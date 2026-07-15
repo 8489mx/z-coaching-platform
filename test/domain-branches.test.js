@@ -31,7 +31,7 @@ const hasCode = (items, code) => items.some((item) => item.code === code);
 test("minor with guardian consent still uses the separate coach-reviewed minor path", () => {
   const result = evaluate(
     completeIntake({
-      personal: { dateOfBirth: "2010-07-15", ageYears: 15, guardianConsent: true },
+      personal: { dateOfBirth: "2010-07-15", guardianConsent: true },
     }),
   );
   assert.equal(result.plan_status, PlanStatus.COACH_REVIEW_REQUIRED);

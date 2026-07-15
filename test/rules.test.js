@@ -55,10 +55,43 @@ test("age calculation handles exact birthday and leap-day birth deterministicall
 
 test("age safety rule can be tested without running the engine", () => {
   const result = evaluateAgeSafety(
-    completeIntake({ personal: { dateOfBirth: "2010-07-15", ageYears: 15, guardianConsent: true } }),
+    completeIntake({ personal: { dateOfBirth: "2010-07-15", guardianConsent: true } }),
     ASSESSMENT_CONTEXT,
   );
   assert.equal(result.statusCandidates[0].status, PlanStatus.COACH_REVIEW_REQUIRED);
+  assert.equal(result.reviewFlags[0].sourcePath, "personal.dateOfBirth");
+});
+
+test("adult exactly 18 on assessmentDate does not enter minor path", () => {
+  const result = evaluateAgeSafety(
+    completeIntake({ personal: { dateOfBirth: "2008-07-14", guardianConsent: null } }),
+    { assessmentDate: "2026-07-14" },
+  );
+  assert.equal(result.statusCandidates.length, 0);
+});
+
+test("client aged 17 years and 364 days enters minor path", () => {
+  const result = evaluateAgeSafety(
+    completeIntake({ personal: { dateOfBirth: "2008-07-15", guardianConsent: false } }),
+    { assessmentDate: "2026-07-14" },
+  );
+  assert.equal(result.statusCandidates[0].status, PlanStatus.BLOCKED);
+});
+
+test("birthday on same day as assessmentDate after 18 years is 18", () => {
+  const result = evaluateAgeSafety(
+    completeIntake({ personal: { dateOfBirth: "2000-01-01", guardianConsent: null } }),
+    { assessmentDate: "2018-01-01" },
+  );
+  assert.equal(result.statusCandidates.length, 0);
+});
+
+test("birthday hasn't passed in the assessment year so age is not increased early", () => {
+  const result = evaluateAgeSafety(
+    completeIntake({ personal: { dateOfBirth: "2008-08-01", guardianConsent: false } }),
+    { assessmentDate: "2026-07-14" },
+  );
+  assert.equal(result.statusCandidates[0].status, PlanStatus.BLOCKED);
 });
 
 test("dangerous symptom rule never scans free text", () => {

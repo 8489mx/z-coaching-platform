@@ -25,7 +25,6 @@ import {
 export const COMPLETE_INTAKE = Object.freeze({
   personal: {
     dateOfBirth: "1990-01-15",
-    ageYears: 36,
     sex: Sex.MALE,
     residenceCountry: "EG",
     guardianConsent: null,

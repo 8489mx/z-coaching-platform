@@ -180,14 +180,13 @@ function validatePersonal(input, assessmentDate, issues) {
   const personal = requiredObject(input.personal, "personal", issues);
   rejectUnknownKeys(
     personal,
-    ["dateOfBirth", "ageYears", "sex", "residenceCountry", "guardianConsent"],
+    ["dateOfBirth", "sex", "residenceCountry", "guardianConsent"],
     "personal",
     issues,
   );
   if (!validIsoDate(personal.dateOfBirth)) {
     issues.push(issue("personal.dateOfBirth", "INVALID_DATE", "Expected a valid ISO date (YYYY-MM-DD)."));
   }
-  numberInRange(personal.ageYears, "personal.ageYears", issues, 0, 120, { integer: true });
   enumValue(personal.sex, Sex, "personal.sex", issues);
   if (typeof personal.residenceCountry !== "string" || !/^[A-Z]{2}$/.test(personal.residenceCountry)) {
     issues.push(
@@ -206,14 +205,6 @@ function validatePersonal(input, assessmentDate, issues) {
     const derivedAge = calculateAgeYears(personal.dateOfBirth, assessmentDate);
     if (derivedAge < 0) {
       issues.push(issue("personal.dateOfBirth", "FUTURE_BIRTH_DATE", "Date of birth is after assessmentDate."));
-    } else if (Number.isInteger(personal.ageYears) && derivedAge !== personal.ageYears) {
-      issues.push(
-        issue(
-          "personal.ageYears",
-          "AGE_DATE_MISMATCH",
-          `Reported age ${personal.ageYears} does not match derived age ${derivedAge}.`,
-        ),
-      );
     }
   }
 }

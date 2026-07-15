@@ -13,7 +13,7 @@
 
 /** @typedef {{assessmentDate:string}} EvaluationContext Trusted server-side evaluation context, not client form data. */
 
-/** @typedef {{dateOfBirth:string, ageYears:number, sex:string, residenceCountry:string, guardianConsent?:boolean|null}} PersonalData */
+/** @typedef {{dateOfBirth:string, sex:string, residenceCountry:string, guardianConsent?:boolean|null}} PersonalData */
 /** @typedef {{primary:string, secondaryTraining?:string|null}} GoalData */
 /** @typedef {{heightCm:number, weightKg:number, waistCm?:number|null, weightTrend:string, measurementQuality:string, progressPhotosAvailable:boolean}} BodyData */
 /** @typedef {{dailyActivity:string, workSchedule:{type:string, physicallyDemandingDays:string[]}, sleep:{averageHours:number, quality:string}, stressLevel:string}} LifestyleData */

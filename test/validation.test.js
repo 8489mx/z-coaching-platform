@@ -18,11 +18,28 @@ test("valid fixture passes schema validation", () => {
   assert.deepEqual(validateIntake(completeIntake(), ASSESSMENT_CONTEXT), { valid: true, issues: [] });
 });
 
-test("reported age must match date of birth at assessment date", () => {
-  const input = completeIntake({ personal: { ageYears: 30 } });
+test("ageYears is rejected as UNKNOWN_FIELD", () => {
+  const input = completeIntake();
+  input.personal.ageYears = 36;
   const validation = validateIntake(input, ASSESSMENT_CONTEXT);
   assert.equal(validation.valid, false);
-  assert.ok(validation.issues.some((item) => item.code === "AGE_DATE_MISMATCH"));
+  assert.ok(validation.issues.some((item) => item.code === "UNKNOWN_FIELD" && item.path === "personal.ageYears"));
+  assert.throws(() => evaluateIntake(input, ASSESSMENT_CONTEXT), IntakeValidationError);
+});
+
+test("missing dateOfBirth is rejected", () => {
+  const input = completeIntake();
+  delete input.personal.dateOfBirth;
+  const validation = validateIntake(input, ASSESSMENT_CONTEXT);
+  assert.equal(validation.valid, false);
+  assert.throws(() => evaluateIntake(input, ASSESSMENT_CONTEXT), IntakeValidationError);
+});
+
+test("dateOfBirth after assessmentDate is rejected", () => {
+  const input = completeIntake({ personal: { dateOfBirth: "2050-01-01" } });
+  const validation = validateIntake(input, ASSESSMENT_CONTEXT);
+  assert.equal(validation.valid, false);
+  assert.ok(validation.issues.some((item) => item.code === "FUTURE_BIRTH_DATE"));
   assert.throws(() => evaluateIntake(input, ASSESSMENT_CONTEXT), IntakeValidationError);
 });
 

@@ -59,7 +59,7 @@ export function evaluateAgeSafety(input, context) {
       Scope.GLOBAL,
       ReviewLevel.COACH,
       "Guardian consent is present, but a coach must use the separate minor pathway.",
-      "personal.ageYears",
+      "personal.dateOfBirth",
     ),
   );
   result.reasons.push(

@@ -59,7 +59,6 @@ test("minor without guardian consent is blocked from the adult path", () => {
   const input = completeIntake({
     personal: {
       dateOfBirth: "2010-07-15",
-      ageYears: 15,
       guardianConsent: false,
     },
   });
@@ -569,7 +568,7 @@ test("a never-trained client requires an intro week", () => {
 
 test("medical safety wins a conflict with a blocked minor while both findings remain", () => {
   const input = completeIntake({
-    personal: { dateOfBirth: "2010-07-15", ageYears: 15, guardianConsent: false },
+    personal: { dateOfBirth: "2010-07-15", guardianConsent: false },
     medical: { dangerousSymptoms: { chestPainOrPressure: ScreeningAnswer.YES } },
     nutrition: { allergies: [{ substance: "SESAME", medicallyConfirmed: true }] },
   });
