@@ -8,13 +8,14 @@
     ".": "./src/intake-decision-engine/index.js",
     "./training-plan-specification": "./src/training-plan-specification/index.js",
     "./training-session-blueprint": "./src/training-session-blueprint/index.js",
-    "./exercise-catalog": "./src/exercise-catalog/index.js"
+    "./exercise-catalog": "./src/exercise-catalog/index.js",
+    "./exercise-selection": "./src/exercise-selection/index.js"
   },
   "scripts": {
-    "test": "node --test test/intake-decision-engine.test.js test/domain-branches.test.js test/rules.test.js test/training-plan-specification.test.js test/training-session-blueprint.test.js test/exercise-catalog.test.js test/validation.test.js",
-    "test:coverage": "node --test --experimental-test-coverage test/intake-decision-engine.test.js test/domain-branches.test.js test/rules.test.js test/training-plan-specification.test.js test/training-session-blueprint.test.js test/exercise-catalog.test.js test/validation.test.js",
+    "test": "node --test test/intake-decision-engine.test.js test/domain-branches.test.js test/rules.test.js test/training-plan-specification.test.js test/training-session-blueprint.test.js test/exercise-catalog.test.js test/exercise-selection.test.js test/validation.test.js",
+    "test:coverage": "node --test --experimental-test-coverage test/intake-decision-engine.test.js test/domain-branches.test.js test/rules.test.js test/training-plan-specification.test.js test/training-session-blueprint.test.js test/exercise-catalog.test.js test/exercise-selection.test.js test/validation.test.js",
     "example": "node examples/run-example.js",
-    "check": "node --check src/intake-decision-engine/index.js && node --check src/training-plan-specification/index.js && node --check src/training-plan-specification/build-training-plan-spec.js && node --check src/training-session-blueprint/index.js && node --check src/training-session-blueprint/build-training-session-blueprint.js && node --check src/exercise-catalog/index.js && node --check src/exercise-catalog/exercise-catalog.js && npm test"
+    "check": "node --check src/intake-decision-engine/index.js && node --check src/training-plan-specification/index.js && node --check src/training-plan-specification/build-training-plan-spec.js && node --check src/training-session-blueprint/index.js && node --check src/training-session-blueprint/build-training-session-blueprint.js && node --check src/exercise-catalog/index.js && node --check src/exercise-catalog/exercise-catalog.js && node --check src/exercise-selection/index.js && node --check src/exercise-selection/build-exercise-selection.js && npm test"
   },
   "engines": {
     "node": ">=22"

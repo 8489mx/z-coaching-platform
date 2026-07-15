@@ -619,6 +619,58 @@ CROSSFIT_OR_FUNCTIONAL
 
 تمارين `BODYWEIGHT` متاحة في `HOME`, `GYM`, `OUTDOORS`, و`MIXED`. تمارين `DUMBBELLS` و`RESISTANCE_BANDS` متاحة في `HOME`, `GYM`, و`MIXED`، بينما `CABLE_STATION` و`SELECTORIZED_MACHINES` متاحتان في `GYM` و`MIXED`. الكتالوج لا يفلتر حسب العميل أو المعدات، ولا يختار تمرينًا أو يبني برنامجًا.
 
+## Exercise Selection V1
+
+الوحدة المستقلة `src/exercise-selection` تستهلك `Training Session Blueprint` و`hard_constraints` المنظمة فقط عبر `buildExerciseSelection({ trainingSessionBlueprint, hardConstraints })`. لا تقرأ Client Intake الخام ولا تعيد تقييم الأمان الطبي، وهي متاحة عبر export الحزمة الفرعي `./exercise-selection`.
+
+```json
+{
+  "selection_version": "exercise-selection-v1",
+  "status": "READY",
+  "recommended_days": 4,
+  "split_code": "UPPER_LOWER",
+  "schedule_mode": "FIXED_DAYS",
+  "intro_week_required": true,
+  "volume_start": "CONSERVATIVE",
+  "sessions": [
+    {
+      "sequence": 1,
+      "session_code": "UPPER_A",
+      "focus": "UPPER_BODY",
+      "exercises": [
+        {
+          "order": 1,
+          "slot_code": "HORIZONTAL_PUSH",
+          "selection_status": "SELECTED",
+          "exercise_code": "DUMBBELL_FLOOR_PRESS",
+          "name_en": "Dumbbell Floor Press",
+          "reason_code": "SELECTED_EXPLICIT_EQUIPMENT",
+          "source_constraint_codes": []
+        }
+      ]
+    }
+  ],
+  "constraints": [],
+  "reasons": []
+}
+```
+
+عند وجود حصص، تقرأ الوحدة قيد `TRAINING_LOCATION` واحدًا بالضبط وقيود `AVAILABLE_TRAINING_EQUIPMENT` من `blueprint.constraints`. `BODYWEIGHT` متاح ضمنيًا في كل المواقع، ولا تفترض الوحدة أي معدات لمجرد أن المكان `GYM`. يجب أن يطابق كل متطلب معدة التمرين؛ `BODYWEIGHT_ONLY` يطابق الجسم فقط، وترتيب القدرات الأخرى هو `LIGHT < MODERATE < HEAVY`، بينما `NOT_APPLICABLE` لا يحقق أي متطلب.
+
+| الحركة المنظمة | Movement Slots المتأثرة |
+|---|---|
+| `ALL_ACTIVITY`, `ALL_TRAINING` | جميع الـSlots |
+| `SQUAT` | `KNEE_DOMINANT`, `UNILATERAL_LOWER` |
+| `HINGE` | `HIP_HINGE` |
+| `PUSH` | `HORIZONTAL_PUSH`, `VERTICAL_PUSH` |
+| `PULL` | `HORIZONTAL_PULL`, `VERTICAL_PULL` |
+| `OVERHEAD` | `VERTICAL_PUSH` |
+| `WALKING`, `RUNNING`, `CYCLING`, `SWIMMING`, `ROWING`, `STAIRS`, `JUMPING`, `ALL_CARDIO` | لا تمنع Strength Slots في V1 |
+
+تقرأ خريطة الحركة فقط من `INJURY_AFFECTED_MOVEMENT`, `INJURY_MEDICAL_RESTRICTION`, و`MEDICAL_MOVEMENT_RESTRICTION` داخل `hardConstraints`، ولا تطبق القيدين الطبيين إلا مع `instruction=AVOID`. الـSlot المقيد يبقى موجودًا بحالة `REVIEW_REQUIRED` وسبب `MOVEMENT_CONSTRAINT_REQUIRES_REVIEW`، والـSlot الذي لا يملك مرشحًا مؤهلًا يستخدم `NO_ELIGIBLE_EXERCISE`.
+
+عند `intro_week_required=true` تكون ملاءمة المبتدئ أولًا، ثم المعدة المذكورة صراحة، ثم ترتيب الكتالوج. من دون Intro Week تكون المعدة الصريحة أولًا ثم ترتيب الكتالوج. أسباب النجاح هي `SELECTED_EXPLICIT_EQUIPMENT` أو `SELECTED_BODYWEIGHT_FALLBACK`. لا تُرقّى الحالة provisional إلى ready؛ أما `READY` فتتحول إلى `PROVISIONAL_REVIEW_REQUIRED` إذا بقي Slot واحد على الأقل للمراجعة، و`WITHHELD` يبقى بلا حصص.
+
 ## تشغيل الاختبارات والمثال
 
 يتطلب Node.js 22 أو أحدث، ولا يحتاج `npm install` لعدم وجود dependencies.
@@ -630,7 +682,7 @@ npm run check
 npm run example
 ```
 
-آخر تشغيل فعلي عند التسليم: **182/182 اختبارات ناجحة**. كانت النسخة المجمدة من Intake Decision Engine تحتوي على 146 اختبارًا، وأضيفت 12 حالة لعقد Training Plan Specification، و11 حالة لخرائط Training Session Blueprints، ثم 13 حالة مستقلة لعقد وبيانات وواجهات Minimal Exercise Catalog. كما نجح كل من `npm run test:coverage` و`npm run check`.
+آخر تشغيل فعلي عند التسليم: **200/200 اختبارات ناجحة**. كانت النسخة المجمدة من Intake Decision Engine تحتوي على 146 اختبارًا، وأضيفت 12 حالة لعقد Training Plan Specification، و11 حالة لخرائط Training Session Blueprints، و13 حالة لـMinimal Exercise Catalog، ثم 18 حالة مستقلة لفلترة Exercise Selection وأولوياته وقيوده وحالاته. كما نجح كل من `npm run test:coverage` و`npm run check`.
 
 `npm run example` يقرأ `examples/full-intake.json` ويطبع ناتج المحرك الفعلي. الخلاصة الفعلية لنفس المثال:
 
@@ -667,6 +719,6 @@ npm run example
 - لا Database أو تخزين أو Audit Log أو إعدادات Tenant.
 - لا AI Runtime أو خدمات خارجية.
 - لا حساب TDEE/BMR أو رقم سعرات أو Macros.
-- لا خطة وجبات أو بدائل طعام فعلية، ولا اختيار تمارين أو Sets أو Reps أو Progression أو جلسات كارديو. Training Plan Specification يحدد Split ورموز حصص، وTraining Session Blueprints يحدد Movement Slots، وExercise Catalog يصف مرشحين ثابتين فقط.
+- لا خطة وجبات أو بدائل طعام فعلية، ولا Sets أو Reps أو Rest أو Tempo أو أحمال أو Progression أو جلسات كارديو. Exercise Selection يختار سجلًا واحدًا لكل Slot فقط، من دون بناء وصفة تدريبية أو توزيع أيام الأسبوع.
 - لا تفسير دوائي أو تشخيص أو بديل عن الطبيب/الكوتش.
 - لا JSON Schema منشور كملف مستقل؛ Validation الحالية Runtime وJSDoc. يمكن توليد Schema versioned لاحقًا عند تثبيت عقد الـAPI.
