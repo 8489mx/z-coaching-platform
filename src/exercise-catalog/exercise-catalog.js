@@ -4,6 +4,7 @@ import {
   TrainingLocation,
 } from "../intake-decision-engine/index.js";
 import { MovementSlotCode } from "../training-session-blueprint/index.js";
+import { ExercisePrescriptionUnit } from "./domain/enums.js";
 
 export const EXERCISE_CATALOG_VERSION = "exercise-catalog-v1";
 
@@ -41,6 +42,7 @@ function createExercise({
   equipmentCode,
   minimumLoadCapacity,
   beginnerFriendly,
+  prescriptionUnit,
 }) {
   return Object.freeze({
     exercise_code: exerciseCode,
@@ -54,6 +56,7 @@ function createExercise({
     ]),
     allowed_locations: ALLOWED_LOCATIONS_BY_EQUIPMENT[equipmentCode],
     beginner_friendly: beginnerFriendly,
+    prescription_unit: prescriptionUnit,
   });
 }
 
@@ -65,6 +68,7 @@ const EXERCISES = Object.freeze([
     equipmentCode: EquipmentCode.BODYWEIGHT,
     minimumLoadCapacity: EquipmentLoadCapacity.BODYWEIGHT_ONLY,
     beginnerFriendly: true,
+    prescriptionUnit: ExercisePrescriptionUnit.REPS,
   }),
   createExercise({
     exerciseCode: "GOBLET_SQUAT",
@@ -73,6 +77,7 @@ const EXERCISES = Object.freeze([
     equipmentCode: EquipmentCode.DUMBBELLS,
     minimumLoadCapacity: EquipmentLoadCapacity.LIGHT,
     beginnerFriendly: true,
+    prescriptionUnit: ExercisePrescriptionUnit.REPS,
   }),
   createExercise({
     exerciseCode: "GLUTE_BRIDGE",
@@ -81,6 +86,7 @@ const EXERCISES = Object.freeze([
     equipmentCode: EquipmentCode.BODYWEIGHT,
     minimumLoadCapacity: EquipmentLoadCapacity.BODYWEIGHT_ONLY,
     beginnerFriendly: true,
+    prescriptionUnit: ExercisePrescriptionUnit.REPS,
   }),
   createExercise({
     exerciseCode: "DUMBBELL_ROMANIAN_DEADLIFT",
@@ -89,6 +95,7 @@ const EXERCISES = Object.freeze([
     equipmentCode: EquipmentCode.DUMBBELLS,
     minimumLoadCapacity: EquipmentLoadCapacity.LIGHT,
     beginnerFriendly: true,
+    prescriptionUnit: ExercisePrescriptionUnit.REPS,
   }),
   createExercise({
     exerciseCode: "SPLIT_SQUAT",
@@ -97,6 +104,7 @@ const EXERCISES = Object.freeze([
     equipmentCode: EquipmentCode.BODYWEIGHT,
     minimumLoadCapacity: EquipmentLoadCapacity.BODYWEIGHT_ONLY,
     beginnerFriendly: true,
+    prescriptionUnit: ExercisePrescriptionUnit.REPS_PER_SIDE,
   }),
   createExercise({
     exerciseCode: "DUMBBELL_REVERSE_LUNGE",
@@ -105,6 +113,7 @@ const EXERCISES = Object.freeze([
     equipmentCode: EquipmentCode.DUMBBELLS,
     minimumLoadCapacity: EquipmentLoadCapacity.LIGHT,
     beginnerFriendly: false,
+    prescriptionUnit: ExercisePrescriptionUnit.REPS_PER_SIDE,
   }),
   createExercise({
     exerciseCode: "HAMSTRING_WALKOUT",
@@ -113,6 +122,7 @@ const EXERCISES = Object.freeze([
     equipmentCode: EquipmentCode.BODYWEIGHT,
     minimumLoadCapacity: EquipmentLoadCapacity.BODYWEIGHT_ONLY,
     beginnerFriendly: true,
+    prescriptionUnit: ExercisePrescriptionUnit.REPS,
   }),
   createExercise({
     exerciseCode: "LYING_LEG_CURL_MACHINE",
@@ -121,6 +131,7 @@ const EXERCISES = Object.freeze([
     equipmentCode: EquipmentCode.SELECTORIZED_MACHINES,
     minimumLoadCapacity: EquipmentLoadCapacity.LIGHT,
     beginnerFriendly: true,
+    prescriptionUnit: ExercisePrescriptionUnit.REPS,
   }),
   createExercise({
     exerciseCode: "STANDING_CALF_RAISE",
@@ -129,6 +140,7 @@ const EXERCISES = Object.freeze([
     equipmentCode: EquipmentCode.BODYWEIGHT,
     minimumLoadCapacity: EquipmentLoadCapacity.BODYWEIGHT_ONLY,
     beginnerFriendly: true,
+    prescriptionUnit: ExercisePrescriptionUnit.REPS,
   }),
   createExercise({
     exerciseCode: "DUMBBELL_CALF_RAISE",
@@ -137,6 +149,7 @@ const EXERCISES = Object.freeze([
     equipmentCode: EquipmentCode.DUMBBELLS,
     minimumLoadCapacity: EquipmentLoadCapacity.LIGHT,
     beginnerFriendly: true,
+    prescriptionUnit: ExercisePrescriptionUnit.REPS,
   }),
   createExercise({
     exerciseCode: "PUSH_UP",
@@ -145,6 +158,7 @@ const EXERCISES = Object.freeze([
     equipmentCode: EquipmentCode.BODYWEIGHT,
     minimumLoadCapacity: EquipmentLoadCapacity.BODYWEIGHT_ONLY,
     beginnerFriendly: true,
+    prescriptionUnit: ExercisePrescriptionUnit.REPS,
   }),
   createExercise({
     exerciseCode: "DUMBBELL_FLOOR_PRESS",
@@ -153,6 +167,7 @@ const EXERCISES = Object.freeze([
     equipmentCode: EquipmentCode.DUMBBELLS,
     minimumLoadCapacity: EquipmentLoadCapacity.LIGHT,
     beginnerFriendly: true,
+    prescriptionUnit: ExercisePrescriptionUnit.REPS,
   }),
   createExercise({
     exerciseCode: "RESISTANCE_BAND_ROW",
@@ -161,6 +176,7 @@ const EXERCISES = Object.freeze([
     equipmentCode: EquipmentCode.RESISTANCE_BANDS,
     minimumLoadCapacity: EquipmentLoadCapacity.LIGHT,
     beginnerFriendly: true,
+    prescriptionUnit: ExercisePrescriptionUnit.REPS,
   }),
   createExercise({
     exerciseCode: "ONE_ARM_DUMBBELL_ROW",
@@ -169,6 +185,7 @@ const EXERCISES = Object.freeze([
     equipmentCode: EquipmentCode.DUMBBELLS,
     minimumLoadCapacity: EquipmentLoadCapacity.LIGHT,
     beginnerFriendly: true,
+    prescriptionUnit: ExercisePrescriptionUnit.REPS_PER_SIDE,
   }),
   createExercise({
     exerciseCode: "PIKE_PUSH_UP",
@@ -177,6 +194,7 @@ const EXERCISES = Object.freeze([
     equipmentCode: EquipmentCode.BODYWEIGHT,
     minimumLoadCapacity: EquipmentLoadCapacity.BODYWEIGHT_ONLY,
     beginnerFriendly: false,
+    prescriptionUnit: ExercisePrescriptionUnit.REPS,
   }),
   createExercise({
     exerciseCode: "STANDING_DUMBBELL_SHOULDER_PRESS",
@@ -185,6 +203,7 @@ const EXERCISES = Object.freeze([
     equipmentCode: EquipmentCode.DUMBBELLS,
     minimumLoadCapacity: EquipmentLoadCapacity.LIGHT,
     beginnerFriendly: true,
+    prescriptionUnit: ExercisePrescriptionUnit.REPS,
   }),
   createExercise({
     exerciseCode: "BAND_LAT_PULLDOWN",
@@ -193,6 +212,7 @@ const EXERCISES = Object.freeze([
     equipmentCode: EquipmentCode.RESISTANCE_BANDS,
     minimumLoadCapacity: EquipmentLoadCapacity.LIGHT,
     beginnerFriendly: true,
+    prescriptionUnit: ExercisePrescriptionUnit.REPS,
   }),
   createExercise({
     exerciseCode: "LAT_PULLDOWN",
@@ -201,6 +221,7 @@ const EXERCISES = Object.freeze([
     equipmentCode: EquipmentCode.CABLE_STATION,
     minimumLoadCapacity: EquipmentLoadCapacity.LIGHT,
     beginnerFriendly: true,
+    prescriptionUnit: ExercisePrescriptionUnit.REPS,
   }),
   createExercise({
     exerciseCode: "DUMBBELL_LATERAL_RAISE",
@@ -209,6 +230,7 @@ const EXERCISES = Object.freeze([
     equipmentCode: EquipmentCode.DUMBBELLS,
     minimumLoadCapacity: EquipmentLoadCapacity.LIGHT,
     beginnerFriendly: true,
+    prescriptionUnit: ExercisePrescriptionUnit.REPS,
   }),
   createExercise({
     exerciseCode: "CABLE_LATERAL_RAISE",
@@ -217,6 +239,7 @@ const EXERCISES = Object.freeze([
     equipmentCode: EquipmentCode.CABLE_STATION,
     minimumLoadCapacity: EquipmentLoadCapacity.LIGHT,
     beginnerFriendly: true,
+    prescriptionUnit: ExercisePrescriptionUnit.REPS_PER_SIDE,
   }),
   createExercise({
     exerciseCode: "BAND_FACE_PULL",
@@ -225,6 +248,7 @@ const EXERCISES = Object.freeze([
     equipmentCode: EquipmentCode.RESISTANCE_BANDS,
     minimumLoadCapacity: EquipmentLoadCapacity.LIGHT,
     beginnerFriendly: true,
+    prescriptionUnit: ExercisePrescriptionUnit.REPS,
   }),
   createExercise({
     exerciseCode: "DUMBBELL_REAR_DELT_RAISE",
@@ -233,6 +257,7 @@ const EXERCISES = Object.freeze([
     equipmentCode: EquipmentCode.DUMBBELLS,
     minimumLoadCapacity: EquipmentLoadCapacity.LIGHT,
     beginnerFriendly: true,
+    prescriptionUnit: ExercisePrescriptionUnit.REPS,
   }),
   createExercise({
     exerciseCode: "BAND_BICEPS_CURL",
@@ -241,6 +266,7 @@ const EXERCISES = Object.freeze([
     equipmentCode: EquipmentCode.RESISTANCE_BANDS,
     minimumLoadCapacity: EquipmentLoadCapacity.LIGHT,
     beginnerFriendly: true,
+    prescriptionUnit: ExercisePrescriptionUnit.REPS,
   }),
   createExercise({
     exerciseCode: "DUMBBELL_BICEPS_CURL",
@@ -249,6 +275,7 @@ const EXERCISES = Object.freeze([
     equipmentCode: EquipmentCode.DUMBBELLS,
     minimumLoadCapacity: EquipmentLoadCapacity.LIGHT,
     beginnerFriendly: true,
+    prescriptionUnit: ExercisePrescriptionUnit.REPS,
   }),
   createExercise({
     exerciseCode: "CLOSE_GRIP_PUSH_UP",
@@ -257,6 +284,7 @@ const EXERCISES = Object.freeze([
     equipmentCode: EquipmentCode.BODYWEIGHT,
     minimumLoadCapacity: EquipmentLoadCapacity.BODYWEIGHT_ONLY,
     beginnerFriendly: false,
+    prescriptionUnit: ExercisePrescriptionUnit.REPS,
   }),
   createExercise({
     exerciseCode: "BAND_TRICEPS_EXTENSION",
@@ -265,6 +293,7 @@ const EXERCISES = Object.freeze([
     equipmentCode: EquipmentCode.RESISTANCE_BANDS,
     minimumLoadCapacity: EquipmentLoadCapacity.LIGHT,
     beginnerFriendly: true,
+    prescriptionUnit: ExercisePrescriptionUnit.REPS,
   }),
   createExercise({
     exerciseCode: "DEAD_BUG",
@@ -273,6 +302,7 @@ const EXERCISES = Object.freeze([
     equipmentCode: EquipmentCode.BODYWEIGHT,
     minimumLoadCapacity: EquipmentLoadCapacity.BODYWEIGHT_ONLY,
     beginnerFriendly: true,
+    prescriptionUnit: ExercisePrescriptionUnit.REPS_PER_SIDE,
   }),
   createExercise({
     exerciseCode: "FRONT_PLANK",
@@ -281,6 +311,7 @@ const EXERCISES = Object.freeze([
     equipmentCode: EquipmentCode.BODYWEIGHT,
     minimumLoadCapacity: EquipmentLoadCapacity.BODYWEIGHT_ONLY,
     beginnerFriendly: true,
+    prescriptionUnit: ExercisePrescriptionUnit.SECONDS,
   }),
 ]);
 

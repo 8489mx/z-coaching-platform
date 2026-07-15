@@ -4,3 +4,4 @@ export {
   getExerciseByCode,
   listExercisesForSlot,
 } from "./exercise-catalog.js";
+export * from "./domain/enums.js";

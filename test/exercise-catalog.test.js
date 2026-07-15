@@ -10,6 +10,7 @@ import { MovementSlotCode } from "../src/training-session-blueprint/index.js";
 import {
   EXERCISE_CATALOG,
   EXERCISE_CATALOG_VERSION,
+  ExercisePrescriptionUnit,
   getExerciseByCode,
   listExercisesForSlot,
 } from "../src/exercise-catalog/index.js";
@@ -71,6 +72,48 @@ const EXPECTED_CODES_BY_SLOT = {
   CORE_STABILITY: ["DEAD_BUG", "FRONT_PLANK"],
 };
 
+const EXPECTED_CODES_BY_PRESCRIPTION_UNIT = {
+  [ExercisePrescriptionUnit.REPS]: [
+    "BODYWEIGHT_SQUAT",
+    "GOBLET_SQUAT",
+    "GLUTE_BRIDGE",
+    "DUMBBELL_ROMANIAN_DEADLIFT",
+    "HAMSTRING_WALKOUT",
+    "LYING_LEG_CURL_MACHINE",
+    "STANDING_CALF_RAISE",
+    "DUMBBELL_CALF_RAISE",
+    "PUSH_UP",
+    "DUMBBELL_FLOOR_PRESS",
+    "RESISTANCE_BAND_ROW",
+    "PIKE_PUSH_UP",
+    "STANDING_DUMBBELL_SHOULDER_PRESS",
+    "BAND_LAT_PULLDOWN",
+    "LAT_PULLDOWN",
+    "DUMBBELL_LATERAL_RAISE",
+    "BAND_FACE_PULL",
+    "DUMBBELL_REAR_DELT_RAISE",
+    "BAND_BICEPS_CURL",
+    "DUMBBELL_BICEPS_CURL",
+    "CLOSE_GRIP_PUSH_UP",
+    "BAND_TRICEPS_EXTENSION",
+  ],
+  [ExercisePrescriptionUnit.REPS_PER_SIDE]: [
+    "SPLIT_SQUAT",
+    "DUMBBELL_REVERSE_LUNGE",
+    "ONE_ARM_DUMBBELL_ROW",
+    "CABLE_LATERAL_RAISE",
+    "DEAD_BUG",
+  ],
+  [ExercisePrescriptionUnit.SECONDS]: ["FRONT_PLANK"],
+};
+
+const EXPECTED_PRESCRIPTION_UNIT_BY_CODE = new Map(
+  Object.entries(EXPECTED_CODES_BY_PRESCRIPTION_UNIT).flatMap(
+    ([prescriptionUnit, exerciseCodes]) =>
+      exerciseCodes.map((exerciseCode) => [exerciseCode, prescriptionUnit]),
+  ),
+);
+
 const EXPECTED_LOCATIONS_BY_EQUIPMENT = {
   BODYWEIGHT: ["HOME", "GYM", "OUTDOORS", "MIXED"],
   DUMBBELLS: ["HOME", "GYM", "MIXED"],
@@ -82,6 +125,11 @@ const EXPECTED_LOCATIONS_BY_EQUIPMENT = {
 test("exercise catalog version is stable", () => {
   assert.equal(EXERCISE_CATALOG_VERSION, "exercise-catalog-v1");
   assert.equal(EXERCISE_CATALOG.catalog_version, EXERCISE_CATALOG_VERSION);
+});
+
+test("ExercisePrescriptionUnit exposes only the three approved units", () => {
+  assert.deepEqual(Object.keys(ExercisePrescriptionUnit), ["REPS", "REPS_PER_SIDE", "SECONDS"]);
+  assert.deepEqual(Object.values(ExercisePrescriptionUnit), ["REPS", "REPS_PER_SIDE", "SECONDS"]);
 });
 
 test("catalog contains exactly 28 exercise records with the required shape", () => {
@@ -98,6 +146,7 @@ test("catalog contains exactly 28 exercise records with the required shape", () 
       "equipment_requirements",
       "exercise_code",
       "name_en",
+      "prescription_unit",
       "slot_code",
     ]);
     for (const requirement of exercise.equipment_requirements) {
@@ -106,6 +155,25 @@ test("catalog contains exactly 28 exercise records with the required shape", () 
         "minimum_load_capacity",
       ]);
     }
+  }
+});
+
+test("all 28 exercises use the exact approved prescription-unit distribution", () => {
+  const knownUnits = new Set(Object.values(ExercisePrescriptionUnit));
+  assert.equal(EXPECTED_PRESCRIPTION_UNIT_BY_CODE.size, 28);
+  assert.ok(
+    EXERCISE_CATALOG.exercises.every(({ prescription_unit: unit }) => knownUnits.has(unit)),
+  );
+
+  for (const [prescriptionUnit, expectedCodes] of Object.entries(
+    EXPECTED_CODES_BY_PRESCRIPTION_UNIT,
+  )) {
+    assert.deepEqual(
+      EXERCISE_CATALOG.exercises
+        .filter(({ prescription_unit: unit }) => unit === prescriptionUnit)
+        .map(({ exercise_code: exerciseCode }) => exerciseCode),
+      expectedCodes,
+    );
   }
 });
 
@@ -218,7 +286,12 @@ test("allowed locations are known, unique, and equipment-appropriate", () => {
 
 test("getExerciseByCode returns the matching record or null", () => {
   for (const exercise of EXERCISE_CATALOG.exercises) {
-    assert.strictEqual(getExerciseByCode(exercise.exercise_code), exercise);
+    const result = getExerciseByCode(exercise.exercise_code);
+    assert.strictEqual(result, exercise);
+    assert.equal(
+      result.prescription_unit,
+      EXPECTED_PRESCRIPTION_UNIT_BY_CODE.get(exercise.exercise_code),
+    );
   }
 
   assert.equal(getExerciseByCode("UNKNOWN_EXERCISE"), null);
@@ -226,9 +299,14 @@ test("getExerciseByCode returns the matching record or null", () => {
 
 test("listExercisesForSlot returns the approved pair for every slot", () => {
   for (const [slotCode, expectedCodes] of Object.entries(EXPECTED_CODES_BY_SLOT)) {
+    const exercises = listExercisesForSlot(slotCode);
     assert.deepEqual(
-      listExercisesForSlot(slotCode).map(({ exercise_code: exerciseCode }) => exerciseCode),
+      exercises.map(({ exercise_code: exerciseCode }) => exerciseCode),
       expectedCodes,
+    );
+    assert.deepEqual(
+      exercises.map(({ prescription_unit: unit }) => unit),
+      expectedCodes.map((exerciseCode) => EXPECTED_PRESCRIPTION_UNIT_BY_CODE.get(exerciseCode)),
     );
   }
 });

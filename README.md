@@ -592,13 +592,16 @@ CROSSFIT_OR_FUNCTIONAL
         }
       ],
       "allowed_locations": ["HOME", "GYM", "OUTDOORS", "MIXED"],
-      "beginner_friendly": true
+      "beginner_friendly": true,
+      "prescription_unit": "REPS"
     }
   ]
 }
 ```
 
-الواجهة العامة تصدّر `EXERCISE_CATALOG`, `EXERCISE_CATALOG_VERSION`, `getExerciseByCode(exerciseCode)`, و`listExercisesForSlot(slotCode)`. تعيد دالة البحث `null` للكود غير الموجود، وتعيد دالة الـSlot قائمة جديدة في كل استدعاء من دون تعديل الكتالوج الأصلي.
+كل سجل يحدد `prescription_unit` صراحة باستخدام `ExercisePrescriptionUnit` فقط، من دون استنتاج الوحدة من اسم التمرين وقت التشغيل. تستخدم `REPS_PER_SIDE` مع `SPLIT_SQUAT`, `DUMBBELL_REVERSE_LUNGE`, `ONE_ARM_DUMBBELL_ROW`, `CABLE_LATERAL_RAISE`, و`DEAD_BUG` فقط؛ وتستخدم `SECONDS` مع `FRONT_PLANK` فقط؛ بينما تستخدم التمارين الـ22 المتبقية `REPS`. هذه بيانات وصفية للوصفة اللاحقة، ولا تضيف Sets أو Reps فعلية أو Rest أو Tempo.
+
+الواجهة العامة تصدّر `EXERCISE_CATALOG`, `EXERCISE_CATALOG_VERSION`, `ExercisePrescriptionUnit`, `getExerciseByCode(exerciseCode)`, و`listExercisesForSlot(slotCode)`. تعيد دالة البحث `null` للكود غير الموجود، وتعيد دالة الـSlot قائمة جديدة في كل استدعاء من دون تعديل الكتالوج الأصلي، وتحتفظ الواجهتان بحقل `prescription_unit` ضمن سجل التمرين.
 
 | `slot_code` | التمارين |
 |---|---|
@@ -682,7 +685,7 @@ npm run check
 npm run example
 ```
 
-آخر تشغيل فعلي عند التسليم: **201/201 اختبارات ناجحة**. كانت النسخة المجمدة من Intake Decision Engine تحتوي على 146 اختبارًا، وأضيفت 12 حالة لعقد Training Plan Specification، و11 حالة لخرائط Training Session Blueprints، و13 حالة لـMinimal Exercise Catalog، ثم 19 حالة مستقلة لفلترة Exercise Selection وأولوياته وقيوده وحالاته، بما فيها ملف معدات الجيم القياسي وعدم تسربه إلى المواقع الأخرى. كما نجح كل من `npm run test:coverage` و`npm run check`.
+آخر تشغيل فعلي عند التسليم: **203/203 اختبارات ناجحة**. كانت النسخة المجمدة من Intake Decision Engine تحتوي على 146 اختبارًا، وأضيفت 12 حالة لعقد Training Plan Specification، و11 حالة لخرائط Training Session Blueprints، و15 حالة لـMinimal Exercise Catalog، ثم 19 حالة مستقلة لفلترة Exercise Selection وأولوياته وقيوده وحالاته، بما فيها ملف معدات الجيم القياسي وعدم تسربه إلى المواقع الأخرى. كما نجح كل من `npm run test:coverage` و`npm run check`.
 
 `npm run example` يقرأ `examples/full-intake.json` ويطبع ناتج المحرك الفعلي. الخلاصة الفعلية لنفس المثال:
 

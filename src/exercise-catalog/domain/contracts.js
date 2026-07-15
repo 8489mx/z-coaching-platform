@@ -2,6 +2,7 @@
 /** @typedef {"BODYWEIGHT"|"DUMBBELLS"|"BARBELL_AND_PLATES"|"ADJUSTABLE_BENCH"|"FLAT_BENCH"|"RESISTANCE_BANDS"|"PULL_UP_BAR"|"SQUAT_RACK"|"SMITH_MACHINE"|"CABLE_STATION"|"SELECTORIZED_MACHINES"|"KETTLEBELLS"} EquipmentCodeValue */
 /** @typedef {"BODYWEIGHT_ONLY"|"LIGHT"|"MODERATE"|"HEAVY"} CatalogLoadCapacityValue */
 /** @typedef {"HOME"|"GYM"|"OUTDOORS"|"MIXED"} TrainingLocationValue */
+/** @typedef {"REPS"|"REPS_PER_SIDE"|"SECONDS"} ExercisePrescriptionUnitValue */
 
 /**
  * @typedef {Object} ExerciseEquipmentRequirement
@@ -17,6 +18,7 @@
  * @property {ExerciseEquipmentRequirement[]} equipment_requirements
  * @property {TrainingLocationValue[]} allowed_locations
  * @property {boolean} beginner_friendly
+ * @property {ExercisePrescriptionUnitValue} prescription_unit
  */
 
 /**
