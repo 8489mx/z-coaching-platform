@@ -522,6 +522,57 @@ CROSSFIT_OR_FUNCTIONAL
 
 الحصص مرتبة بـ`sequence` فقط. لا تحدد الوحدة أيام الأسبوع، ولا تختار تمارين أو Sets أو Reps أو Progression، ولا تغيّر الحمل بسبب الرياضة الإضافية.
 
+## Training Session Blueprints V1
+
+الوحدة المستقلة `src/training-session-blueprint` تستهلك ناتج `buildTrainingPlanSpec(...)` فقط، وتضيف لكل حصة قائمة مرتبة من Movement Slots تصف احتياج الحصة من دون اختيار تمرين فعلي. واجهتها العامة هي `buildTrainingSessionBlueprint(trainingPlanSpec)`، وهي متاحة عبر export الحزمة الفرعي `./training-session-blueprint`.
+
+```json
+{
+  "blueprint_version": "training-session-blueprint-v1",
+  "status": "READY",
+  "recommended_days": 4,
+  "split_code": "UPPER_LOWER",
+  "schedule_mode": "FIXED_DAYS",
+  "intro_week_required": true,
+  "volume_start": "CONSERVATIVE",
+  "sessions": [
+    {
+      "sequence": 1,
+      "session_code": "UPPER_A",
+      "focus": "UPPER_BODY",
+      "movement_slots": [
+        {
+          "order": 1,
+          "slot_code": "HORIZONTAL_PUSH"
+        }
+      ]
+    }
+  ],
+  "constraints": [],
+  "reasons": []
+}
+```
+
+`MovementSlotCode` يحتوي فقط: `KNEE_DOMINANT`, `HIP_HINGE`, `UNILATERAL_LOWER`, `KNEE_FLEXION`, `CALF_RAISE`, `HORIZONTAL_PUSH`, `HORIZONTAL_PULL`, `VERTICAL_PUSH`, `VERTICAL_PULL`, `SHOULDER_ABDUCTION`, `REAR_DELT`, `ELBOW_FLEXION`, `ELBOW_EXTENSION`, و`CORE_STABILITY`.
+
+| `session_code` | Movement Slots بالترتيب |
+|---|---|
+| `FULL_BODY_A` | `KNEE_DOMINANT`, `HIP_HINGE`, `HORIZONTAL_PUSH`, `HORIZONTAL_PULL`, `CORE_STABILITY` |
+| `FULL_BODY_B` | `HIP_HINGE`, `KNEE_DOMINANT`, `VERTICAL_PUSH`, `VERTICAL_PULL`, `CORE_STABILITY` |
+| `FULL_BODY_C` | `UNILATERAL_LOWER`, `KNEE_FLEXION`, `HORIZONTAL_PUSH`, `HORIZONTAL_PULL`, `CORE_STABILITY` |
+| `UPPER_A` | `HORIZONTAL_PUSH`, `HORIZONTAL_PULL`, `VERTICAL_PUSH`, `VERTICAL_PULL`, `ELBOW_FLEXION`, `ELBOW_EXTENSION` |
+| `UPPER_B` | `VERTICAL_PUSH`, `VERTICAL_PULL`, `HORIZONTAL_PUSH`, `HORIZONTAL_PULL`, `ELBOW_EXTENSION`, `ELBOW_FLEXION` |
+| `LOWER_A` | `KNEE_DOMINANT`, `HIP_HINGE`, `UNILATERAL_LOWER`, `KNEE_FLEXION`, `CALF_RAISE`, `CORE_STABILITY` |
+| `LOWER_B` | `HIP_HINGE`, `KNEE_DOMINANT`, `KNEE_FLEXION`, `UNILATERAL_LOWER`, `CALF_RAISE`, `CORE_STABILITY` |
+| `PUSH_A` | `HORIZONTAL_PUSH`, `VERTICAL_PUSH`, `SHOULDER_ABDUCTION`, `ELBOW_EXTENSION` |
+| `PUSH_B` | `VERTICAL_PUSH`, `HORIZONTAL_PUSH`, `SHOULDER_ABDUCTION`, `ELBOW_EXTENSION` |
+| `PULL_A` | `VERTICAL_PULL`, `HORIZONTAL_PULL`, `REAR_DELT`, `ELBOW_FLEXION` |
+| `PULL_B` | `HORIZONTAL_PULL`, `VERTICAL_PULL`, `REAR_DELT`, `ELBOW_FLEXION` |
+| `LEGS_A` | نفس ترتيب `LOWER_A` |
+| `LEGS_B` | نفس ترتيب `LOWER_B` |
+
+تمرّر الوحدة `status`, `recommended_days`, `split_code`, `schedule_mode`, `intro_week_required`, `volume_start`, `constraints`, و`reasons` دون تغيير. تظل `sessions` فارغة عند `WITHHELD`، وكذلك عند `PROVISIONAL_REVIEW_REQUIRED` مع صفر أيام؛ أما provisional الذي يحتوي حصصًا فيُبنى مع بقاء حالته. لا تعيد الوحدة ترتيب الحصص، ولا تفسر القيود أو الإصابات أو المعدات، ولا تختار تمارين أو تضيف Sets أو Reps أو أحمال أو أيام أسبوع.
+
 ## تشغيل الاختبارات والمثال
 
 يتطلب Node.js 22 أو أحدث، ولا يحتاج `npm install` لعدم وجود dependencies.
@@ -533,7 +584,7 @@ npm run check
 npm run example
 ```
 
-آخر تشغيل فعلي عند التسليم: **158/158 اختبارات ناجحة**. كانت النسخة المجمدة من Intake Decision Engine تحتوي على 146 اختبارًا، وأضيفت 12 حالة مستقلة لعقد Training Plan Specification والأنظمة الخمسة وحالات التشغيل والتمرير المباشر. كما نجح كل من `npm run test:coverage` و`npm run check`.
+آخر تشغيل فعلي عند التسليم: **169/169 اختبارات ناجحة**. كانت النسخة المجمدة من Intake Decision Engine تحتوي على 146 اختبارًا، وأضيفت 12 حالة مستقلة لعقد Training Plan Specification، ثم 11 حالة مستقلة لخرائط Training Session Blueprints وحالات التشغيل والترتيب والتمرير المباشر. كما نجح كل من `npm run test:coverage` و`npm run check`.
 
 `npm run example` يقرأ `examples/full-intake.json` ويطبع ناتج المحرك الفعلي. الخلاصة الفعلية لنفس المثال:
 
@@ -570,6 +621,6 @@ npm run example
 - لا Database أو تخزين أو Audit Log أو إعدادات Tenant.
 - لا AI Runtime أو خدمات خارجية.
 - لا حساب TDEE/BMR أو رقم سعرات أو Macros.
-- لا خطة وجبات أو بدائل طعام فعلية، ولا اختيار تمارين أو Sets أو Reps أو Progression أو جلسات كارديو. Training Plan Specification يحدد Split ورموز حصص فقط.
+- لا خطة وجبات أو بدائل طعام فعلية، ولا اختيار تمارين أو Sets أو Reps أو Progression أو جلسات كارديو. Training Plan Specification يحدد Split ورموز حصص، وTraining Session Blueprints يحدد Movement Slots فقط.
 - لا تفسير دوائي أو تشخيص أو بديل عن الطبيب/الكوتش.
 - لا JSON Schema منشور كملف مستقل؛ Validation الحالية Runtime وJSDoc. يمكن توليد Schema versioned لاحقًا عند تثبيت عقد الـAPI.
