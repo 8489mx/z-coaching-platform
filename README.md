@@ -794,3 +794,9 @@ npm run example
 - لا خطة وجبات أو بدائل طعام فعلية، ولا أوزان أو RPE أو RIR أو Tempo أو Warm-up Sets أو Progression أو Deload أو جلسات كارديو. Training Prescription يحدد فقط عدد المجموعات ووحدة ونطاق التنفيذ والراحة، من دون توزيع أيام الأسبوع.
 - لا تفسير دوائي أو تشخيص أو بديل عن الطبيب/الكوتش.
 - لا JSON Schema منشور كملف مستقل؛ Validation الحالية Runtime وJSDoc. يمكن توليد Schema versioned لاحقًا عند تثبيت عقد الـAPI.
+
+## Training Draft Pipeline V1
+
+الوحدة المستقلة `src/training-draft` تجمّع نتائج الوحدات الأربع (`training-plan-specification`, `training-session-blueprint`, `exercise-selection`, `training-prescription`) داخل عقد مسطّح وموحد.
+
+لا تعيد الوحدة الكائنات الوسيطة بشكل متداخل، بل تعيد `sessions` النهائية التي تحتوي على التمارين والوصفات معًا، بالإضافة إلى الثوابت مثل `pipeline_versions` لضمان التتبع والتوافق.
