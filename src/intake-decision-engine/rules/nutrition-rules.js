@@ -75,14 +75,14 @@ export function evaluateFoodConstraints(input) {
   });
 
   input.nutrition.dislikedFoods.forEach((food) => {
-    result.softPreferences.push(
-      constraint(
-        "DISLIKED_FOOD_EXCLUSION",
-        Scope.NUTRITION,
-        { food },
-        "Exclude this preference from normal generation and alternatives without treating it as an allergy.",
-      ),
+    const item = constraint(
+      "DISLIKED_FOOD_EXCLUSION",
+      Scope.NUTRITION,
+      { food },
+      "Exclude this preference from normal generation and alternatives without treating it as an allergy.",
     );
+    result.softPreferences.push(item);
+    decisionConstraints.push(item);
   });
 
   input.nutrition.intolerances.forEach((intolerance, index) => {
@@ -171,7 +171,7 @@ export function evaluateNutritionLogistics(input) {
     { level: input.nutrition.budget },
     "Future meal generation must remain within the reported budget tier.",
   );
-  result.hardConstraints.push(budget);
+  result.softPreferences.push(budget);
   decisionConstraints.push(budget);
 
   if (!input.nutrition.foodStorageAvailable) {

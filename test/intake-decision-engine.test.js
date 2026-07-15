@@ -98,12 +98,68 @@ test("sesame allergy is hard while tuna dislike stays a separate preference", ()
   assert.ok(hasCode(result.nutrition_decision.constraints, "FOOD_ALLERGY_EXCLUSION"));
   assert.equal(hasCode(result.review_flags, "UNCONFIRMED_FOOD_ALLERGY"), false);
   assert.ok(hasCode(result.soft_preferences, "DISLIKED_FOOD_EXCLUSION"));
+  assert.ok(hasCode(result.nutrition_decision.constraints, "DISLIKED_FOOD_EXCLUSION"));
   assert.equal(
     result.hard_constraints.some(
       (item) => item.code === "FOOD_ALLERGY_EXCLUSION" && item.value.substance === "TUNA",
     ),
     false,
   );
+});
+
+test("multiple disliked foods each appear in nutrition decision constraints", () => {
+  const input = completeIntake({
+    nutrition: {
+      dislikedFoods: ["TUNA", "TOMATO"],
+    },
+  });
+  const result = evaluate(input);
+  const dislikes = result.nutrition_decision.constraints.filter(
+    (item) => item.code === "DISLIKED_FOOD_EXCLUSION",
+  );
+  assert.equal(dislikes.length, 2);
+  assert.deepEqual(dislikes.map((item) => item.value.food).sort(), ["TOMATO", "TUNA"]);
+});
+
+test("same ID registered as allergy and disliked food retains both classifications without merging", () => {
+  const input = completeIntake({
+    nutrition: {
+      allergies: [{ substance: "PEANUT", medicallyConfirmed: true }],
+      dislikedFoods: ["PEANUT"],
+    },
+  });
+  const result = evaluate(input);
+  assert.ok(
+    result.hard_constraints.some(
+      (item) => item.code === "FOOD_ALLERGY_EXCLUSION" && item.value.substance === "PEANUT",
+    ),
+  );
+  assert.ok(
+    result.soft_preferences.some(
+      (item) => item.code === "DISLIKED_FOOD_EXCLUSION" && item.value.food === "PEANUT",
+    ),
+  );
+  const decisionConstraints = result.nutrition_decision.constraints;
+  assert.ok(
+    decisionConstraints.some(
+      (item) => item.code === "FOOD_ALLERGY_EXCLUSION" && item.value.substance === "PEANUT",
+    ),
+  );
+  assert.ok(
+    decisionConstraints.some(
+      (item) => item.code === "DISLIKED_FOOD_EXCLUSION" && item.value.food === "PEANUT",
+    ),
+  );
+});
+
+test("budget is classified as a soft preference and does not prevent ready-for-draft", () => {
+  const input = completeIntake({ nutrition: { budget: "LOW" } });
+  const result = evaluate(input);
+  assert.equal(result.plan_status, PlanStatus.READY_FOR_DRAFT);
+  assert.deepEqual(result.review_flags, []);
+  assert.equal(hasCode(result.hard_constraints, "FOOD_BUDGET"), false);
+  assert.ok(hasCode(result.soft_preferences, "FOOD_BUDGET"));
+  assert.ok(hasCode(result.nutrition_decision.constraints, "FOOD_BUDGET"));
 });
 
 test("an unconfirmed food allergy stays excluded and requires coach review", () => {
