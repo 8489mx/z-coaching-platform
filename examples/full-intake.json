@@ -1,0 +1,104 @@
+{
+  "personal": {
+    "dateOfBirth": "1994-05-20",
+    "ageYears": 32,
+    "sex": "FEMALE",
+    "residenceCountry": "EG",
+    "guardianConsent": null
+  },
+  "goals": {
+    "primary": "FAT_LOSS",
+    "secondaryTraining": "GENERAL_STRENGTH"
+  },
+  "body": {
+    "heightCm": 165,
+    "weightKg": 72,
+    "waistCm": 82,
+    "weightTrend": "STABLE",
+    "measurementQuality": "HIGH",
+    "progressPhotosAvailable": true
+  },
+  "lifestyle": {
+    "dailyActivity": "LIGHT",
+    "workSchedule": {
+      "type": "VARIABLE",
+      "physicallyDemandingDays": []
+    },
+    "sleep": {
+      "averageHours": 7.5,
+      "quality": "GOOD"
+    },
+    "stressLevel": "MODERATE"
+  },
+  "medical": {
+    "conditions": [
+      {
+        "conditionCode": "THYROID_CONDITION",
+        "otherConditionText": null,
+        "stability": "STABLE",
+        "physicianInstructions": [],
+        "unclassifiedInstructionsText": null
+      }
+    ],
+    "dangerousSymptoms": {
+      "chestPainOrPressure": "NO",
+      "fainting": "NO",
+      "unusualShortnessOfBreath": "NO",
+      "abnormalPalpitations": "NO",
+      "otherDangerousSymptomsPresent": "NO",
+      "otherDangerousSymptoms": []
+    },
+    "medications": [],
+    "eatingDisorderHistory": "NONE",
+    "pregnancyStatus": "NOT_PREGNANT",
+    "menstrualStatus": "REGULAR",
+    "unclassifiedText": []
+  },
+  "nutrition": {
+    "preferredMealCount": 3,
+    "unavailableEatingWindows": [
+      { "start": "09:00", "end": "12:00" }
+    ],
+    "budget": "MEDIUM",
+    "foodStorageAvailable": true,
+    "foodReheatingAvailable": true,
+    "allergies": [
+      { "substance": "SESAME", "medicallyConfirmed": true }
+    ],
+    "medicalExclusions": [],
+    "dislikedFoods": ["TUNA"],
+    "intolerances": [
+      {
+        "substance": "LACTOSE",
+        "severity": "MILD",
+        "medicallyDiagnosed": false,
+        "notes": null
+      }
+    ],
+    "digestiveIssues": []
+  },
+  "training": {
+    "location": "HOME",
+    "equipment": [
+      { "name": "DUMBBELLS", "loadCapacity": "LIGHT" }
+    ],
+    "maxDaysPerWeek": 4,
+    "preferredDaysPerWeek": 3,
+    "trainingScheduleAvailabilityType": "FLEXIBLE",
+    "availableTrainingDays": [],
+    "unavailableTrainingDays": [],
+    "maxSessionMinutes": 45,
+    "experience": "NEVER_TRAINED",
+    "recentTraining": "NONE_LAST_4_WEEKS",
+    "injuries": [],
+    "medicalMovementRestrictions": []
+  },
+  "cardio": {
+    "additionalSports": [],
+    "averageDailySteps": 4500,
+    "walkingAbility": "EASY",
+    "maxSessionsPerWeek": 2,
+    "maxDurationMinutes": 20
+  },
+  "unclassifiedNotes": []
+}

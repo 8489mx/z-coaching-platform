@@ -1,0 +1,19 @@
+{
+  "name": "z-coaching-intake-decision-engine",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Deterministic client intake decision engine for Z Coaching.",
+  "exports": {
+    ".": "./src/intake-decision-engine/index.js"
+  },
+  "scripts": {
+    "test": "node --test test/intake-decision-engine.test.js test/domain-branches.test.js test/rules.test.js test/validation.test.js",
+    "test:coverage": "node --test --experimental-test-coverage test/intake-decision-engine.test.js test/domain-branches.test.js test/rules.test.js test/validation.test.js",
+    "example": "node examples/run-example.js",
+    "check": "node --check src/intake-decision-engine/index.js && npm test"
+  },
+  "engines": {
+    "node": ">=22"
+  }
+}
