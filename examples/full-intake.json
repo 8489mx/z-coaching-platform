@@ -80,7 +80,11 @@
   "training": {
     "location": "HOME",
     "equipment": [
-      { "name": "DUMBBELLS", "loadCapacity": "LIGHT" }
+      {
+        "equipmentCode": "DUMBBELLS",
+        "otherEquipmentText": null,
+        "loadCapacity": "LIGHT"
+      }
     ],
     "maxDaysPerWeek": 4,
     "preferredDaysPerWeek": 3,

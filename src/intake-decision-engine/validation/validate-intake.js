@@ -3,6 +3,7 @@ import {
   BudgetLevel,
   DayOfWeek,
   EatingDisorderHistory,
+  EquipmentCode,
   EquipmentLoadCapacity,
   MeasurementQuality,
   MedicalConditionCode,
@@ -32,6 +33,15 @@ import {
 } from "../domain/enums.js";
 
 const ISO_DATE = /^\d{4}-\d{2}-\d{2}$/;
+const STANDARD_EQUIPMENT_LOAD_CAPACITIES = Object.freeze([
+  EquipmentLoadCapacity.LIGHT,
+  EquipmentLoadCapacity.MODERATE,
+  EquipmentLoadCapacity.HEAVY,
+]);
+const OTHER_EQUIPMENT_LOAD_CAPACITIES = Object.freeze([
+  ...STANDARD_EQUIPMENT_LOAD_CAPACITIES,
+  EquipmentLoadCapacity.NOT_APPLICABLE,
+]);
 
 function isPlainObject(value) {
   return value !== null && typeof value === "object" && !Array.isArray(value);
@@ -131,6 +141,14 @@ function enumValue(value, runtimeEnum, path, issues) {
   if (!enumValues(runtimeEnum).includes(value)) {
     issues.push(
       issue(path, "INVALID_ENUM_VALUE", `Expected one of: ${enumValues(runtimeEnum).join(", ")}.`),
+    );
+  }
+}
+
+function allowedEnumValue(value, allowedValues, path, issues) {
+  if (!allowedValues.includes(value)) {
+    issues.push(
+      issue(path, "INVALID_ENUM_VALUE", `Expected one of: ${allowedValues.join(", ")}.`),
     );
   }
 }
@@ -500,13 +518,135 @@ function validateTraining(input, issues) {
     issues,
   );
   enumValue(training.location, TrainingLocation, "training.location", issues);
-  array(training.equipment, "training.equipment", issues).forEach((raw, index) => {
+  const equipmentItems = array(training.equipment, "training.equipment", issues);
+  const seenEquipmentCodes = new Set();
+  equipmentItems.forEach((raw, index) => {
     const path = `training.equipment[${index}]`;
     const equipment = requiredObject(raw, path, issues);
-    rejectUnknownKeys(equipment, ["name", "loadCapacity"], path, issues);
-    requiredString(equipment.name, `${path}.name`, issues);
-    enumValue(equipment.loadCapacity, EquipmentLoadCapacity, `${path}.loadCapacity`, issues);
+    rejectUnknownKeys(
+      equipment,
+      ["equipmentCode", "otherEquipmentText", "loadCapacity"],
+      path,
+      issues,
+    );
+
+    const hasEquipmentCode = Object.hasOwn(equipment, "equipmentCode");
+    const hasOtherEquipmentText = Object.hasOwn(equipment, "otherEquipmentText");
+    const hasLoadCapacity = Object.hasOwn(equipment, "loadCapacity");
+
+    if (!hasEquipmentCode) {
+      issues.push(
+        issue(
+          `${path}.equipmentCode`,
+          "REQUIRED_TRAINING_EQUIPMENT_DISCRIMINATOR",
+          "Expected a known EquipmentCode or explicit null for unclassified equipment.",
+        ),
+      );
+    }
+    if (!hasOtherEquipmentText) {
+      issues.push(
+        issue(
+          `${path}.otherEquipmentText`,
+          "REQUIRED_TRAINING_EQUIPMENT_FIELD",
+          "Expected explicit null or an empty string for classified equipment, or non-empty original text for unclassified equipment.",
+        ),
+      );
+    }
+    if (!hasLoadCapacity) {
+      issues.push(
+        issue(
+          `${path}.loadCapacity`,
+          "REQUIRED_TRAINING_EQUIPMENT_LOAD_CAPACITY",
+          "Expected an explicit load capacity compatible with the equipment classification route.",
+        ),
+      );
+    }
+
+    if (!hasEquipmentCode) return;
+
+    if (equipment.equipmentCode === null) {
+      if (hasOtherEquipmentText) {
+        requiredString(equipment.otherEquipmentText, `${path}.otherEquipmentText`, issues);
+      }
+      if (hasLoadCapacity) {
+        allowedEnumValue(
+          equipment.loadCapacity,
+          OTHER_EQUIPMENT_LOAD_CAPACITIES,
+          `${path}.loadCapacity`,
+          issues,
+        );
+      }
+      return;
+    }
+
+    enumValue(equipment.equipmentCode, EquipmentCode, `${path}.equipmentCode`, issues);
+    const knownEquipmentCode = enumValues(EquipmentCode).includes(equipment.equipmentCode);
+    if (knownEquipmentCode) {
+      if (seenEquipmentCodes.has(equipment.equipmentCode)) {
+        issues.push(
+          issue(
+            `${path}.equipmentCode`,
+            "DUPLICATE_TRAINING_EQUIPMENT_CODE",
+            "Each EquipmentCode may appear only once in training.equipment.",
+          ),
+        );
+      } else {
+        seenEquipmentCodes.add(equipment.equipmentCode);
+      }
+    }
+
+    if (
+      hasOtherEquipmentText &&
+      equipment.otherEquipmentText !== null &&
+      equipment.otherEquipmentText !== ""
+    ) {
+      issues.push(
+        issue(
+          path,
+          "TRAINING_EQUIPMENT_CLASSIFICATION_CONFLICT",
+          "Provide either equipmentCode or non-empty otherEquipmentText, never both.",
+        ),
+      );
+    }
+
+    if (!hasLoadCapacity) return;
+    if (equipment.equipmentCode === EquipmentCode.BODYWEIGHT) {
+      allowedEnumValue(
+        equipment.loadCapacity,
+        [EquipmentLoadCapacity.BODYWEIGHT_ONLY],
+        `${path}.loadCapacity`,
+        issues,
+      );
+    } else if (knownEquipmentCode) {
+      allowedEnumValue(
+        equipment.loadCapacity,
+        STANDARD_EQUIPMENT_LOAD_CAPACITIES,
+        `${path}.loadCapacity`,
+        issues,
+      );
+    } else {
+      enumValue(
+        equipment.loadCapacity,
+        EquipmentLoadCapacity,
+        `${path}.loadCapacity`,
+        issues,
+      );
+    }
   });
+  if (
+    [TrainingLocation.HOME, TrainingLocation.MIXED].includes(training.location) &&
+    equipmentItems.length === 0
+  ) {
+    issues.push(
+      issue(
+        "training.equipment",
+        training.location === TrainingLocation.HOME
+          ? "HOME_TRAINING_EQUIPMENT_REQUIRED"
+          : "MIXED_HOME_TRAINING_EQUIPMENT_REQUIRED",
+        `${training.location} training requires at least one explicitly reported home-training capability.`,
+      ),
+    );
+  }
   numberInRange(training.maxDaysPerWeek, "training.maxDaysPerWeek", issues, 2, 6, { integer: true });
   numberInRange(training.preferredDaysPerWeek, "training.preferredDaysPerWeek", issues, 2, 6, {
     integer: true,

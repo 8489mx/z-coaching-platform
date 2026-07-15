@@ -5,6 +5,7 @@ import {
   CardioStrategy,
   DayOfWeek,
   EatingDisorderHistory,
+  EquipmentCode,
   EquipmentLoadCapacity,
   HIGH_PAIN_MEDICAL_REVIEW_THRESHOLD,
   Movement,
@@ -341,17 +342,158 @@ test("high football load, five hours sleep, and high stress produce conservative
   assert.equal(result.cardio_decision.max_sessions, 0);
 });
 
-test("home training with only light dumbbells records location and load constraints", () => {
+test("home bodyweight training is valid and records BODYWEIGHT_ONLY as an available capability", () => {
   const input = completeIntake({
     training: {
       location: TrainingLocation.HOME,
-      equipment: [{ name: "DUMBBELLS", loadCapacity: EquipmentLoadCapacity.LIGHT }],
+      equipment: [
+        {
+          equipmentCode: EquipmentCode.BODYWEIGHT,
+          otherEquipmentText: null,
+          loadCapacity: EquipmentLoadCapacity.BODYWEIGHT_ONLY,
+        },
+      ],
     },
   });
   const result = evaluate(input);
-  const equipment = result.training_decision.constraints.find((item) => item.code === "AVAILABLE_EQUIPMENT");
-  assert.deepEqual(equipment.value, { name: "DUMBBELLS", loadCapacity: EquipmentLoadCapacity.LIGHT });
+  const equipment = result.training_decision.constraints.find(
+    (item) => item.code === "AVAILABLE_TRAINING_EQUIPMENT",
+  );
+
+  assert.equal(result.plan_status, PlanStatus.READY_FOR_DRAFT);
+  assert.deepEqual(equipment.value, {
+    equipmentCode: EquipmentCode.BODYWEIGHT,
+    loadCapacity: EquipmentLoadCapacity.BODYWEIGHT_ONLY,
+  });
+  assert.equal(hasCode(result.hard_constraints, "AVAILABLE_TRAINING_EQUIPMENT"), false);
+});
+
+test("home training with moderate dumbbells records a decision-only equipment constraint", () => {
+  const input = completeIntake({
+    training: {
+      location: TrainingLocation.HOME,
+      equipment: [
+        {
+          equipmentCode: EquipmentCode.DUMBBELLS,
+          otherEquipmentText: null,
+          loadCapacity: EquipmentLoadCapacity.MODERATE,
+        },
+      ],
+    },
+  });
+  const result = evaluate(input);
+  const equipment = result.training_decision.constraints.find(
+    (item) => item.code === "AVAILABLE_TRAINING_EQUIPMENT",
+  );
+
+  assert.deepEqual(equipment.value, {
+    equipmentCode: EquipmentCode.DUMBBELLS,
+    loadCapacity: EquipmentLoadCapacity.MODERATE,
+  });
   assert.ok(hasCode(result.training_decision.constraints, "TRAINING_LOCATION"));
+  assert.equal(hasCode(result.hard_constraints, "AVAILABLE_TRAINING_EQUIPMENT"), false);
+});
+
+test("gym training accepts an empty equipment list", () => {
+  const result = evaluate(
+    completeIntake({
+      training: { location: TrainingLocation.GYM, equipment: [] },
+    }),
+  );
+
+  assert.equal(result.plan_status, PlanStatus.READY_FOR_DRAFT);
+  assert.equal(
+    hasCode(result.training_decision.constraints, "AVAILABLE_TRAINING_EQUIPMENT"),
+    false,
+  );
+});
+
+test("free-text training equipment requires coach mapping and is never inferred", () => {
+  const originalText = "  DUMBBELLS  ";
+  const input = completeIntake({
+    training: {
+      location: TrainingLocation.HOME,
+      equipment: [
+        {
+          equipmentCode: null,
+          otherEquipmentText: originalText,
+          loadCapacity: EquipmentLoadCapacity.NOT_APPLICABLE,
+        },
+      ],
+    },
+  });
+  const result = evaluate(input);
+  const sourcePath = "training.equipment[0].otherEquipmentText";
+
+  assert.equal(result.plan_status, PlanStatus.COACH_REVIEW_REQUIRED);
+  assert.deepEqual(
+    result.review_flags.find((item) => item.code === "UNCLASSIFIED_TRAINING_EQUIPMENT"),
+    {
+      code: "UNCLASSIFIED_TRAINING_EQUIPMENT",
+      scope: "TRAINING",
+      level: "COACH",
+      message:
+        "The reported equipment is preserved without interpretation and requires coach mapping.",
+      sourcePath,
+    },
+  );
+  assert.deepEqual(
+    result.missing_or_uncertain_data.find(
+      (item) => item.code === "TRAINING_EQUIPMENT_MAPPING_PENDING",
+    ),
+    {
+      code: "TRAINING_EQUIPMENT_MAPPING_PENDING",
+      path: sourcePath,
+      message: "The reported equipment must be mapped before automatic exercise selection.",
+    },
+  );
+  assert.ok(hasCode(result.decision_reasons, "UNCLASSIFIED_EQUIPMENT_REQUIRES_MAPPING"));
+  assert.equal(
+    hasCode(result.training_decision.constraints, "AVAILABLE_TRAINING_EQUIPMENT"),
+    false,
+  );
+  assert.equal(hasCode(result.hard_constraints, "AVAILABLE_TRAINING_EQUIPMENT"), false);
+  assert.equal(input.training.equipment[0].otherEquipmentText, originalText);
+});
+
+test("structured equipment is usable while free-text equipment remains pending review", () => {
+  const input = completeIntake({
+    training: {
+      location: TrainingLocation.HOME,
+      equipment: [
+        {
+          equipmentCode: EquipmentCode.RESISTANCE_BANDS,
+          otherEquipmentText: "",
+          loadCapacity: EquipmentLoadCapacity.LIGHT,
+        },
+        {
+          equipmentCode: null,
+          otherEquipmentText: "Portable pulley from the client",
+          loadCapacity: EquipmentLoadCapacity.MODERATE,
+        },
+      ],
+    },
+  });
+  const result = evaluate(input);
+  const availableEquipment = result.training_decision.constraints.filter(
+    (item) => item.code === "AVAILABLE_TRAINING_EQUIPMENT",
+  );
+
+  assert.equal(result.plan_status, PlanStatus.COACH_REVIEW_REQUIRED);
+  assert.deepEqual(availableEquipment.map((item) => item.value), [
+    {
+      equipmentCode: EquipmentCode.RESISTANCE_BANDS,
+      loadCapacity: EquipmentLoadCapacity.LIGHT,
+    },
+  ]);
+  assert.ok(
+    result.review_flags.some(
+      (item) =>
+        item.code === "UNCLASSIFIED_TRAINING_EQUIPMENT" &&
+        item.sourcePath === "training.equipment[1].otherEquipmentText",
+    ),
+  );
+  assert.equal(hasCode(result.hard_constraints, "AVAILABLE_TRAINING_EQUIPMENT"), false);
 });
 
 test("work schedule does not choose the training schedule mode", () => {

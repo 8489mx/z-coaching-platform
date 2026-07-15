@@ -331,12 +331,48 @@ export function evaluateTrainingConstraints(input) {
       ),
     );
   });
-  input.training.equipment.forEach((equipment) => {
-    constraints.push(
+  const decisionConstraints = [...constraints];
+  input.training.equipment.forEach((equipment, index) => {
+    if (equipment.equipmentCode === null) {
+      const sourcePath = `training.equipment[${index}].otherEquipmentText`;
+      result.statusCandidates.push(
+        statusCandidate(
+          PlanStatus.COACH_REVIEW_REQUIRED,
+          "UNCLASSIFIED_TRAINING_EQUIPMENT",
+        ),
+      );
+      result.reviewFlags.push(
+        reviewFlag(
+          "UNCLASSIFIED_TRAINING_EQUIPMENT",
+          Scope.TRAINING,
+          ReviewLevel.COACH,
+          "The reported equipment is preserved without interpretation and requires coach mapping.",
+          sourcePath,
+        ),
+      );
+      result.reasons.push(
+        reason(
+          "UNCLASSIFIED_EQUIPMENT_REQUIRES_MAPPING",
+          Scope.TRAINING,
+          "Unclassified equipment must be mapped before automatic exercise selection.",
+        ),
+      );
+      result.missingOrUncertainData.push({
+        code: "TRAINING_EQUIPMENT_MAPPING_PENDING",
+        path: sourcePath,
+        message: "The reported equipment must be mapped before automatic exercise selection.",
+      });
+      return;
+    }
+
+    decisionConstraints.push(
       constraint(
-        "AVAILABLE_EQUIPMENT",
+        "AVAILABLE_TRAINING_EQUIPMENT",
         Scope.TRAINING,
-        { name: equipment.name, loadCapacity: equipment.loadCapacity },
+        {
+          equipmentCode: equipment.equipmentCode,
+          loadCapacity: equipment.loadCapacity,
+        },
         "Future exercises must respect both equipment type and load capacity.",
       ),
     );
@@ -350,7 +386,7 @@ export function evaluateTrainingConstraints(input) {
       "The preferred day count is used only after hard capacity and safety constraints.",
     ),
   );
-  return { ...result, decisionConstraints: constraints };
+  return { ...result, decisionConstraints };
 }
 
 export function decideTraining(input, safetyContext) {

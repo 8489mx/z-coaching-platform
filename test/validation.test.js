@@ -3,8 +3,11 @@ import test from "node:test";
 
 import {
   DayOfWeek,
+  EquipmentCode,
+  EquipmentLoadCapacity,
   IntakeValidationError,
   MedicalConditionCode,
+  TrainingLocation,
   TrainingScheduleAvailabilityType,
   evaluateIntake,
   validateIntake,
@@ -222,6 +225,320 @@ test("legacy and hidden training schedule fields are rejected rather than interp
   assert.ok(
     validation.issues.some(
       (item) => item.path === "training.scheduleMode" && item.code === "UNKNOWN_FIELD",
+    ),
+  );
+  assert.throws(() => evaluateIntake(input, ASSESSMENT_CONTEXT), IntakeValidationError);
+});
+
+test("home training rejects an empty equipment list without inferring bodyweight", () => {
+  const input = completeIntake({
+    training: { location: TrainingLocation.HOME, equipment: [] },
+  });
+  const validation = validateIntake(input, ASSESSMENT_CONTEXT);
+
+  assert.equal(validation.valid, false);
+  assert.ok(
+    validation.issues.some(
+      (item) =>
+        item.path === "training.equipment" &&
+        item.code === "HOME_TRAINING_EQUIPMENT_REQUIRED",
+    ),
+  );
+  assert.throws(() => evaluateIntake(input, ASSESSMENT_CONTEXT), IntakeValidationError);
+});
+
+test("mixed training rejects an empty list because home capability must be explicit", () => {
+  const input = completeIntake({
+    training: { location: TrainingLocation.MIXED, equipment: [] },
+  });
+  const validation = validateIntake(input, ASSESSMENT_CONTEXT);
+
+  assert.equal(validation.valid, false);
+  assert.ok(
+    validation.issues.some(
+      (item) =>
+        item.path === "training.equipment" &&
+        item.code === "MIXED_HOME_TRAINING_EQUIPMENT_REQUIRED",
+    ),
+  );
+  assert.throws(() => evaluateIntake(input, ASSESSMENT_CONTEXT), IntakeValidationError);
+});
+
+test("an unknown training equipment code is rejected", () => {
+  const input = completeIntake({
+    training: {
+      equipment: [
+        {
+          equipmentCode: "UNKNOWN_EQUIPMENT",
+          otherEquipmentText: null,
+          loadCapacity: EquipmentLoadCapacity.MODERATE,
+        },
+      ],
+    },
+  });
+  const validation = validateIntake(input, ASSESSMENT_CONTEXT);
+
+  assert.equal(validation.valid, false);
+  assert.ok(
+    validation.issues.some(
+      (item) =>
+        item.path === "training.equipment[0].equipmentCode" &&
+        item.code === "INVALID_ENUM_VALUE",
+    ),
+  );
+  assert.throws(() => evaluateIntake(input, ASSESSMENT_CONTEXT), IntakeValidationError);
+});
+
+test("the legacy training equipment name field is rejected as unknown", () => {
+  const input = completeIntake({
+    training: {
+      equipment: [
+        {
+          equipmentCode: EquipmentCode.DUMBBELLS,
+          otherEquipmentText: null,
+          loadCapacity: EquipmentLoadCapacity.LIGHT,
+          name: "DUMBBELLS",
+        },
+      ],
+    },
+  });
+  const validation = validateIntake(input, ASSESSMENT_CONTEXT);
+
+  assert.equal(validation.valid, false);
+  assert.ok(
+    validation.issues.some(
+      (item) =>
+        item.path === "training.equipment[0].name" && item.code === "UNKNOWN_FIELD",
+    ),
+  );
+  assert.throws(() => evaluateIntake(input, ASSESSMENT_CONTEXT), IntakeValidationError);
+});
+
+test("training equipment cannot provide equipmentCode and free text together", () => {
+  const input = completeIntake({
+    training: {
+      equipment: [
+        {
+          equipmentCode: EquipmentCode.DUMBBELLS,
+          otherEquipmentText: "Client-entered dumbbells",
+          loadCapacity: EquipmentLoadCapacity.MODERATE,
+        },
+      ],
+    },
+  });
+  const validation = validateIntake(input, ASSESSMENT_CONTEXT);
+
+  assert.equal(validation.valid, false);
+  assert.ok(
+    validation.issues.some(
+      (item) => item.code === "TRAINING_EQUIPMENT_CLASSIFICATION_CONFLICT",
+    ),
+  );
+  assert.throws(() => evaluateIntake(input, ASSESSMENT_CONTEXT), IntakeValidationError);
+});
+
+test("training equipment must provide one non-empty classification route", () => {
+  const input = completeIntake({
+    training: {
+      equipment: [
+        {
+          loadCapacity: EquipmentLoadCapacity.NOT_APPLICABLE,
+        },
+      ],
+    },
+  });
+  const validation = validateIntake(input, ASSESSMENT_CONTEXT);
+
+  assert.equal(validation.valid, false);
+  assert.ok(
+    validation.issues.some(
+      (item) =>
+        item.path === "training.equipment[0].equipmentCode" &&
+        item.code === "REQUIRED_TRAINING_EQUIPMENT_DISCRIMINATOR",
+    ),
+  );
+  assert.ok(
+    validation.issues.some(
+      (item) =>
+        item.path === "training.equipment[0].otherEquipmentText" &&
+        item.code === "REQUIRED_TRAINING_EQUIPMENT_FIELD",
+    ),
+  );
+  assert.throws(() => evaluateIntake(input, ASSESSMENT_CONTEXT), IntakeValidationError);
+});
+
+test("blank free-text training equipment is rejected", () => {
+  const input = completeIntake({
+    training: {
+      equipment: [
+        {
+          equipmentCode: null,
+          otherEquipmentText: "   ",
+          loadCapacity: EquipmentLoadCapacity.NOT_APPLICABLE,
+        },
+      ],
+    },
+  });
+  const validation = validateIntake(input, ASSESSMENT_CONTEXT);
+
+  assert.equal(validation.valid, false);
+  assert.ok(
+    validation.issues.some(
+      (item) =>
+        item.path === "training.equipment[0].otherEquipmentText" &&
+        item.code === "REQUIRED_STRING",
+    ),
+  );
+  assert.throws(() => evaluateIntake(input, ASSESSMENT_CONTEXT), IntakeValidationError);
+});
+
+test("bodyweight equipment accepts only BODYWEIGHT_ONLY load capacity", () => {
+  const input = completeIntake({
+    training: {
+      equipment: [
+        {
+          equipmentCode: EquipmentCode.BODYWEIGHT,
+          otherEquipmentText: null,
+          loadCapacity: EquipmentLoadCapacity.LIGHT,
+        },
+      ],
+    },
+  });
+  const validation = validateIntake(input, ASSESSMENT_CONTEXT);
+
+  assert.equal(validation.valid, false);
+  assert.ok(
+    validation.issues.some(
+      (item) =>
+        item.path === "training.equipment[0].loadCapacity" &&
+        item.code === "INVALID_ENUM_VALUE",
+    ),
+  );
+  assert.throws(() => evaluateIntake(input, ASSESSMENT_CONTEXT), IntakeValidationError);
+});
+
+test("non-bodyweight and free-text equipment reject incompatible load capacities", () => {
+  const cases = [
+    {
+      equipmentCode: EquipmentCode.DUMBBELLS,
+      otherEquipmentText: null,
+      loadCapacity: EquipmentLoadCapacity.BODYWEIGHT_ONLY,
+    },
+    {
+      equipmentCode: EquipmentCode.DUMBBELLS,
+      otherEquipmentText: "",
+      loadCapacity: EquipmentLoadCapacity.NOT_APPLICABLE,
+    },
+    {
+      equipmentCode: null,
+      otherEquipmentText: "Client equipment",
+      loadCapacity: EquipmentLoadCapacity.BODYWEIGHT_ONLY,
+    },
+  ];
+
+  for (const equipment of cases) {
+    const input = completeIntake({ training: { equipment: [equipment] } });
+    const validation = validateIntake(input, ASSESSMENT_CONTEXT);
+    assert.equal(validation.valid, false);
+    assert.ok(
+      validation.issues.some(
+        (item) =>
+          item.path === "training.equipment[0].loadCapacity" &&
+          item.code === "INVALID_ENUM_VALUE",
+      ),
+    );
+    assert.throws(() => evaluateIntake(input, ASSESSMENT_CONTEXT), IntakeValidationError);
+  }
+});
+
+test("duplicate structured training equipment codes are rejected", () => {
+  const input = completeIntake({
+    training: {
+      equipment: [
+        {
+          equipmentCode: EquipmentCode.DUMBBELLS,
+          otherEquipmentText: null,
+          loadCapacity: EquipmentLoadCapacity.LIGHT,
+        },
+        {
+          equipmentCode: EquipmentCode.DUMBBELLS,
+          otherEquipmentText: "",
+          loadCapacity: EquipmentLoadCapacity.HEAVY,
+        },
+      ],
+    },
+  });
+  const validation = validateIntake(input, ASSESSMENT_CONTEXT);
+
+  assert.equal(validation.valid, false);
+  assert.ok(
+    validation.issues.some(
+      (item) =>
+        item.path === "training.equipment[1].equipmentCode" &&
+        item.code === "DUPLICATE_TRAINING_EQUIPMENT_CODE",
+    ),
+  );
+  assert.throws(() => evaluateIntake(input, ASSESSMENT_CONTEXT), IntakeValidationError);
+});
+
+test("each training equipment item requires all three explicit contract fields", () => {
+  const cases = [
+    {
+      item: {
+        equipmentCode: EquipmentCode.DUMBBELLS,
+        loadCapacity: EquipmentLoadCapacity.LIGHT,
+      },
+      path: "training.equipment[0].otherEquipmentText",
+      code: "REQUIRED_TRAINING_EQUIPMENT_FIELD",
+    },
+    {
+      item: {
+        otherEquipmentText: "Client equipment",
+        loadCapacity: EquipmentLoadCapacity.NOT_APPLICABLE,
+      },
+      path: "training.equipment[0].equipmentCode",
+      code: "REQUIRED_TRAINING_EQUIPMENT_DISCRIMINATOR",
+    },
+    {
+      item: {
+        equipmentCode: null,
+        otherEquipmentText: "Client equipment",
+      },
+      path: "training.equipment[0].loadCapacity",
+      code: "REQUIRED_TRAINING_EQUIPMENT_LOAD_CAPACITY",
+    },
+  ];
+
+  for (const testCase of cases) {
+    const input = completeIntake({ training: { equipment: [testCase.item] } });
+    const validation = validateIntake(input, ASSESSMENT_CONTEXT);
+    assert.equal(validation.valid, false);
+    assert.ok(
+      validation.issues.some(
+        (item) => item.path === testCase.path && item.code === testCase.code,
+      ),
+    );
+    assert.throws(() => evaluateIntake(input, ASSESSMENT_CONTEXT), IntakeValidationError);
+  }
+});
+
+test("BODYWEIGHT cannot appear more than once", () => {
+  const bodyweight = {
+    equipmentCode: EquipmentCode.BODYWEIGHT,
+    otherEquipmentText: null,
+    loadCapacity: EquipmentLoadCapacity.BODYWEIGHT_ONLY,
+  };
+  const input = completeIntake({
+    training: { equipment: [bodyweight, { ...bodyweight, otherEquipmentText: "" }] },
+  });
+  const validation = validateIntake(input, ASSESSMENT_CONTEXT);
+
+  assert.equal(validation.valid, false);
+  assert.ok(
+    validation.issues.some(
+      (item) =>
+        item.path === "training.equipment[1].equipmentCode" &&
+        item.code === "DUPLICATE_TRAINING_EQUIPMENT_CODE",
     ),
   );
   assert.throws(() => evaluateIntake(input, ASSESSMENT_CONTEXT), IntakeValidationError);

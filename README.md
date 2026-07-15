@@ -184,6 +184,63 @@ PCOS
 
 هذا المثال ينتج `MEDICAL_REVIEW_REQUIRED` و`HIGH_PAIN_REQUIRES_MEDICAL_REVIEW` من دون تشخيص سبب الألم.
 
+### عقد معدات التدريب المنظمة
+
+كل عنصر داخل `training.equipment` يصرّح بالحقول الثلاثة `equipmentCode` و`otherEquipmentText` و`loadCapacity`. لا يقبل الحقل القديم `name`، ولا يحاول المحرك تفسير أسماء المعدات الحرة أو مطابقتها بالكلمات المفتاحية.
+
+المعدة المنظمة:
+
+```json
+{
+  "equipmentCode": "DUMBBELLS",
+  "otherEquipmentText": null,
+  "loadCapacity": "MODERATE"
+}
+```
+
+وزن الجسم فقط:
+
+```json
+{
+  "equipmentCode": "BODYWEIGHT",
+  "otherEquipmentText": null,
+  "loadCapacity": "BODYWEIGHT_ONLY"
+}
+```
+
+المعدة الأخرى التي كتبها العميل:
+
+```json
+{
+  "equipmentCode": null,
+  "otherEquipmentText": "النص الأصلي الذي كتبه العميل",
+  "loadCapacity": "NOT_APPLICABLE"
+}
+```
+
+قيم `EquipmentCode` النهائية هي:
+
+```text
+BODYWEIGHT
+DUMBBELLS
+BARBELL_AND_PLATES
+ADJUSTABLE_BENCH
+FLAT_BENCH
+RESISTANCE_BANDS
+PULL_UP_BAR
+SQUAT_RACK
+SMITH_MACHINE
+CABLE_STATION
+SELECTORIZED_MACHINES
+KETTLEBELLS
+```
+
+المساران حصريان: المعدة المنظمة تستخدم `equipmentCode` معروفًا مع `otherEquipmentText=null` أو `""`، والمعدة الحرة تستخدم `equipmentCode=null` مع نص غير فارغ بعد التحقق من المسافات. `BODYWEIGHT` يقبل `BODYWEIGHT_ONLY` فقط، وبقية المعدات المنظمة تقبل `LIGHT/MODERATE/HEAVY` فقط، بينما المسار الحر يقبل أيضًا `NOT_APPLICABLE`. تُرفض الأكواد المكررة، بما فيها تكرار `BODYWEIGHT`.
+
+قواعد المكان ثابتة: `HOME` و`MIXED` يتطلبان عنصر معدات واحدًا على الأقل يمثل القدرة المنزلية المصرح بها، من دون افتراض وزن الجسم تلقائيًا؛ `GYM` يقبل قائمة فارغة؛ وسلوك `OUTDOORS` لم يتغير.
+
+المعدات المنظمة تظهر كـ`AVAILABLE_TRAINING_EQUIPMENT` داخل `training_decision.constraints` فقط، ولا تدخل `hard_constraints`. أما المعدة الحرة فتضيف `COACH_REVIEW_REQUIRED` و`UNCLASSIFIED_TRAINING_EQUIPMENT` و`UNCLASSIFIED_EQUIPMENT_REQUIRES_MAPPING` و`TRAINING_EQUIPMENT_MAPPING_PENDING` بمسار العنصر المفهرس، ولا تتحول إلى معدة متاحة قبل المراجعة.
+
 ### عقد توافر جدول التدريب
 
 جدول العمل وجدول التدريب مدخلان مستقلان. `lifestyle.workSchedule` يظل عاملًا في تقدير الضغط اليومي والاستشفاء، لكنه لا يحدد `schedule_mode`. الحقول المنظمة داخل `training` هي:
@@ -381,7 +438,7 @@ npm run check
 npm run example
 ```
 
-آخر تشغيل فعلي عند التسليم: **104/104 اختبارات ناجحة**، وتشمل الاختبارات الـ99 السابقة و5 اختبارات جديدة لهذا التصحيح. التغطية الكلية: **98.42% للأسطر، 94.80% للفروع، 99.69% للدوال**. كما نجح `npm run check`.
+آخر تشغيل فعلي عند التسليم: **123/123 اختبارات ناجحة**. كانت النسخة المتزامنة على `develop` تحتوي فعليًا على 107 اختبارات قبل هذا التصحيح، وأضيفت 16 حالة اختبار مستقلة لتغطية السيناريوهات الإلزامية واكتمال الحقول وتكرار `BODYWEIGHT`. التغطية الكلية: **98.61% للأسطر، 95.31% للفروع، 99.74% للدوال**. كما نجح `npm run check`.
 
 `npm run example` يقرأ `examples/full-intake.json` ويطبع ناتج المحرك الفعلي. الخلاصة الفعلية لنفس المثال:
 

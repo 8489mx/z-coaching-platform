@@ -3,6 +3,7 @@ import {
   BudgetLevel,
   DayOfWeek,
   EatingDisorderHistory,
+  EquipmentCode,
   EquipmentLoadCapacity,
   MeasurementQuality,
   MenstrualStatus,
@@ -83,7 +84,13 @@ export const COMPLETE_INTAKE = Object.freeze({
   },
   training: {
     location: TrainingLocation.GYM,
-    equipment: [{ name: "FULL_GYM", loadCapacity: EquipmentLoadCapacity.HEAVY }],
+    equipment: [
+      {
+        equipmentCode: EquipmentCode.SELECTORIZED_MACHINES,
+        otherEquipmentText: null,
+        loadCapacity: EquipmentLoadCapacity.HEAVY,
+      },
+    ],
     maxDaysPerWeek: 4,
     preferredDaysPerWeek: 3,
     trainingScheduleAvailabilityType:

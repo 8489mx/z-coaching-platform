@@ -29,7 +29,12 @@
 /** @typedef {{movement:string, instruction:string, source:string}} MovementRestriction */
 /** @typedef {"MONDAY"|"TUESDAY"|"WEDNESDAY"|"THURSDAY"|"FRIDAY"|"SATURDAY"|"SUNDAY"} DayOfWeekValue */
 /** @typedef {"FIXED_AVAILABLE_DAYS"|"FIXED_UNAVAILABLE_DAYS"|"VARIABLE"|"FLEXIBLE"} TrainingScheduleAvailabilityTypeValue */
-/** @typedef {{location:string, equipment:Array<{name:string,loadCapacity:string}>, maxDaysPerWeek:number, preferredDaysPerWeek:number, trainingScheduleAvailabilityType:TrainingScheduleAvailabilityTypeValue, availableTrainingDays:DayOfWeekValue[], unavailableTrainingDays:DayOfWeekValue[], maxSessionMinutes:number, experience:string, recentTraining:string, injuries:Injury[], medicalMovementRestrictions:MovementRestriction[]}} TrainingData */
+/** @typedef {"DUMBBELLS"|"BARBELL_AND_PLATES"|"ADJUSTABLE_BENCH"|"FLAT_BENCH"|"RESISTANCE_BANDS"|"PULL_UP_BAR"|"SQUAT_RACK"|"SMITH_MACHINE"|"CABLE_STATION"|"SELECTORIZED_MACHINES"|"KETTLEBELLS"} NonBodyweightEquipmentCodeValue */
+/** @typedef {{equipmentCode:"BODYWEIGHT",otherEquipmentText:null|"",loadCapacity:"BODYWEIGHT_ONLY"}} BodyweightTrainingEquipment */
+/** @typedef {{equipmentCode:NonBodyweightEquipmentCodeValue,otherEquipmentText:null|"",loadCapacity:"LIGHT"|"MODERATE"|"HEAVY"}} ClassifiedTrainingEquipment */
+/** @typedef {{equipmentCode:null,otherEquipmentText:string,loadCapacity:"LIGHT"|"MODERATE"|"HEAVY"|"NOT_APPLICABLE"}} OtherTrainingEquipment The original non-whitespace text is preserved verbatim and never mapped automatically. */
+/** @typedef {BodyweightTrainingEquipment|ClassifiedTrainingEquipment|OtherTrainingEquipment} TrainingEquipment */
+/** @typedef {{location:string, equipment:TrainingEquipment[], maxDaysPerWeek:number, preferredDaysPerWeek:number, trainingScheduleAvailabilityType:TrainingScheduleAvailabilityTypeValue, availableTrainingDays:DayOfWeekValue[], unavailableTrainingDays:DayOfWeekValue[], maxSessionMinutes:number, experience:string, recentTraining:string, injuries:Injury[], medicalMovementRestrictions:MovementRestriction[]}} TrainingData */
 /** @typedef {{name:string, daysPerWeek:number, minutesPerSession:number, intensity:string}} AdditionalSport */
 /** @typedef {{additionalSports:AdditionalSport[], averageDailySteps:number|null, walkingAbility:string, maxSessionsPerWeek:number, maxDurationMinutes:number}} CardioData */
 
