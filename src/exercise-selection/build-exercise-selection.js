@@ -15,6 +15,7 @@ import {
 
 const SelectionReasonCode = Object.freeze({
   SELECTED_EXPLICIT_EQUIPMENT: "SELECTED_EXPLICIT_EQUIPMENT",
+  SELECTED_STANDARD_GYM_EQUIPMENT: "SELECTED_STANDARD_GYM_EQUIPMENT",
   SELECTED_BODYWEIGHT_FALLBACK: "SELECTED_BODYWEIGHT_FALLBACK",
   MOVEMENT_CONSTRAINT_REQUIRES_REVIEW: "MOVEMENT_CONSTRAINT_REQUIRES_REVIEW",
   NO_ELIGIBLE_EXERCISE: "NO_ELIGIBLE_EXERCISE",
@@ -66,6 +67,27 @@ const LOAD_CAPACITY_RANK = Object.freeze({
   [EquipmentLoadCapacity.HEAVY]: 3,
 });
 
+const EquipmentAvailabilitySource = Object.freeze({
+  EXPLICIT: "EXPLICIT",
+  STANDARD_GYM: "STANDARD_GYM",
+  BODYWEIGHT: "BODYWEIGHT",
+});
+
+const STANDARD_GYM_EQUIPMENT_PROFILE = Object.freeze([
+  Object.freeze({
+    equipmentCode: EquipmentCode.DUMBBELLS,
+    loadCapacity: EquipmentLoadCapacity.LIGHT,
+  }),
+  Object.freeze({
+    equipmentCode: EquipmentCode.CABLE_STATION,
+    loadCapacity: EquipmentLoadCapacity.LIGHT,
+  }),
+  Object.freeze({
+    equipmentCode: EquipmentCode.SELECTORIZED_MACHINES,
+    loadCapacity: EquipmentLoadCapacity.LIGHT,
+  }),
+]);
+
 function extractTrainingLocation(constraints) {
   const locationConstraints = constraints.filter(
     ({ code }) => code === "TRAINING_LOCATION",
@@ -86,11 +108,34 @@ function extractTrainingLocation(constraints) {
   return location;
 }
 
-function extractAvailableEquipment(constraints) {
+function mergeLoadCapacity(availableEquipment, equipmentCode, loadCapacity) {
+  const incomingRank = LOAD_CAPACITY_RANK[loadCapacity];
+  if (incomingRank === undefined) {
+    return false;
+  }
+
+  const currentCapacity = availableEquipment.get(equipmentCode);
+  const currentRank = LOAD_CAPACITY_RANK[currentCapacity] ?? 0;
+  if (incomingRank > currentRank) {
+    availableEquipment.set(equipmentCode, loadCapacity);
+  }
+  return true;
+}
+
+function extractAvailableEquipment(constraints, location) {
   const availableEquipment = new Map([
     [EquipmentCode.BODYWEIGHT, EquipmentLoadCapacity.BODYWEIGHT_ONLY],
   ]);
-  const explicitEquipmentCodes = new Set();
+  const equipmentSources = new Map([
+    [EquipmentCode.BODYWEIGHT, EquipmentAvailabilitySource.BODYWEIGHT],
+  ]);
+
+  if (location === TrainingLocation.GYM) {
+    STANDARD_GYM_EQUIPMENT_PROFILE.forEach(({ equipmentCode, loadCapacity }) => {
+      availableEquipment.set(equipmentCode, loadCapacity);
+      equipmentSources.set(equipmentCode, EquipmentAvailabilitySource.STANDARD_GYM);
+    });
+  }
 
   constraints
     .filter(({ code }) => code === "AVAILABLE_TRAINING_EQUIPMENT")
@@ -99,11 +144,13 @@ function extractAvailableEquipment(constraints) {
       if (equipmentCode === EquipmentCode.BODYWEIGHT) {
         return;
       }
-      explicitEquipmentCodes.add(equipmentCode);
-      availableEquipment.set(equipmentCode, loadCapacity);
+      if (!mergeLoadCapacity(availableEquipment, equipmentCode, loadCapacity)) {
+        return;
+      }
+      equipmentSources.set(equipmentCode, EquipmentAvailabilitySource.EXPLICIT);
     });
 
-  return { availableEquipment, explicitEquipmentCodes };
+  return { availableEquipment, equipmentSources };
 }
 
 function equipmentRequirementIsMet(requirement, availableEquipment) {
@@ -127,15 +174,20 @@ function equipmentRequirementIsMet(requirement, availableEquipment) {
   return availableRank !== undefined && requiredRank !== undefined && availableRank >= requiredRank;
 }
 
-function exerciseUsesExplicitEquipment(exercise, explicitEquipmentCodes) {
-  return exercise.equipment_requirements.some(
-    ({ equipment_code: equipmentCode }) =>
-      equipmentCode !== EquipmentCode.BODYWEIGHT &&
-      explicitEquipmentCodes.has(equipmentCode),
+function equipmentSourceForExercise(exercise, equipmentSources) {
+  const sources = exercise.equipment_requirements.map(
+    ({ equipment_code: equipmentCode }) => equipmentSources.get(equipmentCode),
   );
+  if (sources.includes(EquipmentAvailabilitySource.EXPLICIT)) {
+    return EquipmentAvailabilitySource.EXPLICIT;
+  }
+  if (sources.includes(EquipmentAvailabilitySource.STANDARD_GYM)) {
+    return EquipmentAvailabilitySource.STANDARD_GYM;
+  }
+  return EquipmentAvailabilitySource.BODYWEIGHT;
 }
 
-function selectPreferredCandidate(candidates, introWeekRequired, explicitEquipmentCodes) {
+function selectPreferredCandidate(candidates, introWeekRequired, equipmentSources) {
   let preferredCandidates = candidates;
   if (introWeekRequired) {
     const beginnerFriendlyCandidates = candidates.filter(
@@ -147,9 +199,17 @@ function selectPreferredCandidate(candidates, introWeekRequired, explicitEquipme
   }
 
   return (
-    preferredCandidates.find((exercise) =>
-      exerciseUsesExplicitEquipment(exercise, explicitEquipmentCodes),
-    ) ?? preferredCandidates[0]
+    preferredCandidates.find(
+      (exercise) =>
+        equipmentSourceForExercise(exercise, equipmentSources) ===
+        EquipmentAvailabilitySource.EXPLICIT,
+    ) ??
+    preferredCandidates.find(
+      (exercise) =>
+        equipmentSourceForExercise(exercise, equipmentSources) ===
+        EquipmentAvailabilitySource.STANDARD_GYM,
+    ) ??
+    preferredCandidates[0]
   );
 }
 
@@ -194,7 +254,7 @@ function selectExerciseForSlot({
   slot,
   location,
   availableEquipment,
-  explicitEquipmentCodes,
+  equipmentSources,
   introWeekRequired,
   movementConstraintSources,
 }) {
@@ -221,21 +281,21 @@ function selectExerciseForSlot({
   const selectedExercise = selectPreferredCandidate(
     eligibleCandidates,
     introWeekRequired,
-    explicitEquipmentCodes,
+    equipmentSources,
   );
-  const usesExplicitEquipment = exerciseUsesExplicitEquipment(
-    selectedExercise,
-    explicitEquipmentCodes,
-  );
+  const equipmentSource = equipmentSourceForExercise(selectedExercise, equipmentSources);
   return {
     order: slot.order,
     slot_code: slot.slot_code,
     selection_status: ExerciseSlotSelectionStatus.SELECTED,
     exercise_code: selectedExercise.exercise_code,
     name_en: selectedExercise.name_en,
-    reason_code: usesExplicitEquipment
-      ? SelectionReasonCode.SELECTED_EXPLICIT_EQUIPMENT
-      : SelectionReasonCode.SELECTED_BODYWEIGHT_FALLBACK,
+    reason_code:
+      equipmentSource === EquipmentAvailabilitySource.EXPLICIT
+        ? SelectionReasonCode.SELECTED_EXPLICIT_EQUIPMENT
+        : equipmentSource === EquipmentAvailabilitySource.STANDARD_GYM
+          ? SelectionReasonCode.SELECTED_STANDARD_GYM_EQUIPMENT
+          : SelectionReasonCode.SELECTED_BODYWEIGHT_FALLBACK,
     source_constraint_codes: [],
   };
 }
@@ -271,8 +331,9 @@ export function buildExerciseSelection({ trainingSessionBlueprint, hardConstrain
   }
 
   const location = extractTrainingLocation(trainingSessionBlueprint.constraints);
-  const { availableEquipment, explicitEquipmentCodes } = extractAvailableEquipment(
+  const { availableEquipment, equipmentSources } = extractAvailableEquipment(
     trainingSessionBlueprint.constraints,
+    location,
   );
   const movementConstraintSources = buildMovementConstraintSources(hardConstraints);
   let hasReviewRequiredSlot = false;
@@ -285,7 +346,7 @@ export function buildExerciseSelection({ trainingSessionBlueprint, hardConstrain
         slot,
         location,
         availableEquipment,
-        explicitEquipmentCodes,
+        equipmentSources,
         introWeekRequired: trainingSessionBlueprint.intro_week_required,
         movementConstraintSources,
       });

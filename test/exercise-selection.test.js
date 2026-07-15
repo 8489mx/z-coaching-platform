@@ -152,8 +152,9 @@ test("explicit dumbbell equipment wins over bodyweight when other priorities tie
   assert.equal(firstSelectionFor(result, MovementSlotCode.HIP_HINGE).exercise_code, "DUMBBELL_ROMANIAN_DEADLIFT");
   assert.equal(firstSelectionFor(result, MovementSlotCode.HORIZONTAL_PUSH).exercise_code, "DUMBBELL_FLOOR_PRESS");
   assert.equal(firstSelectionFor(result, MovementSlotCode.HORIZONTAL_PULL).exercise_code, "RESISTANCE_BAND_ROW");
+  assert.equal(firstSelectionFor(result, MovementSlotCode.VERTICAL_PULL).exercise_code, "BAND_LAT_PULLDOWN");
   assert.equal(
-    firstSelectionFor(result, MovementSlotCode.KNEE_DOMINANT).reason_code,
+    firstSelectionFor(result, MovementSlotCode.VERTICAL_PULL).reason_code,
     "SELECTED_EXPLICIT_EQUIPMENT",
   );
   assert.equal(result.status, TrainingPlanStatus.READY);
@@ -189,11 +190,14 @@ test("cable equipment enables lat pulldown and cable lateral raise", () => {
   });
   const result = buildExerciseSelection({ trainingSessionBlueprint: blueprint, hardConstraints: [] });
 
-  assert.equal(firstSelectionFor(result, MovementSlotCode.VERTICAL_PULL).exercise_code, "LAT_PULLDOWN");
-  assert.equal(
-    firstSelectionFor(result, MovementSlotCode.SHOULDER_ABDUCTION).exercise_code,
-    "CABLE_LATERAL_RAISE",
-  );
+  for (const [slotCode, exerciseCode] of [
+    [MovementSlotCode.VERTICAL_PULL, "LAT_PULLDOWN"],
+    [MovementSlotCode.SHOULDER_ABDUCTION, "CABLE_LATERAL_RAISE"],
+  ]) {
+    const selection = firstSelectionFor(result, slotCode);
+    assert.equal(selection.exercise_code, exerciseCode);
+    assert.equal(selection.reason_code, "SELECTED_EXPLICIT_EQUIPMENT");
+  }
 });
 
 test("selectorized machines enable lying leg curl machine", () => {
@@ -207,13 +211,12 @@ test("selectorized machines enable lying leg curl machine", () => {
   });
   const result = buildExerciseSelection({ trainingSessionBlueprint: blueprint, hardConstraints: [] });
 
-  assert.equal(
-    firstSelectionFor(result, MovementSlotCode.KNEE_FLEXION).exercise_code,
-    "LYING_LEG_CURL_MACHINE",
-  );
+  const selection = firstSelectionFor(result, MovementSlotCode.KNEE_FLEXION);
+  assert.equal(selection.exercise_code, "LYING_LEG_CURL_MACHINE");
+  assert.equal(selection.reason_code, "SELECTED_EXPLICIT_EQUIPMENT");
 });
 
-test("moderate and heavy capacities satisfy light requirements", () => {
+test("moderate and heavy explicit capacities remain explicit and satisfy light requirements", () => {
   for (const loadCapacity of [
     EquipmentLoadCapacity.MODERATE,
     EquipmentLoadCapacity.HEAVY,
@@ -225,10 +228,15 @@ test("moderate and heavy capacities satisfy light requirements", () => {
       trainingSessionBlueprint: blueprint,
       hardConstraints: [],
     });
-    assert.equal(
-      firstSelectionFor(result, MovementSlotCode.KNEE_DOMINANT).exercise_code,
-      "GOBLET_SQUAT",
+    const selection = firstSelectionFor(result, MovementSlotCode.KNEE_DOMINANT);
+    assert.equal(selection.exercise_code, "GOBLET_SQUAT");
+    assert.equal(selection.reason_code, "SELECTED_EXPLICIT_EQUIPMENT");
+    const reportedEquipment = result.constraints.find(
+      ({ code, value }) =>
+        code === "AVAILABLE_TRAINING_EQUIPMENT" &&
+        value.equipmentCode === EquipmentCode.DUMBBELLS,
     );
+    assert.equal(reportedEquipment.value.loadCapacity, loadCapacity);
   }
 
   const notApplicableBlueprint = makeBlueprint({
@@ -243,27 +251,33 @@ test("moderate and heavy capacities satisfy light requirements", () => {
     trainingSessionBlueprint: notApplicableBlueprint,
     hardConstraints: [],
   });
-  assert.equal(
-    firstSelectionFor(notApplicableResult, MovementSlotCode.KNEE_DOMINANT).exercise_code,
-    "BODYWEIGHT_SQUAT",
+  const notApplicableSelection = firstSelectionFor(
+    notApplicableResult,
+    MovementSlotCode.KNEE_DOMINANT,
   );
+  assert.equal(notApplicableSelection.exercise_code, "GOBLET_SQUAT");
+  assert.equal(notApplicableSelection.reason_code, "SELECTED_STANDARD_GYM_EQUIPMENT");
 });
 
-test("gym location never implies unreported equipment and requires one location constraint", () => {
+test("gym location supplies only the standard gym equipment profile", () => {
   const blueprint = makeBlueprint();
   const result = buildExerciseSelection({ trainingSessionBlueprint: blueprint, hardConstraints: [] });
 
-  assert.equal(
-    firstSelectionFor(result, MovementSlotCode.HORIZONTAL_PULL).reason_code,
-    "NO_ELIGIBLE_EXERCISE",
-  );
-  assert.equal(
-    firstSelectionFor(result, MovementSlotCode.VERTICAL_PULL).reason_code,
-    "NO_ELIGIBLE_EXERCISE",
-  );
-  assert.equal(
-    firstSelectionFor(result, MovementSlotCode.HORIZONTAL_PUSH).exercise_code,
-    "PUSH_UP",
+  for (const [slotCode, exerciseCode] of [
+    [MovementSlotCode.HORIZONTAL_PUSH, "DUMBBELL_FLOOR_PRESS"],
+    [MovementSlotCode.HORIZONTAL_PULL, "ONE_ARM_DUMBBELL_ROW"],
+    [MovementSlotCode.VERTICAL_PULL, "LAT_PULLDOWN"],
+    [MovementSlotCode.KNEE_FLEXION, "LYING_LEG_CURL_MACHINE"],
+  ]) {
+    const selection = firstSelectionFor(result, slotCode);
+    assert.equal(selection.exercise_code, exerciseCode);
+    assert.equal(selection.reason_code, "SELECTED_STANDARD_GYM_EQUIPMENT");
+  }
+  assert.equal(result.status, TrainingPlanStatus.READY);
+  assert.ok(
+    allSelections(result).every(
+      ({ reason_code: reasonCode }) => reasonCode !== "NO_ELIGIBLE_EXERCISE",
+    ),
   );
 
   const missingLocation = makeBlueprint({ includeLocation: false, equipment: BROAD_EQUIPMENT });
@@ -291,6 +305,31 @@ test("gym location never implies unreported equipment and requires one location 
       }),
     TypeError,
   );
+});
+
+test("standard gym equipment is not added to home, outdoors, or mixed training", () => {
+  for (const location of [
+    TrainingLocation.HOME,
+    TrainingLocation.OUTDOORS,
+    TrainingLocation.MIXED,
+  ]) {
+    const result = buildExerciseSelection({
+      trainingSessionBlueprint: makeBlueprint({ recommendedDays: 6, location }),
+      hardConstraints: [],
+    });
+
+    assert.equal(
+      firstSelectionFor(result, MovementSlotCode.VERTICAL_PULL).reason_code,
+      "NO_ELIGIBLE_EXERCISE",
+    );
+    assert.equal(
+      firstSelectionFor(result, MovementSlotCode.SHOULDER_ABDUCTION).reason_code,
+      "NO_ELIGIBLE_EXERCISE",
+    );
+    const bodyweightSelection = firstSelectionFor(result, MovementSlotCode.HORIZONTAL_PUSH);
+    assert.equal(bodyweightSelection.exercise_code, "PUSH_UP");
+    assert.equal(bodyweightSelection.reason_code, "SELECTED_BODYWEIGHT_FALLBACK");
+  }
 });
 
 test("intro week prefers beginner-friendly exercise before explicit equipment", () => {
@@ -373,7 +412,7 @@ test("PUSH, PULL, and OVERHEAD use only their explicit slot mappings", () => {
   }
 
   const constrainedWithoutEquipment = buildExerciseSelection({
-    trainingSessionBlueprint: makeBlueprint(),
+    trainingSessionBlueprint: makeBlueprint({ location: TrainingLocation.HOME }),
     hardConstraints: [movementConstraint("INJURY_AFFECTED_MOVEMENT", Movement.PULL)],
   });
   const horizontalPull = firstSelectionFor(
@@ -445,7 +484,7 @@ test("an unavailable location-equipment combination keeps the slot for review", 
 });
 
 test("a ready blueprint becomes provisional when any slot is unresolved", () => {
-  const blueprint = makeBlueprint();
+  const blueprint = makeBlueprint({ location: TrainingLocation.HOME });
   const result = buildExerciseSelection({ trainingSessionBlueprint: blueprint, hardConstraints: [] });
 
   assert.equal(blueprint.status, TrainingPlanStatus.READY);

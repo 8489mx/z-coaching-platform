@@ -4,7 +4,7 @@
 /** @typedef {"FULL_BODY"|"UPPER_BODY"|"LOWER_BODY"|"PUSH"|"PULL"|"LEGS"} TrainingSessionFocusValue */
 /** @typedef {"KNEE_DOMINANT"|"HIP_HINGE"|"UNILATERAL_LOWER"|"KNEE_FLEXION"|"CALF_RAISE"|"HORIZONTAL_PUSH"|"HORIZONTAL_PULL"|"VERTICAL_PUSH"|"VERTICAL_PULL"|"SHOULDER_ABDUCTION"|"REAR_DELT"|"ELBOW_FLEXION"|"ELBOW_EXTENSION"|"CORE_STABILITY"} MovementSlotCodeValue */
 /** @typedef {"SELECTED"|"REVIEW_REQUIRED"} ExerciseSlotSelectionStatusValue */
-/** @typedef {"SELECTED_EXPLICIT_EQUIPMENT"|"SELECTED_BODYWEIGHT_FALLBACK"|"MOVEMENT_CONSTRAINT_REQUIRES_REVIEW"|"NO_ELIGIBLE_EXERCISE"} ExerciseSelectionReasonCodeValue */
+/** @typedef {"SELECTED_EXPLICIT_EQUIPMENT"|"SELECTED_STANDARD_GYM_EQUIPMENT"|"SELECTED_BODYWEIGHT_FALLBACK"|"MOVEMENT_CONSTRAINT_REQUIRES_REVIEW"|"NO_ELIGIBLE_EXERCISE"} ExerciseSelectionReasonCodeValue */
 
 /** @typedef {{code:string,scope:string,value:unknown,reason:string}} SelectionConstraint */
 /** @typedef {{code:string,scope:string,message:string}} SelectionReason */
@@ -45,7 +45,7 @@
  * @property {"SELECTED"} selection_status
  * @property {string} exercise_code
  * @property {string} name_en
- * @property {"SELECTED_EXPLICIT_EQUIPMENT"|"SELECTED_BODYWEIGHT_FALLBACK"} reason_code
+ * @property {"SELECTED_EXPLICIT_EQUIPMENT"|"SELECTED_STANDARD_GYM_EQUIPMENT"|"SELECTED_BODYWEIGHT_FALLBACK"} reason_code
  * @property {[]} source_constraint_codes
  */
 

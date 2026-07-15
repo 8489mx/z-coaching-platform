@@ -655,7 +655,7 @@ CROSSFIT_OR_FUNCTIONAL
 }
 ```
 
-عند وجود حصص، تقرأ الوحدة قيد `TRAINING_LOCATION` واحدًا بالضبط وقيود `AVAILABLE_TRAINING_EQUIPMENT` من `blueprint.constraints`. `BODYWEIGHT` متاح ضمنيًا في كل المواقع، ولا تفترض الوحدة أي معدات لمجرد أن المكان `GYM`. يجب أن يطابق كل متطلب معدة التمرين؛ `BODYWEIGHT_ONLY` يطابق الجسم فقط، وترتيب القدرات الأخرى هو `LIGHT < MODERATE < HEAVY`، بينما `NOT_APPLICABLE` لا يحقق أي متطلب.
+عند وجود حصص، تقرأ الوحدة قيد `TRAINING_LOCATION` واحدًا بالضبط وقيود `AVAILABLE_TRAINING_EQUIPMENT` من `blueprint.constraints`. `BODYWEIGHT` متاح ضمنيًا في كل المواقع. عندما يكون المكان `GYM` فقط، تضيف الوحدة داخليًا ملف الجيم القياسي: `DUMBBELLS/LIGHT`, `CABLE_STATION/LIGHT`, و`SELECTORIZED_MACHINES/LIGHT`. لا يفترض هذا الملف أي معدات أخرى، ولا يطبق على `HOME`, `OUTDOORS`, أو`MIXED`. تندمج المعدات الصريحة مع الملف الداخلي، وتبقى السعة الأعلى عند تكرار نفس المعدة؛ ولا تُضاف معدات الملف الافتراضي إلى `constraints` الناتجة. يجب أن يطابق كل متطلب معدة التمرين؛ `BODYWEIGHT_ONLY` يطابق الجسم فقط، وترتيب القدرات الأخرى هو `LIGHT < MODERATE < HEAVY`، بينما `NOT_APPLICABLE` لا يحقق أي متطلب.
 
 | الحركة المنظمة | Movement Slots المتأثرة |
 |---|---|
@@ -669,7 +669,7 @@ CROSSFIT_OR_FUNCTIONAL
 
 تقرأ خريطة الحركة فقط من `INJURY_AFFECTED_MOVEMENT`, `INJURY_MEDICAL_RESTRICTION`, و`MEDICAL_MOVEMENT_RESTRICTION` داخل `hardConstraints`، ولا تطبق القيدين الطبيين إلا مع `instruction=AVOID`. الـSlot المقيد يبقى موجودًا بحالة `REVIEW_REQUIRED` وسبب `MOVEMENT_CONSTRAINT_REQUIRES_REVIEW`، والـSlot الذي لا يملك مرشحًا مؤهلًا يستخدم `NO_ELIGIBLE_EXERCISE`.
 
-عند `intro_week_required=true` تكون ملاءمة المبتدئ أولًا، ثم المعدة المذكورة صراحة، ثم ترتيب الكتالوج. من دون Intro Week تكون المعدة الصريحة أولًا ثم ترتيب الكتالوج. أسباب النجاح هي `SELECTED_EXPLICIT_EQUIPMENT` أو `SELECTED_BODYWEIGHT_FALLBACK`. لا تُرقّى الحالة provisional إلى ready؛ أما `READY` فتتحول إلى `PROVISIONAL_REVIEW_REQUIRED` إذا بقي Slot واحد على الأقل للمراجعة، و`WITHHELD` يبقى بلا حصص.
+عند `intro_week_required=true` تكون ملاءمة المبتدئ أولًا، ثم المعدة المذكورة صراحة، ثم معدات ملف الجيم القياسي، ثم `BODYWEIGHT`، ثم ترتيب الكتالوج. من دون Intro Week يبدأ الترتيب بالمعدة الصريحة، ثم معدات ملف الجيم القياسي، ثم `BODYWEIGHT`، ثم ترتيب الكتالوج. أسباب النجاح هي `SELECTED_EXPLICIT_EQUIPMENT`, `SELECTED_STANDARD_GYM_EQUIPMENT`, أو `SELECTED_BODYWEIGHT_FALLBACK`. لا تُرقّى الحالة provisional إلى ready؛ أما `READY` فتتحول إلى `PROVISIONAL_REVIEW_REQUIRED` إذا بقي Slot واحد على الأقل للمراجعة، و`WITHHELD` يبقى بلا حصص.
 
 ## تشغيل الاختبارات والمثال
 
@@ -682,7 +682,7 @@ npm run check
 npm run example
 ```
 
-آخر تشغيل فعلي عند التسليم: **200/200 اختبارات ناجحة**. كانت النسخة المجمدة من Intake Decision Engine تحتوي على 146 اختبارًا، وأضيفت 12 حالة لعقد Training Plan Specification، و11 حالة لخرائط Training Session Blueprints، و13 حالة لـMinimal Exercise Catalog، ثم 18 حالة مستقلة لفلترة Exercise Selection وأولوياته وقيوده وحالاته. كما نجح كل من `npm run test:coverage` و`npm run check`.
+آخر تشغيل فعلي عند التسليم: **201/201 اختبارات ناجحة**. كانت النسخة المجمدة من Intake Decision Engine تحتوي على 146 اختبارًا، وأضيفت 12 حالة لعقد Training Plan Specification، و11 حالة لخرائط Training Session Blueprints، و13 حالة لـMinimal Exercise Catalog، ثم 19 حالة مستقلة لفلترة Exercise Selection وأولوياته وقيوده وحالاته، بما فيها ملف معدات الجيم القياسي وعدم تسربه إلى المواقع الأخرى. كما نجح كل من `npm run test:coverage` و`npm run check`.
 
 `npm run example` يقرأ `examples/full-intake.json` ويطبع ناتج المحرك الفعلي. الخلاصة الفعلية لنفس المثال:
 
