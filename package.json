@@ -5,13 +5,14 @@
   "type": "module",
   "description": "Deterministic client intake decision engine for Z Coaching.",
   "exports": {
-    ".": "./src/intake-decision-engine/index.js"
+    ".": "./src/intake-decision-engine/index.js",
+    "./training-plan-specification": "./src/training-plan-specification/index.js"
   },
   "scripts": {
-    "test": "node --test test/intake-decision-engine.test.js test/domain-branches.test.js test/rules.test.js test/validation.test.js",
-    "test:coverage": "node --test --experimental-test-coverage test/intake-decision-engine.test.js test/domain-branches.test.js test/rules.test.js test/validation.test.js",
+    "test": "node --test test/intake-decision-engine.test.js test/domain-branches.test.js test/rules.test.js test/training-plan-specification.test.js test/validation.test.js",
+    "test:coverage": "node --test --experimental-test-coverage test/intake-decision-engine.test.js test/domain-branches.test.js test/rules.test.js test/training-plan-specification.test.js test/validation.test.js",
     "example": "node examples/run-example.js",
-    "check": "node --check src/intake-decision-engine/index.js && npm test"
+    "check": "node --check src/intake-decision-engine/index.js && node --check src/training-plan-specification/index.js && node --check src/training-plan-specification/build-training-plan-spec.js && npm test"
   },
   "engines": {
     "node": ">=22"

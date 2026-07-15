@@ -452,7 +452,7 @@ CROSSFIT_OR_FUNCTIONAL
 | 18 | الأدوات والإصابات | المكان، الأدوات، قدرة الحمل، الإصابة والمنع الطبي كلها قيود منظمة للجيل المستقبلي. |
 | 19 | Intro Week | لم يتدرب مطلقًا، عائد بعد انقطاع، بلا تدريب آخر 4 أسابيع، أو خبرته/تاريخه مجهول ⇒ Intro/Calibration Week. |
 | 20 | البداية المحافظة | Intro Week، نوم أقل من 6 ساعات أو رديء، ضغط مرتفع، حمل رياضي مرتفع، أو عمل بدني ⇒ `CONSERVATIVE`. |
-| 21 | قرار التدريب | يعيد الأيام، نمط الجدول، Intro Week، حجم البداية، القيود والأسباب، بلا Split أو تمارين. |
+| 21 | قرار التدريب | يعيد Intake Engine الأيام، نمط الجدول، Intro Week، حجم البداية، القيود والأسباب، بلا Split أو تمارين؛ تبني الوحدة المستقلة اللاحقة الهيكل من هذا الناتج فقط. |
 | 22 | الرياضة الإضافية | تُصنف قبل الهدف والسعة؛ الحمل المرتفع ⇒ `NO_ADDITIONAL_CARDIO`، أو `STEPS_ONLY` فقط مع خطوات أقل من 5000 ومشي آمن. |
 | 23 | المشي 10 دقائق | `LIMITED` ⇒ `REVIEW_REQUIRED`؛ ولا يخمّن المحرك سبب العجز. عدم اليقين يُحفظ في بيانات المراجعة ولا يبرر جلسات. |
 | 24 | قدرة الكارديو | السعة حد أقصى وليست وصفة. `CARDIO_SESSIONS` تتطلب سقف جلسات ومدة موجبين؛ كل استراتيجية أخرى تعيدهما صفرًا. |
@@ -483,6 +483,45 @@ CROSSFIT_OR_FUNCTIONAL
 
 ثوابت التدريب والكارديو موجودة في `TrainingPolicy` و`CardioPolicy`، وعتبة الألم الطبية مصدّرة باسم `HIGH_PAIN_MEDICAL_REVIEW_THRESHOLD` من قواعد الأمان.
 
+## Training Plan Specification V1
+
+الوحدة المستقلة `src/training-plan-specification` تحوّل قرار التدريب المجمد إلى هيكل برنامج فقط، من دون إعادة حساب الأيام أو قراءة قواعد التغذية أو الكارديو أو الأمان. واجهتها العامة هي `buildTrainingPlanSpec(intakeDecision)`، وهي متاحة أيضًا عبر export الحزمة الفرعي `./training-plan-specification`.
+
+تقرأ الوحدة فقط `plan_status` والحقول `recommended_days`, `schedule_mode`, `intro_week_required`, `volume_start`, `constraints`, و`reasons` داخل `training_decision`. وتعيد العقد التالي:
+
+```json
+{
+  "spec_version": "training-plan-spec-v1",
+  "status": "READY",
+  "recommended_days": 4,
+  "split_code": "UPPER_LOWER",
+  "schedule_mode": "FIXED_DAYS",
+  "intro_week_required": true,
+  "volume_start": "CONSERVATIVE",
+  "sessions": [
+    {
+      "sequence": 1,
+      "session_code": "UPPER_A",
+      "focus": "UPPER_BODY"
+    }
+  ],
+  "constraints": [],
+  "reasons": []
+}
+```
+
+| `recommended_days` | `split_code` | ترتيب الحصص |
+|---:|---|---|
+| 2 | `FULL_BODY` | `FULL_BODY_A`, `FULL_BODY_B` |
+| 3 | `FULL_BODY` | `FULL_BODY_A`, `FULL_BODY_B`, `FULL_BODY_C` |
+| 4 | `UPPER_LOWER` | `UPPER_A`, `LOWER_A`, `UPPER_B`, `LOWER_B` |
+| 5 | `UPPER_LOWER_PPL` | `UPPER_A`, `LOWER_A`, `PUSH_A`, `PULL_A`, `LEGS_A` |
+| 6 | `PUSH_PULL_LEGS` | `PUSH_A`, `PULL_A`, `LEGS_A`, `PUSH_B`, `PULL_B`, `LEGS_B` |
+
+`READY_FOR_DRAFT` ينتج `READY`، و`COACH_REVIEW_REQUIRED` ينتج `PROVISIONAL_REVIEW_REQUIRED`. إذا كان قرار مراجعة الكوتش المعتمد يحتوي `recommended_days=0`، تبقى الحالة provisional مع `split_code=null` و`sessions=[]` من دون اختراع أيام. أما `MEDICAL_REVIEW_REQUIRED` و`BLOCKED` فينتجان `WITHHELD` بلا Split أو حصص. في كل الحالات تُمرر قيود التدريب وأسبابه دون تصفية أو تفسير.
+
+الحصص مرتبة بـ`sequence` فقط. لا تحدد الوحدة أيام الأسبوع، ولا تختار تمارين أو Sets أو Reps أو Progression، ولا تغيّر الحمل بسبب الرياضة الإضافية.
+
 ## تشغيل الاختبارات والمثال
 
 يتطلب Node.js 22 أو أحدث، ولا يحتاج `npm install` لعدم وجود dependencies.
@@ -494,7 +533,7 @@ npm run check
 npm run example
 ```
 
-آخر تشغيل فعلي عند التسليم: **146/146 اختبارات ناجحة**. كانت النسخة المتزامنة على `develop` تحتوي على 131 اختبارًا قبل عقد جدول الرياضات الإضافية المنظم، وأضيفت 15 حالة اختبار للعقد والتحقق والقيود وحساب الأيام الفريدة. التغطية الكلية: **98.90% للأسطر، 96.05% للفروع، 99.77% للدوال**. كما نجح `npm run check`.
+آخر تشغيل فعلي عند التسليم: **158/158 اختبارات ناجحة**. كانت النسخة المجمدة من Intake Decision Engine تحتوي على 146 اختبارًا، وأضيفت 12 حالة مستقلة لعقد Training Plan Specification والأنظمة الخمسة وحالات التشغيل والتمرير المباشر. كما نجح كل من `npm run test:coverage` و`npm run check`.
 
 `npm run example` يقرأ `examples/full-intake.json` ويطبع ناتج المحرك الفعلي. الخلاصة الفعلية لنفس المثال:
 
@@ -531,10 +570,6 @@ npm run example
 - لا Database أو تخزين أو Audit Log أو إعدادات Tenant.
 - لا AI Runtime أو خدمات خارجية.
 - لا حساب TDEE/BMR أو رقم سعرات أو Macros.
-- لا خطة وجبات، بدائل طعام فعلية، Split، تمارين أو جلسات كارديو.
+- لا خطة وجبات أو بدائل طعام فعلية، ولا اختيار تمارين أو Sets أو Reps أو Progression أو جلسات كارديو. Training Plan Specification يحدد Split ورموز حصص فقط.
 - لا تفسير دوائي أو تشخيص أو بديل عن الطبيب/الكوتش.
 - لا JSON Schema منشور كملف مستقل؛ Validation الحالية Runtime وJSDoc. يمكن توليد Schema versioned لاحقًا عند تثبيت عقد الـAPI.
-
-## الخطوة التالية المقترحة — بدون تنفيذ
-
-إنشاء `Draft Specification Builder V1` يستهلك ناتج هذا المحرك فقط بعد اجتياز `plan_status`، ويحوّل القرارات إلى مواصفات Draft قابلة للمراجعة: نطاق طاقة لا رقم نهائي، تكرار تدريب، حدود حجم، وجرعة كارديو، مع `rulesetVersion` و`coachPolicyVersion` وAudit Trail للأسباب. بعد اعتماد هذه الطبقة يمكن أن تأتي مولدات الوجبات والتمارين كطبقات منفصلة لا تتجاوز Hard Constraints.
