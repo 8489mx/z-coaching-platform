@@ -754,7 +754,7 @@ npm run check
 npm run example
 ```
 
-آخر تشغيل فعلي عند التسليم: **213/213 اختبارات ناجحة**. كانت النسخة المجمدة من Intake Decision Engine تحتوي على 146 اختبارًا، وأضيفت 12 حالة لعقد Training Plan Specification، و11 حالة لخرائط Training Session Blueprints، و15 حالة لـMinimal Exercise Catalog، و19 حالة مستقلة لفلترة Exercise Selection، ثم 10 حالات لـTraining Prescription وقواعد المجموعات والوحدات والنطاقات والراحة. كما نجح كل من `npm run test:coverage` و`npm run check`.
+آخر تشغيل فعلي عند التسليم: **244/244 اختبارات ناجحة**. كانت النسخة المجمدة من Intake Decision Engine تحتوي على 146 اختبارًا، وأضيفت 12 حالة لعقد Training Plan Specification، و11 حالة لخرائط Training Session Blueprints، و15 حالة لـMinimal Exercise Catalog، و19 حالة مستقلة لفلترة Exercise Selection، و10 حالات لـTraining Prescription، و11 حالة لـTraining Draft Pipeline، ثم 20 حالة لـWeekly Training Schedule. كما نجح كل من `npm run test:coverage` و`npm run check`.
 
 `npm run example` يقرأ `examples/full-intake.json` ويطبع ناتج المحرك الفعلي. الخلاصة الفعلية لنفس المثال:
 
@@ -791,7 +791,7 @@ npm run example
 - لا Database أو تخزين أو Audit Log أو إعدادات Tenant.
 - لا AI Runtime أو خدمات خارجية.
 - لا حساب TDEE/BMR أو رقم سعرات أو Macros.
-- لا خطة وجبات أو بدائل طعام فعلية، ولا أوزان أو RPE أو RIR أو Tempo أو Warm-up Sets أو Progression أو Deload أو جلسات كارديو. Training Prescription يحدد فقط عدد المجموعات ووحدة ونطاق التنفيذ والراحة، من دون توزيع أيام الأسبوع.
+- لا خطة وجبات أو بدائل طعام فعلية، ولا أوزان أو RPE أو RIR أو Tempo أو Warm-up Sets أو Progression أو Deload أو جلسات كارديو. Weekly Training Schedule يوزع الحصص على أيام الأسبوع فقط، من دون ساعات يوم أو تغيير التمارين والوصفات.
 - لا تفسير دوائي أو تشخيص أو بديل عن الطبيب/الكوتش.
 - لا JSON Schema منشور كملف مستقل؛ Validation الحالية Runtime وJSDoc. يمكن توليد Schema versioned لاحقًا عند تثبيت عقد الـAPI.
 
@@ -800,3 +800,51 @@ npm run example
 الوحدة المستقلة `src/training-draft` تجمّع نتائج الوحدات الأربع (`training-plan-specification`, `training-session-blueprint`, `exercise-selection`, `training-prescription`) داخل عقد مسطّح وموحد.
 
 لا تعيد الوحدة الكائنات الوسيطة بشكل متداخل، بل تعيد `sessions` النهائية التي تحتوي على التمارين والوصفات معًا، بالإضافة إلى الثوابت مثل `pipeline_versions` لضمان التتبع والتوافق.
+
+## Weekly Training Schedule V1
+
+الوحدة المستقلة `src/weekly-training-schedule` تستهلك ناتج `buildTrainingDraft(...)` فقط عبر `buildWeeklyTrainingSchedule(trainingDraft)`، وهي متاحة من export الحزمة الفرعي `./weekly-training-schedule`. تصدّر الواجهة العامة `WEEKLY_TRAINING_SCHEDULE_VERSION`, `WeeklySportLoad`, `ScheduleReasonCode`, و`buildWeeklyTrainingSchedule`، ولا تغيّر التمارين أو الوصفات التدريبية.
+
+```json
+{
+  "schedule_version": "weekly-training-schedule-v1",
+  "draft_version": "training-draft-v1",
+  "pipeline_versions": {},
+  "prescription_version": "training-prescription-v1",
+  "status": "READY",
+  "recommended_days": 4,
+  "split_code": "UPPER_LOWER",
+  "schedule_mode": "FIXED_DAYS",
+  "intro_week_required": false,
+  "volume_start": "NORMAL",
+  "schedule_review_required": false,
+  "schedule_reasons": [],
+  "sessions": [
+    {
+      "sequence": 1,
+      "session_code": "UPPER_A",
+      "focus": "UPPER_BODY",
+      "scheduled_day": "MONDAY",
+      "sport_load": "NONE",
+      "schedule_reason_code": "SELECTED_FIXED_TRAINING_DAY",
+      "exercises": []
+    }
+  ],
+  "constraints": [],
+  "reasons": []
+}
+```
+
+عند `SESSION_SEQUENCE` لا تختار الوحدة أيامًا ثابتة؛ تضيف لكل حصة `scheduled_day=null`, `sport_load=NONE`, و`SESSION_SEQUENCE_REQUIRED` مع الحفاظ على ترتيب الحصص وحالة الخطة. عند `WITHHELD` أو عدم وجود حصص يبقى الناتج بلا حصص ولا يتطلب قيود أيام.
+
+عند `FIXED_DAYS` تستخدم قيود `TRAINING_AVAILABLE_DAY` كقائمة حصرية، أو تبدأ بالأسبوع كاملًا وتحذف `TRAINING_UNAVAILABLE_DAY`. يجب أن يساوي عدد الحصص `recommended_days` وأن يبقى بين 2 و6. التوزيعات المفضلة هي:
+
+| عدد الحصص | ترتيب الاختيار المفضل |
+|---:|---|
+| 2 | `MONDAY`, `THURSDAY`, `TUESDAY`, `FRIDAY`, `WEDNESDAY`, `SATURDAY`, `SUNDAY` |
+| 3 | `MONDAY`, `WEDNESDAY`, `FRIDAY`, `TUESDAY`, `THURSDAY`, `SATURDAY`, `SUNDAY` |
+| 4 | `MONDAY`, `TUESDAY`, `THURSDAY`, `SATURDAY`, `WEDNESDAY`, `FRIDAY`, `SUNDAY` |
+| 5 | `MONDAY`, `TUESDAY`, `WEDNESDAY`, `FRIDAY`, `SATURDAY`, `THURSDAY`, `SUNDAY` |
+| 6 | `MONDAY`, `TUESDAY`, `WEDNESDAY`, `THURSDAY`, `FRIDAY`, `SATURDAY`, `SUNDAY` |
+
+تجمع الوحدة أعلى شدة من قيود `EXISTING_ADDITIONAL_SPORT` لكل يوم، ثم ترتب المرشحين حسب `NONE`, `LOW`, `MODERATE`, `HIGH` قبل ترتيب التوزيع المفضل. بعد الاختيار ترتب الأيام طبيعيًا من الاثنين إلى الأحد وتربطها بـ`sequence`. الأيام ذات `LOW` أو `MODERATE` تستخدم `SELECTED_AROUND_ADDITIONAL_SPORT` ولا تغيّر الحالة. إذا تعذر تجنب يوم `HIGH` تستخدم `HIGH_SPORT_DAY_REQUIRES_REVIEW`، وتضيف سبب مراجعة واحدًا، وتحول `READY` إلى `PROVISIONAL_REVIEW_REQUIRED` دون ترقية أو تغيير أي حالة أخرى.
