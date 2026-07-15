@@ -34,19 +34,44 @@ const ADEQUATE_DAILY_ACTIVITY_LEVELS = new Set([
   ActivityLevel.HIGH,
   ActivityLevel.VERY_HIGH,
 ]);
+const SPORT_INTENSITY_PRIORITY = Object.freeze({
+  [SportIntensity.LOW]: 0,
+  [SportIntensity.MODERATE]: 1,
+  [SportIntensity.HIGH]: 2,
+});
+
+export function summarizeAdditionalSportDays(additionalSports) {
+  const strongestIntensityByDay = new Map();
+  additionalSports.forEach((sport) => {
+    sport.days.forEach((day) => {
+      const currentIntensity = strongestIntensityByDay.get(day);
+      if (
+        currentIntensity === undefined ||
+        SPORT_INTENSITY_PRIORITY[sport.intensity] >
+          SPORT_INTENSITY_PRIORITY[currentIntensity]
+      ) {
+        strongestIntensityByDay.set(day, sport.intensity);
+      }
+    });
+  });
+
+  const uniqueIntensities = [...strongestIntensityByDay.values()];
+  return {
+    highDays: uniqueIntensities.filter((intensity) => intensity === SportIntensity.HIGH)
+      .length,
+    moderateDays: uniqueIntensities.filter(
+      (intensity) => intensity === SportIntensity.MODERATE,
+    ).length,
+  };
+}
 
 /**
  * Cardio-specific view of existing sport load. The shared training classifier
- * remains authoritative for its documented minute-based thresholds; cardio
- * additionally treats two HIGH days or three MODERATE days as sufficient load.
+ * remains authoritative for its existing load thresholds; cardio additionally
+ * treats two HIGH days or three MODERATE days as sufficient load.
  */
 export function isHighCardioSportLoad(additionalSports) {
-  const highDays = additionalSports
-    .filter((sport) => sport.intensity === SportIntensity.HIGH)
-    .reduce((total, sport) => total + sport.daysPerWeek, 0);
-  const moderateDays = additionalSports
-    .filter((sport) => sport.intensity === SportIntensity.MODERATE)
-    .reduce((total, sport) => total + sport.daysPerWeek, 0);
+  const { highDays, moderateDays } = summarizeAdditionalSportDays(additionalSports);
 
   return (
     isHighAdditionalSportLoad(additionalSports) ||
@@ -65,7 +90,7 @@ function hasExplicitEnduranceGoal(input) {
 function hasModerateOrHighActiveSport(additionalSports) {
   return additionalSports.some(
     (sport) =>
-      sport.daysPerWeek > 0 &&
+      sport.days.length > 0 &&
       [SportIntensity.MODERATE, SportIntensity.HIGH].includes(sport.intensity),
   );
 }
@@ -86,7 +111,7 @@ export function evaluateCardioConstraints(input) {
       "Formal cardio must never exceed the client's stated duration capacity.",
     ),
   ];
-  input.cardio.additionalSports.forEach((sport) => {
+  input.cardio.additionalSports.forEach((sport, index) => {
     constraints.push(
       constraint(
         "EXISTING_ADDITIONAL_SPORT",
@@ -95,6 +120,36 @@ export function evaluateCardioConstraints(input) {
         "Existing sport load takes priority when deciding whether more cardio is appropriate.",
       ),
     );
+    if (sport.sportCode === null) {
+      const sourcePath = `cardio.additionalSports[${index}].otherSportText`;
+      result.statusCandidates.push(
+        statusCandidate(
+          PlanStatus.COACH_REVIEW_REQUIRED,
+          "UNCLASSIFIED_ADDITIONAL_SPORT",
+        ),
+      );
+      result.reviewFlags.push(
+        reviewFlag(
+          "UNCLASSIFIED_ADDITIONAL_SPORT",
+          Scope.TRAINING,
+          ReviewLevel.COACH,
+          "The reported sport is preserved without interpretation and requires coach mapping.",
+          sourcePath,
+        ),
+      );
+      result.reasons.push(
+        reason(
+          "UNCLASSIFIED_SPORT_REQUIRES_MAPPING",
+          Scope.TRAINING,
+          "The unclassified sport schedule remains part of total load while its type awaits mapping.",
+        ),
+      );
+      result.missingOrUncertainData.push({
+        code: "ADDITIONAL_SPORT_MAPPING_PENDING",
+        path: sourcePath,
+        message: "The reported sport requires coach mapping for sport-specific planning.",
+      });
+    }
   });
   result.hardConstraints.push(...constraints);
   return { ...result, decisionConstraints: constraints };

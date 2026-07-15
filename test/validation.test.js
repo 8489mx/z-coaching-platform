@@ -7,12 +7,25 @@ import {
   EquipmentLoadCapacity,
   IntakeValidationError,
   MedicalConditionCode,
+  SportCode,
+  SportIntensity,
+  SportParticipationLevel,
   TrainingLocation,
   TrainingScheduleAvailabilityType,
   evaluateIntake,
   validateIntake,
 } from "../src/intake-decision-engine/index.js";
 import { ASSESSMENT_CONTEXT, completeIntake } from "./fixtures/complete-intake.js";
+
+const validAdditionalSport = (overrides = {}) => ({
+  sportCode: SportCode.FOOTBALL,
+  otherSportText: null,
+  days: [DayOfWeek.MONDAY, DayOfWeek.THURSDAY],
+  minutesPerSession: 60,
+  intensity: SportIntensity.HIGH,
+  participationLevel: SportParticipationLevel.RECREATIONAL,
+  ...overrides,
+});
 
 test("valid fixture passes schema validation", () => {
   assert.deepEqual(validateIntake(completeIntake(), ASSESSMENT_CONTEXT), { valid: true, issues: [] });
@@ -813,15 +826,231 @@ test("medical exclusions and movement restrictions require classified sources an
   assert.ok(validation.issues.some((item) => item.path.endsWith(".source")));
 });
 
-test("an active additional sport cannot report zero session duration", () => {
+test("an additional sport session duration must be an integer from 1 to 300", () => {
   const input = completeIntake({
     cardio: {
-      additionalSports: [{ name: "FOOTBALL", daysPerWeek: 2, minutesPerSession: 0, intensity: "HIGH" }],
+      additionalSports: [validAdditionalSport({ minutesPerSession: 0 })],
     },
   });
   const validation = validateIntake(input, ASSESSMENT_CONTEXT);
   assert.equal(validation.valid, false);
-  assert.ok(validation.issues.some((item) => item.code === "ZERO_DURATION_ACTIVE_SPORT"));
+  assert.ok(
+    validation.issues.some(
+      (item) =>
+        item.path === "cardio.additionalSports[0].minutesPerSession" &&
+        item.code === "NUMBER_OUT_OF_RANGE",
+    ),
+  );
+  assert.throws(() => evaluateIntake(input, ASSESSMENT_CONTEXT), IntakeValidationError);
+});
+
+test("legacy additional sport name and daysPerWeek fields are rejected as unknown", () => {
+  const input = completeIntake({
+    cardio: {
+      additionalSports: [
+        {
+          ...validAdditionalSport(),
+          name: "Football",
+          daysPerWeek: 2,
+        },
+      ],
+    },
+  });
+  const validation = validateIntake(input, ASSESSMENT_CONTEXT);
+
+  assert.equal(validation.valid, false);
+  for (const field of ["name", "daysPerWeek"]) {
+    assert.ok(
+      validation.issues.some(
+        (item) =>
+          item.path === `cardio.additionalSports[0].${field}` &&
+          item.code === "UNKNOWN_FIELD",
+      ),
+    );
+  }
+  assert.throws(() => evaluateIntake(input, ASSESSMENT_CONTEXT), IntakeValidationError);
+});
+
+test("an additional sport cannot repeat a weekday", () => {
+  const input = completeIntake({
+    cardio: {
+      additionalSports: [
+        validAdditionalSport({ days: [DayOfWeek.MONDAY, DayOfWeek.MONDAY] }),
+      ],
+    },
+  });
+  const validation = validateIntake(input, ASSESSMENT_CONTEXT);
+
+  assert.equal(validation.valid, false);
+  assert.ok(
+    validation.issues.some(
+      (item) =>
+        item.path === "cardio.additionalSports[0].days" && item.code === "DUPLICATE_DAY",
+    ),
+  );
+  assert.throws(() => evaluateIntake(input, ASSESSMENT_CONTEXT), IntakeValidationError);
+});
+
+test("an additional sport must report at least one actual weekday", () => {
+  const input = completeIntake({
+    cardio: { additionalSports: [validAdditionalSport({ days: [] })] },
+  });
+  const validation = validateIntake(input, ASSESSMENT_CONTEXT);
+
+  assert.equal(validation.valid, false);
+  assert.ok(
+    validation.issues.some(
+      (item) =>
+        item.path === "cardio.additionalSports[0].days" &&
+        item.code === "NUMBER_OUT_OF_RANGE",
+    ),
+  );
+  assert.throws(() => evaluateIntake(input, ASSESSMENT_CONTEXT), IntakeValidationError);
+});
+
+test("an unknown additional sport participation level is rejected", () => {
+  const input = completeIntake({
+    cardio: {
+      additionalSports: [validAdditionalSport({ participationLevel: "ELITE" })],
+    },
+  });
+  const validation = validateIntake(input, ASSESSMENT_CONTEXT);
+
+  assert.equal(validation.valid, false);
+  assert.ok(
+    validation.issues.some(
+      (item) =>
+        item.path === "cardio.additionalSports[0].participationLevel" &&
+        item.code === "INVALID_ENUM_VALUE",
+    ),
+  );
+  assert.throws(() => evaluateIntake(input, ASSESSMENT_CONTEXT), IntakeValidationError);
+});
+
+test("an unknown structured SportCode is rejected", () => {
+  const input = completeIntake({
+    cardio: {
+      additionalSports: [validAdditionalSport({ sportCode: "UNKNOWN_SPORT" })],
+    },
+  });
+  const validation = validateIntake(input, ASSESSMENT_CONTEXT);
+
+  assert.equal(validation.valid, false);
+  assert.ok(
+    validation.issues.some(
+      (item) =>
+        item.path === "cardio.additionalSports[0].sportCode" &&
+        item.code === "INVALID_ENUM_VALUE",
+    ),
+  );
+  assert.throws(() => evaluateIntake(input, ASSESSMENT_CONTEXT), IntakeValidationError);
+});
+
+test("additional sport classification requires exactly one non-empty route", () => {
+  const bothRoutes = completeIntake({
+    cardio: {
+      additionalSports: [validAdditionalSport({ otherSportText: "Football training" })],
+    },
+  });
+  const neitherRoute = completeIntake({
+    cardio: {
+      additionalSports: [
+        validAdditionalSport({ sportCode: null, otherSportText: "   " }),
+      ],
+    },
+  });
+  const bothValidation = validateIntake(bothRoutes, ASSESSMENT_CONTEXT);
+  const neitherValidation = validateIntake(neitherRoute, ASSESSMENT_CONTEXT);
+
+  assert.equal(bothValidation.valid, false);
+  assert.ok(
+    bothValidation.issues.some(
+      (item) => item.code === "ADDITIONAL_SPORT_CLASSIFICATION_CONFLICT",
+    ),
+  );
+  assert.equal(neitherValidation.valid, false);
+  assert.ok(
+    neitherValidation.issues.some(
+      (item) =>
+        item.path === "cardio.additionalSports[0].otherSportText" &&
+        item.code === "REQUIRED_STRING",
+    ),
+  );
+  assert.throws(
+    () => evaluateIntake(bothRoutes, ASSESSMENT_CONTEXT),
+    IntakeValidationError,
+  );
+  assert.throws(
+    () => evaluateIntake(neitherRoute, ASSESSMENT_CONTEXT),
+    IntakeValidationError,
+  );
+});
+
+test("each additional sport requires all six contract fields explicitly", () => {
+  const fields = [
+    "sportCode",
+    "otherSportText",
+    "days",
+    "minutesPerSession",
+    "intensity",
+    "participationLevel",
+  ];
+
+  for (const field of fields) {
+    const sport = validAdditionalSport();
+    delete sport[field];
+    const input = completeIntake({ cardio: { additionalSports: [sport] } });
+    const validation = validateIntake(input, ASSESSMENT_CONTEXT);
+
+    assert.equal(validation.valid, false, `${field} should be required`);
+    assert.ok(
+      validation.issues.some(
+        (item) =>
+          item.path === `cardio.additionalSports[0].${field}` &&
+          item.code === "REQUIRED_ADDITIONAL_SPORT_FIELD",
+      ),
+      `${field} should have an explicit required-field issue`,
+    );
+    assert.throws(() => evaluateIntake(input, ASSESSMENT_CONTEXT), IntakeValidationError);
+  }
+});
+
+test("additional sport day and session-duration boundaries remain valid", () => {
+  const boundarySports = [
+    validAdditionalSport({ minutesPerSession: 1 }),
+    validAdditionalSport({
+      days: Object.values(DayOfWeek),
+      minutesPerSession: 300,
+      participationLevel: SportParticipationLevel.COMPETITIVE,
+    }),
+    validAdditionalSport({
+      sportCode: null,
+      otherSportText: "  Volleyball beach training  ",
+      days: [DayOfWeek.SATURDAY],
+      intensity: SportIntensity.MODERATE,
+    }),
+  ];
+
+  for (const sport of boundarySports) {
+    const input = completeIntake({ cardio: { additionalSports: [sport] } });
+    assert.deepEqual(validateIntake(input, ASSESSMENT_CONTEXT), { valid: true, issues: [] });
+  }
+
+  for (const minutesPerSession of [301, 1.5]) {
+    const input = completeIntake({
+      cardio: { additionalSports: [validAdditionalSport({ minutesPerSession })] },
+    });
+    const validation = validateIntake(input, ASSESSMENT_CONTEXT);
+    assert.equal(validation.valid, false);
+    assert.ok(
+      validation.issues.some(
+        (item) =>
+          item.path === "cardio.additionalSports[0].minutesPerSession" &&
+          item.code === "NUMBER_OUT_OF_RANGE",
+      ),
+    );
+    assert.throws(() => evaluateIntake(input, ASSESSMENT_CONTEXT), IntakeValidationError);
+  }
 });
 
 test("eating windows must be same-day, positive, and non-overlapping", () => {

@@ -36,10 +36,10 @@ export const TrainingPolicy = Object.freeze({
 export function isHighAdditionalSportLoad(additionalSports) {
   const highIntensitySessions = additionalSports
     .filter((sport) => sport.intensity === SportIntensity.HIGH)
-    .reduce((total, sport) => total + sport.daysPerWeek, 0);
+    .reduce((total, sport) => total + sport.days.length, 0);
   const highIntensityMinutes = additionalSports
     .filter((sport) => sport.intensity === SportIntensity.HIGH)
-    .reduce((total, sport) => total + sport.daysPerWeek * sport.minutesPerSession, 0);
+    .reduce((total, sport) => total + sport.days.length * sport.minutesPerSession, 0);
   const weightedWeeklyMinutes = additionalSports.reduce((total, sport) => {
     const intensityWeight =
       sport.intensity === SportIntensity.HIGH
@@ -47,7 +47,7 @@ export function isHighAdditionalSportLoad(additionalSports) {
         : sport.intensity === SportIntensity.MODERATE
           ? 0.5
           : 0.25;
-    return total + sport.daysPerWeek * sport.minutesPerSession * intensityWeight;
+    return total + sport.days.length * sport.minutesPerSession * intensityWeight;
   }, 0);
   return (
     highIntensitySessions >= TrainingPolicy.HIGH_SPORT_MIN_SESSIONS ||
@@ -374,6 +374,16 @@ export function evaluateTrainingConstraints(input) {
           loadCapacity: equipment.loadCapacity,
         },
         "Future exercises must respect both equipment type and load capacity.",
+      ),
+    );
+  });
+  input.cardio.additionalSports.forEach((sport) => {
+    decisionConstraints.push(
+      constraint(
+        "EXISTING_ADDITIONAL_SPORT",
+        Scope.TRAINING,
+        sport,
+        "Existing sport schedule must remain visible when coordinating future training sessions.",
       ),
     );
   });

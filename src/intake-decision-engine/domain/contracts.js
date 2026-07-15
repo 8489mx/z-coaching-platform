@@ -35,7 +35,12 @@
 /** @typedef {{equipmentCode:null,otherEquipmentText:string,loadCapacity:"LIGHT"|"MODERATE"|"HEAVY"|"NOT_APPLICABLE"}} OtherTrainingEquipment The original non-whitespace text is preserved verbatim and never mapped automatically. */
 /** @typedef {BodyweightTrainingEquipment|ClassifiedTrainingEquipment|OtherTrainingEquipment} TrainingEquipment */
 /** @typedef {{location:string, equipment:TrainingEquipment[], maxDaysPerWeek:number, preferredDaysPerWeek:number, trainingScheduleAvailabilityType:TrainingScheduleAvailabilityTypeValue, availableTrainingDays:DayOfWeekValue[], unavailableTrainingDays:DayOfWeekValue[], maxSessionMinutes:number, experience:string, recentTraining:string, injuries:Injury[], medicalMovementRestrictions:MovementRestriction[]}} TrainingData */
-/** @typedef {{name:string, daysPerWeek:number, minutesPerSession:number, intensity:string}} AdditionalSport */
+/** @typedef {"FOOTBALL"|"RUNNING"|"CYCLING"|"SWIMMING"|"BOXING"|"MARTIAL_ARTS"|"BASKETBALL"|"HANDBALL"|"VOLLEYBALL"|"RACKET_SPORTS"|"CROSSFIT_OR_FUNCTIONAL"} SportCodeValue */
+/** @typedef {"LOW"|"MODERATE"|"HIGH"} SportIntensityValue */
+/** @typedef {"RECREATIONAL"|"COMPETITIVE"} SportParticipationLevelValue */
+/** @typedef {{sportCode:SportCodeValue,otherSportText:null|"",days:DayOfWeekValue[],minutesPerSession:number,intensity:SportIntensityValue,participationLevel:SportParticipationLevelValue}} ClassifiedAdditionalSport */
+/** @typedef {{sportCode:null,otherSportText:string,days:DayOfWeekValue[],minutesPerSession:number,intensity:SportIntensityValue,participationLevel:SportParticipationLevelValue}} OtherAdditionalSport The original non-whitespace text is preserved verbatim and never mapped automatically. */
+/** @typedef {ClassifiedAdditionalSport|OtherAdditionalSport} AdditionalSport */
 /** @typedef {{additionalSports:AdditionalSport[], averageDailySteps:number|null, walkingAbility:string, maxSessionsPerWeek:number, maxDurationMinutes:number}} CardioData */
 
 /** @typedef {{code:string, scope:string, value:unknown, reason:string}} DecisionConstraint */

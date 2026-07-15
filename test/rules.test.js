@@ -12,7 +12,9 @@ import {
   RecentTraining,
   ScheduleMode,
   ScreeningAnswer,
+  SportCode,
   SportIntensity,
+  SportParticipationLevel,
   TrainingScheduleAvailabilityType,
   TrainingExperience,
   WalkingAbility,
@@ -29,6 +31,7 @@ import {
   evaluateFoodConstraints,
   isHighAdditionalSportLoad,
   isHighCardioSportLoad,
+  summarizeAdditionalSportDays,
 } from "../src/intake-decision-engine/index.js";
 import { ASSESSMENT_CONTEXT, completeIntake } from "./fixtures/complete-intake.js";
 
@@ -45,6 +48,16 @@ const decideCardio = (overrides, conservativeRecoveryStart = false) =>
     SAFE_CARDIO_CONTEXT,
     conservativeRecoveryStart,
   );
+
+const additionalSport = (overrides = {}) => ({
+  sportCode: SportCode.FOOTBALL,
+  otherSportText: null,
+  days: [DayOfWeek.MONDAY],
+  minutesPerSession: 45,
+  intensity: SportIntensity.MODERATE,
+  participationLevel: SportParticipationLevel.RECREATIONAL,
+  ...overrides,
+});
 
 test("age calculation handles exact birthday and leap-day birth deterministically", () => {
   assert.equal(calculateAgeYears("2008-07-14", "2026-07-14"), 18);
@@ -240,19 +253,37 @@ test("fixed unavailable training days treat the other five weekdays as available
 test("high sport load threshold is deterministic", () => {
   assert.equal(
     isHighAdditionalSportLoad([
-      { name: "FOOTBALL", daysPerWeek: 2, minutesPerSession: 45, intensity: "HIGH" },
+      additionalSport({
+        days: [DayOfWeek.MONDAY, DayOfWeek.THURSDAY],
+        minutesPerSession: 45,
+        intensity: SportIntensity.HIGH,
+      }),
     ]),
     true,
   );
   assert.equal(
     isHighAdditionalSportLoad([
-      { name: "TENNIS", daysPerWeek: 1, minutesPerSession: 60, intensity: "MODERATE" },
+      additionalSport({
+        sportCode: SportCode.RACKET_SPORTS,
+        days: [DayOfWeek.SATURDAY],
+        minutesPerSession: 60,
+      }),
     ]),
     false,
   );
   assert.equal(
     isHighAdditionalSportLoad([
-      { name: "LONG_MODERATE_SPORT", daysPerWeek: 5, minutesPerSession: 90, intensity: "MODERATE" },
+      additionalSport({
+        sportCode: SportCode.CYCLING,
+        days: [
+          DayOfWeek.MONDAY,
+          DayOfWeek.TUESDAY,
+          DayOfWeek.WEDNESDAY,
+          DayOfWeek.THURSDAY,
+          DayOfWeek.FRIDAY,
+        ],
+        minutesPerSession: 90,
+      }),
     ]),
     true,
   );
@@ -261,37 +292,110 @@ test("high sport load threshold is deterministic", () => {
 test("cardio sport-load classifier treats two high or three moderate days as high", () => {
   assert.equal(
     isHighCardioSportLoad([
-      {
-        name: "FOOTBALL",
-        daysPerWeek: 2,
-        minutesPerSession: 45,
+      additionalSport({
+        days: [DayOfWeek.MONDAY, DayOfWeek.THURSDAY],
+        minutesPerSession: 30,
         intensity: SportIntensity.HIGH,
-      },
+      }),
     ]),
     true,
   );
   assert.equal(
     isHighCardioSportLoad([
-      {
-        name: "TENNIS",
-        daysPerWeek: 3,
-        minutesPerSession: 45,
-        intensity: SportIntensity.MODERATE,
-      },
+      additionalSport({
+        sportCode: SportCode.RACKET_SPORTS,
+        days: [DayOfWeek.MONDAY, DayOfWeek.WEDNESDAY, DayOfWeek.SATURDAY],
+        minutesPerSession: 30,
+      }),
     ]),
     true,
   );
   assert.equal(
     isHighCardioSportLoad([
-      {
-        name: "TENNIS",
-        daysPerWeek: 2,
-        minutesPerSession: 45,
-        intensity: SportIntensity.MODERATE,
-      },
+      additionalSport({
+        sportCode: SportCode.RACKET_SPORTS,
+        days: [DayOfWeek.MONDAY, DayOfWeek.SATURDAY],
+        minutesPerSession: 30,
+      }),
     ]),
     false,
   );
+});
+
+test("two high sports on the same day count as one high day while retaining two sessions", () => {
+  const sports = [
+    additionalSport({
+      sportCode: SportCode.FOOTBALL,
+      days: [DayOfWeek.MONDAY],
+      minutesPerSession: 20,
+      intensity: SportIntensity.HIGH,
+    }),
+    additionalSport({
+      sportCode: SportCode.BOXING,
+      days: [DayOfWeek.MONDAY],
+      minutesPerSession: 20,
+      intensity: SportIntensity.HIGH,
+    }),
+  ];
+
+  assert.deepEqual(summarizeAdditionalSportDays(sports), {
+    highDays: 1,
+    moderateDays: 0,
+  });
+  assert.equal(isHighAdditionalSportLoad(sports), true);
+  assert.equal(isHighCardioSportLoad(sports), true);
+});
+
+test("two high sports on different days count as two actual high days", () => {
+  const sports = [
+    additionalSport({
+      sportCode: SportCode.FOOTBALL,
+      days: [DayOfWeek.MONDAY],
+      minutesPerSession: 20,
+      intensity: SportIntensity.HIGH,
+    }),
+    additionalSport({
+      sportCode: SportCode.BOXING,
+      days: [DayOfWeek.THURSDAY],
+      minutesPerSession: 20,
+      intensity: SportIntensity.HIGH,
+    }),
+  ];
+
+  assert.deepEqual(summarizeAdditionalSportDays(sports), {
+    highDays: 2,
+    moderateDays: 0,
+  });
+  assert.equal(isHighAdditionalSportLoad(sports), true);
+  assert.equal(isHighCardioSportLoad(sports), true);
+});
+
+test("high intensity dominates moderate intensity on an overlapping sport day", () => {
+  const sports = [
+    additionalSport({
+      sportCode: SportCode.FOOTBALL,
+      days: [DayOfWeek.MONDAY],
+      minutesPerSession: 10,
+      intensity: SportIntensity.HIGH,
+    }),
+    additionalSport({
+      sportCode: SportCode.CYCLING,
+      days: [DayOfWeek.MONDAY, DayOfWeek.TUESDAY, DayOfWeek.WEDNESDAY],
+      minutesPerSession: 10,
+      intensity: SportIntensity.MODERATE,
+    }),
+  ];
+
+  assert.deepEqual(summarizeAdditionalSportDays(sports), {
+    highDays: 1,
+    moderateDays: 2,
+  });
+  assert.equal(isHighCardioSportLoad(sports), false);
+});
+
+test("no additional sports preserve the existing low-load classification", () => {
+  assert.equal(isHighAdditionalSportLoad([]), false);
+  assert.equal(isHighCardioSportLoad([]), false);
 });
 
 test("12000 steps and a fat-loss goal do not create additional cardio", () => {
@@ -352,12 +456,11 @@ test("two high-intensity sport days cover the additional cardio load", () => {
     cardio: {
       averageDailySteps: 8000,
       additionalSports: [
-        {
-          name: "FOOTBALL",
-          daysPerWeek: 2,
+        additionalSport({
+          days: [DayOfWeek.MONDAY, DayOfWeek.THURSDAY],
           minutesPerSession: 45,
           intensity: SportIntensity.HIGH,
-        },
+        }),
       ],
     },
   });
@@ -372,12 +475,12 @@ test("two high-intensity sport days cover the additional cardio load", () => {
 });
 
 test("three moderate sport days allow only no-cardio or low-step steps-only routing", () => {
-  const sport = {
-    name: "TENNIS",
-    daysPerWeek: 3,
+  const sport = additionalSport({
+    sportCode: SportCode.RACKET_SPORTS,
+    days: [DayOfWeek.MONDAY, DayOfWeek.WEDNESDAY, DayOfWeek.SATURDAY],
     minutesPerSession: 45,
     intensity: SportIntensity.MODERATE,
-  };
+  });
   const adequateSteps = decideCardio({
     cardio: { averageDailySteps: 8000, additionalSports: [sport] },
   });
@@ -437,12 +540,12 @@ test("formal cardio starts low for a beginner, recovery risk, or existing modera
     cardio: {
       ...baseOverrides.cardio,
       additionalSports: [
-        {
-          name: "TENNIS",
-          daysPerWeek: 1,
+        additionalSport({
+          sportCode: SportCode.RACKET_SPORTS,
+          days: [DayOfWeek.SATURDAY],
           minutesPerSession: 45,
           intensity: SportIntensity.MODERATE,
-        },
+        }),
       ],
     },
   });

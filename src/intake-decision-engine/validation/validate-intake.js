@@ -20,7 +20,9 @@ import {
   Severity,
   Sex,
   SleepQuality,
+  SportCode,
   SportIntensity,
+  SportParticipationLevel,
   Stability,
   StressLevel,
   TrainingExperience,
@@ -863,20 +865,81 @@ function validateCardio(input, issues) {
   array(cardio.additionalSports, "cardio.additionalSports", issues).forEach((raw, index) => {
     const path = `cardio.additionalSports[${index}]`;
     const sport = requiredObject(raw, path, issues);
-    rejectUnknownKeys(sport, ["name", "daysPerWeek", "minutesPerSession", "intensity"], path, issues);
-    requiredString(sport.name, `${path}.name`, issues);
-    numberInRange(sport.daysPerWeek, `${path}.daysPerWeek`, issues, 0, 7, { integer: true });
-    numberInRange(sport.minutesPerSession, `${path}.minutesPerSession`, issues, 0, 300, {
-      integer: true,
+    const sportFields = [
+      "sportCode",
+      "otherSportText",
+      "days",
+      "minutesPerSession",
+      "intensity",
+      "participationLevel",
+    ];
+    rejectUnknownKeys(sport, sportFields, path, issues);
+    sportFields.forEach((field) => {
+      if (!Object.hasOwn(sport, field)) {
+        issues.push(
+          issue(
+            `${path}.${field}`,
+            "REQUIRED_ADDITIONAL_SPORT_FIELD",
+            `Additional sport field ${field} must be explicitly present.`,
+          ),
+        );
+      }
     });
-    enumValue(sport.intensity, SportIntensity, `${path}.intensity`, issues);
-    if (sport.daysPerWeek > 0 && sport.minutesPerSession === 0) {
-      issues.push(
-        issue(
-          `${path}.minutesPerSession`,
-          "ZERO_DURATION_ACTIVE_SPORT",
-          "A sport with one or more weekly days must have a positive session duration.",
-        ),
+
+    const hasSportCode = Object.hasOwn(sport, "sportCode");
+    const hasOtherSportText = Object.hasOwn(sport, "otherSportText");
+    if (hasSportCode && sport.sportCode === null) {
+      if (hasOtherSportText) {
+        requiredString(sport.otherSportText, `${path}.otherSportText`, issues);
+      }
+    } else if (hasSportCode) {
+      enumValue(sport.sportCode, SportCode, `${path}.sportCode`, issues);
+      if (
+        hasOtherSportText &&
+        sport.otherSportText !== null &&
+        sport.otherSportText !== ""
+      ) {
+        issues.push(
+          issue(
+            path,
+            "ADDITIONAL_SPORT_CLASSIFICATION_CONFLICT",
+            "Provide either sportCode or non-empty otherSportText, never both.",
+          ),
+        );
+      }
+    }
+
+    if (Object.hasOwn(sport, "days")) {
+      const days = dayArray(sport.days, `${path}.days`, issues);
+      if (Array.isArray(sport.days) && (days.length < 1 || days.length > 7)) {
+        issues.push(
+          issue(
+            `${path}.days`,
+            "NUMBER_OUT_OF_RANGE",
+            "Additional sport days must contain from 1 to 7 weekdays.",
+          ),
+        );
+      }
+    }
+    if (Object.hasOwn(sport, "minutesPerSession")) {
+      numberInRange(
+        sport.minutesPerSession,
+        `${path}.minutesPerSession`,
+        issues,
+        1,
+        300,
+        { integer: true },
+      );
+    }
+    if (Object.hasOwn(sport, "intensity")) {
+      enumValue(sport.intensity, SportIntensity, `${path}.intensity`, issues);
+    }
+    if (Object.hasOwn(sport, "participationLevel")) {
+      enumValue(
+        sport.participationLevel,
+        SportParticipationLevel,
+        `${path}.participationLevel`,
+        issues,
       );
     }
   });

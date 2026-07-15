@@ -224,10 +224,29 @@ export const RecentTraining = Object.freeze({
   UNKNOWN: "UNKNOWN",
 });
 
+export const SportCode = Object.freeze({
+  FOOTBALL: "FOOTBALL",
+  RUNNING: "RUNNING",
+  CYCLING: "CYCLING",
+  SWIMMING: "SWIMMING",
+  BOXING: "BOXING",
+  MARTIAL_ARTS: "MARTIAL_ARTS",
+  BASKETBALL: "BASKETBALL",
+  HANDBALL: "HANDBALL",
+  VOLLEYBALL: "VOLLEYBALL",
+  RACKET_SPORTS: "RACKET_SPORTS",
+  CROSSFIT_OR_FUNCTIONAL: "CROSSFIT_OR_FUNCTIONAL",
+});
+
 export const SportIntensity = Object.freeze({
   LOW: "LOW",
   MODERATE: "MODERATE",
   HIGH: "HIGH",
+});
+
+export const SportParticipationLevel = Object.freeze({
+  RECREATIONAL: "RECREATIONAL",
+  COMPETITIVE: "COMPETITIVE",
 });
 
 export const WalkingAbility = Object.freeze({

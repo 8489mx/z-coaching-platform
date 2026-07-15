@@ -16,11 +16,15 @@ import {
   RecentTraining,
   RestrictionInstruction,
   RestrictionSource,
+  ReviewLevel,
   ScheduleMode,
+  Scope,
   ScreeningAnswer,
   Sex,
   SleepQuality,
+  SportCode,
   SportIntensity,
+  SportParticipationLevel,
   StressLevel,
   TrainingScheduleAvailabilityType,
   TrainingExperience,
@@ -42,6 +46,8 @@ test("complete healthy adult intake is ready for draft", () => {
   assert.equal(result.nutrition_decision.confidence, "HIGH");
   assert.equal(result.training_decision.recommended_days, 3);
   assert.equal(result.cardio_decision.strategy, CardioStrategy.NO_ADDITIONAL_CARDIO);
+  assert.equal(hasCode(result.training_decision.constraints, "EXISTING_ADDITIONAL_SPORT"), false);
+  assert.equal(hasCode(result.cardio_decision.constraints, "EXISTING_ADDITIONAL_SPORT"), false);
 });
 
 test("chest pain during effort requires medical review and withholds activity decisions", () => {
@@ -331,7 +337,14 @@ test("high football load, five hours sleep, and high stress produce conservative
     },
     cardio: {
       additionalSports: [
-        { name: "FOOTBALL", daysPerWeek: 2, minutesPerSession: 60, intensity: SportIntensity.HIGH },
+        {
+          sportCode: SportCode.FOOTBALL,
+          otherSportText: null,
+          days: [DayOfWeek.MONDAY, DayOfWeek.THURSDAY],
+          minutesPerSession: 60,
+          intensity: SportIntensity.HIGH,
+          participationLevel: SportParticipationLevel.RECREATIONAL,
+        },
       ],
     },
   });
@@ -339,6 +352,117 @@ test("high football load, five hours sleep, and high stress produce conservative
   assert.equal(result.training_decision.volume_start, VolumeStart.CONSERVATIVE);
   assert.equal(result.cardio_decision.strategy, CardioStrategy.NO_ADDITIONAL_CARDIO);
   assert.equal(result.cardio_decision.max_sessions, 0);
+});
+
+test("a structured football schedule reaches both decisions without blocking its sport days", () => {
+  const sport = {
+    sportCode: SportCode.FOOTBALL,
+    otherSportText: null,
+    days: [DayOfWeek.MONDAY, DayOfWeek.THURSDAY],
+    minutesPerSession: 60,
+    intensity: SportIntensity.HIGH,
+    participationLevel: SportParticipationLevel.RECREATIONAL,
+  };
+  const result = evaluate(completeIntake({ cardio: { additionalSports: [sport] } }));
+  const cardioConstraint = result.cardio_decision.constraints.find(
+    (item) => item.code === "EXISTING_ADDITIONAL_SPORT",
+  );
+  const trainingConstraint = result.training_decision.constraints.find(
+    (item) => item.code === "EXISTING_ADDITIONAL_SPORT",
+  );
+
+  assert.equal(result.plan_status, PlanStatus.READY_FOR_DRAFT);
+  assert.equal(cardioConstraint.scope, Scope.CARDIO);
+  assert.deepEqual(cardioConstraint.value, sport);
+  assert.equal(trainingConstraint.scope, Scope.TRAINING);
+  assert.deepEqual(trainingConstraint.value, sport);
+  assert.equal(
+    result.training_decision.constraints.some(
+      (item) =>
+        item.code === "TRAINING_UNAVAILABLE_DAY" && sport.days.includes(item.value.day),
+    ),
+    false,
+  );
+});
+
+test("basketball and handball are classified sports that preserve participation level", () => {
+  const sports = [
+    {
+      sportCode: SportCode.BASKETBALL,
+      otherSportText: null,
+      days: [DayOfWeek.TUESDAY],
+      minutesPerSession: 45,
+      intensity: SportIntensity.LOW,
+      participationLevel: SportParticipationLevel.COMPETITIVE,
+    },
+    {
+      sportCode: SportCode.HANDBALL,
+      otherSportText: null,
+      days: [DayOfWeek.SATURDAY],
+      minutesPerSession: 60,
+      intensity: SportIntensity.LOW,
+      participationLevel: SportParticipationLevel.RECREATIONAL,
+    },
+  ];
+  const result = evaluate(completeIntake({ cardio: { additionalSports: sports } }));
+
+  assert.equal(result.plan_status, PlanStatus.READY_FOR_DRAFT);
+  assert.equal(hasCode(result.review_flags, "UNCLASSIFIED_ADDITIONAL_SPORT"), false);
+  for (const decision of [result.cardio_decision, result.training_decision]) {
+    const sportConstraints = decision.constraints.filter(
+      (item) => item.code === "EXISTING_ADDITIONAL_SPORT",
+    );
+    assert.equal(sportConstraints.length, 2);
+    for (const sport of sports) {
+      assert.deepEqual(
+        sportConstraints.find((item) => item.value.sportCode === sport.sportCode).value,
+        sport,
+      );
+    }
+  }
+});
+
+test("an unclassified sport requires indexed coach mapping while its schedule still counts", () => {
+  const originalText = "  Volleyball beach training  ";
+  const sport = {
+    sportCode: null,
+    otherSportText: originalText,
+    days: [DayOfWeek.MONDAY, DayOfWeek.THURSDAY],
+    minutesPerSession: 45,
+    intensity: SportIntensity.HIGH,
+    participationLevel: SportParticipationLevel.RECREATIONAL,
+  };
+  const result = evaluate(completeIntake({ cardio: { additionalSports: [sport] } }));
+  const sourcePath = "cardio.additionalSports[0].otherSportText";
+  const flag = result.review_flags.find(
+    (item) => item.code === "UNCLASSIFIED_ADDITIONAL_SPORT",
+  );
+  const missing = result.missing_or_uncertain_data.find(
+    (item) => item.code === "ADDITIONAL_SPORT_MAPPING_PENDING",
+  );
+
+  assert.equal(result.plan_status, PlanStatus.COACH_REVIEW_REQUIRED);
+  assert.equal(flag.scope, Scope.TRAINING);
+  assert.equal(flag.level, ReviewLevel.COACH);
+  assert.equal(flag.sourcePath, sourcePath);
+  assert.ok(hasCode(result.decision_reasons, "UNCLASSIFIED_SPORT_REQUIRES_MAPPING"));
+  assert.deepEqual(missing, {
+    code: "ADDITIONAL_SPORT_MAPPING_PENDING",
+    path: sourcePath,
+    message: "The reported sport requires coach mapping for sport-specific planning.",
+  });
+  for (const decision of [result.cardio_decision, result.training_decision]) {
+    const sportConstraint = decision.constraints.find(
+      (item) => item.code === "EXISTING_ADDITIONAL_SPORT",
+    );
+    assert.deepEqual(sportConstraint.value, sport);
+    assert.equal(sportConstraint.value.otherSportText, originalText);
+    assert.equal(sportConstraint.value.sportCode, null);
+  }
+  assert.equal(result.training_decision.volume_start, VolumeStart.CONSERVATIVE);
+  assert.ok(hasCode(result.training_decision.reasons, "CONSERVATIVE_HIGH_SPORT_LOAD"));
+  assert.equal(result.cardio_decision.strategy, CardioStrategy.NO_ADDITIONAL_CARDIO);
+  assert.ok(hasCode(result.cardio_decision.reasons, "NO_CARDIO_HIGH_ADDITIONAL_SPORT_LOAD"));
 });
 
 test("home bodyweight training is valid and records BODYWEIGHT_ONLY as an available capability", () => {
@@ -859,7 +983,14 @@ test("unknown walking requires review before high sport while missing findings a
   const input = completeIntake({
     cardio: {
       additionalSports: [
-        { name: "FOOTBALL", daysPerWeek: 2, minutesPerSession: 60, intensity: SportIntensity.HIGH },
+        {
+          sportCode: SportCode.FOOTBALL,
+          otherSportText: null,
+          days: [DayOfWeek.MONDAY, DayOfWeek.THURSDAY],
+          minutesPerSession: 60,
+          intensity: SportIntensity.HIGH,
+          participationLevel: SportParticipationLevel.RECREATIONAL,
+        },
       ],
       walkingAbility: "UNKNOWN",
       averageDailySteps: null,

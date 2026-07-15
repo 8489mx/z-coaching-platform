@@ -117,7 +117,7 @@ MEDICAL_REVIEW_REQUIRED > BLOCKED > COACH_REVIEW_REQUIRED > READY_FOR_DRAFT
 | `medical` | الحالات الصحية بعقد `conditionCode`/`otherConditionText` حصري واستقرارها، screening الأعراض الخطرة بـ`YES/NO/UNKNOWN`، الأدوية، تاريخ اضطرابات الأكل، الحمل/الرضاعة، الدورة، والنصوص غير المصنفة. |
 | `nutrition` | الحساسية بعقد `{substance, medicallyConfirmed}`، المنع الطبي ذو `instruction/source` مصنفين ومعرّفات غذائية canonical، الأطعمة غير المرغوبة، عدم التحمل، المشاكل الهضمية، عدد الوجبات، فترات تعذر الأكل، الميزانية، الحفظ والتسخين. |
 | `training` | المكان، الأدوات وقدرتها، `maxDaysPerWeek` و`preferredDaysPerWeek`، نوع توافر جدول التدريب، `availableTrainingDays` و`unavailableTrainingDays` من `DayOfWeek`، مدة الجلسة، الخبرة، آخر 4 أسابيع، `movementImpact` للإصابات، والمنع الطبي ذو حركة/تعليمات/مصدر من Enums. |
-| `cardio` | الرياضات الإضافية وأيامها ومدتها وشدتها، الخطوات، القدرة على المشي 10 دقائق بسهولة، الحد الأقصى للجلسات والمدة. |
+| `cardio` | الرياضات الإضافية المصنفة أو الحرة، أيامها الفعلية ومدتها وشدتها ومستوى المشاركة، الخطوات، القدرة على المشي 10 دقائق بسهولة، الحد الأقصى للجلسات والمدة. |
 | `unclassifiedNotes` | نصوص حرة تُحفظ كـReview Flags ولا يجري تفسيرها. |
 
 العقد التفصيلي موجود في `domain/contracts.js`، والقيم المسموحة موجودة في `domain/enums.js`. مثال مكتمل في `examples/full-intake.json`، وسياق التقييم المنفصل في `examples/evaluation-context.json`.
@@ -240,6 +240,62 @@ KETTLEBELLS
 قواعد المكان ثابتة: `HOME` و`MIXED` يتطلبان عنصر معدات واحدًا على الأقل يمثل القدرة المنزلية المصرح بها، من دون افتراض وزن الجسم تلقائيًا؛ `GYM` يقبل قائمة فارغة؛ وسلوك `OUTDOORS` لم يتغير.
 
 المعدات المنظمة تظهر كـ`AVAILABLE_TRAINING_EQUIPMENT` داخل `training_decision.constraints` فقط، ولا تدخل `hard_constraints`. أما المعدة الحرة فتضيف `COACH_REVIEW_REQUIRED` و`UNCLASSIFIED_TRAINING_EQUIPMENT` و`UNCLASSIFIED_EQUIPMENT_REQUIRES_MAPPING` و`TRAINING_EQUIPMENT_MAPPING_PENDING` بمسار العنصر المفهرس، ولا تتحول إلى معدة متاحة قبل المراجعة.
+
+### عقد جدول الرياضات الإضافية المنظم
+
+كل عنصر داخل `cardio.additionalSports` يصرّح صراحة بالحقول الستة `sportCode` و`otherSportText` و`days` و`minutesPerSession` و`intensity` و`participationLevel`. لا يقبل العقد الحقلين القديمين `name` و`daysPerWeek`؛ كلاهما يُرفض كـ`UNKNOWN_FIELD`، ويُشتق عدد أيام الرياضة من `days.length` بدل استقبال رقم منفصل من العميل.
+
+رياضة معروفة:
+
+```json
+{
+  "sportCode": "FOOTBALL",
+  "otherSportText": null,
+  "days": ["MONDAY", "THURSDAY"],
+  "minutesPerSession": 60,
+  "intensity": "HIGH",
+  "participationLevel": "RECREATIONAL"
+}
+```
+
+رياضة أخرى كتبها العميل:
+
+```json
+{
+  "sportCode": null,
+  "otherSportText": "Volleyball beach training",
+  "days": ["SATURDAY"],
+  "minutesPerSession": 90,
+  "intensity": "MODERATE",
+  "participationLevel": "RECREATIONAL"
+}
+```
+
+قيم `SportCode` النهائية هي:
+
+```text
+FOOTBALL
+RUNNING
+CYCLING
+SWIMMING
+BOXING
+MARTIAL_ARTS
+BASKETBALL
+HANDBALL
+VOLLEYBALL
+RACKET_SPORTS
+CROSSFIT_OR_FUNCTIONAL
+```
+
+أما `SportParticipationLevel` فيقبل `RECREATIONAL` و`COMPETITIVE` فقط. تُحفظ قيمة المشاركة في القيود الناتجة كما أرسلها العميل، لكنها لا تضيف معامل حمل أو تغيّر الحدود الحالية في V1.
+
+المساران حصريان: الرياضة المنظمة تستخدم `sportCode` معروفًا مع `otherSportText=null` أو `""`، والرياضة الحرة تستخدم `sportCode=null` مع نص أصلي غير فارغ. يجب أن تحتوي `days` من يوم واحد إلى سبعة أيام فريدة من `DayOfWeek`، ويجب أن تكون `minutesPerSession` عددًا صحيحًا من 1 إلى 300، وأن تكون `intensity` من `SportIntensity` و`participationLevel` من `SportParticipationLevel`. تُرفض القيم غير المعروفة، واليوم المكرر داخل الرياضة نفسها، وغياب أي حقل صريح، ووجود مساري التصنيف معًا أو غيابهما. وتظل `additionalSports=[]` صالحة لمن لا يمارس رياضة إضافية.
+
+النص في `otherSportText` يُحفظ كما كتبه العميل، بلا trim أو Keyword Matching أو AI mapping. يرفع المسار الحر الحالة إلى `COACH_REVIEW_REQUIRED` ويضيف Review Flag باسم `UNCLASSIFIED_ADDITIONAL_SPORT` بالنطاق `TRAINING` والمستوى `COACH` ومسار المصدر `cardio.additionalSports[index].otherSportText`، وسبب `UNCLASSIFIED_SPORT_REQUIRES_MAPPING`، وبيانًا ناقصًا باسم `ADDITIONAL_SPORT_MAPPING_PENDING` ورسالة `The reported sport requires coach mapping for sport-specific planning.`. ورغم أن نوع الرياضة غير مصنف، تبقى أيامها ومدتها وشدتها محسوبة في الحمل الرياضي العام.
+
+كل رياضة، منظمة أو حرة، تظهر كقيد `EXISTING_ADDITIONAL_SPORT` داخل كل من `cardio_decision.constraints` و`training_decision.constraints` ببيانات العقد الجديدة. هذه الأيام ليست أيامًا ممنوعة تلقائيًا للتدريب، ولا تتحول إلى `TRAINING_UNAVAILABLE_DAY`، ولا يختار المحرك جدول تمارين في هذه المرحلة.
+
+تُحسب الجلسات الأسبوعية لكل رياضة من `sport.days.length`، وتُحسب دقائقها الأسبوعية من `sport.days.length × sport.minutesPerSession`. أما عدد أيام الحمل `HIGH` أو `MODERATE` فيستخدم اتحاد الأيام الفعلية الفريدة بين كل الرياضات: لا يُحسب اليوم نفسه مرتين، وإذا اجتمعت رياضة `HIGH` وأخرى `MODERATE` في اليوم نفسه يُصنف ذلك اليوم `HIGH` فقط لهذا الحساب. لا يغير هذا التصحيح عتبات الحمل أو أوزان الشدة الحالية.
 
 ### عقد توافر جدول التدريب
 
@@ -438,7 +494,7 @@ npm run check
 npm run example
 ```
 
-آخر تشغيل فعلي عند التسليم: **131/131 اختبارات ناجحة**. كانت النسخة المتزامنة على `develop` تحتوي على 129 اختبارًا قبل تصحيح حد العمر المشتق، وأضيف اختبارا الحدين لعمر 120 و121 سنة. التغطية الكلية: **98.68% للأسطر، 95.68% للفروع، 99.75% للدوال**. كما نجح `npm run check`.
+آخر تشغيل فعلي عند التسليم: **146/146 اختبارات ناجحة**. كانت النسخة المتزامنة على `develop` تحتوي على 131 اختبارًا قبل عقد جدول الرياضات الإضافية المنظم، وأضيفت 15 حالة اختبار للعقد والتحقق والقيود وحساب الأيام الفريدة. التغطية الكلية: **98.90% للأسطر، 96.05% للفروع، 99.77% للدوال**. كما نجح `npm run check`.
 
 `npm run example` يقرأ `examples/full-intake.json` ويطبع ناتج المحرك الفعلي. الخلاصة الفعلية لنفس المثال:
 
