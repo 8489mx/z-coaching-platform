@@ -674,6 +674,75 @@ CROSSFIT_OR_FUNCTIONAL
 
 عند `intro_week_required=true` تكون ملاءمة المبتدئ أولًا، ثم المعدة المذكورة صراحة، ثم معدات ملف الجيم القياسي، ثم `BODYWEIGHT`، ثم ترتيب الكتالوج. من دون Intro Week يبدأ الترتيب بالمعدة الصريحة، ثم معدات ملف الجيم القياسي، ثم `BODYWEIGHT`، ثم ترتيب الكتالوج. أسباب النجاح هي `SELECTED_EXPLICIT_EQUIPMENT`, `SELECTED_STANDARD_GYM_EQUIPMENT`, أو `SELECTED_BODYWEIGHT_FALLBACK`. لا تُرقّى الحالة provisional إلى ready؛ أما `READY` فتتحول إلى `PROVISIONAL_REVIEW_REQUIRED` إذا بقي Slot واحد على الأقل للمراجعة، و`WITHHELD` يبقى بلا حصص.
 
+## Training Prescription V1
+
+الوحدة المستقلة `src/training-prescription` تستهلك ناتج `buildExerciseSelection(...)` فقط عبر `buildTrainingPrescription(exerciseSelection)`، وهي متاحة من export الحزمة الفرعي `./training-prescription`. تصدّر الواجهة العامة `TRAINING_PRESCRIPTION_VERSION` و`buildTrainingPrescription`، ولا تقرأ Client Intake أو تعيد اختيار التمارين أو تفسير القيود.
+
+```json
+{
+  "prescription_version": "training-prescription-v1",
+  "status": "READY",
+  "recommended_days": 4,
+  "split_code": "UPPER_LOWER",
+  "schedule_mode": "FIXED_DAYS",
+  "intro_week_required": true,
+  "volume_start": "CONSERVATIVE",
+  "sessions": [
+    {
+      "sequence": 1,
+      "session_code": "UPPER_A",
+      "focus": "UPPER_BODY",
+      "exercises": [
+        {
+          "order": 1,
+          "slot_code": "HORIZONTAL_PUSH",
+          "selection_status": "SELECTED",
+          "exercise_code": "DUMBBELL_FLOOR_PRESS",
+          "name_en": "Dumbbell Floor Press",
+          "reason_code": "SELECTED_STANDARD_GYM_EQUIPMENT",
+          "source_constraint_codes": [],
+          "prescription": {
+            "sets": 2,
+            "unit": "REPS",
+            "target_min": 8,
+            "target_max": 12,
+            "rest_seconds": 90
+          }
+        }
+      ]
+    }
+  ],
+  "constraints": [],
+  "reasons": []
+}
+```
+
+| التصنيف | Movement Slots |
+|---|---|
+| Primary | `KNEE_DOMINANT`, `HIP_HINGE`, `UNILATERAL_LOWER`, `HORIZONTAL_PUSH`, `HORIZONTAL_PULL`, `VERTICAL_PUSH`, `VERTICAL_PULL` |
+| Accessory | `KNEE_FLEXION`, `CALF_RAISE`, `SHOULDER_ABDUCTION`, `REAR_DELT`, `ELBOW_FLEXION`, `ELBOW_EXTENSION` |
+| Core | `CORE_STABILITY` |
+
+| المدة و`volume_start` | Primary | Accessory | Core |
+|---|---:|---:|---:|
+| `minutes <= 30` | 2 Sets | 2 Sets | 2 Sets |
+| `minutes > 30`, `CONSERVATIVE` | 2 Sets | 2 Sets | 2 Sets |
+| `minutes > 30`, `NORMAL` | 3 Sets | 2 Sets | 2 Sets |
+
+| التصنيف والوحدة | `target_min` | `target_max` |
+|---|---:|---:|
+| Primary، `REPS` أو `REPS_PER_SIDE` | 8 | 12 |
+| Accessory، `REPS` أو `REPS_PER_SIDE` | 10 | 15 |
+| Core، `REPS` أو `REPS_PER_SIDE` | 8 | 12 |
+| Core، `SECONDS` | 20 | 30 |
+
+| مدة الحصة | Primary | Accessory | Core |
+|---|---:|---:|---:|
+| `minutes <= 30` | 60 ثانية | 45 ثانية | 30 ثانية |
+| `minutes > 30` | 90 ثانية | 60 ثانية | 45 ثانية |
+
+تقرأ الوحدة `prescription_unit` من `getExerciseByCode(exercise_code)` فقط. عند وجود حصص يلزم قيد واحد صحيح `TRAINING_MAX_SESSION_DURATION` بقيمة `minutes` عدد صحيح موجب. كود تمرين غير موجود، أو `SECONDS` خارج `CORE_STABILITY`، أو كسر في الوحدة أو الـSlot ينتج `TypeError`. يحتفظ `REVIEW_REQUIRED` بكل حقوله مع `prescription=null`، وتبقى حالات `READY`, `PROVISIONAL_REVIEW_REQUIRED`, و`WITHHELD` كما قررتها Exercise Selection. لا تتطلب `WITHHELD` أو الحالة بلا حصص قيد مدة، ولا تستخدم `intro_week_required` لتخفيض إضافي.
+
 ## تشغيل الاختبارات والمثال
 
 يتطلب Node.js 22 أو أحدث، ولا يحتاج `npm install` لعدم وجود dependencies.
@@ -685,7 +754,7 @@ npm run check
 npm run example
 ```
 
-آخر تشغيل فعلي عند التسليم: **203/203 اختبارات ناجحة**. كانت النسخة المجمدة من Intake Decision Engine تحتوي على 146 اختبارًا، وأضيفت 12 حالة لعقد Training Plan Specification، و11 حالة لخرائط Training Session Blueprints، و15 حالة لـMinimal Exercise Catalog، ثم 19 حالة مستقلة لفلترة Exercise Selection وأولوياته وقيوده وحالاته، بما فيها ملف معدات الجيم القياسي وعدم تسربه إلى المواقع الأخرى. كما نجح كل من `npm run test:coverage` و`npm run check`.
+آخر تشغيل فعلي عند التسليم: **213/213 اختبارات ناجحة**. كانت النسخة المجمدة من Intake Decision Engine تحتوي على 146 اختبارًا، وأضيفت 12 حالة لعقد Training Plan Specification، و11 حالة لخرائط Training Session Blueprints، و15 حالة لـMinimal Exercise Catalog، و19 حالة مستقلة لفلترة Exercise Selection، ثم 10 حالات لـTraining Prescription وقواعد المجموعات والوحدات والنطاقات والراحة. كما نجح كل من `npm run test:coverage` و`npm run check`.
 
 `npm run example` يقرأ `examples/full-intake.json` ويطبع ناتج المحرك الفعلي. الخلاصة الفعلية لنفس المثال:
 
@@ -722,6 +791,6 @@ npm run example
 - لا Database أو تخزين أو Audit Log أو إعدادات Tenant.
 - لا AI Runtime أو خدمات خارجية.
 - لا حساب TDEE/BMR أو رقم سعرات أو Macros.
-- لا خطة وجبات أو بدائل طعام فعلية، ولا Sets أو Reps أو Rest أو Tempo أو أحمال أو Progression أو جلسات كارديو. Exercise Selection يختار سجلًا واحدًا لكل Slot فقط، من دون بناء وصفة تدريبية أو توزيع أيام الأسبوع.
+- لا خطة وجبات أو بدائل طعام فعلية، ولا أوزان أو RPE أو RIR أو Tempo أو Warm-up Sets أو Progression أو Deload أو جلسات كارديو. Training Prescription يحدد فقط عدد المجموعات ووحدة ونطاق التنفيذ والراحة، من دون توزيع أيام الأسبوع.
 - لا تفسير دوائي أو تشخيص أو بديل عن الطبيب/الكوتش.
 - لا JSON Schema منشور كملف مستقل؛ Validation الحالية Runtime وJSDoc. يمكن توليد Schema versioned لاحقًا عند تثبيت عقد الـAPI.
