@@ -205,6 +205,14 @@ function validatePersonal(input, assessmentDate, issues) {
     const derivedAge = calculateAgeYears(personal.dateOfBirth, assessmentDate);
     if (derivedAge < 0) {
       issues.push(issue("personal.dateOfBirth", "FUTURE_BIRTH_DATE", "Date of birth is after assessmentDate."));
+    } else if (derivedAge > 120) {
+      issues.push(
+        issue(
+          "personal.dateOfBirth",
+          "NUMBER_OUT_OF_RANGE",
+          "Date of birth must produce an age from 0 to 120 years at assessmentDate.",
+        ),
+      );
     }
   }
 }

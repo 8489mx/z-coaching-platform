@@ -39,7 +39,36 @@ test("dateOfBirth after assessmentDate is rejected", () => {
   const input = completeIntake({ personal: { dateOfBirth: "2050-01-01" } });
   const validation = validateIntake(input, ASSESSMENT_CONTEXT);
   assert.equal(validation.valid, false);
-  assert.ok(validation.issues.some((item) => item.code === "FUTURE_BIRTH_DATE"));
+  assert.deepEqual(
+    validation.issues.filter((item) => item.path === "personal.dateOfBirth"),
+    [
+      {
+        path: "personal.dateOfBirth",
+        code: "FUTURE_BIRTH_DATE",
+        message: "Date of birth is after assessmentDate.",
+      },
+    ],
+  );
+  assert.throws(() => evaluateIntake(input, ASSESSMENT_CONTEXT), IntakeValidationError);
+});
+
+test("a derived age of exactly 120 years is valid", () => {
+  const input = completeIntake({ personal: { dateOfBirth: "1906-07-14" } });
+
+  assert.deepEqual(validateIntake(input, ASSESSMENT_CONTEXT), { valid: true, issues: [] });
+});
+
+test("a derived age of 121 years is rejected at dateOfBirth", () => {
+  const input = completeIntake({ personal: { dateOfBirth: "1905-07-14" } });
+  const validation = validateIntake(input, ASSESSMENT_CONTEXT);
+
+  assert.equal(validation.valid, false);
+  assert.ok(
+    validation.issues.some(
+      (item) =>
+        item.path === "personal.dateOfBirth" && item.code === "NUMBER_OUT_OF_RANGE",
+    ),
+  );
   assert.throws(() => evaluateIntake(input, ASSESSMENT_CONTEXT), IntakeValidationError);
 });
 
