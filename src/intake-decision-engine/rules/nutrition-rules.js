@@ -24,7 +24,7 @@ export function evaluateFoodConstraints(input) {
   const result = emptyRuleResult();
   const decisionConstraints = [];
 
-  input.nutrition.allergies.forEach((allergy) => {
+  input.nutrition.allergies.forEach((allergy, index) => {
     const item = constraint(
       "FOOD_ALLERGY_EXCLUSION",
       Scope.NUTRITION,
@@ -33,6 +33,34 @@ export function evaluateFoodConstraints(input) {
     );
     result.hardConstraints.push(item);
     decisionConstraints.push(item);
+
+    if (allergy.medicallyConfirmed === false) {
+      const sourcePath = `nutrition.allergies[${index}].medicallyConfirmed`;
+      result.statusCandidates.push(
+        statusCandidate(PlanStatus.COACH_REVIEW_REQUIRED, "UNCONFIRMED_FOOD_ALLERGY"),
+      );
+      result.reviewFlags.push(
+        reviewFlag(
+          "UNCONFIRMED_FOOD_ALLERGY",
+          Scope.NUTRITION,
+          ReviewLevel.COACH,
+          "The reported allergy remains excluded as a precaution, but its classification requires coach review.",
+          sourcePath,
+        ),
+      );
+      result.reasons.push(
+        reason(
+          "UNCONFIRMED_ALLERGY_TEMPORARILY_EXCLUDED",
+          Scope.NUTRITION,
+          "The substance is temporarily excluded from meals and alternatives while the reported allergy awaits confirmation.",
+        ),
+      );
+      result.missingOrUncertainData.push({
+        code: "FOOD_ALLERGY_CONFIRMATION_PENDING",
+        path: sourcePath,
+        message: "The reported allergy is temporarily excluded but still requires confirmation.",
+      });
+    }
   });
 
   input.nutrition.medicalExclusions.forEach((exclusion) => {

@@ -87,8 +87,16 @@ test("sesame allergy is hard while tuna dislike stays a separate preference", ()
     },
   });
   const result = evaluate(input);
+  const allergyConstraint = result.hard_constraints.find(
+    (item) => item.code === "FOOD_ALLERGY_EXCLUSION",
+  );
   assert.equal(result.plan_status, PlanStatus.READY_FOR_DRAFT);
-  assert.ok(hasCode(result.hard_constraints, "FOOD_ALLERGY_EXCLUSION"));
+  assert.deepEqual(allergyConstraint.value, {
+    substance: "SESAME",
+    medicallyConfirmed: true,
+  });
+  assert.ok(hasCode(result.nutrition_decision.constraints, "FOOD_ALLERGY_EXCLUSION"));
+  assert.equal(hasCode(result.review_flags, "UNCONFIRMED_FOOD_ALLERGY"), false);
   assert.ok(hasCode(result.soft_preferences, "DISLIKED_FOOD_EXCLUSION"));
   assert.equal(
     result.hard_constraints.some(
@@ -96,6 +104,156 @@ test("sesame allergy is hard while tuna dislike stays a separate preference", ()
     ),
     false,
   );
+});
+
+test("an unconfirmed food allergy stays excluded and requires coach review", () => {
+  const result = evaluate(
+    completeIntake({
+      nutrition: {
+        allergies: [{ substance: "PEANUT", medicallyConfirmed: false }],
+      },
+    }),
+  );
+  const allergyConstraint = result.hard_constraints.find(
+    (item) => item.code === "FOOD_ALLERGY_EXCLUSION",
+  );
+  const flag = result.review_flags.find(
+    (item) => item.code === "UNCONFIRMED_FOOD_ALLERGY",
+  );
+  const pending = result.missing_or_uncertain_data.find(
+    (item) => item.code === "FOOD_ALLERGY_CONFIRMATION_PENDING",
+  );
+
+  assert.equal(result.plan_status, PlanStatus.COACH_REVIEW_REQUIRED);
+  assert.equal(result.nutrition_decision.calorie_direction, "MAINTENANCE");
+  assert.equal(result.nutrition_decision.meal_count_strategy, "USE_CLIENT_PREFERENCE");
+  assert.deepEqual(allergyConstraint.value, {
+    substance: "PEANUT",
+    medicallyConfirmed: false,
+  });
+  assert.ok(hasCode(result.nutrition_decision.constraints, "FOOD_ALLERGY_EXCLUSION"));
+  assert.deepEqual(flag, {
+    code: "UNCONFIRMED_FOOD_ALLERGY",
+    scope: "NUTRITION",
+    level: "COACH",
+    message:
+      "The reported allergy remains excluded as a precaution, but its classification requires coach review.",
+    sourcePath: "nutrition.allergies[0].medicallyConfirmed",
+  });
+  assert.deepEqual(pending, {
+    code: "FOOD_ALLERGY_CONFIRMATION_PENDING",
+    path: "nutrition.allergies[0].medicallyConfirmed",
+    message: "The reported allergy is temporarily excluded but still requires confirmation.",
+  });
+  assert.ok(
+    hasCode(result.decision_reasons, "UNCONFIRMED_ALLERGY_TEMPORARILY_EXCLUDED"),
+  );
+});
+
+test("an unconfirmed food allergy alone is neither medical review nor blocked", () => {
+  const result = evaluate(
+    completeIntake({
+      nutrition: {
+        allergies: [{ substance: "SHELLFISH", medicallyConfirmed: false }],
+      },
+    }),
+  );
+
+  assert.equal(result.plan_status, PlanStatus.COACH_REVIEW_REQUIRED);
+  assert.notEqual(result.plan_status, PlanStatus.MEDICAL_REVIEW_REQUIRED);
+  assert.notEqual(result.plan_status, PlanStatus.BLOCKED);
+});
+
+test("confirmed and unconfirmed food allergies are both excluded with one indexed review flag", () => {
+  const result = evaluate(
+    completeIntake({
+      nutrition: {
+        allergies: [
+          { substance: "SESAME", medicallyConfirmed: true },
+          { substance: "MILK", medicallyConfirmed: false },
+        ],
+      },
+    }),
+  );
+  const exclusions = result.hard_constraints.filter(
+    (item) => item.code === "FOOD_ALLERGY_EXCLUSION",
+  );
+  const flags = result.review_flags.filter(
+    (item) => item.code === "UNCONFIRMED_FOOD_ALLERGY",
+  );
+  const nestedExclusions = result.nutrition_decision.constraints.filter(
+    (item) => item.code === "FOOD_ALLERGY_EXCLUSION",
+  );
+
+  assert.deepEqual(
+    exclusions.map((item) => item.value),
+    [
+      { substance: "MILK", medicallyConfirmed: false },
+      { substance: "SESAME", medicallyConfirmed: true },
+    ],
+  );
+  assert.equal(nestedExclusions.length, 2);
+  assert.equal(flags.length, 1);
+  assert.equal(flags[0].sourcePath, "nutrition.allergies[1].medicallyConfirmed");
+});
+
+test("multiple unconfirmed food allergies keep independent indexed review findings", () => {
+  const result = evaluate(
+    completeIntake({
+      nutrition: {
+        allergies: [
+          { substance: "PEANUT", medicallyConfirmed: false },
+          { substance: "SHELLFISH", medicallyConfirmed: false },
+        ],
+      },
+    }),
+  );
+  const flags = result.review_flags.filter(
+    (item) => item.code === "UNCONFIRMED_FOOD_ALLERGY",
+  );
+  const pending = result.missing_or_uncertain_data.filter(
+    (item) => item.code === "FOOD_ALLERGY_CONFIRMATION_PENDING",
+  );
+  const exclusions = result.hard_constraints.filter(
+    (item) => item.code === "FOOD_ALLERGY_EXCLUSION",
+  );
+
+  assert.equal(exclusions.length, 2);
+  assert.deepEqual(
+    flags.map((item) => item.sourcePath),
+    [
+      "nutrition.allergies[0].medicallyConfirmed",
+      "nutrition.allergies[1].medicallyConfirmed",
+    ],
+  );
+  assert.deepEqual(
+    pending.map((item) => item.path),
+    [
+      "nutrition.allergies[0].medicallyConfirmed",
+      "nutrition.allergies[1].medicallyConfirmed",
+    ],
+  );
+  assert.equal(new Set(flags.map((item) => JSON.stringify(item))).size, flags.length);
+});
+
+test("an unconfirmed food allergy is not converted to intolerance or medical exclusion", () => {
+  const result = evaluate(
+    completeIntake({
+      nutrition: {
+        allergies: [{ substance: "EGG", medicallyConfirmed: false }],
+      },
+    }),
+  );
+  const allConstraints = [
+    ...result.hard_constraints,
+    ...result.soft_preferences,
+    ...result.nutrition_decision.constraints,
+  ];
+
+  assert.ok(hasCode(result.hard_constraints, "FOOD_ALLERGY_EXCLUSION"));
+  assert.equal(hasCode(allConstraints, "MEDICAL_FOOD_EXCLUSION"), false);
+  assert.equal(hasCode(allConstraints, "MEDICALLY_DIAGNOSED_INTOLERANCE"), false);
+  assert.equal(hasCode(allConstraints, "REPORTED_INTOLERANCE"), false);
 });
 
 test("unclassified free text creates a review flag and is never interpreted", () => {
