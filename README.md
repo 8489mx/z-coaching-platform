@@ -573,6 +573,52 @@ CROSSFIT_OR_FUNCTIONAL
 
 تمرّر الوحدة `status`, `recommended_days`, `split_code`, `schedule_mode`, `intro_week_required`, `volume_start`, `constraints`, و`reasons` دون تغيير. تظل `sessions` فارغة عند `WITHHELD`، وكذلك عند `PROVISIONAL_REVIEW_REQUIRED` مع صفر أيام؛ أما provisional الذي يحتوي حصصًا فيُبنى مع بقاء حالته. لا تعيد الوحدة ترتيب الحصص، ولا تفسر القيود أو الإصابات أو المعدات، ولا تختار تمارين أو تضيف Sets أو Reps أو أحمال أو أيام أسبوع.
 
+## Minimal Exercise Catalog V1
+
+الوحدة المستقلة `src/exercise-catalog` توفر 28 سجل تمرين ثابتًا كبيانات مرشحة للمرحلة اللاحقة، بواقع تمرينين لكل `MovementSlotCode`. تستخدم الوحدة `MovementSlotCode`, `EquipmentCode`, `EquipmentLoadCapacity`, و`TrainingLocation` من الـPublic Exports الحالية فقط، وهي متاحة عبر export الحزمة الفرعي `./exercise-catalog`.
+
+```json
+{
+  "catalog_version": "exercise-catalog-v1",
+  "exercises": [
+    {
+      "exercise_code": "BODYWEIGHT_SQUAT",
+      "name_en": "Bodyweight Squat",
+      "slot_code": "KNEE_DOMINANT",
+      "equipment_requirements": [
+        {
+          "equipment_code": "BODYWEIGHT",
+          "minimum_load_capacity": "BODYWEIGHT_ONLY"
+        }
+      ],
+      "allowed_locations": ["HOME", "GYM", "OUTDOORS", "MIXED"],
+      "beginner_friendly": true
+    }
+  ]
+}
+```
+
+الواجهة العامة تصدّر `EXERCISE_CATALOG`, `EXERCISE_CATALOG_VERSION`, `getExerciseByCode(exerciseCode)`, و`listExercisesForSlot(slotCode)`. تعيد دالة البحث `null` للكود غير الموجود، وتعيد دالة الـSlot قائمة جديدة في كل استدعاء من دون تعديل الكتالوج الأصلي.
+
+| `slot_code` | التمارين |
+|---|---|
+| `KNEE_DOMINANT` | `BODYWEIGHT_SQUAT`, `GOBLET_SQUAT` |
+| `HIP_HINGE` | `GLUTE_BRIDGE`, `DUMBBELL_ROMANIAN_DEADLIFT` |
+| `UNILATERAL_LOWER` | `SPLIT_SQUAT`, `DUMBBELL_REVERSE_LUNGE` |
+| `KNEE_FLEXION` | `HAMSTRING_WALKOUT`, `LYING_LEG_CURL_MACHINE` |
+| `CALF_RAISE` | `STANDING_CALF_RAISE`, `DUMBBELL_CALF_RAISE` |
+| `HORIZONTAL_PUSH` | `PUSH_UP`, `DUMBBELL_FLOOR_PRESS` |
+| `HORIZONTAL_PULL` | `RESISTANCE_BAND_ROW`, `ONE_ARM_DUMBBELL_ROW` |
+| `VERTICAL_PUSH` | `PIKE_PUSH_UP`, `STANDING_DUMBBELL_SHOULDER_PRESS` |
+| `VERTICAL_PULL` | `BAND_LAT_PULLDOWN`, `LAT_PULLDOWN` |
+| `SHOULDER_ABDUCTION` | `DUMBBELL_LATERAL_RAISE`, `CABLE_LATERAL_RAISE` |
+| `REAR_DELT` | `BAND_FACE_PULL`, `DUMBBELL_REAR_DELT_RAISE` |
+| `ELBOW_FLEXION` | `BAND_BICEPS_CURL`, `DUMBBELL_BICEPS_CURL` |
+| `ELBOW_EXTENSION` | `CLOSE_GRIP_PUSH_UP`, `BAND_TRICEPS_EXTENSION` |
+| `CORE_STABILITY` | `DEAD_BUG`, `FRONT_PLANK` |
+
+تمارين `BODYWEIGHT` متاحة في `HOME`, `GYM`, `OUTDOORS`, و`MIXED`. تمارين `DUMBBELLS` و`RESISTANCE_BANDS` متاحة في `HOME`, `GYM`, و`MIXED`، بينما `CABLE_STATION` و`SELECTORIZED_MACHINES` متاحتان في `GYM` و`MIXED`. الكتالوج لا يفلتر حسب العميل أو المعدات، ولا يختار تمرينًا أو يبني برنامجًا.
+
 ## تشغيل الاختبارات والمثال
 
 يتطلب Node.js 22 أو أحدث، ولا يحتاج `npm install` لعدم وجود dependencies.
@@ -584,7 +630,7 @@ npm run check
 npm run example
 ```
 
-آخر تشغيل فعلي عند التسليم: **169/169 اختبارات ناجحة**. كانت النسخة المجمدة من Intake Decision Engine تحتوي على 146 اختبارًا، وأضيفت 12 حالة مستقلة لعقد Training Plan Specification، ثم 11 حالة مستقلة لخرائط Training Session Blueprints وحالات التشغيل والترتيب والتمرير المباشر. كما نجح كل من `npm run test:coverage` و`npm run check`.
+آخر تشغيل فعلي عند التسليم: **182/182 اختبارات ناجحة**. كانت النسخة المجمدة من Intake Decision Engine تحتوي على 146 اختبارًا، وأضيفت 12 حالة لعقد Training Plan Specification، و11 حالة لخرائط Training Session Blueprints، ثم 13 حالة مستقلة لعقد وبيانات وواجهات Minimal Exercise Catalog. كما نجح كل من `npm run test:coverage` و`npm run check`.
 
 `npm run example` يقرأ `examples/full-intake.json` ويطبع ناتج المحرك الفعلي. الخلاصة الفعلية لنفس المثال:
 
@@ -621,6 +667,6 @@ npm run example
 - لا Database أو تخزين أو Audit Log أو إعدادات Tenant.
 - لا AI Runtime أو خدمات خارجية.
 - لا حساب TDEE/BMR أو رقم سعرات أو Macros.
-- لا خطة وجبات أو بدائل طعام فعلية، ولا اختيار تمارين أو Sets أو Reps أو Progression أو جلسات كارديو. Training Plan Specification يحدد Split ورموز حصص، وTraining Session Blueprints يحدد Movement Slots فقط.
+- لا خطة وجبات أو بدائل طعام فعلية، ولا اختيار تمارين أو Sets أو Reps أو Progression أو جلسات كارديو. Training Plan Specification يحدد Split ورموز حصص، وTraining Session Blueprints يحدد Movement Slots، وExercise Catalog يصف مرشحين ثابتين فقط.
 - لا تفسير دوائي أو تشخيص أو بديل عن الطبيب/الكوتش.
 - لا JSON Schema منشور كملف مستقل؛ Validation الحالية Runtime وJSDoc. يمكن توليد Schema versioned لاحقًا عند تثبيت عقد الـAPI.
