@@ -1,6 +1,6 @@
 # Z Coaching — Client Intake Decision Engine V1
 
-محرك Domain مستقل وحتمي يحوّل بيانات تأسيس العميل المنظمة إلى قرار أولي آمن للتغذية والتدريب والكارديو. لا يستخدم AI Runtime، ولا يتصل بقاعدة بيانات أو API، ولا يولّد سعرات فعلية أو وجبات أو تمارين.
+محرك Domain مستقل وحتمي يحوّل بيانات تأسيس العميل المنظمة إلى قرار أولي آمن للتغذية والتدريب والكارديو، ثم يستطيع بناء خطة تدريب وتقدير هدف طاقة غذائي أولي. لا يستخدم AI Runtime، ولا يتصل بقاعدة بيانات أو API، ولا يولّد وجبات أو يختار أطعمة.
 
 ## النطاق والقرار التقني
 
@@ -755,7 +755,7 @@ npm run example
 npm run example:training
 ```
 
-آخر تشغيل فعلي عند التسليم: **294/294 اختبارات ناجحة**. كانت النسخة المجمدة من Intake Decision Engine تحتوي على 146 اختبارًا، وأضيفت 12 حالة لعقد Training Plan Specification، و11 حالة لخرائط Training Session Blueprints، و15 حالة لـMinimal Exercise Catalog، و19 حالة مستقلة لفلترة Exercise Selection، و10 حالات لـTraining Prescription، و11 حالة لـTraining Draft Pipeline، و20 حالة لـWeekly Training Schedule، و21 حالة لـTraining Plan Preflight، و13 حالة لـTraining Engine، ثم 16 حالة لـNutrition Planning Snapshot. كما نجح كل من `npm run test:coverage` و`npm run check`.
+آخر تشغيل فعلي عند التسليم: **323/323 اختبارات ناجحة**. كانت النسخة المجمدة من Intake Decision Engine تحتوي على 146 اختبارًا، وأضيفت 12 حالة لعقد Training Plan Specification، و11 حالة لخرائط Training Session Blueprints، و15 حالة لـMinimal Exercise Catalog، و19 حالة مستقلة لفلترة Exercise Selection، و10 حالات لـTraining Prescription، و11 حالة لـTraining Draft Pipeline، و20 حالة لـWeekly Training Schedule، و21 حالة لـTraining Plan Preflight، و13 حالة لـTraining Engine، و16 حالة لـNutrition Planning Snapshot، ثم 29 حالة لـNutrition Energy Target. كما نجح كل من `npm run test:coverage` و`npm run check`.
 
 `npm run example` يقرأ `examples/full-intake.json` ويطبع ناتج المحرك الفعلي. الخلاصة الفعلية لنفس المثال:
 
@@ -791,7 +791,7 @@ npm run example:training
 - لا UI أو صفحات موقع أو API أو مصادقة أو دفع.
 - لا Database أو تخزين أو Audit Log أو إعدادات Tenant.
 - لا AI Runtime أو خدمات خارجية.
-- لا حساب TDEE/BMR أو رقم سعرات أو Macros.
+- لا حساب BMR أو Macros؛ حساب الطاقة الحالي محصور في تقدير EER للبالغين وهدف السعرات الأولي داخل Nutrition Energy Target V1.
 - لا خطة وجبات أو بدائل طعام فعلية، ولا أوزان أو RPE أو RIR أو Tempo أو Warm-up Sets أو Progression أو Deload أو جلسات كارديو. Weekly Training Schedule يوزع الحصص على أيام الأسبوع فقط، من دون ساعات يوم أو تغيير التمارين والوصفات.
 - لا تفسير دوائي أو تشخيص أو بديل عن الطبيب/الكوتش.
 - لا JSON Schema منشور كملف مستقل؛ Validation الحالية Runtime وJSDoc. يمكن توليد Schema versioned لاحقًا عند تثبيت عقد الـAPI.
@@ -885,7 +885,7 @@ npm run example:training
 
 لا تقبل الوحدة بيانات العميل (Raw Intake)، ولا تنفذ `evaluateIntake` داخليًا. تتأكد الوحدة فقط من استدعاء `buildTrainingDraft` ثم `buildWeeklyTrainingSchedule` ثم `evaluateTrainingPlanPreflight` بالترتيب الإلزامي، ثم ترمي `TypeError` فورًا في حال كسر اتساق الـPipeline (مثل اختلاف `schedule_version` أو `plan_status` بين التقرير والخطة)، ولا تعيد المخرجات الوسيطة.
 
-إجمالي عدد الاختبارات الحالية: 294 اختبارًا.
+إجمالي عدد الاختبارات الحالية: 323 اختبارًا.
 
 ## Nutrition Planning Snapshot V1
 
@@ -894,3 +894,11 @@ npm run example:training
 هذه الوحدة ليست Nutrition Engine كاملًا: لا تحسب BMR أو TDEE أو سعرات أو ماكروز، ولا تختار أطعمة أو وجبات ولا تضيف قواعد تغذية. تستخدم `validateIntake` و`IntakeValidationError` و`calculateAgeYears` من Public API الحالي، ثم تنسخ الأقسام المحددة دون تفسير أو إعادة حساب لقرار التغذية أو التدريب أو الكارديو.
 
 الناتج مستقل عن المدخلات الثلاثة باستخدام `structuredClone` ومجمّد بالكامل بعمق، بما في ذلك كل الكائنات والقوائم وعناصرها؛ لذلك يصلح كنقطة بيانات موثوقة وثابتة للوحدات الغذائية التالية دون مشاركة مراجع قابلة للتعديل.
+
+## Nutrition Energy Target V1
+
+الوحدة المستقلة `src/nutrition-energy-target` تستهلك ناتج `buildNutritionPlanningSnapshot(...)` فقط عبر `buildNutritionEnergyTarget(snapshot)`، وهي متاحة من export الحزمة الفرعي `./nutrition-energy-target`. تصنّف PAL من أعلى إشارة بين نمط الحياة والخطوات وتدريب المقاومة والرياضات الإضافية، ثم تقدّر سعرات المحافظة للبالغين من 19 سنة فأكثر باستخدام معادلات **NASEM DRI 2023 EER** الخاصة بالجنس وفئة النشاط.
+
+الناتج يحدد `READY` أو `PROVISIONAL_REVIEW_REQUIRED` أو `WITHHELD`، ويحافظ على حالات المراجعة القادمة من Intake Decision. يطبّق اتجاه `MAINTENANCE` أو عجزًا أوليًا بنسبة 15% (10% عند الحاجة للمحافظة) بحد 500 kcal/day، أو فائضًا أوليًا بنسبة 8% (5% عند الحاجة للمحافظة) بحد 300 kcal/day. حالات المراجعة الطبية والحظر لا تشغّل معادلة الطاقة.
+
+أرقام المحافظة والهدف **تقديرات أولية وليست قياسًا معمليًا**. عند وجود `target_calories` فعلي يكون `calibration_required=true` لأن المعايرة اللاحقة مقابل تغير الوزن والالتزام مطلوبة. هذه الوحدة لا تحسب Macros، ولا تركّب وجبات، ولا تختار أطعمة، ولا تنفذ المعايرة نفسها.
