@@ -754,7 +754,7 @@ npm run check
 npm run example
 ```
 
-آخر تشغيل فعلي عند التسليم: **244/244 اختبارات ناجحة**. كانت النسخة المجمدة من Intake Decision Engine تحتوي على 146 اختبارًا، وأضيفت 12 حالة لعقد Training Plan Specification، و11 حالة لخرائط Training Session Blueprints، و15 حالة لـMinimal Exercise Catalog، و19 حالة مستقلة لفلترة Exercise Selection، و10 حالات لـTraining Prescription، و11 حالة لـTraining Draft Pipeline، ثم 20 حالة لـWeekly Training Schedule. كما نجح كل من `npm run test:coverage` و`npm run check`.
+آخر تشغيل فعلي عند التسليم: **265/265 اختبارات ناجحة**. كانت النسخة المجمدة من Intake Decision Engine تحتوي على 146 اختبارًا، وأضيفت 12 حالة لعقد Training Plan Specification، و11 حالة لخرائط Training Session Blueprints، و15 حالة لـMinimal Exercise Catalog، و19 حالة مستقلة لفلترة Exercise Selection، و10 حالات لـTraining Prescription، و11 حالة لـTraining Draft Pipeline، و20 حالة لـWeekly Training Schedule، ثم 21 حالة لـTraining Plan Preflight. كما نجح كل من `npm run test:coverage` و`npm run check`.
 
 `npm run example` يقرأ `examples/full-intake.json` ويطبع ناتج المحرك الفعلي. الخلاصة الفعلية لنفس المثال:
 
@@ -848,3 +848,11 @@ npm run example
 | 6 | `MONDAY`, `TUESDAY`, `WEDNESDAY`, `THURSDAY`, `FRIDAY`, `SATURDAY`, `SUNDAY` |
 
 تجمع الوحدة أعلى شدة من قيود `EXISTING_ADDITIONAL_SPORT` لكل يوم، ثم ترتب المرشحين حسب `NONE`, `LOW`, `MODERATE`, `HIGH` قبل ترتيب التوزيع المفضل. بعد الاختيار ترتب الأيام طبيعيًا من الاثنين إلى الأحد وتربطها بـ`sequence`. الأيام ذات `LOW` أو `MODERATE` تستخدم `SELECTED_AROUND_ADDITIONAL_SPORT` ولا تغيّر الحالة. إذا تعذر تجنب يوم `HIGH` تستخدم `HIGH_SPORT_DAY_REQUIRES_REVIEW`، وتضيف سبب مراجعة واحدًا، وتحول `READY` إلى `PROVISIONAL_REVIEW_REQUIRED` دون ترقية أو تغيير أي حالة أخرى.
+
+## Training Plan Preflight V1
+
+الوحدة المستقلة `src/training-plan-preflight` تستهلك الناتج النهائي من `buildWeeklyTrainingSchedule(...)` عبر `evaluateTrainingPlanPreflight(weeklyTrainingSchedule)`، وهي متاحة من export الحزمة الفرعي `./training-plan-preflight`. تصدّر الواجهة العامة `TRAINING_PLAN_PREFLIGHT_VERSION`, `TrainingPlanPreflightResult`, `PreflightIssueSeverity`, `PreflightIssueCode`، ودالة التقييم فقط.
+
+تعيد الوحدة تقريرًا جديدًا بالمفاتيح `preflight_version`, `schedule_version`, `plan_status`, `result`, `can_approve`, و`issues`، ولا تعيد الخطة أو تعدّل الجدول أو الحصص أو التمارين أو الوصفات. الخطة `READY` المتسقة تنتج `PASSED` وقابلية اعتماد، والخطة `PROVISIONAL_REVIEW_REQUIRED` تنتج `REVIEW_REQUIRED` مع Issues محددة، والخطة `WITHHELD` تنتج `WITHHELD` مع Issue مانع واحد.
+
+يتحقق الفحص من بنية الجدول، وتتابع الحصص، وتوافق اليوم والحمل وسبب الجدولة، واتساق مراجعة يوم الرياضة عالي الشدة، ثم من تتابع Exercise Slots وصحة Prescription لكل تمرين مختار. يرتب Issues بدءًا من `HIGH_SPORT_DAY_REQUIRES_REVIEW`، ثم Slots التي تحتاج مراجعة حسب `session_sequence` و`slot_order`، ثم `UPSTREAM_REVIEW_REQUIRED` عند غياب سبب محلي؛ أما الخطة المحجوبة فتحتوي `PLAN_WITHHELD` وحده.

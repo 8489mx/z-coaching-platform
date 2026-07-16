@@ -1,0 +1,17 @@
+export const TrainingPlanPreflightResult = Object.freeze({
+  PASSED: "PASSED",
+  REVIEW_REQUIRED: "REVIEW_REQUIRED",
+  WITHHELD: "WITHHELD",
+});
+
+export const PreflightIssueSeverity = Object.freeze({
+  REVIEW: "REVIEW",
+  BLOCKING: "BLOCKING",
+});
+
+export const PreflightIssueCode = Object.freeze({
+  PLAN_WITHHELD: "PLAN_WITHHELD",
+  UPSTREAM_REVIEW_REQUIRED: "UPSTREAM_REVIEW_REQUIRED",
+  EXERCISE_SLOT_REQUIRES_REVIEW: "EXERCISE_SLOT_REQUIRES_REVIEW",
+  HIGH_SPORT_DAY_REQUIRES_REVIEW: "HIGH_SPORT_DAY_REQUIRES_REVIEW",
+});
