@@ -1,6 +1,6 @@
 # Z Coaching — Client Intake Decision Engine V1
 
-محرك Domain مستقل وحتمي يحوّل بيانات تأسيس العميل المنظمة إلى قرار أولي آمن للتغذية والتدريب والكارديو، ثم يستطيع بناء خطة تدريب وتقدير هدف طاقة غذائي أولي. لا يستخدم AI Runtime، ولا يتصل بقاعدة بيانات أو API، ولا يولّد وجبات أو يختار أطعمة.
+محرك Domain مستقل وحتمي يحوّل بيانات تأسيس العميل المنظمة إلى قرار أولي آمن للتغذية والتدريب والكارديو، ثم يستطيع بناء خطة تدريب وتقدير هدف طاقة غذائي وأهداف ماكروز يومية أولية. لا يستخدم AI Runtime، ولا يتصل بقاعدة بيانات أو API، ولا يولّد وجبات أو يختار أطعمة.
 
 ## النطاق والقرار التقني
 
@@ -755,7 +755,7 @@ npm run example
 npm run example:training
 ```
 
-آخر تشغيل فعلي عند التسليم: **323/323 اختبارات ناجحة**. كانت النسخة المجمدة من Intake Decision Engine تحتوي على 146 اختبارًا، وأضيفت 12 حالة لعقد Training Plan Specification، و11 حالة لخرائط Training Session Blueprints، و15 حالة لـMinimal Exercise Catalog، و19 حالة مستقلة لفلترة Exercise Selection، و10 حالات لـTraining Prescription، و11 حالة لـTraining Draft Pipeline، و20 حالة لـWeekly Training Schedule، و21 حالة لـTraining Plan Preflight، و13 حالة لـTraining Engine، و16 حالة لـNutrition Planning Snapshot، ثم 29 حالة لـNutrition Energy Target. كما نجح كل من `npm run test:coverage` و`npm run check`.
+آخر تشغيل فعلي عند التسليم: **353/353 اختبارات ناجحة**. كانت النسخة المجمدة من Intake Decision Engine تحتوي على 146 اختبارًا، وأضيفت 12 حالة لعقد Training Plan Specification، و11 حالة لخرائط Training Session Blueprints، و15 حالة لـMinimal Exercise Catalog، و19 حالة مستقلة لفلترة Exercise Selection، و10 حالات لـTraining Prescription، و11 حالة لـTraining Draft Pipeline، و20 حالة لـWeekly Training Schedule، و21 حالة لـTraining Plan Preflight، و13 حالة لـTraining Engine، و16 حالة لـNutrition Planning Snapshot، و29 حالة لـNutrition Energy Target، ثم 30 حالة لـNutrition Macro Targets. كما نجح كل من `npm run test:coverage` و`npm run check`.
 
 `npm run example` يقرأ `examples/full-intake.json` ويطبع ناتج المحرك الفعلي. الخلاصة الفعلية لنفس المثال:
 
@@ -791,7 +791,7 @@ npm run example:training
 - لا UI أو صفحات موقع أو API أو مصادقة أو دفع.
 - لا Database أو تخزين أو Audit Log أو إعدادات Tenant.
 - لا AI Runtime أو خدمات خارجية.
-- لا حساب BMR أو Macros؛ حساب الطاقة الحالي محصور في تقدير EER للبالغين وهدف السعرات الأولي داخل Nutrition Energy Target V1.
+- لا حساب BMR، ولا توزيع للماكروز على الوجبات، ولا Carb Cycling أو Saturated Fat أو Supplements. حساب الطاقة والماكروز محصور في سياسات V1 المنظمة.
 - لا خطة وجبات أو بدائل طعام فعلية، ولا أوزان أو RPE أو RIR أو Tempo أو Warm-up Sets أو Progression أو Deload أو جلسات كارديو. Weekly Training Schedule يوزع الحصص على أيام الأسبوع فقط، من دون ساعات يوم أو تغيير التمارين والوصفات.
 - لا تفسير دوائي أو تشخيص أو بديل عن الطبيب/الكوتش.
 - لا JSON Schema منشور كملف مستقل؛ Validation الحالية Runtime وJSDoc. يمكن توليد Schema versioned لاحقًا عند تثبيت عقد الـAPI.
@@ -885,7 +885,7 @@ npm run example:training
 
 لا تقبل الوحدة بيانات العميل (Raw Intake)، ولا تنفذ `evaluateIntake` داخليًا. تتأكد الوحدة فقط من استدعاء `buildTrainingDraft` ثم `buildWeeklyTrainingSchedule` ثم `evaluateTrainingPlanPreflight` بالترتيب الإلزامي، ثم ترمي `TypeError` فورًا في حال كسر اتساق الـPipeline (مثل اختلاف `schedule_version` أو `plan_status` بين التقرير والخطة)، ولا تعيد المخرجات الوسيطة.
 
-إجمالي عدد الاختبارات الحالية: 323 اختبارًا.
+إجمالي عدد الاختبارات الحالية: 353 اختبارًا.
 
 ## Nutrition Planning Snapshot V1
 
@@ -902,3 +902,11 @@ npm run example:training
 الناتج يحدد `READY` أو `PROVISIONAL_REVIEW_REQUIRED` أو `WITHHELD`، ويحافظ على حالات المراجعة القادمة من Intake Decision. يطبّق اتجاه `MAINTENANCE` أو عجزًا أوليًا بنسبة 15% (10% عند الحاجة للمحافظة) بحد 500 kcal/day، أو فائضًا أوليًا بنسبة 8% (5% عند الحاجة للمحافظة) بحد 300 kcal/day. حالات المراجعة الطبية والحظر لا تشغّل معادلة الطاقة.
 
 أرقام المحافظة والهدف **تقديرات أولية وليست قياسًا معمليًا**. عند وجود `target_calories` فعلي يكون `calibration_required=true` لأن المعايرة اللاحقة مقابل تغير الوزن والالتزام مطلوبة. هذه الوحدة لا تحسب Macros، ولا تركّب وجبات، ولا تختار أطعمة، ولا تنفذ المعايرة نفسها.
+
+## Nutrition Macro Targets V1
+
+الوحدة المستقلة `src/nutrition-macro-targets` تستهلك Nutrition Planning Snapshot وNutrition Energy Target فقط عبر `buildNutritionMacroTargets({ nutritionPlanningSnapshot, nutritionEnergyTarget })`، وهي متاحة من export الحزمة الفرعي `./nutrition-macro-targets`. لا تعيد حساب PAL أو السعرات، وتحافظ على حالة الطاقة `READY` أو `PROVISIONAL_REVIEW_REQUIRED` أو `WITHHELD`.
+
+البروتين يعتمد على وزن مرجعي يساوي الأقل بين الوزن الفعلي والوزن المقابل لـBMI 30 وفق Policy V1، ثم يستخدم عاملًا من 1.2 إلى 2.0 g/kg حسب أيام المقاومة وحمل الرياضات واتجاه العجز. يُحد البروتين عند 30% من السعرات؛ وإذا خفضه الحد تحت 1.2 g/kg تصبح النتيجة Provisional مع بقاء الماكروز محسوبة. هذا الحد الحسابي ليس تشخيصًا طبيًا ولا وزنًا مستهدفًا.
+
+الدهون تستهدف 25% من السعرات وتُقرب لأقرب 5g، والكربوهيدرات تستخدم السعرات المتبقية بعد البروتين والدهون. Fiber للبالغين يعتمد على العمر والجنس ولا يُطرح من الكربوهيدرات. الوحدة لا توزع الماكروز على الوجبات، ولا تنشئ Meal Templates، ولا تختار أطعمة أو Supplements.
