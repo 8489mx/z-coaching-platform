@@ -856,3 +856,30 @@ npm run example
 تعيد الوحدة تقريرًا جديدًا بالمفاتيح `preflight_version`, `schedule_version`, `plan_status`, `result`, `can_approve`, و`issues`، ولا تعيد الخطة أو تعدّل الجدول أو الحصص أو التمارين أو الوصفات. الخطة `READY` المتسقة تنتج `PASSED` وقابلية اعتماد، والخطة `PROVISIONAL_REVIEW_REQUIRED` تنتج `REVIEW_REQUIRED` مع Issues محددة، والخطة `WITHHELD` تنتج `WITHHELD` مع Issue مانع واحد.
 
 يتحقق الفحص من بنية الجدول، وتتابع الحصص، وتوافق اليوم والحمل وسبب الجدولة، واتساق مراجعة يوم الرياضة عالي الشدة، ثم من تتابع Exercise Slots وصحة Prescription لكل تمرين مختار. يرتب Issues بدءًا من `HIGH_SPORT_DAY_REQUIRES_REVIEW`، ثم Slots التي تحتاج مراجعة حسب `session_sequence` و`slot_order`، ثم `UPSTREAM_REVIEW_REQUIRED` عند غياب سبب محلي؛ أما الخطة المحجوبة فتحتوي `PLAN_WITHHELD` وحده.
+
+## Training Engine Facade V1
+
+الوحدة المستقلة `src/training-engine` توفر الواجهة الرئيسية ونقطة الدخول الرسمية لمسار التدريب بالكامل. تستهلك الناتج النهائي من `evaluateIntake(...)` عبر `buildTrainingEngine(intakeDecision)`، وهي متاحة من export الحزمة الفرعي `./training-engine`. تصدّر الواجهة العامة `TRAINING_ENGINE_VERSION` ودالة البناء فقط.
+
+الناتج يحتوي فقط على الخطة الأسبوعية النهائية (بكل ما تشمله من حصص وتمارين ووصفات)، وتقرير صلاحية الاعتماد (Preflight Report):
+
+```json
+{
+  "engine_version": "training-engine-v1",
+  "weekly_training_plan": {
+    "schedule_version": "weekly-training-schedule-v1",
+    "status": "READY",
+    "sessions": []
+  },
+  "preflight_report": {
+    "preflight_version": "training-plan-preflight-v1",
+    "schedule_version": "weekly-training-schedule-v1",
+    "plan_status": "READY",
+    "result": "PASSED",
+    "can_approve": true,
+    "issues": []
+  }
+}
+```
+
+لا تقبل الوحدة بيانات العميل (Raw Intake)، ولا تنفذ `evaluateIntake` داخليًا. تتأكد الوحدة فقط من استدعاء `buildTrainingDraft` ثم `buildWeeklyTrainingSchedule` ثم `evaluateTrainingPlanPreflight` بالترتيب الإلزامي، ثم ترمي `TypeError` فورًا في حال كسر اتساق الـPipeline (مثل اختلاف `schedule_version` أو `plan_status` بين التقرير والخطة)، ولا تعيد المخرجات الوسيطة.
