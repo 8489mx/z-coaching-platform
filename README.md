@@ -755,7 +755,7 @@ npm run example
 npm run example:training
 ```
 
-آخر تشغيل فعلي عند التسليم: **353/353 اختبارات ناجحة**. كانت النسخة المجمدة من Intake Decision Engine تحتوي على 146 اختبارًا، وأضيفت 12 حالة لعقد Training Plan Specification، و11 حالة لخرائط Training Session Blueprints، و15 حالة لـMinimal Exercise Catalog، و19 حالة مستقلة لفلترة Exercise Selection، و10 حالات لـTraining Prescription، و11 حالة لـTraining Draft Pipeline، و20 حالة لـWeekly Training Schedule، و21 حالة لـTraining Plan Preflight، و13 حالة لـTraining Engine، و16 حالة لـNutrition Planning Snapshot، و29 حالة لـNutrition Energy Target، ثم 30 حالة لـNutrition Macro Targets. كما نجح كل من `npm run test:coverage` و`npm run check`.
+آخر تشغيل فعلي عند التسليم: **385/385 اختبارات ناجحة**. كانت النسخة المجمدة من Intake Decision Engine تحتوي على 146 اختبارًا، وأضيفت 12 حالة لعقد Training Plan Specification، و11 حالة لخرائط Training Session Blueprints، و15 حالة لـMinimal Exercise Catalog، و19 حالة مستقلة لفلترة Exercise Selection، و10 حالات لـTraining Prescription، و11 حالة لـTraining Draft Pipeline، و20 حالة لـWeekly Training Schedule، و21 حالة لـTraining Plan Preflight، و13 حالة لـTraining Engine، و16 حالة لـNutrition Planning Snapshot، و29 حالة لـNutrition Energy Target، و30 حالة لـNutrition Macro Targets، ثم 32 حالة لـNutrition Meal Distribution. كما نجح كل من `npm run test:coverage` و`npm run check`.
 
 `npm run example` يقرأ `examples/full-intake.json` ويطبع ناتج المحرك الفعلي. الخلاصة الفعلية لنفس المثال:
 
@@ -791,7 +791,7 @@ npm run example:training
 - لا UI أو صفحات موقع أو API أو مصادقة أو دفع.
 - لا Database أو تخزين أو Audit Log أو إعدادات Tenant.
 - لا AI Runtime أو خدمات خارجية.
-- لا حساب BMR، ولا توزيع للماكروز على الوجبات، ولا Carb Cycling أو Saturated Fat أو Supplements. حساب الطاقة والماكروز محصور في سياسات V1 المنظمة.
+- لا اختيار Foods أو Serving Sizes أو Meal Templates أو أوقات وجبات محددة، ولا Carb Cycling أو Saturated Fat أو Supplements. حساب الطاقة والماكروز وتوزيعها على Meal Slots محصور في سياسات V1 المنظمة.
 - لا خطة وجبات أو بدائل طعام فعلية، ولا أوزان أو RPE أو RIR أو Tempo أو Warm-up Sets أو Progression أو Deload أو جلسات كارديو. Weekly Training Schedule يوزع الحصص على أيام الأسبوع فقط، من دون ساعات يوم أو تغيير التمارين والوصفات.
 - لا تفسير دوائي أو تشخيص أو بديل عن الطبيب/الكوتش.
 - لا JSON Schema منشور كملف مستقل؛ Validation الحالية Runtime وJSDoc. يمكن توليد Schema versioned لاحقًا عند تثبيت عقد الـAPI.
@@ -885,7 +885,7 @@ npm run example:training
 
 لا تقبل الوحدة بيانات العميل (Raw Intake)، ولا تنفذ `evaluateIntake` داخليًا. تتأكد الوحدة فقط من استدعاء `buildTrainingDraft` ثم `buildWeeklyTrainingSchedule` ثم `evaluateTrainingPlanPreflight` بالترتيب الإلزامي، ثم ترمي `TypeError` فورًا في حال كسر اتساق الـPipeline (مثل اختلاف `schedule_version` أو `plan_status` بين التقرير والخطة)، ولا تعيد المخرجات الوسيطة.
 
-إجمالي عدد الاختبارات الحالية: 353 اختبارًا.
+إجمالي عدد الاختبارات الحالية: 385 اختبارًا.
 
 ## Nutrition Planning Snapshot V1
 
@@ -910,3 +910,11 @@ npm run example:training
 البروتين يعتمد على وزن مرجعي يساوي الأقل بين الوزن الفعلي والوزن المقابل لـBMI 30 وفق Policy V1، ثم يستخدم عاملًا من 1.2 إلى 2.0 g/kg حسب أيام المقاومة وحمل الرياضات واتجاه العجز. يُحد البروتين عند 30% من السعرات؛ وإذا خفضه الحد تحت 1.2 g/kg تصبح النتيجة Provisional مع بقاء الماكروز محسوبة. هذا الحد الحسابي ليس تشخيصًا طبيًا ولا وزنًا مستهدفًا.
 
 الدهون تستهدف 25% من السعرات وتُقرب لأقرب 5g، والكربوهيدرات تستخدم السعرات المتبقية بعد البروتين والدهون. Fiber للبالغين يعتمد على العمر والجنس ولا يُطرح من الكربوهيدرات. الوحدة لا توزع الماكروز على الوجبات، ولا تنشئ Meal Templates، ولا تختار أطعمة أو Supplements.
+
+## Nutrition Meal Distribution V1
+
+الوحدة المستقلة `src/nutrition-meal-distribution` تستهلك Nutrition Planning Snapshot وNutrition Macro Targets فقط عبر `buildNutritionMealDistribution({ nutritionPlanningSnapshot, nutritionMacroTargets })`، وهي متاحة من export الحزمة الفرعي `./nutrition-meal-distribution`. تحافظ على حالات `READY` و`PROVISIONAL_REVIEW_REQUIRED` و`WITHHELD`، ولا تعيد حساب السعرات أو أهداف الماكروز اليومية.
+
+يدعم المسار التلقائي في V1 من وجبتين إلى خمس وجبات فقط وفق خرائط الأدوار والأوزان الثابتة. يوزع البروتين بالتساوي قدر الإمكان، ويوزع الدهون والكربوهيدرات وFiber بخوارزمية Largest Remainder الحتمية مع حسم التعادل حسب تسلسل الوجبة، مع إغلاق أهداف الجرامات وسعرات الماكروز اليومية بالضبط.
+
+تنتج استراتيجيات عدد الوجبات أوضاع `FLEXIBLE_SEQUENCE` أو `AVOID_UNAVAILABLE_WINDOWS` أو `COACH_TO_CONFIRM`. تُحفظ نوافذ عدم القدرة على الأكل دون تعيين أوقات وجبات من النظام، وتحتاج الأعداد خارج 2–5 أو `COACH_TO_CONFIRM` إلى مراجعة. الوحدة لا تختار أطعمة، ولا تنشئ Meal Templates أو Serving Sizes، ولا تفرق بين أيام التدريب والراحة.
