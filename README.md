@@ -752,9 +752,10 @@ npm test
 npm run test:coverage
 npm run check
 npm run example
+npm run example:training
 ```
 
-آخر تشغيل فعلي عند التسليم: **265/265 اختبارات ناجحة**. كانت النسخة المجمدة من Intake Decision Engine تحتوي على 146 اختبارًا، وأضيفت 12 حالة لعقد Training Plan Specification، و11 حالة لخرائط Training Session Blueprints، و15 حالة لـMinimal Exercise Catalog، و19 حالة مستقلة لفلترة Exercise Selection، و10 حالات لـTraining Prescription، و11 حالة لـTraining Draft Pipeline، و20 حالة لـWeekly Training Schedule، ثم 21 حالة لـTraining Plan Preflight. كما نجح كل من `npm run test:coverage` و`npm run check`.
+آخر تشغيل فعلي عند التسليم: **294/294 اختبارات ناجحة**. كانت النسخة المجمدة من Intake Decision Engine تحتوي على 146 اختبارًا، وأضيفت 12 حالة لعقد Training Plan Specification، و11 حالة لخرائط Training Session Blueprints، و15 حالة لـMinimal Exercise Catalog، و19 حالة مستقلة لفلترة Exercise Selection، و10 حالات لـTraining Prescription، و11 حالة لـTraining Draft Pipeline، و20 حالة لـWeekly Training Schedule، و21 حالة لـTraining Plan Preflight، و13 حالة لـTraining Engine، ثم 16 حالة لـNutrition Planning Snapshot. كما نجح كل من `npm run test:coverage` و`npm run check`.
 
 `npm run example` يقرأ `examples/full-intake.json` ويطبع ناتج المحرك الفعلي. الخلاصة الفعلية لنفس المثال:
 
@@ -884,4 +885,12 @@ npm run example
 
 لا تقبل الوحدة بيانات العميل (Raw Intake)، ولا تنفذ `evaluateIntake` داخليًا. تتأكد الوحدة فقط من استدعاء `buildTrainingDraft` ثم `buildWeeklyTrainingSchedule` ثم `evaluateTrainingPlanPreflight` بالترتيب الإلزامي، ثم ترمي `TypeError` فورًا في حال كسر اتساق الـPipeline (مثل اختلاف `schedule_version` أو `plan_status` بين التقرير والخطة)، ولا تعيد المخرجات الوسيطة.
 
-إجمالي عدد الاختبارات الحالية: 278 اختبارًا.
+إجمالي عدد الاختبارات الحالية: 294 اختبارًا.
+
+## Nutrition Planning Snapshot V1
+
+الوحدة المستقلة `src/nutrition-planning-snapshot` تنشئ عبر `buildNutritionPlanningSnapshot(...)` عقدًا ثابتًا يجمع البيانات الغذائية المطلوبة لاحقًا من Raw Client Intake الصحيح، وEvaluation Context الموثوق، وIntake Decision الموجود. وهي متاحة من export الحزمة الفرعي `./nutrition-planning-snapshot` وتصدّر فقط `NUTRITION_PLANNING_SNAPSHOT_VERSION` ودالة البناء.
+
+هذه الوحدة ليست Nutrition Engine كاملًا: لا تحسب BMR أو TDEE أو سعرات أو ماكروز، ولا تختار أطعمة أو وجبات ولا تضيف قواعد تغذية. تستخدم `validateIntake` و`IntakeValidationError` و`calculateAgeYears` من Public API الحالي، ثم تنسخ الأقسام المحددة دون تفسير أو إعادة حساب لقرار التغذية أو التدريب أو الكارديو.
+
+الناتج مستقل عن المدخلات الثلاثة باستخدام `structuredClone` ومجمّد بالكامل بعمق، بما في ذلك كل الكائنات والقوائم وعناصرها؛ لذلك يصلح كنقطة بيانات موثوقة وثابتة للوحدات الغذائية التالية دون مشاركة مراجع قابلة للتعديل.
