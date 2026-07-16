@@ -1,7 +1,7 @@
 import { buildTrainingDraft } from "../training-draft/index.js";
 import { buildWeeklyTrainingSchedule } from "../weekly-training-schedule/index.js";
 import { evaluateTrainingPlanPreflight } from "../training-plan-preflight/index.js";
-import { TRAINING_ENGINE_VERSION } from "./index.js";
+import { TRAINING_ENGINE_VERSION } from "./domain/contracts.js";
 
 /**
  * Executes the full training engine pipeline.

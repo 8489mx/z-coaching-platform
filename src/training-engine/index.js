@@ -1,3 +1,3 @@
-export const TRAINING_ENGINE_VERSION = "training-engine-v1";
+export { TRAINING_ENGINE_VERSION } from "./domain/contracts.js";
 
 export { buildTrainingEngine } from "./build-training-engine.js";
