@@ -755,7 +755,7 @@ npm run example
 npm run example:training
 ```
 
-آخر تشغيل فعلي عند التسليم: **418/418 اختبارات ناجحة**. كانت النسخة المجمدة من Intake Decision Engine تحتوي على 146 اختبارًا، وأضيفت 12 حالة لعقد Training Plan Specification، و11 حالة لخرائط Training Session Blueprints، و15 حالة لـMinimal Exercise Catalog، و19 حالة مستقلة لفلترة Exercise Selection، و10 حالات لـTraining Prescription، و11 حالة لـTraining Draft Pipeline، و20 حالة لـWeekly Training Schedule، و21 حالة لـTraining Plan Preflight، و13 حالة لـTraining Engine، و16 حالة لـNutrition Planning Snapshot، و29 حالة لـNutrition Energy Target، و30 حالة لـNutrition Macro Targets، و32 حالة لـNutrition Meal Distribution، ثم 33 حالة لـNutrition Meal Assembly Blueprint. كما نجح كل من `npm run test:coverage` و`npm run check`.
+آخر تشغيل فعلي عند التسليم: **456/456 اختبارات ناجحة**. كانت النسخة المجمدة من Intake Decision Engine تحتوي على 146 اختبارًا، وأضيفت 12 حالة لعقد Training Plan Specification، و11 حالة لخرائط Training Session Blueprints، و15 حالة لـMinimal Exercise Catalog، و19 حالة مستقلة لفلترة Exercise Selection، و10 حالات لـTraining Prescription، و11 حالة لـTraining Draft Pipeline، و20 حالة لـWeekly Training Schedule، و21 حالة لـTraining Plan Preflight، و13 حالة لـTraining Engine، و16 حالة لـNutrition Planning Snapshot، و29 حالة لـNutrition Energy Target، و30 حالة لـNutrition Macro Targets، و32 حالة لـNutrition Meal Distribution، و33 حالة لـNutrition Meal Assembly Blueprint، ثم 38 حالة لـNutrition Food Catalog Contract. كما نجح كل من `npm run test:coverage` و`npm run check`.
 
 `npm run example` يقرأ `examples/full-intake.json` ويطبع ناتج المحرك الفعلي. الخلاصة الفعلية لنفس المثال:
 
@@ -885,7 +885,7 @@ npm run example:training
 
 لا تقبل الوحدة بيانات العميل (Raw Intake)، ولا تنفذ `evaluateIntake` داخليًا. تتأكد الوحدة فقط من استدعاء `buildTrainingDraft` ثم `buildWeeklyTrainingSchedule` ثم `evaluateTrainingPlanPreflight` بالترتيب الإلزامي، ثم ترمي `TypeError` فورًا في حال كسر اتساق الـPipeline (مثل اختلاف `schedule_version` أو `plan_status` بين التقرير والخطة)، ولا تعيد المخرجات الوسيطة.
 
-إجمالي عدد الاختبارات الحالية: 418 اختبارًا.
+إجمالي عدد الاختبارات الحالية: 456 اختبارًا.
 
 ## Nutrition Planning Snapshot V1
 
@@ -925,4 +925,12 @@ npm run example:training
 
 للفطار ثلاثة Patterns عملية: Savory، وDairy/Fruit، وLegume. تتطلب الوجبات الرئيسية والمسائية Protein Anchor وCarbohydrate Base وVegetable، بينما يتطلب السناك Protein Anchor مع Fruit أو Carbohydrate حتى لا يصبح كاربًا أو دهونًا فقط. الدهون المضافة اختيارية دائمًا وبحد عنصر واحد، وتسجل السياسة أنها لا تستخدم إلا عند الحاجة بعد المكونات الأساسية؛ ولا تنفذ الوحدة حساب هذا الاحتياج.
 
-تنسخ الوحدة الميزانية وإتاحة التخزين وإعادة التسخين وجميع Food Restrictions دون تفسيرها، ليطبقها Food Selection لاحقًا. وهي لا تختار Food Items أو كميات أو Serving Sizes أو Recipes أو بدائل. سيستخدم Food Catalog في مرحلة مستقلة لاحقة قيم `NutritionFoodClass` المنظمة، ولم يتم إنشاؤه ضمن هذه المهمة.
+تنسخ الوحدة الميزانية وإتاحة التخزين وإعادة التسخين وجميع Food Restrictions دون تفسيرها، ليطبقها Food Selection لاحقًا. وهي لا تختار Food Items أو كميات أو Serving Sizes أو Recipes أو بدائل. يستخدم Nutrition Food Catalog المستقل قيم `NutritionFoodClass` المنظمة دون تغيير قواعد تركيب الوجبة.
+
+## Nutrition Food Catalog Contract V1
+
+الوحدة المستقلة `src/nutrition-food-catalog` تثبت عقد Runtime لبيانات الأطعمة عبر `validateNutritionFoodCatalogItems(items)` و`buildNutritionFoodCatalog(items)`، وهي متاحة من export الحزمة الفرعي `./nutrition-food-catalog`. جميع القيم الغذائية مسجلة لكل 100 جرام من الجزء الصالح للأكل في `NutritionFoodState` المحددة، لأن حالة الطعام جزء من هويته ولا تُستنتج منها قيود التخزين أو إعادة التسخين.
+
+يسجل كل Food Item توافقه مع `NutritionMealPatternCode` دون إعادة بناء Pattern Catalog أو قواعد الوجبة. تفصل الوحدة بين Identity Tags وAllergy Tags وIntolerance Tags دون تفسير طبي أو تحويل تلقائي بينها. أما `portion_rule_g` فهو نطاق حتمي للكميات العملية بالجرامات ليستفيد منه Portion Solver لاحقًا، وليس كمية مختارة للعميل.
+
+لا تصبح Swap Group صالحة للاستخدام الفعلي إلا بوجود عنصرين Active على الأقل من `NutritionFoodClass` نفسها. الوحدة تتحقق من العقد وتنتج Catalog مستقلة ومجمدة، لكنها لا تختار أطعمة ولا تركب وجبات ولا تحل الكميات. كما أنها لا تحتوي Food Data إنتاجية؛ وسيكون Excel Import مهمة مستقلة لاحقًا.
