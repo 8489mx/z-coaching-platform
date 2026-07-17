@@ -755,7 +755,7 @@ npm run example
 npm run example:training
 ```
 
-آخر تشغيل فعلي عند التسليم: **385/385 اختبارات ناجحة**. كانت النسخة المجمدة من Intake Decision Engine تحتوي على 146 اختبارًا، وأضيفت 12 حالة لعقد Training Plan Specification، و11 حالة لخرائط Training Session Blueprints، و15 حالة لـMinimal Exercise Catalog، و19 حالة مستقلة لفلترة Exercise Selection، و10 حالات لـTraining Prescription، و11 حالة لـTraining Draft Pipeline، و20 حالة لـWeekly Training Schedule، و21 حالة لـTraining Plan Preflight، و13 حالة لـTraining Engine، و16 حالة لـNutrition Planning Snapshot، و29 حالة لـNutrition Energy Target، و30 حالة لـNutrition Macro Targets، ثم 32 حالة لـNutrition Meal Distribution. كما نجح كل من `npm run test:coverage` و`npm run check`.
+آخر تشغيل فعلي عند التسليم: **418/418 اختبارات ناجحة**. كانت النسخة المجمدة من Intake Decision Engine تحتوي على 146 اختبارًا، وأضيفت 12 حالة لعقد Training Plan Specification، و11 حالة لخرائط Training Session Blueprints، و15 حالة لـMinimal Exercise Catalog، و19 حالة مستقلة لفلترة Exercise Selection، و10 حالات لـTraining Prescription، و11 حالة لـTraining Draft Pipeline، و20 حالة لـWeekly Training Schedule، و21 حالة لـTraining Plan Preflight، و13 حالة لـTraining Engine، و16 حالة لـNutrition Planning Snapshot، و29 حالة لـNutrition Energy Target، و30 حالة لـNutrition Macro Targets، و32 حالة لـNutrition Meal Distribution، ثم 33 حالة لـNutrition Meal Assembly Blueprint. كما نجح كل من `npm run test:coverage` و`npm run check`.
 
 `npm run example` يقرأ `examples/full-intake.json` ويطبع ناتج المحرك الفعلي. الخلاصة الفعلية لنفس المثال:
 
@@ -885,7 +885,7 @@ npm run example:training
 
 لا تقبل الوحدة بيانات العميل (Raw Intake)، ولا تنفذ `evaluateIntake` داخليًا. تتأكد الوحدة فقط من استدعاء `buildTrainingDraft` ثم `buildWeeklyTrainingSchedule` ثم `evaluateTrainingPlanPreflight` بالترتيب الإلزامي، ثم ترمي `TypeError` فورًا في حال كسر اتساق الـPipeline (مثل اختلاف `schedule_version` أو `plan_status` بين التقرير والخطة)، ولا تعيد المخرجات الوسيطة.
 
-إجمالي عدد الاختبارات الحالية: 385 اختبارًا.
+إجمالي عدد الاختبارات الحالية: 418 اختبارًا.
 
 ## Nutrition Planning Snapshot V1
 
@@ -918,3 +918,11 @@ npm run example:training
 يدعم المسار التلقائي في V1 من وجبتين إلى خمس وجبات فقط وفق خرائط الأدوار والأوزان الثابتة. يوزع البروتين بالتساوي قدر الإمكان، ويوزع الدهون والكربوهيدرات وFiber بخوارزمية Largest Remainder الحتمية مع حسم التعادل حسب تسلسل الوجبة، مع إغلاق أهداف الجرامات وسعرات الماكروز اليومية بالضبط.
 
 تنتج استراتيجيات عدد الوجبات أوضاع `FLEXIBLE_SEQUENCE` أو `AVOID_UNAVAILABLE_WINDOWS` أو `COACH_TO_CONFIRM`. تُحفظ نوافذ عدم القدرة على الأكل دون تعيين أوقات وجبات من النظام، وتحتاج الأعداد خارج 2–5 أو `COACH_TO_CONFIRM` إلى مراجعة. الوحدة لا تختار أطعمة، ولا تنشئ Meal Templates أو Serving Sizes، ولا تفرق بين أيام التدريب والراحة.
+
+## Nutrition Meal Assembly Blueprint V1
+
+الوحدة المستقلة `src/nutrition-meal-assembly-blueprint` تستهلك Nutrition Planning Snapshot وNutrition Meal Distribution فقط عبر `buildNutritionMealAssemblyBlueprint({ nutritionPlanningSnapshot, nutritionMealDistribution })`، وهي متاحة من export الحزمة الفرعي `./nutrition-meal-assembly-blueprint`. تنتج Component Patterns مسموحة لكل Meal Slot، وتحافظ على Targets الموزعة وحالة `READY` أو `PROVISIONAL_REVIEW_REQUIRED` أو `WITHHELD` دون إعادة حساب السعرات أو الماكروز.
+
+للفطار ثلاثة Patterns عملية: Savory، وDairy/Fruit، وLegume. تتطلب الوجبات الرئيسية والمسائية Protein Anchor وCarbohydrate Base وVegetable، بينما يتطلب السناك Protein Anchor مع Fruit أو Carbohydrate حتى لا يصبح كاربًا أو دهونًا فقط. الدهون المضافة اختيارية دائمًا وبحد عنصر واحد، وتسجل السياسة أنها لا تستخدم إلا عند الحاجة بعد المكونات الأساسية؛ ولا تنفذ الوحدة حساب هذا الاحتياج.
+
+تنسخ الوحدة الميزانية وإتاحة التخزين وإعادة التسخين وجميع Food Restrictions دون تفسيرها، ليطبقها Food Selection لاحقًا. وهي لا تختار Food Items أو كميات أو Serving Sizes أو Recipes أو بدائل. سيستخدم Food Catalog في مرحلة مستقلة لاحقة قيم `NutritionFoodClass` المنظمة، ولم يتم إنشاؤه ضمن هذه المهمة.
