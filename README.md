@@ -755,7 +755,7 @@ npm run example
 npm run example:training
 ```
 
-آخر تشغيل فعلي عند التسليم: **456/456 اختبارات ناجحة**. كانت النسخة المجمدة من Intake Decision Engine تحتوي على 146 اختبارًا، وأضيفت 12 حالة لعقد Training Plan Specification، و11 حالة لخرائط Training Session Blueprints، و15 حالة لـMinimal Exercise Catalog، و19 حالة مستقلة لفلترة Exercise Selection، و10 حالات لـTraining Prescription، و11 حالة لـTraining Draft Pipeline، و20 حالة لـWeekly Training Schedule، و21 حالة لـTraining Plan Preflight، و13 حالة لـTraining Engine، و16 حالة لـNutrition Planning Snapshot، و29 حالة لـNutrition Energy Target، و30 حالة لـNutrition Macro Targets، و32 حالة لـNutrition Meal Distribution، و33 حالة لـNutrition Meal Assembly Blueprint، ثم 38 حالة لـNutrition Food Catalog Contract. كما نجح كل من `npm run test:coverage` و`npm run check`.
+آخر تشغيل فعلي عند التسليم: **516/516 اختبارات ناجحة**. كانت النسخة المجمدة من Intake Decision Engine تحتوي على 146 اختبارًا، وأضيفت 12 حالة لعقد Training Plan Specification، و11 حالة لخرائط Training Session Blueprints، و15 حالة لـMinimal Exercise Catalog، و19 حالة مستقلة لفلترة Exercise Selection، و10 حالات لـTraining Prescription، و11 حالة لـTraining Draft Pipeline، و20 حالة لـWeekly Training Schedule، و21 حالة لـTraining Plan Preflight، و13 حالة لـTraining Engine، و16 حالة لـNutrition Planning Snapshot، و29 حالة لـNutrition Energy Target، و30 حالة لـNutrition Macro Targets، و32 حالة لـNutrition Meal Distribution، و33 حالة لـNutrition Meal Assembly Blueprint، و38 حالة لـNutrition Food Catalog Contract، ثم 60 حالة لأداة Nutrition Food Catalog Excel. كما نجح كل من `npm run test:coverage` و`npm run check`.
 
 `npm run example` يقرأ `examples/full-intake.json` ويطبع ناتج المحرك الفعلي. الخلاصة الفعلية لنفس المثال:
 
@@ -885,7 +885,7 @@ npm run example:training
 
 لا تقبل الوحدة بيانات العميل (Raw Intake)، ولا تنفذ `evaluateIntake` داخليًا. تتأكد الوحدة فقط من استدعاء `buildTrainingDraft` ثم `buildWeeklyTrainingSchedule` ثم `evaluateTrainingPlanPreflight` بالترتيب الإلزامي، ثم ترمي `TypeError` فورًا في حال كسر اتساق الـPipeline (مثل اختلاف `schedule_version` أو `plan_status` بين التقرير والخطة)، ولا تعيد المخرجات الوسيطة.
 
-إجمالي عدد الاختبارات الحالية: 456 اختبارًا.
+إجمالي عدد الاختبارات الحالية: 516 اختبارًا.
 
 ## Nutrition Planning Snapshot V1
 
@@ -934,3 +934,34 @@ npm run example:training
 يسجل كل Food Item توافقه مع `NutritionMealPatternCode` دون إعادة بناء Pattern Catalog أو قواعد الوجبة. تفصل الوحدة بين Identity Tags وAllergy Tags وIntolerance Tags دون تفسير طبي أو تحويل تلقائي بينها. أما `portion_rule_g` فهو نطاق حتمي للكميات العملية بالجرامات ليستفيد منه Portion Solver لاحقًا، وليس كمية مختارة للعميل.
 
 لا تصبح Swap Group صالحة للاستخدام الفعلي إلا بوجود عنصرين Active على الأقل من `NutritionFoodClass` نفسها. الوحدة تتحقق من العقد وتنتج Catalog مستقلة ومجمدة، لكنها لا تختار أطعمة ولا تركب وجبات ولا تحل الكميات. كما أنها لا تحتوي Food Data إنتاجية؛ وسيكون Excel Import مهمة مستقلة لاحقًا.
+
+## Nutrition Food Catalog Excel Workbook & Importer V1
+
+القالب الرسمي الفارغ موجود في `data-templates/nutrition-food-catalog-v1.xlsx`. يمكن إعادة إنشائه حتميًا دون بيانات أطعمة عبر:
+
+```bash
+npm run food:excel:template
+```
+
+ولاستيراد Workbook صالح وتحويله إلى Food Catalog JSON نهائي:
+
+```bash
+npm run food:excel:import -- data-templates/nutrition-food-catalog-v1.xlsx
+npm run food:excel:import -- input.xlsx output.json
+```
+
+تتكون الـWorkbook، بالترتيب الثابت، من:
+
+- `Instructions`: إصدار القالب، إصدار Catalog المستهدف، أساس القيم `PER_100G`، الأسواق المدعومة، وتعليمات الإدخال.
+- `Foods`: هوية الطعام وحالته وأولوية الاختيار والميزانية واللوجستيات والمصدر وتاريخ مراجعته.
+- `Nutrition`: القيم الغذائية لكل 100 جرام، مرتبطة عبر `food_code`.
+- `Portions`: الحد الأدنى والأقصى والخطوة والقيمة الافتراضية بالجرامات؛ وهي حدود وليست حصة مختارة.
+- `Patterns`: توافق الطعام مع Meal Patterns وترتيبها.
+- `Markets`: الأسواق المتاحة وترتيبها.
+- `Tags`: Identity وAllergen وIntolerance Tags منفصلة ومرتبة.
+- `Swap_Groups`: قابلية الاستبدال وGroup Code.
+- `_Lists`: القوائم الرسمية المستخدمة في Data Validation، وهي Sheet مخفية.
+
+Excel أداة تجهيز واستيراد فقط، وليس Runtime Source of Truth ولا يُقرأ أثناء إنشاء خطط العملاء. يتحقق الـImporter من بنية الملف وأنواع الخلايا والعلاقات وترتيبها، ثم يمرر Food Item Records إلى `buildNutritionFoodCatalog` ليبقى Domain Validator مصدر القرار النهائي. ستصبح قاعدة البيانات Runtime Source of Truth لاحقًا.
+
+القالب الملتزم في Git فارغ ولا يحتوي Food Data أو أرقامًا غذائية إنتاجية. يجب أن يحمل كل Food Item يُضاف مصدرًا موثقًا ومرجعًا وتاريخ مراجعة، ولا تنشئ هذه الأداة Seeds أو Food Selection أو Portion Solver.
