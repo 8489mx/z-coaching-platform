@@ -1111,3 +1111,24 @@ upstream stages with every check passed produce `READY`. Non-withheld plans are
 available for coach review, while withheld plans are not. Constraints and
 first-occurrence reason codes are copied from Swap Engine by value. The output
 is independent, deeply frozen, and unaffected by catalog item order.
+
+## Nutrition Engine V1
+
+The `src/nutrition-engine` facade exposes one deterministic entry point:
+`buildNutritionEngine({ intake, evaluationContext, nutritionFoodCatalog })`.
+Its version is `nutrition-engine-v1` and its fixed policy is
+`Z_COACHING_NUTRITION_ENGINE_V1`.
+
+The facade invokes the existing public APIs in this order: Intake Decision,
+Planning Snapshot, Energy Target, Macro Targets, Meal Distribution, Meal
+Assembly Blueprint, Food Selection, Portion Solver, Swap Engine, and Nutrition
+Plan Preflight. It contains no duplicated nutrition rules and does not
+recalculate or modify any upstream result.
+
+The output retains complete independent copies of all ten stage outputs under
+`stages`, but never embeds the full Food Catalog. Engine `status` and
+`ready_for_coach_review` come directly from Plan Preflight: `READY` remains
+ready, `REVIEW_REQUIRED` retains coach review, and `WITHHELD` remains withheld.
+The complete result is deeply frozen, deterministic, and unaffected by Food
+Catalog item order. Upstream validation errors are allowed to propagate without
+conversion. Pipeline tracing is intentionally outside Nutrition Engine V1.
