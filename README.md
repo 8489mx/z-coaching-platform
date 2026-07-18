@@ -979,3 +979,27 @@ npm run food:core:build
 ```
 
 هذه الدفعة لا تنفذ Food Selection أو Portion Solver.
+
+## Nutrition Food Selection V1
+
+The independent `src/nutrition-food-selection` stage consumes a completed
+Nutrition Planning Snapshot, Nutrition Meal Assembly Blueprint, and Nutrition
+Food Catalog. It selects deterministic food codes for required component slots;
+it does not calculate grams, portions, meal calories, or macro closure.
+
+Selection evaluates each meal's `allowed_patterns` in order and commits the
+first feasible pattern. The candidate universe is limited to the current food
+class and pattern, then filters are applied in this fixed order: active state,
+exact market, budget, storage, reheating, allergy, medical exclusion,
+intolerance, and dislike. Budget is a maximum tier: `LOW` allows `LOW`,
+`MEDIUM` allows `LOW` and `MEDIUM`, and `HIGH` allows all three tiers. No
+constraint is relaxed when a required slot cannot be filled.
+
+Eligible candidates are ranked by ascending use count across the plan, then
+`selection_priority`, then `food_code`. Required slots select exactly their
+minimum item count. Optional slots, including added fat, retain candidates but
+are deferred to the future Portion Solver. Digestive issues are not interpreted
+as exclusions; they retain selection diagnostics and require provisional
+review. The stage exposes its own status, reasons, pattern attempts, blocking
+slots, and rejection codes so a future unified pipeline trace can identify the
+stage that needs review.
