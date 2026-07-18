@@ -1039,3 +1039,42 @@ Only ready upstream selection with every meal pattern and all five targets insid
 tolerance produces `READY`; otherwise the output is
 `PROVISIONAL_REVIEW_REQUIRED`. The output is independent, deterministic across
 catalog item order, and deeply frozen.
+
+## Nutrition Swap Engine V1
+
+The independent `src/nutrition-swap-engine` stage consumes Nutrition Food
+Selection, Nutrition Portion Solver, and Nutrition Food Catalog through
+`buildNutritionSwapEngine({ nutritionFoodSelection, nutritionPortionSolver,
+nutritionFoodCatalog })`. Its version is `nutrition-swap-engine-v1` and its
+fixed policy is `Z_COACHING_SWAP_ENGINE_V1`. It never changes the selected meal
+pattern or original portions, invokes the Portion Solver, or selects outside the
+approved candidates for the original item's slot.
+
+An item can expose alternatives only when its catalog record is swappable and
+belongs to a valid swap group. Each alternative must be an active member of that
+same group, occur in the slot's `candidate_food_codes`, differ from the original
+food, and not already occur elsewhere in the meal. Allergy, market, budget, and
+other upstream filters are not reapplied because candidate membership is the
+Food Selection stage's approved boundary.
+
+For every eligible candidate, the engine tests each legal
+`minimum_g + n * step_g` amount through the allowed maximum. It reconstructs
+the original meal from unrounded catalog nutrition, replaces only the current
+item, and minimizes the same weighted squared normalized objective used by the
+Portion Solver: protein (4), calories (3), carbohydrate (2), fat (2), and fiber
+(1). A candidate is returned only when its best portion keeps all five projected
+totals inside the Portion Solver meal tolerances. Output nutrition, projected
+totals, residuals, and scores are rounded to two decimals after all decisions.
+
+Alternatives sort deterministically by raw objective score, slot candidate
+order, food code, and grams. A swappable item with no accepted alternative gets
+the item issue `NO_SAFE_SWAP_AVAILABLE`, which does not change plan status.
+Non-swappable foods report `is_swappable=false`, `group_code=null`, and no
+alternatives. Meals that are not closed within all five tolerances retain their
+upstream issues, add `SWAPS_WITHHELD_FOR_UNCLOSED_MEAL`, and generate no swaps.
+
+`WITHHELD` Portion Solver output remains withheld. Provisional output can
+evaluate closed meals but is never promoted, while `READY` remains ready even
+when an item has no safe swap. Constraints and deduplicated reasons pass from
+the Portion Solver by independent value. The full result is deterministic across
+catalog item order, independent from all three inputs, and deeply frozen.
