@@ -998,8 +998,44 @@ constraint is relaxed when a required slot cannot be filled.
 Eligible candidates are ranked by ascending use count across the plan, then
 `selection_priority`, then `food_code`. Required slots select exactly their
 minimum item count. Optional slots, including added fat, retain candidates but
-are deferred to the future Portion Solver. Digestive issues are not interpreted
-as exclusions; they retain selection diagnostics and require provisional
-review. The stage exposes its own status, reasons, pattern attempts, blocking
-slots, and rejection codes so a future unified pipeline trace can identify the
-stage that needs review.
+are deferred to the downstream Portion Solver. Digestive issues are not
+interpreted as exclusions; they retain selection diagnostics and require
+provisional review. The stage exposes its own status, reasons, pattern attempts,
+blocking slots, and rejection codes so a future unified pipeline trace can
+identify the stage that needs review.
+
+## Nutrition Portion Solver V1
+
+The independent `src/nutrition-portion-solver` stage consumes only a completed
+Nutrition Food Selection and Nutrition Food Catalog through
+`buildNutritionPortionSolver({ nutritionFoodSelection, nutritionFoodCatalog })`.
+Its version is `nutrition-portion-solver-v1` and its fixed policy is
+`Z_COACHING_PORTION_SOLVER_V1`. It converts approved food codes into legal gram
+amounts without reselecting meal patterns, reapplying allergy or budget rules,
+or changing the upstream Food Selection.
+
+Each food is restricted to `minimum_g + n * step_g` without exceeding
+`maximum_g`; optimization starts independently from minimum, default, and legal
+maximum portions. A deterministic coordinate descent tests every legal portion
+in slot-sequence and food-code order for at most 20 passes, using the best of
+the three starts. Candidate foods are then considered one at a time and retained
+only for a strict objective improvement, without exceeding the slot's
+`max_items`, duplicating a food within a meal, or selecting outside approved
+candidates. Optional and added-fat slots therefore begin empty.
+
+The objective is the weighted sum of squared normalized errors for protein (4),
+calories (3), carbohydrate (2), fat (2), and fiber (1). Meal tolerances are the
+larger of the fixed floor and target percentage: calories `max(50, 10%)`,
+protein `max(5g, 15%)`, fat `max(5g, 20%)`, carbohydrate `max(10g, 15%)`, and
+fiber `max(3g, 25%)`. Unrounded nutrition values drive optimization; contract
+display values are rounded to two decimals.
+
+The result reports meal items, totals, residuals, tolerances, closure fields,
+daily aggregates, and copied upstream constraints/reasons. `WITHHELD` selection
+remains withheld with no meals. Provisional selection can solve meals that have
+a selected pattern but can never be promoted. A meal without a selected pattern
+remains unsolved with `PORTION_SOLVER_UNAVAILABLE_WITHOUT_SELECTED_PATTERN`.
+Only ready upstream selection with every meal pattern and all five targets inside
+tolerance produces `READY`; otherwise the output is
+`PROVISIONAL_REVIEW_REQUIRED`. The output is independent, deterministic across
+catalog item order, and deeply frozen.
