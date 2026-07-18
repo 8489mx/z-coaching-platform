@@ -1078,3 +1078,36 @@ evaluate closed meals but is never promoted, while `READY` remains ready even
 when an item has no safe swap. Constraints and deduplicated reasons pass from
 the Portion Solver by independent value. The full result is deterministic across
 catalog item order, independent from all three inputs, and deeply frozen.
+
+## Nutrition Plan Preflight V1
+
+The independent `src/nutrition-plan-preflight` stage audits the completed Food
+Selection, Portion Solver, and Swap Engine outputs through
+`evaluateNutritionPlanPreflight({ nutritionFoodSelection,
+nutritionPortionSolver, nutritionSwapEngine, nutritionFoodCatalog })`. Its
+version is `nutrition-plan-preflight-v1` and its fixed policy is
+`Z_COACHING_NUTRITION_PREFLIGHT_V1`. It does not modify the nutrition plan or
+rerun any upstream stage.
+
+Preflight reports eight ordered checks: upstream status, meal-pattern
+completeness, selected-food integrity, portion legality, portion-calculation
+integrity, meal-target closure, daily-target closure, and swap safety.
+Structural contract contradictions throw `TypeError`; actionable plan findings
+become deterministic issues attributed to `FOOD_SELECTION`, `PORTION_SOLVER`,
+`SWAP_ENGINE`, or `PLAN_PREFLIGHT`.
+
+Item, meal, daily, and projected-swap nutrition is reconstructed from the
+catalog's unrounded per-100g values. Reported display values may differ by at
+most `0.01`. Meal checks reuse the Portion Solver tolerances. Daily checks use
+calories `max(50, 10%)`, protein `max(5g, 15%)`, fat `max(5g, 20%)`,
+carbohydrate `max(10g, 15%)`, and fiber `max(3g, 25%)`. Swap alternatives are
+revalidated against the original slot candidates, swap group, existing meal
+foods, legal grams, projected totals, residuals, and all five tolerance flags.
+`NO_SAFE_SWAP_AVAILABLE` remains informational and never blocks readiness.
+
+All three upstream `WITHHELD` states produce `WITHHELD` preflight. Any retained
+provisional state or local issue produces `REVIEW_REQUIRED`; only three ready
+upstream stages with every check passed produce `READY`. Non-withheld plans are
+available for coach review, while withheld plans are not. Constraints and
+first-occurrence reason codes are copied from Swap Engine by value. The output
+is independent, deeply frozen, and unaffected by catalog item order.
