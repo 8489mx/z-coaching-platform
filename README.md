@@ -755,7 +755,7 @@ npm run example
 npm run example:training
 ```
 
-آخر تشغيل فعلي عند التسليم: **516/516 اختبارات ناجحة**. كانت النسخة المجمدة من Intake Decision Engine تحتوي على 146 اختبارًا، وأضيفت 12 حالة لعقد Training Plan Specification، و11 حالة لخرائط Training Session Blueprints، و15 حالة لـMinimal Exercise Catalog، و19 حالة مستقلة لفلترة Exercise Selection، و10 حالات لـTraining Prescription، و11 حالة لـTraining Draft Pipeline، و20 حالة لـWeekly Training Schedule، و21 حالة لـTraining Plan Preflight، و13 حالة لـTraining Engine، و16 حالة لـNutrition Planning Snapshot، و29 حالة لـNutrition Energy Target، و30 حالة لـNutrition Macro Targets، و32 حالة لـNutrition Meal Distribution، و33 حالة لـNutrition Meal Assembly Blueprint، و38 حالة لـNutrition Food Catalog Contract، ثم 60 حالة لأداة Nutrition Food Catalog Excel. كما نجح كل من `npm run test:coverage` و`npm run check`.
+آخر تشغيل فعلي عند التسليم: **554/554 اختبارات ناجحة**. كانت النسخة المجمدة من Intake Decision Engine تحتوي على 146 اختبارًا، وأضيفت 12 حالة لعقد Training Plan Specification، و11 حالة لخرائط Training Session Blueprints، و15 حالة لـMinimal Exercise Catalog، و19 حالة مستقلة لفلترة Exercise Selection، و10 حالات لـTraining Prescription، و11 حالة لـTraining Draft Pipeline، و20 حالة لـWeekly Training Schedule، و21 حالة لـTraining Plan Preflight، و13 حالة لـTraining Engine، و16 حالة لـNutrition Planning Snapshot، و29 حالة لـNutrition Energy Target، و30 حالة لـNutrition Macro Targets، و32 حالة لـNutrition Meal Distribution، و33 حالة لـNutrition Meal Assembly Blueprint، و38 حالة لـNutrition Food Catalog Contract، و60 حالة لأداة Nutrition Food Catalog Excel، ثم 38 حالة لدفعة Core Global Food Data. كما نجح كل من `npm run test:coverage` و`npm run check`.
 
 `npm run example` يقرأ `examples/full-intake.json` ويطبع ناتج المحرك الفعلي. الخلاصة الفعلية لنفس المثال:
 
@@ -885,7 +885,7 @@ npm run example:training
 
 لا تقبل الوحدة بيانات العميل (Raw Intake)، ولا تنفذ `evaluateIntake` داخليًا. تتأكد الوحدة فقط من استدعاء `buildTrainingDraft` ثم `buildWeeklyTrainingSchedule` ثم `evaluateTrainingPlanPreflight` بالترتيب الإلزامي، ثم ترمي `TypeError` فورًا في حال كسر اتساق الـPipeline (مثل اختلاف `schedule_version` أو `plan_status` بين التقرير والخطة)، ولا تعيد المخرجات الوسيطة.
 
-إجمالي عدد الاختبارات الحالية: 516 اختبارًا.
+إجمالي عدد الاختبارات الحالية: 554 اختبارًا.
 
 ## Nutrition Planning Snapshot V1
 
@@ -965,3 +965,17 @@ npm run food:excel:import -- input.xlsx output.json
 Excel أداة تجهيز واستيراد فقط، وليس Runtime Source of Truth ولا يُقرأ أثناء إنشاء خطط العملاء. يتحقق الـImporter من بنية الملف وأنواع الخلايا والعلاقات وترتيبها، ثم يمرر Food Item Records إلى `buildNutritionFoodCatalog` ليبقى Domain Validator مصدر القرار النهائي. ستصبح قاعدة البيانات Runtime Source of Truth لاحقًا.
 
 القالب الملتزم في Git فارغ ولا يحتوي Food Data أو أرقامًا غذائية إنتاجية. يجب أن يحمل كل Food Item يُضاف مصدرًا موثقًا ومرجعًا وتاريخ مراجعة، ولا تنشئ هذه الأداة Seeds أو Food Selection أو Portion Solver.
+
+## Core Global Food Data Batch V1
+
+الدفعة الإنتاجية الأولى موجودة في `data/catalogs/core-global-food-batch-v1.xlsx`، ونسخة JSON الحتمية في `data/catalogs/core-global-food-batch-v1.json`. تحتوي الدفعة على 24 طعامًا عالميًا أساسيًا فقط، وتغطي فئات الطعام الثماني وMeal Patterns الحالية. جميع قيم الطاقة والبروتين والدهون والكربوهيدرات والألياف منشورة لكل 100 جرام من سجل واحد في USDA FoodData Central.
+
+تتبع مراجعة المصدر ترتيب السجل المطابق والمكتمل: Foundation Food أولًا، ثم SR Legacy، ثم FNDDS عند غياب سجل Foundation أو SR Legacy مطابق ومكتمل. بيانات الميزانية والتوافر في الأسواق المحلية سياسات تشغيلية للدفعة وليست مشتقة من USDA، كما أن `selection_priority` ترتيب اختيار تقني وليس ترتيبًا صحيًا. قواعد `portion_rule_g` حدود أولية لـPortion Solver وليست حصة مختارة للعميل، وستضاف الأطعمة المصرية والخليجية المتخصصة في دفعات مستقلة لاحقًا.
+
+ملف JSON لا يُكتب يدويًا؛ بل يُعاد توليده من الـWorkbook عبر الـImporter الحالي:
+
+```bash
+npm run food:core:build
+```
+
+هذه الدفعة لا تنفذ Food Selection أو Portion Solver.
