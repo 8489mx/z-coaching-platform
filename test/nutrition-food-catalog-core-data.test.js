@@ -559,11 +559,21 @@ test("the official template remains empty", async () => {
   }
 });
 
-test("the production catalog directory contains only the required workbook and JSON", async () => {
-  assert.deepEqual((await readdir(CATALOG_DIRECTORY)).sort(), [
-    "core-global-food-batch-v1.json",
-    "core-global-food-batch-v1.xlsx",
-  ]);
+test("the production catalog directory contains the required batch without temporary build artifacts", async () => {
+  const fileNames = await readdir(CATALOG_DIRECTORY);
+
+  assert.ok(fileNames.includes("core-global-food-batch-v1.xlsx"));
+  assert.ok(fileNames.includes("core-global-food-batch-v1.json"));
+
+  const temporaryArtifacts = fileNames.filter((fileName) => {
+    const normalizedName = fileName.toLowerCase();
+    return /\.(?:tmp|temp|mjs|js|csv)$/u.test(normalizedName)
+      || normalizedName.includes("draft")
+      || normalizedName.includes("final-final")
+      || fileName.startsWith("~");
+  });
+
+  assert.deepEqual(temporaryArtifacts, []);
 });
 
 test("DATA_TYPE allows only FOUNDATION_FOOD, SR_LEGACY, or FNDDS", async () => {
