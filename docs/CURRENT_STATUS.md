@@ -2,7 +2,8 @@
 
 - Audit date: 2026-07-23
 - Audited branch: `develop`
-- Audited commit: `d19b97bc9bdaa9d2846f7946b8d81c5a3901fef4`
+- Implementation baseline reviewed: `98a7f4171447dc632375e0ac4ba555c13c22bd57`
+- Status updated through: Cardio Plan Specification V1
 
 This is the live-state companion to
 [PROJECT_MEMORY.md](PROJECT_MEMORY.md). Update this file when the implementation,
@@ -15,8 +16,9 @@ The audit covered:
 
 - All available repository documentation.
 - All domain modules and their public exports under `src/`.
-- The complete Intake, Training, Nutrition, and Pipeline Trace flows.
-- All 27 test files and their integration coverage.
+- The complete Intake, Training, Nutrition, Cardio Plan Specification, and
+  Pipeline Trace flows.
+- All 28 test files and their integration coverage.
 - Package exports, scripts, examples, Git history, and version tags.
 
 Before this documentation milestone, `README.md` was the only repository
@@ -94,7 +96,25 @@ Raw Intake + trusted Evaluation Context + Nutrition Food Catalog
   -> Nutrition Engine output
 ```
 
-### 2.4 Pipeline trace
+### 2.4 Cardio
+
+```text
+IntakeDecision
+  -> Cardio Plan Specification
+  -> future Cardio Session/Modality Requirements
+  -> future modality selection and prescription stages
+  -> future weekly coordination and Cardio Preflight
+  -> future Cardio Engine output
+```
+
+The current Cardio Plan Specification is a deterministic boundary module. It
+maps the authoritative Intake status and Cardio decision into a versioned plan
+status, strategy, formal-session state, capacity limits, constraints, reasons,
+and retained source review context. It does not choose a modality, create a
+session dose, schedule Cardio, or add scientific rules that are not yet
+approved.
+
+### 2.5 Pipeline trace
 
 `Pipeline Trace Core V1` is a standalone metadata-only utility. It records
 caller-supplied stage codes, versions, statuses, issue codes, reason codes, and
@@ -341,7 +361,36 @@ and at daily level. Swap safety still passes.
 
 Total Nutrition tests: 517.
 
-### 3.10 Pipeline Trace Core V1
+### 3.10 Cardio Plan Specification V1
+
+What exists:
+
+- A deterministic projection from the authoritative Intake Decision into
+  `cardio-plan-spec-v1`.
+- Exact propagation of `READY`, `PROVISIONAL_REVIEW_REQUIRED`, and `WITHHELD`
+  from the approved Intake status mapping.
+- Exact strategy mapping to `NOT_INDICATED`, `DAILY_MOVEMENT_ONLY`,
+  `PRESCRIPTION_REQUIRED`, `REVIEW_REQUIRED`, or `WITHHELD`.
+- Capacity retained only as maximum sessions, maximum duration, and starting
+  intensity limits; no executable session dose is created.
+- Cardio constraints and reasons copied without interpretation.
+- Global review flags, decision reasons, and missing-data issues retained as
+  source review context so higher-priority status does not hide causes.
+- Closed runtime validation, deterministic output, input independence, and
+  deep-frozen results.
+- No duplicated Intake/Safety logic, modality selection, schedule, progression,
+  adaptation, medical decision, or AI decision.
+
+Main files:
+
+- `src/cardio-plan-specification/build-cardio-plan-spec.js`
+- `src/cardio-plan-specification/domain/contracts.js`
+- `src/cardio-plan-specification/domain/enums.js`
+- `src/cardio-plan-specification/index.js`
+
+Tests: 37.
+
+### 3.11 Pipeline Trace Core V1
 
 What exists:
 
@@ -361,17 +410,18 @@ Main files:
 
 Tests: 13.
 
-### 3.11 Test baseline
+### 3.12 Test baseline
 
 Actual audit run:
 
-- Test files: 27.
-- Tests: 808.
-- Passed: 808.
+- Test files: 28.
+- Tests: 845.
+- Passed: 845.
 - Failed: 0.
-- Overall line coverage: 98.12%.
-- Overall branch coverage: 95.13%.
-- Overall function coverage: 99.59%.
+- Overall line coverage: 98.20%.
+- Overall branch coverage: 95.29%.
+- Overall function coverage: 99.61%.
+- Cardio Plan Specification coverage: 100.00% lines, branches, and functions.
 
 Test distribution:
 
@@ -381,14 +431,16 @@ Test distribution:
 | Training pipeline | 132 |
 | Nutrition pipeline, catalog, and Excel tooling | 517 |
 | Pipeline Trace | 13 |
-| **Total** | **808** |
+| Cardio Plan Specification | 37 |
+| **Total** | **845** |
 
-### 3.12 Repository baseline and important milestones
+### 3.13 Repository baseline and important milestones
 
 Current repository facts at audit time:
 
 - Local branch: `develop`.
-- Local and remote baseline: `d19b97bc9bdaa9d2846f7946b8d81c5a3901fef4`.
+- Cardio implementation baseline:
+  `98a7f4171447dc632375e0ac4ba555c13c22bd57`.
 - `main` points to the Training Engine V1 milestone `6f6cdd9`.
 - Version tags: `intake-engine-v1-baseline`, `intake-engine-v1`, and
   `training-engine-v1`.
@@ -410,6 +462,7 @@ Important functional milestones:
 | `e4a8eac` | Nutrition Plan Preflight V1 |
 | `b83ed22` | Nutrition Engine facade V1 |
 | `d19b97b` | Pipeline Trace Core V1 |
+| `98a7f41` | Cardio Engine Specification V1 architecture review |
 
 The complete milestone narrative is in
 [CHANGELOG_HISTORY.md](CHANGELOG_HISTORY.md).
@@ -508,14 +561,22 @@ Existing foundation:
 
 - Intake produces a deterministic cardio strategy, capacity limits, starting
   intensity, constraints, and reasons.
+- Cardio Plan Specification V1 validates and maps that authoritative projection
+  into a versioned, immutable downstream contract.
+- Intake-wide review context is retained without reinterpreting goals,
+  activity, injuries, restrictions, or safety findings.
 
 Missing:
 
-- Cardio Plan Specification.
+- Cardio Session/Modality Requirements contract.
+- An approved Cardio Modality Catalog.
 - Modality selection.
 - Session prescription.
 - Weekly coordination with training.
 - Cardio preflight and facade.
+- Evidence-backed frequency, duration, intensity-method, recovery-interference,
+  progression, and regression policies.
+- Check-in-driven change rules, which belong to the future Adaptation Engine.
 
 ### 4.7 Versioning and traceability
 
@@ -539,7 +600,7 @@ Missing:
 | Product capability | Current status | What is missing |
 |---|---|---|
 | Nutrition Engine | **Domain Engine V1 exists** | Product delivery, approval, persistence, history, calibration/adaptation, and broader catalog coverage |
-| Cardio Engine | Missing after Intake decision | Plan specification, prescription, scheduling, preflight, and facade |
+| Cardio Engine | **Plan Specification V1 exists** | Session/modality requirements, approved modality catalog, selection, prescription, scheduling, preflight, facade, and evidence-backed adaptation inputs |
 | Mobility/Flexibility Engine | Missing | Contracts, movement library, deterministic rules, prescription, tests, and evidence |
 | Check-in Engine | Missing | Structured check-in contract, adherence/recovery inputs, validation, findings, and statuses |
 | Adaptation Engine | Missing | Deterministic plan-change rules based on approved check-in and progress data |
@@ -557,10 +618,12 @@ outside the pure domain engines.
 
 ### 6.1 Missing or stale documentation
 
-- `/docs` does not exist.
 - There are no architecture decision records.
 - `README.md` is a 1,152-line monolith.
-- README still reports 554 tests although 808 now pass.
+- README still reports 554 tests although 845 now pass.
+- `ROADMAP.md` still names the now-completed Cardio Plan Specification V1 as
+  the exact next task; it must be synchronized in a separately scoped roadmap
+  update before another Cardio implementation is approved.
 - Early README sections say food selection, portions, swaps, dependencies, and
   production food data do not exist, while later code and appended sections
   show that they do.
@@ -625,7 +688,8 @@ The suite is strong, but the remaining gaps include:
 
 ### 6.5 Immutability and status consistency
 
-- Nutrition stages and Pipeline Trace return independent deeply frozen outputs.
+- Nutrition stages, Cardio Plan Specification, and Pipeline Trace return
+  independent deeply frozen outputs.
 - Training stages generally do not deep-freeze outputs and often pass
   `constraints`, `reasons`, and nested arrays by reference.
 - Intake output is cloned but remains mutable.
@@ -652,34 +716,30 @@ The suite is strong, but the remaining gaps include:
 
 ## 7. Recommended next implementation step
 
-The next deterministic product module should be:
+No later Cardio implementation step is currently approved.
 
-### Cardio Plan Specification V1
+The next Cardio roadmap action should be documentation and evidence gating for:
 
-Why this is next:
+### Cardio Session/Modality Requirements V1
 
-- Intake already produces a structured cardio decision, but the pipeline ends
-  at strategy and capacity.
-- Training and Nutrition already have downstream specifications and preflight
-  flows.
-- Cardio is therefore the largest remaining gap in the deterministic coaching
-  core, before Mobility, Check-ins, Adaptation, UI, or AI.
+Implementation must not start until its exact contract is separately specified
+and reviewed. The required preparatory work is:
 
-Required boundaries for that future task:
+1. Define only the requirements owned by that stage without choosing a concrete
+   modality or inventing a dose.
+2. Resolve the missing structured Cardio access, preference, and experience
+   inputs without inferring them from unrelated Intake fields.
+3. Define a versioned, verified Cardio Activity Catalog contract before
+   modality selection.
+4. Approve rule-level evidence records before any frequency, duration,
+   operational intensity, modality, interval, concurrency, progression, or
+   regression policy becomes executable.
+5. Preserve the current Plan Specification as the authoritative downstream
+   status, strategy, capacity-limit, constraint, reason, and review-context
+   boundary.
+6. Keep safety decisions in Intake/Safety, resistance-plan ownership in
+   Training, check-in responses in the future Adaptation Engine, and AI outside
+   deterministic decision authority.
 
-1. Consume only the approved Intake Decision cardio output and explicitly
-   required upstream schedule context.
-2. Do not re-run or reinterpret medical, injury, training-load, or Intake rules.
-3. Preserve `MEDICAL_REVIEW_REQUIRED` and `BLOCKED` as withheld.
-4. Treat current `max_sessions` and `max_duration_minutes` as limits unless a
-   separately documented evidence-backed rule determines an actual
-   prescription.
-5. Define versioned contracts, enums, status propagation, immutability, and
-   deterministic tests before adding session details.
-6. Add a rule-level evidence document for every new duration, frequency,
-   intensity, progression, or modality rule.
-7. Keep API, database, UI, calendar integration, and AI outside the module.
-8. Preserve all existing public contracts and backward compatibility.
-
-No Cardio implementation, architecture redesign, AI layer, API, database, UI,
-or other feature was started as part of this audit.
+Cardio Modality Selection, Prescription, Weekly Schedule, Preflight, the Cardio
+Engine facade, and all adaptation behavior remain blocked and were not started.
