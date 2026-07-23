@@ -28,6 +28,8 @@ This specification must be read with:
 - [DEVELOPMENT_RULES.md](DEVELOPMENT_RULES.md)
 - [SCIENTIFIC_POLICY.md](SCIENTIFIC_POLICY.md)
 - [AI_ARCHITECTURE.md](AI_ARCHITECTURE.md)
+- [CARDIO_ENGINE_REVIEW.md](CARDIO_ENGINE_REVIEW.md): formal architecture and
+  implementation-readiness review.
 
 ## 1. Purpose
 
@@ -68,7 +70,8 @@ flowchart LR
     INTAKE --> CARDIO["Cardio Engine"]
     INTAKE --> NUTRITION["Nutrition Engine"]
     TRAINING -. "read-only schedule context" .-> CARDIO
-    CARDIO -. "future approved workload metadata" .-> NUTRITION
+    CARDIO -. "future completed workload metadata" .-> ORCHESTRATION["Application / Adaptation orchestration"]
+    ORCHESTRATION -. "versioned approved input" .-> NUTRITION
     CARDIO --> REVIEW["Coach review and approval"]
 ```
 
@@ -77,8 +80,10 @@ The arrows do not authorize circular business logic:
 - Cardio Engine MUST NOT change the Intake Decision.
 - Cardio Engine MUST NOT change the resistance-training draft or schedule.
 - Cardio Engine MUST NOT change calories, macros, meals, foods, or portions.
-- Nutrition Engine MAY consume approved cardio workload in a future versioned
-  policy, but Cardio Engine does not calculate the nutritional consequence.
+- Nutrition Engine MAY consume approved, completed cardio workload through
+  future Application/Adaptation orchestration and a versioned Nutrition
+  policy. Cardio Engine neither calls Nutrition Engine nor calculates the
+  nutritional consequence.
 - Training Engine remains the owner of resistance sessions.
 - A future cross-domain application orchestrator may call both engines and
   persist their immutable outputs.
@@ -99,6 +104,15 @@ After Intake has authorized a path, the complete future Cardio Engine owns:
 - Read-only coordination with the resistance schedule and additional sports.
 - Cardio-specific preflight consistency and review eligibility.
 - Structured Cardio-owned reasons, issues, and applied rule identifiers.
+- Verbatim pass-through of the upstream review context needed to explain why a
+  global Intake status is provisional or withheld, without interpreting that
+  context.
+
+Cardio Prescription may eventually describe a prospective, evidence-approved
+progression or regression protocol attached to one approved plan. It does not
+observe check-ins or apply longitudinal plan changes. A future Adaptation
+Engine owns the decision to hold, progress, regress, supersede, or withhold a
+plan after execution data exists.
 
 ### 1.4 Decisions that do not belong to Cardio Engine
 
@@ -152,7 +166,7 @@ current approved implementation item is stage 1 only.
 
 | Stage | Owns | Must not do |
 |---|---|---|
-| Plan Specification | Normalize upstream status, strategy, limits, constraints, and reasons | Select type, modality, dose, or weekday |
+| Plan Specification | Normalize upstream status and formal-session state; copy limits, constraints, reasons, and review context verbatim | Select type, modality, dose, weekday, or review resolution |
 | Session/Modality Requirements | Describe what kind of session is required | Select a concrete activity or invent dose |
 | Modality Selection | Match requirements, preferences, and explicit restrictions against a verified catalog | Diagnose or infer a restriction |
 | Prescription | Apply approved frequency, duration, intensity, interval, progression, and regression policies | Recompute need or exceed caps |
@@ -176,10 +190,16 @@ current approved implementation item is stage 1 only.
 11. A downstream stage may retain or lower readiness for a stage-owned issue;
     it MUST NOT promote a provisional or withheld upstream artifact.
 12. A withheld result MUST contain no executable sessions.
-13. Constraints and reasons MUST be copied by value and preserved.
+13. Constraints, reasons, and the contracted upstream review context MUST be
+    copied by value and preserved.
 14. Upstream errors and `TypeError`s MUST not be swallowed.
-15. Every stage MUST validate source versions when the public upstream contract
-    exposes them, and MUST always validate structural and cross-stage identity.
+15. Every stage MUST validate source versions and cross-stage identity fields
+    that the public upstream contracts actually expose.
+16. A stage MUST NOT claim that two source artifacts belong to the same client,
+    intake evaluation, or plan version when their public contracts expose no
+    common identity or lineage field. Until a versioned lineage contract
+    exists, the Application/API orchestrator owns source pairing and must
+    persist the paired immutable artifacts.
 
 ### 2.4 Status model
 
@@ -232,6 +252,9 @@ It reads only the following authoritative fields:
 ```text
 CardioPlanSpecificationInput
   plan_status
+  review_flags
+  decision_reasons
+  missing_or_uncertain_data
   cardio_decision
     strategy
     max_sessions
@@ -255,12 +278,13 @@ intensity_start:
   MODERATE
 ```
 
-This is not a new closed wrapper containing only two fields. The builder MUST
-accept the other documented top-level `IntakeDecision` fields produced by
-`evaluateIntake`. It MUST NOT read them to repeat the cardio decision. Unknown
-fields inside `cardio_decision` indicate a mismatched contract and must be
-rejected; validation of unrelated top-level Intake fields remains owned by
-Intake Engine.
+This is not a new closed wrapper containing only the fields above. The builder
+MUST accept the other documented top-level `IntakeDecision` fields produced by
+`evaluateIntake`. It reads the three top-level review arrays only to copy the
+authoritative review context; it MUST NOT interpret them or repeat any rule.
+Unknown fields inside `cardio_decision` or any copied review record indicate a
+mismatched contract and must be rejected. Validation of unrelated top-level
+Intake fields remains owned by Intake Engine.
 
 Required structural invariants:
 
@@ -280,10 +304,30 @@ Required structural invariants:
 - Each reason has `{code, scope, message}` and `scope=CARDIO`.
 - `constraints` and `reasons` are arrays of valid structured records.
 - Every reason has a stable code, `CARDIO` scope, and non-empty message.
+- `review_flags`, `decision_reasons`, and `missing_or_uncertain_data` are dense
+  arrays of valid structured records copied from the top-level Intake Decision.
 - Source array order is preserved exactly.
 - Constraint codes may repeat for distinct records such as multiple
   `EXISTING_ADDITIONAL_SPORT` constraints. Constraints MUST NOT be deduplicated
   by code.
+
+The copied record contracts are closed:
+
+| Record | Exact fields and validation |
+|---|---|
+| Cardio constraint | Plain object with exactly `code`, `scope`, `value`, and `reason`; `code` and `reason` are non-empty strings, `scope` is `CARDIO` or `GLOBAL`, and `value` is JSON-compatible |
+| Cardio reason | Plain object with exactly `code`, `scope`, and `message`; `code` and `message` are non-empty strings and `scope=CARDIO` |
+| Upstream review flag | Plain object with exactly `code`, `scope`, `level`, `message`, and `sourcePath`; all text fields are non-empty, `scope` is a current Intake `Scope`, and `level` is a current Intake `ReviewLevel` |
+| Upstream decision reason | Plain object with exactly `code`, `scope`, and `message`; text fields are non-empty and `scope` is a current Intake `Scope` |
+| Upstream data issue | Plain object with exactly `code`, `path`, and `message`; all three fields are non-empty strings |
+
+For this JSON contract, “JSON-compatible” means `null`, a boolean, a finite
+number, a string, a dense array of JSON-compatible values, or a plain object
+whose enumerable string-keyed values are JSON-compatible. `undefined`,
+functions, symbols, `bigint`, sparse arrays, non-finite numbers, class
+instances, and cyclic references are invalid. Plan Specification does not
+normalize or deduplicate any copied array. Repeated but distinct records and
+their original order must survive exactly.
 
 The current Intake Decision has no runtime decision-version field. Plan
 Specification MUST NOT invent one. Its own version identifies the downstream
@@ -350,7 +394,7 @@ constraints:
 | Injuries | Intake status and `INJURY_AFFECTED_MOVEMENT` / medical restriction constraints | Exclude a directly conflicting catalog modality only |
 | Medical restrictions | Structured `MEDICAL_MOVEMENT_RESTRICTION` and `INJURY_MEDICAL_RESTRICTION` | Apply exact `AVOID` mapping; do not diagnose |
 | Safety limitations | `plan_status`, `cardio_decision.strategy`, constraints, reasons | Withhold or retain review exactly |
-| Unclassified information | Review flags/reasons owned upstream | Preserve; never map to a modality restriction |
+| Unclassified information | Top-level Intake review flags/reasons/data issues | Copy verbatim into `source_review_context`; never map to a modality restriction |
 
 There must be no downstream diagnosis table such as “condition X means no
 HIIT.” Any new clinical gate belongs to a separately reviewed Safety policy.
@@ -398,6 +442,15 @@ Rules:
   choices.
 - Missing future contracts must result in a deliberate review/unsupported
   state, not guessed values.
+- Current Intake and Training outputs expose no common client, intake, or plan
+  identity. Cardio Engine can validate their shapes, versions, statuses, and
+  any fields explicitly linked by later stage contracts, but it cannot prove
+  that the two artifacts belong together.
+- Until a separately versioned lineage/plan-identity contract exists, the
+  Application/API orchestrator is responsible for pairing and persisting the
+  exact Intake Decision, Training Engine output, and Cardio Engine output as
+  one review bundle. Cardio domain code must not invent an identity or
+  fingerprint to close this gap.
 
 ## 4. Cardio Decision Logic
 
@@ -433,6 +486,8 @@ The deterministic precedence is:
 
 The engine does not inspect raw symptoms, pain, pregnancy, medical conditions,
 medications, or free text to create a new contraindication.
+It copies the existing Intake review context so the withheld or provisional
+state remains explainable without repeating those rules.
 
 ### 4.3 Initial volume
 
@@ -754,7 +809,12 @@ The builder MUST return:
     "intensity_start": "LOW"
   },
   "constraints": [],
-  "reasons": []
+  "reasons": [],
+  "source_review_context": {
+    "review_flags": [],
+    "decision_reasons": [],
+    "missing_or_uncertain_data": []
+  }
 }
 ```
 
@@ -804,9 +864,11 @@ Negative-space requirements:
 The limits are preserved ceilings. This stage does not use them as
 recommendations.
 
-Plan Specification MUST deep-clone `constraints` and `reasons` in their exact
-upstream order. It does not sort, deduplicate, rewrite, or append stage-owned
-records.
+Plan Specification MUST deep-clone `constraints`, `reasons`, and every
+`source_review_context` array in their exact upstream order. It does not sort,
+deduplicate, rewrite, classify, or append stage-owned records. The review
+context exists only to keep provisional and withheld outputs explainable by
+their exact upstream codes and source paths.
 
 ### 6.2 Future complete Cardio Engine output
 
@@ -826,7 +888,10 @@ The target facade output is conceptually:
     "weekly_cardio_schedule": "weekly-cardio-schedule-v1",
     "cardio_plan_preflight": "cardio-plan-preflight-v1",
     "training_engine": "training-engine-v1",
-    "cardio_activity_catalog": "catalog-version-from-input"
+    "cardio_activity_catalog": "catalog-version-from-input",
+    "cardio_modality_selection_policy": "policy-version-from-selection-stage",
+    "cardio_prescription_policy": "policy-version-from-prescription-stage",
+    "cardio_scheduling_policy": "policy-version-from-scheduling-stage"
   },
   "stages": {
     "plan_specification": {},
@@ -835,6 +900,7 @@ The target facade output is conceptually:
     "prescription": {},
     "weekly_schedule": {
       "weekly_cardio_schedule_version": "weekly-cardio-schedule-v1",
+      "policy_version": "policy-version-from-scheduling-stage",
       "status": "PROVISIONAL_REVIEW_REQUIRED",
       "strategy": "CARDIO_SESSIONS",
       "frequency_per_week": null,
@@ -842,7 +908,8 @@ The target facade output is conceptually:
       "constraints": [],
       "applied_restrictions": [],
       "reasons": [],
-      "applied_rule_codes": []
+      "applied_rule_codes": [],
+      "applied_evidence_record_ids": []
     },
     "plan_preflight": {}
   }
@@ -859,6 +926,8 @@ Rules:
 - `ready_for_coach_review` is copied from Preflight and is not proof of
   approval.
 - Full stage outputs are retained unchanged for auditability.
+- The retained Plan Specification stage includes the exact upstream
+  `source_review_context`; a facade must not discard or summarize it.
 - `stages.weekly_schedule` owns the final planned sessions and is the
   authoritative plan representation.
 - The facade MUST NOT build a second consolidated plan object or reshape the
@@ -876,6 +945,11 @@ Rules:
   reason code under an explicit policy.
 - Constraints are never deduplicated by code because multiple records may
   legitimately share a code and carry different values or source paths.
+- Every stage that applies a scientific Cardio rule MUST expose its independent
+  `policy_version`, `applied_rule_codes`, and
+  `applied_evidence_record_ids`. The facade copies those policy versions into
+  `source_versions`; a module version is not a substitute for a scientific
+  policy version.
 
 Cardio Preflight MUST define:
 
@@ -927,7 +1001,8 @@ Each formal prescribed session should contain:
   },
   "applied_restrictions": [],
   "reasons": [],
-  "applied_rule_codes": []
+  "applied_rule_codes": [],
+  "applied_evidence_record_ids": []
 }
 ```
 
@@ -997,11 +1072,12 @@ Cardio Engine MUST NOT:
 Future weekly coordination follows this ownership order:
 
 1. Upstream Safety status and explicit restrictions.
-2. Client capacity and structured availability.
+2. Client capacity and structured Cardio availability after that future
+   contract exists.
 3. Existing resistance schedule.
 4. Existing additional-sport schedule and load.
 5. Eligible cardio prescription.
-6. Structured client preference.
+6. Structured Cardio preference after that future contract exists.
 7. Evidence-backed deterministic placement tie-breaker.
 
 If no eligible placement exists, Cardio Scheduling must return a structured
@@ -1050,10 +1126,13 @@ For session-sequence training:
 - A Training Preflight `WITHHELD` caused by a global upstream state will already
   correspond to withheld Cardio.
 - A Training review caused only by exercise selection or scheduling does not
-  automatically prove Cardio unsafe; Cardio remains at least provisional until
-  the conflict is resolved.
-- Cardio Scheduling may lower Cardio readiness for its own unresolved
-  coordination issue.
+  change Cardio status by itself and does not prove Cardio unsafe.
+- Cardio Scheduling may lower Cardio readiness only when the structured
+  Training context produces a concrete Cardio-owned coordination conflict. It
+  must emit a Cardio issue that identifies that conflict.
+- A future cross-domain approval orchestrator presents unresolved Training and
+  Cardio statuses together; neither engine absorbs an unrelated review status
+  from the other.
 - Neither engine may promote the other.
 
 ### 7.6 Nutrition interaction
@@ -1274,15 +1353,20 @@ record containing the fields required by `SCIENTIFIC_POLICY.md`:
 rule_code
 policy_version
 domain
+decision_supported
 source_type
 full_citation
 source_identifier_or_url
 accessed_or_published_date
 applicable_population
 rule_summary
+evidence_to_implementation_interpretation
 implementation_location
 assumptions
 exceptions
+uncertainty_and_material_limitations
+product_policy_choices
+effective_date
 review_status
 reviewed_by
 next_review_date
@@ -1295,7 +1379,15 @@ Each record must additionally make explicit:
 - Reason/issue code.
 - Priority and interactions.
 - Exact section, table, equation, or page when possible.
+- Safety exceptions and escalation path.
+- Which choices are conservative product policy rather than direct scientific
+  conclusions.
 - Boundary and interaction tests.
+
+Runtime outputs from a scientific Cardio stage must link the applicable
+`policy_version`, `rule_code`, and stable evidence-record identifier. A Git
+commit, module version, or prose placeholder alone does not satisfy plan
+reproducibility.
 
 AI may help locate candidate sources, but a human must verify the primary
 source. AI-generated citations or summaries are not evidence records.
@@ -1306,7 +1398,8 @@ source. AI-generated citations or summaries are not evidence records.
 
 - [x] The specification follows the domain-first staged architecture.
 - [x] Cardio Plan Specification V1 consumes existing `plan_status` and
-  `cardio_decision`.
+  `cardio_decision` and copies the existing review context without
+  interpretation.
 - [x] Intake cardio-need logic is not duplicated.
 - [x] Safety and medical logic are not duplicated.
 - [x] Training remains authoritative for resistance programming and schedule.
@@ -1325,16 +1418,22 @@ source. AI-generated citations or summaries are not evidence records.
 - [x] Missing preference, cardio-experience, recovery-score, and conditioning
   contracts are documented instead of guessed.
 - [x] Constraints, reasons, versions, immutability, and determinism are required.
+- [x] Exact upstream review codes and source paths remain available in a
+  verbatim copied review context.
+- [x] Cross-artifact identity claims are limited to lineage fields actually
+  exposed by public contracts.
 - [x] Future type, dose, progression, scheduling, and adaptation decisions are
   blocked on evidence records.
+- [x] Scientific stage outputs must link independent policy, rule, and evidence
+  identifiers.
 
 ### 10.3 Required future Plan Specification tests
 
 The first code task must cover:
 
 - Minimal public API, package export, version, statuses, and frozen enums.
-- Full `IntakeDecision` acceptance while reading only `plan_status` and
-  `cardio_decision`.
+- Full `IntakeDecision` acceptance while reading only `plan_status`,
+  `cardio_decision`, and the three contracted top-level review arrays.
 - Rejection of unknown fields inside `cardio_decision`.
 - All four Intake `plan_status` mappings.
 - All four current cardio strategies.
@@ -1349,9 +1448,12 @@ The first code task must cover:
 - Rejection of non-session strategies with `MODERATE` intensity.
 - Rejection of impossible current status/strategy combinations.
 - Rejection of malformed constraints and reasons.
+- Rejection of malformed review flags, decision reasons, and data issues.
+- Rejection of unknown copied-record fields and non-JSON-compatible values.
 - Exact value preservation for constraints and reasons.
-- Preservation of input order and repeated constraint codes with distinct
-  records.
+- Exact value preservation for `source_review_context`, including review codes
+  and source paths.
+- Preservation of input order and repeated distinct constraint/review records.
 - No frequency, duration, modality, type, schedule, progression, or step target
   in Plan Specification.
 - Input non-mutation and non-freezing.
@@ -1369,10 +1471,13 @@ When separately authorized, later stages must add:
 - Exact movement-restriction mapping without inference.
 - Preference tie-breaking only among eligible modalities.
 - Evidence-policy version and applied-rule traceability.
+- Runtime linkage to stable evidence-record identifiers.
 - Frequency/duration/intensity boundary tests.
 - Interval work/recovery protocol consistency.
 - No automatic HIIT under the current Intake intensity contract.
 - Training schedule conflict and non-mutation tests.
+- Confirmation that an unrelated Training review does not lower Cardio status.
+- Cardio-owned review behavior for a concrete structured scheduling conflict.
 - Fixed-day and session-sequence behavior.
 - Existing-sport coordination and no double counting.
 - Preflight issue ordering and source attribution.
