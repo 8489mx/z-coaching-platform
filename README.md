@@ -1132,3 +1132,21 @@ ready, `REVIEW_REQUIRED` retains coach review, and `WITHHELD` remains withheld.
 The complete result is deeply frozen, deterministic, and unaffected by Food
 Catalog item order. Upstream validation errors are allowed to propagate without
 conversion. Pipeline tracing is intentionally outside Nutrition Engine V1.
+
+## Pipeline Trace Core V1
+
+The standalone `src/pipeline-trace` module exposes
+`buildPipelineTrace({ pipelineCode, engineVersion, finalStatus,
+readyForCoachReview, stages })`. Its version is `pipeline-trace-v1` and its
+fixed policy is `Z_COACHING_PIPELINE_TRACE_V1`. It is not integrated into the
+Nutrition Engine or any other pipeline in V1.
+
+Each caller-supplied stage is projected to ordered trace metadata only: a
+one-based sequence, stage code and version, normalized trace status, unique
+issue and reason codes in first-occurrence order, and an optional non-negative
+duration. Full stage outputs, timestamps, and random values are never retained.
+The module performs no business decisions or status inference.
+
+Stage codes must be unique. `READY`, `REVIEW_REQUIRED`, `WITHHELD`, and `FAILED`
+are the only trace statuses. Inputs remain unchanged and unfrozen; the returned
+trace is independent, deeply frozen, and deterministic for identical inputs.
