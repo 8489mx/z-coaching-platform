@@ -125,6 +125,8 @@ change.
 | Intake cardio decision | Produce bounded cardio guidance inside the intake decision. | Intake-level decision complete | `src/intake-decision-engine/cardio-rules/` | Tested as part of intake/rules. |
 | Cardio Plan Specification | Turn the frozen intake cardio decision into a downstream specification without recalculating it. | V1 complete | `src/cardio-plan-specification/` | Propagates strategy, limits, constraints, and produces WITHHELD when blocked. Tested. |
 | Cardio Modality Requirements | Select precise modalities and upper bounds based on the specification strategy. | V1 complete | `src/cardio-modality-requirements/` | Outputs LISS and STEPS; HIIT is deferred. Ready/withheld paths are tested. |
+| Cardio Prescription | Translate modality requirements into specific, evidence-backed concrete cardio dose prescriptions. | V1 complete | `src/cardio-prescription/` | Enforces minimum effective dose and sets sequence blocks. Ready/provisional/withheld paths are tested. |
+| Weekly Cardio Schedule | Place prescribed cardio sessions into the week coordinately with training and sports. | V1 complete | `src/weekly-cardio-schedule/` | Prioritizes rest days, evaluates sport loads, and adds flexible instructions. Tested. |
 | Training Plan Specification | Turn the frozen intake training decision into a split and ordered sessions without recalculating it. | V1 complete | `src/training-plan-specification/` | Covers 2–6 days, ready/provisional/withheld states, and the valid provisional zero-day case. |
 | Training Session Blueprint | Translate each session code into ordered movement slots. | V1 complete | `src/training-session-blueprint/` | All 13 session codes and 14 movement-slot codes are mapped and tested. |
 | Exercise Catalog | Provide structured exercises and prescription-unit metadata. | Minimal V1 complete | `src/exercise-catalog/` | 28 exercises, two per movement slot; query APIs, order, equipment, locations, and units are tested. |
@@ -201,7 +203,7 @@ The domain foundation is strong, but the product is not yet an operating
 platform. The most important partial areas are:
 
 - Coach approval is represented only by eligibility booleans, not a workflow.
-- Cardio has a specification, but lacks modality requirements and a downstream plan pipeline.
+- Cardio preflight and orchestration facade are missing.
 - Training prescription lacks progression and load/autoregulation.
 - Nutrition lacks adaptation/calibration, recipes, shopping, broader regional
   catalogs, and longitudinal outcome feedback.
@@ -237,7 +239,7 @@ During implementation:
 5. Add tests and evidence traceability with every scientific rule.
 6. Run the repository acceptance commands before committing.
 
-The next recommended domain task is **Cardio Prescription V1**. It must
-translate modality requirements into specific, evidence-backed concrete cardio prescriptions
-without scheduling them into a weekly calendar yet. Its exact scope is defined in
-[ROADMAP.md](ROADMAP.md).
+The next recommended domain task is **Cardio Preflight & Facade**. It must
+evaluate the generated cardio schedule against the client's original intake profile
+for final safety checks before assembling the complete Cardio Engine orchestration.
+Its exact scope is defined in [ROADMAP.md](ROADMAP.md).

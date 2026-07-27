@@ -27,35 +27,29 @@ into unfinished domain work. Exact current facts and test totals live in
 - Cardio Plan Specification V1.
 - Cardio Session/Modality Requirements V1.
 
-### Next task: Cardio Prescription V1
+- Cardio Prescription V1.
+- Cardio Weekly Schedule V1.
+
+### Next task: Cardio Preflight & Facade
 
 This is the exact next implementation task.
 
-Purpose: Translate modality requirements into specific, evidence-backed concrete cardio prescriptions (e.g., prescribing exact duration, intensity, or zones) before scheduling them into the week.
+Purpose: 
+1. `CardioPreflight`: Perform a final evaluation of the generated Weekly Cardio Schedule against the client's original intake profile to ensure no catastrophic errors or safety violations slipped through. It blocks the pipeline if a violation is found.
+2. `CardioEngineFacade`: A cohesive orchestrator that strings together all the cardio engine modules (`CardioPlanSpecification` -> `CardioModalityRequirements` -> `CardioPrescription` -> `WeeklyCardioSchedule` -> `CardioPreflight`).
 
 Minimum scope:
 
-1. Create a standalone domain module (`src/cardio-prescription/`).
-2. Consume the `CardioModalityRequirements` and generate concrete session building blocks.
-3. Define safe lower and upper dose boundaries (e.g., minimum effective dose for LISS).
-4. Preserve upstream reasons and constraints.
-5. Provide tests for standard scenarios and blocked paths.
+1. Create a standalone domain module (`src/cardio-plan-preflight/`).
+2. Evaluate the `WeeklyCardioSchedule` against `ClientIntakeProfile`.
+3. Create a facade module (`src/cardio-engine/`).
+4. Provide tests for standard scenarios and blocked paths.
 
 Definition of done:
 
 - Contracts reject invalid and mismatched upstream data.
 - Ready, review-required, and blocked/withheld paths are tested.
 - All existing tests and acceptance commands pass.
-
-### Remaining Cardio Engine sequence
-
-After the prescription is approved, proceed through separately scoped tasks:
-
-1. Weekly cardio scheduling coordinated with training and additional sports.
-2. Cardio preflight.
-3. Cardio Engine facade.
-
-Do not collapse these into one broad change.
 
 ### Mobility/Flexibility Engine
 
