@@ -24,48 +24,39 @@ into unfinished domain work. Exact current facts and test totals live in
 - Nutrition Engine V1 from intake through preflight.
 - Structured exercise and food catalogs.
 - Pipeline Trace Core V1 as a standalone metadata contract.
+- Cardio Plan Specification V1.
 
-### Next task: Cardio Plan Specification V1
+### Next task: Cardio Session/Modality Requirements V1
 
 This is the exact next implementation task.
 
-Purpose: transform the existing
-`intakeDecision.cardio_decision` into a versioned downstream specification
-without recalculating intake safety or inventing a complete cardio program.
+Purpose: transform the `Cardio Plan Specification` into a set of precise, evidence-backed requirements for individual cardio sessions (modalities, minimum/maximum intensity boundaries, duration limits per modality).
 
 Minimum scope:
 
-1. Create a standalone domain module with contracts, enums, builder, public
-   export, and tests.
-2. Consume the existing cardio decision only through its documented output.
-3. Preserve upstream status, constraints, reasons, safety limits, and
-   additional-sport context.
-4. Produce `WITHHELD` when upstream status prohibits planning.
-5. Treat existing maximum values as limits, not automatically as prescribed
-   doses.
-6. Do not introduce modality, frequency, intensity, or progression rules until
-   their evidence and exceptions are explicitly approved.
-7. Add rule-level scientific references for every new numeric or clinical
-   policy.
-8. Do not add API, database, UI, AI, check-in, or adaptation behavior.
+1. Create a standalone domain module with contracts, enums, builder, public export, and tests.
+2. Consume the existing `Cardio Plan Specification`.
+3. Select appropriate cardio modalities (e.g., LISS, HIIT, Steps) based on the prescribed strategy and client constraints (e.g., walking ability).
+4. Define duration and intensity limits per selected modality.
+5. Produce `WITHHELD` or `REVIEW_REQUIRED` when conditions cannot be safely satisfied.
+6. Do not schedule the sessions into a weekly calendar yet (that is a separate future phase).
+7. Add rule-level scientific references for modality selection and intensity mapping.
 
 Definition of done:
 
 - Public API is minimal and versioned.
 - Contracts reject invalid and mismatched upstream data.
-- Ready, coach-review, medical-review, and blocked/withheld paths are tested.
-- Inputs remain unmodified; deterministic output is independently immutable.
+- Ready, review-required, and blocked/withheld paths are tested.
 - All existing tests and acceptance commands pass.
 
 ### Remaining Cardio Engine sequence
 
-After the specification is approved, proceed through separately scoped tasks:
+After the modality requirements are approved, proceed through separately scoped tasks:
 
-1. Cardio session blueprint or modality requirements.
-2. Cardio prescription with evidence-backed dose boundaries.
-3. Weekly cardio scheduling coordinated with training and additional sports.
-4. Cardio preflight.
-5. Cardio Engine facade.
+1. Cardio prescription with evidence-backed dose boundaries.
+2. Weekly cardio scheduling coordinated with training and additional sports.
+3. Cardio preflight.
+4. Cardio Engine facade.
 
 Do not collapse these into one broad change.
 
