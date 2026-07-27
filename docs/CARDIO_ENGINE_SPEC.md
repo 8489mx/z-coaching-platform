@@ -28,8 +28,6 @@ This specification must be read with:
 - [DEVELOPMENT_RULES.md](DEVELOPMENT_RULES.md)
 - [SCIENTIFIC_POLICY.md](SCIENTIFIC_POLICY.md)
 - [AI_ARCHITECTURE.md](AI_ARCHITECTURE.md)
-- [CARDIO_ENGINE_REVIEW.md](CARDIO_ENGINE_REVIEW.md): formal architecture and
-  implementation-readiness review.
 
 ## 1. Purpose
 
@@ -278,8 +276,8 @@ intensity_start:
   MODERATE
 ```
 
-This is not a new closed wrapper containing only the fields above. The builder
-MUST accept the other documented top-level `IntakeDecision` fields produced by
+This is not a new closed wrapper containing only the fields above. The builder MUST
+accept the other documented top-level `IntakeDecision` fields produced by
 `evaluateIntake`. It reads the three top-level review arrays only to copy the
 authoritative review context; it MUST NOT interpret them or repeat any rule.
 Unknown fields inside `cardio_decision` or any copied review record indicate a
@@ -486,8 +484,6 @@ The deterministic precedence is:
 
 The engine does not inspect raw symptoms, pain, pregnancy, medical conditions,
 medications, or free text to create a new contraindication.
-It copies the existing Intake review context so the withheld or provisional
-state remains explainable without repeating those rules.
 
 ### 4.3 Initial volume
 
@@ -889,7 +885,6 @@ The target facade output is conceptually:
     "cardio_plan_preflight": "cardio-plan-preflight-v1",
     "training_engine": "training-engine-v1",
     "cardio_activity_catalog": "catalog-version-from-input",
-    "cardio_modality_selection_policy": "policy-version-from-selection-stage",
     "cardio_prescription_policy": "policy-version-from-prescription-stage",
     "cardio_scheduling_policy": "policy-version-from-scheduling-stage"
   },
