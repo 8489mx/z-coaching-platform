@@ -124,6 +124,7 @@ change.
 | Intake training decision | Determine recommended days, schedule mode, starting volume, and constraints. | V1 complete | `src/intake-decision-engine/training-rules/` | Equipment, locations, injuries, age, additional sports, and review behavior are covered. |
 | Intake cardio decision | Produce bounded cardio guidance inside the intake decision. | Intake-level decision complete | `src/intake-decision-engine/cardio-rules/` | Tested as part of intake/rules. |
 | Cardio Plan Specification | Turn the frozen intake cardio decision into a downstream specification without recalculating it. | V1 complete | `src/cardio-plan-specification/` | Propagates strategy, limits, constraints, and produces WITHHELD when blocked. Tested. |
+| Cardio Modality Requirements | Select precise modalities and upper bounds based on the specification strategy. | V1 complete | `src/cardio-modality-requirements/` | Outputs LISS and STEPS; HIIT is deferred. Ready/withheld paths are tested. |
 | Training Plan Specification | Turn the frozen intake training decision into a split and ordered sessions without recalculating it. | V1 complete | `src/training-plan-specification/` | Covers 2–6 days, ready/provisional/withheld states, and the valid provisional zero-day case. |
 | Training Session Blueprint | Translate each session code into ordered movement slots. | V1 complete | `src/training-session-blueprint/` | All 13 session codes and 14 movement-slot codes are mapped and tested. |
 | Exercise Catalog | Provide structured exercises and prescription-unit metadata. | Minimal V1 complete | `src/exercise-catalog/` | 28 exercises, two per movement slot; query APIs, order, equipment, locations, and units are tested. |
@@ -236,7 +237,7 @@ During implementation:
 5. Add tests and evidence traceability with every scientific rule.
 6. Run the repository acceptance commands before committing.
 
-The next recommended domain task is **Cardio Session/Modality Requirements V1**. It must
-transform the specification into specific modalities and intensity/duration boundaries
-without scheduling them. Its exact scope is defined in
+The next recommended domain task is **Cardio Prescription V1**. It must
+translate modality requirements into specific, evidence-backed concrete cardio prescriptions
+without scheduling them into a weekly calendar yet. Its exact scope is defined in
 [ROADMAP.md](ROADMAP.md).

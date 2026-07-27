@@ -25,38 +25,35 @@ into unfinished domain work. Exact current facts and test totals live in
 - Structured exercise and food catalogs.
 - Pipeline Trace Core V1 as a standalone metadata contract.
 - Cardio Plan Specification V1.
+- Cardio Session/Modality Requirements V1.
 
-### Next task: Cardio Session/Modality Requirements V1
+### Next task: Cardio Prescription V1
 
 This is the exact next implementation task.
 
-Purpose: transform the `Cardio Plan Specification` into a set of precise, evidence-backed requirements for individual cardio sessions (modalities, minimum/maximum intensity boundaries, duration limits per modality).
+Purpose: Translate modality requirements into specific, evidence-backed concrete cardio prescriptions (e.g., prescribing exact duration, intensity, or zones) before scheduling them into the week.
 
 Minimum scope:
 
-1. Create a standalone domain module with contracts, enums, builder, public export, and tests.
-2. Consume the existing `Cardio Plan Specification`.
-3. Select appropriate cardio modalities (e.g., LISS, HIIT, Steps) based on the prescribed strategy and client constraints (e.g., walking ability).
-4. Define duration and intensity limits per selected modality.
-5. Produce `WITHHELD` or `REVIEW_REQUIRED` when conditions cannot be safely satisfied.
-6. Do not schedule the sessions into a weekly calendar yet (that is a separate future phase).
-7. Add rule-level scientific references for modality selection and intensity mapping.
+1. Create a standalone domain module (`src/cardio-prescription/`).
+2. Consume the `CardioModalityRequirements` and generate concrete session building blocks.
+3. Define safe lower and upper dose boundaries (e.g., minimum effective dose for LISS).
+4. Preserve upstream reasons and constraints.
+5. Provide tests for standard scenarios and blocked paths.
 
 Definition of done:
 
-- Public API is minimal and versioned.
 - Contracts reject invalid and mismatched upstream data.
 - Ready, review-required, and blocked/withheld paths are tested.
 - All existing tests and acceptance commands pass.
 
 ### Remaining Cardio Engine sequence
 
-After the modality requirements are approved, proceed through separately scoped tasks:
+After the prescription is approved, proceed through separately scoped tasks:
 
-1. Cardio prescription with evidence-backed dose boundaries.
-2. Weekly cardio scheduling coordinated with training and additional sports.
-3. Cardio preflight.
-4. Cardio Engine facade.
+1. Weekly cardio scheduling coordinated with training and additional sports.
+2. Cardio preflight.
+3. Cardio Engine facade.
 
 Do not collapse these into one broad change.
 
