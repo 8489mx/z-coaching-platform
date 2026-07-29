@@ -161,6 +161,7 @@ export const EquipmentCode = Object.freeze({
   CABLE_STATION: "CABLE_STATION",
   SELECTORIZED_MACHINES: "SELECTORIZED_MACHINES",
   KETTLEBELLS: "KETTLEBELLS",
+  FOAM_ROLLER: "FOAM_ROLLER",
 });
 
 export const EquipmentLoadCapacity = Object.freeze({
