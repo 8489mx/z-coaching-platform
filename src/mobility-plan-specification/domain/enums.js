@@ -1,0 +1,11 @@
+export const MobilityPlanStatus = Object.freeze({
+  READY: "READY",
+  PROVISIONAL_REVIEW_REQUIRED: "PROVISIONAL_REVIEW_REQUIRED",
+  WITHHELD: "WITHHELD",
+});
+
+export const MobilityFormalSessionState = Object.freeze({
+  NOT_INDICATED: "NOT_INDICATED",
+  PRESCRIPTION_REQUIRED: "PRESCRIPTION_REQUIRED",
+  WITHHELD: "WITHHELD",
+});

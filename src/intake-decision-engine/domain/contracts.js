@@ -57,6 +57,7 @@
  * @property {{calorie_direction:string, confidence:string, meal_count_strategy:string, constraints:DecisionConstraint[], reasons:DecisionReason[]}} nutrition_decision
  * @property {{recommended_days:number, schedule_mode:string, intro_week_required:boolean, volume_start:string, constraints:DecisionConstraint[], reasons:DecisionReason[]}} training_decision
  * @property {{strategy:string, max_sessions:number, max_duration_minutes:number, intensity_start:string, constraints:DecisionConstraint[], reasons:DecisionReason[]}} cardio_decision
+ * @property {{strategy:string, max_duration_minutes:number, constraints:DecisionConstraint[], reasons:DecisionReason[]}} mobility_decision
  * @property {DecisionReason[]} decision_reasons
  * @property {DataIssue[]} missing_or_uncertain_data
  */
