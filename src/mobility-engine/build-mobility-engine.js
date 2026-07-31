@@ -1,4 +1,4 @@
-import { buildMobilityPlanSpec } from "../mobility-plan-specification/index.js";
+import { buildMobilityPlanSpecification } from "../mobility-plan-specification/index.js";
 import { buildMobilityModalityRequirements } from "../mobility-modality-requirements/index.js";
 import { buildMobilityPrescription } from "../mobility-prescription/index.js";
 import { buildWeeklyMobilitySchedule } from "../weekly-mobility-schedule/index.js";
@@ -14,7 +14,7 @@ import { MOBILITY_ENGINE_VERSION } from "./domain/enums.js";
  */
 export function buildMobilityEngine(intakeDecision, weeklyTrainingSchedule = null) {
   // 1. Convert intake rules to plan specification
-  const plan_specification = buildMobilityPlanSpec(intakeDecision);
+  const plan_specification = buildMobilityPlanSpecification(intakeDecision);
 
   // 2. Select modalities based on specification
   const modality_requirements = buildMobilityModalityRequirements(plan_specification);

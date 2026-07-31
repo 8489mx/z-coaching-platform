@@ -24,17 +24,17 @@ test("buildWeeklyMobilitySchedule assigns mobility to all days for INTEGRATED_AN
   };
 
   const weeklyTrainingSchedule = {
-    scheduled_days: [
-      { day_of_week: "MONDAY", sequence: null, has_primary_training: true },
-      { day_of_week: "TUESDAY", sequence: null, has_primary_training: false },
-      { day_of_week: "WEDNESDAY", sequence: null, has_primary_training: true }
+    schedule_mode: "FIXED_DAYS",
+    sessions: [
+      { scheduled_day: "MONDAY", sequence: null },
+      { scheduled_day: "WEDNESDAY", sequence: null }
     ]
   };
 
   const schedule = buildWeeklyMobilitySchedule(mobilityPrescription, mobilityPlanSpec, weeklyTrainingSchedule);
 
   assert.equal(schedule.status, MobilityScheduleStatus.READY);
-  assert.equal(schedule.scheduled_days.length, 3);
+  assert.equal(schedule.scheduled_days.length, 7);
   
   const monday = schedule.scheduled_days.find(d => d.day_of_week === "MONDAY");
   assert.ok(monday.schedule_instructions[0].includes("كإحماء")); // Training day text

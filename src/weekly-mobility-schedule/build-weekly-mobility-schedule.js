@@ -76,24 +76,60 @@ export function buildWeeklyMobilitySchedule(mobilityPrescription, mobilityPlanSp
   const INSTRUCTION_TRAINING_DAY = "يُفضل أداء الجلسة كإحماء قبل التمرين، أو للتهدئة بعده.";
   const INSTRUCTION_REST_DAY = "يُفضل أداؤها في الصباح الباكر لبدء اليوم بنشاط، أو في أي وقت مناسب لك خلال يوم الراحة.";
 
-  for (const day of weeklyTrainingSchedule.scheduled_days) {
-    const hasTraining = day.has_primary_training;
-    
-    let shouldSchedule = false;
-    let instructions = [];
+  const trainingDays = new Set();
+  const sequenceSessions = [];
 
-    if (strategy === MobilityStrategy.INTEGRATED_AND_SEPARATE) {
-      shouldSchedule = true;
-      instructions.push(hasTraining ? INSTRUCTION_TRAINING_DAY : INSTRUCTION_REST_DAY);
+  if (weeklyTrainingSchedule && weeklyTrainingSchedule.sessions) {
+    for (const session of weeklyTrainingSchedule.sessions) {
+      if (session.scheduled_day) {
+        trainingDays.add(session.scheduled_day);
+      } else if (session.sequence !== null) {
+        sequenceSessions.push(session.sequence);
+      }
     }
+  }
 
-    if (shouldSchedule) {
-      scheduled_days.push({
-        day_of_week: day.day_of_week,
-        sequence: day.sequence,
-        modalities: [...mobilityPrescription.prescribed_modalities],
-        schedule_instructions: instructions
-      });
+  const DAYS_OF_WEEK = ["MONDAY", "TUESDAY", "WEDNESDAY", "THURSDAY", "FRIDAY", "SATURDAY", "SUNDAY"];
+  const isSessionSequence = weeklyTrainingSchedule?.schedule_mode === "SESSION_SEQUENCE";
+
+  if (isSessionSequence) {
+    // If it's a sequence, we might just provide sequence sessions for training days, and no fixed rest days.
+    // Or we provide 7 sequence days. For simplicity, we just provide the training sequence days.
+    for (const seq of sequenceSessions) {
+      let instructions = [];
+      if (strategy === MobilityStrategy.INTEGRATED_AND_SEPARATE) {
+        instructions.push(INSTRUCTION_TRAINING_DAY);
+      }
+
+      if (instructions.length > 0) {
+        scheduled_days.push({
+          day_of_week: null,
+          sequence: seq,
+          modalities: [...mobilityPrescription.prescribed_modalities],
+          schedule_instructions: instructions
+        });
+      }
+    }
+  } else {
+    for (const day of DAYS_OF_WEEK) {
+      const hasTraining = trainingDays.has(day);
+      
+      let shouldSchedule = false;
+      let instructions = [];
+
+      if (strategy === MobilityStrategy.INTEGRATED_AND_SEPARATE) {
+        shouldSchedule = true;
+        instructions.push(hasTraining ? INSTRUCTION_TRAINING_DAY : INSTRUCTION_REST_DAY);
+      }
+
+      if (shouldSchedule) {
+        scheduled_days.push({
+          day_of_week: day,
+          sequence: null,
+          modalities: [...mobilityPrescription.prescribed_modalities],
+          schedule_instructions: instructions
+        });
+      }
     }
   }
 

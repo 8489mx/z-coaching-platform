@@ -30,9 +30,9 @@ test("Mobility Engine Pipeline Tests", async (t) => {
   await t.test("It generates a full APPROVED pipeline for a healthy client", () => {
     const intakeDecision = evaluateIntake(VALID_MINIMAL_PROFILE);
     const weeklyTrainingSchedule = {
-      scheduled_days: [
-        { day_of_week: "MONDAY", sequence: null, has_primary_training: true },
-        { day_of_week: "TUESDAY", sequence: null, has_primary_training: false }
+      schedule_mode: "FIXED_DAYS",
+      sessions: [
+        { scheduled_day: "MONDAY", sequence: null },
       ]
     };
 
@@ -47,7 +47,7 @@ test("Mobility Engine Pipeline Tests", async (t) => {
     assert.equal(result.plan_specification.strategy, MobilityStrategy.INTEGRATED_AND_SEPARATE);
     
     // Should have scheduled on all days provided
-    assert.equal(result.weekly_schedule.scheduled_days.length, 2);
+    assert.equal(result.weekly_schedule.scheduled_days.length, 7);
   });
 
   await t.test("It blocks pipeline and returns PROVISIONAL_REVIEW_REQUIRED for an injured client", () => {
