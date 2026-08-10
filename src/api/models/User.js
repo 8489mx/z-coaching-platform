@@ -30,6 +30,11 @@ const User = sequelize.define("User", {
     type: DataTypes.STRING,
     allowNull: true,
   },
+  role: {
+    type: DataTypes.ENUM("ADMIN", "CLIENT"),
+    defaultValue: "CLIENT",
+    allowNull: false,
+  }
 }, {
   tableName: "users",
   timestamps: true, // adds createdAt and updatedAt

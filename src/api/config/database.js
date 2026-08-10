@@ -9,7 +9,7 @@ const sequelize = new Sequelize(
   process.env.DB_PASSWORD || "",
   {
     host: process.env.DB_HOST || "localhost",
-    dialect: "mysql",
+    dialect: "mariadb",
     logging: false, // Set to true to see SQL queries in console
   }
 );
