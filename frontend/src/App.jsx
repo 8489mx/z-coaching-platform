@@ -1,40 +1,28 @@
-import './rtl.css';
+import React from 'react';
 import './i18n';
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider } from './contexts/AuthContext';
-import Layout from './components/Layout';
 import DashboardClone from './pages/DashboardClone';
-import IntakeWizard from './pages/IntakeWizard';
-import TrainingSchedule from './pages/TrainingSchedule';
-import Catalogs from './pages/Catalogs';
-import ClientProfile from './pages/ClientProfile';
-import NutritionPlan from './pages/NutritionPlan';
-import PipelineTrace from './pages/PipelineTrace';
-import Login from './pages/Login';
-import ClientLogin from './pages/ClientLogin';
-import Clients from './pages/Clients';
-import ReviewIntake from './pages/ReviewIntake';
+import UserDashboardClone from './pages/UserDashboardClone';
+import IndexClone from './pages/IndexClone';
+import ProgressClone from './pages/ProgressClone';
+import ProfileClone from './pages/ProfileClone';
 
 function App() {
   return (
     <AuthProvider>
       <Router>
         <Routes>
-          <Route path="/login" element={<Login />} />
-          <Route path="/client-login" element={<ClientLogin />} />
-          <Route path="/client-intake" element={<IntakeWizard />} />
-          
-          <Route path="/" element={<Layout />}>
-            <Route index element={<DashboardClone />} />
-            <Route path="intake" element={<IntakeWizard />} />
-            <Route path="profile" element={<ClientProfile />} />
-            <Route path="schedule" element={<TrainingSchedule />} />
-            <Route path="nutrition" element={<NutritionPlan />} />
-            <Route path="catalogs" element={<Catalogs />} />
-            <Route path="logs" element={<PipelineTrace />} />
-            <Route path="admin/clients" element={<Clients />} />
-            <Route path="admin/review/:id" element={<ReviewIntake />} />
-          </Route>
+          <Route path="/" element={<DashboardClone />} />
+          <Route path="/index" element={<IndexClone />} />
+          <Route path="/index.html" element={<Navigate to="/index" />} />
+          <Route path="/user-dashboard" element={<UserDashboardClone />} />
+          <Route path="/user-dashboard.html" element={<Navigate to="/user-dashboard" />} />
+          <Route path="/progress" element={<ProgressClone />} />
+          <Route path="/progress.html" element={<Navigate to="/progress" />} />
+          <Route path="/profile" element={<ProfileClone />} />
+          <Route path="/profile.html" element={<Navigate to="/profile" />} />
+          <Route path="*" element={<Navigate to="/" />} />
         </Routes>
       </Router>
     </AuthProvider>
