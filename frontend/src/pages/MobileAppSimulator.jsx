@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { getArabicExerciseName } from '../utils/exerciseTranslator';
+import { API_BASE } from '../config/api';
 
 export default function MobileAppSimulator() {
   const [activeTab, setActiveTab] = useState('home'); // 'home' | 'workout' | 'nutrition' | 'checkin'
@@ -38,7 +39,7 @@ export default function MobileAppSimulator() {
 
   const fetchClients = async () => {
     try {
-      const res = await fetch('http://localhost:3000/api/v1/clients');
+      const res = await fetch(`${API_BASE}/api/v1/clients`);
       const data = await res.json();
       if (data.clients) setClients(data.clients);
     } catch (e) {
@@ -49,7 +50,7 @@ export default function MobileAppSimulator() {
   const fetchData = async (uid) => {
     try {
       setLoading(true);
-      const res = await fetch(`http://localhost:3000/api/v1/programs/active/${uid}`);
+      const res = await fetch(`${API_BASE}/api/v1/programs/active/${uid}`);
       const data = await res.json();
       if (data.master_program) {
         setProgram(data.master_program);
@@ -70,7 +71,7 @@ export default function MobileAppSimulator() {
     e.preventDefault();
     try {
       setSubmittingCheckin(true);
-      const res = await fetch('http://localhost:3000/api/v1/programs/checkin/submit', {
+      const res = await fetch(`${API_BASE}/api/v1/programs/checkin/submit`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

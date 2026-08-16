@@ -40,9 +40,9 @@ const startServer = async () => {
     console.warn("Unable to connect to the database. Running in preview/mock mode.", err.message);
   }
 
-  // Start the server regardless of DB connection (so preview API works)
-  app.listen(PORT, () => {
-    console.log(`Server is running on port ${PORT}`);
+  // Start the server on 0.0.0.0 so all network devices can connect
+  app.listen(PORT, "0.0.0.0", () => {
+    console.log(`Server is running on port ${PORT} (0.0.0.0)`);
   });
 };
 

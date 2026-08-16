@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { API_BASE } from '../config/api';
 import '../engine-tester.css';
 
 const DEFAULT_INTAKE = {
@@ -146,8 +147,8 @@ const EngineTester = () => {
         throw new Error("Invalid JSON formatting.");
       }
 
-      // We hit the backend API running locally on port 3000
-      const response = await fetch("http://localhost:3000/api/v1/programs/generate-preview", {
+      // We hit the backend API running on port 3000
+      const response = await fetch(`${API_BASE}/api/v1/programs/generate-preview`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json"

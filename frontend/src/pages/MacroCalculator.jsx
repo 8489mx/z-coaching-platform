@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
+import { API_BASE } from '../config/api';
 import NotificationsDropdown from '../components/NotificationsDropdown';
 
 export default function MacroCalculator() {
@@ -27,7 +28,7 @@ export default function MacroCalculator() {
 
   const fetchClients = async () => {
     try {
-      const res = await fetch('http://localhost:3000/api/v1/clients');
+      const res = await fetch(`${API_BASE}/api/v1/clients`);
       const data = await res.json();
       if (data.clients) setClients(data.clients);
     } catch (e) {
@@ -106,7 +107,7 @@ export default function MacroCalculator() {
     }
     try {
       setSaving(true);
-      const res = await fetch(`http://localhost:3000/api/v1/programs/active/${selectedClient}`);
+      const res = await fetch(`${API_BASE}/api/v1/programs/active/${selectedClient}`);
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || 'فشل تحميل خطة المتدرب');
 
@@ -119,7 +120,7 @@ export default function MacroCalculator() {
       updatedProgram.nutrition_program.daily_targets.carbs_g = targetCarbGrams;
       updatedProgram.nutrition_program.daily_targets.fats_g = targetFatGrams;
 
-      const saveRes = await fetch('http://localhost:3000/api/v1/programs/update-custom', {
+      const saveRes = await fetch(`${API_BASE}/api/v1/programs/update-custom`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

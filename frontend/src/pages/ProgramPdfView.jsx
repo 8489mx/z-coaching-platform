@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { getArabicExerciseName } from '../utils/exerciseTranslator';
+import { API_BASE } from '../config/api';
 
 export default function ProgramPdfView() {
   const [loading, setLoading] = useState(true);
@@ -17,7 +18,7 @@ export default function ProgramPdfView() {
   const fetchData = async () => {
     try {
       setLoading(true);
-      const res = await fetch(`http://localhost:3000/api/v1/programs/active/${targetUserId}`);
+      const res = await fetch(`${API_BASE}/api/v1/programs/active/${targetUserId}`);
       const data = await res.json();
       if (data.master_program) {
         setProgram(data.master_program);

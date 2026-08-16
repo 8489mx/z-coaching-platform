@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
+import { API_BASE } from '../config/api';
 import NotificationsDropdown from '../components/NotificationsDropdown';
 
 export default function Subscriptions() {
@@ -40,7 +41,7 @@ export default function Subscriptions() {
   const fetchSubscriptions = async () => {
     try {
       setLoading(true);
-      const res = await fetch('http://localhost:3000/api/v1/subscriptions/overview');
+      const res = await fetch(`${API_BASE}/api/v1/subscriptions/overview`);
       const data = await res.json();
       if (data.overview) setOverview(data.overview);
       if (data.clients) setClients(data.clients);
@@ -54,7 +55,7 @@ export default function Subscriptions() {
   const handleRenew = async (client) => {
     if (!window.confirm(`هل أنت متأكد من رغبتك في تجديد اشتراك ${client.full_name || 'المشترك'}؟`)) return;
     try {
-      const res = await fetch(`http://localhost:3000/api/v1/subscriptions/renew/${client.client_code || client.id}`, {
+      const res = await fetch(`${API_BASE}/api/v1/subscriptions/renew/${client.client_code || client.id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ package_code: client.package || '1_MONTH' })
@@ -84,7 +85,7 @@ export default function Subscriptions() {
     if (!editClient) return;
     try {
       setSaving(true);
-      const res = await fetch(`http://localhost:3000/api/v1/subscriptions/update/${editClient.client_code || editClient.id}`, {
+      const res = await fetch(`${API_BASE}/api/v1/subscriptions/update/${editClient.client_code || editClient.id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(editForm)

@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
+import { API_BASE } from '../config/api';
 
 export default function ProgressClone() {
   const [loading, setLoading] = useState(true);
@@ -38,7 +39,7 @@ export default function ProgressClone() {
 
   const fetchClients = async () => {
     try {
-      const res = await fetch('http://localhost:3000/api/v1/clients');
+      const res = await fetch(`${API_BASE}/api/v1/clients`);
       const data = await res.json();
       if (data.clients) setClients(data.clients);
     } catch (e) {
@@ -49,7 +50,7 @@ export default function ProgressClone() {
   const fetchProgressData = async (uid) => {
     try {
       setLoading(true);
-      const res = await fetch(`http://localhost:3000/api/v1/programs/checkin/history/${uid}`);
+      const res = await fetch(`${API_BASE}/api/v1/programs/checkin/history/${uid}`);
       const data = await res.json();
       if (data.user) setUser(data.user);
       if (data.checkins) setCheckins(data.checkins);
@@ -62,7 +63,7 @@ export default function ProgressClone() {
 
   const fetchPhotos = async (uid) => {
     try {
-      const res = await fetch(`http://localhost:3000/api/v1/photos/${uid}`);
+      const res = await fetch(`${API_BASE}/api/v1/photos/${uid}`);
       const data = await res.json();
       if (data.photos) setPhotos(data.photos);
     } catch (e) {
@@ -88,7 +89,7 @@ export default function ProgressClone() {
     }
     try {
       setUploading(true);
-      const res = await fetch('http://localhost:3000/api/v1/photos/upload', {
+      const res = await fetch(`${API_BASE}/api/v1/photos/upload`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

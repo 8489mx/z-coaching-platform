@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { getArabicExerciseName } from "../utils/exerciseTranslator";
+import { API_BASE } from "../config/api";
 
 export default function ClientProgramView() {
   const [activeTab, setActiveTab] = useState("nutrition"); // 'nutrition' | 'training' | 'cardio' | 'checkin'
@@ -101,7 +102,7 @@ export default function ClientProgramView() {
         },
       };
 
-      const response = await fetch("http://localhost:3000/api/v1/programs/generate-preview", {
+      const response = await fetch(`${API_BASE}/api/v1/programs/generate-preview`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(sampleIntake),
@@ -127,7 +128,7 @@ export default function ClientProgramView() {
       setSwapModalOpen(true);
       setSwapLoading(true);
 
-      const res = await fetch("http://localhost:3000/api/v1/programs/swap-candidates", {
+      const res = await fetch(`${API_BASE}/api/v1/programs/swap-candidates`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -149,7 +150,7 @@ export default function ClientProgramView() {
   const handleExecuteSwap = async (targetFoodCode) => {
     try {
       setSwapLoading(true);
-      const res = await fetch("http://localhost:3000/api/v1/programs/swap-food", {
+      const res = await fetch(`${API_BASE}/api/v1/programs/swap-food`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -231,7 +232,7 @@ export default function ClientProgramView() {
         pain_reports: painReports,
       };
 
-      const res = await fetch("http://localhost:3000/api/v1/programs/checkin/evaluate", {
+      const res = await fetch(`${API_BASE}/api/v1/programs/checkin/evaluate`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),

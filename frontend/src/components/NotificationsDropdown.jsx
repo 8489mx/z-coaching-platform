@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
+import { API_BASE } from '../config/api';
 
 export default function NotificationsDropdown() {
   const [isOpen, setIsOpen] = useState(false);
@@ -33,8 +34,8 @@ export default function NotificationsDropdown() {
   const fetchAlerts = async () => {
     try {
       const [checkinsRes, subsRes] = await Promise.all([
-        fetch('http://localhost:3000/api/v1/programs/checkin/pending'),
-        fetch('http://localhost:3000/api/v1/subscriptions/overview')
+        fetch(`${API_BASE}/api/v1/programs/checkin/pending`),
+        fetch(`${API_BASE}/api/v1/subscriptions/overview`)
       ]);
 
       const checkinsData = await checkinsRes.json();

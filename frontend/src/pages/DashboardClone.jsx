@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
+import { API_BASE } from '../config/api';
 import NotificationsDropdown from '../components/NotificationsDropdown';
 
 export default function DashboardClone() {
@@ -46,9 +47,9 @@ export default function DashboardClone() {
     try {
       setLoading(true);
       const [clientsRes, checkinsRes, subsRes] = await Promise.all([
-        fetch('http://localhost:3000/api/v1/clients'),
-        fetch('http://localhost:3000/api/v1/programs/checkin/pending'),
-        fetch('http://localhost:3000/api/v1/subscriptions/overview')
+        fetch(`${API_BASE}/api/v1/clients`),
+        fetch(`${API_BASE}/api/v1/programs/checkin/pending`),
+        fetch(`${API_BASE}/api/v1/subscriptions/overview`)
       ]);
 
       const clientsData = await clientsRes.json();
@@ -69,7 +70,7 @@ export default function DashboardClone() {
     if (!selectedCheckin) return;
     try {
       setApproving(true);
-      const res = await fetch('http://localhost:3000/api/v1/programs/checkin/approve', {
+      const res = await fetch(`${API_BASE}/api/v1/programs/checkin/approve`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

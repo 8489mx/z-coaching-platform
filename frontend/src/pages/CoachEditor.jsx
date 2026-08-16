@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import { API_BASE } from '../config/api';
 
 export default function CoachEditor() {
   const navigate = useNavigate();
@@ -24,8 +25,8 @@ export default function CoachEditor() {
     try {
       setLoading(true);
       const [progRes, catRes] = await Promise.all([
-        fetch(`http://localhost:3000/api/v1/programs/active/${targetUserId}`),
-        fetch('http://localhost:3000/api/v1/programs/exercises-catalog')
+        fetch(`${API_BASE}/api/v1/programs/active/${targetUserId}`),
+        fetch(`${API_BASE}/api/v1/programs/exercises-catalog`)
       ]);
 
       const progData = await progRes.json();
@@ -52,7 +53,7 @@ export default function CoachEditor() {
         coach_notes: coachNotes
       };
 
-      const res = await fetch('http://localhost:3000/api/v1/programs/update-custom', {
+      const res = await fetch(`${API_BASE}/api/v1/programs/update-custom`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

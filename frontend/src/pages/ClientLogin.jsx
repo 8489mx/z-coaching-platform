@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { API_BASE } from '../config/api';
 import '../onboarding.css';
 
 export default function ClientLogin() {
@@ -14,7 +15,7 @@ export default function ClientLogin() {
 
     try {
       setLoading(true);
-      const res = await fetch('http://localhost:3000/api/v1/auth/login-fast', {
+      const res = await fetch(`${API_BASE}/api/v1/auth/login-fast`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

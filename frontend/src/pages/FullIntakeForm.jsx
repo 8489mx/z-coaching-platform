@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { API_BASE } from '../config/api';
 import '../onboarding.css';
 
 const DEFAULT_INTAKE = {
@@ -1125,7 +1126,7 @@ export default function FullIntakeForm() {
         }));
       }
 
-      const res = await fetch('http://localhost:3000/api/v1/programs/generate-and-save', {
+      const res = await fetch(`${API_BASE}/api/v1/programs/generate-and-save`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

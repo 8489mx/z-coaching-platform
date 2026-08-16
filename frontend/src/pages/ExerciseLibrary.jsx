@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
+import { API_BASE } from '../config/api';
 
 export default function ExerciseLibrary() {
   const [exercises, setExercises] = useState([]);
@@ -29,7 +30,7 @@ export default function ExerciseLibrary() {
       if (equipmentFilter !== 'ALL') params.append('equipment', equipmentFilter);
       if (searchTerm.trim()) params.append('search', searchTerm.trim());
 
-      const res = await fetch(`http://localhost:3000/api/v1/exercises?${params.toString()}`);
+      const res = await fetch(`${API_BASE}/api/v1/exercises?${params.toString()}`);
       const data = await res.json();
       if (data.exercises) setExercises(data.exercises);
     } catch (e) {

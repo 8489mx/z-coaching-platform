@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
+import { API_BASE } from '../config/api';
 
 export default function Customers() {
   const [phone, setPhone] = useState('');
@@ -32,7 +33,7 @@ export default function Customers() {
   const fetchClients = async () => {
     try {
       setLoading(true);
-      const res = await fetch('http://localhost:3000/api/v1/clients');
+      const res = await fetch(`${API_BASE}/api/v1/clients`);
       const data = await res.json();
       if (data.clients) {
         setClients(data.clients);
@@ -49,7 +50,7 @@ export default function Customers() {
     if (!phone) return;
 
     try {
-      const res = await fetch('http://localhost:3000/api/v1/clients', {
+      const res = await fetch(`${API_BASE}/api/v1/clients`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

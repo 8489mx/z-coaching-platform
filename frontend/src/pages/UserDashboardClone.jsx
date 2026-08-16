@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { getArabicExerciseName } from "../utils/exerciseTranslator";
+import { API_BASE } from "../config/api";
 
 const ARABIC_FOOD_NAMES = {
   COTTAGE_CHEESE_LOW_FAT_2_PERCENT: "جبن قريش قليل الدسم",
@@ -152,7 +153,7 @@ export default function UserDashboardClone() {
       const searchParams = new URLSearchParams(window.location.search);
       const targetUserId = searchParams.get('user_id') || sessionStorage.getItem('z_active_client_code') || "CLIENT-AHMED-SAMIR";
 
-      const res = await fetch(`http://localhost:3000/api/v1/programs/active/${targetUserId}`);
+      const res = await fetch(`${API_BASE}/api/v1/programs/active/${targetUserId}`);
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "فشل تحميل البرنامج من قاعدة البيانات");
 
@@ -189,7 +190,7 @@ export default function UserDashboardClone() {
       setSwapLoading(true);
 
       const sourceGrams = foodItem.portion_g_rounded || foodItem.grams || foodItem.portion_g || 100;
-      const res = await fetch("http://localhost:3000/api/v1/programs/swap-candidates", {
+      const res = await fetch(`${API_BASE}/api/v1/programs/swap-candidates`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -216,7 +217,7 @@ export default function UserDashboardClone() {
       const sourceGrams = selectedFoodItem.portion_g_rounded || selectedFoodItem.grams || selectedFoodItem.portion_g || 100;
       const foodCode = selectedFoodItem.food_code || (selectedFoodItem.name_ar?.includes("قريش") ? "CHEESE_COTTAGE_LOW_FAT" : (selectedFoodItem.name_ar?.includes("بيض") ? "WHOLE_EGG" : "CHICKEN_BREAST_COOKED"));
 
-      const res = await fetch("http://localhost:3000/api/v1/programs/swap-food", {
+      const res = await fetch(`${API_BASE}/api/v1/programs/swap-food`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -251,7 +252,7 @@ export default function UserDashboardClone() {
       setSwapModalOpen(false);
 
       // Persist to MariaDB z in background
-      await fetch("http://localhost:3000/api/v1/programs/update-custom", {
+      await fetch(`${API_BASE}/api/v1/programs/update-custom`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -300,7 +301,7 @@ export default function UserDashboardClone() {
         pain_reports: [],
       };
 
-      const res = await fetch("http://localhost:3000/api/v1/programs/checkin/submit", {
+      const res = await fetch(`${API_BASE}/api/v1/programs/checkin/submit`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
