@@ -38,6 +38,9 @@ dist/
 build/
 out/
 tmp/
+scratch/
+frontend/dist/
+frontend/node_modules/
 temp/
 .cache/
 *.tmp

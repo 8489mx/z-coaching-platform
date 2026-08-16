@@ -34,6 +34,30 @@ const User = sequelize.define("User", {
     type: DataTypes.ENUM("ADMIN", "CLIENT"),
     defaultValue: "CLIENT",
     allowNull: false,
+  },
+  subscription_package: {
+    type: DataTypes.STRING,
+    defaultValue: "1_MONTH",
+    allowNull: true,
+  },
+  subscription_price: {
+    type: DataTypes.FLOAT,
+    defaultValue: 1500,
+    allowNull: true,
+  },
+  subscription_start_date: {
+    type: DataTypes.DATE,
+    defaultValue: DataTypes.NOW,
+    allowNull: true,
+  },
+  subscription_end_date: {
+    type: DataTypes.DATE,
+    allowNull: true,
+  },
+  subscription_status: {
+    type: DataTypes.STRING,
+    defaultValue: "ACTIVE", // ACTIVE | EXPIRING_SOON | EXPIRED
+    allowNull: true,
   }
 }, {
   tableName: "users",

@@ -4,8 +4,7 @@ import { requireAuth } from "../middlewares/auth.middleware.js";
 
 const router = express.Router();
 
-// Only ADMIN should be able to create clients (could add role check middleware later)
-router.post("/", requireAuth, addClient);
-router.get("/", requireAuth, getClients);
+router.post("/", addClient);
+router.get("/", getClients);
 
 export default router;

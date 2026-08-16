@@ -253,95 +253,169 @@ const EngineTester = () => {
               )}
             </div>
 
-            <div className="grid-2">
-              {/* Training Plan Summary */}
-              {result.training_program?.weekly_training_plan && (
-                <div className="result-section">
-                  <h3 className="result-title">
-                    Training Plan
-                    {renderStatusBadge(result.training_program.weekly_training_plan.status)}
-                  </h3>
-                  <div className="grid-2" style={{marginBottom: '1rem'}}>
-                    <div className="stat-box">
-                      <div className="stat-label">Days</div>
-                      <div className="stat-value">{result.training_program.weekly_training_plan.recommended_days}</div>
-                    </div>
-                    <div className="stat-box">
-                      <div className="stat-label">Split</div>
-                      <div className="stat-value stat-value-accent" style={{fontSize: '1rem'}}>{result.training_program.weekly_training_plan.split_code?.replace(/_/g, ' ') || 'N/A'}</div>
-                    </div>
-                  </div>
-                  
-                  <strong style={{fontSize: '0.85rem', color: '#94a3b8'}}>Sessions:</strong>
-                  <div className="pill-list">
-                    {result.training_program.weekly_training_plan.sessions?.map(s => (
-                      <span className="pill" key={s.sequence}>{s.session_code}</span>
-                    ))}
+            {/* Training Meso-Cycle (V2) or Plan (V1) */}
+            <div className="result-section">
+              <h3 className="result-title">
+                {result.training_program?.total_weeks ? `Training Meso-Cycle (V2 - ${result.training_program.total_weeks} Weeks)` : 'Training Plan'}
+                {renderStatusBadge(result.training_program?.preflight_report?.plan_status || result.training_program?.weekly_training_plan?.status || 'READY')}
+              </h3>
+
+              <div className="grid-2" style={{marginBottom: '1rem'}}>
+                <div className="stat-box">
+                  <div className="stat-label">Split Structure</div>
+                  <div className="stat-value stat-value-accent" style={{fontSize: '1.1rem'}}>
+                    {result.training_program?.split_code?.replace(/_/g, ' ') || 'UPPER LOWER'}
                   </div>
                 </div>
-              )}
-
-              {/* Nutrition Summary */}
-              {result.nutrition_program && (
-                <div className="result-section">
-                  <h3 className="result-title">
-                    Nutrition Plan
-                    {renderStatusBadge(result.nutrition_program.status)}
-                  </h3>
-                  
-                  <div className="stat-box" style={{marginBottom: '1rem'}}>
-                    <div className="stat-label">Energy Target</div>
-                    <div className="stat-value">{result.nutrition_program.stages?.energy_target?.target_calories || 0} <span style={{fontSize: '1rem', color: '#94a3b8'}}>kcal</span></div>
+                <div className="stat-box">
+                  <div className="stat-label">Engine Version</div>
+                  <div className="stat-value" style={{fontSize: '0.9rem', color: '#38bdf8'}}>
+                    {result.training_program?.engine_version || 'V1'}
                   </div>
+                </div>
+              </div>
 
-                  <div className="grid-3">
-                    <div className="stat-box">
-                      <div className="stat-label" style={{color: '#f87171'}}>PRO</div>
-                      <div className="stat-value" style={{fontSize: '1.1rem'}}>{result.nutrition_program.stages?.macro_targets?.protein?.target_g || 0}g</div>
+              {/* V2 Meso-cycle Weeks */}
+              {result.training_program?.weeks && result.training_program.weeks.length > 0 && (
+                <div>
+                  <h4 style={{fontSize: '0.95rem', color: '#e2e8f0', marginBottom: '0.5rem'}}>Periodized Meso-Cycle Progression:</h4>
+                  {result.training_program.weeks.map(week => (
+                    <div key={week.week_number} style={{background: 'rgba(30, 41, 59, 0.7)', borderRadius: '8px', padding: '1rem', marginBottom: '0.75rem', border: '1px solid #334155'}}>
+                      <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem'}}>
+                        <strong style={{color: '#38bdf8'}}>الأسبوع {week.week_number} — {week.phase}</strong>
+                        <span className="badge badge-ready">Target RIR: {week.target_rir}</span>
+                      </div>
+                      <p style={{fontSize: '0.85rem', color: '#94a3b8', margin: '0 0 0.5rem'}}>{week.focus_note}</p>
+                      
+                      <div style={{display: 'flex', flexDirection: 'column', gap: '0.4rem', marginTop: '0.5rem'}}>
+                        {week.sessions.map((sess, sIdx) => (
+                          <div key={sIdx} style={{background: '#0f172a', padding: '0.5rem 0.75rem', borderRadius: '6px', fontSize: '0.82rem'}}>
+                            <div style={{display: 'flex', justifyContent: 'space-between', color: '#f1f5f9', fontWeight: 'bold'}}>
+                              <span>{sess.session_code} {sess.scheduled_day ? `(${sess.scheduled_day})` : ''}</span>
+                              <span style={{color: '#94a3b8'}}>{sess.exercises.length} Exercises</span>
+                            </div>
+                            <div style={{marginTop: '0.3rem', color: '#cbd5e1'}}>
+                              {sess.exercises.slice(0, 3).map((ex, exIdx) => (
+                                <span key={exIdx} style={{display: 'inline-block', marginRight: '0.75rem'}}>
+                                  • {ex.name_ar || ex.name_en} ({ex.prescription.sets} sets x {ex.prescription.target_min || ex.prescription.target_max} reps)
+                                </span>
+                              ))}
+                              {sess.exercises.length > 3 && <span style={{color: '#64748b'}}>+{sess.exercises.length - 3} more</span>}
+                            </div>
+                          </div>
+                        ))}
+                      </div>
                     </div>
-                    <div className="stat-box">
-                      <div className="stat-label" style={{color: '#60a5fa'}}>CARB</div>
-                      <div className="stat-value" style={{fontSize: '1.1rem'}}>{result.nutrition_program.stages?.macro_targets?.carbohydrate?.target_g || 0}g</div>
-                    </div>
-                    <div className="stat-box">
-                      <div className="stat-label" style={{color: '#fbbf24'}}>FAT</div>
-                      <div className="stat-value" style={{fontSize: '1.1rem'}}>{result.nutrition_program.stages?.macro_targets?.fat?.target_g || 0}g</div>
-                    </div>
-                  </div>
+                  ))}
                 </div>
               )}
             </div>
 
-            {/* Cardio & Mobility */}
-            <div className="grid-2">
-              {result.cardio_program?.plan_specification && (
-                <div className="result-section">
-                  <h3 className="result-title">
-                    Cardio Plan
-                    {renderStatusBadge(result.cardio_program.plan_specification.status)}
-                  </h3>
-                  <div className="stat-box">
-                    <div className="stat-label">Max Sessions</div>
-                    <div className="stat-value">{result.cardio_program.plan_specification.max_sessions_per_week || 0}</div>
+            {/* Nutrition with Quantized Household Servings */}
+            {result.nutrition_program && (
+              <div className="result-section">
+                <h3 className="result-title">
+                  Nutrition Plan (V2 Quantized)
+                  {renderStatusBadge(result.nutrition_program.stages?.plan_preflight?.status || 'READY')}
+                </h3>
+                
+                <div className="stat-box" style={{marginBottom: '1rem'}}>
+                  <div className="stat-label">Daily Target Calories</div>
+                  <div className="stat-value">
+                    {Math.round(result.nutrition_program.stages?.energy_target?.target_calories_kcal || 0)}{' '}
+                    <span style={{fontSize: '1rem', color: '#94a3b8'}}>kcal</span>
                   </div>
                 </div>
-              )}
-              {result.mobility_program?.plan_specification && (
+
+                <div className="grid-3" style={{marginBottom: '1.25rem'}}>
+                  <div className="stat-box">
+                    <div className="stat-label" style={{color: '#f87171'}}>PROTEIN</div>
+                    <div className="stat-value" style={{fontSize: '1.1rem'}}>
+                      {Math.round(result.nutrition_program.stages?.macro_targets?.protein_g || 0)}g
+                    </div>
+                  </div>
+                  <div className="stat-box">
+                    <div className="stat-label" style={{color: '#60a5fa'}}>CARBS</div>
+                    <div className="stat-value" style={{fontSize: '1.1rem'}}>
+                      {Math.round(result.nutrition_program.stages?.macro_targets?.carbohydrate_g || 0)}g
+                    </div>
+                  </div>
+                  <div className="stat-box">
+                    <div className="stat-label" style={{color: '#fbbf24'}}>FATS</div>
+                    <div className="stat-value" style={{fontSize: '1.1rem'}}>
+                      {Math.round(result.nutrition_program.stages?.macro_targets?.fat_g || 0)}g
+                    </div>
+                  </div>
+                </div>
+
+                {/* Quantized Meals */}
+                {result.nutrition_program.quantized_plan?.meals && (
+                  <div>
+                    <h4 style={{fontSize: '0.95rem', color: '#e2e8f0', marginBottom: '0.5rem'}}>Household Serving Meals (الوجبات المقربة):</h4>
+                    {result.nutrition_program.quantized_plan.meals.map((meal, mIdx) => (
+                      <div key={mIdx} style={{background: 'rgba(30, 41, 59, 0.7)', borderRadius: '8px', padding: '0.85rem', marginBottom: '0.5rem', border: '1px solid #334155'}}>
+                        <div style={{display: 'flex', justifyContent: 'space-between', color: '#f8fafc', fontWeight: 'bold', marginBottom: '0.4rem', fontSize: '0.9rem'}}>
+                          <span>الوجبة {mIdx + 1}</span>
+                          <span style={{color: '#38bdf8'}}>{Math.round(meal.meal_energy_kcal)} kcal | P: {Math.round(meal.protein_g)}g</span>
+                        </div>
+                        <ul style={{paddingLeft: '1.2rem', margin: 0, fontSize: '0.85rem', color: '#cbd5e1'}}>
+                          {meal.foods?.map((f, fIdx) => (
+                            <li key={fIdx} style={{marginBottom: '0.2rem'}}>
+                              <strong>{f.serving_display_ar || f.serving_display_en}</strong>
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* Cardio & Mobility with HR Targets */}
+            <div className="grid-2">
+              {result.cardio_program && (
                 <div className="result-section">
                   <h3 className="result-title">
-                    Mobility Plan
-                    {renderStatusBadge(result.mobility_program.plan_specification.status)}
+                    Cardio & Heart-Rate Zones
+                    {renderStatusBadge(result.cardio_program.preflight_report?.result || 'READY')}
                   </h3>
-                  <div className="stat-box">
-                    <div className="stat-label">Max Sessions</div>
-                    <div className="stat-value">{result.mobility_program.plan_specification.max_sessions_per_week || 0}</div>
+                  <div className="stat-box" style={{marginBottom: '0.75rem'}}>
+                    <div className="stat-label">Daily Steps</div>
+                    <div className="stat-value">{result.cardio_program.prescription?.daily_step_target || 8000}</div>
                   </div>
+                  {result.cardio_program.weekly_schedule?.sessions?.map((cs, cIdx) => (
+                    <div key={cIdx} style={{background: '#0f172a', padding: '0.6rem', borderRadius: '6px', fontSize: '0.82rem', marginBottom: '0.4rem'}}>
+                      <div style={{fontWeight: 'bold', color: '#38bdf8'}}>{cs.modality_type} on {cs.day_of_week} ({cs.duration_minutes} min)</div>
+                      {cs.heart_rate_target && (
+                        <div style={{color: '#a7f3d0', marginTop: '0.2rem'}}>
+                          ❤️ {cs.heart_rate_target.target_range_bpm} ({cs.heart_rate_target.zone})
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              {result.mobility_program && (
+                <div className="result-section">
+                  <h3 className="result-title">
+                    Mobility & Recovery
+                    {renderStatusBadge(result.mobility_program.preflight_report?.approval_state || 'READY')}
+                  </h3>
+                  <div className="stat-box" style={{marginBottom: '0.75rem'}}>
+                    <div className="stat-label">Scheduled Days</div>
+                    <div className="stat-value">{result.mobility_program.weekly_schedule?.scheduled_days?.length || 7} Days</div>
+                  </div>
+                  <p style={{fontSize: '0.82rem', color: '#94a3b8', margin: 0}}>
+                    3m Dynamic Warmup Pre-Workout + 2m Static Cooldown Post-Workout + Rest-day recovery routines.
+                  </p>
                 </div>
               )}
             </div>
 
             <div className="result-section">
-              <h3 className="result-title">Raw Master Program</h3>
+              <h3 className="result-title">Raw Master Program JSON</h3>
               <pre className="pre-wrap">
                 {JSON.stringify(result, null, 2)}
               </pre>

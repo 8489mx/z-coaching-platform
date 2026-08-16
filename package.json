@@ -32,11 +32,18 @@
     "./cardio-prescription": "./src/cardio-prescription/index.js",
     "./weekly-cardio-schedule": "./src/weekly-cardio-schedule/index.js",
     "./cardio-plan-preflight": "./src/cardio-plan-preflight/index.js",
-    "./cardio-engine": "./src/cardio-engine/index.js"
+    "./cardio-engine": "./src/cardio-engine/index.js",
+    "./exercise-catalog-v2": "./src/exercise-catalog-v2/index.js",
+    "./training-engine-v2": "./src/training-engine-v2/index.js",
+    "./master-engine-v2": "./src/master-engine-v2/index.js",
+    "./checkin-engine": "./src/checkin-engine/index.js",
+    "./adaptation-engine": "./src/adaptation-engine/index.js",
+    "./nutrition-swap-engine-v2": "./src/nutrition-swap-engine-v2/index.js",
+    "./nutrition-meal-context-v2": "./src/nutrition-meal-context-v2/index.js"
   },
   "scripts": {
-    "test": "node --test test/intake-decision-engine.test.js test/domain-branches.test.js test/rules.test.js test/training-plan-specification.test.js test/training-session-blueprint.test.js test/exercise-catalog.test.js test/exercise-selection.test.js test/training-prescription.test.js test/training-draft.test.js test/weekly-training-schedule.test.js test/training-plan-preflight.test.js test/validation.test.js test/training-engine.test.js test/nutrition-planning-snapshot.test.js test/nutrition-energy-target.test.js test/nutrition-macro-targets.test.js test/nutrition-meal-distribution.test.js test/nutrition-meal-assembly-blueprint.test.js test/nutrition-food-catalog.test.js test/nutrition-food-catalog-excel.test.js test/nutrition-food-catalog-core-data.test.js test/nutrition-food-selection.test.js test/nutrition-portion-solver.test.js test/nutrition-swap-engine.test.js test/nutrition-plan-preflight.test.js test/nutrition-engine.test.js test/pipeline-trace.test.js test/cardio-plan-specification.test.js test/cardio-modality-requirements.test.js test/cardio-prescription.test.js test/weekly-cardio-schedule.test.js test/cardio-plan-preflight.test.js test/cardio-engine.test.js",
-    "test:coverage": "node --test --experimental-test-coverage test/intake-decision-engine.test.js test/domain-branches.test.js test/rules.test.js test/training-plan-specification.test.js test/training-session-blueprint.test.js test/exercise-catalog.test.js test/exercise-selection.test.js test/training-prescription.test.js test/training-draft.test.js test/weekly-training-schedule.test.js test/training-plan-preflight.test.js test/validation.test.js test/training-engine.test.js test/nutrition-planning-snapshot.test.js test/nutrition-energy-target.test.js test/nutrition-macro-targets.test.js test/nutrition-meal-distribution.test.js test/nutrition-meal-assembly-blueprint.test.js test/nutrition-food-catalog.test.js test/nutrition-food-catalog-excel.test.js test/nutrition-food-catalog-core-data.test.js test/nutrition-food-selection.test.js test/nutrition-portion-solver.test.js test/nutrition-swap-engine.test.js test/nutrition-plan-preflight.test.js test/nutrition-engine.test.js test/pipeline-trace.test.js test/cardio-plan-specification.test.js test/cardio-modality-requirements.test.js test/cardio-prescription.test.js test/weekly-cardio-schedule.test.js test/cardio-plan-preflight.test.js test/cardio-engine.test.js",
+    "test": "node --test test/*.test.js",
+    "test:coverage": "node --test --experimental-test-coverage test/*.test.js",
     "food:excel:template": "node tools/nutrition-food-catalog-excel/create-template.js data-templates/nutrition-food-catalog-v1.xlsx",
     "food:excel:import": "node tools/nutrition-food-catalog-excel/cli.js",
     "food:core:build": "node tools/nutrition-food-catalog-excel/cli.js data/catalogs/core-global-food-batch-v1.xlsx data/catalogs/core-global-food-batch-v1.json",

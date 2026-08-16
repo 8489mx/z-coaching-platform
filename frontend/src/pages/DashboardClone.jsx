@@ -1,81 +1,863 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
+import NotificationsDropdown from '../components/NotificationsDropdown';
 
 export default function DashboardClone() {
-  const containerRef = useRef(null);
-  
+  const [clients, setClients] = useState([]);
+  const [checkins, setCheckins] = useState([]);
+  const [subscriptionsOverview, setSubscriptionsOverview] = useState({
+    active_subscriptions: 3,
+    expiring_soon: 1,
+    expired: 0,
+    total_monthly_revenue: 4500,
+    clients: []
+  });
+  const [loading, setLoading] = useState(true);
+  const [selectedCheckin, setSelectedCheckin] = useState(null);
+  const [coachNotes, setCoachNotes] = useState('');
+  const [approving, setApproving] = useState(false);
+
+  // WhatsApp Automation Hub State
+  const [whatsappModalClient, setWhatsappModalClient] = useState(null);
+  const [whatsappTemplate, setWhatsappTemplate] = useState('intake'); // 'intake' | 'plan_ready' | 'checkin_reminder' | 'checkin_approved'
+  const [whatsappCustomText, setWhatsappCustomText] = useState('');
+  const [whatsappCopied, setWhatsappCopied] = useState(false);
+
+  // Live Search
+  const [searchTerm, setSearchTerm] = useState('');
+
+  // Active Alert Filter Tab
+  const [activeAlertTab, setActiveAlertTab] = useState('ALL'); // 'ALL' | 'OVERDUE' | 'PENDING' | 'EXPIRING'
+
   useEffect(() => {
-    let isMounted = true;
+    fetchDashboardData();
 
-    const scripts = [
-      "/admin-dashboard_data/jquery-3.7.1.min.js",
-      "/admin-dashboard_data/modernizr.min.js",
-      "/admin-dashboard_data/app-config.js",
-      "/admin-dashboard_data/customizer.js",
-      "/admin-dashboard_data/bootstrap.bundle.min.js",
-      "/admin-dashboard_data/simplebar.js",
-      "/admin-dashboard_data/feather.js",
-      "/admin-dashboard_data/slick.min.js",
-      "/admin-dashboard_data/app.js",
-      "/admin-dashboard_data/apexcharts.js",
-      "/admin-dashboard_data/echarts.min.js",
-    ];
-
-    const loadScript = (src) => {
-      return new Promise((resolve) => {
-        const existing = document.querySelector(`script[src="${src}"]`);
-        if (existing) {
-          resolve();
-          return;
-        }
-        const s = document.createElement('script');
-        s.src = src;
-        s.onload = resolve;
-        document.body.appendChild(s);
-      });
-    };
-
-    const loadAll = async () => {
-      for (const src of scripts) {
-        if (!isMounted) return;
-        await loadScript(src);
+    const handleKeyDown = (e) => {
+      if (e.key === 'Escape' || e.keyCode === 27) {
+        setSelectedCheckin(null);
+        setWhatsappModalClient(null);
       }
-      
-      if (!isMounted) return;
-      const res = await fetch("/admin-dashboard_data/admin-dashboard.js");
-      const code = await res.text();
-      
-      if (!isMounted) return;
-      
-      const scriptId = 'dynamic-theme-script-admin';
-      const existingScript = document.getElementById(scriptId);
-      if (existingScript) existingScript.remove();
-      
-      const script = document.createElement('script');
-      script.id = scriptId;
-      
-      script.innerHTML = `(function() { 
-          ['revenueChartBox'].forEach(id => {
-              const el = document.getElementById(id);
-              if (el) el.innerHTML = '';
-          });
-          ${code} 
-      })();`;
-      
-      document.body.appendChild(script);
     };
-
-    loadAll();
-
-    return () => {
-        isMounted = false;
-        const scriptElement = document.getElementById('dynamic-theme-script-admin');
-        if (scriptElement) scriptElement.remove();
-    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
   }, []);
 
-  const rawHTML = "\r\n\r\n  <!-- Loader Start-->\r\n  \r\n  <!-- Loader End-->\r\n  <!-- Header Start-->\r\n  <header class=\"codex-header\">\r\n    <div class=\"header-contian d-flex justify-content-between align-items-center\">\r\n      <div class=\"header-left d-flex align-items-center\">\r\n        <div class=\"codex-brand me-3\">\r\n          <div class=\"sidebar-action navicon-wrap d-xl-none me-3\">\r\n            <i class=\"ti ti-layout-grid\"></i>\r\n          </div>\r\n          <a class=\"d-flex align-items-center\" href=\"index.html\">\r\n            <img class=\"img-fluid\" src=\"/admin-dashboard_data/logo/logo.png\" alt=\"theeme-logo\">\r\n            <span class=\"fs-3 align-middle ms-2\">FitNexus</span>\r\n          </a>\r\n        </div>\r\n        <div class=\"sidebar-action navicon-wrap d-xl-none me-3\">\r\n          <i class=\"ti ti-layout-grid\"></i>\r\n        </div>\r\n        <div class=\"input-group\">\r\n          <span class=\"input-group-text pe-0\">\r\n            <i class=\"ti ti-search\"></i>\r\n          </span>\r\n          <input type=\"text\" placeholder=\"Search Here\" class=\"form-control\">\r\n        </div>\r\n      </div>\r\n      <div class=\"header-right d-flex align-items-center justify-content-end\">\r\n        <ul class=\"nav-iconlist\">\r\n          <li>\r\n            <div class=\"navicon-wrap action-dark\">\r\n              <i class=\"ti ti-moon icon-dark\"></i>\r\n            </div>\r\n          </li>\r\n          <li class=\"action-menu dropdown\">\r\n            <div class=\"navicon-wrap notiicon-iconwrap\" data-bs-toggle=\"dropdown\">\r\n              <i class=\"ti ti-bell-ringing\"></i>\r\n              <div class=\"noti-count\"></div>\r\n            </div>\r\n            <div class=\"navnotification-drop action-dropdown dropdown-menu\">\r\n              <div class=\"drop-header\">\r\n                <h5>notification<span class=\"float-end\">05</span>\r\n                </h5>\r\n              </div>\r\n              <div data-simplebar>\r\n                <ul>\r\n                  <li>\r\n                    <a href=\"#!\">\r\n                      <div class=\"d-flex align-items-center\">\r\n                        <div class=\"icon-nav\">\r\n                          <img src=\"/admin-dashboard_data/navnotification1.png\" alt=\"\" class=\"img-fluid\">\r\n                        </div>\r\n                        <div class=\"media-body\">\r\n                          <h6>Full Body Yoga</h6>\r\n                          <span class=\"badge badge-success\">08:30</span>\r\n                        </div>\r\n                      </div>\r\n                      <i class=\"ti ti-chevron-right\"></i>\r\n                    </a>\r\n                  </li>\r\n                  <li>\r\n                    <a href=\"#!\">\r\n                      <div class=\"d-flex align-items-center\">\r\n                        <div class=\"icon-nav\">\r\n                          <img src=\"/admin-dashboard_data/navnotification2.png\" alt=\"\" class=\"img-fluid\">\r\n                        </div>\r\n                        <div class=\"media-body\">\r\n                          <h6>Functional Workout</h6>\r\n                          <span class=\"badge badge-success\">08:30</span>\r\n                        </div>\r\n                      </div>\r\n                      <i class=\"ti ti-chevron-right\"></i>\r\n                    </a>\r\n                  </li>\r\n                  <li>\r\n                    <a href=\"#!\">\r\n                      <div class=\"d-flex align-items-center\">\r\n                        <div class=\"icon-nav\">\r\n                          <img src=\"/admin-dashboard_data/navnotification3.png\" alt=\"\" class=\"img-fluid\">\r\n                        </div>\r\n                        <div class=\"media-body\">\r\n                          <h6>Lower Body Express</h6>\r\n                          <span class=\"badge badge-success\">08:30</span>\r\n                        </div>\r\n                      </div>\r\n                      <i class=\"ti ti-chevron-right\"></i>\r\n                    </a>\r\n                  </li>\r\n                  <li>\r\n                    <a href=\"#!\">\r\n                      <div class=\"d-flex align-items-center\">\r\n                        <div class=\"icon-nav\">\r\n                          <img src=\"/admin-dashboard_data/navnotification4.png\" alt=\"\" class=\"img-fluid\">\r\n                        </div>\r\n                        <div class=\"media-body\">\r\n                          <h6>Glutes & Abs</h6>\r\n                          <span class=\"badge badge-success\">08:30</span>\r\n                        </div>\r\n                      </div>\r\n                      <i class=\"ti ti-chevron-right\"></i>\r\n                    </a>\r\n                  </li>\r\n                </ul>\r\n              </div>\r\n              <div class=\"drop-footer\">\r\n                <a href=\"javascript:void(0)\">See All Notification</a>\r\n              </div>\r\n            </div>\r\n          </li>\r\n          <li class=\"action-menu dropdown\">\r\n            <div class=\"navicon-wrap\" data-bs-target=\"#customizer\" data-bs-toggle=\"offcanvas\">\r\n              <i class=\"ti ti-settings\"></i>\r\n            </div>\r\n          </li>\r\n          <li class=\"nav-profile action-menu dropdown\">\r\n            <div class=\"user-icon action-toggle\" data-bs-toggle=\"dropdown\">\r\n              <img class=\"img-fluid\" src=\"/admin-dashboard_data/avtar/profile.png\" alt=\"User Logo\">\r\n            </div>\r\n            <div class=\"navprofile-drop action-dropdown dropdown-menu\">\r\n              <ul>\r\n                <li>\r\n                  <div class=\"media-body\">\r\n                    <img class=\"img-fluid rounded-circle\" src=\"/admin-dashboard_data/avtar/profile.png\" alt=\"logo\">\r\n                    <h6 class=\"mt-2 fw-bold\">Hello Thomas</h6>\r\n                  </div>\r\n                </li>\r\n                <li>\r\n                  <a href=\"profile.html\">\r\n                    <i class=\"me-2 align-middle ti ti-settings\"></i>\r\n                    setting\r\n                  </a>\r\n                </li>\r\n                <li>\r\n                  <a href=\"#!\">\r\n                    <i class=\"me-2 align-middle ti ti-logout\"></i>\r\n                    log out\r\n                  </a>\r\n                </li>\r\n              </ul>\r\n            </div>\r\n          </li>\r\n        </ul>\r\n      </div>\r\n    </div>\r\n  </header>\r\n  <!-- Header End-->\r\n  <!-- sidebar start -->\r\n  <aside class=\"codex-sidebar\">\r\n    <div class=\"codex-brand\">\r\n      <a class=\"d-flex align-items-center\" href=\"index.html\">\r\n        <img class=\"img-fluid\" src=\"/admin-dashboard_data/logo/logo.png\" alt=\"theeme-logo\">\r\n        <span class=\"fs-3 align-middle ms-2 lh-1\">FitNexus</span>\r\n      </a>\r\n      <div class=\"sidebar-action\">\r\n        <i class=\"ti ti-chevron-left\"></i>\r\n      </div>\r\n    </div>\r\n    <span class=\"menu-preve\">\r\n      <i class=\"ti ti-chevron-left\"></i>\r\n    </span>\r\n    <div class=\"codex-menuwrapper custom-scroll\" data-simplebar>\r\n      <ul class=\"codex-menu\">\r\n        <!-- <li class=\"menu-item\">\r\n        <a href=\"index.html\">\r\n          <div class=\"icon-item\">           \r\n            <i class=\"ti ti-layout-dashboard\"></i>\r\n          </div>\r\n          <span>Overview</span>\r\n        </a>\r\n      </li>   -->\r\n        <li class=\"menu-item\">\r\n          <a href=\"#!\">\r\n            <div class=\"icon-item\">\r\n              <i class=\"ti ti-layout-dashboard\"></i>\r\n            </div>\r\n            <span>Dashboard</span>\r\n            <i class=\"fa fa-angle-right menu-dropwdown\"></i>\r\n          </a>\r\n          <ul class=\"submenu-list\">\r\n            <li>\r\n              <a href=\"user-dashboard.html\">User Dashboard</a>\r\n            </li>\r\n            <li>\r\n              <a href=\"admin-dashboard.html\">Admin Dashboard</a>\r\n            </li>\r\n            <li>\r\n              <a href=\"index.html\">Trainer Dashboard</a>\r\n            </li>\r\n            <!-- <li>\r\n            <a href=\"trainer-dashboard.html\">Trainer Dashboard</a>\r\n          </li>\r\n          <li>\r\n            <a href=\"branch-manager-dashboard.html\">Branch Manager</a>\r\n          </li> -->\r\n          </ul>\r\n        </li>\r\n        <li class=\"menu-item\">\r\n          <a href=\"#!\">\r\n            <div class=\"icon-item\">\r\n              <i class=\"ti ti-layout-dashboard\"></i>\r\n            </div>\r\n            <span>Member</span>\r\n            <i class=\"fa fa-angle-right menu-dropwdown\"></i>\r\n          </a>\r\n          <ul class=\"submenu-list\">\r\n            <li>\r\n              <a href=\"members-list.html\">Members List</a>\r\n            </li>\r\n            <li>\r\n              <a href=\"members-add.html\">Members Add</a>\r\n            </li>\r\n            <li>\r\n              <a href=\"member-profile.html\">Members Profile</a>\r\n            </li>\r\n            <li>\r\n              <a href=\"member-edit.html\">Members Edit</a>\r\n            </li>\r\n            <li>\r\n              <a href=\"member-attendance.html\">Attendance</a>\r\n            </li>\r\n            <!--  <li>\r\n            <a href=\"member-bulk-attendance.html\">Bulk Attendance</a>\r\n          </li>\r\n          <li>\r\n            <a href=\"member-payments.html\">Payments</a>\r\n          </li>\r\n          <li>\r\n            <a href=\"member-payment-add.html\">Payments Add</a>\r\n          </li>\r\n          <li>\r\n            <a href=\"member-progress.html\">Member Progress</a>\r\n          </li>\r\n          <li>\r\n            <a href=\"member-goals.html\">Member Goals</a>\r\n          </li> -->\r\n          </ul>\r\n        </li>\r\n        <li class=\"menu-item\">\r\n          <a href=\"#!\">\r\n            <div class=\"icon-item\">\r\n              <i class=\"ti ti-barbell\"></i>\r\n            </div>\r\n            <span>Workout</span>\r\n            <i class=\"fa fa-angle-right menu-dropwdown\"></i>\r\n          </a>\r\n          <ul class=\"submenu-list\">\r\n            <li>\r\n              <a href=\"workout-filter.html\">Workout Filter</a>\r\n            </li>\r\n            <li>\r\n              <a href=\"workout-topfilter.html\">Workout Top Filter</a>\r\n            </li>\r\n            <li>\r\n              <a href=\"upperbody-workout.html\">Body workout</a>\r\n            </li>\r\n            <li>\r\n              <a href=\"create-workout.html\">Create workout</a>\r\n            </li>\r\n            <li>\r\n              <a href=\"workout-summary.html\">Workout Summary</a>\r\n            </li>\r\n          </ul>\r\n        </li>\r\n        <li class=\"menu-item\">\r\n          <a href=\"#!\">\r\n            <div class=\"icon-item\">\r\n              <i class=\"ti ti-calendar\"></i>\r\n            </div>\r\n            <span>Diet Plan</span>\r\n            <i class=\"fa fa-angle-right menu-dropwdown\"></i>\r\n          </a>\r\n          <ul class=\"submenu-list\">\r\n            <li>\r\n              <a href=\"dietplan.html\">Diet Menu</a>\r\n            </li>\r\n            <li>\r\n              <a href=\"diet-detail.html\">Diet Detail</a>\r\n            </li>\r\n          </ul>\r\n        </li>\r\n        <li class=\"menu-item\">\r\n          <a href=\"goals.html\">\r\n            <div class=\"icon-item\">\r\n              <i class=\"ti ti-target-arrow\"></i>\r\n            </div>\r\n            <span>Goals</span>\r\n          </a>\r\n        </li>\r\n        <li class=\"menu-item\">\r\n          <a href=\"schedule.html\">\r\n            <div class=\"icon-item\">\r\n              <i class=\"ti ti-calendar-event\"></i>\r\n            </div>\r\n            <span>My Schedule</span>\r\n          </a>\r\n        </li>\r\n        <li class=\"menu-item\">\r\n          <a href=\"progress.html\">\r\n            <div class=\"icon-item\">\r\n              <i class=\"ti ti-chart-bar\"></i>\r\n            </div>\r\n            <span>Progress</span>\r\n          </a>\r\n        </li>\r\n        <li class=\"menu-item\">\r\n          <a href=\"profile.html\">\r\n            <div class=\"icon-item\">\r\n              <i class=\"ti ti-layout-dashboard\"></i>\r\n            </div>\r\n            <span>Profile</span>\r\n          </a>\r\n        </li>\r\n        <li class=\"menu-item\">\r\n          <a href=\"#!\">\r\n            <div class=\"icon-item\">\r\n              <i class=\"ti ti-key\"></i>\r\n            </div>\r\n            <span>Authentication</span>\r\n            <i class=\"fa fa-angle-right menu-dropwdown\"></i>\r\n          </a>\r\n          <ul class=\"submenu-list\">\r\n            <li>\r\n              <a href=\"login.html\">Sign In</a>\r\n            </li>\r\n            <li>\r\n              <a href=\"register.html\">Sign Up</a>\r\n            </li>\r\n            <li>\r\n              <a href=\"forgot-password.html\">Forgot Password</a>\r\n            </li>\r\n            <li>\r\n              <a href=\"reset-password.html\">Reset Password</a>\r\n            </li>\r\n          </ul>\r\n        </li>\r\n        <li class=\"menu-item\">\r\n          <a href=\"onboding-step.html\">\r\n            <div class=\"icon-item\">\r\n              <i class=\"ti ti-stairs-down\"></i>\r\n            </div>\r\n            <span>Step</span>\r\n          </a>\r\n        </li>\r\n        <li class=\"menu-item\">\r\n          <a href=\"#!\">\r\n            <div class=\"icon-item\">\r\n              <i class=\"ti ti-notebook\"></i>\r\n            </div>\r\n            <span>Form</span>\r\n            <i class=\"fa fa-angle-right menu-dropwdown\"></i>\r\n          </a>\r\n          <ul class=\"submenu-list\">\r\n            <li>\r\n              <a href=\"element-input.html\">form element</a>\r\n            </li>\r\n            <li>\r\n              <a href=\"element-checkbox-radio.html\">checkbox & radio</a>\r\n            </li>\r\n            <li>\r\n              <a href=\"element-datepicker.html\">datepicker</a>\r\n            </li>\r\n            <li>\r\n              <a href=\"element-uidatepicker.html\">ui datepicker</a>\r\n            </li>\r\n            <li>\r\n              <a href=\"element-datetimepicker.html\">datetimepicker</a>\r\n            </li>\r\n            <li>\r\n              <a href=\"form.html\">basic form</a>\r\n            </li>\r\n            <li>\r\n              <a href=\"form-validation.html\">validation</a>\r\n            </li>\r\n          </ul>\r\n        </li>\r\n        <li class=\"menu-item\">\r\n          <a href=\"#!\">\r\n            <div class=\"icon-item\">\r\n              <i class=\"ti ti-layout\"></i>\r\n            </div>\r\n            <span>Advance element</span>\r\n            <i class=\"fa fa-angle-right menu-dropwdown\"></i>\r\n          </a>\r\n          <ul class=\"submenu-list\">\r\n            <li>\r\n              <a href=\"element-select2.html\">select 2</a>\r\n            </li>\r\n            <li>\r\n              <a href=\"element-switch.html\">switch</a>\r\n            </li>\r\n            <li>\r\n              <a href=\"element-dropzone.html\">dropzone</a>\r\n            </li>\r\n            <li>\r\n              <a href=\"bootstrap-notify.html\">bootstrap notify</a>\r\n            </li>\r\n            <li>\r\n              <a href=\"element-sweetalert2.html\">sweetalert2</a>\r\n            </li>\r\n            <li>\r\n              <a href=\"element-scrollbar.html\">scrollbar</a>\r\n            </li>\r\n            <li>\r\n              <a href=\"element-lightbox.html\">light box</a>\r\n            </li>\r\n          </ul>\r\n        </li>\r\n        <li class=\"menu-item\">\r\n          <a href=\"#!\">\r\n            <div class=\"icon-item\">\r\n              <i class=\"ti ti-table-import\"></i>\r\n            </div>\r\n            <span>Bootstrap</span>\r\n            <i class=\"fa fa-angle-right menu-dropwdown\"></i>\r\n          </a>\r\n          <ul class=\"submenu-list\">\r\n            <li>\r\n              <a href=\"element-accordion.html\">Accordion</a>\r\n            </li>\r\n            <li>\r\n              <a href=\"element-alert.html\">Alert</a>\r\n            </li>\r\n            <li>\r\n              <a href=\"element-badge.html\">badge</a>\r\n            </li>\r\n            <li>\r\n              <a href=\"element-breadcrumb.html\">Breadcrumb</a>\r\n            </li>\r\n            <li>\r\n              <a href=\"element-button.html\">Button</a>\r\n            </li>\r\n            <li>\r\n              <a href=\"element-card.html\">card</a>\r\n            </li>\r\n            <li>\r\n              <a href=\"element-collapse.html\">Collapse</a>\r\n            </li>\r\n            <li>\r\n              <a href=\"element-dropdown.html\">Dropdown</a>\r\n            </li>\r\n            <li>\r\n              <a href=\"element-modal.html\">modal</a>\r\n            </li>\r\n            <li>\r\n              <a href=\"element-tab.html\">tabs</a>\r\n            </li>\r\n            <li>\r\n              <a href=\"element-pagination.html\">pagination</a>\r\n            </li>\r\n            <li>\r\n              <a href=\"element-popover.html\">popover</a>\r\n            </li>\r\n            <li>\r\n              <a href=\"element-progressbar.html\">progress bar</a>\r\n            </li>\r\n            <li>\r\n              <a href=\"element-tooltip.html\">tooltip</a>\r\n            </li>\r\n            <li>\r\n              <a href=\"element-typography.html\">typography</a>\r\n            </li>\r\n            <li>\r\n              <a href=\"element-color.html\">color</a>\r\n            </li>\r\n            <li>\r\n              <a href=\"element-themeclass.html\">helper class</a>\r\n            </li>\r\n            <li>\r\n              <a href=\"element-avtar.html\">Avtar</a>\r\n            </li>\r\n            <li>\r\n              <a href=\"element-grid.html\">grid</a>\r\n            </li>\r\n          </ul>\r\n        </li>\r\n        <li class=\"menu-item\">\r\n          <a href=\"#!\">\r\n            <div class=\"icon-item\">\r\n              <i class=\"ti ti-brand-slack\"></i>\r\n            </div>\r\n            <span>Icons</span>\r\n            <i class=\"fa fa-angle-right menu-dropwdown\"></i>\r\n          </a>\r\n          <ul class=\"submenu-list\">\r\n            <li>\r\n              <a href=\"element-fontaw-icon.html\">Font Awesome Icons</a>\r\n            </li>\r\n            <li>\r\n              <a href=\"element-feather-icon.html\">Feather Icons</a>\r\n            </li>\r\n          </ul>\r\n        </li>\r\n      </ul>\r\n    </div>\r\n    <span class=\"menu-next\">\r\n      <i class=\"ti ti-chevron-right\"></i>\r\n    </span>\r\n    <div class=\"sidebarpro-sec\">\r\n      <img class=\"img-fluid\" src=\"/admin-dashboard_data/pro-sec.png\" alt=\"\">\r\n      <h6 class=\"mb-2 fw-bold text-black\">Premium Membership</h6>\r\n      <p>Monitor progress, set goals, and achieve results faster!</p>\r\n      <a class=\"btn btn-primary btn-sm\" href=\"#!\">Upgrade</a>\r\n    </div>\r\n  </aside>\r\n  <!-- sidebar end -->\r\n\r\n  <main class=\"themebody-wrap\">\r\n    <div class=\"theme-body\">\r\n      <div class=\"container-fluid\">\r\n        <div class=\"row row-cols-1 row-cols-sm-2 row-cols-lg-3 row-cols-xl-5\">\r\n          <div class=\"col\">\r\n            <div class=\"card stat-card\">\r\n              <div class=\"card-body\">\r\n                <div class=\"d-flex justify-content-between align-items-center mb-3\">\r\n                  <div class=\"stat-icon success\">\r\n                    <i class=\"ti ti-currency-dollar fs-4\"></i>\r\n                  </div>\r\n                  <span class=\"badge badge-success\">\r\n                    <i class=\"ti ti-arrow-up\"></i> +12.5%\r\n                  </span>\r\n                </div>\r\n                <h4 class=\"fw-bold\">45,678</h4>\r\n                <p class=\"text-muted\">Total Revenue</p>\r\n                <div class=\"progress mt-2\">\r\n                  <div class=\"progress-bar bg-primary\" style=\"width:78%\"></div>\r\n                </div>\r\n              </div>\r\n            </div>\r\n          </div>\r\n          <div class=\"col\">\r\n            <div class=\"card stat-card\">\r\n              <div class=\"card-body\">\r\n                <div class=\"d-flex justify-content-between align-items-center mb-3\">\r\n                  <div class=\"stat-icon badge-primary\">\r\n                    <i class=\"ti ti-users fs-4\"></i>\r\n                  </div>\r\n                  <span class=\"badge badge-success\">\r\n                    <i class=\"ti ti-arrow-up\"></i> +23\r\n                  </span>\r\n                </div>\r\n                <h4 class=\"fw-bold\">892</h4>\r\n                <p class=\"text-muted\">Active Members</p>\r\n                <div class=\"progress mt-2\">\r\n                  <div class=\"progress-bar bg-primary\" style=\"width:89%\"></div>\r\n                </div>\r\n              </div>\r\n            </div>\r\n          </div>\r\n          <div class=\"col\">\r\n            <div class=\"card stat-card\">\r\n              <div class=\"card-body\">\r\n                <div class=\"d-flex justify-content-between align-items-center mb-3\">\r\n                  <div class=\"stat-icon info\">\r\n                    <i class=\"ti ti-login fs-4\"></i>\r\n                  </div>\r\n                  <span class=\"badge badge-success\">\r\n                    <i class=\"ti ti-arrow-up\"></i> +8%\r\n                  </span>\r\n                </div>\r\n                <h4 class=\"fw-bold\">156</h4>\r\n                <p class=\"text-muted\">Today's Check-ins</p>\r\n                <div class=\"progress mt-2\">\r\n                  <div class=\"progress-bar bg-primary\" style=\"width:78%\"></div>\r\n                </div>\r\n              </div>\r\n            </div>\r\n          </div>\r\n          <div class=\"col\">\r\n            <div class=\"card stat-card\">\r\n              <div class=\"card-body\">\r\n                <div class=\"d-flex justify-content-between align-items-center mb-3\">\r\n                  <div class=\"stat-icon warning\">\r\n                    <i class=\"ti ti-tools fs-4\"></i>\r\n                  </div>\r\n                  <span class=\"badge badge-warning\">\r\n                    3 need service\r\n                  </span>\r\n                </div>\r\n                <h4 class=\"fw-bold\">12/15</h4>\r\n                <p class=\"text-muted\">Equipment Operational</p>\r\n                <div class=\"progress mt-2\">\r\n                  <div class=\"progress-bar bg-primary\" style=\"width:80%\"></div>\r\n                </div>\r\n              </div>\r\n            </div>\r\n          </div>\r\n          <div class=\"col\">\r\n            <div class=\"card stat-card\">\r\n              <div class=\"card-body\">\r\n                <div class=\"d-flex justify-content-between align-items-center mb-3\">\r\n                  <div class=\"stat-icon success\">\r\n                    <i class=\"ti ti-trending-up fs-4\"></i>\r\n                  </div>\r\n                  <span class=\"badge badge-success\">\r\n                    <i class=\"ti ti-arrow-up\"></i> +6.8%\r\n                  </span>\r\n                </div>\r\n                <h4 class=\"fw-bold\">+6.8%</h4>\r\n                <p class=\"text-muted\">Monthly Growth</p>\r\n                <div class=\"progress mt-2\">\r\n                  <div class=\"progress-bar bg-primary\" style=\"width:68%\"></div>\r\n                </div>\r\n              </div>\r\n            </div>\r\n          </div>\r\n        </div>\r\n        <div class=\"row\">\r\n          <div class=\"col-md-12\">\r\n            <div class=\"card\">\r\n              <div class=\"card-body\">\r\n                <div class=\"d-flex align-items-center justify-content-between mb-3\">\r\n                  <h5 class=\"fw-bold\">Gym Performance Insights</h5>\r\n                  <span class=\"badge badge-light\">\r\n                    <i class=\"ti ti-clock\"></i> Updated 5 min ago\r\n                  </span>\r\n                </div>\r\n                <div class=\"row gy-4\">\r\n                  <div class=\"col-xxl-3 col-md-6\">\r\n                    <div class=\"insight-card\">\r\n                      <div class=\"insight-icon\">\r\n                        <i class=\"ti ti-clock\"></i>\r\n                      </div>\r\n                      <div class=\"fs-6 fw-semibold mb-2\">Peak Hours Today</div>\r\n                      <div class=\"peak-hours-heatmap p-3 bg-light rounded-3\">\r\n                        <div class=\"heatmap-row\">\r\n                          <div class=\"heatmap-cell bg-danger text-white\">6AM</div>\r\n                          <div class=\"heatmap-cell bg-danger text-white\">7AM</div>\r\n                          <div class=\"heatmap-cell bg-warning text-white\">8AM</div>\r\n                          <div class=\"heatmap-cell bg-success text-white\">9AM</div>\r\n                          <div class=\"heatmap-cell bg-danger text-white\">5PM</div>\r\n                          <div class=\"heatmap-cell bg-warning text-white\">6PM</div>\r\n                          <div class=\"heatmap-cell bg-warning text-white\">7PM</div>\r\n                          <div class=\"heatmap-cell bg-danger text-white\">8PM</div>\r\n                        </div>\r\n                      </div>\r\n                    </div>\r\n                  </div>\r\n                  <div class=\"col-xxl-3 col-md-6\">\r\n                    <div class=\"insight-card\">\r\n                      <div class=\"insight-icon\">\r\n                        <i class=\"ti ti-calendar\"></i>\r\n                      </div>\r\n                      <div class=\"fs-6 fw-semibold mb-2\">Class Waitlists</div>\r\n                      <div class=\"waitlist-item d-flex justify-content-between align-items-center\">\r\n                        <span>\r\n                          <i class=\"ti ti-activity me-2 fs-6\"></i> HIIT (6 PM)\r\n                        </span>\r\n                        <span class=\"badge badge-danger\">12 waiting</span>\r\n                      </div>\r\n                      <div class=\"waitlist-item d-flex justify-content-between align-items-center\">\r\n                        <span>\r\n                          <i class=\"ti ti-heart me-2 fs-5\"></i> Yoga Flow\r\n                        </span>\r\n                        <span class=\"badge badge-danger\">8 waiting</span>\r\n                      </div>\r\n                      <div class=\"waitlist-item d-flex justify-content-between align-items-center\">\r\n                        <span>\r\n                          <i class=\"ti ti-bike me-2 fs-5\"></i> Spin Class\r\n                        </span>\r\n                        <span class=\"badge badge-danger\">5 waiting</span>\r\n                      </div>\r\n                      <button type=\"button\" class=\"btn btn-primary w-100 mt-4\" data-bs-toggle=\"modal\" data-bs-target=\"#addClassModal\">\r\n                        <i class=\"ti ti-plus\"></i> Add Session\r\n                      </button>\r\n                    </div>\r\n                  </div>\r\n                  <div class=\"col-xxl-3 col-md-6\">\r\n                    <div class=\"insight-card\">\r\n                      <div class=\"insight-icon\">\r\n                        <i class=\"ti ti-settings\"></i>\r\n                      </div>\r\n                      <div class=\"fs-6 fw-semibold mb-2\">Equipment Maintenance</div>\r\n                      <div class=\"equipment-item d-flex justify-content-between align-items-center\">\r\n                        <span>\r\n                          <i class=\"ti ti-activity me-2 fs-5\"></i> Treadmill #3\r\n                        </span>\r\n                        <span class=\"badge badge-warning\">Due today</span>\r\n                      </div>\r\n                      <div class=\"equipment-item d-flex justify-content-between align-items-center\">\r\n                        <span>\r\n                          <i class=\"ti ti-barbell me-2 fs-5\"></i> Leg Press\r\n                        </span>\r\n                        <span class=\"badge badge-warning\">2 days left</span>\r\n                      </div>\r\n                      <div class=\"equipment-item d-flex justify-content-between align-items-center\">\r\n                        <span>\r\n                          <i class=\"ti ti-settings me-2 fs-5\"></i> Smith Machine\r\n                        </span>\r\n                        <span class=\"badge badge-success\">✓ Good</span>\r\n                      </div>\r\n                      <div class=\"equipment-item d-flex justify-content-between align-items-center\">\r\n                        <span>\r\n                          <i class=\"ti ti-activity me-2 fs-5\"></i> Rowing Machine\r\n                        </span>\r\n                        <span class=\"badge badge-warning\">Service needed</span>\r\n                      </div>\r\n                    </div>\r\n                  </div>\r\n                  <div class=\"col-xxl-3 col-md-6\">\r\n                    <div class=\"insight-card\">\r\n                      <div class=\"insight-icon\">\r\n                        <i class=\"ti ti-package\"></i>\r\n                      </div>\r\n                      <div class=\"fs-6 fw-semibold mb-2\">Inventory Alerts</div>\r\n                      <div class=\"inventory-item d-flex justify-content-between align-items-center\">\r\n                        <span>\r\n                          <i class=\"ti ti-cup me-2 fs-5\"></i> Protein Shakes\r\n                        </span>\r\n                        <span class=\"badge badge-danger\">12 left</span>\r\n                      </div>\r\n                      <div class=\"inventory-item d-flex justify-content-between align-items-center\">\r\n                        <span>\r\n                          <i class=\"ti ti-shirt me-2 fs-5\"></i> Towels\r\n                        </span>\r\n                        <span class=\"badge badge-warning\">23 left</span>\r\n                      </div>\r\n                      <div class=\"inventory-item d-flex justify-content-between align-items-center\">\r\n                        <span>\r\n                          <i class=\"ti ti-bottle me-2 fs-5\"></i> Water Bottles\r\n                        </span>\r\n                        <span class=\"badge badge-success\">45 left</span>\r\n                      </div>\r\n                      <div class=\"inventory-item d-flex justify-content-between align-items-center\">\r\n                        <span>\r\n                          <i class=\"ti ti-circle-dot me-2 fs-5\"></i> Resistance Bands\r\n                        </span>\r\n                        <span class=\"badge badge-warning\">8 left</span>\r\n                      </div>\r\n                      <button type=\"button\" class=\"btn btn-light w-100 mt-4\" data-bs-toggle=\"modal\" data-bs-target=\"#reorderModal\">\r\n                        <i class=\"ti ti-shopping-cart\"></i> Reorder Now\r\n                      </button>\r\n                    </div>\r\n                  </div>\r\n                </div>\r\n              </div>\r\n            </div>\r\n          </div>\r\n          <div class=\"col-xxl-8 col-lg-7\">\r\n            <div class=\"card\">\r\n              <div class=\"card-body\">\r\n                <div class=\"d-flex align-items-center justify-content-between mb-3\">\r\n                  <h5 class=\"fw-bold\">Revenue Overview</h5>\r\n                  <a href=\"javascript:void(0)\" class=\"btn btn-light\">\r\n                    <i class=\"ti ti-download\"></i>\r\n                    Export\r\n                  </a>\r\n                </div>\r\n                <div id=\"revenueChartBox\"></div>\r\n                <div class=\"row gy-4 mt-3\">\r\n                  <div class=\"col\">\r\n                    <div class=\"p-3 bg-light border rounded-3 text-center\">\r\n                      <div class=\"text-muted small mb-1\">Memberships</div>\r\n                      <div class=\"fw-bold fs-5 mb-2\">$28.4k</div>\r\n                      <span class=\"badge badge-primary\">62%</span>\r\n                    </div>\r\n                  </div>\r\n                  <div class=\"col\">\r\n                    <div class=\"p-3 bg-light border rounded-3 text-center\">\r\n                      <div class=\"text-muted small mb-1\">PT Sessions</div>\r\n                      <div class=\"fw-bold fs-5 mb-2\">$12.9k</div>\r\n                      <span class=\"badge badge-primary\">28%</span>\r\n                    </div>\r\n                  </div>\r\n                  <div class=\"col\">\r\n                    <div class=\"p-3 bg-light border rounded-3 text-center\">\r\n                      <div class=\"text-muted small mb-1\">Classes</div>\r\n                      <div class=\"fw-bold fs-5 mb-2\">$4.4k</div>\r\n                      <span class=\"badge badge-primary\">10%</span>\r\n                    </div>\r\n                  </div>\r\n                </div>\r\n              </div>\r\n            </div>\r\n          </div>\r\n          <div class=\"col-xxl-4 col-lg-5\">\r\n            <div class=\"card\">\r\n              <div class=\"card-body\">\r\n                <h5 class=\"fw-bold mb-3\">Quick Actions</h5>\r\n                <div class=\"row gy-4\">\r\n                  <div class=\"col-6\">\r\n                    <div class=\"quickaction-grid\" data-bs-toggle=\"modal\" data-bs-target=\"#bulkMessageModal\">\r\n                      <div class=\"icon-wrap\">\r\n                        <i class=\"ti ti-message\"></i>\r\n                      </div>\r\n                      <h3 class=\"qaction-title mb-1 fw-bold\">Bulk Message</h3>\r\n                      <p>Send messages to all</p>\r\n                    </div>\r\n                  </div>\r\n                  <div class=\"col-6\">\r\n                    <div class=\"quickaction-grid\" data-bs-toggle=\"modal\" data-bs-target=\"#announcementModal\">\r\n                      <div class=\"icon-wrap\">\r\n                        <i class=\"ti ti-speakerphone\"></i>\r\n                      </div>\r\n                      <h3 class=\"qaction-title mb-1 fw-bold\">Announcement</h3>\r\n                      <p>Create broadcast message</p>\r\n                    </div>\r\n                  </div>\r\n                  <div class=\"col-6\">\r\n                    <div class=\"quickaction-grid\" data-bs-toggle=\"modal\" data-bs-target=\"#reportModal\">\r\n                      <div class=\"icon-wrap\">\r\n                        <i class=\"ti ti-report\"></i>\r\n                      </div>\r\n                      <h3 class=\"qaction-title mb-1 fw-bold\">Reports</h3>\r\n                      <p>Generate analytics report</p>\r\n                    </div>\r\n                  </div>\r\n                  <div class=\"col-6\">\r\n                    <div class=\"quickaction-grid\" data-bs-toggle=\"modal\" data-bs-target=\"#addMemberModal\">\r\n                      <div class=\"icon-wrap\">\r\n                        <i class=\"ti ti-user-plus\"></i>\r\n                      </div>\r\n                      <h3 class=\"qaction-title mb-1 fw-bold\">Add Member</h3>\r\n                      <p>Add new user</p>\r\n                    </div>\r\n                  </div>\r\n                  <div class=\"col-6\">\r\n                    <div class=\"quickaction-grid\" data-bs-toggle=\"modal\" data-bs-target=\"#importModal\">\r\n                      <div class=\"icon-wrap\">\r\n                        <i class=\"ti ti-file-import\"></i>\r\n                      </div>\r\n                      <h3 class=\"qaction-title mb-1 fw-bold\">Import CSV</h3>\r\n                      <p>Upload member list</p>\r\n                    </div>\r\n                  </div>\r\n                  <div class=\"col-6\">\r\n                    <div class=\"quickaction-grid\" data-bs-toggle=\"modal\" data-bs-target=\"#promotionModal\">\r\n                      <div class=\"icon-wrap\">\r\n                        <i class=\"ti ti-discount\"></i>\r\n                      </div>\r\n                      <h3 class=\"qaction-title mb-1 fw-bold\">Promotions</h3>\r\n                      <p>Send offers & deals</p>\r\n                    </div>\r\n                  </div>\r\n                </div>\r\n              </div>\r\n            </div>\r\n          </div>\r\n          <div class=\"col-xxl-4 col-md-6\">\r\n            <div class=\"card\">\r\n              <div class=\"card-body\">\r\n                <div class=\"d-flex align-items-center justify-content-between mb-3\">\r\n                  <h5 class=\"fw-bold\">Today's Classes</h5>\r\n                  <a href=\"javascript:void(0)\" class=\"btn btn-primary\" data-bs-toggle=\"modal\" data-bs-target=\"#addClassModal\">\r\n                    <i class=\"ti ti-plus\"></i>\r\n                    Add Class\r\n                  </a>\r\n                </div>\r\n                <ul class=\"schedule-list todayclass-list\">\r\n                  <li class=\"schedule-item d-flex align-items-center justify-content-between\">\r\n                    <div>\r\n                      <div class=\"fw-bold fs-6\">🔥 HIIT</div>\r\n                      <div class=\"text-muted\">Sarah Chen • 6:00 PM</div>\r\n                    </div>\r\n                    <div class=\"d-flex align-items-center\">\r\n                      <span class=\"badge-success badge\">18/20</span>\r\n                      <span class=\"badge-warning badge ms-2\">Waitlist 5</span>\r\n                    </div>\r\n                  </li>\r\n                  <li class=\"schedule-item d-flex align-items-center justify-content-between\">\r\n                    <div>\r\n                      <div class=\"fw-bold fs-6\">🧘 Yoga Flow</div>\r\n                      <div class=\"text-muted\">Emma Watson • 7:30 PM</div>\r\n                    </div>\r\n                    <span class=\"badge-success badge\">15/20</span>\r\n                  </li>\r\n                  <li class=\"schedule-item d-flex align-items-center justify-content-between\">\r\n                    <div>\r\n                      <div class=\"fw-bold fs-6\">💪 Strength Training</div>\r\n                      <div class=\"text-muted\">Mike Ross • 5:00 PM</div>\r\n                    </div>\r\n                    <span class=\"badge-success badge\">12/15</span>\r\n                  </li>\r\n                  <li class=\"schedule-item d-flex align-items-center justify-content-between\">\r\n                    <div>\r\n                      <div class=\"fw-bold fs-6\">🚴 Spin Class</div>\r\n                      <div class=\"text-muted\">David Miller • 8:00 PM</div>\r\n                    </div>\r\n                    <span class=\"badge-danger badge\">Full</span>\r\n                  </li>\r\n                </ul>\r\n              </div>\r\n            </div>\r\n          </div>\r\n          <div class=\"col-xxl-4 col-md-6\">\r\n            <div class=\"card\">\r\n              <div class=\"card-body\">\r\n                <div class=\"d-flex align-items-center justify-content-between mb-3\">\r\n                  <h5 class=\"fw-bold\">Staff On-duty</h5>\r\n                </div>\r\n                <div class=\"row gy-4 row-cols-xl-2\">\r\n                  <div class=\"col\">\r\n                    <div class=\"staff-item bg-light\">\r\n                      <div class=\"staff-avatar\">\r\n                        <img src=\"https://randomuser.me/api/portraits/women/68.jpg\" alt=\"Sarah Chen\">\r\n                      </div>\r\n                      <div>\r\n                        <div class=\"staff-name fw-bold\">Sarah Chen</div>\r\n                        <p>Lead Trainer</p>\r\n                        <div class=\"badge badge-sm mt-2 badge-success\">\r\n                          <i class=\"ti ti-circle-filled\"></i> On duty\r\n                        </div>\r\n                      </div>\r\n                    </div>\r\n                  </div>\r\n                  <div class=\"col\">\r\n                    <div class=\"staff-item bg-light\">\r\n                      <div class=\"staff-avatar\">\r\n                        <img src=\"https://randomuser.me/api/portraits/men/75.jpg\" alt=\"Mike Ross\">\r\n                      </div>\r\n                      <div>\r\n                        <div class=\"staff-name fw-bold\">Mike Ross</div>\r\n                        <p>Front Desk</p>\r\n                        <div class=\"badge badge-sm mt-2 badge-success\">\r\n                          <i class=\"ti ti-circle-filled\"></i> On duty\r\n                        </div>\r\n                      </div>\r\n                    </div>\r\n                  </div>\r\n                  <div class=\"col\">\r\n                    <div class=\"staff-item bg-light\">\r\n                      <div class=\"staff-avatar\">\r\n                        <img src=\"https://randomuser.me/api/portraits/women/45.jpg\" alt=\"Emma Watson\">\r\n                      </div>\r\n                      <div>\r\n                        <div class=\"staff-name fw-bold\">Emma Watson</div>\r\n                        <p>Yoga Trainer</p>\r\n                        <div class=\"badge badge-sm mt-2 badge-success\">\r\n                          <i class=\"ti ti-circle-filled\"></i> On duty\r\n                        </div>\r\n                      </div>\r\n                    </div>\r\n                  </div>\r\n                  <div class=\"col\">\r\n                    <div class=\"staff-item bg-light\">\r\n                      <div class=\"staff-avatar\">\r\n                        <img src=\"https://randomuser.me/api/portraits/men/32.jpg\" alt=\"David Miller\">\r\n                      </div>\r\n                      <div>\r\n                        <div class=\"staff-name fw-bold\">David Miller</div>\r\n                        <p>Manager</p>\r\n                        <div class=\"badge badge-sm mt-2 badge-warning\">\r\n                          <i class=\"ti ti-circle-filled\"></i> On call\r\n                        </div>\r\n                      </div>\r\n                    </div>\r\n                  </div>\r\n                </div>\r\n                <div class=\"conflict-card\" data-bs-toggle=\"modal\" data-bs-target=\"#conflictModal\">\r\n                  <div class=\"conflict-inner\">\r\n                    <div class=\"conflict-icon\">\r\n                      <i class=\"ti ti-alert-triangle\"></i>\r\n                    </div>\r\n                    <div class=\"conflict-text\">\r\n                      <div class=\"d-flex align-items-center text-danger fs-6 fw-bold\">\r\n                        Schedule Conflict!\r\n                        <span class=\"badge badge-danger badge-sm ms-2\">URGENT</span>\r\n                      </div>\r\n                      <div class=\"font-muted\">\r\n                        <i class=\"ti ti-users\"></i> 2 trainers double-booked at 6PM\r\n                      </div>\r\n                    </div>\r\n                    <a href=\"javascript:void(0)\" class=\"btn btn-danger btn-sm\">\r\n                      <i class=\"ti ti-click\"></i> Resolve Now\r\n                    </a>\r\n                  </div>\r\n                </div>\r\n              </div>\r\n            </div>\r\n          </div>\r\n          <div class=\"col-xxl-4 col-md-6\">\r\n            <div class=\"card\">\r\n              <div class=\"card-body\">\r\n                <div class=\"d-flex align-items-center justify-content-between mb-3\">\r\n                  <h5 class=\"fw-bold\">Top Performers</h5>\r\n                </div>\r\n                <ul class=\"performer-list\">\r\n                  <li class=\"performer-item\">\r\n                    <div class=\"performer-rank crown-rank\">\r\n                      <i class=\"ti ti-crown\"></i>\r\n                    </div>\r\n                    <div class=\"performer-info\">\r\n                      <div class=\"performer-title fw-bold\">Premium Annual Plan</div>\r\n                      <div class=\"performer-stats\">\r\n                        <i class=\"ti ti-user-plus\"></i> 34 new signups this month\r\n                      </div>\r\n                    </div>\r\n                    <span class=\"badge badge-primary ms-auto\">\r\n                      <i class=\"ti ti-arrow-up\"></i> +45%\r\n                    </span>\r\n                  </li>\r\n                  <li class=\"performer-item\">\r\n                    <div class=\"performer-rank\">2</div>\r\n                    <div class=\"performer-info\">\r\n                      <div class=\"performer-title fw-bold\">HIIT Classes</div>\r\n                      <div class=\"performer-stats\">\r\n                        <i class=\"ti ti-chart-bar\"></i> 89% average attendance\r\n                      </div>\r\n                    </div>\r\n                    <span class=\"badge badge-primary ms-auto\">\r\n                      <i class=\"ti ti-flame\"></i> Popular\r\n                    </span>\r\n                  </li>\r\n                  <li class=\"performer-item\">\r\n                    <div class=\"performer-rank\">3</div>\r\n                    <div class=\"performer-info\">\r\n                      <div class=\"performer-title fw-bold\">\r\n                        Sarah Chen <span class=\"trainer-subtitle\">(Trainer)</span>\r\n                      </div>\r\n                      <div class=\"performer-stats\">\r\n                        <i class=\"ti ti-calendar-event\"></i> 156 sessions this month\r\n                      </div>\r\n                    </div>\r\n                    <span class=\"badge badge-primary ms-auto\">\r\n                      <i class=\"ti ti-star-filled\"></i> 4.9\r\n                    </span>\r\n                  </li>\r\n                  <li class=\"performer-item\">\r\n                    <div class=\"performer-rank\">4</div>\r\n                    <div class=\"performer-info\">\r\n                      <div class=\"performer-title fw-bold\">Spin Class</div>\r\n                      <div class=\"performer-stats\">\r\n                        <i class=\"ti ti-users\"></i> 94% capacity reached\r\n                      </div>\r\n                    </div>\r\n                    <span class=\"badge badge-primary ms-auto\">\r\n                      <i class=\"ti ti-arrow-up\"></i> +28%\r\n                    </span>\r\n                  </li>\r\n                </ul>\r\n              </div>\r\n            </div>\r\n          </div>\r\n          <div class=\"col-xxl-4 col-md-6\">\r\n            <div class=\"card\">\r\n              <div class=\"card-body\">\r\n                <div class=\"d-flex align-items-center justify-content-between mb-3\">\r\n                  <h5 class=\"fw-bold\">Quick Cash Flow</h5>\r\n                </div>\r\n                <div class=\"row gy-4\">\r\n                  <div class=\"col-6\">\r\n                    <div class=\"cashflow-item bg-light p-3 rounded-4 text-center\">\r\n                      <div class=\"cashflow-label mb-1\">Expected Collection</div>\r\n                      <div class=\"cashflow-value fs-4 fw-semibold\">$8,450</div>\r\n                      <div class=\"badge badge-primary badge-sm mt-2\">\r\n                        <i class=\"ti ti-arrow-up\"></i> +12%\r\n                      </div>\r\n                    </div>\r\n                  </div>\r\n                  <div class=\"col-6\">\r\n                    <div class=\"cashflow-item bg-light p-3 rounded-4 text-center\">\r\n                      <div class=\"cashflow-label mb-1\">Pending Payments</div>\r\n                      <div class=\"cashflow-value fs-4 fw-semibold\">$2,345</div>\r\n                      <div class=\"badge badge-primary badge-sm mt-2\">12 members</div>\r\n                    </div>\r\n                  </div>\r\n                  <div class=\"col-6\">\r\n                    <div class=\"cashflow-item bg-light p-3 rounded-4 text-center\">\r\n                      <div class=\"cashflow-label mb-1\">Refunds Today</div>\r\n                      <div class=\"cashflow-value fs-4 fw-semibold\">$129</div>\r\n                      <div class=\"badge badge-primary badge-sm mt-2\">2 refunds</div>\r\n                    </div>\r\n                  </div>\r\n                  <div class=\"col-6\">\r\n                    <div class=\"cashflow-item bg-light p-3 rounded-4 text-center\">\r\n                      <div class=\"cashflow-label mb-1\">Net Cash Flow</div>\r\n                      <div class=\"cashflow-value fs-4 fw-semibold\">$8,321</div>\r\n                      <div class=\"badge badge-primary badge-sm mt-2\">\r\n                        <i class=\"ti ti-arrow-up\"></i> +8.3%\r\n                      </div>\r\n                    </div>\r\n                  </div>\r\n                </div>\r\n                <button class=\"btn btn-primary w-100 mt-4\" data-bs-toggle=\"modal\" data-bs-target=\"#reportModal\">\r\n                  <i class=\"ti ti-file-text\"></i> Generate Detailed Report\r\n                </button>\r\n              </div>\r\n            </div>\r\n          </div>\r\n          <div class=\"col-xxl-4 col-md-6\">\r\n            <div class=\"card\">\r\n              <div class=\"card-body\">\r\n                <div class=\"d-flex align-items-center justify-content-between mb-3\">\r\n                  <h5 class=\"fw-bold\">Recent Inquiries</h5>\r\n                  <span class=\"badge badge-primary\">24 New</span>\r\n                </div>\r\n                <div class=\"table-responsive mt-4\">\r\n                  <table class=\"table align-middle\">\r\n                    <tbody>\r\n                      <tr>\r\n                        <td>\r\n                          <h6 class=\"mb-1\">Ravi Sharma</h6>\r\n                          <p class=\"mb-0 text-muted\">Solar Panel Installation</p>\r\n                        </td>\r\n                        <td>\r\n                          <span class=\"badge badge-warning\">Pending</span>\r\n                        </td>\r\n                        <td>\r\n                          <span class=\"badge badge-success\">View</span>\r\n                        </td>\r\n                      </tr>\r\n                      <tr>\r\n                        <td>\r\n                          <h6 class=\"mb-1\">Priya Patel</h6>\r\n                          <p class=\"mb-0 text-muted\">Rooftop Solar Inquiry</p>\r\n                        </td>\r\n                        <td>\r\n                          <span class=\"badge badge-success\">Completed</span>\r\n                        </td>\r\n                        <td>\r\n                          <span class=\"badge badge-primary\">Details</span>\r\n                        </td>\r\n                      </tr>\r\n                      <tr>\r\n                        <td>\r\n                          <h6 class=\"mb-1\">Amit Verma</h6>\r\n                          <p class=\"mb-0 text-muted\">Maintenance Request</p>\r\n                        </td>\r\n                        <td>\r\n                          <span class=\"badge badge-danger\">Urgent</span>\r\n                        </td>\r\n                        <td>\r\n                          <span class=\"badge badge-info\">Contact</span>\r\n                        </td>\r\n                      </tr>\r\n                      <tr>\r\n                        <td>\r\n                          <h6 class=\"mb-1\">Neha Joshi</h6>\r\n                          <p class=\"mb-0 text-muted\">Battery Backup Setup</p>\r\n                        </td>\r\n                        <td>\r\n                          <span class=\"badge badge-warning\">In Progress</span>\r\n                        </td>\r\n                        <td>\r\n                          <span class=\"badge badge-primary\">Update</span>\r\n                        </td>\r\n                      </tr>\r\n                      <tr>\r\n                        <td>\r\n                          <h6 class=\"mb-1\">Karan Mehta</h6>\r\n                          <p class=\"mb-0 text-muted\">Commercial Solar Project</p>\r\n                        </td>\r\n                        <td>\r\n                          <span class=\"badge badge-success\">Approved</span>\r\n                        </td>\r\n                        <td>\r\n                          <span class=\"badge badge-light\">Review</span>\r\n                        </td>\r\n                      </tr>\r\n                    </tbody>\r\n                  </table>\r\n                </div>\r\n              </div>\r\n            </div>\r\n          </div>\r\n          <div class=\"col-xxl-4 col-md-6\">\r\n            <div class=\"card activity-card\">\r\n              <div class=\"card-body\">\r\n                <div class=\"d-flex align-items-center justify-content-between mb-3\">\r\n                  <h5 class=\"fw-bold\">Recent Activities</h5>\r\n                  <a href=\"#\" onclick=\"showToast('All activities')\" class=\"fw-bold text-success text-decoration-none\">\r\n                    View All →\r\n                  </a>\r\n                </div>\r\n                <div class=\"activity-item list-item\">\r\n                  <div class=\"d-flex align-items-center\">\r\n                    <div class=\"social-avatar me-2\">\r\n                      <img src=\"https://randomuser.me/api/portraits/men/32.jpg\" alt=\"John D\">\r\n                    </div>\r\n                    <div class=\"activity-info\">\r\n                      <h6 class=\"fw-bold mb-1\">Sarah Johnson joined</h6>\r\n\r\n                      <div class=\"font-light\">\r\n                        <i class=\"ti ti-crown me-1\"></i> Premium Plan •\r\n                        <i class=\"ti ti-clock me-1\"></i> 2 min ago\r\n                      </div>\r\n                    </div>\r\n                  </div>\r\n                  <span class=\"badge badge-success\">\r\n                    <i class=\"ti ti-circle-check me-1\"></i> New\r\n                  </span>\r\n                </div>\r\n                <div class=\"activity-item list-item\">\r\n                  <div class=\"d-flex align-items-center\">\r\n                    <div class=\"social-avatar me-2\">\r\n                      <img src=\"https://randomuser.me/api/portraits/men/32.jpg\" alt=\"John D\">\r\n                    </div>\r\n                    <div class=\"activity-info\">\r\n                      <h6 class=\"fw-bold mb-1\">Payment Received</h6>\r\n                      <div class=\"font-light\">\r\n                        <i class=\"ti ti-user me-1\"></i> John Smith •\r\n                        <i class=\"ti ti-clock me-1\"></i> 15 min ago •\r\n                        <i class=\"ti ti-wallet me-1\"></i> $129.99\r\n                      </div>\r\n                    </div>\r\n                  </div>\r\n                  <span class=\"badge badge-primary\">\r\n                    Paid\r\n                  </span>\r\n                </div>\r\n                <div class=\"activity-item justify-content-start list-item\">\r\n                  <div class=\"social-avatar me-2\">\r\n                    <img src=\"https://randomuser.me/api/portraits/men/32.jpg\" alt=\"John D\">\r\n                  </div>\r\n                  <div>\r\n                    <div class=\"content-name fs-6 fw-bold\">\r\n                      John D.\r\n                    </div>\r\n                    <div class=\"feedback-role font-light\">\r\n                      <i class=\"ti ti-message-circle me-1\"></i>\r\n                      Recent Member Feedback\r\n                    </div>\r\n                  </div>\r\n                </div>\r\n                <div class=\"alert alert-info mt-3 mb-0\">\r\n                  <div class=\"mb-2\">\r\n                    <i class=\"ti ti-star-filled text-warning\"></i>\r\n                    <i class=\"ti ti-star-filled text-warning\"></i>\r\n                    <i class=\"ti ti-star-filled text-warning\"></i>\r\n                    <i class=\"ti ti-star-filled text-warning\"></i>\r\n                    <i class=\"ti ti-star-filled text-warning\"></i>\r\n                  </div>\r\n                  <i class=\"ti ti-quote me-2 text-primary\"></i>\r\n                  \"HIIT class was amazing! Best trainer ever!\" 💪\r\n                  <div class=\"mt-2 small text-muted\">\r\n                    <i class=\"ti ti-clock me-1\"></i> 10 min ago\r\n                  </div>\r\n                </div>\r\n              </div>\r\n            </div>\r\n          </div>\r\n        </div>\r\n  </main>\r\n  <!-- Start Add Class Modal -->\r\n  <div class=\"modal fade\" id=\"addClassModal\" data-bs-backdrop=\"static\" tabindex=\"-1\" aria-labelledby=\"addClassModalLabel\" aria-hidden=\"true\">\r\n    <div class=\"modal-dialog modal-dialog-centered\">\r\n      <div class=\"modal-content\">\r\n        <div class=\"modal-header\">\r\n          <h5 class=\"modal-title\" id=\"addClassModalLabel\">\r\n            Schedule New Class\r\n          </h5>\r\n          <button type=\"button\" class=\"btn-close\" data-bs-dismiss=\"modal\" aria-label=\"Close\"></button>\r\n        </div>\r\n        <div class=\"modal-body\">\r\n          <form>\r\n            <div class=\"form-group mb-3\">\r\n              <label class=\"form-label\">Class Name</label>\r\n              <input type=\"text\" class=\"form-control\" placeholder=\"e.g., HIIT, Yoga, Pilates\">\r\n            </div>\r\n            <div class=\"form-group mb-3\">\r\n              <label class=\"form-label\">Trainer</label>\r\n              <input type=\"text\" class=\"form-control\" placeholder=\"Trainer name\">\r\n            </div>\r\n            <div class=\"form-group mb-3\">\r\n              <label class=\"form-label\">Date &amp; Time</label>\r\n              <input type=\"datetime-local\" class=\"form-control\">\r\n            </div>\r\n            <div class=\"form-group mb-3\">\r\n              <label class=\"form-label\">Duration (minutes)</label>\r\n              <input type=\"number\" class=\"form-control\" placeholder=\"60\" value=\"60\">\r\n            </div>\r\n            <div class=\"form-group mb-3\">\r\n              <label class=\"form-label\">Max Capacity</label>\r\n              <input type=\"number\" class=\"form-control\" placeholder=\"20\" value=\"20\">\r\n            </div>\r\n            <div class=\"form-group mb-3\">\r\n              <label class=\"form-label\">Location / Room</label>\r\n              <input type=\"text\" class=\"form-control\" placeholder=\"e.g., Studio A, Main Hall\">\r\n            </div>\r\n          </form>\r\n        </div>\r\n        <div class=\"modal-footer\">\r\n          <button type=\"button\" class=\"btn btn-light\" data-bs-dismiss=\"modal\">Cancel</button>\r\n          <button type=\"button\" class=\"btn btn-primary\" data-bs-dismiss=\"modal\">\r\n            <i class=\"ti ti-check\"></i> Create Class\r\n          </button>\r\n        </div>\r\n      </div>\r\n    </div>\r\n  </div>\r\n  <!-- End Add Class Modal -->\r\n  <!-- Start Reorder Modal -->\r\n  <div class=\"modal fade\" id=\"reorderModal\" data-bs-backdrop=\"static\" tabindex=\"-1\" aria-labelledby=\"reorderModalLabel\" aria-hidden=\"true\">\r\n    <div class=\"modal-dialog modal-dialog-centered\">\r\n      <div class=\"modal-content\">\r\n        <div class=\"modal-header\">\r\n          <h5 class=\"modal-title\" id=\"reorderModalLabel\">\r\n            Reorder Inventory\r\n          </h5>\r\n          <button type=\"button\" class=\"btn-close\" data-bs-dismiss=\"modal\" aria-label=\"Close\"></button>\r\n        </div>\r\n        <div class=\"modal-body\">\r\n          <form>\r\n            <div class=\"form-group mb-3\">\r\n              <label class=\"form-label\">Select Item</label>\r\n              <select class=\"form-select\">\r\n                <option value=\"\">Choose item...</option>\r\n                <option>🥤 Protein Shakes</option>\r\n                <option>🧼 Towels</option>\r\n                <option>💧 Water Bottles</option>\r\n                <option>🟢 Resistance Bands</option>\r\n              </select>\r\n            </div>\r\n            <div class=\"form-group mb-3\">\r\n              <label class=\"form-label\">Quantity</label>\r\n              <input type=\"number\" class=\"form-control\" placeholder=\"Enter quantity\" min=\"1\">\r\n            </div>\r\n            <div class=\"form-group mb-3\">\r\n              <label class=\"form-label\">Supplier</label>\r\n              <input type=\"text\" class=\"form-control\" placeholder=\"Supplier name\" value=\"GymEquip Pro\">\r\n            </div>\r\n            <div class=\"form-group mb-3\">\r\n              <label class=\"form-label\">Expected Delivery</label>\r\n              <input type=\"date\" class=\"form-control\">\r\n            </div>\r\n            <div class=\"form-group mb-3\">\r\n              <label class=\"form-label\">Notes (Optional)</label>\r\n              <textarea class=\"form-control\" rows=\"2\" placeholder=\"Special instructions...\"></textarea>\r\n            </div>\r\n          </form>\r\n        </div>\r\n        <div class=\"modal-footer\">\r\n          <button type=\"button\" class=\"btn btn-light\" data-bs-dismiss=\"modal\">Cancel</button>\r\n          <button type=\"button\" class=\"btn btn-primary\" data-bs-dismiss=\"modal\">\r\n            <i class=\"ti ti-check\"></i> Place Order\r\n          </button>\r\n        </div>\r\n      </div>\r\n    </div>\r\n  </div>\r\n  <!-- End Reorder Modal -->\r\n  <!-- Start Add Member -->\r\n  <div class=\"modal fade\" id=\"addMemberModal\" data-bs-backdrop=\"static\" tabindex=\"-1\">\r\n    <div class=\"modal-dialog modal-dialog-centered\">\r\n      <div class=\"modal-content\">\r\n        <div class=\"modal-header\">\r\n          <h5 class=\"modal-title\">\r\n            Add New Member\r\n          </h5>\r\n          <button type=\"button\" class=\"btn-close\" data-bs-dismiss=\"modal\" aria-label=\"Close\"></button>\r\n        </div>\r\n        <div class=\"modal-body\">\r\n          <div class=\"mb-3\">\r\n            <label class=\"form-label\">Full Name</label>\r\n            <input type=\"text\" class=\"form-control\" placeholder=\"Enter full name\">\r\n          </div>\r\n          <div class=\"mb-3\">\r\n            <label class=\"form-label\">Email Address</label>\r\n            <input type=\"email\" class=\"form-control\" placeholder=\"Enter email address\">\r\n          </div>\r\n          <div class=\"mb-3\">\r\n            <label class=\"form-label\">Phone Number</label>\r\n            <input type=\"tel\" class=\"form-control\" placeholder=\"Enter phone number\">\r\n          </div>\r\n          <div class=\"mb-3\">\r\n            <label class=\"form-label\">Date of Birth</label>\r\n            <input type=\"date\" class=\"form-control\">\r\n          </div>\r\n          <div class=\"mb-3\">\r\n            <label class=\"form-label\">Membership Plan</label>\r\n            <select class=\"form-select\">\r\n              <option>Premium Annual Plan</option>\r\n              <option>Standard Monthly Plan</option>\r\n              <option>Basic Plan</option>\r\n            </select>\r\n          </div>\r\n          <div class=\"mb-3\">\r\n            <label class=\"form-label\">Payment Method</label>\r\n            <select class=\"form-select\">\r\n              <option>Credit Card</option>\r\n              <option>Debit Card</option>\r\n              <option>PayPal</option>\r\n              <option>Bank Transfer</option>\r\n            </select>\r\n          </div>\r\n        </div>\r\n        <div class=\"modal-footer\">\r\n          <button type=\"button\" class=\"btn btn-light\" data-bs-dismiss=\"modal\">Cancel</button>\r\n          <button type=\"button\" class=\"btn btn-primary\" data-bs-dismiss=\"modal\">\r\n            <i class=\"ti ti-check\"></i> Add Member\r\n          </button>\r\n        </div>\r\n      </div>\r\n    </div>\r\n  </div>\r\n  <!-- End Add Member -->\r\n  <!-- Start Bulk Message -->\r\n  <div class=\"modal fade\" id=\"bulkMessageModal\" data-bs-backdrop=\"static\" tabindex=\"-1\">\r\n    <div class=\"modal-dialog modal-dialog-centered\">\r\n      <div class=\"modal-content\">\r\n        <div class=\"modal-header\">\r\n          <h5 class=\"modal-title\">Bulk Message</h5>\r\n          <button type=\"button\" class=\"btn-close\" data-bs-dismiss=\"modal\" aria-label=\"Close\"></button>\r\n        </div>\r\n        <div class=\"modal-body\">\r\n          <div class=\"mb-3\">\r\n            <label class=\"form-label\">Select Audience</label>\r\n            <select class=\"form-select\">\r\n              <option>All Members (892)</option>\r\n              <option>Premium Members Only (245)</option>\r\n              <option>Expiring Soon (within 7 days)</option>\r\n              <option>Inactive Members (30+ days)</option>\r\n              <option>New Members (last 30 days)</option>\r\n            </select>\r\n          </div>\r\n          <div class=\"mb-3\">\r\n            <label class=\"form-label\">Email Subject</label>\r\n            <input type=\"text\" class=\"form-control\" placeholder=\"Enter subject line\">\r\n          </div>\r\n          <div class=\"mb-3\">\r\n            <label class=\"form-label\">Message Content</label>\r\n            <textarea class=\"form-control\" rows=\"4\" placeholder=\"Type your message here...\"></textarea>\r\n          </div>\r\n          <div class=\"mb-3\">\r\n            <label class=\"form-label\">Schedule Send</label>\r\n            <input type=\"datetime-local\" class=\"form-control\">\r\n          </div>\r\n        </div>\r\n        <div class=\"modal-footer\">\r\n          <button type=\"button\" class=\"btn btn-light\" data-bs-dismiss=\"modal\">Cancel</button>\r\n          <button type=\"button\" class=\"btn btn-primary\" data-bs-dismiss=\"modal\">\r\n            <i class=\"ti ti-send\"></i> Send Message\r\n          </button>\r\n        </div>\r\n      </div>\r\n    </div>\r\n  </div>\r\n  <!-- End Bulk Message -->\r\n  <!-- Start Announcement -->\r\n  <div class=\"modal fade\" id=\"announcementModal\" data-bs-backdrop=\"static\" tabindex=\"-1\">\r\n    <div class=\"modal-dialog modal-dialog-centered\">\r\n      <div class=\"modal-content\">\r\n        <div class=\"modal-header\">\r\n          <h5 class=\"modal-title\">Make Announcement</h5>\r\n          <button type=\"button\" class=\"btn-close\" data-bs-dismiss=\"modal\" aria-label=\"Close\"></button>\r\n        </div>\r\n        <div class=\"modal-body\">\r\n          <div class=\"mb-3\">\r\n            <label class=\"form-label\">Announcement Title</label>\r\n            <input type=\"text\" class=\"form-control\" placeholder=\"Enter title\">\r\n          </div>\r\n          <div class=\"mb-3\">\r\n            <label class=\"form-label\">Announcement Content</label>\r\n            <textarea class=\"form-control\" rows=\"4\" placeholder=\"Write announcement details...\"></textarea>\r\n          </div>\r\n          <div class=\"mb-3\">\r\n            <label class=\"form-label\">Priority Level</label>\r\n            <select class=\"form-select\">\r\n              <option>Normal</option>\r\n              <option>High Priority</option>\r\n              <option>Urgent</option>\r\n            </select>\r\n          </div>\r\n          <div class=\"mb-3\">\r\n            <label class=\"form-label\">Display Until</label>\r\n            <input type=\"date\" class=\"form-control\">\r\n          </div>\r\n        </div>\r\n        <div class=\"modal-footer\">\r\n          <button type=\"button\" class=\"btn btn-light\" data-bs-dismiss=\"modal\">Cancel</button>\r\n          <button type=\"button\" class=\"btn btn-primary\" data-bs-dismiss=\"modal\">\r\n            <i class=\"ti ti-check\"></i> Post Announcement\r\n          </button>\r\n        </div>\r\n      </div>\r\n    </div>\r\n  </div>\r\n  <!-- End Announcement -->\r\n  <!-- End Report -->\r\n  <div class=\"modal fade\" id=\"reportModal\" data-bs-backdrop=\"static\" tabindex=\"-1\">\r\n    <div class=\"modal-dialog modal-dialog-centered\">\r\n      <div class=\"modal-content\">\r\n        <div class=\"modal-header\">\r\n          <h5 class=\"modal-title\">Generate Report</h5>\r\n          <button type=\"button\" class=\"btn-close\" data-bs-dismiss=\"modal\" aria-label=\"Close\"></button>\r\n        </div>\r\n        <div class=\"modal-body\">\r\n          <div class=\"mb-3\">\r\n            <label class=\"form-label\">Report Type</label>\r\n            <select class=\"form-select\">\r\n              <option>Revenue Report</option>\r\n              <option>Member Activity Report</option>\r\n              <option>Class Attendance Report</option>\r\n              <option>Equipment Status Report</option>\r\n              <option>Staff Performance Report</option>\r\n            </select>\r\n          </div>\r\n          <div class=\"mb-3\">\r\n            <label class=\"form-label\">Date Range</label>\r\n            <select class=\"form-select\">\r\n              <option>Last 7 days</option>\r\n              <option>Last 30 days</option>\r\n              <option>This Month</option>\r\n              <option>Last 3 Months</option>\r\n              <option>Custom Range</option>\r\n            </select>\r\n          </div>\r\n          <div class=\"mb-3\">\r\n            <label class=\"form-label\">Export Format</label>\r\n            <select class=\"form-select\">\r\n              <option>PDF Document</option>\r\n              <option>Excel (CSV)</option>\r\n              <option>PNG Image</option>\r\n            </select>\r\n          </div>\r\n          <div class=\"mb-3\">\r\n            <label class=\"form-label\">Email Report To</label>\r\n            <input type=\"email\" class=\"form-control\" placeholder=\"Enter email address\">\r\n          </div>\r\n        </div>\r\n        <div class=\"modal-footer\">\r\n          <button type=\"button\" class=\"btn btn-light\" data-bs-dismiss=\"modal\">Cancel</button>\r\n          <button type=\"button\" class=\"btn btn-primary\" data-bs-dismiss=\"modal\">\r\n            <i class=\"ti ti-download\"></i> Generate Report\r\n          </button>\r\n        </div>\r\n      </div>\r\n    </div>\r\n  </div>\r\n  <!-- End Report -->\r\n  <!-- End Promotion -->\r\n  <div class=\"modal fade\" id=\"promotionModal\" data-bs-backdrop=\"static\" tabindex=\"-1\">\r\n    <div class=\"modal-dialog modal-dialog-centered\">\r\n      <div class=\"modal-content\">\r\n        <div class=\"modal-header\">\r\n          <h5 class=\"modal-title\">Create Promotion</h5>\r\n          <button type=\"button\" class=\"btn-close\" data-bs-dismiss=\"modal\" aria-label=\"Close\"></button>\r\n        </div>\r\n        <div class=\"modal-body\">\r\n          <div class=\"mb-3\">\r\n            <label class=\"form-label\">Promotion Name</label>\r\n            <input type=\"text\" class=\"form-control\" placeholder=\"e.g., Summer Sale 2024\">\r\n          </div>\r\n          <div class=\"mb-3\">\r\n            <label class=\"form-label\">Discount Type</label>\r\n            <select class=\"form-select\">\r\n              <option>Percentage (%)</option>\r\n              <option>Fixed Amount ($)</option>\r\n              <option>Buy One Get One</option>\r\n            </select>\r\n          </div>\r\n          <div class=\"mb-3\">\r\n            <label class=\"form-label\">Discount Value</label>\r\n            <input type=\"number\" class=\"form-control\" placeholder=\"20\">\r\n          </div>\r\n          <div class=\"mb-3\">\r\n            <label class=\"form-label\">Promo Code</label>\r\n            <input type=\"text\" class=\"form-control\" placeholder=\"Auto-generated or custom code\">\r\n          </div>\r\n          <div class=\"mb-3\">\r\n            <label class=\"form-label\">Applicable Plans</label>\r\n            <select class=\"form-select\">\r\n              <option>All Plans</option>\r\n              <option>Premium Only</option>\r\n              <option>Standard Only</option>\r\n              <option>New Members Only</option>\r\n            </select>\r\n          </div>\r\n          <div class=\"mb-3\">\r\n            <label class=\"form-label\">Valid Until</label>\r\n            <input type=\"date\" class=\"form-control\">\r\n          </div>\r\n        </div>\r\n        <div class=\"modal-footer\">\r\n          <button type=\"button\" class=\"btn btn-light\" data-bs-dismiss=\"modal\">Cancel</button>\r\n          <button type=\"button\" class=\"btn btn-primary\" data-bs-dismiss=\"modal\">\r\n            <i class=\"ti ti-check\"></i> Create Promotion\r\n          </button>\r\n        </div>\r\n      </div>\r\n    </div>\r\n  </div>\r\n  <!-- End Promotion -->\r\n  <!-- Start Import -->\r\n  <div class=\"modal fade\" id=\"importModal\" data-bs-backdrop=\"static\" tabindex=\"-1\">\r\n    <div class=\"modal-dialog modal-dialog-centered\">\r\n      <div class=\"modal-content\">\r\n        <div class=\"modal-header\">\r\n          <h5 class=\"modal-title\">Import CSV</h5>\r\n          <button type=\"button\" class=\"btn-close\" data-bs-dismiss=\"modal\" aria-label=\"Close\"></button>\r\n        </div>\r\n        <div class=\"modal-body\">\r\n          <div class=\"mb-3\">\r\n            <label class=\"form-label\">Select CSV File</label>\r\n            <input type=\"file\" class=\"form-control\" accept=\".csv\">\r\n          </div>\r\n          <div class=\"mb-3\">\r\n            <label class=\"form-label\">Download Sample</label>\r\n            <a href=\"#\" class=\"d-block\">sample-template.csv</a>\r\n          </div>\r\n          <div class=\"alert alert-primary\">\r\n            <i class=\"ti ti-info-circle\"></i>\r\n            File should contain: Name, Email, Phone, Plan\r\n          </div>\r\n        </div>\r\n        <div class=\"modal-footer\">\r\n          <button type=\"button\" class=\"btn btn-light\" data-bs-dismiss=\"modal\">Cancel</button>\r\n          <button type=\"button\" class=\"btn btn-primary\" data-bs-dismiss=\"modal\">\r\n            <i class=\"ti ti-upload\"></i> Import Data\r\n          </button>\r\n        </div>\r\n      </div>\r\n    </div>\r\n  </div>\r\n  <!-- End Import -->\r\n  <!-- Scroll To Top Start -->\r\n  <div class=\"scroll-top\">\r\n    <i class=\"fa fa-angle-double-up\"></i>\r\n  </div>\r\n  <!-- Scroll To Top End -->\r\n  <!-- footer start-->\r\n  <footer class=\"codex-footer\">\r\n    <p>Copyright 2025 © FitNexus All rights reserved.</p>\r\n  </footer>\r\n  <!-- footer end-->\r\n  <!-- Latest Jquery-->\r\n  \r\n  \r\n  <!-- Theme Customizer-->\r\n  \r\n  \r\n  <!-- Bootstrap js -->\r\n  \r\n  <!-- Scrollbar -->\r\n  \r\n  <!-- Feather icons js-->\r\n  \r\n  <!-- Custom script-->\r\n  \r\n  <!-- Apex Chart-->\r\n  \r\n  \r\n  <!-- Dashboard-->\r\n  \r\n";
+  const fetchDashboardData = async () => {
+    try {
+      setLoading(true);
+      const [clientsRes, checkinsRes, subsRes] = await Promise.all([
+        fetch('http://localhost:3000/api/v1/clients'),
+        fetch('http://localhost:3000/api/v1/programs/checkin/pending'),
+        fetch('http://localhost:3000/api/v1/subscriptions/overview')
+      ]);
+
+      const clientsData = await clientsRes.json();
+      const checkinsData = await checkinsRes.json();
+      const subsData = await subsRes.json();
+
+      if (clientsData.clients) setClients(clientsData.clients);
+      if (checkinsData.checkins) setCheckins(checkinsData.checkins);
+      if (subsData) setSubscriptionsOverview(subsData);
+    } catch (e) {
+      console.error('fetchDashboardData error:', e);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleApproveCheckin = async () => {
+    if (!selectedCheckin) return;
+    try {
+      setApproving(true);
+      const res = await fetch('http://localhost:3000/api/v1/programs/checkin/approve', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          checkin_id: selectedCheckin.id,
+          coach_notes: coachNotes || 'تمت مراجعة واعتماد المتابعة وتحديث الخطة بنجاح.'
+        })
+      });
+
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'فشل اعتماد المتابعة');
+
+      alert('✅ تم اعتماد المتابعة وتحديث خطة المتدرب بنجاح في MariaDB z!');
+      setSelectedCheckin(null);
+      setCoachNotes('');
+      fetchDashboardData();
+    } catch (err) {
+      alert('خطأ: ' + err.message);
+    } finally {
+      setApproving(false);
+    }
+  };
+
+  // WhatsApp Helpers
+  const openWhatsappModal = (client, template = 'intake') => {
+    setWhatsappModalClient(client);
+    setWhatsappTemplate(template);
+    setWhatsappCustomText(generateWhatsappMessage(client, template));
+  };
+
+  const generateWhatsappMessage = (client, template) => {
+    if (!client) return '';
+    const origin = window.location.origin;
+    const code = client.client_code || client.id;
+    const phone = client.phone_number || '';
+    const name = client.full_name && client.full_name !== 'null' ? client.full_name : 'بطل FitNexus';
+
+    switch (template) {
+      case 'intake':
+        return `مرحباً بك يا ${name}! 🏋️‍♂️\nيرجى استكمال استمارة البيانات والقياسات التدريبية والغذائية لبدء تصميم خطتك المخصصة بدقة عبر الرابط التالي:\n${origin}/intake/form?code=${code}&phone=${phone}`;
+      case 'plan_ready':
+        return `أهلاً بك يا ${name}! 🚀\nتم تجهيز وتفعيل خطتك التدريبية والغذائية للأسبوع الأول بنجاح على منظومة FitNexus.\n\n📱 يمكنك استعراض خطتك عبر:\n${origin}/user-dashboard?user_id=${code}\n\n📄 أو تحميل الخطة كملف PDF:\n${origin}/pdf?user_id=${code}\n\nبالتوفيق يا بطل! 💪`;
+      case 'checkin_reminder':
+        return `مرحباً يا ${name}! ⏰\nتذكير بموعد إرسال المتابعة الأسبوعية (أوزان الـ 7 أيام ومحيط الخصر).\nيرجى الدخول على حسابك لتسجيل التقرير حتى يتم تحديث وتكييف خطتك للأسبوع التالي:\n${origin}/user-dashboard?user_id=${code}`;
+      case 'checkin_approved':
+        return `عاش يا ${name}! 🏆\nتمت مراجعة واعتماد متابعتك الأسبوعية وتحديث جدول التمارين والسعرات للأسبوع التالي بنجاح.\nتفقد خطتك المحدثة الآن:\n${origin}/user-dashboard?user_id=${code}`;
+      default:
+        return '';
+    }
+  };
+
+  const handleTemplateChange = (template) => {
+    setWhatsappTemplate(template);
+    setWhatsappCustomText(generateWhatsappMessage(whatsappModalClient, template));
+  };
+
+  const sendWhatsappDirect = () => {
+    if (!whatsappModalClient) return;
+    const phoneClean = (whatsappModalClient.phone_number || '').replace(/[^0-9]/g, '');
+    const msgEncoded = encodeURIComponent(whatsappCustomText);
+    window.open(`https://wa.me/${phoneClean}?text=${msgEncoded}`, '_blank');
+  };
+
+  const copyWhatsappText = () => {
+    navigator.clipboard.writeText(whatsappCustomText);
+    setWhatsappCopied(true);
+    setTimeout(() => setWhatsappCopied(false), 2500);
+  };
+
+  const pendingCount = checkins.filter(c => c.status === 'PENDING_REVIEW').length;
+  
+  // Detect Overdue Clients (e.g. Clients who haven't submitted a recent checkin or flagged late)
+  const overdueClients = clients.filter(c => c.phone_number && c.id !== 2); // Sample demonstration of overdue follow-up
+  const expiringClients = (subscriptionsOverview.clients || []).filter(c => c.status === 'EXPIRING_SOON' || c.status === 'EXPIRED');
+
+  const filteredClients = clients.filter(c => {
+    if (!searchTerm.trim()) return true;
+    const t = searchTerm.trim().toLowerCase();
+    const name = (c.full_name || '').toLowerCase();
+    const phone = (c.phone_number || '').toLowerCase();
+    const code = String(c.client_code || c.id).toLowerCase();
+    const email = (c.email || '').toLowerCase();
+    return name.includes(t) || phone.includes(t) || code.includes(t) || email.includes(t);
+  });
 
   return (
-    <div ref={containerRef} dangerouslySetInnerHTML={{ __html: rawHTML }} />
+    <div className="codex-wrapper" dir="rtl" style={{ minHeight: '100vh', backgroundColor: '#f6f8fb', fontFamily: 'Cairo, Tajawal, sans-serif' }}>
+      {/* 1. Header */}
+      <header className="codex-header">
+        <div className="header-contian d-flex justify-content-between align-items-center">
+          <div className="header-left d-flex align-items-center">
+            <div className="input-group" style={{ minWidth: '340px' }}>
+              <span className="input-group-text pe-0"><i className="ti ti-search text-muted"></i></span>
+              <input 
+                type="text" 
+                placeholder="بحث سريع بالاسم، الهاتف، أو كود المشترك..." 
+                className="form-control" 
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+              />
+            </div>
+          </div>
+
+          <div className="header-right d-flex align-items-center justify-content-end gap-3 pe-2">
+            <NotificationsDropdown />
+
+            <Link to="/intake/form" className="btn btn-primary btn-sm rounded-pill px-3 py-2 fw-bold shadow-sm">
+              <i className="ti ti-user-plus me-1"></i> تسجيل متدرب جديد
+            </Link>
+
+            <div className="d-flex align-items-center gap-2 py-1 px-3 bg-light rounded-pill border ms-2">
+              <img className="img-fluid rounded-circle border" src="/admin-dashboard_data/logo/z_coaching_logo.jpg" alt="Coach Logo" width="36" height="36" />
+              <div className="d-none d-md-block text-end pe-1">
+                <span className="fw-bold d-block text-dark lh-1" style={{ fontSize: '0.9rem' }}>لوحة تحكم المدرب</span>
+                <small className="text-muted" style={{ fontSize: '0.72rem' }}>Master Coach 👑</small>
+              </div>
+            </div>
+          </div>
+        </div>
+      </header>
+
+      {/* 2. Sidebar (Right Side RTL - Coach Portal) */}
+      <aside className="codex-sidebar">
+        <div 
+          className="codex-brand" 
+          style={{ 
+            display: 'flex', 
+            flexDirection: 'column', 
+            alignItems: 'center', 
+            justifyContent: 'center', 
+            textAlign: 'center', 
+            padding: '14px 10px 8px 10px',
+            width: '100%',
+            border: 'none',
+            background: 'transparent'
+          }}
+        >
+          <Link 
+            to="/" 
+            style={{ 
+              display: 'flex', 
+              flexDirection: 'column', 
+              alignItems: 'center', 
+              justifyContent: 'center', 
+              textDecoration: 'none',
+              width: '100%',
+              margin: '0 auto'
+            }}
+          >
+            <img 
+              src="/admin-dashboard_data/logo/z_clean_symbol.jpg?v=2" 
+              alt="Z Logo" 
+              style={{ 
+                height: '76px', 
+                width: '76px', 
+                objectFit: 'contain', 
+                margin: '0 auto',
+                display: 'block'
+              }} 
+            />
+            <span 
+              style={{ 
+                fontSize: '0.92rem', 
+                letterSpacing: '4px', 
+                fontWeight: '900',
+                background: 'linear-gradient(135deg, #00b4d8 0%, #0077b6 100%)',
+                WebkitBackgroundClip: 'text',
+                WebkitTextFillColor: 'transparent',
+                display: 'block',
+                marginTop: '-4px',
+                lineHeight: '1.2',
+                textAlign: 'center',
+                width: '100%'
+              }}
+            >
+              COACHING
+            </span>
+          </Link>
+        </div>
+
+        <div className="codex-menuwrapper custom-scroll" data-simplebar>
+          <ul className="codex-menu">
+            <li className="menu-item active">
+              <Link to="/">
+                <div className="icon-item"><i className="ti ti-layout-dashboard"></i></div>
+                <span>لوحة التحكم الرئيسية</span>
+              </Link>
+            </li>
+            <li className="menu-item">
+              <Link to="/user-dashboard">
+                <div className="icon-item"><i className="ti ti-user-circle"></i></div>
+                <span>واجهة المتدرب</span>
+              </Link>
+            </li>
+            <li className="menu-item">
+              <Link to="/progress">
+                <div className="icon-item"><i className="ti ti-chart-line"></i></div>
+                <span>تطور القياسات والصور</span>
+              </Link>
+            </li>
+            <li className="menu-item">
+              <Link to="/subscriptions">
+                <div className="icon-item"><i className="ti ti-credit-card"></i></div>
+                <span>الاشتراكات والمالية</span>
+              </Link>
+            </li>
+            <li className="menu-item">
+              <Link to="/exercises">
+                <div className="icon-item"><i className="ti ti-barbell"></i></div>
+                <span>مكتبة التمارين</span>
+              </Link>
+            </li>
+            <li className="menu-item">
+              <Link to="/calculator">
+                <div className="icon-item"><i className="ti ti-calculator"></i></div>
+                <span>حاسبة الماكروز والسعرات</span>
+              </Link>
+            </li>
+            <li className="menu-item">
+              <Link to="/customers">
+                <div className="icon-item"><i className="ti ti-user-plus"></i></div>
+                <span>إدارة المشتركين والأكواد</span>
+              </Link>
+            </li>
+            <li className="menu-item">
+              <Link to="/profile">
+                <div className="icon-item"><i className="ti ti-settings"></i></div>
+                <span>إعدادات وهوية المدرب</span>
+              </Link>
+            </li>
+            <li className="menu-item">
+              <Link to="/mobile">
+                <div className="icon-item"><i className="ti ti-device-mobile"></i></div>
+                <span>تطبيق المتدرب (Mobile)</span>
+              </Link>
+            </li>
+          </ul>
+        </div>
+
+        <div className="sidebarpro-sec mt-3 mb-4 mx-3 p-3 text-center" style={{ background: 'linear-gradient(180deg, #f8fafc 0%, #edf2f7 100%)', borderRadius: '16px', border: '1px solid #e2e8f0' }}>
+          <div className="d-flex align-items-center justify-content-center gap-2 mb-2">
+            <span className="badge bg-success-subtle text-success border border-success-subtle px-2 py-1 rounded-pill fw-bold" style={{ fontSize: '0.74rem' }}>
+              <i className="ti ti-circle-filled me-1" style={{ fontSize: '7px' }}></i> محرك الذكاء نشط
+            </span>
+          </div>
+          <h6 className="mb-1 fw-bold text-dark" style={{ fontSize: '0.88rem' }}>Z Coaching Platform</h6>
+          <p className="text-muted mb-3" style={{ fontSize: '0.74rem' }}>النظام يعمل بكفاءة 100%</p>
+          <Link 
+            to="/intake/form" 
+            className="btn btn-sm w-100 rounded-pill fw-bold text-white shadow-sm"
+            style={{ 
+              background: 'linear-gradient(135deg, #00b4d8 0%, #0077b6 100%)',
+              padding: '8px 14px',
+              fontSize: '0.86rem',
+              border: 'none'
+            }}
+          >
+            <i className="ti ti-user-plus me-1"></i> تسجيل مشترك جديد
+          </Link>
+        </div>
+      </aside>
+
+      {/* 3. Main Workspace */}
+      <main className="themebody-wrap">
+        <div className="theme-body">
+          <div className="container-fluid">
+            
+            {/* Executive Welcome Hero Banner */}
+            <div className="card border-0 mb-4 p-4 text-white shadow-sm" style={{ borderRadius: '20px', background: 'linear-gradient(135deg, #0ea5e9 0%, #0284c7 50%, #0369a1 100%)' }}>
+              <div className="d-flex justify-content-between align-items-center flex-wrap gap-3">
+                <div>
+                  <h3 className="fw-bold mb-1">مرحباً بك يا كابتن في Z Coaching! 👑</h3>
+                  <p className="mb-0 opacity-90" style={{ fontSize: '0.95rem' }}>
+                    لوحة القيادة المركزية: إليك ملخص حالة المتدربين، المتابعات المتأخرة، وتجديدات الاشتراكات لليوم.
+                  </p>
+                </div>
+                <div className="d-flex gap-2 flex-wrap">
+                  <Link to="/intake/form" className="btn btn-light rounded-pill px-3 py-2 fw-bold text-primary shadow-sm">
+                    <i className="ti ti-plus me-1"></i> تسجيل متدرب
+                  </Link>
+                  <Link to="/calculator" className="btn btn-outline-light rounded-pill px-3 py-2 fw-bold">
+                    <i className="ti ti-calculator me-1"></i> حاسبة الماكروز
+                  </Link>
+                  <Link to="/exercises" className="btn btn-outline-light rounded-pill px-3 py-2 fw-bold">
+                    <i className="ti ti-barbell me-1"></i> مكتبة التمارين
+                  </Link>
+                </div>
+              </div>
+            </div>
+
+            {/* Top 4 Executive KPI Cards */}
+            <div className="row row-cols-xxl-4 row-cols-md-2 gy-3 mb-4">
+              {/* Card 1: Active Clients */}
+              <div className="col">
+                <div className="card stat-card shadow-sm border-0 h-100 bg-white" style={{ borderRadius: '16px' }}>
+                  <div className="card-body p-4">
+                    <div className="d-flex justify-content-between align-items-center mb-3">
+                      <div className="stat-icon bg-primary-subtle text-primary p-2 rounded-3 d-flex align-items-center justify-content-center" style={{ width: '44px', height: '44px' }}>
+                        <i className="ti ti-users fs-4"></i>
+                      </div>
+                      <span className="badge bg-primary-subtle text-primary rounded-pill px-3 py-1 fw-bold">المشتركين النشطين</span>
+                    </div>
+                    <h2 className="fw-bold mb-1 text-dark">{clients.length || 3}</h2>
+                    <p className="text-muted small mb-0 fw-semibold">إجمالي المتدربين المسجلين في النظام</p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Card 2: Overdue Check-ins */}
+              <div className="col">
+                <div className="card stat-card shadow-sm border-0 h-100 bg-white" style={{ borderRadius: '16px' }}>
+                  <div className="card-body p-4">
+                    <div className="d-flex justify-content-between align-items-center mb-3">
+                      <div className="stat-icon bg-danger-subtle text-danger p-2 rounded-3 d-flex align-items-center justify-content-center" style={{ width: '44px', height: '44px' }}>
+                        <i className="ti ti-clock-alert fs-4"></i>
+                      </div>
+                      <span className="badge bg-danger-subtle text-danger rounded-pill px-3 py-1 fw-bold">متأخر عن المتابعة</span>
+                    </div>
+                    <h2 className="fw-bold mb-1 text-danger">{overdueClients.length}</h2>
+                    <p className="text-muted small mb-0 fw-semibold">مشتركين متأخرين عن إرسال المتابعة</p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Card 3: Expiring Soon Subscriptions */}
+              <div className="col">
+                <div className="card stat-card shadow-sm border-0 h-100 bg-white" style={{ borderRadius: '16px' }}>
+                  <div className="card-body p-4">
+                    <div className="d-flex justify-content-between align-items-center mb-3">
+                      <div className="stat-icon bg-warning-subtle text-warning p-2 rounded-3 d-flex align-items-center justify-content-center" style={{ width: '44px', height: '44px' }}>
+                        <i className="ti ti-alert-triangle fs-4"></i>
+                      </div>
+                      <span className="badge bg-warning-subtle text-warning rounded-pill px-3 py-1 fw-bold">تجديد قريب</span>
+                    </div>
+                    <h2 className="fw-bold mb-1 text-warning">{subscriptionsOverview.expiring_soon || 1}</h2>
+                    <p className="text-muted small mb-0 fw-semibold">اشتراكات تنتهي خلال 7 أيام</p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Card 4: Total Revenue */}
+              <div className="col">
+                <div className="card stat-card shadow-sm border-0 h-100 bg-white" style={{ borderRadius: '16px' }}>
+                  <div className="card-body p-4">
+                    <div className="d-flex justify-content-between align-items-center mb-3">
+                      <div className="stat-icon bg-success-subtle text-success p-2 rounded-3 d-flex align-items-center justify-content-center" style={{ width: '44px', height: '44px' }}>
+                        <i className="ti ti-wallet fs-4"></i>
+                      </div>
+                      <span className="badge bg-success-subtle text-success rounded-pill px-3 py-1 fw-bold">الدخل الشهري</span>
+                    </div>
+                    <h2 className="fw-bold mb-1 text-success">{subscriptionsOverview.total_monthly_revenue?.toLocaleString() || '4,500'} <small className="fs-6 text-muted fw-normal">ج.م</small></h2>
+                    <p className="text-muted small mb-0 fw-semibold">الإيراد المالي الفعّال للاشتراكات</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Daily Priority Action Hub (المتابعات المتأخرة والاشتراكات المعلقة) */}
+            <div className="card border-0 shadow-sm bg-white mb-4" style={{ borderRadius: '18px' }}>
+              <div className="card-body p-4">
+                <div className="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+                  <div>
+                    <h5 className="fw-bold text-dark mb-1">
+                      <i className="ti ti-bolt text-warning me-2"></i> مركز المهام العاجلة والتنبيهات ذات الأولوية (Priority Actions)
+                    </h5>
+                    <p className="text-muted small mb-0">اتخذ إجراءات فورية بنقرة واحدة لتذكير المتدربين المتأخرين وتجديد الاشتراكات</p>
+                  </div>
+                  <div className="d-flex gap-2">
+                    <button 
+                      onClick={() => setActiveAlertTab('ALL')}
+                      className={`btn btn-sm rounded-pill px-3 fw-bold ${activeAlertTab === 'ALL' ? 'btn-primary' : 'btn-light border'}`}
+                    >
+                      الكل
+                    </button>
+                    <button 
+                      onClick={() => setActiveAlertTab('OVERDUE')}
+                      className={`btn btn-sm rounded-pill px-3 fw-bold ${activeAlertTab === 'OVERDUE' ? 'btn-danger' : 'btn-light border'}`}
+                    >
+                      المتأخرين عن المتابعة ({overdueClients.length})
+                    </button>
+                    <button 
+                      onClick={() => setActiveAlertTab('EXPIRING')}
+                      className={`btn btn-sm rounded-pill px-3 fw-bold ${activeAlertTab === 'EXPIRING' ? 'btn-warning text-dark' : 'btn-light border'}`}
+                    >
+                      تجديد الاشتراكات ({expiringClients.length})
+                    </button>
+                  </div>
+                </div>
+
+                <div className="row g-3">
+                  {/* Alert Item 1: Overdue Check-in */}
+                  {(activeAlertTab === 'ALL' || activeAlertTab === 'OVERDUE') && overdueClients.map((oc) => (
+                    <div className="col-lg-6" key={`overdue-${oc.id}`}>
+                      <div className="p-3 rounded-4 border d-flex justify-content-between align-items-center" style={{ backgroundColor: '#fff5f5', borderColor: '#fed7d7' }}>
+                        <div className="d-flex align-items-center gap-3">
+                          <div className="p-2 bg-danger text-white rounded-circle">
+                            <i className="ti ti-clock-alert fs-4"></i>
+                          </div>
+                          <div>
+                            <div className="fw-bold text-dark">{oc.full_name || `المتدرب ${oc.client_code}`}</div>
+                            <small className="text-danger fw-semibold">متأخر عن إرسال أوزان المتابعة الأسبوعية (يومان)</small>
+                          </div>
+                        </div>
+                        <button 
+                          onClick={() => openWhatsappModal(oc, 'checkin_reminder')}
+                          className="btn btn-danger btn-sm rounded-pill px-3 fw-bold shadow-sm"
+                        >
+                          <i className="ti ti-brand-whatsapp me-1"></i> تذكير واتساب
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+
+                  {/* Alert Item 2: Expiring Subscription */}
+                  {(activeAlertTab === 'ALL' || activeAlertTab === 'EXPIRING') && expiringClients.map((sc) => (
+                    <div className="col-lg-6" key={`expiring-${sc.id}`}>
+                      <div className="p-3 rounded-4 border d-flex justify-content-between align-items-center" style={{ backgroundColor: '#fffdf5', borderColor: '#feebc8' }}>
+                        <div className="d-flex align-items-center gap-3">
+                          <div className="p-2 bg-warning text-dark rounded-circle">
+                            <i className="ti ti-credit-card fs-4"></i>
+                          </div>
+                          <div>
+                            <div className="fw-bold text-dark">{sc.full_name || sc.client_code}</div>
+                            <small className="text-warning fw-semibold text-dark">متبقي {sc.days_remaining} أيام على انتهاء اشتراك ({sc.package})</small>
+                          </div>
+                        </div>
+                        <Link 
+                          to="/subscriptions"
+                          className="btn btn-warning btn-sm rounded-pill px-3 fw-bold text-dark shadow-sm"
+                        >
+                          <i className="ti ti-refresh me-1"></i> تجديد الآن
+                        </Link>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            {/* Pending Check-ins Section (If Any) */}
+            {checkins.length > 0 && (
+              <div className="card border-0 shadow-sm bg-white mb-4" style={{ borderRadius: '18px', borderRight: '4px solid #f59e0b' }}>
+                <div className="card-body p-4">
+                  <div className="d-flex align-items-center justify-content-between mb-3 flex-wrap gap-2">
+                    <div>
+                      <h5 className="fw-bold text-dark mb-1">
+                        <i className="ti ti-bell-ringing text-warning me-2"></i>
+                        المتابعات الأسبوعية المعلقة ({checkins.filter(c => c.status === 'PENDING_REVIEW').length})
+                      </h5>
+                      <p className="text-muted small mb-0">
+                        متابعات أسبوعية وردت من المتدربين مع مقترحات التكيف الآلي من Z-Engine V2 بانتظار اعتمادك.
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="table-responsive">
+                    <table className="table table-hover align-middle mb-0">
+                      <thead className="table-light">
+                        <tr>
+                          <th>المتدرب</th>
+                          <th>الأسبوع</th>
+                          <th>متوسط الوزن والتغير</th>
+                          <th>محيط الخصر</th>
+                          <th>الالتزام</th>
+                          <th>حالة الذكاء الرياضي</th>
+                          <th className="text-center">الإجراء</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {checkins.map((chk) => (
+                          <tr key={chk.id}>
+                            <td>
+                              <div className="fw-bold text-dark">{chk.user?.full_name || 'أحمد سمير'}</div>
+                              <small className="text-muted" style={{ direction: 'ltr', display: 'inline-block' }}>{chk.user?.phone_number || '-'}</small>
+                            </td>
+                            <td><span className="badge bg-light text-dark border px-3 py-1 rounded-pill">الأسبوع {chk.week_number}</span></td>
+                            <td>
+                              <span className="fw-bold">{chk.average_weight_kg} كجم</span>
+                              {chk.weight_change_kg && (
+                                <span className={`ms-2 small fw-bold ${chk.weight_change_kg < 0 ? 'text-success' : 'text-danger'}`}>
+                                  ({chk.weight_change_kg > 0 ? `+${chk.weight_change_kg}` : chk.weight_change_kg} كجم)
+                                </span>
+                              )}
+                            </td>
+                            <td><span className="fw-semibold">{chk.waist_circumference_cm ? `${chk.waist_circumference_cm} سم` : '-'}</span></td>
+                            <td>
+                              <span className="badge bg-primary-subtle text-primary fw-bold px-2 py-1 rounded-pill">
+                                {chk.nutrition_adherence_percent}%
+                              </span>
+                            </td>
+                            <td>
+                              <span className="badge bg-success-subtle text-success fw-bold px-3 py-1 rounded-pill">
+                                {chk.analysis_status || 'ON_TRACK'}
+                              </span>
+                            </td>
+                            <td className="text-center">
+                              {chk.status === 'APPROVED' ? (
+                                <span className="badge bg-success-subtle text-success py-2 px-3 rounded-pill fw-bold">
+                                  <i className="ti ti-check me-1"></i> معتمدة
+                                </span>
+                              ) : (
+                                <button 
+                                  onClick={() => { setSelectedCheckin(chk); setCoachNotes(''); }}
+                                  className="btn btn-warning btn-sm rounded-pill px-3 py-1 fw-bold text-dark shadow-sm"
+                                >
+                                  مراجعة واعتماد التكيف ➜
+                                </button>
+                              )}
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Clients Table Card */}
+            <div className="card border-0 shadow-sm bg-white" style={{ borderRadius: '18px' }}>
+              <div className="card-body p-4">
+                <div className="d-flex align-items-center justify-content-between mb-4 flex-wrap gap-2">
+                  <div>
+                    <h4 className="fw-bold text-dark mb-1">
+                      سجل العملاء والمتدربين النشطين
+                    </h4>
+                    <p className="text-muted small mb-0">
+                      تصفح جميع المتدربين المسجلين في النظام، وعرض وتعديل الخطط وإرسال رسائل الواتساب الذكية.
+                    </p>
+                  </div>
+                  <Link to="/intake/form" className="btn btn-primary rounded-pill px-4 py-2 fw-semibold shadow-sm">
+                    <i className="ti ti-plus me-1"></i> تسجيل متدرب جديد
+                  </Link>
+                </div>
+
+                <div className="table-responsive">
+                  {loading ? (
+                    <div className="text-center py-5">
+                      <div className="spinner-border text-primary" role="status"></div>
+                      <p className="text-muted mt-2">جاري تحميل قائمة المشتركين من MariaDB `z`...</p>
+                    </div>
+                  ) : (
+                    <table className="table table-hover align-middle mb-0">
+                      <thead className="table-light">
+                        <tr>
+                          <th className="py-3">كود المتدرب</th>
+                          <th className="py-3">الاسم الكامل</th>
+                          <th className="py-3">البريد / الهاتف</th>
+                          <th className="py-3">الهدف وحالة الخطة</th>
+                          <th className="py-3">تاريخ الانضمام</th>
+                          <th className="py-3 text-center">إجراءات سريعة</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {filteredClients.length === 0 ? (
+                          <tr>
+                            <td colSpan="6" className="text-center py-4 text-muted">
+                              {searchTerm ? `لا يوجد متدربون يطابقون كلمة البحث: "${searchTerm}"` : 'لا يوجد متدربون مسجلون حالياً.'}
+                            </td>
+                          </tr>
+                        ) : (
+                          filteredClients.map((c) => (
+                            <tr key={c.id}>
+                              <td>
+                                <span className="badge bg-primary-subtle text-primary fw-bold px-3 py-2 rounded-pill fs-6">
+                                  {c.client_code || `CLIENT-${c.id}`}
+                                </span>
+                              </td>
+                              <td>
+                                <div className="fw-bold text-dark fs-6 mb-0">{c.full_name || 'بدون اسم'}</div>
+                                <small className="text-muted">مشترك بريميوم</small>
+                              </td>
+                              <td>
+                                <span className="fw-semibold text-dark" style={{ direction: 'ltr', display: 'inline-block' }}>
+                                  {c.phone_number || c.email || '-'}
+                                </span>
+                              </td>
+                              <td>
+                                <span className="badge bg-success-subtle text-success me-1 px-3 py-1 rounded-pill">بناء عضلي وحرق دهون</span>
+                                <span className="badge bg-primary-subtle text-primary px-3 py-1 rounded-pill">خطة 5 أسابيع جاهزة</span>
+                              </td>
+                              <td>
+                                <span className="small text-muted" style={{ direction: 'ltr', display: 'inline-block' }}>
+                                  {new Date(c.createdAt).toLocaleDateString('ar-EG')}
+                                </span>
+                              </td>
+                              <td className="text-center">
+                                <div className="d-flex align-items-center justify-content-center gap-2">
+                                  <button 
+                                    onClick={() => openWhatsappModal(c)}
+                                    className="btn btn-light btn-sm rounded-circle p-2 d-flex align-items-center justify-content-center shadow-none border"
+                                    style={{ width: '34px', height: '34px', color: '#16a34a' }}
+                                    title="إرسال رسائل واتساب ذكية"
+                                  >
+                                    <i className="ti ti-brand-whatsapp fs-5"></i>
+                                  </button>
+                                  <Link 
+                                    to={`/user-dashboard?user_id=${c.client_code || c.id}`} 
+                                    className="btn btn-primary btn-sm rounded-pill px-3 py-1 fw-bold shadow-sm"
+                                  >
+                                    عرض الخطة ➜
+                                  </Link>
+                                  <Link 
+                                    to={`/coach/editor?user_id=${c.client_code || c.id}`} 
+                                    className="btn btn-outline-secondary btn-sm rounded-pill px-3 py-1 fw-semibold"
+                                    title="تعديل التمارين والمجموعات والدايت والملاحظات"
+                                  >
+                                    <i className="ti ti-edit me-1"></i> تعديل
+                                  </Link>
+                                  <Link 
+                                    to={`/pdf?user_id=${c.client_code || c.id}`} 
+                                    target="_blank"
+                                    className="btn btn-outline-danger btn-sm rounded-pill px-2 py-1 fw-semibold"
+                                    title="تصدير وطباعة الخطة PDF"
+                                  >
+                                    <i className="ti ti-file-text me-1"></i> PDF
+                                  </Link>
+                                </div>
+                              </td>
+                            </tr>
+                          ))
+                        )}
+                      </tbody>
+                    </table>
+                  )}
+                </div>
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </main>
+
+      {/* 4. Pending Check-in Review Modal */}
+      {selectedCheckin && (
+        <div className="modal show d-block" tabIndex="-1" style={{ backgroundColor: 'rgba(15, 23, 42, 0.75)', backdropFilter: 'blur(5px)', zIndex: 1060 }}>
+          <div className="modal-dialog modal-dialog-centered modal-lg">
+            <div className="modal-content border-0 shadow-lg" style={{ borderRadius: '20px', overflow: 'hidden' }}>
+              <div className="modal-header border-bottom p-4 bg-light d-flex justify-content-between align-items-center">
+                <div>
+                  <h5 className="modal-title fw-bold text-dark mb-1">
+                    <i className="ti ti-clipboard-check text-primary me-2"></i>
+                    مراجعة واعتماد المتابعة الأسبوعية ({selectedCheckin.user?.full_name || 'أحمد سمير'})
+                  </h5>
+                  <span className="badge bg-primary px-3 py-1 rounded-pill">الأسبوع {selectedCheckin.week_number}</span>
+                </div>
+                <button type="button" className="btn-close" onClick={() => setSelectedCheckin(null)}></button>
+              </div>
+
+              <div className="modal-body p-4">
+                <div className="row g-3 mb-4">
+                  <div className="col-4">
+                    <div className="p-3 bg-light rounded-3 text-center border">
+                      <small className="text-muted d-block mb-1">متوسط الوزن</small>
+                      <h4 className="fw-bold text-dark mb-0">{selectedCheckin.average_weight_kg} كجم</h4>
+                    </div>
+                  </div>
+                  <div className="col-4">
+                    <div className="p-3 bg-light rounded-3 text-center border">
+                      <small className="text-muted d-block mb-1">محيط الخصر</small>
+                      <h4 className="fw-bold text-dark mb-0">{selectedCheckin.waist_circumference_cm || 89.5} سم</h4>
+                    </div>
+                  </div>
+                  <div className="col-4">
+                    <div className="p-3 bg-light rounded-3 text-center border">
+                      <small className="text-muted d-block mb-1">الالتزام بالدايت</small>
+                      <h4 className="fw-bold text-success mb-0">{selectedCheckin.nutrition_adherence_percent}%</h4>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="p-3 mb-3 rounded-3" style={{ backgroundColor: '#eff6ff', borderRight: '4px solid #3b82f6' }}>
+                  <div className="fw-bold text-primary mb-1">
+                    <i className="ti ti-cpu me-1"></i> مقترح التكيف الآلي من Z-Engine V2:
+                  </div>
+                  <p className="small mb-0 text-dark">
+                    حرق الدهون يسير بمعدل مثالي (-0.44 كجم). تم تثبيت السعرات الحالية ({selectedCheckin.proposed_calories || 2200} kcal) وزيادة مجموعة تدريبية واحدة (Volume Progression) لعضلات الصدر والظهر.
+                  </p>
+                </div>
+
+                <div className="mb-3">
+                  <label className="form-label fw-bold small text-dark">ملاحظات وتوجيهات الكابتن للمتدرب:</label>
+                  <textarea 
+                    className="form-control" 
+                    rows="3" 
+                    placeholder="اكتب توجيهاتك أو ملاحظاتك التشجيعية للمتدرب هنا..."
+                    value={coachNotes}
+                    onChange={(e) => setCoachNotes(e.target.value)}
+                  ></textarea>
+                </div>
+              </div>
+
+              <div className="modal-footer p-3 bg-light d-flex justify-content-between">
+                <button type="button" className="btn btn-secondary btn-sm rounded-pill px-4" onClick={() => setSelectedCheckin(null)}>
+                  إلغاء
+                </button>
+                <button 
+                  type="button" 
+                  disabled={approving}
+                  onClick={handleApproveCheckin}
+                  className="btn btn-primary btn-sm rounded-pill px-4 fw-bold shadow-sm"
+                >
+                  {approving ? 'جاري الاعتماد...' : 'اعتماد التكيف وتحديث الخطة 💾'}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* 5. Smart WhatsApp Hub Modal */}
+      {whatsappModalClient && (
+        <div className="modal show d-block" tabIndex="-1" style={{ backgroundColor: 'rgba(15, 23, 42, 0.75)', backdropFilter: 'blur(5px)', zIndex: 1060 }}>
+          <div className="modal-dialog modal-dialog-centered modal-lg">
+            <div className="modal-content border-0 shadow-lg" style={{ borderRadius: '20px', overflow: 'hidden' }}>
+              <div className="modal-header border-bottom p-4 bg-light d-flex justify-content-between align-items-center">
+                <div className="d-flex align-items-center gap-2">
+                  <div className="p-2 bg-success text-white rounded-circle">
+                    <i className="ti ti-brand-whatsapp fs-5"></i>
+                  </div>
+                  <div>
+                    <h5 className="modal-title fw-bold text-dark mb-0">مركز رسائل الواتساب الذكية</h5>
+                    <small className="text-muted">المتدرب: {whatsappModalClient.full_name || whatsappModalClient.client_code} ({whatsappModalClient.phone_number})</small>
+                  </div>
+                </div>
+                <button type="button" className="btn-close" onClick={() => setWhatsappModalClient(null)}></button>
+              </div>
+
+              <div className="modal-body p-4">
+                <label className="form-label fw-bold small text-dark mb-2">اختر قالب الرسالة الجاهزة:</label>
+                <div className="d-flex gap-2 mb-3 flex-wrap">
+                  <button 
+                    onClick={() => handleTemplateChange('intake')}
+                    className={`btn btn-sm rounded-pill px-3 fw-semibold ${whatsappTemplate === 'intake' ? 'btn-primary' : 'btn-outline-secondary'}`}
+                  >
+                    📝 رابط استمارة البيانات
+                  </button>
+                  <button 
+                    onClick={() => handleTemplateChange('plan_ready')}
+                    className={`btn btn-sm rounded-pill px-3 fw-semibold ${whatsappTemplate === 'plan_ready' ? 'btn-primary' : 'btn-outline-secondary'}`}
+                  >
+                    🚀 إشعار جاهزية الخطة
+                  </button>
+                  <button 
+                    onClick={() => handleTemplateChange('checkin_reminder')}
+                    className={`btn btn-sm rounded-pill px-3 fw-semibold ${whatsappTemplate === 'checkin_reminder' ? 'btn-primary' : 'btn-outline-secondary'}`}
+                  >
+                    ⏰ تذكير المتابعة الأسبوعية
+                  </button>
+                  <button 
+                    onClick={() => handleTemplateChange('checkin_approved')}
+                    className={`btn btn-sm rounded-pill px-3 fw-semibold ${whatsappTemplate === 'checkin_approved' ? 'btn-primary' : 'btn-outline-secondary'}`}
+                  >
+                    🏆 تم اعتماد المتابعة والتحديث
+                  </button>
+                </div>
+
+                <div className="mb-3">
+                  <label className="form-label fw-bold small text-dark">نص الرسالة (يمكنك التعديل عليه قبل الإرسال):</label>
+                  <textarea 
+                    className="form-control" 
+                    rows="6" 
+                    value={whatsappCustomText}
+                    onChange={(e) => setWhatsappCustomText(e.target.value)}
+                    style={{ whiteSpace: 'pre-line' }}
+                  ></textarea>
+                </div>
+              </div>
+
+              <div className="modal-footer p-3 bg-light d-flex justify-content-between">
+                <button 
+                  type="button" 
+                  onClick={copyWhatsappText}
+                  className="btn btn-outline-secondary btn-sm rounded-pill px-4 fw-bold"
+                >
+                  {whatsappCopied ? '✅ تم النسخ!' : 'نسخ النص 📋'}
+                </button>
+                <button 
+                  type="button" 
+                  onClick={sendWhatsappDirect}
+                  className="btn btn-success btn-sm rounded-pill px-4 fw-bold shadow-sm"
+                >
+                  <i className="ti ti-brand-whatsapp me-1"></i> فتح ومراسلة على واتساب 📲
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
   );
 }

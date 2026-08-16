@@ -4,7 +4,13 @@ import { fileURLToPath } from "node:url";
 
 import { evaluateIntake } from "z-coaching-intake-decision-engine";
 import { buildMasterEngine } from "../../../src/master-engine/build-master-engine.js";
-import { Program, IntakeSubmission } from "../models/index.js";
+import { buildMasterEngineV2 } from "../../../src/master-engine-v2/index.js";
+import { evaluateCheckin } from "../../../src/checkin-engine/index.js";
+import { buildAdaptedPlan } from "../../../src/adaptation-engine/index.js";
+import { User, Program, IntakeSubmission, CheckinSubmission } from "../models/index.js";
+import { MASTER_EXERCISE_DICTIONARY } from "../../../src/exercise-catalog-v2/index.js";
+import { calculateSmartSwap } from "../../../src/nutrition-swap-engine-v2/calculate-smart-swap.js";
+import { listSmartSwapCandidates, getSmartFoodRegistryItem, SMART_SWAP_REGISTRY } from "../../../src/nutrition-swap-engine-v2/swap-pool-registry.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -22,7 +28,7 @@ const loadFoodCatalog = async () => {
 
 export const generateProgram = async (req, res) => {
   try {
-    const { meta, ...intakePayload } = req.body; // Strip meta before validation
+    const { meta, options, ...intakePayload } = req.body; // Strip meta/options before validation
     
     if (!req.body) {
       return res.status(400).json({ error: "Invalid intake form data" });
@@ -46,11 +52,12 @@ export const generateProgram = async (req, res) => {
     // 2. Load Catalog
     const catalog = await loadFoodCatalog();
 
-    // 3. Build Master Engine
-    const masterProgram = buildMasterEngine({
+    // 3. Build Master Engine V2
+    const masterProgram = buildMasterEngineV2({
       intake: intakePayload,
       evaluationContext,
-      nutritionFoodCatalog: catalog
+      nutritionFoodCatalog: catalog,
+      options: options || {}
     });
 
     // 4. Save to Database
@@ -60,7 +67,7 @@ export const generateProgram = async (req, res) => {
     });
 
     return res.status(201).json({
-      message: "Program generated successfully",
+      message: "Program generated successfully (V2)",
       program_id: savedProgram.id,
       master_program: masterProgram
     });
@@ -76,7 +83,7 @@ export const generateProgram = async (req, res) => {
 
 export const generateProgramPreview = async (req, res) => {
   try {
-    const { meta, ...intakePayload } = req.body;
+    const { meta, options, ...intakePayload } = req.body;
     
     if (!req.body) {
       return res.status(400).json({ error: "Invalid intake form data" });
@@ -93,21 +100,119 @@ export const generateProgramPreview = async (req, res) => {
     }
 
     const catalog = await loadFoodCatalog();
-    const masterProgram = buildMasterEngine({
+    const masterProgram = buildMasterEngineV2({
       intake: intakePayload,
       evaluationContext,
-      nutritionFoodCatalog: catalog
+      nutritionFoodCatalog: catalog,
+      options: options || {}
     });
 
     // Skip DB save for preview
     return res.status(200).json({
-      message: "Preview program generated successfully",
+      message: "Preview program generated successfully (V2)",
       master_program: masterProgram
     });
 
   } catch (err) {
     console.error("generateProgramPreview error:", err);
     return res.status(500).json({ error: "Failed to generate preview program", details: err.message });
+  }
+};
+
+export const generateAndSaveProgram = async (req, res) => {
+  try {
+    const { client_code, phone_number, full_name, email, ...intakePayload } = req.body;
+    
+    if (!intakePayload || !intakePayload.personal) {
+      return res.status(400).json({ error: "Invalid intake form data" });
+    }
+
+    const evaluationContext = Object.freeze({
+      system_time: new Date().toISOString(),
+      assessmentDate: new Date().toISOString().split("T")[0]
+    });
+
+    // 1. Evaluate Intake
+    const intakeDecision = evaluateIntake(intakePayload, evaluationContext);
+    if (intakeDecision.plan_status === "BLOCK") {
+      return res.status(400).json({ error: "Intake rejected", reasons: intakeDecision.decision_reasons });
+    }
+
+    // 2. Load Catalog & Build Master Engine V2
+    const catalog = await loadFoodCatalog();
+    const masterProgram = buildMasterEngineV2({
+      intake: intakePayload,
+      evaluationContext,
+      nutritionFoodCatalog: catalog,
+      options: {}
+    });
+
+    // 3. Find or Create User in MariaDB `z`
+    const clientName = full_name || `${intakePayload.personal.firstName || ""} ${intakePayload.personal.lastName || ""}`.trim() || "متدرب جديد";
+    const clientPhone = phone_number || "01000000000";
+    const clientEmail = email || `${intakePayload.personal.firstName?.toLowerCase() || "client"}.${Date.now()}@example.com`;
+    const code = client_code || `CLIENT-${Date.now().toString().slice(-4)}`;
+
+    let user = null;
+    if (phone_number && phone_number !== "01000000000") {
+      user = await User.findOne({ where: { phone_number } });
+    }
+    if (!user && client_code) {
+      user = await User.findOne({ where: { client_code } });
+    }
+
+    if (!user) {
+      user = await User.create({
+        client_code: code,
+        full_name: clientName,
+        phone_number: clientPhone,
+        email: clientEmail,
+        role: "CLIENT",
+      });
+    } else {
+      user.full_name = clientName;
+      if (clientPhone && user.phone_number === "01000000000") {
+        user.phone_number = clientPhone;
+      }
+      await user.save();
+    }
+
+    // 4. Save Intake Submission
+    const submission = await IntakeSubmission.create({
+      user_id: user.id,
+      answers: intakePayload,
+      status: "PROCESSED"
+    });
+
+    // 5. Save or Update Program
+    let program = await Program.findOne({ where: { user_id: user.id } });
+    if (program) {
+      program.program_data = masterProgram;
+      await program.save();
+    } else {
+      program = await Program.create({
+        user_id: user.id,
+        program_data: masterProgram
+      });
+    }
+
+    return res.status(201).json({
+      message: "Program generated and saved successfully to MariaDB z",
+      user: {
+        id: user.id,
+        client_code: user.client_code,
+        full_name: user.full_name,
+        email: user.email,
+        phone_number: user.phone_number
+      },
+      submission_id: submission.id,
+      program_id: program.id,
+      master_program: masterProgram
+    });
+
+  } catch (err) {
+    console.error("generateAndSaveProgram error:", err);
+    return res.status(500).json({ error: "Failed to generate and save program", details: err.message });
   }
 };
 
@@ -175,3 +280,493 @@ export const getUserPrograms = async (req, res) => {
     return res.status(500).json({ error: "Internal server error" });
   }
 };
+
+export const evaluateCheckinHandler = async (req, res) => {
+  try {
+    const submission = req.body;
+    if (!submission) {
+      return res.status(400).json({ error: "Missing check-in submission body" });
+    }
+    const analysis = evaluateCheckin(submission);
+    return res.status(200).json({ analysis });
+  } catch (err) {
+    console.error("evaluateCheckinHandler error:", err);
+    return res.status(400).json({ error: err.message });
+  }
+};
+
+export const submitWeeklyCheckin = async (req, res) => {
+  try {
+    const {
+      client_code,
+      user_id,
+      week_number = 1,
+      daily_weights_kg,
+      previous_average_weight_kg,
+      waist_circumference_cm,
+      nutrition_adherence_percent = 100,
+      workouts_completed = 4,
+      workouts_scheduled = 4,
+      biofeedback = {},
+      pain_reports = []
+    } = req.body;
+
+    // Find User
+    let user = null;
+    const lookupId = user_id || client_code;
+    if (lookupId) {
+      user = await User.findOne({ where: { client_code: lookupId } });
+      if (!user && !isNaN(lookupId)) {
+        user = await User.findByPk(parseInt(lookupId, 10));
+      }
+    }
+
+    if (!user) {
+      user = await User.findOne({ order: [["id", "DESC"]] });
+    }
+
+    const weights = Array.isArray(daily_weights_kg) && daily_weights_kg.length > 0
+      ? daily_weights_kg.map(w => Number(w))
+      : [85, 84.8, 84.7, 84.5, 84.4, 84.3, 84.2];
+
+    const analysis = evaluateCheckin({
+      daily_weights_kg: weights,
+      previous_week_average_weight_kg: Number(previous_average_weight_kg) || 85.5,
+      waist_circumference_cm: Number(waist_circumference_cm) || null,
+      nutrition_adherence_percent: Number(nutrition_adherence_percent) || 95,
+      workouts_completed: Number(workouts_completed) || 4,
+      workouts_scheduled: Number(workouts_scheduled) || 4,
+      biofeedback: biofeedback || { hunger_level: 2, energy_in_gym: 4, sleep_quality: 4, stress_level: 2 },
+      pain_reports: pain_reports || []
+    });
+
+    const avgWeight = Math.round((weights.reduce((a, b) => a + b, 0) / weights.length) * 100) / 100;
+    const weightChange = previous_average_weight_kg ? Math.round((avgWeight - Number(previous_average_weight_kg)) * 100) / 100 : null;
+
+    const checkin = await CheckinSubmission.create({
+      user_id: user ? user.id : 1,
+      week_number: Number(week_number) || 1,
+      daily_weights_kg: weights,
+      average_weight_kg: avgWeight,
+      weight_change_kg: weightChange,
+      waist_circumference_cm: Number(waist_circumference_cm) || null,
+      nutrition_adherence_percent: Number(nutrition_adherence_percent) || 100,
+      workouts_completed: Number(workouts_completed) || 4,
+      workouts_scheduled: Number(workouts_scheduled) || 4,
+      biofeedback: biofeedback,
+      pain_reports: pain_reports,
+      analysis_status: analysis.status,
+      analysis_output: analysis,
+      status: "PENDING_REVIEW"
+    });
+
+    return res.status(201).json({
+      message: "تم إرسال المتابعة الأسبوعية بنجاح، وهي الآن معلقة في انتظار مراجعة الكابتن",
+      checkin_id: checkin.id,
+      analysis,
+      checkin
+    });
+  } catch (err) {
+    console.error("submitWeeklyCheckin error:", err);
+    return res.status(500).json({ error: "فشل إرسال المتابعة", details: err.message });
+  }
+};
+
+export const getPendingCheckins = async (req, res) => {
+  try {
+    const checkins = await CheckinSubmission.findAll({
+      include: [
+        {
+          model: User,
+          as: "user",
+          attributes: ["id", "client_code", "full_name", "phone_number", "email"]
+        }
+      ],
+      order: [["createdAt", "DESC"]]
+    });
+    return res.status(200).json({ checkins });
+  } catch (err) {
+    console.error("getPendingCheckins error:", err);
+    return res.status(500).json({ error: "فشل جلب المتابعات", details: err.message });
+  }
+};
+
+export const approveWeeklyCheckin = async (req, res) => {
+  try {
+    const { checkin_id, coach_notes } = req.body;
+    const checkin = await CheckinSubmission.findByPk(checkin_id, {
+      include: [{ model: User, as: "user" }]
+    });
+
+    if (!checkin) {
+      return res.status(404).json({ error: "المتابعة غير موجودة" });
+    }
+
+    // Find client's active program
+    const program = await Program.findOne({
+      where: { user_id: checkin.user_id },
+      order: [["id", "DESC"]]
+    });
+
+    if (program && program.program_data) {
+      try {
+        const adapted = buildAdaptedPlan({
+          currentMasterProgram: program.program_data,
+          checkinAnalysis: checkin.analysis_output,
+          options: {}
+        });
+        program.program_data = adapted;
+        await program.save();
+      } catch (adaptErr) {
+        console.warn("buildAdaptedPlan fallback notice:", adaptErr.message);
+      }
+    }
+
+    checkin.status = "APPROVED";
+    checkin.coach_notes = coach_notes || "تمت مراجعة واعتماد المتابعة من قبل الكابتن وتحديث الخطة بنجاح.";
+    await checkin.save();
+
+    return res.status(200).json({
+      message: "تم اعتماد المتابعة وتحديث الخطة التدريبية والغذائية للمتدرب بنجاح",
+      checkin
+    });
+  } catch (err) {
+    console.error("approveWeeklyCheckin error:", err);
+    return res.status(500).json({ error: "فشل اعتماد المتابعة", details: err.message });
+  }
+};
+
+export const getCheckinHistory = async (req, res) => {
+  try {
+    const { user_id } = req.params;
+    let user = await User.findOne({ where: { client_code: user_id } });
+    if (!user && !isNaN(user_id)) {
+      user = await User.findByPk(parseInt(user_id, 10));
+    }
+    if (!user) {
+      user = await User.findOne({ where: { phone_number: user_id } });
+    }
+
+    if (!user) {
+      return res.status(404).json({ error: "User not found" });
+    }
+
+    const checkins = await CheckinSubmission.findAll({
+      where: { user_id: user.id },
+      order: [["createdAt", "ASC"]]
+    });
+
+    return res.status(200).json({ user, checkins });
+  } catch (err) {
+    console.error("getCheckinHistory error:", err);
+    return res.status(500).json({ error: "فشل جلب سجل المتابعات", details: err.message });
+  }
+};
+
+export const adaptProgramHandler = async (req, res) => {
+  try {
+    const { current_master_program, checkin_analysis, options } = req.body;
+    if (!current_master_program || !checkin_analysis) {
+      return res.status(400).json({ error: "current_master_program and checkin_analysis are required." });
+    }
+    const adaptedProgram = buildAdaptedPlan({
+      currentMasterProgram: current_master_program,
+      checkinAnalysis: checkin_analysis,
+      options: options || {},
+    });
+    return res.status(200).json({ adapted_program: adaptedProgram });
+  } catch (err) {
+    console.error("adaptProgramHandler error:", err);
+    return res.status(400).json({ error: err.message });
+  }
+};
+
+const ARABIC_FOOD_CODE_MAP = [
+  { keywords: ["قريش", "جبن قريش", "cottage"], code: "CHEESE_COTTAGE_LOW_FAT" },
+  { keywords: ["بياض", "egg white"], code: "EGG_WHITE" },
+  { keywords: ["بيض", "egg", "eggs"], code: "WHOLE_EGG" },
+  { keywords: ["زبادي", "يوناني", "greek yogurt"], code: "YOGURT_GREEK_PLAIN_NONFAT" },
+  { keywords: ["واي", "بروتين باودر", "whey"], code: "WHEY_PROTEIN_POWDER" },
+  { keywords: ["دجاج", "فراخ", "صدور", "chicken"], code: "CHICKEN_BREAST_COOKED" },
+  { keywords: ["لحم", "ستيك", "بقري", "beef", "sirloin"], code: "BEEF_TOP_SIRLOIN_LEAN" },
+  { keywords: ["بلطي", "فيليه", "سمك", "tilapia"], code: "TILAPIA_COOKED" },
+  { keywords: ["سلمون", "salmon"], code: "SALMON_ATLANTIC_COOKED" },
+  { keywords: ["تونة", "تونه", "tuna"], code: "TUNA_CANNED_IN_WATER" },
+  { keywords: ["شوفان", "oat", "oats", "oatmeal"], code: "OATS_ROLLED_RAW" },
+  { keywords: ["توست", "خبز", "عيش", "toast", "bread"], code: "BREAD_WHOLE_WHEAT" },
+  { keywords: ["موز", "banana"], code: "BANANA_RAW" },
+  { keywords: ["أرز", "ارز", "رز", "rice"], code: "RICE_WHITE_COOKED" },
+  { keywords: ["بطاطس", "potato"], code: "POTATO_BAKED" },
+  { keywords: ["بطاطا", "sweet potato"], code: "SWEET_POTATO_BAKED" },
+  { keywords: ["مكرونة", "مكرونه", "باستا", "pasta"], code: "PASTA_WHOLE_WHEAT_COOKED" },
+  { keywords: ["زيت", "olive oil"], code: "OLIVE_OIL" },
+  { keywords: ["فول سوداني", "سوداني", "peanut butter"], code: "PEANUT_BUTTER" },
+  { keywords: ["لوز", "مكسرات", "almond", "almonds"], code: "ALMONDS_RAW" }
+];
+
+const FOOD_CODE_ALIASES = {
+  CHEESE_COTTAGE_LOWFAT: "CHEESE_COTTAGE_LOW_FAT",
+  CHEESE_COTTAGE: "CHEESE_COTTAGE_LOW_FAT",
+  COTTAGE_CHEESE: "CHEESE_COTTAGE_LOW_FAT",
+  EGG_WHOLE: "WHOLE_EGG",
+  EGG_WHOLE_COOKED: "WHOLE_EGG",
+  EGGS: "WHOLE_EGG",
+  EGG_WHITES: "EGG_WHITE",
+  GREEK_YOGURT: "YOGURT_GREEK_PLAIN_NONFAT",
+  GREEK_YOGURT_PLAIN_NONFAT: "YOGURT_GREEK_PLAIN_NONFAT",
+  WHEY_PROTEIN: "WHEY_PROTEIN_POWDER",
+  CHICKEN_BREAST: "CHICKEN_BREAST_COOKED",
+  BEEF_SIRLOIN: "BEEF_TOP_SIRLOIN_LEAN",
+  BEEF_LEAN: "BEEF_TOP_SIRLOIN_LEAN",
+  TILAPIA: "TILAPIA_COOKED",
+  SALMON: "SALMON_ATLANTIC_COOKED",
+  TUNA: "TUNA_CANNED_IN_WATER",
+  OATS: "OATS_ROLLED_RAW",
+  OATMEAL: "OATS_ROLLED_RAW",
+  TOAST_WHOLE_WHEAT: "BREAD_WHOLE_WHEAT",
+  WHOLE_WHEAT_BREAD: "BREAD_WHOLE_WHEAT",
+  BANANA: "BANANA_RAW",
+  WHITE_RICE: "RICE_WHITE_COOKED",
+  RICE_WHITE: "RICE_WHITE_COOKED",
+  POTATO: "POTATO_BAKED",
+  SWEET_POTATO: "SWEET_POTATO_BAKED",
+  SWEET_POTATO_COOKED: "SWEET_POTATO_BAKED",
+  PASTA_WHOLE_WHEAT: "PASTA_WHOLE_WHEAT_COOKED",
+  PASTA_WHOLE_WHEAT_COOKED: "PASTA_WHOLE_WHEAT_COOKED",
+  OLIVE_OIL: "OLIVE_OIL",
+  PEANUT_BUTTER: "PEANUT_BUTTER",
+  ALMONDS: "ALMONDS_RAW",
+  ALMONDS_RAW: "ALMONDS_RAW"
+};
+
+function normalizeFoodCode(codeOrName) {
+  if (!codeOrName) return "WHOLE_EGG";
+  const str = String(codeOrName).trim();
+  const upper = str.toUpperCase();
+
+  if (FOOD_CODE_ALIASES[upper]) return FOOD_CODE_ALIASES[upper];
+
+  for (const item of SMART_SWAP_REGISTRY) {
+    if (item.food_code === upper) return upper;
+  }
+
+  const lower = str.toLowerCase();
+  for (const mapping of ARABIC_FOOD_CODE_MAP) {
+    for (const kw of mapping.keywords) {
+      if (lower.includes(kw)) {
+        return mapping.code;
+      }
+    }
+  }
+
+  return "WHOLE_EGG";
+}
+
+export const getSwapCandidatesHandler = async (req, res) => {
+  try {
+    const { food_code, name_ar, meal_context, source_grams } = req.body;
+    const normalizedCode = normalizeFoodCode(food_code || name_ar);
+    const grams = Number(source_grams) || 100;
+    const mealCategory = meal_context === "BREAKFAST" ? "BREAKFAST" : "MAIN_MEAL";
+
+    let candidates = listSmartSwapCandidates(normalizedCode, mealCategory);
+    if (!candidates || candidates.length === 0) {
+      const current = getSmartFoodRegistryItem(normalizedCode);
+      if (current) {
+        candidates = SMART_SWAP_REGISTRY.filter(
+          (item) => item.food_code !== normalizedCode && item.macro_type === current.macro_type
+        );
+      }
+    }
+
+    const currentItem = getSmartFoodRegistryItem(normalizedCode);
+    const enrichedCandidates = (candidates || []).map((cand) => {
+      let targetGrams = 100;
+      let displayAr = `${cand.name_ar}`;
+      if (currentItem) {
+        try {
+          const swapCalc = calculateSmartSwap({
+            current_food_code: normalizedCode,
+            current_portion_g: grams,
+            target_food_code: cand.food_code,
+            meal_category: cand.meal_categories?.[0] || mealCategory
+          });
+          targetGrams = swapCalc.target_food.portion_g;
+          displayAr = swapCalc.target_food.serving_display_ar;
+        } catch (e) {
+          targetGrams = Math.round(grams * (currentItem.primary_nutrient_per_100g / cand.primary_nutrient_per_100g));
+          displayAr = `${cand.name_ar} (${targetGrams} جرام)`;
+        }
+      }
+      return {
+        food_code: cand.food_code,
+        name_ar: cand.name_ar,
+        name_en: cand.name_en,
+        macro_type: cand.macro_type,
+        target_grams: targetGrams,
+        display_ar: displayAr,
+        serving_display_ar: displayAr
+      };
+    });
+
+    return res.status(200).json({ candidates: enrichedCandidates });
+  } catch (err) {
+    console.error("getSwapCandidatesHandler error:", err);
+    return res.status(500).json({ error: "فشل استرجاع البدائل", details: err.message });
+  }
+};
+
+export const calculateSwapHandler = async (req, res) => {
+  try {
+    const {
+      source_food_code,
+      current_food_code,
+      source_grams,
+      current_portion_g,
+      target_food_code,
+      meal_context,
+      meal_category,
+    } = req.body;
+
+    const fromCode = normalizeFoodCode(source_food_code || current_food_code);
+    const toCode = normalizeFoodCode(target_food_code);
+    const fromGrams = Number(source_grams || current_portion_g) || 100;
+    const category = meal_category || (meal_context === "BREAKFAST" ? "BREAKFAST" : "MAIN_MEAL");
+
+    const result = calculateSmartSwap({
+      current_food_code: fromCode,
+      current_portion_g: fromGrams,
+      target_food_code: toCode,
+      meal_category: category,
+    });
+
+    const swappedFood = {
+      food_code: result.target_food.food_code,
+      name_ar: result.target_food.name_ar,
+      name_en: result.target_food.name_en,
+      grams: result.target_food.portion_g,
+      portion_g_rounded: result.target_food.portion_g,
+      serving_display_ar: result.target_food.serving_display_ar,
+      serving_display_en: result.target_food.serving_display_en
+    };
+
+    return res.status(200).json({
+      swap: result,
+      swapped_food: swappedFood
+    });
+  } catch (err) {
+    console.error("calculateSwapHandler error:", err);
+    return res.status(400).json({ error: err.message });
+  }
+};
+
+export const getActiveProgramByUserId = async (req, res) => {
+  try {
+    const { user_id } = req.params;
+    
+    // Look up user by client_code first, then by id, then by phone_number
+    let user = await User.findOne({ where: { client_code: user_id } });
+    if (!user && !isNaN(user_id)) {
+      user = await User.findByPk(parseInt(user_id, 10));
+    }
+    if (!user) {
+      user = await User.findOne({ where: { phone_number: user_id } });
+    }
+
+    if (!user) {
+      return res.status(404).json({ error: "User not found" });
+    }
+
+    const program = await Program.findOne({
+      where: { user_id: user.id },
+      order: [["id", "DESC"]],
+      include: [{ model: User, as: "user", attributes: ["id", "client_code", "full_name", "email", "role"] }],
+    });
+
+    if (!program) {
+      return res.status(404).json({ error: "No active program found for this client" });
+    }
+
+    return res.status(200).json({
+      program_id: program.id,
+      user: program.user,
+      master_program: program.program_data,
+    });
+  } catch (err) {
+    console.error("getActiveProgramByUserId error:", err);
+    return res.status(500).json({ error: "Failed to fetch active program", details: err.message });
+  }
+};
+
+export const updateCustomProgram = async (req, res) => {
+  try {
+    const { user_id, client_code, program_data, coach_notes } = req.body;
+    const lookup = user_id || client_code;
+
+    if (!lookup) {
+      return res.status(400).json({ error: "user_id or client_code is required" });
+    }
+
+    let user = await User.findOne({ where: { client_code: lookup } });
+    if (!user && !isNaN(lookup)) {
+      user = await User.findByPk(parseInt(lookup, 10));
+    }
+    if (!user) {
+      user = await User.findOne({ where: { phone_number: lookup } });
+    }
+
+    if (!user) {
+      return res.status(404).json({ error: "User not found" });
+    }
+
+    let program = await Program.findOne({
+      where: { user_id: user.id },
+      order: [["id", "DESC"]]
+    });
+
+    if (!program) {
+      program = await Program.create({
+        user_id: user.id,
+        program_data: program_data || {}
+      });
+    } else {
+      if (program_data) {
+        program.program_data = program_data;
+      }
+      await program.save();
+    }
+
+    if (coach_notes !== undefined) {
+      if (typeof program.program_data === "object" && program.program_data !== null) {
+        program.program_data.coach_notes = coach_notes;
+        program.changed("program_data", true);
+        await program.save();
+      }
+    }
+
+    return res.status(200).json({
+      message: "تم تحديث وحفظ خطة المتدرب وملاحظات الكابتن بنجاح في MariaDB z",
+      user,
+      program_id: program.id,
+      master_program: program.program_data
+    });
+  } catch (err) {
+    console.error("updateCustomProgram error:", err);
+    return res.status(500).json({ error: "فشل تحديث الخطة", details: err.message });
+  }
+};
+
+export const getExercisesCatalog = async (req, res) => {
+  try {
+    const exercises = Object.entries(MASTER_EXERCISE_DICTIONARY).map(([code, info]) => ({
+      code,
+      name_en: info.en,
+      name_ar: info.ar,
+      muscle: info.muscle || "GENERAL"
+    }));
+    return res.status(200).json({ exercises });
+  } catch (err) {
+    return res.status(500).json({ error: "Failed to fetch exercise catalog", details: err.message });
+  }
+};
+

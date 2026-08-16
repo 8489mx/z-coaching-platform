@@ -8,7 +8,7 @@ const DEFAULT_INTAKE = {
   body: { heightCm: 170, weightKg: 70, waistCm: 80, weightTrend: 'STABLE', measurementQuality: 'HIGH', progressPhotosAvailable: true },
   lifestyle: { 
     dailyActivity: 'LIGHT', 
-    workSchedule: { type: 'STANDARD', physicallyDemandingDays: [] },
+    workSchedule: { type: 'FIXED', physicallyDemandingDays: [] },
     sleep: { averageHours: 7, quality: 'GOOD' },
     stressLevel: 'MODERATE'
   },
@@ -48,32 +48,47 @@ export default function FullIntakeForm() {
   const [activeTab, setActiveTab] = useState('personal');
   const [saveStatus, setSaveStatus] = useState(''); // '', 'saving', 'saved'
   
-  // Initialize state from localStorage
-  const [formData, setFormData] = useState(() => {
-    const code = sessionStorage.getItem('z_client_code');
-    const phone = sessionStorage.getItem('z_client_phone');
-    if (!code || !phone) {
-      // Must be logged in
-      return DEFAULT_INTAKE;
-    }
+  // Extract URL query params on mount
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const codeParam = params.get('code');
+    const phoneParam = params.get('phone');
+    if (codeParam) sessionStorage.setItem('z_client_code', codeParam);
+    if (phoneParam) sessionStorage.setItem('z_client_phone', phoneParam);
     
-    const storageKey = `z_intake_${code}_${phone}`;
-    const saved = localStorage.getItem(storageKey);
-    if (saved) {
-      try {
-        return JSON.parse(saved);
-      } catch (e) {}
+    if (!codeParam) {
+      // If entering without URL params, treat as a fresh intake
+      sessionStorage.removeItem('z_client_code');
+      sessionStorage.removeItem('z_client_phone');
+    }
+  }, []);
+
+  // Initialize state
+  const [formData, setFormData] = useState(() => {
+    const params = new URLSearchParams(window.location.search);
+    const codeParam = params.get('code');
+    const phoneParam = params.get('phone');
+    
+    if (codeParam && phoneParam) {
+      const storageKey = `z_intake_${codeParam}_${phoneParam}`;
+      const saved = localStorage.getItem(storageKey);
+      if (saved) {
+        try {
+          return JSON.parse(saved);
+        } catch (e) {}
+      }
     }
     return DEFAULT_INTAKE;
   });
 
-  // Authentication check
-  useEffect(() => {
-    const code = sessionStorage.getItem('z_client_code');
-    if (!code) {
-      navigate('/intake');
+  const handleResetForm = () => {
+    if (window.confirm('هل تريد مسح البيانات والبدء باستمارة جديدة فارغة؟')) {
+      setFormData(DEFAULT_INTAKE);
+      sessionStorage.removeItem('z_client_code');
+      sessionStorage.removeItem('z_client_phone');
+      setActiveTab('personal');
     }
-  }, [navigate]);
+  };
 
   // Auto-save logic (debounced)
   useEffect(() => {
@@ -287,9 +302,9 @@ export default function FullIntakeForm() {
         <div className="form-group">
           <label className="form-label">نوع جدول العمل</label>
           <select className="form-control" value={formData.lifestyle.workSchedule.type} onChange={e => updateNested('lifestyle', 'workSchedule', 'type', e.target.value)}>
-            <option value="STANDARD">ثابت (مثال: 9 لـ 5)</option>
-            <option value="VARIABLE">متغير أو شفتات</option>
-            <option value="NIGHT_SHIFT">عمل مسائي/ليلي</option>
+            <option value="FIXED">ثابت (مواعيد محددة)</option>
+            <option value="VARIABLE">متغير أو مرن</option>
+            <option value="SHIFT_BASED">نظام شفتات / ورديات</option>
           </select>
         </div>
         <div className="form-group">
@@ -1074,34 +1089,90 @@ export default function FullIntakeForm() {
     </div>
   );
 
+  const [submitting, setSubmitting] = useState(false);
+
+  const handleSubmitIntake = async () => {
+    if (!formData.personal.firstName || !formData.personal.lastName) {
+      alert('يرجى التأكد من إدخال الاسم الأول واسم العائلة في قسم البيانات الشخصية.');
+      setActiveTab('personal');
+      return;
+    }
+    if (!formData.personal.dateOfBirth) {
+      alert('يرجى إدخال تاريخ الميلاد، فهو ضروري لحساب العمر في الخطة.');
+      setActiveTab('personal');
+      return;
+    }
+
+    try {
+      setSubmitting(true);
+      const code = sessionStorage.getItem('z_client_code') || 'CLIENT-AHMED-SAMIR';
+      const phone = sessionStorage.getItem('z_client_phone') || '01000000000';
+
+      const payload = JSON.parse(JSON.stringify(formData));
+      if (payload.lifestyle?.workSchedule?.type === 'STANDARD') {
+        payload.lifestyle.workSchedule.type = 'FIXED';
+      }
+      if (payload.lifestyle?.workSchedule?.type === 'NIGHT_SHIFT') {
+        payload.lifestyle.workSchedule.type = 'SHIFT_BASED';
+      }
+      if (!['FIXED', 'VARIABLE', 'SHIFT_BASED'].includes(payload.lifestyle?.workSchedule?.type)) {
+        payload.lifestyle.workSchedule.type = 'FIXED';
+      }
+      if (payload.training?.location === 'GYM') {
+        payload.training.equipment = (payload.training.equipment || []).map(eq => ({
+          ...eq,
+          otherEquipmentText: eq.otherEquipmentText || null
+        }));
+      }
+
+      const res = await fetch('http://localhost:3000/api/v1/programs/generate-and-save', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          ...payload,
+          client_code: code,
+          phone_number: phone,
+          full_name: `${formData.personal.firstName} ${formData.personal.lastName}`
+        })
+      });
+
+      const data = await res.json();
+      if (!res.ok) {
+        throw new Error(data.error || (data.details ? data.details : 'فشل توليد وحفظ الخطة'));
+      }
+
+      const storageKey = `z_intake_${code}_${phone}`;
+      localStorage.removeItem(storageKey);
+      sessionStorage.removeItem('z_client_code');
+      sessionStorage.removeItem('z_client_phone');
+
+      sessionStorage.setItem('z_active_client_id', data.user?.id || 1);
+      sessionStorage.setItem('z_active_client_code', data.user?.client_code || code);
+      sessionStorage.setItem('z_active_client_name', data.user?.full_name || 'أحمد سمير');
+
+      navigate(`/user-dashboard?user_id=${data.user?.client_code || code}`);
+    } catch (err) {
+      alert('حدث خطأ أثناء معالجة البيانات: ' + err.message);
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
   const renderReview = () => (
     <div className="step-content" style={{textAlign: 'center', padding: '4rem 2rem'}}>
-      <div style={{fontSize: '4rem', marginBottom: '1rem', color: '#10b981'}}><i className="bi bi-check2-circle"></i></div>
-      <h3 style={{fontSize: '1.75rem', fontWeight: 'bold', color: '#1e293b'}}>هل أنت جاهز لتوليد خطتك؟</h3>
-      <p style={{color: '#64748b', margin: '1rem auto 2.5rem', maxWidth: '500px', lineHeight: '1.6'}}>
-        لقد تم حفظ جميع بياناتك تلقائياً بنجاح. سيقوم محرك الذكاء الخاص بنا (Z-Engine) بتحليل أكثر من 70 نقطة بيانات صممتها لتوليد أقصى استفادة لجسمك وهدفك.
+      <div style={{fontSize: '4.5rem', marginBottom: '1rem', color: '#00b4d8'}}><i className="bi bi-check2-circle"></i></div>
+      <h3 style={{fontSize: '1.85rem', fontWeight: 'bold', color: '#0f172a'}}>هل أنت جاهز لتوليد خطتك التدريبية والغذائية؟</h3>
+      <p style={{color: '#64748b', margin: '1rem auto 2.5rem', maxWidth: '540px', lineHeight: '1.7', fontSize: '1.05rem'}}>
+        تم حفظ جميع بياناتك بنجاح. سيقوم محرك الذكاء الرياضي (Z-Engine V2) بتحليل أكثر من 70 نقطة بيانات صممتها بدقة لتوليد أقصى تطور لجسمك وهدفك.
       </p>
       
-      <button className="btn btn-primary" style={{padding: '1rem 3rem', fontSize: '1.15rem'}} onClick={() => {
-        // Basic frontend validation
-        if (!formData.personal.firstName || !formData.personal.lastName) {
-          alert('يرجى التأكد من إدخال الاسم الأول واسم العائلة في قسم البيانات الشخصية.');
-          setActiveTab('personal');
-          return;
-        }
-        if (!formData.personal.dateOfBirth) {
-          alert('يرجى إدخال تاريخ الميلاد، فهو ضروري لحساب العمر في الخطة.');
-          setActiveTab('personal');
-          return;
-        }
-
-        // Prepare to test the engine with the current payload
-        const code = sessionStorage.getItem('z_client_code');
-        const phone = sessionStorage.getItem('z_client_phone');
-        localStorage.setItem('z_intake_payload', JSON.stringify(formData));
-        window.location.href = '/test-engine?autoRun=true';
-      }}>
-        إرسال وتوليد الخطة الآن
+      <button 
+        className="btn btn-primary" 
+        style={{padding: '1.1rem 3.5rem', fontSize: '1.2rem', borderRadius: '40px'}} 
+        disabled={submitting}
+        onClick={handleSubmitIntake}
+      >
+        {submitting ? 'جاري بناء الميزوسايكل والدايت المكمم...' : 'إرسال وتوليد الخطة الذكية الآن'}
       </button>
     </div>
   );
@@ -1126,9 +1197,19 @@ export default function FullIntakeForm() {
         
         {/* Sidebar Tabs */}
         <div className="intake-sidebar">
-          <div className="intake-sidebar-header">
-            <h2 className="intake-sidebar-title">ملف العميل</h2>
-            <p style={{margin: '0.25rem 0 0', fontSize: '0.8rem', color: '#94a3b8'}}>كود: {sessionStorage.getItem('z_client_code')}</p>
+          <div className="intake-sidebar-header d-flex justify-content-between align-items-center">
+            <div>
+              <h2 className="intake-sidebar-title">ملف العميل</h2>
+              <p style={{margin: '0.25rem 0 0', fontSize: '0.8rem', color: '#94a3b8'}}>كود: {sessionStorage.getItem('z_client_code') || 'جديد'}</p>
+            </div>
+            <button 
+              onClick={handleResetForm} 
+              className="btn btn-outline-danger btn-sm rounded-pill" 
+              style={{fontSize: '0.72rem', padding: '3px 10px'}} 
+              title="تفريغ الاستمارة والبدء من جديد"
+            >
+              استمارة جديدة
+            </button>
           </div>
           <div style={{display: 'flex', flexDirection: 'column', gap: '0.25rem'}}>
             {TABS.map(tab => (

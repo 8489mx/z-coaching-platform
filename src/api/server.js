@@ -6,6 +6,9 @@ import authRoutes from "./routes/auth.routes.js";
 import programRoutes from "./routes/program.routes.js";
 import clientRoutes from "./routes/client.routes.js";
 import intakeRoutes from "./routes/intake.routes.js";
+import subscriptionRoutes from "./routes/subscription.routes.js";
+import photoRoutes from "./routes/photo.routes.js";
+import exerciseRoutes from "./routes/exercise.routes.js";
 
 dotenv.config();
 
@@ -20,6 +23,9 @@ app.use("/api/v1/auth", authRoutes);
 app.use("/api/v1/programs", programRoutes);
 app.use("/api/v1/clients", clientRoutes);
 app.use("/api/v1/intake", intakeRoutes);
+app.use("/api/v1/subscriptions", subscriptionRoutes);
+app.use("/api/v1/photos", photoRoutes);
+app.use("/api/v1/exercises", exerciseRoutes);
 
 // Database Sync and Server Start
 const PORT = process.env.PORT || 3000;

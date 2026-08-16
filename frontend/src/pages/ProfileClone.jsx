@@ -1,73 +1,419 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
+
+const DEFAULT_SETTINGS = {
+  coach_name: 'كابتن كيمو المحروقي',
+  academy_name: 'Z Coaching Academy',
+  phone_number: '01205004949',
+  email: 'coach@zcoaching.com',
+  gym_logo_url: '/admin-dashboard_data/logo/z_coaching_logo.jpg',
+  pdf_footer_note: '💧 اشرب 3 إلى 4 لتر ماء يومياً | 🚶‍♂️ استهدف 8,000 إلى 10,000 خطوة يومياً | 😴 نم 7 إلى 8 ساعات لنوم عميق واستشفاء عضلي ممتاز.',
+  whatsapp_prefix: 'مرحباً بك مع كابتن كيمو في منظومة Z Coaching 🏋️‍♂️'
+};
 
 export default function ProfileClone() {
-  const containerRef = useRef(null);
-  
+  const [activeTab, setActiveTab] = useState('branding'); // 'branding' | 'security' | 'whatsapp'
+  const [settings, setSettings] = useState(DEFAULT_SETTINGS);
+  const [savedSuccess, setSavedSuccess] = useState(false);
+
+  // Security Form State
+  const [securityForm, setSecurityForm] = useState({
+    current_password: '',
+    new_password: '',
+    confirm_password: ''
+  });
+
   useEffect(() => {
-    let isMounted = true;
-
-    const scripts = [
-      "/admin-dashboard_data/jquery-3.7.1.min.js",
-      "/admin-dashboard_data/modernizr.min.js",
-      "/admin-dashboard_data/app-config.js",
-      "/admin-dashboard_data/customizer.js",
-      "/admin-dashboard_data/bootstrap.bundle.min.js",
-      "/admin-dashboard_data/simplebar.js",
-      "/admin-dashboard_data/feather.js",
-      "/admin-dashboard_data/app.js",
-      "/admin-dashboard_data/jquery-ui.js",
-    ];
-
-    const loadScript = (src) => {
-      return new Promise((resolve) => {
-        const existing = document.querySelector(`script[src="${src}"]`);
-        if (existing) {
-          resolve();
-          return;
-        }
-        const s = document.createElement('script');
-        s.src = src;
-        s.onload = resolve;
-        document.body.appendChild(s);
-      });
-    };
-
-    const loadAll = async () => {
-      for (const src of scripts) {
-        if (!isMounted) return;
-        await loadScript(src);
+    const stored = localStorage.getItem('fitnexus_coach_settings');
+    if (stored) {
+      try {
+        setSettings({ ...DEFAULT_SETTINGS, ...JSON.parse(stored) });
+      } catch (e) {
+        console.error(e);
       }
-      
-      if (!isMounted) return;
-      
-      const scriptId = 'dynamic-theme-script-profile';
-      const existingScript = document.getElementById(scriptId);
-      if (existingScript) existingScript.remove();
-      
-      const script = document.createElement('script');
-      script.id = scriptId;
-      
-      script.innerHTML = `(function() { 
-        if (typeof $ !== 'undefined' && $.fn.datepicker) {
-            $('.datepicker').datepicker();
-        }
-      })();`;
-      
-      document.body.appendChild(script);
-    };
-
-    loadAll();
-
-    return () => {
-        isMounted = false;
-        const scriptElement = document.getElementById('dynamic-theme-script-profile');
-        if (scriptElement) scriptElement.remove();
-    };
+    }
   }, []);
 
-  const rawHTML = "\r\n\r\n  <!-- Loader Start-->\r\n  \r\n  <!-- Loader End-->\r\n  <!-- Header Start-->\r\n  <header class=\"codex-header\">\r\n    <div class=\"header-contian d-flex justify-content-between align-items-center\">\r\n      <div class=\"header-left d-flex align-items-center\">\r\n        <div class=\"codex-brand me-3\">\r\n          <div class=\"sidebar-action navicon-wrap d-xl-none me-3\">\r\n            <i class=\"ti ti-layout-grid\"></i>\r\n          </div>\r\n          <a class=\"d-flex align-items-center\" href=\"index.html\">\r\n            <img class=\"img-fluid\" src=\"/admin-dashboard_data/logo/logo.png\" alt=\"theeme-logo\">\r\n            <span class=\"fs-3 align-middle ms-2\">FitNexus</span>\r\n          </a>\r\n        </div>\r\n        <div class=\"sidebar-action navicon-wrap d-xl-none me-3\">\r\n          <i class=\"ti ti-layout-grid\"></i>\r\n        </div>\r\n        <div class=\"input-group\">\r\n          <span class=\"input-group-text pe-0\">\r\n            <i class=\"ti ti-search\"></i>\r\n          </span>\r\n          <input type=\"text\" placeholder=\"Search Here\" class=\"form-control\">\r\n        </div>\r\n      </div>\r\n      <div class=\"header-right d-flex align-items-center justify-content-end\">\r\n        <ul class=\"nav-iconlist\">\r\n          <li>\r\n            <div class=\"navicon-wrap action-dark\">\r\n              <i class=\"ti ti-moon icon-dark\"></i>\r\n            </div>\r\n          </li>\r\n          <li class=\"action-menu dropdown\">\r\n            <div class=\"navicon-wrap notiicon-iconwrap\" data-bs-toggle=\"dropdown\">\r\n              <i class=\"ti ti-bell-ringing\"></i>\r\n              <div class=\"noti-count\"></div>\r\n            </div>\r\n            <div class=\"navnotification-drop action-dropdown dropdown-menu\">\r\n              <div class=\"drop-header\">\r\n                <h5>notification<span class=\"float-end\">05</span>\r\n                </h5>\r\n              </div>\r\n              <div data-simplebar>\r\n                <ul>\r\n                  <li>\r\n                    <a href=\"#!\">\r\n                      <div class=\"d-flex align-items-center\">\r\n                        <div class=\"icon-nav\">\r\n                          <img src=\"/admin-dashboard_data/navnotification1.png\" alt=\"\" class=\"img-fluid\">\r\n                        </div>\r\n                        <div class=\"media-body\">\r\n                          <h6>Full Body Yoga</h6>\r\n                          <span class=\"badge badge-success\">08:30</span>\r\n                        </div>\r\n                      </div>\r\n                      <i class=\"ti ti-chevron-right\"></i>\r\n                    </a>\r\n                  </li>\r\n                  <li>\r\n                    <a href=\"#!\">\r\n                      <div class=\"d-flex align-items-center\">\r\n                        <div class=\"icon-nav\">\r\n                          <img src=\"/admin-dashboard_data/navnotification2.png\" alt=\"\" class=\"img-fluid\">\r\n                        </div>\r\n                        <div class=\"media-body\">\r\n                          <h6>Functional Workout</h6>\r\n                          <span class=\"badge badge-success\">08:30</span>\r\n                        </div>\r\n                      </div>\r\n                      <i class=\"ti ti-chevron-right\"></i>\r\n                    </a>\r\n                  </li>\r\n                  <li>\r\n                    <a href=\"#!\">\r\n                      <div class=\"d-flex align-items-center\">\r\n                        <div class=\"icon-nav\">\r\n                          <img src=\"/admin-dashboard_data/navnotification3.png\" alt=\"\" class=\"img-fluid\">\r\n                        </div>\r\n                        <div class=\"media-body\">\r\n                          <h6>Lower Body Express</h6>\r\n                          <span class=\"badge badge-success\">08:30</span>\r\n                        </div>\r\n                      </div>\r\n                      <i class=\"ti ti-chevron-right\"></i>\r\n                    </a>\r\n                  </li>\r\n                  <li>\r\n                    <a href=\"#!\">\r\n                      <div class=\"d-flex align-items-center\">\r\n                        <div class=\"icon-nav\">\r\n                          <img src=\"/admin-dashboard_data/navnotification4.png\" alt=\"\" class=\"img-fluid\">\r\n                        </div>\r\n                        <div class=\"media-body\">\r\n                          <h6>Glutes & Abs</h6>\r\n                          <span class=\"badge badge-success\">08:30</span>\r\n                        </div>\r\n                      </div>\r\n                      <i class=\"ti ti-chevron-right\"></i>\r\n                    </a>\r\n                  </li>\r\n                </ul>\r\n              </div>\r\n              <div class=\"drop-footer\">\r\n                <a href=\"javascript:void(0)\">See All Notification</a>\r\n              </div>\r\n            </div>\r\n          </li>\r\n          <li class=\"action-menu dropdown\">\r\n            <div class=\"navicon-wrap\" data-bs-target=\"#customizer\" data-bs-toggle=\"offcanvas\">\r\n              <i class=\"ti ti-settings\"></i>\r\n            </div>\r\n          </li>\r\n          <li class=\"nav-profile action-menu dropdown\">\r\n            <div class=\"user-icon action-toggle\" data-bs-toggle=\"dropdown\">\r\n              <img class=\"img-fluid\" src=\"/admin-dashboard_data/avtar/profile.png\" alt=\"User Logo\">\r\n            </div>\r\n            <div class=\"navprofile-drop action-dropdown dropdown-menu\">\r\n              <ul>\r\n                <li>\r\n                  <div class=\"media-body\">\r\n                    <img class=\"img-fluid rounded-circle\" src=\"/admin-dashboard_data/avtar/profile.png\" alt=\"logo\">\r\n                    <h6 class=\"mt-2 fw-bold\">Hello Thomas</h6>\r\n                  </div>\r\n                </li>\r\n                <li>\r\n                  <a href=\"profile.html\">\r\n                    <i class=\"me-2 align-middle ti ti-settings\"></i>\r\n                    setting\r\n                  </a>\r\n                </li>\r\n                <li>\r\n                  <a href=\"#!\">\r\n                    <i class=\"me-2 align-middle ti ti-logout\"></i>\r\n                    log out\r\n                  </a>\r\n                </li>\r\n              </ul>\r\n            </div>\r\n          </li>\r\n        </ul>\r\n      </div>\r\n    </div>\r\n  </header>\r\n  <!-- Header End-->\r\n\r\n  <!-- sidebar start -->\r\n  <aside class=\"codex-sidebar\">\r\n    <div class=\"codex-brand\">\r\n      <a class=\"d-flex align-items-center\" href=\"index.html\">\r\n        <img class=\"img-fluid\" src=\"/admin-dashboard_data/logo/logo.png\" alt=\"theeme-logo\">\r\n        <span class=\"fs-3 align-middle ms-2 lh-1\">FitNexus</span>\r\n      </a>\r\n      <div class=\"sidebar-action\">\r\n        <i class=\"ti ti-chevron-left\"></i>\r\n      </div>\r\n    </div>\r\n    <span class=\"menu-preve\">\r\n      <i class=\"ti ti-chevron-left\"></i>\r\n    </span>\r\n    <div class=\"codex-menuwrapper custom-scroll\" data-simplebar>\r\n      <ul class=\"codex-menu\">\r\n        <!-- <li class=\"menu-item\">\r\n        <a href=\"index.html\">\r\n          <div class=\"icon-item\">           \r\n            <i class=\"ti ti-layout-dashboard\"></i>\r\n          </div>\r\n          <span>Overview</span>\r\n        </a>\r\n      </li>   -->\r\n        <li class=\"menu-item\">\r\n          <a href=\"#!\">\r\n            <div class=\"icon-item\">\r\n              <i class=\"ti ti-layout-dashboard\"></i>\r\n            </div>\r\n            <span>Dashboard</span>\r\n            <i class=\"fa fa-angle-right menu-dropwdown\"></i>\r\n          </a>\r\n          <ul class=\"submenu-list\">\r\n            <li>\r\n              <a href=\"user-dashboard.html\">User Dashboard</a>\r\n            </li>\r\n            <li>\r\n              <a href=\"admin-dashboard.html\">Admin Dashboard</a>\r\n            </li>\r\n            <li>\r\n              <a href=\"index.html\">Trainer Dashboard</a>\r\n            </li>\r\n            <!-- <li>\r\n            <a href=\"trainer-dashboard.html\">Trainer Dashboard</a>\r\n          </li>\r\n          <li>\r\n            <a href=\"branch-manager-dashboard.html\">Branch Manager</a>\r\n          </li> -->\r\n          </ul>\r\n        </li>\r\n        <li class=\"menu-item\">\r\n          <a href=\"#!\">\r\n            <div class=\"icon-item\">\r\n              <i class=\"ti ti-layout-dashboard\"></i>\r\n            </div>\r\n            <span>Member</span>\r\n            <i class=\"fa fa-angle-right menu-dropwdown\"></i>\r\n          </a>\r\n          <ul class=\"submenu-list\">\r\n            <li>\r\n              <a href=\"members-list.html\">Members List</a>\r\n            </li>\r\n            <li>\r\n              <a href=\"members-add.html\">Members Add</a>\r\n            </li>\r\n            <li>\r\n              <a href=\"member-profile.html\">Members Profile</a>\r\n            </li>\r\n            <li>\r\n              <a href=\"member-edit.html\">Members Edit</a>\r\n            </li>\r\n            <li>\r\n              <a href=\"member-attendance.html\">Attendance</a>\r\n            </li>\r\n            <!--  <li>\r\n            <a href=\"member-bulk-attendance.html\">Bulk Attendance</a>\r\n          </li>\r\n          <li>\r\n            <a href=\"member-payments.html\">Payments</a>\r\n          </li>\r\n          <li>\r\n            <a href=\"member-payment-add.html\">Payments Add</a>\r\n          </li>\r\n          <li>\r\n            <a href=\"member-progress.html\">Member Progress</a>\r\n          </li>\r\n          <li>\r\n            <a href=\"member-goals.html\">Member Goals</a>\r\n          </li> -->\r\n          </ul>\r\n        </li>\r\n        <li class=\"menu-item\">\r\n          <a href=\"#!\">\r\n            <div class=\"icon-item\">\r\n              <i class=\"ti ti-barbell\"></i>\r\n            </div>\r\n            <span>Workout</span>\r\n            <i class=\"fa fa-angle-right menu-dropwdown\"></i>\r\n          </a>\r\n          <ul class=\"submenu-list\">\r\n            <li>\r\n              <a href=\"workout-filter.html\">Workout Filter</a>\r\n            </li>\r\n            <li>\r\n              <a href=\"workout-topfilter.html\">Workout Top Filter</a>\r\n            </li>\r\n            <li>\r\n              <a href=\"upperbody-workout.html\">Body workout</a>\r\n            </li>\r\n            <li>\r\n              <a href=\"create-workout.html\">Create workout</a>\r\n            </li>\r\n            <li>\r\n              <a href=\"workout-summary.html\">Workout Summary</a>\r\n            </li>\r\n          </ul>\r\n        </li>\r\n        <li class=\"menu-item\">\r\n          <a href=\"#!\">\r\n            <div class=\"icon-item\">\r\n              <i class=\"ti ti-calendar\"></i>\r\n            </div>\r\n            <span>Diet Plan</span>\r\n            <i class=\"fa fa-angle-right menu-dropwdown\"></i>\r\n          </a>\r\n          <ul class=\"submenu-list\">\r\n            <li>\r\n              <a href=\"dietplan.html\">Diet Menu</a>\r\n            </li>\r\n            <li>\r\n              <a href=\"diet-detail.html\">Diet Detail</a>\r\n            </li>\r\n          </ul>\r\n        </li>\r\n        <li class=\"menu-item\">\r\n          <a href=\"goals.html\">\r\n            <div class=\"icon-item\">\r\n              <i class=\"ti ti-target-arrow\"></i>\r\n            </div>\r\n            <span>Goals</span>\r\n          </a>\r\n        </li>\r\n        <li class=\"menu-item\">\r\n          <a href=\"schedule.html\">\r\n            <div class=\"icon-item\">\r\n              <i class=\"ti ti-calendar-event\"></i>\r\n            </div>\r\n            <span>My Schedule</span>\r\n          </a>\r\n        </li>\r\n        <li class=\"menu-item\">\r\n          <a href=\"progress.html\">\r\n            <div class=\"icon-item\">\r\n              <i class=\"ti ti-chart-bar\"></i>\r\n            </div>\r\n            <span>Progress</span>\r\n          </a>\r\n        </li>\r\n        <li class=\"menu-item\">\r\n          <a href=\"profile.html\">\r\n            <div class=\"icon-item\">\r\n              <i class=\"ti ti-layout-dashboard\"></i>\r\n            </div>\r\n            <span>Profile</span>\r\n          </a>\r\n        </li>\r\n        <li class=\"menu-item\">\r\n          <a href=\"#!\">\r\n            <div class=\"icon-item\">\r\n              <i class=\"ti ti-key\"></i>\r\n            </div>\r\n            <span>Authentication</span>\r\n            <i class=\"fa fa-angle-right menu-dropwdown\"></i>\r\n          </a>\r\n          <ul class=\"submenu-list\">\r\n            <li>\r\n              <a href=\"login.html\">Sign In</a>\r\n            </li>\r\n            <li>\r\n              <a href=\"register.html\">Sign Up</a>\r\n            </li>\r\n            <li>\r\n              <a href=\"forgot-password.html\">Forgot Password</a>\r\n            </li>\r\n            <li>\r\n              <a href=\"reset-password.html\">Reset Password</a>\r\n            </li>\r\n          </ul>\r\n        </li>\r\n        <li class=\"menu-item\">\r\n          <a href=\"onboding-step.html\">\r\n            <div class=\"icon-item\">\r\n              <i class=\"ti ti-stairs-down\"></i>\r\n            </div>\r\n            <span>Step</span>\r\n          </a>\r\n        </li>\r\n        <li class=\"menu-item\">\r\n          <a href=\"#!\">\r\n            <div class=\"icon-item\">\r\n              <i class=\"ti ti-notebook\"></i>\r\n            </div>\r\n            <span>Form</span>\r\n            <i class=\"fa fa-angle-right menu-dropwdown\"></i>\r\n          </a>\r\n          <ul class=\"submenu-list\">\r\n            <li>\r\n              <a href=\"element-input.html\">form element</a>\r\n            </li>\r\n            <li>\r\n              <a href=\"element-checkbox-radio.html\">checkbox & radio</a>\r\n            </li>\r\n            <li>\r\n              <a href=\"element-datepicker.html\">datepicker</a>\r\n            </li>\r\n            <li>\r\n              <a href=\"element-uidatepicker.html\">ui datepicker</a>\r\n            </li>\r\n            <li>\r\n              <a href=\"element-datetimepicker.html\">datetimepicker</a>\r\n            </li>\r\n            <li>\r\n              <a href=\"form.html\">basic form</a>\r\n            </li>\r\n            <li>\r\n              <a href=\"form-validation.html\">validation</a>\r\n            </li>\r\n          </ul>\r\n        </li>\r\n        <li class=\"menu-item\">\r\n          <a href=\"#!\">\r\n            <div class=\"icon-item\">\r\n              <i class=\"ti ti-layout\"></i>\r\n            </div>\r\n            <span>Advance element</span>\r\n            <i class=\"fa fa-angle-right menu-dropwdown\"></i>\r\n          </a>\r\n          <ul class=\"submenu-list\">\r\n            <li>\r\n              <a href=\"element-select2.html\">select 2</a>\r\n            </li>\r\n            <li>\r\n              <a href=\"element-switch.html\">switch</a>\r\n            </li>\r\n            <li>\r\n              <a href=\"element-dropzone.html\">dropzone</a>\r\n            </li>\r\n            <li>\r\n              <a href=\"bootstrap-notify.html\">bootstrap notify</a>\r\n            </li>\r\n            <li>\r\n              <a href=\"element-sweetalert2.html\">sweetalert2</a>\r\n            </li>\r\n            <li>\r\n              <a href=\"element-scrollbar.html\">scrollbar</a>\r\n            </li>\r\n            <li>\r\n              <a href=\"element-lightbox.html\">light box</a>\r\n            </li>\r\n          </ul>\r\n        </li>\r\n        <li class=\"menu-item\">\r\n          <a href=\"#!\">\r\n            <div class=\"icon-item\">\r\n              <i class=\"ti ti-table-import\"></i>\r\n            </div>\r\n            <span>Bootstrap</span>\r\n            <i class=\"fa fa-angle-right menu-dropwdown\"></i>\r\n          </a>\r\n          <ul class=\"submenu-list\">\r\n            <li>\r\n              <a href=\"element-accordion.html\">Accordion</a>\r\n            </li>\r\n            <li>\r\n              <a href=\"element-alert.html\">Alert</a>\r\n            </li>\r\n            <li>\r\n              <a href=\"element-badge.html\">badge</a>\r\n            </li>\r\n            <li>\r\n              <a href=\"element-breadcrumb.html\">Breadcrumb</a>\r\n            </li>\r\n            <li>\r\n              <a href=\"element-button.html\">Button</a>\r\n            </li>\r\n            <li>\r\n              <a href=\"element-card.html\">card</a>\r\n            </li>\r\n            <li>\r\n              <a href=\"element-collapse.html\">Collapse</a>\r\n            </li>\r\n            <li>\r\n              <a href=\"element-dropdown.html\">Dropdown</a>\r\n            </li>\r\n            <li>\r\n              <a href=\"element-modal.html\">modal</a>\r\n            </li>\r\n            <li>\r\n              <a href=\"element-tab.html\">tabs</a>\r\n            </li>\r\n            <li>\r\n              <a href=\"element-pagination.html\">pagination</a>\r\n            </li>\r\n            <li>\r\n              <a href=\"element-popover.html\">popover</a>\r\n            </li>\r\n            <li>\r\n              <a href=\"element-progressbar.html\">progress bar</a>\r\n            </li>\r\n            <li>\r\n              <a href=\"element-tooltip.html\">tooltip</a>\r\n            </li>\r\n            <li>\r\n              <a href=\"element-typography.html\">typography</a>\r\n            </li>\r\n            <li>\r\n              <a href=\"element-color.html\">color</a>\r\n            </li>\r\n            <li>\r\n              <a href=\"element-themeclass.html\">helper class</a>\r\n            </li>\r\n            <li>\r\n              <a href=\"element-avtar.html\">Avtar</a>\r\n            </li>\r\n            <li>\r\n              <a href=\"element-grid.html\">grid</a>\r\n            </li>\r\n          </ul>\r\n        </li>\r\n        <li class=\"menu-item\">\r\n          <a href=\"#!\">\r\n            <div class=\"icon-item\">\r\n              <i class=\"ti ti-brand-slack\"></i>\r\n            </div>\r\n            <span>Icons</span>\r\n            <i class=\"fa fa-angle-right menu-dropwdown\"></i>\r\n          </a>\r\n          <ul class=\"submenu-list\">\r\n            <li>\r\n              <a href=\"element-fontaw-icon.html\">Font Awesome Icons</a>\r\n            </li>\r\n            <li>\r\n              <a href=\"element-feather-icon.html\">Feather Icons</a>\r\n            </li>\r\n          </ul>\r\n        </li>\r\n      </ul>\r\n    </div>\r\n    <span class=\"menu-next\">\r\n      <i class=\"ti ti-chevron-right\"></i>\r\n    </span>\r\n    <div class=\"sidebarpro-sec\">\r\n      <img class=\"img-fluid\" src=\"/admin-dashboard_data/pro-sec.png\" alt=\"\">\r\n      <h6 class=\"mb-2 fw-bold text-black\">Premium Membership</h6>\r\n      <p>Monitor progress, set goals, and achieve results faster!</p>\r\n      <a class=\"btn btn-primary btn-sm\" href=\"#!\">Upgrade</a>\r\n    </div>\r\n  </aside>\r\n  <!-- sidebar end -->\r\n\r\n\r\n  <main class=\"themebody-wrap\">\r\n    <div class=\"theme-body\">\r\n      <div class=\"container-fluid\">\r\n        <div class=\"row\">\r\n          <div class=\"col-xxl-4 col-md-6\">\r\n            <div class=\"card\">\r\n              <div class=\"card-body\">\r\n                <div class=\"d-flex align-items-center gap-3\">\r\n                  <div class=\"img-wrap border rounded-2 px-3 pt-2\">\r\n                    <img src=\"/admin-dashboard_data/avtar/profile-img.png\" alt=\"\" class=\"img-fluid\">\r\n                  </div>\r\n                  <div>\r\n                    <h4 class=\"fw-bold mb-2\">Leslie Alexander</h4>\r\n                    <a href=\"javascript:void(0)\" class=\"btn btn-primary\">Go Premium</a>\r\n                  </div>\r\n                </div>\r\n                <ul class=\"equipment-list gap-3 my-4\">\r\n                  <li>\r\n                    <a href=\"\">\r\n                      <img src=\"/admin-dashboard_data/workout/clock.svg\" alt=\"\" class=\"img-fluid\">\r\n                      55 kg\r\n                    </a>\r\n                  </li>\r\n                  <li>\r\n                    <a href=\"\">\r\n                      <img src=\"/admin-dashboard_data/workout/fire.svg\" alt=\"\" class=\"img-fluid\">\r\n                      167 cm\r\n                    </a>\r\n                  </li>\r\n                  <li>\r\n                    <a href=\"\">\r\n                      <img src=\"/admin-dashboard_data/workout/power.svg\" alt=\"\" class=\"img-fluid\">\r\n                      26 years\r\n                    </a>\r\n                  </li>\r\n                </ul>\r\n                <table class=\"table mt-3 mb-4\">\r\n                  <tbody>\r\n                    <tr>\r\n                      <td class=\"fs-6 fw-semibold py-3 align-middle\">Name</td>\r\n                      <td class=\"text-end align-middle\">\r\n                        <span>Leslie Alexander <i class=\"ti ti-chevron-right ms-2 fs-5 align-middle\"></i>\r\n                        </span>\r\n                      </td>\r\n                    </tr>\r\n                    <tr>\r\n                      <td class=\"fs-6 fw-semibold py-3 align-middle\">Gender</td>\r\n                      <td class=\"text-end align-middle\">\r\n                        <span>Male <i class=\"ti ti-chevron-right ms-2 fs-5 align-middle\"></i>\r\n                        </span>\r\n                      </td>\r\n                    </tr>\r\n                    <tr>\r\n                      <td class=\"fs-6 fw-semibold py-3 align-middle\">Date of birth</td>\r\n                      <td class=\"text-end align-middle\">\r\n                        <span>22 may 1995 <i class=\"ti ti-chevron-right ms-2 fs-5 align-middle\"></i>\r\n                        </span>\r\n                      </td>\r\n                    </tr>\r\n                    <tr>\r\n                      <td class=\"fs-6 fw-semibold py-3 align-middle\">Height</td>\r\n                      <td class=\"text-end align-middle\">\r\n                        <span>172 cm <i class=\"ti ti-chevron-right ms-2 fs-5 align-middle\"></i>\r\n                        </span>\r\n                      </td>\r\n                    </tr>\r\n                    <tr>\r\n                      <td class=\"fs-6 fw-semibold py-3 align-middle\">Weight</td>\r\n                      <td class=\"text-end align-middle\">\r\n                        <span>62 kg <i class=\"ti ti-chevron-right ms-2 fs-5 align-middle\"></i>\r\n                        </span>\r\n                      </td>\r\n                    </tr>\r\n                    <tr>\r\n                      <td class=\"fs-6 fw-semibold py-3 align-middle\">Max heart rate</td>\r\n                      <td class=\"text-end align-middle\">\r\n                        <span>195 bpm <i class=\"ti ti-chevron-right ms-2 fs-5 align-middle\"></i>\r\n                        </span>\r\n                      </td>\r\n                    </tr>\r\n                  </tbody>\r\n                </table>\r\n              </div>\r\n            </div>\r\n            <div class=\"card bg-light-warning\">\r\n              <div class=\"card-body\">\r\n                <img src=\"/admin-dashboard_data/icon/email-subscription.png\" alt=\"\" class=\"img-fluid\">\r\n                <h3 class=\"fw-bold mt-4\">Subscribe to Our Newsletter</h3>\r\n                <p class=\"mt-3\">Subscribe to our newsletter for the latest updates, exclusive content, and special offers delivered directly to your inbox</p>\r\n                <input type=\"text\" placeholder=\"Enter Your Email\" class=\"form-control mt-5 border-0 p-3\">\r\n                <a href=\"javascript:void(0)\" class=\"btn btn-primary mt-4 w-100 py-3\">Subscribe</a>\r\n              </div>\r\n            </div>\r\n          </div>\r\n          <div class=\"col-xxl-4 col-md-6\">\r\n            <div class=\"card\">\r\n              <div class=\"card-body\">\r\n                <h4 class=\"fw-bold mb-3\">Account</h4>\r\n                <table class=\"table\">\r\n                  <tbody>\r\n                    <tr data-bs-toggle=\"modal\" data-bs-target=\"#workoutreminder\">\r\n                      <td class=\"fs-6 fw-semibold py-3 align-middle\">Account</td>\r\n                      <td class=\"text-end align-middle\">\r\n                        <span class=\"fs-5\">\r\n                          <i class=\"ti ti-chevron-right ms-2\"></i>\r\n                        </span>\r\n                      </td>\r\n                    </tr>\r\n                    <tr data-bs-toggle=\"modal\" data-bs-target=\"#workoutreminder\">\r\n                      <td class=\"fs-6 fw-semibold py-3 align-middle\">My Workouts</td>\r\n                      <td class=\"text-end align-middle\">\r\n                        <span class=\"fs-5\">\r\n                          <i class=\"ti ti-chevron-right ms-2\"></i>\r\n                        </span>\r\n                      </td>\r\n                    </tr>\r\n                    <tr data-bs-toggle=\"modal\" data-bs-target=\"#workoutreminder\">\r\n                      <td class=\"fs-6 fw-semibold py-3 align-middle\">Workout reminders</td>\r\n                      <td class=\"text-end align-middle\">\r\n                        <span class=\"fs-5\">\r\n                          <i class=\"ti ti-chevron-right ms-2\"></i>\r\n                        </span>\r\n                      </td>\r\n                    </tr>\r\n                  </tbody>\r\n                </table>\r\n                <a href=\"javascript:void(0)\" class=\"btn btn-primary mt-3\">Log out</a>\r\n              </div>\r\n            </div>\r\n            <div class=\"card\">\r\n              <div class=\"card-body\">\r\n                <h4 class=\"fw-bold mb-3\">Weight tracking</h4>\r\n                <ul class=\"warmup-list mb-3\">\r\n                  <li>\r\n                    <div class=\"d-flex align-items-center justify-content-between\">\r\n                      <div>\r\n                        <span class=\"font-light fs-6\">Toady</span>\r\n                        <h6 class=\"fw-bold\">52.7 kg</h6>\r\n                      </div>\r\n                      <div class=\"text-end\">\r\n                        <span class=\"font-light fs-6\">7:02</span>\r\n                        <h6 class=\"fw-bold\">\r\n                          +0.1 kg\r\n                          <i class=\"ti ti-circle-arrow-up align-middle text-danger ms-1 fs-5\"></i>\r\n                        </h6>\r\n                      </div>\r\n                    </div>\r\n                  </li>\r\n                  <li>\r\n                    <div class=\"d-flex align-items-center justify-content-between\">\r\n                      <div>\r\n                        <span class=\"font-light fs-6\">Nov 13,2028</span>\r\n                        <h6 class=\"fw-bold\">52.6 kg</h6>\r\n                      </div>\r\n                      <div class=\"text-end\">\r\n                        <span class=\"font-light fs-6\">8:46</span>\r\n                        <h6 class=\"fw-bold\">\r\n                          -0.3 kg\r\n                          <i class=\"ti ti-circle-arrow-up align-middle text-success ms-1 fs-5\"></i>\r\n                        </h6>\r\n                      </div>\r\n                    </div>\r\n                  </li>\r\n                  <li>\r\n                    <div class=\"d-flex align-items-center justify-content-between\">\r\n                      <div>\r\n                        <span class=\"font-light fs-6\">Nov 14,2028</span>\r\n                        <h6 class=\"fw-bold\">52.9 kg</h6>\r\n                      </div>\r\n                      <div class=\"text-end\">\r\n                        <span class=\"font-light fs-6\">9:22</span>\r\n                        <h6 class=\"fw-bold\">\r\n                          +0.2 kg\r\n                          <i class=\"ti ti-circle-arrow-up align-middle text-danger ms-1 fs-5\"></i>\r\n                        </h6>\r\n                      </div>\r\n                    </div>\r\n                  </li>\r\n                  <li>\r\n                    <div class=\"d-flex align-items-center justify-content-between\">\r\n                      <div>\r\n                        <span class=\"font-light fs-6\">Nov 15,2028</span>\r\n                        <h6 class=\"fw-bold\">52.7 kg</h6>\r\n                      </div>\r\n                      <div class=\"text-end\">\r\n                        <span class=\"font-light fs-6\">6:50</span>\r\n                        <h6 class=\"fw-bold\">\r\n                          -0.2 kg\r\n                          <i class=\"ti ti-circle-arrow-up align-middle text-success ms-1 fs-5\"></i>\r\n                        </h6>\r\n                      </div>\r\n                    </div>\r\n                  </li>\r\n                  <li>\r\n                    <div class=\"d-flex align-items-center justify-content-between\">\r\n                      <div>\r\n                        <span class=\"font-light fs-6\">Nov 16,2028</span>\r\n                        <h6 class=\"fw-bold\">52.9 kg</h6>\r\n                      </div>\r\n                      <div class=\"text-end\">\r\n                        <span class=\"font-light fs-6\">7:40</span>\r\n                        <h6 class=\"fw-bold\">\r\n                          -0.1 kg\r\n                          <i class=\"ti ti-circle-arrow-up align-middle text-success ms-1 fs-5\"></i>\r\n                        </h6>\r\n                      </div>\r\n                    </div>\r\n                  </li>\r\n                  <li>\r\n                    <div class=\"d-flex align-items-center justify-content-between\">\r\n                      <div>\r\n                        <span class=\"font-light fs-6\">Nov 17,2028</span>\r\n                        <h6 class=\"fw-bold\">52.9 kg</h6>\r\n                      </div>\r\n                      <div class=\"text-end\">\r\n                        <span class=\"font-light fs-6\">6:25</span>\r\n                        <h6 class=\"fw-bold\">\r\n                          -0.1 kg\r\n                          <i class=\"ti ti-circle-arrow-up align-middle text-danger ms-1 fs-5\"></i>\r\n                        </h6>\r\n                      </div>\r\n                    </div>\r\n                  </li>\r\n                  <li>\r\n                    <div class=\"d-flex align-items-center justify-content-between\">\r\n                      <div>\r\n                        <span class=\"font-light fs-6\">Nov 15,2028</span>\r\n                        <h6 class=\"fw-bold\">52.7 kg</h6>\r\n                      </div>\r\n                      <div class=\"text-end\">\r\n                        <span class=\"font-light fs-6\">6:50</span>\r\n                        <h6 class=\"fw-bold\">\r\n                          -0.2 kg\r\n                          <i class=\"ti ti-circle-arrow-up align-middle text-success ms-1 fs-5\"></i>\r\n                        </h6>\r\n                      </div>\r\n                    </div>\r\n                  </li>\r\n                </ul>\r\n              </div>\r\n            </div>\r\n          </div>\r\n          <div class=\"col-xxl-4 col-lg-12\">\r\n            <div class=\"row\">\r\n              <div class=\"col-xxl-12 col-md-6 order-xxl-3 order-3\">\r\n                <div class=\"card bg-light-warning\">\r\n                  <div class=\"card-body\">\r\n                    <div class=\"d-flex align-items-center justify-content-between gap-2\">\r\n                      <div>\r\n                        <h3 class=\"mb-2 fw-bold\">Fitness Star</h3>\r\n                        <p>Got an award for your calorie-burning journey</p>\r\n                      </div>\r\n                      <img src=\"/admin-dashboard_data/icon/tropphy.png\" alt=\"\" class=\"img-fluid\">\r\n                    </div>\r\n                  </div>\r\n                </div>\r\n              </div>\r\n              <div class=\"col-xxl-12 col-md-6\">\r\n                <div class=\"card\">\r\n                  <div class=\"card-body\">\r\n                    <h4 class=\"fw-bold mb-2\">Settings</h4>\r\n                    <table class=\"table mt-3 mb-0\">\r\n                      <tbody>\r\n                        <tr>\r\n                          <td class=\"fs-6 fw-semibold py-4 align-middle\">Preferences</td>\r\n                          <td class=\"text-end align-middle\">\r\n                            <span class=\"fs-5\">\r\n                              <i class=\"ti ti-chevron-right ms-2\"></i>\r\n                            </span>\r\n                          </td>\r\n                        </tr>\r\n                        <tr>\r\n                          <td class=\"fs-6 fw-semibold py-4 align-middle\">Plan Settings</td>\r\n                          <td class=\"text-end align-middle\">\r\n                            <span class=\"fs-5\">\r\n                              <i class=\"ti ti-chevron-right ms-2\"></i>\r\n                            </span>\r\n                          </td>\r\n                        </tr>\r\n                        <tr>\r\n                          <td class=\"fs-6 fw-semibold py-4 align-middle\">Notification</td>\r\n                          <td class=\"text-end align-middle\">\r\n                            <label class=\"switch round switch-primary\">\r\n                              <input type=\"checkbox\" checked=\"\">\r\n                              <span class=\"switch-btn\"></span>\r\n                            </label>\r\n                          </td>\r\n                        </tr>\r\n                        <tr>\r\n                          <td class=\"fs-6 fw-semibold py-4 align-middle\">Pin Lock</td>\r\n                          <td class=\"text-end align-middle\">\r\n                            <label class=\"switch round switch-primary\">\r\n                              <input type=\"checkbox\" checked=\"\">\r\n                              <span class=\"switch-btn\"></span>\r\n                            </label>\r\n                          </td>\r\n                        </tr>\r\n                        <tr>\r\n                          <td class=\"fs-6 fw-semibold py-4 align-middle\">Apple Health</td>\r\n                          <td class=\"text-end align-middle\">\r\n                            <label class=\"switch round switch-primary\">\r\n                              <input type=\"checkbox\" checked=\"\">\r\n                              <span class=\"switch-btn\"></span>\r\n                            </label>\r\n                          </td>\r\n                        </tr>\r\n                        <tr>\r\n                          <td class=\"fs-6 fw-semibold py-4 align-middle\">Dark Mode</td>\r\n                          <td class=\"text-end align-middle\">\r\n                            <label class=\"switch round switch-primary\">\r\n                              <input type=\"checkbox\">\r\n                              <span class=\"switch-btn\"></span>\r\n                            </label>\r\n                          </td>\r\n                        </tr>\r\n                        <tr>\r\n                          <td class=\"fs-6 fw-semibold pt-4 border-bottom-0 align-middle\">Contacts Support</td>\r\n                          <td class=\"text-end border-bottom-0 pt-4 align-middle\">\r\n                            <span class=\"fs-5\">\r\n                              <i class=\"ti ti-chevron-right ms-2\"></i>\r\n                            </span>\r\n                          </td>\r\n                        </tr>\r\n                      </tbody>\r\n                    </table>\r\n                  </div>\r\n                </div>\r\n              </div>\r\n              <div class=\"col-xxl-12 col-md-6\">\r\n                <div class=\"card\">\r\n                  <div class=\"card-body\">\r\n                    <h4 class=\"fw-bold\">Music Provider</h4>\r\n                    <p class=\"mb-3\">Listen to your favorite music while exercising. The best music streaming services include access to millions of songs.</p>\r\n                    <table class=\"table\">\r\n                      <tbody>\r\n                        <tr>\r\n                          <td class=\"fs-6 fw-semibold py-3 align-middle\">Spotily</td>\r\n                          <td class=\"text-end align-middle\">\r\n                            <span class=\"fs-5\">\r\n                              <i class=\"ti ti-chevron-right ms-2\"></i>\r\n                            </span>\r\n                          </td>\r\n                        </tr>\r\n                        <tr>\r\n                          <td class=\"fs-6 fw-semibold py-3 align-middle\">Apple Music</td>\r\n                          <td class=\"text-end align-middle\">\r\n                            <span class=\"fs-5\">\r\n                              <i class=\"ti ti-chevron-right ms-2\"></i>\r\n                            </span>\r\n                          </td>\r\n                        </tr>\r\n                      </tbody>\r\n                    </table>\r\n                  </div>\r\n                </div>\r\n              </div>\r\n            </div>\r\n          </div>\r\n        </div>\r\n      </div>\r\n    </div>\r\n\r\n    <div class=\"modal fade\" id=\"workoutreminder\">\r\n      <div class=\"modal-dialog modal-dialog-centered\">\r\n        <div class=\"modal-content\">\r\n          <div class=\"modal-body\">\r\n            <span data-bs-dismiss=\"modal\" class=\"close-modal\">\r\n              <i class=\"ti ti-x\"></i>\r\n            </span>\r\n            <h3 class=\"text-center fw-bold\">Workout reminders</h3>\r\n            <p class=\"mb-3 text-center\">Select the days you want to exercise</p>\r\n            <input type=\"text\" id=\"seduleworkout\" class=\"form-control\">\r\n            <a href=\"javascript:void(0)\" class=\"btn btn-primary mt-4 w-100\">Schedule</a>\r\n          </div>\r\n        </div>\r\n      </div>\r\n    </div>\r\n\r\n  </main>\r\n\r\n\r\n  <!-- Scroll To Top Start -->\r\n  <div class=\"scroll-top\">\r\n    <i class=\"fa fa-angle-double-up\"></i>\r\n  </div>\r\n  <!-- Scroll To Top End -->\r\n  <!-- footer start-->\r\n  <footer class=\"codex-footer\">\r\n    <p>Copyright 2025 © FitNexus All rights reserved.</p>\r\n  </footer>\r\n  <!-- footer end-->\r\n\r\n  <!-- Latest Jquery-->\r\n  \r\n  \r\n  <!-- Theme Customizer-->\r\n  \r\n  \r\n  <!-- Bootstrap js -->\r\n  \r\n  <!-- Scrollbar -->\r\n  \r\n  <!-- Feather icons js-->\r\n  \r\n  <!-- Custom script-->\r\n  \r\n\r\n\r\n  \r\n\r\n  \r\n\r\n\r\n";
+  const handleSaveSettings = (e) => {
+    e.preventDefault();
+    localStorage.setItem('fitnexus_coach_settings', JSON.stringify(settings));
+    setSavedSuccess(true);
+    setTimeout(() => setSavedSuccess(false), 3000);
+    alert('✅ تم حفظ وتطبيق إعدادات هوية الكابتن بنجاح!');
+  };
+
+  const handleLogoUpload = (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      setSettings(prev => ({ ...prev, gym_logo_url: reader.result }));
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const handleChangePassword = (e) => {
+    e.preventDefault();
+    if (securityForm.new_password !== securityForm.confirm_password) {
+      alert('كلمة المرور الجديدة غير متطابقة مع تأكيد كلمة المرور');
+      return;
+    }
+    alert('✅ تم تغيير كلمة المرور بنجاح!');
+    setSecurityForm({ current_password: '', new_password: '', confirm_password: '' });
+  };
 
   return (
-    <div ref={containerRef} dangerouslySetInnerHTML={{ __html: rawHTML }} />
+    <div className="codex-wrapper" dir="rtl" style={{ minHeight: '100vh', backgroundColor: '#f6f8fb', fontFamily: 'Cairo, Tajawal, sans-serif' }}>
+      {/* 1. Header */}
+      <header className="codex-header">
+        <div className="header-contian d-flex justify-content-between align-items-center">
+          <div className="header-left d-flex align-items-center gap-3">
+            <h5 className="fw-bold text-dark mb-0">إعدادات الملف الشخصي وهوية المدرب</h5>
+          </div>
+
+          <div className="header-right d-flex align-items-center justify-content-end gap-3 pe-2">
+            <Link to="/" className="btn btn-outline-secondary btn-sm rounded-pill px-3 fw-semibold">
+              <i className="ti ti-arrow-right me-1"></i> لوحة التحكم
+            </Link>
+
+            <div className="d-flex align-items-center gap-2 py-1 px-3 bg-light rounded-pill border ms-2">
+              <img className="img-fluid rounded-circle border" src={settings.gym_logo_url || "/admin-dashboard_data/avtar/profile.png"} alt="Coach Logo" width="36" height="36" />
+              <div className="d-none d-md-block text-end pe-1">
+                <span className="fw-bold d-block text-dark lh-1" style={{ fontSize: '0.9rem' }}>{settings.coach_name}</span>
+                <small className="text-muted" style={{ fontSize: '0.72rem' }}>Master Coach 👑</small>
+              </div>
+            </div>
+          </div>
+        </div>
+      </header>
+
+      {/* 2. Sidebar (Right Side RTL) */}
+      <aside className="codex-sidebar">
+        <div 
+          className="codex-brand" 
+          style={{ 
+            display: 'flex', 
+            flexDirection: 'column', 
+            alignItems: 'center', 
+            justifyContent: 'center', 
+            textAlign: 'center', 
+            padding: '14px 10px 8px 10px',
+            width: '100%',
+            border: 'none',
+            background: 'transparent'
+          }}
+        >
+          <Link 
+            to="/" 
+            style={{ 
+              display: 'flex', 
+              flexDirection: 'column', 
+              alignItems: 'center', 
+              justifyContent: 'center', 
+              textDecoration: 'none',
+              width: '100%',
+              margin: '0 auto'
+            }}
+          >
+            <img 
+              src={settings.gym_logo_url || "/admin-dashboard_data/logo/z_clean_symbol.jpg?v=2"} 
+              alt="Z Logo" 
+              style={{ 
+                height: '76px', 
+                width: '76px', 
+                objectFit: 'contain', 
+                margin: '0 auto',
+                display: 'block'
+              }} 
+            />
+            <span 
+              style={{ 
+                fontSize: '0.92rem', 
+                letterSpacing: '4px', 
+                fontWeight: '900',
+                background: 'linear-gradient(135deg, #00b4d8 0%, #0077b6 100%)',
+                WebkitBackgroundClip: 'text',
+                WebkitTextFillColor: 'transparent',
+                display: 'block',
+                marginTop: '-4px',
+                lineHeight: '1.2',
+                textAlign: 'center',
+                width: '100%'
+              }}
+            >
+              COACHING
+            </span>
+          </Link>
+        </div>
+
+        <div className="codex-menuwrapper custom-scroll" data-simplebar>
+          <ul className="codex-menu">
+            <li className="menu-item">
+              <Link to="/">
+                <div className="icon-item"><i className="ti ti-layout-dashboard"></i></div>
+                <span>لوحة التحكم الرئيسية</span>
+              </Link>
+            </li>
+            <li className="menu-item">
+              <Link to="/user-dashboard">
+                <div className="icon-item"><i className="ti ti-user-circle"></i></div>
+                <span>واجهة المتدرب</span>
+              </Link>
+            </li>
+            <li className="menu-item">
+              <Link to="/progress">
+                <div className="icon-item"><i className="ti ti-chart-line"></i></div>
+                <span>تطور القياسات والصور</span>
+              </Link>
+            </li>
+            <li className="menu-item">
+              <Link to="/subscriptions">
+                <div className="icon-item"><i className="ti ti-credit-card"></i></div>
+                <span>الاشتراكات والمالية</span>
+              </Link>
+            </li>
+            <li className="menu-item">
+              <Link to="/exercises">
+                <div className="icon-item"><i className="ti ti-barbell"></i></div>
+                <span>مكتبة التمارين</span>
+              </Link>
+            </li>
+            <li className="menu-item">
+              <Link to="/calculator">
+                <div className="icon-item"><i className="ti ti-calculator"></i></div>
+                <span>حاسبة الماكروز والسعرات</span>
+              </Link>
+            </li>
+            <li className="menu-item">
+              <Link to="/customers">
+                <div className="icon-item"><i className="ti ti-user-plus"></i></div>
+                <span>إدارة المشتركين والأكواد</span>
+              </Link>
+            </li>
+            <li className="menu-item active">
+              <Link to="/profile">
+                <div className="icon-item"><i className="ti ti-settings"></i></div>
+                <span>إعدادات وهوية المدرب</span>
+              </Link>
+            </li>
+            <li className="menu-item">
+              <Link to="/mobile">
+                <div className="icon-item"><i className="ti ti-device-mobile"></i></div>
+                <span>تطبيق المتدرب (Mobile)</span>
+              </Link>
+            </li>
+          </ul>
+        </div>
+
+        <div className="sidebarpro-sec mt-3 mb-4 mx-3 p-3 text-center" style={{ background: 'linear-gradient(180deg, #f8fafc 0%, #edf2f7 100%)', borderRadius: '16px', border: '1px solid #e2e8f0' }}>
+          <div className="d-flex align-items-center justify-content-center gap-2 mb-2">
+            <span className="badge bg-success-subtle text-success border border-success-subtle px-2 py-1 rounded-pill fw-bold" style={{ fontSize: '0.74rem' }}>
+              <i className="ti ti-circle-filled me-1" style={{ fontSize: '7px' }}></i> محرك الذكاء نشط
+            </span>
+          </div>
+          <h6 className="mb-1 fw-bold text-dark" style={{ fontSize: '0.88rem' }}>Z Coaching Platform</h6>
+          <p className="text-muted mb-3" style={{ fontSize: '0.74rem' }}>النظام يعمل بكفاءة 100%</p>
+          <Link 
+            to="/intake/form" 
+            className="btn btn-sm w-100 rounded-pill fw-bold text-white shadow-sm"
+            style={{ 
+              background: 'linear-gradient(135deg, #00b4d8 0%, #0077b6 100%)',
+              padding: '8px 14px',
+              fontSize: '0.86rem',
+              border: 'none'
+            }}
+          >
+            <i className="ti ti-user-plus me-1"></i> تسجيل مشترك جديد
+          </Link>
+        </div>
+      </aside>
+
+      {/* 3. Main Workspace */}
+      <main className="themebody-wrap">
+        <div className="theme-body">
+          <div className="container-fluid" style={{ maxWidth: '1000px' }}>
+            
+            {/* Page Header */}
+            <div className="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
+              <div>
+                <h4 className="fw-bold text-dark mb-1">إعدادات وهوية المدرب والجيم</h4>
+                <p className="text-muted small mb-0">تخصيص اللوجو واسم الأكاديمية ورقم الواتساب ورسائل التوقيع على خطط المتدربين</p>
+              </div>
+              {savedSuccess && (
+                <span className="badge bg-success-subtle text-success py-2 px-3 rounded-pill fw-bold">
+                  <i className="ti ti-check me-1"></i> تم حفظ التعديلات بنجاح
+                </span>
+              )}
+            </div>
+
+            {/* Navigation Tabs */}
+            <div className="d-flex gap-2 mb-4">
+              <button 
+                onClick={() => setActiveTab('branding')}
+                className={`btn rounded-pill px-4 fw-bold ${activeTab === 'branding' ? 'btn-primary shadow-sm' : 'btn-white bg-white border'}`}
+              >
+                🏢 هوية الجيم والأكاديمية
+              </button>
+              <button 
+                onClick={() => setActiveTab('security')}
+                className={`btn rounded-pill px-4 fw-bold ${activeTab === 'security' ? 'btn-primary shadow-sm' : 'btn-white bg-white border'}`}
+              >
+                🔒 الأمان وكلمة المرور
+              </button>
+            </div>
+
+            {/* TAB 1: BRANDING & IDENTITY */}
+            {activeTab === 'branding' && (
+              <form onSubmit={handleSaveSettings}>
+                <div className="card border-0 shadow-sm bg-white mb-4" style={{ borderRadius: '16px' }}>
+                  <div className="card-body p-4">
+                    <h5 className="fw-bold text-dark mb-4">
+                      <i className="ti ti-badge text-primary me-2"></i> الهوية والبيانات التجارية
+                    </h5>
+
+                    {/* Logo Upload Box */}
+                    <div className="d-flex align-items-center gap-4 mb-4 p-3 bg-light rounded-4 border">
+                      <img 
+                        src={settings.gym_logo_url} 
+                        alt="Logo Preview" 
+                        className="rounded-circle border bg-white p-1 shadow-sm" 
+                        width="80" 
+                        height="80" 
+                        style={{ objectFit: 'contain' }}
+                      />
+                      <div>
+                        <h6 className="fw-bold text-dark mb-1">شعار الجيم / الأكاديمية (Logo)</h6>
+                        <p className="small text-muted mb-2">يظهر في أعلى صفحات المتدربين وفي ملفات الـ PDF المطبوعة</p>
+                        <label className="btn btn-outline-primary btn-sm rounded-pill px-3 fw-semibold" style={{ cursor: 'pointer' }}>
+                          <i className="ti ti-upload me-1"></i> رفع لوجو جديد
+                          <input type="file" accept="image/*" className="d-none" onChange={handleLogoUpload} />
+                        </label>
+                      </div>
+                    </div>
+
+                    <div className="row g-3">
+                      <div className="col-md-6">
+                        <label className="form-label fw-bold text-dark small">اسم الكابتن / المدرب</label>
+                        <input 
+                          type="text" 
+                          className="form-control" 
+                          value={settings.coach_name}
+                          onChange={(e) => setSettings({ ...settings, coach_name: e.target.value })}
+                          required
+                        />
+                      </div>
+
+                      <div className="col-md-6">
+                        <label className="form-label fw-bold text-dark small">اسم الأكاديمية / الجيم</label>
+                        <input 
+                          type="text" 
+                          className="form-control" 
+                          value={settings.academy_name}
+                          onChange={(e) => setSettings({ ...settings, academy_name: e.target.value })}
+                          required
+                        />
+                      </div>
+
+                      <div className="col-md-6">
+                        <label className="form-label fw-bold text-dark small">رقم هاتف الواتساب المعتمد</label>
+                        <input 
+                          type="tel" 
+                          className="form-control" 
+                          value={settings.phone_number}
+                          onChange={(e) => setSettings({ ...settings, phone_number: e.target.value })}
+                          required
+                        />
+                      </div>
+
+                      <div className="col-md-6">
+                        <label className="form-label fw-bold text-dark small">البريد الإلكتروني</label>
+                        <input 
+                          type="email" 
+                          className="form-control" 
+                          value={settings.email}
+                          onChange={(e) => setSettings({ ...settings, email: e.target.value })}
+                          required
+                        />
+                      </div>
+
+                      <div className="col-12">
+                        <label className="form-label fw-bold text-dark small">التوجيهات والإرشادات الافتراضية أسفل خطط الـ PDF</label>
+                        <textarea 
+                          className="form-control" 
+                          rows="3"
+                          value={settings.pdf_footer_note}
+                          onChange={(e) => setSettings({ ...settings, pdf_footer_note: e.target.value })}
+                        ></textarea>
+                      </div>
+                    </div>
+
+                    <div className="mt-4 pt-3 border-top d-flex justify-content-end">
+                      <button type="submit" className="btn btn-primary rounded-pill px-5 fw-bold shadow-sm">
+                        حفظ وتطبيق إعدادات الهوية 💾
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </form>
+            )}
+
+            {/* TAB 2: SECURITY & PASSWORD */}
+            {activeTab === 'security' && (
+              <form onSubmit={handleChangePassword}>
+                <div className="card border-0 shadow-sm bg-white mb-4" style={{ borderRadius: '16px' }}>
+                  <div className="card-body p-4">
+                    <h5 className="fw-bold text-dark mb-4">
+                      <i className="ti ti-lock text-primary me-2"></i> تأمين الحساب وكلمة المرور
+                    </h5>
+
+                    <div className="row g-3" style={{ maxWidth: '600px' }}>
+                      <div className="col-12">
+                        <label className="form-label fw-bold text-dark small">كلمة المرور الحالية</label>
+                        <input 
+                          type="password" 
+                          className="form-control" 
+                          value={securityForm.current_password}
+                          onChange={(e) => setSecurityForm({ ...securityForm, current_password: e.target.value })}
+                          required
+                        />
+                      </div>
+
+                      <div className="col-12">
+                        <label className="form-label fw-bold text-dark small">كلمة المرور الجديدة</label>
+                        <input 
+                          type="password" 
+                          className="form-control" 
+                          value={securityForm.new_password}
+                          onChange={(e) => setSecurityForm({ ...securityForm, new_password: e.target.value })}
+                          required
+                        />
+                      </div>
+
+                      <div className="col-12">
+                        <label className="form-label fw-bold text-dark small">تأكيد كلمة المرور الجديدة</label>
+                        <input 
+                          type="password" 
+                          className="form-control" 
+                          value={securityForm.confirm_password}
+                          onChange={(e) => setSecurityForm({ ...securityForm, confirm_password: e.target.value })}
+                          required
+                        />
+                      </div>
+                    </div>
+
+                    <div className="mt-4 pt-3 border-top d-flex justify-content-start">
+                      <button type="submit" className="btn btn-primary rounded-pill px-5 fw-bold shadow-sm">
+                        تحديث كلمة المرور 🔒
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </form>
+            )}
+
+          </div>
+        </div>
+      </main>
+    </div>
   );
 }

@@ -12,6 +12,13 @@ import ClientOnboarding from './pages/ClientOnboarding';
 import ClientLogin from './pages/ClientLogin';
 import FullIntakeForm from './pages/FullIntakeForm';
 import Customers from './pages/Customers';
+import ClientProgramView from './pages/ClientProgramView';
+import CoachEditor from './pages/CoachEditor';
+import MobileAppSimulator from './pages/MobileAppSimulator';
+import ProgramPdfView from './pages/ProgramPdfView';
+import Subscriptions from './pages/Subscriptions';
+import ExerciseLibrary from './pages/ExerciseLibrary';
+import MacroCalculator from './pages/MacroCalculator';
 
 function App() {
   return (
@@ -23,8 +30,12 @@ function App() {
           <Route path="/index.html" element={<Navigate to="/index" />} />
           <Route path="/user-dashboard" element={<UserDashboardClone />} />
           <Route path="/user-dashboard.html" element={<Navigate to="/user-dashboard" />} />
+          <Route path="/program" element={<ClientProgramView />} />
           <Route path="/progress" element={<ProgressClone />} />
           <Route path="/progress.html" element={<Navigate to="/progress" />} />
+          <Route path="/subscriptions" element={<Subscriptions />} />
+          <Route path="/exercises" element={<ExerciseLibrary />} />
+          <Route path="/calculator" element={<MacroCalculator />} />
           <Route path="/profile" element={<ProfileClone />} />
           <Route path="/profile.html" element={<Navigate to="/profile" />} />
           <Route path="/test-engine" element={<EngineTester />} />
@@ -32,6 +43,9 @@ function App() {
           <Route path="/intake" element={<ClientLogin />} />
           <Route path="/intake/form" element={<FullIntakeForm />} />
           <Route path="/customers" element={<Customers />} />
+          <Route path="/coach/editor" element={<CoachEditor />} />
+          <Route path="/mobile" element={<MobileAppSimulator />} />
+          <Route path="/pdf" element={<ProgramPdfView />} />
           <Route path="*" element={<Navigate to="/" />} />
         </Routes>
       </Router>

@@ -5,71 +5,85 @@ import '../onboarding.css';
 export default function ClientLogin() {
   const [clientCode, setClientCode] = useState('');
   const [phoneNumber, setPhoneNumber] = useState('');
+  const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
-  const handleLogin = (e) => {
+  const handleLogin = async (e) => {
     e.preventDefault();
     if (!clientCode || !phoneNumber) return;
-    
-    // Validate against created clients
-    const savedClients = localStorage.getItem('z_clients');
-    if (savedClients) {
-      try {
-        const clients = JSON.parse(savedClients);
-        const exists = clients.find(c => c.code === clientCode && c.phone === phoneNumber);
-        if (!exists) {
-          alert('بيانات الدخول غير صحيحة. يرجى التأكد من كود العميل ورقم الهاتف أو إنشاء حساب جديد من لوحة العملاء.');
-          return;
-        }
-      } catch (e) {}
-    } else {
-      alert('لا يوجد أي عملاء مسجلين في النظام. يرجى إنشاء عميل أولاً من صفحة العملاء.');
-      return;
-    }
 
-    // Store credentials in session or local to maintain session
-    sessionStorage.setItem('z_client_code', clientCode);
-    sessionStorage.setItem('z_client_phone', phoneNumber);
-    
-    // Navigate to the form
-    navigate('/intake/form');
+    try {
+      setLoading(true);
+      const res = await fetch('http://localhost:3000/api/v1/auth/login-fast', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          client_code: clientCode.trim(),
+          phone_number: phoneNumber.trim()
+        })
+      });
+
+      const data = await res.json();
+      if (!res.ok) {
+        throw new Error(data.error || 'بيانات الدخول غير صحيحة. يرجى التأكد من كود المشترك ورقم الهاتف.');
+      }
+
+      sessionStorage.setItem('z_client_code', data.user.client_code);
+      sessionStorage.setItem('z_client_phone', data.user.phone_number);
+      sessionStorage.setItem('z_client_id', data.user.id);
+      sessionStorage.setItem('z_active_client_name', data.user.full_name || '');
+
+      navigate('/intake/form');
+    } catch (err) {
+      alert(err.message);
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
-    <div className="onboarding-layout" dir="rtl">
-      <div className="onboarding-container" style={{ maxWidth: '450px', padding: '2rem' }}>
+    <div className="onboarding-layout" dir="rtl" style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', backgroundColor: '#f8fafc', fontFamily: 'Cairo, Tajawal, sans-serif' }}>
+      <div className="onboarding-container shadow-sm bg-white p-4" style={{ maxWidth: '440px', width: '100%', borderRadius: '20px', border: '1px solid #e2e8f0' }}>
         <div style={{ textAlign: 'center', marginBottom: '2rem' }}>
-          <h2 style={{ color: '#1e293b', fontWeight: 'bold' }}>أهلاً بك في Z-Coaching</h2>
-          <p style={{ color: '#64748b', fontSize: '0.9rem' }}>أدخل بياناتك للبدء أو لاستكمال خطتك</p>
+          <div style={{ width: '60px', height: '60px', borderRadius: '50%', backgroundColor: '#e0f2fe', color: '#00b4d8', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 1rem', fontSize: '1.8rem' }}>
+            <i className="bi bi-person-badge"></i>
+          </div>
+          <h3 style={{ color: '#0f172a', fontWeight: 'bold' }}>دخول المتدرب</h3>
+          <p style={{ color: '#64748b', fontSize: '0.9rem', marginBottom: 0 }}>أدخل كود المشترك ورقم هاتفك للبدء في استمارة خطتك</p>
         </div>
 
         <form onSubmit={handleLogin}>
-          <div className="form-group">
-            <label className="form-label">كود العميل</label>
+          <div className="form-group mb-3">
+            <label className="form-label fw-bold text-dark">كود المشترك</label>
             <input 
               type="text" 
-              className="form-control" 
-              placeholder="مثال: 1"
+              className="form-control form-control-lg" 
+              placeholder="مثال: 2"
               value={clientCode}
               onChange={(e) => setClientCode(e.target.value)}
               required 
             />
           </div>
 
-          <div className="form-group">
-            <label className="form-label">رقم الهاتف</label>
+          <div className="form-group mb-4">
+            <label className="form-label fw-bold text-dark">رقم الهاتف</label>
             <input 
               type="tel" 
-              className="form-control" 
-              placeholder="رقم الموبايل المسجل"
+              className="form-control form-control-lg" 
+              placeholder="012xxxxxxxx"
               value={phoneNumber}
               onChange={(e) => setPhoneNumber(e.target.value)}
               required 
             />
           </div>
 
-          <button type="submit" className="btn btn-primary" style={{ width: '100%', marginTop: '1rem', padding: '1rem' }}>
-            دخول الدورة التدريبية
+          <button 
+            type="submit" 
+            className="btn btn-primary btn-lg w-100 rounded-pill fw-bold" 
+            disabled={loading}
+            style={{ padding: '0.85rem' }}
+          >
+            {loading ? 'جاري التحقق...' : 'دخول وملء استمارة الـ Intake 🚀'}
           </button>
         </form>
       </div>
