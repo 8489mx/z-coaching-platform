@@ -9,8 +9,8 @@ import { MobilityModalityType, MobilityModalityRequirementsStatus } from "../src
 
 test("buildMobilityModalityRequirements includes foam rolling and resistance bands when equipment is available", () => {
   const equipment = [
-    { equipmentCode: EquipmentCode.FOAM_ROLLER, loadCapacity: EquipmentLoadCapacity.NOT_APPLICABLE },
-    { equipmentCode: EquipmentCode.RESISTANCE_BANDS, loadCapacity: EquipmentLoadCapacity.LIGHT }
+    { equipmentCode: EquipmentCode.FOAM_ROLLER, otherEquipmentText: null, loadCapacity: EquipmentLoadCapacity.LIGHT },
+    { equipmentCode: EquipmentCode.RESISTANCE_BANDS, otherEquipmentText: null, loadCapacity: EquipmentLoadCapacity.LIGHT }
   ];
   const intake = completeIntake({
     training: { equipment }

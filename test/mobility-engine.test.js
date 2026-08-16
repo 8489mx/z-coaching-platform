@@ -1,34 +1,17 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 
+import { completeIntake } from "./fixtures/complete-intake.js";
 import { evaluateIntake } from "../src/intake-decision-engine/index.js";
 import { buildMobilityEngine } from "../src/mobility-engine/index.js";
 import { MobilityApprovalState } from "../src/mobility-plan-preflight/domain/enums.js";
 import { MobilityStrategy } from "../src/intake-decision-engine/domain/enums.js";
 
-const VALID_MINIMAL_PROFILE = Object.freeze({
-  age_years: 30,
-  sex: "MALE",
-  biological_sex: "MALE",
-  bmi: 22,
-  activity_level: "SEDENTARY",
-  sleep_quality: "GOOD",
-  primary_goal: "MUSCLE_GAIN",
-  training_experience: "INTERMEDIATE",
-  preferred_session_duration: 60,
-  available_days_per_week: 3,
-  available_equipment: ["DUMBBELLS"],
-  available_cardio_equipment: [],
-  medical_conditions: [],
-  movement_restrictions: [],
-  injuries: [],
-  dietary_preference: "OMNIVORE",
-  budget_level: "MEDIUM"
-});
+const VALID_MINIMAL_PROFILE = completeIntake();
 
 test("Mobility Engine Pipeline Tests", async (t) => {
   await t.test("It generates a full APPROVED pipeline for a healthy client", () => {
-    const intakeDecision = evaluateIntake(VALID_MINIMAL_PROFILE);
+    const intakeDecision = evaluateIntake(VALID_MINIMAL_PROFILE, { assessmentDate: "2026-07-29" });
     const weeklyTrainingSchedule = {
       schedule_mode: "FIXED_DAYS",
       sessions: [
@@ -51,12 +34,24 @@ test("Mobility Engine Pipeline Tests", async (t) => {
   });
 
   await t.test("It blocks pipeline and returns PROVISIONAL_REVIEW_REQUIRED for an injured client", () => {
-    const injuredProfile = { ...VALID_MINIMAL_PROFILE, injuries: ["LOWER_BACK"] };
-    const intakeDecision = evaluateIntake(injuredProfile);
+    const injuredProfile = completeIntake({
+      training: {
+        injuries: [{
+          area: "LOWER_BACK",
+          painLevel: 4,
+          movementImpact: "LIMITS",
+          worsening: false,
+          numbnessOrWeakness: false,
+          affectedMovements: [],
+          medicalRestrictions: []
+        }]
+      }
+    });
+    const intakeDecision = evaluateIntake(injuredProfile, { assessmentDate: "2026-07-29" });
     const weeklyTrainingSchedule = {
-      scheduled_days: [
-        { day_of_week: "MONDAY", sequence: null, has_primary_training: true },
-        { day_of_week: "TUESDAY", sequence: null, has_primary_training: false }
+      schedule_mode: "FIXED_DAYS",
+      sessions: [
+        { scheduled_day: "MONDAY", sequence: null },
       ]
     };
 

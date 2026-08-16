@@ -34,7 +34,15 @@ test("buildMobilityPrescription requires coach review if client has an injury", 
   const intake = completeIntake({
     training: { 
       equipment, 
-      injuries: [{ type: "SPRAIN", bodyPart: "KNEE", side: "LEFT", limitation: "Cannot fully bend" }],
+      injuries: [{
+        area: "KNEE",
+        painLevel: 4,
+        movementImpact: "LIMITS",
+        worsening: false,
+        numbnessOrWeakness: false,
+        affectedMovements: [],
+        medicalRestrictions: []
+      }],
       medicalMovementRestrictions: []
     }
   });
