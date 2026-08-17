@@ -24,7 +24,15 @@ export default function ExerciseVideoModal({ exercise, onClose }) {
               <h6 className="modal-title fw-bold text-dark mb-0">{exercise.name_ar}</h6>
               <small className="text-muted">{exercise.name_en}</small>
             </div>
-            <button type="button" className="btn-close" onClick={onClose}></button>
+            <button 
+              type="button" 
+              onClick={onClose} 
+              className="btn btn-sm btn-light rounded-circle d-flex align-items-center justify-content-center flex-shrink-0" 
+              style={{ width: '32px', height: '32px', background: '#ffffff', border: '1px solid #e2e8f0', color: '#64748b' }}
+              title="إغلاق"
+            >
+              <i className="ti ti-x fs-6"></i>
+            </button>
           </div>
           <div className="modal-body p-0 bg-black">
             <div className="ratio ratio-16x9">

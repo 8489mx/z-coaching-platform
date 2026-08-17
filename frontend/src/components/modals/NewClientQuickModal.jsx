@@ -203,28 +203,28 @@ export default function NewClientQuickModal({ isOpen, onClose, onClientCreated }
                 <div className="d-flex gap-2 justify-content-between align-items-center pt-2 border-top" style={{ borderColor: '#f1f5f9' }}>
                   <button 
                     type="button" 
-                    className="btn btn-light rounded-pill px-4 fw-semibold" 
-                    style={{ height: '40px', fontSize: '0.82rem', border: '1px solid #e2e8f0', color: '#475569' }}
+                    className="btn btn-sm btn-light rounded-pill px-3 fw-semibold border" 
+                    style={{ height: '36px', fontSize: '0.8rem', color: '#475569' }}
                     onClick={handleClose}
                   >
                     إلغاء
                   </button>
                   <button 
                     type="submit" 
-                    className="btn btn-primary rounded-pill px-4 fw-bold shadow-sm d-flex align-items-center gap-2 text-white"
+                    className="btn btn-sm rounded-pill px-4 fw-bold shadow-sm d-flex align-items-center gap-2 text-white"
                     disabled={loading || !phone.trim()}
                     style={{ 
-                      height: '40px', 
-                      fontSize: '0.84rem', 
-                      background: 'linear-gradient(135deg, #372896 0%, #261c6a 100%)', 
+                      height: '36px', 
+                      fontSize: '0.82rem', 
+                      background: 'linear-gradient(135deg, #261c6a 0%, #4338ca 100%)', 
                       border: 'none', 
-                      boxShadow: '0 4px 14px rgba(38, 28, 106, 0.28)' 
+                      boxShadow: '0 2px 10px rgba(38, 28, 106, 0.22)' 
                     }}
                   >
                     {loading ? (
                       <><span className="spinner-border spinner-border-sm"></span> جاري التوليد...</>
                     ) : (
-                      <><i className="ti ti-sparkles fs-6"></i> توليد الكود ورابط الاستمارة</>
+                      <><i className="ti ti-sparkles fs-6"></i> إنشاء العميل</>
                     )}
                   </button>
                 </div>

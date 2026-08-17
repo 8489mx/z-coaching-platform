@@ -151,8 +151,8 @@ ${baseUrl}/user-dashboard?user_id=${clientCode}`
               className="btn btn-success btn-sm rounded-pill px-4 fw-bold d-flex align-items-center gap-2 shadow-sm text-white"
               style={{ height: '36px', fontSize: '0.82rem' }}
             >
-              <i className="ti ti-brand-whatsapp fs-5"></i>
-              <span>فتح وإرسال عبر WhatsApp</span>
+              <i className="ti ti-brand-whatsapp fs-6"></i>
+              <span>إرسال واتساب</span>
             </button>
           </div>
         </div>

@@ -170,9 +170,9 @@ export default function ApproveCheckinModal({
               disabled={approving}
               onClick={onApprove}
               className="btn btn-sm rounded-pill px-4 fw-bold shadow-sm text-white"
-              style={{ height: '36px', background: '#261c6a', border: 'none', boxShadow: '0 3px 10px rgba(38, 28, 106, 0.28)' }}
+              style={{ height: '36px', background: 'linear-gradient(135deg, #261c6a 0%, #4338ca 100%)', border: 'none', boxShadow: '0 2px 10px rgba(38, 28, 106, 0.22)', fontSize: '0.82rem' }}
             >
-              {approving ? 'جاري الاعتماد...' : 'اعتماد التكيف وتحديث الخطة'}
+              {approving ? 'جاري الاعتماد...' : 'اعتماد المتابعة'}
             </button>
           </div>
         </div>

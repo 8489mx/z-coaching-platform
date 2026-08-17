@@ -265,7 +265,7 @@ export default function CheckinModal({
                 </div>
               </div>
 
-              {/* Footer Actions */}
+              {/* Footer Actions (Compact & Refined) */}
               <div 
                 className="d-flex justify-content-between align-items-center pt-3" 
                 style={{ 
@@ -274,8 +274,8 @@ export default function CheckinModal({
               >
                 <button 
                   type="button" 
-                  className="btn btn-light rounded-pill px-4 fw-bold" 
-                  style={{ height: '42px', fontSize: '0.84rem', border: '1px solid #cbd5e1', color: '#334155' }}
+                  className="btn btn-sm btn-light rounded-pill px-3 fw-semibold transition-all" 
+                  style={{ height: '36px', fontSize: '0.8rem', border: '1px solid #cbd5e1', color: '#475569' }}
                   onClick={onClose}
                 >
                   إلغاء
@@ -284,19 +284,19 @@ export default function CheckinModal({
                 <button 
                   type="submit" 
                   disabled={loading} 
-                  className="btn rounded-pill px-4 fw-bold shadow-md d-flex align-items-center gap-2 text-white"
+                  className="btn btn-sm rounded-pill px-4 fw-bold shadow-sm d-flex align-items-center gap-2 text-white transition-all"
                   style={{ 
-                    height: '42px', 
-                    fontSize: '0.86rem', 
+                    height: '36px', 
+                    fontSize: '0.82rem', 
                     background: 'linear-gradient(135deg, #261c6a 0%, #4338ca 100%)', 
                     border: 'none', 
-                    boxShadow: '0 4px 15px rgba(38, 28, 106, 0.3)' 
+                    boxShadow: '0 2px 10px rgba(38, 28, 106, 0.22)' 
                   }}
                 >
                   {loading ? (
-                    <><span className="spinner-border spinner-border-sm"></span> جاري التحليل والتكيّف...</>
+                    <><span className="spinner-border spinner-border-sm"></span> جاري التحليل...</>
                   ) : (
-                    <><i className="ti ti-send fs-6"></i> إرسال تقرير المتابعة للكابتن</>
+                    <><i className="ti ti-send fs-6"></i> إرسال المتابعة</>
                   )}
                 </button>
               </div>
