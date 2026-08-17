@@ -187,7 +187,7 @@ export default function UserDashboardSidebar({ targetUserId, onOpenCheckin }) {
                         </button>
                       ) : (
                         <a 
-                          href={item.href}
+                          href={location.pathname.startsWith('/user-dashboard') || location.pathname === '/user' ? item.href : `/user-dashboard?user_id=${targetUserId}${item.href}`}
                           className="golden-sidebar-item d-flex align-items-center justify-content-between px-3 py-2 rounded-3 text-decoration-none transition-all"
                           style={{
                             fontSize: '0.82rem',

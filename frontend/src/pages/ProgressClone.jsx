@@ -4,6 +4,7 @@ import AdminLayout from '../components/layout/AdminLayout';
 import UserDashboardHeader from '../components/user-dashboard/UserDashboardHeader';
 import UserDashboardSidebar from '../components/user-dashboard/UserDashboardSidebar';
 import UploadPhotoModal from '../components/modals/UploadPhotoModal';
+import CheckinModal from '../components/modals/CheckinModal';
 
 export default function ProgressClone() {
   const [loading, setLoading] = useState(true);
@@ -14,13 +15,22 @@ export default function ProgressClone() {
 
   // Photo Upload Modal State
   const [uploadModalOpen, setUploadModalOpen] = useState(false);
-  const [uploadForm, setUploadForm] = useState({
-    week_number: 1,
-    pose: 'FRONT',
-    photo_url: '',
-    notes: ''
+  const [checkinModalOpen, setCheckinModalOpen] = useState(false);
+  const [checkinLoading, setCheckinLoading] = useState(false);
+  const [checkinResult, setCheckinResult] = useState(null);
+  const [checkinForm, setCheckinForm] = useState({
+    weightDay1: 85.0,
+    weightDay2: 84.8,
+    weightDay3: 84.7,
+    weightDay4: 84.5,
+    weightDay5: 84.4,
+    weightDay6: 84.3,
+    weightDay7: 84.2,
+    waistCm: 88.5,
+    nutritionAdherence: 95,
+    hungerLevel: 2,
+    rotateMeals: true
   });
-  const [uploading, setUploading] = useState(false);
   const [sliderPos, setSliderPos] = useState(50);
 
   const searchParams = new URLSearchParams(window.location.search);
@@ -426,12 +436,51 @@ export default function ProgressClone() {
       </div>
   );
 
+  const handleCheckinSubmit = async (e) => {
+    e.preventDefault();
+    try {
+      setCheckinLoading(true);
+      const res = await fetch(`${API_BASE}/api/v1/programs/checkin`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          client_code: targetUserId,
+          week_number: checkins.length + 1,
+          weights: [
+            Number(checkinForm.weightDay1) || 85.0,
+            Number(checkinForm.weightDay2) || 84.8,
+            Number(checkinForm.weightDay3) || 84.7,
+            Number(checkinForm.weightDay4) || 84.5,
+            Number(checkinForm.weightDay5) || 84.4,
+            Number(checkinForm.weightDay6) || 84.3,
+            Number(checkinForm.weightDay7) || 84.2,
+          ],
+          waist_cm: Number(checkinForm.waistCm) || 88.5,
+          nutrition_adherence_percent: Number(checkinForm.nutritionAdherence) || 95,
+          hunger_level: Number(checkinForm.hungerLevel) || 2,
+          rotate_meals: checkinForm.rotateMeals
+        })
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'فشل إرسال المتابعة');
+      
+      setCheckinResult(data);
+      alert('تم إرسال المتابعة الأسبوعية بنجاح إلى الكابتن!');
+      setCheckinModalOpen(false);
+      fetchProgressData(targetUserId);
+    } catch (err) {
+      alert('خطأ: ' + err.message);
+    } finally {
+      setCheckinLoading(false);
+    }
+  };
+
   return (
     <>
       {isClientView ? (
         <div className="codex-wrapper" dir="rtl" style={{ minHeight: "100vh", backgroundColor: "#f6f8fb", fontFamily: "Cairo, Tajawal, sans-serif" }}>
           <UserDashboardHeader currentUser={user} targetUserId={targetUserId} clients={clients} />
-          <UserDashboardSidebar targetUserId={targetUserId} onOpenCheckin={() => {}} />
+          <UserDashboardSidebar targetUserId={targetUserId} onOpenCheckin={() => setCheckinModalOpen(true)} />
           <main className="themebody-wrap">
             {progressContent}
           </main>
@@ -445,6 +494,7 @@ export default function ProgressClone() {
       {/* Upload Photo Modal */}
       {uploadModalOpen && (
         <UploadPhotoModal 
+          isOpen={uploadModalOpen}
           onClose={() => setUploadModalOpen(false)}
           onSuccess={() => {
             fetchPhotos(targetUserId);
@@ -453,6 +503,17 @@ export default function ProgressClone() {
           targetUserId={targetUserId}
         />
       )}
+
+      {/* Weekly Checkin Modal */}
+      <CheckinModal 
+        isOpen={checkinModalOpen}
+        onClose={() => setCheckinModalOpen(false)}
+        checkinForm={checkinForm}
+        setCheckinForm={setCheckinForm}
+        onSubmit={handleCheckinSubmit}
+        loading={checkinLoading}
+        checkinResult={checkinResult}
+      />
     </>
   );
 }
