@@ -284,7 +284,7 @@ export default function FullIntakeForm() {
           
           <h2 className="fw-bold text-dark mb-2">تم استلام استمارتك بنجاح!</h2>
           <p className="text-muted mb-4" style={{ fontSize: '1.05rem', lineHeight: '1.8' }}>
-            أهلاً بك يا <strong>{submittedSuccess.full_name}</strong>. تم إرسال جميع إجاباتك وبياناتك بنجاح إلى كابتن كيمو.
+            أهلاً بك يا <strong>{submittedSuccess.full_name}</strong>. تم إرسال جميع إجاباتك وبياناتك بنجاح إلى فريق التدريب.
             <br />
             يقوم الكابتن الآن بمراجعة حالتك الصحية والبدنية، وتأكيد اشتراكك، وتصميم خطتك التدريبية والغذائية المخصصة لك بالكامل.
           </p>

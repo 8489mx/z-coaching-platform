@@ -163,9 +163,7 @@ export default function ProgramPdfView() {
   ];
 
   const meals = defaultMeals;
-  const supplements = program?.supplements || DEFAULT_SUPPLEMENTS;
-  const rawGender = (user?.gender || '').toLowerCase();
-  const clientName = user?.full_name || "أحمد سمير";
+  const clientName = user?.full_name || (user?.client_code ? `متدرب #${user.client_code}` : "المتدرب");
   const clientCode = user?.client_code || targetUserId;
   const isFemale = rawGender === 'female' || rawGender === 'f' || rawGender === 'أنثى' || 
                    clientName.includes('سارة') || clientName.includes('مريم') || clientName.includes('نور');
@@ -486,7 +484,7 @@ export default function ProgramPdfView() {
           {/* Footer Page 1 */}
           <div className="d-flex justify-content-between align-items-center pt-2 border-top text-muted" style={{ fontSize: '0.68rem', borderColor: '#f1f5f9' }}>
             <span>منظومة Z Coaching Master Platform — وثيقة رقمية معتمدة (صفحة 1 من 2)</span>
-            <span>اعتماد الخطة: كابتن كيمو المحروقي ✓</span>
+            <span>اعتماد الخطة: كابتن Z Coaching ✓</span>
           </div>
         </div>
 

@@ -112,7 +112,7 @@ export default function NewClientQuickModal({ isOpen, onClose, onClientCreated }
     : '';
 
   const whatsappMessage = newClient
-    ? `مرحباً بك مع كابتن كيمو في منظومة Z Coaching!\n\nيسعدنا بدء رحلتك التدريبية والغذائية معنا.\nيرجى الضغط على الرابط التالي لتعبئة استمارة التقييم الشاملة وسيقوم المحرك الذكي والكابتن بتصميم خطتك المخصصة فوراً:\n\n${intakeLink}\n\nكود اشتراكك: ${newClient.client_code}\nبالتوفيق!`
+    ? `مرحباً بك في منظومة Z Coaching!\n\nيسعدنا بدء رحلتك التدريبية والغذائية معنا.\nيرجى الضغط على الرابط التالي لتعبئة استمارة التقييم الشاملة وسيقوم المحرك الذكي والكابتن بتصميم خطتك المخصصة فوراً:\n\n${intakeLink}\n\nكود اشتراكك: ${newClient.client_code}\nبالتوفيق!`
     : '';
 
   const handleCopyMessage = () => {
@@ -133,24 +133,20 @@ export default function NewClientQuickModal({ isOpen, onClose, onClientCreated }
     <div 
       className="modal fade show d-block" 
       tabIndex="-1" 
-      style={{ backgroundColor: 'rgba(15, 23, 42, 0.65)', backdropFilter: 'blur(6px)', zIndex: 1065 }}
+      style={{ backgroundColor: 'rgba(15, 23, 42, 0.65)', backdropFilter: 'blur(6px)', zIndex: 1060 }}
       onClick={(e) => { if (e.target === e.currentTarget) handleClose(); }}
     >
-      <div className="modal-dialog modal-dialog-centered" style={{ maxWidth: '490px' }}>
+      <div className="modal-dialog modal-dialog-centered" style={{ maxWidth: '480px' }}>
         <div 
-          className="modal-content border-0 shadow-2xl bg-white position-relative" 
-          style={{ 
-            borderRadius: '24px',
-            border: '1px solid #edf2f7',
-            boxShadow: '0 25px 60px -15px rgba(38, 28, 106, 0.22), 0 0 0 1px rgba(0,0,0,0.03)'
-          }} 
+          className="modal-content border-0 shadow-2xl bg-white" 
+          style={{ borderRadius: '24px', overflow: 'hidden' }}
           dir="rtl"
         >
           
           {/* Header */}
           <div className="modal-header border-bottom p-4 bg-white d-flex justify-content-between align-items-center" style={{ borderColor: '#f1f5f9' }}>
             <div className="d-flex align-items-center gap-3">
-              <div className="rounded-circle d-flex align-items-center justify-content-center flex-shrink-0" style={{ width: '42px', height: '42px', background: '#f5f3ff', color: '#261c6a', border: '1.5px solid #ddd6fe' }}>
+              <div className="rounded-circle d-flex align-items-center justify-content-center flex-shrink-0" style={{ width: '40px', height: '40px', background: '#f5f3ff', color: '#261c6a', border: '1.5px solid #ddd6fe' }}>
                 <i className="ti ti-user-plus fs-5"></i>
               </div>
               <div>
@@ -200,7 +196,7 @@ export default function NewClientQuickModal({ isOpen, onClose, onClientCreated }
                         direction: 'ltr',
                         textAlign: 'right'
                       }}
-                      placeholder="01012345678"
+                      placeholder="010XXXXXXXX"
                       value={phone}
                       onChange={(e) => setPhone(e.target.value)}
                       autoFocus
@@ -229,7 +225,7 @@ export default function NewClientQuickModal({ isOpen, onClose, onClientCreated }
                         border: '1.5px solid #e2e8f0',
                         paddingRight: '42px'
                       }}
-                      placeholder="مثال: أحمد سمير"
+                      placeholder="اكتب اسم العميل..."
                       value={fullName}
                       onChange={(e) => setFullName(e.target.value)}
                     />

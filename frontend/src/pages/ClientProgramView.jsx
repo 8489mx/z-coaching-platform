@@ -335,7 +335,7 @@ export default function ClientProgramView() {
 
  <div className="d-flex align-items-center gap-3">
  <div className="text-end">
- <h6 className="mb-0 fw-bold">أحمد سمير</h6>
+ <h6 className="mb-0 fw-bold">{user?.full_name || (user?.client_code ? `متدرب #${user.client_code}` : 'المشترك')}</h6>
  <small className="text-muted">مشترك متدرب</small>
  </div>
  <img className="rounded-circle border" src="/admin-dashboard_data/avtar/profile.png" alt="avatar" width="42" height="42" />

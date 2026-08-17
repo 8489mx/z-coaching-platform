@@ -385,7 +385,7 @@ export default function MobileAppSimulator() {
             </div>
             <div>
               <h6 className="fw-bold text-dark mb-0 lh-1" style={{ fontSize: '0.94rem', letterSpacing: '-0.3px', color: '#1e144f' }}>
-                {user?.full_name || 'كابتن أحمد سمير'}
+                {user?.full_name || 'المشترك'}
               </h6>
               <small className="text-muted" style={{ fontSize: '0.68rem' }}>كود المتدرب: <span className="font-monospace text-dark fw-bold">{user?.client_code || targetUserId}</span></small>
             </div>
@@ -448,7 +448,7 @@ export default function MobileAppSimulator() {
                     <div className="card-body p-3">
                       <div className="d-flex align-items-center justify-content-between mb-1">
                         <h6 className="fw-bold text-dark mb-0" style={{ fontSize: '1rem', letterSpacing: '-0.3px', color: '#1e144f' }}>
-                          مساء الخير يا كابتن {user?.full_name?.split(' ')[0] || 'أحمد'}!
+                          مساء الخير يا كابتن {user?.full_name?.split(' ')[0] || 'المتدرب'}!
                         </h6>
                         <span className="badge rounded-pill fw-bold" style={{ 
                           background: '#ecfdf5', 

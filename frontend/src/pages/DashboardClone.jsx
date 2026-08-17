@@ -135,7 +135,7 @@ export default function DashboardClone() {
                 </span>
               </h4>
               <p className="text-muted small mb-0">
-                مرحباً بك يا كابتن كيمو — ملخص المشتركين والمتابعات لليوم
+                مرحباً بك يا كابتن — ملخص المشتركين والمتابعات لليوم
               </p>
             </div>
             
@@ -408,21 +408,14 @@ export default function DashboardClone() {
                     <div className="d-flex justify-content-between align-items-center mb-2">
                       <h6 className="fw-bold text-dark mb-0 d-flex align-items-center gap-2" style={{ fontSize: '0.9rem' }}>
                         <i className="ti ti-trophy fs-5" style={{ color: '#261c6a' }}></i>
-                        <span>إنجازات قياسية (PRs)</span>
+                        <span>إنجازات وأرقام قياسية (PRs)</span>
                       </h6>
                       <span className="badge bg-light text-secondary border px-2 py-1 rounded-pill small">اليوم</span>
                     </div>
-                    <p className="small text-muted mb-2" style={{ fontSize: '0.82rem', lineHeight: '1.5' }}>
-                      <strong>أحمد سمير</strong> حقق رقماً قياسياً جديداً في <strong>السكوات (110 كجم × 8 عدات)</strong>!
-                    </p>
-                    <button 
-                      type="button"
-                      onClick={() => setWhatsappModalClient({ full_name: 'أحمد سمير', phone_number: '01012345678', client_code: 'CLIENT-1' })}
-                      className="btn btn-light btn-sm w-100 rounded-pill fw-semibold border"
-                      style={{ fontSize: '0.8rem', color: '#475569' }}
-                    >
-                      <i className="ti ti-brand-whatsapp text-success me-1"></i> إرسال تهنئة وتشجيع
-                    </button>
+                    <div className="p-3 text-center bg-light rounded-3 text-muted small">
+                      <i className="ti ti-trophy text-muted fs-5 d-block mb-1"></i>
+                      لا توجد أرقام قياسية جديدة مسجلة اليوم.
+                    </div>
                   </div>
                 </div>
 

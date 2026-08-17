@@ -375,7 +375,7 @@ export default function UserDashboardClone() {
                         type="button"
                         onClick={() => {
                           const link = `${window.location.origin}/intake/form?code=${currentUser?.client_code || targetUserId}&phone=${currentUser?.phone_number || ''}`;
-                          const msg = `مرحباً بك مع كابتن كيمو في منظومة Z Coaching!\nيرجى تعبئة استمارة التقييم للبدء في خطتك:\n${link}\nكودك: ${currentUser?.client_code || targetUserId}`;
+                          const msg = `مرحباً بك في منظومة Z Coaching!\nيرجى تعبئة استمارة التقييم للبدء في خطتك:\n${link}\nكودك: ${currentUser?.client_code || targetUserId}`;
                           let phone = currentUser.phone_number.replace(/\D/g, '');
                           if (phone.startsWith('01')) phone = '2' + phone;
                           window.open(`https://wa.me/${phone}?text=${encodeURIComponent(msg)}`, '_blank');

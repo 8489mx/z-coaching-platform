@@ -14,7 +14,7 @@ export default function Step1Personal({
  <input 
  type="text" 
  className="form-control" 
- placeholder="مثال: أحمد"
+ placeholder="الاسم الأول..."
  value={formData.personal.firstName} 
  onChange={e => updateField('personal', 'firstName', e.target.value)} 
  />
@@ -24,7 +24,7 @@ export default function Step1Personal({
  <input 
  type="text" 
  className="form-control" 
- placeholder="مثال: سمير"
+ placeholder="اسم العائلة..."
  value={formData.personal.lastName} 
  onChange={e => updateField('personal', 'lastName', e.target.value)} 
  />

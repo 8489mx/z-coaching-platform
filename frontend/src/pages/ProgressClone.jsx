@@ -158,7 +158,7 @@ export default function ProgressClone() {
                 </span>
               </div>
               <p className="text-muted small mb-0" style={{ fontSize: '0.8rem' }}>
-                تحليل مسار الوزن، قياسات الخصر، ومعرض صور التحول البصري للمتدرب: <strong className="text-dark">{user?.full_name || 'كيمو المحروقي'}</strong>
+                تحليل مسار الوزن، قياسات الخصر، ومعرض صور التحول البصري للمتدرب: <strong className="text-dark">{user?.full_name || (user?.client_code ? `متدرب #${user.client_code}` : 'المتدرب')}</strong>
               </p>
             </div>
             <div className="d-flex gap-2">

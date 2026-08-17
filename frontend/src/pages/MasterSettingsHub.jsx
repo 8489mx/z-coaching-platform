@@ -108,7 +108,7 @@ export default function MasterSettingsHub() {
 
   // General Settings State
   const [systemConfig, setSystemConfig] = useState({
-    coachName: 'كابتن كيمو المحروقي',
+    coachName: 'كابتن Z Coaching',
     platformTitle: 'Z COACHING MASTER PLATFORM',
     defaultDailySteps: 8000,
     defaultWaterLiters: 3.5,

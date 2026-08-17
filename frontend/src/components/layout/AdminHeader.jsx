@@ -137,7 +137,7 @@ export default function AdminHeader({ searchTerm, onSearchChange, searchPlacehol
                   Z
                 </div>
                 <div className="d-none d-md-block text-end">
-                  <span className="fw-bold d-block text-dark lh-1" style={{ fontSize: '0.82rem' }}>كابتن كيمو</span>
+                  <span className="fw-bold d-block text-dark lh-1" style={{ fontSize: '0.82rem' }}>كابتن Z Coaching</span>
                   <small className="text-muted" style={{ fontSize: '0.64rem' }}>Master Coach</small>
                 </div>
                 <i 
@@ -164,7 +164,7 @@ export default function AdminHeader({ searchTerm, onSearchChange, searchPlacehol
                   dir="rtl"
                 >
                   <div className="px-3 py-2 border-bottom border-light mb-1">
-                    <strong className="d-block text-dark small">كابتن كيمو المحروقي</strong>
+                    <strong className="d-block text-dark small">كابتن Z Coaching</strong>
                     <small className="text-muted" style={{ fontSize: '0.74rem' }}>coach@zcoaching.com</small>
                   </div>
 

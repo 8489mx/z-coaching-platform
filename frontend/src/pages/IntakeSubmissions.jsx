@@ -95,7 +95,7 @@ export default function IntakeSubmissions() {
     let cleanPhone = clientPhone.replace(/\D/g, '');
     if (cleanPhone.startsWith('01')) cleanPhone = '2' + cleanPhone;
 
-    const message = `أهلاً يا ${clientName}! 🏋️\nلاحظنا أنك اقتربت من إنهاء استمارة اشتراكك في Z Coaching (متبقي خطوات بسيطة فقط).\nاضغط على الرابط التالي لإكمالها وسيبدأ كابتن كيمو بتجهيز وتفعيل خطتك فوراً:\n\n${intakeUrl}\n\nبالتوفيق يا بطل!`;
+    const message = `أهلاً يا ${clientName}!\nلاحظنا أنك اقتربت من إنهاء استمارة اشتراكك في Z Coaching (متبقي خطوات بسيطة فقط).\nاضغط على الرابط التالي لإكمالها وسيبدأ الكابتن بتجهيز وتفعيل خطتك فوراً:\n\n${intakeUrl}\n\nبالتوفيق!`;
     const waUrl = `https://wa.me/${cleanPhone}?text=${encodeURIComponent(message)}`;
     window.open(waUrl, '_blank');
   };

@@ -2,13 +2,13 @@ import React, { useState, useEffect } from 'react';
 import AdminLayout from '../components/layout/AdminLayout';
 
 const DEFAULT_SETTINGS = {
-  coach_name: 'كابتن كيمو المحروقي',
+  coach_name: 'كابتن Z Coaching',
   academy_name: 'Z Coaching Master Platform',
-  phone_number: '01205004949',
+  phone_number: '01000000000',
   email: 'coach@zcoaching.com',
   gym_logo_url: '/admin-dashboard_data/logo/z_dumbbell_flat.jpg',
-  pdf_footer_note: ' اشرب 3 إلى 4 لتر ماء يومياً | استهدف 8,000 إلى 10,000 خطوة يومياً | نم 7 إلى 8 ساعات لنوم عميق واستشفاء عضلي ممتاز.',
-  whatsapp_prefix: 'مرحباً بك مع كابتن كيمو في منظومة Z Coaching '
+  pdf_footer_note: 'اشرب 3 إلى 4 لتر ماء يومياً | استهدف 8,000 إلى 10,000 خطوة يومياً | نم 7 إلى 8 ساعات لنوم عميق واستشفاء عضلي ممتاز.',
+  whatsapp_prefix: 'مرحباً بك في منظومة Z Coaching '
 };
 
 export default function ProfileClone() {
