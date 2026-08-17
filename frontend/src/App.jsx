@@ -20,6 +20,7 @@ import IntakeSubmissions from './pages/IntakeSubmissions';
 import Subscriptions from './pages/Subscriptions';
 import ExerciseLibrary from './pages/ExerciseLibrary';
 import MacroCalculator from './pages/MacroCalculator';
+import MasterSettingsHub from './pages/MasterSettingsHub';
 
 function App() {
   return (
@@ -37,6 +38,8 @@ function App() {
           <Route path="/subscriptions" element={<Subscriptions />} />
           <Route path="/exercises" element={<ExerciseLibrary />} />
           <Route path="/calculator" element={<MacroCalculator />} />
+          <Route path="/master-settings" element={<MasterSettingsHub />} />
+          <Route path="/settings" element={<Navigate to="/master-settings" />} />
           <Route path="/profile" element={<ProfileClone />} />
           <Route path="/profile.html" element={<Navigate to="/profile" />} />
           <Route path="/test-engine" element={<EngineTester />} />

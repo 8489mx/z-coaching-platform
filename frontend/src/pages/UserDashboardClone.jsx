@@ -284,40 +284,35 @@ export default function UserDashboardClone() {
  <main className="themebody-wrap">
  <div className="theme-body">
  <div className="container-fluid">
- {/* Hero Card */}
- <UserWelcomeHero currentUser={currentUser} coachNotes={program?.coach_notes} />
+          {/* 1. Hero Card */}
+          <UserWelcomeHero currentUser={currentUser} coachNotes={program?.coach_notes} />
 
- {/* Macro Stats */}
- <MacroOverviewCard nutrition={nutrition} />
+          {/* 2. Macro Stats */}
+          <MacroOverviewCard nutrition={nutrition} />
 
- {/* Cardio Zone Banner */}
- <CardioZoneBanner onOpenCheckin={() => setCheckinModalOpen(true)} />
+          {/* 3. Daily 3 Meals Section (3 side-by-side vertical cards across the page) */}
+          <MealsSection 
+            nutrition={nutrition}
+            loading={loading}
+            formatArabicFoodSingleLine={formatArabicFoodSingleLine}
+            onOpenSwapModal={handleOpenSwapModal}
+          />
 
- {/* Workout and Meals Row */}
- <div className="row g-4 mb-4">
- <div className="col-xxl-7 col-xl-6">
- <WorkoutSection 
- todaySession={todaySession}
- loading={loading}
- completedExercises={completedExercises}
- onToggleExercise={toggleExercise}
- />
- </div>
+          {/* 4. Cardio Zone Banner */}
+          <CardioZoneBanner onOpenCheckin={() => setCheckinModalOpen(true)} />
 
- <div className="col-xxl-5 col-xl-6">
- <MealsSection 
- nutrition={nutrition}
- loading={loading}
- formatArabicFoodSingleLine={formatArabicFoodSingleLine}
- onOpenSwapModal={handleOpenSwapModal}
- />
- </div>
- </div>
+          {/* 5. Today's Full-Width Workout Section */}
+          <WorkoutSection 
+            todaySession={todaySession}
+            loading={loading}
+            completedExercises={completedExercises}
+            onToggleExercise={toggleExercise}
+          />
 
- {/* Supplements Protocol */}
- <SupplementsSection supplements={program?.supplements} />
- </div>
- </div>
+          {/* 6. Supplements Protocol */}
+          <SupplementsSection supplements={program?.supplements} />
+        </div>
+      </div>
  </main>
 
  {/* Modals */}

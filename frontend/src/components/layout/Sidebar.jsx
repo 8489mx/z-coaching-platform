@@ -20,11 +20,12 @@ const MENU_GROUPS = [
     ]
   },
   {
-    groupTitle: 'الإدارة والتطبيق',
+    groupTitle: 'الإدارة والتحكم',
     items: [
       { path: '/customers', label: 'إدارة المشتركين', icon: 'ti-user-plus' },
+      { path: '/master-settings', label: 'داش الداش', icon: 'ti-settings-cog' },
       { path: '/mobile', label: 'تطبيق العميل', icon: 'ti-device-mobile' },
-      { path: '/profile', label: 'إعدادات المدرب', icon: 'ti-settings' },
+      { path: '/profile', label: 'الملف الشخصي للمدرب', icon: 'ti-settings' },
     ]
   }
 ];

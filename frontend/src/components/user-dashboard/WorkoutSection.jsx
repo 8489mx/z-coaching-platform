@@ -7,22 +7,39 @@ export default function WorkoutSection({
   completedExercises,
   onToggleExercise
 }) {
+  const exercises = todaySession?.exercises || [];
+  const completedCount = exercises.filter(ex => completedExercises[ex.exercise_code]).length;
+
   return (
-    <div className="card border-0 shadow-sm h-100 bg-white" style={{ borderRadius: "16px", border: "1px solid #e2e8f0" }} id="today-workout">
+    <div className="card border-0 shadow-sm bg-white mb-4" style={{ borderRadius: "16px", border: "1px solid #e2e8f0" }} id="today-workout">
       <div className="card-body p-4">
-        <div className="d-flex align-items-center justify-content-between mb-3">
-          <div>
-            <h5 className="fw-bold mb-0 text-dark">
-              تمرين اليوم: {todaySession?.session_code || "UPPER_A"}
-            </h5>
-            <small className="text-muted">مستوى الجهد: 3 RIR | أولوية التمارين المركبة</small>
+        
+        {/* Section Header */}
+        <div className="d-flex align-items-center justify-content-between mb-3 flex-wrap gap-2 pb-2 border-bottom" style={{ borderColor: '#f1f5f9' }}>
+          <div className="d-flex align-items-center gap-2">
+            <div className="rounded-circle d-flex align-items-center justify-content-center flex-shrink-0" style={{ width: '32px', height: '32px', background: '#f5f3ff', color: '#261c6a', border: '1px solid #ddd6fe' }}>
+              <i className="ti ti-barbell fs-6"></i>
+            </div>
+            <div>
+              <h5 className="fw-bold mb-0 text-dark" style={{ fontSize: '1.05rem' }}>
+                جدول تمرين اليوم: {todaySession?.session_name || todaySession?.session_code || "UPPER_A"}
+              </h5>
+              <small className="text-muted" style={{ fontSize: '0.76rem' }}>مستوى الجهد المستهدف: 3 RIR | أولوية التمارين المركبة عالية الكفاءة</small>
+            </div>
           </div>
-          <span className="badge rounded-pill px-3 py-1 fw-bold" style={{ background: '#f5f3ff', color: '#261c6a', border: '1px solid #ddd6fe', fontSize: '0.78rem' }}>
-            يوم الاثنين
-          </span>
+          
+          <div className="d-flex align-items-center gap-2">
+            <span className="badge rounded-pill px-3 py-1 fw-bold" style={{ background: '#f5f3ff', color: '#261c6a', border: '1px solid #ddd6fe', fontSize: '0.74rem' }}>
+              {todaySession?.day_label || "يوم الاثنين"}
+            </span>
+            <span className="badge rounded-pill px-3 py-1 fw-semibold" style={{ background: '#ecfdf5', color: '#059669', border: '1px solid #a7f3d0', fontSize: '0.74rem' }}>
+              الإنجاز: {completedCount} من {exercises.length}
+            </span>
+          </div>
         </div>
 
-        <div className="table-responsive mt-3">
+        {/* Exercises Full-Width Table */}
+        <div className="table-responsive">
           {loading && !todaySession ? (
             <div className="text-center py-4">
               <div className="spinner-border text-primary" role="status"></div>
@@ -32,45 +49,52 @@ export default function WorkoutSection({
             <table className="table table-hover align-middle mb-0">
               <thead className="table-light">
                 <tr>
-                  <th className="border-0 rounded-start">التمرين</th>
-                  <th className="border-0">المجموعات والتكرارات</th>
-                  <th className="border-0">الراحة</th>
-                  <th className="border-0 rounded-end text-center">الإنجاز</th>
+                  <th className="border-0 rounded-start" style={{ width: '40%' }}>التمرين والأداء الحركي</th>
+                  <th className="border-0 text-center" style={{ width: '25%' }}>المجموعات والتكرارات</th>
+                  <th className="border-0 text-center" style={{ width: '20%' }}>فترة الراحة</th>
+                  <th className="border-0 rounded-end text-center" style={{ width: '15%' }}>الإنجاز</th>
                 </tr>
               </thead>
               <tbody>
-                {todaySession?.exercises?.map((ex, exIdx) => {
+                {exercises.map((ex, exIdx) => {
                   const isDone = completedExercises[ex.exercise_code];
+                  const sets = ex.prescription?.sets || ex.sets || 3;
+                  const minReps = ex.prescription?.target_min || ex.reps || 8;
+                  const maxReps = ex.prescription?.target_max || ex.reps || 12;
+                  const rest = ex.prescription?.rest_seconds || ex.rest_seconds || 90;
+                  const arName = ex.name_ar || getArabicExerciseName(ex.exercise_code || ex);
+                  const enName = ex.name_en || ex.exercise_code?.replace(/_/g, " ") || "Exercise";
+
                   return (
                     <tr key={exIdx}>
                       <td>
                         <a 
-                          href={`https://www.youtube.com/results?search_query=${encodeURIComponent((ex.name_ar || getArabicExerciseName(ex)) + ' ' + (ex.name_en || ex.exercise_code) + ' form technique')}`}
+                          href={`https://www.youtube.com/results?search_query=${encodeURIComponent(arName + ' ' + enName + ' form technique')}`}
                           target="_blank" 
                           rel="noreferrer"
                           className="text-decoration-none d-inline-block"
                           title="اضغط لمشاهدة فيديو التكنيك العملي على يوتيوب"
                         >
-                          <div className="fw-bold text-dark d-flex align-items-center gap-1" style={{ fontSize: "0.88rem" }}>
-                            <span>{ex.name_en || ex.exercise_code.replace(/_/g, " ")}</span>
-                            <i className="ti ti-video text-danger fs-6" title="فيديو التمرين"></i>
+                          <div className="fw-bold text-dark d-flex align-items-center gap-1" style={{ fontSize: "0.86rem" }}>
+                            <span>{enName}</span>
+                            <i className="ti ti-video text-danger fs-6" title="فيديو شرح التمرين"></i>
                           </div>
                           <small style={{ fontSize: "0.76rem", color: "#64748b" }}>
-                            {getArabicExerciseName(ex)}
+                            {arName}
                           </small>
                         </a>
                       </td>
-                      <td>
-                        <span className="badge bg-light text-secondary border me-1 font-monospace" style={{ fontSize: '0.75rem' }}>
-                          {ex.prescription?.sets} مجموعات
+                      <td className="text-center">
+                        <span className="badge rounded-pill me-1" style={{ background: '#f5f3ff', color: '#261c6a', border: '1px solid #ddd6fe', fontSize: '0.74rem' }}>
+                          {sets} مجموعات
                         </span>
-                        <span className="badge bg-light text-success border font-monospace" style={{ fontSize: '0.75rem' }}>
-                          {ex.prescription?.target_min || ex.prescription?.target_max} تكرار
+                        <span className="badge rounded-pill" style={{ background: '#ecfdf5', color: '#059669', border: '1px solid #a7f3d0', fontSize: '0.74rem' }}>
+                          {minReps === maxReps ? minReps : `${minReps} - ${maxReps}`} تكرار
                         </span>
                       </td>
-                      <td>
-                        <span className="badge bg-light text-dark border font-monospace" style={{ fontSize: '0.75rem' }}>
-                          {ex.prescription?.rest_seconds || 90} ثانية
+                      <td className="text-center">
+                        <span className="badge rounded-pill" style={{ background: '#fffbeb', color: '#d97706', border: '1px solid #fde68a', fontSize: '0.74rem' }}>
+                          <i className="ti ti-clock me-1"></i> {rest} ثانية
                         </span>
                       </td>
                       <td className="text-center">
@@ -86,7 +110,7 @@ export default function WorkoutSection({
                             color: isDone ? '#ffffff' : '#94a3b8',
                             boxShadow: isDone ? '0 2px 8px rgba(22, 163, 74, 0.3)' : 'none'
                           }}
-                          title={isDone ? 'تم الإنجاز' : 'تحديد كمكتمل'}
+                          title={isDone ? 'تم الإنجاز بنجاح' : 'تحديد كمكتمل'}
                         >
                           <i className={`ti ${isDone ? "ti-check fs-6" : "ti-circle fs-6"}`}></i>
                         </button>
@@ -98,6 +122,7 @@ export default function WorkoutSection({
             </table>
           )}
         </div>
+
       </div>
     </div>
   );

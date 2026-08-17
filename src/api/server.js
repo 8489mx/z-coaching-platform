@@ -9,6 +9,7 @@ import intakeRoutes from "./routes/intake.routes.js";
 import subscriptionRoutes from "./routes/subscription.routes.js";
 import photoRoutes from "./routes/photo.routes.js";
 import exerciseRoutes from "./routes/exercise.routes.js";
+import adminSettingsRoutes from "./routes/admin-settings.routes.js";
 
 dotenv.config();
 
@@ -26,6 +27,8 @@ app.use("/api/v1/intake", intakeRoutes);
 app.use("/api/v1/subscriptions", subscriptionRoutes);
 app.use("/api/v1/photos", photoRoutes);
 app.use("/api/v1/exercises", exerciseRoutes);
+app.use("/api/v1/admin-settings", adminSettingsRoutes);
+app.use("/api/v1/admin", adminSettingsRoutes);
 
 // Database Sync and Server Start
 const PORT = process.env.PORT || 3000;

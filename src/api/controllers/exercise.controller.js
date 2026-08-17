@@ -1,4 +1,5 @@
 import { MASTER_EXERCISE_DICTIONARY } from "../../exercise-catalog-v2/master-exercise-translations.js";
+import { getExercisesCatalogFile } from "./admin-settings.controller.js";
 
 // Enriched Exercise Catalog with muscle classifications, equipment, coaching cues and video tutorials
 const EXERCISES_DATABASE = [
@@ -226,7 +227,7 @@ const EXERCISES_DATABASE = [
 export const getExercisesList = (req, res) => {
   try {
     const { muscle, equipment, search } = req.query;
-    let results = [...EXERCISES_DATABASE];
+    let results = getExercisesCatalogFile();
 
     if (muscle && muscle !== "ALL") {
       results = results.filter((e) => e.muscle_group === muscle);
