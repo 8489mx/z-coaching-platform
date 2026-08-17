@@ -6,42 +6,7 @@ export default function MealsSection({
   formatArabicFoodSingleLine,
   onOpenSwapModal
 }) {
-  const meals = nutrition?.quantized_plan?.meals || [
-    {
-      meal_number: 1,
-      name: "وجبة الإفطار",
-      meal_energy_kcal: 700,
-      foods: [
-        { name_ar: "جبن قريش قليل الدسم (200 جرام)" },
-        { name_ar: "بيض مسلوق كامل (100 جرام)" },
-        { name_ar: "شوفان كامل الحبة (80 جرام)" },
-        { name_ar: "موز طازج (120 جرام)" },
-        { name_ar: "زيت زيتون (10 جرام)" }
-      ]
-    },
-    {
-      meal_number: 2,
-      name: "وجبة الغداء",
-      meal_energy_kcal: 850,
-      foods: [
-        { name_ar: "صدور دجاج مشوية (200 جرام)" },
-        { name_ar: "أرز أبيض مطبوخ (220 جرام)" },
-        { name_ar: "سلطة خضراء بزيت زيتون (150 جرام)" },
-        { name_ar: "خيار وجزر طازج (100 جرام)" }
-      ]
-    },
-    {
-      meal_number: 3,
-      name: "وجبة العشاء",
-      meal_energy_kcal: 650,
-      foods: [
-        { name_ar: "بياض بيض مسلوق (200 جرام)" },
-        { name_ar: "بطاطس مسلوقة (250 جرام)" },
-        { name_ar: "خيار وجزر طازج (150 جرام)" },
-        { name_ar: "زيت زيتون (10 جرام)" }
-      ]
-    }
-  ];
+  const meals = nutrition?.quantized_plan?.meals || [];
 
   return (
     <div className="z-glass-card mb-4 z-animate-in" id="diet-plan">
@@ -71,6 +36,10 @@ export default function MealsSection({
           <div className="text-center py-4">
             <div className="spinner-border text-primary" role="status"></div>
             <p className="text-muted mt-2 small">جاري تحميل الوجبات والبدائل...</p>
+          </div>
+        ) : meals.length === 0 ? (
+          <div className="text-center py-4 text-muted small bg-light rounded-3 border">
+            لا توجد وجبات مسجلة في خطة هذا المتدرب بعد.
           </div>
         ) : (
           <div className="row g-3">

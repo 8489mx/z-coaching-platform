@@ -45,6 +45,10 @@ export default function WorkoutSection({
               <div className="spinner-border text-primary" role="status"></div>
               <p className="text-muted mt-2 small">جاري تحميل تمارين اليوم...</p>
             </div>
+          ) : exercises.length === 0 ? (
+            <div className="text-center py-4 text-muted small bg-light rounded-3 border">
+              لا توجد تمارين مسجلة في خطة هذا المتدرب بعد.
+            </div>
           ) : (
             <table className="table table-hover align-middle mb-0">
               <thead className="table-light">

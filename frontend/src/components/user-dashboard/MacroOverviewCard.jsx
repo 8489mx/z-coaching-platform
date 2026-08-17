@@ -2,7 +2,7 @@ import React from 'react';
 
 export function getNutritionTargets(nutrition) {
   if (!nutrition) {
-    return { calories: 2200, protein: 130, carbs: 350, fats: 70, water: '3.5' };
+    return { calories: 0, protein: 0, carbs: 0, fats: 0, water: '0' };
   }
 
   const stages = nutrition.stages || {};
@@ -28,7 +28,7 @@ export function getNutritionTargets(nutrition) {
     portionTarget.calories_kcal ||
     directTargets.target_calories_kcal ||
     directTargets.calories_kcal ||
-    (mealsSum.calories > 0 ? mealsSum.calories : 2200)
+    mealsSum.calories || 0
   );
 
   const protein = Math.round(
@@ -36,7 +36,7 @@ export function getNutritionTargets(nutrition) {
     mealDist.protein_g ||
     portionTarget.protein_g ||
     directTargets.protein_g ||
-    (mealsSum.protein > 0 ? mealsSum.protein : 130)
+    mealsSum.protein || 0
   );
 
   const carbs = Math.round(
@@ -45,7 +45,7 @@ export function getNutritionTargets(nutrition) {
     portionTarget.carbohydrate_g ||
     directTargets.carbohydrate_g ||
     directTargets.carbs_g ||
-    (mealsSum.carbs > 0 ? mealsSum.carbs : 350)
+    mealsSum.carbs || 0
   );
 
   const fats = Math.round(
@@ -54,10 +54,10 @@ export function getNutritionTargets(nutrition) {
     portionTarget.fat_g ||
     directTargets.fat_g ||
     directTargets.fats_g ||
-    (mealsSum.fats > 0 ? mealsSum.fats : 70)
+    mealsSum.fats || 0
   );
 
-  return { calories, protein, carbs, fats, water: '3.5' };
+  return { calories, protein, carbs, fats, water: calories > 0 ? '3.5' : '0' };
 }
 
 export default function MacroOverviewCard({ nutrition }) {
