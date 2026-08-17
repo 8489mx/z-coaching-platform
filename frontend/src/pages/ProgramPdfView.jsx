@@ -386,46 +386,46 @@ export default function ProgramPdfView() {
               </div>
             </div>
 
-            {/* 2. Daily Macros Target Bar (Distinct 5 Color Cards) */}
+            {/* 2. Daily Macros Target Bar (Soft Luxury Gradient Cards matching Header) */}
             <div className="row g-2 mb-3">
               {/* Calories */}
               <div className="col">
-                <div className="p-2 rounded-3 text-center h-100" style={{ background: 'linear-gradient(180deg, #f5f3ff 0%, #ede9fe 100%)', border: '1.5px solid #c4b5fd' }}>
-                  <small className="d-block fw-bold" style={{ fontSize: '0.64rem', color: '#4338ca' }}>السعرات المستهدفة</small>
-                  <span className="fw-bold" style={{ fontSize: '1.15rem', color: '#261c6a' }}>{calories}</span>
-                  <small className="d-block" style={{ fontSize: '0.58rem', color: '#6366f1' }}>kcal / يوم</small>
+                <div className="p-2 rounded-3 text-center h-100 shadow-xs" style={{ background: 'linear-gradient(180deg, #ffffff 0%, #f8faff 100%)', border: '1px solid #e2e8f0', borderTop: '3.5px solid #372896' }}>
+                  <small className="d-block fw-bold" style={{ fontSize: '0.64rem', color: '#372896' }}>السعرات المستهدفة</small>
+                  <span className="fw-bold d-block my-0.5" style={{ fontSize: '1.18rem', color: '#1e144f' }}>{calories}</span>
+                  <small className="d-block text-muted" style={{ fontSize: '0.58rem' }}>kcal / يوم</small>
                 </div>
               </div>
               {/* Protein */}
               <div className="col">
-                <div className="p-2 rounded-3 text-center h-100" style={{ background: 'linear-gradient(180deg, #f0f9ff 0%, #e0f2fe 100%)', border: '1.5px solid #7dd3fc' }}>
-                  <small className="d-block fw-bold" style={{ fontSize: '0.64rem', color: '#0369a1' }}>البروتين الصافي</small>
-                  <span className="fw-bold" style={{ fontSize: '1.15rem', color: '#0284c7' }}>{protein}g</span>
-                  <small className="d-block" style={{ fontSize: '0.58rem', color: '#0ea5e9' }}>لبناء الألياف</small>
+                <div className="p-2 rounded-3 text-center h-100 shadow-xs" style={{ background: 'linear-gradient(180deg, #ffffff 0%, #f0f9ff 100%)', border: '1px solid #e2e8f0', borderTop: '3.5px solid #0284c7' }}>
+                  <small className="d-block fw-bold" style={{ fontSize: '0.64rem', color: '#0284c7' }}>البروتين الصافي</small>
+                  <span className="fw-bold d-block my-0.5" style={{ fontSize: '1.18rem', color: '#0284c7' }}>{protein}g</span>
+                  <small className="d-block text-muted" style={{ fontSize: '0.58rem' }}>لبناء الألياف</small>
                 </div>
               </div>
               {/* Carbs */}
               <div className="col">
-                <div className="p-2 rounded-3 text-center h-100" style={{ background: 'linear-gradient(180deg, #fffbeb 0%, #fef3c7 100%)', border: '1.5px solid #fcd34d' }}>
-                  <small className="d-block fw-bold" style={{ fontSize: '0.64rem', color: '#b45309' }}>الكاربوهيدرات</small>
-                  <span className="fw-bold" style={{ fontSize: '1.15rem', color: '#d97706' }}>{carbs}g</span>
-                  <small className="d-block" style={{ fontSize: '0.58rem', color: '#f59e0b' }}>طاقة التدريب</small>
+                <div className="p-2 rounded-3 text-center h-100 shadow-xs" style={{ background: 'linear-gradient(180deg, #ffffff 0%, #fffdf5 100%)', border: '1px solid #e2e8f0', borderTop: '3.5px solid #d97706' }}>
+                  <small className="d-block fw-bold" style={{ fontSize: '0.64rem', color: '#d97706' }}>الكاربوهيدرات</small>
+                  <span className="fw-bold d-block my-0.5" style={{ fontSize: '1.18rem', color: '#d97706' }}>{carbs}g</span>
+                  <small className="d-block text-muted" style={{ fontSize: '0.58rem' }}>طاقة التدريب</small>
                 </div>
               </div>
               {/* Fats */}
               <div className="col">
-                <div className="p-2 rounded-3 text-center h-100" style={{ background: 'linear-gradient(180deg, #fff1f2 0%, #ffe4e6 100%)', border: '1.5px solid #fecdd3' }}>
-                  <small className="d-block fw-bold" style={{ fontSize: '0.64rem', color: '#be123c' }}>الدهون الصحية</small>
-                  <span className="fw-bold" style={{ fontSize: '1.15rem', color: '#e11d48' }}>{fats}g</span>
-                  <small className="d-block" style={{ fontSize: '0.58rem', color: '#fb7185' }}>صحة الهرمونات</small>
+                <div className="p-2 rounded-3 text-center h-100 shadow-xs" style={{ background: 'linear-gradient(180deg, #ffffff 0%, #fff5f5 100%)', border: '1px solid #e2e8f0', borderTop: '3.5px solid #e11d48' }}>
+                  <small className="d-block fw-bold" style={{ fontSize: '0.64rem', color: '#e11d48' }}>الدهون الصحية</small>
+                  <span className="fw-bold d-block my-0.5" style={{ fontSize: '1.18rem', color: '#e11d48' }}>{fats}g</span>
+                  <small className="d-block text-muted" style={{ fontSize: '0.58rem' }}>صحة الهرمونات</small>
                 </div>
               </div>
               {/* Water */}
               <div className="col">
-                <div className="p-2 rounded-3 text-center h-100" style={{ background: 'linear-gradient(180deg, #ecfdf5 0%, #d1fae5 100%)', border: '1.5px solid #86efac' }}>
-                  <small className="d-block fw-bold" style={{ fontSize: '0.64rem', color: '#15803d' }}>شرب الماء</small>
-                  <span className="fw-bold" style={{ fontSize: '1.15rem', color: '#059669' }}>3.5L</span>
-                  <small className="d-block" style={{ fontSize: '0.58rem', color: '#10b981' }}>هيدريشن يومي</small>
+                <div className="p-2 rounded-3 text-center h-100 shadow-xs" style={{ background: 'linear-gradient(180deg, #ffffff 0%, #f0fdf4 100%)', border: '1px solid #e2e8f0', borderTop: '3.5px solid #059669' }}>
+                  <small className="d-block fw-bold" style={{ fontSize: '0.64rem', color: '#059669' }}>شرب الماء</small>
+                  <span className="fw-bold d-block my-0.5" style={{ fontSize: '1.18rem', color: '#059669' }}>3.5L</span>
+                  <small className="d-block text-muted" style={{ fontSize: '0.58rem' }}>هيدريشن يومي</small>
                 </div>
               </div>
             </div>
@@ -663,25 +663,25 @@ export default function ProgramPdfView() {
 
             <div className="row g-2 mb-2">
               <div className="col-3">
-                <div className="p-2 rounded-3 text-center h-100" style={{ background: '#f0f9ff', border: '1.5px solid #bae6fd' }}>
+                <div className="p-2 rounded-3 text-center h-100 shadow-xs" style={{ background: 'linear-gradient(180deg, #ffffff 0%, #f0f9ff 100%)', border: '1px solid #e2e8f0', borderTop: '3px solid #0369a1' }}>
                   <small className="d-block fw-semibold" style={{ fontSize: '0.62rem', color: '#0369a1' }}>النوع والنشاط</small>
                   <strong className="d-block text-dark" style={{ fontSize: '0.74rem' }}>مشي سريع / مشاية مائلة</strong>
                 </div>
               </div>
               <div className="col-3">
-                <div className="p-2 rounded-3 text-center h-100" style={{ background: '#fff1f2', border: '1.5px solid #fecdd3' }}>
+                <div className="p-2 rounded-3 text-center h-100 shadow-xs" style={{ background: 'linear-gradient(180deg, #ffffff 0%, #fff5f5 100%)', border: '1px solid #e2e8f0', borderTop: '3px solid #e11d48' }}>
                   <small className="d-block fw-semibold" style={{ fontSize: '0.62rem', color: '#be123c' }}>النبض المستهدف (Zone 2)</small>
                   <strong className="d-block" style={{ fontSize: '0.76rem', color: '#e11d48' }}>115 - 134 نبضة/د</strong>
                 </div>
               </div>
               <div className="col-3">
-                <div className="p-2 rounded-3 text-center h-100" style={{ background: '#faf5ff', border: '1.5px solid #e9d5ff' }}>
+                <div className="p-2 rounded-3 text-center h-100 shadow-xs" style={{ background: 'linear-gradient(180deg, #ffffff 0%, #faf5ff 100%)', border: '1px solid #e2e8f0', borderTop: '3px solid #7e22ce' }}>
                   <small className="d-block fw-semibold" style={{ fontSize: '0.62rem', color: '#7e22ce' }}>التوقيت المفضل</small>
                   <strong className="d-block text-dark" style={{ fontSize: '0.74rem' }}>بعد التمرين أو صباحاً</strong>
                 </div>
               </div>
               <div className="col-3">
-                <div className="p-2 rounded-3 text-center h-100" style={{ background: '#ecfdf5', border: '1.5px solid #86efac' }}>
+                <div className="p-2 rounded-3 text-center h-100 shadow-xs" style={{ background: 'linear-gradient(180deg, #ffffff 0%, #f0fdf4 100%)', border: '1px solid #e2e8f0', borderTop: '3px solid #059669' }}>
                   <small className="d-block fw-semibold" style={{ fontSize: '0.62rem', color: '#15803d' }}>المدة الأسبوعية</small>
                   <strong className="d-block" style={{ fontSize: '0.76rem', color: '#059669' }}>120 - 150 دقيقة</strong>
                 </div>
