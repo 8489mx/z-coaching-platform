@@ -67,29 +67,42 @@ export default function UserDashboardHeader({ currentUser, targetUserId, clients
               onClick={() => setDropdownOpen(!dropdownOpen)}
               className="btn bg-white border d-flex align-items-center gap-2 shadow-xs transition-all"
               style={{ 
-                height: '38px', 
+                minHeight: '38px', 
                 borderRadius: '10px',
                 borderColor: dropdownOpen ? '#1e144f' : '#e2e8f0',
                 background: '#ffffff',
-                padding: '0 14px'
+                padding: '6px 14px',
+                lineHeight: '1.5'
               }}
               title="انقر لتبديل المتدرب"
             >
               <div 
                 className="rounded-2 d-flex align-items-center justify-content-center fw-bold flex-shrink-0"
-                style={{ width: '22px', height: '22px', background: '#f5f3ff', color: '#1e144f', fontSize: '0.75rem', border: '1px solid #ddd6fe' }}
+                style={{ width: '24px', height: '24px', background: '#f5f3ff', color: '#1e144f', fontSize: '0.78rem', border: '1px solid #ddd6fe' }}
               >
                 {activeName[0]}
               </div>
 
-              <span className="fw-bold text-dark text-truncate" style={{ fontSize: '0.82rem', maxWidth: '140px' }}>
+              <span 
+                className="fw-bold text-dark" 
+                style={{ 
+                  fontSize: '0.84rem', 
+                  maxWidth: '160px',
+                  whiteSpace: 'nowrap',
+                  overflow: 'hidden',
+                  textOverflow: 'ellipsis',
+                  lineHeight: '1.6',
+                  padding: '2px 0',
+                  display: 'inline-block'
+                }}
+              >
                 {activeName}
               </span>
 
               <i 
                 className={`ti ti-chevron-down text-muted flex-shrink-0 transition-transform`} 
                 style={{ 
-                  fontSize: '0.72rem',
+                  fontSize: '0.74rem',
                   transform: dropdownOpen ? 'rotate(180deg)' : 'rotate(0deg)',
                   transition: 'transform 0.2s ease'
                 }}
