@@ -219,20 +219,57 @@ export default function MobileAppSimulator() {
   const activeSession = sessions[selectedSessionIdx] || sessions[0];
   const exercises = activeSession?.exercises || [];
 
-  const targets = 
-    program?.adapted_nutrition || 
-    program?.nutrition_program?.targets || 
-    {};
+  const nutrition = program?.nutrition_program || {};
+  const stages = nutrition.stages || {};
+  const energyTarget = stages.energy_target || {};
+  const macroTargets = stages.macro_targets || {};
+  const mealDist = stages.meal_distribution?.daily_targets || {};
+  const portionTarget = stages.portion_solver?.daily_target || {};
+  const directTargets = program?.adapted_nutrition || nutrition.targets || nutrition.macro_targets || {};
+
+  const mealsSum = (nutrition.quantized_plan?.meals || []).reduce((acc, m) => {
+    acc.calories += (m.totals?.calories_kcal || m.target?.planned_calories || 0);
+    acc.protein += (m.totals?.protein_g || 0);
+    acc.carbs += (m.totals?.carbohydrate_g || 0);
+    acc.fats += (m.totals?.fat_g || 0);
+    return acc;
+  }, { calories: 0, protein: 0, carbs: 0, fats: 0 });
 
   const caloriesTarget = Math.round(
-    targets.target_calories_kcal || 
-    targets.calories_kcal || 
-    program?.nutrition_program?.stages?.energy_target?.target_calories_kcal || 
-    2200
+    energyTarget.target_calories ||
+    macroTargets.target_calories ||
+    mealDist.target_calories ||
+    portionTarget.calories_kcal ||
+    directTargets.target_calories_kcal ||
+    directTargets.calories_kcal ||
+    (mealsSum.calories > 0 ? mealsSum.calories : 2200)
   );
-  const proteinTarget = Math.round(targets.protein_g || 170);
-  const carbsTarget = Math.round(targets.carbohydrate_g || targets.carbs_g || 220);
-  const fatsTarget = Math.round(targets.fat_g || targets.fats_g || 60);
+
+  const proteinTarget = Math.round(
+    macroTargets.protein?.target_g ||
+    mealDist.protein_g ||
+    portionTarget.protein_g ||
+    directTargets.protein_g ||
+    (mealsSum.protein > 0 ? mealsSum.protein : 130)
+  );
+
+  const carbsTarget = Math.round(
+    macroTargets.carbohydrate?.target_g ||
+    mealDist.carbohydrate_g ||
+    portionTarget.carbohydrate_g ||
+    directTargets.carbohydrate_g ||
+    directTargets.carbs_g ||
+    (mealsSum.carbs > 0 ? mealsSum.carbs : 350)
+  );
+
+  const fatsTarget = Math.round(
+    macroTargets.fat?.target_g ||
+    mealDist.fat_g ||
+    portionTarget.fat_g ||
+    directTargets.fat_g ||
+    directTargets.fats_g ||
+    (mealsSum.fats > 0 ? mealsSum.fats : 70)
+  );
 
   const defaultMeals = [
     {

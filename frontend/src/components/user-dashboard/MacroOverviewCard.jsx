@@ -1,42 +1,99 @@
 import React from 'react';
 
-const MACRO_CARDS = [
-  { 
-    key: 'calories', icon: 'ti-bolt', iconClass: 'z-icon-power',
-    badge: { text: 'الهدف اليومي', bg: 'linear-gradient(135deg, #f5f3ff, #ede9fe)', color: '#261c6a' },
-    getVal: n => Math.round(n?.stages?.energy_target?.target_calories_kcal || 2200),
-    unit: 'سعرة', label: 'السعرات المستهدفة', pct: 75, barColor: 'linear-gradient(90deg, #818cf8, #261c6a)'
-  },
-  { 
-    key: 'protein', icon: 'ti-barbell', iconClass: 'z-icon-energy',
-    badge: { text: 'هدف عالي', bg: 'linear-gradient(135deg, #ecfeff, #cffafe)', color: '#0891b2' },
-    getVal: n => Math.round(n?.stages?.macro_targets?.protein_g || 170),
-    unit: 'جرام', label: 'البروتين الصافي', pct: 85, barColor: 'linear-gradient(90deg, #22d3ee, #0891b2)'
-  },
-  { 
-    key: 'carbs', icon: 'ti-flame', iconClass: 'z-icon-warmth',
-    badge: { text: 'طاقة ونشاط', bg: 'linear-gradient(135deg, #fffbeb, #fef3c7)', color: '#d97706' },
-    getVal: n => Math.round(n?.stages?.macro_targets?.carbs_g || 220),
-    unit: 'جرام', label: 'الكربوهيدرات الصحية', pct: 65, barColor: 'linear-gradient(90deg, #fbbf24, #d97706)'
-  },
-  { 
-    key: 'fats', icon: 'ti-shield-check', iconClass: 'z-icon-vitality',
-    badge: { text: 'توازن هرموني', bg: 'linear-gradient(135deg, #ecfdf5, #d1fae5)', color: '#059669' },
-    getVal: n => Math.round(n?.stages?.macro_targets?.fats_g || 65),
-    unit: 'جرام', label: 'الدهون المفيدة', pct: 50, barColor: 'linear-gradient(90deg, #34d399, #059669)'
-  },
-  { 
-    key: 'water', icon: 'ti-droplet', iconClass: 'z-icon-power',
-    badge: { text: 'السوائل', bg: 'linear-gradient(135deg, #f5f3ff, #ede9fe)', color: '#261c6a' },
-    getVal: () => '3.5',
-    unit: 'لتر / يوم', label: 'شرب الماء والترطيب', pct: 70, barColor: 'linear-gradient(90deg, #818cf8, #261c6a)'
-  },
-];
+export function getNutritionTargets(nutrition) {
+  if (!nutrition) {
+    return { calories: 2200, protein: 130, carbs: 350, fats: 70, water: '3.5' };
+  }
+
+  const stages = nutrition.stages || {};
+  const energyTarget = stages.energy_target || {};
+  const macroTargets = stages.macro_targets || {};
+  const mealDist = stages.meal_distribution?.daily_targets || {};
+  const portionTarget = stages.portion_solver?.daily_target || {};
+  const directTargets = nutrition.targets || nutrition.macro_targets || {};
+
+  // High fidelity fallback from quantized meals
+  const mealsSum = (nutrition.quantized_plan?.meals || []).reduce((acc, m) => {
+    acc.calories += (m.totals?.calories_kcal || m.target?.planned_calories || 0);
+    acc.protein += (m.totals?.protein_g || 0);
+    acc.carbs += (m.totals?.carbohydrate_g || 0);
+    acc.fats += (m.totals?.fat_g || 0);
+    return acc;
+  }, { calories: 0, protein: 0, carbs: 0, fats: 0 });
+
+  const calories = Math.round(
+    energyTarget.target_calories ||
+    macroTargets.target_calories ||
+    mealDist.target_calories ||
+    portionTarget.calories_kcal ||
+    directTargets.target_calories_kcal ||
+    directTargets.calories_kcal ||
+    (mealsSum.calories > 0 ? mealsSum.calories : 2200)
+  );
+
+  const protein = Math.round(
+    macroTargets.protein?.target_g ||
+    mealDist.protein_g ||
+    portionTarget.protein_g ||
+    directTargets.protein_g ||
+    (mealsSum.protein > 0 ? mealsSum.protein : 130)
+  );
+
+  const carbs = Math.round(
+    macroTargets.carbohydrate?.target_g ||
+    mealDist.carbohydrate_g ||
+    portionTarget.carbohydrate_g ||
+    directTargets.carbohydrate_g ||
+    directTargets.carbs_g ||
+    (mealsSum.carbs > 0 ? mealsSum.carbs : 350)
+  );
+
+  const fats = Math.round(
+    macroTargets.fat?.target_g ||
+    mealDist.fat_g ||
+    portionTarget.fat_g ||
+    directTargets.fat_g ||
+    directTargets.fats_g ||
+    (mealsSum.fats > 0 ? mealsSum.fats : 70)
+  );
+
+  return { calories, protein, carbs, fats, water: '3.5' };
+}
 
 export default function MacroOverviewCard({ nutrition }) {
+  const { calories, protein, carbs, fats, water } = getNutritionTargets(nutrition);
+
+  const cards = [
+    { 
+      key: 'calories', icon: 'ti-bolt', iconClass: 'z-icon-power',
+      badge: { text: 'الهدف اليومي', bg: 'linear-gradient(135deg, #f5f3ff, #ede9fe)', color: '#261c6a' },
+      val: calories, unit: 'سعرة', label: 'السعرات المستهدفة', pct: 75, barColor: 'linear-gradient(90deg, #818cf8, #261c6a)'
+    },
+    { 
+      key: 'protein', icon: 'ti-barbell', iconClass: 'z-icon-energy',
+      badge: { text: 'هدف عالي', bg: 'linear-gradient(135deg, #ecfeff, #cffafe)', color: '#0891b2' },
+      val: protein, unit: 'جرام', label: 'البروتين الصافي', pct: 85, barColor: 'linear-gradient(90deg, #22d3ee, #0891b2)'
+    },
+    { 
+      key: 'carbs', icon: 'ti-flame', iconClass: 'z-icon-warmth',
+      badge: { text: 'طاقة ونشاط', bg: 'linear-gradient(135deg, #fffbeb, #fef3c7)', color: '#d97706' },
+      val: carbs, unit: 'جرام', label: 'الكربوهيدرات الصحية', pct: 65, barColor: 'linear-gradient(90deg, #fbbf24, #d97706)'
+    },
+    { 
+      key: 'fats', icon: 'ti-shield-check', iconClass: 'z-icon-vitality',
+      badge: { text: 'توازن هرموني', bg: 'linear-gradient(135deg, #ecfdf5, #d1fae5)', color: '#059669' },
+      val: fats, unit: 'جرام', label: 'الدهون المفيدة', pct: 50, barColor: 'linear-gradient(90deg, #34d399, #059669)'
+    },
+    { 
+      key: 'water', icon: 'ti-droplet', iconClass: 'z-icon-power',
+      badge: { text: 'السوائل', bg: 'linear-gradient(135deg, #f5f3ff, #ede9fe)', color: '#261c6a' },
+      val: water, unit: 'لتر / يوم', label: 'شرب الماء والترطيب', pct: 70, barColor: 'linear-gradient(90deg, #818cf8, #261c6a)'
+    },
+  ];
+
   return (
     <div className="row g-3 mb-3">
-      {MACRO_CARDS.map((card, i) => (
+      {cards.map((card) => (
         <div key={card.key} className={`${card.key === 'fats' || card.key === 'water' ? 'col-xl col-md-6 col-sm-6' : 'col-xl col-md-4 col-sm-6'} col-12 z-animate-in`}>
           <div className="z-glass-card h-100" style={{ borderRadius: '14px' }}>
             <div className="card-body p-3 d-flex flex-column justify-content-between">
@@ -58,13 +115,20 @@ export default function MacroOverviewCard({ nutrition }) {
                 </span>
               </div>
               <div>
-                <h3 className="fw-bold mb-0 text-dark d-flex align-items-baseline gap-1" style={{ fontSize: '1.45rem', letterSpacing: '-0.5px' }}>
-                  <span>{card.getVal(nutrition)}</span>
-                  <span className="fs-6 text-muted fw-normal">{card.unit}</span>
-                </h3>
-                <p className="text-muted small mb-2 fw-medium" style={{ fontSize: '0.76rem' }}>{card.label}</p>
-                <div className="progress z-progress-animated" style={{ height: '5px', borderRadius: '3px', background: 'rgba(241,245,249,0.8)' }}>
-                  <div className="progress-bar" style={{ width: `${card.pct}%`, background: card.barColor, borderRadius: '3px' }}></div>
+                <div className="d-flex align-items-baseline gap-1">
+                  <h3 className="fw-bold mb-0 text-dark" style={{ letterSpacing: '-0.5px' }}>
+                    {card.val}
+                  </h3>
+                  <small className="text-muted" style={{ fontSize: '0.78rem' }}>{card.unit}</small>
+                </div>
+                <small className="text-muted d-block mt-1" style={{ fontSize: '0.74rem' }}>{card.label}</small>
+                
+                <div className="progress mt-2 z-progress-animated" style={{ height: '4px', background: 'rgba(0,0,0,0.04)', borderRadius: '2px' }}>
+                  <div 
+                    className="progress-bar" 
+                    role="progressbar" 
+                    style={{ width: `${card.pct}%`, background: card.barColor, borderRadius: '2px' }}
+                  ></div>
                 </div>
               </div>
             </div>
