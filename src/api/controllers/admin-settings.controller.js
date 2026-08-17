@@ -549,3 +549,160 @@ export const deleteAdminExercise = (req, res) => {
     return res.status(500).json({ error: "فشل حذف التمرين", details: err.message });
   }
 };
+
+// ----------------------------------------------------
+// SUBSCRIPTION PACKAGES MANAGEMENT
+// ----------------------------------------------------
+const PACKAGES_FILE = path.join(SETTINGS_DIR, 'subscription_packages.json');
+
+const DEFAULT_PACKAGES = [
+  {
+    id: "ELITE_3_PLUS_1",
+    name_ar: "باقة إيليت",
+    name_en: "Elite Package",
+    badge_ar: "عرض خاص 3 شهور + 1 مجاناً",
+    duration_months: 3,
+    free_months: 1,
+    total_months: 4,
+    price_egp: 2500,
+    features: [
+      "خطة تغذية ذكية مع توزين الماكروز بالجرام",
+      "جدول تمارين تفاعلي بالأجهزة والوزن المطلوب",
+      "متابعة أسبوعية وتكيف تلقائي للخطة",
+      "دعم مستمر عبر الواتساب"
+    ],
+    active: true,
+    is_featured: true,
+    order: 1
+  },
+  {
+    id: "MAX_3_PLUS_1",
+    name_ar: "باقة ماكس",
+    name_en: "Max VIP Package",
+    badge_ar: "VIP أقصى اهتمام ومتابعة",
+    duration_months: 3,
+    free_months: 1,
+    total_months: 4,
+    price_egp: 3500,
+    features: [
+      "كل مميزات باقة إيليت بالكامل",
+      "مراجعة وتدقيق تكنيك التمارين بالفيديو",
+      "تعديلات فورية غير محدودة على الوجبات والتمارين",
+      "أولوية التواصل المباشر والمكالمات مع الكابتن"
+    ],
+    active: true,
+    is_featured: true,
+    order: 2
+  },
+  {
+    id: "MONTH_1",
+    name_ar: "باقة شهر واحد",
+    name_en: "1 Month Starter",
+    badge_ar: "تجربة سريعة",
+    duration_months: 1,
+    free_months: 0,
+    total_months: 1,
+    price_egp: 900,
+    features: [
+      "خطة تغذية وتدريب مخصصة لشهر كامل",
+      "متابعة وتكييف أسبوعي"
+    ],
+    active: true,
+    is_featured: false,
+    order: 3
+  },
+  {
+    id: "MONTHS_6",
+    name_ar: "باقة 6 شهور",
+    name_en: "6 Months Transformation",
+    badge_ar: "تحول بدني كامل",
+    duration_months: 6,
+    free_months: 2,
+    total_months: 8,
+    price_egp: 4500,
+    features: [
+      "تحول بدني شامل على مرحلتين (تنشيف ثم بناء)",
+      "تطوير مستمر للأوزان والتغذية",
+      "شاملة شهرين إضافيين مجاناً"
+    ],
+    active: true,
+    is_featured: false,
+    order: 4
+  }
+];
+
+export function getPackagesFile() {
+  ensureSettingsDir();
+  if (!fs.existsSync(PACKAGES_FILE)) {
+    fs.writeFileSync(PACKAGES_FILE, JSON.stringify(DEFAULT_PACKAGES, null, 2), 'utf8');
+    return DEFAULT_PACKAGES;
+  }
+  try {
+    const raw = fs.readFileSync(PACKAGES_FILE, 'utf8');
+    return JSON.parse(raw);
+  } catch (e) {
+    return DEFAULT_PACKAGES;
+  }
+}
+
+export function savePackagesFile(packages) {
+  ensureSettingsDir();
+  fs.writeFileSync(PACKAGES_FILE, JSON.stringify(packages, null, 2), 'utf8');
+}
+
+export const getSubscriptionPackages = (req, res) => {
+  try {
+    const packages = getPackagesFile();
+    return res.status(200).json({ success: true, packages });
+  } catch (err) {
+    return res.status(500).json({ error: "فشل استرجاع الباقات", details: err.message });
+  }
+};
+
+export const saveSubscriptionPackage = (req, res) => {
+  try {
+    const pkgData = req.body;
+    let packages = getPackagesFile();
+
+    const pkgId = pkgData.id || `PKG_${Date.now()}`;
+    const idx = packages.findIndex(p => p.id === pkgId);
+
+    const fullPackage = {
+      id: pkgId,
+      name_ar: pkgData.name_ar || "باقة جديدة",
+      name_en: pkgData.name_en || "New Package",
+      badge_ar: pkgData.badge_ar || "",
+      duration_months: Number(pkgData.duration_months) || 3,
+      free_months: Number(pkgData.free_months) || 0,
+      total_months: (Number(pkgData.duration_months) || 3) + (Number(pkgData.free_months) || 0),
+      price_egp: Number(pkgData.price_egp) || 2500,
+      features: Array.isArray(pkgData.features) ? pkgData.features : (typeof pkgData.features === 'string' ? pkgData.features.split('\n').filter(Boolean) : []),
+      active: pkgData.active !== undefined ? pkgData.active : true,
+      is_featured: Boolean(pkgData.is_featured),
+      order: Number(pkgData.order) || (packages.length + 1)
+    };
+
+    if (idx === -1) {
+      packages.push(fullPackage);
+    } else {
+      packages[idx] = { ...packages[idx], ...fullPackage };
+    }
+
+    savePackagesFile(packages);
+    return res.status(200).json({ success: true, message: "تم حفظ بيانات الباقة بنجاح", package: fullPackage, packages });
+  } catch (err) {
+    return res.status(500).json({ error: "فشل حفظ الباقة", details: err.message });
+  }
+};
+
+export const deleteSubscriptionPackage = (req, res) => {
+  try {
+    const { id } = req.params;
+    let packages = getPackagesFile();
+    packages = packages.filter(p => p.id !== id);
+    savePackagesFile(packages);
+    return res.status(200).json({ success: true, message: "تم حذف الباقة بنجاح", packages });
+  } catch (err) {
+    return res.status(500).json({ error: "فشل حذف الباقة", details: err.message });
+  }
+};

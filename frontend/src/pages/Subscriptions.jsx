@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import { API_BASE } from '../config/api';
 import AdminLayout from '../components/layout/AdminLayout';
 import EditSubscriptionModal from '../components/modals/EditSubscriptionModal';
@@ -280,8 +281,17 @@ export default function Subscriptions() {
                 height: '34px'
               }}
             >
-              المنتهية ({overview.expired_count})
+              الاشتراكات المنتهية ({overview.expired_count})
             </button>
+
+            <Link 
+              to="/master-settings?tab=packages" 
+              className="btn btn-sm rounded-pill px-3 fw-bold ms-auto d-flex align-items-center gap-1 shadow-xs"
+              style={{ background: '#f5f3ff', color: '#261c6a', border: '1px solid #ddd6fe', fontSize: '0.8rem', height: '34px' }}
+            >
+              <i className="ti ti-crown fs-6"></i>
+              <span>تعديل الباقات والأسعار</span>
+            </Link>
           </div>
 
           {/* Subscriptions Table Card */}

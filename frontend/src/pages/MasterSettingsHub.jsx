@@ -3,6 +3,7 @@ import { API_BASE } from '../config/api';
 import AdminLayout from '../components/layout/AdminLayout';
 import EditQuestionModal from '../components/modals/EditQuestionModal';
 import EditExerciseModal from '../components/modals/EditExerciseModal';
+import EditPackageModal from '../components/modals/EditPackageModal';
 
 const SECTION_TRANSLATIONS = {
   personal: '1. البيانات الشخصية والأهداف',
@@ -35,7 +36,8 @@ const DEFAULT_FOODS = [
 ];
 
 export default function MasterSettingsHub() {
-  const [activeTab, setActiveTab] = useState('intake');
+  const initialTab = new URLSearchParams(window.location.search).get('tab') || 'intake';
+  const [activeTab, setActiveTab] = useState(initialTab);
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
 
@@ -52,6 +54,11 @@ export default function MasterSettingsHub() {
   const [muscleFilter, setMuscleFilter] = useState('ALL');
   const [editingExercise, setEditingExercise] = useState(null);
   const [exerciseModalOpen, setExerciseModalOpen] = useState(false);
+
+  // Packages State
+  const [packages, setPackages] = useState([]);
+  const [editingPackage, setEditingPackage] = useState(null);
+  const [packageModalOpen, setPackageModalOpen] = useState(false);
 
   // Foods State
   const [foods, setFoods] = useState(DEFAULT_FOODS);
@@ -70,7 +77,20 @@ export default function MasterSettingsHub() {
   useEffect(() => {
     fetchIntakeSchema();
     fetchExercises();
+    fetchPackages();
   }, []);
+
+  const fetchPackages = async () => {
+    try {
+      const res = await fetch(`${API_BASE}/api/v1/admin-settings/packages`);
+      const data = await res.json();
+      if (data.packages && data.packages.length > 0) {
+        setPackages(data.packages);
+      }
+    } catch (e) {
+      console.error('fetchPackages error:', e);
+    }
+  };
 
   const fetchIntakeSchema = async () => {
     try {
@@ -192,6 +212,48 @@ export default function MasterSettingsHub() {
     } finally {
       setSaving(false);
     }
+  };
+
+  // Package CRUD Handlers
+  const handleSavePackage = async (pkgData) => {
+    try {
+      setSaving(true);
+      const res = await fetch(`${API_BASE}/api/v1/admin-settings/packages`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(pkgData)
+      });
+      const data = await res.json();
+      if (data.packages) setPackages(data.packages);
+      setPackageModalOpen(false);
+      setEditingPackage(null);
+      alert('تم حفظ بيانات الباقة والأسعار بنجاح');
+    } catch (err) {
+      alert('خطأ أثناء حفظ الباقة: ' + err.message);
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleDeletePackage = async (id) => {
+    if (!window.confirm('هل أنت متأكد من حذف هذه الباقة؟')) return;
+    try {
+      setSaving(true);
+      const res = await fetch(`${API_BASE}/api/v1/admin-settings/packages/${id}`, {
+        method: 'DELETE'
+      });
+      const data = await res.json();
+      if (data.packages) setPackages(data.packages);
+      alert('تم حذف الباقة بنجاح');
+    } catch (err) {
+      alert('خطأ أثناء حذف الباقة: ' + err.message);
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleTogglePackageActive = async (pkg) => {
+    handleSavePackage({ ...pkg, active: !pkg.active });
   };
 
   const sectionsList = [
@@ -462,6 +524,18 @@ export default function MasterSettingsHub() {
                 </button>
                 <button
                   type="button"
+                  onClick={() => setActiveTab('packages')}
+                  className={`btn btn-sm rounded-pill px-4 fw-bold transition-all ${activeTab === 'packages' ? 'text-white shadow-xs' : 'bg-light text-dark'}`}
+                  style={{
+                    background: activeTab === 'packages' ? '#261c6a' : undefined,
+                    height: '38px',
+                    fontSize: '0.84rem'
+                  }}
+                >
+                  <i className="ti ti-crown me-1"></i> إدارة الباقات والأسعار (Packages & Pricing)
+                </button>
+                <button
+                  type="button"
                   onClick={() => setActiveTab('foods')}
                   className={`btn btn-sm rounded-pill px-4 fw-bold transition-all ${activeTab === 'foods' ? 'text-white shadow-xs' : 'bg-light text-dark'}`}
                   style={{
@@ -507,6 +581,18 @@ export default function MasterSettingsHub() {
                 >
                   <i className="ti ti-plus fs-6"></i>
                   <span>إضافة تمرين جديد للمكتبة</span>
+                </button>
+              )}
+
+              {activeTab === 'packages' && (
+                <button
+                  type="button"
+                  onClick={() => { setEditingPackage(null); setPackageModalOpen(true); }}
+                  className="btn btn-sm rounded-pill px-4 fw-bold text-white shadow-sm d-flex align-items-center gap-2"
+                  style={{ background: 'linear-gradient(135deg, #372896 0%, #261c6a 100%)', height: '38px', fontSize: '0.82rem', border: 'none' }}
+                >
+                  <i className="ti ti-plus fs-6"></i>
+                  <span>إضافة باقة اشتراك جديدة</span>
                 </button>
               )}
             </div>
@@ -809,6 +895,171 @@ export default function MasterSettingsHub() {
               </div>
             )}
 
+            {/* ================= TAB: PACKAGES & PRICING MANAGER ================= */}
+            {activeTab === 'packages' && (
+              <div className="card-body p-4">
+                <div className="d-flex justify-content-between align-items-center mb-4 pb-2 border-bottom flex-wrap gap-2" style={{ borderColor: '#f1f5f9' }}>
+                  <div>
+                    <h5 className="fw-bold text-dark mb-1" style={{ fontSize: '1.05rem' }}>
+                      باقات الاشتراك والأسعار المعتمدة
+                    </h5>
+                    <small className="text-muted" style={{ fontSize: '0.78rem' }}>
+                      تعديل وإضافة باقات المشتركين، الأسعار، العروض والشهور المجانية، والمميزات
+                    </small>
+                  </div>
+
+                  <span className="badge rounded-pill fw-semibold px-3 py-2" style={{ background: '#f5f3ff', color: '#261c6a', border: '1px solid #ddd6fe', fontSize: '0.8rem' }}>
+                    {packages.length} باقات مسجلة
+                  </span>
+                </div>
+
+                {packages.length === 0 ? (
+                  <div className="text-center py-5 text-muted small bg-light rounded-4 border">
+                    لا توجد باقات اشتراك مسجلة حالياً. انقر على «إضافة باقة اشتراك جديدة» لإضافة باقة.
+                  </div>
+                ) : (
+                  <div className="row g-3">
+                    {packages.map((pkg) => {
+                      const totalMonths = (pkg.duration_months || 0) + (pkg.free_months || 0);
+
+                      return (
+                        <div key={pkg.id} className="col-xl-3 col-lg-4 col-md-6 col-12">
+                          <div 
+                            className="card h-100 shadow-sm border position-relative d-flex flex-column justify-content-between transition-all"
+                            style={{ 
+                              borderRadius: '18px',
+                              borderColor: pkg.is_featured ? '#261c6a' : '#e2e8f0',
+                              borderWidth: pkg.is_featured ? '2px' : '1px',
+                              background: pkg.active ? '#ffffff' : '#f8fafc',
+                              opacity: pkg.active ? 1 : 0.75,
+                              boxShadow: pkg.is_featured ? '0 10px 25px rgba(38,28,106,0.08)' : '0 2px 8px rgba(0,0,0,0.04)'
+                            }}
+                          >
+                            {/* Card Top */}
+                            <div className="p-4 pb-2">
+                              {/* Header & Badges */}
+                              <div className="d-flex justify-content-between align-items-start mb-2">
+                                <div 
+                                  className="rounded-circle d-flex align-items-center justify-content-center"
+                                  style={{ 
+                                    width: '36px', 
+                                    height: '36px', 
+                                    background: pkg.is_featured ? '#f5f3ff' : '#f8fafc', 
+                                    color: pkg.is_featured ? '#261c6a' : '#64748b',
+                                    border: '1px solid #e2e8f0'
+                                  }}
+                                >
+                                  <i className={`ti ${pkg.is_featured ? 'ti-crown' : 'ti-award'} fs-5`}></i>
+                                </div>
+
+                                <div className="d-flex align-items-center gap-1">
+                                  {pkg.badge_ar && (
+                                    <span 
+                                      className="badge rounded-pill fw-bold px-2 py-1"
+                                      style={{ 
+                                        background: pkg.is_featured ? '#ecfdf5' : '#f1f5f9', 
+                                        color: pkg.is_featured ? '#059669' : '#475569',
+                                        fontSize: '0.68rem',
+                                        border: pkg.is_featured ? '1px solid #a7f3d0' : '1px solid #e2e8f0'
+                                      }}
+                                    >
+                                      {pkg.badge_ar}
+                                    </span>
+                                  )}
+                                </div>
+                              </div>
+
+                              {/* Title */}
+                              <h5 className="fw-bold text-dark mb-1" style={{ fontSize: '1.05rem' }}>
+                                {pkg.name_ar}
+                              </h5>
+                              <small className="text-muted font-monospace d-block mb-3" style={{ fontSize: '0.72rem' }}>
+                                Code: {pkg.id}
+                              </small>
+
+                              {/* Price Box */}
+                              <div className="p-3 rounded-3 mb-3" style={{ background: '#fbfaff', border: '1px solid #ede9fe' }}>
+                                <div className="d-flex align-items-baseline justify-content-between mb-1">
+                                  <span className="text-muted small" style={{ fontSize: '0.76rem' }}>سعر الباقة:</span>
+                                  <div className="d-flex align-items-baseline gap-1">
+                                    <h4 className="fw-black mb-0 font-monospace" style={{ color: '#261c6a', letterSpacing: '-0.5px' }}>
+                                      {pkg.price_egp?.toLocaleString()}
+                                    </h4>
+                                    <span className="small text-muted" style={{ fontSize: '0.72rem' }}>ج.م</span>
+                                  </div>
+                                </div>
+
+                                <div className="d-flex justify-content-between align-items-center pt-2 border-top border-light">
+                                  <span className="text-muted small" style={{ fontSize: '0.72rem' }}>المدة الإجمالية:</span>
+                                  <strong className="text-dark small" style={{ fontSize: '0.78rem' }}>
+                                    {totalMonths} شهور ({pkg.duration_months} + {pkg.free_months} مجاناً)
+                                  </strong>
+                                </div>
+                              </div>
+
+                              {/* Features list */}
+                              <div className="mb-3">
+                                <small className="text-muted fw-bold d-block mb-2" style={{ fontSize: '0.72rem' }}>المميزات المشمولة:</small>
+                                <ul className="list-unstyled p-0 m-0 d-flex flex-column gap-1">
+                                  {(pkg.features || []).map((feat, fIdx) => (
+                                    <li key={fIdx} className="d-flex align-items-center gap-2 small text-secondary" style={{ fontSize: '0.78rem' }}>
+                                      <i className="ti ti-check text-success fs-6 flex-shrink-0"></i>
+                                      <span className="text-truncate">{feat}</span>
+                                    </li>
+                                  ))}
+                                </ul>
+                              </div>
+                            </div>
+
+                            {/* Card Footer Actions */}
+                            <div className="p-3 bg-light border-top d-flex justify-content-between align-items-center" style={{ borderColor: '#f1f5f9', borderRadius: '0 0 18px 18px' }}>
+                              {/* Toggle Active Switch */}
+                              <div className="form-check form-switch mb-0">
+                                <input 
+                                  className="form-check-input" 
+                                  type="checkbox" 
+                                  id={`switch_${pkg.id}`}
+                                  checked={pkg.active}
+                                  onChange={() => handleTogglePackageActive(pkg)}
+                                  title={pkg.active ? "باقة نشطة ومتاحة" : "باقة معطلة"}
+                                />
+                                <label className="form-check-label small text-muted ms-1" htmlFor={`switch_${pkg.id}`} style={{ fontSize: '0.74rem' }}>
+                                  {pkg.active ? 'نشطة' : 'معطلة'}
+                                </label>
+                              </div>
+
+                              {/* Edit & Delete Buttons */}
+                              <div className="d-flex align-items-center gap-1">
+                                <button 
+                                  type="button" 
+                                  onClick={() => { setEditingPackage(pkg); setPackageModalOpen(true); }}
+                                  className="btn btn-sm btn-light rounded-circle p-0 d-flex align-items-center justify-content-center border"
+                                  style={{ width: '32px', height: '32px', color: '#261c6a' }}
+                                  title="تعديل الباقة والأسعار"
+                                >
+                                  <i className="ti ti-edit fs-6"></i>
+                                </button>
+                                <button 
+                                  type="button" 
+                                  onClick={() => handleDeletePackage(pkg.id)}
+                                  className="btn btn-sm btn-light rounded-circle p-0 d-flex align-items-center justify-content-center border"
+                                  style={{ width: '32px', height: '32px', color: '#dc2626' }}
+                                  title="حذف الباقة"
+                                >
+                                  <i className="ti ti-trash fs-6"></i>
+                                </button>
+                              </div>
+                            </div>
+
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
+            )}
+
             {/* ================= TAB 3: FOOD DATABASE ================= */}
             {activeTab === 'foods' && (
               <div className="card-body p-4">
@@ -960,6 +1211,16 @@ export default function MasterSettingsHub() {
           exercise={editingExercise}
           onSave={handleSaveExercise}
           loading={saving}
+        />
+      )}
+
+      {packageModalOpen && (
+        <EditPackageModal
+          isOpen={packageModalOpen}
+          onClose={() => { setPackageModalOpen(false); setEditingPackage(null); }}
+          packageData={editingPackage}
+          onSave={handleSavePackage}
+          saving={saving}
         />
       )}
 

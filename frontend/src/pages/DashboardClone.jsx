@@ -141,6 +141,13 @@ export default function DashboardClone() {
             
             <div className="d-flex gap-2 flex-wrap">
               <Link 
+                to="/master-settings?tab=packages" 
+                className="btn btn-sm rounded-pill px-3 py-2 fw-semibold shadow-xs" 
+                style={{ fontSize: '0.84rem', background: '#f5f3ff', color: '#261c6a', border: '1px solid #ddd6fe' }}
+              >
+                <i className="ti ti-crown me-1"></i> إدارة الباقات والأسعار
+              </Link>
+              <Link 
                 to="/intake/submissions" 
                 className="btn btn-sm rounded-pill px-3 py-2 fw-semibold shadow-xs" 
                 style={{ fontSize: '0.84rem', background: '#ffffff', color: '#261c6a', border: '1px solid #c4b5fd' }}

@@ -5,7 +5,10 @@ import {
   deleteIntakeQuestion,
   getAdminExercises,
   saveAdminExercise,
-  deleteAdminExercise
+  deleteAdminExercise,
+  getSubscriptionPackages,
+  saveSubscriptionPackage,
+  deleteSubscriptionPackage
 } from '../controllers/admin-settings.controller.js';
 
 const router = express.Router();
@@ -24,5 +27,14 @@ router.put('/exercises/:id', (req, res) => {
   return saveAdminExercise(req, res);
 });
 router.delete('/exercises/:id', deleteAdminExercise);
+
+// 3. Subscription Packages & Pricing Manager
+router.get('/packages', getSubscriptionPackages);
+router.post('/packages', saveSubscriptionPackage);
+router.put('/packages/:id', (req, res) => {
+  req.body.id = req.params.id;
+  return saveSubscriptionPackage(req, res);
+});
+router.delete('/packages/:id', deleteSubscriptionPackage);
 
 export default router;
