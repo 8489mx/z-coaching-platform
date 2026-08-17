@@ -43,7 +43,15 @@ export default function ApproveCheckinModal({
                 <small className="text-muted" style={{ fontSize: '0.78rem' }}>المتدرب: {checkin.full_name || checkin.client_code}</small>
               </div>
             </div>
-            <button type="button" className="btn-close" onClick={onClose} title="إغلاق"></button>
+            <button 
+              type="button" 
+              onClick={onClose} 
+              className="btn btn-sm btn-light rounded-circle d-flex align-items-center justify-content-center flex-shrink-0" 
+              style={{ width: '34px', height: '34px', background: '#f8fafc', border: '1px solid #e2e8f0', color: '#64748b' }}
+              title="إغلاق"
+            >
+              <i className="ti ti-x fs-6"></i>
+            </button>
           </div>
 
           {/* Body */}
