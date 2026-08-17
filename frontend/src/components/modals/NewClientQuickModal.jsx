@@ -6,6 +6,7 @@ export default function NewClientQuickModal({ isOpen, onClose, onClientCreated }
   const navigate = useNavigate();
   const [phone, setPhone] = useState('');
   const [fullName, setFullName] = useState('');
+  const [subscriptionPackage, setSubscriptionPackage] = useState('ELITE_3_PLUS_1');
   const [loading, setLoading] = useState(false);
   const [newClient, setNewClient] = useState(null);
   const [copied, setCopied] = useState(false);
@@ -29,6 +30,7 @@ export default function NewClientQuickModal({ isOpen, onClose, onClientCreated }
   const handleClose = () => {
     setPhone('');
     setFullName('');
+    setSubscriptionPackage('ELITE_3_PLUS_1');
     setNewClient(null);
     setError('');
     setCopied(false);
@@ -50,7 +52,8 @@ export default function NewClientQuickModal({ isOpen, onClose, onClientCreated }
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           phone_number: phone.trim(),
-          full_name: fullName.trim() || undefined
+          full_name: fullName.trim() || undefined,
+          subscription_package: subscriptionPackage
         })
       });
 
@@ -174,7 +177,7 @@ export default function NewClientQuickModal({ isOpen, onClose, onClientCreated }
                 </div>
 
                 {/* Name Input */}
-                <div className="mb-4">
+                <div className="mb-3">
                   <label className="form-label fw-bold text-dark small mb-1" style={{ fontSize: '0.82rem' }}>
                     اسم العميل (اختياري)
                   </label>
@@ -183,9 +186,9 @@ export default function NewClientQuickModal({ isOpen, onClose, onClientCreated }
                       type="text" 
                       className="form-control" 
                       style={{ 
-                        height: '46px', 
+                        height: '42px', 
                         borderRadius: '12px', 
-                        fontSize: '0.88rem', 
+                        fontSize: '0.86rem', 
                         border: '1.5px solid #e2e8f0',
                         paddingRight: '42px'
                       }}
@@ -195,6 +198,66 @@ export default function NewClientQuickModal({ isOpen, onClose, onClientCreated }
                     />
                     <div className="position-absolute top-50 end-0 translate-middle-y pe-3 pointer-events-none" style={{ color: '#261c6a' }}>
                       <i className="ti ti-user fs-5"></i>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Package Selection (Elite & Max 3+1) */}
+                <div className="mb-4">
+                  <label className="form-label fw-bold text-dark small mb-2 d-flex justify-content-between align-items-center" style={{ fontSize: '0.82rem' }}>
+                    <span>باقة الاشتراك المسددة</span>
+                    <span className="badge rounded-pill fw-bold" style={{ background: '#ecfdf5', color: '#059669', fontSize: '0.68rem', border: '1px solid #a7f3d0' }}>
+                      عرض 3 شهور + 1 مجاناً
+                    </span>
+                  </label>
+
+                  <div className="row g-2">
+                    {/* 1. Elite Package */}
+                    <div className="col-6">
+                      <div 
+                        onClick={() => setSubscriptionPackage('ELITE_3_PLUS_1')}
+                        className="p-3 rounded-3 border text-center transition-all"
+                        style={{ 
+                          cursor: 'pointer',
+                          background: subscriptionPackage === 'ELITE_3_PLUS_1' ? '#f5f3ff' : '#ffffff',
+                          borderColor: subscriptionPackage === 'ELITE_3_PLUS_1' ? '#261c6a' : '#e2e8f0',
+                          borderWidth: subscriptionPackage === 'ELITE_3_PLUS_1' ? '2px' : '1px',
+                          boxShadow: subscriptionPackage === 'ELITE_3_PLUS_1' ? '0 4px 12px rgba(38,28,106,0.12)' : 'none'
+                        }}
+                      >
+                        <div className="d-flex align-items-center justify-content-center gap-1 mb-1">
+                          <i className="ti ti-crown fs-5" style={{ color: '#261c6a' }}></i>
+                          <strong className="d-block text-dark" style={{ fontSize: '0.88rem' }}>باقة إيليت</strong>
+                        </div>
+                        <span className="badge rounded-pill fw-bold text-muted d-block mb-1" style={{ fontSize: '0.66rem', background: '#f8fafc' }}>
+                          3 شهور + 1 مجاناً
+                        </span>
+                        <small className="text-muted d-block" style={{ fontSize: '0.7rem' }}>تغذية وتدريب ذكي ومتابعة</small>
+                      </div>
+                    </div>
+
+                    {/* 2. Max Package */}
+                    <div className="col-6">
+                      <div 
+                        onClick={() => setSubscriptionPackage('MAX_3_PLUS_1')}
+                        className="p-3 rounded-3 border text-center transition-all"
+                        style={{ 
+                          cursor: 'pointer',
+                          background: subscriptionPackage === 'MAX_3_PLUS_1' ? '#f5f3ff' : '#ffffff',
+                          borderColor: subscriptionPackage === 'MAX_3_PLUS_1' ? '#261c6a' : '#e2e8f0',
+                          borderWidth: subscriptionPackage === 'MAX_3_PLUS_1' ? '2px' : '1px',
+                          boxShadow: subscriptionPackage === 'MAX_3_PLUS_1' ? '0 4px 12px rgba(38,28,106,0.12)' : 'none'
+                        }}
+                      >
+                        <div className="d-flex align-items-center justify-content-center gap-1 mb-1">
+                          <i className="ti ti-flame fs-5" style={{ color: '#d97706' }}></i>
+                          <strong className="d-block text-dark" style={{ fontSize: '0.88rem' }}>باقة ماكس</strong>
+                        </div>
+                        <span className="badge rounded-pill fw-bold text-muted d-block mb-1" style={{ fontSize: '0.66rem', background: '#f8fafc' }}>
+                          3 شهور + 1 مجاناً
+                        </span>
+                        <small className="text-muted d-block" style={{ fontSize: '0.7rem' }}>VIP متابعة وتكنيك فيديو</small>
+                      </div>
                     </div>
                   </div>
                 </div>

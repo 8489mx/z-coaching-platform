@@ -7,12 +7,14 @@ import WhatsAppModal from '../components/modals/WhatsAppModal';
 import ApproveCheckinModal from '../components/modals/ApproveCheckinModal';
 
 export function formatSubscriptionPackage(pkg) {
-  if (!pkg) return 'باقة شهر واحد';
+  if (!pkg) return 'باقة إيليت (3 شهور + 1 مجاناً)';
   const p = String(pkg).toUpperCase();
-  if (p.includes('3') || p.includes('VIP')) return 'باقة 3 شهور VIP';
+  if (p.includes('MAX')) return 'باقة ماكس (3 شهور + 1 مجاناً)';
+  if (p.includes('ELITE')) return 'باقة إيليت (3 شهور + 1 مجاناً)';
+  if (p.includes('3') || p.includes('VIP')) return 'باقة إيليت (3 شهور + 1 مجاناً)';
   if (p.includes('6')) return 'باقة 6 شهور';
   if (p.includes('12') || p.includes('YEAR')) return 'باقة سنة كاملة';
-  if (p.includes('1') || p.includes('MONTH')) return 'باقة شهر واحد';
+  if (p.includes('1') || p.includes('MONTH')) return 'باقة إيليت (3 شهور + 1 مجاناً)';
   return pkg;
 }
 
