@@ -62,7 +62,7 @@ export default function Sidebar() {
             alignItems: 'center', 
             justifyContent: 'center', 
             textAlign: 'center', 
-            padding: '14px 10px 10px 10px',
+            padding: '10px 8px 6px 8px',
             width: '100%',
             borderBottom: '1px solid rgba(221, 214, 254, 0.25)',
             background: 'transparent'
@@ -85,8 +85,8 @@ export default function Sidebar() {
               src="/admin-dashboard_data/logo/z_dumbbell_flat.jpg" 
               alt="Z Coaching" 
               style={{ 
-                height: '64px', 
-                width: '64px', 
+                height: '48px', 
+                width: '48px', 
                 objectFit: 'contain', 
                 margin: '0 auto',
                 display: 'block'
@@ -95,15 +95,15 @@ export default function Sidebar() {
 
             <span 
               style={{ 
-                fontSize: '0.84rem', 
-                letterSpacing: '3.5px', 
+                fontSize: '0.76rem', 
+                letterSpacing: '3px', 
                 fontWeight: '900',
                 background: 'linear-gradient(135deg, #372896 0%, #261c6a 100%)',
                 WebkitBackgroundClip: 'text',
                 WebkitTextFillColor: 'transparent',
                 display: 'block',
-                marginTop: '4px',
-                lineHeight: '1.2',
+                marginTop: '2px',
+                lineHeight: '1.1',
                 textAlign: 'center',
                 width: '100%'
               }}
@@ -113,23 +113,24 @@ export default function Sidebar() {
           </Link>
         </div>
 
-        {/* Grouped Menu List (Clean Minimalist Active State) */}
+        {/* Grouped Menu List (Clean Minimalist Active State - Compact Spacing) */}
         <div 
           className="codex-menuwrapper custom-scroll flex-grow-1" 
           data-simplebar 
           data-simplebar-direction="rtl" 
           data-simplebar-auto-hide="true"
-          style={{ padding: '12px 10px', overflowY: 'auto' }}
+          style={{ padding: '6px 8px', overflowY: 'auto' }}
         >
           {MENU_GROUPS.map((group, gIdx) => (
             <div key={gIdx} className="mb-2">
               <div 
                 style={{ 
-                  fontSize: '0.66rem', 
+                  fontSize: '0.62rem', 
                   fontWeight: '700', 
                   color: '#94a3b8', 
-                  padding: '4px 10px', 
-                  letterSpacing: '0.3px'
+                  padding: '2px 8px', 
+                  letterSpacing: '0.2px',
+                  marginBottom: '2px'
                 }}
               >
                 {group.groupTitle}
@@ -139,28 +140,29 @@ export default function Sidebar() {
                 {group.items.map((item) => {
                   const isActive = location.pathname === item.path;
                   return (
-                    <li key={item.path} className="mb-1">
+                    <li key={item.path} style={{ marginBottom: '2px' }}>
                       <Link 
                         to={item.path}
-                        className={`golden-sidebar-item d-flex align-items-center justify-content-between px-3 py-2 rounded-3 text-decoration-none transition-all ${isActive ? 'active' : ''}`}
+                        className={`golden-sidebar-item d-flex align-items-center justify-content-between px-2 py-1 text-decoration-none transition-all ${isActive ? 'active' : ''}`}
                         style={{
-                          fontSize: '0.82rem',
+                          fontSize: '0.79rem',
                           fontWeight: isActive ? '700' : '500',
                           color: isActive ? group.color : '#475569',
                           background: isActive ? `linear-gradient(90deg, ${group.color}08, ${group.color}12)` : 'transparent',
-                          borderRadius: '10px',
+                          borderRadius: '8px',
                           borderRight: isActive ? `3px solid ${group.color}` : '3px solid transparent',
-                          transition: 'all 0.25s cubic-bezier(0.4, 0, 0.2, 1)',
-                          boxShadow: isActive ? `0 2px 8px ${group.color}15` : 'none'
+                          transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
+                          boxShadow: isActive ? `0 2px 6px ${group.color}15` : 'none',
+                          minHeight: '34px'
                         }}
                       >
                         <div className="d-flex align-items-center gap-2">
                           <div 
                             className="d-flex align-items-center justify-content-center flex-shrink-0"
                             style={{
-                              width: '28px',
-                              height: '28px',
-                              borderRadius: '8px',
+                              width: '24px',
+                              height: '24px',
+                              borderRadius: '6px',
                               background: isActive ? `linear-gradient(135deg, ${group.color}15, ${group.color}25)` : 'transparent',
                               transition: 'all 0.2s ease'
                             }}
@@ -168,7 +170,7 @@ export default function Sidebar() {
                             <i 
                               className={`ti ${item.icon}`}
                               style={{ 
-                                fontSize: '1.05rem',
+                                fontSize: '0.94rem',
                                 color: isActive ? group.color : '#94a3b8',
                                 transition: 'color 0.2s ease'
                               }}
