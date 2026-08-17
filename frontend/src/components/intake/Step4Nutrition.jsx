@@ -74,19 +74,30 @@ export default function Step4Nutrition({
               <div className="form-group" style={{ marginBottom: 0 }}>
                 <label className="form-label">المادة أو الصنف</label>
                 <select className="form-control" value={allergy.substance} onChange={e => updateArrayItem('nutrition', 'allergies', idx, 'substance', e.target.value)}>
-                  <option value="DAIRY">منتجات الألبان (Dairy)</option>
-                  <option value="NUTS">المكسرات (Nuts)</option>
-                  <option value="GLUTEN">الجلوتين (Gluten)</option>
-                  <option value="SEAFOOD">المأكولات البحرية</option>
-                  <option value="EGGS">البيض</option>
-                  <option value="SESAME">السمسم</option>
+                  <option value="DAIRY">الحليب ومشتقات الألبان (Milk & Dairy)</option>
+                  <option value="EGGS">البيض (Eggs)</option>
+                  <option value="PEANUTS">الفول السوداني (Peanuts)</option>
+                  <option value="TREE_NUTS">المكسرات الشجرية (كاجو، لوز، جوز، فستق، بندق)</option>
+                  <option value="SEAFOOD">المأكولات البحرية والأسماك (Fish & Seafood)</option>
+                  <option value="SHELLFISH">القشريات والصدفيات (جمبري، إستاكوزا، كابوريا)</option>
+                  <option value="GLUTEN">الجلوتين وحساسية القمح (Gluten & Wheat)</option>
+                  <option value="SOY">الصويا ومشتقات الصويا (Soy & Soybeans)</option>
+                  <option value="SESAME">السمسم والطحينة (Sesame & Tahini)</option>
+                  <option value="LEGUMES">البقوليات (الفول، العدس، الحمص)</option>
+                  <option value="STRAWBERRY">الفراولة والتوتيات (Strawberries & Berries)</option>
+                  <option value="CITRUS">الحمضيات والموالح (برتقال، ليمون، جريب فروت)</option>
+                  <option value="CORN">الذرة ومنتجات الذرة (Corn)</option>
+                  <option value="SULFITES">الكبريتات والمواد الحافظة (Sulfites)</option>
+                  <option value="BANANA">الموز (Banana)</option>
+                  <option value="CHOCOLATE">الشوكولاتة والكاكاو (Chocolate & Cocoa)</option>
+                  <option value="OTHER">حساسية صنف آخر</option>
                 </select>
               </div>
               <div className="form-group" style={{ marginBottom: 0 }}>
                 <label className="form-label">هل هي حساسية مشخصة طبياً؟</label>
                 <select className="form-control" value={String(allergy.medicallyConfirmed)} onChange={e => updateArrayItem('nutrition', 'allergies', idx, 'medicallyConfirmed', e.target.value === 'true')}>
-                  <option value="true">نعم، تم تشخيصها</option>
-                  <option value="false">لا، مجرد شك/تجنب شخصي</option>
+                  <option value="true">نعم، تم تشخيصها طبياً</option>
+                  <option value="false">لا، مجرد شك أو تجنب شخصي</option>
                 </select>
               </div>
             </div>
@@ -109,19 +120,26 @@ export default function Step4Nutrition({
               <div className="form-group" style={{ marginBottom: 0 }}>
                 <label className="form-label">الصنف أو المادة</label>
                 <select className="form-control" value={intol.substance} onChange={e => updateArrayItem('nutrition', 'intolerances', idx, 'substance', e.target.value)}>
-                  <option value="LACTOSE">اللاكتوز (Lactose)</option>
-                  <option value="GLUTEN">الجلوتين (Gluten)</option>
-                  <option value="FODMAP">الفودماب (FODMAP)</option>
-                  <option value="HISTAMINE">الهيستامين (Histamine)</option>
-                  <option value="OTHER">أخرى</option>
+                  <option value="LACTOSE">سكر الحليب واللاكتوز (Lactose Intolerance)</option>
+                  <option value="GLUTEN">حساسية الجلوتين غير السيلياك (Non-Celiac Gluten)</option>
+                  <option value="FRUCTOSE">سكر الفواكه والفركتوز (Fructose Malabsorption)</option>
+                  <option value="FODMAP">أطعمة الفودماب والسكريات المخمرة (FODMAPs)</option>
+                  <option value="HISTAMINE">الهيستامين والأطعمة المعتقة (Histamine)</option>
+                  <option value="CAFFEINE">الكافيين والمنبهات (Caffeine Sensitivity)</option>
+                  <option value="SPICY_FOODS">الأطعمة الحارة والبهارات الشديدة (Spicy Foods)</option>
+                  <option value="ARTIFICIAL_SWEETENERS">المحليات الصناعية وسكر الكحول (Sweeteners)</option>
+                  <option value="EGGS_INTOLERANCE">صفار أو بياض البيض (Egg Intolerance)</option>
+                  <option value="YEAST">الخمائر ومنتجات التخمير (Yeast)</option>
+                  <option value="SULFITES">الكبريتات والمجففات (Sulfites)</option>
+                  <option value="OTHER">عدم تحمل صنف آخر</option>
                 </select>
               </div>
               <div className="form-group" style={{ marginBottom: 0 }}>
                 <label className="form-label">الحدة (Severity)</label>
                 <select className="form-control" value={intol.severity} onChange={e => updateArrayItem('nutrition', 'intolerances', idx, 'severity', e.target.value)}>
-                  <option value="MILD">خفيفة</option>
-                  <option value="MODERATE">متوسطة</option>
-                  <option value="SEVERE">شديدة</option>
+                  <option value="MILD">خفيفة (MILD)</option>
+                  <option value="MODERATE">متوسطة (MODERATE)</option>
+                  <option value="SEVERE">شديدة (SEVERE)</option>
                 </select>
               </div>
               <div className="form-group" style={{ marginBottom: 0 }}>
@@ -133,7 +151,7 @@ export default function Step4Nutrition({
               </div>
               <div className="form-group" style={{ marginBottom: 0 }}>
                 <label className="form-label">ملاحظات إضافية</label>
-                <input type="text" className="form-control" value={intol.notes || ''} onChange={e => updateArrayItem('nutrition', 'intolerances', idx, 'notes', e.target.value)} placeholder="مثال: يسبب لي انتفاخ شديد" />
+                <input type="text" className="form-control" value={intol.notes || ''} onChange={e => updateArrayItem('nutrition', 'intolerances', idx, 'notes', e.target.value)} placeholder="مثال: يسبب لي انتفاخ شديد أو مغص" />
               </div>
             </div>
           </div>
@@ -144,7 +162,7 @@ export default function Step4Nutrition({
       </div>
 
       <div className="section-divider"></div>
-      <h3 className="section-title">مشاكل الهضم (Digestive Issues)</h3>
+      <h3 className="section-title">مشاكل واضطرابات الهضم (Digestive Issues)</h3>
       <div className="array-builder">
         {formData.nutrition.digestiveIssues.map((issue, idx) => (
           <div key={idx} className="array-item">
@@ -153,21 +171,26 @@ export default function Step4Nutrition({
             </button>
             <div className="grid-2-col" style={{ width: '100%' }}>
               <div className="form-group" style={{ marginBottom: 0 }}>
-                <label className="form-label">المشكلة</label>
+                <label className="form-label">المشكلة أو الاضطراب</label>
                 <select className="form-control" value={issue.name} onChange={e => updateArrayItem('nutrition', 'digestiveIssues', idx, 'name', e.target.value)}>
-                  <option value="BLOATING">انتفاخ (Bloating)</option>
-                  <option value="ACID_REFLUX">حموضة / ارتجاع مريء (Acid Reflux)</option>
-                  <option value="IBS">قولون عصبي (IBS)</option>
-                  <option value="CONSTIPATION">إمساك (Constipation)</option>
-                  <option value="DIARRHEA">إسهال (Diarrhea)</option>
+                  <option value="BLOATING">انتفاخ وغازات متكررة (Bloating & Gas)</option>
+                  <option value="ACID_REFLUX">حموضة وحرقان المعدة وارتجاع مريء (Acid Reflux / GERD)</option>
+                  <option value="IBS">متلازمة القولون العصبي (Irritable Bowel Syndrome - IBS)</option>
+                  <option value="CONSTIPATION">إمساك مزمن وصعوبة إخراج (Chronic Constipation)</option>
+                  <option value="DIARRHEA">إسهال متكرر أو براز رخو (Frequent Diarrhea)</option>
+                  <option value="INDIGESTION">عسر هضم وبطء تفريغ المعدة (Dyspepsia / Indigestion)</option>
+                  <option value="STOMACH_ULCER">التهاب أو قرحة المعدة (Gastritis / Stomach Ulcer)</option>
+                  <option value="FAT_MALABSORPTION">كسل المرارة أو صعوبة هضم الدهون (Fat Malabsorption)</option>
+                  <option value="STOMACH_CRAMPS">تقلصات ومغص متكرر في البطن (Abdominal Cramps)</option>
+                  <option value="OTHER">اضطراب هضمي آخر</option>
                 </select>
               </div>
               <div className="form-group" style={{ marginBottom: 0 }}>
                 <label className="form-label">الحدة (Severity)</label>
                 <select className="form-control" value={issue.severity} onChange={e => updateArrayItem('nutrition', 'digestiveIssues', idx, 'severity', e.target.value)}>
-                  <option value="MILD">خفيفة</option>
-                  <option value="MODERATE">متوسطة</option>
-                  <option value="SEVERE">شديدة</option>
+                  <option value="MILD">خفيفة (MILD)</option>
+                  <option value="MODERATE">متوسطة (MODERATE)</option>
+                  <option value="SEVERE">شديدة (SEVERE)</option>
                 </select>
               </div>
             </div>
