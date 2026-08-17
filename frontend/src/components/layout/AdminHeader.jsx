@@ -113,14 +113,14 @@ export default function AdminHeader({ searchTerm, onSearchChange, searchPlacehol
             <div className="position-relative" ref={dropdownRef}>
               <div 
                 onClick={() => setIsProfileDropdownOpen(!isProfileDropdownOpen)}
-                className="d-flex align-items-center gap-2 py-1 px-3 rounded-pill border transition-all"
+                className="d-flex align-items-center gap-2 px-3 rounded-pill border transition-all"
                 style={{ 
-                  height: '36px',
+                  height: '38px',
                   cursor: 'pointer',
                   userSelect: 'none',
                   background: isProfileDropdownOpen ? '#f5f3ff' : '#ffffff',
                   borderColor: isProfileDropdownOpen ? '#c4b5fd' : '#e2e8f0',
-                  boxShadow: '0 1px 3px rgba(0,0,0,0.02)'
+                  boxShadow: isProfileDropdownOpen ? '0 2px 8px rgba(38,28,106,0.1)' : '0 1px 3px rgba(0,0,0,0.03)'
                 }}
                 role="button"
                 tabIndex={0}
@@ -131,18 +131,17 @@ export default function AdminHeader({ searchTerm, onSearchChange, searchPlacehol
                     width: '26px', 
                     height: '26px', 
                     background: 'linear-gradient(135deg, #261c6a 0%, #4338ca 100%)',
-                    fontSize: '0.76rem'
+                    fontSize: '0.78rem'
                   }}
                 >
                   Z
                 </div>
-                <div className="d-none d-md-block text-end">
-                  <span className="fw-bold d-block text-dark lh-1" style={{ fontSize: '0.82rem' }}>كابتن Z Coaching</span>
-                  <small className="text-muted" style={{ fontSize: '0.64rem' }}>Master Coach</small>
-                </div>
+                <span className="d-none d-md-inline-block fw-bold text-dark lh-base" style={{ fontSize: '0.84rem', letterSpacing: '-0.2px' }}>
+                  كابتن Z Coaching
+                </span>
                 <i 
                   className={`ti ti-chevron-down text-muted small transition-transform ${isProfileDropdownOpen ? 'rotate-180' : ''}`}
-                  style={{ fontSize: '0.72rem', transition: 'transform 0.2s ease' }}
+                  style={{ fontSize: '0.74rem', transition: 'transform 0.2s ease' }}
                 ></i>
               </div>
 
