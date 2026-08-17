@@ -24,11 +24,13 @@ export default function UserDashboardHeader({ currentUser, targetUserId, clients
     };
   }, []);
 
-  const activeClient = clients.find(c => String(c.client_code || c.id) === String(targetUserId)) || 
-                       currentUser || 
+  const activeClient = currentUser || 
+                       clients.find(c => String(c.client_code || c.id) === String(targetUserId)) || 
                        (clients.length > 0 ? clients[0] : null);
 
-  const activeName = activeClient?.full_name || (currentUser?.full_name) || "أحمد سمير";
+  const activeName = currentUser?.full_name || 
+                     activeClient?.full_name || 
+                     (activeClient?.client_code ? `متدرب #${activeClient.client_code}` : (targetUserId ? `متدرب #${targetUserId}` : "المتدرب"));
 
   const handleSelectClient = (clientCode) => {
     sessionStorage.setItem('z_active_client_code', clientCode);

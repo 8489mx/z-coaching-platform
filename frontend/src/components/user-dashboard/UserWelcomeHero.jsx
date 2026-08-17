@@ -12,7 +12,7 @@ const MOTIVATIONAL_QUOTES = [
 
 export default function UserWelcomeHero({ currentUser, coachNotes }) {
   const rawGender = (currentUser?.gender || '').toLowerCase();
-  const fullName = currentUser?.full_name || 'أحمد سمير';
+  const fullName = currentUser?.full_name || (currentUser?.client_code ? `متدرب #${currentUser.client_code}` : 'المتدرب');
 
   const isFemale = rawGender === 'female' || rawGender === 'f' || rawGender === 'أنثى' || 
                    fullName.includes('سارة') || 

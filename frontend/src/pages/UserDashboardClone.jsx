@@ -92,6 +92,9 @@ export default function UserDashboardClone() {
   });
   const [checkinResult, setCheckinResult] = useState(null);
 
+  const [generatingPlan, setGeneratingPlan] = useState(false);
+  const [copiedLink, setCopiedLink] = useState(false);
+
   const searchParams = new URLSearchParams(window.location.search);
   const targetUserId = searchParams.get('user_id') || sessionStorage.getItem('z_active_client_code') || "CLIENT-AHMED-SAMIR";
 
@@ -117,14 +120,35 @@ export default function UserDashboardClone() {
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "فشل تحميل البرنامج من قاعدة البيانات");
 
-      setProgram(data.master_program);
       if (data.user) {
         setCurrentUser(data.user);
       }
+      setProgram(data.master_program || null);
     } catch (e) {
       console.error("fetchLiveProgram error:", e);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleQuickGeneratePlan = async () => {
+    try {
+      setGeneratingPlan(true);
+      const res = await fetch(`${API_BASE}/api/v1/programs/generate-for-client/${targetUserId}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' }
+      });
+      const data = await res.json();
+      if (res.ok && data.master_program) {
+        setProgram(data.master_program);
+        if (data.user) setCurrentUser(data.user);
+      } else {
+        alert(data.error || 'حدث خطأ أثناء توليد الخطة');
+      }
+    } catch (e) {
+      alert('خطأ في الاتصال بالخادم: ' + e.message);
+    } finally {
+      setGeneratingPlan(false);
     }
   };
 
@@ -283,34 +307,132 @@ export default function UserDashboardClone() {
  {/* 3. Main Workspace */}
  <main className="themebody-wrap">
  <div className="theme-body">
- <div className="container-fluid">
+        <div className="container-fluid">
           {/* 1. Hero Card */}
           <UserWelcomeHero currentUser={currentUser} coachNotes={program?.coach_notes} />
 
-          {/* 2. Macro Stats */}
-          <MacroOverviewCard nutrition={nutrition} />
+          {!program && !loading ? (
+            /* Pending Intake & Program Generation Card */
+            <div className="row mb-4 z-animate-in">
+              <div className="col-12">
+                <div className="p-4 p-md-5 rounded-4 bg-white border text-center shadow-sm position-relative overflow-hidden" style={{ borderColor: '#e2e8f0' }}>
+                  <div 
+                    className="rounded-circle d-flex align-items-center justify-content-center mx-auto mb-3"
+                    style={{ width: '64px', height: '64px', background: '#f5f3ff', color: '#261c6a', border: '2px solid #ddd6fe' }}
+                  >
+                    <i className="ti ti-clipboard-check fs-2"></i>
+                  </div>
 
-          {/* 3. Daily 3 Meals Section (3 side-by-side vertical cards across the page) */}
-          <MealsSection 
-            nutrition={nutrition}
-            loading={loading}
-            formatArabicFoodSingleLine={formatArabicFoodSingleLine}
-            onOpenSwapModal={handleOpenSwapModal}
-          />
+                  <h4 className="fw-bold text-dark mb-2" style={{ letterSpacing: '-0.3px' }}>
+                    بانتظار استكمال استمارة المشترك
+                  </h4>
 
-          {/* 4. Cardio Zone Banner */}
-          <CardioZoneBanner onOpenCheckin={() => setCheckinModalOpen(true)} />
+                  <p className="text-muted mx-auto mb-4" style={{ maxWidth: '540px', fontSize: '0.9rem', lineHeight: 1.6 }}>
+                    تم تسجيل حساب المشترك بنجاح، ولم يتم توليد الخطة بعد. يمكنك إرسال رابط الاستمارة للمتدرب لتعبئة بياناته، أو توليد خطة مبدئية فوراً بواسطة محرك <strong className="text-primary">Z-Engine V2</strong>.
+                  </p>
 
-          {/* 5. Today's Full-Width Workout Section */}
-          <WorkoutSection 
-            todaySession={todaySession}
-            loading={loading}
-            completedExercises={completedExercises}
-            onToggleExercise={toggleExercise}
-          />
+                  <div className="p-3 bg-light rounded-3 d-inline-flex flex-wrap align-items-center justify-content-center gap-3 mb-4 border">
+                    <span className="small text-dark fw-bold">
+                      كود المشترك: <span className="badge font-monospace" style={{ background: '#261c6a', color: '#fff' }}>{currentUser?.client_code || targetUserId}</span>
+                    </span>
+                    <span className="small text-muted">|</span>
+                    <span className="small text-dark fw-bold">
+                      الهاتف: <span dir="ltr" className="text-muted">{currentUser?.phone_number || '-'}</span>
+                    </span>
+                    <span className="small text-muted">|</span>
+                    <span className="small text-dark fw-bold">
+                      الباقة: <span className="badge bg-success-subtle text-success border border-success-subtle">{currentUser?.subscription_package?.includes('MAX') ? 'باقة ماكس (3 شهور + 1 مجاناً)' : 'باقة إيليت (3 شهور + 1 مجاناً)'}</span>
+                    </span>
+                  </div>
 
-          {/* 6. Supplements Protocol */}
-          <SupplementsSection supplements={program?.supplements} />
+                  <div className="d-flex align-items-center justify-content-center gap-2 flex-wrap">
+                    {/* Copy Link Button */}
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const link = `${window.location.origin}/intake/form?code=${currentUser?.client_code || targetUserId}&phone=${currentUser?.phone_number || ''}`;
+                        navigator.clipboard.writeText(link);
+                        setCopiedLink(true);
+                        setTimeout(() => setCopiedLink(false), 2500);
+                      }}
+                      className="btn btn-sm btn-light rounded-pill px-4 fw-semibold border d-flex align-items-center gap-2"
+                      style={{ height: '38px', fontSize: '0.82rem' }}
+                    >
+                      <i className={copiedLink ? "ti ti-check text-success" : "ti ti-copy"}></i>
+                      <span>{copiedLink ? 'تم نسخ الرابط!' : 'نسخ رابط الاستمارة'}</span>
+                    </button>
+
+                    {/* WhatsApp Button */}
+                    {currentUser?.phone_number && (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          const link = `${window.location.origin}/intake/form?code=${currentUser?.client_code || targetUserId}&phone=${currentUser?.phone_number || ''}`;
+                          const msg = `مرحباً بك مع كابتن كيمو في منظومة Z Coaching!\nيرجى تعبئة استمارة التقييم للبدء في خطتك:\n${link}\nكودك: ${currentUser?.client_code || targetUserId}`;
+                          let phone = currentUser.phone_number.replace(/\D/g, '');
+                          if (phone.startsWith('01')) phone = '2' + phone;
+                          window.open(`https://wa.me/${phone}?text=${encodeURIComponent(msg)}`, '_blank');
+                        }}
+                        className="btn btn-sm btn-success rounded-pill px-4 fw-bold d-flex align-items-center gap-2 text-white shadow-xs"
+                        style={{ height: '38px', fontSize: '0.82rem' }}
+                      >
+                        <i className="ti ti-brand-whatsapp fs-6"></i>
+                        <span>إرسال عبر WhatsApp</span>
+                      </button>
+                    )}
+
+                    {/* Quick Generate Engine V2 Plan */}
+                    <button
+                      type="button"
+                      disabled={generatingPlan}
+                      onClick={handleQuickGeneratePlan}
+                      className="btn btn-sm rounded-pill px-4 fw-bold d-flex align-items-center gap-2 text-white shadow-sm"
+                      style={{ 
+                        height: '38px', 
+                        fontSize: '0.82rem', 
+                        background: 'linear-gradient(135deg, #261c6a 0%, #4338ca 100%)', 
+                        border: 'none',
+                        boxShadow: '0 3px 12px rgba(38,28,106,0.25)'
+                      }}
+                    >
+                      {generatingPlan ? (
+                        <><span className="spinner-border spinner-border-sm"></span> جاري بناء الخطة بالمحرك...</>
+                      ) : (
+                        <><i className="ti ti-sparkles fs-6"></i> توليد الخطة الآن (Z-Engine)</>
+                      )}
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          ) : (
+            <>
+              {/* 2. Macro Stats */}
+              <MacroOverviewCard nutrition={nutrition} />
+
+              {/* 3. Daily 3 Meals Section (3 side-by-side vertical cards across the page) */}
+              <MealsSection 
+                nutrition={nutrition}
+                loading={loading}
+                formatArabicFoodSingleLine={formatArabicFoodSingleLine}
+                onOpenSwapModal={handleOpenSwapModal}
+              />
+
+              {/* 4. Cardio Zone Banner */}
+              <CardioZoneBanner onOpenCheckin={() => setCheckinModalOpen(true)} />
+
+              {/* 5. Today's Full-Width Workout Section */}
+              <WorkoutSection 
+                todaySession={todaySession}
+                loading={loading}
+                completedExercises={completedExercises}
+                onToggleExercise={toggleExercise}
+              />
+
+              {/* 6. Supplements Protocol */}
+              <SupplementsSection supplements={program?.supplements} />
+            </>
+          )}
         </div>
       </div>
  </main>

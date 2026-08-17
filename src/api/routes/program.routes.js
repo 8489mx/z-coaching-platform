@@ -5,6 +5,7 @@ import {
   generateProgramPreview,
   generateAndSaveProgram,
   generateProgramFromSubmission,
+  generateProgramForClient,
   evaluateCheckinHandler,
   submitWeeklyCheckin,
   getPendingCheckins,
@@ -25,6 +26,7 @@ router.post("/generate", requireAuth, generateProgram);
 router.post("/generate-preview", generateProgramPreview); // Unauthenticated route for dashboard testing
 router.post("/generate-and-save", generateAndSaveProgram); // Save client & program to MariaDB z
 router.post("/generate-from-submission/:submission_id", requireAuth, generateProgramFromSubmission);
+router.post("/generate-for-client/:user_id", generateProgramForClient);
 router.get("/", requireAuth, getUserPrograms);
 router.get("/active/:user_id", getActiveProgramByUserId); // Fetch active program from MariaDB
 

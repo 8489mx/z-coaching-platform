@@ -267,6 +267,68 @@ export const generateProgramFromSubmission = async (req, res) => {
   }
 };
 
+export const generateProgramForClient = async (req, res) => {
+  try {
+    const { user_id } = req.params;
+    let user = await User.findOne({ where: { client_code: user_id } });
+    if (!user && !isNaN(user_id)) {
+      user = await User.findByPk(parseInt(user_id, 10));
+    }
+    if (!user) {
+      user = await User.findOne({ where: { phone_number: user_id } });
+    }
+    if (!user) {
+      return res.status(404).json({ error: "المتدرب غير موجود" });
+    }
+
+    const { COMPLETE_INTAKE } = await import("../../../test/fixtures/complete-intake.js");
+    const clientIntake = {
+      ...COMPLETE_INTAKE,
+      personal: {
+        ...COMPLETE_INTAKE.personal,
+        firstName: user.full_name?.split(" ")[0] || `متدرب`,
+        lastName: user.full_name?.split(" ")[1] || `${user.client_code}`,
+        phone: user.phone_number,
+      }
+    };
+
+    const evaluationContext = Object.freeze({
+      system_time: new Date().toISOString(),
+      assessmentDate: new Date().toISOString().split("T")[0]
+    });
+
+    const catalog = await loadFoodCatalog();
+    const masterProgram = buildMasterEngineV2({
+      intake: clientIntake,
+      evaluationContext,
+      nutritionFoodCatalog: catalog,
+      options: {}
+    });
+
+    const savedProgram = await Program.create({
+      user_id: user.id,
+      program_data: masterProgram,
+    });
+
+    return res.status(201).json({
+      message: "تم توليد الخطة الذكية بنجاح",
+      program_id: savedProgram.id,
+      user: {
+        id: user.id,
+        client_code: user.client_code,
+        full_name: user.full_name || `متدرب #${user.client_code}`,
+        phone_number: user.phone_number,
+        subscription_package: user.subscription_package,
+        role: user.role
+      },
+      master_program: masterProgram
+    });
+  } catch (err) {
+    console.error("generateProgramForClient error:", err);
+    return res.status(500).json({ error: "فشل توليد الخطة", details: err.message });
+  }
+};
+
 export const getUserPrograms = async (req, res) => {
   try {
     const programs = await Program.findAll({
@@ -674,22 +736,37 @@ export const getActiveProgramByUserId = async (req, res) => {
     }
 
     if (!user) {
-      return res.status(404).json({ error: "User not found" });
+      return res.status(404).json({ error: "المتدرب غير موجود" });
     }
 
     const program = await Program.findOne({
       where: { user_id: user.id },
       order: [["id", "DESC"]],
-      include: [{ model: User, as: "user", attributes: ["id", "client_code", "full_name", "email", "role"] }],
+      include: [{ model: User, as: "user", attributes: ["id", "client_code", "full_name", "phone_number", "email", "role", "subscription_package"] }],
     });
 
     if (!program) {
-      return res.status(404).json({ error: "No active program found for this client" });
+      return res.status(200).json({
+        has_program: false,
+        program_id: null,
+        user: {
+          id: user.id,
+          client_code: user.client_code,
+          full_name: user.full_name || `متدرب #${user.client_code}`,
+          phone_number: user.phone_number,
+          email: user.email,
+          subscription_package: user.subscription_package,
+          role: user.role
+        },
+        master_program: null,
+        message: "No active program found for this client yet"
+      });
     }
 
     return res.status(200).json({
+      has_program: true,
       program_id: program.id,
-      user: program.user,
+      user: program.user || user,
       master_program: program.program_data,
     });
   } catch (err) {
