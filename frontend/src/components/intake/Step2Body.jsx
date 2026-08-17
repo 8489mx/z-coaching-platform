@@ -14,52 +14,96 @@ export default function Step2Body({
           <input 
             type="number" 
             className="form-control" 
-            value={formData.body.heightCm} 
+            placeholder="مثال: 175"
+            value={formData.body?.heightCm || ''} 
             onChange={e => updateField('body', 'heightCm', Number(e.target.value))} 
+            style={{ fontWeight: '600' }}
           />
         </div>
         <div className="form-group">
-          <label className="form-label">الوزن (كجم)</label>
+          <label className="form-label">الوزن الحالي (كجم)</label>
           <input 
             type="number" 
+            step="0.1"
             className="form-control" 
-            value={formData.body.weightKg} 
+            placeholder="مثال: 82.5"
+            value={formData.body?.weightKg || ''} 
             onChange={e => updateField('body', 'weightKg', Number(e.target.value))} 
+            style={{ fontWeight: '600' }}
           />
         </div>
         <div className="form-group">
-          <label className="form-label">محيط الخصر (سم) - اختياري ولكن مهم</label>
+          <label className="form-label">
+            محيط الخصر عند السرة (سم) <span className="text-muted fw-normal">(اختياري)</span>
+          </label>
           <input 
             type="number" 
+            step="0.5"
             className="form-control" 
-            value={formData.body.waistCm} 
+            placeholder="مثال: 88"
+            value={formData.body?.waistCm || ''} 
             onChange={e => updateField('body', 'waistCm', Number(e.target.value))} 
+            style={{ fontWeight: '600' }}
           />
+          <small className="text-muted" style={{ fontSize: '0.74rem' }}>
+            * يُقاس بشريط قياس (مازورة) حول مستوى السرة تماماً بدون شد أو حبس نفس
+          </small>
         </div>
         <div className="form-group">
-          <label className="form-label">دقة القياسات المتوفرة لديك</label>
-          <select 
-            className="form-control" 
-            value={formData.body.measurementQuality} 
-            onChange={e => updateField('body', 'measurementQuality', e.target.value)}
-          >
-            <option value="LOW">منخفضة (تخمين فقط)</option>
-            <option value="MEDIUM">متوسطة</option>
-            <option value="HIGH">عالية (ميزان دقيق وشريط قياس)</option>
-          </select>
+          <label className="form-label">دقة القياسات المدخلة</label>
+          <div className="choices-grid" style={{ gridTemplateColumns: '1fr 1fr' }}>
+            <div 
+              className={`choice-pill ${formData.body?.measurementQuality === 'ACTUAL_MEASURED' || formData.body?.measurementQuality === 'HIGH' ? 'selected' : ''}`} 
+              onClick={() => updateField('body', 'measurementQuality', 'ACTUAL_MEASURED')}
+            >
+              <div className="choice-title">مقاسة فعلياً بميزان وشريط قياس</div>
+            </div>
+            <div 
+              className={`choice-pill ${formData.body?.measurementQuality === 'APPROXIMATE' || formData.body?.measurementQuality === 'LOW' ? 'selected' : ''}`} 
+              onClick={() => updateField('body', 'measurementQuality', 'APPROXIMATE')}
+            >
+              <div className="choice-title">أرقام تقريبية</div>
+            </div>
+          </div>
         </div>
-        <div className="form-group">
-          <label className="form-label">اتجاه وزنك مؤخراً</label>
-          <select 
-            className="form-control" 
-            value={formData.body.weightTrend || 'STABLE'} 
-            onChange={e => updateField('body', 'weightTrend', e.target.value)}
-          >
-            <option value="LOSING">وزني ينزل مؤخراً</option>
-            <option value="STABLE">وزني ثابت ومستقر</option>
-            <option value="GAINING">وزني يزداد مؤخراً</option>
-          </select>
+      </div>
+
+      {/* Weight Trend Last 3 Months */}
+      <div className="form-group mt-3">
+        <label className="form-label">اتجاه وزنك خلال آخر 3 شهور:</label>
+        <div className="choices-grid" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))' }}>
+          {[
+            { v: 'STABLE', l: 'وزني ثابت ومستقر تقريباً' },
+            { v: 'LOSING', l: 'وزني في نزول مستمر' },
+            { v: 'GAINING', l: 'وزني في زيادة مستمرة' }
+          ].map(trend => (
+            <div 
+              key={trend.v} 
+              className={`choice-pill ${formData.body?.weightTrend === trend.v ? 'selected' : ''}`} 
+              onClick={() => updateField('body', 'weightTrend', trend.v)}
+            >
+              <div className="choice-title">{trend.l}</div>
+            </div>
+          ))}
         </div>
+
+        {(formData.body?.weightTrend === 'LOSING' || formData.body?.weightTrend === 'GAINING') && (
+          <div className="p-3 rounded-3 mt-2 bg-light border">
+            <label className="form-label text-dark fw-bold mb-1">
+              كم كيلو تقريباً {formData.body?.weightTrend === 'LOSING' ? 'نزل وزنك' : 'زاد وزنك'} خلال هذه الفترة؟
+            </label>
+            <select 
+              className="form-control"
+              value={formData.body?.weightTrendAmount || '3_TO_5_KG'}
+              onChange={e => updateField('body', 'weightTrendAmount', e.target.value)}
+              style={{ fontWeight: '600' }}
+            >
+              <option value="1_TO_2_KG">من 1 إلى 2 كجم (تغير طفيف)</option>
+              <option value="3_TO_5_KG">من 3 إلى 5 كجم (تغير ملحوظ)</option>
+              <option value="MORE_THAN_5_KG">أكثر من 5 كجم (تغير كبير)</option>
+            </select>
+          </div>
+        )}
       </div>
 
       {/* Optional Progress Photos Upload Box */}
