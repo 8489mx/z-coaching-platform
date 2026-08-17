@@ -42,12 +42,12 @@ export default function SupplementsSection({ supplements }) {
   const list = supplements || DEFAULT_SUPPLEMENTS;
 
   return (
-    <div className="card border-0 shadow-sm bg-white mt-4 mb-4" style={{ borderRadius: "16px", border: "1px solid #e2e8f0" }} id="supplements-plan">
+    <div className="z-glass-card mt-4 mb-4 z-animate-in" id="supplements-plan">
       <div className="card-body p-4">
-        <div className="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
+        <div className="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2 pb-3 border-bottom" style={{ borderColor: 'rgba(237,233,254,0.6)' }}>
           <div>
             <div className="d-flex align-items-center gap-2 mb-1">
-              <div className="rounded-circle d-flex align-items-center justify-content-center" style={{ width: '30px', height: '30px', background: '#f5f3ff', color: '#261c6a', border: '1px solid #ddd6fe' }}>
+              <div className="rounded-circle d-flex align-items-center justify-content-center flex-shrink-0 z-icon-energy" style={{ width: '32px', height: '32px', borderRadius: '9px' }}>
                 <i className="ti ti-pill fs-6"></i>
               </div>
               <h5 className="fw-bold text-dark mb-0" style={{ fontSize: '1.05rem' }}>
@@ -56,7 +56,7 @@ export default function SupplementsSection({ supplements }) {
             </div>
             <p className="text-muted small mb-0" style={{ fontSize: '0.78rem' }}>توقيتات تناول المكملات الموصى بها لتعزيز الأداء والاستشفاء العضلي</p>
           </div>
-          <span className="badge rounded-pill px-3 py-1 fw-bold" style={{ background: '#ecfdf5', color: '#059669', border: '1px solid #a7f3d0', fontSize: '0.74rem' }}>
+          <span className="badge rounded-pill px-3 py-1 fw-bold" style={{ background: 'linear-gradient(135deg, #ecfdf5, #d1fae5)', color: '#059669', border: 'none', fontSize: '0.74rem', boxShadow: '0 1px 3px rgba(16,185,129,0.08)' }}>
             معتمد من الكابتن ✓
           </span>
         </div>
@@ -64,10 +64,19 @@ export default function SupplementsSection({ supplements }) {
         <div className="row g-3">
           {list.map((sup, idx) => (
             <div className="col-lg-4 col-md-6" key={idx}>
-              <div className="card border h-100 rounded-3 p-3 shadow-none transition-all" style={{ background: '#fbfaff', borderColor: '#ede9fe', borderRadius: '14px' }}>
-                <div className="d-flex justify-content-between align-items-start mb-2">
-                  <h6 className="fw-bold text-dark mb-0" style={{ fontSize: '0.86rem' }}>{sup.name_ar}</h6>
-                  <span className="badge rounded-pill fw-bold" style={{ background: '#f5f3ff', color: '#261c6a', border: '1px solid #ddd6fe', fontSize: '0.68rem' }}>
+              <div 
+                className="card border h-100 p-3 transition-all" 
+                style={{ 
+                  background: 'rgba(255,255,255,0.7)', 
+                  borderColor: 'rgba(226,232,240,0.8)', 
+                  borderRadius: '14px',
+                  backdropFilter: 'blur(8px)',
+                  boxShadow: '0 2px 8px rgba(0,0,0,0.02)'
+                }}
+              >
+                <div className="d-flex justify-content-between align-items-start mb-2 gap-2">
+                  <h6 className="fw-bold text-dark mb-0" style={{ fontSize: '0.88rem' }}>{sup.name_ar}</h6>
+                  <span className="badge rounded-pill fw-bold flex-shrink-0" style={{ background: 'linear-gradient(135deg, #f5f3ff, #ede9fe)', color: '#261c6a', border: '1px solid #ddd6fe', fontSize: '0.68rem' }}>
                     {sup.dosage}
                   </span>
                 </div>

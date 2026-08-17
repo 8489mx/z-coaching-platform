@@ -321,24 +321,57 @@ export default function MobileAppSimulator() {
         {/* Dynamic Island */}
         <div className="position-absolute top-0 start-50 translate-middle-x mt-2 bg-dark rounded-pill" style={{ width: '120px', height: '24px', zIndex: 100 }}></div>
 
-        {/* App Top Bar */}
-        <div className="pt-5 pb-3 px-3 bg-white border-bottom d-flex align-items-center justify-content-between" style={{ borderColor: '#f1f5f9' }}>
+        {/* App Top Bar (Luxury Glass Header) */}
+        <div 
+          className="pt-5 pb-3 px-3 border-bottom d-flex align-items-center justify-content-between position-relative" 
+          style={{ 
+            background: 'linear-gradient(180deg, #ffffff 0%, #f8faff 100%)',
+            borderColor: '#edf2f7',
+            zIndex: 10
+          }}
+        >
           <div className="d-flex align-items-center gap-2">
-            <div className="rounded-circle d-flex align-items-center justify-content-center fw-bold" style={{ width: '36px', height: '36px', background: '#f5f3ff', color: '#261c6a', border: '1.5px solid #ddd6fe', fontSize: '0.85rem' }}>
+            <div 
+              className="rounded-circle d-flex align-items-center justify-content-center fw-bold shadow-xs flex-shrink-0" 
+              style={{ 
+                width: '38px', 
+                height: '38px', 
+                background: 'linear-gradient(135deg, #261c6a 0%, #4c1d95 100%)', 
+                color: '#ffffff', 
+                border: '2px solid #ffffff', 
+                fontSize: '0.9rem',
+                boxShadow: '0 3px 10px rgba(38, 28, 106, 0.25)'
+              }}
+            >
               {(user?.full_name || 'U')[0]}
             </div>
             <div>
-              <h6 className="fw-bold text-dark mb-0 lh-1" style={{ fontSize: '0.92rem' }}>{user?.full_name || 'كيمو المحروقي'}</h6>
-              <small className="text-muted" style={{ fontSize: '0.7rem' }}>كود المشترك: {user?.client_code || targetUserId}</small>
+              <h6 className="fw-bold text-dark mb-0 lh-1" style={{ fontSize: '0.94rem' }}>{user?.full_name || 'كيمو المحروقي'}</h6>
+              <small className="text-muted" style={{ fontSize: '0.68rem' }}>كود المشترك: <strong className="font-monospace text-dark">{user?.client_code || targetUserId}</strong></small>
             </div>
           </div>
-          <span className="badge rounded-pill px-2 py-1 fw-bold" style={{ background: '#f5f3ff', color: '#261c6a', border: '1px solid #ddd6fe', fontSize: '0.68rem' }}>
+          <span 
+            className="badge rounded-pill px-2 py-1 fw-bold" 
+            style={{ 
+              background: 'linear-gradient(135deg, #f5f3ff 0%, #ede9fe 100%)', 
+              color: '#261c6a', 
+              border: '1px solid #ddd6fe', 
+              fontSize: '0.66rem',
+              boxShadow: '0 2px 6px rgba(38,28,106,0.06)'
+            }}
+          >
             Z-ENGINE V2
           </span>
         </div>
 
         {/* App Scrollable Content */}
-        <div className="flex-grow-1 overflow-auto p-3 custom-scroll" style={{ height: 'calc(100% - 145px)' }}>
+        <div 
+          className="flex-grow-1 overflow-auto p-3 custom-scroll" 
+          style={{ 
+            height: 'calc(100% - 145px)',
+            background: 'linear-gradient(180deg, #f8faff 0%, #f1f5f9 100%)'
+          }}
+        >
           {loading ? (
             <div className="text-center py-5">
               <div className="spinner-border spinner-border-sm text-primary" role="status"></div>
@@ -348,14 +381,23 @@ export default function MobileAppSimulator() {
             <>
               {/* TAB 1: HOME OVERVIEW */}
               {activeTab === 'home' && (
-                <div>
-                  {/* Coach Direct Notes Banner */}
+                <div className="d-flex flex-column gap-3">
+                  {/* Coach Direct Notes Banner (Luxury Notification Card) */}
                   {program?.coach_notes && (
-                    <div className="p-3 mb-3 rounded-4 shadow-xs" style={{ backgroundColor: '#fbfaff', border: '1px solid #ede9fe', borderRight: '4px solid #261c6a' }}>
-                      <div className="d-flex align-items-center gap-1 mb-1">
-                        <span className="badge rounded-pill px-2" style={{ background: '#f5f3ff', color: '#261c6a', fontSize: '0.66rem', border: '1px solid #ddd6fe' }}>
-                          توجيهات الكابتن 
+                    <div 
+                      className="p-3 rounded-4 shadow-sm position-relative overflow-hidden" 
+                      style={{ 
+                        background: 'linear-gradient(135deg, #ffffff 0%, #fbfaff 100%)', 
+                        border: '1px solid #ede9fe', 
+                        borderRight: '4px solid #261c6a',
+                        boxShadow: '0 4px 15px rgba(38, 28, 106, 0.05)'
+                      }}
+                    >
+                      <div className="d-flex align-items-center justify-content-between mb-1">
+                        <span className="badge rounded-pill px-2 py-1 fw-bold" style={{ background: '#f5f3ff', color: '#261c6a', fontSize: '0.66rem', border: '1px solid #ddd6fe' }}>
+                          <i className="ti ti-crown me-1"></i> توجيهات الكابتن 
                         </span>
+                        <small className="text-muted" style={{ fontSize: '0.64rem' }}>خطة اليوم</small>
                       </div>
                       <p className="small mb-0 text-dark fw-semibold" style={{ fontSize: '0.82rem', lineHeight: '1.5' }}>
                         {program.coach_notes}
@@ -363,83 +405,201 @@ export default function MobileAppSimulator() {
                     </div>
                   )}
 
-                  {/* Daily Target Macros Card (Clean legible typography) */}
-                  <div className="card border-0 shadow-sm bg-white rounded-4 mb-3" style={{ border: '1px solid #e2e8f0' }}>
+                  {/* Daily Target Macros Card (Energizing Visual Hub) */}
+                  <div 
+                    className="card border-0 shadow-sm bg-white rounded-4 overflow-hidden" 
+                    style={{ 
+                      border: '1px solid rgba(226, 232, 240, 0.8)',
+                      boxShadow: '0 4px 20px rgba(15, 23, 42, 0.04)'
+                    }}
+                  >
                     <div className="card-body p-3">
-                      <div className="d-flex justify-content-between align-items-center mb-2">
-                        <h6 className="fw-bold text-dark mb-0" style={{ fontSize: '0.88rem' }}>طاقة وماكروز اليوم</h6>
-                        <span className="badge rounded-pill fw-semibold" style={{ background: '#f5f3ff', color: '#261c6a', fontSize: '0.66rem', border: '1px solid #ddd6fe' }}>
-                          المستهدف
+                      <div className="d-flex justify-content-between align-items-center mb-3">
+                        <div className="d-flex align-items-center gap-2">
+                          <div className="rounded-circle d-flex align-items-center justify-content-center" style={{ width: '24px', height: '24px', background: '#f5f3ff', color: '#261c6a' }}>
+                            <i className="ti ti-flame fs-6"></i>
+                          </div>
+                          <h6 className="fw-bold text-dark mb-0" style={{ fontSize: '0.88rem' }}>طاقة وماكروز اليوم</h6>
+                        </div>
+                        <span className="badge rounded-pill fw-semibold px-2 py-1" style={{ background: '#ecfdf5', color: '#059669', fontSize: '0.64rem', border: '1px solid #a7f3d0' }}>
+                          الهدف اليومي ✓
                         </span>
                       </div>
+                      
                       <div className="row text-center g-2">
+                        {/* Calories */}
                         <div className="col-3">
-                          <div className="p-2 rounded-3 border" style={{ background: '#fbfaff', borderColor: '#ede9fe' }}>
-                            <div className="fw-bold" style={{ fontSize: '0.9rem', color: '#261c6a' }}>{caloriesTarget}</div>
-                            <div className="text-muted" style={{ fontSize: '0.64rem' }}>سعرة</div>
+                          <div 
+                            className="p-2 rounded-3 border d-flex flex-column justify-content-between" 
+                            style={{ 
+                              background: 'linear-gradient(180deg, #fbfaff 0%, #f5f3ff 100%)', 
+                              borderColor: '#ddd6fe',
+                              minHeight: '74px'
+                            }}
+                          >
+                            <span className="text-muted" style={{ fontSize: '0.62rem' }}>السعرات</span>
+                            <div className="fw-black" style={{ fontSize: '1rem', color: '#261c6a', letterSpacing: '-0.3px', fontWeight: '900' }}>{caloriesTarget}</div>
+                            <div className="text-muted fw-semibold" style={{ fontSize: '0.6rem' }}>سعرة</div>
                           </div>
                         </div>
+
+                        {/* Protein */}
                         <div className="col-3">
-                          <div className="p-2 rounded-3 border" style={{ background: '#f8fafc', borderColor: '#e2e8f0' }}>
-                            <div className="fw-bold text-dark" style={{ fontSize: '0.9rem' }}>{proteinTarget}g</div>
-                            <div className="text-muted" style={{ fontSize: '0.64rem' }}>بروتين</div>
+                          <div 
+                            className="p-2 rounded-3 border d-flex flex-column justify-content-between" 
+                            style={{ 
+                              background: 'linear-gradient(180deg, #f0fdfa 0%, #ecfeff 100%)', 
+                              borderColor: '#a5f3fc',
+                              minHeight: '74px'
+                            }}
+                          >
+                            <span className="text-muted" style={{ fontSize: '0.62rem' }}>بروتين</span>
+                            <div className="fw-black" style={{ fontSize: '1rem', color: '#0891b2', letterSpacing: '-0.3px', fontWeight: '900' }}>{proteinTarget}g</div>
+                            <div className="text-cyan fw-semibold" style={{ fontSize: '0.6rem', color: '#0891b2' }}>عالي</div>
                           </div>
                         </div>
+
+                        {/* Carbs */}
                         <div className="col-3">
-                          <div className="p-2 rounded-3 border" style={{ background: '#fffbeb', borderColor: '#fef3c7' }}>
-                            <div className="fw-bold" style={{ fontSize: '0.9rem', color: '#d97706' }}>{carbsTarget}g</div>
-                            <div className="text-muted" style={{ fontSize: '0.64rem' }}>كارب</div>
+                          <div 
+                            className="p-2 rounded-3 border d-flex flex-column justify-content-between" 
+                            style={{ 
+                              background: 'linear-gradient(180deg, #fffdf5 0%, #fffbeb 100%)', 
+                              borderColor: '#fef08a',
+                              minHeight: '74px'
+                            }}
+                          >
+                            <span className="text-muted" style={{ fontSize: '0.62rem' }}>كارب</span>
+                            <div className="fw-black" style={{ fontSize: '1rem', color: '#d97706', letterSpacing: '-0.3px', fontWeight: '900' }}>{carbsTarget}g</div>
+                            <div className="fw-semibold" style={{ fontSize: '0.6rem', color: '#d97706' }}>طاقة</div>
                           </div>
                         </div>
+
+                        {/* Fats */}
                         <div className="col-3">
-                          <div className="p-2 rounded-3 border" style={{ background: '#ecfdf5', borderColor: '#d1fae5' }}>
-                            <div className="fw-bold" style={{ fontSize: '0.9rem', color: '#059669' }}>{fatsTarget}g</div>
-                            <div className="text-muted" style={{ fontSize: '0.64rem' }}>دهون</div>
+                          <div 
+                            className="p-2 rounded-3 border d-flex flex-column justify-content-between" 
+                            style={{ 
+                              background: 'linear-gradient(180deg, #f6fef9 0%, #ecfdf5 100%)', 
+                              borderColor: '#a7f3d0',
+                              minHeight: '74px'
+                            }}
+                          >
+                            <span className="text-muted" style={{ fontSize: '0.62rem' }}>دهون</span>
+                            <div className="fw-black" style={{ fontSize: '1rem', color: '#059669', letterSpacing: '-0.3px', fontWeight: '900' }}>{fatsTarget}g</div>
+                            <div className="fw-semibold" style={{ fontSize: '0.6rem', color: '#059669' }}>صحية</div>
                           </div>
                         </div>
                       </div>
                     </div>
                   </div>
 
-                  {/* Workout Action Card */}
+                  {/* Workout Action Card (Motivating Neon Accent) */}
                   <div 
                     onClick={() => setActiveTab('workout')}
-                    className="card border-0 shadow-sm bg-white rounded-4 mb-3 p-3 transition-all"
-                    style={{ cursor: 'pointer', border: '1px solid #e2e8f0' }}
+                    className="card border-0 shadow-sm rounded-4 p-3 transition-all position-relative overflow-hidden"
+                    style={{ 
+                      cursor: 'pointer', 
+                      background: 'linear-gradient(135deg, #ffffff 0%, #f0fdfa 100%)',
+                      border: '1px solid #ccfbf1',
+                      boxShadow: '0 4px 15px rgba(13, 148, 136, 0.06)'
+                    }}
                   >
                     <div className="d-flex align-items-center justify-content-between">
                       <div className="d-flex align-items-center gap-3">
-                        <div className="rounded-3 d-flex align-items-center justify-content-center" style={{ width: '36px', height: '36px', background: '#f5f3ff', color: '#261c6a', border: '1px solid #ddd6fe' }}>
+                        <div 
+                          className="rounded-3 d-flex align-items-center justify-content-center shadow-xs" 
+                          style={{ 
+                            width: '42px', 
+                            height: '42px', 
+                            background: 'linear-gradient(135deg, #06b6d4 0%, #0891b2 100%)', 
+                            color: '#ffffff'
+                          }}
+                        >
                           <i className="ti ti-barbell fs-5"></i>
                         </div>
                         <div>
-                          <div className="fw-bold text-dark" style={{ fontSize: '0.86rem' }}>
+                          <div className="fw-bold text-dark" style={{ fontSize: '0.9rem' }}>
                             {activeSession?.session_name || activeSession?.session_code || 'تمرين اليوم'}
                           </div>
-                          <small className="text-muted" style={{ fontSize: '0.72rem' }}>{exercises.length} تمارين مبرمجة</small>
+                          <small className="text-muted d-block" style={{ fontSize: '0.72rem' }}>{exercises.length} تمارين مبرمجة • اضغط للبدء</small>
                         </div>
                       </div>
-                      <i className="ti ti-chevron-left text-muted"></i>
+                      <span className="badge rounded-pill px-2 py-1 fw-bold" style={{ background: '#0891b2', color: '#ffffff', fontSize: '0.66rem' }}>
+                        ابدأ الآن ←
+                      </span>
                     </div>
                   </div>
 
-                  {/* Check-in Action Card */}
+                  {/* Meals Action Card (Appetizing Orange Accent) */}
                   <div 
-                    onClick={() => setActiveTab('checkin')}
-                    className="card border-0 shadow-sm bg-white rounded-4 p-3 transition-all"
-                    style={{ cursor: 'pointer', border: '1px solid #e2e8f0' }}
+                    onClick={() => setActiveTab('nutrition')}
+                    className="card border-0 shadow-sm rounded-4 p-3 transition-all position-relative overflow-hidden"
+                    style={{ 
+                      cursor: 'pointer', 
+                      background: 'linear-gradient(135deg, #ffffff 0%, #fffbeb 100%)',
+                      border: '1px solid #fef3c7',
+                      boxShadow: '0 4px 15px rgba(217, 119, 6, 0.06)'
+                    }}
                   >
                     <div className="d-flex align-items-center justify-content-between">
                       <div className="d-flex align-items-center gap-3">
-                        <div className="rounded-3 d-flex align-items-center justify-content-center" style={{ width: '36px', height: '36px', background: '#ecfdf5', color: '#059669', border: '1px solid #a7f3d0' }}>
+                        <div 
+                          className="rounded-3 d-flex align-items-center justify-content-center shadow-xs" 
+                          style={{ 
+                            width: '42px', 
+                            height: '42px', 
+                            background: 'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)', 
+                            color: '#ffffff'
+                          }}
+                        >
+                          <i className="ti ti-salad fs-5"></i>
+                        </div>
+                        <div>
+                          <div className="fw-bold text-dark" style={{ fontSize: '0.9rem' }}>
+                            جدول الوجبات والبدائل
+                          </div>
+                          <small className="text-muted d-block" style={{ fontSize: '0.72rem' }}>{meals.length} وجبات رئيسية موزونة</small>
+                        </div>
+                      </div>
+                      <span className="badge rounded-pill px-2 py-1 fw-bold" style={{ background: '#d97706', color: '#ffffff', fontSize: '0.66rem' }}>
+                        عرض الوجبات ←
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Check-in Action Card (Emerald Success Accent) */}
+                  <div 
+                    onClick={() => setActiveTab('checkin')}
+                    className="card border-0 shadow-sm rounded-4 p-3 transition-all position-relative overflow-hidden"
+                    style={{ 
+                      cursor: 'pointer', 
+                      background: 'linear-gradient(135deg, #ffffff 0%, #ecfdf5 100%)',
+                      border: '1px solid #d1fae5',
+                      boxShadow: '0 4px 15px rgba(5, 150, 105, 0.06)'
+                    }}
+                  >
+                    <div className="d-flex align-items-center justify-content-between">
+                      <div className="d-flex align-items-center gap-3">
+                        <div 
+                          className="rounded-3 d-flex align-items-center justify-content-center shadow-xs" 
+                          style={{ 
+                            width: '42px', 
+                            height: '42px', 
+                            background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)', 
+                            color: '#ffffff'
+                          }}
+                        >
                           <i className="ti ti-clipboard-check fs-5"></i>
                         </div>
                         <div>
-                          <div className="fw-bold text-dark" style={{ fontSize: '0.86rem' }}>المتابعة الأسبوعية</div>
-                          <small className="text-muted" style={{ fontSize: '0.72rem' }}>تسجيل الأوزان وتحديث الخطة</small>
+                          <div className="fw-bold text-dark" style={{ fontSize: '0.9rem' }}>المتابعة الأسبوعية</div>
+                          <small className="text-muted d-block" style={{ fontSize: '0.72rem' }}>تسجيل الأوزان وتحديث الخطة</small>
                         </div>
                       </div>
-                      <i className="ti ti-chevron-left text-muted"></i>
+                      <span className="badge rounded-pill px-2 py-1 fw-bold" style={{ background: '#059669', color: '#ffffff', fontSize: '0.66rem' }}>
+                        تسجيل ←
+                      </span>
                     </div>
                   </div>
                 </div>
@@ -447,19 +607,19 @@ export default function MobileAppSimulator() {
 
               {/* TAB 2: WORKOUT SCREEN */}
               {activeTab === 'workout' && (
-                <div>
+                <div className="d-flex flex-column gap-3">
                   {/* Session Selector Chips */}
-                  <div className="d-flex gap-2 overflow-auto pb-2 mb-2">
+                  <div className="d-flex gap-2 overflow-auto pb-1">
                     {sessions.map((sess, idx) => (
                       <button
                         key={idx}
                         onClick={() => setSelectedSessionIdx(idx)}
-                        className={`btn btn-sm rounded-pill px-3 fw-bold text-nowrap transition-all ${selectedSessionIdx === idx ? 'text-white shadow-xs' : 'bg-white text-dark border'}`}
+                        className={`btn btn-sm rounded-pill px-3 fw-bold text-nowrap transition-all ${selectedSessionIdx === idx ? 'text-white shadow-sm' : 'bg-white text-dark border'}`}
                         style={{
-                          background: selectedSessionIdx === idx ? '#261c6a' : '#ffffff',
-                          borderColor: selectedSessionIdx === idx ? '#261c6a' : '#e2e8f0',
+                          background: selectedSessionIdx === idx ? 'linear-gradient(135deg, #261c6a 0%, #4c1d95 100%)' : '#ffffff',
+                          borderColor: selectedSessionIdx === idx ? 'transparent' : '#e2e8f0',
                           fontSize: '0.76rem',
-                          height: '32px'
+                          height: '34px'
                         }}
                       >
                         {sess.session_name || sess.session_code || `تمرين ${idx + 1}`}
@@ -469,15 +629,22 @@ export default function MobileAppSimulator() {
 
                   {/* Rest Timer Floating Toast */}
                   {restSeconds > 0 && (
-                    <div className="p-2 rounded-3 mb-3 d-flex justify-content-between align-items-center text-white" style={{ background: '#261c6a' }}>
-                      <div className="small fw-bold" style={{ fontSize: '0.78rem' }}>
-                        <i className="ti ti-timer me-1"></i> الراحة المتبقية: {restSeconds} ثانية
+                    <div 
+                      className="p-3 rounded-4 d-flex justify-content-between align-items-center text-white shadow-md animate__animated animate__pulse animate__infinite" 
+                      style={{ 
+                        background: 'linear-gradient(135deg, #261c6a 0%, #06b6d4 100%)',
+                        boxShadow: '0 4px 15px rgba(38, 28, 106, 0.3)'
+                      }}
+                    >
+                      <div className="small fw-bold d-flex align-items-center gap-2" style={{ fontSize: '0.84rem' }}>
+                        <i className="ti ti-timer fs-5"></i>
+                        <span>الراحة المتبقية: <strong>{restSeconds}</strong> ثانية</span>
                       </div>
-                      <button onClick={() => setRestSeconds(0)} className="btn btn-sm btn-link p-0 text-white opacity-75">إلغاء</button>
+                      <button onClick={() => setRestSeconds(0)} className="btn btn-sm btn-light rounded-pill px-2 py-0 fw-bold" style={{ fontSize: '0.72rem' }}>إلغاء</button>
                     </div>
                   )}
 
-                  {/* Exercises List */}
+                  {/* Exercises List with Technique Video and Celebration Check */}
                   <div className="d-flex flex-column gap-2">
                     {exercises.map((ex, exIdx) => {
                       const sets = ex.prescription?.sets || ex.sets || 3;
@@ -487,35 +654,67 @@ export default function MobileAppSimulator() {
                         ? ex.prescription.target_rir 
                         : (ex.rir !== undefined ? ex.rir : 2);
                       const isDone = completedExercises[ex.exercise_code || exIdx];
+                      const arName = ex.name_ar || getArabicExerciseName(ex.exercise_code || ex);
+                      const enName = ex.name_en || ex.exercise_code?.replace(/_/g, ' ') || 'Exercise';
 
                       return (
-                        <div key={exIdx} className="card border-0 shadow-sm bg-white rounded-4 p-3" style={{ border: '1px solid #e2e8f0' }}>
-                          <div className="d-flex justify-content-between align-items-start">
-                            <div>
-                              <div className="fw-bold text-dark" style={{ fontSize: '0.86rem' }}>{ex.name_en || ex.exercise_code?.replace(/_/g, ' ') || 'Exercise'}</div>
-                              <small className="text-muted" style={{ fontSize: '0.74rem' }}>{getArabicExerciseName(ex)}</small>
+                        <div 
+                          key={exIdx} 
+                          className="card border-0 shadow-sm rounded-4 p-3 transition-all" 
+                          style={{ 
+                            background: isDone ? 'linear-gradient(135deg, #f0fdf4 0%, #ecfdf5 100%)' : '#ffffff',
+                            border: isDone ? '1.5px solid #86efac' : '1px solid #e2e8f0',
+                            boxShadow: '0 2px 10px rgba(0,0,0,0.02)'
+                          }}
+                        >
+                          <div className="d-flex justify-content-between align-items-start gap-2">
+                            <div className="flex-grow-1">
+                              <a 
+                                href={`https://www.youtube.com/results?search_query=${encodeURIComponent(arName + ' ' + enName + ' form technique')}`}
+                                target="_blank" 
+                                rel="noreferrer"
+                                className="text-decoration-none d-flex align-items-center gap-1"
+                                title="اضغط لمشاهدة فيديو التكنيك"
+                              >
+                                <span className="fw-bold text-dark" style={{ fontSize: '0.88rem' }}>{enName}</span>
+                                <i className="ti ti-video text-danger fs-6" title="فيديو شرح التمرين"></i>
+                              </a>
+                              <small className="text-muted d-block" style={{ fontSize: '0.74rem' }}>{arName}</small>
                             </div>
+                            
                             <button 
                               onClick={() => toggleExercise(ex.exercise_code || exIdx)}
-                              className={`btn btn-sm rounded-circle p-1 d-flex align-items-center justify-content-center transition-all ${isDone ? 'text-white' : 'border bg-white text-muted'}`}
-                              style={{ width: '28px', height: '28px', background: isDone ? '#16a34a' : '#ffffff', borderColor: '#e2e8f0' }}
+                              className={`btn btn-sm rounded-circle p-1 d-flex align-items-center justify-content-center transition-all flex-shrink-0 ${isDone ? 'text-white shadow-xs' : 'border bg-light text-muted'}`}
+                              style={{ 
+                                width: '32px', 
+                                height: '32px', 
+                                background: isDone ? '#10b981' : '#f8fafc', 
+                                borderColor: isDone ? '#10b981' : '#cbd5e1' 
+                              }}
+                              title={isDone ? 'تم إكمال التمرين' : 'اضغط لتحديد الإكمال'}
                             >
-                              <i className={`ti ${isDone ? 'ti-check' : 'ti-circle'}`} style={{ fontSize: '0.75rem' }}></i>
+                              <i className={`ti ${isDone ? 'ti-check fs-6' : 'ti-circle'}`}></i>
                             </button>
                           </div>
                           
-                          <div className="d-flex align-items-center justify-content-between mt-2 pt-2 border-top" style={{ borderColor: '#f1f5f9' }}>
-                            <div className="d-flex gap-1">
-                              <span className="badge bg-light text-dark border" style={{ fontSize: '0.66rem' }}>{sets} مجموعات</span>
-                              <span className="badge bg-light text-dark border" style={{ fontSize: '0.66rem' }}>{reps} تكرار</span>
-                              <span className="badge bg-light text-dark border" style={{ fontSize: '0.66rem' }}>RIR {rir}</span>
+                          <div className="d-flex align-items-center justify-content-between mt-2 pt-2 border-top" style={{ borderColor: isDone ? '#bbf7d0' : '#f1f5f9' }}>
+                            <div className="d-flex gap-1 flex-wrap">
+                              <span className="badge rounded-pill px-2 py-1 fw-bold" style={{ background: '#f5f3ff', color: '#261c6a', fontSize: '0.66rem' }}>
+                                {sets} مجموعات
+                              </span>
+                              <span className="badge rounded-pill px-2 py-1 fw-bold" style={{ background: '#eff6ff', color: '#0284c7', fontSize: '0.66rem' }}>
+                                {reps} تكرار
+                              </span>
+                              <span className="badge rounded-pill px-2 py-1 fw-bold" style={{ background: '#fefce8', color: '#ca8a04', fontSize: '0.66rem' }}>
+                                RIR {rir}
+                              </span>
                             </div>
                             <button 
                               onClick={() => setRestSeconds(rest)}
-                              className="btn btn-sm rounded-pill py-0 px-2 fw-semibold"
-                              style={{ fontSize: '0.7rem', background: '#f5f3ff', color: '#261c6a', border: '1px solid #ddd6fe', height: '24px' }}
+                              className="btn btn-sm rounded-pill py-0 px-2 fw-semibold d-flex align-items-center gap-1 shadow-xs"
+                              style={{ fontSize: '0.7rem', background: '#f5f3ff', color: '#261c6a', border: '1px solid #ddd6fe', height: '26px' }}
                             >
-                              <i className="ti ti-timer me-1"></i> {rest}ث
+                              <i className="ti ti-timer"></i> <span>{rest}ث</span>
                             </button>
                           </div>
                         </div>
@@ -525,64 +724,116 @@ export default function MobileAppSimulator() {
                 </div>
               )}
 
-              {/* TAB 3: NUTRITION SCREEN WITH SMART SWAP (Clean readable text) */}
+              {/* TAB 3: NUTRITION SCREEN WITH APPETIZING CARDS & SMART SWAP */}
               {activeTab === 'nutrition' && (
                 <div className="d-flex flex-column gap-3">
-                  {meals.map((meal, mIdx) => (
-                    <div key={mIdx} className="card border-0 shadow-sm bg-white rounded-4 overflow-hidden" style={{ border: '1px solid #e2e8f0' }}>
-                      <div className="p-3 border-bottom d-flex justify-content-between align-items-center" style={{ background: '#fbfaff', borderColor: '#ede9fe' }}>
-                        <h6 className="fw-bold mb-0" style={{ fontSize: '0.88rem', color: '#261c6a' }}>{meal.name || `الوجبة ${meal.meal_number || (mIdx + 1)}`}</h6>
-                        <span className="badge rounded-pill fw-semibold" style={{ background: '#f5f3ff', color: '#261c6a', fontSize: '0.66rem', border: '1px solid #ddd6fe' }}>
-                          {meal.foods?.length || 0} أصناف
-                        </span>
-                      </div>
-                      <div className="p-3 d-flex flex-column gap-2">
-                        {meal.foods?.map((f, fIdx) => {
-                          const grams = f.portion_g_rounded || f.grams || 100;
-                          return (
-                            <div key={fIdx} className="p-2 px-3 border rounded-3 bg-white d-flex justify-content-between align-items-center" style={{ borderColor: '#f1f5f9' }}>
-                              <div>
-                                <span className="fw-semibold text-dark d-block" style={{ fontSize: '0.82rem' }}>
-                                  {f.name_ar || f.name_en || 'صنف'}
-                                </span>
-                                <small className="text-muted" style={{ fontSize: '0.72rem' }}>
-                                  الكمية: <strong className="text-dark fw-bold">{grams} جم</strong>
-                                </small>
-                              </div>
-                              <button
-                                type="button"
-                                onClick={() => handleOpenSwapModal(mIdx, fIdx, f, meal.role)}
-                                className="btn btn-sm rounded-pill px-2 py-0 fw-semibold d-flex align-items-center gap-1 shadow-xs"
-                                style={{ fontSize: '0.72rem', background: '#f5f3ff', color: '#261c6a', border: '1px solid #ddd6fe', height: '26px' }}
-                                title="تبديل الصنف ببديل مكافئ"
+                  {meals.map((meal, mIdx) => {
+                    const mealTheme = mIdx === 0 
+                      ? { bg: '#fffbeb', border: '#f59e0b', color: '#d97706', label: 'الوجبة 1 (الإفطار)' }
+                      : mIdx === 1
+                      ? { bg: '#ecfdf5', border: '#10b981', color: '#059669', label: 'الوجبة 2 (الغداء)' }
+                      : { bg: '#f5f3ff', border: '#261c6a', color: '#261c6a', label: 'الوجبة 3 (العشاء)' };
+
+                    return (
+                      <div 
+                        key={mIdx} 
+                        className="card border-0 shadow-sm bg-white rounded-4 overflow-hidden" 
+                        style={{ 
+                          border: '1px solid #e2e8f0',
+                          boxShadow: '0 4px 15px rgba(0,0,0,0.03)'
+                        }}
+                      >
+                        <div 
+                          className="p-3 border-bottom d-flex justify-content-between align-items-center" 
+                          style={{ 
+                            background: `linear-gradient(135deg, #ffffff 0%, ${mealTheme.bg} 100%)`, 
+                            borderTop: `3.5px solid ${mealTheme.border}`,
+                            borderColor: '#ede9fe' 
+                          }}
+                        >
+                          <div>
+                            <h6 className="fw-bold mb-0" style={{ fontSize: '0.9rem', color: mealTheme.color }}>
+                              {mealTheme.label}
+                            </h6>
+                            <small className="text-muted" style={{ fontSize: '0.66rem' }}>موزونة قبل / بعد الطهي</small>
+                          </div>
+                          <span 
+                            className="badge rounded-pill fw-bold px-2 py-1" 
+                            style={{ 
+                              background: mealTheme.bg, 
+                              color: mealTheme.color, 
+                              fontSize: '0.68rem', 
+                              border: `1px solid ${mealTheme.border}30` 
+                            }}
+                          >
+                            {meal.foods?.length || 0} أصناف
+                          </span>
+                        </div>
+
+                        <div className="p-3 d-flex flex-column gap-2" style={{ background: '#fafbff' }}>
+                          {meal.foods?.map((f, fIdx) => {
+                            const grams = f.portion_g_rounded || f.grams || 100;
+                            return (
+                              <div 
+                                key={fIdx} 
+                                className="p-2 px-3 border rounded-3 bg-white d-flex justify-content-between align-items-center shadow-2xs" 
+                                style={{ borderColor: '#edf2f7' }}
                               >
-                                <i className="ti ti-arrows-exchange"></i>
-                                <span>تبديل</span>
-                              </button>
-                            </div>
-                          );
-                        })}
+                                <div>
+                                  <span className="fw-bold text-dark d-block" style={{ fontSize: '0.84rem' }}>
+                                    {f.name_ar || f.name_en || 'صنف غذائي'}
+                                  </span>
+                                  <small className="text-muted" style={{ fontSize: '0.7rem' }}>
+                                    الكمية: <strong className="text-dark fw-bold">{grams} جرام</strong>
+                                  </small>
+                                </div>
+                                <button
+                                  type="button"
+                                  onClick={() => handleOpenSwapModal(mIdx, fIdx, f, meal.role)}
+                                  className="btn btn-sm rounded-pill px-2 py-0 fw-bold d-flex align-items-center gap-1 shadow-xs"
+                                  style={{ 
+                                    fontSize: '0.72rem', 
+                                    background: 'linear-gradient(135deg, #f5f3ff 0%, #ede9fe 100%)', 
+                                    color: '#261c6a', 
+                                    border: '1px solid #ddd6fe', 
+                                    height: '26px' 
+                                  }}
+                                  title="تبديل الصنف ببديل مكافئ"
+                                >
+                                  <i className="ti ti-arrows-exchange"></i>
+                                  <span>تبديل</span>
+                                </button>
+                              </div>
+                            );
+                          })}
+                        </div>
                       </div>
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
               )}
 
               {/* TAB 4: CHECKIN SCREEN */}
               {activeTab === 'checkin' && (
-                <form onSubmit={handleCheckinSubmit}>
-                  <div className="card border-0 shadow-sm bg-white rounded-4 p-3 mb-3" style={{ border: '1px solid #e2e8f0' }}>
-                    <h6 className="fw-bold text-dark mb-1" style={{ fontSize: '0.88rem' }}>أوزان الأيام الـ 7 على الريق</h6>
-                    <small className="text-muted d-block mb-3" style={{ fontSize: '0.72rem' }}>سجل أوزانك اليومية بعد الاستيقاظ</small>
+                <form onSubmit={handleCheckinSubmit} className="d-flex flex-column gap-3">
+                  <div className="card border-0 shadow-sm bg-white rounded-4 p-3" style={{ border: '1px solid #e2e8f0' }}>
+                    <div className="d-flex align-items-center gap-2 mb-1">
+                      <div className="rounded-circle d-flex align-items-center justify-content-center" style={{ width: '26px', height: '26px', background: '#ecfdf5', color: '#059669' }}>
+                        <i className="ti ti-scale fs-6"></i>
+                      </div>
+                      <h6 className="fw-bold text-dark mb-0" style={{ fontSize: '0.88rem' }}>أوزان الأيام الـ 7 على الريق</h6>
+                    </div>
+                    <small className="text-muted d-block mb-3" style={{ fontSize: '0.72rem' }}>سجل أوزانك الصباحية بعد الاستيقاظ مباشرة</small>
+                    
                     <div className="row g-2">
                       {weights.map((w, idx) => (
                         <div className="col-4" key={idx}>
-                          <label className="text-muted small" style={{ fontSize: '0.66rem' }}>يوم {idx + 1}</label>
+                          <label className="text-muted small d-block mb-1" style={{ fontSize: '0.66rem' }}>يوم {idx + 1}</label>
                           <input 
                             type="number" 
                             step="0.1" 
-                            className="form-control form-control-sm text-center fw-semibold" 
-                            style={{ height: '34px', borderRadius: '8px', fontSize: '0.8rem' }}
+                            className="form-control form-control-sm text-center fw-bold text-dark" 
+                            style={{ height: '34px', borderRadius: '8px', fontSize: '0.82rem', borderColor: '#cbd5e1', background: '#f8fafc' }}
                             value={w}
                             onChange={(e) => {
                               const copy = [...weights];
@@ -595,19 +846,19 @@ export default function MobileAppSimulator() {
                     </div>
                   </div>
 
-                  <div className="card border-0 shadow-sm bg-white rounded-4 p-3 mb-3" style={{ border: '1px solid #e2e8f0' }}>
-                    <label className="fw-bold text-dark small mb-1" style={{ fontSize: '0.8rem' }}>محيط الخصر (سم)</label>
+                  <div className="card border-0 shadow-sm bg-white rounded-4 p-3" style={{ border: '1px solid #e2e8f0' }}>
+                    <label className="fw-bold text-dark small mb-1" style={{ fontSize: '0.82rem' }}>محيط الخصر (سم)</label>
                     <input 
                       type="number" 
                       step="0.5" 
-                      className="form-control form-control-sm mb-3" 
-                      style={{ height: '34px', borderRadius: '8px', fontSize: '0.8rem' }}
+                      className="form-control form-control-sm mb-3 fw-bold" 
+                      style={{ height: '36px', borderRadius: '8px', fontSize: '0.84rem', borderColor: '#cbd5e1' }}
                       value={waist}
                       onChange={(e) => setWaist(e.target.value)}
                     />
 
                     <div className="d-flex justify-content-between align-items-center mb-1">
-                      <label className="fw-bold text-dark small" style={{ fontSize: '0.78rem' }}>الالتزام بالدايت: {adherence}%</label>
+                      <label className="fw-bold text-dark small" style={{ fontSize: '0.8rem' }}>نسبة الالتزام بالدايت: <strong className="text-success">{adherence}%</strong></label>
                     </div>
                     <input 
                       type="range" 
@@ -623,8 +874,14 @@ export default function MobileAppSimulator() {
                   <button 
                     type="submit" 
                     disabled={submittingCheckin}
-                    className="btn btn-sm rounded-pill w-100 fw-bold shadow-xs text-white d-flex align-items-center justify-content-center gap-1"
-                    style={{ height: '38px', background: '#261c6a', border: 'none', fontSize: '0.82rem' }}
+                    className="btn btn-sm rounded-pill w-100 fw-bold shadow-md text-white d-flex align-items-center justify-content-center gap-1"
+                    style={{ 
+                      height: '42px', 
+                      background: 'linear-gradient(135deg, #261c6a 0%, #4c1d95 100%)', 
+                      border: 'none', 
+                      fontSize: '0.86rem',
+                      boxShadow: '0 4px 15px rgba(38, 28, 106, 0.3)'
+                    }}
                   >
                     {submittingCheckin ? 'جاري الإرسال...' : <><i className="ti ti-send"></i> إرسال المتابعة للكابتن</>}
                   </button>
@@ -634,24 +891,47 @@ export default function MobileAppSimulator() {
           )}
         </div>
 
-        {/* App Bottom Navigation Bar */}
-        <div className="bg-white border-top py-2 px-3 d-flex justify-content-around align-items-center position-absolute bottom-0 start-0 end-0" style={{ height: '65px', borderColor: '#f1f5f9' }}>
+        {/* App Bottom Navigation Bar (Floating Pill Style) */}
+        <div 
+          className="bg-white border-top py-2 px-3 d-flex justify-content-around align-items-center position-absolute bottom-0 start-0 end-0 shadow-lg" 
+          style={{ 
+            height: '66px', 
+            borderColor: '#f1f5f9',
+            zIndex: 10
+          }}
+        >
           {[
             { id: 'home', label: 'الرئيسية', icon: 'ti-layout-dashboard' },
             { id: 'workout', label: 'التمارين', icon: 'ti-barbell' },
             { id: 'nutrition', label: 'الوجبات', icon: 'ti-salad' },
             { id: 'checkin', label: 'المتابعة', icon: 'ti-clipboard-check' }
-          ].map(t => (
-            <button 
-              key={t.id}
-              onClick={() => setActiveTab(t.id)}
-              className="btn btn-link p-0 text-decoration-none d-flex flex-column align-items-center transition-all"
-              style={{ color: activeTab === t.id ? '#261c6a' : '#94a3b8' }}
-            >
-              <i className={`ti ${t.icon} fs-5`}></i>
-              <span style={{ fontSize: '0.68rem', fontWeight: activeTab === t.id ? '700' : '500' }}>{t.label}</span>
-            </button>
-          ))}
+          ].map(t => {
+            const isActive = activeTab === t.id;
+            return (
+              <button 
+                key={t.id}
+                onClick={() => setActiveTab(t.id)}
+                className="btn btn-link p-0 text-decoration-none d-flex flex-column align-items-center transition-all"
+                style={{ 
+                  color: isActive ? '#261c6a' : '#94a3b8',
+                  transform: isActive ? 'scale(1.05)' : 'scale(1)'
+                }}
+              >
+                <div 
+                  className="rounded-circle d-flex align-items-center justify-content-center"
+                  style={{
+                    width: '30px',
+                    height: '30px',
+                    background: isActive ? '#f5f3ff' : 'transparent',
+                    marginBottom: '2px'
+                  }}
+                >
+                  <i className={`ti ${t.icon} ${isActive ? 'fs-5 fw-bold' : 'fs-5'}`}></i>
+                </div>
+                <span style={{ fontSize: '0.68rem', fontWeight: isActive ? '800' : '500' }}>{t.label}</span>
+              </button>
+            );
+          })}
         </div>
 
       </div>
