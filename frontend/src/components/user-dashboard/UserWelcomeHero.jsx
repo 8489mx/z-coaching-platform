@@ -90,34 +90,31 @@ export default function UserWelcomeHero({ currentUser, coachNotes }) {
                   خطة الميزوسايكل المخصصة (الأسبوع 1 / مرحلة: التراكم والتجهيز) جاهزة ومفعلة. مستوى الجهد المستهدف: <strong className="text-dark">3 RIR</strong>.
                 </p>
                 <div className="welcome-badges d-flex gap-2 flex-wrap">
-                  <span className="badge rounded-pill px-3 py-1 fw-semibold d-flex align-items-center gap-1" style={{ 
-                    background: 'linear-gradient(135deg, #f5f3ff, #ede9fe)', 
-                    color: '#261c6a', 
-                    border: '1px solid #ddd6fe', 
-                    fontSize: '0.74rem',
-                    boxShadow: '0 1px 3px rgba(38,28,106,0.06)'
+                  <span className="bg-white border px-3 py-1.5 fw-bold d-flex align-items-center gap-1.5 shadow-xs" style={{ 
+                    color: '#1e144f', 
+                    borderColor: '#e2e8f0', 
+                    borderRadius: '8px',
+                    fontSize: '0.78rem'
                   }}>
-                    <i className="ti ti-crown"></i>
+                    <i className="ti ti-crown text-primary"></i>
                     <span>بناء عضلي وحرق دهون</span>
                   </span>
-                  <span className="badge rounded-pill px-3 py-1 fw-semibold d-flex align-items-center gap-1" style={{ 
-                    background: 'linear-gradient(135deg, #ecfeff, #cffafe)', 
-                    color: '#0891b2', 
-                    border: '1px solid #a5f3fc', 
-                    fontSize: '0.74rem',
-                    boxShadow: '0 1px 3px rgba(6,182,212,0.06)'
+                  <span className="bg-white border px-3 py-1.5 fw-bold d-flex align-items-center gap-1.5 shadow-xs" style={{ 
+                    color: '#0369a1', 
+                    borderColor: '#e2e8f0', 
+                    borderRadius: '8px',
+                    fontSize: '0.78rem'
                   }}>
-                    <i className="ti ti-barbell"></i>
+                    <i className="ti ti-barbell text-info"></i>
                     <span>تجهيزات جيم تجاري كامل</span>
                   </span>
-                  <span className="badge rounded-pill px-3 py-1 fw-semibold d-flex align-items-center gap-1" style={{ 
-                    background: 'linear-gradient(135deg, #ecfdf5, #d1fae5)', 
+                  <span className="bg-white border px-3 py-1.5 fw-bold d-flex align-items-center gap-1.5 shadow-xs" style={{ 
                     color: '#059669', 
-                    border: '1px solid #a7f3d0', 
-                    fontSize: '0.74rem',
-                    boxShadow: '0 1px 3px rgba(16,185,129,0.06)'
+                    borderColor: '#e2e8f0', 
+                    borderRadius: '8px',
+                    fontSize: '0.78rem'
                   }}>
-                    <i className="ti ti-flame"></i>
+                    <i className="ti ti-flame text-success"></i>
                     <span>8,000 خطوة يومياً</span>
                   </span>
                 </div>
@@ -139,25 +136,21 @@ export default function UserWelcomeHero({ currentUser, coachNotes }) {
                   />
                 </div>
 
-                {/* Plan Status Pills */}
+                {/* Plan Status Cards */}
                 <div className="d-none d-xl-flex flex-column gap-2">
-                  <div className="p-2 px-3 rounded-3 text-center" style={{ 
-                    background: 'linear-gradient(135deg, #fbfaff, #f5f3ff)', 
-                    border: '1px solid #ede9fe', 
-                    minWidth: '110px',
-                    boxShadow: '0 1px 4px rgba(38,28,106,0.04)'
+                  <div className="p-2 px-3 rounded-3 text-center bg-white border shadow-xs" style={{ 
+                    borderColor: '#e2e8f0', 
+                    minWidth: '110px'
                   }}>
-                    <span className="text-muted d-block" style={{ fontSize: '0.66rem' }}>مرحلة الخطة</span>
-                    <strong className="d-block" style={{ fontSize: '0.84rem', color: '#261c6a' }}>الأسبوع الأول</strong>
+                    <span className="text-muted d-block fw-semibold" style={{ fontSize: '0.66rem' }}>مرحلة الخطة</span>
+                    <strong className="d-block" style={{ fontSize: '0.84rem', color: '#1e144f' }}>الأسبوع الأول</strong>
                   </div>
-                  <div className="p-2 px-3 rounded-3 text-center" style={{ 
-                    background: 'linear-gradient(135deg, #ecfdf5, #d1fae5)', 
-                    border: '1px solid #a7f3d0', 
-                    minWidth: '110px',
-                    boxShadow: '0 1px 4px rgba(16,185,129,0.06)'
+                  <div className="p-2 px-3 rounded-3 text-center bg-white border shadow-xs" style={{ 
+                    borderColor: '#e2e8f0', 
+                    minWidth: '110px'
                   }}>
-                    <span className="text-muted d-block" style={{ fontSize: '0.66rem' }}>التكيف الذكي</span>
-                    <strong className="d-block text-success" style={{ fontSize: '0.84rem' }}>مفعل بنجاح</strong>
+                    <span className="text-muted d-block fw-semibold" style={{ fontSize: '0.66rem' }}>التكيف الذكي</span>
+                    <strong className="d-block text-success" style={{ fontSize: '0.84rem' }}>مفعل بنجاح ✓</strong>
                   </div>
                 </div>
 

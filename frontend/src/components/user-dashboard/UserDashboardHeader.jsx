@@ -58,24 +58,26 @@ export default function UserDashboardHeader({ currentUser, targetUserId, clients
         </div>
 
         {/* Right: Custom Luxury Client Selector & Actions */}
-        <div className="header-right d-flex align-items-center justify-content-end gap-2 pe-2 flex-wrap">
+        <div className="header-right d-flex align-items-center justify-content-end gap-2.5 pe-2 flex-wrap">
           
           {/* 1. Custom Luxury Client Dropdown */}
           <div className="position-relative" ref={dropdownRef}>
             <button
               type="button"
               onClick={() => setDropdownOpen(!dropdownOpen)}
-              className="btn bg-white border rounded-pill px-3 py-1 d-flex align-items-center gap-2 shadow-xs transition-all"
+              className="btn bg-white border d-flex align-items-center gap-2 shadow-xs transition-all"
               style={{ 
-                height: '36px', 
-                borderColor: dropdownOpen ? '#261c6a' : '#e2e8f0',
-                background: '#ffffff'
+                height: '38px', 
+                borderRadius: '10px',
+                borderColor: dropdownOpen ? '#1e144f' : '#e2e8f0',
+                background: '#ffffff',
+                padding: '0 14px'
               }}
               title="انقر لتبديل المتدرب"
             >
               <div 
-                className="rounded-circle d-flex align-items-center justify-content-center fw-bold flex-shrink-0"
-                style={{ width: '24px', height: '24px', background: '#f5f3ff', color: '#261c6a', fontSize: '0.75rem', border: '1px solid #ddd6fe' }}
+                className="rounded-2 d-flex align-items-center justify-content-center fw-bold flex-shrink-0"
+                style={{ width: '22px', height: '22px', background: '#f5f3ff', color: '#1e144f', fontSize: '0.75rem', border: '1px solid #ddd6fe' }}
               >
                 {activeName[0]}
               </div>
@@ -87,7 +89,7 @@ export default function UserDashboardHeader({ currentUser, targetUserId, clients
               <i 
                 className={`ti ti-chevron-down text-muted flex-shrink-0 transition-transform`} 
                 style={{ 
-                  fontSize: '0.75rem',
+                  fontSize: '0.72rem',
                   transform: dropdownOpen ? 'rotate(180deg)' : 'rotate(0deg)',
                   transition: 'transform 0.2s ease'
                 }}
@@ -97,7 +99,7 @@ export default function UserDashboardHeader({ currentUser, targetUserId, clients
             {/* Floating Luxury Menu */}
             {dropdownOpen && (
               <div 
-                className="position-absolute end-0 mt-2 bg-white rounded-4 shadow-xl border overflow-hidden py-2"
+                className="position-absolute end-0 mt-2 bg-white rounded-3 shadow-xl border overflow-hidden py-2"
                 style={{ 
                   minWidth: '220px', 
                   zIndex: 1050, 
@@ -123,21 +125,21 @@ export default function UserDashboardHeader({ currentUser, targetUserId, clients
                         key={c.id}
                         type="button"
                         onClick={() => handleSelectClient(code)}
-                        className="btn btn-sm text-start w-100 px-3 py-2 d-flex align-items-center justify-content-between rounded-3 border-0 transition-all"
+                        className="btn btn-sm text-start w-100 px-3 py-2 d-flex align-items-center justify-content-between rounded-2 border-0 transition-all"
                         style={{
                           background: isSelected ? '#f5f3ff' : 'transparent',
-                          color: isSelected ? '#261c6a' : '#334155',
+                          color: isSelected ? '#1e144f' : '#334155',
                           fontSize: '0.82rem'
                         }}
                       >
                         <div className="d-flex align-items-center gap-2">
                           <div 
-                            className="rounded-circle d-flex align-items-center justify-content-center fw-bold"
+                            className="rounded-2 d-flex align-items-center justify-content-center fw-bold"
                             style={{ 
-                              width: '24px', 
-                              height: '24px', 
+                              width: '22px', 
+                              height: '22px', 
                               fontSize: '0.72rem',
-                              background: isSelected ? '#261c6a' : '#f1f5f9',
+                              background: isSelected ? '#1e144f' : '#f1f5f9',
                               color: isSelected ? '#ffffff' : '#64748b'
                             }}
                           >
@@ -157,32 +159,39 @@ export default function UserDashboardHeader({ currentUser, targetUserId, clients
             )}
           </div>
 
-          {/* 2. PDF Download Button */}
+          {/* 2. PDF Download Button (Clean Executive Card Button) */}
           <Link 
             to={`/pdf?user_id=${targetUserId}`} 
             target="_blank" 
-            className="btn btn-outline-danger btn-sm rounded-pill px-3 fw-semibold d-flex align-items-center gap-1"
-            style={{ height: '36px', fontSize: '0.78rem' }}
+            className="btn btn-white bg-white border px-3 fw-bold d-flex align-items-center gap-1.5 shadow-xs transition-all"
+            style={{ 
+              height: '38px', 
+              borderRadius: '10px', 
+              fontSize: '0.8rem',
+              color: '#0f172a',
+              borderColor: '#e2e8f0'
+            }}
             title="تحميل خطة المتدرب كملف PDF"
           >
-            <i className="ti ti-file-text"></i>
+            <i className="ti ti-file-text text-danger fs-6"></i>
             <span className="d-none d-sm-inline">تحميل PDF</span>
           </Link>
 
-          {/* 3. Switch to Coach Portal */}
+          {/* 3. Switch to Coach Portal (Luxury Dark Indigo Action Button) */}
           <Link 
             to="/" 
-            className="btn btn-sm rounded-pill px-3 fw-bold d-flex align-items-center gap-1 shadow-sm text-white"
+            className="btn px-3.5 fw-bold d-flex align-items-center gap-2 text-white transition-all"
             style={{ 
-              height: '36px',
-              background: '#261c6a',
-              border: 'none',
-              fontSize: '0.78rem',
-              boxShadow: '0 3px 10px rgba(38, 28, 106, 0.28)'
+              height: '38px',
+              borderRadius: '10px',
+              background: 'linear-gradient(135deg, #1e144f 0%, #2e2070 100%)',
+              border: '1px solid rgba(255, 255, 255, 0.15)',
+              fontSize: '0.8rem',
+              boxShadow: '0 3px 10px rgba(30, 20, 79, 0.25)'
             }}
             title="الانتقال إلى لوحة تحكم المدرب الرئيسية"
           >
-            <i className="ti ti-arrows-exchange fs-6 text-light"></i>
+            <i className="ti ti-arrows-exchange fs-6 text-white-50"></i>
             <span>لوحة الكابتن</span>
           </Link>
 

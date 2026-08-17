@@ -338,21 +338,21 @@ export default function UserDashboardClone() {
                     تم تسجيل حساب المشترك بنجاح، ولم يتم توليد الخطة بعد. يمكنك إرسال رابط الاستمارة للمتدرب لتعبئة بياناته، أو توليد خطة مبدئية فوراً بواسطة محرك <strong className="text-primary">Z-Engine V2</strong>.
                   </p>
 
-                  <div className="p-3 bg-light rounded-3 d-inline-flex flex-wrap align-items-center justify-content-center gap-3 mb-4 border">
+                  <div className="p-2.5 px-4 bg-white rounded-3 d-inline-flex flex-wrap align-items-center justify-content-center gap-3 mb-4 border shadow-xs" style={{ borderColor: '#e2e8f0' }}>
                     <span className="small text-dark fw-bold">
-                      كود المشترك: <span className="badge font-monospace" style={{ background: '#261c6a', color: '#fff' }}>{currentUser?.client_code || targetUserId}</span>
+                      كود المشترك: <span className="font-monospace px-2 py-0.5 rounded-2" style={{ background: '#1e144f', color: '#fff', fontSize: '0.78rem' }}>{currentUser?.client_code || targetUserId}</span>
                     </span>
-                    <span className="small text-muted">|</span>
+                    <span className="text-muted opacity-50">|</span>
                     <span className="small text-dark fw-bold">
-                      الهاتف: <span dir="ltr" className="text-muted">{currentUser?.phone_number || '-'}</span>
+                      الهاتف: <span dir="ltr" className="text-secondary fw-semibold">{currentUser?.phone_number || '-'}</span>
                     </span>
-                    <span className="small text-muted">|</span>
+                    <span className="text-muted opacity-50">|</span>
                     <span className="small text-dark fw-bold">
-                      الباقة: <span className="badge bg-success-subtle text-success border border-success-subtle">{currentUser?.subscription_package?.includes('MAX') ? 'باقة ماكس (3 شهور + 1 مجاناً)' : 'باقة إيليت (3 شهور + 1 مجاناً)'}</span>
+                      الباقة: <span className="badge bg-success-subtle text-success border border-success-subtle px-2 py-1 rounded-2">{currentUser?.subscription_package?.includes('MAX') ? 'باقة ماكس (3 شهور + 1 مجاناً)' : 'باقة إيليت (3 شهور + 1 مجاناً)'}</span>
                     </span>
                   </div>
 
-                  <div className="d-flex align-items-center justify-content-center gap-2 flex-wrap">
+                  <div className="d-flex align-items-center justify-content-center gap-2.5 flex-wrap">
                     {/* Copy Link Button */}
                     <button
                       type="button"
@@ -362,10 +362,16 @@ export default function UserDashboardClone() {
                         setCopiedLink(true);
                         setTimeout(() => setCopiedLink(false), 2500);
                       }}
-                      className="btn btn-sm btn-light rounded-pill px-4 fw-semibold border d-flex align-items-center gap-2"
-                      style={{ height: '38px', fontSize: '0.82rem' }}
+                      className="btn btn-white bg-white border px-4 fw-bold d-flex align-items-center gap-2 shadow-xs transition-all"
+                      style={{ 
+                        height: '42px', 
+                        fontSize: '0.84rem',
+                        borderRadius: '10px',
+                        color: '#0f172a',
+                        borderColor: '#cbd5e1'
+                      }}
                     >
-                      <i className={copiedLink ? "ti ti-check text-success" : "ti ti-copy"}></i>
+                      <i className={copiedLink ? "ti ti-check text-success fs-6" : "ti ti-copy text-muted fs-6"}></i>
                       <span>{copiedLink ? 'تم نسخ الرابط!' : 'نسخ رابط الاستمارة'}</span>
                     </button>
 
@@ -380,10 +386,16 @@ export default function UserDashboardClone() {
                           if (phone.startsWith('01')) phone = '2' + phone;
                           window.open(`https://wa.me/${phone}?text=${encodeURIComponent(msg)}`, '_blank');
                         }}
-                        className="btn btn-sm btn-success rounded-pill px-4 fw-bold d-flex align-items-center gap-2 text-white shadow-xs"
-                        style={{ height: '38px', fontSize: '0.82rem' }}
+                        className="btn btn-white bg-white border px-4 fw-bold d-flex align-items-center gap-2 shadow-xs transition-all"
+                        style={{ 
+                          height: '42px', 
+                          fontSize: '0.84rem',
+                          borderRadius: '10px',
+                          color: '#15803d',
+                          borderColor: '#86efac'
+                        }}
                       >
-                        <i className="ti ti-brand-whatsapp fs-6"></i>
+                        <i className="ti ti-brand-whatsapp fs-5 text-success"></i>
                         <span>إرسال عبر WhatsApp</span>
                       </button>
                     )}
@@ -393,19 +405,20 @@ export default function UserDashboardClone() {
                       type="button"
                       disabled={generatingPlan}
                       onClick={handleQuickGeneratePlan}
-                      className="btn btn-sm rounded-pill px-4 fw-bold d-flex align-items-center gap-2 text-white shadow-sm"
+                      className="btn px-4 fw-bold d-flex align-items-center gap-2 text-white transition-all"
                       style={{ 
-                        height: '38px', 
-                        fontSize: '0.82rem', 
-                        background: 'linear-gradient(135deg, #261c6a 0%, #4338ca 100%)', 
-                        border: 'none',
-                        boxShadow: '0 3px 12px rgba(38,28,106,0.25)'
+                        height: '42px', 
+                        fontSize: '0.86rem', 
+                        borderRadius: '10px',
+                        background: 'linear-gradient(135deg, #1e144f 0%, #31217b 100%)', 
+                        border: '1px solid rgba(255,255,255,0.18)',
+                        boxShadow: '0 4px 14px rgba(30,20,79,0.28)'
                       }}
                     >
                       {generatingPlan ? (
                         <><span className="spinner-border spinner-border-sm"></span> جاري بناء الخطة بالمحرك...</>
                       ) : (
-                        <><i className="ti ti-sparkles fs-6"></i> توليد الخطة الآن (Z-Engine)</>
+                        <><i className="ti ti-sparkles fs-6 text-warning"></i> توليد الخطة الآن (Z-Engine)</>
                       )}
                     </button>
                   </div>

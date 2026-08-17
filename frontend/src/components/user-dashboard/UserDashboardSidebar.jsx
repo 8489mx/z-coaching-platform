@@ -135,14 +135,15 @@ export default function UserDashboardSidebar({ targetUserId, onOpenCheckin }) {
                         <Link 
                           to={typeof item.to === 'function' ? item.to(targetUserId) : item.to}
                           target={item.target}
-                          className={`golden-sidebar-item d-flex align-items-center justify-content-between px-3 py-2 rounded-3 text-decoration-none transition-all ${isActive ? 'active' : ''}`}
+                          className={`golden-sidebar-item d-flex align-items-center justify-content-between px-3 py-2 rounded-2 text-decoration-none transition-all ${isActive ? 'active' : ''}`}
                           style={{
-                            fontSize: '0.82rem',
-                            fontWeight: isActive ? '700' : '500',
-                            color: isActive ? '#261c6a' : '#475569',
-                            background: isActive ? '#f5f3ff' : 'transparent',
-                            borderRadius: '8px',
-                            borderRight: isActive ? '3px solid #261c6a' : '3px solid transparent',
+                            fontSize: '0.84rem',
+                            fontWeight: isActive ? '700' : '600',
+                            color: isActive ? '#1e144f' : '#475569',
+                            background: isActive ? 'linear-gradient(135deg, #f8faff 0%, #f0f1ff 100%)' : 'transparent',
+                            borderRadius: '10px',
+                            border: isActive ? '1px solid #e0e7ff' : '1px solid transparent',
+                            boxShadow: isActive ? '0 1px 3px rgba(30, 20, 79, 0.04)' : 'none',
                             transition: 'all 0.15s ease'
                           }}
                         >
@@ -151,7 +152,7 @@ export default function UserDashboardSidebar({ targetUserId, onOpenCheckin }) {
                               className={`ti ${item.icon}`}
                               style={{ 
                                 fontSize: '1.1rem',
-                                color: isActive ? '#261c6a' : '#94a3b8',
+                                color: isActive ? '#1e144f' : '#94a3b8',
                                 transition: 'color 0.15s ease'
                               }}
                             ></i>
@@ -162,14 +163,13 @@ export default function UserDashboardSidebar({ targetUserId, onOpenCheckin }) {
                         <button
                           type="button"
                           onClick={onOpenCheckin}
-                          className="golden-sidebar-item w-100 d-flex align-items-center justify-content-between px-3 py-2 rounded-3 text-decoration-none border-0 transition-all text-start"
+                          className="golden-sidebar-item w-100 d-flex align-items-center justify-content-between px-3 py-2 rounded-2 text-decoration-none border-0 transition-all text-start"
                           style={{
-                            fontSize: '0.82rem',
-                            fontWeight: '500',
+                            fontSize: '0.84rem',
+                            fontWeight: '600',
                             color: '#475569',
                             background: 'transparent',
-                            borderRadius: '8px',
-                            borderRight: '3px solid transparent',
+                            borderRadius: '10px',
                             transition: 'all 0.15s ease'
                           }}
                         >
@@ -188,14 +188,13 @@ export default function UserDashboardSidebar({ targetUserId, onOpenCheckin }) {
                       ) : (
                         <a 
                           href={location.pathname.startsWith('/user-dashboard') || location.pathname === '/user' ? item.href : `/user-dashboard?user_id=${targetUserId}${item.href}`}
-                          className="golden-sidebar-item d-flex align-items-center justify-content-between px-3 py-2 rounded-3 text-decoration-none transition-all"
+                          className="golden-sidebar-item d-flex align-items-center justify-content-between px-3 py-2 rounded-2 text-decoration-none transition-all"
                           style={{
-                            fontSize: '0.82rem',
-                            fontWeight: '500',
+                            fontSize: '0.84rem',
+                            fontWeight: '600',
                             color: '#475569',
                             background: 'transparent',
-                            borderRadius: '8px',
-                            borderRight: '3px solid transparent',
+                            borderRadius: '10px',
                             transition: 'all 0.15s ease'
                           }}
                         >
@@ -221,9 +220,9 @@ export default function UserDashboardSidebar({ targetUserId, onOpenCheckin }) {
         </div>
       </div>
 
-      {/* Fixed Compact Bottom Switcher (Exact match with coach sidebar) */}
+      {/* Fixed Luxury Bottom Switcher */}
       <div 
-        className="p-2 px-3 border-top border-light bg-white flex-shrink-0"
+        className="p-2.5 px-3 border-top border-light bg-white flex-shrink-0"
         style={{ 
           boxShadow: '0 -2px 8px rgba(0, 0, 0, 0.02)',
           zIndex: 10 
@@ -231,18 +230,19 @@ export default function UserDashboardSidebar({ targetUserId, onOpenCheckin }) {
       >
         <Link 
           to="/" 
-          className="btn w-100 rounded-pill fw-bold d-flex align-items-center justify-content-center gap-2 shadow-sm text-white"
+          className="btn w-100 fw-bold d-flex align-items-center justify-content-center gap-2 text-white transition-all"
           style={{ 
-            height: '36px',
-            background: '#261c6a', 
-            border: 'none',
-            fontSize: '0.8rem',
+            height: '38px',
+            borderRadius: '10px',
+            background: 'linear-gradient(135deg, #1e144f 0%, #2e2070 100%)', 
+            border: '1px solid rgba(255, 255, 255, 0.12)',
+            fontSize: '0.82rem',
             letterSpacing: '0.2px',
-            boxShadow: '0 3px 10px rgba(38, 28, 106, 0.25)'
+            boxShadow: '0 3px 10px rgba(30, 20, 79, 0.25)'
           }}
           title="الانتقال إلى لوحة تحكم الكابتن"
         >
-          <i className="ti ti-arrows-exchange fs-6 text-light"></i>
+          <i className="ti ti-arrows-exchange fs-6 text-white-50"></i>
           <span>لوحة الكابتن</span>
         </Link>
       </div>
