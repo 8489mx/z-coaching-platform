@@ -322,12 +322,12 @@ export default function MobileAppSimulator() {
         {/* Dynamic Island */}
         <div className="position-absolute top-0 start-50 translate-middle-x mt-2 bg-dark rounded-pill" style={{ width: '120px', height: '24px', zIndex: 100 }}></div>
 
-        {/* App Top Bar (Bright Energizing Header) */}
+        {/* App Top Bar (Quiet Luxury Header matching Image 2) */}
         <div 
           className="pt-5 pb-3 px-3 d-flex align-items-center justify-content-between position-relative bg-white" 
           style={{ 
             borderBottom: '1px solid #f1f5f9',
-            boxShadow: '0 2px 10px rgba(0, 0, 0, 0.02)',
+            boxShadow: '0 1px 6px rgba(0, 0, 0, 0.02)',
             zIndex: 10
           }}
         >
@@ -335,24 +335,22 @@ export default function MobileAppSimulator() {
             <div 
               className="rounded-circle d-flex align-items-center justify-content-center fw-bold flex-shrink-0" 
               style={{ 
-                width: '40px', 
-                height: '40px', 
-                background: 'linear-gradient(135deg, #261c6a 0%, #4c1d95 100%)', 
+                width: '38px', 
+                height: '38px', 
+                background: 'linear-gradient(135deg, #261c6a 0%, #4338ca 100%)', 
                 color: '#ffffff', 
                 border: '2px solid #ede9fe', 
-                fontSize: '0.95rem',
-                boxShadow: '0 4px 12px rgba(38, 28, 106, 0.2)'
+                fontSize: '0.92rem',
+                boxShadow: '0 2px 8px rgba(38, 28, 106, 0.15)'
               }}
             >
               {(user?.full_name || 'U')[0]}
             </div>
             <div>
-              <div className="d-flex align-items-center gap-1">
-                <span className="small text-muted" style={{ fontSize: '0.7rem' }}>مساء النشاط والقوة</span>
-              </div>
-              <h6 className="fw-bold text-dark mb-0 lh-1" style={{ fontSize: '0.96rem', letterSpacing: '-0.3px' }}>
-                {user?.full_name || 'كيمو المحروقي'}
+              <h6 className="fw-bold text-dark mb-0 lh-1" style={{ fontSize: '0.94rem', letterSpacing: '-0.3px', color: '#1e144f' }}>
+                {user?.full_name || 'كابتن أحمد سمير'}
               </h6>
+              <small className="text-muted" style={{ fontSize: '0.68rem' }}>كود المتدرب: <span className="font-monospace text-dark fw-bold">{user?.client_code || targetUserId}</span></small>
             </div>
           </div>
           
@@ -363,8 +361,7 @@ export default function MobileAppSimulator() {
                 background: 'linear-gradient(135deg, #f5f3ff 0%, #ede9fe 100%)', 
                 color: '#261c6a', 
                 border: '1px solid #ddd6fe', 
-                fontSize: '0.68rem',
-                boxShadow: '0 2px 6px rgba(38,28,106,0.06)'
+                fontSize: '0.68rem'
               }}
             >
               Z-ENGINE V2
@@ -372,18 +369,18 @@ export default function MobileAppSimulator() {
           </div>
         </div>
 
-        {/* App Scrollable Content (Fresh, Bright, Energizing) */}
+        {/* App Scrollable Content (Calm, Soft, Luxurious matching Image 2) */}
         <div 
           className="flex-grow-1 overflow-auto p-3 custom-scroll" 
           style={{ 
             height: 'calc(100% - 145px)',
-            background: 'linear-gradient(180deg, #ffffff 0%, #f8faff 40%, #f0f4ff 100%)'
+            background: 'linear-gradient(180deg, #f8faff 0%, #f4f6fb 100%)'
           }}
         >
           {loading ? (
             <div className="text-center py-5">
               <div className="spinner-border spinner-border-sm text-primary" role="status"></div>
-              <p className="text-muted small mt-2">جاري تجهيز خطتك اليومية...</p>
+              <p className="text-muted small mt-2">جاري مزامنة خطة المتدرب...</p>
             </div>
           ) : (
             <>
@@ -391,37 +388,113 @@ export default function MobileAppSimulator() {
               {activeTab === 'home' && (
                 <div className="d-flex flex-column gap-3">
                   
-                  {/* Daily Energizing Greeting & Coach Directive */}
+                  {/* 1. Calm Hero Card (Exact Twin of UserWelcomeHero in Image 2) */}
+                  <div 
+                    className="card border-0 rounded-4 position-relative overflow-hidden shadow-sm" 
+                    style={{ 
+                      background: 'linear-gradient(135deg, rgba(255,255,255,0.95) 0%, rgba(245,243,255,0.85) 60%, rgba(236,253,245,0.7) 100%)',
+                      border: '1px solid rgba(221, 214, 254, 0.5)',
+                      boxShadow: '0 4px 16px rgba(38, 28, 106, 0.04)'
+                    }}
+                  >
+                    {/* Subtle Right Gradient Bar */}
+                    <div style={{
+                      position: 'absolute',
+                      top: 0,
+                      right: 0,
+                      bottom: 0,
+                      width: '4px',
+                      background: 'linear-gradient(180deg, #261c6a 0%, #06b6d4 50%, #10b981 100%)',
+                      borderRadius: '0 16px 16px 0'
+                    }}></div>
+
+                    <div className="card-body p-3">
+                      <div className="d-flex align-items-center justify-content-between mb-1">
+                        <h6 className="fw-bold text-dark mb-0" style={{ fontSize: '1rem', letterSpacing: '-0.3px', color: '#1e144f' }}>
+                          مساء الخير يا كابتن {user?.full_name?.split(' ')[0] || 'أحمد'}!
+                        </h6>
+                        <span className="badge rounded-pill fw-bold" style={{ 
+                          background: '#ecfdf5', 
+                          color: '#059669', 
+                          border: '1px solid #a7f3d0', 
+                          fontSize: '0.62rem' 
+                        }}>
+                          مفعل بنجاح ✓
+                        </span>
+                      </div>
+
+                      <p className="mb-2 fw-semibold" style={{ 
+                        fontSize: '0.78rem', 
+                        color: '#4338ca',
+                        lineHeight: '1.5'
+                      }}>
+                        التغيير الحقيقي بيحصل لما بتتحدى نفسك كل يوم
+                      </p>
+
+                      <p className="text-muted mb-2 small" style={{ fontSize: '0.72rem', lineHeight: '1.4' }}>
+                        خطة الميزوسايكل المخصصة (الأسبوع 1 / مرحلة: التراكم) جاهزة. مستوى الجهد: <strong className="text-dark">3 RIR</strong>.
+                      </p>
+
+                      {/* Quiet Luxury Badges */}
+                      <div className="d-flex gap-1 flex-wrap">
+                        <span className="badge rounded-pill px-2 py-1 fw-semibold d-flex align-items-center gap-1" style={{ 
+                          background: '#f5f3ff', 
+                          color: '#261c6a', 
+                          border: '1px solid #ddd6fe', 
+                          fontSize: '0.66rem' 
+                        }}>
+                          <i className="ti ti-crown"></i> بناء عضلي وحرق دهون
+                        </span>
+
+                        <span className="badge rounded-pill px-2 py-1 fw-semibold d-flex align-items-center gap-1" style={{ 
+                          background: '#ecfeff', 
+                          color: '#0891b2', 
+                          border: '1px solid #a5f3fc', 
+                          fontSize: '0.66rem' 
+                        }}>
+                          <i className="ti ti-barbell"></i> جيم تجاري كامل
+                        </span>
+
+                        <span className="badge rounded-pill px-2 py-1 fw-semibold d-flex align-items-center gap-1" style={{ 
+                          background: '#ecfdf5', 
+                          color: '#059669', 
+                          border: '1px solid #a7f3d0', 
+                          fontSize: '0.66rem' 
+                        }}>
+                          <i className="ti ti-shoe"></i> 8,000 خطوة
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Coach Direct Notes Banner (Clean Quiet Luxury Card - No Yellow!) */}
                   {program?.coach_notes && (
                     <div 
-                      className="p-3 rounded-4 position-relative overflow-hidden" 
+                      className="p-3 rounded-4 bg-white position-relative overflow-hidden" 
                       style={{ 
-                        background: 'linear-gradient(135deg, #fffdf5 0%, #fef3c7 60%, #ede9fe 100%)', 
-                        border: '1px solid #fde68a', 
-                        borderRight: '4px solid #f59e0b',
-                        boxShadow: '0 4px 15px rgba(245, 158, 11, 0.08)'
+                        border: '1px solid #ede9fe', 
+                        borderRight: '3.5px solid #6366f1',
+                        boxShadow: '0 2px 10px rgba(0, 0, 0, 0.02)'
                       }}
                     >
                       <div className="d-flex align-items-center justify-content-between mb-1">
-                        <span className="badge rounded-pill px-2 py-1 fw-bold" style={{ background: '#ffffff', color: '#d97706', fontSize: '0.66rem', border: '1px solid #fde68a' }}>
-                          توجيهات الكابتن اليومية
+                        <span className="badge rounded-pill px-2 py-1 fw-bold" style={{ background: '#f5f3ff', color: '#4338ca', fontSize: '0.66rem', border: '1px solid #ddd6fe' }}>
+                          توجيهات الكابتن للأسبوع
                         </span>
-                        <span className="badge rounded-pill fw-bold" style={{ background: 'rgba(38, 28, 106, 0.08)', color: '#261c6a', fontSize: '0.62rem' }}>
-                          الأسبوع 1
-                        </span>
+                        <small className="text-muted" style={{ fontSize: '0.64rem' }}>ملاحظات الخطة</small>
                       </div>
-                      <p className="small mb-0 text-dark fw-bold" style={{ fontSize: '0.86rem', lineHeight: '1.55', color: '#1e144f' }}>
+                      <p className="small mb-0 text-dark fw-semibold" style={{ fontSize: '0.82rem', lineHeight: '1.5', color: '#1e293b' }}>
                         {program.coach_notes}
                       </p>
                     </div>
                   )}
 
-                  {/* 1. Daily Energy & Macro Target Hub (Vibrant & Joyful Cards) */}
+                  {/* 2. Daily Energy & Macro Target Hub (Clean Light Card) */}
                   <div 
                     className="card border-0 bg-white rounded-4 overflow-hidden" 
                     style={{ 
-                      boxShadow: '0 10px 25px -5px rgba(38, 28, 106, 0.08), 0 4px 10px -2px rgba(0, 0, 0, 0.03)',
-                      border: '1px solid #edf2f7'
+                      boxShadow: '0 4px 20px rgba(15, 23, 42, 0.04)',
+                      border: '1px solid #e2e8f0'
                     }}
                   >
                     <div className="card-body p-3">
@@ -430,15 +503,15 @@ export default function MobileAppSimulator() {
                         <div className="d-flex align-items-center gap-2">
                           <div 
                             className="rounded-circle d-flex align-items-center justify-content-center" 
-                            style={{ width: '32px', height: '32px', background: 'linear-gradient(135deg, #fef2f2 0%, #fee2e2 100%)', color: '#ef4444' }}
+                            style={{ width: '32px', height: '32px', background: '#f5f3ff', color: '#261c6a', border: '1px solid #ede9fe' }}
                           >
                             <i className="ti ti-flame fs-5"></i>
                           </div>
                           <div>
-                            <h6 className="fw-bold text-dark mb-0" style={{ fontSize: '0.92rem', letterSpacing: '-0.3px' }}>
+                            <h6 className="fw-bold text-dark mb-0" style={{ fontSize: '0.9rem', letterSpacing: '-0.3px' }}>
                               احتياج الطاقة والماكروز
                             </h6>
-                            <small className="text-muted" style={{ fontSize: '0.68rem' }}>موزونة لتعظيم البناء العضلي وحرق الدهون</small>
+                            <small className="text-muted" style={{ fontSize: '0.68rem' }}>موزونة لتعظيم البناء العضلي</small>
                           </div>
                         </div>
 
@@ -450,14 +523,14 @@ export default function MobileAppSimulator() {
                         </div>
                       </div>
 
-                      {/* 3 Macro Cards with Bright Saturated Identity */}
+                      {/* 3 Macro Cards with Clean Saturated Identity */}
                       <div className="row g-2 text-center">
                         {/* Protein */}
                         <div className="col-4">
                           <div 
                             className="p-2 rounded-3 d-flex flex-column justify-content-between h-100" 
                             style={{ 
-                              background: 'linear-gradient(180deg, #f0f9ff 0%, #e0f2fe 100%)', 
+                              background: '#f0f9ff', 
                               border: '1px solid #bae6fd' 
                             }}
                           >
@@ -476,7 +549,7 @@ export default function MobileAppSimulator() {
                           <div 
                             className="p-2 rounded-3 d-flex flex-column justify-content-between h-100" 
                             style={{ 
-                              background: 'linear-gradient(180deg, #fffbeb 0%, #fef3c7 100%)', 
+                              background: '#fffbeb', 
                               border: '1px solid #fde68a' 
                             }}
                           >
@@ -495,7 +568,7 @@ export default function MobileAppSimulator() {
                           <div 
                             className="p-2 rounded-3 d-flex flex-column justify-content-between h-100" 
                             style={{ 
-                              background: 'linear-gradient(180deg, #f0fdf4 0%, #dcfce7 100%)', 
+                              background: '#f0fdf4', 
                               border: '1px solid #bbf7d0' 
                             }}
                           >
@@ -512,62 +585,63 @@ export default function MobileAppSimulator() {
                     </div>
                   </div>
 
-                  {/* 2. Today's Workout Hero Card (Grand Athletic Royal Midnight Card) */}
+                  {/* 3. Today's Workout Card (Clean White/Lavender Card - Calm & Premium) */}
                   <div 
-                    className="card border-0 rounded-4 overflow-hidden text-white" 
+                    className="card border-0 bg-white rounded-4 overflow-hidden" 
                     style={{ 
-                      background: 'linear-gradient(135deg, #261c6a 0%, #3b2d94 60%, #4c1d95 100%)',
-                      boxShadow: '0 12px 30px rgba(38, 28, 106, 0.3)',
-                      border: '1px solid rgba(255, 255, 255, 0.15)'
+                      boxShadow: '0 4px 20px rgba(15, 23, 42, 0.04)',
+                      border: '1px solid #e2e8f0',
+                      borderTop: '3.5px solid #261c6a'
                     }}
                   >
-                    <div className="card-body p-3 d-flex flex-column justify-content-between" style={{ minHeight: '135px' }}>
+                    <div className="card-body p-3">
                       <div className="d-flex justify-content-between align-items-start mb-2">
                         <div className="d-flex align-items-center gap-2">
                           <div 
                             className="rounded-3 d-flex align-items-center justify-content-center" 
-                            style={{ width: '38px', height: '38px', background: 'rgba(255, 255, 255, 0.18)', backdropFilter: 'blur(8px)' }}
+                            style={{ width: '36px', height: '36px', background: '#f5f3ff', color: '#261c6a', border: '1px solid #ddd6fe' }}
                           >
-                            <i className="ti ti-barbell fs-4 text-white"></i>
+                            <i className="ti ti-barbell fs-5"></i>
                           </div>
                           <div>
-                            <span className="badge rounded-pill bg-white text-dark fw-bold px-2 py-0 mb-1" style={{ fontSize: '0.64rem' }}>
+                            <span className="badge rounded-pill fw-bold px-2 py-0 mb-1" style={{ background: '#f5f3ff', color: '#261c6a', fontSize: '0.64rem' }}>
                               تمرين اليوم الأساسي
                             </span>
-                            <h5 className="fw-bold text-white mb-0" style={{ fontSize: '1.05rem', letterSpacing: '-0.3px' }}>
+                            <h5 className="fw-bold text-dark mb-0" style={{ fontSize: '0.98rem', letterSpacing: '-0.3px', color: '#261c6a' }}>
                               {activeSession?.session_name || activeSession?.session_code || 'UPPER_A'}
                             </h5>
                           </div>
                         </div>
 
-                        <span className="badge rounded-pill px-2 py-1 fw-bold" style={{ background: '#06b6d4', color: '#ffffff', fontSize: '0.66rem' }}>
+                        <span className="badge rounded-pill px-2 py-1 fw-bold" style={{ background: '#ecfeff', color: '#0891b2', border: '1px solid #a5f3fc', fontSize: '0.66rem' }}>
                           3 RIR جهود
                         </span>
                       </div>
 
-                      <div className="d-flex align-items-center justify-content-between mt-2 pt-2 border-top border-white border-opacity-10">
-                        <div className="small text-white-50" style={{ fontSize: '0.74rem' }}>
-                          <span className="text-white fw-bold">{exercises.length}</span> تمارين • <span className="text-white fw-bold">45</span> دقيقة
+                      <div className="d-flex align-items-center justify-content-between mt-3 pt-2 border-top" style={{ borderColor: '#f1f5f9' }}>
+                        <div className="small text-muted" style={{ fontSize: '0.74rem' }}>
+                          <span className="text-dark fw-bold">{exercises.length}</span> تمارين • <span className="text-dark fw-bold">45</span> دقيقة
                         </div>
 
                         <button 
                           onClick={() => setActiveTab('workout')}
-                          className="btn btn-sm rounded-pill px-3 py-1 fw-bold d-flex align-items-center gap-1 shadow-sm"
-                          style={{ background: '#ffffff', color: '#261c6a', fontSize: '0.78rem', border: 'none' }}
+                          className="btn btn-sm rounded-pill px-3 py-1 fw-bold d-flex align-items-center gap-1 shadow-xs text-white"
+                          style={{ background: 'linear-gradient(135deg, #261c6a 0%, #4338ca 100%)', border: 'none', fontSize: '0.78rem' }}
                         >
-                          <span>ابدأ التمرين الآن</span>
+                          <span>بدء الجلسة الآن</span>
                           <i className="ti ti-arrow-left"></i>
                         </button>
                       </div>
                     </div>
                   </div>
 
-                  {/* 3. Delicious Today's Meals Hub (Appetizing Sunrise Card) */}
+                  {/* 4. Delicious Today's Meals Hub (Clean Fresh Card) */}
                   <div 
                     className="card border-0 bg-white rounded-4 overflow-hidden" 
                     style={{ 
-                      boxShadow: '0 8px 20px -5px rgba(245, 158, 11, 0.12), 0 2px 8px rgba(0, 0, 0, 0.02)',
-                      border: '1px solid #fef3c7'
+                      boxShadow: '0 4px 20px rgba(15, 23, 42, 0.04)',
+                      border: '1px solid #e2e8f0',
+                      borderTop: '3.5px solid #059669'
                     }}
                   >
                     <div className="card-body p-3">
@@ -575,13 +649,13 @@ export default function MobileAppSimulator() {
                         <div className="d-flex align-items-center gap-2">
                           <div 
                             className="rounded-circle d-flex align-items-center justify-content-center" 
-                            style={{ width: '32px', height: '32px', background: '#fffbeb', color: '#d97706', border: '1px solid #fef08a' }}
+                            style={{ width: '32px', height: '32px', background: '#ecfdf5', color: '#059669', border: '1px solid #a7f3d0' }}
                           >
                             <i className="ti ti-salad fs-5"></i>
                           </div>
                           <div>
-                            <h6 className="fw-bold text-dark mb-0" style={{ fontSize: '0.92rem' }}>
-                              جدول الوجبات والبدائل الذكية
+                            <h6 className="fw-bold text-dark mb-0" style={{ fontSize: '0.9rem' }}>
+                              جدول الوجبات والبدائل
                             </h6>
                             <small className="text-muted" style={{ fontSize: '0.68rem' }}>3 وجبات رئيسية موزونة لتغطية الماكروز</small>
                           </div>
@@ -590,7 +664,7 @@ export default function MobileAppSimulator() {
                         <button 
                           onClick={() => setActiveTab('nutrition')}
                           className="btn btn-sm rounded-pill px-2 py-0 fw-bold"
-                          style={{ background: '#fffbeb', color: '#d97706', border: '1px solid #fde68a', fontSize: '0.72rem', height: '26px' }}
+                          style={{ background: '#f0fdf4', color: '#059669', border: '1px solid #bbf7d0', fontSize: '0.72rem', height: '26px' }}
                         >
                           عرض الكل ←
                         </button>
@@ -604,15 +678,15 @@ export default function MobileAppSimulator() {
                             onClick={() => setActiveTab('nutrition')}
                             className="p-2 px-3 rounded-3 d-flex justify-content-between align-items-center cursor-pointer transition-all"
                             style={{ 
-                              background: mIdx === 0 ? '#fffdf5' : mIdx === 1 ? '#f6fef9' : '#fbfaff',
-                              border: `1px solid ${mIdx === 0 ? '#fde68a' : mIdx === 1 ? '#bbf7d0' : '#ede9fe'}`,
+                              background: '#f8fafc',
+                              border: '1px solid #e2e8f0',
                               cursor: 'pointer'
                             }}
                           >
                             <div className="d-flex align-items-center gap-2">
                               <span 
                                 className="rounded-circle d-inline-block" 
-                                style={{ width: '8px', height: '8px', background: mIdx === 0 ? '#f59e0b' : mIdx === 1 ? '#10b981' : '#6d28d9' }}
+                                style={{ width: '8px', height: '8px', background: mIdx === 0 ? '#f59e0b' : mIdx === 1 ? '#10b981' : '#6366f1' }}
                               ></span>
                               <span className="fw-bold text-dark" style={{ fontSize: '0.82rem' }}>
                                 {mIdx === 0 ? 'وجبة الإفطار' : mIdx === 1 ? 'وجبة الغداء' : 'وجبة العشاء'}
@@ -620,7 +694,7 @@ export default function MobileAppSimulator() {
                               <small className="text-muted" style={{ fontSize: '0.68rem' }}>({m.foods?.length || 0} أصناف)</small>
                             </div>
 
-                            <span className="fw-bold font-monospace" style={{ fontSize: '0.78rem', color: mIdx === 0 ? '#d97706' : mIdx === 1 ? '#059669' : '#4c1d95' }}>
+                            <span className="fw-bold font-monospace text-dark" style={{ fontSize: '0.78rem' }}>
                               ~{Math.round(m.totals?.calories_kcal || m.target?.planned_calories || 700)} سعرة
                             </span>
                           </div>
@@ -629,33 +703,32 @@ export default function MobileAppSimulator() {
                     </div>
                   </div>
 
-                  {/* 4. Weekly Checkin Status Bar (Fresh Mint Success Card) */}
+                  {/* 5. Weekly Checkin Status Bar (Fresh Mint Card) */}
                   <div 
                     onClick={() => setActiveTab('checkin')}
-                    className="card border-0 rounded-4 p-3 transition-all cursor-pointer"
+                    className="card border-0 bg-white rounded-4 p-3 transition-all cursor-pointer shadow-sm"
                     style={{ 
-                      background: 'linear-gradient(135deg, #ecfdf5 0%, #d1fae5 100%)',
-                      border: '1px solid #a7f3d0',
-                      boxShadow: '0 4px 15px rgba(16, 185, 129, 0.08)',
+                      border: '1px solid #e2e8f0',
+                      borderRight: '3.5px solid #10b981',
                       cursor: 'pointer'
                     }}
                   >
                     <div className="d-flex align-items-center justify-content-between">
                       <div className="d-flex align-items-center gap-3">
                         <div 
-                          className="rounded-3 d-flex align-items-center justify-content-center bg-white shadow-xs" 
-                          style={{ width: '38px', height: '38px', color: '#059669' }}
+                          className="rounded-3 d-flex align-items-center justify-content-center" 
+                          style={{ width: '36px', height: '36px', background: '#ecfdf5', color: '#059669', border: '1px solid #a7f3d0' }}
                         >
-                          <i className="ti ti-clipboard-check fs-4"></i>
+                          <i className="ti ti-clipboard-check fs-5"></i>
                         </div>
                         <div>
                           <div className="fw-bold text-dark" style={{ fontSize: '0.88rem' }}>المتابعة الأسبوعية</div>
-                          <small className="text-success fw-semibold d-block" style={{ fontSize: '0.72rem' }}>
+                          <small className="text-muted d-block" style={{ fontSize: '0.72rem' }}>
                             سجل أوزانك وتحديث مقاساتك مع الكابتن
                           </small>
                         </div>
                       </div>
-                      <span className="badge rounded-pill px-3 py-1 fw-bold bg-white text-success shadow-xs" style={{ fontSize: '0.72rem' }}>
+                      <span className="badge rounded-pill px-3 py-1 fw-bold" style={{ background: '#ecfdf5', color: '#059669', border: '1px solid #a7f3d0', fontSize: '0.72rem' }}>
                         تسجيل الآن ←
                       </span>
                     </div>
