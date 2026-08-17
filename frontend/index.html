@@ -423,6 +423,23 @@
         border-color: #261c6a !important;
       }
 
+      /* Universal RTL Form Select Dropdown Arrow Fix */
+      [dir="rtl"] select.form-select,
+      [dir="rtl"] .form-select {
+        background-position: left 0.75rem center !important;
+        padding-left: 2.25rem !important;
+        padding-right: 0.95rem !important;
+        text-align: right !important;
+        background-size: 14px 10px !important;
+      }
+      
+      [dir="rtl"] select.form-select-sm,
+      [dir="rtl"] .form-select-sm {
+        padding-left: 2rem !important;
+        padding-right: 0.75rem !important;
+        background-position: left 0.65rem center !important;
+      }
+
       /* Badges & Pills */
       .badge.bg-primary {
         background-color: #f5f3ff !important;

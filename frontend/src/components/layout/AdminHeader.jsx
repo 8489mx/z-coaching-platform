@@ -113,36 +113,36 @@ export default function AdminHeader({ searchTerm, onSearchChange, searchPlacehol
             <div className="position-relative" ref={dropdownRef}>
               <div 
                 onClick={() => setIsProfileDropdownOpen(!isProfileDropdownOpen)}
-                className="d-flex align-items-center gap-2 py-1 px-2 bg-light rounded-pill border"
+                className="d-flex align-items-center gap-2 py-1 px-3 rounded-pill border transition-all"
                 style={{ 
-                  height: '34px',
+                  height: '36px',
                   cursor: 'pointer',
-                  transition: 'all 0.2s ease',
                   userSelect: 'none',
-                  background: isProfileDropdownOpen ? '#faf5ff' : '#f8fafc',
-                  borderColor: isProfileDropdownOpen ? '#ddd6fe' : '#e2e8f0'
+                  background: isProfileDropdownOpen ? '#f5f3ff' : '#ffffff',
+                  borderColor: isProfileDropdownOpen ? '#c4b5fd' : '#e2e8f0',
+                  boxShadow: '0 1px 3px rgba(0,0,0,0.02)'
                 }}
                 role="button"
                 tabIndex={0}
               >
                 <div 
-                  className="rounded-circle d-flex align-items-center justify-content-center text-white fw-bold shadow-xs" 
+                  className="rounded-circle d-flex align-items-center justify-content-center text-white fw-bold shadow-xs flex-shrink-0" 
                   style={{ 
                     width: '26px', 
                     height: '26px', 
-                    background: '#261c6a',
+                    background: 'linear-gradient(135deg, #261c6a 0%, #4338ca 100%)',
                     fontSize: '0.76rem'
                   }}
                 >
                   Z
                 </div>
-                <div className="d-none d-md-block text-end pe-1">
-                  <span className="fw-bold d-block text-dark lh-1" style={{ fontSize: '0.8rem' }}>كابتن كيمو</span>
-                  <small className="text-muted" style={{ fontSize: '0.66rem' }}>Master Coach</small>
+                <div className="d-none d-md-block text-end">
+                  <span className="fw-bold d-block text-dark lh-1" style={{ fontSize: '0.82rem' }}>كابتن كيمو</span>
+                  <small className="text-muted" style={{ fontSize: '0.64rem' }}>Master Coach</small>
                 </div>
                 <i 
-                  className={`ti ti-chevron-down text-muted small ms-1 transition-transform ${isProfileDropdownOpen ? 'rotate-180' : ''}`}
-                  style={{ fontSize: '0.7rem', transition: 'transform 0.2s ease' }}
+                  className={`ti ti-chevron-down text-muted small transition-transform ${isProfileDropdownOpen ? 'rotate-180' : ''}`}
+                  style={{ fontSize: '0.72rem', transition: 'transform 0.2s ease' }}
                 ></i>
               </div>
 

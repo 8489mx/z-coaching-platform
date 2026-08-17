@@ -94,8 +94,8 @@ export default function ExerciseLibrary() {
             <div className="d-flex align-items-center gap-2">
               <span className="small text-muted fw-semibold" style={{ fontSize: '0.78rem' }}>الأداة:</span>
               <select 
-                className="form-select form-select-sm border rounded-pill bg-white px-3" 
-                style={{ width: '150px', height: '34px', fontSize: '0.8rem', borderColor: '#e2e8f0' }}
+                className="form-select form-select-sm border rounded-pill bg-white shadow-xs" 
+                style={{ width: '160px', height: '36px', fontSize: '0.82rem', borderColor: '#e2e8f0' }}
                 value={equipmentFilter}
                 onChange={(e) => setEquipmentFilter(e.target.value)}
               >
