@@ -323,14 +323,31 @@ export default function UserDashboardClone() {
             <div className="row mb-4 z-animate-in">
               <div className="col-12">
                 <div className="p-4 p-md-5 rounded-4 bg-white border text-center shadow-sm position-relative overflow-hidden" style={{ borderColor: '#e2e8f0' }}>
-                  <div 
-                    className="rounded-circle d-flex align-items-center justify-content-center mx-auto mb-3"
-                    style={{ width: '64px', height: '64px', background: '#f5f3ff', color: '#261c6a', border: '2px solid #ddd6fe' }}
-                  >
-                    <i className="ti ti-clipboard-check fs-2"></i>
+                  {/* Luxury Glowing Executive Icon Badge */}
+                  <div className="position-relative mx-auto mb-3" style={{ width: '68px', height: '68px' }}>
+                    <div 
+                      className="position-absolute top-50 start-50 translate-middle rounded-circle"
+                      style={{ 
+                        width: '84px', 
+                        height: '84px', 
+                        background: 'radial-gradient(circle, rgba(30, 20, 79, 0.12) 0%, rgba(30, 20, 79, 0) 70%)',
+                        pointerEvents: 'none'
+                      }}
+                    ></div>
+                    <div 
+                      className="w-100 h-100 rounded-3 d-flex align-items-center justify-content-center position-relative shadow-sm"
+                      style={{ 
+                        background: 'linear-gradient(135deg, #1e144f 0%, #31217b 100%)',
+                        color: '#ffffff',
+                        border: '1px solid rgba(255, 255, 255, 0.22)',
+                        boxShadow: '0 8px 20px rgba(30, 20, 79, 0.25), inset 0 1px 0 rgba(255, 255, 255, 0.3)'
+                      }}
+                    >
+                      <i className="ti ti-notes fs-2 text-white"></i>
+                    </div>
                   </div>
 
-                  <h4 className="fw-bold text-dark mb-2" style={{ letterSpacing: '-0.3px' }}>
+                  <h4 className="fw-bold text-dark mb-2" style={{ letterSpacing: '-0.3px', fontSize: '1.25rem' }}>
                     بانتظار استكمال استمارة المشترك
                   </h4>
 
