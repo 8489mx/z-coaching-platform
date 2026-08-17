@@ -244,10 +244,10 @@ export default function CoachEditor() {
             <div className="card-body p-3">
               <div className="d-flex align-items-center gap-2 mb-2">
                 <div className="rounded-circle d-flex align-items-center justify-content-center" style={{ width: '28px', height: '28px', background: '#f5f3ff', color: '#261c6a', border: '1px solid #ddd6fe' }}>
-                  <i className="ti ti-sparkles" style={{ fontSize: '0.85rem' }}></i>
+                  <i className="ti ti-shield-check" style={{ fontSize: '0.85rem' }}></i>
                 </div>
                 <h6 className="fw-bold mb-0" style={{ color: '#261c6a', fontSize: '0.92rem' }}>
-                  تقرير الذكاء الرياضي والتدقيق الأمني (Explainable AI & Safety Audit)
+                  تقرير التدقيق الرياضي والأمني (Engine Safety Audit)
                 </h6>
               </div>
 

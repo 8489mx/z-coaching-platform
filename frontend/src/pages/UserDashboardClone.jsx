@@ -435,7 +435,7 @@ export default function UserDashboardClone() {
                       {generatingPlan ? (
                         <><span className="spinner-border spinner-border-sm"></span> جاري بناء الخطة بالمحرك...</>
                       ) : (
-                        <><i className="ti ti-sparkles fs-6 text-warning"></i> توليد الخطة الآن (Z-Engine)</>
+                        <span>توليد الخطة الآن (Z-Engine)</span>
                       )}
                     </button>
                   </div>

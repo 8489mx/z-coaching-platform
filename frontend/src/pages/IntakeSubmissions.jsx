@@ -242,7 +242,7 @@ export default function IntakeSubmissions() {
                       تخصيص الكابتن
                     </span>
                     <div className="d-flex align-items-center justify-content-center" style={{ width: '30px', height: '30px', borderRadius: '8px', background: '#f5f3ff', color: '#261c6a' }}>
-                      <i className="ti ti-sparkles fs-6"></i>
+                      <i className="ti ti-file-pencil fs-6"></i>
                     </div>
                   </div>
                   <div>
@@ -469,7 +469,7 @@ export default function IntakeSubmissions() {
                                     {isGenerating ? (
                                       <span className="spinner-border spinner-border-sm"></span>
                                     ) : (
-                                      <><i className="ti ti-sparkles"></i> {sub.status === 'DRAFT_GENERATED' ? 'تعديل المسودة' : 'توليد ومراجعة'}</>
+                                      <><i className="ti ti-file-text"></i> {sub.status === 'DRAFT_GENERATED' ? 'تعديل المسودة' : 'توليد ومراجعة'}</>
                                     )}
                                   </button>
                                 ) : (

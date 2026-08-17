@@ -307,7 +307,7 @@ export default function NewClientQuickModal({ isOpen, onClose, onClientCreated }
                     {loading ? (
                       <><span className="spinner-border spinner-border-sm"></span> جاري التوليد...</>
                     ) : (
-                      <><i className="ti ti-sparkles fs-6"></i> إنشاء العميل</>
+                      <span>إنشاء العميل</span>
                     )}
                   </button>
                 </div>

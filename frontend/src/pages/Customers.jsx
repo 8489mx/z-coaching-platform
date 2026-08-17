@@ -216,7 +216,7 @@ export default function Customers() {
                     className="btn btn-sm rounded-pill px-4 fw-bold shadow-xs d-flex align-items-center gap-1 text-white"
                     style={{ height: '38px', background: '#261c6a', border: 'none', fontSize: '0.82rem' }}
                   >
-                    <i className="ti ti-sparkles"></i> 
+                    <i className="ti ti-user-plus"></i> 
                     <span>توليد كود المشترك</span>
                   </button>
                 </div>
