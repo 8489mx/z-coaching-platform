@@ -163,8 +163,10 @@ export default function ProgramPdfView() {
   ];
 
   const meals = defaultMeals;
+  const supplements = DEFAULT_SUPPLEMENTS;
   const clientName = user?.full_name || (user?.client_code ? `متدرب #${user.client_code}` : "المتدرب");
   const clientCode = user?.client_code || targetUserId;
+  const rawGender = (user?.gender || program?.athlete_gender || 'male').toLowerCase();
   const isFemale = rawGender === 'female' || rawGender === 'f' || rawGender === 'أنثى' || 
                    clientName.includes('سارة') || clientName.includes('مريم') || clientName.includes('نور');
 
@@ -314,13 +316,14 @@ export default function ProgramPdfView() {
         >
           <div>
             
-            {/* 1. Quiet Luxury Executive Hero Header (Identical to User Portal Hero) */}
+            {/* 1. Quiet Luxury Executive Hero Header */}
             <div 
-              className="p-3 mb-3 border rounded-4 bg-white d-flex align-items-center justify-content-between position-relative overflow-hidden" 
+              className="p-3 mb-3 border rounded-4 d-flex align-items-center justify-content-between position-relative overflow-hidden" 
               style={{ 
-                borderColor: '#e2e8f0', 
-                borderRight: '4px solid #261c6a',
-                background: '#ffffff'
+                borderColor: '#ddd6fe', 
+                borderRight: '5px solid #261c6a',
+                background: 'linear-gradient(135deg, #ffffff 0%, #f8faff 50%, #f5f3ff 100%)',
+                boxShadow: '0 2px 10px rgba(38, 28, 106, 0.04)'
               }}
             >
               {/* Right Side: Athlete Name, Program Phase, and Feature Badges */}
@@ -329,29 +332,29 @@ export default function ProgramPdfView() {
                   <img 
                     src="/admin-dashboard_data/logo/z_dumbbell_flat.jpg" 
                     alt="Z Coaching" 
-                    style={{ width: '32px', height: '32px', objectFit: 'contain' }} 
+                    style={{ width: '34px', height: '34px', objectFit: 'contain' }} 
                   />
-                  <h5 className="fw-bold text-dark mb-0" style={{ letterSpacing: '-0.3px', fontSize: '1.08rem' }}>
+                  <h5 className="fw-bold mb-0" style={{ letterSpacing: '-0.3px', fontSize: '1.12rem', color: '#1e144f' }}>
                     {isFemale ? 'البطلة' : 'كابتن'} {clientName}
                   </h5>
-                  <span className="badge rounded-pill fw-bold" style={{ background: '#f5f3ff', color: '#261c6a', border: '1px solid #ddd6fe', fontSize: '0.64rem' }}>
+                  <span className="badge rounded-pill fw-bold" style={{ background: '#261c6a', color: '#ffffff', fontSize: '0.64rem', padding: '4px 8px' }}>
                     Z-ENGINE V2.0
                   </span>
-                  <small className="text-muted" style={{ fontSize: '0.68rem' }}>كود: {clientCode}</small>
+                  <span className="badge bg-white text-secondary border font-monospace" style={{ fontSize: '0.68rem' }}>كود: {clientCode}</span>
                 </div>
 
-                <p className="text-muted mb-2" style={{ fontSize: '0.74rem' }}>
-                  خطة الميزوسايكل المخصصة (الأسبوع 1 / مرحلة: التراكم والتجهيز) — مستوى الجهد: <strong className="text-dark">3 RIR</strong>
+                <p className="text-muted mb-2 fw-medium" style={{ fontSize: '0.75rem' }}>
+                  خطة الميزوسايكل المخصصة (الأسبوع 1 / مرحلة: <span style={{ color: '#261c6a', fontWeight: '700' }}>التراكم والتجهيز</span>) — مستوى الجهد المستهدف: <strong style={{ color: '#059669' }}>3 RIR</strong>
                 </p>
 
-                <div className="d-flex gap-1 flex-wrap">
-                  <span className="badge rounded-pill px-2 py-1 fw-semibold" style={{ background: '#f5f3ff', color: '#261c6a', border: '1px solid #ddd6fe', fontSize: '0.66rem' }}>
+                <div className="d-flex gap-1.5 flex-wrap" style={{ gap: '6px' }}>
+                  <span className="badge rounded-pill px-2.5 py-1 fw-bold" style={{ background: '#f5f3ff', color: '#372896', border: '1px solid #c4b5fd', fontSize: '0.68rem' }}>
                     بناء عضلي وحرق دهون
                   </span>
-                  <span className="badge rounded-pill px-2 py-1 fw-semibold" style={{ background: '#f8fafc', color: '#475569', border: '1px solid #e2e8f0', fontSize: '0.66rem' }}>
-                    تجهيزات جيم كامل
+                  <span className="badge rounded-pill px-2.5 py-1 fw-bold" style={{ background: '#f0f9ff', color: '#0369a1', border: '1px solid #bae6fd', fontSize: '0.68rem' }}>
+                    تجهيزات جيم تجاري كامل
                   </span>
-                  <span className="badge rounded-pill px-2 py-1 fw-semibold" style={{ background: '#ecfdf5', color: '#059669', border: '1px solid #a7f3d0', fontSize: '0.66rem' }}>
+                  <span className="badge rounded-pill px-2.5 py-1 fw-bold" style={{ background: '#ecfdf5', color: '#059669', border: '1px solid #a7f3d0', fontSize: '0.68rem' }}>
                     8,000 خطوة يومياً
                   </span>
                 </div>
@@ -363,128 +366,162 @@ export default function ProgramPdfView() {
                   src={artworkSrc} 
                   alt="Fitness Art" 
                   style={{ 
-                    maxHeight: '90px', 
+                    maxHeight: '92px', 
                     maxWidth: '120px', 
                     objectFit: 'contain',
                     filter: 'invert(16%) sepia(85%) saturate(3500%) hue-rotate(248deg) brightness(85%) contrast(110%)',
-                    opacity: 0.9
+                    opacity: 0.92
                   }} 
                 />
                 <div className="d-flex flex-column gap-1">
-                  <div className="p-1 px-2 rounded-2 text-center" style={{ background: '#fbfaff', border: '1px solid #ede9fe', minWidth: '85px' }}>
-                    <span className="text-muted d-block" style={{ fontSize: '0.58rem' }}>مرحلة الخطة</span>
-                    <strong className="d-block" style={{ fontSize: '0.72rem', color: '#261c6a' }}>الأسبوع 1</strong>
+                  <div className="p-1 px-2.5 rounded-3 text-center" style={{ background: '#f5f3ff', border: '1.5px solid #ddd6fe', minWidth: '88px' }}>
+                    <span className="text-muted d-block fw-semibold" style={{ fontSize: '0.58rem' }}>مرحلة الخطة</span>
+                    <strong className="d-block" style={{ fontSize: '0.74rem', color: '#261c6a' }}>الأسبوع 1</strong>
                   </div>
-                  <div className="p-1 px-2 rounded-2 text-center" style={{ background: '#ecfdf5', border: '1px solid #a7f3d0', minWidth: '85px' }}>
-                    <span className="text-muted d-block" style={{ fontSize: '0.58rem' }}>التكيف الذكي</span>
-                    <strong className="d-block text-success" style={{ fontSize: '0.72rem' }}>مفعل بنجاح ✓</strong>
+                  <div className="p-1 px-2.5 rounded-3 text-center" style={{ background: '#ecfdf5', border: '1.5px solid #a7f3d0', minWidth: '88px' }}>
+                    <span className="text-muted d-block fw-semibold" style={{ fontSize: '0.58rem' }}>التكيف الذكي</span>
+                    <strong className="d-block text-success" style={{ fontSize: '0.74rem' }}>مفعل بنجاح ✓</strong>
                   </div>
                 </div>
               </div>
             </div>
 
-            {/* 2. Daily Macros Target Bar (Quiet Luxury Imperial Violet) */}
-            <div className="p-2 px-3 rounded-4 mb-3 text-white shadow-xs" style={{ background: 'linear-gradient(135deg, #261c6a 0%, #1a134b 100%)' }}>
-              <div className="row text-center align-items-center g-0">
-                <div className="col">
-                  <small className="text-white-50 d-block" style={{ fontSize: '0.64rem' }}>السعرات اليومية</small>
-                  <span className="fw-bold" style={{ fontSize: '1.05rem' }}>{calories}</span> <small className="text-white-50" style={{ fontSize: '0.6rem' }}>kcal</small>
+            {/* 2. Daily Macros Target Bar (Distinct 5 Color Cards) */}
+            <div className="row g-2 mb-3">
+              {/* Calories */}
+              <div className="col">
+                <div className="p-2 rounded-3 text-center h-100" style={{ background: 'linear-gradient(180deg, #f5f3ff 0%, #ede9fe 100%)', border: '1.5px solid #c4b5fd' }}>
+                  <small className="d-block fw-bold" style={{ fontSize: '0.64rem', color: '#4338ca' }}>السعرات المستهدفة</small>
+                  <span className="fw-bold" style={{ fontSize: '1.15rem', color: '#261c6a' }}>{calories}</span>
+                  <small className="d-block" style={{ fontSize: '0.58rem', color: '#6366f1' }}>kcal / يوم</small>
                 </div>
-                <div className="col border-end border-white border-opacity-10">
-                  <small className="text-white-50 d-block" style={{ fontSize: '0.64rem' }}>البروتين الصافي</small>
-                  <span className="fw-bold" style={{ fontSize: '1.05rem' }}>{protein}g</span>
+              </div>
+              {/* Protein */}
+              <div className="col">
+                <div className="p-2 rounded-3 text-center h-100" style={{ background: 'linear-gradient(180deg, #f0f9ff 0%, #e0f2fe 100%)', border: '1.5px solid #7dd3fc' }}>
+                  <small className="d-block fw-bold" style={{ fontSize: '0.64rem', color: '#0369a1' }}>البروتين الصافي</small>
+                  <span className="fw-bold" style={{ fontSize: '1.15rem', color: '#0284c7' }}>{protein}g</span>
+                  <small className="d-block" style={{ fontSize: '0.58rem', color: '#0ea5e9' }}>لبناء الألياف</small>
                 </div>
-                <div className="col border-end border-white border-opacity-10">
-                  <small className="text-white-50 d-block" style={{ fontSize: '0.64rem' }}>الكاربوهيدرات</small>
-                  <span className="fw-bold" style={{ fontSize: '1.05rem' }}>{carbs}g</span>
+              </div>
+              {/* Carbs */}
+              <div className="col">
+                <div className="p-2 rounded-3 text-center h-100" style={{ background: 'linear-gradient(180deg, #fffbeb 0%, #fef3c7 100%)', border: '1.5px solid #fcd34d' }}>
+                  <small className="d-block fw-bold" style={{ fontSize: '0.64rem', color: '#b45309' }}>الكاربوهيدرات</small>
+                  <span className="fw-bold" style={{ fontSize: '1.15rem', color: '#d97706' }}>{carbs}g</span>
+                  <small className="d-block" style={{ fontSize: '0.58rem', color: '#f59e0b' }}>طاقة التدريب</small>
                 </div>
-                <div className="col border-end border-white border-opacity-10">
-                  <small className="text-white-50 d-block" style={{ fontSize: '0.64rem' }}>الدهون الصحية</small>
-                  <span className="fw-bold" style={{ fontSize: '1.05rem' }}>{fats}g</span>
+              </div>
+              {/* Fats */}
+              <div className="col">
+                <div className="p-2 rounded-3 text-center h-100" style={{ background: 'linear-gradient(180deg, #fff1f2 0%, #ffe4e6 100%)', border: '1.5px solid #fecdd3' }}>
+                  <small className="d-block fw-bold" style={{ fontSize: '0.64rem', color: '#be123c' }}>الدهون الصحية</small>
+                  <span className="fw-bold" style={{ fontSize: '1.15rem', color: '#e11d48' }}>{fats}g</span>
+                  <small className="d-block" style={{ fontSize: '0.58rem', color: '#fb7185' }}>صحة الهرمونات</small>
                 </div>
-                <div className="col border-end border-white border-opacity-10">
-                  <small className="text-white-50 d-block" style={{ fontSize: '0.64rem' }}>شرب الماء</small>
-                  <span className="fw-bold" style={{ fontSize: '1.05rem' }}>3.5L</span>
+              </div>
+              {/* Water */}
+              <div className="col">
+                <div className="p-2 rounded-3 text-center h-100" style={{ background: 'linear-gradient(180deg, #ecfdf5 0%, #d1fae5 100%)', border: '1.5px solid #86efac' }}>
+                  <small className="d-block fw-bold" style={{ fontSize: '0.64rem', color: '#15803d' }}>شرب الماء</small>
+                  <span className="fw-bold" style={{ fontSize: '1.15rem', color: '#059669' }}>3.5L</span>
+                  <small className="d-block" style={{ fontSize: '0.58rem', color: '#10b981' }}>هيدريشن يومي</small>
                 </div>
               </div>
             </div>
 
-            {/* 3. Meals Schedule (Executive 3-Column Structured Layout) */}
-            <div className="d-flex justify-content-between align-items-center mb-2 pb-1 border-bottom" style={{ borderColor: '#f1f5f9' }}>
-              <h6 className="fw-bold text-dark mb-0" style={{ fontSize: '0.82rem' }}>
-                <i className="ti ti-salad me-1" style={{ color: '#261c6a' }}></i> جدول الوجبات والبدائل المرنة (Flexible Meal Plan)
+            {/* 3. Meals Schedule (Executive 3-Column Structured Layout with Colored Ribbons) */}
+            <div className="d-flex justify-content-between align-items-center mb-2 pb-1 border-bottom" style={{ borderColor: '#e2e8f0' }}>
+              <h6 className="fw-bold mb-0 d-flex align-items-center gap-1.5" style={{ fontSize: '0.86rem', color: '#1e144f' }}>
+                <span className="rounded-circle d-inline-flex align-items-center justify-content-center" style={{ width: '22px', height: '22px', background: '#f5f3ff', color: '#261c6a' }}>
+                  <i className="ti ti-salad fs-6"></i>
+                </span>
+                <span>جدول الوجبات والبدائل المرنة (Flexible Meal Plan)</span>
               </h6>
-              <span className="badge rounded-pill fw-semibold" style={{ background: '#f5f3ff', color: '#261c6a', fontSize: '0.64rem' }}>
+              <span className="badge rounded-pill fw-bold" style={{ background: '#f5f3ff', color: '#372896', border: '1px solid #c4b5fd', fontSize: '0.66rem' }}>
                 موزونة بوحدات قياس منزلية دقيقة
               </span>
             </div>
 
             <div className="row g-2 mb-3">
-              {meals.map((meal, mIdx) => (
-                <div key={mIdx} className="col-4">
-                  <div className="p-2 border rounded-3 h-100 bg-white" style={{ borderColor: '#ede9fe', borderTop: '3px solid #261c6a' }}>
-                    <div className="d-flex justify-content-between align-items-center mb-1 pb-1 border-bottom" style={{ borderColor: '#f1f5f9' }}>
-                      <span className="fw-bold text-dark" style={{ fontSize: '0.74rem' }}>
-                        {meal.meal_label}
-                      </span>
-                      <span className="badge rounded-pill" style={{ background: '#f5f3ff', color: '#261c6a', fontSize: '0.62rem' }}>
-                        ~ {meal.calories} سعرة
-                      </span>
-                    </div>
+              {meals.map((meal, mIdx) => {
+                const mealColors = [
+                  { borderTop: '#d97706', badgeBg: '#fffbeb', badgeText: '#b45309', badgeBorder: '#fde68a' },
+                  { borderTop: '#261c6a', badgeBg: '#f5f3ff', badgeText: '#372896', badgeBorder: '#ddd6fe' },
+                  { borderTop: '#7c3aed', badgeBg: '#fdf4ff', badgeText: '#86198f', badgeBorder: '#f5d0fe' }
+                ];
+                const curColor = mealColors[mIdx % 3];
 
-                    <div className="d-flex flex-column gap-1">
-                      {meal.foods?.map((f, fIdx) => (
-                        <div key={fIdx} className="p-1 px-2 rounded-2 border bg-light d-flex flex-column" style={{ fontSize: '0.68rem', borderColor: '#f1f5f9' }}>
-                          <div className="d-flex justify-content-between align-items-center">
-                            <span className="fw-bold text-dark">{f.name_ar}</span>
-                            <span className="badge bg-white text-dark border px-1" style={{ fontSize: '0.62rem' }}>{f.portion_g}</span>
+                return (
+                  <div key={mIdx} className="col-4">
+                    <div className="p-2 border rounded-3 h-100 bg-white shadow-xs" style={{ borderColor: '#e2e8f0', borderTop: `4px solid ${curColor.borderTop}` }}>
+                      <div className="d-flex justify-content-between align-items-center mb-1.5 pb-1.5 border-bottom" style={{ borderColor: '#f1f5f9' }}>
+                        <span className="fw-bold text-dark" style={{ fontSize: '0.78rem' }}>
+                          {meal.meal_label}
+                        </span>
+                        <span className="badge rounded-pill fw-bold" style={{ background: curColor.badgeBg, color: curColor.badgeText, border: `1px solid ${curColor.badgeBorder}`, fontSize: '0.64rem' }}>
+                          ~ {meal.calories} سعرة
+                        </span>
+                      </div>
+
+                      <div className="d-flex flex-column gap-1">
+                        {meal.foods?.map((f, fIdx) => (
+                          <div key={fIdx} className="p-1 px-2 rounded-2 border bg-light d-flex flex-column" style={{ fontSize: '0.68rem', borderColor: '#f1f5f9' }}>
+                            <div className="d-flex justify-content-between align-items-center">
+                              <span className="fw-bold text-dark">{f.name_ar}</span>
+                              <span className="badge bg-white text-dark border px-1.5 fw-bold" style={{ fontSize: '0.62rem', borderColor: '#cbd5e1' }}>{f.portion_g}</span>
+                            </div>
+                            <small className="text-muted" style={{ fontSize: '0.6rem' }}>{f.notes}</small>
                           </div>
-                          <small className="text-muted" style={{ fontSize: '0.6rem' }}>{f.notes}</small>
-                        </div>
-                      ))}
+                        ))}
+                      </div>
                     </div>
                   </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
 
             {/* 4. Daily Supplements Protocol (5 Essential Items) */}
-            <div className="d-flex justify-content-between align-items-center mb-2 pb-1 border-bottom" style={{ borderColor: '#f1f5f9' }}>
-              <h6 className="fw-bold text-dark mb-0" style={{ fontSize: '0.82rem' }}>
-                <i className="ti ti-pill me-1" style={{ color: '#261c6a' }}></i> بروتوكول المكملات الغذائية المعتمد (Supplements Protocol)
+            <div className="d-flex justify-content-between align-items-center mb-2 pb-1 border-bottom" style={{ borderColor: '#e2e8f0' }}>
+              <h6 className="fw-bold mb-0 d-flex align-items-center gap-1.5" style={{ fontSize: '0.86rem', color: '#1e144f' }}>
+                <span className="rounded-circle d-inline-flex align-items-center justify-content-center" style={{ width: '22px', height: '22px', background: '#ecfdf5', color: '#059669' }}>
+                  <i className="ti ti-pill fs-6"></i>
+                </span>
+                <span>بروتوكول المكملات الغذائية المعتمد (Supplements Protocol)</span>
               </h6>
-              <span className="badge rounded-pill" style={{ background: '#ecfdf5', color: '#059669', fontSize: '0.64rem' }}>
-                5 مكملات موصى بها
+              <span className="badge rounded-pill fw-bold" style={{ background: '#ecfdf5', color: '#059669', border: '1px solid #a7f3d0', fontSize: '0.66rem' }}>
+                5 مكملات موصى بها علمياً
               </span>
             </div>
 
             <div className="row g-2 mb-3">
               {supplements.map((sup, sIdx) => (
                 <div key={sIdx} className="col">
-                  <div className="p-2 rounded-3 border text-center h-100 bg-white" style={{ borderColor: '#e2e8f0' }}>
-                    <span className="fw-bold d-block text-dark" style={{ fontSize: '0.72rem' }}>{sup.name_ar}</span>
-                    <span className="badge rounded-pill my-1" style={{ background: '#f5f3ff', color: '#261c6a', fontSize: '0.6rem' }}>{sup.dosage}</span>
-                    <small className="text-muted d-block" style={{ fontSize: '0.62rem', lineHeight: '1.2' }}>{sup.timing}</small>
+                  <div className="p-2 rounded-3 border text-center h-100 bg-white" style={{ borderColor: '#e2e8f0', borderTop: '3px solid #0891b2' }}>
+                    <span className="fw-bold d-block text-dark text-truncate" style={{ fontSize: '0.72rem' }}>{sup.name_ar}</span>
+                    <span className="badge rounded-pill my-1 fw-bold" style={{ background: '#ecfeff', color: '#0891b2', border: '1px solid #a5f3fc', fontSize: '0.62rem' }}>{sup.dosage}</span>
+                    <small className="text-muted d-block" style={{ fontSize: '0.6rem', lineHeight: '1.2' }}>{sup.timing}</small>
                   </div>
                 </div>
               ))}
             </div>
 
             {/* 5. Coach Custom Directives */}
-            <div className="p-2 px-3 rounded-3 mb-2" style={{ backgroundColor: '#fbfaff', border: '1px solid #ede9fe', borderRight: '4px solid #261c6a' }}>
-              <h6 className="fw-bold mb-1" style={{ color: '#261c6a', fontSize: '0.78rem' }}>
-                <i className="ti ti-notes me-1"></i> توجيهات الكابتن للمرحلة الحالية:
+            <div className="p-2.5 px-3 rounded-3 mb-2" style={{ background: 'linear-gradient(135deg, #fbfaff 0%, #f5f3ff 100%)', border: '1.5px solid #ddd6fe', borderRight: '5px solid #261c6a' }}>
+              <h6 className="fw-bold mb-1 d-flex align-items-center gap-1" style={{ color: '#261c6a', fontSize: '0.80rem' }}>
+                <i className="ti ti-notes fs-6"></i>
+                <span>توجيهات الكابتن للمرحلة الحالية:</span>
               </h6>
-              <p className="mb-0 text-dark fw-medium" style={{ lineHeight: '1.4', fontSize: '0.74rem' }}>
+              <p className="mb-0 text-dark fw-medium" style={{ lineHeight: '1.45', fontSize: '0.75rem' }}>
                 {coachNotes}
               </p>
             </div>
           </div>
 
           {/* Footer Page 1 */}
-          <div className="d-flex justify-content-between align-items-center pt-2 border-top text-muted" style={{ fontSize: '0.68rem', borderColor: '#f1f5f9' }}>
+          <div className="d-flex justify-content-between align-items-center pt-2 border-top text-muted" style={{ fontSize: '0.68rem', borderColor: '#e2e8f0' }}>
             <span>منظومة Z Coaching Master Platform — وثيقة رقمية معتمدة (صفحة 1 من 2)</span>
-            <span>اعتماد الخطة: كابتن Z Coaching ✓</span>
+            <span className="fw-bold" style={{ color: '#261c6a' }}>اعتماد الخطة: كابتن Z Coaching ✓</span>
           </div>
         </div>
 
@@ -504,137 +541,164 @@ export default function ProgramPdfView() {
             
             {/* Page 2 Top Header */}
             <div 
-              className="p-3 mb-3 border rounded-4 bg-white d-flex align-items-center justify-content-between position-relative overflow-hidden" 
+              className="p-3 mb-3 border rounded-4 d-flex align-items-center justify-content-between position-relative overflow-hidden" 
               style={{ 
-                borderColor: '#e2e8f0', 
-                borderRight: '4px solid #261c6a',
-                background: '#ffffff'
+                borderColor: '#ddd6fe', 
+                borderRight: '5px solid #261c6a',
+                background: 'linear-gradient(135deg, #ffffff 0%, #f8faff 50%, #f5f3ff 100%)',
+                boxShadow: '0 2px 10px rgba(38, 28, 106, 0.04)'
               }}
             >
               <div className="d-flex align-items-center gap-2">
                 <img 
                   src="/admin-dashboard_data/logo/z_dumbbell_flat.jpg" 
                   alt="Z Coaching" 
-                  style={{ width: '32px', height: '32px', objectFit: 'contain' }} 
+                  style={{ width: '34px', height: '34px', objectFit: 'contain' }} 
                 />
                 <div>
-                  <h5 className="fw-bold text-dark mb-0" style={{ letterSpacing: '-0.3px', fontSize: '1.05rem' }}>
+                  <h5 className="fw-bold mb-0" style={{ letterSpacing: '-0.3px', fontSize: '1.10rem', color: '#1e144f' }}>
                     الجدول التدريبي المعتمد وروابط تكنيك التمارين
                   </h5>
-                  <small className="text-muted" style={{ fontSize: '0.7rem' }}>المتدرب: {clientName} | كود: {clientCode} | صفحة 2 من 2</small>
+                  <small className="text-muted" style={{ fontSize: '0.72rem' }}>
+                    المتدرب: <strong className="text-dark">{clientName}</strong> | كود: <span className="font-monospace fw-bold">{clientCode}</span> | صفحة 2 من 2
+                  </small>
                 </div>
               </div>
 
               <div className="d-flex align-items-center gap-2">
-                <span className="badge rounded-pill px-3 py-1 fw-bold" style={{ background: '#f5f3ff', color: '#261c6a', border: '1px solid #ddd6fe', fontSize: '0.7rem' }}>
-                  4 أيام تدريبية مبرمجة
+                <span className="badge rounded-pill px-3 py-1.5 fw-bold" style={{ background: '#261c6a', color: '#ffffff', fontSize: '0.72rem' }}>
+                  {sessions.length} أيام تدريبية مبرمجة
                 </span>
               </div>
             </div>
 
-            {/* Workout Sessions Grid (Compact 2-Column x 2-Row = 4 Sessions) */}
+            {/* Workout Sessions Grid (Distinct Color Themed Headers) */}
             <div className="row g-2 mb-3">
-              {sessions.slice(0, 4).map((sess, sIdx) => (
-                <div key={sIdx} className="col-6">
-                  <div className="border rounded-3 p-2 h-100 bg-white" style={{ borderColor: '#ede9fe', borderTop: '3px solid #261c6a' }}>
-                    <div className="d-flex justify-content-between align-items-center mb-1 pb-1 border-bottom" style={{ borderColor: '#f1f5f9' }}>
-                      <span className="fw-bold" style={{ fontSize: '0.78rem', color: '#261c6a' }}>
-                        {sess.session_name || sess.session_code || `تمرين اليوم ${sIdx + 1}`}
-                      </span>
-                      <span className="badge rounded-pill" style={{ background: '#f5f3ff', color: '#261c6a', fontSize: '0.64rem' }}>
-                        {sess.exercises?.length || 6} تمارين
-                      </span>
+              {sessions.slice(0, 4).map((sess, sIdx) => {
+                const sessionThemes = [
+                  { borderTop: '#261c6a', headerBg: '#f5f3ff', titleColor: '#261c6a', badgeBg: '#ede9fe', badgeText: '#372896', badgeBorder: '#c4b5fd', tableHeadBg: '#f8faff' },
+                  { borderTop: '#16a34a', headerBg: '#f0fdf4', titleColor: '#15803d', badgeBg: '#dcfce7', badgeText: '#166534', badgeBorder: '#86efac', tableHeadBg: '#f6fef9' },
+                  { borderTop: '#0891b2', headerBg: '#ecfeff', titleColor: '#0e7490', badgeBg: '#cffafe', badgeText: '#155e75', badgeBorder: '#7dd3fc', tableHeadBg: '#f0fdfa' },
+                  { borderTop: '#ea580c', headerBg: '#fff7ed', titleColor: '#c2410c', badgeBg: '#ffedd5', badgeText: '#9a3412', badgeBorder: '#fed7aa', tableHeadBg: '#fffaf5' }
+                ];
+                const theme = sessionThemes[sIdx % 4];
+
+                return (
+                  <div key={sIdx} className="col-6">
+                    <div className="border rounded-3 p-2 h-100 bg-white shadow-xs" style={{ borderColor: '#e2e8f0', borderTop: `4px solid ${theme.borderTop}` }}>
+                      <div className="d-flex justify-content-between align-items-center mb-1.5 p-1.5 rounded-2" style={{ background: theme.headerBg }}>
+                        <span className="fw-bold" style={{ fontSize: '0.80rem', color: theme.titleColor }}>
+                          {sess.session_name || sess.session_code || `تمرين اليوم ${sIdx + 1}`}
+                        </span>
+                        <span className="badge rounded-pill fw-bold" style={{ background: theme.badgeBg, color: theme.badgeText, border: `1px solid ${theme.badgeBorder}`, fontSize: '0.64rem' }}>
+                          {sess.exercises?.length || 6} تمارين
+                        </span>
+                      </div>
+
+                      <table className="table table-sm table-borderless mb-0 align-middle" style={{ fontSize: '0.72rem', tableLayout: 'fixed', width: '100%' }}>
+                        <thead>
+                          <tr className="border-bottom" style={{ fontSize: '0.68rem', borderColor: '#e2e8f0', background: theme.tableHeadBg, color: '#334155' }}>
+                            <th className="py-1 px-1 fw-bold" style={{ width: '56%' }}>التمرين (فيديو)</th>
+                            <th className="text-center py-1 fw-bold" style={{ width: '14%' }}>مجموعات</th>
+                            <th className="text-center py-1 fw-bold" style={{ width: '15%' }}>عدات</th>
+                            <th className="text-center py-1 fw-bold" style={{ width: '15%' }}>راحة</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {sess.exercises?.map((ex, exIdx) => {
+                            const arName = ex.name_ar || getArabicExerciseName(ex.exercise_code || ex);
+                            const videoUrl = getExerciseVideoUrl(ex);
+                            const sets = ex.prescription?.sets || ex.sets || 3;
+                            const minReps = ex.prescription?.target_min || ex.reps || 8;
+                            const maxReps = ex.prescription?.target_max || ex.reps || 12;
+                            const rest = ex.prescription?.rest_seconds || ex.rest_seconds || 90;
+
+                            return (
+                              <tr key={exIdx} className="border-bottom" style={{ borderColor: '#f1f5f9' }}>
+                                <td className="py-1 px-1" style={{ width: '56%' }}>
+                                  <a 
+                                    href={videoUrl} 
+                                    target="_blank" 
+                                    rel="noreferrer" 
+                                    className="fw-semibold text-decoration-none d-inline-flex align-items-center gap-1 text-dark"
+                                    style={{ fontSize: '0.73rem', lineHeight: '1.25' }}
+                                    title="انقر لمشاهدة فيديو التكنيك العملي"
+                                  >
+                                    <span className="text-truncate">{arName}</span>
+                                    <span className="badge rounded-circle p-1 d-inline-flex align-items-center justify-content-center flex-shrink-0" style={{ background: '#fef2f2', color: '#dc2626', width: '16px', height: '16px' }}>
+                                      <i className="ti ti-video" style={{ fontSize: '0.62rem' }}></i>
+                                    </span>
+                                  </a>
+                                </td>
+                                <td className="text-center py-1 fw-bold" style={{ width: '14%', color: '#1e293b' }}>
+                                  <span className="badge bg-light text-dark border px-1.5" style={{ fontSize: '0.68rem', fontWeight: '800' }}>{sets}</span>
+                                </td>
+                                <td className="text-center py-1 fw-semibold text-dark" style={{ width: '15%' }}>
+                                  {minReps === maxReps ? minReps : `${minReps}-${maxReps}`}
+                                </td>
+                                <td className="text-center py-1 text-muted" style={{ width: '15%', fontSize: '0.68rem' }}>{rest}ث</td>
+                              </tr>
+                            );
+                          })}
+                        </tbody>
+                      </table>
                     </div>
-
-                    <table className="table table-sm table-borderless mb-0 align-middle" style={{ fontSize: '0.72rem', tableLayout: 'fixed', width: '100%' }}>
-                      <thead>
-                        <tr className="text-muted border-bottom" style={{ fontSize: '0.66rem', borderColor: '#f1f5f9' }}>
-                          <th style={{ width: '56%' }}>التمرين (فيديو)</th>
-                          <th className="text-center" style={{ width: '14%' }}>مجموعات</th>
-                          <th className="text-center" style={{ width: '15%' }}>عدات</th>
-                          <th className="text-center" style={{ width: '15%' }}>راحة</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {sess.exercises?.map((ex, exIdx) => {
-                          const arName = ex.name_ar || getArabicExerciseName(ex.exercise_code || ex);
-                          const enName = ex.name_en || ex.exercise_code?.replace(/_/g, " ") || "Exercise";
-                          const videoUrl = getExerciseVideoUrl(ex);
-                          const sets = ex.prescription?.sets || ex.sets || 3;
-                          const minReps = ex.prescription?.target_min || ex.reps || 8;
-                          const maxReps = ex.prescription?.target_max || ex.reps || 12;
-                          const rest = ex.prescription?.rest_seconds || ex.rest_seconds || 90;
-
-                          return (
-                            <tr key={exIdx} className="border-bottom" style={{ borderColor: '#f8fafc' }}>
-                              <td className="py-1" style={{ width: '56%' }}>
-                                <a 
-                                  href={videoUrl} 
-                                  target="_blank" 
-                                  rel="noreferrer" 
-                                  className="fw-semibold text-decoration-none d-inline-flex align-items-center gap-1 text-dark"
-                                  style={{ fontSize: '0.72rem', lineHeight: '1.25' }}
-                                  title="انقر لمشاهدة فيديو التكنيك العملي"
-                                >
-                                  <span>{arName}</span>
-                                  <i className="ti ti-video text-danger flex-shrink-0" style={{ fontSize: '0.68rem' }}></i>
-                                </a>
-                              </td>
-                              <td className="text-center py-1 fw-bold text-dark" style={{ width: '14%' }}>{sets}</td>
-                              <td className="text-center py-1" style={{ width: '15%' }}>{minReps === maxReps ? minReps : `${minReps}-${maxReps}`}</td>
-                              <td className="text-center py-1 text-muted" style={{ width: '15%' }}>{rest}ث</td>
-                            </tr>
-                          );
-                        })}
-                      </tbody>
-                    </table>
                   </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
 
-            {/* Cardio Protocol Table */}
-            <div className="d-flex justify-content-between align-items-center mb-2 pb-1 border-bottom" style={{ borderColor: '#f1f5f9' }}>
-              <h6 className="fw-bold text-dark mb-0" style={{ fontSize: '0.82rem' }}>
-                <i className="ti ti-activity text-danger me-1"></i> نشاط الكارديو ونطاق حرق الدهون (Cardio Zone 2)
+            {/* Cardio Protocol Table (Distinct Energetic Red/Coral Theme) */}
+            <div className="d-flex justify-content-between align-items-center mb-2 pb-1 border-bottom" style={{ borderColor: '#e2e8f0' }}>
+              <h6 className="fw-bold mb-0 d-flex align-items-center gap-1.5" style={{ fontSize: '0.86rem', color: '#be123c' }}>
+                <span className="rounded-circle d-inline-flex align-items-center justify-content-center" style={{ width: '22px', height: '22px', background: '#ffe4e6', color: '#e11d48' }}>
+                  <i className="ti ti-activity fs-6"></i>
+                </span>
+                <span>نشاط الكارديو ونطاق حرق الدهون (Cardio Zone 2)</span>
               </h6>
-              <span className="badge rounded-pill" style={{ background: '#ecfdf5', color: '#059669', fontSize: '0.64rem' }}>
-                الهدف: 8,000 خطوة يومياً
+              <span className="badge rounded-pill fw-bold" style={{ background: '#ecfdf5', color: '#059669', border: '1px solid #a7f3d0', fontSize: '0.66rem' }}>
+                الهدف اليومي: 8,000 خطوة
               </span>
             </div>
 
-            <div className="p-2 px-3 rounded-3 mb-2 bg-light border" style={{ borderColor: '#e2e8f0' }}>
-              <div className="row text-center">
-                <div className="col-3">
-                  <small className="text-muted d-block" style={{ fontSize: '0.62rem' }}>النوع والنشاط</small>
-                  <strong className="text-dark" style={{ fontSize: '0.74rem' }}>مشي سريع / مشاية مائلة</strong>
+            <div className="row g-2 mb-2">
+              <div className="col-3">
+                <div className="p-2 rounded-3 text-center h-100" style={{ background: '#f0f9ff', border: '1.5px solid #bae6fd' }}>
+                  <small className="d-block fw-semibold" style={{ fontSize: '0.62rem', color: '#0369a1' }}>النوع والنشاط</small>
+                  <strong className="d-block text-dark" style={{ fontSize: '0.74rem' }}>مشي سريع / مشاية مائلة</strong>
                 </div>
-                <div className="col-3 border-end">
-                  <small className="text-muted d-block" style={{ fontSize: '0.62rem' }}>النبض المستهدف (Zone 2)</small>
-                  <strong className="text-danger" style={{ fontSize: '0.74rem' }}>115 - 134 نبضة/دقيقة</strong>
+              </div>
+              <div className="col-3">
+                <div className="p-2 rounded-3 text-center h-100" style={{ background: '#fff1f2', border: '1.5px solid #fecdd3' }}>
+                  <small className="d-block fw-semibold" style={{ fontSize: '0.62rem', color: '#be123c' }}>النبض المستهدف (Zone 2)</small>
+                  <strong className="d-block" style={{ fontSize: '0.76rem', color: '#e11d48' }}>115 - 134 نبضة/د</strong>
                 </div>
-                <div className="col-3 border-end">
-                  <small className="text-muted d-block" style={{ fontSize: '0.62rem' }}>التوقيت المفضل</small>
-                  <strong className="text-dark" style={{ fontSize: '0.74rem' }}>بعد التمرين أو صباحاً</strong>
+              </div>
+              <div className="col-3">
+                <div className="p-2 rounded-3 text-center h-100" style={{ background: '#faf5ff', border: '1.5px solid #e9d5ff' }}>
+                  <small className="d-block fw-semibold" style={{ fontSize: '0.62rem', color: '#7e22ce' }}>التوقيت المفضل</small>
+                  <strong className="d-block text-dark" style={{ fontSize: '0.74rem' }}>بعد التمرين أو صباحاً</strong>
                 </div>
-                <div className="col-3 border-end">
-                  <small className="text-muted d-block" style={{ fontSize: '0.62rem' }}>المدة الأسبوعية</small>
-                  <strong className="text-success" style={{ fontSize: '0.74rem' }}>120 - 150 دقيقة/أسبوع</strong>
+              </div>
+              <div className="col-3">
+                <div className="p-2 rounded-3 text-center h-100" style={{ background: '#ecfdf5', border: '1.5px solid #86efac' }}>
+                  <small className="d-block fw-semibold" style={{ fontSize: '0.62rem', color: '#15803d' }}>المدة الأسبوعية</small>
+                  <strong className="d-block" style={{ fontSize: '0.76rem', color: '#059669' }}>120 - 150 دقيقة</strong>
                 </div>
               </div>
             </div>
 
-            {/* Training Guidelines */}
-            <div className="p-2 px-3 rounded-3 mb-1" style={{ backgroundColor: '#fbfaff', border: '1px solid #ede9fe' }}>
-              <small className="text-dark fw-semibold d-block" style={{ fontSize: '0.7rem' }}>
-                تعليمات السلامة والتطور: اترك من 2 إلى 3 عدات في الاحتياط (RIR 2-3) قبل الوصول للفشل العضلي، واحرص على زيادة الأوزان تدريجياً (Progressive Overload).
+            {/* Training Guidelines (Progressive Overload Banner) */}
+            <div className="p-2 px-3 rounded-3 mb-1" style={{ background: 'linear-gradient(135deg, #fbfaff 0%, #f5f3ff 100%)', border: '1.5px solid #ddd6fe', borderRight: '5px solid #4f46e5' }}>
+              <small className="text-dark fw-semibold d-block" style={{ fontSize: '0.72rem', lineHeight: '1.4' }}>
+                <strong style={{ color: '#261c6a' }}>تعليمات السلامة والتطور:</strong> اترك من 2 إلى 3 عدات في الاحتياط (<strong style={{ color: '#059669' }}>RIR 2-3</strong>) قبل الوصول للفشل العضلي، واحرص على زيادة الأوزان تدريجياً (<strong style={{ color: '#261c6a' }}>Progressive Overload</strong>) أسبوعياً مع تسجيل الأداء.
               </small>
             </div>
 
           </div>
 
           {/* Footer Page 2 */}
-          <div className="d-flex justify-content-between align-items-center pt-2 border-top text-muted" style={{ fontSize: '0.68rem', borderColor: '#f1f5f9' }}>
+          <div className="d-flex justify-content-between align-items-center pt-2 border-top text-muted" style={{ fontSize: '0.68rem', borderColor: '#e2e8f0' }}>
             <span>منظومة Z Coaching Master Platform — وثيقة رقمية معتمدة (صفحة 2 من 2)</span>
             <span>تاريخ الإصدار: {new Date().toLocaleDateString('ar-EG')}</span>
           </div>
