@@ -10,7 +10,15 @@ export const addClient = async (req, res) => {
 
     const existingUser = await User.findOne({ where: { phone_number } });
     if (existingUser) {
-      return res.status(400).json({ error: "Phone number already registered" });
+      if (existingUser.role === 'CLIENT') {
+        return res.status(200).json({ 
+          client: existingUser, 
+          user: existingUser, 
+          message: `المشترك مسجل بالفعل بكود #${existingUser.client_code}` 
+        });
+      } else {
+        return res.status(400).json({ error: "رقم الهاتف مسجل بالفعل كحساب مدرب في المنظومة" });
+      }
     }
 
     // Generate client_code (sequential starting from 1)
