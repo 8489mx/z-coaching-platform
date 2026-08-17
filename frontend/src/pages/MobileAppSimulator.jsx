@@ -24,13 +24,13 @@ export default function MobileAppSimulator() {
   const [swapLoading, setSwapLoading] = useState(false);
 
   // Checkin state
-  const [weights, setWeights] = useState(['85.0', '84.8', '84.7', '84.5', '84.4', '84.3', '84.2']);
-  const [waist, setWaist] = useState('88.5');
-  const [adherence, setAdherence] = useState(95);
+  const [weights, setWeights] = useState(['', '', '', '', '', '', '']);
+  const [waist, setWaist] = useState('');
+  const [adherence, setAdherence] = useState(100);
   const [submittingCheckin, setSubmittingCheckin] = useState(false);
 
   const searchParams = new URLSearchParams(window.location.search);
-  const targetUserId = searchParams.get('user_id') || '2';
+  const targetUserId = searchParams.get('user_id') || sessionStorage.getItem('z_active_client_code') || '';
 
   // ESC key handler (Exits simulator just like a modal/popup)
   useEffect(() => {
@@ -49,7 +49,13 @@ export default function MobileAppSimulator() {
 
   useEffect(() => {
     fetchClients();
-    fetchData(targetUserId);
+    if (targetUserId) {
+      fetchData(targetUserId);
+    } else {
+      setLoading(false);
+      setProgram(null);
+      setUser(null);
+    }
   }, [targetUserId]);
 
   useEffect(() => {
@@ -66,23 +72,41 @@ export default function MobileAppSimulator() {
     try {
       const res = await fetch(`${API_BASE}/api/v1/clients`);
       const data = await res.json();
-      if (data.clients) setClients(data.clients);
+      if (data.clients) {
+        setClients(data.clients);
+        if (!targetUserId && data.clients.length > 0) {
+          fetchData(data.clients[0].client_code || data.clients[0].id);
+        }
+      }
     } catch (e) {
       console.error(e);
     }
   };
 
   const fetchData = async (uid) => {
+    if (!uid) {
+      setProgram(null);
+      setUser(null);
+      setLoading(false);
+      return;
+    }
     try {
       setLoading(true);
       const res = await fetch(`${API_BASE}/api/v1/programs/active/${uid}`);
       const data = await res.json();
       if (data.master_program) {
         setProgram(data.master_program);
+      } else {
+        setProgram(null);
+      }
+      if (data.user) {
         setUser(data.user);
+      } else {
+        setUser(null);
       }
     } catch (e) {
       console.error(e);
+      setProgram(null);
     } finally {
       setLoading(false);
     }
@@ -242,7 +266,8 @@ export default function MobileAppSimulator() {
     portionTarget.calories_kcal ||
     directTargets.target_calories_kcal ||
     directTargets.calories_kcal ||
-    (mealsSum.calories > 0 ? mealsSum.calories : 2200)
+    mealsSum.calories ||
+    0
   );
 
   const proteinTarget = Math.round(
@@ -250,7 +275,8 @@ export default function MobileAppSimulator() {
     mealDist.protein_g ||
     portionTarget.protein_g ||
     directTargets.protein_g ||
-    (mealsSum.protein > 0 ? mealsSum.protein : 130)
+    mealsSum.protein ||
+    0
   );
 
   const carbsTarget = Math.round(
@@ -259,7 +285,8 @@ export default function MobileAppSimulator() {
     portionTarget.carbohydrate_g ||
     directTargets.carbohydrate_g ||
     directTargets.carbs_g ||
-    (mealsSum.carbs > 0 ? mealsSum.carbs : 350)
+    mealsSum.carbs ||
+    0
   );
 
   const fatsTarget = Math.round(
@@ -268,41 +295,11 @@ export default function MobileAppSimulator() {
     portionTarget.fat_g ||
     directTargets.fat_g ||
     directTargets.fats_g ||
-    (mealsSum.fats > 0 ? mealsSum.fats : 70)
+    mealsSum.fats ||
+    0
   );
 
-  const defaultMeals = [
-    {
-      meal_number: 1,
-      name: "وجبة الإفطار",
-      foods: [
-        { name_ar: "بيض مسلوق كامل", portion_g_rounded: 150 },
-        { name_ar: "شوفان كامل الحبة", portion_g_rounded: 80 }
-      ]
-    },
-    {
-      meal_number: 2,
-      name: "وجبة الغداء",
-      foods: [
-        { name_ar: "صدور دجاج مشوية", portion_g_rounded: 200 },
-        { name_ar: "أرز أبيض مطبوخ", portion_g_rounded: 220 },
-        { name_ar: "سلطة خضراء بزيت زيتون", portion_g_rounded: 150 }
-      ]
-    },
-    {
-      meal_number: 3,
-      name: "وجبة العشاء",
-      foods: [
-        { name_ar: "جبنة قريش قليلة الدسم", portion_g_rounded: 200 },
-        { name_ar: "خبز بلدي / توست حبوب", portion_g_rounded: 100 }
-      ]
-    }
-  ];
-
-  const meals = 
-    (program?.nutrition_program?.quantized_plan?.meals && program.nutrition_program.quantized_plan.meals.length > 0)
-      ? program.nutrition_program.quantized_plan.meals 
-      : defaultMeals;
+  const meals = program?.nutrition_program?.quantized_plan?.meals || [];
 
   return (
     <div className="d-flex flex-column align-items-center justify-content-center py-4" style={{ minHeight: '100vh', backgroundColor: '#090d16', fontFamily: 'Cairo, Tajawal, system-ui, sans-serif' }} dir="rtl">
@@ -418,6 +415,28 @@ export default function MobileAppSimulator() {
             <div className="text-center py-5">
               <div className="spinner-border spinner-border-sm text-primary" role="status"></div>
               <p className="text-muted small mt-2">جاري مزامنة خطة المتدرب...</p>
+            </div>
+          ) : !program ? (
+            <div className="d-flex flex-column align-items-center justify-content-center text-center py-5 px-3">
+              <div className="rounded-circle d-flex align-items-center justify-content-center mb-3 mt-4" style={{ width: '56px', height: '56px', background: '#f5f3ff', color: '#261c6a', border: '1.5px solid #ddd6fe' }}>
+                <i className="ti ti-calendar-time fs-2"></i>
+              </div>
+              <h6 className="fw-bold text-dark mb-1" style={{ fontSize: '0.98rem' }}>
+                بانتظار تفعيل الخطة
+              </h6>
+              <p className="text-muted small mb-3" style={{ fontSize: '0.76rem', lineHeight: '1.6' }}>
+                لم يتم تعبئة استمارة التقييم أو توليد الخطة لهذا المشترك بعد.
+              </p>
+              <div className="p-3 bg-white rounded-3 border w-100 mb-3 shadow-xs text-start" style={{ fontSize: '0.76rem' }}>
+                <div className="d-flex justify-content-between mb-1">
+                  <span className="text-muted">كود المتدرب:</span>
+                  <span className="font-monospace fw-bold text-dark">{user?.client_code || targetUserId || 'غير محدد'}</span>
+                </div>
+                <div className="d-flex justify-content-between">
+                  <span className="text-muted">الاسم:</span>
+                  <span className="fw-bold text-dark">{user?.full_name || 'غير مسجل'}</span>
+                </div>
+              </div>
             </div>
           ) : (
             <>
