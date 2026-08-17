@@ -126,12 +126,13 @@ export default function NewClientQuickModal({ isOpen, onClose, onClientCreated }
             </div>
             <button 
               type="button" 
-              className="btn-close rounded-circle p-2" 
               onClick={handleClose} 
-              aria-label="Close"
+              className="btn btn-sm btn-light rounded-circle d-flex align-items-center justify-content-center flex-shrink-0"
+              style={{ width: '34px', height: '34px', background: '#f8fafc', border: '1px solid #e2e8f0', color: '#64748b' }}
               title="إغلاق (Esc)"
-              style={{ fontSize: '0.8rem' }}
-            ></button>
+            >
+              <i className="ti ti-x fs-6"></i>
+            </button>
           </div>
 
           {/* Body */}

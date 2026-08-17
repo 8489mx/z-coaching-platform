@@ -26,12 +26,20 @@ export default function EditSubscriptionModal({
  <div className="modal show d-block" tabIndex="-1" style={{ backgroundColor: 'rgba(15, 23, 42, 0.65)', backdropFilter: 'blur(4px)', zIndex: 1060 }}>
  <div className="modal-dialog modal-dialog-centered">
  <div className="modal-content border-0 shadow-lg" style={{ borderRadius: '20px' }}>
- <div className="modal-header border-bottom p-4">
- <h5 className="modal-title fw-bold text-dark mb-0">
- تعديل اشتراك: {client.full_name || 'المشترك'}
- </h5>
- <button type="button" className="btn-close" onClick={onClose}></button>
- </div>
+  <div className="modal-header border-bottom p-4 d-flex justify-content-between align-items-center bg-white">
+    <h5 className="modal-title fw-bold text-dark mb-0" style={{ fontSize: '1.05rem' }}>
+      تعديل اشتراك: {client.full_name || 'المشترك'}
+    </h5>
+    <button 
+      type="button" 
+      onClick={onClose}
+      className="btn btn-sm btn-light rounded-circle d-flex align-items-center justify-content-center flex-shrink-0"
+      style={{ width: '34px', height: '34px', background: '#f8fafc', border: '1px solid #e2e8f0', color: '#64748b' }}
+      title="إغلاق"
+    >
+      <i className="ti ti-x fs-6"></i>
+    </button>
+  </div>
 
  <form onSubmit={onSave}>
  <div className="modal-body p-4 text-end">
@@ -42,10 +50,11 @@ export default function EditSubscriptionModal({
  value={editForm.subscription_package}
  onChange={(e) => setEditForm({ ...editForm, subscription_package: e.target.value })}
  >
- <option value="1_MONTH">شهر واحد (1 Month)</option>
- <option value="3_MONTHS">3 شهور (3 Months)</option>
- <option value="6_MONTHS">6 شهور (6 Months)</option>
- <option value="12_MONTHS">سنة كاملة (1 Year)</option>
+ <option value="ELITE_3_PLUS_1">باقة إيليت (3 شهور + 1 شهر مجاناً)</option>
+ <option value="MAX_3_PLUS_1">باقة ماكس VIP (3 شهور + 1 شهر مجاناً)</option>
+ <option value="1_MONTH">باقة شهر واحد</option>
+ <option value="6_MONTHS">باقة 6 شهور</option>
+ <option value="12_MONTHS">باقة سنة كاملة</option>
  </select>
  </div>
 

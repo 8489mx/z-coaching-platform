@@ -793,11 +793,15 @@ export default function ClientProgramView() {
  <h5 className="modal-title fw-bold text-white">
  <i className="ti ti-refresh me-2"></i> استبدال الصنف الذكي
  </h5>
- <button
- type="button"
- className="btn-close btn-close-white ms-0 me-auto"
- onClick={() => setSwapModalOpen(false)}
- ></button>
+  <button
+    type="button"
+    className="btn btn-sm btn-light rounded-circle d-flex align-items-center justify-content-center flex-shrink-0"
+    style={{ width: '32px', height: '32px', background: 'rgba(255,255,255,0.2)', border: 'none', color: '#ffffff' }}
+    onClick={() => setSwapModalOpen(false)}
+    title="إغلاق"
+  >
+    <i className="ti ti-x fs-6"></i>
+  </button>
  </div>
 
  <div className="modal-body p-4">

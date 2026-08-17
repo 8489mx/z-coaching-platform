@@ -526,7 +526,15 @@ export default function IntakeSubmissions() {
                     <small className="text-muted" style={{ fontSize: '0.78rem' }}>مراجعة إجابات التقييم الشامل والأمان الحركي</small>
                   </div>
                 </div>
-                <button type="button" className="btn-close" onClick={() => setSelectedAnswers(null)} title="إغلاق"></button>
+                <button 
+                  type="button" 
+                  onClick={() => setSelectedAnswers(null)} 
+                  className="btn btn-sm btn-light rounded-circle d-flex align-items-center justify-content-center flex-shrink-0"
+                  style={{ width: '34px', height: '34px', background: '#f8fafc', border: '1px solid #e2e8f0', color: '#64748b' }}
+                  title="إغلاق"
+                >
+                  <i className="ti ti-x fs-6"></i>
+                </button>
               </div>
               <div className="modal-body p-4 bg-white" style={{ maxHeight: '70vh', overflowY: 'auto' }}>
                 <pre className="bg-light p-3 rounded-3 text-dark small" style={{ direction: 'ltr', textAlign: 'left', fontSize: '0.8rem' }}>
@@ -558,7 +566,15 @@ export default function IntakeSubmissions() {
                     <small className="text-muted" style={{ fontSize: '0.78rem' }}>تفعيل باقة المشترك والبدء في تصميم الخطة</small>
                   </div>
                 </div>
-                <button type="button" className="btn-close" onClick={() => setPaymentModalSub(null)} title="إغلاق"></button>
+                <button 
+                  type="button" 
+                  onClick={() => setPaymentModalSub(null)} 
+                  className="btn btn-sm btn-light rounded-circle d-flex align-items-center justify-content-center flex-shrink-0"
+                  style={{ width: '34px', height: '34px', background: '#f8fafc', border: '1px solid #e2e8f0', color: '#64748b' }}
+                  title="إغلاق"
+                >
+                  <i className="ti ti-x fs-6"></i>
+                </button>
               </div>
               <form onSubmit={handleVerifyPayment}>
                 <div className="modal-body p-4 bg-white">
@@ -570,10 +586,12 @@ export default function IntakeSubmissions() {
                       value={paymentForm.subscription_package}
                       onChange={(e) => setPaymentForm({ ...paymentForm, subscription_package: e.target.value })}
                     >
-                      <option value="1_MONTH">باقة شهر واحد (1M)</option>
+                      <option value="ELITE_3_PLUS_1">باقة إيليت (3 شهور + 1 شهر مجاناً)</option>
+                      <option value="MAX_3_PLUS_1">باقة ماكس VIP (3 شهور + 1 شهر مجاناً)</option>
+                      <option value="1_MONTH">باقة شهر واحد</option>
                       <option value="3_MONTHS_VIP">باقة 3 شهور VIP</option>
-                      <option value="6_MONTHS">باقة 6 شهور (6M)</option>
-                      <option value="12_MONTHS">باقة سنة كاملة (1 Year)</option>
+                      <option value="6_MONTHS">باقة 6 شهور</option>
+                      <option value="12_MONTHS">باقة سنة كاملة</option>
                     </select>
                   </div>
                   <div className="mb-3">

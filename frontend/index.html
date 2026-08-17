@@ -402,9 +402,20 @@
         color: #261c6a !important;
       }
 
-      /* Modal Header Quiet Luxury Styling */
+      /* Modal Header Quiet Luxury Styling & Bulletproof RTL Close Button */
       .modal-header {
         border-bottom: 1px solid #f1f5f9 !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: space-between !important;
+      }
+      .modal-header .btn-close,
+      [dir="rtl"] .modal-header .btn-close {
+        margin: 0 !important;
+        padding: 0.5rem !important;
+        opacity: 0.65 !important;
+        align-self: center !important;
+        flex-shrink: 0 !important;
       }
       .modal-content {
         border-radius: 20px !important;
