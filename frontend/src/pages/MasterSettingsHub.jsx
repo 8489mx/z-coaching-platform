@@ -267,63 +267,169 @@ export default function MasterSettingsHub() {
             </div>
           </div>
 
-          {/* Top 3 KPI Summary Cards */}
+          {/* Top 4 KPI Summary Cards (Identical to Dashboard Executive KPIs) */}
           <div className="row g-3 mb-4">
-            <div className="col-md-4 col-12">
-              <div className="card border-0 bg-white h-100 shadow-sm" style={{ borderRadius: '16px', border: '1px solid #e2e8f0' }}>
-                <div className="card-body p-3 px-4 d-flex justify-content-between align-items-center">
-                  <div>
-                    <span className="text-muted small d-block" style={{ fontSize: '0.78rem' }}>إجمالي أسئلة الاستمارة</span>
-                    <h3 className="fw-bold text-dark mb-1" style={{ fontSize: '1.5rem', letterSpacing: '-0.5px' }}>{questions.length} سؤال</h3>
-                    <div className="d-flex gap-2">
-                      <span className="badge rounded-pill" style={{ background: '#fef2f2', color: '#dc2626', border: '1px solid #fecaca', fontSize: '0.68rem' }}>
-                        {questions.filter(q => q.required).length} إجباري
-                      </span>
-                      <span className="badge rounded-pill" style={{ background: '#f8fafc', color: '#475569', border: '1px solid #e2e8f0', fontSize: '0.68rem' }}>
-                        {questions.filter(q => !q.required).length} اختياري
-                      </span>
+            
+            {/* Card 1: Intake Questions */}
+            <div className="col-xl-3 col-sm-6 col-12">
+              <div className="card border-0 bg-white h-100 shadow-sm" style={{ borderRadius: '14px', border: '1px solid #e2e8f0' }}>
+                <div className="card-body p-3 d-flex flex-column justify-content-between">
+                  <div className="d-flex justify-content-between align-items-center mb-2">
+                    <div 
+                      className="d-flex align-items-center justify-content-center"
+                      style={{ width: '30px', height: '30px', borderRadius: '8px', background: '#f5f3ff', color: '#261c6a' }}
+                    >
+                      <i className="ti ti-forms fs-6"></i>
                     </div>
+                    <span className="badge rounded-pill fw-semibold px-2 py-1" style={{ background: '#f8fafc', color: '#261c6a', fontSize: '0.68rem', border: '1px solid #ddd6fe' }}>
+                      استمارة نشطة
+                    </span>
                   </div>
-                  <div className="rounded-circle d-flex align-items-center justify-content-center" style={{ width: '48px', height: '48px', background: '#f5f3ff', color: '#261c6a', border: '1px solid #ddd6fe' }}>
-                    <i className="ti ti-forms fs-4"></i>
+
+                  <div>
+                    <h3 className="fw-bold text-dark mb-0" style={{ fontSize: '1.45rem', letterSpacing: '-0.5px' }}>
+                      {questions.length}
+                    </h3>
+                    <p className="text-muted small mb-0 fw-medium" style={{ fontSize: '0.78rem' }}>إجمالي أسئلة الاستمارة</p>
+                  </div>
+
+                  <div className="d-flex justify-content-between align-items-center mt-2 pt-2 border-top border-light">
+                    <small className="text-muted" style={{ fontSize: '0.72rem' }}>
+                      {questions.filter(q => q.required).length} إجباري | {questions.filter(q => !q.required).length} اختياري
+                    </small>
+                    <svg width="48" height="14" viewBox="0 0 60 18" fill="none">
+                      <defs>
+                        <linearGradient id="kpiGrad1" x1="0" y1="0" x2="1" y2="0">
+                          <stop offset="0%" stopColor="#818cf8" />
+                          <stop offset="100%" stopColor="#261c6a" />
+                        </linearGradient>
+                      </defs>
+                      <path d="M1 14C10 14 16 4 24 7C32 10 40 2 50 3C56 5 58 2 59 1" stroke="url(#kpiGrad1)" strokeWidth="2.5" strokeLinecap="round"/>
+                    </svg>
                   </div>
                 </div>
               </div>
             </div>
 
-            <div className="col-md-4 col-12">
-              <div className="card border-0 bg-white h-100 shadow-sm" style={{ borderRadius: '16px', border: '1px solid #e2e8f0' }}>
-                <div className="card-body p-3 px-4 d-flex justify-content-between align-items-center">
-                  <div>
-                    <span className="text-muted small d-block" style={{ fontSize: '0.78rem' }}>مكتبة التمارين والتكنيك</span>
-                    <h3 className="fw-bold text-dark mb-1" style={{ fontSize: '1.5rem', letterSpacing: '-0.5px' }}>{exercises.length} تمرين</h3>
-                    <span className="badge rounded-pill" style={{ background: '#eff6ff', color: '#0284c7', border: '1px solid #bfdbfe', fontSize: '0.68rem' }}>
-                      {exercises.filter(e => e.video_url || e.video_id).length} تمرين مزود بفيديو يوتيوب
+            {/* Card 2: Exercise Library */}
+            <div className="col-xl-3 col-sm-6 col-12">
+              <div className="card border-0 bg-white h-100 shadow-sm" style={{ borderRadius: '14px', border: '1px solid #e2e8f0' }}>
+                <div className="card-body p-3 d-flex flex-column justify-content-between">
+                  <div className="d-flex justify-content-between align-items-center mb-2">
+                    <div 
+                      className="d-flex align-items-center justify-content-center"
+                      style={{ width: '30px', height: '30px', borderRadius: '8px', background: '#eff6ff', color: '#0284c7' }}
+                    >
+                      <i className="ti ti-barbell fs-6"></i>
+                    </div>
+                    <span className="badge rounded-pill fw-semibold px-2 py-1" style={{ background: '#eff6ff', color: '#0284c7', fontSize: '0.68rem', border: '1px solid #bfdbfe' }}>
+                      فيديوهات تكنيك
                     </span>
                   </div>
-                  <div className="rounded-circle d-flex align-items-center justify-content-center" style={{ width: '48px', height: '48px', background: '#eff6ff', color: '#0284c7', border: '1px solid #bfdbfe' }}>
-                    <i className="ti ti-barbell fs-4"></i>
+
+                  <div>
+                    <h3 className="fw-bold text-dark mb-0" style={{ fontSize: '1.45rem', letterSpacing: '-0.5px' }}>
+                      {exercises.length}
+                    </h3>
+                    <p className="text-muted small mb-0 fw-medium" style={{ fontSize: '0.78rem' }}>تمارين معتمدة بالمكتبة</p>
+                  </div>
+
+                  <div className="d-flex justify-content-between align-items-center mt-2 pt-2 border-top border-light">
+                    <small className="text-muted" style={{ fontSize: '0.72rem' }}>
+                      {exercises.filter(e => e.video_url || e.video_id).length} مزود بروابط يوتيوب
+                    </small>
+                    <svg width="48" height="14" viewBox="0 0 60 18" fill="none">
+                      <defs>
+                        <linearGradient id="kpiGrad2" x1="0" y1="0" x2="1" y2="0">
+                          <stop offset="0%" stopColor="#38bdf8" />
+                          <stop offset="100%" stopColor="#0284c7" />
+                        </linearGradient>
+                      </defs>
+                      <path d="M1 5C12 12 18 3 28 8C38 13 48 5 59 11" stroke="url(#kpiGrad2)" strokeWidth="2.5" strokeLinecap="round"/>
+                    </svg>
                   </div>
                 </div>
               </div>
             </div>
 
-            <div className="col-md-4 col-12">
-              <div className="card border-0 bg-white h-100 shadow-sm" style={{ borderRadius: '16px', border: '1px solid #e2e8f0' }}>
-                <div className="card-body p-3 px-4 d-flex justify-content-between align-items-center">
-                  <div>
-                    <span className="text-muted small d-block" style={{ fontSize: '0.78rem' }}>نظام التخزين والمزامنة</span>
-                    <h3 className="fw-bold text-success mb-1" style={{ fontSize: '1.35rem' }}>حفظ فوري متصل</h3>
-                    <span className="text-muted font-monospace" style={{ fontSize: '0.72rem' }}>
-                      المسار: data/settings/
+            {/* Card 3: Food Database */}
+            <div className="col-xl-3 col-sm-6 col-12">
+              <div className="card border-0 bg-white h-100 shadow-sm" style={{ borderRadius: '14px', border: '1px solid #e2e8f0' }}>
+                <div className="card-body p-3 d-flex flex-column justify-content-between">
+                  <div className="d-flex justify-content-between align-items-center mb-2">
+                    <div 
+                      className="d-flex align-items-center justify-content-center"
+                      style={{ width: '30px', height: '30px', borderRadius: '8px', background: '#fefce8', color: '#d97706' }}
+                    >
+                      <i className="ti ti-salad fs-6"></i>
+                    </div>
+                    <span className="badge rounded-pill fw-semibold px-2 py-1" style={{ background: '#fefce8', color: '#d97706', fontSize: '0.68rem', border: '1px solid #fef08a' }}>
+                      ماكروز دقيقة
                     </span>
                   </div>
-                  <div className="rounded-circle d-flex align-items-center justify-content-center" style={{ width: '48px', height: '48px', background: '#ecfdf5', color: '#059669', border: '1px solid #a7f3d0' }}>
-                    <i className="ti ti-database-check fs-4"></i>
+
+                  <div>
+                    <h3 className="fw-bold text-dark mb-0" style={{ fontSize: '1.45rem', letterSpacing: '-0.5px' }}>
+                      {foods.length}+
+                    </h3>
+                    <p className="text-muted small mb-0 fw-medium" style={{ fontSize: '0.78rem' }}>أصناف غذائية وبدائل</p>
+                  </div>
+
+                  <div className="d-flex justify-content-between align-items-center mt-2 pt-2 border-top border-light">
+                    <small className="text-muted" style={{ fontSize: '0.72rem' }}>حساب سعرات فوري</small>
+                    <svg width="48" height="14" viewBox="0 0 60 18" fill="none">
+                      <defs>
+                        <linearGradient id="kpiGrad3" x1="0" y1="0" x2="1" y2="0">
+                          <stop offset="0%" stopColor="#fde047" />
+                          <stop offset="100%" stopColor="#d97706" />
+                        </linearGradient>
+                      </defs>
+                      <path d="M1 12C12 6 22 14 32 9C42 4 50 10 59 3" stroke="url(#kpiGrad3)" strokeWidth="2.5" strokeLinecap="round"/>
+                    </svg>
                   </div>
                 </div>
               </div>
             </div>
+
+            {/* Card 4: Hostinger Storage & Sync */}
+            <div className="col-xl-3 col-sm-6 col-12">
+              <div className="card border-0 bg-white h-100 shadow-sm" style={{ borderRadius: '14px', border: '1px solid #e2e8f0' }}>
+                <div className="card-body p-3 d-flex flex-column justify-content-between">
+                  <div className="d-flex justify-content-between align-items-center mb-2">
+                    <div 
+                      className="d-flex align-items-center justify-content-center"
+                      style={{ width: '30px', height: '30px', borderRadius: '8px', background: '#ecfdf5', color: '#059669' }}
+                    >
+                      <i className="ti ti-database-check fs-6"></i>
+                    </div>
+                    <span className="badge rounded-pill fw-semibold px-2 py-1" style={{ background: '#ecfdf5', color: '#059669', fontSize: '0.68rem', border: '1px solid #a7f3d0' }}>
+                      Hostinger Ready
+                    </span>
+                  </div>
+
+                  <div>
+                    <h3 className="fw-bold text-success mb-0" style={{ fontSize: '1.45rem', letterSpacing: '-0.5px' }}>
+                      100%
+                    </h3>
+                    <p className="text-muted small mb-0 fw-medium" style={{ fontSize: '0.78rem' }}>نظام الحفظ والمزامنة</p>
+                  </div>
+
+                  <div className="d-flex justify-content-between align-items-center mt-2 pt-2 border-top border-light">
+                    <small className="text-muted font-monospace" style={{ fontSize: '0.7rem' }}>data/settings/</small>
+                    <svg width="48" height="14" viewBox="0 0 60 18" fill="none">
+                      <defs>
+                        <linearGradient id="kpiGrad4" x1="0" y1="0" x2="1" y2="0">
+                          <stop offset="0%" stopColor="#34d399" />
+                          <stop offset="100%" stopColor="#059669" />
+                        </linearGradient>
+                      </defs>
+                      <path d="M1 14C10 8 20 12 30 5C40 2 50 7 59 1" stroke="url(#kpiGrad4)" strokeWidth="2.5" strokeLinecap="round"/>
+                    </svg>
+                  </div>
+                </div>
+              </div>
+            </div>
+
           </div>
 
           {/* Master Navigation Tabs */}

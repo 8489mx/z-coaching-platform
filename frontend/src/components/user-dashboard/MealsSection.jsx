@@ -44,13 +44,13 @@ export default function MealsSection({
   ];
 
   return (
-    <div className="card border-0 shadow-sm bg-white mb-4" style={{ borderRadius: "16px", border: "1px solid #e2e8f0" }} id="diet-plan">
+    <div className="z-glass-card mb-4 z-animate-in" id="diet-plan">
       <div className="card-body p-4">
         
         {/* Section Header */}
         <div className="d-flex align-items-center justify-content-between mb-4 flex-wrap gap-2 pb-3 border-bottom" style={{ borderColor: '#f1f5f9' }}>
           <div className="d-flex align-items-center gap-2">
-            <div className="rounded-circle d-flex align-items-center justify-content-center flex-shrink-0" style={{ width: '34px', height: '34px', background: '#f5f3ff', color: '#261c6a', border: '1px solid #ddd6fe' }}>
+            <div className="d-flex align-items-center justify-content-center flex-shrink-0 z-icon-warmth" style={{ width: '34px', height: '34px', borderRadius: '9px' }}>
               <i className="ti ti-salad fs-6"></i>
             </div>
             <div>
@@ -61,7 +61,7 @@ export default function MealsSection({
             </div>
           </div>
 
-          <span className="badge rounded-pill px-3 py-1 fw-bold" style={{ background: '#ecfdf5', color: '#059669', border: '1px solid #a7f3d0', fontSize: '0.74rem' }}>
+          <span className="badge rounded-pill px-3 py-1 fw-bold" style={{ background: 'linear-gradient(135deg, #ecfdf5, #d1fae5)', color: '#059669', border: 'none', fontSize: '0.74rem', boxShadow: '0 1px 3px rgba(16,185,129,0.08)' }}>
             3 وجبات متكاملة
           </span>
         </div>
@@ -82,23 +82,35 @@ export default function MealsSection({
               return (
                 <div key={mIdx} className="col-lg-4 col-md-4 col-12">
                   <div 
-                    className="card h-100 shadow-none d-flex flex-column justify-content-between transition-all" 
+                    className="card h-100 shadow-none d-flex flex-column justify-content-between" 
                     style={{ 
-                      background: '#fbfaff', 
-                      border: '1.5px solid #ede9fe', 
+                      background: 'rgba(251,250,255,0.5)', 
+                      border: '1px solid rgba(237,233,254,0.5)', 
                       borderRadius: '14px',
-                      overflow: 'hidden'
+                      overflow: 'hidden',
+                      backdropFilter: 'blur(8px)',
+                      transition: 'all 0.3s ease'
                     }}
                   >
                     {/* Meal Card Top Header */}
-                    <div className="p-3 border-bottom d-flex justify-content-between align-items-center bg-white" style={{ borderColor: '#ede9fe', borderTop: '3px solid #261c6a' }}>
+                    <div className="p-3 border-bottom d-flex justify-content-between align-items-center" style={{ 
+                      borderColor: 'rgba(237,233,254,0.5)', 
+                      borderTop: `3px solid ${mIdx === 0 ? '#f59e0b' : mIdx === 1 ? '#10b981' : '#261c6a'}`,
+                      background: 'rgba(255,255,255,0.6)'
+                    }}>
                       <div>
-                        <h6 className="fw-bold mb-0" style={{ color: '#261c6a', fontSize: '0.9rem' }}>
+                        <h6 className="fw-bold mb-0" style={{ color: mIdx === 0 ? '#d97706' : mIdx === 1 ? '#059669' : '#261c6a', fontSize: '0.9rem' }}>
                           {mealTitle}
                         </h6>
                         <small className="text-muted" style={{ fontSize: '0.68rem' }}>موزونة قبل / بعد الطهي</small>
                       </div>
-                      <span className="badge rounded-pill px-3 py-1 fw-bold" style={{ background: '#f5f3ff', color: '#261c6a', border: '1px solid #ddd6fe', fontSize: '0.74rem' }}>
+                      <span className="badge rounded-pill px-3 py-1 fw-bold" style={{ 
+                        background: mIdx === 0 ? 'linear-gradient(135deg, #fffbeb, #fef3c7)' : mIdx === 1 ? 'linear-gradient(135deg, #ecfdf5, #d1fae5)' : 'linear-gradient(135deg, #f5f3ff, #ede9fe)', 
+                        color: mIdx === 0 ? '#d97706' : mIdx === 1 ? '#059669' : '#261c6a', 
+                        border: 'none', 
+                        fontSize: '0.74rem',
+                        boxShadow: '0 1px 3px rgba(0,0,0,0.04)'
+                      }}>
                         ~ {mealCalories} سعرة
                       </span>
                     </div>

@@ -11,13 +11,13 @@ export default function WorkoutSection({
   const completedCount = exercises.filter(ex => completedExercises[ex.exercise_code]).length;
 
   return (
-    <div className="card border-0 shadow-sm bg-white mb-4" style={{ borderRadius: "16px", border: "1px solid #e2e8f0" }} id="today-workout">
+    <div className="z-glass-card mb-4 z-animate-in" id="today-workout">
       <div className="card-body p-4">
         
         {/* Section Header */}
         <div className="d-flex align-items-center justify-content-between mb-3 flex-wrap gap-2 pb-2 border-bottom" style={{ borderColor: '#f1f5f9' }}>
           <div className="d-flex align-items-center gap-2">
-            <div className="rounded-circle d-flex align-items-center justify-content-center flex-shrink-0" style={{ width: '32px', height: '32px', background: '#f5f3ff', color: '#261c6a', border: '1px solid #ddd6fe' }}>
+            <div className="d-flex align-items-center justify-content-center flex-shrink-0 z-icon-energy" style={{ width: '32px', height: '32px', borderRadius: '9px' }}>
               <i className="ti ti-barbell fs-6"></i>
             </div>
             <div>
@@ -29,10 +29,10 @@ export default function WorkoutSection({
           </div>
           
           <div className="d-flex align-items-center gap-2">
-            <span className="badge rounded-pill px-3 py-1 fw-bold" style={{ background: '#f5f3ff', color: '#261c6a', border: '1px solid #ddd6fe', fontSize: '0.74rem' }}>
+            <span className="badge rounded-pill px-3 py-1 fw-bold" style={{ background: 'linear-gradient(135deg, #ecfeff, #cffafe)', color: '#0891b2', border: 'none', fontSize: '0.74rem', boxShadow: '0 1px 3px rgba(6,182,212,0.08)' }}>
               {todaySession?.day_label || "يوم الاثنين"}
             </span>
-            <span className="badge rounded-pill px-3 py-1 fw-semibold" style={{ background: '#ecfdf5', color: '#059669', border: '1px solid #a7f3d0', fontSize: '0.74rem' }}>
+            <span className="badge rounded-pill px-3 py-1 fw-semibold" style={{ background: 'linear-gradient(135deg, #ecfdf5, #d1fae5)', color: '#059669', border: 'none', fontSize: '0.74rem', boxShadow: '0 1px 3px rgba(16,185,129,0.08)' }}>
               الإنجاز: {completedCount} من {exercises.length}
             </span>
           </div>

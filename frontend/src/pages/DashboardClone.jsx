@@ -164,8 +164,8 @@ export default function DashboardClone() {
           <div className="row g-4 mb-4">
             
             {/* Main Column (8 cols): Master Active Clients */}
-            <div className="col-lg-8 col-12">
-              <div className="card border-0 bg-white shadow-sm h-100" style={{ borderRadius: '16px', border: '1px solid #e2e8f0' }}>
+            <div className="col-lg-8 col-12 z-animate-in">
+              <div className="z-glass-card h-100">
                 <div className="card-body p-4">
                   <div className="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
                     <div>
@@ -275,7 +275,7 @@ export default function DashboardClone() {
               <div className="d-flex flex-column gap-3">
                 
                 {/* 1. Priority Alerts Widget (Exact Aesthetic Twin of Weekly Widget) */}
-                <div className="card border-0 bg-white shadow-sm" style={{ borderRadius: '16px', border: '1px solid #e2e8f0' }}>
+                <div className="z-glass-card">
                   <div className="card-body p-4">
                     <div className="d-flex justify-content-between align-items-center mb-3">
                       <h6 className="fw-bold text-dark mb-0 d-flex align-items-center gap-2" style={{ fontSize: '0.9rem' }}>
@@ -325,7 +325,7 @@ export default function DashboardClone() {
                 </div>
 
                 {/* 2. Pending Check-in Review Widget (Exact Symmetric Dimensions) */}
-                <div className="card border-0 bg-white shadow-sm" style={{ borderRadius: '16px', border: '1px solid #e2e8f0' }}>
+                <div className="z-glass-card">
                   <div className="card-body p-4">
                     <div className="d-flex justify-content-between align-items-center mb-3">
                       <h6 className="fw-bold text-dark mb-0 d-flex align-items-center gap-2" style={{ fontSize: '0.9rem' }}>
@@ -375,7 +375,7 @@ export default function DashboardClone() {
                 </div>
 
                 {/* 3. PR Milestones Widget */}
-                <div className="card border-0 bg-white shadow-sm" style={{ borderRadius: '16px', border: '1px solid #e2e8f0' }}>
+                <div className="z-glass-card">
                   <div className="card-body p-4">
                     <div className="d-flex justify-content-between align-items-center mb-2">
                       <h6 className="fw-bold text-dark mb-0 d-flex align-items-center gap-2" style={{ fontSize: '0.9rem' }}>

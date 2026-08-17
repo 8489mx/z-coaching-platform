@@ -213,7 +213,7 @@
         overflow-y: auto !important;
         overflow-x: hidden !important;
         direction: rtl !important;
-        background: #f8fafc !important;
+        background: linear-gradient(175deg, #f8faff 0%, #f0f1ff 35%, #f5f0ff 65%, #faf8ff 100%) !important;
       }
 
       /* Universal Premium Ultra-Slim Scrollbar */
@@ -333,11 +333,33 @@
         transition: background-color 0.15s ease-in-out !important;
       }
 
-      /* === MANZUMA MIDNIGHT VIOLET GLOBAL DESIGN SYSTEM TOKENS === */
+      /* === Z COACHING PREMIUM DESIGN SYSTEM === */
       :root {
         --bs-primary: #261c6a;
         --bs-primary-rgb: 38, 28, 106;
         --bs-primary-hover: #1e144f;
+        --bs-secondary: #64748b;
+        --bs-success: #10b981;
+        --bs-info: #06b6d4;
+        --bs-warning: #f59e0b;
+        --bs-danger: #f43f5e;
+        /* Z Coaching Premium Palette */
+        --z-power: #261c6a;
+        --z-energy: #06b6d4;
+        --z-vitality: #10b981;
+        --z-warmth: #f59e0b;
+        --z-coral: #f43f5e;
+        /* Premium Glass Card System */
+        --z-glass-bg: rgba(255, 255, 255, 0.72);
+        --z-glass-border: rgba(255, 255, 255, 0.45);
+        --z-glass-blur: 12px;
+        --z-shadow-sm: 0 1px 3px rgba(15, 23, 42, 0.04), 0 4px 12px rgba(15, 23, 42, 0.03);
+        --z-shadow-md: 0 2px 8px rgba(15, 23, 42, 0.06), 0 8px 24px rgba(15, 23, 42, 0.06);
+        --z-shadow-lg: 0 4px 12px rgba(15, 23, 42, 0.08), 0 16px 40px rgba(15, 23, 42, 0.08);
+        --z-shadow-hover: 0 8px 25px rgba(38, 28, 106, 0.12), 0 4px 12px rgba(15, 23, 42, 0.06);
+        --z-radius: 16px;
+        --z-radius-sm: 10px;
+        --z-radius-lg: 20px;
       }
 
       .btn-primary {
@@ -415,6 +437,274 @@
         [dir="rtl"] .themebody-wrap {
           right: 0 !important;
           padding: 1.25rem !important;
+        }
+      }
+
+      /* === Z COACHING PREMIUM ANIMATIONS === */
+      @keyframes z-fadeInUp {
+        from { opacity: 0; transform: translateY(18px); }
+        to { opacity: 1; transform: translateY(0); }
+      }
+      @keyframes z-pulse-soft {
+        0%, 100% { opacity: 1; }
+        50% { opacity: 0.7; }
+      }
+      @keyframes z-shimmer {
+        0% { background-position: -200% center; }
+        100% { background-position: 200% center; }
+      }
+      @keyframes z-progress-fill {
+        from { width: 0%; }
+      }
+
+      /* Premium Glass Card */
+      .z-glass-card {
+        background: var(--z-glass-bg) !important;
+        backdrop-filter: blur(var(--z-glass-blur)) !important;
+        -webkit-backdrop-filter: blur(var(--z-glass-blur)) !important;
+        border: 1px solid var(--z-glass-border) !important;
+        border-radius: var(--z-radius) !important;
+        box-shadow: var(--z-shadow-sm) !important;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+      }
+      .z-glass-card:hover {
+        box-shadow: var(--z-shadow-hover) !important;
+        transform: translateY(-2px) !important;
+      }
+
+      /* Premium Card (Opaque white with premium shadows) */
+      .z-premium-card {
+        background: #ffffff !important;
+        border: 1px solid rgba(226, 232, 240, 0.6) !important;
+        border-radius: var(--z-radius) !important;
+        box-shadow: var(--z-shadow-md) !important;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+      }
+      .z-premium-card:hover {
+        box-shadow: var(--z-shadow-lg) !important;
+        transform: translateY(-3px) !important;
+      }
+
+      /* Animated Entrance */
+      .z-animate-in {
+        animation: z-fadeInUp 0.5s ease-out both;
+      }
+      .z-animate-in:nth-child(1) { animation-delay: 0.05s; }
+      .z-animate-in:nth-child(2) { animation-delay: 0.1s; }
+      .z-animate-in:nth-child(3) { animation-delay: 0.15s; }
+      .z-animate-in:nth-child(4) { animation-delay: 0.2s; }
+      .z-animate-in:nth-child(5) { animation-delay: 0.25s; }
+
+      /* Gradient Icon Backgrounds */
+      .z-icon-power {
+        background: linear-gradient(135deg, #f5f3ff 0%, #ede9fe 100%) !important;
+        color: #261c6a !important;
+      }
+      .z-icon-energy {
+        background: linear-gradient(135deg, #ecfeff 0%, #cffafe 100%) !important;
+        color: #0891b2 !important;
+      }
+      .z-icon-vitality {
+        background: linear-gradient(135deg, #ecfdf5 0%, #d1fae5 100%) !important;
+        color: #059669 !important;
+      }
+      .z-icon-warmth {
+        background: linear-gradient(135deg, #fffbeb 0%, #fef3c7 100%) !important;
+        color: #d97706 !important;
+      }
+      .z-icon-coral {
+        background: linear-gradient(135deg, #fff1f2 0%, #ffe4e6 100%) !important;
+        color: #e11d48 !important;
+      }
+
+      /* Premium Progress Bars */
+      .z-progress-animated .progress-bar {
+        animation: z-progress-fill 1.2s ease-out both;
+      }
+
+      /* Premium Button Shimmer */
+      .z-btn-premium {
+        background: linear-gradient(135deg, #261c6a 0%, #4c1d95 50%, #261c6a 100%) !important;
+        background-size: 200% auto !important;
+        color: #ffffff !important;
+        border: none !important;
+        border-radius: 50px !important;
+        font-weight: 700 !important;
+        box-shadow: 0 4px 15px rgba(38, 28, 106, 0.3) !important;
+        transition: all 0.3s ease !important;
+      }
+      .z-btn-premium:hover {
+        background-position: right center !important;
+        box-shadow: 0 6px 20px rgba(38, 28, 106, 0.4) !important;
+        transform: translateY(-1px) !important;
+        color: #ffffff !important;
+      }
+
+      /* Header Glass Effect */
+      [dir="rtl"] .codex-header {
+        background: rgba(255, 255, 255, 0.85) !important;
+        backdrop-filter: blur(12px) !important;
+        -webkit-backdrop-filter: blur(12px) !important;
+        border-bottom: 1px solid rgba(226, 232, 240, 0.5) !important;
+      }
+
+      /* Premium scrollbar brand color on hover */
+      ::-webkit-scrollbar-thumb:hover {
+        background: rgba(38, 28, 106, 0.3) !important;
+      }
+
+      /* Print: disable all glass and animations */
+      @media print {
+        .z-glass-card, .z-premium-card {
+          backdrop-filter: none !important;
+          -webkit-backdrop-filter: none !important;
+          box-shadow: none !important;
+          animation: none !important;
+          transform: none !important;
+          background: #ffffff !important;
+        }
+        .z-animate-in {
+          animation: none !important;
+        }
+        [dir="rtl"] .themebody-wrap {
+          background: #ffffff !important;
+      }
+
+      /* Premium Glass Card */
+      .z-glass-card {
+        background: var(--z-glass-bg) !important;
+        backdrop-filter: blur(var(--z-glass-blur)) !important;
+        -webkit-backdrop-filter: blur(var(--z-glass-blur)) !important;
+        border: 1px solid var(--z-glass-border) !important;
+        border-radius: var(--z-radius) !important;
+        box-shadow: var(--z-shadow-sm) !important;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+      }
+      .z-glass-card:hover {
+        box-shadow: var(--z-shadow-hover) !important;
+        transform: translateY(-2px) !important;
+      }
+
+      /* Premium Card (Non-glass, opaque white with premium shadows) */
+      .z-premium-card {
+        background: #ffffff !important;
+        border: 1px solid rgba(226, 232, 240, 0.6) !important;
+        border-radius: var(--z-radius) !important;
+        box-shadow: var(--z-shadow-md) !important;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+      }
+      .z-premium-card:hover {
+        box-shadow: var(--z-shadow-lg) !important;
+        transform: translateY(-3px) !important;
+      }
+
+      /* Animated Entrance */
+      .z-animate-in {
+        animation: z-fadeInUp 0.5s ease-out both;
+      }
+      .z-animate-in:nth-child(1) { animation-delay: 0.05s; }
+      .z-animate-in:nth-child(2) { animation-delay: 0.1s; }
+      .z-animate-in:nth-child(3) { animation-delay: 0.15s; }
+      .z-animate-in:nth-child(4) { animation-delay: 0.2s; }
+      .z-animate-in:nth-child(5) { animation-delay: 0.25s; }
+
+      /* Gradient Icon Backgrounds */
+      .z-icon-power {
+        background: linear-gradient(135deg, #f5f3ff 0%, #ede9fe 100%) !important;
+        color: #261c6a !important;
+      }
+      .z-icon-energy {
+        background: linear-gradient(135deg, #ecfeff 0%, #cffafe 100%) !important;
+        color: #0891b2 !important;
+      }
+      .z-icon-vitality {
+        background: linear-gradient(135deg, #ecfdf5 0%, #d1fae5 100%) !important;
+        color: #059669 !important;
+      }
+      .z-icon-warmth {
+        background: linear-gradient(135deg, #fffbeb 0%, #fef3c7 100%) !important;
+        color: #d97706 !important;
+      }
+      .z-icon-coral {
+        background: linear-gradient(135deg, #fff1f2 0%, #ffe4e6 100%) !important;
+        color: #e11d48 !important;
+      }
+
+      /* Premium Progress Bars */
+      .z-progress-animated .progress-bar {
+        animation: z-progress-fill 1.2s ease-out both;
+      }
+
+      /* Gradient Text Utility */
+      .z-gradient-text {
+        background: linear-gradient(135deg, #261c6a 0%, #6d28d9 50%, #06b6d4 100%) !important;
+        -webkit-background-clip: text !important;
+        -webkit-text-fill-color: transparent !important;
+        background-clip: text !important;
+      }
+
+      /* Premium Button Shimmer */
+      .z-btn-premium {
+        background: linear-gradient(135deg, #261c6a 0%, #4c1d95 50%, #261c6a 100%) !important;
+        background-size: 200% auto !important;
+        color: #ffffff !important;
+        border: none !important;
+        border-radius: 50px !important;
+        font-weight: 700 !important;
+        box-shadow: 0 4px 15px rgba(38, 28, 106, 0.3) !important;
+        transition: all 0.3s ease !important;
+      }
+      .z-btn-premium:hover {
+        background-position: right center !important;
+        box-shadow: 0 6px 20px rgba(38, 28, 106, 0.4) !important;
+        transform: translateY(-1px) !important;
+        color: #ffffff !important;
+      }
+
+      /* Premium Badge Glow */
+      .z-badge-glow {
+        animation: z-pulse-soft 2.5s ease-in-out infinite;
+      }
+
+      /* Sidebar Premium Gradient */
+      .z-sidebar-premium {
+        background: linear-gradient(180deg, #ffffff 0%, #faf8ff 40%, #f5f0ff 100%) !important;
+        border-left: 1px solid rgba(221, 214, 254, 0.4) !important;
+      }
+
+      /* Header Glass Effect */
+      [dir="rtl"] .codex-header {
+        background: rgba(255, 255, 255, 0.85) !important;
+        backdrop-filter: blur(12px) !important;
+        -webkit-backdrop-filter: blur(12px) !important;
+        border-bottom: 1px solid rgba(226, 232, 240, 0.5) !important;
+      }
+
+      /* Table Premium Hover */
+      .z-table-premium tbody tr {
+        transition: all 0.2s ease !important;
+      }
+      .z-table-premium tbody tr:hover {
+        background: linear-gradient(90deg, rgba(245, 243, 255, 0.5) 0%, rgba(255,255,255,0.8) 100%) !important;
+        transform: scale(1.002) !important;
+      }
+
+      /* Smooth scrollbar with brand color on hover */
+      ::-webkit-scrollbar-thumb:hover {
+        background: rgba(38, 28, 106, 0.3) !important;
+      }
+
+      /* Print media — disable all animations and glass effects for PDF */
+      @media print {
+        .z-glass-card, .z-premium-card {
+          backdrop-filter: none !important;
+          -webkit-backdrop-filter: none !important;
+          box-shadow: none !important;
+          animation: none !important;
+          transform: none !important;
+        }
+        .z-animate-in {
+          animation: none !important;
         }
       }
     </style>

@@ -5,6 +5,7 @@ import ZCoachingLogo from '../common/ZCoachingLogo';
 const MENU_GROUPS = [
   {
     groupTitle: 'الرئيسية والمتابعة',
+    color: '#261c6a',
     items: [
       { path: '/', label: 'لوحة القيادة', icon: 'ti-layout-dashboard' },
       { path: '/intake/submissions', label: 'استمارات العملاء', icon: 'ti-clipboard-list' },
@@ -13,6 +14,7 @@ const MENU_GROUPS = [
   },
   {
     groupTitle: 'البرامج والأدوات',
+    color: '#0891b2',
     items: [
       { path: '/exercises', label: 'مكتبة التمارين', icon: 'ti-barbell' },
       { path: '/calculator', label: 'حاسبة الماكروز', icon: 'ti-calculator' },
@@ -21,6 +23,7 @@ const MENU_GROUPS = [
   },
   {
     groupTitle: 'الإدارة والتحكم',
+    color: '#059669',
     items: [
       { path: '/customers', label: 'إدارة المشتركين', icon: 'ti-user-plus' },
       { path: '/master-settings', label: 'داش الداش', icon: 'ti-settings-cog' },
@@ -37,8 +40,9 @@ export default function Sidebar() {
     <aside 
       className="codex-sidebar d-flex flex-column justify-content-between" 
       style={{ 
-        background: '#ffffff', 
-        borderLeft: '1px solid #edf2f7',
+        background: 'linear-gradient(180deg, #ffffff 0%, #faf8ff 40%, #f5f0ff 100%)', 
+        borderLeft: '1px solid rgba(221, 214, 254, 0.35)',
+        boxShadow: '-6px 0 30px rgba(38, 28, 106, 0.04)',
         width: '245px',
         height: '100vh',
         position: 'fixed',
@@ -60,7 +64,7 @@ export default function Sidebar() {
             textAlign: 'center', 
             padding: '14px 10px 10px 10px',
             width: '100%',
-            borderBottom: '1px solid #f8fafc',
+            borderBottom: '1px solid rgba(221, 214, 254, 0.25)',
             background: 'transparent'
           }}
         >
@@ -142,22 +146,34 @@ export default function Sidebar() {
                         style={{
                           fontSize: '0.82rem',
                           fontWeight: isActive ? '700' : '500',
-                          color: isActive ? '#261c6a' : '#475569',
-                          background: isActive ? '#f5f3ff' : 'transparent',
-                          borderRadius: '8px',
-                          borderRight: isActive ? '3px solid #261c6a' : '3px solid transparent',
-                          transition: 'all 0.15s ease'
+                          color: isActive ? group.color : '#475569',
+                          background: isActive ? `linear-gradient(90deg, ${group.color}08, ${group.color}12)` : 'transparent',
+                          borderRadius: '10px',
+                          borderRight: isActive ? `3px solid ${group.color}` : '3px solid transparent',
+                          transition: 'all 0.25s cubic-bezier(0.4, 0, 0.2, 1)',
+                          boxShadow: isActive ? `0 2px 8px ${group.color}15` : 'none'
                         }}
                       >
                         <div className="d-flex align-items-center gap-2">
-                          <i 
-                            className={`ti ${item.icon}`}
-                            style={{ 
-                              fontSize: '1.1rem',
-                              color: isActive ? '#261c6a' : '#94a3b8',
-                              transition: 'color 0.15s ease'
+                          <div 
+                            className="d-flex align-items-center justify-content-center flex-shrink-0"
+                            style={{
+                              width: '28px',
+                              height: '28px',
+                              borderRadius: '8px',
+                              background: isActive ? `linear-gradient(135deg, ${group.color}15, ${group.color}25)` : 'transparent',
+                              transition: 'all 0.2s ease'
                             }}
-                          ></i>
+                          >
+                            <i 
+                              className={`ti ${item.icon}`}
+                              style={{ 
+                                fontSize: '1.05rem',
+                                color: isActive ? group.color : '#94a3b8',
+                                transition: 'color 0.2s ease'
+                              }}
+                            ></i>
+                          </div>
                           <span>{item.label}</span>
                         </div>
                       </Link>
@@ -172,9 +188,10 @@ export default function Sidebar() {
 
       {/* Fixed Compact Bottom Switcher */}
       <div 
-        className="p-2 px-3 border-top border-light bg-white flex-shrink-0"
+        className="p-2 px-3 border-top flex-shrink-0"
         style={{ 
           boxShadow: '0 -2px 8px rgba(0, 0, 0, 0.02)',
+          background: 'transparent',
           zIndex: 10 
         }}
       >
@@ -182,12 +199,13 @@ export default function Sidebar() {
           to="/user-dashboard" 
           className="btn w-100 rounded-pill fw-bold d-flex align-items-center justify-content-center gap-2 shadow-sm text-white"
           style={{ 
-            height: '36px',
-            background: '#261c6a', 
+            height: '38px',
+            background: 'linear-gradient(135deg, #261c6a 0%, #4c1d95 100%)', 
             border: 'none',
             fontSize: '0.8rem',
-            letterSpacing: '0.2px',
-            boxShadow: '0 3px 10px rgba(38, 28, 106, 0.25)'
+            letterSpacing: '0.3px',
+            boxShadow: '0 4px 15px rgba(38, 28, 106, 0.3)',
+            transition: 'all 0.3s ease'
           }}
           title="الانتقال إلى بوابة العميل"
         >
