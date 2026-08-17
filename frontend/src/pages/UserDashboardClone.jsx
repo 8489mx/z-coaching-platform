@@ -96,11 +96,17 @@ export default function UserDashboardClone() {
   const [copiedLink, setCopiedLink] = useState(false);
 
   const searchParams = new URLSearchParams(window.location.search);
-  const targetUserId = searchParams.get('user_id') || sessionStorage.getItem('z_active_client_code') || "CLIENT-AHMED-SAMIR";
+  const targetUserId = searchParams.get('user_id') || sessionStorage.getItem('z_active_client_code') || "";
 
   useEffect(() => {
     fetchClients();
-    fetchLiveProgram();
+    if (targetUserId) {
+      fetchLiveProgram();
+    } else {
+      setLoading(false);
+      setProgram(null);
+      setCurrentUser(null);
+    }
   }, [targetUserId]);
 
   const fetchClients = async () => {
@@ -114,6 +120,7 @@ export default function UserDashboardClone() {
   };
 
   const fetchLiveProgram = async () => {
+    if (!targetUserId) return;
     try {
       setLoading(true);
       const res = await fetch(`${API_BASE}/api/v1/programs/active/${targetUserId}`);

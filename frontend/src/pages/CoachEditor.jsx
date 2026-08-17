@@ -21,7 +21,7 @@ export default function CoachEditor() {
 
   // Active client ID and submission ID from URL
   const searchParams = new URLSearchParams(window.location.search);
-  const targetUserId = userId || searchParams.get('user_id') || 'CLIENT-AHMED-SAMIR';
+  const targetUserId = userId || searchParams.get('user_id') || '';
   const submissionId = searchParams.get('submission_id');
 
   useEffect(() => {

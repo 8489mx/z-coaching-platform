@@ -215,7 +215,7 @@ export default function ClientProgramView() {
  : [];
 
  const payload = {
- client_id: "CLIENT-AHMED-SAMIR",
+ client_id: user?.client_code || targetUserId || '',
  week_number: Number(checkinForm.weekNumber),
  daily_weights_kg: dailyWeights,
  previous_average_weight_kg: 90.0,
