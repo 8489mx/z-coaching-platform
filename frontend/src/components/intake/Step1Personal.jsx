@@ -60,30 +60,56 @@ export default function Step1Personal({
  </div>
  </div>
  </div>
- <div className="form-group">
- <label className="form-label">بلد الإقامة</label>
- <input 
- type="text" 
- className="form-control" 
- placeholder="مثل: EG, SA, AE"
- value={formData.personal.residenceCountry} 
- onChange={e => updateField('personal', 'residenceCountry', e.target.value.toUpperCase())} 
- />
- </div>
- </div>
-
+        <div className="form-group">
+          <label className="form-label">بلد الإقامة</label>
+          <select 
+            className="form-control"
+            value={formData.personal.residenceCountry || 'EG'} 
+            onChange={e => updateField('personal', 'residenceCountry', e.target.value)}
+            style={{ fontWeight: '600' }}
+          >
+            <option value="EG">مصر (Egypt)</option>
+            <option value="SA">المملكة العربية السعودية (Saudi Arabia)</option>
+            <option value="AE">الإمارات العربية المتحدة (UAE)</option>
+            <option value="KW">الكويت (Kuwait)</option>
+            <option value="QA">قطر (Qatar)</option>
+            <option value="BH">البحرين (Bahrain)</option>
+            <option value="OM">سلطنة عُمان (Oman)</option>
+            <option value="IQ">العراق (Iraq)</option>
+            <option value="JO">الأردن (Jordan)</option>
+            <option value="LB">لبنان (Lebanon)</option>
+            <option value="PS">فلسطين (Palestine)</option>
+            <option value="SY">سوريا (Syria)</option>
+            <option value="SD">السودان (Sudan)</option>
+            <option value="LY">ليبيا (Libya)</option>
+            <option value="MA">المغرب (Morocco)</option>
+            <option value="DZ">الجزائر (Algeria)</option>
+            <option value="TN">تونس (Tunisia)</option>
+            <option value="YE">اليمن (Yemen)</option>
+            <option value="TR">تركيا (Turkey)</option>
+            <option value="GB">المملكة المتحدة (UK)</option>
+            <option value="US">الولايات المتحدة (USA)</option>
+            <option value="CA">كندا (Canada)</option>
+            <option value="DE">ألمانيا (Germany)</option>
+            <option value="IT">إيطاليا (Italy)</option>
+            <option value="FR">فرنسا (France)</option>
+            <option value="SE">السويد (Sweden)</option>
+            <option value="NL">هولندا (Netherlands)</option>
+          </select>
+        </div>
+      </div>
+ 
  <div className="section-divider"></div>
  <h3 className="section-title">الأهداف المستهدفة</h3>
  <div className="form-group">
  <label className="form-label">الهدف الأساسي</label>
  <div className="choices-grid" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))' }}>
  {[
- { v: 'FAT_LOSS', l: 'خسارة الدهون ' }, 
- { v: 'MUSCLE_GAIN', l: 'بناء العضلات ' }, 
- { v: 'WEIGHT_MAINTENANCE', l: 'المحافظة على الوزن ' },
- { v: 'GENERAL_HEALTH', l: 'تحسين الصحة العامة ' },
- { v: 'PERFORMANCE', l: 'تحسين الأداء الرياضي ' },
- { v: 'OTHER', l: 'أخرى' }
+ { v: 'FAT_LOSS', l: 'خسارة الدهون ونحت الجسم' }, 
+ { v: 'MUSCLE_GAIN', l: 'بناء وتضخيم العضلات' }, 
+ { v: 'WEIGHT_MAINTENANCE', l: 'المحافظة على الوزن وتناسق القوام' },
+ { v: 'GENERAL_HEALTH', l: 'تحسين الصحة العامة واللياقة' },
+ { v: 'PERFORMANCE', l: 'زيادة القوة والأداء الرياضي' }
  ].map(g => (
  <div 
  key={g.v} 
@@ -99,13 +125,14 @@ export default function Step1Personal({
  <label className="form-label">الهدف التدريبي الثانوي</label>
  <select 
  className="form-control" 
- value={formData.goals.secondaryTraining} 
+ value={formData.goals.secondaryTraining || 'GENERAL_STRENGTH'} 
  onChange={e => updateField('goals', 'secondaryTraining', e.target.value)}
+ style={{ fontWeight: '600' }}
  >
- <option value="GENERAL_STRENGTH">القوة العامة (General Strength)</option>
- <option value="HYPERTROPHY">تضخيم عضلي (Hypertrophy)</option>
- <option value="ENDURANCE">قوة التحمل (Endurance)</option>
- <option value="POWERLIFTING">رفع أثقال (Powerlifting)</option>
+ <option value="GENERAL_STRENGTH">شد الجسم ونحت وتفصيل العضلات (إبراز التقاسيم)</option>
+ <option value="HYPERTROPHY">زيادة الحجم العضلي والتضخيم (تكبير الكتلة العضلية)</option>
+ <option value="POWERLIFTING">زيادة القوة البدنية ورفع أوزان أعلى (Power & Strength)</option>
+ <option value="ENDURANCE">زيادة النفس وقوة التحمل واللياقة العامة (Endurance)</option>
  </select>
  </div>
  </div>
