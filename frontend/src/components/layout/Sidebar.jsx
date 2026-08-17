@@ -40,9 +40,9 @@ export default function Sidebar() {
     <aside 
       className="codex-sidebar d-flex flex-column justify-content-between" 
       style={{ 
-        background: 'linear-gradient(180deg, #ffffff 0%, #faf8ff 40%, #f5f0ff 100%)', 
-        borderLeft: '1px solid rgba(221, 214, 254, 0.35)',
-        boxShadow: '-6px 0 30px rgba(38, 28, 106, 0.04)',
+        background: '#ffffff', 
+        borderLeft: '1px solid #edf2f7',
+        boxShadow: '-4px 0 20px rgba(0, 0, 0, 0.02)',
         width: '245px',
         height: '100vh',
         position: 'fixed',
