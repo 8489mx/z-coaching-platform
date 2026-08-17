@@ -49,6 +49,7 @@ function App() {
           <Route path="/intake/submissions" element={<IntakeSubmissions />} />
           <Route path="/customers" element={<Customers />} />
           <Route path="/coach/editor" element={<CoachEditor />} />
+          <Route path="/coach/editor/:userId" element={<CoachEditor />} />
           <Route path="/mobile" element={<MobileAppSimulator />} />
           <Route path="/pdf" element={<ProgramPdfView />} />
           <Route path="*" element={<Navigate to="/" />} />

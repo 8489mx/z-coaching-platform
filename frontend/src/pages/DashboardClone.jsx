@@ -6,6 +6,16 @@ import ExecutiveKpis from '../components/dashboard/ExecutiveKpis';
 import WhatsAppModal from '../components/modals/WhatsAppModal';
 import ApproveCheckinModal from '../components/modals/ApproveCheckinModal';
 
+export function formatSubscriptionPackage(pkg) {
+  if (!pkg) return 'باقة شهر واحد';
+  const p = String(pkg).toUpperCase();
+  if (p.includes('3') || p.includes('VIP')) return 'باقة 3 شهور VIP';
+  if (p.includes('6')) return 'باقة 6 شهور';
+  if (p.includes('12') || p.includes('YEAR')) return 'باقة سنة كاملة';
+  if (p.includes('1') || p.includes('MONTH')) return 'باقة شهر واحد';
+  return pkg;
+}
+
 export default function DashboardClone() {
   const [clients, setClients] = useState([]);
   const [checkins, setCheckins] = useState([]);
@@ -227,7 +237,7 @@ export default function DashboardClone() {
                               </td>
                               <td>
                                 <span className="text-dark small fw-medium">
-                                  {c.subscription_package || 'باقة 3 شهور VIP'}
+                                  {formatSubscriptionPackage(c.subscription_package)}
                                 </span>
                               </td>
                               <td>
@@ -238,11 +248,12 @@ export default function DashboardClone() {
                               <td className="text-center">
                                 <div className="d-flex align-items-center justify-content-center gap-2">
                                   <Link 
-                                    to={`/coach/editor/${c.id}`}
+                                    to={`/user-dashboard?user_id=${c.client_code || c.id}`}
                                     className="btn btn-sm rounded-pill px-3 py-1 fw-semibold shadow-xs"
                                     style={{ fontSize: '0.78rem', background: '#f5f3ff', color: '#261c6a', border: '1px solid #ddd6fe' }}
+                                    title="عرض خطة المتدرب"
                                   >
-                                    <i className="ti ti-edit me-1"></i> الخطة
+                                    <i className="ti ti-eye me-1"></i> الخطة
                                   </Link>
                                   <button 
                                     type="button"
