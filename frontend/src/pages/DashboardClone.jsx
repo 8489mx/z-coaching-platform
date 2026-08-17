@@ -173,10 +173,10 @@ export default function DashboardClone() {
 
           {/* Top 4 KPI Cards */}
           <ExecutiveKpis 
-            clientsCount={clients.length || 5}
+            clientsCount={clients.length}
             overdueCount={overdueClients.length}
-            expiringCount={subscriptionsOverview.expiring_soon || 1}
-            monthlyRevenue={subscriptionsOverview.total_monthly_revenue || 4500}
+            expiringCount={subscriptionsOverview.expiring_soon || 0}
+            monthlyRevenue={subscriptionsOverview.total_monthly_revenue || 0}
           />
 
           {/* Master 2-Column Grid */}
@@ -220,7 +220,15 @@ export default function DashboardClone() {
                           </tr>
                         ) : filteredClients.length === 0 ? (
                           <tr>
-                            <td colSpan="5" className="text-center py-4 text-muted">لا يوجد متدربين.</td>
+                            <td colSpan="5" className="text-center py-5">
+                              <div className="d-flex flex-column align-items-center justify-content-center">
+                                <div className="rounded-circle d-flex align-items-center justify-content-center mb-2" style={{ width: '48px', height: '48px', background: '#f8fafc', border: '1px solid #e2e8f0', color: '#94a3b8' }}>
+                                  <i className="ti ti-users fs-3"></i>
+                                </div>
+                                <p className="text-muted small mb-1 fw-bold">لا يوجد متدربين مسجلين حالياً في المنظومة.</p>
+                                <small className="text-muted">اضغط على «عميل جديد» لإنشاء أول مشترك وتوليد كوده.</small>
+                              </div>
+                            </td>
                           </tr>
                         ) : (
                           filteredClients.map((c) => (
