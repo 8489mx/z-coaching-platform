@@ -1,130 +1,197 @@
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
+import ZCoachingLogo from '../common/ZCoachingLogo';
 
-const MENU_ITEMS = [
-  { path: '/', label: 'لوحة التحكم الرئيسية', icon: 'ti-layout-dashboard' },
-  { path: '/user-dashboard', label: 'واجهة المتدرب', icon: 'ti-user-circle' },
-  { path: '/progress', label: 'تطور القياسات والصور', icon: 'ti-chart-line' },
-  { path: '/subscriptions', label: 'الاشتراكات والمالية', icon: 'ti-credit-card' },
-  { path: '/exercises', label: 'مكتبة التمارين', icon: 'ti-barbell' },
-  { path: '/calculator', label: 'حاسبة الماكروز والسعرات', icon: 'ti-calculator' },
-  { path: '/customers', label: 'إدارة المشتركين والأكواد', icon: 'ti-user-plus' },
-  { path: '/profile', label: 'إعدادات وهوية المدرب', icon: 'ti-settings' },
-  { path: '/mobile', label: 'تطبيق المتدرب (Mobile)', icon: 'ti-device-mobile' },
+const MENU_GROUPS = [
+  {
+    groupTitle: 'الرئيسية والمتابعة',
+    items: [
+      { path: '/', label: 'لوحة القيادة', icon: 'ti-layout-dashboard' },
+      { path: '/intake/submissions', label: 'استمارات العملاء', icon: 'ti-clipboard-list' },
+      { path: '/progress', label: 'القياسات والصور', icon: 'ti-chart-line' },
+    ]
+  },
+  {
+    groupTitle: 'البرامج والأدوات',
+    items: [
+      { path: '/exercises', label: 'مكتبة التمارين', icon: 'ti-barbell' },
+      { path: '/calculator', label: 'حاسبة الماكروز', icon: 'ti-calculator' },
+      { path: '/subscriptions', label: 'الاشتراكات والمالية', icon: 'ti-credit-card' },
+    ]
+  },
+  {
+    groupTitle: 'الإدارة والتطبيق',
+    items: [
+      { path: '/customers', label: 'إدارة المشتركين', icon: 'ti-user-plus' },
+      { path: '/mobile', label: 'تطبيق العميل', icon: 'ti-device-mobile' },
+      { path: '/profile', label: 'إعدادات المدرب', icon: 'ti-settings' },
+    ]
+  }
 ];
 
 export default function Sidebar() {
   const location = useLocation();
 
   return (
-    <aside className="codex-sidebar">
-      {/* Centered Brand & Logo */}
-      <div 
-        className="codex-brand" 
-        style={{ 
-          display: 'flex', 
-          flexDirection: 'column', 
-          alignItems: 'center', 
-          justifyContent: 'center', 
-          textAlign: 'center', 
-          padding: '14px 10px 8px 10px',
-          width: '100%',
-          border: 'none',
-          background: 'transparent'
-        }}
-      >
-        <Link 
-          to="/" 
+    <aside 
+      className="codex-sidebar d-flex flex-column justify-content-between" 
+      style={{ 
+        background: '#ffffff', 
+        borderLeft: '1px solid #edf2f7',
+        width: '245px',
+        height: '100vh',
+        position: 'fixed',
+        top: 0,
+        right: 0,
+        bottom: 0,
+        zIndex: 99
+      }}
+    >
+      <div className="d-flex flex-column flex-grow-1" style={{ minHeight: 0 }}>
+        {/* Centered Athletic Brand & Logo */}
+        <div 
+          className="codex-brand flex-shrink-0" 
           style={{ 
             display: 'flex', 
             flexDirection: 'column', 
             alignItems: 'center', 
             justifyContent: 'center', 
-            textDecoration: 'none',
+            textAlign: 'center', 
+            padding: '14px 10px 10px 10px',
             width: '100%',
-            margin: '0 auto'
+            borderBottom: '1px solid #f8fafc',
+            background: 'transparent'
           }}
         >
-          <img 
-            src="/admin-dashboard_data/logo/z_clean_symbol.jpg?v=2" 
-            alt="Z Logo" 
+          <Link 
+            to="/" 
             style={{ 
-              height: '76px', 
-              width: '76px', 
-              objectFit: 'contain', 
-              margin: '0 auto',
-              display: 'block'
-            }} 
-          />
-          <span 
-            style={{ 
-              fontSize: '0.92rem', 
-              letterSpacing: '4px', 
-              fontWeight: '900',
-              background: 'linear-gradient(135deg, #00b4d8 0%, #0077b6 100%)',
-              WebkitBackgroundClip: 'text',
-              WebkitTextFillColor: 'transparent',
-              display: 'block',
-              marginTop: '-4px',
-              lineHeight: '1.2',
-              textAlign: 'center',
-              width: '100%'
+              display: 'flex', 
+              flexDirection: 'column', 
+              alignItems: 'center', 
+              justifyContent: 'center', 
+              textDecoration: 'none',
+              width: '100%',
+              margin: '0 auto'
             }}
           >
-            COACHING
-          </span>
-        </Link>
+            {/* Athletic Dumbbell Z Logo */}
+            <img 
+              src="/admin-dashboard_data/logo/z_dumbbell_flat.jpg" 
+              alt="Z Coaching" 
+              style={{ 
+                height: '64px', 
+                width: '64px', 
+                objectFit: 'contain', 
+                margin: '0 auto',
+                display: 'block'
+              }} 
+            />
+
+            <span 
+              style={{ 
+                fontSize: '0.84rem', 
+                letterSpacing: '3.5px', 
+                fontWeight: '900',
+                background: 'linear-gradient(135deg, #372896 0%, #261c6a 100%)',
+                WebkitBackgroundClip: 'text',
+                WebkitTextFillColor: 'transparent',
+                display: 'block',
+                marginTop: '4px',
+                lineHeight: '1.2',
+                textAlign: 'center',
+                width: '100%'
+              }}
+            >
+              COACHING
+            </span>
+          </Link>
+        </div>
+
+        {/* Grouped Menu List (Clean Minimalist Active State) */}
+        <div 
+          className="codex-menuwrapper custom-scroll flex-grow-1" 
+          data-simplebar 
+          data-simplebar-direction="rtl" 
+          data-simplebar-auto-hide="true"
+          style={{ padding: '12px 10px', overflowY: 'auto' }}
+        >
+          {MENU_GROUPS.map((group, gIdx) => (
+            <div key={gIdx} className="mb-2">
+              <div 
+                style={{ 
+                  fontSize: '0.66rem', 
+                  fontWeight: '700', 
+                  color: '#94a3b8', 
+                  padding: '4px 10px', 
+                  letterSpacing: '0.3px'
+                }}
+              >
+                {group.groupTitle}
+              </div>
+
+              <ul className="codex-menu p-0 m-0 list-unstyled">
+                {group.items.map((item) => {
+                  const isActive = location.pathname === item.path;
+                  return (
+                    <li key={item.path} className="mb-1">
+                      <Link 
+                        to={item.path}
+                        className={`golden-sidebar-item d-flex align-items-center justify-content-between px-3 py-2 rounded-3 text-decoration-none transition-all ${isActive ? 'active' : ''}`}
+                        style={{
+                          fontSize: '0.82rem',
+                          fontWeight: isActive ? '700' : '500',
+                          color: isActive ? '#261c6a' : '#475569',
+                          background: isActive ? '#f5f3ff' : 'transparent',
+                          borderRadius: '8px',
+                          borderRight: isActive ? '3px solid #261c6a' : '3px solid transparent',
+                          transition: 'all 0.15s ease'
+                        }}
+                      >
+                        <div className="d-flex align-items-center gap-2">
+                          <i 
+                            className={`ti ${item.icon}`}
+                            style={{ 
+                              fontSize: '1.1rem',
+                              color: isActive ? '#261c6a' : '#94a3b8',
+                              transition: 'color 0.15s ease'
+                            }}
+                          ></i>
+                          <span>{item.label}</span>
+                        </div>
+                      </Link>
+                    </li>
+                  );
+                })}
+              </ul>
+            </div>
+          ))}
+        </div>
       </div>
 
-      {/* Menu List */}
-      <div className="codex-menuwrapper custom-scroll" data-simplebar>
-        <ul className="codex-menu">
-          {MENU_ITEMS.map((item) => {
-            const isActive = location.pathname === item.path;
-            return (
-              <li key={item.path} className={`menu-item ${isActive ? 'active' : ''}`}>
-                <Link to={item.path}>
-                  <div className="icon-item">
-                    <i className={`ti ${item.icon}`}></i>
-                  </div>
-                  <span>{item.label}</span>
-                </Link>
-              </li>
-            );
-          })}
-        </ul>
-      </div>
-
-      {/* Bottom Pro Card */}
+      {/* Fixed Compact Bottom Switcher */}
       <div 
-        className="sidebarpro-sec mt-3 mb-4 mx-3 p-3 text-center" 
+        className="p-2 px-3 border-top border-light bg-white flex-shrink-0"
         style={{ 
-          background: 'linear-gradient(180deg, #f8fafc 0%, #edf2f7 100%)', 
-          borderRadius: '16px', 
-          border: '1px solid #e2e8f0' 
+          boxShadow: '0 -2px 8px rgba(0, 0, 0, 0.02)',
+          zIndex: 10 
         }}
       >
-        <div className="d-flex align-items-center justify-content-center gap-2 mb-2">
-          <span 
-            className="badge bg-success-subtle text-success border border-success-subtle px-2 py-1 rounded-pill fw-bold" 
-            style={{ fontSize: '0.74rem' }}
-          >
-            <i className="ti ti-circle-filled me-1" style={{ fontSize: '7px' }}></i> محرك الذكاء نشط
-          </span>
-        </div>
-        <h6 className="mb-1 fw-bold text-dark" style={{ fontSize: '0.88rem' }}>Z Coaching Platform</h6>
-        <p className="text-muted mb-3" style={{ fontSize: '0.74rem' }}>النظام يعمل بكفاءة 100%</p>
         <Link 
-          to="/intake/form" 
-          className="btn btn-sm w-100 fw-bold rounded-pill text-white shadow-sm"
+          to="/user-dashboard" 
+          className="btn w-100 rounded-pill fw-bold d-flex align-items-center justify-content-center gap-2 shadow-sm text-white"
           style={{ 
-            background: 'linear-gradient(135deg, #00b4d8 0%, #0077b6 100%)',
+            height: '36px',
+            background: '#261c6a', 
             border: 'none',
             fontSize: '0.8rem',
-            padding: '7px 12px'
+            letterSpacing: '0.2px',
+            boxShadow: '0 3px 10px rgba(38, 28, 106, 0.25)'
           }}
+          title="الانتقال إلى بوابة العميل"
         >
-          <i className="ti ti-sparkles me-1"></i> توليد خطة جديدة
+          <i className="ti ti-arrows-exchange fs-6 text-light"></i>
+          <span>بوابة العميل</span>
         </Link>
       </div>
     </aside>

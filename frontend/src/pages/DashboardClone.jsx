@@ -3,7 +3,6 @@ import { Link } from 'react-router-dom';
 import { API_BASE } from '../config/api';
 import AdminLayout from '../components/layout/AdminLayout';
 import ExecutiveKpis from '../components/dashboard/ExecutiveKpis';
-import PriorityActionsHub from '../components/dashboard/PriorityActionsHub';
 import WhatsAppModal from '../components/modals/WhatsAppModal';
 import ApproveCheckinModal from '../components/modals/ApproveCheckinModal';
 
@@ -11,7 +10,7 @@ export default function DashboardClone() {
   const [clients, setClients] = useState([]);
   const [checkins, setCheckins] = useState([]);
   const [subscriptionsOverview, setSubscriptionsOverview] = useState({
-    active_subscriptions: 3,
+    active_subscriptions: 5,
     expiring_soon: 1,
     expired: 0,
     total_monthly_revenue: 4500,
@@ -22,10 +21,10 @@ export default function DashboardClone() {
   const [coachNotes, setCoachNotes] = useState('');
   const [approving, setApproving] = useState(false);
 
-  // WhatsApp Automation Hub State
+  // WhatsApp Modal State
   const [whatsappModalClient, setWhatsappModalClient] = useState(null);
 
-  // Live Search
+  // Search
   const [searchTerm, setSearchTerm] = useState('');
 
   useEffect(() => {
@@ -71,7 +70,7 @@ export default function DashboardClone() {
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || 'فشل اعتماد المتابعة');
 
-      alert('✅ تم اعتماد المتابعة وتحديث خطة المتدرب بنجاح في MariaDB z!');
+      alert('تم اعتماد المتابعة وتحديث خطة المتدرب بنجاح في MariaDB z!');
       setSelectedCheckin(null);
       setCoachNotes('');
       fetchDashboardData();
@@ -87,212 +86,335 @@ export default function DashboardClone() {
 
   const filteredClients = clients.filter(c => {
     if (!searchTerm.trim()) return true;
-    const t = searchTerm.trim().toLowerCase();
+    const raw = searchTerm.trim().toLowerCase();
+
+    // Smart # Prefix Search: Specifically and strictly target exact client code
+    if (raw.startsWith('#')) {
+      const codeQuery = raw.replace(/^#+/, '').trim();
+      if (!codeQuery) return true;
+      const displayedCode = String(c.client_code || c.id || '').trim().toLowerCase();
+      const cleanCode = displayedCode.replace(/^client[-_]?/i, '');
+      return displayedCode === codeQuery || cleanCode === codeQuery || displayedCode === `client-${codeQuery}`;
+    }
+
+    // Standard Universal Search
     const name = (c.full_name || '').toLowerCase();
     const phone = (c.phone_number || '').toLowerCase();
     const code = String(c.client_code || c.id).toLowerCase();
     const email = (c.email || '').toLowerCase();
-    return name.includes(t) || phone.includes(t) || code.includes(t) || email.includes(t);
+    return name.includes(raw) || phone.includes(raw) || code.includes(raw) || email.includes(raw);
   });
 
   return (
     <AdminLayout searchTerm={searchTerm} onSearchChange={setSearchTerm}>
       <div className="theme-body">
         <div className="container-fluid">
-          {/* Executive Welcome Hero Banner */}
-          <div className="card border-0 mb-4 p-4 text-white shadow-sm" style={{ borderRadius: '20px', background: 'linear-gradient(135deg, #0ea5e9 0%, #0284c7 50%, #0369a1 100%)' }}>
-            <div className="d-flex justify-content-between align-items-center flex-wrap gap-3">
-              <div>
-                <h3 className="fw-bold mb-1">مرحباً بك يا كابتن في Z Coaching! 👑</h3>
-                <p className="mb-0 opacity-90" style={{ fontSize: '0.95rem' }}>
-                  لوحة القيادة المركزية: إليك ملخص حالة المتدربين، المتابعات المتأخرة، وتجديدات الاشتراكات لليوم.
-                </p>
-              </div>
-              <div className="d-flex gap-2 flex-wrap">
-                <Link to="/intake/form" className="btn btn-light rounded-pill px-3 py-2 fw-bold text-primary shadow-sm">
-                  <i className="ti ti-plus me-1"></i> تسجيل متدرب
-                </Link>
-                <Link to="/calculator" className="btn btn-outline-light rounded-pill px-3 py-2 fw-bold">
-                  <i className="ti ti-calculator me-1"></i> حاسبة الماكروز
-                </Link>
-                <Link to="/exercises" className="btn btn-outline-light rounded-pill px-3 py-2 fw-bold">
-                  <i className="ti ti-barbell me-1"></i> مكتبة التمارين
-                </Link>
-              </div>
+          
+          {/* Header Action Bar */}
+          <div className="d-flex justify-content-between align-items-center flex-wrap gap-3 mb-4">
+            <div>
+              <h4 className="fw-bold text-dark mb-1 d-flex align-items-center gap-2" style={{ letterSpacing: '-0.3px' }}>
+                <span>لوحة القيادة المركزية</span>
+                <span 
+                  className="badge rounded-pill px-3 py-1 fw-semibold" 
+                  style={{ fontSize: '0.72rem', background: '#f5f3ff', color: '#261c6a', border: '1px solid #ddd6fe' }}
+                >
+                  Z Coaching V2.0
+                </span>
+              </h4>
+              <p className="text-muted small mb-0">
+                مرحباً بك يا كابتن كيمو — ملخص المشتركين والمتابعات لليوم
+              </p>
+            </div>
+            
+            <div className="d-flex gap-2 flex-wrap">
+              <Link 
+                to="/intake/submissions" 
+                className="btn btn-sm rounded-pill px-3 py-2 fw-semibold shadow-xs" 
+                style={{ fontSize: '0.84rem', background: '#ffffff', color: '#261c6a', border: '1px solid #c4b5fd' }}
+              >
+                <i className="ti ti-clipboard-list me-1"></i> استمارات العملاء
+              </Link>
+              <Link 
+                to="/calculator" 
+                className="btn btn-light btn-sm rounded-pill px-3 py-2 fw-semibold border" 
+                style={{ fontSize: '0.84rem', color: '#475569' }}
+              >
+                <i className="ti ti-calculator me-1"></i> حاسبة الماكروز
+              </Link>
+              <Link 
+                to="/exercises" 
+                className="btn btn-light btn-sm rounded-pill px-3 py-2 fw-semibold border" 
+                style={{ fontSize: '0.84rem', color: '#475569' }}
+              >
+                <i className="ti ti-barbell me-1"></i> مكتبة التمارين
+              </Link>
             </div>
           </div>
 
-          {/* Top 4 Executive KPI Cards */}
+          {/* Top 4 KPI Cards */}
           <ExecutiveKpis 
-            clientsCount={clients.length || 3}
+            clientsCount={clients.length || 5}
             overdueCount={overdueClients.length}
             expiringCount={subscriptionsOverview.expiring_soon || 1}
             monthlyRevenue={subscriptionsOverview.total_monthly_revenue || 4500}
           />
 
-          {/* Priority Actions Hub */}
-          <PriorityActionsHub 
-            overdueClients={overdueClients}
-            expiringClients={expiringClients}
-            onOpenWhatsapp={(client) => setWhatsappModalClient(client)}
-          />
-
-          {/* Pending Check-ins Section */}
-          {checkins.length > 0 && (
-            <div className="card border-0 shadow-sm bg-white mb-4" style={{ borderRadius: '18px', borderRight: '4px solid #f59e0b' }}>
-              <div className="card-body p-4">
-                <div className="d-flex align-items-center justify-content-between mb-3 flex-wrap gap-2">
-                  <div>
-                    <h5 className="fw-bold text-dark mb-1">
-                      <i className="ti ti-bell-ringing text-warning me-2"></i>
-                      المتابعات الأسبوعية المعلقة ({checkins.filter(c => c.status === 'PENDING_REVIEW').length})
-                    </h5>
-                    <p className="text-muted small mb-0">تحتاج مراجعتك لاعتماد تعديل السعرات والأوزان الجديدة</p>
+          {/* Master 2-Column Grid */}
+          <div className="row g-4 mb-4">
+            
+            {/* Main Column (8 cols): Master Active Clients */}
+            <div className="col-lg-8 col-12">
+              <div className="card border-0 bg-white shadow-sm h-100" style={{ borderRadius: '16px', border: '1px solid #e2e8f0' }}>
+                <div className="card-body p-4">
+                  <div className="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
+                    <div>
+                      <h6 className="fw-bold text-dark mb-1">
+                        <i className="ti ti-users-group me-2" style={{ color: '#261c6a' }}></i> قائمة المشتركين الفعّالين
+                      </h6>
+                      <p className="text-muted small mb-0">إدارة الخطط، الحسابات، ومتابعة الالتزام</p>
+                    </div>
+                    <Link 
+                      to="/customers" 
+                      className="btn btn-light btn-sm rounded-pill px-3 fw-semibold border" 
+                      style={{ fontSize: '0.78rem', color: '#475569' }}
+                    >
+                      عرض الكل <i className="ti ti-arrow-left ms-1"></i>
+                    </Link>
                   </div>
-                  <span className="badge bg-warning text-dark px-3 py-2 rounded-pill fw-bold">
-                    تتطلب المراجعة الآن
-                  </span>
-                </div>
 
-                <div className="row g-3">
-                  {checkins.map((chk) => (
-                    <div className="col-lg-6" key={chk.id}>
-                      <div className="p-3 bg-light rounded-4 border d-flex justify-content-between align-items-center">
-                        <div>
-                          <div className="d-flex align-items-center gap-2 mb-1">
-                            <span className="fw-bold text-dark fs-6">{chk.full_name || chk.client_code}</span>
-                            <span className="badge bg-primary-subtle text-primary">الأسبوع {chk.week_number}</span>
-                          </div>
-                          <small className="text-muted d-block mb-1">
-                            متوسط الوزن: <strong>{chk.average_weight} كجم</strong> | الالتزام: <strong>{chk.adherence}%</strong>
-                          </small>
-                          <small className="text-success fw-semibold">
-                            <i className="ti ti-sparkles me-1"></i> جاهز للاعتماد الآلي
-                          </small>
+                  <div className="table-responsive">
+                    <table className="table table-hover align-middle mb-0">
+                      <thead className="table-light">
+                        <tr className="text-secondary small fw-semibold">
+                          <th className="border-0 rounded-start">المتدرب</th>
+                          <th className="border-0">كود المشترك</th>
+                          <th className="border-0">الخطة</th>
+                          <th className="border-0">الحالة</th>
+                          <th className="border-0 rounded-end text-center">الإجراءات</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {loading ? (
+                          <tr>
+                            <td colSpan="5" className="text-center py-4 text-muted">جاري تحميل البيانات...</td>
+                          </tr>
+                        ) : filteredClients.length === 0 ? (
+                          <tr>
+                            <td colSpan="5" className="text-center py-4 text-muted">لا يوجد متدربين.</td>
+                          </tr>
+                        ) : (
+                          filteredClients.map((c) => (
+                            <tr key={c.id}>
+                              <td>
+                                <div className="d-flex align-items-center gap-3">
+                                  <div 
+                                    className="rounded-circle d-flex align-items-center justify-content-center fw-bold" 
+                                    style={{ width: '34px', height: '34px', fontSize: '0.82rem', background: '#f5f3ff', color: '#261c6a', border: '1px solid #ddd6fe' }}
+                                  >
+                                    {(c.full_name || 'U')[0]}
+                                  </div>
+                                  <div>
+                                    <div className="fw-bold text-dark" style={{ fontSize: '0.88rem' }}>{c.full_name || `المتدرب ${c.id}`}</div>
+                                    <small style={{ fontSize: '0.76rem', color: '#64748b' }}>{c.phone_number || '-'}</small>
+                                  </div>
+                                </div>
+                              </td>
+                              <td>
+                                <span className="badge bg-light text-secondary border px-2 py-1 font-monospace" style={{ fontSize: '0.75rem' }}>
+                                  {c.client_code || `CLIENT-${c.id}`}
+                                </span>
+                              </td>
+                              <td>
+                                <span className="text-dark small fw-medium">
+                                  {c.subscription_package || 'باقة 3 شهور VIP'}
+                                </span>
+                              </td>
+                              <td>
+                                <span className="badge bg-light text-success border px-2 py-1 rounded-pill fw-semibold" style={{ fontSize: '0.75rem' }}>
+                                  <i className="ti ti-point-filled me-1"></i> نشط
+                                </span>
+                              </td>
+                              <td className="text-center">
+                                <div className="d-flex align-items-center justify-content-center gap-2">
+                                  <Link 
+                                    to={`/coach/editor/${c.id}`}
+                                    className="btn btn-sm rounded-pill px-3 py-1 fw-semibold shadow-xs"
+                                    style={{ fontSize: '0.78rem', background: '#f5f3ff', color: '#261c6a', border: '1px solid #ddd6fe' }}
+                                  >
+                                    <i className="ti ti-edit me-1"></i> الخطة
+                                  </Link>
+                                  <button 
+                                    type="button"
+                                    onClick={() => setWhatsappModalClient(c)}
+                                    className="btn btn-sm rounded-circle p-0 d-flex align-items-center justify-content-center transition-all bg-white border"
+                                    style={{ 
+                                      width: '32px', 
+                                      height: '32px', 
+                                      borderColor: '#e2e8f0', 
+                                      color: '#16a34a' 
+                                    }}
+                                    title="مراسلة واتساب"
+                                  >
+                                    <i className="ti ti-brand-whatsapp fs-6"></i>
+                                  </button>
+                                </div>
+                              </td>
+                            </tr>
+                          ))
+                        )}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Sidebar Column (4 cols): Priority Alerts & Check-ins */}
+            <div className="col-lg-4 col-12">
+              <div className="d-flex flex-column gap-3">
+                
+                {/* 1. Priority Alerts Widget (Exact Aesthetic Twin of Weekly Widget) */}
+                <div className="card border-0 bg-white shadow-sm" style={{ borderRadius: '16px', border: '1px solid #e2e8f0' }}>
+                  <div className="card-body p-4">
+                    <div className="d-flex justify-content-between align-items-center mb-3">
+                      <h6 className="fw-bold text-dark mb-0 d-flex align-items-center gap-2" style={{ fontSize: '0.9rem' }}>
+                        <i className="ti ti-bell-ringing fs-5" style={{ color: '#dc2626' }}></i>
+                        <span>تنبيهات المتابعة المتأخرة</span>
+                      </h6>
+                      <span 
+                        className="badge rounded-pill small fw-bold px-2 py-1"
+                        style={{ background: '#fef2f2', color: '#dc2626', border: '1px solid #fee2e2' }}
+                      >
+                        {overdueClients.length} متأخرين
+                      </span>
+                    </div>
+
+                    {overdueClients.length === 0 ? (
+                      <div className="p-3 text-center bg-light rounded-3 text-muted small">
+                        <i className="ti ti-check text-success fs-5 d-block mb-1"></i>
+                        جميع المتدربين ملتزمون بالمتابعة!
+                      </div>
+                    ) : (
+                      <div className="p-3 rounded-3 border" style={{ background: '#fbfaff', borderColor: '#ede9fe' }}>
+                        <div className="d-flex justify-content-between align-items-center mb-2">
+                          <strong className="text-dark small">{overdueClients[0].full_name || `المتدرب ${overdueClients[0].client_code}`}</strong>
+                          <span className="badge bg-white text-danger border small">متأخر يومان</span>
                         </div>
+                        <small className="d-block text-muted mb-3" style={{ fontSize: '0.78rem' }}>
+                          آخر متابعة: <strong>منذ 9 أيام</strong> | الهاتف: <span className="font-monospace text-dark">{overdueClients[0].phone_number || '-'}</span>
+                        </small>
                         <button 
                           type="button"
-                          onClick={() => { setSelectedCheckin(chk); setCoachNotes(''); }}
-                          className="btn btn-primary btn-sm rounded-pill px-3 fw-bold shadow-sm"
+                          onClick={() => setWhatsappModalClient(overdueClients[0])}
+                          className="btn btn-sm w-100 rounded-pill fw-bold text-white shadow-sm d-flex align-items-center justify-content-center gap-2"
+                          style={{ 
+                            height: '38px',
+                            fontSize: '0.84rem',
+                            background: '#261c6a', 
+                            border: 'none',
+                            boxShadow: '0 4px 12px rgba(38, 28, 106, 0.25)'
+                          }}
                         >
-                          مراجعة واعتماد ✏️
+                          <i className="ti ti-brand-whatsapp fs-6 text-light"></i>
+                          <span>إرسال تذكير عبر واتساب</span>
                         </button>
                       </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </div>
-          )}
-
-          {/* Master Active Clients Table */}
-          <div className="card border-0 shadow-sm bg-white" style={{ borderRadius: '18px' }}>
-            <div className="card-body p-4">
-              <div className="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
-                <div>
-                  <h5 className="fw-bold text-dark mb-1">
-                    <i className="ti ti-users-group text-primary me-2"></i> قائمة المتدربين الشاملة في المنظومة
-                  </h5>
-                  <p className="text-muted small mb-0">إدارة الخطط، الحسابات، والمتابعات الفردية</p>
-                </div>
-                <Link to="/customers" className="btn btn-outline-primary btn-sm rounded-pill px-3 fw-bold">
-                  إدارة المشتركين والأكواد <i className="ti ti-arrow-left ms-1"></i>
-                </Link>
-              </div>
-
-              <div className="table-responsive">
-                <table className="table table-hover align-middle mb-0">
-                  <thead className="table-light">
-                    <tr>
-                      <th className="border-0 rounded-start">كود المشترك</th>
-                      <th className="border-0">اسم المتدرب</th>
-                      <th className="border-0">رقم الهاتف</th>
-                      <th className="border-0">الخطة الحالية</th>
-                      <th className="border-0">حالة الاشتراك</th>
-                      <th className="border-0 rounded-end text-center">إجراءات سريعة</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {loading ? (
-                      <tr>
-                        <td colSpan="6" className="text-center py-4">
-                          <div className="spinner-border text-primary" role="status"></div>
-                          <p className="mt-2 text-muted small">جاري تحميل بيانات المشتركين...</p>
-                        </td>
-                      </tr>
-                    ) : filteredClients.length === 0 ? (
-                      <tr>
-                        <td colSpan="6" className="text-center py-4 text-muted">
-                          لا يوجد متدربين مطابقين لبحثك.
-                        </td>
-                      </tr>
-                    ) : (
-                      filteredClients.map((c) => (
-                        <tr key={c.id}>
-                          <td>
-                            <span className="badge bg-light text-dark border fw-bold px-2 py-1">
-                              {c.client_code || `CLIENT-${c.id}`}
-                            </span>
-                          </td>
-                          <td>
-                            <div className="d-flex align-items-center gap-2">
-                              <div className="avatar-sm rounded-circle bg-primary-subtle text-primary d-flex align-items-center justify-content-center fw-bold" style={{ width: '34px', height: '34px', fontSize: '0.85rem' }}>
-                                {(c.full_name || 'U')[0]}
-                              </div>
-                              <span className="fw-bold text-dark">{c.full_name || 'متدرب جديد'}</span>
-                            </div>
-                          </td>
-                          <td>
-                            <span className="text-muted" dir="ltr">{c.phone_number || '-'}</span>
-                          </td>
-                          <td>
-                            <span className="badge bg-success-subtle text-success fw-bold">
-                              4 أيام Upper/Lower
-                            </span>
-                          </td>
-                          <td>
-                            <span className="badge bg-success text-white px-2 py-1 rounded-pill">
-                              نشط ⭐
-                            </span>
-                          </td>
-                          <td>
-                            <div className="d-flex align-items-center justify-content-center gap-1">
-                              <Link 
-                                to={`/user-dashboard?user_id=${c.client_code || c.id}`} 
-                                className="btn btn-sm btn-outline-primary rounded-pill px-2 py-1"
-                                title="عرض لوحة المتدرب"
-                              >
-                                <i className="ti ti-eye"></i> الخطة
-                              </Link>
-                              <Link 
-                                to={`/coach-editor?user_id=${c.client_code || c.id}`} 
-                                className="btn btn-sm btn-outline-secondary rounded-pill px-2 py-1"
-                                title="تعديل الخطة"
-                              >
-                                <i className="ti ti-edit"></i> تعديل
-                              </Link>
-                              <button 
-                                type="button"
-                                onClick={() => setWhatsappModalClient(c)}
-                                className="btn btn-sm btn-success rounded-pill px-2 py-1 text-white shadow-sm"
-                                title="إرسال واتساب"
-                              >
-                                <i className="ti ti-brand-whatsapp"></i>
-                              </button>
-                            </div>
-                          </td>
-                        </tr>
-                      ))
                     )}
-                  </tbody>
-                </table>
+                  </div>
+                </div>
+
+                {/* 2. Pending Check-in Review Widget (Exact Symmetric Dimensions) */}
+                <div className="card border-0 bg-white shadow-sm" style={{ borderRadius: '16px', border: '1px solid #e2e8f0' }}>
+                  <div className="card-body p-4">
+                    <div className="d-flex justify-content-between align-items-center mb-3">
+                      <h6 className="fw-bold text-dark mb-0 d-flex align-items-center gap-2" style={{ fontSize: '0.9rem' }}>
+                        <i className="ti ti-clipboard-check fs-5" style={{ color: '#261c6a' }}></i>
+                        <span>المتابعات الأسبوعية</span>
+                      </h6>
+                      <span 
+                        className="badge rounded-pill small fw-bold px-2 py-1"
+                        style={{ background: '#f5f3ff', color: '#261c6a', border: '1px solid #ddd6fe' }}
+                      >
+                        {checkins.length} معلقة
+                      </span>
+                    </div>
+
+                    {checkins.length === 0 ? (
+                      <div className="p-3 text-center bg-light rounded-3 text-muted small">
+                        <i className="ti ti-check text-success fs-5 d-block mb-1"></i>
+                        جميع المتابعات معتمدة ومحدثة!
+                      </div>
+                    ) : (
+                      <div className="p-3 rounded-3 border" style={{ background: '#fbfaff', borderColor: '#ede9fe' }}>
+                        <div className="d-flex justify-content-between align-items-center mb-2">
+                          <strong className="text-dark small">{checkins[0].full_name || checkins[0].client_code}</strong>
+                          <span className="badge bg-white text-dark border small">الأسبوع {checkins[0].week_number || 1}</span>
+                        </div>
+                        <small className="d-block text-muted mb-3" style={{ fontSize: '0.78rem' }}>
+                          متوسط الوزن: <strong>{checkins[0].average_weight || '84.4'} كجم</strong> | الالتزام: <strong>{checkins[0].adherence || '95'}%</strong>
+                        </small>
+                        <button 
+                          type="button"
+                          onClick={() => { setSelectedCheckin(checkins[0]); setCoachNotes(''); }}
+                          className="btn btn-sm w-100 rounded-pill fw-bold text-white shadow-sm d-flex align-items-center justify-content-center gap-2"
+                          style={{ 
+                            height: '38px',
+                            fontSize: '0.84rem',
+                            background: '#261c6a', 
+                            border: 'none',
+                            boxShadow: '0 4px 12px rgba(38, 28, 106, 0.25)'
+                          }}
+                        >
+                          <i className="ti ti-check fs-6 text-light"></i>
+                          <span>مراجعة واعتماد التكيف</span>
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                {/* 3. PR Milestones Widget */}
+                <div className="card border-0 bg-white shadow-sm" style={{ borderRadius: '16px', border: '1px solid #e2e8f0' }}>
+                  <div className="card-body p-4">
+                    <div className="d-flex justify-content-between align-items-center mb-2">
+                      <h6 className="fw-bold text-dark mb-0 d-flex align-items-center gap-2" style={{ fontSize: '0.9rem' }}>
+                        <i className="ti ti-trophy fs-5" style={{ color: '#261c6a' }}></i>
+                        <span>إنجازات قياسية (PRs)</span>
+                      </h6>
+                      <span className="badge bg-light text-secondary border px-2 py-1 rounded-pill small">اليوم</span>
+                    </div>
+                    <p className="small text-muted mb-2" style={{ fontSize: '0.82rem', lineHeight: '1.5' }}>
+                      <strong>أحمد سمير</strong> حقق رقماً قياسياً جديداً في <strong>السكوات (110 كجم × 8 عدات)</strong>!
+                    </p>
+                    <button 
+                      type="button"
+                      onClick={() => setWhatsappModalClient({ full_name: 'أحمد سمير', phone_number: '01012345678', client_code: 'CLIENT-1' })}
+                      className="btn btn-light btn-sm w-100 rounded-pill fw-semibold border"
+                      style={{ fontSize: '0.8rem', color: '#475569' }}
+                    >
+                      <i className="ti ti-brand-whatsapp text-success me-1"></i> إرسال تهنئة وتشجيع
+                    </button>
+                  </div>
+                </div>
+
               </div>
             </div>
+
           </div>
+
         </div>
       </div>
 
-      {/* Approve Check-in Modal */}
+      {/* WhatsApp Modal */}
+      <WhatsAppModal 
+        isOpen={!!whatsappModalClient}
+        onClose={() => setWhatsappModalClient(null)}
+        client={whatsappModalClient}
+        scenario="checkin_reminder"
+      />
+
+      {/* Approve Checkin Modal */}
       <ApproveCheckinModal 
         checkin={selectedCheckin}
         onClose={() => setSelectedCheckin(null)}
@@ -300,12 +422,6 @@ export default function DashboardClone() {
         setCoachNotes={setCoachNotes}
         onApprove={handleApproveCheckin}
         approving={approving}
-      />
-
-      {/* WhatsApp Hub Modal */}
-      <WhatsAppModal 
-        client={whatsappModalClient}
-        onClose={() => setWhatsappModalClient(null)}
       />
     </AdminLayout>
   );

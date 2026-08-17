@@ -70,12 +70,23 @@ export default function Customers() {
 
   const filteredClients = clients.filter(c => {
     if (!searchTerm.trim()) return true;
-    const t = searchTerm.trim().toLowerCase();
+    const raw = searchTerm.trim().toLowerCase();
+
+    // Smart # Prefix Search: Specifically and strictly target exact client code
+    if (raw.startsWith('#')) {
+      const codeQuery = raw.replace(/^#+/, '').trim();
+      if (!codeQuery) return true;
+      const displayedCode = String(c.client_code || c.id || '').trim().toLowerCase();
+      const cleanCode = displayedCode.replace(/^client[-_]?/i, '');
+      return displayedCode === codeQuery || cleanCode === codeQuery || displayedCode === `client-${codeQuery}`;
+    }
+
+    // Standard Universal Search
     const name = (c.full_name || '').toLowerCase();
     const phone = (c.phone_number || '').toLowerCase();
     const code = String(c.client_code || c.id).toLowerCase();
     const email = (c.email || '').toLowerCase();
-    return name.includes(t) || phone.includes(t) || code.includes(t) || email.includes(t);
+    return name.includes(raw) || phone.includes(raw) || code.includes(raw) || email.includes(raw);
   });
 
   return (

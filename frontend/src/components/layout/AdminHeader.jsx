@@ -1,45 +1,234 @@
-import React from 'react';
-import { Link } from 'react-router-dom';
+import React, { useState, useEffect, useRef } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 import NotificationsDropdown from '../NotificationsDropdown';
+import NewClientQuickModal from '../modals/NewClientQuickModal';
 
-export default function AdminHeader({ searchTerm, onSearchChange, searchPlaceholder = "بحث عن متدرب بالاسم، الهاتف أو كود المشترك..." }) {
+export default function AdminHeader({ searchTerm, onSearchChange, searchPlaceholder = "بحث بالاسم، الهاتف، أو اكتب #كود المشترك (مثل #4)..." }) {
+  const [isNewClientModalOpen, setIsNewClientModalOpen] = useState(false);
+  const [isProfileDropdownOpen, setIsProfileDropdownOpen] = useState(false);
+  const dropdownRef = useRef(null);
+  const searchInputRef = useRef(null);
+  const navigate = useNavigate();
+
+  // Global Shortcut Listener for Search Focus: Ctrl+1, Ctrl+*, or Ctrl+K
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if (e.ctrlKey || e.metaKey) {
+        if (
+          e.key === '1' || 
+          e.key === '*' || 
+          e.key === 'k' || 
+          e.key === 'K' || 
+          e.code === 'Digit1' || 
+          e.code === 'Numpad1' || 
+          e.code === 'NumpadMultiply' || 
+          e.code === 'KeyK'
+        ) {
+          e.preventDefault();
+          if (searchInputRef.current) {
+            searchInputRef.current.focus();
+            searchInputRef.current.select();
+          }
+        }
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, []);
+
+  // Close dropdown on outside click
+  useEffect(() => {
+    const handleClickOutside = (e) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(e.target)) {
+        setIsProfileDropdownOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  const handleLogout = () => {
+    localStorage.removeItem('z_coach_token');
+    localStorage.removeItem('z_coach_user');
+    setIsProfileDropdownOpen(false);
+    navigate('/client/login');
+  };
+
   return (
-    <header className="codex-header">
-      <div className="header-contian d-flex justify-content-between align-items-center">
-        {/* Left Side: Search Bar */}
-        <div className="header-left d-flex align-items-center flex-grow-1">
-          <div className="input-group search-bar-wrapper" style={{ maxWidth: '440px' }}>
-            <span className="input-group-text bg-light border-0 ps-3">
-              <i className="ti ti-search text-muted"></i>
-            </span>
-            <input
-              type="text"
-              className="form-control bg-light border-0 py-2 pe-3"
-              placeholder={searchPlaceholder}
-              style={{ fontSize: '0.86rem' }}
-              value={searchTerm !== undefined ? searchTerm : ''}
-              onChange={(e) => onSearchChange && onSearchChange(e.target.value)}
-            />
-          </div>
-        </div>
-
-        {/* Right Side: Quick Action & Avatar */}
-        <div className="header-right d-flex align-items-center justify-content-end gap-3 pe-2">
-          <NotificationsDropdown />
-
-          <Link to="/intake/form" className="btn btn-primary btn-sm rounded-pill px-3 py-2 fw-bold shadow-sm">
-            <i className="ti ti-user-plus me-1"></i> تسجيل متدرب جديد
-          </Link>
-
-          <div className="d-flex align-items-center gap-2 py-1 px-3 bg-light rounded-pill border ms-2">
-            <img className="img-fluid rounded-circle border" src="/admin-dashboard_data/logo/z_coaching_logo.jpg" alt="Coach Logo" width="36" height="36" />
-            <div className="d-none d-md-block text-end pe-1">
-              <span className="fw-bold d-block text-dark lh-1" style={{ fontSize: '0.9rem' }}>لوحة تحكم المدرب</span>
-              <small className="text-muted" style={{ fontSize: '0.72rem' }}>Master Coach 👑</small>
+    <>
+      <header className="codex-header" style={{ zIndex: 1010 }}>
+        <div className="header-contian d-flex justify-content-between align-items-center">
+          
+          {/* Right Side in RTL: Global Search Input */}
+          <div className="header-left d-flex align-items-center flex-grow-1">
+            <div className="input-group search-bar-wrapper position-relative" style={{ maxWidth: '440px' }}>
+              <span className="input-group-text bg-light border-0 ps-3">
+                <i className="ti ti-search text-muted"></i>
+              </span>
+              <input
+                ref={searchInputRef}
+                type="text"
+                className="form-control bg-light border-0 py-2 ps-5 pe-2"
+                placeholder={searchPlaceholder}
+                style={{ fontSize: '0.86rem' }}
+                value={searchTerm !== undefined ? searchTerm : ''}
+                onChange={(e) => onSearchChange && onSearchChange(e.target.value)}
+              />
+              {/* Shortcut badge on the LEFT in RTL */}
+              <span 
+                className="position-absolute start-0 top-50 translate-middle-y ms-3 badge bg-white border text-muted px-2 py-1 font-monospace d-none d-sm-inline-block shadow-xs"
+                style={{ fontSize: '0.68rem', borderRadius: '6px', pointerEvents: 'none', zIndex: 5 }}
+                title="اضغط Ctrl + 1 أو Ctrl + * للبحث الفوري"
+              >
+                Ctrl 1
+              </span>
             </div>
           </div>
+
+          {/* Left Side in RTL: Manzuma Deep Midnight Violet Action + Notifications + Profile */}
+          <div className="header-right d-flex align-items-center justify-content-end gap-2" style={{ paddingLeft: '24px', paddingRight: '8px' }}>
+            
+            {/* Quick Action: New Client Button (Manzuma Midnight Violet #261c6a) */}
+            <button 
+              type="button"
+              onClick={() => setIsNewClientModalOpen(true)}
+              className="btn btn-sm rounded-pill px-3 py-1 fw-bold shadow-sm d-flex align-items-center gap-1 text-white" 
+              style={{ 
+                height: '34px',
+                background: '#261c6a', 
+                border: 'none',
+                fontSize: '0.8rem',
+                boxShadow: '0 3px 10px rgba(38, 28, 106, 0.28)',
+                transition: 'all 0.2s ease'
+              }}
+            >
+              <i className="ti ti-plus fs-6"></i>
+              <span>عميل جديد</span>
+            </button>
+
+            {/* Notifications Dropdown */}
+            <NotificationsDropdown />
+
+            {/* Clickable Coach Profile Dropdown */}
+            <div className="position-relative" ref={dropdownRef}>
+              <div 
+                onClick={() => setIsProfileDropdownOpen(!isProfileDropdownOpen)}
+                className="d-flex align-items-center gap-2 py-1 px-2 bg-light rounded-pill border"
+                style={{ 
+                  height: '34px',
+                  cursor: 'pointer',
+                  transition: 'all 0.2s ease',
+                  userSelect: 'none',
+                  background: isProfileDropdownOpen ? '#faf5ff' : '#f8fafc',
+                  borderColor: isProfileDropdownOpen ? '#ddd6fe' : '#e2e8f0'
+                }}
+                role="button"
+                tabIndex={0}
+              >
+                <div 
+                  className="rounded-circle d-flex align-items-center justify-content-center text-white fw-bold shadow-xs" 
+                  style={{ 
+                    width: '26px', 
+                    height: '26px', 
+                    background: '#261c6a',
+                    fontSize: '0.76rem'
+                  }}
+                >
+                  Z
+                </div>
+                <div className="d-none d-md-block text-end pe-1">
+                  <span className="fw-bold d-block text-dark lh-1" style={{ fontSize: '0.8rem' }}>كابتن كيمو</span>
+                  <small className="text-muted" style={{ fontSize: '0.66rem' }}>Master Coach</small>
+                </div>
+                <i 
+                  className={`ti ti-chevron-down text-muted small ms-1 transition-transform ${isProfileDropdownOpen ? 'rotate-180' : ''}`}
+                  style={{ fontSize: '0.7rem', transition: 'transform 0.2s ease' }}
+                ></i>
+              </div>
+
+              {/* Profile Dropdown Menu */}
+              {isProfileDropdownOpen && (
+                <div 
+                  className="dropdown-menu show shadow-lg border-0 py-2 mt-2"
+                  style={{ 
+                    position: 'absolute',
+                    top: '100%',
+                    left: 0,
+                    minWidth: '240px',
+                    borderRadius: '16px',
+                    zIndex: 1050,
+                    background: '#ffffff',
+                    border: '1px solid #f1f5f9',
+                    boxShadow: '0 10px 30px rgba(0, 0, 0, 0.12)'
+                  }}
+                  dir="rtl"
+                >
+                  <div className="px-3 py-2 border-bottom border-light mb-1">
+                    <strong className="d-block text-dark small">كابتن كيمو المحروقي</strong>
+                    <small className="text-muted" style={{ fontSize: '0.74rem' }}>coach@zcoaching.com</small>
+                  </div>
+
+                  <Link 
+                    to="/profile" 
+                    className="dropdown-item d-flex align-items-center gap-2 py-2 px-3 text-dark small"
+                    onClick={() => setIsProfileDropdownOpen(false)}
+                  >
+                    <i className="ti ti-user-circle fs-5" style={{ color: '#261c6a' }}></i>
+                    <span>الملف الشخصي وإعدادات الحساب</span>
+                  </Link>
+
+                  <Link 
+                    to="/profile" 
+                    className="dropdown-item d-flex align-items-center gap-2 py-2 px-3 text-dark small"
+                    onClick={() => setIsProfileDropdownOpen(false)}
+                  >
+                    <i className="ti ti-palette fs-5 text-secondary"></i>
+                    <span>هوية المدرب والشعار</span>
+                  </Link>
+
+                  <Link 
+                    to="/subscriptions" 
+                    className="dropdown-item d-flex align-items-center gap-2 py-2 px-3 text-dark small"
+                    onClick={() => setIsProfileDropdownOpen(false)}
+                  >
+                    <i className="ti ti-credit-card fs-5 text-secondary"></i>
+                    <span>الاشتراكات والمالية</span>
+                  </Link>
+
+                  <div className="dropdown-divider my-1"></div>
+
+                  <Link 
+                    to="/user-dashboard" 
+                    className="dropdown-item d-flex align-items-center gap-2 py-2 px-3 text-dark small"
+                    onClick={() => setIsProfileDropdownOpen(false)}
+                  >
+                    <i className="ti ti-arrows-exchange fs-5" style={{ color: '#261c6a' }}></i>
+                    <span>التبديل إلى بوابة العميل</span>
+                  </Link>
+
+                  <div className="dropdown-divider my-1"></div>
+
+                  <button 
+                    type="button"
+                    onClick={handleLogout}
+                    className="dropdown-item d-flex align-items-center gap-2 py-2 px-3 text-danger small w-100 border-0 bg-transparent"
+                  >
+                    <i className="ti ti-logout fs-5"></i>
+                    <span>تسجيل الخروج</span>
+                  </button>
+                </div>
+              )}
+            </div>
+
+          </div>
         </div>
-      </div>
-    </header>
+      </header>
+
+      {/* New Client Modal */}
+      <NewClientQuickModal 
+        isOpen={isNewClientModalOpen}
+        onClose={() => setIsNewClientModalOpen(false)}
+      />
+    </>
   );
 }

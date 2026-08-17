@@ -37,10 +37,10 @@ export default function ProgramPdfView() {
 
   if (loading) {
     return (
-      <div className="d-flex align-items-center justify-content-center" style={{ minHeight: '100vh', fontFamily: 'Cairo, sans-serif' }} dir="rtl">
+      <div className="d-flex align-items-center justify-content-center min-vh-100" dir="rtl">
         <div className="text-center">
           <div className="spinner-border text-primary" role="status"></div>
-          <p className="text-muted mt-2">جاري تجهيز وثيقة الخطة التدريبية والغذائية...</p>
+          <p className="text-muted mt-2 small">جاري إعداد وثيقة الـ PDF المضغوطة المعتمدة...</p>
         </div>
       </div>
     );
@@ -65,213 +65,260 @@ export default function ProgramPdfView() {
   const defaultMeals = [
     {
       meal_number: 1,
-      name: "وجبة الإفطار",
+      meal_label: "الوجبة 1 (الإفطار)",
       foods: [
-        { name_ar: "بيض مسلوق كامل", portion_g_rounded: 150 },
-        { name_ar: "شوفان مطبوخ بالماء", portion_g_rounded: 80 }
+        { name_ar: "بيض مسلوق كامل", portion_g_rounded: 150, serving_display_ar: "3 بيضات كاملة" },
+        { name_ar: "شوفان مطبوخ", portion_g_rounded: 80, serving_display_ar: "80 جرام قبل الطهي" }
       ]
     },
     {
       meal_number: 2,
-      name: "وجبة الغداء",
+      meal_label: "الوجبة 2 (الغداء)",
       foods: [
-        { name_ar: "صدور دجاج مشوية", portion_g_rounded: 200 },
-        { name_ar: "أرز أبيض مطبوخ", portion_g_rounded: 220 },
-        { name_ar: "سلطة خضراء بزيت زيتون", portion_g_rounded: 150 }
+        { name_ar: "صدور دجاج مشوية", portion_g_rounded: 200, serving_display_ar: "200 جرام وزن مطبوخ" },
+        { name_ar: "أرز أبيض مطبوخ", portion_g_rounded: 220, serving_display_ar: "كوب ونصف مطبوخ" },
+        { name_ar: "سلطة خضراء مع زيت زيتون", portion_g_rounded: 150, serving_display_ar: "طبق متوسط + ملعقة زيت" }
       ]
     },
     {
       meal_number: 3,
-      name: "وجبة العشاء",
+      meal_label: "الوجبة 3 (العشاء)",
       foods: [
-        { name_ar: "جبنة قريش", portion_g_rounded: 200 },
-        { name_ar: "خبز أسمر / بلدي", portion_g_rounded: 100 }
+        { name_ar: "جبنة قريش", portion_g_rounded: 200, serving_display_ar: "قطعة كبيرة 200 جرام" },
+        { name_ar: "خبز بلدي / أسمر", portion_g_rounded: 100, serving_display_ar: "رغيف بلدي متوسط" }
       ]
     }
   ];
 
   const meals = 
     (program?.nutrition_program?.quantized_plan?.meals && program.nutrition_program.quantized_plan.meals.length > 0)
-      ? program.nutrition_program.quantized_plan.meals 
-      : defaultMeals;
+    ? program.nutrition_program.quantized_plan.meals 
+    : defaultMeals;
+
+  const cardio = program?.cardio_program;
+  const clientName = user?.full_name || "أحمد سمير";
+  const clientCode = user?.client_code || targetUserId;
+  const coachNotes = program?.coach_notes || "التزم بشرب الماء، والنوم 8 ساعات، وسجل أوزان التمارين أسبوعياً لتفعيل التكيف الذكي.";
+
+  // Helper to build YouTube search link for any exercise
+  const getExerciseVideoUrl = (ex) => {
+    const query = encodeURIComponent(`${ex.name_ar || getArabicExerciseName(ex.exercise_code)} ${ex.name_en || ex.exercise_code} form technique`);
+    return `https://www.youtube.com/results?search_query=${query}`;
+  };
 
   return (
-    <div className="bg-light py-4" style={{ minHeight: '100vh', fontFamily: 'Cairo, Tajawal, sans-serif' }} dir="rtl">
+    <div className="pdf-view-wrapper bg-secondary bg-opacity-10 py-4" dir="rtl" style={{ minHeight: '100vh', fontFamily: 'Cairo, Tajawal, sans-serif' }}>
       
-      {/* Floating Control Bar (Hidden on Print) */}
-      <div className="container d-print-none mb-4" style={{ maxWidth: '900px' }}>
-        <div className="card border-0 shadow-sm p-3 rounded-4 bg-white d-flex flex-row align-items-center justify-content-between">
+      {/* Top Floating Print Controller (Hidden in Print) */}
+      <div className="container d-print-none mb-3" style={{ maxWidth: '850px' }}>
+        <div className="card border-0 shadow-sm p-3 bg-white d-flex flex-row justify-content-between align-items-center rounded-4">
           <div className="d-flex align-items-center gap-2">
-            <Link to="/" className="btn btn-outline-secondary btn-sm rounded-pill px-3">
-              <i className="ti ti-arrow-right me-1"></i> لوحة التحكم
+            <Link to={`/coach/editor?user_id=${targetUserId}`} className="btn btn-outline-secondary btn-sm rounded-pill px-3">
+              <i className="ti ti-arrow-right me-1"></i> العودة للمحرر
             </Link>
-            <Link to={`/user-dashboard?user_id=${targetUserId}`} className="btn btn-light btn-sm rounded-pill px-3 border">
-              واجهة المتدرب
-            </Link>
+            <span className="fw-bold text-dark" style={{ fontSize: '0.92rem' }}>
+              معاينة الخطة المعتمدة — {clientName} ({clientCode})
+            </span>
           </div>
           <button 
+            type="button"
             onClick={handlePrint}
-            className="btn btn-primary rounded-pill px-4 fw-bold shadow-sm"
+            className="btn btn-primary btn-sm rounded-pill px-4 fw-bold shadow-sm"
+            style={{ background: 'linear-gradient(135deg, #0ea5e9 0%, #0284c7 100%)', border: 'none' }}
           >
-            <i className="ti ti-printer me-1"></i> طباعة / حفظ كملف PDF 📄
+            <i className="ti ti-printer me-1"></i> طباعة / حفظ PDF صفحتين
           </button>
         </div>
       </div>
 
-      {/* PDF Document Container (A4 Formatted) */}
-      <div className="container bg-white shadow-sm p-5 rounded-4" style={{ maxWidth: '900px', minHeight: '1100px', border: '1px solid #e2e8f0' }}>
+      {/* Print Document Container */}
+      <div className="pdf-document mx-auto" style={{ maxWidth: '820px' }}>
         
-        {/* 1. Header & Branding */}
-        <div className="d-flex justify-content-between align-items-center pb-4 border-bottom mb-4">
-          <div className="d-flex align-items-center gap-3">
-            <img src="/admin-dashboard_data/logo/z_coaching_logo.jpg" alt="Z Coaching Logo" width="52" height="52" className="rounded-3 shadow-sm" />
-            <div>
-              <h4 className="fw-bold text-primary mb-0">Z Coaching</h4>
-              <small className="text-muted">المنظومة التدريبية والغذائية المخصصة (Z-Engine V2.0)</small>
+        {/* ================= PAGE 1: NUTRITION & LIFESTYLE ================= */}
+        <div className="pdf-page bg-white p-4 mb-4 shadow-sm rounded-4 position-relative" style={{ minHeight: '1100px' }}>
+          
+          {/* Header */}
+          <div className="d-flex justify-content-between align-items-center border-bottom pb-3 mb-3">
+            <div className="d-flex align-items-center gap-3">
+              <img src="/admin-dashboard_data/logo/z_clean_symbol.jpg?v=2" alt="Z Logo" style={{ width: '56px', height: '56px', objectFit: 'contain' }} />
+              <div>
+                <h4 className="fw-black mb-0 text-dark" style={{ letterSpacing: '1px' }}>Z COACHING</h4>
+                <small className="text-muted fw-semibold" style={{ fontSize: '0.74rem' }}>وثيقة الخطة الغذائية ونمط الحياة المعتمدة</small>
+              </div>
+            </div>
+            <div className="text-end">
+              <div className="fw-bold text-dark" style={{ fontSize: '0.94rem' }}>{clientName}</div>
+              <small className="text-muted">كود: <span className="font-monospace fw-bold text-primary">{clientCode}</span> | التاريخ: {new Date().toLocaleDateString('ar-EG')}</small>
             </div>
           </div>
-          <div className="text-end">
-            <div className="badge bg-primary px-3 py-2 fs-6 rounded-pill">
-              كود العميل: {user?.client_code || targetUserId}
-            </div>
-            <div className="fw-bold text-dark mt-1" style={{ fontSize: '1.1rem' }}>{user?.full_name || 'المتدرب'}</div>
-            <small className="text-muted">{new Date().toLocaleDateString('ar-EG', { year: 'numeric', month: 'long', day: 'numeric' })}</small>
-          </div>
-        </div>
 
-        {/* 2. Coach Direct Notes (If Available) */}
-        {program?.coach_notes && (
-          <div className="p-3 mb-4 rounded-3" style={{ backgroundColor: '#ecfdf5', borderRight: '4px solid #10b981' }}>
-            <div className="fw-bold text-success mb-1" style={{ fontSize: '0.95rem' }}>
-              <i className="ti ti-crown me-1"></i> توجيهات وملاحظات الكابتن المباشرة:
-            </div>
-            <p className="mb-0 text-dark fw-semibold" style={{ fontSize: '0.92rem', lineHeight: '1.7' }}>
-              {program.coach_notes}
-            </p>
-          </div>
-        )}
-
-        {/* 3. Daily Energy & Target Macros Box */}
-        <div className="mb-4">
-          <h5 className="fw-bold text-dark mb-3">
-            <i className="ti ti-bolt text-primary me-2"></i> 1. أهداف الطاقة والماكروز اليومية
-          </h5>
-          <div className="row g-3 text-center">
-            <div className="col-3">
-              <div className="p-3 bg-light rounded-3 border">
-                <div className="text-muted small mb-1">السعرات المستهدفة</div>
-                <h4 className="fw-bold text-primary mb-0">{calories}</h4>
-                <small className="text-muted">سعرة حرارية</small>
+          {/* Daily Macros Target Bar */}
+          <div className="p-3 rounded-4 mb-3" style={{ background: 'linear-gradient(135deg, #0f172a 0%, #1e293b 100%)', color: '#fff' }}>
+            <div className="d-flex justify-content-between align-items-center text-center">
+              <div>
+                <small className="text-white-50 d-block" style={{ fontSize: '0.75rem' }}>السعرات اليومية</small>
+                <span className="fw-bold fs-5 text-warning">{calories}</span> <small className="text-white-50">kcal</small>
               </div>
-            </div>
-            <div className="col-3">
-              <div className="p-3 bg-light rounded-3 border">
-                <div className="text-muted small mb-1">البروتين</div>
-                <h4 className="fw-bold text-danger mb-0">{protein}g</h4>
-                <small className="text-muted">جرام يومياً</small>
+              <div className="border-end border-secondary border-opacity-50 ps-3"></div>
+              <div>
+                <small className="text-white-50 d-block" style={{ fontSize: '0.75rem' }}>البروتين</small>
+                <span className="fw-bold fs-5 text-info">{protein}</span> <small className="text-white-50">جم</small>
               </div>
-            </div>
-            <div className="col-3">
-              <div className="p-3 bg-light rounded-3 border">
-                <div className="text-muted small mb-1">الكاربوهيدرات</div>
-                <h4 className="fw-bold text-info mb-0">{carbs}g</h4>
-                <small className="text-muted">جرام يومياً</small>
+              <div className="border-end border-secondary border-opacity-50 ps-3"></div>
+              <div>
+                <small className="text-white-50 d-block" style={{ fontSize: '0.75rem' }}>الكاربوهيدرات</small>
+                <span className="fw-bold fs-5 text-success">{carbs}</span> <small className="text-white-50">جم</small>
               </div>
-            </div>
-            <div className="col-3">
-              <div className="p-3 bg-light rounded-3 border">
-                <div className="text-muted small mb-1">الدهون الصحية</div>
-                <h4 className="fw-bold text-warning mb-0">{fats}g</h4>
-                <small className="text-muted">جرام يومياً</small>
+              <div className="border-end border-secondary border-opacity-50 ps-3"></div>
+              <div>
+                <small className="text-white-50 d-block" style={{ fontSize: '0.75rem' }}>الدهون الصحية</small>
+                <span className="fw-bold fs-5 text-danger">{fats}</span> <small className="text-white-50">جم</small>
+              </div>
+              <div className="border-end border-secondary border-opacity-50 ps-3"></div>
+              <div>
+                <small className="text-white-50 d-block" style={{ fontSize: '0.75rem' }}>الماء اليومي</small>
+                <span className="fw-bold fs-5 text-primary">3.5</span> <small className="text-white-50">لتر</small>
               </div>
             </div>
           </div>
-        </div>
 
-        {/* 4. Daily Nutrition Plan */}
-        <div className="mb-5">
-          <h5 className="fw-bold text-dark mb-3">
-            <i className="ti ti-salad text-success me-2"></i> 2. خطة الوجبات المكممة
-          </h5>
-          <div className="row g-3">
+          {/* Meals Schedule Table */}
+          <h6 className="fw-bold text-dark mb-2 pb-1 border-bottom" style={{ fontSize: '0.92rem' }}>
+            <i className="ti ti-salad text-success me-1"></i> جدول الوجبات والبدائل المرنة (Flexible Meal Plan)
+          </h6>
+
+          <div className="row g-2 mb-3">
             {meals.map((meal, mIdx) => (
-              <div className="col-md-4" key={mIdx}>
-                <div className="card border h-100 rounded-3 overflow-hidden">
-                  <div className="bg-light p-2 px-3 border-bottom d-flex justify-content-between align-items-center">
-                    <strong className="text-dark" style={{ fontSize: '0.9rem' }}>
-                      {meal.name || `الوجبة ${meal.meal_number || (mIdx + 1)}`}
-                    </strong>
-                    <span className="badge bg-white text-primary border" style={{ fontSize: '0.75rem' }}>
-                      {meal.foods?.length || 0} أصناف
+              <div key={mIdx} className="col-12">
+                <div className="p-2 border rounded-3 bg-light bg-opacity-50">
+                  <div className="d-flex justify-content-between align-items-center mb-1">
+                    <span className="badge bg-primary px-2 py-1" style={{ fontSize: '0.75rem' }}>
+                      {meal.meal_label || `الوجبة ${mIdx + 1}`}
                     </span>
+                    <small className="text-muted" style={{ fontSize: '0.72rem' }}>موزونة قبل أو بعد الطهي حسب الصنف</small>
                   </div>
-                  <div className="p-3">
-                    <ul className="list-unstyled mb-0 d-flex flex-column gap-2">
-                      {meal.foods?.map((f, fIdx) => (
-                        <li key={fIdx} className="d-flex justify-content-between align-items-center small pb-1 border-bottom border-light">
-                          <span className="fw-semibold text-dark">{f.name_ar || f.name_en || 'صنف'}</span>
-                          <span className="badge bg-light text-primary border fw-bold">
-                            {f.portion_g_rounded || f.grams || 100} جم
-                          </span>
-                        </li>
-                      ))}
-                    </ul>
+                  <div className="d-flex flex-wrap gap-2">
+                    {meal.foods?.map((food, fIdx) => (
+                      <div key={fIdx} className="bg-white border rounded px-2 py-1 small d-flex align-items-center gap-1" style={{ fontSize: '0.8rem' }}>
+                        <span className="fw-semibold text-dark">{food.name_ar || food.food_code}</span>
+                        <span className="badge bg-light text-muted border">{food.serving_display_ar || `${food.portion_g_rounded || food.grams || 100} جرام`}</span>
+                      </div>
+                    ))}
                   </div>
                 </div>
               </div>
             ))}
           </div>
+
+          {/* Daily Supplements Protocol */}
+          <h6 className="fw-bold text-dark mb-2 pb-1 border-bottom" style={{ fontSize: '0.92rem' }}>
+            <i className="ti ti-pill text-primary me-1"></i> بروتوكول المكملات الغذائية (Supplements Protocol)
+          </h6>
+          <div className="row g-2 mb-3">
+            <div className="col-4">
+              <div className="p-2 bg-light rounded-3 border text-center">
+                <span className="fw-bold d-block text-dark small">كرياتين مونوهيدرات</span>
+                <small className="text-muted" style={{ fontSize: '0.74rem' }}>5 جرام يومياً بعد التمرين مع ماء كافي</small>
+              </div>
+            </div>
+            <div className="col-4">
+              <div className="p-2 bg-light rounded-3 border text-center">
+                <span className="fw-bold d-block text-dark small">واي بروتين (Whey)</span>
+                <small className="text-muted" style={{ fontSize: '0.74rem' }}>سكوب واحد (30 جم) عند الحاجة بعد التمرين</small>
+              </div>
+            </div>
+            <div className="col-4">
+              <div className="p-2 bg-light rounded-3 border text-center">
+                <span className="fw-bold d-block text-dark small">أوميجا 3 وفيتامين D3</span>
+                <small className="text-muted" style={{ fontSize: '0.74rem' }}>كبسولة واحدة صباحاً مع وجبة الإفطار</small>
+              </div>
+            </div>
+          </div>
+
+          {/* Coach Custom Directives */}
+          <div className="p-3 bg-primary bg-opacity-10 border border-primary-subtle rounded-3 mb-2">
+            <h6 className="fw-bold text-primary mb-1" style={{ fontSize: '0.85rem' }}>
+              <i className="ti ti-notes me-1"></i> توجيهات الكابتن للمرحلة الأولى:
+            </h6>
+            <p className="mb-0 text-dark small" style={{ lineHeight: '1.6', fontSize: '0.82rem' }}>
+              {coachNotes}
+            </p>
+          </div>
+
+          {/* Footer Page 1 */}
+          <div className="d-flex justify-content-between align-items-center pt-2 mt-auto border-top text-muted" style={{ fontSize: '0.72rem' }}>
+            <span>منظومة Z Coaching V2.0 — صفحة 1 من 2</span>
+            <span>اعتماد الكابتن: كيمو المحروقي</span>
+          </div>
         </div>
 
-        {/* 5. Weekly Workout Program */}
-        <div className="mb-4">
-          <h5 className="fw-bold text-dark mb-3">
-            <i className="ti ti-barbell text-primary me-2"></i> 3. جدول تمارين الميزوسايكل الأسبوعي
-          </h5>
+        {/* ================= PAGE 2: WORKOUT & CARDIO ================= */}
+        <div className="pdf-page bg-white p-4 mb-4 shadow-sm rounded-4 position-relative" style={{ minHeight: '1100px' }}>
+          
+          {/* Header */}
+          <div className="d-flex justify-content-between align-items-center border-bottom pb-3 mb-3">
+            <div className="d-flex align-items-center gap-3">
+              <img src="/admin-dashboard_data/logo/z_clean_symbol.jpg?v=2" alt="Z Logo" style={{ width: '56px', height: '56px', objectFit: 'contain' }} />
+              <div>
+                <h4 className="fw-black mb-0 text-dark" style={{ letterSpacing: '1px' }}>Z COACHING</h4>
+                <small className="text-muted fw-semibold" style={{ fontSize: '0.74rem' }}>وثيقة الخطة التدريبية والكارديو (اضغط على اسم التمرين لمشاهدة فيديو التكنيك)</small>
+              </div>
+            </div>
+            <div className="text-end">
+              <div className="fw-bold text-dark" style={{ fontSize: '0.94rem' }}>{clientName}</div>
+              <small className="text-muted">الجدول التدريبي المعتمد | صفحة 2 من 2</small>
+            </div>
+          </div>
 
-          {sessions.map((sess, sIdx) => {
-            const exList = sess.exercises || [];
-            return (
-              <div key={sIdx} className="mb-4">
-                <div className="p-2 px-3 bg-light rounded-3 border d-flex justify-content-between align-items-center mb-2">
-                  <strong className="text-dark" style={{ fontSize: '0.95rem' }}>
-                    🏋️ {sess.session_name || sess.session_code || `جلسة تدريب ${sIdx + 1}`}
-                  </strong>
-                  <span className="badge bg-primary text-white">
-                    {exList.length} تمارين
-                  </span>
-                </div>
+          {/* Workout Sessions */}
+          <div className="row g-2 mb-3">
+            {sessions.map((sess, sIdx) => (
+              <div key={sIdx} className="col-md-6 col-12">
+                <div className="card border rounded-3 p-2 h-100 bg-light bg-opacity-25">
+                  <div className="d-flex justify-content-between align-items-center mb-2 pb-1 border-bottom">
+                    <span className="fw-bold text-dark" style={{ fontSize: '0.84rem' }}>
+                      {sess.day_label || `اليوم ${sIdx + 1}`}: {sess.session_code}
+                    </span>
+                    <span className="badge bg-secondary-subtle text-dark" style={{ fontSize: '0.7rem' }}>
+                      {sess.exercises?.length || 0} تمارين
+                    </span>
+                  </div>
 
-                <div className="table-responsive">
-                  <table className="table table-bordered table-sm align-middle mb-0" style={{ fontSize: '0.88rem' }}>
-                    <thead className="table-light">
-                      <tr>
-                        <th style={{ width: '45%' }}>التمرين</th>
-                        <th className="text-center" style={{ width: '15%' }}>المجموعات</th>
-                        <th className="text-center" style={{ width: '15%' }}>التكرارات</th>
-                        <th className="text-center" style={{ width: '15%' }}>الراحة</th>
-                        <th className="text-center" style={{ width: '10%' }}>RIR</th>
+                  <table className="table table-sm table-borderless mb-0 align-middle" style={{ fontSize: '0.76rem' }}>
+                    <thead>
+                      <tr className="text-muted border-bottom" style={{ fontSize: '0.7rem' }}>
+                        <th>التمرين (رابط الفيديو)</th>
+                        <th className="text-center">المجموعات</th>
+                        <th className="text-center">العدات</th>
+                        <th className="text-center">الراحة</th>
                       </tr>
                     </thead>
                     <tbody>
-                      {exList.map((ex, exIdx) => {
-                        const sets = ex.prescription?.sets || ex.sets || 3;
-                        const reps = ex.prescription?.target_min || ex.reps || 10;
-                        const rest = ex.prescription?.rest_seconds || ex.rest_seconds || 90;
-                        const rir = ex.prescription?.target_rir !== undefined 
-                          ? ex.prescription.target_rir 
-                          : (ex.rir !== undefined ? ex.rir : 2);
+                      {sess.exercises?.map((ex, exIdx) => {
+                        const arName = ex.name_ar || getArabicExerciseName(ex.exercise_code);
+                        const videoUrl = getExerciseVideoUrl(ex);
+                        const sets = ex.prescription?.sets || 3;
+                        const minReps = ex.prescription?.target_min || 8;
+                        const maxReps = ex.prescription?.target_max || 12;
+                        const rest = ex.prescription?.rest_seconds || 90;
 
                         return (
-                          <tr key={exIdx}>
-                            <td>
-                              <div className="fw-bold text-dark">{ex.name_en || ex.exercise_code?.replace(/_/g, ' ')}</div>
-                              <small className="text-muted">{getArabicExerciseName(ex)}</small>
+                          <tr key={exIdx} className="border-bottom border-light">
+                            <td className="py-1">
+                              <a 
+                                href={videoUrl} 
+                                target="_blank" 
+                                rel="noreferrer" 
+                                className="text-primary fw-bold text-decoration-none d-inline-flex align-items-center gap-1"
+                                title="اضغط لمشاهدة فيديو التكنيك والأداء الصحيح على يوتيوب"
+                              >
+                                <span>{arName}</span>
+                                <i className="ti ti-video text-danger" style={{ fontSize: '0.75rem' }}></i>
+                              </a>
                             </td>
-                            <td className="text-center fw-bold">{sets}</td>
-                            <td className="text-center fw-bold">{reps}</td>
-                            <td className="text-center text-muted">{rest} ثانية</td>
-                            <td className="text-center fw-bold text-primary">{rir}</td>
+                            <td className="text-center py-1 fw-bold">{sets}</td>
+                            <td className="text-center py-1">{minReps}-{maxReps}</td>
+                            <td className="text-center py-1 text-muted">{rest}ث</td>
                           </tr>
                         );
                       })}
@@ -279,69 +326,69 @@ export default function ProgramPdfView() {
                   </table>
                 </div>
               </div>
-            );
-          })}
-        </div>
-
-        {/* 6. Supplements Protocol */}
-        <div className="mb-4">
-          <h5 className="fw-bold text-dark mb-3">
-            <i className="ti ti-pill text-primary me-2"></i> 4. بروتوكول المكملات الغذائية والجرعات المعتمدة
-          </h5>
-          <div className="table-responsive">
-            <table className="table table-bordered table-sm align-middle mb-0" style={{ fontSize: '0.88rem' }}>
-              <thead className="table-light">
-                <tr>
-                  <th style={{ width: '35%' }}>المكمل الغذائي</th>
-                  <th className="text-center" style={{ width: '20%' }}>الجرعة المحددة</th>
-                  <th style={{ width: '45%' }}>توقيت الاستخدام وإرشادات الكابتن</th>
-                </tr>
-              </thead>
-              <tbody>
-                {[
-                  { name: "كرياتين مونوهايدرات (Creatine Monohydrate)", dosage: "5 جرام يومياً", timing: "بعد التمرين مباشرة مع الماء أو الكارب (أو صباحاً بأيام الراحة)" },
-                  { name: "واي بروتين (Whey Protein)", dosage: "1 سكوب (30 جم)", timing: "بعد التمرين مباشرة أو بين الوجبات لتعويض البروتين" },
-                  { name: "أوميجا 3 (Omega-3 Fish Oil)", dosage: "2 كبسولة (1000mg)", timing: "مع وجبة الإفطار أو الغداء لامتصاص مثالي" },
-                  { name: "فيتامين D3 + K2", dosage: "5000 IU", timing: "صباحاً مع وجبة الإفطار لدعم المناعة والهرمونات" },
-                  { name: "ماغنيسيوم جلايسينات (Magnesium)", dosage: "350 مجم", timing: "قبل النوم بـ 45 دقيقة لنوم عميق واسترخاء العضلات" }
-                ].map((sup, idx) => (
-                  <tr key={idx}>
-                    <td className="fw-bold text-dark">{sup.name}</td>
-                    <td className="text-center fw-bold text-primary">{sup.dosage}</td>
-                    <td className="text-muted">{sup.timing}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+            ))}
           </div>
-        </div>
 
-        {/* 7. Footer & Guidelines */}
-        <div className="pt-4 border-top text-center text-muted small mt-4">
-          <p className="mb-1">💧 اشرب 3 إلى 4 لتر ماء يومياً | 🚶‍♂️ استهدف 8,000 إلى 10,000 خطوة يومياً | 😴 نم 7 إلى 8 ساعات لنوم عميق واستشفاء عضلي ممتاز</p>
-          <p className="mb-0 fw-semibold text-primary">تم توليد هذه الخطة المعتمدة بواسطة منظومة Z Coaching V2.0 👑</p>
+          {/* Cardio Protocol Table */}
+          <h6 className="fw-bold text-dark mb-2 pb-1 border-bottom" style={{ fontSize: '0.92rem' }}>
+            <i className="ti ti-activity text-danger me-1"></i> نشاط الكارديو ونطاق حرق الدهون (Cardio Zone 2)
+          </h6>
+          <div className="p-3 bg-light rounded-3 border mb-3">
+            <div className="row g-2 text-center" style={{ fontSize: '0.8rem' }}>
+              <div className="col-4">
+                <span className="text-muted d-block small">الجلسات الأسبوعية</span>
+                <strong className="text-dark fs-6">{cardio?.schedule?.sessions?.length || 2} جلسات</strong>
+              </div>
+              <div className="col-4">
+                <span className="text-muted d-block small">المدة للجلسة</span>
+                <strong className="text-dark fs-6">{cardio?.schedule?.sessions?.[0]?.duration_minutes || 30} دقيقة</strong>
+              </div>
+              <div className="col-4">
+                <span className="text-muted d-block small">نطاق النبضات المستهدف</span>
+                <strong className="text-danger fs-6">{cardio?.schedule?.sessions?.[0]?.heart_rate_target?.target_range_bpm || '120 - 135 bpm'}</strong>
+              </div>
+            </div>
+          </div>
+
+          {/* Guidelines and Disclaimer */}
+          <div className="p-2 bg-light rounded-3 text-muted mb-3" style={{ fontSize: '0.72rem', lineHeight: '1.6' }}>
+            <strong>تعليمات تنفيذ التمارين:</strong> قم بالإحماء العام والموبيلتي لمدة 5 دقائق قبل بدء التمرين. اختر وزناً يتيح لك الوصول للعدات المستهدفة مع بقاء عدة أو عدتين في الاحتياط (RPE 8-9). اضغط على اسم أي تمرين في هذا الملف لفتح فيديو الأداء الصحيح.
+          </div>
+
+          {/* Footer Page 2 */}
+          <div className="d-flex justify-content-between align-items-center pt-2 mt-auto border-top text-muted" style={{ fontSize: '0.72rem' }}>
+            <span>تم تصميم واعتماد هذه الخطة عبر منصة Z Coaching V2.0</span>
+            <span>تاريخ الإصدار: {new Date().toLocaleDateString('ar-EG')}</span>
+          </div>
         </div>
 
       </div>
 
-      {/* Print Stylesheet Overrides */}
-      <style>{`
+      {/* Print-specific style */}
+      <style dangerouslySetInnerHTML={{ __html: `
         @media print {
-          body {
-            background-color: white !important;
+          body, html {
+            background: #ffffff !important;
+            margin: 0 !important;
             padding: 0 !important;
+          }
+          .pdf-view-wrapper {
+            background: transparent !important;
+            padding: 0 !important;
+          }
+          .pdf-page {
+            box-shadow: none !important;
+            border-radius: 0 !important;
+            page-break-after: always !important;
+            margin: 0 !important;
+            padding: 15mm 15mm !important;
+            min-height: 275mm !important;
           }
           .d-print-none {
             display: none !important;
           }
-          .container {
-            box-shadow: none !important;
-            border: none !important;
-            max-width: 100% !important;
-            padding: 0 !important;
-          }
         }
-      `}</style>
+      `}} />
     </div>
   );
 }

@@ -1,21 +1,27 @@
 import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { API_BASE } from '../config/api';
 import AdminLayout from '../components/layout/AdminLayout';
+import WhatsAppModal from '../components/modals/WhatsAppModal';
 
 export default function CoachEditor() {
+  const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
-  const [activeTab, setActiveTab] = useState('workout'); // 'workout' | 'nutrition' | 'notes'
+  const [publishing, setPublishing] = useState(false);
+  const [activeTab, setActiveTab] = useState('workout'); // 'workout' | 'nutrition' | 'mobility' | 'notes'
   const [user, setUser] = useState(null);
   const [program, setProgram] = useState(null);
   const [coachNotes, setCoachNotes] = useState('');
   const [exerciseCatalog, setExerciseCatalog] = useState([]);
   const [selectedSessionIndex, setSelectedSessionIndex] = useState(0);
+  const [whatsappClient, setWhatsappClient] = useState(null);
+  const [selectedExToAdd, setSelectedExToAdd] = useState('');
 
-  // Active client ID from URL or session
+  // Active client ID and submission ID from URL
   const searchParams = new URLSearchParams(window.location.search);
   const targetUserId = searchParams.get('user_id') || '2';
+  const submissionId = searchParams.get('submission_id');
 
   useEffect(() => {
     fetchProgramAndCatalog();
@@ -45,7 +51,7 @@ export default function CoachEditor() {
     }
   };
 
-  const handleSaveProgram = async () => {
+  const handleSaveDraft = async () => {
     try {
       setSaving(true);
       const updatedProgram = {
@@ -58,19 +64,64 @@ export default function CoachEditor() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           client_code: targetUserId,
-          master_program: updatedProgram
+          program_data: updatedProgram,
+          coach_notes: coachNotes
         })
       });
 
       const data = await res.json();
-      if (!res.ok) throw new Error(data.error || 'فشل حفظ التعديلات');
+      if (!res.ok) throw new Error(data.error || 'فشل حفظ المسودة');
 
-      alert('✅ تم حفظ جميع التعديلات في خطة المتدرب بنجاح في MariaDB z!');
+      alert('تم حفظ المسودة بنجاح ويمكنك الرجوع لها والتعديل عليها في أي وقت.');
       setProgram(updatedProgram);
     } catch (err) {
       alert('خطأ أثناء الحفظ: ' + err.message);
     } finally {
       setSaving(false);
+    }
+  };
+
+  const handleApproveAndPublish = async () => {
+    try {
+      setPublishing(true);
+      const updatedProgram = {
+        ...program,
+        coach_notes: coachNotes
+      };
+
+      // 1. Save custom program changes
+      await fetch(`${API_BASE}/api/v1/programs/update-custom`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          client_code: targetUserId,
+          program_data: updatedProgram,
+          coach_notes: coachNotes
+        })
+      });
+
+      // 2. If submissionId exists, approve and publish submission
+      if (submissionId) {
+        await fetch(`${API_BASE}/api/v1/intake/${submissionId}/approve-and-publish`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ coach_notes: coachNotes })
+        });
+      }
+
+      setProgram(updatedProgram);
+
+      // 3. Trigger WhatsApp Modal to deliver plan to client
+      setWhatsappClient({
+        full_name: user?.full_name || 'البطل',
+        phone_number: user?.phone_number || '',
+        client_code: user?.client_code || targetUserId
+      });
+
+    } catch (err) {
+      alert('حدث خطأ أثناء اعتماد الخطة: ' + err.message);
+    } finally {
+      setPublishing(false);
     }
   };
 
@@ -90,7 +141,7 @@ export default function CoachEditor() {
 
   const handleAddExerciseToSession = (sessionIdx, exCode) => {
     if (!exCode) return;
-    const catItem = exerciseCatalog.find(e => e.exercise_code === exCode);
+    const catItem = exerciseCatalog.find(e => e.code === exCode);
     const updated = JSON.parse(JSON.stringify(program));
     const newEx = {
       exercise_code: exCode,
@@ -106,6 +157,7 @@ export default function CoachEditor() {
     };
     updated.training_program.weeks[0].sessions[sessionIdx].exercises.push(newEx);
     setProgram(updated);
+    setSelectedExToAdd('');
   };
 
   const handleFoodGramChange = (mealIdx, foodIdx, grams) => {
@@ -126,6 +178,8 @@ export default function CoachEditor() {
   const nutrition = program?.nutrition_program;
   const sessions = training?.weeks?.[0]?.sessions || [];
   const meals = nutrition?.quantized_plan?.meals || [];
+  const cardio = program?.cardio_program;
+  const mobility = program?.mobility_program;
 
   return (
     <AdminLayout>
@@ -146,23 +200,100 @@ export default function CoachEditor() {
                 target="_blank" 
                 className="btn btn-outline-danger btn-sm rounded-pill px-3 fw-semibold"
               >
-                <i className="ti ti-file-text me-1"></i> تصدير PDF
+                <i className="ti ti-file-text me-1"></i> معاينة الـ PDF (صفحتين)
               </Link>
               <Link 
                 to={`/user-dashboard?user_id=${targetUserId}`} 
                 target="_blank" 
                 className="btn btn-light btn-sm rounded-pill px-3 border"
               >
-                <i className="ti ti-eye me-1"></i> معاينة واجهة المتدرب
+                <i className="ti ti-eye me-1"></i> معاينة بوابة العميل
               </Link>
+              
+              {/* 1. Save Draft Button */}
               <button 
                 type="button"
-                onClick={handleSaveProgram} 
-                disabled={saving} 
-                className="btn btn-primary btn-sm rounded-pill px-4 fw-bold shadow-sm"
+                onClick={handleSaveDraft} 
+                disabled={saving || publishing} 
+                className="btn btn-outline-secondary btn-sm rounded-pill px-3 fw-bold"
               >
-                {saving ? 'جاري الحفظ...' : 'حفظ وتفعيل التعديلات 💾'}
+                {saving ? 'جاري الحفظ...' : 'حفظ كمسودة'}
               </button>
+
+              {/* 2. Approve & Publish Button */}
+              <button 
+                type="button"
+                onClick={handleApproveAndPublish} 
+                disabled={publishing || saving} 
+                className="btn btn-success btn-sm rounded-pill px-4 fw-bold shadow-sm"
+                style={{ background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)', border: 'none' }}
+              >
+                {publishing ? (
+                  <><span className="spinner-border spinner-border-sm me-1"></span> جاري الاعتماد والنشر...</>
+                ) : (
+                  <><i className="ti ti-check me-1"></i> اعتماد وإرسال الخطة للعميل</>
+                )}
+              </button>
+            </div>
+          </div>
+
+          {/* AI Rationale & Safety Audit Box */}
+          <div className="card border-0 shadow-sm mb-4" style={{ borderRadius: '16px', background: 'linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%)', borderLeft: '4px solid #0284c7' }}>
+            <div className="card-body p-3">
+              <div className="d-flex align-items-center gap-2 mb-2">
+                <div className="p-2 bg-primary text-white rounded-circle d-flex align-items-center justify-content-center" style={{ width: '30px', height: '30px' }}>
+                  <i className="ti ti-sparkles" style={{ fontSize: '0.9rem' }}></i>
+                </div>
+                <h6 className="fw-bold text-primary mb-0" style={{ fontSize: '0.95rem' }}>
+                  تقرير الذكاء الرياضي والتدقيق الأمني (Explainable AI & Safety Audit)
+                </h6>
+              </div>
+
+              <div className="row g-2 text-dark small" style={{ fontSize: '0.84rem', lineHeight: '1.6' }}>
+                <div className="col-md-6">
+                  <div className="p-2 bg-white rounded-3 border">
+                    <strong className="text-danger d-block mb-1">
+                      <i className="ti ti-heart-rate-monitor me-1"></i> مراعاة الإصابات والموانع:
+                    </strong>
+                    <span>
+                      {program?.ai_rationale?.injury_exclusions?.[0] || 'تم فحص المفاصل والأربطة؛ البرنامج يعتمد على التمارين المركبة الحرة مع مدى حركي آمن.'}
+                    </span>
+                  </div>
+                </div>
+
+                <div className="col-md-6">
+                  <div className="p-2 bg-white rounded-3 border">
+                    <strong className="text-success d-block mb-1">
+                      <i className="ti ti-apple me-1"></i> الحساسية وتفضيلات الطعام:
+                    </strong>
+                    <span>
+                      {program?.ai_rationale?.food_exclusions?.[0] || 'الدايت خالٍ من أي أطعمة تسبب الحساسية مع خيارات تبديل ذكية متنوعة.'}
+                    </span>
+                  </div>
+                </div>
+
+                <div className="col-md-6">
+                  <div className="p-2 bg-white rounded-3 border">
+                    <strong className="text-primary d-block mb-1">
+                      <i className="ti ti-flame me-1"></i> استراتيجية السعرات والماكروز:
+                    </strong>
+                    <span>
+                      {program?.ai_rationale?.macro_rationale || 'عجز سعرات مدروس (~400 kcal) مع بروتين كافي لحماية الكتلة العضلية وتحفيز حرق الدهون.'}
+                    </span>
+                  </div>
+                </div>
+
+                <div className="col-md-6">
+                  <div className="p-2 bg-white rounded-3 border">
+                    <strong className="text-warning d-block mb-1">
+                      <i className="ti ti-activity me-1"></i> الكارديو وحرق الدهون:
+                    </strong>
+                    <span>
+                      {program?.ai_rationale?.cardio_strategy || '2-3 جلسات أسبوعياً Zone 2 (120-135 bpm) لحرق الدهون دون إجهاد الاستشفاء.'}
+                    </span>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
 
@@ -174,21 +305,28 @@ export default function CoachEditor() {
                 className={`nav-link rounded-pill px-4 fw-bold ${activeTab === 'workout' ? 'active' : ''}`}
                 onClick={() => setActiveTab('workout')}
               >
-                <i className="ti ti-barbell me-1"></i> محرر التمارين والمجموعات
+                <i className="ti ti-barbell me-1"></i> جدول التمارين والمجموعات
               </button>
               <button 
                 type="button"
                 className={`nav-link rounded-pill px-4 fw-bold ${activeTab === 'nutrition' ? 'active' : ''}`}
                 onClick={() => setActiveTab('nutrition')}
               >
-                <i className="ti ti-salad me-1"></i> محرر الدايت والوجبات
+                <i className="ti ti-salad me-1"></i> الدايت والوجبات
+              </button>
+              <button 
+                type="button"
+                className={`nav-link rounded-pill px-4 fw-bold ${activeTab === 'mobility' ? 'active' : ''}`}
+                onClick={() => setActiveTab('mobility')}
+              >
+                <i className="ti ti-activity me-1"></i> الكارديو والإحماء
               </button>
               <button 
                 type="button"
                 className={`nav-link rounded-pill px-4 fw-bold ${activeTab === 'notes' ? 'active' : ''}`}
                 onClick={() => setActiveTab('notes')}
               >
-                <i className="ti ti-notes me-1"></i> توجيهات وملاحظات الكابتن
+                <i className="ti ti-notes me-1"></i> توجيهات الكابتن
               </button>
             </div>
           </div>
@@ -256,7 +394,7 @@ export default function CoachEditor() {
                                 <input 
                                   type="number" 
                                   className="form-control form-control-sm text-center" 
-                                  value={ex.prescription?.target_min || 10}
+                                  value={ex.prescription?.target_min || 8}
                                   onChange={(e) => handlePrescriptionChange(selectedSessionIndex, exIdx, 'target_min', e.target.value)}
                                 />
                               </td>
@@ -276,11 +414,11 @@ export default function CoachEditor() {
                                   onChange={(e) => handlePrescriptionChange(selectedSessionIndex, exIdx, 'rest_seconds', e.target.value)}
                                 />
                               </td>
-                              <td className="text-center">
+                              <td className="text-center" style={{ width: '80px' }}>
                                 <button 
                                   type="button"
+                                  className="btn btn-outline-danger btn-sm rounded-circle p-1"
                                   onClick={() => handleDeleteExercise(selectedSessionIndex, exIdx)}
-                                  className="btn btn-outline-danger btn-sm rounded-circle p-2"
                                   title="حذف التمرين"
                                 >
                                   <i className="ti ti-trash"></i>
@@ -292,152 +430,152 @@ export default function CoachEditor() {
                       </table>
                     </div>
 
-                    {/* Add Exercise from Catalog Selector */}
-                    <div className="mt-4 pt-3 border-top d-flex gap-2 align-items-center">
+                    {/* Add Exercise from Catalog Form */}
+                    <div className="mt-4 p-3 bg-light rounded-4 d-flex align-items-center gap-2 flex-wrap">
+                      <span className="fw-semibold small text-muted">إضافة تمرين جديد للحصة:</span>
                       <select 
-                        id="newExerciseSelect"
-                        className="form-select form-select-sm"
-                        style={{ maxWidth: '350px' }}
+                        className="form-select form-select-sm" 
+                        style={{ maxWidth: '320px' }}
+                        value={selectedExToAdd}
+                        onChange={(e) => setSelectedExToAdd(e.target.value)}
                       >
-                        <option value="">-- اختر تمرين لإضافته للحصة --</option>
-                        {exerciseCatalog.map(cat => (
-                          <option key={cat.exercise_code} value={cat.exercise_code}>
-                            {cat.name_ar} ({cat.name_en})
+                        <option value="">-- اختر من مكتبة التمارين --</option>
+                        {exerciseCatalog.map((catEx, idx) => (
+                          <option key={idx} value={catEx.code}>
+                            {catEx.name_ar} ({catEx.name_en})
                           </option>
                         ))}
                       </select>
                       <button 
-                        type="button"
-                        onClick={() => {
-                          const val = document.getElementById('newExerciseSelect').value;
-                          if (val) handleAddExerciseToSession(selectedSessionIndex, val);
-                        }}
-                        className="btn btn-outline-primary btn-sm rounded-pill px-3 fw-bold"
+                        type="button" 
+                        className="btn btn-primary btn-sm rounded-pill px-3 fw-bold"
+                        disabled={!selectedExToAdd}
+                        onClick={() => handleAddExerciseToSession(selectedSessionIndex, selectedExToAdd)}
                       >
                         <i className="ti ti-plus me-1"></i> إضافة التمرين
                       </button>
                     </div>
-
                   </div>
                 </div>
               </div>
             </div>
           )}
 
-          {/* TAB 2: NUTRITION EDITOR */}
+          {/* TAB 2: NUTRITION & MEALS EDITOR */}
           {activeTab === 'nutrition' && (
-            <div className="row g-4">
-              <div className="col-12">
-                <div className="card border-0 shadow-sm bg-white mb-3" style={{ borderRadius: '16px' }}>
-                  <div className="card-body p-4 d-flex justify-content-between align-items-center flex-wrap gap-2">
-                    <div>
-                      <h5 className="fw-bold text-dark mb-1">أهداف الطاقة والماكروز اليومية للخطة</h5>
-                      <p className="text-muted small mb-0">يمكنك تعديل جرامات كل وجبة ومقادير الأصناف مباشرة</p>
-                    </div>
-                    <div className="d-flex gap-2">
-                      <span className="badge bg-primary px-3 py-2 rounded-pill fs-6">
-                        {Math.round(nutrition?.stages?.energy_target?.target_calories_kcal || 2200)} سعرة
-                      </span>
-                      <span className="badge bg-danger px-3 py-2 rounded-pill fs-6">
-                        {Math.round(nutrition?.stages?.macro_targets?.protein_g || 170)} جم بروتين
-                      </span>
-                    </div>
-                  </div>
-                </div>
-
-                {meals.map((meal, mealIdx) => (
-                  <div className="card border-0 shadow-sm bg-white mb-3" key={mealIdx} style={{ borderRadius: '16px' }}>
+            <div className="row g-3">
+              {meals.map((meal, mIdx) => (
+                <div key={mIdx} className="col-md-6 col-12">
+                  <div className="card border-0 shadow-sm bg-white h-100" style={{ borderRadius: '16px' }}>
                     <div className="card-body p-4">
                       <div className="d-flex justify-content-between align-items-center mb-3">
-                        <h6 className="fw-bold text-primary mb-0">
-                          {mealIdx === 0 ? '🍳 الوجبة 1 (الإفطار)' : mealIdx === 1 ? '🍗 الوجبة 2 (الغداء)' : '🥣 الوجبة 3 (العشاء)'}
+                        <h6 className="fw-bold text-dark mb-0">
+                          {meal.meal_label || `الوجبة ${mIdx + 1}`}
                         </h6>
-                        <span className="badge bg-light text-dark border">
-                          ~{Math.round(meal.totals?.calories_kcal || 700)} سعرة
+                        <span className="badge bg-success-subtle text-success fw-bold">
+                          {meal.foods?.length || 0} أصناف
                         </span>
                       </div>
 
-                      <div className="table-responsive">
-                        <table className="table table-sm align-middle">
-                          <thead className="table-light">
-                            <tr>
-                              <th>الصنف الغذائي</th>
-                              <th>الوزن المقترح (جرام)</th>
-                              <th>الوحدة المنزلية</th>
-                              <th className="text-center">إجراءات</th>
-                            </tr>
-                          </thead>
-                          <tbody>
-                            {meal.foods?.map((food, foodIdx) => (
-                              <tr key={foodIdx}>
-                                <td className="fw-semibold text-dark">{food.name_ar || food.name_en}</td>
-                                <td style={{ width: '130px' }}>
-                                  <input 
-                                    type="number" 
-                                    className="form-control form-control-sm text-center fw-bold" 
-                                    value={food.portion_g_rounded || food.grams || 100}
-                                    onChange={(e) => handleFoodGramChange(mealIdx, foodIdx, e.target.value)}
-                                  />
-                                </td>
-                                <td className="small text-muted">{food.serving_display_ar || '-'}</td>
-                                <td className="text-center">
-                                  <button 
-                                    type="button"
-                                    onClick={() => handleDeleteFood(mealIdx, foodIdx)}
-                                    className="btn btn-outline-danger btn-sm p-1 rounded-circle"
-                                    style={{ width: '28px', height: '28px' }}
-                                    title="حذف الصنف"
-                                  >
-                                    <i className="ti ti-trash"></i>
-                                  </button>
-                                </td>
-                              </tr>
-                            ))}
-                          </tbody>
-                        </table>
-                      </div>
+                      <ul className="list-group list-group-flush mb-0">
+                        {meal.foods?.map((food, fIdx) => (
+                          <li key={fIdx} className="list-group-item px-0 py-2 d-flex justify-content-between align-items-center border-0 border-bottom">
+                            <div>
+                              <div className="fw-bold text-dark small">{food.name_ar || food.food_code}</div>
+                              <small className="text-muted">{food.serving_display_ar || `${food.grams || 100} جرام`}</small>
+                            </div>
+                            <div className="d-flex align-items-center gap-2">
+                              <div className="input-group input-group-sm" style={{ width: '120px' }}>
+                                <input 
+                                  type="number" 
+                                  className="form-control text-center fw-bold" 
+                                  value={food.portion_g_rounded || food.grams || 100}
+                                  onChange={(e) => handleFoodGramChange(mIdx, fIdx, e.target.value)}
+                                />
+                                <span className="input-group-text bg-light text-muted small">جرام</span>
+                              </div>
+                              <button 
+                                type="button"
+                                className="btn btn-outline-danger btn-sm rounded-circle p-1"
+                                onClick={() => handleDeleteFood(mIdx, fIdx)}
+                                title="حذف الصنف"
+                              >
+                                <i className="ti ti-trash"></i>
+                              </button>
+                            </div>
+                          </li>
+                        ))}
+                      </ul>
                     </div>
                   </div>
-                ))}
+                </div>
+              ))}
+            </div>
+          )}
+
+          {/* TAB 3: CARDIO & MOBILITY */}
+          {activeTab === 'mobility' && (
+            <div className="row g-3">
+              <div className="col-md-6">
+                <div className="card border-0 shadow-sm bg-white p-4 h-100" style={{ borderRadius: '16px' }}>
+                  <h5 className="fw-bold text-dark mb-3">
+                    <i className="ti ti-activity text-primary me-2"></i> بروتوكول الكارديو (Cardio Protocol)
+                  </h5>
+                  <div className="p-3 bg-light rounded-3 mb-3">
+                    <p className="mb-1 small"><strong>الجلسات الأسبوعية:</strong> {cardio?.schedule?.sessions?.length || 2} جلسات</p>
+                    <p className="mb-1 small"><strong>المدة لكل جلسة:</strong> {cardio?.schedule?.sessions?.[0]?.duration_minutes || 30} دقيقة</p>
+                    <p className="mb-0 small"><strong>نطاق النبضات المستهدف (Zone 2):</strong> {cardio?.schedule?.sessions?.[0]?.heart_rate_target?.target_range_bpm || '120 - 135 bpm'}</p>
+                  </div>
+                </div>
+              </div>
+
+              <div className="col-md-6">
+                <div className="card border-0 shadow-sm bg-white p-4 h-100" style={{ borderRadius: '16px' }}>
+                  <h5 className="fw-bold text-dark mb-3">
+                    <i className="ti ti-stretching text-success me-2"></i> الإحماء والموبيلتي (Mobility & Warm-up)
+                  </h5>
+                  <div className="p-3 bg-light rounded-3 mb-3">
+                    <p className="mb-1 small"><strong>استراتيجية الإحماء:</strong> مدمجة مع التمارين الأساسية (Integrated Mobility)</p>
+                    <p className="mb-0 small"><strong>تمارين الإطالة المخصصة:</strong> فتح الحوض، الكتف، وعضلات الظهر السفلية قبل كل تمرين.</p>
+                  </div>
+                </div>
               </div>
             </div>
           )}
 
-          {/* TAB 3: COACH DIRECT NOTES */}
+          {/* TAB 4: COACH DIRECT NOTES */}
           {activeTab === 'notes' && (
             <div className="card border-0 shadow-sm bg-white" style={{ borderRadius: '16px' }}>
               <div className="card-body p-4">
-                <h5 className="fw-bold text-dark mb-2">توجيهات وملاحظات الكابتن المباشرة للمتدرب</h5>
-                <p className="text-muted small mb-4">
-                  اكتب هنا أي ملاحظات أو نصائح مخصصة لهذا المتدرب (مثل التركيز على شرب الماء، بطء الحركة السلبية، أو زيادة الكارديو). ستظهر هذه الملاحظات بشكل بارز في أعلى صفحة المتدرب.
+                <h5 className="fw-bold text-dark mb-2">توجيهات وملاحظات الكابتن للعميل</h5>
+                <p className="text-muted small mb-3">
+                  هذه التعليمات ستظهر مباشرة في ترويسة تطبيق العميل وفي أول صفحة من ملف الـ PDF.
                 </p>
-
-                <div className="form-group mb-4">
-                  <label className="form-label fw-bold text-dark">نص التوجيهات والملاحظات</label>
-                  <textarea 
-                    className="form-control" 
-                    rows="6" 
-                    placeholder="مثال: ركز هذا الأسبوع على النزول البطيء (3 ثواني) في تمارين الصدر، ولا تنسَ شرب 3.5 لتر ماء يومياً قبل الساعة 8 مساءً..."
-                    value={coachNotes}
-                    onChange={(e) => setCoachNotes(e.target.value)}
-                    style={{ fontSize: '1.05rem', lineHeight: '1.8' }}
-                  ></textarea>
-                </div>
-
-                <button 
-                  type="button"
-                  onClick={handleSaveProgram} 
-                  disabled={saving} 
-                  className="btn btn-primary rounded-pill px-4 py-2 fw-bold"
-                >
-                  {saving ? 'جاري الحفظ...' : 'حفظ الملاحظات وتحديث واجهة المتدرب 💾'}
-                </button>
+                <textarea 
+                  className="form-control bg-light border-0 p-3 mb-3" 
+                  rows="6"
+                  placeholder="اكتب توجيهاتك ونصائح الأسبوع الأول للمتدرب هنا..."
+                  value={coachNotes}
+                  onChange={(e) => setCoachNotes(e.target.value)}
+                  style={{ fontSize: '0.95rem', lineHeight: '1.7' }}
+                />
               </div>
             </div>
           )}
 
         </div>
       </div>
+
+      {/* WhatsApp Modal after Publishing */}
+      {whatsappClient && (
+        <WhatsAppModal 
+          client={whatsappClient}
+          onClose={() => {
+            setWhatsappClient(null);
+            navigate('/intake/submissions');
+          }}
+        />
+      )}
     </AdminLayout>
   );
 }

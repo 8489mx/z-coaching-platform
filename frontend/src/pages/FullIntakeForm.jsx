@@ -46,7 +46,7 @@ const TABS = [
   { id: 'medical', title: 'الحالة الطبية والموانع', icon: 'bi-heart-pulse' },
   { id: 'nutrition', title: 'التغذية المفضلة والحساسية', icon: 'bi-egg-fried' },
   { id: 'training', title: 'التدريب والإصابات والكارديو', icon: 'bi-bicycle' },
-  { id: 'review', title: 'المراجعة وتوليد الخطة', icon: 'bi-check-circle' }
+  { id: 'review', title: 'المراجعة وإرسال الاستمارة', icon: 'bi-send' }
 ];
 
 export default function FullIntakeForm() {
@@ -54,6 +54,7 @@ export default function FullIntakeForm() {
   const [activeTab, setActiveTab] = useState('personal');
   const [saveStatus, setSaveStatus] = useState('');
   const [submitting, setSubmitting] = useState(false);
+  const [submittedSuccess, setSubmittedSuccess] = useState(null);
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
@@ -91,22 +92,51 @@ export default function FullIntakeForm() {
       sessionStorage.removeItem('z_client_code');
       sessionStorage.removeItem('z_client_phone');
       setActiveTab('personal');
+      setSubmittedSuccess(null);
     }
   };
 
-  // Debounced auto-save
+  // Debounced local & server auto-save
   useEffect(() => {
     const code = sessionStorage.getItem('z_client_code');
-    const phone = sessionStorage.getItem('z_client_phone');
-    if (!code) return;
+    const phone = sessionStorage.getItem('z_client_phone') || formData.personal?.phone;
+    if (!code && !phone) return;
 
     setSaveStatus('saving');
-    const timer = setTimeout(() => {
-      const storageKey = `z_intake_${code}_${phone}`;
+    const timer = setTimeout(async () => {
+      // 1. Save locally in localStorage
+      const storageKey = `z_intake_${code || 'draft'}_${phone || 'phone'}`;
       localStorage.setItem(storageKey, JSON.stringify(formData));
+      
+      // 2. Calculate progress percent
+      let progress = 20;
+      if (formData.personal?.firstName && formData.personal?.lastName) progress += 10;
+      if (formData.body?.heightCm && formData.body?.weightKg) progress += 20;
+      if (formData.medical) progress += 15;
+      if (formData.nutrition?.preferredMealCount) progress += 15;
+      if (formData.training?.preferredDaysPerWeek) progress += 15;
+      progress = Math.min(progress, 95);
+
+      // 3. Sync draft to backend
+      try {
+        await fetch(`${API_BASE}/api/v1/intake/save-draft`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            ...formData,
+            client_code: code || undefined,
+            phone_number: phone || '01000000000',
+            full_name: `${formData.personal?.firstName || ''} ${formData.personal?.lastName || ''}`.trim() || undefined,
+            progress_percent: progress
+          })
+        });
+      } catch (e) {
+        // silent fail on network glitch
+      }
+
       setSaveStatus('saved');
       setTimeout(() => setSaveStatus(''), 2000);
-    }, 800);
+    }, 1000);
 
     return () => clearTimeout(timer);
   }, [formData]);
@@ -189,8 +219,8 @@ export default function FullIntakeForm() {
 
     try {
       setSubmitting(true);
-      const code = sessionStorage.getItem('z_client_code') || 'CLIENT-AHMED-SAMIR';
-      const phone = sessionStorage.getItem('z_client_phone') || '01000000000';
+      const code = sessionStorage.getItem('z_client_code') || '';
+      const phone = sessionStorage.getItem('z_client_phone') || formData.personal.phone || '01000000000';
 
       const payload = JSON.parse(JSON.stringify(formData));
       if (payload.lifestyle?.workSchedule?.type === 'STANDARD') {
@@ -209,12 +239,12 @@ export default function FullIntakeForm() {
         }));
       }
 
-      const res = await fetch(`${API_BASE}/api/v1/programs/generate-and-save`, {
+      const res = await fetch(`${API_BASE}/api/v1/intake/submit`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           ...payload,
-          client_code: code,
+          client_code: code || undefined,
           phone_number: phone,
           full_name: `${formData.personal.firstName} ${formData.personal.lastName}`
         })
@@ -222,25 +252,74 @@ export default function FullIntakeForm() {
 
       const data = await res.json();
       if (!res.ok) {
-        throw new Error(data.error || (data.details ? data.details : 'فشل توليد وحفظ الخطة'));
+        throw new Error(data.error || (data.details ? data.details : 'فشل إرسال الاستمارة'));
       }
 
-      const storageKey = `z_intake_${code}_${phone}`;
-      localStorage.removeItem(storageKey);
+      if (code && phone) {
+        const storageKey = `z_intake_${code}_${phone}`;
+        localStorage.removeItem(storageKey);
+      }
       sessionStorage.removeItem('z_client_code');
       sessionStorage.removeItem('z_client_phone');
 
-      sessionStorage.setItem('z_active_client_id', data.user?.id || 1);
-      sessionStorage.setItem('z_active_client_code', data.user?.client_code || code);
-      sessionStorage.setItem('z_active_client_name', data.user?.full_name || 'أحمد سمير');
+      setSubmittedSuccess({
+        client_code: data.client_code || data.user?.client_code || 'جديد',
+        full_name: `${formData.personal.firstName} ${formData.personal.lastName}`
+      });
 
-      navigate(`/user-dashboard?user_id=${data.user?.client_code || code}`);
     } catch (err) {
-      alert('حدث خطأ أثناء معالجة البيانات: ' + err.message);
+      alert('حدث خطأ أثناء إرسال الاستمارة: ' + err.message);
     } finally {
       setSubmitting(false);
     }
   };
+
+  if (submittedSuccess) {
+    return (
+      <div className="onboarding-layout d-flex align-items-center justify-content-center min-vh-100 p-3" dir="rtl" style={{ background: '#f8fafc' }}>
+        <div className="card border-0 shadow-sm p-4 p-md-5 text-center" style={{ maxWidth: '600px', width: '100%', borderRadius: '24px' }}>
+          <div className="mb-3 text-success" style={{ fontSize: '5rem' }}>
+            <i className="ti ti-circle-check"></i>
+          </div>
+          
+          <h2 className="fw-bold text-dark mb-2">تم استلام استمارتك بنجاح!</h2>
+          <p className="text-muted mb-4" style={{ fontSize: '1.05rem', lineHeight: '1.8' }}>
+            أهلاً بك يا <strong>{submittedSuccess.full_name}</strong>. تم إرسال جميع إجاباتك وبياناتك بنجاح إلى كابتن كيمو.
+            <br />
+            يقوم الكابتن الآن بمراجعة حالتك الصحية والبدنية، وتأكيد اشتراكك، وتصميم خطتك التدريبية والغذائية المخصصة لك بالكامل.
+          </p>
+
+          <div className="p-3 bg-light rounded-4 border mb-4">
+            <div className="d-flex justify-content-between align-items-center">
+              <span className="text-muted small">كود المشترك الخاص بك:</span>
+              <span className="badge bg-dark font-monospace px-3 py-2 fs-6">{submittedSuccess.client_code}</span>
+            </div>
+          </div>
+
+          <div className="d-grid gap-2">
+            <a 
+              href="https://wa.me/201099687766" 
+              target="_blank" 
+              rel="noreferrer"
+              className="btn btn-success py-3 rounded-pill fw-bold shadow-sm d-flex align-items-center justify-content-center gap-2"
+              style={{ fontSize: '1rem' }}
+            >
+              <i className="ti ti-brand-whatsapp fs-5"></i>
+              <span>متابعة حالة الخطة مع الكابتن عبر الواتساب</span>
+            </a>
+
+            <button 
+              type="button" 
+              className="btn btn-outline-secondary py-2 rounded-pill mt-2"
+              onClick={handleResetForm}
+            >
+              تقديم استمارة جديدة
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   const renderActiveTab = () => {
     switch (activeTab) {
@@ -349,7 +428,7 @@ export default function FullIntakeForm() {
             {saveStatus && (
               <div className={`auto-save-indicator ${saveStatus}`}>
                 {saveStatus === 'saving' ? (
-                  <><i className="bi bi-arrow-repeat" style={{ animation: 'spin 1s linear infinite' }}></i> جاري الحفظ...</>
+                  <><i className="bi bi-arrow-repeat spin"></i> جاري الحفظ...</>
                 ) : (
                   <><i className="bi bi-check-circle"></i> تم الحفظ التلقائي</>
                 )}

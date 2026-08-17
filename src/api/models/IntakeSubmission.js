@@ -16,10 +16,23 @@ const IntakeSubmission = sequelize.define("IntakeSubmission", {
     allowNull: false,
   },
   status: {
-    type: DataTypes.ENUM("PENDING", "PROCESSED", "REJECTED"),
-    defaultValue: "PENDING",
+    type: DataTypes.STRING,
+    defaultValue: "PENDING_COACH_REVIEW", // IN_PROGRESS | PENDING_COACH_REVIEW | PAYMENT_CONFIRMED | DRAFT_GENERATED | APPROVED | REJECTED
     allowNull: false,
   },
+  progress_percent: {
+    type: DataTypes.INTEGER,
+    defaultValue: 100,
+    allowNull: false,
+  },
+  coach_notes: {
+    type: DataTypes.TEXT,
+    allowNull: true,
+  },
+  reviewed_at: {
+    type: DataTypes.DATE,
+    allowNull: true,
+  }
 }, {
   tableName: "intake_submissions",
   timestamps: true,

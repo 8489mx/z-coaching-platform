@@ -37,12 +37,27 @@ const User = sequelize.define("User", {
   },
   subscription_package: {
     type: DataTypes.STRING,
-    defaultValue: "1_MONTH",
+    defaultValue: "3_MONTHS_VIP",
     allowNull: true,
   },
   subscription_price: {
     type: DataTypes.FLOAT,
-    defaultValue: 1500,
+    defaultValue: 2500,
+    allowNull: true,
+  },
+  payment_status: {
+    type: DataTypes.STRING,
+    defaultValue: "PENDING", // PENDING | PAID | UNPAID
+    allowNull: true,
+  },
+  payment_method: {
+    type: DataTypes.STRING,
+    defaultValue: "INSTAPAY", // INSTAPAY | VODAFONE_CASH | BANK_TRANSFER | CASH
+    allowNull: true,
+  },
+  plan_approval_status: {
+    type: DataTypes.STRING,
+    defaultValue: "PENDING_COACH_REVIEW", // PENDING_COACH_REVIEW | DRAFT | APPROVED | PUBLISHED
     allowNull: true,
   },
   subscription_start_date: {
@@ -58,10 +73,18 @@ const User = sequelize.define("User", {
     type: DataTypes.STRING,
     defaultValue: "ACTIVE", // ACTIVE | EXPIRING_SOON | EXPIRED
     allowNull: true,
-  }
+  },
+  avatar: {
+    type: DataTypes.STRING,
+    allowNull: true,
+  },
+  notes: {
+    type: DataTypes.TEXT,
+    allowNull: true,
+  },
 }, {
   tableName: "users",
-  timestamps: true, // adds createdAt and updatedAt
+  timestamps: true,
 });
 
 export default User;

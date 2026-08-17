@@ -16,6 +16,7 @@ import ClientProgramView from './pages/ClientProgramView';
 import CoachEditor from './pages/CoachEditor';
 import MobileAppSimulator from './pages/MobileAppSimulator';
 import ProgramPdfView from './pages/ProgramPdfView';
+import IntakeSubmissions from './pages/IntakeSubmissions';
 import Subscriptions from './pages/Subscriptions';
 import ExerciseLibrary from './pages/ExerciseLibrary';
 import MacroCalculator from './pages/MacroCalculator';
@@ -42,6 +43,7 @@ function App() {
           <Route path="/onboarding" element={<ClientOnboarding />} />
           <Route path="/intake" element={<ClientLogin />} />
           <Route path="/intake/form" element={<FullIntakeForm />} />
+          <Route path="/intake/submissions" element={<IntakeSubmissions />} />
           <Route path="/customers" element={<Customers />} />
           <Route path="/coach/editor" element={<CoachEditor />} />
           <Route path="/mobile" element={<MobileAppSimulator />} />
