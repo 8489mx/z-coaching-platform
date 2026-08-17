@@ -6,9 +6,38 @@ import NewClientQuickModal from '../modals/NewClientQuickModal';
 export default function AdminHeader({ searchTerm, onSearchChange, searchPlaceholder = "بحث بالاسم، الهاتف، أو اكتب #كود المشترك (مثل #4)..." }) {
   const [isNewClientModalOpen, setIsNewClientModalOpen] = useState(false);
   const [isProfileDropdownOpen, setIsProfileDropdownOpen] = useState(false);
+  const [coachProfile, setCoachProfile] = useState({
+    coach_name: 'كريم زكريا',
+    email: 'info@karimzakaria.com'
+  });
   const dropdownRef = useRef(null);
   const searchInputRef = useRef(null);
   const navigate = useNavigate();
+
+  // Load coach profile from localStorage
+  const loadCoachProfile = () => {
+    try {
+      const stored = localStorage.getItem('fitnexus_coach_settings');
+      if (stored) {
+        const parsed = JSON.parse(stored);
+        if (parsed.coach_name) {
+          setCoachProfile(parsed);
+        }
+      }
+    } catch (e) {
+      console.error(e);
+    }
+  };
+
+  useEffect(() => {
+    loadCoachProfile();
+    window.addEventListener('coach_settings_updated', loadCoachProfile);
+    window.addEventListener('storage', loadCoachProfile);
+    return () => {
+      window.removeEventListener('coach_settings_updated', loadCoachProfile);
+      window.removeEventListener('storage', loadCoachProfile);
+    };
+  }, []);
 
   // Global Shortcut Listener for Search Focus: Ctrl+1, Ctrl+*, or Ctrl+K
   useEffect(() => {
@@ -137,7 +166,7 @@ export default function AdminHeader({ searchTerm, onSearchChange, searchPlacehol
                   Z
                 </div>
                 <span className="d-none d-md-inline-block fw-bold text-dark lh-base" style={{ fontSize: '0.84rem', letterSpacing: '-0.2px' }}>
-                  كابتن Z Coaching
+                  {coachProfile.coach_name?.startsWith('كابتن') ? coachProfile.coach_name : `كابتن ${coachProfile.coach_name || 'Z Coaching'}`}
                 </span>
                 <i 
                   className={`ti ti-chevron-down text-muted small transition-transform ${isProfileDropdownOpen ? 'rotate-180' : ''}`}
@@ -163,8 +192,8 @@ export default function AdminHeader({ searchTerm, onSearchChange, searchPlacehol
                   dir="rtl"
                 >
                   <div className="px-3 py-2 border-bottom border-light mb-1">
-                    <strong className="d-block text-dark small">كابتن Z Coaching</strong>
-                    <small className="text-muted" style={{ fontSize: '0.74rem' }}>coach@zcoaching.com</small>
+                    <strong className="d-block text-dark small">{coachProfile.coach_name || 'كابتن Z Coaching'}</strong>
+                    <small className="text-muted" style={{ fontSize: '0.74rem' }}>{coachProfile.email || 'coach@zcoaching.com'}</small>
                   </div>
 
                   <Link 

@@ -37,9 +37,10 @@ export default function ProfileClone() {
   const handleSaveSettings = (e) => {
     e.preventDefault();
     localStorage.setItem('fitnexus_coach_settings', JSON.stringify(settings));
+    window.dispatchEvent(new Event('coach_settings_updated'));
     setSavedSuccess(true);
     setTimeout(() => setSavedSuccess(false), 3000);
-    alert(' تم حفظ وتطبيق إعدادات هوية الكابتن بنجاح!');
+    alert('تم حفظ وتطبيق إعدادات هوية الكابتن بنجاح!');
   };
 
   const handleLogoUpload = (e) => {
