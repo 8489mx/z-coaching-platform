@@ -110,7 +110,7 @@ export default function IntakeSubmissions() {
     if (!searchTerm.trim()) return true;
     const raw = searchTerm.trim().toLowerCase();
 
-    // Smart # Prefix Search: Specifically and strictly target exact client code
+    // Smart # Prefix Search
     if (raw.startsWith('#')) {
       const codeQuery = raw.replace(/^#+/, '').trim();
       if (!codeQuery) return true;
@@ -137,88 +137,149 @@ export default function IntakeSubmissions() {
       <div className="theme-body">
         <div className="container-fluid">
 
-          {/* Page Header */}
-          <div className="d-flex justify-content-between align-items-center flex-wrap gap-3 mb-4">
+          {/* Page Header (Consistent with Dashboard) */}
+          <div className="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
             <div>
-              <h3 className="fw-bold text-dark mb-1">مركز استمارات العملاء ومراجعة الخطط</h3>
-              <p className="text-muted mb-0" style={{ fontSize: '0.9rem' }}>
-                متابعة ملء الاستمارات لحظياً، استعادة الاستمارات المتروكة، تأكيد الدفع، وتوليد مسودة الخطة الذكية.
+              <div className="d-flex align-items-center gap-2 mb-1">
+                <h4 className="fw-bold text-dark mb-0" style={{ letterSpacing: '-0.3px', fontSize: '1.25rem' }}>
+                  مركز استمارات العملاء ومراجعة الخطط
+                </h4>
+                <span className="badge rounded-pill fw-bold" style={{ background: '#f5f3ff', color: '#261c6a', border: '1px solid #ddd6fe', fontSize: '0.7rem' }}>
+                  Z COACHING V2.0
+                </span>
+              </div>
+              <p className="text-muted small mb-0" style={{ fontSize: '0.8rem' }}>
+                متابعة ملء الاستمارات لحظياً، استعادة الاستمارات المتروكة، وتوليد مسودة الخطة الذكية
               </p>
             </div>
             <div className="d-flex gap-2">
-              <Link to="/intake/form" target="_blank" className="btn btn-outline-primary rounded-pill px-3 py-2 fw-semibold shadow-sm" style={{ fontSize: '0.85rem' }}>
-                <i className="ti ti-external-link me-1"></i> فتح رابط الاستمارة العامة
+              <Link 
+                to="/intake/form" 
+                target="_blank" 
+                className="btn btn-sm rounded-pill px-3 fw-bold d-flex align-items-center gap-1 shadow-sm text-white" 
+                style={{ 
+                  height: '34px', 
+                  fontSize: '0.8rem',
+                  background: '#261c6a',
+                  border: 'none',
+                  boxShadow: '0 3px 10px rgba(38, 28, 106, 0.28)'
+                }}
+              >
+                <i className="ti ti-external-link fs-6"></i> 
+                <span>فتح رابط الاستمارة العامة</span>
               </Link>
             </div>
           </div>
 
-          {/* KPI Stat Cards */}
-          <div className="row g-3 mb-4">
-            <div className="col-md-2 col-sm-6 col-6">
-              <div className="card stat-card shadow-sm border-0 h-100 bg-white" style={{ borderRadius: '16px' }}>
-                <div className="card-body p-3 text-center">
-                  <span className="badge bg-secondary-subtle text-secondary rounded-pill mb-2 px-2 py-1">قيد التعبئة</span>
-                  <h3 className="fw-bold mb-0 text-dark">{inProgressCount}</h3>
-                  <small className="text-muted" style={{ fontSize: '0.72rem' }}>استمارات جارية</small>
-                </div>
-              </div>
-            </div>
-
-            <div className="col-md-2 col-sm-6 col-6">
-              <div className="card stat-card shadow-sm border-0 h-100 bg-white" style={{ borderRadius: '16px' }}>
-                <div className="card-body p-3 text-center">
-                  <span className="badge bg-warning-subtle text-warning rounded-pill mb-2 px-2 py-1">بانتظار المراجعة</span>
-                  <h3 className="fw-bold mb-0 text-dark">{pendingCount}</h3>
-                  <small className="text-muted" style={{ fontSize: '0.72rem' }}>مكتملة 100%</small>
-                </div>
-              </div>
-            </div>
-
-            <div className="col-md-3 col-sm-6">
-              <div className="card stat-card shadow-sm border-0 h-100 bg-white" style={{ borderRadius: '16px' }}>
-                <div className="card-body p-3 d-flex align-items-center gap-3">
-                  <div className="p-3 bg-info-subtle text-info rounded-circle">
-                    <i className="ti ti-credit-card fs-3"></i>
+          {/* 5 KPI Stat Cards (Exact Universal Design) */}
+          <div className="row row-cols-xxl-5 row-cols-md-3 row-cols-sm-2 g-3 mb-3">
+            {/* 1. In Progress */}
+            <div className="col">
+              <div className="card border-0 bg-white h-100 shadow-sm" style={{ borderRadius: '14px', border: '1px solid #e2e8f0' }}>
+                <div className="card-body p-3 d-flex flex-column justify-content-between">
+                  <div className="d-flex justify-content-between align-items-center mb-2">
+                    <span className="badge rounded-pill fw-semibold px-2 py-1" style={{ background: '#f8fafc', color: '#64748b', fontSize: '0.68rem', border: '1px solid #e2e8f0' }}>
+                      جارية
+                    </span>
+                    <div className="d-flex align-items-center justify-content-center" style={{ width: '30px', height: '30px', borderRadius: '8px', background: '#f1f5f9', color: '#64748b' }}>
+                      <i className="ti ti-pencil fs-6"></i>
+                    </div>
                   </div>
                   <div>
-                    <h3 className="fw-bold mb-0 text-dark">{paidCount}</h3>
-                    <small className="text-muted fw-semibold">مؤكد الدفع</small>
+                    <h3 className="fw-bold mb-0 text-dark" style={{ fontSize: '1.45rem', letterSpacing: '-0.5px' }}>{inProgressCount}</h3>
+                    <p className="text-muted small mb-0 fw-medium" style={{ fontSize: '0.76rem' }}>قيد التعبئة</p>
                   </div>
                 </div>
               </div>
             </div>
 
-            <div className="col-md-2 col-sm-6">
-              <div className="card stat-card shadow-sm border-0 h-100 bg-white" style={{ borderRadius: '16px' }}>
-                <div className="card-body p-3 text-center">
-                  <span className="badge bg-primary-subtle text-primary rounded-pill mb-2 px-2 py-1">مسودات جاهزة</span>
-                  <h3 className="fw-bold mb-0 text-dark">{draftCount}</h3>
-                  <small className="text-muted" style={{ fontSize: '0.72rem' }}>قيد تخصيص الكابتن</small>
-                </div>
-              </div>
-            </div>
-
-            <div className="col-md-3 col-sm-6">
-              <div className="card stat-card shadow-sm border-0 h-100 bg-white" style={{ borderRadius: '16px' }}>
-                <div className="card-body p-3 d-flex align-items-center gap-3">
-                  <div className="p-3 bg-success-subtle text-success rounded-circle">
-                    <i className="ti ti-circle-check fs-3"></i>
+            {/* 2. Pending Coach Review */}
+            <div className="col">
+              <div className="card border-0 bg-white h-100 shadow-sm" style={{ borderRadius: '14px', border: '1px solid #e2e8f0' }}>
+                <div className="card-body p-3 d-flex flex-column justify-content-between">
+                  <div className="d-flex justify-content-between align-items-center mb-2">
+                    <span className="badge rounded-pill fw-semibold px-2 py-1" style={{ background: '#fffbeb', color: '#d97706', fontSize: '0.68rem', border: '1px solid #fde68a' }}>
+                      مكتملة 100%
+                    </span>
+                    <div className="d-flex align-items-center justify-content-center" style={{ width: '30px', height: '30px', borderRadius: '8px', background: '#fffbeb', color: '#d97706' }}>
+                      <i className="ti ti-clock fs-6"></i>
+                    </div>
                   </div>
                   <div>
-                    <h3 className="fw-bold mb-0 text-dark">{approvedCount}</h3>
-                    <small className="text-muted fw-semibold">خطط منشورة ومعتمدة</small>
+                    <h3 className="fw-bold mb-0 text-dark" style={{ fontSize: '1.45rem', letterSpacing: '-0.5px' }}>{pendingCount}</h3>
+                    <p className="text-muted small mb-0 fw-medium" style={{ fontSize: '0.76rem' }}>بانتظار الاعتماد</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* 3. Paid */}
+            <div className="col">
+              <div className="card border-0 bg-white h-100 shadow-sm" style={{ borderRadius: '14px', border: '1px solid #e2e8f0' }}>
+                <div className="card-body p-3 d-flex flex-column justify-content-between">
+                  <div className="d-flex justify-content-between align-items-center mb-2">
+                    <span className="badge rounded-pill fw-semibold px-2 py-1" style={{ background: '#ecfdf5', color: '#059669', fontSize: '0.68rem', border: '1px solid #a7f3d0' }}>
+                      InstaPay
+                    </span>
+                    <div className="d-flex align-items-center justify-content-center" style={{ width: '30px', height: '30px', borderRadius: '8px', background: '#ecfdf5', color: '#059669' }}>
+                      <i className="ti ti-credit-card fs-6"></i>
+                    </div>
+                  </div>
+                  <div>
+                    <h3 className="fw-bold mb-0 text-dark" style={{ fontSize: '1.45rem', letterSpacing: '-0.5px' }}>{paidCount}</h3>
+                    <p className="text-muted small mb-0 fw-medium" style={{ fontSize: '0.76rem' }}>مؤكد الدفع</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* 4. Draft Generated */}
+            <div className="col">
+              <div className="card border-0 bg-white h-100 shadow-sm" style={{ borderRadius: '14px', border: '1px solid #e2e8f0' }}>
+                <div className="card-body p-3 d-flex flex-column justify-content-between">
+                  <div className="d-flex justify-content-between align-items-center mb-2">
+                    <span className="badge rounded-pill fw-semibold px-2 py-1" style={{ background: '#f5f3ff', color: '#261c6a', fontSize: '0.68rem', border: '1px solid #ddd6fe' }}>
+                      تخصيص الكابتن
+                    </span>
+                    <div className="d-flex align-items-center justify-content-center" style={{ width: '30px', height: '30px', borderRadius: '8px', background: '#f5f3ff', color: '#261c6a' }}>
+                      <i className="ti ti-sparkles fs-6"></i>
+                    </div>
+                  </div>
+                  <div>
+                    <h3 className="fw-bold mb-0 text-dark" style={{ fontSize: '1.45rem', letterSpacing: '-0.5px' }}>{draftCount}</h3>
+                    <p className="text-muted small mb-0 fw-medium" style={{ fontSize: '0.76rem' }}>مسودات جاهزة</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* 5. Approved & Active */}
+            <div className="col">
+              <div className="card border-0 bg-white h-100 shadow-sm" style={{ borderRadius: '14px', border: '1px solid #e2e8f0' }}>
+                <div className="card-body p-3 d-flex flex-column justify-content-between">
+                  <div className="d-flex justify-content-between align-items-center mb-2">
+                    <span className="badge rounded-pill fw-semibold px-2 py-1" style={{ background: '#f5f3ff', color: '#261c6a', fontSize: '0.68rem', border: '1px solid #ddd6fe' }}>
+                      منشورة ومفعلة
+                    </span>
+                    <div className="d-flex align-items-center justify-content-center" style={{ width: '30px', height: '30px', borderRadius: '8px', background: '#f5f3ff', color: '#261c6a' }}>
+                      <i className="ti ti-circle-check fs-6"></i>
+                    </div>
+                  </div>
+                  <div>
+                    <h3 className="fw-bold mb-0 text-dark" style={{ fontSize: '1.45rem', letterSpacing: '-0.5px' }}>{approvedCount}</h3>
+                    <p className="text-muted small mb-0 fw-medium" style={{ fontSize: '0.76rem' }}>خطط معتمدة</p>
                   </div>
                 </div>
               </div>
             </div>
           </div>
 
-          {/* Filter Pills */}
-          <div className="d-flex gap-2 overflow-auto pb-2 mb-3">
+          {/* Filter Pills (Quiet Luxury Style) */}
+          <div className="d-flex gap-2 mb-3 flex-wrap align-items-center">
             {[
               { id: 'ALL', label: `الكل (${submissions.length})` },
               { id: 'IN_PROGRESS', label: `قيد التعبئة (${inProgressCount})` },
-              { id: 'PENDING', label: `مكتملة بانتظار الاعتماد (${pendingCount})` },
+              { id: 'PENDING', label: `بانتظار الاعتماد (${pendingCount})` },
               { id: 'PAID', label: `مؤكد الدفع (${paidCount})` },
               { id: 'DRAFT', label: `مسودات جاهزة (${draftCount})` },
               { id: 'APPROVED', label: `معتمد ومنشور (${approvedCount})` }
@@ -227,8 +288,14 @@ export default function IntakeSubmissions() {
                 key={f.id}
                 type="button"
                 onClick={() => setFilter(f.id)}
-                className={`btn btn-sm rounded-pill px-3 py-2 fw-semibold ${filter === f.id ? 'btn-primary shadow-sm' : 'btn-light border text-dark'}`}
-                style={{ fontSize: '0.84rem', whiteSpace: 'nowrap' }}
+                className={`btn btn-sm rounded-pill px-3 fw-bold transition-all ${filter === f.id ? 'text-white shadow-xs' : 'bg-white text-dark border'}`}
+                style={{
+                  background: filter === f.id ? '#261c6a' : '#ffffff',
+                  borderColor: filter === f.id ? '#261c6a' : '#e2e8f0',
+                  fontSize: '0.8rem',
+                  height: '34px',
+                  whiteSpace: 'nowrap'
+                }}
               >
                 {f.label}
               </button>
@@ -236,39 +303,39 @@ export default function IntakeSubmissions() {
           </div>
 
           {/* Submissions Table */}
-          <div className="card border-0 shadow-sm bg-white" style={{ borderRadius: '20px' }}>
-            <div className="card-body p-0">
+          <div className="card border-0 shadow-sm bg-white" style={{ borderRadius: '16px', border: '1px solid #e2e8f0' }}>
+            <div className="card-body p-4">
               <div className="table-responsive">
-                <table className="table table-hover align-middle mb-0" style={{ fontSize: '0.9rem' }}>
+                <table className="table table-hover align-middle mb-0">
                   <thead className="table-light">
                     <tr>
-                      <th className="px-4 py-3">كود العميل</th>
-                      <th className="py-3">اسم المتدرب</th>
-                      <th className="py-3">رقم الواتساب</th>
-                      <th className="py-3">الباقة والمبلغ</th>
-                      <th className="py-3">حالة الدفع</th>
-                      <th className="py-3">نسبة وحالة الاستمارة</th>
-                      <th className="py-3 text-center">الإجراءات</th>
+                      <th className="border-0 rounded-start">كود العميل</th>
+                      <th className="border-0">اسم المتدرب</th>
+                      <th className="border-0">رقم الهاتف</th>
+                      <th className="border-0">الباقة والمبلغ</th>
+                      <th className="border-0">حالة الدفع</th>
+                      <th className="border-0">حالة الاستمارة</th>
+                      <th className="border-0 rounded-end text-center">الإجراءات</th>
                     </tr>
                   </thead>
                   <tbody>
                     {loading ? (
                       <tr>
-                        <td colSpan="7" className="text-center py-5 text-muted">
-                          <span className="spinner-border spinner-border-sm me-2" role="status"></span>
+                        <td colSpan="7" className="text-center py-5 text-muted small">
+                          <span className="spinner-border spinner-border-sm me-2 text-primary" role="status"></span>
                           جاري تحميل الاستمارات...
                         </td>
                       </tr>
                     ) : filteredSubmissions.length === 0 ? (
                       <tr>
-                        <td colSpan="7" className="text-center py-5 text-muted">
-                          لا توجد استمارات واردة تطابق هذا الفلتر
+                        <td colSpan="7" className="text-center py-4 text-muted small">
+                          لا توجد استمارات واردة تطابق هذا الفلتر.
                         </td>
                       </tr>
                     ) : (
                       filteredSubmissions.map((sub) => {
                         const user = sub.user || {};
-                        const clientName = user.full_name || `${sub.answers?.personal?.firstName || ''} ${sub.answers?.personal?.lastName || ''}`.trim() || 'متدرب جديد';
+                        const clientName = user.full_name || `${sub.answers?.personal?.firstName || ''} ${sub.answers?.personal?.lastName || ''}`.trim() || `متدرب ${sub.id}`;
                         const clientPhone = user.phone_number || sub.answers?.personal?.phone || '-';
                         const isGenerating = generatingId === sub.id;
                         const progress = sub.progress_percent || (sub.status === 'APPROVED' ? 100 : 70);
@@ -276,32 +343,39 @@ export default function IntakeSubmissions() {
 
                         return (
                           <tr key={sub.id}>
-                            <td className="px-4 fw-bold font-monospace text-primary">
-                              {user.client_code || sub.id}
+                            <td>
+                              <span className="badge bg-light text-secondary border px-2 py-1 font-monospace" style={{ fontSize: '0.75rem' }}>
+                                {user.client_code || sub.id}
+                              </span>
                             </td>
-                            <td className="fw-semibold text-dark">
-                              {clientName}
+                            <td>
+                              <div className="d-flex align-items-center gap-2">
+                                <div className="rounded-circle d-flex align-items-center justify-content-center fw-bold" style={{ width: '34px', height: '34px', fontSize: '0.82rem', background: '#f5f3ff', color: '#261c6a', border: '1px solid #ddd6fe' }}>
+                                  {(clientName || 'U')[0]}
+                                </div>
+                                <span className="fw-bold text-dark" style={{ fontSize: '0.88rem' }}>{clientName}</span>
+                              </div>
                             </td>
-                            <td className="text-muted dir-ltr">
-                              {clientPhone}
+                            <td>
+                              <span className="text-muted" dir="ltr" style={{ fontSize: '0.8rem' }}>{clientPhone}</span>
                             </td>
                             <td>
                               <div>
                                 <span className="fw-semibold text-dark d-block" style={{ fontSize: '0.82rem' }}>
                                   {user.subscription_package || 'باقة 3 شهور VIP'}
                                 </span>
-                                <small className="text-muted">
+                                <small className="text-muted" style={{ fontSize: '0.76rem' }}>
                                   {user.subscription_price || 2500} ج.م
                                 </small>
                               </div>
                             </td>
                             <td>
                               {user.payment_status === 'PAID' ? (
-                                <span className="badge bg-success-subtle text-success border border-success-subtle px-2 py-1 rounded-pill">
-                                  <i className="ti ti-check me-1"></i> مدفوع ({user.payment_method || 'InstaPay'})
+                                <span className="badge bg-light text-success border px-2 py-1 rounded-pill fw-semibold" style={{ fontSize: '0.75rem' }}>
+                                  <i className="ti ti-point-filled me-1"></i> مدفوع ({user.payment_method || 'InstaPay'})
                                 </span>
                               ) : (
-                                <span className="badge bg-warning-subtle text-warning border border-warning-subtle px-2 py-1 rounded-pill">
+                                <span className="badge bg-light text-warning border px-2 py-1 rounded-pill fw-semibold" style={{ fontSize: '0.75rem' }}>
                                   <i className="ti ti-clock me-1"></i> بانتظار الدفع
                                 </span>
                               )}
@@ -310,40 +384,41 @@ export default function IntakeSubmissions() {
                               {isAbandoned ? (
                                 <div>
                                   <div className="d-flex justify-content-between align-items-center mb-1">
-                                    <span className="badge bg-secondary-subtle text-secondary px-2 py-0 small" style={{ fontSize: '0.72rem' }}>
+                                    <span className="badge bg-light text-muted border px-2 py-0" style={{ fontSize: '0.7rem' }}>
                                       قيد التعبئة ({progress}%)
                                     </span>
                                   </div>
-                                  <div className="progress" style={{ height: '6px', width: '130px' }}>
-                                    <div className="progress-bar bg-warning progress-bar-striped progress-bar-animated" style={{ width: `${progress}%` }}></div>
+                                  <div className="progress" style={{ height: '4px', width: '120px', background: '#f1f5f9' }}>
+                                    <div className="progress-bar bg-warning" style={{ width: `${progress}%` }}></div>
                                   </div>
                                 </div>
                               ) : sub.status === 'PENDING_COACH_REVIEW' ? (
-                                <span className="badge bg-success-subtle text-success border border-success-subtle px-3 py-1 rounded-pill fw-bold">
-                                  <i className="ti ti-circle-check me-1"></i> 100% بانتظار الاعتماد
+                                <span className="badge bg-light text-warning border px-2 py-1 rounded-pill fw-semibold" style={{ fontSize: '0.75rem' }}>
+                                  <i className="ti ti-clock-pause me-1"></i> 100% بانتظار الاعتماد
                                 </span>
                               ) : sub.status === 'PAYMENT_CONFIRMED' ? (
-                                <span className="badge bg-info-subtle text-info px-2 py-1 rounded-pill">
+                                <span className="badge bg-light text-info border px-2 py-1 rounded-pill fw-semibold" style={{ fontSize: '0.75rem' }}>
                                   تم تأكيد الدفع
                                 </span>
                               ) : sub.status === 'DRAFT_GENERATED' ? (
-                                <span className="badge bg-primary-subtle text-primary px-2 py-1 rounded-pill">
+                                <span className="badge rounded-pill fw-semibold px-2 py-1" style={{ background: '#f5f3ff', color: '#261c6a', border: '1px solid #ddd6fe', fontSize: '0.75rem' }}>
                                   مسودة جاهزة
                                 </span>
                               ) : (
-                                <span className="badge bg-success-subtle text-success px-2 py-1 rounded-pill">
-                                  معتمد ومنشور
+                                <span className="badge bg-light text-success border px-2 py-1 rounded-pill fw-semibold" style={{ fontSize: '0.75rem' }}>
+                                  <i className="ti ti-point-filled me-1"></i> معتمد ومنشور
                                 </span>
                               )}
                             </td>
                             <td className="text-center">
-                              <div className="d-flex justify-content-center gap-1">
+                              <div className="d-flex align-items-center justify-content-center gap-2">
                                 
                                 {/* If Abandoned, Show WhatsApp Nudge Button */}
                                 {isAbandoned && (
                                   <button
                                     type="button"
-                                    className="btn btn-warning btn-sm rounded-pill px-2 py-1 fw-bold text-dark shadow-sm d-flex align-items-center gap-1"
+                                    className="btn btn-sm rounded-pill px-2 py-1 fw-bold shadow-xs d-flex align-items-center gap-1"
+                                    style={{ fontSize: '0.76rem', background: '#fffbeb', color: '#d97706', border: '1px solid #fde68a' }}
                                     onClick={() => handleSendNudge(sub)}
                                     title="إرسال تذكير عبر الواتساب لإكمال الاستمارة"
                                   >
@@ -355,17 +430,19 @@ export default function IntakeSubmissions() {
                                 {/* View Answers Modal */}
                                 <button
                                   type="button"
-                                  className="btn btn-outline-secondary btn-sm rounded-pill px-2 py-1"
+                                  className="btn btn-sm rounded-pill px-2 py-1 fw-semibold bg-white border"
+                                  style={{ fontSize: '0.76rem', color: '#475569', height: '30px' }}
                                   onClick={() => setSelectedAnswers({ sub, answers: sub.answers })}
                                   title="عرض إجابات الاستمارة وتدقيق الأمان"
                                 >
-                                  <i className="ti ti-eye"></i> إجابات
+                                  <i className="ti ti-eye me-1"></i> إجابات
                                 </button>
 
                                 {/* Payment Confirmation Modal */}
                                 <button
                                   type="button"
-                                  className="btn btn-outline-info btn-sm rounded-pill px-2 py-1"
+                                  className="btn btn-sm rounded-pill px-2 py-1 fw-semibold bg-white border"
+                                  style={{ fontSize: '0.76rem', color: '#059669', height: '30px' }}
                                   onClick={() => {
                                     setPaymentModalSub(sub);
                                     setPaymentForm({
@@ -377,28 +454,29 @@ export default function IntakeSubmissions() {
                                   }}
                                   title="تأكيد الدفع والباقة"
                                 >
-                                  <i className="ti ti-wallet"></i> الدفع
+                                  <i className="ti ti-wallet me-1"></i> الدفع
                                 </button>
 
                                 {/* Generate Draft / Edit */}
                                 {sub.status !== 'APPROVED' ? (
                                   <button
                                     type="button"
-                                    className="btn btn-primary btn-sm rounded-pill px-3 py-1 fw-bold shadow-sm"
+                                    className="btn btn-sm rounded-pill px-3 py-1 fw-bold text-white shadow-xs d-flex align-items-center gap-1"
                                     disabled={isGenerating}
                                     onClick={() => handleGenerateDraft(sub)}
-                                    style={{ background: 'linear-gradient(135deg, #0ea5e9 0%, #0284c7 100%)', border: 'none' }}
+                                    style={{ fontSize: '0.76rem', background: '#261c6a', border: 'none', height: '30px' }}
                                   >
                                     {isGenerating ? (
                                       <span className="spinner-border spinner-border-sm"></span>
                                     ) : (
-                                      <><i className="ti ti-sparkles me-1"></i> {sub.status === 'DRAFT_GENERATED' ? 'تعديل المسودة' : 'توليد ومراجعة'}</>
+                                      <><i className="ti ti-sparkles"></i> {sub.status === 'DRAFT_GENERATED' ? 'تعديل المسودة' : 'توليد ومراجعة'}</>
                                     )}
                                   </button>
                                 ) : (
                                   <Link
                                     to={`/coach/editor?user_id=${user.client_code || user.id}`}
-                                    className="btn btn-outline-success btn-sm rounded-pill px-3 py-1 fw-bold"
+                                    className="btn btn-sm rounded-pill px-3 py-1 fw-semibold shadow-xs"
+                                    style={{ fontSize: '0.76rem', background: '#f5f3ff', color: '#261c6a', border: '1px solid #ddd6fe', height: '30px' }}
                                   >
                                     <i className="ti ti-edit me-1"></i> تعديل الخطة
                                   </Link>
@@ -407,16 +485,16 @@ export default function IntakeSubmissions() {
                                 {/* WhatsApp CTA */}
                                 <button
                                   type="button"
-                                  className="btn btn-outline-success btn-sm rounded-circle p-1"
-                                  style={{ width: '32px', height: '32px' }}
+                                  className="btn btn-sm rounded-circle p-0 d-flex align-items-center justify-content-center transition-all bg-white border"
+                                  style={{ width: '30px', height: '30px', borderColor: '#e2e8f0', color: '#16a34a' }}
                                   onClick={() => setWhatsappClient({
                                     full_name: clientName,
-                                    phone_number: clientPhone,
-                                    client_code: user.client_code
+                                    client_code: user.client_code || sub.id,
+                                    phone_number: clientPhone
                                   })}
-                                  title="مراسلة العميل عبر الواتساب"
+                                  title="مراسلة سريعة عبر الواتساب"
                                 >
-                                  <i className="ti ti-brand-whatsapp"></i>
+                                  <i className="ti ti-brand-whatsapp fs-6"></i>
                                 </button>
                               </div>
                             </td>
@@ -433,171 +511,103 @@ export default function IntakeSubmissions() {
         </div>
       </div>
 
-      {/* View Answers & Safety Audit Modal */}
+      {/* Answers Audit Modal */}
       {selectedAnswers && (
-        <div 
-          className="modal fade show d-block" 
-          tabIndex="-1" 
-          style={{ backgroundColor: 'rgba(15, 23, 42, 0.65)', backdropFilter: 'blur(4px)', zIndex: 1055 }}
-          onClick={(e) => { if (e.target === e.currentTarget) setSelectedAnswers(null); }}
-        >
+        <div className="modal show d-block" tabIndex="-1" style={{ backgroundColor: 'rgba(15, 23, 42, 0.65)', backdropFilter: 'blur(4px)', zIndex: 1060 }}>
           <div className="modal-dialog modal-dialog-centered modal-lg">
-            <div className="modal-content border-0 shadow-lg" style={{ borderRadius: '24px' }} dir="rtl">
-              <div className="modal-header border-0 pb-0 px-4 pt-4 d-flex justify-content-between align-items-center">
-                <h5 className="modal-title fw-bold text-dark">
-                  إجابات الاستمارة وتدقيق الأمان: {selectedAnswers.sub.user?.full_name || 'العميل'}
-                </h5>
-                <button type="button" className="btn-close" onClick={() => setSelectedAnswers(null)}></button>
-              </div>
-              <div className="modal-body px-4 py-3" style={{ maxHeight: '75vh', overflowY: 'auto' }}>
-                
-                {/* AI Rationale & Safety Audit Box */}
-                <div className="p-3 mb-3 rounded-4 border border-primary-subtle" style={{ background: 'linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%)' }}>
-                  <h6 className="fw-bold text-primary mb-2 d-flex align-items-center gap-1">
-                    <i className="ti ti-sparkles"></i> تقرير الذكاء الرياضي والتدقيق الأمني (AI Safety Audit)
-                  </h6>
-                  <ul className="list-unstyled mb-0 small text-dark" style={{ lineHeight: '1.7' }}>
-                    <li className="mb-1">
-                      <strong>مراعاة الإصابات:</strong> {selectedAnswers.answers?.medical?.conditions?.length > 0 ? 'تم استبعاد الحركات المجهدة للمفاصل المتأثرة وتضمين بدائل آمنة.' : 'لا توجد إصابات مسجلة؛ البرنامج يعتمد على التمارين المركبة الحرة.'}
-                    </li>
-                    <li className="mb-1">
-                      <strong>الحساسية والتفضيل:</strong> {selectedAnswers.answers?.nutrition?.allergies?.length > 0 ? `تم استبعاد (${selectedAnswers.answers.nutrition.allergies.map(a => a.substance).join(', ')}) من الدايت والبدائل.` : 'لا توجد حساسية طعام؛ خطة الوجبات مرنة وشاملة.'}
-                    </li>
-                    <li>
-                      <strong>استراتيجية الكارديو:</strong> 3 جلسات Zone 2 بمعدل 120-135 نبضة/دقيقة لحرق الدهون دون التأثير على الكتلة العضلية.
-                    </li>
-                  </ul>
-                </div>
-
-                <div className="row g-3">
-                  <div className="col-md-6">
-                    <div className="p-3 bg-light rounded-3 border">
-                      <h6 className="fw-bold text-primary mb-2">البيانات الجسدية والأهداف</h6>
-                      <p className="mb-1 small"><strong>الطول:</strong> {selectedAnswers.answers?.body?.heightCm || 170} سم</p>
-                      <p className="mb-1 small"><strong>الوزن:</strong> {selectedAnswers.answers?.body?.weightKg || 70} كجم</p>
-                      <p className="mb-1 small"><strong>محيط الخصر:</strong> {selectedAnswers.answers?.body?.waistCm || '-'} سم</p>
-                      <p className="mb-1 small"><strong>الهدف الأساسي:</strong> {selectedAnswers.answers?.goals?.primary || 'FAT_LOSS'}</p>
-                      <p className="mb-0 small"><strong>الهدف الثانوي:</strong> {selectedAnswers.answers?.goals?.secondaryTraining || 'GENERAL_STRENGTH'}</p>
-                    </div>
+            <div className="modal-content border-0 shadow-lg" style={{ borderRadius: '20px', overflow: 'hidden' }} dir="rtl">
+              <div className="modal-header border-bottom p-4 bg-white d-flex justify-content-between align-items-center" style={{ borderColor: '#f1f5f9' }}>
+                <div className="d-flex align-items-center gap-3">
+                  <div className="rounded-circle d-flex align-items-center justify-content-center" style={{ width: '38px', height: '38px', background: '#f5f3ff', color: '#261c6a', border: '1px solid #ddd6fe' }}>
+                    <i className="ti ti-clipboard-list fs-5"></i>
                   </div>
-
-                  <div className="col-md-6">
-                    <div className="p-3 bg-light rounded-3 border">
-                      <h6 className="fw-bold text-primary mb-2">التدريب والنشاط</h6>
-                      <p className="mb-1 small"><strong>مكان التمرين:</strong> {selectedAnswers.answers?.training?.location === 'HOME' ? 'المنزل' : 'الجيم'}</p>
-                      <p className="mb-1 small"><strong>أيام التمرين المفضلة:</strong> {selectedAnswers.answers?.training?.preferredDaysPerWeek || 4} أيام أسبوعياً</p>
-                      <p className="mb-1 small"><strong>الخبرة:</strong> {selectedAnswers.answers?.training?.experience || 'BEGINNER'}</p>
-                      <p className="mb-0 small"><strong>ساعات النوم:</strong> {selectedAnswers.answers?.lifestyle?.sleep?.averageHours || 7} ساعات</p>
-                    </div>
-                  </div>
-
-                  <div className="col-12">
-                    <div className="p-3 bg-light rounded-3 border">
-                      <h6 className="fw-bold text-danger mb-2">الحالة الطبية والموانع</h6>
-                      {selectedAnswers.answers?.medical?.conditions?.length > 0 ? (
-                        selectedAnswers.answers.medical.conditions.map((c, i) => (
-                          <span key={i} className="badge bg-danger-subtle text-danger border border-danger-subtle me-1 p-2">
-                            {c.conditionCode} ({c.stability})
-                          </span>
-                        ))
-                      ) : (
-                        <p className="text-muted small mb-0">لا توجد أمراض أو حالات مزمنة مسجلة.</p>
-                      )}
-                    </div>
-                  </div>
-
-                  <div className="col-12">
-                    <div className="p-3 bg-light rounded-3 border">
-                      <h6 className="fw-bold text-success mb-2">التغذية والحساسية</h6>
-                      <p className="mb-1 small"><strong>عدد الوجبات المفضل:</strong> {selectedAnswers.answers?.nutrition?.preferredMealCount || 3} وجبات</p>
-                      <p className="mb-1 small"><strong>الميزانية:</strong> {selectedAnswers.answers?.nutrition?.budget || 'MEDIUM'}</p>
-                      <p className="mb-0 small"><strong>حساسية الطعام:</strong> {selectedAnswers.answers?.nutrition?.allergies?.map(a => a.substance).join(', ') || 'لا توجد'}</p>
-                    </div>
+                  <div>
+                    <h5 className="modal-title fw-bold text-dark mb-0" style={{ fontSize: '1.05rem' }}>بيانات استمارة المتدرب</h5>
+                    <small className="text-muted" style={{ fontSize: '0.78rem' }}>مراجعة إجابات التقييم الشامل والأمان الحركي</small>
                   </div>
                 </div>
+                <button type="button" className="btn-close" onClick={() => setSelectedAnswers(null)} title="إغلاق"></button>
               </div>
-              <div className="modal-footer border-0 px-4 pb-4">
-                <button type="button" className="btn btn-secondary rounded-pill px-4" onClick={() => setSelectedAnswers(null)}>إغلاق</button>
+              <div className="modal-body p-4 bg-white" style={{ maxHeight: '70vh', overflowY: 'auto' }}>
+                <pre className="bg-light p-3 rounded-3 text-dark small" style={{ direction: 'ltr', textAlign: 'left', fontSize: '0.8rem' }}>
+                  {JSON.stringify(selectedAnswers.answers, null, 2)}
+                </pre>
+              </div>
+              <div className="modal-footer bg-light border-top p-3 d-flex justify-content-end" style={{ borderColor: '#f1f5f9' }}>
+                <button type="button" className="btn btn-light btn-sm rounded-pill px-4 border text-dark" style={{ height: '36px' }} onClick={() => setSelectedAnswers(null)}>
+                  إغلاق
+                </button>
               </div>
             </div>
           </div>
         </div>
       )}
 
-      {/* Verify Payment Modal */}
+      {/* Payment Confirmation Modal */}
       {paymentModalSub && (
-        <div 
-          className="modal fade show d-block" 
-          tabIndex="-1" 
-          style={{ backgroundColor: 'rgba(15, 23, 42, 0.65)', backdropFilter: 'blur(4px)', zIndex: 1055 }}
-          onClick={(e) => { if (e.target === e.currentTarget) setPaymentModalSub(null); }}
-        >
-          <div className="modal-dialog modal-dialog-centered">
-            <div className="modal-content border-0 shadow-lg" style={{ borderRadius: '24px' }} dir="rtl">
+        <div className="modal show d-block" tabIndex="-1" style={{ backgroundColor: 'rgba(15, 23, 42, 0.65)', backdropFilter: 'blur(4px)', zIndex: 1060 }}>
+          <div className="modal-dialog modal-dialog-centered" style={{ maxWidth: '480px' }}>
+            <div className="modal-content border-0 shadow-lg" style={{ borderRadius: '20px', overflow: 'hidden' }} dir="rtl">
+              <div className="modal-header border-bottom p-4 bg-white d-flex justify-content-between align-items-center" style={{ borderColor: '#f1f5f9' }}>
+                <div className="d-flex align-items-center gap-3">
+                  <div className="rounded-circle d-flex align-items-center justify-content-center" style={{ width: '38px', height: '38px', background: '#ecfdf5', color: '#059669', border: '1px solid #a7f3d0' }}>
+                    <i className="ti ti-wallet fs-5"></i>
+                  </div>
+                  <div>
+                    <h5 className="modal-title fw-bold text-dark mb-0" style={{ fontSize: '1.05rem' }}>تأكيد دفع الاشتراك</h5>
+                    <small className="text-muted" style={{ fontSize: '0.78rem' }}>تفعيل باقة المشترك والبدء في تصميم الخطة</small>
+                  </div>
+                </div>
+                <button type="button" className="btn-close" onClick={() => setPaymentModalSub(null)} title="إغلاق"></button>
+              </div>
               <form onSubmit={handleVerifyPayment}>
-                <div className="modal-header border-0 pb-0 px-4 pt-4">
-                  <h5 className="modal-title fw-bold text-dark">
-                    تأكيد دفع واشتراك العميل: {paymentModalSub.user?.full_name || 'العميل'}
-                  </h5>
-                  <button type="button" className="btn-close" onClick={() => setPaymentModalSub(null)}></button>
-                </div>
-                <div className="modal-body px-4 py-3">
+                <div className="modal-body p-4 bg-white">
                   <div className="mb-3">
-                    <label className="form-label fw-semibold small">باقة الاشتراك</label>
+                    <label className="form-label fw-bold text-dark small">نوع الباقة</label>
                     <select 
-                      className="form-select bg-light border-0"
+                      className="form-select"
+                      style={{ height: '38px', borderRadius: '10px', fontSize: '0.82rem' }}
                       value={paymentForm.subscription_package}
-                      onChange={e => setPaymentForm({ ...paymentForm, subscription_package: e.target.value })}
+                      onChange={(e) => setPaymentForm({ ...paymentForm, subscription_package: e.target.value })}
                     >
-                      <option value="1_MONTH_STANDARD">باقة شهر تدريب وتغذية (1 Month)</option>
-                      <option value="3_MONTHS_VIP">باقة 3 شهور VIP الشاملة (3 Months)</option>
-                      <option value="6_MONTHS_PRO">باقة 6 شهور تحول شامل (6 Months)</option>
-                      <option value="12_MONTHS_ELITE">باقة سنوية Elite (12 Months)</option>
+                      <option value="1_MONTH">باقة شهر واحد (1M)</option>
+                      <option value="3_MONTHS_VIP">باقة 3 شهور VIP</option>
+                      <option value="6_MONTHS">باقة 6 شهور (6M)</option>
+                      <option value="12_MONTHS">باقة سنة كاملة (1 Year)</option>
                     </select>
                   </div>
-
                   <div className="mb-3">
-                    <label className="form-label fw-semibold small">المبلغ المدفوع (ج.م)</label>
+                    <label className="form-label fw-bold text-dark small">المبلغ المدفوع (ج.م)</label>
                     <input 
-                      type="number" 
-                      className="form-control bg-light border-0"
+                      type="number"
+                      className="form-control"
+                      style={{ height: '38px', borderRadius: '10px', fontSize: '0.82rem' }}
                       value={paymentForm.subscription_price}
-                      onChange={e => setPaymentForm({ ...paymentForm, subscription_price: Number(e.target.value) })}
+                      onChange={(e) => setPaymentForm({ ...paymentForm, subscription_price: Number(e.target.value) })}
                       required
                     />
                   </div>
-
-                  <div className="mb-3">
-                    <label className="form-label fw-semibold small">طريقة التحويل / الدفع</label>
+                  <div className="mb-2">
+                    <label className="form-label fw-bold text-dark small">طريقة الدفع</label>
                     <select 
-                      className="form-select bg-light border-0"
+                      className="form-select"
+                      style={{ height: '38px', borderRadius: '10px', fontSize: '0.82rem' }}
                       value={paymentForm.payment_method}
-                      onChange={e => setPaymentForm({ ...paymentForm, payment_method: e.target.value })}
+                      onChange={(e) => setPaymentForm({ ...paymentForm, payment_method: e.target.value })}
                     >
-                      <option value="INSTAPAY">إنستاباي (InstaPay)</option>
+                      <option value="INSTAPAY">انستاباي (InstaPay)</option>
                       <option value="VODAFONE_CASH">فودافون كاش (Vodafone Cash)</option>
-                      <option value="BANK_TRANSFER">تحويل بنكي (Bank Transfer)</option>
-                      <option value="CASH">نقداً (Cash)</option>
+                      <option value="CREDIT_CARD">بطاقة بنكية / فيزا</option>
+                      <option value="CASH">نقداً في الجيم</option>
                     </select>
-                  </div>
-
-                  <div className="mb-3">
-                    <label className="form-label fw-semibold small">مدة الاشتراك (بالشهور)</label>
-                    <input 
-                      type="number" 
-                      className="form-control bg-light border-0"
-                      min="1" 
-                      max="12"
-                      value={paymentForm.duration_months}
-                      onChange={e => setPaymentForm({ ...paymentForm, duration_months: Number(e.target.value) })}
-                      required
-                    />
                   </div>
                 </div>
-                <div className="modal-footer border-0 px-4 pb-4">
-                  <button type="button" className="btn btn-light rounded-pill px-4" onClick={() => setPaymentModalSub(null)}>إلغاء</button>
-                  <button type="submit" className="btn btn-success rounded-pill px-4 fw-bold shadow-sm">
-                    <i className="ti ti-check me-1"></i> حفظ وتأكيد الدفع
+                <div className="modal-footer bg-light border-top p-3 d-flex justify-content-between" style={{ borderColor: '#f1f5f9' }}>
+                  <button type="button" className="btn btn-light btn-sm rounded-pill px-4 border text-dark" style={{ height: '36px' }} onClick={() => setPaymentModalSub(null)}>
+                    إلغاء
+                  </button>
+                  <button type="submit" className="btn btn-primary btn-sm rounded-pill px-4 fw-bold" style={{ height: '36px' }}>
+                    تأكيد وتفعيل الاشتراك 
                   </button>
                 </div>
               </form>
@@ -606,13 +616,11 @@ export default function IntakeSubmissions() {
         </div>
       )}
 
-      {/* WhatsApp Modal */}
-      {whatsappClient && (
-        <WhatsAppModal 
-          client={whatsappClient}
-          onClose={() => setWhatsappClient(null)}
-        />
-      )}
+      {/* WhatsApp Hub Modal */}
+      <WhatsAppModal 
+        client={whatsappClient}
+        onClose={() => setWhatsappClient(null)}
+      />
     </AdminLayout>
   );
 }

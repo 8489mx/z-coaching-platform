@@ -1,13 +1,32 @@
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import ZCoachingLogo from '../common/ZCoachingLogo';
+
+const USER_MENU_GROUPS = [
+  {
+    groupTitle: 'الخطة اليومية',
+    items: [
+      { id: 'dashboard', to: '/user-dashboard', label: 'الرئيسية', icon: 'ti-layout-dashboard', isActive: true },
+      { id: 'workout', href: '#today-workout', label: 'جدول التمارين', icon: 'ti-barbell' },
+      { id: 'meals', href: '#diet-plan', label: 'الدايت والوجبات', icon: 'ti-salad' },
+      { id: 'supplements', href: '#supplements-plan', label: 'المكملات الغذائية', icon: 'ti-pill' },
+    ]
+  },
+  {
+    groupTitle: 'المتابعة والملف',
+    items: [
+      { id: 'checkin', action: 'checkin', label: 'إرسال المتابعة', icon: 'ti-clipboard-check' },
+      { id: 'progress', to: (uid) => `/progress?user_id=${uid}`, label: 'القياسات والصور', icon: 'ti-chart-line' },
+      { id: 'pdf', to: (uid) => `/pdf?user_id=${uid}`, target: '_blank', label: 'تحميل الخطة PDF', icon: 'ti-file-text' },
+    ]
+  }
+];
 
 export default function UserDashboardSidebar({ targetUserId, onOpenCheckin }) {
   const location = useLocation();
 
   return (
     <aside 
-      className="codex-sidebar d-flex flex-column justify-content-between"
+      className="codex-sidebar d-flex flex-column justify-content-between" 
       style={{ 
         background: '#ffffff', 
         borderLeft: '1px solid #edf2f7',
@@ -21,7 +40,7 @@ export default function UserDashboardSidebar({ targetUserId, onOpenCheckin }) {
       }}
     >
       <div className="d-flex flex-column flex-grow-1" style={{ minHeight: 0 }}>
-        {/* Centered Athletic Brand & Logo */}
+        {/* Centered Athletic Brand & Logo (Exact match with coach sidebar) */}
         <div 
           className="codex-brand flex-shrink-0" 
           style={{ 
@@ -81,7 +100,7 @@ export default function UserDashboardSidebar({ targetUserId, onOpenCheckin }) {
           </Link>
         </div>
 
-        {/* Menu List */}
+        {/* Grouped Menu List (Identical typography, weights, and active state to coach sidebar) */}
         <div 
           className="codex-menuwrapper custom-scroll flex-grow-1" 
           data-simplebar 
@@ -89,127 +108,116 @@ export default function UserDashboardSidebar({ targetUserId, onOpenCheckin }) {
           data-simplebar-auto-hide="true"
           style={{ padding: '12px 10px', overflowY: 'auto' }}
         >
-          <div className="mb-2">
-            <div 
-              style={{ 
-                fontSize: '0.66rem', 
-                fontWeight: '700', 
-                color: '#94a3b8', 
-                padding: '4px 10px', 
-                letterSpacing: '0.3px'
-              }}
-            >
-              الخطة اليومية
+          {USER_MENU_GROUPS.map((group, gIdx) => (
+            <div key={gIdx} className="mb-2">
+              <div 
+                style={{ 
+                  fontSize: '0.66rem', 
+                  fontWeight: '700', 
+                  color: '#94a3b8', 
+                  padding: '4px 10px', 
+                  letterSpacing: '0.3px'
+                }}
+              >
+                {group.groupTitle}
+              </div>
+
+              <ul className="codex-menu p-0 m-0 list-unstyled">
+                {group.items.map((item) => {
+                  const isActive = item.isActive;
+                  return (
+                    <li key={item.id} className="mb-1">
+                      {item.to ? (
+                        <Link 
+                          to={typeof item.to === 'function' ? item.to(targetUserId) : item.to}
+                          target={item.target}
+                          className={`golden-sidebar-item d-flex align-items-center justify-content-between px-3 py-2 rounded-3 text-decoration-none transition-all ${isActive ? 'active' : ''}`}
+                          style={{
+                            fontSize: '0.82rem',
+                            fontWeight: isActive ? '700' : '500',
+                            color: isActive ? '#261c6a' : '#475569',
+                            background: isActive ? '#f5f3ff' : 'transparent',
+                            borderRadius: '8px',
+                            borderRight: isActive ? '3px solid #261c6a' : '3px solid transparent',
+                            transition: 'all 0.15s ease'
+                          }}
+                        >
+                          <div className="d-flex align-items-center gap-2">
+                            <i 
+                              className={`ti ${item.icon}`}
+                              style={{ 
+                                fontSize: '1.1rem',
+                                color: isActive ? '#261c6a' : '#94a3b8',
+                                transition: 'color 0.15s ease'
+                              }}
+                            ></i>
+                            <span>{item.label}</span>
+                          </div>
+                        </Link>
+                      ) : item.action === 'checkin' ? (
+                        <button
+                          type="button"
+                          onClick={onOpenCheckin}
+                          className="golden-sidebar-item w-100 d-flex align-items-center justify-content-between px-3 py-2 rounded-3 text-decoration-none border-0 transition-all text-start"
+                          style={{
+                            fontSize: '0.82rem',
+                            fontWeight: '500',
+                            color: '#475569',
+                            background: 'transparent',
+                            borderRadius: '8px',
+                            borderRight: '3px solid transparent',
+                            transition: 'all 0.15s ease'
+                          }}
+                        >
+                          <div className="d-flex align-items-center gap-2">
+                            <i 
+                              className={`ti ${item.icon}`}
+                              style={{ 
+                                fontSize: '1.1rem',
+                                color: '#16a34a',
+                                transition: 'color 0.15s ease'
+                              }}
+                            ></i>
+                            <span>{item.label}</span>
+                          </div>
+                        </button>
+                      ) : (
+                        <a 
+                          href={item.href}
+                          className="golden-sidebar-item d-flex align-items-center justify-content-between px-3 py-2 rounded-3 text-decoration-none transition-all"
+                          style={{
+                            fontSize: '0.82rem',
+                            fontWeight: '500',
+                            color: '#475569',
+                            background: 'transparent',
+                            borderRadius: '8px',
+                            borderRight: '3px solid transparent',
+                            transition: 'all 0.15s ease'
+                          }}
+                        >
+                          <div className="d-flex align-items-center gap-2">
+                            <i 
+                              className={`ti ${item.icon}`}
+                              style={{ 
+                                fontSize: '1.1rem',
+                                color: '#94a3b8',
+                                transition: 'color 0.15s ease'
+                              }}
+                            ></i>
+                            <span>{item.label}</span>
+                          </div>
+                        </a>
+                      )}
+                    </li>
+                  );
+                })}
+              </ul>
             </div>
-
-            <ul className="p-0 m-0 list-unstyled">
-              <li className="mb-1">
-                <Link 
-                  to="/user-dashboard"
-                  className="golden-sidebar-item d-flex align-items-center gap-2 px-3 py-2 rounded-3 text-decoration-none active"
-                  style={{
-                    fontSize: '0.82rem',
-                    fontWeight: '700',
-                    color: '#261c6a',
-                    background: '#f5f3ff',
-                    borderRight: '3px solid #261c6a',
-                    borderRadius: '8px'
-                  }}
-                >
-                  <i className="ti ti-layout-dashboard" style={{ fontSize: '1.1rem', color: '#261c6a' }}></i>
-                  <span>الرئيسية</span>
-                </Link>
-              </li>
-
-              <li className="mb-1">
-                <a 
-                  href="#today-workout"
-                  className="golden-sidebar-item d-flex align-items-center gap-2 px-3 py-2 rounded-3 text-decoration-none text-secondary"
-                  style={{ fontSize: '0.82rem', fontWeight: '500' }}
-                >
-                  <i className="ti ti-barbell text-muted" style={{ fontSize: '1.1rem' }}></i>
-                  <span>جدول التمارين</span>
-                </a>
-              </li>
-
-              <li className="mb-1">
-                <a 
-                  href="#diet-plan"
-                  className="golden-sidebar-item d-flex align-items-center gap-2 px-3 py-2 rounded-3 text-decoration-none text-secondary"
-                  style={{ fontSize: '0.82rem', fontWeight: '500' }}
-                >
-                  <i className="ti ti-salad text-muted" style={{ fontSize: '1.1rem' }}></i>
-                  <span>الدايت والوجبات</span>
-                </a>
-              </li>
-
-              <li className="mb-1">
-                <a 
-                  href="#supplements-plan"
-                  className="golden-sidebar-item d-flex align-items-center gap-2 px-3 py-2 rounded-3 text-decoration-none text-secondary"
-                  style={{ fontSize: '0.82rem', fontWeight: '500' }}
-                >
-                  <i className="ti ti-pill text-muted" style={{ fontSize: '1.1rem' }}></i>
-                  <span>المكملات</span>
-                </a>
-              </li>
-            </ul>
-          </div>
-
-          <div className="mb-2">
-            <div 
-              style={{ 
-                fontSize: '0.66rem', 
-                fontWeight: '700', 
-                color: '#94a3b8', 
-                padding: '4px 10px', 
-                letterSpacing: '0.3px'
-              }}
-            >
-              المتابعة والملف
-            </div>
-
-            <ul className="p-0 m-0 list-unstyled">
-              <li className="mb-1">
-                <button
-                  type="button"
-                  onClick={onOpenCheckin}
-                  className="btn w-100 text-start d-flex align-items-center gap-2 px-3 py-2 rounded-3 border-0 bg-transparent text-secondary"
-                  style={{ fontSize: '0.82rem', fontWeight: '500' }}
-                >
-                  <i className="ti ti-clipboard-check text-success" style={{ fontSize: '1.1rem' }}></i>
-                  <span>إرسال المتابعة</span>
-                </button>
-              </li>
-
-              <li className="mb-1">
-                <Link 
-                  to={`/progress?user_id=${targetUserId}`}
-                  className="golden-sidebar-item d-flex align-items-center gap-2 px-3 py-2 rounded-3 text-decoration-none text-secondary"
-                  style={{ fontSize: '0.82rem', fontWeight: '500' }}
-                >
-                  <i className="ti ti-chart-line text-muted" style={{ fontSize: '1.1rem' }}></i>
-                  <span>القياسات والصور</span>
-                </Link>
-              </li>
-
-              <li className="mb-1">
-                <Link 
-                  to={`/pdf?user_id=${targetUserId}`}
-                  target="_blank"
-                  className="golden-sidebar-item d-flex align-items-center gap-2 px-3 py-2 rounded-3 text-decoration-none text-secondary"
-                  style={{ fontSize: '0.82rem', fontWeight: '500' }}
-                >
-                  <i className="ti ti-file-text text-danger" style={{ fontSize: '1.1rem' }}></i>
-                  <span>تحميل الخطة PDF</span>
-                </Link>
-              </li>
-            </ul>
-          </div>
+          ))}
         </div>
       </div>
 
-      {/* Fixed Compact Bottom Switcher */}
+      {/* Fixed Compact Bottom Switcher (Exact match with coach sidebar) */}
       <div 
         className="p-2 px-3 border-top border-light bg-white flex-shrink-0"
         style={{ 

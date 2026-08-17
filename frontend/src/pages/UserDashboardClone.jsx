@@ -61,60 +61,72 @@ function formatArabicFoodSingleLine(food) {
 }
 
 export default function UserDashboardClone() {
- const [loading, setLoading] = useState(true);
- const [program, setProgram] = useState(null);
- const [currentUser, setCurrentUser] = useState(null);
- const [completedExercises, setCompletedExercises] = useState({});
+  const [loading, setLoading] = useState(true);
+  const [program, setProgram] = useState(null);
+  const [currentUser, setCurrentUser] = useState(null);
+  const [clients, setClients] = useState([]);
+  const [completedExercises, setCompletedExercises] = useState({});
 
- // Smart Swap Modal State
- const [swapModalOpen, setSwapModalOpen] = useState(false);
- const [activeMealIndex, setActiveMealIndex] = useState(null);
- const [activeFoodIndex, setActiveFoodIndex] = useState(null);
- const [selectedFoodItem, setSelectedFoodItem] = useState(null);
- const [swapCandidates, setSwapCandidates] = useState([]);
- const [swapLoading, setSwapLoading] = useState(false);
+  // Smart Swap Modal State
+  const [swapModalOpen, setSwapModalOpen] = useState(false);
+  const [activeMealIndex, setActiveMealIndex] = useState(null);
+  const [activeFoodIndex, setActiveFoodIndex] = useState(null);
+  const [selectedFoodItem, setSelectedFoodItem] = useState(null);
+  const [swapCandidates, setSwapCandidates] = useState([]);
+  const [swapLoading, setSwapLoading] = useState(false);
 
- // Weekly Check-in Modal State
- const [checkinModalOpen, setCheckinModalOpen] = useState(false);
- const [checkinForm, setCheckinForm] = useState({
- weightDay1: 85.0,
- weightDay2: 84.8,
- weightDay3: 84.7,
- weightDay4: 84.5,
- weightDay5: 84.4,
- weightDay6: 84.3,
- weightDay7: 84.2,
- waistCm: 88.5,
- nutritionAdherence: 95,
- hungerLevel: 2,
- energyInGym: 4,
- });
- const [checkinResult, setCheckinResult] = useState(null);
+  // Weekly Check-in Modal State
+  const [checkinModalOpen, setCheckinModalOpen] = useState(false);
+  const [checkinForm, setCheckinForm] = useState({
+    weightDay1: 85.0,
+    weightDay2: 84.8,
+    weightDay3: 84.7,
+    weightDay4: 84.5,
+    weightDay5: 84.4,
+    weightDay6: 84.3,
+    weightDay7: 84.2,
+    waistCm: 88.5,
+    nutritionAdherence: 95,
+    hungerLevel: 2,
+    energyInGym: 4,
+  });
+  const [checkinResult, setCheckinResult] = useState(null);
 
- const searchParams = new URLSearchParams(window.location.search);
- const targetUserId = searchParams.get('user_id') || sessionStorage.getItem('z_active_client_code') || "CLIENT-AHMED-SAMIR";
+  const searchParams = new URLSearchParams(window.location.search);
+  const targetUserId = searchParams.get('user_id') || sessionStorage.getItem('z_active_client_code') || "CLIENT-AHMED-SAMIR";
 
- useEffect(() => {
- fetchLiveProgram();
- }, [targetUserId]);
+  useEffect(() => {
+    fetchClients();
+    fetchLiveProgram();
+  }, [targetUserId]);
 
- const fetchLiveProgram = async () => {
- try {
- setLoading(true);
- const res = await fetch(`${API_BASE}/api/v1/programs/active/${targetUserId}`);
- const data = await res.json();
- if (!res.ok) throw new Error(data.error || "فشل تحميل البرنامج من قاعدة البيانات");
+  const fetchClients = async () => {
+    try {
+      const res = await fetch(`${API_BASE}/api/v1/clients`);
+      const data = await res.json();
+      if (data.clients) setClients(data.clients);
+    } catch (e) {
+      console.error(e);
+    }
+  };
 
- setProgram(data.master_program);
- if (data.user) {
- setCurrentUser(data.user);
- }
- } catch (e) {
- console.error("fetchLiveProgram error:", e);
- } finally {
- setLoading(false);
- }
- };
+  const fetchLiveProgram = async () => {
+    try {
+      setLoading(true);
+      const res = await fetch(`${API_BASE}/api/v1/programs/active/${targetUserId}`);
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "فشل تحميل البرنامج من قاعدة البيانات");
+
+      setProgram(data.master_program);
+      if (data.user) {
+        setCurrentUser(data.user);
+      }
+    } catch (e) {
+      console.error("fetchLiveProgram error:", e);
+    } finally {
+      setLoading(false);
+    }
+  };
 
  // Open Smart Swap Modal
  const handleOpenSwapModal = async (mealIdx, foodIdx, foodItem, mealRole) => {
@@ -263,7 +275,7 @@ export default function UserDashboardClone() {
  return (
  <div className="codex-wrapper" dir="rtl" style={{ minHeight: "100vh", backgroundColor: "#f6f8fb", fontFamily: "Cairo, Tajawal, sans-serif" }}>
  {/* 1. Header */}
- <UserDashboardHeader currentUser={currentUser} targetUserId={targetUserId} />
+ <UserDashboardHeader currentUser={currentUser} targetUserId={targetUserId} clients={clients} />
 
  {/* 2. Sidebar */}
  <UserDashboardSidebar targetUserId={targetUserId} onOpenCheckin={() => setCheckinModalOpen(true)} />

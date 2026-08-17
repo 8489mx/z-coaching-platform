@@ -215,7 +215,8 @@ export default function CoachEditor() {
                 type="button"
                 onClick={handleSaveDraft} 
                 disabled={saving || publishing} 
-                className="btn btn-outline-secondary btn-sm rounded-pill px-3 fw-bold"
+                className="btn btn-light btn-sm rounded-pill px-3 fw-semibold border"
+                style={{ height: '34px', fontSize: '0.8rem' }}
               >
                 {saving ? 'جاري الحفظ...' : 'حفظ كمسودة'}
               </button>
@@ -225,33 +226,33 @@ export default function CoachEditor() {
                 type="button"
                 onClick={handleApproveAndPublish} 
                 disabled={publishing || saving} 
-                className="btn btn-success btn-sm rounded-pill px-4 fw-bold shadow-sm"
-                style={{ background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)', border: 'none' }}
+                className="btn btn-sm rounded-pill px-4 fw-bold shadow-sm text-white d-flex align-items-center gap-1"
+                style={{ height: '34px', background: '#261c6a', border: 'none', boxShadow: '0 3px 10px rgba(38, 28, 106, 0.28)', fontSize: '0.8rem' }}
               >
                 {publishing ? (
                   <><span className="spinner-border spinner-border-sm me-1"></span> جاري الاعتماد والنشر...</>
                 ) : (
-                  <><i className="ti ti-check me-1"></i> اعتماد وإرسال الخطة للعميل</>
+                  <><i className="ti ti-check"></i> اعتماد وإرسال الخطة للعميل</>
                 )}
               </button>
             </div>
           </div>
 
           {/* AI Rationale & Safety Audit Box */}
-          <div className="card border-0 shadow-sm mb-4" style={{ borderRadius: '16px', background: 'linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%)', borderLeft: '4px solid #0284c7' }}>
+          <div className="card border-0 shadow-sm mb-4" style={{ borderRadius: '16px', background: '#fbfaff', border: '1px solid #ede9fe', borderRight: '4px solid #261c6a' }}>
             <div className="card-body p-3">
               <div className="d-flex align-items-center gap-2 mb-2">
-                <div className="p-2 bg-primary text-white rounded-circle d-flex align-items-center justify-content-center" style={{ width: '30px', height: '30px' }}>
-                  <i className="ti ti-sparkles" style={{ fontSize: '0.9rem' }}></i>
+                <div className="rounded-circle d-flex align-items-center justify-content-center" style={{ width: '28px', height: '28px', background: '#f5f3ff', color: '#261c6a', border: '1px solid #ddd6fe' }}>
+                  <i className="ti ti-sparkles" style={{ fontSize: '0.85rem' }}></i>
                 </div>
-                <h6 className="fw-bold text-primary mb-0" style={{ fontSize: '0.95rem' }}>
+                <h6 className="fw-bold mb-0" style={{ color: '#261c6a', fontSize: '0.92rem' }}>
                   تقرير الذكاء الرياضي والتدقيق الأمني (Explainable AI & Safety Audit)
                 </h6>
               </div>
 
-              <div className="row g-2 text-dark small" style={{ fontSize: '0.84rem', lineHeight: '1.6' }}>
+              <div className="row g-2 text-dark small" style={{ fontSize: '0.82rem', lineHeight: '1.6' }}>
                 <div className="col-md-6">
-                  <div className="p-2 bg-white rounded-3 border">
+                  <div className="p-2 bg-white rounded-3 border" style={{ borderColor: '#e2e8f0' }}>
                     <strong className="text-danger d-block mb-1">
                       <i className="ti ti-heart-rate-monitor me-1"></i> مراعاة الإصابات والموانع:
                     </strong>
@@ -262,7 +263,7 @@ export default function CoachEditor() {
                 </div>
 
                 <div className="col-md-6">
-                  <div className="p-2 bg-white rounded-3 border">
+                  <div className="p-2 bg-white rounded-3 border" style={{ borderColor: '#e2e8f0' }}>
                     <strong className="text-success d-block mb-1">
                       <i className="ti ti-apple me-1"></i> الحساسية وتفضيلات الطعام:
                     </strong>
@@ -273,8 +274,8 @@ export default function CoachEditor() {
                 </div>
 
                 <div className="col-md-6">
-                  <div className="p-2 bg-white rounded-3 border">
-                    <strong className="text-primary d-block mb-1">
+                  <div className="p-2 bg-white rounded-3 border" style={{ borderColor: '#e2e8f0' }}>
+                    <strong className="d-block mb-1" style={{ color: '#261c6a' }}>
                       <i className="ti ti-flame me-1"></i> استراتيجية السعرات والماكروز:
                     </strong>
                     <span>
@@ -284,7 +285,7 @@ export default function CoachEditor() {
                 </div>
 
                 <div className="col-md-6">
-                  <div className="p-2 bg-white rounded-3 border">
+                  <div className="p-2 bg-white rounded-3 border" style={{ borderColor: '#e2e8f0' }}>
                     <strong className="text-warning d-block mb-1">
                       <i className="ti ti-activity me-1"></i> الكارديو وحرق الدهون:
                     </strong>
@@ -297,37 +298,30 @@ export default function CoachEditor() {
             </div>
           </div>
 
-          {/* Editor Tabs Navigation */}
+          {/* Editor Tabs Navigation (Quiet Luxury Style) */}
           <div className="d-flex align-items-center justify-content-between mb-4 flex-wrap gap-2">
-            <div className="nav nav-pills bg-white p-2 rounded-pill shadow-sm border">
-              <button 
-                type="button"
-                className={`nav-link rounded-pill px-4 fw-bold ${activeTab === 'workout' ? 'active' : ''}`}
-                onClick={() => setActiveTab('workout')}
-              >
-                <i className="ti ti-barbell me-1"></i> جدول التمارين والمجموعات
-              </button>
-              <button 
-                type="button"
-                className={`nav-link rounded-pill px-4 fw-bold ${activeTab === 'nutrition' ? 'active' : ''}`}
-                onClick={() => setActiveTab('nutrition')}
-              >
-                <i className="ti ti-salad me-1"></i> الدايت والوجبات
-              </button>
-              <button 
-                type="button"
-                className={`nav-link rounded-pill px-4 fw-bold ${activeTab === 'mobility' ? 'active' : ''}`}
-                onClick={() => setActiveTab('mobility')}
-              >
-                <i className="ti ti-activity me-1"></i> الكارديو والإحماء
-              </button>
-              <button 
-                type="button"
-                className={`nav-link rounded-pill px-4 fw-bold ${activeTab === 'notes' ? 'active' : ''}`}
-                onClick={() => setActiveTab('notes')}
-              >
-                <i className="ti ti-notes me-1"></i> توجيهات الكابتن
-              </button>
+            <div className="d-flex gap-2 p-1 bg-white rounded-pill shadow-sm border flex-wrap" style={{ borderColor: '#e2e8f0' }}>
+              {[
+                { id: 'workout', label: 'جدول التمارين والمجموعات', icon: 'ti-barbell' },
+                { id: 'nutrition', label: 'الدايت والوجبات', icon: 'ti-salad' },
+                { id: 'mobility', label: 'الإحماء والإطالات', icon: 'ti-stretching' },
+                { id: 'notes', label: 'توجيهات الكابتن المباشرة', icon: 'ti-notes' }
+              ].map(t => (
+                <button 
+                  key={t.id}
+                  type="button"
+                  className={`btn btn-sm rounded-pill px-4 fw-bold transition-all ${activeTab === t.id ? 'text-white shadow-sm' : 'bg-transparent text-dark'}`}
+                  style={{
+                    background: activeTab === t.id ? '#261c6a' : 'transparent',
+                    border: 'none',
+                    fontSize: '0.82rem',
+                    height: '34px'
+                  }}
+                  onClick={() => setActiveTab(t.id)}
+                >
+                  <i className={`ti ${t.icon} me-1`}></i> {t.label}
+                </button>
+              ))}
             </div>
           </div>
 

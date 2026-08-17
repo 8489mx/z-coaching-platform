@@ -94,113 +94,170 @@ export default function NewClientQuickModal({ isOpen, onClose, onClientCreated }
     <div 
       className="modal fade show d-block" 
       tabIndex="-1" 
-      style={{ backgroundColor: 'rgba(15, 23, 42, 0.65)', backdropFilter: 'blur(4px)', zIndex: 1055 }}
+      style={{ backgroundColor: 'rgba(15, 23, 42, 0.65)', backdropFilter: 'blur(6px)', zIndex: 1065 }}
       onClick={(e) => { if (e.target === e.currentTarget) handleClose(); }}
     >
-      <div className="modal-dialog modal-dialog-centered" style={{ maxWidth: '500px' }}>
-        <div className="modal-content border-0 shadow-lg" style={{ borderRadius: '24px' }} dir="rtl">
+      <div className="modal-dialog modal-dialog-centered" style={{ maxWidth: '490px' }}>
+        <div 
+          className="modal-content border-0 shadow-2xl bg-white position-relative" 
+          style={{ 
+            borderRadius: '24px',
+            border: '1px solid #edf2f7',
+            boxShadow: '0 25px 60px -15px rgba(38, 28, 106, 0.22), 0 0 0 1px rgba(0,0,0,0.03)'
+          }} 
+          dir="rtl"
+        >
           
           {/* Header */}
-          <div className="modal-header border-0 pb-0 px-4 pt-4 d-flex justify-content-between align-items-center">
-            <div className="d-flex align-items-center gap-2">
-              <div className="p-2 bg-primary-subtle text-primary rounded-circle d-flex align-items-center justify-content-center" style={{ width: '40px', height: '40px' }}>
-                <i className="ti ti-user-plus fs-4"></i>
+          <div className="modal-header border-bottom p-4 bg-white d-flex justify-content-between align-items-center" style={{ borderColor: '#f1f5f9' }}>
+            <div className="d-flex align-items-center gap-3">
+              <div className="rounded-circle d-flex align-items-center justify-content-center flex-shrink-0" style={{ width: '42px', height: '42px', background: '#f5f3ff', color: '#261c6a', border: '1.5px solid #ddd6fe' }}>
+                <i className="ti ti-user-plus fs-5"></i>
               </div>
               <div>
-                <h5 className="modal-title fw-bold text-dark mb-0" style={{ fontSize: '1.1rem' }}>تسجيل عميل جديد وتوليد كود</h5>
+                <h5 className="modal-title fw-bold text-dark mb-0" style={{ fontSize: '1.08rem', letterSpacing: '-0.3px' }}>
+                  تسجيل عميل جديد وتوليد كود
+                </h5>
                 <small className="text-muted" style={{ fontSize: '0.78rem' }}>إنشاء رابط استمارة الاشتراك وإرساله عبر الواتساب</small>
               </div>
             </div>
             <button 
               type="button" 
-              className="btn-close" 
+              className="btn-close rounded-circle p-2" 
               onClick={handleClose} 
               aria-label="Close"
               title="إغلاق (Esc)"
+              style={{ fontSize: '0.8rem' }}
             ></button>
           </div>
 
           {/* Body */}
-          <div className="modal-body px-4 py-3">
+          <div className="modal-body p-4 bg-white">
             {error && (
-              <div className="alert alert-danger py-2 px-3 small rounded-3 mb-3">
-                <i className="ti ti-alert-circle me-1"></i> {error}
+              <div className="alert alert-danger py-2 px-3 small rounded-3 mb-3 d-flex align-items-center gap-2" style={{ fontSize: '0.8rem' }}>
+                <i className="ti ti-alert-circle fs-5"></i>
+                <span>{error}</span>
               </div>
             )}
 
             {!newClient ? (
               <form onSubmit={handleCreate}>
+                {/* Phone Input */}
                 <div className="mb-3">
-                  <label className="form-label fw-semibold text-dark small mb-1">رقم الواتساب للعميل <span className="text-danger">*</span></label>
-                  <div className="input-group">
-                    <span className="input-group-text bg-light border-0"><i className="ti ti-brand-whatsapp text-success fs-5"></i></span>
+                  <label className="form-label fw-bold text-dark small mb-1" style={{ fontSize: '0.82rem' }}>
+                    رقم الواتساب للعميل <span className="text-danger">*</span>
+                  </label>
+                  <div className="position-relative">
                     <input 
                       type="tel" 
-                      className="form-control bg-light border-0 py-2" 
-                      placeholder="مثال: 01012345678"
+                      className="form-control" 
+                      style={{ 
+                        height: '46px', 
+                        borderRadius: '12px', 
+                        fontSize: '0.88rem', 
+                        border: '1.5px solid #e2e8f0',
+                        paddingRight: '42px',
+                        direction: 'ltr',
+                        textAlign: 'right'
+                      }}
+                      placeholder="01012345678"
                       value={phone}
                       onChange={(e) => setPhone(e.target.value)}
                       autoFocus
                       required
                     />
+                    <div className="position-absolute top-50 end-0 translate-middle-y pe-3 pointer-events-none text-success">
+                      <i className="ti ti-brand-whatsapp fs-5"></i>
+                    </div>
                   </div>
+                  <small className="text-muted d-block mt-1" style={{ fontSize: '0.72rem' }}>سيصل كود الدخول ورابط الاستمارة فوراً على هذا الرقم</small>
                 </div>
 
+                {/* Name Input */}
                 <div className="mb-4">
-                  <label className="form-label fw-semibold text-dark small mb-1">اسم العميل (اختياري)</label>
-                  <div className="input-group">
-                    <span className="input-group-text bg-light border-0"><i className="ti ti-user text-muted fs-5"></i></span>
+                  <label className="form-label fw-bold text-dark small mb-1" style={{ fontSize: '0.82rem' }}>
+                    اسم العميل (اختياري)
+                  </label>
+                  <div className="position-relative">
                     <input 
                       type="text" 
-                      className="form-control bg-light border-0 py-2" 
+                      className="form-control" 
+                      style={{ 
+                        height: '46px', 
+                        borderRadius: '12px', 
+                        fontSize: '0.88rem', 
+                        border: '1.5px solid #e2e8f0',
+                        paddingRight: '42px'
+                      }}
                       placeholder="مثال: أحمد سمير"
                       value={fullName}
                       onChange={(e) => setFullName(e.target.value)}
                     />
+                    <div className="position-absolute top-50 end-0 translate-middle-y pe-3 pointer-events-none" style={{ color: '#261c6a' }}>
+                      <i className="ti ti-user fs-5"></i>
+                    </div>
                   </div>
                 </div>
 
-                <div className="d-flex gap-2 justify-content-end pt-2">
-                  <button type="button" className="btn btn-light rounded-pill px-4" onClick={handleClose}>
+                {/* Footer Buttons */}
+                <div className="d-flex gap-2 justify-content-between align-items-center pt-2 border-top" style={{ borderColor: '#f1f5f9' }}>
+                  <button 
+                    type="button" 
+                    className="btn btn-light rounded-pill px-4 fw-semibold" 
+                    style={{ height: '40px', fontSize: '0.82rem', border: '1px solid #e2e8f0', color: '#475569' }}
+                    onClick={handleClose}
+                  >
                     إلغاء
                   </button>
                   <button 
                     type="submit" 
-                    className="btn btn-primary rounded-pill px-4 fw-bold shadow-sm"
+                    className="btn btn-primary rounded-pill px-4 fw-bold shadow-sm d-flex align-items-center gap-2 text-white"
                     disabled={loading || !phone.trim()}
-                    style={{ background: 'linear-gradient(135deg, #00b4d8 0%, #0077b6 100%)', border: 'none' }}
+                    style={{ 
+                      height: '40px', 
+                      fontSize: '0.84rem', 
+                      background: 'linear-gradient(135deg, #372896 0%, #261c6a 100%)', 
+                      border: 'none', 
+                      boxShadow: '0 4px 14px rgba(38, 28, 106, 0.28)' 
+                    }}
                   >
                     {loading ? (
-                      <><span className="spinner-border spinner-border-sm me-2" role="status"></span> جاري التوليد...</>
+                      <><span className="spinner-border spinner-border-sm"></span> جاري التوليد...</>
                     ) : (
-                      <><i className="ti ti-sparkles me-1"></i> توليد الكود ورابط الاستمارة</>
+                      <><i className="ti ti-sparkles fs-6"></i> توليد الكود ورابط الاستمارة</>
                     )}
                   </button>
                 </div>
               </form>
             ) : (
-              <div className="text-center py-2">
-                <div className="mb-3">
-                  <span className="badge bg-success-subtle text-success border border-success-subtle px-3 py-2 rounded-pill fw-bold" style={{ fontSize: '0.86rem' }}>
-                    <i className="ti ti-check me-1"></i> تم إنشاء العميل بنجاح
+              <div className="py-2">
+                {/* Success Banner */}
+                <div className="text-center mb-3">
+                  <span className="badge rounded-pill fw-bold px-3 py-2" style={{ background: '#f0fdf4', color: '#16a34a', border: '1px solid #dcfce7', fontSize: '0.84rem' }}>
+                    <i className="ti ti-circle-check me-1"></i> تم إنشاء حساب العميل بنجاح
                   </span>
                 </div>
 
-                <div className="p-3 bg-light rounded-4 text-start mb-3 border">
-                  <div className="d-flex justify-content-between align-items-center mb-2 pb-2 border-bottom">
-                    <span className="text-muted small">كود المشترك:</span>
-                    <span className="badge bg-dark px-3 py-1 font-monospace fs-6">{newClient.client_code}</span>
+                {/* Account Details Card */}
+                <div className="p-3 rounded-4 mb-4 border" style={{ background: '#fbfaff', borderColor: '#ede9fe' }}>
+                  <div className="d-flex justify-content-between align-items-center mb-2 pb-2 border-bottom" style={{ borderColor: '#ede9fe' }}>
+                    <span className="text-muted small" style={{ fontSize: '0.78rem' }}>كود المشترك المعتمد:</span>
+                    <span className="badge rounded-pill fw-bold font-monospace px-3 py-1" style={{ background: '#f5f3ff', color: '#261c6a', border: '1px solid #ddd6fe', fontSize: '0.88rem' }}>
+                      {newClient.client_code}
+                    </span>
                   </div>
-                  <div className="d-flex justify-content-between align-items-center mb-1">
-                    <span className="text-muted small">رقم الهاتف:</span>
-                    <span className="fw-bold text-dark dir-ltr">{newClient.phone_number}</span>
+                  <div className="d-flex justify-content-between align-items-center">
+                    <span className="text-muted small" style={{ fontSize: '0.78rem' }}>رقم الواتساب:</span>
+                    <span className="fw-bold text-dark dir-ltr" style={{ fontSize: '0.86rem' }}>{newClient.phone_number}</span>
                   </div>
                 </div>
 
+                {/* Action Buttons */}
                 <div className="d-grid gap-2">
                   <button 
                     type="button" 
-                    className="btn btn-success py-2 rounded-pill fw-bold shadow-sm d-flex align-items-center justify-content-center gap-2"
+                    className="btn py-2 rounded-pill fw-bold shadow-sm d-flex align-items-center justify-content-center gap-2 text-white"
+                    style={{ height: '42px', background: 'linear-gradient(135deg, #16a34a 0%, #15803d 100%)', border: 'none', fontSize: '0.84rem' }}
                     onClick={handleOpenWhatsApp}
                   >
                     <i className="ti ti-brand-whatsapp fs-5"></i>
@@ -209,7 +266,8 @@ export default function NewClientQuickModal({ isOpen, onClose, onClientCreated }
 
                   <button 
                     type="button" 
-                    className="btn btn-outline-secondary py-2 rounded-pill fw-semibold d-flex align-items-center justify-content-center gap-2"
+                    className="btn btn-light py-2 rounded-pill fw-semibold d-flex align-items-center justify-content-center gap-2"
+                    style={{ height: '40px', border: '1px solid #e2e8f0', fontSize: '0.82rem', color: '#334155' }}
                     onClick={handleCopyMessage}
                   >
                     <i className={copied ? "ti ti-check text-success" : "ti ti-copy"}></i>
@@ -218,7 +276,8 @@ export default function NewClientQuickModal({ isOpen, onClose, onClientCreated }
 
                   <button 
                     type="button" 
-                    className="btn btn-light py-2 rounded-pill text-primary fw-bold"
+                    className="btn btn-sm rounded-pill fw-bold mt-1"
+                    style={{ height: '36px', background: '#f5f3ff', color: '#261c6a', border: '1px solid #ddd6fe', fontSize: '0.8rem' }}
                     onClick={() => {
                       handleClose();
                       navigate(`/intake/form?code=${newClient.client_code}&phone=${newClient.phone_number}`);
