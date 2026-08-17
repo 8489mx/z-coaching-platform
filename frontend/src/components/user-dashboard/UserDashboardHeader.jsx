@@ -1,8 +1,40 @@
-import React from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import React, { useState, useEffect, useRef } from 'react';
+import { Link } from 'react-router-dom';
 
 export default function UserDashboardHeader({ currentUser, targetUserId, clients = [] }) {
-  const navigate = useNavigate();
+  const [dropdownOpen, setDropdownOpen] = useState(false);
+  const dropdownRef = useRef(null);
+
+  // Close dropdown on click outside or ESC
+  useEffect(() => {
+    const handleClickOutside = (e) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(e.target)) {
+        setDropdownOpen(false);
+      }
+    };
+    const handleKeyDown = (e) => {
+      if (e.key === 'Escape') setDropdownOpen(false);
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    window.addEventListener('keydown', handleKeyDown);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+      window.removeEventListener('keydown', handleKeyDown);
+    };
+  }, []);
+
+  const activeClient = clients.find(c => String(c.client_code || c.id) === String(targetUserId)) || 
+                       currentUser || 
+                       (clients.length > 0 ? clients[0] : null);
+
+  const activeName = activeClient?.full_name || (currentUser?.full_name) || "أحمد سمير";
+
+  const handleSelectClient = (clientCode) => {
+    sessionStorage.setItem('z_active_client_code', clientCode);
+    setDropdownOpen(false);
+    window.location.href = `/user-dashboard?user_id=${clientCode}`;
+  };
 
   return (
     <header className="codex-header" style={{ height: '60px' }}>
@@ -23,38 +55,112 @@ export default function UserDashboardHeader({ currentUser, targetUserId, clients
           </div>
         </div>
 
-        {/* Right: Client Selector & Coach Actions */}
+        {/* Right: Custom Luxury Client Selector & Actions */}
         <div className="header-right d-flex align-items-center justify-content-end gap-2 pe-2 flex-wrap">
           
-          {/* 1. Client Switcher Dropdown (Allows switching to ANY client) */}
-          {clients.length > 0 && (
-            <div className="d-flex align-items-center gap-1 bg-white border rounded-pill px-2 py-1 shadow-xs" style={{ height: '34px', borderColor: '#e2e8f0' }}>
-              <i className="ti ti-user-check text-primary" style={{ fontSize: '0.9rem' }}></i>
-              <select 
-                className="form-select form-select-sm border-0 bg-transparent py-0 pe-4 ps-1 fw-bold text-dark"
-                style={{ fontSize: '0.78rem', cursor: 'pointer', maxWidth: '170px', outline: 'none', boxShadow: 'none' }}
-                value={targetUserId}
-                onChange={(e) => {
-                  sessionStorage.setItem('z_active_client_code', e.target.value);
-                  window.location.href = `/user-dashboard?user_id=${e.target.value}`;
-                }}
-                title="تبديل المتدرب المعروض في البوابة"
+          {/* 1. Custom Luxury Client Dropdown */}
+          <div className="position-relative" ref={dropdownRef}>
+            <button
+              type="button"
+              onClick={() => setDropdownOpen(!dropdownOpen)}
+              className="btn bg-white border rounded-pill px-3 py-1 d-flex align-items-center gap-2 shadow-xs transition-all"
+              style={{ 
+                height: '36px', 
+                borderColor: dropdownOpen ? '#261c6a' : '#e2e8f0',
+                background: '#ffffff'
+              }}
+              title="انقر لتبديل المتدرب"
+            >
+              <div 
+                className="rounded-circle d-flex align-items-center justify-content-center fw-bold flex-shrink-0"
+                style={{ width: '24px', height: '24px', background: '#f5f3ff', color: '#261c6a', fontSize: '0.75rem', border: '1px solid #ddd6fe' }}
               >
-                {clients.map(c => (
-                  <option key={c.id} value={c.client_code || c.id}>
-                    {c.full_name || `متدرب ${c.client_code}`} ({c.client_code})
-                  </option>
-                ))}
-              </select>
-            </div>
-          )}
+                {activeName[0]}
+              </div>
+
+              <span className="fw-bold text-dark text-truncate" style={{ fontSize: '0.82rem', maxWidth: '140px' }}>
+                {activeName}
+              </span>
+
+              <i 
+                className={`ti ti-chevron-down text-muted flex-shrink-0 transition-transform`} 
+                style={{ 
+                  fontSize: '0.75rem',
+                  transform: dropdownOpen ? 'rotate(180deg)' : 'rotate(0deg)',
+                  transition: 'transform 0.2s ease'
+                }}
+              ></i>
+            </button>
+
+            {/* Floating Luxury Menu */}
+            {dropdownOpen && (
+              <div 
+                className="position-absolute end-0 mt-2 bg-white rounded-4 shadow-xl border overflow-hidden py-2"
+                style={{ 
+                  minWidth: '220px', 
+                  zIndex: 1050, 
+                  borderColor: '#e2e8f0',
+                  boxShadow: '0 15px 35px -5px rgba(15, 23, 42, 0.16), 0 0 0 1px rgba(0,0,0,0.02)',
+                  animation: 'fadeIn 0.15s ease'
+                }}
+              >
+                <div className="px-3 py-1 pb-2 border-bottom mb-1" style={{ borderColor: '#f1f5f9' }}>
+                  <small className="text-muted fw-semibold" style={{ fontSize: '0.7rem' }}>
+                    اختر المتدرب لعرض خطته:
+                  </small>
+                </div>
+
+                <div className="d-flex flex-column gap-1 px-1" style={{ maxHeight: '260px', overflowY: 'auto' }}>
+                  {clients.map((c) => {
+                    const isSelected = String(c.client_code || c.id) === String(targetUserId);
+                    const name = c.full_name || `متدرب ${c.client_code}`;
+                    const code = c.client_code || c.id;
+
+                    return (
+                      <button
+                        key={c.id}
+                        type="button"
+                        onClick={() => handleSelectClient(code)}
+                        className="btn btn-sm text-start w-100 px-3 py-2 d-flex align-items-center justify-content-between rounded-3 border-0 transition-all"
+                        style={{
+                          background: isSelected ? '#f5f3ff' : 'transparent',
+                          color: isSelected ? '#261c6a' : '#334155',
+                          fontSize: '0.82rem'
+                        }}
+                      >
+                        <div className="d-flex align-items-center gap-2">
+                          <div 
+                            className="rounded-circle d-flex align-items-center justify-content-center fw-bold"
+                            style={{ 
+                              width: '24px', 
+                              height: '24px', 
+                              fontSize: '0.72rem',
+                              background: isSelected ? '#261c6a' : '#f1f5f9',
+                              color: isSelected ? '#ffffff' : '#64748b'
+                            }}
+                          >
+                            {name[0]}
+                          </div>
+                          <span className={isSelected ? 'fw-bold' : 'fw-medium'}>{name}</span>
+                        </div>
+
+                        {isSelected && (
+                          <i className="ti ti-check text-primary fw-bold" style={{ fontSize: '0.85rem' }}></i>
+                        )}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+          </div>
 
           {/* 2. PDF Download Button */}
           <Link 
             to={`/pdf?user_id=${targetUserId}`} 
             target="_blank" 
             className="btn btn-outline-danger btn-sm rounded-pill px-3 fw-semibold d-flex align-items-center gap-1"
-            style={{ height: '34px', fontSize: '0.78rem' }}
+            style={{ height: '36px', fontSize: '0.78rem' }}
             title="تحميل خطة المتدرب كملف PDF"
           >
             <i className="ti ti-file-text"></i>
@@ -66,7 +172,7 @@ export default function UserDashboardHeader({ currentUser, targetUserId, clients
             to="/" 
             className="btn btn-sm rounded-pill px-3 fw-bold d-flex align-items-center gap-1 shadow-sm text-white"
             style={{ 
-              height: '34px',
+              height: '36px',
               background: '#261c6a',
               border: 'none',
               fontSize: '0.78rem',

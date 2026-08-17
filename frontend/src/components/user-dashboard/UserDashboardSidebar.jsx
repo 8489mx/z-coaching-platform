@@ -5,7 +5,7 @@ const USER_MENU_GROUPS = [
   {
     groupTitle: 'الخطة اليومية',
     items: [
-      { id: 'dashboard', to: '/user-dashboard', label: 'الرئيسية', icon: 'ti-layout-dashboard', isActive: true },
+      { id: 'dashboard', to: (uid) => `/user-dashboard?user_id=${uid}`, label: 'الرئيسية', icon: 'ti-layout-dashboard' },
       { id: 'workout', href: '#today-workout', label: 'جدول التمارين', icon: 'ti-barbell' },
       { id: 'meals', href: '#diet-plan', label: 'الدايت والوجبات', icon: 'ti-salad' },
       { id: 'supplements', href: '#supplements-plan', label: 'المكملات الغذائية', icon: 'ti-pill' },
@@ -15,7 +15,7 @@ const USER_MENU_GROUPS = [
     groupTitle: 'المتابعة والملف',
     items: [
       { id: 'checkin', action: 'checkin', label: 'إرسال المتابعة', icon: 'ti-clipboard-check' },
-      { id: 'progress', to: (uid) => `/progress?user_id=${uid}`, label: 'القياسات والصور', icon: 'ti-chart-line' },
+      { id: 'progress', to: (uid) => `/progress?user_id=${uid}&mode=client`, label: 'القياسات والصور', icon: 'ti-chart-line' },
       { id: 'pdf', to: (uid) => `/pdf?user_id=${uid}`, target: '_blank', label: 'تحميل الخطة PDF', icon: 'ti-file-text' },
     ]
   }
@@ -124,7 +124,11 @@ export default function UserDashboardSidebar({ targetUserId, onOpenCheckin }) {
 
               <ul className="codex-menu p-0 m-0 list-unstyled">
                 {group.items.map((item) => {
-                  const isActive = item.isActive;
+                  const isActive = item.id === 'dashboard'
+                    ? (location.pathname === '/user-dashboard' || location.pathname === '/user')
+                    : item.id === 'progress'
+                    ? location.pathname.startsWith('/progress')
+                    : false;
                   return (
                     <li key={item.id} className="mb-1">
                       {item.to ? (

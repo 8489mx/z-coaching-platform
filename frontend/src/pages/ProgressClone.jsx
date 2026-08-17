@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { API_BASE } from '../config/api';
 import AdminLayout from '../components/layout/AdminLayout';
+import UserDashboardHeader from '../components/user-dashboard/UserDashboardHeader';
+import UserDashboardSidebar from '../components/user-dashboard/UserDashboardSidebar';
 import UploadPhotoModal from '../components/modals/UploadPhotoModal';
 
 export default function ProgressClone() {
@@ -128,10 +130,11 @@ export default function ProgressClone() {
     { week: 4, weight: 84.4, waist: 87.5, adherence: 96 }
   ];
 
-  return (
-    <AdminLayout>
-      <div className="theme-body">
-        <div className="container-fluid">
+  const isClientView = searchParams.get('mode') === 'client';
+
+  const progressContent = (
+    <div className="theme-body">
+      <div className="container-fluid">
           
           {/* Page Header (Quiet Luxury) */}
           <div className="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
@@ -421,6 +424,23 @@ export default function ProgressClone() {
 
         </div>
       </div>
+  );
+
+  return (
+    <>
+      {isClientView ? (
+        <div className="codex-wrapper" dir="rtl" style={{ minHeight: "100vh", backgroundColor: "#f6f8fb", fontFamily: "Cairo, Tajawal, sans-serif" }}>
+          <UserDashboardHeader currentUser={user} targetUserId={targetUserId} clients={clients} />
+          <UserDashboardSidebar targetUserId={targetUserId} onOpenCheckin={() => {}} />
+          <main className="themebody-wrap">
+            {progressContent}
+          </main>
+        </div>
+      ) : (
+        <AdminLayout>
+          {progressContent}
+        </AdminLayout>
+      )}
 
       {/* Upload Photo Modal */}
       {uploadModalOpen && (
@@ -433,6 +453,6 @@ export default function ProgressClone() {
           targetUserId={targetUserId}
         />
       )}
-    </AdminLayout>
+    </>
   );
 }
