@@ -1,0 +1,40 @@
+[
+  {
+    "id": "ELITE_3_PLUS_1",
+    "name_ar": "باقة إيليت",
+    "name_en": "Elite Package",
+    "badge_ar": "عرض خاص 3 شهور + 1 مجاناً",
+    "duration_months": 3,
+    "free_months": 1,
+    "total_months": 4,
+    "price_egp": 2500,
+    "features": [
+      "خطة تغذية ذكية مع توزين الماكروز بالجرام",
+      "جدول تمارين تفاعلي بالأوزان ومستوى الجهد RIR",
+      "متابعة أسبوعية وتكيف تلقائي للخطة",
+      "دعم مستمر وإرسال التنبيهات عبر الواتساب"
+    ],
+    "active": true,
+    "is_featured": true,
+    "order": 1
+  },
+  {
+    "id": "MAX_3_PLUS_1",
+    "name_ar": "باقة ماكس VIP",
+    "name_en": "Max VIP Package",
+    "badge_ar": "VIP أقصى اهتمام ومتابعة",
+    "duration_months": 3,
+    "free_months": 1,
+    "total_months": 4,
+    "price_egp": 3500,
+    "features": [
+      "كل مميزات باقة إيليت بالكامل",
+      "مراجعة وتدقيق تكنيك التمارين بالفيديو",
+      "تعديلات فورية غير محدودة على الوجبات والتمارين",
+      "أولوية التواصل المباشر والمكالمات مع الكابتن"
+    ],
+    "active": true,
+    "is_featured": true,
+    "order": 2
+  }
+]

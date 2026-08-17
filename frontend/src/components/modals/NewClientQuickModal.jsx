@@ -2,15 +2,51 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { API_BASE } from '../../config/api';
 
+const DEFAULT_PACKAGES = [
+  {
+    id: "ELITE_3_PLUS_1",
+    name_ar: "باقة إيليت",
+    badge_ar: "3 شهور + 1 مجاناً",
+    featuresText: "تغذية وتدريب ذكي ومتابعة",
+    price_egp: 2500,
+    active: true
+  },
+  {
+    id: "MAX_3_PLUS_1",
+    name_ar: "باقة ماكس",
+    badge_ar: "3 شهور + 1 مجاناً",
+    featuresText: "VIP متابعة وتكنيك فيديو",
+    price_egp: 3500,
+    active: true
+  }
+];
+
 export default function NewClientQuickModal({ isOpen, onClose, onClientCreated }) {
   const navigate = useNavigate();
   const [phone, setPhone] = useState('');
   const [fullName, setFullName] = useState('');
   const [subscriptionPackage, setSubscriptionPackage] = useState('ELITE_3_PLUS_1');
+  const [availablePackages, setAvailablePackages] = useState(DEFAULT_PACKAGES);
   const [loading, setLoading] = useState(false);
   const [newClient, setNewClient] = useState(null);
   const [copied, setCopied] = useState(false);
   const [error, setError] = useState('');
+
+  useEffect(() => {
+    fetchPackages();
+  }, []);
+
+  const fetchPackages = async () => {
+    try {
+      const res = await fetch(`${API_BASE}/api/v1/admin-settings/packages`);
+      const data = await res.json();
+      if (data.packages && data.packages.length > 0) {
+        setAvailablePackages(data.packages.filter(p => p.active !== false));
+      }
+    } catch (e) {
+      console.error(e);
+    }
+  };
 
   // Close on Escape key
   useEffect(() => {
@@ -203,63 +239,50 @@ export default function NewClientQuickModal({ isOpen, onClose, onClientCreated }
                   </div>
                 </div>
 
-                {/* Package Selection (Elite & Max 3+1) */}
+                {/* Dynamic Package Selection */}
                 <div className="mb-4">
                   <label className="form-label fw-bold text-dark small mb-2 d-flex justify-content-between align-items-center" style={{ fontSize: '0.82rem' }}>
                     <span>باقة الاشتراك المسددة</span>
                     <span className="badge rounded-pill fw-bold" style={{ background: '#ecfdf5', color: '#059669', fontSize: '0.68rem', border: '1px solid #a7f3d0' }}>
-                      عرض 3 شهور + 1 مجاناً
+                      الأسعار والباقات المعتمدة
                     </span>
                   </label>
 
                   <div className="row g-2">
-                    {/* 1. Elite Package */}
-                    <div className="col-6">
-                      <div 
-                        onClick={() => setSubscriptionPackage('ELITE_3_PLUS_1')}
-                        className="p-3 rounded-3 border text-center transition-all"
-                        style={{ 
-                          cursor: 'pointer',
-                          background: subscriptionPackage === 'ELITE_3_PLUS_1' ? '#f5f3ff' : '#ffffff',
-                          borderColor: subscriptionPackage === 'ELITE_3_PLUS_1' ? '#261c6a' : '#e2e8f0',
-                          borderWidth: subscriptionPackage === 'ELITE_3_PLUS_1' ? '2px' : '1px',
-                          boxShadow: subscriptionPackage === 'ELITE_3_PLUS_1' ? '0 4px 12px rgba(38,28,106,0.12)' : 'none'
-                        }}
-                      >
-                        <div className="d-flex align-items-center justify-content-center gap-1 mb-1">
-                          <i className="ti ti-crown fs-5" style={{ color: '#261c6a' }}></i>
-                          <strong className="d-block text-dark" style={{ fontSize: '0.88rem' }}>باقة إيليت</strong>
-                        </div>
-                        <span className="badge rounded-pill fw-bold text-muted d-block mb-1" style={{ fontSize: '0.66rem', background: '#f8fafc' }}>
-                          3 شهور + 1 مجاناً
-                        </span>
-                        <small className="text-muted d-block" style={{ fontSize: '0.7rem' }}>تغذية وتدريب ذكي ومتابعة</small>
-                      </div>
-                    </div>
+                    {availablePackages.map((pkg) => {
+                      const isSelected = subscriptionPackage === pkg.id;
+                      const badgeText = pkg.badge_ar || `${pkg.duration_months || 3} شهور ${pkg.free_months ? `+ ${pkg.free_months} مجاناً` : ''}`;
+                      const subtext = Array.isArray(pkg.features) && pkg.features.length > 0 
+                        ? pkg.features[0] 
+                        : (pkg.featuresText || 'تغذية وتدريب ذكي ومتابعة');
 
-                    {/* 2. Max Package */}
-                    <div className="col-6">
-                      <div 
-                        onClick={() => setSubscriptionPackage('MAX_3_PLUS_1')}
-                        className="p-3 rounded-3 border text-center transition-all"
-                        style={{ 
-                          cursor: 'pointer',
-                          background: subscriptionPackage === 'MAX_3_PLUS_1' ? '#f5f3ff' : '#ffffff',
-                          borderColor: subscriptionPackage === 'MAX_3_PLUS_1' ? '#261c6a' : '#e2e8f0',
-                          borderWidth: subscriptionPackage === 'MAX_3_PLUS_1' ? '2px' : '1px',
-                          boxShadow: subscriptionPackage === 'MAX_3_PLUS_1' ? '0 4px 12px rgba(38,28,106,0.12)' : 'none'
-                        }}
-                      >
-                        <div className="d-flex align-items-center justify-content-center gap-1 mb-1">
-                          <i className="ti ti-flame fs-5" style={{ color: '#d97706' }}></i>
-                          <strong className="d-block text-dark" style={{ fontSize: '0.88rem' }}>باقة ماكس</strong>
+                      return (
+                        <div key={pkg.id} className={availablePackages.length > 2 ? "col-4" : "col-6"}>
+                          <div 
+                            onClick={() => setSubscriptionPackage(pkg.id)}
+                            className="p-3 rounded-3 border text-center transition-all h-100 d-flex flex-column justify-content-between"
+                            style={{ 
+                              cursor: 'pointer',
+                              background: isSelected ? '#f5f3ff' : '#ffffff',
+                              borderColor: isSelected ? '#261c6a' : '#e2e8f0',
+                              borderWidth: isSelected ? '2px' : '1px',
+                              boxShadow: isSelected ? '0 4px 12px rgba(38,28,106,0.12)' : 'none'
+                            }}
+                          >
+                            <div>
+                              <div className="d-flex align-items-center justify-content-center gap-1 mb-1">
+                                <i className={`ti ${pkg.id.includes('MAX') ? 'ti-flame' : 'ti-crown'} fs-5`} style={{ color: pkg.id.includes('MAX') ? '#d97706' : '#261c6a' }}></i>
+                                <strong className="d-block text-dark text-truncate" style={{ fontSize: '0.88rem' }}>{pkg.name_ar}</strong>
+                              </div>
+                              <span className="badge rounded-pill fw-bold text-muted d-block mb-1 text-truncate" style={{ fontSize: '0.66rem', background: '#f8fafc' }}>
+                                {badgeText}
+                              </span>
+                            </div>
+                            <small className="text-muted d-block text-truncate" style={{ fontSize: '0.7rem' }}>{subtext}</small>
+                          </div>
                         </div>
-                        <span className="badge rounded-pill fw-bold text-muted d-block mb-1" style={{ fontSize: '0.66rem', background: '#f8fafc' }}>
-                          3 شهور + 1 مجاناً
-                        </span>
-                        <small className="text-muted d-block" style={{ fontSize: '0.7rem' }}>VIP متابعة وتكنيك فيديو</small>
-                      </div>
-                    </div>
+                      );
+                    })}
                   </div>
                 </div>
 

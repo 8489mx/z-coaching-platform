@@ -35,6 +35,48 @@ const DEFAULT_FOODS = [
   { id: 'BANANA', name_ar: 'موز طازج', category_ar: 'فاكهة وبوتاسيوم', calories: 89, protein: 1.1, carbs: 22.8, fats: 0.3, unit: '100 جرام (حبة متوسطة)' }
 ];
 
+// Default Packages for Packages Tab
+const DEFAULT_PACKAGES = [
+  {
+    id: "ELITE_3_PLUS_1",
+    name_ar: "باقة إيليت",
+    name_en: "Elite Package",
+    badge_ar: "عرض خاص 3 شهور + 1 مجاناً",
+    duration_months: 3,
+    free_months: 1,
+    total_months: 4,
+    price_egp: 2500,
+    features: [
+      "خطة تغذية ذكية مع توزين الماكروز بالجرام",
+      "جدول تمارين تفاعلي بالأوزان ومستوى الجهد RIR",
+      "متابعة أسبوعية وتكيف تلقائي للخطة",
+      "دعم مستمر وإرسال التنبيهات عبر الواتساب"
+    ],
+    active: true,
+    is_featured: true,
+    order: 1
+  },
+  {
+    id: "MAX_3_PLUS_1",
+    name_ar: "باقة ماكس VIP",
+    name_en: "Max VIP Package",
+    badge_ar: "VIP أقصى اهتمام ومتابعة",
+    duration_months: 3,
+    free_months: 1,
+    total_months: 4,
+    price_egp: 3500,
+    features: [
+      "كل مميزات باقة إيليت بالكامل",
+      "مراجعة وتدقيق تكنيك التمارين بالفيديو",
+      "تعديلات فورية غير محدودة على الوجبات والتمارين",
+      "أولوية التواصل المباشر والمكالمات مع الكابتن"
+    ],
+    active: true,
+    is_featured: true,
+    order: 2
+  }
+];
+
 export default function MasterSettingsHub() {
   const initialTab = new URLSearchParams(window.location.search).get('tab') || 'intake';
   const [activeTab, setActiveTab] = useState(initialTab);
@@ -56,7 +98,7 @@ export default function MasterSettingsHub() {
   const [exerciseModalOpen, setExerciseModalOpen] = useState(false);
 
   // Packages State
-  const [packages, setPackages] = useState([]);
+  const [packages, setPackages] = useState(DEFAULT_PACKAGES);
   const [editingPackage, setEditingPackage] = useState(null);
   const [packageModalOpen, setPackageModalOpen] = useState(false);
 
