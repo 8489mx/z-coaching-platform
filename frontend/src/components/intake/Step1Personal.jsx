@@ -154,67 +154,6 @@ export default function Step1Personal({
         </select>
       </div>
 
-      <div className="section-divider"></div>
-
-      {/* 4. Commitment & Experience */}
-      <h3 className="section-title">وتيرة الخطة والالتزام والتجربة السابقة</h3>
-      
-      {/* 2 Commitment Options as requested */}
-      <div className="form-group mb-4">
-        <label className="form-label">وتيرة الخطة والالتزام الأنسب لظروفك:</label>
-        <div className="choices-grid" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))' }}>
-          {[
-            { v: 'SUSTAINABLE_FLEXIBLE', l: 'خطة أسهل وأكثر مرونة حتى لو كانت النتيجة أبطأ' },
-            { v: 'BALANCED_PROGRESS', l: 'توازن متزن بين سرعة النتيجة وسهولة الالتزام' }
-          ].map(opt => (
-            <div 
-              key={opt.v} 
-              className={`choice-pill ${formData.goals?.pacingPreference === opt.v ? 'selected' : ''}`} 
-              onClick={() => updateField('goals', 'pacingPreference', opt.v)}
-            >
-              <div className="choice-title">{opt.l}</div>
-            </div>
-          ))}
-        </div>
-      </div>
-
-      {/* Previous Experience */}
-      <div className="form-group mb-3">
-        <label className="form-label">تجربتك السابقة مع التمرين والتغذية:</label>
-        <div className="choices-grid" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))' }}>
-          {[
-            { v: 'FIRST_TIME', l: 'أول مرة أبدأ خطة منظمة' },
-            { v: 'PAST_SUCCESS', l: 'جربت سابقاً والتزمت وحققت نتائج' },
-            { v: 'PAST_STRUGGLED', l: 'جربت سابقاً ولم أستطع الاستمرار' }
-          ].map(exp => (
-            <div 
-              key={exp.v} 
-              className={`choice-pill ${formData.goals?.previousExperience === exp.v ? 'selected' : ''}`} 
-              onClick={() => updateField('goals', 'previousExperience', exp.v)}
-            >
-              <div className="choice-title">{exp.l}</div>
-            </div>
-          ))}
-        </div>
-      </div>
-
-      {formData.goals?.previousExperience === 'PAST_STRUGGLED' && (
-        <div className="form-group p-3 rounded-3 mt-2 bg-light border">
-          <label className="form-label text-dark fw-bold mb-1">ما السبب الأكبر الذي جعلك تتوقف سابقاً؟</label>
-          <select 
-            className="form-control"
-            value={formData.goals?.struggleReason || 'TIME_CONSTRAINTS'}
-            onChange={e => updateField('goals', 'struggleReason', e.target.value)}
-            style={{ fontWeight: '600' }}
-          >
-            <option value="TIME_CONSTRAINTS">ضيق الوقت وضغوط العمل والدراسة</option>
-            <option value="TOO_RESTRICTIVE">الخطة كانت صعبة وقاسية جداً ولم أتحملها</option>
-            <option value="NO_RESULTS">لم ألاحظ نتائج واضحة تشجعني على الاستمرار</option>
-            <option value="BOREDOM">الملل والروتين الثابت</option>
-            <option value="HEALTH_PERSONAL">ظروف صحية أو شخصية طارئة</option>
-          </select>
-        </div>
-      )}
     </div>
   );
 }
