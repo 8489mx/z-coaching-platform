@@ -45,8 +45,11 @@ export default function Step1Personal({
             max="100"
             className="form-control" 
             placeholder="مثال: 24"
-            value={formData.personal?.age || ''} 
-            onChange={e => updateField('personal', 'age', Math.max(14, Math.min(100, parseInt(e.target.value, 10) || '')))} 
+            value={formData.personal?.age ?? ''} 
+            onChange={e => {
+              const val = e.target.value;
+              updateField('personal', 'age', val === '' ? '' : parseInt(val, 10));
+            }} 
             style={{ fontWeight: '600' }}
           />
           <small className="text-muted" style={{ fontSize: '0.72rem' }}>متاح من سن 14 سنة فما فوق</small>
