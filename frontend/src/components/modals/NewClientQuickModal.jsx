@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import ReactDOM from 'react-dom';
 import { useNavigate } from 'react-router-dom';
 import { API_BASE } from '../../config/api';
+import { copyToClipboard } from '../../utils/clipboardUtils';
 
 const DEFAULT_PACKAGES = [
   {
@@ -109,17 +110,19 @@ export default function NewClientQuickModal({ isOpen, onClose, onClientCreated }
   };
 
   const intakeLink = newClient 
-    ? `${window.location.protocol}//${window.location.hostname}:5173/intake/form?code=${newClient.client_code}&phone=${newClient.phone_number}`
+    ? `${window.location.origin}/intake/form?code=${newClient.client_code}&phone=${newClient.phone_number}`
     : '';
 
   const whatsappMessage = newClient
     ? `مرحباً بك في منظومة Z Coaching!\n\nيسعدنا بدء رحلتك التدريبية والغذائية معنا.\nيرجى الضغط على الرابط التالي لتعبئة استمارة التقييم الشاملة وسيقوم المحرك الذكي والكابتن بتصميم خطتك المخصصة فوراً:\n\n${intakeLink}\n\nكود اشتراكك: ${newClient.client_code}\nبالتوفيق!`
     : '';
 
-  const handleCopyMessage = () => {
-    navigator.clipboard.writeText(whatsappMessage);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2500);
+  const handleCopyMessage = async () => {
+    const success = await copyToClipboard(whatsappMessage);
+    if (success) {
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2500);
+    }
   };
 
   const handleOpenWhatsApp = () => {

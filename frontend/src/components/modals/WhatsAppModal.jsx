@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import ReactDOM from 'react-dom';
+import { copyToClipboard } from '../../utils/clipboardUtils';
 
 export default function WhatsAppModal({ client, onClose }) {
   const [template, setTemplate] = useState('intake');
@@ -58,10 +59,12 @@ ${baseUrl}/user-dashboard?user_id=${clientCode}`
     setCustomText(templates[tplKey] || '');
   };
 
-  const handleCopy = () => {
-    navigator.clipboard.writeText(customText);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2500);
+  const handleCopy = async () => {
+    const success = await copyToClipboard(customText);
+    if (success) {
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2500);
+    }
   };
 
   const handleSend = () => {

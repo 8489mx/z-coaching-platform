@@ -4,6 +4,7 @@ import { API_BASE } from '../config/api';
 import AdminLayout from '../components/layout/AdminLayout';
 import WhatsAppModal from '../components/modals/WhatsAppModal';
 import { arabicSearchMatch } from '../utils/searchUtils';
+import { copyToClipboard } from '../utils/clipboardUtils';
 
 export default function Customers() {
   const [phone, setPhone] = useState('');
@@ -63,10 +64,12 @@ export default function Customers() {
     }
   };
 
-  const copyToClipboard = (text) => {
-    navigator.clipboard.writeText(text);
-    setCopySuccess(true);
-    setTimeout(() => setCopySuccess(false), 2500);
+  const handleCopyLink = async (text) => {
+    const success = await copyToClipboard(text);
+    if (success) {
+      setCopySuccess(true);
+      setTimeout(() => setCopySuccess(false), 2500);
+    }
   };
 
   const filteredClients = clients.filter(c => {
@@ -242,7 +245,7 @@ export default function Customers() {
                         type="button"
                         className="btn btn-sm rounded-pill px-3 fw-semibold bg-white border"
                         style={{ height: '32px', fontSize: '0.78rem', color: '#16a34a', borderColor: '#86efac' }}
-                        onClick={() => copyToClipboard(`${window.location.origin}/intake/form?code=${newlyCreated.client_code}&phone=${newlyCreated.phone_number}`)}
+                        onClick={() => handleCopyLink(`${window.location.origin}/intake/form?code=${newlyCreated.client_code}&phone=${newlyCreated.phone_number}`)}
                       >
                         <i className="ti ti-copy me-1"></i> {copySuccess ? 'تم النسخ!' : 'نسخ رابط الاستمارة'}
                       </button>

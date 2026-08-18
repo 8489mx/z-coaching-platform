@@ -152,12 +152,22 @@ export default function IntakeAuditDetailModal({
   else if (bmi >= 25 && bmi < 30) bmiBadge = { label: 'وزن زائد', color: '#f59e0b', bg: '#fffbeb' };
   else if (bmi >= 30) bmiBadge = { label: 'سمنة', color: '#ef4444', bg: '#fef2f2' };
 
+  const getCode = (item) => {
+    if (!item) return '';
+    if (typeof item === 'string') return item;
+    if (typeof item === 'object') {
+      return item.code || item.conditionCode || item.food || item.substance || item.id || item.name || '';
+    }
+    return String(item);
+  };
+
   // Determine Alert Indicators for Coach Scanning
-  const excludedFoodsList = (nutrition.excludedFoodsList || []).filter(f => f && f !== 'NONE');
-  const digestiveIssuesList = (nutrition.digestiveIssuesList || []).filter(d => d && d !== 'NONE');
-  const selectedInjuriesList = (training.selectedInjuries || []).filter(inj => inj && inj !== 'NONE');
-  const medicalConditionsList = (medical.selectedConditions || medical.conditions || []).filter(c => (c.conditionCode || c) !== 'NONE');
-  const dangerousSymptomsList = (medical.dangerousSymptomsList || []).filter(s => s && s !== 'NONE');
+  const excludedFoodsList = (nutrition.excludedFoodsList || []).map(getCode).filter(f => f && f !== 'NONE');
+  const digestiveIssuesList = (nutrition.digestiveIssuesList || []).map(getCode).filter(d => d && d !== 'NONE');
+  const selectedInjuriesList = (training.selectedInjuries || []).map(getCode).filter(inj => inj && inj !== 'NONE');
+  const medicalConditionsList = (medical.selectedConditions || medical.conditions || []).map(getCode).filter(c => c && c !== 'NONE');
+  const dangerousSymptomsList = (medical.dangerousSymptomsList || []).map(getCode).filter(s => s && s !== 'NONE');
+  const targetFocusMusclesList = (training.targetFocusMuscles || []).map(getCode).filter(m => m && m !== 'NONE');
 
   const hasCriticalFlags = dangerousSymptomsList.length > 0;
   const hasInjuries = selectedInjuriesList.length > 0;
@@ -554,14 +564,14 @@ export default function IntakeAuditDetailModal({
             </div>
 
             {/* 2. Focus Target Muscles */}
-            {training.targetFocusMuscles && training.targetFocusMuscles.length > 0 && (
+            {targetFocusMusclesList.length > 0 && (
               <div className="p-3 mb-3 rounded-3" style={{ background: '#f5f3ff', border: '1.5px solid #ddd6fe' }}>
                 <div className="d-flex align-items-center gap-2 mb-2">
                   <i className="ti ti-target text-primary fs-5" style={{ color: '#261c6a' }}></i>
                   <span className="fw-bold text-dark" style={{ fontSize: '0.88rem' }}>العضلات المستهدفة بالتركيز الإضافي:</span>
                 </div>
                 <div className="d-flex flex-wrap gap-2">
-                  {training.targetFocusMuscles.map((m, i) => (
+                  {targetFocusMusclesList.map((m, i) => (
                     <span key={i} className="badge px-3 py-2 fw-bold shadow-sm" style={{ background: '#ffffff', color: '#261c6a', border: '1.5px solid #6d28d9', borderRadius: '8px', fontSize: '0.80rem' }}>
                       {FOCUS_MUSCLES_LABELS[m] || m}
                     </span>

@@ -88,6 +88,23 @@ export function buildTrainingMesoCycle(intakeDecision, options = {}) {
     STANDING_DUMBBELL_SHOULDER_PRESS: "BARBELL_OVERHEAD_PRESS",
   });
 
+  const constraints = intakeDecision.hard_constraints || [];
+  const hasInjuries = constraints.some(
+    (c) => c.code && (c.code.includes("INJURY") || c.code.includes("RESTRICTION"))
+  );
+  const hasLowerBackInjury = constraints.some(
+    (c) => (c.code && (c.code.includes("LOWER_BACK") || c.code.includes("SPINE") || c.code.includes("LUMBAR"))) ||
+           (c.instructions && c.instructions.some((i) => i.affected_movement === "HINGE"))
+  );
+  const hasShoulderInjury = constraints.some(
+    (c) => (c.code && (c.code.includes("SHOULDER") || c.code.includes("ROTATOR_CUFF") || c.code.includes("NECK"))) ||
+           (c.instructions && c.instructions.some((i) => i.affected_movement === "OVERHEAD"))
+  );
+  const hasKneeInjury = constraints.some(
+    (c) => (c.code && c.code.includes("KNEE")) ||
+           (c.instructions && c.instructions.some((i) => i.affected_movement === "SQUAT"))
+  );
+
   // 2. Generate Periodized Weeks
   const weekConfigs = DEFAULT_MESOCYCLE_CONFIG.slice(0, Math.min(weeksCount, DEFAULT_MESOCYCLE_CONFIG.length));
 
@@ -103,12 +120,23 @@ export function buildTrainingMesoCycle(intakeDecision, options = {}) {
           else if (ex.slot_code === 'VERTICAL_PUSH') finalCode = 'LATERAL_RAISE';
           else if (ex.slot_code === 'KNEE_DOMINANT') finalCode = 'GOBLET_SQUAT';
           else finalCode = 'CHEST_SUPPORTED_ROW';
-        } else if (GYM_COMPOUND_UPGRADES[finalCode]) {
+        } else if (!hasInjuries && GYM_COMPOUND_UPGRADES[finalCode]) {
           finalCode = GYM_COMPOUND_UPGRADES[finalCode];
           const upgradedV2 = getExerciseV2ByCode(finalCode);
           if (upgradedV2) {
             finalNameEn = upgradedV2.name_en;
           }
+        }
+
+        // Active injury overrides for safety
+        if (hasKneeInjury && finalCode === 'BARBELL_BACK_SQUAT') {
+          finalCode = 'GOBLET_SQUAT';
+        }
+        if (hasShoulderInjury && (finalCode === 'BARBELL_OVERHEAD_PRESS' || finalCode === 'STANDING_DUMBBELL_SHOULDER_PRESS')) {
+          finalCode = 'LATERAL_RAISE';
+        }
+        if (hasLowerBackInjury && finalCode === 'BARBELL_BENT_OVER_ROW') {
+          finalCode = 'CHEST_SUPPORTED_ROW';
         }
 
         const v2Exercise = getExerciseV2ByCode(finalCode);

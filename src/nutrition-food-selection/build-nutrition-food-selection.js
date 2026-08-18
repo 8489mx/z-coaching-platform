@@ -538,7 +538,14 @@ function compareCode(left, right) {
   return left < right ? -1 : left > right ? 1 : 0;
 }
 
-function compareFoodsByPriority(left, right) {
+function compareFoodsByPriority(left, right, patternCode) {
+  if (patternCode && patternCode.startsWith('BREAKFAST')) {
+    const leftIsBreakfastStaple = ['EGG', 'DAIRY_PROTEIN', 'LEGUME'].includes(left.food_class) ? 0 : 1;
+    const rightIsBreakfastStaple = ['EGG', 'DAIRY_PROTEIN', 'LEGUME'].includes(right.food_class) ? 0 : 1;
+    if (leftIsBreakfastStaple !== rightIsBreakfastStaple) {
+      return leftIsBreakfastStaple - rightIsBreakfastStaple;
+    }
+  }
   return left.selection_priority - right.selection_priority ||
     compareCode(left.food_code, right.food_code);
 }
@@ -643,12 +650,33 @@ function evaluateSlot({
     }
   }
 
+  // Intelligent fallback for heavy exclusion cases (e.g. eggs+dairy+legumes excluded for breakfast)
+  if (
+    eligibleFoods.length < slot.min_items &&
+    slot.requirement === NutritionComponentRequirement.REQUIRED &&
+    patternCode.startsWith("BREAKFAST")
+  ) {
+    const candidateCodes = new Set(candidateUniverse.map((f) => f.food_code));
+    const fallbackUniverse = catalogItems.filter(
+      (food) =>
+        slot.allowed_food_classes.includes(food.food_class) &&
+        !localSelected.has(food.food_code) &&
+        !candidateCodes.has(food.food_code),
+    );
+    for (const food of fallbackUniverse) {
+      const reasonCodes = rejectionCodesFor(food, context);
+      if (reasonCodes.length === 0) {
+        eligibleFoods.push(food);
+      }
+    }
+  }
+
   eligibleFoods.sort((left, right) =>
     (usageCounts.get(left.food_code) ?? 0) -
       (usageCounts.get(right.food_code) ?? 0) ||
-    compareFoodsByPriority(left, right));
+    compareFoodsByPriority(left, right, patternCode));
   rejectedFoods.sort((left, right) =>
-    compareFoodsByPriority(left.food, right.food));
+    compareFoodsByPriority(left.food, right.food, patternCode));
 
   const canMeetMinimum = eligibleFoods.length >= slot.min_items;
   const selectedFoodCodes =

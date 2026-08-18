@@ -10,6 +10,7 @@ import MealsSection from "../components/user-dashboard/MealsSection";
 import SupplementsSection from "../components/user-dashboard/SupplementsSection";
 import SmartSwapModal from "../components/modals/SmartSwapModal";
 import CheckinModal from "../components/modals/CheckinModal";
+import { copyToClipboard } from "../utils/clipboardUtils";
 
 const ARABIC_FOOD_NAMES = {
  COTTAGE_CHEESE_LOW_FAT_2_PERCENT: "جبن قريش قليل الدسم",
@@ -398,11 +399,13 @@ export default function UserDashboardClone() {
                     {/* Copy Link Button */}
                     <button
                       type="button"
-                      onClick={() => {
+                      onClick={async () => {
                         const link = `${window.location.origin}/intake/form?code=${currentUser?.client_code || targetUserId}&phone=${currentUser?.phone_number || ''}`;
-                        navigator.clipboard.writeText(link);
-                        setCopiedLink(true);
-                        setTimeout(() => setCopiedLink(false), 2500);
+                        const success = await copyToClipboard(link);
+                        if (success) {
+                          setCopiedLink(true);
+                          setTimeout(() => setCopiedLink(false), 2500);
+                        }
                       }}
                       className="btn btn-white bg-white border px-4 fw-bold d-flex align-items-center gap-2 shadow-xs transition-all"
                       style={{ 

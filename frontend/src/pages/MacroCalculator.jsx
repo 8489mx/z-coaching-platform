@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { API_BASE } from '../config/api';
 import AdminLayout from '../components/layout/AdminLayout';
+import { copyToClipboard } from '../utils/clipboardUtils';
 
 export default function MacroCalculator() {
   const [clients, setClients] = useState([]);
@@ -136,7 +137,7 @@ export default function MacroCalculator() {
     }
   };
 
-  const handleCopyWhatsapp = () => {
+  const handleCopyWhatsapp = async () => {
     const text = ` أهداف السعرات والماكروز اليومية المخصصة لك:
  السعرات المستهدفة: ${targetCalories} سعرة
  البروتين: ${targetProteinGrams} جرام
@@ -147,9 +148,11 @@ export default function MacroCalculator() {
 
 بالتوفيق وبداية أسبوع قوية! `;
 
-    navigator.clipboard.writeText(text);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2500);
+    const success = await copyToClipboard(text);
+    if (success) {
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2500);
+    }
   };
 
   const getGoalLabel = (goal) => {
