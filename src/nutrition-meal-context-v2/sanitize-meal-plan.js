@@ -7,10 +7,30 @@ import { NUTRITION_MEAL_CONTEXT_V2_VERSION, ErgonomicPortionCaps } from "./domai
  * @param {Object} rawMealPlan - Meal plan from portion solver
  * @returns {Object} Sanitized and ergonomically optimized meal plan
  */
-export function sanitizeMealPlan(rawMealPlan) {
+export function sanitizeMealPlan(rawMealPlan, intakeOrRestrictions = {}) {
   if (!rawMealPlan || !Array.isArray(rawMealPlan.meals)) {
     throw new TypeError("rawMealPlan must contain meals array.");
   }
+
+  const exclusions = new Set();
+  const nutrition = intakeOrRestrictions.nutrition || intakeOrRestrictions || {};
+  const excludedList = Array.isArray(nutrition.excludedFoodsList) ? nutrition.excludedFoodsList : [];
+  for (const ex of excludedList) {
+    if (typeof ex === 'string') exclusions.add(ex.toUpperCase());
+  }
+  const dislikedList = Array.isArray(nutrition.dislikedFoods || nutrition.disliked_foods) ? (nutrition.dislikedFoods || nutrition.disliked_foods) : [];
+  for (const d of dislikedList) {
+    const code = typeof d === 'string' ? d : (d.foodCode || d.name || '');
+    if (code) exclusions.add(code.toUpperCase());
+  }
+  const allergiesList = Array.isArray(nutrition.allergies) ? nutrition.allergies : [];
+  for (const a of allergiesList) {
+    if (a && a.substance) exclusions.add(a.substance.toUpperCase());
+  }
+
+  const isOatsExcluded = exclusions.has("OATS") || exclusions.has("OAT") || exclusions.has("OATS_ROLLED_DRY");
+  const isWheatExcluded = exclusions.has("GLUTEN") || exclusions.has("WHEAT") || exclusions.has("GLUTEN_WHEAT") || exclusions.has("WHEAT_GLUTEN") || exclusions.has("BREAD");
+  const isBananaExcluded = exclusions.has("BANANA") || exclusions.has("FRUIT");
 
   const sanitizedMeals = rawMealPlan.meals.map((meal) => {
     const isBreakfast = meal.role === "BREAKFAST" || meal.sequence === 1;
@@ -26,21 +46,33 @@ export function sanitizeMealPlan(rawMealPlan) {
 
       // 1. Cultural Breakfast Replacement: No Rice/Pasta at Breakfast!
       if (isBreakfast && (foodCode.includes("RICE") || foodCode.includes("PASTA"))) {
-        // Swap rice (28g carbs/100g) for Rolled Oats (68g carbs/100g) or Whole Wheat Bread (43g carbs/100g)
         const carbGrams = grams * 0.28;
-        foodCode = "OATS_ROLLED_DRY";
-        grams = Math.min(80, Math.round(carbGrams / 0.68));
-        nameAr = "شوفان كامل الحبة";
-        nameEn = "Rolled Oats";
+        if (!isOatsExcluded) {
+          foodCode = "OATS_ROLLED_DRY";
+          grams = Math.min(80, Math.round(carbGrams / 0.68));
+          nameAr = "شوفان كامل الحبة";
+          nameEn = "Rolled Oats";
+        } else if (!isWheatExcluded) {
+          foodCode = "BREAD_WHOLE_WHEAT";
+          grams = Math.min(120, Math.round(carbGrams / 0.43));
+          nameAr = "خبز قمح كامل (بلدي / توست بني)";
+          nameEn = "Whole Wheat Bread";
+        } else {
+          foodCode = "POTATO_BOILED_WITHOUT_SKIN";
+          grams = Math.min(250, Math.round(carbGrams / 0.20));
+          nameAr = "بطاطس مسلوقة بدون قشر";
+          nameEn = "Boiled Potato";
+        }
 
-        // If extra carbs remain after 80g oats ceiling, add fresh fruit
-        const remainingCarbs = carbGrams - (grams * 0.68);
-        if (remainingCarbs > 15) {
+        // If extra carbs remain, add safe fresh fruit
+        const remainingCarbs = carbGrams - (grams * 0.4);
+        if (remainingCarbs > 15 && !isBananaExcluded) {
           newItems.push({
             food_code: "BANANA_RAW",
             name_ar: "موز طازج",
             name_en: "Fresh Banana",
             grams: 120,
+            portion_g: 120,
             nutrition: {
               calories_kcal: 105,
               protein_g: 1.3,

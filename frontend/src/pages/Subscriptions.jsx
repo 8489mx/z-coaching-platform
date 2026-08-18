@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { API_BASE } from '../config/api';
 import AdminLayout from '../components/layout/AdminLayout';
 import EditSubscriptionModal from '../components/modals/EditSubscriptionModal';
+import { arabicSearchMatch } from '../utils/searchUtils';
 
 export default function Subscriptions() {
   const [overview, setOverview] = useState({
@@ -135,11 +136,13 @@ export default function Subscriptions() {
       return displayedCode === codeQuery || cleanCode === codeQuery || displayedCode === `client-${codeQuery}`;
     }
 
-    // Standard Search
-    const name = (c.full_name || '').toLowerCase();
-    const phone = (c.phone_number || '').toLowerCase();
-    const code = String(c.client_code || c.id).toLowerCase();
-    return name.includes(raw) || phone.includes(raw) || code.includes(raw);
+    // Standard Search with Hamza / Diacritics Invariance
+    return (
+      arabicSearchMatch(c.full_name, searchTerm) ||
+      arabicSearchMatch(c.phone_number, searchTerm) ||
+      arabicSearchMatch(c.client_code || c.id, searchTerm) ||
+      arabicSearchMatch(c.email, searchTerm)
+    );
   });
 
   return (

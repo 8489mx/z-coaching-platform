@@ -224,6 +224,20 @@ const EXERCISES_DATABASE = [
   }
 ];
 
+function normalizeArabicText(text) {
+  if (text === undefined || text === null) return '';
+  return String(text)
+    .toLowerCase()
+    .trim()
+    .replace(/[\u064B-\u065F\u0670\u0640]/g, '')
+    .replace(/[أإآٱٵ]/g, 'ا')
+    .replace(/ة/g, 'ه')
+    .replace(/[ىئ]/g, 'ي')
+    .replace(/ؤ/g, 'و')
+    .replace(/ء/g, '')
+    .replace(/\s+/g, ' ');
+}
+
 export const getExercisesList = (req, res) => {
   try {
     const { muscle, equipment, search } = req.query;
@@ -236,12 +250,12 @@ export const getExercisesList = (req, res) => {
       results = results.filter((e) => e.equipment === equipment);
     }
     if (search) {
-      const q = search.trim().toLowerCase();
+      const q = normalizeArabicText(search);
       results = results.filter(
         (e) =>
-          e.name_ar.toLowerCase().includes(q) ||
-          e.name_en.toLowerCase().includes(q) ||
-          e.muscle_ar.toLowerCase().includes(q)
+          normalizeArabicText(e.name_ar).includes(q) ||
+          normalizeArabicText(e.name_en).includes(q) ||
+          normalizeArabicText(e.muscle_ar).includes(q)
       );
     }
 

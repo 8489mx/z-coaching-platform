@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { API_BASE } from '../config/api';
 import AdminLayout from '../components/layout/AdminLayout';
 import WhatsAppModal from '../components/modals/WhatsAppModal';
+import { arabicSearchMatch } from '../utils/searchUtils';
 
 export default function Customers() {
   const [phone, setPhone] = useState('');
@@ -81,12 +82,13 @@ export default function Customers() {
       return displayedCode === codeQuery || cleanCode === codeQuery || displayedCode === `client-${codeQuery}`;
     }
 
-    // Standard Universal Search
-    const name = (c.full_name || '').toLowerCase();
-    const phone = (c.phone_number || '').toLowerCase();
-    const code = String(c.client_code || c.id).toLowerCase();
-    const email = (c.email || '').toLowerCase();
-    return name.includes(raw) || phone.includes(raw) || code.includes(raw) || email.includes(raw);
+    // Standard Universal Search with Hamza / Diacritics Invariance
+    return (
+      arabicSearchMatch(c.full_name, searchTerm) ||
+      arabicSearchMatch(c.phone_number, searchTerm) ||
+      arabicSearchMatch(c.client_code || c.id, searchTerm) ||
+      arabicSearchMatch(c.email, searchTerm)
+    );
   });
 
   const activeProgramsCount = clients.filter(c => c.has_active_program).length;

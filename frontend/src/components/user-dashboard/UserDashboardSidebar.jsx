@@ -4,6 +4,7 @@ import { Link, useLocation } from 'react-router-dom';
 const USER_MENU_GROUPS = [
   {
     groupTitle: 'الخطة اليومية',
+    color: '#261c6a',
     items: [
       { id: 'dashboard', to: (uid) => `/user-dashboard?user_id=${uid}`, label: 'الرئيسية', icon: 'ti-layout-dashboard' },
       { id: 'workout', href: '#today-workout', label: 'جدول التمارين', icon: 'ti-barbell' },
@@ -13,6 +14,7 @@ const USER_MENU_GROUPS = [
   },
   {
     groupTitle: 'المتابعة والملف',
+    color: '#059669',
     items: [
       { id: 'checkin', action: 'checkin', label: 'إرسال المتابعة', icon: 'ti-clipboard-check' },
       { id: 'progress', to: (uid) => `/progress?user_id=${uid}&mode=client`, label: 'القياسات والصور', icon: 'ti-chart-line' },
@@ -21,22 +23,30 @@ const USER_MENU_GROUPS = [
   }
 ];
 
-export default function UserDashboardSidebar({ targetUserId, onOpenCheckin }) {
+export default function UserDashboardSidebar({ 
+  targetUserId, 
+  onOpenCheckin, 
+  isCollapsed = false, 
+  onToggleSidebar 
+}) {
   const location = useLocation();
 
   return (
     <aside 
-      className="codex-sidebar d-flex flex-column justify-content-between" 
+      className={`codex-sidebar d-flex flex-column justify-content-between ${isCollapsed ? 'collapsed' : ''}`} 
       style={{ 
-        background: '#ffffff', 
-        borderLeft: '1px solid #edf2f7',
-        width: '245px',
+        background: 'linear-gradient(180deg, #ffffff 0%, #fcfbfe 50%, #f8f6fd 100%)', 
+        borderLeft: '1px solid rgba(221, 214, 254, 0.3)',
+        boxShadow: '-4px 0 20px rgba(38, 28, 106, 0.02)',
+        width: isCollapsed ? '72px' : '245px',
         height: '100vh',
         position: 'fixed',
         top: 0,
         right: 0,
         bottom: 0,
-        zIndex: 99
+        zIndex: 99,
+        transition: 'width 0.25s cubic-bezier(0.4, 0, 0.2, 1)',
+        overflowX: 'hidden'
       }}
     >
       <div className="d-flex flex-column flex-grow-1" style={{ minHeight: 0 }}>
@@ -49,10 +59,11 @@ export default function UserDashboardSidebar({ targetUserId, onOpenCheckin }) {
             alignItems: 'center', 
             justifyContent: 'center', 
             textAlign: 'center', 
-            padding: '14px 10px 10px 10px',
+            padding: isCollapsed ? '10px 4px 8px 4px' : '8px 6px 4px 6px',
             width: '100%',
-            borderBottom: '1px solid #f8fafc',
-            background: 'transparent'
+            borderBottom: '1px solid rgba(221, 214, 254, 0.25)',
+            background: 'transparent',
+            transition: 'all 0.2s ease'
           }}
         >
           <Link 
@@ -66,149 +77,158 @@ export default function UserDashboardSidebar({ targetUserId, onOpenCheckin }) {
               width: '100%',
               margin: '0 auto'
             }}
+            title="Z Coaching Platform"
           >
             {/* Athletic Dumbbell Z Logo */}
             <img 
               src="/admin-dashboard_data/logo/z_dumbbell_flat.jpg" 
               alt="Z Coaching" 
               style={{ 
-                height: '64px', 
-                width: '64px', 
+                height: isCollapsed ? '32px' : '36px', 
+                width: isCollapsed ? '32px' : '36px', 
                 objectFit: 'contain', 
                 margin: '0 auto',
-                display: 'block'
+                display: 'block',
+                transition: 'all 0.2s ease'
               }} 
             />
 
-            <span 
-              style={{ 
-                fontSize: '0.84rem', 
-                letterSpacing: '3.5px', 
-                fontWeight: '900',
-                background: 'linear-gradient(135deg, #372896 0%, #261c6a 100%)',
-                WebkitBackgroundClip: 'text',
-                WebkitTextFillColor: 'transparent',
-                display: 'block',
-                marginTop: '4px',
-                lineHeight: '1.2',
-                textAlign: 'center',
-                width: '100%'
-              }}
-            >
-              COACHING
-            </span>
+            {!isCollapsed && (
+              <span 
+                style={{ 
+                  fontSize: '0.68rem', 
+                  letterSpacing: '2px', 
+                  fontWeight: '900',
+                  background: 'linear-gradient(135deg, #372896 0%, #261c6a 100%)',
+                  WebkitBackgroundClip: 'text',
+                  WebkitTextFillColor: 'transparent',
+                  display: 'block',
+                  marginTop: '2px',
+                  lineHeight: '1.0',
+                  textAlign: 'center',
+                  width: '100%'
+                }}
+              >
+                COACHING
+              </span>
+            )}
           </Link>
         </div>
 
-        {/* Grouped Menu List (Identical typography, weights, and active state to coach sidebar) */}
+        {/* Grouped Menu List */}
         <div 
           className="codex-menuwrapper custom-scroll flex-grow-1" 
           data-simplebar 
           data-simplebar-direction="rtl" 
           data-simplebar-auto-hide="true"
-          style={{ padding: '12px 10px', overflowY: 'auto' }}
+          style={{ padding: isCollapsed ? '6px 4px' : '2px 4px', overflowY: 'auto' }}
         >
           {USER_MENU_GROUPS.map((group, gIdx) => (
-            <div key={gIdx} className="mb-2">
-              <div 
-                style={{ 
-                  fontSize: '0.66rem', 
-                  fontWeight: '700', 
-                  color: '#94a3b8', 
-                  padding: '4px 10px', 
-                  letterSpacing: '0.3px'
-                }}
-              >
-                {group.groupTitle}
-              </div>
+            <div key={gIdx} style={{ marginBottom: isCollapsed ? '8px' : '2px' }}>
+              {!isCollapsed ? (
+                <div 
+                  style={{ 
+                    fontSize: '0.54rem', 
+                    fontWeight: '700', 
+                    color: '#94a3b8', 
+                    padding: '1px 4px', 
+                    letterSpacing: '0.2px',
+                    marginBottom: '0px'
+                  }}
+                >
+                  {group.groupTitle}
+                </div>
+              ) : (
+                <div 
+                  style={{ 
+                    height: '1px', 
+                    background: 'rgba(221, 214, 254, 0.4)', 
+                    margin: '6px 12px 6px 12px' 
+                  }} 
+                />
+              )}
 
-              <ul className="codex-menu p-0 m-0 list-unstyled">
+              <ul className="codex-menu p-0 m-0 list-unstyled d-flex flex-column align-items-center">
                 {group.items.map((item) => {
                   const isActive = item.id === 'dashboard'
                     ? (location.pathname === '/user-dashboard' || location.pathname === '/user')
                     : item.id === 'progress'
                     ? location.pathname.startsWith('/progress')
                     : false;
+
+                  const linkContent = (
+                    <div 
+                      className={`d-flex align-items-center ${isCollapsed ? 'justify-content-center' : ''}`} 
+                      style={{ gap: isCollapsed ? '0' : '6px', width: isCollapsed ? '100%' : 'auto' }}
+                    >
+                      <div 
+                        className="d-flex align-items-center justify-content-center flex-shrink-0"
+                        style={{
+                          width: isCollapsed ? '26px' : '18px',
+                          height: isCollapsed ? '26px' : '18px',
+                          borderRadius: isCollapsed ? '6px' : '3px',
+                          background: isActive ? `linear-gradient(135deg, ${group.color}15, ${group.color}25)` : 'transparent',
+                          transition: 'all 0.15s ease'
+                        }}
+                      >
+                        <i 
+                          className={`ti ${item.icon}`}
+                          style={{ 
+                            fontSize: isCollapsed ? '1.15rem' : '0.82rem',
+                            color: isActive ? group.color : (item.id === 'checkin' ? '#16a34a' : '#94a3b8'),
+                            transition: 'color 0.15s ease'
+                          }}
+                        ></i>
+                      </div>
+                      {!isCollapsed && <span>{item.label}</span>}
+                    </div>
+                  );
+
+                  const commonStyle = {
+                    fontSize: '0.74rem',
+                    fontWeight: isActive ? '700' : '500',
+                    color: isActive ? group.color : '#475569',
+                    background: isActive ? `linear-gradient(90deg, ${group.color}08, ${group.color}12)` : 'transparent',
+                    borderRadius: isCollapsed ? '8px' : '5px',
+                    borderRight: !isCollapsed ? (isActive ? `2.5px solid ${group.color}` : '2.5px solid transparent') : 'none',
+                    border: isCollapsed && isActive ? `1.5px solid ${group.color}40` : 'none',
+                    transition: 'all 0.15s ease',
+                    boxShadow: isActive ? `0 1px 4px ${group.color}12` : 'none',
+                    minHeight: isCollapsed ? '34px' : '25px',
+                    padding: isCollapsed ? '4px' : '1px 6px',
+                    width: '100%'
+                  };
+
                   return (
-                    <li key={item.id} className="mb-1">
+                    <li key={item.id} style={{ marginBottom: isCollapsed ? '4px' : '0px', width: '100%' }}>
                       {item.to ? (
                         <Link 
                           to={typeof item.to === 'function' ? item.to(targetUserId) : item.to}
                           target={item.target}
-                          className={`golden-sidebar-item d-flex align-items-center justify-content-between px-3 py-2 rounded-2 text-decoration-none transition-all ${isActive ? 'active' : ''}`}
-                          style={{
-                            fontSize: '0.84rem',
-                            fontWeight: isActive ? '700' : '600',
-                            color: isActive ? '#1e144f' : '#475569',
-                            background: isActive ? 'linear-gradient(135deg, #f8faff 0%, #f0f1ff 100%)' : 'transparent',
-                            borderRadius: '10px',
-                            border: isActive ? '1px solid #e0e7ff' : '1px solid transparent',
-                            boxShadow: isActive ? '0 1px 3px rgba(30, 20, 79, 0.04)' : 'none',
-                            transition: 'all 0.15s ease'
-                          }}
+                          title={item.label}
+                          className={`golden-sidebar-item d-flex align-items-center ${isCollapsed ? 'justify-content-center' : 'justify-content-between'} text-decoration-none transition-all ${isActive ? 'active' : ''}`}
+                          style={commonStyle}
                         >
-                          <div className="d-flex align-items-center gap-2">
-                            <i 
-                              className={`ti ${item.icon}`}
-                              style={{ 
-                                fontSize: '1.1rem',
-                                color: isActive ? '#1e144f' : '#94a3b8',
-                                transition: 'color 0.15s ease'
-                              }}
-                            ></i>
-                            <span>{item.label}</span>
-                          </div>
+                          {linkContent}
                         </Link>
                       ) : item.action === 'checkin' ? (
                         <button
                           type="button"
                           onClick={onOpenCheckin}
-                          className="golden-sidebar-item w-100 d-flex align-items-center justify-content-between px-3 py-2 rounded-2 text-decoration-none border-0 transition-all text-start"
-                          style={{
-                            fontSize: '0.84rem',
-                            fontWeight: '600',
-                            color: '#475569',
-                            background: 'transparent',
-                            borderRadius: '10px',
-                            transition: 'all 0.15s ease'
-                          }}
+                          title={item.label}
+                          className={`golden-sidebar-item d-flex align-items-center ${isCollapsed ? 'justify-content-center' : 'justify-content-between'} text-decoration-none border-0 transition-all text-start ${isActive ? 'active' : ''}`}
+                          style={commonStyle}
                         >
-                          <div className="d-flex align-items-center gap-2">
-                            <i 
-                              className={`ti ${item.icon}`}
-                              style={{ 
-                                fontSize: '1.1rem',
-                                color: '#16a34a',
-                                transition: 'color 0.15s ease'
-                              }}
-                            ></i>
-                            <span>{item.label}</span>
-                          </div>
+                          {linkContent}
                         </button>
                       ) : (
                         <a 
                           href={location.pathname.startsWith('/user-dashboard') || location.pathname === '/user' ? item.href : `/user-dashboard?user_id=${targetUserId}${item.href}`}
-                          className="golden-sidebar-item d-flex align-items-center justify-content-between px-3 py-2 rounded-2 text-decoration-none transition-all"
-                          style={{
-                            fontSize: '0.84rem',
-                            fontWeight: '600',
-                            color: '#475569',
-                            background: 'transparent',
-                            borderRadius: '10px',
-                            transition: 'all 0.15s ease'
-                          }}
+                          title={item.label}
+                          className={`golden-sidebar-item d-flex align-items-center ${isCollapsed ? 'justify-content-center' : 'justify-content-between'} text-decoration-none transition-all ${isActive ? 'active' : ''}`}
+                          style={commonStyle}
                         >
-                          <div className="d-flex align-items-center gap-2">
-                            <i 
-                              className={`ti ${item.icon}`}
-                              style={{ 
-                                fontSize: '1.1rem',
-                                color: '#94a3b8',
-                                transition: 'color 0.15s ease'
-                              }}
-                            ></i>
-                            <span>{item.label}</span>
-                          </div>
+                          {linkContent}
                         </a>
                       )}
                     </li>
@@ -220,30 +240,94 @@ export default function UserDashboardSidebar({ targetUserId, onOpenCheckin }) {
         </div>
       </div>
 
-      {/* Fixed Luxury Bottom Switcher */}
+      {/* Fixed Bottom Footer (Toggle Button + Coach Portal Link) */}
       <div 
-        className="p-2.5 px-3 border-top border-light bg-white flex-shrink-0"
+        className={`p-2 ${isCollapsed ? 'px-1 d-flex flex-column align-items-center' : 'px-3'} border-top flex-shrink-0`}
         style={{ 
           boxShadow: '0 -2px 8px rgba(0, 0, 0, 0.02)',
+          background: 'transparent',
           zIndex: 10 
         }}
       >
+        {/* Single Sleek Toggle Button Directly Above Switcher Button */}
+        {!isCollapsed ? (
+          <button
+            type="button"
+            onClick={onToggleSidebar}
+            className="btn w-100 d-flex align-items-center justify-content-between px-3 mb-2 rounded-3 shadow-xs"
+            style={{
+              height: '34px',
+              background: '#f8fafc',
+              border: '1px solid rgba(221, 214, 254, 0.7)',
+              color: '#475569',
+              fontSize: '0.78rem',
+              fontWeight: '600',
+              cursor: 'pointer',
+              transition: 'all 0.2s ease'
+            }}
+            title="طي القائمة الجانبية (تصغير)"
+            onMouseEnter={(e) => {
+              e.currentTarget.style.background = '#f5f3ff';
+              e.currentTarget.style.color = '#261c6a';
+              e.currentTarget.style.borderColor = '#261c6a';
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.background = '#f8fafc';
+              e.currentTarget.style.color = '#475569';
+              e.currentTarget.style.borderColor = 'rgba(221, 214, 254, 0.7)';
+            }}
+          >
+            <span>طي القائمة</span>
+            <i className="ti ti-layout-sidebar-right-collapse fs-6" style={{ color: '#261c6a' }}></i>
+          </button>
+        ) : (
+          <button
+            type="button"
+            onClick={onToggleSidebar}
+            className="btn d-flex align-items-center justify-content-center mb-2 p-0 rounded-3 shadow-xs"
+            style={{
+              width: '38px',
+              height: '34px',
+              background: '#f8fafc',
+              border: '1px solid rgba(221, 214, 254, 0.7)',
+              color: '#261c6a',
+              cursor: 'pointer',
+              transition: 'all 0.2s ease'
+            }}
+            title="توسيع القائمة الجانبية"
+            onMouseEnter={(e) => {
+              e.currentTarget.style.background = '#261c6a';
+              e.currentTarget.style.color = '#ffffff';
+              e.currentTarget.style.borderColor = '#261c6a';
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.background = '#f8fafc';
+              e.currentTarget.style.color = '#261c6a';
+              e.currentTarget.style.borderColor = 'rgba(221, 214, 254, 0.7)';
+            }}
+          >
+            <i className="ti ti-layout-sidebar-right-expand fs-5"></i>
+          </button>
+        )}
+
+        {/* Coach Portal Button */}
         <Link 
           to="/" 
-          className="btn w-100 fw-bold d-flex align-items-center justify-content-center gap-2 text-white transition-all"
+          className={`btn ${isCollapsed ? 'rounded-circle p-0 d-flex align-items-center justify-content-center' : 'w-100 rounded-pill d-flex align-items-center justify-content-center gap-2'} fw-bold shadow-sm text-white`}
           style={{ 
             height: '38px',
-            borderRadius: '10px',
-            background: 'linear-gradient(135deg, #1e144f 0%, #2e2070 100%)', 
-            border: '1px solid rgba(255, 255, 255, 0.12)',
-            fontSize: '0.82rem',
-            letterSpacing: '0.2px',
-            boxShadow: '0 3px 10px rgba(30, 20, 79, 0.25)'
+            width: isCollapsed ? '38px' : '100%',
+            background: 'linear-gradient(135deg, #261c6a 0%, #4c1d95 100%)', 
+            border: 'none',
+            fontSize: '0.8rem',
+            letterSpacing: '0.3px',
+            boxShadow: '0 4px 15px rgba(38, 28, 106, 0.3)',
+            transition: 'all 0.3s ease'
           }}
-          title="الانتقال إلى لوحة تحكم الكابتن"
+          title="الانتقال إلى لوحة الكابتن"
         >
-          <i className="ti ti-arrows-exchange fs-6 text-white-50"></i>
-          <span>لوحة الكابتن</span>
+          <i className="ti ti-arrows-exchange fs-6 text-light"></i>
+          {!isCollapsed && <span>لوحة الكابتن</span>}
         </Link>
       </div>
     </aside>

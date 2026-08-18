@@ -13,7 +13,7 @@ import Step6Review from '../components/intake/Step6Review';
 const DEFAULT_INTAKE = {
   personal: { firstName: '', lastName: '', dateOfBirth: '', sex: 'MALE', residenceCountry: 'EG', guardianConsent: null },
   goals: { primary: 'FAT_LOSS', secondaryTraining: 'GENERAL_STRENGTH' },
-  body: { heightCm: 170, weightKg: 70, waistCm: 80, weightTrend: 'STABLE', measurementQuality: 'HIGH', progressPhotosAvailable: true },
+  body: { heightCm: 170, weightKg: 70, waistCm: 80, hipCm: '', weightTrend: 'STABLE', measurementQuality: 'HIGH', progressPhotosAvailable: false, photos: { front: null, side: null, back: null } },
   lifestyle: { 
     dailyActivity: 'LIGHT', 
     workSchedule: { type: 'FIXED', physicallyDemandingDays: [] },
@@ -51,7 +51,9 @@ const TABS = [
 
 export default function FullIntakeForm() {
   const navigate = useNavigate();
-  const [activeTab, setActiveTab] = useState('personal');
+  const [activeTab, setActiveTab] = useState(() => {
+    return localStorage.getItem('z_intake_active_tab') || 'personal';
+  });
   const [saveStatus, setSaveStatus] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [submittedSuccess, setSubmittedSuccess] = useState(null);
@@ -61,52 +63,83 @@ export default function FullIntakeForm() {
     const codeParam = params.get('code');
     const phoneParam = params.get('phone');
     if (codeParam) sessionStorage.setItem('z_client_code', codeParam);
-    if (phoneParam) sessionStorage.setItem('z_client_phone', phoneParam);
-    
-    if (!codeParam) {
-      sessionStorage.removeItem('z_client_code');
-      sessionStorage.removeItem('z_client_phone');
+    if (phoneParam) {
+      sessionStorage.setItem('z_client_phone', phoneParam);
+      setFormData(prev => ({
+        ...prev,
+        personal: {
+          ...prev.personal,
+          phone: prev.personal?.phone || phoneParam
+        }
+      }));
     }
   }, []);
 
   const [formData, setFormData] = useState(() => {
     const params = new URLSearchParams(window.location.search);
-    const codeParam = params.get('code');
-    const phoneParam = params.get('phone');
+    const codeParam = params.get('code') || sessionStorage.getItem('z_client_code');
+    const phoneParam = params.get('phone') || sessionStorage.getItem('z_client_phone');
     
+    // 1. Try specific client key if code & phone exist
     if (codeParam && phoneParam) {
-      const storageKey = `z_intake_${codeParam}_${phoneParam}`;
-      const saved = localStorage.getItem(storageKey);
-      if (saved) {
+      const specificKey = `z_intake_${codeParam}_${phoneParam}`;
+      const savedSpecific = localStorage.getItem(specificKey);
+      if (savedSpecific) {
         try {
-          return JSON.parse(saved);
+          const parsed = JSON.parse(savedSpecific);
+          return { ...DEFAULT_INTAKE, ...parsed };
         } catch (e) {}
       }
     }
+
+    // 2. Try general draft key
+    const savedDraft = localStorage.getItem('z_intake_draft');
+    if (savedDraft) {
+      try {
+        const parsed = JSON.parse(savedDraft);
+        return { ...DEFAULT_INTAKE, ...parsed };
+      } catch (e) {}
+    }
+
     return DEFAULT_INTAKE;
   });
 
   const handleResetForm = () => {
     if (window.confirm('هل تريد مسح البيانات والبدء باستمارة جديدة فارغة؟')) {
-      setFormData(DEFAULT_INTAKE);
+      const code = sessionStorage.getItem('z_client_code');
+      const phone = sessionStorage.getItem('z_client_phone');
+      if (code && phone) {
+        localStorage.removeItem(`z_intake_${code}_${phone}`);
+      }
+      localStorage.removeItem('z_intake_draft');
+      localStorage.removeItem('z_intake_active_tab');
       sessionStorage.removeItem('z_client_code');
       sessionStorage.removeItem('z_client_phone');
+      setFormData(DEFAULT_INTAKE);
       setActiveTab('personal');
       setSubmittedSuccess(null);
     }
   };
 
-  // Debounced local & server auto-save
+  // Save active tab on change
   useEffect(() => {
-    const code = sessionStorage.getItem('z_client_code');
-    const phone = sessionStorage.getItem('z_client_phone') || formData.personal?.phone;
-    if (!code && !phone) return;
+    if (activeTab) {
+      localStorage.setItem('z_intake_active_tab', activeTab);
+    }
+  }, [activeTab]);
 
+  // Debounced local & server auto-save (ALWAYS saves locally)
+  useEffect(() => {
     setSaveStatus('saving');
     const timer = setTimeout(async () => {
-      // 1. Save locally in localStorage
-      const storageKey = `z_intake_${code || 'draft'}_${phone || 'phone'}`;
-      localStorage.setItem(storageKey, JSON.stringify(formData));
+      const code = sessionStorage.getItem('z_client_code');
+      const phone = sessionStorage.getItem('z_client_phone') || formData.personal?.phone;
+
+      // 1. Always save in localStorage draft
+      localStorage.setItem('z_intake_draft', JSON.stringify(formData));
+      if (code && phone) {
+        localStorage.setItem(`z_intake_${code}_${phone}`, JSON.stringify(formData));
+      }
       
       // 2. Calculate progress percent
       let progress = 20;
@@ -117,7 +150,7 @@ export default function FullIntakeForm() {
       if (formData.training?.preferredDaysPerWeek) progress += 15;
       progress = Math.min(progress, 95);
 
-      // 3. Sync draft to backend
+      // 3. Sync draft to backend if connected
       try {
         await fetch(`${API_BASE}/api/v1/intake/save-draft`, {
           method: 'POST',
@@ -136,7 +169,7 @@ export default function FullIntakeForm() {
 
       setSaveStatus('saved');
       setTimeout(() => setSaveStatus(''), 2000);
-    }, 1000);
+    }, 600);
 
     return () => clearTimeout(timer);
   }, [formData]);
@@ -206,13 +239,13 @@ export default function FullIntakeForm() {
   }, []);
 
   const handleSubmitIntake = async () => {
-    if (!formData.personal.firstName || !formData.personal.lastName) {
+    if (!formData.personal?.firstName || !formData.personal?.lastName) {
       alert('يرجى التأكد من إدخال الاسم الأول واسم العائلة في قسم البيانات الشخصية.');
       setActiveTab('personal');
       return;
     }
-    if (!formData.personal.dateOfBirth) {
-      alert('يرجى إدخال تاريخ الميلاد، فهو ضروري لحساب العمر في الخطة.');
+    if (!formData.personal?.age && !formData.personal?.dateOfBirth) {
+      alert('يرجى إدخال السن في قسم البيانات الشخصية.');
       setActiveTab('personal');
       return;
     }
@@ -220,9 +253,13 @@ export default function FullIntakeForm() {
     try {
       setSubmitting(true);
       const code = sessionStorage.getItem('z_client_code') || '';
-      const phone = sessionStorage.getItem('z_client_phone') || formData.personal.phone || '01000000000';
+      const phone = formData.personal?.phone || sessionStorage.getItem('z_client_phone') || '';
 
       const payload = JSON.parse(JSON.stringify(formData));
+      const ageVal = payload.personal?.age || 25;
+      if (!payload.personal.dateOfBirth) {
+        payload.personal.dateOfBirth = `${new Date().getFullYear() - ageVal}-01-01`;
+      }
       if (payload.lifestyle?.workSchedule?.type === 'STANDARD') {
         payload.lifestyle.workSchedule.type = 'FIXED';
       }
@@ -245,8 +282,8 @@ export default function FullIntakeForm() {
         body: JSON.stringify({
           ...payload,
           client_code: code || undefined,
-          phone_number: phone,
-          full_name: `${formData.personal.firstName} ${formData.personal.lastName}`
+          phone_number: phone || undefined,
+          full_name: `${formData.personal?.firstName || ''} ${formData.personal?.lastName || ''}`.trim()
         })
       });
 
@@ -259,6 +296,8 @@ export default function FullIntakeForm() {
         const storageKey = `z_intake_${code}_${phone}`;
         localStorage.removeItem(storageKey);
       }
+      localStorage.removeItem('z_intake_draft');
+      localStorage.removeItem('z_intake_active_tab');
       sessionStorage.removeItem('z_client_code');
       sessionStorage.removeItem('z_client_phone');
 

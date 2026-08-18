@@ -30,7 +30,6 @@ export function buildCardioEngine(
   // 4. Schedule sessions into the week
   const weekly_schedule = buildWeeklyCardioSchedule(
     prescription,
-    clientIntakeProfile,
     weeklyTrainingSchedule
   );
 

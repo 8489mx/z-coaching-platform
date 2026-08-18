@@ -5,6 +5,7 @@ import AdminLayout from '../components/layout/AdminLayout';
 import ExecutiveKpis from '../components/dashboard/ExecutiveKpis';
 import WhatsAppModal from '../components/modals/WhatsAppModal';
 import ApproveCheckinModal from '../components/modals/ApproveCheckinModal';
+import { arabicSearchMatch } from '../utils/searchUtils';
 
 export function formatSubscriptionPackage(pkg) {
   if (!pkg) return 'باقة إيليت (3 شهور + 1 مجاناً)';
@@ -109,12 +110,13 @@ export default function DashboardClone() {
       return displayedCode === codeQuery || cleanCode === codeQuery || displayedCode === `client-${codeQuery}`;
     }
 
-    // Standard Universal Search
-    const name = (c.full_name || '').toLowerCase();
-    const phone = (c.phone_number || '').toLowerCase();
-    const code = String(c.client_code || c.id).toLowerCase();
-    const email = (c.email || '').toLowerCase();
-    return name.includes(raw) || phone.includes(raw) || code.includes(raw) || email.includes(raw);
+    // Standard Universal Search with Hamza / Diacritics Invariance
+    return (
+      arabicSearchMatch(c.full_name, searchTerm) ||
+      arabicSearchMatch(c.phone_number, searchTerm) ||
+      arabicSearchMatch(c.client_code || c.id, searchTerm) ||
+      arabicSearchMatch(c.email, searchTerm)
+    );
   });
 
   return (

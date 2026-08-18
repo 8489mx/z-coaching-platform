@@ -1,8 +1,9 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { API_BASE } from '../config/api';
 import AdminLayout from '../components/layout/AdminLayout';
 import WhatsAppModal from '../components/modals/WhatsAppModal';
+import SearchableSelect from '../components/common/SearchableSelect';
 
 export default function CoachEditor() {
   const navigate = useNavigate();
@@ -163,15 +164,20 @@ export default function CoachEditor() {
 
   const handleFoodGramChange = (mealIdx, foodIdx, grams) => {
     const updated = JSON.parse(JSON.stringify(program));
-    const food = updated.nutrition_program.quantized_plan.meals[mealIdx].foods[foodIdx];
+    const targetMeal = updated.nutrition_program.quantized_plan.meals[mealIdx];
+    const foodList = targetMeal.items || targetMeal.foods;
+    const food = foodList[foodIdx];
     food.portion_g_rounded = Number(grams);
     food.grams = Number(grams);
+    food.portion_g = Number(grams);
     setProgram(updated);
   };
 
   const handleDeleteFood = (mealIdx, foodIdx) => {
     const updated = JSON.parse(JSON.stringify(program));
-    updated.nutrition_program.quantized_plan.meals[mealIdx].foods.splice(foodIdx, 1);
+    const targetMeal = updated.nutrition_program.quantized_plan.meals[mealIdx];
+    const foodList = targetMeal.items || targetMeal.foods;
+    foodList.splice(foodIdx, 1);
     setProgram(updated);
   };
 
@@ -181,6 +187,14 @@ export default function CoachEditor() {
   const meals = nutrition?.quantized_plan?.meals || [];
   const cardio = program?.cardio_program;
   const mobility = program?.mobility_program;
+
+  const exerciseOptions = useMemo(() => {
+    return exerciseCatalog.map((catEx) => ({
+      value: catEx.code,
+      label: catEx.name_en || catEx.name_ar || catEx.code,
+      sublabel: catEx.name_ar && catEx.name_ar !== catEx.name_en ? catEx.name_ar : ''
+    }));
+  }, [exerciseCatalog]);
 
   return (
     <AdminLayout>
@@ -374,8 +388,12 @@ export default function CoachEditor() {
                           {sessions[selectedSessionIndex]?.exercises?.map((ex, exIdx) => (
                             <tr key={exIdx}>
                               <td>
-                                <div className="fw-bold text-dark">{ex.name_ar || ex.exercise_code}</div>
-                                <small className="text-muted">{ex.name_en || ex.exercise_code}</small>
+                                <div className="fw-bold text-dark" style={{ fontSize: '0.92rem', letterSpacing: '-0.2px' }}>
+                                  {ex.name_en || ex.exercise_code}
+                                </div>
+                                <small className="text-muted d-block" style={{ fontSize: '0.78rem' }}>
+                                  {ex.name_ar || ex.exercise_code}
+                                </small>
                               </td>
                               <td style={{ width: '110px' }}>
                                 <input 
@@ -426,28 +444,25 @@ export default function CoachEditor() {
                     </div>
 
                     {/* Add Exercise from Catalog Form */}
-                    <div className="mt-4 p-3 bg-light rounded-4 d-flex align-items-center gap-2 flex-wrap">
-                      <span className="fw-semibold small text-muted">إضافة تمرين جديد للحصة:</span>
-                      <select 
-                        className="form-select form-select-sm" 
-                        style={{ maxWidth: '320px' }}
-                        value={selectedExToAdd}
-                        onChange={(e) => setSelectedExToAdd(e.target.value)}
-                      >
-                        <option value="">-- اختر من مكتبة التمارين --</option>
-                        {exerciseCatalog.map((catEx, idx) => (
-                          <option key={idx} value={catEx.code}>
-                            {catEx.name_ar} ({catEx.name_en})
-                          </option>
-                        ))}
-                      </select>
+                    <div className="mt-4 p-3 bg-light rounded-4 d-flex align-items-center gap-3 flex-wrap">
+                      <span className="fw-semibold small text-muted text-nowrap">إضافة تمرين جديد للحصة:</span>
+                      <div style={{ minWidth: '320px', flex: '1 1 320px', maxWidth: '460px' }}>
+                        <SearchableSelect
+                          options={exerciseOptions}
+                          value={selectedExToAdd}
+                          onChange={(val) => setSelectedExToAdd(val)}
+                          placeholder="-- ابحث واختر من مكتبة التمارين --"
+                          searchPlaceholder="ابحث باسم التمرين بالعربي أو الإنجليزي..."
+                        />
+                      </div>
                       <button 
                         type="button" 
-                        className="btn btn-primary btn-sm rounded-pill px-3 fw-bold"
+                        className="btn btn-primary btn-sm rounded-pill px-4 fw-bold shadow-sm"
+                        style={{ height: '38px', background: '#261c6a', border: 'none' }}
                         disabled={!selectedExToAdd}
                         onClick={() => handleAddExerciseToSession(selectedSessionIndex, selectedExToAdd)}
                       >
-                        <i className="ti ti-plus me-1"></i> إضافة التمرين
+                        <i className="ti ti-plus me-1"></i> إضافة التمرين للحصة
                       </button>
                     </div>
                   </div>
@@ -459,52 +474,55 @@ export default function CoachEditor() {
           {/* TAB 2: NUTRITION & MEALS EDITOR */}
           {activeTab === 'nutrition' && (
             <div className="row g-3">
-              {meals.map((meal, mIdx) => (
-                <div key={mIdx} className="col-md-6 col-12">
-                  <div className="card border-0 shadow-sm bg-white h-100" style={{ borderRadius: '16px' }}>
-                    <div className="card-body p-4">
-                      <div className="d-flex justify-content-between align-items-center mb-3">
-                        <h6 className="fw-bold text-dark mb-0">
-                          {meal.meal_label || `الوجبة ${mIdx + 1}`}
-                        </h6>
-                        <span className="badge bg-success-subtle text-success fw-bold">
-                          {meal.foods?.length || 0} أصناف
-                        </span>
-                      </div>
+              {meals.map((meal, mIdx) => {
+                const foodList = meal.items || meal.foods || [];
+                return (
+                  <div key={mIdx} className="col-md-6 col-12">
+                    <div className="card border-0 shadow-sm bg-white h-100" style={{ borderRadius: '16px' }}>
+                      <div className="card-body p-4">
+                        <div className="d-flex justify-content-between align-items-center mb-3">
+                          <h6 className="fw-bold text-dark mb-0">
+                            {meal.meal_label || `الوجبة ${mIdx + 1}`}
+                          </h6>
+                          <span className="badge bg-success-subtle text-success fw-bold">
+                            {foodList.length} أصناف
+                          </span>
+                        </div>
 
-                      <ul className="list-group list-group-flush mb-0">
-                        {meal.foods?.map((food, fIdx) => (
-                          <li key={fIdx} className="list-group-item px-0 py-2 d-flex justify-content-between align-items-center border-0 border-bottom">
-                            <div>
-                              <div className="fw-bold text-dark small">{food.name_ar || food.food_code}</div>
-                              <small className="text-muted">{food.serving_display_ar || `${food.grams || 100} جرام`}</small>
-                            </div>
-                            <div className="d-flex align-items-center gap-2">
-                              <div className="input-group input-group-sm" style={{ width: '120px' }}>
-                                <input 
-                                  type="number" 
-                                  className="form-control text-center fw-bold" 
-                                  value={food.portion_g_rounded || food.grams || 100}
-                                  onChange={(e) => handleFoodGramChange(mIdx, fIdx, e.target.value)}
-                                />
-                                <span className="input-group-text bg-light text-muted small">جرام</span>
+                        <ul className="list-group list-group-flush mb-0">
+                          {foodList.map((food, fIdx) => (
+                            <li key={fIdx} className="list-group-item px-0 py-2 d-flex justify-content-between align-items-center border-0 border-bottom">
+                              <div>
+                                <div className="fw-bold text-dark small">{food.name_ar || food.food_name_ar || food.food_code}</div>
+                                <small className="text-muted">{food.household_serving || food.serving_display_ar || `${food.portion_g_rounded || food.grams || food.portion_g || 100} جرام`}</small>
                               </div>
-                              <button 
-                                type="button"
-                                className="btn btn-outline-danger btn-sm rounded-circle p-1"
-                                onClick={() => handleDeleteFood(mIdx, fIdx)}
-                                title="حذف الصنف"
-                              >
-                                <i className="ti ti-trash"></i>
-                              </button>
-                            </div>
-                          </li>
-                        ))}
-                      </ul>
+                              <div className="d-flex align-items-center gap-2">
+                                <div className="input-group input-group-sm" style={{ width: '120px' }}>
+                                  <input 
+                                    type="number" 
+                                    className="form-control text-center fw-bold" 
+                                    value={food.portion_g_rounded || food.grams || food.portion_g || 100}
+                                    onChange={(e) => handleFoodGramChange(mIdx, fIdx, e.target.value)}
+                                  />
+                                  <span className="input-group-text bg-light text-muted small">جرام</span>
+                                </div>
+                                <button 
+                                  type="button"
+                                  className="btn btn-outline-danger btn-sm rounded-circle p-1"
+                                  onClick={() => handleDeleteFood(mIdx, fIdx)}
+                                  title="حذف الصنف"
+                                >
+                                  <i className="ti ti-trash"></i>
+                                </button>
+                              </div>
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
                     </div>
                   </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           )}
 

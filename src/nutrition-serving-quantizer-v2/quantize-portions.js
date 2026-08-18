@@ -14,21 +14,31 @@ export const ARABIC_FOOD_NAMES = Object.freeze({
   POTATO_BOILED: "بطاطس مسلوقة",
   RICE_WHITE_COOKED: "أرز أبيض مطبوخ",
   RICE_WHITE: "أرز أبيض مطبوخ",
+  RICE_WHITE_LONG_GRAIN_COOKED: "أرز أبيض مطبوخ",
+  PASTA_SPAGHETTI_COOKED: "مكرونة مسلوقة",
+  LENTILS_MATURE_COOKED: "عدس مسلوق",
+  CHICKPEAS_MATURE_COOKED: "حمص مسلوق",
+  FAVA_BEANS_MATURE_COOKED: "فول مدمس",
+  TUNA_LIGHT_CANNED_WATER_DRAINED: "تونة لايت مصفاة",
+  TUNA_CANNED_IN_WATER: "تونة بالماء",
+  BEEF_GROUND_90_LEAN_COOKED: "لحم بقري مفروم صافي",
+  BEEF_GROUND_95_5_RAW: "لحم بقري مفروم قليل الدسم",
+  YOGURT_PLAIN_LOW_FAT: "زبادي قليل الدسم",
+  GREEK_YOGURT_PLAIN_NONFAT: "زبادي يوناني خالي الدسم",
   CARROT_RAW: "جزر طازج",
   CUCUMBER_WITH_PEEL_RAW: "خيار طازج",
   TOMATO_RED_RAW: "طماطم طازجة",
   OLIVE_OIL: "زيت زيتون",
-  BREAD_WHOLE_WHEAT: "توست أسمر",
-  TUNA_CANNED_IN_WATER: "تونة بالماء",
-  SALMON_ATLANTIC_WILD_RAW: "سمك سلمون",
-  BEEF_GROUND_95_5_RAW: "لحم بقري مفروم قليل الدسم",
+  SUNFLOWER_OIL: "زيت نباتي نقي",
+  BREAD_WHOLE_WHEAT: "خبز قمح كامل (بلدي / توست بني)",
+  APPLE_RAW_WITH_SKIN: "تفاح طازج",
+  APPLE_RAW: "تفاح طازج",
+  ORANGE_RAW: "برتقال طازج",
   SWEET_POTATO_COOKED: "بطاطا حلوة مشوية",
   PASTA_WHOLE_WHEAT_COOKED: "مكرونة قمح كامل مسلوقة",
   AVOCADO_RAW: "أفوكادو طازج",
-  GREEK_YOGURT_PLAIN_NONFAT: "زبادي يوناني خالي الدسم",
   ALMONDS_RAW: "لوز نيء",
   PEANUT_BUTTER_ALL_NATURAL: "زبدة فول سوداني",
-  APPLE_RAW: "تفاح طازج",
   BERRIES_MIXED_RAW: "توت مشكل",
   SPINACH_RAW: "سبانخ طازجة",
   BROCCOLI_COOKED: "بروكلي مسلوق",
@@ -142,7 +152,12 @@ export function quantizeFoodPortion(foodItem) {
   return Object.freeze({
     ...foodItem,
     name_ar: arName,
+    name_en: foodItem.name_en || foodCode,
+    grams: Math.round(rawGrams),
+    portion_g: Math.round(rawGrams),
     portion_g_rounded: Math.round(rawGrams),
+    household_serving: servingDisplayAr,
+    household_serving_en: servingDisplayEn,
     household_unit_type: householdUnit,
     unit_count: unitCount,
     serving_display_ar: servingDisplayAr,
@@ -162,10 +177,12 @@ export function quantizeNutritionPlan(portionSolverOutput) {
   }
 
   const quantizedMeals = portionSolverOutput.meals.map((meal) => {
-    const quantizedFoods = (meal.foods || []).map((food) => quantizeFoodPortion(food));
+    const rawList = meal.items || meal.foods || [];
+    const quantizedFoods = rawList.map((food) => quantizeFoodPortion(food));
 
     return Object.freeze({
       ...meal,
+      items: Object.freeze(quantizedFoods),
       foods: Object.freeze(quantizedFoods),
     });
   });

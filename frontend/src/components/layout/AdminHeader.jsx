@@ -3,7 +3,13 @@ import { Link, useNavigate } from 'react-router-dom';
 import NotificationsDropdown from '../NotificationsDropdown';
 import NewClientQuickModal from '../modals/NewClientQuickModal';
 
-export default function AdminHeader({ searchTerm, onSearchChange, searchPlaceholder = "بحث بالاسم، الهاتف، أو اكتب #كود المشترك (مثل #4)..." }) {
+export default function AdminHeader({ 
+  searchTerm, 
+  onSearchChange, 
+  searchPlaceholder = "بحث بالاسم، الهاتف، أو اكتب #كود المشترك (مثل #4)...",
+  isCollapsed = false,
+  onToggleSidebar
+}) {
   const [isNewClientModalOpen, setIsNewClientModalOpen] = useState(false);
   const [isProfileDropdownOpen, setIsProfileDropdownOpen] = useState(false);
   const [coachProfile, setCoachProfile] = useState({
@@ -115,7 +121,7 @@ export default function AdminHeader({ searchTerm, onSearchChange, searchPlacehol
           </div>
 
           {/* Left Side in RTL: Manzuma Deep Midnight Violet Action + Notifications + Profile */}
-          <div className="header-right d-flex align-items-center justify-content-end gap-2" style={{ paddingLeft: '24px', paddingRight: '8px' }}>
+          <div className="header-right d-flex align-items-center justify-content-end gap-2 flex-shrink-0">
             
             {/* Quick Action: New Client Button (Manzuma Midnight Violet #261c6a) */}
             <button 

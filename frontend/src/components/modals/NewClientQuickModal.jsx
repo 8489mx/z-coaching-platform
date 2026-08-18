@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import ReactDOM from 'react-dom';
 import { useNavigate } from 'react-router-dom';
 import { API_BASE } from '../../config/api';
 
@@ -129,14 +130,22 @@ export default function NewClientQuickModal({ isOpen, onClose, onClientCreated }
     window.open(waUrl, '_blank');
   };
 
-  return (
+  const modalContent = (
     <div 
       className="modal fade show d-block" 
       tabIndex="-1" 
-      style={{ backgroundColor: 'rgba(15, 23, 42, 0.65)', backdropFilter: 'blur(6px)', zIndex: 1060 }}
+      style={{ 
+        backgroundColor: 'rgba(15, 23, 42, 0.65)', 
+        backdropFilter: 'blur(6px)', 
+        zIndex: 10000,
+        position: 'fixed',
+        top: 0,
+        bottom: 0,
+        overflowY: 'auto'
+      }}
       onClick={(e) => { if (e.target === e.currentTarget) handleClose(); }}
     >
-      <div className="modal-dialog modal-dialog-centered" style={{ maxWidth: '480px' }}>
+      <div className="modal-dialog modal-dialog-centered" style={{ width: '96%', maxWidth: '480px', margin: '1.5rem auto' }}>
         <div 
           className="modal-content border-0 shadow-2xl bg-white" 
           style={{ borderRadius: '24px', overflow: 'hidden' }}
@@ -376,4 +385,6 @@ export default function NewClientQuickModal({ isOpen, onClose, onClientCreated }
       </div>
     </div>
   );
+
+  return ReactDOM.createPortal(modalContent, document.body);
 }

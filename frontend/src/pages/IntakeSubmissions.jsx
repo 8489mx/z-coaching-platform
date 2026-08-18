@@ -1,8 +1,11 @@
 import React, { useState, useEffect } from 'react';
+import ReactDOM from 'react-dom';
 import { useNavigate, Link } from 'react-router-dom';
 import { API_BASE } from '../config/api';
 import AdminLayout from '../components/layout/AdminLayout';
 import WhatsAppModal from '../components/modals/WhatsAppModal';
+import IntakeAuditDetailModal from '../components/intake/IntakeAuditDetailModal';
+import { arabicSearchMatch } from '../utils/searchUtils';
 
 export default function IntakeSubmissions() {
   const navigate = useNavigate();
@@ -22,6 +25,20 @@ export default function IntakeSubmissions() {
   });
   const [whatsappClient, setWhatsappClient] = useState(null);
   const [generatingId, setGeneratingId] = useState(null);
+
+  const handleToggleAnswers = (sub) => {
+    if (selectedAnswers && selectedAnswers.id === sub.id) {
+      setSelectedAnswers(null);
+    } else {
+      setSelectedAnswers(sub);
+      setTimeout(() => {
+        const el = document.getElementById('intake-audit-section');
+        if (el) {
+          el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+      }, 120);
+    }
+  };
 
   useEffect(() => {
     fetchSubmissions();
@@ -119,11 +136,15 @@ export default function IntakeSubmissions() {
       return clientCode === codeQuery || cleanCode === codeQuery || clientCode === `client-${codeQuery}`;
     }
 
-    // Standard Search
-    const name = (sub.user?.full_name || sub.answers?.personal?.firstName || '').toLowerCase();
-    const phone = (sub.user?.phone_number || sub.answers?.personal?.phone || '').toLowerCase();
-    const code = String(sub.user?.client_code || '').toLowerCase();
-    return name.includes(raw) || phone.includes(raw) || code.includes(raw);
+    // Standard Search with Hamza / Diacritics Invariance
+    return (
+      arabicSearchMatch(sub.user?.full_name, searchTerm) ||
+      arabicSearchMatch(sub.answers?.personal?.firstName, searchTerm) ||
+      arabicSearchMatch(sub.answers?.personal?.lastName, searchTerm) ||
+      arabicSearchMatch(sub.user?.phone_number, searchTerm) ||
+      arabicSearchMatch(sub.answers?.personal?.phone, searchTerm) ||
+      arabicSearchMatch(sub.user?.client_code, searchTerm)
+    );
   });
 
   const inProgressCount = submissions.filter(s => s.status === 'IN_PROGRESS' || ((s.progress_percent || 100) < 100 && s.status !== 'APPROVED')).length;
@@ -427,75 +448,81 @@ export default function IntakeSubmissions() {
                                   </button>
                                 )}
 
-                                {/* View Answers Modal */}
-                                <button
-                                  type="button"
-                                  className="btn btn-sm rounded-pill px-2 py-1 fw-semibold bg-white border"
-                                  style={{ fontSize: '0.76rem', color: '#475569', height: '30px' }}
-                                  onClick={() => setSelectedAnswers({ sub, answers: sub.answers })}
-                                  title="عرض إجابات الاستمارة وتدقيق الأمان"
-                                >
-                                  <i className="ti ti-eye me-1"></i> إجابات
-                                </button>
+                                {/* View Answers Inline Toggle Button */}
+                                 <button
+                                   type="button"
+                                   className={`btn btn-sm rounded-pill px-2 py-1 fw-semibold transition-all ${selectedAnswers?.id === sub.id ? 'btn-primary text-white shadow-sm' : 'bg-white border'}`}
+                                   style={{ 
+                                     fontSize: '0.76rem', 
+                                     color: selectedAnswers?.id === sub.id ? '#ffffff' : '#475569', 
+                                     background: selectedAnswers?.id === sub.id ? '#261c6a' : '#ffffff',
+                                     height: '30px' 
+                                   }}
+                                   onClick={() => handleToggleAnswers(sub)}
+                                   title="عرض إجابات الاستمارة وتدقيق الأمان"
+                                 >
+                                   <i className="ti ti-eye me-1"></i>
+                                   <span>{selectedAnswers?.id === sub.id ? 'إخفاء الإجابات' : 'إجابات'}</span>
+                                 </button>
 
-                                {/* Payment Confirmation Modal */}
-                                <button
-                                  type="button"
-                                  className="btn btn-sm rounded-pill px-2 py-1 fw-semibold bg-white border"
-                                  style={{ fontSize: '0.76rem', color: '#059669', height: '30px' }}
-                                  onClick={() => {
-                                    setPaymentModalSub(sub);
-                                    setPaymentForm({
-                                      subscription_package: user.subscription_package || '3_MONTHS_VIP',
-                                      subscription_price: user.subscription_price || 2500,
-                                      payment_method: user.payment_method || 'INSTAPAY',
-                                      duration_months: 3
-                                    });
-                                  }}
-                                  title="تأكيد الدفع والباقة"
-                                >
-                                  <i className="ti ti-wallet me-1"></i> الدفع
-                                </button>
+                                 {/* Payment Confirmation Modal */}
+                                 <button
+                                   type="button"
+                                   className="btn btn-sm rounded-pill px-2 py-1 fw-semibold bg-white border"
+                                   style={{ fontSize: '0.76rem', color: '#059669', height: '30px' }}
+                                   onClick={() => {
+                                     setPaymentModalSub(sub);
+                                     setPaymentForm({
+                                       subscription_package: user.subscription_package || '3_MONTHS_VIP',
+                                       subscription_price: user.subscription_price || 2500,
+                                       payment_method: user.payment_method || 'INSTAPAY',
+                                       duration_months: 3
+                                     });
+                                   }}
+                                   title="تأكيد الدفع والباقة"
+                                 >
+                                   <i className="ti ti-wallet me-1"></i> الدفع
+                                 </button>
 
-                                {/* Generate Draft / Edit */}
-                                {sub.status !== 'APPROVED' ? (
-                                  <button
-                                    type="button"
-                                    className="btn btn-sm rounded-pill px-3 py-1 fw-bold text-white shadow-xs d-flex align-items-center gap-1"
-                                    disabled={isGenerating}
-                                    onClick={() => handleGenerateDraft(sub)}
-                                    style={{ fontSize: '0.76rem', background: '#261c6a', border: 'none', height: '30px' }}
-                                  >
-                                    {isGenerating ? (
-                                      <span className="spinner-border spinner-border-sm"></span>
-                                    ) : (
-                                      <><i className="ti ti-file-text"></i> {sub.status === 'DRAFT_GENERATED' ? 'تعديل المسودة' : 'توليد ومراجعة'}</>
-                                    )}
-                                  </button>
-                                ) : (
-                                  <Link
-                                    to={`/coach/editor?user_id=${user.client_code || user.id}`}
-                                    className="btn btn-sm rounded-pill px-3 py-1 fw-semibold shadow-xs"
-                                    style={{ fontSize: '0.76rem', background: '#f5f3ff', color: '#261c6a', border: '1px solid #ddd6fe', height: '30px' }}
-                                  >
-                                    <i className="ti ti-edit me-1"></i> تعديل الخطة
-                                  </Link>
-                                )}
+                                 {/* Generate Draft / Edit */}
+                                 {sub.status !== 'APPROVED' ? (
+                                   <button
+                                     type="button"
+                                     className="btn btn-sm rounded-pill px-3 py-1 fw-bold text-white shadow-xs d-flex align-items-center gap-1"
+                                     disabled={isGenerating}
+                                     onClick={() => handleGenerateDraft(sub)}
+                                     style={{ fontSize: '0.76rem', background: '#261c6a', border: 'none', height: '30px' }}
+                                   >
+                                     {isGenerating ? (
+                                       <span className="spinner-border spinner-border-sm"></span>
+                                     ) : (
+                                       <><i className="ti ti-file-text"></i> {sub.status === 'DRAFT_GENERATED' ? 'تعديل المسودة' : 'توليد ومراجعة'}</>
+                                     )}
+                                   </button>
+                                 ) : (
+                                   <Link
+                                     to={`/coach/editor?user_id=${user.client_code || user.id}`}
+                                     className="btn btn-sm rounded-pill px-3 py-1 fw-semibold shadow-xs"
+                                     style={{ fontSize: '0.76rem', background: '#f5f3ff', color: '#261c6a', border: '1px solid #ddd6fe', height: '30px' }}
+                                   >
+                                     <i className="ti ti-edit me-1"></i> تعديل الخطة
+                                   </Link>
+                                 )}
 
-                                {/* WhatsApp CTA */}
-                                <button
-                                  type="button"
-                                  className="btn btn-sm rounded-circle p-0 d-flex align-items-center justify-content-center transition-all bg-white border"
-                                  style={{ width: '30px', height: '30px', borderColor: '#e2e8f0', color: '#16a34a' }}
-                                  onClick={() => setWhatsappClient({
-                                    full_name: clientName,
-                                    client_code: user.client_code || sub.id,
-                                    phone_number: clientPhone
-                                  })}
-                                  title="مراسلة سريعة عبر الواتساب"
-                                >
-                                  <i className="ti ti-brand-whatsapp fs-6"></i>
-                                </button>
+                                 {/* WhatsApp CTA */}
+                                 <button
+                                   type="button"
+                                   className="btn btn-sm rounded-circle p-0 d-flex align-items-center justify-content-center transition-all bg-white border"
+                                   style={{ width: '30px', height: '30px', borderColor: '#e2e8f0', color: '#16a34a' }}
+                                   onClick={() => setWhatsappClient({
+                                     full_name: clientName,
+                                     client_code: user.client_code || sub.id,
+                                     phone_number: clientPhone
+                                   })}
+                                   title="مراسلة سريعة عبر الواتساب"
+                                 >
+                                   <i className="ti ti-brand-whatsapp fs-6"></i>
+                                 </button>
                               </div>
                             </td>
                           </tr>
@@ -508,53 +535,38 @@ export default function IntakeSubmissions() {
             </div>
           </div>
 
+          {/* Answers Audit Section (Visual, Structured & Photo Gallery Inline in Page) */}
+          {selectedAnswers && (
+            <div className="col-12 mt-4">
+              <IntakeAuditDetailModal
+                submission={selectedAnswers}
+                onClose={() => setSelectedAnswers(null)}
+                onGenerateDraft={handleGenerateDraft}
+                generatingId={generatingId}
+              />
+            </div>
+          )}
+
         </div>
       </div>
 
-      {/* Answers Audit Modal */}
-      {selectedAnswers && (
-        <div className="modal show d-block" tabIndex="-1" style={{ backgroundColor: 'rgba(15, 23, 42, 0.65)', backdropFilter: 'blur(4px)', zIndex: 1060 }}>
-          <div className="modal-dialog modal-dialog-centered modal-lg">
-            <div className="modal-content border-0 shadow-lg" style={{ borderRadius: '20px', overflow: 'hidden' }} dir="rtl">
-              <div className="modal-header border-bottom p-4 bg-white d-flex justify-content-between align-items-center" style={{ borderColor: '#f1f5f9' }}>
-                <div className="d-flex align-items-center gap-3">
-                  <div className="rounded-circle d-flex align-items-center justify-content-center" style={{ width: '38px', height: '38px', background: '#f5f3ff', color: '#261c6a', border: '1px solid #ddd6fe' }}>
-                    <i className="ti ti-clipboard-list fs-5"></i>
-                  </div>
-                  <div>
-                    <h5 className="modal-title fw-bold text-dark mb-0" style={{ fontSize: '1.05rem' }}>بيانات استمارة المتدرب</h5>
-                    <small className="text-muted" style={{ fontSize: '0.78rem' }}>مراجعة إجابات التقييم الشامل والأمان الحركي</small>
-                  </div>
-                </div>
-                <button 
-                  type="button" 
-                  onClick={() => setSelectedAnswers(null)} 
-                  className="btn btn-sm btn-light rounded-circle d-flex align-items-center justify-content-center flex-shrink-0"
-                  style={{ width: '34px', height: '34px', background: '#f8fafc', border: '1px solid #e2e8f0', color: '#64748b' }}
-                  title="إغلاق"
-                >
-                  <i className="ti ti-x fs-6"></i>
-                </button>
-              </div>
-              <div className="modal-body p-4 bg-white" style={{ maxHeight: '70vh', overflowY: 'auto' }}>
-                <pre className="bg-light p-3 rounded-3 text-dark small" style={{ direction: 'ltr', textAlign: 'left', fontSize: '0.8rem' }}>
-                  {JSON.stringify(selectedAnswers.answers, null, 2)}
-                </pre>
-              </div>
-              <div className="modal-footer bg-light border-top p-3 d-flex justify-content-end" style={{ borderColor: '#f1f5f9' }}>
-                <button type="button" className="btn btn-light btn-sm rounded-pill px-4 border text-dark" style={{ height: '36px' }} onClick={() => setSelectedAnswers(null)}>
-                  إغلاق
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
-
       {/* Payment Confirmation Modal */}
-      {paymentModalSub && (
-        <div className="modal show d-block" tabIndex="-1" style={{ backgroundColor: 'rgba(15, 23, 42, 0.65)', backdropFilter: 'blur(4px)', zIndex: 1060 }}>
-          <div className="modal-dialog modal-dialog-centered" style={{ maxWidth: '480px' }}>
+      {paymentModalSub && ReactDOM.createPortal(
+        <div 
+          className="modal show d-block" 
+          tabIndex="-1" 
+          style={{ 
+            backgroundColor: 'rgba(15, 23, 42, 0.65)', 
+            backdropFilter: 'blur(4px)', 
+            zIndex: 10000,
+            position: 'fixed',
+            top: 0,
+            bottom: 0,
+            overflowY: 'auto'
+          }}
+          onClick={(e) => { if (e.target === e.currentTarget) setPaymentModalSub(null); }}
+        >
+          <div className="modal-dialog modal-dialog-centered" style={{ width: '96%', maxWidth: '480px', margin: '1.5rem auto' }}>
             <div className="modal-content border-0 shadow-lg" style={{ borderRadius: '20px', overflow: 'hidden' }} dir="rtl">
               <div className="modal-header border-bottom p-4 bg-white d-flex justify-content-between align-items-center" style={{ borderColor: '#f1f5f9' }}>
                 <div className="d-flex align-items-center gap-3">
@@ -631,7 +643,8 @@ export default function IntakeSubmissions() {
               </form>
             </div>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
 
       {/* WhatsApp Hub Modal */}

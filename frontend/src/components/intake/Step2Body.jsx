@@ -119,39 +119,156 @@ export default function Step2Body({
 
       <div className="section-divider"></div>
 
-      {/* 3. Optional Progress Photos Upload Box */}
-      <div className="p-3.5 my-3 rounded-4 border" style={{ background: '#f8fafc', borderColor: '#e2e8f0' }}>
+      {/* 3. Optional Progress Photos: 3 Upload Boxes (Front, Side, Back) */}
+      <div className="my-3">
         <div className="d-flex align-items-center justify-content-between mb-2">
           <div className="d-flex align-items-center gap-2">
             <span className="badge rounded-pill fw-bold" style={{ background: '#f5f3ff', color: '#1e144f', border: '1px solid #ddd6fe' }}>
               اختياري
             </span>
-            <span className="fw-bold text-dark" style={{ fontSize: '0.92rem' }}>
-              رفع صور التقييم الجسدي
+            <span className="fw-bold text-dark" style={{ fontSize: '1rem' }}>
+              صور التقييم الجسدي (3 زوايا)
             </span>
           </div>
           <small className="text-muted fw-semibold" style={{ fontSize: '0.75rem' }}>
             مشفرة وخاصة بالكابتن فقط
           </small>
         </div>
-        <p className="text-muted mb-3" style={{ fontSize: '0.8rem', lineHeight: '1.5' }}>
-          يمكنك إرفاق صور لجسمك بملابس رياضية (أمام - جانب - خلف) لمساعدة الكابتن في التدقيق البصري لنسبة الدهون ونقاط القوة العضلية.
+        <p className="text-muted mb-3" style={{ fontSize: '0.82rem', lineHeight: '1.6' }}>
+          رفع الصور يساعد الكابتن في الفحص البصري لتوزيع الدهون، استقامة القوام، وتحديد الأولويات العضلية بدقة.
         </p>
-        <div className="d-flex align-items-center gap-2">
-          <input 
-            type="file" 
-            id="intake-photo-upload" 
-            multiple 
-            accept="image/*" 
-            className="form-control form-control-sm"
-            style={{ maxWidth: '350px' }}
-            onChange={(e) => {
-              const files = e.target.files;
-              if (files && files.length > 0) {
-                updateField('body', 'progressPhotosAvailable', true);
-              }
-            }}
-          />
+
+        <div className="row g-3">
+          {[
+            {
+              key: 'front',
+              title: 'صورة من الأمام (Front)',
+              subtitle: 'وقفة مستقيمة بمواجهة الكاميرا واليدين للجانبين',
+              icon: 'ti-user'
+            },
+            {
+              key: 'side',
+              title: 'صورة من الجانب (Side)',
+              subtitle: 'وقفة جانبية لتقييم مظهر البطن واستقامة الظهر',
+              icon: 'ti-user-circle'
+            },
+            {
+              key: 'back',
+              title: 'صورة من الخلف (Back)',
+              subtitle: 'وقفة خلفية لتقييم عضلات الظهر والأكتاف',
+              icon: 'ti-user-check'
+            }
+          ].map((box) => {
+            const photoSrc = formData.body?.photos?.[box.key];
+            const inputId = `upload-photo-${box.key}`;
+
+            return (
+              <div className="col-md-4" key={box.key}>
+                <div 
+                  className="card h-100 border text-center p-3"
+                  style={{
+                    borderRadius: '14px',
+                    borderColor: photoSrc ? '#10b981' : '#e2e8f0',
+                    background: photoSrc ? '#f0fdf4' : '#ffffff',
+                    transition: 'all 0.25s ease'
+                  }}
+                >
+                  <input
+                    type="file"
+                    id={inputId}
+                    accept="image/*"
+                    className="d-none"
+                    onChange={(e) => {
+                      const file = e.target.files?.[0];
+                      if (file) {
+                        const reader = new FileReader();
+                        reader.onload = () => {
+                          const currentPhotos = formData.body?.photos || {};
+                          const updatedPhotos = { ...currentPhotos, [box.key]: reader.result };
+                          updateField('body', 'photos', updatedPhotos);
+                          updateField('body', 'progressPhotosAvailable', true);
+                        };
+                        reader.readAsDataURL(file);
+                      }
+                    }}
+                  />
+
+                  {photoSrc ? (
+                    <div className="d-flex flex-column align-items-center">
+                      <div className="position-relative mb-2" style={{ width: '100%', height: '140px' }}>
+                        <img
+                          src={photoSrc}
+                          alt={box.title}
+                          className="rounded-3 shadow-xs"
+                          style={{
+                            width: '100%',
+                            height: '100%',
+                            objectFit: 'cover'
+                          }}
+                        />
+                        <span 
+                          className="position-absolute top-0 start-0 m-2 badge bg-success shadow-sm"
+                          style={{ fontSize: '0.7rem' }}
+                        >
+                          <i className="ti ti-check me-1"></i> تم الرفع
+                        </span>
+                      </div>
+
+                      <h6 className="fw-bold text-dark mb-1" style={{ fontSize: '0.85rem' }}>{box.title}</h6>
+                      <div className="d-flex gap-2 mt-2">
+                        <label 
+                          htmlFor={inputId}
+                          className="btn btn-sm btn-outline-primary py-1 px-2"
+                          style={{ fontSize: '0.75rem', cursor: 'pointer', borderRadius: '8px' }}
+                        >
+                          <i className="ti ti-replace me-1"></i> تغيير
+                        </label>
+                        <button
+                          type="button"
+                          className="btn btn-sm btn-outline-danger py-1 px-2"
+                          style={{ fontSize: '0.75rem', borderRadius: '8px' }}
+                          onClick={() => {
+                            const currentPhotos = { ...(formData.body?.photos || {}) };
+                            delete currentPhotos[box.key];
+                            updateField('body', 'photos', currentPhotos);
+                            const remaining = Object.values(currentPhotos).filter(Boolean).length;
+                            updateField('body', 'progressPhotosAvailable', remaining > 0);
+                          }}
+                        >
+                          <i className="ti ti-trash me-1"></i> حذف
+                        </button>
+                      </div>
+                    </div>
+                  ) : (
+                    <label
+                      htmlFor={inputId}
+                      className="d-flex flex-column align-items-center justify-content-center h-100 py-3"
+                      style={{ cursor: 'pointer', minHeight: '160px' }}
+                    >
+                      <div 
+                        className="rounded-circle d-flex align-items-center justify-content-center mb-2"
+                        style={{ width: '48px', height: '48px', background: '#f1f5f9', color: '#1e144f' }}
+                      >
+                        <i className="ti ti-camera" style={{ fontSize: '1.35rem' }}></i>
+                      </div>
+                      <h6 className="fw-bold text-dark mb-1" style={{ fontSize: '0.88rem' }}>
+                        {box.title}
+                      </h6>
+                      <p className="text-muted mb-2 px-1" style={{ fontSize: '0.72rem', lineHeight: '1.4' }}>
+                        {box.subtitle}
+                      </p>
+                      <span 
+                        className="btn btn-sm btn-light border fw-semibold px-3 py-1"
+                        style={{ fontSize: '0.75rem', borderRadius: '8px', color: '#1e144f' }}
+                      >
+                        + اختيار الصورة
+                      </span>
+                    </label>
+                  )}
+                </div>
+              </div>
+            );
+          })}
         </div>
       </div>
     </div>

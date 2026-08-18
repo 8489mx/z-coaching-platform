@@ -3,6 +3,7 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 
 import { evaluateIntake } from "z-coaching-intake-decision-engine";
+import { adaptIntakePayloadToCanonicalEngine } from "../../intake-decision-engine/adapters/intake-adapter.js";
 import { buildMasterEngineV2 } from "../../../src/master-engine-v2/index.js";
 import { User, Program, IntakeSubmission } from "../models/index.js";
 
@@ -37,12 +38,35 @@ function generateAiRationaleAudit(intakePayload, masterProgram) {
   }
 
   const foodExclusions = [];
-  if (nutrition.allergies && nutrition.allergies.length > 0) {
-    const allergens = nutrition.allergies.map(a => a.substance).join("، ");
+  const EXCLUSION_LABELS_AR = {
+    EGGS: 'البيض ومنتجاته',
+    EGG: 'البيض ومنتجاته',
+    DAIRY: 'الألبان والأجبان',
+    MILK: 'الألبان والأجبان',
+    FISH_SEAFOOD: 'الأسماك والمأكولات البحرية والتونة',
+    FISH: 'الأسماك والمأكولات البحرية',
+    OATS: 'الشوفان',
+    OAT: 'الشوفان',
+    RED_MEAT: 'اللحوم الحمراء',
+    MEAT: 'اللحوم الحمراء',
+    PEANUTS_NUTS: 'المكسرات والفول السوداني',
+    GLUTEN_WHEAT: 'القمح والجلوتين',
+    WHEAT_GLUTEN: 'القمح والجلوتين',
+    LEGUMES: 'البقوليات',
+    EGGPLANT_VEG: 'الباذنجان والخضار المطبوخ',
+    EGGPLANT: 'الباذنجان'
+  };
+
+  const excludedItemsList = Array.isArray(nutrition.excludedFoodsList) ? nutrition.excludedFoodsList.filter(f => f !== 'NONE') : [];
+  if (excludedItemsList.length > 0) {
+    const labels = excludedItemsList.map(code => EXCLUSION_LABELS_AR[code] || code).join("، ");
+    foodExclusions.push(`تم استبعاد مسببات الحساسية والممنوعات بالكامل: (${labels}) واستبدالها ببدائل صحية آمنة 100%.`);
+  } else if (nutrition.allergies && nutrition.allergies.length > 0) {
+    const allergens = nutrition.allergies.map(a => EXCLUSION_LABELS_AR[a.substance] || a.substance).join("، ");
     foodExclusions.push(`تم استبعاد مسببات الحساسية بالكامل: (${allergens}) واستبدالها بمصادر بروتين وكارب آمنة 100%.`);
   }
-  if (nutrition.dislikedFoods && nutrition.dislikedFoods.length > 0) {
-    const disliked = nutrition.dislikedFoods.map(d => d.foodName || d.foodCode).join("، ");
+  if (nutrition.dislikedFoods && nutrition.dislikedFoods.length > 0 && excludedItemsList.length === 0) {
+    const disliked = nutrition.dislikedFoods.map(d => d.foodName || d.foodCode || d).join("، ");
     foodExclusions.push(`تم حذف الأطعمة غير المفضلة (${disliked}) من قائمة الوجبات وخيارات التبديل.`);
   }
   if (foodExclusions.length === 0) {
@@ -70,28 +94,31 @@ function generateAiRationaleAudit(intakePayload, masterProgram) {
 export const saveDraftIntake = async (req, res) => {
   try {
     const { client_code, phone_number, full_name, progress_percent = 50, ...intakePayload } = req.body;
-    const phone = phone_number || intakePayload.personal?.phone || "01000000000";
+    const rawPhone = phone_number || intakePayload.personal?.phone || "";
+    const cleanPhone = rawPhone.trim() && rawPhone !== "01000000000" ? rawPhone.trim() : null;
     const name = full_name || `${intakePayload.personal?.firstName || ""} ${intakePayload.personal?.lastName || ""}`.trim() || "متدرب جديد (قيد التعبئة)";
 
     let user = null;
-    if (client_code) {
-      user = await User.findOne({ where: { client_code } });
+    if (client_code && client_code !== "COACH-KIMO") {
+      user = await User.findOne({ where: { client_code, role: 'CLIENT' } });
     }
-    if (!user && phone) {
-      user = await User.findOne({ where: { phone_number: phone } });
+    if (!user && cleanPhone) {
+      user = await User.findOne({ where: { phone_number: cleanPhone, role: 'CLIENT' } });
     }
 
     if (!user) {
-      const lastUser = await User.findOne({ where: { role: 'CLIENT' }, order: [['id', 'DESC']] });
-      let nextCode = 1;
-      if (lastUser && lastUser.client_code) {
-        const parsed = parseInt(lastUser.client_code, 10);
-        if (!isNaN(parsed)) nextCode = parsed + 1;
+      // Find highest numerical code among CLIENTS
+      const allClients = await User.findAll({ where: { role: 'CLIENT' }, attributes: ['client_code'] });
+      let maxCode = 0;
+      for (const c of allClients) {
+        const num = parseInt(c.client_code, 10);
+        if (!isNaN(num) && num > maxCode) maxCode = num;
       }
+      const nextCode = (maxCode + 1).toString();
 
       user = await User.create({
-        client_code: nextCode.toString(),
-        phone_number: phone,
+        client_code: nextCode,
+        phone_number: cleanPhone || `TEMP_${Date.now().toString().slice(-8)}`,
         full_name: name,
         role: 'CLIENT',
         payment_status: 'PENDING',
@@ -135,28 +162,31 @@ export const saveDraftIntake = async (req, res) => {
 export const submitPublicIntake = async (req, res) => {
   try {
     const { client_code, phone_number, full_name, ...intakePayload } = req.body;
-    const phone = phone_number || intakePayload.personal?.phone || "01000000000";
+    const rawPhone = phone_number || intakePayload.personal?.phone || "";
+    const cleanPhone = rawPhone.trim() && rawPhone !== "01000000000" ? rawPhone.trim() : null;
     const name = full_name || `${intakePayload.personal?.firstName || ""} ${intakePayload.personal?.lastName || ""}`.trim() || "متدرب جديد";
 
     let user = null;
-    if (client_code) {
-      user = await User.findOne({ where: { client_code } });
+    if (client_code && client_code !== "COACH-KIMO") {
+      user = await User.findOne({ where: { client_code, role: 'CLIENT' } });
     }
-    if (!user && phone) {
-      user = await User.findOne({ where: { phone_number: phone } });
+    if (!user && cleanPhone) {
+      user = await User.findOne({ where: { phone_number: cleanPhone, role: 'CLIENT' } });
     }
 
     if (!user) {
-      const lastUser = await User.findOne({ where: { role: 'CLIENT' }, order: [['id', 'DESC']] });
-      let nextCode = 1;
-      if (lastUser && lastUser.client_code) {
-        const parsed = parseInt(lastUser.client_code, 10);
-        if (!isNaN(parsed)) nextCode = parsed + 1;
+      // Find highest numerical code among CLIENTS
+      const allClients = await User.findAll({ where: { role: 'CLIENT' }, attributes: ['client_code'] });
+      let maxCode = 0;
+      for (const c of allClients) {
+        const num = parseInt(c.client_code, 10);
+        if (!isNaN(num) && num > maxCode) maxCode = num;
       }
+      const nextCode = (maxCode + 1).toString();
 
       user = await User.create({
-        client_code: nextCode.toString(),
-        phone_number: phone,
+        client_code: nextCode,
+        phone_number: cleanPhone || `TEMP_${Date.now().toString().slice(-8)}`,
         full_name: name,
         role: 'CLIENT',
         payment_status: 'PENDING',
@@ -164,6 +194,9 @@ export const submitPublicIntake = async (req, res) => {
       });
     } else {
       user.full_name = name;
+      if (cleanPhone && user.phone_number.startsWith('TEMP_')) {
+        user.phone_number = cleanPhone;
+      }
       user.plan_approval_status = 'PENDING_COACH_REVIEW';
       await user.save();
     }
@@ -284,7 +317,8 @@ export const generateDraftFromIntake = async (req, res) => {
       assessmentDate: new Date().toISOString().split("T")[0]
     });
 
-    const intakeDecision = evaluateIntake(intakePayload, evaluationContext);
+    const canonicalIntake = adaptIntakePayloadToCanonicalEngine(intakePayload);
+    const intakeDecision = evaluateIntake(canonicalIntake, evaluationContext);
     if (intakeDecision.plan_status === "BLOCK") {
       return res.status(400).json({
         error: "الاستمارة تحتاج مراجعة طبية خاصة لوجود موانع حرجة",
@@ -294,7 +328,7 @@ export const generateDraftFromIntake = async (req, res) => {
 
     const catalog = await loadFoodCatalog();
 
-    const masterProgram = buildMasterEngineV2({
+    const rawProgram = buildMasterEngineV2({
       intake: intakePayload,
       evaluationContext,
       nutritionFoodCatalog: catalog,
@@ -302,7 +336,10 @@ export const generateDraftFromIntake = async (req, res) => {
     });
 
     // Attach Explainable AI Rationale
-    masterProgram.ai_rationale = generateAiRationaleAudit(intakePayload, masterProgram);
+    const masterProgram = {
+      ...rawProgram,
+      ai_rationale: generateAiRationaleAudit(intakePayload, rawProgram)
+    };
 
     // Save as DRAFT program
     const savedProgram = await Program.create({

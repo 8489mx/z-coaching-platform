@@ -547,8 +547,8 @@ export default function ClientProgramView() {
  {session.exercises?.map((ex, exIdx) => (
  <tr key={exIdx} className="border-bottom">
  <td className="py-2">
- <div className="fw-bold text-dark">{getArabicExerciseName(ex)}</div>
- <small className="text-muted">{ex.name_en || ex.exercise_code?.replace(/_/g, ' ')}</small>
+ <div className="fw-bold text-dark" style={{ fontSize: '0.92rem', letterSpacing: '-0.2px' }}>{ex.name_en || ex.exercise_code?.replace(/_/g, ' ')}</div>
+ <small className="text-muted d-block" style={{ fontSize: '0.78rem' }}>{getArabicExerciseName(ex)}</small>
  </td>
  <td className="py-2 text-center">
  <span className="badge bg-primary-subtle text-primary">

@@ -277,20 +277,25 @@ export const generateProgramForClient = async (req, res) => {
     if (!user) {
       user = await User.findOne({ where: { phone_number: user_id } });
     }
-    if (!user) {
-      return res.status(404).json({ error: "المتدرب غير موجود" });
-    }
+    let clientIntake = null;
+    const latestSubmission = await IntakeSubmission.findOne({
+      where: { user_id: user.id },
+      order: [["id", "DESC"]]
+    });
 
-    const { COMPLETE_INTAKE } = await import("../../../test/fixtures/complete-intake.js");
-    const clientIntake = {
-      ...COMPLETE_INTAKE,
-      personal: {
-        ...COMPLETE_INTAKE.personal,
-        firstName: user.full_name?.split(" ")[0] || `متدرب`,
-        lastName: user.full_name?.split(" ")[1] || `${user.client_code}`,
-        phone: user.phone_number,
-      }
-    };
+    if (latestSubmission && latestSubmission.answers) {
+      clientIntake = latestSubmission.answers;
+    } else {
+      const { COMPLETE_INTAKE } = await import("../../../test/fixtures/complete-intake.js");
+      clientIntake = {
+        ...COMPLETE_INTAKE,
+        personal: {
+          ...COMPLETE_INTAKE.personal,
+          firstName: user.full_name?.split(" ")[0] || `متدرب`,
+          lastName: user.full_name?.split(" ")[1] || `${user.client_code}`
+        }
+      };
+    }
 
     const evaluationContext = Object.freeze({
       system_time: new Date().toISOString(),
@@ -837,13 +842,13 @@ export const getExercisesCatalog = async (req, res) => {
   try {
     const exercises = Object.entries(MASTER_EXERCISE_DICTIONARY).map(([code, info]) => ({
       code,
-      name_en: info.en,
-      name_ar: info.ar,
+      name_en: info.name_en || info.en || code,
+      name_ar: info.name_ar || info.ar || code,
       muscle: info.muscle || "GENERAL"
     }));
     return res.status(200).json({ exercises });
   } catch (err) {
-    return res.status(500).json({ error: "Failed to fetch exercise catalog", details: err.message });
+    console.error("getExercisesCatalog error:", err);
+    return res.status(500).json({ error: "فشل تحميل كتالوج التمارين" });
   }
 };
-

@@ -607,6 +607,7 @@ export default function ProgramPdfView() {
                         <tbody>
                           {sess.exercises?.map((ex, exIdx) => {
                             const arName = ex.name_ar || getArabicExerciseName(ex.exercise_code || ex);
+                            const enName = ex.name_en || ex.exercise_code?.replace(/_/g, ' ') || 'Exercise';
                             const videoUrl = getExerciseVideoUrl(ex);
                             const sets = ex.prescription?.sets || ex.sets || 3;
                             const minReps = ex.prescription?.target_min || ex.reps || 8;
@@ -620,14 +621,17 @@ export default function ProgramPdfView() {
                                     href={videoUrl} 
                                     target="_blank" 
                                     rel="noreferrer" 
-                                    className="fw-semibold text-decoration-none d-inline-flex align-items-center gap-1 text-dark"
-                                    style={{ fontSize: '0.73rem', lineHeight: '1.25' }}
+                                    className="text-decoration-none d-flex flex-column text-dark"
+                                    style={{ lineHeight: '1.2' }}
                                     title="انقر لمشاهدة فيديو التكنيك العملي"
                                   >
-                                    <span className="text-truncate">{arName}</span>
-                                    <span className="badge rounded-circle p-1 d-inline-flex align-items-center justify-content-center flex-shrink-0" style={{ background: '#fef2f2', color: '#dc2626', width: '16px', height: '16px' }}>
-                                      <i className="ti ti-video" style={{ fontSize: '0.62rem' }}></i>
-                                    </span>
+                                    <div className="d-inline-flex align-items-center gap-1">
+                                      <span className="fw-bold text-dark text-truncate" style={{ fontSize: '0.74rem' }}>{enName}</span>
+                                      <span className="badge rounded-circle p-1 d-inline-flex align-items-center justify-content-center flex-shrink-0" style={{ background: '#fef2f2', color: '#dc2626', width: '15px', height: '15px' }}>
+                                        <i className="ti ti-video" style={{ fontSize: '0.58rem' }}></i>
+                                      </span>
+                                    </div>
+                                    <small className="text-muted" style={{ fontSize: '0.62rem' }}>{arName}</small>
                                   </a>
                                 </td>
                                 <td className="text-center py-1 fw-bold" style={{ width: '14%', color: '#1e293b' }}>

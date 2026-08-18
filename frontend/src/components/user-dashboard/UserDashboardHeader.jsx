@@ -1,7 +1,13 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
 
-export default function UserDashboardHeader({ currentUser, targetUserId, clients = [] }) {
+export default function UserDashboardHeader({ 
+  currentUser, 
+  targetUserId, 
+  clients = [],
+  isCollapsed = false,
+  onToggleSidebar
+}) {
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const dropdownRef = useRef(null);
 
@@ -42,7 +48,7 @@ export default function UserDashboardHeader({ currentUser, targetUserId, clients
     <header className="codex-header" style={{ height: '60px' }}>
       <div className="header-contian d-flex justify-content-between align-items-center h-100">
         
-        {/* Left: Quick Search */}
+        {/* Right Side in RTL: Quick Search */}
         <div className="header-left d-flex align-items-center">
           <div className="input-group" style={{ maxWidth: "320px", height: "36px" }}>
             <span className="input-group-text pe-0 bg-white border" style={{ borderColor: '#e2e8f0', borderRadius: '0 10px 10px 0' }}>

@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import ReactDOM from 'react-dom';
 
 export default function WhatsAppModal({ client, onClose }) {
   const [template, setTemplate] = useState('intake');
@@ -69,9 +70,22 @@ ${baseUrl}/user-dashboard?user_id=${clientCode}`
     window.open(`https://wa.me/${cleanPhone}?text=${encodedMsg}`, '_blank');
   };
 
-  return (
-    <div className="modal show d-block" tabIndex="-1" style={{ backgroundColor: 'rgba(15, 23, 42, 0.65)', backdropFilter: 'blur(4px)', zIndex: 1060 }}>
-      <div className="modal-dialog modal-dialog-centered modal-lg">
+  const modalContent = (
+    <div 
+      className="modal show d-block" 
+      tabIndex="-1" 
+      style={{ 
+        backgroundColor: 'rgba(15, 23, 42, 0.65)', 
+        backdropFilter: 'blur(4px)', 
+        zIndex: 10000,
+        position: 'fixed',
+        top: 0,
+        bottom: 0,
+        overflowY: 'auto'
+      }}
+      onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}
+    >
+      <div className="modal-dialog modal-dialog-centered modal-lg" style={{ width: '96%', maxWidth: '720px', margin: '1.5rem auto' }}>
         <div className="modal-content border-0 shadow-lg" style={{ borderRadius: '20px', overflow: 'hidden' }} dir="rtl">
           {/* Header */}
           <div className="modal-header border-bottom p-4 bg-white d-flex justify-content-between align-items-center" style={{ borderColor: '#f1f5f9' }}>
@@ -159,4 +173,6 @@ ${baseUrl}/user-dashboard?user_id=${clientCode}`
       </div>
     </div>
   );
+
+  return ReactDOM.createPortal(modalContent, document.body);
 }

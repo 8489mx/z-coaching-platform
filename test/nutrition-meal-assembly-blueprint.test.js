@@ -206,7 +206,12 @@ function classicSlots() {
       1,
       NutritionMealComponentSlot.PROTEIN_ANCHOR,
       1,
-      [NutritionFoodClass.ANIMAL_PROTEIN, NutritionFoodClass.EGG],
+      [
+        NutritionFoodClass.ANIMAL_PROTEIN,
+        NutritionFoodClass.EGG,
+        NutritionFoodClass.DAIRY_PROTEIN,
+        NutritionFoodClass.LEGUME,
+      ],
     ),
     requiredSlot(
       2,
@@ -262,7 +267,12 @@ const EXPECTED_PATTERNS = Object.freeze({
         1,
         NutritionMealComponentSlot.PROTEIN_ANCHOR,
         2,
-        [NutritionFoodClass.EGG, NutritionFoodClass.DAIRY_PROTEIN],
+        [
+          NutritionFoodClass.EGG,
+          NutritionFoodClass.DAIRY_PROTEIN,
+          NutritionFoodClass.ANIMAL_PROTEIN,
+          NutritionFoodClass.LEGUME,
+        ],
       ),
       requiredSlot(
         2,

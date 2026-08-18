@@ -35,6 +35,8 @@ function calculateAge(dobString, assessmentDateString) {
  * @param {Object} [inputs.options]
  * @returns {Object}
  */
+import { adaptIntakePayloadToCanonicalEngine } from "../intake-decision-engine/adapters/intake-adapter.js";
+
 export function buildMasterEngineV2(inputs) {
   requireObject(inputs, "inputs");
 
@@ -43,8 +45,10 @@ export function buildMasterEngineV2(inputs) {
   requireObject(evaluationContext, "evaluationContext");
   requireObject(nutritionFoodCatalog, "nutritionFoodCatalog");
 
+  const canonicalIntake = adaptIntakePayloadToCanonicalEngine(intake);
+
   // 1. Evaluate Intake
-  const intake_decision = evaluateIntake(intake, evaluationContext);
+  const intake_decision = evaluateIntake(canonicalIntake, evaluationContext);
 
   // 2. Training Engine V2 (Multi-Week Meso-Cycle Periodization)
   const training_mesocycle = buildTrainingMesoCycle(intake_decision, {
@@ -61,8 +65,8 @@ export function buildMasterEngineV2(inputs) {
   };
 
   // 3. Cardio Engine V2 with Zone 2 Target Heart Rates
-  const clientAge = intake.personal?.dateOfBirth
-    ? calculateAge(intake.personal.dateOfBirth, evaluationContext.assessmentDate)
+  const clientAge = canonicalIntake.personal?.dateOfBirth
+    ? calculateAge(canonicalIntake.personal.dateOfBirth, evaluationContext.assessmentDate)
     : 30;
   const estimatedMaxHr = Math.round(208 - 0.7 * clientAge);
   const zone2LowBpm = Math.round(0.6 * estimatedMaxHr);
@@ -70,7 +74,7 @@ export function buildMasterEngineV2(inputs) {
 
   const baseCardioProgram = buildCardioEngine(
     intake_decision,
-    intake,
+    canonicalIntake,
     syntheticWeeklyPlan,
   );
 
@@ -102,13 +106,13 @@ export function buildMasterEngineV2(inputs) {
 
   // 5. Nutrition Engine V2 with Practical Household Quantization
   const baseNutritionProgram = buildNutritionEngine({
-    intake,
+    intake: canonicalIntake,
     evaluationContext,
     nutritionFoodCatalog,
   });
 
   const portionSolverStage = baseNutritionProgram.stages?.portion_solver;
-  const sanitizedMealPlan = portionSolverStage ? sanitizeMealPlan(portionSolverStage) : null;
+  const sanitizedMealPlan = portionSolverStage ? sanitizeMealPlan(portionSolverStage, canonicalIntake) : null;
   const quantizedNutrition = sanitizedMealPlan ? quantizeNutritionPlan(sanitizedMealPlan) : null;
 
   const nutrition_program_v2 = Object.freeze({

@@ -1,4 +1,36 @@
 import React from 'react';
+import SearchableSelect from '../common/SearchableSelect';
+
+const COUNTRIES_OPTIONS = [
+  { value: 'EG', label: 'مصر (Egypt)' },
+  { value: 'SA', label: 'المملكة العربية السعودية (Saudi Arabia)' },
+  { value: 'AE', label: 'الإمارات العربية المتحدة (UAE)' },
+  { value: 'KW', label: 'الكويت (Kuwait)' },
+  { value: 'QA', label: 'قطر (Qatar)' },
+  { value: 'BH', label: 'البحرين (Bahrain)' },
+  { value: 'OM', label: 'سلطنة عُمان (Oman)' },
+  { value: 'IQ', label: 'العراق (Iraq)' },
+  { value: 'JO', label: 'الأردن (Jordan)' },
+  { value: 'LB', label: 'لبنان (Lebanon)' },
+  { value: 'PS', label: 'فلسطين (Palestine)' },
+  { value: 'SY', label: 'سوريا (Syria)' },
+  { value: 'SD', label: 'السودان (Sudan)' },
+  { value: 'LY', label: 'ليبيا (Libya)' },
+  { value: 'MA', label: 'المغرب (Morocco)' },
+  { value: 'DZ', label: 'الجزائر (Algeria)' },
+  { value: 'TN', label: 'تونس (Tunisia)' },
+  { value: 'YE', label: 'اليمن (Yemen)' },
+  { value: 'TR', label: 'تركيا (Turkey)' },
+  { value: 'GB', label: 'المملكة المتحدة (UK)' },
+  { value: 'US', label: 'الولايات المتحدة (USA)' },
+  { value: 'CA', label: 'كندا (Canada)' },
+  { value: 'DE', label: 'ألمانيا (Germany)' },
+  { value: 'IT', label: 'إيطاليا (Italy)' },
+  { value: 'FR', label: 'فرنسا (France)' },
+  { value: 'SE', label: 'السويد (Sweden)' },
+  { value: 'NL', label: 'هولندا (Netherlands)' },
+  { value: 'OTHER', label: 'دولة أخرى (Other Country)' }
+];
 
 export default function Step1Personal({
   formData,
@@ -8,8 +40,8 @@ export default function Step1Personal({
   return (
     <div className="step-content">
       {/* 1. Basic Info */}
-      <h3 className="section-title">بيانات المتدرب والاسم</h3>
-      <div className="grid-2-col">
+      <h3 className="section-title">بيانات المتدرب والتواصل</h3>
+      <div className="grid-3-col" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '16px' }}>
         <div className="form-group">
           <label className="form-label">الاسم الأول</label>
           <input 
@@ -28,6 +60,17 @@ export default function Step1Personal({
             placeholder="اسم العائلة..."
             value={formData.personal?.lastName || ''} 
             onChange={e => updateField('personal', 'lastName', e.target.value)} 
+          />
+        </div>
+        <div className="form-group">
+          <label className="form-label">رقم الهاتف / الواتساب</label>
+          <input 
+            type="tel" 
+            className="form-control" 
+            placeholder="مثال: 01012345678"
+            value={formData.personal?.phone || ''} 
+            onChange={e => updateField('personal', 'phone', e.target.value)} 
+            style={{ direction: 'ltr', textAlign: 'right', fontWeight: '600' }}
           />
         </div>
       </div>
@@ -75,40 +118,13 @@ export default function Step1Personal({
 
         <div className="form-group">
           <label className="form-label">بلد الإقامة</label>
-          <select 
-            className="form-control"
+          <SearchableSelect 
+            options={COUNTRIES_OPTIONS}
             value={formData.personal?.residenceCountry || 'EG'} 
-            onChange={e => updateField('personal', 'residenceCountry', e.target.value)}
-            style={{ fontWeight: '600' }}
-          >
-            <option value="EG">مصر (Egypt)</option>
-            <option value="SA">المملكة العربية السعودية (Saudi Arabia)</option>
-            <option value="AE">الإمارات العربية المتحدة (UAE)</option>
-            <option value="KW">الكويت (Kuwait)</option>
-            <option value="QA">قطر (Qatar)</option>
-            <option value="BH">البحرين (Bahrain)</option>
-            <option value="OM">سلطنة عُمان (Oman)</option>
-            <option value="IQ">العراق (Iraq)</option>
-            <option value="JO">الأردن (Jordan)</option>
-            <option value="LB">لبنان (Lebanon)</option>
-            <option value="PS">فلسطين (Palestine)</option>
-            <option value="SY">سوريا (Syria)</option>
-            <option value="SD">السودان (Sudan)</option>
-            <option value="LY">ليبيا (Libya)</option>
-            <option value="MA">المغرب (Morocco)</option>
-            <option value="DZ">الجزائر (Algeria)</option>
-            <option value="TN">تونس (Tunisia)</option>
-            <option value="YE">اليمن (Yemen)</option>
-            <option value="TR">تركيا (Turkey)</option>
-            <option value="GB">المملكة المتحدة (UK)</option>
-            <option value="US">الولايات المتحدة (USA)</option>
-            <option value="CA">كندا (Canada)</option>
-            <option value="DE">ألمانيا (Germany)</option>
-            <option value="IT">إيطاليا (Italy)</option>
-            <option value="FR">فرنسا (France)</option>
-            <option value="SE">السويد (Sweden)</option>
-            <option value="NL">هولندا (Netherlands)</option>
-          </select>
+            onChange={val => updateField('personal', 'residenceCountry', val)}
+            placeholder="اختر الدولة..."
+            searchPlaceholder="ابحث عن دولتك (عربي / English)..."
+          />
         </div>
       </div>
       

@@ -1,4 +1,5 @@
 import React from 'react';
+import SearchableSelect from '../common/SearchableSelect';
 
 const FOCUS_MUSCLE_OPTIONS = [
   { code: 'CHEST', label: 'الصدر' },
@@ -18,15 +19,16 @@ const INJURY_AREAS = [
   { code: 'ELBOW_WRIST', label: 'الكوع أو المعصم' }
 ];
 
-const SPORTS_LIST = [
-  { code: 'FOOTBALL', name: 'كرة قدم (Football)' },
-  { code: 'RACKET_SPORTS', name: 'بادل أو تنس (Padel / Tennis)' },
-  { code: 'SWIMMING', name: 'سباحة (Swimming)' },
-  { code: 'RUNNING', name: 'جري سريع (Running)' },
-  { code: 'MARTIAL_ARTS', name: 'ملاكمة / فنون قتالية (Martial Arts)' },
-  { code: 'BASKETBALL', name: 'كرة سلة (Basketball)' },
-  { code: 'CYCLING', name: 'ركوب دراجات (Cycling)' },
-  { code: 'CROSSFIT_OR_FUNCTIONAL', name: 'كروس فيت / تمارين وظيفية (CrossFit)' }
+const SPORTS_OPTIONS = [
+  { value: 'FOOTBALL', label: 'كرة قدم (Football)' },
+  { value: 'RACKET_SPORTS', label: 'بادل أو تنس (Padel / Tennis)' },
+  { value: 'SWIMMING', label: 'سباحة (Swimming)' },
+  { value: 'RUNNING', label: 'جري سريع (Running)' },
+  { value: 'MARTIAL_ARTS', label: 'ملاكمة / فنون قتالية (Martial Arts)' },
+  { value: 'BASKETBALL', label: 'كرة سلة (Basketball)' },
+  { value: 'CYCLING', label: 'ركوب دراجات (Cycling)' },
+  { value: 'CROSSFIT_OR_FUNCTIONAL', label: 'كروس فيت / تمارين وظيفية (CrossFit)' },
+  { value: 'OTHER', label: 'رياضة أخرى (Other Sport)' }
 ];
 
 export default function Step5Training({
@@ -324,15 +326,13 @@ export default function Step5Training({
             <div className="grid-2-col" style={{ width: '100%' }}>
               <div className="form-group" style={{ marginBottom: 0 }}>
                 <label className="form-label">نوع الرياضة</label>
-                <select 
-                  className="form-control" 
+                <SearchableSelect 
+                  options={SPORTS_OPTIONS}
                   value={sport.sportCode || 'FOOTBALL'} 
-                  onChange={e => updateArrayItem('cardio', 'additionalSports', idx, 'sportCode', e.target.value)}
-                >
-                  {SPORTS_LIST.map(s => (
-                    <option key={s.code} value={s.code}>{s.name}</option>
-                  ))}
-                </select>
+                  onChange={val => updateArrayItem('cardio', 'additionalSports', idx, 'sportCode', val)}
+                  placeholder="اختر الرياضة..."
+                  searchPlaceholder="ابحث عن الرياضة..."
+                />
               </div>
               <div className="form-group" style={{ marginBottom: 0 }}>
                 <label className="form-label">مدة الماتش / التمرين (بالدقائق)</label>

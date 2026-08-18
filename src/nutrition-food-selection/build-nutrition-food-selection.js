@@ -561,6 +561,9 @@ function makeRestrictionSets(foodRestrictions) {
 }
 
 function hasMatchingTag(tags, excludedValues) {
+  if (!Array.isArray(tags) || tags.length === 0 || !excludedValues || excludedValues.size === 0) {
+    return false;
+  }
   return tags.some((tag) => excludedValues.has(tag));
 }
 

@@ -67,6 +67,31 @@ export default function UserDashboardClone() {
   const [clients, setClients] = useState([]);
   const [completedExercises, setCompletedExercises] = useState({});
 
+  // Sidebar Collapse State
+  const [isCollapsed, setIsCollapsed] = useState(() => {
+    const saved = localStorage.getItem('z_sidebar_collapsed');
+    if (saved !== null) return saved === 'true';
+    return window.innerWidth < 1200;
+  });
+
+  useEffect(() => {
+    const handleResize = () => {
+      if (window.innerWidth < 1200 && !isCollapsed) {
+        setIsCollapsed(true);
+      }
+    };
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, [isCollapsed]);
+
+  const toggleSidebar = () => {
+    setIsCollapsed(prev => {
+      const next = !prev;
+      localStorage.setItem('z_sidebar_collapsed', String(next));
+      return next;
+    });
+  };
+
   // Smart Swap Modal State
   const [swapModalOpen, setSwapModalOpen] = useState(false);
   const [activeMealIndex, setActiveMealIndex] = useState(null);
@@ -303,16 +328,16 @@ export default function UserDashboardClone() {
  const training = program?.training_program;
  const todaySession = training?.weeks?.[0]?.sessions?.[0]; // Upper A
 
- return (
- <div className="codex-wrapper" dir="rtl" style={{ minHeight: "100vh", backgroundColor: "#f6f8fb", fontFamily: "Cairo, Tajawal, sans-serif" }}>
- {/* 1. Header */}
- <UserDashboardHeader currentUser={currentUser} targetUserId={targetUserId} clients={clients} />
+  return (
+  <div className={`admin-root ${isCollapsed ? 'sidebar-collapsed' : ''} codex-wrapper`} dir="rtl" style={{ minHeight: "100vh", backgroundColor: "#f6f8fb", fontFamily: "Cairo, Tajawal, sans-serif" }}>
+  {/* 1. Header */}
+  <UserDashboardHeader currentUser={currentUser} targetUserId={targetUserId} clients={clients} isCollapsed={isCollapsed} onToggleSidebar={toggleSidebar} />
 
- {/* 2. Sidebar */}
- <UserDashboardSidebar targetUserId={targetUserId} onOpenCheckin={() => setCheckinModalOpen(true)} />
+  {/* 2. Sidebar */}
+  <UserDashboardSidebar targetUserId={targetUserId} onOpenCheckin={() => setCheckinModalOpen(true)} isCollapsed={isCollapsed} onToggleSidebar={toggleSidebar} />
 
- {/* 3. Main Workspace */}
- <main className="themebody-wrap">
+  {/* 3. Main Workspace */}
+  <main className="themebody-wrap">
  <div className="theme-body">
         <div className="container-fluid">
           {/* 1. Hero Card */}

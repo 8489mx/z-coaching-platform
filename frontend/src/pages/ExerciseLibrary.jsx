@@ -139,9 +139,9 @@ export default function ExerciseLibrary() {
                         </div>
 
                         {/* Exercise Title */}
-                        <h5 className="fw-bold text-dark mb-0" style={{ fontSize: '0.96rem' }}>{ex.name_ar}</h5>
-                        <div className="small text-muted mb-3" style={{ direction: 'ltr', textAlign: 'right', fontSize: '0.76rem' }}>
-                          {ex.name_en}
+                        <h5 className="fw-bold text-dark mb-0" style={{ fontSize: '0.96rem', letterSpacing: '-0.2px' }}>{ex.name_en}</h5>
+                        <div className="small text-muted mb-3" style={{ fontSize: '0.78rem' }}>
+                          {ex.name_ar}
                         </div>
 
                         {/* Coaching Cues Box (Quiet Luxury) */}

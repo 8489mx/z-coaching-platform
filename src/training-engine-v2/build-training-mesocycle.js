@@ -97,7 +97,13 @@ export function buildTrainingMesoCycle(intakeDecision, options = {}) {
         let finalCode = ex.exercise_code;
         let finalNameEn = ex.name_en;
 
-        if (GYM_COMPOUND_UPGRADES[finalCode]) {
+        // Safe defaults if an upstream slot was marked for review due to injury/equipment
+        if (!finalCode) {
+          if (ex.slot_code === 'HIP_HINGE') finalCode = 'GLUTE_BRIDGE';
+          else if (ex.slot_code === 'VERTICAL_PUSH') finalCode = 'LATERAL_RAISE';
+          else if (ex.slot_code === 'KNEE_DOMINANT') finalCode = 'GOBLET_SQUAT';
+          else finalCode = 'CHEST_SUPPORTED_ROW';
+        } else if (GYM_COMPOUND_UPGRADES[finalCode]) {
           finalCode = GYM_COMPOUND_UPGRADES[finalCode];
           const upgradedV2 = getExerciseV2ByCode(finalCode);
           if (upgradedV2) {
@@ -107,9 +113,17 @@ export function buildTrainingMesoCycle(intakeDecision, options = {}) {
 
         const v2Exercise = getExerciseV2ByCode(finalCode);
         
+        const basePrescription = ex.prescription || {
+          sets: 3,
+          target_min: 10,
+          target_max: 12,
+          rest_seconds: 60,
+          unit: 'REPS'
+        };
+
         let calculatedSets = Math.max(
           2,
-          Math.min(5, (ex.prescription.sets || 3) + config.set_delta),
+          Math.min(5, (basePrescription.sets || 3) + config.set_delta),
         );
 
         if (config.phase === MesoCyclePhase.DELOAD) {
@@ -132,7 +146,7 @@ export function buildTrainingMesoCycle(intakeDecision, options = {}) {
           name_ar: resolvedNameAr,
           primary_muscle: v2Exercise ? v2Exercise.primary_muscle : null,
           prescription: Object.freeze({
-            ...ex.prescription,
+            ...basePrescription,
             sets: calculatedSets,
             target_rir: config.target_rir,
           }),
