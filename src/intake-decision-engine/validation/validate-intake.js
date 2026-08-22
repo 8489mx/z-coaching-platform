@@ -182,10 +182,18 @@ function validatePersonal(input, assessmentDate, issues) {
   const personal = requiredObject(input.personal, "personal", issues);
   rejectUnknownKeys(
     personal,
-    ["dateOfBirth", "sex", "residenceCountry", "guardianConsent"],
+    ["firstName", "lastName", "dateOfBirth", "sex", "residenceCountry", "guardianConsent"],
     "personal",
     issues,
   );
+
+  if (personal.firstName !== undefined) {
+    requiredString(personal.firstName, "personal.firstName", issues);
+  }
+  if (personal.lastName !== undefined) {
+    requiredString(personal.lastName, "personal.lastName", issues);
+  }
+
   if (!validIsoDate(personal.dateOfBirth)) {
     issues.push(issue("personal.dateOfBirth", "INVALID_DATE", "Expected a valid ISO date (YYYY-MM-DD)."));
   }

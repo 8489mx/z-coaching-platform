@@ -5,6 +5,7 @@ import {
   selectPlanStatus,
 } from "./domain/rule-result.js";
 import { decideCardioStrategy } from "./rules/cardio-rules.js";
+import { decideMobilityStrategy } from "./rules/mobility-rules.js";
 import { decideNutrition } from "./rules/nutrition-rules.js";
 import { evaluateSafetyRules } from "./rules/safety-rules.js";
 import { decideTraining } from "./rules/training-rules.js";
@@ -47,12 +48,14 @@ export function evaluateIntake(input, context) {
     safety.context,
     training.decision.volume_start === VolumeStart.CONSERVATIVE,
   );
+  const mobility = decideMobilityStrategy(input, safety.context);
 
   const combined = mergeRuleResults([
     safety,
     nutrition.result,
     training.result,
     cardio.result,
+    mobility.result,
   ]);
   const hardConstraints = normalizeList(combined.hardConstraints);
   const softPreferences = normalizeList(combined.softPreferences);
@@ -70,9 +73,14 @@ export function evaluateIntake(input, context) {
     [...cardio.decision.constraints, ...hardConstraints],
     Scope.CARDIO,
   );
+  mobility.decision.constraints = constraintsForScope(
+    [...mobility.decision.constraints, ...hardConstraints],
+    Scope.MOBILITY,
+  );
   nutrition.decision.reasons = normalizeList(nutrition.decision.reasons);
   training.decision.reasons = normalizeList(training.decision.reasons);
   cardio.decision.reasons = normalizeList(cardio.decision.reasons);
+  mobility.decision.reasons = normalizeList(mobility.decision.reasons);
 
   const planStatus = selectPlanStatus(combined.statusCandidates);
   // A READY result has no hidden review flags. This invariant guards future rules.
@@ -88,6 +96,7 @@ export function evaluateIntake(input, context) {
     nutrition_decision: nutrition.decision,
     training_decision: training.decision,
     cardio_decision: cardio.decision,
+    mobility_decision: mobility.decision,
     decision_reasons: reasons,
     missing_or_uncertain_data: normalizeList(combined.missingOrUncertainData),
   };

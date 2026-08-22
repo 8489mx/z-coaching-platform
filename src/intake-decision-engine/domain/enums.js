@@ -27,6 +27,7 @@ export const Scope = Object.freeze({
   NUTRITION: "NUTRITION",
   TRAINING: "TRAINING",
   CARDIO: "CARDIO",
+  MOBILITY: "MOBILITY",
 });
 
 export const Sex = Object.freeze({
@@ -160,6 +161,7 @@ export const EquipmentCode = Object.freeze({
   CABLE_STATION: "CABLE_STATION",
   SELECTORIZED_MACHINES: "SELECTORIZED_MACHINES",
   KETTLEBELLS: "KETTLEBELLS",
+  FOAM_ROLLER: "FOAM_ROLLER",
 });
 
 export const EquipmentLoadCapacity = Object.freeze({
@@ -318,6 +320,12 @@ export const CardioStrategy = Object.freeze({
 export const CardioIntensity = Object.freeze({
   LOW: "LOW",
   MODERATE: "MODERATE",
+});
+
+export const MobilityStrategy = Object.freeze({
+  INTEGRATED_AND_SEPARATE: "INTEGRATED_AND_SEPARATE",
+  REVIEW_REQUIRED: "REVIEW_REQUIRED",
+  NONE: "NONE",
 });
 
 export const enumValues = (runtimeEnum) => Object.values(runtimeEnum);

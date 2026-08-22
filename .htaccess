@@ -1,0 +1,27 @@
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+    RewriteBase /
+
+    # 1. تمرير طلبات الـ API مباشرة إلى سيرفر Node.js (المنفذ 3000)
+    RewriteRule ^api/(.*)$ http://127.0.0.1:3000/api/$1 [P,L]
+
+    # 2. خدمة الملفات الثابتة إذا كانت موجودة فعلياً
+    RewriteCond %{DOCUMENT_ROOT}/frontend/dist%{REQUEST_URI} -f [OR]
+    RewriteCond %{DOCUMENT_ROOT}/frontend/dist%{REQUEST_URI} -d
+    RewriteRule ^(.*)$ /frontend/dist/$1 [L]
+
+    # 3. توجيه كافة المسارات الأخرى للـ SPA Router
+    RewriteRule ^(.*)$ /frontend/dist/index.html [L]
+</IfModule>
+
+# تفعيل ضغط GZIP لتسريع تحميل المنظومة
+<IfModule mod_deflate.c>
+    AddOutputFilterByType DEFLATE text/html text/plain text/xml text/css text/javascript application/javascript application/json
+</IfModule>
+
+# أمان الرؤوس ومنع تضمين الـ iFrame غير المصرح به
+<IfModule mod_headers.c>
+    Header set X-Content-Type-Options "nosniff"
+    Header set X-Frame-Options "SAMEORIGIN"
+    Header set X-XSS-Protection "1; mode=block"
+</IfModule>

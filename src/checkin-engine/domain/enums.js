@@ -1,0 +1,29 @@
+export const CHECKIN_ENGINE_VERSION = "checkin-engine-v2";
+
+export const CheckinAnalysisStatus = Object.freeze({
+  ON_TRACK: "ON_TRACK",
+  BODY_RECOMP_SUCCESS: "BODY_RECOMP_SUCCESS",
+  PLATEAU_DETECTED: "PLATEAU_DETECTED",
+  TRUE_PLATEAU: "TRUE_PLATEAU",
+  RAPID_LOSS_WARNING: "RAPID_LOSS_WARNING",
+  HIGH_FATIGUE_WARNING: "HIGH_FATIGUE_WARNING",
+  DELOAD_RECOMMENDED: "DELOAD_RECOMMENDED",
+  REFEED_RECOMMENDED: "REFEED_RECOMMENDED",
+  POOR_ADHERENCE: "POOR_ADHERENCE",
+  INJURY_FLAGGED: "INJURY_FLAGGED",
+});
+
+export const AdherenceTier = Object.freeze({
+  OPTIMAL: "OPTIMAL",        // >= 80% (Strict Adherence Gate)
+  LOW: "LOW",                // < 80% (Adherence Gate triggers - no calorie cuts)
+});
+
+export const BiofeedbackAlert = Object.freeze({
+  NORMAL: "NORMAL",
+  HIGH_HUNGER: "HIGH_HUNGER",
+  POOR_SLEEP: "POOR_SLEEP",
+  HIGH_STRESS: "HIGH_STRESS",
+  LOW_RECOVERY_ENERGY: "LOW_RECOVERY_ENERGY",
+  JOINT_DISCOMFORT: "JOINT_DISCOMFORT",
+});
+

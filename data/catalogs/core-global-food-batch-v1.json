@@ -1,0 +1,1559 @@
+{
+  "food_catalog_version": "nutrition-food-catalog-v1",
+  "catalog_policy": "Z_COACHING_FOOD_CATALOG_V1",
+  "items_count": 24,
+  "active_items_count": 24,
+  "items": [
+    {
+      "food_code": "CHICKEN_BREAST_ROASTED_SKINLESS",
+      "name_ar": "صدور دجاج مشوية بدون جلد",
+      "name_en": "Roasted Skinless Chicken Breast",
+      "food_class": "ANIMAL_PROTEIN",
+      "food_state": "COOKED",
+      "is_active": true,
+      "selection_priority": 10,
+      "compatible_pattern_codes": [
+        "MAIN_CLASSIC",
+        "EVENING_CLASSIC",
+        "EVENING_LIGHT_SAVORY",
+        "SNACK_PROTEIN_CARB"
+      ],
+      "available_markets": [
+        "EG",
+        "SA",
+        "KW",
+        "BH",
+        "QA",
+        "AE"
+      ],
+      "budget_level": "MEDIUM",
+      "logistics": {
+        "requires_storage": true,
+        "requires_reheating": true
+      },
+      "nutrition_per_100g": {
+        "calories_kcal": 165,
+        "protein_g": 31.02,
+        "fat_g": 3.57,
+        "carbohydrate_g": 0,
+        "fiber_g": 0
+      },
+      "portion_rule_g": {
+        "minimum_g": 50,
+        "maximum_g": 250,
+        "step_g": 10,
+        "default_g": 150
+      },
+      "tags": {
+        "identity_tags": [
+          "CHICKEN",
+          "POULTRY"
+        ],
+        "allergen_tags": [],
+        "intolerance_tags": []
+      },
+      "swap": {
+        "is_swappable": true,
+        "group_code": "LEAN_ANIMAL_PROTEIN"
+      },
+      "source": {
+        "type": "FOOD_COMPOSITION_DATABASE",
+        "name": "USDA FoodData Central",
+        "reference": "FDC:171477 | DATA_TYPE:SR_LEGACY | DESCRIPTION:Chicken, broilers or fryers, breast, meat only, cooked, roasted | ENERGY_NUTRIENT_ID:1008 | FIBER_NUTRIENT_ID:1079",
+        "checked_date": "2026-07-17"
+      }
+    },
+    {
+      "food_code": "TUNA_LIGHT_CANNED_WATER_DRAINED",
+      "name_ar": "تونة لايت معلبة بالماء ومصفاة",
+      "name_en": "Light Tuna Canned in Water, Drained",
+      "food_class": "ANIMAL_PROTEIN",
+      "food_state": "READY_TO_EAT",
+      "is_active": true,
+      "selection_priority": 20,
+      "compatible_pattern_codes": [
+        "MAIN_CLASSIC",
+        "EVENING_CLASSIC",
+        "EVENING_LIGHT_SAVORY",
+        "SNACK_PROTEIN_CARB"
+      ],
+      "available_markets": [
+        "EG",
+        "SA",
+        "KW",
+        "BH",
+        "QA",
+        "AE"
+      ],
+      "budget_level": "MEDIUM",
+      "logistics": {
+        "requires_storage": false,
+        "requires_reheating": false
+      },
+      "nutrition_per_100g": {
+        "calories_kcal": 86,
+        "protein_g": 19.44,
+        "fat_g": 0.96,
+        "carbohydrate_g": 0,
+        "fiber_g": 0
+      },
+      "portion_rule_g": {
+        "minimum_g": 50,
+        "maximum_g": 200,
+        "step_g": 10,
+        "default_g": 100
+      },
+      "tags": {
+        "identity_tags": [
+          "TUNA",
+          "FISH"
+        ],
+        "allergen_tags": [
+          "FISH"
+        ],
+        "intolerance_tags": []
+      },
+      "swap": {
+        "is_swappable": true,
+        "group_code": "LEAN_ANIMAL_PROTEIN"
+      },
+      "source": {
+        "type": "FOOD_COMPOSITION_DATABASE",
+        "name": "USDA FoodData Central",
+        "reference": "FDC:173709 | DATA_TYPE:SR_LEGACY | DESCRIPTION:Fish, tuna, light, canned in water, drained solids (Includes foods for USDA's Food Distribution Program) | ENERGY_NUTRIENT_ID:1008 | FIBER_NUTRIENT_ID:1079",
+        "checked_date": "2026-07-17"
+      }
+    },
+    {
+      "food_code": "BEEF_GROUND_90_LEAN_COOKED",
+      "name_ar": "لحم بقري مفروم 90% قليل الدهن مطهي",
+      "name_en": "Cooked 90% Lean Ground Beef",
+      "food_class": "ANIMAL_PROTEIN",
+      "food_state": "COOKED",
+      "is_active": true,
+      "selection_priority": 30,
+      "compatible_pattern_codes": [
+        "MAIN_CLASSIC",
+        "EVENING_CLASSIC",
+        "EVENING_LIGHT_SAVORY",
+        "SNACK_PROTEIN_CARB"
+      ],
+      "available_markets": [
+        "EG",
+        "SA",
+        "KW",
+        "BH",
+        "QA",
+        "AE"
+      ],
+      "budget_level": "HIGH",
+      "logistics": {
+        "requires_storage": true,
+        "requires_reheating": true
+      },
+      "nutrition_per_100g": {
+        "calories_kcal": 230,
+        "protein_g": 28.45,
+        "fat_g": 12.04,
+        "carbohydrate_g": 0,
+        "fiber_g": 0
+      },
+      "portion_rule_g": {
+        "minimum_g": 50,
+        "maximum_g": 250,
+        "step_g": 10,
+        "default_g": 150
+      },
+      "tags": {
+        "identity_tags": [
+          "BEEF",
+          "RED_MEAT"
+        ],
+        "allergen_tags": [],
+        "intolerance_tags": []
+      },
+      "swap": {
+        "is_swappable": false,
+        "group_code": null
+      },
+      "source": {
+        "type": "FOOD_COMPOSITION_DATABASE",
+        "name": "USDA FoodData Central",
+        "reference": "FDC:171794 | DATA_TYPE:SR_LEGACY | DESCRIPTION:Beef, ground, 90% lean meat / 10% fat, crumbles, cooked, pan-browned | ENERGY_NUTRIENT_ID:1008 | FIBER_NUTRIENT_ID:1079",
+        "checked_date": "2026-07-17"
+      }
+    },
+    {
+      "food_code": "EGG_WHOLE_HARD_BOILED",
+      "name_ar": "بيض كامل مسلوق",
+      "name_en": "Hard-Boiled Whole Egg",
+      "food_class": "EGG",
+      "food_state": "COOKED",
+      "is_active": true,
+      "selection_priority": 10,
+      "compatible_pattern_codes": [
+        "BREAKFAST_SAVORY",
+        "MAIN_CLASSIC",
+        "EVENING_CLASSIC",
+        "EVENING_LIGHT_SAVORY",
+        "SNACK_PROTEIN_CARB"
+      ],
+      "available_markets": [
+        "EG",
+        "SA",
+        "KW",
+        "BH",
+        "QA",
+        "AE"
+      ],
+      "budget_level": "LOW",
+      "logistics": {
+        "requires_storage": true,
+        "requires_reheating": false
+      },
+      "nutrition_per_100g": {
+        "calories_kcal": 155,
+        "protein_g": 12.58,
+        "fat_g": 10.61,
+        "carbohydrate_g": 1.12,
+        "fiber_g": 0
+      },
+      "portion_rule_g": {
+        "minimum_g": 50,
+        "maximum_g": 250,
+        "step_g": 10,
+        "default_g": 100
+      },
+      "tags": {
+        "identity_tags": [
+          "EGG",
+          "WHOLE_EGG"
+        ],
+        "allergen_tags": [
+          "EGG"
+        ],
+        "intolerance_tags": []
+      },
+      "swap": {
+        "is_swappable": false,
+        "group_code": null
+      },
+      "source": {
+        "type": "FOOD_COMPOSITION_DATABASE",
+        "name": "USDA FoodData Central",
+        "reference": "FDC:173424 | DATA_TYPE:SR_LEGACY | DESCRIPTION:Egg, whole, cooked, hard-boiled | ENERGY_NUTRIENT_ID:1008 | FIBER_NUTRIENT_ID:1079",
+        "checked_date": "2026-07-17"
+      }
+    },
+    {
+      "food_code": "EGG_WHITE_COOKED",
+      "name_ar": "بياض بيض مطهي",
+      "name_en": "Cooked Egg White",
+      "food_class": "EGG",
+      "food_state": "COOKED",
+      "is_active": true,
+      "selection_priority": 20,
+      "compatible_pattern_codes": [
+        "BREAKFAST_SAVORY",
+        "MAIN_CLASSIC",
+        "EVENING_CLASSIC",
+        "EVENING_LIGHT_SAVORY",
+        "SNACK_PROTEIN_CARB"
+      ],
+      "available_markets": [
+        "EG",
+        "SA",
+        "KW",
+        "BH",
+        "QA",
+        "AE"
+      ],
+      "budget_level": "LOW",
+      "logistics": {
+        "requires_storage": true,
+        "requires_reheating": false
+      },
+      "nutrition_per_100g": {
+        "calories_kcal": 52,
+        "protein_g": 10.7,
+        "fat_g": 0,
+        "carbohydrate_g": 2.35,
+        "fiber_g": 0
+      },
+      "portion_rule_g": {
+        "minimum_g": 50,
+        "maximum_g": 250,
+        "step_g": 10,
+        "default_g": 100
+      },
+      "tags": {
+        "identity_tags": [
+          "EGG",
+          "EGG_WHITE"
+        ],
+        "allergen_tags": [
+          "EGG"
+        ],
+        "intolerance_tags": []
+      },
+      "swap": {
+        "is_swappable": false,
+        "group_code": null
+      },
+      "source": {
+        "type": "FOOD_COMPOSITION_DATABASE",
+        "name": "USDA FoodData Central",
+        "reference": "FDC:2707170 | DATA_TYPE:FNDDS | DESCRIPTION:Egg, white, cooked, no added fat | ENERGY_NUTRIENT_ID:1008 | FIBER_NUTRIENT_ID:1079",
+        "checked_date": "2026-07-17"
+      }
+    },
+    {
+      "food_code": "YOGURT_PLAIN_LOW_FAT",
+      "name_ar": "زبادي سادة قليل الدسم",
+      "name_en": "Plain Low-Fat Yogurt",
+      "food_class": "DAIRY_PROTEIN",
+      "food_state": "READY_TO_EAT",
+      "is_active": true,
+      "selection_priority": 10,
+      "compatible_pattern_codes": [
+        "BREAKFAST_SAVORY",
+        "BREAKFAST_DAIRY_FRUIT",
+        "BREAKFAST_LEGUME",
+        "MAIN_LEGUME",
+        "EVENING_LIGHT_SAVORY",
+        "SNACK_DAIRY_FRUIT",
+        "SNACK_PROTEIN_CARB"
+      ],
+      "available_markets": [
+        "EG",
+        "SA",
+        "KW",
+        "BH",
+        "QA",
+        "AE"
+      ],
+      "budget_level": "LOW",
+      "logistics": {
+        "requires_storage": true,
+        "requires_reheating": false
+      },
+      "nutrition_per_100g": {
+        "calories_kcal": 63,
+        "protein_g": 5.25,
+        "fat_g": 1.55,
+        "carbohydrate_g": 7.04,
+        "fiber_g": 0
+      },
+      "portion_rule_g": {
+        "minimum_g": 100,
+        "maximum_g": 400,
+        "step_g": 25,
+        "default_g": 200
+      },
+      "tags": {
+        "identity_tags": [
+          "YOGURT",
+          "DAIRY"
+        ],
+        "allergen_tags": [
+          "MILK"
+        ],
+        "intolerance_tags": [
+          "LACTOSE"
+        ]
+      },
+      "swap": {
+        "is_swappable": true,
+        "group_code": "PLAIN_DAIRY_PROTEIN"
+      },
+      "source": {
+        "type": "FOOD_COMPOSITION_DATABASE",
+        "name": "USDA FoodData Central",
+        "reference": "FDC:170886 | DATA_TYPE:SR_LEGACY | DESCRIPTION:Yogurt, plain, low fat | ENERGY_NUTRIENT_ID:1008 | FIBER_NUTRIENT_ID:1079",
+        "checked_date": "2026-07-17"
+      }
+    },
+    {
+      "food_code": "GREEK_YOGURT_PLAIN_NONFAT",
+      "name_ar": "زبادي يوناني سادة خالي الدسم",
+      "name_en": "Plain Nonfat Greek Yogurt",
+      "food_class": "DAIRY_PROTEIN",
+      "food_state": "READY_TO_EAT",
+      "is_active": true,
+      "selection_priority": 20,
+      "compatible_pattern_codes": [
+        "BREAKFAST_SAVORY",
+        "BREAKFAST_DAIRY_FRUIT",
+        "BREAKFAST_LEGUME",
+        "MAIN_LEGUME",
+        "EVENING_LIGHT_SAVORY",
+        "SNACK_DAIRY_FRUIT",
+        "SNACK_PROTEIN_CARB"
+      ],
+      "available_markets": [
+        "EG",
+        "SA",
+        "KW",
+        "BH",
+        "QA",
+        "AE"
+      ],
+      "budget_level": "MEDIUM",
+      "logistics": {
+        "requires_storage": true,
+        "requires_reheating": false
+      },
+      "nutrition_per_100g": {
+        "calories_kcal": 59,
+        "protein_g": 10.19,
+        "fat_g": 0.39,
+        "carbohydrate_g": 3.6,
+        "fiber_g": 0
+      },
+      "portion_rule_g": {
+        "minimum_g": 100,
+        "maximum_g": 400,
+        "step_g": 25,
+        "default_g": 200
+      },
+      "tags": {
+        "identity_tags": [
+          "GREEK_YOGURT",
+          "DAIRY"
+        ],
+        "allergen_tags": [
+          "MILK"
+        ],
+        "intolerance_tags": [
+          "LACTOSE"
+        ]
+      },
+      "swap": {
+        "is_swappable": true,
+        "group_code": "PLAIN_DAIRY_PROTEIN"
+      },
+      "source": {
+        "type": "FOOD_COMPOSITION_DATABASE",
+        "name": "USDA FoodData Central",
+        "reference": "FDC:170894 | DATA_TYPE:SR_LEGACY | DESCRIPTION:Yogurt, Greek, plain, nonfat (Includes foods for USDA's Food Distribution Program) | ENERGY_NUTRIENT_ID:1008 | FIBER_NUTRIENT_ID:1079",
+        "checked_date": "2026-07-17"
+      }
+    },
+    {
+      "food_code": "COTTAGE_CHEESE_LOW_FAT_2_PERCENT",
+      "name_ar": "جبن كوتج قليل الدسم 2%",
+      "name_en": "Low-Fat Cottage Cheese, 2%",
+      "food_class": "DAIRY_PROTEIN",
+      "food_state": "READY_TO_EAT",
+      "is_active": true,
+      "selection_priority": 30,
+      "compatible_pattern_codes": [
+        "BREAKFAST_SAVORY",
+        "BREAKFAST_DAIRY_FRUIT",
+        "BREAKFAST_LEGUME",
+        "MAIN_LEGUME",
+        "EVENING_LIGHT_SAVORY",
+        "SNACK_DAIRY_FRUIT",
+        "SNACK_PROTEIN_CARB"
+      ],
+      "available_markets": [
+        "EG",
+        "SA",
+        "KW",
+        "BH",
+        "QA",
+        "AE"
+      ],
+      "budget_level": "MEDIUM",
+      "logistics": {
+        "requires_storage": true,
+        "requires_reheating": false
+      },
+      "nutrition_per_100g": {
+        "calories_kcal": 81,
+        "protein_g": 10.45,
+        "fat_g": 2.27,
+        "carbohydrate_g": 4.76,
+        "fiber_g": 0
+      },
+      "portion_rule_g": {
+        "minimum_g": 50,
+        "maximum_g": 300,
+        "step_g": 25,
+        "default_g": 150
+      },
+      "tags": {
+        "identity_tags": [
+          "COTTAGE_CHEESE",
+          "DAIRY"
+        ],
+        "allergen_tags": [
+          "MILK"
+        ],
+        "intolerance_tags": [
+          "LACTOSE"
+        ]
+      },
+      "swap": {
+        "is_swappable": true,
+        "group_code": "PLAIN_DAIRY_PROTEIN"
+      },
+      "source": {
+        "type": "FOOD_COMPOSITION_DATABASE",
+        "name": "USDA FoodData Central",
+        "reference": "FDC:172182 | DATA_TYPE:SR_LEGACY | DESCRIPTION:Cheese, cottage, lowfat, 2% milkfat | ENERGY_NUTRIENT_ID:1008 | FIBER_NUTRIENT_ID:1079",
+        "checked_date": "2026-07-17"
+      }
+    },
+    {
+      "food_code": "LENTILS_MATURE_COOKED",
+      "name_ar": "عدس ناضج مطهي",
+      "name_en": "Cooked Mature Lentils",
+      "food_class": "LEGUME",
+      "food_state": "COOKED",
+      "is_active": true,
+      "selection_priority": 10,
+      "compatible_pattern_codes": [
+        "BREAKFAST_LEGUME",
+        "MAIN_LEGUME"
+      ],
+      "available_markets": [
+        "EG",
+        "SA",
+        "KW",
+        "BH",
+        "QA",
+        "AE"
+      ],
+      "budget_level": "LOW",
+      "logistics": {
+        "requires_storage": true,
+        "requires_reheating": true
+      },
+      "nutrition_per_100g": {
+        "calories_kcal": 116,
+        "protein_g": 9.02,
+        "fat_g": 0.38,
+        "carbohydrate_g": 20.13,
+        "fiber_g": 7.9
+      },
+      "portion_rule_g": {
+        "minimum_g": 50,
+        "maximum_g": 350,
+        "step_g": 25,
+        "default_g": 150
+      },
+      "tags": {
+        "identity_tags": [
+          "LENTILS",
+          "LEGUME"
+        ],
+        "allergen_tags": [],
+        "intolerance_tags": []
+      },
+      "swap": {
+        "is_swappable": true,
+        "group_code": "COOKED_LEGUMES"
+      },
+      "source": {
+        "type": "FOOD_COMPOSITION_DATABASE",
+        "name": "USDA FoodData Central",
+        "reference": "FDC:172421 | DATA_TYPE:SR_LEGACY | DESCRIPTION:Lentils, mature seeds, cooked, boiled, without salt | ENERGY_NUTRIENT_ID:1008 | FIBER_NUTRIENT_ID:1079",
+        "checked_date": "2026-07-17"
+      }
+    },
+    {
+      "food_code": "CHICKPEAS_MATURE_COOKED",
+      "name_ar": "حمص ناضج مطهي",
+      "name_en": "Cooked Mature Chickpeas",
+      "food_class": "LEGUME",
+      "food_state": "COOKED",
+      "is_active": true,
+      "selection_priority": 20,
+      "compatible_pattern_codes": [
+        "BREAKFAST_LEGUME",
+        "MAIN_LEGUME"
+      ],
+      "available_markets": [
+        "EG",
+        "SA",
+        "KW",
+        "BH",
+        "QA",
+        "AE"
+      ],
+      "budget_level": "LOW",
+      "logistics": {
+        "requires_storage": true,
+        "requires_reheating": true
+      },
+      "nutrition_per_100g": {
+        "calories_kcal": 164,
+        "protein_g": 8.86,
+        "fat_g": 2.59,
+        "carbohydrate_g": 27.42,
+        "fiber_g": 7.6
+      },
+      "portion_rule_g": {
+        "minimum_g": 50,
+        "maximum_g": 350,
+        "step_g": 25,
+        "default_g": 150
+      },
+      "tags": {
+        "identity_tags": [
+          "CHICKPEAS",
+          "LEGUME"
+        ],
+        "allergen_tags": [],
+        "intolerance_tags": []
+      },
+      "swap": {
+        "is_swappable": true,
+        "group_code": "COOKED_LEGUMES"
+      },
+      "source": {
+        "type": "FOOD_COMPOSITION_DATABASE",
+        "name": "USDA FoodData Central",
+        "reference": "FDC:173757 | DATA_TYPE:SR_LEGACY | DESCRIPTION:Chickpeas (garbanzo beans, bengal gram), mature seeds, cooked, boiled, without salt | ENERGY_NUTRIENT_ID:1008 | FIBER_NUTRIENT_ID:1079",
+        "checked_date": "2026-07-17"
+      }
+    },
+    {
+      "food_code": "FAVA_BEANS_MATURE_COOKED",
+      "name_ar": "فول عريض ناضج مطهي",
+      "name_en": "Cooked Mature Fava Beans",
+      "food_class": "LEGUME",
+      "food_state": "COOKED",
+      "is_active": true,
+      "selection_priority": 30,
+      "compatible_pattern_codes": [
+        "BREAKFAST_LEGUME",
+        "MAIN_LEGUME"
+      ],
+      "available_markets": [
+        "EG",
+        "SA",
+        "KW",
+        "BH",
+        "QA",
+        "AE"
+      ],
+      "budget_level": "LOW",
+      "logistics": {
+        "requires_storage": true,
+        "requires_reheating": true
+      },
+      "nutrition_per_100g": {
+        "calories_kcal": 110,
+        "protein_g": 7.6,
+        "fat_g": 0.4,
+        "carbohydrate_g": 19.65,
+        "fiber_g": 5.4
+      },
+      "portion_rule_g": {
+        "minimum_g": 50,
+        "maximum_g": 350,
+        "step_g": 25,
+        "default_g": 150
+      },
+      "tags": {
+        "identity_tags": [
+          "FAVA_BEANS",
+          "LEGUME"
+        ],
+        "allergen_tags": [],
+        "intolerance_tags": []
+      },
+      "swap": {
+        "is_swappable": true,
+        "group_code": "COOKED_LEGUMES"
+      },
+      "source": {
+        "type": "FOOD_COMPOSITION_DATABASE",
+        "name": "USDA FoodData Central",
+        "reference": "FDC:173753 | DATA_TYPE:SR_LEGACY | DESCRIPTION:Broadbeans (fava beans), mature seeds, cooked, boiled, without salt | ENERGY_NUTRIENT_ID:1008 | FIBER_NUTRIENT_ID:1079",
+        "checked_date": "2026-07-17"
+      }
+    },
+    {
+      "food_code": "RICE_WHITE_LONG_GRAIN_COOKED",
+      "name_ar": "أرز أبيض طويل الحبة مطهي",
+      "name_en": "Cooked Long-Grain White Rice",
+      "food_class": "STARCH",
+      "food_state": "COOKED",
+      "is_active": true,
+      "selection_priority": 10,
+      "compatible_pattern_codes": [
+        "BREAKFAST_SAVORY",
+        "BREAKFAST_DAIRY_FRUIT",
+        "BREAKFAST_LEGUME",
+        "MAIN_CLASSIC",
+        "MAIN_LEGUME",
+        "EVENING_CLASSIC",
+        "EVENING_LIGHT_SAVORY",
+        "SNACK_DAIRY_FRUIT",
+        "SNACK_PROTEIN_CARB"
+      ],
+      "available_markets": [
+        "EG",
+        "SA",
+        "KW",
+        "BH",
+        "QA",
+        "AE"
+      ],
+      "budget_level": "LOW",
+      "logistics": {
+        "requires_storage": true,
+        "requires_reheating": true
+      },
+      "nutrition_per_100g": {
+        "calories_kcal": 130,
+        "protein_g": 2.69,
+        "fat_g": 0.28,
+        "carbohydrate_g": 28.17,
+        "fiber_g": 0.4
+      },
+      "portion_rule_g": {
+        "minimum_g": 50,
+        "maximum_g": 400,
+        "step_g": 25,
+        "default_g": 200
+      },
+      "tags": {
+        "identity_tags": [
+          "RICE",
+          "GRAIN"
+        ],
+        "allergen_tags": [],
+        "intolerance_tags": []
+      },
+      "swap": {
+        "is_swappable": true,
+        "group_code": "COOKED_STARCHES"
+      },
+      "source": {
+        "type": "FOOD_COMPOSITION_DATABASE",
+        "name": "USDA FoodData Central",
+        "reference": "FDC:169757 | DATA_TYPE:SR_LEGACY | DESCRIPTION:Rice, white, long-grain, regular, unenriched, cooked without salt | ENERGY_NUTRIENT_ID:1008 | FIBER_NUTRIENT_ID:1079",
+        "checked_date": "2026-07-17"
+      }
+    },
+    {
+      "food_code": "POTATO_BOILED_WITHOUT_SKIN",
+      "name_ar": "بطاطس مسلوقة بدون قشر",
+      "name_en": "Boiled Potato Without Skin",
+      "food_class": "STARCH",
+      "food_state": "COOKED",
+      "is_active": true,
+      "selection_priority": 20,
+      "compatible_pattern_codes": [
+        "BREAKFAST_SAVORY",
+        "BREAKFAST_DAIRY_FRUIT",
+        "BREAKFAST_LEGUME",
+        "MAIN_CLASSIC",
+        "MAIN_LEGUME",
+        "EVENING_CLASSIC",
+        "EVENING_LIGHT_SAVORY",
+        "SNACK_DAIRY_FRUIT",
+        "SNACK_PROTEIN_CARB"
+      ],
+      "available_markets": [
+        "EG",
+        "SA",
+        "KW",
+        "BH",
+        "QA",
+        "AE"
+      ],
+      "budget_level": "LOW",
+      "logistics": {
+        "requires_storage": true,
+        "requires_reheating": true
+      },
+      "nutrition_per_100g": {
+        "calories_kcal": 86,
+        "protein_g": 1.71,
+        "fat_g": 0.1,
+        "carbohydrate_g": 20.01,
+        "fiber_g": 1.8
+      },
+      "portion_rule_g": {
+        "minimum_g": 100,
+        "maximum_g": 500,
+        "step_g": 25,
+        "default_g": 250
+      },
+      "tags": {
+        "identity_tags": [
+          "POTATO",
+          "TUBER"
+        ],
+        "allergen_tags": [],
+        "intolerance_tags": []
+      },
+      "swap": {
+        "is_swappable": true,
+        "group_code": "COOKED_STARCHES"
+      },
+      "source": {
+        "type": "FOOD_COMPOSITION_DATABASE",
+        "name": "USDA FoodData Central",
+        "reference": "FDC:170440 | DATA_TYPE:SR_LEGACY | DESCRIPTION:Potatoes, boiled, cooked without skin, flesh, without salt | ENERGY_NUTRIENT_ID:1008 | FIBER_NUTRIENT_ID:1079",
+        "checked_date": "2026-07-17"
+      }
+    },
+    {
+      "food_code": "OATS_ROLLED_DRY",
+      "name_ar": "شوفان ملفوف جاف",
+      "name_en": "Dry Rolled Oats",
+      "food_class": "STARCH",
+      "food_state": "RAW",
+      "is_active": true,
+      "selection_priority": 30,
+      "compatible_pattern_codes": [
+        "BREAKFAST_SAVORY",
+        "BREAKFAST_DAIRY_FRUIT",
+        "BREAKFAST_LEGUME",
+        "MAIN_CLASSIC",
+        "MAIN_LEGUME",
+        "EVENING_CLASSIC",
+        "EVENING_LIGHT_SAVORY",
+        "SNACK_DAIRY_FRUIT",
+        "SNACK_PROTEIN_CARB"
+      ],
+      "available_markets": [
+        "EG",
+        "SA",
+        "KW",
+        "BH",
+        "QA",
+        "AE"
+      ],
+      "budget_level": "LOW",
+      "logistics": {
+        "requires_storage": false,
+        "requires_reheating": false
+      },
+      "nutrition_per_100g": {
+        "calories_kcal": 378.866123,
+        "protein_g": 13.49645,
+        "fat_g": 5.89,
+        "carbohydrate_g": 68.65755,
+        "fiber_g": 10.42
+      },
+      "portion_rule_g": {
+        "minimum_g": 20,
+        "maximum_g": 150,
+        "step_g": 10,
+        "default_g": 50
+      },
+      "tags": {
+        "identity_tags": [
+          "OATS",
+          "GRAIN"
+        ],
+        "allergen_tags": [],
+        "intolerance_tags": []
+      },
+      "swap": {
+        "is_swappable": true,
+        "group_code": "BREAKFAST_STARCHES"
+      },
+      "source": {
+        "type": "FOOD_COMPOSITION_DATABASE",
+        "name": "USDA FoodData Central",
+        "reference": "FDC:2346396 | DATA_TYPE:FOUNDATION_FOOD | DESCRIPTION:Oats, whole grain, rolled, old fashioned | ENERGY_NUTRIENT_ID:2048 | FIBER_NUTRIENT_ID:2033",
+        "checked_date": "2026-07-17"
+      }
+    },
+    {
+      "food_code": "BREAD_WHOLE_WHEAT",
+      "name_ar": "خبز قمح كامل",
+      "name_en": "Whole-Wheat Bread",
+      "food_class": "STARCH",
+      "food_state": "READY_TO_EAT",
+      "is_active": true,
+      "selection_priority": 40,
+      "compatible_pattern_codes": [
+        "BREAKFAST_SAVORY",
+        "BREAKFAST_DAIRY_FRUIT",
+        "BREAKFAST_LEGUME",
+        "MAIN_CLASSIC",
+        "MAIN_LEGUME",
+        "EVENING_CLASSIC",
+        "EVENING_LIGHT_SAVORY",
+        "SNACK_DAIRY_FRUIT",
+        "SNACK_PROTEIN_CARB"
+      ],
+      "available_markets": [
+        "EG",
+        "SA",
+        "KW",
+        "BH",
+        "QA",
+        "AE"
+      ],
+      "budget_level": "LOW",
+      "logistics": {
+        "requires_storage": false,
+        "requires_reheating": false
+      },
+      "nutrition_per_100g": {
+        "calories_kcal": 252,
+        "protein_g": 12.45,
+        "fat_g": 3.5,
+        "carbohydrate_g": 42.71,
+        "fiber_g": 6
+      },
+      "portion_rule_g": {
+        "minimum_g": 25,
+        "maximum_g": 200,
+        "step_g": 25,
+        "default_g": 50
+      },
+      "tags": {
+        "identity_tags": [
+          "WHOLE_WHEAT_BREAD",
+          "BREAD",
+          "WHEAT"
+        ],
+        "allergen_tags": [
+          "WHEAT"
+        ],
+        "intolerance_tags": [
+          "GLUTEN"
+        ]
+      },
+      "swap": {
+        "is_swappable": true,
+        "group_code": "BREAKFAST_STARCHES"
+      },
+      "source": {
+        "type": "FOOD_COMPOSITION_DATABASE",
+        "name": "USDA FoodData Central",
+        "reference": "FDC:172688 | DATA_TYPE:SR_LEGACY | DESCRIPTION:Bread, whole-wheat, commercially prepared | ENERGY_NUTRIENT_ID:1008 | FIBER_NUTRIENT_ID:1079",
+        "checked_date": "2026-07-17"
+      }
+    },
+    {
+      "food_code": "PASTA_SPAGHETTI_COOKED",
+      "name_ar": "سباجيتي مطهية",
+      "name_en": "Cooked Spaghetti",
+      "food_class": "STARCH",
+      "food_state": "COOKED",
+      "is_active": true,
+      "selection_priority": 50,
+      "compatible_pattern_codes": [
+        "BREAKFAST_SAVORY",
+        "BREAKFAST_DAIRY_FRUIT",
+        "BREAKFAST_LEGUME",
+        "MAIN_CLASSIC",
+        "MAIN_LEGUME",
+        "EVENING_CLASSIC",
+        "EVENING_LIGHT_SAVORY",
+        "SNACK_DAIRY_FRUIT",
+        "SNACK_PROTEIN_CARB"
+      ],
+      "available_markets": [
+        "EG",
+        "SA",
+        "KW",
+        "BH",
+        "QA",
+        "AE"
+      ],
+      "budget_level": "LOW",
+      "logistics": {
+        "requires_storage": true,
+        "requires_reheating": true
+      },
+      "nutrition_per_100g": {
+        "calories_kcal": 157,
+        "protein_g": 5.76,
+        "fat_g": 0.92,
+        "carbohydrate_g": 30.7,
+        "fiber_g": 1.8
+      },
+      "portion_rule_g": {
+        "minimum_g": 50,
+        "maximum_g": 400,
+        "step_g": 25,
+        "default_g": 200
+      },
+      "tags": {
+        "identity_tags": [
+          "PASTA",
+          "WHEAT"
+        ],
+        "allergen_tags": [
+          "WHEAT"
+        ],
+        "intolerance_tags": [
+          "GLUTEN"
+        ]
+      },
+      "swap": {
+        "is_swappable": true,
+        "group_code": "COOKED_STARCHES"
+      },
+      "source": {
+        "type": "FOOD_COMPOSITION_DATABASE",
+        "name": "USDA FoodData Central",
+        "reference": "FDC:2708357 | DATA_TYPE:FNDDS | DESCRIPTION:Pasta, cooked | ENERGY_NUTRIENT_ID:1008 | FIBER_NUTRIENT_ID:1079",
+        "checked_date": "2026-07-17"
+      }
+    },
+    {
+      "food_code": "BANANA_RAW",
+      "name_ar": "موز",
+      "name_en": "Raw Banana",
+      "food_class": "FRUIT",
+      "food_state": "RAW",
+      "is_active": true,
+      "selection_priority": 10,
+      "compatible_pattern_codes": [
+        "BREAKFAST_DAIRY_FRUIT",
+        "SNACK_DAIRY_FRUIT",
+        "SNACK_PROTEIN_CARB"
+      ],
+      "available_markets": [
+        "EG",
+        "SA",
+        "KW",
+        "BH",
+        "QA",
+        "AE"
+      ],
+      "budget_level": "LOW",
+      "logistics": {
+        "requires_storage": false,
+        "requires_reheating": false
+      },
+      "nutrition_per_100g": {
+        "calories_kcal": 88,
+        "protein_g": 0.74,
+        "fat_g": 0.29,
+        "carbohydrate_g": 23,
+        "fiber_g": 1.7
+      },
+      "portion_rule_g": {
+        "minimum_g": 50,
+        "maximum_g": 300,
+        "step_g": 10,
+        "default_g": 150
+      },
+      "tags": {
+        "identity_tags": [
+          "BANANA"
+        ],
+        "allergen_tags": [],
+        "intolerance_tags": []
+      },
+      "swap": {
+        "is_swappable": true,
+        "group_code": "WHOLE_FRUITS"
+      },
+      "source": {
+        "type": "FOOD_COMPOSITION_DATABASE",
+        "name": "USDA FoodData Central",
+        "reference": "FDC:1105314 | DATA_TYPE:FOUNDATION_FOOD | DESCRIPTION:Bananas, ripe and slightly ripe, raw | ENERGY_NUTRIENT_ID:2048 | FIBER_NUTRIENT_ID:1079",
+        "checked_date": "2026-07-17"
+      }
+    },
+    {
+      "food_code": "APPLE_RAW_WITH_SKIN",
+      "name_ar": "تفاح بالقشر",
+      "name_en": "Raw Apple With Skin",
+      "food_class": "FRUIT",
+      "food_state": "RAW",
+      "is_active": true,
+      "selection_priority": 20,
+      "compatible_pattern_codes": [
+        "BREAKFAST_DAIRY_FRUIT",
+        "SNACK_DAIRY_FRUIT",
+        "SNACK_PROTEIN_CARB"
+      ],
+      "available_markets": [
+        "EG",
+        "SA",
+        "KW",
+        "BH",
+        "QA",
+        "AE"
+      ],
+      "budget_level": "LOW",
+      "logistics": {
+        "requires_storage": false,
+        "requires_reheating": false
+      },
+      "nutrition_per_100g": {
+        "calories_kcal": 52,
+        "protein_g": 0.26,
+        "fat_g": 0.17,
+        "carbohydrate_g": 13.81,
+        "fiber_g": 2.4
+      },
+      "portion_rule_g": {
+        "minimum_g": 50,
+        "maximum_g": 300,
+        "step_g": 10,
+        "default_g": 150
+      },
+      "tags": {
+        "identity_tags": [
+          "APPLE"
+        ],
+        "allergen_tags": [],
+        "intolerance_tags": []
+      },
+      "swap": {
+        "is_swappable": true,
+        "group_code": "WHOLE_FRUITS"
+      },
+      "source": {
+        "type": "FOOD_COMPOSITION_DATABASE",
+        "name": "USDA FoodData Central",
+        "reference": "FDC:171688 | DATA_TYPE:SR_LEGACY | DESCRIPTION:Apples, raw, with skin (Includes foods for USDA's Food Distribution Program) | ENERGY_NUTRIENT_ID:1008 | FIBER_NUTRIENT_ID:1079",
+        "checked_date": "2026-07-17"
+      }
+    },
+    {
+      "food_code": "ORANGE_RAW",
+      "name_ar": "برتقال",
+      "name_en": "Raw Orange",
+      "food_class": "FRUIT",
+      "food_state": "RAW",
+      "is_active": true,
+      "selection_priority": 30,
+      "compatible_pattern_codes": [
+        "BREAKFAST_DAIRY_FRUIT",
+        "SNACK_DAIRY_FRUIT",
+        "SNACK_PROTEIN_CARB"
+      ],
+      "available_markets": [
+        "EG",
+        "SA",
+        "KW",
+        "BH",
+        "QA",
+        "AE"
+      ],
+      "budget_level": "LOW",
+      "logistics": {
+        "requires_storage": false,
+        "requires_reheating": false
+      },
+      "nutrition_per_100g": {
+        "calories_kcal": 47,
+        "protein_g": 0.94,
+        "fat_g": 0.12,
+        "carbohydrate_g": 11.75,
+        "fiber_g": 2.4
+      },
+      "portion_rule_g": {
+        "minimum_g": 50,
+        "maximum_g": 300,
+        "step_g": 10,
+        "default_g": 150
+      },
+      "tags": {
+        "identity_tags": [
+          "ORANGE"
+        ],
+        "allergen_tags": [],
+        "intolerance_tags": []
+      },
+      "swap": {
+        "is_swappable": true,
+        "group_code": "WHOLE_FRUITS"
+      },
+      "source": {
+        "type": "FOOD_COMPOSITION_DATABASE",
+        "name": "USDA FoodData Central",
+        "reference": "FDC:169097 | DATA_TYPE:SR_LEGACY | DESCRIPTION:Oranges, raw, all commercial varieties | ENERGY_NUTRIENT_ID:1008 | FIBER_NUTRIENT_ID:1079",
+        "checked_date": "2026-07-17"
+      }
+    },
+    {
+      "food_code": "TOMATO_RED_RAW",
+      "name_ar": "طماطم حمراء",
+      "name_en": "Raw Red Tomato",
+      "food_class": "NON_STARCH_VEGETABLE",
+      "food_state": "RAW",
+      "is_active": true,
+      "selection_priority": 10,
+      "compatible_pattern_codes": [
+        "BREAKFAST_SAVORY",
+        "BREAKFAST_LEGUME",
+        "MAIN_CLASSIC",
+        "MAIN_LEGUME",
+        "EVENING_CLASSIC",
+        "EVENING_LIGHT_SAVORY"
+      ],
+      "available_markets": [
+        "EG",
+        "SA",
+        "KW",
+        "BH",
+        "QA",
+        "AE"
+      ],
+      "budget_level": "LOW",
+      "logistics": {
+        "requires_storage": false,
+        "requires_reheating": false
+      },
+      "nutrition_per_100g": {
+        "calories_kcal": 18,
+        "protein_g": 0.88,
+        "fat_g": 0.2,
+        "carbohydrate_g": 3.89,
+        "fiber_g": 1.2
+      },
+      "portion_rule_g": {
+        "minimum_g": 50,
+        "maximum_g": 400,
+        "step_g": 25,
+        "default_g": 150
+      },
+      "tags": {
+        "identity_tags": [
+          "TOMATO"
+        ],
+        "allergen_tags": [],
+        "intolerance_tags": []
+      },
+      "swap": {
+        "is_swappable": true,
+        "group_code": "RAW_VEGETABLES"
+      },
+      "source": {
+        "type": "FOOD_COMPOSITION_DATABASE",
+        "name": "USDA FoodData Central",
+        "reference": "FDC:170457 | DATA_TYPE:SR_LEGACY | DESCRIPTION:Tomatoes, red, ripe, raw, year round average | ENERGY_NUTRIENT_ID:1008 | FIBER_NUTRIENT_ID:1079",
+        "checked_date": "2026-07-17"
+      }
+    },
+    {
+      "food_code": "CUCUMBER_WITH_PEEL_RAW",
+      "name_ar": "خيار بالقشر",
+      "name_en": "Raw Cucumber With Peel",
+      "food_class": "NON_STARCH_VEGETABLE",
+      "food_state": "RAW",
+      "is_active": true,
+      "selection_priority": 20,
+      "compatible_pattern_codes": [
+        "BREAKFAST_SAVORY",
+        "BREAKFAST_LEGUME",
+        "MAIN_CLASSIC",
+        "MAIN_LEGUME",
+        "EVENING_CLASSIC",
+        "EVENING_LIGHT_SAVORY"
+      ],
+      "available_markets": [
+        "EG",
+        "SA",
+        "KW",
+        "BH",
+        "QA",
+        "AE"
+      ],
+      "budget_level": "LOW",
+      "logistics": {
+        "requires_storage": false,
+        "requires_reheating": false
+      },
+      "nutrition_per_100g": {
+        "calories_kcal": 15,
+        "protein_g": 0.65,
+        "fat_g": 0.11,
+        "carbohydrate_g": 3.63,
+        "fiber_g": 0.5
+      },
+      "portion_rule_g": {
+        "minimum_g": 50,
+        "maximum_g": 400,
+        "step_g": 25,
+        "default_g": 150
+      },
+      "tags": {
+        "identity_tags": [
+          "CUCUMBER"
+        ],
+        "allergen_tags": [],
+        "intolerance_tags": []
+      },
+      "swap": {
+        "is_swappable": true,
+        "group_code": "RAW_VEGETABLES"
+      },
+      "source": {
+        "type": "FOOD_COMPOSITION_DATABASE",
+        "name": "USDA FoodData Central",
+        "reference": "FDC:168409 | DATA_TYPE:SR_LEGACY | DESCRIPTION:Cucumber, with peel, raw | ENERGY_NUTRIENT_ID:1008 | FIBER_NUTRIENT_ID:1079",
+        "checked_date": "2026-07-17"
+      }
+    },
+    {
+      "food_code": "CARROT_RAW",
+      "name_ar": "جزر",
+      "name_en": "Raw Carrot",
+      "food_class": "NON_STARCH_VEGETABLE",
+      "food_state": "RAW",
+      "is_active": true,
+      "selection_priority": 30,
+      "compatible_pattern_codes": [
+        "BREAKFAST_SAVORY",
+        "BREAKFAST_LEGUME",
+        "MAIN_CLASSIC",
+        "MAIN_LEGUME",
+        "EVENING_CLASSIC",
+        "EVENING_LIGHT_SAVORY"
+      ],
+      "available_markets": [
+        "EG",
+        "SA",
+        "KW",
+        "BH",
+        "QA",
+        "AE"
+      ],
+      "budget_level": "LOW",
+      "logistics": {
+        "requires_storage": false,
+        "requires_reheating": false
+      },
+      "nutrition_per_100g": {
+        "calories_kcal": 44.978589,
+        "protein_g": 0.94125,
+        "fat_g": 0.3506,
+        "carbohydrate_g": 10.26755,
+        "fiber_g": 3.095
+      },
+      "portion_rule_g": {
+        "minimum_g": 50,
+        "maximum_g": 400,
+        "step_g": 25,
+        "default_g": 150
+      },
+      "tags": {
+        "identity_tags": [
+          "CARROT"
+        ],
+        "allergen_tags": [],
+        "intolerance_tags": []
+      },
+      "swap": {
+        "is_swappable": true,
+        "group_code": "RAW_VEGETABLES"
+      },
+      "source": {
+        "type": "FOOD_COMPOSITION_DATABASE",
+        "name": "USDA FoodData Central",
+        "reference": "FDC:2258586 | DATA_TYPE:FOUNDATION_FOOD | DESCRIPTION:Carrots, mature, raw | ENERGY_NUTRIENT_ID:2048 | FIBER_NUTRIENT_ID:1079",
+        "checked_date": "2026-07-17"
+      }
+    },
+    {
+      "food_code": "OLIVE_OIL",
+      "name_ar": "زيت زيتون",
+      "name_en": "Olive Oil",
+      "food_class": "ADDED_FAT",
+      "food_state": "READY_TO_EAT",
+      "is_active": true,
+      "selection_priority": 10,
+      "compatible_pattern_codes": [
+        "BREAKFAST_SAVORY",
+        "BREAKFAST_DAIRY_FRUIT",
+        "BREAKFAST_LEGUME",
+        "MAIN_CLASSIC",
+        "MAIN_LEGUME",
+        "EVENING_CLASSIC",
+        "EVENING_LIGHT_SAVORY",
+        "SNACK_DAIRY_FRUIT",
+        "SNACK_PROTEIN_CARB"
+      ],
+      "available_markets": [
+        "EG",
+        "SA",
+        "KW",
+        "BH",
+        "QA",
+        "AE"
+      ],
+      "budget_level": "MEDIUM",
+      "logistics": {
+        "requires_storage": false,
+        "requires_reheating": false
+      },
+      "nutrition_per_100g": {
+        "calories_kcal": 884,
+        "protein_g": 0,
+        "fat_g": 100,
+        "carbohydrate_g": 0,
+        "fiber_g": 0
+      },
+      "portion_rule_g": {
+        "minimum_g": 5,
+        "maximum_g": 40,
+        "step_g": 5,
+        "default_g": 10
+      },
+      "tags": {
+        "identity_tags": [
+          "OLIVE_OIL",
+          "OIL"
+        ],
+        "allergen_tags": [],
+        "intolerance_tags": []
+      },
+      "swap": {
+        "is_swappable": true,
+        "group_code": "COOKING_OILS"
+      },
+      "source": {
+        "type": "FOOD_COMPOSITION_DATABASE",
+        "name": "USDA FoodData Central",
+        "reference": "FDC:171413 | DATA_TYPE:SR_LEGACY | DESCRIPTION:Oil, olive, salad or cooking | ENERGY_NUTRIENT_ID:1008 | FIBER_NUTRIENT_ID:1079",
+        "checked_date": "2026-07-17"
+      }
+    },
+    {
+      "food_code": "SUNFLOWER_OIL",
+      "name_ar": "زيت دوار الشمس",
+      "name_en": "Sunflower Oil",
+      "food_class": "ADDED_FAT",
+      "food_state": "READY_TO_EAT",
+      "is_active": true,
+      "selection_priority": 20,
+      "compatible_pattern_codes": [
+        "BREAKFAST_SAVORY",
+        "BREAKFAST_DAIRY_FRUIT",
+        "BREAKFAST_LEGUME",
+        "MAIN_CLASSIC",
+        "MAIN_LEGUME",
+        "EVENING_CLASSIC",
+        "EVENING_LIGHT_SAVORY",
+        "SNACK_DAIRY_FRUIT",
+        "SNACK_PROTEIN_CARB"
+      ],
+      "available_markets": [
+        "EG",
+        "SA",
+        "KW",
+        "BH",
+        "QA",
+        "AE"
+      ],
+      "budget_level": "LOW",
+      "logistics": {
+        "requires_storage": false,
+        "requires_reheating": false
+      },
+      "nutrition_per_100g": {
+        "calories_kcal": 884,
+        "protein_g": 0,
+        "fat_g": 100,
+        "carbohydrate_g": 0,
+        "fiber_g": 0
+      },
+      "portion_rule_g": {
+        "minimum_g": 5,
+        "maximum_g": 40,
+        "step_g": 5,
+        "default_g": 10
+      },
+      "tags": {
+        "identity_tags": [
+          "SUNFLOWER_OIL",
+          "OIL"
+        ],
+        "allergen_tags": [],
+        "intolerance_tags": []
+      },
+      "swap": {
+        "is_swappable": true,
+        "group_code": "COOKING_OILS"
+      },
+      "source": {
+        "type": "FOOD_COMPOSITION_DATABASE",
+        "name": "USDA FoodData Central",
+        "reference": "FDC:171025 | DATA_TYPE:SR_LEGACY | DESCRIPTION:Oil, sunflower, linoleic, (approx. 65%) | ENERGY_NUTRIENT_ID:1008 | FIBER_NUTRIENT_ID:1079",
+        "checked_date": "2026-07-17"
+      }
+    }
+  ],
+  "swap_groups": [
+    {
+      "group_code": "BREAKFAST_STARCHES",
+      "food_class": "STARCH",
+      "active_item_codes": [
+        "BREAD_WHOLE_WHEAT",
+        "OATS_ROLLED_DRY"
+      ]
+    },
+    {
+      "group_code": "COOKED_LEGUMES",
+      "food_class": "LEGUME",
+      "active_item_codes": [
+        "CHICKPEAS_MATURE_COOKED",
+        "FAVA_BEANS_MATURE_COOKED",
+        "LENTILS_MATURE_COOKED"
+      ]
+    },
+    {
+      "group_code": "COOKED_STARCHES",
+      "food_class": "STARCH",
+      "active_item_codes": [
+        "PASTA_SPAGHETTI_COOKED",
+        "POTATO_BOILED_WITHOUT_SKIN",
+        "RICE_WHITE_LONG_GRAIN_COOKED"
+      ]
+    },
+    {
+      "group_code": "COOKING_OILS",
+      "food_class": "ADDED_FAT",
+      "active_item_codes": [
+        "OLIVE_OIL",
+        "SUNFLOWER_OIL"
+      ]
+    },
+    {
+      "group_code": "LEAN_ANIMAL_PROTEIN",
+      "food_class": "ANIMAL_PROTEIN",
+      "active_item_codes": [
+        "CHICKEN_BREAST_ROASTED_SKINLESS",
+        "TUNA_LIGHT_CANNED_WATER_DRAINED"
+      ]
+    },
+    {
+      "group_code": "PLAIN_DAIRY_PROTEIN",
+      "food_class": "DAIRY_PROTEIN",
+      "active_item_codes": [
+        "COTTAGE_CHEESE_LOW_FAT_2_PERCENT",
+        "GREEK_YOGURT_PLAIN_NONFAT",
+        "YOGURT_PLAIN_LOW_FAT"
+      ]
+    },
+    {
+      "group_code": "RAW_VEGETABLES",
+      "food_class": "NON_STARCH_VEGETABLE",
+      "active_item_codes": [
+        "CARROT_RAW",
+        "CUCUMBER_WITH_PEEL_RAW",
+        "TOMATO_RED_RAW"
+      ]
+    },
+    {
+      "group_code": "WHOLE_FRUITS",
+      "food_class": "FRUIT",
+      "active_item_codes": [
+        "APPLE_RAW_WITH_SKIN",
+        "BANANA_RAW",
+        "ORANGE_RAW"
+      ]
+    }
+  ]
+}

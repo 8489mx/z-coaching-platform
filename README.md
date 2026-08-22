@@ -1,6 +1,6 @@
 # Z Coaching — Client Intake Decision Engine V1
 
-محرك Domain مستقل وحتمي يحوّل بيانات تأسيس العميل المنظمة إلى قرار أولي آمن للتغذية والتدريب والكارديو. لا يستخدم AI Runtime، ولا يتصل بقاعدة بيانات أو API، ولا يولّد سعرات فعلية أو وجبات أو تمارين.
+محرك Domain مستقل وحتمي يحوّل بيانات تأسيس العميل المنظمة إلى قرار أولي آمن للتغذية والتدريب والكارديو، ثم يستطيع بناء خطة تدريب وتقدير هدف طاقة غذائي وأهداف ماكروز يومية أولية. لا يستخدم AI Runtime، ولا يتصل بقاعدة بيانات أو API، ولا يولّد وجبات أو يختار أطعمة.
 
 ## النطاق والقرار التقني
 
@@ -752,9 +752,10 @@ npm test
 npm run test:coverage
 npm run check
 npm run example
+npm run example:training
 ```
 
-آخر تشغيل فعلي عند التسليم: **265/265 اختبارات ناجحة**. كانت النسخة المجمدة من Intake Decision Engine تحتوي على 146 اختبارًا، وأضيفت 12 حالة لعقد Training Plan Specification، و11 حالة لخرائط Training Session Blueprints، و15 حالة لـMinimal Exercise Catalog، و19 حالة مستقلة لفلترة Exercise Selection، و10 حالات لـTraining Prescription، و11 حالة لـTraining Draft Pipeline، و20 حالة لـWeekly Training Schedule، ثم 21 حالة لـTraining Plan Preflight. كما نجح كل من `npm run test:coverage` و`npm run check`.
+آخر تشغيل فعلي عند التسليم: **554/554 اختبارات ناجحة**. كانت النسخة المجمدة من Intake Decision Engine تحتوي على 146 اختبارًا، وأضيفت 12 حالة لعقد Training Plan Specification، و11 حالة لخرائط Training Session Blueprints، و15 حالة لـMinimal Exercise Catalog، و19 حالة مستقلة لفلترة Exercise Selection، و10 حالات لـTraining Prescription، و11 حالة لـTraining Draft Pipeline، و20 حالة لـWeekly Training Schedule، و21 حالة لـTraining Plan Preflight، و13 حالة لـTraining Engine، و16 حالة لـNutrition Planning Snapshot، و29 حالة لـNutrition Energy Target، و30 حالة لـNutrition Macro Targets، و32 حالة لـNutrition Meal Distribution، و33 حالة لـNutrition Meal Assembly Blueprint، و38 حالة لـNutrition Food Catalog Contract، و60 حالة لأداة Nutrition Food Catalog Excel، ثم 38 حالة لدفعة Core Global Food Data. كما نجح كل من `npm run test:coverage` و`npm run check`.
 
 `npm run example` يقرأ `examples/full-intake.json` ويطبع ناتج المحرك الفعلي. الخلاصة الفعلية لنفس المثال:
 
@@ -790,7 +791,7 @@ npm run example
 - لا UI أو صفحات موقع أو API أو مصادقة أو دفع.
 - لا Database أو تخزين أو Audit Log أو إعدادات Tenant.
 - لا AI Runtime أو خدمات خارجية.
-- لا حساب TDEE/BMR أو رقم سعرات أو Macros.
+- لا اختيار Foods أو Serving Sizes أو Meal Templates أو أوقات وجبات محددة، ولا Carb Cycling أو Saturated Fat أو Supplements. حساب الطاقة والماكروز وتوزيعها على Meal Slots محصور في سياسات V1 المنظمة.
 - لا خطة وجبات أو بدائل طعام فعلية، ولا أوزان أو RPE أو RIR أو Tempo أو Warm-up Sets أو Progression أو Deload أو جلسات كارديو. Weekly Training Schedule يوزع الحصص على أيام الأسبوع فقط، من دون ساعات يوم أو تغيير التمارين والوصفات.
 - لا تفسير دوائي أو تشخيص أو بديل عن الطبيب/الكوتش.
 - لا JSON Schema منشور كملف مستقل؛ Validation الحالية Runtime وJSDoc. يمكن توليد Schema versioned لاحقًا عند تثبيت عقد الـAPI.
@@ -884,4 +885,268 @@ npm run example
 
 لا تقبل الوحدة بيانات العميل (Raw Intake)، ولا تنفذ `evaluateIntake` داخليًا. تتأكد الوحدة فقط من استدعاء `buildTrainingDraft` ثم `buildWeeklyTrainingSchedule` ثم `evaluateTrainingPlanPreflight` بالترتيب الإلزامي، ثم ترمي `TypeError` فورًا في حال كسر اتساق الـPipeline (مثل اختلاف `schedule_version` أو `plan_status` بين التقرير والخطة)، ولا تعيد المخرجات الوسيطة.
 
-إجمالي عدد الاختبارات الحالية: 278 اختبارًا.
+إجمالي عدد الاختبارات الحالية: 554 اختبارًا.
+
+## Nutrition Planning Snapshot V1
+
+الوحدة المستقلة `src/nutrition-planning-snapshot` تنشئ عبر `buildNutritionPlanningSnapshot(...)` عقدًا ثابتًا يجمع البيانات الغذائية المطلوبة لاحقًا من Raw Client Intake الصحيح، وEvaluation Context الموثوق، وIntake Decision الموجود. وهي متاحة من export الحزمة الفرعي `./nutrition-planning-snapshot` وتصدّر فقط `NUTRITION_PLANNING_SNAPSHOT_VERSION` ودالة البناء.
+
+هذه الوحدة ليست Nutrition Engine كاملًا: لا تحسب BMR أو TDEE أو سعرات أو ماكروز، ولا تختار أطعمة أو وجبات ولا تضيف قواعد تغذية. تستخدم `validateIntake` و`IntakeValidationError` و`calculateAgeYears` من Public API الحالي، ثم تنسخ الأقسام المحددة دون تفسير أو إعادة حساب لقرار التغذية أو التدريب أو الكارديو.
+
+الناتج مستقل عن المدخلات الثلاثة باستخدام `structuredClone` ومجمّد بالكامل بعمق، بما في ذلك كل الكائنات والقوائم وعناصرها؛ لذلك يصلح كنقطة بيانات موثوقة وثابتة للوحدات الغذائية التالية دون مشاركة مراجع قابلة للتعديل.
+
+## Nutrition Energy Target V1
+
+الوحدة المستقلة `src/nutrition-energy-target` تستهلك ناتج `buildNutritionPlanningSnapshot(...)` فقط عبر `buildNutritionEnergyTarget(snapshot)`، وهي متاحة من export الحزمة الفرعي `./nutrition-energy-target`. تصنّف PAL من أعلى إشارة بين نمط الحياة والخطوات وتدريب المقاومة والرياضات الإضافية، ثم تقدّر سعرات المحافظة للبالغين من 19 سنة فأكثر باستخدام معادلات **NASEM DRI 2023 EER** الخاصة بالجنس وفئة النشاط.
+
+الناتج يحدد `READY` أو `PROVISIONAL_REVIEW_REQUIRED` أو `WITHHELD`، ويحافظ على حالات المراجعة القادمة من Intake Decision. يطبّق اتجاه `MAINTENANCE` أو عجزًا أوليًا بنسبة 15% (10% عند الحاجة للمحافظة) بحد 500 kcal/day، أو فائضًا أوليًا بنسبة 8% (5% عند الحاجة للمحافظة) بحد 300 kcal/day. حالات المراجعة الطبية والحظر لا تشغّل معادلة الطاقة.
+
+أرقام المحافظة والهدف **تقديرات أولية وليست قياسًا معمليًا**. عند وجود `target_calories` فعلي يكون `calibration_required=true` لأن المعايرة اللاحقة مقابل تغير الوزن والالتزام مطلوبة. هذه الوحدة لا تحسب Macros، ولا تركّب وجبات، ولا تختار أطعمة، ولا تنفذ المعايرة نفسها.
+
+## Nutrition Macro Targets V1
+
+الوحدة المستقلة `src/nutrition-macro-targets` تستهلك Nutrition Planning Snapshot وNutrition Energy Target فقط عبر `buildNutritionMacroTargets({ nutritionPlanningSnapshot, nutritionEnergyTarget })`، وهي متاحة من export الحزمة الفرعي `./nutrition-macro-targets`. لا تعيد حساب PAL أو السعرات، وتحافظ على حالة الطاقة `READY` أو `PROVISIONAL_REVIEW_REQUIRED` أو `WITHHELD`.
+
+البروتين يعتمد على وزن مرجعي يساوي الأقل بين الوزن الفعلي والوزن المقابل لـBMI 30 وفق Policy V1، ثم يستخدم عاملًا من 1.2 إلى 2.0 g/kg حسب أيام المقاومة وحمل الرياضات واتجاه العجز. يُحد البروتين عند 30% من السعرات؛ وإذا خفضه الحد تحت 1.2 g/kg تصبح النتيجة Provisional مع بقاء الماكروز محسوبة. هذا الحد الحسابي ليس تشخيصًا طبيًا ولا وزنًا مستهدفًا.
+
+الدهون تستهدف 25% من السعرات وتُقرب لأقرب 5g، والكربوهيدرات تستخدم السعرات المتبقية بعد البروتين والدهون. Fiber للبالغين يعتمد على العمر والجنس ولا يُطرح من الكربوهيدرات. الوحدة لا توزع الماكروز على الوجبات، ولا تنشئ Meal Templates، ولا تختار أطعمة أو Supplements.
+
+## Nutrition Meal Distribution V1
+
+الوحدة المستقلة `src/nutrition-meal-distribution` تستهلك Nutrition Planning Snapshot وNutrition Macro Targets فقط عبر `buildNutritionMealDistribution({ nutritionPlanningSnapshot, nutritionMacroTargets })`، وهي متاحة من export الحزمة الفرعي `./nutrition-meal-distribution`. تحافظ على حالات `READY` و`PROVISIONAL_REVIEW_REQUIRED` و`WITHHELD`، ولا تعيد حساب السعرات أو أهداف الماكروز اليومية.
+
+يدعم المسار التلقائي في V1 من وجبتين إلى خمس وجبات فقط وفق خرائط الأدوار والأوزان الثابتة. يوزع البروتين بالتساوي قدر الإمكان، ويوزع الدهون والكربوهيدرات وFiber بخوارزمية Largest Remainder الحتمية مع حسم التعادل حسب تسلسل الوجبة، مع إغلاق أهداف الجرامات وسعرات الماكروز اليومية بالضبط.
+
+تنتج استراتيجيات عدد الوجبات أوضاع `FLEXIBLE_SEQUENCE` أو `AVOID_UNAVAILABLE_WINDOWS` أو `COACH_TO_CONFIRM`. تُحفظ نوافذ عدم القدرة على الأكل دون تعيين أوقات وجبات من النظام، وتحتاج الأعداد خارج 2–5 أو `COACH_TO_CONFIRM` إلى مراجعة. الوحدة لا تختار أطعمة، ولا تنشئ Meal Templates أو Serving Sizes، ولا تفرق بين أيام التدريب والراحة.
+
+## Nutrition Meal Assembly Blueprint V1
+
+الوحدة المستقلة `src/nutrition-meal-assembly-blueprint` تستهلك Nutrition Planning Snapshot وNutrition Meal Distribution فقط عبر `buildNutritionMealAssemblyBlueprint({ nutritionPlanningSnapshot, nutritionMealDistribution })`، وهي متاحة من export الحزمة الفرعي `./nutrition-meal-assembly-blueprint`. تنتج Component Patterns مسموحة لكل Meal Slot، وتحافظ على Targets الموزعة وحالة `READY` أو `PROVISIONAL_REVIEW_REQUIRED` أو `WITHHELD` دون إعادة حساب السعرات أو الماكروز.
+
+للفطار ثلاثة Patterns عملية: Savory، وDairy/Fruit، وLegume. تتطلب الوجبات الرئيسية والمسائية Protein Anchor وCarbohydrate Base وVegetable، بينما يتطلب السناك Protein Anchor مع Fruit أو Carbohydrate حتى لا يصبح كاربًا أو دهونًا فقط. الدهون المضافة اختيارية دائمًا وبحد عنصر واحد، وتسجل السياسة أنها لا تستخدم إلا عند الحاجة بعد المكونات الأساسية؛ ولا تنفذ الوحدة حساب هذا الاحتياج.
+
+تنسخ الوحدة الميزانية وإتاحة التخزين وإعادة التسخين وجميع Food Restrictions دون تفسيرها، ليطبقها Food Selection لاحقًا. وهي لا تختار Food Items أو كميات أو Serving Sizes أو Recipes أو بدائل. يستخدم Nutrition Food Catalog المستقل قيم `NutritionFoodClass` المنظمة دون تغيير قواعد تركيب الوجبة.
+
+## Nutrition Food Catalog Contract V1
+
+الوحدة المستقلة `src/nutrition-food-catalog` تثبت عقد Runtime لبيانات الأطعمة عبر `validateNutritionFoodCatalogItems(items)` و`buildNutritionFoodCatalog(items)`، وهي متاحة من export الحزمة الفرعي `./nutrition-food-catalog`. جميع القيم الغذائية مسجلة لكل 100 جرام من الجزء الصالح للأكل في `NutritionFoodState` المحددة، لأن حالة الطعام جزء من هويته ولا تُستنتج منها قيود التخزين أو إعادة التسخين.
+
+يسجل كل Food Item توافقه مع `NutritionMealPatternCode` دون إعادة بناء Pattern Catalog أو قواعد الوجبة. تفصل الوحدة بين Identity Tags وAllergy Tags وIntolerance Tags دون تفسير طبي أو تحويل تلقائي بينها. أما `portion_rule_g` فهو نطاق حتمي للكميات العملية بالجرامات ليستفيد منه Portion Solver لاحقًا، وليس كمية مختارة للعميل.
+
+لا تصبح Swap Group صالحة للاستخدام الفعلي إلا بوجود عنصرين Active على الأقل من `NutritionFoodClass` نفسها. الوحدة تتحقق من العقد وتنتج Catalog مستقلة ومجمدة، لكنها لا تختار أطعمة ولا تركب وجبات ولا تحل الكميات. كما أنها لا تحتوي Food Data إنتاجية؛ وسيكون Excel Import مهمة مستقلة لاحقًا.
+
+## Nutrition Food Catalog Excel Workbook & Importer V1
+
+القالب الرسمي الفارغ موجود في `data-templates/nutrition-food-catalog-v1.xlsx`. يمكن إعادة إنشائه حتميًا دون بيانات أطعمة عبر:
+
+```bash
+npm run food:excel:template
+```
+
+ولاستيراد Workbook صالح وتحويله إلى Food Catalog JSON نهائي:
+
+```bash
+npm run food:excel:import -- data-templates/nutrition-food-catalog-v1.xlsx
+npm run food:excel:import -- input.xlsx output.json
+```
+
+تتكون الـWorkbook، بالترتيب الثابت، من:
+
+- `Instructions`: إصدار القالب، إصدار Catalog المستهدف، أساس القيم `PER_100G`، الأسواق المدعومة، وتعليمات الإدخال.
+- `Foods`: هوية الطعام وحالته وأولوية الاختيار والميزانية واللوجستيات والمصدر وتاريخ مراجعته.
+- `Nutrition`: القيم الغذائية لكل 100 جرام، مرتبطة عبر `food_code`.
+- `Portions`: الحد الأدنى والأقصى والخطوة والقيمة الافتراضية بالجرامات؛ وهي حدود وليست حصة مختارة.
+- `Patterns`: توافق الطعام مع Meal Patterns وترتيبها.
+- `Markets`: الأسواق المتاحة وترتيبها.
+- `Tags`: Identity وAllergen وIntolerance Tags منفصلة ومرتبة.
+- `Swap_Groups`: قابلية الاستبدال وGroup Code.
+- `_Lists`: القوائم الرسمية المستخدمة في Data Validation، وهي Sheet مخفية.
+
+Excel أداة تجهيز واستيراد فقط، وليس Runtime Source of Truth ولا يُقرأ أثناء إنشاء خطط العملاء. يتحقق الـImporter من بنية الملف وأنواع الخلايا والعلاقات وترتيبها، ثم يمرر Food Item Records إلى `buildNutritionFoodCatalog` ليبقى Domain Validator مصدر القرار النهائي. ستصبح قاعدة البيانات Runtime Source of Truth لاحقًا.
+
+القالب الملتزم في Git فارغ ولا يحتوي Food Data أو أرقامًا غذائية إنتاجية. يجب أن يحمل كل Food Item يُضاف مصدرًا موثقًا ومرجعًا وتاريخ مراجعة، ولا تنشئ هذه الأداة Seeds أو Food Selection أو Portion Solver.
+
+## Core Global Food Data Batch V1
+
+الدفعة الإنتاجية الأولى موجودة في `data/catalogs/core-global-food-batch-v1.xlsx`، ونسخة JSON الحتمية في `data/catalogs/core-global-food-batch-v1.json`. تحتوي الدفعة على 24 طعامًا عالميًا أساسيًا فقط، وتغطي فئات الطعام الثماني وMeal Patterns الحالية. جميع قيم الطاقة والبروتين والدهون والكربوهيدرات والألياف منشورة لكل 100 جرام من سجل واحد في USDA FoodData Central.
+
+تتبع مراجعة المصدر ترتيب السجل المطابق والمكتمل: Foundation Food أولًا، ثم SR Legacy، ثم FNDDS عند غياب سجل Foundation أو SR Legacy مطابق ومكتمل. بيانات الميزانية والتوافر في الأسواق المحلية سياسات تشغيلية للدفعة وليست مشتقة من USDA، كما أن `selection_priority` ترتيب اختيار تقني وليس ترتيبًا صحيًا. قواعد `portion_rule_g` حدود أولية لـPortion Solver وليست حصة مختارة للعميل، وستضاف الأطعمة المصرية والخليجية المتخصصة في دفعات مستقلة لاحقًا.
+
+ملف JSON لا يُكتب يدويًا؛ بل يُعاد توليده من الـWorkbook عبر الـImporter الحالي:
+
+```bash
+npm run food:core:build
+```
+
+هذه الدفعة لا تنفذ Food Selection أو Portion Solver.
+
+## Nutrition Food Selection V1
+
+The independent `src/nutrition-food-selection` stage consumes a completed
+Nutrition Planning Snapshot, Nutrition Meal Assembly Blueprint, and Nutrition
+Food Catalog. It selects deterministic food codes for required component slots;
+it does not calculate grams, portions, meal calories, or macro closure.
+
+Selection evaluates each meal's `allowed_patterns` in order and commits the
+first feasible pattern. The candidate universe is limited to the current food
+class and pattern, then filters are applied in this fixed order: active state,
+exact market, budget, storage, reheating, allergy, medical exclusion,
+intolerance, and dislike. Budget is a maximum tier: `LOW` allows `LOW`,
+`MEDIUM` allows `LOW` and `MEDIUM`, and `HIGH` allows all three tiers. No
+constraint is relaxed when a required slot cannot be filled.
+
+Eligible candidates are ranked by ascending use count across the plan, then
+`selection_priority`, then `food_code`. Required slots select exactly their
+minimum item count. Optional slots, including added fat, retain candidates but
+are deferred to the downstream Portion Solver. Digestive issues are not
+interpreted as exclusions; they retain selection diagnostics and require
+provisional review. The stage exposes its own status, reasons, pattern attempts,
+blocking slots, and rejection codes so a future unified pipeline trace can
+identify the stage that needs review.
+
+## Nutrition Portion Solver V1
+
+The independent `src/nutrition-portion-solver` stage consumes only a completed
+Nutrition Food Selection and Nutrition Food Catalog through
+`buildNutritionPortionSolver({ nutritionFoodSelection, nutritionFoodCatalog })`.
+Its version is `nutrition-portion-solver-v1` and its fixed policy is
+`Z_COACHING_PORTION_SOLVER_V1`. It converts approved food codes into legal gram
+amounts without reselecting meal patterns, reapplying allergy or budget rules,
+or changing the upstream Food Selection.
+
+Each food is restricted to `minimum_g + n * step_g` without exceeding
+`maximum_g`; optimization starts independently from minimum, default, and legal
+maximum portions. A deterministic coordinate descent tests every legal portion
+in slot-sequence and food-code order for at most 20 passes, using the best of
+the three starts. Candidate foods are then considered one at a time and retained
+only for a strict objective improvement, without exceeding the slot's
+`max_items`, duplicating a food within a meal, or selecting outside approved
+candidates. Optional and added-fat slots therefore begin empty.
+
+The objective is the weighted sum of squared normalized errors for protein (4),
+calories (3), carbohydrate (2), fat (2), and fiber (1). Meal tolerances are the
+larger of the fixed floor and target percentage: calories `max(50, 10%)`,
+protein `max(5g, 15%)`, fat `max(5g, 20%)`, carbohydrate `max(10g, 15%)`, and
+fiber `max(3g, 25%)`. Unrounded nutrition values drive optimization; contract
+display values are rounded to two decimals.
+
+The result reports meal items, totals, residuals, tolerances, closure fields,
+daily aggregates, and copied upstream constraints/reasons. `WITHHELD` selection
+remains withheld with no meals. Provisional selection can solve meals that have
+a selected pattern but can never be promoted. A meal without a selected pattern
+remains unsolved with `PORTION_SOLVER_UNAVAILABLE_WITHOUT_SELECTED_PATTERN`.
+Only ready upstream selection with every meal pattern and all five targets inside
+tolerance produces `READY`; otherwise the output is
+`PROVISIONAL_REVIEW_REQUIRED`. The output is independent, deterministic across
+catalog item order, and deeply frozen.
+
+## Nutrition Swap Engine V1
+
+The independent `src/nutrition-swap-engine` stage consumes Nutrition Food
+Selection, Nutrition Portion Solver, and Nutrition Food Catalog through
+`buildNutritionSwapEngine({ nutritionFoodSelection, nutritionPortionSolver,
+nutritionFoodCatalog })`. Its version is `nutrition-swap-engine-v1` and its
+fixed policy is `Z_COACHING_SWAP_ENGINE_V1`. It never changes the selected meal
+pattern or original portions, invokes the Portion Solver, or selects outside the
+approved candidates for the original item's slot.
+
+An item can expose alternatives only when its catalog record is swappable and
+belongs to a valid swap group. Each alternative must be an active member of that
+same group, occur in the slot's `candidate_food_codes`, differ from the original
+food, and not already occur elsewhere in the meal. Allergy, market, budget, and
+other upstream filters are not reapplied because candidate membership is the
+Food Selection stage's approved boundary.
+
+For every eligible candidate, the engine tests each legal
+`minimum_g + n * step_g` amount through the allowed maximum. It reconstructs
+the original meal from unrounded catalog nutrition, replaces only the current
+item, and minimizes the same weighted squared normalized objective used by the
+Portion Solver: protein (4), calories (3), carbohydrate (2), fat (2), and fiber
+(1). A candidate is returned only when its best portion keeps all five projected
+totals inside the Portion Solver meal tolerances. Output nutrition, projected
+totals, residuals, and scores are rounded to two decimals after all decisions.
+
+Alternatives sort deterministically by raw objective score, slot candidate
+order, food code, and grams. A swappable item with no accepted alternative gets
+the item issue `NO_SAFE_SWAP_AVAILABLE`, which does not change plan status.
+Non-swappable foods report `is_swappable=false`, `group_code=null`, and no
+alternatives. Meals that are not closed within all five tolerances retain their
+upstream issues, add `SWAPS_WITHHELD_FOR_UNCLOSED_MEAL`, and generate no swaps.
+
+`WITHHELD` Portion Solver output remains withheld. Provisional output can
+evaluate closed meals but is never promoted, while `READY` remains ready even
+when an item has no safe swap. Constraints and deduplicated reasons pass from
+the Portion Solver by independent value. The full result is deterministic across
+catalog item order, independent from all three inputs, and deeply frozen.
+
+## Nutrition Plan Preflight V1
+
+The independent `src/nutrition-plan-preflight` stage audits the completed Food
+Selection, Portion Solver, and Swap Engine outputs through
+`evaluateNutritionPlanPreflight({ nutritionFoodSelection,
+nutritionPortionSolver, nutritionSwapEngine, nutritionFoodCatalog })`. Its
+version is `nutrition-plan-preflight-v1` and its fixed policy is
+`Z_COACHING_NUTRITION_PREFLIGHT_V1`. It does not modify the nutrition plan or
+rerun any upstream stage.
+
+Preflight reports eight ordered checks: upstream status, meal-pattern
+completeness, selected-food integrity, portion legality, portion-calculation
+integrity, meal-target closure, daily-target closure, and swap safety.
+Structural contract contradictions throw `TypeError`; actionable plan findings
+become deterministic issues attributed to `FOOD_SELECTION`, `PORTION_SOLVER`,
+`SWAP_ENGINE`, or `PLAN_PREFLIGHT`.
+
+Item, meal, daily, and projected-swap nutrition is reconstructed from the
+catalog's unrounded per-100g values. Reported display values may differ by at
+most `0.01`. Meal checks reuse the Portion Solver tolerances. Daily checks use
+calories `max(50, 10%)`, protein `max(5g, 15%)`, fat `max(5g, 20%)`,
+carbohydrate `max(10g, 15%)`, and fiber `max(3g, 25%)`. Swap alternatives are
+revalidated against the original slot candidates, swap group, existing meal
+foods, legal grams, projected totals, residuals, and all five tolerance flags.
+`NO_SAFE_SWAP_AVAILABLE` remains informational and never blocks readiness.
+
+All three upstream `WITHHELD` states produce `WITHHELD` preflight. Any retained
+provisional state or local issue produces `REVIEW_REQUIRED`; only three ready
+upstream stages with every check passed produce `READY`. Non-withheld plans are
+available for coach review, while withheld plans are not. Constraints and
+first-occurrence reason codes are copied from Swap Engine by value. The output
+is independent, deeply frozen, and unaffected by catalog item order.
+
+## Nutrition Engine V1
+
+The `src/nutrition-engine` facade exposes one deterministic entry point:
+`buildNutritionEngine({ intake, evaluationContext, nutritionFoodCatalog })`.
+Its version is `nutrition-engine-v1` and its fixed policy is
+`Z_COACHING_NUTRITION_ENGINE_V1`.
+
+The facade invokes the existing public APIs in this order: Intake Decision,
+Planning Snapshot, Energy Target, Macro Targets, Meal Distribution, Meal
+Assembly Blueprint, Food Selection, Portion Solver, Swap Engine, and Nutrition
+Plan Preflight. It contains no duplicated nutrition rules and does not
+recalculate or modify any upstream result.
+
+The output retains complete independent copies of all ten stage outputs under
+`stages`, but never embeds the full Food Catalog. Engine `status` and
+`ready_for_coach_review` come directly from Plan Preflight: `READY` remains
+ready, `REVIEW_REQUIRED` retains coach review, and `WITHHELD` remains withheld.
+The complete result is deeply frozen, deterministic, and unaffected by Food
+Catalog item order. Upstream validation errors are allowed to propagate without
+conversion. Pipeline tracing is intentionally outside Nutrition Engine V1.
+
+## Pipeline Trace Core V1
+
+The standalone `src/pipeline-trace` module exposes
+`buildPipelineTrace({ pipelineCode, engineVersion, finalStatus,
+readyForCoachReview, stages })`. Its version is `pipeline-trace-v1` and its
+fixed policy is `Z_COACHING_PIPELINE_TRACE_V1`. It is not integrated into the
+Nutrition Engine or any other pipeline in V1.
+
+Each caller-supplied stage is projected to ordered trace metadata only: a
+one-based sequence, stage code and version, normalized trace status, unique
+issue and reason codes in first-occurrence order, and an optional non-negative
+duration. Full stage outputs, timestamps, and random values are never retained.
+The module performs no business decisions or status inference.
+
+Stage codes must be unique. `READY`, `REVIEW_REQUIRED`, `WITHHELD`, and `FAILED`
+are the only trace statuses. Inputs remain unchanged and unfrozen; the returned
+trace is independent, deeply frozen, and deterministic for identical inputs.
