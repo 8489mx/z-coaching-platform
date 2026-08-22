@@ -4,3 +4,9 @@ export {
 } from "./domain/enums.js";
 
 export { sanitizeMealPlan } from "./sanitize-meal-plan.js";
+export {
+  buildCulinaryRecipeMeals,
+  generateSmartSwaps,
+  FOOD_SWAP_DATABASE,
+} from "./build-culinary-meals.js";
+

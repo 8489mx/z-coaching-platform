@@ -3,6 +3,61 @@
  * Every exercise has an English Display Title and a clear, professional Arabic Subtitle.
  */
 export const MASTER_EXERCISE_DICTIONARY = Object.freeze({
+  KAS_GLUTE_BRIDGE: {
+    name_en: "Kas Glute Bridge",
+    name_ar: "كاس جلوت بريدج بالبار (عزل قصر وانقباض الجلوتس)",
+  },
+  CABLE_45_GLUTE_KICKBACK: {
+    name_en: "Standing 45-Degree Diagonal Cable Glute Kickback",
+    name_ar: "ركل خلفي قطري بالكابل بزاوية 45°",
+  },
+  GLUTE_BIASED_45_HYPEREXTENSION: {
+    name_en: "Glute-Biased 45-Degree Hyperextension",
+    name_ar: "تمديد ظهر 45 درجة بتركيز الجلوتس الكامل",
+  },
+  B_STANCE_RDL: {
+    name_en: "B-Stance Dumbbell Romanian Deadlift",
+    name_ar: "ديدليفت روماني أحادي بوضعية B-Stance بالدمبلز",
+  },
+  SEATED_HIP_ABDUCTION_LEAN_FORWARD: {
+    name_en: "Seated Hip Abduction (Torso Leaned Forward)",
+    name_ar: "جهاز تفتيح الأرجل جالس مع ميل الجذع للأمام",
+  },
+  DEFICIT_REVERSE_LUNGE: {
+    name_en: "Deficit Reverse Lunge with Torso Forward Lean",
+    name_ar: "طعنات خلفية من منصة مرتفعة بتركيز الجلوتس",
+  },
+  STOMACH_VACUUM: {
+    name_en: "Stomach Vacuum TVA Isometric Activation",
+    name_ar: "تمرين شفط البطن لنحت الخصر (Stomach Vacuum)",
+  },
+
+  CABLE_GLUTE_KICKBACK: {
+    name_en: "Cable Glute Kickback",
+    name_ar: "ركل خلفي بالكابل لعزل الجلوتس",
+  },
+  SEATED_HIP_ABDUCTION_MACHINE: {
+    name_en: "Seated Hip Abduction Machine",
+    name_ar: "جهاز تفتيح الأرجل جالس لعزل الجلوتس",
+  },
+  CHEST_SUPPORTED_INCLINE_DB_ROW: {
+    name_en: "Chest-Supported Incline Dumbbell Row",
+    name_ar: "تجديف دمبل مسنود الصدر على بنش مائل",
+  },
+
+  SINGLE_ARM_CABLE_LAT_PULLDOWN: {
+    name_en: "Single-Arm Iliac Cable Lat Pulldown",
+    name_ar: "سحب لاتس فردي كابل بزاوية 45 درجة",
+  },
+  BEHIND_BACK_CABLE_LATERAL_RAISE: {
+    name_en: "Behind-the-Back Cable Lateral Raise",
+    name_ar: "رفرفة جانبية بالكابل خلف الظهر",
+  },
+  PALLOF_PRESS: {
+    name_en: "Anti-Rotation Cable / Band Pallof Press",
+    name_ar: "بالوف بريس كابل / حبل لمقاومة الدوران",
+  },
+
   // --- CHEST (HORIZONTAL & INCLINE PUSH) ---
   BARBELL_BENCH_PRESS: {
     name_en: "Barbell Bench Press",
@@ -81,6 +136,10 @@ export const MASTER_EXERCISE_DICTIONARY = Object.freeze({
   CHEST_SUPPORTED_T_BAR_ROW: {
     name_en: "Chest-Supported T-Bar Row",
     name_ar: "تجديف تي بار مع تثبيت الصدر",
+  },
+  CHEST_SUPPORTED_ROW: {
+    name_en: "Chest-Supported Row",
+    name_ar: "تجديف مسنود الصدر للأعلى",
   },
   T_BAR_ROW: {
     name_en: "T-Bar Row",
@@ -370,6 +429,10 @@ export const MASTER_EXERCISE_DICTIONARY = Object.freeze({
     name_en: "Dumbbell Hammer Curl",
     name_ar: "مرجحة شاكوش بالدمبل للبايسبس والساعد",
   },
+  DUMBBELL_HAMMER_CURL: {
+    name_en: "Dumbbell Hammer Curl",
+    name_ar: "مرجحة شاكوش بالدمبل للبايسبس والساعد",
+  },
   HAMMER_CURL: {
     name_en: "Dumbbell Hammer Curl",
     name_ar: "مرجحة شاكوش بالدمبل للبايسبس والساعد",
@@ -417,6 +480,10 @@ export const MASTER_EXERCISE_DICTIONARY = Object.freeze({
   OVERHEAD_DUMBBELL_TRICEPS_EXTENSION: {
     name_en: "Overhead Dumbbell Triceps Extension",
     name_ar: "مد ترايسبس خلف الرأس بالدمبل",
+  },
+  OVERHEAD_CABLE_TRICEPS_EXTENSION: {
+    name_en: "Overhead Cable Triceps Extension",
+    name_ar: "مد ترايسبس خلف الرأس بالكابل",
   },
   OVERHEAD_TRICEPS_EXTENSION: {
     name_en: "Overhead Triceps Extension",

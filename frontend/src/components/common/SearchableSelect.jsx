@@ -181,7 +181,7 @@ export default function SearchableSelect({
                       fontSize: '0.85rem',
                       fontWeight: isSelected ? '700' : '500',
                       color: isSelected ? '#1e144f' : '#334155',
-                      background: isSelected ? 'linear-gradient(90deg, #f5f3ff 0%, #ede9fe 100%)' : 'transparent',
+                      background: isSelected ? 'linear-gradient(90deg, #E5F0FF 0%, #F0F9FF 100%)' : 'transparent',
                       transition: 'background 0.15s ease'
                     }}
                     onMouseEnter={(e) => {

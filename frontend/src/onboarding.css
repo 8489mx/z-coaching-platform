@@ -85,9 +85,9 @@
 }
 
 .intake-nav-item.active {
-  background: #f5f3ff;
-  color: #261c6a;
-  border-right-color: #261c6a;
+  background: #E5F0FF;
+  color: #0284C7;
+  border-right-color: #0284C7;
   font-weight: 700;
 }
 
@@ -253,8 +253,8 @@
 }
 
 .choice-pill.selected {
-  border-color: #261c6a;
-  background: #f5f3ff;
+  border-color: #0284C7;
+  background: #E5F0FF;
   box-shadow: 0 2px 8px rgba(38, 28, 106, 0.12);
 }
 
@@ -265,7 +265,7 @@
 }
 
 .choice-pill.selected .choice-title {
-  color: #261c6a;
+  color: #0284C7;
 }
 
 .choice-pill .choice-desc {
@@ -275,7 +275,7 @@
 }
 
 .choice-pill.selected .choice-desc {
-  color: #4c1d95;
+  color: #0369A1;
 }
 
 /* Section Dividers */
@@ -330,7 +330,7 @@
   padding: 0.85rem;
   background: #ffffff;
   border: 1.5px dashed #a78bfa;
-  color: #261c6a;
+  color: #0284C7;
   border-radius: 12px;
   font-weight: 700;
   cursor: pointer;
@@ -343,8 +343,8 @@
 }
 
 .btn-add-outline:hover {
-  background: #f5f3ff;
-  border-color: #261c6a;
+  background: #E5F0FF;
+  border-color: #0284C7;
 }
 
 /* Buttons */
@@ -364,7 +364,7 @@
 }
 
 .btn-primary {
-  background: #261c6a;
+  background: #0284C7;
   color: #ffffff;
   box-shadow: 0 4px 12px rgba(38, 28, 106, 0.25);
 }

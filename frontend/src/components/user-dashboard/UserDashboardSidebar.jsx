@@ -4,7 +4,7 @@ import { Link, useLocation } from 'react-router-dom';
 const USER_MENU_GROUPS = [
   {
     groupTitle: 'الخطة اليومية',
-    color: '#261c6a',
+    color: '#0284C7',
     items: [
       { id: 'dashboard', to: (uid) => `/user-dashboard?user_id=${uid}`, label: 'الرئيسية', icon: 'ti-layout-dashboard' },
       { id: 'workout', href: '#today-workout', label: 'جدول التمارين', icon: 'ti-barbell' },
@@ -35,7 +35,7 @@ export default function UserDashboardSidebar({
     <aside 
       className={`codex-sidebar d-flex flex-column justify-content-between ${isCollapsed ? 'collapsed' : ''}`} 
       style={{ 
-        background: 'linear-gradient(180deg, #ffffff 0%, #fcfbfe 50%, #f8f6fd 100%)', 
+        background: 'linear-gradient(180deg, #ffffff 0%, #FAFBFC 50%, #F1F5F9 100%)', 
         borderLeft: '1px solid rgba(221, 214, 254, 0.3)',
         boxShadow: '-4px 0 20px rgba(38, 28, 106, 0.02)',
         width: isCollapsed ? '72px' : '245px',
@@ -99,7 +99,7 @@ export default function UserDashboardSidebar({
                   fontSize: '0.68rem', 
                   letterSpacing: '2px', 
                   fontWeight: '900',
-                  background: 'linear-gradient(135deg, #372896 0%, #261c6a 100%)',
+                  background: 'linear-gradient(135deg, #58B4E5 0%, #0284C7 100%)',
                   WebkitBackgroundClip: 'text',
                   WebkitTextFillColor: 'transparent',
                   display: 'block',
@@ -267,9 +267,9 @@ export default function UserDashboardSidebar({
             }}
             title="طي القائمة الجانبية (تصغير)"
             onMouseEnter={(e) => {
-              e.currentTarget.style.background = '#f5f3ff';
-              e.currentTarget.style.color = '#261c6a';
-              e.currentTarget.style.borderColor = '#261c6a';
+              e.currentTarget.style.background = '#E5F0FF';
+              e.currentTarget.style.color = '#0284C7';
+              e.currentTarget.style.borderColor = '#0284C7';
             }}
             onMouseLeave={(e) => {
               e.currentTarget.style.background = '#f8fafc';
@@ -278,7 +278,7 @@ export default function UserDashboardSidebar({
             }}
           >
             <span>طي القائمة</span>
-            <i className="ti ti-layout-sidebar-right-collapse fs-6" style={{ color: '#261c6a' }}></i>
+            <i className="ti ti-layout-sidebar-right-collapse fs-6" style={{ color: '#0284C7' }}></i>
           </button>
         ) : (
           <button
@@ -290,19 +290,19 @@ export default function UserDashboardSidebar({
               height: '34px',
               background: '#f8fafc',
               border: '1px solid rgba(221, 214, 254, 0.7)',
-              color: '#261c6a',
+              color: '#0284C7',
               cursor: 'pointer',
               transition: 'all 0.2s ease'
             }}
             title="توسيع القائمة الجانبية"
             onMouseEnter={(e) => {
-              e.currentTarget.style.background = '#261c6a';
+              e.currentTarget.style.background = '#0284C7';
               e.currentTarget.style.color = '#ffffff';
-              e.currentTarget.style.borderColor = '#261c6a';
+              e.currentTarget.style.borderColor = '#0284C7';
             }}
             onMouseLeave={(e) => {
               e.currentTarget.style.background = '#f8fafc';
-              e.currentTarget.style.color = '#261c6a';
+              e.currentTarget.style.color = '#0284C7';
               e.currentTarget.style.borderColor = 'rgba(221, 214, 254, 0.7)';
             }}
           >
@@ -317,7 +317,7 @@ export default function UserDashboardSidebar({
           style={{ 
             height: '38px',
             width: isCollapsed ? '38px' : '100%',
-            background: 'linear-gradient(135deg, #261c6a 0%, #4c1d95 100%)', 
+            background: 'linear-gradient(135deg, #0284C7 0%, #0369A1 100%)', 
             border: 'none',
             fontSize: '0.8rem',
             letterSpacing: '0.3px',

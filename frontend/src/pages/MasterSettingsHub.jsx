@@ -348,13 +348,13 @@ export default function MasterSettingsHub() {
           <div className="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
             <div>
               <div className="d-flex align-items-center gap-2 mb-1">
-                <div className="rounded-circle d-flex align-items-center justify-content-center flex-shrink-0" style={{ width: '38px', height: '38px', background: '#f5f3ff', color: '#261c6a', border: '1.5px solid #ddd6fe' }}>
+                <div className="rounded-circle d-flex align-items-center justify-content-center flex-shrink-0" style={{ width: '38px', height: '38px', background: '#E5F0FF', color: '#0284C7', border: '1.5px solid #BAE6FD' }}>
                   <i className="ti ti-settings-cog fs-5"></i>
                 </div>
                 <h4 className="fw-bold text-dark mb-0" style={{ letterSpacing: '-0.3px', fontSize: '1.3rem' }}>
                   لوحة تحكم المنظومة الرئيسية — «داش الداش»
                 </h4>
-                <span className="badge rounded-pill fw-bold" style={{ background: '#261c6a', color: '#ffffff', fontSize: '0.68rem', padding: '5px 10px' }}>
+                <span className="badge rounded-pill fw-bold" style={{ background: '#0284C7', color: '#ffffff', fontSize: '0.68rem', padding: '5px 10px' }}>
                   SUPER ADMIN
                 </span>
               </div>
@@ -381,11 +381,11 @@ export default function MasterSettingsHub() {
                   <div className="d-flex justify-content-between align-items-center mb-2">
                     <div 
                       className="d-flex align-items-center justify-content-center"
-                      style={{ width: '30px', height: '30px', borderRadius: '8px', background: '#f5f3ff', color: '#261c6a' }}
+                      style={{ width: '30px', height: '30px', borderRadius: '8px', background: '#E5F0FF', color: '#0284C7' }}
                     >
                       <i className="ti ti-forms fs-6"></i>
                     </div>
-                    <span className="badge rounded-pill fw-semibold px-2 py-1" style={{ background: '#f8fafc', color: '#261c6a', fontSize: '0.68rem', border: '1px solid #ddd6fe' }}>
+                    <span className="badge rounded-pill fw-semibold px-2 py-1" style={{ background: '#f8fafc', color: '#0284C7', fontSize: '0.68rem', border: '1px solid #BAE6FD' }}>
                       استمارة نشطة
                     </span>
                   </div>
@@ -405,7 +405,7 @@ export default function MasterSettingsHub() {
                       <defs>
                         <linearGradient id="kpiGrad1" x1="0" y1="0" x2="1" y2="0">
                           <stop offset="0%" stopColor="#818cf8" />
-                          <stop offset="100%" stopColor="#261c6a" />
+                          <stop offset="100%" stopColor="#0284C7" />
                         </linearGradient>
                       </defs>
                       <path d="M1 14C10 14 16 4 24 7C32 10 40 2 50 3C56 5 58 2 59 1" stroke="url(#kpiGrad1)" strokeWidth="2.5" strokeLinecap="round"/>
@@ -545,7 +545,7 @@ export default function MasterSettingsHub() {
                   onClick={() => setActiveTab('intake')}
                   className={`btn btn-sm rounded-pill px-4 fw-bold transition-all ${activeTab === 'intake' ? 'text-white shadow-xs' : 'bg-light text-dark'}`}
                   style={{
-                    background: activeTab === 'intake' ? '#261c6a' : undefined,
+                    background: activeTab === 'intake' ? '#0284C7' : undefined,
                     height: '38px',
                     fontSize: '0.84rem'
                   }}
@@ -557,7 +557,7 @@ export default function MasterSettingsHub() {
                   onClick={() => setActiveTab('exercises')}
                   className={`btn btn-sm rounded-pill px-4 fw-bold transition-all ${activeTab === 'exercises' ? 'text-white shadow-xs' : 'bg-light text-dark'}`}
                   style={{
-                    background: activeTab === 'exercises' ? '#261c6a' : undefined,
+                    background: activeTab === 'exercises' ? '#0284C7' : undefined,
                     height: '38px',
                     fontSize: '0.84rem'
                   }}
@@ -569,7 +569,7 @@ export default function MasterSettingsHub() {
                   onClick={() => setActiveTab('packages')}
                   className={`btn btn-sm rounded-pill px-4 fw-bold transition-all ${activeTab === 'packages' ? 'text-white shadow-xs' : 'bg-light text-dark'}`}
                   style={{
-                    background: activeTab === 'packages' ? '#261c6a' : undefined,
+                    background: activeTab === 'packages' ? '#0284C7' : undefined,
                     height: '38px',
                     fontSize: '0.84rem'
                   }}
@@ -581,7 +581,7 @@ export default function MasterSettingsHub() {
                   onClick={() => setActiveTab('foods')}
                   className={`btn btn-sm rounded-pill px-4 fw-bold transition-all ${activeTab === 'foods' ? 'text-white shadow-xs' : 'bg-light text-dark'}`}
                   style={{
-                    background: activeTab === 'foods' ? '#261c6a' : undefined,
+                    background: activeTab === 'foods' ? '#0284C7' : undefined,
                     height: '38px',
                     fontSize: '0.84rem'
                   }}
@@ -593,7 +593,7 @@ export default function MasterSettingsHub() {
                   onClick={() => setActiveTab('system')}
                   className={`btn btn-sm rounded-pill px-4 fw-bold transition-all ${activeTab === 'system' ? 'text-white shadow-xs' : 'bg-light text-dark'}`}
                   style={{
-                    background: activeTab === 'system' ? '#261c6a' : undefined,
+                    background: activeTab === 'system' ? '#0284C7' : undefined,
                     height: '38px',
                     fontSize: '0.84rem'
                   }}
@@ -607,7 +607,7 @@ export default function MasterSettingsHub() {
                   type="button"
                   onClick={() => { setEditingQuestion(null); setQuestionModalOpen(true); }}
                   className="btn btn-sm rounded-pill px-4 fw-bold text-white shadow-sm d-flex align-items-center gap-2"
-                  style={{ background: 'linear-gradient(135deg, #372896 0%, #261c6a 100%)', height: '38px', fontSize: '0.82rem', border: 'none' }}
+                  style={{ background: 'linear-gradient(135deg, #58B4E5 0%, #0284C7 100%)', height: '38px', fontSize: '0.82rem', border: 'none' }}
                 >
                   <i className="ti ti-plus fs-6"></i>
                   <span>إضافة سؤال جديد للاستمارة</span>
@@ -619,7 +619,7 @@ export default function MasterSettingsHub() {
                   type="button"
                   onClick={() => { setEditingExercise(null); setExerciseModalOpen(true); }}
                   className="btn btn-sm rounded-pill px-4 fw-bold text-white shadow-sm d-flex align-items-center gap-2"
-                  style={{ background: 'linear-gradient(135deg, #372896 0%, #261c6a 100%)', height: '38px', fontSize: '0.82rem', border: 'none' }}
+                  style={{ background: 'linear-gradient(135deg, #58B4E5 0%, #0284C7 100%)', height: '38px', fontSize: '0.82rem', border: 'none' }}
                 >
                   <i className="ti ti-plus fs-6"></i>
                   <span>إضافة تمرين جديد للمكتبة</span>
@@ -631,7 +631,7 @@ export default function MasterSettingsHub() {
                   type="button"
                   onClick={() => { setEditingPackage(null); setPackageModalOpen(true); }}
                   className="btn btn-sm rounded-pill px-4 fw-bold text-white shadow-sm d-flex align-items-center gap-2"
-                  style={{ background: 'linear-gradient(135deg, #372896 0%, #261c6a 100%)', height: '38px', fontSize: '0.82rem', border: 'none' }}
+                  style={{ background: 'linear-gradient(135deg, #58B4E5 0%, #0284C7 100%)', height: '38px', fontSize: '0.82rem', border: 'none' }}
                 >
                   <i className="ti ti-plus fs-6"></i>
                   <span>إضافة باقة اشتراك جديدة</span>
@@ -670,7 +670,7 @@ export default function MasterSettingsHub() {
                           onClick={() => setSelectedSection(sec.id)}
                           className={`btn btn-sm rounded-pill px-3 fw-semibold transition-all ${selectedSection === sec.id ? 'text-white shadow-xs' : 'bg-white text-dark border'}`}
                           style={{
-                            background: selectedSection === sec.id ? '#261c6a' : '#ffffff',
+                            background: selectedSection === sec.id ? '#0284C7' : '#ffffff',
                             fontSize: '0.78rem',
                             height: '36px'
                           }}
@@ -743,7 +743,7 @@ export default function MasterSettingsHub() {
 
                             {/* Section */}
                             <td className="text-center">
-                              <span className="badge rounded-pill px-3 py-1 fw-semibold" style={{ background: '#f5f3ff', color: '#261c6a', border: '1px solid #ddd6fe', fontSize: '0.74rem' }}>
+                              <span className="badge rounded-pill px-3 py-1 fw-semibold" style={{ background: '#E5F0FF', color: '#0284C7', border: '1px solid #BAE6FD', fontSize: '0.74rem' }}>
                                 {SECTION_TRANSLATIONS[q.section] || q.section}
                               </span>
                             </td>
@@ -787,7 +787,7 @@ export default function MasterSettingsHub() {
                                   type="button"
                                   onClick={() => { setEditingQuestion(q); setQuestionModalOpen(true); }}
                                   className="btn btn-sm rounded-circle p-0 d-inline-flex align-items-center justify-content-center"
-                                  style={{ width: '32px', height: '32px', background: '#f5f3ff', color: '#261c6a', border: '1px solid #ddd6fe' }}
+                                  style={{ width: '32px', height: '32px', background: '#E5F0FF', color: '#0284C7', border: '1px solid #BAE6FD' }}
                                   title="تعديل نص وخيارات السؤال"
                                 >
                                   <i className="ti ti-edit fs-6"></i>
@@ -843,7 +843,7 @@ export default function MasterSettingsHub() {
                           onClick={() => setMuscleFilter(m.id)}
                           className={`btn btn-sm rounded-pill px-3 fw-semibold transition-all ${muscleFilter === m.id ? 'text-white shadow-xs' : 'bg-white text-dark border'}`}
                           style={{
-                            background: muscleFilter === m.id ? '#261c6a' : '#ffffff',
+                            background: muscleFilter === m.id ? '#0284C7' : '#ffffff',
                             fontSize: '0.78rem',
                             height: '36px'
                           }}
@@ -880,7 +880,7 @@ export default function MasterSettingsHub() {
                               </small>
                             </td>
                             <td className="text-center">
-                              <span className="badge rounded-pill px-3 py-1" style={{ background: '#f5f3ff', color: '#261c6a', border: '1px solid #ddd6fe', fontSize: '0.74rem' }}>
+                              <span className="badge rounded-pill px-3 py-1" style={{ background: '#E5F0FF', color: '#0284C7', border: '1px solid #BAE6FD', fontSize: '0.74rem' }}>
                                 {ex.muscle_ar || ex.muscle_group}
                               </span>
                             </td>
@@ -911,7 +911,7 @@ export default function MasterSettingsHub() {
                                   type="button"
                                   onClick={() => { setEditingExercise(ex); setExerciseModalOpen(true); }}
                                   className="btn btn-sm rounded-circle p-0 d-inline-flex align-items-center justify-content-center"
-                                  style={{ width: '32px', height: '32px', background: '#f5f3ff', color: '#261c6a', border: '1px solid #ddd6fe' }}
+                                  style={{ width: '32px', height: '32px', background: '#E5F0FF', color: '#0284C7', border: '1px solid #BAE6FD' }}
                                   title="تعديل بيانات ورابط التمرين"
                                 >
                                   <i className="ti ti-edit fs-6"></i>
@@ -950,7 +950,7 @@ export default function MasterSettingsHub() {
                     </small>
                   </div>
 
-                  <span className="badge rounded-pill fw-semibold px-3 py-2" style={{ background: '#f5f3ff', color: '#261c6a', border: '1px solid #ddd6fe', fontSize: '0.8rem' }}>
+                  <span className="badge rounded-pill fw-semibold px-3 py-2" style={{ background: '#E5F0FF', color: '#0284C7', border: '1px solid #BAE6FD', fontSize: '0.8rem' }}>
                     {packages.length} باقات مسجلة
                   </span>
                 </div>
@@ -970,7 +970,7 @@ export default function MasterSettingsHub() {
                             className="card h-100 shadow-sm border position-relative d-flex flex-column justify-content-between transition-all"
                             style={{ 
                               borderRadius: '18px',
-                              borderColor: pkg.is_featured ? '#261c6a' : '#e2e8f0',
+                              borderColor: pkg.is_featured ? '#0284C7' : '#e2e8f0',
                               borderWidth: pkg.is_featured ? '2px' : '1px',
                               background: pkg.active ? '#ffffff' : '#f8fafc',
                               opacity: pkg.active ? 1 : 0.75,
@@ -986,8 +986,8 @@ export default function MasterSettingsHub() {
                                   style={{ 
                                     width: '36px', 
                                     height: '36px', 
-                                    background: pkg.is_featured ? '#f5f3ff' : '#f8fafc', 
-                                    color: pkg.is_featured ? '#261c6a' : '#64748b',
+                                    background: pkg.is_featured ? '#E5F0FF' : '#f8fafc', 
+                                    color: pkg.is_featured ? '#0284C7' : '#64748b',
                                     border: '1px solid #e2e8f0'
                                   }}
                                 >
@@ -1020,11 +1020,11 @@ export default function MasterSettingsHub() {
                               </small>
 
                               {/* Price Box */}
-                              <div className="p-3 rounded-3 mb-3" style={{ background: '#fbfaff', border: '1px solid #ede9fe' }}>
+                              <div className="p-3 rounded-3 mb-3" style={{ background: '#F0F9FF', border: '1px solid #F0F9FF' }}>
                                 <div className="d-flex align-items-baseline justify-content-between mb-1">
                                   <span className="text-muted small" style={{ fontSize: '0.76rem' }}>سعر الباقة:</span>
                                   <div className="d-flex align-items-baseline gap-1">
-                                    <h4 className="fw-black mb-0 font-monospace" style={{ color: '#261c6a', letterSpacing: '-0.5px' }}>
+                                    <h4 className="fw-black mb-0 font-monospace" style={{ color: '#0284C7', letterSpacing: '-0.5px' }}>
                                       {pkg.price_egp?.toLocaleString()}
                                     </h4>
                                     <span className="small text-muted" style={{ fontSize: '0.72rem' }}>ج.م</span>
@@ -1076,7 +1076,7 @@ export default function MasterSettingsHub() {
                                   type="button" 
                                   onClick={() => { setEditingPackage(pkg); setPackageModalOpen(true); }}
                                   className="btn btn-sm btn-light rounded-circle p-0 d-flex align-items-center justify-content-center border"
-                                  style={{ width: '32px', height: '32px', color: '#261c6a' }}
+                                  style={{ width: '32px', height: '32px', color: '#0284C7' }}
                                   title="تعديل الباقة والأسعار"
                                 >
                                   <i className="ti ti-edit fs-6"></i>
@@ -1147,7 +1147,7 @@ export default function MasterSettingsHub() {
                               <small className="text-muted" style={{ fontSize: '0.72rem' }}>وحدة القياس: {f.unit}</small>
                             </td>
                             <td className="text-center">
-                              <span className="badge rounded-pill" style={{ background: '#f5f3ff', color: '#261c6a', border: '1px solid #ddd6fe', fontSize: '0.74rem' }}>
+                              <span className="badge rounded-pill" style={{ background: '#E5F0FF', color: '#0284C7', border: '1px solid #BAE6FD', fontSize: '0.74rem' }}>
                                 {f.category_ar}
                               </span>
                             </td>
@@ -1217,7 +1217,7 @@ export default function MasterSettingsHub() {
                       style={{ 
                         height: '42px', 
                         fontSize: '0.86rem', 
-                        background: 'linear-gradient(135deg, #372896 0%, #261c6a 100%)', 
+                        background: 'linear-gradient(135deg, #58B4E5 0%, #0284C7 100%)', 
                         border: 'none', 
                         boxShadow: '0 4px 14px rgba(38, 28, 106, 0.28)' 
                       }}

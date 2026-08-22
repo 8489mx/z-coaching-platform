@@ -94,14 +94,15 @@ export const generateProgramPreview = async (req, res) => {
       assessmentDate: (meta && meta.assessmentDate) || new Date().toISOString().split("T")[0]
     });
 
-    const intakeDecision = evaluateIntake(intakePayload, evaluationContext);
+    const canonicalIntake = adaptIntakePayloadToCanonicalEngine(intakePayload);
+    const intakeDecision = evaluateIntake(canonicalIntake, evaluationContext);
     if (intakeDecision.plan_status === "BLOCK") {
       return res.status(400).json({ error: "Intake rejected", reasons: intakeDecision.decision_reasons });
     }
 
     const catalog = await loadFoodCatalog();
     const masterProgram = buildMasterEngineV2({
-      intake: intakePayload,
+      intake: canonicalIntake,
       evaluationContext,
       nutritionFoodCatalog: catalog,
       options: options || {}

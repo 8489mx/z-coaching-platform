@@ -76,7 +76,47 @@ export function buildAdaptedPlan(inputs) {
 
   const status = checkinAnalysis.analysis_status;
 
-  if (status === CheckinAnalysisStatus.INJURY_FLAGGED) {
+
+  const consecutiveHighComplianceWeeks = Number(options.consecutive_high_compliance_weeks || options.consecutiveHighComplianceWeeks || 0);
+  const isDietBreakEligible = consecutiveHighComplianceWeeks >= 6 && (status === CheckinAnalysisStatus.ON_TRACK || status === CheckinAnalysisStatus.HIGH_FATIGUE_WARNING || status === CheckinAnalysisStatus.PLATEAU_DETECTED);
+
+  
+  const isReverseDieting = options.diet_framework === "REVERSE_DIETING" || options.dietFramework === "REVERSE_DIETING";
+
+  if (isDietBreakEligible) {
+    adaptationAction = AdaptationAction.SCHEDULE_DIET_BREAK;
+    const maintenanceCalories = Math.round(baseEnergy + 350);
+    const maintenanceCarbs = Math.round(baseCarbs + 75);
+    adaptedCalories = maintenanceCalories;
+    adaptedCarbs = maintenanceCarbs;
+    reasons.push({
+      code: AdaptationReasonCode.DIET_BREAK_TRIGGERED_AFTER_COMPLIANCE,
+      message_ar: "استراحة دايت مبرمجة (Diet Break)! بعد 6 أسابيع متصلة من الالتزام العالي (≥85%)، تم رفع السعرات إلى حد الصيانة (+350 سعرة من الكاربوهيدرات النظيفة) لمدة أسبوع لإعادة تنشيط هرمونات الحرق (Leptin و T3) وإراحة الجهاز العصبي قبل استئناف العجز.",
+      message_en: "Adherence-gated Diet Break activated! Following 6 consecutive weeks of high compliance (≥85%), calories increased to maintenance (+350 kcal) for one week to restore leptin, thyroid output, and metabolic rate.",
+    });
+  } else if (isReverseDieting) {
+    adaptationAction = AdaptationAction.INCREASE_CALORIES_REVERSE_DIETING || "INCREASE_CALORIES_REVERSE_DIETING";
+    const weightChange = typeof checkinAnalysis.weight_change_kg === "number" ? checkinAnalysis.weight_change_kg : 0;
+    if (weightChange > 0.5) {
+      // Weight jumped > 0.5kg -> freeze calories for 1 week to allow metabolic adaptation
+      reasons.push({
+        code: AdaptationReasonCode.REVERSE_DIET_STABILIZATION_MAINTAINED || "REVERSE_DIET_STABILIZATION_MAINTAINED",
+        message_ar: "محرك الدايت العكسي (Reverse Dieting): زاد الوزن بمقدار >0.5 كجم هذا الأسبوع، فتم تثبيت السعرات الحالية لأسبوع إضافي للسماح لمعدل الأيض بالاستقرار التام قبل استئناف رفع السعرات.",
+        message_en: "Reverse Dieting Engine: Weight increased >0.5kg this week. Calories frozen for one week to stabilize metabolic adaptation before resuming surplus.",
+      });
+    } else {
+      // Weight stable or minor increase <= 0.3kg -> add +75 kcal (+18g carbs)
+      adaptedCalories += 75;
+      adaptedCarbs += 18;
+      reasons.push({
+        code: AdaptationReasonCode.REVERSE_DIET_SURPLUS_APPLIED || "REVERSE_DIET_SURPLUS_APPLIED",
+        message_ar: "محرك الدايت العكسي (Reverse Dieting): استجابة فسيولوجية ممتازة وثبات في الوزن (تغير ≤ 0.3 كجم). تم رفع السعرات بمقدار +75 سعرة حرارية (+18 جم كاربوهيدرات معقدة) لإعادة تنشيط سرعة الحرق تدريجياً دون زيادة دهون.",
+        message_en: "Reverse Dieting Engine: Optimal metabolic response (weight delta ≤ 0.3kg). Added +75 kcal (+18g carbs) to progressively restore metabolic rate without fat gain.",
+      });
+    }
+  } else if (status === CheckinAnalysisStatus.INJURY_FLAGGED) {
+
+
     adaptationAction = AdaptationAction.SUBSTITUTE_INJURED_EXERCISE;
     requiresCoachApproval = true;
     reasons.push({

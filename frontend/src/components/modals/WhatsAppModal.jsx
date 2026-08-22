@@ -31,11 +31,20 @@ export default function WhatsAppModal({ client, onClose }) {
   const baseUrl = window.location.origin;
 
   const templates = {
-    intake: `أهلاً بك يا ${clientName} معنا في Z Coaching! 
-يرجى ملء استمارة تسجيل البيانات الصحية والتدريبية من خلال الرابط التالي للبدء في تصميم خطتك المخصصة:
+    intake: `مرحباً ${clientName} يا بطل!
+تم تأكيد اشتراكك وتفعيل ملفك في المنظومة التدريبية بنجاح!
+
+بيانات دخول استمارتك الخاصة:
+🔑 *كود المشترك:* ${clientCode}
+📱 *رقم الهاتف المسجل:* ${clientPhone}
+
+🔗 *رابط استمارتك الصحية والرياضية المباشر:*
 ${baseUrl}/intake/form?code=${clientCode}&phone=${clientPhone}
-كود المشترك الخاص بك: ${clientCode}
-رقم الهاتف المسجل: ${clientPhone}`,
+
+🔗 *رابط البوابة الموحد:*
+${baseUrl}/intake
+
+(افتح الرابط المباشر واملأ بياناتك وصورك بدقة لنبدأ فوراً في تجهيز خطتك المتكاملة!)`,
 
     plan_ready: `مرحباً يا ${clientName}! 
 تم إعداد خطتك التدريبية والغذائية المخصصة بنجاح بواسطة محرك Z Coaching الذكي وتم اعتمادها.
@@ -128,8 +137,8 @@ ${baseUrl}/user-dashboard?user_id=${clientCode}`
                   onClick={() => applyTemplate(t.id)}
                   className={`btn btn-sm rounded-pill px-3 py-1 fw-semibold transition-all ${template === t.id ? 'text-white shadow-sm' : 'bg-white text-dark border'}`}
                   style={{
-                    background: template === t.id ? '#261c6a' : '#ffffff',
-                    borderColor: template === t.id ? '#261c6a' : '#e2e8f0',
+                    background: template === t.id ? '#0284C7' : '#ffffff',
+                    borderColor: template === t.id ? '#0284C7' : '#e2e8f0',
                     fontSize: '0.8rem',
                     height: '32px'
                   }}

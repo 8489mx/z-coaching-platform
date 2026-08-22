@@ -36,10 +36,11 @@ export default function ExerciseLibrary() {
   const muscleCategories = [
     { id: 'ALL', label: 'جميع العضلات' },
     { id: 'CHEST', label: 'عضلات الصدر' },
-    { id: 'BACK', label: 'عضلات الظهر' },
+    { id: 'BACK', label: 'الظهر والترابيس' },
     { id: 'LEGS', label: 'الأرجل والأرداف' },
+    { id: 'CALVES', label: 'السمانة وقصبة الساق' },
     { id: 'SHOULDERS', label: 'الأكتاف' },
-    { id: 'ARMS', label: 'الذراعين (باي وتراي)' },
+    { id: 'ARMS', label: 'الذراعين والساعد' },
     { id: 'CORE', label: 'البطن والكور' },
   ];
 
@@ -55,7 +56,7 @@ export default function ExerciseLibrary() {
                 <h4 className="fw-bold text-dark mb-0" style={{ letterSpacing: '-0.3px', fontSize: '1.25rem' }}>
                   مكتبة التمارين والتكنيك الحركي (Exercise Library)
                 </h4>
-                <span className="badge rounded-pill fw-bold" style={{ background: '#f5f3ff', color: '#261c6a', border: '1px solid #ddd6fe', fontSize: '0.7rem' }}>
+                <span className="badge rounded-pill fw-bold" style={{ background: '#E5F0FF', color: '#0284C7', border: '1px solid #BAE6FD', fontSize: '0.7rem' }}>
                   Z COACHING V2.0
                 </span>
               </div>
@@ -63,7 +64,7 @@ export default function ExerciseLibrary() {
                 دليل التمارين المعتمد مع مقاطع الفيديو التوضيحية وشرح التكنيك والأخطاء الشائعة
               </p>
             </div>
-            <span className="badge rounded-pill px-3 py-2 fw-semibold" style={{ background: '#f5f3ff', color: '#261c6a', border: '1px solid #ddd6fe', fontSize: '0.78rem' }}>
+            <span className="badge rounded-pill px-3 py-2 fw-semibold" style={{ background: '#E5F0FF', color: '#0284C7', border: '1px solid #BAE6FD', fontSize: '0.78rem' }}>
               إجمالي التمارين: {exercises.length} تمرين
             </span>
           </div>
@@ -79,8 +80,8 @@ export default function ExerciseLibrary() {
                   onClick={() => setMuscleFilter(cat.id)}
                   className={`btn btn-sm rounded-pill px-3 fw-bold transition-all ${muscleFilter === cat.id ? 'text-white shadow-xs' : 'bg-white text-dark border'}`}
                   style={{
-                    background: muscleFilter === cat.id ? '#261c6a' : '#ffffff',
-                    borderColor: muscleFilter === cat.id ? '#261c6a' : '#e2e8f0',
+                    background: muscleFilter === cat.id ? '#0284C7' : '#ffffff',
+                    borderColor: muscleFilter === cat.id ? '#0284C7' : '#e2e8f0',
                     fontSize: '0.8rem',
                     height: '34px'
                   }}
@@ -130,7 +131,7 @@ export default function ExerciseLibrary() {
                       <div>
                         {/* Card Top Badges */}
                         <div className="d-flex justify-content-between align-items-center mb-2">
-                          <span className="badge rounded-pill fw-semibold px-2 py-1" style={{ background: '#f5f3ff', color: '#261c6a', border: '1px solid #ddd6fe', fontSize: '0.72rem' }}>
+                          <span className="badge rounded-pill fw-semibold px-2 py-1" style={{ background: '#E5F0FF', color: '#0284C7', border: '1px solid #BAE6FD', fontSize: '0.72rem' }}>
                             {ex.muscle_ar}
                           </span>
                           <span className="badge bg-light text-secondary border px-2 py-1 rounded-pill" style={{ fontSize: '0.7rem' }}>
@@ -145,8 +146,8 @@ export default function ExerciseLibrary() {
                         </div>
 
                         {/* Coaching Cues Box (Quiet Luxury) */}
-                        <div className="p-2 px-3 mb-2 rounded-3" style={{ backgroundColor: '#fbfaff', border: '1px solid #ede9fe', borderRight: '3px solid #261c6a' }}>
-                          <div className="fw-bold small mb-1" style={{ color: '#261c6a', fontSize: '0.76rem' }}>
+                        <div className="p-2 px-3 mb-2 rounded-3" style={{ backgroundColor: '#F0F9FF', border: '1px solid #F0F9FF', borderRight: '3px solid #0284C7' }}>
+                          <div className="fw-bold small mb-1" style={{ color: '#0284C7', fontSize: '0.76rem' }}>
                             <i className="ti ti-check me-1"></i> التكنيك السليم للأداء:
                           </div>
                           <p className="mb-0 text-dark" style={{ lineHeight: '1.5', fontSize: '0.78rem' }}>
@@ -170,7 +171,7 @@ export default function ExerciseLibrary() {
                         <button
                           type="button"
                           className="btn btn-sm rounded-pill px-3 fw-semibold shadow-xs d-flex align-items-center gap-1"
-                          style={{ fontSize: '0.76rem', background: '#f5f3ff', color: '#261c6a', border: '1px solid #ddd6fe', height: '30px' }}
+                          style={{ fontSize: '0.76rem', background: '#E5F0FF', color: '#0284C7', border: '1px solid #BAE6FD', height: '30px' }}
                           onClick={() => setActiveVideo(ex)}
                         >
                           <i className="ti ti-player-play-filled" style={{ fontSize: '0.75rem' }}></i>

@@ -1,6 +1,9 @@
 /**
  * Dynamic API Base URL configuration.
- * Uses window.location.hostname to automatically adapt whether the app is accessed
- * from localhost (127.0.0.1) or from another device on the local network (e.g. 192.168.1.92).
+ * Adapts automatically between local development (Vite dev server) and production deployment on Hostinger.
  */
-export const API_BASE = `http://${window.location.hostname}:3000`;
+const isDev = typeof window !== 'undefined' && (window.location.port === '5173' || window.location.port === '5174' || window.location.port === '3001');
+
+export const API_BASE = import.meta.env.VITE_API_URL || (
+  isDev ? `http://${window.location.hostname}:3000` : ''
+);

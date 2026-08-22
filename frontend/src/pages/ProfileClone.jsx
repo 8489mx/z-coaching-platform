@@ -88,8 +88,8 @@ export default function ProfileClone() {
               onClick={() => setActiveTab('branding')}
               className={`btn btn-sm rounded-pill px-4 fw-bold transition-all ${activeTab === 'branding' ? 'text-white shadow-sm' : 'bg-white text-dark border'}`}
               style={{
-                background: activeTab === 'branding' ? '#261c6a' : '#ffffff',
-                borderColor: activeTab === 'branding' ? '#261c6a' : '#e2e8f0',
+                background: activeTab === 'branding' ? '#0284C7' : '#ffffff',
+                borderColor: activeTab === 'branding' ? '#0284C7' : '#e2e8f0',
                 fontSize: '0.84rem',
                 height: '36px'
               }}
@@ -101,8 +101,8 @@ export default function ProfileClone() {
               onClick={() => setActiveTab('security')}
               className={`btn btn-sm rounded-pill px-4 fw-bold transition-all ${activeTab === 'security' ? 'text-white shadow-sm' : 'bg-white text-dark border'}`}
               style={{
-                background: activeTab === 'security' ? '#261c6a' : '#ffffff',
-                borderColor: activeTab === 'security' ? '#261c6a' : '#e2e8f0',
+                background: activeTab === 'security' ? '#0284C7' : '#ffffff',
+                borderColor: activeTab === 'security' ? '#0284C7' : '#e2e8f0',
                 fontSize: '0.84rem',
                 height: '36px'
               }}
@@ -114,8 +114,8 @@ export default function ProfileClone() {
               onClick={() => setActiveTab('whatsapp')}
               className={`btn btn-sm rounded-pill px-4 fw-bold transition-all ${activeTab === 'whatsapp' ? 'text-white shadow-sm' : 'bg-white text-dark border'}`}
               style={{
-                background: activeTab === 'whatsapp' ? '#261c6a' : '#ffffff',
-                borderColor: activeTab === 'whatsapp' ? '#261c6a' : '#e2e8f0',
+                background: activeTab === 'whatsapp' ? '#0284C7' : '#ffffff',
+                borderColor: activeTab === 'whatsapp' ? '#0284C7' : '#e2e8f0',
                 fontSize: '0.84rem',
                 height: '36px'
               }}
@@ -131,7 +131,7 @@ export default function ProfileClone() {
                 <form onSubmit={handleSaveSettings}>
                   
                   {/* Gym Logo Upload Preview */}
-                  <div className="p-4 rounded-4 border mb-4 d-flex align-items-center gap-4 flex-wrap" style={{ background: '#fbfaff', borderColor: '#ede9fe' }}>
+                  <div className="p-4 rounded-4 border mb-4 d-flex align-items-center gap-4 flex-wrap" style={{ background: '#F0F9FF', borderColor: '#F0F9FF' }}>
                     <img 
                       src={settings.gym_logo_url || '/admin-dashboard_data/logo/z_dumbbell_flat.jpg'} 
                       alt="Gym Logo" 
@@ -148,7 +148,7 @@ export default function ProfileClone() {
                         style={{ display: 'none' }}
                         onChange={handleLogoUpload}
                       />
-                      <label htmlFor="logoUploadInput" className="btn btn-sm rounded-pill px-3 fw-semibold shadow-xs" style={{ fontSize: '0.78rem', background: '#f5f3ff', color: '#261c6a', border: '1px solid #ddd6fe' }}>
+                      <label htmlFor="logoUploadInput" className="btn btn-sm rounded-pill px-3 fw-semibold shadow-xs" style={{ fontSize: '0.78rem', background: '#E5F0FF', color: '#0284C7', border: '1px solid #BAE6FD' }}>
                         <i className="ti ti-upload me-1"></i> تغيير اللوجو
                       </label>
                     </div>
@@ -209,7 +209,7 @@ export default function ProfileClone() {
                   <button 
                     type="submit" 
                     className="btn btn-primary rounded-pill px-5 fw-bold shadow-sm"
-                    style={{ height: '40px', background: '#261c6a', border: 'none', boxShadow: '0 4px 14px rgba(38, 28, 106, 0.28)' }}
+                    style={{ height: '40px', background: '#0284C7', border: 'none', boxShadow: '0 4px 14px rgba(38, 28, 106, 0.28)' }}
                   >
                     <i className="ti ti-device-floppy me-1"></i> حفظ وتطبيق الهوية
                   </button>
@@ -259,7 +259,7 @@ export default function ProfileClone() {
                   <button 
                     type="submit" 
                     className="btn btn-primary rounded-pill px-5 fw-bold shadow-sm"
-                    style={{ height: '40px', background: '#261c6a', border: 'none' }}
+                    style={{ height: '40px', background: '#0284C7', border: 'none' }}
                   >
                     <i className="ti ti-lock me-1"></i> تحديث كلمة المرور
                   </button>
@@ -287,7 +287,7 @@ export default function ProfileClone() {
                   <button 
                     type="submit" 
                     className="btn btn-primary rounded-pill px-5 fw-bold shadow-sm"
-                    style={{ height: '40px', background: '#261c6a', border: 'none' }}
+                    style={{ height: '40px', background: '#0284C7', border: 'none' }}
                   >
                     <i className="ti ti-device-floppy me-1"></i> حفظ قوالب الواتساب
                   </button>

@@ -37,6 +37,24 @@ export default function Step2Body({
         </div>
         <div className="form-group">
           <label className="form-label">
+            محيط الرقبة (سم) <span className="text-muted fw-normal">(اختياري لحساب نسبة الدهون)</span>
+          </label>
+          <input 
+            type="number" 
+            step="0.5"
+            className="form-control" 
+            placeholder="مثال: 39"
+            value={formData.body?.neckCm || ''} 
+            onChange={e => updateField('body', 'neckCm', Number(e.target.value))} 
+            style={{ fontWeight: '600' }}
+          />
+          <small className="text-muted" style={{ fontSize: '0.74rem' }}>
+            * يُقاس حول منتصف الرقبة (أسفل تفاحة آدم للرجال)
+          </small>
+        </div>
+
+        <div className="form-group">
+          <label className="form-label">
             محيط الخصر عند السرة (سم) <span className="text-muted fw-normal">(اختياري)</span>
           </label>
           <input 
@@ -75,13 +93,33 @@ export default function Step2Body({
         )}
 
         <div className="form-group">
+          <label className="form-label">
+            نسبة الدهون % <span className="text-muted fw-normal">(اختياري إذا قمت بفحص InBody حديث)</span>
+          </label>
+          <input 
+            type="number" 
+            step="0.5"
+            min="4"
+            max="60"
+            className="form-control" 
+            placeholder="مثال: 18.5"
+            value={formData.body?.bodyFat || ''} 
+            onChange={e => updateField('body', 'bodyFat', Number(e.target.value))} 
+            style={{ fontWeight: '600' }}
+          />
+          <small className="text-muted" style={{ fontSize: '0.74rem' }}>
+            * إذا لم تكن متوفرة، سيحسبها النظام تلقائياً من محيط الرقبة والخصر
+          </small>
+        </div>
+
+        <div className="form-group">
           <label className="form-label">دقة القياسات المدخلة</label>
           <div className="choices-grid" style={{ gridTemplateColumns: '1fr 1fr' }}>
             <div 
               className={`choice-pill ${formData.body?.measurementQuality === 'ACTUAL_MEASURED' || formData.body?.measurementQuality === 'HIGH' ? 'selected' : ''}`} 
               onClick={() => updateField('body', 'measurementQuality', 'ACTUAL_MEASURED')}
             >
-              <div className="choice-title">مقاسة فعلياً بميزان وشريط قياس</div>
+              <div className="choice-title">مقاسة فعلياً بميزان ومازورة</div>
             </div>
             <div 
               className={`choice-pill ${formData.body?.measurementQuality === 'APPROXIMATE' || formData.body?.measurementQuality === 'LOW' ? 'selected' : ''}`} 
@@ -95,27 +133,63 @@ export default function Step2Body({
 
       <div className="section-divider"></div>
 
-      {/* 2. Daily Activity Outside Gym (NEAT Multiplier) */}
-      <h3 className="section-title">مستوى النشاط والحركة اليومية خارج الجيم</h3>
-      <div className="form-group">
-        <label className="form-label">طبيعة حركتك في العمل والدراسة واليوم المعتاد:</label>
-        <div className="choices-grid" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))' }}>
+      {/* 2. Unified Smart NEAT Daily Activity */}
+      <h3 className="section-title">النشاط الحركي اليومي ومتوسط الخطوات (Smart NEAT)</h3>
+      <div className="form-group mb-3">
+        <label className="form-label">طبيعة حركتك ونشاطك اليومي المعتاد خارج أوقات التمرين:</label>
+        <div className="choices-grid" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))' }}>
           {[
-            { v: 'SEDENTARY', l: 'خامل (جلوس معظم اليوم أمام الشاشات أو مكتبياً)' }, 
-            { v: 'LIGHT', l: 'نشاط خفيف (حركة متفرقة وأعمال خفيفة)' }, 
-            { v: 'MODERATE', l: 'نشاط متوسط (مشي وحركة وتواجد على القدمين جزء من اليوم)' }, 
-            { v: 'HIGH', l: 'نشاط عالي (عمل بدني شاق أو وقوف مستمر طوال اليوم)' }
+            { 
+              v: 'SEDENTARY', 
+              t: 'خامل / قليل الحركة', 
+              d: 'عمل مكتبي، قيادة سيارة، جلوس معظم اليوم أمام الشاشات (~4,000 - 5,000 خطوة)' 
+            }, 
+            { 
+              v: 'LIGHT', 
+              t: 'نشاط خفيف', 
+              d: 'حركة متقطعة في المنزل أو العمل، وقوف لبعض الوقت (~6,000 - 7,500 خطوة)' 
+            }, 
+            { 
+              v: 'MODERATE', 
+              t: 'نشاط متوسط / حركي', 
+              d: 'مشي متكرر، طبيعة عمل تتطلب حركة مستمرة ووقوفاً (~8,000 - 10,000 خطوة)' 
+            }, 
+            { 
+              v: 'HIGH', 
+              t: 'نشاط عالي / شاق', 
+              d: 'عمل ميداني أو بدني شاق، مجهود متواصل طوال اليوم (~12,000+ خطوة)' 
+            }
           ].map(l => (
             <div 
               key={l.v} 
-              className={`choice-pill ${formData.lifestyle?.dailyActivity === l.v ? 'selected' : ''}`} 
+              className={`choice-pill text-start p-3 ${formData.lifestyle?.dailyActivity === l.v ? 'selected' : ''}`} 
               onClick={() => updateField('lifestyle', 'dailyActivity', l.v)}
+              style={{ height: 'auto', minHeight: '80px', display: 'flex', flexDirection: 'column', alignItems: 'flex-start', justifyContent: 'center' }}
             >
-              <div className="choice-title">{l.l}</div>
+              <div className="choice-title fw-bold mb-1" style={{ fontSize: '0.88rem' }}>{l.t}</div>
+              <small className="text-muted" style={{ fontSize: '0.74rem', lineHeight: '1.4' }}>{l.d}</small>
             </div>
           ))}
         </div>
       </div>
+
+      <div className="form-group mb-4">
+        <label className="form-label">
+          إذا كنت ترتدي ساعة ذكية، يمكنك كتابة متوسط خطواتك اليومية الفعلي بدقة <span className="text-muted fw-normal">(اختياري تماماً)</span>:
+        </label>
+        <input 
+          type="number" 
+          step="500" 
+          min="1000" 
+          max="30000" 
+          className="form-control" 
+          placeholder="مثال: 8500 (اتركها فارغة للاعتماد على المستوى المختار أعلاه)"
+          value={formData.cardio?.averageDailySteps || ''} 
+          onChange={e => updateField('cardio', 'averageDailySteps', e.target.value ? Number(e.target.value) : '')} 
+          style={{ fontWeight: '600', maxWidth: '400px' }}
+        />
+      </div>
+
 
       <div className="section-divider"></div>
 
@@ -123,7 +197,7 @@ export default function Step2Body({
       <div className="my-3">
         <div className="d-flex align-items-center justify-content-between mb-2">
           <div className="d-flex align-items-center gap-2">
-            <span className="badge rounded-pill fw-bold" style={{ background: '#f5f3ff', color: '#1e144f', border: '1px solid #ddd6fe' }}>
+            <span className="badge rounded-pill fw-bold" style={{ background: '#E5F0FF', color: '#1e144f', border: '1px solid #BAE6FD' }}>
               اختياري
             </span>
             <span className="fw-bold text-dark" style={{ fontSize: '1rem' }}>

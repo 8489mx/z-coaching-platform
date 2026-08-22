@@ -63,9 +63,9 @@ export default function SmartSwapModal({
                 style={{ 
                   width: '42px', 
                   height: '42px', 
-                  background: 'linear-gradient(135deg, #f5f3ff 0%, #ede9fe 100%)', 
-                  color: '#261c6a', 
-                  border: '1px solid #ddd6fe',
+                  background: 'linear-gradient(135deg, #E5F0FF 0%, #F0F9FF 100%)', 
+                  color: '#0284C7', 
+                  border: '1px solid #BAE6FD',
                   boxShadow: '0 2px 8px rgba(38, 28, 106, 0.08)'
                 }}
               >
@@ -106,15 +106,15 @@ export default function SmartSwapModal({
               className="p-3 rounded-4 mb-3 position-relative overflow-hidden" 
               style={{ 
                 background: 'linear-gradient(135deg, #faf8ff 0%, #f5f0ff 100%)', 
-                border: '1px solid #ede9fe',
-                borderRight: '4px solid #261c6a'
+                border: '1px solid #F0F9FF',
+                borderRight: '4px solid #0284C7'
               }}
             >
               <div className="d-flex justify-content-between align-items-center mb-1">
-                <span className="badge rounded-pill px-2 py-1 fw-bold" style={{ background: '#ffffff', color: '#261c6a', fontSize: '0.68rem', border: '1px solid #ddd6fe' }}>
+                <span className="badge rounded-pill px-2 py-1 fw-bold" style={{ background: '#ffffff', color: '#0284C7', fontSize: '0.68rem', border: '1px solid #BAE6FD' }}>
                   الصنف الحالي في الوجبة
                 </span>
-                <span className="badge rounded-pill px-2 py-1 fw-bold" style={{ background: '#f5f3ff', color: '#4338ca', fontSize: '0.72rem' }}>
+                <span className="badge rounded-pill px-2 py-1 fw-bold" style={{ background: '#E5F0FF', color: '#0284C7', fontSize: '0.72rem' }}>
                   الكمية الحالية: {currentGrams} جرام
                 </span>
               </div>
@@ -187,7 +187,7 @@ export default function SmartSwapModal({
                           onClick={() => onExecuteSwap(candidate.food_code)}
                           className="btn btn-sm rounded-pill px-3 py-1 fw-bold text-white d-flex align-items-center gap-1 shadow-xs flex-shrink-0"
                           style={{ 
-                            background: 'linear-gradient(135deg, #261c6a 0%, #4338ca 100%)', 
+                            background: 'linear-gradient(135deg, #0284C7 0%, #0284C7 100%)', 
                             border: 'none', 
                             fontSize: '0.8rem',
                             height: '34px'

@@ -165,7 +165,7 @@ export default function IntakeSubmissions() {
                 <h4 className="fw-bold text-dark mb-0" style={{ letterSpacing: '-0.3px', fontSize: '1.25rem' }}>
                   مركز استمارات العملاء ومراجعة الخطط
                 </h4>
-                <span className="badge rounded-pill fw-bold" style={{ background: '#f5f3ff', color: '#261c6a', border: '1px solid #ddd6fe', fontSize: '0.7rem' }}>
+                <span className="badge rounded-pill fw-bold" style={{ background: '#E5F0FF', color: '#0284C7', border: '1px solid #BAE6FD', fontSize: '0.7rem' }}>
                   Z COACHING V2.0
                 </span>
               </div>
@@ -181,7 +181,7 @@ export default function IntakeSubmissions() {
                 style={{ 
                   height: '34px', 
                   fontSize: '0.8rem',
-                  background: '#261c6a',
+                  background: '#0284C7',
                   border: 'none',
                   boxShadow: '0 3px 10px rgba(38, 28, 106, 0.28)'
                 }}
@@ -259,10 +259,10 @@ export default function IntakeSubmissions() {
               <div className="card border-0 bg-white h-100 shadow-sm" style={{ borderRadius: '14px', border: '1px solid #e2e8f0' }}>
                 <div className="card-body p-3 d-flex flex-column justify-content-between">
                   <div className="d-flex justify-content-between align-items-center mb-2">
-                    <span className="badge rounded-pill fw-semibold px-2 py-1" style={{ background: '#f5f3ff', color: '#261c6a', fontSize: '0.68rem', border: '1px solid #ddd6fe' }}>
+                    <span className="badge rounded-pill fw-semibold px-2 py-1" style={{ background: '#E5F0FF', color: '#0284C7', fontSize: '0.68rem', border: '1px solid #BAE6FD' }}>
                       تخصيص الكابتن
                     </span>
-                    <div className="d-flex align-items-center justify-content-center" style={{ width: '30px', height: '30px', borderRadius: '8px', background: '#f5f3ff', color: '#261c6a' }}>
+                    <div className="d-flex align-items-center justify-content-center" style={{ width: '30px', height: '30px', borderRadius: '8px', background: '#E5F0FF', color: '#0284C7' }}>
                       <i className="ti ti-file-pencil fs-6"></i>
                     </div>
                   </div>
@@ -279,10 +279,10 @@ export default function IntakeSubmissions() {
               <div className="card border-0 bg-white h-100 shadow-sm" style={{ borderRadius: '14px', border: '1px solid #e2e8f0' }}>
                 <div className="card-body p-3 d-flex flex-column justify-content-between">
                   <div className="d-flex justify-content-between align-items-center mb-2">
-                    <span className="badge rounded-pill fw-semibold px-2 py-1" style={{ background: '#f5f3ff', color: '#261c6a', fontSize: '0.68rem', border: '1px solid #ddd6fe' }}>
+                    <span className="badge rounded-pill fw-semibold px-2 py-1" style={{ background: '#E5F0FF', color: '#0284C7', fontSize: '0.68rem', border: '1px solid #BAE6FD' }}>
                       منشورة ومفعلة
                     </span>
-                    <div className="d-flex align-items-center justify-content-center" style={{ width: '30px', height: '30px', borderRadius: '8px', background: '#f5f3ff', color: '#261c6a' }}>
+                    <div className="d-flex align-items-center justify-content-center" style={{ width: '30px', height: '30px', borderRadius: '8px', background: '#E5F0FF', color: '#0284C7' }}>
                       <i className="ti ti-circle-check fs-6"></i>
                     </div>
                   </div>
@@ -311,8 +311,8 @@ export default function IntakeSubmissions() {
                 onClick={() => setFilter(f.id)}
                 className={`btn btn-sm rounded-pill px-3 fw-bold transition-all ${filter === f.id ? 'text-white shadow-xs' : 'bg-white text-dark border'}`}
                 style={{
-                  background: filter === f.id ? '#261c6a' : '#ffffff',
-                  borderColor: filter === f.id ? '#261c6a' : '#e2e8f0',
+                  background: filter === f.id ? '#0284C7' : '#ffffff',
+                  borderColor: filter === f.id ? '#0284C7' : '#e2e8f0',
                   fontSize: '0.8rem',
                   height: '34px',
                   whiteSpace: 'nowrap'
@@ -371,7 +371,7 @@ export default function IntakeSubmissions() {
                             </td>
                             <td>
                               <div className="d-flex align-items-center gap-2">
-                                <div className="rounded-circle d-flex align-items-center justify-content-center fw-bold" style={{ width: '34px', height: '34px', fontSize: '0.82rem', background: '#f5f3ff', color: '#261c6a', border: '1px solid #ddd6fe' }}>
+                                <div className="rounded-circle d-flex align-items-center justify-content-center fw-bold" style={{ width: '34px', height: '34px', fontSize: '0.82rem', background: '#E5F0FF', color: '#0284C7', border: '1px solid #BAE6FD' }}>
                                   {(clientName || 'U')[0]}
                                 </div>
                                 <span className="fw-bold text-dark" style={{ fontSize: '0.88rem' }}>{clientName}</span>
@@ -422,7 +422,7 @@ export default function IntakeSubmissions() {
                                   تم تأكيد الدفع
                                 </span>
                               ) : sub.status === 'DRAFT_GENERATED' ? (
-                                <span className="badge rounded-pill fw-semibold px-2 py-1" style={{ background: '#f5f3ff', color: '#261c6a', border: '1px solid #ddd6fe', fontSize: '0.75rem' }}>
+                                <span className="badge rounded-pill fw-semibold px-2 py-1" style={{ background: '#E5F0FF', color: '#0284C7', border: '1px solid #BAE6FD', fontSize: '0.75rem' }}>
                                   مسودة جاهزة
                                 </span>
                               ) : (
@@ -455,7 +455,7 @@ export default function IntakeSubmissions() {
                                    style={{ 
                                      fontSize: '0.76rem', 
                                      color: selectedAnswers?.id === sub.id ? '#ffffff' : '#475569', 
-                                     background: selectedAnswers?.id === sub.id ? '#261c6a' : '#ffffff',
+                                     background: selectedAnswers?.id === sub.id ? '#0284C7' : '#ffffff',
                                      height: '30px' 
                                    }}
                                    onClick={() => handleToggleAnswers(sub)}
@@ -491,7 +491,7 @@ export default function IntakeSubmissions() {
                                      className="btn btn-sm rounded-pill px-3 py-1 fw-bold text-white shadow-xs d-flex align-items-center gap-1"
                                      disabled={isGenerating}
                                      onClick={() => handleGenerateDraft(sub)}
-                                     style={{ fontSize: '0.76rem', background: '#261c6a', border: 'none', height: '30px' }}
+                                     style={{ fontSize: '0.76rem', background: '#0284C7', border: 'none', height: '30px' }}
                                    >
                                      {isGenerating ? (
                                        <span className="spinner-border spinner-border-sm"></span>
@@ -503,7 +503,7 @@ export default function IntakeSubmissions() {
                                    <Link
                                      to={`/coach/editor?user_id=${user.client_code || user.id}`}
                                      className="btn btn-sm rounded-pill px-3 py-1 fw-semibold shadow-xs"
-                                     style={{ fontSize: '0.76rem', background: '#f5f3ff', color: '#261c6a', border: '1px solid #ddd6fe', height: '30px' }}
+                                     style={{ fontSize: '0.76rem', background: '#E5F0FF', color: '#0284C7', border: '1px solid #BAE6FD', height: '30px' }}
                                    >
                                      <i className="ti ti-edit me-1"></i> تعديل الخطة
                                    </Link>

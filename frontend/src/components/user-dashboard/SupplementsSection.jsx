@@ -76,18 +76,18 @@ export default function SupplementsSection({ supplements }) {
               >
                 <div className="d-flex justify-content-between align-items-start mb-2 gap-2">
                   <h6 className="fw-bold text-dark mb-0" style={{ fontSize: '0.88rem' }}>{sup.name_ar}</h6>
-                  <span className="badge rounded-pill fw-bold flex-shrink-0" style={{ background: 'linear-gradient(135deg, #f5f3ff, #ede9fe)', color: '#261c6a', border: '1px solid #ddd6fe', fontSize: '0.68rem' }}>
+                  <span className="badge rounded-pill fw-bold flex-shrink-0" style={{ background: 'linear-gradient(135deg, #E5F0FF, #F0F9FF)', color: '#0284C7', border: '1px solid #BAE6FD', fontSize: '0.68rem' }}>
                     {sup.dosage}
                   </span>
                 </div>
                 <div className="small text-muted mb-2" style={{ fontSize: '0.76rem' }}>
-                  <i className="ti ti-clock me-1" style={{ color: '#261c6a' }}></i> <strong className="text-dark">التوقيت:</strong> {sup.timing}
+                  <i className="ti ti-clock me-1" style={{ color: '#0284C7' }}></i> <strong className="text-dark">التوقيت:</strong> {sup.timing}
                 </div>
                 <div className="small text-muted mb-1" style={{ fontSize: '0.75rem', lineHeight: '1.5' }}>
                   <strong className="text-dark">الهدف:</strong> {sup.purpose}
                 </div>
                 {sup.instructions && (
-                  <div className="small text-muted border-top pt-2 mt-2" style={{ borderColor: '#ede9fe', fontSize: '0.72rem' }}>
+                  <div className="small text-muted border-top pt-2 mt-2" style={{ borderColor: '#F0F9FF', fontSize: '0.72rem' }}>
                     <i className="ti ti-info-circle text-primary me-1"></i> {sup.instructions}
                   </div>
                 )}

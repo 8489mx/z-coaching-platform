@@ -188,7 +188,7 @@ export default function IntakeAuditDetailModal({
       className="card border-0 shadow-sm mt-4 bg-white w-100" 
       style={{ 
         borderRadius: '24px', 
-        border: '1.5px solid #ede9fe', 
+        border: '1.5px solid #F0F9FF', 
         overflow: 'hidden',
         animation: 'z-fadeInUp 0.35s ease-out'
       }} 
@@ -199,7 +199,7 @@ export default function IntakeAuditDetailModal({
         <div className="d-flex align-items-center gap-3">
           <div 
             className="rounded-circle d-flex align-items-center justify-content-center flex-shrink-0" 
-            style={{ width: '44px', height: '44px', background: '#f5f3ff', color: '#261c6a', border: '1.5px solid #ddd6fe' }}
+            style={{ width: '44px', height: '44px', background: '#E5F0FF', color: '#0284C7', border: '1.5px solid #BAE6FD' }}
           >
             <i className="ti ti-clipboard-check fs-4"></i>
           </div>
@@ -208,7 +208,7 @@ export default function IntakeAuditDetailModal({
               <h5 className="modal-title fw-bold text-dark mb-0" style={{ fontSize: '1.15rem' }}>
                 مراجعة استمارة التقييم: {clientName}
               </h5>
-              <span className="badge fw-bold" style={{ background: '#261c6a', color: '#ffffff', borderRadius: '6px', fontSize: '0.72rem' }}>
+              <span className="badge fw-bold" style={{ background: '#0284C7', color: '#ffffff', borderRadius: '6px', fontSize: '0.72rem' }}>
                 كود #{clientCode}
               </span>
             </div>
@@ -310,7 +310,7 @@ export default function IntakeAuditDetailModal({
             <div className="row g-3 text-center align-items-center">
               <div className="col-6 col-md border-start">
                 <span className="text-muted small d-block mb-1" style={{ fontSize: '0.72rem' }}>الهدف الأساسي</span>
-                <strong className="text-dark d-block text-truncate" style={{ fontSize: '0.86rem', color: '#261c6a' }}>
+                <strong className="text-dark d-block text-truncate" style={{ fontSize: '0.86rem', color: '#0284C7' }}>
                   {GOALS_MAP[goals.primary] || goals.primary || 'حرق دهون'}
                 </strong>
               </div>
@@ -348,7 +348,7 @@ export default function IntakeAuditDetailModal({
         {/* Section 1: Photos Review */}
         <div className="card border-0 shadow-sm mb-4 bg-white" style={{ borderRadius: '16px', border: '1px solid #e2e8f0' }}>
           <div className="card-header bg-white border-bottom p-3 d-flex align-items-center gap-2">
-            <i className="ti ti-camera fs-5 text-primary" style={{ color: '#261c6a' }}></i>
+            <i className="ti ti-camera fs-5 text-primary" style={{ color: '#0284C7' }}></i>
             <h6 className="fw-bold mb-0 text-dark" style={{ fontSize: '0.92rem' }}>صور القوام المرفوعة (Front, Side, Back)</h6>
           </div>
           <div className="card-body p-3">
@@ -565,14 +565,14 @@ export default function IntakeAuditDetailModal({
 
             {/* 2. Focus Target Muscles */}
             {targetFocusMusclesList.length > 0 && (
-              <div className="p-3 mb-3 rounded-3" style={{ background: '#f5f3ff', border: '1.5px solid #ddd6fe' }}>
+              <div className="p-3 mb-3 rounded-3" style={{ background: '#E5F0FF', border: '1.5px solid #BAE6FD' }}>
                 <div className="d-flex align-items-center gap-2 mb-2">
-                  <i className="ti ti-target text-primary fs-5" style={{ color: '#261c6a' }}></i>
+                  <i className="ti ti-target text-primary fs-5" style={{ color: '#0284C7' }}></i>
                   <span className="fw-bold text-dark" style={{ fontSize: '0.88rem' }}>العضلات المستهدفة بالتركيز الإضافي:</span>
                 </div>
                 <div className="d-flex flex-wrap gap-2">
                   {targetFocusMusclesList.map((m, i) => (
-                    <span key={i} className="badge px-3 py-2 fw-bold shadow-sm" style={{ background: '#ffffff', color: '#261c6a', border: '1.5px solid #6d28d9', borderRadius: '8px', fontSize: '0.80rem' }}>
+                    <span key={i} className="badge px-3 py-2 fw-bold shadow-sm" style={{ background: '#ffffff', color: '#0284C7', border: '1.5px solid #58B4E5', borderRadius: '8px', fontSize: '0.80rem' }}>
                       {FOCUS_MUSCLES_LABELS[m] || m}
                     </span>
                   ))}
@@ -696,7 +696,7 @@ export default function IntakeAuditDetailModal({
             style={{ 
               height: '38px', 
               fontSize: '0.84rem',
-              background: 'linear-gradient(135deg, #261c6a 0%, #4c1d95 100%)',
+              background: 'linear-gradient(135deg, #0284C7 0%, #0369A1 100%)',
               border: 'none',
               boxShadow: '0 4px 12px rgba(38, 28, 106, 0.3)'
             }}

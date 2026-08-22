@@ -113,8 +113,12 @@ export default function NewClientQuickModal({ isOpen, onClose, onClientCreated }
     ? `${window.location.origin}/intake/form?code=${newClient.client_code}&phone=${newClient.phone_number}`
     : '';
 
+  const portalLink = `${window.location.origin}/intake`;
+
+  const clientNameDisplay = newClient?.full_name ? newClient.full_name : 'يا بطل';
+
   const whatsappMessage = newClient
-    ? `مرحباً بك في منظومة Z Coaching!\n\nيسعدنا بدء رحلتك التدريبية والغذائية معنا.\nيرجى الضغط على الرابط التالي لتعبئة استمارة التقييم الشاملة وسيقوم المحرك الذكي والكابتن بتصميم خطتك المخصصة فوراً:\n\n${intakeLink}\n\nكود اشتراكك: ${newClient.client_code}\nبالتوفيق!`
+    ? `مرحباً ${clientNameDisplay} يا بطل!\nتم تأكيد اشتراكك وتفعيل ملفك في المنظومة التدريبية بنجاح!\n\nبيانات دخول استمارتك الخاصة:\n🔑 *كود المشترك:* ${newClient.client_code}\n📱 *رقم الهاتف المسجل:* ${newClient.phone_number}\n\n🔗 *رابط استمارتك الصحية والرياضية المباشر:*\n${intakeLink}\n\n🔗 *رابط البوابة الموحد:*\n${portalLink}\n\n(افتح الرابط المباشر واملأ بياناتك وصورك بدقة لنبدأ فوراً في تجهيز خطتك المتكاملة!)`
     : '';
 
   const handleCopyMessage = async () => {
@@ -158,7 +162,7 @@ export default function NewClientQuickModal({ isOpen, onClose, onClientCreated }
           {/* Header */}
           <div className="modal-header border-bottom p-4 bg-white d-flex justify-content-between align-items-center" style={{ borderColor: '#f1f5f9' }}>
             <div className="d-flex align-items-center gap-3">
-              <div className="rounded-circle d-flex align-items-center justify-content-center flex-shrink-0" style={{ width: '40px', height: '40px', background: '#f5f3ff', color: '#261c6a', border: '1.5px solid #ddd6fe' }}>
+              <div className="rounded-circle d-flex align-items-center justify-content-center flex-shrink-0" style={{ width: '40px', height: '40px', background: '#E5F0FF', color: '#0284C7', border: '1.5px solid #BAE6FD' }}>
                 <i className="ti ti-user-plus fs-5"></i>
               </div>
               <div>
@@ -241,7 +245,7 @@ export default function NewClientQuickModal({ isOpen, onClose, onClientCreated }
                       value={fullName}
                       onChange={(e) => setFullName(e.target.value)}
                     />
-                    <div className="position-absolute top-50 end-0 translate-middle-y pe-3 pointer-events-none" style={{ color: '#261c6a' }}>
+                    <div className="position-absolute top-50 end-0 translate-middle-y pe-3 pointer-events-none" style={{ color: '#0284C7' }}>
                       <i className="ti ti-user fs-5"></i>
                     </div>
                   </div>
@@ -271,15 +275,15 @@ export default function NewClientQuickModal({ isOpen, onClose, onClientCreated }
                             className="p-3 rounded-3 border text-center transition-all h-100 d-flex flex-column justify-content-between"
                             style={{ 
                               cursor: 'pointer',
-                              background: isSelected ? '#f5f3ff' : '#ffffff',
-                              borderColor: isSelected ? '#261c6a' : '#e2e8f0',
+                              background: isSelected ? '#E5F0FF' : '#ffffff',
+                              borderColor: isSelected ? '#0284C7' : '#e2e8f0',
                               borderWidth: isSelected ? '2px' : '1px',
                               boxShadow: isSelected ? '0 4px 12px rgba(38,28,106,0.12)' : 'none'
                             }}
                           >
                             <div>
                               <div className="d-flex align-items-center justify-content-center gap-1 mb-1">
-                                <i className={`ti ${pkg.id.includes('MAX') ? 'ti-flame' : 'ti-crown'} fs-5`} style={{ color: pkg.id.includes('MAX') ? '#d97706' : '#261c6a' }}></i>
+                                <i className={`ti ${pkg.id.includes('MAX') ? 'ti-flame' : 'ti-crown'} fs-5`} style={{ color: pkg.id.includes('MAX') ? '#d97706' : '#0284C7' }}></i>
                                 <strong className="d-block text-dark text-truncate" style={{ fontSize: '0.88rem' }}>{pkg.name_ar}</strong>
                               </div>
                               <span className="badge rounded-pill fw-bold text-muted d-block mb-1 text-truncate" style={{ fontSize: '0.66rem', background: '#f8fafc' }}>
@@ -311,7 +315,7 @@ export default function NewClientQuickModal({ isOpen, onClose, onClientCreated }
                     style={{ 
                       height: '36px', 
                       fontSize: '0.82rem', 
-                      background: 'linear-gradient(135deg, #261c6a 0%, #4338ca 100%)', 
+                      background: 'linear-gradient(135deg, #0284C7 0%, #0284C7 100%)', 
                       border: 'none', 
                       boxShadow: '0 2px 10px rgba(38, 28, 106, 0.22)' 
                     }}
@@ -334,10 +338,10 @@ export default function NewClientQuickModal({ isOpen, onClose, onClientCreated }
                 </div>
 
                 {/* Account Details Card */}
-                <div className="p-3 rounded-4 mb-4 border" style={{ background: '#fbfaff', borderColor: '#ede9fe' }}>
-                  <div className="d-flex justify-content-between align-items-center mb-2 pb-2 border-bottom" style={{ borderColor: '#ede9fe' }}>
+                <div className="p-3 rounded-4 mb-4 border" style={{ background: '#F0F9FF', borderColor: '#F0F9FF' }}>
+                  <div className="d-flex justify-content-between align-items-center mb-2 pb-2 border-bottom" style={{ borderColor: '#F0F9FF' }}>
                     <span className="text-muted small" style={{ fontSize: '0.78rem' }}>كود المشترك المعتمد:</span>
-                    <span className="badge rounded-pill fw-bold font-monospace px-3 py-1" style={{ background: '#f5f3ff', color: '#261c6a', border: '1px solid #ddd6fe', fontSize: '0.88rem' }}>
+                    <span className="badge rounded-pill fw-bold font-monospace px-3 py-1" style={{ background: '#E5F0FF', color: '#0284C7', border: '1px solid #BAE6FD', fontSize: '0.88rem' }}>
                       {newClient.client_code}
                     </span>
                   </div>
@@ -372,7 +376,7 @@ export default function NewClientQuickModal({ isOpen, onClose, onClientCreated }
                   <button 
                     type="button" 
                     className="btn btn-sm rounded-pill fw-bold mt-1"
-                    style={{ height: '36px', background: '#f5f3ff', color: '#261c6a', border: '1px solid #ddd6fe', fontSize: '0.8rem' }}
+                    style={{ height: '36px', background: '#E5F0FF', color: '#0284C7', border: '1px solid #BAE6FD', fontSize: '0.8rem' }}
                     onClick={() => {
                       handleClose();
                       navigate(`/intake/form?code=${newClient.client_code}&phone=${newClient.phone_number}`);

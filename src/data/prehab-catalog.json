@@ -1,0 +1,235 @@
+[
+  {
+    "id": "prehab_rounded_shoulders",
+    "issue_tag": "ROUNDED_SHOULDERS",
+    "name_ar": "روتين تصحيح انحناء الكتفين والأكتاف المتقدمة",
+    "target_session": [
+      "PUSH",
+      "UPPER",
+      "CHEST"
+    ],
+    "duration_minutes": 3,
+    "exercises": [
+      {
+        "id": "BANDED_PULL_APART",
+        "name_ar": "سحب شريط المقاومة للصدر (Banded Pull-Apart)",
+        "sets": 2,
+        "reps": "20-25",
+        "duration_seconds": 45,
+        "cue": "تثبيت لوحي الكتف للخلف والأسفل وسحب الشريط حتى يلامس الصدر مع عصر الظهر العلوي.",
+        "cue_ar": "تثبيت لوحي الكتف للخلف والأسفل وسحب الشريط حتى يلامس الصدر مع عصر الظهر العلوي.",
+        "thumbnail_url": "/assets/prehab/banded-pull-apart.webp",
+        "video_url": "https://video.zplatform.com/prehab/banded-pull-apart.mp4",
+        "target_area": "أعلى الظهر والأكتاف"
+      },
+      {
+        "id": "DOORWAY_PEC_STRETCH",
+        "name_ar": "إطالة الصدر في الزاوية (Doorway/Corner Pec Stretch)",
+        "sets": 2,
+        "hold_seconds": 30,
+        "duration_seconds": 60,
+        "cue": "إسناد الساعدين على زاويتي الجدار والميل بالجذع برفق للأمام دون تقوس أسفل الظهر.",
+        "cue_ar": "إسناد الساعدين على زاويتي الجدار والميل بالجذع برفق للأمام دون تقوس أسفل الظهر.",
+        "thumbnail_url": "/assets/prehab/corner-pec-stretch.webp",
+        "video_url": "https://video.zplatform.com/prehab/corner-pec-stretch.mp4",
+        "target_area": "عضلات الصدر"
+      },
+      {
+        "id": "FOAM_ROLLER_THORACIC",
+        "name_ar": "تمديد الفقرات الصدرية بالفوم رولر (Foam Roller Thoracic Ext.)",
+        "sets": 2,
+        "reps": "10",
+        "duration_seconds": 45,
+        "cue": "وضع الرولر أسفل أعلى الظهر ودعم الرأس باليدين والميل للخلف برفق مع الزفير.",
+        "cue_ar": "وضع الرولر أسفل أعلى الظهر ودعم الرأس باليدين والميل للخلف برفق مع الزفير.",
+        "thumbnail_url": "/assets/prehab/foam-roller-thoracic.webp",
+        "video_url": "https://video.zplatform.com/prehab/foam-roller-thoracic.mp4",
+        "target_area": "العمود الفقري الصدري"
+      }
+    ]
+  },
+  {
+    "id": "prehab_anterior_pelvic_tilt",
+    "issue_tag": "ANTERIOR_PELVIC_TILT",
+    "name_ar": "روتين تعديل ميل الحوض للأمام وتخفيف ضغط القطنية",
+    "target_session": [
+      "LEGS",
+      "LOWER",
+      "FULL_BODY"
+    ],
+    "duration_minutes": 4,
+    "exercises": [
+      {
+        "id": "HIP_FLEXOR_STRETCH",
+        "name_ar": "إطالة ثني الفخذ نصف راكع (Half-Kneeling Hip Flexor Stretch)",
+        "sets": 2,
+        "hold_seconds": 30,
+        "duration_seconds": 60,
+        "cue": "الارتكاز على ركبة واحدة وشد المؤخرة للداخل مع دفع الحوض للأمام بلطف.",
+        "cue_ar": "الارتكاز على ركبة واحدة وشد المؤخرة للداخل مع دفع الحوض للأمام بلطف.",
+        "thumbnail_url": "/assets/prehab/hip-flexor-stretch.webp",
+        "video_url": "https://video.zplatform.com/prehab/hip-flexor-stretch.mp4",
+        "target_area": "ثنيات الحوض"
+      },
+      {
+        "id": "GLUTE_BRIDGES_POSTERIOR_TILT",
+        "name_ar": "جسر الأرداف بتدوير الحوض (Glute Bridge w/ Posterior Tilt)",
+        "sets": 2,
+        "reps": "15",
+        "duration_seconds": 45,
+        "cue": "الضغط بالكعبين ورفع الحوض مع عصر الجلوتس وتسطيح أسفل الظهر تماماً في القمة.",
+        "cue_ar": "الضغط بالكعبين ورفع الحوض مع عصر الجلوتس وتسطيح أسفل الظهر تماماً في القمة.",
+        "thumbnail_url": "/assets/prehab/glute-bridge.webp",
+        "video_url": "https://video.zplatform.com/prehab/glute-bridge.mp4",
+        "target_area": "عضلات المؤخرة"
+      },
+      {
+        "id": "DEADBUG",
+        "name_ar": "تمرين الحشرة الميتة لتثبيت الكور (Deadbug)",
+        "sets": 2,
+        "reps": "10 per side",
+        "duration_seconds": 45,
+        "cue": "إلصاق أسفل الظهر بالأرض تماماً ومنع أي فراغ هوائي أثناء تحريك الأطراف المتقابلة.",
+        "cue_ar": "إلصاق أسفل الظهر بالأرض تماماً ومنع أي فراغ هوائي أثناء تحريك الأطراف المتقابلة.",
+        "thumbnail_url": "/assets/prehab/deadbug.webp",
+        "video_url": "https://video.zplatform.com/prehab/deadbug.mp4",
+        "target_area": "عضلات الكور وأسفل البطن"
+      }
+    ]
+  },
+  {
+    "id": "prehab_knee_and_ankle",
+    "issue_tag": "KNEE_DISCOMFORT",
+    "name_ar": "روتين حماية صابونة الركبة وزيادة مرونة الكاحل",
+    "target_session": [
+      "LEGS",
+      "LOWER",
+      "SQUAT_DAY"
+    ],
+    "duration_minutes": 3,
+    "exercises": [
+      {
+        "id": "WALL_TIBIALIS_RAISES",
+        "name_ar": "رفع قصبة الساق الجداري (Wall Tibialis Raise)",
+        "sets": 2,
+        "reps": "20",
+        "duration_seconds": 45,
+        "cue": "إسناد الظهر على جدار ورفع أمشاط القدمين لأعلى نقطة لتقوية عضلة القصبة وامتصاص الصدمات.",
+        "cue_ar": "إسناد الظهر على جدار ورفع أمشاط القدمين لأعلى نقطة لتقوية عضلة القصبة وامتصاص الصدمات.",
+        "thumbnail_url": "/assets/prehab/wall-tibialis.webp",
+        "video_url": "https://video.zplatform.com/prehab/wall-tibialis.mp4",
+        "target_area": "عضلة قصبة الساق"
+      },
+      {
+        "id": "KNEE_TO_WALL_DORSIFLEXION",
+        "name_ar": "دفع الركبة الجداري لمرونة الكاحل (Knee-to-Wall Dorsiflexion)",
+        "sets": 2,
+        "reps": "12 per leg",
+        "duration_seconds": 45,
+        "cue": "تثبيت الكعب بالكامل على الأرض ودفع الركبة للأمام لتجاوز أصابع القدم باتجاه الحائط.",
+        "cue_ar": "تثبيت الكعب بالكامل على الأرض ودفع الركبة للأمام لتجاوز أصابع القدم باتجاه الحائط.",
+        "thumbnail_url": "/assets/prehab/knee-to-wall.webp",
+        "video_url": "https://video.zplatform.com/prehab/knee-to-wall.mp4",
+        "target_area": "مفصل الكاحل"
+      },
+      {
+        "id": "BANDED_TKE",
+        "name_ar": "فرد الركبة بالاستك (Banded Terminal Knee Extension)",
+        "sets": 2,
+        "reps": "15 per leg",
+        "duration_seconds": 45,
+        "cue": "تثبيت الاستك خلف الركبة وفرد المفصل كاملاً لعزل رأس الـ VMO الداخلي.",
+        "cue_ar": "تثبيت الاستك خلف الركبة وفرد المفصل كاملاً لعزل رأس الـ VMO الداخلي.",
+        "thumbnail_url": "/assets/prehab/banded-tke.webp",
+        "video_url": "https://video.zplatform.com/prehab/banded-tke.mp4",
+        "target_area": "الرأس الداخلي للفخذ (VMO)"
+      }
+    ]
+  },
+  {
+    "id": "prehab_rotator_cuff",
+    "issue_tag": "SHOULDER_IMPINGEMENT",
+    "name_ar": "روتين تحرير أوتار الكتف الدوارة ومنع الاحتكاك",
+    "target_session": [
+      "PUSH",
+      "UPPER",
+      "SHOULDERS"
+    ],
+    "duration_minutes": 3,
+    "exercises": [
+      {
+        "id": "BANDED_EXTERNAL_ROTATIONS",
+        "name_ar": "تدوير الكتف الخارجي بالمطاط (Banded External Rotation)",
+        "sets": 2,
+        "reps": "15",
+        "duration_seconds": 45,
+        "cue": "تثبيت الكوع بجانب الخصر بزاوية 90 درجة وسحب المطاط للخارج ببطء وبوزن خفيف.",
+        "cue_ar": "تثبيت الكوع بجانب الخصر بزاوية 90 درجة وسحب المطاط للخارج ببطء وبوزن خفيف.",
+        "thumbnail_url": "/assets/prehab/shoulder-ext-rotation.webp",
+        "video_url": "https://video.zplatform.com/prehab/shoulder-ext-rotation.mp4",
+        "target_area": "أوتار الكتف الدوارة (Rotator Cuff)"
+      },
+      {
+        "id": "SLEEPER_STRETCH",
+        "name_ar": "استرتش النائم لمرونة الدوران الداخلي (Sleeper Stretch)",
+        "sets": 2,
+        "hold_seconds": 20,
+        "duration_seconds": 40,
+        "cue": "الاستلقاء على الجانب والضغط باليد المعاكسة برفق للأسفل دون رفع لوح الكتف عن الأرض.",
+        "cue_ar": "الاستلقاء على الجانب والضغط باليد المعاكسة برفق للأسفل دون رفع لوح الكتف عن الأرض.",
+        "thumbnail_url": "/assets/prehab/sleeper-stretch.webp",
+        "video_url": "https://video.zplatform.com/prehab/sleeper-stretch.mp4",
+        "target_area": "محفظة الكتف الخلفية"
+      },
+      {
+        "id": "WALL_SLIDES_FOREARMS",
+        "name_ar": "انزلاق الساعدين على الحائط (Wall Slides with Forearms)",
+        "sets": 2,
+        "reps": "10",
+        "duration_seconds": 45,
+        "cue": "رفع الساعدين ملامسين للحائط للأعلى مع إبعاد لوحي الكتف لتفعيل السراتوس.",
+        "cue_ar": "رفع الساعدين ملامسين للحائط للأعلى مع إبعاد لوحي الكتف لتفعيل السراتوس.",
+        "thumbnail_url": "/assets/prehab/wall-slides.webp",
+        "video_url": "https://video.zplatform.com/prehab/wall-slides.mp4",
+        "target_area": "عضلة السراتوس واللوح"
+      }
+    ]
+  },
+  {
+    "id": "prehab_wrist_and_forearms",
+    "issue_tag": "WRIST_STRAIN",
+    "name_ar": "روتين تخفيف إجهاد المعصم وتيبس الساعدين",
+    "target_session": [
+      "PUSH",
+      "UPPER",
+      "PULL"
+    ],
+    "duration_minutes": 2,
+    "exercises": [
+      {
+        "id": "FOREARM_BALL_RELEASE",
+        "name_ar": "تدليك الساعد بالكرة (Tennis Ball Forearm Release)",
+        "sets": 1,
+        "hold_seconds": 30,
+        "duration_seconds": 60,
+        "cue": "تمرير عضلات الساعد فوق كرة تنس على الدكة لتحرير العقد العضلية.",
+        "cue_ar": "تمرير عضلات الساعد فوق كرة تنس على الدكة لتحرير العقد العضلية.",
+        "thumbnail_url": "/assets/prehab/forearm-release.webp",
+        "video_url": "https://video.zplatform.com/prehab/forearm-release.mp4",
+        "target_area": "عضلات الساعد"
+      },
+      {
+        "id": "QUADRUPED_WRIST_ROCKERS",
+        "name_ar": "إطالة أوتار الرسغ على الأرض (Quadruped Wrist Rockers)",
+        "sets": 2,
+        "reps": "15",
+        "duration_seconds": 45,
+        "cue": "وضع الراحتين والأصابع للخلف على الأرض والميل للخلف برفق لإطالة أوتار الرسغ.",
+        "cue_ar": "وضع الراحتين والأصابع للخلف على الأرض والميل للخلف برفق لإطالة أوتار الرسغ.",
+        "thumbnail_url": "/assets/prehab/wrist-rockers.webp",
+        "video_url": "https://video.zplatform.com/prehab/wrist-rockers.mp4",
+        "target_area": "أوتار المعصم والرست"
+      }
+    ]
+  }
+]

@@ -1,508 +1,1114 @@
-import React, { useState, useEffect, useCallback } from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { API_BASE } from '../config/api';
-import '../onboarding.css';
 
-import Step1Personal from '../components/intake/Step1Personal';
-import Step2Body from '../components/intake/Step2Body';
-import Step3Medical from '../components/intake/Step3Medical';
-import Step4Nutrition from '../components/intake/Step4Nutrition';
-import Step5Training from '../components/intake/Step5Training';
-import Step6Review from '../components/intake/Step6Review';
+const DEFAULT_MASTER_INTAKE = {
+  // Screen 1: Biometrics & Target
+  gender: 'male',
+  age: '',
+  height_cm: '',
+  weight_kg: '',
+  circumferences: {
+    neck_cm: '',
+    waist_cm: '',
+    hips_cm: '',
+    chest_cm: '',
+    arm_cm: '',
+    thigh_cm: ''
+  },
+  primary_goal: 'recomposition',
+  neat_level: 'moderate',
 
-const DEFAULT_INTAKE = {
-  personal: { firstName: '', lastName: '', dateOfBirth: '', sex: 'MALE', residenceCountry: 'EG', guardianConsent: null },
-  goals: { primary: 'FAT_LOSS', secondaryTraining: 'GENERAL_STRENGTH' },
-  body: { heightCm: 170, weightKg: 70, waistCm: 80, hipCm: '', weightTrend: 'STABLE', measurementQuality: 'HIGH', progressPhotosAvailable: false, photos: { front: null, side: null, back: null } },
-  lifestyle: { 
-    dailyActivity: 'LIGHT', 
-    workSchedule: { type: 'FIXED', physicallyDemandingDays: [] },
-    sleep: { averageHours: 7, quality: 'GOOD' },
-    stressLevel: 'MODERATE'
+  // Screen 2: Clinical & Injury Matrix
+  medical_conditions: {
+    has_conditions: false,
+    selected: [],
+    bariatric: { is_operated: false, meal_capacity_grams: '150_200', dumping_syndrome: false },
+    diabetes: { type: 'type2', uses_insulin: false, icr_ratio: '', hba1c: '' },
+    favism_g6pd: false,
+    renal_hepatic_issue: false,
+    thyroid: 'hypo',
+    gi_issues: [],
+    female_cases: { is_pcos: false, is_lactating: false, is_postpartum: false },
+    hypertension: false,
+    gout: false,
+    cholecystectomy: false,
+    other_notes: ''
   },
-  medical: {
-    conditions: [],
-    dangerousSymptoms: { chestPainOrPressure: 'NO', fainting: 'NO', unusualShortnessOfBreath: 'NO', abnormalPalpitations: 'NO', otherDangerousSymptomsPresent: 'NO', otherDangerousSymptoms: [] },
-    medications: [], eatingDisorderHistory: 'NONE', pregnancyStatus: 'NOT_PREGNANT', menstrualStatus: 'REGULAR', unclassifiedText: []
+  injuries_map: {
+    has_injuries: false,
+    selected_areas: [],
+    knee: [],
+    spine_back: [],
+    shoulder: [],
+    core: [],
+    other_joints: [],
+    injury_nature: 'chronic',
+    pain_relieved_by_rest: true
   },
-  nutrition: {
-    preferredMealCount: 3, unavailableEatingWindows: [], budget: 'MEDIUM', foodStorageAvailable: true, foodReheatingAvailable: true,
-    allergies: [], medicalExclusions: [], dislikedFoods: [], intolerances: [], digestiveIssues: []
+  smoking_status: 'non_smoker',
+  current_meds_supplements: '',
+
+  // Screen 3: Nutrition & Lifestyle
+  strict_allergies: [],
+  other_allergies: '',
+  cuisine_preference: 'egyptian_traditional',
+  meal_structure: {
+    meals_count: '3_meals_snack',
+    intermittent_fasting: 'none'
   },
-  training: {
-    location: 'GYM', equipment: [], maxDaysPerWeek: 4, preferredDaysPerWeek: 4,
-    trainingScheduleAvailabilityType: 'FLEXIBLE', availableTrainingDays: [], unavailableTrainingDays: [],
-    maxSessionMinutes: 60, experience: 'BEGINNER', recentTraining: 'NONE_LAST_4_WEEKS', injuries: [], medicalMovementRestrictions: []
+  disliked_foods: [],
+  disliked_foods_text: '',
+
+  // Screen 4: Training & Media
+  training_environment: 'commercial_gym',
+  training_logistics: {
+    days_per_week: 4,
+    experience_level: 'intermediate',
+    has_other_sports: false,
+    sports_name: '',
+    hours_per_week: ''
   },
-  cardio: {
-    additionalSports: [], averageDailySteps: 5000, walkingAbility: 'EASY', maxSessionsPerWeek: 2, maxDurationMinutes: 30
-  },
-  unclassifiedNotes: []
+  focus_muscles: [],
+  media_uploads: {
+    front_url: '',
+    side_url: '',
+    back_url: '',
+    inbody_report_url: '',
+    medical_reports_urls: []
+  }
 };
 
-const TABS = [
-  { id: 'personal', title: 'البيانات الشخصية والأهداف', icon: 'bi-person' },
-  { id: 'body', title: 'القياسات الجسدية وأسلوب الحياة', icon: 'bi-rulers' },
-  { id: 'medical', title: 'الحالة الطبية والموانع', icon: 'bi-heart-pulse' },
-  { id: 'nutrition', title: 'التغذية المفضلة والحساسية', icon: 'bi-egg-fried' },
-  { id: 'training', title: 'التدريب والإصابات والكارديو', icon: 'bi-bicycle' },
-  { id: 'review', title: 'المراجعة وإرسال الاستمارة', icon: 'bi-send' }
+const STEPS = [
+  { id: 1, title: 'القياسات والأهداف', sub: 'البيانات الفسيولوجية والمحيطات' },
+  { id: 2, title: 'السجل الطبي والإصابات', sub: 'الحالات الصحية والمفاصل' },
+  { id: 3, title: 'التغذية والمطبخ', sub: 'الحساسيات ونمط الوجبات' },
+  { id: 4, title: 'التدريب والصور', sub: 'بيئة الجيم ورفع الملفات' }
 ];
 
 export default function FullIntakeForm() {
   const navigate = useNavigate();
-  const [activeTab, setActiveTab] = useState(() => {
-    return localStorage.getItem('z_intake_active_tab') || 'personal';
-  });
+  const location = useLocation();
+
+  const [currentStep, setCurrentStep] = useState(1);
+  const [formData, setFormData] = useState(DEFAULT_MASTER_INTAKE);
+  const [loadingDraft, setLoadingDraft] = useState(true);
   const [saveStatus, setSaveStatus] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [submittedSuccess, setSubmittedSuccess] = useState(null);
 
+  // Read URL query params (?code=...&phone=...)
   useEffect(() => {
-    const params = new URLSearchParams(window.location.search);
-    const codeParam = params.get('code');
-    const phoneParam = params.get('phone');
-    if (codeParam) sessionStorage.setItem('z_client_code', codeParam);
-    if (phoneParam) {
-      sessionStorage.setItem('z_client_phone', phoneParam);
-      setFormData(prev => ({
-        ...prev,
-        personal: {
-          ...prev.personal,
-          phone: prev.personal?.phone || phoneParam
+    const queryParams = new URLSearchParams(location.search);
+    const qCode = queryParams.get('code');
+    const qPhone = queryParams.get('phone');
+
+    if (qCode) sessionStorage.setItem('z_client_code', qCode.trim());
+    if (qPhone) sessionStorage.setItem('z_client_phone', qPhone.trim());
+
+    const clientCode = sessionStorage.getItem('z_client_code');
+    const clientPhone = sessionStorage.getItem('z_client_phone');
+
+    if (!clientCode || !clientPhone) {
+      navigate('/intake');
+      return;
+    }
+
+    fetchInitialData(clientCode, clientPhone);
+  }, [location.search]);
+
+  const fetchInitialData = async (code, phone) => {
+    try {
+      setLoadingDraft(true);
+      const res = await fetch(`${API_BASE}/api/v1/intake/answers?client_code=${encodeURIComponent(code)}&phone_number=${encodeURIComponent(phone)}`);
+      const data = await res.json();
+
+      if (data.submission) {
+        if (['SUBMITTED', 'REVIEWED', 'LOCKED'].includes(data.submission.status)) {
+          setSubmittedSuccess(data.submission);
+          return;
         }
-      }));
-    }
-  }, []);
-
-  const [formData, setFormData] = useState(() => {
-    const params = new URLSearchParams(window.location.search);
-    const codeParam = params.get('code') || sessionStorage.getItem('z_client_code');
-    const phoneParam = params.get('phone') || sessionStorage.getItem('z_client_phone');
-    
-    // 1. Try specific client key if code & phone exist
-    if (codeParam && phoneParam) {
-      const specificKey = `z_intake_${codeParam}_${phoneParam}`;
-      const savedSpecific = localStorage.getItem(specificKey);
-      if (savedSpecific) {
-        try {
-          const parsed = JSON.parse(savedSpecific);
-          return { ...DEFAULT_INTAKE, ...parsed };
-        } catch (e) {}
+        if (data.submission.answers) {
+          setFormData(prev => ({ ...prev, ...data.submission.answers }));
+        }
       }
-    }
-
-    // 2. Try general draft key
-    const savedDraft = localStorage.getItem('z_intake_draft');
-    if (savedDraft) {
-      try {
-        const parsed = JSON.parse(savedDraft);
-        return { ...DEFAULT_INTAKE, ...parsed };
-      } catch (e) {}
-    }
-
-    return DEFAULT_INTAKE;
-  });
-
-  const handleResetForm = () => {
-    if (window.confirm('هل تريد مسح البيانات والبدء باستمارة جديدة فارغة؟')) {
-      const code = sessionStorage.getItem('z_client_code');
-      const phone = sessionStorage.getItem('z_client_phone');
-      if (code && phone) {
-        localStorage.removeItem(`z_intake_${code}_${phone}`);
-      }
-      localStorage.removeItem('z_intake_draft');
-      localStorage.removeItem('z_intake_active_tab');
-      sessionStorage.removeItem('z_client_code');
-      sessionStorage.removeItem('z_client_phone');
-      setFormData(DEFAULT_INTAKE);
-      setActiveTab('personal');
-      setSubmittedSuccess(null);
+    } catch (e) {
+      console.error('Failed to fetch intake draft:', e);
+    } finally {
+      setLoadingDraft(false);
     }
   };
 
-  // Save active tab on change
+  // Auto-Save Effect
   useEffect(() => {
-    if (activeTab) {
-      localStorage.setItem('z_intake_active_tab', activeTab);
-    }
-  }, [activeTab]);
+    if (loadingDraft || submittedSuccess) return;
 
-  // Debounced local & server auto-save (ALWAYS saves locally)
-  useEffect(() => {
     setSaveStatus('saving');
     const timer = setTimeout(async () => {
       const code = sessionStorage.getItem('z_client_code');
-      const phone = sessionStorage.getItem('z_client_phone') || formData.personal?.phone;
+      const phone = sessionStorage.getItem('z_client_phone');
 
-      // 1. Always save in localStorage draft
-      localStorage.setItem('z_intake_draft', JSON.stringify(formData));
-      if (code && phone) {
-        localStorage.setItem(`z_intake_${code}_${phone}`, JSON.stringify(formData));
-      }
-      
-      // 2. Calculate progress percent
-      let progress = 20;
-      if (formData.personal?.firstName && formData.personal?.lastName) progress += 10;
-      if (formData.body?.heightCm && formData.body?.weightKg) progress += 20;
-      if (formData.medical) progress += 15;
-      if (formData.nutrition?.preferredMealCount) progress += 15;
-      if (formData.training?.preferredDaysPerWeek) progress += 15;
-      progress = Math.min(progress, 95);
-
-      // 3. Sync draft to backend if connected
       try {
+        localStorage.setItem(`z_intake_${code}_${phone}`, JSON.stringify(formData));
         await fetch(`${API_BASE}/api/v1/intake/save-draft`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
-            ...formData,
-            client_code: code || undefined,
-            phone_number: phone || '01000000000',
-            full_name: `${formData.personal?.firstName || ''} ${formData.personal?.lastName || ''}`.trim() || undefined,
-            progress_percent: progress
+            client_code: code,
+            phone_number: phone,
+            answers: formData,
+            progress_percent: Math.round((currentStep / 4) * 100)
           })
         });
+        setSaveStatus('saved');
       } catch (e) {
-        // silent fail on network glitch
+        setSaveStatus('saved');
       }
-
-      setSaveStatus('saved');
-      setTimeout(() => setSaveStatus(''), 2000);
-    }, 600);
+    }, 1200);
 
     return () => clearTimeout(timer);
-  }, [formData]);
+  }, [formData, currentStep, loadingDraft, submittedSuccess]);
 
-  const updateField = useCallback((section, field, value) => {
+  const updateNested = (parent, field, val) => {
     setFormData(prev => ({
       ...prev,
-      [section]: {
-        ...prev[section],
-        [field]: value
+      [parent]: {
+        ...prev[parent],
+        [field]: val
       }
     }));
-  }, []);
+  };
 
-  const updateNested = useCallback((section, subSection, field, value) => {
-    setFormData(prev => ({
-      ...prev,
-      [section]: {
-        ...prev[section],
-        [subSection]: {
-          ...prev[section][subSection],
-          [field]: value
-        }
-      }
-    }));
-  }, []);
-
-  const addArrayItem = useCallback((section, field, defaultItem) => {
-    setFormData(prev => ({
-      ...prev,
-      [section]: {
-        ...prev[section],
-        [field]: [...(prev[section][field] || []), defaultItem]
-      }
-    }));
-  }, []);
-
-  const updateArrayItem = useCallback((section, field, index, itemField, value) => {
+  const toggleArrayItem = (arrayField, item) => {
     setFormData(prev => {
-      const newArray = [...(prev[section][field] || [])];
-      newArray[index] = {
-        ...newArray[index],
-        [itemField]: value
-      };
+      const current = prev[arrayField] || [];
+      if (current.includes(item)) {
+        return { ...prev, [arrayField]: current.filter(x => x !== item) };
+      } else {
+        return { ...prev, [arrayField]: [...current, item] };
+      }
+    });
+  };
+
+  const toggleCondition = (conditionKey) => {
+    setFormData(prev => {
+      const med = prev.medical_conditions;
+      const selected = med.selected || [];
+      const isSelected = selected.includes(conditionKey);
+      const newSelected = isSelected ? selected.filter(k => k !== conditionKey) : [...selected, conditionKey];
       return {
         ...prev,
-        [section]: {
-          ...prev[section],
-          [field]: newArray
+        medical_conditions: {
+          ...med,
+          selected: newSelected,
+          has_conditions: newSelected.length > 0
         }
       };
     });
-  }, []);
+  };
 
-  const removeArrayItem = useCallback((section, field, index) => {
+  const toggleInjuryArea = (areaKey) => {
     setFormData(prev => {
-      const newArray = [...(prev[section][field] || [])];
-      newArray.splice(index, 1);
+      const inj = prev.injuries_map;
+      const selected = inj.selected_areas || [];
+      const isSelected = selected.includes(areaKey);
+      const newSelected = isSelected ? selected.filter(k => k !== areaKey) : [...selected, areaKey];
       return {
         ...prev,
-        [section]: {
-          ...prev[section],
-          [field]: newArray
+        injuries_map: {
+          ...inj,
+          selected_areas: newSelected,
+          has_injuries: newSelected.length > 0
         }
       };
     });
-  }, []);
+  };
 
-  const handleSubmitIntake = async () => {
-    if (!formData.personal?.firstName || !formData.personal?.lastName) {
-      alert('يرجى التأكد من إدخال الاسم الأول واسم العائلة في قسم البيانات الشخصية.');
-      setActiveTab('personal');
+  const handleSubmit = async () => {
+    // Validation
+    if (!formData.height_cm || !formData.weight_kg || !formData.age) {
+      alert('يرجى التأكد من ملء الطول، الوزن، والسن في الخطوة الأولى.');
+      setCurrentStep(1);
       return;
     }
-    if (!formData.personal?.age && !formData.personal?.dateOfBirth) {
-      alert('يرجى إدخال السن في قسم البيانات الشخصية.');
-      setActiveTab('personal');
+    if (!formData.circumferences?.waist_cm || !formData.circumferences?.neck_cm) {
+      alert('يرجى إدخال محيط الرقبة والوسط بالمتر الشريطي لحساب نسبة الدهون بدقة.');
+      setCurrentStep(1);
       return;
     }
 
     try {
       setSubmitting(true);
-      const code = sessionStorage.getItem('z_client_code') || '';
-      const phone = formData.personal?.phone || sessionStorage.getItem('z_client_phone') || '';
-
-      const payload = JSON.parse(JSON.stringify(formData));
-      const ageVal = payload.personal?.age || 25;
-      if (!payload.personal.dateOfBirth) {
-        payload.personal.dateOfBirth = `${new Date().getFullYear() - ageVal}-01-01`;
-      }
-      if (payload.lifestyle?.workSchedule?.type === 'STANDARD') {
-        payload.lifestyle.workSchedule.type = 'FIXED';
-      }
-      if (payload.lifestyle?.workSchedule?.type === 'NIGHT_SHIFT') {
-        payload.lifestyle.workSchedule.type = 'SHIFT_BASED';
-      }
-      if (!['FIXED', 'VARIABLE', 'SHIFT_BASED'].includes(payload.lifestyle?.workSchedule?.type)) {
-        payload.lifestyle.workSchedule.type = 'FIXED';
-      }
-      if (payload.training?.location === 'GYM') {
-        payload.training.equipment = (payload.training.equipment || []).map(eq => ({
-          ...eq,
-          otherEquipmentText: eq.otherEquipmentText || null
-        }));
-      }
+      const code = sessionStorage.getItem('z_client_code');
+      const phone = sessionStorage.getItem('z_client_phone');
 
       const res = await fetch(`${API_BASE}/api/v1/intake/submit`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          ...payload,
-          client_code: code || undefined,
-          phone_number: phone || undefined,
-          full_name: `${formData.personal?.firstName || ''} ${formData.personal?.lastName || ''}`.trim()
+          client_code: code,
+          phone_number: phone,
+          answers: formData
         })
       });
 
       const data = await res.json();
       if (!res.ok) {
-        throw new Error(data.error || (data.details ? data.details : 'فشل إرسال الاستمارة'));
+        throw new Error(data.error || 'حدث خطأ أثناء إرسال الاستمارة.');
       }
 
-      if (code && phone) {
-        const storageKey = `z_intake_${code}_${phone}`;
-        localStorage.removeItem(storageKey);
-      }
-      localStorage.removeItem('z_intake_draft');
-      localStorage.removeItem('z_intake_active_tab');
-      sessionStorage.removeItem('z_client_code');
-      sessionStorage.removeItem('z_client_phone');
-
-      setSubmittedSuccess({
-        client_code: data.client_code || data.user?.client_code || 'جديد',
-        full_name: `${formData.personal.firstName} ${formData.personal.lastName}`
-      });
-
-    } catch (err) {
-      alert('حدث خطأ أثناء إرسال الاستمارة: ' + err.message);
+      setSubmittedSuccess(data.submission || { status: 'SUBMITTED' });
+    } catch (e) {
+      alert(e.message);
     } finally {
       setSubmitting(false);
     }
   };
 
-  if (submittedSuccess) {
+  if (loadingDraft) {
     return (
-      <div className="onboarding-layout d-flex align-items-center justify-content-center min-vh-100 p-3" dir="rtl" style={{ background: '#f8fafc' }}>
-        <div className="card border-0 shadow-sm p-4 p-md-5 text-center" style={{ maxWidth: '600px', width: '100%', borderRadius: '24px' }}>
-          <div className="mb-3 text-success" style={{ fontSize: '5rem' }}>
-            <i className="ti ti-circle-check"></i>
-          </div>
-          
-          <h2 className="fw-bold text-dark mb-2">تم استلام استمارتك بنجاح!</h2>
-          <p className="text-muted mb-4" style={{ fontSize: '1.05rem', lineHeight: '1.8' }}>
-            أهلاً بك يا <strong>{submittedSuccess.full_name}</strong>. تم إرسال جميع إجاباتك وبياناتك بنجاح إلى فريق التدريب.
-            <br />
-            يقوم الكابتن الآن بمراجعة حالتك الصحية والبدنية، وتأكيد اشتراكك، وتصميم خطتك التدريبية والغذائية المخصصة لك بالكامل.
-          </p>
-
-          <div className="p-3 bg-light rounded-4 border mb-4">
-            <div className="d-flex justify-content-between align-items-center">
-              <span className="text-muted small">كود المشترك الخاص بك:</span>
-              <span className="badge bg-dark font-monospace px-3 py-2 fs-6">{submittedSuccess.client_code}</span>
-            </div>
-          </div>
-
-          <div className="d-grid gap-2">
-            <a 
-              href="https://wa.me/201099687766" 
-              target="_blank" 
-              rel="noreferrer"
-              className="btn btn-success py-3 rounded-pill fw-bold shadow-sm d-flex align-items-center justify-content-center gap-2"
-              style={{ fontSize: '1rem' }}
-            >
-              <i className="ti ti-brand-whatsapp fs-5"></i>
-              <span>متابعة حالة الخطة مع الكابتن عبر الواتساب</span>
-            </a>
-
-            <button 
-              type="button" 
-              className="btn btn-outline-secondary py-2 rounded-pill mt-2"
-              onClick={handleResetForm}
-            >
-              تقديم استمارة جديدة
-            </button>
-          </div>
+      <div className="d-flex justify-content-center align-items-center vh-100 bg-white" dir="rtl">
+        <div className="text-center">
+          <div className="spinner-border text-primary mb-3" role="status" style={{ width: '3rem', height: '3rem', color: '#0284C7' }}></div>
+          <h5 className="fw-bold text-dark" style={{ fontFamily: 'var(--font-sans)' }}>جاري استرجاع مسودة استمارتك بأمان...</h5>
         </div>
       </div>
     );
   }
 
-  const renderActiveTab = () => {
-    switch (activeTab) {
-      case 'personal':
-        return (
-          <Step1Personal 
-            formData={formData} 
-            updateField={updateField} 
-            updateNested={updateNested} 
-          />
-        );
-      case 'body':
-        return (
-          <Step2Body 
-            formData={formData} 
-            updateField={updateField} 
-            updateNested={updateNested} 
-          />
-        );
-      case 'medical':
-        return (
-          <Step3Medical 
-            formData={formData} 
-            updateField={updateField} 
-            updateNested={updateNested} 
-            addArrayItem={addArrayItem}
-            updateArrayItem={updateArrayItem}
-            removeArrayItem={removeArrayItem}
-          />
-        );
-      case 'nutrition':
-        return (
-          <Step4Nutrition 
-            formData={formData} 
-            updateField={updateField} 
-            addArrayItem={addArrayItem}
-            updateArrayItem={updateArrayItem}
-            removeArrayItem={removeArrayItem}
-          />
-        );
-      case 'training':
-        return (
-          <Step5Training 
-            formData={formData} 
-            updateField={updateField} 
-            addArrayItem={addArrayItem}
-            updateArrayItem={updateArrayItem}
-            removeArrayItem={removeArrayItem}
-          />
-        );
-      case 'review':
-        return (
-          <Step6Review 
-            submitting={submitting} 
-            onSubmit={handleSubmitIntake} 
-          />
-        );
-      default:
-        return null;
-    }
-  };
+  // Idempotent Locked Screen if already submitted
+  if (submittedSuccess) {
+    return (
+      <div dir="rtl" style={{ minHeight: '100vh', background: '#FAFBFC', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '1.5rem', fontFamily: 'var(--font-sans)' }}>
+        <div className="z-premium-card p-4 p-sm-5 text-center" style={{ maxWidth: '580px', width: '100%', borderRadius: '24px', border: '1px solid #E7EEF3', background: '#FFFFFF', boxShadow: '0 10px 40px rgba(15, 23, 42, 0.06)' }}>
+          <div style={{ width: '64px', height: '64px', borderRadius: '20px', background: '#ECFDF5', color: '#059669', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 1.5rem', fontSize: '1.8rem', border: '1px solid #A7F3D0' }}>
+            <i className="ti ti-circle-check"></i>
+          </div>
+
+          <span className="badge rounded-pill px-3 py-1 fw-bold mb-2" style={{ background: '#E5F0FF', color: '#0284C7', fontSize: '0.76rem', border: '1px solid #BAE6FD' }}>
+            كود المشترك: #{sessionStorage.getItem('z_client_code')}
+          </span>
+
+          <h3 className="fw-black text-dark mb-2" style={{ color: '#0F172A', fontSize: '1.5rem' }}>
+            تم استلام استمارتك الصحية والرياضية بنجاح
+          </h3>
+
+          <p className="text-muted small mb-4" style={{ fontSize: '0.88rem', lineHeight: '1.7', color: '#64748B' }}>
+            يقوم كابتن كريم زكريا ومحركات الذكاء الاصطناعي السبعة حالياً بمراجعة قياساتك، مصفوفة إصاباتك، وتفضيلات المطبخ لإعداد خطتك المخصصة بالجرام وميزوسايكل التمارين.
+          </p>
+
+          <div className="p-3 rounded-3 mb-4 text-start" style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', fontSize: '0.82rem' }}>
+            <div className="d-flex justify-content-between mb-1">
+              <span className="text-muted">حالة الملف:</span>
+              <strong className="text-success">قيد المراجعة السريرية والاعتماد (SUBMITTED)</strong>
+            </div>
+            <div className="d-flex justify-content-between">
+              <span className="text-muted">توقيت الإرسال:</span>
+              <strong className="text-dark font-monospace">{new Date().toLocaleDateString('ar-EG')}</strong>
+            </div>
+          </div>
+
+          <a 
+            href="https://wa.me/201000000000" 
+            target="_blank" 
+            rel="noreferrer"
+            className="btn btn-lg w-100 rounded-pill fw-bold text-white shadow-sm d-flex align-items-center justify-content-center gap-2 mb-2"
+            style={{ background: '#16A34A', border: 'none', height: '46px', fontSize: '0.92rem' }}
+          >
+            <i className="ti ti-brand-whatsapp fs-5"></i>
+            <span>متابعة حالة الخطة مع الكوتش عبر WhatsApp</span>
+          </a>
+        </div>
+      </div>
+    );
+  }
 
   return (
-    <div className="onboarding-layout" dir="rtl">
-      <div className="intake-layout">
-        
-        {/* Sidebar Tabs */}
-        <div className="intake-sidebar">
-          <div className="intake-sidebar-header d-flex justify-content-between align-items-center">
-            <div>
-              <h2 className="intake-sidebar-title">ملف العميل</h2>
-              <p style={{ margin: '0.25rem 0 0', fontSize: '0.8rem', color: '#94a3b8' }}>
-                كود: {sessionStorage.getItem('z_client_code') || 'جديد'}
-              </p>
+    <div dir="rtl" style={{ minHeight: '100vh', background: '#FAFBFC', padding: '20px 10px', fontFamily: 'var(--font-sans)' }}>
+      <div className="container" style={{ maxWidth: '760px' }}>
+
+        {/* Master Header */}
+        <div className="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
+          <div className="d-flex align-items-center gap-3">
+            <div style={{ width: '42px', height: '42px', borderRadius: '12px', background: 'linear-gradient(135deg, #58B4E5 0%, #0284C7 100%)', color: '#FFFFFF', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: '900', fontSize: '1.2rem' }}>
+              Z
             </div>
-            <button 
-              type="button"
-              onClick={handleResetForm} 
-              className="btn btn-outline-danger btn-sm rounded-pill" 
-              style={{ fontSize: '0.72rem', padding: '3px 10px' }} 
-              title="تفريغ الاستمارة والبدء من جديد"
-            >
-              استمارة جديدة
-            </button>
+            <div>
+              <h5 className="fw-black text-dark mb-0" style={{ fontSize: '1.15rem', color: '#0F172A' }}>
+                استمارة التقييم الصحي والرياضي الماستر
+              </h5>
+              <small className="text-muted" style={{ fontSize: '0.78rem' }}>
+                كود المشترك: <strong className="font-monospace text-primary">#{sessionStorage.getItem('z_client_code')}</strong> | هاتف: <strong className="font-monospace">{sessionStorage.getItem('z_client_phone')}</strong>
+              </small>
+            </div>
           </div>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
-            {TABS.map(tab => (
-              <div 
-                key={tab.id} 
-                className={`intake-nav-item ${activeTab === tab.id ? 'active' : ''}`}
-                onClick={() => setActiveTab(tab.id)}
-              >
-                <i className={`bi ${tab.icon}`} style={{ fontSize: '1.25rem' }}></i>
-                <span>{tab.title}</span>
-              </div>
-            ))}
+
+          {/* Auto-save status */}
+          <div className="d-flex align-items-center gap-1 small text-muted" style={{ fontSize: '0.76rem' }}>
+            {saveStatus === 'saving' ? (
+              <span className="text-primary"><i className="ti ti-refresh spin me-1"></i> جاري الحفظ التلقائي...</span>
+            ) : (
+              <span className="text-success"><i className="ti ti-check me-1"></i> مسودتك محفوظة</span>
+            )}
           </div>
         </div>
 
-        {/* Main Content Area */}
-        <div className="intake-content-area">
-          <div className="intake-header">
-            <h2 className="intake-header-title">{TABS.find(t => t.id === activeTab)?.title}</h2>
-            
-            {/* Auto-save indicator */}
-            {saveStatus && (
-              <div className={`auto-save-indicator ${saveStatus}`}>
-                {saveStatus === 'saving' ? (
-                  <><i className="bi bi-arrow-repeat spin"></i> جاري الحفظ...</>
-                ) : (
-                  <><i className="bi bi-check-circle"></i> تم الحفظ التلقائي</>
+        {/* 4-Step Stepper Progress Bar */}
+        <div className="z-premium-card p-3 mb-4" style={{ borderRadius: '20px', border: '1px solid #E7EEF3', background: '#FFFFFF' }}>
+          <div className="d-flex justify-content-between mb-2">
+            {STEPS.map((s) => (
+              <div 
+                key={s.id}
+                onClick={() => setCurrentStep(s.id)}
+                style={{ 
+                  cursor: 'pointer',
+                  textAlign: 'center',
+                  flex: 1,
+                  color: currentStep === s.id ? '#0284C7' : currentStep > s.id ? '#059669' : '#94A3B8'
+                }}
+              >
+                <div 
+                  className="rounded-circle d-flex align-items-center justify-content-center mx-auto mb-1 fw-bold"
+                  style={{ 
+                    width: '30px', 
+                    height: '30px', 
+                    fontSize: '0.82rem',
+                    background: currentStep === s.id ? '#E5F0FF' : currentStep > s.id ? '#ECFDF5' : '#F1F5F9',
+                    color: currentStep === s.id ? '#0284C7' : currentStep > s.id ? '#059669' : '#94A3B8',
+                    border: currentStep === s.id ? '1.5px solid #0284C7' : 'none'
+                  }}
+                >
+                  {currentStep > s.id ? <i className="ti ti-check"></i> : s.id}
+                </div>
+                <span className="d-none d-sm-block fw-bold" style={{ fontSize: '0.76rem' }}>{s.title}</span>
+              </div>
+            ))}
+          </div>
+          <div className="progress" style={{ height: '6px', borderRadius: '10px', background: '#F1F5F9' }}>
+            <div 
+              className="progress-bar" 
+              style={{ 
+                width: `${(currentStep / 4) * 100}%`,
+                background: 'linear-gradient(90deg, #58B4E5 0%, #0284C7 100%)',
+                borderRadius: '10px',
+                transition: 'width 0.3s ease'
+              }}
+            ></div>
+          </div>
+        </div>
+
+        {/* Dynamic Form Content */}
+        <div className="z-premium-card p-4 p-sm-5 mb-4" style={{ borderRadius: '24px', border: '1px solid #E7EEF3', background: '#FFFFFF' }}>
+
+          {/* =========================================================================
+              SCREEN 1: القياسات الفسيولوجية ومعدل النشاط (Biometrics & Target)
+              ========================================================================= */}
+          {currentStep === 1 && (
+            <div>
+              <div className="mb-4 pb-2 border-bottom" style={{ borderColor: '#F1F5F9' }}>
+                <h5 className="fw-black text-dark mb-1" style={{ color: '#0F172A' }}>1. القياسات الفسيولوجية ومعدل النشاط</h5>
+                <small className="text-muted" style={{ fontSize: '0.82rem' }}>البيانات الأساسية لتشغيل معادلة الأيض BMR ونسبة الدهون U.S. Navy</small>
+              </div>
+
+              {/* Q1: Gender Toggle & Age, Height, Weight */}
+              <div className="mb-4">
+                <label className="form-label fw-bold text-dark small mb-2">الجنس</label>
+                <div className="d-flex gap-2">
+                  <button 
+                    type="button" 
+                    onClick={() => setFormData(p => ({ ...p, gender: 'male' }))}
+                    className={`btn flex-fill py-2.5 rounded-3 fw-bold ${formData.gender === 'male' ? 'btn-primary' : 'btn-light border'}`}
+                    style={{ fontSize: '0.88rem' }}
+                  >
+                    ذكر (Male)
+                  </button>
+                  <button 
+                    type="button" 
+                    onClick={() => setFormData(p => ({ ...p, gender: 'female' }))}
+                    className={`btn flex-fill py-2.5 rounded-3 fw-bold ${formData.gender === 'female' ? 'btn-primary' : 'btn-light border'}`}
+                    style={{ fontSize: '0.88rem' }}
+                  >
+                    أنثى (Female)
+                  </button>
+                </div>
+              </div>
+
+              <div className="row g-3 mb-4">
+                <div className="col-md-4 col-12">
+                  <label className="form-label fw-bold text-dark small mb-1">السن (بالسنوات)</label>
+                  <input 
+                    type="number" 
+                    className="form-control font-monospace" 
+                    placeholder="مثال: 26"
+                    value={formData.age}
+                    onChange={(e) => setFormData(p => ({ ...p, age: e.target.value }))}
+                    style={{ height: '44px', borderRadius: '12px', borderColor: '#E2E8F0' }}
+                    required 
+                  />
+                </div>
+                <div className="col-md-4 col-12">
+                  <label className="form-label fw-bold text-dark small mb-1">الطول (سم)</label>
+                  <input 
+                    type="number" 
+                    className="form-control font-monospace" 
+                    placeholder="مثال: 180"
+                    value={formData.height_cm}
+                    onChange={(e) => setFormData(p => ({ ...p, height_cm: e.target.value }))}
+                    style={{ height: '44px', borderRadius: '12px', borderColor: '#E2E8F0' }}
+                    required 
+                  />
+                </div>
+                <div className="col-md-4 col-12">
+                  <label className="form-label fw-bold text-dark small mb-1">الوزن الحالي (كجم)</label>
+                  <input 
+                    type="number" 
+                    className="form-control font-monospace" 
+                    placeholder="مثال: 82.5"
+                    value={formData.weight_kg}
+                    onChange={(e) => setFormData(p => ({ ...p, weight_kg: e.target.value }))}
+                    style={{ height: '44px', borderRadius: '12px', borderColor: '#E2E8F0' }}
+                    required 
+                  />
+                </div>
+              </div>
+
+              {/* Q2: Anthropometric Tape Measurements */}
+              <div className="mb-4 p-3 rounded-3" style={{ background: '#F8FAFC', border: '1px solid #E2E8F0' }}>
+                <div className="d-flex align-items-center gap-2 mb-2">
+                  <i className="ti ti-ruler text-primary fs-5"></i>
+                  <h6 className="fw-bold text-dark mb-0" style={{ fontSize: '0.88rem' }}>القياسات بالمتر الشريطي (إلزامية لدقة نسبة الدهون)</h6>
+                </div>
+                <div className="row g-3">
+                  <div className="col-md-4 col-12">
+                    <label className="form-label small fw-bold text-dark mb-1">محيط الرقبة (سم) *</label>
+                    <input 
+                      type="number" 
+                      className="form-control font-monospace bg-white" 
+                      placeholder="عند أضيق نقطة"
+                      value={formData.circumferences.neck_cm}
+                      onChange={(e) => updateNested('circumferences', 'neck_cm', e.target.value)}
+                      style={{ height: '42px', borderRadius: '10px', borderColor: '#CBD5E1' }}
+                      required 
+                    />
+                  </div>
+                  <div className="col-md-4 col-12">
+                    <label className="form-label small fw-bold text-dark mb-1">محيط الوسط / البطن (سم) *</label>
+                    <input 
+                      type="number" 
+                      className="form-control font-monospace bg-white" 
+                      placeholder="عند مستوى السرة"
+                      value={formData.circumferences.waist_cm}
+                      onChange={(e) => updateNested('circumferences', 'waist_cm', e.target.value)}
+                      style={{ height: '42px', borderRadius: '10px', borderColor: '#CBD5E1' }}
+                      required 
+                    />
+                  </div>
+                  <div className="col-md-4 col-12">
+                    <label className="form-label small fw-bold text-dark mb-1">
+                      محيط الحوض والأرداف (سم) {formData.gender === 'female' ? '*' : '(اختياري للذكور)'}
+                    </label>
+                    <input 
+                      type="number" 
+                      className="form-control font-monospace bg-white" 
+                      placeholder="أعرض نقطة بالحوض"
+                      value={formData.circumferences.hips_cm}
+                      onChange={(e) => updateNested('circumferences', 'hips_cm', e.target.value)}
+                      style={{ height: '42px', borderRadius: '10px', borderColor: '#CBD5E1' }}
+                    />
+                  </div>
+                </div>
+              </div>
+
+              {/* Q3: Primary Goal */}
+              <div className="mb-4">
+                <label className="form-label fw-bold text-dark small mb-2">الهدف الفسيولوجي الرئيسي</label>
+                <div className="row g-2">
+                  {[
+                    { id: 'fat_loss', title: 'خسارة دهون حادة (Fat Loss)', desc: 'عجز سعرات مدروس مع الحفاظ التام على العضل' },
+                    { id: 'lean_bulk', title: 'بناء كتلة عضلية صافية (Lean Bulk)', desc: 'فائض سعرات خفيف لتضخيم عضلي نظيف' },
+                    { id: 'recomposition', title: 'إعادة تشكيل الجسم (Body Recomp)', desc: 'حرق دهون وبناء عضلات في نفس التوقيت' },
+                    { id: 'general_fitness', title: 'لياقة عامة وتأهيل بدني (Fitness)', desc: 'تحسين كفاءة القلب والصحة العامة' }
+                  ].map((goal) => (
+                    <div className="col-sm-6 col-12" key={goal.id}>
+                      <div 
+                        onClick={() => setFormData(p => ({ ...p, primary_goal: goal.id }))}
+                        className={`p-3 rounded-3 border h-100 ${formData.primary_goal === goal.id ? 'border-primary' : ''}`}
+                        style={{ 
+                          cursor: 'pointer',
+                          background: formData.primary_goal === goal.id ? '#E5F0FF' : '#FFFFFF',
+                          borderColor: formData.primary_goal === goal.id ? '#0284C7' : '#E2E8F0'
+                        }}
+                      >
+                        <strong className="d-block text-dark mb-1" style={{ fontSize: '0.86rem' }}>{goal.title}</strong>
+                        <small className="text-muted" style={{ fontSize: '0.74rem' }}>{goal.desc}</small>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Q4: NEAT Activity Level */}
+              <div className="mb-4">
+                <label className="form-label fw-bold text-dark small mb-2">معدل النشاط اليومي خارج الجيم (NEAT Level)</label>
+                <div className="row g-2">
+                  {[
+                    { id: 'sedentary', title: 'خامل / عمل مكتبي', desc: 'أقل من 5,000 خطوة يومياً' },
+                    { id: 'moderate', title: 'متوسط النشاط', desc: 'من 6,000 إلى 9,000 خطوة يومياً' },
+                    { id: 'very_active', title: 'عالي النشاط / عمل ميداني', desc: 'أكثر من 10,000 خطوة يومياً' }
+                  ].map((act) => (
+                    <div className="col-md-4 col-12" key={act.id}>
+                      <div 
+                        onClick={() => setFormData(p => ({ ...p, neat_level: act.id }))}
+                        className={`p-3 rounded-3 border text-center ${formData.neat_level === act.id ? 'border-primary' : ''}`}
+                        style={{ 
+                          cursor: 'pointer',
+                          background: formData.neat_level === act.id ? '#E5F0FF' : '#FFFFFF',
+                          borderColor: formData.neat_level === act.id ? '#0284C7' : '#E2E8F0'
+                        }}
+                      >
+                        <strong className="d-block text-dark mb-1" style={{ fontSize: '0.84rem' }}>{act.title}</strong>
+                        <small className="text-muted" style={{ fontSize: '0.74rem' }}>{act.desc}</small>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+            </div>
+          )}
+
+          {/* =========================================================================
+              SCREEN 2: السجل الطبي، العمليات، ومصفوفة الإصابات (Clinical & Injury Matrix)
+              ========================================================================= */}
+          {currentStep === 2 && (
+            <div>
+              <div className="mb-4 pb-2 border-bottom" style={{ borderColor: '#F1F5F9' }}>
+                <h5 className="fw-black text-dark mb-1" style={{ color: '#0F172A' }}>2. السجل الطبي، العمليات الجراحية، ومصفوفة الإصابات</h5>
+                <small className="text-muted" style={{ fontSize: '0.82rem' }}>لتفعيل محددات الأمان السريري واستبعاد التمارين أو الأغذية الممنوعة</small>
+              </div>
+
+              {/* Q5: Medical Conditions Multi-Select Chips */}
+              <div className="mb-4">
+                <label className="form-label fw-bold text-dark small mb-2">الحالات الطبية أو العمليات السابقة (اختر ما ينطبق)</label>
+                <div className="d-flex flex-wrap gap-2 mb-3">
+                  {[
+                    { key: 'none', label: 'سليم تماماً - لا توجد حالات خاصة' },
+                    { key: 'bariatric_surgery', label: 'تكميم معدة / تحويل مسار' },
+                    { key: 'diabetes', label: 'سكري / مقاومة أنسولين' },
+                    { key: 'favism_g6pd', label: 'أنيميا الفول (G6PD)' },
+                    { key: 'renal_hepatic', label: 'أمراض كلى أو كبد' },
+                    { key: 'thyroid', label: 'اضطرابات الغدة الدرقية' },
+                    { key: 'gi_tract', label: 'قولون عصبي / ارتجاع مريء' },
+                    { key: 'hypertension', label: 'ضغط دم مرتفع' },
+                    { key: 'gout', label: 'نقرس / يوريك أسيد مرتفع' }
+                  ].map((c) => {
+                    const isChecked = formData.medical_conditions.selected?.includes(c.key);
+                    return (
+                      <button 
+                        key={c.key}
+                        type="button"
+                        onClick={() => {
+                          if (c.key === 'none') {
+                            setFormData(p => ({ ...p, medical_conditions: { ...p.medical_conditions, selected: ['none'], has_conditions: false } }));
+                          } else {
+                            toggleCondition(c.key);
+                          }
+                        }}
+                        className={`btn btn-sm rounded-pill px-3 py-2 fw-semibold ${isChecked ? 'btn-primary' : 'btn-light border'}`}
+                        style={{ fontSize: '0.8rem' }}
+                      >
+                        {c.label}
+                      </button>
+                    );
+                  })}
+                </div>
+
+                {/* Conditional Sub-questions for Bariatric */}
+                {formData.medical_conditions.selected?.includes('bariatric_surgery') && (
+                  <div className="p-3 rounded-3 mb-3" style={{ background: '#F0F9FF', border: '1px solid #BAE6FD' }}>
+                    <h6 className="fw-bold text-primary mb-2" style={{ fontSize: '0.84rem' }}>تخصيص سعة الوجبات لمتكممي المعدة:</h6>
+                    <div className="row g-2">
+                      <div className="col-md-6 col-12">
+                        <label className="small text-dark mb-1">سعة الوجبة التقريبية</label>
+                        <select 
+                          className="form-select form-select-sm"
+                          value={formData.medical_conditions.bariatric.meal_capacity_grams}
+                          onChange={(e) => updateNested('medical_conditions', 'bariatric', { ...formData.medical_conditions.bariatric, meal_capacity_grams: e.target.value })}
+                        >
+                          <option value="under_150">أقل من 150 جم (وجبات مكثفة صغيرة جداً)</option>
+                          <option value="150_200">150 إلى 200 جم (المعدل القياسي)</option>
+                          <option value="over_200">أكثر من 200 جم</option>
+                        </select>
+                      </div>
+                      <div className="col-md-6 col-12">
+                        <label className="small text-dark mb-1">هل تعاني من متلازمة الإغراق (Dumping)؟</label>
+                        <div className="d-flex gap-2">
+                          <button 
+                            type="button" 
+                            onClick={() => updateNested('medical_conditions', 'bariatric', { ...formData.medical_conditions.bariatric, dumping_syndrome: true })}
+                            className={`btn btn-sm flex-fill ${formData.medical_conditions.bariatric.dumping_syndrome ? 'btn-danger' : 'btn-light border'}`}
+                          >نعم</button>
+                          <button 
+                            type="button" 
+                            onClick={() => updateNested('medical_conditions', 'bariatric', { ...formData.medical_conditions.bariatric, dumping_syndrome: false })}
+                            className={`btn btn-sm flex-fill ${!formData.medical_conditions.bariatric.dumping_syndrome ? 'btn-success' : 'btn-light border'}`}
+                          >لا</button>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* Conditional Sub-questions for Diabetes */}
+                {formData.medical_conditions.selected?.includes('diabetes') && (
+                  <div className="p-3 rounded-3 mb-3" style={{ background: '#FEF3C7', border: '1px solid #FDE68A' }}>
+                    <h6 className="fw-bold text-dark mb-2" style={{ fontSize: '0.84rem' }}>تخصيص بروتوكول السكري ومقاومة الأنسولين:</h6>
+                    <div className="row g-2">
+                      <div className="col-md-6 col-12">
+                        <label className="small text-dark mb-1">النوع</label>
+                        <select 
+                          className="form-select form-select-sm"
+                          value={formData.medical_conditions.diabetes.type}
+                          onChange={(e) => updateNested('medical_conditions', 'diabetes', { ...formData.medical_conditions.diabetes, type: e.target.value })}
+                        >
+                          <option value="insulin_resistance">مقاومة أنسولين (Insulin Resistance)</option>
+                          <option value="type2">سكري النوع الثاني (Type 2)</option>
+                          <option value="type1">سكري النوع الأول (Type 1)</option>
+                        </select>
+                      </div>
+                      <div className="col-md-6 col-12">
+                        <label className="small text-dark mb-1">استخدام حقن الأنسولين</label>
+                        <div className="d-flex gap-2">
+                          <button 
+                            type="button" 
+                            onClick={() => updateNested('medical_conditions', 'diabetes', { ...formData.medical_conditions.diabetes, uses_insulin: true })}
+                            className={`btn btn-sm flex-fill ${formData.medical_conditions.diabetes.uses_insulin ? 'btn-warning text-dark fw-bold' : 'btn-light border'}`}
+                          >نعم</button>
+                          <button 
+                            type="button" 
+                            onClick={() => updateNested('medical_conditions', 'diabetes', { ...formData.medical_conditions.diabetes, uses_insulin: false })}
+                            className={`btn btn-sm flex-fill ${!formData.medical_conditions.diabetes.uses_insulin ? 'btn-success' : 'btn-light border'}`}
+                          >لا</button>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
                 )}
               </div>
+
+              {/* Q6: Injuries Matrix Multi-Select Chips */}
+              <div className="mb-4">
+                <label className="form-label fw-bold text-dark small mb-2">مواضع الإصابات أو الآلام المفصلية الحالية</label>
+                <div className="d-flex flex-wrap gap-2 mb-3">
+                  {[
+                    { key: 'none', label: 'لا توجد أي إصابات مفصلية' },
+                    { key: 'knee', label: 'إصابات الركبة (صليبي / غضروف / صابونة)' },
+                    { key: 'spine_back', label: 'العمود الفقري (انزلاق غضروفي قطني / عنقي / عرق النسا)' },
+                    { key: 'shoulder', label: 'الكتف (اختناق أوتار / كفة مدورة)' },
+                    { key: 'core', label: 'الجدار البطني (انفصال عضلي / فتق)' },
+                    { key: 'elbow_wrist', label: 'الكوع أو المعصم' }
+                  ].map((inj) => {
+                    const isChecked = formData.injuries_map.selected_areas?.includes(inj.key);
+                    return (
+                      <button 
+                        key={inj.key}
+                        type="button"
+                        onClick={() => {
+                          if (inj.key === 'none') {
+                            setFormData(p => ({ ...p, injuries_map: { ...p.injuries_map, selected_areas: ['none'], has_injuries: false } }));
+                          } else {
+                            toggleInjuryArea(inj.key);
+                          }
+                        }}
+                        className={`btn btn-sm rounded-pill px-3 py-2 fw-semibold ${isChecked ? 'btn-danger' : 'btn-light border'}`}
+                        style={{ fontSize: '0.8rem' }}
+                      >
+                        {inj.label}
+                      </button>
+                    );
+                  })}
+                </div>
+
+                {/* Conditional Questions if any injury is selected */}
+                {formData.injuries_map.has_injuries && (
+                  <div className="p-3 rounded-3 mb-3" style={{ background: '#FFF1F2', border: '1px solid #FECDD3' }}>
+                    <h6 className="fw-bold text-danger mb-2" style={{ fontSize: '0.84rem' }}>تحديد طبيعة الإصابة لضبط محرك البدائل الآمنة:</h6>
+                    <div className="row g-2">
+                      <div className="col-md-6 col-12">
+                        <label className="small text-dark mb-1">طبيعة الإصابة</label>
+                        <select 
+                          className="form-select form-select-sm"
+                          value={formData.injuries_map.injury_nature}
+                          onChange={(e) => updateNested('injuries_map', 'injury_nature', e.target.value)}
+                        >
+                          <option value="chronic">إجهاد تراكمي وتدريجي (Chronic)</option>
+                          <option value="acute">حادث أو صدمة مفاجئة (Acute)</option>
+                        </select>
+                      </div>
+                      <div className="col-md-6 col-12">
+                        <label className="small text-dark mb-1">هل يهدأ الألم عند الراحة وعدم التحميل؟</label>
+                        <div className="d-flex gap-2">
+                          <button 
+                            type="button" 
+                            onClick={() => updateNested('injuries_map', 'pain_relieved_by_rest', true)}
+                            className={`btn btn-sm flex-fill ${formData.injuries_map.pain_relieved_by_rest ? 'btn-success' : 'btn-light border'}`}
+                          >نعم يهدأ</button>
+                          <button 
+                            type="button" 
+                            onClick={() => updateNested('injuries_map', 'pain_relieved_by_rest', false)}
+                            className={`btn btn-sm flex-fill ${!formData.injuries_map.pain_relieved_by_rest ? 'btn-danger' : 'btn-light border'}`}
+                          >لا يستمر</button>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {/* Q7: Smoking Status */}
+              <div className="mb-4">
+                <label className="form-label fw-bold text-dark small mb-2">حالة التدخين</label>
+                <div className="d-flex gap-2">
+                  <button 
+                    type="button" 
+                    onClick={() => setFormData(p => ({ ...p, smoking_status: 'non_smoker' }))}
+                    className={`btn flex-fill py-2 rounded-3 fw-bold ${formData.smoking_status === 'non_smoker' ? 'btn-success' : 'btn-light border'}`}
+                    style={{ fontSize: '0.84rem' }}
+                  >
+                    غير مدخن (Non-Smoker)
+                  </button>
+                  <button 
+                    type="button" 
+                    onClick={() => setFormData(p => ({ ...p, smoking_status: 'smoker' }))}
+                    className={`btn flex-fill py-2 rounded-3 fw-bold ${formData.smoking_status === 'smoker' ? 'btn-danger' : 'btn-light border'}`}
+                    style={{ fontSize: '0.84rem' }}
+                  >
+                    مدخن (Smoker)
+                  </button>
+                </div>
+              </div>
+
+              {/* Q8: Current Meds / Supplements */}
+              <div className="mb-3">
+                <label className="form-label fw-bold text-dark small mb-1">الأدوية أو المكملات المتوفرة لديك حالياً (اختياري)</label>
+                <input 
+                  type="text" 
+                  className="form-control" 
+                  placeholder="مثال: كرياتين، أوميجا 3، دواء ضغط، فيتامين د..."
+                  value={formData.current_meds_supplements}
+                  onChange={(e) => setFormData(p => ({ ...p, current_meds_supplements: e.target.value }))}
+                  style={{ height: '42px', borderRadius: '10px', borderColor: '#E2E8F0', fontSize: '0.84rem' }}
+                />
+              </div>
+
+            </div>
+          )}
+
+          {/* =========================================================================
+              SCREEN 3: التغذية، المطبخ، والحساسيات (Nutrition & Culinary Engine)
+              ========================================================================= */}
+          {currentStep === 3 && (
+            <div>
+              <div className="mb-4 pb-2 border-bottom" style={{ borderColor: '#F1F5F9' }}>
+                <h5 className="fw-black text-dark mb-1" style={{ color: '#0F172A' }}>3. التغذية، المطبخ، والحساسيات الغذائية</h5>
+                <small className="text-muted" style={{ fontSize: '0.82rem' }}>لبناء سفرة الوجبات الدقيقة من مطبخك المفضل واستبعاد المحظورات</small>
+              </div>
+
+              {/* Q9: Strict Allergies */}
+              <div className="mb-4">
+                <label className="form-label fw-bold text-dark small mb-2">مصفوفة الحساسيات الغذائية الصارمة (حظر فوري)</label>
+                <div className="d-flex flex-wrap gap-2 mb-2">
+                  {[
+                    { key: 'none', label: 'لا توجد أي حساسية غذائية' },
+                    { key: 'eggs', label: 'حساسية بيض' },
+                    { key: 'dairy_lactose', label: 'حساسية لاكتوز وألبان' },
+                    { key: 'gluten_celiac', label: 'حساسية قمح وجلوتين / سيلياك' },
+                    { key: 'peanuts_tree_nuts', label: 'حساسية مكسرات وفول سوداني' },
+                    { key: 'fish_shellfish', label: 'حساسية أسماك ومأكولات بحرية' },
+                    { key: 'soy', label: 'حساسية فول صويا' },
+                    { key: 'sesame_seeds', label: 'حساسية سمسم وبذور' }
+                  ].map((alg) => {
+                    const isChecked = formData.strict_allergies.includes(alg.key);
+                    return (
+                      <button 
+                        key={alg.key}
+                        type="button"
+                        onClick={() => {
+                          if (alg.key === 'none') {
+                            setFormData(p => ({ ...p, strict_allergies: ['none'] }));
+                          } else {
+                            toggleArrayItem('strict_allergies', alg.key);
+                          }
+                        }}
+                        className={`btn btn-sm rounded-pill px-3 py-2 fw-semibold ${isChecked ? 'btn-danger' : 'btn-light border'}`}
+                        style={{ fontSize: '0.8rem' }}
+                      >
+                        {alg.label}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* Q10: Cuisine Preference */}
+              <div className="mb-4">
+                <label className="form-label fw-bold text-dark small mb-2">نمط المطبخ والوجبات المفضل لديك</label>
+                <div className="row g-2">
+                  {[
+                    { id: 'egyptian_traditional', title: 'مطبخ مصري منزلي', desc: 'أرز، خضار مطبوخ، دواجن ولحوم، جبن قريش' },
+                    { id: 'gulf_traditional', title: 'مطبخ خليجي غني', desc: 'كبسة، مجبوس، لحوم ودواجن بتوابل شرقية' },
+                    { id: 'quick_prep_western', title: 'وجبات عصرية سريعة التحضير', desc: 'شوفان، توست، زبادي يوناني، ستيك وفيليه' },
+                    { id: 'keto', title: 'نظام كيتو دايت (Keto)', desc: 'دهون صحية عالية وبروتين مع كارب منعدم' },
+                    { id: 'vegetarian_pescatarian', title: 'نظام نباتي مرن', desc: 'اعتماد على الأسماك، البيض، والألبان والنبات' }
+                  ].map((cuis) => (
+                    <div className="col-sm-6 col-12" key={cuis.id}>
+                      <div 
+                        onClick={() => setFormData(p => ({ ...p, cuisine_preference: cuis.id }))}
+                        className={`p-3 rounded-3 border h-100 ${formData.cuisine_preference === cuis.id ? 'border-primary' : ''}`}
+                        style={{ 
+                          cursor: 'pointer',
+                          background: formData.cuisine_preference === cuis.id ? '#E5F0FF' : '#FFFFFF',
+                          borderColor: formData.cuisine_preference === cuis.id ? '#0284C7' : '#E2E8F0'
+                        }}
+                      >
+                        <strong className="d-block text-dark mb-1" style={{ fontSize: '0.86rem' }}>{cuis.title}</strong>
+                        <small className="text-muted" style={{ fontSize: '0.74rem' }}>{cuis.desc}</small>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Q11: Meal Structure & Intermittent Fasting */}
+              <div className="row g-3 mb-4">
+                <div className="col-md-6 col-12">
+                  <label className="form-label fw-bold text-dark small mb-2">عدد الوجبات المفضل يومياً</label>
+                  <select 
+                    className="form-select"
+                    value={formData.meal_structure.meals_count}
+                    onChange={(e) => updateNested('meal_structure', 'meals_count', e.target.value)}
+                    style={{ height: '44px', borderRadius: '12px', borderColor: '#E2E8F0', fontSize: '0.84rem' }}
+                  >
+                    <option value="3_meals">3 وجبات رئيسية فقط</option>
+                    <option value="3_meals_snack">3 وجبات رئيسية + سناك خفيف (الموصى به)</option>
+                    <option value="4_to_5_meals">4 إلى 5 وجبات صغيرة موزعة</option>
+                  </select>
+                </div>
+                <div className="col-md-6 col-12">
+                  <label className="form-label fw-bold text-dark small mb-2">تطبيق الصيام المتقطع</label>
+                  <select 
+                    className="form-select"
+                    value={formData.meal_structure.intermittent_fasting}
+                    onChange={(e) => updateNested('meal_structure', 'intermittent_fasting', e.target.value)}
+                    style={{ height: '44px', borderRadius: '12px', borderColor: '#E2E8F0', fontSize: '0.84rem' }}
+                  >
+                    <option value="none">لا أفضله (توزيع مرن على مدار اليوم)</option>
+                    <option value="16_8">نعم، صيام 16 ساعة وإفطار 8 ساعات</option>
+                    <option value="14_10">نعم، صيام 14 ساعة وإفطار 10 ساعات</option>
+                  </select>
+                </div>
+              </div>
+
+              {/* Q12: Disliked Foods Capsules */}
+              <div className="mb-3">
+                <label className="form-label fw-bold text-dark small mb-2">الأطعمة غير المرغوبة (استبعاد اختياري من الوصفات)</label>
+                <div className="d-flex flex-wrap gap-2 mb-2">
+                  {['جبن قريش', 'تونة', 'كبدة', 'بيض مسلوق', 'شوفان', 'سمك سلمون'].map((food) => {
+                    const isChecked = formData.disliked_foods.includes(food);
+                    return (
+                      <button 
+                        key={food}
+                        type="button"
+                        onClick={() => toggleArrayItem('disliked_foods', food)}
+                        className={`btn btn-sm rounded-pill px-3 py-1.5 ${isChecked ? 'btn-secondary text-white' : 'btn-light border'}`}
+                        style={{ fontSize: '0.8rem' }}
+                      >
+                        {isChecked ? `✕ ${food}` : food}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+
+            </div>
+          )}
+
+          {/* =========================================================================
+              SCREEN 4: بيئة التدريب، الاستهداف، ورفع الملفات (Training & Uploads)
+              ========================================================================= */}
+          {currentStep === 4 && (
+            <div>
+              <div className="mb-4 pb-2 border-bottom" style={{ borderColor: '#F1F5F9' }}>
+                <h5 className="fw-black text-dark mb-1" style={{ color: '#0F172A' }}>4. بيئة التدريب، الأهداف الحركية، ورفع الملفات</h5>
+                <small className="text-muted" style={{ fontSize: '0.82rem' }}>لبناء جدول التمارين المخصص ورفع صور القوام المشفرة</small>
+              </div>
+
+              {/* Q13: Training Environment */}
+              <div className="mb-4">
+                <label className="form-label fw-bold text-dark small mb-2">مكان التمرين والأدوات المتاحة</label>
+                <div className="row g-2">
+                  {[
+                    { id: 'commercial_gym', title: 'جيم تجاري متكامل', desc: 'أجهزة، كابلات، وأوزان حرة كاملة' },
+                    { id: 'home_gym', title: 'جيم منزلي متطور', desc: 'دمبلز قابلة للتعديل + بنش + عقلة' },
+                    { id: 'minimal_equipment', title: 'أدوات منزلية خفيفة', desc: 'دمبلز وزن ثابت أو أشرطة مقاومة' },
+                    { id: 'calisthenics_bands', title: 'وزن الجسم فقط (Calisthenics)', desc: 'تمارين بوزن الجسم بدون أوزان خارجية' }
+                  ].map((env) => (
+                    <div className="col-sm-6 col-12" key={env.id}>
+                      <div 
+                        onClick={() => setFormData(p => ({ ...p, training_environment: env.id }))}
+                        className={`p-3 rounded-3 border h-100 ${formData.training_environment === env.id ? 'border-primary' : ''}`}
+                        style={{ 
+                          cursor: 'pointer',
+                          background: formData.training_environment === env.id ? '#E5F0FF' : '#FFFFFF',
+                          borderColor: formData.training_environment === env.id ? '#0284C7' : '#E2E8F0'
+                        }}
+                      >
+                        <strong className="d-block text-dark mb-1" style={{ fontSize: '0.86rem' }}>{env.title}</strong>
+                        <small className="text-muted" style={{ fontSize: '0.74rem' }}>{env.desc}</small>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Q14: Training Logistics (Days & Level) */}
+              <div className="row g-3 mb-4">
+                <div className="col-md-6 col-12">
+                  <label className="form-label fw-bold text-dark small mb-2">أيام التمرين المتاحة أسبوعياً</label>
+                  <div className="d-flex gap-2">
+                    {[3, 4, 5, 6].map((days) => (
+                      <button 
+                        key={days}
+                        type="button"
+                        onClick={() => updateNested('training_logistics', 'days_per_week', days)}
+                        className={`btn flex-fill py-2 rounded-3 fw-bold font-monospace ${formData.training_logistics.days_per_week === days ? 'btn-primary' : 'btn-light border'}`}
+                        style={{ fontSize: '0.9rem' }}
+                      >
+                        {days} أيام
+                      </button>
+                    ))}
+                  </div>
+                </div>
+                <div className="col-md-6 col-12">
+                  <label className="form-label fw-bold text-dark small mb-2">المستوى التدريبي الفعلي</label>
+                  <select 
+                    className="form-select"
+                    value={formData.training_logistics.experience_level}
+                    onChange={(e) => updateNested('training_logistics', 'experience_level', e.target.value)}
+                    style={{ height: '44px', borderRadius: '12px', borderColor: '#E2E8F0', fontSize: '0.84rem' }}
+                  >
+                    <option value="beginner">مبتدئ (أقل من سنة تمرين منتظم)</option>
+                    <option value="intermediate">متوسط (1 إلى 3 سنوات تمرين منتظم)</option>
+                    <option value="advanced">متقدم (أكثر من 3 سنوات مع إتقان التكنيك)</option>
+                  </select>
+                </div>
+              </div>
+
+              {/* Q15: Focus Muscles (Max 2) */}
+              <div className="mb-4">
+                <label className="form-label fw-bold text-dark small mb-2">عضلات التركيز والأولوية (اختر بحد أقصى عضلتين)</label>
+                <div className="d-flex flex-wrap gap-2">
+                  {[
+                    { key: 'upper_chest', label: 'الصدر العلوي (Upper Chest)' },
+                    { key: 'lats_width', label: 'عرض الظهر (Lats Width)' },
+                    { key: 'side_delts', label: 'الكتف الجانبي (Side Delts)' },
+                    { key: 'arms', label: 'الذراعين (Arms)' },
+                    { key: 'glutes_legs', label: 'الجلوتس والأرجل (Glutes / Legs)' }
+                  ].map((m) => {
+                    const isChecked = formData.focus_muscles.includes(m.key);
+                    return (
+                      <button 
+                        key={m.key}
+                        type="button"
+                        onClick={() => {
+                          if (isChecked) {
+                            toggleArrayItem('focus_muscles', m.key);
+                          } else if (formData.focus_muscles.length < 2) {
+                            toggleArrayItem('focus_muscles', m.key);
+                          } else {
+                            alert('يمكنك اختيار عضلتين فقط كأولوية قصوى لضمان عدم الإجهاد العضلي.');
+                          }
+                        }}
+                        className={`btn btn-sm rounded-pill px-3 py-2 fw-semibold ${isChecked ? 'btn-primary' : 'btn-light border'}`}
+                        style={{ fontSize: '0.8rem' }}
+                      >
+                        {m.label}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* Q16: Secure Media Uploads (Front, Side, Back Photos) */}
+              <div className="p-3 rounded-3 mb-4" style={{ background: '#F8FAFC', border: '1px solid #E2E8F0' }}>
+                <div className="d-flex align-items-center gap-2 mb-2">
+                  <i className="ti ti-lock text-success fs-5"></i>
+                  <h6 className="fw-bold text-dark mb-0" style={{ fontSize: '0.88rem' }}>رفع صور القوام المشفرة (خاصة بالكوتش فقط)</h6>
+                </div>
+                <p className="text-muted small mb-3" style={{ fontSize: '0.76rem' }}>
+                  تُرفع الصور بأمان تام وتُشفر على الخزينة السحابية لتقييم توزيع الدهون ونقاط الضعف العضلية (3 زوايا: أمامية، جانبية، خلفية).
+                </p>
+
+                <div className="row g-2 text-center">
+                  {['أمامية (Front)', 'جانبية (Side)', 'خلفية (Back)'].map((angle, idx) => (
+                    <div className="col-4" key={idx}>
+                      <div className="p-3 bg-white border rounded-3 text-center" style={{ borderColor: '#CBD5E1', borderStyle: 'dashed' }}>
+                        <i className="ti ti-camera fs-4 text-muted mb-1 d-block"></i>
+                        <span className="fw-bold d-block text-dark" style={{ fontSize: '0.76rem' }}>{angle}</span>
+                        <small className="text-success fw-bold" style={{ fontSize: '0.7rem' }}>جاهز للرفع</small>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Submit Button */}
+              <button 
+                type="button" 
+                onClick={handleSubmit}
+                disabled={submitting}
+                className="btn btn-lg w-100 rounded-pill fw-bold text-white shadow-sm d-flex align-items-center justify-content-center gap-2"
+                style={{ height: '48px', background: 'linear-gradient(135deg, #10B981 0%, #059669 100%)', border: 'none', fontSize: '0.96rem' }}
+              >
+                {submitting ? (
+                  <span>جاري معالجة وإرسال الاستمارة...</span>
+                ) : (
+                  <>
+                    <i className="ti ti-circle-check fs-5"></i>
+                    <span>إرسال الاستمارة واعتماد البيانات</span>
+                  </>
+                )}
+              </button>
+
+            </div>
+          )}
+
+          {/* Stepper Navigation Footer */}
+          <div className="d-flex justify-content-between align-items-center mt-4 pt-3 border-top" style={{ borderColor: '#F1F5F9' }}>
+            <button 
+              type="button" 
+              onClick={() => setCurrentStep(p => Math.max(1, p - 1))}
+              disabled={currentStep === 1}
+              className="btn btn-light rounded-pill px-4 fw-bold border"
+              style={{ fontSize: '0.84rem' }}
+            >
+              <i className="ti ti-arrow-right me-1"></i> السابق
+            </button>
+
+            {currentStep < 4 ? (
+              <button 
+                type="button" 
+                onClick={() => setCurrentStep(p => Math.min(4, p + 1))}
+                className="btn btn-primary rounded-pill px-4 fw-bold text-white"
+                style={{ fontSize: '0.84rem', background: 'linear-gradient(135deg, #58B4E5 0%, #0284C7 100%)', border: 'none' }}
+              >
+                <span>التالي</span> <i className="ti ti-arrow-left ms-1"></i>
+              </button>
+            ) : (
+              <span className="small text-muted fw-bold">الخطوة الأخيرة (4 من 4)</span>
             )}
           </div>
-          
-          <div className="intake-body">
-            {renderActiveTab()}
-          </div>
-          
-          <div className="intake-footer">
-            <button 
-              type="button"
-              className="btn btn-secondary" 
-              disabled={activeTab === TABS[0].id} 
-              onClick={() => {
-                const idx = TABS.findIndex(t => t.id === activeTab);
-                if (idx > 0) setActiveTab(TABS[idx - 1].id);
-              }}
-            >
-              السابق
-            </button>
-            <button 
-              type="button"
-              className="btn btn-primary" 
-              disabled={activeTab === TABS[TABS.length - 1].id}
-              onClick={() => {
-                const idx = TABS.findIndex(t => t.id === activeTab);
-                if (idx < TABS.length - 1) setActiveTab(TABS[idx + 1].id);
-              }}
-            >
-              التالي
-            </button>
-          </div>
+
         </div>
 
       </div>

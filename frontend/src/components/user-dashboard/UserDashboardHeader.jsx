@@ -84,7 +84,7 @@ export default function UserDashboardHeader({
             >
               <div 
                 className="rounded-2 d-flex align-items-center justify-content-center fw-bold flex-shrink-0"
-                style={{ width: '24px', height: '24px', background: '#f5f3ff', color: '#1e144f', fontSize: '0.78rem', border: '1px solid #ddd6fe' }}
+                style={{ width: '24px', height: '24px', background: '#E5F0FF', color: '#1e144f', fontSize: '0.78rem', border: '1px solid #BAE6FD' }}
               >
                 {activeName[0]}
               </div>
@@ -146,7 +146,7 @@ export default function UserDashboardHeader({
                         onClick={() => handleSelectClient(code)}
                         className="btn btn-sm text-start w-100 px-3 py-2 d-flex align-items-center justify-content-between rounded-2 border-0 transition-all"
                         style={{
-                          background: isSelected ? '#f5f3ff' : 'transparent',
+                          background: isSelected ? '#E5F0FF' : 'transparent',
                           color: isSelected ? '#1e144f' : '#334155',
                           fontSize: '0.82rem'
                         }}

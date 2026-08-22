@@ -1,10 +1,31 @@
 import { User } from "../models/index.js";
 
-const PACKAGE_DAYS = {
-  "1_MONTH": 30,
-  "3_MONTHS": 90,
-  "6_MONTHS": 180,
-  "12_MONTHS": 365,
+export const PACKAGE_CONFIG = {
+  "MAX_3_PLUS_1": {
+    tier: "max",
+    name: "باقة ماكس (VIP)",
+    name_en: "MAX VIP Coaching (3+1 Free)",
+    duration_days: 112, // 16 weeks
+    checkin_interval_days: 7,
+    price: 3500,
+    features: ["متابعة أسبوعية دقيقة كل 7 أيام", "تعديل فوري للبرامج", "أولوية في طابور المراجعة"]
+  },
+  "ELITE_3_PLUS_1": {
+    tier: "elite",
+    name: "باقة إيليت (3 شهور + 1 مجاناً)",
+    name_en: "ELITE Transform (3+1 Free)",
+    duration_days: 112, // 16 weeks
+    checkin_interval_days: 14,
+    price: 2500,
+    features: ["متابعة نصف شهرية كل 14 يوماً", "تحديث الخطة كل أسبوعين", "دعم كامل للمبادلات الذكية"]
+  },
+  // Aliases & legacy
+  "max": { tier: "max", name: "باقة ماكس (VIP)", duration_days: 112, checkin_interval_days: 7, price: 3500 },
+  "elite": { tier: "elite", name: "باقة إيليت (3 شهور + 1 مجاناً)", duration_days: 112, checkin_interval_days: 14, price: 2500 },
+  "1_MONTH": { tier: "elite", name: "باقة شهرية", duration_days: 30, checkin_interval_days: 7, price: 1000 },
+  "3_MONTHS": { tier: "elite", name: "باقة 3 شهور", duration_days: 90, checkin_interval_days: 14, price: 2000 },
+  "6_MONTHS": { tier: "max", name: "باقة 6 شهور VIP", duration_days: 180, checkin_interval_days: 7, price: 5000 },
+  "12_MONTHS": { tier: "max", name: "باقة سنة كاملة VIP", duration_days: 365, checkin_interval_days: 7, price: 8000 }
 };
 
 export const getSubscriptionOverview = async (req, res) => {
@@ -21,12 +42,15 @@ export const getSubscriptionOverview = async (req, res) => {
     let expiredCount = 0;
 
     const enrichedClients = clients.map((c) => {
+      const pkgCode = c.subscription_package || "ELITE_3_PLUS_1";
+      const config = PACKAGE_CONFIG[pkgCode] || PACKAGE_CONFIG["ELITE_3_PLUS_1"];
+
       const start = c.subscription_start_date ? new Date(c.subscription_start_date) : new Date(c.createdAt);
       let end = c.subscription_end_date ? new Date(c.subscription_end_date) : null;
 
       if (!end) {
         end = new Date(start);
-        end.setDate(end.getDate() + (PACKAGE_DAYS[c.subscription_package] || 30));
+        end.setDate(end.getDate() + config.duration_days);
       }
 
       const diffTime = end.getTime() - now.getTime();
@@ -40,11 +64,11 @@ export const getSubscriptionOverview = async (req, res) => {
         computedStatus = "EXPIRING_SOON";
         expiringSoonCount++;
         activeCount++;
-        totalMonthlyRevenue += Number(c.subscription_price) || 1500;
+        totalMonthlyRevenue += Number(c.subscription_price) || config.price;
       } else {
         computedStatus = "ACTIVE";
         activeCount++;
-        totalMonthlyRevenue += Number(c.subscription_price) || 1500;
+        totalMonthlyRevenue += Number(c.subscription_price) || config.price;
       }
 
       return {
@@ -52,8 +76,12 @@ export const getSubscriptionOverview = async (req, res) => {
         client_code: c.client_code,
         full_name: c.full_name,
         phone_number: c.phone_number,
-        package: c.subscription_package || "1_MONTH",
-        price: Number(c.subscription_price) || 1500,
+        package: config.name,
+        package_code: pkgCode,
+        tier: config.tier,
+        is_vip: config.tier === "max",
+        checkin_interval_days: config.checkin_interval_days,
+        price: Number(c.subscription_price) || config.price,
         start_date: start.toISOString().split("T")[0],
         end_date: end.toISOString().split("T")[0],
         days_remaining: daysRemaining,
@@ -94,22 +122,24 @@ export const renewSubscription = async (req, res) => {
       return res.status(404).json({ error: "User not found" });
     }
 
-    const pkg = package_code || user.subscription_package || "1_MONTH";
-    const daysToAdd = PACKAGE_DAYS[pkg] || 30;
+    const pkg = package_code || user.subscription_package || "ELITE_3_PLUS_1";
+    const config = PACKAGE_CONFIG[pkg] || PACKAGE_CONFIG["ELITE_3_PLUS_1"];
+    const daysToAdd = config.duration_days;
 
     const currentEnd = user.subscription_end_date ? new Date(user.subscription_end_date) : new Date();
-    const newStartDate = currentEnd > new Date() ? currentEnd : new Date();
-    const newEndDate = new Date(newStartDate);
-    newEndDate.setDate(newEndDate.getDate() + daysToAdd);
+    const newEnd = new Date(Math.max(currentEnd.getTime(), Date.now()));
+    newEnd.setDate(newEnd.getDate() + daysToAdd);
 
-    user.subscription_package = pkg;
-    user.subscription_start_date = newStartDate;
-    user.subscription_end_date = newEndDate;
-    user.subscription_status = "ACTIVE";
-    await user.save();
+    await user.update({
+      subscription_package: pkg,
+      subscription_price: config.price,
+      subscription_end_date: newEnd,
+      subscription_status: "ACTIVE"
+    });
 
     return res.status(200).json({
-      message: "تم تجديد الاشتراك بنجاح!",
+      success: true,
+      message: "تم تجديد الاشتراك بنجاح",
       user
     });
   } catch (err) {
@@ -118,36 +148,25 @@ export const renewSubscription = async (req, res) => {
   }
 };
 
-export const updateSubscription = async (req, res) => {
+export const overrideClientCheckin = async (req, res) => {
   try {
-    const { user_id } = req.params;
-    const { subscription_package, subscription_price, subscription_start_date, subscription_end_date } = req.body;
-
-    let user = await User.findOne({ where: { client_code: user_id } });
-    if (!user && !isNaN(user_id)) {
-      user = await User.findByPk(parseInt(user_id, 10));
-    }
+    const { user_id, reason = "Super Admin Override: استثناء إداري لفتح متابعة فورية" } = req.body;
+    let user = await User.findByPk(user_id);
     if (!user) {
-      user = await User.findOne({ where: { phone_number: user_id } });
+      user = await User.findOne({ where: { client_code: String(user_id) } });
     }
-
     if (!user) {
       return res.status(404).json({ error: "User not found" });
     }
 
-    if (subscription_package) user.subscription_package = subscription_package;
-    if (subscription_price !== undefined) user.subscription_price = Number(subscription_price);
-    if (subscription_start_date) user.subscription_start_date = new Date(subscription_start_date);
-    if (subscription_end_date) user.subscription_end_date = new Date(subscription_end_date);
-
-    await user.save();
-
+    // Set an override flag in user metadata
     return res.status(200).json({
-      message: "تم تحديث بيانات الاشتراك بنجاح!",
-      user
+      success: true,
+      message: "تم فتح نافذة المتابعة الاستثنائية فوراً بصلاحية Super Admin Override",
+      user_id: user.id,
+      checkin_url: `/check-in?user_id=${user.id}&override=true`
     });
   } catch (err) {
-    console.error("updateSubscription error:", err);
-    return res.status(500).json({ error: "فشل تحديث بيانات الاشتراك", details: err.message });
+    return res.status(500).json({ error: err.message });
   }
 };

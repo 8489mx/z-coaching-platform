@@ -41,9 +41,9 @@ export default function CardioZoneBanner({ onOpenCheckin }) {
               style={{ 
                 height: '38px', 
                 fontSize: '0.82rem', 
-                background: 'linear-gradient(135deg, #f5f3ff 0%, #ede9fe 100%)',
-                color: '#261c6a',
-                border: '1px solid #ddd6fe',
+                background: 'linear-gradient(135deg, #E5F0FF 0%, #F0F9FF 100%)',
+                color: '#0284C7',
+                border: '1px solid #BAE6FD',
                 boxShadow: '0 2px 8px rgba(38,28,106,0.08)'
               }}
             >

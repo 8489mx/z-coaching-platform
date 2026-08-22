@@ -242,7 +242,7 @@ export default function CoachEditor() {
                 onClick={handleApproveAndPublish} 
                 disabled={publishing || saving} 
                 className="btn btn-sm rounded-pill px-4 fw-bold shadow-sm text-white d-flex align-items-center gap-1"
-                style={{ height: '34px', background: '#261c6a', border: 'none', boxShadow: '0 3px 10px rgba(38, 28, 106, 0.28)', fontSize: '0.8rem' }}
+                style={{ height: '34px', background: '#0284C7', border: 'none', boxShadow: '0 3px 10px rgba(38, 28, 106, 0.28)', fontSize: '0.8rem' }}
               >
                 {publishing ? (
                   <><span className="spinner-border spinner-border-sm me-1"></span> جاري الاعتماد والنشر...</>
@@ -254,13 +254,13 @@ export default function CoachEditor() {
           </div>
 
           {/* AI Rationale & Safety Audit Box */}
-          <div className="card border-0 shadow-sm mb-4" style={{ borderRadius: '16px', background: '#fbfaff', border: '1px solid #ede9fe', borderRight: '4px solid #261c6a' }}>
+          <div className="card border-0 shadow-sm mb-4" style={{ borderRadius: '16px', background: '#F0F9FF', border: '1px solid #F0F9FF', borderRight: '4px solid #0284C7' }}>
             <div className="card-body p-3">
               <div className="d-flex align-items-center gap-2 mb-2">
-                <div className="rounded-circle d-flex align-items-center justify-content-center" style={{ width: '28px', height: '28px', background: '#f5f3ff', color: '#261c6a', border: '1px solid #ddd6fe' }}>
+                <div className="rounded-circle d-flex align-items-center justify-content-center" style={{ width: '28px', height: '28px', background: '#E5F0FF', color: '#0284C7', border: '1px solid #BAE6FD' }}>
                   <i className="ti ti-shield-check" style={{ fontSize: '0.85rem' }}></i>
                 </div>
-                <h6 className="fw-bold mb-0" style={{ color: '#261c6a', fontSize: '0.92rem' }}>
+                <h6 className="fw-bold mb-0" style={{ color: '#0284C7', fontSize: '0.92rem' }}>
                   تقرير التدقيق الرياضي والأمني (Engine Safety Audit)
                 </h6>
               </div>
@@ -290,7 +290,7 @@ export default function CoachEditor() {
 
                 <div className="col-md-6">
                   <div className="p-2 bg-white rounded-3 border" style={{ borderColor: '#e2e8f0' }}>
-                    <strong className="d-block mb-1" style={{ color: '#261c6a' }}>
+                    <strong className="d-block mb-1" style={{ color: '#0284C7' }}>
                       <i className="ti ti-flame me-1"></i> استراتيجية السعرات والماكروز:
                     </strong>
                     <span>
@@ -327,7 +327,7 @@ export default function CoachEditor() {
                   type="button"
                   className={`btn btn-sm rounded-pill px-4 fw-bold transition-all ${activeTab === t.id ? 'text-white shadow-sm' : 'bg-transparent text-dark'}`}
                   style={{
-                    background: activeTab === t.id ? '#261c6a' : 'transparent',
+                    background: activeTab === t.id ? '#0284C7' : 'transparent',
                     border: 'none',
                     fontSize: '0.82rem',
                     height: '34px'
@@ -458,7 +458,7 @@ export default function CoachEditor() {
                       <button 
                         type="button" 
                         className="btn btn-primary btn-sm rounded-pill px-4 fw-bold shadow-sm"
-                        style={{ height: '38px', background: '#261c6a', border: 'none' }}
+                        style={{ height: '38px', background: '#0284C7', border: 'none' }}
                         disabled={!selectedExToAdd}
                         onClick={() => handleAddExerciseToSession(selectedSessionIndex, selectedExToAdd)}
                       >

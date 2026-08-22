@@ -92,7 +92,7 @@ export default function EditPackageModal({ isOpen, onClose, packageData, onSave,
           {/* Header */}
           <div className="modal-header border-bottom p-4 bg-white d-flex justify-content-between align-items-center" style={{ borderColor: '#f1f5f9' }}>
             <div className="d-flex align-items-center gap-3">
-              <div className="rounded-circle d-flex align-items-center justify-content-center flex-shrink-0" style={{ width: '40px', height: '40px', background: '#f5f3ff', color: '#261c6a', border: '1.5px solid #ddd6fe' }}>
+              <div className="rounded-circle d-flex align-items-center justify-content-center flex-shrink-0" style={{ width: '40px', height: '40px', background: '#E5F0FF', color: '#0284C7', border: '1.5px solid #BAE6FD' }}>
                 <i className="ti ti-crown fs-5"></i>
               </div>
               <div>
@@ -262,7 +262,7 @@ export default function EditPackageModal({ isOpen, onClose, packageData, onSave,
                 style={{ 
                   height: '36px', 
                   fontSize: '0.82rem', 
-                  background: 'linear-gradient(135deg, #261c6a 0%, #4338ca 100%)', 
+                  background: 'linear-gradient(135deg, #0284C7 0%, #0284C7 100%)', 
                   border: 'none', 
                   boxShadow: '0 2px 10px rgba(38, 28, 106, 0.22)' 
                 }}

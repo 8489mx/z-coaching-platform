@@ -178,10 +178,10 @@ export default function Subscriptions() {
               <div className="card border-0 bg-white h-100 shadow-sm" style={{ borderRadius: '14px', border: '1px solid #e2e8f0' }}>
                 <div className="card-body p-3 d-flex flex-column justify-content-between">
                   <div className="d-flex justify-content-between align-items-center mb-2">
-                    <div className="d-flex align-items-center justify-content-center" style={{ width: '30px', height: '30px', borderRadius: '8px', background: '#f5f3ff', color: '#261c6a' }}>
+                    <div className="d-flex align-items-center justify-content-center" style={{ width: '30px', height: '30px', borderRadius: '8px', background: '#E5F0FF', color: '#0284C7' }}>
                       <i className="ti ti-user-check fs-6"></i>
                     </div>
-                    <span className="badge rounded-pill fw-semibold px-2 py-1" style={{ background: '#f5f3ff', color: '#261c6a', fontSize: '0.68rem', border: '1px solid #ddd6fe' }}>
+                    <span className="badge rounded-pill fw-semibold px-2 py-1" style={{ background: '#E5F0FF', color: '#0284C7', fontSize: '0.68rem', border: '1px solid #BAE6FD' }}>
                       سارية
                     </span>
                   </div>
@@ -239,8 +239,8 @@ export default function Subscriptions() {
               onClick={() => setFilter('ALL')}
               className={`btn btn-sm rounded-pill px-3 fw-bold transition-all ${filter === 'ALL' ? 'text-white shadow-sm' : 'bg-white text-dark border'}`}
               style={{
-                background: filter === 'ALL' ? '#261c6a' : '#ffffff',
-                borderColor: filter === 'ALL' ? '#261c6a' : '#e2e8f0',
+                background: filter === 'ALL' ? '#0284C7' : '#ffffff',
+                borderColor: filter === 'ALL' ? '#0284C7' : '#e2e8f0',
                 fontSize: '0.8rem',
                 height: '34px'
               }}
@@ -252,8 +252,8 @@ export default function Subscriptions() {
               onClick={() => setFilter('ACTIVE')}
               className={`btn btn-sm rounded-pill px-3 fw-bold transition-all ${filter === 'ACTIVE' ? 'text-white shadow-sm' : 'bg-white text-dark border'}`}
               style={{
-                background: filter === 'ACTIVE' ? '#261c6a' : '#ffffff',
-                borderColor: filter === 'ACTIVE' ? '#261c6a' : '#e2e8f0',
+                background: filter === 'ACTIVE' ? '#0284C7' : '#ffffff',
+                borderColor: filter === 'ACTIVE' ? '#0284C7' : '#e2e8f0',
                 fontSize: '0.8rem',
                 height: '34px'
               }}
@@ -265,8 +265,8 @@ export default function Subscriptions() {
               onClick={() => setFilter('EXPIRING_SOON')}
               className={`btn btn-sm rounded-pill px-3 fw-bold transition-all ${filter === 'EXPIRING_SOON' ? 'text-white shadow-sm' : 'bg-white text-dark border'}`}
               style={{
-                background: filter === 'EXPIRING_SOON' ? '#261c6a' : '#ffffff',
-                borderColor: filter === 'EXPIRING_SOON' ? '#261c6a' : '#e2e8f0',
+                background: filter === 'EXPIRING_SOON' ? '#0284C7' : '#ffffff',
+                borderColor: filter === 'EXPIRING_SOON' ? '#0284C7' : '#e2e8f0',
                 fontSize: '0.8rem',
                 height: '34px'
               }}
@@ -278,8 +278,8 @@ export default function Subscriptions() {
               onClick={() => setFilter('EXPIRED')}
               className={`btn btn-sm rounded-pill px-3 fw-bold transition-all ${filter === 'EXPIRED' ? 'text-white shadow-sm' : 'bg-white text-dark border'}`}
               style={{
-                background: filter === 'EXPIRED' ? '#261c6a' : '#ffffff',
-                borderColor: filter === 'EXPIRED' ? '#261c6a' : '#e2e8f0',
+                background: filter === 'EXPIRED' ? '#0284C7' : '#ffffff',
+                borderColor: filter === 'EXPIRED' ? '#0284C7' : '#e2e8f0',
                 fontSize: '0.8rem',
                 height: '34px'
               }}
@@ -290,7 +290,7 @@ export default function Subscriptions() {
             <Link 
               to="/master-settings?tab=packages" 
               className="btn btn-sm rounded-pill px-3 fw-bold ms-auto d-flex align-items-center gap-1 shadow-xs"
-              style={{ background: '#f5f3ff', color: '#261c6a', border: '1px solid #ddd6fe', fontSize: '0.8rem', height: '34px' }}
+              style={{ background: '#E5F0FF', color: '#0284C7', border: '1px solid #BAE6FD', fontSize: '0.8rem', height: '34px' }}
             >
               <i className="ti ti-crown fs-6"></i>
               <span>تعديل الباقات والأسعار</span>
@@ -334,7 +334,7 @@ export default function Subscriptions() {
                             <tr key={c.id}>
                               <td>
                                 <div className="d-flex align-items-center gap-2">
-                                  <div className="rounded-circle d-flex align-items-center justify-content-center fw-bold" style={{ width: '34px', height: '34px', fontSize: '0.82rem', background: '#f5f3ff', color: '#261c6a', border: '1px solid #ddd6fe' }}>
+                                  <div className="rounded-circle d-flex align-items-center justify-content-center fw-bold" style={{ width: '34px', height: '34px', fontSize: '0.82rem', background: '#E5F0FF', color: '#0284C7', border: '1px solid #BAE6FD' }}>
                                     {(c.full_name || 'U')[0]}
                                   </div>
                                   <div>
@@ -377,7 +377,7 @@ export default function Subscriptions() {
                                     type="button"
                                     onClick={() => handleRenew(c)}
                                     className="btn btn-sm rounded-pill px-3 py-1 fw-semibold shadow-xs"
-                                    style={{ fontSize: '0.78rem', background: '#f5f3ff', color: '#261c6a', border: '1px solid #ddd6fe' }}
+                                    style={{ fontSize: '0.78rem', background: '#E5F0FF', color: '#0284C7', border: '1px solid #BAE6FD' }}
                                     title="تجديد الاشتراك"
                                   >
                                     <i className="ti ti-refresh me-1"></i> تجديد

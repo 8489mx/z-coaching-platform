@@ -94,6 +94,30 @@ export default function Step5Training({
         </div>
       </div>
 
+
+      {/* Conditional Home Dumbbell Weights */}
+      {(formData.training?.location === 'HOME_GEAR' || formData.training?.location === 'HOME') && (
+        <div className="form-group mb-4 p-3 rounded-3 border" style={{ background: '#f8fafc' }}>
+          <label className="form-label fw-bold">أقصى وزن للدمبلز متاح لديك في المنزل:</label>
+          <div className="choices-grid" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))' }}>
+            {[
+              { v: 'LIGHT', l: 'خفيف (حتى 10 كجم)', d: 'تركيز على التكرارات العالية والثبات الحركي' },
+              { v: 'MODERATE', l: 'متوسط (حتى 20 كجم)', d: 'مناسب لغالبية التمارين الأساسية' },
+              { v: 'HEAVY', l: 'أوزان ثقيلة ومفتوحة', d: 'دمبلز قابلة للتعديل أو طقم كامل' }
+            ].map(hw => (
+              <div 
+                key={hw.v} 
+                className={`choice-pill ${(formData.training?.homeEquipmentWeight === hw.v || (hw.v === 'MODERATE' && !formData.training?.homeEquipmentWeight)) ? 'selected' : ''}`} 
+                onClick={() => updateField('training', 'homeEquipmentWeight', hw.v)}
+              >
+                <div className="choice-title fw-bold">{hw.l}</div>
+                <small className="text-muted d-block" style={{ fontSize: '0.7rem' }}>{hw.d}</small>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
       <div className="form-group mb-4">
         <label className="form-label">مستوى خبرتك في تمارين الحديد والمقاومة:</label>
         <div className="choices-grid" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))' }}>
@@ -115,8 +139,8 @@ export default function Step5Training({
 
       <div className="section-divider"></div>
 
-      {/* 2. Days & Weekly Availability */}
-      <h3 className="section-title">أيام ومدة التمرين الأسبوعية</h3>
+      {/* 2. Days, Split Preference & Session Duration */}
+      <h3 className="section-title">أيام وتقسيم ومدة التمرين الأسبوعية</h3>
       
       <div className="form-group mb-4">
         <label className="form-label">كم يوماً تستطيع الالتزام بالتمرين أسبوعياً؟</label>
@@ -131,6 +155,28 @@ export default function Step5Training({
               }}
             >
               <div className="choice-title">{days} أيام</div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Workout Split Preference */}
+      <div className="form-group mb-4">
+        <label className="form-label">تقسيم الجدول التدريبي المفضل لديك:</label>
+        <div className="choices-grid" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))' }}>
+          {[
+            { v: 'COACH_CHOICE', l: 'دع الكابتن يحدد الأفضل لهدفي ووقتي (موصى به)' },
+            { v: 'PUSH_PULL_LEGS', l: 'Push / Pull / Legs (دفع / سحب / أرجل)' },
+            { v: 'UPPER_LOWER', l: 'Upper / Lower (علوي / سفلي)' },
+            { v: 'FULL_BODY', l: 'Full Body (تدريب الجسم كامل في الجلسة)' },
+            { v: 'BRO_SPLIT', l: 'Arnold / Bro Split (تقسيم العضلات المنفصلة)' }
+          ].map(sp => (
+            <div 
+              key={sp.v} 
+              className={`choice-pill ${(formData.training?.splitPreference === sp.v || (sp.v === 'COACH_CHOICE' && !formData.training?.splitPreference)) ? 'selected' : ''}`} 
+              onClick={() => updateField('training', 'splitPreference', sp.v)}
+            >
+              <div className="choice-title">{sp.l}</div>
             </div>
           ))}
         </div>
@@ -171,8 +217,8 @@ export default function Step5Training({
             const isSelected = focusMuscles.includes(m.code);
             return (
               <div 
-                key={m.code}
-                className={`choice-pill ${isSelected ? 'selected' : ''}`}
+                key={m.code} 
+                className={`choice-pill ${isSelected ? 'selected' : ''}`} 
                 onClick={() => toggleFocusMuscle(m.code)}
               >
                 <div className="choice-title">{isSelected ? '✓ ' : ''}{m.label}</div>
@@ -190,8 +236,8 @@ export default function Step5Training({
             const isSelected = selectedInjuries.some(item => (typeof item === 'string' ? item : item.code) === inj.code);
             return (
               <div 
-                key={inj.code}
-                className={`choice-pill ${isSelected ? 'selected' : ''}`}
+                key={inj.code} 
+                className={`choice-pill ${isSelected ? 'selected' : ''}`} 
                 onClick={() => toggleInjury(inj.code)}
                 style={{
                   borderColor: isSelected ? '#e11d48' : '#e2e8f0',
@@ -205,7 +251,7 @@ export default function Step5Training({
             );
           })}
           <div 
-            className={`choice-pill ${noInjuries ? 'selected' : ''}`}
+            className={`choice-pill ${noInjuries ? 'selected' : ''}`} 
             onClick={() => toggleInjury('NONE')}
             style={{ borderColor: noInjuries ? '#10b981' : '#e2e8f0' }}
           >
@@ -216,53 +262,11 @@ export default function Step5Training({
         </div>
       </div>
 
-      {/* 4. Smart Cardio & Step Counter */}
+      {/* 4. Dedicated Cardio & Walking Ability */}
       <div className="section-divider"></div>
-      <h3 className="section-title">نشاط الكارديو وحرق السعرات (Cardio & Steps)</h3>
-      <p className="text-muted" style={{ fontSize: '0.82rem', marginTop: '-0.5rem' }}>
-        حساب الخطوات والنشاط الحركي يساعد المحرك في استنتاج معدل حرق السعرات بدقة عالمية وضبط العجز الحراري.
-      </p>
-
-      {/* Quick Visual Step Guide for Beginners */}
-      <div className="form-group mb-3">
-        <label className="form-label fw-bold">اختر مستوى نشاطك الحركي التقريبي (أو اكتب خطواتك بدقة):</label>
-        <div className="row g-2 mb-2">
-          {[
-            { steps: 3000, label: 'خامل / مكتبي', desc: 'جلوس معظم اليوم وقليل المشي (~3,000 خطوة)' },
-            { steps: 6000, label: 'حركة يومية خفيفة', desc: 'مشاوير وقضاء طلبات معتادة (~6,000 خطوة)' },
-            { steps: 8500, label: 'نشيط وحركي (مثالي)', desc: 'مشي منتظم وحركة مستمرة (~8,500 خطوة)' },
-            { steps: 12000, label: 'نشاط شاق جداً', desc: 'وقفة ومشي مستمر طوال اليوم (~12,000+ خطوة)' }
-          ].map(lvl => (
-            <div key={lvl.steps} className="col-md-3 col-6">
-              <div 
-                className={`p-2.5 rounded-3 border text-center h-100 cursor-pointer ${formData.cardio?.averageDailySteps === lvl.steps ? 'border-primary bg-primary-subtle' : 'bg-light'}`}
-                style={{ cursor: 'pointer', transition: 'all 0.2s ease' }}
-                onClick={() => updateField('cardio', 'averageDailySteps', lvl.steps)}
-              >
-                <small className="d-block fw-bold text-primary mb-1">{lvl.label}</small>
-                <span className="fw-bold fs-6 d-block text-dark">{lvl.steps.toLocaleString('ar-EG')}</span>
-                <span className="text-muted d-block" style={{ fontSize: '0.7rem' }}>{lvl.desc}</span>
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
+      <h3 className="section-title">جلسات الكارديو المخصصة (Cardio Protocol)</h3>
 
       <div className="grid-2-col">
-        <div className="form-group">
-          <label className="form-label">الخطوات اليومية المحسوبة (أو من ساعتك الذكية):</label>
-          <input 
-            type="number" 
-            step="500" 
-            min="1000" 
-            max="30000" 
-            className="form-control" 
-            value={formData.cardio?.averageDailySteps || 5000} 
-            onChange={e => updateField('cardio', 'averageDailySteps', Number(e.target.value))} 
-            placeholder="مثال: 8000"
-          />
-        </div>
-
         <div className="form-group">
           <label className="form-label">القدرة على المشي لفترات متواصلة</label>
           <select 
@@ -305,11 +309,12 @@ export default function Step5Training({
         </div>
       </div>
 
+
       {/* 5. Optional Additional Sports */}
       <div className="section-divider"></div>
       <div className="d-flex align-items-center justify-content-between mb-2">
         <h3 className="section-title mb-0">الرياضات الإضافية (اختياري)</h3>
-        <span className="badge rounded-pill fw-bold" style={{ background: '#f5f3ff', color: '#1e144f', border: '1px solid #ddd6fe', fontSize: '0.72rem' }}>
+        <span className="badge rounded-pill fw-bold" style={{ background: '#E5F0FF', color: '#1e144f', border: '1px solid #BAE6FD', fontSize: '0.72rem' }}>
           لضبط حرق السعرات بدقة
         </span>
       </div>

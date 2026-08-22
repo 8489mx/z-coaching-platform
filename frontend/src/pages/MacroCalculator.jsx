@@ -2,6 +2,12 @@ import React, { useState, useEffect } from 'react';
 import { API_BASE } from '../config/api';
 import AdminLayout from '../components/layout/AdminLayout';
 import { copyToClipboard } from '../utils/clipboardUtils';
+import {
+  calculateMetabolicMacroProfile,
+  DAILY_ACTIVITY_FACTORS,
+  WORKOUT_FREQUENCY_FACTORS,
+  GOAL_CALORIE_MULTIPLIERS
+} from '../utils/metabolicMacroEngine';
 
 export default function MacroCalculator() {
   const [clients, setClients] = useState([]);
@@ -14,9 +20,11 @@ export default function MacroCalculator() {
     weight: 85,
     height: 178,
     bodyFat: 18,
-    activityLevel: 'MODERATE',
+    dailyActivity: 'STANDING_WALKING',
+    workoutFrequency: 'DAYS_3_TO_5',
     goal: 'FAT_LOSS_STANDARD',
     proteinPerKg: 2.2,
+    isMuscular: false
   });
 
   const [copied, setCopied] = useState(false);
@@ -36,58 +44,29 @@ export default function MacroCalculator() {
     }
   };
 
-  // 1. Calculate BMR
-  const calculateBMR = () => {
-    if (form.bodyFat && form.bodyFat > 5 && form.bodyFat < 60) {
-      const leanMass = form.weight * (1 - form.bodyFat / 100);
-      return Math.round(370 + 21.6 * leanMass);
-    }
-    if (form.gender === 'MALE') {
-      return Math.round(10 * form.weight + 6.25 * form.height - 5 * form.age + 5);
-    } else {
-      return Math.round(10 * form.weight + 6.25 * form.height - 5 * form.age - 161);
-    }
-  };
+  const metabolic = calculateMetabolicMacroProfile({
+    gender: form.gender,
+    age: form.age,
+    weight_kg: form.weight,
+    height_cm: form.height,
+    body_fat_percent: form.bodyFat || null,
+    daily_activity: form.dailyActivity,
+    workout_frequency: form.workoutFrequency,
+    goal: form.goal,
+    protein_per_kg: form.proteinPerKg,
+    is_muscular: form.isMuscular
+  });
 
-  // 2. Activity Multiplier
-  const getActivityMultiplier = () => {
-    switch (form.activityLevel) {
-      case 'SEDENTARY': return 1.2;
-      case 'LIGHT': return 1.375;
-      case 'MODERATE': return 1.55;
-      case 'HEAVY': return 1.725;
-      case 'ATHLETE': return 1.9;
-      default: return 1.55;
-    }
-  };
+  const bmr = metabolic.bmr_kcal;
+  const tdee = metabolic.tdee_kcal;
+  const targetCalories = metabolic.target_calories_kcal;
 
-  // 3. Goal Multiplier
-  const getGoalMultiplier = () => {
-    switch (form.goal) {
-      case 'AGGRESSIVE_CUT': return 0.75;
-      case 'FAT_LOSS_STANDARD': return 0.80;
-      case 'MAINTENANCE': return 1.00;
-      case 'LEAN_BULK': return 1.10;
-      case 'MAX_BULK': return 1.18;
-      default: return 0.80;
-    }
-  };
+  const targetProteinGrams = metabolic.macro_targets.protein_g;
+  const targetFatGrams = metabolic.macro_targets.fat_g;
+  const targetCarbGrams = metabolic.macro_targets.carbs_g;
 
-  const bmr = calculateBMR();
-  const tdee = Math.round(bmr * getActivityMultiplier());
-  const targetCalories = Math.round(tdee * getGoalMultiplier());
-
-  const targetProteinGrams = Math.round(form.weight * form.proteinPerKg);
-  const proteinCalories = targetProteinGrams * 4;
-
-  const fatCalories = Math.round(targetCalories * 0.25);
-  const targetFatGrams = Math.round(fatCalories / 9);
-
-  const remainingCalories = Math.max(0, targetCalories - proteinCalories - fatCalories);
-  const targetCarbGrams = Math.round(remainingCalories / 4);
-
-  const waterTargetLiters = (form.weight * 0.04).toFixed(1);
-  const stepsTarget = form.goal.includes('CUT') || form.goal.includes('FAT') ? 10000 : 8000;
+  const waterTargetLiters = metabolic.water_target_liters.toFixed(1);
+  const stepsTarget = metabolic.steps_target;
 
   const handleApplyToClient = async () => {
     if (!selectedClient) {
@@ -178,7 +157,7 @@ export default function MacroCalculator() {
                 <h4 className="fw-bold text-dark mb-0" style={{ letterSpacing: '-0.3px', fontSize: '1.25rem' }}>
                   حاسبة معدل الأيض واحتياج الماكروز السريعة
                 </h4>
-                <span className="badge rounded-pill fw-bold" style={{ background: '#f5f3ff', color: '#261c6a', border: '1px solid #ddd6fe', fontSize: '0.7rem' }}>
+                <span className="badge rounded-pill fw-bold" style={{ background: '#E5F0FF', color: '#0284C7', border: '1px solid #BAE6FD', fontSize: '0.7rem' }}>
                   Z COACHING V2.0
                 </span>
               </div>
@@ -194,7 +173,7 @@ export default function MacroCalculator() {
               <div className="card border-0 shadow-sm bg-white h-100" style={{ borderRadius: '16px', border: '1px solid #e2e8f0' }}>
                 <div className="card-body p-4">
                   <div className="d-flex align-items-center gap-2 mb-3 pb-2 border-bottom" style={{ borderColor: '#f1f5f9' }}>
-                    <div className="rounded-circle d-flex align-items-center justify-content-center" style={{ width: '30px', height: '30px', background: '#f5f3ff', color: '#261c6a', border: '1px solid #ddd6fe' }}>
+                    <div className="rounded-circle d-flex align-items-center justify-content-center" style={{ width: '30px', height: '30px', background: '#E5F0FF', color: '#0284C7', border: '1px solid #BAE6FD' }}>
                       <i className="ti ti-adjustments fs-6"></i>
                     </div>
                     <h5 className="fw-bold text-dark mb-0" style={{ fontSize: '0.98rem' }}>
@@ -261,21 +240,57 @@ export default function MacroCalculator() {
                       />
                     </div>
 
-                    <div className="col-12">
-                      <label className="form-label small fw-bold text-dark">مستوى النشاط اليومي والتمارين</label>
+                    <div className="col-md-6 col-12">
+                      <label className="form-label small fw-bold text-dark">النشاط والحركة اليومية (NEAT)</label>
                       <select 
                         className="form-select"
                         style={{ height: '38px', borderRadius: '10px', fontSize: '0.82rem' }}
-                        value={form.activityLevel}
-                        onChange={(e) => setForm({ ...form, activityLevel: e.target.value })}
+                        value={form.dailyActivity}
+                        onChange={(e) => setForm({ ...form, dailyActivity: e.target.value })}
                       >
-                        <option value="SEDENTARY">قليل الحركة (عمل مكتبي بدون تمارين - 1.2)</option>
-                        <option value="LIGHT">نشاط خفيف (تمارين 1-3 أيام أسبوعياً - 1.375)</option>
-                        <option value="MODERATE">نشاط معتدل (تمارين 3-5 أيام أسبوعياً - 1.55)</option>
-                        <option value="HEAVY">نشاط عالي (تمارين 6-7 أيام شديدة - 1.725)</option>
-                        <option value="ATHLETE">نشاط رياضي شاق (تمارين مرتين يومياً - 1.9)</option>
+                        <option value="SEDENTARY_DESK">مكتبي خامل (قليل الحركة - 1.20)</option>
+                        <option value="LIGHT_MOVEMENT">حركة خفيفة 5k-7k خطوة (1.30)</option>
+                        <option value="STANDING_WALKING">وقوف ومشي 8k-11k خطوة (1.45)</option>
+                        <option value="HEAVY_PHYSICAL">عمل بدني شاق ومجهد (1.60)</option>
                       </select>
                     </div>
+
+                    <div className="col-md-6 col-12">
+                      <label className="form-label small fw-bold text-dark">تكرار تمارين المقاومة (EAT)</label>
+                      <select 
+                        className="form-select"
+                        style={{ height: '38px', borderRadius: '10px', fontSize: '0.82rem' }}
+                        value={form.workoutFrequency}
+                        onChange={(e) => setForm({ ...form, workoutFrequency: e.target.value })}
+                      >
+                        <option value="NO_WORKOUTS">بدون تمارين مقاومة (+0.00)</option>
+                        <option value="DAYS_1_TO_2">1 - 2 يوم أسبوعياً (+0.075)</option>
+                        <option value="DAYS_3_TO_5">3 - 5 أيام أسبوعياً (+0.150)</option>
+                        <option value="DAYS_6_PLUS">6+ أيام مكثفة (+0.250)</option>
+                      </select>
+                    </div>
+
+                    {metabolic.bmi >= 30 && (
+                      <div className="col-12">
+                        <div className="p-2 rounded-3" style={{ background: '#f8fafc', border: '1px solid #e2e8f0' }}>
+                          <div className="form-check form-switch mb-0 d-flex align-items-center justify-content-between">
+                            <label className="form-check-label small fw-bold text-dark mb-0" htmlFor="muscularSwitch">
+                              سقف بروتين مؤشر كتلة الجسم (محسوب على {metabolic.calculation_weight_for_protein_kg}kg)
+                            </label>
+                            <input
+                              className="form-check-input ms-2"
+                              type="checkbox"
+                              id="muscularSwitch"
+                              checked={form.isMuscular}
+                              onChange={(e) => setForm({ ...form, isMuscular: e.target.checked })}
+                            />
+                          </div>
+                          <p className="text-muted mb-0 mt-1" style={{ fontSize: '0.73rem' }}>
+                            {form.isMuscular ? 'مفعّل: لاعب كمال أجسام ذو كتلة عضلية عالية (حساب على الوزن الكلي).' : 'مفعّل تلقائياً: حماية سقف البروتين لمنع هبوط الكاربوهيدرات والدهون الصحية.'}
+                          </p>
+                        </div>
+                      </div>
+                    )}
 
                     <div className="col-12">
                       <label className="form-label small fw-bold text-dark">الهدف المستهدف</label>
@@ -296,7 +311,7 @@ export default function MacroCalculator() {
                     <div className="col-12">
                       <div className="d-flex justify-content-between align-items-center mb-1">
                         <label className="form-label small fw-bold text-dark mb-0">احتياج البروتين لكل كجم وزن</label>
-                        <span className="badge rounded-pill fw-bold" style={{ background: '#f5f3ff', color: '#261c6a', border: '1px solid #ddd6fe', fontSize: '0.75rem' }}>
+                        <span className="badge rounded-pill fw-bold" style={{ background: '#E5F0FF', color: '#0284C7', border: '1px solid #BAE6FD', fontSize: '0.75rem' }}>
                           {form.proteinPerKg} جم / كجم
                         </span>
                       </div>
@@ -329,7 +344,7 @@ export default function MacroCalculator() {
                           نتائج الطاقة والماكروز المستهدفة
                         </h5>
                       </div>
-                      <span className="badge rounded-pill fw-semibold px-2 py-1" style={{ background: '#f5f3ff', color: '#261c6a', border: '1px solid #ddd6fe', fontSize: '0.72rem' }}>
+                      <span className="badge rounded-pill fw-semibold px-2 py-1" style={{ background: '#E5F0FF', color: '#0284C7', border: '1px solid #BAE6FD', fontSize: '0.72rem' }}>
                         {getGoalLabel(form.goal).split(' ')[0]}
                       </span>
                     </div>
@@ -355,7 +370,7 @@ export default function MacroCalculator() {
                         <div className="p-3 bg-white rounded-3 border d-flex flex-column justify-content-between" style={{ borderColor: '#e2e8f0' }}>
                           <div className="d-flex justify-content-between align-items-center mb-1">
                             <span className="small text-muted" style={{ fontSize: '0.74rem' }}>استهلاك الطاقة (TDEE)</span>
-                            <div className="d-flex align-items-center justify-content-center rounded-2" style={{ width: '24px', height: '24px', background: '#f5f3ff', color: '#261c6a' }}>
+                            <div className="d-flex align-items-center justify-content-center rounded-2" style={{ width: '24px', height: '24px', background: '#E5F0FF', color: '#0284C7' }}>
                               <i className="ti ti-bolt" style={{ fontSize: '0.75rem' }}></i>
                             </div>
                           </div>
@@ -367,7 +382,7 @@ export default function MacroCalculator() {
                       </div>
 
                       <div className="col-12">
-                        <div className="p-3 rounded-3 text-center text-white shadow-sm" style={{ background: 'linear-gradient(135deg, #372896 0%, #261c6a 100%)', boxShadow: '0 4px 14px rgba(38, 28, 106, 0.25)' }}>
+                        <div className="p-3 rounded-3 text-center text-white shadow-sm" style={{ background: 'linear-gradient(135deg, #58B4E5 0%, #0284C7 100%)', boxShadow: '0 4px 14px rgba(38, 28, 106, 0.25)' }}>
                           <small className="opacity-90 d-block" style={{ fontSize: '0.74rem' }}>السعرات اليومية المستهدفة للخطة</small>
                           <h2 className="fw-bold mb-0 d-flex align-items-baseline justify-content-center gap-1" style={{ letterSpacing: '-0.5px', fontSize: '1.6rem' }}>
                             <span>{targetCalories}</span>
@@ -383,8 +398,8 @@ export default function MacroCalculator() {
                       <div className="col-4">
                         <div className="p-3 bg-white rounded-3 text-center border h-100 d-flex flex-column justify-content-between" style={{ borderColor: '#e2e8f0' }}>
                           <div className="d-flex justify-content-between align-items-center mb-1">
-                            <span className="small fw-semibold" style={{ fontSize: '0.74rem', color: '#261c6a' }}>البروتين</span>
-                            <div className="d-flex align-items-center justify-content-center rounded-2" style={{ width: '22px', height: '22px', background: '#f5f3ff', color: '#261c6a' }}>
+                            <span className="small fw-semibold" style={{ fontSize: '0.74rem', color: '#0284C7' }}>البروتين</span>
+                            <div className="d-flex align-items-center justify-content-center rounded-2" style={{ width: '22px', height: '22px', background: '#E5F0FF', color: '#0284C7' }}>
                               <i className="ti ti-barbell" style={{ fontSize: '0.7rem' }}></i>
                             </div>
                           </div>
@@ -395,7 +410,7 @@ export default function MacroCalculator() {
                             <small className="text-muted font-monospace" style={{ fontSize: '0.68rem' }}>{proteinCalories} kcal</small>
                           </div>
                           <div className="progress mt-2" style={{ height: '3px', background: '#f1f5f9' }}>
-                            <div className="progress-bar" style={{ width: '85%', background: '#261c6a' }}></div>
+                            <div className="progress-bar" style={{ width: '85%', background: '#0284C7' }}></div>
                           </div>
                         </div>
                       </div>
@@ -447,7 +462,7 @@ export default function MacroCalculator() {
                     <div className="row g-2 mb-3">
                       <div className="col-6">
                         <div className="p-2 px-3 rounded-3 border d-flex align-items-center gap-2" style={{ background: '#f8fafc', borderColor: '#e2e8f0' }}>
-                          <div className="d-flex align-items-center justify-content-center rounded-circle" style={{ width: '28px', height: '28px', background: '#f5f3ff', color: '#261c6a' }}>
+                          <div className="d-flex align-items-center justify-content-center rounded-circle" style={{ width: '28px', height: '28px', background: '#E5F0FF', color: '#0284C7' }}>
                             <i className="ti ti-droplet fs-6"></i>
                           </div>
                           <div>
@@ -494,7 +509,7 @@ export default function MacroCalculator() {
                           onClick={handleApplyToClient} 
                           disabled={saving || !selectedClient}
                           className="btn btn-sm rounded-pill w-100 fw-bold shadow-xs text-white d-flex align-items-center justify-content-center gap-1"
-                          style={{ height: '36px', background: '#261c6a', border: 'none', fontSize: '0.8rem' }}
+                          style={{ height: '36px', background: '#0284C7', border: 'none', fontSize: '0.8rem' }}
                         >
                           {saving ? 'جاري التطبيق...' : <><i className="ti ti-device-floppy"></i> تطبيق على المتدرب</>}
                         </button>

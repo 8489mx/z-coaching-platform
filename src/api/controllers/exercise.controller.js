@@ -268,3 +268,72 @@ export const getExercisesList = (req, res) => {
     return res.status(500).json({ error: "فشل استرجاع مكتبة التمارين", details: err.message });
   }
 };
+
+/**
+ * Controller to fetch biomechanically matched exercise alternatives
+ */
+export const getExerciseSwapsHandler = async (req, res) => {
+  try {
+    const { exercise_code } = req.params;
+    const { environment, injury } = req.query;
+    const { getSmartExerciseSwaps } = await import("../../exercise-swap-engine/index.js");
+
+    const injuryFlags = injury ? (Array.isArray(injury) ? injury : [injury]) : [];
+    const swaps = getSmartExerciseSwaps(exercise_code, {
+      environment: environment || "GYM",
+      injuryFlags,
+    });
+
+    return res.status(200).json({
+      base_exercise_code: exercise_code,
+      total_swaps: swaps.length,
+      swaps,
+    });
+  } catch (err) {
+    console.error("getExerciseSwapsHandler error:", err);
+    return res.status(500).json({ error: "فشل احتساب بدائل التمرين الذكية", details: err.message });
+  }
+};
+
+/**
+ * Controller to execute an exercise swap in a client's program
+ */
+export const swapProgramExerciseHandler = async (req, res) => {
+  try {
+    const { programId } = req.params;
+    const { sessionIndex, exerciseIndex, newExerciseCode, newExerciseNameAr, newExerciseNameEn } = req.body;
+
+    const { Program } = await import("../models/index.js");
+    const program = await Program.findByPk(programId);
+    if (!program) {
+      return res.status(404).json({ error: "البرنامج التدريبي غير موجود" });
+    }
+
+    const programData = JSON.parse(JSON.stringify(program.program_data || {}));
+    const weeks = programData.training_program?.weeks || [];
+
+    // Update across all weeks for consistency
+    weeks.forEach((week) => {
+      const session = week.sessions?.[sessionIndex];
+      if (session && session.exercises?.[exerciseIndex]) {
+        const ex = session.exercises[exerciseIndex];
+        ex.exercise_code = newExerciseCode;
+        ex.name_ar = newExerciseNameAr || ex.name_ar;
+        ex.name_en = newExerciseNameEn || ex.name_en;
+      }
+    });
+
+    program.program_data = programData;
+    program.changed("program_data", true);
+    await program.save();
+
+    return res.status(200).json({
+      message: "تم تبديل التمرين بنجاح في خطة المتدرب",
+      program: programData,
+    });
+  } catch (err) {
+    console.error("swapProgramExerciseHandler error:", err);
+    return res.status(500).json({ error: "فشل تبديل التمرين في الخطة", details: err.message });
+  }
+};
+

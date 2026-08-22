@@ -124,7 +124,7 @@ export default function EditExerciseModal({
           {/* Header */}
           <div className="p-4 bg-white d-flex align-items-center justify-content-between border-bottom" style={{ borderColor: '#f1f5f9' }}>
             <div className="d-flex align-items-center gap-3">
-              <div className="rounded-circle d-flex align-items-center justify-content-center flex-shrink-0" style={{ width: '42px', height: '42px', background: '#f5f3ff', color: '#261c6a', border: '1.5px solid #ddd6fe' }}>
+              <div className="rounded-circle d-flex align-items-center justify-content-center flex-shrink-0" style={{ width: '42px', height: '42px', background: '#E5F0FF', color: '#0284C7', border: '1.5px solid #BAE6FD' }}>
                 <i className="ti ti-barbell fs-5"></i>
               </div>
               <div className="text-end">
@@ -289,7 +289,7 @@ export default function EditExerciseModal({
                 style={{ 
                   height: '40px', 
                   fontSize: '0.86rem', 
-                  background: 'linear-gradient(135deg, #372896 0%, #261c6a 100%)', 
+                  background: 'linear-gradient(135deg, #58B4E5 0%, #0284C7 100%)', 
                   border: 'none', 
                   boxShadow: '0 4px 14px rgba(38, 28, 106, 0.28)' 
                 }}

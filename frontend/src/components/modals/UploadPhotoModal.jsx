@@ -110,9 +110,9 @@ export default function UploadPhotoModal({
                 style={{ 
                   width: '42px', 
                   height: '42px', 
-                  background: 'linear-gradient(135deg, #f5f3ff 0%, #ede9fe 100%)', 
-                  color: '#261c6a', 
-                  border: '1.5px solid #ddd6fe' 
+                  background: 'linear-gradient(135deg, #E5F0FF 0%, #F0F9FF 100%)', 
+                  color: '#0284C7', 
+                  border: '1.5px solid #BAE6FD' 
                 }}
               >
                 <i className="ti ti-camera fs-4"></i>
@@ -253,7 +253,7 @@ export default function UploadPhotoModal({
                 style={{ 
                   height: '36px', 
                   fontSize: '0.82rem', 
-                  background: 'linear-gradient(135deg, #261c6a 0%, #4338ca 100%)', 
+                  background: 'linear-gradient(135deg, #0284C7 0%, #0284C7 100%)', 
                   border: 'none', 
                   boxShadow: '0 2px 10px rgba(38, 28, 106, 0.22)' 
                 }}

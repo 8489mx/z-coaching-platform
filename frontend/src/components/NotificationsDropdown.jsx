@@ -1,15 +1,29 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Link } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
+import { 
+  Bell, 
+  CheckCheck, 
+  Check, 
+  ClipboardList, 
+  ActivitySquare, 
+  CreditCard, 
+  ShoppingBag, 
+  UserCheck, 
+  Clock 
+} from 'lucide-react';
 import { API_BASE } from '../config/api';
 
 export default function NotificationsDropdown() {
   const [isOpen, setIsOpen] = useState(false);
+  const [activeFilter, setActiveFilter] = useState('ALL'); // 'ALL' | 'UNREAD'
   const [notifications, setNotifications] = useState([]);
-  const [unreadCount, setUnreadCount] = useState(0);
   const dropdownRef = useRef(null);
+  const navigate = useNavigate();
 
+  // Load and sync notifications
   useEffect(() => {
-    fetchAlerts();
+    fetchLiveNotifications();
+    const interval = setInterval(fetchLiveNotifications, 30000); // 30s poll
 
     const handleClickOutside = (event) => {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
@@ -25,91 +39,196 @@ export default function NotificationsDropdown() {
 
     document.addEventListener('mousedown', handleClickOutside);
     window.addEventListener('keydown', handleKeyDown);
+    window.addEventListener('plan_approved', fetchLiveNotifications);
+    window.addEventListener('checkin_approved', fetchLiveNotifications);
+
     return () => {
+      clearInterval(interval);
       document.removeEventListener('mousedown', handleClickOutside);
       window.removeEventListener('keydown', handleKeyDown);
+      window.removeEventListener('plan_approved', fetchLiveNotifications);
+      window.removeEventListener('checkin_approved', fetchLiveNotifications);
     };
   }, []);
 
-  const fetchAlerts = async () => {
+  const fetchLiveNotifications = async () => {
     try {
-      const [checkinsRes, subsRes] = await Promise.all([
-        fetch(`${API_BASE}/api/v1/programs/checkin/pending`),
-        fetch(`${API_BASE}/api/v1/subscriptions/overview`)
+      const [checkinsRes, subsRes, intakesRes, ordersRes] = await Promise.all([
+        fetch(`${API_BASE}/api/v1/programs/checkin/pending`).catch(() => ({ json: () => ({ checkins: [] }) })),
+        fetch(`${API_BASE}/api/v1/subscriptions/overview`).catch(() => ({ json: () => ({ clients: [] }) })),
+        fetch(`${API_BASE}/api/v1/intake/submissions`).catch(() => ({ json: () => ({ submissions: [] }) })),
+        fetch(`${API_BASE}/api/v1/orders`).catch(() => ({ json: () => ({ orders: [] }) }))
       ]);
 
       const checkinsData = await checkinsRes.json();
       const subsData = await subsRes.json();
+      const intakesData = await intakesRes.json();
+      const ordersData = await ordersRes.json();
 
-      const alertsList = [];
+      // Read persisted status from localStorage
+      const readMap = JSON.parse(localStorage.getItem('z_notif_read_map') || '{}');
+      const completedMap = JSON.parse(localStorage.getItem('z_notif_completed_map') || '{}');
 
-      // 1. Pending Check-ins alerts
-      if (checkinsData.checkins && checkinsData.checkins.length > 0) {
-        checkinsData.checkins.forEach((chk) => {
-          alertsList.push({
-            id: `chk-${chk.id}`,
-            type: 'CHECKIN',
-            title: `متابعة جديدة (أسبوع ${chk.week_number})`,
-            desc: `${chk.user?.full_name || 'المتدرب'} أرسل تقرير الأوزان والمقاسات.`,
-            link: `/?review_checkin=${chk.id}`,
-            time: 'الآن',
-            isRead: false,
+      const list = [];
+
+      // 1. Website Orders Alerts
+      if (ordersData.orders && ordersData.orders.length > 0) {
+        ordersData.orders.forEach((ord) => {
+          const isActivated = ord.status === 'ACTIVATED' || completedMap[`ord-${ord.id}`];
+          list.push({
+            id: `ord-${ord.id}`,
+            type: 'ORDER',
+            icon: ShoppingBag,
+            iconBg: '#FEF3C7',
+            iconColor: '#D97706',
+            title: `طلب موقع جديد (#${ord.order_number || 'KZ-1001'})`,
+            body: `${ord.customer_name} اشترك في باقة ${ord.package_name || 'ماكس'} بمبلغ ${ord.amount} ج.م.`,
+            time: 'طلب موقع',
+            link: '/customers?tab=orders',
+            isRead: Boolean(readMap[`ord-${ord.id}`]),
+            isCompleted: Boolean(isActivated),
+            actionLabel: isActivated ? 'تم تفعيل الحساب' : 'تفعيل المشترك',
+            createdAt: ord.createdAt || new Date()
           });
         });
       }
 
-      // 2. Expiring soon subscriptions alerts
+      // 2. New Intake Submissions
+      if (intakesData.submissions && intakesData.submissions.length > 0) {
+        intakesData.submissions.forEach((sub) => {
+          const isApproved = sub.status === 'APPROVED' || sub.status === 'REVIEWED' || completedMap[`intake-${sub.id}`];
+          list.push({
+            id: `intake-${sub.id}`,
+            type: 'INTAKE',
+            icon: ClipboardList,
+            iconBg: '#E0F2FE',
+            iconColor: '#0284C7',
+            title: `استمارة صحية واردة (#${sub.user?.client_code || sub.id})`,
+            body: `${sub.user?.full_name || 'مشترك جديد'} أكمل استمارة التقييم ومصفوفة الإصابات.`,
+            time: 'استمارة',
+            link: `/intake/submissions?review=${sub.id}`,
+            isRead: Boolean(readMap[`intake-${sub.id}`]),
+            isCompleted: Boolean(isApproved),
+            actionLabel: isApproved ? 'تم اعتماد الخطة وإرسالها' : 'مراجعة وتوليد الخطة',
+            createdAt: sub.createdAt || new Date()
+          });
+        });
+      }
+
+      // 3. Weekly Check-ins
+      if (checkinsData.checkins && checkinsData.checkins.length > 0) {
+        checkinsData.checkins.forEach((chk) => {
+          const isReviewed = chk.status === 'REVIEWED' || chk.status === 'RESOLVED' || completedMap[`chk-${chk.id}`];
+          list.push({
+            id: `chk-${chk.id}`,
+            type: 'CHECKIN',
+            icon: ActivitySquare,
+            iconBg: '#ECFDF5',
+            iconColor: '#059669',
+            title: `تقرير متابعة أسبوعي (أسبوع ${chk.week_number})`,
+            body: `${chk.user?.full_name || 'المتدرب'} سجل الوزن الجديد والالتزام (${chk.nutrition_adherence_percent || 100}%).`,
+            time: 'متابعة حية',
+            link: `/?review_checkin=${chk.id}`,
+            isRead: Boolean(readMap[`chk-${chk.id}`]),
+            isCompleted: Boolean(isReviewed),
+            actionLabel: isReviewed ? 'تم اعتماد التعديل وإرساله' : 'مراجعة التقرير والتكيف',
+            createdAt: chk.createdAt || new Date()
+          });
+        });
+      }
+
+      // 4. Expiring / Renewals Subscriptions
       if (subsData.clients) {
         subsData.clients.filter(c => c.status === 'EXPIRING_SOON' || c.status === 'EXPIRED').forEach((sub) => {
           const isExp = sub.status === 'EXPIRED';
-          alertsList.push({
+          const isDone = completedMap[`sub-${sub.id}`];
+          list.push({
             id: `sub-${sub.id}`,
             type: 'SUBSCRIPTION',
-            title: isExp ? `اشتراك منتهي: ${sub.full_name || sub.client_code}` : `تجديد قريب: ${sub.full_name || sub.client_code}`,
-            desc: isExp ? `انتهى منذ ${Math.abs(sub.days_remaining)} يوم.` : `متبقي ${sub.days_remaining} أيام على باقة ${sub.package}.`,
-            link: '/subscriptions',
+            icon: CreditCard,
+            iconBg: '#FEE2E2',
+            iconColor: '#DC2626',
+            title: isExp ? `اشتراك منتهي: ${sub.full_name || sub.client_code}` : `تجديد وشيك: ${sub.full_name || sub.client_code}`,
+            body: isExp ? `انتهى اشتراكه منذ ${Math.abs(sub.days_remaining)} يوم.` : `متبقي ${sub.days_remaining} أيام على انتهاء باقة ${sub.package}.`,
             time: 'مالي',
-            isRead: false,
+            link: '/subscriptions',
+            isRead: Boolean(readMap[`sub-${sub.id}`]),
+            isCompleted: Boolean(isDone),
+            actionLabel: isDone ? 'تم التواصل والتجديد' : 'إرسال تذكير التجديد',
+            createdAt: sub.createdAt || new Date()
           });
         });
       }
 
-      setNotifications(alertsList);
-      setUnreadCount(alertsList.length);
+      // Sort by newest first
+      list.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+
+      setNotifications(list);
     } catch (e) {
-      console.error('fetchAlerts error:', e);
+      console.error('fetchLiveNotifications error:', e);
+    }
+  };
+
+  const handleNotificationClick = (item) => {
+    // 1. Mark as read in state & localStorage (removes blue unread dot)
+    const readMap = JSON.parse(localStorage.getItem('z_notif_read_map') || '{}');
+    readMap[item.id] = true;
+    localStorage.setItem('z_notif_read_map', JSON.stringify(readMap));
+
+    setNotifications(prev => prev.map(n => n.id === item.id ? { ...n, isRead: true } : n));
+
+    // 2. Navigate to destination
+    setIsOpen(false);
+    if (item.link) {
+      navigate(item.link);
     }
   };
 
   const markAllAsRead = () => {
-    setUnreadCount(0);
+    const readMap = JSON.parse(localStorage.getItem('z_notif_read_map') || '{}');
+    notifications.forEach(n => { readMap[n.id] = true; });
+    localStorage.setItem('z_notif_read_map', JSON.stringify(readMap));
     setNotifications(prev => prev.map(n => ({ ...n, isRead: true })));
   };
 
+  const unreadCount = notifications.filter(n => !n.isRead).length;
+  const filteredNotifications = activeFilter === 'UNREAD' 
+    ? notifications.filter(n => !n.isRead) 
+    : notifications;
+
   return (
     <div className="position-relative" ref={dropdownRef} dir="rtl">
-      {/* Bell Button (34px compact) */}
+      
+      {/* Bell Button (Facebook Style with Badge) */}
       <button 
         type="button" 
         onClick={() => setIsOpen(!isOpen)}
-        className="btn btn-light rounded-circle p-0 position-relative d-flex align-items-center justify-content-center transition-all shadow-xs"
+        className="btn d-flex align-items-center justify-content-center position-relative transition-all"
         style={{ 
-          width: '34px', 
-          height: '34px', 
-          border: '1px solid #e2e8f0',
-          background: isOpen ? '#f5f3ff' : '#ffffff'
+          width: '38px', 
+          height: '38px', 
+          borderRadius: '12px',
+          border: '1px solid #E2E8F0',
+          background: isOpen ? '#E0F2FE' : '#F8FAFC',
+          color: isOpen ? '#0284C7' : '#475569',
+          boxShadow: '0 1px 3px rgba(15, 23, 42, 0.04)'
         }}
-        title="التنبيهات والإشعارات"
+        title="الإشعارات والتنبيهات"
       >
-        <i className="ti ti-bell fs-6" style={{ color: isOpen ? '#261c6a' : '#475569' }}></i>
+        <Bell style={{ width: '18px', height: '18px' }} />
         {unreadCount > 0 && (
           <span 
-            className="position-absolute top-0 start-100 translate-middle badge rounded-pill border border-white text-white fw-bold shadow-xs"
+            className="position-absolute d-flex align-items-center justify-content-center text-white font-monospace fw-bold"
             style={{ 
-              fontSize: '0.62rem', 
-              padding: '0.2em 0.48em',
-              background: '#261c6a',
-              minWidth: '17px'
+              top: '-4px', 
+              left: '-4px', 
+              background: '#EF4444', 
+              fontSize: '10px', 
+              minWidth: '18px', 
+              height: '18px', 
+              borderRadius: '50%',
+              border: '2px solid #FFFFFF',
+              padding: '0 4px'
             }}
           >
             {unreadCount}
@@ -117,102 +236,188 @@ export default function NotificationsDropdown() {
         )}
       </button>
 
-      {/* Quiet Luxury Compact Dropdown */}
+      {/* Facebook-Style Floating Notifications Dropdown */}
       {isOpen && (
         <div 
-          className="dropdown-menu dropdown-menu-end show shadow-lg p-0 mt-2" 
+          className="dropdown-menu show shadow-2xl p-0 mt-2" 
           style={{ 
-            width: '295px', 
-            borderRadius: '14px', 
-            border: '1px solid #e2e8f0',
-            zIndex: 1070, 
+            width: '380px', 
+            maxWidth: '92vw',
+            borderRadius: '20px', 
+            border: '1px solid #E2E8F0',
+            zIndex: 1080, 
             position: 'absolute',
             left: 0,
-            overflow: 'hidden',
-            boxShadow: '0 12px 30px rgba(15, 23, 42, 0.12)'
+            background: '#FFFFFF',
+            boxShadow: '0 20px 45px rgba(15, 23, 42, 0.16)',
+            overflow: 'hidden'
           }}
+          dir="rtl"
         >
-          {/* Header */}
-          <div 
-            className="p-3 bg-white border-bottom d-flex justify-content-between align-items-center"
-            style={{ borderColor: '#f1f5f9' }}
-          >
-            <div className="d-flex align-items-center gap-2">
-              <span className="fw-bold text-dark" style={{ fontSize: '0.86rem' }}>الإشعارات</span>
+          {/* 1. Header (Facebook Style) */}
+          <div className="p-3 pb-2 border-bottom bg-white" style={{ borderColor: '#F1F5F9' }}>
+            <div className="d-flex justify-content-between align-items-center mb-2">
+              <div className="d-flex align-items-center gap-2">
+                <h6 className="fw-black text-dark mb-0" style={{ fontSize: '1.05rem', color: '#0F172A' }}>
+                  الإشعارات
+                </h6>
+                {unreadCount > 0 && (
+                  <span 
+                    className="badge rounded-pill fw-bold"
+                    style={{ fontSize: '11px', background: '#E0F2FE', color: '#0284C7', padding: '3px 8px' }}
+                  >
+                    {unreadCount} غير مقروء
+                  </span>
+                )}
+              </div>
+
               {unreadCount > 0 && (
-                <span className="badge rounded-pill fw-semibold" style={{ background: '#f5f3ff', color: '#261c6a', fontSize: '0.66rem', border: '1px solid #ddd6fe' }}>
-                  {unreadCount} جديد
-                </span>
+                <button 
+                  type="button" 
+                  onClick={markAllAsRead}
+                  className="btn btn-sm d-flex align-items-center gap-1 text-primary p-0 border-0 bg-transparent fw-bold"
+                  style={{ fontSize: '0.78rem', color: '#0284C7' }}
+                >
+                  <CheckCheck style={{ width: '15px', height: '15px' }} />
+                  <span>تحديد الكل كمقروء</span>
+                </button>
               )}
             </div>
-            {unreadCount > 0 && (
+
+            {/* Sub Tabs: الكل / غير المقروءة */}
+            <div className="d-flex gap-2 pt-1">
               <button 
-                onClick={markAllAsRead} 
-                className="btn btn-link p-0 text-decoration-none"
-                style={{ fontSize: '0.72rem', color: '#261c6a', fontWeight: '600' }}
+                type="button"
+                onClick={() => setActiveFilter('ALL')}
+                className={`btn btn-sm rounded-pill px-3 py-1 fw-bold ${activeFilter === 'ALL' ? 'btn-primary text-white' : 'btn-light border text-muted'}`}
+                style={{ fontSize: '0.78rem', height: '28px' }}
               >
-                تحديد كمقروء
+                الكل ({notifications.length})
               </button>
-            )}
+              <button 
+                type="button"
+                onClick={() => setActiveFilter('UNREAD')}
+                className={`btn btn-sm rounded-pill px-3 py-1 fw-bold ${activeFilter === 'UNREAD' ? 'btn-primary text-white' : 'btn-light border text-muted'}`}
+                style={{ fontSize: '0.78rem', height: '28px' }}
+              >
+                غير المقروءة ({unreadCount})
+              </button>
+            </div>
           </div>
 
-          {/* List */}
-          <div className="custom-scroll" style={{ maxHeight: '280px', overflowY: 'auto' }}>
-            {notifications.length === 0 ? (
-              <div className="text-center py-4 text-muted" style={{ fontSize: '0.8rem' }}>
-                <i className="ti ti-bell-off fs-4 mb-1 d-block opacity-40"></i>
-                لا توجد إشعارات جديدة
+          {/* 2. Notification Items List */}
+          <div style={{ maxHeight: '390px', overflowY: 'auto' }}>
+            {filteredNotifications.length === 0 ? (
+              <div className="text-center py-5 px-3">
+                <div 
+                  className="rounded-circle d-flex align-items-center justify-content-center mx-auto mb-2"
+                  style={{ width: '48px', height: '48px', background: '#F1F5F9', color: '#94A3B8' }}
+                >
+                  <Bell style={{ width: '22px', height: '22px' }} />
+                </div>
+                <p className="fw-bold text-dark mb-1" style={{ fontSize: '0.88rem' }}>لا توجد إشعارات جديدة</p>
+                <small className="text-muted" style={{ fontSize: '0.76rem' }}>تمت متابعة واعتماد جميع الحالات والتقارير بنجاح.</small>
               </div>
             ) : (
-              notifications.map((n) => (
-                <Link 
-                  key={n.id}
-                  to={n.link}
-                  onClick={() => setIsOpen(false)}
-                  className="d-flex align-items-start gap-2 p-2 px-3 text-decoration-none transition-all border-bottom"
-                  style={{ 
-                    backgroundColor: n.isRead ? '#ffffff' : '#fbfaff',
-                    borderColor: '#f8fafc',
-                    borderRight: !n.isRead ? '3px solid #261c6a' : '3px solid transparent'
-                  }}
-                >
-                  <div 
-                    className="rounded-circle d-flex align-items-center justify-content-center flex-shrink-0 mt-1"
-                    style={{ 
-                      width: '26px', 
-                      height: '26px', 
-                      background: n.type === 'CHECKIN' ? '#f5f3ff' : '#fffbeb', 
-                      color: n.type === 'CHECKIN' ? '#261c6a' : '#d97706',
-                      border: n.type === 'CHECKIN' ? '1px solid #ede9fe' : '1px solid #fde68a'
+              filteredNotifications.map((item) => {
+                const IconComponent = item.icon || Bell;
+
+                return (
+                  <div
+                    key={item.id}
+                    onClick={() => handleNotificationClick(item)}
+                    className="p-3 d-flex align-items-start gap-3 transition border-bottom"
+                    style={{
+                      cursor: 'pointer',
+                      background: !item.isRead ? '#F0F9FF' : '#FFFFFF',
+                      borderColor: '#F1F5F9',
+                      position: 'relative'
                     }}
                   >
-                    <i className={n.type === 'CHECKIN' ? 'ti ti-clipboard-check fs-6' : 'ti ti-credit-card fs-6'}></i>
-                  </div>
-                  <div className="flex-grow-1 min-w-0">
-                    <div className="d-flex justify-content-between align-items-center mb-0">
-                      <span className="fw-bold text-dark text-truncate" style={{ fontSize: '0.78rem' }}>{n.title}</span>
-                      <small style={{ fontSize: '0.64rem', color: '#94a3b8' }}>{n.time}</small>
+                    {/* Category Icon */}
+                    <div 
+                      className="rounded-circle d-flex align-items-center justify-content-center flex-shrink-0 shadow-xs mt-0.5"
+                      style={{ 
+                        width: '40px', 
+                        height: '40px', 
+                        background: item.iconBg, 
+                        color: item.iconColor 
+                      }}
+                    >
+                      <IconComponent style={{ width: '19px', height: '19px' }} />
                     </div>
-                    <p className="text-muted mb-0 text-truncate" style={{ fontSize: '0.72rem', lineHeight: '1.3' }}>
-                      {n.desc}
-                    </p>
+
+                    {/* Notification Text & Metadata */}
+                    <div className="flex-grow-1" style={{ minWidth: 0 }}>
+                      <div className="d-flex align-items-center justify-content-between mb-1">
+                        <strong 
+                          className={`d-block text-truncate ${!item.isRead ? 'fw-black text-dark' : 'fw-bold text-slate-700'}`}
+                          style={{ fontSize: '0.84rem' }}
+                        >
+                          {item.title}
+                        </strong>
+                        <span className="text-muted small" style={{ fontSize: '0.7rem' }}>
+                          {item.time}
+                        </span>
+                      </div>
+
+                      <p className="text-muted mb-2 line-clamp-2" style={{ fontSize: '0.78rem', lineHeight: '1.45', color: '#475569' }}>
+                        {item.body}
+                      </p>
+
+                      {/* Action Execution Status Pill */}
+                      <div className="d-flex align-items-center gap-2">
+                        {item.isCompleted ? (
+                          <span 
+                            className="badge rounded-pill fw-bold d-inline-flex align-items-center gap-1"
+                            style={{ background: '#ECFDF5', color: '#059669', border: '1px solid #A7F3D0', fontSize: '0.7rem', padding: '3px 8px' }}
+                          >
+                            <Check style={{ width: '12px', height: '12px' }} />
+                            <span>{item.actionLabel}</span>
+                          </span>
+                        ) : (
+                          <span 
+                            className="badge rounded-pill fw-semibold d-inline-flex align-items-center gap-1"
+                            style={{ background: '#FEF3C7', color: '#B45309', border: '1px solid #FDE68A', fontSize: '0.7rem', padding: '3px 8px' }}
+                          >
+                            <Clock style={{ width: '12px', height: '12px' }} />
+                            <span>{item.actionLabel}</span>
+                          </span>
+                        )}
+                      </div>
+                    </div>
+
+                    {/* Facebook-Style Blue Unread Dot */}
+                    {!item.isRead && (
+                      <div 
+                        className="rounded-circle flex-shrink-0 align-self-center"
+                        style={{ 
+                          width: '10px', 
+                          height: '10px', 
+                          background: '#0284C7',
+                          boxShadow: '0 0 0 2px #BAE6FD'
+                        }}
+                        title="غير مقروء"
+                      ></div>
+                    )}
                   </div>
-                </Link>
-              ))
+                );
+              })
             )}
           </div>
 
-          {/* Footer */}
-          <div className="p-2 text-center bg-light border-top" style={{ borderColor: '#f1f5f9' }}>
-            <Link 
-              to="/subscriptions" 
-              onClick={() => setIsOpen(false)} 
-              className="text-decoration-none fw-semibold"
-              style={{ fontSize: '0.74rem', color: '#261c6a' }}
+          {/* 3. Footer */}
+          <div className="p-2 text-center bg-slate-50 border-top" style={{ borderColor: '#F1F5F9' }}>
+            <button 
+              type="button"
+              onClick={() => { setIsOpen(false); navigate('/intake/submissions'); }}
+              className="btn btn-link text-primary fw-bold text-decoration-none p-1"
+              style={{ fontSize: '0.78rem', color: '#0284C7' }}
             >
-              عرض سجل الاشتراكات والمتابعات
-            </Link>
+              عرض جميع استمارات ومتابعات المشتركين
+            </button>
           </div>
+
         </div>
       )}
     </div>

@@ -1,519 +1,445 @@
 import React, { useState, useEffect } from 'react';
+import { Link, useSearchParams } from 'react-router-dom';
+import { 
+  ActivitySquare, 
+  Scale, 
+  Ruler, 
+  Sparkles, 
+  CheckCircle2, 
+  AlertTriangle, 
+  TrendingDown, 
+  TrendingUp, 
+  Flame, 
+  Clock, 
+  FileText, 
+  MessageCircle, 
+  ChevronLeft, 
+  Check, 
+  UserCheck 
+} from 'lucide-react';
 import { API_BASE } from '../config/api';
 import AdminLayout from '../components/layout/AdminLayout';
-import UserDashboardHeader from '../components/user-dashboard/UserDashboardHeader';
-import UserDashboardSidebar from '../components/user-dashboard/UserDashboardSidebar';
-import UploadPhotoModal from '../components/modals/UploadPhotoModal';
-import CheckinModal from '../components/modals/CheckinModal';
+import CaseStudyModal from '../components/modals/CaseStudyModal';
+import { generateWhatsAppCoachingScript } from '../utils/whatsappScriptEngine';
 
 export default function ProgressClone() {
-  const [loading, setLoading] = useState(true);
-  const [user, setUser] = useState(null);
+  const [searchParams] = useSearchParams();
   const [clients, setClients] = useState([]);
+  const [selectedClientId, setSelectedClientId] = useState(searchParams.get('user_id') || '1');
   const [checkins, setCheckins] = useState([]);
-  const [photos, setPhotos] = useState([]);
-
-  // Photo Upload Modal State
-  const [uploadModalOpen, setUploadModalOpen] = useState(false);
-  const [checkinModalOpen, setCheckinModalOpen] = useState(false);
-  const [checkinLoading, setCheckinLoading] = useState(false);
-  const [checkinResult, setCheckinResult] = useState(null);
-  const [checkinForm, setCheckinForm] = useState({
-    weightDay1: 85.0,
-    weightDay2: 84.8,
-    weightDay3: 84.7,
-    weightDay4: 84.5,
-    weightDay5: 84.4,
-    weightDay6: 84.3,
-    weightDay7: 84.2,
-    waistCm: 88.5,
-    nutritionAdherence: 95,
-    hungerLevel: 2,
-    rotateMeals: true
-  });
-  const [sliderPos, setSliderPos] = useState(50);
-
-  const searchParams = new URLSearchParams(window.location.search);
-  const targetUserId = searchParams.get('user_id') || '2';
+  const [loading, setLoading] = useState(true);
+  const [coachNotes, setCoachNotes] = useState('');
+  const [approvingId, setApprovingId] = useState(null);
+  const [caseStudyOpen, setCaseStudyOpen] = useState(false);
 
   useEffect(() => {
-    fetchClients();
-    fetchProgressData(targetUserId);
-    fetchPhotos(targetUserId);
-  }, [targetUserId]);
+    fetchInitialData();
+  }, []);
 
-  const fetchClients = async () => {
-    try {
-      const res = await fetch(`${API_BASE}/api/v1/clients`);
-      const data = await res.json();
-      if (data.clients) setClients(data.clients);
-    } catch (e) {
-      console.error(e);
+  useEffect(() => {
+    if (selectedClientId) {
+      fetchClientCheckins(selectedClientId);
     }
-  };
+  }, [selectedClientId]);
 
-  const fetchProgressData = async (uid) => {
+  const fetchInitialData = async () => {
     try {
       setLoading(true);
-      const res = await fetch(`${API_BASE}/api/v1/programs/checkin/history/${uid}`);
+      const res = await fetch(`${API_BASE}/api/v1/clients`);
       const data = await res.json();
-      if (data.user) setUser(data.user);
-      if (data.checkins) setCheckins(data.checkins);
+      if (data.clients && data.clients.length > 0) {
+        setClients(data.clients);
+      }
     } catch (e) {
-      console.error('fetchProgressData error:', e);
+      console.error(e);
     } finally {
       setLoading(false);
     }
   };
 
-  const fetchPhotos = async (uid) => {
+  const fetchClientCheckins = async (uid) => {
     try {
-      const res = await fetch(`${API_BASE}/api/v1/photos/${uid}`);
+      const res = await fetch(`${API_BASE}/api/v1/programs/checkin/history/${uid}`);
       const data = await res.json();
-      if (data.photos) setPhotos(data.photos);
+      if (data.checkins) {
+        setCheckins(data.checkins);
+      }
     } catch (e) {
-      console.error('fetchPhotos error:', e);
+      console.error(e);
     }
   };
 
-  const handleFileUpload = (e) => {
-    const file = e.target.files[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setUploadForm({ ...uploadForm, photo_url: reader.result });
-      };
-      reader.readAsDataURL(file);
-    }
-  };
-
-  const handleSavePhoto = async (e) => {
-    e.preventDefault();
-    if (!uploadForm.photo_url) return;
+  const handleApproveCheckin = async (checkinId) => {
     try {
-      setUploading(true);
-      const res = await fetch(`${API_BASE}/api/v1/photos/upload`, {
+      setApprovingId(checkinId);
+      const res = await fetch(`${API_BASE}/api/v1/programs/checkin/approve`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          client_code: targetUserId,
-          week_number: uploadForm.week_number,
-          pose: uploadForm.pose,
-          photo_url: uploadForm.photo_url,
-          notes: uploadForm.notes
+          checkin_id: checkinId,
+          coach_notes: coachNotes || 'تمت مراجعة واعتماد المتابعة الأسبوعية وتحديث الخطة النشطة بنجاح.'
         })
       });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error || 'فشل حفظ الصورة');
 
-      alert(' تم حفظ الصورة بنجاح!');
-      setUploadModalOpen(false);
-      setUploadForm({ week_number: 1, pose: 'FRONT', photo_url: '', notes: '' });
-      fetchPhotos(targetUserId);
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'فشل اعتماد المتابعة');
+
+      alert('✓ تم اعتماد التعديل وتحديث الخطة النشطة للمتدرب بنجاح!');
+      fetchClientCheckins(selectedClientId);
+      window.dispatchEvent(new Event('checkin_approved'));
     } catch (err) {
       alert('خطأ: ' + err.message);
     } finally {
-      setUploading(false);
+      setApprovingId(null);
     }
   };
 
-  const initialWeight = checkins[0]?.average_weight || 90.0;
-  const currentWeight = checkins[checkins.length - 1]?.average_weight || 84.4;
-  const totalWeightLoss = (initialWeight - currentWeight).toFixed(1);
-
-  const initialWaist = checkins[0]?.waist_circumference_cm || 94.0;
-  const currentWaist = checkins[checkins.length - 1]?.waist_circumference_cm || 87.5;
-  const totalWaistLoss = (initialWaist - currentWaist).toFixed(1);
-
-  const beforePhoto = photos.find(p => p.week_number === 1 && p.pose === 'FRONT') || { photo_url: '/admin-dashboard_data/user-dashboard/before-sample.png' };
-  const afterPhoto = photos.filter(p => p.pose === 'FRONT').pop() || { photo_url: '/admin-dashboard_data/user-dashboard/after-sample.png' };
-
-  const weightDataPoints = checkins.length > 0 ? checkins.map(c => ({
-    week: c.week_number,
-    weight: c.average_weight,
-    waist: c.waist_circumference_cm,
-    adherence: c.nutrition_adherence_percent
-  })) : [
-    { week: 1, weight: 90.0, waist: 94.0, adherence: 90 },
-    { week: 2, weight: 87.5, waist: 91.0, adherence: 95 },
-    { week: 3, weight: 85.8, waist: 89.0, adherence: 92 },
-    { week: 4, weight: 84.4, waist: 87.5, adherence: 96 }
-  ];
-
-  const isClientView = searchParams.get('mode') === 'client';
-
-  const progressContent = (
-    <div className="theme-body">
-      <div className="container-fluid">
-          
-          {/* Page Header (Quiet Luxury) */}
-          <div className="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
-            <div>
-              <div className="d-flex align-items-center gap-2 mb-1">
-                <h4 className="fw-bold text-dark mb-0" style={{ letterSpacing: '-0.3px', fontSize: '1.25rem' }}>
-                  لوحة الرسوم البيانية وتتبع تطور المتدرب
-                </h4>
-                <span className="badge rounded-pill fw-bold" style={{ background: '#f5f3ff', color: '#261c6a', border: '1px solid #ddd6fe', fontSize: '0.7rem' }}>
-                  Z COACHING V2.0
-                </span>
-              </div>
-              <p className="text-muted small mb-0" style={{ fontSize: '0.8rem' }}>
-                تحليل مسار الوزن، قياسات الخصر، ومعرض صور التحول البصري للمتدرب: <strong className="text-dark">{user?.full_name || (user?.client_code ? `متدرب #${user.client_code}` : 'المتدرب')}</strong>
-              </p>
-            </div>
-            <div className="d-flex gap-2">
-              <button 
-                type="button"
-                onClick={() => setUploadModalOpen(true)} 
-                className="btn btn-sm rounded-pill px-3 fw-bold d-flex align-items-center gap-1 shadow-sm text-white"
-                style={{ 
-                  height: '34px', 
-                  fontSize: '0.8rem',
-                  background: '#261c6a',
-                  border: 'none',
-                  boxShadow: '0 3px 10px rgba(38, 28, 106, 0.28)'
-                }}
-              >
-                <i className="ti ti-upload fs-6"></i> 
-                <span>إضافة صورة جديدة</span>
-              </button>
-            </div>
-          </div>
-
-          {/* Top 4 KPI Cards (Exact Universal Design) */}
-          <div className="row row-cols-xxl-4 row-cols-md-2 g-3 mb-3">
-            {/* 1. Current Average Weight */}
-            <div className="col">
-              <div className="card border-0 bg-white h-100 shadow-sm" style={{ borderRadius: '14px', border: '1px solid #e2e8f0' }}>
-                <div className="card-body p-3 d-flex flex-column justify-content-between">
-                  <div className="d-flex justify-content-between align-items-center mb-2">
-                    <span className="badge rounded-pill fw-semibold px-2 py-1" style={{ background: '#ecfdf5', color: '#059669', fontSize: '0.68rem', border: '1px solid #a7f3d0' }}>
-                      {totalWeightLoss >= 0 ? `-${totalWeightLoss} كجم` : `+${Math.abs(totalWeightLoss)} كجم`}
-                    </span>
-                    <div className="d-flex align-items-center justify-content-center" style={{ width: '30px', height: '30px', borderRadius: '8px', background: '#f5f3ff', color: '#261c6a' }}>
-                      <i className="ti ti-scale fs-6"></i>
-                    </div>
-                  </div>
-                  <div>
-                    <h3 className="fw-bold mb-0 text-dark d-flex align-items-baseline gap-1" style={{ fontSize: '1.45rem', letterSpacing: '-0.5px' }}>
-                      <span>{currentWeight}</span>
-                      <span className="fs-6 text-muted fw-normal">كجم</span>
-                    </h3>
-                    <p className="text-muted small mb-0 fw-medium" style={{ fontSize: '0.76rem' }}>متوسط الوزن الحالي (البداية: {initialWeight} كجم)</p>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* 2. Waist Circumference */}
-            <div className="col">
-              <div className="card border-0 bg-white h-100 shadow-sm" style={{ borderRadius: '14px', border: '1px solid #e2e8f0' }}>
-                <div className="card-body p-3 d-flex flex-column justify-content-between">
-                  <div className="d-flex justify-content-between align-items-center mb-2">
-                    <span className="badge rounded-pill fw-semibold px-2 py-1" style={{ background: '#eff6ff', color: '#0284c7', fontSize: '0.68rem', border: '1px solid #bae6fd' }}>
-                      -{totalWaistLoss} سم
-                    </span>
-                    <div className="d-flex align-items-center justify-content-center" style={{ width: '30px', height: '30px', borderRadius: '8px', background: '#eff6ff', color: '#0284c7' }}>
-                      <i className="ti ti-ruler-2 fs-6"></i>
-                    </div>
-                  </div>
-                  <div>
-                    <h3 className="fw-bold mb-0 text-dark d-flex align-items-baseline gap-1" style={{ fontSize: '1.45rem', letterSpacing: '-0.5px' }}>
-                      <span>{currentWaist}</span>
-                      <span className="fs-6 text-muted fw-normal">سم</span>
-                    </h3>
-                    <p className="text-muted small mb-0 fw-medium" style={{ fontSize: '0.76rem' }}>محيط الخصر (البداية: {initialWaist} سم)</p>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* 3. Progress Photos Count */}
-            <div className="col">
-              <div className="card border-0 bg-white h-100 shadow-sm" style={{ borderRadius: '14px', border: '1px solid #e2e8f0' }}>
-                <div className="card-body p-3 d-flex flex-column justify-content-between">
-                  <div className="d-flex justify-content-between align-items-center mb-2">
-                    <span className="badge rounded-pill fw-semibold px-2 py-1" style={{ background: '#f8fafc', color: '#64748b', fontSize: '0.68rem', border: '1px solid #e2e8f0' }}>
-                      الصور الموثقة
-                    </span>
-                    <div className="d-flex align-items-center justify-content-center" style={{ width: '30px', height: '30px', borderRadius: '8px', background: '#f1f5f9', color: '#64748b' }}>
-                      <i className="ti ti-camera fs-6"></i>
-                    </div>
-                  </div>
-                  <div>
-                    <h3 className="fw-bold mb-0 text-dark d-flex align-items-baseline gap-1" style={{ fontSize: '1.45rem', letterSpacing: '-0.5px' }}>
-                      <span>{photos.length}</span>
-                      <span className="fs-6 text-muted fw-normal">صور</span>
-                    </h3>
-                    <p className="text-muted small mb-0 fw-medium" style={{ fontSize: '0.76rem' }}>صور التطور المسجلة في الحساب</p>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* 4. Mesocycle Week */}
-            <div className="col">
-              <div className="card border-0 bg-white h-100 shadow-sm" style={{ borderRadius: '14px', border: '1px solid #e2e8f0' }}>
-                <div className="card-body p-3 d-flex flex-column justify-content-between">
-                  <div className="d-flex justify-content-between align-items-center mb-2">
-                    <span className="badge rounded-pill fw-semibold px-2 py-1" style={{ background: '#f5f3ff', color: '#261c6a', fontSize: '0.68rem', border: '1px solid #ddd6fe' }}>
-                      الميزوسايكل
-                    </span>
-                    <div className="d-flex align-items-center justify-content-center" style={{ width: '30px', height: '30px', borderRadius: '8px', background: '#f5f3ff', color: '#261c6a' }}>
-                      <i className="ti ti-calendar-event fs-6"></i>
-                    </div>
-                  </div>
-                  <div>
-                    <h3 className="fw-bold mb-0 text-dark d-flex align-items-baseline gap-1" style={{ fontSize: '1.45rem', letterSpacing: '-0.5px' }}>
-                      <span>الأسبوع {checkins.length > 0 ? checkins.length + 1 : 2}</span>
-                    </h3>
-                    <p className="text-muted small mb-0 fw-medium" style={{ fontSize: '0.76rem' }}>من إجمالي 5 أسابيع مبرمجة</p>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Main Charts Row */}
-          <div className="row g-3 mb-4">
-            {/* Weight Progression Chart */}
-            <div className="col-lg-8">
-              <div className="card border-0 shadow-sm bg-white h-100" style={{ borderRadius: '16px', border: '1px solid #e2e8f0' }}>
-                <div className="card-body p-4">
-                  <div className="d-flex justify-content-between align-items-center mb-3">
-                    <div>
-                      <h5 className="fw-bold text-dark mb-1" style={{ fontSize: '0.98rem' }}>
-                        <i className="ti ti-trending-down text-primary me-2"></i> مسار تغير الوزن الأسبوعي
-                      </h5>
-                      <p className="text-muted small mb-0" style={{ fontSize: '0.78rem' }}>مقارنة متوسط الأوزان الأسبوعية مع منحنى التطور المستهدف</p>
-                    </div>
-                    <span className="badge rounded-pill fw-semibold px-3 py-1" style={{ background: '#f5f3ff', color: '#261c6a', border: '1px solid #ddd6fe', fontSize: '0.75rem' }}>
-                      المعدل الحالي: {totalWeightLoss} كجم
-                    </span>
-                  </div>
-
-                  <div className="p-4 rounded-4 border position-relative" style={{ minHeight: '250px', background: '#fbfaff', borderColor: '#ede9fe' }}>
-                    <div className="d-flex justify-content-between align-items-end h-100 pt-3 pb-1">
-                      {weightDataPoints.map((dp, idx) => {
-                        const heightPct = Math.max(30, Math.min(95, 100 - (initialWeight - dp.weight) * 15));
-                        return (
-                          <div key={idx} className="d-flex flex-column align-items-center" style={{ flex: 1 }}>
-                            <span className="badge bg-white border shadow-xs mb-2 fw-bold font-monospace" style={{ color: '#261c6a', fontSize: '0.78rem' }}>
-                              {dp.weight} كجم
-                            </span>
-                            <div 
-                              className="w-50 rounded-pill" 
-                              style={{ 
-                                height: `${heightPct * 1.5}px`, 
-                                background: 'linear-gradient(180deg, #372896 0%, #261c6a 100%)',
-                                boxShadow: '0 4px 10px rgba(38, 28, 106, 0.22)'
-                              }}
-                            ></div>
-                            <span className="fw-bold text-dark small mt-2" style={{ fontSize: '0.78rem' }}>الأسبوع {dp.week}</span>
-                          </div>
-                        );
-                      })}
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* Biofeedback Breakdown */}
-            <div className="col-lg-4">
-              <div className="card border-0 shadow-sm bg-white h-100" style={{ borderRadius: '16px', border: '1px solid #e2e8f0' }}>
-                <div className="card-body p-4">
-                  <h5 className="fw-bold text-dark mb-3" style={{ fontSize: '0.98rem' }}>
-                    <i className="ti ti-activity-heartbeat text-success me-2"></i> جودة الاستجابة والمؤشرات الحيوية
-                  </h5>
-                  <div className="d-flex flex-column gap-3">
-                    <div className="p-3 rounded-3 border" style={{ background: '#f8fafc', borderColor: '#e2e8f0' }}>
-                      <div className="d-flex justify-content-between align-items-center mb-1">
-                        <span className="small text-muted" style={{ fontSize: '0.78rem' }}>الالتزام بالدايت</span>
-                        <span className="fw-bold text-dark" style={{ fontSize: '0.82rem' }}>95%</span>
-                      </div>
-                      <div className="progress" style={{ height: '4px', background: '#e2e8f0' }}>
-                        <div className="progress-bar" style={{ width: '95%', background: '#059669' }}></div>
-                      </div>
-                    </div>
-
-                    <div className="p-3 rounded-3 border" style={{ background: '#f8fafc', borderColor: '#e2e8f0' }}>
-                      <div className="d-flex justify-content-between align-items-center mb-1">
-                        <span className="small text-muted" style={{ fontSize: '0.78rem' }}>مستوى الجوع والتحكم بالشهية</span>
-                        <span className="fw-bold text-dark" style={{ fontSize: '0.82rem' }}>2 / 5 (ممتاز)</span>
-                      </div>
-                      <div className="progress" style={{ height: '4px', background: '#e2e8f0' }}>
-                        <div className="progress-bar" style={{ width: '80%', background: '#261c6a' }}></div>
-                      </div>
-                    </div>
-
-                    <div className="p-3 rounded-3 border" style={{ background: '#f8fafc', borderColor: '#e2e8f0' }}>
-                      <div className="d-flex justify-content-between align-items-center mb-1">
-                        <span className="small text-muted" style={{ fontSize: '0.78rem' }}>مستوى الطاقة والنشاط في التمرين</span>
-                        <span className="fw-bold text-dark" style={{ fontSize: '0.82rem' }}>4 / 5 (عالي)</span>
-                      </div>
-                      <div className="progress" style={{ height: '4px', background: '#e2e8f0' }}>
-                        <div className="progress-bar" style={{ width: '85%', background: '#d97706' }}></div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Interactive Before & After Photo Comparison */}
-          <div className="card border-0 shadow-sm bg-white mb-4" style={{ borderRadius: '16px', border: '1px solid #e2e8f0' }}>
-            <div className="card-body p-4">
-              <div className="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
-                <div>
-                  <h5 className="fw-bold text-dark mb-1" style={{ fontSize: '0.98rem' }}>
-                    <i className="ti ti-transform text-primary me-2"></i> مقارنة التحول البصري التفاعلية (Before & After Slider)
-                  </h5>
-                  <p className="text-muted small mb-0" style={{ fontSize: '0.78rem' }}>اسحب المؤشر لمقارنة التطور العضلي ونسبة الدهون بين الأسبوع الأول والأسبوع الأخير</p>
-                </div>
-              </div>
-
-              <div className="row g-4 align-items-center justify-content-center">
-                <div className="col-lg-6 text-center">
-                  <div 
-                    className="position-relative mx-auto overflow-hidden rounded-4 border shadow-sm"
-                    style={{ maxWidth: '440px', height: '360px', backgroundColor: '#0f172a' }}
-                  >
-                    {/* Before Image */}
-                    <img 
-                      src={beforePhoto.photo_url || '/admin-dashboard_data/user-dashboard/before-sample.png'} 
-                      alt="Before" 
-                      className="position-absolute top-0 start-0 w-100 h-100"
-                      style={{ objectFit: 'contain' }}
-                    />
-                    
-                    {/* After Image with clip */}
-                    <div 
-                      className="position-absolute top-0 start-0 w-100 h-100 overflow-hidden"
-                      style={{ width: `${sliderPos}%` }}
-                    >
-                      <img 
-                        src={afterPhoto.photo_url || '/admin-dashboard_data/user-dashboard/after-sample.png'} 
-                        alt="After" 
-                        className="position-absolute top-0 start-0"
-                        style={{ width: '440px', height: '360px', objectFit: 'contain' }}
-                      />
-                    </div>
-
-                    {/* Divider Line */}
-                    <div 
-                      className="position-absolute top-0 bottom-0 bg-white"
-                      style={{ left: `${sliderPos}%`, width: '2px', zIndex: 5 }}
-                    >
-                      <div className="position-absolute top-50 start-50 translate-middle text-white rounded-circle p-1 d-flex align-items-center justify-content-center shadow" style={{ width: '28px', height: '28px', background: '#261c6a' }}>
-                        <i className="ti ti-arrows-left-right" style={{ fontSize: '0.75rem' }}></i>
-                      </div>
-                    </div>
-
-                    {/* Labels */}
-                    <span className="position-absolute top-0 start-0 m-2 badge bg-dark bg-opacity-75 text-white small" style={{ fontSize: '0.7rem' }}>البداية (الأسبوع 1)</span>
-                    <span className="position-absolute top-0 end-0 m-2 badge text-white small" style={{ fontSize: '0.7rem', background: '#261c6a' }}>الآن (الأسبوع {checkins.length + 1})</span>
-                  </div>
-
-                  {/* Range Input Slider */}
-                  <div className="mt-3 px-4" style={{ maxWidth: '440px', margin: '0 auto' }}>
-                    <input 
-                      type="range" 
-                      className="form-range" 
-                      min="0" 
-                      max="100" 
-                      value={sliderPos}
-                      onChange={(e) => setSliderPos(Number(e.target.value))}
-                    />
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-
-        </div>
-      </div>
-  );
-
-  const handleCheckinSubmit = async (e) => {
-    e.preventDefault();
-    try {
-      setCheckinLoading(true);
-      const res = await fetch(`${API_BASE}/api/v1/programs/checkin`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          client_code: targetUserId,
-          week_number: checkins.length + 1,
-          weights: [
-            Number(checkinForm.weightDay1) || 85.0,
-            Number(checkinForm.weightDay2) || 84.8,
-            Number(checkinForm.weightDay3) || 84.7,
-            Number(checkinForm.weightDay4) || 84.5,
-            Number(checkinForm.weightDay5) || 84.4,
-            Number(checkinForm.weightDay6) || 84.3,
-            Number(checkinForm.weightDay7) || 84.2,
-          ],
-          waist_cm: Number(checkinForm.waistCm) || 88.5,
-          nutrition_adherence_percent: Number(checkinForm.nutritionAdherence) || 95,
-          hunger_level: Number(checkinForm.hungerLevel) || 2,
-          rotate_meals: checkinForm.rotateMeals
-        })
-      });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error || 'فشل إرسال المتابعة');
-      
-      setCheckinResult(data);
-      alert('تم إرسال المتابعة الأسبوعية بنجاح إلى الكابتن!');
-      setCheckinModalOpen(false);
-      fetchProgressData(targetUserId);
-    } catch (err) {
-      alert('خطأ: ' + err.message);
-    } finally {
-      setCheckinLoading(false);
-    }
-  };
+  const activeClient = clients.find(c => String(c.id) === String(selectedClientId)) || clients[0] || { full_name: 'سارة المنصوري', client_code: '1' };
 
   return (
-    <>
-      {isClientView ? (
-        <div className="codex-wrapper" dir="rtl" style={{ minHeight: "100vh", backgroundColor: "#f6f8fb", fontFamily: "Cairo, Tajawal, sans-serif" }}>
-          <UserDashboardHeader currentUser={user} targetUserId={targetUserId} clients={clients} />
-          <UserDashboardSidebar targetUserId={targetUserId} onOpenCheckin={() => setCheckinModalOpen(true)} />
-          <main className="themebody-wrap">
-            {progressContent}
-          </main>
+    <AdminLayout>
+      <div style={{ direction: 'rtl', fontFamily: 'Alexandria, Cairo, sans-serif' }}>
+        
+        {/* 1. Header & Client Selector */}
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '14px', marginBottom: '24px' }}>
+          <div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px' }}>
+              <span style={{ fontSize: '0.75rem', fontWeight: 800, color: '#0284C7', background: '#E0F2FE', padding: '2px 8px', borderRadius: '6px' }}>
+                محرك التكيف والـ Auto-Regulation
+              </span>
+              <span style={{ fontSize: '0.75rem', color: '#64748B', fontWeight: 700 }}>
+                Engine 7 Review Hub
+              </span>
+            </div>
+            <h1 style={{ fontSize: '1.45rem', fontWeight: 900, color: '#0F172A', margin: 0 }}>
+              مركز المتابعات الأسبوعية واعتماد التعديلات
+            </h1>
+          </div>
+
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+            <label style={{ fontSize: '0.82rem', fontWeight: 700, color: '#475569' }}>المتدرب:</label>
+            <select
+              value={selectedClientId}
+              onChange={(e) => setSelectedClientId(e.target.value)}
+              style={{
+                height: '40px',
+                borderRadius: '12px',
+                border: '1px solid #CBD5E1',
+                padding: '0 14px',
+                fontSize: '0.86rem',
+                fontWeight: 700,
+                color: '#0F172A',
+                background: '#FFFFFF',
+                outline: 'none',
+                boxShadow: '0 1px 3px rgba(15, 23, 42, 0.04)'
+              }}
+            >
+              {clients.map(c => (
+                <option key={c.id} value={c.id}>
+                  #{c.client_code || c.id} - {c.full_name} ({c.subscription_package || 'باقة ماكس'})
+                </option>
+              ))}
+            </select>
+
+            <button
+              type="button"
+              onClick={() => setCaseStudyOpen(true)}
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '6px',
+                background: '#FEF3C7',
+                color: '#92400E',
+                border: '1px solid #FDE68A',
+                borderRadius: '12px',
+                padding: '0 14px',
+                height: '40px',
+                fontSize: '0.82rem',
+                fontWeight: 800,
+                cursor: 'pointer'
+              }}
+            >
+              <Sparkles style={{ width: '14px', height: '14px', color: '#D97706' }} />
+              <span>بطاقة التحول (Case Study)</span>
+            </button>
+
+            <Link
+              to={`/check-in?user_id=${selectedClientId}`}
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '6px',
+                background: '#0F172A',
+                color: '#FFFFFF',
+                borderRadius: '12px',
+                padding: '0 16px',
+                height: '40px',
+                fontSize: '0.82rem',
+                fontWeight: 700,
+                textDecoration: 'none'
+              }}
+            >
+              <span>+ تسجيل متابعة جديدة</span>
+            </Link>
+          </div>
         </div>
-      ) : (
-        <AdminLayout>
-          {progressContent}
-        </AdminLayout>
-      )}
 
-      {/* Upload Photo Modal */}
-      {uploadModalOpen && (
-        <UploadPhotoModal 
-          isOpen={uploadModalOpen}
-          onClose={() => setUploadModalOpen(false)}
-          onSuccess={() => {
-            fetchPhotos(targetUserId);
-            setUploadModalOpen(false);
-          }}
-          targetUserId={targetUserId}
-        />
-      )}
+        {/* 2. Main Review Stream */}
+        {checkins.length === 0 ? (
+          <div style={{ background: '#FFFFFF', borderRadius: '24px', padding: '48px', textAlign: 'center', border: '1px solid #E2E8F0', boxShadow: '0 2px 8px rgba(15, 23, 42, 0.03)' }}>
+            <div style={{ width: '56px', height: '56px', borderRadius: '16px', background: '#F1F5F9', color: '#94A3B8', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 16px auto' }}>
+              <ActivitySquare style={{ width: '28px', height: '28px' }} />
+            </div>
+            <h3 style={{ fontSize: '1.1rem', fontWeight: 800, color: '#0F172A', marginBottom: '6px' }}>
+              لا توجد متابعات مسجلة لهذا المتدرب حتى الآن
+            </h3>
+            <p style={{ fontSize: '0.84rem', color: '#64748B', maxWidth: '440px', margin: '0 auto 20px auto' }}>
+              يمكنك فتح استمارة المتابعة وتسجيل الأسبوع الأول لتفعيل خوارزمية التكيف ومقارنة المقاييس الحيوية.
+            </p>
+            <Link
+              to={`/check-in?user_id=${selectedClientId}&week=1`}
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '6px',
+                background: '#0284C7',
+                color: '#FFFFFF',
+                borderRadius: '12px',
+                padding: '10px 20px',
+                fontSize: '0.84rem',
+                fontWeight: 700,
+                textDecoration: 'none'
+              }}
+            >
+              <span>تسجيل تقرير الأسبوع الأول</span>
+            </Link>
+          </div>
+        ) : (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+            {checkins.map((chk) => {
+              const analysis = chk.analysis_output || {};
+              const bio = chk.biofeedback || {};
+              const isApproved = chk.status === 'APPROVED';
 
-      {/* Weekly Checkin Modal */}
-      <CheckinModal 
-        isOpen={checkinModalOpen}
-        onClose={() => setCheckinModalOpen(false)}
-        checkinForm={checkinForm}
-        setCheckinForm={setCheckinForm}
-        onSubmit={handleCheckinSubmit}
-        loading={checkinLoading}
-        checkinResult={checkinResult}
-      />
-    </>
+              return (
+                <div 
+                  key={chk.id}
+                  style={{
+                    background: '#FFFFFF',
+                    borderRadius: '24px',
+                    border: isApproved ? '1px solid #E2E8F0' : '2px solid #38BDF8',
+                    padding: '24px 28px',
+                    boxShadow: isApproved ? '0 1px 4px rgba(15, 23, 42, 0.03)' : '0 8px 25px rgba(2, 132, 199, 0.08)'
+                  }}
+                >
+                  {/* Top Bar of Check-in Card */}
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '10px', borderBottom: '1px solid #F1F5F9', paddingBottom: '16px', marginBottom: '18px' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                      <span style={{ fontSize: '0.82rem', fontWeight: 900, background: '#0F172A', color: '#FFFFFF', padding: '4px 10px', borderRadius: '8px' }}>
+                        الأسبوع {chk.week_number}
+                      </span>
+                      <span style={{ fontSize: '0.82rem', color: '#64748B' }}>
+                        تاريخ التسليم: {new Date(chk.createdAt).toLocaleDateString('ar-EG')}
+                      </span>
+                    </div>
+
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                      {isApproved ? (
+                        <span style={{ fontSize: '0.78rem', fontWeight: 800, background: '#ECFDF5', color: '#059669', border: '1px solid #A7F3D0', padding: '4px 12px', borderRadius: '20px', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                          <Check style={{ width: '13px', height: '13px' }} />
+                          <span>تم الاعتماد وتحديث الخطة</span>
+                        </span>
+                      ) : (
+                        <span style={{ fontSize: '0.78rem', fontWeight: 800, background: '#FEF3C7', color: '#B45309', border: '1px solid #FDE68A', padding: '4px 12px', borderRadius: '20px', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                          <Clock style={{ width: '13px', height: '13px' }} />
+                          <span>في انتظار مراجعة واعتماد الكوتش</span>
+                        </span>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* 4 Pillars Summary Grid */}
+                  <div className="row g-3 mb-4">
+                    
+                    {/* Weight & Waist */}
+                    <div className="col-12 col-md-3">
+                      <div style={{ background: '#F8FAFC', padding: '14px', borderRadius: '14px', border: '1px solid #E2E8F0' }}>
+                        <span style={{ fontSize: '0.72rem', color: '#64748B', fontWeight: 700, display: 'block', marginBottom: '2px' }}>الوزن الحالي والتغير:</span>
+                        <div style={{ display: 'flex', alignItems: 'baseline', gap: '6px' }}>
+                          <strong style={{ fontSize: '1.2rem', color: '#0F172A', fontFamily: 'monospace' }}>
+                            {chk.average_weight_kg} كجم
+                          </strong>
+                          {analysis.weight_change_kg !== null && (
+                            <span style={{ fontSize: '0.74rem', fontWeight: 800, color: analysis.weight_change_kg <= 0 ? '#059669' : '#DC2626' }}>
+                              ({analysis.weight_change_kg > 0 ? '+' : ''}{analysis.weight_change_kg} كجم)
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Waist Circumference */}
+                    <div className="col-12 col-md-3">
+                      <div style={{ background: '#F8FAFC', padding: '14px', borderRadius: '14px', border: '1px solid #E2E8F0' }}>
+                        <span style={{ fontSize: '0.72rem', color: '#64748B', fontWeight: 700, display: 'block', marginBottom: '2px' }}>محيط الوسط (السرة):</span>
+                        <strong style={{ fontSize: '1.2rem', color: '#0F172A', fontFamily: 'monospace' }}>
+                          {chk.waist_circumference_cm ? `${chk.waist_circumference_cm} سم` : 'غير محدد'}
+                        </strong>
+                      </div>
+                    </div>
+
+                    {/* Nutrition Adherence */}
+                    <div className="col-12 col-md-3">
+                      <div style={{ background: '#F8FAFC', padding: '14px', borderRadius: '14px', border: '1px solid #E2E8F0' }}>
+                        <span style={{ fontSize: '0.72rem', color: '#64748B', fontWeight: 700, display: 'block', marginBottom: '2px' }}>الالتزام الغذائي:</span>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                          <strong style={{ fontSize: '1.2rem', color: '#0284C7', fontFamily: 'monospace' }}>
+                            {chk.nutrition_adherence_percent}%
+                          </strong>
+                          <span style={{ fontSize: '0.7rem', fontWeight: 700, color: '#059669' }}>
+                            {chk.nutrition_adherence_percent >= 85 ? '(ممتاز)' : '(يحتاج انضباط)'}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Biofeedback Radar */}
+                    <div className="col-12 col-md-3">
+                      <div style={{ background: '#F8FAFC', padding: '14px', borderRadius: '14px', border: '1px solid #E2E8F0' }}>
+                        <span style={{ fontSize: '0.72rem', color: '#64748B', fontWeight: 700, display: 'block', marginBottom: '2px' }}>مؤشرات التوافق الحيوي:</span>
+                        <div style={{ fontSize: '0.76rem', color: '#334155', fontWeight: 700 }}>
+                          <span>الجوع: {bio.hunger_level || 3}/10</span> | <span>الطاقة: {bio.energy_level || 8}/10</span>
+                        </div>
+                      </div>
+                    </div>
+
+                  </div>
+
+                  {/* Smart Adaptation Recommendation Card (Engine 7) */}
+                  <div style={{ background: '#F0F9FF', border: '1px solid #BAE6FD', borderRadius: '18px', padding: '20px', marginBottom: '18px' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#0369A1', fontWeight: 800, fontSize: '0.9rem', marginBottom: '8px' }}>
+                      <Sparkles style={{ width: '18px', height: '18px' }} />
+                      <span>توصية محرك التكيف التلقائي (Auto-Regulation Directive):</span>
+                    </div>
+
+                    <div style={{ background: '#FFFFFF', padding: '12px 16px', borderRadius: '12px', border: '1px solid #E0F2FE', marginBottom: '10px' }}>
+                      <strong style={{ color: '#0F172A', fontSize: '0.86rem', display: 'block', marginBottom: '4px' }}>
+                        التشخيص: {analysis.analysis_status || 'ON_TRACK (النزول يسير وفق المعدل المستهدف)'}
+                      </strong>
+                      {analysis.recommendations_ar && analysis.recommendations_ar.length > 0 ? (
+                        analysis.recommendations_ar.map((rec, rIdx) => (
+                          <p key={rIdx} style={{ fontSize: '0.82rem', color: '#334155', margin: '3px 0' }}>
+                            • {rec}
+                          </p>
+                        ))
+                      ) : (
+                        <p style={{ fontSize: '0.82rem', color: '#334155', margin: 0 }}>
+                          • الاستمرار على نفس السعرات والماكروز مع الحفاظ على خطوات الـ NEAT.
+                        </p>
+                      )}
+                    </div>
+
+                    {/* Joint pain alert if any */}
+                    {chk.pain_reports && chk.pain_reports.length > 0 && (
+                      <div style={{ background: '#FFF1F2', border: '1px solid #FECDD3', borderRadius: '12px', padding: '10px 14px', color: '#9F1239', fontSize: '0.8rem', fontWeight: 700 }}>
+                        <AlertTriangle style={{ width: '15px', height: '15px', display: 'inline', marginLeft: '6px' }} />
+                        <span>تم الإبلاغ عن ألم في {chk.pain_reports[0].joint} (شدة {chk.pain_reports[0].pain_level}/10) — تم تفعيل بروتوكول حماية المفصل.</span>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Coach Action & Notes */}
+                  {!isApproved && (
+                    <div style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', borderRadius: '18px', padding: '18px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                      <label style={{ fontSize: '0.82rem', fontWeight: 700, color: '#0F172A' }}>
+                        ملاحظات وتوجيهات الكوتش للمتدرب للأسبوع القادم:
+                      </label>
+                      <textarea
+                        rows="2"
+                        placeholder="اكتب ملاحظاتك التشجيعية وتوجيهات التعديل..."
+                        value={coachNotes}
+                        onChange={(e) => setCoachNotes(e.target.value)}
+                        style={{ width: '100%', borderRadius: '10px', border: '1px solid #CBD5E1', padding: '8px 12px', fontSize: '0.84rem', outline: 'none' }}
+                      ></textarea>
+
+                      <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px' }}>
+                        {(() => {
+                          const waScript = generateWhatsAppCoachingScript({
+                            client_name: activeClient.full_name || 'يا بطل',
+                            phone_number: activeClient.phone_number || '01011111110',
+                            decision_scenario: analysis.analysis_status || 'ON_TRACK',
+                            weight_loss_kg: 0.8,
+                            waist_loss_cm: 1.5,
+                            affected_joint: chk.pain_reports?.[0]?.joint || 'الركبة'
+                          });
+
+                          return (
+                            <a
+                              href={waScript.whatsapp_url}
+                              target="_blank"
+                              rel="noreferrer"
+                              style={{
+                                display: 'inline-flex',
+                                alignItems: 'center',
+                                gap: '6px',
+                                background: '#ECFDF5',
+                                color: '#059669',
+                                borderRadius: '10px',
+                                padding: '0 16px',
+                                height: '40px',
+                                fontSize: '0.82rem',
+                                fontWeight: 700,
+                                textDecoration: 'none'
+                              }}
+                            >
+                              <MessageCircle style={{ width: '15px', height: '15px' }} />
+                              <span>إرسال التوجيه الذكي عبر واتساب</span>
+                            </a>
+                          );
+                        })()}
+
+                        <button
+                          type="button"
+                          disabled={approvingId === chk.id}
+                          onClick={() => handleApproveCheckin(chk.id)}
+                          style={{
+                            display: 'inline-flex',
+                            alignItems: 'center',
+                            gap: '6px',
+                            background: '#059669',
+                            color: '#FFFFFF',
+                            borderRadius: '10px',
+                            padding: '0 20px',
+                            height: '40px',
+                            fontSize: '0.84rem',
+                            fontWeight: 800,
+                            border: 'none',
+                            cursor: 'pointer',
+                            boxShadow: '0 2px 8px rgba(5, 150, 105, 0.25)'
+                          }}
+                        >
+                          <CheckCircle2 style={{ width: '16px', height: '16px' }} />
+                          <span>{approvingId === chk.id ? 'جاري التحديث...' : 'اعتماد التعديل وتحديث الخطة فوراً'}</span>
+                        </button>
+                      </div>
+                    </div>
+                  )}
+
+                </div>
+              );
+            })}
+          </div>
+        )}
+
+        {/* Case Study Modal */}
+        {caseStudyOpen && (
+          <CaseStudyModal
+            client={activeClient}
+            onClose={() => setCaseStudyOpen(false)}
+          />
+        )}
+
+      </div>
+    </AdminLayout>
   );
 }

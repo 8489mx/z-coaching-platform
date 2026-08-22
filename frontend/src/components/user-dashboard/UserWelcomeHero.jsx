@@ -53,7 +53,7 @@ export default function UserWelcomeHero({ currentUser, coachNotes }) {
               right: 0,
               bottom: 0,
               width: '4px',
-              background: 'linear-gradient(180deg, #261c6a 0%, #06b6d4 50%, #10b981 100%)',
+              background: 'linear-gradient(180deg, #0284C7 0%, #06b6d4 50%, #10b981 100%)',
               borderRadius: '0 18px 18px 0'
             }}></div>
 
@@ -66,9 +66,9 @@ export default function UserWelcomeHero({ currentUser, coachNotes }) {
                     {greeting} {fullName}! 
                   </h3>
                   <span className="badge rounded-pill fw-bold" style={{ 
-                    background: 'linear-gradient(135deg, #f5f3ff, #ede9fe)', 
-                    color: '#261c6a', 
-                    border: '1px solid #ddd6fe', 
+                    background: 'linear-gradient(135deg, #E5F0FF, #F0F9FF)', 
+                    color: '#0284C7', 
+                    border: '1px solid #BAE6FD', 
                     fontSize: '0.68rem',
                     boxShadow: '0 1px 4px rgba(38,28,106,0.08)'
                   }}>
@@ -79,7 +79,7 @@ export default function UserWelcomeHero({ currentUser, coachNotes }) {
                 {/* Motivational Quote */}
                 <p className="mb-2 fw-semibold" style={{ 
                   fontSize: '0.85rem', 
-                  color: '#261c6a',
+                  color: '#0284C7',
                   lineHeight: '1.6',
                   opacity: 0.85
                 }}>
@@ -168,14 +168,14 @@ export default function UserWelcomeHero({ currentUser, coachNotes }) {
             <div className="z-glass-card" style={{ 
               borderRadius: '16px', 
               background: 'linear-gradient(135deg, rgba(251,250,255,0.85), rgba(245,243,255,0.75))',
-              borderRight: '4px solid #261c6a' 
+              borderRight: '4px solid #0284C7' 
             }}>
               <div className="card-body p-3 px-4">
                 <div className="d-flex align-items-center gap-2 mb-1">
                   <span className="badge rounded-pill fw-bold" style={{ 
-                    background: 'linear-gradient(135deg, #f5f3ff, #ede9fe)', 
-                    color: '#261c6a', 
-                    border: '1px solid #ddd6fe', 
+                    background: 'linear-gradient(135deg, #E5F0FF, #F0F9FF)', 
+                    color: '#0284C7', 
+                    border: '1px solid #BAE6FD', 
                     fontSize: '0.7rem' 
                   }}>
                     توجيهات الكابتن المباشرة 

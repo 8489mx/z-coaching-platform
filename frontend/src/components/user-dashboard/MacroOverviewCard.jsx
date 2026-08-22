@@ -57,8 +57,13 @@ export function getNutritionTargets(nutrition) {
     mealsSum.fats || 0
   );
 
-  return { calories, protein, carbs, fats, water: calories > 0 ? '3.5' : '0' };
+  const waterVal = directTargets.water_liters 
+    ? `${directTargets.water_liters}` 
+    : (directTargets.hydration?.rest_day_water_liters ? `${directTargets.hydration.rest_day_water_liters}` : (calories > 0 ? '3.5' : '0'));
+
+  return { calories, protein, carbs, fats, water: waterVal };
 }
+
 
 export default function MacroOverviewCard({ nutrition }) {
   const { calories, protein, carbs, fats, water } = getNutritionTargets(nutrition);
@@ -66,8 +71,8 @@ export default function MacroOverviewCard({ nutrition }) {
   const cards = [
     { 
       key: 'calories', icon: 'ti-bolt', iconClass: 'z-icon-power',
-      badge: { text: 'الهدف اليومي', bg: 'linear-gradient(135deg, #f5f3ff, #ede9fe)', color: '#261c6a' },
-      val: calories, unit: 'سعرة', label: 'السعرات المستهدفة', pct: 75, barColor: 'linear-gradient(90deg, #818cf8, #261c6a)'
+      badge: { text: 'الهدف اليومي', bg: 'linear-gradient(135deg, #E5F0FF, #F0F9FF)', color: '#0284C7' },
+      val: calories, unit: 'سعرة', label: 'السعرات المستهدفة', pct: 75, barColor: 'linear-gradient(90deg, #818cf8, #0284C7)'
     },
     { 
       key: 'protein', icon: 'ti-barbell', iconClass: 'z-icon-energy',
@@ -86,8 +91,8 @@ export default function MacroOverviewCard({ nutrition }) {
     },
     { 
       key: 'water', icon: 'ti-droplet', iconClass: 'z-icon-power',
-      badge: { text: 'السوائل', bg: 'linear-gradient(135deg, #f5f3ff, #ede9fe)', color: '#261c6a' },
-      val: water, unit: 'لتر / يوم', label: 'شرب الماء والترطيب', pct: 70, barColor: 'linear-gradient(90deg, #818cf8, #261c6a)'
+      badge: { text: 'السوائل', bg: 'linear-gradient(135deg, #E5F0FF, #F0F9FF)', color: '#0284C7' },
+      val: water, unit: 'لتر / يوم', label: 'شرب الماء والترطيب', pct: 70, barColor: 'linear-gradient(90deg, #818cf8, #0284C7)'
     },
   ];
 

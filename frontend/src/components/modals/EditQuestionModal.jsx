@@ -100,7 +100,7 @@ export default function EditQuestionModal({
           {/* Header */}
           <div className="p-4 bg-white d-flex align-items-center justify-content-between border-bottom" style={{ borderColor: '#f1f5f9' }}>
             <div className="d-flex align-items-center gap-3">
-              <div className="rounded-circle d-flex align-items-center justify-content-center flex-shrink-0" style={{ width: '42px', height: '42px', background: '#f5f3ff', color: '#261c6a', border: '1.5px solid #ddd6fe' }}>
+              <div className="rounded-circle d-flex align-items-center justify-content-center flex-shrink-0" style={{ width: '42px', height: '42px', background: '#E5F0FF', color: '#0284C7', border: '1.5px solid #BAE6FD' }}>
                 <i className="ti ti-edit fs-5"></i>
               </div>
               <div className="text-end">
@@ -198,7 +198,7 @@ export default function EditQuestionModal({
 
               {/* Options builder for Select / Dropdown */}
               {formData.type === 'select' && (
-                <div className="p-3 rounded-3 border mb-3" style={{ background: '#fbfaff', borderColor: '#ede9fe' }}>
+                <div className="p-3 rounded-3 border mb-3" style={{ background: '#F0F9FF', borderColor: '#F0F9FF' }}>
                   <label className="form-label fw-bold text-dark small mb-2 d-block text-end" style={{ fontSize: '0.82rem' }}>
                     خيارات القائمة المنسدلة:
                   </label>
@@ -224,7 +224,7 @@ export default function EditQuestionModal({
                       type="button"
                       onClick={handleAddOption}
                       className="btn btn-sm px-3 fw-bold rounded-pill text-white flex-shrink-0"
-                      style={{ background: '#261c6a', fontSize: '0.8rem', height: '36px' }}
+                      style={{ background: '#0284C7', fontSize: '0.8rem', height: '36px' }}
                     >
                       إضافة خيار
                     </button>
@@ -263,8 +263,8 @@ export default function EditQuestionModal({
                         fontSize: '0.78rem', 
                         height: '38px', 
                         borderRadius: '8px 0 0 8px',
-                        background: !formData.required ? '#261c6a' : undefined,
-                        borderColor: !formData.required ? '#261c6a' : undefined
+                        background: !formData.required ? '#0284C7' : undefined,
+                        borderColor: !formData.required ? '#0284C7' : undefined
                       }}
                     >
                       اختياري
@@ -316,7 +316,7 @@ export default function EditQuestionModal({
                 style={{ 
                   height: '40px', 
                   fontSize: '0.86rem', 
-                  background: 'linear-gradient(135deg, #372896 0%, #261c6a 100%)', 
+                  background: 'linear-gradient(135deg, #58B4E5 0%, #0284C7 100%)', 
                   border: 'none', 
                   boxShadow: '0 4px 14px rgba(38, 28, 106, 0.28)' 
                 }}

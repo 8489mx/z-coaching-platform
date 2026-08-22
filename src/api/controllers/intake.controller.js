@@ -22,6 +22,8 @@ const loadFoodCatalog = async () => {
 
 // Helper: Build Explainable AI Safety & Rationale Audit
 function generateAiRationaleAudit(intakePayload, masterProgram) {
+  const personal = intakePayload.personal || intakePayload.client || {};
+  const training = intakePayload.training || {};
   const medical = intakePayload.medical || {};
   const nutrition = intakePayload.nutrition || {};
   const body = intakePayload.body || {};
@@ -73,22 +75,128 @@ function generateAiRationaleAudit(intakePayload, masterProgram) {
     foodExclusions.push("النظام الغذائي مرن وشامل لجميع مجموعات الطعام الصحية مع خيارات تبديل ذكية متنوعة.");
   }
 
-  const cardioBpm = masterProgram.cardio_program?.schedule?.sessions?.[0]?.heart_rate_target?.target_range_bpm || "120 - 135 bpm";
-  const cardioStrategy = `تم تحديد ${cardio.maxSessionsPerWeek || 2} جلسات كارديو أسبوعياً بنطاق نبضات حرق الدهون Zone 2 (${cardioBpm}) لتحفيز نزول الدهون دون التأثير على الاستشفاء العضلي.`;
+  const cardioBpm = "120 - 135 bpm";
+  const cardioStrategy = `تم تحديد ${cardio.maxSessionsPerWeek || 3} جلسات كارديو أسبوعياً بنطاق نبضات حرق الدهون Zone 2 (${cardioBpm}) بالإضافة إلى مستهدف ${cardio.averageDailySteps || 10000} خطوة يومياً لتحفيز نزول الدهون دون التأثير على الاستشفاء العضلي.`;
 
-  const weight = body.weightKg || 70;
-  const targetCalories = masterProgram.nutrition_program?.targets?.target_calories_kcal || 2200;
-  const proteinG = masterProgram.nutrition_program?.targets?.protein_g || 160;
-  const macroRationale = `تم ضبط السعرات اليومية عند (${Math.round(targetCalories)} kcal) مع بروتين (${Math.round(proteinG)} جم بمعدل ~${(proteinG / weight).toFixed(1)} جم/كجم) لضمان حماية واستشفاء الكتلة العضلية أثناء مرحلة (${goals.primary === 'FAT_LOSS' ? 'حرق الدهون' : 'البناء العضلي'}).`;
+  const weight = Number(body.weightKg) || 75;
+  const height = Number(body.heightCm) || 175;
+  const age = Number(personal.age) || (personal.dateOfBirth ? (new Date().getFullYear() - new Date(personal.dateOfBirth).getFullYear()) : 28);
+  const isMale = personal.sex !== 'FEMALE';
+  const bodyFat = Number(body.bodyFat) || null;
+
+  // 1. Calculate BMR
+  let bmr = 0;
+  if (bodyFat && bodyFat > 0 && bodyFat < 50) {
+    const lbm = weight * (1 - bodyFat / 100);
+    bmr = Math.round(370 + (21.6 * lbm));
+  } else {
+    bmr = Math.round(10 * weight + 6.25 * height - 5 * age + (isMale ? 5 : -161));
+  }
+
+  // 2. Activity multiplier based on steps & training days
+  const steps = Number(cardio.averageDailySteps) || 6000;
+  const trainDays = Number(training.preferredDaysPerWeek) || 3;
+  let activityMultiplier = 1.35;
+  if (steps >= 10000) activityMultiplier += 0.15;
+  else if (steps >= 7000) activityMultiplier += 0.10;
+  if (trainDays >= 4) activityMultiplier += 0.10;
+  else if (trainDays >= 3) activityMultiplier += 0.05;
+
+  const tdee = Math.round(bmr * activityMultiplier);
+
+  // 3. Calorie Deficit / Surplus based on Goal
+  let targetCalories = tdee;
+  let proteinPerKg = 2.0;
+  if (goals.primary === 'FAT_LOSS') {
+    targetCalories = Math.round(tdee * 0.80); // 20% Deficit
+    proteinPerKg = 2.2; // High protein for muscle sparing
+  } else if (goals.primary === 'MUSCLE_GAIN') {
+    targetCalories = Math.round(tdee * 1.10); // 10% Surplus
+    proteinPerKg = 2.0;
+  }
+
+  const proteinG = Math.round(weight * proteinPerKg);
+  const fatCalories = Math.round(targetCalories * 0.22);
+  const fatG = Math.round(fatCalories / 9);
+  const carbCalories = Math.max(0, targetCalories - (proteinG * 4) - (fatG * 9));
+  const carbG = Math.round(carbCalories / 4);
+
+  const mealCount = Number(nutrition.preferredMealCount) || 3;
+  const mealProtein = Math.round(proteinG / mealCount);
+  const mealFat = Math.round(fatG / mealCount);
+  const mealCarb = Math.round(carbG / mealCount);
+
+  const macroRationale = `سعرات الصيانة (TDEE): ~${tdee} kcal. تم تطبيق عجز 20% للتنشيف لتصبح السعرات المستهدفة (${targetCalories} kcal) مقسمة بدقة: بروتين (${proteinG} جم بمعدل ${proteinPerKg} جم/كجم) + دهون صحية (${fatG} جم) + كاربوهيدرات (${carbG} جم). متوسط كل وجبة من الوجبات الـ (${mealCount}): ~${mealProtein} جم بروتين، ~${mealCarb} جم كارب، ~${mealFat} جم دهون مع رفع الكارب في وجبة ما قبل التمرين.`;
 
   return {
     injury_exclusions: injuryExclusions,
     food_exclusions: foodExclusions,
     cardio_strategy: cardioStrategy,
     macro_rationale: macroRationale,
+    target_calories_calculated: targetCalories,
+    tdee_calculated: tdee,
+    bmr_calculated: bmr,
+    protein_g_calculated: proteinG,
+    fat_g_calculated: fatG,
+    carb_g_calculated: carbG,
     projected_weekly_change: goals.primary === 'FAT_LOSS' ? '-0.5 إلى -0.8 كجم/أسبوع' : '+0.25 إلى +0.4 كجم/أسبوع'
   };
 }
+
+// 0. Fetch existing intake draft or submitted status for client
+export const getClientIntakeDraft = async (req, res) => {
+  try {
+    const { code, phone } = req.query;
+    const clientCode = (code || "").trim();
+    const clientPhone = (phone || "").trim();
+
+    if (!clientCode && !clientPhone) {
+      return res.status(200).json({ user: null, submission: null });
+    }
+
+    let user = null;
+    if (clientCode && clientCode !== "COACH-KIMO") {
+      user = await User.findOne({ where: { client_code: clientCode, role: 'CLIENT' } });
+    }
+    if (!user && clientPhone) {
+      user = await User.findOne({ where: { phone_number: clientPhone, role: 'CLIENT' } });
+    }
+
+    if (!user) {
+      return res.status(200).json({ user: null, submission: null });
+    }
+
+    const submission = await IntakeSubmission.findOne({
+      where: { user_id: user.id },
+      order: [["id", "DESC"]]
+    });
+
+    const isSubmitted = submission && ["PENDING_COACH_REVIEW", "DRAFT_GENERATED", "APPROVED"].includes(submission.status);
+    const isApproved = submission && submission.status === "APPROVED";
+
+    return res.status(200).json({
+      user: {
+        id: user.id,
+        full_name: user.full_name,
+        client_code: user.client_code,
+        phone_number: user.phone_number,
+        payment_status: user.payment_status
+      },
+      submission: submission ? {
+        id: submission.id,
+        status: submission.status,
+        progress_percent: submission.progress_percent,
+        answers: submission.answers,
+        updatedAt: submission.updatedAt
+      } : null,
+      isSubmitted,
+      isApproved
+    });
+  } catch (err) {
+    console.error("getClientIntakeDraft error:", err);
+    return res.status(500).json({ error: "فشل استرجاع بيانات الاستمارة", details: err.message });
+  }
+};
 
 // 1. Client saves in-progress draft (Auto-save)
 export const saveDraftIntake = async (req, res) => {
@@ -131,7 +239,19 @@ export const saveDraftIntake = async (req, res) => {
       order: [["id", "DESC"]]
     });
 
-    if (!submission || submission.status === 'APPROVED') {
+    if (submission && ["PENDING_COACH_REVIEW", "DRAFT_GENERATED", "APPROVED"].includes(submission.status)) {
+      // If already submitted or approved, do NOT overwrite answers via background auto-save
+      return res.status(200).json({
+        message: "الاستمارة معتمدة بالفعل ومحفوظة",
+        client_code: user.client_code,
+        submission_id: submission.id,
+        isLocked: true,
+        status: submission.status,
+        progress_percent: 100
+      });
+    }
+
+    if (!submission) {
       submission = await IntakeSubmission.create({
         user_id: user.id,
         answers: intakePayload,
@@ -140,9 +260,7 @@ export const saveDraftIntake = async (req, res) => {
       });
     } else {
       submission.answers = intakePayload;
-      if (submission.status === 'IN_PROGRESS' || submission.status === 'PENDING_COACH_REVIEW') {
-        submission.progress_percent = Math.min(Math.max(Number(progress_percent) || 20, 10), 99);
-      }
+      submission.progress_percent = Math.min(Math.max(Number(progress_percent) || 20, 10), 99);
       await submission.save();
     }
 

@@ -1,0 +1,2258 @@
+[
+  {
+    "id": "chest_incline_db_press",
+    "name_ar": "ضغط دمبل مائل للصدر العلوي",
+    "name_en": "Incline Dumbbell Bench Press",
+    "target_muscle": "Upper Chest (Clavicular Head)",
+    "muscle_group": "CHEST",
+    "muscle_ar": "عضلات الصدر العلوي",
+    "synergist_muscles": [
+      "Front Deltoid",
+      "Triceps"
+    ],
+    "environment": [
+      "GYM",
+      "HOME_DUMBBELL"
+    ],
+    "equipment": "DUMBBELL",
+    "equipment_ar": "دمبلز ودكة مائلة 30°",
+    "biomechanical_focus": "LENGTHENED_MID",
+    "difficulty_level": "INTERMEDIATE",
+    "difficulty": "INTERMEDIATE",
+    "video_url": "https://video.zplatform.com/exercises/incline-db-press.mp4",
+    "video_id": "8iPEnn-ltC8",
+    "cues": [
+      "ضبط زاوية الدكة بين 30 و 45 درجة فقط.",
+      "مسار الكوع بزاوية 45 درجة مع الجذع لحماية أوتار الكتف.",
+      "نزول متحكم في ثانيتين مع استطالة كاملة لأعلى الصدر."
+    ],
+    "common_mistakes": [
+      "رفع الدكة لزاوية 60 درجة مما يحول الحمل بالكامل لعضلة الكتف الأمامي.",
+      "فرد الكوعين للخارج بزاوية 90 درجة مما يسبب احتكاك مفصل الكتف."
+    ],
+    "cues_ar": "ضبط زاوية الدكة بين 30 و 45 درجة فقط. مسار الكوع بزاوية 45 درجة مع الجذع لحماية أوتار الكتف. نزول متحكم في ثانيتين مع استطالة كاملة لأعلى الصدر.",
+    "mistakes_ar": "رفع الدكة لزاوية 60 درجة مما يحول الحمل بالكامل لعضلة الكتف الأمامي. فرد الكوعين للخارج بزاوية 90 درجة مما يسبب احتكاك مفصل الكتف.",
+    "synergists": [
+      "Front Deltoid",
+      "Triceps"
+    ],
+    "environments": [
+      "GYM",
+      "HOME_DUMBBELL"
+    ],
+    "thumbnail_url": "/assets/exercises/incline-db-press.webp"
+  },
+  {
+    "id": "chest_flat_barbell_press",
+    "name_ar": "بنش برس مستوي بالبار",
+    "name_en": "Flat Barbell Bench Press",
+    "target_muscle": "Pectoralis Major (Sternal Head - الصدر الأوسط)",
+    "muscle_group": "CHEST",
+    "muscle_ar": "الصدر الأوسط والكتلة الإجمالية",
+    "synergist_muscles": [
+      "Anterior Deltoid",
+      "Triceps Brachii",
+      "Serratus Anterior"
+    ],
+    "environment": [
+      "GYM"
+    ],
+    "equipment": "BARBELL",
+    "equipment_ar": "بار أولمبي ودكة مستوية",
+    "biomechanical_focus": "MID_RANGE",
+    "difficulty_level": "INTERMEDIATE",
+    "difficulty": "متوسط",
+    "video_url": "https://www.youtube.com/watch?v=rT7DgCr-3pg",
+    "video_id": "rT7DgCr-3pg",
+    "cues": [
+      "ثبّت لوحي الكتف للخلف والأسفل (Scapular Retraction) طوال الحركة.",
+      "انزل بالبار إلى منتصف عظمة القص بمسار قوسي طفيف وتحكم كامل.",
+      "ادفع الأرض بقدميك (Leg Drive) للمساعدة في ثبات الجسم والدفع الرأسي."
+    ],
+    "common_mistakes": [
+      "ارتداد البار عن القفص الصدري في الأسفل.",
+      "فقدان ثبات لوحي الكتف وارتفاعهما للأمام أثناء الدفع للأعلى."
+    ],
+    "cues_ar": "ثبّت لوحي الكتف للخلف والأسفل (Scapular Retraction) طوال الحركة. انزل بالبار إلى منتصف عظمة القص بمسار قوسي طفيف وتحكم كامل. ادفع الأرض بقدميك (Leg Drive) للمساعدة في ثبات الجسم والدفع الرأسي.",
+    "mistakes_ar": "ارتداد البار عن القفص الصدري في الأسفل. فقدان ثبات لوحي الكتف وارتفاعهما للأمام أثناء الدفع للأعلى."
+  },
+  {
+    "id": "chest_incline_machine_press",
+    "name_ar": "جهاز دفع الصدر العالي",
+    "name_en": "Incline Machine Chest Press",
+    "target_muscle": "Pectoralis Major (Clavicular Head - الصدر العلوي)",
+    "muscle_group": "CHEST",
+    "muscle_ar": "الصدر العلوي بمسار تقارب موجه",
+    "synergist_muscles": [
+      "Anterior Deltoid",
+      "Triceps Brachii"
+    ],
+    "environment": [
+      "GYM"
+    ],
+    "equipment": "MACHINE",
+    "equipment_ar": "جهاز إنكلاين تشيست برس",
+    "biomechanical_focus": "MID_RANGE",
+    "difficulty_level": "BEGINNER",
+    "difficulty": "مبتدئ",
+    "video_url": "https://www.youtube.com/watch?v=8Ie_kL0-n6A",
+    "video_id": "8Ie_kL0-n6A",
+    "cues": [
+      "اضبط ارتفاع المقعد لتكون المقابض بمحاذاة الترقوة وأعلى الصدر.",
+      "ادفع للأمام وللأعلى في المسار التقاربي للجهاز مع الحفاظ على ملاصقة الظهر للدكة.",
+      "تحكم بالوزن أثناء الرجوع للوراء في ثانيتين للشعور بإطالة الصدر."
+    ],
+    "common_mistakes": [
+      "استخدام وزن مفرط يمنع المدى الحركي الكامل في الرجوع.",
+      "انفصال الظهر عن المسند أثناء الدفع القوي."
+    ],
+    "cues_ar": "اضبط ارتفاع المقعد لتكون المقابض بمحاذاة الترقوة وأعلى الصدر. ادفع للأمام وللأعلى في المسار التقاربي للجهاز مع الحفاظ على ملاصقة الظهر للدكة. تحكم بالوزن أثناء الرجوع للوراء في ثانيتين للشعور بإطالة الصدر.",
+    "mistakes_ar": "استخدام وزن مفرط يمنع المدى الحركي الكامل في الرجوع. انفصال الظهر عن المسند أثناء الدفع القوي."
+  },
+  {
+    "id": "chest_pec_deck_fly",
+    "name_ar": "جهاز الفراشة لعزل الصدر",
+    "name_en": "Pec Deck Machine Fly",
+    "target_muscle": "Pectoralis Major (عزل ألياف الصدر بالكامل)",
+    "muscle_group": "CHEST",
+    "muscle_ar": "قمة الانقباض والعزل التام",
+    "synergist_muscles": [
+      "Anterior Deltoid"
+    ],
+    "environment": [
+      "GYM"
+    ],
+    "equipment": "MACHINE",
+    "equipment_ar": "جهاز البيك ديك",
+    "biomechanical_focus": "SHORTENED",
+    "difficulty_level": "BEGINNER",
+    "difficulty": "مبتدئ",
+    "video_url": "https://www.youtube.com/watch?v=O-Z7T_3c39g",
+    "video_id": "O-Z7T_3c39g",
+    "cues": [
+      "حافظ على ثنية طفيفة وثابتة في الكوعين طوال مسار الحركة.",
+      "اجمع الذراعين أمام منتصف الصدر مع عصر الألياف بقوة لمدة ثانية في قمة الانقباض.",
+      "ارجع بالوزن ببطء حتى تشعر بتمدد مريح في الصدر دون مبالغة في تمديد الكتف."
+    ],
+    "common_mistakes": [
+      "إرجاع الذراعين للخلف أكثر من اللازم مما يسبب إجهاداً لأوتار الكتف الدوارة.",
+      "ثني وفرد الكوعين أثناء الحركة وتحويلها لتمرين دفع."
+    ],
+    "cues_ar": "حافظ على ثنية طفيفة وثابتة في الكوعين طوال مسار الحركة. اجمع الذراعين أمام منتصف الصدر مع عصر الألياف بقوة لمدة ثانية في قمة الانقباض. ارجع بالوزن ببطء حتى تشعر بتمدد مريح في الصدر دون مبالغة في تمديد الكتف.",
+    "mistakes_ar": "إرجاع الذراعين للخلف أكثر من اللازم مما يسبب إجهاداً لأوتار الكتف الدوارة. ثني وفرد الكوعين أثناء الحركة وتحويلها لتمرين دفع."
+  },
+  {
+    "id": "chest_low_to_high_cable_fly",
+    "name_ar": "تفتيح كابل من أسفل لأعلى",
+    "name_en": "Low-to-High Cable Fly",
+    "target_muscle": "Pectoralis Major (Clavicular Head - الصدر العلوي)",
+    "muscle_group": "CHEST",
+    "muscle_ar": "الصدر العلوي والاستطالة الداخلية",
+    "synergist_muscles": [
+      "Anterior Deltoid"
+    ],
+    "environment": [
+      "GYM"
+    ],
+    "equipment": "CABLE",
+    "equipment_ar": "بكرات الكابل السفلية بمقابض فردية",
+    "biomechanical_focus": "SHORTENED",
+    "difficulty_level": "BEGINNER",
+    "difficulty": "مبتدئ",
+    "video_url": "https://www.youtube.com/watch?v=M1N804yWA-8",
+    "video_id": "M1N804yWA-8",
+    "cues": [
+      "اضبط بكرات الكابل في أدنى مستوى مع مسك المقابض وراحة اليد متجهة لأعلى.",
+      "اسحب المقابض في مسار نصف دائري للأعلى باتجاه الذقن مع ثبات انحناءة الكوع.",
+      "اعصر أعلى الصدر في قمة الحركة وتحكم في النزول السلبي."
+    ],
+    "common_mistakes": [
+      "رفع الوزن بعضلات البايسبس بدلاً من ضم الصدر العلوي.",
+      "التأرجح بالجسم للخلف لرفع أوزان زائدة."
+    ],
+    "cues_ar": "اضبط بكرات الكابل في أدنى مستوى مع مسك المقابض وراحة اليد متجهة لأعلى. اسحب المقابض في مسار نصف دائري للأعلى باتجاه الذقن مع ثبات انحناءة الكوع. اعصر أعلى الصدر في قمة الحركة وتحكم في النزول السلبي.",
+    "mistakes_ar": "رفع الوزن بعضلات البايسبس بدلاً من ضم الصدر العلوي. التأرجح بالجسم للخلف لرفع أوزان زائدة."
+  },
+  {
+    "id": "chest_dips",
+    "name_ar": "تمرين المتوازي بتركيز الصدر",
+    "name_en": "Chest-Biased Dips",
+    "target_muscle": "Pectoralis Major (Costal Head - الصدر السفلي)",
+    "muscle_group": "CHEST",
+    "muscle_ar": "الصدر السفلي والخارجي",
+    "synergist_muscles": [
+      "Triceps Brachii",
+      "Anterior Deltoid"
+    ],
+    "environment": [
+      "GYM",
+      "BODYWEIGHT"
+    ],
+    "equipment": "BODYWEIGHT",
+    "equipment_ar": "جهاز المتوازي / وزن الجسم",
+    "biomechanical_focus": "LENGTHENED",
+    "difficulty_level": "ADVANCED",
+    "difficulty": "متقدم",
+    "video_url": "https://www.youtube.com/watch?v=2z8JmcrW-As",
+    "video_id": "2z8JmcrW-As",
+    "cues": [
+      "انحنِ بالجذع للأمام بزاوية 30 درجة لتوجيه الحمل للصدر السفلي.",
+      "افتح الكوعين للخارج قليلاً وانزل حتى يصل الكوع إلى زاوية 90 درجة.",
+      "ادفع بقوة للأعلى مع التركيز على عصر أسفل الصدر."
+    ],
+    "common_mistakes": [
+      "النزول بشكل عمودي مستقيم مما يحول التمرين بالكامل لعضلة الترايسبس.",
+      "النزول لعمق مفرط يسبب ضغطاً حاداً على كبسولة مفصل الكتف."
+    ],
+    "cues_ar": "انحنِ بالجذع للأمام بزاوية 30 درجة لتوجيه الحمل للصدر السفلي. افتح الكوعين للخارج قليلاً وانزل حتى يصل الكوع إلى زاوية 90 درجة. ادفع بقوة للأعلى مع التركيز على عصر أسفل الصدر.",
+    "mistakes_ar": "النزول بشكل عمودي مستقيم مما يحول التمرين بالكامل لعضلة الترايسبس. النزول لعمق مفرط يسبب ضغطاً حاداً على كبسولة مفصل الكتف."
+  },
+  {
+    "id": "chest_standard_pushup",
+    "name_ar": "تمرين الضغط القياسي / المعمق",
+    "name_en": "Standard / Deficit Push-Up",
+    "target_muscle": "Pectoralis Major (عضلات الصدر العامة)",
+    "muscle_group": "CHEST",
+    "muscle_ar": "الصدر العام واستقرار الكور",
+    "synergist_muscles": [
+      "Triceps Brachii",
+      "Anterior Deltoid",
+      "Core Muscles"
+    ],
+    "environment": [
+      "HOME_DUMBBELL",
+      "BODYWEIGHT"
+    ],
+    "equipment": "BODYWEIGHT",
+    "equipment_ar": "وزن الجسم أو مقابض ضغط",
+    "biomechanical_focus": "MID_RANGE",
+    "difficulty_level": "BEGINNER",
+    "difficulty": "مبتدئ",
+    "video_url": "https://www.youtube.com/watch?v=IODxDxX7oi4",
+    "video_id": "IODxDxX7oi4",
+    "cues": [
+      "حافظ على استقامة الجسم ككتلة واحدة من الرأس للكعبين مع شد المؤخرة والبطن.",
+      "انزل حتى يقترب الصدر من الأرض بزاوية كوع 45 درجة مع الجذع.",
+      "ادفع الأرض بقوة للأعلى حتى استقامة الذراعين التامة."
+    ],
+    "common_mistakes": [
+      "سقوط الحوض للأسفل وتقوس القطنية.",
+      "فتح الكوعين بزاوية 90 درجة مما يؤذي الكتف."
+    ],
+    "cues_ar": "حافظ على استقامة الجسم ككتلة واحدة من الرأس للكعبين مع شد المؤخرة والبطن. انزل حتى يقترب الصدر من الأرض بزاوية كوع 45 درجة مع الجذع. ادفع الأرض بقوة للأعلى حتى استقامة الذراعين التامة.",
+    "mistakes_ar": "سقوط الحوض للأسفل وتقوس القطنية. فتح الكوعين بزاوية 90 درجة مما يؤذي الكتف."
+  },
+  {
+    "id": "chest_incline_pushup",
+    "name_ar": "تمرين الضغط المرتفع (للمبتدئين وتدرج القوة)",
+    "name_en": "Incline Bodyweight Push-Up",
+    "target_muscle": "Chest / Core",
+    "muscle_group": "CHEST",
+    "muscle_ar": "الصدر والجذع",
+    "synergist_muscles": [
+      "Triceps",
+      "Front Deltoid"
+    ],
+    "environment": [
+      "BODYWEIGHT",
+      "HOME_DUMBBELL"
+    ],
+    "equipment": "BODYWEIGHT",
+    "equipment_ar": "وزن الجسم مع حافة مرتفعة",
+    "biomechanical_focus": "MID_RANGE",
+    "difficulty_level": "BEGINNER",
+    "difficulty": "BEGINNER",
+    "video_url": "https://video.zplatform.com/exercises/incline-pushup.mp4",
+    "video_id": "4dF1DOWzf20",
+    "cues": [
+      "وضع اليدين على حافة دكة أو طاولة أو جدار.",
+      "استقامة الجسم ككتلة واحدة من الرأس للكعبين مع شد البطن.",
+      "النزول حتى يلامس الصدر الحافة والدفع بقوة للأعلى."
+    ],
+    "common_mistakes": [
+      "تقوس أسفل الظهر وسقوط الحوض للأسفل.",
+      "عدم إكمال المدى الحركي بلمس الصدر للحافة."
+    ],
+    "cues_ar": "وضع اليدين على حافة دكة أو طاولة أو جدار. استقامة الجسم ككتلة واحدة من الرأس للكعبين مع شد البطن. النزول حتى يلامس الصدر الحافة والدفع بقوة للأعلى.",
+    "mistakes_ar": "تقوس أسفل الظهر وسقوط الحوض للأسفل. عدم إكمال المدى الحركي بلمس الصدر للحافة.",
+    "synergists": [
+      "Triceps",
+      "Front Deltoid"
+    ],
+    "environments": [
+      "BODYWEIGHT",
+      "HOME_DUMBBELL"
+    ],
+    "thumbnail_url": "/assets/exercises/incline-pushup.webp"
+  },
+  {
+    "id": "chest_feet_elevated_pushup",
+    "name_ar": "تمرين ضغط برفع القدمين",
+    "name_en": "Feet-Elevated Push-Up",
+    "target_muscle": "Pectoralis Major (Clavicular Head - الصدر العلوي)",
+    "muscle_group": "CHEST",
+    "muscle_ar": "الصدر العلوي بوزن الجسم الصرف",
+    "synergist_muscles": [
+      "Anterior Deltoid",
+      "Triceps Brachii"
+    ],
+    "environment": [
+      "HOME_DUMBBELL",
+      "BODYWEIGHT"
+    ],
+    "equipment": "BODYWEIGHT",
+    "equipment_ar": "كرسي أو سرير / وزن الجسم",
+    "biomechanical_focus": "MID_RANGE",
+    "difficulty_level": "INTERMEDIATE",
+    "difficulty": "متوسط",
+    "video_url": "https://www.youtube.com/watch?v=SKPab2YC8BE",
+    "video_id": "SKPab2YC8BE",
+    "cues": [
+      "ضع قدميك على كرسي أو سرير مع وضع اليدين على الأرض بعرض الكتفين.",
+      "انزل بجذعك المائل باتجاه الأرض حتى يقترب الصدر من الملامسة.",
+      "ادفع بقوة للأعلى مع الحفاظ على ثبات الكور واستقامة الظهر."
+    ],
+    "common_mistakes": [
+      "تقوس الرقبة لأسفل بدلاً من النزول بالصدر.",
+      "هبوط الحوض مما يفقد التمرين زاوية التركيز على الصدر العلوي."
+    ],
+    "cues_ar": "ضع قدميك على كرسي أو سرير مع وضع اليدين على الأرض بعرض الكتفين. انزل بجذعك المائل باتجاه الأرض حتى يقترب الصدر من الملامسة. ادفع بقوة للأعلى مع الحفاظ على ثبات الكور واستقامة الظهر.",
+    "mistakes_ar": "تقوس الرقبة لأسفل بدلاً من النزول بالصدر. هبوط الحوض مما يفقد التمرين زاوية التركيز على الصدر العلوي."
+  },
+  {
+    "id": "back_pullup_chinup",
+    "name_ar": "تمرين العقلة القياسي / قبضة مقلوبة",
+    "name_en": "Pull-Up / Chin-Up",
+    "target_muscle": "Latissimus Dorsi (عضلة اللاتس وتعريض الظهر)",
+    "muscle_group": "BACK",
+    "muscle_ar": "تعريض الظهر واللاتس",
+    "synergist_muscles": [
+      "Biceps Brachii",
+      "Brachialis",
+      "Lower Trapezius",
+      "Teres Major"
+    ],
+    "environment": [
+      "GYM",
+      "BODYWEIGHT"
+    ],
+    "equipment": "BODYWEIGHT",
+    "equipment_ar": "عقلة سحب / وزن الجسم",
+    "biomechanical_focus": "LENGTHENED",
+    "difficulty_level": "ADVANCED",
+    "difficulty": "متقدم",
+    "video_url": "https://www.youtube.com/watch?v=eGo4IYlbE5g",
+    "video_id": "eGo4IYlbE5g",
+    "cues": [
+      "امسك البار بقبضة واسعة (أو مقلوبة للـ Chin-Up) مع ثبات الجسم تماماً.",
+      "اسحب الصدر باتجاه البار مع إرجاع الكوعين للأسفل والداخل وعصر عضلات الظهر.",
+      "انزل بمدى حركي كامل وبتحكم حتى استطالة عضلات اللاتس دون ارتخاء مفصل الكتف."
+    ],
+    "common_mistakes": [
+      "استخدام ركلات الأرجل (Kipping) للتسلق بدلاً من سحب عضلات الظهر.",
+      "عدم استكمال المدى الحركي الكامل في الصعود والهبوط."
+    ],
+    "cues_ar": "امسك البار بقبضة واسعة (أو مقلوبة للـ Chin-Up) مع ثبات الجسم تماماً. اسحب الصدر باتجاه البار مع إرجاع الكوعين للأسفل والداخل وعصر عضلات الظهر. انزل بمدى حركي كامل وبتحكم حتى استطالة عضلات اللاتس دون ارتخاء مفصل الكتف.",
+    "mistakes_ar": "استخدام ركلات الأرجل (Kipping) للتسلق بدلاً من سحب عضلات الظهر. عدم استكمال المدى الحركي الكامل في الصعود والهبوط."
+  },
+  {
+    "id": "back_wide_lat_pulldown",
+    "name_ar": "سحب عالي قبضة واسعة",
+    "name_en": "Wide-Grip Lat Pulldown",
+    "target_muscle": "Latissimus Dorsi (Upper & Outer Lats)",
+    "muscle_group": "BACK",
+    "muscle_ar": "عرض اللاتس العلوي",
+    "synergist_muscles": [
+      "Biceps Brachii",
+      "Teres Major",
+      "Rhomboids"
+    ],
+    "environment": [
+      "GYM"
+    ],
+    "equipment": "MACHINE",
+    "equipment_ar": "جهاز السحب العالي",
+    "biomechanical_focus": "MID_RANGE",
+    "difficulty_level": "BEGINNER",
+    "difficulty": "مبتدئ",
+    "video_url": "https://www.youtube.com/watch?v=CAwf7n6Luuc",
+    "video_id": "CAwf7n6Luuc",
+    "cues": [
+      "اجلس مع تثبيت الفخذين بإحكام أسفل الوسائد المخصصة.",
+      "اسحب البار لأسفل باتجاه أعلى عظمة القص مع فتح الصدر وإرجاع الكوعين للأسفل.",
+      "اعصر لوحي الكتف في القاع، وتحكم في الصعود البطيء في 2-3 ثوانٍ."
+    ],
+    "common_mistakes": [
+      "الميلان المفرط للخلف مما يحول التمرين لسحب أرضي بدلاً من تعريض الظهر.",
+      "سحب البار خلف الرقبة مما يضع مفصل الكتف والفقرات العنقية في خطر."
+    ],
+    "cues_ar": "اجلس مع تثبيت الفخذين بإحكام أسفل الوسائد المخصصة. اسحب البار لأسفل باتجاه أعلى عظمة القص مع فتح الصدر وإرجاع الكوعين للأسفل. اعصر لوحي الكتف في القاع، وتحكم في الصعود البطيء في 2-3 ثوانٍ.",
+    "mistakes_ar": "الميلان المفرط للخلف مما يحول التمرين لسحب أرضي بدلاً من تعريض الظهر. سحب البار خلف الرقبة مما يضع مفصل الكتف والفقرات العنقية في خطر."
+  },
+  {
+    "id": "back_chest_supported_row",
+    "name_ar": "تجديف دمبل مسنود الصدر لعزل الظهر وحماية القطنية",
+    "name_en": "Chest-Supported Dumbbell Row",
+    "target_muscle": "Mid-Back (Rhomboids / Mid-Traps / Lats)",
+    "muscle_group": "BACK",
+    "muscle_ar": "عضلات منتصف وأعلى الظهر",
+    "synergist_muscles": [
+      "Biceps",
+      "Rear Delts"
+    ],
+    "environment": [
+      "GYM",
+      "HOME_DUMBBELL"
+    ],
+    "equipment": "DUMBBELL",
+    "equipment_ar": "دمبلز ودكة مائلة 30°",
+    "biomechanical_focus": "SHORTENED",
+    "difficulty_level": "BEGINNER",
+    "difficulty": "BEGINNER",
+    "video_url": "https://video.zplatform.com/exercises/chest-supported-row.mp4",
+    "video_id": "H75im9fAUMc",
+    "cues": [
+      "إسناد الصدر بالكامل على دكة مائلة بزاوية 30 درجة لعزل أسفل الظهر.",
+      "سحب الكوعين باتجاه الحوض مع ضم لوحي الكتف في القمة لمدة ثانية.",
+      "النزول البطيء حتى استطالة عضلات الظهر بالكامل."
+    ],
+    "common_mistakes": [
+      "رفع الصدر عن الدكة أثناء السحب مما يلغي حماية القطنية.",
+      "سحب الوزن بالبايسبس بدلاً من قيادة الحركة بالكوعين."
+    ],
+    "cues_ar": "إسناد الصدر بالكامل على دكة مائلة بزاوية 30 درجة لعزل أسفل الظهر. سحب الكوعين باتجاه الحوض مع ضم لوحي الكتف في القمة لمدة ثانية. النزول البطيء حتى استطالة عضلات الظهر بالكامل.",
+    "mistakes_ar": "رفع الصدر عن الدكة أثناء السحب مما يلغي حماية القطنية. سحب الوزن بالبايسبس بدلاً من قيادة الحركة بالكوعين.",
+    "synergists": [
+      "Biceps",
+      "Rear Delts"
+    ],
+    "environments": [
+      "GYM",
+      "HOME_DUMBBELL"
+    ],
+    "thumbnail_url": "/assets/exercises/chest-supported-row.webp"
+  },
+  {
+    "id": "back_single_arm_db_row",
+    "name_ar": "منشار بالدمبل فردي",
+    "name_en": "Single-Arm Dumbbell Row",
+    "target_muscle": "Latissimus Dorsi (Lower Lats - ألياف اللاتس السفلية)",
+    "muscle_group": "BACK",
+    "muscle_ar": "عزل اللاتس السفلي الفردي",
+    "synergist_muscles": [
+      "Biceps Brachii",
+      "Brachialis",
+      "Rear Deltoid"
+    ],
+    "environment": [
+      "GYM",
+      "HOME_DUMBBELL"
+    ],
+    "equipment": "DUMBBELL",
+    "equipment_ar": "دمبل ودكة مستوية",
+    "biomechanical_focus": "LENGTHENED",
+    "difficulty_level": "INTERMEDIATE",
+    "difficulty": "متوسط",
+    "video_url": "https://www.youtube.com/watch?v=dFzUjzfih7k",
+    "video_id": "dFzUjzfih7k",
+    "cues": [
+      "ثبت اليد والركبة على الدكة مع الحفاظ على استقامة الظهر وموازاته للأرض.",
+      "اسحب الدمبل في مسار قوسي باتجاه عظمة الحوض مع قيادة الحركة بالكوع.",
+      "اعصر أسفل اللاتس في القمة وانزل بالدمبل للأسفل مع استطالة كاملة."
+    ],
+    "common_mistakes": [
+      "سحب الدمبل باتجاه الصدر مما يحول الحمل للبايسبس وأعلى الظهر.",
+      "تدوير الجذع للأعلى لرفع وزن مفرط."
+    ],
+    "cues_ar": "ثبت اليد والركبة على الدكة مع الحفاظ على استقامة الظهر وموازاته للأرض. اسحب الدمبل في مسار قوسي باتجاه عظمة الحوض مع قيادة الحركة بالكوع. اعصر أسفل اللاتس في القمة وانزل بالدمبل للأسفل مع استطالة كاملة.",
+    "mistakes_ar": "سحب الدمبل باتجاه الصدر مما يحول الحمل للبايسبس وأعلى الظهر. تدوير الجذع للأعلى لرفع وزن مفرط."
+  },
+  {
+    "id": "back_seated_cable_row",
+    "name_ar": "سحب أرضي كابل قبضة ضيقة",
+    "name_en": "Close-Grip Seated Cable Row",
+    "target_muscle": "Latissimus Dorsi & Lower Trapezius",
+    "muscle_group": "BACK",
+    "muscle_ar": "سماكة منتصف الظهر واللاتس",
+    "synergist_muscles": [
+      "Rhomboids",
+      "Biceps Brachii",
+      "Erector Spinae"
+    ],
+    "environment": [
+      "GYM"
+    ],
+    "equipment": "CABLE",
+    "equipment_ar": "جهاز السحب الأرضي بمقبض V",
+    "biomechanical_focus": "SHORTENED",
+    "difficulty_level": "BEGINNER",
+    "difficulty": "مبتدئ",
+    "video_url": "https://www.youtube.com/watch?v=GZbfZ033fBo",
+    "video_id": "GZbfZ033fBo",
+    "cues": [
+      "اجلس بظهر مستقيم مع ثنية طفيفة في الركبتين وثبات الجذع.",
+      "اسحب المقبض باتجاه السرة وأسفل البطن مع إرجاع الكوعين للخلف وضم اللوحين.",
+      "اثبت لمدة ثانية في قمة الانقباض، ثم تحكم في الرجوع للأمام."
+    ],
+    "common_mistakes": [
+      "التأرجح الشديد للأمام والخلف أثناء السحب.",
+      "تقوس الظهر للأمام عند استطالة الكابل."
+    ],
+    "cues_ar": "اجلس بظهر مستقيم مع ثنية طفيفة في الركبتين وثبات الجذع. اسحب المقبض باتجاه السرة وأسفل البطن مع إرجاع الكوعين للخلف وضم اللوحين. اثبت لمدة ثانية في قمة الانقباض، ثم تحكم في الرجوع للأمام.",
+    "mistakes_ar": "التأرجح الشديد للأمام والخلف أثناء السحب. تقوس الظهر للأمام عند استطالة الكابل."
+  },
+  {
+    "id": "back_straight_arm_pulldown",
+    "name_ar": "سحب مستقيم الذراعين بالكابل",
+    "name_en": "Straight-Arm Lat Pulldown (Lat Prayer)",
+    "target_muscle": "Latissimus Dorsi (عزل تام باستطالة كاملة)",
+    "muscle_group": "BACK",
+    "muscle_ar": "عزل اللاتس في أقصى استطالة",
+    "synergist_muscles": [
+      "Teres Major",
+      "Triceps (Long Head)",
+      "Abdominals"
+    ],
+    "environment": [
+      "GYM"
+    ],
+    "equipment": "CABLE",
+    "equipment_ar": "كابل علوي وحبل أو بار مستقيم",
+    "biomechanical_focus": "LENGTHENED",
+    "difficulty_level": "BEGINNER",
+    "difficulty": "مبتدئ",
+    "video_url": "https://www.youtube.com/watch?v=GxD_cKk_z8k",
+    "video_id": "GxD_cKk_z8k",
+    "cues": [
+      "انحنِ بالجذع للأمام 30 درجة مع فرد الذراعين بثنية كوع طفيفة وثابتة.",
+      "اضغط الكابل لأسفل في مسار قوسي باتجاه الفخذين بالاعتماد الكامل على عضلات اللاتس.",
+      "اعصر اللاتس بقوة في الأسفل، ثم ارفع الذراعين ببطء للشعور بإطالة عميقة."
+    ],
+    "common_mistakes": [
+      "ثني الكوعين أثناء السحب وتحويل التمرين لضغط ترايسبس.",
+      "استخدام عزم الجذع للتأرجح."
+    ],
+    "cues_ar": "انحنِ بالجذع للأمام 30 درجة مع فرد الذراعين بثنية كوع طفيفة وثابتة. اضغط الكابل لأسفل في مسار قوسي باتجاه الفخذين بالاعتماد الكامل على عضلات اللاتس. اعصر اللاتس بقوة في الأسفل، ثم ارفع الذراعين ببطء للشعور بإطالة عميقة.",
+    "mistakes_ar": "ثني الكوعين أثناء السحب وتحويل التمرين لضغط ترايسبس. استخدام عزم الجذع للتأرجح."
+  },
+  {
+    "id": "back_conventional_deadlift",
+    "name_ar": "ديدليفت بالبار / راك بول",
+    "name_en": "Conventional / Rack Pull Deadlift",
+    "target_muscle": "Posterior Chain (Erector Spinae, Glutes, Hamstrings)",
+    "muscle_group": "BACK",
+    "muscle_ar": "السلسلة الخلفية والقطنية والترابيس",
+    "synergist_muscles": [
+      "Trapezius",
+      "Latissimus Dorsi",
+      "Quadriceps",
+      "Forearms"
+    ],
+    "environment": [
+      "GYM"
+    ],
+    "equipment": "BARBELL",
+    "equipment_ar": "بار وأوزان أولمبية",
+    "biomechanical_focus": "MID_RANGE",
+    "difficulty_level": "ADVANCED",
+    "difficulty": "متقدم",
+    "video_url": "https://www.youtube.com/watch?v=op9kVnSso6Q",
+    "video_id": "op9kVnSso6Q",
+    "cues": [
+      "اجعل البار ملاصقاً لقصبة الساق مع فتح القدمين بعرض الحوض واستقامة الظهر.",
+      "ادفع الأرض بقدميك مع إحكام عضلات اللاتس وشد الكور (Valsalva Maneuver).",
+      "قف باستقامة كاملة مع قفل الحوض وعصر الجلوتس دون المبالغة في تقويس الظهر للخلف."
+    ],
+    "common_mistakes": [
+      "تقوس أسفل الظهر (Lumbar Flexion) أثناء السحب من الأرض.",
+      "ابتعاد البار عن الساقين مما يضاعف العزم الضاغط على الفقرات القطنية."
+    ],
+    "cues_ar": "اجعل البار ملاصقاً لقصبة الساق مع فتح القدمين بعرض الحوض واستقامة الظهر. ادفع الأرض بقدميك مع إحكام عضلات اللاتس وشد الكور (Valsalva Maneuver). قف باستقامة كاملة مع قفل الحوض وعصر الجلوتس دون المبالغة في تقويس الظهر للخلف.",
+    "mistakes_ar": "تقوس أسفل الظهر (Lumbar Flexion) أثناء السحب من الأرض. ابتعاد البار عن الساقين مما يضاعف العزم الضاغط على الفقرات القطنية."
+  },
+  {
+    "id": "back_45_hyperextension",
+    "name_ar": "تمديد ظهر 45 درجة لتقوية القطنية والجلوتس",
+    "name_en": "45-Degree Hyperextension / Back Extension",
+    "target_muscle": "Erector Spinae & Gluteus Maximus (صحة العمود الفقري)",
+    "muscle_group": "BACK",
+    "muscle_ar": "القطنية والناصبات الفقرية وأسفل الجلوتس",
+    "synergist_muscles": [
+      "Hamstrings"
+    ],
+    "environment": [
+      "GYM",
+      "HOME_DUMBBELL"
+    ],
+    "equipment": "MACHINE",
+    "equipment_ar": "جهاز الهايبر إكستنشن 45° أو دكة",
+    "biomechanical_focus": "LENGTHENED",
+    "difficulty_level": "BEGINNER",
+    "difficulty": "مبتدئ",
+    "video_url": "https://www.youtube.com/watch?v=5_ejbGfdAQE",
+    "video_id": "5_ejbGfdAQE",
+    "cues": [
+      "اضبط وسادة الحوض لتكون أسفل عظمة الحوض مباشرة للسماح بحرية حركة مفصل الورك.",
+      "انزل بالجذع لأسفل مع الحفاظ على استقامة العمود الفقري أو استدارة خفيفة لعزل الجلوتس.",
+      "ارفع الجذع للأعلى من خلال دفع الحوض في الوسادة وعصر المؤخرة وعضلات أسفل الظهر."
+    ],
+    "common_mistakes": [
+      "المبالغة في تقويس الظهر للأعلى أكثر من خط الاستقامة الطبيعي.",
+      "التأرجح السريع واستخدام قوة الاندفاع."
+    ],
+    "cues_ar": "اضبط وسادة الحوض لتكون أسفل عظمة الحوض مباشرة للسماح بحرية حركة مفصل الورك. انزل بالجذع لأسفل مع الحفاظ على استقامة العمود الفقري أو استدارة خفيفة لعزل الجلوتس. ارفع الجذع للأعلى من خلال دفع الحوض في الوسادة وعصر المؤخرة وعضلات أسفل الظهر.",
+    "mistakes_ar": "المبالغة في تقويس الظهر للأعلى أكثر من خط الاستقامة الطبيعي. التأرجح السريع واستخدام قوة الاندفاع."
+  },
+  {
+    "id": "back_inverted_row",
+    "name_ar": "تجديف مقلوب بوزن الجسم",
+    "name_en": "Inverted Bodyweight Row",
+    "target_muscle": "Mid-Trapezius, Rhomboids & Lats (كثافة الظهر بالمنزل)",
+    "muscle_group": "BACK",
+    "muscle_ar": "كثافة الظهر بوزن الجسم",
+    "synergist_muscles": [
+      "Biceps Brachii",
+      "Rear Deltoid",
+      "Core Muscles"
+    ],
+    "environment": [
+      "HOME_DUMBBELL",
+      "BODYWEIGHT"
+    ],
+    "equipment": "BODYWEIGHT",
+    "equipment_ar": "بار منخفض أو أسفل طاولة قوية / وزن الجسم",
+    "biomechanical_focus": "SHORTENED",
+    "difficulty_level": "BEGINNER",
+    "difficulty": "مبتدئ",
+    "video_url": "https://www.youtube.com/watch?v=hXTc1mDnC3U",
+    "video_id": "hXTc1mDnC3U",
+    "cues": [
+      "تعلق أسفل بار منخفض بجسم مستقيم تماماً وكعبين ثابتين على الأرض.",
+      "اسحب الصدر باتجاه البار مع توجيه الكوعين للخلف وعصر لوحي الكتف.",
+      "انزل ببطء وتحكم حتى استقامة الذراعين."
+    ],
+    "common_mistakes": [
+      "سقوط الحوض لأسفل أو ثني الخصر أثناء السحب.",
+      "سحب الرقبة للأمام بدلاً من لمس الصدر للبار."
+    ],
+    "cues_ar": "تعلق أسفل بار منخفض بجسم مستقيم تماماً وكعبين ثابتين على الأرض. اسحب الصدر باتجاه البار مع توجيه الكوعين للخلف وعصر لوحي الكتف. انزل ببطء وتحكم حتى استقامة الذراعين.",
+    "mistakes_ar": "سقوط الحوض لأسفل أو ثني الخصر أثناء السحب. سحب الرقبة للأمام بدلاً من لمس الصدر للبار."
+  },
+  {
+    "id": "back_shrugs",
+    "name_ar": "هزات كتف بالدمبل / بار",
+    "name_en": "Dumbbell / Barbell Shrugs",
+    "target_muscle": "Upper Trapezius (الترابيس العلوية)",
+    "muscle_group": "BACK",
+    "muscle_ar": "الترابيس العلوية",
+    "synergist_muscles": [
+      "Levator Scapulae",
+      "Forearms"
+    ],
+    "environment": [
+      "GYM",
+      "HOME_DUMBBELL"
+    ],
+    "equipment": "DUMBBELL",
+    "equipment_ar": "زوج دمبلز ثقيل أو بار أولمبي",
+    "biomechanical_focus": "SHORTENED",
+    "difficulty_level": "BEGINNER",
+    "difficulty": "مبتدئ",
+    "video_url": "https://www.youtube.com/watch?v=cJRVVxmytaM",
+    "video_id": "cJRVVxmytaM",
+    "cues": [
+      "احمل الأوزان بجانبك مع استقامة الظهر وثبات الرأس في وضع محايد.",
+      "ارفع الكتفين رأسياً لأعلى نقطة باتجاه الأذنين مع ثبات لمدة ثانية في القمة.",
+      "انزل بالكتفين ببطء لتحقيق أقصى استطالة للترابيس."
+    ],
+    "common_mistakes": [
+      "تدوير الكتفين للأمام أو الخلف مما يسبب احتكاكاً ضاراً في المفصل.",
+      "ثني الكوعين لمحاولة رفع أوزان ثقيلة."
+    ],
+    "cues_ar": "احمل الأوزان بجانبك مع استقامة الظهر وثبات الرأس في وضع محايد. ارفع الكتفين رأسياً لأعلى نقطة باتجاه الأذنين مع ثبات لمدة ثانية في القمة. انزل بالكتفين ببطء لتحقيق أقصى استطالة للترابيس.",
+    "mistakes_ar": "تدوير الكتفين للأمام أو الخلف مما يسبب احتكاكاً ضاراً في المفصل. ثني الكوعين لمحاولة رفع أوزان ثقيلة."
+  },
+  {
+    "id": "shoulders_seated_db_press",
+    "name_ar": "ضغط كتف بالدمبل جالس / واقف",
+    "name_en": "Seated / Standing DB Shoulder Press",
+    "target_muscle": "Anterior & Lateral Deltoid (الكتف الأمامي والجانبي)",
+    "muscle_group": "SHOULDERS",
+    "muscle_ar": "الكتف الأمامي والجانبي",
+    "synergist_muscles": [
+      "Triceps Brachii",
+      "Upper Trapezius"
+    ],
+    "environment": [
+      "GYM",
+      "HOME_DUMBBELL"
+    ],
+    "equipment": "DUMBBELL",
+    "equipment_ar": "زوج دمبلز ودكة عمودية",
+    "biomechanical_focus": "MID_RANGE",
+    "difficulty_level": "INTERMEDIATE",
+    "difficulty": "متوسط",
+    "video_url": "https://www.youtube.com/watch?v=qEwKCR5JCog",
+    "video_id": "qEwKCR5JCog",
+    "cues": [
+      "اجعل مسار الكوع مائلاً للأمام 30 درجة في المستوى الكتفي (Scapular Plane).",
+      "ادفع الدمبلز رأسياً لأعلى الرأس بسلاسة دون تلامسهما في القمة.",
+      "انزل بالدمبلز حتى مستوى الأذنين مع تحكم كامل."
+    ],
+    "common_mistakes": [
+      "فتح الكوعين للخارج بزاوية 90 درجة بالكامل مما يضغط أوتار الكتف.",
+      "تقوس مفرط في أسفل الظهر لتعويض ضعف الدفع."
+    ],
+    "cues_ar": "اجعل مسار الكوع مائلاً للأمام 30 درجة في المستوى الكتفي (Scapular Plane). ادفع الدمبلز رأسياً لأعلى الرأس بسلاسة دون تلامسهما في القمة. انزل بالدمبلز حتى مستوى الأذنين مع تحكم كامل.",
+    "mistakes_ar": "فتح الكوعين للخارج بزاوية 90 درجة بالكامل مما يضغط أوتار الكتف. تقوس مفرط في أسفل الظهر لتعويض ضعف الدفع."
+  },
+  {
+    "id": "shoulders_standing_barbell_ohp",
+    "name_ar": "ضغط كتف بالبار واقفاً",
+    "name_en": "Standing Barbell Overhead Press",
+    "target_muscle": "Anterior Deltoid & Core Stability",
+    "muscle_group": "SHOULDERS",
+    "muscle_ar": "الكتف الأمامي وقوة الدفع الرأسية",
+    "synergist_muscles": [
+      "Triceps Brachii",
+      "Core Muscles",
+      "Glutes",
+      "Upper Trapezius"
+    ],
+    "environment": [
+      "GYM"
+    ],
+    "equipment": "BARBELL",
+    "equipment_ar": "بار أولمبي واقفاً",
+    "biomechanical_focus": "MID_RANGE",
+    "difficulty_level": "ADVANCED",
+    "difficulty": "متقدم",
+    "video_url": "https://www.youtube.com/watch?v=2yjwXTZQDDI",
+    "video_id": "2yjwXTZQDDI",
+    "cues": [
+      "اضغط عضلات المؤخرة والبطن بقوة لتثبيت الحوض والعمود الفقري.",
+      "ادفع البار في خط رأسي مستقيم مع إرجاع الرأس للخلف قليلاً لمرور البار ثم تمرير الرأس للأمام في القمة.",
+      "اقفل الكوعين في القمة مع تثبيت الوزن فوق منتصف القدم."
+    ],
+    "common_mistakes": [
+      "الميلان للخلف بشدة واستخدام عضلات الصدر العلوي للدفع.",
+      "ثني الركبتين واستخدام دفع الأرجل (Push Press) بدلاً من الدفع الصافي للكتف."
+    ],
+    "cues_ar": "اضغط عضلات المؤخرة والبطن بقوة لتثبيت الحوض والعمود الفقري. ادفع البار في خط رأسي مستقيم مع إرجاع الرأس للخلف قليلاً لمرور البار ثم تمرير الرأس للأمام في القمة. اقفل الكوعين في القمة مع تثبيت الوزن فوق منتصف القدم.",
+    "mistakes_ar": "الميلان للخلف بشدة واستخدام عضلات الصدر العلوي للدفع. ثني الركبتين واستخدام دفع الأرجل (Push Press) بدلاً من الدفع الصافي للكتف."
+  },
+  {
+    "id": "shoulders_pike_pushup",
+    "name_ar": "تمرين ضغط بايك للأكتاف بوزن الجسم",
+    "name_en": "Pike Push-Up / Elev. Pike Push-Up",
+    "target_muscle": "Anterior Deltoid & Upper Pectoralis",
+    "muscle_group": "SHOULDERS",
+    "muscle_ar": "كتف أمامي بوزن الجسم الصرف",
+    "synergist_muscles": [
+      "Triceps Brachii",
+      "Core Muscles",
+      "Upper Trapezius"
+    ],
+    "environment": [
+      "HOME_DUMBBELL",
+      "BODYWEIGHT"
+    ],
+    "equipment": "BODYWEIGHT",
+    "equipment_ar": "وزن الجسم على الأرض أو رفع القدمين",
+    "biomechanical_focus": "MID_RANGE",
+    "difficulty_level": "INTERMEDIATE",
+    "difficulty": "متوسط",
+    "video_url": "https://www.youtube.com/watch?v=sposDXWEB0A",
+    "video_id": "sposDXWEB0A",
+    "cues": [
+      "ارفع الحوض للأعلى على شكل حرف V مقلوب مع تقريب القدمين من اليدين.",
+      "انزل بالرأس للأمام قليلاً لصنع شكل مثلث متساوي الساقين مع موضع اليدين.",
+      "ادفع الأرض بقوة للأعلى وللخلف للعودة لوضعية البايك."
+    ],
+    "common_mistakes": [
+      "فتح الكوعين للخارج بزاوية 90 درجة بدلاً من توجيههما للداخل 45 درجة.",
+      "النزول العمودي المباشر بين اليدين مما يقلل تفعيل الكتف."
+    ],
+    "cues_ar": "ارفع الحوض للأعلى على شكل حرف V مقلوب مع تقريب القدمين من اليدين. انزل بالرأس للأمام قليلاً لصنع شكل مثلث متساوي الساقين مع موضع اليدين. ادفع الأرض بقوة للأعلى وللخلف للعودة لوضعية البايك.",
+    "mistakes_ar": "فتح الكوعين للخارج بزاوية 90 درجة بدلاً من توجيههما للداخل 45 درجة. النزول العمودي المباشر بين اليدين مما يقلل تفعيل الكتف."
+  },
+  {
+    "id": "shoulders_db_lateral_raise",
+    "name_ar": "رفرفة جانبية بالدمبل",
+    "name_en": "Dumbbell Lateral Raise",
+    "target_muscle": "Lateral Deltoid (عضلة الكتف الجانبي وتدوير الأكتاف)",
+    "muscle_group": "SHOULDERS",
+    "muscle_ar": "الكتف الجانبي وعرض الكتف",
+    "synergist_muscles": [
+      "Supraspinatus",
+      "Upper Trapezius"
+    ],
+    "environment": [
+      "GYM",
+      "HOME_DUMBBELL"
+    ],
+    "equipment": "DUMBBELL",
+    "equipment_ar": "زوج دمبلز خفيفة إلى متوسطة",
+    "biomechanical_focus": "MID_RANGE",
+    "difficulty_level": "BEGINNER",
+    "difficulty": "مبتدئ",
+    "video_url": "https://www.youtube.com/watch?v=3VcKaXpzqRo",
+    "video_id": "3VcKaXpzqRo",
+    "cues": [
+      "انحنِ بالجذع للأمام بزاوية 10-15 درجة مع ثبات الركبتين والجذع.",
+      "ارفع الذراعين للجانبين في المستوى الكتفي بقيادة الكوعين حتى مستوى الكتف.",
+      "انزل بالدمبلز ببطء في ثانيتين دون السماح لها بملامسة الفخذين في الأسفل."
+    ],
+    "common_mistakes": [
+      "تأرجح الظهر والاعتماد على عزم القصور الذاتي لرفع أوزان زائدة.",
+      "رفع اليدين أعلى من مستوى الكوعين مما يشرك الترابيس بدلاً من الكتف الجانبي."
+    ],
+    "cues_ar": "انحنِ بالجذع للأمام بزاوية 10-15 درجة مع ثبات الركبتين والجذع. ارفع الذراعين للجانبين في المستوى الكتفي بقيادة الكوعين حتى مستوى الكتف. انزل بالدمبلز ببطء في ثانيتين دون السماح لها بملامسة الفخذين في الأسفل.",
+    "mistakes_ar": "تأرجح الظهر والاعتماد على عزم القصور الذاتي لرفع أوزان زائدة. رفع اليدين أعلى من مستوى الكوعين مما يشرك الترابيس بدلاً من الكتف الجانبي."
+  },
+  {
+    "id": "shoulders_cable_lateral_raise",
+    "name_ar": "رفرفة جانبية بالكابل خلف الظهر / مائل",
+    "name_en": "Behind-the-Back / Lean-Away Cable Lateral",
+    "target_muscle": "Lateral Deltoid (استطالة وتوتر مستمر من نقطة الصفر)",
+    "muscle_group": "SHOULDERS",
+    "muscle_ar": "استطالة الكتف الجانبي",
+    "synergist_muscles": [
+      "Supraspinatus"
+    ],
+    "environment": [
+      "GYM"
+    ],
+    "equipment": "CABLE",
+    "equipment_ar": "كابل سفلي بمقبض فردي",
+    "biomechanical_focus": "LENGTHENED",
+    "difficulty_level": "BEGINNER",
+    "difficulty": "مبتدئ",
+    "video_url": "https://www.youtube.com/watch?v=PPrzBWZDOhA",
+    "video_id": "PPrzBWZDOhA",
+    "cues": [
+      "اضبط بكرة الكابل في أسفل مستوى واسحب الكابل من خلف الظهر (أو بالميل للجانب).",
+      "ارفع الذراع للأعلى وللجانب مع الحفاظ على استقامة الذراع وثنية كوع ميكروسكوبية.",
+      "تحكم بالوزن أثناء النزول للاستفادة من التوتر الميكانيكي المستمر للكابل."
+    ],
+    "common_mistakes": [
+      "رفع لوح الكتف للأعلى واستخدام الترابيس.",
+      "سحب الكابل بسرعة دون ثبات في القمة."
+    ],
+    "cues_ar": "اضبط بكرة الكابل في أسفل مستوى واسحب الكابل من خلف الظهر (أو بالميل للجانب). ارفع الذراع للأعلى وللجانب مع الحفاظ على استقامة الذراع وثنية كوع ميكروسكوبية. تحكم بالوزن أثناء النزول للاستفادة من التوتر الميكانيكي المستمر للكابل.",
+    "mistakes_ar": "رفع لوح الكتف للأعلى واستخدام الترابيس. سحب الكابل بسرعة دون ثبات في القمة."
+  },
+  {
+    "id": "shoulders_face_pull",
+    "name_ar": "فيس بول بالحبل على الكابل / دمبل",
+    "name_en": "Cable / DB Face Pull",
+    "target_muscle": "Posterior Deltoid & Rotator Cuff (الكتف الخلفي وصحة المفصل)",
+    "muscle_group": "SHOULDERS",
+    "muscle_ar": "الكتف الخلفي والـ Rotator Cuff",
+    "synergist_muscles": [
+      "Infraspinatus",
+      "Teres Minor",
+      "Rhomboids",
+      "Mid Traps"
+    ],
+    "environment": [
+      "GYM",
+      "HOME_DUMBBELL"
+    ],
+    "equipment": "CABLE",
+    "equipment_ar": "كابل وحبل أو زوج دمبلز",
+    "biomechanical_focus": "SHORTENED",
+    "difficulty_level": "BEGINNER",
+    "difficulty": "مبتدئ",
+    "video_url": "https://www.youtube.com/watch?v=rep-qVOkqgk",
+    "video_id": "rep-qVOkqgk",
+    "cues": [
+      "اضبط الكابل بمحاذاة العينين واسحب الحبل باتجاه الجبهة والعينين.",
+      "قم بتدوير المعصمين للخارج (External Rotation) في نهاية السحب مع عصر اللوحين.",
+      "اثبت لمدة ثانية في القمة لحماية أوتار الكتف الدوارة وتقوية عضلات الظهر العلوية."
+    ],
+    "common_mistakes": [
+      "السحب للأسفل باتجاه الصدر بدلاً من الجبهة.",
+      "استخدام أوزان ثقيلة تمنع الدوران الخارجي للكتف."
+    ],
+    "cues_ar": "اضبط الكابل بمحاذاة العينين واسحب الحبل باتجاه الجبهة والعينين. قم بتدوير المعصمين للخارج (External Rotation) في نهاية السحب مع عصر اللوحين. اثبت لمدة ثانية في القمة لحماية أوتار الكتف الدوارة وتقوية عضلات الظهر العلوية.",
+    "mistakes_ar": "السحب للأسفل باتجاه الصدر بدلاً من الجبهة. استخدام أوزان ثقيلة تمنع الدوران الخارجي للكتف."
+  },
+  {
+    "id": "shoulders_incline_rear_delt_fly",
+    "name_ar": "رفرفة كتف خلفي على دكة مائلة",
+    "name_en": "Incline Rear Delt Fly",
+    "target_muscle": "Posterior Deltoid (الكتف الخلفي المعزول)",
+    "muscle_group": "SHOULDERS",
+    "muscle_ar": "الكتف الخلفي المعزول",
+    "synergist_muscles": [
+      "Infraspinatus",
+      "Teres Minor",
+      "Lateral Deltoid"
+    ],
+    "environment": [
+      "GYM",
+      "HOME_DUMBBELL"
+    ],
+    "equipment": "DUMBBELL",
+    "equipment_ar": "دكة مائلة 30° وزوج دمبلز خفيفة",
+    "biomechanical_focus": "SHORTENED",
+    "difficulty_level": "BEGINNER",
+    "difficulty": "مبتدئ",
+    "video_url": "https://www.youtube.com/watch?v=k_lZ2pXfX3U",
+    "video_id": "k_lZ2pXfX3U",
+    "cues": [
+      "أسند الصدر على دكة مائلة 30 درجة مع تدلي الذراعين للأسفل.",
+      "ارفع الدمبلز للجانبين في خط مستقيم أو مائل للأمام قليلاً دون ضم لوحي الكتف.",
+      "اعصر عضلات الكتف الخلفي في القمة وانزل ببطء وتحكم."
+    ],
+    "common_mistakes": [
+      "عصر لوحي الكتف بقوة مما يحول التمرين لعضلات الظهر الأوسط.",
+      "رفع الأوزان بثني الكوعين كأنها تمرين تجديف."
+    ],
+    "cues_ar": "أسند الصدر على دكة مائلة 30 درجة مع تدلي الذراعين للأسفل. ارفع الدمبلز للجانبين في خط مستقيم أو مائل للأمام قليلاً دون ضم لوحي الكتف. اعصر عضلات الكتف الخلفي في القمة وانزل ببطء وتحكم.",
+    "mistakes_ar": "عصر لوحي الكتف بقوة مما يحول التمرين لعضلات الظهر الأوسط. رفع الأوزان بثني الكوعين كأنها تمرين تجديف."
+  },
+  {
+    "id": "arms_incline_db_curl",
+    "name_ar": "بايسبس دمبل على دكة مائلة",
+    "name_en": "Incline Dumbbell Bicep Curl",
+    "target_muscle": "Biceps Brachii (Long Head - استطالة الرأس الطويل)",
+    "muscle_group": "ARMS",
+    "muscle_ar": "الرأس الطويل للبايسبس في أقصى استطالة",
+    "synergist_muscles": [
+      "Brachialis",
+      "Anterior Deltoid"
+    ],
+    "environment": [
+      "GYM",
+      "HOME_DUMBBELL"
+    ],
+    "equipment": "DUMBBELL",
+    "equipment_ar": "دكة مائلة 45°-60° وزوج دمبلز",
+    "biomechanical_focus": "LENGTHENED",
+    "difficulty_level": "INTERMEDIATE",
+    "difficulty": "متوسط",
+    "video_url": "https://www.youtube.com/watch?v=soxrZlIl35U",
+    "video_id": "soxrZlIl35U",
+    "cues": [
+      "اضبط الدكة بزاوية 45-60 درجة مع إرجاع الكوعين للخلف خلف الجذع.",
+      "اثنِ الكوعين للأعلى مع تدوير المعصم للخارج (Supination) في منتصف الحركة.",
+      "اعصر البايسبس في القمة وانزل ببطء للشعور بإطالة عميقة على الرأس الطويل."
+    ],
+    "common_mistakes": [
+      "رفع الكوعين للأمام أثناء الصعود مما يقلل الاستطالة على البايسبس.",
+      "رفع الرأس والظهر عن الدكة."
+    ],
+    "cues_ar": "اضبط الدكة بزاوية 45-60 درجة مع إرجاع الكوعين للخلف خلف الجذع. اثنِ الكوعين للأعلى مع تدوير المعصم للخارج (Supination) في منتصف الحركة. اعصر البايسبس في القمة وانزل ببطء للشعور بإطالة عميقة على الرأس الطويل.",
+    "mistakes_ar": "رفع الكوعين للأمام أثناء الصعود مما يقلل الاستطالة على البايسبس. رفع الرأس والظهر عن الدكة."
+  },
+  {
+    "id": "arms_standing_barbell_curl",
+    "name_ar": "بايسبس بالبار مستقيم / متعرج",
+    "name_en": "Standing Barbell / EZ-Bar Curl",
+    "target_muscle": "Biceps Brachii (الكتلة الإجمالية للبايسبس برأسيه)",
+    "muscle_group": "ARMS",
+    "muscle_ar": "الكتلة الإجمالية للبايسبس",
+    "synergist_muscles": [
+      "Brachialis",
+      "Brachioradialis"
+    ],
+    "environment": [
+      "GYM"
+    ],
+    "equipment": "BARBELL",
+    "equipment_ar": "بار مستقيم أو متعرج EZ",
+    "biomechanical_focus": "MID_RANGE",
+    "difficulty_level": "BEGINNER",
+    "difficulty": "مبتدئ",
+    "video_url": "https://www.youtube.com/watch?v=kwG2ipFRgfo",
+    "video_id": "kwG2ipFRgfo",
+    "cues": [
+      "ثبت الكوعين بجانب الخصر مع الحفاظ على استقامة الظهر التامة.",
+      "ارفع البار للأعلى من خلال ثني مفصل الكوع فقط مع عصر البايسبس في القمة.",
+      "انزل بالبار ببطء وتحكم في 2-3 ثوانٍ حتى استقامة الذراعين."
+    ],
+    "common_mistakes": [
+      "تأرجح الظهر واستخدام عزم الجسم لرفع أوزان تفوق القدرة العضلية.",
+      "تحريك الكوعين للأمام وللخلف أثناء التكرارات."
+    ],
+    "cues_ar": "ثبت الكوعين بجانب الخصر مع الحفاظ على استقامة الظهر التامة. ارفع البار للأعلى من خلال ثني مفصل الكوع فقط مع عصر البايسبس في القمة. انزل بالبار ببطء وتحكم في 2-3 ثوانٍ حتى استقامة الذراعين.",
+    "mistakes_ar": "تأرجح الظهر واستخدام عزم الجسم لرفع أوزان تفوق القدرة العضلية. تحريك الكوعين للأمام وللخلف أثناء التكرارات."
+  },
+  {
+    "id": "arms_preacher_spider_curl",
+    "name_ar": "بايسبس مسند بريتشر / دكة سبايدر",
+    "name_en": "Preacher / Spider Dumbbell Curl",
+    "target_muscle": "Biceps Brachii (Short Head - الرأس القصير وقمة الانقباض)",
+    "muscle_group": "ARMS",
+    "muscle_ar": "الرأس القصير وقمة الانقباض",
+    "synergist_muscles": [
+      "Brachialis"
+    ],
+    "environment": [
+      "GYM",
+      "HOME_DUMBBELL"
+    ],
+    "equipment": "DUMBBELL",
+    "equipment_ar": "دكة بريتشر أو دكة مائلة ودمبلز",
+    "biomechanical_focus": "SHORTENED",
+    "difficulty_level": "BEGINNER",
+    "difficulty": "مبتدئ",
+    "video_url": "https://www.youtube.com/watch?v=fIWP-FRFNU0",
+    "video_id": "fIWP-FRFNU0",
+    "cues": [
+      "ثبت أعلى الذراعين على المسند للأمام لمنع أي مساعدة من عضلات الكتف.",
+      "ارفع الدمبلز للأعلى مع عصر ألياف الرأس القصير للبايسبس في القمة.",
+      "انزل ببطء حتى استطالة العضلة دون فرد المفصل بعنف في الأسفل."
+    ],
+    "common_mistakes": [
+      "فرد الكوعين بعنف في الأسفل مما يضع ضغطاً خطيراً على وتر البايسبس السفلي.",
+      "رفع الجسم عن المقعد للمساعدة في الرفع."
+    ],
+    "cues_ar": "ثبت أعلى الذراعين على المسند للأمام لمنع أي مساعدة من عضلات الكتف. ارفع الدمبلز للأعلى مع عصر ألياف الرأس القصير للبايسبس في القمة. انزل ببطء حتى استطالة العضلة دون فرد المفصل بعنف في الأسفل.",
+    "mistakes_ar": "فرد الكوعين بعنف في الأسفل مما يضع ضغطاً خطيراً على وتر البايسبس السفلي. رفع الجسم عن المقعد للمساعدة في الرفع."
+  },
+  {
+    "id": "arms_hammer_curl",
+    "name_ar": "شاكوش بالدمبلز أو كابل",
+    "name_en": "Dumbbell / Cable Hammer Curl",
+    "target_muscle": "Brachialis & Brachioradialis (عضلة البراكيلس وعرض الذراع)",
+    "muscle_group": "ARMS",
+    "muscle_ar": "عرض الذراع والساعد",
+    "synergist_muscles": [
+      "Biceps Brachii"
+    ],
+    "environment": [
+      "GYM",
+      "HOME_DUMBBELL"
+    ],
+    "equipment": "DUMBBELL",
+    "equipment_ar": "زوج دمبلز أو كابل وحبل",
+    "biomechanical_focus": "MID_RANGE",
+    "difficulty_level": "BEGINNER",
+    "difficulty": "مبتدئ",
+    "video_url": "https://www.youtube.com/watch?v=zC3nLlEvin4",
+    "video_id": "zC3nLlEvin4",
+    "cues": [
+      "امسك الدمبلز بقبضة محايدة (Neutral Grip - راحة اليد للداخل طوال الحركة).",
+      "ارفع الدمبلز للأعلى مع ثبات الكوعين بجانب الخصر وعصر العضلة في القمة.",
+      "انزل ببطء وتحكم للاستفادة من مرحلة الهبوط اللامركزية."
+    ],
+    "common_mistakes": [
+      "تدوير المعصم أثناء الرفع وتحويل التمرين لبايسبس كيرل عادي.",
+      "أرجحة الكوعين للخلف وللأمام."
+    ],
+    "cues_ar": "امسك الدمبلز بقبضة محايدة (Neutral Grip - راحة اليد للداخل طوال الحركة). ارفع الدمبلز للأعلى مع ثبات الكوعين بجانب الخصر وعصر العضلة في القمة. انزل ببطء وتحكم للاستفادة من مرحلة الهبوط اللامركزية.",
+    "mistakes_ar": "تدوير المعصم أثناء الرفع وتحويل التمرين لبايسبس كيرل عادي. أرجحة الكوعين للخلف وللأمام."
+  },
+  {
+    "id": "arms_overhead_triceps_extension",
+    "name_ar": "ترايسبس كابل / دمبل خلف الرأس",
+    "name_en": "Overhead Cable / DB Triceps Extension",
+    "target_muscle": "Triceps Brachii (Long Head - الرأس الطويل للترايسبس)",
+    "muscle_group": "ARMS",
+    "muscle_ar": "الرأس الطويل للترايسبس في أقصى استطالة",
+    "synergist_muscles": [
+      "Anconeus"
+    ],
+    "environment": [
+      "GYM",
+      "HOME_DUMBBELL"
+    ],
+    "equipment": "CABLE",
+    "equipment_ar": "كابل وحبل أو دمبل فردي خلف الرأس",
+    "biomechanical_focus": "LENGTHENED",
+    "difficulty_level": "INTERMEDIATE",
+    "difficulty": "متوسط",
+    "video_url": "https://www.youtube.com/watch?v=1u18yJmLHYA",
+    "video_id": "1u18yJmLHYA",
+    "cues": [
+      "ارفع الذراعين بجانب الرأس مع تثبيت الكوعين للأمام والداخل.",
+      "انزل بالوزن خلف الرأس للشعور بإطالة عميقة على الرأس الطويل للترايسبس.",
+      "افرد الكوعين بالكامل للأعلى وللأمام مع عصر الترايسبس في نهاية المدى."
+    ],
+    "common_mistakes": [
+      "تأرجح الكوعين للأعلى والأسفل مما يضيع استطالة الرأس الطويل.",
+      "تقوس مفرط في أسفل الظهر عند حمل أوزان ثقيلة."
+    ],
+    "cues_ar": "ارفع الذراعين بجانب الرأس مع تثبيت الكوعين للأمام والداخل. انزل بالوزن خلف الرأس للشعور بإطالة عميقة على الرأس الطويل للترايسبس. افرد الكوعين بالكامل للأعلى وللأمام مع عصر الترايسبس في نهاية المدى.",
+    "mistakes_ar": "تأرجح الكوعين للأعلى والأسفل مما يضيع استطالة الرأس الطويل. تقوس مفرط في أسفل الظهر عند حمل أوزان ثقيلة."
+  },
+  {
+    "id": "arms_cable_pushdown",
+    "name_ar": "ترايسبس بوش داون بالكابل",
+    "name_en": "Cable Straight-Bar / Rope Pushdown",
+    "target_muscle": "Triceps Brachii (Lateral & Medial Head - الرأس الوحشي والأوسط)",
+    "muscle_group": "ARMS",
+    "muscle_ar": "الرأس الوحشي والأوسط للترايسبس",
+    "synergist_muscles": [
+      "Anconeus"
+    ],
+    "environment": [
+      "GYM"
+    ],
+    "equipment": "CABLE",
+    "equipment_ar": "جهاز الكيبل مع بار مستقيم أو حبل",
+    "biomechanical_focus": "SHORTENED",
+    "difficulty_level": "BEGINNER",
+    "difficulty": "مبتدئ",
+    "video_url": "https://www.youtube.com/watch?v=vB5OHsJ3EME",
+    "video_id": "vB5OHsJ3EME",
+    "cues": [
+      "ثبت الكوعين بجانب الأضلاع مع ميل خفيف للجذع للأمام.",
+      "ادفع البار أو الحبل لأسفل بالكامل مع فرد الذراع وعصر الترايسبس بقوة.",
+      "ارجع بالوزن للأعلى حتى زاوية 90 درجة مع بقاء الكوعين ثابتين في موضعهما."
+    ],
+    "common_mistakes": [
+      "ترك الكوعين يتحركان للأعلى مع الكيبل أثناء الصعود.",
+      "استخدام وزن الجسم بالضغط لأسفل بدلاً من عزل الترايسبس."
+    ],
+    "cues_ar": "ثبت الكوعين بجانب الأضلاع مع ميل خفيف للجذع للأمام. ادفع البار أو الحبل لأسفل بالكامل مع فرد الذراع وعصر الترايسبس بقوة. ارجع بالوزن للأعلى حتى زاوية 90 درجة مع بقاء الكوعين ثابتين في موضعهما.",
+    "mistakes_ar": "ترك الكوعين يتحركان للأعلى مع الكيبل أثناء الصعود. استخدام وزن الجسم بالضغط لأسفل بدلاً من عزل الترايسبس."
+  },
+  {
+    "id": "arms_lying_skull_crushers",
+    "name_ar": "تكسير الجمجمة بالبار / دمبلز",
+    "name_en": "Lying Skull Crushers (EZ-Bar / DB)",
+    "target_muscle": "Triceps Brachii (الكتلة الإجمالية للترايسبس)",
+    "muscle_group": "ARMS",
+    "muscle_ar": "كثافة الترايسبس الإجمالية",
+    "synergist_muscles": [
+      "Anconeus"
+    ],
+    "environment": [
+      "GYM",
+      "HOME_DUMBBELL"
+    ],
+    "equipment": "BARBELL",
+    "equipment_ar": "بار متعرج EZ أو دمبلز ودكة مستوية",
+    "biomechanical_focus": "MID_RANGE",
+    "difficulty_level": "INTERMEDIATE",
+    "difficulty": "متوسط",
+    "video_url": "https://www.youtube.com/watch?v=d_KZxkY_0cM",
+    "video_id": "d_KZxkY_0cM",
+    "cues": [
+      "استلقِ على دكة مستوية مع جعل الذراعين مائلتين للخلف قليلاً بزاوية 15 درجة للحفاظ على التوتر المستمر.",
+      "اثنِ الكوعين للنزول بالبار باتجاه أعلى الرأس وليس الجبهة مباشرة لحماية الكوع.",
+      "افرد الذراعين للأعلى مع عصر الترايسبس بالكامل."
+    ],
+    "common_mistakes": [
+      "النزول المباشر فوق الجبهة مما يضع ضغطاً حاداً على أوتار الكوع.",
+      "فتح الكوعين للخارج بشدة أثناء النزول."
+    ],
+    "cues_ar": "استلقِ على دكة مستوية مع جعل الذراعين مائلتين للخلف قليلاً بزاوية 15 درجة للحفاظ على التوتر المستمر. اثنِ الكوعين للنزول بالبار باتجاه أعلى الرأس وليس الجبهة مباشرة لحماية الكوع. افرد الذراعين للأعلى مع عصر الترايسبس بالكامل.",
+    "mistakes_ar": "النزول المباشر فوق الجبهة مما يضع ضغطاً حاداً على أوتار الكوع. فتح الكوعين للخارج بشدة أثناء النزول."
+  },
+  {
+    "id": "arms_close_grip_pushup_dips",
+    "name_ar": "ضغط قبضة ضيقة / متوازي الدكة بوزن الجسم",
+    "name_en": "Close-Grip Push-Up / Bench Dips",
+    "target_muscle": "Triceps Brachii (الترايسبس بوزن الجسم المنزلي)",
+    "muscle_group": "ARMS",
+    "muscle_ar": "ترايسبس بوزن الجسم المنزلي",
+    "synergist_muscles": [
+      "Anterior Deltoid",
+      "Pectoralis Major"
+    ],
+    "environment": [
+      "HOME_DUMBBELL",
+      "BODYWEIGHT"
+    ],
+    "equipment": "BODYWEIGHT",
+    "equipment_ar": "وزن الجسم على الأرض أو دكة/كرسي",
+    "biomechanical_focus": "MID_RANGE",
+    "difficulty_level": "BEGINNER",
+    "difficulty": "مبتدئ",
+    "video_url": "https://www.youtube.com/watch?v=0326dy_-CzM",
+    "video_id": "0326dy_-CzM",
+    "cues": [
+      "ضع اليدين بمحاذاة الصدر مع تضييق المسافة بينهما (بعرض الكتف أو أضيق قليلاً).",
+      "انزل بالصدر مع ملاصقة الكوعين للجذع تماماً لتوجيه الحمل للترايسبس.",
+      "ادفع الأرض بقوة للأعلى حتى استقامة الذراعين التامة."
+    ],
+    "common_mistakes": [
+      "فتح الكوعين للخارج مما يحول الحمل لعضلات الصدر.",
+      "تقوس أسفل الظهر أثناء الدفع."
+    ],
+    "cues_ar": "ضع اليدين بمحاذاة الصدر مع تضييق المسافة بينهما (بعرض الكتف أو أضيق قليلاً). انزل بالصدر مع ملاصقة الكوعين للجذع تماماً لتوجيه الحمل للترايسبس. ادفع الأرض بقوة للأعلى حتى استقامة الذراعين التامة.",
+    "mistakes_ar": "فتح الكوعين للخارج مما يحول الحمل لعضلات الصدر. تقوس أسفل الظهر أثناء الدفع."
+  },
+  {
+    "id": "forearms_seated_wrist_curl",
+    "name_ar": "ثني المعصم جالس بالدمبل / بار",
+    "name_en": "Seated Dumbbell / Barbell Wrist Curl",
+    "target_muscle": "Wrist Flexors (عضلات الساعد الداخلية وقوة القبضة)",
+    "muscle_group": "ARMS",
+    "muscle_ar": "ثني المعصم والساعد الداخلي",
+    "synergist_muscles": [
+      "Flexor Digitorum"
+    ],
+    "environment": [
+      "GYM",
+      "HOME_DUMBBELL"
+    ],
+    "equipment": "DUMBBELL",
+    "equipment_ar": "دمبلز أو بار ودكة مستوية",
+    "biomechanical_focus": "SHORTENED",
+    "difficulty_level": "BEGINNER",
+    "difficulty": "مبتدئ",
+    "video_url": "https://www.youtube.com/watch?v=3V_2Ptjc798",
+    "video_id": "3V_2Ptjc798",
+    "cues": [
+      "أسند الساعدين على الفخذين أو حافة الدكة مع ترك المعصمين متدليين بحرية.",
+      "أنزل الوزن للأصابع ثم ارفعه للأعلى بثني المعصم لأقصى نقطة مع عصر الساعد.",
+      "انزل بالوزن ببطء وتحكم كامل لتفادي إجهاد أوتار الرسغ."
+    ],
+    "common_mistakes": [
+      "رفع الساعدين عن الفخذين أثناء ثني المعصم.",
+      "استخدام أوزان مفرطة تسبب التواء مفصل الرسغ."
+    ],
+    "cues_ar": "أسند الساعدين على الفخذين أو حافة الدكة مع ترك المعصمين متدليين بحرية. أنزل الوزن للأصابع ثم ارفعه للأعلى بثني المعصم لأقصى نقطة مع عصر الساعد. انزل بالوزن ببطء وتحكم كامل لتفادي إجهاد أوتار الرسغ.",
+    "mistakes_ar": "رفع الساعدين عن الفخذين أثناء ثني المعصم. استخدام أوزان مفرطة تسبب التواء مفصل الرسغ."
+  },
+  {
+    "id": "forearms_reverse_wrist_curl",
+    "name_ar": "بسط المعصم عكسي بالبار / دمبل",
+    "name_en": "Reverse Barbell / DB Wrist Curl",
+    "target_muscle": "Wrist Extensors (عضلات الساعد الخارجية وتوازن الرسغ)",
+    "muscle_group": "ARMS",
+    "muscle_ar": "بسط المعصم والساعد الخارجي",
+    "synergist_muscles": [
+      "Extensor Digitorum"
+    ],
+    "environment": [
+      "GYM",
+      "HOME_DUMBBELL"
+    ],
+    "equipment": "DUMBBELL",
+    "equipment_ar": "بار أولمبي أو دمبلز خفيفة",
+    "biomechanical_focus": "SHORTENED",
+    "difficulty_level": "BEGINNER",
+    "difficulty": "مبتدئ",
+    "video_url": "https://www.youtube.com/watch?v=FW7OU6_nB_U",
+    "video_id": "FW7OU6_nB_U",
+    "cues": [
+      "امسك البار أو الدمبلز بقبضة مقلوبة (راحة اليد متجهة لأسفل).",
+      "أسند الساعدين على الفخذين وارفع المعصمين للأعلى باتجاه الساعد.",
+      "اثبت لمدة ثانية في القمة وانزل ببطء، وهو تمرين أساسي للوقاية من آلام الرست والتنس إلبو."
+    ],
+    "common_mistakes": [
+      "استخدام أوزان ثقيلة تضغط أوتار المعصم الخارجية.",
+      "أداء الحركة بسرعة دون عصر العضلات في القمة."
+    ],
+    "cues_ar": "امسك البار أو الدمبلز بقبضة مقلوبة (راحة اليد متجهة لأسفل). أسند الساعدين على الفخذين وارفع المعصمين للأعلى باتجاه الساعد. اثبت لمدة ثانية في القمة وانزل ببطء، وهو تمرين أساسي للوقاية من آلام الرست والتنس إلبو.",
+    "mistakes_ar": "استخدام أوزان ثقيلة تضغط أوتار المعصم الخارجية. أداء الحركة بسرعة دون عصر العضلات في القمة."
+  },
+  {
+    "id": "forearms_reverse_ez_bar_curl",
+    "name_ar": "بايسبس قبضة مقلوبة بالبار المتعرج",
+    "name_en": "Standing Reverse EZ-Bar Curl",
+    "target_muscle": "Brachioradialis (عضلة الساعد العلوية وقوة المفصل)",
+    "muscle_group": "ARMS",
+    "muscle_ar": "عضلة الـ Brachioradialis وقوة الساعد",
+    "synergist_muscles": [
+      "Brachialis",
+      "Biceps Brachii",
+      "Wrist Extensors"
+    ],
+    "environment": [
+      "GYM",
+      "HOME_DUMBBELL"
+    ],
+    "equipment": "BARBELL",
+    "equipment_ar": "بار متعرج EZ أو دمبلز",
+    "biomechanical_focus": "MID_RANGE",
+    "difficulty_level": "BEGINNER",
+    "difficulty": "مبتدئ",
+    "video_url": "https://www.youtube.com/watch?v=nRgxYX2Ve9w",
+    "video_id": "nRgxYX2Ve9w",
+    "cues": [
+      "امسك البار المتعرج بقبضة مقلوبة (راحة اليد لأسفل) بعرض الكتفين.",
+      "ارفع البار للأعلى مع ثبات الكوعين بجانب الخصر لعزل الجزء العلوي من الساعد.",
+      "انزل ببطء وتحكم في مرحلة الهبوط."
+    ],
+    "common_mistakes": [
+      "ثني المعصم للأعلى أثناء الرفع بدلاً من الحفاظ على استقامة الرسغ.",
+      "تأرجح الظهر لرفع الوزن."
+    ],
+    "cues_ar": "امسك البار المتعرج بقبضة مقلوبة (راحة اليد لأسفل) بعرض الكتفين. ارفع البار للأعلى مع ثبات الكوعين بجانب الخصر لعزل الجزء العلوي من الساعد. انزل ببطء وتحكم في مرحلة الهبوط.",
+    "mistakes_ar": "ثني المعصم للأعلى أثناء الرفع بدلاً من الحفاظ على استقامة الرسغ. تأرجح الظهر لرفع الوزن."
+  },
+  {
+    "id": "forearms_farmers_walk",
+    "name_ar": "مشي الفلاح بالدمبلز الثقيلة",
+    "name_en": "Farmer's Walk (Heavy Carries)",
+    "target_muscle": "Grip Strength, Trapezius & Core Stability (قوة القبضة الثابتة)",
+    "muscle_group": "ARMS",
+    "muscle_ar": "قوة القبضة الثابتة والترابيس والكور",
+    "synergist_muscles": [
+      "Upper Traps",
+      "Forearms",
+      "Core",
+      "Calves"
+    ],
+    "environment": [
+      "GYM",
+      "HOME_DUMBBELL"
+    ],
+    "equipment": "DUMBBELL",
+    "equipment_ar": "زوج دمبلز ثقيلة أو حقائب أوزان",
+    "biomechanical_focus": "MID_RANGE",
+    "difficulty_level": "INTERMEDIATE",
+    "difficulty": "متوسط",
+    "video_url": "https://www.youtube.com/watch?v=Fkzk_Rql4ig",
+    "video_id": "Fkzk_Rql4ig",
+    "cues": [
+      "احمل دمبلين ثقيلين بجانبك مع فتح الصدر وشد عضلات البطن والمؤخرة.",
+      "امشِ بخطوات مستقيمة وثابتة وقصيرة دون السماح للدمبلز بالاهتزاز أو الاصطدام بالفخذين.",
+      "استمر في المشي لمدة 30-45 ثانية متواصلة مع الحفاظ على استقامة القامة."
+    ],
+    "common_mistakes": [
+      "الميلان لأحد الجانبين أو ارتخاء عضلات الكتف والظهر.",
+      "المشي بخطوات واسعة سريعة مما يفقد التوازن."
+    ],
+    "cues_ar": "احمل دمبلين ثقيلين بجانبك مع فتح الصدر وشد عضلات البطن والمؤخرة. امشِ بخطوات مستقيمة وثابتة وقصيرة دون السماح للدمبلز بالاهتزاز أو الاصطدام بالفخذين. استمر في المشي لمدة 30-45 ثانية متواصلة مع الحفاظ على استقامة القامة.",
+    "mistakes_ar": "الميلان لأحد الجانبين أو ارتخاء عضلات الكتف والظهر. المشي بخطوات واسعة سريعة مما يفقد التوازن."
+  },
+  {
+    "id": "forearms_dead_hangs",
+    "name_ar": "التعلق الحر على العقلة",
+    "name_en": "Dead Hangs (Grip & Shoulder Health)",
+    "target_muscle": "Finger Flexors, Shoulder Joint Decompression & Spinal Health",
+    "muscle_group": "ARMS",
+    "muscle_ar": "قوة الأصابع وإطالة الكتف وتخفيف ضغط الفقرات",
+    "synergist_muscles": [
+      "Forearms",
+      "Lats",
+      "Rotator Cuff"
+    ],
+    "environment": [
+      "GYM",
+      "HOME_DUMBBELL",
+      "BODYWEIGHT"
+    ],
+    "equipment": "BODYWEIGHT",
+    "equipment_ar": "عقلة سحب / وزن الجسم",
+    "biomechanical_focus": "LENGTHENED",
+    "difficulty_level": "BEGINNER",
+    "difficulty": "مبتدئ",
+    "video_url": "https://www.youtube.com/watch?v=Cq_d23XoWvI",
+    "video_id": "Cq_d23XoWvI",
+    "cues": [
+      "امسك بار العقلة بقبضة محكمة بعرض الكتفين مع ترك الجسم معلقاً بحرية.",
+      "تنفس بعمق وببطء واترك الجاذبية تفك انضغاط فقرات العمود الفقري ومفصل الكتف.",
+      "اثبت لأقصى مدة ممكنة (30-60 ثانية) لتقوية أوتار الأصابع وقوة القبضة."
+    ],
+    "common_mistakes": [
+      "كتم النفس أثناء التعلق.",
+      "التأرجح أو محاولة ثني الكوعين."
+    ],
+    "cues_ar": "امسك بار العقلة بقبضة محكمة بعرض الكتفين مع ترك الجسم معلقاً بحرية. تنفس بعمق وببطء واترك الجاذبية تفك انضغاط فقرات العمود الفقري ومفصل الكتف. اثبت لأقصى مدة ممكنة (30-60 ثانية) لتقوية أوتار الأصابع وقوة القبضة.",
+    "mistakes_ar": "كتم النفس أثناء التعلق. التأرجح أو محاولة ثني الكوعين."
+  },
+  {
+    "id": "quads_barbell_squat",
+    "name_ar": "سكوات بالبار خلفي / أمامي",
+    "name_en": "Barbell Back / Front Squat",
+    "target_muscle": "Quadriceps (عضلات الفخذ الأمامية والقوة الشاملة)",
+    "muscle_group": "LEGS",
+    "muscle_ar": "الفخذ الأمامي والقوة الشاملة",
+    "synergist_muscles": [
+      "Gluteus Maximus",
+      "Adductor Magnus",
+      "Soleus",
+      "Core"
+    ],
+    "environment": [
+      "GYM"
+    ],
+    "equipment": "BARBELL",
+    "equipment_ar": "بار أولمبي وراك سكوات",
+    "biomechanical_focus": "LENGTHENED",
+    "difficulty_level": "ADVANCED",
+    "difficulty": "متقدم",
+    "video_url": "https://www.youtube.com/watch?v=bEv6CCg2BC8",
+    "video_id": "bEv6CCg2BC8",
+    "cues": [
+      "ثبت البار على الترابيس مع فتح القدمين بعرض الكتفين وأصابع القدم مائلة للخارج قليلاً.",
+      "انزل بالحوض للأسفل مع دفع الركبتين في اتجاه أصابع القدم حتى موازاة الفخذ للأرض.",
+      "ادفع الأرض بكامل باطن القدم مع الحفاظ على استقامة العمود الفقري وتنفس البطن."
+    ],
+    "common_mistakes": [
+      "انهيار الركبتين للداخل أثناء الصعود (Knee Valgus).",
+      "ارتفاع الكعبين عن الأرض أو تقوس أسفل الظهر (Butt Wink)."
+    ],
+    "cues_ar": "ثبت البار على الترابيس مع فتح القدمين بعرض الكتفين وأصابع القدم مائلة للخارج قليلاً. انزل بالحوض للأسفل مع دفع الركبتين في اتجاه أصابع القدم حتى موازاة الفخذ للأرض. ادفع الأرض بكامل باطن القدم مع الحفاظ على استقامة العمود الفقري وتنفس البطن.",
+    "mistakes_ar": "انهيار الركبتين للداخل أثناء الصعود (Knee Valgus). ارتفاع الكعبين عن الأرض أو تقوس أسفل الظهر (Butt Wink)."
+  },
+  {
+    "id": "quads_hack_pendulum_squat",
+    "name_ar": "هاك سكوات / بندوليم سكوات",
+    "name_en": "Hack Squat / Pendulum Squat",
+    "target_muscle": "Quadriceps (عزل الفخذ الأمامي في أقصى استطالة بأمان قطني)",
+    "muscle_group": "LEGS",
+    "muscle_ar": "الفخذ الأمامي بأقصى استطالة",
+    "synergist_muscles": [
+      "Gluteus Maximus"
+    ],
+    "environment": [
+      "GYM"
+    ],
+    "equipment": "MACHINE",
+    "equipment_ar": "جهاز الهاك سكوات أو البندوليم",
+    "biomechanical_focus": "LENGTHENED",
+    "difficulty_level": "INTERMEDIATE",
+    "difficulty": "متوسط",
+    "video_url": "https://www.youtube.com/watch?v=0tn5K9NlCfo",
+    "video_id": "0tn5K9NlCfo",
+    "cues": [
+      "أسند الظهر بالكامل على المسند مع وضع القدمين في منتصف المنصة.",
+      "انزل لعمق كامل مع ثني الركبتين للأمام بأمان تام على الفقرات القطنية.",
+      "ادفع المنصة بكامل القدم للأعلى مع تجنب قفل مفصل الركبة بالكامل في القمة."
+    ],
+    "common_mistakes": [
+      "رفع الحوض وأسفل الظهر عن المسند أثناء النزول العميق.",
+      "قفل الركبة بعنف (Lockout) في قمة الحركة."
+    ],
+    "cues_ar": "أسند الظهر بالكامل على المسند مع وضع القدمين في منتصف المنصة. انزل لعمق كامل مع ثني الركبتين للأمام بأمان تام على الفقرات القطنية. ادفع المنصة بكامل القدم للأعلى مع تجنب قفل مفصل الركبة بالكامل في القمة.",
+    "mistakes_ar": "رفع الحوض وأسفل الظهر عن المسند أثناء النزول العميق. قفل الركبة بعنف (Lockout) في قمة الحركة."
+  },
+  {
+    "id": "quads_bulgarian_split_squat",
+    "name_ar": "سكوات بلغاري أحادي بالدمبل / حر",
+    "name_en": "Bulgarian Split Squat",
+    "target_muscle": "Quadriceps & Gluteus Maximus (عزل الفخذ الأحادي وتوازن القوة)",
+    "muscle_group": "LEGS",
+    "muscle_ar": "عزل الفخذ الأحادي والاتزان",
+    "synergist_muscles": [
+      "Adductors",
+      "Hamstrings",
+      "Core"
+    ],
+    "environment": [
+      "GYM",
+      "HOME_DUMBBELL",
+      "BODYWEIGHT"
+    ],
+    "equipment": "DUMBBELL",
+    "equipment_ar": "زوج دمبلز ودكة أو كرسي / وزن الجسم",
+    "biomechanical_focus": "LENGTHENED",
+    "difficulty_level": "INTERMEDIATE",
+    "difficulty": "متوسط",
+    "video_url": "https://www.youtube.com/watch?v=2C-uNgKwPLE",
+    "video_id": "2C-uNgKwPLE",
+    "cues": [
+      "ضع مشط القدم الخلفية على دكة أو كرسي، وتقدم بالساق الأمامية للأمام مسافة خطوة ونصف.",
+      "انزل عمودياً بالساق الأمامية حتى زاوية 90 درجة مع تركيز الحمل على كعب القدم الأمامية.",
+      "ادفع الأرض بالساق الأمامية للعودة للأعلى مع الحفاظ على استقامة الجذع."
+    ],
+    "common_mistakes": [
+      "الاعتماد على دفع الساق الخلفية بدلاً من الساق الأمامية.",
+      "ميلان الركبة الأمامية للداخل أثناء الصعود."
+    ],
+    "cues_ar": "ضع مشط القدم الخلفية على دكة أو كرسي، وتقدم بالساق الأمامية للأمام مسافة خطوة ونصف. انزل عمودياً بالساق الأمامية حتى زاوية 90 درجة مع تركيز الحمل على كعب القدم الأمامية. ادفع الأرض بالساق الأمامية للعودة للأعلى مع الحفاظ على استقامة الجذع.",
+    "mistakes_ar": "الاعتماد على دفع الساق الخلفية بدلاً من الساق الأمامية. ميلان الركبة الأمامية للداخل أثناء الصعود."
+  },
+  {
+    "id": "quads_goblet_squat",
+    "name_ar": "جوبلت سكوات بالدمبل / كيتل بل",
+    "name_en": "Goblet Squat (DB / Kettlebell)",
+    "target_muscle": "Quadriceps & Core Stability (الفخذ الأمامي بمدى حركي عميق)",
+    "muscle_group": "LEGS",
+    "muscle_ar": "الفخذ الأمامي وثبات الجذع",
+    "synergist_muscles": [
+      "Gluteus Maximus",
+      "Core Muscles"
+    ],
+    "environment": [
+      "GYM",
+      "HOME_DUMBBELL"
+    ],
+    "equipment": "DUMBBELL",
+    "equipment_ar": "دمبل فردي أو كيتل بل أمام الصدر",
+    "biomechanical_focus": "MID_RANGE",
+    "difficulty_level": "BEGINNER",
+    "difficulty": "مبتدئ",
+    "video_url": "https://www.youtube.com/watch?v=MeIiIdhvXT4",
+    "video_id": "MeIiIdhvXT4",
+    "cues": [
+      "احمل الدمبل بكلتا اليدين ملاصقاً لأعلى الصدر مع فتح الكوعين للأسفل.",
+      "انزل بالحوض بين الساقين مع الحفاظ على استقامة الجذع التامة حتى لمس الكوعين للفخذين من الداخل.",
+      "ادفع الأرض بالقدمين للعودة للأعلى مع عصر الفخذ والمؤخرة."
+    ],
+    "common_mistakes": [
+      "ميل الجذع للأمام وسقوط الدمبل لأسفل بعيداً عن الصدر.",
+      "رفع الكعبين عن الأرض أثناء النزول."
+    ],
+    "cues_ar": "احمل الدمبل بكلتا اليدين ملاصقاً لأعلى الصدر مع فتح الكوعين للأسفل. انزل بالحوض بين الساقين مع الحفاظ على استقامة الجذع التامة حتى لمس الكوعين للفخذين من الداخل. ادفع الأرض بالقدمين للعودة للأعلى مع عصر الفخذ والمؤخرة.",
+    "mistakes_ar": "ميل الجذع للأمام وسقوط الدمبل لأسفل بعيداً عن الصدر. رفع الكعبين عن الأرض أثناء النزول."
+  },
+  {
+    "id": "quads_seated_leg_extension",
+    "name_ar": "تمديد الساقين على الجهاز",
+    "name_en": "Seated Leg Extension",
+    "target_muscle": "Quadriceps (Rectus Femoris - عزل الفخذ الأمامي في قمة الانقباض)",
+    "muscle_group": "LEGS",
+    "muscle_ar": "عزل الفخذ الأمامي وقمة الانقباض",
+    "synergist_muscles": [],
+    "environment": [
+      "GYM"
+    ],
+    "equipment": "MACHINE",
+    "equipment_ar": "جهاز الليج إكستنشن",
+    "biomechanical_focus": "SHORTENED",
+    "difficulty_level": "BEGINNER",
+    "difficulty": "مبتدئ",
+    "video_url": "https://www.youtube.com/watch?v=YyvSfVjQeL0",
+    "video_id": "YyvSfVjQeL0",
+    "cues": [
+      "اضبط مسند الظهر لتكون الركبتان بمحاذاة محور دوران الجهاز والوسادة فوق الكاحلين مباشرة.",
+      "افرد الساقين بالكامل مع عصر عضلات الفخذ الأمامية لمدة ثانية كاملة في القمة.",
+      "انزل بالوزن ببطء وتحكم كامل في 3 ثوانٍ."
+    ],
+    "common_mistakes": [
+      "ركل الوزن بسرعة واستخدام عزم الاندفاع بدلاً من التحكم العضلي.",
+      "رفع الحوض عن المقعد أثناء فرد الساقين."
+    ],
+    "cues_ar": "اضبط مسند الظهر لتكون الركبتان بمحاذاة محور دوران الجهاز والوسادة فوق الكاحلين مباشرة. افرد الساقين بالكامل مع عصر عضلات الفخذ الأمامية لمدة ثانية كاملة في القمة. انزل بالوزن ببطء وتحكم كامل في 3 ثوانٍ.",
+    "mistakes_ar": "ركل الوزن بسرعة واستخدام عزم الاندفاع بدلاً من التحكم العضلي. رفع الحوض عن المقعد أثناء فرد الساقين."
+  },
+  {
+    "id": "quads_sissy_squat",
+    "name_ar": "سيسي سكوات / تمديد الفخذ بوزن الجسم",
+    "name_en": "Sissy Squat / Bodyweight Quad Extension",
+    "target_muscle": "Quadriceps (استطالة الفخذ الأمامي بوزن الجسم الصرف)",
+    "muscle_group": "LEGS",
+    "muscle_ar": "استطالة الفخذ بوزن الجسم",
+    "synergist_muscles": [
+      "Core",
+      "Calves"
+    ],
+    "environment": [
+      "HOME_DUMBBELL",
+      "BODYWEIGHT"
+    ],
+    "equipment": "BODYWEIGHT",
+    "equipment_ar": "وزن الجسم مع الاستناد على حائط أو مقبض",
+    "biomechanical_focus": "LENGTHENED",
+    "difficulty_level": "ADVANCED",
+    "difficulty": "متقدم",
+    "video_url": "https://www.youtube.com/watch?v=0kPq_lJq7Yg",
+    "video_id": "0kPq_lJq7Yg",
+    "cues": [
+      "استند بيد واحدة على حائط أو عمود ثابت مع الوقوف على مشطي القدمين.",
+      "ادفع الركبتين للأمام مع إرجاع الجذع للخلف في خط مستقيم واحد للشعور بإطالة هائلة في الكوادز.",
+      "ادفع بأصابع القدمين والكوادز للعودة لوضع البداية."
+    ],
+    "common_mistakes": [
+      "ثني الخصر والورك بدلاً من الحفاظ على استقامة الجذع مع الفخذين.",
+      "أداء التمرين بدون إحماء كافٍ لمفصل الركبة."
+    ],
+    "cues_ar": "استند بيد واحدة على حائط أو عمود ثابت مع الوقوف على مشطي القدمين. ادفع الركبتين للأمام مع إرجاع الجذع للخلف في خط مستقيم واحد للشعور بإطالة هائلة في الكوادز. ادفع بأصابع القدمين والكوادز للعودة لوضع البداية.",
+    "mistakes_ar": "ثني الخصر والورك بدلاً من الحفاظ على استقامة الجذع مع الفخذين. أداء التمرين بدون إحماء كافٍ لمفصل الركبة."
+  },
+  {
+    "id": "hamstrings_romanian_deadlift",
+    "name_ar": "ديدليفت روماني بالبار / دمبلز",
+    "name_en": "Romanian Deadlift (Barbell / DB)",
+    "target_muscle": "Hamstrings & Gluteus Maximus (استطالة الفخذ الخلفي وأسفل الجلوتس)",
+    "muscle_group": "LEGS",
+    "muscle_ar": "استطالة الفخذ الخلفي والأرداف",
+    "synergist_muscles": [
+      "Adductor Magnus",
+      "Erector Spinae",
+      "Forearms"
+    ],
+    "environment": [
+      "GYM",
+      "HOME_DUMBBELL"
+    ],
+    "equipment": "BARBELL",
+    "equipment_ar": "بار أولمبي أو زوج دمبلز",
+    "biomechanical_focus": "LENGTHENED",
+    "difficulty_level": "INTERMEDIATE",
+    "difficulty": "متوسط",
+    "video_url": "https://www.youtube.com/watch?v=vbpjSpvH_4M",
+    "video_id": "vbpjSpvH_4M",
+    "cues": [
+      "ارجع الحوض للخلف (Hip Hinge) مع ثنية ركبة طفيفة وثابتة طوال الحركة.",
+      "انزل بالوزن بمحاذاة الساقين مع استقامة الظهر حتى تشعر بإطالة قوية في أوتار الفخذ الخلفية.",
+      "ادفع الحوض للأمام من خلال عصر عضلات الفخذ الخلفية والمؤخرة للعودة للوقوف."
+    ],
+    "common_mistakes": [
+      "ثني الركبتين كأنه سكوات مما يضيع التركيز على الفخذ الخلفي.",
+      "تقوس الظهر للوصول للأرض بدلاً من الاعتماد على حركة الحوض."
+    ],
+    "cues_ar": "ارجع الحوض للخلف (Hip Hinge) مع ثنية ركبة طفيفة وثابتة طوال الحركة. انزل بالوزن بمحاذاة الساقين مع استقامة الظهر حتى تشعر بإطالة قوية في أوتار الفخذ الخلفية. ادفع الحوض للأمام من خلال عصر عضلات الفخذ الخلفية والمؤخرة للعودة للوقوف.",
+    "mistakes_ar": "ثني الركبتين كأنه سكوات مما يضيع التركيز على الفخذ الخلفي. تقوس الظهر للوصول للأرض بدلاً من الاعتماد على حركة الحوض."
+  },
+  {
+    "id": "hamstrings_leg_curl",
+    "name_ar": "ثني الأرجل جالس / نائم على الجهاز",
+    "name_en": "Seated / Lying Hamstring Curl",
+    "target_muscle": "Hamstrings (عزل أوتار الفخذ الخلفية في قمة الانقباض)",
+    "muscle_group": "LEGS",
+    "muscle_ar": "أوتار الفخذ الخلفية المعزولة",
+    "synergist_muscles": [
+      "Gastrocnemius",
+      "Sartorius"
+    ],
+    "environment": [
+      "GYM"
+    ],
+    "equipment": "MACHINE",
+    "equipment_ar": "جهاز الليج كيرل جالس أو نائم",
+    "biomechanical_focus": "SHORTENED",
+    "difficulty_level": "BEGINNER",
+    "difficulty": "مبتدئ",
+    "video_url": "https://www.youtube.com/watch?v=1Tq3QdYUuHs",
+    "video_id": "1Tq3QdYUuHs",
+    "cues": [
+      "ثبت الحوض بإحكام في المقعد مع ضبط الوسادة فوق الكعبين مباشرة.",
+      "اثنِ الساقين للداخل بقوة مع عصر عضلات الفخذ الخلفية لمدة ثانية في القمة.",
+      "انزل بالوزن ببطء وتحكم في 2-3 ثوانٍ حتى استطالة العضلة."
+    ],
+    "common_mistakes": [
+      "رفع الحوض وأسفل الظهر عن المقعد لتسهيل سحب الوزن.",
+      "استخدام أوزان ثقيلة تمنع المدى الحركي الكامل في الثني."
+    ],
+    "cues_ar": "ثبت الحوض بإحكام في المقعد مع ضبط الوسادة فوق الكعبين مباشرة. اثنِ الساقين للداخل بقوة مع عصر عضلات الفخذ الخلفية لمدة ثانية في القمة. انزل بالوزن ببطء وتحكم في 2-3 ثوانٍ حتى استطالة العضلة.",
+    "mistakes_ar": "رفع الحوض وأسفل الظهر عن المقعد لتسهيل سحب الوزن. استخدام أوزان ثقيلة تمنع المدى الحركي الكامل في الثني."
+  },
+  {
+    "id": "glutes_barbell_hip_thrust",
+    "name_ar": "هيب ثرست بالبار / دمبل للأرداف",
+    "name_en": "Barbell / DB Hip Thrust",
+    "target_muscle": "Gluteus Maximus (قمة انقباض وعزل الجلوتس)",
+    "muscle_group": "LEGS",
+    "muscle_ar": "قمة انقباض الجلوتس",
+    "synergist_muscles": [
+      "Hamstrings",
+      "Adductor Magnus",
+      "Quadriceps"
+    ],
+    "environment": [
+      "GYM",
+      "HOME_DUMBBELL"
+    ],
+    "equipment": "BARBELL",
+    "equipment_ar": "بار أولمبي أو دمبل ودكة مستوية مع وسادة حماية",
+    "biomechanical_focus": "SHORTENED",
+    "difficulty_level": "INTERMEDIATE",
+    "difficulty": "متوسط",
+    "video_url": "https://www.youtube.com/watch?v=SEdqd1n0cvg",
+    "video_id": "SEdqd1n0cvg",
+    "cues": [
+      "أسند أعلى الظهر (أسفل لوحي الكتف مباشرة) على حافة الدكة مع وضع البار فوق الحوض.",
+      "ادفع الحوض للأعلى من خلال كعبي القدمين حتى يصبح الفخذ والجذع في خط أفقي مستقيم.",
+      "اعصر الجلوتس بقوة لمدة ثانية كاملة في القمة مع توجيه النظر للأمام لتثبيت الحوض."
+    ],
+    "common_mistakes": [
+      "تقوس الرقبة والظهر للأعلى بدلاً من تدوير الحوض للأعلى (Posterior Pelvic Tilt).",
+      "الدفع بأمشاط القدمين بدلاً من الكعبين."
+    ],
+    "cues_ar": "أسند أعلى الظهر (أسفل لوحي الكتف مباشرة) على حافة الدكة مع وضع البار فوق الحوض. ادفع الحوض للأعلى من خلال كعبي القدمين حتى يصبح الفخذ والجذع في خط أفقي مستقيم. اعصر الجلوتس بقوة لمدة ثانية كاملة في القمة مع توجيه النظر للأمام لتثبيت الحوض.",
+    "mistakes_ar": "تقوس الرقبة والظهر للأعلى بدلاً من تدوير الحوض للأعلى (Posterior Pelvic Tilt). الدفع بأمشاط القدمين بدلاً من الكعبين."
+  },
+  {
+    "id": "hamstrings_nordic_curl",
+    "name_ar": "نورديك كيرل للفخذ الخلفي",
+    "name_en": "Nordic Hamstring Curl",
+    "target_muscle": "Hamstrings (القوة اللامركزية Eccentric وحماية أوتار الركبة)",
+    "muscle_group": "LEGS",
+    "muscle_ar": "القوة اللامركزية للفخذ الخلفي",
+    "synergist_muscles": [
+      "Gastrocnemius",
+      "Glutes",
+      "Core"
+    ],
+    "environment": [
+      "GYM",
+      "HOME_DUMBBELL",
+      "BODYWEIGHT"
+    ],
+    "equipment": "BODYWEIGHT",
+    "equipment_ar": "تثبيت الكاحلين أسفل بار/كنبة أو شريك تمرين",
+    "biomechanical_focus": "LENGTHENED",
+    "difficulty_level": "ADVANCED",
+    "difficulty": "متقدم",
+    "video_url": "https://www.youtube.com/watch?v=zJg_6Q6Xq4g",
+    "video_id": "zJg_6Q6Xq4g",
+    "cues": [
+      "ثبت الكاحلين بإحكام على الأرض مع الحفاظ على استقامة الفخذين مع الجذع.",
+      "انزل بالجذع للأمام بأقصى بطء وتحكم ممكن مع مقاومة السقوط بعضلات الفخذ الخلفية.",
+      "المس الأرض بيديك بخفة ثم ادفع نفسك للأعلى للعودة لوضع البداية."
+    ],
+    "common_mistakes": [
+      "ثني الخصر للأمام بدلاً من النزول بخط مستقيم من الركبة للكتف.",
+      "السقوط الحر السريع دون أي مقاومة عضلية."
+    ],
+    "cues_ar": "ثبت الكاحلين بإحكام على الأرض مع الحفاظ على استقامة الفخذين مع الجذع. انزل بالجذع للأمام بأقصى بطء وتحكم ممكن مع مقاومة السقوط بعضلات الفخذ الخلفية. المس الأرض بيديك بخفة ثم ادفع نفسك للأعلى للعودة لوضع البداية.",
+    "mistakes_ar": "ثني الخصر للأمام بدلاً من النزول بخط مستقيم من الركبة للكتف. السقوط الحر السريع دون أي مقاومة عضلية."
+  },
+  {
+    "id": "hamstrings_slider_towel_curl",
+    "name_ar": "ثني الفخذ الخلفي بالسلايدر / المنشفة على الأرض",
+    "name_en": "Slider / Towel Floor Hamstring Curl",
+    "target_muscle": "Hamstrings (عزل أوتار الركبة منزلياً بوزن الجسم)",
+    "muscle_group": "LEGS",
+    "muscle_ar": "عزل الفخذ الخلفي المنزلي",
+    "synergist_muscles": [
+      "Gluteus Maximus",
+      "Calves",
+      "Core"
+    ],
+    "environment": [
+      "HOME_DUMBBELL",
+      "BODYWEIGHT"
+    ],
+    "equipment": "BODYWEIGHT",
+    "equipment_ar": "منشفة على أرضية ملساء أو أقراص سلايدر",
+    "biomechanical_focus": "SHORTENED",
+    "difficulty_level": "INTERMEDIATE",
+    "difficulty": "متوسط",
+    "video_url": "https://www.youtube.com/watch?v=l_tWc2P97jE",
+    "video_id": "l_tWc2P97jE",
+    "cues": [
+      "استلقِ على الظهر مع وضع الكعبين على منشفة فوق أرضية ملساء (سيراميك/باركية).",
+      "ارفع الحوض في وضع الجلوت بريدج، ثم اسحب الكعبين باتجاه المؤخرة بثني الركبتين.",
+      "اعصر الفخذ الخلفي في القمة ثم مد الساقين للأمام ببطء مع بقاء الحوض مرفوعاً."
+    ],
+    "common_mistakes": [
+      "سقوط الحوض على الأرض أثناء سحب الكعبين.",
+      "دفع الكعبين بسرعة دون تحكم عضلي في مرحلة الفرد."
+    ],
+    "cues_ar": "استلقِ على الظهر مع وضع الكعبين على منشفة فوق أرضية ملساء (سيراميك/باركية). ارفع الحوض في وضع الجلوت بريدج، ثم اسحب الكعبين باتجاه المؤخرة بثني الركبتين. اعصر الفخذ الخلفي في القمة ثم مد الساقين للأمام ببطء مع بقاء الحوض مرفوعاً.",
+    "mistakes_ar": "سقوط الحوض على الأرض أثناء سحب الكعبين. دفع الكعبين بسرعة دون تحكم عضلي في مرحلة الفرد."
+  },
+  {
+    "id": "glutes_single_leg_bridge",
+    "name_ar": "جلوت بريدج أحادي بوزن الجسم",
+    "name_en": "Single-Leg Glute Bridge",
+    "target_muscle": "Gluteus Maximus (عزل الأرداف وثبات الحوض بالمنزل)",
+    "muscle_group": "LEGS",
+    "muscle_ar": "عزل الأرداف الأحادي",
+    "synergist_muscles": [
+      "Hamstrings",
+      "Core Muscles"
+    ],
+    "environment": [
+      "HOME_DUMBBELL",
+      "BODYWEIGHT"
+    ],
+    "equipment": "BODYWEIGHT",
+    "equipment_ar": "سجادة تمارين / وزن الجسم",
+    "biomechanical_focus": "SHORTENED",
+    "difficulty_level": "BEGINNER",
+    "difficulty": "مبتدئ",
+    "video_url": "https://www.youtube.com/watch?v=e_0pQfWb3Xk",
+    "video_id": "e_0pQfWb3Xk",
+    "cues": [
+      "استلقِ على الظهر مع ثني الركبتين ورفع ساق واحدة في الهواء.",
+      "ادفع الأرض بكعب الساق الثابتة لرفع الحوض للأعلى حتى استقامة الفخذ مع الجذع.",
+      "اعصر المؤخرة بقوة في القمة لمدة ثانية ثم انزل ببطء."
+    ],
+    "common_mistakes": [
+      "تقوس أسفل الظهر لتعويض ضعف عصر الجلوتس.",
+      "ميلان الحوض لأحد الجانبين أثناء الرفع."
+    ],
+    "cues_ar": "استلقِ على الظهر مع ثني الركبتين ورفع ساق واحدة في الهواء. ادفع الأرض بكعب الساق الثابتة لرفع الحوض للأعلى حتى استقامة الفخذ مع الجذع. اعصر المؤخرة بقوة في القمة لمدة ثانية ثم انزل ببطء.",
+    "mistakes_ar": "تقوس أسفل الظهر لتعويض ضعف عصر الجلوتس. ميلان الحوض لأحد الجانبين أثناء الرفع."
+  },
+  {
+    "id": "adductors_seated_machine",
+    "name_ar": "جهاز ضم الفخذ جالس (الضامة)",
+    "name_en": "Seated Machine Hip Adductor",
+    "target_muscle": "Adductor Longus / Magnus (عضلات الفخذ الداخلي والضامة)",
+    "muscle_group": "LEGS",
+    "muscle_ar": "عضلات الفخذ الداخلي والضامة",
+    "synergist_muscles": [
+      "Gracilis",
+      "Pectineus"
+    ],
+    "environment": [
+      "GYM"
+    ],
+    "equipment": "MACHINE",
+    "equipment_ar": "جهاز الضامة جالس",
+    "biomechanical_focus": "SHORTENED",
+    "difficulty_level": "BEGINNER",
+    "difficulty": "مبتدئ",
+    "video_url": "https://www.youtube.com/watch?v=x0XqQzM77x8",
+    "video_id": "x0XqQzM77x8",
+    "cues": [
+      "اجلس بظهر مستقيم مع تثبيت الحوض بالكامل في المقعد.",
+      "ضم الساقين للداخل بسلاسة مع عصر عضلات الفخذ الداخلي لمدة ثانية في القمة.",
+      "ارجع بالوزن ببطء وتحكم حتى فتح الساقين بزاوية مريحة دون مبالغة."
+    ],
+    "common_mistakes": [
+      "فتح الساقين بزاوية مفرطة تسبب إجهاد أوتار الضامة.",
+      "استخدام أوزان ثقيلة تؤدي لتحريك الجذع للمساعدة."
+    ],
+    "cues_ar": "اجلس بظهر مستقيم مع تثبيت الحوض بالكامل في المقعد. ضم الساقين للداخل بسلاسة مع عصر عضلات الفخذ الداخلي لمدة ثانية في القمة. ارجع بالوزن ببطء وتحكم حتى فتح الساقين بزاوية مريحة دون مبالغة.",
+    "mistakes_ar": "فتح الساقين بزاوية مفرطة تسبب إجهاد أوتار الضامة. استخدام أوزان ثقيلة تؤدي لتحريك الجذع للمساعدة."
+  },
+  {
+    "id": "adductors_copenhagen_plank",
+    "name_ar": "بلانك كوبنهاجن للضامة وثبات الركبة",
+    "name_en": "Copenhagen Plank (Adductor Health)",
+    "target_muscle": "Adductor Complex & Lateral Core (الضامة وثبات الحوض والركبة)",
+    "muscle_group": "LEGS",
+    "muscle_ar": "الضامة وثبات الركبة بوزن الجسم",
+    "synergist_muscles": [
+      "Obliques",
+      "Gluteus Medius"
+    ],
+    "environment": [
+      "HOME_DUMBBELL",
+      "BODYWEIGHT"
+    ],
+    "equipment": "BODYWEIGHT",
+    "equipment_ar": "دكة أو كرسي / وزن الجسم أرضي",
+    "biomechanical_focus": "MID_RANGE",
+    "difficulty_level": "INTERMEDIATE",
+    "difficulty": "متوسط",
+    "video_url": "https://www.youtube.com/watch?v=0h9Vp2aQ5bU",
+    "video_id": "0h9Vp2aQ5bU",
+    "cues": [
+      "استلقِ في وضع البلانك الجانبي مع وضع باطن كاحل الساق العلوية على دكة أو كرسي.",
+      "ارفع الجسم بالكامل في خط مستقيم مع رفع الساق السفلية لتلاصق أسفل الدكة.",
+      "اثبت في هذا الوضع لمدة 15-30 ثانية، وهو التمرين المعتمد إكلينيكياً للوقاية من تمزقات الضامة."
+    ],
+    "common_mistakes": [
+      "سقوط الحوض للأسفل أو التواء الجذع للأمام.",
+      "ثني الركبة العلوية أثناء الثبات."
+    ],
+    "cues_ar": "استلقِ في وضع البلانك الجانبي مع وضع باطن كاحل الساق العلوية على دكة أو كرسي. ارفع الجسم بالكامل في خط مستقيم مع رفع الساق السفلية لتلاصق أسفل الدكة. اثبت في هذا الوضع لمدة 15-30 ثانية، وهو التمرين المعتمد إكلينيكياً للوقاية من تمزقات الضامة.",
+    "mistakes_ar": "سقوط الحوض للأسفل أو التواء الجذع للأمام. ثني الركبة العلوية أثناء الثبات."
+  },
+  {
+    "id": "abductors_seated_machine",
+    "name_ar": "جهاز إبعاد الفخذ جالس (المبعدة)",
+    "name_en": "Seated Machine Hip Abductor",
+    "target_muscle": "Gluteus Medius & Minimus (الجلوتس الجانبي ومثبتات الحوض)",
+    "muscle_group": "LEGS",
+    "muscle_ar": "الجلوتس الجانبي ومثبتات الحوض",
+    "synergist_muscles": [
+      "Tensor Fasciae Latae (TFL)",
+      "Piriformis"
+    ],
+    "environment": [
+      "GYM"
+    ],
+    "equipment": "MACHINE",
+    "equipment_ar": "جهاز المبعدة جالس",
+    "biomechanical_focus": "SHORTENED",
+    "difficulty_level": "BEGINNER",
+    "difficulty": "مبتدئ",
+    "video_url": "https://www.youtube.com/watch?v=G_8LHgBCPqg",
+    "video_id": "G_8LHgBCPqg",
+    "cues": [
+      "انحنِ بالجذع للأمام قليلاً بزاوية 20-30 درجة لزيادة تفعيل ألياف الجلوتس الوسطى.",
+      "ادفع الركبتين للخارج بقوة وثبات مع عصر زوايا المؤخرة العلوية لمدة ثانية.",
+      "ارجع بالوزن ببطء وتحكم دون ترك الأوزان تصطدم."
+    ],
+    "common_mistakes": [
+      "التحرك السريع وارتداد الأوزان دون ثبات في نقطة القمة.",
+      "الاستلقاء للخلف بشدة مما يحول الحمل لعضلة الـ TFL بدلاً من الجلوتس."
+    ],
+    "cues_ar": "انحنِ بالجذع للأمام قليلاً بزاوية 20-30 درجة لزيادة تفعيل ألياف الجلوتس الوسطى. ادفع الركبتين للخارج بقوة وثبات مع عصر زوايا المؤخرة العلوية لمدة ثانية. ارجع بالوزن ببطء وتحكم دون ترك الأوزان تصطدم.",
+    "mistakes_ar": "التحرك السريع وارتداد الأوزان دون ثبات في نقطة القمة. الاستلقاء للخلف بشدة مما يحول الحمل لعضلة الـ TFL بدلاً من الجلوتس."
+  },
+  {
+    "id": "abductors_cable_band_lateral",
+    "name_ar": "إبعاد الساق بالكابل / شريط مطاط",
+    "name_en": "Cable / Band Lateral Leg Abduction",
+    "target_muscle": "Gluteus Medius (مثبتات الحوض والتوازن وثبات مفصل الركبة)",
+    "muscle_group": "LEGS",
+    "muscle_ar": "مثبتات الحوض والتوازن",
+    "synergist_muscles": [
+      "Gluteus Minimus",
+      "Core Stabilizers"
+    ],
+    "environment": [
+      "GYM",
+      "HOME_DUMBBELL"
+    ],
+    "equipment": "CABLE",
+    "equipment_ar": "كابل سفلي مع سوار كاحل أو شريط مطاط",
+    "biomechanical_focus": "SHORTENED",
+    "difficulty_level": "BEGINNER",
+    "difficulty": "مبتدئ",
+    "video_url": "https://www.youtube.com/watch?v=d_kF_q0gB9U",
+    "video_id": "d_kF_q0gB9U",
+    "cues": [
+      "ثبت سوار الكابل على الكاحل واقفاً مع الإمساك بقائم الجهاز لتثبيت الجذع.",
+      "اسحب الساق للخارج بزاوية 30 درجة للخلف قليلاً لاستهداف زاوية ألياف الجلوتس الوسطى.",
+      "اعصر المؤخرة الجانبية في القمة وانزل ببطء."
+    ],
+    "common_mistakes": [
+      "ميل الجذع للجانب المعاكس لتعويض ضعف مدى حركة الساق.",
+      "تدوير القدم للخارج مما يشرك عضلات الفخذ الأمامية."
+    ],
+    "cues_ar": "ثبت سوار الكابل على الكاحل واقفاً مع الإمساك بقائم الجهاز لتثبيت الجذع. اسحب الساق للخارج بزاوية 30 درجة للخلف قليلاً لاستهداف زاوية ألياف الجلوتس الوسطى. اعصر المؤخرة الجانبية في القمة وانزل ببطء.",
+    "mistakes_ar": "ميل الجذع للجانب المعاكس لتعويض ضعف مدى حركة الساق. تدوير القدم للخارج مما يشرك عضلات الفخذ الأمامية."
+  },
+  {
+    "id": "calves_standing_raise",
+    "name_ar": "رفع السمانة واقفاً",
+    "name_en": "Standing Calf Raise (Machine / DB)",
+    "target_muscle": "Gastrocnemius (عضلة السمانة السطحية الواقفة)",
+    "muscle_group": "CALVES",
+    "muscle_ar": "عضلة السمانة السطحية الواقفة",
+    "synergist_muscles": [
+      "Soleus",
+      "Plantaris"
+    ],
+    "environment": [
+      "GYM",
+      "HOME_DUMBBELL",
+      "BODYWEIGHT"
+    ],
+    "equipment": "MACHINE",
+    "equipment_ar": "جهاز السمانة واقفاً أو دمبلز على عتبة",
+    "biomechanical_focus": "LENGTHENED",
+    "difficulty_level": "BEGINNER",
+    "difficulty": "مبتدئ",
+    "video_url": "https://www.youtube.com/watch?v=gwLzBJYoWlI",
+    "video_id": "gwLzBJYoWlI",
+    "cues": [
+      "قف بمشطي القدمين على حافة عتبة مع ركبتين مفرودتين واستقامة القامة.",
+      "انزل بالكعبين لأسفل مستوى العتبة للشعور بأقصى استطالة في السمانة مع ثبات ثانية.",
+      "ادفع لأعلى نقطة على مشط القدم مع عصر السمانة بقوة لمدة ثانيتين."
+    ],
+    "common_mistakes": [
+      "الارتداد السريع (Bouncing) والاعتماد على مرونة وتر أكيلس بدلاً من القوة العضلية.",
+      "ثني الركبتين أثناء الرفع مما يقلل تفعيل عضلة الجاستروكنيميوس."
+    ],
+    "cues_ar": "قف بمشطي القدمين على حافة عتبة مع ركبتين مفرودتين واستقامة القامة. انزل بالكعبين لأسفل مستوى العتبة للشعور بأقصى استطالة في السمانة مع ثبات ثانية. ادفع لأعلى نقطة على مشط القدم مع عصر السمانة بقوة لمدة ثانيتين.",
+    "mistakes_ar": "الارتداد السريع (Bouncing) والاعتماد على مرونة وتر أكيلس بدلاً من القوة العضلية. ثني الركبتين أثناء الرفع مما يقلل تفعيل عضلة الجاستروكنيميوس."
+  },
+  {
+    "id": "calves_seated_raise",
+    "name_ar": "رفع السمانة جالساً",
+    "name_en": "Seated Calf Raise (Machine / DB on Knees)",
+    "target_muscle": "Soleus (عضلة السمانة العميقة المسؤولة عن سمك الساق)",
+    "muscle_group": "CALVES",
+    "muscle_ar": "عضلة السمانة العميقة الجالسة",
+    "synergist_muscles": [],
+    "environment": [
+      "GYM",
+      "HOME_DUMBBELL"
+    ],
+    "equipment": "MACHINE",
+    "equipment_ar": "جهاز السمانة جالساً أو دمبلز على الركبتين",
+    "biomechanical_focus": "SHORTENED",
+    "difficulty_level": "BEGINNER",
+    "difficulty": "مبتدئ",
+    "video_url": "https://www.youtube.com/watch?v=JbyjNymZOt0",
+    "video_id": "JbyjNymZOt0",
+    "cues": [
+      "اجلس مع ثني الركبتين بزاوية 90 درجة لتثبيط عضلة الجاسترو وعزل عضلة السوليوس العميقة.",
+      "انزل بالكعبين لأسفل نقطة ممكنة للشعور باستطالة كاملة.",
+      "ادفع لأعلى نقطة واثبت لمدة ثانية في القمة."
+    ],
+    "common_mistakes": [
+      "عدم النزول لمدى استطالة كامل أسفل مستوى الدواسة.",
+      "استخدام أوزان ثقيلة تؤدي إلى تقصير المدى الحركي."
+    ],
+    "cues_ar": "اجلس مع ثني الركبتين بزاوية 90 درجة لتثبيط عضلة الجاسترو وعزل عضلة السوليوس العميقة. انزل بالكعبين لأسفل نقطة ممكنة للشعور باستطالة كاملة. ادفع لأعلى نقطة واثبت لمدة ثانية في القمة.",
+    "mistakes_ar": "عدم النزول لمدى استطالة كامل أسفل مستوى الدواسة. استخدام أوزان ثقيلة تؤدي إلى تقصير المدى الحركي."
+  },
+  {
+    "id": "calves_wall_tibialis_raise",
+    "name_ar": "رفع قصبة الساق الأمامية على الجدار",
+    "name_en": "Wall Tibialis Raises (Knee Bulletproofing)",
+    "target_muscle": "Tibialis Anterior (عضلة قصبة الساق الأمامية لحماية الركبة)",
+    "muscle_group": "CALVES",
+    "muscle_ar": "قصبة الساق الأمامية وعلاج الشين سبلنتس",
+    "synergist_muscles": [
+      "Extensor Digitorum Longus"
+    ],
+    "environment": [
+      "GYM",
+      "HOME_DUMBBELL",
+      "BODYWEIGHT"
+    ],
+    "equipment": "BODYWEIGHT",
+    "equipment_ar": "إسناد الظهر على جدار / وزن الجسم",
+    "biomechanical_focus": "SHORTENED",
+    "difficulty_level": "BEGINNER",
+    "difficulty": "مبتدئ",
+    "video_url": "https://www.youtube.com/watch?v=d_kF_q0gB9U",
+    "video_id": "d_kF_q0gB9U",
+    "cues": [
+      "أسند الظهر والمؤخرة على جدار مع مد الساقين للأمام بمسافة خطوتين واستقامة الركبتين.",
+      "ارفع أمشاط القدمين للأعلى باتجاه الساق لأقصى ارتفاع ممكن مع ارتكاز الكعبين على الأرض.",
+      "اثبت لمدة ثانية في القمة لعصر عضلة القصبة، وهو تمرين معتمد لعلاج آلام الشين سبلنتس (Shin Splints) وامتصاص صدمات الجري."
+    ],
+    "common_mistakes": [
+      "ثني الركبتين أثناء الرفع مما يقلل تفعيل قصبة الساق.",
+      "التسرع في النزول دون عصر العضلة في القمة."
+    ],
+    "cues_ar": "أسند الظهر والمؤخرة على جدار مع مد الساقين للأمام بمسافة خطوتين واستقامة الركبتين. ارفع أمشاط القدمين للأعلى باتجاه الساق لأقصى ارتفاع ممكن مع ارتكاز الكعبين على الأرض. اثبت لمدة ثانية في القمة لعصر عضلة القصبة، وهو تمرين معتمد لعلاج آلام الشين سبلنتس (Shin Splints) وامتصاص صدمات الجري.",
+    "mistakes_ar": "ثني الركبتين أثناء الرفع مما يقلل تفعيل قصبة الساق. التسرع في النزول دون عصر العضلة في القمة."
+  },
+  {
+    "id": "core_hanging_leg_raise",
+    "name_ar": "رفع الأرجل / الركبتين على العقلة",
+    "name_en": "Hanging Leg / Knee Raise",
+    "target_muscle": "Rectus Abdominis (Lower Abs & Pelvic Control)",
+    "muscle_group": "CORE",
+    "muscle_ar": "البطن السفلية وتدوير الحوض",
+    "synergist_muscles": [
+      "Iliopsoas",
+      "Obliques",
+      "Forearms"
+    ],
+    "environment": [
+      "GYM",
+      "HOME_DUMBBELL",
+      "BODYWEIGHT"
+    ],
+    "equipment": "BODYWEIGHT",
+    "equipment_ar": "عقلة سحب أو جهاز الكابتن تشير",
+    "biomechanical_focus": "SHORTENED",
+    "difficulty_level": "INTERMEDIATE",
+    "difficulty": "متوسط",
+    "video_url": "https://www.youtube.com/watch?v=hdng3Nm1x_E",
+    "video_id": "hdng3Nm1x_E",
+    "cues": [
+      "تعلق بالعقلة مع ثبات الجذع ومنع أي تأرجح.",
+      "ارفع الركبتين أو الساقين مع تدوير الحوض للأعلى باتجاه الصدر (Posterior Pelvic Tilt).",
+      "اعصر البطن في القمة وانزل ببطء وتحكم دون استخدام عزم الاندفاع."
+    ],
+    "common_mistakes": [
+      "أرجحة الجسم واستخدام عزم القصور الذاتي.",
+      "رفع الساقين بمفصل الفخذ فقط دون تدوير الحوض مما يشغل عضلات الفخذ بدلاً من البطن."
+    ],
+    "cues_ar": "تعلق بالعقلة مع ثبات الجذع ومنع أي تأرجح. ارفع الركبتين أو الساقين مع تدوير الحوض للأعلى باتجاه الصدر (Posterior Pelvic Tilt). اعصر البطن في القمة وانزل ببطء وتحكم دون استخدام عزم الاندفاع.",
+    "mistakes_ar": "أرجحة الجسم واستخدام عزم القصور الذاتي. رفع الساقين بمفصل الفخذ فقط دون تدوير الحوض مما يشغل عضلات الفخذ بدلاً من البطن."
+  },
+  {
+    "id": "core_cable_kneeling_crunch",
+    "name_ar": "طحن البطن بالكابل راكعاً / دمبل",
+    "name_en": "Cable / DB Kneeling Crunch",
+    "target_muscle": "Rectus Abdominis (Upper Abs تحت مقاومة متدرجة)",
+    "muscle_group": "CORE",
+    "muscle_ar": "عضلات البطن العلوية تحت مقاومة",
+    "synergist_muscles": [
+      "Obliques"
+    ],
+    "environment": [
+      "GYM",
+      "HOME_DUMBBELL"
+    ],
+    "equipment": "CABLE",
+    "equipment_ar": "كابل علوي وحبل أو دمبل",
+    "biomechanical_focus": "SHORTENED",
+    "difficulty_level": "INTERMEDIATE",
+    "difficulty": "متوسط",
+    "video_url": "https://www.youtube.com/watch?v=2fbujehkda8",
+    "video_id": "2fbujehkda8",
+    "cues": [
+      "اركع على ركبتيك مع مسك الحبل بجانب الرأس وتثبيت الحوض في موضع ثابت.",
+      "قم بطحن البطن من خلال ثني العمود الفقري لتقريب الضلوع من عظمة العانة مع تفريغ الهواء بالكامل.",
+      "اثبت لمدة ثانية في الأسفل، ثم ارجع ببطء حتى استقامة الجذع."
+    ],
+    "common_mistakes": [
+      "الجلوس للخلف على الكعبين وتحويل التمرين لحركة فخذ بدلاً من طحن البطن.",
+      "سحب الحبل بالذراعين بدلاً من ثني الجذع بعضلات البطن."
+    ],
+    "cues_ar": "اركع على ركبتيك مع مسك الحبل بجانب الرأس وتثبيت الحوض في موضع ثابت. قم بطحن البطن من خلال ثني العمود الفقري لتقريب الضلوع من عظمة العانة مع تفريغ الهواء بالكامل. اثبت لمدة ثانية في الأسفل، ثم ارجع ببطء حتى استقامة الجذع.",
+    "mistakes_ar": "الجلوس للخلف على الكعبين وتحويل التمرين لحركة فخذ بدلاً من طحن البطن. سحب الحبل بالذراعين بدلاً من ثني الجذع بعضلات البطن."
+  },
+  {
+    "id": "core_ab_wheel_rollout",
+    "name_ar": "عجلة البطن / بلانك ممدود",
+    "name_en": "Ab Wheel Rollout / Long-Lever Plank",
+    "target_muscle": "Anterior Core (Anti-Extension - ثبات الجذع ضد التمدد)",
+    "muscle_group": "CORE",
+    "muscle_ar": "ثبات الجذع ضد التمدد والكور العميق",
+    "synergist_muscles": [
+      "Lats",
+      "Glutes",
+      "Erector Spinae"
+    ],
+    "environment": [
+      "GYM",
+      "HOME_DUMBBELL",
+      "BODYWEIGHT"
+    ],
+    "equipment": "BODYWEIGHT",
+    "equipment_ar": "عجلة بطن أو سجادة تمارين / وزن الجسم",
+    "biomechanical_focus": "LENGTHENED",
+    "difficulty_level": "ADVANCED",
+    "difficulty": "متقدم",
+    "video_url": "https://www.youtube.com/watch?v=rqiTPdK1c_I",
+    "video_id": "rqiTPdK1c_I",
+    "cues": [
+      "ابدأ في وضع الركوع مع مسك عجلة البطن أسفل الكتفين مباشرة وتثبيت الحوض.",
+      "تدحرج بالأمام ببطء في خط مستقيم مع شد عضلات البطن والمؤخرة لمنع تقوس الظهر.",
+      "اسحب العجلة للعودة من خلال تقليص عضلات البطن واللاتس."
+    ],
+    "common_mistakes": [
+      "سقوط الحوض وتقوس القطنية لأسفل مما يسبب ضغطاً سلبياً على الفقرات.",
+      "المبالغة في المدى للأمام دون امتلاك القوة الكافية للعودة."
+    ],
+    "cues_ar": "ابدأ في وضع الركوع مع مسك عجلة البطن أسفل الكتفين مباشرة وتثبيت الحوض. تدحرج بالأمام ببطء في خط مستقيم مع شد عضلات البطن والمؤخرة لمنع تقوس الظهر. اسحب العجلة للعودة من خلال تقليص عضلات البطن واللاتس.",
+    "mistakes_ar": "سقوط الحوض وتقوس القطنية لأسفل مما يسبب ضغطاً سلبياً على الفقرات. المبالغة في المدى للأمام دون امتلاك القوة الكافية للعودة."
+  },
+  {
+    "id": "core_pallof_press",
+    "name_ar": "ضغط بالوف لثبات الجذع ضد الالتفاف وحماية العمود الفقري",
+    "name_en": "Cable / Band Pallof Press",
+    "target_muscle": "Core (Transverse Abdominis & Obliques)",
+    "muscle_group": "CORE",
+    "muscle_ar": "عضلات الكور والجذع العميقة والخواصر",
+    "synergist_muscles": [
+      "Glutes",
+      "Shoulders"
+    ],
+    "environment": [
+      "GYM",
+      "HOME_DUMBBELL"
+    ],
+    "equipment": "CABLE",
+    "equipment_ar": "كابل أو استك مقاومة",
+    "biomechanical_focus": "ISOMETRIC_ANTI_ROTATION",
+    "difficulty_level": "BEGINNER",
+    "difficulty": "BEGINNER",
+    "video_url": "https://video.zplatform.com/exercises/pallof-press.mp4",
+    "video_id": "AH_QZLM_0-s",
+    "cues": [
+      "الإمساك بالمقبض أمام منتصف الصدر مع الوقوف باتساع الكتفين وثني الركبتين قليلاً.",
+      "دفع اليدين للأمام بخط مستقيم والثبات لثانيتين مع مقاومة دوران الجذع باتجاه الجهاز.",
+      "إرجاع اليدين للصدر ببطء وتحكم تام مع شد البطن والمؤخرة."
+    ],
+    "common_mistakes": [
+      "السماح للوزن بلف الجذع أو تحريك الحوض أثناء الدفع.",
+      "حبس النفس بدلاً من التنفس البطني المستقر."
+    ],
+    "cues_ar": "الإمساك بالمقبض أمام منتصف الصدر مع الوقوف باتساع الكتفين وثني الركبتين قليلاً. دفع اليدين للأمام بخط مستقيم والثبات لثانيتين مع مقاومة دوران الجذع باتجاه الجهاز. إرجاع اليدين للصدر ببطء وتحكم تام مع شد البطن والمؤخرة.",
+    "mistakes_ar": "السماح للوزن بلف الجذع أو تحريك الحوض أثناء الدفع. حبس النفس بدلاً من التنفس البطني المستقر.",
+    "synergists": [
+      "Glutes",
+      "Shoulders"
+    ],
+    "environments": [
+      "GYM",
+      "HOME_DUMBBELL"
+    ],
+    "thumbnail_url": "/assets/exercises/pallof-press.webp"
+  },
+  {
+    "id": "core_cable_woodchopper",
+    "name_ar": "تقطيع الخشب بالكابل / مطاط للجوانب",
+    "name_en": "Cable / Band Woodchopper",
+    "target_muscle": "Internal & External Obliques (عضلات الخصر المائلة وثبات الدوران)",
+    "muscle_group": "CORE",
+    "muscle_ar": "عضلات الخصر المائلة وثبات الدوران",
+    "synergist_muscles": [
+      "Transverse Abdominis",
+      "Shoulders"
+    ],
+    "environment": [
+      "GYM",
+      "HOME_DUMBBELL"
+    ],
+    "equipment": "CABLE",
+    "equipment_ar": "جهاز الكابل بمقبض D أو شريط مطاط",
+    "biomechanical_focus": "SHORTENED",
+    "difficulty_level": "INTERMEDIATE",
+    "difficulty": "متوسط",
+    "video_url": "https://www.youtube.com/watch?v=pAplQXk3dkU",
+    "video_id": "pAplQXk3dkU",
+    "cues": [
+      "اسحب الكابل بشكل قطري عبر الجذع من الأعلى للأسفل (أو العكس) مع تدوير الكتفين.",
+      "حافظ على ثبات الحوض والركبتين لعصر عضلات الخصر والمائلة بقوة.",
+      "تحكم بالرجوع للوراء في ثانيتين للاستفادة من المقاومة."
+    ],
+    "common_mistakes": [
+      "السحب بالذراعين فقط دون تدوير الجذع وعصر الكور.",
+      "التواء مفرط في الركبتين أثناء الدوران."
+    ],
+    "cues_ar": "اسحب الكابل بشكل قطري عبر الجذع من الأعلى للأسفل (أو العكس) مع تدوير الكتفين. حافظ على ثبات الحوض والركبتين لعصر عضلات الخصر والمائلة بقوة. تحكم بالرجوع للوراء في ثانيتين للاستفادة من المقاومة.",
+    "mistakes_ar": "السحب بالذراعين فقط دون تدوير الجذع وعصر الكور. التواء مفرط في الركبتين أثناء الدوران."
+  },
+  {
+    "id": "core_deadbug_birddog",
+    "name_ar": "تمرين الحشرة الميتة / طائر الكلب",
+    "name_en": "Deadbug / Bird-Dog",
+    "target_muscle": "Deep Core & Spinal Stabilization (الكور العميق وتثبيت العمود الفقري)",
+    "muscle_group": "CORE",
+    "muscle_ar": "الكور العميق واستقرار العمود الفقري",
+    "synergist_muscles": [
+      "Erector Spinae",
+      "Gluteus Maximus",
+      "Shoulders"
+    ],
+    "environment": [
+      "HOME_DUMBBELL",
+      "BODYWEIGHT"
+    ],
+    "equipment": "BODYWEIGHT",
+    "equipment_ar": "سجادة تمارين / وزن الجسم أرضي",
+    "biomechanical_focus": "MID_RANGE",
+    "difficulty_level": "BEGINNER",
+    "difficulty": "مبتدئ",
+    "video_url": "https://www.youtube.com/watch?v=4XLEnwUr1d8",
+    "video_id": "4XLEnwUr1d8",
+    "cues": [
+      "استلقِ على الظهر مع ضغط أسفل الظهر بالكامل على الأرض لمنع أي فراغ هوائي.",
+      "مد الذراع اليمنى والساق اليسرى ببطء للأمام والأسفل مع الحفاظ على ملاصقة الظهر للأرض.",
+      "ارجع لوضع البداية وكرر مع الجانب المعاكس بتحكم وتنفس عميق."
+    ],
+    "common_mistakes": [
+      "تقوس أسفل الظهر وارتفاعه عن الأرض أثناء مد الساق.",
+      "التسرع في أداء الحركة بدون ثبات عضلي."
+    ],
+    "cues_ar": "استلقِ على الظهر مع ضغط أسفل الظهر بالكامل على الأرض لمنع أي فراغ هوائي. مد الذراع اليمنى والساق اليسرى ببطء للأمام والأسفل مع الحفاظ على ملاصقة الظهر للأرض. ارجع لوضع البداية وكرر مع الجانب المعاكس بتحكم وتنفس عميق.",
+    "mistakes_ar": "تقوس أسفل الظهر وارتفاعه عن الأرض أثناء مد الساق. التسرع في أداء الحركة بدون ثبات عضلي."
+  },
+  {
+    "id": "legs_bulgarian_split_squat",
+    "name_ar": "سكوات بلغاري لعزل الفخذ والجلوتس والتوازن",
+    "name_en": "Bulgarian Split Squat",
+    "target_muscle": "Quadriceps & Gluteus Maximus",
+    "muscle_group": "LEGS",
+    "muscle_ar": "الفخذ الأمامي وعضلات المقعدة",
+    "synergists": [
+      "Hamstrings",
+      "Adductors"
+    ],
+    "synergist_muscles": [
+      "Hamstrings",
+      "Adductors"
+    ],
+    "environments": [
+      "GYM",
+      "HOME_DUMBBELL",
+      "BODYWEIGHT"
+    ],
+    "environment": [
+      "GYM",
+      "HOME_DUMBBELL",
+      "BODYWEIGHT"
+    ],
+    "equipment": "DUMBBELL",
+    "equipment_ar": "دمبلز أو وزن الجسم ودكة",
+    "biomechanical_focus": "LENGTHENED",
+    "difficulty": "INTERMEDIATE",
+    "difficulty_level": "INTERMEDIATE",
+    "cues": [
+      "وضع مشط القدم الخلفية على دكة أو كرسي مستقر.",
+      "النزول بالركبة الخلفية باتجاه الأرض مع الحفاظ على استقرار القدم الأمامية.",
+      "الدفع من كعب القدم الأمامية مع ميل طفيف بالجذع للأمام لتركيز التحميل على الجلوتس."
+    ],
+    "common_mistakes": [
+      "رفع كعب القدم الأمامية عن الأرض أثناء النزول.",
+      "الوقوف بمسافة ضيقة جداً تضغط على صابونة الركبة الأمامية."
+    ],
+    "cues_ar": "وضع مشط القدم الخلفية على دكة أو كرسي مستقر. النزول بالركبة الخلفية باتجاه الأرض مع الحفاظ على استقرار القدم الأمامية. الدفع من كعب القدم الأمامية مع ميل طفيف بالجذع للأمام لتركيز التحميل على الجلوتس.",
+    "mistakes_ar": "رفع كعب القدم الأمامية عن الأرض أثناء النزول. الوقوف بمسافة ضيقة جداً تضغط على صابونة الركبة الأمامية.",
+    "thumbnail_url": "/assets/exercises/bulgarian-split-squat.webp",
+    "video_url": "https://video.zplatform.com/exercises/bulgarian-split-squat.mp4"
+  }
+]

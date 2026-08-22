@@ -6,6 +6,9 @@
 
 export function adaptIntakePayloadToCanonicalEngine(raw) {
   if (!raw || typeof raw !== 'object') return {};
+  if (raw.client && raw.body && raw.goals && raw.training && raw.medical) {
+    return raw;
+  }
   const intake = JSON.parse(JSON.stringify(raw));
 
   // 1. Personal
@@ -32,9 +35,15 @@ export function adaptIntakePayloadToCanonicalEngine(raw) {
   const goals = intake.goals || {};
   const primaryGoalMap = {
     FAT_LOSS: "FAT_LOSS",
+    CUT: "FAT_LOSS",
     MUSCLE_GAIN: "MUSCLE_GAIN",
+    LEAN_BULK: "MUSCLE_GAIN",
+    BULK: "MUSCLE_GAIN",
+    HYPERTROPHY: "MUSCLE_GAIN",
     BODY_RECOMPOSITION: "FAT_LOSS",
+    RECOMP: "FAT_LOSS",
     WEIGHT_MAINTENANCE: "WEIGHT_MAINTENANCE",
+    MAINTENANCE: "WEIGHT_MAINTENANCE",
     GENERAL_HEALTH: "GENERAL_HEALTH",
     PERFORMANCE: "PERFORMANCE",
     OTHER: "OTHER"
@@ -54,6 +63,28 @@ export function adaptIntakePayloadToCanonicalEngine(raw) {
   const height = Number(body.heightCm) || 175;
   const weight = Number(body.weightKg) || 75;
   const waist = Number(body.waistCm) || Math.round(height * 0.45);
+  const neck = Number(body.neckCm) || null;
+  const hip = Number(body.hipCm) || null;
+  let bodyFat = Number(body.bodyFat) || null;
+
+  // Calculate US Navy Body Fat if neckCm and waistCm are provided and direct bodyFat is missing
+  if (!bodyFat && neck && waist && waist > neck) {
+    if (canonicalPersonal.sex === "MALE") {
+      const logWaistNeck = Math.log10(waist - neck);
+      const logHeight = Math.log10(height);
+      const calculatedFat = 495 / (1.0324 - 0.19077 * logWaistNeck + 0.15456 * logHeight) - 450;
+      if (calculatedFat >= 5 && calculatedFat <= 50) {
+        bodyFat = Math.round(calculatedFat * 10) / 10;
+      }
+    } else if (hip && (waist + hip) > neck) {
+      const logWaistHipNeck = Math.log10(waist + hip - neck);
+      const logHeight = Math.log10(height);
+      const calculatedFat = 495 / (1.29579 - 0.35004 * logWaistHipNeck + 0.22100 * logHeight) - 450;
+      if (calculatedFat >= 8 && calculatedFat <= 55) {
+        bodyFat = Math.round(calculatedFat * 10) / 10;
+      }
+    }
+  }
 
   const canonicalBody = {
     heightCm: Math.max(100, Math.min(250, height)),
@@ -64,11 +95,14 @@ export function adaptIntakePayloadToCanonicalEngine(raw) {
     progressPhotosAvailable: Boolean(body.progressPhotosAvailable || (body.photos && Object.keys(body.photos).length > 0))
   };
 
-  // 4. Lifestyle
+
+  // 4. Lifestyle & Smart NEAT Activity Multiplier
   const lifestyle = intake.lifestyle || {};
   const validActivity = ["SEDENTARY", "LIGHT", "MODERATE", "HIGH"];
+  const activityLevel = validActivity.includes(lifestyle.dailyActivity) ? lifestyle.dailyActivity : "LIGHT";
+
   const canonicalLifestyle = {
-    dailyActivity: validActivity.includes(lifestyle.dailyActivity) ? lifestyle.dailyActivity : "LIGHT",
+    dailyActivity: activityLevel,
     workSchedule: {
       type: ["FIXED", "VARIABLE", "SHIFT_BASED"].includes(lifestyle.workSchedule?.type) ? lifestyle.workSchedule.type : "FIXED",
       physicallyDemandingDays: Array.isArray(lifestyle.workSchedule?.physicallyDemandingDays) ? lifestyle.workSchedule.physicallyDemandingDays : []
@@ -79,6 +113,7 @@ export function adaptIntakePayloadToCanonicalEngine(raw) {
     },
     stressLevel: ["LOW", "MODERATE", "HIGH", "SEVERE"].includes(lifestyle.stressLevel) ? lifestyle.stressLevel : "MODERATE"
   };
+
 
   // 5. Medical
   const medical = intake.medical || {};
@@ -120,7 +155,9 @@ export function adaptIntakePayloadToCanonicalEngine(raw) {
       if (canonicalCode && !conditions.some(existing => existing.conditionCode === canonicalCode)) {
         conditions.push({
           conditionCode: canonicalCode,
-          stability: c.stability === "UNCONTROLLED_UNSTABLE" ? "UNSTABLE" : "STABLE"
+          stability: c.stability === "UNCONTROLLED_UNSTABLE" ? "UNSTABLE" : "STABLE",
+          otherConditionText: null,
+          physicianInstructions: Array.isArray(c.physicianInstructions) ? c.physicianInstructions : [],
         });
       }
     }
@@ -138,7 +175,13 @@ export function adaptIntakePayloadToCanonicalEngine(raw) {
 
   // 6. Nutrition
   const nutrition = intake.nutrition || {};
-  const excludedFoods = Array.isArray(nutrition.excludedFoodsList) ? nutrition.excludedFoodsList : [];
+  const rawExcluded = Array.isArray(nutrition.excludedFoodsList)
+    ? nutrition.excludedFoodsList
+    : (Array.isArray(nutrition.excludedFoodCodes)
+      ? nutrition.excludedFoodCodes
+      : (Array.isArray(nutrition.excluded_foods) ? nutrition.excluded_foods : []));
+  const excludedFoods = rawExcluded.map(x => (typeof x === "string" ? x.toUpperCase() : ""));
+
   
   // Format Allergies: [{ substance: "EGG", medicallyConfirmed: true }]
   const allergies = [];
@@ -265,7 +308,9 @@ export function adaptIntakePayloadToCanonicalEngine(raw) {
   const canonicalNutrition = {
     preferredMealCount: Math.min(6, Math.max(2, Number(nutrition.preferredMealCount) || 3)),
     unavailableEatingWindows: [],
-    budget: ["LOW", "MEDIUM", "HIGH"].includes(nutrition.budget) ? nutrition.budget : "MEDIUM",
+    budget: ["LOW", "MEDIUM", "HIGH"].includes(nutrition.budget) 
+      ? nutrition.budget 
+      : ((nutrition.budgetTier === "LOW" || nutrition.budgetTier === "ECONOMIC" || nutrition.budgetTier === "SAVER") ? "LOW" : (nutrition.budgetTier === "HIGH" || nutrition.budgetTier === "PREMIUM" ? "HIGH" : "MEDIUM")),
     foodStorageAvailable: nutrition.foodStorageAvailable !== false,
     foodReheatingAvailable: nutrition.foodReheatingAvailable !== false,
     allergies,
@@ -300,6 +345,13 @@ export function adaptIntakePayloadToCanonicalEngine(raw) {
           ? inj.affectedMovements
           : defaultMovements;
 
+        const formattedRestrictions = (Array.isArray(inj.medicalRestrictions) ? inj.medicalRestrictions : [])
+          .map(r => {
+            if (typeof r === "object" && r !== null && r.movement && r.instruction && r.source) return r;
+            return null;
+          })
+          .filter(Boolean);
+
         injuries.push({
           area: String(area),
           painLevel: Number(inj.painLevel) || 4,
@@ -307,7 +359,7 @@ export function adaptIntakePayloadToCanonicalEngine(raw) {
           worsening: Boolean(inj.worsening),
           numbnessOrWeakness: Boolean(inj.numbnessOrWeakness),
           affectedMovements,
-          medicalRestrictions: Array.isArray(inj.medicalRestrictions) ? inj.medicalRestrictions : []
+          medicalRestrictions: formattedRestrictions
         });
       }
     });
@@ -330,11 +382,46 @@ export function adaptIntakePayloadToCanonicalEngine(raw) {
   });
 
   let location = training.location;
-  if (location === "HOME_WITH_EQUIPMENT" || location === "HOME_BODYWEIGHT") location = "HOME";
+  if (location === "HOME_WITH_EQUIPMENT" || location === "HOME_GEAR" || location === "HOME_BODYWEIGHT") location = "HOME";
   if (!["GYM", "HOME"].includes(location)) location = "GYM";
 
   // Equipment array: ensure valid equipment for GYM and HOME
-  let equipment = Array.isArray(training.equipment) ? training.equipment : [];
+  const rawEquipment = Array.isArray(training.equipment) ? training.equipment : [];
+  let equipment = [];
+
+  rawEquipment.forEach((item) => {
+    if (typeof item === 'string') {
+      const code = item.toUpperCase();
+      let mappedCode = "BODYWEIGHT";
+      let loadCap = "BODYWEIGHT_ONLY";
+
+      if (code.includes("DUMBBELL")) {
+        mappedCode = "DUMBBELLS";
+        loadCap = "HEAVY";
+      } else if (code.includes("BARBELL")) {
+        mappedCode = "BARBELL_AND_PLATES";
+        loadCap = "HEAVY";
+      } else if (code.includes("CABLE")) {
+        mappedCode = "CABLE_STATION";
+        loadCap = "HEAVY";
+      } else if (code.includes("MACHINE")) {
+        mappedCode = "SELECTORIZED_MACHINES";
+        loadCap = "HEAVY";
+      } else if (code.includes("BAND")) {
+        mappedCode = "RESISTANCE_BANDS";
+        loadCap = "LIGHT";
+      }
+
+      equipment.push({
+        equipmentCode: mappedCode,
+        otherEquipmentText: null,
+        loadCapacity: loadCap,
+      });
+    } else if (item && typeof item === 'object' && item.equipmentCode) {
+      equipment.push(item);
+    }
+  });
+
   if (location === "HOME" && equipment.length === 0) {
     equipment = [{
       equipmentCode: "BODYWEIGHT",
@@ -377,7 +464,8 @@ export function adaptIntakePayloadToCanonicalEngine(raw) {
     medicalMovementRestrictions: []
   };
 
-  // 8. Cardio
+
+  // 8. Cardio & Activity Steps
   const cardio = intake.cardio || {};
   const sports = Array.isArray(cardio.additionalSports) ? cardio.additionalSports.map(s => ({
     sportCode: s.sportCode || (s.otherSportText ? null : "FOOTBALL"),
@@ -388,13 +476,24 @@ export function adaptIntakePayloadToCanonicalEngine(raw) {
     participationLevel: s.participationLevel || "RECREATIONAL"
   })) : [];
 
+  const activityStepsMap = {
+    SEDENTARY: 4500,
+    LIGHT: 6500,
+    MODERATE: 8500,
+    HIGH: 12500,
+  };
+  const derivedSteps = (!isNaN(Number(cardio.averageDailySteps)) && Number(cardio.averageDailySteps) > 0)
+    ? Number(cardio.averageDailySteps)
+    : (activityStepsMap[canonicalLifestyle.dailyActivity] || 6500);
+
   const canonicalCardio = {
     additionalSports: sports,
-    averageDailySteps: Math.min(30000, Math.max(1000, !isNaN(Number(cardio.averageDailySteps)) ? Number(cardio.averageDailySteps) : 6000)),
+    averageDailySteps: Math.min(30000, Math.max(1000, derivedSteps)),
     walkingAbility: ["EASY", "MODERATE", "PAINFUL"].includes(cardio.walkingAbility) ? cardio.walkingAbility : "EASY",
     maxSessionsPerWeek: Math.min(7, Math.max(0, !isNaN(Number(cardio.maxSessionsPerWeek)) ? Number(cardio.maxSessionsPerWeek) : 2)),
     maxDurationMinutes: Math.min(120, Math.max(10, !isNaN(Number(cardio.maxDurationMinutes)) ? Number(cardio.maxDurationMinutes) : 30))
   };
+
 
   return {
     personal: canonicalPersonal,
