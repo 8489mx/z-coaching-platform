@@ -57,120 +57,146 @@ export const SPLIT_PREFERENCES = [
 export default function ClientOnboardingForm() {
   const navigate = useNavigate();
 
-  // Basic Metrics State
-  const [name, setName] = useState('');
-  const [phone, setPhone] = useState('');
-  const [gender, setGender] = useState('MALE');
-  const [age, setAge] = useState(26);
-  const [weightKg, setWeightKg] = useState(78);
-  const [heightCm, setHeightCm] = useState(175);
-  const [activityLevel, setActivityLevel] = useState('LIGHT');
-  const [goal, setGoal] = useState('FAT_LOSS');
-  const [trainingDaysPerWeek, setTrainingDaysPerWeek] = useState(4);
-  const [environment, setEnvironment] = useState('GYM');
-
-  // Medical & Dietary Protocol State
-  const [selectedConditions, setSelectedConditions] = useState(['NONE_HEALTHY']);
-  const [religion, setReligion] = useState('MUSLIM');
-  const [christianFastingStyle, setChristianFastingStyle] = useState('PESCATARIAN_ALLOWED');
-  const [splitPreference, setSplitPreference] = useState('AUTO');
+  const [formData, setFormData] = useState({
+    name: '',
+    phone: '',
+    gender: 'MALE', // 'MALE' | 'FEMALE'
+    age: 26,
+    heightCm: 175,
+    weightKg: 78,
+    activityLevel: 'LIGHT',
+    goal: 'FAT_LOSS',
+    trainingDaysPerWeek: 4,
+    experienceLevel: 'BEGINNER', // 'BEGINNER' | 'INTERMEDIATE' | 'ADVANCED'
+    trainingEnvironment: 'GYM', // 'GYM' | 'HOME'
+    homeEquipment: ['DUMBBELLS', 'BODYWEIGHT'],
+    preferredSplit: 'AUTO',
+    preferredWorkoutTime: 'EVENING',
+    religion: 'MUSLIM',
+    christianFastingStyle: 'PESCATARIAN_ALLOWED',
+    selectedConditions: ['NONE_HEALTHY'],
+    posturalIssues: [],
+    pregnancyTrimester: 'NONE',
+    benchPressWeightKg: '',
+    benchPressReps: '',
+    squatWeightKg: '',
+    squatReps: '',
+    neckCircumferenceCm: '',
+    waistCircumferenceCm: '',
+    hipCircumferenceCm: ''
+  });
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
   const toggleCondition = (id) => {
+    let updated = formData.selectedConditions.filter(c => c !== 'NONE_HEALTHY');
     if (id === 'NONE_HEALTHY') {
-      setSelectedConditions(['NONE_HEALTHY']);
-      return;
-    }
-    let updated = selectedConditions.filter((c) => c !== 'NONE_HEALTHY');
-    if (updated.includes(id)) {
-      updated = updated.filter((c) => c !== id);
+      updated = ['NONE_HEALTHY'];
+    } else if (updated.includes(id)) {
+      updated = updated.filter(c => c !== id);
     } else {
       updated.push(id);
     }
-    setSelectedConditions(updated.length ? updated : ['NONE_HEALTHY']);
+    setFormData({ ...formData, selectedConditions: updated.length ? updated : ['NONE_HEALTHY'] });
+  };
+
+  const togglePosturalIssue = (id) => {
+    let updated = [...formData.posturalIssues];
+    if (updated.includes(id)) {
+      updated = updated.filter(p => p !== id);
+    } else {
+      updated.push(id);
+    }
+    setFormData({ ...formData, posturalIssues: updated });
+  };
+
+  const toggleHomeEquipment = (tool) => {
+    const exists = formData.homeEquipment.includes(tool);
+    const updated = exists
+      ? formData.homeEquipment.filter(t => t !== tool)
+      : [...formData.homeEquipment, tool];
+    setFormData({ ...formData, homeEquipment: updated });
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
 
-    if (!name.trim()) {
+    if (!formData.name.trim()) {
       setError('يرجى إدخال اسم المتدرب بالكامل');
       return;
     }
-
-    setLoading(true);
+    if (!formData.phone.trim()) {
+      setError('يرجى إدخال رقم هاتف المتدرب');
+      return;
+    }
 
     try {
-      // Map conditions to medical flags for engines
-      const medicalFlags = [...selectedConditions];
-      if (
-        selectedConditions.includes('TYPE_1_DIABETES') ||
-        selectedConditions.includes('TYPE_2_DIABETES_INSULIN')
-      ) {
-        medicalFlags.push('INSULIN_DEPENDENT');
-        medicalFlags.push('INSULIN');
+      setLoading(true);
+
+      const conditionsToPass = formData.selectedConditions.filter(c => c !== 'NONE_HEALTHY');
+      if (formData.gender === 'FEMALE' && formData.pregnancyTrimester === 'POSTPARTUM_LACTATING') {
+        if (!conditionsToPass.includes('LACTATION')) conditionsToPass.push('LACTATION');
       }
 
-      // Generate initial plan deterministically
-      const initialPlan = generateInitialPlan({
-        name: name.trim(),
-        gender,
-        age: Number(age),
-        weightKg: Number(weightKg),
-        heightCm: Number(heightCm),
-        activityLevel,
-        goal,
-        trainingDaysPerWeek: Number(trainingDaysPerWeek),
-        environment,
-        medicalFlags,
-        splitPreference
+      const planResult = generateInitialPlan({
+        name: formData.name.trim(),
+        gender: formData.gender,
+        age: Number(formData.age),
+        weightKg: Number(formData.weightKg),
+        heightCm: Number(formData.heightCm),
+        activityLevel: formData.activityLevel,
+        goal: formData.goal,
+        trainingDaysPerWeek: Number(formData.trainingDaysPerWeek),
+        environment: formData.trainingEnvironment,
+        medicalFlags: conditionsToPass,
+        medicalConditions: conditionsToPass,
+        posturalIssues: formData.posturalIssues,
+        splitPreference: formData.preferredSplit
       });
 
-      // Prepare client session payload
+      const clientCode = 'Z-' + Math.floor(1000 + Math.random() * 9000);
       const clientSession = {
-        id: 'client_' + Date.now(),
-        client_code: 'Z-' + Math.floor(1000 + Math.random() * 9000),
-        name: name.trim(),
-        phone: phone.trim() || '01000000000',
-        gender,
-        weight_kg: Number(weightKg),
-        height_cm: Number(heightCm),
-        goal,
-        religion,
-        christian_fasting_style: religion === 'CHRISTIAN' ? christianFastingStyle : null,
-        selected_conditions: selectedConditions,
-        medical_flags: medicalFlags,
-        daily_targets: initialPlan.daily_targets,
-        training_split: initialPlan.training_split,
-        clinical_notes: initialPlan.clinical_notes,
-        today_plan: {
-          meals: ['وجبة الإفطار المتوازنة', 'وجبة الغداء الغنية بالبروتين', 'سناك الطاقة قبل التمرين', 'وجبة العشاء والاستشفاء'],
-          waterTargetLiters: initialPlan.daily_targets?.water_liters || 3.0,
-          workoutTitle: `تمرين اليوم: ${initialPlan.training_split?.name_ar || 'تمرين عام'}`
-        }
+        client_code: clientCode,
+        phone_number: formData.phone.trim(),
+        full_name: formData.name.trim(),
+        gender: formData.gender,
+        goal: formData.goal,
+        daily_targets: planResult.daily_targets,
+        training_split: planResult.training_split,
+        clinical_profile: planResult.clinical_profile,
+        rehab_routine: planResult.rehab_routine,
+        cardio_protocol: planResult.cardio_protocol,
+        clinical_notes: planResult.clinical_notes,
+        selected_conditions: conditionsToPass,
+        postural_issues: formData.posturalIssues,
+        training_environment: formData.trainingEnvironment,
+        home_equipment: formData.homeEquipment,
+        experience_level: formData.experienceLevel,
+        benchmarks: {
+          bench_kg: formData.benchPressWeightKg || null,
+          squat_kg: formData.squatWeightKg || null
+        },
+        circumferences: {
+          neck: formData.neckCircumferenceCm || null,
+          waist: formData.waistCircumferenceCm || null,
+          hip: formData.hipCircumferenceCm || null
+        },
+        package_info: {
+          tier: 'MAX',
+          duration_months: 4,
+          status: 'ACTIVE',
+          days_remaining: 120
+        },
+        onboarding_completed: true,
+        created_at: new Date().toISOString()
       };
 
-      // Save persistent session
       saveSession(clientSession);
-
-      // Try background sync to server if available
-      try {
-        await fetch('/api/v1/client/onboarding', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(clientSession)
-        });
-      } catch (syncErr) {
-        console.warn('Background sync warning:', syncErr.message);
-      }
-
-      // Navigate to client cockpit
-      navigate('/client/today', { replace: true });
+      navigate('/client/today');
     } catch (err) {
-      setError(err.message || 'حدث خطأ أثناء إعداد الخطة التدريبية');
+      setError(err.message || 'حدث خطأ أثناء إنشاء الخطة');
     } finally {
       setLoading(false);
     }
@@ -178,292 +204,395 @@ export default function ClientOnboardingForm() {
 
   return (
     <div className="min-h-screen bg-slate-950 text-white p-4 md:p-8 font-sans" dir="rtl">
-      <div className="max-w-4xl mx-auto">
-        {/* Header Title */}
-        <div className="text-center mb-8">
-          <div className="inline-block px-3 py-1 bg-emerald-500/10 border border-emerald-500/30 rounded-full text-emerald-400 text-xs font-bold mb-2">
-            منظومة كابتن كريم زكريا الإكلينيكية 2026
+      <div className="max-w-4xl mx-auto bg-slate-900 border border-slate-800 rounded-3xl p-6 md:p-8 shadow-2xl space-y-6">
+        
+        {/* Header */}
+        <div className="border-b border-slate-800 pb-4">
+          <div className="d-flex align-items-center justify-content-between">
+            <div>
+              <h1 className="text-xl md:text-2xl font-black text-emerald-400 m-0">استمارة استقبال وتهيئة الخطة التفاعلية</h1>
+              <p className="text-xs md:text-sm text-slate-400 mt-1 mb-0">نظام الإظهار التدريجي الذكي والمعايرة الإكلينيكية الحتمية</p>
+            </div>
+            <span className="badge bg-emerald-950 text-emerald-400 border border-emerald-800 px-3 py-2 rounded-xl text-xs font-monospace">
+              V2026.OMNI
+            </span>
           </div>
-          <h1 className="text-2xl md:text-3xl font-black text-white m-0">استمارة التحليل وتصميم البرنامج الرياضي</h1>
-          <p className="text-xs md:text-sm text-slate-400 mt-2 mb-0">
-            تصميم دقيق لبرنامجك التدريبي والغذائي وفق أحدث المعايير البيوميكانيكية والفسيولوجية
-          </p>
         </div>
 
         {error && (
-          <div className="bg-rose-950/60 border border-rose-800 text-rose-300 text-xs p-4 rounded-xl mb-6 text-center">
+          <div className="p-3 rounded-xl bg-rose-950/60 border border-rose-800 text-rose-300 text-xs font-semibold">
             {error}
           </div>
         )}
 
         <form onSubmit={handleSubmit} className="space-y-6">
-          {/* Section 1: Basic Info */}
-          <div className="bg-slate-900 border border-slate-800 p-5 rounded-2xl">
-            <h3 className="font-bold text-sm text-emerald-400 mb-4 flex items-center gap-2">
-              <span className="w-2 h-2 rounded-full bg-emerald-500"></span>
-              <span>1. البيانات الأساسية والقياسات البدنية</span>
-            </h3>
 
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          {/* 1. البيانات الأساسية */}
+          <div className="bg-slate-900/60 border border-slate-800 p-4 rounded-2xl space-y-4">
+            <h2 className="text-sm font-bold text-slate-200 m-0">1. البيانات الشخصية والقياسات الأساسية</h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <label className="block text-xs text-slate-400 mb-1">الاسم الكامل *</label>
+                <label className="text-xs font-semibold text-slate-400 block mb-1">الاسم بالكامل:</label>
                 <input
                   type="text"
                   required
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                  placeholder="مثال: أحمد مصطفى"
-                  className="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2.5 text-xs text-white focus:outline-none focus:border-emerald-500"
+                  placeholder="مثال: أحمد محمود"
+                  value={formData.name}
+                  onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                  className="w-full bg-slate-950 border border-slate-700 rounded-xl p-2.5 text-xs text-white"
                 />
               </div>
-
               <div>
-                <label className="block text-xs text-slate-400 mb-1">رقم الواتساب للتواصل</label>
+                <label className="text-xs font-semibold text-slate-400 block mb-1">رقم الهاتف (WhatsApp):</label>
                 <input
                   type="tel"
-                  value={phone}
-                  onChange={(e) => setPhone(e.target.value)}
-                  placeholder="010XXXXXXXX"
-                  className="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2.5 text-xs text-white focus:outline-none focus:border-emerald-500"
-                />
-              </div>
-
-              <div>
-                <label className="block text-xs text-slate-400 mb-1">النوع (الجنس)</label>
-                <select
-                  value={gender}
-                  onChange={(e) => setGender(e.target.value)}
-                  className="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2.5 text-xs text-white focus:outline-none focus:border-emerald-500"
-                >
-                  <option value="MALE">ذكر (Male)</option>
-                  <option value="FEMALE">أنثى (Female)</option>
-                </select>
-              </div>
-
-              <div>
-                <label className="block text-xs text-slate-400 mb-1">العمر (بالسنوات)</label>
-                <input
-                  type="number"
-                  min="14"
-                  max="85"
-                  value={age}
-                  onChange={(e) => setAge(e.target.value)}
-                  className="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2.5 text-xs text-white focus:outline-none focus:border-emerald-500"
-                />
-              </div>
-
-              <div>
-                <label className="block text-xs text-slate-400 mb-1">الوزن الحالي (كجم)</label>
-                <input
-                  type="number"
-                  step="0.5"
-                  value={weightKg}
-                  onChange={(e) => setWeightKg(e.target.value)}
-                  className="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2.5 text-xs text-white focus:outline-none focus:border-emerald-500"
-                />
-              </div>
-
-              <div>
-                <label className="block text-xs text-slate-400 mb-1">الطول (سم)</label>
-                <input
-                  type="number"
-                  value={heightCm}
-                  onChange={(e) => setHeightCm(e.target.value)}
-                  className="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2.5 text-xs text-white focus:outline-none focus:border-emerald-500"
+                  required
+                  placeholder="مثال: 01012345678"
+                  value={formData.phone}
+                  onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                  className="w-full bg-slate-950 border border-slate-700 rounded-xl p-2.5 text-xs text-white"
                 />
               </div>
             </div>
-          </div>
 
-          {/* Section 2: Goals & Activity */}
-          <div className="bg-slate-900 border border-slate-800 p-5 rounded-2xl">
-            <h3 className="font-bold text-sm text-emerald-400 mb-4 flex items-center gap-2">
-              <span className="w-2 h-2 rounded-full bg-emerald-500"></span>
-              <span>2. الأهداف التدريبية والنشاط اليومي</span>
-            </h3>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
               <div>
-                <label className="block text-xs text-slate-400 mb-1">الهدف الرئيسي</label>
+                <label className="text-xs font-semibold text-slate-400 block mb-1">النوع:</label>
                 <select
-                  value={goal}
-                  onChange={(e) => setGoal(e.target.value)}
-                  className="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2.5 text-xs text-white focus:outline-none focus:border-emerald-500"
+                  value={formData.gender}
+                  onChange={(e) => setFormData({ ...formData, gender: e.target.value })}
+                  className="w-full bg-slate-950 border border-slate-700 rounded-xl p-2.5 text-xs text-white"
                 >
-                  <option value="FAT_LOSS">خسارة دهون وتنشيف ذكي (Fat Loss)</option>
-                  <option value="AGGRESSIVE_CUT">تنشيف سريع ومكثف (Aggressive Cut)</option>
-                  <option value="LEAN_BULK">بناء عضلي وزيادة وزن نقية (Lean Bulk)</option>
-                  <option value="MAINTENANCE">تحسين اللياقة وإعادة تشكيل الجسم (Body Recomposition)</option>
+                  <option value="MALE">ذكر</option>
+                  <option value="FEMALE">أنثى</option>
                 </select>
               </div>
-
               <div>
-                <label className="block text-xs text-slate-400 mb-1">مستوى النشاط اليومي خارج التمرين</label>
+                <label className="text-xs font-semibold text-slate-400 block mb-1">العمر:</label>
+                <input
+                  type="number"
+                  required
+                  value={formData.age}
+                  onChange={(e) => setFormData({ ...formData, age: e.target.value })}
+                  className="w-full bg-slate-950 border border-slate-700 rounded-xl p-2.5 text-xs text-white"
+                />
+              </div>
+              <div>
+                <label className="text-xs font-semibold text-slate-400 block mb-1">الطول (سم):</label>
+                <input
+                  type="number"
+                  required
+                  value={formData.heightCm}
+                  onChange={(e) => setFormData({ ...formData, heightCm: e.target.value })}
+                  className="w-full bg-slate-950 border border-slate-700 rounded-xl p-2.5 text-xs text-white"
+                />
+              </div>
+              <div>
+                <label className="text-xs font-semibold text-slate-400 block mb-1">الوزن الحالي (كجم):</label>
+                <input
+                  type="number"
+                  step="0.1"
+                  required
+                  value={formData.weightKg}
+                  onChange={(e) => setFormData({ ...formData, weightKg: e.target.value })}
+                  className="w-full bg-slate-950 border border-slate-700 rounded-xl p-2.5 text-xs text-white"
+                />
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+              <div>
+                <label className="text-xs font-semibold text-slate-400 block mb-1">الهدف الرئيسي:</label>
                 <select
-                  value={activityLevel}
-                  onChange={(e) => setActivityLevel(e.target.value)}
-                  className="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2.5 text-xs text-white focus:outline-none focus:border-emerald-500"
+                  value={formData.goal}
+                  onChange={(e) => setFormData({ ...formData, goal: e.target.value })}
+                  className="w-full bg-slate-950 border border-slate-700 rounded-xl p-2.5 text-xs text-white"
                 >
-                  <option value="SEDENTARY">مكتبي خامل (أقل من 4000 خطوة يومياً)</option>
-                  <option value="LIGHT">نشاط خفيف (4000 - 8000 خطوة يومياً)</option>
-                  <option value="MODERATE">نشاط متوسط (8000 - 12000 خطوة يومياً)</option>
-                  <option value="HEAVY">نشاط بدني شاق / عمل ميداني</option>
+                  <option value="FAT_LOSS">خسارة دهون متوازنة</option>
+                  <option value="AGGRESSIVE_CUT">خسارة دهون سريعة (عجز مكثف)</option>
+                  <option value="LEAN_BULK">بناء عضلي نقي (Lean Bulk)</option>
+                  <option value="MAINTENANCE">تثبيت الوزن وتحسين القوام</option>
                 </select>
               </div>
-
               <div>
-                <label className="block text-xs text-slate-400 mb-1">عدد أيام التمرين الأسبوعية المتاحة</label>
+                <label className="text-xs font-semibold text-slate-400 block mb-1">مستوى النشاط اليومي:</label>
                 <select
-                  value={trainingDaysPerWeek}
-                  onChange={(e) => setTrainingDaysPerWeek(e.target.value)}
-                  className="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2.5 text-xs text-white focus:outline-none focus:border-emerald-500"
+                  value={formData.activityLevel}
+                  onChange={(e) => setFormData({ ...formData, activityLevel: e.target.value })}
+                  className="w-full bg-slate-950 border border-slate-700 rounded-xl p-2.5 text-xs text-white"
+                >
+                  <option value="SEDENTARY">خامل (عمل مكتبي / قلة حركة)</option>
+                  <option value="LIGHT">خفيف (مشي بسيط 5,000 خطوة)</option>
+                  <option value="MODERATE">متوسط (حركة يومية 8,000+ خطوة)</option>
+                  <option value="HEAVY">نشط جداً (عمل بدني شاق)</option>
+                </select>
+              </div>
+              <div>
+                <label className="text-xs font-semibold text-slate-400 block mb-1">أيام التمرين الأسبوعية:</label>
+                <select
+                  value={formData.trainingDaysPerWeek}
+                  onChange={(e) => setFormData({ ...formData, trainingDaysPerWeek: Number(e.target.value) })}
+                  className="w-full bg-slate-950 border border-slate-700 rounded-xl p-2.5 text-xs text-white"
                 >
                   <option value="2">يومان أسبوعياً</option>
                   <option value="3">3 أيام أسبوعياً</option>
-                  <option value="4">4 أيام أسبوعياً (الموصى به)</option>
+                  <option value="4">4 أيام أسبوعياً</option>
                   <option value="5">5 أيام أسبوعياً</option>
                   <option value="6">6 أيام أسبوعياً</option>
                 </select>
               </div>
-
-              <div>
-                <label className="block text-xs text-slate-400 mb-1">بيئة التمرين</label>
-                <select
-                  value={environment}
-                  onChange={(e) => setEnvironment(e.target.value)}
-                  className="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2.5 text-xs text-white focus:outline-none focus:border-emerald-500"
-                >
-                  <option value="GYM">جيم مجهز بالكامل (GYM)</option>
-                  <option value="HOME">تمرين منزلي بأوزان / دمبلز (Home Gym)</option>
-                  <option value="BODYWEIGHT">تمرين بوزن الجسم فقط (Bodyweight / Calisthenics)</option>
-                </select>
-              </div>
             </div>
           </div>
 
-          {/* Section 3: Training Split Preference */}
-          <div className="bg-slate-900 border border-slate-800 p-5 rounded-2xl">
-            <h3 className="font-bold text-sm text-emerald-400 mb-3 flex items-center gap-2">
-              <span className="w-2 h-2 rounded-full bg-emerald-500"></span>
-              <span>3. تفضيل النظام والتقسيم التدريبي (Split Preference)</span>
-            </h3>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-2.5">
-              {SPLIT_PREFERENCES.map((sp) => (
-                <div
-                  key={sp.id}
-                  onClick={() => setSplitPreference(sp.id)}
-                  className={`p-3 rounded-xl border text-right transition cursor-pointer flex flex-col justify-between ${
-                    splitPreference === sp.id
-                      ? 'bg-emerald-950/60 border-emerald-500 text-emerald-200'
-                      : 'bg-slate-800/60 border-slate-700 text-slate-300 hover:border-slate-600'
-                  }`}
+          {/* 2. المستوى التدريبي ومعايرة أوزان البداية (Progressive Disclosure) */}
+          <div className="bg-slate-900/60 border border-slate-800 p-4 rounded-2xl space-y-3">
+            <label className="text-xs font-bold text-slate-300 block">2. مستواك في تمارين المقاومة:</label>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
+              {[
+                { id: 'BEGINNER', label: 'مبتدئ تماماً (أول مرة / عودة بعد انقطاع)' },
+                { id: 'INTERMEDIATE', label: 'متوسط (6 أشهر - سنتين من الالتزام)' },
+                { id: 'ADVANCED', label: 'متقدم (أكثر من سنتين تدريب متواصل)' }
+              ].map(lvl => (
+                <button
+                  key={lvl.id}
+                  type="button"
+                  onClick={() => setFormData({ ...formData, experienceLevel: lvl.id })}
+                  className={'p-3 rounded-xl border text-xs font-bold transition text-center ' + (
+                    formData.experienceLevel === lvl.id
+                      ? 'bg-emerald-500 text-slate-950 border-emerald-400'
+                      : 'bg-slate-950 border-slate-700 text-slate-300'
+                  )}
                 >
-                  <div className="flex items-center justify-between mb-1">
-                    <span className="font-bold text-xs text-white">{sp.label}</span>
-                    <span
-                      className={`w-4 h-4 rounded-full flex items-center justify-center text-[10px] ${
-                        splitPreference === sp.id
-                          ? 'bg-emerald-500 text-slate-950 font-bold'
-                          : 'border border-slate-600'
-                      }`}
-                    >
-                      {splitPreference === sp.id ? '✓' : ''}
-                    </span>
-                  </div>
-                  <p className="text-[11px] text-slate-400 m-0 leading-relaxed">{sp.desc}</p>
-                </div>
+                  {lvl.label}
+                </button>
               ))}
             </div>
+
+            {/* يظهر فقط للمتوسط والمتقدم */}
+            {formData.experienceLevel !== 'BEGINNER' && (
+              <div className="bg-slate-950/80 border border-amber-900/40 p-4 rounded-xl space-y-3 mt-3">
+                <span className="text-xs font-bold text-amber-400 block">تقدير أوزان البداية المعتادة (اختياري لمعايرة أوزان التمرين التلقائية):</span>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                  <div>
+                    <label className="text-[11px] text-slate-400 block mb-1">أقصى وزن معتاد في البنش برس (كجم):</label>
+                    <input
+                      type="number"
+                      placeholder="مثال: 60"
+                      value={formData.benchPressWeightKg}
+                      onChange={(e) => setFormData({ ...formData, benchPressWeightKg: e.target.value })}
+                      className="w-full bg-slate-900 border border-slate-700 rounded-xl p-2 text-xs text-white"
+                    />
+                  </div>
+                  <div>
+                    <label className="text-[11px] text-slate-400 block mb-1">أقصى وزن طارات معتاد في السكوات (كجم):</label>
+                    <input
+                      type="number"
+                      placeholder="مثال: 40"
+                      value={formData.squatWeightKg}
+                      onChange={(e) => setFormData({ ...formData, squatWeightKg: e.target.value })}
+                      className="w-full bg-slate-900 border border-slate-700 rounded-xl p-2 text-xs text-white"
+                    />
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
 
-          {/* Section 4: Religious Calendar & Fasting */}
-          <div className="bg-slate-900 border border-slate-800 p-5 rounded-2xl">
-            <h3 className="font-bold text-sm text-emerald-400 mb-3 flex items-center gap-2">
-              <span className="w-2 h-2 rounded-full bg-emerald-500"></span>
-              <span>4. الجدول العقائدي ومواسم الصيام</span>
-            </h3>
+          {/* 3. مكان وبيئة التمرين (Progressive Disclosure) */}
+          <div className="bg-slate-900/60 border border-slate-800 p-4 rounded-2xl space-y-3">
+            <label className="text-xs font-bold text-slate-300 block">3. مكان وبيئة التمرين:</label>
+            <div className="grid grid-cols-2 gap-2">
+              <button
+                type="button"
+                onClick={() => setFormData({ ...formData, trainingEnvironment: 'GYM' })}
+                className={'p-3 rounded-xl border text-xs font-bold transition text-center ' + (
+                  formData.trainingEnvironment === 'GYM' ? 'bg-emerald-500 text-slate-950 border-emerald-400' : 'bg-slate-950 border-slate-700 text-slate-300'
+                )}
+              >
+                في الجيم (أجهزة وأوزان متكاملة)
+              </button>
+              <button
+                type="button"
+                onClick={() => setFormData({ ...formData, trainingEnvironment: 'HOME' })}
+                className={'p-3 rounded-xl border text-xs font-bold transition text-center ' + (
+                  formData.trainingEnvironment === 'HOME' ? 'bg-emerald-500 text-slate-950 border-emerald-400' : 'bg-slate-950 border-slate-700 text-slate-300'
+                )}
+              >
+                في البيت (أدوات منزلية / وزن الجسم)
+              </button>
+            </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {/* خيارات الأدوات المنزلية المشروطة */}
+            {formData.trainingEnvironment === 'HOME' && (
+              <div className="bg-slate-950/80 border border-slate-800 p-3 rounded-xl space-y-2 mt-2">
+                <span className="text-xs font-bold text-slate-300 block">الأدوات المتاحة لديك بالمنزل:</span>
+                <div className="flex flex-wrap gap-2">
+                  {[
+                    { id: 'DUMBBELLS', label: 'دمبلز قابلة للتعديل' },
+                    { id: 'BANDS', label: 'أشرطة مقاومة مطاطية (Bands)' },
+                    { id: 'PULLUP_BAR', label: 'عقلة منزلية' },
+                    { id: 'BODYWEIGHT', label: 'وزن الجسم فقط' }
+                  ].map(tool => (
+                    <button
+                      key={tool.id}
+                      type="button"
+                      onClick={() => toggleHomeEquipment(tool.id)}
+                      className={'px-3 py-1.5 rounded-lg border text-xs font-semibold ' + (
+                        formData.homeEquipment.includes(tool.id)
+                          ? 'bg-emerald-950 border-emerald-500 text-emerald-300'
+                          : 'bg-slate-900 border-slate-700 text-slate-400'
+                      )}
+                    >
+                      {tool.label} {formData.homeEquipment.includes(tool.id) ? '✓' : ''}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* 4. الحالة الفسيولوجية للسيدات (Progressive Disclosure) */}
+          {formData.gender === 'FEMALE' && (
+            <div className="bg-rose-950/20 border border-rose-900/40 p-4 rounded-2xl space-y-3">
+              <span className="text-xs font-bold text-rose-300 block">4. الحالة الفسيولوجية للسيدات:</span>
+              <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
+                {[
+                  { id: 'NONE', label: 'طبيعي / غير حامل' },
+                  { id: 'FIRST', label: 'حمل (الثلث الأول: 1-12 أسبوع)' },
+                  { id: 'SECOND', label: 'حمل (الثلث الثاني: 13-26 أسبوع)' },
+                  { id: 'THIRD', label: 'حمل (الثلث الثالث: 27+ أسبوع)' },
+                  { id: 'POSTPARTUM_LACTATING', label: 'مرحلة الرضاعة الطبيعية' }
+                ].map(opt => (
+                  <button
+                    key={opt.id}
+                    type="button"
+                    onClick={() => setFormData({ ...formData, pregnancyTrimester: opt.id })}
+                    className={'p-2.5 rounded-xl border text-xs font-bold text-center ' + (
+                      formData.pregnancyTrimester === opt.id
+                        ? 'bg-rose-500 text-slate-950 border-rose-400'
+                        : 'bg-slate-950 border-slate-800 text-slate-300'
+                    )}
+                  >
+                    {opt.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* 5. التقويم الموسمي والصيام العقائدي */}
+          <div className="bg-slate-900/60 border border-slate-800 p-4 rounded-2xl space-y-3">
+            <label className="text-xs font-bold text-slate-300 block">5. نمط الصيام والتقويم العقائدي:</label>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
               <div>
-                <label className="block text-xs text-slate-400 mb-1">النمط الديني لتنظيم مواعيد الصيام والوجبات</label>
                 <select
-                  value={religion}
-                  onChange={(e) => setReligion(e.target.value)}
-                  className="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2.5 text-xs text-white focus:outline-none focus:border-emerald-500"
+                  value={formData.religion}
+                  onChange={(e) => setFormData({ ...formData, religion: e.target.value })}
+                  className="w-full bg-slate-950 border border-slate-700 rounded-xl p-2.5 text-xs text-white"
                 >
-                  <option value="MUSLIM">مسلم (صيام رمضان، شوال، والنوافل)</option>
-                  <option value="CHRISTIAN">مسيحي (الصوم الكبير، صوم الرسل، الميلاد، والأربعاء والجمعة)</option>
-                  <option value="NONE">بدون مواسم صيام دينية خاصة</option>
+                  <option value="MUSLIM">مسلم (صيام رمضان المبارك والنوافل)</option>
+                  <option value="CHRISTIAN">مسيحي (مواسم الصيام الكبير والميلاد)</option>
+                  <option value="NONE">النمط اليومي المعتاد (Non-Fasting Baseline)</option>
                 </select>
               </div>
-
-              {religion === 'CHRISTIAN' && (
+              {formData.religion === 'CHRISTIAN' && (
                 <div>
-                  <label className="block text-xs text-slate-400 mb-1">نمط الصيام المسيحي المعتمد</label>
                   <select
-                    value={christianFastingStyle}
-                    onChange={(e) => setChristianFastingStyle(e.target.value)}
-                    className="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2.5 text-xs text-white focus:outline-none focus:border-emerald-500"
+                    value={formData.christianFastingStyle}
+                    onChange={(e) => setFormData({ ...formData, christianFastingStyle: e.target.value })}
+                    className="w-full bg-slate-950 border border-slate-700 rounded-xl p-2.5 text-xs text-white"
                   >
-                    <option value="PESCATARIAN_ALLOWED">صيام نباتي مع السماح بالمأكولات البحرية والأسماك</option>
-                    <option value="STRICT_VEGAN">صيام نباتي صارم (نباتي صرف بدون أسماك)</option>
+                    <option value="PESCATARIAN_ALLOWED">صيام نباتي مع السماح بالأسماك والمأكولات البحرية</option>
+                    <option value="STRICT_VEGAN">صيام نباتي صرف بدون أسماك (Strict Vegan)</option>
                   </select>
                 </div>
               )}
             </div>
           </div>
 
-          {/* Section 5: Medical Conditions & Injuries (Multi-Select Chips) */}
-          <div className="bg-slate-900 border border-slate-800 p-5 rounded-2xl">
-            <div className="mb-3">
-              <h3 className="font-bold text-sm text-emerald-400 flex items-center gap-2 m-0">
-                <span className="w-2 h-2 rounded-full bg-emerald-500"></span>
-                <span>5. الحالة الصحية والإصابات (يمكن اختيار أكثر من حالة):</span>
-              </h3>
-              <p className="text-xs text-slate-400 mt-1 mb-0">
-                يتم قفل وضبط الماكروز وجداول الأمان وجدار الحماية الدوائي تلقائياً حسب اختياراتك
-              </p>
+          {/* 6. تفضيلات التقسيم التدريبي */}
+          <div className="bg-slate-900/60 border border-slate-800 p-4 rounded-2xl space-y-3">
+            <label className="text-xs font-bold text-slate-300 block">6. التقسيم التدريبي المفضل:</label>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+              {SPLIT_PREFERENCES.map(s => (
+                <button
+                  key={s.id}
+                  type="button"
+                  onClick={() => setFormData({ ...formData, preferredSplit: s.id })}
+                  className={'p-3 rounded-xl border text-right transition ' + (
+                    formData.preferredSplit === s.id
+                      ? 'bg-emerald-950 border-emerald-500 text-emerald-300'
+                      : 'bg-slate-950 border-slate-800 text-slate-400'
+                  )}
+                >
+                  <div className="text-xs font-bold text-white">{s.label}</div>
+                  <div className="text-[11px] text-slate-400 mt-0.5">{s.desc}</div>
+                </button>
+              ))}
             </div>
+          </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-2.5">
-              {MEDICAL_CONDITIONS_OPTIONS.map((opt) => {
-                const isSelected = selectedConditions.includes(opt.id);
-                return (
-                  <button
-                    key={opt.id}
-                    type="button"
-                    onClick={() => toggleCondition(opt.id)}
-                    className={`p-3 rounded-xl border text-xs text-right transition flex items-center justify-between cursor-pointer ${
-                      isSelected
-                        ? 'bg-emerald-950/60 border-emerald-500 text-emerald-200 shadow-sm'
-                        : 'bg-slate-800/60 border-slate-700 text-slate-300 hover:border-slate-600'
-                    }`}
-                  >
-                    <span>{opt.label}</span>
-                    <span
-                      className={`w-4 h-4 rounded flex items-center justify-center text-[10px] flex-shrink-0 ${
-                        isSelected
-                          ? 'bg-emerald-500 text-slate-950 font-bold'
-                          : 'border border-slate-600'
-                      }`}
-                    >
-                      {isSelected ? '✓' : ''}
-                    </span>
-                  </button>
-                );
-              })}
+          {/* 7. انحرافات القوام والعمود الفقري */}
+          <div className="bg-slate-900/60 border border-slate-800 p-4 rounded-2xl space-y-3">
+            <label className="text-xs font-bold text-slate-300 block">7. تصحيح انحرافات القوام (اختر ما ينطبق لحقن التمارين التصحيحية):</label>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+              {[
+                { id: 'ANTERIOR_PELVIC_TILT', label: 'ميل الحوض الأمامي (Anterior Pelvic Tilt - بروز البطن وتقوس أسفل الظهر)' },
+                { id: 'ROUNDED_SHOULDERS', label: 'تقوس الأكتاف للأمام وانحناء الرقبة (Rounded Shoulders / Kyphosis)' }
+              ].map(p => (
+                <button
+                  key={p.id}
+                  type="button"
+                  onClick={() => togglePosturalIssue(p.id)}
+                  className={'p-3 rounded-xl border text-right transition flex items-center justify-between ' + (
+                    formData.posturalIssues.includes(p.id)
+                      ? 'bg-indigo-950 border-indigo-500 text-indigo-300'
+                      : 'bg-slate-950 border-slate-800 text-slate-400'
+                  )}
+                >
+                  <span className="text-xs font-semibold">{p.label}</span>
+                  <span className="text-xs font-bold">{formData.posturalIssues.includes(p.id) ? '✓' : ''}</span>
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* 8. الحالات الطبية والإصابات (22+ خياراً بنظام الـ Multi-Select Chips) */}
+          <div className="bg-slate-900/60 border border-slate-800 p-4 rounded-2xl space-y-3">
+            <div className="d-flex align-items-center justify-content-between">
+              <label className="text-xs font-bold text-slate-300 block m-0">8. مصفوفة الحالات الصحية والإصابات (اختر ما ينطبق لتفعيل جدران الحماية):</label>
+              <span className="text-[11px] text-slate-400">تطبيق تراكمي تلقائي</span>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+              {MEDICAL_CONDITIONS_OPTIONS.map(opt => (
+                <button
+                  key={opt.id}
+                  type="button"
+                  onClick={() => toggleCondition(opt.id)}
+                  className={'p-2.5 rounded-xl border text-xs text-right transition flex items-center justify-between ' + (
+                    formData.selectedConditions.includes(opt.id)
+                      ? 'bg-emerald-950 border-emerald-500 text-emerald-200 font-bold'
+                      : 'bg-slate-950 border-slate-800 text-slate-400'
+                  )}
+                >
+                  <span>{opt.label}</span>
+                  <span className="text-emerald-400 font-bold">{formData.selectedConditions.includes(opt.id) ? '✓' : ''}</span>
+                </button>
+              ))}
             </div>
           </div>
 
           {/* Submit Button */}
-          <button
-            type="submit"
-            disabled={loading}
-            className="w-full bg-emerald-500 hover:bg-emerald-600 active:scale-[0.99] text-slate-950 font-black py-3.5 rounded-2xl text-sm transition shadow-xl shadow-emerald-950/50 cursor-pointer"
-          >
-            {loading ? 'جاري تحليل البيانات وتوليد البرنامج الرياضي...' : 'توليد الخطة وبدء رحلة التحول الآن'}
-          </button>
+          <div className="pt-2">
+            <button
+              type="submit"
+              disabled={loading}
+              className="w-full py-3.5 px-6 rounded-2xl bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-400 hover:to-teal-500 text-slate-950 font-black text-sm transition shadow-lg shadow-emerald-950/50 disabled:opacity-50"
+            >
+              {loading ? 'جاري بناء ومعايرة خطة الإنتاج المخصصة...' : 'توليد خطة اليوم والبدء الفوري'}
+            </button>
+          </div>
+
         </form>
       </div>
     </div>
