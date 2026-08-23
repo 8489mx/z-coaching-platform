@@ -65,6 +65,10 @@ export default function MacroCalculator() {
   const targetFatGrams = metabolic.macro_targets.fat_g;
   const targetCarbGrams = metabolic.macro_targets.carbs_g;
 
+  const proteinCalories = targetProteinGrams * 4;
+  const fatCalories = targetFatGrams * 9;
+  const carbsCalories = targetCarbGrams * 4;
+
   const waterTargetLiters = metabolic.water_target_liters.toFixed(1);
   const stepsTarget = metabolic.steps_target;
 

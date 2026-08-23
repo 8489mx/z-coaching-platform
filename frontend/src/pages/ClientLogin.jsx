@@ -41,56 +41,82 @@ export default function ClientLogin() {
     }
   };
 
+  const inputStyle = {
+    background: '#FFFFFF',
+    color: '#0F172A',
+    border: '1.5px solid #CBD5E1',
+    borderRadius: '12px',
+    padding: '12px 16px',
+    fontSize: '0.92rem',
+    fontWeight: '500',
+    width: '100%',
+    outline: 'none',
+    boxShadow: 'none'
+  };
+
   return (
-    <div className="min-h-screen bg-slate-950 flex items-center justify-center p-4 text-white" dir="rtl">
-      <div className="w-full max-w-sm bg-slate-900 border border-slate-800 rounded-3xl p-6 shadow-2xl">
-        <div className="text-center mb-6">
-          <div className="w-14 h-14 bg-emerald-500/10 border border-emerald-500/30 rounded-2xl flex items-center justify-center mx-auto mb-3">
-            <span className="w-4 h-4 rounded-full bg-emerald-400 animate-pulse"></span>
+    <div dir="rtl" style={{ minHeight: '100vh', background: '#FAFBFC', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px', fontFamily: 'Alexandria, Cairo, sans-serif' }}>
+      <div style={{ width: '100%', maxWidth: '420px', background: '#FFFFFF', border: '1px solid #E2E8F0', borderRadius: '24px', padding: '32px 28px', boxShadow: '0 10px 40px rgba(15, 23, 42, 0.06)' }}>
+        
+        <div style={{ textAlign: 'center', marginBottom: '24px' }}>
+          <div style={{ width: '56px', height: '56px', borderRadius: '16px', background: 'linear-gradient(135deg, #E0F2FE 0%, #BAE6FD 100%)', color: '#0284C7', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 12px auto', fontSize: '1.4rem', border: '1px solid #7DD3FC' }}>
+            <i className="ti ti-lock"></i>
           </div>
-          <h1 className="text-xl font-bold text-white m-0">تسجيل الدخول</h1>
-          <p className="text-xs text-slate-400 mt-1 mb-0">أدخل كود المشترك ورقم هاتفك للمتابعة</p>
+          <h1 style={{ fontSize: '1.3rem', fontWeight: '900', color: '#0F172A', margin: 0 }}>تسجيل الدخول للمتدربين</h1>
+          <p style={{ fontSize: '0.82rem', color: '#64748B', margin: '4px 0 0 0' }}>أدخل كود المشترك ورقم هاتفك للوصول لخطتك</p>
         </div>
 
         {error && (
-          <div className="bg-rose-500/10 border border-rose-500/30 text-rose-300 text-xs p-3 rounded-xl mb-4 text-center">
+          <div style={{ background: '#FFF1F2', border: '1px solid #FECDD3', color: '#BE123C', fontSize: '0.8rem', padding: '10px 14px', borderRadius: '12px', marginBottom: '18px', textAlign: 'center', fontWeight: '700' }}>
             {error}
           </div>
         )}
 
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
           <div>
-            <label className="block text-xs font-semibold text-slate-300 mb-1.5">كود المشترك</label>
+            <label style={{ display: 'block', fontSize: '0.82rem', fontWeight: '700', color: '#334155', marginBottom: '6px' }}>كود المشترك الخاص بك:</label>
             <input
               type="text"
               required
               placeholder="مثال: 1042"
               value={code}
               onChange={(e) => setCode(e.target.value)}
-              className="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-emerald-500"
+              style={inputStyle}
             />
           </div>
 
           <div>
-            <label className="block text-xs font-semibold text-slate-300 mb-1.5">رقم الهاتف المسجل</label>
+            <label style={{ display: 'block', fontSize: '0.82rem', fontWeight: '700', color: '#334155', marginBottom: '6px' }}>رقم الهاتف المسجل (WhatsApp):</label>
             <input
               type="tel"
               required
-              placeholder="010XXXXXXXX"
+              placeholder="010XXXXXXXX أو 05XXXXXXXX"
               value={phone}
               onChange={(e) => setPhone(e.target.value)}
-              className="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-emerald-500"
+              style={inputStyle}
             />
           </div>
 
           <button
             type="submit"
             disabled={loading}
-            className="w-full bg-emerald-500 hover:bg-emerald-600 active:scale-95 text-slate-950 font-bold py-3 rounded-xl text-sm transition cursor-pointer"
+            style={{
+              background: 'linear-gradient(135deg, #0284C7 0%, #0369A1 100%)',
+              color: '#FFFFFF',
+              border: 'none',
+              borderRadius: '14px',
+              padding: '14px',
+              fontSize: '0.92rem',
+              fontWeight: '800',
+              cursor: 'pointer',
+              boxShadow: '0 4px 14px rgba(2, 132, 199, 0.3)',
+              marginTop: '8px'
+            }}
           >
-            {loading ? 'جاري التحقق...' : 'دخول للتطبيق'}
+            {loading ? 'جاري التحقق...' : 'دخول للمنصة والتطبيق'}
           </button>
         </form>
+
       </div>
     </div>
   );
