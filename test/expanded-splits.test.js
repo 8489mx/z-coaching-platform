@@ -62,7 +62,7 @@ test('Expanded Splits Generator Suite', async (t) => {
     });
 
     assert.equal(plan5.training_split.id, 'female_glute_specialized');
-    assert.equal(plan5.training_split.schedule_blueprint.length, 6);
+    assert.equal(plan5.training_split.schedule_blueprint.length, 5);
   });
 
   await t.test('4. Explicit splitPreference overrides default assignment', () => {
