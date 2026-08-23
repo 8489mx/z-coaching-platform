@@ -21,16 +21,13 @@ import {
   FileText 
 } from 'lucide-react';
 import AdminLayout from '../components/layout/AdminLayout';
+import NewClientQuickModal from '../components/modals/NewClientQuickModal';
 import { API_BASE } from '../config/api';
 
 export default function CoachCommandCenter() {
   const [activeTab, setActiveTab] = useState('ALL'); // 'ALL' | 'CHECKIN' | 'CLINICAL' | 'INACTIVE' | 'RENEWAL'
   const [searchQuery, setSearchQuery] = useState('');
   const [isNewClientModalOpen, setIsNewClientModalOpen] = useState(false);
-  const [generatedCode, setGeneratedCode] = useState(null);
-  const [newClientName, setNewClientName] = useState('');
-  const [newClientPhone, setNewClientPhone] = useState('');
-  const [copiedCode, setCopiedCode] = useState(false);
 
   // إحصائيات سريعة للـ KPI Cards
   const stats = [
@@ -46,7 +43,7 @@ export default function CoachCommandCenter() {
       id: 'ACT_01',
       type: 'CHECKIN',
       clientName: 'سارة المنصوري',
-      tier: 'VIP MAX',
+      tier: 'باقة ماكس (Max)',
       phone: '+966501234567',
       summary: 'نزول 1.6 كجم من الوزن والمحيطات في أسبوعين.',
       suggestedAction: 'الاستمرار بنفس العجز السعري وتثبيت الماكروز.',
@@ -59,7 +56,7 @@ export default function CoachCommandCenter() {
       id: 'ACT_02',
       type: 'CLINICAL',
       clientName: 'ياسمين فهد',
-      tier: 'ELITE',
+      tier: 'باقة إيليت (Elite)',
       phone: '+971509876543',
       summary: 'نغزة ألم في الكتف الأيمن (6/10) أثناء تمرين Overhead Press.',
       suggestedAction: 'استبدال البار بقبضة دمبل محايدة مائلة وتفعيل روتين الكفة المدورة.',
@@ -72,7 +69,7 @@ export default function CoachCommandCenter() {
       id: 'ACT_03',
       type: 'INACTIVE',
       clientName: 'حسام البدري',
-      tier: 'VIP MAX',
+      tier: 'باقة ماكس (Max)',
       phone: '+201012345678',
       summary: 'لم يسجل أي تمرين أو وجبة منذ أكثر من 48 ساعة.',
       suggestedAction: 'إرسال رسالة تشجيع واطمئنان على الواتساب.',
@@ -85,9 +82,9 @@ export default function CoachCommandCenter() {
       id: 'ACT_04',
       type: 'RENEWAL',
       clientName: 'أحمد فتحي',
-      tier: 'ELITE',
+      tier: 'باقة إيليت (Elite)',
       phone: '+201123456789',
-      summary: 'متبقي 3 أيام على نهاية باقة الـ 14 أسبوعاً (إنجاز -13.5 كجم).',
+      summary: 'متبقي 3 أيام على نهاية باقة الـ 16 أسبوعاً (إنجاز -13.5 كجم).',
       suggestedAction: 'إرسال عرض تجديد الدايت العكسي والبناء العضلي الصافي.',
       badgeColor: '#4F46E5',
       badgeBg: '#EEF2FF',
@@ -104,11 +101,6 @@ export default function CoachCommandCenter() {
       act.phone.includes(cleanSearch);
     return matchesTab && matchesSearch;
   });
-
-  const generateNewClient = () => {
-    const randomCode = 'KZ-' + Math.floor(1000 + Math.random() * 9000);
-    setGeneratedCode(randomCode);
-  };
 
   return (
     <AdminLayout>
@@ -151,13 +143,10 @@ export default function CoachCommandCenter() {
               />
             </div>
 
-            {/* Quick Action Button */}
+            {/* Quick Action Button to open real NewClientQuickModal */}
             <button
               type="button"
-              onClick={() => {
-                generateNewClient();
-                setIsNewClientModalOpen(true);
-              }}
+              onClick={() => setIsNewClientModalOpen(true)}
               style={{
                 background: 'linear-gradient(135deg, #0284C7 0%, #0369A1 100%)',
                 color: '#FFFFFF',
@@ -417,16 +406,16 @@ export default function CoachCommandCenter() {
                 </div>
               </div>
 
-              {/* بطاقة توزيع الباقات */}
+              {/* بطاقة توزيع الباقات (Elite & Max) */}
               <div style={{ background: '#FFFFFF', border: '1px solid #E2E8F0', borderRadius: '18px', padding: '18px', boxShadow: '0 2px 8px rgba(15, 23, 42, 0.03)' }}>
                 <h3 style={{ fontSize: '0.88rem', fontWeight: 800, color: '#0F172A', margin: '0 0 14px 0', display: 'flex', alignItems: 'center', gap: '6px' }}>
                   <BarChart3 style={{ width: '16px', height: '16px', color: '#0284C7' }} />
-                  <span>توزيع الباقات النشطة</span>
+                  <span>توزيع الباقات النشطة (Elite & Max)</span>
                 </h3>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
                   <div>
                     <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.78rem', marginBottom: '4px' }}>
-                      <span style={{ color: '#64748B', fontWeight: 600 }}>باقة ماكس (VIP MAX 360°)</span>
+                      <span style={{ color: '#64748B', fontWeight: 600 }}>باقة ماكس (Max)</span>
                       <span style={{ color: '#0284C7', fontWeight: 800 }}>32 مشترك (67%)</span>
                     </div>
                     <div style={{ width: '100%', background: '#F1F5F9', height: '6px', borderRadius: '10px', overflow: 'hidden' }}>
@@ -436,7 +425,7 @@ export default function CoachCommandCenter() {
 
                   <div>
                     <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.78rem', marginBottom: '4px' }}>
-                      <span style={{ color: '#64748B', fontWeight: 600 }}>باقة إيليت (ELITE)</span>
+                      <span style={{ color: '#64748B', fontWeight: 600 }}>باقة إيليت (Elite)</span>
                       <span style={{ color: '#4F46E5', fontWeight: 800 }}>16 مشترك (33%)</span>
                     </div>
                     <div style={{ width: '100%', background: '#F1F5F9', height: '6px', borderRadius: '10px', overflow: 'hidden' }}>
@@ -451,106 +440,14 @@ export default function CoachCommandCenter() {
 
         </div>
 
-        {/* 5. نافذة إنشاء كود المشترك الجديد (Modal) */}
-        {isNewClientModalOpen && (
-          <div 
-            style={{
-              position: 'fixed',
-              top: 0,
-              left: 0,
-              right: 0,
-              bottom: 0,
-              background: 'rgba(15, 23, 42, 0.6)',
-              backdropFilter: 'blur(4px)',
-              zIndex: 9999,
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              padding: '16px'
-            }}
-            onClick={(e) => {
-              if (e.target === e.currentTarget) setIsNewClientModalOpen(false);
-            }}
-          >
-            <div 
-              style={{
-                width: '100%',
-                maxWidth: '460px',
-                background: '#FFFFFF',
-                borderRadius: '24px',
-                padding: '24px',
-                boxShadow: '0 20px 60px rgba(0,0,0,0.2)',
-                border: '1px solid #E2E8F0',
-                direction: 'rtl'
-              }}
-            >
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid #F1F5F9', paddingBottom: '12px', marginBottom: '16px' }}>
-                <h3 style={{ fontSize: '1.1rem', fontWeight: 900, color: '#0F172A', margin: 0 }}>
-                  توليد كود مشترك جديد
-                </h3>
-                <button
-                  type="button"
-                  onClick={() => setIsNewClientModalOpen(false)}
-                  style={{ background: '#F1F5F9', border: 'none', width: '28px', height: '28px', borderRadius: '8px', color: '#64748B', fontSize: '1rem', cursor: 'pointer' }}
-                >
-                  ✕
-                </button>
-              </div>
-
-              <div style={{ textAlign: 'center', padding: '16px', background: '#F8FAFC', border: '1.5px dashed #0284C7', borderRadius: '16px', marginBottom: '16px' }}>
-                <span style={{ fontSize: '0.76rem', color: '#64748B', display: 'block', fontWeight: 700, marginBottom: '4px' }}>
-                  كود المتدرب المخصص:
-                </span>
-                <span style={{ fontSize: '2rem', fontWeight: 900, color: '#0284C7', letterSpacing: '2px', fontFamily: 'monospace' }}>
-                  {generatedCode}
-                </span>
-              </div>
-
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                <button
-                  type="button"
-                  onClick={() => {
-                    const inviteMsg = 'أهلاً بك مع كابتن كريم زكريا!\nكود الاشتراك الخاص بك هو: *' + generatedCode + '*\nرابط الدخول واستمارة التقييم:\n' + window.location.origin + '/onboarding';
-                    navigator.clipboard.writeText(inviteMsg);
-                    setCopiedCode(true);
-                    setTimeout(() => setCopiedCode(false), 2500);
-                  }}
-                  style={{
-                    width: '100%',
-                    background: 'linear-gradient(135deg, #0284C7 0%, #0369A1 100%)',
-                    color: '#FFFFFF',
-                    fontWeight: 800,
-                    padding: '12px',
-                    borderRadius: '12px',
-                    fontSize: '0.84rem',
-                    border: 'none',
-                    cursor: 'pointer'
-                  }}
-                >
-                  {copiedCode ? 'تم نسخ رسالة الدعوة وكود المشترك بنجاح!' : 'نسخ رسالة الترحيب والواتساب'}
-                </button>
-
-                <button
-                  type="button"
-                  onClick={() => setIsNewClientModalOpen(false)}
-                  style={{
-                    width: '100%',
-                    background: '#F1F5F9',
-                    color: '#475569',
-                    fontWeight: 700,
-                    padding: '10px',
-                    borderRadius: '12px',
-                    fontSize: '0.82rem',
-                    border: 'none',
-                    cursor: 'pointer'
-                  }}
-                >
-                  إغلاق
-                </button>
-              </div>
-            </div>
-          </div>
-        )}
+        {/* 5. نافذة تسجيل عميل جديد وتوليد كود (NewClientQuickModal) */}
+        <NewClientQuickModal
+          isOpen={isNewClientModalOpen}
+          onClose={() => setIsNewClientModalOpen(false)}
+          onClientCreated={(newClient) => {
+            console.log('Client created successfully:', newClient);
+          }}
+        />
 
       </div>
     </AdminLayout>
