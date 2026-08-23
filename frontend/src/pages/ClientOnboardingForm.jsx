@@ -41,6 +41,10 @@ export const MEDICAL_CONDITIONS_OPTIONS = [
   { id: 'PATELLAR_TENDINITIS', label: 'خشونة أو آلام صابونة الركبة' },
   { id: 'HERNIA_VARICOSE', label: 'فتق (إربي/سري) أو دوالي شديدة بالساقين' },
   { id: 'LACTATION', label: 'مرحلة الرضاعة الطبيعية (للسيدات)' },
+    // 8. الحالات النادرة والحساسيات الخاصة
+  { id: 'CELIAC_DISEASE', label: 'حساسية القمح والجلوتين (مرض السيلياك)' },
+  { id: 'OSTEOPOROSIS', label: 'هشاشة العظام / نقص الكثافة العظمية' },
+  { id: 'G6PD_DEFICIENCY', label: 'أنيميا الفول (نقص إنزيم G6PD)' },
   { id: 'NONE_HEALTHY', label: 'سليم تماماً ولا أعاني من أي مشكلة صحية ✔' }
 ];
 

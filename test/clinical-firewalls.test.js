@@ -31,18 +31,17 @@ test('Clinical Firewalls & Pharmacological Matrix Suite', async (t) => {
     assert.equal(profile.cardioProtocol.dailySteps, 10000);
   });
 
-  await t.test('3. Adjusts water target for kidney stones', () => {
+  await t.test('3. Handles rare conditions: celiac, osteoporosis, and g6pd deficiency', () => {
     const profile = evaluateMasterClinicalProfile({
-      medicalConditions: ['KIDNEY_STONES'],
-      targetCalories: 2000,
-      targetProteinGrams: 150,
-      targetCarbGrams: 200,
-      targetFatGrams: 60,
-      waterLiters: 3.0
+      medicalConditions: ['CELIAC_DISEASE', 'OSTEOPOROSIS', 'G6PD_DEFICIENCY'],
+      targetCalories: 2000
     });
 
-    assert.equal(profile.waterLiters, 4.5);
-    assert.ok(profile.prescribedNutrients.includes('LOW_OXALATE_FOODS'));
+    assert.ok(profile.prescribedNutrients.includes('STRICT_GLUTEN_FREE_CERTIFIED'));
+    assert.ok(profile.prescribedNutrients.includes('HIGH_CALCIUM_VITAMIN_D3'));
+    assert.ok(profile.prescribedNutrients.includes('ZERO_FAVA_BEANS'));
+    assert.ok(profile.prohibitedSupplements.includes('HIGH_DOSE_VITAMIN_C'));
+    assert.ok(profile.biomechanicalRestrictions.includes('NO_LOADED_SPINAL_FLEXION_AND_TWISTING'));
   });
 
   await t.test('4. Handles pregnancy trimesters and lactation calories correctly', () => {

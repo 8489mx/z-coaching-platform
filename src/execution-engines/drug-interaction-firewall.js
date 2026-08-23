@@ -290,5 +290,26 @@ export function evaluateMasterClinicalProfile({
     adjusted.safetyCues.push('إضافة 450 سعرة لدعم إدرار الحليب مع ترطيب مكثف بالماء.');
   }
 
+  
+  // 25. مرض السيلياك وحساسية الجلوتين
+  if (conds.includes('CELIAC_DISEASE')) {
+    adjusted.prescribedNutrients.push('STRICT_GLUTEN_FREE_CERTIFIED');
+    adjusted.safetyCues.push('اعتماد نظام خالٍ تماماً من الجلوتين واستخدام شوفان معتمد Gluten-Free لمنع تحسس بطانة الأمعاء.');
+  }
+
+  // 26. هشاشة العظام
+  if (conds.includes('OSTEOPOROSIS')) {
+    adjusted.biomechanicalRestrictions.push('NO_LOADED_SPINAL_FLEXION_AND_TWISTING');
+    adjusted.prescribedNutrients.push('HIGH_CALCIUM_VITAMIN_D3');
+    adjusted.safetyCues.push('تجنب حركات الالتواء العنيفة للجذع، والتركيز على تمارين الأجهزة المستقرة لتحفيز كثافة العظام.');
+  }
+
+  // 27. أنيميا الفول
+  if (conds.includes('G6PD_DEFICIENCY')) {
+    adjusted.prohibitedSupplements.push('HIGH_DOSE_VITAMIN_C', 'OXIDATIVE_HERBS');
+    adjusted.prescribedNutrients.push('ZERO_FAVA_BEANS');
+    adjusted.safetyCues.push('حظر تام للفول والبقوليات المسببة لتكسر الدم مع تجنب المكملات المؤكسدة.');
+  }
+
   return adjusted;
 }

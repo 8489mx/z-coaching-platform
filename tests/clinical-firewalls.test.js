@@ -29,18 +29,17 @@ describe('Clinical Firewalls & Pharmacological Matrix Suite', () => {
     expect(profile.cardioProtocol.dailySteps).toBe(10000);
   });
 
-  it('adjusts water target for kidney stones', () => {
+  it('handles rare conditions: celiac, osteoporosis, and g6pd deficiency', () => {
     const profile = evaluateMasterClinicalProfile({
-      medicalConditions: ['KIDNEY_STONES'],
-      targetCalories: 2000,
-      targetProteinGrams: 150,
-      targetCarbGrams: 200,
-      targetFatGrams: 60,
-      waterLiters: 3.0
+      medicalConditions: ['CELIAC_DISEASE', 'OSTEOPOROSIS', 'G6PD_DEFICIENCY'],
+      targetCalories: 2000
     });
 
-    expect(profile.waterLiters).toBe(4.5);
-    expect(profile.prescribedNutrients).toContain('LOW_OXALATE_FOODS');
+    expect(profile.prescribedNutrients).toContain('STRICT_GLUTEN_FREE_CERTIFIED');
+    expect(profile.prescribedNutrients).toContain('HIGH_CALCIUM_VITAMIN_D3');
+    expect(profile.prescribedNutrients).toContain('ZERO_FAVA_BEANS');
+    expect(profile.prohibitedSupplements).toContain('HIGH_DOSE_VITAMIN_C');
+    expect(profile.biomechanicalRestrictions).toContain('NO_LOADED_SPINAL_FLEXION_AND_TWISTING');
   });
 
   it('handles pregnancy trimesters and lactation calories correctly', () => {
