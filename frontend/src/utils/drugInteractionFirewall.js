@@ -1,5 +1,5 @@
 /**
- * Zero-Conflict Pharmacological Isolation & 22-Condition Clinical Firewall
+ * Zero-Conflict Pharmacological Isolation & 22-Condition Clinical Safety Matrix
  */
 
 export const INSULIN_DRUG_KEYS = [
@@ -99,7 +99,8 @@ export function evaluatePharmacologicalFirewall(medicationsList = []) {
 }
 
 /**
- * Master Stacked Clinical & Orthopedic Firewall Engine (22-Condition Comprehensive Matrix)
+ * Master Omni-Clinical, Pharmacological & Orthopedic Safety Firewall
+ * Handles 22 Distinct Medical & Physical Conditions Deterministically
  */
 export function evaluateMasterClinicalProfile({
   medicalConditions = [],
@@ -107,7 +108,8 @@ export function evaluateMasterClinicalProfile({
   targetCalories = 2000,
   targetProteinGrams = 150,
   targetCarbGrams = 200,
-  targetFatGrams = 60
+  targetFatGrams = 60,
+  waterLiters = 3.5
 }) {
   let adjusted = {
     calories: targetCalories,
@@ -115,117 +117,130 @@ export function evaluateMasterClinicalProfile({
     carbGrams: targetCarbGrams,
     fatGrams: targetFatGrams,
     fiberGrams: 28,
+    waterLiters: waterLiters || 3.5,
     prohibitedSupplements: [],
     prescribedNutrients: [],
     biomechanicalRestrictions: [],
+    cardioProtocol: { type: 'LISS', dailySteps: 8000, maxHeartRateZone: 3 },
     safetyCues: []
   };
 
   const conds = (Array.isArray(medicalConditions) ? medicalConditions : [medicalConditions])
     .map(c => String(c || '').toUpperCase());
 
-  // 1. سكري النوع الأول أو النوع الثاني المعتمد على الأنسولين
+  // 1. سكري الأنسولين
   if (conds.includes('TYPE_1_DIABETES') || conds.includes('TYPE_2_DIABETES_INSULIN') || conds.includes('INSULIN_DEPENDENT')) {
     adjusted.carbGrams = Math.max(adjusted.carbGrams, 130);
-    adjusted.safetyCues.push('قاعدة 15-15: احتفظ بمصدر سكر سريع بحقيبة الجيم. تجنب الحقن السريع في العضلة المستهدفة بالتمرين.');
+    adjusted.safetyCues.push('قاعدة 15-15: احتفظ بـ 15 جم سكر سريع في حقيبة الجيم، وتجنب الحقن السريع في العضلة المستهدفة بالتمرين.');
   }
 
-  // 2. سكري النوع الثاني الفموي / مقاومة الإنسولين / تكيس المبايض
+  // 2. سكري النوع الثاني ومقاومة الإنسولين
   if (conds.includes('TYPE_2_DIABETES_ORAL') || conds.includes('PCOS_IR') || conds.includes('INSULIN_RESISTANCE')) {
     adjusted.fiberGrams = Math.max(adjusted.fiberGrams, 35);
     adjusted.prescribedNutrients.push('LOW_GI_CARBOHYDRATES');
-    adjusted.safetyCues.push('اعتماد النشويات منخفضة المؤشر الجلايسيمي لحماية حساسية الإنسولين وتثبيت سكر الدم.');
+    adjusted.fatGrams = Math.round(adjusted.fatGrams * 1.15); // دعم الهرمونات بالدهون الصحية
+    adjusted.safetyCues.push('اعتماد نشويات منخفضة المؤشر الجلايسيمي لحماية حساسية الإنسولين واستقرار الطاقة.');
   }
 
   // 3. خمول الغدة الدرقية
   if (conds.includes('HYPOTHYROIDISM')) {
-    adjusted.safetyCues.push('عزل حبة الغدة (Eltroxin) 4 ساعات كاملة عن الكالسيوم والألبان والحديد والألياف الكثيفة.');
+    adjusted.calories = Math.round(adjusted.calories * 0.90);
+    adjusted.cardioProtocol.dailySteps = 10000;
+    adjusted.safetyCues.push('تناول دواء الغدة صباحاً على معدة فارغة وافصله 4 ساعات عن مكملات الكالسيوم والحديد.');
   }
 
   // 4. الكبد الدهني
   if (conds.includes('FATTY_LIVER')) {
-    adjusted.prescribedNutrients.push('OMEGA_3_FATTY_ACIDS', 'LEAFY_GREENS');
-    adjusted.safetyCues.push('تقييد الدهون المشبعة بأقل من 7%، وحظر السكريات المكررة وعصائر الفركتوز لحماية الكبد.');
+    adjusted.prescribedNutrients.push('ZERO_SIMPLE_FRUCTOSE');
+    adjusted.cardioProtocol.dailySteps = 10000;
   }
 
   // 5. ضغط الدم المرتفع
   if (conds.includes('HYPERTENSION')) {
     adjusted.prohibitedSupplements.push('HIGH_STIM_PREWORKOUT', 'YOHIMBINE', 'FAT_BURNERS');
     adjusted.biomechanicalRestrictions.push('NO_VALSALVA_MANEUVER', 'NO_1RM_TESTING');
-    adjusted.safetyCues.push('تنفس بانتظام مع الدفع وتجنب كتم النفس داخل الجيم، وابتعد عن مكملات الطاقة عالية الكافيين.');
+    adjusted.safetyCues.push('تنفس بانتظام وتجنب كتم النفس أثناء الرفع، وابتعد تماماً عن مكملات الطاقة العالية.');
   }
 
-  // 6. أدوية السيولة
+  // 6. أدوية السيولة ومضادات التجلط
   if (conds.includes('BLOOD_THINNERS')) {
-    adjusted.prohibitedSupplements.push('HIGH_DOSE_VITAMIN_E', 'GINKGO_BILOBA', 'HIGH_DOSE_GINSENG');
-    adjusted.safetyCues.push('تثبيت الحصة اليومية من الخضروات الغنية بفيتامين K دون تذبذب حاد لضبط سيولة الدم.');
+    adjusted.prohibitedSupplements.push('HIGH_DOSE_OMEGA3_OVER_2000MG', 'VITAMIN_E_HIGH_DOSE', 'GINSENG');
+    adjusted.biomechanicalRestrictions.push('NO_HEAVY_CONTACT_TRAINING');
+    adjusted.safetyCues.push('تثبيت حصص الخضروات الورقية الخضراء (Vitamin K) وتجنب التغيير المفاجئ في استهلاكها.');
   }
 
-  // 7. الأنيميا الحادة
+  // 7. الأنيميا ونقص مخزون الحديد
   if (conds.includes('SEVERE_ANEMIA')) {
-    adjusted.safetyCues.push('فصل الشاي والقهوة ومنتجات الكالسيوم ساعتين عن الوجبات الغنية بالحديد، ودمج فيتامين C لتعزيز الامتصاص.');
+    adjusted.prescribedNutrients.push('IRON_WITH_VITAMIN_C');
+    adjusted.cardioProtocol.type = 'LIGHT_LISS_ONLY';
+    adjusted.safetyCues.push('افصل الشاي والقهوة ومنتجات الألبان ساعتين عن وجبات الحديد، وزد فترات الراحة بين الجولات لـ 2.5 دقيقة.');
   }
 
-  // 8. جراحات السمنة (تكميم / تحويل مسار)
+  // 8. جراحات السمنة وتكميم المعدة
   if (conds.includes('BARIATRIC_SURGERY')) {
-    adjusted.proteinGrams = Math.max(adjusted.proteinGrams, Math.round((weightKg || 75) * 1.8));
-    adjusted.safetyCues.push('تقسيم الوجبات إلى 5-6 وجبات صغيرة، وفصل السوائل 30 دقيقة قبل وبعد الوجبة مع الالتزام بالملتي فيتامين.');
+    adjusted.proteinGrams = Math.max(adjusted.proteinGrams, Math.round((weightKg || 75) * 2.0));
+    adjusted.prescribedNutrients.push('WHEY_ISOLATE_FLUID_SEPARATION');
+    adjusted.safetyCues.push('افصل شرب الماء والسوائل عن الوجبة بـ 30 دقيقة قبل وبعد لتجنب الغثيان ومتلازمة الإغراق.');
   }
 
-  // 9. القولون العصبي
+  // 9. القولون العصبي والحساسيات
   if (conds.includes('IBS')) {
     adjusted.prescribedNutrients.push('LOW_FODMAP_DIET');
-    adjusted.safetyCues.push('استبعاد البقوليات غير المنقوعة، المحليات الكحولية، واللاكتوز العالي لتفادي الانتفاخ.');
+    adjusted.safetyCues.push('استبعاد البقوليات غير المنقوعة، المحليات الصناعية الكحولية، واللاكتوز العالي لتفادي تهيج القولون.');
   }
 
   // 10. ارتجاع المريء
   if (conds.includes('GERD_REFLUX')) {
-    adjusted.biomechanicalRestrictions.push('NO_INVERTED_EXERCISES_DECLINE_BENCH');
-    adjusted.safetyCues.push('تجنب الاستلقاء أو التمارين المقلوبة بعد الوجبات مباشرة، والابتعاد عن الوجبات الدسمة والحارة قبل التمرين.');
+    adjusted.biomechanicalRestrictions.push('NO_INVERTED_EXERCISES_POST_MEAL');
+    adjusted.safetyCues.push('منع تناول وجبات دسمة قبل التمرين بساعتين، وتجنب التمارين المقلوبة أو ارتداء أحزمة البطن الضيقة.');
   }
 
   // 11. استئصال المرارة
   if (conds.includes('CHOLECYSTECTOMY')) {
-    adjusted.safetyCues.push('توزيع حصة الدهون بالتساوي على كافة الوجبات وتجنب الوجبات عالية الدسم دفعة واحدة.');
+    adjusted.safetyCues.push('توزيع الدهون على 4-5 وجبات بحد أقصى 15-20 جم دهون للوجبة الواحدة لضمان راحة الهضم.');
   }
 
   // 12. القصور الكلوي
   if (conds.includes('RENAL_INSUFFICIENCY')) {
     adjusted.proteinGrams = Math.round((weightKg || 75) * 1.1);
     adjusted.prohibitedSupplements.push('CREATINE');
-    adjusted.safetyCues.push('تقنين البروتين إلى 1.1 جم/كجم لحماية الكلى مع حظر تام لمكمل الكرياتين.');
+    adjusted.safetyCues.push('تقنين البروتين عند 1.1 جم/كجم لحماية الكلى مع حظر تام لمكمل الكرياتين.');
   }
 
-  // 13. داء النقرس
+  // 13. النقرس واليوريك أسيد
   if (conds.includes('GOUT')) {
-    adjusted.prohibitedSupplements.push('HIGH_PURINE_EXTRACTS');
-    adjusted.safetyCues.push('استبعاد الأحشاء الداخلية (كبدة/كلاوي) والماكريل واللحوم عالية البيورين، ورفع شرب الماء لمنع نوبات النقرس.');
+    adjusted.waterLiters = Math.max(adjusted.waterLiters, 4.0);
+    adjusted.prescribedNutrients.push('LOW_PURINE_PROTEIN_SOURCES');
+    adjusted.safetyCues.push('الاعتماد على البيض والجبن القريش والواي بروتين، وشرب 4 لتر ماء يومياً لطرد اليوريك أسيد.');
   }
 
-  // 14. حساسية الصدر والربو
+  // 14. الربو القصبي وحساسية الصدر
   if (conds.includes('BRONCHIAL_ASTHMA')) {
-    adjusted.safetyCues.push('إحماء تدريجي ممتد لـ 10-15 دقيقة، واصطحاب بخاخ الربو الإسعافي داخل حقيبة الجيم دائماً.');
+    adjusted.biomechanicalRestrictions.push('EXTENDED_DYNAMIC_WARMUP_15MIN');
+    adjusted.cardioProtocol.type = 'GRADUAL_LISS';
+    adjusted.safetyCues.push('إحماء تدريجي بطيء لمدة 15 دقيقة، واحتفظ بالبخاخ الوقائي معك دائماً في الجيم.');
   }
 
   // 15. أدوية التخسيس (GLP-1)
   if (conds.includes('GLP1_USER')) {
     adjusted.proteinGrams = Math.max(adjusted.proteinGrams, Math.round((weightKg || 75) * 2.3));
-    adjusted.safetyCues.push('رفع نسبة البروتين لحماية العضلات والاعتماد على السوائل المغذية عند هبوط الشهية.');
+    adjusted.safetyCues.push('رفع البروتين لحماية العضلات من الهدم والاعتماد على السموذي الغني عند هبوط الشهية.');
   }
 
-  // 16. الروكتان (Isotretinoin)
+  // 16. الروكتان
   if (conds.includes('ROACCUTANE_USER')) {
     adjusted.prohibitedSupplements.push('VITAMIN_A');
-    adjusted.safetyCues.push('حظر مكملات فيتامين A والابتعاد عن الوصول للفشل العضلي الشديد لحماية المفاصل وإنزيمات الكبد.');
+    adjusted.prescribedNutrients.push('OMEGA_3_JOINT_SUPPORT');
+    adjusted.safetyCues.push('ترطيب مكثف بالماء وأوميجا-3، وتجنب رفع أوزان الإجهاد الأقصى بسبب جفاف الأربطة والمفاصل.');
   }
 
   // 17. الكورتيزون المزمن
   if (conds.includes('CORTICOSTEROIDS')) {
-    adjusted.prescribedNutrients.push('CALCIUM_VITAMIN_D3');
-    adjusted.safetyCues.push('حماية كثافة العظام بالحرص على الكالسيوم وفيتامين د، وضبط الصوديوم لتقليل احتباس السوائل.');
+    adjusted.prescribedNutrients.push('LOW_SODIUM_HIGH_CALCIUM');
+    adjusted.proteinGrams = Math.round(adjusted.proteinGrams * 1.15);
   }
 
-  // 18. آلام أسفل الظهر
+  // 18. أسفل الظهر والغضروف
   if (conds.includes('LOWER_BACK_PAIN')) {
     adjusted.biomechanicalRestrictions.push('NO_AXIAL_LOADING_SQUAT_DEADLIFT');
   }
@@ -235,21 +250,22 @@ export function evaluateMasterClinicalProfile({
     adjusted.biomechanicalRestrictions.push('SCAPULAR_PLANE_PRESSING_ONLY');
   }
 
-  // 20. آلام صابونة الركبة
+  // 20. صابونة الركبة
   if (conds.includes('PATELLAR_TENDINITIS')) {
     adjusted.biomechanicalRestrictions.push('NO_OPEN_CHAIN_LEG_EXTENSIONS');
   }
 
-  // 21. الفتق والدوالي الشديدة
+  // 21. الفتق ودوالي الساقين
   if (conds.includes('HERNIA_VARICOSE')) {
-    adjusted.biomechanicalRestrictions.push('NO_HEAVY_LEG_PRESS_HIGH_IAP', 'NO_VALSALVA_MANEUVER');
-    adjusted.safetyCues.push('تجنب الضغط البطني العنيف وأجهزة الليج بريس الثقيلة، والابتعاد عن الوقوف الثابت لفترات طويلة.');
+    adjusted.biomechanicalRestrictions.push('NO_VALSALVA_HEAVY_LEG_PRESS', 'PREFER_SEATED_AND_LYING');
+    adjusted.safetyCues.push('حظر كتم النفس أثناء الرفع، وتفضيل تمارين الدفع أثناء الجلوس أو الاستلقاء لحماية الأوردة وجدار البطن.');
   }
 
   // 22. الرضاعة الطبيعية
   if (conds.includes('LACTATION')) {
     adjusted.calories += 450;
     adjusted.biomechanicalRestrictions.push('NO_INTRA_ABDOMINAL_CRUNCHES');
+    adjusted.safetyCues.push('إضافة 450 سعرة لدعم إدرار الحليب، وحظر تمارين البطن الطاحنة لحماية عضلات قاع الحوض.');
   }
 
   return adjusted;
