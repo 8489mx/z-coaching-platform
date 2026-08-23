@@ -21,7 +21,7 @@ export default function NewClientQuickModal({ isOpen, onClose, onClientCreated }
   const [phone, setPhone] = useState('');
   const [fullName, setFullName] = useState('');
   const [selectedTier, setSelectedTier] = useState('MAX'); // 'MAX' (Gold) | 'ELITE' (Blue)
-  const [selectedDuration, setSelectedDuration] = useState('4M'); // '4M' (4 شهور) | '6M' (6 شهور)
+  const [selectedDuration, setSelectedDuration] = useState('4M'); // '4M' (4 شهور) | '8M' (8 شهور)
   const [loading, setLoading] = useState(false);
   const [newClient, setNewClient] = useState(null);
   const [copied, setCopied] = useState(false);
@@ -54,7 +54,7 @@ export default function NewClientQuickModal({ isOpen, onClose, onClientCreated }
   };
 
   const packageCode = `${selectedTier}_${selectedDuration}`;
-  const packageLabel = `باقة ${selectedTier === 'MAX' ? 'MAX' : 'ELITE'} — ${selectedDuration === '4M' ? '4 شهور' : '6 شهور'}`;
+  const packageLabel = `باقة ${selectedTier === 'MAX' ? 'MAX' : 'ELITE'} — ${selectedDuration === '4M' ? '4 شهور' : '8 شهور'}`;
 
   const handleCreate = async (e) => {
     e.preventDefault();
@@ -73,7 +73,7 @@ export default function NewClientQuickModal({ isOpen, onClose, onClientCreated }
           phone_number: phone.trim(),
           full_name: fullName.trim() || undefined,
           subscription_package: packageCode,
-          subscription_price: selectedTier === 'MAX' ? (selectedDuration === '4M' ? 2800 : 4200) : (selectedDuration === '4M' ? 3800 : 5800)
+          subscription_price: selectedTier === 'MAX' ? (selectedDuration === '4M' ? 4500 : 8000) : (selectedDuration === '4M' ? 3000 : 5500)
         })
       });
 
@@ -312,7 +312,7 @@ export default function NewClientQuickModal({ isOpen, onClose, onClientCreated }
                   </div>
                 </div>
 
-                {/* 4. Duration Selector: 4 شهور vs 6 شهور */}
+                {/* 4. Duration Selector: 4 شهور vs 8 شهور */}
                 <div className="mb-4">
                   <label className="form-label fw-bold text-dark small mb-2" style={{ fontSize: '0.82rem' }}>
                     مدة الاشتراك
@@ -336,18 +336,18 @@ export default function NewClientQuickModal({ isOpen, onClose, onClientCreated }
                     </button>
                     <button
                       type="button"
-                      onClick={() => setSelectedDuration('6M')}
+                      onClick={() => setSelectedDuration('8M')}
                       className="btn flex-fill fw-bold py-2"
                       style={{
                         borderRadius: '12px',
                         fontSize: '0.86rem',
-                        border: selectedDuration === '6M' ? `2px solid ${themeColor}` : '1.5px solid #E2E8F0',
-                        background: selectedDuration === '6M' ? themeBg : '#FFFFFF',
-                        color: selectedDuration === '6M' ? (isMax ? '#92400E' : '#0369A1') : '#64748B',
+                        border: selectedDuration === '8M' ? `2px solid ${themeColor}` : '1.5px solid #E2E8F0',
+                        background: selectedDuration === '8M' ? themeBg : '#FFFFFF',
+                        color: selectedDuration === '8M' ? (isMax ? '#92400E' : '#0369A1') : '#64748B',
                         transition: 'all 0.15s ease'
                       }}
                     >
-                      6 شهور
+                      8 شهور
                     </button>
                   </div>
 

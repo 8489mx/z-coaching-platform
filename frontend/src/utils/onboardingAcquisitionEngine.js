@@ -9,59 +9,103 @@ export const SUPPORTED_PACKAGES = {
     id: 'MAX_4M',
     name_ar: 'باقة ماكس (4 شهور)',
     tier: 'MAX',
-    tier_name: 'Max',
+    tier_name: 'M A X',
     duration_months: 4,
-    price_egp: 2800,
-    price_usd: 95,
-    features: ['متابعة دورية مباشرة عبر الواتساب', 'خطة تغذية مخصصة وتعديل دوري', 'برنامج تدريبي كامل للجيم والبيت', 'تحليل مقاطع الفيديو والتكنيك']
+    base_months: 3,
+    bonus_months: 1,
+    total_days: 120,
+    price_egp: 4500,
+    original_price_egp: 7500,
+    checkin_interval_days: 7,
+    support_sla_hours: 6,
+    features: [
+      'برنامج تدريب مفصل وتغذية مرنة مع حساب دقيق للماكروز',
+      'مراجعة وتحديث شامل لخطتك وتطورك كل أسبوع',
+      'تحليل أسبوعي عميق للاستشفاء وجودة النوم ومستويات الطاقة',
+      'فحص وتصحيح مفتوح لجميع فيديوهات التمارين لضبط التكنيك',
+      'دعم صوتي مخصص مع أولوية قصوى في الرد والتواصل'
+    ]
   },
-  MAX_6M: {
-    code: 'MAX_6M',
-    id: 'MAX_6M',
-    name_ar: 'باقة ماكس (6 شهور)',
+  MAX_8M: {
+    code: 'MAX_8M',
+    id: 'MAX_8M',
+    name_ar: 'باقة ماكس (8 شهور)',
     tier: 'MAX',
-    tier_name: 'Max',
-    duration_months: 6,
-    price_egp: 4200,
-    price_usd: 145,
-    features: ['متابعة دورية مباشرة عبر الواتساب', 'خطة تغذية وتعديل مستمر', 'برمجة تدريبية لميزوسايكلز متعددة', 'تحليل حركي وتكنيك مستمر']
+    tier_name: 'M A X',
+    duration_months: 8,
+    base_months: 6,
+    bonus_months: 2,
+    total_days: 240,
+    price_egp: 8000,
+    original_price_egp: 13500,
+    checkin_interval_days: 7,
+    support_sla_hours: 6,
+    features: [
+      'برنامج تدريب مفصل وتغذية مرنة مع حساب دقيق للماكروز',
+      'مراجعة وتحديث شامل لخطتك وتطورك كل أسبوع',
+      'تحليل أسبوعي عميق للاستشفاء وجودة النوم ومستويات الطاقة',
+      'فحص وتصحيح مفتوح لجميع فيديوهات التمارين لضبط التكنيك',
+      'دعم صوتي مخصص مع أولوية قصوى في الرد والتواصل'
+    ]
   },
   ELITE_4M: {
     code: 'ELITE_4M',
     id: 'ELITE_4M',
     name_ar: 'باقة إيليت (4 شهور)',
     tier: 'ELITE',
-    tier_name: 'Elite',
+    tier_name: 'ELITE',
     duration_months: 4,
-    price_egp: 3800,
-    price_usd: 130,
-    features: ['متابعة VIP وتدريب شخصي مخصص', 'تعديل فوري للماكروز والدايت', 'تحليل حركي متقدم وبروتوكول استشفاء', 'دعم سريري وإصابات كامل']
-  },
-  ELITE_6M: {
-    code: 'ELITE_6M',
-    id: 'ELITE_6M',
-    name_ar: 'باقة إيليت (6 شهور)',
-    tier: 'ELITE',
-    tier_name: 'Elite',
-    duration_months: 6,
-    price_egp: 5800,
-    price_usd: 195,
-    features: ['متابعة VIP وتدريب شخصي مخصص', 'تعديل فوري للماكروز والدايت', 'تحليل حركي متقدم وبروتوكول استشفاء', 'دعم سريري وإصابات كامل']
-  },
-  // Backward compatibility aliases
-  MAX_8M: {
-    code: 'MAX_6M',
-    id: 'MAX_6M',
-    name_ar: 'باقة ماكس (6 شهور)',
-    tier: 'MAX',
-    duration_months: 6
+    base_months: 3,
+    bonus_months: 1,
+    total_days: 120,
+    price_egp: 3000,
+    original_price_egp: 5000,
+    checkin_interval_days: 14,
+    support_sla_hours: 24,
+    features: [
+      'برنامج تدريب مفصل ونظام تغذية مرن وحساب دقيق للماكروز',
+      'تقييم ومراجعة شاملة لمسار خطتك ونتائجك كل 14 يوم',
+      'بروتوكول متكامل لـ Cardio - Mobility - Stretching',
+      'مراجعة وتحليل أداء أهم التمارين الأساسية لتصحيح التكنيك',
+      'دعم وتواصل مستمر عبر WhatsApp خلال 24 ساعة'
+    ]
   },
   ELITE_8M: {
-    code: 'ELITE_6M',
-    id: 'ELITE_6M',
-    name_ar: 'باقة إيليت (6 شهور)',
+    code: 'ELITE_8M',
+    id: 'ELITE_8M',
+    name_ar: 'باقة إيليت (8 شهور)',
     tier: 'ELITE',
-    duration_months: 6
+    tier_name: 'ELITE',
+    duration_months: 8,
+    base_months: 6,
+    bonus_months: 2,
+    total_days: 240,
+    price_egp: 5500,
+    original_price_egp: 9000,
+    checkin_interval_days: 14,
+    support_sla_hours: 24,
+    features: [
+      'برنامج تدريب مفصل ونظام تغذية مرن وحساب دقيق للماكروز',
+      'تقييم ومراجعة شاملة لمسار خطتك ونتائجك كل 14 يوم',
+      'بروتوكول متكامل لـ Cardio - Mobility - Stretching',
+      'مراجعة وتحليل أداء أهم التمارين الأساسية لتصحيح التكنيك',
+      'دعم وتواصل مستمر عبر WhatsApp خلال 24 ساعة'
+    ]
+  },
+  // Backward compatibility aliases
+  MAX_6M: {
+    code: 'MAX_8M',
+    id: 'MAX_8M',
+    name_ar: 'باقة ماكس (8 شهور)',
+    tier: 'MAX',
+    duration_months: 8
+  },
+  ELITE_6M: {
+    code: 'ELITE_8M',
+    id: 'ELITE_8M',
+    name_ar: 'باقة إيليت (8 شهور)',
+    tier: 'ELITE',
+    duration_months: 8
   },
   MAX_3_PLUS_1: {
     code: 'MAX_4M',
