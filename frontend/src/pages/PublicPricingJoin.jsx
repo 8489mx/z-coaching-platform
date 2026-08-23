@@ -84,11 +84,11 @@ export default function PublicPricingJoin() {
                 transition: 'all 0.15s ease'
               }}
             >
-              4 شهور (16 أسبوعاً)
+              4 شهور (4 شهور)
             </button>
             <button
               type="button"
-              onClick={() => setDurationMonths(8)}
+              onClick={() => setDurationMonths(6)}
               style={{
                 padding: '8px 20px',
                 borderRadius: '10px',
@@ -96,12 +96,12 @@ export default function PublicPricingJoin() {
                 fontWeight: 800,
                 border: 'none',
                 cursor: 'pointer',
-                background: durationMonths === 8 ? '#0284C7' : 'transparent',
-                color: durationMonths === 8 ? '#FFFFFF' : '#94A3B8',
+                background: durationMonths === 6 ? '#0284C7' : 'transparent',
+                color: durationMonths === 6 ? '#FFFFFF' : '#94A3B8',
                 transition: 'all 0.15s ease'
               }}
             >
-              8 شهور (32 أسبوعاً)
+              6 شهور (6 شهور)
             </button>
           </div>
         </div>
@@ -166,7 +166,7 @@ export default function PublicPricingJoin() {
                   <strong style={{ fontSize: '1.05rem' }}>باقة ماكس (Max)</strong>
                 </div>
                 <div style={{ fontSize: '1.4rem', fontWeight: 900, color: '#38BDF8', marginBottom: '12px' }}>
-                  {durationMonths === 4 ? '2,800' : '4,800'} <span style={{ fontSize: '0.75rem', color: '#94A3B8' }}>ج.م / {durationMonths === 4 ? '4 شهور (16 أسبوعاً)' : '8 شهور (32 أسبوعاً)'}</span>
+                  {durationMonths === 4 ? '2,800' : '4,800'} <span style={{ fontSize: '0.75rem', color: '#94A3B8' }}>ج.م / {durationMonths === 4 ? '4 شهور (4 شهور)' : '6 شهور (6 شهور)'}</span>
                 </div>
                 <ul style={{ listStyle: 'none', padding: 0, margin: 0, fontSize: '0.78rem', color: '#CBD5E1', display: 'flex', flexDirection: 'column', gap: '6px' }}>
                   <li>✓ متابعة دورية مباشرة عبر الواتساب</li>
@@ -196,7 +196,7 @@ export default function PublicPricingJoin() {
                   <strong style={{ fontSize: '1.05rem' }}>باقة إيليت (Elite)</strong>
                 </div>
                 <div style={{ fontSize: '1.4rem', fontWeight: 900, color: '#38BDF8', marginBottom: '12px' }}>
-                  {durationMonths === 4 ? '3,800' : '6,800'} <span style={{ fontSize: '0.75rem', color: '#94A3B8' }}>ج.م / {durationMonths === 4 ? '4 شهور (16 أسبوعاً)' : '8 شهور (32 أسبوعاً)'}</span>
+                  {durationMonths === 4 ? '3,800' : '6,800'} <span style={{ fontSize: '0.75rem', color: '#94A3B8' }}>ج.م / {durationMonths === 4 ? '4 شهور (4 شهور)' : '6 شهور (6 شهور)'}</span>
                 </div>
                 <ul style={{ listStyle: 'none', padding: 0, margin: 0, fontSize: '0.78rem', color: '#CBD5E1', display: 'flex', flexDirection: 'column', gap: '6px' }}>
                   <li>✓ متابعة VIP وتدريب شخصي مخصص</li>

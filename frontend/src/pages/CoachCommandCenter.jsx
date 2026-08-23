@@ -31,7 +31,7 @@ export default function CoachCommandCenter() {
 
   // إحصائيات سريعة للـ KPI Cards
   const stats = [
-    { title: 'إجمالي المشتركين النشطين', value: '48', change: '+12% هذا الشهر', icon: Users, color: '#0284C7', bg: '#E0F2FE' },
+    { title: 'إجمالي المشتركين النشطين', value: '48', change: '+12% هذا الشهر', icon: Users, color: '#00A3FF', bg: '#E0F2FE' },
     { title: 'متابعات تنتظر الاعتماد', value: '2', change: 'اليوم', icon: Clock, color: '#D97706', bg: '#FEF3C7' },
     { title: 'طوارئ المفاصل والعيادة', value: '1', change: 'تدخل عاجل', icon: ShieldAlert, color: '#E11D48', bg: '#FFE4E6' },
     { title: 'تجديدات خلال 7 أيام', value: '3', change: 'باقات منتهية', icon: Hourglass, color: '#4F46E5', bg: '#EEF2FF' },
@@ -43,7 +43,7 @@ export default function CoachCommandCenter() {
       id: 'ACT_01',
       type: 'CHECKIN',
       clientName: 'سارة المنصوري',
-      tier: 'باقة ماكس (Max)',
+      tier: 'باقة MAX',
       phone: '+966501234567',
       summary: 'نزول 1.6 كجم من الوزن والمحيطات في أسبوعين.',
       suggestedAction: 'الاستمرار بنفس العجز السعري وتثبيت الماكروز.',
@@ -56,7 +56,7 @@ export default function CoachCommandCenter() {
       id: 'ACT_02',
       type: 'CLINICAL',
       clientName: 'ياسمين فهد',
-      tier: 'باقة إيليت (Elite)',
+      tier: 'باقة ELITE',
       phone: '+971509876543',
       summary: 'نغزة ألم في الكتف الأيمن (6/10) أثناء تمرين Overhead Press.',
       suggestedAction: 'استبدال البار بقبضة دمبل محايدة مائلة وتفعيل روتين الكفة المدورة.',
@@ -69,7 +69,7 @@ export default function CoachCommandCenter() {
       id: 'ACT_03',
       type: 'INACTIVE',
       clientName: 'حسام البدري',
-      tier: 'باقة ماكس (Max)',
+      tier: 'باقة MAX',
       phone: '+201012345678',
       summary: 'لم يسجل أي تمرين أو وجبة منذ أكثر من 48 ساعة.',
       suggestedAction: 'إرسال رسالة تشجيع واطمئنان على الواتساب.',
@@ -82,7 +82,7 @@ export default function CoachCommandCenter() {
       id: 'ACT_04',
       type: 'RENEWAL',
       clientName: 'أحمد فتحي',
-      tier: 'باقة إيليت (Elite)',
+      tier: 'باقة ELITE',
       phone: '+201123456789',
       summary: 'متبقي 3 أيام على نهاية باقة الـ 16 أسبوعاً (إنجاز -13.5 كجم).',
       suggestedAction: 'إرسال عرض تجديد الدايت العكسي والبناء العضلي الصافي.',
@@ -110,7 +110,7 @@ export default function CoachCommandCenter() {
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '22px', flexWrap: 'wrap', gap: '14px' }}>
           <div>
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px' }}>
-              <span style={{ fontSize: '0.74rem', fontWeight: 800, color: '#0284C7', background: '#E0F2FE', padding: '2px 8px', borderRadius: '6px' }}>
+              <span style={{ fontSize: '0.74rem', fontWeight: 800, color: '#00A3FF', background: '#E0F2FE', padding: '2px 8px', borderRadius: '6px' }}>
                 Command Cockpit
               </span>
               <span style={{ fontSize: '0.75rem', color: '#64748B', fontWeight: 700 }}>
@@ -148,7 +148,7 @@ export default function CoachCommandCenter() {
               type="button"
               onClick={() => setIsNewClientModalOpen(true)}
               style={{
-                background: 'linear-gradient(135deg, #0284C7 0%, #0369A1 100%)',
+                background: 'linear-gradient(135deg, #00A3FF 0%, #0369A1 100%)',
                 color: '#FFFFFF',
                 border: 'none',
                 padding: '9px 18px',
@@ -230,7 +230,7 @@ export default function CoachCommandCenter() {
                     fontWeight: activeTab === tab.id ? 800 : 600,
                     border: 'none',
                     cursor: 'pointer',
-                    background: activeTab === tab.id ? '#0284C7' : 'transparent',
+                    background: activeTab === tab.id ? '#00A3FF' : 'transparent',
                     color: activeTab === tab.id ? '#FFFFFF' : '#64748B',
                     transition: 'all 0.15s ease'
                   }}
@@ -306,7 +306,7 @@ export default function CoachCommandCenter() {
                       <div style={{ color: '#334155', marginBottom: '4px' }}>
                         <strong style={{ color: '#0F172A' }}>الحالة:</strong> {action.summary}
                       </div>
-                      <div style={{ color: '#0284C7', fontWeight: 700 }}>
+                      <div style={{ color: '#00A3FF', fontWeight: 700 }}>
                         <strong style={{ color: '#0F172A' }}>القرار المقترح:</strong> {action.suggestedAction}
                       </div>
                     </div>
@@ -409,23 +409,23 @@ export default function CoachCommandCenter() {
               {/* بطاقة توزيع الباقات (Elite & Max) */}
               <div style={{ background: '#FFFFFF', border: '1px solid #E2E8F0', borderRadius: '18px', padding: '18px', boxShadow: '0 2px 8px rgba(15, 23, 42, 0.03)' }}>
                 <h3 style={{ fontSize: '0.88rem', fontWeight: 800, color: '#0F172A', margin: '0 0 14px 0', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                  <BarChart3 style={{ width: '16px', height: '16px', color: '#0284C7' }} />
+                  <BarChart3 style={{ width: '16px', height: '16px', color: '#00A3FF' }} />
                   <span>توزيع الباقات النشطة (Elite & Max)</span>
                 </h3>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
                   <div>
                     <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.78rem', marginBottom: '4px' }}>
-                      <span style={{ color: '#64748B', fontWeight: 600 }}>باقة ماكس (Max)</span>
-                      <span style={{ color: '#0284C7', fontWeight: 800 }}>32 مشترك (67%)</span>
+                      <span style={{ color: '#64748B', fontWeight: 600 }}>باقة MAX</span>
+                      <span style={{ color: '#00A3FF', fontWeight: 800 }}>32 مشترك (67%)</span>
                     </div>
                     <div style={{ width: '100%', background: '#F1F5F9', height: '6px', borderRadius: '10px', overflow: 'hidden' }}>
-                      <div style={{ background: '#0284C7', height: '100%', width: '67%', borderRadius: '10px' }}></div>
+                      <div style={{ background: '#00A3FF', height: '100%', width: '67%', borderRadius: '10px' }}></div>
                     </div>
                   </div>
 
                   <div>
                     <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.78rem', marginBottom: '4px' }}>
-                      <span style={{ color: '#64748B', fontWeight: 600 }}>باقة إيليت (Elite)</span>
+                      <span style={{ color: '#64748B', fontWeight: 600 }}>باقة ELITE</span>
                       <span style={{ color: '#4F46E5', fontWeight: 800 }}>16 مشترك (33%)</span>
                     </div>
                     <div style={{ width: '100%', background: '#F1F5F9', height: '6px', borderRadius: '10px', overflow: 'hidden' }}>

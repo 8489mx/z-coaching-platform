@@ -50,10 +50,10 @@ export default function EditSubscriptionModal({
  value={editForm.subscription_package}
  onChange={(e) => setEditForm({ ...editForm, subscription_package: e.target.value })}
  >
- <option value="MAX_4M">باقة ماكس (4 شهور - 16 أسبوعاً)</option>
- <option value="MAX_8M">باقة ماكس (8 شهور - 32 أسبوعاً)</option>
- <option value="ELITE_4M">باقة إيليت (4 شهور - 16 أسبوعاً)</option>
- <option value="ELITE_8M">باقة إيليت (8 شهور - 32 أسبوعاً)</option>
+ <option value="MAX_4M">باقة ماكس (4 شهور)</option>
+ <option value="MAX_6M">باقة ماكس (6 شهور)</option>
+ <option value="ELITE_4M">باقة إيليت (4 شهور)</option>
+ <option value="ELITE_6M">باقة إيليت (6 شهور)</option>
  </select>
  </div>
 
