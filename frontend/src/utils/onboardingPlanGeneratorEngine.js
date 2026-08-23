@@ -51,7 +51,13 @@ export function generateInitialPlan({
   const fatKcal = targetFatGrams * 9;
 
   const remainingKcal = Math.max(0, targetCalories - (proteinKcal + fatKcal));
-  const targetCarbGrams = Math.round(remainingKcal / 4);
+  let targetCarbGrams = Math.round(remainingKcal / 4);
+
+  // Exogenous Insulin Safety Floor
+  const isInsulinDependent = medicalFlags.includes('INSULIN_DEPENDENT') || medicalFlags.includes('INSULIN');
+  if (isInsulinDependent) {
+    targetCarbGrams = Math.max(130, targetCarbGrams);
+  }
 
   const isBeginnerEater = medicalFlags.includes('LOW_FIBER_DIET_HISTORY');
   const targetFiberGrams = isBeginnerEater ? 20 : Math.round((targetCalories / 1000) * 14);
@@ -151,6 +157,14 @@ export function generateInitialPlan({
 
   trainingSplit.recommended_exercises = recommendedExercises;
 
+  const clinicalNotes = [];
+  if (hasRenalIssue) {
+    clinicalNotes.push('تم خفض البروتين تلقائياً إلى 1.1 جم/كجم لحماية الكلى مع حظر الكرياتين.');
+  }
+  if (isInsulinDependent) {
+    clinicalNotes.push('بروتوكول الأنسولين الإكلينيكي: قفل حد أدنى للكربوهيدرات عند 130 جم لمنع هبوط السكر، مع تفعيل قاعدة 15-15 للطوارئ وتوجيه موضع الحقن بعيداً عن العضلات المستهدفة بالتمرين.');
+  }
+
   return {
     client_name: name,
     bmr: Math.round(bmr),
@@ -165,6 +179,6 @@ export function generateInitialPlan({
       water_liters: +((weightKg * 0.04) + 0.5).toFixed(1)
     },
     training_split: { ...trainingSplit, environment },
-    clinical_notes: hasRenalIssue ? ['تم خفض البروتين تلقائياً إلى 1.1 جم/كجم لحماية الكلى مع حظر الكرياتين.'] : []
+    clinical_notes: clinicalNotes
   };
 }

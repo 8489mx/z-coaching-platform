@@ -12,9 +12,26 @@
  *    - Strict ban on Potassium Chloride (KCl) salt substitutes to prevent hyperkalemia.
  * 5. Antibiotics (Fluoroquinolones / Tetracyclines):
  *    - 2-hour separation from dairy and multivalent divalent minerals (Ca, Fe, Mg).
+ * 6. Exogenous Insulin Therapy (Lantus, Novorapid, Apidra, etc.):
+ *    - Minimum 130g carb floor, anti-keto lock, 15-15 emergency rule, and non-working muscle injection directive.
  */
 
+export const INSULIN_DRUG_KEYS = [
+  'INSULIN', 'LANTUS', 'NOVORAPID', 'APIDRA', 'TRESIBA', 'MIXTARD', 'HUMALOG', 'LEVEMIR', 'انسولين'
+];
+
 export const PHARMACOLOGICAL_RULES = {
+  INSULIN: {
+    identifiers: INSULIN_DRUG_KEYS,
+    carb_floor_grams: 130,
+    lock_keto: true,
+    safety_cues_ar: [
+      'قاعدة 15-15: احتفظ بـ 15 جم سكر سريع في حقيبة الجيم (عصير صغير / تمر) للطوارئ.',
+      'توجيه موضع الحقن: تجنب حقن الأنسولين السريع في العضلة المستهدفة بالتمرين في نفس اليوم.',
+      'نطاق الأمان: السكر قبل التمرين يجب أن يكون بين 100 إلى 250 mg/dL.'
+    ],
+    rule_directive_ar: 'بروتوكول الأنسولين الإكلينيكي: قفل حد أدنى للكربوهيدرات عند 130 جم لمنع هبوط السكر، مع تفعيل قاعدة 15-15 للطوارئ وتوجيه موضع الحقن بعيداً عن العضلات المستهدفة بالتمرين.'
+  },
   LEVOTHYROXINE: {
     identifiers: ['ELTROXIN', 'EUTHYROX', 'LEVOTHYROXINE', 'THYROXINE', 'غدة'],
     isolation_hours: 4,
@@ -44,6 +61,30 @@ export const PHARMACOLOGICAL_RULES = {
     rule_directive_ar: 'فاصل أمان ساعتين قبل وبعد الجرعة بعيداً عن منتجات الألبان ومكملات المعادن لتفادي التصالب المخلبي (Chelation) وفقدان فاعلية الدواء.'
   }
 };
+
+export function evaluateInsulinSafety(medicationsList = []) {
+  const normalizedMeds = (Array.isArray(medicationsList) ? medicationsList : [medicationsList])
+    .map(m => String(m || '').toUpperCase());
+
+  const isTakingInsulin = normalizedMeds.some(med => 
+    INSULIN_DRUG_KEYS.some(k => med.includes(k))
+  );
+
+  if (!isTakingInsulin) {
+    return { requires_insulin_protocol: false };
+  }
+
+  return {
+    requires_insulin_protocol: true,
+    carb_floor_grams: 130,
+    lock_keto: true,
+    safety_cues_ar: [
+      'قاعدة 15-15: احتفظ بـ 15 جم سكر سريع في حقيبة الجيم (عصير صغير / تمر) للطوارئ.',
+      'توجيه موضع الحقن: تجنب حقن الأنسولين السريع في العضلة المستهدفة بالتمرين في نفس اليوم.',
+      'نطاق الأمان: السكر قبل التمرين يجب أن يكون بين 100 إلى 250 mg/dL.'
+    ]
+  };
+}
 
 /**
  * Evaluates active pharmacological profile against dietary & supplement prescriptions.
