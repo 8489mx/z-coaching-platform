@@ -114,3 +114,93 @@ export function evaluatePharmacologicalFirewall(medicationsList = []) {
     isolation_directives_ar: activeRules.map(r => r.rule_directive_ar || r.timing_rule_ar)
   };
 }
+
+/**
+ * Master Stacked Clinical & Orthopedic Firewall Engine
+ * Handles multiple stacked conditions simultaneously without conflict
+ */
+export function evaluateMasterClinicalProfile({
+  medicalConditions = [],
+  weightKg = 75,
+  targetCalories = 2000,
+  targetProteinGrams = 150,
+  targetCarbGrams = 200,
+  targetFatGrams = 60
+}) {
+  let adjusted = {
+    calories: targetCalories,
+    proteinGrams: targetProteinGrams,
+    carbGrams: targetCarbGrams,
+    fatGrams: targetFatGrams,
+    fiberGrams: 28,
+    prohibitedSupplements: [],
+    prescribedNutrients: [],
+    biomechanicalRestrictions: [],
+    safetyCues: []
+  };
+
+  const conds = (Array.isArray(medicalConditions) ? medicalConditions : [medicalConditions])
+    .map(c => String(c || '').toUpperCase());
+
+  // 1. سكري النوع الأول أو النوع الثاني المعتمد على الأنسولين
+  if (conds.includes('TYPE_1_DIABETES') || conds.includes('TYPE_2_DIABETES_INSULIN') || conds.includes('INSULIN_DEPENDENT')) {
+    adjusted.carbGrams = Math.max(adjusted.carbGrams, 130);
+    adjusted.safetyCues.push('قاعدة 15-15: احتفظ بمصدر سكر سريع بحقيبة الجيم. تجنب الحقن السريع في العضلة المستهدفة بالتمرين.');
+  }
+
+  // 2. سكري النوع الثاني الفموي / مقاومة الإنسولين / تكيس المبايض
+  if (conds.includes('TYPE_2_DIABETES_ORAL') || conds.includes('PCOS_IR') || conds.includes('INSULIN_RESISTANCE')) {
+    adjusted.fiberGrams = Math.max(adjusted.fiberGrams, 35);
+    adjusted.prescribedNutrients.push('LOW_GI_CARBOHYDRATES');
+    adjusted.safetyCues.push('اعتماد النشويات منخفضة المؤشر الجلايسيمي لحماية حساسية الإنسولين وتثبيت سكر الدم.');
+  }
+
+  // 3. ضغط الدم المرتفع
+  if (conds.includes('HYPERTENSION')) {
+    adjusted.prohibitedSupplements.push('HIGH_STIM_PREWORKOUT', 'YOHIMBINE', 'FAT_BURNERS');
+    adjusted.biomechanicalRestrictions.push('NO_VALSALVA_MANEUVER', 'NO_1RM_TESTING');
+    adjusted.safetyCues.push('تنفس بانتظام مع الدفع وتجنب كتم النفس داخل الجيم، وابتعد عن مكملات الطاقة عالية الكافيين.');
+  }
+
+  // 4. القصور الكلوي
+  if (conds.includes('RENAL_INSUFFICIENCY')) {
+    adjusted.proteinGrams = Math.round((weightKg || 75) * 1.1);
+    adjusted.prohibitedSupplements.push('CREATINE');
+    adjusted.safetyCues.push('تقنين البروتين إلى 1.1 جم/كجم لحماية الكلى مع حظر تام لمكمل الكرياتين.');
+  }
+
+  // 5. القولون العصبي
+  if (conds.includes('IBS')) {
+    adjusted.prescribedNutrients.push('LOW_FODMAP_DIET');
+    adjusted.safetyCues.push('استبعاد البقوليات غير المنقوعة، المحليات الكحولية، واللاكتوز العالي لتفادي الانتفاخ.');
+  }
+
+  // 6. أدوية التخسيس (GLP-1)
+  if (conds.includes('GLP1_USER')) {
+    adjusted.proteinGrams = Math.max(adjusted.proteinGrams, Math.round((weightKg || 75) * 2.3));
+    adjusted.safetyCues.push('رفع نسبة البروتين لحماية العضلات والاعتماد على السوائل المغذية عند هبوط الشهية.');
+  }
+
+  // 7. الرضاعة الطبيعية
+  if (conds.includes('LACTATION')) {
+    adjusted.calories += 450;
+    adjusted.biomechanicalRestrictions.push('NO_INTRA_ABDOMINAL_CRUNCHES');
+  }
+
+  // 8. إصابات أسفل الظهر
+  if (conds.includes('LOWER_BACK_PAIN')) {
+    adjusted.biomechanicalRestrictions.push('NO_AXIAL_LOADING_SQUAT_DEADLIFT');
+  }
+
+  // 9. نغزة مفصل الكتف
+  if (conds.includes('SHOULDER_IMPINGEMENT')) {
+    adjusted.biomechanicalRestrictions.push('SCAPULAR_PLANE_PRESSING_ONLY');
+  }
+
+  // 10. آلام صابونة الركبة
+  if (conds.includes('PATELLAR_TENDINITIS')) {
+    adjusted.biomechanicalRestrictions.push('NO_OPEN_CHAIN_LEG_EXTENSIONS');
+  }
+
+  return adjusted;
+}
