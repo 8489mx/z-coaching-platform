@@ -18,6 +18,7 @@ import IntakeSubmissions from './pages/IntakeSubmissions';
 import FullIntakeForm from './pages/FullIntakeForm';
 import ClientLogin from './pages/ClientLogin';
 import ClientOnboarding from './pages/ClientOnboarding';
+import ClientOnboardingForm from './pages/ClientOnboardingForm';
 import CoachEditor from './pages/CoachEditor';
 import ProgramPdfView from './pages/ProgramPdfView';
 import ProgressClone from './pages/ProgressClone';
@@ -52,7 +53,9 @@ function App() {
           {/* Client Onboarding, Intake & Check-in */}
           <Route path="/join" element={<PublicPricingJoin />} />
           <Route path="/pricing" element={<PublicPricingJoin />} />
-          <Route path="/onboarding" element={<ClientOnboarding />} />
+          <Route path="/onboarding" element={<ClientOnboardingForm />} />
+          <Route path="/onboarding/multi" element={<ClientOnboardingForm />} />
+          <Route path="/onboarding/classic" element={<ClientOnboarding />} />
           <Route path="/intake" element={<ClientLogin />} />
           <Route path="/client/login" element={<ClientLogin />} />
           <Route path="/login" element={<ClientLogin />} />
