@@ -301,6 +301,70 @@ app.get("/api/v1/clients/export/csv", async (req, res) => {
   }
 });
 
+
+// =========================================================================
+// Subscription Management & Coach Quick Actions
+// =========================================================================
+
+// 1. Add Gift Days (+7, +14, +30)
+app.post('/api/v1/coach/add-gift-days', async (req, res) => {
+  try {
+    const { client_id, days = 7 } = req.body;
+    if (!client_id) return res.status(400).json({ success: false, message: 'Client ID required' });
+
+    if (pool) {
+      await pool.execute(
+        'UPDATE clients SET subscription_end_date = DATE_ADD(COALESCE(subscription_end_date, NOW()), INTERVAL ? DAY) WHERE id = ?',
+        [Number(days), client_id]
+      );
+    }
+    res.json({ success: true, message: `تمت إضافة ${days} يوماً مجانية بنجاح` });
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+// 2. Toggle Freeze / Unfreeze
+app.post('/api/v1/coach/toggle-freeze', async (req, res) => {
+  try {
+    const { client_id, status } = req.body; // 'FROZEN' or 'ACTIVE'
+    if (!client_id) return res.status(400).json({ success: false, message: 'Client ID required' });
+
+    const newStatus = status === 'FROZEN' ? 'FROZEN' : 'ACTIVE';
+    if (pool) {
+      await pool.execute(
+        'UPDATE clients SET subscription_status = ? WHERE id = ?',
+        [newStatus, client_id]
+      );
+    }
+    res.json({ 
+      success: true, 
+      subscription_status: newStatus,
+      message: newStatus === 'FROZEN' ? 'تم تجميد الاشتراك بنجاح' : 'تم استئناف الاشتراك بنجاح' 
+    });
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+// 3. Adjust Tier & Package
+app.post('/api/v1/coach/adjust-package', async (req, res) => {
+  try {
+    const { client_id, tier, duration_months } = req.body;
+    if (!client_id) return res.status(400).json({ success: false, message: 'Client ID required' });
+
+    if (pool) {
+      await pool.execute(
+        'UPDATE clients SET tier = COALESCE(?, tier), subscription_duration_months = COALESCE(?, subscription_duration_months) WHERE id = ?',
+        [tier, duration_months, client_id]
+      );
+    }
+    res.json({ success: true, message: 'تم تحديث باقة المشترك بنجاح' });
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
 // 3. Application Domain Routes (CRUD, Auth & Submissions)
 app.use("/api/v1/auth", authRoutes);
 app.use("/api/v1/programs", programRoutes);
