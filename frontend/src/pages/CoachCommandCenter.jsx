@@ -1,108 +1,90 @@
 import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { 
   Users, 
   Clock, 
-  Activity, 
+  ShieldAlert, 
   Hourglass, 
   Search, 
   Plus, 
   MessageCircle, 
-  CheckCircle2, 
-  AlertCircle, 
-  ShieldAlert, 
-  BarChart3, 
-  Flame, 
-  TrendingDown, 
-  ChevronLeft, 
-  ExternalLink, 
-  Copy, 
   Check, 
-  FileText 
+  CheckCircle2, 
+  BarChart3, 
+  Dumbbell, 
+  Calculator, 
+  CreditCard, 
+  LayoutDashboard, 
+  Zap,
+  Activity
 } from 'lucide-react';
-import AdminLayout from '../components/layout/AdminLayout';
-import { API_BASE } from '../config/api';
 
 export default function CoachCommandCenter() {
-  const [activeTab, setActiveTab] = useState('ALL'); // 'ALL' | 'CHECKIN' | 'CLINICAL' | 'INACTIVE' | 'RENEWAL'
+  const navigate = useNavigate();
+  const [activeTab, setActiveTab] = useState('ALL');
   const [searchQuery, setSearchQuery] = useState('');
   const [isNewClientModalOpen, setIsNewClientModalOpen] = useState(false);
-  const [generatedCode, setGeneratedCode] = useState(null);
-  const [newClientName, setNewClientName] = useState('');
-  const [newClientPhone, setNewClientPhone] = useState('');
+  const [generatedCode, setGeneratedCode] = useState('KZ-9421');
   const [copiedCode, setCopiedCode] = useState(false);
 
-  // إحصائيات سريعة للـ KPI Cards
   const stats = [
-    { title: 'إجمالي المشتركين النشطين', value: '48', change: '+12% هذا الشهر', icon: Users, color: '#0284C7', bg: '#E0F2FE' },
-    { title: 'متابعات تنتظر الاعتماد', value: '2', change: 'اليوم', icon: Clock, color: '#D97706', bg: '#FEF3C7' },
-    { title: 'طوارئ المفاصل والعيادة', value: '1', change: 'تدخل عاجل', icon: ShieldAlert, color: '#E11D48', bg: '#FFE4E6' },
-    { title: 'تجديدات خلال 7 أيام', value: '3', change: 'باقات منتهية', icon: Hourglass, color: '#4F46E5', bg: '#EEF2FF' },
+    { title: 'إجمالي المشتركين النشطين', value: '48', change: '+18.2%', isUp: true, icon: Users, iconColor: '#0284C7', iconBg: '#E0F2FE' },
+    { title: 'متابعات تنتظر الاعتماد', value: '2', change: 'اليوم', isUp: true, icon: Clock, iconColor: '#D97706', iconBg: '#FEF3C7' },
+    { title: 'طوارئ المفاصل والتأهيل', value: '1', change: 'عاجل', isUp: false, icon: ShieldAlert, iconColor: '#E11D48', iconBg: '#FFE4E6' },
+    { title: 'تجديدات خلال 7 أيام', value: '3', change: 'باقات منتهية', isUp: true, icon: Hourglass, iconColor: '#4F46E5', iconBg: '#EEF2FF' },
   ];
 
-  // المهام والإجراءات اليومية
-  const [dailyActions, setDailyActions] = useState([
+  const [actions, setActions] = useState([
     {
-      id: 'ACT_01',
+      id: 1,
       type: 'CHECKIN',
-      clientName: 'سارة المنصوري',
-      tier: 'VIP MAX',
+      client: 'سارة المنصوري',
+      tier: 'باقة ماكس VIP',
       phone: '+966501234567',
-      summary: 'نزول 1.6 كجم من الوزن والمحيطات في أسبوعين.',
-      suggestedAction: 'الاستمرار بنفس العجز السعري وتثبيت الماكروز.',
-      badgeColor: '#059669',
-      badgeBg: '#ECFDF5',
-      badgeBorder: '#A7F3D0',
-      badgeText: 'متابعة أسبوعية'
+      metric: 'نزول 1.6 كجم • -2 سم خصر',
+      decision: 'الاستمرار بنفس العجز السعري وتثبيت الماكروز.',
+      badge: 'متابعة أسبوعية',
+      badgeClass: 'bg-emerald-50 text-emerald-700 border-emerald-200/60'
     },
     {
-      id: 'ACT_02',
+      id: 2,
       type: 'CLINICAL',
-      clientName: 'ياسمين فهد',
-      tier: 'ELITE',
+      client: 'ياسمين فهد',
+      tier: 'باقة إيليت',
       phone: '+971509876543',
-      summary: 'نغزة ألم في الكتف الأيمن (6/10) أثناء تمرين Overhead Press.',
-      suggestedAction: 'استبدال البار بقبضة دمبل محايدة مائلة وتفعيل روتين الكفة المدورة.',
-      badgeColor: '#E11D48',
-      badgeBg: '#FFF1F2',
-      badgeBorder: '#FECDD3',
-      badgeText: 'تنبيه مفصلي'
+      metric: 'نغزة ألم بالكتف الأيمن (6/10) بالتمرين',
+      decision: 'استبدال البار بقبضة دمبل محايدة مائلة وتفعيل روتين الكفة المدورة.',
+      badge: 'تنبيه مفصلي',
+      badgeClass: 'bg-rose-50 text-rose-700 border-rose-200/60'
     },
     {
-      id: 'ACT_03',
+      id: 3,
       type: 'INACTIVE',
-      clientName: 'حسام البدري',
-      tier: 'VIP MAX',
+      client: 'حسام البدري',
+      tier: 'باقة ماكس VIP',
       phone: '+201012345678',
-      summary: 'لم يسجل أي تمرين أو وجبة منذ أكثر من 48 ساعة.',
-      suggestedAction: 'إرسال رسالة تشجيع واطمئنان على الواتساب.',
-      badgeColor: '#D97706',
-      badgeBg: '#FFFBEB',
-      badgeBorder: '#FDE68A',
-      badgeText: 'انقطاع 48 ساعة'
+      metric: 'انقطاع 48 ساعة عن تسجيل التمارين',
+      decision: 'إرسال رسالة تشجيع واطمئنان عبر الواتساب.',
+      badge: 'رادار الغياب',
+      badgeClass: 'bg-amber-50 text-amber-700 border-amber-200/60'
     },
     {
-      id: 'ACT_04',
+      id: 4,
       type: 'RENEWAL',
-      clientName: 'أحمد فتحي',
-      tier: 'ELITE',
+      client: 'أحمد فتحي',
+      tier: 'باقة إيليت',
       phone: '+201123456789',
-      summary: 'متبقي 3 أيام على نهاية باقة الـ 14 أسبوعاً (إنجاز -13.5 كجم).',
-      suggestedAction: 'إرسال عرض تجديد الدايت العكسي والبناء العضلي الصافي.',
-      badgeColor: '#4F46E5',
-      badgeBg: '#EEF2FF',
-      badgeBorder: '#C7D2FE',
-      badgeText: 'تجديد اشتراك'
+      metric: 'الأسبوع 14 (إنجاز -13.5 كجم)',
+      decision: 'إرسال عرض تجديد الدايت العكسي والبناء العضلي.',
+      badge: 'تجديد اشتراك',
+      badgeClass: 'bg-indigo-50 text-indigo-700 border-indigo-200/60'
     }
   ]);
 
-  const filteredActions = dailyActions.filter(act => {
-    const matchesTab = activeTab === 'ALL' || act.type === activeTab;
-    const cleanSearch = searchQuery.trim().toLowerCase();
-    const matchesSearch = !cleanSearch || 
-      act.clientName.toLowerCase().includes(cleanSearch) || 
-      act.phone.includes(cleanSearch);
-    return matchesTab && matchesSearch;
+  const filteredActions = actions.filter(act => {
+    const matchTab = activeTab === 'ALL' || act.type === activeTab;
+    const matchSearch = act.client.includes(searchQuery) || act.phone.includes(searchQuery);
+    return matchTab && matchSearch;
   });
 
   const generateNewClient = () => {
@@ -111,448 +93,343 @@ export default function CoachCommandCenter() {
   };
 
   return (
-    <AdminLayout>
-      <div style={{ maxWidth: '1180px', margin: '0 auto', direction: 'rtl', fontFamily: 'Alexandria, Cairo, sans-serif' }}>
-        
-        {/* Top Header Bar */}
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '22px', flexWrap: 'wrap', gap: '14px' }}>
-          <div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px' }}>
-              <span style={{ fontSize: '0.74rem', fontWeight: 800, color: '#0284C7', background: '#E0F2FE', padding: '2px 8px', borderRadius: '6px' }}>
-                Command Cockpit
-              </span>
-              <span style={{ fontSize: '0.75rem', color: '#64748B', fontWeight: 700 }}>
-                مسار الإجراءات والقرارات اليومية
-              </span>
+    <div className="min-h-screen bg-[#F4F6F9] text-slate-800 font-sans flex flex-row-reverse antialiased" dir="rtl">
+      
+      {/* 1. السايدبار الجانبي الفاخر (Sidebar) */}
+      <aside className="w-64 bg-white border-l border-slate-200/80 p-5 flex flex-col justify-between hidden lg:flex shadow-[0_0_15px_rgba(0,0,0,0.02)]">
+        <div className="space-y-6">
+          {/* Identity */}
+          <div className="flex items-center gap-3 px-2 py-1">
+            <div className="w-10 h-10 rounded-xl bg-blue-600 flex items-center justify-center font-bold text-white text-base shadow-md shadow-blue-500/20">
+              KZ
             </div>
-            <h1 style={{ fontSize: '1.45rem', fontWeight: 900, color: '#0F172A', margin: 0 }}>
-              مركز الإجراءات والقرارات اليومية
-            </h1>
+            <div>
+              <h1 className="text-sm font-bold text-slate-900 tracking-tight">كابتن كريم زكريا</h1>
+              <span className="text-[11px] font-medium text-slate-400">Super Admin</span>
+            </div>
           </div>
 
-          <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap' }}>
-            {/* Search Input */}
-            <div style={{ position: 'relative' }}>
-              <input
-                type="text"
-                placeholder="بحث بالاسم أو الهاتف..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                style={{
-                  width: '240px',
-                  background: '#FFFFFF',
-                  border: '1.5px solid #CBD5E1',
-                  borderRadius: '12px',
-                  padding: '8px 14px',
-                  fontSize: '0.82rem',
-                  color: '#0F172A',
-                  outline: 'none'
-                }}
-              />
+          {/* Navigation Links */}
+          <div className="space-y-4">
+            <div>
+              <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider px-3 mb-2 block">الرئيسية والمتابعة</span>
+              <nav className="space-y-1">
+                <Link to="/" className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl bg-blue-50 text-blue-600 font-bold text-xs transition text-decoration-none">
+                  <LayoutDashboard className="w-4 h-4" />
+                  <span>مركز القيادة اليومي</span>
+                </Link>
+                <Link to="/customers" className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-slate-600 hover:bg-slate-50 font-semibold text-xs transition text-decoration-none">
+                  <Users className="w-4 h-4" />
+                  <span>إدارة المشتركين</span>
+                </Link>
+              </nav>
             </div>
 
-            {/* Quick Action Button */}
+            <div>
+              <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider px-3 mb-2 block">البرامج والأدوات</span>
+              <nav className="space-y-1">
+                <Link to="/exercises" className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-slate-600 hover:bg-slate-50 font-semibold text-xs transition text-decoration-none">
+                  <Dumbbell className="w-4 h-4" />
+                  <span>مكتبة التمارين والأمان</span>
+                </Link>
+                <Link to="/calculator" className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-slate-600 hover:bg-slate-50 font-semibold text-xs transition text-decoration-none">
+                  <Calculator className="w-4 h-4" />
+                  <span>كتالوج الأغذية والماكروز</span>
+                </Link>
+                <Link to="/subscriptions" className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-slate-600 hover:bg-slate-50 font-semibold text-xs transition text-decoration-none">
+                  <CreditCard className="w-4 h-4" />
+                  <span>الاشتراكات والمالية</span>
+                </Link>
+              </nav>
+            </div>
+          </div>
+        </div>
+
+        {/* System Status Footer */}
+        <div className="bg-slate-50 border border-slate-100 p-3 rounded-xl flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+            <span className="text-[11px] font-semibold text-slate-600">النظام متصل</span>
+          </div>
+          <span className="text-[10px] font-bold text-slate-400 bg-white border border-slate-200 px-2 py-0.5 rounded-md">V2.6</span>
+        </div>
+      </aside>
+
+      {/* 2. المحتوى الرئيسي (Main Container) */}
+      <main className="flex-1 flex flex-col min-w-0 overflow-y-auto">
+        
+        {/* Top Navbar */}
+        <header className="h-16 bg-white border-b border-slate-200/80 px-6 flex items-center justify-between sticky top-0 z-10">
+          <div className="flex items-center gap-4 flex-1 max-w-lg">
+            <div className="relative w-full">
+              <span className="absolute right-3.5 top-2.5 text-slate-400 text-xs">
+                <Search className="w-4 h-4" />
+              </span>
+              <input
+                type="text"
+                placeholder="بحث بالاسم، رقم الهاتف، أو الكود (#1K)..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="w-full bg-slate-50 border border-slate-200 rounded-xl pr-9 pl-4 py-2 text-xs text-slate-800 placeholder-slate-400 focus:outline-none focus:bg-white focus:border-blue-500 transition"
+              />
+            </div>
+          </div>
+
+          <div className="flex items-center gap-3">
             <button
-              type="button"
               onClick={() => {
                 generateNewClient();
                 setIsNewClientModalOpen(true);
               }}
-              style={{
-                background: 'linear-gradient(135deg, #0284C7 0%, #0369A1 100%)',
-                color: '#FFFFFF',
-                border: 'none',
-                padding: '9px 18px',
-                borderRadius: '12px',
-                fontSize: '0.84rem',
-                fontWeight: 800,
-                cursor: 'pointer',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '6px',
-                boxShadow: '0 4px 14px rgba(2, 132, 199, 0.25)',
-                transition: 'all 0.2s ease'
-              }}
+              className="bg-blue-600 hover:bg-blue-700 text-white font-bold px-4 py-2 rounded-xl text-xs flex items-center gap-2 shadow-sm shadow-blue-600/20 transition active:scale-95 border-0 cursor-pointer"
             >
-              <Plus style={{ width: '16px', height: '16px' }} />
-              <span>كود مشترك جديد</span>
+              <Plus className="w-4 h-4" />
+              <span>إنشاء كود مشترك</span>
             </button>
           </div>
-        </div>
+        </header>
 
-        {/* 3. شريط كروت الإحصائيات (KPI Metric Cards) */}
-        <div className="row g-3 mb-4">
-          {stats.map((st, i) => {
-            const IconComponent = st.icon;
-            return (
-              <div key={i} className="col-6 col-lg-3">
-                <div 
-                  style={{
-                    background: '#FFFFFF',
-                    border: '1px solid #E2E8F0',
-                    borderRadius: '18px',
-                    padding: '16px',
-                    boxShadow: '0 2px 10px rgba(15, 23, 42, 0.03)',
-                    height: '100%',
-                    display: 'flex',
-                    flexDirection: 'column',
-                    justifyContent: 'space-between'
-                  }}
-                >
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <span style={{ fontSize: '0.78rem', fontWeight: 700, color: '#64748B' }}>{st.title}</span>
-                    <div style={{ width: '32px', height: '32px', borderRadius: '10px', background: st.bg, color: st.color, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                      <IconComponent style={{ width: '18px', height: '18px' }} />
-                    </div>
-                  </div>
-                  <div style={{ marginTop: '12px', display: 'flex', alignItems: 'baseline', gap: '8px' }}>
-                    <span style={{ fontSize: '1.6rem', fontWeight: 900, color: '#0F172A' }}>{st.value}</span>
-                    <span style={{ fontSize: '0.74rem', fontWeight: 700, color: st.color }}>{st.change}</span>
-                  </div>
-                </div>
-              </div>
-            );
-          })}
-        </div>
-
-        {/* 4. الهيكل التفاعلي 70/30 (Main Action Grid) */}
-        <div className="row g-4">
+        <div className="p-6 md:p-8 space-y-6 max-w-7xl w-full mx-auto">
           
-          {/* العمود الرئيسي (70%): طابور المتابعات والقرارات */}
-          <div className="col-lg-8">
-            
-            {/* Filter Tabs */}
-            <div style={{ display: 'flex', gap: '6px', background: '#FFFFFF', padding: '6px', borderRadius: '14px', border: '1px solid #E2E8F0', marginBottom: '16px', flexWrap: 'wrap' }}>
-              {[
-                { id: 'ALL', label: 'الكل' },
-                { id: 'CHECKIN', label: 'المتابعات' },
-                { id: 'CLINICAL', label: 'الشكاوى السريرية' },
-                { id: 'INACTIVE', label: 'رادار الانقطاع' },
-                { id: 'RENEWAL', label: 'التجديدات' },
-              ].map(tab => (
-                <button
-                  key={tab.id}
-                  type="button"
-                  onClick={() => setActiveTab(tab.id)}
-                  style={{
-                    padding: '8px 14px',
-                    borderRadius: '10px',
-                    fontSize: '0.78rem',
-                    fontWeight: activeTab === tab.id ? 800 : 600,
-                    border: 'none',
-                    cursor: 'pointer',
-                    background: activeTab === tab.id ? '#0284C7' : 'transparent',
-                    color: activeTab === tab.id ? '#FFFFFF' : '#64748B',
-                    transition: 'all 0.15s ease'
-                  }}
-                >
-                  {tab.label}
-                </button>
-              ))}
-            </div>
-
-            {/* Action Cards List */}
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
-              {filteredActions.length === 0 ? (
-                <div style={{ padding: '40px 20px', textAlign: 'center', background: '#FFFFFF', border: '1.5px dashed #CBD5E1', borderRadius: '20px' }}>
-                  <div style={{ width: '48px', height: '48px', borderRadius: '50%', background: '#ECFDF5', color: '#059669', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 12px auto' }}>
-                    <CheckCircle2 style={{ width: '28px', height: '28px' }} />
-                  </div>
-                  <h3 style={{ fontSize: '1.1rem', fontWeight: 900, color: '#0F172A', margin: '0 0 6px 0' }}>
-                    رائع! تم إنهاء كافة الإجراءات والمتابعات لليوم
-                  </h3>
-                  <p style={{ fontSize: '0.8rem', color: '#64748B', margin: 0 }}>
-                    كافة المراجعات والتنبيهات المندرجة تحت هذا التبويب معتمدة بنسبة 100%.
-                  </p>
-                </div>
-              ) : (
-                filteredActions.map(action => (
-                  <div
-                    key={action.id}
-                    style={{
-                      background: '#FFFFFF',
-                      border: '1px solid #E2E8F0',
-                      borderRadius: '18px',
-                      padding: '18px',
-                      boxShadow: '0 2px 8px rgba(15, 23, 42, 0.03)',
-                      display: 'flex',
-                      flexDirection: 'column',
-                      gap: '12px'
-                    }}
-                  >
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                        <div style={{ width: '36px', height: '36px', borderRadius: '10px', background: '#F1F5F9', color: '#0F172A', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 800, fontSize: '0.88rem' }}>
-                          {action.clientName[0]}
-                        </div>
-                        <div>
-                          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                            <h4 style={{ fontSize: '0.92rem', fontWeight: 800, color: '#0F172A', margin: 0 }}>
-                              {action.clientName}
-                            </h4>
-                            <span style={{ fontSize: '0.72rem', background: '#F1F5F9', color: '#475569', padding: '2px 8px', borderRadius: '6px', fontWeight: 700 }}>
-                              {action.tier}
-                            </span>
-                          </div>
-                          <span style={{ fontSize: '0.74rem', color: '#94A3B8', fontFamily: 'monospace' }}>{action.phone}</span>
-                        </div>
-                      </div>
-
-                      <span 
-                        style={{ 
-                          fontSize: '0.74rem', 
-                          fontWeight: 800, 
-                          padding: '4px 10px', 
-                          borderRadius: '8px', 
-                          background: action.badgeBg, 
-                          color: action.badgeColor, 
-                          border: '1px solid ' + action.badgeBorder
-                        }}
-                      >
-                        {action.badgeText}
-                      </span>
-                    </div>
-
-                    <div style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', padding: '12px 14px', borderRadius: '12px', fontSize: '0.82rem', lineHeight: '1.6' }}>
-                      <div style={{ color: '#334155', marginBottom: '4px' }}>
-                        <strong style={{ color: '#0F172A' }}>الحالة:</strong> {action.summary}
-                      </div>
-                      <div style={{ color: '#0284C7', fontWeight: 700 }}>
-                        <strong style={{ color: '#0F172A' }}>القرار المقترح:</strong> {action.suggestedAction}
-                      </div>
-                    </div>
-
-                    <div style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', gap: '8px', paddingTop: '4px' }}>
-                      <a
-                        href={'https://wa.me/' + action.phone.replace(/\D/g, '')}
-                        target="_blank"
-                        rel="noreferrer"
-                        style={{
-                          padding: '7px 14px',
-                          borderRadius: '10px',
-                          border: '1px solid #CBD5E1',
-                          background: '#FFFFFF',
-                          color: '#334155',
-                          fontWeight: 700,
-                          fontSize: '0.78rem',
-                          textDecoration: 'none',
-                          display: 'flex',
-                          alignItems: 'center',
-                          gap: '6px'
-                        }}
-                      >
-                        <MessageCircle style={{ width: '14px', height: '14px', color: '#16A34A' }} />
-                        <span>محادثة واتساب</span>
-                      </a>
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setDailyActions(dailyActions.filter(a => a.id !== action.id));
-                        }}
-                        style={{
-                          padding: '7px 16px',
-                          borderRadius: '10px',
-                          background: 'linear-gradient(135deg, #059669 0%, #047857 100%)',
-                          color: '#FFFFFF',
-                          fontWeight: 800,
-                          fontSize: '0.78rem',
-                          border: 'none',
-                          cursor: 'pointer',
-                          display: 'flex',
-                          alignItems: 'center',
-                          gap: '4px',
-                          boxShadow: '0 2px 8px rgba(5, 150, 105, 0.2)'
-                        }}
-                      >
-                        <Check style={{ width: '14px', height: '14px' }} />
-                        <span>اعتماد وتحديث الخطة</span>
-                      </button>
-                    </div>
-                  </div>
-                ))
-              )}
+          {/* Page Title & Breadcrumb */}
+          <div className="flex items-center justify-between">
+            <div>
+              <h2 className="text-xl font-bold text-slate-900 tracking-tight">مركز القيادة اليومي</h2>
+              <p className="text-xs text-slate-500 mt-0.5">مسار الإجراءات والقرارات اليومية لمشتركي المنظومة</p>
             </div>
           </div>
 
-          {/* العمود الجانبي (30%): ملخص الطوارئ وتوزيع الباقات */}
-          <div className="col-lg-4">
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+          {/* 3. شريط كروت الإحصائيات (KPI Cards - Liner Style) */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            {stats.map((st, i) => {
+              const IconComp = st.icon;
+              return (
+                <div
+                  key={i}
+                  className="bg-white border border-slate-200/80 p-5 rounded-2xl shadow-[0_2px_8px_rgba(0,0,0,0.02)] flex flex-col justify-between hover:shadow-md transition"
+                >
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs font-bold text-slate-500">{st.title}</span>
+                    <div className="w-9 h-9 rounded-xl flex items-center justify-center text-sm font-bold" style={{ background: st.iconBg, color: st.iconColor }}>
+                      <IconComp className="w-4 h-4" />
+                    </div>
+                  </div>
+                  <div className="mt-4 flex items-baseline justify-between">
+                    <span className="text-2xl font-black text-slate-900">{st.value}</span>
+                    <span className={'text-[11px] font-bold px-2 py-0.5 rounded-full ' + (st.isUp ? 'bg-emerald-50 text-emerald-600' : 'bg-rose-50 text-rose-600')}>
+                      {st.change}
+                    </span>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+
+          {/* 4. التقسيم الرئيسي 70/30 (Main Action Grid) */}
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            
+            {/* العمود الأيمن (70%): المتابعات والإجراءات اليومية */}
+            <div className="lg:col-span-2 space-y-4">
               
-              {/* بطاقة الطوارئ السريرية السريعة */}
-              <div style={{ background: '#FFFFFF', border: '1px solid #E2E8F0', borderRadius: '18px', padding: '18px', boxShadow: '0 2px 8px rgba(15, 23, 42, 0.03)' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
-                  <h3 style={{ fontSize: '0.88rem', fontWeight: 800, color: '#0F172A', margin: 0, display: 'flex', alignItems: 'center', gap: '6px' }}>
-                    <ShieldAlert style={{ width: '16px', height: '16px', color: '#E11D48' }} />
+              {/* Filter Tabs */}
+              <div className="flex items-center gap-1.5 p-1 bg-white border border-slate-200/80 rounded-xl max-w-fit shadow-sm">
+                {[
+                  { id: 'ALL', label: 'الكل' },
+                  { id: 'CHECKIN', label: 'المتابعات' },
+                  { id: 'CLINICAL', label: 'الشكاوى السريرية' },
+                  { id: 'INACTIVE', label: 'رادار الانقطاع' },
+                  { id: 'RENEWAL', label: 'التجديدات' },
+                ].map(tab => (
+                  <button
+                    key={tab.id}
+                    onClick={() => setActiveTab(tab.id)}
+                    className={'px-3.5 py-1.5 rounded-lg text-xs font-bold transition border-0 cursor-pointer ' + (
+                      activeTab === tab.id
+                        ? 'bg-slate-900 text-white shadow-sm'
+                        : 'text-slate-500 hover:text-slate-900 hover:bg-slate-50 bg-transparent'
+                    )}
+                  >
+                    {tab.label}
+                  </button>
+                ))}
+              </div>
+
+              {/* Action List */}
+              <div className="space-y-3">
+                {filteredActions.length === 0 ? (
+                  <div className="p-12 text-center bg-white border border-dashed border-slate-200 rounded-2xl">
+                    <div className="w-12 h-12 rounded-full bg-emerald-50 text-emerald-600 flex items-center justify-center mx-auto mb-3">
+                      <CheckCircle2 className="w-6 h-6" />
+                    </div>
+                    <p className="text-xs font-bold text-slate-600">رائع! تم إنهاء كافة إجراءات اليوم بنجاح.</p>
+                  </div>
+                ) : (
+                  filteredActions.map(action => (
+                    <div
+                      key={action.id}
+                      className="bg-white border border-slate-200/80 rounded-2xl p-5 shadow-[0_2px_8px_rgba(0,0,0,0.02)] hover:border-slate-300 transition space-y-4"
+                    >
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-3">
+                          <div className="w-10 h-10 rounded-xl bg-slate-100 flex items-center justify-center font-bold text-slate-700 text-sm">
+                            {action.client[0]}
+                          </div>
+                          <div>
+                            <div className="flex items-center gap-2">
+                              <h4 className="text-sm font-bold text-slate-900 m-0">{action.client}</h4>
+                              <span className="text-[10px] font-semibold bg-slate-100 text-slate-600 px-2 py-0.5 rounded-md">
+                                {action.tier}
+                              </span>
+                            </div>
+                            <span className="text-[11px] text-slate-400 font-mono">{action.phone}</span>
+                          </div>
+                        </div>
+
+                        <span className={'text-[11px] font-bold px-3 py-1 rounded-full border ' + action.badgeClass}>
+                          {action.badge}
+                        </span>
+                      </div>
+
+                      {/* Content Box */}
+                      <div className="bg-slate-50/80 border border-slate-100 rounded-xl p-3.5 space-y-1.5">
+                        <p className="text-xs text-slate-700 leading-relaxed m-0">
+                          <strong className="text-slate-900 font-bold">الحالة: </strong>
+                          {action.metric}
+                        </p>
+                        <p className="text-xs text-blue-700 font-semibold leading-relaxed m-0">
+                          <strong className="text-slate-900 font-bold">القرار المقترح: </strong>
+                          {action.decision}
+                        </p>
+                      </div>
+
+                      {/* Actions Footer */}
+                      <div className="flex items-center justify-end gap-2 pt-1">
+                        <a
+                          href={'https://wa.me/' + action.phone.replace(/\D/g, '')}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="px-3.5 py-2 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 font-bold text-xs flex items-center gap-1.5 transition shadow-sm text-decoration-none"
+                        >
+                          <MessageCircle className="w-3.5 h-3.5 text-emerald-600" />
+                          <span>محادثة واتساب</span>
+                        </a>
+                        <button
+                          onClick={() => setActions(actions.filter(a => a.id !== action.id))}
+                          className="px-4 py-2 rounded-xl bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs transition shadow-sm active:scale-95 flex items-center gap-1.5 border-0 cursor-pointer"
+                        >
+                          <span>اعتماد وتحديث الخطة</span>
+                          <Check className="w-3.5 h-3.5" />
+                        </button>
+                      </div>
+                    </div>
+                  ))
+                )}
+              </div>
+
+            </div>
+
+            {/* العمود الأيسر (30%): الطوارئ وتوزيع الباقات */}
+            <div className="space-y-4">
+              
+              {/* بطاقة الطوارئ السريرية */}
+              <div className="bg-white border border-slate-200/80 p-5 rounded-2xl shadow-[0_2px_8px_rgba(0,0,0,0.02)] space-y-3.5">
+                <div className="flex items-center justify-between">
+                  <h3 className="text-xs font-bold text-slate-900 flex items-center gap-2 m-0">
+                    <ShieldAlert className="w-4 h-4 text-rose-500" />
                     <span>رادار الطوارئ السريرية</span>
                   </h3>
-                  <span style={{ fontSize: '0.72rem', background: '#FFF1F2', color: '#E11D48', border: '1px solid #FECDD3', padding: '2px 8px', borderRadius: '6px', fontWeight: 800 }}>
-                    1 حالة نشطة
-                  </span>
+                  <span className="text-[10px] font-bold bg-rose-50 text-rose-600 px-2 py-0.5 rounded-full">1 حالة</span>
                 </div>
-                <div style={{ padding: '12px', background: '#F8FAFC', border: '1px solid #E2E8F0', borderRadius: '12px' }}>
-                  <span style={{ fontSize: '0.84rem', fontWeight: 800, color: '#0F172A', display: 'block', marginBottom: '4px' }}>
-                    ياسمين فهد (إصابة كتف أيمن)
-                  </span>
-                  <p style={{ fontSize: '0.76rem', color: '#64748B', margin: '0 0 10px 0', lineHeight: '1.5' }}>
-                    تم عزل تمارين البار واستبدالها بالدمبل المحايد تلقائياً لحماية الكفة المدورة.
-                  </p>
-                  <Link
-                    to="/exercises"
-                    style={{
-                      display: 'block',
-                      width: '100%',
-                      textAlign: 'center',
-                      background: '#FFFFFF',
-                      border: '1px solid #CBD5E1',
-                      color: '#0F172A',
-                      fontSize: '0.76rem',
-                      fontWeight: 800,
-                      padding: '8px',
-                      borderRadius: '10px',
-                      textDecoration: 'none'
-                    }}
-                  >
+                <div className="p-3.5 bg-rose-50/40 border border-rose-100 rounded-xl space-y-1.5">
+                  <span className="text-xs font-bold text-slate-900 block">ياسمين فهد (إصابة كتف أيمن)</span>
+                  <p className="text-[11px] text-slate-600 leading-relaxed m-0">تم عزل تمارين البار وتفعيل الكفة المدورة والدمبل المحايد تلقائياً.</p>
+                  <Link to="/exercises" className="w-full mt-2 bg-white hover:bg-slate-50 border border-rose-200 text-rose-700 text-[11px] font-bold py-1.5 rounded-lg transition shadow-sm text-center block text-decoration-none">
                     استعراض بروتوكول التأهيل
                   </Link>
                 </div>
               </div>
 
               {/* بطاقة توزيع الباقات */}
-              <div style={{ background: '#FFFFFF', border: '1px solid #E2E8F0', borderRadius: '18px', padding: '18px', boxShadow: '0 2px 8px rgba(15, 23, 42, 0.03)' }}>
-                <h3 style={{ fontSize: '0.88rem', fontWeight: 800, color: '#0F172A', margin: '0 0 14px 0', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                  <BarChart3 style={{ width: '16px', height: '16px', color: '#0284C7' }} />
-                  <span>توزيع الباقات النشطة</span>
+              <div className="bg-white border border-slate-200/80 p-5 rounded-2xl shadow-[0_2px_8px_rgba(0,0,0,0.02)] space-y-4">
+                <h3 className="text-xs font-bold text-slate-900 flex items-center gap-2 m-0">
+                  <BarChart3 className="w-4 h-4 text-blue-600" />
+                  <span>توزيع المشتركين حسب الباقة</span>
                 </h3>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                
+                <div className="space-y-3">
                   <div>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.78rem', marginBottom: '4px' }}>
-                      <span style={{ color: '#64748B', fontWeight: 600 }}>باقة ماكس (VIP MAX 360°)</span>
-                      <span style={{ color: '#0284C7', fontWeight: 800 }}>32 مشترك (67%)</span>
+                    <div className="flex justify-between text-xs font-semibold mb-1.5">
+                      <span className="text-slate-600">باقة ماكس (VIP MAX)</span>
+                      <span className="text-slate-900 font-bold">32 مشترك (67%)</span>
                     </div>
-                    <div style={{ width: '100%', background: '#F1F5F9', height: '6px', borderRadius: '10px', overflow: 'hidden' }}>
-                      <div style={{ background: '#0284C7', height: '100%', width: '67%', borderRadius: '10px' }}></div>
+                    <div className="w-full bg-slate-100 h-2 rounded-full overflow-hidden">
+                      <div className="bg-blue-600 h-full rounded-full" style={{ width: '67%' }}></div>
                     </div>
                   </div>
 
                   <div>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.78rem', marginBottom: '4px' }}>
-                      <span style={{ color: '#64748B', fontWeight: 600 }}>باقة إيليت (ELITE)</span>
-                      <span style={{ color: '#4F46E5', fontWeight: 800 }}>16 مشترك (33%)</span>
+                    <div className="flex justify-between text-xs font-semibold mb-1.5">
+                      <span className="text-slate-600">باقة إيليت (ELITE)</span>
+                      <span className="text-slate-900 font-bold">16 مشترك (33%)</span>
                     </div>
-                    <div style={{ width: '100%', background: '#F1F5F9', height: '6px', borderRadius: '10px', overflow: 'hidden' }}>
-                      <div style={{ background: '#4F46E5', height: '100%', width: '33%', borderRadius: '10px' }}></div>
+                    <div className="w-full bg-slate-100 h-2 rounded-full overflow-hidden">
+                      <div className="bg-indigo-600 h-full rounded-full" style={{ width: '33%' }}></div>
                     </div>
                   </div>
                 </div>
               </div>
 
             </div>
+
           </div>
 
         </div>
 
-        {/* 5. نافذة إنشاء كود المشترك الجديد (Modal) */}
-        {isNewClientModalOpen && (
-          <div 
-            style={{
-              position: 'fixed',
-              top: 0,
-              left: 0,
-              right: 0,
-              bottom: 0,
-              background: 'rgba(15, 23, 42, 0.6)',
-              backdropFilter: 'blur(4px)',
-              zIndex: 9999,
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              padding: '16px'
-            }}
-            onClick={(e) => {
-              if (e.target === e.currentTarget) setIsNewClientModalOpen(false);
-            }}
-          >
-            <div 
-              style={{
-                width: '100%',
-                maxWidth: '460px',
-                background: '#FFFFFF',
-                borderRadius: '24px',
-                padding: '24px',
-                boxShadow: '0 20px 60px rgba(0,0,0,0.2)',
-                border: '1px solid #E2E8F0',
-                direction: 'rtl'
-              }}
-            >
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid #F1F5F9', paddingBottom: '12px', marginBottom: '16px' }}>
-                <h3 style={{ fontSize: '1.1rem', fontWeight: 900, color: '#0F172A', margin: 0 }}>
-                  توليد كود مشترك جديد
-                </h3>
-                <button
-                  type="button"
-                  onClick={() => setIsNewClientModalOpen(false)}
-                  style={{ background: '#F1F5F9', border: 'none', width: '28px', height: '28px', borderRadius: '8px', color: '#64748B', fontSize: '1rem', cursor: 'pointer' }}
-                >
-                  ✕
-                </button>
-              </div>
+      </main>
 
-              <div style={{ textAlign: 'center', padding: '16px', background: '#F8FAFC', border: '1.5px dashed #0284C7', borderRadius: '16px', marginBottom: '16px' }}>
-                <span style={{ fontSize: '0.76rem', color: '#64748B', display: 'block', fontWeight: 700, marginBottom: '4px' }}>
-                  كود المتدرب المخصص:
-                </span>
-                <span style={{ fontSize: '2rem', fontWeight: 900, color: '#0284C7', letterSpacing: '2px', fontFamily: 'monospace' }}>
-                  {generatedCode}
-                </span>
-              </div>
+      {/* 5. نافذة توليد كود المشترك (Modal) */}
+      {isNewClientModalOpen && (
+        <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div className="bg-white border border-slate-200 p-6 rounded-2xl max-w-md w-full space-y-5 shadow-xl">
+            <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+              <h3 className="text-sm font-bold text-slate-900 m-0">توليد كود مشترك جديد</h3>
+              <button
+                onClick={() => setIsNewClientModalOpen(false)}
+                className="text-slate-400 hover:text-slate-600 text-sm font-bold border-0 bg-transparent cursor-pointer"
+              >
+                ✕
+              </button>
+            </div>
 
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                <button
-                  type="button"
-                  onClick={() => {
-                    const inviteMsg = 'أهلاً بك مع كابتن كريم زكريا!\nكود الاشتراك الخاص بك هو: *' + generatedCode + '*\nرابط الدخول واستمارة التقييم:\n' + window.location.origin + '/onboarding';
-                    navigator.clipboard.writeText(inviteMsg);
-                    setCopiedCode(true);
-                    setTimeout(() => setCopiedCode(false), 2500);
-                  }}
-                  style={{
-                    width: '100%',
-                    background: 'linear-gradient(135deg, #0284C7 0%, #0369A1 100%)',
-                    color: '#FFFFFF',
-                    fontWeight: 800,
-                    padding: '12px',
-                    borderRadius: '12px',
-                    fontSize: '0.84rem',
-                    border: 'none',
-                    cursor: 'pointer'
-                  }}
-                >
-                  {copiedCode ? 'تم نسخ رسالة الدعوة وكود المشترك بنجاح!' : 'نسخ رسالة الترحيب والواتساب'}
-                </button>
+            <div className="text-center p-4 bg-slate-50 border border-slate-200 rounded-xl space-y-1">
+              <span className="text-[11px] text-slate-500 font-semibold block">كود المتدرب المخصص:</span>
+              <span className="text-2xl font-black text-blue-600 tracking-wider font-mono">{generatedCode}</span>
+            </div>
 
-                <button
-                  type="button"
-                  onClick={() => setIsNewClientModalOpen(false)}
-                  style={{
-                    width: '100%',
-                    background: '#F1F5F9',
-                    color: '#475569',
-                    fontWeight: 700,
-                    padding: '10px',
-                    borderRadius: '12px',
-                    fontSize: '0.82rem',
-                    border: 'none',
-                    cursor: 'pointer'
-                  }}
-                >
-                  إغلاق
-                </button>
-              </div>
+            <div className="space-y-2">
+              <button
+                onClick={() => {
+                  const inviteMsg = 'أهلاً بك مع كابتن كريم زكريا!\nكود الاشتراك الخاص بك هو: *' + generatedCode + '*\nرابط الدخول واستمارة التقييم:\n' + window.location.origin + '/onboarding';
+                  navigator.clipboard.writeText(inviteMsg);
+                  setCopiedCode(true);
+                  setTimeout(() => setCopiedCode(false), 2500);
+                }}
+                className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-2.5 rounded-xl text-xs transition shadow-sm shadow-blue-600/20 border-0 cursor-pointer"
+              >
+                {copiedCode ? 'تم نسخ رسالة الدعوة وكود المشترك بنجاح!' : 'نسخ رسالة الترحيب والواتساب'}
+              </button>
+
+              <button
+                onClick={() => setIsNewClientModalOpen(false)}
+                className="w-full bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold py-2.5 rounded-xl text-xs transition border-0 cursor-pointer"
+              >
+                إغلاق
+              </button>
             </div>
           </div>
-        )}
+        </div>
+      )}
 
-      </div>
-    </AdminLayout>
+    </div>
   );
 }
