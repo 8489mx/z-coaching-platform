@@ -99,8 +99,7 @@ export function evaluatePharmacologicalFirewall(medicationsList = []) {
 }
 
 /**
- * Master Omni-Clinical, Pharmacological & Orthopedic Safety Firewall
- * Handles 22 Distinct Medical & Physical Conditions Deterministically
+ * Master Clinical Firewall (22 Evidence-Based Profiles)
  */
 export function evaluateMasterClinicalProfile({
   medicalConditions = [],
@@ -121,25 +120,25 @@ export function evaluateMasterClinicalProfile({
     prohibitedSupplements: [],
     prescribedNutrients: [],
     biomechanicalRestrictions: [],
-    cardioProtocol: { type: 'LISS', dailySteps: 8000, maxHeartRateZone: 3 },
+    cardioProtocol: { type: 'LISS', equipment: 'INCLINE_TREADMILL', dailySteps: 8000, maxHeartRateZone: 2 },
     safetyCues: []
   };
 
   const conds = (Array.isArray(medicalConditions) ? medicalConditions : [medicalConditions])
     .map(c => String(c || '').toUpperCase());
 
-  // 1. سكري الأنسولين
+  // 1. سكري الأنسولين (النوع الأول أو الثاني المعتمد)
   if (conds.includes('TYPE_1_DIABETES') || conds.includes('TYPE_2_DIABETES_INSULIN') || conds.includes('INSULIN_DEPENDENT')) {
     adjusted.carbGrams = Math.max(adjusted.carbGrams, 130);
-    adjusted.safetyCues.push('قاعدة 15-15: احتفظ بـ 15 جم سكر سريع في حقيبة الجيم، وتجنب الحقن السريع في العضلة المستهدفة بالتمرين.');
+    adjusted.safetyCues.push('قاعدة 15-15: احتفظ بـ 15 جم سكر سريع في حقيبة الجيم. تجنب الحقن السريع في العضلة المستهدفة بالتمرين.');
   }
 
-  // 2. سكري النوع الثاني ومقاومة الإنسولين
+  // 2. سكري النوع الثاني ومقاومة الإنسولين وتكيس المبايض
   if (conds.includes('TYPE_2_DIABETES_ORAL') || conds.includes('PCOS_IR') || conds.includes('INSULIN_RESISTANCE')) {
     adjusted.fiberGrams = Math.max(adjusted.fiberGrams, 35);
     adjusted.prescribedNutrients.push('LOW_GI_CARBOHYDRATES');
-    adjusted.fatGrams = Math.round(adjusted.fatGrams * 1.15); // دعم الهرمونات بالدهون الصحية
-    adjusted.safetyCues.push('اعتماد نشويات منخفضة المؤشر الجلايسيمي لحماية حساسية الإنسولين واستقرار الطاقة.');
+    adjusted.fatGrams = Math.round(adjusted.fatGrams * 1.15);
+    adjusted.safetyCues.push('اعتماد النشويات منخفضة المؤشر الجلايسيمي لحماية حساسية الإنسولين وتثبيت مستويات الطاقة.');
   }
 
   // 3. خمول الغدة الدرقية
@@ -159,14 +158,15 @@ export function evaluateMasterClinicalProfile({
   if (conds.includes('HYPERTENSION')) {
     adjusted.prohibitedSupplements.push('HIGH_STIM_PREWORKOUT', 'YOHIMBINE', 'FAT_BURNERS');
     adjusted.biomechanicalRestrictions.push('NO_VALSALVA_MANEUVER', 'NO_1RM_TESTING');
-    adjusted.safetyCues.push('تنفس بانتظام وتجنب كتم النفس أثناء الرفع، وابتعد تماماً عن مكملات الطاقة العالية.');
+    adjusted.cardioProtocol.maxHeartRateZone = 2;
+    adjusted.safetyCues.push('تنفس بانتظام مع الدفع وتجنب كتم النفس داخل الجيم، وابتعد تماماً عن مكملات الطاقة العالية.');
   }
 
   // 6. أدوية السيولة ومضادات التجلط
   if (conds.includes('BLOOD_THINNERS')) {
     adjusted.prohibitedSupplements.push('HIGH_DOSE_OMEGA3_OVER_2000MG', 'VITAMIN_E_HIGH_DOSE', 'GINSENG');
     adjusted.biomechanicalRestrictions.push('NO_HEAVY_CONTACT_TRAINING');
-    adjusted.safetyCues.push('تثبيت حصص الخضروات الورقية الخضراء (Vitamin K) وتجنب التغيير المفاجئ في استهلاكها.');
+    adjusted.safetyCues.push('تثبيت حصص الخضروات الورقية الخضراء وتجنب التغيير المفاجئ في استهلاكها.');
   }
 
   // 7. الأنيميا ونقص مخزون الحديد
@@ -231,7 +231,7 @@ export function evaluateMasterClinicalProfile({
   if (conds.includes('ROACCUTANE_USER')) {
     adjusted.prohibitedSupplements.push('VITAMIN_A');
     adjusted.prescribedNutrients.push('OMEGA_3_JOINT_SUPPORT');
-    adjusted.safetyCues.push('ترطيب مكثف بالماء وأوميجا-3، وتجنب رفع أوزان الإجهاد الأقصى بسبب جفاف الأربطة والمفاصل.');
+    adjusted.safetyCues.push('ترطيب مكثف بالماء وأوميجا-3، وتجنب أوزان الإجهاد الأقصى بسبب جفاف الأربطة والمفاصل.');
   }
 
   // 17. الكورتيزون المزمن
@@ -253,11 +253,13 @@ export function evaluateMasterClinicalProfile({
   // 20. صابونة الركبة
   if (conds.includes('PATELLAR_TENDINITIS')) {
     adjusted.biomechanicalRestrictions.push('NO_OPEN_CHAIN_LEG_EXTENSIONS');
+    adjusted.cardioProtocol.equipment = 'RECUMBENT_BIKE_OR_ELLIPTICAL';
   }
 
   // 21. الفتق ودوالي الساقين
   if (conds.includes('HERNIA_VARICOSE')) {
     adjusted.biomechanicalRestrictions.push('NO_VALSALVA_HEAVY_LEG_PRESS', 'PREFER_SEATED_AND_LYING');
+    adjusted.cardioProtocol.equipment = 'RECUMBENT_BIKE';
     adjusted.safetyCues.push('حظر كتم النفس أثناء الرفع، وتفضيل تمارين الدفع أثناء الجلوس أو الاستلقاء لحماية الأوردة وجدار البطن.');
   }
 
@@ -265,7 +267,7 @@ export function evaluateMasterClinicalProfile({
   if (conds.includes('LACTATION')) {
     adjusted.calories += 450;
     adjusted.biomechanicalRestrictions.push('NO_INTRA_ABDOMINAL_CRUNCHES');
-    adjusted.safetyCues.push('إضافة 450 سعرة لدعم إدرار الحليب، وحظر تمارين البطن الطاحنة لحماية عضلات قاع الحوض.');
+    adjusted.safetyCues.push('إضافة 450 سعرة لدعم إدرار الحليب، وحظر تمارين البطن الطاحنة لحماية قاع الحوض.');
   }
 
   return adjusted;

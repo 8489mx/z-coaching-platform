@@ -56,9 +56,9 @@ describe('Clinical Safety Firewalls - 22-Condition Stacked Suite', () => {
     expect(result.biomechanicalRestrictions).toContain('EXTENDED_DYNAMIC_WARMUP_15MIN');
   });
 
-  it('evaluates roaccutane, hernia, corticosteroids, and lactation protocols', () => {
+  it('evaluates roaccutane, hernia, patellar tendinitis, corticosteroids, and lactation protocols', () => {
     const result = evaluateMasterClinicalProfile({
-      medicalConditions: ['ROACCUTANE_USER', 'HERNIA_VARICOSE', 'CORTICOSTEROIDS', 'LACTATION'],
+      medicalConditions: ['ROACCUTANE_USER', 'HERNIA_VARICOSE', 'PATELLAR_TENDINITIS', 'CORTICOSTEROIDS', 'LACTATION'],
       weightKg: 65,
       targetCalories: 1700,
       targetProteinGrams: 130,
@@ -76,8 +76,10 @@ describe('Clinical Safety Firewalls - 22-Condition Stacked Suite', () => {
     // Roaccutane: Vitamin A prohibited
     expect(result.prohibitedSupplements).toContain('VITAMIN_A');
 
-    // Hernia: restrictions
+    // Hernia & Patellar: equipment adaptations
     expect(result.biomechanicalRestrictions).toContain('NO_VALSALVA_HEAVY_LEG_PRESS');
+    expect(result.biomechanicalRestrictions).toContain('NO_OPEN_CHAIN_LEG_EXTENSIONS');
+    expect(result.cardioProtocol.equipment).toBe('RECUMBENT_BIKE');
   });
 
 });
