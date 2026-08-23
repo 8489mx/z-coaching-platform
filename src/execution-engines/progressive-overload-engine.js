@@ -253,3 +253,63 @@ export function compileDeloadSession(workoutSession) {
     exercises: adjustedExercises
   };
 }
+
+/**
+ * Non-Load Progressive Overload & Multi-Tool Home Engine
+ */
+export function resolveExerciseProgressionModel({
+  environment = 'GYM',
+  availableEquipment = ['BODYWEIGHT_ONLY'],
+  weekNumber = 1,
+  currentWeightKg = 0,
+  currentReps = 10,
+  targetRIR = 2
+}) {
+  // إذا كان في الجيم: التدرج المباشر بزيادة الحمل الميكانيكي (Load Progression)
+  if (environment === 'GYM') {
+    return {
+      strategy: 'LOAD_OVERLOAD',
+      suggestedWeightKg: weekNumber > 1 ? currentWeightKg + 2.5 : currentWeightKg,
+      targetReps: currentReps,
+      tempo: '2-0-1-0',
+      restSeconds: 90,
+      progressionNote: 'زيادة الوزن تدريجياً مع الحفاظ على الأداء المحكم ومعدل RIR 2.'
+    };
+  }
+
+  // إذا كان في المنزل: تفعيل المسارات الثلاثة لفرط التضخم العضلي بدون أوزان ثقيلة
+  const hasDumbbells = availableEquipment.includes('DUMBBELLS') || availableEquipment.includes('BARBELL') || availableEquipment.includes('MULTI_GYM');
+  const hasBands = availableEquipment.includes('BANDS');
+
+  if (hasDumbbells && hasBands) {
+    return {
+      strategy: 'ACCOMMODATING_RESISTANCE',
+      suggestedWeightKg: currentWeightKg,
+      targetReps: Math.min(currentReps + 2, 20),
+      tempo: '3-1-1-0', // نزول في 3 ثوانٍ وثبات ثانية بالقمة
+      restSeconds: 60,
+      progressionNote: 'دمج حبل المقاومة مع الدمبل لزيادة ذروة الانقباض، والنزول البطيء في 3 ثوانٍ.'
+    };
+  }
+
+  if (hasDumbbells) {
+    return {
+      strategy: 'VOLUME_AND_TEMPO',
+      suggestedWeightKg: currentWeightKg,
+      targetReps: Math.min(currentReps + 2, 20),
+      tempo: '4-1-1-0', // زيادة وقت الشد العضلي TUT
+      restSeconds: 45,
+      progressionNote: 'التركيز على النزول في 4 ثوانٍ وتقليل فترة الراحة إلى 45 ثانية لمضاعفة الإجهاد الأيضي.'
+    };
+  }
+
+  // وزن الجسم فقط (Leverage Progression)
+  return {
+    strategy: 'BIOMECHANICAL_LEVERAGE',
+    suggestedWeightKg: 0,
+    targetReps: Math.min(currentReps + 3, 25),
+    tempo: '3-1-1-0',
+    restSeconds: 45,
+    progressionNote: 'تعديل زاوية الارتكاز (مثل رفع القدمين على كرسي في الضغط) لزيادة عزم المقاومة بوزن الجسم.'
+  };
+}

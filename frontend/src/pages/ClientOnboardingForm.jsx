@@ -5,47 +5,46 @@ import { generateInitialPlan } from '../utils/onboardingPlanGeneratorEngine';
 
 export const MEDICAL_CONDITIONS_OPTIONS = [
   // 1. الغدد والأيض والسكري
-  { id: 'TYPE_1_DIABETES', label: 'سكري نوع أول (معتمد على حقن الأنسولين)' },
-  { id: 'TYPE_2_DIABETES_ORAL', label: 'سكري نوع ثاني (أقراص فموية / تنظيم غذائي)' },
+  { id: 'TYPE_1_DIABETES', label: 'سكري نوع أول (أنسولين)' },
+  { id: 'TYPE_2_DIABETES_ORAL', label: 'سكري نوع ثانٍ (أقراص)' },
   { id: 'TYPE_2_DIABETES_INSULIN', label: 'سكري نوع ثاني (حقن أنسولين)' },
   { id: 'PCOS_IR', label: 'مقاومة إنسولين / تكيس مبايض' },
-  { id: 'HYPOTHYROIDISM', label: 'خمول الغدة الدرقية (Eltroxin)' },
+  { id: 'HYPOTHYROIDISM', label: 'خمول الغدة الدرقية' },
   { id: 'FATTY_LIVER', label: 'كبد دهني / ارتفاع إنزيمات الكبد' },
 
   // 2. القلب والأوعية والدم
   { id: 'HYPERTENSION', label: 'ارتفاع ضغط الدم' },
-  { id: 'BLOOD_THINNERS', label: 'أدوية السيولة ومضادات التجلط (ماريفان / زارلتو)' },
-  { id: 'SEVERE_ANEMIA', label: 'أنيميا حادة / نقص مخزون الحديد (Ferritin)' },
+  { id: 'BLOOD_THINNERS', label: 'أدوية السيولة ومضادات التجلط' },
+  { id: 'SEVERE_ANEMIA', label: 'أنيميا حادة / نقص مخزون الحديد' },
 
   // 3. الجهاز الهضمي والعمليات
-  { id: 'BARIATRIC_SURGERY', label: 'جراحة سمنة سابقة (تكميم / تحويل مسار)' },
-  { id: 'IBS', label: 'متلازمة القولون العصبي / حساسيات طعام' },
-  { id: 'GERD_REFLUX', label: 'ارتجاع المريء / فتق الحجاب الحاجز' },
+  { id: 'BARIATRIC_SURGERY', label: 'جراحة سمنة (تكميم / تحويل مسار)' },
+  { id: 'H_PYLORI_GASTRITIS', label: 'جرثومة أو قرحة المعدة / ارتجاع' },
+  { id: 'IBS', label: 'متلازمة القولون العصبي' },
+  { id: 'GERD_REFLUX', label: 'ارتجاع المريء' },
   { id: 'CHOLECYSTECTOMY', label: 'استئصال المرارة سابقاً' },
 
   // 4. الكلى والمسالك
-  { id: 'RENAL_INSUFFICIENCY', label: 'قصور أو مشاكل في وظائف الكلى' },
-  { id: 'GOUT', label: 'داء النقرس / ارتفاع اليوريك أسيد' },
+  { id: 'KIDNEY_STONES', label: 'حصوات الكلى والأوكسالات' },
+  { id: 'RENAL_INSUFFICIENCY', label: 'قصور وظائف الكلى' },
+  { id: 'GOUT', label: 'داء النقرس / أملاح اليوريك أسيد' },
 
-  // 5. الجهاز التنفسي
+  // 5. الحالات النادرة والخاصة
+  { id: 'CELIAC_DISEASE', label: 'مرض السيلياك (حساسية الجلوتين التامة)' },
+  { id: 'OSTEOPOROSIS', label: 'هشاشة أو لين العظام' },
+  { id: 'G6PD_DEFICIENCY', label: 'أنيميا الفول (نقص إنزيم G6PD)' },
   { id: 'BRONCHIAL_ASTHMA', label: 'حساسية الصدر / الربو القصبي' },
-
-  // 6. العقاقير الخاصة
-  { id: 'GLP1_USER', label: 'حقن التخسيس (Ozempic / Mounjaro / Saxenda)' },
-  { id: 'ROACCUTANE_USER', label: 'علاج حب الشباب (روكتان / أيزوتريتينوين)' },
+  { id: 'GLP1_USER', label: 'حقن التخسيس (Ozempic / Mounjaro)' },
+  { id: 'ROACCUTANE_USER', label: 'علاج الروكتان لحب الشباب' },
   { id: 'CORTICOSTEROIDS', label: 'علاج الكورتيزون المزمن' },
 
-  // 7. المفاصل، الفتق، والسيدات
+  // 6. المفاصل، الفتق، والسيدات
   { id: 'LOWER_BACK_PAIN', label: 'انزلاق غضروفي / آلام أسفل الظهر' },
-  { id: 'SHOULDER_IMPINGEMENT', label: 'نغزة أو آلام بمفصل الكتف' },
+  { id: 'SHOULDER_IMPINGEMENT', label: 'نغزة أو التهاب أوتار الكتف' },
   { id: 'PATELLAR_TENDINITIS', label: 'خشونة أو آلام صابونة الركبة' },
-  { id: 'HERNIA_VARICOSE', label: 'فتق (إربي/سري) أو دوالي شديدة بالساقين' },
-  { id: 'LACTATION', label: 'مرحلة الرضاعة الطبيعية (للسيدات)' },
-    // 8. الحالات النادرة والحساسيات الخاصة
-  { id: 'CELIAC_DISEASE', label: 'حساسية القمح والجلوتين (مرض السيلياك)' },
-  { id: 'OSTEOPOROSIS', label: 'هشاشة العظام / نقص الكثافة العظمية' },
-  { id: 'G6PD_DEFICIENCY', label: 'أنيميا الفول (نقص إنزيم G6PD)' },
-  { id: 'NONE_HEALTHY', label: 'سليم تماماً ولا أعاني من أي مشكلة صحية ✔' }
+  { id: 'HERNIA_VARICOSE', label: 'فتق جدار البطن أو دوالي الساقين' },
+  { id: 'LACTATION', label: 'مرحلة الرضاعة الطبيعية' },
+  { id: 'NONE_HEALTHY', label: 'سليم تماماً ولا أعاني من أي عارض ✔' }
 ];
 
 export const SPLIT_PREFERENCES = [
@@ -64,7 +63,7 @@ export default function ClientOnboardingForm() {
   const [formData, setFormData] = useState({
     name: '',
     phone: '',
-    gender: 'MALE', // 'MALE' | 'FEMALE'
+    gender: 'MALE',
     age: 26,
     heightCm: 175,
     weightKg: 78,
@@ -73,7 +72,7 @@ export default function ClientOnboardingForm() {
     trainingDaysPerWeek: 4,
     experienceLevel: 'BEGINNER', // 'BEGINNER' | 'INTERMEDIATE' | 'ADVANCED'
     trainingEnvironment: 'GYM', // 'GYM' | 'HOME'
-    homeEquipment: ['DUMBBELLS', 'BODYWEIGHT'],
+    homeEquipment: ['BODYWEIGHT_ONLY'],
     preferredSplit: 'AUTO',
     preferredWorkoutTime: 'EVENING',
     religion: 'MUSLIM',
@@ -90,8 +89,32 @@ export default function ClientOnboardingForm() {
     hipCircumferenceCm: ''
   });
 
+  const availableHomeTools = [
+    { id: 'DUMBBELLS', label: 'دمبلز بأوزان محددة' },
+    { id: 'BANDS', label: 'أشرطة مقاومة مطاطية (Resistance Bands)' },
+    { id: 'BARBELL', label: 'بار حر وأوزان' },
+    { id: 'PULLUP_BAR', label: 'عقلة منزلية / حبال TRX' },
+    { id: 'MULTI_GYM', label: 'جهاز مالتي هوم جيم' },
+    { id: 'BODYWEIGHT_ONLY', label: 'وزن الجسم فقط' }
+  ];
+
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+
+  const toggleHomeTool = (id) => {
+    let current = [...formData.homeEquipment];
+    if (id === 'BODYWEIGHT_ONLY') {
+      setFormData({ ...formData, homeEquipment: ['BODYWEIGHT_ONLY'] });
+      return;
+    }
+    current = current.filter(t => t !== 'BODYWEIGHT_ONLY');
+    if (current.includes(id)) {
+      current = current.filter(t => t !== id);
+    } else {
+      current.push(id);
+    }
+    setFormData({ ...formData, homeEquipment: current.length ? current : ['BODYWEIGHT_ONLY'] });
+  };
 
   const toggleCondition = (id) => {
     let updated = formData.selectedConditions.filter(c => c !== 'NONE_HEALTHY');
@@ -113,14 +136,6 @@ export default function ClientOnboardingForm() {
       updated.push(id);
     }
     setFormData({ ...formData, posturalIssues: updated });
-  };
-
-  const toggleHomeEquipment = (tool) => {
-    const exists = formData.homeEquipment.includes(tool);
-    const updated = exists
-      ? formData.homeEquipment.filter(t => t !== tool)
-      : [...formData.homeEquipment, tool];
-    setFormData({ ...formData, homeEquipment: updated });
   };
 
   const handleSubmit = async (e) => {
@@ -153,10 +168,16 @@ export default function ClientOnboardingForm() {
         activityLevel: formData.activityLevel,
         goal: formData.goal,
         trainingDaysPerWeek: Number(formData.trainingDaysPerWeek),
+        experienceLevel: formData.experienceLevel,
         environment: formData.trainingEnvironment,
+        homeEquipment: formData.homeEquipment,
+        benchPressWeightKg: formData.benchPressWeightKg || null,
+        squatWeightKg: formData.squatWeightKg || null,
+        preferredWorkoutTime: formData.preferredWorkoutTime,
         medicalFlags: conditionsToPass,
         medicalConditions: conditionsToPass,
         posturalIssues: formData.posturalIssues,
+        pregnancyTrimester: formData.pregnancyTrimester,
         splitPreference: formData.preferredSplit
       });
 
@@ -169,6 +190,7 @@ export default function ClientOnboardingForm() {
         goal: formData.goal,
         daily_targets: planResult.daily_targets,
         training_split: planResult.training_split,
+        training_phase: planResult.training_phase,
         clinical_profile: planResult.clinical_profile,
         rehab_routine: planResult.rehab_routine,
         cardio_protocol: planResult.cardio_protocol,
@@ -214,7 +236,7 @@ export default function ClientOnboardingForm() {
         <div className="border-b border-slate-800 pb-4">
           <div className="d-flex align-items-center justify-content-between">
             <div>
-              <h1 className="text-xl md:text-2xl font-black text-emerald-400 m-0">استمارة استقبال وتهيئة الخطة التفاعلية</h1>
+              <h1 className="text-xl md:text-2xl font-black text-emerald-400 m-0">استمارة التقييم البيولوجي والبدني التفاعلية</h1>
               <p className="text-xs md:text-sm text-slate-400 mt-1 mb-0">نظام الإظهار التدريجي الذكي والمعايرة الإكلينيكية الحتمية</p>
             </div>
             <span className="badge bg-emerald-950 text-emerald-400 border border-emerald-800 px-3 py-2 rounded-xl text-xs font-monospace">
@@ -231,7 +253,7 @@ export default function ClientOnboardingForm() {
 
         <form onSubmit={handleSubmit} className="space-y-6">
 
-          {/* 1. البيانات الأساسية */}
+          {/* 1. البيانات الشخصية والقياسات */}
           <div className="bg-slate-900/60 border border-slate-800 p-4 rounded-2xl space-y-4">
             <h2 className="text-sm font-bold text-slate-200 m-0">1. البيانات الشخصية والقياسات الأساسية</h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -348,14 +370,14 @@ export default function ClientOnboardingForm() {
             </div>
           </div>
 
-          {/* 2. المستوى التدريبي ومعايرة أوزان البداية (Progressive Disclosure) */}
+          {/* 2. المستوى التدريبي ومعايرة الأوزان */}
           <div className="bg-slate-900/60 border border-slate-800 p-4 rounded-2xl space-y-3">
             <label className="text-xs font-bold text-slate-300 block">2. مستواك في تمارين المقاومة:</label>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
               {[
-                { id: 'BEGINNER', label: 'مبتدئ تماماً (أول مرة / عودة بعد انقطاع)' },
-                { id: 'INTERMEDIATE', label: 'متوسط (6 أشهر - سنتين من الالتزام)' },
-                { id: 'ADVANCED', label: 'متقدم (أكثر من سنتين تدريب متواصل)' }
+                { id: 'BEGINNER', label: 'مبتدئ (أول مرة أتمرن / عودة بعد انقطاع)' },
+                { id: 'INTERMEDIATE', label: 'متوسط (6 أشهر - سنتين)' },
+                { id: 'ADVANCED', label: 'متقدم (أكثر من سنتين)' }
               ].map(lvl => (
                 <button
                   key={lvl.id}
@@ -375,23 +397,23 @@ export default function ClientOnboardingForm() {
             {/* يظهر فقط للمتوسط والمتقدم */}
             {formData.experienceLevel !== 'BEGINNER' && (
               <div className="bg-slate-950/80 border border-amber-900/40 p-4 rounded-xl space-y-3 mt-3">
-                <span className="text-xs font-bold text-amber-400 block">تقدير أوزان البداية المعتادة (اختياري لمعايرة أوزان التمرين التلقائية):</span>
+                <span className="text-xs font-bold text-amber-400 block">معايرة أوزان البداية (اختياري لمعايرة الجلسة الأولى بنسبة 75%):</span>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                   <div>
-                    <label className="text-[11px] text-slate-400 block mb-1">أقصى وزن معتاد في البنش برس (كجم):</label>
+                    <label className="text-[11px] text-slate-400 block mb-1">أقصى وزن معتاد بالبنش برس (كجم):</label>
                     <input
                       type="number"
-                      placeholder="مثال: 60"
+                      placeholder="مثال: 70"
                       value={formData.benchPressWeightKg}
                       onChange={(e) => setFormData({ ...formData, benchPressWeightKg: e.target.value })}
                       className="w-full bg-slate-900 border border-slate-700 rounded-xl p-2 text-xs text-white"
                     />
                   </div>
                   <div>
-                    <label className="text-[11px] text-slate-400 block mb-1">أقصى وزن طارات معتاد في السكوات (كجم):</label>
+                    <label className="text-[11px] text-slate-400 block mb-1">أقصى وزن طارات بالسكوات (كجم):</label>
                     <input
                       type="number"
-                      placeholder="مثال: 40"
+                      placeholder="مثال: 50"
                       value={formData.squatWeightKg}
                       onChange={(e) => setFormData({ ...formData, squatWeightKg: e.target.value })}
                       className="w-full bg-slate-900 border border-slate-700 rounded-xl p-2 text-xs text-white"
@@ -402,9 +424,9 @@ export default function ClientOnboardingForm() {
             )}
           </div>
 
-          {/* 3. مكان وبيئة التمرين (Progressive Disclosure) */}
+          {/* 3. بيئة التدريب والأدوات المنزلية المتعددة */}
           <div className="bg-slate-900/60 border border-slate-800 p-4 rounded-2xl space-y-3">
-            <label className="text-xs font-bold text-slate-300 block">3. مكان وبيئة التمرين:</label>
+            <label className="text-xs font-bold text-slate-300 block">3. مكان التمرين المفضل:</label>
             <div className="grid grid-cols-2 gap-2">
               <button
                 type="button"
@@ -426,28 +448,24 @@ export default function ClientOnboardingForm() {
               </button>
             </div>
 
-            {/* خيارات الأدوات المنزلية المشروطة */}
+            {/* أدوات المنزل المتعددة */}
             {formData.trainingEnvironment === 'HOME' && (
-              <div className="bg-slate-950/80 border border-slate-800 p-3 rounded-xl space-y-2 mt-2">
-                <span className="text-xs font-bold text-slate-300 block">الأدوات المتاحة لديك بالمنزل:</span>
-                <div className="flex flex-wrap gap-2">
-                  {[
-                    { id: 'DUMBBELLS', label: 'دمبلز قابلة للتعديل' },
-                    { id: 'BANDS', label: 'أشرطة مقاومة مطاطية (Bands)' },
-                    { id: 'PULLUP_BAR', label: 'عقلة منزلية' },
-                    { id: 'BODYWEIGHT', label: 'وزن الجسم فقط' }
-                  ].map(tool => (
+              <div className="bg-slate-950/80 border border-slate-800 p-4 rounded-xl space-y-2 mt-2">
+                <span className="text-xs font-bold text-slate-300 block">حدد الأدوات المتوفرة لديك بالمنزل (يمكن اختيار أكثر من أداة):</span>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+                  {availableHomeTools.map(tool => (
                     <button
                       key={tool.id}
                       type="button"
-                      onClick={() => toggleHomeEquipment(tool.id)}
-                      className={'px-3 py-1.5 rounded-lg border text-xs font-semibold ' + (
+                      onClick={() => toggleHomeTool(tool.id)}
+                      className={'p-2.5 rounded-xl border text-xs text-right transition flex items-center justify-between ' + (
                         formData.homeEquipment.includes(tool.id)
-                          ? 'bg-emerald-950 border-emerald-500 text-emerald-300'
-                          : 'bg-slate-900 border-slate-700 text-slate-400'
+                          ? 'bg-emerald-950 border-emerald-500 text-emerald-300 font-bold'
+                          : 'bg-slate-900 border-slate-800 text-slate-400'
                       )}
                     >
-                      {tool.label} {formData.homeEquipment.includes(tool.id) ? '✓' : ''}
+                      <span>{tool.label}</span>
+                      <span className="text-emerald-400 font-bold">{formData.homeEquipment.includes(tool.id) ? '✓' : ''}</span>
                     </button>
                   ))}
                 </div>
@@ -455,7 +473,7 @@ export default function ClientOnboardingForm() {
             )}
           </div>
 
-          {/* 4. الحالة الفسيولوجية للسيدات (Progressive Disclosure) */}
+          {/* 4. الحالة الفسيولوجية للسيدات */}
           {formData.gender === 'FEMALE' && (
             <div className="bg-rose-950/20 border border-rose-900/40 p-4 rounded-2xl space-y-3">
               <span className="text-xs font-bold text-rose-300 block">4. الحالة الفسيولوجية للسيدات:</span>
@@ -536,12 +554,12 @@ export default function ClientOnboardingForm() {
             </div>
           </div>
 
-          {/* 7. انحرافات القوام والعمود الفقري */}
+          {/* 7. تصحيح انحرافات القوام */}
           <div className="bg-slate-900/60 border border-slate-800 p-4 rounded-2xl space-y-3">
             <label className="text-xs font-bold text-slate-300 block">7. تصحيح انحرافات القوام (اختر ما ينطبق لحقن التمارين التصحيحية):</label>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
               {[
-                { id: 'ANTERIOR_PELVIC_TILT', label: 'ميل الحوض الأمامي (Anterior Pelvic Tilt - بروز البطن وتقوس أسفل الظهر)' },
+                { id: 'ANTERIOR_PELVIC_TILT', label: 'ميل الحوض الأمامي (Anterior Pelvic Tilt - بروز البطن وتقوس الظهر)' },
                 { id: 'ROUNDED_SHOULDERS', label: 'تقوس الأكتاف للأمام وانحناء الرقبة (Rounded Shoulders / Kyphosis)' }
               ].map(p => (
                 <button
@@ -561,10 +579,10 @@ export default function ClientOnboardingForm() {
             </div>
           </div>
 
-          {/* 8. الحالات الطبية والإصابات (22+ خياراً بنظام الـ Multi-Select Chips) */}
+          {/* 8. مصفوفة الحالات الصحية والإصابات (26+ حالة بنظام الـ Chips المتعددة) */}
           <div className="bg-slate-900/60 border border-slate-800 p-4 rounded-2xl space-y-3">
             <div className="d-flex align-items-center justify-content-between">
-              <label className="text-xs font-bold text-slate-300 block m-0">8. مصفوفة الحالات الصحية والإصابات (اختر ما ينطبق لتفعيل جدران الحماية):</label>
+              <label className="text-xs font-bold text-slate-300 block m-0">8. الحالة الصحية والإصابات (انقر لتحديد ما ينطبق لتفعيل جدران الحماية):</label>
               <span className="text-[11px] text-slate-400">تطبيق تراكمي تلقائي</span>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
@@ -586,7 +604,7 @@ export default function ClientOnboardingForm() {
             </div>
           </div>
 
-          {/* Submit Button */}
+          {/* زر التوليد والبدء */}
           <div className="pt-2">
             <button
               type="submit"
