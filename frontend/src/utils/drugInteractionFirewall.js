@@ -99,10 +99,11 @@ export function evaluatePharmacologicalFirewall(medicationsList = []) {
 }
 
 /**
- * Master Clinical Firewall (22 Evidence-Based Profiles)
+ * Master Clinical & Pharmacological Safety Firewall (22+ Profiles)
  */
 export function evaluateMasterClinicalProfile({
   medicalConditions = [],
+  pregnancyTrimester = 'NONE',
   weightKg = 75,
   targetCalories = 2000,
   targetProteinGrams = 150,
@@ -183,91 +184,110 @@ export function evaluateMasterClinicalProfile({
     adjusted.safetyCues.push('افصل شرب الماء والسوائل عن الوجبة بـ 30 دقيقة قبل وبعد لتجنب الغثيان ومتلازمة الإغراق.');
   }
 
-  // 9. القولون العصبي والحساسيات
+  // 9. جرثومة وقرحة المعدة والارتجاع
+  if (conds.includes('H_PYLORI_GASTRITIS') || conds.includes('GASTRITIS')) {
+    adjusted.prescribedNutrients.push('BLAND_EASY_DIGEST_FOODS');
+    adjusted.safetyCues.push('استبعاد الشطة والمقليات والحمضيات على الريق، وتقسيم الوجبات لوجبات أصغر حجماً لتخفيف الضغط على المعدة.');
+  }
+
+  // 10. القولون العصبي والحساسيات
   if (conds.includes('IBS')) {
     adjusted.prescribedNutrients.push('LOW_FODMAP_DIET');
     adjusted.safetyCues.push('استبعاد البقوليات غير المنقوعة، المحليات الصناعية الكحولية، واللاكتوز العالي لتفادي تهيج القولون.');
   }
 
-  // 10. ارتجاع المريء
+  // 11. ارتجاع المريء
   if (conds.includes('GERD_REFLUX')) {
     adjusted.biomechanicalRestrictions.push('NO_INVERTED_EXERCISES_POST_MEAL');
     adjusted.safetyCues.push('منع تناول وجبات دسمة قبل التمرين بساعتين، وتجنب التمارين المقلوبة أو ارتداء أحزمة البطن الضيقة.');
   }
 
-  // 11. استئصال المرارة
+  // 12. استئصال المرارة
   if (conds.includes('CHOLECYSTECTOMY')) {
     adjusted.safetyCues.push('توزيع الدهون على 4-5 وجبات بحد أقصى 15-20 جم دهون للوجبة الواحدة لضمان راحة الهضم.');
   }
 
-  // 12. القصور الكلوي
+  // 13. حصوات الكلى واليوريك أسيد
+  if (conds.includes('KIDNEY_STONES')) {
+    adjusted.waterLiters = Math.max(adjusted.waterLiters, 4.5);
+    adjusted.prescribedNutrients.push('LOW_OXALATE_FOODS');
+    adjusted.safetyCues.push('شرب 4.5 لتر ماء يومياً وتقنين السبانخ والمكسرات بكميات ضخمة لمنع تشكل الحصوات.');
+  }
+
+  // 14. القصور الكلوي
   if (conds.includes('RENAL_INSUFFICIENCY')) {
     adjusted.proteinGrams = Math.round((weightKg || 75) * 1.1);
     adjusted.prohibitedSupplements.push('CREATINE');
     adjusted.safetyCues.push('تقنين البروتين عند 1.1 جم/كجم لحماية الكلى مع حظر تام لمكمل الكرياتين.');
   }
 
-  // 13. النقرس واليوريك أسيد
+  // 15. النقرس واليوريك أسيد
   if (conds.includes('GOUT')) {
     adjusted.waterLiters = Math.max(adjusted.waterLiters, 4.0);
     adjusted.prescribedNutrients.push('LOW_PURINE_PROTEIN_SOURCES');
     adjusted.safetyCues.push('الاعتماد على البيض والجبن القريش والواي بروتين، وشرب 4 لتر ماء يومياً لطرد اليوريك أسيد.');
   }
 
-  // 14. الربو القصبي وحساسية الصدر
+  // 16. الربو القصبي وحساسية الصدر
   if (conds.includes('BRONCHIAL_ASTHMA')) {
     adjusted.biomechanicalRestrictions.push('EXTENDED_DYNAMIC_WARMUP_15MIN');
     adjusted.cardioProtocol.type = 'GRADUAL_LISS';
     adjusted.safetyCues.push('إحماء تدريجي بطيء لمدة 15 دقيقة، واحتفظ بالبخاخ الوقائي معك دائماً في الجيم.');
   }
 
-  // 15. أدوية التخسيس (GLP-1)
+  // 17. أدوية التخسيس (GLP-1)
   if (conds.includes('GLP1_USER')) {
     adjusted.proteinGrams = Math.max(adjusted.proteinGrams, Math.round((weightKg || 75) * 2.3));
     adjusted.safetyCues.push('رفع البروتين لحماية العضلات من الهدم والاعتماد على السموذي الغني عند هبوط الشهية.');
   }
 
-  // 16. الروكتان
+  // 18. الروكتان
   if (conds.includes('ROACCUTANE_USER')) {
     adjusted.prohibitedSupplements.push('VITAMIN_A');
     adjusted.prescribedNutrients.push('OMEGA_3_JOINT_SUPPORT');
     adjusted.safetyCues.push('ترطيب مكثف بالماء وأوميجا-3، وتجنب أوزان الإجهاد الأقصى بسبب جفاف الأربطة والمفاصل.');
   }
 
-  // 17. الكورتيزون المزمن
+  // 19. الكورتيزون المزمن
   if (conds.includes('CORTICOSTEROIDS')) {
     adjusted.prescribedNutrients.push('LOW_SODIUM_HIGH_CALCIUM');
     adjusted.proteinGrams = Math.round(adjusted.proteinGrams * 1.15);
   }
 
-  // 18. أسفل الظهر والغضروف
+  // 20. أسفل الظهر والغضروف
   if (conds.includes('LOWER_BACK_PAIN')) {
     adjusted.biomechanicalRestrictions.push('NO_AXIAL_LOADING_SQUAT_DEADLIFT');
   }
 
-  // 19. نغزة مفصل الكتف
+  // 21. نغزة مفصل الكتف
   if (conds.includes('SHOULDER_IMPINGEMENT')) {
     adjusted.biomechanicalRestrictions.push('SCAPULAR_PLANE_PRESSING_ONLY');
   }
 
-  // 20. صابونة الركبة
+  // 22. صابونة الركبة
   if (conds.includes('PATELLAR_TENDINITIS')) {
     adjusted.biomechanicalRestrictions.push('NO_OPEN_CHAIN_LEG_EXTENSIONS');
     adjusted.cardioProtocol.equipment = 'RECUMBENT_BIKE_OR_ELLIPTICAL';
   }
 
-  // 21. الفتق ودوالي الساقين
+  // 23. الفتق ودوالي الساقين
   if (conds.includes('HERNIA_VARICOSE')) {
     adjusted.biomechanicalRestrictions.push('NO_VALSALVA_HEAVY_LEG_PRESS', 'PREFER_SEATED_AND_LYING');
     adjusted.cardioProtocol.equipment = 'RECUMBENT_BIKE';
     adjusted.safetyCues.push('حظر كتم النفس أثناء الرفع، وتفضيل تمارين الدفع أثناء الجلوس أو الاستلقاء لحماية الأوردة وجدار البطن.');
   }
 
-  // 22. الرضاعة الطبيعية
-  if (conds.includes('LACTATION')) {
+  // 24. الرضاعة الطبيعية / الحمل
+  const normTrimester = String(pregnancyTrimester || '').toUpperCase();
+  if (normTrimester === 'FIRST') {
+    adjusted.safetyCues.push('المحافظة على الطاقة والترطيب الكافي وتجنب الإجهاد الحراري أو التدريب في أجواء حارة.');
+  } else if (normTrimester === 'SECOND' || normTrimester === 'THIRD') {
+    adjusted.calories += 350;
+    adjusted.safetyCues.push('تجنب التمارين المستوية على الظهر واستخدم الدكة المائلة لحماية تدفق الدم للجنين.');
+  } else if (normTrimester === 'POSTPARTUM_LACTATING' || conds.includes('LACTATION')) {
     adjusted.calories += 450;
     adjusted.biomechanicalRestrictions.push('NO_INTRA_ABDOMINAL_CRUNCHES');
-    adjusted.safetyCues.push('إضافة 450 سعرة لدعم إدرار الحليب، وحظر تمارين البطن الطاحنة لحماية قاع الحوض.');
+    adjusted.safetyCues.push('إضافة 450 سعرة لدعم إدرار الحليب مع ترطيب مكثف بالماء.');
   }
 
   return adjusted;
