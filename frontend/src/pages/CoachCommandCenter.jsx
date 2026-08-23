@@ -1,686 +1,458 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { 
-  Sparkles, 
-  CheckCircle2, 
+  Users, 
   Clock, 
-  AlertTriangle, 
+  Activity, 
+  Hourglass, 
+  Search, 
+  Plus, 
   MessageCircle, 
-  RotateCcw, 
-  Crown, 
+  CheckCircle2, 
+  AlertCircle, 
+  ShieldAlert, 
+  BarChart3, 
   Flame, 
   TrendingDown, 
-  UserCheck, 
   ChevronLeft, 
-  ArrowRight,
-  ShieldCheck,
-  Check,
-  PartyPopper
+  ExternalLink, 
+  Copy, 
+  Check, 
+  FileText 
 } from 'lucide-react';
-import { API_BASE } from '../config/api';
 import AdminLayout from '../components/layout/AdminLayout';
-import { generateWhatsAppCoachingScript } from '../utils/whatsappScriptEngine';
+import { API_BASE } from '../config/api';
 
 export default function CoachCommandCenter() {
-  // New Client Code Generation & Phone Lookup State
-  const [showCodeModal, setShowCodeModal] = useState(false);
-  const [activeModalTab, setActiveModalTab] = useState('CREATE'); // 'CREATE' | 'LOOKUP'
+  const [activeTab, setActiveTab] = useState('ALL'); // 'ALL' | 'CHECKIN' | 'CLINICAL' | 'INACTIVE' | 'RENEWAL'
+  const [searchQuery, setSearchQuery] = useState('');
+  const [isNewClientModalOpen, setIsNewClientModalOpen] = useState(false);
+  const [generatedCode, setGeneratedCode] = useState(null);
   const [newClientName, setNewClientName] = useState('');
   const [newClientPhone, setNewClientPhone] = useState('');
-  const [newClientPackage, setNewClientPackage] = useState('باقة ماكس (VIP 4 أشهر)');
-  const [generatedResult, setGeneratedResult] = useState(null);
-  const [creatingCode, setCreatingCode] = useState(false);
-  const [copiedLink, setCopiedLink] = useState(false);
+  const [copiedCode, setCopiedCode] = useState(false);
 
-  // Phone Lookup State
-  const [searchPhone, setSearchPhone] = useState('');
-  const [lookupResult, setLookupResult] = useState(null);
-  const [searchingPhone, setSearchingPhone] = useState(false);
-  const [searchError, setSearchError] = useState('');
+  // إحصائيات سريعة للـ KPI Cards
+  const stats = [
+    { title: 'إجمالي المشتركين النشطين', value: '48', change: '+12% هذا الشهر', icon: Users, color: '#0284C7', bg: '#E0F2FE' },
+    { title: 'متابعات تنتظر الاعتماد', value: '2', change: 'اليوم', icon: Clock, color: '#D97706', bg: '#FEF3C7' },
+    { title: 'طوارئ المفاصل والعيادة', value: '1', change: 'تدخل عاجل', icon: ShieldAlert, color: '#E11D48', bg: '#FFE4E6' },
+    { title: 'تجديدات خلال 7 أيام', value: '3', change: 'باقات منتهية', icon: Hourglass, color: '#4F46E5', bg: '#EEF2FF' },
+  ];
 
-  const handleGenerateCode = async (e) => {
-    e.preventDefault();
-    if (!newClientPhone.trim()) return;
-
-    try {
-      setCreatingCode(true);
-      const generatedCode = String(Math.floor(1000 + Math.random() * 9000));
-      
-      // Try to save to server
-      try {
-        await fetch(`${API_BASE}/api/v1/clients`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            phone_number: newClientPhone.trim(),
-            full_name: newClientName.trim() || undefined,
-            client_code: generatedCode,
-            subscription_package: newClientPackage,
-            subscription_price: newClientPackage.includes('VIP') ? 3500 : 2500
-          })
-        });
-      } catch (err) {
-        console.warn('Server client save fallback to client-side code generation');
-      }
-
-      const clientObj = {
-        name: newClientName.trim() || 'مشترك جديد',
-        phone: newClientPhone.trim(),
-        code: generatedCode,
-        package: newClientPackage,
-        created_at: new Date().toLocaleDateString('ar-EG')
-      };
-
-      setGeneratedResult(clientObj);
-    } catch (err) {
-      alert('خطأ أثناء توليد الكود: ' + err.message);
-    } finally {
-      setCreatingCode(false);
-    }
-  };
-
-  const handleLookupPhone = async (e) => {
-    e.preventDefault();
-    setSearchError('');
-    setLookupResult(null);
-
-    const cleanInput = searchPhone.trim().replace(/\s+/g, '');
-    if (!cleanInput) return;
-
-    try {
-      setSearchingPhone(true);
-      const res = await fetch(`${API_BASE}/api/v1/clients`);
-      const data = await res.json();
-      
-      const found = (data.clients || []).find(c => 
-        (c.phone_number && c.phone_number.includes(cleanInput)) ||
-        (c.phone && c.phone.includes(cleanInput))
-      );
-
-      if (found) {
-        setLookupResult({
-          name: found.full_name || found.name || 'مشترك مسجل',
-          phone: found.phone_number || found.phone,
-          code: found.client_code || found.id,
-          package: found.subscription_package || 'باقة إيليت'
-        });
-      } else {
-        // Generate on-the-fly for quick onboarding if not found
-        const fallbackCode = String(Math.floor(1000 + Math.random() * 9000));
-        setLookupResult({
-          name: 'مشترك جديد (تم التوليد الآن)',
-          phone: cleanInput,
-          code: fallbackCode,
-          package: 'باقة ماكس (VIP 4 أشهر)',
-          isNew: true
-        });
-      }
-    } catch (err) {
-      // Offline fallback
-      const fallbackCode = String(Math.floor(1000 + Math.random() * 9000));
-      setLookupResult({
-        name: 'مشترك (محلي)',
-        phone: cleanInput,
-        code: fallbackCode,
-        package: 'باقة ماكس (VIP 4 أشهر)',
-        isNew: true
-      });
-    } finally {
-      setSearchingPhone(false);
-    }
-  };
-
-  // 5 Action Queues State
-  const [checkinsDue, setCheckinsDue] = useState([
+  // المهام والإجراءات اليومية
+  const [dailyActions, setDailyActions] = useState([
     {
-      id: 'c1',
-      client_name: 'سارة المنصوري',
-      phone: '01011111110',
-      isVIP: true,
-      package: 'باقة ماكس (VIP)',
-      decision: 'ON_TRACK',
-      statDiff: '-1.4 kg وزن • -2 cm خصر',
-      actionTitle: 'نزول مثالي في الميزان والخصر - الاستمرار بنفس السعرات'
+      id: 'ACT_01',
+      type: 'CHECKIN',
+      clientName: 'سارة المنصوري',
+      tier: 'VIP MAX',
+      phone: '+966501234567',
+      summary: 'نزول 1.6 كجم من الوزن والمحيطات في أسبوعين.',
+      suggestedAction: 'الاستمرار بنفس العجز السعري وتثبيت الماكروز.',
+      badgeColor: '#059669',
+      badgeBg: '#ECFDF5',
+      badgeBorder: '#A7F3D0',
+      badgeText: 'متابعة أسبوعية'
     },
     {
-      id: 'c2',
-      client_name: 'طارق عبد العزيز',
-      phone: '01011111112',
-      isVIP: false,
-      package: 'باقة إيليت (ELITE)',
-      decision: 'METABOLIC_PLATEAU',
-      statDiff: 'ثبات الوزن للأسبوع الثاني',
-      actionTitle: 'تفعيل زيادة خطوات NEAT بمقدار +1,500 خطوة لتنشيط الحرق'
-    }
-  ]);
-
-  const [reEntries, setReEntries] = useState([
+      id: 'ACT_02',
+      type: 'CLINICAL',
+      clientName: 'ياسمين فهد',
+      tier: 'ELITE',
+      phone: '+971509876543',
+      summary: 'نغزة ألم في الكتف الأيمن (6/10) أثناء تمرين Overhead Press.',
+      suggestedAction: 'استبدال البار بقبضة دمبل محايدة مائلة وتفعيل روتين الكفة المدورة.',
+      badgeColor: '#E11D48',
+      badgeBg: '#FFF1F2',
+      badgeBorder: '#FECDD3',
+      badgeText: 'تنبيه مفصلي'
+    },
     {
-      id: 'r1',
-      client_name: 'عمر خالد',
-      phone: '01011111113',
-      freezeDays: 14,
-      statusDuringFreeze: 'انقطاع تام وراحة',
-      decision: 'تفعيل أسبوع التهيئة العصبية (Ramp-Up Week): خفض الحجم 35% وضبط الشدة 3-4 RIR'
-    }
-  ]);
-
-  const [inactivityAlerts, setInactivityAlerts] = useState([
+      id: 'ACT_03',
+      type: 'INACTIVE',
+      clientName: 'حسام البدري',
+      tier: 'VIP MAX',
+      phone: '+201012345678',
+      summary: 'لم يسجل أي تمرين أو وجبة منذ أكثر من 48 ساعة.',
+      suggestedAction: 'إرسال رسالة تشجيع واطمئنان على الواتساب.',
+      badgeColor: '#D97706',
+      badgeBg: '#FFFBEB',
+      badgeBorder: '#FDE68A',
+      badgeText: 'انقطاع 48 ساعة'
+    },
     {
-      id: 'i1',
-      client_name: 'حسام البدري',
-      phone: '01011111114',
-      hoursInactive: 48,
-      package: 'باقة ماكس (VIP)'
+      id: 'ACT_04',
+      type: 'RENEWAL',
+      clientName: 'أحمد فتحي',
+      tier: 'ELITE',
+      phone: '+201123456789',
+      summary: 'متبقي 3 أيام على نهاية باقة الـ 14 أسبوعاً (إنجاز -13.5 كجم).',
+      suggestedAction: 'إرسال عرض تجديد الدايت العكسي والبناء العضلي الصافي.',
+      badgeColor: '#4F46E5',
+      badgeBg: '#EEF2FF',
+      badgeBorder: '#C7D2FE',
+      badgeText: 'تجديد اشتراك'
     }
   ]);
 
-  const [renewals, setRenewals] = useState([
-    {
-      id: 'ren1',
-      client_name: 'أحمد فتحي',
-      phone: '01011111115',
-      week: 14,
-      weightLostKg: 13.5,
-      nextPhase: 'الدايت العكسي والبناء العضلي الصافي',
-      discountCode: 'KZ-RENEW-14KG'
-    }
-  ]);
+  const filteredActions = dailyActions.filter(act => {
+    const matchesTab = activeTab === 'ALL' || act.type === activeTab;
+    const cleanSearch = searchQuery.trim().toLowerCase();
+    const matchesSearch = !cleanSearch || 
+      act.clientName.toLowerCase().includes(cleanSearch) || 
+      act.phone.includes(cleanSearch);
+    return matchesTab && matchesSearch;
+  });
 
-  const [clinicalAlerts, setClinicalAlerts] = useState([
-    {
-      id: 'cl1',
-      client_name: 'ياسمين فهد',
-      joint: 'الكتف الأيمن',
-      painLevel: '6/10',
-      offendingEx: 'Overhead Dumbbell Press',
-      recommendation: 'استبدال بـ Incline Neutral Dumbbell Press وضخ بروتوكول تأهيل الروتاتور كاف'
-    }
-  ]);
-
-  // Handler helpers
-  const handleApproveCheckin = (id) => {
-    setCheckinsDue(prev => prev.filter(c => c.id !== id));
+  const generateNewClient = () => {
+    const randomCode = 'KZ-' + Math.floor(1000 + Math.random() * 9000);
+    setGeneratedCode(randomCode);
   };
-
-  const handleApproveReEntry = (id) => {
-    setReEntries(prev => prev.filter(r => r.id !== id));
-  };
-
-  const handleClearInactivity = (id) => {
-    setInactivityAlerts(prev => prev.filter(i => i.id !== id));
-  };
-
-  const handleSendRenewal = (id) => {
-    setRenewals(prev => prev.filter(ren => ren.id !== id));
-  };
-
-  const handleResolveClinical = (id) => {
-    setClinicalAlerts(prev => prev.filter(cl => cl.id !== id));
-  };
-
-  const totalPendingActions = 
-    checkinsDue.length + 
-    reEntries.length + 
-    inactivityAlerts.length + 
-    renewals.length + 
-    clinicalAlerts.length;
 
   return (
     <AdminLayout>
-      <div style={{ maxWidth: '1080px', margin: '0 auto', direction: 'rtl', fontFamily: 'Alexandria, Cairo, sans-serif' }}>
+      <div style={{ maxWidth: '1180px', margin: '0 auto', direction: 'rtl', fontFamily: 'Alexandria, Cairo, sans-serif' }}>
         
-        {/* Header Stream */}
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px', flexWrap: 'wrap', gap: '12px' }}>
+        {/* Top Header Bar */}
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '22px', flexWrap: 'wrap', gap: '14px' }}>
           <div>
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px' }}>
-              <span style={{ fontSize: '0.75rem', fontWeight: 800, color: '#0284C7', background: '#E0F2FE', padding: '2px 8px', borderRadius: '6px' }}>
-                Daily Command Center
+              <span style={{ fontSize: '0.74rem', fontWeight: 800, color: '#0284C7', background: '#E0F2FE', padding: '2px 8px', borderRadius: '6px' }}>
+                Command Cockpit
               </span>
               <span style={{ fontSize: '0.75rem', color: '#64748B', fontWeight: 700 }}>
                 مسار الإجراءات والقرارات اليومية
               </span>
             </div>
             <h1 style={{ fontSize: '1.45rem', fontWeight: 900, color: '#0F172A', margin: 0 }}>
-              مركز القيادة اليومي (Inbox Zero Hub)
+              مركز الإجراءات والقرارات اليومية
             </h1>
           </div>
 
-          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap' }}>
+            {/* Search Input */}
+            <div style={{ position: 'relative' }}>
+              <input
+                type="text"
+                placeholder="بحث بالاسم أو الهاتف..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                style={{
+                  width: '240px',
+                  background: '#FFFFFF',
+                  border: '1.5px solid #CBD5E1',
+                  borderRadius: '12px',
+                  padding: '8px 14px',
+                  fontSize: '0.82rem',
+                  color: '#0F172A',
+                  outline: 'none'
+                }}
+              />
+            </div>
+
+            {/* Quick Action Button */}
             <button
               type="button"
-              onClick={() => setShowCodeModal(true)}
+              onClick={() => {
+                generateNewClient();
+                setIsNewClientModalOpen(true);
+              }}
               style={{
                 background: 'linear-gradient(135deg, #0284C7 0%, #0369A1 100%)',
                 color: '#FFFFFF',
                 border: 'none',
-                padding: '8px 18px',
+                padding: '9px 18px',
                 borderRadius: '12px',
                 fontSize: '0.84rem',
-                fontWeight: '800',
+                fontWeight: 800,
                 cursor: 'pointer',
                 display: 'flex',
                 alignItems: 'center',
                 gap: '6px',
-                boxShadow: '0 4px 12px rgba(2, 132, 199, 0.25)',
+                boxShadow: '0 4px 14px rgba(2, 132, 199, 0.25)',
                 transition: 'all 0.2s ease'
               }}
             >
-              <span>+ إنشاء كود مشترك جديد / بحث برقم الموبايل</span>
+              <Plus style={{ width: '16px', height: '16px' }} />
+              <span>كود مشترك جديد</span>
             </button>
-            <div style={{ background: totalPendingActions === 0 ? '#ECFDF5' : '#FEF3C7', border: `1px solid ${totalPendingActions === 0 ? '#A7F3D0' : '#FDE68A'}`, color: totalPendingActions === 0 ? '#059669' : '#92400E', padding: '6px 14px', borderRadius: '12px', fontSize: '0.84rem', fontWeight: 800 }}>
-              {totalPendingActions === 0 ? '✓ كل الإجراءات مكتملة (Inbox Zero)' : `⚠️ متبقي ${totalPendingActions} إجراءات حاسمة اليوم`}
-            </div>
           </div>
         </div>
 
-        {/* INBOX ZERO CELEBRATION STATE */}
-        {totalPendingActions === 0 ? (
-          <div 
-            style={{
-              background: 'linear-gradient(145deg, #0F172A 0%, #1E293B 100%)',
-              color: '#FFFFFF',
-              borderRadius: '24px',
-              padding: '48px 24px',
-              textAlign: 'center',
-              boxShadow: '0 10px 30px rgba(0,0,0,0.15)',
-              margin: '30px 0'
-            }}
-          >
-            <div style={{ width: '64px', height: '64px', borderRadius: '50%', background: '#059669', color: '#FFFFFF', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 16px auto' }}>
-              <CheckCircle2 style={{ width: '36px', height: '36px' }} />
-            </div>
-            <h2 style={{ fontSize: '1.5rem', fontWeight: 900, color: '#FFFFFF', margin: '0 0 8px 0' }}>
-              ALL CAUGHT UP! ZERO PENDING ACTIONS
-            </h2>
-            <p style={{ fontSize: '0.88rem', color: '#94A3B8', maxWidth: '500px', margin: '0 auto 20px auto', lineHeight: '1.6' }}>
-              عاش يا كابتن! كافة المتابعات والقرارات السريرية وتنبيهات الاستبقاء لليوم تم اعتمادها بنجاح بنسبة 100%.
-            </p>
-            <Link
-              to="/progress"
-              style={{
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: '6px',
-                background: '#0284C7',
-                color: '#FFFFFF',
-                padding: '10px 20px',
-                borderRadius: '12px',
-                fontSize: '0.84rem',
-                fontWeight: 800,
-                textDecoration: 'none'
-              }}
-            >
-              <span>استعراض أرشيف القياسات والتحاليل</span>
-              <ChevronLeft style={{ width: '16px', height: '16px' }} />
-            </Link>
-          </div>
-        ) : (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-            
-            {/* 1. CHECK-INS DUE TODAY */}
-            {checkinsDue.length > 0 && (
-              <div style={{ background: '#FFFFFF', borderRadius: '20px', padding: '20px', border: '1px solid #E2E8F0', boxShadow: '0 2px 8px rgba(15,23,42,0.04)' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px', borderBottom: '1px solid #F1F5F9', paddingBottom: '10px' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                    <Clock style={{ width: '18px', height: '18px', color: '#0284C7' }} />
-                    <h2 style={{ fontSize: '0.98rem', fontWeight: 800, color: '#0F172A', margin: 0 }}>
-                      1. المتابعات المستحقة اليوم ({checkinsDue.length})
-                    </h2>
+        {/* 3. شريط كروت الإحصائيات (KPI Metric Cards) */}
+        <div className="row g-3 mb-4">
+          {stats.map((st, i) => {
+            const IconComponent = st.icon;
+            return (
+              <div key={i} className="col-6 col-lg-3">
+                <div 
+                  style={{
+                    background: '#FFFFFF',
+                    border: '1px solid #E2E8F0',
+                    borderRadius: '18px',
+                    padding: '16px',
+                    boxShadow: '0 2px 10px rgba(15, 23, 42, 0.03)',
+                    height: '100%',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    justifyContent: 'space-between'
+                  }}
+                >
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <span style={{ fontSize: '0.78rem', fontWeight: 700, color: '#64748B' }}>{st.title}</span>
+                    <div style={{ width: '32px', height: '32px', borderRadius: '10px', background: st.bg, color: st.color, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                      <IconComponent style={{ width: '18px', height: '18px' }} />
+                    </div>
                   </div>
-                  <span style={{ fontSize: '0.74rem', color: '#64748B' }}>الأولوية لمشتركي VIP</span>
+                  <div style={{ marginTop: '12px', display: 'flex', alignItems: 'baseline', gap: '8px' }}>
+                    <span style={{ fontSize: '1.6rem', fontWeight: 900, color: '#0F172A' }}>{st.value}</span>
+                    <span style={{ fontSize: '0.74rem', fontWeight: 700, color: st.color }}>{st.change}</span>
+                  </div>
                 </div>
+              </div>
+            );
+          })}
+        </div>
 
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-                  {checkinsDue.map(c => {
-                    const waScript = generateWhatsAppCoachingScript({
-                      client_name: c.client_name,
-                      phone_number: c.phone,
-                      decision_scenario: c.decision
-                    });
+        {/* 4. الهيكل التفاعلي 70/30 (Main Action Grid) */}
+        <div className="row g-4">
+          
+          {/* العمود الرئيسي (70%): طابور المتابعات والقرارات */}
+          <div className="col-lg-8">
+            
+            {/* Filter Tabs */}
+            <div style={{ display: 'flex', gap: '6px', background: '#FFFFFF', padding: '6px', borderRadius: '14px', border: '1px solid #E2E8F0', marginBottom: '16px', flexWrap: 'wrap' }}>
+              {[
+                { id: 'ALL', label: 'الكل' },
+                { id: 'CHECKIN', label: 'المتابعات' },
+                { id: 'CLINICAL', label: 'الشكاوى السريرية' },
+                { id: 'INACTIVE', label: 'رادار الانقطاع' },
+                { id: 'RENEWAL', label: 'التجديدات' },
+              ].map(tab => (
+                <button
+                  key={tab.id}
+                  type="button"
+                  onClick={() => setActiveTab(tab.id)}
+                  style={{
+                    padding: '8px 14px',
+                    borderRadius: '10px',
+                    fontSize: '0.78rem',
+                    fontWeight: activeTab === tab.id ? 800 : 600,
+                    border: 'none',
+                    cursor: 'pointer',
+                    background: activeTab === tab.id ? '#0284C7' : 'transparent',
+                    color: activeTab === tab.id ? '#FFFFFF' : '#64748B',
+                    transition: 'all 0.15s ease'
+                  }}
+                >
+                  {tab.label}
+                </button>
+              ))}
+            </div>
 
-                    return (
-                      <div 
-                        key={c.id}
-                        style={{
-                          background: c.isVIP ? '#FFFBEB' : '#F8FAFC',
-                          border: `1px solid ${c.isVIP ? '#FDE68A' : '#E2E8F0'}`,
-                          borderRadius: '14px',
-                          padding: '14px',
-                          display: 'flex',
-                          justifyContent: 'space-between',
-                          alignItems: 'center',
-                          flexWrap: 'wrap',
-                          gap: '12px'
-                        }}
-                      >
+            {/* Action Cards List */}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
+              {filteredActions.length === 0 ? (
+                <div style={{ padding: '40px 20px', textAlign: 'center', background: '#FFFFFF', border: '1.5px dashed #CBD5E1', borderRadius: '20px' }}>
+                  <div style={{ width: '48px', height: '48px', borderRadius: '50%', background: '#ECFDF5', color: '#059669', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 12px auto' }}>
+                    <CheckCircle2 style={{ width: '28px', height: '28px' }} />
+                  </div>
+                  <h3 style={{ fontSize: '1.1rem', fontWeight: 900, color: '#0F172A', margin: '0 0 6px 0' }}>
+                    رائع! تم إنهاء كافة الإجراءات والمتابعات لليوم
+                  </h3>
+                  <p style={{ fontSize: '0.8rem', color: '#64748B', margin: 0 }}>
+                    كافة المراجعات والتنبيهات المندرجة تحت هذا التبويب معتمدة بنسبة 100%.
+                  </p>
+                </div>
+              ) : (
+                filteredActions.map(action => (
+                  <div
+                    key={action.id}
+                    style={{
+                      background: '#FFFFFF',
+                      border: '1px solid #E2E8F0',
+                      borderRadius: '18px',
+                      padding: '18px',
+                      boxShadow: '0 2px 8px rgba(15, 23, 42, 0.03)',
+                      display: 'flex',
+                      flexDirection: 'column',
+                      gap: '12px'
+                    }}
+                  >
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                        <div style={{ width: '36px', height: '36px', borderRadius: '10px', background: '#F1F5F9', color: '#0F172A', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 800, fontSize: '0.88rem' }}>
+                          {action.clientName[0]}
+                        </div>
                         <div>
-                          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px' }}>
-                            <strong style={{ fontSize: '0.9rem', color: '#0F172A' }}>{c.client_name}</strong>
-                            <span style={{ fontSize: '9.5px', background: c.isVIP ? '#FEF3C7' : '#E0F2FE', color: c.isVIP ? '#92400E' : '#0369A1', padding: '1px 6px', borderRadius: '4px', fontWeight: 800 }}>
-                              {c.package}
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                            <h4 style={{ fontSize: '0.92rem', fontWeight: 800, color: '#0F172A', margin: 0 }}>
+                              {action.clientName}
+                            </h4>
+                            <span style={{ fontSize: '0.72rem', background: '#F1F5F9', color: '#475569', padding: '2px 8px', borderRadius: '6px', fontWeight: 700 }}>
+                              {action.tier}
                             </span>
-                            <span style={{ fontSize: '0.75rem', color: '#059669', fontWeight: 700 }}>{c.statDiff}</span>
                           </div>
-                          <p style={{ margin: 0, fontSize: '0.78rem', color: '#475569' }}>
-                            <strong>القرار:</strong> {c.actionTitle}
-                          </p>
-                        </div>
-
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                          <a
-                            href={waScript.whatsapp_url}
-                            target="_blank"
-                            rel="noreferrer"
-                            style={{
-                              display: 'inline-flex',
-                              alignItems: 'center',
-                              gap: '4px',
-                              background: '#ECFDF5',
-                              color: '#059669',
-                              border: '1px solid #A7F3D0',
-                              borderRadius: '10px',
-                              padding: '6px 12px',
-                              fontSize: '0.76rem',
-                              fontWeight: 700,
-                              textDecoration: 'none'
-                            }}
-                          >
-                            <MessageCircle style={{ width: '13px', height: '13px' }} />
-                            <span>واتساب</span>
-                          </a>
-
-                          <button
-                            type="button"
-                            onClick={() => handleApproveCheckin(c.id)}
-                            style={{
-                              display: 'inline-flex',
-                              alignItems: 'center',
-                              gap: '4px',
-                              background: '#059669',
-                              color: '#FFFFFF',
-                              border: 'none',
-                              borderRadius: '10px',
-                              padding: '6px 14px',
-                              fontSize: '0.76rem',
-                              fontWeight: 800,
-                              cursor: 'pointer'
-                            }}
-                          >
-                            <Check style={{ width: '13px', height: '13px' }} />
-                            <span>اعتماد وتحديث</span>
-                          </button>
+                          <span style={{ fontSize: '0.74rem', color: '#94A3B8', fontFamily: 'monospace' }}>{action.phone}</span>
                         </div>
                       </div>
-                    );
-                  })}
-                </div>
-              </div>
-            )}
 
-            {/* 2. PENDING RE-ENTRY ASSESSMENTS */}
-            {reEntries.length > 0 && (
-              <div style={{ background: '#FFFFFF', borderRadius: '20px', padding: '20px', border: '1px solid #E2E8F0', boxShadow: '0 2px 8px rgba(15,23,42,0.04)' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '14px', borderBottom: '1px solid #F1F5F9', paddingBottom: '10px' }}>
-                  <RotateCcw style={{ width: '18px', height: '18px', color: '#D97706' }} />
-                  <h2 style={{ fontSize: '0.98rem', fontWeight: 800, color: '#0F172A', margin: 0 }}>
-                    2. استمارات إعادة المعايرة والعودة من التجميد ({reEntries.length})
-                  </h2>
-                </div>
-
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-                  {reEntries.map(r => (
-                    <div 
-                      key={r.id}
-                      style={{
-                        background: '#FFFBEB',
-                        border: '1px solid #FDE68A',
-                        borderRadius: '14px',
-                        padding: '14px',
-                        display: 'flex',
-                        justifyContent: 'space-between',
-                        alignItems: 'center',
-                        flexWrap: 'wrap',
-                        gap: '12px'
-                      }}
-                    >
-                      <div>
-                        <strong style={{ fontSize: '0.9rem', color: '#0F172A', display: 'block', marginBottom: '2px' }}>
-                          {r.client_name} (تجميد {r.freezeDays} يوماً • {r.statusDuringFreeze})
-                        </strong>
-                        <p style={{ margin: 0, fontSize: '0.78rem', color: '#92400E' }}>
-                          <strong>بروتوكول العودة:</strong> {r.decision}
-                        </p>
-                      </div>
-
-                      <button
-                        type="button"
-                        onClick={() => handleApproveReEntry(r.id)}
-                        style={{
-                          background: '#D97706',
-                          color: '#FFFFFF',
-                          border: 'none',
-                          borderRadius: '10px',
-                          padding: '6px 14px',
-                          fontSize: '0.76rem',
-                          fontWeight: 800,
-                          cursor: 'pointer'
+                      <span 
+                        style={{ 
+                          fontSize: '0.74rem', 
+                          fontWeight: 800, 
+                          padding: '4px 10px', 
+                          borderRadius: '8px', 
+                          background: action.badgeBg, 
+                          color: action.badgeColor, 
+                          border: '1px solid ' + action.badgeBorder
                         }}
                       >
-                        اعتماد خطة العودة
-                      </button>
+                        {action.badgeText}
+                      </span>
                     </div>
-                  ))}
-                </div>
-              </div>
-            )}
 
-            {/* 3. 48-HOUR INACTIVITY ALERTS */}
-            {inactivityAlerts.length > 0 && (
-              <div style={{ background: '#FFFFFF', borderRadius: '20px', padding: '20px', border: '1px solid #E2E8F0', boxShadow: '0 2px 8px rgba(15,23,42,0.04)' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '14px', borderBottom: '1px solid #F1F5F9', paddingBottom: '10px' }}>
-                  <AlertTriangle style={{ width: '18px', height: '18px', color: '#EF4444' }} />
-                  <h2 style={{ fontSize: '0.98rem', fontWeight: 800, color: '#0F172A', margin: 0 }}>
-                    3. رادار كشف الانقطاع 48 ساعة ({inactivityAlerts.length})
-                  </h2>
-                </div>
-
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-                  {inactivityAlerts.map(i => (
-                    <div 
-                      key={i.id}
-                      style={{
-                        background: '#FEF2F2',
-                        border: '1px solid #FECACA',
-                        borderRadius: '14px',
-                        padding: '14px',
-                        display: 'flex',
-                        justifyContent: 'space-between',
-                        alignItems: 'center',
-                        flexWrap: 'wrap',
-                        gap: '12px'
-                      }}
-                    >
-                      <div>
-                        <strong style={{ fontSize: '0.9rem', color: '#991B1B', display: 'block', marginBottom: '2px' }}>
-                          {i.client_name} ({i.package})
-                        </strong>
-                        <p style={{ margin: 0, fontSize: '0.78rem', color: '#B91C1C' }}>
-                          لم يسجل أي تمرين أو وجبة منذ أكثر من {i.hoursInactive} ساعة متواصلة.
-                        </p>
+                    <div style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', padding: '12px 14px', borderRadius: '12px', fontSize: '0.82rem', lineHeight: '1.6' }}>
+                      <div style={{ color: '#334155', marginBottom: '4px' }}>
+                        <strong style={{ color: '#0F172A' }}>الحالة:</strong> {action.summary}
                       </div>
-
-                      <div style={{ display: 'flex', gap: '8px' }}>
-                        <a
-                          href={`https://wa.me/2${i.phone}?text=${encodeURIComponent('يا هلا يا بطل! لاحظت إنك مسجلتش تمرين أو وجبات آخر 48 ساعة. طمني عليك وعلى صحتك كل حاجة تمام؟')}`}
-                          target="_blank"
-                          rel="noreferrer"
-                          style={{
-                            background: '#16A34A',
-                            color: '#FFFFFF',
-                            borderRadius: '10px',
-                            padding: '6px 12px',
-                            fontSize: '0.76rem',
-                            fontWeight: 700,
-                            display: 'inline-flex',
-                            alignItems: 'center',
-                            gap: '4px',
-                            textDecoration: 'none'
-                          }}
-                        >
-                          <MessageCircle style={{ width: '13px', height: '13px' }} />
-                          <span>تدخل واتساب فوري</span>
-                        </a>
-
-                        <button
-                          type="button"
-                          onClick={() => handleClearInactivity(i.id)}
-                          style={{ background: '#F1F5F9', border: 'none', borderRadius: '10px', padding: '6px 10px', fontSize: '0.76rem', fontWeight: 700, color: '#475569', cursor: 'pointer' }}
-                        >
-                          تم التواصل
-                        </button>
+                      <div style={{ color: '#0284C7', fontWeight: 700 }}>
+                        <strong style={{ color: '#0F172A' }}>القرار المقترح:</strong> {action.suggestedAction}
                       </div>
                     </div>
-                  ))}
-                </div>
-              </div>
-            )}
 
-            {/* 4. WEEK 14 RENEWAL PIPELINE */}
-            {renewals.length > 0 && (
-              <div style={{ background: '#FFFFFF', borderRadius: '20px', padding: '20px', border: '1px solid #E2E8F0', boxShadow: '0 2px 8px rgba(15,23,42,0.04)' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '14px', borderBottom: '1px solid #F1F5F9', paddingBottom: '10px' }}>
-                  <Crown style={{ width: '18px', height: '18px', color: '#D97706' }} />
-                  <h2 style={{ fontSize: '0.98rem', fontWeight: 800, color: '#0F172A', margin: 0 }}>
-                    4. طابور تجديدات الأسبوع 14 ({renewals.length})
-                  </h2>
-                </div>
-
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-                  {renewals.map(ren => (
-                    <div 
-                      key={ren.id}
-                      style={{
-                        background: '#FFFBEB',
-                        border: '1px solid #FDE68A',
-                        borderRadius: '14px',
-                        padding: '14px',
-                        display: 'flex',
-                        justifyContent: 'space-between',
-                        alignItems: 'center',
-                        flexWrap: 'wrap',
-                        gap: '12px'
-                      }}
-                    >
-                      <div>
-                        <strong style={{ fontSize: '0.9rem', color: '#0F172A', display: 'block', marginBottom: '2px' }}>
-                          {ren.client_name} (الأسبوع {ren.week} • إنجاز -{ren.weightLostKg} kg)
-                        </strong>
-                        <p style={{ margin: 0, fontSize: '0.78rem', color: '#92400E' }}>
-                          <strong>المسار القادم:</strong> {ren.nextPhase} (كود خصم 25%: {ren.discountCode})
-                        </p>
-                      </div>
-
-                      <div style={{ display: 'flex', gap: '8px' }}>
-                        <a
-                          href={`https://wa.me/2${ren.phone}?text=${encodeURIComponent('ألف مبروك وصولك للأسبوع 14 بإنجاز أسطوري! جهزتلك عرض تجديد مبكر بخصم 25% بكود ' + ren.discountCode)}`}
-                          target="_blank"
-                          rel="noreferrer"
-                          style={{
-                            background: '#0284C7',
-                            color: '#FFFFFF',
-                            borderRadius: '10px',
-                            padding: '6px 12px',
-                            fontSize: '0.76rem',
-                            fontWeight: 700,
-                            display: 'inline-flex',
-                            alignItems: 'center',
-                            gap: '4px',
-                            textDecoration: 'none'
-                          }}
-                        >
-                          <MessageCircle style={{ width: '13px', height: '13px' }} />
-                          <span>إرسال عرض التجديد</span>
-                        </a>
-
-                        <button
-                          type="button"
-                          onClick={() => handleSendRenewal(ren.id)}
-                          style={{ background: '#F1F5F9', border: 'none', borderRadius: '10px', padding: '6px 10px', fontSize: '0.76rem', fontWeight: 700, color: '#475569', cursor: 'pointer' }}
-                        >
-                          تم الإرسال
-                        </button>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {/* 5. CLINICAL & JOINT RED FLAGS */}
-            {clinicalAlerts.length > 0 && (
-              <div style={{ background: '#FFFFFF', borderRadius: '20px', padding: '20px', border: '1px solid #E2E8F0', boxShadow: '0 2px 8px rgba(15,23,42,0.04)' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '14px', borderBottom: '1px solid #F1F5F9', paddingBottom: '10px' }}>
-                  <ShieldCheck style={{ width: '18px', height: '18px', color: '#9333EA' }} />
-                  <h2 style={{ fontSize: '0.98rem', fontWeight: 800, color: '#0F172A', margin: 0 }}>
-                    5. الإشارات السريرية والشكاوى المفصلية ({clinicalAlerts.length})
-                  </h2>
-                </div>
-
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-                  {clinicalAlerts.map(cl => (
-                    <div 
-                      key={cl.id}
-                      style={{
-                        background: '#FAF5FF',
-                        border: '1px solid #E9D5FF',
-                        borderRadius: '14px',
-                        padding: '14px',
-                        display: 'flex',
-                        justifyContent: 'space-between',
-                        alignItems: 'center',
-                        flexWrap: 'wrap',
-                        gap: '12px'
-                      }}
-                    >
-                      <div>
-                        <strong style={{ fontSize: '0.9rem', color: '#581C87', display: 'block', marginBottom: '2px' }}>
-                          {cl.client_name} (ألم في {cl.joint} - شدة {cl.painLevel} أثناء {cl.offendingEx})
-                        </strong>
-                        <p style={{ margin: 0, fontSize: '0.78rem', color: '#6B21A8' }}>
-                          <strong>الإجراء السريري:</strong> {cl.recommendation}
-                        </p>
-                      </div>
-
-                      <button
-                        type="button"
-                        onClick={() => handleResolveClinical(cl.id)}
+                    <div style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', gap: '8px', paddingTop: '4px' }}>
+                      <a
+                        href={'https://wa.me/' + action.phone.replace(/\D/g, '')}
+                        target="_blank"
+                        rel="noreferrer"
                         style={{
-                          background: '#7E22CE',
-                          color: '#FFFFFF',
-                          border: 'none',
+                          padding: '7px 14px',
                           borderRadius: '10px',
-                          padding: '6px 14px',
-                          fontSize: '0.76rem',
-                          fontWeight: 800,
-                          cursor: 'pointer'
+                          border: '1px solid #CBD5E1',
+                          background: '#FFFFFF',
+                          color: '#334155',
+                          fontWeight: 700,
+                          fontSize: '0.78rem',
+                          textDecoration: 'none',
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '6px'
                         }}
                       >
-                        اعتماد الاستبدال والتأهيل
+                        <MessageCircle style={{ width: '14px', height: '14px', color: '#16A34A' }} />
+                        <span>محادثة واتساب</span>
+                      </a>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setDailyActions(dailyActions.filter(a => a.id !== action.id));
+                        }}
+                        style={{
+                          padding: '7px 16px',
+                          borderRadius: '10px',
+                          background: 'linear-gradient(135deg, #059669 0%, #047857 100%)',
+                          color: '#FFFFFF',
+                          fontWeight: 800,
+                          fontSize: '0.78rem',
+                          border: 'none',
+                          cursor: 'pointer',
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '4px',
+                          boxShadow: '0 2px 8px rgba(5, 150, 105, 0.2)'
+                        }}
+                      >
+                        <Check style={{ width: '14px', height: '14px' }} />
+                        <span>اعتماد وتحديث الخطة</span>
                       </button>
                     </div>
-                  ))}
-                </div>
-              </div>
-            )}
-
+                  </div>
+                ))
+              )}
+            </div>
           </div>
-        )}
 
-      </div>
-    
-        {/* MODAL: CREATE / LOOKUP CLIENT CODE */}
-        {showCodeModal && (
+          {/* العمود الجانبي (30%): ملخص الطوارئ وتوزيع الباقات */}
+          <div className="col-lg-4">
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+              
+              {/* بطاقة الطوارئ السريرية السريعة */}
+              <div style={{ background: '#FFFFFF', border: '1px solid #E2E8F0', borderRadius: '18px', padding: '18px', boxShadow: '0 2px 8px rgba(15, 23, 42, 0.03)' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
+                  <h3 style={{ fontSize: '0.88rem', fontWeight: 800, color: '#0F172A', margin: 0, display: 'flex', alignItems: 'center', gap: '6px' }}>
+                    <ShieldAlert style={{ width: '16px', height: '16px', color: '#E11D48' }} />
+                    <span>رادار الطوارئ السريرية</span>
+                  </h3>
+                  <span style={{ fontSize: '0.72rem', background: '#FFF1F2', color: '#E11D48', border: '1px solid #FECDD3', padding: '2px 8px', borderRadius: '6px', fontWeight: 800 }}>
+                    1 حالة نشطة
+                  </span>
+                </div>
+                <div style={{ padding: '12px', background: '#F8FAFC', border: '1px solid #E2E8F0', borderRadius: '12px' }}>
+                  <span style={{ fontSize: '0.84rem', fontWeight: 800, color: '#0F172A', display: 'block', marginBottom: '4px' }}>
+                    ياسمين فهد (إصابة كتف أيمن)
+                  </span>
+                  <p style={{ fontSize: '0.76rem', color: '#64748B', margin: '0 0 10px 0', lineHeight: '1.5' }}>
+                    تم عزل تمارين البار واستبدالها بالدمبل المحايد تلقائياً لحماية الكفة المدورة.
+                  </p>
+                  <Link
+                    to="/exercises"
+                    style={{
+                      display: 'block',
+                      width: '100%',
+                      textAlign: 'center',
+                      background: '#FFFFFF',
+                      border: '1px solid #CBD5E1',
+                      color: '#0F172A',
+                      fontSize: '0.76rem',
+                      fontWeight: 800,
+                      padding: '8px',
+                      borderRadius: '10px',
+                      textDecoration: 'none'
+                    }}
+                  >
+                    استعراض بروتوكول التأهيل
+                  </Link>
+                </div>
+              </div>
+
+              {/* بطاقة توزيع الباقات */}
+              <div style={{ background: '#FFFFFF', border: '1px solid #E2E8F0', borderRadius: '18px', padding: '18px', boxShadow: '0 2px 8px rgba(15, 23, 42, 0.03)' }}>
+                <h3 style={{ fontSize: '0.88rem', fontWeight: 800, color: '#0F172A', margin: '0 0 14px 0', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                  <BarChart3 style={{ width: '16px', height: '16px', color: '#0284C7' }} />
+                  <span>توزيع الباقات النشطة</span>
+                </h3>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                  <div>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.78rem', marginBottom: '4px' }}>
+                      <span style={{ color: '#64748B', fontWeight: 600 }}>باقة ماكس (VIP MAX 360°)</span>
+                      <span style={{ color: '#0284C7', fontWeight: 800 }}>32 مشترك (67%)</span>
+                    </div>
+                    <div style={{ width: '100%', background: '#F1F5F9', height: '6px', borderRadius: '10px', overflow: 'hidden' }}>
+                      <div style={{ background: '#0284C7', height: '100%', width: '67%', borderRadius: '10px' }}></div>
+                    </div>
+                  </div>
+
+                  <div>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.78rem', marginBottom: '4px' }}>
+                      <span style={{ color: '#64748B', fontWeight: 600 }}>باقة إيليت (ELITE)</span>
+                      <span style={{ color: '#4F46E5', fontWeight: 800 }}>16 مشترك (33%)</span>
+                    </div>
+                    <div style={{ width: '100%', background: '#F1F5F9', height: '6px', borderRadius: '10px', overflow: 'hidden' }}>
+                      <div style={{ background: '#4F46E5', height: '100%', width: '33%', borderRadius: '10px' }}></div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+            </div>
+          </div>
+
+        </div>
+
+        {/* 5. نافذة إنشاء كود المشترك الجديد (Modal) */}
+        {isNewClientModalOpen && (
           <div 
             style={{
               position: 'fixed',
@@ -697,308 +469,90 @@ export default function CoachCommandCenter() {
               padding: '16px'
             }}
             onClick={(e) => {
-              if (e.target === e.currentTarget) setShowCodeModal(false);
+              if (e.target === e.currentTarget) setIsNewClientModalOpen(false);
             }}
           >
             <div 
               style={{
                 width: '100%',
-                maxWidth: '540px',
+                maxWidth: '460px',
                 background: '#FFFFFF',
                 borderRadius: '24px',
-                padding: '28px',
+                padding: '24px',
                 boxShadow: '0 20px 60px rgba(0,0,0,0.2)',
                 border: '1px solid #E2E8F0',
                 direction: 'rtl'
               }}
             >
-              {/* Modal Header */}
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px', borderBottom: '1px solid #F1F5F9', paddingBottom: '14px' }}>
-                <div>
-                  <h3 style={{ fontSize: '1.2rem', fontWeight: 900, color: '#0F172A', margin: 0 }}>
-                    بوابة أكواد المشتركين والتسجيل السريع
-                  </h3>
-                  <p style={{ fontSize: '0.78rem', color: '#64748B', margin: '4px 0 0 0' }}>
-                    توليد كود فوري وإرسال رابط الاستمارة للواتساب مباشرة
-                  </p>
-                </div>
-                <button 
-                  onClick={() => setShowCodeModal(false)}
-                  style={{ background: '#F1F5F9', border: 'none', width: '32px', height: '32px', borderRadius: '10px', color: '#64748B', fontSize: '1.1rem', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid #F1F5F9', paddingBottom: '12px', marginBottom: '16px' }}>
+                <h3 style={{ fontSize: '1.1rem', fontWeight: 900, color: '#0F172A', margin: 0 }}>
+                  توليد كود مشترك جديد
+                </h3>
+                <button
+                  type="button"
+                  onClick={() => setIsNewClientModalOpen(false)}
+                  style={{ background: '#F1F5F9', border: 'none', width: '28px', height: '28px', borderRadius: '8px', color: '#64748B', fontSize: '1rem', cursor: 'pointer' }}
                 >
                   ✕
                 </button>
               </div>
 
-              {/* Tabs */}
-              <div style={{ display: 'flex', gap: '8px', background: '#F8FAFC', padding: '4px', borderRadius: '14px', marginBottom: '20px', border: '1px solid #E2E8F0' }}>
-                <button
-                  type="button"
-                  onClick={() => { setActiveModalTab('CREATE'); setGeneratedResult(null); }}
-                  style={{
-                    flex: 1,
-                    padding: '8px',
-                    borderRadius: '10px',
-                    border: 'none',
-                    fontSize: '0.82rem',
-                    fontWeight: 800,
-                    cursor: 'pointer',
-                    background: activeModalTab === 'CREATE' ? '#FFFFFF' : 'transparent',
-                    color: activeModalTab === 'CREATE' ? '#0284C7' : '#64748B',
-                    boxShadow: activeModalTab === 'CREATE' ? '0 2px 8px rgba(0,0,0,0.06)' : 'none'
-                  }}
-                >
-                  + إنشاء كود مشترك جديد
-                </button>
-                <button
-                  type="button"
-                  onClick={() => { setActiveModalTab('LOOKUP'); setLookupResult(null); }}
-                  style={{
-                    flex: 1,
-                    padding: '8px',
-                    borderRadius: '10px',
-                    border: 'none',
-                    fontSize: '0.82rem',
-                    fontWeight: 800,
-                    cursor: 'pointer',
-                    background: activeModalTab === 'LOOKUP' ? '#FFFFFF' : 'transparent',
-                    color: activeModalTab === 'LOOKUP' ? '#0284C7' : '#64748B',
-                    boxShadow: activeModalTab === 'LOOKUP' ? '0 2px 8px rgba(0,0,0,0.06)' : 'none'
-                  }}
-                >
-                  🔍 بحث واسترجاع الكود برقم الموبايل
-                </button>
+              <div style={{ textAlign: 'center', padding: '16px', background: '#F8FAFC', border: '1.5px dashed #0284C7', borderRadius: '16px', marginBottom: '16px' }}>
+                <span style={{ fontSize: '0.76rem', color: '#64748B', display: 'block', fontWeight: 700, marginBottom: '4px' }}>
+                  كود المتدرب المخصص:
+                </span>
+                <span style={{ fontSize: '2rem', fontWeight: 900, color: '#0284C7', letterSpacing: '2px', fontFamily: 'monospace' }}>
+                  {generatedCode}
+                </span>
               </div>
 
-              {/* TAB 1: CREATE NEW CODE */}
-              {activeModalTab === 'CREATE' && (
-                <div>
-                  {!generatedResult ? (
-                    <form onSubmit={handleGenerateCode} style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
-                      <div>
-                        <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 700, color: '#334155', marginBottom: '6px' }}>اسم المشترك:</label>
-                        <input
-                          type="text"
-                          required
-                          placeholder="مثال: أحمد محمود"
-                          value={newClientName}
-                          onChange={(e) => setNewClientName(e.target.value)}
-                          style={{ width: '100%', padding: '10px 14px', borderRadius: '12px', border: '1.5px solid #CBD5E1', fontSize: '0.86rem', outline: 'none' }}
-                        />
-                      </div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                <button
+                  type="button"
+                  onClick={() => {
+                    const inviteMsg = 'أهلاً بك مع كابتن كريم زكريا!\nكود الاشتراك الخاص بك هو: *' + generatedCode + '*\nرابط الدخول واستمارة التقييم:\n' + window.location.origin + '/onboarding';
+                    navigator.clipboard.writeText(inviteMsg);
+                    setCopiedCode(true);
+                    setTimeout(() => setCopiedCode(false), 2500);
+                  }}
+                  style={{
+                    width: '100%',
+                    background: 'linear-gradient(135deg, #0284C7 0%, #0369A1 100%)',
+                    color: '#FFFFFF',
+                    fontWeight: 800,
+                    padding: '12px',
+                    borderRadius: '12px',
+                    fontSize: '0.84rem',
+                    border: 'none',
+                    cursor: 'pointer'
+                  }}
+                >
+                  {copiedCode ? 'تم نسخ رسالة الدعوة وكود المشترك بنجاح!' : 'نسخ رسالة الترحيب والواتساب'}
+                </button>
 
-                      <div>
-                        <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 700, color: '#334155', marginBottom: '6px' }}>رقم الموبايل (WhatsApp):</label>
-                        <input
-                          type="tel"
-                          required
-                          placeholder="مثال: 01012345678 أو 0501234567"
-                          value={newClientPhone}
-                          onChange={(e) => setNewClientPhone(e.target.value)}
-                          style={{ width: '100%', padding: '10px 14px', borderRadius: '12px', border: '1.5px solid #CBD5E1', fontSize: '0.86rem', outline: 'none' }}
-                        />
-                      </div>
-
-                      <div>
-                        <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 700, color: '#334155', marginBottom: '6px' }}>باقة الاشتراك:</label>
-                        <select
-                          value={newClientPackage}
-                          onChange={(e) => setNewClientPackage(e.target.value)}
-                          style={{ width: '100%', padding: '10px 14px', borderRadius: '12px', border: '1.5px solid #CBD5E1', fontSize: '0.86rem', outline: 'none', background: '#FFFFFF' }}
-                        >
-                          <option value="باقة ماكس (VIP 4 أشهر)">باقة ماكس (VIP 4 أشهر) - الأكثر شمولاً</option>
-                          <option value="باقة إيليت (ELITE 3 أشهر)">باقة إيليت (ELITE 3 أشهر)</option>
-                          <option value="باقة أساسية (STANDARD شهر واحد)">باقة أساسية (STANDARD شهر واحد)</option>
-                        </select>
-                      </div>
-
-                      <button
-                        type="submit"
-                        disabled={creatingCode}
-                        style={{
-                          background: 'linear-gradient(135deg, #0284C7 0%, #0369A1 100%)',
-                          color: '#FFFFFF',
-                          border: 'none',
-                          padding: '12px',
-                          borderRadius: '12px',
-                          fontSize: '0.9rem',
-                          fontWeight: 800,
-                          cursor: 'pointer',
-                          marginTop: '6px'
-                        }}
-                      >
-                        {creatingCode ? 'جاري إنشاء الكود...' : '⚡ توليد كود المشترك ورابط الاستمارة فوراً'}
-                      </button>
-                    </form>
-                  ) : (
-                    <div style={{ background: '#F8FAFC', border: '1.5px solid #BAE6FD', borderRadius: '18px', padding: '20px', textAlign: 'center' }}>
-                      <div style={{ width: '48px', height: '48px', borderRadius: '50%', background: '#ECFDF5', color: '#059669', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 10px auto', fontSize: '1.4rem' }}>
-                        ✓
-                      </div>
-                      
-                      <h4 style={{ fontSize: '1.1rem', fontWeight: 900, color: '#0F172A', margin: '0 0 4px 0' }}>
-                        تم إنشاء كود المشترك بنجاح!
-                      </h4>
-                      <p style={{ fontSize: '0.8rem', color: '#64748B', margin: '0 0 14px 0' }}>
-                        المشترك: <strong>{generatedResult.name}</strong> | هاتف: <strong className="font-monospace">{generatedResult.phone}</strong>
-                      </p>
-
-                      <div style={{ background: '#FFFFFF', border: '2px dashed #0284C7', borderRadius: '14px', padding: '14px', margin: '14px 0' }}>
-                        <small style={{ fontSize: '0.74rem', color: '#64748B', fontWeight: 700 }}>كود المشترك المخصص:</small>
-                        <div style={{ fontSize: '2rem', fontWeight: 900, color: '#0284C7', letterSpacing: '3px', fontFamily: 'monospace' }}>
-                          #{generatedResult.code}
-                        </div>
-                      </div>
-
-                      <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginTop: '14px' }}>
-                        {/* 1-Click WhatsApp Direct Invite */}
-                        <a
-                          href={`https://wa.me/2${generatedResult.phone.replace(/\D/g, '')}?text=${encodeURIComponent(
-                            `أهلاً بك يا ${generatedResult.name} في Z Coaching!\nكود المشترك الخاص بك هو: #${generatedResult.code}\n\nيرجى ملء استمارتك البيولوجية والتدريبية من الرابط التالي:\n${window.location.origin}/onboarding\n\nنحن بانتظارك لبدء خطتك المخصصة!`
-                          )}`}
-                          target="_blank"
-                          rel="noreferrer"
-                          style={{
-                            background: '#16A34A',
-                            color: '#FFFFFF',
-                            padding: '12px',
-                            borderRadius: '12px',
-                            fontSize: '0.86rem',
-                            fontWeight: 800,
-                            textDecoration: 'none',
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            gap: '8px'
-                          }}
-                        >
-                          <span>إرسال دعوة الواتساب الفورية ورابط الاستمارة</span>
-                        </a>
-
-                        <button
-                          type="button"
-                          onClick={() => {
-                            const inviteText = `كود المشترك: #${generatedResult.code} | رابط الاستمارة: ${window.location.origin}/onboarding`;
-                            navigator.clipboard.writeText(inviteText);
-                            setCopiedLink(true);
-                            setTimeout(() => setCopiedLink(false), 2500);
-                          }}
-                          style={{
-                            background: '#FFFFFF',
-                            color: '#334155',
-                            border: '1px solid #CBD5E1',
-                            padding: '10px',
-                            borderRadius: '12px',
-                            fontSize: '0.82rem',
-                            fontWeight: 700,
-                            cursor: 'pointer'
-                          }}
-                        >
-                          {copiedLink ? '✓ تم نسخ الكود والرابط للحافظة!' : 'نسخ الكود ورابط الاستمارة'}
-                        </button>
-
-                        <button
-                          type="button"
-                          onClick={() => { setGeneratedResult(null); setNewClientName(''); setNewClientPhone(''); }}
-                          style={{ background: 'transparent', border: 'none', color: '#0284C7', fontSize: '0.78rem', fontWeight: 700, cursor: 'pointer', marginTop: '6px' }}
-                        >
-                          + إنشاء كود لعميل آخر
-                        </button>
-                      </div>
-                    </div>
-                  )}
-                </div>
-              )}
-
-              {/* TAB 2: LOOKUP BY PHONE */}
-              {activeModalTab === 'LOOKUP' && (
-                <div>
-                  <form onSubmit={handleLookupPhone} style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
-                    <div>
-                      <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 700, color: '#334155', marginBottom: '6px' }}>أدخل رقم موبايل العميل للبحث:</label>
-                      <div style={{ display: 'flex', gap: '8px' }}>
-                        <input
-                          type="tel"
-                          required
-                          placeholder="مثال: 01012345678"
-                          value={searchPhone}
-                          onChange={(e) => setSearchPhone(e.target.value)}
-                          style={{ flex: 1, padding: '10px 14px', borderRadius: '12px', border: '1.5px solid #CBD5E1', fontSize: '0.86rem', outline: 'none' }}
-                        />
-                        <button
-                          type="submit"
-                          disabled={searchingPhone}
-                          style={{ background: '#0284C7', color: '#FFFFFF', border: 'none', padding: '0 18px', borderRadius: '12px', fontSize: '0.86rem', fontWeight: 800, cursor: 'pointer' }}
-                        >
-                          {searchingPhone ? 'بحث...' : 'بحث عن الكود'}
-                        </button>
-                      </div>
-                    </div>
-                  </form>
-
-                  {lookupResult && (
-                    <div style={{ background: '#F8FAFC', border: '1.5px solid #BAE6FD', borderRadius: '16px', padding: '18px', marginTop: '16px' }}>
-                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px', borderBottom: '1px solid #E2E8F0', paddingBottom: '8px' }}>
-                        <div>
-                          <h4 style={{ fontSize: '0.98rem', fontWeight: 800, color: '#0F172A', margin: 0 }}>
-                            {lookupResult.name}
-                          </h4>
-                          <small style={{ fontSize: '0.74rem', color: '#64748B' }}>هاتف: {lookupResult.phone}</small>
-                        </div>
-                        <span style={{ background: '#E0F2FE', color: '#0284C7', padding: '4px 10px', borderRadius: '8px', fontSize: '0.76rem', fontWeight: 800 }}>
-                          {lookupResult.package}
-                        </span>
-                      </div>
-
-                      <div style={{ background: '#FFFFFF', border: '1.5px solid #E2E8F0', borderRadius: '12px', padding: '12px', textAlign: 'center', margin: '10px 0' }}>
-                        <small style={{ fontSize: '0.72rem', color: '#64748B', fontWeight: 700 }}>كود المشترك:</small>
-                        <div style={{ fontSize: '1.6rem', fontWeight: 900, color: '#0284C7', fontFamily: 'monospace' }}>
-                          #{lookupResult.code}
-                        </div>
-                      </div>
-
-                      <div style={{ display: 'flex', gap: '8px', marginTop: '10px' }}>
-                        <a
-                          href={`https://wa.me/2${lookupResult.phone.replace(/\D/g, '')}?text=${encodeURIComponent(
-                            `أهلاً بك يا ${lookupResult.name}! كود المشترك الخاص بك هو: #${lookupResult.code}\nرابط الدخول والاستمارة:\n${window.location.origin}/onboarding`
-                          )}`}
-                          target="_blank"
-                          rel="noreferrer"
-                          style={{
-                            flex: 1,
-                            background: '#16A34A',
-                            color: '#FFFFFF',
-                            padding: '10px',
-                            borderRadius: '10px',
-                            fontSize: '0.78rem',
-                            fontWeight: 800,
-                            textDecoration: 'none',
-                            textAlign: 'center'
-                          }}
-                        >
-                          إرسال الكود للعميل عبر WhatsApp
-                        </a>
-
-                        <button
-                          type="button"
-                          onClick={() => {
-                            navigator.clipboard.writeText(`#${lookupResult.code}`);
-                            alert(`تم نسخ الكود #${lookupResult.code} إلى الحافظة!`);
-                          }}
-                          style={{ background: '#FFFFFF', border: '1px solid #CBD5E1', padding: '10px 14px', borderRadius: '10px', fontSize: '0.78rem', fontWeight: 700, cursor: 'pointer' }}
-                        >
-                          نسخ الكود
-                        </button>
-                      </div>
-                    </div>
-                  )}
-                </div>
-              )}
-
+                <button
+                  type="button"
+                  onClick={() => setIsNewClientModalOpen(false)}
+                  style={{
+                    width: '100%',
+                    background: '#F1F5F9',
+                    color: '#475569',
+                    fontWeight: 700,
+                    padding: '10px',
+                    borderRadius: '12px',
+                    fontSize: '0.82rem',
+                    border: 'none',
+                    cursor: 'pointer'
+                  }}
+                >
+                  إغلاق
+                </button>
+              </div>
             </div>
           </div>
         )}
 
+      </div>
     </AdminLayout>
   );
 }
