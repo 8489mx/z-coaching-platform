@@ -6,7 +6,7 @@ import {
 } from '../src/execution-engines/drug-interaction-firewall.js';
 import { generateInitialPlan } from '../src/execution-engines/onboarding-plan-generator-engine.js';
 
-describe('Clinical Safety Firewalls - Stacked Multi-Condition Suite', () => {
+describe('Clinical Safety Firewalls - 22-Condition Stacked Suite', () => {
 
   it('detects insulin therapy and enforces carb floor & safety cues', () => {
     const result = evaluateInsulinSafety(['Lantus', 'Novorapid']);
@@ -42,22 +42,51 @@ describe('Clinical Safety Firewalls - Stacked Multi-Condition Suite', () => {
     expect(result.biomechanicalRestrictions).toContain('NO_AXIAL_LOADING_SQUAT_DEADLIFT');
   });
 
-  it('evaluates lactation calorie boost and GLP-1 protein escalation', () => {
+  it('evaluates bariatric surgery, blood thinners, gout, and asthma protocols', () => {
     const result = evaluateMasterClinicalProfile({
-      medicalConditions: ['LACTATION', 'GLP1_USER'],
-      weightKg: 70,
+      medicalConditions: ['BARIATRIC_SURGERY', 'BLOOD_THINNERS', 'GOUT', 'BRONCHIAL_ASTHMA'],
+      weightKg: 90,
       targetCalories: 1800,
-      targetProteinGrams: 140,
-      targetCarbGrams: 150,
+      targetProteinGrams: 120,
+      targetCarbGrams: 180,
+      targetFatGrams: 50
+    });
+
+    // Bariatric: protein scaled to at least 1.8 * 90 = 162g
+    expect(result.proteinGrams).toBe(162);
+
+    // Blood thinners: Vitamin E / Ginkgo prohibited
+    expect(result.prohibitedSupplements).toContain('HIGH_DOSE_VITAMIN_E');
+    expect(result.prohibitedSupplements).toContain('GINKGO_BILOBA');
+
+    // Gout: high purine prohibited
+    expect(result.prohibitedSupplements).toContain('HIGH_PURINE_EXTRACTS');
+
+    // Safety cues include asthma and bariatric notes
+    expect(result.safetyCues.some(c => c.includes('بخاخ الربو'))).toBe(true);
+    expect(result.safetyCues.some(c => c.includes('فصل السوائل'))).toBe(true);
+  });
+
+  it('evaluates roaccutane, hernia, gerd, and lactation protocols', () => {
+    const result = evaluateMasterClinicalProfile({
+      medicalConditions: ['ROACCUTANE_USER', 'HERNIA_VARICOSE', 'GERD_REFLUX', 'LACTATION'],
+      weightKg: 65,
+      targetCalories: 1700,
+      targetProteinGrams: 130,
+      targetCarbGrams: 160,
       targetFatGrams: 50
     });
 
     // Lactation: +450 kcal
-    expect(result.calories).toBe(2250);
-    expect(result.biomechanicalRestrictions).toContain('NO_INTRA_ABDOMINAL_CRUNCHES');
+    expect(result.calories).toBe(2150);
 
-    // GLP-1: 70 * 2.3 = 161g protein
-    expect(result.proteinGrams).toBe(161);
+    // Roaccutane: Vitamin A prohibited
+    expect(result.prohibitedSupplements).toContain('VITAMIN_A');
+
+    // Hernia & GERD: restrictions
+    expect(result.biomechanicalRestrictions).toContain('NO_HEAVY_LEG_PRESS_HIGH_IAP');
+    expect(result.biomechanicalRestrictions).toContain('NO_INVERTED_EXERCISES_DECLINE_BENCH');
+    expect(result.biomechanicalRestrictions).toContain('NO_INTRA_ABDOMINAL_CRUNCHES');
   });
 
 });

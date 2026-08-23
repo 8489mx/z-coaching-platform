@@ -4,21 +4,42 @@ import { saveSession } from '../utils/auth';
 import { generateInitialPlan } from '../utils/onboardingPlanGeneratorEngine';
 
 export const MEDICAL_CONDITIONS_OPTIONS = [
-  { id: 'TYPE_1_DIABETES', label: 'سكري نوع أول (معتمد كلياً على حقن الأنسولين)' },
+  // 1. الغدد والأيض والسكري
+  { id: 'TYPE_1_DIABETES', label: 'سكري نوع أول (معتمد على حقن الأنسولين)' },
   { id: 'TYPE_2_DIABETES_ORAL', label: 'سكري نوع ثاني (أقراص فموية / تنظيم غذائي)' },
-  { id: 'TYPE_2_DIABETES_INSULIN', label: 'سكري نوع ثاني (يستخدم حقن أنسولين)' },
-  { id: 'HYPERTENSION', label: 'ارتفاع ضغط الدم' },
+  { id: 'TYPE_2_DIABETES_INSULIN', label: 'سكري نوع ثاني (حقن أنسولين)' },
   { id: 'PCOS_IR', label: 'مقاومة إنسولين / تكيس مبايض' },
   { id: 'HYPOTHYROIDISM', label: 'خمول الغدة الدرقية (Eltroxin)' },
+  { id: 'FATTY_LIVER', label: 'كبد دهني / ارتفاع إنزيمات الكبد' },
+
+  // 2. القلب والأوعية والدم
+  { id: 'HYPERTENSION', label: 'ارتفاع ضغط الدم' },
+  { id: 'BLOOD_THINNERS', label: 'أدوية السيولة ومضادات التجلط (ماريفان / زارلتو)' },
+  { id: 'SEVERE_ANEMIA', label: 'أنيميا حادة / نقص مخزون الحديد (Ferritin)' },
+
+  // 3. الجهاز الهضمي والعمليات
+  { id: 'BARIATRIC_SURGERY', label: 'جراحة سمنة سابقة (تكميم / تحويل مسار)' },
   { id: 'IBS', label: 'متلازمة القولون العصبي / حساسيات طعام' },
-  { id: 'RENAL_INSUFFICIENCY', label: 'مشاكل أو قصور في وظائف الكلى' },
-  { id: 'GOUT', label: 'داء النقرس / ارتفاع اليوريك أسيد' },
+  { id: 'GERD_REFLUX', label: 'ارتجاع المريء / فتق الحجاب الحاجز' },
   { id: 'CHOLECYSTECTOMY', label: 'استئصال المرارة سابقاً' },
-  { id: 'GLP1_USER', label: 'استخدام حقن التخسيس (Ozempic / Mounjaro / Saxenda)' },
+
+  // 4. الكلى والمسالك
+  { id: 'RENAL_INSUFFICIENCY', label: 'قصور أو مشاكل في وظائف الكلى' },
+  { id: 'GOUT', label: 'داء النقرس / ارتفاع اليوريك أسيد' },
+
+  // 5. الجهاز التنفسي
+  { id: 'BRONCHIAL_ASTHMA', label: 'حساسية الصدر / الربو القصبي' },
+
+  // 6. العقاقير الخاصة
+  { id: 'GLP1_USER', label: 'حقن التخسيس (Ozempic / Mounjaro / Saxenda)' },
   { id: 'ROACCUTANE_USER', label: 'علاج حب الشباب (روكتان / أيزوتريتينوين)' },
-  { id: 'LOWER_BACK_PAIN', label: 'آلام أسفل الظهر / انزلاق غضروفي' },
-  { id: 'SHOULDER_IMPINGEMENT', label: 'آلام أو نغزة في مفصل الكتف' },
-  { id: 'PATELLAR_TENDINITIS', label: 'آلام أو خشونة صابونة الركبة' },
+  { id: 'CORTICOSTEROIDS', label: 'علاج الكورتيزون المزمن' },
+
+  // 7. المفاصل، الفتق، والسيدات
+  { id: 'LOWER_BACK_PAIN', label: 'انزلاق غضروفي / آلام أسفل الظهر' },
+  { id: 'SHOULDER_IMPINGEMENT', label: 'نغزة أو آلام بمفصل الكتف' },
+  { id: 'PATELLAR_TENDINITIS', label: 'خشونة أو آلام صابونة الركبة' },
+  { id: 'HERNIA_VARICOSE', label: 'فتق (إربي/سري) أو دوالي شديدة بالساقين' },
   { id: 'LACTATION', label: 'مرحلة الرضاعة الطبيعية (للسيدات)' },
   { id: 'NONE_HEALTHY', label: 'سليم تماماً ولا أعاني من أي مشكلة صحية ✔' }
 ];

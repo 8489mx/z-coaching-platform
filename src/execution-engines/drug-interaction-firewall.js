@@ -1,19 +1,5 @@
 /**
- * Zero-Conflict Pharmacological Isolation Firewall
- *
- * Deterministic Pharmacological Safety Matrix:
- * 1. Levothyroxine (Eltroxin / Euthyrox):
- *    - 4-hour strict isolation window from calcium, iron, soy, and high fiber.
- * 2. Metformin (Glucophage):
- *    - Taken with largest meal; mandatory B12 replenishment tracking.
- * 3. Statins (Atorvastatin / Lipitor / Crestor):
- *    - Absolute ban on Grapefruit fruit and juice (CYP3A4 inhibition).
- * 4. ACE Inhibitors / ARBs (Captopril, Enalapril, Losartan):
- *    - Strict ban on Potassium Chloride (KCl) salt substitutes to prevent hyperkalemia.
- * 5. Antibiotics (Fluoroquinolones / Tetracyclines):
- *    - 2-hour separation from dairy and multivalent divalent minerals (Ca, Fe, Mg).
- * 6. Exogenous Insulin Therapy (Lantus, Novorapid, Apidra, etc.):
- *    - Minimum 130g carb floor, anti-keto lock, 15-15 emergency rule, and non-working muscle injection directive.
+ * Zero-Conflict Pharmacological Isolation & 22-Condition Clinical Firewall
  */
 
 export const INSULIN_DRUG_KEYS = [
@@ -86,9 +72,6 @@ export function evaluateInsulinSafety(medicationsList = []) {
   };
 }
 
-/**
- * Evaluates active pharmacological profile against dietary & supplement prescriptions.
- */
 export function evaluatePharmacologicalFirewall(medicationsList = []) {
   const activeRules = [];
   const normalizedMeds = (Array.isArray(medicationsList) ? medicationsList : [medicationsList])
@@ -116,8 +99,7 @@ export function evaluatePharmacologicalFirewall(medicationsList = []) {
 }
 
 /**
- * Master Stacked Clinical & Orthopedic Firewall Engine
- * Handles multiple stacked conditions simultaneously without conflict
+ * Master Stacked Clinical & Orthopedic Firewall Engine (22-Condition Comprehensive Matrix)
  */
 export function evaluateMasterClinicalProfile({
   medicalConditions = [],
@@ -155,51 +137,119 @@ export function evaluateMasterClinicalProfile({
     adjusted.safetyCues.push('اعتماد النشويات منخفضة المؤشر الجلايسيمي لحماية حساسية الإنسولين وتثبيت سكر الدم.');
   }
 
-  // 3. ضغط الدم المرتفع
+  // 3. خمول الغدة الدرقية
+  if (conds.includes('HYPOTHYROIDISM')) {
+    adjusted.safetyCues.push('عزل حبة الغدة (Eltroxin) 4 ساعات كاملة عن الكالسيوم والألبان والحديد والألياف الكثيفة.');
+  }
+
+  // 4. الكبد الدهني
+  if (conds.includes('FATTY_LIVER')) {
+    adjusted.prescribedNutrients.push('OMEGA_3_FATTY_ACIDS', 'LEAFY_GREENS');
+    adjusted.safetyCues.push('تقييد الدهون المشبعة بأقل من 7%، وحظر السكريات المكررة وعصائر الفركتوز لحماية الكبد.');
+  }
+
+  // 5. ضغط الدم المرتفع
   if (conds.includes('HYPERTENSION')) {
     adjusted.prohibitedSupplements.push('HIGH_STIM_PREWORKOUT', 'YOHIMBINE', 'FAT_BURNERS');
     adjusted.biomechanicalRestrictions.push('NO_VALSALVA_MANEUVER', 'NO_1RM_TESTING');
     adjusted.safetyCues.push('تنفس بانتظام مع الدفع وتجنب كتم النفس داخل الجيم، وابتعد عن مكملات الطاقة عالية الكافيين.');
   }
 
-  // 4. القصور الكلوي
+  // 6. أدوية السيولة
+  if (conds.includes('BLOOD_THINNERS')) {
+    adjusted.prohibitedSupplements.push('HIGH_DOSE_VITAMIN_E', 'GINKGO_BILOBA', 'HIGH_DOSE_GINSENG');
+    adjusted.safetyCues.push('تثبيت الحصة اليومية من الخضروات الغنية بفيتامين K دون تذبذب حاد لضبط سيولة الدم.');
+  }
+
+  // 7. الأنيميا الحادة
+  if (conds.includes('SEVERE_ANEMIA')) {
+    adjusted.safetyCues.push('فصل الشاي والقهوة ومنتجات الكالسيوم ساعتين عن الوجبات الغنية بالحديد، ودمج فيتامين C لتعزيز الامتصاص.');
+  }
+
+  // 8. جراحات السمنة (تكميم / تحويل مسار)
+  if (conds.includes('BARIATRIC_SURGERY')) {
+    adjusted.proteinGrams = Math.max(adjusted.proteinGrams, Math.round((weightKg || 75) * 1.8));
+    adjusted.safetyCues.push('تقسيم الوجبات إلى 5-6 وجبات صغيرة، وفصل السوائل 30 دقيقة قبل وبعد الوجبة مع الالتزام بالملتي فيتامين.');
+  }
+
+  // 9. القولون العصبي
+  if (conds.includes('IBS')) {
+    adjusted.prescribedNutrients.push('LOW_FODMAP_DIET');
+    adjusted.safetyCues.push('استبعاد البقوليات غير المنقوعة، المحليات الكحولية، واللاكتوز العالي لتفادي الانتفاخ.');
+  }
+
+  // 10. ارتجاع المريء
+  if (conds.includes('GERD_REFLUX')) {
+    adjusted.biomechanicalRestrictions.push('NO_INVERTED_EXERCISES_DECLINE_BENCH');
+    adjusted.safetyCues.push('تجنب الاستلقاء أو التمارين المقلوبة بعد الوجبات مباشرة، والابتعاد عن الوجبات الدسمة والحارة قبل التمرين.');
+  }
+
+  // 11. استئصال المرارة
+  if (conds.includes('CHOLECYSTECTOMY')) {
+    adjusted.safetyCues.push('توزيع حصة الدهون بالتساوي على كافة الوجبات وتجنب الوجبات عالية الدسم دفعة واحدة.');
+  }
+
+  // 12. القصور الكلوي
   if (conds.includes('RENAL_INSUFFICIENCY')) {
     adjusted.proteinGrams = Math.round((weightKg || 75) * 1.1);
     adjusted.prohibitedSupplements.push('CREATINE');
     adjusted.safetyCues.push('تقنين البروتين إلى 1.1 جم/كجم لحماية الكلى مع حظر تام لمكمل الكرياتين.');
   }
 
-  // 5. القولون العصبي
-  if (conds.includes('IBS')) {
-    adjusted.prescribedNutrients.push('LOW_FODMAP_DIET');
-    adjusted.safetyCues.push('استبعاد البقوليات غير المنقوعة، المحليات الكحولية، واللاكتوز العالي لتفادي الانتفاخ.');
+  // 13. داء النقرس
+  if (conds.includes('GOUT')) {
+    adjusted.prohibitedSupplements.push('HIGH_PURINE_EXTRACTS');
+    adjusted.safetyCues.push('استبعاد الأحشاء الداخلية (كبدة/كلاوي) والماكريل واللحوم عالية البيورين، ورفع شرب الماء لمنع نوبات النقرس.');
   }
 
-  // 6. أدوية التخسيس (GLP-1)
+  // 14. حساسية الصدر والربو
+  if (conds.includes('BRONCHIAL_ASTHMA')) {
+    adjusted.safetyCues.push('إحماء تدريجي ممتد لـ 10-15 دقيقة، واصطحاب بخاخ الربو الإسعافي داخل حقيبة الجيم دائماً.');
+  }
+
+  // 15. أدوية التخسيس (GLP-1)
   if (conds.includes('GLP1_USER')) {
     adjusted.proteinGrams = Math.max(adjusted.proteinGrams, Math.round((weightKg || 75) * 2.3));
     adjusted.safetyCues.push('رفع نسبة البروتين لحماية العضلات والاعتماد على السوائل المغذية عند هبوط الشهية.');
   }
 
-  // 7. الرضاعة الطبيعية
-  if (conds.includes('LACTATION')) {
-    adjusted.calories += 450;
-    adjusted.biomechanicalRestrictions.push('NO_INTRA_ABDOMINAL_CRUNCHES');
+  // 16. الروكتان (Isotretinoin)
+  if (conds.includes('ROACCUTANE_USER')) {
+    adjusted.prohibitedSupplements.push('VITAMIN_A');
+    adjusted.safetyCues.push('حظر مكملات فيتامين A والابتعاد عن الوصول للفشل العضلي الشديد لحماية المفاصل وإنزيمات الكبد.');
   }
 
-  // 8. إصابات أسفل الظهر
+  // 17. الكورتيزون المزمن
+  if (conds.includes('CORTICOSTEROIDS')) {
+    adjusted.prescribedNutrients.push('CALCIUM_VITAMIN_D3');
+    adjusted.safetyCues.push('حماية كثافة العظام بالحرص على الكالسيوم وفيتامين د، وضبط الصوديوم لتقليل احتباس السوائل.');
+  }
+
+  // 18. آلام أسفل الظهر
   if (conds.includes('LOWER_BACK_PAIN')) {
     adjusted.biomechanicalRestrictions.push('NO_AXIAL_LOADING_SQUAT_DEADLIFT');
   }
 
-  // 9. نغزة مفصل الكتف
+  // 19. نغزة مفصل الكتف
   if (conds.includes('SHOULDER_IMPINGEMENT')) {
     adjusted.biomechanicalRestrictions.push('SCAPULAR_PLANE_PRESSING_ONLY');
   }
 
-  // 10. آلام صابونة الركبة
+  // 20. آلام صابونة الركبة
   if (conds.includes('PATELLAR_TENDINITIS')) {
     adjusted.biomechanicalRestrictions.push('NO_OPEN_CHAIN_LEG_EXTENSIONS');
+  }
+
+  // 21. الفتق والدوالي الشديدة
+  if (conds.includes('HERNIA_VARICOSE')) {
+    adjusted.biomechanicalRestrictions.push('NO_HEAVY_LEG_PRESS_HIGH_IAP', 'NO_VALSALVA_MANEUVER');
+    adjusted.safetyCues.push('تجنب الضغط البطني العنيف وأجهزة الليج بريس الثقيلة، والابتعاد عن الوقوف الثابت لفترات طويلة.');
+  }
+
+  // 22. الرضاعة الطبيعية
+  if (conds.includes('LACTATION')) {
+    adjusted.calories += 450;
+    adjusted.biomechanicalRestrictions.push('NO_INTRA_ABDOMINAL_CRUNCHES');
   }
 
   return adjusted;
