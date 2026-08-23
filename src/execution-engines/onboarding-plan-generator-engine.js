@@ -3,7 +3,7 @@ import { evaluateMasterClinicalProfile } from './drug-interaction-firewall.js';
 import { generateRehabAndMobilityRoutine } from './rehab-mobility-engine.js';
 
 /**
- * Master Onboarding & Split Generator Engine (22-Firewall & Rehab Integration)
+ * Master Onboarding & Split Generator Engine (22-Firewall, Rehab, Home vs Gym & Calibration)
  * Evidence-Based Splits: Full Body, Upper/Lower, PPL, Arnold, UL+Arms, Female Glute Focus
  */
 export function generateInitialPlan({
@@ -15,22 +15,29 @@ export function generateInitialPlan({
   activityLevel = 'SEDENTARY',
   goal = 'FAT_LOSS',
   trainingDaysPerWeek = 4,
+  experienceLevel = 'BEGINNER',
   environment = 'GYM',
+  homeEquipment = ['DUMBBELLS', 'BODYWEIGHT'],
+  benchPressWeightKg = null,
+  squatWeightKg = null,
+  dislikedFoods = [],
+  preferredWorkoutTime = 'EVENING',
   medicalFlags = [],
   medicalConditions = [],
   posturalIssues = [],
+  pregnancyTrimester = 'NONE',
   splitPreference = 'AUTO'
 }) {
   if (!weightKg || !heightCm || !age) {
     throw new Error('Weight, height, and age are required for baseline calculations.');
   }
 
-  const isMale = gender.toUpperCase() === 'MALE';
+  const isMale = String(gender || 'MALE').toUpperCase() === 'MALE';
   let bmr = (10 * weightKg) + (6.25 * heightCm) - (5 * age);
   bmr = isMale ? bmr + 5 : bmr - 161;
 
   const activityMultipliers = { SEDENTARY: 1.2, LIGHT: 1.375, MODERATE: 1.55, HEAVY: 1.725 };
-  const multiplier = activityMultipliers[activityLevel.toUpperCase()] || 1.2;
+  const multiplier = activityMultipliers[String(activityLevel || 'SEDENTARY').toUpperCase()] || 1.2;
   const tdee = Math.round(bmr * multiplier);
 
   let targetCalories = tdee;
@@ -72,6 +79,7 @@ export function generateInitialPlan({
   // Evaluate Master Clinical Profile (22 Conditions)
   const clinicalProfile = evaluateMasterClinicalProfile({
     medicalConditions: combinedConditions,
+    pregnancyTrimester,
     weightKg,
     targetCalories,
     targetProteinGrams,
@@ -98,7 +106,7 @@ export function generateInitialPlan({
     schedule_blueprint: ['جسم علوي (A)', 'جسم سفلي (A)', 'جسم علوي (B)', 'جسم سفلي (B)']
   };
 
-  const pref = splitPreference.toUpperCase();
+  const pref = String(splitPreference || 'AUTO').toUpperCase();
 
   if (pref === 'ARNOLD' || pref === 'ARNOLD_SPLIT' || (trainingDaysPerWeek === 6 && pref === 'AUTO' && isMale)) {
     trainingSplit = {
@@ -165,6 +173,31 @@ export function generateInitialPlan({
     };
   }
 
+  // =========================================================================
+  // معايرة المستوى التدريبي (Experience Level & Baseline Calibration)
+  // =========================================================================
+  const expLevel = String(experienceLevel || 'BEGINNER').toUpperCase();
+  let trainingPhase = {};
+  if (expLevel === 'BEGINNER') {
+    trainingPhase = {
+      level: 'BEGINNER',
+      mode: 'NEURAL_ADAPTATION',
+      target_rir: 3,
+      description_ar: 'نظام التكيف العصبي للأسبوع الأول بأوزان استكشافية تدريجية ومعدل جهد RIR 3 لمنع الإجهاد العضلي الحاد.'
+    };
+  } else {
+    const benchWorkingKg = benchPressWeightKg ? Math.round(Number(benchPressWeightKg) * 0.75) : null;
+    const squatWorkingKg = squatWeightKg ? Math.round(Number(squatWeightKg) * 0.75) : null;
+    trainingPhase = {
+      level: expLevel,
+      mode: 'PROGRESSIVE_OVERLOAD',
+      target_rir: 2,
+      calibrated_bench_working_kg: benchWorkingKg,
+      calibrated_squat_working_kg: squatWorkingKg,
+      description_ar: 'معايرة أوزان الجلسة الأولى بنسبة 75% من أقصى وزن معتاد ومعدل جهد RIR 2 للبدء الفوري في الزيادة التدريجية.'
+    };
+  }
+
   // ربط التمارين التخصصية من بنك التمارين المركزي (Exercise Catalog Integration)
   let recommendedExercises = [];
   if (Array.isArray(EXPANDED_EXERCISE_CATALOG)) {
@@ -185,9 +218,32 @@ export function generateInitialPlan({
     }
   }
 
+  // Home vs Gym Adaptation
+  const envType = String(environment || 'GYM').toUpperCase();
+  if (envType === 'HOME') {
+    recommendedExercises = recommendedExercises.map(ex => {
+      let homeAlt = ex.name_ar;
+      if (homeEquipment.includes('DUMBBELLS')) {
+        homeAlt = ex.name_ar.replace('كيبل', 'دمبلز').replace('جهاز', 'دمبلز');
+      } else if (homeEquipment.includes('BANDS')) {
+        homeAlt = ex.name_ar.replace('كيبل', 'باند مقاومة').replace('جهاز', 'باند مقاومة');
+      } else {
+        homeAlt = ex.name_ar.replace('بار', 'وزن الجسم').replace('دمبلز', 'وزن الجسم');
+      }
+      return {
+        ...ex,
+        name_ar: homeAlt,
+        environment_adapted: 'HOME',
+        available_tools: homeEquipment
+      };
+    });
+  }
+
   // Inject Warmup Ladder Metadata to recommended exercises
   recommendedExercises = recommendedExercises.map(ex => ({
     ...ex,
+    exercise_id: ex.id,
+    target_rir: trainingPhase.target_rir,
     warmup_ladder: [
       { set_number: 'إحماء 1', load_percent: 40, reps: 10, rest_seconds: 60 },
       { set_number: 'إحماء 2', load_percent: 60, reps: 6, rest_seconds: 90 },
@@ -202,8 +258,17 @@ export function generateInitialPlan({
   const rehabRoutine = generateRehabAndMobilityRoutine({
     medicalConditions: combinedConditions,
     posturalIssues,
+    pregnancyTrimester,
     workoutTarget: trainingSplit.id.includes('lower') || trainingSplit.id.includes('glute') ? 'LOWER' : 'UPPER'
   });
+
+  // Nutrient Timing & Meal Scheduling
+  const workoutTime = String(preferredWorkoutTime || 'EVENING').toUpperCase();
+  const mealTimingProtocol = {
+    preferred_workout_time: workoutTime,
+    pre_workout_timing_ar: 'تناول أكبر وجبة نشويات وبروتين قبل موعد التمرين بـ 90 دقيقة لتوفير مخازن الجليكوجين وأعلى ضخ دموي.',
+    disliked_foods_excluded: dislikedFoods || []
+  };
 
   const clinicalNotes = [...clinicalProfile.safetyCues];
   if (hasRenalIssue && !clinicalNotes.some(n => n.includes('البروتين'))) {
@@ -226,9 +291,11 @@ export function generateInitialPlan({
       target_fiber_g: targetFiberGrams,
       water_liters: targetWaterLiters
     },
-    training_split: { ...trainingSplit, environment },
-    clinical_profile: clinicalProfile,
+    training_split: { ...trainingSplit, environment: envType },
+    training_phase: trainingPhase,
     rehab_routine: rehabRoutine,
+    meal_timing_protocol: mealTimingProtocol,
+    clinical_profile: clinicalProfile,
     cardio_protocol: clinicalProfile.cardioProtocol,
     clinical_notes: clinicalNotes
   };
