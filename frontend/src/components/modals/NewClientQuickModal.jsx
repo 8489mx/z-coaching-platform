@@ -6,19 +6,35 @@ import { copyToClipboard } from '../../utils/clipboardUtils';
 
 const DEFAULT_PACKAGES = [
   {
-    id: "ELITE_3_PLUS_1",
-    name_ar: "باقة إيليت",
-    badge_ar: "3 شهور + 1 مجاناً",
+    id: "MAX_4M",
+    name_ar: "باقة ماكس (4 شهور)",
+    badge_ar: "16 أسبوعاً",
     featuresText: "تغذية وتدريب ذكي ومتابعة",
-    price_egp: 2500,
+    price_egp: 2800,
     active: true
   },
   {
-    id: "MAX_3_PLUS_1",
-    name_ar: "باقة ماكس",
-    badge_ar: "3 شهور + 1 مجاناً",
-    featuresText: "VIP متابعة وتكنيك فيديو",
-    price_egp: 3500,
+    id: "MAX_8M",
+    name_ar: "باقة ماكس (8 شهور)",
+    badge_ar: "32 أسبوعاً",
+    featuresText: "تغذية وتدريب ومتابعة طويلة المدى",
+    price_egp: 4800,
+    active: true
+  },
+  {
+    id: "ELITE_4M",
+    name_ar: "باقة إيليت (4 شهور)",
+    badge_ar: "16 أسبوعاً",
+    featuresText: "VIP متابعة وتدريب شخصي مخصص",
+    price_egp: 3800,
+    active: true
+  },
+  {
+    id: "ELITE_8M",
+    name_ar: "باقة إيليت (8 شهور)",
+    badge_ar: "32 أسبوعاً",
+    featuresText: "VIP متابعة مكثفة وتعديل مستمر",
+    price_egp: 6800,
     active: true
   }
 ];
@@ -68,7 +84,7 @@ export default function NewClientQuickModal({ isOpen, onClose, onClientCreated }
   const handleClose = () => {
     setPhone('');
     setFullName('');
-    setSubscriptionPackage('ELITE_3_PLUS_1');
+    setSubscriptionPackage('MAX_4M');
     setNewClient(null);
     setError('');
     setCopied(false);

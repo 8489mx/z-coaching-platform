@@ -16,13 +16,17 @@ import { SUPPORTED_PACKAGES, PAYMENT_METHODS, generateSecureIntakeToken } from '
 
 export default function PublicPricingJoin() {
   const navigate = useNavigate();
-  const [selectedPackage, setSelectedPackage] = useState(SUPPORTED_PACKAGES.MAX_3_PLUS_1.code);
+  const [durationMonths, setDurationMonths] = useState(4); // 4 or 8
+  const [selectedTier, setSelectedTier] = useState('MAX'); // 'MAX' or 'ELITE'
   const [paymentMethod, setPaymentMethod] = useState(PAYMENT_METHODS.INSTAPAY);
   const [clientName, setClientName] = useState('');
   const [clientPhone, setClientPhone] = useState('');
   const [clientEmail, setClientEmail] = useState('');
   const [isProcessing, setIsProcessing] = useState(false);
   const [completedTokenData, setCompletedTokenData] = useState(null);
+
+  const selectedPackageCode = `${selectedTier}_${durationMonths}M`;
+  const currentPackage = SUPPORTED_PACKAGES[selectedPackageCode] || SUPPORTED_PACKAGES.MAX_4M;
 
   const handleSubmitPayment = (e) => {
     e.preventDefault();
@@ -37,7 +41,7 @@ export default function PublicPricingJoin() {
         client_name: clientName,
         client_email: clientEmail || 'client@example.com',
         client_phone: clientPhone,
-        package_code: selectedPackage,
+        package_code: selectedPackageCode,
         payment_method: paymentMethod,
         payment_reference: 'TXN-' + Math.floor(100000 + Math.random() * 900000)
       });
@@ -51,7 +55,7 @@ export default function PublicPricingJoin() {
       <div style={{ maxWidth: '840px', margin: '0 auto' }}>
         
         {/* Header */}
-        <div style={{ textAlign: 'center', marginBottom: '32px' }}>
+        <div style={{ textAlign: 'center', marginBottom: '28px' }}>
           <div style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', background: 'rgba(2, 132, 199, 0.2)', border: '1px solid rgba(2, 132, 199, 0.4)', padding: '4px 12px', borderRadius: '50px', fontSize: '0.75rem', fontWeight: 800, color: '#38BDF8', marginBottom: '12px' }}>
             <Sparkles style={{ width: '14px', height: '14px' }} />
             <span>الاشتراك المباشر مع كابتن كريم زكريا</span>
@@ -60,8 +64,46 @@ export default function PublicPricingJoin() {
             اختر باقتك وانطلق في رحلة التحول الكبرى
           </h1>
           <p style={{ fontSize: '0.86rem', color: '#94A3B8', maxWidth: '520px', margin: '0 auto' }}>
-            اشتراك شامل 16 أسبوعاً (3 شهور + شهر مجاناً) مع المتابعة الفسيولوجية والسريرية الدقيقة.
+            باقات احترافية محددة بدقة (Elite أو Max) لمدة 4 أشهر أو 8 أشهر للمتابعة الفسيولوجية والسريرية الكاملة.
           </p>
+
+          {/* Duration Selector Tabs */}
+          <div style={{ display: 'inline-flex', gap: '6px', background: 'rgba(15, 23, 42, 0.8)', border: '1px solid rgba(255,255,255,0.12)', padding: '4px', borderRadius: '14px', marginTop: '20px' }}>
+            <button
+              type="button"
+              onClick={() => setDurationMonths(4)}
+              style={{
+                padding: '8px 20px',
+                borderRadius: '10px',
+                fontSize: '0.82rem',
+                fontWeight: 800,
+                border: 'none',
+                cursor: 'pointer',
+                background: durationMonths === 4 ? '#0284C7' : 'transparent',
+                color: durationMonths === 4 ? '#FFFFFF' : '#94A3B8',
+                transition: 'all 0.15s ease'
+              }}
+            >
+              4 شهور (16 أسبوعاً)
+            </button>
+            <button
+              type="button"
+              onClick={() => setDurationMonths(8)}
+              style={{
+                padding: '8px 20px',
+                borderRadius: '10px',
+                fontSize: '0.82rem',
+                fontWeight: 800,
+                border: 'none',
+                cursor: 'pointer',
+                background: durationMonths === 8 ? '#0284C7' : 'transparent',
+                color: durationMonths === 8 ? '#FFFFFF' : '#94A3B8',
+                transition: 'all 0.15s ease'
+              }}
+            >
+              8 شهور (32 أسبوعاً)
+            </button>
+          </div>
         </div>
 
         {completedTokenData ? (
@@ -101,15 +143,15 @@ export default function PublicPricingJoin() {
           /* PRICING & CHECKOUT FORM */
           <form onSubmit={handleSubmitPayment}>
             
-            {/* Packages Grid */}
+            {/* Packages Grid: 2 TIERS ONLY */}
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '16px', marginBottom: '24px' }}>
               
-              {/* MAX VIP */}
+              {/* MAX TIER */}
               <div 
-                onClick={() => setSelectedPackage(SUPPORTED_PACKAGES.MAX_3_PLUS_1.code)}
+                onClick={() => setSelectedTier('MAX')}
                 style={{
-                  background: selectedPackage === SUPPORTED_PACKAGES.MAX_3_PLUS_1.code ? 'rgba(2, 132, 199, 0.15)' : 'rgba(255,255,255,0.03)',
-                  border: selectedPackage === SUPPORTED_PACKAGES.MAX_3_PLUS_1.code ? '2px solid #38BDF8' : '1px solid rgba(255,255,255,0.1)',
+                  background: selectedTier === 'MAX' ? 'rgba(2, 132, 199, 0.15)' : 'rgba(255,255,255,0.03)',
+                  border: selectedTier === 'MAX' ? '2px solid #38BDF8' : '1px solid rgba(255,255,255,0.1)',
                   borderRadius: '20px',
                   padding: '20px',
                   cursor: 'pointer',
@@ -117,114 +159,123 @@ export default function PublicPricingJoin() {
                 }}
               >
                 <div style={{ position: 'absolute', top: '12px', left: '12px', background: '#FEF3C7', color: '#92400E', fontSize: '9px', fontWeight: 900, padding: '2px 8px', borderRadius: '6px' }}>
-                  الأكثر طلباً (VIP)
+                  الأكثر شمولاً (Max)
                 </div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '10px' }}>
                   <Crown style={{ width: '22px', height: '22px', color: '#FBBF24' }} />
-                  <strong style={{ fontSize: '1.05rem' }}>باقة ماكس VIP</strong>
+                  <strong style={{ fontSize: '1.05rem' }}>باقة ماكس (Max)</strong>
                 </div>
                 <div style={{ fontSize: '1.4rem', fontWeight: 900, color: '#38BDF8', marginBottom: '12px' }}>
-                  4,500 <span style={{ fontSize: '0.75rem', color: '#94A3B8' }}>ج.م / 16 أسبوعاً</span>
+                  {durationMonths === 4 ? '2,800' : '4,800'} <span style={{ fontSize: '0.75rem', color: '#94A3B8' }}>ج.م / {durationMonths === 4 ? '4 شهور (16 أسبوعاً)' : '8 شهور (32 أسبوعاً)'}</span>
                 </div>
                 <ul style={{ listStyle: 'none', padding: 0, margin: 0, fontSize: '0.78rem', color: '#CBD5E1', display: 'flex', flexDirection: 'column', gap: '6px' }}>
-                  <li>✓ متابعة أسبوعية دقيقة (كل 7 أيام)</li>
-                  <li>✓ تعديل فوري للماكروز والتمارين بنقرة زر</li>
-                  <li>✓ تواصل مباشر على الواتساب مع كابتن كريم</li>
-                  <li>✓ صلاحية تجميد حتى 21 يوماً</li>
+                  <li>✓ متابعة دورية مباشرة عبر الواتساب</li>
+                  <li>✓ خطة تغذية مخصصة وتعديل دوري للماكروز</li>
+                  <li>✓ برنامج تدريبي كامل للجيم والبيت بالفيديو</li>
+                  <li>✓ تحليل مقاطع التكنيك وتطور الأوزان</li>
                 </ul>
               </div>
 
-              {/* ELITE */}
+              {/* ELITE TIER */}
               <div 
-                onClick={() => setSelectedPackage(SUPPORTED_PACKAGES.ELITE_3_PLUS_1.code)}
+                onClick={() => setSelectedTier('ELITE')}
                 style={{
-                  background: selectedPackage === SUPPORTED_PACKAGES.ELITE_3_PLUS_1.code ? 'rgba(2, 132, 199, 0.15)' : 'rgba(255,255,255,0.03)',
-                  border: selectedPackage === SUPPORTED_PACKAGES.ELITE_3_PLUS_1.code ? '2px solid #38BDF8' : '1px solid rgba(255,255,255,0.1)',
+                  background: selectedTier === 'ELITE' ? 'rgba(2, 132, 199, 0.15)' : 'rgba(255,255,255,0.03)',
+                  border: selectedTier === 'ELITE' ? '2px solid #38BDF8' : '1px solid rgba(255,255,255,0.1)',
                   borderRadius: '20px',
                   padding: '20px',
-                  cursor: 'pointer'
+                  cursor: 'pointer',
+                  position: 'relative'
                 }}
               >
+                <div style={{ position: 'absolute', top: '12px', left: '12px', background: '#E0F2FE', color: '#0369A1', fontSize: '9px', fontWeight: 900, padding: '2px 8px', borderRadius: '6px' }}>
+                  كبار المشتركين (Elite VIP)
+                </div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '10px' }}>
                   <Zap style={{ width: '20px', height: '20px', color: '#0284C7' }} />
-                  <strong style={{ fontSize: '1.05rem' }}>باقة إيليت</strong>
+                  <strong style={{ fontSize: '1.05rem' }}>باقة إيليت (Elite)</strong>
                 </div>
                 <div style={{ fontSize: '1.4rem', fontWeight: 900, color: '#38BDF8', marginBottom: '12px' }}>
-                  3,000 <span style={{ fontSize: '0.75rem', color: '#94A3B8' }}>ج.م / 16 أسبوعاً</span>
+                  {durationMonths === 4 ? '3,800' : '6,800'} <span style={{ fontSize: '0.75rem', color: '#94A3B8' }}>ج.م / {durationMonths === 4 ? '4 شهور (16 أسبوعاً)' : '8 شهور (32 أسبوعاً)'}</span>
                 </div>
                 <ul style={{ listStyle: 'none', padding: 0, margin: 0, fontSize: '0.78rem', color: '#CBD5E1', display: 'flex', flexDirection: 'column', gap: '6px' }}>
-                  <li>✓ متابعة نصف شهرية (كل 14 يوماً)</li>
-                  <li>✓ برنامج التغذية والتدريب التكيفي الكامل</li>
-                  <li>✓ الوصول الشامل لتطبيق المشترك التفاعلي</li>
-                  <li>✓ صلاحية تجميد حتى 21 يوماً</li>
+                  <li>✓ متابعة VIP وتدريب شخصي مخصص</li>
+                  <li>✓ تعديل فوري ومباشر للماكروز والدايت</li>
+                  <li>✓ تحليل حركي متقدم وبروتوكول استشفاء</li>
+                  <li>✓ دعم سريري وتأهيل كامل للإصابات</li>
                 </ul>
               </div>
 
             </div>
 
-            {/* Inputs Form */}
-            <div style={{ background: 'rgba(255,255,255,0.05)', borderRadius: '20px', padding: '20px', border: '1px solid rgba(255,255,255,0.1)', marginBottom: '20px' }}>
-              <h3 style={{ fontSize: '0.94rem', fontWeight: 800, marginBottom: '14px', margin: '0 0 14px 0' }}>بيانات المشترك وطريقة الدفع</h3>
+            {/* Client Details Form */}
+            <div style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '20px', padding: '20px', marginBottom: '20px' }}>
+              <h3 style={{ fontSize: '0.95rem', fontWeight: 800, margin: '0 0 14px 0', color: '#FFFFFF' }}>
+                بيانات المشترك وطريقة السداد
+              </h3>
               
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '12px', marginBottom: '16px' }}>
                 <div>
-                  <label style={{ fontSize: '0.75rem', color: '#94A3B8', display: 'block', marginBottom: '4px' }}>الاسم بالكامل</label>
+                  <label style={{ fontSize: '0.76rem', color: '#94A3B8', display: 'block', marginBottom: '4px' }}>الاسم بالكامل *</label>
                   <input
                     type="text"
                     required
-                    placeholder="مثال: سارة المنصوري"
                     value={clientName}
                     onChange={(e) => setClientName(e.target.value)}
-                    style={{ width: '100%', background: 'rgba(0,0,0,0.3)', border: '1px solid rgba(255,255,255,0.2)', borderRadius: '10px', padding: '10px', color: '#FFFFFF', fontSize: '0.84rem' }}
+                    placeholder="اكتب اسمك..."
+                    style={{ width: '100%', background: 'rgba(15, 23, 42, 0.8)', border: '1px solid rgba(255,255,255,0.15)', borderRadius: '10px', padding: '10px', color: '#FFFFFF', fontSize: '0.82rem', outline: 'none' }}
                   />
                 </div>
 
                 <div>
-                  <label style={{ fontSize: '0.75rem', color: '#94A3B8', display: 'block', marginBottom: '4px' }}>رقم الهاتف / الواتساب</label>
+                  <label style={{ fontSize: '0.76rem', color: '#94A3B8', display: 'block', marginBottom: '4px' }}>رقم الواتساب للتواصل *</label>
                   <input
                     type="tel"
                     required
-                    placeholder="مثال: 01011111110"
                     value={clientPhone}
                     onChange={(e) => setClientPhone(e.target.value)}
-                    style={{ width: '100%', background: 'rgba(0,0,0,0.3)', border: '1px solid rgba(255,255,255,0.2)', borderRadius: '10px', padding: '10px', color: '#FFFFFF', fontSize: '0.84rem' }}
+                    placeholder="01012345678"
+                    style={{ width: '100%', background: 'rgba(15, 23, 42, 0.8)', border: '1px solid rgba(255,255,255,0.15)', borderRadius: '10px', padding: '10px', color: '#FFFFFF', fontSize: '0.82rem', outline: 'none' }}
                   />
                 </div>
               </div>
 
-              {/* Payment Method Selector */}
-              <div style={{ marginBottom: '8px' }}>
-                <label style={{ fontSize: '0.75rem', color: '#94A3B8', display: 'block', marginBottom: '8px' }}>اختر طريقة الدفع</label>
-                <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
-                  {[
-                    { id: PAYMENT_METHODS.INSTAPAY, label: 'InstaPay (إنستاباي)' },
-                    { id: PAYMENT_METHODS.VODAFONE_CASH, label: 'Vodafone Cash (فودافون كاش)' },
-                    { id: PAYMENT_METHODS.CREDIT_CARD, label: 'بطاقة بنكية (Credit/Debit)' }
-                  ].map(m => (
-                    <button
-                      key={m.id}
-                      type="button"
-                      onClick={() => setPaymentMethod(m.id)}
+              {/* Payment Methods */}
+              <label style={{ fontSize: '0.76rem', color: '#94A3B8', display: 'block', marginBottom: '8px' }}>اختر طريقة التحويل</label>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: '10px' }}>
+                {[
+                  { id: PAYMENT_METHODS.INSTAPAY, label: 'InstaPay (إنستاباي)', icon: Smartphone },
+                  { id: PAYMENT_METHODS.VODAFONE_CASH, label: 'فودافون كاش', icon: Smartphone },
+                  { id: PAYMENT_METHODS.STRIPE_CARD, label: 'بطاقة بنكية / فيزا', icon: CreditCard },
+                ].map(pm => {
+                  const Icon = pm.icon;
+                  const isSel = paymentMethod === pm.id;
+                  return (
+                    <div
+                      key={pm.id}
+                      onClick={() => setPaymentMethod(pm.id)}
                       style={{
-                        background: paymentMethod === m.id ? '#0284C7' : 'rgba(255,255,255,0.08)',
-                        border: paymentMethod === m.id ? '1px solid #38BDF8' : '1px solid transparent',
-                        color: '#FFFFFF',
-                        borderRadius: '10px',
-                        padding: '8px 14px',
-                        fontSize: '0.76rem',
-                        fontWeight: 700,
-                        cursor: 'pointer'
+                        background: isSel ? 'rgba(2, 132, 199, 0.2)' : 'rgba(15, 23, 42, 0.6)',
+                        border: isSel ? '1.5px solid #38BDF8' : '1px solid rgba(255,255,255,0.1)',
+                        borderRadius: '12px',
+                        padding: '10px',
+                        cursor: 'pointer',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '8px',
+                        fontSize: '0.78rem',
+                        fontWeight: 700
                       }}
                     >
-                      {m.label}
-                    </button>
-                  ))}
-                </div>
+                      <Icon style={{ width: '16px', height: '16px', color: isSel ? '#38BDF8' : '#94A3B8' }} />
+                      <span>{pm.label}</span>
+                    </div>
+                  );
+                })}
               </div>
-
             </div>
 
-            {/* CTA Button */}
+            {/* Submit Button */}
             <button
               type="submit"
               disabled={isProcessing}
@@ -235,15 +286,14 @@ export default function PublicPricingJoin() {
                 border: 'none',
                 padding: '14px',
                 borderRadius: '14px',
-                fontSize: '0.94rem',
+                fontSize: '0.95rem',
                 fontWeight: 900,
-                cursor: 'pointer',
-                boxShadow: '0 10px 20px rgba(2, 132, 199, 0.3)'
+                cursor: isProcessing ? 'not-allowed' : 'pointer',
+                boxShadow: '0 4px 15px rgba(2, 132, 199, 0.3)'
               }}
             >
-              {isProcessing ? 'جاري تأكيد الدفع وتوليد الاستمارة...' : 'تأكيد الاشتراك والانتقال للاستمارة 🚀'}
+              {isProcessing ? 'جارٍ تأكيد الاشتراك...' : `تأكيد اشتراك ${currentPackage.name_ar} الآن`}
             </button>
-
           </form>
         )}
 

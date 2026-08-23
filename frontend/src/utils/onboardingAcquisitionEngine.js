@@ -4,55 +4,68 @@ import { EXPANDED_EXERCISE_CATALOG } from '../constants/exercise-catalog.js';
 const SECRET_KEY = (typeof process !== 'undefined' && process.env && process.env.INTAKE_JWT_SECRET) || 'antigravity_master_clinical_intake_secret_2026_jwt_fallback';
 
 export const SUPPORTED_PACKAGES = {
-  MAX_3_PLUS_1: {
-    code: 'MAX_3_PLUS_1',
-    id: 'MAX_3_PLUS_1',
-    name_ar: 'باقة ماكس للتحول الشامل (Max 3+1)',
+  MAX_4M: {
+    code: 'MAX_4M',
+    id: 'MAX_4M',
+    name_ar: 'باقة ماكس - 4 شهور (16 أسبوعاً)',
     tier: 'MAX',
+    tier_name: 'Max',
     duration_months: 4,
+    duration_weeks: 16,
     price_egp: 2800,
     price_usd: 95,
-    features: ['متابعة يومية عبر الواتساب', 'خطة تغذية مخصصة وتعديل دوري', 'برنامج تدريبي كامل للجيم والبيت', 'تحليل مقاطع الفيديو والتكنيك']
+    features: ['متابعة دورية مباشرة عبر الواتساب', 'خطة تغذية مخصصة وتعديل دوري', 'برنامج تدريبي كامل للجيم والبيت', 'تحليل مقاطع الفيديو والتكنيك']
+  },
+  MAX_8M: {
+    code: 'MAX_8M',
+    id: 'MAX_8M',
+    name_ar: 'باقة ماكس - 8 شهور (32 أسبوعاً)',
+    tier: 'MAX',
+    tier_name: 'Max',
+    duration_months: 8,
+    duration_weeks: 32,
+    price_egp: 4800,
+    price_usd: 165,
+    features: ['متابعة دورية مباشرة عبر الواتساب', 'خطة تغذية وتعديل أسبوعي مستمر', 'برمجة تدريبية لميزوسايكلز متعددة', 'تحليل حركي وتكنيك مستمر']
+  },
+  ELITE_4M: {
+    code: 'ELITE_4M',
+    id: 'ELITE_4M',
+    name_ar: 'باقة إيليت - 4 شهور (16 أسبوعاً)',
+    tier: 'ELITE',
+    tier_name: 'Elite',
+    duration_months: 4,
+    duration_weeks: 16,
+    price_egp: 3800,
+    price_usd: 130,
+    features: ['متابعة VIP وتدريب شخصي مخصص', 'تعديل فوري للماكروز والدايت', 'تحليل حركي متقدم وبروتوكول استشفاء', 'دعم سريري وإصابات كامل']
+  },
+  ELITE_8M: {
+    code: 'ELITE_8M',
+    id: 'ELITE_8M',
+    name_ar: 'باقة إيليت - 8 شهور (32 أسبوعاً)',
+    tier: 'ELITE',
+    tier_name: 'Elite',
+    duration_months: 8,
+    duration_weeks: 32,
+    price_egp: 6800,
+    price_usd: 230,
+    features: ['متابعة VIP وتدريب شخصي مخصص', 'تعديل فوري للماكروز والدايت', 'تحليل حركي متقدم وبروتوكول استشفاء', 'دعم سريري وإصابات كامل']
+  },
+  // Backward compatibility aliases
+  MAX_3_PLUS_1: {
+    code: 'MAX_4M',
+    id: 'MAX_4M',
+    name_ar: 'باقة ماكس - 4 شهور',
+    tier: 'MAX',
+    duration_months: 4
   },
   ELITE_3_PLUS_1: {
-    code: 'ELITE_3_PLUS_1',
-    id: 'ELITE_3_PLUS_1',
-    name_ar: 'باقة إيليت الاحترافية (Elite 3+1)',
+    code: 'ELITE_4M',
+    id: 'ELITE_4M',
+    name_ar: 'باقة إيليت - 4 شهور',
     tier: 'ELITE',
-    duration_months: 4,
-    price_egp: 3500,
-    price_usd: 120,
-    features: ['متابعة VIP وتدريب شخصي مخصص', 'تعديل فوري للماكروز', 'تحليل حركي متقدم']
-  },
-  TRANSFORMATION_VIP: {
-    code: 'TRANSFORMATION_VIP',
-    id: 'TRANSFORMATION_VIP',
-    name_ar: 'الباقة البلاتينية للتحول الشامل (VIP Transformation)',
-    tier: 'VIP',
-    duration_months: 3,
-    price_egp: 2800,
-    price_usd: 95,
-    features: ['متابعة يومية عبر الواتساب', 'خطة تغذية مخصصة وتعديل دوري', 'برنامج تدريبي كامل للجيم والبيت', 'تحليل مقاطع الفيديو والتكنيك']
-  },
-  FAT_LOSS_EXTREME: {
-    code: 'FAT_LOSS_EXTREME',
-    id: 'FAT_LOSS_EXTREME',
-    name_ar: 'باقة حرق الدهون ونحت القوام (Fat Loss Protocol)',
-    tier: 'FAT_LOSS',
-    duration_months: 2,
-    price_egp: 1900,
-    price_usd: 65,
-    features: ['متابعة أسبوعية دقيقة', 'خطة عجز سعرات ذكية وبنك سعرات', 'مصفوفة التبديل الغذائي']
-  },
-  LEAN_BULK_POWER: {
-    code: 'LEAN_BULK_POWER',
-    id: 'LEAN_BULK_POWER',
-    name_ar: 'باقة الضخامة النظيفة والقوة (Hypertrophy Pro)',
-    tier: 'BULK',
-    duration_months: 3,
-    price_egp: 2600,
-    price_usd: 90,
-    features: ['فائض سعرات محسوب للبناء الصافي', 'تدرج أحمال أسبوعي بمحرك الأوفرلود', 'بروتوكول الديلود الوقائي']
+    duration_months: 4
   }
 };
 
