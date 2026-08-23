@@ -96,6 +96,47 @@ export default function Subscriptions() {
     }
   };
 
+  
+  const handleAddGiftDays = async (client, days) => {
+    try {
+      const res = await fetch(`${API_BASE}/api/v1/coach/add-gift-days`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ client_id: client.client_code || client.id, days })
+      });
+      const data = await res.json();
+      if (res.ok && data.success) {
+        alert(data.message || `تمت إضافة ${days} يوماً هدية بنجاح`);
+        fetchSubscriptions();
+      } else {
+        alert(data.message || 'حدث خطأ أثناء إضافة الأيام');
+      }
+    } catch (err) {
+      alert(err.message);
+    }
+  };
+
+  const handleToggleFreeze = async (client) => {
+    const isCurrentlyFrozen = client.status === 'FROZEN' || client.subscription_status === 'FROZEN';
+    const nextStatus = isCurrentlyFrozen ? 'ACTIVE' : 'FROZEN';
+    try {
+      const res = await fetch(`${API_BASE}/api/v1/coach/toggle-freeze`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ client_id: client.client_code || client.id, status: nextStatus })
+      });
+      const data = await res.json();
+      if (res.ok && data.success) {
+        alert(data.message || (nextStatus === 'FROZEN' ? 'تم تجميد الاشتراك بنجاح' : 'تم استئناف الاشتراك بنجاح'));
+        fetchSubscriptions();
+      } else {
+        alert(data.message || 'حدث خطأ أثناء تعديل حالة التجميد');
+      }
+    } catch (err) {
+      alert(err.message);
+    }
+  };
+
   const handleSendWhatsAppReminder = (client) => {
     const phone = (client.phone_number || '').replace(/[^0-9]/g, '');
     if (!phone) {
@@ -372,30 +413,76 @@ export default function Subscriptions() {
                                 )}
                               </td>
                               <td className="text-center">
-                                <div className="d-flex align-items-center justify-content-center gap-2">
+                                <div className="d-flex align-items-center justify-content-center gap-1.5 flex-wrap">
+                                  <div className="btn-group btn-group-sm">
+                                    <button
+                                      type="button"
+                                      onClick={() => handleAddGiftDays(c, 7)}
+                                      className="btn btn-outline-primary py-0 px-1.5"
+                                      style={{ fontSize: '0.72rem' }}
+                                      title="إضافة 7 أيام هدية"
+                                    >
+                                      +7ي
+                                    </button>
+                                    <button
+                                      type="button"
+                                      onClick={() => handleAddGiftDays(c, 14)}
+                                      className="btn btn-outline-primary py-0 px-1.5"
+                                      style={{ fontSize: '0.72rem' }}
+                                      title="إضافة 14 يوماً هدية"
+                                    >
+                                      +14ي
+                                    </button>
+                                    <button
+                                      type="button"
+                                      onClick={() => handleAddGiftDays(c, 30)}
+                                      className="btn btn-outline-primary py-0 px-1.5"
+                                      style={{ fontSize: '0.72rem' }}
+                                      title="إضافة 30 يوماً هدية"
+                                    >
+                                      +30ي
+                                    </button>
+                                  </div>
+
+                                  <button
+                                    type="button"
+                                    onClick={() => handleToggleFreeze(c)}
+                                    className={`btn btn-sm py-0 px-2 rounded-pill ${
+                                      c.status === 'FROZEN' || c.subscription_status === 'FROZEN'
+                                        ? 'btn-success text-white'
+                                        : 'btn-outline-secondary'
+                                    }`}
+                                    style={{ fontSize: '0.72rem' }}
+                                    title="تجميد أو استئناف الاشتراك"
+                                  >
+                                    {c.status === 'FROZEN' || c.subscription_status === 'FROZEN' ? 'استئناف' : 'تجميد'}
+                                  </button>
+
                                   <button 
                                     type="button"
                                     onClick={() => handleRenew(c)}
-                                    className="btn btn-sm rounded-pill px-3 py-1 fw-semibold shadow-xs"
-                                    style={{ fontSize: '0.78rem', background: '#E5F0FF', color: '#0284C7', border: '1px solid #BAE6FD' }}
+                                    className="btn btn-sm rounded-pill px-2.5 py-0 fw-semibold shadow-xs"
+                                    style={{ fontSize: '0.74rem', background: '#E5F0FF', color: '#0284C7', border: '1px solid #BAE6FD' }}
                                     title="تجديد الاشتراك"
                                   >
-                                    <i className="ti ti-refresh me-1"></i> تجديد
+                                    تجديد
                                   </button>
+
                                   <button 
                                     type="button"
                                     onClick={() => handleOpenEdit(c)}
                                     className="btn btn-sm rounded-circle p-0 d-flex align-items-center justify-content-center transition-all bg-white border"
-                                    style={{ width: '32px', height: '32px', borderColor: '#e2e8f0', color: '#475569' }}
+                                    style={{ width: '28px', height: '28px', borderColor: '#e2e8f0', color: '#475569' }}
                                     title="تعديل تفاصيل الباقة"
                                   >
                                     <i className="ti ti-edit fs-6"></i>
                                   </button>
+
                                   <button 
                                     type="button"
                                     onClick={() => handleSendWhatsAppReminder(c)}
                                     className="btn btn-sm rounded-circle p-0 d-flex align-items-center justify-content-center transition-all bg-white border"
-                                    style={{ width: '32px', height: '32px', borderColor: '#e2e8f0', color: '#16a34a' }}
+                                    style={{ width: '28px', height: '28px', borderColor: '#e2e8f0', color: '#16a34a' }}
                                     title="تذكير عبر WhatsApp"
                                   >
                                     <i className="ti ti-brand-whatsapp fs-6"></i>
