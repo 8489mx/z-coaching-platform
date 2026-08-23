@@ -92,8 +92,10 @@ export default function ClientOnboardingForm() {
   const availableHomeTools = [
     { id: 'DUMBBELLS', label: 'دمبلز بأوزان محددة' },
     { id: 'BANDS', label: 'أشرطة مقاومة مطاطية (Resistance Bands)' },
-    { id: 'BARBELL', label: 'بار حر وأوزان' },
-    { id: 'PULLUP_BAR', label: 'عقلة منزلية / حبال TRX' },
+    { id: 'BARBELL', label: 'بار حر وأوزان طارات' },
+    { id: 'TREADMILL', label: 'مشاية كهربائية منزلية (Treadmill)' },
+    { id: 'STATIONARY_BIKE', label: 'دراجة رياضية ثابتة (Stationary Bike)' },
+    { id: 'PULLUP_BAR', label: 'عقلة منزلية / حبال معلقة TRX' },
     { id: 'MULTI_GYM', label: 'جهاز مالتي هوم جيم' },
     { id: 'BODYWEIGHT_ONLY', label: 'وزن الجسم فقط' }
   ];
