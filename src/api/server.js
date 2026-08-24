@@ -5,6 +5,7 @@ import mysql from "mysql2/promise";
 import cors from "cors";
 import dotenv from "dotenv";
 import path from "path";
+import fs from "fs";
 import { fileURLToPath } from "url";
 
 // Database & Existing API Routes
@@ -381,7 +382,7 @@ app.use("/api/v1/orders", orderRoutes);
 // 4. Production Static Frontend SPA Serving (Hostinger / All-in-One)
 if (fs.existsSync(frontendDistPath)) {
   app.use(express.static(frontendDistPath));
-  app.get("*", (req, res, next) => {
+  app.use((req, res, next) => {
     if (req.path.startsWith("/api/")) return next();
     res.sendFile(path.join(frontendDistPath, "index.html"));
   });

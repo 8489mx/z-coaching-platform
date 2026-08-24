@@ -312,7 +312,7 @@ export default function FullIntakeForm() {
             href="https://wa.me/201000000000" 
             target="_blank" 
             rel="noreferrer"
-            className="btn btn-lg w-100 rounded-pill fw-bold text-white shadow-sm d-flex align-items-center justify-content-center gap-2 mb-2"
+            className="btn btn-lg w-100 rounded-pill fw-bold text-slate-900 shadow-sm d-flex align-items-center justify-content-center gap-2 mb-2"
             style={{ background: '#16A34A', border: 'none', height: '46px', fontSize: '0.92rem' }}
           >
             <i className="ti ti-brand-whatsapp fs-5"></i>
@@ -920,7 +920,7 @@ export default function FullIntakeForm() {
                         key={food}
                         type="button"
                         onClick={() => toggleArrayItem('disliked_foods', food)}
-                        className={`btn btn-sm rounded-pill px-3 py-1.5 ${isChecked ? 'btn-secondary text-white' : 'btn-light border'}`}
+                        className={`btn btn-sm rounded-pill px-3 py-1.5 ${isChecked ? 'btn-secondary text-slate-900' : 'btn-light border'}`}
                         style={{ fontSize: '0.8rem' }}
                       >
                         {isChecked ? `✕ ${food}` : food}
@@ -1067,7 +1067,7 @@ export default function FullIntakeForm() {
                 type="button" 
                 onClick={handleSubmit}
                 disabled={submitting}
-                className="btn btn-lg w-100 rounded-pill fw-bold text-white shadow-sm d-flex align-items-center justify-content-center gap-2"
+                className="btn btn-lg w-100 rounded-pill fw-bold text-slate-900 shadow-sm d-flex align-items-center justify-content-center gap-2"
                 style={{ height: '48px', background: 'linear-gradient(135deg, #10B981 0%, #059669 100%)', border: 'none', fontSize: '0.96rem' }}
               >
                 {submitting ? (
@@ -1099,7 +1099,7 @@ export default function FullIntakeForm() {
               <button 
                 type="button" 
                 onClick={() => setCurrentStep(p => Math.min(4, p + 1))}
-                className="btn btn-primary rounded-pill px-4 fw-bold text-white"
+                className="btn btn-primary rounded-pill px-4 fw-bold text-slate-900"
                 style={{ fontSize: '0.84rem', background: 'linear-gradient(135deg, #58B4E5 0%, #0284C7 100%)', border: 'none' }}
               >
                 <span>التالي</span> <i className="ti ti-arrow-left ms-1"></i>

@@ -98,7 +98,7 @@ ${baseUrl}/user-dashboard?user_id=${clientCode}`
       onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}
     >
       <div className="modal-dialog modal-dialog-centered modal-lg" style={{ width: '96%', maxWidth: '720px', margin: '1.5rem auto' }}>
-        <div className="modal-content border-0 shadow-lg" style={{ borderRadius: '20px', overflow: 'hidden' }} dir="rtl">
+        <div className="modal-content border-0 shadow-sm shadow-slate-200/50" style={{ borderRadius: '20px', overflow: 'hidden' }} dir="rtl">
           {/* Header */}
           <div className="modal-header border-bottom p-4 bg-white d-flex justify-content-between align-items-center" style={{ borderColor: '#f1f5f9' }}>
             <div className="d-flex align-items-center gap-3">
@@ -135,7 +135,7 @@ ${baseUrl}/user-dashboard?user_id=${clientCode}`
                   key={t.id}
                   type="button"
                   onClick={() => applyTemplate(t.id)}
-                  className={`btn btn-sm rounded-pill px-3 py-1 fw-semibold transition-all ${template === t.id ? 'text-white shadow-sm' : 'bg-white text-dark border'}`}
+                  className={`btn btn-sm rounded-pill px-3 py-1 fw-semibold transition-all ${template === t.id ? 'text-slate-900 shadow-sm' : 'bg-white text-dark border'}`}
                   style={{
                     background: template === t.id ? '#0284C7' : '#ffffff',
                     borderColor: template === t.id ? '#0284C7' : '#e2e8f0',
@@ -174,7 +174,7 @@ ${baseUrl}/user-dashboard?user_id=${clientCode}`
             <button 
               type="button" 
               onClick={handleSend}
-              className="btn btn-success btn-sm rounded-pill px-4 fw-bold d-flex align-items-center gap-2 shadow-sm text-white"
+              className="btn btn-success btn-sm rounded-pill px-4 fw-bold d-flex align-items-center gap-2 shadow-sm text-slate-900"
               style={{ height: '36px', fontSize: '0.82rem' }}
             >
               <i className="ti ti-brand-whatsapp fs-6"></i>

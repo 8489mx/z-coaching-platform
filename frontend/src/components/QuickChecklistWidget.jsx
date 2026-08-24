@@ -43,14 +43,14 @@ export default function QuickChecklistWidget({
   };
 
   return (
-    <div className="bg-slate-900 border border-slate-800 rounded-2xl p-5 text-white mb-5 shadow-lg" dir="rtl">
+    <div className="bg-slate-50 border border-slate-200 rounded-2xl p-5 text-slate-900 mb-5 shadow-sm shadow-slate-200/50" dir="rtl">
       <div className="flex justify-between items-center mb-4">
         <div>
-          <h3 className="font-bold text-base text-white flex items-center gap-2 m-0">
+          <h3 className="font-bold text-base text-slate-900 flex items-center gap-2 m-0">
             <span className="inline-block w-2 h-2 rounded-full bg-amber-400"></span>
             <span>تسجيل اليوم السريع (10 ثوانٍ)</span>
           </h3>
-          <p className="text-xs text-slate-400 mt-1 mb-0">علّم على ما أنجزته بنقرة واحدة دون الحاجة لحسابات معقدة</p>
+          <p className="text-xs text-slate-600 mt-1 mb-0">علّم على ما أنجزته بنقرة واحدة دون الحاجة لحسابات معقدة</p>
         </div>
         <span className="text-xs bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 px-2.5 py-1 rounded-full font-bold">
           {Object.values(completedMeals).filter(Boolean).length} / {dailyPlan.meals.length} وجبات
@@ -67,7 +67,7 @@ export default function QuickChecklistWidget({
             className={`w-full flex items-center justify-between p-3 rounded-xl border text-xs font-semibold transition active:scale-[0.99] cursor-pointer ${
               completedMeals[idx]
                 ? 'bg-emerald-950/40 border-emerald-600/60 text-emerald-300'
-                : 'bg-slate-800/60 border-slate-700/60 text-slate-300 hover:border-slate-600'
+                : 'bg-slate-100/60 border-slate-300/60 text-slate-700 hover:border-slate-600'
             }`}
           >
             <span>{meal}</span>
@@ -88,7 +88,7 @@ export default function QuickChecklistWidget({
           className={`w-full flex items-center justify-between p-3.5 rounded-xl border text-xs font-bold transition active:scale-[0.99] cursor-pointer ${
             workoutDone
               ? 'bg-blue-950/50 border-blue-500/60 text-blue-300'
-              : 'bg-slate-800/80 border-slate-700 text-slate-200 hover:border-slate-500'
+              : 'bg-slate-100/80 border-slate-300 text-slate-200 hover:border-slate-500'
           }`}
         >
           <div className="flex items-center gap-2">
@@ -96,7 +96,7 @@ export default function QuickChecklistWidget({
             <span>{dailyPlan.workoutTitle}</span>
           </div>
           <span className={`px-2.5 py-1 rounded-lg text-[11px] font-bold ${
-            workoutDone ? 'bg-blue-500 text-slate-950' : 'bg-slate-700 text-slate-300'
+            workoutDone ? 'bg-blue-500 text-slate-950' : 'bg-slate-700 text-slate-700'
           }`}>
             {workoutDone ? 'تم بالوزن المعتاد' : 'اضغط عند الإتمام'}
           </span>
@@ -104,30 +104,30 @@ export default function QuickChecklistWidget({
       </div>
 
       {/* 3. شريط الماء والنوم السريع */}
-      <div className="grid grid-cols-2 gap-3 pt-3 border-t border-slate-800 text-xs">
+      <div className="grid grid-cols-2 gap-3 pt-3 border-t border-slate-200 text-xs">
         <button
           type="button"
           onClick={addWaterCup}
-          className="bg-slate-800/60 hover:bg-slate-800 border border-slate-700 p-2.5 rounded-xl flex items-center justify-between cursor-pointer"
+          className="bg-slate-100/60 hover:bg-slate-100 border border-slate-300 p-2.5 rounded-xl flex items-center justify-between cursor-pointer"
         >
-          <span className="text-slate-300">كوب ماء (+250ml)</span>
+          <span className="text-slate-700">كوب ماء (+250ml)</span>
           <span className="font-mono font-bold text-sky-400">{(waterCups * 0.25).toFixed(1)}L</span>
         </button>
 
-        <div className="bg-slate-800/60 border border-slate-700 p-2 rounded-xl flex items-center justify-between">
-          <span className="text-[11px] text-slate-300">جودة النوم:</span>
+        <div className="bg-slate-100/60 border border-slate-300 p-2 rounded-xl flex items-center justify-between">
+          <span className="text-[11px] text-slate-700">جودة النوم:</span>
           <div className="flex gap-1">
             <button
               type="button"
               onClick={() => { setSleptWell(true); triggerSync(completedMeals, workoutDone, waterCups, true); }}
-              className={`px-2 py-1 rounded text-[10px] font-bold cursor-pointer ${sleptWell === true ? 'bg-emerald-500 text-slate-950' : 'bg-slate-700 text-slate-400'}`}
+              className={`px-2 py-1 rounded text-[10px] font-bold cursor-pointer ${sleptWell === true ? 'bg-emerald-500 text-slate-950' : 'bg-slate-700 text-slate-600'}`}
             >
               ممتاز
             </button>
             <button
               type="button"
               onClick={() => { setSleptWell(false); triggerSync(completedMeals, workoutDone, waterCups, false); }}
-              className={`px-2 py-1 rounded text-[10px] font-bold cursor-pointer ${sleptWell === false ? 'bg-rose-500 text-white' : 'bg-slate-700 text-slate-400'}`}
+              className={`px-2 py-1 rounded text-[10px] font-bold cursor-pointer ${sleptWell === false ? 'bg-rose-500 text-slate-900' : 'bg-slate-700 text-slate-600'}`}
             >
               قليل
             </button>

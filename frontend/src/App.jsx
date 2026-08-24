@@ -25,6 +25,9 @@ import ProgressClone from './pages/ProgressClone';
 import ProfileClone from './pages/ProfileClone';
 import WeeklyCheckinForm from './pages/WeeklyCheckinForm';
 import EngineTester from './pages/EngineTester';
+import CoachAnalyticsDashboard from './pages/CoachAnalyticsDashboard';
+import CheckinReviewDashboard from './pages/CheckinReviewDashboard';
+import ClientTimelineProfile from './pages/ClientTimelineProfile';
 
 function App() {
   return (
@@ -76,6 +79,9 @@ function App() {
           <Route path="/settings" element={<Navigate to="/master-settings" replace />} />
           <Route path="/coach/editor" element={<CoachEditor />} />
           <Route path="/coach/editor/:userId" element={<CoachEditor />} />
+          <Route path="/coach/analytics" element={<CoachAnalyticsDashboard />} />
+          <Route path="/coach/checkin-review" element={<CheckinReviewDashboard />} />
+          <Route path="/customers/:id" element={<ClientTimelineProfile />} />
           <Route path="/profile" element={<ProfileClone />} />
           <Route path="/profile.html" element={<Navigate to="/profile" replace />} />
           <Route path="/pdf" element={<ProgramPdfView />} />

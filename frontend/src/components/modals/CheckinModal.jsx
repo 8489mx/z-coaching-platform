@@ -428,7 +428,7 @@ export default function CheckinModal({
                 <button 
                   type="submit" 
                   disabled={loading} 
-                  className="btn btn-sm rounded-pill px-4 fw-bold shadow-sm d-flex align-items-center gap-2 text-white transition-all"
+                  className="btn btn-sm rounded-pill px-4 fw-bold shadow-sm d-flex align-items-center gap-2 text-slate-900 transition-all"
                   style={{ 
                     height: '36px', 
                     fontSize: '0.82rem', 

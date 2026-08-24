@@ -285,7 +285,7 @@ export default function EditExerciseModal({
               <button 
                 type="submit" 
                 disabled={loading} 
-                className="btn btn-primary rounded-pill px-4 fw-bold shadow-sm d-flex align-items-center gap-2 text-white"
+                className="btn btn-primary rounded-pill px-4 fw-bold shadow-sm d-flex align-items-center gap-2 text-slate-900"
                 style={{ 
                   height: '40px', 
                   fontSize: '0.86rem', 

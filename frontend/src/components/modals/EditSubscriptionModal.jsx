@@ -25,7 +25,7 @@ export default function EditSubscriptionModal({
  return (
  <div className="modal show d-block" tabIndex="-1" style={{ backgroundColor: 'rgba(15, 23, 42, 0.65)', backdropFilter: 'blur(4px)', zIndex: 1060 }}>
  <div className="modal-dialog modal-dialog-centered">
- <div className="modal-content border-0 shadow-lg" style={{ borderRadius: '20px' }}>
+ <div className="modal-content border-0 shadow-sm shadow-slate-200/50" style={{ borderRadius: '20px' }}>
   <div className="modal-header border-bottom p-4 d-flex justify-content-between align-items-center bg-white">
     <h5 className="modal-title fw-bold text-dark mb-0" style={{ fontSize: '1.05rem' }}>
       تعديل اشتراك: {client.full_name || 'المشترك'}

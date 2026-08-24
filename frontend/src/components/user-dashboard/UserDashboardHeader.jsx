@@ -118,7 +118,7 @@ export default function UserDashboardHeader({
             {/* Floating Luxury Menu */}
             {dropdownOpen && (
               <div 
-                className="position-absolute end-0 mt-2 bg-white rounded-3 shadow-xl border overflow-hidden py-2"
+                className="position-absolute end-0 mt-2 bg-white rounded-3 shadow-md shadow-slate-200/50 border overflow-hidden py-2"
                 style={{ 
                   minWidth: '220px', 
                   zIndex: 1050, 
@@ -199,7 +199,7 @@ export default function UserDashboardHeader({
           {/* 3. Switch to Coach Portal (Luxury Dark Indigo Action Button) */}
           <Link 
             to="/" 
-            className="btn px-3.5 fw-bold d-flex align-items-center gap-2 text-white transition-all"
+            className="btn px-3.5 fw-bold d-flex align-items-center gap-2 text-slate-900 transition-all"
             style={{ 
               height: '38px',
               borderRadius: '10px',
@@ -210,7 +210,7 @@ export default function UserDashboardHeader({
             }}
             title="الانتقال إلى لوحة تحكم المدرب الرئيسية"
           >
-            <i className="ti ti-arrows-exchange fs-6 text-white-50"></i>
+            <i className="ti ti-arrows-exchange fs-6 text-slate-900-50"></i>
             <span>لوحة الكابتن</span>
           </Link>
 

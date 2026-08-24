@@ -234,7 +234,7 @@ export default function NotificationsDropdown() {
         </svg>
         {unreadCount > 0 && (
           <span 
-            className="position-absolute d-flex align-items-center justify-content-center text-white font-monospace fw-bold"
+            className="position-absolute d-flex align-items-center justify-content-center text-slate-900 font-monospace fw-bold"
             style={{ 
               top: '-4px', 
               left: '-4px', 
@@ -305,7 +305,7 @@ export default function NotificationsDropdown() {
               <button 
                 type="button"
                 onClick={() => setActiveFilter('ALL')}
-                className={`btn btn-sm rounded-pill px-3 py-1 fw-bold ${activeFilter === 'ALL' ? 'btn-primary text-white' : 'btn-light border text-muted'}`}
+                className={`btn btn-sm rounded-pill px-3 py-1 fw-bold ${activeFilter === 'ALL' ? 'btn-primary text-slate-900' : 'btn-light border text-muted'}`}
                 style={{ fontSize: '0.78rem', height: '28px' }}
               >
                 الكل ({notifications.length})
@@ -313,7 +313,7 @@ export default function NotificationsDropdown() {
               <button 
                 type="button"
                 onClick={() => setActiveFilter('UNREAD')}
-                className={`btn btn-sm rounded-pill px-3 py-1 fw-bold ${activeFilter === 'UNREAD' ? 'btn-primary text-white' : 'btn-light border text-muted'}`}
+                className={`btn btn-sm rounded-pill px-3 py-1 fw-bold ${activeFilter === 'UNREAD' ? 'btn-primary text-slate-900' : 'btn-light border text-muted'}`}
                 style={{ fontSize: '0.78rem', height: '28px' }}
               >
                 غير المقروءة ({unreadCount})

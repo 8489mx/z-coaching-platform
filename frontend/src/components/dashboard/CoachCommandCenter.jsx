@@ -55,16 +55,16 @@ export default function CoachCommandCenter({ clients = [], onUpdateClientPlan = 
   return (
     <div className="min-h-screen bg-slate-950 text-slate-100 p-4 md:p-8 font-sans" dir="rtl">
       {/* Header & Metrics Bar */}
-      <header className="flex flex-col md:flex-row justify-between items-start md:items-center pb-6 border-b border-slate-800 gap-4">
+      <header className="flex flex-col md:flex-row justify-between items-start md:items-center pb-6 border-b border-slate-200 gap-4">
         <div>
-          <h1 className="text-2xl font-black tracking-tight text-white">غرفة قيادة الكوتش | Coach Command Center</h1>
-          <p className="text-sm text-slate-400">إدارة المشتركين، اتخاذ قرارات المتابعة الأسبوعية، ورادار الاشتراكات بنقرة واحدة</p>
+          <h1 className="text-2xl font-black tracking-tight text-slate-900">غرفة قيادة الكوتش | Coach Command Center</h1>
+          <p className="text-sm text-slate-600">إدارة المشتركين، اتخاذ قرارات المتابعة الأسبوعية، ورادار الاشتراكات بنقرة واحدة</p>
         </div>
         <div className="flex gap-2">
           <button
             onClick={() => setSelectedFilter('ALL')}
             className={`px-4 py-2 rounded-lg text-xs font-bold transition-all ${
-              selectedFilter === 'ALL' ? 'bg-indigo-600 text-white' : 'bg-slate-800 text-slate-300 hover:bg-slate-700'
+              selectedFilter === 'ALL' ? 'bg-indigo-600 text-slate-900' : 'bg-slate-100 text-slate-700 hover:bg-slate-300'
             }`}
           >
             الكل ({processedClients.length})
@@ -72,7 +72,7 @@ export default function CoachCommandCenter({ clients = [], onUpdateClientPlan = 
           <button
             onClick={() => setSelectedFilter('CHECKIN_PENDING')}
             className={`px-4 py-2 rounded-lg text-xs font-bold transition-all ${
-              selectedFilter === 'CHECKIN_PENDING' ? 'bg-amber-600 text-white' : 'bg-slate-800 text-amber-400 hover:bg-slate-700'
+              selectedFilter === 'CHECKIN_PENDING' ? 'bg-amber-600 text-slate-900' : 'bg-slate-100 text-amber-400 hover:bg-slate-300'
             }`}
           >
             متابعات معلقة ({processedClients.filter((c) => c.triageCategory === 'CHECKIN_PENDING').length})
@@ -80,7 +80,7 @@ export default function CoachCommandCenter({ clients = [], onUpdateClientPlan = 
           <button
             onClick={() => setSelectedFilter('EXPIRING')}
             className={`px-4 py-2 rounded-lg text-xs font-bold transition-all ${
-              selectedFilter === 'EXPIRING' ? 'bg-rose-600 text-white' : 'bg-slate-800 text-rose-400 hover:bg-slate-700'
+              selectedFilter === 'EXPIRING' ? 'bg-rose-600 text-slate-900' : 'bg-slate-100 text-rose-400 hover:bg-slate-300'
             }`}
           >
             رادار التجديد ({processedClients.filter((c) => c.triageCategory === 'EXPIRING').length})
@@ -91,10 +91,10 @@ export default function CoachCommandCenter({ clients = [], onUpdateClientPlan = 
       {/* Main Roster Grid */}
       <main className="mt-8 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {filteredClients.map((client) => (
-          <div key={client.id} className="bg-slate-900 border border-slate-800 rounded-xl p-5 flex flex-col justify-between">
+          <div key={client.id} className="bg-slate-50 border border-slate-200 rounded-xl p-5 flex flex-col justify-between">
             <div>
               <div className="flex justify-between items-center mb-3">
-                <h3 className="font-bold text-lg text-white">{client.name}</h3>
+                <h3 className="font-bold text-lg text-slate-900">{client.name}</h3>
                 <span
                   className={`px-2.5 py-1 rounded-full text-xs font-bold ${
                     client.subStatus.status === 'EXPIRED'
@@ -112,7 +112,7 @@ export default function CoachCommandCenter({ clients = [], onUpdateClientPlan = 
                 </span>
               </div>
 
-              <div className="text-xs text-slate-400 space-y-1 mb-4">
+              <div className="text-xs text-slate-600 space-y-1 mb-4">
                 <p>الهدف: <span className="text-slate-200">{client.goal_type === 'FAT_LOSS' ? 'خسارة دهون' : 'بناء عضلي'}</span></p>
                 <p>السعرات الحالية: <span className="text-indigo-400 font-bold">{client.current_calories} Kcal</span></p>
               </div>
@@ -124,9 +124,9 @@ export default function CoachCommandCenter({ clients = [], onUpdateClientPlan = 
                     <span>تقرير المتابعة الأسبوعية</span>
                     <span>التزام {client.pending_checkin.adherence_pct}%</span>
                   </div>
-                  <div className="text-xs text-slate-300 space-y-1 mb-3">
-                    <p>الوزن: {client.pending_checkin.previous_weight}kg ➔ <strong className="text-white">{client.pending_checkin.current_weight}kg</strong></p>
-                    <p>الخصر: {client.pending_checkin.previous_waist}cm ➔ <strong className="text-white">{client.pending_checkin.current_waist}cm</strong></p>
+                  <div className="text-xs text-slate-700 space-y-1 mb-3">
+                    <p>الوزن: {client.pending_checkin.previous_weight}kg ➔ <strong className="text-slate-900">{client.pending_checkin.current_weight}kg</strong></p>
+                    <p>الخصر: {client.pending_checkin.previous_waist}cm ➔ <strong className="text-slate-900">{client.pending_checkin.current_waist}cm</strong></p>
                   </div>
                   <button
                     onClick={() => handleApproveCheckin(client)}
@@ -139,17 +139,17 @@ export default function CoachCommandCenter({ clients = [], onUpdateClientPlan = 
             </div>
 
             {/* Actions Bar */}
-            <div className="pt-4 border-t border-slate-800/80 flex items-center justify-between gap-2 mt-4">
+            <div className="pt-4 border-t border-slate-200/80 flex items-center justify-between gap-2 mt-4">
               <a
                 href={`https://wa.me/${client.phone}?text=${encodeURIComponent(client.subStatus.whatsapp_renewal_template)}`}
                 target="_blank"
                 rel="noreferrer"
-                className="flex-1 text-center py-2 bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg text-xs font-bold transition-colors"
+                className="flex-1 text-center py-2 bg-emerald-600 hover:bg-emerald-500 text-slate-900 rounded-lg text-xs font-bold transition-colors"
               >
                 واتساب مباشر
               </a>
               <button
-                className="px-3 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-lg text-xs font-bold transition-colors"
+                className="px-3 py-2 bg-slate-100 hover:bg-slate-300 text-slate-700 rounded-lg text-xs font-bold transition-colors"
               >
                 تعديل الخطة
               </button>

@@ -475,7 +475,7 @@ ${portalLink}\n\n(افتح الرابط المباشر واملأ بياناتك
                   </button>
                   <button 
                     type="submit" 
-                    className="btn btn-sm rounded-pill px-4 fw-bold shadow-sm d-flex align-items-center gap-2 text-white"
+                    className="btn btn-sm rounded-pill px-4 fw-bold shadow-sm d-flex align-items-center gap-2 text-slate-900"
                     disabled={loading || !clientPhone.trim()}
                     style={{ 
                       height: '40px', 
@@ -520,7 +520,7 @@ ${portalLink}\n\n(افتح الرابط المباشر واملأ بياناتك
                 <div className="d-grid gap-2">
                   <button 
                     type="button" 
-                    className="btn py-2 rounded-pill fw-bold shadow-sm d-flex align-items-center justify-content-center gap-2 text-white"
+                    className="btn py-2 rounded-pill fw-bold shadow-sm d-flex align-items-center justify-content-center gap-2 text-slate-900"
                     style={{ height: '42px', background: 'linear-gradient(135deg, #16A34A 0%, #15803D 100%)', border: 'none', fontSize: '0.84rem', cursor: 'pointer' }}
                     onClick={handleOpenWhatsApp}
                   >

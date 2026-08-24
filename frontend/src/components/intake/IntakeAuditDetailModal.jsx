@@ -250,7 +250,7 @@ export default function IntakeAuditDetailModal({
         <div className="card border-0 shadow-sm mb-3" style={{ borderRadius: '14px', background: 'linear-gradient(135deg, #f8f9fd 0%, #f1f3fa 100%)', border: '1px solid #e2e8f0' }}>
           <div className="card-body p-3 d-flex align-items-center justify-content-between flex-wrap gap-2">
             <div className="d-flex align-items-center gap-2">
-              <span className="badge bg-dark text-white fw-bold px-2 py-1" style={{ fontSize: '0.72rem', borderRadius: '6px' }}>
+              <span className="badge bg-dark text-slate-900 fw-bold px-2 py-1" style={{ fontSize: '0.72rem', borderRadius: '6px' }}>
                 ملخص الفحص السريع:
               </span>
             </div>
@@ -369,7 +369,7 @@ export default function IntakeAuditDetailModal({
                         className="img-fluid rounded" 
                         style={{ objectFit: 'cover', width: '100%', maxHeight: '220px' }} 
                       />
-                      <span className="position-absolute bottom-0 end-0 m-2 badge bg-dark bg-opacity-75 text-white" style={{ fontSize: '0.68rem' }}>
+                      <span className="position-absolute bottom-0 end-0 m-2 badge bg-dark bg-opacity-75 text-slate-900" style={{ fontSize: '0.68rem' }}>
                         <i className="ti ti-zoom-in me-1"></i> تكبير
                       </span>
                     </div>
@@ -398,7 +398,7 @@ export default function IntakeAuditDetailModal({
                         className="img-fluid rounded" 
                         style={{ objectFit: 'cover', width: '100%', maxHeight: '220px' }} 
                       />
-                      <span className="position-absolute bottom-0 end-0 m-2 badge bg-dark bg-opacity-75 text-white" style={{ fontSize: '0.68rem' }}>
+                      <span className="position-absolute bottom-0 end-0 m-2 badge bg-dark bg-opacity-75 text-slate-900" style={{ fontSize: '0.68rem' }}>
                         <i className="ti ti-zoom-in me-1"></i> تكبير
                       </span>
                     </div>
@@ -427,7 +427,7 @@ export default function IntakeAuditDetailModal({
                         className="img-fluid rounded" 
                         style={{ objectFit: 'cover', width: '100%', maxHeight: '220px' }} 
                       />
-                      <span className="position-absolute bottom-0 end-0 m-2 badge bg-dark bg-opacity-75 text-white" style={{ fontSize: '0.68rem' }}>
+                      <span className="position-absolute bottom-0 end-0 m-2 badge bg-dark bg-opacity-75 text-slate-900" style={{ fontSize: '0.68rem' }}>
                         <i className="ti ti-zoom-in me-1"></i> تكبير
                       </span>
                     </div>
@@ -737,7 +737,7 @@ export default function IntakeAuditDetailModal({
         >
           <div className="modal-dialog modal-dialog-centered modal-lg" style={{ maxWidth: '800px', width: '92%' }}>
             <div className="modal-content bg-transparent border-0 text-center position-relative">
-              <div className="d-flex justify-content-between align-items-center text-white mb-2 px-2">
+              <div className="d-flex justify-content-between align-items-center text-slate-900 mb-2 px-2">
                 <span className="fw-bold fs-6">{previewImage.title}</span>
                 <button 
                   type="button" 

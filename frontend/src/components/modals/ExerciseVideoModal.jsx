@@ -18,7 +18,7 @@ export default function ExerciseVideoModal({ exercise, onClose }) {
   return (
     <div className="modal show d-block" tabIndex="-1" style={{ backgroundColor: 'rgba(15, 23, 42, 0.75)', backdropFilter: 'blur(5px)', zIndex: 1060 }}>
       <div className="modal-dialog modal-dialog-centered modal-lg">
-        <div className="modal-content border-0 shadow-lg" style={{ borderRadius: '20px', overflow: 'hidden' }}>
+        <div className="modal-content border-0 shadow-sm shadow-slate-200/50" style={{ borderRadius: '20px', overflow: 'hidden' }}>
           <div className="modal-header border-bottom p-3 bg-light d-flex justify-content-between align-items-center">
             <div>
               <h6 className="modal-title fw-bold text-dark mb-0">{exercise.name_ar}</h6>

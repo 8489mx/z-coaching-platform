@@ -258,7 +258,7 @@ export default function EditPackageModal({ isOpen, onClose, packageData, onSave,
               <button 
                 type="submit" 
                 disabled={saving}
-                className="btn btn-sm rounded-pill px-4 fw-bold shadow-sm d-flex align-items-center gap-2 text-white"
+                className="btn btn-sm rounded-pill px-4 fw-bold shadow-sm d-flex align-items-center gap-2 text-slate-900"
                 style={{ 
                   height: '36px', 
                   fontSize: '0.82rem', 

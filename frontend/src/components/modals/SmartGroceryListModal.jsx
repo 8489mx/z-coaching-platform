@@ -38,7 +38,7 @@ export default function SmartGroceryListModal({ isOpen, onClose, culinaryMeals =
       onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}
     >
       <div className="modal-dialog modal-dialog-centered modal-lg" style={{ width: '96%', maxWidth: '780px', margin: '1.5rem auto' }}>
-        <div className="modal-content border-0 shadow-lg" style={{ borderRadius: '24px', overflow: 'hidden', background: '#FAFBFC' }} dir="rtl">
+        <div className="modal-content border-0 shadow-sm shadow-slate-200/50" style={{ borderRadius: '24px', overflow: 'hidden', background: '#FAFBFC' }} dir="rtl">
           
           {/* Header */}
           <div className="modal-header border-bottom p-4 bg-white d-flex justify-content-between align-items-center" style={{ borderColor: '#E7EEF3' }}>

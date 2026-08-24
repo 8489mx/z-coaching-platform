@@ -278,7 +278,7 @@ export default function Subscriptions() {
             <button 
               type="button"
               onClick={() => setFilter('ALL')}
-              className={`btn btn-sm rounded-pill px-3 fw-bold transition-all ${filter === 'ALL' ? 'text-white shadow-sm' : 'bg-white text-dark border'}`}
+              className={`btn btn-sm rounded-pill px-3 fw-bold transition-all ${filter === 'ALL' ? 'text-slate-900 shadow-sm' : 'bg-white text-dark border'}`}
               style={{
                 background: filter === 'ALL' ? '#0284C7' : '#ffffff',
                 borderColor: filter === 'ALL' ? '#0284C7' : '#e2e8f0',
@@ -291,7 +291,7 @@ export default function Subscriptions() {
             <button 
               type="button"
               onClick={() => setFilter('ACTIVE')}
-              className={`btn btn-sm rounded-pill px-3 fw-bold transition-all ${filter === 'ACTIVE' ? 'text-white shadow-sm' : 'bg-white text-dark border'}`}
+              className={`btn btn-sm rounded-pill px-3 fw-bold transition-all ${filter === 'ACTIVE' ? 'text-slate-900 shadow-sm' : 'bg-white text-dark border'}`}
               style={{
                 background: filter === 'ACTIVE' ? '#0284C7' : '#ffffff',
                 borderColor: filter === 'ACTIVE' ? '#0284C7' : '#e2e8f0',
@@ -304,7 +304,7 @@ export default function Subscriptions() {
             <button 
               type="button"
               onClick={() => setFilter('EXPIRING_SOON')}
-              className={`btn btn-sm rounded-pill px-3 fw-bold transition-all ${filter === 'EXPIRING_SOON' ? 'text-white shadow-sm' : 'bg-white text-dark border'}`}
+              className={`btn btn-sm rounded-pill px-3 fw-bold transition-all ${filter === 'EXPIRING_SOON' ? 'text-slate-900 shadow-sm' : 'bg-white text-dark border'}`}
               style={{
                 background: filter === 'EXPIRING_SOON' ? '#0284C7' : '#ffffff',
                 borderColor: filter === 'EXPIRING_SOON' ? '#0284C7' : '#e2e8f0',
@@ -317,7 +317,7 @@ export default function Subscriptions() {
             <button 
               type="button"
               onClick={() => setFilter('EXPIRED')}
-              className={`btn btn-sm rounded-pill px-3 fw-bold transition-all ${filter === 'EXPIRED' ? 'text-white shadow-sm' : 'bg-white text-dark border'}`}
+              className={`btn btn-sm rounded-pill px-3 fw-bold transition-all ${filter === 'EXPIRED' ? 'text-slate-900 shadow-sm' : 'bg-white text-dark border'}`}
               style={{
                 background: filter === 'EXPIRED' ? '#0284C7' : '#ffffff',
                 borderColor: filter === 'EXPIRED' ? '#0284C7' : '#e2e8f0',
@@ -449,7 +449,7 @@ export default function Subscriptions() {
                                     onClick={() => handleToggleFreeze(c)}
                                     className={`btn btn-sm py-0 px-2 rounded-pill ${
                                       c.status === 'FROZEN' || c.subscription_status === 'FROZEN'
-                                        ? 'btn-success text-white'
+                                        ? 'btn-success text-slate-900'
                                         : 'btn-outline-secondary'
                                     }`}
                                     style={{ fontSize: '0.72rem' }}

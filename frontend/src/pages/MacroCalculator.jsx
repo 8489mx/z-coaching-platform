@@ -386,7 +386,7 @@ export default function MacroCalculator() {
                       </div>
 
                       <div className="col-12">
-                        <div className="p-3 rounded-3 text-center text-white shadow-sm" style={{ background: 'linear-gradient(135deg, #58B4E5 0%, #0284C7 100%)', boxShadow: '0 4px 14px rgba(38, 28, 106, 0.25)' }}>
+                        <div className="p-3 rounded-3 text-center text-slate-900 shadow-sm" style={{ background: 'linear-gradient(135deg, #58B4E5 0%, #0284C7 100%)', boxShadow: '0 4px 14px rgba(38, 28, 106, 0.25)' }}>
                           <small className="opacity-90 d-block" style={{ fontSize: '0.74rem' }}>السعرات اليومية المستهدفة للخطة</small>
                           <h2 className="fw-bold mb-0 d-flex align-items-baseline justify-content-center gap-1" style={{ letterSpacing: '-0.5px', fontSize: '1.6rem' }}>
                             <span>{targetCalories}</span>
@@ -512,7 +512,7 @@ export default function MacroCalculator() {
                           type="button"
                           onClick={handleApplyToClient} 
                           disabled={saving || !selectedClient}
-                          className="btn btn-sm rounded-pill w-100 fw-bold shadow-xs text-white d-flex align-items-center justify-content-center gap-1"
+                          className="btn btn-sm rounded-pill w-100 fw-bold shadow-xs text-slate-900 d-flex align-items-center justify-content-center gap-1"
                           style={{ height: '36px', background: '#0284C7', border: 'none', fontSize: '0.8rem' }}
                         >
                           {saving ? 'جاري التطبيق...' : <><i className="ti ti-device-floppy"></i> تطبيق على المتدرب</>}

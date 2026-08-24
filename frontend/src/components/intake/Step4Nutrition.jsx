@@ -126,7 +126,7 @@ export default function Step4Nutrition({
                     {df.title}
                   </div>
                   {df.recommended && (
-                    <span className="badge bg-primary text-white" style={{ fontSize: '0.66rem', borderRadius: '50px' }}>
+                    <span className="badge bg-primary text-slate-900" style={{ fontSize: '0.66rem', borderRadius: '50px' }}>
                       موصى به
                     </span>
                   )}

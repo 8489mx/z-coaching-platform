@@ -170,3 +170,23 @@ export const overrideClientCheckin = async (req, res) => {
     return res.status(500).json({ error: err.message });
   }
 };
+
+export const updateSubscription = async (req, res) => {
+  try {
+    const { user_id } = req.params;
+    const { package_code, price, end_date } = req.body;
+    let user = await User.findOne({ where: { client_code: user_id } });
+    if (!user && !isNaN(user_id)) {
+      user = await User.findByPk(parseInt(user_id, 10));
+    }
+    if (!user) return res.status(404).json({ error: "User not found" });
+    await user.update({
+      subscription_package: package_code || user.subscription_package,
+      subscription_price: price || user.subscription_price,
+      subscription_end_date: end_date ? new Date(end_date) : user.subscription_end_date
+    });
+    return res.status(200).json({ success: true, message: "Subscription updated successfully", user });
+  } catch (err) {
+    return res.status(500).json({ error: err.message });
+  }
+};
