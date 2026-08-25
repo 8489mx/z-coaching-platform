@@ -79,7 +79,7 @@ export default function CoachTriageQueue({
       >
         <div className="space-y-1">
           <div className="flex items-center gap-2">
-            <span className="font-bold text-sm text-white">{item.name}</span>
+            <span className="font-bold text-sm text-slate-900">{item.name}</span>
             <span
               className={`text-[10px] px-2 py-0.5 rounded-full font-medium ${
                 isHighPriority
@@ -90,7 +90,7 @@ export default function CoachTriageQueue({
               {item.badge_ar || (isHighPriority ? 'عاجل' : 'متابعة')}
             </span>
           </div>
-          <p className="text-xs text-slate-400 leading-relaxed m-0">{item.reason_ar || item.message_ar}</p>
+          <p className="text-xs text-slate-600 leading-relaxed m-0">{item.reason_ar || item.message_ar}</p>
         </div>
 
         <div className="flex items-center gap-2">
@@ -98,7 +98,7 @@ export default function CoachTriageQueue({
           <button
             type="button"
             onClick={() => openEditModal(item)}
-            className="flex items-center gap-1 bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs px-2.5 py-2 rounded-lg border border-slate-700 transition cursor-pointer"
+            className="flex items-center gap-1 bg-slate-100 hover:bg-slate-300 text-slate-700 text-xs px-2.5 py-2 rounded-lg border border-slate-300 transition cursor-pointer"
             title="تعديل بيانات المشترك"
           >
             <span>تعديل</span>
@@ -109,7 +109,7 @@ export default function CoachTriageQueue({
             href={waAction.url}
             target="_blank"
             rel="noopener noreferrer"
-            className="flex items-center gap-1.5 bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold px-3 py-2 rounded-lg transition active:scale-95 shadow-md shadow-emerald-950 no-underline"
+            className="flex items-center gap-1.5 bg-emerald-600 hover:bg-emerald-500 text-slate-900 text-xs font-bold px-3 py-2 rounded-lg transition active:scale-95 shadow-md shadow-emerald-950 no-underline"
           >
             <span>واتساب</span>
             <svg className="w-3.5 h-3.5 fill-current" viewBox="0 0 24 24">
@@ -126,14 +126,14 @@ export default function CoachTriageQueue({
     : (triageData.high_priority_queue?.length || 0) + (triageData.medium_priority_queue?.length || 0);
 
   return (
-    <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6 text-white mb-6" dir="rtl">
+    <div className="bg-slate-50 border border-slate-200 rounded-2xl p-6 text-slate-900 mb-6" dir="rtl">
       <div className="flex justify-between items-center mb-5">
         <div>
-          <h2 className="text-lg font-bold text-white flex items-center gap-2 m-0">
+          <h2 className="text-lg font-bold text-slate-900 flex items-center gap-2 m-0">
             <span className="inline-block w-2.5 h-2.5 rounded-full bg-rose-500 animate-pulse"></span>
             <span>طابور الإجراءات والأولويات اليومية (Triage)</span>
           </h2>
-          <p className="text-xs text-slate-400 mt-1 mb-0">
+          <p className="text-xs text-slate-600 mt-1 mb-0">
             المهام العاجلة مرتبة حسب الأولوية الإكلينيكية لإنهاء المتابعات في أقل من 15 دقيقة
           </p>
         </div>
@@ -165,7 +165,7 @@ export default function CoachTriageQueue({
       )}
 
       {totalActions === 0 && (
-        <div className="text-center py-6 text-slate-400 text-sm">
+        <div className="text-center py-6 text-slate-600 text-sm">
           لا توجد مهام معلقة؛ جميع المتدربين في حالة التزام ومتابعة مستقرة.
         </div>
       )}
@@ -173,34 +173,34 @@ export default function CoachTriageQueue({
       {/* Inline Edit Modal */}
       {editingClient && (
         <div className="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="bg-slate-900 border border-slate-700 rounded-2xl p-6 w-full max-w-sm shadow-2xl text-white">
-            <h3 className="font-bold text-base mb-3 text-white">تعديل بيانات المشترك</h3>
+          <div className="bg-slate-50 border border-slate-300 rounded-2xl p-6 w-full max-w-sm shadow-2xl text-slate-900">
+            <h3 className="font-bold text-base mb-3 text-slate-900">تعديل بيانات المشترك</h3>
 
             {saveMessage && (
-              <div className="bg-slate-800 text-emerald-400 text-xs p-2 rounded-lg mb-3 text-center">
+              <div className="bg-slate-100 text-emerald-400 text-xs p-2 rounded-lg mb-3 text-center">
                 {saveMessage}
               </div>
             )}
 
             <form onSubmit={handleSaveClient} className="space-y-3">
               <div>
-                <label className="block text-xs text-slate-400 mb-1">اسم المشترك</label>
+                <label className="block text-xs text-slate-600 mb-1">اسم المشترك</label>
                 <input
                   type="text"
                   value={newName}
                   onChange={(e) => setNewName(e.target.value)}
-                  className="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-sm text-white focus:outline-none focus:border-emerald-500"
+                  className="w-full bg-slate-100 border border-slate-300 rounded-xl px-3 py-2 text-sm text-slate-900 focus:outline-none focus:border-emerald-500"
                 />
               </div>
 
               <div>
-                <label className="block text-xs text-slate-400 mb-1">رقم الهاتف المسجل</label>
+                <label className="block text-xs text-slate-600 mb-1">رقم الهاتف المسجل</label>
                 <input
                   type="tel"
                   value={newPhone}
                   onChange={(e) => setNewPhone(e.target.value)}
                   placeholder="010XXXXXXXX"
-                  className="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-sm text-white focus:outline-none focus:border-emerald-500"
+                  className="w-full bg-slate-100 border border-slate-300 rounded-xl px-3 py-2 text-sm text-slate-900 focus:outline-none focus:border-emerald-500"
                 />
               </div>
 
@@ -215,7 +215,7 @@ export default function CoachTriageQueue({
                 <button
                   type="button"
                   onClick={() => setEditingClient(null)}
-                  className="px-4 bg-slate-800 hover:bg-slate-700 text-slate-300 py-2 rounded-xl text-xs transition cursor-pointer"
+                  className="px-4 bg-slate-100 hover:bg-slate-300 text-slate-700 py-2 rounded-xl text-xs transition cursor-pointer"
                 >
                   إلغاء
                 </button>

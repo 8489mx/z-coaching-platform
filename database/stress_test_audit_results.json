@@ -1,0 +1,2542 @@
+[
+  {
+    "client": {
+      "id": "STRESS-01",
+      "name": "طارق الألفي",
+      "gender": "MALE",
+      "age": 24,
+      "height_cm": 182,
+      "weight_kg": 84,
+      "experience_level": "ADVANCED",
+      "training_environment": "GYM",
+      "preferred_split": "PPL_SPLIT",
+      "training_days_per_week": 6,
+      "goal": "LEAN_BULK",
+      "activity_level": "MODERATE",
+      "medical_conditions": [
+        "TYPE_1_DIABETES",
+        "LOWER_BACK_PAIN"
+      ],
+      "postural_issues": [
+        "ANTERIOR_PELVIC_TILT"
+      ],
+      "bench_press_weight_kg": 105,
+      "bench_press_reps": 6,
+      "squat_weight_kg": 120,
+      "squat_reps": 5
+    },
+    "plan": {
+      "client_name": "طارق الألفي",
+      "bmr": 1863,
+      "tdee": 2887,
+      "daily_targets": {
+        "calories": 3176,
+        "protein_grams": 151,
+        "carbs_grams": 483,
+        "fats_grams": 71,
+        "fiber_grams": 28,
+        "target_fiber_g": 28,
+        "water_liters": 3.9
+      },
+      "training_split": {
+        "id": "ppl_split",
+        "name_ar": "دفع / سحب / أرجل (PPL Split)",
+        "frequency": "6 أيام أسبوعياً",
+        "schedule_blueprint": [
+          "Push (دفع)",
+          "Pull (سحب)",
+          "Legs (أرجل)",
+          "Push (دفع)",
+          "Pull (سحب)",
+          "Legs (أرجل)"
+        ],
+        "focus_target_ar": "عزل المجموعات العضلية المترابطة",
+        "recommended_exercises": [
+          {
+            "id": "kas_glute_bridge",
+            "name_ar": "كاس جلوت بريدج (Kas Glute Bridge)",
+            "target_muscle": "GLUTES",
+            "target_rep_range": [
+              10,
+              15
+            ],
+            "target_rir": 2,
+            "cues_ar": [
+              "تثبيت أعلى الظهر على البنش تحت لوح الكتف مباشرة.",
+              "المدى الحركي صغير ومركز في الثلث العلوي فقط مع عصر ثانيتين بالأعلى.",
+              "الذقن مضمومة للصدر والنظر للأمام طوال الحركة لحماية أسفل الظهر."
+            ],
+            "exercise_id": "kas_glute_bridge",
+            "warmup_ladder": [
+              {
+                "set_number": "إحماء 1",
+                "load_percent": 40,
+                "reps": 10,
+                "rest_seconds": 60
+              },
+              {
+                "set_number": "إحماء 2",
+                "load_percent": 60,
+                "reps": 6,
+                "rest_seconds": 90
+              },
+              {
+                "set_number": "تهيئة عصبية",
+                "load_percent": 80,
+                "reps": 2,
+                "rest_seconds": 120
+              }
+            ],
+            "allow_instant_swap": true
+          },
+          {
+            "id": "glute_hyperextension_45",
+            "name_ar": "هايبراكتنشن جلوتس 45 درجة (Glute-Biased Hyperextension)",
+            "target_muscle": "GLUTES_HAMSTRINGS",
+            "target_rep_range": [
+              12,
+              15
+            ],
+            "target_rir": 2,
+            "cues_ar": [
+              "تثبيت وسادة الجهاز تحت مفصل الحوض مباشرة.",
+              "تقويس الظهر العلوي عمداً (Rounded Upper Back) لإلغاء مشاركة عضلات القطنية.",
+              "الدفع وعصر الجلوتس بالكامل عند الصعود."
+            ],
+            "exercise_id": "glute_hyperextension_45",
+            "warmup_ladder": [
+              {
+                "set_number": "إحماء 1",
+                "load_percent": 40,
+                "reps": 10,
+                "rest_seconds": 60
+              },
+              {
+                "set_number": "إحماء 2",
+                "load_percent": 60,
+                "reps": 6,
+                "rest_seconds": 90
+              },
+              {
+                "set_number": "تهيئة عصبية",
+                "load_percent": 80,
+                "reps": 2,
+                "rest_seconds": 120
+              }
+            ],
+            "allow_instant_swap": true
+          },
+          {
+            "id": "cable_glute_kickback",
+            "name_ar": "كيك باك كابل للجلوتس (Cable Glute Kickback)",
+            "target_muscle": "GLUTES",
+            "target_rep_range": [
+              12,
+              15
+            ],
+            "target_rir": 2,
+            "cues_ar": [
+              "توجيه مسار الساق للخلف وللخارج قليلاً بزاوية 30 درجة.",
+              "تثبيت الجذع تماماً دون أرجحة أسفل الظهر.",
+              "التحكم في الرجوع البطيء بالوزن في ثانيتين."
+            ],
+            "exercise_id": "cable_glute_kickback",
+            "warmup_ladder": [
+              {
+                "set_number": "إحماء 1",
+                "load_percent": 40,
+                "reps": 10,
+                "rest_seconds": 60
+              },
+              {
+                "set_number": "إحماء 2",
+                "load_percent": 60,
+                "reps": 6,
+                "rest_seconds": 90
+              },
+              {
+                "set_number": "تهيئة عصبية",
+                "load_percent": 80,
+                "reps": 2,
+                "rest_seconds": 120
+              }
+            ],
+            "allow_instant_swap": true
+          }
+        ],
+        "environment": "GYM"
+      },
+      "training_phase": {
+        "level": "ADVANCED",
+        "mode": "PROGRESSIVE_OVERLOAD",
+        "target_rir": 2,
+        "calibrated_bench_working_kg": 79,
+        "calibrated_squat_working_kg": 90,
+        "description_ar": "معايرة أوزان الجلسة الأولى بنسبة 75% من أقصى وزن معتاد ومعدل جهد RIR 2 للبدء الفوري في الزيادة التدريجية."
+      },
+      "rehab_routine": {
+        "prehabWarmup": [
+          {
+            "name_ar": "تمرين Bird-Dog لتثبيت العمود الفقري",
+            "sets": 2,
+            "reps": "8 لكل جانب",
+            "tempo": "ثبات ثانيتين"
+          },
+          {
+            "name_ar": "تمرين Side Plank للكور الجانبي",
+            "sets": 2,
+            "reps": "25 ثانية لكل جانب"
+          },
+          {
+            "name_ar": "تفعيل الجلوتس بالباند (Glute Bridges)",
+            "sets": 2,
+            "reps": "12 تكرار"
+          }
+        ],
+        "postWorkoutStretches": [
+          {
+            "name_ar": "إطالة مثنيات الحوض (Kneeling Hip Flexor Stretch)",
+            "duration": "45 ثانية لكل جانب"
+          },
+          {
+            "name_ar": "إطالة عضلة الكمثرى (Piriformis Stretch)",
+            "duration": "45 ثانية لكل جانب"
+          }
+        ],
+        "posturalCorrections": [
+          {
+            "name_ar": "تقوية عضلات البطن السفلية بتفريغ الحوض (Deadbug)",
+            "sets": 3,
+            "reps": "10 تكرارات"
+          },
+          {
+            "name_ar": "إطالة الفخذ الأمامية ومثنيات الحوض (Couch Stretch)",
+            "duration": "60 ثانية لكل جانب"
+          }
+        ],
+        "biomechanicalRestrictions": [
+          "NO_AXIAL_LOADING_SQUAT_DEADLIFT",
+          "NO_SEATED_TOE_TOUCH"
+        ],
+        "prohibitedMovements": [
+          "NO_AXIAL_LOADING_SQUAT_DEADLIFT",
+          "NO_SEATED_TOE_TOUCH"
+        ]
+      },
+      "meal_timing_protocol": {
+        "preferred_workout_time": "EVENING",
+        "pre_workout_timing_ar": "تناول أكبر وجبة نشويات وبروتين قبل موعد التمرين بـ 90 دقيقة لتوفير مخازن الجليكوجين وأعلى ضخ دموي.",
+        "disliked_foods_excluded": []
+      },
+      "clinical_profile": {
+        "calories": 3176,
+        "proteinGrams": 151,
+        "carbGrams": 483,
+        "fatGrams": 71,
+        "fiberGrams": 28,
+        "waterLiters": 3.9,
+        "prohibitedSupplements": [],
+        "prescribedNutrients": [],
+        "biomechanicalRestrictions": [
+          "NO_AXIAL_LOADING_SQUAT_DEADLIFT"
+        ],
+        "cardioProtocol": {
+          "type": "LISS",
+          "equipment": "INCLINE_TREADMILL",
+          "dailySteps": 8000,
+          "maxHeartRateZone": 2
+        },
+        "safetyCues": [
+          "قاعدة 15-15: احتفظ بـ 15 جم سكر سريع في حقيبة الجيم. تجنب الحقن السريع في العضلة المستهدفة بالتمرين."
+        ]
+      },
+      "cardio_protocol": {
+        "type": "LISS",
+        "equipment": "INCLINE_TREADMILL",
+        "dailySteps": 8000,
+        "maxHeartRateZone": 2
+      },
+      "clinical_notes": [
+        "قاعدة 15-15: احتفظ بـ 15 جم سكر سريع في حقيبة الجيم. تجنب الحقن السريع في العضلة المستهدفة بالتمرين.",
+        "بروتوكول الأنسولين الإكلينيكي: قفل حد أدنى للكربوهيدرات عند 130 جم لمنع هبوط السكر، مع تفعيل قاعدة 15-15 للطوارئ وتوجيه موضع الحقن بعيداً عن العضلات المستهدفة بالتمرين."
+      ]
+    },
+    "fastingPlan": null
+  },
+  {
+    "client": {
+      "id": "STRESS-02",
+      "name": "مروة عبد الرحمن",
+      "gender": "FEMALE",
+      "age": 32,
+      "height_cm": 165,
+      "weight_kg": 72,
+      "experience_level": "INTERMEDIATE",
+      "training_environment": "HOME",
+      "home_equipment": [
+        "DUMBBELLS",
+        "BANDS"
+      ],
+      "pregnancy_trimester": "SECOND",
+      "training_days_per_week": 3,
+      "goal": "MAINTENANCE",
+      "activity_level": "LIGHT",
+      "medical_conditions": [
+        "TYPE_2_DIABETES_ORAL",
+        "GERD_REFLUX"
+      ],
+      "preferred_split": "FULL_BODY_3X"
+    },
+    "plan": {
+      "client_name": "مروة عبد الرحمن",
+      "bmr": 1430,
+      "tdee": 1967,
+      "daily_targets": {
+        "calories": 2317,
+        "protein_grams": 158,
+        "carbs_grams": 203,
+        "fats_grams": 67,
+        "fiber_grams": 35,
+        "target_fiber_g": 35,
+        "water_liters": 3.4
+      },
+      "training_split": {
+        "id": "full_body_3x",
+        "name_ar": "تقسيم الجسم الشامل (Full Body 3x)",
+        "frequency": "3 أيام أسبوعياً",
+        "schedule_blueprint": [
+          "الجسم الشامل (A)",
+          "الجسم الشامل (B)",
+          "الجسم الشامل (C)"
+        ],
+        "focus_target_ar": "تكرار التحفيز العضلي 3 مرات أسبوعياً",
+        "recommended_exercises": [
+          {
+            "id": "kas_glute_bridge",
+            "name_ar": "كاس جلوت بريدج (Kas Glute Bridge)",
+            "target_muscle": "GLUTES",
+            "target_rep_range": [
+              10,
+              15
+            ],
+            "target_rir": 2,
+            "cues_ar": [
+              "تثبيت أعلى الظهر على البنش تحت لوح الكتف مباشرة.",
+              "المدى الحركي صغير ومركز في الثلث العلوي فقط مع عصر ثانيتين بالأعلى.",
+              "الذقن مضمومة للصدر والنظر للأمام طوال الحركة لحماية أسفل الظهر."
+            ],
+            "environment_adapted": "HOME",
+            "available_tools": [
+              "DUMBBELLS",
+              "BANDS"
+            ],
+            "exercise_id": "kas_glute_bridge",
+            "warmup_ladder": [
+              {
+                "set_number": "إحماء 1",
+                "load_percent": 40,
+                "reps": 10,
+                "rest_seconds": 60
+              },
+              {
+                "set_number": "إحماء 2",
+                "load_percent": 60,
+                "reps": 6,
+                "rest_seconds": 90
+              },
+              {
+                "set_number": "تهيئة عصبية",
+                "load_percent": 80,
+                "reps": 2,
+                "rest_seconds": 120
+              }
+            ],
+            "allow_instant_swap": true
+          },
+          {
+            "id": "glute_hyperextension_45",
+            "name_ar": "هايبراكتنشن جلوتس 45 درجة (Glute-Biased Hyperextension)",
+            "target_muscle": "GLUTES_HAMSTRINGS",
+            "target_rep_range": [
+              12,
+              15
+            ],
+            "target_rir": 2,
+            "cues_ar": [
+              "تثبيت وسادة الجهاز تحت مفصل الحوض مباشرة.",
+              "تقويس الظهر العلوي عمداً (Rounded Upper Back) لإلغاء مشاركة عضلات القطنية.",
+              "الدفع وعصر الجلوتس بالكامل عند الصعود."
+            ],
+            "environment_adapted": "HOME",
+            "available_tools": [
+              "DUMBBELLS",
+              "BANDS"
+            ],
+            "exercise_id": "glute_hyperextension_45",
+            "warmup_ladder": [
+              {
+                "set_number": "إحماء 1",
+                "load_percent": 40,
+                "reps": 10,
+                "rest_seconds": 60
+              },
+              {
+                "set_number": "إحماء 2",
+                "load_percent": 60,
+                "reps": 6,
+                "rest_seconds": 90
+              },
+              {
+                "set_number": "تهيئة عصبية",
+                "load_percent": 80,
+                "reps": 2,
+                "rest_seconds": 120
+              }
+            ],
+            "allow_instant_swap": true
+          },
+          {
+            "id": "cable_glute_kickback",
+            "name_ar": "كيك باك كابل للجلوتس (Cable Glute Kickback)",
+            "target_muscle": "GLUTES",
+            "target_rep_range": [
+              12,
+              15
+            ],
+            "target_rir": 2,
+            "cues_ar": [
+              "توجيه مسار الساق للخلف وللخارج قليلاً بزاوية 30 درجة.",
+              "تثبيت الجذع تماماً دون أرجحة أسفل الظهر.",
+              "التحكم في الرجوع البطيء بالوزن في ثانيتين."
+            ],
+            "environment_adapted": "HOME",
+            "available_tools": [
+              "DUMBBELLS",
+              "BANDS"
+            ],
+            "exercise_id": "cable_glute_kickback",
+            "warmup_ladder": [
+              {
+                "set_number": "إحماء 1",
+                "load_percent": 40,
+                "reps": 10,
+                "rest_seconds": 60
+              },
+              {
+                "set_number": "إحماء 2",
+                "load_percent": 60,
+                "reps": 6,
+                "rest_seconds": 90
+              },
+              {
+                "set_number": "تهيئة عصبية",
+                "load_percent": 80,
+                "reps": 2,
+                "rest_seconds": 120
+              }
+            ],
+            "allow_instant_swap": true
+          }
+        ],
+        "environment": "HOME"
+      },
+      "training_phase": {
+        "level": "INTERMEDIATE",
+        "mode": "PROGRESSIVE_OVERLOAD",
+        "target_rir": 2,
+        "calibrated_bench_working_kg": null,
+        "calibrated_squat_working_kg": null,
+        "description_ar": "معايرة أوزان الجلسة الأولى بنسبة 75% من أقصى وزن معتاد ومعدل جهد RIR 2 للبدء الفوري في الزيادة التدريجية."
+      },
+      "rehab_routine": {
+        "prehabWarmup": [
+          {
+            "name_ar": "دوران الأكتاف بالباند (Band Shoulder Dislocates)",
+            "sets": 2,
+            "reps": "12 تكرار"
+          },
+          {
+            "name_ar": "سحب الباند للصدر (Band Pull-Aparts)",
+            "sets": 2,
+            "reps": "15 تكرار"
+          }
+        ],
+        "postWorkoutStretches": [
+          {
+            "name_ar": "إطالة الصدر والأكتاف المهدئة",
+            "duration": "60 ثانية"
+          },
+          {
+            "name_ar": "إطالة عضلات الفخذ الخلفية وأسفل الظهر",
+            "duration": "60 ثانية"
+          }
+        ],
+        "posturalCorrections": [],
+        "biomechanicalRestrictions": [
+          "NO_FLAT_SUPINE_EXERCISES",
+          "NO_INTRA_ABDOMINAL_CRUNCHES"
+        ],
+        "prohibitedMovements": [
+          "NO_FLAT_SUPINE_EXERCISES",
+          "NO_INTRA_ABDOMINAL_CRUNCHES"
+        ]
+      },
+      "meal_timing_protocol": {
+        "preferred_workout_time": "EVENING",
+        "pre_workout_timing_ar": "تناول أكبر وجبة نشويات وبروتين قبل موعد التمرين بـ 90 دقيقة لتوفير مخازن الجليكوجين وأعلى ضخ دموي.",
+        "disliked_foods_excluded": []
+      },
+      "clinical_profile": {
+        "calories": 2317,
+        "proteinGrams": 158,
+        "carbGrams": 203,
+        "fatGrams": 67,
+        "fiberGrams": 35,
+        "waterLiters": 3.4,
+        "prohibitedSupplements": [],
+        "prescribedNutrients": [
+          "LOW_GI_CARBOHYDRATES"
+        ],
+        "biomechanicalRestrictions": [
+          "NO_INVERTED_EXERCISES_POST_MEAL"
+        ],
+        "cardioProtocol": {
+          "type": "LISS",
+          "equipment": "INCLINE_TREADMILL",
+          "dailySteps": 8000,
+          "maxHeartRateZone": 2
+        },
+        "safetyCues": [
+          "اعتماد النشويات منخفضة المؤشر الجلايسيمي لحماية حساسية الإنسولين وتثبيت مستويات الطاقة.",
+          "منع تناول وجبات دسمة قبل التمرين بساعتين، وتجنب التمارين المقلوبة أو ارتداء أحزمة البطن الضيقة.",
+          "تجنب التمارين المستوية على الظهر واستخدم الدكة المائلة لحماية تدفق الدم للجنين."
+        ]
+      },
+      "cardio_protocol": {
+        "type": "LISS",
+        "equipment": "INCLINE_TREADMILL",
+        "dailySteps": 8000,
+        "maxHeartRateZone": 2
+      },
+      "clinical_notes": [
+        "اعتماد النشويات منخفضة المؤشر الجلايسيمي لحماية حساسية الإنسولين وتثبيت مستويات الطاقة.",
+        "منع تناول وجبات دسمة قبل التمرين بساعتين، وتجنب التمارين المقلوبة أو ارتداء أحزمة البطن الضيقة.",
+        "تجنب التمارين المستوية على الظهر واستخدم الدكة المائلة لحماية تدفق الدم للجنين."
+      ]
+    },
+    "fastingPlan": null
+  },
+  {
+    "client": {
+      "id": "STRESS-03",
+      "name": "د. عصام القاضي",
+      "gender": "MALE",
+      "age": 52,
+      "height_cm": 176,
+      "weight_kg": 96,
+      "experience_level": "BEGINNER",
+      "training_environment": "GYM",
+      "training_days_per_week": 3,
+      "goal": "FAT_LOSS",
+      "activity_level": "SEDENTARY",
+      "medical_conditions": [
+        "HYPERTENSION",
+        "GOUT",
+        "HERNIA_VARICOSE"
+      ],
+      "postural_issues": []
+    },
+    "plan": {
+      "client_name": "د. عصام القاضي",
+      "bmr": 1805,
+      "tdee": 2166,
+      "daily_targets": {
+        "calories": 1689,
+        "protein_grams": 211,
+        "carbs_grams": 38,
+        "fats_grams": 77,
+        "fiber_grams": 28,
+        "target_fiber_g": 28,
+        "water_liters": 4.3
+      },
+      "training_split": {
+        "id": "full_body_3x",
+        "name_ar": "تقسيم الجسم الشامل (Full Body 3x)",
+        "frequency": "3 أيام أسبوعياً",
+        "schedule_blueprint": [
+          "الجسم الشامل (A)",
+          "الجسم الشامل (B)",
+          "الجسم الشامل (C)"
+        ],
+        "focus_target_ar": "تكرار التحفيز العضلي 3 مرات أسبوعياً",
+        "recommended_exercises": [
+          {
+            "id": "kas_glute_bridge",
+            "name_ar": "كاس جلوت بريدج (Kas Glute Bridge)",
+            "target_muscle": "GLUTES",
+            "target_rep_range": [
+              10,
+              15
+            ],
+            "target_rir": 3,
+            "cues_ar": [
+              "تثبيت أعلى الظهر على البنش تحت لوح الكتف مباشرة.",
+              "المدى الحركي صغير ومركز في الثلث العلوي فقط مع عصر ثانيتين بالأعلى.",
+              "الذقن مضمومة للصدر والنظر للأمام طوال الحركة لحماية أسفل الظهر."
+            ],
+            "exercise_id": "kas_glute_bridge",
+            "warmup_ladder": [
+              {
+                "set_number": "إحماء 1",
+                "load_percent": 40,
+                "reps": 10,
+                "rest_seconds": 60
+              },
+              {
+                "set_number": "إحماء 2",
+                "load_percent": 60,
+                "reps": 6,
+                "rest_seconds": 90
+              },
+              {
+                "set_number": "تهيئة عصبية",
+                "load_percent": 80,
+                "reps": 2,
+                "rest_seconds": 120
+              }
+            ],
+            "allow_instant_swap": true
+          },
+          {
+            "id": "glute_hyperextension_45",
+            "name_ar": "هايبراكتنشن جلوتس 45 درجة (Glute-Biased Hyperextension)",
+            "target_muscle": "GLUTES_HAMSTRINGS",
+            "target_rep_range": [
+              12,
+              15
+            ],
+            "target_rir": 3,
+            "cues_ar": [
+              "تثبيت وسادة الجهاز تحت مفصل الحوض مباشرة.",
+              "تقويس الظهر العلوي عمداً (Rounded Upper Back) لإلغاء مشاركة عضلات القطنية.",
+              "الدفع وعصر الجلوتس بالكامل عند الصعود."
+            ],
+            "exercise_id": "glute_hyperextension_45",
+            "warmup_ladder": [
+              {
+                "set_number": "إحماء 1",
+                "load_percent": 40,
+                "reps": 10,
+                "rest_seconds": 60
+              },
+              {
+                "set_number": "إحماء 2",
+                "load_percent": 60,
+                "reps": 6,
+                "rest_seconds": 90
+              },
+              {
+                "set_number": "تهيئة عصبية",
+                "load_percent": 80,
+                "reps": 2,
+                "rest_seconds": 120
+              }
+            ],
+            "allow_instant_swap": true
+          },
+          {
+            "id": "cable_glute_kickback",
+            "name_ar": "كيك باك كابل للجلوتس (Cable Glute Kickback)",
+            "target_muscle": "GLUTES",
+            "target_rep_range": [
+              12,
+              15
+            ],
+            "target_rir": 3,
+            "cues_ar": [
+              "توجيه مسار الساق للخلف وللخارج قليلاً بزاوية 30 درجة.",
+              "تثبيت الجذع تماماً دون أرجحة أسفل الظهر.",
+              "التحكم في الرجوع البطيء بالوزن في ثانيتين."
+            ],
+            "exercise_id": "cable_glute_kickback",
+            "warmup_ladder": [
+              {
+                "set_number": "إحماء 1",
+                "load_percent": 40,
+                "reps": 10,
+                "rest_seconds": 60
+              },
+              {
+                "set_number": "إحماء 2",
+                "load_percent": 60,
+                "reps": 6,
+                "rest_seconds": 90
+              },
+              {
+                "set_number": "تهيئة عصبية",
+                "load_percent": 80,
+                "reps": 2,
+                "rest_seconds": 120
+              }
+            ],
+            "allow_instant_swap": true
+          }
+        ],
+        "environment": "GYM"
+      },
+      "training_phase": {
+        "level": "BEGINNER",
+        "mode": "NEURAL_ADAPTATION",
+        "target_rir": 3,
+        "description_ar": "نظام التكيف العصبي للأسبوع الأول بأوزان استكشافية تدريجية ومعدل جهد RIR 3 لمنع الإجهاد العضلي الحاد."
+      },
+      "rehab_routine": {
+        "prehabWarmup": [
+          {
+            "name_ar": "دوران الأكتاف بالباند (Band Shoulder Dislocates)",
+            "sets": 2,
+            "reps": "12 تكرار"
+          },
+          {
+            "name_ar": "سحب الباند للصدر (Band Pull-Aparts)",
+            "sets": 2,
+            "reps": "15 تكرار"
+          }
+        ],
+        "postWorkoutStretches": [
+          {
+            "name_ar": "رفع الساقين للأعلى بزاوية 90° على الحائط (Legs-Up-The-Wall)",
+            "duration": "5 دقائق متواصلة لتصريف الدم الراكد"
+          }
+        ],
+        "posturalCorrections": [],
+        "biomechanicalRestrictions": [
+          "NO_VALSALVA_MANEUVER",
+          "PREFER_SEATED_AND_LYING"
+        ],
+        "prohibitedMovements": [
+          "NO_VALSALVA_MANEUVER",
+          "PREFER_SEATED_AND_LYING"
+        ]
+      },
+      "meal_timing_protocol": {
+        "preferred_workout_time": "EVENING",
+        "pre_workout_timing_ar": "تناول أكبر وجبة نشويات وبروتين قبل موعد التمرين بـ 90 دقيقة لتوفير مخازن الجليكوجين وأعلى ضخ دموي.",
+        "disliked_foods_excluded": []
+      },
+      "clinical_profile": {
+        "calories": 1689,
+        "proteinGrams": 211,
+        "carbGrams": 38,
+        "fatGrams": 77,
+        "fiberGrams": 28,
+        "waterLiters": 4.3,
+        "prohibitedSupplements": [
+          "HIGH_STIM_PREWORKOUT",
+          "YOHIMBINE",
+          "FAT_BURNERS"
+        ],
+        "prescribedNutrients": [
+          "LOW_PURINE_PROTEIN_SOURCES"
+        ],
+        "biomechanicalRestrictions": [
+          "NO_VALSALVA_MANEUVER",
+          "NO_1RM_TESTING",
+          "NO_VALSALVA_HEAVY_LEG_PRESS",
+          "PREFER_SEATED_AND_LYING"
+        ],
+        "cardioProtocol": {
+          "type": "LISS",
+          "equipment": "RECUMBENT_BIKE",
+          "dailySteps": 8000,
+          "maxHeartRateZone": 2
+        },
+        "safetyCues": [
+          "تنفس بانتظام مع الدفع وتجنب كتم النفس داخل الجيم، وابتعد تماماً عن مكملات الطاقة العالية.",
+          "الاعتماد على البيض والجبن القريش والواي بروتين، وشرب 4 لتر ماء يومياً لطرد اليوريك أسيد.",
+          "حظر كتم النفس أثناء الرفع، وتفضيل تمارين الدفع أثناء الجلوس أو الاستلقاء لحماية الأوردة وجدار البطن."
+        ]
+      },
+      "cardio_protocol": {
+        "type": "LISS",
+        "equipment": "RECUMBENT_BIKE",
+        "dailySteps": 8000,
+        "maxHeartRateZone": 2
+      },
+      "clinical_notes": [
+        "تنفس بانتظام مع الدفع وتجنب كتم النفس داخل الجيم، وابتعد تماماً عن مكملات الطاقة العالية.",
+        "الاعتماد على البيض والجبن القريش والواي بروتين، وشرب 4 لتر ماء يومياً لطرد اليوريك أسيد.",
+        "حظر كتم النفس أثناء الرفع، وتفضيل تمارين الدفع أثناء الجلوس أو الاستلقاء لحماية الأوردة وجدار البطن."
+      ]
+    },
+    "fastingPlan": null
+  },
+  {
+    "client": {
+      "id": "STRESS-04",
+      "name": "نور الشناوي",
+      "gender": "FEMALE",
+      "age": 21,
+      "height_cm": 160,
+      "weight_kg": 68,
+      "experience_level": "BEGINNER",
+      "training_environment": "GYM",
+      "training_days_per_week": 4,
+      "goal": "FAT_LOSS",
+      "activity_level": "LIGHT",
+      "medical_conditions": [
+        "BARIATRIC_SURGERY",
+        "GLP1_USER",
+        "SEVERE_ANEMIA"
+      ],
+      "preferred_split": "UPPER_LOWER_4X"
+    },
+    "plan": {
+      "client_name": "نور الشناوي",
+      "bmr": 1414,
+      "tdee": 1944,
+      "daily_targets": {
+        "calories": 1516,
+        "protein_grams": 156,
+        "carbs_grams": 108,
+        "fats_grams": 54,
+        "fiber_grams": 28,
+        "target_fiber_g": 28,
+        "water_liters": 3.2
+      },
+      "training_split": {
+        "id": "female_glute_specialized",
+        "name_ar": "تقسيم التناسق الأنثوي والتركيز على الجزء السفلي (Female Glute Focus)",
+        "frequency": "4 أيام أسبوعياً",
+        "schedule_blueprint": [
+          "جلوتس وهامسترينج (تركيز استطالة)",
+          "جسم علوي وبطن (تناسق وتحديد)",
+          "كوادز وسمانة (تركيز ضخامة)",
+          "جلوتس وألياف علوية (عزل بالكيبل والباند)"
+        ],
+        "focus_target_ar": "التشريح الفسيولوجي الأنثوي والتركيز البيوميكانيكي على عضلات الحوض والأرداف",
+        "recommended_exercises": [
+          {
+            "id": "kas_glute_bridge",
+            "name_ar": "كاس جلوت بريدج (Kas Glute Bridge)",
+            "target_muscle": "GLUTES",
+            "target_rep_range": [
+              10,
+              15
+            ],
+            "target_rir": 3,
+            "cues_ar": [
+              "تثبيت أعلى الظهر على البنش تحت لوح الكتف مباشرة.",
+              "المدى الحركي صغير ومركز في الثلث العلوي فقط مع عصر ثانيتين بالأعلى.",
+              "الذقن مضمومة للصدر والنظر للأمام طوال الحركة لحماية أسفل الظهر."
+            ],
+            "exercise_id": "kas_glute_bridge",
+            "warmup_ladder": [
+              {
+                "set_number": "إحماء 1",
+                "load_percent": 40,
+                "reps": 10,
+                "rest_seconds": 60
+              },
+              {
+                "set_number": "إحماء 2",
+                "load_percent": 60,
+                "reps": 6,
+                "rest_seconds": 90
+              },
+              {
+                "set_number": "تهيئة عصبية",
+                "load_percent": 80,
+                "reps": 2,
+                "rest_seconds": 120
+              }
+            ],
+            "allow_instant_swap": true
+          },
+          {
+            "id": "glute_hyperextension_45",
+            "name_ar": "هايبراكتنشن جلوتس 45 درجة (Glute-Biased Hyperextension)",
+            "target_muscle": "GLUTES_HAMSTRINGS",
+            "target_rep_range": [
+              12,
+              15
+            ],
+            "target_rir": 3,
+            "cues_ar": [
+              "تثبيت وسادة الجهاز تحت مفصل الحوض مباشرة.",
+              "تقويس الظهر العلوي عمداً (Rounded Upper Back) لإلغاء مشاركة عضلات القطنية.",
+              "الدفع وعصر الجلوتس بالكامل عند الصعود."
+            ],
+            "exercise_id": "glute_hyperextension_45",
+            "warmup_ladder": [
+              {
+                "set_number": "إحماء 1",
+                "load_percent": 40,
+                "reps": 10,
+                "rest_seconds": 60
+              },
+              {
+                "set_number": "إحماء 2",
+                "load_percent": 60,
+                "reps": 6,
+                "rest_seconds": 90
+              },
+              {
+                "set_number": "تهيئة عصبية",
+                "load_percent": 80,
+                "reps": 2,
+                "rest_seconds": 120
+              }
+            ],
+            "allow_instant_swap": true
+          },
+          {
+            "id": "cable_glute_kickback",
+            "name_ar": "كيك باك كابل للجلوتس (Cable Glute Kickback)",
+            "target_muscle": "GLUTES",
+            "target_rep_range": [
+              12,
+              15
+            ],
+            "target_rir": 3,
+            "cues_ar": [
+              "توجيه مسار الساق للخلف وللخارج قليلاً بزاوية 30 درجة.",
+              "تثبيت الجذع تماماً دون أرجحة أسفل الظهر.",
+              "التحكم في الرجوع البطيء بالوزن في ثانيتين."
+            ],
+            "exercise_id": "cable_glute_kickback",
+            "warmup_ladder": [
+              {
+                "set_number": "إحماء 1",
+                "load_percent": 40,
+                "reps": 10,
+                "rest_seconds": 60
+              },
+              {
+                "set_number": "إحماء 2",
+                "load_percent": 60,
+                "reps": 6,
+                "rest_seconds": 90
+              },
+              {
+                "set_number": "تهيئة عصبية",
+                "load_percent": 80,
+                "reps": 2,
+                "rest_seconds": 120
+              }
+            ],
+            "allow_instant_swap": true
+          }
+        ],
+        "environment": "GYM"
+      },
+      "training_phase": {
+        "level": "BEGINNER",
+        "mode": "NEURAL_ADAPTATION",
+        "target_rir": 3,
+        "description_ar": "نظام التكيف العصبي للأسبوع الأول بأوزان استكشافية تدريجية ومعدل جهد RIR 3 لمنع الإجهاد العضلي الحاد."
+      },
+      "rehab_routine": {
+        "prehabWarmup": [
+          {
+            "name_ar": "إحماء الحوض (World Greatest Stretch)",
+            "sets": 2,
+            "reps": "6 لكل جانب"
+          },
+          {
+            "name_ar": "تفعيل الجلوتس بالباند (Bodyweight Glute Bridges)",
+            "sets": 2,
+            "reps": "15 تكرار"
+          }
+        ],
+        "postWorkoutStretches": [
+          {
+            "name_ar": "إطالة الصدر والأكتاف المهدئة",
+            "duration": "60 ثانية"
+          },
+          {
+            "name_ar": "إطالة عضلات الفخذ الخلفية وأسفل الظهر",
+            "duration": "60 ثانية"
+          }
+        ],
+        "posturalCorrections": [],
+        "biomechanicalRestrictions": [],
+        "prohibitedMovements": []
+      },
+      "meal_timing_protocol": {
+        "preferred_workout_time": "EVENING",
+        "pre_workout_timing_ar": "تناول أكبر وجبة نشويات وبروتين قبل موعد التمرين بـ 90 دقيقة لتوفير مخازن الجليكوجين وأعلى ضخ دموي.",
+        "disliked_foods_excluded": []
+      },
+      "clinical_profile": {
+        "calories": 1516,
+        "proteinGrams": 156,
+        "carbGrams": 108,
+        "fatGrams": 54,
+        "fiberGrams": 28,
+        "waterLiters": 3.2,
+        "prohibitedSupplements": [],
+        "prescribedNutrients": [
+          "IRON_WITH_VITAMIN_C",
+          "WHEY_ISOLATE_FLUID_SEPARATION"
+        ],
+        "biomechanicalRestrictions": [],
+        "cardioProtocol": {
+          "type": "LIGHT_LISS_ONLY",
+          "equipment": "INCLINE_TREADMILL",
+          "dailySteps": 8000,
+          "maxHeartRateZone": 2
+        },
+        "safetyCues": [
+          "افصل الشاي والقهوة ومنتجات الألبان ساعتين عن وجبات الحديد، وزد فترات الراحة بين الجولات لـ 2.5 دقيقة.",
+          "افصل شرب الماء والسوائل عن الوجبة بـ 30 دقيقة قبل وبعد لتجنب الغثيان ومتلازمة الإغراق.",
+          "رفع البروتين لحماية العضلات من الهدم والاعتماد على السموذي الغني عند هبوط الشهية."
+        ]
+      },
+      "cardio_protocol": {
+        "type": "LIGHT_LISS_ONLY",
+        "equipment": "INCLINE_TREADMILL",
+        "dailySteps": 8000,
+        "maxHeartRateZone": 2
+      },
+      "clinical_notes": [
+        "افصل الشاي والقهوة ومنتجات الألبان ساعتين عن وجبات الحديد، وزد فترات الراحة بين الجولات لـ 2.5 دقيقة.",
+        "افصل شرب الماء والسوائل عن الوجبة بـ 30 دقيقة قبل وبعد لتجنب الغثيان ومتلازمة الإغراق.",
+        "رفع البروتين لحماية العضلات من الهدم والاعتماد على السموذي الغني عند هبوط الشهية."
+      ]
+    },
+    "fastingPlan": null
+  },
+  {
+    "client": {
+      "id": "STRESS-05",
+      "name": "ياسمين السعدني",
+      "gender": "FEMALE",
+      "age": 29,
+      "height_cm": 168,
+      "weight_kg": 65,
+      "pregnancy_trimester": "POSTPARTUM_LACTATING",
+      "experience_level": "INTERMEDIATE",
+      "training_environment": "GYM",
+      "training_days_per_week": 4,
+      "goal": "FAT_LOSS",
+      "activity_level": "LIGHT",
+      "preferred_split": "FEMALE_GLUTE_SPECIALIZED",
+      "medical_conditions": [
+        "SHOULDER_IMPINGEMENT",
+        "LACTATION"
+      ]
+    },
+    "plan": {
+      "client_name": "ياسمين السعدني",
+      "bmr": 1394,
+      "tdee": 1917,
+      "daily_targets": {
+        "calories": 1945,
+        "protein_grams": 143,
+        "carbs_grams": 114,
+        "fats_grams": 52,
+        "fiber_grams": 28,
+        "target_fiber_g": 28,
+        "water_liters": 3.1
+      },
+      "training_split": {
+        "id": "female_glute_specialized",
+        "name_ar": "تقسيم التناسق الأنثوي والتركيز على الجزء السفلي (Female Glute Focus)",
+        "frequency": "4 أيام أسبوعياً",
+        "schedule_blueprint": [
+          "جلوتس وهامسترينج (تركيز استطالة)",
+          "جسم علوي وبطن (تناسق وتحديد)",
+          "كوادز وسمانة (تركيز ضخامة)",
+          "جلوتس وألياف علوية (عزل بالكيبل والباند)"
+        ],
+        "focus_target_ar": "التشريح الفسيولوجي الأنثوي والتركيز البيوميكانيكي على عضلات الحوض والأرداف",
+        "recommended_exercises": [
+          {
+            "id": "kas_glute_bridge",
+            "name_ar": "كاس جلوت بريدج (Kas Glute Bridge)",
+            "target_muscle": "GLUTES",
+            "target_rep_range": [
+              10,
+              15
+            ],
+            "target_rir": 2,
+            "cues_ar": [
+              "تثبيت أعلى الظهر على البنش تحت لوح الكتف مباشرة.",
+              "المدى الحركي صغير ومركز في الثلث العلوي فقط مع عصر ثانيتين بالأعلى.",
+              "الذقن مضمومة للصدر والنظر للأمام طوال الحركة لحماية أسفل الظهر."
+            ],
+            "exercise_id": "kas_glute_bridge",
+            "warmup_ladder": [
+              {
+                "set_number": "إحماء 1",
+                "load_percent": 40,
+                "reps": 10,
+                "rest_seconds": 60
+              },
+              {
+                "set_number": "إحماء 2",
+                "load_percent": 60,
+                "reps": 6,
+                "rest_seconds": 90
+              },
+              {
+                "set_number": "تهيئة عصبية",
+                "load_percent": 80,
+                "reps": 2,
+                "rest_seconds": 120
+              }
+            ],
+            "allow_instant_swap": true
+          },
+          {
+            "id": "glute_hyperextension_45",
+            "name_ar": "هايبراكتنشن جلوتس 45 درجة (Glute-Biased Hyperextension)",
+            "target_muscle": "GLUTES_HAMSTRINGS",
+            "target_rep_range": [
+              12,
+              15
+            ],
+            "target_rir": 2,
+            "cues_ar": [
+              "تثبيت وسادة الجهاز تحت مفصل الحوض مباشرة.",
+              "تقويس الظهر العلوي عمداً (Rounded Upper Back) لإلغاء مشاركة عضلات القطنية.",
+              "الدفع وعصر الجلوتس بالكامل عند الصعود."
+            ],
+            "exercise_id": "glute_hyperextension_45",
+            "warmup_ladder": [
+              {
+                "set_number": "إحماء 1",
+                "load_percent": 40,
+                "reps": 10,
+                "rest_seconds": 60
+              },
+              {
+                "set_number": "إحماء 2",
+                "load_percent": 60,
+                "reps": 6,
+                "rest_seconds": 90
+              },
+              {
+                "set_number": "تهيئة عصبية",
+                "load_percent": 80,
+                "reps": 2,
+                "rest_seconds": 120
+              }
+            ],
+            "allow_instant_swap": true
+          },
+          {
+            "id": "cable_glute_kickback",
+            "name_ar": "كيك باك كابل للجلوتس (Cable Glute Kickback)",
+            "target_muscle": "GLUTES",
+            "target_rep_range": [
+              12,
+              15
+            ],
+            "target_rir": 2,
+            "cues_ar": [
+              "توجيه مسار الساق للخلف وللخارج قليلاً بزاوية 30 درجة.",
+              "تثبيت الجذع تماماً دون أرجحة أسفل الظهر.",
+              "التحكم في الرجوع البطيء بالوزن في ثانيتين."
+            ],
+            "exercise_id": "cable_glute_kickback",
+            "warmup_ladder": [
+              {
+                "set_number": "إحماء 1",
+                "load_percent": 40,
+                "reps": 10,
+                "rest_seconds": 60
+              },
+              {
+                "set_number": "إحماء 2",
+                "load_percent": 60,
+                "reps": 6,
+                "rest_seconds": 90
+              },
+              {
+                "set_number": "تهيئة عصبية",
+                "load_percent": 80,
+                "reps": 2,
+                "rest_seconds": 120
+              }
+            ],
+            "allow_instant_swap": true
+          }
+        ],
+        "environment": "GYM"
+      },
+      "training_phase": {
+        "level": "INTERMEDIATE",
+        "mode": "PROGRESSIVE_OVERLOAD",
+        "target_rir": 2,
+        "calibrated_bench_working_kg": null,
+        "calibrated_squat_working_kg": null,
+        "description_ar": "معايرة أوزان الجلسة الأولى بنسبة 75% من أقصى وزن معتاد ومعدل جهد RIR 2 للبدء الفوري في الزيادة التدريجية."
+      },
+      "rehab_routine": {
+        "prehabWarmup": [
+          {
+            "name_ar": "دوران خارجي للكتف بالكيبل/الباند (External Rotations)",
+            "sets": 2,
+            "reps": "15 تكرار"
+          },
+          {
+            "name_ar": "سحب الباند للصدر (Band Pull-Aparts)",
+            "sets": 2,
+            "reps": "20 تكرار"
+          }
+        ],
+        "postWorkoutStretches": [
+          {
+            "name_ar": "إطالة الصدر على زاوية الباب (Doorway Pec Stretch)",
+            "duration": "45 ثانية"
+          },
+          {
+            "name_ar": "إطالة العضلة الظهرية العريضة (Lat Stretch)",
+            "duration": "45 ثانية"
+          }
+        ],
+        "posturalCorrections": [],
+        "biomechanicalRestrictions": [
+          "SCAPULAR_PLANE_PRESSING_ONLY",
+          "NO_BEHIND_NECK_MOVEMENTS"
+        ],
+        "prohibitedMovements": [
+          "SCAPULAR_PLANE_PRESSING_ONLY",
+          "NO_BEHIND_NECK_MOVEMENTS"
+        ]
+      },
+      "meal_timing_protocol": {
+        "preferred_workout_time": "EVENING",
+        "pre_workout_timing_ar": "تناول أكبر وجبة نشويات وبروتين قبل موعد التمرين بـ 90 دقيقة لتوفير مخازن الجليكوجين وأعلى ضخ دموي.",
+        "disliked_foods_excluded": []
+      },
+      "clinical_profile": {
+        "calories": 1945,
+        "proteinGrams": 143,
+        "carbGrams": 114,
+        "fatGrams": 52,
+        "fiberGrams": 28,
+        "waterLiters": 3.1,
+        "prohibitedSupplements": [],
+        "prescribedNutrients": [],
+        "biomechanicalRestrictions": [
+          "SCAPULAR_PLANE_PRESSING_ONLY",
+          "NO_INTRA_ABDOMINAL_CRUNCHES"
+        ],
+        "cardioProtocol": {
+          "type": "LISS",
+          "equipment": "INCLINE_TREADMILL",
+          "dailySteps": 8000,
+          "maxHeartRateZone": 2
+        },
+        "safetyCues": [
+          "إضافة 450 سعرة لدعم إدرار الحليب مع ترطيب مكثف بالماء."
+        ]
+      },
+      "cardio_protocol": {
+        "type": "LISS",
+        "equipment": "INCLINE_TREADMILL",
+        "dailySteps": 8000,
+        "maxHeartRateZone": 2
+      },
+      "clinical_notes": [
+        "إضافة 450 سعرة لدعم إدرار الحليب مع ترطيب مكثف بالماء."
+      ]
+    },
+    "fastingPlan": null
+  },
+  {
+    "client": {
+      "id": "STRESS-06",
+      "name": "خالد ممدوح",
+      "gender": "MALE",
+      "age": 45,
+      "height_cm": 174,
+      "weight_kg": 88,
+      "experience_level": "INTERMEDIATE",
+      "training_environment": "GYM",
+      "training_days_per_week": 4,
+      "goal": "FAT_LOSS",
+      "activity_level": "SEDENTARY",
+      "medical_conditions": [
+        "RENAL_INSUFFICIENCY",
+        "BLOOD_THINNERS",
+        "PATELLAR_TENDINITIS"
+      ]
+    },
+    "plan": {
+      "client_name": "خالد ممدوح",
+      "bmr": 1748,
+      "tdee": 2097,
+      "daily_targets": {
+        "calories": 1636,
+        "protein_grams": 97,
+        "carbs_grams": 155,
+        "fats_grams": 70,
+        "fiber_grams": 28,
+        "target_fiber_g": 28,
+        "water_liters": 4
+      },
+      "training_split": {
+        "id": "upper_lower_4x",
+        "name_ar": "تقسيم علوي / سفلي (Upper / Lower 4x)",
+        "frequency": "4 أيام أسبوعياً",
+        "schedule_blueprint": [
+          "جسم علوي (A)",
+          "جسم سفلي (A)",
+          "جسم علوي (B)",
+          "جسم سفلي (B)"
+        ],
+        "focus_target_ar": "الاستشفاء المثالي والبناء العضلي المتوازن",
+        "recommended_exercises": [
+          {
+            "id": "kas_glute_bridge",
+            "name_ar": "كاس جلوت بريدج (Kas Glute Bridge)",
+            "target_muscle": "GLUTES",
+            "target_rep_range": [
+              10,
+              15
+            ],
+            "target_rir": 2,
+            "cues_ar": [
+              "تثبيت أعلى الظهر على البنش تحت لوح الكتف مباشرة.",
+              "المدى الحركي صغير ومركز في الثلث العلوي فقط مع عصر ثانيتين بالأعلى.",
+              "الذقن مضمومة للصدر والنظر للأمام طوال الحركة لحماية أسفل الظهر."
+            ],
+            "exercise_id": "kas_glute_bridge",
+            "warmup_ladder": [
+              {
+                "set_number": "إحماء 1",
+                "load_percent": 40,
+                "reps": 10,
+                "rest_seconds": 60
+              },
+              {
+                "set_number": "إحماء 2",
+                "load_percent": 60,
+                "reps": 6,
+                "rest_seconds": 90
+              },
+              {
+                "set_number": "تهيئة عصبية",
+                "load_percent": 80,
+                "reps": 2,
+                "rest_seconds": 120
+              }
+            ],
+            "allow_instant_swap": true
+          },
+          {
+            "id": "glute_hyperextension_45",
+            "name_ar": "هايبراكتنشن جلوتس 45 درجة (Glute-Biased Hyperextension)",
+            "target_muscle": "GLUTES_HAMSTRINGS",
+            "target_rep_range": [
+              12,
+              15
+            ],
+            "target_rir": 2,
+            "cues_ar": [
+              "تثبيت وسادة الجهاز تحت مفصل الحوض مباشرة.",
+              "تقويس الظهر العلوي عمداً (Rounded Upper Back) لإلغاء مشاركة عضلات القطنية.",
+              "الدفع وعصر الجلوتس بالكامل عند الصعود."
+            ],
+            "exercise_id": "glute_hyperextension_45",
+            "warmup_ladder": [
+              {
+                "set_number": "إحماء 1",
+                "load_percent": 40,
+                "reps": 10,
+                "rest_seconds": 60
+              },
+              {
+                "set_number": "إحماء 2",
+                "load_percent": 60,
+                "reps": 6,
+                "rest_seconds": 90
+              },
+              {
+                "set_number": "تهيئة عصبية",
+                "load_percent": 80,
+                "reps": 2,
+                "rest_seconds": 120
+              }
+            ],
+            "allow_instant_swap": true
+          },
+          {
+            "id": "cable_glute_kickback",
+            "name_ar": "كيك باك كابل للجلوتس (Cable Glute Kickback)",
+            "target_muscle": "GLUTES",
+            "target_rep_range": [
+              12,
+              15
+            ],
+            "target_rir": 2,
+            "cues_ar": [
+              "توجيه مسار الساق للخلف وللخارج قليلاً بزاوية 30 درجة.",
+              "تثبيت الجذع تماماً دون أرجحة أسفل الظهر.",
+              "التحكم في الرجوع البطيء بالوزن في ثانيتين."
+            ],
+            "exercise_id": "cable_glute_kickback",
+            "warmup_ladder": [
+              {
+                "set_number": "إحماء 1",
+                "load_percent": 40,
+                "reps": 10,
+                "rest_seconds": 60
+              },
+              {
+                "set_number": "إحماء 2",
+                "load_percent": 60,
+                "reps": 6,
+                "rest_seconds": 90
+              },
+              {
+                "set_number": "تهيئة عصبية",
+                "load_percent": 80,
+                "reps": 2,
+                "rest_seconds": 120
+              }
+            ],
+            "allow_instant_swap": true
+          }
+        ],
+        "environment": "GYM"
+      },
+      "training_phase": {
+        "level": "INTERMEDIATE",
+        "mode": "PROGRESSIVE_OVERLOAD",
+        "target_rir": 2,
+        "calibrated_bench_working_kg": null,
+        "calibrated_squat_working_kg": null,
+        "description_ar": "معايرة أوزان الجلسة الأولى بنسبة 75% من أقصى وزن معتاد ومعدل جهد RIR 2 للبدء الفوري في الزيادة التدريجية."
+      },
+      "rehab_routine": {
+        "prehabWarmup": [
+          {
+            "name_ar": "سكوات إيزومتري بالباند (Isometric Spanish Squat)",
+            "sets": 3,
+            "reps": "45 ثانية ثبات"
+          },
+          {
+            "name_ar": "مرونة مفصل الكاحل على الحائط (Ankle Dorsiflexion)",
+            "sets": 2,
+            "reps": "10 تكرارات لكل قدم"
+          }
+        ],
+        "postWorkoutStretches": [
+          {
+            "name_ar": "إطالة السمانة على حافة الدرج (Calf Stretch)",
+            "duration": "45 ثانية"
+          },
+          {
+            "name_ar": "إطالة الفخذ الخلفية بالباند مستلقياً",
+            "duration": "45 ثانية"
+          }
+        ],
+        "posturalCorrections": [],
+        "biomechanicalRestrictions": [
+          "NO_OPEN_CHAIN_LEG_EXTENSIONS"
+        ],
+        "prohibitedMovements": [
+          "NO_OPEN_CHAIN_LEG_EXTENSIONS"
+        ]
+      },
+      "meal_timing_protocol": {
+        "preferred_workout_time": "EVENING",
+        "pre_workout_timing_ar": "تناول أكبر وجبة نشويات وبروتين قبل موعد التمرين بـ 90 دقيقة لتوفير مخازن الجليكوجين وأعلى ضخ دموي.",
+        "disliked_foods_excluded": []
+      },
+      "clinical_profile": {
+        "calories": 1636,
+        "proteinGrams": 97,
+        "carbGrams": 155,
+        "fatGrams": 70,
+        "fiberGrams": 28,
+        "waterLiters": 4,
+        "prohibitedSupplements": [
+          "HIGH_DOSE_OMEGA3_OVER_2000MG",
+          "VITAMIN_E_HIGH_DOSE",
+          "GINSENG",
+          "CREATINE"
+        ],
+        "prescribedNutrients": [],
+        "biomechanicalRestrictions": [
+          "NO_HEAVY_CONTACT_TRAINING",
+          "NO_OPEN_CHAIN_LEG_EXTENSIONS"
+        ],
+        "cardioProtocol": {
+          "type": "LISS",
+          "equipment": "RECUMBENT_BIKE_OR_ELLIPTICAL",
+          "dailySteps": 8000,
+          "maxHeartRateZone": 2
+        },
+        "safetyCues": [
+          "تثبيت حصص الخضروات الورقية الخضراء وتجنب التغيير المفاجئ في استهلاكها.",
+          "تقنين البروتين عند 1.1 جم/كجم لحماية الكلى مع حظر تام لمكمل الكرياتين."
+        ]
+      },
+      "cardio_protocol": {
+        "type": "LISS",
+        "equipment": "RECUMBENT_BIKE_OR_ELLIPTICAL",
+        "dailySteps": 8000,
+        "maxHeartRateZone": 2
+      },
+      "clinical_notes": [
+        "تثبيت حصص الخضروات الورقية الخضراء وتجنب التغيير المفاجئ في استهلاكها.",
+        "تقنين البروتين عند 1.1 جم/كجم لحماية الكلى مع حظر تام لمكمل الكرياتين."
+      ]
+    },
+    "fastingPlan": null
+  },
+  {
+    "client": {
+      "id": "STRESS-07",
+      "name": "ريم الدسوقي",
+      "gender": "FEMALE",
+      "age": 26,
+      "height_cm": 162,
+      "weight_kg": 78,
+      "experience_level": "BEGINNER",
+      "training_environment": "GYM",
+      "training_days_per_week": 4,
+      "goal": "FAT_LOSS",
+      "activity_level": "LIGHT",
+      "medical_conditions": [
+        "PCOS_IR",
+        "HYPOTHYROIDISM",
+        "IBS"
+      ],
+      "disliked_foods": [
+        "MILK",
+        "WHEAT",
+        "BEANS"
+      ]
+    },
+    "plan": {
+      "client_name": "ريم الدسوقي",
+      "bmr": 1502,
+      "tdee": 2065,
+      "daily_targets": {
+        "calories": 1450,
+        "protein_grams": 172,
+        "carbs_grams": 91,
+        "fats_grams": 71,
+        "fiber_grams": 35,
+        "target_fiber_g": 35,
+        "water_liters": 3.6
+      },
+      "training_split": {
+        "id": "female_glute_specialized",
+        "name_ar": "تقسيم التناسق الأنثوي والتركيز على الجزء السفلي (Female Glute Focus)",
+        "frequency": "4 أيام أسبوعياً",
+        "schedule_blueprint": [
+          "جلوتس وهامسترينج (تركيز استطالة)",
+          "جسم علوي وبطن (تناسق وتحديد)",
+          "كوادز وسمانة (تركيز ضخامة)",
+          "جلوتس وألياف علوية (عزل بالكيبل والباند)"
+        ],
+        "focus_target_ar": "التشريح الفسيولوجي الأنثوي والتركيز البيوميكانيكي على عضلات الحوض والأرداف",
+        "recommended_exercises": [
+          {
+            "id": "kas_glute_bridge",
+            "name_ar": "كاس جلوت بريدج (Kas Glute Bridge)",
+            "target_muscle": "GLUTES",
+            "target_rep_range": [
+              10,
+              15
+            ],
+            "target_rir": 3,
+            "cues_ar": [
+              "تثبيت أعلى الظهر على البنش تحت لوح الكتف مباشرة.",
+              "المدى الحركي صغير ومركز في الثلث العلوي فقط مع عصر ثانيتين بالأعلى.",
+              "الذقن مضمومة للصدر والنظر للأمام طوال الحركة لحماية أسفل الظهر."
+            ],
+            "exercise_id": "kas_glute_bridge",
+            "warmup_ladder": [
+              {
+                "set_number": "إحماء 1",
+                "load_percent": 40,
+                "reps": 10,
+                "rest_seconds": 60
+              },
+              {
+                "set_number": "إحماء 2",
+                "load_percent": 60,
+                "reps": 6,
+                "rest_seconds": 90
+              },
+              {
+                "set_number": "تهيئة عصبية",
+                "load_percent": 80,
+                "reps": 2,
+                "rest_seconds": 120
+              }
+            ],
+            "allow_instant_swap": true
+          },
+          {
+            "id": "glute_hyperextension_45",
+            "name_ar": "هايبراكتنشن جلوتس 45 درجة (Glute-Biased Hyperextension)",
+            "target_muscle": "GLUTES_HAMSTRINGS",
+            "target_rep_range": [
+              12,
+              15
+            ],
+            "target_rir": 3,
+            "cues_ar": [
+              "تثبيت وسادة الجهاز تحت مفصل الحوض مباشرة.",
+              "تقويس الظهر العلوي عمداً (Rounded Upper Back) لإلغاء مشاركة عضلات القطنية.",
+              "الدفع وعصر الجلوتس بالكامل عند الصعود."
+            ],
+            "exercise_id": "glute_hyperextension_45",
+            "warmup_ladder": [
+              {
+                "set_number": "إحماء 1",
+                "load_percent": 40,
+                "reps": 10,
+                "rest_seconds": 60
+              },
+              {
+                "set_number": "إحماء 2",
+                "load_percent": 60,
+                "reps": 6,
+                "rest_seconds": 90
+              },
+              {
+                "set_number": "تهيئة عصبية",
+                "load_percent": 80,
+                "reps": 2,
+                "rest_seconds": 120
+              }
+            ],
+            "allow_instant_swap": true
+          },
+          {
+            "id": "cable_glute_kickback",
+            "name_ar": "كيك باك كابل للجلوتس (Cable Glute Kickback)",
+            "target_muscle": "GLUTES",
+            "target_rep_range": [
+              12,
+              15
+            ],
+            "target_rir": 3,
+            "cues_ar": [
+              "توجيه مسار الساق للخلف وللخارج قليلاً بزاوية 30 درجة.",
+              "تثبيت الجذع تماماً دون أرجحة أسفل الظهر.",
+              "التحكم في الرجوع البطيء بالوزن في ثانيتين."
+            ],
+            "exercise_id": "cable_glute_kickback",
+            "warmup_ladder": [
+              {
+                "set_number": "إحماء 1",
+                "load_percent": 40,
+                "reps": 10,
+                "rest_seconds": 60
+              },
+              {
+                "set_number": "إحماء 2",
+                "load_percent": 60,
+                "reps": 6,
+                "rest_seconds": 90
+              },
+              {
+                "set_number": "تهيئة عصبية",
+                "load_percent": 80,
+                "reps": 2,
+                "rest_seconds": 120
+              }
+            ],
+            "allow_instant_swap": true
+          }
+        ],
+        "environment": "GYM"
+      },
+      "training_phase": {
+        "level": "BEGINNER",
+        "mode": "NEURAL_ADAPTATION",
+        "target_rir": 3,
+        "description_ar": "نظام التكيف العصبي للأسبوع الأول بأوزان استكشافية تدريجية ومعدل جهد RIR 3 لمنع الإجهاد العضلي الحاد."
+      },
+      "rehab_routine": {
+        "prehabWarmup": [
+          {
+            "name_ar": "إحماء الحوض (World Greatest Stretch)",
+            "sets": 2,
+            "reps": "6 لكل جانب"
+          },
+          {
+            "name_ar": "تفعيل الجلوتس بالباند (Bodyweight Glute Bridges)",
+            "sets": 2,
+            "reps": "15 تكرار"
+          }
+        ],
+        "postWorkoutStretches": [
+          {
+            "name_ar": "إطالة الصدر والأكتاف المهدئة",
+            "duration": "60 ثانية"
+          },
+          {
+            "name_ar": "إطالة عضلات الفخذ الخلفية وأسفل الظهر",
+            "duration": "60 ثانية"
+          }
+        ],
+        "posturalCorrections": [],
+        "biomechanicalRestrictions": [],
+        "prohibitedMovements": []
+      },
+      "meal_timing_protocol": {
+        "preferred_workout_time": "EVENING",
+        "pre_workout_timing_ar": "تناول أكبر وجبة نشويات وبروتين قبل موعد التمرين بـ 90 دقيقة لتوفير مخازن الجليكوجين وأعلى ضخ دموي.",
+        "disliked_foods_excluded": [
+          "MILK",
+          "WHEAT",
+          "BEANS"
+        ]
+      },
+      "clinical_profile": {
+        "calories": 1450,
+        "proteinGrams": 172,
+        "carbGrams": 91,
+        "fatGrams": 71,
+        "fiberGrams": 35,
+        "waterLiters": 3.6,
+        "prohibitedSupplements": [],
+        "prescribedNutrients": [
+          "LOW_GI_CARBOHYDRATES",
+          "LOW_FODMAP_DIET"
+        ],
+        "biomechanicalRestrictions": [],
+        "cardioProtocol": {
+          "type": "LISS",
+          "equipment": "INCLINE_TREADMILL",
+          "dailySteps": 10000,
+          "maxHeartRateZone": 2
+        },
+        "safetyCues": [
+          "اعتماد النشويات منخفضة المؤشر الجلايسيمي لحماية حساسية الإنسولين وتثبيت مستويات الطاقة.",
+          "تناول دواء الغدة صباحاً على معدة فارغة وافصله 4 ساعات عن مكملات الكالسيوم والحديد.",
+          "استبعاد البقوليات غير المنقوعة، المحليات الصناعية الكحولية، واللاكتوز العالي لتفادي تهيج القولون."
+        ]
+      },
+      "cardio_protocol": {
+        "type": "LISS",
+        "equipment": "INCLINE_TREADMILL",
+        "dailySteps": 10000,
+        "maxHeartRateZone": 2
+      },
+      "clinical_notes": [
+        "اعتماد النشويات منخفضة المؤشر الجلايسيمي لحماية حساسية الإنسولين وتثبيت مستويات الطاقة.",
+        "تناول دواء الغدة صباحاً على معدة فارغة وافصله 4 ساعات عن مكملات الكالسيوم والحديد.",
+        "استبعاد البقوليات غير المنقوعة، المحليات الصناعية الكحولية، واللاكتوز العالي لتفادي تهيج القولون."
+      ]
+    },
+    "fastingPlan": null
+  },
+  {
+    "client": {
+      "id": "STRESS-08",
+      "name": "زياد الهواري",
+      "gender": "MALE",
+      "age": 19,
+      "height_cm": 179,
+      "weight_kg": 62,
+      "experience_level": "BEGINNER",
+      "training_environment": "GYM",
+      "training_days_per_week": 3,
+      "goal": "LEAN_BULK",
+      "activity_level": "LIGHT",
+      "medical_conditions": [
+        "ROACCUTANE_USER",
+        "BRONCHIAL_ASTHMA"
+      ]
+    },
+    "plan": {
+      "client_name": "زياد الهواري",
+      "bmr": 1649,
+      "tdee": 2267,
+      "daily_targets": {
+        "calories": 2494,
+        "protein_grams": 112,
+        "carbs_grams": 388,
+        "fats_grams": 55,
+        "fiber_grams": 28,
+        "target_fiber_g": 28,
+        "water_liters": 3
+      },
+      "training_split": {
+        "id": "full_body_3x",
+        "name_ar": "تقسيم الجسم الشامل (Full Body 3x)",
+        "frequency": "3 أيام أسبوعياً",
+        "schedule_blueprint": [
+          "الجسم الشامل (A)",
+          "الجسم الشامل (B)",
+          "الجسم الشامل (C)"
+        ],
+        "focus_target_ar": "تكرار التحفيز العضلي 3 مرات أسبوعياً",
+        "recommended_exercises": [
+          {
+            "id": "kas_glute_bridge",
+            "name_ar": "كاس جلوت بريدج (Kas Glute Bridge)",
+            "target_muscle": "GLUTES",
+            "target_rep_range": [
+              10,
+              15
+            ],
+            "target_rir": 3,
+            "cues_ar": [
+              "تثبيت أعلى الظهر على البنش تحت لوح الكتف مباشرة.",
+              "المدى الحركي صغير ومركز في الثلث العلوي فقط مع عصر ثانيتين بالأعلى.",
+              "الذقن مضمومة للصدر والنظر للأمام طوال الحركة لحماية أسفل الظهر."
+            ],
+            "exercise_id": "kas_glute_bridge",
+            "warmup_ladder": [
+              {
+                "set_number": "إحماء 1",
+                "load_percent": 40,
+                "reps": 10,
+                "rest_seconds": 60
+              },
+              {
+                "set_number": "إحماء 2",
+                "load_percent": 60,
+                "reps": 6,
+                "rest_seconds": 90
+              },
+              {
+                "set_number": "تهيئة عصبية",
+                "load_percent": 80,
+                "reps": 2,
+                "rest_seconds": 120
+              }
+            ],
+            "allow_instant_swap": true
+          },
+          {
+            "id": "glute_hyperextension_45",
+            "name_ar": "هايبراكتنشن جلوتس 45 درجة (Glute-Biased Hyperextension)",
+            "target_muscle": "GLUTES_HAMSTRINGS",
+            "target_rep_range": [
+              12,
+              15
+            ],
+            "target_rir": 3,
+            "cues_ar": [
+              "تثبيت وسادة الجهاز تحت مفصل الحوض مباشرة.",
+              "تقويس الظهر العلوي عمداً (Rounded Upper Back) لإلغاء مشاركة عضلات القطنية.",
+              "الدفع وعصر الجلوتس بالكامل عند الصعود."
+            ],
+            "exercise_id": "glute_hyperextension_45",
+            "warmup_ladder": [
+              {
+                "set_number": "إحماء 1",
+                "load_percent": 40,
+                "reps": 10,
+                "rest_seconds": 60
+              },
+              {
+                "set_number": "إحماء 2",
+                "load_percent": 60,
+                "reps": 6,
+                "rest_seconds": 90
+              },
+              {
+                "set_number": "تهيئة عصبية",
+                "load_percent": 80,
+                "reps": 2,
+                "rest_seconds": 120
+              }
+            ],
+            "allow_instant_swap": true
+          },
+          {
+            "id": "cable_glute_kickback",
+            "name_ar": "كيك باك كابل للجلوتس (Cable Glute Kickback)",
+            "target_muscle": "GLUTES",
+            "target_rep_range": [
+              12,
+              15
+            ],
+            "target_rir": 3,
+            "cues_ar": [
+              "توجيه مسار الساق للخلف وللخارج قليلاً بزاوية 30 درجة.",
+              "تثبيت الجذع تماماً دون أرجحة أسفل الظهر.",
+              "التحكم في الرجوع البطيء بالوزن في ثانيتين."
+            ],
+            "exercise_id": "cable_glute_kickback",
+            "warmup_ladder": [
+              {
+                "set_number": "إحماء 1",
+                "load_percent": 40,
+                "reps": 10,
+                "rest_seconds": 60
+              },
+              {
+                "set_number": "إحماء 2",
+                "load_percent": 60,
+                "reps": 6,
+                "rest_seconds": 90
+              },
+              {
+                "set_number": "تهيئة عصبية",
+                "load_percent": 80,
+                "reps": 2,
+                "rest_seconds": 120
+              }
+            ],
+            "allow_instant_swap": true
+          }
+        ],
+        "environment": "GYM"
+      },
+      "training_phase": {
+        "level": "BEGINNER",
+        "mode": "NEURAL_ADAPTATION",
+        "target_rir": 3,
+        "description_ar": "نظام التكيف العصبي للأسبوع الأول بأوزان استكشافية تدريجية ومعدل جهد RIR 3 لمنع الإجهاد العضلي الحاد."
+      },
+      "rehab_routine": {
+        "prehabWarmup": [
+          {
+            "name_ar": "دوران الأكتاف بالباند (Band Shoulder Dislocates)",
+            "sets": 2,
+            "reps": "12 تكرار"
+          },
+          {
+            "name_ar": "سحب الباند للصدر (Band Pull-Aparts)",
+            "sets": 2,
+            "reps": "15 تكرار"
+          }
+        ],
+        "postWorkoutStretches": [
+          {
+            "name_ar": "إطالة الصدر والأكتاف المهدئة",
+            "duration": "60 ثانية"
+          },
+          {
+            "name_ar": "إطالة عضلات الفخذ الخلفية وأسفل الظهر",
+            "duration": "60 ثانية"
+          }
+        ],
+        "posturalCorrections": [],
+        "biomechanicalRestrictions": [],
+        "prohibitedMovements": []
+      },
+      "meal_timing_protocol": {
+        "preferred_workout_time": "EVENING",
+        "pre_workout_timing_ar": "تناول أكبر وجبة نشويات وبروتين قبل موعد التمرين بـ 90 دقيقة لتوفير مخازن الجليكوجين وأعلى ضخ دموي.",
+        "disliked_foods_excluded": []
+      },
+      "clinical_profile": {
+        "calories": 2494,
+        "proteinGrams": 112,
+        "carbGrams": 388,
+        "fatGrams": 55,
+        "fiberGrams": 28,
+        "waterLiters": 3,
+        "prohibitedSupplements": [
+          "VITAMIN_A"
+        ],
+        "prescribedNutrients": [
+          "OMEGA_3_JOINT_SUPPORT"
+        ],
+        "biomechanicalRestrictions": [
+          "EXTENDED_DYNAMIC_WARMUP_15MIN"
+        ],
+        "cardioProtocol": {
+          "type": "GRADUAL_LISS",
+          "equipment": "INCLINE_TREADMILL",
+          "dailySteps": 8000,
+          "maxHeartRateZone": 2
+        },
+        "safetyCues": [
+          "إحماء تدريجي بطيء لمدة 15 دقيقة، واحتفظ بالبخاخ الوقائي معك دائماً في الجيم.",
+          "ترطيب مكثف بالماء وأوميجا-3، وتجنب أوزان الإجهاد الأقصى بسبب جفاف الأربطة والمفاصل."
+        ]
+      },
+      "cardio_protocol": {
+        "type": "GRADUAL_LISS",
+        "equipment": "INCLINE_TREADMILL",
+        "dailySteps": 8000,
+        "maxHeartRateZone": 2
+      },
+      "clinical_notes": [
+        "إحماء تدريجي بطيء لمدة 15 دقيقة، واحتفظ بالبخاخ الوقائي معك دائماً في الجيم.",
+        "ترطيب مكثف بالماء وأوميجا-3، وتجنب أوزان الإجهاد الأقصى بسبب جفاف الأربطة والمفاصل."
+      ]
+    },
+    "fastingPlan": null
+  },
+  {
+    "client": {
+      "id": "STRESS-09",
+      "name": "وائل فكري",
+      "gender": "MALE",
+      "age": 38,
+      "height_cm": 175,
+      "weight_kg": 89,
+      "experience_level": "INTERMEDIATE",
+      "training_environment": "GYM",
+      "training_days_per_week": 4,
+      "goal": "FAT_LOSS",
+      "activity_level": "LIGHT",
+      "medical_conditions": [
+        "FATTY_LIVER",
+        "KIDNEY_STONES"
+      ],
+      "postural_issues": [
+        "ROUNDED_SHOULDERS"
+      ],
+      "religious_calendar": "CHRISTIAN_FASTING_VEGAN"
+    },
+    "plan": {
+      "client_name": "وائل فكري",
+      "bmr": 1799,
+      "tdee": 2473,
+      "daily_targets": {
+        "calories": 1929,
+        "protein_grams": 196,
+        "carbs_grams": 127,
+        "fats_grams": 71,
+        "fiber_grams": 28,
+        "target_fiber_g": 28,
+        "water_liters": 4.5
+      },
+      "training_split": {
+        "id": "upper_lower_4x",
+        "name_ar": "تقسيم علوي / سفلي (Upper / Lower 4x)",
+        "frequency": "4 أيام أسبوعياً",
+        "schedule_blueprint": [
+          "جسم علوي (A)",
+          "جسم سفلي (A)",
+          "جسم علوي (B)",
+          "جسم سفلي (B)"
+        ],
+        "focus_target_ar": "الاستشفاء المثالي والبناء العضلي المتوازن",
+        "recommended_exercises": [
+          {
+            "id": "kas_glute_bridge",
+            "name_ar": "كاس جلوت بريدج (Kas Glute Bridge)",
+            "target_muscle": "GLUTES",
+            "target_rep_range": [
+              10,
+              15
+            ],
+            "target_rir": 2,
+            "cues_ar": [
+              "تثبيت أعلى الظهر على البنش تحت لوح الكتف مباشرة.",
+              "المدى الحركي صغير ومركز في الثلث العلوي فقط مع عصر ثانيتين بالأعلى.",
+              "الذقن مضمومة للصدر والنظر للأمام طوال الحركة لحماية أسفل الظهر."
+            ],
+            "exercise_id": "kas_glute_bridge",
+            "warmup_ladder": [
+              {
+                "set_number": "إحماء 1",
+                "load_percent": 40,
+                "reps": 10,
+                "rest_seconds": 60
+              },
+              {
+                "set_number": "إحماء 2",
+                "load_percent": 60,
+                "reps": 6,
+                "rest_seconds": 90
+              },
+              {
+                "set_number": "تهيئة عصبية",
+                "load_percent": 80,
+                "reps": 2,
+                "rest_seconds": 120
+              }
+            ],
+            "allow_instant_swap": true
+          },
+          {
+            "id": "glute_hyperextension_45",
+            "name_ar": "هايبراكتنشن جلوتس 45 درجة (Glute-Biased Hyperextension)",
+            "target_muscle": "GLUTES_HAMSTRINGS",
+            "target_rep_range": [
+              12,
+              15
+            ],
+            "target_rir": 2,
+            "cues_ar": [
+              "تثبيت وسادة الجهاز تحت مفصل الحوض مباشرة.",
+              "تقويس الظهر العلوي عمداً (Rounded Upper Back) لإلغاء مشاركة عضلات القطنية.",
+              "الدفع وعصر الجلوتس بالكامل عند الصعود."
+            ],
+            "exercise_id": "glute_hyperextension_45",
+            "warmup_ladder": [
+              {
+                "set_number": "إحماء 1",
+                "load_percent": 40,
+                "reps": 10,
+                "rest_seconds": 60
+              },
+              {
+                "set_number": "إحماء 2",
+                "load_percent": 60,
+                "reps": 6,
+                "rest_seconds": 90
+              },
+              {
+                "set_number": "تهيئة عصبية",
+                "load_percent": 80,
+                "reps": 2,
+                "rest_seconds": 120
+              }
+            ],
+            "allow_instant_swap": true
+          },
+          {
+            "id": "cable_glute_kickback",
+            "name_ar": "كيك باك كابل للجلوتس (Cable Glute Kickback)",
+            "target_muscle": "GLUTES",
+            "target_rep_range": [
+              12,
+              15
+            ],
+            "target_rir": 2,
+            "cues_ar": [
+              "توجيه مسار الساق للخلف وللخارج قليلاً بزاوية 30 درجة.",
+              "تثبيت الجذع تماماً دون أرجحة أسفل الظهر.",
+              "التحكم في الرجوع البطيء بالوزن في ثانيتين."
+            ],
+            "exercise_id": "cable_glute_kickback",
+            "warmup_ladder": [
+              {
+                "set_number": "إحماء 1",
+                "load_percent": 40,
+                "reps": 10,
+                "rest_seconds": 60
+              },
+              {
+                "set_number": "إحماء 2",
+                "load_percent": 60,
+                "reps": 6,
+                "rest_seconds": 90
+              },
+              {
+                "set_number": "تهيئة عصبية",
+                "load_percent": 80,
+                "reps": 2,
+                "rest_seconds": 120
+              }
+            ],
+            "allow_instant_swap": true
+          }
+        ],
+        "environment": "GYM"
+      },
+      "training_phase": {
+        "level": "INTERMEDIATE",
+        "mode": "PROGRESSIVE_OVERLOAD",
+        "target_rir": 2,
+        "calibrated_bench_working_kg": null,
+        "calibrated_squat_working_kg": null,
+        "description_ar": "معايرة أوزان الجلسة الأولى بنسبة 75% من أقصى وزن معتاد ومعدل جهد RIR 2 للبدء الفوري في الزيادة التدريجية."
+      },
+      "rehab_routine": {
+        "prehabWarmup": [
+          {
+            "name_ar": "إحماء الحوض (World Greatest Stretch)",
+            "sets": 2,
+            "reps": "6 لكل جانب"
+          },
+          {
+            "name_ar": "تفعيل الجلوتس بالباند (Bodyweight Glute Bridges)",
+            "sets": 2,
+            "reps": "15 تكرار"
+          }
+        ],
+        "postWorkoutStretches": [
+          {
+            "name_ar": "إطالة الصدر والأكتاف المهدئة",
+            "duration": "60 ثانية"
+          },
+          {
+            "name_ar": "إطالة عضلات الفخذ الخلفية وأسفل الظهر",
+            "duration": "60 ثانية"
+          }
+        ],
+        "posturalCorrections": [
+          {
+            "name_ar": "تمرين Face Pulls بحبل الكيبل مع التركيز على دوران الكتف",
+            "sets": 3,
+            "reps": "15 تكرار"
+          },
+          {
+            "name_ar": "تمرين Prone Y-Raises للظهر الأوسط والسفلي",
+            "sets": 2,
+            "reps": "12 تكرار"
+          }
+        ],
+        "biomechanicalRestrictions": [],
+        "prohibitedMovements": []
+      },
+      "meal_timing_protocol": {
+        "preferred_workout_time": "EVENING",
+        "pre_workout_timing_ar": "تناول أكبر وجبة نشويات وبروتين قبل موعد التمرين بـ 90 دقيقة لتوفير مخازن الجليكوجين وأعلى ضخ دموي.",
+        "disliked_foods_excluded": []
+      },
+      "clinical_profile": {
+        "calories": 1929,
+        "proteinGrams": 196,
+        "carbGrams": 127,
+        "fatGrams": 71,
+        "fiberGrams": 28,
+        "waterLiters": 4.5,
+        "prohibitedSupplements": [],
+        "prescribedNutrients": [
+          "ZERO_SIMPLE_FRUCTOSE",
+          "LOW_OXALATE_FOODS"
+        ],
+        "biomechanicalRestrictions": [],
+        "cardioProtocol": {
+          "type": "LISS",
+          "equipment": "INCLINE_TREADMILL",
+          "dailySteps": 10000,
+          "maxHeartRateZone": 2
+        },
+        "safetyCues": [
+          "شرب 4.5 لتر ماء يومياً وتقنين السبانخ والمكسرات بكميات ضخمة لمنع تشكل الحصوات."
+        ]
+      },
+      "cardio_protocol": {
+        "type": "LISS",
+        "equipment": "INCLINE_TREADMILL",
+        "dailySteps": 10000,
+        "maxHeartRateZone": 2
+      },
+      "clinical_notes": [
+        "شرب 4.5 لتر ماء يومياً وتقنين السبانخ والمكسرات بكميات ضخمة لمنع تشكل الحصوات."
+      ]
+    },
+    "fastingPlan": {
+      "mode": "CHRISTIAN_FASTING_STRICT_VEGAN",
+      "mode_name_ar": "نظام الصيام المسيحي الصارم (نباتي صرف بدون أسماك)",
+      "eating_window_ar": "على مدار اليوم مع الامتناع عن المنتجات الحيوانية والألبان",
+      "meals_distribution": [
+        {
+          "meal_id": "breakfast",
+          "name_ar": "وجبة الإفطار النباتية المعززة",
+          "calorie_percent": 30,
+          "calories": 579,
+          "guidelines_ar": [
+            "دمج بروتين نباتي مركب (شوفان مع حليب صويا / بودرة بروتين نباتية / زبدة فول سوداني).",
+            "إضافة بذور الشيا وبذور الكتان لأحماض أوميجا 3 النباتية."
+          ]
+        },
+        {
+          "meal_id": "lunch",
+          "name_ar": "وجبة الغداء الرئيسية",
+          "calorie_percent": 40,
+          "calories": 772,
+          "guidelines_ar": [
+            "دمج الحبوب والبقوليات معاً (أرز وعدس / كينوا وفاصوليا حمراء) لضمان بروتين مكتمل الأحماض الأمينية.",
+            "إضافة الخميرة الغذائية (Nutritional Yeast) كمصدر طبيعي لفيتامين B12."
+          ]
+        },
+        {
+          "meal_id": "dinner",
+          "name_ar": "وجبة العشاء والاستشفاء",
+          "calorie_percent": 30,
+          "calories": 579,
+          "guidelines_ar": [
+            "وجبة خفيفة غنية بالبروتين (توفو مشوي / حمص مسلوق مع متبل طحينة وخضروات).",
+            "شرب الماء بانتظام ومتابعة كفاية المعادن الدقيقة."
+          ]
+        }
+      ],
+      "supplement_synergy_ar": [
+        "فيتامين B12 (1000 mcg يومياً) لتعويض غياب اللحوم والألبان.",
+        "مكمل أوميجا 3 نباتي (Algae Oil) أو زيت السمك في حال الصيام السمكي.",
+        "فيتامين د3 وزنك لتعزيز المناعة وقوة المفاصل."
+      ]
+    }
+  },
+  {
+    "client": {
+      "id": "STRESS-10",
+      "name": "نادية منصور",
+      "gender": "FEMALE",
+      "age": 40,
+      "height_cm": 158,
+      "weight_kg": 82,
+      "experience_level": "BEGINNER",
+      "training_environment": "HOME",
+      "home_equipment": [
+        "BODYWEIGHT"
+      ],
+      "training_days_per_week": 3,
+      "goal": "FAT_LOSS",
+      "activity_level": "SEDENTARY",
+      "medical_conditions": [
+        "TYPE_2_DIABETES_ORAL",
+        "CHOLECYSTECTOMY",
+        "LOWER_BACK_PAIN",
+        "PATELLAR_TENDINITIS"
+      ]
+    },
+    "plan": {
+      "client_name": "نادية منصور",
+      "bmr": 1447,
+      "tdee": 1736,
+      "daily_targets": {
+        "calories": 1354,
+        "protein_grams": 180,
+        "carbs_grams": 10,
+        "fats_grams": 76,
+        "fiber_grams": 35,
+        "target_fiber_g": 35,
+        "water_liters": 3.8
+      },
+      "training_split": {
+        "id": "full_body_3x",
+        "name_ar": "تقسيم الجسم الشامل (Full Body 3x)",
+        "frequency": "3 أيام أسبوعياً",
+        "schedule_blueprint": [
+          "الجسم الشامل (A)",
+          "الجسم الشامل (B)",
+          "الجسم الشامل (C)"
+        ],
+        "focus_target_ar": "تكرار التحفيز العضلي 3 مرات أسبوعياً",
+        "recommended_exercises": [
+          {
+            "id": "kas_glute_bridge",
+            "name_ar": "كاس جلوت بريدج (Kas Glute Bridge)",
+            "target_muscle": "GLUTES",
+            "target_rep_range": [
+              10,
+              15
+            ],
+            "target_rir": 3,
+            "cues_ar": [
+              "تثبيت أعلى الظهر على البنش تحت لوح الكتف مباشرة.",
+              "المدى الحركي صغير ومركز في الثلث العلوي فقط مع عصر ثانيتين بالأعلى.",
+              "الذقن مضمومة للصدر والنظر للأمام طوال الحركة لحماية أسفل الظهر."
+            ],
+            "environment_adapted": "HOME",
+            "available_tools": [
+              "BODYWEIGHT"
+            ],
+            "exercise_id": "kas_glute_bridge",
+            "warmup_ladder": [
+              {
+                "set_number": "إحماء 1",
+                "load_percent": 40,
+                "reps": 10,
+                "rest_seconds": 60
+              },
+              {
+                "set_number": "إحماء 2",
+                "load_percent": 60,
+                "reps": 6,
+                "rest_seconds": 90
+              },
+              {
+                "set_number": "تهيئة عصبية",
+                "load_percent": 80,
+                "reps": 2,
+                "rest_seconds": 120
+              }
+            ],
+            "allow_instant_swap": true
+          },
+          {
+            "id": "glute_hyperextension_45",
+            "name_ar": "هايبراكتنشن جلوتس 45 درجة (Glute-Biased Hyperextension)",
+            "target_muscle": "GLUTES_HAMSTRINGS",
+            "target_rep_range": [
+              12,
+              15
+            ],
+            "target_rir": 3,
+            "cues_ar": [
+              "تثبيت وسادة الجهاز تحت مفصل الحوض مباشرة.",
+              "تقويس الظهر العلوي عمداً (Rounded Upper Back) لإلغاء مشاركة عضلات القطنية.",
+              "الدفع وعصر الجلوتس بالكامل عند الصعود."
+            ],
+            "environment_adapted": "HOME",
+            "available_tools": [
+              "BODYWEIGHT"
+            ],
+            "exercise_id": "glute_hyperextension_45",
+            "warmup_ladder": [
+              {
+                "set_number": "إحماء 1",
+                "load_percent": 40,
+                "reps": 10,
+                "rest_seconds": 60
+              },
+              {
+                "set_number": "إحماء 2",
+                "load_percent": 60,
+                "reps": 6,
+                "rest_seconds": 90
+              },
+              {
+                "set_number": "تهيئة عصبية",
+                "load_percent": 80,
+                "reps": 2,
+                "rest_seconds": 120
+              }
+            ],
+            "allow_instant_swap": true
+          },
+          {
+            "id": "cable_glute_kickback",
+            "name_ar": "كيك باك كابل للجلوتس (Cable Glute Kickback)",
+            "target_muscle": "GLUTES",
+            "target_rep_range": [
+              12,
+              15
+            ],
+            "target_rir": 3,
+            "cues_ar": [
+              "توجيه مسار الساق للخلف وللخارج قليلاً بزاوية 30 درجة.",
+              "تثبيت الجذع تماماً دون أرجحة أسفل الظهر.",
+              "التحكم في الرجوع البطيء بالوزن في ثانيتين."
+            ],
+            "environment_adapted": "HOME",
+            "available_tools": [
+              "BODYWEIGHT"
+            ],
+            "exercise_id": "cable_glute_kickback",
+            "warmup_ladder": [
+              {
+                "set_number": "إحماء 1",
+                "load_percent": 40,
+                "reps": 10,
+                "rest_seconds": 60
+              },
+              {
+                "set_number": "إحماء 2",
+                "load_percent": 60,
+                "reps": 6,
+                "rest_seconds": 90
+              },
+              {
+                "set_number": "تهيئة عصبية",
+                "load_percent": 80,
+                "reps": 2,
+                "rest_seconds": 120
+              }
+            ],
+            "allow_instant_swap": true
+          }
+        ],
+        "environment": "HOME"
+      },
+      "training_phase": {
+        "level": "BEGINNER",
+        "mode": "NEURAL_ADAPTATION",
+        "target_rir": 3,
+        "description_ar": "نظام التكيف العصبي للأسبوع الأول بأوزان استكشافية تدريجية ومعدل جهد RIR 3 لمنع الإجهاد العضلي الحاد."
+      },
+      "rehab_routine": {
+        "prehabWarmup": [
+          {
+            "name_ar": "تمرين Bird-Dog لتثبيت العمود الفقري",
+            "sets": 2,
+            "reps": "8 لكل جانب",
+            "tempo": "ثبات ثانيتين"
+          },
+          {
+            "name_ar": "تمرين Side Plank للكور الجانبي",
+            "sets": 2,
+            "reps": "25 ثانية لكل جانب"
+          },
+          {
+            "name_ar": "تفعيل الجلوتس بالباند (Glute Bridges)",
+            "sets": 2,
+            "reps": "12 تكرار"
+          },
+          {
+            "name_ar": "سكوات إيزومتري بالباند (Isometric Spanish Squat)",
+            "sets": 3,
+            "reps": "45 ثانية ثبات"
+          },
+          {
+            "name_ar": "مرونة مفصل الكاحل على الحائط (Ankle Dorsiflexion)",
+            "sets": 2,
+            "reps": "10 تكرارات لكل قدم"
+          }
+        ],
+        "postWorkoutStretches": [
+          {
+            "name_ar": "إطالة مثنيات الحوض (Kneeling Hip Flexor Stretch)",
+            "duration": "45 ثانية لكل جانب"
+          },
+          {
+            "name_ar": "إطالة عضلة الكمثرى (Piriformis Stretch)",
+            "duration": "45 ثانية لكل جانب"
+          },
+          {
+            "name_ar": "إطالة السمانة على حافة الدرج (Calf Stretch)",
+            "duration": "45 ثانية"
+          },
+          {
+            "name_ar": "إطالة الفخذ الخلفية بالباند مستلقياً",
+            "duration": "45 ثانية"
+          }
+        ],
+        "posturalCorrections": [],
+        "biomechanicalRestrictions": [
+          "NO_AXIAL_LOADING_SQUAT_DEADLIFT",
+          "NO_SEATED_TOE_TOUCH",
+          "NO_OPEN_CHAIN_LEG_EXTENSIONS"
+        ],
+        "prohibitedMovements": [
+          "NO_AXIAL_LOADING_SQUAT_DEADLIFT",
+          "NO_SEATED_TOE_TOUCH",
+          "NO_OPEN_CHAIN_LEG_EXTENSIONS"
+        ]
+      },
+      "meal_timing_protocol": {
+        "preferred_workout_time": "EVENING",
+        "pre_workout_timing_ar": "تناول أكبر وجبة نشويات وبروتين قبل موعد التمرين بـ 90 دقيقة لتوفير مخازن الجليكوجين وأعلى ضخ دموي.",
+        "disliked_foods_excluded": []
+      },
+      "clinical_profile": {
+        "calories": 1354,
+        "proteinGrams": 180,
+        "carbGrams": 10,
+        "fatGrams": 76,
+        "fiberGrams": 35,
+        "waterLiters": 3.8,
+        "prohibitedSupplements": [],
+        "prescribedNutrients": [
+          "LOW_GI_CARBOHYDRATES"
+        ],
+        "biomechanicalRestrictions": [
+          "NO_AXIAL_LOADING_SQUAT_DEADLIFT",
+          "NO_OPEN_CHAIN_LEG_EXTENSIONS"
+        ],
+        "cardioProtocol": {
+          "type": "LISS",
+          "equipment": "RECUMBENT_BIKE_OR_ELLIPTICAL",
+          "dailySteps": 8000,
+          "maxHeartRateZone": 2
+        },
+        "safetyCues": [
+          "اعتماد النشويات منخفضة المؤشر الجلايسيمي لحماية حساسية الإنسولين وتثبيت مستويات الطاقة.",
+          "توزيع الدهون على 4-5 وجبات بحد أقصى 15-20 جم دهون للوجبة الواحدة لضمان راحة الهضم."
+        ]
+      },
+      "cardio_protocol": {
+        "type": "LISS",
+        "equipment": "RECUMBENT_BIKE_OR_ELLIPTICAL",
+        "dailySteps": 8000,
+        "maxHeartRateZone": 2
+      },
+      "clinical_notes": [
+        "اعتماد النشويات منخفضة المؤشر الجلايسيمي لحماية حساسية الإنسولين وتثبيت مستويات الطاقة.",
+        "توزيع الدهون على 4-5 وجبات بحد أقصى 15-20 جم دهون للوجبة الواحدة لضمان راحة الهضم."
+      ]
+    },
+    "fastingPlan": null
+  }
+]

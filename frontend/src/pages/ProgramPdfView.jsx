@@ -153,7 +153,7 @@ export default function ProgramPdfView() {
         <button 
           type="button" 
           onClick={handlePrint}
-          className="btn rounded-pill px-4 fw-bold text-white shadow-sm d-flex align-items-center gap-2"
+          className="btn rounded-pill px-4 fw-bold text-slate-900 shadow-sm d-flex align-items-center gap-2"
           style={{ background: 'linear-gradient(135deg, #0284C7 0%, #0369A1 100%)', border: 'none', height: '42px', fontSize: '0.9rem' }}
         >
           <i className="ti ti-printer"></i>

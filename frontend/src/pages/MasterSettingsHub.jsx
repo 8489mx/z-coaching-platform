@@ -543,7 +543,7 @@ export default function MasterSettingsHub() {
                 <button
                   type="button"
                   onClick={() => setActiveTab('intake')}
-                  className={`btn btn-sm rounded-pill px-4 fw-bold transition-all ${activeTab === 'intake' ? 'text-white shadow-xs' : 'bg-light text-dark'}`}
+                  className={`btn btn-sm rounded-pill px-4 fw-bold transition-all ${activeTab === 'intake' ? 'text-slate-900 shadow-xs' : 'bg-light text-dark'}`}
                   style={{
                     background: activeTab === 'intake' ? '#0284C7' : undefined,
                     height: '38px',
@@ -555,7 +555,7 @@ export default function MasterSettingsHub() {
                 <button
                   type="button"
                   onClick={() => setActiveTab('exercises')}
-                  className={`btn btn-sm rounded-pill px-4 fw-bold transition-all ${activeTab === 'exercises' ? 'text-white shadow-xs' : 'bg-light text-dark'}`}
+                  className={`btn btn-sm rounded-pill px-4 fw-bold transition-all ${activeTab === 'exercises' ? 'text-slate-900 shadow-xs' : 'bg-light text-dark'}`}
                   style={{
                     background: activeTab === 'exercises' ? '#0284C7' : undefined,
                     height: '38px',
@@ -567,7 +567,7 @@ export default function MasterSettingsHub() {
                 <button
                   type="button"
                   onClick={() => setActiveTab('packages')}
-                  className={`btn btn-sm rounded-pill px-4 fw-bold transition-all ${activeTab === 'packages' ? 'text-white shadow-xs' : 'bg-light text-dark'}`}
+                  className={`btn btn-sm rounded-pill px-4 fw-bold transition-all ${activeTab === 'packages' ? 'text-slate-900 shadow-xs' : 'bg-light text-dark'}`}
                   style={{
                     background: activeTab === 'packages' ? '#0284C7' : undefined,
                     height: '38px',
@@ -579,7 +579,7 @@ export default function MasterSettingsHub() {
                 <button
                   type="button"
                   onClick={() => setActiveTab('foods')}
-                  className={`btn btn-sm rounded-pill px-4 fw-bold transition-all ${activeTab === 'foods' ? 'text-white shadow-xs' : 'bg-light text-dark'}`}
+                  className={`btn btn-sm rounded-pill px-4 fw-bold transition-all ${activeTab === 'foods' ? 'text-slate-900 shadow-xs' : 'bg-light text-dark'}`}
                   style={{
                     background: activeTab === 'foods' ? '#0284C7' : undefined,
                     height: '38px',
@@ -591,7 +591,7 @@ export default function MasterSettingsHub() {
                 <button
                   type="button"
                   onClick={() => setActiveTab('system')}
-                  className={`btn btn-sm rounded-pill px-4 fw-bold transition-all ${activeTab === 'system' ? 'text-white shadow-xs' : 'bg-light text-dark'}`}
+                  className={`btn btn-sm rounded-pill px-4 fw-bold transition-all ${activeTab === 'system' ? 'text-slate-900 shadow-xs' : 'bg-light text-dark'}`}
                   style={{
                     background: activeTab === 'system' ? '#0284C7' : undefined,
                     height: '38px',
@@ -606,7 +606,7 @@ export default function MasterSettingsHub() {
                 <button
                   type="button"
                   onClick={() => { setEditingQuestion(null); setQuestionModalOpen(true); }}
-                  className="btn btn-sm rounded-pill px-4 fw-bold text-white shadow-sm d-flex align-items-center gap-2"
+                  className="btn btn-sm rounded-pill px-4 fw-bold text-slate-900 shadow-sm d-flex align-items-center gap-2"
                   style={{ background: 'linear-gradient(135deg, #58B4E5 0%, #0284C7 100%)', height: '38px', fontSize: '0.82rem', border: 'none' }}
                 >
                   <i className="ti ti-plus fs-6"></i>
@@ -618,7 +618,7 @@ export default function MasterSettingsHub() {
                 <button
                   type="button"
                   onClick={() => { setEditingExercise(null); setExerciseModalOpen(true); }}
-                  className="btn btn-sm rounded-pill px-4 fw-bold text-white shadow-sm d-flex align-items-center gap-2"
+                  className="btn btn-sm rounded-pill px-4 fw-bold text-slate-900 shadow-sm d-flex align-items-center gap-2"
                   style={{ background: 'linear-gradient(135deg, #58B4E5 0%, #0284C7 100%)', height: '38px', fontSize: '0.82rem', border: 'none' }}
                 >
                   <i className="ti ti-plus fs-6"></i>
@@ -630,7 +630,7 @@ export default function MasterSettingsHub() {
                 <button
                   type="button"
                   onClick={() => { setEditingPackage(null); setPackageModalOpen(true); }}
-                  className="btn btn-sm rounded-pill px-4 fw-bold text-white shadow-sm d-flex align-items-center gap-2"
+                  className="btn btn-sm rounded-pill px-4 fw-bold text-slate-900 shadow-sm d-flex align-items-center gap-2"
                   style={{ background: 'linear-gradient(135deg, #58B4E5 0%, #0284C7 100%)', height: '38px', fontSize: '0.82rem', border: 'none' }}
                 >
                   <i className="ti ti-plus fs-6"></i>
@@ -668,7 +668,7 @@ export default function MasterSettingsHub() {
                           key={sec.id}
                           type="button"
                           onClick={() => setSelectedSection(sec.id)}
-                          className={`btn btn-sm rounded-pill px-3 fw-semibold transition-all ${selectedSection === sec.id ? 'text-white shadow-xs' : 'bg-white text-dark border'}`}
+                          className={`btn btn-sm rounded-pill px-3 fw-semibold transition-all ${selectedSection === sec.id ? 'text-slate-900 shadow-xs' : 'bg-white text-dark border'}`}
                           style={{
                             background: selectedSection === sec.id ? '#0284C7' : '#ffffff',
                             fontSize: '0.78rem',
@@ -841,7 +841,7 @@ export default function MasterSettingsHub() {
                           key={m.id}
                           type="button"
                           onClick={() => setMuscleFilter(m.id)}
-                          className={`btn btn-sm rounded-pill px-3 fw-semibold transition-all ${muscleFilter === m.id ? 'text-white shadow-xs' : 'bg-white text-dark border'}`}
+                          className={`btn btn-sm rounded-pill px-3 fw-semibold transition-all ${muscleFilter === m.id ? 'text-slate-900 shadow-xs' : 'bg-white text-dark border'}`}
                           style={{
                             background: muscleFilter === m.id ? '#0284C7' : '#ffffff',
                             fontSize: '0.78rem',
@@ -1213,7 +1213,7 @@ export default function MasterSettingsHub() {
                     <button
                       type="button"
                       onClick={() => alert('تم حفظ إعدادات المنظومة العامة بنجاح')}
-                      className="btn btn-primary rounded-pill px-4 fw-bold shadow-sm d-flex align-items-center gap-2 text-white"
+                      className="btn btn-primary rounded-pill px-4 fw-bold shadow-sm d-flex align-items-center gap-2 text-slate-900"
                       style={{ 
                         height: '42px', 
                         fontSize: '0.86rem', 

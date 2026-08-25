@@ -78,7 +78,7 @@ export default function RecipeModal({
                 <span className="badge rounded-pill px-2 py-0 mb-1 fw-bold" style={{ background: 'rgba(255,255,255,0.2)', fontSize: '0.68rem', color: '#ffffff' }}>
                   {mealName || 'وصفة المطبخ الصحي'}
                 </span>
-                <h5 className="fw-bold mb-0 text-white" style={{ fontSize: '1.12rem', letterSpacing: '-0.2px' }}>
+                <h5 className="fw-bold mb-0 text-slate-900" style={{ fontSize: '1.12rem', letterSpacing: '-0.2px' }}>
                   {recipe?.title_ar || `طريقة تحضير: ${foodName}`}
                 </h5>
               </div>

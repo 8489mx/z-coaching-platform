@@ -106,50 +106,9 @@ export function AdminHeader({
         </div>
       </div>
 
-      {/* Left Side: Notifications & Coach Profile */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+      {/* Left Side: Notifications */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
         <NotificationsDropdown />
-
-        <div style={{ width: '1px', height: '26px', background: '#E2E8F0' }}></div>
-
-        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-          <div 
-            style={{
-              width: '38px',
-              height: '38px',
-              borderRadius: '12px',
-              background: '#0F172A',
-              color: '#FFFFFF',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              fontWeight: 800,
-              fontSize: '0.86rem',
-              letterSpacing: '0.5px'
-            }}
-          >
-            KZ
-          </div>
-          <div style={{ textAlign: 'right' }}>
-            <p style={{ margin: 0, fontSize: '0.84rem', fontWeight: 800, color: '#0F172A', lineHeight: 1.2 }}>
-              كابتن كريم زكريا
-            </p>
-            <span 
-              style={{ 
-                fontSize: '9.5px', 
-                fontWeight: 700, 
-                color: '#0284C7', 
-                background: '#E0F2FE', 
-                padding: '1px 6px', 
-                borderRadius: '4px', 
-                display: 'inline-block', 
-                marginTop: '2px' 
-              }}
-            >
-              Super Admin
-            </span>
-          </div>
-        </div>
       </div>
     </header>
   );

@@ -313,7 +313,7 @@ export default function UserDashboardSidebar({
         {/* Coach Portal Button */}
         <Link 
           to="/" 
-          className={`btn ${isCollapsed ? 'rounded-circle p-0 d-flex align-items-center justify-content-center' : 'w-100 rounded-pill d-flex align-items-center justify-content-center gap-2'} fw-bold shadow-sm text-white`}
+          className={`btn ${isCollapsed ? 'rounded-circle p-0 d-flex align-items-center justify-content-center' : 'w-100 rounded-pill d-flex align-items-center justify-content-center gap-2'} fw-bold shadow-sm text-slate-900`}
           style={{ 
             height: '38px',
             width: isCollapsed ? '38px' : '100%',

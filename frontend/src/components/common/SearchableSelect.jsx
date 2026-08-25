@@ -106,7 +106,7 @@ export default function SearchableSelect({
       {/* Floating Dropdown Panel */}
       {isOpen && (
         <div
-          className="position-absolute shadow-lg bg-white border"
+          className="position-absolute shadow-sm shadow-slate-200/50 bg-white border"
           style={{
             top: 'calc(100% + 6px)',
             left: 0,

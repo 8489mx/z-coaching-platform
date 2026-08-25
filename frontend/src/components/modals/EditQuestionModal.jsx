@@ -223,7 +223,7 @@ export default function EditQuestionModal({
                     <button
                       type="button"
                       onClick={handleAddOption}
-                      className="btn btn-sm px-3 fw-bold rounded-pill text-white flex-shrink-0"
+                      className="btn btn-sm px-3 fw-bold rounded-pill text-slate-900 flex-shrink-0"
                       style={{ background: '#0284C7', fontSize: '0.8rem', height: '36px' }}
                     >
                       إضافة خيار
@@ -250,7 +250,7 @@ export default function EditQuestionModal({
                     <button
                       type="button"
                       onClick={() => setFormData({ ...formData, required: true })}
-                      className={`btn btn-sm fw-bold ${formData.required ? 'btn-danger text-white' : 'btn-outline-secondary'}`}
+                      className={`btn btn-sm fw-bold ${formData.required ? 'btn-danger text-slate-900' : 'btn-outline-secondary'}`}
                       style={{ fontSize: '0.78rem', height: '38px', borderRadius: '0 8px 8px 0' }}
                     >
                       إجباري *
@@ -258,7 +258,7 @@ export default function EditQuestionModal({
                     <button
                       type="button"
                       onClick={() => setFormData({ ...formData, required: false })}
-                      className={`btn btn-sm fw-bold ${!formData.required ? 'btn-primary text-white' : 'btn-outline-secondary'}`}
+                      className={`btn btn-sm fw-bold ${!formData.required ? 'btn-primary text-slate-900' : 'btn-outline-secondary'}`}
                       style={{ 
                         fontSize: '0.78rem', 
                         height: '38px', 
@@ -280,7 +280,7 @@ export default function EditQuestionModal({
                     <button
                       type="button"
                       onClick={() => setFormData({ ...formData, active: true })}
-                      className={`btn btn-sm fw-bold ${formData.active ? 'btn-success text-white' : 'btn-outline-secondary'}`}
+                      className={`btn btn-sm fw-bold ${formData.active ? 'btn-success text-slate-900' : 'btn-outline-secondary'}`}
                       style={{ fontSize: '0.78rem', height: '38px', borderRadius: '0 8px 8px 0' }}
                     >
                       مفعّل بالاستمارة
@@ -288,7 +288,7 @@ export default function EditQuestionModal({
                     <button
                       type="button"
                       onClick={() => setFormData({ ...formData, active: false })}
-                      className={`btn btn-sm fw-bold ${!formData.active ? 'btn-secondary text-white' : 'btn-outline-secondary'}`}
+                      className={`btn btn-sm fw-bold ${!formData.active ? 'btn-secondary text-slate-900' : 'btn-outline-secondary'}`}
                       style={{ fontSize: '0.78rem', height: '38px', borderRadius: '8px 0 0 8px' }}
                     >
                       مخفي مؤقتاً
@@ -312,7 +312,7 @@ export default function EditQuestionModal({
               <button 
                 type="submit" 
                 disabled={loading} 
-                className="btn btn-primary rounded-pill px-4 fw-bold shadow-sm d-flex align-items-center gap-2 text-white"
+                className="btn btn-primary rounded-pill px-4 fw-bold shadow-sm d-flex align-items-center gap-2 text-slate-900"
                 style={{ 
                   height: '40px', 
                   fontSize: '0.86rem', 

@@ -71,12 +71,12 @@ export default function BiomechanicalExerciseCard({
   };
 
   return (
-    <div className="bg-slate-900 border border-slate-800 rounded-2xl p-5 shadow-lg mb-4 text-white" dir="rtl">
+    <div className="bg-slate-50 border border-slate-200 rounded-2xl p-5 shadow-sm shadow-slate-200/50 mb-4 text-slate-900" dir="rtl">
       {/* Header */}
       <div className="flex justify-between items-start mb-3">
         <div>
           <h3 className="text-lg font-bold text-emerald-400 m-0">{exercise.name_ar}</h3>
-          <p className="text-xs text-slate-400 mt-1 mb-0">
+          <p className="text-xs text-slate-600 mt-1 mb-0">
             المستهدف: {exercise.target_sets} مجموعات × {exercise.target_reps} تكرار (RIR {exercise.target_rir})
           </p>
         </div>
@@ -86,12 +86,12 @@ export default function BiomechanicalExerciseCard({
       </div>
 
       {/* Visual Cues */}
-      <div className="bg-slate-800/60 rounded-xl p-3 mb-3 border-r-4 border-emerald-500">
-        <div className="text-xs font-semibold text-slate-300 mb-1.5 flex items-center gap-1">
+      <div className="bg-slate-100/60 rounded-xl p-3 mb-3 border-r-4 border-emerald-500">
+        <div className="text-xs font-semibold text-slate-700 mb-1.5 flex items-center gap-1">
           <span className="inline-block w-2 h-2 rounded-full bg-emerald-400"></span>
           <span>توجيهات التكنيك الإكلينيكي:</span>
         </div>
-        <ul className="text-xs text-slate-400 space-y-1 pr-2 list-disc list-inside m-0">
+        <ul className="text-xs text-slate-600 space-y-1 pr-2 list-disc list-inside m-0">
           {exercise.cues_ar?.map((cue, idx) => (
             <li key={idx} className="leading-relaxed">{cue}</li>
           ))}
@@ -110,13 +110,13 @@ export default function BiomechanicalExerciseCard({
         </button>
 
         {showWarmups && (
-          <div className="mt-2 p-3 bg-slate-800/80 rounded-xl border border-slate-700 text-xs">
+          <div className="mt-2 p-3 bg-slate-100/80 rounded-xl border border-slate-300 text-xs">
             <div className="font-bold text-amber-300 mb-2">جولات الإحماء التحضيرية:</div>
             <div className="space-y-1.5">
               {warmupSets.map((ws, i) => (
-                <div key={i} className="flex justify-between items-center bg-slate-900/60 p-2 rounded-lg">
-                  <span className="text-white font-mono font-bold">{ws.weight_kg} كجم × {ws.reps} عدات</span>
-                  <span className="text-[11px] text-slate-400">{ws.note_ar}</span>
+                <div key={i} className="flex justify-between items-center bg-slate-50/60 p-2 rounded-lg">
+                  <span className="text-slate-900 font-mono font-bold">{ws.weight_kg} كجم × {ws.reps} عدات</span>
+                  <span className="text-[11px] text-slate-600">{ws.note_ar}</span>
                 </div>
               ))}
             </div>
@@ -127,8 +127,8 @@ export default function BiomechanicalExerciseCard({
       {/* Logged Sets History Table */}
       {loggedSets.length > 0 && (
         <div className="mb-4">
-          <table className="w-full text-xs text-center border border-slate-800 rounded-lg overflow-hidden">
-            <thead className="bg-slate-800 text-slate-300">
+          <table className="w-full text-xs text-center border border-slate-200 rounded-lg overflow-hidden">
+            <thead className="bg-slate-100 text-slate-700">
               <tr>
                 <th className="py-1.5">الجولة</th>
                 <th>الوزن (كجم)</th>
@@ -138,11 +138,11 @@ export default function BiomechanicalExerciseCard({
             </thead>
             <tbody>
               {loggedSets.map((s, idx) => (
-                <tr key={idx} className="border-t border-slate-800 bg-slate-900/50">
-                  <td className="py-1 text-slate-400">{s.set_number}</td>
-                  <td className="font-bold text-white">{s.weight_kg}</td>
+                <tr key={idx} className="border-t border-slate-200 bg-slate-50">
+                  <td className="py-1 text-slate-600">{s.set_number}</td>
+                  <td className="font-bold text-slate-900">{s.weight_kg}</td>
                   <td className="font-bold text-emerald-400">{s.reps}</td>
-                  <td className="text-slate-400">{s.rir}</td>
+                  <td className="text-slate-600">{s.rir}</td>
                 </tr>
               ))}
             </tbody>
@@ -151,36 +151,36 @@ export default function BiomechanicalExerciseCard({
       )}
 
       {/* Set Input Form */}
-      <form onSubmit={handleLogSet} className="grid grid-cols-4 gap-2 pt-2 border-t border-slate-800">
+      <form onSubmit={handleLogSet} className="grid grid-cols-4 gap-2 pt-2 border-t border-slate-200">
         <div>
-          <label className="block text-[10px] text-slate-400 mb-1">الوزن</label>
+          <label className="block text-[10px] text-slate-600 mb-1">الوزن</label>
           <input
             type="number"
             step="0.5"
             value={weight}
             onChange={(e) => setWeight(e.target.value)}
-            className="w-full bg-slate-800 border border-slate-700 rounded-lg px-2 py-1.5 text-sm text-center text-white focus:outline-none focus:border-emerald-500"
+            className="w-full bg-slate-100 border border-slate-300 rounded-lg px-2 py-1.5 text-sm text-center text-slate-900 focus:outline-none focus:border-emerald-500"
             placeholder="كجم"
             required
           />
         </div>
         <div>
-          <label className="block text-[10px] text-slate-400 mb-1">العدات</label>
+          <label className="block text-[10px] text-slate-600 mb-1">العدات</label>
           <input
             type="number"
             value={reps}
             onChange={(e) => setReps(e.target.value)}
-            className="w-full bg-slate-800 border border-slate-700 rounded-lg px-2 py-1.5 text-sm text-center text-white focus:outline-none focus:border-emerald-500"
+            className="w-full bg-slate-100 border border-slate-300 rounded-lg px-2 py-1.5 text-sm text-center text-slate-900 focus:outline-none focus:border-emerald-500"
             placeholder="عدات"
             required
           />
         </div>
         <div>
-          <label className="block text-[10px] text-slate-400 mb-1">الـ RIR</label>
+          <label className="block text-[10px] text-slate-600 mb-1">الـ RIR</label>
           <select
             value={rir}
             onChange={(e) => setRir(e.target.value)}
-            className="w-full bg-slate-800 border border-slate-700 rounded-lg px-2 py-1.5 text-sm text-center text-white focus:outline-none focus:border-emerald-500"
+            className="w-full bg-slate-100 border border-slate-300 rounded-lg px-2 py-1.5 text-sm text-center text-slate-900 focus:outline-none focus:border-emerald-500"
           >
             <option value={0}>0 (فشل تام)</option>
             <option value={1}>1 (عدة متبقية)</option>

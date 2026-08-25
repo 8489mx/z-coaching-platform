@@ -10,13 +10,16 @@ import {
   ArrowLeft,
   Calendar,
   Zap,
-  MessageCircle
+  MessageCircle,
+  X
 } from 'lucide-react';
-import { SUPPORTED_PACKAGES, PAYMENT_METHODS, generateSecureIntakeToken } from '../utils/onboardingAcquisitionEngine';
+import SubscriptionCardsView from '../components/subscription/SubscriptionCardsView';
+import { SUBSCRIPTION_TIERS } from '../config/subscription-tiers';
+import { PAYMENT_METHODS, generateSecureIntakeToken } from '../utils/onboardingAcquisitionEngine';
 
 export default function PublicPricingJoin() {
   const navigate = useNavigate();
-  const [selectedPackage, setSelectedPackage] = useState(SUPPORTED_PACKAGES.MAX_3_PLUS_1.code);
+  const [selectedPlan, setSelectedPlan] = useState(null); // { tier: 'MAX' | 'ELITE', durationKey: 'FOUR_MONTHS' | 'EIGHT_MONTHS' }
   const [paymentMethod, setPaymentMethod] = useState(PAYMENT_METHODS.INSTAPAY);
   const [clientName, setClientName] = useState('');
   const [clientPhone, setClientPhone] = useState('');
@@ -24,20 +27,28 @@ export default function PublicPricingJoin() {
   const [isProcessing, setIsProcessing] = useState(false);
   const [completedTokenData, setCompletedTokenData] = useState(null);
 
+  const handleSelectTier = (tier, durationKey) => {
+    setSelectedPlan({ tier, durationKey });
+  };
+
+  const currentTierData = selectedPlan ? SUBSCRIPTION_TIERS[selectedPlan.tier] : null;
+  const currentDurationData = selectedPlan ? currentTierData.durations[selectedPlan.durationKey] : null;
+
   const handleSubmitPayment = (e) => {
     e.preventDefault();
-    if (!clientName || !clientPhone) {
+    if (!clientName || !clientPhone || !selectedPlan) {
       alert('يرجى كتابة الاسم ورقم الهاتف للمتابعة');
       return;
     }
 
     setIsProcessing(true);
     setTimeout(() => {
+      const packageCode = `${selectedPlan.tier}_${currentDurationData.id}`;
       const tokenResult = generateSecureIntakeToken({
         client_name: clientName,
         client_email: clientEmail || 'client@example.com',
         client_phone: clientPhone,
-        package_code: selectedPackage,
+        package_code: packageCode,
         payment_method: paymentMethod,
         payment_reference: 'TXN-' + Math.floor(100000 + Math.random() * 900000)
       });
@@ -47,33 +58,33 @@ export default function PublicPricingJoin() {
   };
 
   return (
-    <div style={{ minHeight: '100vh', background: 'linear-gradient(175deg, #0F172A 0%, #1E293B 100%)', color: '#FFFFFF', direction: 'rtl', fontFamily: 'Alexandria, Cairo, sans-serif', padding: '32px 16px' }}>
-      <div style={{ maxWidth: '840px', margin: '0 auto' }}>
+    <div style={{ minHeight: '100vh', background: 'linear-gradient(175deg, #0F172A 0%, #1E293B 100%)', color: '#FFFFFF', direction: 'rtl', fontFamily: 'Alexandria, Cairo, sans-serif', padding: '36px 16px' }}>
+      <div style={{ maxWidth: '1080px', margin: '0 auto' }}>
         
-        {/* Header */}
+        {/* Top Branding Header */}
         <div style={{ textAlign: 'center', marginBottom: '32px' }}>
-          <div style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', background: 'rgba(2, 132, 199, 0.2)', border: '1px solid rgba(2, 132, 199, 0.4)', padding: '4px 12px', borderRadius: '50px', fontSize: '0.75rem', fontWeight: 800, color: '#38BDF8', marginBottom: '12px' }}>
+          <div style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', background: 'rgba(2, 132, 199, 0.2)', border: '1px solid rgba(2, 132, 199, 0.4)', padding: '4px 14px', borderRadius: '50px', fontSize: '0.78rem', fontWeight: 800, color: '#38BDF8', marginBottom: '12px' }}>
             <Sparkles style={{ width: '14px', height: '14px' }} />
             <span>الاشتراك المباشر مع كابتن كريم زكريا</span>
           </div>
-          <h1 style={{ fontSize: '1.85rem', fontWeight: 900, margin: '0 0 8px 0', letterSpacing: '-0.5px' }}>
+          <h1 style={{ fontSize: '2.1rem', fontWeight: 900, margin: '0 0 8px 0', letterSpacing: '-0.5px' }}>
             اختر باقتك وانطلق في رحلة التحول الكبرى
           </h1>
-          <p style={{ fontSize: '0.86rem', color: '#94A3B8', maxWidth: '520px', margin: '0 auto' }}>
-            اشتراك شامل 16 أسبوعاً (3 شهور + شهر مجاناً) مع المتابعة الفسيولوجية والسريرية الدقيقة.
+          <p style={{ fontSize: '0.9rem', color: '#94A3B8', maxWidth: '580px', margin: '0 auto' }}>
+            باقات احترافية محددة بدقة (ELITE و MAX) للمتابعة الفسيولوجية والسريرية الكاملة.
           </p>
         </div>
 
         {completedTokenData ? (
           /* SUCCESS STATE */
-          <div style={{ background: '#FFFFFF', color: '#0F172A', borderRadius: '24px', padding: '36px 24px', textAlign: 'center', boxShadow: '0 20px 40px rgba(0,0,0,0.3)' }}>
+          <div style={{ background: '#FFFFFF', color: '#0F172A', borderRadius: '28px', padding: '40px 24px', textAlign: 'center', boxShadow: '0 20px 40px rgba(0,0,0,0.3)', maxWidth: '600px', margin: '0 auto' }}>
             <div style={{ width: '64px', height: '64px', borderRadius: '50%', background: '#ECFDF5', color: '#059669', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 16px auto' }}>
               <Check style={{ width: '36px', height: '36px' }} />
             </div>
-            <h2 style={{ fontSize: '1.4rem', fontWeight: 900, margin: '0 0 8px 0', color: '#0F172A' }}>
+            <h2 style={{ fontSize: '1.45rem', fontWeight: 900, margin: '0 0 8px 0', color: '#0F172A' }}>
               تم تأكيد الاشتراك بنجاح يا {clientName}!
             </h2>
-            <p style={{ fontSize: '0.84rem', color: '#64748B', maxWidth: '480px', margin: '0 auto 20px auto', lineHeight: '1.6' }}>
+            <p style={{ fontSize: '0.86rem', color: '#64748B', maxWidth: '480px', margin: '0 auto 24px auto', lineHeight: '1.6' }}>
               تم حجز مقعدك في <strong>{completedTokenData.package_details.name_ar}</strong>. الخطوة التالية هي ملء استمارتك الطبية والتدريبية لتجهيز برنامجك فوراً.
             </p>
 
@@ -81,7 +92,7 @@ export default function PublicPricingJoin() {
               <button
                 type="button"
                 onClick={() => navigate('/intake/form')}
-                style={{ background: '#0284C7', color: '#FFFFFF', border: 'none', padding: '12px 28px', borderRadius: '12px', fontSize: '0.88rem', fontWeight: 800, cursor: 'pointer' }}
+                style={{ background: '#00A3FF', color: '#FFFFFF', border: 'none', padding: '12px 28px', borderRadius: '12px', fontSize: '0.88rem', fontWeight: 800, cursor: 'pointer' }}
               >
                 ملء الاستمارة الآن (Intake Form)
               </button>
@@ -98,153 +109,146 @@ export default function PublicPricingJoin() {
             </div>
           </div>
         ) : (
-          /* PRICING & CHECKOUT FORM */
-          <form onSubmit={handleSubmitPayment}>
-            
-            {/* Packages Grid */}
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '16px', marginBottom: '24px' }}>
-              
-              {/* MAX VIP */}
+          <div>
+            {/* 1. Subscription Cards View */}
+            <SubscriptionCardsView onSelectTier={handleSelectTier} />
+
+            {/* 2. Checkout Modal / Drawer when a plan is selected */}
+            {selectedPlan && (
               <div 
-                onClick={() => setSelectedPackage(SUPPORTED_PACKAGES.MAX_3_PLUS_1.code)}
                 style={{
-                  background: selectedPackage === SUPPORTED_PACKAGES.MAX_3_PLUS_1.code ? 'rgba(2, 132, 199, 0.15)' : 'rgba(255,255,255,0.03)',
-                  border: selectedPackage === SUPPORTED_PACKAGES.MAX_3_PLUS_1.code ? '2px solid #38BDF8' : '1px solid rgba(255,255,255,0.1)',
-                  borderRadius: '20px',
-                  padding: '20px',
-                  cursor: 'pointer',
-                  position: 'relative'
+                  position: 'fixed',
+                  top: 0,
+                  left: 0,
+                  right: 0,
+                  bottom: 0,
+                  background: 'rgba(15, 23, 42, 0.8)',
+                  backdropFilter: 'blur(8px)',
+                  zIndex: 9999,
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  padding: '16px'
+                }}
+                onClick={(e) => {
+                  if (e.target === e.currentTarget) setSelectedPlan(null);
                 }}
               >
-                <div style={{ position: 'absolute', top: '12px', left: '12px', background: '#FEF3C7', color: '#92400E', fontSize: '9px', fontWeight: 900, padding: '2px 8px', borderRadius: '6px' }}>
-                  الأكثر طلباً (VIP)
-                </div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '10px' }}>
-                  <Crown style={{ width: '22px', height: '22px', color: '#FBBF24' }} />
-                  <strong style={{ fontSize: '1.05rem' }}>باقة ماكس VIP</strong>
-                </div>
-                <div style={{ fontSize: '1.4rem', fontWeight: 900, color: '#38BDF8', marginBottom: '12px' }}>
-                  4,500 <span style={{ fontSize: '0.75rem', color: '#94A3B8' }}>ج.م / 16 أسبوعاً</span>
-                </div>
-                <ul style={{ listStyle: 'none', padding: 0, margin: 0, fontSize: '0.78rem', color: '#CBD5E1', display: 'flex', flexDirection: 'column', gap: '6px' }}>
-                  <li>✓ متابعة أسبوعية دقيقة (كل 7 أيام)</li>
-                  <li>✓ تعديل فوري للماكروز والتمارين بنقرة زر</li>
-                  <li>✓ تواصل مباشر على الواتساب مع كابتن كريم</li>
-                  <li>✓ صلاحية تجميد حتى 21 يوماً</li>
-                </ul>
-              </div>
-
-              {/* ELITE */}
-              <div 
-                onClick={() => setSelectedPackage(SUPPORTED_PACKAGES.ELITE_3_PLUS_1.code)}
-                style={{
-                  background: selectedPackage === SUPPORTED_PACKAGES.ELITE_3_PLUS_1.code ? 'rgba(2, 132, 199, 0.15)' : 'rgba(255,255,255,0.03)',
-                  border: selectedPackage === SUPPORTED_PACKAGES.ELITE_3_PLUS_1.code ? '2px solid #38BDF8' : '1px solid rgba(255,255,255,0.1)',
-                  borderRadius: '20px',
-                  padding: '20px',
-                  cursor: 'pointer'
-                }}
-              >
-                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '10px' }}>
-                  <Zap style={{ width: '20px', height: '20px', color: '#0284C7' }} />
-                  <strong style={{ fontSize: '1.05rem' }}>باقة إيليت</strong>
-                </div>
-                <div style={{ fontSize: '1.4rem', fontWeight: 900, color: '#38BDF8', marginBottom: '12px' }}>
-                  3,000 <span style={{ fontSize: '0.75rem', color: '#94A3B8' }}>ج.م / 16 أسبوعاً</span>
-                </div>
-                <ul style={{ listStyle: 'none', padding: 0, margin: 0, fontSize: '0.78rem', color: '#CBD5E1', display: 'flex', flexDirection: 'column', gap: '6px' }}>
-                  <li>✓ متابعة نصف شهرية (كل 14 يوماً)</li>
-                  <li>✓ برنامج التغذية والتدريب التكيفي الكامل</li>
-                  <li>✓ الوصول الشامل لتطبيق المشترك التفاعلي</li>
-                  <li>✓ صلاحية تجميد حتى 21 يوماً</li>
-                </ul>
-              </div>
-
-            </div>
-
-            {/* Inputs Form */}
-            <div style={{ background: 'rgba(255,255,255,0.05)', borderRadius: '20px', padding: '20px', border: '1px solid rgba(255,255,255,0.1)', marginBottom: '20px' }}>
-              <h3 style={{ fontSize: '0.94rem', fontWeight: 800, marginBottom: '14px', margin: '0 0 14px 0' }}>بيانات المشترك وطريقة الدفع</h3>
-              
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '12px', marginBottom: '16px' }}>
-                <div>
-                  <label style={{ fontSize: '0.75rem', color: '#94A3B8', display: 'block', marginBottom: '4px' }}>الاسم بالكامل</label>
-                  <input
-                    type="text"
-                    required
-                    placeholder="مثال: سارة المنصوري"
-                    value={clientName}
-                    onChange={(e) => setClientName(e.target.value)}
-                    style={{ width: '100%', background: 'rgba(0,0,0,0.3)', border: '1px solid rgba(255,255,255,0.2)', borderRadius: '10px', padding: '10px', color: '#FFFFFF', fontSize: '0.84rem' }}
-                  />
-                </div>
-
-                <div>
-                  <label style={{ fontSize: '0.75rem', color: '#94A3B8', display: 'block', marginBottom: '4px' }}>رقم الهاتف / الواتساب</label>
-                  <input
-                    type="tel"
-                    required
-                    placeholder="مثال: 01011111110"
-                    value={clientPhone}
-                    onChange={(e) => setClientPhone(e.target.value)}
-                    style={{ width: '100%', background: 'rgba(0,0,0,0.3)', border: '1px solid rgba(255,255,255,0.2)', borderRadius: '10px', padding: '10px', color: '#FFFFFF', fontSize: '0.84rem' }}
-                  />
-                </div>
-              </div>
-
-              {/* Payment Method Selector */}
-              <div style={{ marginBottom: '8px' }}>
-                <label style={{ fontSize: '0.75rem', color: '#94A3B8', display: 'block', marginBottom: '8px' }}>اختر طريقة الدفع</label>
-                <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
-                  {[
-                    { id: PAYMENT_METHODS.INSTAPAY, label: 'InstaPay (إنستاباي)' },
-                    { id: PAYMENT_METHODS.VODAFONE_CASH, label: 'Vodafone Cash (فودافون كاش)' },
-                    { id: PAYMENT_METHODS.CREDIT_CARD, label: 'بطاقة بنكية (Credit/Debit)' }
-                  ].map(m => (
+                <div 
+                  style={{
+                    width: '100%',
+                    maxWidth: '480px',
+                    background: '#FFFFFF',
+                    borderRadius: '24px',
+                    padding: '24px',
+                    boxShadow: '0 20px 60px rgba(0,0,0,0.3)',
+                    color: '#0F172A',
+                    direction: 'rtl'
+                  }}
+                >
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid #F1F5F9', paddingBottom: '12px', marginBottom: '16px' }}>
+                    <div>
+                      <h3 style={{ fontSize: '1.1rem', fontWeight: 900, color: '#0F172A', margin: 0 }}>
+                        تأكيد الاشتراك في {selectedPlan.tier === 'MAX' ? 'باقة M A X' : 'باقة ELITE'}
+                      </h3>
+                      <span style={{ fontSize: '0.76rem', color: selectedPlan.tier === 'MAX' ? '#B45309' : '#0284C7', fontWeight: 700 }}>
+                        {currentDurationData.label} — {currentDurationData.priceEgp.toLocaleString()} ج.م
+                      </span>
+                    </div>
                     <button
-                      key={m.id}
                       type="button"
-                      onClick={() => setPaymentMethod(m.id)}
+                      onClick={() => setSelectedPlan(null)}
+                      style={{ background: '#F1F5F9', border: 'none', width: '28px', height: '28px', borderRadius: '8px', color: '#64748B', cursor: 'pointer' }}
+                    >
+                      <X style={{ width: '16px', height: '16px' }} />
+                    </button>
+                  </div>
+
+                  <form onSubmit={handleSubmitPayment} className="space-y-3">
+                    <div>
+                      <label style={{ fontSize: '0.78rem', color: '#475569', display: 'block', fontWeight: 700, marginBottom: '4px' }}>الاسم بالكامل *</label>
+                      <input
+                        type="text"
+                        required
+                        value={clientName}
+                        onChange={(e) => setClientName(e.target.value)}
+                        placeholder="اكتب اسمك..."
+                        style={{ width: '100%', background: '#F8FAFC', border: '1.5px solid #E2E8F0', borderRadius: '12px', padding: '10px 14px', color: '#0F172A', fontSize: '0.86rem', outline: 'none' }}
+                      />
+                    </div>
+
+                    <div>
+                      <label style={{ fontSize: '0.78rem', color: '#475569', display: 'block', fontWeight: 700, marginBottom: '4px' }}>رقم الواتساب للتواصل *</label>
+                      <input
+                        type="tel"
+                        required
+                        value={clientPhone}
+                        onChange={(e) => setClientPhone(e.target.value)}
+                        placeholder="010XXXXXXXX"
+                        style={{ width: '100%', background: '#F8FAFC', border: '1.5px solid #E2E8F0', borderRadius: '12px', padding: '10px 14px', color: '#0F172A', fontSize: '0.86rem', outline: 'none', direction: 'ltr', textAlign: 'right' }}
+                      />
+                    </div>
+
+                    {/* Payment Method Selector */}
+                    <div>
+                      <label style={{ fontSize: '0.78rem', color: '#475569', display: 'block', fontWeight: 700, marginBottom: '6px' }}>اختر طريقة التحويل</label>
+                      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
+                        {[
+                          { id: PAYMENT_METHODS.INSTAPAY, label: 'InstaPay إنستاباي', icon: Smartphone },
+                          { id: PAYMENT_METHODS.VODAFONE_CASH, label: 'فودافون كاش', icon: Smartphone },
+                        ].map(pm => {
+                          const Icon = pm.icon;
+                          const isSel = paymentMethod === pm.id;
+                          return (
+                            <div
+                              key={pm.id}
+                              onClick={() => setPaymentMethod(pm.id)}
+                              style={{
+                                background: isSel ? '#E0F2FE' : '#F8FAFC',
+                                border: isSel ? '1.5px solid #00A3FF' : '1px solid #E2E8F0',
+                                borderRadius: '12px',
+                                padding: '10px',
+                                cursor: 'pointer',
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: '8px',
+                                fontSize: '0.78rem',
+                                fontWeight: 700,
+                                color: isSel ? '#0284C7' : '#475569'
+                              }}
+                            >
+                              <Icon style={{ width: '16px', height: '16px' }} />
+                              <span>{pm.label}</span>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </div>
+
+                    <button
+                      type="submit"
+                      disabled={isProcessing}
                       style={{
-                        background: paymentMethod === m.id ? '#0284C7' : 'rgba(255,255,255,0.08)',
-                        border: paymentMethod === m.id ? '1px solid #38BDF8' : '1px solid transparent',
+                        width: '100%',
+                        background: selectedPlan.tier === 'MAX' ? 'linear-gradient(135deg, #D9A738 0%, #BF8D24 100%)' : 'linear-gradient(135deg, #00A3FF 0%, #0284C7 100%)',
                         color: '#FFFFFF',
-                        borderRadius: '10px',
-                        padding: '8px 14px',
-                        fontSize: '0.76rem',
-                        fontWeight: 700,
-                        cursor: 'pointer'
+                        border: 'none',
+                        padding: '14px',
+                        borderRadius: '14px',
+                        fontSize: '0.92rem',
+                        fontWeight: 900,
+                        cursor: isProcessing ? 'not-allowed' : 'pointer',
+                        marginTop: '12px',
+                        boxShadow: '0 4px 15px rgba(0,0,0,0.15)'
                       }}
                     >
-                      {m.label}
+                      {isProcessing ? 'جارٍ تأكيد الاشتراك...' : `تأكيد الاشتراك (${currentDurationData.priceEgp.toLocaleString()} ج.م)`}
                     </button>
-                  ))}
+                  </form>
                 </div>
               </div>
-
-            </div>
-
-            {/* CTA Button */}
-            <button
-              type="submit"
-              disabled={isProcessing}
-              style={{
-                width: '100%',
-                background: 'linear-gradient(135deg, #0284C7 0%, #0369A1 100%)',
-                color: '#FFFFFF',
-                border: 'none',
-                padding: '14px',
-                borderRadius: '14px',
-                fontSize: '0.94rem',
-                fontWeight: 900,
-                cursor: 'pointer',
-                boxShadow: '0 10px 20px rgba(2, 132, 199, 0.3)'
-              }}
-            >
-              {isProcessing ? 'جاري تأكيد الدفع وتوليد الاستمارة...' : 'تأكيد الاشتراك والانتقال للاستمارة 🚀'}
-            </button>
-
-          </form>
+            )}
+          </div>
         )}
 
       </div>

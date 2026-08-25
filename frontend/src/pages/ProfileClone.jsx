@@ -86,7 +86,7 @@ export default function ProfileClone() {
             <button 
               type="button"
               onClick={() => setActiveTab('branding')}
-              className={`btn btn-sm rounded-pill px-4 fw-bold transition-all ${activeTab === 'branding' ? 'text-white shadow-sm' : 'bg-white text-dark border'}`}
+              className={`btn btn-sm rounded-pill px-4 fw-bold transition-all ${activeTab === 'branding' ? 'text-slate-900 shadow-sm' : 'bg-white text-dark border'}`}
               style={{
                 background: activeTab === 'branding' ? '#0284C7' : '#ffffff',
                 borderColor: activeTab === 'branding' ? '#0284C7' : '#e2e8f0',
@@ -99,7 +99,7 @@ export default function ProfileClone() {
             <button 
               type="button"
               onClick={() => setActiveTab('security')}
-              className={`btn btn-sm rounded-pill px-4 fw-bold transition-all ${activeTab === 'security' ? 'text-white shadow-sm' : 'bg-white text-dark border'}`}
+              className={`btn btn-sm rounded-pill px-4 fw-bold transition-all ${activeTab === 'security' ? 'text-slate-900 shadow-sm' : 'bg-white text-dark border'}`}
               style={{
                 background: activeTab === 'security' ? '#0284C7' : '#ffffff',
                 borderColor: activeTab === 'security' ? '#0284C7' : '#e2e8f0',
@@ -112,7 +112,7 @@ export default function ProfileClone() {
             <button 
               type="button"
               onClick={() => setActiveTab('whatsapp')}
-              className={`btn btn-sm rounded-pill px-4 fw-bold transition-all ${activeTab === 'whatsapp' ? 'text-white shadow-sm' : 'bg-white text-dark border'}`}
+              className={`btn btn-sm rounded-pill px-4 fw-bold transition-all ${activeTab === 'whatsapp' ? 'text-slate-900 shadow-sm' : 'bg-white text-dark border'}`}
               style={{
                 background: activeTab === 'whatsapp' ? '#0284C7' : '#ffffff',
                 borderColor: activeTab === 'whatsapp' ? '#0284C7' : '#e2e8f0',

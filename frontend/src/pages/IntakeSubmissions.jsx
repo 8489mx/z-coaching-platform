@@ -177,7 +177,7 @@ export default function IntakeSubmissions() {
               <Link 
                 to="/intake/form" 
                 target="_blank" 
-                className="btn btn-sm rounded-pill px-3 fw-bold d-flex align-items-center gap-1 shadow-sm text-white" 
+                className="btn btn-sm rounded-pill px-3 fw-bold d-flex align-items-center gap-1 shadow-sm text-slate-900" 
                 style={{ 
                   height: '34px', 
                   fontSize: '0.8rem',
@@ -309,7 +309,7 @@ export default function IntakeSubmissions() {
                 key={f.id}
                 type="button"
                 onClick={() => setFilter(f.id)}
-                className={`btn btn-sm rounded-pill px-3 fw-bold transition-all ${filter === f.id ? 'text-white shadow-xs' : 'bg-white text-dark border'}`}
+                className={`btn btn-sm rounded-pill px-3 fw-bold transition-all ${filter === f.id ? 'text-slate-900 shadow-xs' : 'bg-white text-dark border'}`}
                 style={{
                   background: filter === f.id ? '#0284C7' : '#ffffff',
                   borderColor: filter === f.id ? '#0284C7' : '#e2e8f0',
@@ -451,7 +451,7 @@ export default function IntakeSubmissions() {
                                 {/* View Answers Inline Toggle Button */}
                                  <button
                                    type="button"
-                                   className={`btn btn-sm rounded-pill px-2 py-1 fw-semibold transition-all ${selectedAnswers?.id === sub.id ? 'btn-primary text-white shadow-sm' : 'bg-white border'}`}
+                                   className={`btn btn-sm rounded-pill px-2 py-1 fw-semibold transition-all ${selectedAnswers?.id === sub.id ? 'btn-primary text-slate-900 shadow-sm' : 'bg-white border'}`}
                                    style={{ 
                                      fontSize: '0.76rem', 
                                      color: selectedAnswers?.id === sub.id ? '#ffffff' : '#475569', 
@@ -488,7 +488,7 @@ export default function IntakeSubmissions() {
                                  {sub.status !== 'APPROVED' ? (
                                    <button
                                      type="button"
-                                     className="btn btn-sm rounded-pill px-3 py-1 fw-bold text-white shadow-xs d-flex align-items-center gap-1"
+                                     className="btn btn-sm rounded-pill px-3 py-1 fw-bold text-slate-900 shadow-xs d-flex align-items-center gap-1"
                                      disabled={isGenerating}
                                      onClick={() => handleGenerateDraft(sub)}
                                      style={{ fontSize: '0.76rem', background: '#0284C7', border: 'none', height: '30px' }}
@@ -567,7 +567,7 @@ export default function IntakeSubmissions() {
           onClick={(e) => { if (e.target === e.currentTarget) setPaymentModalSub(null); }}
         >
           <div className="modal-dialog modal-dialog-centered" style={{ width: '96%', maxWidth: '480px', margin: '1.5rem auto' }}>
-            <div className="modal-content border-0 shadow-lg" style={{ borderRadius: '20px', overflow: 'hidden' }} dir="rtl">
+            <div className="modal-content border-0 shadow-sm shadow-slate-200/50" style={{ borderRadius: '20px', overflow: 'hidden' }} dir="rtl">
               <div className="modal-header border-bottom p-4 bg-white d-flex justify-content-between align-items-center" style={{ borderColor: '#f1f5f9' }}>
                 <div className="d-flex align-items-center gap-3">
                   <div className="rounded-circle d-flex align-items-center justify-content-center" style={{ width: '38px', height: '38px', background: '#ecfdf5', color: '#059669', border: '1px solid #a7f3d0' }}>

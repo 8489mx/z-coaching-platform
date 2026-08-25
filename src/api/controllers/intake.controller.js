@@ -6,6 +6,7 @@ import { evaluateIntake } from "z-coaching-intake-decision-engine";
 import { adaptIntakePayloadToCanonicalEngine } from "../../intake-decision-engine/adapters/intake-adapter.js";
 import { buildMasterEngineV2 } from "../../../src/master-engine-v2/index.js";
 import { User, Program, IntakeSubmission } from "../models/index.js";
+import { encryptMedicalData, decryptMedicalData } from "../../utils/crypto.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -254,12 +255,12 @@ export const saveDraftIntake = async (req, res) => {
     if (!submission) {
       submission = await IntakeSubmission.create({
         user_id: user.id,
-        answers: intakePayload,
+        answers: { _isEncrypted: true, data: encryptMedicalData(intakePayload) },
         status: "IN_PROGRESS",
         progress_percent: Math.min(Math.max(Number(progress_percent) || 20, 10), 99)
       });
     } else {
-      submission.answers = intakePayload;
+      submission.answers = { _isEncrypted: true, data: encryptMedicalData(intakePayload) };
       submission.progress_percent = Math.min(Math.max(Number(progress_percent) || 20, 10), 99);
       await submission.save();
     }
@@ -327,12 +328,12 @@ export const submitPublicIntake = async (req, res) => {
     if (!submission || submission.status === 'APPROVED') {
       submission = await IntakeSubmission.create({
         user_id: user.id,
-        answers: intakePayload,
+        answers: { _isEncrypted: true, data: encryptMedicalData(intakePayload) },
         status: "PENDING_COACH_REVIEW",
         progress_percent: 100
       });
     } else {
-      submission.answers = intakePayload;
+      submission.answers = { _isEncrypted: true, data: encryptMedicalData(intakePayload) };
       submission.status = "PENDING_COACH_REVIEW";
       submission.progress_percent = 100;
       await submission.save();
@@ -429,7 +430,10 @@ export const generateDraftFromIntake = async (req, res) => {
       return res.status(404).json({ error: "الاستمارة غير موجودة" });
     }
 
-    const intakePayload = submission.answers;
+    let intakePayload = submission.answers;
+    if (intakePayload && intakePayload._isEncrypted) {
+      intakePayload = decryptMedicalData(intakePayload.data);
+    }
     const evaluationContext = Object.freeze({
       system_time: new Date().toISOString(),
       assessmentDate: new Date().toISOString().split("T")[0]
@@ -453,10 +457,32 @@ export const generateDraftFromIntake = async (req, res) => {
       options: {}
     });
 
-    // Attach Explainable AI Rationale
+    let rawCalories = rawProgram.nutrition_program?.macro_targets?.calories_kcal || 2000;
+    let rawProtein = rawProgram.nutrition_program?.macro_targets?.protein_g || 150;
+    let rawCarbs = rawProgram.nutrition_program?.macro_targets?.carbohydrate_g || 150;
+    let rawFats = rawProgram.nutrition_program?.macro_targets?.fat_g || 50;
+
+    // Failsafe Bounds
+    rawCalories = Math.max(1200, Math.min(rawCalories, 5000));
+    rawProtein = Math.max(50, Math.min(rawProtein, 300));
+    rawFats = Math.max(30, Math.min(rawFats, 150));
+    rawCarbs = Math.max(20, Math.min(rawCarbs, 600));
+
     const masterProgram = {
       ...rawProgram,
-      ai_rationale: generateAiRationaleAudit(intakePayload, rawProgram)
+      ai_rationale: generateAiRationaleAudit(intakePayload, rawProgram),
+      nutrition: {
+        targets: {
+          calories: rawCalories,
+          protein: rawProtein,
+          carbs: rawCarbs,
+          fats: rawFats
+        },
+        meals: rawProgram.nutrition_program?.culinary_meals || []
+      },
+      training: {
+        sessions: rawProgram.training_program?.weeks?.[0]?.sessions || []
+      }
     };
 
     // Save as DRAFT program

@@ -557,73 +557,76 @@ const PACKAGES_FILE = path.join(SETTINGS_DIR, 'subscription_packages.json');
 
 const DEFAULT_PACKAGES = [
   {
-    id: "ELITE_3_PLUS_1",
-    name_ar: "باقة إيليت",
-    name_en: "Elite Package",
-    badge_ar: "عرض خاص 3 شهور + 1 مجاناً",
-    duration_months: 3,
-    free_months: 1,
+    id: "MAX_4M",
+    name_ar: "باقة ماكس (4 شهور)",
+    name_en: "MAX (4 Months)",
+    badge_ar: "4 شهور",
+    duration_months: 4,
+    free_months: 0,
     total_months: 4,
-    price_egp: 2500,
+    price_egp: 2800,
     features: [
-      "خطة تغذية ذكية مع توزين الماكروز بالجرام",
-      "جدول تمارين تفاعلي بالأجهزة والوزن المطلوب",
-      "متابعة أسبوعية وتكيف تلقائي للخطة",
-      "دعم مستمر عبر الواتساب"
+      "متابعة دورية مباشرة عبر الواتساب",
+      "خطة تغذية مخصصة وتعديل دوري",
+      "برنامج تدريبي كامل للجيم والبيت",
+      "تحليل مقاطع الفيديو والتكنيك"
     ],
     active: true,
     is_featured: true,
     order: 1
   },
   {
-    id: "MAX_3_PLUS_1",
-    name_ar: "باقة ماكس",
-    name_en: "Max VIP Package",
-    badge_ar: "VIP أقصى اهتمام ومتابعة",
-    duration_months: 3,
-    free_months: 1,
-    total_months: 4,
-    price_egp: 3500,
-    features: [
-      "كل مميزات باقة إيليت بالكامل",
-      "مراجعة وتدقيق تكنيك التمارين بالفيديو",
-      "تعديلات فورية غير محدودة على الوجبات والتمارين",
-      "أولوية التواصل المباشر والمكالمات مع الكابتن"
-    ],
-    active: true,
-    is_featured: true,
-    order: 2
-  },
-  {
-    id: "MONTH_1",
-    name_ar: "باقة شهر واحد",
-    name_en: "1 Month Starter",
-    badge_ar: "تجربة سريعة",
-    duration_months: 1,
+    id: "MAX_6M",
+    name_ar: "باقة ماكس (6 شهور)",
+    name_en: "MAX (6 Months)",
+    badge_ar: "6 شهور",
+    duration_months: 6,
     free_months: 0,
-    total_months: 1,
-    price_egp: 900,
+    total_months: 6,
+    price_egp: 4200,
     features: [
-      "خطة تغذية وتدريب مخصصة لشهر كامل",
-      "متابعة وتكييف أسبوعي"
+      "متابعة دورية مباشرة عبر الواتساب",
+      "خطة تغذية وتعديل مستمر",
+      "برمجة تدريبية لميزوسايكلز متعددة",
+      "تحليل حركي وتكنيك مستمر"
     ],
     active: true,
     is_featured: false,
+    order: 2
+  },
+  {
+    id: "ELITE_4M",
+    name_ar: "باقة إيليت (4 شهور)",
+    name_en: "ELITE (4 Months)",
+    badge_ar: "4 شهور",
+    duration_months: 4,
+    free_months: 0,
+    total_months: 4,
+    price_egp: 3800,
+    features: [
+      "متابعة VIP وتدريب شخصي مخصص",
+      "تعديل فوري للماكروز والدايت",
+      "تحليل حركي متقدم وبروتوكول استشفاء",
+      "دعم سريري وإصابات كامل"
+    ],
+    active: true,
+    is_featured: true,
     order: 3
   },
   {
-    id: "MONTHS_6",
-    name_ar: "باقة 6 شهور",
-    name_en: "6 Months Transformation",
-    badge_ar: "تحول بدني كامل",
+    id: "ELITE_6M",
+    name_ar: "باقة إيليت (6 شهور)",
+    name_en: "ELITE (6 Months)",
+    badge_ar: "6 شهور",
     duration_months: 6,
-    free_months: 2,
-    total_months: 8,
-    price_egp: 4500,
+    free_months: 0,
+    total_months: 6,
+    price_egp: 5800,
     features: [
-      "تحول بدني شامل على مرحلتين (تنشيف ثم بناء)",
-      "تطوير مستمر للأوزان والتغذية",
-      "شاملة شهرين إضافيين مجاناً"
+      "متابعة VIP وتدريب شخصي مخصص",
+      "تعديل فوري للماكروز والدايت",
+      "تحليل حركي متقدم وبروتوكول استشفاء",
+      "دعم سريري وإصابات كامل"
     ],
     active: true,
     is_featured: false,

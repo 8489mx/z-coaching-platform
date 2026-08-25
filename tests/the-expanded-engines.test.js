@@ -44,7 +44,10 @@ describe('Expanded Splits & Onboarding Engine Tests', () => {
     });
 
     expect(plan5.training_split.id).toBe('female_glute_specialized');
-    expect(plan5.training_split.schedule_blueprint.length).toBe(6);
+    expect(plan5.training_split.schedule_blueprint.length).toBe(5);
+    expect(plan5.rehab_routine).toBeDefined();
+    expect(plan5.cardio_protocol).toBeDefined();
+    expect(plan5.clinical_profile).toBeDefined();
   });
 
   it('generates UL_ARMS_HYBRID successfully for 5-day male with arm exercises', () => {

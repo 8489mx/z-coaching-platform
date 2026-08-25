@@ -203,7 +203,7 @@ export default function NotificationsDropdown() {
       <button 
         type="button" 
         onClick={() => setIsOpen(!isOpen)}
-        className="btn d-flex align-items-center justify-content-center position-relative transition-all"
+        className="btn d-flex align-items-center justify-content-center position-relative"
         style={{ 
           width: '38px', 
           height: '38px', 
@@ -211,14 +211,30 @@ export default function NotificationsDropdown() {
           border: '1px solid #E2E8F0',
           background: isOpen ? '#E0F2FE' : '#F8FAFC',
           color: isOpen ? '#0284C7' : '#475569',
-          boxShadow: '0 1px 3px rgba(15, 23, 42, 0.04)'
+          boxShadow: '0 1px 3px rgba(15, 23, 42, 0.04)',
+          padding: 0,
+          cursor: 'pointer'
         }}
         title="الإشعارات والتنبيهات"
       >
-        <Bell style={{ width: '18px', height: '18px' }} />
+        <svg 
+          xmlns="http://www.w3.org/2000/svg" 
+          width="19" 
+          height="19" 
+          viewBox="0 0 24 24" 
+          fill="none" 
+          stroke="currentColor" 
+          strokeWidth="2" 
+          strokeLinecap="round" 
+          strokeLinejoin="round"
+          style={{ color: isOpen ? '#0284C7' : '#475569', display: 'block' }}
+        >
+          <path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9" />
+          <path d="M10.3 21a1.94 1.94 0 0 0 3.4 0" />
+        </svg>
         {unreadCount > 0 && (
           <span 
-            className="position-absolute d-flex align-items-center justify-content-center text-white font-monospace fw-bold"
+            className="position-absolute d-flex align-items-center justify-content-center text-slate-900 font-monospace fw-bold"
             style={{ 
               top: '-4px', 
               left: '-4px', 
@@ -289,7 +305,7 @@ export default function NotificationsDropdown() {
               <button 
                 type="button"
                 onClick={() => setActiveFilter('ALL')}
-                className={`btn btn-sm rounded-pill px-3 py-1 fw-bold ${activeFilter === 'ALL' ? 'btn-primary text-white' : 'btn-light border text-muted'}`}
+                className={`btn btn-sm rounded-pill px-3 py-1 fw-bold ${activeFilter === 'ALL' ? 'btn-primary text-slate-900' : 'btn-light border text-muted'}`}
                 style={{ fontSize: '0.78rem', height: '28px' }}
               >
                 الكل ({notifications.length})
@@ -297,7 +313,7 @@ export default function NotificationsDropdown() {
               <button 
                 type="button"
                 onClick={() => setActiveFilter('UNREAD')}
-                className={`btn btn-sm rounded-pill px-3 py-1 fw-bold ${activeFilter === 'UNREAD' ? 'btn-primary text-white' : 'btn-light border text-muted'}`}
+                className={`btn btn-sm rounded-pill px-3 py-1 fw-bold ${activeFilter === 'UNREAD' ? 'btn-primary text-slate-900' : 'btn-light border text-muted'}`}
                 style={{ fontSize: '0.78rem', height: '28px' }}
               >
                 غير المقروءة ({unreadCount})

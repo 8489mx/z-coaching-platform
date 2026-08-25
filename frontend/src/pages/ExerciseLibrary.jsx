@@ -78,7 +78,7 @@ export default function ExerciseLibrary() {
                   key={cat.id}
                   type="button"
                   onClick={() => setMuscleFilter(cat.id)}
-                  className={`btn btn-sm rounded-pill px-3 fw-bold transition-all ${muscleFilter === cat.id ? 'text-white shadow-xs' : 'bg-white text-dark border'}`}
+                  className={`btn btn-sm rounded-pill px-3 fw-bold transition-all ${muscleFilter === cat.id ? 'text-slate-900 shadow-xs' : 'bg-white text-dark border'}`}
                   style={{
                     background: muscleFilter === cat.id ? '#0284C7' : '#ffffff',
                     borderColor: muscleFilter === cat.id ? '#0284C7' : '#e2e8f0',

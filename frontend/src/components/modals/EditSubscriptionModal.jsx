@@ -25,7 +25,7 @@ export default function EditSubscriptionModal({
  return (
  <div className="modal show d-block" tabIndex="-1" style={{ backgroundColor: 'rgba(15, 23, 42, 0.65)', backdropFilter: 'blur(4px)', zIndex: 1060 }}>
  <div className="modal-dialog modal-dialog-centered">
- <div className="modal-content border-0 shadow-lg" style={{ borderRadius: '20px' }}>
+ <div className="modal-content border-0 shadow-sm shadow-slate-200/50" style={{ borderRadius: '20px' }}>
   <div className="modal-header border-bottom p-4 d-flex justify-content-between align-items-center bg-white">
     <h5 className="modal-title fw-bold text-dark mb-0" style={{ fontSize: '1.05rem' }}>
       تعديل اشتراك: {client.full_name || 'المشترك'}
@@ -50,11 +50,10 @@ export default function EditSubscriptionModal({
  value={editForm.subscription_package}
  onChange={(e) => setEditForm({ ...editForm, subscription_package: e.target.value })}
  >
- <option value="ELITE_3_PLUS_1">باقة إيليت (3 شهور + 1 شهر مجاناً)</option>
- <option value="MAX_3_PLUS_1">باقة ماكس VIP (3 شهور + 1 شهر مجاناً)</option>
- <option value="1_MONTH">باقة شهر واحد</option>
- <option value="6_MONTHS">باقة 6 شهور</option>
- <option value="12_MONTHS">باقة سنة كاملة</option>
+ <option value="MAX_4M">باقة MAX (4 شهور - 3+1 هدية)</option>
+ <option value="MAX_8M">باقة MAX (8 شهور - 6+2 هدية)</option>
+ <option value="ELITE_4M">باقة ELITE (4 شهور - 3+1 هدية)</option>
+ <option value="ELITE_8M">باقة ELITE (8 شهور - 6+2 هدية)</option>
  </select>
  </div>
 

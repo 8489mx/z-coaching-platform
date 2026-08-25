@@ -52,7 +52,7 @@ export default function ApproveCheckinModal({
   return (
     <div className="modal show d-block" tabIndex="-1" style={{ backgroundColor: 'rgba(15, 23, 42, 0.65)', backdropFilter: 'blur(4px)', zIndex: 1060 }}>
       <div className="modal-dialog modal-dialog-centered modal-lg">
-        <div className="modal-content border-0 shadow-lg" style={{ borderRadius: '20px', overflow: 'hidden' }} dir="rtl">
+        <div className="modal-content border-0 shadow-sm shadow-slate-200/50" style={{ borderRadius: '20px', overflow: 'hidden' }} dir="rtl">
           
           {/* Header */}
           <div className="modal-header border-bottom p-4 bg-white d-flex justify-content-between align-items-center" style={{ borderColor: '#f1f5f9' }}>
@@ -196,7 +196,7 @@ export default function ApproveCheckinModal({
               type="button" 
               disabled={approving}
               onClick={onApprove}
-              className="btn btn-sm rounded-pill px-4 fw-bold shadow-sm text-white d-flex align-items-center gap-1.5"
+              className="btn btn-sm rounded-pill px-4 fw-bold shadow-sm text-slate-900 d-flex align-items-center gap-1.5"
               style={{ height: '38px', background: 'linear-gradient(135deg, #0284C7 0%, #0284C7 100%)', border: 'none', boxShadow: '0 2px 10px rgba(38, 28, 106, 0.22)', fontSize: '0.84rem' }}
             >
               {approving ? (

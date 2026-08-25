@@ -1,94 +1,126 @@
-import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { saveSession, isClientLoggedIn } from '../utils/auth';
+import React, { useState } from 'react';
+import { ShieldCheck, LogIn, AlertCircle, Smartphone, KeyRound } from 'lucide-react';
 
-export default function ClientLogin() {
-  const [code, setCode] = useState('');
+export default function ClientLogin({ onLoginSuccess }) {
   const [phone, setPhone] = useState('');
+  const [code, setCode] = useState('');
   const [error, setError] = useState('');
-  const [loading, setLoading] = useState(false);
-  const navigate = useNavigate();
+  const [isLoading, setIsLoading] = useState(false);
 
-  useEffect(() => {
-    if (isClientLoggedIn()) {
-      navigate('/client/today', { replace: true });
-    }
-  }, [navigate]);
-
-  const handleSubmit = async (e) => {
+  const handleLogin = async (e) => {
     e.preventDefault();
+    
+    if (phone.length < 10 || code.length < 5) {
+      setError('يرجى إدخال رقم الموبايل وكود الاشتراك بشكل صحيح.');
+      return;
+    }
+    
+    setIsLoading(true);
     setError('');
-    setLoading(true);
+    
+    // Normalization: Remove non-numeric chars, remove leading +20 or 002
+    let normalizedPhone = phone.replace(/\D/g, '');
+    if (normalizedPhone.startsWith('20') && normalizedPhone.length > 10) normalizedPhone = normalizedPhone.substring(2);
+    if (normalizedPhone.startsWith('0020')) normalizedPhone = normalizedPhone.substring(4);
+    if (!normalizedPhone.startsWith('01')) {
+      // Local fallback for numbers lacking 01
+      if (normalizedPhone.startsWith('1')) normalizedPhone = '0' + normalizedPhone;
+    }
 
     try {
-      const res = await fetch('/api/v1/client/login', {
+      const response = await fetch('/api/v1/auth/login-fast', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ client_code: code.trim(), phone: phone.trim() })
+        body: JSON.stringify({ client_code: code, phone_number: normalizedPhone })
       });
-      const data = await res.json();
-
-      if (!res.ok || !data.success) {
-        throw new Error(data.message || data.error || 'بيانات الدخول غير صحيحة، يرجى مراجعة الكود ورقم الهاتف');
+      
+      const data = await response.json();
+      
+      if (response.ok && data.token) {
+        localStorage.setItem('kz_client_token', data.token);
+        localStorage.setItem('kz_client_code', code);
+        localStorage.setItem('kz_client_phone', phone);
+        setIsLoading(false);
+        if(onLoginSuccess) onLoginSuccess();
+      } else {
+        setError(data.error || 'بيانات الدخول غير صحيحة. تأكد من الكود ورقم الموبايل المسجل.');
+        setIsLoading(false);
       }
-
-      saveSession(data.client || data.user || { client_code: code.trim(), phone: phone.trim() });
-      navigate('/client/today', { replace: true });
     } catch (err) {
-      setError(err.message);
-    } finally {
-      setLoading(false);
+      setError('حدث خطأ في الاتصال بالخادم. يرجى المحاولة مرة أخرى.');
+      setIsLoading(false);
     }
   };
 
   return (
-    <div className="min-h-screen bg-slate-950 flex items-center justify-center p-4 text-white" dir="rtl">
-      <div className="w-full max-w-sm bg-slate-900 border border-slate-800 rounded-3xl p-6 shadow-2xl">
-        <div className="text-center mb-6">
-          <div className="w-14 h-14 bg-emerald-500/10 border border-emerald-500/30 rounded-2xl flex items-center justify-center mx-auto mb-3">
-            <span className="w-4 h-4 rounded-full bg-emerald-400 animate-pulse"></span>
+    <div className="min-h-screen bg-slate-50 flex items-center justify-center p-4 font-sans" dir="rtl">
+      <div className="max-w-md w-full space-y-8 bg-white p-8 rounded-3xl border border-slate-200 shadow-2xl relative overflow-hidden">
+        
+        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-1 bg-gradient-to-r from-transparent via-blue-500 to-transparent opacity-50"></div>
+
+        <div className="text-center pt-2">
+          <div className="w-16 h-16 bg-blue-600/10 text-blue-500 rounded-2xl flex items-center justify-center mx-auto mb-5 border border-blue-500/20 shadow-[0_0_15px_rgba(59,130,246,0.1)]">
+            <ShieldCheck size={32} strokeWidth={1.5} />
           </div>
-          <h1 className="text-xl font-bold text-white m-0">تسجيل الدخول</h1>
-          <p className="text-xs text-slate-400 mt-1 mb-0">أدخل كود المشترك ورقم هاتفك للمتابعة</p>
+          <h2 className="text-2xl font-black text-slate-900 tracking-tight">تسجيل الدخول</h2>
+          <p className="text-xs text-slate-600 mt-2 font-medium">أدخل رقم الموبايل وكود الاشتراك السري للبدء</p>
         </div>
 
-        {error && (
-          <div className="bg-rose-500/10 border border-rose-500/30 text-rose-300 text-xs p-3 rounded-xl mb-4 text-center">
-            {error}
+        <form onSubmit={handleLogin} className="space-y-5 mt-8">
+          <div className="space-y-2">
+            <label className="text-[11px] font-bold text-slate-500">رقم الموبايل المسجل</label>
+            <div className="relative flex items-center">
+              <span className="absolute right-4 text-slate-500">
+                <Smartphone size={18} />
+              </span>
+              <input
+                type="tel"
+                value={phone}
+                onChange={(e) => setPhone(e.target.value)}
+                placeholder="مثال: 01012345678"
+                className="w-full bg-slate-50 border border-slate-300 rounded-xl pr-12 pl-4 py-3.5 text-right text-sm font-bold text-slate-900 placeholder-slate-600 focus:outline-none focus:border-blue-500 transition"
+                dir="ltr"
+              />
+            </div>
           </div>
-        )}
 
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div>
-            <label className="block text-xs font-semibold text-slate-300 mb-1.5">كود المشترك</label>
-            <input
-              type="text"
-              required
-              placeholder="مثال: 1042"
-              value={code}
-              onChange={(e) => setCode(e.target.value)}
-              className="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-emerald-500"
-            />
+          <div className="space-y-2">
+            <label className="text-[11px] font-bold text-slate-500">كود الاشتراك</label>
+            <div className="relative flex items-center">
+              <span className="absolute right-4 text-slate-500">
+                <KeyRound size={18} />
+              </span>
+              <input
+                type="number"
+                value={code}
+                onChange={(e) => setCode(e.target.value)}
+                placeholder="مثال: 84902"
+                className="w-full bg-slate-50 border border-slate-300 rounded-xl pr-12 pl-4 py-3.5 text-center text-xl font-black tracking-widest text-slate-900 placeholder-slate-600 focus:outline-none focus:border-blue-500 transition"
+                dir="ltr"
+              />
+            </div>
           </div>
 
-          <div>
-            <label className="block text-xs font-semibold text-slate-300 mb-1.5">رقم الهاتف المسجل</label>
-            <input
-              type="tel"
-              required
-              placeholder="010XXXXXXXX"
-              value={phone}
-              onChange={(e) => setPhone(e.target.value)}
-              className="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-emerald-500"
-            />
-          </div>
+          {error && (
+            <div className="flex items-start gap-2 text-rose-400 bg-rose-500/10 p-3 rounded-xl border border-rose-500/20 text-xs font-bold">
+              <AlertCircle size={16} className="shrink-0 mt-0.5" />
+              <span className="leading-relaxed">{error}</span>
+            </div>
+          )}
 
           <button
             type="submit"
-            disabled={loading}
-            className="w-full bg-emerald-500 hover:bg-emerald-600 active:scale-95 text-slate-950 font-bold py-3 rounded-xl text-sm transition cursor-pointer"
+            disabled={isLoading}
+            className="w-full flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 text-slate-900 font-black py-4 rounded-xl transition shadow-sm shadow-slate-200/50 shadow-blue-600/20 active:scale-95 disabled:opacity-50 mt-4"
           >
-            {loading ? 'جاري التحقق...' : 'دخول للتطبيق'}
+            {isLoading ? (
+              <span className="animate-pulse">جاري التحقق الآمن...</span>
+            ) : (
+              <>
+                <span>دخول للبرنامج</span>
+                <LogIn size={18} />
+              </>
+            )}
           </button>
         </form>
       </div>

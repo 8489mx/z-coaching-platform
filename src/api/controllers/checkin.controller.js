@@ -22,9 +22,16 @@ export async function submitCheckin(req, res) {
       photos = [],
     } = req.body;
 
-    const targetUserId = user_id || client_id;
+    let targetUserId = user_id || client_id;
     if (!targetUserId) {
       return res.status(400).json({ success: false, error: "user_id is required" });
+    }
+
+    // Resolve real user ID if client_code was passed
+    if (isNaN(targetUserId)) {
+      const userObj = await User.findOne({ where: { client_code: targetUserId } });
+      if (!userObj) return res.status(404).json({ success: false, error: "Client not found" });
+      targetUserId = userObj.id;
     }
 
 
