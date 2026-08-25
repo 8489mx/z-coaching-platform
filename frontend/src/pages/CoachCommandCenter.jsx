@@ -149,7 +149,7 @@ export default function CoachCommandCenter() {
               onClick={() => setIsNewClientModalOpen(true)}
               style={{
                 background: 'linear-gradient(135deg, #00A3FF 0%, #0369A1 100%)',
-                color: '#FFFFFF',
+                          color: '#FFFFFF',
                 border: 'none',
                 padding: '9px 18px',
                 borderRadius: '12px',
@@ -170,18 +170,17 @@ export default function CoachCommandCenter() {
         </div>
 
         {/* 3. شريط كروت الإحصائيات (KPI Metric Cards) */}
-        <div className="row g-3 mb-4">
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '16px', marginBottom: '32px' }}>
           {stats.map((st, i) => {
             const IconComponent = st.icon;
             return (
-              <div key={i} className="col-6 col-lg-3">
+              <div key={i} className="kpi-card">
                 <div 
                   style={{
-                    background: '#FFFFFF',
-                    border: '1px solid #E2E8F0',
+                    background: '#FFFFFF', border: '1px solid #E2E8F0', 
                     borderRadius: '18px',
                     padding: '16px',
-                    boxShadow: '0 2px 10px rgba(15, 23, 42, 0.03)',
+                    boxShadow: '0 2px 10px rgba(15, 23, 42, 0.03)', transition: 'all 0.2s ease', cursor: 'default',
                     height: '100%',
                     display: 'flex',
                     flexDirection: 'column',
@@ -191,11 +190,11 @@ export default function CoachCommandCenter() {
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                     <span style={{ fontSize: '0.78rem', fontWeight: 700, color: '#64748B' }}>{st.title}</span>
                     <div style={{ width: '32px', height: '32px', borderRadius: '10px', background: st.bg, color: st.color, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                      <IconComponent style={{ width: '18px', height: '18px' }} />
+                      <IconComponent style={{ width: '20px', height: '20px' }} />
                     </div>
                   </div>
                   <div style={{ marginTop: '12px', display: 'flex', alignItems: 'baseline', gap: '8px' }}>
-                    <span style={{ fontSize: '1.6rem', fontWeight: 900, color: '#0F172A' }}>{st.value}</span>
+                    <span style={{ fontSize: '1.8rem', fontWeight: 900, color: '#0F172A' }}>{st.value}</span>
                     <span style={{ fontSize: '0.74rem', fontWeight: 700, color: st.color }}>{st.change}</span>
                   </div>
                 </div>
@@ -230,8 +229,8 @@ export default function CoachCommandCenter() {
                     fontWeight: activeTab === tab.id ? 800 : 600,
                     border: 'none',
                     cursor: 'pointer',
-                    background: activeTab === tab.id ? '#00A3FF' : 'transparent',
-                    color: activeTab === tab.id ? '#FFFFFF' : '#64748B',
+                    background: activeTab === tab.id ? '#EFF6FF' : 'transparent',
+                    color: activeTab === tab.id ? '#1D4ED8' : '#64748B',
                     transition: 'all 0.15s ease'
                   }}
                 >
@@ -259,8 +258,7 @@ export default function CoachCommandCenter() {
                   <div
                     key={action.id}
                     style={{
-                      background: '#FFFFFF',
-                      border: '1px solid #E2E8F0',
+                      background: '#FFFFFF', border: '1px solid #E2E8F0', 
                       borderRadius: '18px',
                       padding: '18px',
                       boxShadow: '0 2px 8px rgba(15, 23, 42, 0.03)',
@@ -272,7 +270,7 @@ export default function CoachCommandCenter() {
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
                         <div style={{ width: '36px', height: '36px', borderRadius: '10px', background: '#F1F5F9', color: '#0F172A', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 800, fontSize: '0.88rem' }}>
-                          {action.clientName[0]}
+                          {'#' + action.id.replace('ACT_0', '')}
                         </div>
                         <div>
                           <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
@@ -282,31 +280,22 @@ export default function CoachCommandCenter() {
                             <span style={{ fontSize: '0.72rem', background: '#F1F5F9', color: '#475569', padding: '2px 8px', borderRadius: '6px', fontWeight: 700 }}>
                               {action.tier}
                             </span>
+                            <span style={{ fontSize: '0.72rem', fontWeight: 800, padding: '2px 8px', borderRadius: '6px', background: action.badgeBg, color: action.badgeColor, border: '1px solid ' + action.badgeBorder }}>
+                              {action.badgeText}
+                            </span>
                           </div>
                           <span style={{ fontSize: '0.74rem', color: '#94A3B8', fontFamily: 'monospace' }}>{action.phone}</span>
                         </div>
                       </div>
 
-                      <span 
-                        style={{ 
-                          fontSize: '0.74rem', 
-                          fontWeight: 800, 
-                          padding: '4px 10px', 
-                          borderRadius: '8px', 
-                          background: action.badgeBg, 
-                          color: action.badgeColor, 
-                          border: '1px solid ' + action.badgeBorder
-                        }}
-                      >
-                        {action.badgeText}
-                      </span>
+                      
                     </div>
 
                     <div style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', padding: '12px 14px', borderRadius: '12px', fontSize: '0.82rem', lineHeight: '1.6' }}>
-                      <div style={{ color: '#334155', marginBottom: '4px' }}>
+                      <div style={{ color: '#1E293B', marginBottom: '4px' }}>
                         <strong style={{ color: '#0F172A' }}>الحالة:</strong> {action.summary}
                       </div>
-                      <div style={{ color: '#00A3FF', fontWeight: 700 }}>
+                      <div style={{ color: '#0284C7', fontWeight: 800 }}>
                         <strong style={{ color: '#0F172A' }}>القرار المقترح:</strong> {action.suggestedAction}
                       </div>
                     </div>
@@ -321,7 +310,7 @@ export default function CoachCommandCenter() {
                           borderRadius: '10px',
                           border: '1px solid #CBD5E1',
                           background: '#FFFFFF',
-                          color: '#334155',
+                          color: '#1E293B',
                           fontWeight: 700,
                           fontSize: '0.78rem',
                           textDecoration: 'none',
@@ -419,7 +408,7 @@ export default function CoachCommandCenter() {
                       <span style={{ color: '#00A3FF', fontWeight: 800 }}>32 مشترك (67%)</span>
                     </div>
                     <div style={{ width: '100%', background: '#F1F5F9', height: '6px', borderRadius: '10px', overflow: 'hidden' }}>
-                      <div style={{ background: '#00A3FF', height: '100%', width: '67%', borderRadius: '10px' }}></div>
+                      <div style={{ background: '#EFF6FF', height: '100%', width: '67%', borderRadius: '10px' }}></div>
                     </div>
                   </div>
 
@@ -453,3 +442,16 @@ export default function CoachCommandCenter() {
     </AdminLayout>
   );
 }
+
+
+
+
+
+
+
+
+
+
+
+
+

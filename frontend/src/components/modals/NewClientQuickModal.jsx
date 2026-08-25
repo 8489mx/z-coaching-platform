@@ -60,6 +60,11 @@ export default function NewClientQuickModal({ isOpen, onClose, onClientCreated }
   const themeColor = isMax ? '#C89327' : '#00A3FF';
   const themeBg = isMax ? '#FEF9C3' : '#E0F2FE';
 
+  const baseMonths = durationKey === 'FOUR_MONTHS' ? 4 : 8;
+  let durationText = baseMonths + ' شهور';
+  if (bonusMonths > 0) durationText += ' + ' + bonusMonths + ' شهر';
+  if (bonusWeeks > 0) durationText += ' + ' + bonusWeeks + ' أسبوع';
+
   const handleClose = () => {
     setClientPhone('');
     setClientName('');
@@ -101,7 +106,7 @@ export default function NewClientQuickModal({ isOpen, onClose, onClientCreated }
         if (onClientCreated) onClientCreated(data.client);
       } else {
         // Fallback offline generation if server issue
-        const fallbackCode = 'KZ-' + Math.floor(1000 + Math.random() * 9000);
+        const fallbackCode = Math.floor(1000 + Math.random() * 9000).toString();
         const fallbackClient = {
           client_code: fallbackCode,
           phone_number: clientPhone.trim(),
@@ -113,7 +118,7 @@ export default function NewClientQuickModal({ isOpen, onClose, onClientCreated }
       }
     } catch (err) {
       // Fallback offline generation
-      const fallbackCode = 'KZ-' + Math.floor(1000 + Math.random() * 9000);
+      const fallbackCode = Math.floor(1000 + Math.random() * 9000).toString();
       const fallbackClient = {
         client_code: fallbackCode,
         phone_number: clientPhone.trim(),
@@ -136,7 +141,7 @@ export default function NewClientQuickModal({ isOpen, onClose, onClientCreated }
   const tierNameLabel = tier === 'MAX' ? 'باقة ماكس (M A X)' : 'باقة إيليت (ELITE)';
 
   const whatsappMessage = newClient
-    ? `أهلاً بك يا ${clientNameDisplay} مع كابتن كريم زكريا!\n\nتم تفعيل اشتراكك في: *${tierNameLabel}*\nإجمالي مدة المتابعة: *${finalTotalDays} يوماً* (${currentDurationData.label}${extraDays > 0 ? ` + ${extraDays} يوماً هدية إضافية` : ''})\n\nبيانات دخول استمارتك الخاصة:\n*كود المشترك:* ${newClient.client_code}\n*رقم الهاتف المسجل:* ${newClient.phone_number}\n\n*رابط استمارتك المباشر:*
+    ? `أهلاً بك يا ${clientNameDisplay} مع كابتن كريم زكريا!\n\nتم تفعيل اشتراكك في: *${tierNameLabel}*\nإجمالي مدة المتابعة: **\n\nبيانات دخول استمارتك الخاصة:\n*كود المشترك:* ${newClient.client_code}\n*رقم الهاتف المسجل:* ${newClient.phone_number}\n\n*رابط استمارتك المباشر:*
 ${intakeLink}\n\n*رابط البوابة الموحد:*
 ${portalLink}\n\n(افتح الرابط المباشر واملأ بياناتك وصورك بدقة لنبدأ فوراً في تجهيز خطتك المتكاملة!)`
     : '';
@@ -245,13 +250,13 @@ ${portalLink}\n\n(افتح الرابط المباشر واملأ بياناتك
                           borderRadius: '12px', 
                           fontSize: '0.86rem', 
                           border: '1.5px solid #E2E8F0',
-                          paddingRight: '36px'
+                          paddingRight: '38px', paddingLeft: '12px'
                         }}
                         placeholder="مثال: أحمد فتحي"
                         value={clientName}
                         onChange={(e) => setClientName(e.target.value)}
                       />
-                      <div className="position-absolute top-50 end-0 translate-middle-y pe-2.5 pointer-events-none" style={{ color: '#64748B' }}>
+                      <div className="position-absolute top-50 translate-middle-y pointer-events-none" style={{ right: "12px", color: "#64748B" }}>
                         <User style={{ width: '16px', height: '16px' }} />
                       </div>
                     </div>
@@ -270,9 +275,9 @@ ${portalLink}\n\n(افتح الرابط المباشر واملأ بياناتك
                           borderRadius: '12px', 
                           fontSize: '0.86rem', 
                           border: '1.5px solid #E2E8F0',
-                          paddingRight: '36px',
+                          paddingRight: '38px', paddingLeft: '12px',
                           direction: 'ltr',
-                          textAlign: 'right'
+                          textAlign: 'right', paddingRight: '38px', paddingLeft: '12px'
                         }}
                         placeholder="010XXXXXXXX"
                         value={clientPhone}
@@ -280,7 +285,7 @@ ${portalLink}\n\n(افتح الرابط المباشر واملأ بياناتك
                         autoFocus
                         required
                       />
-                      <div className="position-absolute top-50 end-0 translate-middle-y pe-2.5 pointer-events-none text-success">
+                      <div className="position-absolute top-50 translate-middle-y pointer-events-none text-success" style={{ right: "12px" }}>
                         <Phone style={{ width: '16px', height: '16px' }} />
                       </div>
                     </div>
@@ -298,7 +303,7 @@ ${portalLink}\n\n(افتح الرابط المباشر واملأ بياناتك
                     <div className="col-6">
                       <div 
                         onClick={() => setTier('ELITE')}
-                        className="p-2.5 rounded-3 text-right transition-all h-100 d-flex align-items-center justify-content-between"
+                        className="p-2.5 rounded-3 text-center transition-all h-100 d-flex align-items-center justify-content-center"
                         style={{ 
                           cursor: 'pointer',
                           background: tier === 'ELITE' ? '#E0F2FE' : '#FFFFFF',
@@ -317,9 +322,7 @@ ${portalLink}\n\n(افتح الرابط المباشر واملأ بياناتك
                             متابعة كل 14 يوم
                           </span>
                         </div>
-                        <div style={{ width: '28px', height: '28px', borderRadius: '8px', background: tier === 'ELITE' ? '#00A3FF' : '#F1F5F9', color: tier === 'ELITE' ? '#FFFFFF' : '#00A3FF', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                          <Zap style={{ width: '16px', height: '16px' }} />
-                        </div>
+                        
                       </div>
                     </div>
 
@@ -327,7 +330,7 @@ ${portalLink}\n\n(افتح الرابط المباشر واملأ بياناتك
                     <div className="col-6">
                       <div 
                         onClick={() => setTier('MAX')}
-                        className="p-2.5 rounded-3 text-right transition-all h-100 d-flex align-items-center justify-content-between"
+                        className="p-2.5 rounded-3 text-center transition-all h-100 d-flex align-items-center justify-content-center"
                         style={{ 
                           cursor: 'pointer',
                           background: tier === 'MAX' ? '#FFFBEB' : '#FFFFFF',
@@ -346,9 +349,7 @@ ${portalLink}\n\n(افتح الرابط المباشر واملأ بياناتك
                             متابعة أسبوعية + صوتي
                           </span>
                         </div>
-                        <div style={{ width: '28px', height: '28px', borderRadius: '8px', background: tier === 'MAX' ? '#C89327' : '#F1F5F9', color: tier === 'MAX' ? '#FFFFFF' : '#C89327', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                          <Crown style={{ width: '16px', height: '16px' }} />
-                        </div>
+                        
                       </div>
                     </div>
                   </div>
@@ -397,20 +398,18 @@ ${portalLink}\n\n(افتح الرابط المباشر واملأ بياناتك
 
                 {/* 4. Bonus Gift Calculator (Weeks & Months) */}
                 <div className="p-3 rounded-3 mb-4" style={{ background: '#F8FAFC', border: '1px solid #E2E8F0' }}>
-                  <div className="d-flex align-items-center gap-2 mb-2">
-                    <Gift style={{ width: '15px', height: '15px', color: '#D97706' }} />
-                    <span className="fw-black text-dark" style={{ fontSize: '0.78rem' }}>
+                  <div className="d-flex align-items-center mb-2"><span className="fw-black text-dark" style={{ fontSize: '0.78rem' }}>
                       إضافة هدايا إضافية للكود (اختياري للكوتش):
                     </span>
                   </div>
 
                   {/* Bonus Weeks */}
-                  <div className="d-flex align-items-center gap-2 mb-2">
-                    <span className="text-muted fw-bold" style={{ fontSize: '0.74rem', width: '65px' }}>
+                  <div className="d-flex align-items-center gap-3 mb-2">
+                    <span className="text-muted fw-bold" style={{ fontSize: '0.74rem', whiteSpace: 'nowrap' }}>
                       أسابيع هدية:
                     </span>
                     <div className="d-flex gap-1">
-                      {[0, 1, 2, 4].map(w => (
+                      {[0, 1, 2, 3].map(w => (
                         <button
                           key={w}
                           type="button"
@@ -432,8 +431,8 @@ ${portalLink}\n\n(افتح الرابط المباشر واملأ بياناتك
                   </div>
 
                   {/* Bonus Months */}
-                  <div className="d-flex align-items-center gap-2 mb-2">
-                    <span className="text-muted fw-bold" style={{ fontSize: '0.74rem', width: '65px' }}>
+                  <div className="d-flex align-items-center gap-3 mb-2">
+                    <span className="text-muted fw-bold" style={{ fontSize: '0.74rem', whiteSpace: 'nowrap' }}>
                       شهور هدية:
                     </span>
                     <div className="d-flex gap-1">
@@ -458,9 +457,7 @@ ${portalLink}\n\n(افتح الرابط المباشر واملأ بياناتك
                     </div>
                   </div>
 
-                  <div className="pt-1 text-success fw-bold" style={{ fontSize: '0.76rem' }}>
-                    إجمالي المدة الممنوحة: {finalTotalDays} يوماً ({Math.round(finalTotalDays / 30)} شهراً تقريباً)
-                  </div>
+                  <div className="pt-1 text-success fw-bold" style={{ fontSize: '0.76rem' }}>إجمالي المدة الممنوحة: {durationText}</div>
                 </div>
 
                 {/* Footer Buttons */}
@@ -475,7 +472,7 @@ ${portalLink}\n\n(افتح الرابط المباشر واملأ بياناتك
                   </button>
                   <button 
                     type="submit" 
-                    className="btn btn-sm rounded-pill px-4 fw-bold shadow-sm d-flex align-items-center gap-2 text-slate-900"
+                    className="btn btn-sm rounded-pill px-4 fw-bold shadow-sm d-flex align-items-center gap-2 text-white"
                     disabled={loading || !clientPhone.trim()}
                     style={{ 
                       height: '40px', 
@@ -498,7 +495,7 @@ ${portalLink}\n\n(افتح الرابط المباشر واملأ بياناتك
               <div className="py-2 text-center space-y-3">
                 {/* Success Banner */}
                 <div className="mb-3">
-                  <span className="badge rounded-pill fw-bold px-3 py-2" style={{ background: '#F0FDF4', color: '#16A34A', border: '1px solid #DCFCE7', fontSize: '0.84rem' }}>
+                  <span className="d-inline-flex align-items-center justify-content-center px-4 py-2 rounded-3 shadow-sm fw-bold" style={{ background: '#F0FDF4', color: '#16A34A', border: '1px solid #DCFCE7', fontSize: '0.84rem' }}>
                     <CheckCircle2 style={{ width: '16px', height: '16px', display: 'inline', marginLeft: '4px' }} />
                     تم إنشاء حساب المشترك وتوليد الكود بنجاح
                   </span>
@@ -507,12 +504,12 @@ ${portalLink}\n\n(افتح الرابط المباشر واملأ بياناتك
                 {/* Account Details Card */}
                 <div className="p-3 rounded-4 mb-4" style={{ background: '#F8FAFC', border: '1.5px dashed #CBD5E1' }}>
                   <span className="text-muted small d-block mb-1" style={{ fontSize: '0.78rem' }}>كود المشترك المعتمد:</span>
-                  <span className="badge rounded-pill fw-black font-monospace px-4 py-1.5 mb-2" style={{ background: themeBg, color: themeColor, border: `1.5px solid ${themeColor}40`, fontSize: '1.4rem', letterSpacing: '2px' }}>
+                  <span className="d-inline-block rounded-3 fw-black font-monospace px-5 py-2 mb-2" style={{ background: themeBg, color: themeColor, border: `1.5px solid ${themeColor}40`, fontSize: '1.4rem', letterSpacing: '2px' }}>
                     {newClient.client_code}
                   </span>
                   
                   <div className="pt-2 text-muted" style={{ fontSize: '0.78rem', borderTop: '1px solid #E2E8F0' }}>
-                    الباقة: <strong style={{ color: themeColor }}>{tierNameLabel}</strong> | إجمالي المدة: <strong>{finalTotalDays} يوماً</strong>
+                    الباقة: <strong style={{ color: themeColor }}>{tierNameLabel}</strong> | إجمالي المدة: <strong>{durationText}</strong>
                   </div>
                 </div>
 
@@ -520,7 +517,7 @@ ${portalLink}\n\n(افتح الرابط المباشر واملأ بياناتك
                 <div className="d-grid gap-2">
                   <button 
                     type="button" 
-                    className="btn py-2 rounded-pill fw-bold shadow-sm d-flex align-items-center justify-content-center gap-2 text-slate-900"
+                    className="btn py-2 rounded-pill fw-bold shadow-sm d-flex align-items-center justify-content-center gap-2 text-white"
                     style={{ height: '42px', background: 'linear-gradient(135deg, #16A34A 0%, #15803D 100%)', border: 'none', fontSize: '0.84rem', cursor: 'pointer' }}
                     onClick={handleOpenWhatsApp}
                   >
@@ -561,3 +558,18 @@ ${portalLink}\n\n(افتح الرابط المباشر واملأ بياناتك
 
   return ReactDOM.createPortal(modalContent, document.body);
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

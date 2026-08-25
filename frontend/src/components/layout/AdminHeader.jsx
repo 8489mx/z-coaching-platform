@@ -58,10 +58,10 @@ export function AdminHeader({
           onChange={(e) => onSearchChange && onSearchChange(e.target.value)}
           style={{
             width: '100%',
-            height: '42px',
+            height: '38px',
             background: '#F8FAFC',
-            border: '1px solid #E2E8F0',
-            borderRadius: '12px',
+            border: '1px solid #F1F5F9',
+            borderRadius: '8px',
             paddingRight: '42px',
             paddingLeft: '65px',
             fontSize: '0.84rem',
@@ -116,3 +116,4 @@ export function AdminHeader({
 
 export const Header = AdminHeader;
 export default AdminHeader;
+
