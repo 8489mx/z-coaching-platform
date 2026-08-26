@@ -61,29 +61,8 @@ export default function Sidebar({ isCollapsed = false, onToggleSidebar }) {
   const location = useLocation();
   const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState('');
-  const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [openGroupKeys, setOpenGroupKeys] = useState(() => ['clients-group', 'engines-group', 'system-group']);
   const searchInputRef = useRef(null);
-  const sidebarRef = useRef(null);
-
-  const handleOpenSearch = () => {
-    if (isCollapsed && onToggleSidebar) {
-      onToggleSidebar();
-    }
-    setIsSearchOpen(true);
-    setTimeout(() => {
-      searchInputRef.current?.focus();
-    }, 60);
-  };
-
-  const handleCloseSearch = () => {
-    setIsSearchOpen(false);
-    setSearchQuery('');
-  };
-
-  useEffect(() => {
-    handleCloseSearch();
-  }, [location.pathname]);
 
   const toggleGroup = (groupKey) => {
     if (isCollapsed && onToggleSidebar) {
@@ -120,7 +99,7 @@ export default function Sidebar({ isCollapsed = false, onToggleSidebar }) {
     }).filter(Boolean);
   }, [cleanQuery]);
 
-  const renderNavItem = (item, type = 'primary') => {
+  const renderNavItem = (item, isSubItem = false) => {
     const Icon = item.icon;
 
     return (
@@ -129,41 +108,42 @@ export default function Sidebar({ isCollapsed = false, onToggleSidebar }) {
         to={item.to}
         end={item.end}
         data-tooltip={isCollapsed ? item.label : undefined}
-        style={{
+        style={({ isActive }) => ({
           display: 'flex',
           alignItems: 'center',
           gap: '10px',
-          padding: type === 'group' ? '7px 12px' : '9px 12px',
+          padding: isSubItem ? '8px 12px' : '9px 12px',
           borderRadius: '8px',
           textDecoration: 'none',
-          color: '#475569',
-          fontSize: '13px',
-          fontWeight: 600,
+          color: isActive ? '#0F172A' : '#475569',
+          background: isActive ? '#F1F5F9' : 'transparent',
+          fontSize: isSubItem ? '12.5px' : '13px',
+          fontWeight: isActive ? 800 : 600,
           transition: 'all 0.15s ease',
-          marginBottom: '2px'
-        }}
-        className={({ isActive }) => (isActive ? 'active-nav-link' : '')}
+          marginBottom: '2px',
+        })}
       >
         {({ isActive }) => (
           <>
             <div
               style={{
-                width: '28px',
-                height: '28px',
+                width: '26px',
+                height: '26px',
                 borderRadius: '6px',
-                background: isActive ? '#0F172A' : (type === 'group' ? 'transparent' : '#F1F5F9'),
+                background: isActive ? '#0F172A' : (isSubItem ? 'transparent' : '#F8FAFC'),
+                border: isActive ? '1px solid #0F172A' : (isSubItem ? 'none' : '1px solid #E2E8F0'),
                 color: isActive ? '#FFFFFF' : '#64748B',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
                 flexShrink: 0,
-                transition: 'all 0.15s ease'
+                transition: 'all 0.15s ease',
               }}
             >
-              <Icon size={16} strokeWidth={isActive ? 2.2 : 1.8} />
+              <Icon size={14} strokeWidth={isActive ? 2.4 : 1.8} />
             </div>
             {!isCollapsed && (
-              <span style={{ flex: 1, color: isActive ? '#0F172A' : '#475569', fontWeight: isActive ? 800 : 600 }}>
+              <span style={{ flex: 1, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                 {item.label}
               </span>
             )}
@@ -174,7 +154,7 @@ export default function Sidebar({ isCollapsed = false, onToggleSidebar }) {
                   color: '#FFFFFF',
                   fontSize: '9.5px',
                   fontWeight: 800,
-                  padding: '2px 6px',
+                  padding: '2px 7px',
                   borderRadius: '10px',
                   marginInlineStart: 'auto',
                   lineHeight: 1,
@@ -191,9 +171,8 @@ export default function Sidebar({ isCollapsed = false, onToggleSidebar }) {
 
   return (
     <aside
-      ref={sidebarRef}
       style={{
-        width: isCollapsed ? '72px' : '240px',
+        width: isCollapsed ? '72px' : '255px',
         background: '#FFFFFF',
         borderLeft: '1px solid #E2E8F0',
         height: '100vh',
@@ -204,35 +183,37 @@ export default function Sidebar({ isCollapsed = false, onToggleSidebar }) {
         top: 0,
         zIndex: 100,
         transition: 'width 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
-        overflow: 'hidden'
+        overflow: 'hidden',
+        boxSizing: 'border-box'
       }}
     >
       {/* Brand Header */}
       <div 
         style={{ 
-          padding: isCollapsed ? '18px 8px' : '20px 18px 16px', 
+          padding: isCollapsed ? '16px 8px' : '18px 18px 14px', 
           display: 'flex', 
           alignItems: 'center', 
           justifyContent: isCollapsed ? 'center' : 'space-between',
-          borderBottom: '1px solid #F1F5F9'
+          borderBottom: '1px solid #F1F5F9',
+          gap: '12px'
         }}
       >
-        {!isCollapsed ? (
-          <div>
-            <div style={{ fontSize: '15px', fontWeight: 900, color: '#0F172A', letterSpacing: '-0.3px' }}>
+        {!isCollapsed && (
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <div style={{ fontSize: '15px', fontWeight: 900, color: '#0F172A', letterSpacing: '-0.3px', lineHeight: 1.2 }}>
               Z-COACHING
             </div>
-            <div style={{ fontSize: '11px', color: '#64748B', fontWeight: 600, marginTop: '1px' }}>
+            <div style={{ fontSize: '11px', color: '#64748B', fontWeight: 600, marginTop: '2px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
               منظومة التدريب والمتابعة
             </div>
           </div>
-        ) : null}
+        )}
 
         <div 
           onClick={() => navigate('/')} 
           style={{ 
-            width: '34px', 
-            height: '34px', 
+            width: '36px', 
+            height: '36px', 
             borderRadius: '8px', 
             background: '#0F172A', 
             color: '#FFFFFF',
@@ -240,16 +221,17 @@ export default function Sidebar({ isCollapsed = false, onToggleSidebar }) {
             alignItems: 'center', 
             justifyContent: 'center',
             fontWeight: 900,
-            fontSize: '16px',
+            fontSize: '17px',
             cursor: 'pointer',
             flexShrink: 0
           }}
+          title="الرئيسية"
         >
           Z
         </div>
       </div>
 
-      {/* Instant Search Bar */}
+      {/* Search Bar */}
       <div style={{ padding: '10px 14px 6px' }}>
         <div
           style={{
@@ -260,14 +242,15 @@ export default function Sidebar({ isCollapsed = false, onToggleSidebar }) {
             border: '1px solid #E2E8F0',
             borderRadius: '8px',
             padding: '0 10px',
-            height: '34px'
+            height: '34px',
+            boxSizing: 'border-box'
           }}
         >
           <Search size={14} color="#94A3B8" style={{ flexShrink: 0 }} />
           <input
             ref={searchInputRef}
             type="text"
-            placeholder={isCollapsed ? '' : 'بحث في القوائم...'}
+            placeholder={isCollapsed ? '' : 'بحث سريع في القوائم...'}
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             style={{
@@ -277,7 +260,8 @@ export default function Sidebar({ isCollapsed = false, onToggleSidebar }) {
               background: 'transparent',
               padding: '0 8px',
               fontSize: '12px',
-              color: '#0F172A'
+              color: '#0F172A',
+              fontWeight: 500
             }}
           />
           {searchQuery && (
@@ -286,16 +270,16 @@ export default function Sidebar({ isCollapsed = false, onToggleSidebar }) {
               onClick={() => setSearchQuery('')}
               style={{ border: 'none', background: 'transparent', cursor: 'pointer', padding: 0, color: '#94A3B8', display: 'flex' }}
             >
-              <X size={12} />
+              <X size={13} />
             </button>
           )}
         </div>
       </div>
 
       {/* Navigation List */}
-      <nav style={{ flex: 1, overflowY: 'auto', padding: '8px 10px', display: 'flex', flexDirection: 'column', gap: '2px' }}>
+      <nav style={{ flex: 1, overflowY: 'auto', padding: '8px 12px', display: 'flex', flexDirection: 'column', gap: '2px' }}>
         {/* Primary Items */}
-        {filteredPrimaryItems.map((item) => renderNavItem(item, 'primary'))}
+        {filteredPrimaryItems.map((item) => renderNavItem(item, false))}
 
         <div style={{ height: '8px' }} />
 
@@ -305,7 +289,7 @@ export default function Sidebar({ isCollapsed = false, onToggleSidebar }) {
           const GroupIcon = group.icon;
 
           return (
-            <div key={group.key} style={{ marginBottom: '4px' }}>
+            <div key={group.key} style={{ marginBottom: '6px' }}>
               <div 
                 onClick={() => toggleGroup(group.key)}
                 style={{
@@ -316,14 +300,15 @@ export default function Sidebar({ isCollapsed = false, onToggleSidebar }) {
                   borderRadius: '6px',
                   cursor: 'pointer',
                   color: '#64748B',
-                  fontSize: '12px',
+                  fontSize: '11.5px',
                   fontWeight: 700,
-                  transition: 'background 0.15s ease'
+                  transition: 'all 0.15s ease',
+                  userSelect: 'none'
                 }}
                 onMouseEnter={(e) => (e.currentTarget.style.background = '#F8FAFC')}
                 onMouseLeave={(e) => (e.currentTarget.style.background = 'transparent')}
               >
-                <div style={{ width: '20px', height: '20px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#94A3B8' }}>
+                <div style={{ width: '18px', height: '18px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#94A3B8' }}>
                   <GroupIcon size={14} />
                 </div>
                 {!isCollapsed && (
@@ -339,8 +324,8 @@ export default function Sidebar({ isCollapsed = false, onToggleSidebar }) {
               </div>
 
               {isOpen && !isCollapsed && (
-                <div style={{ paddingRight: '14px', borderRight: '1px solid #E2E8F0', marginRight: '16px', marginTop: '2px', display: 'flex', flexDirection: 'column', gap: '1px' }}>
-                  {group.items.map((item) => renderNavItem(item, 'group'))}
+                <div style={{ paddingRight: '12px', borderRight: '1.5px solid #E2E8F0', marginRight: '16px', marginTop: '2px', display: 'flex', flexDirection: 'column', gap: '1px' }}>
+                  {group.items.map((item) => renderNavItem(item, true))}
                 </div>
               )}
             </div>
@@ -349,7 +334,7 @@ export default function Sidebar({ isCollapsed = false, onToggleSidebar }) {
       </nav>
 
       {/* Footer / Toggle & Account */}
-      <div style={{ padding: '12px 14px', borderTop: '1px solid #F1F5F9', background: '#FFFFFF' }}>
+      <div style={{ padding: '12px 16px', borderTop: '1px solid #F1F5F9', background: '#FFFFFF' }}>
         {!isCollapsed && (
           <div style={{ marginBottom: '10px', textAlign: 'center' }}>
             <div style={{ fontSize: '12px', fontWeight: 800, color: '#0F172A' }}>كابتن كريم زكريا</div>

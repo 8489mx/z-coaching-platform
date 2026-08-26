@@ -37,7 +37,7 @@ export function AdminHeader() {
   return (
     <header 
       style={{
-        height: '52px',
+        height: '56px',
         background: '#FFFFFF',
         borderBottom: '1px solid #E2E8F0',
         display: 'flex',
@@ -45,7 +45,8 @@ export function AdminHeader() {
         justifyContent: 'space-between',
         padding: '0 24px',
         flexShrink: 0,
-        direction: 'rtl'
+        direction: 'rtl',
+        boxSizing: 'border-box'
       }}
     >
       {/* Breadcrumb on right */}
@@ -80,16 +81,16 @@ export function AdminHeader() {
             background: '#F8FAFC',
             border: '1px solid #E2E8F0',
             borderRadius: '6px',
-            padding: '0 12px',
+            padding: '0 10px',
             height: '32px',
-            width: '220px',
+            width: '240px',
             gap: '8px',
             cursor: 'pointer'
           }}
         >
-          <Search size={14} color="#94A3B8" />
-          <span style={{ fontSize: '12px', color: '#94A3B8', flex: 1 }}>ابحث في أي مكان...</span>
-          <kbd style={{ fontSize: '10px', background: '#E2E8F0', color: '#475569', padding: '1px 5px', borderRadius: '4px', fontFamily: 'monospace' }}>
+          <Search size={14} color="#94A3B8" style={{ flexShrink: 0 }} />
+          <span style={{ fontSize: '12px', color: '#94A3B8', flex: 1, whiteSpace: 'nowrap' }}>ابحث في أي مكان...</span>
+          <kbd style={{ fontSize: '10px', background: '#E2E8F0', color: '#475569', padding: '1px 5px', borderRadius: '4px', fontFamily: 'monospace', flexShrink: 0 }}>
             Ctrl /
           </kbd>
         </div>
@@ -132,13 +133,13 @@ export function AdminHeader() {
         >
           <div
             style={{
-              width: '24px',
-              height: '24px',
+              width: '26px',
+              height: '26px',
               borderRadius: '50%',
               background: '#0F172A',
               color: '#FFFFFF',
               fontWeight: 800,
-              fontSize: '11px',
+              fontSize: '12px',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center'
