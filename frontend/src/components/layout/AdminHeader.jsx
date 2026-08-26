@@ -2,6 +2,7 @@
 import { useLocation, useNavigate } from 'react-router-dom';
 import { RotateCw, Maximize2, Search } from 'lucide-react';
 import NotificationsDropdown from '../NotificationsDropdown';
+import CoachAccountDropdown from './CoachAccountDropdown';
 
 export function AdminHeader() {
   const location = useLocation();
@@ -115,43 +116,11 @@ export function AdminHeader() {
           <Maximize2 size={14} color="#475569" />
         </button>
 
-        {/* Notifications */}
+        {/* Notifications Dropdown */}
         <NotificationsDropdown />
 
-        {/* User Account Avatar Pill */}
-        <div
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: '8px',
-            padding: '3px 10px 3px 5px',
-            background: '#F8FAFC',
-            border: '1px solid #E2E8F0',
-            borderRadius: '20px',
-            cursor: 'pointer'
-          }}
-        >
-          <div
-            style={{
-              width: '26px',
-              height: '26px',
-              borderRadius: '50%',
-              background: '#0F172A',
-              color: '#FFFFFF',
-              fontWeight: 800,
-              fontSize: '12px',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center'
-            }}
-          >
-            ك
-          </div>
-          <div style={{ display: 'flex', flexDirection: 'column', lineHeight: 1.15 }}>
-            <span style={{ fontSize: '11.5px', fontWeight: 800, color: '#0F172A' }}>كريم زكريا</span>
-            <span style={{ fontSize: '9px', color: '#64748B', fontWeight: 600 }}>المدرب الرئيسي</span>
-          </div>
-        </div>
+        {/* Interactive Coach Profile Dropdown */}
+        <CoachAccountDropdown />
 
       </div>
     </header>

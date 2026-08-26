@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+﻿import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { 
   Bell, 
@@ -8,7 +8,6 @@ import {
   ActivitySquare, 
   CreditCard, 
   ShoppingBag, 
-  UserCheck, 
   Clock 
 } from 'lucide-react';
 import { API_BASE } from '../config/api';
@@ -20,10 +19,9 @@ export default function NotificationsDropdown() {
   const dropdownRef = useRef(null);
   const navigate = useNavigate();
 
-  // Load and sync notifications
   useEffect(() => {
     fetchLiveNotifications();
-    const interval = setInterval(fetchLiveNotifications, 30000); // 30s poll
+    const interval = setInterval(fetchLiveNotifications, 30000);
 
     const handleClickOutside = (event) => {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
@@ -32,22 +30,18 @@ export default function NotificationsDropdown() {
     };
 
     const handleKeyDown = (e) => {
-      if (e.key === 'Escape' || e.keyCode === 27) {
+      if (e.key === 'Escape') {
         setIsOpen(false);
       }
     };
 
     document.addEventListener('mousedown', handleClickOutside);
     window.addEventListener('keydown', handleKeyDown);
-    window.addEventListener('plan_approved', fetchLiveNotifications);
-    window.addEventListener('checkin_approved', fetchLiveNotifications);
 
     return () => {
       clearInterval(interval);
       document.removeEventListener('mousedown', handleClickOutside);
       window.removeEventListener('keydown', handleKeyDown);
-      window.removeEventListener('plan_approved', fetchLiveNotifications);
-      window.removeEventListener('checkin_approved', fetchLiveNotifications);
     };
   }, []);
 
@@ -65,7 +59,6 @@ export default function NotificationsDropdown() {
       const intakesData = await intakesRes.json();
       const ordersData = await ordersRes.json();
 
-      // Read persisted status from localStorage
       const readMap = JSON.parse(localStorage.getItem('z_notif_read_map') || '{}');
       const completedMap = JSON.parse(localStorage.getItem('z_notif_completed_map') || '{}');
 
@@ -79,11 +72,9 @@ export default function NotificationsDropdown() {
             id: `ord-${ord.id}`,
             type: 'ORDER',
             icon: ShoppingBag,
-            iconBg: '#FEF3C7',
-            iconColor: '#D97706',
-            title: `طلب موقع جديد (#${ord.order_number || 'KZ-1001'})`,
+            title: `طلب موقع جديد (#${ord.order_number || '1001'})`,
             body: `${ord.customer_name} اشترك في باقة ${ord.package_name || 'ماكس'} بمبلغ ${ord.amount} ج.م.`,
-            time: 'طلب موقع',
+            time: 'طلب جديد',
             link: '/customers?tab=orders',
             isRead: Boolean(readMap[`ord-${ord.id}`]),
             isCompleted: Boolean(isActivated),
@@ -101,15 +92,13 @@ export default function NotificationsDropdown() {
             id: `intake-${sub.id}`,
             type: 'INTAKE',
             icon: ClipboardList,
-            iconBg: '#E0F2FE',
-            iconColor: '#0284C7',
             title: `استمارة صحية واردة (#${sub.user?.client_code || sub.id})`,
-            body: `${sub.user?.full_name || 'مشترك جديد'} أكمل استمارة التقييم ومصفوفة الإصابات.`,
+            body: `${sub.user?.full_name || 'مشترك جديد'} أكمل استمارة التقييم والمصفوفة الصحية.`,
             time: 'استمارة',
             link: `/intake/submissions?review=${sub.id}`,
             isRead: Boolean(readMap[`intake-${sub.id}`]),
             isCompleted: Boolean(isApproved),
-            actionLabel: isApproved ? 'تم اعتماد الخطة وإرسالها' : 'مراجعة وتوليد الخطة',
+            actionLabel: isApproved ? 'تم اعتماد الخطة' : 'مراجعة وتوليد الخطة',
             createdAt: sub.createdAt || new Date()
           });
         });
@@ -123,21 +112,19 @@ export default function NotificationsDropdown() {
             id: `chk-${chk.id}`,
             type: 'CHECKIN',
             icon: ActivitySquare,
-            iconBg: '#ECFDF5',
-            iconColor: '#059669',
             title: `تقرير متابعة أسبوعي (أسبوع ${chk.week_number})`,
             body: `${chk.user?.full_name || 'المتدرب'} سجل الوزن الجديد والالتزام (${chk.nutrition_adherence_percent || 100}%).`,
             time: 'متابعة حية',
             link: `/?review_checkin=${chk.id}`,
             isRead: Boolean(readMap[`chk-${chk.id}`]),
             isCompleted: Boolean(isReviewed),
-            actionLabel: isReviewed ? 'تم اعتماد التعديل وإرساله' : 'مراجعة التقرير والتكيف',
+            actionLabel: isReviewed ? 'تم اعتماد التعديل' : 'مراجعة التقرير',
             createdAt: chk.createdAt || new Date()
           });
         });
       }
 
-      // 4. Expiring / Renewals Subscriptions
+      // 4. Expiring Subscriptions
       if (subsData.clients) {
         subsData.clients.filter(c => c.status === 'EXPIRING_SOON' || c.status === 'EXPIRED').forEach((sub) => {
           const isExp = sub.status === 'EXPIRED';
@@ -146,23 +133,19 @@ export default function NotificationsDropdown() {
             id: `sub-${sub.id}`,
             type: 'SUBSCRIPTION',
             icon: CreditCard,
-            iconBg: '#FEE2E2',
-            iconColor: '#DC2626',
             title: isExp ? `اشتراك منتهي: ${sub.full_name || sub.client_code}` : `تجديد وشيك: ${sub.full_name || sub.client_code}`,
-            body: isExp ? `انتهى اشتراكه منذ ${Math.abs(sub.days_remaining)} يوم.` : `متبقي ${sub.days_remaining} أيام على انتهاء باقة ${sub.package}.`,
+            body: isExp ? `انتهى اشتراكه منذ ${Math.abs(sub.days_remaining)} يوم.` : `متبقي ${sub.days_remaining} أيام على انتهاء الباقة.`,
             time: 'مالي',
             link: '/subscriptions',
             isRead: Boolean(readMap[`sub-${sub.id}`]),
             isCompleted: Boolean(isDone),
-            actionLabel: isDone ? 'تم التواصل والتجديد' : 'إرسال تذكير التجديد',
+            actionLabel: isDone ? 'تم التجديد' : 'إرسال تذكير',
             createdAt: sub.createdAt || new Date()
           });
         });
       }
 
-      // Sort by newest first
       list.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
-
       setNotifications(list);
     } catch (e) {
       console.error('fetchLiveNotifications error:', e);
@@ -170,14 +153,11 @@ export default function NotificationsDropdown() {
   };
 
   const handleNotificationClick = (item) => {
-    // 1. Mark as read in state & localStorage (removes blue unread dot)
     const readMap = JSON.parse(localStorage.getItem('z_notif_read_map') || '{}');
     readMap[item.id] = true;
     localStorage.setItem('z_notif_read_map', JSON.stringify(readMap));
 
     setNotifications(prev => prev.map(n => n.id === item.id ? { ...n, isRead: true } : n));
-
-    // 2. Navigate to destination
     setIsOpen(false);
     if (item.link) {
       navigate(item.link);
@@ -197,91 +177,85 @@ export default function NotificationsDropdown() {
     : notifications;
 
   return (
-    <div className="position-relative" ref={dropdownRef} dir="rtl">
+    <div style={{ position: 'relative' }} ref={dropdownRef} dir="rtl">
       
-      {/* Bell Button (Facebook Style with Badge) */}
+      {/* 32px Standard Toolbar Bell Button */}
       <button 
         type="button" 
         onClick={() => setIsOpen(!isOpen)}
-        className="btn d-flex align-items-center justify-content-center position-relative"
         style={{ 
-          width: '38px', 
-          height: '38px', 
-          borderRadius: '12px',
+          width: '32px', 
+          height: '32px', 
+          borderRadius: '6px',
           border: '1px solid #E2E8F0',
-          background: isOpen ? '#E0F2FE' : '#F8FAFC',
-          color: isOpen ? '#0284C7' : '#475569',
-          boxShadow: '0 1px 3px rgba(15, 23, 42, 0.04)',
+          background: isOpen ? '#F1F5F9' : '#F8FAFC',
+          color: isOpen ? '#0F172A' : '#475569',
           padding: 0,
-          cursor: 'pointer'
+          cursor: 'pointer',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          position: 'relative',
+          transition: 'all 0.15s ease'
         }}
         title="الإشعارات والتنبيهات"
       >
-        <svg 
-          xmlns="http://www.w3.org/2000/svg" 
-          width="19" 
-          height="19" 
-          viewBox="0 0 24 24" 
-          fill="none" 
-          stroke="currentColor" 
-          strokeWidth="2" 
-          strokeLinecap="round" 
-          strokeLinejoin="round"
-          style={{ color: isOpen ? '#0284C7' : '#475569', display: 'block' }}
-        >
-          <path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9" />
-          <path d="M10.3 21a1.94 1.94 0 0 0 3.4 0" />
-        </svg>
+        <Bell size={14} color="#475569" />
+        
         {unreadCount > 0 && (
           <span 
-            className="position-absolute d-flex align-items-center justify-content-center text-slate-900 font-monospace fw-bold"
             style={{ 
+              position: 'absolute',
               top: '-4px', 
               left: '-4px', 
               background: '#EF4444', 
-              fontSize: '10px', 
-              minWidth: '18px', 
-              height: '18px', 
-              borderRadius: '50%',
+              color: '#FFFFFF',
+              fontSize: '9px', 
+              fontWeight: 800,
+              minWidth: '15px', 
+              height: '15px', 
+              borderRadius: '8px',
               border: '2px solid #FFFFFF',
-              padding: '0 4px'
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              padding: '0 3px',
+              lineHeight: 1,
+              fontFamily: 'JetBrains Mono, monospace'
             }}
           >
-            {unreadCount}
+            {unreadCount > 99 ? '99+' : unreadCount}
           </span>
         )}
       </button>
 
-      {/* Facebook-Style Floating Notifications Dropdown */}
+      {/* Popover Notifications Dropdown */}
       {isOpen && (
         <div 
-          className="dropdown-menu show shadow-2xl p-0 mt-2" 
           style={{ 
-            width: '380px', 
-            maxWidth: '92vw',
-            borderRadius: '20px', 
+            width: '360px', 
+            maxWidth: '90vw',
+            borderRadius: '12px', 
             border: '1px solid #E2E8F0',
-            zIndex: 1080, 
+            zIndex: 1100, 
             position: 'absolute',
             left: 0,
+            top: 'calc(100% + 8px)',
             background: '#FFFFFF',
-            boxShadow: '0 20px 45px rgba(15, 23, 42, 0.16)',
+            boxShadow: '0 12px 32px rgba(15, 23, 42, 0.12), 0 4px 12px rgba(15, 23, 42, 0.04)',
             overflow: 'hidden'
           }}
           dir="rtl"
         >
-          {/* 1. Header (Facebook Style) */}
-          <div className="p-3 pb-2 border-bottom bg-white" style={{ borderColor: '#F1F5F9' }}>
-            <div className="d-flex justify-content-between align-items-center mb-2">
-              <div className="d-flex align-items-center gap-2">
-                <h6 className="fw-black text-dark mb-0" style={{ fontSize: '1.05rem', color: '#0F172A' }}>
+          {/* Header */}
+          <div style={{ padding: '12px 14px', borderBottom: '1px solid #F1F5F9', background: '#FFFFFF' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                <strong style={{ fontSize: '13.5px', color: '#0F172A', fontWeight: 800 }}>
                   الإشعارات
-                </h6>
+                </strong>
                 {unreadCount > 0 && (
-                  <span 
-                    className="badge rounded-pill fw-bold"
-                    style={{ fontSize: '11px', background: '#E0F2FE', color: '#0284C7', padding: '3px 8px' }}
-                  >
+                  <span style={{ fontSize: '10.5px', background: '#F1F5F9', color: '#0F172A', padding: '2px 7px', borderRadius: '10px', fontWeight: 700 }}>
                     {unreadCount} غير مقروء
                   </span>
                 )}
@@ -291,48 +265,62 @@ export default function NotificationsDropdown() {
                 <button 
                   type="button" 
                   onClick={markAllAsRead}
-                  className="btn btn-sm d-flex align-items-center gap-1 text-primary p-0 border-0 bg-transparent fw-bold"
-                  style={{ fontSize: '0.78rem', color: '#0284C7' }}
+                  style={{ fontSize: '11.5px', color: '#64748B', background: 'transparent', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px', fontWeight: 600, padding: 0 }}
                 >
-                  <CheckCheck style={{ width: '15px', height: '15px' }} />
+                  <CheckCheck size={13} />
                   <span>تحديد الكل كمقروء</span>
                 </button>
               )}
             </div>
 
-            {/* Sub Tabs: الكل / غير المقروءة */}
-            <div className="d-flex gap-2 pt-1">
+            {/* Sub Tabs */}
+            <div style={{ display: 'flex', gap: '4px' }}>
               <button 
                 type="button"
                 onClick={() => setActiveFilter('ALL')}
-                className={`btn btn-sm rounded-pill px-3 py-1 fw-bold ${activeFilter === 'ALL' ? 'btn-primary text-slate-900' : 'btn-light border text-muted'}`}
-                style={{ fontSize: '0.78rem', height: '28px' }}
+                style={{ 
+                  fontSize: '11px', 
+                  padding: '3px 10px', 
+                  borderRadius: '4px', 
+                  border: 'none', 
+                  cursor: 'pointer',
+                  fontWeight: activeFilter === 'ALL' ? 800 : 600,
+                  background: activeFilter === 'ALL' ? '#0F172A' : '#F1F5F9',
+                  color: activeFilter === 'ALL' ? '#FFFFFF' : '#64748B'
+                }}
               >
                 الكل ({notifications.length})
               </button>
               <button 
                 type="button"
                 onClick={() => setActiveFilter('UNREAD')}
-                className={`btn btn-sm rounded-pill px-3 py-1 fw-bold ${activeFilter === 'UNREAD' ? 'btn-primary text-slate-900' : 'btn-light border text-muted'}`}
-                style={{ fontSize: '0.78rem', height: '28px' }}
+                style={{ 
+                  fontSize: '11px', 
+                  padding: '3px 10px', 
+                  borderRadius: '4px', 
+                  border: 'none', 
+                  cursor: 'pointer',
+                  fontWeight: activeFilter === 'UNREAD' ? 800 : 600,
+                  background: activeFilter === 'UNREAD' ? '#0F172A' : '#F1F5F9',
+                  color: activeFilter === 'UNREAD' ? '#FFFFFF' : '#64748B'
+                }}
               >
                 غير المقروءة ({unreadCount})
               </button>
             </div>
           </div>
 
-          {/* 2. Notification Items List */}
-          <div style={{ maxHeight: '390px', overflowY: 'auto' }}>
+          {/* Notification List */}
+          <div style={{ maxHeight: '340px', overflowY: 'auto' }}>
             {filteredNotifications.length === 0 ? (
-              <div className="text-center py-5 px-3">
+              <div style={{ textAlign: 'center', padding: '36px 16px' }}>
                 <div 
-                  className="rounded-circle d-flex align-items-center justify-content-center mx-auto mb-2"
-                  style={{ width: '48px', height: '48px', background: '#F1F5F9', color: '#94A3B8' }}
+                  style={{ width: '36px', height: '36px', borderRadius: '50%', background: '#F1F5F9', color: '#94A3B8', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 8px auto' }}
                 >
-                  <Bell style={{ width: '22px', height: '22px' }} />
+                  <Bell size={18} />
                 </div>
-                <p className="fw-bold text-dark mb-1" style={{ fontSize: '0.88rem' }}>لا توجد إشعارات جديدة</p>
-                <small className="text-muted" style={{ fontSize: '0.76rem' }}>تمت متابعة واعتماد جميع الحالات والتقارير بنجاح.</small>
+                <strong style={{ fontSize: '13px', color: '#0F172A', display: 'block', marginBottom: '2px' }}>لا توجد إشعارات جديدة</strong>
+                <small style={{ fontSize: '11px', color: '#64748B' }}>تمت متابعة واعتماد جميع الحالات بنجاح.</small>
               </div>
             ) : (
               filteredNotifications.map((item) => {
@@ -342,95 +330,77 @@ export default function NotificationsDropdown() {
                   <div
                     key={item.id}
                     onClick={() => handleNotificationClick(item)}
-                    className="p-3 d-flex align-items-start gap-3 transition border-bottom"
                     style={{
                       cursor: 'pointer',
-                      background: !item.isRead ? '#F0F9FF' : '#FFFFFF',
-                      borderColor: '#F1F5F9',
-                      position: 'relative'
+                      background: !item.isRead ? '#F8FAFC' : '#FFFFFF',
+                      borderBottom: '1px solid #F1F5F9',
+                      padding: '10px 14px',
+                      display: 'flex',
+                      alignItems: 'flex-start',
+                      gap: '10px',
+                      transition: 'background 0.15s ease'
                     }}
+                    onMouseEnter={(e) => (e.currentTarget.style.background = '#F1F5F9')}
+                    onMouseLeave={(e) => (e.currentTarget.style.background = !item.isRead ? '#F8FAFC' : '#FFFFFF')}
                   >
-                    {/* Category Icon */}
                     <div 
-                      className="rounded-circle d-flex align-items-center justify-content-center flex-shrink-0 shadow-xs mt-0.5"
                       style={{ 
-                        width: '40px', 
-                        height: '40px', 
-                        background: item.iconBg, 
-                        color: item.iconColor 
+                        width: '28px', 
+                        height: '28px', 
+                        borderRadius: '6px',
+                        background: '#F1F5F9', 
+                        border: '1px solid #E2E8F0',
+                        color: '#0F172A',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        flexShrink: 0,
+                        marginTop: '2px'
                       }}
                     >
-                      <IconComponent style={{ width: '19px', height: '19px' }} />
+                      <IconComponent size={14} />
                     </div>
 
-                    {/* Notification Text & Metadata */}
-                    <div className="flex-grow-1" style={{ minWidth: 0 }}>
-                      <div className="d-flex align-items-center justify-content-between mb-1">
-                        <strong 
-                          className={`d-block text-truncate ${!item.isRead ? 'fw-black text-dark' : 'fw-bold text-slate-700'}`}
-                          style={{ fontSize: '0.84rem' }}
-                        >
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2px' }}>
+                        <strong style={{ fontSize: '12.5px', color: '#0F172A', fontWeight: !item.isRead ? 800 : 600 }}>
                           {item.title}
                         </strong>
-                        <span className="text-muted small" style={{ fontSize: '0.7rem' }}>
-                          {item.time}
-                        </span>
+                        <span style={{ fontSize: '10px', color: '#94A3B8' }}>{item.time}</span>
                       </div>
 
-                      <p className="text-muted mb-2 line-clamp-2" style={{ fontSize: '0.78rem', lineHeight: '1.45', color: '#475569' }}>
+                      <p style={{ fontSize: '11.5px', color: '#64748B', margin: '0 0 6px 0', lineHeight: 1.4 }}>
                         {item.body}
                       </p>
 
-                      {/* Action Execution Status Pill */}
-                      <div className="d-flex align-items-center gap-2">
+                      <div>
                         {item.isCompleted ? (
-                          <span 
-                            className="badge rounded-pill fw-bold d-inline-flex align-items-center gap-1"
-                            style={{ background: '#ECFDF5', color: '#059669', border: '1px solid #A7F3D0', fontSize: '0.7rem', padding: '3px 8px' }}
-                          >
-                            <Check style={{ width: '12px', height: '12px' }} />
+                          <span style={{ background: '#F1F5F9', color: '#059669', fontSize: '10px', padding: '1px 6px', borderRadius: '4px', fontWeight: 700, display: 'inline-flex', alignItems: 'center', gap: '3px' }}>
+                            <Check size={10} />
                             <span>{item.actionLabel}</span>
                           </span>
                         ) : (
-                          <span 
-                            className="badge rounded-pill fw-semibold d-inline-flex align-items-center gap-1"
-                            style={{ background: '#FEF3C7', color: '#B45309', border: '1px solid #FDE68A', fontSize: '0.7rem', padding: '3px 8px' }}
-                          >
-                            <Clock style={{ width: '12px', height: '12px' }} />
+                          <span style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', color: '#475569', fontSize: '10px', padding: '1px 6px', borderRadius: '4px', fontWeight: 600, display: 'inline-flex', alignItems: 'center', gap: '3px' }}>
+                            <Clock size={10} />
                             <span>{item.actionLabel}</span>
                           </span>
                         )}
                       </div>
                     </div>
-
-                    {/* Facebook-Style Blue Unread Dot */}
-                    {!item.isRead && (
-                      <div 
-                        className="rounded-circle flex-shrink-0 align-self-center"
-                        style={{ 
-                          width: '10px', 
-                          height: '10px', 
-                          background: '#0284C7',
-                          boxShadow: '0 0 0 2px #BAE6FD'
-                        }}
-                        title="غير مقروء"
-                      ></div>
-                    )}
                   </div>
                 );
               })
             )}
           </div>
 
-          {/* 3. Footer */}
-          <div className="p-2 text-center bg-slate-50 border-top" style={{ borderColor: '#F1F5F9' }}>
+          {/* Footer */}
+          <div style={{ padding: '8px', textAlign: 'center', borderTop: '1px solid #F1F5F9', background: '#F8FAFC' }}>
             <button 
               type="button"
               onClick={() => { setIsOpen(false); navigate('/intake/submissions'); }}
-              className="btn btn-link text-primary fw-bold text-decoration-none p-1"
-              style={{ fontSize: '0.78rem', color: '#0284C7' }}
+              style={{ fontSize: '11.5px', color: '#0F172A', background: 'transparent', border: 'none', cursor: 'pointer', fontWeight: 700 }}
             >
-              عرض جميع استمارات ومتابعات المشتركين
+              عرض جميع استمارات المشتركين
             </button>
           </div>
 
