@@ -1,0 +1,81 @@
+import type { ReactNode, Ref } from 'react';
+import { Field } from '@/shared/ui/field';
+import { Button } from '@/shared/ui/button';
+import { normalizeArabicSearchText } from '@/lib/arabic-normalization';
+
+interface SearchToolbarProps {
+  search: string;
+  onSearchChange: (value: string) => void;
+  searchPlaceholder?: string;
+  searchLabel?: string;
+  children?: ReactNode;
+  title?: string;
+  description?: string;
+  actions?: ReactNode;
+  meta?: ReactNode;
+  className?: string;
+  onReset?: (() => void) | null;
+  resetLabel?: string;
+  inputRef?: Ref<HTMLInputElement>;
+  inputAriaLabel?: string;
+}
+
+export function SearchToolbar({
+  search,
+  onSearchChange,
+  searchPlaceholder = 'ابحث...',
+  searchLabel = 'بحث سريع',
+  children,
+  title,
+  description,
+  actions,
+  meta,
+  className = '',
+  onReset = null,
+  resetLabel = 'تصفير',
+  inputRef,
+  inputAriaLabel,
+}: SearchToolbarProps) {
+  const hasHeading = Boolean(title || description || actions);
+
+  return (
+    <div className={`toolbar-stack ${className}`.trim()}>
+      {hasHeading ? (
+        <div className="toolbar-heading">
+          <div className="toolbar-heading-copy">
+            {title ? <strong className="toolbar-title">{title}</strong> : null}
+            {description ? <p className="toolbar-description">{description}</p> : null}
+          </div>
+          <div className="toolbar-heading-actions">
+            {actions}
+            {onReset ? <Button type="button" variant="secondary" onClick={onReset}>{resetLabel}</Button> : null}
+          </div>
+        </div>
+      ) : null}
+
+      {meta ? <div className="toolbar-meta-row">{meta}</div> : null}
+
+      <div className="toolbar-grid compact-toolbar">
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <Field label={searchLabel}>
+            <input
+              ref={inputRef}
+              value={search}
+              onChange={(event) => onSearchChange(normalizeArabicSearchText(event.target.value))}
+              placeholder={searchPlaceholder}
+              aria-label={inputAriaLabel || searchPlaceholder}
+            />
+          </Field>
+        </div>
+        {children ? <div className="toolbar-extra">{children}</div> : null}
+        {!hasHeading && onReset ? (
+          <div className="toolbar-reset-action">
+            <Button type="button" variant="secondary" onClick={onReset}>
+              {resetLabel}
+            </Button>
+          </div>
+        ) : null}
+      </div>
+    </div>
+  );
+}

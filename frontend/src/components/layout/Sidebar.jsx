@@ -1,203 +1,323 @@
-import React from 'react';
-import { useLocation, useNavigate } from 'react-router-dom';
+﻿import React, { useState, useRef, useEffect, useMemo } from 'react';
+import { NavLink, useLocation, useNavigate } from 'react-router-dom';
 import {
   LayoutDashboard,
   ClipboardList,
   CheckCircle2,
   Users,
+  CreditCard,
   Dumbbell,
   UtensilsCrossed,
+  FileEdit,
   LineChart,
   Settings,
-  ShieldCheck
+  ShieldCheck,
+  Search,
+  ChevronLeft,
+  ChevronRight,
+  LogOut,
+  X
 } from 'lucide-react';
+
+const iconToneMap = {
+  dashboard: { bg: 'linear-gradient(135deg, #ede9fe, #dbeafe)', border: '#c4b5fd', fg: '#5b21b6', glow: 'rgba(99, 102, 241, 0.22)' },
+  intakes: { bg: 'linear-gradient(135deg, #dcfce7, #bbf7d0)', border: '#86efac', fg: '#166534', glow: 'rgba(34, 197, 94, 0.22)' },
+  checkins: { bg: 'linear-gradient(135deg, #dbeafe, #bfdbfe)', border: '#93c5fd', fg: '#1d4ed8', glow: 'rgba(37, 99, 235, 0.22)' },
+  customers: { bg: 'linear-gradient(135deg, #ffe4e6, #fecdd3)', border: '#fda4af', fg: '#be123c', glow: 'rgba(244, 63, 94, 0.2)' },
+  subscriptions: { bg: 'linear-gradient(135deg, #fef3c7, #fde68a)', border: '#fbbf24', fg: '#a16207', glow: 'rgba(245, 158, 11, 0.24)' },
+  exercises: { bg: 'linear-gradient(135deg, #d1fae5, #a7f3d0)', border: '#6ee7b7', fg: '#065f46', glow: 'rgba(16, 185, 129, 0.22)' },
+  calculator: { bg: 'linear-gradient(135deg, #cffafe, #a5f3fc)', border: '#67e8f9', fg: '#0f766e', glow: 'rgba(6, 182, 212, 0.22)' },
+  editor: { bg: 'linear-gradient(135deg, #ede9fe, #ddd6fe)', border: '#c4b5fd', fg: '#6d28d9', glow: 'rgba(124, 58, 237, 0.22)' },
+  analytics: { bg: 'linear-gradient(135deg, #e0e7ff, #c7d2fe)', border: '#a5b4fc', fg: '#4338ca', glow: 'rgba(99, 102, 241, 0.2)' },
+  settings: { bg: 'linear-gradient(135deg, #f8fafc, #e2e8f0)', border: '#cbd5e1', fg: '#475569', glow: 'rgba(71, 85, 105, 0.18)' },
+  'test-engine': { bg: 'linear-gradient(135deg, #fee2e2, #fecaca)', border: '#fca5a5', fg: '#991b1b', glow: 'rgba(239, 68, 68, 0.2)' },
+};
 
 const NAVIGATION_GROUPS = [
   {
-    title: 'الرئيسية والمتابعة',
+    key: 'operations',
+    title: 'المتابعة والعمليات',
+    iconKey: 'dashboard',
     items: [
-      { name: 'لوحة التحكم', path: '/', aliasPath: '/dashboard', icon: LayoutDashboard },
-      { name: 'الاستبيانات الجديدة', path: '/intake/submissions', aliasPath: '/intakes', icon: ClipboardList, badge: 'جديد' },
-      { name: 'مراجعة التقييمات', path: '/coach/checkin-review', aliasPath: '/checkin-review', icon: CheckCircle2 },
+      { key: 'dashboard', label: 'لوحة التحكم اليومية', to: '/', end: true, icon: LayoutDashboard },
+      { key: 'intakes', label: 'الاستبيانات الجديدة', to: '/intake/submissions', icon: ClipboardList, badge: 'جديد' },
+      { key: 'checkins', label: 'مراجعة التقييمات الأسبوعية', to: '/coach/checkin-review', icon: CheckCircle2 },
     ],
   },
   {
-    title: 'البرامج والأدوات',
+    key: 'clients-group',
+    title: 'المشتركين والاشتراكات',
+    iconKey: 'customers',
     items: [
-      { name: 'إدارة العملاء (CRM)', path: '/customers', aliasPath: '/clients', icon: Users },
-      { name: 'مكتبة التمارين والأمان', path: '/exercises', aliasPath: '/workouts', icon: Dumbbell },
-      { name: 'محرك التغذية والماكروز', path: '/calculator', aliasPath: '/nutrition', icon: UtensilsCrossed },
+      { key: 'customers', label: 'إدارة المشتركين (CRM)', to: '/customers', icon: Users },
+      { key: 'subscriptions', label: 'الباقات والاشتراكات', to: '/subscriptions', icon: CreditCard },
     ],
   },
   {
-    title: 'الإدارة والتحكم',
+    key: 'engines-group',
+    title: 'المحركات والبرامج',
+    iconKey: 'exercises',
     items: [
-      { name: 'الإحصائيات المالية', path: '/coach/analytics', aliasPath: '/analytics', icon: LineChart },
-      { name: 'إعدادات النظام', path: '/master-settings', aliasPath: '/settings', icon: Settings },
-      { name: 'اختبار المحرك السريري', path: '/test-engine', aliasPath: '/test', icon: ShieldCheck },
+      { key: 'exercises', label: 'مكتبة التمارين والأمان', to: '/exercises', icon: Dumbbell },
+      { key: 'calculator', label: 'محرك التغذية والماكروز', to: '/calculator', icon: UtensilsCrossed },
+      { key: 'editor', label: 'منشئ ومعدل البرامج', to: '/coach/editor', icon: FileEdit },
+    ],
+  },
+  {
+    key: 'system-group',
+    title: 'الإدارة والنظام',
+    iconKey: 'settings',
+    items: [
+      { key: 'analytics', label: 'التقارير والإحصائيات', to: '/coach/analytics', icon: LineChart },
+      { key: 'settings', label: 'إعدادات النظام العامة', to: '/master-settings', icon: Settings },
+      { key: 'test-engine', label: 'اختبار المحرك السريري', to: '/test-engine', icon: ShieldCheck },
     ],
   },
 ];
 
-export default function Sidebar({ currentPath, onNavigate, isCollapsed = false }) {
+export default function Sidebar({ isCollapsed = false, onToggleSidebar }) {
   const location = useLocation();
   const navigate = useNavigate();
-  const activePath = currentPath || location.pathname;
+  const [searchQuery, setSearchQuery] = useState('');
+  const [isSearchOpen, setIsSearchOpen] = useState(false);
+  const searchInputRef = useRef(null);
+  const sidebarRef = useRef(null);
 
-  const handleItemClick = (path) => {
-    if (onNavigate) onNavigate(path);
-    else navigate(path);
+  const handleOpenSearch = () => {
+    if (isCollapsed && onToggleSidebar) {
+      onToggleSidebar();
+    }
+    setIsSearchOpen(true);
+    setTimeout(() => {
+      searchInputRef.current?.focus();
+    }, 60);
+  };
+
+  const handleCloseSearch = () => {
+    setIsSearchOpen(false);
+    setSearchQuery('');
+  };
+
+  useEffect(() => {
+    handleCloseSearch();
+  }, [location.pathname]);
+
+  const cleanQuery = searchQuery.trim().toLowerCase();
+
+  const filteredGroups = useMemo(() => {
+    if (!cleanQuery) return NAVIGATION_GROUPS;
+
+    return NAVIGATION_GROUPS.map((group) => {
+      const matchingItems = group.items.filter(
+        (item) =>
+          item.label.toLowerCase().includes(cleanQuery) ||
+          group.title.toLowerCase().includes(cleanQuery)
+      );
+      if (matchingItems.length === 0) return null;
+      return {
+        ...group,
+        items: matchingItems,
+      };
+    }).filter(Boolean);
+  }, [cleanQuery]);
+
+  const renderItem = (item) => {
+    const tone = iconToneMap[item.key] || iconToneMap.settings;
+    const toneStyle = {
+      '--icon-bg': tone.bg,
+      '--icon-border': tone.border,
+      '--icon-fg': tone.fg,
+      '--icon-glow': tone.glow,
+    };
+    const Icon = item.icon;
+
+    return (
+      <NavLink
+        key={item.key}
+        to={item.to}
+        end={item.end}
+        style={toneStyle}
+        data-tooltip={isCollapsed ? item.label : undefined}
+        className={({ isActive }) =>
+          `sidebar-link ${isActive ? 'active' : ''}`.trim()
+        }
+      >
+        <span className="sidebar-icon">
+          <Icon size={17} style={{ strokeWidth: 2 }} />
+        </span>
+        <span className="sidebar-label">{item.label}</span>
+        {item.badge && !isCollapsed && (
+          <span
+            style={{
+              background: '#10B981',
+              color: '#FFFFFF',
+              fontSize: '10px',
+              fontWeight: 800,
+              padding: '2px 6px',
+              borderRadius: '20px',
+              marginInlineStart: 'auto',
+              lineHeight: 1,
+            }}
+          >
+            {item.badge}
+          </span>
+        )}
+      </NavLink>
+    );
   };
 
   return (
-    <aside 
-      className={`codex-sidebar ${isCollapsed ? 'collapsed' : ''}`} 
+    <aside
+      ref={sidebarRef}
+      className={`sidebar-fixed ${isCollapsed ? 'is-collapsed' : ''}`}
       style={{
-        position: 'fixed',
-        top: 0,
-        right: 0,
-        bottom: 0,
-        width: isCollapsed ? '76px' : '250px',
-        background: '#FFFFFF',
-        borderLeft: '1px solid #E7EEF3',
-        zIndex: 100,
+        width: isCollapsed ? '72px' : '240px',
         transition: 'width 0.22s cubic-bezier(0.4, 0, 0.2, 1)',
-        display: 'flex',
-        flexDirection: 'column',
-        overflow: 'hidden'
       }}
     >
-      <div 
-        className="sidebar-header" 
-        style={{
-          padding: isCollapsed ? '24px 0' : '24px 20px',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: isCollapsed ? 'center' : 'space-between',
-          borderBottom: '1px solid #E7EEF3',
-          background: '#FAFBFC'
-        }}
-      >
-        {!isCollapsed ? (
-          <div className="d-flex align-items-center">
-            <h4 style={{ margin: 0, fontWeight: 900, color: '#0F172A', fontSize: '18px', letterSpacing: '-0.5px' }}>
-              Z-COACHING
-            </h4>
-          </div>
-        ) : (
-          <div style={{
-            width: '32px',
-            height: '32px',
-            background: 'linear-gradient(135deg, #0F172A 0%, #1E293B 100%)',
-            borderRadius: '8px',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            color: 'white',
-            fontWeight: 900,
-            fontSize: '16px'
-          }}>
-            Z
-          </div>
-        )}
+      {/* Brand Header */}
+      <div className="brand" style={{ padding: isCollapsed ? '16px 8px' : '20px 16px 14px' }}>
+        <div className="brand-copy">
+          {!isCollapsed ? (
+            <>
+              <div className="brand-title" style={{ fontSize: '15px', fontWeight: 900, color: '#0F172A' }}>
+                Z-COACHING
+              </div>
+              <div className="brand-sub" style={{ fontSize: '11px', color: '#64748B', fontWeight: 600 }}>
+                Powered by Karim Zakaria
+              </div>
+            </>
+          ) : (
+            <div
+              style={{
+                width: '36px',
+                height: '36px',
+                background: 'linear-gradient(135deg, #170c5c 0%, #10003b 100%)',
+                borderRadius: '10px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                color: '#FFFFFF',
+                fontWeight: 900,
+                fontSize: '18px',
+              }}
+            >
+              Z
+            </div>
+          )}
+        </div>
       </div>
 
-      <div 
-        className="sidebar-content" 
-        style={{ 
-          flex: 1, 
-          overflowY: 'auto', 
-          overflowX: 'hidden',
-          padding: '16px 0',
-        }}
-      >
-        {NAVIGATION_GROUPS.map((group, gIdx) => (
-          <div key={gIdx} style={{ marginBottom: '24px' }}>
-            {!isCollapsed && (
-              <div 
-                style={{ 
-                  padding: '0 20px', 
-                  marginBottom: '8px',
-                  fontSize: '11px',
-                  fontWeight: 800,
-                  color: '#94A3B8',
-                  textTransform: 'uppercase',
-                  letterSpacing: '0.5px'
+      {/* Instant Search Bar */}
+      <div className="sidebar-search-wrapper">
+        <div
+          className={`sidebar-search-pill ${isSearchOpen ? 'is-expanded' : ''}`}
+          onClick={() => {
+            if (!isSearchOpen) handleOpenSearch();
+          }}
+        >
+          <button
+            type="button"
+            className="sidebar-search-icon-btn"
+            title={isSearchOpen ? 'بحث' : 'بحث سريع في القوائم'}
+            onClick={(e) => {
+              if (!isSearchOpen) {
+                e.stopPropagation();
+                handleOpenSearch();
+              }
+            }}
+          >
+            <Search size={15} />
+          </button>
+          {isSearchOpen && (
+            <>
+              <input
+                ref={searchInputRef}
+                type="text"
+                className="sidebar-search-input"
+                placeholder="ابحث في القوائم..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Escape') {
+                    e.preventDefault();
+                    handleCloseSearch();
+                  }
+                }}
+              />
+              <button
+                type="button"
+                className="sidebar-search-close-btn"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleCloseSearch();
                 }}
               >
-                {group.title}
-              </div>
-            )}
-            
-            <nav style={{ padding: isCollapsed ? '0 8px' : '0 12px' }}>
-              {group.items.map((item, iIdx) => {
-                const isActive = activePath === item.path || activePath === item.aliasPath || (item.path !== '/' && activePath.startsWith(item.path));
-                const Icon = item.icon;
-                
-                return (
-                  <div
-                    key={iIdx}
-                    onClick={() => handleItemClick(item.path)}
-                    title={isCollapsed ? item.name : undefined}
-                    style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      padding: isCollapsed ? '12px' : '10px 12px',
-                      marginBottom: '4px',
-                      borderRadius: '10px',
-                      cursor: 'pointer',
-                      background: isActive ? '#E5F0FF' : 'transparent',
-                      color: isActive ? '#0284C7' : '#475569',
-                      transition: 'all 0.15s ease',
-                      position: 'relative',
-                      justifyContent: isCollapsed ? 'center' : 'flex-start',
-                    }}
-                    onMouseEnter={(e) => {
-                      if (!isActive) {
-                        e.currentTarget.style.background = '#F8FAFC';
-                        e.currentTarget.style.color = '#0F172A';
-                      }
-                    }}
-                    onMouseLeave={(e) => {
-                      if (!isActive) {
-                        e.currentTarget.style.background = 'transparent';
-                        e.currentTarget.style.color = '#475569';
-                      }
-                    }}
-                  >
-                    <Icon size={isCollapsed ? 22 : 18} style={{ strokeWidth: isActive ? 2.5 : 2, flexShrink: 0 }} />
-                    
-                    {!isCollapsed && (
-                      <span style={{ 
-                        marginRight: '12px', 
-                        fontSize: '13.5px', 
-                        fontWeight: isActive ? 700 : 600,
-                        whiteSpace: 'nowrap',
-                        flex: 1
-                      }}>
-                        {item.name}
-                      </span>
-                    )}
+                <X size={14} />
+              </button>
+            </>
+          )}
+        </div>
+      </div>
 
-                    {!isCollapsed && item.badge && (
-                      <span style={{
-                        background: '#10B981',
-                        color: 'white',
-                        fontSize: '10px',
-                        fontWeight: 800,
-                        padding: '2px 6px',
-                        borderRadius: '20px',
-                        lineHeight: 1
-                      }}>
-                        {item.badge}
-                      </span>
-                    )}
-                  </div>
-                );
-              })}
-            </nav>
+      {/* Navigation List */}
+      <nav className="sidebar-nav" style={{ flex: 1, overflowY: 'auto', padding: '6px 0' }}>
+        {filteredGroups.map((group) => {
+          const groupTone = iconToneMap[group.iconKey] || iconToneMap.settings;
+          const groupToneStyle = {
+            '--icon-bg': groupTone.bg,
+            '--icon-border': groupTone.border,
+            '--icon-fg': groupTone.fg,
+            '--icon-glow': groupTone.glow,
+          };
+
+          return (
+            <div key={group.key} className="sidebar-group is-open">
+              {!isCollapsed && (
+                <div className="sidebar-group-trigger" style={groupToneStyle}>
+                  <span className="sidebar-label" style={{ fontSize: '11px', fontWeight: 800, color: '#94A3B8', textTransform: 'uppercase' }}>
+                    {group.title}
+                  </span>
+                </div>
+              )}
+              <div className="sidebar-group-items">
+                {group.items.map(renderItem)}
+              </div>
+            </div>
+          );
+        })}
+      </nav>
+
+      {/* Footer / Toggle & Account */}
+      <div className="sidebar-footer" style={{ padding: '12px 14px', borderTop: '1px solid #E2E8F0' }}>
+        {!isCollapsed && (
+          <div className="sidebar-footer-info" style={{ marginBottom: '10px', textAlign: 'center' }}>
+            <div style={{ fontSize: '12px', fontWeight: 700, color: '#1E293B' }}>الكوتش كريم زكريا</div>
+            <div style={{ fontSize: '10px', color: '#94A3B8', marginTop: '2px' }}>الإصدار v2.5 ● نظام مفعل</div>
           </div>
-        ))}
+        )}
+        <div className="sidebar-footer-actions" style={{ display: 'flex', alignItems: 'center', justifyContent: isCollapsed ? 'center' : 'space-between', gap: '8px' }}>
+          <button
+            type="button"
+            onClick={onToggleSidebar}
+            className="sidebar-toggle-btn"
+            style={{
+              width: '32px',
+              height: '32px',
+              borderRadius: '8px',
+              border: '1px solid #E2E8F0',
+              background: '#F8FAFC',
+              color: '#64748B',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              cursor: 'pointer',
+            }}
+            title={isCollapsed ? 'توسيع القائمة' : 'تصغير القائمة'}
+          >
+            {isCollapsed ? <ChevronLeft size={16} /> : <ChevronRight size={16} />}
+          </button>
+        </div>
       </div>
     </aside>
   );

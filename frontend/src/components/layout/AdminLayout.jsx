@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+﻿import React, { useState, useEffect } from 'react';
 import Sidebar from './Sidebar';
 import AdminHeader from './AdminHeader';
 
@@ -6,7 +6,8 @@ export default function AdminLayout({
   children, 
   searchTerm, 
   onSearchChange, 
-  searchPlaceholder 
+  searchPlaceholder,
+  onOpenNewClient
 }) {
   const [isCollapsed, setIsCollapsed] = useState(() => {
     const saved = localStorage.getItem('z_sidebar_collapsed');
@@ -34,27 +35,33 @@ export default function AdminLayout({
 
   return (
     <div 
-      className={`admin-root ${isCollapsed ? 'sidebar-collapsed' : ''}`} 
+      className={`app-layout ${isCollapsed ? 'sidebar-collapsed' : ''}`} 
       dir="rtl"
     >
-      {/* 1. Header */}
-      <AdminHeader 
-        searchTerm={searchTerm} 
-        onSearchChange={onSearchChange} 
-        searchPlaceholder={searchPlaceholder} 
-        isCollapsed={isCollapsed}
-        onToggleSidebar={toggleSidebar}
-      />
-
-      {/* 2. Sidebar (Always visible: Full 245px or Mini 72px) */}
+      {/* 1. Sidebar (Fixed / Collapsible) */}
       <Sidebar 
         isCollapsed={isCollapsed} 
         onToggleSidebar={toggleSidebar} 
       />
 
-      {/* 3. Main Content Container */}
-      <div className="themebody-wrap">
-        {children}
+      {/* 2. Main Column */}
+      <div className="main-col" style={{ flex: 1, display: 'flex', flexDirection: 'column', minWidth: 0, height: '100vh', overflow: 'hidden' }}>
+        {/* Global Toolbar Header */}
+        <AdminHeader 
+          searchTerm={searchTerm} 
+          onSearchChange={onSearchChange} 
+          searchPlaceholder={searchPlaceholder} 
+          isCollapsed={isCollapsed}
+          onToggleSidebar={toggleSidebar}
+          onOpenNewClient={onOpenNewClient}
+        />
+
+        {/* Scrollable Content View */}
+        <div className="content-wrap" style={{ flex: 1, overflowY: 'auto', padding: '20px 28px 48px' }}>
+          <main className="page-stack" style={{ maxWidth: '1280px', margin: '0 auto', width: '100%' }}>
+            {children}
+          </main>
+        </div>
       </div>
     </div>
   );

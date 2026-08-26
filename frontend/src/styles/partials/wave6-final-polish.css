@@ -1,0 +1,672 @@
+.accounts-workspace .stats-grid.compact-grid,
+.treasury-workspace .stats-grid.compact-grid {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.accounts-workspace .stat-card,
+.treasury-workspace .stat-card {
+  padding: 12px 14px;
+  border-radius: 8px;
+}
+
+.accounts-workspace .stat-card span,
+.treasury-workspace .stat-card span {
+  font-size: 11px;
+}
+
+.accounts-workspace .stat-card strong,
+.treasury-workspace .stat-card strong {
+  margin-top: 6px;
+  font-size: 17px;
+  line-height: 1.25;
+}
+
+
+.customers-page .stats-grid.compact-grid,
+.suppliers-page .stats-grid.compact-grid,
+.services-page .stats-grid.compact-grid,
+.cash-drawer-page .stats-grid.compact-grid,
+.audit-page .stats-grid.compact-grid,
+.accounts-workspace .stats-grid.compact-grid,
+.treasury-workspace .stats-grid.compact-grid {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.customers-page .stat-card,
+.suppliers-page .stat-card,
+.services-page .stat-card,
+.cash-drawer-page .stat-card,
+.audit-page .stat-card {
+  padding: 12px 14px;
+  border-radius: 8px;
+}
+
+.customers-page .stat-card span,
+.suppliers-page .stat-card span,
+.services-page .stat-card span,
+.cash-drawer-page .stat-card span,
+.audit-page .stat-card span {
+  font-size: 11px;
+}
+
+.customers-page .stat-card strong,
+.suppliers-page .stat-card strong,
+.services-page .stat-card strong,
+.cash-drawer-page .stat-card strong,
+.audit-page .stat-card strong {
+  margin-top: 6px;
+  font-size: 17px;
+  line-height: 1.25;
+}
+
+.customers-page .page-header .page-header-description,
+.suppliers-page .page-header .page-header-description,
+.services-page .page-header .page-header-description,
+.cash-drawer-page .page-header .page-header-description,
+.audit-page .page-header .page-header-description {
+  max-width: 720px;
+}
+
+.customers-page .page-header-actions .button,
+.suppliers-page .page-header-actions .button,
+.services-page .page-header-actions .button,
+.audit-page .page-header-actions .button {
+  min-height: 36px;
+  padding: 0 12px;
+}
+
+.services-page .services-workspace-grid {
+  align-items: start;
+}
+
+.services-page .services-insights-list .metric-row {
+  padding: 10px 12px;
+  border-radius: 8px;
+}
+
+.audit-page .card > .stats-grid.compact-grid {
+  margin-top: 8px;
+}
+
+.audit-page .card .toolbar,
+.audit-page .card .search-toolbar,
+.audit-page .card .filter-chip-row {
+  margin-bottom: 10px;
+}
+
+.audit-page .audit-action-cell {
+  display: grid;
+  gap: 4px;
+  min-width: 0;
+}
+
+.audit-page .audit-col-activity {
+  width: 64%;
+  min-width: 360px;
+}
+
+.audit-page .audit-col-user {
+  width: 16%;
+  white-space: nowrap;
+  color: #475569;
+  font-size: 12px;
+}
+
+.audit-page .audit-col-date {
+  width: 20%;
+  white-space: nowrap;
+  color: #475569;
+  font-size: 12px;
+}
+
+.audit-page .audit-action-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+
+.audit-page .audit-action-label {
+  color: #0f172a;
+  font-size: 13px;
+  line-height: 1.45;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.audit-page .audit-detail-text {
+  display: inline-block;
+  max-width: min(520px, 100%);
+  color: #64748b;
+  font-size: 12px;
+  line-height: 1.65;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  vertical-align: top;
+}
+
+.audit-page .audit-activity-badge {
+  width: fit-content;
+  flex: 0 0 auto;
+  border-radius: 8px;
+  padding: 2px 8px;
+  font-size: 10px;
+  font-weight: 800;
+  border: 1px solid transparent;
+}
+
+.audit-page .audit-badge-auth {
+  color: #1d4ed8;
+  background: #f1f0fa;
+  border-color: #bfdbfe;
+}
+
+.audit-page .audit-badge-maintenance {
+  color: #c2410c;
+  background: #fff7ed;
+  border-color: #fed7aa;
+}
+
+.audit-page .audit-badge-import {
+  color: #166534;
+  background: #f0fdf4;
+  border-color: #bbf7d0;
+}
+
+.audit-page .audit-badge-inventory {
+  color: #0f766e;
+  background: #f0fdfa;
+  border-color: #99f6e4;
+}
+
+.audit-page .audit-badge-sales {
+  color: #1e3a8a;
+  background: #eef2ff;
+  border-color: #c7d2fe;
+}
+
+.audit-page .audit-badge-purchases {
+  color: #155e75;
+  background: #ecfeff;
+  border-color: #a5f3fc;
+}
+
+.audit-page .audit-badge-hr {
+  color: #334155;
+  background: #f8fafc;
+  border-color: #cbd5e1;
+}
+
+.audit-page .audit-badge-settings {
+  color: #6d28d9;
+  background: #f5f3ff;
+  border-color: #ddd6fe;
+}
+
+.audit-page .audit-badge-backup {
+  color: #065f46;
+  background: #ecfdf5;
+  border-color: #a7f3d0;
+}
+
+.audit-page .audit-badge-sensitive {
+  color: #92400e;
+  background: #fffbeb;
+  border-color: #fde68a;
+}
+
+.audit-page .audit-badge-general {
+  color: #475569;
+  background: #f8fafc;
+  border-color: #e2e8f0;
+}
+
+.cash-drawer-page .cash-drawer-forms-panel,
+.customers-page .panel-grid,
+.suppliers-page .panel-grid,
+.services-page .services-workspace-grid {
+  gap: 14px;
+}
+
+.customers-page .customers-editor-grid,
+.suppliers-page .suppliers-editor-grid {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  align-items: start;
+}
+
+@media (max-width: 820px) {
+  .customers-page .customers-editor-grid,
+  .suppliers-page .suppliers-editor-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .audit-page .audit-col-activity,
+  .audit-page .audit-col-user,
+  .audit-page .audit-col-date {
+    width: auto;
+    min-width: 0;
+    white-space: normal;
+  }
+}
+
+@media (max-width: 1200px) {
+  .customers-page .stats-grid.compact-grid,
+  .suppliers-page .stats-grid.compact-grid,
+  .services-page .stats-grid.compact-grid,
+  .cash-drawer-page .stats-grid.compact-grid,
+  .audit-page .stats-grid.compact-grid,
+  .accounts-workspace .stats-grid.compact-grid,
+  .treasury-workspace .stats-grid.compact-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 820px) {
+  .customers-page .stats-grid.compact-grid,
+  .suppliers-page .stats-grid.compact-grid,
+  .services-page .stats-grid.compact-grid,
+  .cash-drawer-page .stats-grid.compact-grid,
+  .audit-page .stats-grid.compact-grid,
+  .accounts-workspace .stats-grid.compact-grid,
+  .treasury-workspace .stats-grid.compact-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+
+.settings-users-stats-grid {
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.settings-users-stats-grid .stat-card {
+  padding: 12px 14px;
+  border-radius: 8px;
+}
+
+.settings-users-stats-grid .stat-card span {
+  font-size: 11px;
+}
+
+.settings-users-stats-grid .stat-card strong {
+  margin-top: 6px;
+  font-size: 17px;
+  line-height: 1.25;
+}
+
+@media (max-width: 1200px) {
+  .settings-users-stats-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 820px) {
+  .settings-users-stats-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ==========================================================================
+   Reports Range Toolbar Unified Sizing (Inputs, Selects, Buttons)
+   ========================================================================== */
+.reports-range-grid,
+.reports-range-grid--compact {
+  display: grid !important;
+  grid-template-columns: repeat(4, minmax(0, 1fr)) minmax(130px, 150px) !important;
+  gap: 10px !important;
+  align-items: flex-end !important;
+  margin-bottom: 8px !important;
+}
+
+.reports-range-grid .field,
+.reports-range-grid--compact .field,
+.reports-range-grid .reports-action-field,
+.reports-range-grid--compact .reports-action-field {
+  display: flex !important;
+  flex-direction: column !important;
+  justify-content: flex-end !important;
+  gap: 5px !important;
+  margin-bottom: 0 !important;
+  min-width: 0 !important;
+}
+
+.reports-range-grid .field > span,
+.reports-range-grid .field > label,
+.reports-range-grid--compact .field > span,
+.reports-range-grid--compact .field > label,
+.reports-range-grid .reports-action-field > span,
+.reports-range-grid--compact .reports-action-field > span {
+  font-size: 0.75rem !important;
+  font-weight: 700 !important;
+  color: #475569 !important;
+  white-space: nowrap !important;
+  margin: 0 !important;
+  line-height: 16px !important;
+  height: 16px !important;
+}
+
+.reports-range-grid input[type="date"],
+.reports-range-grid input,
+.reports-range-grid select,
+.reports-range-grid .button,
+.reports-range-grid .btn,
+.reports-range-grid--compact input[type="date"],
+.reports-range-grid--compact input,
+.reports-range-grid--compact select,
+.reports-range-grid--compact .button,
+.reports-range-grid--compact .btn {
+  height: 38px !important;
+  min-height: 38px !important;
+  max-height: 38px !important;
+  box-sizing: border-box !important;
+  border-radius: 6px !important;
+  font-size: 0.825rem !important;
+  font-weight: 600 !important;
+  line-height: 1.2 !important;
+  margin: 0 !important;
+}
+
+.reports-range-grid input[type="date"],
+.reports-range-grid--compact input[type="date"] {
+  padding: 6px 10px !important;
+  border: 1px solid #cbd5e1 !important;
+  background-color: #ffffff !important;
+  color: #0f172a !important;
+}
+
+.reports-range-grid select,
+.reports-range-grid--compact select {
+  padding: 6px 10px 6px 26px !important;
+  border: 1px solid #cbd5e1 !important;
+  background-color: #ffffff !important;
+  color: #0f172a !important;
+  background-position: left 8px center !important;
+}
+
+.reports-range-grid .reports-action-field .button,
+.reports-range-grid .reports-action-field .btn,
+.reports-range-grid--compact .reports-action-field .button,
+.reports-range-grid--compact .reports-action-field .btn {
+  width: 100% !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  padding: 0 14px !important;
+  background: var(--primary, #170c5c) !important;
+  color: #ffffff !important;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05) !important;
+}
+
+@media (max-width: 1100px) {
+  .reports-range-grid,
+  .reports-range-grid--compact {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) 1fr !important;
+  }
+  .reports-range-grid .reports-action-field,
+  .reports-range-grid--compact .reports-action-field {
+    grid-column: span 1 !important;
+  }
+}
+
+@media (max-width: 768px) {
+  .reports-range-grid,
+  .reports-range-grid--compact {
+    grid-template-columns: 1fr 1fr !important;
+  }
+  .reports-range-grid .reports-action-field,
+  .reports-range-grid--compact .reports-action-field {
+    grid-column: span 2 !important;
+  }
+}
+
+@media (max-width: 480px) {
+  .reports-range-grid,
+  .reports-range-grid--compact {
+    grid-template-columns: 1fr !important;
+  }
+  .reports-range-grid .reports-action-field,
+  .reports-range-grid--compact .reports-action-field {
+    grid-column: span 1 !important;
+  }
+}
+
+/* ==========================================================================
+   Reports Overview Visual Command Center (Charts-First Layout)
+   ========================================================================== */
+.reports-charts-hub-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.85fr) minmax(320px, 1.15fr);
+  gap: 16px;
+  align-items: stretch;
+  margin-top: 14px;
+}
+
+.reports-charts-hub-grid > * {
+  margin-top: 0 !important;
+  margin-bottom: 0 !important;
+  display: flex;
+  flex-direction: column;
+}
+
+.reports-charts-hub-grid .card-body,
+.reports-charts-hub-grid .section-body {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.reports-margin-donut-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  padding: 12px 8px;
+}
+
+.reports-executive-metric-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 10px;
+}
+
+.reports-executive-metric-item {
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  padding: 12px 14px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.02);
+  transition: border-color 0.15s ease;
+}
+
+.reports-executive-metric-item:hover {
+  border-color: #cbd5e1;
+}
+
+.reports-executive-metric-item span {
+  font-size: 0.8rem;
+  color: #64748b;
+  font-weight: 600;
+}
+
+.reports-executive-metric-item strong {
+  font-size: 0.95rem;
+  color: #0f172a;
+  font-weight: 800;
+}
+
+@media (max-width: 1100px) {
+  .reports-charts-hub-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ==========================================================================
+   Compact Executive Summary Cards
+   ========================================================================== */
+.reports-executive-card--compact,
+.reports-executive-card {
+  padding: 12px 14px !important;
+  margin-top: 0 !important;
+  margin-bottom: 0 !important;
+}
+
+.reports-executive-card .form-section-header,
+.reports-executive-card .section-header {
+  margin-bottom: 8px !important;
+}
+
+.reports-premium-summary-strip,
+.reports-premium-summary-strip--compact {
+  display: grid !important;
+  grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+  gap: 10px !important;
+  margin-bottom: 0 !important;
+}
+
+.reports-premium-stat,
+.reports-premium-stat-compact {
+  position: relative !important;
+  min-height: 74px !important;
+  padding: 10px 14px 14px 14px !important;
+  border-radius: 8px !important;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.03) !important;
+  display: flex !important;
+  flex-direction: column !important;
+  justify-content: space-between !important;
+}
+
+.reports-premium-stat span:first-child {
+  font-size: 0.75rem !important;
+  font-weight: 700 !important;
+  color: #64748b !important;
+  line-height: 1.2 !important;
+}
+
+.reports-premium-stat strong {
+  font-size: clamp(1.2rem, 1.4vw, 1.45rem) !important;
+  font-weight: 800 !important;
+  color: #0f172a !important;
+  margin-top: 2px !important;
+  line-height: 1.2 !important;
+  letter-spacing: -0.01em !important;
+}
+
+.reports-premium-stat small {
+  font-size: 0.68rem !important;
+  color: #94a3b8 !important;
+  font-weight: 600 !important;
+  margin-top: 0 !important;
+  line-height: 1.2 !important;
+}
+
+.reports-premium-stat-rail {
+  height: 4px !important;
+  bottom: 6px !important;
+  inset-inline: 12px !important;
+  border-radius: 4px !important;
+}
+
+.reports-preset-row--compact .btn,
+.reports-preset-row--compact .button {
+  padding: 3px 10px !important;
+  min-height: 28px !important;
+  height: 28px !important;
+  font-size: 0.75rem !important;
+  border-radius: 6px !important;
+}
+
+.reports-mini-overview-grid--compact .stat-card,
+.reports-mini-overview-grid--compact .report-mini-stat-card {
+  padding: 6px 10px !important;
+  border-radius: 6px !important;
+}
+
+.reports-mini-overview-grid--compact .stat-card strong,
+.reports-mini-overview-grid--compact .report-mini-stat-card strong {
+  font-size: 0.95rem !important;
+  margin-top: 2px !important;
+}
+
+@media (max-width: 900px) {
+  .reports-premium-summary-strip,
+  .reports-premium-summary-strip--compact {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  }
+}
+
+@media (max-width: 480px) {
+  .reports-premium-summary-strip,
+  .reports-premium-summary-strip--compact {
+    grid-template-columns: 1fr !important;
+  }
+}
+
+/* ==========================================================================
+   Horizontal Single-Row Legend for Donut Chart
+   ========================================================================== */
+.reports-ring-legend,
+.reports-ring-legend-horizontal {
+  display: flex !important;
+  flex-direction: row !important;
+  justify-content: center !important;
+  align-items: center !important;
+  gap: 8px !important;
+  flex-wrap: wrap !important;
+  width: 100% !important;
+  margin-bottom: 0 !important;
+}
+
+.reports-ring-legend-row {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 6px !important;
+  padding: 6px 10px !important;
+  border-radius: 6px !important;
+  background: #ffffff !important;
+  border: 1px solid #e2e8f0 !important;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.02) !important;
+}
+
+.reports-ring-legend-row span {
+  font-size: 0.75rem !important;
+  font-weight: 700 !important;
+  color: #475569 !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 5px !important;
+}
+
+.reports-ring-legend-row strong {
+  font-size: 0.8rem !important;
+  font-weight: 800 !important;
+  color: #0f172a !important;
+  margin-inline-start: 4px !important;
+}
+
+/* ==========================================================================
+   Dynamic Chart Entrance Animations
+   ========================================================================== */
+@keyframes chartSmoothDrawIn {
+  from {
+    opacity: 0.2;
+    transform: translateY(12px) scaleY(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scaleY(1);
+  }
+}
+
+.reports-chart-draw-in {
+  animation: chartSmoothDrawIn 0.85s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  transform-origin: bottom center;
+}

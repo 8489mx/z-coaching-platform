@@ -1,0 +1,173 @@
+@import './partials/base.css';
+@import './partials/layout.css';
+@import './partials/dashboard.css';
+@import './partials/features.css';
+@import './partials/combobox-system.css';
+@import './partials/pos-compact-fix.css';
+@import './partials/dashboard-compact-fix.css';
+@import './partials/cash-drawer-compact-fix.css';
+@import './partials/inventory-compact-fix.css';
+@import './partials/sales-cleanup-fix.css';
+@import './partials/reports-compact-fix.css';
+@import './partials/returns-cleanup-fix.css';
+@import './partials/pos-1080-layout-fix.css';
+
+@import './partials/wave2-compact-fix.css';
+
+@import "./partials/purchases-followup-fix.css";
+@import "./partials/wave6-final-polish.css";
+
+@import './partials/internal-detail-review.css';
+
+@import './partials/pos-print-actions-fix.css';
+@import './partials/activation-flow.css';
+@import './partials/global-visual-refresh.css';
+
+@import './partials/pos-step3-cashier-dock.css';
+
+@import './partials/pos-step4-cashier-tune.css';
+@import './partials/pos-cashier-unified-mode-layout.css';
+@import './partials/pos-cashier-product-picker-cleanup.css';
+@import './partials/pos-cashier-vertical-fill.css';
+@import './partials/pos-checkout-dialog-polish.css';
+@import './partials/global-dialog-shell.css';
+@import './partials/sales-invoice-detail-responsive.css';
+@import './partials/global-responsive-foundation.css';
+@import './partials/dashboard-priority-layout.css';
+@import './partials/reports-executive-summary-pairs.css';
+@import './partials/sidebar-submenu-alignment-fix.css';
+@import './partials/hr-loans-layout-fix.css';
+@import './partials/hr-module-polish.css';
+@import './partials/z-erp-brand.css';
+@import './partials/supplier-payment-schedule-polish.css';
+@import './partials/stock-count-workflow-polish.css';
+@import './partials/document-form-prototype.css';
+@import './partials/onboarding-wizard.css';
+@import './partials/reports-redesign.css';
+@import './partials/mobile-layout.css';
+@import './partials/global-search.css';
+@import './partials/segmented-controls.css';
+@import './partials/product-form-compact.css';
+@import './partials/system-updates.css';
+
+/* ========================================================
+   GLOBAL AUTHORITY: PRIMARY BRAND COLOR (CUSTOMIZABLE)
+   ======================================================== */
+:root {
+  --primary: #170c5c;
+  --primary2: #10003b;
+  --primary-color: #170c5c;
+  --color-primary: #170c5c;
+  --color-primary-dark: #10003b;
+  --color-primary-light: rgba(23, 12, 92, 0.08);
+  --z-erp-approved-logo: url('./brand/z-erp-approved-icon.png');
+}
+
+.btn-primary,
+.button-primary,
+button.btn-primary,
+.btn.btn-primary,
+.filter-chip-row .btn-primary,
+.filter-chip-row .button-primary,
+.filter-chip-row .btn.btn-primary,
+.settings-section-tabs .btn-primary,
+.settings-section-tabs .btn.btn-primary,
+.purchase-prototype-create-card .btn-primary,
+.purchase-prototype-create-confirm .btn-primary,
+.settings-page-shell .settings-core-form > .btn.btn-primary {
+  background: var(--primary, #170c5c) !important;
+  border-color: var(--primary, #170c5c) !important;
+  color: #ffffff !important;
+}
+
+.btn-primary:hover:not(:disabled),
+.button-primary:hover:not(:disabled),
+button.btn-primary:hover:not(:disabled),
+.btn.btn-primary:hover:not(:disabled),
+.filter-chip-row .btn-primary:hover:not(:disabled),
+.filter-chip-row .button-primary:hover:not(:disabled) {
+  background: var(--primary2, var(--color-primary-dark, #10003b)) !important;
+  border-color: var(--primary2, var(--color-primary-dark, #10003b)) !important;
+  color: #ffffff !important;
+}
+
+@keyframes slideUp { from { opacity: 0; transform: translateX(-50%) translateY(20px); } to { opacity: 1; transform: translateX(-50%) translateY(0); } }
+@media print { .no-print { display: none !important; } }
+
+/* ========================================================
+   GLOBAL TOOLBAR & FILTER CHIPS HEIGHT HARMONIZATION (NON-POS)
+   ======================================================== */
+:where(.toolbar-grid, .compact-toolbar):not(.pos-workspace, .pos-workspace *) {
+  display: flex !important;
+  flex-direction: row !important;
+  align-items: flex-end !important;
+  justify-content: space-between !important;
+  gap: 12px !important;
+  width: 100% !important;
+}
+
+:where(.toolbar-grid > div:first-child):not(.pos-workspace, .pos-workspace *) {
+  flex: 1 1 auto !important;
+  min-width: 240px !important;
+}
+
+:where(.toolbar-grid .field):not(.pos-workspace, .pos-workspace *) {
+  margin-bottom: 0 !important;
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 4px !important;
+}
+
+:where(.toolbar-grid .field > span, .toolbar-grid .field > label):not(.pos-workspace, .pos-workspace *) {
+  font-size: 12px !important;
+  font-weight: 700 !important;
+  color: #475569 !important;
+  margin: 0 !important;
+  line-height: 1.3 !important;
+}
+
+:where(.toolbar-grid input, .toolbar-grid select, .search-toolbar input):not(.pos-workspace, .pos-workspace *) {
+  height: 38px !important;
+  min-height: 38px !important;
+  max-height: 38px !important;
+  padding: 0 12px !important;
+  font-size: 13px !important;
+  line-height: 38px !important;
+  border-radius: 8px !important;
+  border: 1px solid #cbd5e1 !important;
+  background: #ffffff !important;
+  box-sizing: border-box !important;
+}
+
+:where(.toolbar-extra, .toolbar-reset-action):not(.pos-workspace, .pos-workspace *) {
+  display: flex !important;
+  align-items: flex-end !important;
+  gap: 8px !important;
+  flex-shrink: 0 !important;
+}
+
+:where(.toolbar-chip-row):not(.pos-workspace, .pos-workspace *) {
+  display: flex !important;
+  align-items: center !important;
+  gap: 6px !important;
+  margin-bottom: 0 !important;
+  flex-wrap: wrap !important;
+}
+
+:where(.search-toolbar .btn, .toolbar-chip-row .btn, .toolbar-chip-row .button, .toolbar-chip-row button, .toolbar-extra > .btn, .toolbar-extra > .button, .toolbar-extra > button, .toolbar-reset-action > .btn, .toolbar-reset-action > .button, .toolbar-reset-action > button):not(.pos-workspace, .pos-workspace *) {
+  height: 38px !important;
+  min-height: 38px !important;
+  max-height: 38px !important;
+  padding: 0 14px !important;
+  font-size: 12.5px !important;
+  font-weight: 700 !important;
+  line-height: 36px !important;
+  border-radius: 8px !important;
+  box-sizing: border-box !important;
+  box-shadow: none !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  white-space: nowrap !important;
+}
+

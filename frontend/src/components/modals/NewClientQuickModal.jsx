@@ -1,9 +1,6 @@
-import React, { useState, useEffect } from 'react';
-import ReactDOM from 'react-dom';
+﻿import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { 
-  UserPlus, 
-  X, 
   Phone, 
   User, 
   CheckCircle2, 
@@ -12,20 +9,18 @@ import {
   Check, 
   Edit3, 
   AlertCircle,
-  Zap,
-  Crown,
-  Gift,
-  Calendar
+  Sparkles
 } from 'lucide-react';
 import { API_BASE } from '../../config/api';
 import { SUBSCRIPTION_TIERS } from '../../config/subscription-tiers';
 import { copyToClipboard } from '../../utils/clipboardUtils';
+import { DialogShell } from '@/shared/components/dialog-shell';
 
 export default function NewClientQuickModal({ isOpen, onClose, onClientCreated }) {
   const navigate = useNavigate();
   const [tier, setTier] = useState('MAX'); // 'ELITE' | 'MAX'
   const [durationKey, setDurationKey] = useState('FOUR_MONTHS'); // 'FOUR_MONTHS' | 'EIGHT_MONTHS'
-  const [bonusWeeks, setBonusWeeks] = useState(0); // 0, 1, 2, 4 أسابيع إضافية
+  const [bonusWeeks, setBonusWeeks] = useState(0); // 0, 1, 2, 3 أسابيع إضافية
   const [bonusMonths, setBonusMonths] = useState(0); // 0, 1, 2 شهور إضافية
   const [clientName, setClientName] = useState('');
   const [clientPhone, setClientPhone] = useState('');
@@ -33,19 +28,6 @@ export default function NewClientQuickModal({ isOpen, onClose, onClientCreated }
   const [newClient, setNewClient] = useState(null);
   const [copied, setCopied] = useState(false);
   const [error, setError] = useState('');
-
-  // Close on Escape key
-  useEffect(() => {
-    const handleKeyDown = (e) => {
-      if (e.key === 'Escape' || e.keyCode === 27) {
-        handleClose();
-      }
-    };
-    if (isOpen) {
-      window.addEventListener('keydown', handleKeyDown);
-    }
-    return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [isOpen]);
 
   if (!isOpen) return null;
 
@@ -57,13 +39,13 @@ export default function NewClientQuickModal({ isOpen, onClose, onClientCreated }
   const packageCode = `${tier}_${currentDurationData.id}`;
 
   const isMax = tier === 'MAX';
-  const themeColor = isMax ? '#C89327' : '#00A3FF';
-  const themeBg = isMax ? '#FEF9C3' : '#E0F2FE';
+  const themeColor = isMax ? '#C89327' : '#170c5c';
+  const themeBg = isMax ? '#FFFBEB' : '#EDE9FE';
 
   const baseMonths = durationKey === 'FOUR_MONTHS' ? 4 : 8;
-  let durationText = baseMonths + ' شهور';
-  if (bonusMonths > 0) durationText += ' + ' + bonusMonths + ' شهر';
-  if (bonusWeeks > 0) durationText += ' + ' + bonusWeeks + ' أسبوع';
+  let durationText = `${baseMonths} شهور`;
+  if (bonusMonths > 0) durationText += ` + ${bonusMonths} شهر`;
+  if (bonusWeeks > 0) durationText += ` + ${bonusWeeks} أسبوع`;
 
   const handleClose = () => {
     setClientPhone('');
@@ -105,7 +87,6 @@ export default function NewClientQuickModal({ isOpen, onClose, onClientCreated }
         setNewClient(data.client);
         if (onClientCreated) onClientCreated(data.client);
       } else {
-        // Fallback offline generation if server issue
         const fallbackCode = Math.floor(1000 + Math.random() * 9000).toString();
         const fallbackClient = {
           client_code: fallbackCode,
@@ -117,7 +98,6 @@ export default function NewClientQuickModal({ isOpen, onClose, onClientCreated }
         if (onClientCreated) onClientCreated(fallbackClient);
       }
     } catch (err) {
-      // Fallback offline generation
       const fallbackCode = Math.floor(1000 + Math.random() * 9000).toString();
       const fallbackClient = {
         client_code: fallbackCode,
@@ -141,9 +121,7 @@ export default function NewClientQuickModal({ isOpen, onClose, onClientCreated }
   const tierNameLabel = tier === 'MAX' ? 'باقة ماكس (M A X)' : 'باقة إيليت (ELITE)';
 
   const whatsappMessage = newClient
-    ? `أهلاً بك يا ${clientNameDisplay} مع كابتن كريم زكريا!\n\nتم تفعيل اشتراكك في: *${tierNameLabel}*\nإجمالي مدة المتابعة: **\n\nبيانات دخول استمارتك الخاصة:\n*كود المشترك:* ${newClient.client_code}\n*رقم الهاتف المسجل:* ${newClient.phone_number}\n\n*رابط استمارتك المباشر:*
-${intakeLink}\n\n*رابط البوابة الموحد:*
-${portalLink}\n\n(افتح الرابط المباشر واملأ بياناتك وصورك بدقة لنبدأ فوراً في تجهيز خطتك المتكاملة!)`
+    ? `أهلاً بك يا ${clientNameDisplay} مع كابتن كريم زكريا!\n\nتم تفعيل اشتراكك في: *${tierNameLabel}*\nإجمالي مدة المتابعة: *${durationText}*\n\nبيانات دخول استمارتك الخاصة:\n*كود المشترك:* ${newClient.client_code}\n*رقم الهاتف المسجل:* ${newClient.phone_number}\n\n*رابط استمارتك المباشر:*\n${intakeLink}\n\n*رابط البوابة الموحد:*\n${portalLink}\n\n(افتح الرابط المباشر واملأ بياناتك بدقة لنبدأ فوراً في تجهيز خطتك المتكاملة!)`
     : '';
 
   const handleCopyMessage = async () => {
@@ -162,414 +140,414 @@ ${portalLink}\n\n(افتح الرابط المباشر واملأ بياناتك
     window.open(waUrl, '_blank');
   };
 
-  const modalContent = (
-    <div 
-      className="modal fade show d-block" 
-      tabIndex="-1" 
-      style={{ 
-        backgroundColor: 'rgba(15, 23, 42, 0.75)', 
-        backdropFilter: 'blur(8px)', 
-        zIndex: 10000,
-        position: 'fixed',
-        top: 0,
-        bottom: 0,
-        left: 0,
-        right: 0,
-        overflowY: 'auto',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        padding: '16px'
-      }}
-      onClick={(e) => { if (e.target === e.currentTarget) handleClose(); }}
+  return (
+    <DialogShell
+      open={isOpen}
+      onClose={handleClose}
+      showCloseButton={true}
+      width="520px"
+      ariaLabel="إنشاء كود مشترك وتحديد الباقة"
     >
-      <div style={{ width: '100%', maxWidth: '500px', margin: 'auto' }}>
-        <div 
-          className="modal-content border-0 shadow-2xl bg-white" 
-          style={{ borderRadius: '24px', overflow: 'hidden', border: '1px solid #E2E8F0' }}
-          dir="rtl"
-        >
-          
-          {/* Header */}
-          <div className="p-4 bg-white d-flex justify-content-between align-items-center" style={{ borderBottom: '1px solid #F1F5F9' }}>
-            <div className="d-flex align-items-center gap-3">
-              <div 
-                className="rounded-circle d-flex align-items-center justify-content-center flex-shrink-0" 
-                style={{ 
-                  width: '42px', 
-                  height: '42px', 
-                  background: themeBg, 
-                  color: themeColor, 
-                  border: `1.5px solid ${themeColor}40` 
-                }}
-              >
-                <UserPlus style={{ width: '20px', height: '20px' }} />
-              </div>
-              <div>
-                <h5 className="modal-title fw-black text-dark mb-0" style={{ fontSize: '1.1rem', letterSpacing: '-0.3px' }}>
-                  إنشاء كود مشترك وتحديد الباقة
-                </h5>
-                <small className="text-muted" style={{ fontSize: '0.78rem' }}>اختر نوع الباقة والمدة وأضف شهوراً أو أسابيع هدية</small>
-              </div>
-            </div>
-            <button 
-              type="button" 
-              onClick={handleClose} 
-              className="btn btn-sm btn-light rounded-circle d-flex align-items-center justify-content-center flex-shrink-0"
-              style={{ width: '34px', height: '34px', background: '#F8FAFC', border: '1px solid #E2E8F0', color: '#64748B', cursor: 'pointer' }}
-              title="إغلاق"
-            >
-              <X style={{ width: '16px', height: '16px' }} />
-            </button>
+      <div className="dialog-card" dir="rtl" style={{ padding: '24px 28px' }}>
+        {/* Header Title with Signature Accent Bar */}
+        <div style={{ marginBottom: '20px' }}>
+          <h3 style={{ margin: '0 0 6px 0', fontSize: '1.2rem', fontWeight: 800, color: '#0F172A' }}>
+            إنشاء كود مشترك وتحديد الباقة
+          </h3>
+          <p className="dialog-description" style={{ margin: 0, fontSize: '0.84rem', color: '#64748B' }}>
+            اختر نوع الباقة والمدة وأضف شهوراً أو أسابيع هدية لتوليد كود التفعيل
+          </p>
+        </div>
+
+        {error && (
+          <div className="alert alert-danger py-2 px-3 small rounded-3 mb-3 d-flex align-items-center gap-2" style={{ fontSize: '0.84rem', background: '#FEF2F2', border: '1px solid #FEE2E2', color: '#DC2626', borderRadius: '8px', padding: '8px 12px', marginBottom: '16px' }}>
+            <AlertCircle size={16} />
+            <span>{error}</span>
           </div>
+        )}
 
-          {/* Body */}
-          <div className="p-4 bg-white">
-            {error && (
-              <div className="alert alert-danger py-2 px-3 small rounded-3 mb-3 d-flex align-items-center gap-2" style={{ fontSize: '0.8rem' }}>
-                <AlertCircle style={{ width: '16px', height: '16px' }} />
-                <span>{error}</span>
-              </div>
-            )}
-
-            {!newClient ? (
-              <form onSubmit={handleCreate}>
-                
-                {/* 1. Client Info Inputs */}
-                <div className="row g-2 mb-3">
-                  <div className="col-6">
-                    <label className="form-label fw-bold text-dark small mb-1" style={{ fontSize: '0.8rem' }}>
-                      اسم المشترك:
-                    </label>
-                    <div className="position-relative">
-                      <input 
-                        type="text" 
-                        className="form-control" 
-                        style={{ 
-                          height: '42px', 
-                          borderRadius: '12px', 
-                          fontSize: '0.86rem', 
-                          border: '1.5px solid #E2E8F0',
-                          paddingRight: '38px', paddingLeft: '12px'
-                        }}
-                        placeholder="مثال: أحمد فتحي"
-                        value={clientName}
-                        onChange={(e) => setClientName(e.target.value)}
-                      />
-                      <div className="position-absolute top-50 translate-middle-y pointer-events-none" style={{ right: "12px", color: "#64748B" }}>
-                        <User style={{ width: '16px', height: '16px' }} />
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="col-6">
-                    <label className="form-label fw-bold text-dark small mb-1" style={{ fontSize: '0.8rem' }}>
-                      رقم الواتساب: <span className="text-danger">*</span>
-                    </label>
-                    <div className="position-relative">
-                      <input 
-                        type="tel" 
-                        className="form-control" 
-                        style={{ 
-                          height: '42px', 
-                          borderRadius: '12px', 
-                          fontSize: '0.86rem', 
-                          border: '1.5px solid #E2E8F0',
-                          paddingRight: '38px', paddingLeft: '12px',
-                          direction: 'ltr',
-                          textAlign: 'right', paddingRight: '38px', paddingLeft: '12px'
-                        }}
-                        placeholder="010XXXXXXXX"
-                        value={clientPhone}
-                        onChange={(e) => setClientPhone(e.target.value)}
-                        autoFocus
-                        required
-                      />
-                      <div className="position-absolute top-50 translate-middle-y pointer-events-none text-success" style={{ right: "12px" }}>
-                        <Phone style={{ width: '16px', height: '16px' }} />
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                {/* 2. Package Tier Selector (ELITE vs MAX) */}
-                <div className="mb-3">
-                  <label className="form-label fw-bold text-dark small mb-1.5" style={{ fontSize: '0.8rem' }}>
-                    نوع الباقة:
-                  </label>
-
-                  <div className="row g-2">
-                    {/* ELITE (Blue) */}
-                    <div className="col-6">
-                      <div 
-                        onClick={() => setTier('ELITE')}
-                        className="p-2.5 rounded-3 text-center transition-all h-100 d-flex align-items-center justify-content-center"
-                        style={{ 
-                          cursor: 'pointer',
-                          background: tier === 'ELITE' ? '#E0F2FE' : '#FFFFFF',
-                          borderColor: tier === 'ELITE' ? '#00A3FF' : '#E2E8F0',
-                          borderWidth: '2px',
-                          borderStyle: 'solid',
-                          boxShadow: tier === 'ELITE' ? '0 3px 10px rgba(0, 163, 255, 0.15)' : 'none',
-                          borderRadius: '14px'
-                        }}
-                      >
-                        <div>
-                          <span style={{ fontSize: '1.15rem', fontWeight: 900, color: '#00A3FF', letterSpacing: '0.5px', display: 'block' }}>
-                            ELITE
-                          </span>
-                          <span style={{ fontSize: '0.72rem', color: '#64748B', fontWeight: 600 }}>
-                            متابعة كل 14 يوم
-                          </span>
-                        </div>
-                        
-                      </div>
-                    </div>
-
-                    {/* MAX (Gold) */}
-                    <div className="col-6">
-                      <div 
-                        onClick={() => setTier('MAX')}
-                        className="p-2.5 rounded-3 text-center transition-all h-100 d-flex align-items-center justify-content-center"
-                        style={{ 
-                          cursor: 'pointer',
-                          background: tier === 'MAX' ? '#FFFBEB' : '#FFFFFF',
-                          borderColor: tier === 'MAX' ? '#C89327' : '#E2E8F0',
-                          borderWidth: '2px',
-                          borderStyle: 'solid',
-                          boxShadow: tier === 'MAX' ? '0 3px 10px rgba(200, 147, 39, 0.15)' : 'none',
-                          borderRadius: '14px'
-                        }}
-                      >
-                        <div>
-                          <span style={{ fontSize: '1.15rem', fontWeight: 900, color: '#C89327', letterSpacing: '0.5px', display: 'block' }}>
-                            M A X
-                          </span>
-                          <span style={{ fontSize: '0.72rem', color: '#64748B', fontWeight: 600 }}>
-                            متابعة أسبوعية + صوتي
-                          </span>
-                        </div>
-                        
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                {/* 3. Base Duration Selector (4M vs 8M) */}
-                <div className="mb-3">
-                  <label className="form-label fw-bold text-dark small mb-1.5" style={{ fontSize: '0.8rem' }}>
-                    مدة الاشتراك الأساسية:
-                  </label>
-
-                  <div className="d-flex gap-2">
-                    <button
-                      type="button"
-                      onClick={() => setDurationKey('FOUR_MONTHS')}
-                      className="btn flex-fill fw-bold py-2"
-                      style={{
-                        borderRadius: '12px',
-                        fontSize: '0.82rem',
-                        border: durationKey === 'FOUR_MONTHS' ? '2px solid #0F172A' : '1.5px solid #E2E8F0',
-                        background: durationKey === 'FOUR_MONTHS' ? '#0F172A' : '#FFFFFF',
-                        color: durationKey === 'FOUR_MONTHS' ? '#FFFFFF' : '#64748B',
-                        transition: 'all 0.15s ease'
-                      }}
-                    >
-                      4 شهور (3 + 1 هدية)
-                    </button>
-
-                    <button
-                      type="button"
-                      onClick={() => setDurationKey('EIGHT_MONTHS')}
-                      className="btn flex-fill fw-bold py-2"
-                      style={{
-                        borderRadius: '12px',
-                        fontSize: '0.82rem',
-                        border: durationKey === 'EIGHT_MONTHS' ? '2px solid #0F172A' : '1.5px solid #E2E8F0',
-                        background: durationKey === 'EIGHT_MONTHS' ? '#0F172A' : '#FFFFFF',
-                        color: durationKey === 'EIGHT_MONTHS' ? '#FFFFFF' : '#64748B',
-                        transition: 'all 0.15s ease'
-                      }}
-                    >
-                      8 شهور (6 + 2 هدية)
-                    </button>
-                  </div>
-                </div>
-
-                {/* 4. Bonus Gift Calculator (Weeks & Months) */}
-                <div className="p-3 rounded-3 mb-4" style={{ background: '#F8FAFC', border: '1px solid #E2E8F0' }}>
-                  <div className="d-flex align-items-center mb-2"><span className="fw-black text-dark" style={{ fontSize: '0.78rem' }}>
-                      إضافة هدايا إضافية للكود (اختياري للكوتش):
-                    </span>
-                  </div>
-
-                  {/* Bonus Weeks */}
-                  <div className="d-flex align-items-center gap-3 mb-2">
-                    <span className="text-muted fw-bold" style={{ fontSize: '0.74rem', whiteSpace: 'nowrap' }}>
-                      أسابيع هدية:
-                    </span>
-                    <div className="d-flex gap-1">
-                      {[0, 1, 2, 3].map(w => (
-                        <button
-                          key={w}
-                          type="button"
-                          onClick={() => setBonusWeeks(w)}
-                          className="btn btn-sm fw-bold"
-                          style={{
-                            padding: '3px 10px',
-                            fontSize: '0.74rem',
-                            borderRadius: '8px',
-                            border: bonusWeeks === w ? '1.5px solid #00A3FF' : '1px solid #CBD5E1',
-                            background: bonusWeeks === w ? '#00A3FF' : '#FFFFFF',
-                            color: bonusWeeks === w ? '#FFFFFF' : '#475569'
-                          }}
-                        >
-                          {w === 0 ? 'بدون' : `+${w} أسبوع`}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-
-                  {/* Bonus Months */}
-                  <div className="d-flex align-items-center gap-3 mb-2">
-                    <span className="text-muted fw-bold" style={{ fontSize: '0.74rem', whiteSpace: 'nowrap' }}>
-                      شهور هدية:
-                    </span>
-                    <div className="d-flex gap-1">
-                      {[0, 1, 2].map(m => (
-                        <button
-                          key={m}
-                          type="button"
-                          onClick={() => setBonusMonths(m)}
-                          className="btn btn-sm fw-bold"
-                          style={{
-                            padding: '3px 10px',
-                            fontSize: '0.74rem',
-                            borderRadius: '8px',
-                            border: bonusMonths === m ? '1.5px solid #C89327' : '1px solid #CBD5E1',
-                            background: bonusMonths === m ? '#C89327' : '#FFFFFF',
-                            color: bonusMonths === m ? '#FFFFFF' : '#475569'
-                          }}
-                        >
-                          {m === 0 ? 'بدون' : `+${m} شهر`}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-
-                  <div className="pt-1 text-success fw-bold" style={{ fontSize: '0.76rem' }}>إجمالي المدة الممنوحة: {durationText}</div>
-                </div>
-
-                {/* Footer Buttons */}
-                <div className="d-flex gap-2 justify-content-between align-items-center pt-2" style={{ borderTop: '1px solid #F1F5F9' }}>
-                  <button 
-                    type="button" 
-                    className="btn btn-sm btn-light rounded-pill px-4 fw-semibold" 
-                    style={{ height: '40px', fontSize: '0.82rem', color: '#475569', border: '1px solid #E2E8F0' }}
-                    onClick={handleClose}
-                  >
-                    إلغاء
-                  </button>
-                  <button 
-                    type="submit" 
-                    className="btn btn-sm rounded-pill px-4 fw-bold shadow-sm d-flex align-items-center gap-2 text-white"
-                    disabled={loading || !clientPhone.trim()}
+        {!newClient ? (
+          <form onSubmit={handleCreate} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+            
+            {/* 1. Client Inputs Grid */}
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+              <div className="field" style={{ margin: 0 }}>
+                <label style={{ fontSize: '12px', fontWeight: 700, color: '#334155', marginBottom: '4px' }}>
+                  اسم المشترك:
+                </label>
+                <div style={{ position: 'relative' }}>
+                  <input 
+                    type="text" 
                     style={{ 
                       height: '40px', 
-                      fontSize: '0.86rem', 
-                      background: `linear-gradient(135deg, ${themeColor} 0%, ${isMax ? '#B45309' : '#0284C7'} 100%)`, 
-                      border: 'none', 
-                      boxShadow: `0 4px 14px ${themeColor}40`,
-                      cursor: 'pointer'
+                      borderRadius: '8px', 
+                      fontSize: '13px', 
+                      border: '1px solid #CBD5E1',
+                      paddingRight: '36px',
+                      paddingLeft: '12px',
+                      background: '#FFFFFF',
+                      width: '100%',
+                      boxSizing: 'border-box'
                     }}
-                  >
-                    {loading ? (
-                      <><span className="spinner-border spinner-border-sm"></span> جاري التوليد...</>
-                    ) : (
-                      <span>توليد الكود وتجهيز رابط المشترك</span>
-                    )}
-                  </button>
+                    placeholder="مثال: أحمد فتحي"
+                    value={clientName}
+                    onChange={(e) => setClientName(e.target.value)}
+                  />
+                  <div style={{ position: 'absolute', right: '12px', top: '50%', transform: 'translateY(-50%)', color: '#94A3B8', pointerEvents: 'none', display: 'flex' }}>
+                    <User size={16} />
+                  </div>
                 </div>
-              </form>
-            ) : (
-              <div className="py-2 text-center space-y-3">
-                {/* Success Banner */}
-                <div className="mb-3">
-                  <span className="d-inline-flex align-items-center justify-content-center px-4 py-2 rounded-3 shadow-sm fw-bold" style={{ background: '#F0FDF4', color: '#16A34A', border: '1px solid #DCFCE7', fontSize: '0.84rem' }}>
-                    <CheckCircle2 style={{ width: '16px', height: '16px', display: 'inline', marginLeft: '4px' }} />
-                    تم إنشاء حساب المشترك وتوليد الكود بنجاح
-                  </span>
-                </div>
+              </div>
 
-                {/* Account Details Card */}
-                <div className="p-3 rounded-4 mb-4" style={{ background: '#F8FAFC', border: '1.5px dashed #CBD5E1' }}>
-                  <span className="text-muted small d-block mb-1" style={{ fontSize: '0.78rem' }}>كود المشترك المعتمد:</span>
-                  <span className="d-inline-block rounded-3 fw-black font-monospace px-5 py-2 mb-2" style={{ background: themeBg, color: themeColor, border: `1.5px solid ${themeColor}40`, fontSize: '1.4rem', letterSpacing: '2px' }}>
-                    {newClient.client_code}
-                  </span>
-                  
-                  <div className="pt-2 text-muted" style={{ fontSize: '0.78rem', borderTop: '1px solid #E2E8F0' }}>
-                    الباقة: <strong style={{ color: themeColor }}>{tierNameLabel}</strong> | إجمالي المدة: <strong>{durationText}</strong>
+              <div className="field" style={{ margin: 0 }}>
+                <label style={{ fontSize: '12px', fontWeight: 700, color: '#334155', marginBottom: '4px' }}>
+                  رقم الواتساب: <span style={{ color: '#DC2626' }}>*</span>
+                </label>
+                <div style={{ position: 'relative' }}>
+                  <input 
+                    type="tel" 
+                    style={{ 
+                      height: '40px', 
+                      borderRadius: '8px', 
+                      fontSize: '13px', 
+                      border: '1px solid #CBD5E1',
+                      paddingRight: '36px',
+                      paddingLeft: '12px',
+                      background: '#FFFFFF',
+                      width: '100%',
+                      boxSizing: 'border-box',
+                      direction: 'ltr',
+                      textAlign: 'right'
+                    }}
+                    placeholder="010XXXXXXXX"
+                    value={clientPhone}
+                    onChange={(e) => setClientPhone(e.target.value)}
+                    autoFocus
+                    required
+                  />
+                  <div style={{ position: 'absolute', right: '12px', top: '50%', transform: 'translateY(-50%)', color: '#10B981', pointerEvents: 'none', display: 'flex' }}>
+                    <Phone size={16} />
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* 2. Package Tier Selector */}
+            <div className="field" style={{ margin: 0 }}>
+              <label style={{ fontSize: '12px', fontWeight: 700, color: '#334155', marginBottom: '6px' }}>
+                نوع الباقة:
+              </label>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
+                {/* ELITE Card */}
+                <div 
+                  onClick={() => setTier('ELITE')}
+                  style={{ 
+                    cursor: 'pointer',
+                    padding: '12px',
+                    borderRadius: '10px',
+                    textAlign: 'center',
+                    border: tier === 'ELITE' ? '2px solid #170c5c' : '1px solid #CBD5E1',
+                    background: tier === 'ELITE' ? '#EDE9FE' : '#FFFFFF',
+                    boxShadow: tier === 'ELITE' ? '0 4px 12px rgba(23, 12, 92, 0.12)' : 'none',
+                    transition: 'all 0.16s ease'
+                  }}
+                >
+                  <div style={{ fontSize: '1.15rem', fontWeight: 900, color: '#170c5c', letterSpacing: '0.5px' }}>
+                    ELITE
+                  </div>
+                  <div style={{ fontSize: '11.5px', color: '#64748B', fontWeight: 600, marginTop: '2px' }}>
+                    متابعة كل 14 يوم
                   </div>
                 </div>
 
-                {/* Action Buttons */}
-                <div className="d-grid gap-2">
-                  <button 
-                    type="button" 
-                    className="btn py-2 rounded-pill fw-bold shadow-sm d-flex align-items-center justify-content-center gap-2 text-white"
-                    style={{ height: '42px', background: 'linear-gradient(135deg, #16A34A 0%, #15803D 100%)', border: 'none', fontSize: '0.84rem', cursor: 'pointer' }}
-                    onClick={handleOpenWhatsApp}
-                  >
-                    <MessageCircle style={{ width: '18px', height: '18px' }} />
-                    <span>إرسال الرابط عبر الواتساب مباشرة</span>
-                  </button>
-
-                  <button 
-                    type="button" 
-                    className="btn btn-light py-2 rounded-pill fw-semibold d-flex align-items-center justify-content-center gap-2"
-                    style={{ height: '40px', border: '1px solid #E2E8F0', fontSize: '0.82rem', color: '#334155', cursor: 'pointer' }}
-                    onClick={handleCopyMessage}
-                  >
-                    {copied ? <Check style={{ width: '16px', height: '16px', color: '#16A34A' }} /> : <Copy style={{ width: '16px', height: '16px' }} />}
-                    <span>{copied ? "تم نسخ رسالة الواتساب ورابط الاستمارة!" : "نسخ دعوة الواتساب والكود"}</span>
-                  </button>
-
-                  <button 
-                    type="button" 
-                    className="btn btn-sm rounded-pill fw-bold mt-1"
-                    style={{ height: '36px', background: themeBg, color: themeColor, border: `1.5px solid ${themeColor}40`, fontSize: '0.8rem', cursor: 'pointer' }}
-                    onClick={() => {
-                      handleClose();
-                      navigate(`/intake/form?code=${newClient.client_code}&phone=${newClient.phone_number}`);
-                    }}
-                  >
-                    <Edit3 style={{ width: '14px', height: '14px', display: 'inline', marginLeft: '4px' }} />
-                    فتح وتعبئة الاستمارة الآن
-                  </button>
+                {/* MAX Card */}
+                <div 
+                  onClick={() => setTier('MAX')}
+                  style={{ 
+                    cursor: 'pointer',
+                    padding: '12px',
+                    borderRadius: '10px',
+                    textAlign: 'center',
+                    border: tier === 'MAX' ? '2px solid #C89327' : '1px solid #CBD5E1',
+                    background: tier === 'MAX' ? '#FFFBEB' : '#FFFFFF',
+                    boxShadow: tier === 'MAX' ? '0 4px 12px rgba(200, 147, 39, 0.15)' : 'none',
+                    transition: 'all 0.16s ease'
+                  }}
+                >
+                  <div style={{ fontSize: '1.15rem', fontWeight: 900, color: '#C89327', letterSpacing: '0.5px' }}>
+                    M A X
+                  </div>
+                  <div style={{ fontSize: '11.5px', color: '#64748B', fontWeight: 600, marginTop: '2px' }}>
+                    متابعة أسبوعية + صوتي
+                  </div>
                 </div>
               </div>
-            )}
+            </div>
+
+            {/* 3. Base Duration Selector */}
+            <div className="field" style={{ margin: 0 }}>
+              <label style={{ fontSize: '12px', fontWeight: 700, color: '#334155', marginBottom: '6px' }}>
+                مدة الاشتراك الأساسية:
+              </label>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
+                <button
+                  type="button"
+                  onClick={() => setDurationKey('FOUR_MONTHS')}
+                  style={{
+                    height: '38px',
+                    borderRadius: '8px',
+                    fontSize: '13px',
+                    fontWeight: 700,
+                    cursor: 'pointer',
+                    border: durationKey === 'FOUR_MONTHS' ? '2px solid #0F172A' : '1px solid #CBD5E1',
+                    background: durationKey === 'FOUR_MONTHS' ? '#0F172A' : '#FFFFFF',
+                    color: durationKey === 'FOUR_MONTHS' ? '#FFFFFF' : '#475569',
+                    transition: 'all 0.15s ease'
+                  }}
+                >
+                  4 شهور (3 + 1 هدية)
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => setDurationKey('EIGHT_MONTHS')}
+                  style={{
+                    height: '38px',
+                    borderRadius: '8px',
+                    fontSize: '13px',
+                    fontWeight: 700,
+                    cursor: 'pointer',
+                    border: durationKey === 'EIGHT_MONTHS' ? '2px solid #0F172A' : '1px solid #CBD5E1',
+                    background: durationKey === 'EIGHT_MONTHS' ? '#0F172A' : '#FFFFFF',
+                    color: durationKey === 'EIGHT_MONTHS' ? '#FFFFFF' : '#475569',
+                    transition: 'all 0.15s ease'
+                  }}
+                >
+                  8 شهور (6 + 2 هدية)
+                </button>
+              </div>
+            </div>
+
+            {/* 4. Bonus Gift Calculator */}
+            <div style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', borderRadius: '10px', padding: '14px 16px' }}>
+              <div style={{ fontSize: '12px', fontWeight: 800, color: '#0F172A', marginBottom: '10px' }}>
+                إضافة هدايا إضافية للكود (اختياري للكوتش):
+              </div>
+
+              {/* Bonus Weeks */}
+              <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '8px' }}>
+                <span style={{ fontSize: '12px', fontWeight: 700, color: '#64748B', whiteSpace: 'nowrap' }}>
+                  أسابيع هدية:
+                </span>
+                <div style={{ display: 'flex', gap: '6px' }}>
+                  {[0, 1, 2, 3].map(w => (
+                    <button
+                      key={w}
+                      type="button"
+                      onClick={() => setBonusWeeks(w)}
+                      style={{
+                        padding: '4px 12px',
+                        fontSize: '12px',
+                        fontWeight: 700,
+                        borderRadius: '6px',
+                        cursor: 'pointer',
+                        border: bonusWeeks === w ? '1.5px solid #170c5c' : '1px solid #CBD5E1',
+                        background: bonusWeeks === w ? '#170c5c' : '#FFFFFF',
+                        color: bonusWeeks === w ? '#FFFFFF' : '#475569'
+                      }}
+                    >
+                      {w === 0 ? 'بدون' : `+${w} أسبوع`}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Bonus Months */}
+              <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '10px' }}>
+                <span style={{ fontSize: '12px', fontWeight: 700, color: '#64748B', whiteSpace: 'nowrap' }}>
+                  شهور هدية:
+                </span>
+                <div style={{ display: 'flex', gap: '6px' }}>
+                  {[0, 1, 2].map(m => (
+                    <button
+                      key={m}
+                      type="button"
+                      onClick={() => setBonusMonths(m)}
+                      style={{
+                        padding: '4px 12px',
+                        fontSize: '12px',
+                        fontWeight: 700,
+                        borderRadius: '6px',
+                        cursor: 'pointer',
+                        border: bonusMonths === m ? '1.5px solid #C89327' : '1px solid #CBD5E1',
+                        background: bonusMonths === m ? '#C89327' : '#FFFFFF',
+                        color: bonusMonths === m ? '#FFFFFF' : '#475569'
+                      }}
+                    >
+                      {m === 0 ? 'بدون' : `+${m} شهر`}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <div style={{ fontSize: '12.5px', fontWeight: 800, color: '#059669', paddingTop: '4px', borderTop: '1px solid #E2E8F0' }}>
+                إجمالي المدة الممنوحة: {durationText}
+              </div>
+            </div>
+
+            {/* Footer Buttons */}
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '10px', paddingTop: '12px', borderTop: '1px solid #E2E8F0' }}>
+              <button 
+                type="button" 
+                className="button button-secondary"
+                style={{ height: '38px', padding: '0 20px', borderRadius: '8px', fontSize: '13px', fontWeight: 600, border: '1px solid #CBD5E1', background: '#FFFFFF', color: '#475569', cursor: 'pointer' }}
+                onClick={handleClose}
+              >
+                إلغاء
+              </button>
+              <button 
+                type="submit" 
+                className="button button-primary"
+                disabled={loading || !clientPhone.trim()}
+                style={{ 
+                  height: '38px', 
+                  padding: '0 20px', 
+                  borderRadius: '8px', 
+                  fontSize: '13px', 
+                  fontWeight: 700, 
+                  background: '#170c5c', 
+                  color: '#FFFFFF', 
+                  border: 'none', 
+                  cursor: 'pointer',
+                  opacity: loading || !clientPhone.trim() ? 0.6 : 1
+                }}
+              >
+                {loading ? 'جاري التوليد...' : 'توليد الكود وتجهيز رابط المشترك'}
+              </button>
+            </div>
+          </form>
+        ) : (
+          <div style={{ textAlign: 'center', display: 'flex', flexDirection: 'column', gap: '16px' }}>
+            {/* Success Banner */}
+            <div style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: '8px',
+              padding: '8px 18px',
+              borderRadius: '8px',
+              background: '#ECFDF5',
+              border: '1px solid #A7F3D0',
+              color: '#065F46',
+              fontSize: '13px',
+              fontWeight: 700,
+              margin: '0 auto'
+            }}>
+              <CheckCircle2 size={16} />
+              <span>تم إنشاء حساب المشترك وتوليد الكود بنجاح</span>
+            </div>
+
+            {/* Account Details Card */}
+            <div style={{ background: '#F8FAFC', border: '1.5px dashed #CBD5E1', borderRadius: '12px', padding: '18px 20px' }}>
+              <span style={{ fontSize: '12px', color: '#64748B', display: 'block', marginBottom: '6px' }}>
+                كود المشترك المعتمد:
+              </span>
+              <span style={{
+                display: 'inline-block',
+                background: themeBg,
+                color: themeColor,
+                border: `1.5px solid ${themeColor}40`,
+                borderRadius: '10px',
+                padding: '8px 36px',
+                fontSize: '1.6rem',
+                fontWeight: 900,
+                letterSpacing: '2px',
+                fontFamily: 'JetBrains Mono, monospace',
+                marginBottom: '10px'
+              }}>
+                {newClient.client_code}
+              </span>
+              
+              <div style={{ fontSize: '12px', color: '#64748B', borderTop: '1px solid #E2E8F0', paddingTop: '8px' }}>
+                الباقة: <strong style={{ color: themeColor }}>{tierNameLabel}</strong> | إجمالي المدة: <strong>{durationText}</strong>
+              </div>
+            </div>
+
+            {/* Action Buttons */}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+              <button 
+                type="button" 
+                style={{
+                  height: '42px',
+                  background: 'linear-gradient(135deg, #16A34A 0%, #15803D 100%)',
+                  border: 'none',
+                  borderRadius: '8px',
+                  color: '#FFFFFF',
+                  fontSize: '13.5px',
+                  fontWeight: 700,
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: '8px',
+                  cursor: 'pointer',
+                  boxShadow: '0 2px 8px rgba(22, 163, 74, 0.25)'
+                }}
+                onClick={handleOpenWhatsApp}
+              >
+                <MessageCircle size={18} />
+                <span>إرسال الرابط عبر الواتساب مباشرة</span>
+              </button>
+
+              <button 
+                type="button" 
+                style={{
+                  height: '40px',
+                  border: '1px solid #CBD5E1',
+                  borderRadius: '8px',
+                  background: '#FFFFFF',
+                  color: '#334155',
+                  fontSize: '13px',
+                  fontWeight: 600,
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: '8px',
+                  cursor: 'pointer'
+                }}
+                onClick={handleCopyMessage}
+              >
+                {copied ? <Check size={16} color="#16A34A" /> : <Copy size={16} />}
+                <span>{copied ? "تم نسخ رسالة الواتساب ورابط الاستمارة!" : "نسخ دعوة الواتساب والكود"}</span>
+              </button>
+
+              <button 
+                type="button" 
+                style={{
+                  height: '36px',
+                  background: themeBg,
+                  color: themeColor,
+                  border: `1.5px solid ${themeColor}40`,
+                  borderRadius: '8px',
+                  fontSize: '12.5px',
+                  fontWeight: 700,
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: '6px',
+                  cursor: 'pointer'
+                }}
+                onClick={() => {
+                  handleClose();
+                  navigate(`/intake/form?code=${newClient.client_code}&phone=${newClient.phone_number}`);
+                }}
+              >
+                <Edit3 size={14} />
+                <span>فتح وتعبئة الاستمارة الآن</span>
+              </button>
+            </div>
           </div>
-        </div>
+        )}
       </div>
-    </div>
+    </DialogShell>
   );
-
-  return ReactDOM.createPortal(modalContent, document.body);
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
