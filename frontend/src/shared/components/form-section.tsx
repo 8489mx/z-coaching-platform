@@ -1,4 +1,4 @@
-import { ReactNode } from 'react';
+﻿import React, { ReactNode } from 'react';
 
 export interface FormSectionProps {
   title: ReactNode;
@@ -20,18 +20,41 @@ export function FormSection({
   actions,
 }: FormSectionProps) {
   return (
-    <section className={`document-prototype-section ${className}`.trim()}>
-      <div className={`document-prototype-section-header ${headerClassName}`.trim()} style={{ marginBottom: 16, display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+    <section 
+      style={{
+        background: '#FFFFFF',
+        border: '1px solid #E2E8F0',
+        borderRadius: '10px',
+        padding: '20px 22px',
+        boxShadow: '0 1px 3px rgba(15, 23, 42, 0.02)'
+      }}
+      className={className}
+    >
+      <div 
+        style={{ 
+          marginBottom: '16px', 
+          display: 'flex', 
+          justifyContent: 'space-between', 
+          alignItems: 'flex-start',
+          gap: '12px'
+        }}
+        className={headerClassName}
+      >
         <div>
-          <h3 className="document-prototype-section-title" style={{ margin: 0 }}>{title}</h3>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <span style={{ width: '3px', height: '16px', background: '#0F172A', borderRadius: '2px', display: 'inline-block' }} />
+            <h3 style={{ margin: 0, fontSize: '15px', fontWeight: 800, color: '#0F172A' }}>
+              {title}
+            </h3>
+          </div>
           {description && (
-            <p className="muted small" style={{ margin: '4px 0 0 0', paddingRight: '12px' }}>
+            <p style={{ margin: '4px 0 0 0', paddingRight: '11px', fontSize: '12px', color: '#64748B' }}>
               {description}
             </p>
           )}
         </div>
         {actions && (
-          <div className="document-prototype-section-actions">
+          <div>
             {actions}
           </div>
         )}

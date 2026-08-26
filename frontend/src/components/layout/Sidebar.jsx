@@ -15,23 +15,9 @@ import {
   Search,
   ChevronLeft,
   ChevronRight,
-  LogOut,
+  ChevronDown,
   X
 } from 'lucide-react';
-
-const iconToneMap = {
-  dashboard: { bg: 'linear-gradient(135deg, #ede9fe, #dbeafe)', border: '#c4b5fd', fg: '#5b21b6', glow: 'rgba(99, 102, 241, 0.22)' },
-  intakes: { bg: 'linear-gradient(135deg, #dcfce7, #bbf7d0)', border: '#86efac', fg: '#166534', glow: 'rgba(34, 197, 94, 0.22)' },
-  checkins: { bg: 'linear-gradient(135deg, #dbeafe, #bfdbfe)', border: '#93c5fd', fg: '#1d4ed8', glow: 'rgba(37, 99, 235, 0.22)' },
-  customers: { bg: 'linear-gradient(135deg, #ffe4e6, #fecdd3)', border: '#fda4af', fg: '#be123c', glow: 'rgba(244, 63, 94, 0.2)' },
-  subscriptions: { bg: 'linear-gradient(135deg, #fef3c7, #fde68a)', border: '#fbbf24', fg: '#a16207', glow: 'rgba(245, 158, 11, 0.24)' },
-  exercises: { bg: 'linear-gradient(135deg, #d1fae5, #a7f3d0)', border: '#6ee7b7', fg: '#065f46', glow: 'rgba(16, 185, 129, 0.22)' },
-  calculator: { bg: 'linear-gradient(135deg, #cffafe, #a5f3fc)', border: '#67e8f9', fg: '#0f766e', glow: 'rgba(6, 182, 212, 0.22)' },
-  editor: { bg: 'linear-gradient(135deg, #ede9fe, #ddd6fe)', border: '#c4b5fd', fg: '#6d28d9', glow: 'rgba(124, 58, 237, 0.22)' },
-  analytics: { bg: 'linear-gradient(135deg, #e0e7ff, #c7d2fe)', border: '#a5b4fc', fg: '#4338ca', glow: 'rgba(99, 102, 241, 0.2)' },
-  settings: { bg: 'linear-gradient(135deg, #f8fafc, #e2e8f0)', border: '#cbd5e1', fg: '#475569', glow: 'rgba(71, 85, 105, 0.18)' },
-  'test-engine': { bg: 'linear-gradient(135deg, #fee2e2, #fecaca)', border: '#fca5a5', fg: '#991b1b', glow: 'rgba(239, 68, 68, 0.2)' },
-};
 
 const PRIMARY_NAV_ITEMS = [
   { key: 'dashboard', label: 'لوحة التحكم اليومية', to: '/', end: true, icon: LayoutDashboard },
@@ -43,7 +29,7 @@ const SIDEBAR_GROUPS = [
   {
     key: 'clients-group',
     label: 'المشتركين والاشتراكات',
-    iconKey: 'customers',
+    icon: Users,
     items: [
       { key: 'customers', label: 'إدارة المشتركين (CRM)', to: '/customers', icon: Users },
       { key: 'subscriptions', label: 'الباقات والاشتراكات', to: '/subscriptions', icon: CreditCard },
@@ -52,7 +38,7 @@ const SIDEBAR_GROUPS = [
   {
     key: 'engines-group',
     label: 'المحركات والبرامج',
-    iconKey: 'exercises',
+    icon: Dumbbell,
     items: [
       { key: 'exercises', label: 'مكتبة التمارين والأمان', to: '/exercises', icon: Dumbbell },
       { key: 'calculator', label: 'محرك التغذية والماكروز', to: '/calculator', icon: UtensilsCrossed },
@@ -62,7 +48,7 @@ const SIDEBAR_GROUPS = [
   {
     key: 'system-group',
     label: 'الإدارة والنظام',
-    iconKey: 'settings',
+    icon: Settings,
     items: [
       { key: 'analytics', label: 'التقارير والإحصائيات', to: '/coach/analytics', icon: LineChart },
       { key: 'settings', label: 'إعدادات النظام العامة', to: '/master-settings', icon: Settings },
@@ -135,13 +121,6 @@ export default function Sidebar({ isCollapsed = false, onToggleSidebar }) {
   }, [cleanQuery]);
 
   const renderNavItem = (item, type = 'primary') => {
-    const tone = iconToneMap[item.key] || iconToneMap.settings;
-    const toneStyle = {
-      '--icon-bg': tone.bg,
-      '--icon-border': tone.border,
-      '--icon-fg': tone.fg,
-      '--icon-glow': tone.glow,
-    };
     const Icon = item.icon;
 
     return (
@@ -149,31 +128,62 @@ export default function Sidebar({ isCollapsed = false, onToggleSidebar }) {
         key={item.key}
         to={item.to}
         end={item.end}
-        style={toneStyle}
         data-tooltip={isCollapsed ? item.label : undefined}
-        className={({ isActive }) =>
-          `sidebar-link ${type === 'group' ? 'sidebar-link-sub ' : ''}${isActive ? 'active' : ''}`.trim()
-        }
+        style={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: '10px',
+          padding: type === 'group' ? '7px 12px' : '9px 12px',
+          borderRadius: '8px',
+          textDecoration: 'none',
+          color: '#475569',
+          fontSize: '13px',
+          fontWeight: 600,
+          transition: 'all 0.15s ease',
+          marginBottom: '2px'
+        }}
+        className={({ isActive }) => (isActive ? 'active-nav-link' : '')}
       >
-        <span className="sidebar-icon">
-          <Icon size={17} strokeWidth={2} />
-        </span>
-        <span className="sidebar-label">{item.label}</span>
-        {item.badge && !isCollapsed && (
-          <span
-            style={{
-              background: '#10B981',
-              color: '#FFFFFF',
-              fontSize: '10px',
-              fontWeight: 800,
-              padding: '2px 6px',
-              borderRadius: '20px',
-              marginInlineStart: 'auto',
-              lineHeight: 1,
-            }}
-          >
-            {item.badge}
-          </span>
+        {({ isActive }) => (
+          <>
+            <div
+              style={{
+                width: '28px',
+                height: '28px',
+                borderRadius: '6px',
+                background: isActive ? '#0F172A' : (type === 'group' ? 'transparent' : '#F1F5F9'),
+                color: isActive ? '#FFFFFF' : '#64748B',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                flexShrink: 0,
+                transition: 'all 0.15s ease'
+              }}
+            >
+              <Icon size={16} strokeWidth={isActive ? 2.2 : 1.8} />
+            </div>
+            {!isCollapsed && (
+              <span style={{ flex: 1, color: isActive ? '#0F172A' : '#475569', fontWeight: isActive ? 800 : 600 }}>
+                {item.label}
+              </span>
+            )}
+            {item.badge && !isCollapsed && (
+              <span
+                style={{
+                  background: '#0F172A',
+                  color: '#FFFFFF',
+                  fontSize: '9.5px',
+                  fontWeight: 800,
+                  padding: '2px 6px',
+                  borderRadius: '10px',
+                  marginInlineStart: 'auto',
+                  lineHeight: 1,
+                }}
+              >
+                {item.badge}
+              </span>
+            )}
+          </>
         )}
       </NavLink>
     );
@@ -182,126 +192,154 @@ export default function Sidebar({ isCollapsed = false, onToggleSidebar }) {
   return (
     <aside
       ref={sidebarRef}
-      className={`sidebar-fixed ${isCollapsed ? 'is-collapsed' : ''}`}
+      style={{
+        width: isCollapsed ? '72px' : '240px',
+        background: '#FFFFFF',
+        borderLeft: '1px solid #E2E8F0',
+        height: '100vh',
+        display: 'flex',
+        flexDirection: 'column',
+        flexShrink: 0,
+        position: 'sticky',
+        top: 0,
+        zIndex: 100,
+        transition: 'width 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
+        overflow: 'hidden'
+      }}
     >
       {/* Brand Header */}
-      <div className="brand">
-        <div className="brand-copy">
-          {!isCollapsed ? (
-            <>
-              <div className="brand-title">
-                Z-COACHING
-              </div>
-              <div className="brand-sub">
-                منظومة التدريب والمتابعة الذكية
-              </div>
-            </>
-          ) : null}
-        </div>
+      <div 
+        style={{ 
+          padding: isCollapsed ? '18px 8px' : '20px 18px 16px', 
+          display: 'flex', 
+          alignItems: 'center', 
+          justifyContent: isCollapsed ? 'center' : 'space-between',
+          borderBottom: '1px solid #F1F5F9'
+        }}
+      >
+        {!isCollapsed ? (
+          <div>
+            <div style={{ fontSize: '15px', fontWeight: 900, color: '#0F172A', letterSpacing: '-0.3px' }}>
+              Z-COACHING
+            </div>
+            <div style={{ fontSize: '11px', color: '#64748B', fontWeight: 600, marginTop: '1px' }}>
+              منظومة التدريب والمتابعة
+            </div>
+          </div>
+        ) : null}
+
         <div 
-          className="brand-logo" 
           onClick={() => navigate('/')} 
-          style={{ cursor: 'pointer' }}
+          style={{ 
+            width: '34px', 
+            height: '34px', 
+            borderRadius: '8px', 
+            background: '#0F172A', 
+            color: '#FFFFFF',
+            display: 'flex', 
+            alignItems: 'center', 
+            justifyContent: 'center',
+            fontWeight: 900,
+            fontSize: '16px',
+            cursor: 'pointer',
+            flexShrink: 0
+          }}
         >
-          <img 
-            src="/brand/z-erp-approved-icon.png" 
-            alt="Z-COACHING" 
-            className="brand-logo-img"
-            onError={(e) => {
-              e.currentTarget.style.display = 'none';
-            }}
-          />
+          Z
         </div>
       </div>
 
       {/* Instant Search Bar */}
-      <div className="sidebar-search-wrapper">
+      <div style={{ padding: '10px 14px 6px' }}>
         <div
-          className={`sidebar-search-pill ${isSearchOpen ? 'is-expanded' : ''}`}
-          onClick={() => {
-            if (!isSearchOpen) handleOpenSearch();
+          style={{
+            position: 'relative',
+            display: 'flex',
+            alignItems: 'center',
+            background: '#F8FAFC',
+            border: '1px solid #E2E8F0',
+            borderRadius: '8px',
+            padding: '0 10px',
+            height: '34px'
           }}
         >
-          <button
-            type="button"
-            className="sidebar-search-icon-btn"
-            title={isSearchOpen ? 'بحث' : 'بحث سريع في القوائم'}
-            onClick={(e) => {
-              if (!isSearchOpen) {
-                e.stopPropagation();
-                handleOpenSearch();
-              }
+          <Search size={14} color="#94A3B8" style={{ flexShrink: 0 }} />
+          <input
+            ref={searchInputRef}
+            type="text"
+            placeholder={isCollapsed ? '' : 'بحث في القوائم...'}
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            style={{
+              width: '100%',
+              border: 'none',
+              outline: 'none',
+              background: 'transparent',
+              padding: '0 8px',
+              fontSize: '12px',
+              color: '#0F172A'
             }}
-          >
-            <Search size={15} />
-          </button>
-          {isSearchOpen && (
-            <>
-              <input
-                ref={searchInputRef}
-                type="text"
-                className="sidebar-search-input"
-                placeholder="ابحث في القوائم..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                onKeyDown={(e) => {
-                  if (e.key === 'Escape') {
-                    e.preventDefault();
-                    handleCloseSearch();
-                  }
-                }}
-              />
-              <button
-                type="button"
-                className="sidebar-search-close-btn"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  handleCloseSearch();
-                }}
-              >
-                <X size={14} />
-              </button>
-            </>
+          />
+          {searchQuery && (
+            <button
+              type="button"
+              onClick={() => setSearchQuery('')}
+              style={{ border: 'none', background: 'transparent', cursor: 'pointer', padding: 0, color: '#94A3B8', display: 'flex' }}
+            >
+              <X size={12} />
+            </button>
           )}
         </div>
       </div>
 
       {/* Navigation List */}
-      <nav className="sidebar-nav">
+      <nav style={{ flex: 1, overflowY: 'auto', padding: '8px 10px', display: 'flex', flexDirection: 'column', gap: '2px' }}>
         {/* Primary Items */}
         {filteredPrimaryItems.map((item) => renderNavItem(item, 'primary'))}
+
+        <div style={{ height: '8px' }} />
 
         {/* Grouped Accordions */}
         {filteredGroups.map((group) => {
           const isOpen = openGroupKeys.includes(group.key) || Boolean(cleanQuery);
-          const tone = iconToneMap[group.iconKey] || iconToneMap.settings;
-          const toneStyle = {
-            '--icon-bg': tone.bg,
-            '--icon-border': tone.border,
-            '--icon-fg': tone.fg,
-            '--icon-glow': tone.glow,
-          };
+          const GroupIcon = group.icon;
 
           return (
-            <div key={group.key} className={`sidebar-group ${isOpen ? 'is-open' : ''}`}>
+            <div key={group.key} style={{ marginBottom: '4px' }}>
               <div 
-                className="sidebar-group-trigger" 
-                style={toneStyle}
-                data-tooltip={isCollapsed ? group.label : undefined}
                 onClick={() => toggleGroup(group.key)}
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '8px',
+                  padding: '7px 10px',
+                  borderRadius: '6px',
+                  cursor: 'pointer',
+                  color: '#64748B',
+                  fontSize: '12px',
+                  fontWeight: 700,
+                  transition: 'background 0.15s ease'
+                }}
+                onMouseEnter={(e) => (e.currentTarget.style.background = '#F8FAFC')}
+                onMouseLeave={(e) => (e.currentTarget.style.background = 'transparent')}
               >
-                <span className="sidebar-group-icon">
-                  <span style={{ fontSize: '13px', fontWeight: 800 }}>●</span>
-                </span>
-                <span className="sidebar-label">{group.label}</span>
+                <div style={{ width: '20px', height: '20px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#94A3B8' }}>
+                  <GroupIcon size={14} />
+                </div>
                 {!isCollapsed && (
-                  <span className="sidebar-group-chevron">
-                    <ChevronLeft size={14} />
-                  </span>
+                  <>
+                    <span style={{ flex: 1, color: '#64748B', fontSize: '11.5px', fontWeight: 700 }}>
+                      {group.label}
+                    </span>
+                    <span style={{ display: 'flex', color: '#94A3B8', transform: isOpen ? 'rotate(180deg)' : 'rotate(0deg)', transition: 'transform 0.2s ease' }}>
+                      <ChevronDown size={13} />
+                    </span>
+                  </>
                 )}
               </div>
+
               {isOpen && !isCollapsed && (
-                <div className="sidebar-group-items">
+                <div style={{ paddingRight: '14px', borderRight: '1px solid #E2E8F0', marginRight: '16px', marginTop: '2px', display: 'flex', flexDirection: 'column', gap: '1px' }}>
                   {group.items.map((item) => renderNavItem(item, 'group'))}
                 </div>
               )}
@@ -311,23 +349,32 @@ export default function Sidebar({ isCollapsed = false, onToggleSidebar }) {
       </nav>
 
       {/* Footer / Toggle & Account */}
-      <div className="sidebar-footer">
+      <div style={{ padding: '12px 14px', borderTop: '1px solid #F1F5F9', background: '#FFFFFF' }}>
         {!isCollapsed && (
-          <div className="sidebar-footer-info" style={{ marginBottom: '12px' }}>
-            <div className="muted small">مرحباً بك، كابتن كريم زكريا</div>
-            <div className="muted small" style={{ opacity: 0.7, marginTop: '4px', fontSize: '0.75rem', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}>
-              الإصدار الحالي: v2.5.0 ● نسخة مفعلة
-            </div>
+          <div style={{ marginBottom: '10px', textAlign: 'center' }}>
+            <div style={{ fontSize: '12px', fontWeight: 800, color: '#0F172A' }}>كابتن كريم زكريا</div>
+            <div style={{ fontSize: '10px', color: '#94A3B8', marginTop: '2px', fontWeight: 600 }}>v2.5.0 ● مفعل</div>
           </div>
         )}
-        <div className="sidebar-footer-actions">
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: isCollapsed ? 'center' : 'flex-end' }}>
           <button
             type="button"
             onClick={onToggleSidebar}
-            className="sidebar-toggle-btn"
+            style={{
+              width: '30px',
+              height: '30px',
+              borderRadius: '6px',
+              border: '1px solid #E2E8F0',
+              background: '#F8FAFC',
+              color: '#64748B',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              cursor: 'pointer',
+            }}
             title={isCollapsed ? 'توسيع القائمة' : 'تصغير القائمة'}
           >
-            {isCollapsed ? <ChevronLeft size={16} /> : <ChevronRight size={16} />}
+            {isCollapsed ? <ChevronLeft size={15} /> : <ChevronRight size={15} />}
           </button>
         </div>
       </div>
