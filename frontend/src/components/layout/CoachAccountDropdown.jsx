@@ -1,6 +1,6 @@
 ﻿import React, { useState, useRef, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { User, Settings, Users, LogOut, ChevronDown, ShieldCheck } from 'lucide-react';
+import { Settings, Users, LogOut, ChevronDown, ShieldCheck } from 'lucide-react';
 
 export default function CoachAccountDropdown() {
   const [isOpen, setIsOpen] = useState(false);
@@ -37,34 +37,35 @@ export default function CoachAccountDropdown() {
 
   return (
     <div style={{ position: 'relative' }} ref={dropdownRef} dir="rtl">
-      {/* Interactive Trigger Pill */}
+      {/* 28px Interactive Trigger Pill */}
       <button
         type="button"
         onClick={() => setIsOpen(!isOpen)}
         style={{
           display: 'flex',
           alignItems: 'center',
-          gap: '8px',
-          padding: '3px 10px 3px 5px',
+          gap: '6px',
+          padding: '2px 8px 2px 4px',
+          height: '28px',
           background: isOpen ? '#F1F5F9' : '#F8FAFC',
           border: isOpen ? '1px solid #CBD5E1' : '1px solid #E2E8F0',
-          borderRadius: '20px',
+          borderRadius: '16px',
           cursor: 'pointer',
           transition: 'all 0.15s ease',
           outline: 'none',
-          boxShadow: '0 1px 2px rgba(15, 23, 42, 0.04)'
+          boxSizing: 'border-box'
         }}
         title="قائمة الحساب"
       >
         <div
           style={{
-            width: '26px',
-            height: '26px',
+            width: '22px',
+            height: '22px',
             borderRadius: '50%',
             background: '#0F172A',
             color: '#FFFFFF',
             fontWeight: 800,
-            fontSize: '12px',
+            fontSize: '11px',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
@@ -73,17 +74,17 @@ export default function CoachAccountDropdown() {
         >
           ك
         </div>
-        <div style={{ display: 'flex', flexDirection: 'column', textAlign: 'right', lineHeight: 1.15 }}>
-          <span style={{ fontSize: '11.5px', fontWeight: 800, color: '#0F172A' }}>كابتن كريم زكريا</span>
-          <span style={{ fontSize: '9px', color: '#64748B', fontWeight: 600 }}>المدرب الرئيسي</span>
+        <div style={{ display: 'flex', flexDirection: 'column', textAlign: 'right', lineHeight: 1.1 }}>
+          <span style={{ fontSize: '11px', fontWeight: 800, color: '#0F172A', whiteSpace: 'nowrap' }}>كابتن كريم زكريا</span>
+          <span style={{ fontSize: '8.5px', color: '#64748B', fontWeight: 600, whiteSpace: 'nowrap' }}>المدرب الرئيسي</span>
         </div>
         <ChevronDown 
-          size={13} 
+          size={12} 
           color="#94A3B8" 
           style={{ 
             transform: isOpen ? 'rotate(180deg)' : 'rotate(0deg)', 
             transition: 'transform 0.2s ease',
-            marginRight: '2px'
+            marginRight: '1px'
           }} 
         />
       </button>
@@ -94,15 +95,14 @@ export default function CoachAccountDropdown() {
           style={{
             position: 'absolute',
             left: 0,
-            top: 'calc(100% + 8px)',
-            width: '250px',
+            top: 'calc(100% + 6px)',
+            width: '240px',
             background: '#FFFFFF',
             border: '1px solid #E2E8F0',
-            borderRadius: '12px',
+            borderRadius: '10px',
             boxShadow: '0 12px 32px rgba(15, 23, 42, 0.12), 0 4px 12px rgba(15, 23, 42, 0.04)',
             padding: '8px',
-            zIndex: 1100,
-            animation: 'fadeInScale 0.18s cubic-bezier(0.16, 1, 0.3, 1) forwards'
+            zIndex: 1100
           }}
         >
           {/* Identity Header */}
@@ -111,22 +111,22 @@ export default function CoachAccountDropdown() {
               display: 'flex',
               alignItems: 'center',
               gap: '10px',
-              padding: '10px',
+              padding: '8px 10px',
               background: '#F8FAFC',
               border: '1px solid #E2E8F0',
-              borderRadius: '8px',
+              borderRadius: '6px',
               marginBottom: '6px'
             }}
           >
             <div
               style={{
-                width: '36px',
-                height: '36px',
-                borderRadius: '8px',
+                width: '32px',
+                height: '32px',
+                borderRadius: '6px',
                 background: '#0F172A',
                 color: '#FFFFFF',
                 fontWeight: 900,
-                fontSize: '15px',
+                fontSize: '14px',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
@@ -135,12 +135,12 @@ export default function CoachAccountDropdown() {
             >
               ك
             </div>
-            <div style={{ minWidth: 0, flex: 1, display: 'flex', flexDirection: 'column', gap: '2px' }}>
-              <strong style={{ fontSize: '13px', color: '#0F172A', fontWeight: 800 }}>كابتن كريم زكريا</strong>
-              <span style={{ fontSize: '11px', color: '#64748B', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>coach@z-coaching.com</span>
-              <div style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', marginTop: '2px' }}>
-                <ShieldCheck size={12} color="#059669" />
-                <span style={{ fontSize: '10px', fontWeight: 700, color: '#059669' }}>مشرف عام النظام</span>
+            <div style={{ minWidth: 0, flex: 1, display: 'flex', flexDirection: 'column', gap: '1px' }}>
+              <strong style={{ fontSize: '12.5px', color: '#0F172A', fontWeight: 800 }}>كابتن كريم زكريا</strong>
+              <span style={{ fontSize: '10.5px', color: '#64748B', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>coach@z-coaching.com</span>
+              <div style={{ display: 'inline-flex', alignItems: 'center', gap: '3px', marginTop: '1px' }}>
+                <ShieldCheck size={11} color="#059669" />
+                <span style={{ fontSize: '9.5px', fontWeight: 700, color: '#059669' }}>مشرف عام النظام</span>
               </div>
             </div>
           </div>
@@ -153,11 +153,11 @@ export default function CoachAccountDropdown() {
               style={{
                 display: 'flex',
                 alignItems: 'center',
-                gap: '10px',
-                padding: '8px 10px',
-                borderRadius: '6px',
+                gap: '8px',
+                padding: '7px 8px',
+                borderRadius: '5px',
                 color: '#334155',
-                fontSize: '12.5px',
+                fontSize: '12px',
                 fontWeight: 600,
                 textDecoration: 'none',
                 transition: 'background 0.15s ease'
@@ -165,7 +165,7 @@ export default function CoachAccountDropdown() {
               onMouseEnter={(e) => (e.currentTarget.style.background = '#F1F5F9')}
               onMouseLeave={(e) => (e.currentTarget.style.background = 'transparent')}
             >
-              <Users size={15} color="#64748B" />
+              <Users size={14} color="#64748B" />
               <span>إدارة المشتركين (CRM)</span>
             </Link>
 
@@ -175,11 +175,11 @@ export default function CoachAccountDropdown() {
               style={{
                 display: 'flex',
                 alignItems: 'center',
-                gap: '10px',
-                padding: '8px 10px',
-                borderRadius: '6px',
+                gap: '8px',
+                padding: '7px 8px',
+                borderRadius: '5px',
                 color: '#334155',
-                fontSize: '12.5px',
+                fontSize: '12px',
                 fontWeight: 600,
                 textDecoration: 'none',
                 transition: 'background 0.15s ease'
@@ -187,11 +187,11 @@ export default function CoachAccountDropdown() {
               onMouseEnter={(e) => (e.currentTarget.style.background = '#F1F5F9')}
               onMouseLeave={(e) => (e.currentTarget.style.background = 'transparent')}
             >
-              <Settings size={15} color="#64748B" />
+              <Settings size={14} color="#64748B" />
               <span>إعدادات النظام العامة</span>
             </Link>
 
-            <div style={{ height: '1px', background: '#E2E8F0', margin: '4px 0' }} />
+            <div style={{ height: '1px', background: '#E2E8F0', margin: '3px 0' }} />
 
             <button
               type="button"
@@ -199,11 +199,11 @@ export default function CoachAccountDropdown() {
               style={{
                 display: 'flex',
                 alignItems: 'center',
-                gap: '10px',
-                padding: '8px 10px',
-                borderRadius: '6px',
+                gap: '8px',
+                padding: '7px 8px',
+                borderRadius: '5px',
                 color: '#DC2626',
-                fontSize: '12.5px',
+                fontSize: '12px',
                 fontWeight: 700,
                 background: 'transparent',
                 border: 'none',
@@ -215,7 +215,7 @@ export default function CoachAccountDropdown() {
               onMouseEnter={(e) => (e.currentTarget.style.background = '#FEF2F2')}
               onMouseLeave={(e) => (e.currentTarget.style.background = 'transparent')}
             >
-              <LogOut size={15} color="#DC2626" />
+              <LogOut size={14} color="#DC2626" />
               <span>تسجيل الخروج</span>
             </button>
           </div>

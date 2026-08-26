@@ -38,20 +38,20 @@ export function AdminHeader() {
   return (
     <header 
       style={{
-        height: '56px',
+        height: '42px',
         background: '#FFFFFF',
         borderBottom: '1px solid #E2E8F0',
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'space-between',
-        padding: '0 24px',
+        padding: '0 20px',
         flexShrink: 0,
         direction: 'rtl',
         boxSizing: 'border-box'
       }}
     >
       {/* Breadcrumb on right */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '13px' }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '12px' }}>
         {breadcrumbs.map((crumb, idx) => {
           const isLast = idx === breadcrumbs.length - 1;
           return (
@@ -72,7 +72,7 @@ export function AdminHeader() {
       </div>
 
       {/* Center / Left Toolbar Actions */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
         
         {/* Quick Search Trigger */}
         <div 
@@ -81,17 +81,17 @@ export function AdminHeader() {
             alignItems: 'center',
             background: '#F8FAFC',
             border: '1px solid #E2E8F0',
-            borderRadius: '6px',
-            padding: '0 10px',
-            height: '32px',
-            width: '240px',
-            gap: '8px',
+            borderRadius: '5px',
+            padding: '0 8px',
+            height: '28px',
+            width: '210px',
+            gap: '6px',
             cursor: 'pointer'
           }}
         >
-          <Search size={14} color="#94A3B8" style={{ flexShrink: 0 }} />
-          <span style={{ fontSize: '12px', color: '#94A3B8', flex: 1, whiteSpace: 'nowrap' }}>ابحث في أي مكان...</span>
-          <kbd style={{ fontSize: '10px', background: '#E2E8F0', color: '#475569', padding: '1px 5px', borderRadius: '4px', fontFamily: 'monospace', flexShrink: 0 }}>
+          <Search size={13} color="#94A3B8" style={{ flexShrink: 0 }} />
+          <span style={{ fontSize: '11.5px', color: '#94A3B8', flex: 1, whiteSpace: 'nowrap' }}>ابحث في أي مكان...</span>
+          <kbd style={{ fontSize: '9.5px', background: '#E2E8F0', color: '#475569', padding: '1px 4px', borderRadius: '3px', fontFamily: 'monospace', flexShrink: 0 }}>
             Ctrl /
           </kbd>
         </div>
@@ -99,21 +99,21 @@ export function AdminHeader() {
         {/* Refresh Button */}
         <button 
           type="button"
-          style={{ width: '32px', height: '32px', display: 'flex', alignItems: 'center', justifyContent: 'center', backgroundColor: '#F8FAFC', border: '1px solid #E2E8F0', borderRadius: '6px', cursor: 'pointer' }}
+          style={{ width: '28px', height: '28px', display: 'flex', alignItems: 'center', justifyContent: 'center', backgroundColor: '#F8FAFC', border: '1px solid #E2E8F0', borderRadius: '5px', cursor: 'pointer' }}
           title="تحديث البيانات"
           onClick={handleRefresh}
         >
-          <RotateCw size={14} color="#475569" />
+          <RotateCw size={13} color="#475569" />
         </button>
 
         {/* Fullscreen Button */}
         <button 
           type="button"
-          style={{ width: '32px', height: '32px', display: 'flex', alignItems: 'center', justifyContent: 'center', backgroundColor: '#F8FAFC', border: '1px solid #E2E8F0', borderRadius: '6px', cursor: 'pointer' }}
+          style={{ width: '28px', height: '28px', display: 'flex', alignItems: 'center', justifyContent: 'center', backgroundColor: '#F8FAFC', border: '1px solid #E2E8F0', borderRadius: '5px', cursor: 'pointer' }}
           title="ملء الشاشة"
           onClick={toggleFullScreen}
         >
-          <Maximize2 size={14} color="#475569" />
+          <Maximize2 size={13} color="#475569" />
         </button>
 
         {/* Notifications Dropdown */}

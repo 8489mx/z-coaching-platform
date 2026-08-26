@@ -179,14 +179,14 @@ export default function NotificationsDropdown() {
   return (
     <div style={{ position: 'relative' }} ref={dropdownRef} dir="rtl">
       
-      {/* 32px Standard Toolbar Bell Button */}
+      {/* 28px Standard Toolbar Bell Button */}
       <button 
         type="button" 
         onClick={() => setIsOpen(!isOpen)}
         style={{ 
-          width: '32px', 
-          height: '32px', 
-          borderRadius: '6px',
+          width: '28px', 
+          height: '28px', 
+          borderRadius: '5px',
           border: '1px solid #E2E8F0',
           background: isOpen ? '#F1F5F9' : '#F8FAFC',
           color: isOpen ? '#0F172A' : '#475569',
@@ -196,30 +196,31 @@ export default function NotificationsDropdown() {
           alignItems: 'center',
           justifyContent: 'center',
           position: 'relative',
-          transition: 'all 0.15s ease'
+          transition: 'all 0.15s ease',
+          boxSizing: 'border-box'
         }}
         title="الإشعارات والتنبيهات"
       >
-        <Bell size={14} color="#475569" />
+        <Bell size={13} color="#475569" />
         
         {unreadCount > 0 && (
           <span 
             style={{ 
               position: 'absolute',
-              top: '-4px', 
-              left: '-4px', 
+              top: '-3px', 
+              left: '-3px', 
               background: '#EF4444', 
               color: '#FFFFFF',
-              fontSize: '9px', 
+              fontSize: '8.5px', 
               fontWeight: 800,
-              minWidth: '15px', 
-              height: '15px', 
-              borderRadius: '8px',
-              border: '2px solid #FFFFFF',
+              minWidth: '14px', 
+              height: '14px', 
+              borderRadius: '7px',
+              border: '1.5px solid #FFFFFF',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              padding: '0 3px',
+              padding: '0 2px',
               lineHeight: 1,
               fontFamily: 'JetBrains Mono, monospace'
             }}
@@ -233,14 +234,14 @@ export default function NotificationsDropdown() {
       {isOpen && (
         <div 
           style={{ 
-            width: '360px', 
+            width: '350px', 
             maxWidth: '90vw',
-            borderRadius: '12px', 
+            borderRadius: '10px', 
             border: '1px solid #E2E8F0',
             zIndex: 1100, 
             position: 'absolute',
             left: 0,
-            top: 'calc(100% + 8px)',
+            top: 'calc(100% + 6px)',
             background: '#FFFFFF',
             boxShadow: '0 12px 32px rgba(15, 23, 42, 0.12), 0 4px 12px rgba(15, 23, 42, 0.04)',
             overflow: 'hidden'
@@ -248,14 +249,14 @@ export default function NotificationsDropdown() {
           dir="rtl"
         >
           {/* Header */}
-          <div style={{ padding: '12px 14px', borderBottom: '1px solid #F1F5F9', background: '#FFFFFF' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+          <div style={{ padding: '10px 12px', borderBottom: '1px solid #F1F5F9', background: '#FFFFFF' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                <strong style={{ fontSize: '13.5px', color: '#0F172A', fontWeight: 800 }}>
+                <strong style={{ fontSize: '13px', color: '#0F172A', fontWeight: 800 }}>
                   الإشعارات
                 </strong>
                 {unreadCount > 0 && (
-                  <span style={{ fontSize: '10.5px', background: '#F1F5F9', color: '#0F172A', padding: '2px 7px', borderRadius: '10px', fontWeight: 700 }}>
+                  <span style={{ fontSize: '10px', background: '#F1F5F9', color: '#0F172A', padding: '1px 6px', borderRadius: '8px', fontWeight: 700 }}>
                     {unreadCount} غير مقروء
                   </span>
                 )}
@@ -265,22 +266,22 @@ export default function NotificationsDropdown() {
                 <button 
                   type="button" 
                   onClick={markAllAsRead}
-                  style={{ fontSize: '11.5px', color: '#64748B', background: 'transparent', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px', fontWeight: 600, padding: 0 }}
+                  style={{ fontSize: '11px', color: '#64748B', background: 'transparent', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '3px', fontWeight: 600, padding: 0 }}
                 >
-                  <CheckCheck size={13} />
+                  <CheckCheck size={12} />
                   <span>تحديد الكل كمقروء</span>
                 </button>
               )}
             </div>
 
             {/* Sub Tabs */}
-            <div style={{ display: 'flex', gap: '4px' }}>
+            <div style={{ display: 'flex', gap: '3px' }}>
               <button 
                 type="button"
                 onClick={() => setActiveFilter('ALL')}
                 style={{ 
-                  fontSize: '11px', 
-                  padding: '3px 10px', 
+                  fontSize: '10.5px', 
+                  padding: '2px 8px', 
                   borderRadius: '4px', 
                   border: 'none', 
                   cursor: 'pointer',
@@ -295,8 +296,8 @@ export default function NotificationsDropdown() {
                 type="button"
                 onClick={() => setActiveFilter('UNREAD')}
                 style={{ 
-                  fontSize: '11px', 
-                  padding: '3px 10px', 
+                  fontSize: '10.5px', 
+                  padding: '2px 8px', 
                   borderRadius: '4px', 
                   border: 'none', 
                   cursor: 'pointer',
@@ -311,16 +312,16 @@ export default function NotificationsDropdown() {
           </div>
 
           {/* Notification List */}
-          <div style={{ maxHeight: '340px', overflowY: 'auto' }}>
+          <div style={{ maxHeight: '320px', overflowY: 'auto' }}>
             {filteredNotifications.length === 0 ? (
-              <div style={{ textAlign: 'center', padding: '36px 16px' }}>
+              <div style={{ textAlign: 'center', padding: '30px 16px' }}>
                 <div 
-                  style={{ width: '36px', height: '36px', borderRadius: '50%', background: '#F1F5F9', color: '#94A3B8', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 8px auto' }}
+                  style={{ width: '32px', height: '32px', borderRadius: '50%', background: '#F1F5F9', color: '#94A3B8', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 6px auto' }}
                 >
-                  <Bell size={18} />
+                  <Bell size={16} />
                 </div>
-                <strong style={{ fontSize: '13px', color: '#0F172A', display: 'block', marginBottom: '2px' }}>لا توجد إشعارات جديدة</strong>
-                <small style={{ fontSize: '11px', color: '#64748B' }}>تمت متابعة واعتماد جميع الحالات بنجاح.</small>
+                <strong style={{ fontSize: '12.5px', color: '#0F172A', display: 'block', marginBottom: '2px' }}>لا توجد إشعارات جديدة</strong>
+                <small style={{ fontSize: '10.5px', color: '#64748B' }}>تمت متابعة واعتماد جميع الحالات بنجاح.</small>
               </div>
             ) : (
               filteredNotifications.map((item) => {
@@ -334,10 +335,10 @@ export default function NotificationsDropdown() {
                       cursor: 'pointer',
                       background: !item.isRead ? '#F8FAFC' : '#FFFFFF',
                       borderBottom: '1px solid #F1F5F9',
-                      padding: '10px 14px',
+                      padding: '8px 12px',
                       display: 'flex',
                       alignItems: 'flex-start',
-                      gap: '10px',
+                      gap: '8px',
                       transition: 'background 0.15s ease'
                     }}
                     onMouseEnter={(e) => (e.currentTarget.style.background = '#F1F5F9')}
@@ -345,9 +346,9 @@ export default function NotificationsDropdown() {
                   >
                     <div 
                       style={{ 
-                        width: '28px', 
-                        height: '28px', 
-                        borderRadius: '6px',
+                        width: '26px', 
+                        height: '26px', 
+                        borderRadius: '5px',
                         background: '#F1F5F9', 
                         border: '1px solid #E2E8F0',
                         color: '#0F172A',
@@ -355,33 +356,33 @@ export default function NotificationsDropdown() {
                         alignItems: 'center',
                         justifyContent: 'center',
                         flexShrink: 0,
-                        marginTop: '2px'
+                        marginTop: '1px'
                       }}
                     >
-                      <IconComponent size={14} />
+                      <IconComponent size={13} />
                     </div>
 
                     <div style={{ flex: 1, minWidth: 0 }}>
-                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2px' }}>
-                        <strong style={{ fontSize: '12.5px', color: '#0F172A', fontWeight: !item.isRead ? 800 : 600 }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1px' }}>
+                        <strong style={{ fontSize: '12px', color: '#0F172A', fontWeight: !item.isRead ? 800 : 600 }}>
                           {item.title}
                         </strong>
-                        <span style={{ fontSize: '10px', color: '#94A3B8' }}>{item.time}</span>
+                        <span style={{ fontSize: '9.5px', color: '#94A3B8' }}>{item.time}</span>
                       </div>
 
-                      <p style={{ fontSize: '11.5px', color: '#64748B', margin: '0 0 6px 0', lineHeight: 1.4 }}>
+                      <p style={{ fontSize: '11px', color: '#64748B', margin: '0 0 4px 0', lineHeight: 1.35 }}>
                         {item.body}
                       </p>
 
                       <div>
                         {item.isCompleted ? (
-                          <span style={{ background: '#F1F5F9', color: '#059669', fontSize: '10px', padding: '1px 6px', borderRadius: '4px', fontWeight: 700, display: 'inline-flex', alignItems: 'center', gap: '3px' }}>
-                            <Check size={10} />
+                          <span style={{ background: '#F1F5F9', color: '#059669', fontSize: '9.5px', padding: '1px 5px', borderRadius: '3px', fontWeight: 700, display: 'inline-flex', alignItems: 'center', gap: '3px' }}>
+                            <Check size={9} />
                             <span>{item.actionLabel}</span>
                           </span>
                         ) : (
-                          <span style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', color: '#475569', fontSize: '10px', padding: '1px 6px', borderRadius: '4px', fontWeight: 600, display: 'inline-flex', alignItems: 'center', gap: '3px' }}>
-                            <Clock size={10} />
+                          <span style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', color: '#475569', fontSize: '9.5px', padding: '1px 5px', borderRadius: '3px', fontWeight: 600, display: 'inline-flex', alignItems: 'center', gap: '3px' }}>
+                            <Clock size={9} />
                             <span>{item.actionLabel}</span>
                           </span>
                         )}
@@ -394,11 +395,11 @@ export default function NotificationsDropdown() {
           </div>
 
           {/* Footer */}
-          <div style={{ padding: '8px', textAlign: 'center', borderTop: '1px solid #F1F5F9', background: '#F8FAFC' }}>
+          <div style={{ padding: '6px', textAlign: 'center', borderTop: '1px solid #F1F5F9', background: '#F8FAFC' }}>
             <button 
               type="button"
               onClick={() => { setIsOpen(false); navigate('/intake/submissions'); }}
-              style={{ fontSize: '11.5px', color: '#0F172A', background: 'transparent', border: 'none', cursor: 'pointer', fontWeight: 700 }}
+              style={{ fontSize: '11px', color: '#0F172A', background: 'transparent', border: 'none', cursor: 'pointer', fontWeight: 700 }}
             >
               عرض جميع استمارات المشتركين
             </button>
