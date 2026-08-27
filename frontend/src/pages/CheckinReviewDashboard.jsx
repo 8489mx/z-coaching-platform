@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { 
   CheckCircle2, 
   MessageCircle, 
@@ -8,237 +9,324 @@ import {
   Scale, 
   Utensils, 
   Activity, 
+  BrainCircuit, 
+  Save, 
+  Loader2, 
+  AlertTriangle,
   ChevronRight,
-  BrainCircuit,
-  Save,
-  Loader2,
-  AlertTriangle
+  ShieldCheck,
+  Zap
 } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
-
 import AdminLayout from '../components/layout/AdminLayout';
+import { PageHeader } from '@/shared/components/page-header';
+import { FormSection } from '@/shared/components/form-section';
 
 export default function CheckinReviewDashboard() {
   const navigate = useNavigate();
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
-  const [checkin, setCheckin] = useState(null); // The current check-in being reviewed
+  const [loading, setLoading] = useState(false);
+  const [checkin, setCheckin] = useState(null);
   const [macroAdjustments, setMacroAdjustments] = useState({ calories: 0, protein: 0, carbs: 0, fats: 0 });
   const [coachReply, setCoachReply] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // Mock fetching the next pending check-in
-  useEffect(() => {
-    setTimeout(() => {
-      setCheckin({
-        id: 101,
-        client: { name: 'أحمد محمود', code: 'TEST99', goal: 'FAT_LOSS', package: 'MAX' },
-        week_number: 4,
-        metrics: {
-          current_weight: 84.5,
-          previous_weight: 85.0,
-          weight_change: -0.5,
-          adherence: 95,
-          workouts_completed: 4
-        },
-        biofeedback: { energy: 7, sleep: 8, hunger: 6 },
-        client_notes: 'الحمدلله أسبوع ممتاز، التزمت بالدايت بس حسيت بجوع شوية بليل قبل النوم.',
-        ai_analysis: {
-          status: 'ON_TRACK',
-          recommendation: 'العميل ينزل بمعدل صحي جداً (نصف كيلو أسبوعياً). ينصح بزيادة الألياف أو البروتين في الوجبة الأخيرة لسد الجوع الليلي دون المساس بالسعرات الكلية.'
-        },
-        current_macros: { calories: 1900, protein: 160, carbs: 150, fats: 55 }
-      });
-      
-      // Initialize adjustments with current macros
-      setMacroAdjustments({ calories: 1900, protein: 160, carbs: 150, fats: 55 });
-      setLoading(false);
-    }, 1000);
-  }, []);
-
   const handleApprove = async () => {
     setIsSubmitting(true);
-    // محاكاة إرسال الاعتماد للباك إند
     setTimeout(() => {
       setIsSubmitting(false);
       alert('تم اعتماد التحديث بنجاح، وتم إرسال الإشعار للعميل!');
-      navigate('/admin/dashboard');
-    }, 1500);
+      navigate('/');
+    }, 400);
   };
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-slate-50 flex flex-col items-center justify-center space-y-4" dir="rtl">
-        <Loader2 size={48} className="text-blue-600 animate-spin" />
-        <h2 className="text-xl font-black text-slate-700">جاري سحب التقييمات المعلقة...</h2>
-      </div>
+      <AdminLayout>
+        <div style={{ padding: '60px 20px', textAlign: 'center', color: '#64748B' }}>
+          <Loader2 size={32} className="animate-spin" style={{ margin: '0 auto 12px auto', color: '#0F172A' }} />
+          <strong style={{ fontSize: '14px', color: '#0F172A', display: 'block' }}>جاري سحب التقييمات المعلقة...</strong>
+        </div>
+      </AdminLayout>
     );
   }
 
   if (!checkin) {
     return (
-      <div className="min-h-screen bg-slate-50 flex items-center justify-center" dir="rtl">
-        <div className="text-center">
-          <CheckCircle2 size={48} className="text-emerald-500 mx-auto mb-4" />
-          <h2 className="text-xl font-black text-slate-900">لا توجد تقييمات معلقة</h2>
-          <p className="text-slate-500 font-bold mt-2">لقد قمت بإنهاء جميع أعمالك لليوم!</p>
-          <button onClick={() => navigate('/admin/dashboard')} className="mt-6 bg-blue-600 text-white px-6 py-2 rounded-xl font-bold">العودة للرئيسية</button>
+      <AdminLayout>
+        <div style={{ padding: '60px 20px', textAlign: 'center' }}>
+          <CheckCircle2 size={40} color="#16A34A" style={{ margin: '0 auto 12px auto' }} />
+          <strong style={{ fontSize: '16px', color: '#0F172A', display: 'block', marginBottom: '4px' }}>لا توجد تقييمات معلقة</strong>
+          <p style={{ fontSize: '12px', color: '#64748B', marginBottom: '16px' }}>لقد قمت بمراجعة واعتماد جميع أعمالك لليوم بنجاح!</p>
+          <button 
+            type="button" 
+            onClick={() => navigate('/')} 
+            style={{ padding: '8px 20px', background: '#0F172A', color: '#FFFFFF', border: 'none', borderRadius: '6px', fontSize: '12px', fontWeight: 700, cursor: 'pointer' }}
+          >
+            العودة للرئيسية
+          </button>
         </div>
-      </div>
+      </AdminLayout>
     );
   }
 
   return (
     <AdminLayout>
-    <div className="min-h-screen bg-slate-50 text-slate-900 font-sans pb-24" dir="rtl">
-      {/* Header */}
-      <div className="sticky top-0 z-50 bg-white/90 backdrop-blur-md border-b border-slate-200 p-4 shadow-sm">
-        <div className="max-w-6xl mx-auto flex items-center justify-between">
-          <div className="flex items-center gap-4">
-            <button onClick={() => navigate('/admin/dashboard')} className="text-slate-400 hover:text-slate-900 transition p-2 bg-slate-50 rounded-xl">
-              <ChevronRight size={24} />
-            </button>
-            <div>
-              <h1 className="text-xl font-black text-slate-900">مراجعة تقييم العميل</h1>
-              <p className="text-xs font-bold text-slate-500">{checkin.client.name} | الأسبوع {checkin.week_number}</p>
-            </div>
-          </div>
-          <div className="bg-amber-100 text-amber-700 font-black text-xs px-3 py-1.5 rounded-lg flex items-center gap-1">
-            باقة {checkin.client.package}
-          </div>
-        </div>
-      </div>
-
-      <div className="max-w-6xl mx-auto p-6 grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <div className="page-stack" dir="rtl" style={{ display: 'flex', flexDirection: 'column', gap: '18px' }}>
         
-        {/* Right Column: Client Data & Biofeedback */}
-        <div className="lg:col-span-1 space-y-6">
-          <div className="bg-white border border-slate-200 p-6 rounded-2xl shadow-sm">
-            <h3 className="font-black text-lg mb-4 flex items-center gap-2"><Scale className="text-blue-600" size={20} /> المؤشرات الرقمية</h3>
-            <div className="grid grid-cols-2 gap-4">
-              <div className="bg-slate-50 p-4 rounded-xl border border-slate-100">
-                <p className="text-xs font-bold text-slate-500 mb-1">الوزن الحالي</p>
-                <p className="text-2xl font-black">{checkin.metrics.current_weight} <span className="text-sm">كجم</span></p>
+        {/* 1. Page Header */}
+        <PageHeader
+          title={`مراجعة تقييم العميل: ${checkin.client.name}`}
+          description={`التقييم الدوري للأسبوع ${checkin.week_number} • كود المشترك #${checkin.client.code} • باقة ${checkin.client.package}`}
+          actions={(
+            <button 
+              type="button" 
+              onClick={() => navigate('/')}
+              style={{
+                height: '36px',
+                padding: '0 14px',
+                fontSize: '12px',
+                fontWeight: 700,
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '6px',
+                borderRadius: '6px',
+                background: '#FFFFFF',
+                color: '#0F172A',
+                border: '1px solid #CBD5E1',
+                cursor: 'pointer'
+              }}
+            >
+              <ChevronRight size={14} />
+              <span>العودة لطابور القرارات</span>
+            </button>
+          )}
+        />
+
+        {/* 2. Balanced 2-Column Grid (65 / 35) */}
+        <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1.8fr) minmax(0, 1.2fr)', gap: '18px', alignItems: 'start' }}>
+          
+          {/* Right Column: Client Assessment & Intelligence */}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
+            
+            {/* Numeric Indicators */}
+            <FormSection
+              title="المؤشرات الرقمية والحيوية"
+              description="تطور الوزن والالتزام والنشاط مقارنة بالأسبوع الماضي."
+            >
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '10px', marginTop: '6px' }}>
+                <div style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', padding: '10px 12px', borderRadius: '8px' }}>
+                  <span style={{ fontSize: '11px', color: '#64748B', display: 'block', marginBottom: '2px' }}>الوزن الحالي</span>
+                  <strong style={{ fontSize: '18px', color: '#0F172A', fontFamily: 'JetBrains Mono, Cairo' }}>
+                    {checkin.metrics.current_weight} <span style={{ fontSize: '11px', fontWeight: 600 }}>كجم</span>
+                  </strong>
+                </div>
+
+                <div style={{ background: '#F0FDF4', border: '1px solid #BBF7D0', padding: '10px 12px', borderRadius: '8px' }}>
+                  <span style={{ fontSize: '11px', color: '#166534', display: 'block', marginBottom: '2px' }}>التغير (دلتا)</span>
+                  <strong style={{ fontSize: '18px', color: '#16A34A', fontFamily: 'JetBrains Mono, Cairo', display: 'flex', alignItems: 'center', gap: '2px' }}>
+                    <TrendingDown size={16} />
+                    <span dir="ltr">{checkin.metrics.weight_change} كجم</span>
+                  </strong>
+                </div>
+
+                <div style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', padding: '10px 12px', borderRadius: '8px' }}>
+                  <span style={{ fontSize: '11px', color: '#64748B', display: 'block', marginBottom: '2px' }}>الالتزام بالدايت</span>
+                  <strong style={{ fontSize: '18px', color: '#0F172A', fontFamily: 'JetBrains Mono, Cairo' }}>
+                    {checkin.metrics.adherence}%
+                  </strong>
+                </div>
+
+                <div style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', padding: '10px 12px', borderRadius: '8px' }}>
+                  <span style={{ fontSize: '11px', color: '#64748B', display: 'block', marginBottom: '2px' }}>التمرين (أيام)</span>
+                  <strong style={{ fontSize: '18px', color: '#0F172A', fontFamily: 'JetBrains Mono, Cairo' }}>
+                    {checkin.metrics.workouts_completed} / 4
+                  </strong>
+                </div>
               </div>
-              <div className="bg-emerald-50 p-4 rounded-xl border border-emerald-100">
-                <p className="text-xs font-bold text-emerald-600 mb-1">التغير (دلتا)</p>
-                <p className="text-2xl font-black text-emerald-600 flex items-center gap-1">
-                  {checkin.metrics.weight_change < 0 ? <TrendingDown size={18} /> : <TrendingUp size={18} />} 
-                  {Math.abs(checkin.metrics.weight_change)} <span className="text-sm">كجم</span>
+
+              {/* Biofeedback strip */}
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '10px', marginTop: '10px' }}>
+                <div style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', padding: '8px 12px', borderRadius: '6px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <span style={{ fontSize: '11.5px', color: '#475569' }}>الطاقة والنشاط:</span>
+                  <strong style={{ fontSize: '12px', color: '#0F172A' }}>{checkin.biofeedback.energy} / 10</strong>
+                </div>
+                <div style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', padding: '8px 12px', borderRadius: '6px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <span style={{ fontSize: '11.5px', color: '#475569' }}>جودة النوم:</span>
+                  <strong style={{ fontSize: '12px', color: '#0F172A' }}>{checkin.biofeedback.sleep} / 10</strong>
+                </div>
+                <div style={{ background: '#FFFBEB', border: '1px solid #FDE68A', padding: '8px 12px', borderRadius: '6px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <span style={{ fontSize: '11.5px', color: '#B45309' }}>معدل الجوع:</span>
+                  <strong style={{ fontSize: '12px', color: '#B45309' }}>{checkin.biofeedback.hunger} / 10 (مرتفع)</strong>
+                </div>
+              </div>
+            </FormSection>
+
+            {/* Photos & Notes */}
+            <FormSection
+              title="صور التطور ورسالة المتدرب"
+              description="مقارنة القياسات البصرية وتعليق المتدرب على أداء الأسبوع."
+            >
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px', marginTop: '6px' }}>
+                <div style={{ background: '#F8FAFC', border: '1px dashed #CBD5E1', borderRadius: '8px', padding: '24px 10px', textAlign: 'center', color: '#64748B' }}>
+                  <Camera size={20} style={{ margin: '0 auto 6px auto', color: '#94A3B8' }} />
+                  <span style={{ fontSize: '11.5px', fontWeight: 700, display: 'block' }}>الأسبوع الماضي</span>
+                  <small style={{ fontSize: '10px', color: '#94A3B8' }}>85.0 كجم</small>
+                </div>
+
+                <div style={{ background: '#F8FAFC', border: '1px dashed #CBD5E1', borderRadius: '8px', padding: '24px 10px', textAlign: 'center', color: '#0F172A' }}>
+                  <Camera size={20} style={{ margin: '0 auto 6px auto', color: '#0F172A' }} />
+                  <span style={{ fontSize: '11.5px', fontWeight: 700, display: 'block' }}>هذا الأسبوع</span>
+                  <small style={{ fontSize: '10px', color: '#64748B' }}>84.5 كجم (-0.5)</small>
+                </div>
+              </div>
+
+              <div style={{ marginTop: '12px', background: '#F8FAFC', border: '1px solid #E2E8F0', padding: '10px 14px', borderRadius: '6px' }}>
+                <strong style={{ fontSize: '11.5px', color: '#475569', display: 'block', marginBottom: '3px' }}>رسالة المتدرب:</strong>
+                <p style={{ fontSize: '12px', color: '#0F172A', margin: 0, lineHeight: 1.5 }}>
+                  "{checkin.client_notes}"
                 </p>
               </div>
-              <div className="bg-slate-50 p-4 rounded-xl border border-slate-100">
-                <p className="text-xs font-bold text-slate-500 mb-1">الالتزام بالدايت</p>
-                <p className="text-2xl font-black text-blue-600">{checkin.metrics.adherence}%</p>
-              </div>
-              <div className="bg-slate-50 p-4 rounded-xl border border-slate-100">
-                <p className="text-xs font-bold text-slate-500 mb-1">التمرين (أيام)</p>
-                <p className="text-2xl font-black">{checkin.metrics.workouts_completed} / 4</p>
-              </div>
-            </div>
-          </div>
+            </FormSection>
 
-          <div className="bg-white border border-slate-200 p-6 rounded-2xl shadow-sm space-y-4">
-            <h3 className="font-black text-lg mb-2 flex items-center gap-2"><Activity className="text-rose-600" size={20} /> المؤشرات الحيوية</h3>
-            <div className="flex items-center justify-between bg-slate-50 p-3 rounded-lg border border-slate-100">
-              <span className="font-bold text-slate-600 text-sm">الطاقة والنشاط</span>
-              <span className="font-black text-slate-900">{checkin.biofeedback.energy} / 10</span>
-            </div>
-            <div className="flex items-center justify-between bg-slate-50 p-3 rounded-lg border border-slate-100">
-              <span className="font-bold text-slate-600 text-sm">جودة النوم</span>
-              <span className="font-black text-slate-900">{checkin.biofeedback.sleep} / 10</span>
-            </div>
-            <div className="flex items-center justify-between bg-amber-50 p-3 rounded-lg border border-amber-100">
-              <span className="font-bold text-amber-700 text-sm">معدل الجوع (مرتفع)</span>
-              <span className="font-black text-amber-600">{checkin.biofeedback.hunger} / 10</span>
-            </div>
-          </div>
-        </div>
-
-        {/* Middle Column: Photos & Client Message */}
-        <div className="lg:col-span-1 space-y-6">
-          <div className="bg-white border border-slate-200 p-6 rounded-2xl shadow-sm">
-            <h3 className="font-black text-lg mb-4 flex items-center gap-2"><Camera className="text-blue-600" size={20} /> صور التطور (المقارنة)</h3>
-            <div className="grid grid-cols-2 gap-2 h-48">
-              <div className="bg-slate-100 rounded-lg flex flex-col items-center justify-center text-slate-400 border border-dashed border-slate-300">
-                <Camera size={24} className="mb-2" />
-                <span className="text-xs font-bold">الأسبوع الماضي</span>
-              </div>
-              <div className="bg-slate-100 rounded-lg flex flex-col items-center justify-center text-slate-400 border border-dashed border-slate-300">
-                <Camera size={24} className="mb-2 text-blue-500" />
-                <span className="text-xs font-bold text-blue-600">هذا الأسبوع</span>
-              </div>
-            </div>
-            <button className="w-full mt-4 bg-slate-50 hover:bg-slate-100 text-slate-700 font-bold py-2 rounded-lg text-sm transition">تكبير الصور</button>
-          </div>
-
-          <div className="bg-white border border-slate-200 p-6 rounded-2xl shadow-sm">
-            <h3 className="font-black text-lg mb-4 flex items-center gap-2"><MessageCircle className="text-blue-600" size={20} /> رسالة العميل</h3>
-            <p className="bg-slate-50 border border-slate-100 p-4 rounded-xl text-slate-700 font-bold text-sm leading-relaxed">
-              "{checkin.client_notes}"
-            </p>
-          </div>
-        </div>
-
-        {/* Left Column: AI Engine & Macro Adjustments */}
-        <div className="lg:col-span-1 space-y-6">
-          <div className="bg-blue-50 border border-blue-100 p-6 rounded-2xl shadow-sm">
-            <h3 className="font-black text-lg text-blue-900 mb-4 flex items-center gap-2"><BrainCircuit className="text-blue-600" size={20} /> تحليل المحرك الذكي</h3>
-            <p className="text-blue-800 text-sm font-bold leading-relaxed mb-4">
-              {checkin.ai_analysis.recommendation}
-            </p>
-            {checkin.biofeedback.hunger > 5 && (
-              <div className="bg-amber-100/50 border border-amber-200 p-3 rounded-lg flex items-start gap-2 text-xs font-bold text-amber-800">
-                <AlertTriangle size={16} className="shrink-0 mt-0.5" />
-                <span>العميل يشتكي من الجوع، لا ينصح بتقليل السعرات أكثر هذا الأسبوع.</span>
-              </div>
-            )}
-          </div>
-
-          <div className="bg-white border border-slate-200 p-6 rounded-2xl shadow-sm">
-            <h3 className="font-black text-lg mb-4 flex items-center gap-2"><Utensils className="text-blue-600" size={20} /> تعديل الماكروز للأسبوع القادم</h3>
-            <div className="space-y-4">
-              <div className="flex items-center justify-between">
-                <span className="font-bold text-slate-600 text-sm">السعرات (Kcal)</span>
-                <input type="number" value={macroAdjustments.calories} onChange={e => setMacroAdjustments({...macroAdjustments, calories: e.target.value})} className="w-24 bg-slate-50 border border-slate-200 rounded-lg p-2 text-center font-black focus:border-blue-500 outline-none" />
-              </div>
-              <div className="flex items-center justify-between">
-                <span className="font-bold text-slate-600 text-sm">البروتين (g)</span>
-                <input type="number" value={macroAdjustments.protein} onChange={e => setMacroAdjustments({...macroAdjustments, protein: e.target.value})} className="w-24 bg-slate-50 border border-slate-200 rounded-lg p-2 text-center font-black focus:border-blue-500 outline-none" />
-              </div>
-              <div className="flex items-center justify-between">
-                <span className="font-bold text-slate-600 text-sm">الكارب (g)</span>
-                <input type="number" value={macroAdjustments.carbs} onChange={e => setMacroAdjustments({...macroAdjustments, carbs: e.target.value})} className="w-24 bg-slate-50 border border-slate-200 rounded-lg p-2 text-center font-black focus:border-blue-500 outline-none" />
-              </div>
-              <div className="flex items-center justify-between">
-                <span className="font-bold text-slate-600 text-sm">الدهون (g)</span>
-                <input type="number" value={macroAdjustments.fats} onChange={e => setMacroAdjustments({...macroAdjustments, fats: e.target.value})} className="w-24 bg-slate-50 border border-slate-200 rounded-lg p-2 text-center font-black focus:border-blue-500 outline-none" />
-              </div>
-            </div>
-
-            <div className="mt-6 space-y-2">
-              <label className="text-sm font-bold text-slate-600">رسالتك للعميل (واتساب)</label>
-              <textarea 
-                value={coachReply}
-                onChange={e => setCoachReply(e.target.value)}
-                placeholder="اكتب ردك التشجيعي هنا..." 
-                className="w-full h-24 bg-slate-50 border border-slate-200 rounded-xl p-3 text-sm font-bold resize-none focus:border-blue-500 outline-none"
-              />
-            </div>
-
-            <button 
-              onClick={handleApprove}
-              disabled={isSubmitting}
-              className="w-full mt-6 bg-blue-600 hover:bg-blue-700 text-white font-black py-4 rounded-xl transition flex items-center justify-center gap-2 shadow-sm shadow-blue-200"
+            {/* AI Engine Recommendation */}
+            <FormSection
+              title="تحليل المحرك السريري الذكي"
+              description="توصيات النظام التكيفية المبنية على الدلتا الحسابية."
             >
-              {isSubmitting ? <Loader2 size={20} className="animate-spin" /> : <><Save size={20} /> اعتماد التحديث وإرسال</>}
-            </button>
+              <div style={{ background: '#F1F5F9', border: '1px solid #CBD5E1', padding: '12px 14px', borderRadius: '8px', marginTop: '6px' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '4px' }}>
+                  <BrainCircuit size={15} color="#0F172A" />
+                  <strong style={{ fontSize: '12.5px', color: '#0F172A' }}>توصية المحرك التكيفي</strong>
+                </div>
+                <p style={{ fontSize: '12px', color: '#334155', margin: '0 0 8px 0', lineHeight: 1.5 }}>
+                  {checkin.ai_analysis.recommendation}
+                </p>
+                <div style={{ background: '#FFFBEB', border: '1px solid #FDE68A', padding: '6px 10px', borderRadius: '5px', fontSize: '11px', color: '#B45309', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                  <AlertTriangle size={13} />
+                  <span>تنبيه: العميل يشتكي من الجوع الليلي؛ ينصح بتثبيت السعرات دون خفض إضافي.</span>
+                </div>
+              </div>
+            </FormSection>
+
           </div>
+
+          {/* Left Column: Decision & Macro Adjustments */}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
+            
+            <FormSection
+              title="تعديل الماكروز للأسبوع القادم"
+              description="ضبط السعرات والجرامات المعتمدة للبرنامج."
+            >
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginTop: '6px' }}>
+                
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: '#F8FAFC', border: '1px solid #E2E8F0', padding: '6px 10px', borderRadius: '6px' }}>
+                  <span style={{ fontSize: '12px', fontWeight: 600, color: '#475569' }}>السعرات الكلية</span>
+                  <input
+                    type="number"
+                    value={macroAdjustments.calories}
+                    onChange={(e) => setMacroAdjustments({ ...macroAdjustments, calories: Number(e.target.value) })}
+                    style={{ width: '80px', height: '30px', borderRadius: '5px', border: '1px solid #CBD5E1', textAlign: 'center', fontWeight: 800, fontSize: '13px', color: '#0F172A', outline: 'none' }}
+                  />
+                </div>
+
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: '#F8FAFC', border: '1px solid #E2E8F0', padding: '6px 10px', borderRadius: '6px' }}>
+                  <span style={{ fontSize: '12px', fontWeight: 600, color: '#475569' }}>البروتين (g)</span>
+                  <input
+                    type="number"
+                    value={macroAdjustments.protein}
+                    onChange={(e) => setMacroAdjustments({ ...macroAdjustments, protein: Number(e.target.value) })}
+                    style={{ width: '80px', height: '30px', borderRadius: '5px', border: '1px solid #CBD5E1', textAlign: 'center', fontWeight: 800, fontSize: '13px', color: '#0F172A', outline: 'none' }}
+                  />
+                </div>
+
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: '#F8FAFC', border: '1px solid #E2E8F0', padding: '6px 10px', borderRadius: '6px' }}>
+                  <span style={{ fontSize: '12px', fontWeight: 600, color: '#475569' }}>الكاربوهيدرات (g)</span>
+                  <input
+                    type="number"
+                    value={macroAdjustments.carbs}
+                    onChange={(e) => setMacroAdjustments({ ...macroAdjustments, carbs: Number(e.target.value) })}
+                    style={{ width: '80px', height: '30px', borderRadius: '5px', border: '1px solid #CBD5E1', textAlign: 'center', fontWeight: 800, fontSize: '13px', color: '#0F172A', outline: 'none' }}
+                  />
+                </div>
+
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: '#F8FAFC', border: '1px solid #E2E8F0', padding: '6px 10px', borderRadius: '6px' }}>
+                  <span style={{ fontSize: '12px', fontWeight: 600, color: '#475569' }}>الدهون الصحية (g)</span>
+                  <input
+                    type="number"
+                    value={macroAdjustments.fats}
+                    onChange={(e) => setMacroAdjustments({ ...macroAdjustments, fats: Number(e.target.value) })}
+                    style={{ width: '80px', height: '30px', borderRadius: '5px', border: '1px solid #CBD5E1', textAlign: 'center', fontWeight: 800, fontSize: '13px', color: '#0F172A', outline: 'none' }}
+                  />
+                </div>
+
+              </div>
+            </FormSection>
+
+            {/* Coach WhatsApp Reply & Submit */}
+            <FormSection
+              title="رسالة الكوتش واعتماد الخطة"
+              description="كتابة التوجيهات وإرسال التحديث لبرنامج المتدرب."
+            >
+              <div style={{ marginTop: '6px' }}>
+                <textarea
+                  value={coachReply}
+                  onChange={(e) => setCoachReply(e.target.value)}
+                  placeholder="اكتب التوجيه والرد التشجيعي للمتدرب..."
+                  style={{
+                    width: '100%',
+                    height: '90px',
+                    padding: '8px 10px',
+                    borderRadius: '6px',
+                    border: '1px solid #CBD5E1',
+                    fontSize: '12px',
+                    outline: 'none',
+                    resize: 'none',
+                    boxSizing: 'border-box',
+                    lineHeight: 1.4
+                  }}
+                />
+
+                <button
+                  type="button"
+                  onClick={handleApprove}
+                  disabled={isSubmitting}
+                  style={{
+                    width: '100%',
+                    height: '38px',
+                    marginTop: '10px',
+                    background: '#0F172A',
+                    color: '#FFFFFF',
+                    border: 'none',
+                    borderRadius: '6px',
+                    fontSize: '12.5px',
+                    fontWeight: 700,
+                    cursor: 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    gap: '6px',
+                    boxShadow: '0 2px 6px rgba(15, 23, 42, 0.25)',
+                    transition: 'all 0.15s ease'
+                  }}
+                  onMouseEnter={(e) => (e.currentTarget.style.background = '#334155')}
+                  onMouseLeave={(e) => (e.currentTarget.style.background = '#0F172A')}
+                >
+                  {isSubmitting ? (
+                    <Loader2 size={16} className="animate-spin" />
+                  ) : (
+                    <>
+                      <Save size={15} />
+                      <span>اعتماد التحديث وإرسال للعميل</span>
+                    </>
+                  )}
+                </button>
+              </div>
+            </FormSection>
+
+          </div>
+
         </div>
 
       </div>
-    </div>
     </AdminLayout>
   );
 }
-

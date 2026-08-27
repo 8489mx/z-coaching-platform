@@ -312,13 +312,13 @@ export default function EditQuestionModal({
               <button 
                 type="submit" 
                 disabled={loading} 
-                className="btn btn-primary rounded-pill px-4 fw-bold shadow-sm d-flex align-items-center gap-2 text-slate-900"
+                className="btn btn-primary rounded-pill px-4 fw-bold shadow-sm d-flex align-items-center gap-2 text-white"
                 style={{ 
                   height: '40px', 
                   fontSize: '0.86rem', 
-                  background: 'linear-gradient(135deg, #58B4E5 0%, #0284C7 100%)', 
+                  background: '#0F172A', 
                   border: 'none', 
-                  boxShadow: '0 4px 14px rgba(38, 28, 106, 0.28)' 
+                  boxShadow: '0 4px 14px rgba(15, 23, 42, 0.28)' 
                 }}
               >
                 {loading ? (

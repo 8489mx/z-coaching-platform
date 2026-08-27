@@ -1,4 +1,4 @@
-﻿import React, { ReactNode } from 'react';
+import React, { ReactNode } from 'react';
 
 export interface FormSectionProps {
   title: ReactNode;
@@ -25,14 +25,14 @@ export function FormSection({
         background: '#FFFFFF',
         border: '1px solid #E2E8F0',
         borderRadius: '10px',
-        padding: '20px 22px',
+        padding: '18px 20px',
         boxShadow: '0 1px 3px rgba(15, 23, 42, 0.02)'
       }}
       className={className}
     >
       <div 
         style={{ 
-          marginBottom: '16px', 
+          marginBottom: '14px', 
           display: 'flex', 
           justifyContent: 'space-between', 
           alignItems: 'flex-start',
@@ -42,13 +42,13 @@ export function FormSection({
       >
         <div>
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <span style={{ width: '3px', height: '16px', background: '#0F172A', borderRadius: '2px', display: 'inline-block' }} />
-            <h3 style={{ margin: 0, fontSize: '15px', fontWeight: 800, color: '#0F172A' }}>
+            <span className="section-title-bullet" style={{ width: '3.5px', height: '16px', background: 'var(--primary, #0F172A)', borderRadius: '2px', display: 'inline-block' }} />
+            <h3 style={{ margin: 0, fontSize: '15px', fontWeight: 800, color: 'var(--primary, #0F172A)' }}>
               {title}
             </h3>
           </div>
           {description && (
-            <p style={{ margin: '4px 0 0 0', paddingRight: '11px', fontSize: '12px', color: '#64748B' }}>
+            <p style={{ margin: '3px 0 0 0', paddingRight: '11px', fontSize: '12px', color: '#64748B' }}>
               {description}
             </p>
           )}

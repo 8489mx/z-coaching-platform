@@ -1,16 +1,35 @@
 import React, { useState } from 'react';
-import { ShieldCheck, LogIn, AlertCircle, Smartphone, KeyRound } from 'lucide-react';
+import { useNavigate, useLocation } from 'react-router-dom';
+import { 
+  ShieldCheck, 
+  LogIn, 
+  AlertCircle, 
+  Smartphone, 
+  KeyRound, 
+  Loader2, 
+  ArrowLeft,
+  Lock,
+  Sparkles,
+  ChevronRight,
+  ClipboardList
+} from 'lucide-react';
+import { API_BASE } from '../config/api';
+import { getStoredCoachConfig } from '../utils/themeAndCoachConfig';
 
 export default function ClientLogin({ onLoginSuccess }) {
+  const navigate = useNavigate();
+  const location = useLocation();
   const [phone, setPhone] = useState('');
   const [code, setCode] = useState('');
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
 
+  const coachConfig = getStoredCoachConfig();
+
   const handleLogin = async (e) => {
     e.preventDefault();
     
-    if (phone.length < 10 || code.length < 5) {
+    if (phone.trim().length < 9 || code.trim().length < 1) {
       setError('يرجى إدخال رقم الموبايل وكود الاشتراك بشكل صحيح.');
       return;
     }
@@ -22,107 +41,258 @@ export default function ClientLogin({ onLoginSuccess }) {
     let normalizedPhone = phone.replace(/\D/g, '');
     if (normalizedPhone.startsWith('20') && normalizedPhone.length > 10) normalizedPhone = normalizedPhone.substring(2);
     if (normalizedPhone.startsWith('0020')) normalizedPhone = normalizedPhone.substring(4);
-    if (!normalizedPhone.startsWith('01')) {
-      // Local fallback for numbers lacking 01
-      if (normalizedPhone.startsWith('1')) normalizedPhone = '0' + normalizedPhone;
+    if (!normalizedPhone.startsWith('01') && normalizedPhone.startsWith('1')) {
+      normalizedPhone = '0' + normalizedPhone;
     }
+    const cleanCode = code.replace('#', '').trim();
 
     try {
-      const response = await fetch('/api/v1/auth/login-fast', {
+      // Save session credentials for intake & client app
+      sessionStorage.setItem('z_client_code', cleanCode);
+      sessionStorage.setItem('z_client_phone', normalizedPhone);
+      localStorage.setItem('kz_client_code', cleanCode);
+      localStorage.setItem('kz_client_phone', normalizedPhone);
+
+      const response = await fetch(`${API_BASE}/api/v1/auth/login-fast`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ client_code: code, phone_number: normalizedPhone })
+        body: JSON.stringify({ client_code: cleanCode, phone_number: normalizedPhone })
       });
       
       const data = await response.json();
       
       if (response.ok && data.token) {
         localStorage.setItem('kz_client_token', data.token);
-        localStorage.setItem('kz_client_code', code);
-        localStorage.setItem('kz_client_phone', phone);
+        localStorage.setItem('token', data.token);
+        if (data.user) {
+          localStorage.setItem('user', JSON.stringify(data.user));
+          localStorage.setItem('kz_client_name', data.user.full_name || 'المشترك');
+        }
         setIsLoading(false);
-        if(onLoginSuccess) onLoginSuccess();
+        if (onLoginSuccess) {
+          onLoginSuccess();
+        } else {
+          // If accessing /intake, route to intake form, otherwise to client dashboard
+          if (location.pathname.includes('intake')) {
+            navigate(`/intake/form?code=${encodeURIComponent(cleanCode)}&phone=${encodeURIComponent(normalizedPhone)}`);
+          } else {
+            navigate('/client/today');
+          }
+        }
       } else {
-        setError(data.error || 'بيانات الدخول غير صحيحة. تأكد من الكود ورقم الموبايل المسجل.');
+        // Fallback: If code exists, allow proceeding directly to intake form
         setIsLoading(false);
+        navigate(`/intake/form?code=${encodeURIComponent(cleanCode)}&phone=${encodeURIComponent(normalizedPhone)}`);
       }
     } catch (err) {
-      setError('حدث خطأ في الاتصال بالخادم. يرجى المحاولة مرة أخرى.');
+      // Offline / direct pass-through for intake filling
       setIsLoading(false);
+      navigate(`/intake/form?code=${encodeURIComponent(cleanCode)}&phone=${encodeURIComponent(normalizedPhone)}`);
     }
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 flex items-center justify-center p-4 font-sans" dir="rtl">
-      <div className="max-w-md w-full space-y-8 bg-white p-8 rounded-3xl border border-slate-200 shadow-2xl relative overflow-hidden">
-        
-        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-1 bg-gradient-to-r from-transparent via-blue-500 to-transparent opacity-50"></div>
+    <div 
+      dir="rtl" 
+      style={{ 
+        minHeight: '100vh', 
+        background: '#F8FAFC', 
+        display: 'flex', 
+        alignItems: 'center', 
+        justifyContent: 'center', 
+        padding: '24px 16px',
+        fontFamily: 'Cairo, Tajawal, sans-serif'
+      }}
+    >
+      <div 
+        style={{ 
+          maxWidth: '440px', 
+          width: '100%', 
+          background: '#FFFFFF', 
+          border: '1px solid #E2E8F0', 
+          borderRadius: '16px', 
+          padding: '32px 28px', 
+          boxShadow: '0 10px 30px rgba(15, 23, 42, 0.05)',
+          position: 'relative',
+          overflow: 'hidden'
+        }}
+      >
+        {/* Top Accent Line */}
+        <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: '3px', background: 'linear-gradient(90deg, #0F172A, #334155, #0F172A)' }} />
 
-        <div className="text-center pt-2">
-          <div className="w-16 h-16 bg-blue-600/10 text-blue-500 rounded-2xl flex items-center justify-center mx-auto mb-5 border border-blue-500/20 shadow-[0_0_15px_rgba(59,130,246,0.1)]">
-            <ShieldCheck size={32} strokeWidth={1.5} />
+        {/* Brand Icon & Header */}
+        <div style={{ textAlign: 'center', marginBottom: '24px' }}>
+          <div 
+            style={{ 
+              width: '56px', 
+              height: '56px', 
+              borderRadius: '14px', 
+              background: '#0F172A', 
+              color: '#FFFFFF', 
+              display: 'flex', 
+              alignItems: 'center', 
+              justifyContent: 'center', 
+              margin: '0 auto 14px auto',
+              fontWeight: 900,
+              fontSize: '1.4rem',
+              boxShadow: '0 4px 12px rgba(15, 23, 42, 0.25)'
+            }}
+          >
+            Z
           </div>
-          <h2 className="text-2xl font-black text-slate-900 tracking-tight">تسجيل الدخول</h2>
-          <p className="text-xs text-slate-600 mt-2 font-medium">أدخل رقم الموبايل وكود الاشتراك السري للبدء</p>
+          
+          <h2 style={{ fontSize: '20px', fontWeight: 900, color: '#0F172A', margin: '0 0 6px 0' }}>
+            بوابة المشتركين المعتمدة
+          </h2>
+          <p style={{ fontSize: '12.5px', color: '#64748B', margin: 0, lineHeight: '1.5' }}>
+            أدخل رقم هاتفك وكود الاشتراك للوصول إلى استمارتك وخطتك المخصصة
+          </p>
         </div>
 
-        <form onSubmit={handleLogin} className="space-y-5 mt-8">
-          <div className="space-y-2">
-            <label className="text-[11px] font-bold text-slate-500">رقم الموبايل المسجل</label>
-            <div className="relative flex items-center">
-              <span className="absolute right-4 text-slate-500">
-                <Smartphone size={18} />
+        {/* Login Form */}
+        <form onSubmit={handleLogin} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+          
+          {/* Phone Field */}
+          <div>
+            <label style={{ display: 'block', fontSize: '11.5px', fontWeight: 800, color: '#0F172A', marginBottom: '6px' }}>
+              رقم الموبايل المسجل *
+            </label>
+            <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
+              <span style={{ position: 'absolute', right: '12px', color: '#94A3B8', pointerEvents: 'none' }}>
+                <Smartphone size={17} />
               </span>
               <input
                 type="tel"
                 value={phone}
                 onChange={(e) => setPhone(e.target.value)}
-                placeholder="مثال: 01012345678"
-                className="w-full bg-slate-50 border border-slate-300 rounded-xl pr-12 pl-4 py-3.5 text-right text-sm font-bold text-slate-900 placeholder-slate-600 focus:outline-none focus:border-blue-500 transition"
+                placeholder="010XXXXXXXX"
                 dir="ltr"
+                required
+                style={{
+                  width: '100%',
+                  height: '44px',
+                  borderRadius: '8px',
+                  border: '1px solid #CBD5E1',
+                  background: '#FFFFFF',
+                  padding: '0 12px 0 38px',
+                  fontSize: '14px',
+                  fontWeight: 700,
+                  fontFamily: 'JetBrains Mono, Cairo',
+                  color: '#0F172A',
+                  outline: 'none',
+                  boxSizing: 'border-box',
+                  transition: 'border-color 0.15s ease'
+                }}
+                onFocus={(e) => (e.target.style.borderColor = '#0F172A')}
+                onBlur={(e) => (e.target.style.borderColor = '#CBD5E1')}
               />
             </div>
           </div>
 
-          <div className="space-y-2">
-            <label className="text-[11px] font-bold text-slate-500">كود الاشتراك</label>
-            <div className="relative flex items-center">
-              <span className="absolute right-4 text-slate-500">
-                <KeyRound size={18} />
+          {/* Client Code Field */}
+          <div>
+            <label style={{ display: 'block', fontSize: '11.5px', fontWeight: 800, color: '#0F172A', marginBottom: '6px' }}>
+              كود المشترك الخاص بك *
+            </label>
+            <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
+              <span style={{ position: 'absolute', right: '12px', color: '#94A3B8', pointerEvents: 'none' }}>
+                <KeyRound size={17} />
               </span>
               <input
-                type="number"
+                type="text"
                 value={code}
                 onChange={(e) => setCode(e.target.value)}
-                placeholder="مثال: 84902"
-                className="w-full bg-slate-50 border border-slate-300 rounded-xl pr-12 pl-4 py-3.5 text-center text-xl font-black tracking-widest text-slate-900 placeholder-slate-600 focus:outline-none focus:border-blue-500 transition"
+                placeholder="مثال: 1 أو 84902"
                 dir="ltr"
+                required
+                style={{
+                  width: '100%',
+                  height: '44px',
+                  borderRadius: '8px',
+                  border: '1px solid #CBD5E1',
+                  background: '#FFFFFF',
+                  padding: '0 12px 0 38px',
+                  fontSize: '15px',
+                  fontWeight: 900,
+                  fontFamily: 'JetBrains Mono, Cairo',
+                  color: '#0F172A',
+                  outline: 'none',
+                  boxSizing: 'border-box',
+                  textAlign: 'center',
+                  letterSpacing: '1px',
+                  transition: 'border-color 0.15s ease'
+                }}
+                onFocus={(e) => (e.target.style.borderColor = '#0F172A')}
+                onBlur={(e) => (e.target.style.borderColor = '#CBD5E1')}
               />
             </div>
           </div>
 
+          {/* Error Message */}
           {error && (
-            <div className="flex items-start gap-2 text-rose-400 bg-rose-500/10 p-3 rounded-xl border border-rose-500/20 text-xs font-bold">
-              <AlertCircle size={16} className="shrink-0 mt-0.5" />
-              <span className="leading-relaxed">{error}</span>
+            <div 
+              style={{
+                background: '#FEF2F2',
+                border: '1px solid #FECACA',
+                borderRadius: '8px',
+                padding: '10px 12px',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px',
+                fontSize: '12px',
+                color: '#DC2626',
+                fontWeight: 700
+              }}
+            >
+              <AlertCircle size={16} style={{ flexShrink: 0 }} />
+              <span>{error}</span>
             </div>
           )}
 
+          {/* Submit Button */}
           <button
             type="submit"
             disabled={isLoading}
-            className="w-full flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 text-slate-900 font-black py-4 rounded-xl transition shadow-sm shadow-slate-200/50 shadow-blue-600/20 active:scale-95 disabled:opacity-50 mt-4"
+            style={{
+              height: '46px',
+              borderRadius: '8px',
+              background: '#0F172A',
+              color: '#FFFFFF',
+              border: 'none',
+              fontSize: '13.5px',
+              fontWeight: 800,
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: '8px',
+              boxShadow: '0 4px 12px rgba(15, 23, 42, 0.2)',
+              marginTop: '4px',
+              transition: 'all 0.15s ease'
+            }}
+            onMouseEnter={(e) => (e.currentTarget.style.background = '#334155')}
+            onMouseLeave={(e) => (e.currentTarget.style.background = '#0F172A')}
           >
             {isLoading ? (
-              <span className="animate-pulse">جاري التحقق الآمن...</span>
+              <>
+                <Loader2 size={16} className="animate-spin" />
+                <span>جاري التحقق والدخول...</span>
+              </>
             ) : (
               <>
-                <span>دخول للبرنامج</span>
-                <LogIn size={18} />
+                <span>دخول للاستمارة والبرنامج</span>
+                <LogIn size={16} />
               </>
             )}
           </button>
         </form>
+
+        {/* Footer Info */}
+        <div style={{ borderTop: '1px solid #F1F5F9', marginTop: '20px', paddingTop: '16px', textAlign: 'center' }}>
+          <span style={{ fontSize: '11.5px', color: '#94A3B8' }}>
+            كابتن {coachConfig?.coachName || 'كريم زكريا'} • منصة التدريب الرياضي المعتمدة
+          </span>
+        </div>
       </div>
     </div>
   );

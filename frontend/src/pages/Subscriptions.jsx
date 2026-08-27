@@ -1,9 +1,27 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
+import { 
+  CreditCard, 
+  Search, 
+  Wallet, 
+  Users, 
+  Hourglass, 
+  AlertTriangle, 
+  Edit3, 
+  PauseCircle, 
+  PlayCircle, 
+  RotateCw, 
+  MessageCircle, 
+  Plus, 
+  X,
+  CheckCircle2
+} from 'lucide-react';
 import { API_BASE } from '../config/api';
 import AdminLayout from '../components/layout/AdminLayout';
 import EditSubscriptionModal from '../components/modals/EditSubscriptionModal';
 import { arabicSearchMatch } from '../utils/searchUtils';
+import { PageHeader } from '@/shared/components/page-header';
+import { FormSection } from '@/shared/components/form-section';
 
 export default function Subscriptions() {
   const [overview, setOverview] = useState({
@@ -57,7 +75,7 @@ export default function Subscriptions() {
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || 'فشل تجديد الاشتراك');
 
-      alert(' تم تجديد الاشتراك بنجاح!');
+      alert('تم تجديد الاشتراك بنجاح!');
       fetchSubscriptions();
     } catch (err) {
       alert(err.message || 'حدث خطأ أثناء التجديد');
@@ -86,7 +104,7 @@ export default function Subscriptions() {
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || 'فشل تحديث الاشتراك');
 
-      alert(' تم تحديث بيانات الاشتراك بنجاح!');
+      alert('تم تحديث بيانات الاشتراك بنجاح!');
       setEditClient(null);
       fetchSubscriptions();
     } catch (err) {
@@ -96,7 +114,6 @@ export default function Subscriptions() {
     }
   };
 
-  
   const handleAddGiftDays = async (client, days) => {
     try {
       const res = await fetch(`${API_BASE}/api/v1/coach/add-gift-days`, {
@@ -145,7 +162,7 @@ export default function Subscriptions() {
     }
     const name = client.full_name || 'بطلنا';
     const message = encodeURIComponent(
-      `مرحباً يا ${name}! \nنود تذكيرك بأن اشتراكك في Z Coaching أوشك على الانتهاء.\nلتجديد الاشتراك والاستمرار في تحقيق أهدافك، يرجى التواصل معنا أو تأكيد التجديد.\nبالتوفيق يا بطل! `
+      `مرحباً يا ${name}! \nنود تذكيرك بأن اشتراكك في Z Coaching أوشك على الانتهاء.\nلتجديد الاشتراك والاستمرار في تحقيق أهدافك، يرجى التواصل معنا أو تأكيد التجديد.\nبالتوفيق يا بطل!`
     );
     window.open(`https://wa.me/${phone}?text=${message}`, '_blank');
   };
@@ -153,7 +170,8 @@ export default function Subscriptions() {
   const getPackageLabel = (pkg) => {
     switch (pkg) {
       case '1_MONTH': return 'باقة شهر واحد (1M)';
-      case '3_MONTHS': return 'باقة 3 شهور VIP';
+      case '3_MONTHS': return 'باقة إيليت (3 شهور + 1 مجاناً)';
+      case 'MAX_3_PLUS_1': return 'باقة ماكس VIP (3 شهور + 1 مجاناً)';
       case '6_MONTHS': return 'باقة 6 شهور (6M)';
       case '12_MONTHS': return 'باقة سنة كاملة';
       default: return pkg || 'باقة شهرية';
@@ -168,7 +186,6 @@ export default function Subscriptions() {
     if (!searchTerm.trim()) return true;
     const raw = searchTerm.trim().toLowerCase();
 
-    // Smart # Prefix Search: Specifically and strictly target exact client code
     if (raw.startsWith('#')) {
       const codeQuery = raw.replace(/^#+/, '').trim();
       if (!codeQuery) return true;
@@ -177,7 +194,6 @@ export default function Subscriptions() {
       return displayedCode === codeQuery || cleanCode === codeQuery || displayedCode === `client-${codeQuery}`;
     }
 
-    // Standard Search with Hamza / Diacritics Invariance
     return (
       arabicSearchMatch(c.full_name, searchTerm) ||
       arabicSearchMatch(c.phone_number, searchTerm) ||
@@ -186,332 +202,330 @@ export default function Subscriptions() {
     );
   });
 
+  const statCards = [
+    { title: 'الدخل الشهري الفعّال', value: `${Number(overview.total_monthly_revenue || 0).toLocaleString()} ج.م`, label: 'تدفق نقدي صحي', icon: Wallet },
+    { title: 'مشتركون نشطون حالياً', value: overview.active_count || clients.filter(c => c.status === 'ACTIVE').length, label: 'سارية ومفعلة', icon: Users },
+    { title: 'قاربت على الانتهاء', value: overview.expiring_soon_count || 0, label: 'خلال 7 أيام', icon: Hourglass },
+    { title: 'اشتراكات منتهية', value: overview.expired_count || 0, label: 'مطلوب تجديدها', icon: AlertTriangle },
+  ];
+
   return (
-    <AdminLayout searchTerm={searchTerm} onSearchChange={setSearchTerm}>
-      <div className="theme-body">
-        <div className="container-fluid">
+    <AdminLayout>
+      <div className="page-stack" dir="rtl" style={{ display: 'flex', flexDirection: 'column', gap: '18px' }}>
+        
+        {/* 1. Page Header */}
+        <PageHeader
+          title="إدارة الباقات والاشتراكات والمالية"
+          description="متابعة التدفق المالي، تجديد الباقات، تجميد الاشتراكات، وإضافة الأيام الترويجية."
+          actions={(
+            <button 
+              type="button" 
+              onClick={fetchSubscriptions}
+              style={{
+                height: '36px',
+                padding: '0 16px',
+                fontSize: '12.5px',
+                fontWeight: 700,
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '6px',
+                borderRadius: '6px',
+                background: '#0F172A',
+                color: '#FFFFFF',
+                border: 'none',
+                cursor: 'pointer',
+                boxShadow: '0 2px 6px rgba(15, 23, 42, 0.25)',
+                transition: 'all 0.15s ease'
+              }}
+              onMouseEnter={(e) => (e.currentTarget.style.background = '#334155')}
+              onMouseLeave={(e) => (e.currentTarget.style.background = '#0F172A')}
+            >
+              <RotateCw size={14} />
+              <span>تحديث البيانات المالية</span>
+            </button>
+          )}
+        />
 
-          {/* 4 Financial Stat Cards (Quiet Luxury Style) */}
-          <div className="row g-3 mb-3">
-            <div className="col-xl-3 col-sm-6 col-12">
-              <div className="card border-0 bg-white h-100 shadow-sm" style={{ borderRadius: '14px', border: '1px solid #e2e8f0' }}>
-                <div className="card-body p-3 d-flex flex-column justify-content-between">
-                  <div className="d-flex justify-content-between align-items-center mb-2">
-                    <div className="d-flex align-items-center justify-content-center" style={{ width: '30px', height: '30px', borderRadius: '8px', background: '#ecfdf5', color: '#059669' }}>
-                      <i className="ti ti-wallet fs-6"></i>
-                    </div>
-                    <span className="badge rounded-pill fw-semibold px-2 py-1" style={{ background: '#f8fafc', color: '#059669', fontSize: '0.68rem', border: '1px solid #e2e8f0' }}>
-                      شهرياً
-                    </span>
-                  </div>
-                  <div>
-                    <h3 className="fw-bold mb-0 text-dark d-flex align-items-baseline gap-1" style={{ fontSize: '1.45rem', letterSpacing: '-0.5px' }}>
-                      <span>{Number(overview.total_monthly_revenue || 0).toLocaleString()}</span>
-                      <span className="fs-6 text-muted fw-normal">ج.م</span>
-                    </h3>
-                    <p className="text-muted small mb-0 fw-medium" style={{ fontSize: '0.78rem' }}>الدخل الشهري الفعّال</p>
+        {/* 2. 4-Column Balanced KPI Grid */}
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '14px' }}>
+          {statCards.map((st, i) => {
+            const Icon = st.icon;
+            return (
+              <div 
+                key={i} 
+                style={{
+                  background: '#FFFFFF',
+                  border: '1px solid #E2E8F0',
+                  borderRadius: '10px',
+                  padding: '12px 14px',
+                  boxShadow: '0 1px 3px rgba(15, 23, 42, 0.02)',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  gap: '8px'
+                }}
+              >
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <span style={{ fontSize: '11.5px', fontWeight: 700, color: '#64748B' }}>{st.title}</span>
+                  <div style={{ width: '28px', height: '28px', borderRadius: '6px', background: '#F8FAFC', border: '1px solid #E2E8F0', color: '#0F172A', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    <Icon size={14} />
                   </div>
                 </div>
-              </div>
-            </div>
-
-            <div className="col-xl-3 col-sm-6 col-12">
-              <div className="card border-0 bg-white h-100 shadow-sm" style={{ borderRadius: '14px', border: '1px solid #e2e8f0' }}>
-                <div className="card-body p-3 d-flex flex-column justify-content-between">
-                  <div className="d-flex justify-content-between align-items-center mb-2">
-                    <div className="d-flex align-items-center justify-content-center" style={{ width: '30px', height: '30px', borderRadius: '8px', background: '#E5F0FF', color: '#0284C7' }}>
-                      <i className="ti ti-user-check fs-6"></i>
-                    </div>
-                    <span className="badge rounded-pill fw-semibold px-2 py-1" style={{ background: '#E5F0FF', color: '#0284C7', fontSize: '0.68rem', border: '1px solid #BAE6FD' }}>
-                      سارية
-                    </span>
-                  </div>
-                  <div>
-                    <h3 className="fw-bold mb-0 text-dark" style={{ fontSize: '1.45rem', letterSpacing: '-0.5px' }}>{overview.active_count}</h3>
-                    <p className="text-muted small mb-0 fw-medium" style={{ fontSize: '0.78rem' }}>مشتركين نشطين حالياً</p>
-                  </div>
+                <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between' }}>
+                  <span style={{ fontSize: '1.6rem', fontWeight: 900, color: '#0F172A', fontFamily: 'JetBrains Mono, Cairo, sans-serif', lineHeight: 1 }}>
+                    {st.value}
+                  </span>
+                  <span style={{ fontSize: '10.5px', color: '#94A3B8', fontWeight: 600 }}>{st.label}</span>
                 </div>
               </div>
-            </div>
+            );
+          })}
+        </div>
 
-            <div className="col-xl-3 col-sm-6 col-12">
-              <div className="card border-0 bg-white h-100 shadow-sm" style={{ borderRadius: '14px', border: '1px solid #e2e8f0' }}>
-                <div className="card-body p-3 d-flex flex-column justify-content-between">
-                  <div className="d-flex justify-content-between align-items-center mb-2">
-                    <div className="d-flex align-items-center justify-content-center" style={{ width: '30px', height: '30px', borderRadius: '8px', background: '#fffbeb', color: '#d97706' }}>
-                      <i className="ti ti-clock-pause fs-6"></i>
-                    </div>
-                    <span className="badge rounded-pill fw-semibold px-2 py-1" style={{ background: '#fffbeb', color: '#d97706', fontSize: '0.68rem' }}>
-                      خلال 7 أيام
-                    </span>
-                  </div>
-                  <div>
-                    <h3 className="fw-bold mb-0 text-dark" style={{ fontSize: '1.45rem', letterSpacing: '-0.5px' }}>{overview.expiring_soon_count}</h3>
-                    <p className="text-muted small mb-0 fw-medium" style={{ fontSize: '0.78rem' }}>قاربت على الانتهاء</p>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <div className="col-xl-3 col-sm-6 col-12">
-              <div className="card border-0 bg-white h-100 shadow-sm" style={{ borderRadius: '14px', border: '1px solid #e2e8f0' }}>
-                <div className="card-body p-3 d-flex flex-column justify-content-between">
-                  <div className="d-flex justify-content-between align-items-center mb-2">
-                    <div className="d-flex align-items-center justify-content-center" style={{ width: '30px', height: '30px', borderRadius: '8px', background: '#fef2f2', color: '#dc2626' }}>
-                      <i className="ti ti-alert-triangle fs-6"></i>
-                    </div>
-                    <span className="badge rounded-pill fw-semibold px-2 py-1" style={{ background: '#fef2f2', color: '#dc2626', fontSize: '0.68rem' }}>
-                      مطلوب تجديدها
-                    </span>
-                  </div>
-                  <div>
-                    <h3 className="fw-bold mb-0 text-dark" style={{ fontSize: '1.45rem', letterSpacing: '-0.5px' }}>{overview.expired_count}</h3>
-                    <p className="text-muted small mb-0 fw-medium" style={{ fontSize: '0.78rem' }}>اشتراكات منتهية</p>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Filter Pills (Quiet Luxury Style) */}
-          <div className="d-flex gap-2 mb-3 flex-wrap">
-            <button 
-              type="button"
-              onClick={() => setFilter('ALL')}
-              className={`btn btn-sm rounded-pill px-3 fw-bold transition-all ${filter === 'ALL' ? 'text-slate-900 shadow-sm' : 'bg-white text-dark border'}`}
-              style={{
-                background: filter === 'ALL' ? '#0284C7' : '#ffffff',
-                borderColor: filter === 'ALL' ? '#0284C7' : '#e2e8f0',
-                fontSize: '0.8rem',
-                height: '34px'
-              }}
-            >
-              جميع المشتركين ({clients.length})
-            </button>
-            <button 
-              type="button"
-              onClick={() => setFilter('ACTIVE')}
-              className={`btn btn-sm rounded-pill px-3 fw-bold transition-all ${filter === 'ACTIVE' ? 'text-slate-900 shadow-sm' : 'bg-white text-dark border'}`}
-              style={{
-                background: filter === 'ACTIVE' ? '#0284C7' : '#ffffff',
-                borderColor: filter === 'ACTIVE' ? '#0284C7' : '#e2e8f0',
-                fontSize: '0.8rem',
-                height: '34px'
-              }}
-            >
-              الاشتراكات النشطة ({overview.active_count})
-            </button>
-            <button 
-              type="button"
-              onClick={() => setFilter('EXPIRING_SOON')}
-              className={`btn btn-sm rounded-pill px-3 fw-bold transition-all ${filter === 'EXPIRING_SOON' ? 'text-slate-900 shadow-sm' : 'bg-white text-dark border'}`}
-              style={{
-                background: filter === 'EXPIRING_SOON' ? '#0284C7' : '#ffffff',
-                borderColor: filter === 'EXPIRING_SOON' ? '#0284C7' : '#e2e8f0',
-                fontSize: '0.8rem',
-                height: '34px'
-              }}
-            >
-              قاربت على الانتهاء ({overview.expiring_soon_count})
-            </button>
-            <button 
-              type="button"
-              onClick={() => setFilter('EXPIRED')}
-              className={`btn btn-sm rounded-pill px-3 fw-bold transition-all ${filter === 'EXPIRED' ? 'text-slate-900 shadow-sm' : 'bg-white text-dark border'}`}
-              style={{
-                background: filter === 'EXPIRED' ? '#0284C7' : '#ffffff',
-                borderColor: filter === 'EXPIRED' ? '#0284C7' : '#e2e8f0',
-                fontSize: '0.8rem',
-                height: '34px'
-              }}
-            >
-              الاشتراكات المنتهية ({overview.expired_count})
-            </button>
-
-            <Link 
-              to="/master-settings?tab=packages" 
-              className="btn btn-sm rounded-pill px-3 fw-bold ms-auto d-flex align-items-center gap-1 shadow-xs"
-              style={{ background: '#E5F0FF', color: '#0284C7', border: '1px solid #BAE6FD', fontSize: '0.8rem', height: '34px' }}
-            >
-              <i className="ti ti-crown fs-6"></i>
-              <span>تعديل الباقات والأسعار</span>
-            </Link>
-          </div>
-
-          {/* Subscriptions Table Card */}
-          <div className="card border-0 shadow-sm bg-white" style={{ borderRadius: '16px', border: '1px solid #e2e8f0' }}>
-            <div className="card-body p-4">
-              <div className="table-responsive">
-                {loading ? (
-                  <div className="text-center py-5">
-                    <div className="spinner-border text-primary" role="status"></div>
-                    <p className="text-muted mt-2 small">جاري تحميل بيانات الاشتراكات...</p>
-                  </div>
-                ) : (
-                  <table className="table table-hover align-middle mb-0">
-                    <thead className="table-light">
-                      <tr>
-                        <th className="border-0 rounded-start">المشترك</th>
-                        <th className="border-0">كود العميل</th>
-                        <th className="border-0">الباقة والسعر</th>
-                        <th className="border-0">تاريخ البداية والانتهاء</th>
-                        <th className="border-0">حالة الاشتراك</th>
-                        <th className="border-0 rounded-end text-center">إجراءات</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {filteredClients.length === 0 ? (
-                        <tr>
-                          <td colSpan="6" className="text-center py-4 text-muted">
-                            لا توجد اشتراكات تطابق الفلتر المحدد.
-                          </td>
-                        </tr>
-                      ) : (
-                        filteredClients.map((c) => {
-                          const isExpiring = c.status === 'EXPIRING_SOON';
-                          const isExpired = c.status === 'EXPIRED';
-
-                          return (
-                            <tr key={c.id}>
-                              <td>
-                                <div className="d-flex align-items-center gap-2">
-                                  <div className="rounded-circle d-flex align-items-center justify-content-center fw-bold" style={{ width: '34px', height: '34px', fontSize: '0.82rem', background: '#E5F0FF', color: '#0284C7', border: '1px solid #BAE6FD' }}>
-                                    {(c.full_name || 'U')[0]}
-                                  </div>
-                                  <div>
-                                    <div className="fw-bold text-dark" style={{ fontSize: '0.88rem' }}>{c.full_name || `المتدرب ${c.id}`}</div>
-                                    <small style={{ fontSize: '0.76rem', color: '#64748b' }}>{c.phone_number || '-'}</small>
-                                  </div>
-                                </div>
-                              </td>
-                              <td>
-                                <span className="badge bg-light text-secondary border px-2 py-1 font-monospace" style={{ fontSize: '0.75rem' }}>
-                                  {c.client_code}
-                                </span>
-                              </td>
-                              <td>
-                                <div className="fw-bold text-dark" style={{ fontSize: '0.85rem' }}>{getPackageLabel(c.package)}</div>
-                                <small className="text-muted" style={{ fontSize: '0.76rem' }}>{c.price} ج.م</small>
-                              </td>
-                              <td>
-                                <div className="small" style={{ fontSize: '0.78rem' }}>من: <span className="text-dark fw-semibold">{c.start_date}</span></div>
-                                <div className="small" style={{ fontSize: '0.78rem' }}>إلى: <span className="text-dark fw-semibold">{c.end_date}</span></div>
-                              </td>
-                              <td>
-                                {isExpired ? (
-                                  <span className="badge bg-light text-danger border px-2 py-1 rounded-pill fw-semibold" style={{ fontSize: '0.75rem' }}>
-                                    <i className="ti ti-x me-1"></i> منتهي ({Math.abs(c.days_remaining)} يوم)
-                                  </span>
-                                ) : isExpiring ? (
-                                  <span className="badge bg-light text-warning border px-2 py-1 rounded-pill fw-semibold" style={{ fontSize: '0.75rem' }}>
-                                    <i className="ti ti-clock me-1"></i> متبقي {c.days_remaining} أيام
-                                  </span>
-                                ) : (
-                                  <span className="badge bg-light text-success border px-2 py-1 rounded-pill fw-semibold" style={{ fontSize: '0.75rem' }}>
-                                    <i className="ti ti-point-filled me-1"></i> نشط ({c.days_remaining} يوم)
-                                  </span>
-                                )}
-                              </td>
-                              <td className="text-center">
-                                <div className="d-flex align-items-center justify-content-center gap-1.5 flex-wrap">
-                                  <div className="btn-group btn-group-sm">
-                                    <button
-                                      type="button"
-                                      onClick={() => handleAddGiftDays(c, 7)}
-                                      className="btn btn-outline-primary py-0 px-1.5"
-                                      style={{ fontSize: '0.72rem' }}
-                                      title="إضافة 7 أيام هدية"
-                                    >
-                                      +7ي
-                                    </button>
-                                    <button
-                                      type="button"
-                                      onClick={() => handleAddGiftDays(c, 14)}
-                                      className="btn btn-outline-primary py-0 px-1.5"
-                                      style={{ fontSize: '0.72rem' }}
-                                      title="إضافة 14 يوماً هدية"
-                                    >
-                                      +14ي
-                                    </button>
-                                    <button
-                                      type="button"
-                                      onClick={() => handleAddGiftDays(c, 30)}
-                                      className="btn btn-outline-primary py-0 px-1.5"
-                                      style={{ fontSize: '0.72rem' }}
-                                      title="إضافة 30 يوماً هدية"
-                                    >
-                                      +30ي
-                                    </button>
-                                  </div>
-
-                                  <button
-                                    type="button"
-                                    onClick={() => handleToggleFreeze(c)}
-                                    className={`btn btn-sm py-0 px-2 rounded-pill ${
-                                      c.status === 'FROZEN' || c.subscription_status === 'FROZEN'
-                                        ? 'btn-success text-slate-900'
-                                        : 'btn-outline-secondary'
-                                    }`}
-                                    style={{ fontSize: '0.72rem' }}
-                                    title="تجميد أو استئناف الاشتراك"
-                                  >
-                                    {c.status === 'FROZEN' || c.subscription_status === 'FROZEN' ? 'استئناف' : 'تجميد'}
-                                  </button>
-
-                                  <button 
-                                    type="button"
-                                    onClick={() => handleRenew(c)}
-                                    className="btn btn-sm rounded-pill px-2.5 py-0 fw-semibold shadow-xs"
-                                    style={{ fontSize: '0.74rem', background: '#E5F0FF', color: '#0284C7', border: '1px solid #BAE6FD' }}
-                                    title="تجديد الاشتراك"
-                                  >
-                                    تجديد
-                                  </button>
-
-                                  <button 
-                                    type="button"
-                                    onClick={() => handleOpenEdit(c)}
-                                    className="btn btn-sm rounded-circle p-0 d-flex align-items-center justify-content-center transition-all bg-white border"
-                                    style={{ width: '28px', height: '28px', borderColor: '#e2e8f0', color: '#475569' }}
-                                    title="تعديل تفاصيل الباقة"
-                                  >
-                                    <i className="ti ti-edit fs-6"></i>
-                                  </button>
-
-                                  <button 
-                                    type="button"
-                                    onClick={() => handleSendWhatsAppReminder(c)}
-                                    className="btn btn-sm rounded-circle p-0 d-flex align-items-center justify-content-center transition-all bg-white border"
-                                    style={{ width: '28px', height: '28px', borderColor: '#e2e8f0', color: '#16a34a' }}
-                                    title="تذكير عبر WhatsApp"
-                                  >
-                                    <i className="ti ti-brand-whatsapp fs-6"></i>
-                                  </button>
-                                </div>
-                              </td>
-                            </tr>
-                          );
-                        })
-                      )}
-                    </tbody>
-                  </table>
+        {/* 3. Subscriptions List Section */}
+        <FormSection
+          title="سجل الاشتراكات والتجديدات"
+          description="كافة اشتراكات المتدربين مع خيارات التجديد الفوري والتجميد وإضافة أيام مجانية."
+          actions={(
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+              {/* Search Box */}
+              <div 
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  background: '#F8FAFC',
+                  border: '1px solid #E2E8F0',
+                  borderRadius: '6px',
+                  padding: '0 8px',
+                  height: '32px',
+                  width: '210px',
+                  gap: '6px'
+                }}
+              >
+                <Search size={13} color="#94A3B8" />
+                <input
+                  type="text"
+                  placeholder="بحث في الاشتراكات..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  style={{
+                    border: 'none',
+                    outline: 'none',
+                    background: 'transparent',
+                    fontSize: '11.5px',
+                    width: '100%',
+                    color: '#0F172A'
+                  }}
+                />
+                {searchTerm && (
+                  <button type="button" onClick={() => setSearchTerm('')} style={{ border: 'none', background: 'transparent', cursor: 'pointer', padding: 0, color: '#94A3B8' }}>
+                    <X size={12} />
+                  </button>
                 )}
               </div>
-            </div>
-          </div>
-        </div>
-      </div>
 
-      {/* Edit Subscription Modal */}
-      <EditSubscriptionModal
-        isOpen={!!editClient}
-        onClose={() => setEditClient(null)}
-        client={editClient}
-        editForm={editForm}
-        setEditForm={setEditForm}
-        onSave={handleSaveEdit}
-        saving={saving}
-      />
+              {/* Filter Pills */}
+              <div style={{ display: 'flex', gap: '3px', background: '#F1F5F9', padding: '3px', borderRadius: '6px', border: '1px solid #E2E8F0' }}>
+                {[
+                  { id: 'ALL', label: `الكل (${clients.length})` },
+                  { id: 'ACTIVE', label: `النشطة (${overview.active_count || clients.filter(c => c.status === 'ACTIVE').length})` },
+                  { id: 'EXPIRING_SOON', label: `قاربت على الانتهاء (${overview.expiring_soon_count || 0})` },
+                  { id: 'EXPIRED', label: `المنتهية (${overview.expired_count || 0})` },
+                ].map(tab => (
+                  <button
+                    key={tab.id}
+                    type="button"
+                    onClick={() => setFilter(tab.id)}
+                    style={{
+                      padding: '4px 10px',
+                      borderRadius: '5px',
+                      fontSize: '11px',
+                      fontWeight: 700,
+                      border: 'none',
+                      cursor: 'pointer',
+                      background: filter === tab.id ? '#0F172A' : 'transparent',
+                      color: filter === tab.id ? '#FFFFFF' : '#64748B',
+                      boxShadow: filter === tab.id ? '0 2px 5px rgba(15, 23, 42, 0.25)' : 'none',
+                      transition: 'background 0.12s ease, color 0.12s ease'
+                    }}
+                  >
+                    {tab.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+        >
+          {loading ? (
+            <div style={{ padding: '40px', textAlign: 'center', color: '#64748B', fontSize: '13px' }}>
+              جاري تحميل الاشتراكات...
+            </div>
+          ) : filteredClients.length === 0 ? (
+            <div style={{ padding: '40px 16px', textAlign: 'center', background: '#F8FAFC', border: '1px dashed #CBD5E1', borderRadius: '8px' }}>
+              <div style={{ width: '36px', height: '36px', borderRadius: '50%', background: '#F1F5F9', color: '#0F172A', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 8px auto' }}>
+                <CheckCircle2 size={18} />
+              </div>
+              <strong style={{ fontSize: '13px', color: '#0F172A', display: 'block', marginBottom: '2px' }}>لا توجد اشتراكات مطابقة</strong>
+              <small style={{ fontSize: '11.5px', color: '#64748B' }}>لم يتم العثور على أي مشترك تحت هذا الفلتر أو البحث.</small>
+            </div>
+          ) : (
+            <div style={{ overflowX: 'auto', border: '1px solid #E2E8F0', borderRadius: '8px' }}>
+              <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'right', fontSize: '12px' }}>
+                <thead>
+                  <tr style={{ background: '#F8FAFC', borderBottom: '1px solid #E2E8F0', color: '#475569', fontWeight: 700 }}>
+                    <th style={{ padding: '10px 14px' }}>الكود</th>
+                    <th style={{ padding: '10px 14px' }}>المشترك</th>
+                    <th style={{ padding: '10px 14px' }}>الباقة والسعر</th>
+                    <th style={{ padding: '10px 14px' }}>تاريخ البداية والانتهاء</th>
+                    <th style={{ padding: '10px 14px' }}>حالة الاشتراك</th>
+                    <th style={{ padding: '10px 14px', textAlign: 'left' }}>الإجراءات المالية</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {filteredClients.map((client) => {
+                    const cleanCode = String(client.client_code || client.id).replace(/^client[-_]?/i, '');
+                    const isFrozen = client.status === 'FROZEN' || client.subscription_status === 'FROZEN';
+                    const isExp = client.status === 'EXPIRED';
+                    const isSoon = client.status === 'EXPIRING_SOON';
+
+                    return (
+                      <tr 
+                        key={client.id} 
+                        style={{ borderBottom: '1px solid #F1F5F9', transition: 'background 0.15s ease' }}
+                        onMouseEnter={(e) => (e.currentTarget.style.background = '#F8FAFC')}
+                        onMouseLeave={(e) => (e.currentTarget.style.background = 'transparent')}
+                      >
+                        {/* Code */}
+                        <td style={{ padding: '10px 14px' }}>
+                          <span style={{ fontFamily: 'JetBrains Mono, monospace', fontWeight: 800, fontSize: '11px', background: '#F1F5F9', border: '1px solid #CBD5E1', color: '#0F172A', padding: '2px 7px', borderRadius: '4px' }}>
+                            {'#' + cleanCode}
+                          </span>
+                        </td>
+
+                        {/* Name & Phone */}
+                        <td style={{ padding: '10px 14px' }}>
+                          <strong style={{ color: '#0F172A', fontSize: '13px', display: 'block' }}>{client.full_name || 'مشترك جديد'}</strong>
+                          <span dir="ltr" style={{ fontSize: '11px', color: '#94A3B8', fontFamily: 'JetBrains Mono, monospace' }}>
+                            {client.phone_number}
+                          </span>
+                        </td>
+
+                        {/* Package & Price */}
+                        <td style={{ padding: '10px 14px' }}>
+                          <div style={{ color: '#0F172A', fontWeight: 600 }}>{getPackageLabel(client.package)}</div>
+                          <span style={{ fontSize: '11px', color: '#64748B', fontFamily: 'JetBrains Mono, monospace' }}>
+                            {client.price ? `${client.price} ج.م` : '2500 ج.م'}
+                          </span>
+                        </td>
+
+                        {/* Start and End */}
+                        <td style={{ padding: '10px 14px', fontSize: '11px', color: '#64748B' }}>
+                          <div>من: <span dir="ltr" style={{ fontFamily: 'JetBrains Mono, monospace' }}>{client.start_date || '2026-08-21'}</span></div>
+                          <div>إلى: <span dir="ltr" style={{ fontFamily: 'JetBrains Mono, monospace' }}>{client.end_date || '2026-12-19'}</span></div>
+                        </td>
+
+                        {/* Status */}
+                        <td style={{ padding: '10px 14px' }}>
+                          {isFrozen ? (
+                            <span style={{ background: '#F1F5F9', border: '1px solid #CBD5E1', color: '#475569', padding: '2px 8px', borderRadius: '4px', fontSize: '10.5px', fontWeight: 700 }}>
+                              مجمّد
+                            </span>
+                          ) : isExp ? (
+                            <span style={{ background: '#FEF2F2', border: '1px solid #FECACA', color: '#DC2626', padding: '2px 8px', borderRadius: '4px', fontSize: '10.5px', fontWeight: 700 }}>
+                              منتهي
+                            </span>
+                          ) : isSoon ? (
+                            <span style={{ background: '#FFFBEB', border: '1px solid #FDE68A', color: '#D97706', padding: '2px 8px', borderRadius: '4px', fontSize: '10.5px', fontWeight: 700 }}>
+                              قارب على الانتهاء ({client.days_remaining} يوم)
+                            </span>
+                          ) : (
+                            <span style={{ background: '#F0FDF4', border: '1px solid #BBF7D0', color: '#16A34A', padding: '2px 8px', borderRadius: '4px', fontSize: '10.5px', fontWeight: 700 }}>
+                              نشط ({client.days_remaining ? `${client.days_remaining} يوم` : '115 يوم'})
+                            </span>
+                          )}
+                        </td>
+
+                        {/* Financial Actions */}
+                        <td style={{ padding: '10px 14px', textAlign: 'left' }}>
+                          <div style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+                            
+                            {/* Gift Days Pills */}
+                            <button type="button" onClick={() => handleAddGiftDays(client, 7)} style={{ padding: '2px 6px', borderRadius: '4px', border: '1px solid #E2E8F0', background: '#F8FAFC', color: '#475569', fontSize: '10.5px', fontWeight: 700, cursor: 'pointer' }} title="إضافة 7 أيام هدية">+7ي</button>
+                            <button type="button" onClick={() => handleAddGiftDays(client, 14)} style={{ padding: '2px 6px', borderRadius: '4px', border: '1px solid #E2E8F0', background: '#F8FAFC', color: '#475569', fontSize: '10.5px', fontWeight: 700, cursor: 'pointer' }} title="إضافة 14 يوماً هدية">+14ي</button>
+                            <button type="button" onClick={() => handleAddGiftDays(client, 30)} style={{ padding: '2px 6px', borderRadius: '4px', border: '1px solid #E2E8F0', background: '#F8FAFC', color: '#475569', fontSize: '10.5px', fontWeight: 700, cursor: 'pointer' }} title="إضافة شهر كامل هدية">+30ي</button>
+
+                            {/* Freeze Toggle */}
+                            <button
+                              type="button"
+                              onClick={() => handleToggleFreeze(client)}
+                              style={{ padding: '4px 7px', borderRadius: '4px', border: '1px solid #CBD5E1', background: '#FFFFFF', color: '#0F172A', fontSize: '11px', fontWeight: 700, cursor: 'pointer' }}
+                              title={isFrozen ? 'استئناف الاشتراك' : 'تجميد الاشتراك'}
+                            >
+                              {isFrozen ? 'استئناف' : 'تجميد'}
+                            </button>
+
+                            {/* Renew Button */}
+                            <button
+                              type="button"
+                              onClick={() => handleRenew(client)}
+                              style={{
+                                padding: '4px 10px',
+                                borderRadius: '4px',
+                                background: '#0F172A',
+                                color: '#FFFFFF',
+                                fontSize: '11px',
+                                fontWeight: 700,
+                                border: 'none',
+                                cursor: 'pointer',
+                                display: 'inline-flex',
+                                alignItems: 'center',
+                                gap: '3px',
+                                boxShadow: '0 2px 5px rgba(15, 23, 42, 0.25)',
+                                transition: 'all 0.15s ease'
+                              }}
+                              onMouseEnter={(e) => (e.currentTarget.style.background = '#334155')}
+                              onMouseLeave={(e) => (e.currentTarget.style.background = '#0F172A')}
+                            >
+                              <RotateCw size={10} />
+                              <span>تجديد</span>
+                            </button>
+
+                            {/* WhatsApp Reminder if Expiring */}
+                            {(isSoon || isExp) && (
+                              <button
+                                type="button"
+                                onClick={() => handleSendWhatsAppReminder(client)}
+                                style={{ padding: '4px 7px', borderRadius: '4px', border: '1px solid #CBD5E1', background: '#FFFFFF', color: '#16A34A', fontSize: '11px', fontWeight: 700, cursor: 'pointer' }}
+                                title="إرسال تذكير واتساب"
+                              >
+                                <MessageCircle size={12} />
+                              </button>
+                            )}
+
+                          </div>
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </FormSection>
+
+        {/* Edit Subscription Modal */}
+        {editClient && (
+          <EditSubscriptionModal
+            isOpen={Boolean(editClient)}
+            onClose={() => setEditClient(null)}
+            client={editClient}
+            formData={editForm}
+            setFormData={setEditForm}
+            onSave={handleSaveEdit}
+            saving={saving}
+          />
+        )}
+
+      </div>
     </AdminLayout>
   );
 }

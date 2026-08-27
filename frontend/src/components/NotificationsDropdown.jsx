@@ -1,4 +1,4 @@
-﻿import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { 
   Bell, 
@@ -54,13 +54,26 @@ export default function NotificationsDropdown() {
         fetch(`${API_BASE}/api/v1/orders`).catch(() => ({ json: () => ({ orders: [] }) }))
       ]);
 
-      const checkinsData = await checkinsRes.json();
-      const subsData = await subsRes.json();
-      const intakesData = await intakesRes.json();
-      const ordersData = await ordersRes.json();
+      const safeJson = async (res) => {
+        try {
+          if (res && typeof res.json === 'function') return await res.json();
+        } catch (e) {}
+        return {};
+      };
 
-      const readMap = JSON.parse(localStorage.getItem('z_notif_read_map') || '{}');
-      const completedMap = JSON.parse(localStorage.getItem('z_notif_completed_map') || '{}');
+      const checkinsData = await safeJson(checkinsRes);
+      const subsData = await safeJson(subsRes);
+      const intakesData = await safeJson(intakesRes);
+      const ordersData = await safeJson(ordersRes);
+
+      let readMap = {};
+      let completedMap = {};
+      try {
+        readMap = JSON.parse(localStorage.getItem('z_notif_read_map') || '{}') || {};
+      } catch (e) {}
+      try {
+        completedMap = JSON.parse(localStorage.getItem('z_notif_completed_map') || '{}') || {};
+      } catch (e) {}
 
       const list = [];
 
@@ -153,9 +166,10 @@ export default function NotificationsDropdown() {
   };
 
   const handleNotificationClick = (item) => {
-    const readMap = JSON.parse(localStorage.getItem('z_notif_read_map') || '{}');
+    let readMap = {};
+    try { readMap = JSON.parse(localStorage.getItem('z_notif_read_map') || '{}') || {}; } catch (e) {}
     readMap[item.id] = true;
-    localStorage.setItem('z_notif_read_map', JSON.stringify(readMap));
+    try { localStorage.setItem('z_notif_read_map', JSON.stringify(readMap)); } catch (e) {}
 
     setNotifications(prev => prev.map(n => n.id === item.id ? { ...n, isRead: true } : n));
     setIsOpen(false);
@@ -165,9 +179,10 @@ export default function NotificationsDropdown() {
   };
 
   const markAllAsRead = () => {
-    const readMap = JSON.parse(localStorage.getItem('z_notif_read_map') || '{}');
+    let readMap = {};
+    try { readMap = JSON.parse(localStorage.getItem('z_notif_read_map') || '{}') || {}; } catch (e) {}
     notifications.forEach(n => { readMap[n.id] = true; });
-    localStorage.setItem('z_notif_read_map', JSON.stringify(readMap));
+    try { localStorage.setItem('z_notif_read_map', JSON.stringify(readMap)); } catch (e) {}
     setNotifications(prev => prev.map(n => ({ ...n, isRead: true })));
   };
 
@@ -179,14 +194,14 @@ export default function NotificationsDropdown() {
   return (
     <div style={{ position: 'relative' }} ref={dropdownRef} dir="rtl">
       
-      {/* 28px Standard Toolbar Bell Button */}
+      {/* 32px Standard Toolbar Bell Button */}
       <button 
         type="button" 
         onClick={() => setIsOpen(!isOpen)}
         style={{ 
-          width: '28px', 
-          height: '28px', 
-          borderRadius: '5px',
+          width: '32px', 
+          height: '32px', 
+          borderRadius: '6px',
           border: '1px solid #E2E8F0',
           background: isOpen ? '#F1F5F9' : '#F8FAFC',
           color: isOpen ? '#0F172A' : '#475569',
@@ -201,7 +216,7 @@ export default function NotificationsDropdown() {
         }}
         title="الإشعارات والتنبيهات"
       >
-        <Bell size={13} color="#475569" />
+        <Bell size={14} color="#475569" />
         
         {unreadCount > 0 && (
           <span 
@@ -211,16 +226,16 @@ export default function NotificationsDropdown() {
               left: '-3px', 
               background: '#EF4444', 
               color: '#FFFFFF',
-              fontSize: '8.5px', 
+              fontSize: '9px', 
               fontWeight: 800,
-              minWidth: '14px', 
-              height: '14px', 
-              borderRadius: '7px',
-              border: '1.5px solid #FFFFFF',
+              minWidth: '15px', 
+              height: '15px', 
+              borderRadius: '8px',
+              border: '2px solid #FFFFFF',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              padding: '0 2px',
+              padding: '0 3px',
               lineHeight: 1,
               fontFamily: 'JetBrains Mono, monospace'
             }}
@@ -241,7 +256,7 @@ export default function NotificationsDropdown() {
             zIndex: 1100, 
             position: 'absolute',
             left: 0,
-            top: 'calc(100% + 6px)',
+            top: 'calc(100% + 8px)',
             background: '#FFFFFF',
             boxShadow: '0 12px 32px rgba(15, 23, 42, 0.12), 0 4px 12px rgba(15, 23, 42, 0.04)',
             overflow: 'hidden'

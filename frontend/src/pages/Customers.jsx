@@ -12,15 +12,18 @@ import {
   ExternalLink, 
   Copy, 
   Check, 
-  Filter, 
-  FileText,
   Zap,
-  ActivitySquare
+  ActivitySquare,
+  X,
+  CreditCard,
+  Edit3
 } from 'lucide-react';
 import { API_BASE } from '../config/api';
 import AdminLayout from '../components/layout/AdminLayout';
 import WhatsAppModal from '../components/modals/WhatsAppModal';
 import { copyToClipboard } from '../utils/clipboardUtils';
+import { PageHeader } from '@/shared/components/page-header';
+import { FormSection } from '@/shared/components/form-section';
 
 export default function Customers() {
   const [phone, setPhone] = useState('');
@@ -91,14 +94,12 @@ export default function Customers() {
 
   // Filter Clients
   const filteredClients = clients.filter(client => {
-    // Search match
     const term = searchTerm.trim().toLowerCase();
     const matchesSearch = !term || 
       (client.full_name && client.full_name.toLowerCase().includes(term)) ||
       (client.phone_number && client.phone_number.includes(term)) ||
       (client.client_code && String(client.client_code).includes(term.replace('#', '')));
 
-    // Tier match
     const pkg = (client.subscription_package || '').toUpperCase();
     const isMax = pkg.includes('MAX');
     const isElite = !isMax;
@@ -109,43 +110,69 @@ export default function Customers() {
     return matchesSearch;
   });
 
+  const maxCount = clients.filter(c => (c.subscription_package || '').toUpperCase().includes('MAX')).length;
+  const eliteCount = clients.length - maxCount;
+
+  const statCards = [
+    { title: 'إجمالي المشتركين النشطين', value: clients.length, label: 'قاعدة البيانات', icon: Users },
+    { title: 'مشتركو باقة MAX', value: maxCount, label: 'متابعة أسبوعية (7 أيام)', icon: Crown },
+    { title: 'مشتركو باقة ELITE', value: eliteCount, label: 'متابعة كل 14 يوماً', icon: Sparkles },
+    { title: 'تجاوز الكوتش الإداري', value: 'مفعل', label: 'صلاحية التدخل الفوري', icon: ShieldCheck },
+  ];
+
   return (
     <AdminLayout>
-      <div style={{ direction: 'rtl', fontFamily: 'Alexandria, Cairo, sans-serif' }}>
+      <div className="page-stack" dir="rtl" style={{ display: 'flex', flexDirection: 'column', gap: '18px' }}>
         
-        {/* Page Header */}
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '14px', marginBottom: '24px' }}>
-          <div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px' }}>
-              <span style={{ fontSize: '0.75rem', fontWeight: 800, color: '#D97706', background: '#FEF3C7', padding: '2px 8px', borderRadius: '6px' }}>
-                إدارة المشتركين والباقات
-              </span>
-              <span style={{ fontSize: '0.75rem', color: '#64748B', fontWeight: 700 }}>
-                Super Admin Override Enabled
-              </span>
-            </div>
-            <h1 style={{ fontSize: '1.45rem', fontWeight: 900, color: '#0F172A', margin: 0 }}>
-              قاعدة بيانات المشتركين والباقات المعتمدة
-            </h1>
-          </div>
+        {/* 1. Page Header */}
+        <PageHeader
+          title="قاعدة بيانات المشتركين والباقات المعتمدة"
+          description="إدارة حسابات المشتركين، إنشاء وتفعيل الأكواد الجديدة، وإجراء المتابعات الفورية."
+        />
 
-          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-            <div style={{ background: '#ECFDF5', border: '1px solid #A7F3D0', padding: '6px 14px', borderRadius: '12px', display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.82rem', color: '#065F46', fontWeight: 800 }}>
-              <ShieldCheck style={{ width: '16px', height: '16px', color: '#059669' }} />
-              <span>صلاحية التجاوز الإداري الكاملة مفعلة للكوتش</span>
-            </div>
-          </div>
+        {/* 2. 4-Column KPI Stats */}
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '14px' }}>
+          {statCards.map((st, i) => {
+            const Icon = st.icon;
+            return (
+              <div 
+                key={i} 
+                style={{
+                  background: '#FFFFFF',
+                  border: '1px solid #E2E8F0',
+                  borderRadius: '10px',
+                  padding: '12px 14px',
+                  boxShadow: '0 1px 3px rgba(15, 23, 42, 0.02)',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  gap: '8px'
+                }}
+              >
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <span style={{ fontSize: '11.5px', fontWeight: 700, color: '#64748B' }}>{st.title}</span>
+                  <div style={{ width: '28px', height: '28px', borderRadius: '6px', background: '#F8FAFC', border: '1px solid #E2E8F0', color: '#0F172A', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    <Icon size={14} />
+                  </div>
+                </div>
+                <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between' }}>
+                  <span style={{ fontSize: '1.6rem', fontWeight: 900, color: '#0F172A', fontFamily: 'JetBrains Mono, Cairo, sans-serif', lineHeight: 1 }}>
+                    {st.value}
+                  </span>
+                  <span style={{ fontSize: '10.5px', color: '#94A3B8', fontWeight: 600 }}>{st.label}</span>
+                </div>
+              </div>
+            );
+          })}
         </div>
 
-        {/* Quick Add Client Modal/Card */}
-        <div style={{ background: '#FFFFFF', borderRadius: '20px', padding: '20px 24px', border: '1px solid #E2E8F0', boxShadow: '0 2px 8px rgba(15, 23, 42, 0.04)', marginBottom: '24px' }}>
-          <h2 style={{ fontSize: '0.98rem', fontWeight: 800, color: '#0F172A', marginBottom: '14px' }}>
-            + تسجيل مشترك جديد برقم الهاتف والباقة
-          </h2>
-
-          <form onSubmit={handleCreateClient} style={{ display: 'flex', gap: '12px', flexWrap: 'wrap', alignItems: 'flex-end' }}>
-            <div style={{ flex: '1 1 200px' }}>
-              <label style={{ display: 'block', fontSize: '0.78rem', fontWeight: 700, color: '#475569', marginBottom: '4px' }}>
+        {/* 3. Quick Register Client Form */}
+        <FormSection
+          title="تسجيل مشترك جديد برقم الهاتف والباقة"
+          description="توليد كود المشترك وتجهيز حسابه فوراً للبدء وتعبئة الاستمارة."
+        >
+          <form onSubmit={handleCreateClient} style={{ display: 'grid', gridTemplateColumns: '1.2fr 1.2fr 1.5fr auto', gap: '12px', alignItems: 'end', marginTop: '6px' }}>
+            <div>
+              <label style={{ display: 'block', fontSize: '11.5px', fontWeight: 700, color: '#475569', marginBottom: '4px' }}>
                 رقم الهاتف (الواتساب) *
               </label>
               <input
@@ -154,12 +181,12 @@ export default function Customers() {
                 placeholder="010XXXXXXXX"
                 value={phone}
                 onChange={(e) => setPhone(e.target.value)}
-                style={{ width: '100%', height: '42px', borderRadius: '10px', border: '1px solid #CBD5E1', padding: '0 12px', fontSize: '0.88rem', direction: 'ltr', outline: 'none' }}
+                style={{ width: '100%', height: '34px', borderRadius: '6px', border: '1px solid #CBD5E1', padding: '0 10px', fontSize: '12px', direction: 'ltr', outline: 'none', boxSizing: 'border-box' }}
               />
             </div>
 
-            <div style={{ flex: '1 1 200px' }}>
-              <label style={{ display: 'block', fontSize: '0.78rem', fontWeight: 700, color: '#475569', marginBottom: '4px' }}>
+            <div>
+              <label style={{ display: 'block', fontSize: '11.5px', fontWeight: 700, color: '#475569', marginBottom: '4px' }}>
                 اسم المشترك (اختياري)
               </label>
               <input
@@ -167,18 +194,18 @@ export default function Customers() {
                 placeholder="الاسم الكامل"
                 value={fullName}
                 onChange={(e) => setFullName(e.target.value)}
-                style={{ width: '100%', height: '42px', borderRadius: '10px', border: '1px solid #CBD5E1', padding: '0 12px', fontSize: '0.88rem', outline: 'none' }}
+                style={{ width: '100%', height: '34px', borderRadius: '6px', border: '1px solid #CBD5E1', padding: '0 10px', fontSize: '12px', outline: 'none', boxSizing: 'border-box' }}
               />
             </div>
 
-            <div style={{ flex: '1 1 220px' }}>
-              <label style={{ display: 'block', fontSize: '0.78rem', fontWeight: 700, color: '#475569', marginBottom: '4px' }}>
+            <div>
+              <label style={{ display: 'block', fontSize: '11.5px', fontWeight: 700, color: '#475569', marginBottom: '4px' }}>
                 نوع الباقة المعتمدة *
               </label>
               <select
                 value={packageTier}
                 onChange={(e) => setPackageTier(e.target.value)}
-                style={{ width: '100%', height: '42px', borderRadius: '10px', border: '1px solid #CBD5E1', padding: '0 12px', fontSize: '0.86rem', fontWeight: 700, color: '#0F172A', background: '#F8FAFC', outline: 'none' }}
+                style={{ width: '100%', height: '34px', borderRadius: '6px', border: '1px solid #CBD5E1', padding: '0 10px', fontSize: '11.5px', fontWeight: 700, color: '#0F172A', background: '#F8FAFC', outline: 'none', boxSizing: 'border-box' }}
               >
                 <option value="MAX_3_PLUS_1">باقة ماكس VIP (متابعة أسبوعية كل 7 أيام) - 16 أسبوعاً</option>
                 <option value="ELITE_3_PLUS_1">باقة إيليت (متابعة كل 14 يوماً) - 16 أسبوعاً</option>
@@ -187,248 +214,301 @@ export default function Customers() {
 
             <button
               type="submit"
-              style={{ height: '42px', padding: '0 24px', background: '#0F172A', color: '#FFFFFF', border: 'none', borderRadius: '10px', fontSize: '0.86rem', fontWeight: 800, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px' }}
+              style={{
+                height: '34px',
+                padding: '0 18px',
+                background: '#0F172A',
+                color: '#FFFFFF',
+                border: 'none',
+                borderRadius: '6px',
+                fontSize: '12px',
+                fontWeight: 700,
+                cursor: 'pointer',
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '6px',
+                boxShadow: '0 2px 5px rgba(15, 23, 42, 0.25)',
+                whiteSpace: 'nowrap'
+              }}
+              onMouseEnter={(e) => (e.currentTarget.style.background = '#334155')}
+              onMouseLeave={(e) => (e.currentTarget.style.background = '#0F172A')}
             >
-              <Plus style={{ width: '16px', height: '16px' }} />
+              <Plus size={14} />
               <span>إضافة المشترك فوراً</span>
             </button>
           </form>
-        </div>
 
-        {/* Filters Bar */}
-        <div style={{ background: '#FFFFFF', borderRadius: '18px', padding: '16px 20px', border: '1px solid #E2E8F0', marginBottom: '20px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '14px' }}>
-          
-          {/* Search Box */}
-          <div style={{ position: 'relative', width: '320px', maxWidth: '100%' }}>
-            <Search style={{ width: '16px', height: '16px', position: 'absolute', right: '12px', top: '50%', transform: 'translateY(-50%)', color: '#94A3B8' }} />
-            <input
-              type="text"
-              placeholder="بحث بالاسم، الهاتف، أو الكود..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              style={{ width: '100%', height: '38px', borderRadius: '10px', border: '1px solid #E2E8F0', padding: '0 36px 0 12px', fontSize: '0.84rem', outline: 'none', background: '#F8FAFC' }}
-            />
-          </div>
+          {/* Newly Created Card Flash */}
+          {newlyCreated && (
+            <div style={{ marginTop: '12px', padding: '10px 14px', background: '#F0FDF4', border: '1px solid #BBF7D0', borderRadius: '6px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <Check size={16} color="#16A34A" />
+                <span style={{ fontSize: '12px', color: '#166534', fontWeight: 700 }}>
+                  تم إنشاء حساب المشترك بنجاح! الكود: <strong>#{newlyCreated.client_code || newlyCreated.id}</strong>
+                </span>
+              </div>
+              <button
+                type="button"
+                onClick={() => {
+                  const link = `${window.location.protocol}//${window.location.hostname}:5173/intake/form?code=${newlyCreated.client_code}&phone=${newlyCreated.phone_number}`;
+                  copyToClipboard(link);
+                  setCopySuccess(true);
+                  setTimeout(() => setCopySuccess(false), 2000);
+                }}
+                style={{ padding: '3px 10px', background: '#FFFFFF', border: '1px solid #BBF7D0', borderRadius: '4px', fontSize: '11px', color: '#166534', fontWeight: 700, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px' }}
+              >
+                <Copy size={12} />
+                <span>{copySuccess ? 'تم النسخ!' : 'نسخ رابط الاستمارة'}</span>
+              </button>
+            </div>
+          )}
+        </FormSection>
 
-          {/* Tier Filter Buttons */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <span style={{ fontSize: '0.78rem', color: '#64748B', fontWeight: 700 }}>تصفية حسب الباقة:</span>
-            
-            <button
-              type="button"
-              onClick={() => setTierFilter('ALL')}
-              style={{
-                padding: '6px 14px',
-                borderRadius: '8px',
-                fontSize: '0.78rem',
-                fontWeight: tierFilter === 'ALL' ? 800 : 600,
-                background: tierFilter === 'ALL' ? '#0F172A' : '#F1F5F9',
-                color: tierFilter === 'ALL' ? '#FFFFFF' : '#475569',
-                border: 'none',
-                cursor: 'pointer'
-              }}
-            >
-              الكل ({clients.length})
-            </button>
+        {/* 4. Clients Table Section */}
+        <FormSection
+          title="قائمة المشتركين المعتمدين"
+          description="إدارة كافة المشتركين المسجلين في النظام، ومتابعة الخطط والتقييمات."
+          actions={(
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+              {/* Search Box */}
+              <div 
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  background: '#F8FAFC',
+                  border: '1px solid #E2E8F0',
+                  borderRadius: '6px',
+                  padding: '0 8px',
+                  height: '32px',
+                  width: '210px',
+                  gap: '6px'
+                }}
+              >
+                <Search size={13} color="#94A3B8" />
+                <input
+                  type="text"
+                  placeholder="بحث بالاسم، الهاتف، أو الكود..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  style={{
+                    border: 'none',
+                    outline: 'none',
+                    background: 'transparent',
+                    fontSize: '11.5px',
+                    width: '100%',
+                    color: '#0F172A'
+                  }}
+                />
+                {searchTerm && (
+                  <button type="button" onClick={() => setSearchTerm('')} style={{ border: 'none', background: 'transparent', cursor: 'pointer', padding: 0, color: '#94A3B8' }}>
+                    <X size={12} />
+                  </button>
+                )}
+              </div>
 
-            <button
-              type="button"
-              onClick={() => setTierFilter('MAX')}
-              style={{
-                padding: '6px 14px',
-                borderRadius: '8px',
-                fontSize: '0.78rem',
-                fontWeight: tierFilter === 'MAX' ? 800 : 600,
-                background: tierFilter === 'MAX' ? '#D97706' : '#FEF3C7',
-                color: tierFilter === 'MAX' ? '#FFFFFF' : '#92400E',
-                border: 'none',
-                cursor: 'pointer',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '4px'
-              }}
-            >
-              <Crown style={{ width: '13px', height: '13px' }} />
-              <span>باقة ماكس VIP</span>
-            </button>
+              {/* Tier Filter Pills */}
+              <div style={{ display: 'flex', gap: '3px', background: '#F1F5F9', padding: '3px', borderRadius: '6px', border: '1px solid #E2E8F0' }}>
+                {[
+                  { id: 'ALL', label: `الكل (${clients.length})` },
+                  { id: 'MAX', label: `باقة ماكس (${maxCount})` },
+                  { id: 'ELITE', label: `باقة إيليت (${eliteCount})` },
+                ].map(tab => (
+                  <button
+                    key={tab.id}
+                    type="button"
+                    onClick={() => setTierFilter(tab.id)}
+                    style={{
+                      padding: '4px 10px',
+                      borderRadius: '5px',
+                      fontSize: '11px',
+                      fontWeight: 700,
+                      border: 'none',
+                      cursor: 'pointer',
+                      background: tierFilter === tab.id ? '#0F172A' : 'transparent',
+                      color: tierFilter === tab.id ? '#FFFFFF' : '#64748B',
+                      boxShadow: tierFilter === tab.id ? '0 2px 5px rgba(15, 23, 42, 0.25)' : 'none',
+                      transition: 'background 0.12s ease, color 0.12s ease'
+                    }}
+                  >
+                    {tab.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+        >
+          {loading ? (
+            <div style={{ padding: '40px', textAlign: 'center', color: '#64748B', fontSize: '13px' }}>
+              جاري تحميل المشتركين...
+            </div>
+          ) : filteredClients.length === 0 ? (
+            <div style={{ padding: '40px 16px', textAlign: 'center', background: '#F8FAFC', border: '1px dashed #CBD5E1', borderRadius: '8px' }}>
+              <div style={{ width: '36px', height: '36px', borderRadius: '50%', background: '#F1F5F9', color: '#0F172A', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 8px auto' }}>
+                <Users size={18} />
+              </div>
+              <strong style={{ fontSize: '13px', color: '#0F172A', display: 'block', marginBottom: '2px' }}>لا يوجد مشتركون مطابقون</strong>
+              <small style={{ fontSize: '11.5px', color: '#64748B' }}>لم يتم العثور على أي مشترك تحت هذا البحث أو الفلتر.</small>
+            </div>
+          ) : (
+            <div style={{ overflowX: 'auto', border: '1px solid #E2E8F0', borderRadius: '8px' }}>
+              <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'right', fontSize: '12px' }}>
+                <thead>
+                  <tr style={{ background: '#F8FAFC', borderBottom: '1px solid #E2E8F0', color: '#475569', fontWeight: 700 }}>
+                    <th style={{ padding: '10px 14px' }}>الكود</th>
+                    <th style={{ padding: '10px 14px' }}>المشترك</th>
+                    <th style={{ padding: '10px 14px' }}>الهاتف</th>
+                    <th style={{ padding: '10px 14px' }}>الباقة ودورية المتابعة</th>
+                    <th style={{ padding: '10px 14px' }}>مدة الاشتراك</th>
+                    <th style={{ padding: '10px 14px' }}>حالة الاستمارة</th>
+                    <th style={{ padding: '10px 14px', textAlign: 'left' }}>إجراءات الكوتش والتجاوز الإداري</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {filteredClients.map((client) => {
+                    const pkg = (client.subscription_package || '').toUpperCase();
+                    const isMax = pkg.includes('MAX');
+                    const cleanCode = String(client.client_code || client.id).replace(/^client[-_]?/i, '');
 
-            <button
-              type="button"
-              onClick={() => setTierFilter('ELITE')}
-              style={{
-                padding: '6px 14px',
-                borderRadius: '8px',
-                fontSize: '0.78rem',
-                fontWeight: tierFilter === 'ELITE' ? 800 : 600,
-                background: tierFilter === 'ELITE' ? '#0284C7' : '#E0F2FE',
-                color: tierFilter === 'ELITE' ? '#FFFFFF' : '#0369A1',
-                border: 'none',
-                cursor: 'pointer'
-              }}
-            >
-              <span>باقة إيليت</span>
-            </button>
-          </div>
+                    return (
+                      <tr 
+                        key={client.id} 
+                        style={{ borderBottom: '1px solid #F1F5F9', transition: 'background 0.15s ease' }}
+                        onMouseEnter={(e) => (e.currentTarget.style.background = '#F8FAFC')}
+                        onMouseLeave={(e) => (e.currentTarget.style.background = 'transparent')}
+                      >
+                        {/* Code */}
+                        <td style={{ padding: '10px 14px' }}>
+                          <span style={{ fontFamily: 'JetBrains Mono, monospace', fontWeight: 800, fontSize: '11px', background: '#F1F5F9', border: '1px solid #CBD5E1', color: '#0F172A', padding: '2px 7px', borderRadius: '4px' }}>
+                            {'#' + cleanCode}
+                          </span>
+                        </td>
 
-        </div>
+                        {/* Name */}
+                        <td style={{ padding: '10px 14px' }}>
+                          <strong style={{ color: '#0F172A', fontSize: '13px', display: 'block' }}>{client.full_name || 'مشترك جديد'}</strong>
+                        </td>
 
-        {/* Clients Table */}
-        <div style={{ background: '#FFFFFF', borderRadius: '20px', border: '1px solid #E2E8F0', overflow: 'hidden', boxShadow: '0 2px 8px rgba(15, 23, 42, 0.03)' }}>
-          <div style={{ overflowX: 'auto' }}>
-            <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'right', fontSize: '0.86rem' }}>
-              <thead>
-                <tr style={{ background: '#F8FAFC', borderBottom: '1px solid #E2E8F0', color: '#475569', fontWeight: 800, fontSize: '0.78rem' }}>
-                  <th style={{ padding: '14px 16px' }}>الكود</th>
-                  <th style={{ padding: '14px 16px' }}>المشترك</th>
-                  <th style={{ padding: '14px 16px' }}>الهاتف</th>
-                  <th style={{ padding: '14px 16px' }}>الباقة ودورية المتابعة</th>
-                  <th style={{ padding: '14px 16px' }}>مدة الاشتراك</th>
-                  <th style={{ padding: '14px 16px' }}>حالة الاستمارة</th>
-                  <th style={{ padding: '14px 16px', textAlign: 'center' }}>إجراءات الكوتش والتجاوز الإداري</th>
-                </tr>
-              </thead>
-              <tbody>
-                {filteredClients.map((client) => {
-                  const pkg = (client.subscription_package || '').toUpperCase();
-                  const isMax = pkg.includes('MAX');
+                        {/* Phone */}
+                        <td style={{ padding: '10px 14px' }}>
+                          <span dir="ltr" style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '11.5px', color: '#475569' }}>
+                            {client.phone_number}
+                          </span>
+                        </td>
 
-                  return (
-                    <tr key={client.id} style={{ borderBottom: '1px solid #F1F5F9' }}>
-                      
-                      {/* Code */}
-                      <td style={{ padding: '14px 16px' }}>
-                        <span style={{ fontWeight: 900, color: '#0F172A', fontFamily: 'monospace', background: '#F1F5F9', padding: '3px 8px', borderRadius: '6px' }}>
-                          #{client.client_code || client.id}
-                        </span>
-                      </td>
-
-                      {/* Name */}
-                      <td style={{ padding: '14px 16px' }}>
-                        <strong style={{ color: '#0F172A', display: 'block' }}>{client.full_name || 'مشترك جديد'}</strong>
-                      </td>
-
-                      {/* Phone */}
-                      <td style={{ padding: '14px 16px', direction: 'ltr', textAlign: 'right', fontFamily: 'monospace', color: '#475569' }}>
-                        {client.phone_number}
-                      </td>
-
-                      {/* Tier & Frequency */}
-                      <td style={{ padding: '14px 16px' }}>
-                        {isMax ? (
+                        {/* Tier */}
+                        <td style={{ padding: '10px 14px' }}>
                           <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                            <span style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', background: '#FEF3C7', color: '#92400E', border: '1px solid #FDE68A', padding: '3px 8px', borderRadius: '6px', fontSize: '0.74rem', fontWeight: 800 }}>
-                              <Crown style={{ width: '12px', height: '12px' }} />
-                              <span>ماكس (VIP)</span>
+                            <span style={{ background: isMax ? '#F1F5F9' : '#F8FAFC', border: isMax ? '1px solid #CBD5E1' : '1px solid #E2E8F0', color: isMax ? '#0F172A' : '#475569', padding: '1px 6px', borderRadius: '4px', fontSize: '10.5px', fontWeight: 700 }}>
+                              {isMax ? 'باقة MAX' : 'باقة ELITE'}
                             </span>
-                            <span style={{ fontSize: '0.7rem', color: '#059669', fontWeight: 700 }}>
-                              متابعة أسبوعية (7 أيام)
+                            <span style={{ fontSize: '10.5px', color: '#64748B' }}>
+                              {isMax ? 'متابعة أسبوعية (7 أيام)' : 'متابعة كل 14 يوماً'}
                             </span>
                           </div>
-                        ) : (
-                          <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                            <span style={{ background: '#E0F2FE', color: '#0369A1', border: '1px solid #BAE6FD', padding: '3px 8px', borderRadius: '6px', fontSize: '0.74rem', fontWeight: 800 }}>
-                              إيليت
-                            </span>
-                            <span style={{ fontSize: '0.7rem', color: '#64748B', fontWeight: 700 }}>
-                              متابعة كل 14 يوماً
-                            </span>
+                        </td>
+
+                        {/* Duration */}
+                        <td style={{ padding: '10px 14px', color: '#64748B', fontSize: '11.5px' }}>
+                          16 أسبوعاً (3+1 مجاناً)
+                        </td>
+
+                        {/* Status */}
+                        <td style={{ padding: '10px 14px' }}>
+                          <span style={{ background: '#F0FDF4', color: '#16A34A', border: '1px solid #BBF7D0', padding: '1px 7px', borderRadius: '4px', fontSize: '10.5px', fontWeight: 700 }}>
+                            ✓ معتمدة ونشطة
+                          </span>
+                        </td>
+
+                        {/* Actions */}
+                        <td style={{ padding: '10px 14px', textAlign: 'left' }}>
+                          <div style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
+                            {/* WhatsApp Modal Trigger */}
+                            <button
+                              type="button"
+                              onClick={() => setWhatsappModalClient(client)}
+                              style={{
+                                padding: '4px 8px',
+                                borderRadius: '5px',
+                                border: '1px solid #CBD5E1',
+                                background: '#FFFFFF',
+                                color: '#0F172A',
+                                fontSize: '11px',
+                                fontWeight: 700,
+                                cursor: 'pointer',
+                                display: 'inline-flex',
+                                alignItems: 'center',
+                                gap: '4px'
+                              }}
+                              title="مركز رسائل الواتساب الذكية"
+                            >
+                              <MessageCircle size={12} color="#16A34A" />
+                              <span>واتساب</span>
+                            </button>
+
+                            {/* Program Editor Button */}
+                            <Link
+                              to={`/coach/editor/${cleanCode}`}
+                              style={{
+                                padding: '4px 9px',
+                                borderRadius: '5px',
+                                border: '1px solid #CBD5E1',
+                                background: '#FFFFFF',
+                                color: '#0F172A',
+                                fontSize: '11px',
+                                fontWeight: 700,
+                                textDecoration: 'none',
+                                display: 'inline-flex',
+                                alignItems: 'center',
+                                gap: '4px'
+                              }}
+                            >
+                              <Edit3 size={11} />
+                              <span>تعديل الخطة</span>
+                            </Link>
+
+                            {/* Super Admin Override Button */}
+                            <button
+                              type="button"
+                              onClick={() => handleSuperAdminOverrideCheckin(client.id)}
+                              style={{
+                                padding: '4px 10px',
+                                borderRadius: '5px',
+                                background: '#0F172A',
+                                color: '#FFFFFF',
+                                fontSize: '11px',
+                                fontWeight: 700,
+                                border: 'none',
+                                cursor: 'pointer',
+                                display: 'inline-flex',
+                                alignItems: 'center',
+                                gap: '4px',
+                                boxShadow: '0 2px 5px rgba(15, 23, 42, 0.25)',
+                                transition: 'all 0.15s ease'
+                              }}
+                              onMouseEnter={(e) => (e.currentTarget.style.background = '#334155')}
+                              onMouseLeave={(e) => (e.currentTarget.style.background = '#0F172A')}
+                              title="تسجيل تقييم نيابة عن المشترك"
+                            >
+                              <Zap size={11} />
+                              <span>متابعة فورية</span>
+                            </button>
                           </div>
-                        )}
-                      </td>
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </FormSection>
 
-                      {/* Duration */}
-                      <td style={{ padding: '14px 16px', color: '#64748B', fontSize: '0.8rem' }}>
-                        16 أسبوعاً (3+1 مجاناً)
-                      </td>
-
-                      {/* Intake status */}
-                      <td style={{ padding: '14px 16px' }}>
-                        <span style={{ background: '#ECFDF5', color: '#059669', padding: '2px 8px', borderRadius: '6px', fontSize: '0.74rem', fontWeight: 700 }}>
-                          ✓ معتمدة ونشطة
-                        </span>
-                      </td>
-
-                      {/* Coach Super Admin Actions */}
-                      <td style={{ padding: '14px 16px', textAlign: 'center' }}>
-                        <div style={{ display: 'inline-flex', gap: '6px' }}>
-                          
-                          {/* Super Admin Override Button */}
-                          <button
-                            type="button"
-                            onClick={() => handleSuperAdminOverrideCheckin(client.id)}
-                            style={{
-                              background: '#0F172A',
-                              color: '#FFFFFF',
-                              border: 'none',
-                              borderRadius: '8px',
-                              padding: '5px 10px',
-                              fontSize: '0.72rem',
-                              fontWeight: 700,
-                              cursor: 'pointer',
-                              display: 'flex',
-                              alignItems: 'center',
-                              gap: '4px'
-                            }}
-                            title="فتح متابعة استثنائية فوراً دون قيود"
-                          >
-                            <Zap style={{ width: '12px', height: '12px', color: '#38BDF8' }} />
-                            <span>متابعة فورية (Override)</span>
-                          </button>
-
-                          {/* Coach Program Editor */}
-                          <Link
-                            to={`/coach/editor/${client.id}`}
-                            style={{
-                              background: '#F1F5F9',
-                              color: '#334155',
-                              borderRadius: '8px',
-                              padding: '5px 10px',
-                              fontSize: '0.72rem',
-                              fontWeight: 700,
-                              textDecoration: 'none',
-                              display: 'flex',
-                              alignItems: 'center',
-                              gap: '4px'
-                            }}
-                          >
-                            <FileText style={{ width: '12px', height: '12px' }} />
-                            <span>تعديل الخطة</span>
-                          </Link>
-
-                          {/* WhatsApp */}
-                          <button
-                            type="button"
-                            onClick={() => setWhatsappModalClient(client)}
-                            style={{
-                              background: '#ECFDF5',
-                              color: '#059669',
-                              border: '1px solid #A7F3D0',
-                              borderRadius: '8px',
-                              padding: '5px 8px',
-                              fontSize: '0.72rem',
-                              fontWeight: 700,
-                              cursor: 'pointer'
-                            }}
-                          >
-                            <MessageCircle style={{ width: '13px', height: '13px' }} />
-                          </button>
-
-                        </div>
-                      </td>
-
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
-          </div>
-        </div>
-
-        {/* WhatsApp Hub Modal */}
+        {/* WhatsApp Modal */}
         {whatsappModalClient && (
-          <WhatsAppModal 
-            client={whatsappModalClient} 
-            onClose={() => setWhatsappModalClient(null)} 
+          <WhatsAppModal
+            isOpen={Boolean(whatsappModalClient)}
+            onClose={() => setWhatsappModalClient(null)}
+            client={whatsappModalClient}
           />
         )}
 

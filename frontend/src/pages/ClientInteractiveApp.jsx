@@ -54,20 +54,24 @@ export default function ClientInteractiveApp() {
   const [selectedDay, setSelectedDay] = useState(1); // 1 to 7
 
   // Client info & Clinical Profile
-  const [clientData, setClientData] = useState({
-    name: 'سارة المنصوري',
-    code: '#1',
-    package: 'باقة ماكس (VIP)',
-    isVIP: true,
-    streak: 14,
-    waterGlasses: 6,
-    waterTarget: 8,
-    clinicalProfile: {
-      is_g6pd: true,
-      is_bariatric: true,
-      is_celiac: false,
-      medications: ['ELTROXIN']
-    }
+  const [clientData, setClientData] = useState(() => {
+    const storedCode = localStorage.getItem('kz_client_code') || sessionStorage.getItem('z_client_code') || '#1';
+    const storedName = localStorage.getItem('kz_client_name') || 'المشترك';
+    return {
+      name: storedName,
+      code: storedCode.startsWith('#') ? storedCode : `#${storedCode}`,
+      package: 'الخطة المخصصة',
+      isVIP: false,
+      streak: 1,
+      waterGlasses: 0,
+      waterTarget: 8,
+      clinicalProfile: {
+        is_g6pd: false,
+        is_bariatric: false,
+        is_celiac: false,
+        medications: []
+      }
+    };
   });
 
   // Daily Nutrition State & Live Swaps

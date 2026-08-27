@@ -24,7 +24,6 @@ import ProgramPdfView from './pages/ProgramPdfView';
 import ProgressClone from './pages/ProgressClone';
 import ProfileClone from './pages/ProfileClone';
 import WeeklyCheckinForm from './pages/WeeklyCheckinForm';
-import EngineTester from './pages/EngineTester';
 import CoachAnalyticsDashboard from './pages/CoachAnalyticsDashboard';
 import CheckinReviewDashboard from './pages/CheckinReviewDashboard';
 import ClientTimelineProfile from './pages/ClientTimelineProfile';
@@ -85,7 +84,7 @@ function App() {
           <Route path="/profile" element={<ProfileClone />} />
           <Route path="/profile.html" element={<Navigate to="/profile" replace />} />
           <Route path="/pdf" element={<ProgramPdfView />} />
-          <Route path="/test-engine" element={<EngineTester />} />
+          <Route path="/test-engine" element={<Navigate to="/" replace />} />
 
           {/* Catch-all fallback */}
           <Route path="*" element={<Navigate to="/" replace />} />

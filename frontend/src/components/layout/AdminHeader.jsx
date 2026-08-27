@@ -1,12 +1,26 @@
-﻿import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { RotateCw, Maximize2, Search } from 'lucide-react';
 import NotificationsDropdown from '../NotificationsDropdown';
 import CoachAccountDropdown from './CoachAccountDropdown';
+import GlobalSearchModal from '../modals/GlobalSearchModal';
 
 export function AdminHeader() {
   const location = useLocation();
   const navigate = useNavigate();
+  const [isSearchOpen, setIsSearchOpen] = useState(false);
+
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      // Trigger on Ctrl+/ or Ctrl+K or Cmd+K
+      if ((e.ctrlKey || e.metaKey) && (e.key === '/' || e.key === 'k' || e.key === 'K')) {
+        e.preventDefault();
+        setIsSearchOpen(true);
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, []);
 
   const getBreadcrumbs = () => {
     const path = location.pathname;
@@ -36,94 +50,112 @@ export function AdminHeader() {
   };
 
   return (
-    <header 
-      style={{
-        height: '42px',
-        background: '#FFFFFF',
-        borderBottom: '1px solid #E2E8F0',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'space-between',
-        padding: '0 20px',
-        flexShrink: 0,
-        direction: 'rtl',
-        boxSizing: 'border-box'
-      }}
-    >
-      {/* Breadcrumb on right */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '12px' }}>
-        {breadcrumbs.map((crumb, idx) => {
-          const isLast = idx === breadcrumbs.length - 1;
-          return (
-            <React.Fragment key={idx}>
-              {isLast ? (
-                <strong style={{ color: '#0F172A', fontWeight: 800 }}>{crumb.label}</strong>
-              ) : (
-                <>
-                  <span style={{ cursor: 'pointer', color: '#64748B' }} onClick={() => navigate('/')}>
-                    {crumb.label}
-                  </span>
-                  <span style={{ color: '#94A3B8' }}>›</span>
-                </>
-              )}
-            </React.Fragment>
-          );
-        })}
-      </div>
-
-      {/* Center / Left Toolbar Actions */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-        
-        {/* Quick Search Trigger */}
-        <div 
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            background: '#F8FAFC',
-            border: '1px solid #E2E8F0',
-            borderRadius: '5px',
-            padding: '0 8px',
-            height: '28px',
-            width: '210px',
-            gap: '6px',
-            cursor: 'pointer'
-          }}
-        >
-          <Search size={13} color="#94A3B8" style={{ flexShrink: 0 }} />
-          <span style={{ fontSize: '11.5px', color: '#94A3B8', flex: 1, whiteSpace: 'nowrap' }}>ابحث في أي مكان...</span>
-          <kbd style={{ fontSize: '9.5px', background: '#E2E8F0', color: '#475569', padding: '1px 4px', borderRadius: '3px', fontFamily: 'monospace', flexShrink: 0 }}>
-            Ctrl /
-          </kbd>
+    <>
+      <header 
+        style={{
+          height: '52px',
+          background: '#FFFFFF',
+          borderBottom: '1px solid #E2E8F0',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          padding: '0 24px',
+          flexShrink: 0,
+          direction: 'rtl',
+          boxSizing: 'border-box'
+        }}
+      >
+        {/* Breadcrumb on right */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '13px' }}>
+          {breadcrumbs.map((crumb, idx) => {
+            const isLast = idx === breadcrumbs.length - 1;
+            return (
+              <React.Fragment key={idx}>
+                {isLast ? (
+                  <strong style={{ color: '#0F172A', fontWeight: 800 }}>{crumb.label}</strong>
+                ) : (
+                  <>
+                    <span style={{ cursor: 'pointer', color: '#64748B' }} onClick={() => navigate('/')}>
+                      {crumb.label}
+                    </span>
+                    <span style={{ color: '#94A3B8' }}>›</span>
+                  </>
+                )}
+              </React.Fragment>
+            );
+          })}
         </div>
 
-        {/* Refresh Button */}
-        <button 
-          type="button"
-          style={{ width: '28px', height: '28px', display: 'flex', alignItems: 'center', justifyContent: 'center', backgroundColor: '#F8FAFC', border: '1px solid #E2E8F0', borderRadius: '5px', cursor: 'pointer' }}
-          title="تحديث البيانات"
-          onClick={handleRefresh}
-        >
-          <RotateCw size={13} color="#475569" />
-        </button>
+        {/* Center / Left Toolbar Actions */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+          
+          {/* Quick Search Trigger */}
+          <div 
+            onClick={() => setIsSearchOpen(true)}
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              background: '#F8FAFC',
+              border: '1px solid #E2E8F0',
+              borderRadius: '6px',
+              padding: '0 10px',
+              height: '32px',
+              width: '220px',
+              gap: '8px',
+              cursor: 'pointer',
+              transition: 'all 0.15s ease'
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.borderColor = '#CBD5E1';
+              e.currentTarget.style.background = '#F1F5F9';
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.borderColor = '#E2E8F0';
+              e.currentTarget.style.background = '#F8FAFC';
+            }}
+          >
+            <Search size={14} color="#0F172A" style={{ flexShrink: 0 }} />
+            <span style={{ fontSize: '12px', color: '#64748B', flex: 1, whiteSpace: 'nowrap' }}>ابحث في أي مكان...</span>
+            <kbd style={{ fontSize: '10px', background: '#E2E8F0', color: '#475569', padding: '1px 5px', borderRadius: '4px', fontFamily: 'monospace', flexShrink: 0 }}>
+              Ctrl /
+            </kbd>
+          </div>
 
-        {/* Fullscreen Button */}
-        <button 
-          type="button"
-          style={{ width: '28px', height: '28px', display: 'flex', alignItems: 'center', justifyContent: 'center', backgroundColor: '#F8FAFC', border: '1px solid #E2E8F0', borderRadius: '5px', cursor: 'pointer' }}
-          title="ملء الشاشة"
-          onClick={toggleFullScreen}
-        >
-          <Maximize2 size={13} color="#475569" />
-        </button>
+          {/* Refresh Button */}
+          <button 
+            type="button"
+            style={{ width: '32px', height: '32px', display: 'flex', alignItems: 'center', justifyContent: 'center', backgroundColor: '#F8FAFC', border: '1px solid #E2E8F0', borderRadius: '6px', cursor: 'pointer' }}
+            title="تحديث البيانات"
+            onClick={handleRefresh}
+          >
+            <RotateCw size={14} color="#475569" />
+          </button>
 
-        {/* Notifications Dropdown */}
-        <NotificationsDropdown />
+          {/* Fullscreen Button */}
+          <button 
+            type="button"
+            style={{ width: '32px', height: '32px', display: 'flex', alignItems: 'center', justifyContent: 'center', backgroundColor: '#F8FAFC', border: '1px solid #E2E8F0', borderRadius: '6px', cursor: 'pointer' }}
+            title="ملء الشاشة"
+            onClick={toggleFullScreen}
+          >
+            <Maximize2 size={14} color="#475569" />
+          </button>
 
-        {/* Interactive Coach Profile Dropdown */}
-        <CoachAccountDropdown />
+          {/* Notifications Dropdown */}
+          <NotificationsDropdown />
 
-      </div>
-    </header>
+          {/* Interactive Coach Profile Dropdown */}
+          <CoachAccountDropdown />
+
+        </div>
+      </header>
+
+      {/* Global Command Palette / Spotlight Search Modal */}
+      <GlobalSearchModal 
+        isOpen={isSearchOpen} 
+        onClose={() => setIsSearchOpen(false)} 
+      />
+    </>
   );
 }
 

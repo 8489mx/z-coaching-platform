@@ -6,8 +6,21 @@ const AuthContext = createContext();
 export const useAuth = () => useContext(AuthContext);
 
 export const AuthProvider = ({ children }) => {
-  const [token, setToken] = useState(localStorage.getItem('token'));
-  const [user, setUser] = useState(JSON.parse(localStorage.getItem('user')) || null);
+  const [token, setToken] = useState(() => {
+    try {
+      return localStorage.getItem('token') || null;
+    } catch (e) {
+      return null;
+    }
+  });
+  const [user, setUser] = useState(() => {
+    try {
+      const stored = localStorage.getItem('user');
+      return (stored && stored !== 'undefined' && stored !== 'null') ? JSON.parse(stored) : null;
+    } catch (e) {
+      return null;
+    }
+  });
   const [programData, setProgramData] = useState(null);
   const [loadingProgram, setLoadingProgram] = useState(true);
   

@@ -1,4 +1,18 @@
 import React, { useState, useEffect } from 'react';
+import { 
+  Calculator, 
+  Flame, 
+  Zap, 
+  Dumbbell, 
+  Droplet, 
+  Footprints, 
+  Copy, 
+  Check, 
+  Save, 
+  RotateCw, 
+  MessageCircle,
+  Sparkles
+} from 'lucide-react';
 import { API_BASE } from '../config/api';
 import AdminLayout from '../components/layout/AdminLayout';
 import { copyToClipboard } from '../utils/clipboardUtils';
@@ -8,6 +22,8 @@ import {
   WORKOUT_FREQUENCY_FACTORS,
   GOAL_CALORIE_MULTIPLIERS
 } from '../utils/metabolicMacroEngine';
+import { PageHeader } from '@/shared/components/page-header';
+import { FormSection } from '@/shared/components/form-section';
 
 export default function MacroCalculator() {
   const [clients, setClients] = useState([]);
@@ -112,7 +128,7 @@ export default function MacroCalculator() {
       });
 
       if (!updateRes.ok) throw new Error('فشل تحديث الخطة في السيرفر');
-      alert(` تم تحديث وتطبيق أهداف السعرات والماكروز الجديدة على خطة المتدرب ${selectedClient} بنجاح!`);
+      alert(`تم تحديث وتطبيق أهداف السعرات والماكروز الجديدة على خطة المتدرب #${selectedClient} بنجاح!`);
     } catch (e) {
       alert('خطأ: ' + e.message);
     } finally {
@@ -121,15 +137,15 @@ export default function MacroCalculator() {
   };
 
   const handleCopyWhatsapp = async () => {
-    const text = ` أهداف السعرات والماكروز اليومية المخصصة لك:
- السعرات المستهدفة: ${targetCalories} سعرة
- البروتين: ${targetProteinGrams} جرام
- الكاربوهيدرات: ${targetCarbGrams} جرام
- الدهون الصحية: ${targetFatGrams} جرام
- احتياج الماء: ${waterTargetLiters} لتر يومياً
- الخطوات المستهدفة: ${stepsTarget.toLocaleString()} خطوة
+    const text = `🔥 أهداف السعرات والماكروز اليومية المخصصة لك:
+🎯 السعرات المستهدفة: ${targetCalories} سعرة
+🥩 البروتين: ${targetProteinGrams} جرام (${proteinCalories} kcal)
+🍚 الكاربوهيدرات: ${targetCarbGrams} جرام (${carbsCalories} kcal)
+🥑 الدهون الصحية: ${targetFatGrams} جرام (${fatCalories} kcal)
+💧 احتياج الماء: ${waterTargetLiters} لتر يومياً
+👟 الخطوات المستهدفة: ${stepsTarget.toLocaleString()} خطوة
 
-بالتوفيق وبداية أسبوع قوية! `;
+بالتوفيق يا بطل! 🚀`;
 
     const success = await copyToClipboard(text);
     if (success) {
@@ -151,393 +167,305 @@ export default function MacroCalculator() {
 
   return (
     <AdminLayout>
-      <div className="theme-body">
-        <div className="container-fluid">
+      <div className="page-stack" dir="rtl" style={{ display: 'flex', flexDirection: 'column', gap: '18px' }}>
+        
+        {/* 1. Page Header */}
+        <PageHeader
+          title="حاسبة معدل الأيض واحتياج الماكروز السريعة"
+          description="احتساب BMR و TDEE وتقسيم جرامات البروتين والكاربوهيدرات والدهون مع إمكانية التطبيق الفوري على خطة المتدرب."
+        />
+
+        {/* 2. Balanced 2-Column Cockpit Grid (50 / 50) */}
+        <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1fr) minmax(0, 1fr)', gap: '18px', alignItems: 'start' }}>
           
-          {/* Page Header (Consistent with Dashboard) */}
-          <div className="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
-            <div>
-              <div className="d-flex align-items-center gap-2 mb-1">
-                <h4 className="fw-bold text-dark mb-0" style={{ letterSpacing: '-0.3px', fontSize: '1.25rem' }}>
-                  حاسبة معدل الأيض واحتياج الماكروز السريعة
-                </h4>
-                <span className="badge rounded-pill fw-bold" style={{ background: '#E5F0FF', color: '#0284C7', border: '1px solid #BAE6FD', fontSize: '0.7rem' }}>
-                  Z COACHING V2.0
-                </span>
-              </div>
-              <p className="text-muted small mb-0" style={{ fontSize: '0.8rem' }}>
-                احتساب BMR و TDEE وتقسيم جرامات البروتين والكاربوهيدرات والدهون مع إمكانية التطبيق الفوري
-              </p>
-            </div>
-          </div>
+          {/* Right Column: Physical Inputs */}
+          <FormSection
+            title="بيانات المتدرب والمستوى البدني"
+            description="إدخال القياسات الحيوية، مستوى النشاط، ونمط التدريب."
+          >
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', marginTop: '6px' }}>
+              
+              {/* Gender & Age */}
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
+                <div>
+                  <label style={{ display: 'block', fontSize: '11.5px', fontWeight: 700, color: '#475569', marginBottom: '3px' }}>النوع (الجنس)</label>
+                  <select 
+                    value={form.gender}
+                    onChange={(e) => setForm({ ...form, gender: e.target.value })}
+                    style={{ width: '100%', height: '34px', borderRadius: '6px', border: '1px solid #CBD5E1', padding: '0 8px', fontSize: '12px', outline: 'none', background: '#F8FAFC' }}
+                  >
+                    <option value="MALE">ذكر</option>
+                    <option value="FEMALE">أنثى</option>
+                  </select>
+                </div>
 
-          <div className="row g-3">
-            {/* Form Column */}
-            <div className="col-lg-6">
-              <div className="card border-0 shadow-sm bg-white h-100" style={{ borderRadius: '16px', border: '1px solid #e2e8f0' }}>
-                <div className="card-body p-4">
-                  <div className="d-flex align-items-center gap-2 mb-3 pb-2 border-bottom" style={{ borderColor: '#f1f5f9' }}>
-                    <div className="rounded-circle d-flex align-items-center justify-content-center" style={{ width: '30px', height: '30px', background: '#E5F0FF', color: '#0284C7', border: '1px solid #BAE6FD' }}>
-                      <i className="ti ti-adjustments fs-6"></i>
-                    </div>
-                    <h5 className="fw-bold text-dark mb-0" style={{ fontSize: '0.98rem' }}>
-                      بيانات المتدرب والمستوى البدني
-                    </h5>
-                  </div>
-
-                  <div className="row g-3">
-                    <div className="col-6">
-                      <label className="form-label small fw-bold text-dark">النوع (الجنس)</label>
-                      <select 
-                        className="form-select"
-                        style={{ height: '38px', borderRadius: '10px', fontSize: '0.82rem' }}
-                        value={form.gender}
-                        onChange={(e) => setForm({ ...form, gender: e.target.value })}
-                      >
-                        <option value="MALE">ذكر</option>
-                        <option value="FEMALE">أنثى</option>
-                      </select>
-                    </div>
-
-                    <div className="col-6">
-                      <label className="form-label small fw-bold text-dark">العمر (سنة)</label>
-                      <input 
-                        type="number" 
-                        className="form-control" 
-                        style={{ height: '38px', borderRadius: '10px', fontSize: '0.82rem' }}
-                        value={form.age}
-                        onChange={(e) => setForm({ ...form, age: Number(e.target.value) })}
-                      />
-                    </div>
-
-                    <div className="col-4">
-                      <label className="form-label small fw-bold text-dark">الوزن (كجم)</label>
-                      <input 
-                        type="number" 
-                        className="form-control" 
-                        style={{ height: '38px', borderRadius: '10px', fontSize: '0.82rem' }}
-                        value={form.weight}
-                        onChange={(e) => setForm({ ...form, weight: Number(e.target.value) })}
-                      />
-                    </div>
-
-                    <div className="col-4">
-                      <label className="form-label small fw-bold text-dark">الطول (سم)</label>
-                      <input 
-                        type="number" 
-                        className="form-control" 
-                        style={{ height: '38px', borderRadius: '10px', fontSize: '0.82rem' }}
-                        value={form.height}
-                        onChange={(e) => setForm({ ...form, height: Number(e.target.value) })}
-                      />
-                    </div>
-
-                    <div className="col-4">
-                      <label className="form-label small fw-bold text-dark">نسبة الدهون %</label>
-                      <input 
-                        type="number" 
-                        className="form-control" 
-                        style={{ height: '38px', borderRadius: '10px', fontSize: '0.82rem' }}
-                        placeholder="اختياري 18%"
-                        value={form.bodyFat}
-                        onChange={(e) => setForm({ ...form, bodyFat: Number(e.target.value) })}
-                      />
-                    </div>
-
-                    <div className="col-md-6 col-12">
-                      <label className="form-label small fw-bold text-dark">النشاط والحركة اليومية (NEAT)</label>
-                      <select 
-                        className="form-select"
-                        style={{ height: '38px', borderRadius: '10px', fontSize: '0.82rem' }}
-                        value={form.dailyActivity}
-                        onChange={(e) => setForm({ ...form, dailyActivity: e.target.value })}
-                      >
-                        <option value="SEDENTARY_DESK">مكتبي خامل (قليل الحركة - 1.20)</option>
-                        <option value="LIGHT_MOVEMENT">حركة خفيفة 5k-7k خطوة (1.30)</option>
-                        <option value="STANDING_WALKING">وقوف ومشي 8k-11k خطوة (1.45)</option>
-                        <option value="HEAVY_PHYSICAL">عمل بدني شاق ومجهد (1.60)</option>
-                      </select>
-                    </div>
-
-                    <div className="col-md-6 col-12">
-                      <label className="form-label small fw-bold text-dark">تكرار تمارين المقاومة (EAT)</label>
-                      <select 
-                        className="form-select"
-                        style={{ height: '38px', borderRadius: '10px', fontSize: '0.82rem' }}
-                        value={form.workoutFrequency}
-                        onChange={(e) => setForm({ ...form, workoutFrequency: e.target.value })}
-                      >
-                        <option value="NO_WORKOUTS">بدون تمارين مقاومة (+0.00)</option>
-                        <option value="DAYS_1_TO_2">1 - 2 يوم أسبوعياً (+0.075)</option>
-                        <option value="DAYS_3_TO_5">3 - 5 أيام أسبوعياً (+0.150)</option>
-                        <option value="DAYS_6_PLUS">6+ أيام مكثفة (+0.250)</option>
-                      </select>
-                    </div>
-
-                    {metabolic.bmi >= 30 && (
-                      <div className="col-12">
-                        <div className="p-2 rounded-3" style={{ background: '#f8fafc', border: '1px solid #e2e8f0' }}>
-                          <div className="form-check form-switch mb-0 d-flex align-items-center justify-content-between">
-                            <label className="form-check-label small fw-bold text-dark mb-0" htmlFor="muscularSwitch">
-                              سقف بروتين مؤشر كتلة الجسم (محسوب على {metabolic.calculation_weight_for_protein_kg}kg)
-                            </label>
-                            <input
-                              className="form-check-input ms-2"
-                              type="checkbox"
-                              id="muscularSwitch"
-                              checked={form.isMuscular}
-                              onChange={(e) => setForm({ ...form, isMuscular: e.target.checked })}
-                            />
-                          </div>
-                          <p className="text-muted mb-0 mt-1" style={{ fontSize: '0.73rem' }}>
-                            {form.isMuscular ? 'مفعّل: لاعب كمال أجسام ذو كتلة عضلية عالية (حساب على الوزن الكلي).' : 'مفعّل تلقائياً: حماية سقف البروتين لمنع هبوط الكاربوهيدرات والدهون الصحية.'}
-                          </p>
-                        </div>
-                      </div>
-                    )}
-
-                    <div className="col-12">
-                      <label className="form-label small fw-bold text-dark">الهدف المستهدف</label>
-                      <select 
-                        className="form-select"
-                        style={{ height: '38px', borderRadius: '10px', fontSize: '0.82rem' }}
-                        value={form.goal}
-                        onChange={(e) => setForm({ ...form, goal: e.target.value })}
-                      >
-                        <option value="AGGRESSIVE_CUT">تنشيف سريع قاسي (-25% عجز سعرات)</option>
-                        <option value="FAT_LOSS_STANDARD">تنشيف وحرق دهون قياسي (-20% عجز سعرات)</option>
-                        <option value="MAINTENANCE">ثبات الوزن وإعادة تشكيل الجسم (0%)</option>
-                        <option value="LEAN_BULK">بناء عضلي صافي وتضخيم نظيف (+10% فائض)</option>
-                        <option value="MAX_BULK">تضخيم وزيادة وزن (+18% فائض)</option>
-                      </select>
-                    </div>
-
-                    <div className="col-12">
-                      <div className="d-flex justify-content-between align-items-center mb-1">
-                        <label className="form-label small fw-bold text-dark mb-0">احتياج البروتين لكل كجم وزن</label>
-                        <span className="badge rounded-pill fw-bold" style={{ background: '#E5F0FF', color: '#0284C7', border: '1px solid #BAE6FD', fontSize: '0.75rem' }}>
-                          {form.proteinPerKg} جم / كجم
-                        </span>
-                      </div>
-                      <input 
-                        type="range" 
-                        className="form-range" 
-                        min="1.6" 
-                        max="2.6" 
-                        step="0.1"
-                        value={form.proteinPerKg}
-                        onChange={(e) => setForm({ ...form, proteinPerKg: Number(e.target.value) })}
-                      />
-                    </div>
-                  </div>
+                <div>
+                  <label style={{ display: 'block', fontSize: '11.5px', fontWeight: 700, color: '#475569', marginBottom: '3px' }}>العمر (سنة)</label>
+                  <input 
+                    type="number" 
+                    value={form.age}
+                    onChange={(e) => setForm({ ...form, age: Number(e.target.value) })}
+                    style={{ width: '100%', height: '34px', borderRadius: '6px', border: '1px solid #CBD5E1', padding: '0 8px', fontSize: '12px', outline: 'none', boxSizing: 'border-box' }}
+                  />
                 </div>
               </div>
-            </div>
 
-            {/* Output Results Column */}
-            <div className="col-lg-6">
-              <div className="card border-0 shadow-sm bg-white h-100" style={{ borderRadius: '16px', border: '1px solid #e2e8f0' }}>
-                <div className="card-body p-4 d-flex flex-column justify-content-between">
+              {/* Weight, Height, BodyFat */}
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '10px' }}>
+                <div>
+                  <label style={{ display: 'block', fontSize: '11.5px', fontWeight: 700, color: '#475569', marginBottom: '3px' }}>الوزن (كجم)</label>
+                  <input 
+                    type="number" 
+                    value={form.weight}
+                    onChange={(e) => setForm({ ...form, weight: Number(e.target.value) })}
+                    style={{ width: '100%', height: '34px', borderRadius: '6px', border: '1px solid #CBD5E1', padding: '0 8px', fontSize: '12px', outline: 'none', boxSizing: 'border-box' }}
+                  />
+                </div>
+
+                <div>
+                  <label style={{ display: 'block', fontSize: '11.5px', fontWeight: 700, color: '#475569', marginBottom: '3px' }}>الطول (سم)</label>
+                  <input 
+                    type="number" 
+                    value={form.height}
+                    onChange={(e) => setForm({ ...form, height: Number(e.target.value) })}
+                    style={{ width: '100%', height: '34px', borderRadius: '6px', border: '1px solid #CBD5E1', padding: '0 8px', fontSize: '12px', outline: 'none', boxSizing: 'border-box' }}
+                  />
+                </div>
+
+                <div>
+                  <label style={{ display: 'block', fontSize: '11.5px', fontWeight: 700, color: '#475569', marginBottom: '3px' }}>نسبة الدهون %</label>
+                  <input 
+                    type="number" 
+                    placeholder="18%"
+                    value={form.bodyFat}
+                    onChange={(e) => setForm({ ...form, bodyFat: Number(e.target.value) })}
+                    style={{ width: '100%', height: '34px', borderRadius: '6px', border: '1px solid #CBD5E1', padding: '0 8px', fontSize: '12px', outline: 'none', boxSizing: 'border-box' }}
+                  />
+                </div>
+              </div>
+
+              {/* NEAT & EAT */}
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
+                <div>
+                  <label style={{ display: 'block', fontSize: '11.5px', fontWeight: 700, color: '#475569', marginBottom: '3px' }}>النشاط والحركة اليومية (NEAT)</label>
+                  <select 
+                    value={form.dailyActivity}
+                    onChange={(e) => setForm({ ...form, dailyActivity: e.target.value })}
+                    style={{ width: '100%', height: '34px', borderRadius: '6px', border: '1px solid #CBD5E1', padding: '0 8px', fontSize: '11.5px', outline: 'none', background: '#F8FAFC' }}
+                  >
+                    <option value="SEDENTARY_DESK">مكتبي خامل (1.20)</option>
+                    <option value="LIGHT_MOVEMENT">حركة خفيفة 5k-7k (1.30)</option>
+                    <option value="STANDING_WALKING">وقوف ومشي 8k-11k (1.45)</option>
+                    <option value="HEAVY_PHYSICAL">عمل بدني شاق (1.60)</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label style={{ display: 'block', fontSize: '11.5px', fontWeight: 700, color: '#475569', marginBottom: '3px' }}>تكرار تمارين المقاومة (EAT)</label>
+                  <select 
+                    value={form.workoutFrequency}
+                    onChange={(e) => setForm({ ...form, workoutFrequency: e.target.value })}
+                    style={{ width: '100%', height: '34px', borderRadius: '6px', border: '1px solid #CBD5E1', padding: '0 8px', fontSize: '11.5px', outline: 'none', background: '#F8FAFC' }}
+                  >
+                    <option value="NO_WORKOUTS">بدون تمارين (+0.00)</option>
+                    <option value="DAYS_1_TO_2">1 - 2 يوم أسبوعياً (+0.075)</option>
+                    <option value="DAYS_3_TO_5">3 - 5 أيام أسبوعياً (+0.150)</option>
+                    <option value="DAYS_6_PLUS">6+ أيام مكثفة (+0.250)</option>
+                  </select>
+                </div>
+              </div>
+
+              {/* Goal */}
+              <div>
+                <label style={{ display: 'block', fontSize: '11.5px', fontWeight: 700, color: '#475569', marginBottom: '3px' }}>الهدف المستهدف</label>
+                <select 
+                  value={form.goal}
+                  onChange={(e) => setForm({ ...form, goal: e.target.value })}
+                  style={{ width: '100%', height: '34px', borderRadius: '6px', border: '1px solid #CBD5E1', padding: '0 8px', fontSize: '12px', fontWeight: 700, color: '#0F172A', outline: 'none', background: '#F8FAFC' }}
+                >
+                  <option value="AGGRESSIVE_CUT">تنشيف سريع قاسي (-25% عجز سعرات)</option>
+                  <option value="FAT_LOSS_STANDARD">تنشيف وحرق دهون قياسي (-20% عجز سعرات)</option>
+                  <option value="MAINTENANCE">ثبات الوزن وإعادة تشكيل الجسم (0%)</option>
+                  <option value="LEAN_BULK">بناء عضلي صافي وتضخيم نظيف (+10% فائض)</option>
+                  <option value="MAX_BULK">تضخيم وزيادة وزن (+18% فائض)</option>
+                </select>
+              </div>
+
+              {/* Protein Slider */}
+              <div style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', padding: '10px 12px', borderRadius: '8px' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
+                  <label style={{ fontSize: '11.5px', fontWeight: 700, color: '#475569', margin: 0 }}>احتياج البروتين لكل كجم وزن</label>
+                  <span style={{ background: '#F1F5F9', border: '1px solid #CBD5E1', color: '#0F172A', fontWeight: 800, padding: '2px 8px', borderRadius: '4px', fontSize: '11px' }}>
+                    {form.proteinPerKg} جم / كجم
+                  </span>
+                </div>
+                <input 
+                  type="range" 
+                  min="1.6" 
+                  max="2.6" 
+                  step="0.1"
+                  value={form.proteinPerKg}
+                  onChange={(e) => setForm({ ...form, proteinPerKg: Number(e.target.value) })}
+                  style={{ width: '100%', cursor: 'pointer', accentColor: '#0F172A' }}
+                />
+              </div>
+
+            </div>
+          </FormSection>
+
+          {/* Left Column: Calculation Results */}
+          <FormSection
+            title="نتائج الطاقة والماكروز المستهدفة"
+            description="التقسيم الرياضي الدقيق للسعرات والجرامات اليومية."
+          >
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', marginTop: '6px' }}>
+              
+              {/* BMR and TDEE */}
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
+                <div style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', padding: '8px 12px', borderRadius: '8px' }}>
+                  <span style={{ fontSize: '11px', color: '#64748B', display: 'block' }}>معدل الحرق الأساسي (BMR)</span>
+                  <strong style={{ fontSize: '16px', color: '#0F172A', fontFamily: 'JetBrains Mono, Cairo' }}>
+                    {bmr} <span style={{ fontSize: '11px', fontWeight: 600 }}>kcal</span>
+                  </strong>
+                </div>
+
+                <div style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', padding: '8px 12px', borderRadius: '8px' }}>
+                  <span style={{ fontSize: '11px', color: '#64748B', display: 'block' }}>استهلاك الطاقة (TDEE)</span>
+                  <strong style={{ fontSize: '16px', color: '#0F172A', fontFamily: 'JetBrains Mono, Cairo' }}>
+                    {tdee} <span style={{ fontSize: '11px', fontWeight: 600 }}>kcal</span>
+                  </strong>
+                </div>
+              </div>
+
+              {/* Target Calories Banner in #0F172A */}
+              <div style={{ background: '#0F172A', color: '#FFFFFF', padding: '12px 16px', borderRadius: '8px', textAlign: 'center', boxShadow: '0 3px 8px rgba(15, 23, 42, 0.25)' }}>
+                <span style={{ fontSize: '11px', opacity: 0.85, display: 'block', marginBottom: '2px' }}>السعرات اليومية المستهدفة للخطة</span>
+                <strong style={{ fontSize: '24px', fontWeight: 900, fontFamily: 'JetBrains Mono, Cairo', letterSpacing: '-0.5px' }}>
+                  {targetCalories} <span style={{ fontSize: '13px', fontWeight: 600, opacity: 0.95 }}>سعرة حرارية</span>
+                </strong>
+              </div>
+
+              {/* Macros Breakdown (3 Cards) */}
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '10px' }}>
+                {/* Protein */}
+                <div style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', padding: '10px 8px', borderRadius: '8px', textAlign: 'center' }}>
+                  <span style={{ fontSize: '11px', fontWeight: 700, color: '#0F172A', display: 'block' }}>البروتين</span>
+                  <strong style={{ fontSize: '17px', color: '#0F172A', fontFamily: 'JetBrains Mono, Cairo', display: 'block' }}>
+                    {targetProteinGrams} <span style={{ fontSize: '11px' }}>جم</span>
+                  </strong>
+                  <small style={{ fontSize: '10px', color: '#94A3B8', fontFamily: 'JetBrains Mono, Cairo' }}>{proteinCalories} kcal</small>
+                </div>
+
+                {/* Carbs */}
+                <div style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', padding: '10px 8px', borderRadius: '8px', textAlign: 'center' }}>
+                  <span style={{ fontSize: '11px', fontWeight: 700, color: '#D97706', display: 'block' }}>الكارب</span>
+                  <strong style={{ fontSize: '17px', color: '#0F172A', fontFamily: 'JetBrains Mono, Cairo', display: 'block' }}>
+                    {targetCarbGrams} <span style={{ fontSize: '11px' }}>جم</span>
+                  </strong>
+                  <small style={{ fontSize: '10px', color: '#94A3B8', fontFamily: 'JetBrains Mono, Cairo' }}>{carbsCalories} kcal</small>
+                </div>
+
+                {/* Fats */}
+                <div style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', padding: '10px 8px', borderRadius: '8px', textAlign: 'center' }}>
+                  <span style={{ fontSize: '11px', fontWeight: 700, color: '#16A34A', display: 'block' }}>الدهون</span>
+                  <strong style={{ fontSize: '17px', color: '#0F172A', fontFamily: 'JetBrains Mono, Cairo', display: 'block' }}>
+                    {targetFatGrams} <span style={{ fontSize: '11px' }}>جم</span>
+                  </strong>
+                  <small style={{ fontSize: '10px', color: '#94A3B8', fontFamily: 'JetBrains Mono, Cairo' }}>{fatCalories} kcal</small>
+                </div>
+              </div>
+
+              {/* Water & Steps */}
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
+                <div style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', padding: '6px 10px', borderRadius: '6px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <Droplet size={14} color="#0F172A" />
                   <div>
-                    <div className="d-flex justify-content-between align-items-center mb-3 pb-2 border-bottom" style={{ borderColor: '#f1f5f9' }}>
-                      <div className="d-flex align-items-center gap-2">
-                        <div className="rounded-circle d-flex align-items-center justify-content-center" style={{ width: '30px', height: '30px', background: '#fffbeb', color: '#d97706', border: '1px solid #fde68a' }}>
-                          <i className="ti ti-flame fs-6"></i>
-                        </div>
-                        <h5 className="fw-bold text-dark mb-0" style={{ fontSize: '0.98rem' }}>
-                          نتائج الطاقة والماكروز المستهدفة
-                        </h5>
-                      </div>
-                      <span className="badge rounded-pill fw-semibold px-2 py-1" style={{ background: '#E5F0FF', color: '#0284C7', border: '1px solid #BAE6FD', fontSize: '0.72rem' }}>
-                        {getGoalLabel(form.goal).split(' ')[0]}
-                      </span>
-                    </div>
-
-                    {/* Calorie Stat Cards */}
-                    <div className="row g-2 mb-3">
-                      <div className="col-6">
-                        <div className="p-3 bg-white rounded-3 border d-flex flex-column justify-content-between" style={{ borderColor: '#e2e8f0' }}>
-                          <div className="d-flex justify-content-between align-items-center mb-1">
-                            <span className="small text-muted" style={{ fontSize: '0.74rem' }}>معدل الحرق (BMR)</span>
-                            <div className="d-flex align-items-center justify-content-center rounded-2" style={{ width: '24px', height: '24px', background: '#f1f5f9', color: '#64748b' }}>
-                              <i className="ti ti-flame" style={{ fontSize: '0.75rem' }}></i>
-                            </div>
-                          </div>
-                          <h4 className="fw-bold text-dark mb-0 d-flex align-items-baseline gap-1" style={{ fontSize: '1.25rem', letterSpacing: '-0.5px' }}>
-                            <span>{bmr}</span>
-                            <small className="fs-6 text-muted fw-normal">kcal</small>
-                          </h4>
-                        </div>
-                      </div>
-
-                      <div className="col-6">
-                        <div className="p-3 bg-white rounded-3 border d-flex flex-column justify-content-between" style={{ borderColor: '#e2e8f0' }}>
-                          <div className="d-flex justify-content-between align-items-center mb-1">
-                            <span className="small text-muted" style={{ fontSize: '0.74rem' }}>استهلاك الطاقة (TDEE)</span>
-                            <div className="d-flex align-items-center justify-content-center rounded-2" style={{ width: '24px', height: '24px', background: '#E5F0FF', color: '#0284C7' }}>
-                              <i className="ti ti-bolt" style={{ fontSize: '0.75rem' }}></i>
-                            </div>
-                          </div>
-                          <h4 className="fw-bold text-dark mb-0 d-flex align-items-baseline gap-1" style={{ fontSize: '1.25rem', letterSpacing: '-0.5px' }}>
-                            <span>{tdee}</span>
-                            <small className="fs-6 text-muted fw-normal">kcal</small>
-                          </h4>
-                        </div>
-                      </div>
-
-                      <div className="col-12">
-                        <div className="p-3 rounded-3 text-center text-slate-900 shadow-sm" style={{ background: 'linear-gradient(135deg, #58B4E5 0%, #0284C7 100%)', boxShadow: '0 4px 14px rgba(38, 28, 106, 0.25)' }}>
-                          <small className="opacity-90 d-block" style={{ fontSize: '0.74rem' }}>السعرات اليومية المستهدفة للخطة</small>
-                          <h2 className="fw-bold mb-0 d-flex align-items-baseline justify-content-center gap-1" style={{ letterSpacing: '-0.5px', fontSize: '1.6rem' }}>
-                            <span>{targetCalories}</span>
-                            <span className="fs-6 fw-normal opacity-90">سعرة حرارية</span>
-                          </h2>
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* Macros Breakdown Cards */}
-                    <div className="row g-2 mb-3">
-                      {/* Protein */}
-                      <div className="col-4">
-                        <div className="p-3 bg-white rounded-3 text-center border h-100 d-flex flex-column justify-content-between" style={{ borderColor: '#e2e8f0' }}>
-                          <div className="d-flex justify-content-between align-items-center mb-1">
-                            <span className="small fw-semibold" style={{ fontSize: '0.74rem', color: '#0284C7' }}>البروتين</span>
-                            <div className="d-flex align-items-center justify-content-center rounded-2" style={{ width: '22px', height: '22px', background: '#E5F0FF', color: '#0284C7' }}>
-                              <i className="ti ti-barbell" style={{ fontSize: '0.7rem' }}></i>
-                            </div>
-                          </div>
-                          <div>
-                            <h4 className="fw-bold text-dark mb-0 font-monospace" style={{ fontSize: '1.25rem' }}>
-                              {targetProteinGrams} <small className="fs-6 text-muted fw-normal">جم</small>
-                            </h4>
-                            <small className="text-muted font-monospace" style={{ fontSize: '0.68rem' }}>{proteinCalories} kcal</small>
-                          </div>
-                          <div className="progress mt-2" style={{ height: '3px', background: '#f1f5f9' }}>
-                            <div className="progress-bar" style={{ width: '85%', background: '#0284C7' }}></div>
-                          </div>
-                        </div>
-                      </div>
-
-                      {/* Carbs */}
-                      <div className="col-4">
-                        <div className="p-3 bg-white rounded-3 text-center border h-100 d-flex flex-column justify-content-between" style={{ borderColor: '#e2e8f0' }}>
-                          <div className="d-flex justify-content-between align-items-center mb-1">
-                            <span className="small fw-semibold" style={{ fontSize: '0.74rem', color: '#d97706' }}>الكارب</span>
-                            <div className="d-flex align-items-center justify-content-center rounded-2" style={{ width: '22px', height: '22px', background: '#fffbeb', color: '#d97706' }}>
-                              <i className="ti ti-flame" style={{ fontSize: '0.7rem' }}></i>
-                            </div>
-                          </div>
-                          <div>
-                            <h4 className="fw-bold text-dark mb-0 font-monospace" style={{ fontSize: '1.25rem' }}>
-                              {targetCarbGrams} <small className="fs-6 text-muted fw-normal">جم</small>
-                            </h4>
-                            <small className="text-muted font-monospace" style={{ fontSize: '0.68rem' }}>{targetCarbGrams * 4} kcal</small>
-                          </div>
-                          <div className="progress mt-2" style={{ height: '3px', background: '#f1f5f9' }}>
-                            <div className="progress-bar" style={{ width: '65%', background: '#d97706' }}></div>
-                          </div>
-                        </div>
-                      </div>
-
-                      {/* Fats */}
-                      <div className="col-4">
-                        <div className="p-3 bg-white rounded-3 text-center border h-100 d-flex flex-column justify-content-between" style={{ borderColor: '#e2e8f0' }}>
-                          <div className="d-flex justify-content-between align-items-center mb-1">
-                            <span className="small fw-semibold" style={{ fontSize: '0.74rem', color: '#059669' }}>الدهون</span>
-                            <div className="d-flex align-items-center justify-content-center rounded-2" style={{ width: '22px', height: '22px', background: '#ecfdf5', color: '#059669' }}>
-                              <i className="ti ti-shield-check" style={{ fontSize: '0.7rem' }}></i>
-                            </div>
-                          </div>
-                          <div>
-                            <h4 className="fw-bold text-dark mb-0 font-monospace" style={{ fontSize: '1.25rem' }}>
-                              {targetFatGrams} <small className="fs-6 text-muted fw-normal">جم</small>
-                            </h4>
-                            <small className="text-muted font-monospace" style={{ fontSize: '0.68rem' }}>{fatCalories} kcal</small>
-                          </div>
-                          <div className="progress mt-2" style={{ height: '3px', background: '#f1f5f9' }}>
-                            <div className="progress-bar" style={{ width: '50%', background: '#059669' }}></div>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* Extra Targets (Water & Steps) */}
-                    <div className="row g-2 mb-3">
-                      <div className="col-6">
-                        <div className="p-2 px-3 rounded-3 border d-flex align-items-center gap-2" style={{ background: '#f8fafc', borderColor: '#e2e8f0' }}>
-                          <div className="d-flex align-items-center justify-content-center rounded-circle" style={{ width: '28px', height: '28px', background: '#E5F0FF', color: '#0284C7' }}>
-                            <i className="ti ti-droplet fs-6"></i>
-                          </div>
-                          <div>
-                            <div className="small fw-bold text-dark" style={{ fontSize: '0.76rem' }}>احتياج الماء اليومي</div>
-                            <small className="text-muted" style={{ fontSize: '0.72rem' }}>{waterTargetLiters} لتر / يوم</small>
-                          </div>
-                        </div>
-                      </div>
-                      <div className="col-6">
-                        <div className="p-2 px-3 rounded-3 border d-flex align-items-center gap-2" style={{ background: '#f8fafc', borderColor: '#e2e8f0' }}>
-                          <div className="d-flex align-items-center justify-content-center rounded-circle" style={{ width: '28px', height: '28px', background: '#ecfdf5', color: '#059669' }}>
-                            <i className="ti ti-walk fs-6"></i>
-                          </div>
-                          <div>
-                            <div className="small fw-bold text-dark" style={{ fontSize: '0.76rem' }}>معدل الخطوات اليومي</div>
-                            <small className="text-muted" style={{ fontSize: '0.72rem' }}>{stepsTarget.toLocaleString()} خطوة</small>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
+                    <span style={{ fontSize: '10.5px', color: '#64748B', display: 'block' }}>احتياج الماء</span>
+                    <strong style={{ fontSize: '12px', color: '#0F172A' }}>{waterTargetLiters} لتر / يوم</strong>
                   </div>
+                </div>
 
-                  {/* Actions & Client Assignment */}
-                  <div className="pt-3 border-top" style={{ borderColor: '#f1f5f9' }}>
-                    <div className="row g-2">
-                      <div className="col-md-7">
-                        <select 
-                          className="form-select"
-                          style={{ height: '36px', borderRadius: '10px', fontSize: '0.8rem', borderColor: '#e2e8f0' }}
-                          value={selectedClient}
-                          onChange={(e) => setSelectedClient(e.target.value)}
-                        >
-                          <option value="">-- اختر متدرب لتطبيق الخطة --</option>
-                          {clients.map(c => (
-                            <option key={c.id} value={c.client_code || c.id}>
-                              {c.full_name || `عميل ${c.client_code}`} ({c.client_code})
-                            </option>
-                          ))}
-                        </select>
-                      </div>
-                      <div className="col-md-5">
-                        <button 
-                          type="button"
-                          onClick={handleApplyToClient} 
-                          disabled={saving || !selectedClient}
-                          className="btn btn-sm rounded-pill w-100 fw-bold shadow-xs text-slate-900 d-flex align-items-center justify-content-center gap-1"
-                          style={{ height: '36px', background: '#0284C7', border: 'none', fontSize: '0.8rem' }}
-                        >
-                          {saving ? 'جاري التطبيق...' : <><i className="ti ti-device-floppy"></i> تطبيق على المتدرب</>}
-                        </button>
-                      </div>
-                      <div className="col-12 mt-2">
-                        <button 
-                          type="button"
-                          onClick={handleCopyWhatsapp} 
-                          className="btn btn-sm rounded-pill w-100 fw-semibold d-flex align-items-center justify-content-center gap-1 shadow-xs"
-                          style={{ height: '36px', background: '#f0fdf4', color: '#16a34a', border: '1px solid #bbf7d0', fontSize: '0.8rem' }}
-                        >
-                          <i className="ti ti-brand-whatsapp fs-6"></i>
-                          <span>{copied ? ' تم النسخ إلى الحافظة!' : 'نسخ ملخص الماكروز للواتساب'}</span>
-                        </button>
-                      </div>
-                    </div>
+                <div style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', padding: '6px 10px', borderRadius: '6px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <Footprints size={14} color="#16A34A" />
+                  <div>
+                    <span style={{ fontSize: '10.5px', color: '#64748B', display: 'block' }}>الخطوات اليومية</span>
+                    <strong style={{ fontSize: '12px', color: '#0F172A' }}>{stepsTarget.toLocaleString()} خطوة</strong>
                   </div>
-
                 </div>
               </div>
+
+              {/* Apply to Client & Copy WhatsApp Strip */}
+              <div style={{ paddingTop: '10px', borderTop: '1px solid #F1F5F9', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr auto', gap: '8px' }}>
+                  <select 
+                    value={selectedClient}
+                    onChange={(e) => setSelectedClient(e.target.value)}
+                    style={{ height: '34px', borderRadius: '6px', border: '1px solid #CBD5E1', padding: '0 8px', fontSize: '11.5px', fontWeight: 600, color: '#0F172A', outline: 'none' }}
+                  >
+                    <option value="">-- اختر متدرب لتطبيق الخطة فوراً --</option>
+                    {clients.map(c => (
+                      <option key={c.id} value={c.client_code || c.id}>
+                        {c.full_name || `متدرب #${c.client_code}`} (#{c.client_code})
+                      </option>
+                    ))}
+                  </select>
+
+                  <button
+                    type="button"
+                    onClick={handleApplyToClient}
+                    disabled={saving || !selectedClient}
+                    style={{
+                      height: '34px',
+                      padding: '0 14px',
+                      borderRadius: '6px',
+                      background: '#0F172A',
+                      color: '#FFFFFF',
+                      border: 'none',
+                      fontSize: '11.5px',
+                      fontWeight: 700,
+                      cursor: 'pointer',
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: '4px',
+                      boxShadow: '0 2px 5px rgba(15, 23, 42, 0.25)',
+                      transition: 'all 0.15s ease'
+                    }}
+                    onMouseEnter={(e) => (e.currentTarget.style.background = '#334155')}
+                    onMouseLeave={(e) => (e.currentTarget.style.background = '#0F172A')}
+                  >
+                    <Save size={13} />
+                    <span>{saving ? 'جاري التطبيق...' : 'تطبيق'}</span>
+                  </button>
+                </div>
+
+                <button
+                  type="button"
+                  onClick={handleCopyWhatsapp}
+                  style={{
+                    height: '32px',
+                    borderRadius: '6px',
+                    background: '#F0FDF4',
+                    border: '1px solid #BBF7D0',
+                    color: '#16A34A',
+                    fontSize: '11.5px',
+                    fontWeight: 700,
+                    cursor: 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    gap: '6px'
+                  }}
+                >
+                  <MessageCircle size={13} />
+                  <span>{copied ? 'تم النسخ إلى الحافظة بنجاح!' : 'نسخ ملخص الماكروز للواتساب'}</span>
+                </button>
+              </div>
+
             </div>
-          </div>
+          </FormSection>
 
         </div>
+
       </div>
     </AdminLayout>
   );

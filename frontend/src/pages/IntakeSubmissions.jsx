@@ -1,11 +1,27 @@
 import React, { useState, useEffect } from 'react';
-import ReactDOM from 'react-dom';
 import { useNavigate, Link } from 'react-router-dom';
+import { 
+  ExternalLink, 
+  Search, 
+  Clock, 
+  CheckCircle2, 
+  CreditCard, 
+  FileText, 
+  Send, 
+  Check, 
+  MessageCircle, 
+  Eye, 
+  Sparkles,
+  Edit3,
+  X
+} from 'lucide-react';
 import { API_BASE } from '../config/api';
 import AdminLayout from '../components/layout/AdminLayout';
 import WhatsAppModal from '../components/modals/WhatsAppModal';
 import IntakeAuditDetailModal from '../components/intake/IntakeAuditDetailModal';
 import { arabicSearchMatch } from '../utils/searchUtils';
+import { PageHeader } from '@/shared/components/page-header';
+import { FormSection } from '@/shared/components/form-section';
 
 export default function IntakeSubmissions() {
   const navigate = useNavigate();
@@ -27,17 +43,7 @@ export default function IntakeSubmissions() {
   const [generatingId, setGeneratingId] = useState(null);
 
   const handleToggleAnswers = (sub) => {
-    if (selectedAnswers && selectedAnswers.id === sub.id) {
-      setSelectedAnswers(null);
-    } else {
-      setSelectedAnswers(sub);
-      setTimeout(() => {
-        const el = document.getElementById('intake-audit-section');
-        if (el) {
-          el.scrollIntoView({ behavior: 'smooth', block: 'start' });
-        }
-      }, 120);
-    }
+    setSelectedAnswers(sub);
   };
 
   useEffect(() => {
@@ -127,7 +133,6 @@ export default function IntakeSubmissions() {
     if (!searchTerm.trim()) return true;
     const raw = searchTerm.trim().toLowerCase();
 
-    // Smart # Prefix Search
     if (raw.startsWith('#')) {
       const codeQuery = raw.replace(/^#+/, '').trim();
       if (!codeQuery) return true;
@@ -136,7 +141,6 @@ export default function IntakeSubmissions() {
       return clientCode === codeQuery || cleanCode === codeQuery || clientCode === `client-${codeQuery}`;
     }
 
-    // Standard Search with Hamza / Diacritics Invariance
     return (
       arabicSearchMatch(sub.user?.full_name, searchTerm) ||
       arabicSearchMatch(sub.answers?.personal?.firstName, searchTerm) ||
@@ -153,505 +157,412 @@ export default function IntakeSubmissions() {
   const draftCount = submissions.filter(s => s.status === 'DRAFT_GENERATED').length;
   const approvedCount = submissions.filter(s => s.status === 'APPROVED').length;
 
+  const statCards = [
+    { title: 'قيد التعبئة', value: inProgressCount, label: 'استمارات جارية', icon: Edit3 },
+    { title: 'بانتظار الاعتماد', value: pendingCount, label: 'مكتملة 100%', icon: Clock },
+    { title: 'مؤكد الدفع', value: paidCount, label: 'InstaPay / كاش', icon: CreditCard },
+    { title: 'مسودات جاهزة', value: draftCount, label: 'تخصيص الكابتن', icon: Sparkles },
+    { title: 'معتمد ومنشور', value: approvedCount, label: 'برامج نشطة', icon: CheckCircle2 },
+  ];
+
   return (
-    <AdminLayout searchTerm={searchTerm} onSearchChange={setSearchTerm} searchPlaceholder="بحث في استمارات العملاء بالاسم، الهاتف أو الكود...">
-      <div className="theme-body">
-        <div className="container-fluid">
+    <AdminLayout>
+      <div className="page-stack" dir="rtl" style={{ display: 'flex', flexDirection: 'column', gap: '18px' }}>
+        
+        {/* 1. Page Header */}
+        <PageHeader
+          title="مركز استمارات العملاء ومراجعة الخطط"
+          description="متابعة ملء الاستمارات لحظياً، استعادة الاستمارات المتروكة، وتوليد مسودة الخطة الذكية."
+          actions={(
+            <Link
+              to="/intake/form"
+              target="_blank"
+              style={{
+                height: '36px',
+                padding: '0 16px',
+                fontSize: '12.5px',
+                fontWeight: 700,
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '6px',
+                borderRadius: '6px',
+                background: '#0F172A',
+                color: '#FFFFFF',
+                textDecoration: 'none',
+                boxShadow: '0 2px 6px rgba(15, 23, 42, 0.25)',
+                transition: 'all 0.15s ease'
+              }}
+              onMouseEnter={(e) => (e.currentTarget.style.background = '#334155')}
+              onMouseLeave={(e) => (e.currentTarget.style.background = '#0F172A')}
+            >
+              <ExternalLink size={14} />
+              <span>فتح رابط الاستمارة العامة</span>
+            </Link>
+          )}
+        />
 
-          {/* Page Header (Consistent with Dashboard) */}
-          <div className="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
-            <div>
-              <div className="d-flex align-items-center gap-2 mb-1">
-                <h4 className="fw-bold text-dark mb-0" style={{ letterSpacing: '-0.3px', fontSize: '1.25rem' }}>
-                  مركز استمارات العملاء ومراجعة الخطط
-                </h4>
-                <span className="badge rounded-pill fw-bold" style={{ background: '#E5F0FF', color: '#0284C7', border: '1px solid #BAE6FD', fontSize: '0.7rem' }}>
-                  Z COACHING V2.0
-                </span>
-              </div>
-              <p className="text-muted small mb-0" style={{ fontSize: '0.8rem' }}>
-                متابعة ملء الاستمارات لحظياً، استعادة الاستمارات المتروكة، وتوليد مسودة الخطة الذكية
-              </p>
-            </div>
-            <div className="d-flex gap-2">
-              <Link 
-                to="/intake/form" 
-                target="_blank" 
-                className="btn btn-sm rounded-pill px-3 fw-bold d-flex align-items-center gap-1 shadow-sm text-slate-900" 
-                style={{ 
-                  height: '34px', 
-                  fontSize: '0.8rem',
-                  background: '#0284C7',
-                  border: 'none',
-                  boxShadow: '0 3px 10px rgba(38, 28, 106, 0.28)'
-                }}
-              >
-                <i className="ti ti-external-link fs-6"></i> 
-                <span>فتح رابط الاستمارة العامة</span>
-              </Link>
-            </div>
-          </div>
-
-          {/* 5 KPI Stat Cards (Exact Universal Design) */}
-          <div className="row row-cols-xxl-5 row-cols-md-3 row-cols-sm-2 g-3 mb-3">
-            {/* 1. In Progress */}
-            <div className="col">
-              <div className="card border-0 bg-white h-100 shadow-sm" style={{ borderRadius: '14px', border: '1px solid #e2e8f0' }}>
-                <div className="card-body p-3 d-flex flex-column justify-content-between">
-                  <div className="d-flex justify-content-between align-items-center mb-2">
-                    <span className="badge rounded-pill fw-semibold px-2 py-1" style={{ background: '#f8fafc', color: '#64748b', fontSize: '0.68rem', border: '1px solid #e2e8f0' }}>
-                      جارية
-                    </span>
-                    <div className="d-flex align-items-center justify-content-center" style={{ width: '30px', height: '30px', borderRadius: '8px', background: '#f1f5f9', color: '#64748b' }}>
-                      <i className="ti ti-pencil fs-6"></i>
-                    </div>
-                  </div>
-                  <div>
-                    <h3 className="fw-bold mb-0 text-dark" style={{ fontSize: '1.45rem', letterSpacing: '-0.5px' }}>{inProgressCount}</h3>
-                    <p className="text-muted small mb-0 fw-medium" style={{ fontSize: '0.76rem' }}>قيد التعبئة</p>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* 2. Pending Coach Review */}
-            <div className="col">
-              <div className="card border-0 bg-white h-100 shadow-sm" style={{ borderRadius: '14px', border: '1px solid #e2e8f0' }}>
-                <div className="card-body p-3 d-flex flex-column justify-content-between">
-                  <div className="d-flex justify-content-between align-items-center mb-2">
-                    <span className="badge rounded-pill fw-semibold px-2 py-1" style={{ background: '#fffbeb', color: '#d97706', fontSize: '0.68rem', border: '1px solid #fde68a' }}>
-                      مكتملة 100%
-                    </span>
-                    <div className="d-flex align-items-center justify-content-center" style={{ width: '30px', height: '30px', borderRadius: '8px', background: '#fffbeb', color: '#d97706' }}>
-                      <i className="ti ti-clock fs-6"></i>
-                    </div>
-                  </div>
-                  <div>
-                    <h3 className="fw-bold mb-0 text-dark" style={{ fontSize: '1.45rem', letterSpacing: '-0.5px' }}>{pendingCount}</h3>
-                    <p className="text-muted small mb-0 fw-medium" style={{ fontSize: '0.76rem' }}>بانتظار الاعتماد</p>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* 3. Paid */}
-            <div className="col">
-              <div className="card border-0 bg-white h-100 shadow-sm" style={{ borderRadius: '14px', border: '1px solid #e2e8f0' }}>
-                <div className="card-body p-3 d-flex flex-column justify-content-between">
-                  <div className="d-flex justify-content-between align-items-center mb-2">
-                    <span className="badge rounded-pill fw-semibold px-2 py-1" style={{ background: '#ecfdf5', color: '#059669', fontSize: '0.68rem', border: '1px solid #a7f3d0' }}>
-                      InstaPay
-                    </span>
-                    <div className="d-flex align-items-center justify-content-center" style={{ width: '30px', height: '30px', borderRadius: '8px', background: '#ecfdf5', color: '#059669' }}>
-                      <i className="ti ti-credit-card fs-6"></i>
-                    </div>
-                  </div>
-                  <div>
-                    <h3 className="fw-bold mb-0 text-dark" style={{ fontSize: '1.45rem', letterSpacing: '-0.5px' }}>{paidCount}</h3>
-                    <p className="text-muted small mb-0 fw-medium" style={{ fontSize: '0.76rem' }}>مؤكد الدفع</p>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* 4. Draft Generated */}
-            <div className="col">
-              <div className="card border-0 bg-white h-100 shadow-sm" style={{ borderRadius: '14px', border: '1px solid #e2e8f0' }}>
-                <div className="card-body p-3 d-flex flex-column justify-content-between">
-                  <div className="d-flex justify-content-between align-items-center mb-2">
-                    <span className="badge rounded-pill fw-semibold px-2 py-1" style={{ background: '#E5F0FF', color: '#0284C7', fontSize: '0.68rem', border: '1px solid #BAE6FD' }}>
-                      تخصيص الكابتن
-                    </span>
-                    <div className="d-flex align-items-center justify-content-center" style={{ width: '30px', height: '30px', borderRadius: '8px', background: '#E5F0FF', color: '#0284C7' }}>
-                      <i className="ti ti-file-pencil fs-6"></i>
-                    </div>
-                  </div>
-                  <div>
-                    <h3 className="fw-bold mb-0 text-dark" style={{ fontSize: '1.45rem', letterSpacing: '-0.5px' }}>{draftCount}</h3>
-                    <p className="text-muted small mb-0 fw-medium" style={{ fontSize: '0.76rem' }}>مسودات جاهزة</p>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* 5. Approved & Active */}
-            <div className="col">
-              <div className="card border-0 bg-white h-100 shadow-sm" style={{ borderRadius: '14px', border: '1px solid #e2e8f0' }}>
-                <div className="card-body p-3 d-flex flex-column justify-content-between">
-                  <div className="d-flex justify-content-between align-items-center mb-2">
-                    <span className="badge rounded-pill fw-semibold px-2 py-1" style={{ background: '#E5F0FF', color: '#0284C7', fontSize: '0.68rem', border: '1px solid #BAE6FD' }}>
-                      منشورة ومفعلة
-                    </span>
-                    <div className="d-flex align-items-center justify-content-center" style={{ width: '30px', height: '30px', borderRadius: '8px', background: '#E5F0FF', color: '#0284C7' }}>
-                      <i className="ti ti-circle-check fs-6"></i>
-                    </div>
-                  </div>
-                  <div>
-                    <h3 className="fw-bold mb-0 text-dark" style={{ fontSize: '1.45rem', letterSpacing: '-0.5px' }}>{approvedCount}</h3>
-                    <p className="text-muted small mb-0 fw-medium" style={{ fontSize: '0.76rem' }}>خطط معتمدة</p>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Filter Pills (Quiet Luxury Style) */}
-          <div className="d-flex gap-2 mb-3 flex-wrap align-items-center">
-            {[
-              { id: 'ALL', label: `الكل (${submissions.length})` },
-              { id: 'IN_PROGRESS', label: `قيد التعبئة (${inProgressCount})` },
-              { id: 'PENDING', label: `بانتظار الاعتماد (${pendingCount})` },
-              { id: 'PAID', label: `مؤكد الدفع (${paidCount})` },
-              { id: 'DRAFT', label: `مسودات جاهزة (${draftCount})` },
-              { id: 'APPROVED', label: `معتمد ومنشور (${approvedCount})` }
-            ].map(f => (
-              <button
-                key={f.id}
-                type="button"
-                onClick={() => setFilter(f.id)}
-                className={`btn btn-sm rounded-pill px-3 fw-bold transition-all ${filter === f.id ? 'text-slate-900 shadow-xs' : 'bg-white text-dark border'}`}
+        {/* 2. 5-Column Horizontal Balanced KPI Grid */}
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: '12px' }}>
+          {statCards.map((st, i) => {
+            const Icon = st.icon;
+            return (
+              <div 
+                key={i} 
                 style={{
-                  background: filter === f.id ? '#0284C7' : '#ffffff',
-                  borderColor: filter === f.id ? '#0284C7' : '#e2e8f0',
-                  fontSize: '0.8rem',
-                  height: '34px',
-                  whiteSpace: 'nowrap'
+                  background: '#FFFFFF',
+                  border: '1px solid #E2E8F0',
+                  borderRadius: '10px',
+                  padding: '12px 14px',
+                  boxShadow: '0 1px 3px rgba(15, 23, 42, 0.02)',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  gap: '8px'
                 }}
               >
-                {f.label}
-              </button>
-            ))}
-          </div>
-
-          {/* Submissions Table */}
-          <div className="card border-0 shadow-sm bg-white" style={{ borderRadius: '16px', border: '1px solid #e2e8f0' }}>
-            <div className="card-body p-4">
-              <div className="table-responsive">
-                <table className="table table-hover align-middle mb-0">
-                  <thead className="table-light">
-                    <tr>
-                      <th className="border-0 rounded-start">كود العميل</th>
-                      <th className="border-0">اسم المتدرب</th>
-                      <th className="border-0">رقم الهاتف</th>
-                      <th className="border-0">الباقة والمبلغ</th>
-                      <th className="border-0">حالة الدفع</th>
-                      <th className="border-0">حالة الاستمارة</th>
-                      <th className="border-0 rounded-end text-center">الإجراءات</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {loading ? (
-                      <tr>
-                        <td colSpan="7" className="text-center py-5 text-muted small">
-                          <span className="spinner-border spinner-border-sm me-2 text-primary" role="status"></span>
-                          جاري تحميل الاستمارات...
-                        </td>
-                      </tr>
-                    ) : filteredSubmissions.length === 0 ? (
-                      <tr>
-                        <td colSpan="7" className="text-center py-4 text-muted small">
-                          لا توجد استمارات واردة تطابق هذا الفلتر.
-                        </td>
-                      </tr>
-                    ) : (
-                      filteredSubmissions.map((sub) => {
-                        const user = sub.user || {};
-                        const clientName = user.full_name || `${sub.answers?.personal?.firstName || ''} ${sub.answers?.personal?.lastName || ''}`.trim() || `متدرب ${sub.id}`;
-                        const clientPhone = user.phone_number || sub.answers?.personal?.phone || '-';
-                        const isGenerating = generatingId === sub.id;
-                        const progress = sub.progress_percent || (sub.status === 'APPROVED' ? 100 : 70);
-                        const isAbandoned = (sub.status === 'IN_PROGRESS' || progress < 100) && sub.status !== 'APPROVED';
-
-                        return (
-                          <tr key={sub.id}>
-                            <td>
-                              <span className="badge bg-light text-secondary border px-2 py-1 font-monospace" style={{ fontSize: '0.75rem' }}>
-                                {user.client_code || sub.id}
-                              </span>
-                            </td>
-                            <td>
-                              <div className="d-flex align-items-center gap-2">
-                                <div className="rounded-circle d-flex align-items-center justify-content-center fw-bold" style={{ width: '34px', height: '34px', fontSize: '0.82rem', background: '#E5F0FF', color: '#0284C7', border: '1px solid #BAE6FD' }}>
-                                  {(clientName || 'U')[0]}
-                                </div>
-                                <span className="fw-bold text-dark" style={{ fontSize: '0.88rem' }}>{clientName}</span>
-                              </div>
-                            </td>
-                            <td>
-                              <span className="text-muted" dir="ltr" style={{ fontSize: '0.8rem' }}>{clientPhone}</span>
-                            </td>
-                            <td>
-                              <div>
-                                <span className="fw-semibold text-dark d-block" style={{ fontSize: '0.82rem' }}>
-                                  {user.subscription_package || 'باقة 3 شهور VIP'}
-                                </span>
-                                <small className="text-muted" style={{ fontSize: '0.76rem' }}>
-                                  {user.subscription_price || 2500} ج.م
-                                </small>
-                              </div>
-                            </td>
-                            <td>
-                              {user.payment_status === 'PAID' ? (
-                                <span className="badge bg-light text-success border px-2 py-1 rounded-pill fw-semibold" style={{ fontSize: '0.75rem' }}>
-                                  <i className="ti ti-point-filled me-1"></i> مدفوع ({user.payment_method || 'InstaPay'})
-                                </span>
-                              ) : (
-                                <span className="badge bg-light text-warning border px-2 py-1 rounded-pill fw-semibold" style={{ fontSize: '0.75rem' }}>
-                                  <i className="ti ti-clock me-1"></i> بانتظار الدفع
-                                </span>
-                              )}
-                            </td>
-                            <td>
-                              {isAbandoned ? (
-                                <div>
-                                  <div className="d-flex justify-content-between align-items-center mb-1">
-                                    <span className="badge bg-light text-muted border px-2 py-0" style={{ fontSize: '0.7rem' }}>
-                                      قيد التعبئة ({progress}%)
-                                    </span>
-                                  </div>
-                                  <div className="progress" style={{ height: '4px', width: '120px', background: '#f1f5f9' }}>
-                                    <div className="progress-bar bg-warning" style={{ width: `${progress}%` }}></div>
-                                  </div>
-                                </div>
-                              ) : sub.status === 'PENDING_COACH_REVIEW' ? (
-                                <span className="badge bg-light text-warning border px-2 py-1 rounded-pill fw-semibold" style={{ fontSize: '0.75rem' }}>
-                                  <i className="ti ti-clock-pause me-1"></i> 100% بانتظار الاعتماد
-                                </span>
-                              ) : sub.status === 'PAYMENT_CONFIRMED' ? (
-                                <span className="badge bg-light text-info border px-2 py-1 rounded-pill fw-semibold" style={{ fontSize: '0.75rem' }}>
-                                  تم تأكيد الدفع
-                                </span>
-                              ) : sub.status === 'DRAFT_GENERATED' ? (
-                                <span className="badge rounded-pill fw-semibold px-2 py-1" style={{ background: '#E5F0FF', color: '#0284C7', border: '1px solid #BAE6FD', fontSize: '0.75rem' }}>
-                                  مسودة جاهزة
-                                </span>
-                              ) : (
-                                <span className="badge bg-light text-success border px-2 py-1 rounded-pill fw-semibold" style={{ fontSize: '0.75rem' }}>
-                                  <i className="ti ti-point-filled me-1"></i> معتمد ومنشور
-                                </span>
-                              )}
-                            </td>
-                            <td className="text-center">
-                              <div className="d-flex align-items-center justify-content-center gap-2">
-                                
-                                {/* If Abandoned, Show WhatsApp Nudge Button */}
-                                {isAbandoned && (
-                                  <button
-                                    type="button"
-                                    className="btn btn-sm rounded-pill px-2 py-1 fw-bold shadow-xs d-flex align-items-center gap-1"
-                                    style={{ fontSize: '0.76rem', background: '#fffbeb', color: '#d97706', border: '1px solid #fde68a' }}
-                                    onClick={() => handleSendNudge(sub)}
-                                    title="إرسال تذكير عبر الواتساب لإكمال الاستمارة"
-                                  >
-                                    <i className="ti ti-brand-whatsapp fs-6 text-success"></i>
-                                    <span>تذكير إكمال</span>
-                                  </button>
-                                )}
-
-                                {/* View Answers Inline Toggle Button */}
-                                 <button
-                                   type="button"
-                                   className={`btn btn-sm rounded-pill px-2 py-1 fw-semibold transition-all ${selectedAnswers?.id === sub.id ? 'btn-primary text-slate-900 shadow-sm' : 'bg-white border'}`}
-                                   style={{ 
-                                     fontSize: '0.76rem', 
-                                     color: selectedAnswers?.id === sub.id ? '#ffffff' : '#475569', 
-                                     background: selectedAnswers?.id === sub.id ? '#0284C7' : '#ffffff',
-                                     height: '30px' 
-                                   }}
-                                   onClick={() => handleToggleAnswers(sub)}
-                                   title="عرض إجابات الاستمارة وتدقيق الأمان"
-                                 >
-                                   <i className="ti ti-eye me-1"></i>
-                                   <span>{selectedAnswers?.id === sub.id ? 'إخفاء الإجابات' : 'إجابات'}</span>
-                                 </button>
-
-                                 {/* Payment Confirmation Modal */}
-                                 <button
-                                   type="button"
-                                   className="btn btn-sm rounded-pill px-2 py-1 fw-semibold bg-white border"
-                                   style={{ fontSize: '0.76rem', color: '#059669', height: '30px' }}
-                                   onClick={() => {
-                                     setPaymentModalSub(sub);
-                                     setPaymentForm({
-                                       subscription_package: user.subscription_package || '3_MONTHS_VIP',
-                                       subscription_price: user.subscription_price || 2500,
-                                       payment_method: user.payment_method || 'INSTAPAY',
-                                       duration_months: 3
-                                     });
-                                   }}
-                                   title="تأكيد الدفع والباقة"
-                                 >
-                                   <i className="ti ti-wallet me-1"></i> الدفع
-                                 </button>
-
-                                 {/* Generate Draft / Edit */}
-                                 {sub.status !== 'APPROVED' ? (
-                                   <button
-                                     type="button"
-                                     className="btn btn-sm rounded-pill px-3 py-1 fw-bold text-slate-900 shadow-xs d-flex align-items-center gap-1"
-                                     disabled={isGenerating}
-                                     onClick={() => handleGenerateDraft(sub)}
-                                     style={{ fontSize: '0.76rem', background: '#0284C7', border: 'none', height: '30px' }}
-                                   >
-                                     {isGenerating ? (
-                                       <span className="spinner-border spinner-border-sm"></span>
-                                     ) : (
-                                       <><i className="ti ti-file-text"></i> {sub.status === 'DRAFT_GENERATED' ? 'تعديل المسودة' : 'توليد ومراجعة'}</>
-                                     )}
-                                   </button>
-                                 ) : (
-                                   <Link
-                                     to={`/coach/editor?user_id=${user.client_code || user.id}`}
-                                     className="btn btn-sm rounded-pill px-3 py-1 fw-semibold shadow-xs"
-                                     style={{ fontSize: '0.76rem', background: '#E5F0FF', color: '#0284C7', border: '1px solid #BAE6FD', height: '30px' }}
-                                   >
-                                     <i className="ti ti-edit me-1"></i> تعديل الخطة
-                                   </Link>
-                                 )}
-
-                                 {/* WhatsApp CTA */}
-                                 <button
-                                   type="button"
-                                   className="btn btn-sm rounded-circle p-0 d-flex align-items-center justify-content-center transition-all bg-white border"
-                                   style={{ width: '30px', height: '30px', borderColor: '#e2e8f0', color: '#16a34a' }}
-                                   onClick={() => setWhatsappClient({
-                                     full_name: clientName,
-                                     client_code: user.client_code || sub.id,
-                                     phone_number: clientPhone
-                                   })}
-                                   title="مراسلة سريعة عبر الواتساب"
-                                 >
-                                   <i className="ti ti-brand-whatsapp fs-6"></i>
-                                 </button>
-                              </div>
-                            </td>
-                          </tr>
-                        );
-                      })
-                    )}
-                  </tbody>
-                </table>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <span style={{ fontSize: '11.5px', fontWeight: 700, color: '#64748B' }}>{st.title}</span>
+                  <div style={{ width: '28px', height: '28px', borderRadius: '6px', background: '#F8FAFC', border: '1px solid #E2E8F0', color: '#0F172A', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    <Icon size={14} />
+                  </div>
+                </div>
+                <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between' }}>
+                  <span style={{ fontSize: '1.6rem', fontWeight: 900, color: '#0F172A', fontFamily: 'JetBrains Mono, Cairo, sans-serif', lineHeight: 1 }}>
+                    {st.value}
+                  </span>
+                  <span style={{ fontSize: '10.5px', color: '#94A3B8', fontWeight: 600 }}>{st.label}</span>
+                </div>
               </div>
-            </div>
-          </div>
+            );
+          })}
+        </div>
 
-          {/* Answers Audit Section (Visual, Structured & Photo Gallery Inline in Page) */}
-          {selectedAnswers && (
-            <div className="col-12 mt-4">
-              <IntakeAuditDetailModal
-                submission={selectedAnswers}
-                onClose={() => setSelectedAnswers(null)}
-                onGenerateDraft={handleGenerateDraft}
-                generatingId={generatingId}
-              />
+        {/* 3. Submissions Table & Filter Section */}
+        <FormSection
+          title="قائمة الاستمارات المسجلة"
+          description="كافة الاستمارات الواردة مع إمكانية مراجعة الإجابات، تأكيد التحويل، وتوليد البرامج."
+          actions={(
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+              {/* Search Box */}
+              <div 
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  background: '#F8FAFC',
+                  border: '1px solid #E2E8F0',
+                  borderRadius: '6px',
+                  padding: '0 8px',
+                  height: '32px',
+                  width: '200px',
+                  gap: '6px'
+                }}
+              >
+                <Search size={13} color="#94A3B8" />
+                <input
+                  type="text"
+                  placeholder="بحث في الاستمارات..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  style={{
+                    border: 'none',
+                    outline: 'none',
+                    background: 'transparent',
+                    fontSize: '11.5px',
+                    width: '100%',
+                    color: '#0F172A'
+                  }}
+                />
+                {searchTerm && (
+                  <button type="button" onClick={() => setSearchTerm('')} style={{ border: 'none', background: 'transparent', cursor: 'pointer', padding: 0, color: '#94A3B8' }}>
+                    <X size={12} />
+                  </button>
+                )}
+              </div>
+
+              {/* Filter Pills */}
+              <div style={{ display: 'flex', gap: '3px', background: '#F1F5F9', padding: '3px', borderRadius: '6px', border: '1px solid #E2E8F0' }}>
+                {[
+                  { id: 'ALL', label: `الكل (${submissions.length})` },
+                  { id: 'IN_PROGRESS', label: `قيد التعبئة (${inProgressCount})` },
+                  { id: 'PENDING', label: `بانتظار الاعتماد (${pendingCount})` },
+                  { id: 'PAID', label: `مؤكد الدفع (${paidCount})` },
+                  { id: 'DRAFT', label: `مسودات (${draftCount})` },
+                  { id: 'APPROVED', label: `معتمد (${approvedCount})` },
+                ].map(tab => (
+                  <button
+                    key={tab.id}
+                    type="button"
+                    onClick={() => setFilter(tab.id)}
+                    style={{
+                      padding: '4px 9px',
+                      borderRadius: '5px',
+                      fontSize: '11px',
+                      fontWeight: 700,
+                      border: 'none',
+                      cursor: 'pointer',
+                      background: filter === tab.id ? '#0F172A' : 'transparent',
+                      color: filter === tab.id ? '#FFFFFF' : '#64748B',
+                      boxShadow: filter === tab.id ? '0 2px 5px rgba(15, 23, 42, 0.25)' : 'none',
+                      transition: 'background 0.12s ease, color 0.12s ease'
+                    }}
+                  >
+                    {tab.label}
+                  </button>
+                ))}
+              </div>
             </div>
           )}
-
-        </div>
-      </div>
-
-      {/* Payment Confirmation Modal */}
-      {paymentModalSub && ReactDOM.createPortal(
-        <div 
-          className="modal show d-block" 
-          tabIndex="-1" 
-          style={{ 
-            backgroundColor: 'rgba(15, 23, 42, 0.65)', 
-            backdropFilter: 'blur(4px)', 
-            zIndex: 10000,
-            position: 'fixed',
-            top: 0,
-            bottom: 0,
-            overflowY: 'auto'
-          }}
-          onClick={(e) => { if (e.target === e.currentTarget) setPaymentModalSub(null); }}
         >
-          <div className="modal-dialog modal-dialog-centered" style={{ width: '96%', maxWidth: '480px', margin: '1.5rem auto' }}>
-            <div className="modal-content border-0 shadow-sm shadow-slate-200/50" style={{ borderRadius: '20px', overflow: 'hidden' }} dir="rtl">
-              <div className="modal-header border-bottom p-4 bg-white d-flex justify-content-between align-items-center" style={{ borderColor: '#f1f5f9' }}>
-                <div className="d-flex align-items-center gap-3">
-                  <div className="rounded-circle d-flex align-items-center justify-content-center" style={{ width: '38px', height: '38px', background: '#ecfdf5', color: '#059669', border: '1px solid #a7f3d0' }}>
-                    <i className="ti ti-wallet fs-5"></i>
-                  </div>
-                  <div>
-                    <h5 className="modal-title fw-bold text-dark mb-0" style={{ fontSize: '1.05rem' }}>تأكيد دفع الاشتراك</h5>
-                    <small className="text-muted" style={{ fontSize: '0.78rem' }}>تفعيل باقة المشترك والبدء في تصميم الخطة</small>
-                  </div>
-                </div>
-                <button 
-                  type="button" 
-                  onClick={() => setPaymentModalSub(null)} 
-                  className="btn btn-sm btn-light rounded-circle d-flex align-items-center justify-content-center flex-shrink-0"
-                  style={{ width: '34px', height: '34px', background: '#f8fafc', border: '1px solid #e2e8f0', color: '#64748b' }}
-                  title="إغلاق"
-                >
-                  <i className="ti ti-x fs-6"></i>
-                </button>
+          {loading ? (
+            <div style={{ padding: '40px', textAlign: 'center', color: '#64748B', fontSize: '13px' }}>
+              جاري تحميل الاستمارات...
+            </div>
+          ) : filteredSubmissions.length === 0 ? (
+            <div style={{ padding: '40px 16px', textAlign: 'center', background: '#F8FAFC', border: '1px dashed #CBD5E1', borderRadius: '8px' }}>
+              <div style={{ width: '36px', height: '36px', borderRadius: '50%', background: '#F1F5F9', color: '#0F172A', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 8px auto' }}>
+                <CheckCircle2 size={18} />
               </div>
-              <form onSubmit={handleVerifyPayment}>
-                <div className="modal-body p-4 bg-white">
-                  <div className="mb-3">
-                    <label className="form-label fw-bold text-dark small">نوع الباقة</label>
-                    <select 
-                      className="form-select"
-                      style={{ height: '38px', borderRadius: '10px', fontSize: '0.82rem' }}
-                      value={paymentForm.subscription_package}
-                      onChange={(e) => setPaymentForm({ ...paymentForm, subscription_package: e.target.value })}
-                    >
-                      <option value="ELITE_3_PLUS_1">باقة إيليت (3 شهور + 1 شهر مجاناً)</option>
-                      <option value="MAX_3_PLUS_1">باقة ماكس VIP (3 شهور + 1 شهر مجاناً)</option>
-                      <option value="1_MONTH">باقة شهر واحد</option>
-                      <option value="3_MONTHS_VIP">باقة 3 شهور VIP</option>
-                      <option value="6_MONTHS">باقة 6 شهور</option>
-                      <option value="12_MONTHS">باقة سنة كاملة</option>
-                    </select>
-                  </div>
-                  <div className="mb-3">
-                    <label className="form-label fw-bold text-dark small">المبلغ المدفوع (ج.م)</label>
-                    <input 
-                      type="number"
-                      className="form-control"
-                      style={{ height: '38px', borderRadius: '10px', fontSize: '0.82rem' }}
-                      value={paymentForm.subscription_price}
-                      onChange={(e) => setPaymentForm({ ...paymentForm, subscription_price: Number(e.target.value) })}
-                      required
-                    />
-                  </div>
-                  <div className="mb-2">
-                    <label className="form-label fw-bold text-dark small">طريقة الدفع</label>
-                    <select 
-                      className="form-select"
-                      style={{ height: '38px', borderRadius: '10px', fontSize: '0.82rem' }}
-                      value={paymentForm.payment_method}
-                      onChange={(e) => setPaymentForm({ ...paymentForm, payment_method: e.target.value })}
-                    >
-                      <option value="INSTAPAY">انستاباي (InstaPay)</option>
-                      <option value="VODAFONE_CASH">فودافون كاش (Vodafone Cash)</option>
-                      <option value="CREDIT_CARD">بطاقة بنكية / فيزا</option>
-                      <option value="CASH">نقداً في الجيم</option>
-                    </select>
-                  </div>
+              <strong style={{ fontSize: '13px', color: '#0F172A', display: 'block', marginBottom: '2px' }}>لا توجد استمارات مطابقة</strong>
+              <small style={{ fontSize: '11.5px', color: '#64748B' }}>لم يتم العثور على أي استمارة مسجلة تحت هذا التصنيف أو البحث.</small>
+            </div>
+          ) : (
+            <div style={{ overflowX: 'auto', border: '1px solid #E2E8F0', borderRadius: '8px' }}>
+              <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'right', fontSize: '12px' }}>
+                <thead>
+                  <tr style={{ background: '#F8FAFC', borderBottom: '1px solid #E2E8F0', color: '#475569', fontWeight: 700 }}>
+                    <th style={{ padding: '10px 14px' }}>كود العميل</th>
+                    <th style={{ padding: '10px 14px' }}>اسم المتدرب</th>
+                    <th style={{ padding: '10px 14px' }}>رقم الهاتف</th>
+                    <th style={{ padding: '10px 14px' }}>الباقة والمبلغ</th>
+                    <th style={{ padding: '10px 14px' }}>حالة الدفع</th>
+                    <th style={{ padding: '10px 14px' }}>حالة الاستمارة</th>
+                    <th style={{ padding: '10px 14px', textAlign: 'left' }}>الإجراءات</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {filteredSubmissions.map((sub) => {
+                    const clientName = sub.user?.full_name || sub.answers?.personal?.firstName || 'متدرب جديد';
+                    const clientPhone = sub.user?.phone_number || sub.answers?.personal?.phone || '-';
+                    const clientCode = sub.user?.client_code || String(sub.id);
+                    const cleanCode = clientCode.replace(/^client[-_]?/i, '');
+
+                    return (
+                      <tr 
+                        key={sub.id} 
+                        style={{ borderBottom: '1px solid #F1F5F9', transition: 'background 0.15s ease' }}
+                        onMouseEnter={(e) => (e.currentTarget.style.background = '#F8FAFC')}
+                        onMouseLeave={(e) => (e.currentTarget.style.background = 'transparent')}
+                      >
+                        {/* Code */}
+                        <td style={{ padding: '10px 14px' }}>
+                          <span style={{ fontFamily: 'JetBrains Mono, monospace', fontWeight: 800, fontSize: '11px', background: '#F1F5F9', border: '1px solid #CBD5E1', color: '#0F172A', padding: '2px 7px', borderRadius: '4px' }}>
+                            {'#' + cleanCode}
+                          </span>
+                        </td>
+
+                        {/* Name */}
+                        <td style={{ padding: '10px 14px' }}>
+                          <strong style={{ color: '#0F172A', fontSize: '13px', display: 'block' }}>{clientName}</strong>
+                        </td>
+
+                        {/* Phone */}
+                        <td style={{ padding: '10px 14px' }}>
+                          <span dir="ltr" style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '11.5px', color: '#475569' }}>
+                            {clientPhone}
+                          </span>
+                        </td>
+
+                        {/* Package */}
+                        <td style={{ padding: '10px 14px', color: '#475569' }}>
+                          <div>{sub.package_name || sub.subscription_package || 'باقة 3 شهور VIP'}</div>
+                          <small style={{ color: '#94A3B8', fontSize: '10.5px' }}>{sub.amount ? `${sub.amount} ج.م` : '2500 ج.م'}</small>
+                        </td>
+
+                        {/* Payment Status */}
+                        <td style={{ padding: '10px 14px' }}>
+                          {sub.payment_status === 'PAID' || sub.status === 'PAYMENT_CONFIRMED' || sub.status === 'APPROVED' ? (
+                            <span style={{ background: '#F0FDF4', border: '1px solid #BBF7D0', color: '#16A34A', padding: '2px 8px', borderRadius: '4px', fontSize: '10.5px', fontWeight: 700 }}>
+                              مدفوع (INSTAPAY)
+                            </span>
+                          ) : (
+                            <span style={{ background: '#FFFBEB', border: '1px solid #FDE68A', color: '#D97706', padding: '2px 8px', borderRadius: '4px', fontSize: '10.5px', fontWeight: 700 }}>
+                              بانتظار الدفع
+                            </span>
+                          )}
+                        </td>
+
+                        {/* Intake Status */}
+                        <td style={{ padding: '10px 14px' }}>
+                          {sub.status === 'APPROVED' ? (
+                            <span style={{ background: '#F0FDF4', border: '1px solid #BBF7D0', color: '#16A34A', padding: '2px 8px', borderRadius: '4px', fontSize: '10.5px', fontWeight: 800 }}>
+                              معتمد ومنشور
+                            </span>
+                          ) : sub.status === 'DRAFT_GENERATED' ? (
+                            <span style={{ background: '#F1F5F9', border: '1px solid #CBD5E1', color: '#0F172A', padding: '2px 8px', borderRadius: '4px', fontSize: '10.5px', fontWeight: 700 }}>
+                              مسودة جاهزة
+                            </span>
+                          ) : sub.status === 'PENDING_COACH_REVIEW' ? (
+                            <span style={{ background: '#FFFBEB', border: '1px solid #FDE68A', color: '#D97706', padding: '2px 8px', borderRadius: '4px', fontSize: '10.5px', fontWeight: 700 }}>
+                              بانتظار المراجعة
+                            </span>
+                          ) : (
+                            <span style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', color: '#64748B', padding: '2px 8px', borderRadius: '4px', fontSize: '10.5px', fontWeight: 700 }}>
+                              قيد التعبئة
+                            </span>
+                          )}
+                        </td>
+
+                        {/* Actions */}
+                        <td style={{ padding: '10px 14px', textAlign: 'left' }}>
+                          <div style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
+                            
+                            {/* WhatsApp Nudge Button */}
+                            <button
+                              type="button"
+                              onClick={() => handleSendNudge(sub)}
+                              style={{
+                                padding: '4px 8px',
+                                borderRadius: '5px',
+                                border: '1px solid #CBD5E1',
+                                background: '#FFFFFF',
+                                color: '#0F172A',
+                                fontSize: '11px',
+                                fontWeight: 700,
+                                cursor: 'pointer',
+                                display: 'inline-flex',
+                                alignItems: 'center',
+                                gap: '4px'
+                              }}
+                              title="تواصل وتذكير واتساب"
+                            >
+                              <MessageCircle size={12} color="#16A34A" />
+                              <span>واتساب</span>
+                            </button>
+
+                            {/* View Answers */}
+                            <button
+                              type="button"
+                              onClick={() => handleToggleAnswers(sub)}
+                              style={{
+                                padding: '4px 8px',
+                                borderRadius: '5px',
+                                border: '1px solid #CBD5E1',
+                                background: '#FFFFFF',
+                                color: '#475569',
+                                fontSize: '11px',
+                                fontWeight: 700,
+                                cursor: 'pointer',
+                                display: 'inline-flex',
+                                alignItems: 'center',
+                                gap: '4px'
+                              }}
+                              title="عرض إجابات الاستمارة"
+                            >
+                              <Eye size={12} />
+                              <span>إجابات</span>
+                            </button>
+
+                            {/* Verify Payment Modal trigger if not paid */}
+                            {sub.status !== 'APPROVED' && sub.payment_status !== 'PAID' && (
+                              <button
+                                type="button"
+                                onClick={() => setPaymentModalSub(sub)}
+                                style={{
+                                  padding: '4px 8px',
+                                  borderRadius: '5px',
+                                  border: '1px solid #CBD5E1',
+                                  background: '#FFFFFF',
+                                  color: '#0F172A',
+                                  fontSize: '11px',
+                                  fontWeight: 700,
+                                  cursor: 'pointer'
+                                }}
+                              >
+                                تأكيد الدفع
+                              </button>
+                            )}
+
+                            {/* Generate / Edit Program CTA in #0F172A */}
+                            <button
+                              type="button"
+                              onClick={() => handleGenerateDraft(sub)}
+                              disabled={generatingId === sub.id}
+                              style={{
+                                padding: '4px 12px',
+                                borderRadius: '5px',
+                                background: '#0F172A',
+                                color: '#FFFFFF',
+                                fontSize: '11px',
+                                fontWeight: 700,
+                                border: 'none',
+                                cursor: 'pointer',
+                                display: 'inline-flex',
+                                alignItems: 'center',
+                                gap: '4px',
+                                boxShadow: '0 2px 5px rgba(15, 23, 42, 0.25)',
+                                transition: 'all 0.15s ease'
+                              }}
+                              onMouseEnter={(e) => (e.currentTarget.style.background = '#334155')}
+                              onMouseLeave={(e) => (e.currentTarget.style.background = '#0F172A')}
+                            >
+                              <Sparkles size={12} />
+                              <span>{sub.status === 'APPROVED' ? 'تعديل الخطة' : 'توليد ومراجعة'}</span>
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </FormSection>
+
+        {/* Payment Confirmation Modal */}
+        {paymentModalSub && (
+          <div style={{ position: 'fixed', inset: 0, background: 'rgba(15, 23, 42, 0.5)', backdropFilter: 'blur(4px)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1200 }}>
+            <div style={{ background: '#FFFFFF', borderRadius: '12px', width: '400px', maxWidth: '90vw', padding: '20px', border: '1px solid #E2E8F0', boxShadow: '0 20px 40px rgba(15, 23, 42, 0.15)' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px' }}>
+                <strong style={{ fontSize: '14px', color: '#0F172A' }}>تأكيد استلام الدفع وتفعيل الباقة</strong>
+                <button type="button" onClick={() => setPaymentModalSub(null)} style={{ border: 'none', background: 'transparent', cursor: 'pointer' }}><X size={16} /></button>
+              </div>
+              <form onSubmit={handleVerifyPayment} style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                <div>
+                  <label style={{ fontSize: '11.5px', color: '#64748B', display: 'block', marginBottom: '4px' }}>اسم المشترك</label>
+                  <input type="text" disabled value={paymentModalSub.user?.full_name || 'متدرب جديد'} style={{ width: '100%', padding: '7px 10px', borderRadius: '6px', border: '1px solid #E2E8F0', background: '#F8FAFC', fontSize: '12px' }} />
                 </div>
-                <div className="modal-footer bg-light border-top p-3 d-flex justify-content-between" style={{ borderColor: '#f1f5f9' }}>
-                  <button type="button" className="btn btn-light btn-sm rounded-pill px-4 border text-dark" style={{ height: '36px' }} onClick={() => setPaymentModalSub(null)}>
-                    إلغاء
-                  </button>
-                  <button type="submit" className="btn btn-primary btn-sm rounded-pill px-4 fw-bold" style={{ height: '36px' }}>
-                    تأكيد وتفعيل الاشتراك 
-                  </button>
+                <div>
+                  <label style={{ fontSize: '11.5px', color: '#64748B', display: 'block', marginBottom: '4px' }}>المبلغ المستلم (ج.م)</label>
+                  <input type="number" value={paymentForm.subscription_price} onChange={(e) => setPaymentForm({ ...paymentForm, subscription_price: Number(e.target.value) })} style={{ width: '100%', padding: '7px 10px', borderRadius: '6px', border: '1px solid #E2E8F0', fontSize: '12px' }} />
+                </div>
+                <div style={{ display: 'flex', gap: '8px', marginTop: '6px' }}>
+                  <button type="button" onClick={() => setPaymentModalSub(null)} style={{ flex: 1, padding: '8px', borderRadius: '6px', border: '1px solid #E2E8F0', background: '#FFFFFF', color: '#475569', fontSize: '12px', fontWeight: 700, cursor: 'pointer' }}>إلغاء</button>
+                  <button type="submit" style={{ flex: 1, padding: '8px', borderRadius: '6px', border: 'none', background: '#0F172A', color: '#FFFFFF', fontSize: '12px', fontWeight: 700, cursor: 'pointer' }}>تأكيد وتفعيل</button>
                 </div>
               </form>
             </div>
           </div>
-        </div>,
-        document.body
-      )}
+        )}
 
-      {/* WhatsApp Hub Modal */}
-      <WhatsAppModal 
-        client={whatsappClient}
-        onClose={() => setWhatsappClient(null)}
-      />
+        {/* Intake Audit Details Modal */}
+        {selectedAnswers && (
+          <IntakeAuditDetailModal
+            submission={selectedAnswers}
+            isOpen={Boolean(selectedAnswers)}
+            onClose={() => setSelectedAnswers(null)}
+          />
+        )}
+
+        {/* WhatsApp Modal */}
+        {whatsappClient && (
+          <WhatsAppModal
+            isOpen={Boolean(whatsappClient)}
+            onClose={() => setWhatsappClient(null)}
+            client={whatsappClient}
+          />
+        )}
+
+      </div>
     </AdminLayout>
   );
 }

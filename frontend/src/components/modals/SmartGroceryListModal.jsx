@@ -48,13 +48,13 @@ export default function SmartGroceryListModal({ isOpen, onClose, culinaryMeals =
                   width: '42px', 
                   height: '42px', 
                   borderRadius: '12px', 
-                  background: 'linear-gradient(135deg, #58B4E5 0%, #0284C7 100%)', 
+                  background: '#0F172A', 
                   color: '#FFFFFF',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
                   fontSize: '1.2rem',
-                  boxShadow: '0 4px 12px rgba(88, 180, 229, 0.3)'
+                  boxShadow: '0 4px 12px rgba(15, 23, 42, 0.25)'
                 }}
               >
                 <i className="ti ti-shopping-cart"></i>

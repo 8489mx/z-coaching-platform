@@ -1,9 +1,55 @@
 import React, { useState, useEffect } from 'react';
+import { 
+  Settings, 
+  Layers, 
+  Video, 
+  Crown, 
+  Salad, 
+  Sliders, 
+  Plus, 
+  Search, 
+  Check, 
+  X, 
+  Edit3, 
+  Trash2, 
+  ExternalLink, 
+  ShieldCheck, 
+  Database, 
+  FileText,
+  ChevronUp,
+  ChevronDown,
+  Save,
+  CheckCircle2,
+  Palette,
+  Sparkles,
+  RotateCcw,
+  User,
+  Phone,
+  CreditCard,
+  Globe,
+  MessageSquare,
+  Award,
+  Activity,
+  Droplets,
+  Footprints,
+  Eye,
+  Send,
+  Building2
+} from 'lucide-react';
 import { API_BASE } from '../config/api';
 import AdminLayout from '../components/layout/AdminLayout';
 import EditQuestionModal from '../components/modals/EditQuestionModal';
 import EditExerciseModal from '../components/modals/EditExerciseModal';
 import EditPackageModal from '../components/modals/EditPackageModal';
+import { PageHeader } from '@/shared/components/page-header';
+import { FormSection } from '@/shared/components/form-section';
+import { 
+  THEME_PALETTES, 
+  getStoredCoachConfig, 
+  saveCoachConfig, 
+  applyThemeLive, 
+  deriveThemeColors 
+} from '../utils/themeAndCoachConfig';
 
 const SECTION_TRANSLATIONS = {
   personal: '1. البيانات الشخصية والأهداف',
@@ -21,7 +67,6 @@ const TYPE_TRANSLATIONS = {
   date: 'تاريخ'
 };
 
-// Default Foods Catalog for Food Manager Tab
 const DEFAULT_FOODS = [
   { id: 'CHICKEN_BREAST', name_ar: 'صدور دجاج مشوية', category_ar: 'مصادر بروتين', calories: 165, protein: 31, carbs: 0, fats: 3.6, unit: '100 جرام' },
   { id: 'WHITE_RICE', name_ar: 'أرز أبيض بسمتي مطبوخ', category_ar: 'كاربوهيدرات معقدة', calories: 130, protein: 2.7, carbs: 28, fats: 0.3, unit: '100 جرام' },
@@ -35,7 +80,6 @@ const DEFAULT_FOODS = [
   { id: 'BANANA', name_ar: 'موز طازج', category_ar: 'فاكهة وبوتاسيوم', calories: 89, protein: 1.1, carbs: 22.8, fats: 0.3, unit: '100 جرام (حبة متوسطة)' }
 ];
 
-// Default Packages for Packages Tab
 const DEFAULT_PACKAGES = [
   {
     id: "ELITE_3_PLUS_1",
@@ -106,15 +150,69 @@ export default function MasterSettingsHub() {
   const [foods, setFoods] = useState(DEFAULT_FOODS);
   const [foodSearch, setFoodSearch] = useState('');
 
-  // General Settings State
-  const [systemConfig, setSystemConfig] = useState({
-    coachName: 'كابتن Z Coaching',
-    platformTitle: 'Z COACHING MASTER PLATFORM',
-    defaultDailySteps: 8000,
-    defaultWaterLiters: 3.5,
-    defaultRIR: 3,
-    smartAdaptationEnabled: true
+  // Coach Studio & System Theme State
+  const [coachConfig, setCoachConfig] = useState(getStoredCoachConfig());
+  const [activePalette, setActivePalette] = useState(() => {
+    const cfg = getStoredCoachConfig();
+    return cfg.primaryColor || '#0F172A';
   });
+  const [customColor, setCustomColor] = useState(() => {
+    const cfg = getStoredCoachConfig();
+    return cfg.primaryColor || '#0F172A';
+  });
+  const [saveSuccessMsg, setSaveSuccessMsg] = useState(null);
+
+  // Realtime Live Preview Palette Handler
+  const handleSelectPalette = (palette) => {
+    setActivePalette(palette.primary);
+    setCustomColor(palette.primary);
+    const updated = {
+      ...coachConfig,
+      primaryColor: palette.primary,
+      hoverColor: palette.hover,
+      paletteId: palette.id
+    };
+    setCoachConfig(updated);
+    saveCoachConfig(updated);
+  };
+
+  // Realtime Custom Color Picker Handler
+  const handleCustomColorChange = (newHex) => {
+    setCustomColor(newHex);
+    setActivePalette(newHex);
+    const derived = deriveThemeColors(newHex);
+    const updated = {
+      ...coachConfig,
+      primaryColor: derived.primary,
+      hoverColor: derived.hover,
+      paletteId: 'custom'
+    };
+    setCoachConfig(updated);
+    saveCoachConfig(updated);
+  };
+
+  const handleResetDefaultTheme = () => {
+    const defaultPalette = THEME_PALETTES[0]; // Slate Navy #0F172A
+    handleSelectPalette(defaultPalette);
+  };
+
+  const handleSaveSystemSettings = (e) => {
+    if (e) e.preventDefault();
+    setSaving(true);
+    try {
+      const saved = saveCoachConfig(coachConfig);
+      if (saved) {
+        setCoachConfig(saved);
+        setSaveSuccessMsg('تم حفظ وتثبيت إعدادات وهوية المنظومة بنجاح!');
+        setTimeout(() => setSaveSuccessMsg(null), 3500);
+      }
+    } catch (err) {
+      console.error(err);
+      alert('خطأ أثناء الحفظ: ' + err.message);
+    } finally {
+      setSaving(false);
+    }
+  };
 
   useEffect(() => {
     fetchIntakeSchema();
@@ -207,7 +305,6 @@ export default function MasterSettingsHub() {
     }
   };
 
-  // Move Question Up / Down
   const handleMoveQuestion = (index, direction) => {
     const newIdx = direction === 'up' ? index - 1 : index + 1;
     if (newIdx < 0 || newIdx >= questions.length) return;
@@ -339,933 +436,1070 @@ export default function MasterSettingsHub() {
       f.category_ar.toLowerCase().includes(foodSearch.trim().toLowerCase());
   });
 
+  const statCards = [
+    { title: 'أسئلة الاستمارة', value: questions.length, label: `${questions.filter(q => q.required).length} إجباري`, icon: Layers },
+    { title: 'تمارين معتمدة', value: exercises.length, label: `${exercises.filter(e => e.video_url || e.video_id).length} بروابط يوتيوب`, icon: Video },
+    { title: 'أصناف غذائية وبدائل', value: `${foods.length}+`, label: 'ماكروز دقيقة', icon: Salad },
+    { title: 'نظام الحفظ والمزامنة', value: '100%', label: 'Hostinger Ready ✓', icon: Database },
+  ];
+
   return (
     <AdminLayout>
-      <div className="theme-body py-2" dir="rtl" style={{ fontFamily: 'Cairo, Tajawal, system-ui, sans-serif' }}>
-        <div className="container-fluid">
-          
-          {/* Top Page Header (Quiet Luxury) */}
-          <div className="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
-            <div>
-              <div className="d-flex align-items-center gap-2 mb-1">
-                <div className="rounded-circle d-flex align-items-center justify-content-center flex-shrink-0" style={{ width: '38px', height: '38px', background: '#E5F0FF', color: '#0284C7', border: '1.5px solid #BAE6FD' }}>
-                  <i className="ti ti-settings-cog fs-5"></i>
-                </div>
-                <h4 className="fw-bold text-dark mb-0" style={{ letterSpacing: '-0.3px', fontSize: '1.3rem' }}>
-                  لوحة تحكم المنظومة الرئيسية — «داش الداش»
-                </h4>
-                <span className="badge rounded-pill fw-bold" style={{ background: '#0284C7', color: '#ffffff', fontSize: '0.68rem', padding: '5px 10px' }}>
-                  SUPER ADMIN
-                </span>
-              </div>
-              <p className="text-muted small mb-0" style={{ fontSize: '0.82rem' }}>
-                التحكم المركزي في استمارة الاشتراك، مكتبة التمارين وروابط الفيديو، وقواعد بيانات المنظومة
-              </p>
-            </div>
+      <div className="page-stack" dir="rtl" style={{ display: 'flex', flexDirection: 'column', gap: '18px' }}>
+        
+        {/* 1. Page Header */}
+        <PageHeader
+          title="لوحة تحكم المنظومة الرئيسية — «داش الداش»"
+          description="التحكم المركزي في استمارة الاشتراك، مكتبة التمارين، الباقات وقواعد بيانات النظام."
+        />
 
-            <div className="d-flex gap-2 align-items-center">
-              <span className="badge rounded-pill px-3 py-2 fw-semibold d-inline-flex align-items-center gap-1" style={{ background: '#ecfdf5', color: '#059669', border: '1px solid #a7f3d0', fontSize: '0.78rem' }}>
-                <i className="ti ti-circle-check fs-6"></i>
-                <span>جاهز للاستضافة (Hostinger Ready) ✓</span>
-              </span>
-            </div>
-          </div>
-
-          {/* Top 4 KPI Summary Cards (Identical to Dashboard Executive KPIs) */}
-          <div className="row g-3 mb-4">
-            
-            {/* Card 1: Intake Questions */}
-            <div className="col-xl-3 col-sm-6 col-12">
-              <div className="card border-0 bg-white h-100 shadow-sm" style={{ borderRadius: '14px', border: '1px solid #e2e8f0' }}>
-                <div className="card-body p-3 d-flex flex-column justify-content-between">
-                  <div className="d-flex justify-content-between align-items-center mb-2">
-                    <div 
-                      className="d-flex align-items-center justify-content-center"
-                      style={{ width: '30px', height: '30px', borderRadius: '8px', background: '#E5F0FF', color: '#0284C7' }}
-                    >
-                      <i className="ti ti-forms fs-6"></i>
-                    </div>
-                    <span className="badge rounded-pill fw-semibold px-2 py-1" style={{ background: '#f8fafc', color: '#0284C7', fontSize: '0.68rem', border: '1px solid #BAE6FD' }}>
-                      استمارة نشطة
-                    </span>
-                  </div>
-
-                  <div>
-                    <h3 className="fw-bold text-dark mb-0" style={{ fontSize: '1.45rem', letterSpacing: '-0.5px' }}>
-                      {questions.length}
-                    </h3>
-                    <p className="text-muted small mb-0 fw-medium" style={{ fontSize: '0.78rem' }}>إجمالي أسئلة الاستمارة</p>
-                  </div>
-
-                  <div className="d-flex justify-content-between align-items-center mt-2 pt-2 border-top border-light">
-                    <small className="text-muted" style={{ fontSize: '0.72rem' }}>
-                      {questions.filter(q => q.required).length} إجباري | {questions.filter(q => !q.required).length} اختياري
-                    </small>
-                    <svg width="48" height="14" viewBox="0 0 60 18" fill="none">
-                      <defs>
-                        <linearGradient id="kpiGrad1" x1="0" y1="0" x2="1" y2="0">
-                          <stop offset="0%" stopColor="#818cf8" />
-                          <stop offset="100%" stopColor="#0284C7" />
-                        </linearGradient>
-                      </defs>
-                      <path d="M1 14C10 14 16 4 24 7C32 10 40 2 50 3C56 5 58 2 59 1" stroke="url(#kpiGrad1)" strokeWidth="2.5" strokeLinecap="round"/>
-                    </svg>
+        {/* 2. 4-Column Balanced KPI Grid */}
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '14px' }}>
+          {statCards.map((st, i) => {
+            const Icon = st.icon;
+            return (
+              <div 
+                key={i} 
+                style={{
+                  background: '#FFFFFF',
+                  border: '1px solid #E2E8F0',
+                  borderRadius: '10px',
+                  padding: '12px 14px',
+                  boxShadow: '0 1px 3px rgba(15, 23, 42, 0.02)',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  gap: '8px'
+                }}
+              >
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <span style={{ fontSize: '11.5px', fontWeight: 700, color: '#64748B' }}>{st.title}</span>
+                  <div style={{ width: '28px', height: '28px', borderRadius: '6px', background: '#F8FAFC', border: '1px solid #E2E8F0', color: '#0F172A', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    <Icon size={14} />
                   </div>
                 </div>
-              </div>
-            </div>
-
-            {/* Card 2: Exercise Library */}
-            <div className="col-xl-3 col-sm-6 col-12">
-              <div className="card border-0 bg-white h-100 shadow-sm" style={{ borderRadius: '14px', border: '1px solid #e2e8f0' }}>
-                <div className="card-body p-3 d-flex flex-column justify-content-between">
-                  <div className="d-flex justify-content-between align-items-center mb-2">
-                    <div 
-                      className="d-flex align-items-center justify-content-center"
-                      style={{ width: '30px', height: '30px', borderRadius: '8px', background: '#eff6ff', color: '#0284c7' }}
-                    >
-                      <i className="ti ti-barbell fs-6"></i>
-                    </div>
-                    <span className="badge rounded-pill fw-semibold px-2 py-1" style={{ background: '#eff6ff', color: '#0284c7', fontSize: '0.68rem', border: '1px solid #bfdbfe' }}>
-                      فيديوهات تكنيك
-                    </span>
-                  </div>
-
-                  <div>
-                    <h3 className="fw-bold text-dark mb-0" style={{ fontSize: '1.45rem', letterSpacing: '-0.5px' }}>
-                      {exercises.length}
-                    </h3>
-                    <p className="text-muted small mb-0 fw-medium" style={{ fontSize: '0.78rem' }}>تمارين معتمدة بالمكتبة</p>
-                  </div>
-
-                  <div className="d-flex justify-content-between align-items-center mt-2 pt-2 border-top border-light">
-                    <small className="text-muted" style={{ fontSize: '0.72rem' }}>
-                      {exercises.filter(e => e.video_url || e.video_id).length} مزود بروابط يوتيوب
-                    </small>
-                    <svg width="48" height="14" viewBox="0 0 60 18" fill="none">
-                      <defs>
-                        <linearGradient id="kpiGrad2" x1="0" y1="0" x2="1" y2="0">
-                          <stop offset="0%" stopColor="#38bdf8" />
-                          <stop offset="100%" stopColor="#0284c7" />
-                        </linearGradient>
-                      </defs>
-                      <path d="M1 5C12 12 18 3 28 8C38 13 48 5 59 11" stroke="url(#kpiGrad2)" strokeWidth="2.5" strokeLinecap="round"/>
-                    </svg>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* Card 3: Food Database */}
-            <div className="col-xl-3 col-sm-6 col-12">
-              <div className="card border-0 bg-white h-100 shadow-sm" style={{ borderRadius: '14px', border: '1px solid #e2e8f0' }}>
-                <div className="card-body p-3 d-flex flex-column justify-content-between">
-                  <div className="d-flex justify-content-between align-items-center mb-2">
-                    <div 
-                      className="d-flex align-items-center justify-content-center"
-                      style={{ width: '30px', height: '30px', borderRadius: '8px', background: '#fefce8', color: '#d97706' }}
-                    >
-                      <i className="ti ti-salad fs-6"></i>
-                    </div>
-                    <span className="badge rounded-pill fw-semibold px-2 py-1" style={{ background: '#fefce8', color: '#d97706', fontSize: '0.68rem', border: '1px solid #fef08a' }}>
-                      ماكروز دقيقة
-                    </span>
-                  </div>
-
-                  <div>
-                    <h3 className="fw-bold text-dark mb-0" style={{ fontSize: '1.45rem', letterSpacing: '-0.5px' }}>
-                      {foods.length}+
-                    </h3>
-                    <p className="text-muted small mb-0 fw-medium" style={{ fontSize: '0.78rem' }}>أصناف غذائية وبدائل</p>
-                  </div>
-
-                  <div className="d-flex justify-content-between align-items-center mt-2 pt-2 border-top border-light">
-                    <small className="text-muted" style={{ fontSize: '0.72rem' }}>حساب سعرات فوري</small>
-                    <svg width="48" height="14" viewBox="0 0 60 18" fill="none">
-                      <defs>
-                        <linearGradient id="kpiGrad3" x1="0" y1="0" x2="1" y2="0">
-                          <stop offset="0%" stopColor="#fde047" />
-                          <stop offset="100%" stopColor="#d97706" />
-                        </linearGradient>
-                      </defs>
-                      <path d="M1 12C12 6 22 14 32 9C42 4 50 10 59 3" stroke="url(#kpiGrad3)" strokeWidth="2.5" strokeLinecap="round"/>
-                    </svg>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* Card 4: Hostinger Storage & Sync */}
-            <div className="col-xl-3 col-sm-6 col-12">
-              <div className="card border-0 bg-white h-100 shadow-sm" style={{ borderRadius: '14px', border: '1px solid #e2e8f0' }}>
-                <div className="card-body p-3 d-flex flex-column justify-content-between">
-                  <div className="d-flex justify-content-between align-items-center mb-2">
-                    <div 
-                      className="d-flex align-items-center justify-content-center"
-                      style={{ width: '30px', height: '30px', borderRadius: '8px', background: '#ecfdf5', color: '#059669' }}
-                    >
-                      <i className="ti ti-database-check fs-6"></i>
-                    </div>
-                    <span className="badge rounded-pill fw-semibold px-2 py-1" style={{ background: '#ecfdf5', color: '#059669', fontSize: '0.68rem', border: '1px solid #a7f3d0' }}>
-                      Hostinger Ready
-                    </span>
-                  </div>
-
-                  <div>
-                    <h3 className="fw-bold text-success mb-0" style={{ fontSize: '1.45rem', letterSpacing: '-0.5px' }}>
-                      100%
-                    </h3>
-                    <p className="text-muted small mb-0 fw-medium" style={{ fontSize: '0.78rem' }}>نظام الحفظ والمزامنة</p>
-                  </div>
-
-                  <div className="d-flex justify-content-between align-items-center mt-2 pt-2 border-top border-light">
-                    <small className="text-muted font-monospace" style={{ fontSize: '0.7rem' }}>data/settings/</small>
-                    <svg width="48" height="14" viewBox="0 0 60 18" fill="none">
-                      <defs>
-                        <linearGradient id="kpiGrad4" x1="0" y1="0" x2="1" y2="0">
-                          <stop offset="0%" stopColor="#34d399" />
-                          <stop offset="100%" stopColor="#059669" />
-                        </linearGradient>
-                      </defs>
-                      <path d="M1 14C10 8 20 12 30 5C40 2 50 7 59 1" stroke="url(#kpiGrad4)" strokeWidth="2.5" strokeLinecap="round"/>
-                    </svg>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-          </div>
-
-          {/* Master Navigation Tabs */}
-          <div className="card border-0 shadow-sm bg-white mb-4" style={{ borderRadius: '18px', border: '1px solid #e2e8f0' }}>
-            <div className="card-header bg-white border-bottom p-3 px-4 d-flex justify-content-between align-items-center flex-wrap gap-2" style={{ borderColor: '#f1f5f9' }}>
-              <div className="d-flex gap-2 flex-wrap">
-                <button
-                  type="button"
-                  onClick={() => setActiveTab('intake')}
-                  className={`btn btn-sm rounded-pill px-4 fw-bold transition-all ${activeTab === 'intake' ? 'text-slate-900 shadow-xs' : 'bg-light text-dark'}`}
-                  style={{
-                    background: activeTab === 'intake' ? '#0284C7' : undefined,
-                    height: '38px',
-                    fontSize: '0.84rem'
-                  }}
-                >
-                  <i className="ti ti-forms me-1"></i> محرر استمارة الاشتراك (Intake Builder)
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setActiveTab('exercises')}
-                  className={`btn btn-sm rounded-pill px-4 fw-bold transition-all ${activeTab === 'exercises' ? 'text-slate-900 shadow-xs' : 'bg-light text-dark'}`}
-                  style={{
-                    background: activeTab === 'exercises' ? '#0284C7' : undefined,
-                    height: '38px',
-                    fontSize: '0.84rem'
-                  }}
-                >
-                  <i className="ti ti-video me-1"></i> مكتبة التمارين وروابط الفيديو (Exercise Manager)
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setActiveTab('packages')}
-                  className={`btn btn-sm rounded-pill px-4 fw-bold transition-all ${activeTab === 'packages' ? 'text-slate-900 shadow-xs' : 'bg-light text-dark'}`}
-                  style={{
-                    background: activeTab === 'packages' ? '#0284C7' : undefined,
-                    height: '38px',
-                    fontSize: '0.84rem'
-                  }}
-                >
-                  <i className="ti ti-crown me-1"></i> إدارة الباقات والأسعار (Packages & Pricing)
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setActiveTab('foods')}
-                  className={`btn btn-sm rounded-pill px-4 fw-bold transition-all ${activeTab === 'foods' ? 'text-slate-900 shadow-xs' : 'bg-light text-dark'}`}
-                  style={{
-                    background: activeTab === 'foods' ? '#0284C7' : undefined,
-                    height: '38px',
-                    fontSize: '0.84rem'
-                  }}
-                >
-                  <i className="ti ti-salad me-1"></i> جدول الأغذية والماكروز (Food Database)
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setActiveTab('system')}
-                  className={`btn btn-sm rounded-pill px-4 fw-bold transition-all ${activeTab === 'system' ? 'text-slate-900 shadow-xs' : 'bg-light text-dark'}`}
-                  style={{
-                    background: activeTab === 'system' ? '#0284C7' : undefined,
-                    height: '38px',
-                    fontSize: '0.84rem'
-                  }}
-                >
-                  <i className="ti ti-adjustments me-1"></i> إعدادات المنظومة العامة (System Defaults)
-                </button>
-              </div>
-
-              {activeTab === 'intake' && (
-                <button
-                  type="button"
-                  onClick={() => { setEditingQuestion(null); setQuestionModalOpen(true); }}
-                  className="btn btn-sm rounded-pill px-4 fw-bold text-slate-900 shadow-sm d-flex align-items-center gap-2"
-                  style={{ background: 'linear-gradient(135deg, #58B4E5 0%, #0284C7 100%)', height: '38px', fontSize: '0.82rem', border: 'none' }}
-                >
-                  <i className="ti ti-plus fs-6"></i>
-                  <span>إضافة سؤال جديد للاستمارة</span>
-                </button>
-              )}
-
-              {activeTab === 'exercises' && (
-                <button
-                  type="button"
-                  onClick={() => { setEditingExercise(null); setExerciseModalOpen(true); }}
-                  className="btn btn-sm rounded-pill px-4 fw-bold text-slate-900 shadow-sm d-flex align-items-center gap-2"
-                  style={{ background: 'linear-gradient(135deg, #58B4E5 0%, #0284C7 100%)', height: '38px', fontSize: '0.82rem', border: 'none' }}
-                >
-                  <i className="ti ti-plus fs-6"></i>
-                  <span>إضافة تمرين جديد للمكتبة</span>
-                </button>
-              )}
-
-              {activeTab === 'packages' && (
-                <button
-                  type="button"
-                  onClick={() => { setEditingPackage(null); setPackageModalOpen(true); }}
-                  className="btn btn-sm rounded-pill px-4 fw-bold text-slate-900 shadow-sm d-flex align-items-center gap-2"
-                  style={{ background: 'linear-gradient(135deg, #58B4E5 0%, #0284C7 100%)', height: '38px', fontSize: '0.82rem', border: 'none' }}
-                >
-                  <i className="ti ti-plus fs-6"></i>
-                  <span>إضافة باقة اشتراك جديدة</span>
-                </button>
-              )}
-            </div>
-
-            {/* ================= TAB 1: INTAKE BUILDER ================= */}
-            {activeTab === 'intake' && (
-              <div className="card-body p-4">
-                
-                {/* Search & Section Filter */}
-                <div className="row g-2 mb-3 align-items-center">
-                  <div className="col-md-4 col-12">
-                    <div className="input-group">
-                      <span className="input-group-text bg-white border-end-0" style={{ borderColor: '#e2e8f0' }}>
-                        <i className="ti ti-search text-muted"></i>
-                      </span>
-                      <input
-                        type="text"
-                        className="form-control border-start-0 text-end"
-                        style={{ borderColor: '#e2e8f0', fontSize: '0.84rem', height: '40px' }}
-                        placeholder="ابحث في نصوص الأسئلة..."
-                        value={questionSearch}
-                        onChange={(e) => setQuestionSearch(e.target.value)}
-                      />
-                    </div>
-                  </div>
-
-                  <div className="col-md-8 col-12">
-                    <div className="d-flex gap-1 flex-wrap">
-                      {sectionsList.map(sec => (
-                        <button
-                          key={sec.id}
-                          type="button"
-                          onClick={() => setSelectedSection(sec.id)}
-                          className={`btn btn-sm rounded-pill px-3 fw-semibold transition-all ${selectedSection === sec.id ? 'text-slate-900 shadow-xs' : 'bg-white text-dark border'}`}
-                          style={{
-                            background: selectedSection === sec.id ? '#0284C7' : '#ffffff',
-                            fontSize: '0.78rem',
-                            height: '36px'
-                          }}
-                        >
-                          {sec.label}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-                </div>
-
-                {/* Questions Table Container */}
-                <div className="border rounded-3 overflow-hidden bg-white shadow-xs" style={{ borderColor: '#e2e8f0' }}>
-                  <div className="table-responsive">
-                    <table className="table table-hover align-middle mb-0" style={{ fontSize: '0.84rem' }}>
-                      <thead className="table-light">
-                        <tr className="text-muted" style={{ fontSize: '0.76rem', borderBottom: '1.5px solid #e2e8f0' }}>
-                          <th className="py-3 px-3" style={{ width: '5%' }}>الترتيب</th>
-                          <th className="py-3 px-3" style={{ width: '38%' }}>نص السؤال</th>
-                          <th className="py-3 text-center" style={{ width: '18%' }}>القسم في الاستمارة</th>
-                          <th className="py-3 text-center" style={{ width: '14%' }}>نوع الحقل</th>
-                          <th className="py-3 text-center" style={{ width: '15%' }}>الإلزامية والتفعيل</th>
-                          <th className="py-3 text-center" style={{ width: '10%' }}>الإجراءات</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {filteredQuestions.map((q, idx) => (
-                          <tr key={q.id || idx} className="border-bottom" style={{ borderColor: '#f1f5f9' }}>
-                            {/* Order & Move buttons */}
-                            <td className="px-3">
-                              <div className="d-flex align-items-center gap-1">
-                                <span className="fw-bold text-muted" style={{ fontSize: '0.76rem' }}>#{idx + 1}</span>
-                                <div className="d-flex flex-column">
-                                  <button
-                                    type="button"
-                                    onClick={() => handleMoveQuestion(idx, 'up')}
-                                    disabled={idx === 0}
-                                    className="btn btn-sm p-0 text-muted border-0 lh-1"
-                                    title="تحريك لأعلى"
-                                  >
-                                    <i className="ti ti-chevron-up" style={{ fontSize: '0.7rem' }}></i>
-                                  </button>
-                                  <button
-                                    type="button"
-                                    onClick={() => handleMoveQuestion(idx, 'down')}
-                                    disabled={idx === questions.length - 1}
-                                    className="btn btn-sm p-0 text-muted border-0 lh-1"
-                                    title="تحريك لأسفل"
-                                  >
-                                    <i className="ti ti-chevron-down" style={{ fontSize: '0.7rem' }}></i>
-                                  </button>
-                                </div>
-                              </div>
-                            </td>
-
-                            {/* Question Title */}
-                            <td className="px-3">
-                              <div className="fw-bold text-dark mb-1" style={{ fontSize: '0.86rem' }}>
-                                {q.title_ar}
-                              </div>
-                              <div className="d-flex align-items-center gap-2">
-                                <span className="badge bg-light text-muted border font-monospace" style={{ fontSize: '0.68rem' }}>
-                                  ID: {q.id}
-                                </span>
-                                {q.placeholder_ar && (
-                                  <small className="text-muted" style={{ fontSize: '0.72rem' }}>({q.placeholder_ar})</small>
-                                )}
-                              </div>
-                            </td>
-
-                            {/* Section */}
-                            <td className="text-center">
-                              <span className="badge rounded-pill px-3 py-1 fw-semibold" style={{ background: '#E5F0FF', color: '#0284C7', border: '1px solid #BAE6FD', fontSize: '0.74rem' }}>
-                                {SECTION_TRANSLATIONS[q.section] || q.section}
-                              </span>
-                            </td>
-
-                            {/* Type */}
-                            <td className="text-center">
-                              <span className="badge bg-light text-dark border px-2 py-1" style={{ fontSize: '0.74rem' }}>
-                                {TYPE_TRANSLATIONS[q.type] || q.type}
-                              </span>
-                            </td>
-
-                            {/* Required & Active Toggles */}
-                            <td className="text-center">
-                              <div className="d-flex justify-content-center align-items-center gap-2">
-                                <button
-                                  type="button"
-                                  onClick={() => handleToggleQuestionRequired(q)}
-                                  className={`badge rounded-pill px-2 py-1 transition-all border ${q.required ? 'bg-danger-subtle text-danger border-danger-subtle' : 'bg-light text-muted'}`}
-                                  style={{ fontSize: '0.7rem', cursor: 'pointer' }}
-                                  title="اضغط للتبديل بين إجباري واختياري"
-                                >
-                                  {q.required ? 'إجباري *' : 'اختياري'}
-                                </button>
-
-                                <button
-                                  type="button"
-                                  onClick={() => handleToggleQuestionActive(q)}
-                                  className={`badge rounded-pill px-2 py-1 transition-all border ${q.active ? 'bg-success-subtle text-success border-success-subtle' : 'bg-secondary-subtle text-secondary'}`}
-                                  style={{ fontSize: '0.7rem', cursor: 'pointer' }}
-                                  title="اضغط للإخفاء أو التفعيل"
-                                >
-                                  {q.active ? 'مفعّل' : 'مخفي'}
-                                </button>
-                              </div>
-                            </td>
-
-                            {/* Action Buttons */}
-                            <td className="text-center">
-                              <div className="d-flex justify-content-center align-items-center gap-1">
-                                <button
-                                  type="button"
-                                  onClick={() => { setEditingQuestion(q); setQuestionModalOpen(true); }}
-                                  className="btn btn-sm rounded-circle p-0 d-inline-flex align-items-center justify-content-center"
-                                  style={{ width: '32px', height: '32px', background: '#E5F0FF', color: '#0284C7', border: '1px solid #BAE6FD' }}
-                                  title="تعديل نص وخيارات السؤال"
-                                >
-                                  <i className="ti ti-edit fs-6"></i>
-                                </button>
-                                <button
-                                  type="button"
-                                  onClick={() => handleDeleteQuestion(q.id)}
-                                  className="btn btn-sm rounded-circle p-0 d-inline-flex align-items-center justify-content-center text-danger"
-                                  style={{ width: '32px', height: '32px', background: '#fff1f2', border: '1px solid #fecdd3' }}
-                                  title="حذف السؤال"
-                                >
-                                  <i className="ti ti-trash fs-6"></i>
-                                </button>
-                              </div>
-                            </td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
-                </div>
-
-              </div>
-            )}
-
-            {/* ================= TAB 2: EXERCISES & VIDEOS ================= */}
-            {activeTab === 'exercises' && (
-              <div className="card-body p-4">
-                
-                {/* Search & Muscle Filters */}
-                <div className="row g-2 mb-3 align-items-center">
-                  <div className="col-md-5 col-12">
-                    <div className="input-group">
-                      <span className="input-group-text bg-white border-end-0" style={{ borderColor: '#e2e8f0' }}>
-                        <i className="ti ti-search text-muted"></i>
-                      </span>
-                      <input
-                        type="text"
-                        className="form-control border-start-0 text-end"
-                        style={{ borderColor: '#e2e8f0', fontSize: '0.84rem', height: '40px' }}
-                        placeholder="ابحث باسم التمرين بالعربي أو الإنجليزي..."
-                        value={exerciseSearch}
-                        onChange={(e) => setExerciseSearch(e.target.value)}
-                      />
-                    </div>
-                  </div>
-                  <div className="col-md-7 col-12">
-                    <div className="d-flex gap-1 flex-wrap">
-                      {muscleCategories.map(m => (
-                        <button
-                          key={m.id}
-                          type="button"
-                          onClick={() => setMuscleFilter(m.id)}
-                          className={`btn btn-sm rounded-pill px-3 fw-semibold transition-all ${muscleFilter === m.id ? 'text-slate-900 shadow-xs' : 'bg-white text-dark border'}`}
-                          style={{
-                            background: muscleFilter === m.id ? '#0284C7' : '#ffffff',
-                            fontSize: '0.78rem',
-                            height: '36px'
-                          }}
-                        >
-                          {m.label}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-                </div>
-
-                {/* Exercises Table Container */}
-                <div className="border rounded-3 overflow-hidden bg-white shadow-xs" style={{ borderColor: '#e2e8f0' }}>
-                  <div className="table-responsive">
-                    <table className="table table-hover align-middle mb-0" style={{ fontSize: '0.84rem' }}>
-                      <thead className="table-light">
-                        <tr className="text-muted" style={{ fontSize: '0.76rem', borderBottom: '1.5px solid #e2e8f0' }}>
-                          <th className="py-3 px-3" style={{ width: '32%' }}>التمرين</th>
-                          <th className="py-3 text-center" style={{ width: '16%' }}>العضلة المستهدفة</th>
-                          <th className="py-3 text-center" style={{ width: '16%' }}>الأداة المستخدمة</th>
-                          <th className="py-3 text-center" style={{ width: '24%' }}>فيديو التكنيك (يوتيوب)</th>
-                          <th className="py-3 text-center" style={{ width: '12%' }}>الإجراءات</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {filteredExercises.map((ex, idx) => (
-                          <tr key={ex.id || idx} className="border-bottom" style={{ borderColor: '#f1f5f9' }}>
-                            <td className="px-3">
-                              <div className="fw-bold text-dark mb-1" style={{ fontSize: '0.86rem' }}>
-                                {ex.name_ar}
-                              </div>
-                              <small className="text-muted font-monospace" style={{ fontSize: '0.72rem' }}>
-                                {ex.name_en || ex.id}
-                              </small>
-                            </td>
-                            <td className="text-center">
-                              <span className="badge rounded-pill px-3 py-1" style={{ background: '#E5F0FF', color: '#0284C7', border: '1px solid #BAE6FD', fontSize: '0.74rem' }}>
-                                {ex.muscle_ar || ex.muscle_group}
-                              </span>
-                            </td>
-                            <td className="text-center">
-                              <span className="badge bg-light text-dark border px-2 py-1" style={{ fontSize: '0.74rem' }}>
-                                {ex.equipment_ar || ex.equipment}
-                              </span>
-                            </td>
-                            <td className="text-center">
-                              {(ex.video_url || ex.video_id) ? (
-                                <a
-                                  href={ex.video_url || `https://www.youtube.com/watch?v=${ex.video_id}`}
-                                  target="_blank"
-                                  rel="noreferrer"
-                                  className="btn btn-sm rounded-pill px-3 fw-semibold text-danger d-inline-flex align-items-center gap-1 border"
-                                  style={{ background: '#fff1f2', borderColor: '#fecdd3', fontSize: '0.76rem', height: '30px' }}
-                                >
-                                  <i className="ti ti-brand-youtube fs-6"></i>
-                                  <span>معاينة فيديو التكنيك</span>
-                                </a>
-                              ) : (
-                                <span className="text-muted small" style={{ fontSize: '0.74rem' }}>لا يوجد رابط</span>
-                              )}
-                            </td>
-                            <td className="text-center">
-                              <div className="d-flex justify-content-center align-items-center gap-1">
-                                <button
-                                  type="button"
-                                  onClick={() => { setEditingExercise(ex); setExerciseModalOpen(true); }}
-                                  className="btn btn-sm rounded-circle p-0 d-inline-flex align-items-center justify-content-center"
-                                  style={{ width: '32px', height: '32px', background: '#E5F0FF', color: '#0284C7', border: '1px solid #BAE6FD' }}
-                                  title="تعديل بيانات ورابط التمرين"
-                                >
-                                  <i className="ti ti-edit fs-6"></i>
-                                </button>
-                                <button
-                                  type="button"
-                                  onClick={() => handleDeleteExercise(ex.id)}
-                                  className="btn btn-sm rounded-circle p-0 d-inline-flex align-items-center justify-content-center text-danger"
-                                  style={{ width: '32px', height: '32px', background: '#fff1f2', border: '1px solid #fecdd3' }}
-                                  title="حذف التمرين"
-                                >
-                                  <i className="ti ti-trash fs-6"></i>
-                                </button>
-                              </div>
-                            </td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
-                </div>
-
-              </div>
-            )}
-
-            {/* ================= TAB: PACKAGES & PRICING MANAGER ================= */}
-            {activeTab === 'packages' && (
-              <div className="card-body p-4">
-                <div className="d-flex justify-content-between align-items-center mb-4 pb-2 border-bottom flex-wrap gap-2" style={{ borderColor: '#f1f5f9' }}>
-                  <div>
-                    <h5 className="fw-bold text-dark mb-1" style={{ fontSize: '1.05rem' }}>
-                      باقات الاشتراك والأسعار المعتمدة
-                    </h5>
-                    <small className="text-muted" style={{ fontSize: '0.78rem' }}>
-                      تعديل وإضافة باقات المشتركين، الأسعار، العروض والشهور المجانية، والمميزات
-                    </small>
-                  </div>
-
-                  <span className="badge rounded-pill fw-semibold px-3 py-2" style={{ background: '#E5F0FF', color: '#0284C7', border: '1px solid #BAE6FD', fontSize: '0.8rem' }}>
-                    {packages.length} باقات مسجلة
+                <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between' }}>
+                  <span style={{ fontSize: '1.6rem', fontWeight: 900, color: '#0F172A', fontFamily: 'JetBrains Mono, Cairo, sans-serif', lineHeight: 1 }}>
+                    {st.value}
                   </span>
+                  <span style={{ fontSize: '10.5px', color: '#94A3B8', fontWeight: 600 }}>{st.label}</span>
                 </div>
+              </div>
+            );
+          })}
+        </div>
 
-                {packages.length === 0 ? (
-                  <div className="text-center py-5 text-muted small bg-light rounded-4 border">
-                    لا توجد باقات اشتراك مسجلة حالياً. انقر على «إضافة باقة اشتراك جديدة» لإضافة باقة.
-                  </div>
-                ) : (
-                  <div className="row g-3">
-                    {packages.map((pkg) => {
-                      const totalMonths = (pkg.duration_months || 0) + (pkg.free_months || 0);
+        {/* 3. Navigation Tabs Bar */}
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '10px', background: '#FFFFFF', border: '1px solid #E2E8F0', padding: '8px 12px', borderRadius: '10px' }}>
+          
+          {/* Main Tabs */}
+          <div style={{ display: 'flex', gap: '4px', flexWrap: 'wrap' }}>
+            {[
+              { id: 'intake', label: 'محرر استمارة الاشتراك (Intake)', icon: Layers },
+              { id: 'exercises', label: 'مكتبة التمارين والفيديو (Exercises)', icon: Video },
+              { id: 'packages', label: 'إدارة الباقات والأسعار (Packages)', icon: Crown },
+              { id: 'foods', label: 'جدول الأغذية والماكروز (Foods)', icon: Salad },
+              { id: 'system', label: 'تخصيص وهوية الكوتش (System & Studio)', icon: Palette },
+            ].map(tab => {
+              const Icon = tab.icon;
+              return (
+                <button
+                  key={tab.id}
+                  type="button"
+                  onClick={() => setActiveTab(tab.id)}
+                  style={{
+                    padding: '6px 12px',
+                    borderRadius: '6px',
+                    fontSize: '11.5px',
+                    fontWeight: activeTab === tab.id ? 800 : 600,
+                    border: activeTab === tab.id ? '1px solid var(--color-primary-border, #CBD5E1)' : '1px solid transparent',
+                    cursor: 'pointer',
+                    background: activeTab === tab.id ? 'var(--color-primary-light, #F1F5F9)' : 'transparent',
+                    color: activeTab === tab.id ? (coachConfig?.primaryColor || 'var(--primary, #0F172A)') : '#475569',
+                    boxShadow: activeTab === tab.id ? '0 1px 4px rgba(0, 0, 0, 0.03)' : 'none',
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '6px',
+                    transition: 'all 0.15s ease'
+                  }}
+                >
+                  <Icon size={13} />
+                  <span>{tab.label}</span>
+                </button>
+              );
+            })}
+          </div>
 
-                      return (
-                        <div key={pkg.id} className="col-xl-3 col-lg-4 col-md-6 col-12">
-                          <div 
-                            className="card h-100 shadow-sm border position-relative d-flex flex-column justify-content-between transition-all"
-                            style={{ 
-                              borderRadius: '18px',
-                              borderColor: pkg.is_featured ? '#0284C7' : '#e2e8f0',
-                              borderWidth: pkg.is_featured ? '2px' : '1px',
-                              background: pkg.active ? '#ffffff' : '#f8fafc',
-                              opacity: pkg.active ? 1 : 0.75,
-                              boxShadow: pkg.is_featured ? '0 10px 25px rgba(38,28,106,0.08)' : '0 2px 8px rgba(0,0,0,0.04)'
-                            }}
-                          >
-                            {/* Card Top */}
-                            <div className="p-4 pb-2">
-                              {/* Header & Badges */}
-                              <div className="d-flex justify-content-between align-items-start mb-2">
-                                <div 
-                                  className="rounded-circle d-flex align-items-center justify-content-center"
-                                  style={{ 
-                                    width: '36px', 
-                                    height: '36px', 
-                                    background: pkg.is_featured ? '#E5F0FF' : '#f8fafc', 
-                                    color: pkg.is_featured ? '#0284C7' : '#64748b',
-                                    border: '1px solid #e2e8f0'
-                                  }}
-                                >
-                                  <i className={`ti ${pkg.is_featured ? 'ti-crown' : 'ti-award'} fs-5`}></i>
-                                </div>
+          {/* New Item Action Button */}
+          {activeTab === 'intake' && (
+            <button
+              type="button"
+              onClick={() => { setEditingQuestion(null); setQuestionModalOpen(true); }}
+              style={{ padding: '6px 14px', borderRadius: '6px', background: '#0F172A', color: '#FFFFFF', border: 'none', fontSize: '11.5px', fontWeight: 700, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px' }}
+            >
+              <Plus size={13} />
+              <span>إضافة سؤال جديد</span>
+            </button>
+          )}
 
-                                <div className="d-flex align-items-center gap-1">
-                                  {pkg.badge_ar && (
-                                    <span 
-                                      className="badge rounded-pill fw-bold px-2 py-1"
-                                      style={{ 
-                                        background: pkg.is_featured ? '#ecfdf5' : '#f1f5f9', 
-                                        color: pkg.is_featured ? '#059669' : '#475569',
-                                        fontSize: '0.68rem',
-                                        border: pkg.is_featured ? '1px solid #a7f3d0' : '1px solid #e2e8f0'
-                                      }}
-                                    >
-                                      {pkg.badge_ar}
-                                    </span>
-                                  )}
-                                </div>
-                              </div>
+          {activeTab === 'exercises' && (
+            <button
+              type="button"
+              onClick={() => { setEditingExercise(null); setExerciseModalOpen(true); }}
+              style={{ padding: '6px 14px', borderRadius: '6px', background: '#0F172A', color: '#FFFFFF', border: 'none', fontSize: '11.5px', fontWeight: 700, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px' }}
+            >
+              <Plus size={13} />
+              <span>إضافة تمرين جديد</span>
+            </button>
+          )}
 
-                              {/* Title */}
-                              <h5 className="fw-bold text-dark mb-1" style={{ fontSize: '1.05rem' }}>
-                                {pkg.name_ar}
-                              </h5>
-                              <small className="text-muted font-monospace d-block mb-3" style={{ fontSize: '0.72rem' }}>
-                                Code: {pkg.id}
-                              </small>
+          {activeTab === 'packages' && (
+            <button
+              type="button"
+              onClick={() => { setEditingPackage(null); setPackageModalOpen(true); }}
+              style={{ padding: '6px 14px', borderRadius: '6px', background: '#0F172A', color: '#FFFFFF', border: 'none', fontSize: '11.5px', fontWeight: 700, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px' }}
+            >
+              <Plus size={13} />
+              <span>إضافة باقة جديدة</span>
+            </button>
+          )}
+        </div>
 
-                              {/* Price Box */}
-                              <div className="p-3 rounded-3 mb-3" style={{ background: '#F0F9FF', border: '1px solid #F0F9FF' }}>
-                                <div className="d-flex align-items-baseline justify-content-between mb-1">
-                                  <span className="text-muted small" style={{ fontSize: '0.76rem' }}>سعر الباقة:</span>
-                                  <div className="d-flex align-items-baseline gap-1">
-                                    <h4 className="fw-black mb-0 font-monospace" style={{ color: '#0284C7', letterSpacing: '-0.5px' }}>
-                                      {pkg.price_egp?.toLocaleString()}
-                                    </h4>
-                                    <span className="small text-muted" style={{ fontSize: '0.72rem' }}>ج.م</span>
-                                  </div>
-                                </div>
-
-                                <div className="d-flex justify-content-between align-items-center pt-2 border-top border-light">
-                                  <span className="text-muted small" style={{ fontSize: '0.72rem' }}>المدة الإجمالية:</span>
-                                  <strong className="text-dark small" style={{ fontSize: '0.78rem' }}>
-                                    {totalMonths} شهور ({pkg.duration_months} + {pkg.free_months} مجاناً)
-                                  </strong>
-                                </div>
-                              </div>
-
-                              {/* Features list */}
-                              <div className="mb-3">
-                                <small className="text-muted fw-bold d-block mb-2" style={{ fontSize: '0.72rem' }}>المميزات المشمولة:</small>
-                                <ul className="list-unstyled p-0 m-0 d-flex flex-column gap-1">
-                                  {(pkg.features || []).map((feat, fIdx) => (
-                                    <li key={fIdx} className="d-flex align-items-center gap-2 small text-secondary" style={{ fontSize: '0.78rem' }}>
-                                      <i className="ti ti-check text-success fs-6 flex-shrink-0"></i>
-                                      <span className="text-truncate">{feat}</span>
-                                    </li>
-                                  ))}
-                                </ul>
-                              </div>
-                            </div>
-
-                            {/* Card Footer Actions */}
-                            <div className="p-3 bg-light border-top d-flex justify-content-between align-items-center" style={{ borderColor: '#f1f5f9', borderRadius: '0 0 18px 18px' }}>
-                              {/* Toggle Active Switch */}
-                              <div className="form-check form-switch mb-0">
-                                <input 
-                                  className="form-check-input" 
-                                  type="checkbox" 
-                                  id={`switch_${pkg.id}`}
-                                  checked={pkg.active}
-                                  onChange={() => handleTogglePackageActive(pkg)}
-                                  title={pkg.active ? "باقة نشطة ومتاحة" : "باقة معطلة"}
-                                />
-                                <label className="form-check-label small text-muted ms-1" htmlFor={`switch_${pkg.id}`} style={{ fontSize: '0.74rem' }}>
-                                  {pkg.active ? 'نشطة' : 'معطلة'}
-                                </label>
-                              </div>
-
-                              {/* Edit & Delete Buttons */}
-                              <div className="d-flex align-items-center gap-1">
-                                <button 
-                                  type="button" 
-                                  onClick={() => { setEditingPackage(pkg); setPackageModalOpen(true); }}
-                                  className="btn btn-sm btn-light rounded-circle p-0 d-flex align-items-center justify-content-center border"
-                                  style={{ width: '32px', height: '32px', color: '#0284C7' }}
-                                  title="تعديل الباقة والأسعار"
-                                >
-                                  <i className="ti ti-edit fs-6"></i>
-                                </button>
-                                <button 
-                                  type="button" 
-                                  onClick={() => handleDeletePackage(pkg.id)}
-                                  className="btn btn-sm btn-light rounded-circle p-0 d-flex align-items-center justify-content-center border"
-                                  style={{ width: '32px', height: '32px', color: '#dc2626' }}
-                                  title="حذف الباقة"
-                                >
-                                  <i className="ti ti-trash fs-6"></i>
-                                </button>
-                              </div>
-                            </div>
-
+        {/* ================= TAB 1: INTAKE BUILDER ================= */}
+        {activeTab === 'intake' && (
+          <FormSection
+            title="محرر أسئلة استمارة الاشتراك"
+            description="التحكم في الأسئلة، الأقسام، الحقول الإلزامية والاختيارية، وإعادة الترتيب."
+            actions={(
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+                <div style={{ display: 'flex', alignItems: 'center', background: '#F8FAFC', border: '1px solid #E2E8F0', borderRadius: '6px', padding: '0 8px', height: '32px', width: '180px', gap: '6px' }}>
+                  <Search size={13} color="#94A3B8" />
+                  <input
+                    type="text"
+                    placeholder="ابحث في الأسئلة..."
+                    value={questionSearch}
+                    onChange={(e) => setQuestionSearch(e.target.value)}
+                    style={{ border: 'none', outline: 'none', background: 'transparent', fontSize: '11px', width: '100%' }}
+                  />
+                </div>
+                <div style={{ display: 'flex', gap: '2px', background: '#F1F5F9', padding: '2px', borderRadius: '6px' }}>
+                  {sectionsList.map(sec => (
+                    <button
+                      key={sec.id}
+                      type="button"
+                      onClick={() => setSelectedSection(sec.id)}
+                      style={{
+                        padding: '3px 8px',
+                        borderRadius: '4px',
+                        fontSize: '10.5px',
+                        fontWeight: 700,
+                        border: 'none',
+                        cursor: 'pointer',
+                        background: selectedSection === sec.id ? '#0F172A' : 'transparent',
+                        color: selectedSection === sec.id ? '#FFFFFF' : '#64748B',
+                        transition: 'background 0.12s ease, color 0.12s ease'
+                      }}
+                    >
+                      {sec.label.split('.')[1] || sec.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+          >
+            <div style={{ overflowX: 'auto', border: '1px solid #E2E8F0', borderRadius: '8px', marginTop: '6px' }}>
+              <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'right', fontSize: '12px' }}>
+                <thead>
+                  <tr style={{ background: '#F8FAFC', borderBottom: '1px solid #E2E8F0', color: '#475569', fontWeight: 700 }}>
+                    <th style={{ padding: '8px 12px', width: '70px' }}>الترتيب</th>
+                    <th style={{ padding: '8px 12px' }}>نص السؤال</th>
+                    <th style={{ padding: '8px 12px' }}>القسم</th>
+                    <th style={{ padding: '8px 12px' }}>نوع الحقل</th>
+                    <th style={{ padding: '8px 12px' }}>الإلزامية والتفعيل</th>
+                    <th style={{ padding: '8px 12px', textAlign: 'left' }}>الإجراءات</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {filteredQuestions.map((q, idx) => (
+                    <tr key={q.id || idx} style={{ borderBottom: '1px solid #F1F5F9' }}>
+                      <td style={{ padding: '8px 12px' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                          <span style={{ fontFamily: 'JetBrains Mono, monospace', fontWeight: 800, fontSize: '11px', color: '#64748B' }}>#{idx + 1}</span>
+                          <div style={{ display: 'flex', flexDirection: 'column' }}>
+                            <button type="button" onClick={() => handleMoveQuestion(idx, 'up')} disabled={idx === 0} style={{ border: 'none', background: 'transparent', cursor: 'pointer', padding: 0, color: '#94A3B8' }}><ChevronUp size={12} /></button>
+                            <button type="button" onClick={() => handleMoveQuestion(idx, 'down')} disabled={idx === questions.length - 1} style={{ border: 'none', background: 'transparent', cursor: 'pointer', padding: 0, color: '#94A3B8' }}><ChevronDown size={12} /></button>
                           </div>
                         </div>
-                      );
-                    })}
-                  </div>
-                )}
-              </div>
-            )}
+                      </td>
 
-            {/* ================= TAB 3: FOOD DATABASE ================= */}
-            {activeTab === 'foods' && (
-              <div className="card-body p-4">
-                
-                {/* Search */}
-                <div className="row g-2 mb-3 align-items-center">
-                  <div className="col-md-5 col-12">
-                    <div className="input-group">
-                      <span className="input-group-text bg-white border-end-0" style={{ borderColor: '#e2e8f0' }}>
-                        <i className="ti ti-search text-muted"></i>
-                      </span>
-                      <input
-                        type="text"
-                        className="form-control border-start-0 text-end"
-                        style={{ borderColor: '#e2e8f0', fontSize: '0.84rem', height: '40px' }}
-                        placeholder="ابحث باسم الطعام أو الفئة..."
-                        value={foodSearch}
-                        onChange={(e) => setFoodSearch(e.target.value)}
-                      />
+                      <td style={{ padding: '8px 12px' }}>
+                        <strong style={{ color: '#0F172A', fontSize: '12.5px', display: 'block' }}>{q.title_ar}</strong>
+                        <small style={{ color: '#94A3B8', fontSize: '10.5px' }}>ID: {q.id} {q.placeholder_ar ? `(${q.placeholder_ar})` : ''}</small>
+                      </td>
+
+                      <td style={{ padding: '8px 12px' }}>
+                        <span style={{ background: '#F1F5F9', border: '1px solid #CBD5E1', color: '#0F172A', padding: '1px 7px', borderRadius: '4px', fontSize: '10.5px', fontWeight: 700 }}>
+                          {SECTION_TRANSLATIONS[q.section] || q.section}
+                        </span>
+                      </td>
+
+                      <td style={{ padding: '8px 12px' }}>
+                        <span style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', color: '#475569', padding: '1px 7px', borderRadius: '4px', fontSize: '10.5px' }}>
+                          {TYPE_TRANSLATIONS[q.type] || q.type}
+                        </span>
+                      </td>
+
+                      <td style={{ padding: '8px 12px' }}>
+                        <div style={{ display: 'flex', gap: '4px' }}>
+                          <button
+                            type="button"
+                            onClick={() => handleToggleQuestionRequired(q)}
+                            style={{ padding: '2px 6px', borderRadius: '4px', border: 'none', background: q.required ? '#FEE2E2' : '#F1F5F9', color: q.required ? '#DC2626' : '#64748B', fontSize: '10.5px', fontWeight: 700, cursor: 'pointer' }}
+                          >
+                            {q.required ? 'إجباري *' : 'اختياري'}
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => handleToggleQuestionActive(q)}
+                            style={{ padding: '2px 6px', borderRadius: '4px', border: 'none', background: q.active ? '#DCFCE7' : '#F1F5F9', color: q.active ? '#16A34A' : '#64748B', fontSize: '10.5px', fontWeight: 700, cursor: 'pointer' }}
+                          >
+                            {q.active ? 'مفعّل' : 'مخفي'}
+                          </button>
+                        </div>
+                      </td>
+
+                      <td style={{ padding: '8px 12px', textAlign: 'left' }}>
+                        <div style={{ display: 'inline-flex', gap: '4px' }}>
+                          <button type="button" onClick={() => { setEditingQuestion(q); setQuestionModalOpen(true); }} style={{ padding: '3px 6px', borderRadius: '4px', border: '1px solid #CBD5E1', background: '#FFFFFF', color: '#0F172A', cursor: 'pointer' }}><Edit3 size={12} /></button>
+                          <button type="button" onClick={() => handleDeleteQuestion(q.id)} style={{ padding: '3px 6px', borderRadius: '4px', border: '1px solid #FECACA', background: '#FEF2F2', color: '#DC2626', cursor: 'pointer' }}><Trash2 size={12} /></button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </FormSection>
+        )}
+
+        {/* ================= TAB 2: EXERCISES & VIDEOS ================= */}
+        {activeTab === 'exercises' && (
+          <FormSection
+            title="مكتبة التمارين وروابط الفيديو"
+            description="إدارة التمارين وروابط شروحات اليوتيوب المعتمدة."
+          >
+            <div style={{ overflowX: 'auto', border: '1px solid #E2E8F0', borderRadius: '8px', marginTop: '6px' }}>
+              <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'right', fontSize: '12px' }}>
+                <thead>
+                  <tr style={{ background: '#F8FAFC', borderBottom: '1px solid #E2E8F0', color: '#475569', fontWeight: 700 }}>
+                    <th style={{ padding: '8px 12px' }}>التمرين</th>
+                    <th style={{ padding: '8px 12px' }}>العضلة</th>
+                    <th style={{ padding: '8px 12px' }}>الأداة</th>
+                    <th style={{ padding: '8px 12px' }}>فيديو التكنيك</th>
+                    <th style={{ padding: '8px 12px', textAlign: 'left' }}>الإجراءات</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {filteredExercises.map((ex, idx) => (
+                    <tr key={ex.id || idx} style={{ borderBottom: '1px solid #F1F5F9' }}>
+                      <td style={{ padding: '8px 12px' }}>
+                        <strong style={{ color: '#0F172A', display: 'block' }}>{ex.name_ar}</strong>
+                        <small style={{ color: '#64748B', fontFamily: 'JetBrains Mono, monospace' }}>{ex.name_en}</small>
+                      </td>
+                      <td style={{ padding: '8px 12px' }}>
+                        <span style={{ background: '#F1F5F9', border: '1px solid #CBD5E1', color: '#0F172A', padding: '1px 7px', borderRadius: '4px', fontSize: '10.5px', fontWeight: 700 }}>
+                          {ex.muscle_ar || ex.muscle_group}
+                        </span>
+                      </td>
+                      <td style={{ padding: '8px 12px', color: '#475569' }}>
+                        {ex.equipment_ar || ex.equipment}
+                      </td>
+                      <td style={{ padding: '8px 12px' }}>
+                        {(ex.video_url || ex.video_id) ? (
+                          <a
+                            href={ex.video_url || `https://www.youtube.com/watch?v=${ex.video_id}`}
+                            target="_blank"
+                            rel="noreferrer"
+                            style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', background: '#FEF2F2', border: '1px solid #FECACA', color: '#DC2626', padding: '2px 8px', borderRadius: '4px', textDecoration: 'none', fontSize: '11px', fontWeight: 700 }}
+                          >
+                            <Video size={12} />
+                            <span>معاينة الفيديو</span>
+                          </a>
+                        ) : (
+                          <span style={{ color: '#94A3B8', fontSize: '11px' }}>لا يوجد رابط</span>
+                        )}
+                      </td>
+                      <td style={{ padding: '8px 12px', textAlign: 'left' }}>
+                        <div style={{ display: 'inline-flex', gap: '4px' }}>
+                          <button type="button" onClick={() => { setEditingExercise(ex); setExerciseModalOpen(true); }} style={{ padding: '3px 6px', borderRadius: '4px', border: '1px solid #CBD5E1', background: '#FFFFFF', color: '#0F172A', cursor: 'pointer' }}><Edit3 size={12} /></button>
+                          <button type="button" onClick={() => handleDeleteExercise(ex.id)} style={{ padding: '3px 6px', borderRadius: '4px', border: '1px solid #FECACA', background: '#FEF2F2', color: '#DC2626', cursor: 'pointer' }}><Trash2 size={12} /></button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </FormSection>
+        )}
+
+        {/* ================= TAB 3: PACKAGES ================= */}
+        {activeTab === 'packages' && (
+          <FormSection
+            title="باقات الاشتراك والأسعار المعتمدة"
+            description="إدارة الباقات والعروض والشهور المجانية والمميزات."
+          >
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '14px', marginTop: '6px' }}>
+              {packages.map((pkg) => (
+                <div key={pkg.id} style={{ background: '#FFFFFF', border: '1px solid #E2E8F0', borderRadius: '10px', padding: '14px', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', gap: '10px' }}>
+                  <div>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4px' }}>
+                      <span style={{ background: '#F1F5F9', border: '1px solid #CBD5E1', color: '#0F172A', padding: '1px 8px', borderRadius: '4px', fontSize: '10.5px', fontWeight: 800 }}>{pkg.badge_ar}</span>
+                      <strong style={{ fontSize: '18px', color: '#0F172A', fontFamily: 'JetBrains Mono, Cairo' }}>{pkg.price_egp} ج.م</strong>
+                    </div>
+                    <h4 style={{ margin: '0 0 2px 0', fontSize: '14px', fontWeight: 800, color: '#0F172A' }}>{pkg.name_ar}</h4>
+                    <small style={{ color: '#64748B', fontSize: '11px' }}>المدة: {pkg.total_months} شهور ({pkg.duration_months} + {pkg.free_months} مجاناً)</small>
+                    
+                    <ul style={{ margin: '10px 0 0 0', padding: '0 16px', fontSize: '11.5px', color: '#475569', lineHeight: 1.6 }}>
+                      {(pkg.features || []).map((feat, idx) => (
+                        <li key={idx}>{feat}</li>
+                      ))}
+                    </ul>
+                  </div>
+
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingTop: '8px', borderTop: '1px solid #F1F5F9' }}>
+                    <label style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '11.5px', fontWeight: 700, color: pkg.active ? '#16A34A' : '#94A3B8', cursor: 'pointer' }}>
+                      <input type="checkbox" checked={pkg.active} onChange={() => handleTogglePackageActive(pkg)} />
+                      <span>{pkg.active ? 'باقة نشطة' : 'معطلة'}</span>
+                    </label>
+                    <div style={{ display: 'flex', gap: '4px' }}>
+                      <button type="button" onClick={() => { setEditingPackage(pkg); setPackageModalOpen(true); }} style={{ padding: '3px 8px', borderRadius: '4px', border: '1px solid #CBD5E1', background: '#FFFFFF', color: '#0F172A', fontSize: '11px', fontWeight: 700, cursor: 'pointer' }}>تعديل</button>
+                      <button type="button" onClick={() => handleDeletePackage(pkg.id)} style={{ padding: '3px 8px', borderRadius: '4px', border: '1px solid #FECACA', background: '#FEF2F2', color: '#DC2626', fontSize: '11px', fontWeight: 700, cursor: 'pointer' }}>حذف</button>
                     </div>
                   </div>
                 </div>
+              ))}
+            </div>
+          </FormSection>
+        )}
 
-                {/* Foods Table */}
-                <div className="border rounded-3 overflow-hidden bg-white shadow-xs" style={{ borderColor: '#e2e8f0' }}>
-                  <div className="table-responsive">
-                    <table className="table table-hover align-middle mb-0" style={{ fontSize: '0.84rem' }}>
-                      <thead className="table-light">
-                        <tr className="text-muted" style={{ fontSize: '0.76rem', borderBottom: '1.5px solid #e2e8f0' }}>
-                          <th className="py-3 px-3" style={{ width: '30%' }}>الصنف الغذائي</th>
-                          <th className="py-3 text-center" style={{ width: '18%' }}>التصنيف</th>
-                          <th className="py-3 text-center" style={{ width: '13%' }}>السعرات</th>
-                          <th className="py-3 text-center" style={{ width: '13%' }}>بروتين (g)</th>
-                          <th className="py-3 text-center" style={{ width: '13%' }}>كارب (g)</th>
-                          <th className="py-3 text-center" style={{ width: '13%' }}>دهون (g)</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {filteredFoods.map((f, idx) => (
-                          <tr key={f.id || idx} className="border-bottom" style={{ borderColor: '#f1f5f9' }}>
-                            <td className="px-3">
-                              <div className="fw-bold text-dark">{f.name_ar}</div>
-                              <small className="text-muted" style={{ fontSize: '0.72rem' }}>وحدة القياس: {f.unit}</small>
-                            </td>
-                            <td className="text-center">
-                              <span className="badge rounded-pill" style={{ background: '#E5F0FF', color: '#0284C7', border: '1px solid #BAE6FD', fontSize: '0.74rem' }}>
-                                {f.category_ar}
-                              </span>
-                            </td>
-                            <td className="text-center fw-bold text-dark">{f.calories} kcal</td>
-                            <td className="text-center fw-bold text-primary">{f.protein}g</td>
-                            <td className="text-center fw-bold text-warning">{f.carbs}g</td>
-                            <td className="text-center fw-bold text-danger">{f.fats}g</td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
-                </div>
+        {/* ================= TAB 4: FOODS ================= */}
+        {activeTab === 'foods' && (
+          <FormSection
+            title="جدول الأغذية وقاعدة بيانات الماكروز"
+            description="القيم الغذائية المعتمدة للأطعمة وبدائل التغذية."
+          >
+            <div style={{ overflowX: 'auto', border: '1px solid #E2E8F0', borderRadius: '8px', marginTop: '6px' }}>
+              <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'right', fontSize: '12px' }}>
+                <thead>
+                  <tr style={{ background: '#F8FAFC', borderBottom: '1px solid #E2E8F0', color: '#475569', fontWeight: 700 }}>
+                    <th style={{ padding: '8px 12px' }}>الصنف الغذائي</th>
+                    <th style={{ padding: '8px 12px' }}>التصنيف</th>
+                    <th style={{ padding: '8px 12px' }}>السعرات</th>
+                    <th style={{ padding: '8px 12px' }}>بروتين (g)</th>
+                    <th style={{ padding: '8px 12px' }}>كارب (g)</th>
+                    <th style={{ padding: '8px 12px' }}>دهون (g)</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {filteredFoods.map((f, idx) => (
+                    <tr key={f.id || idx} style={{ borderBottom: '1px solid #F1F5F9' }}>
+                      <td style={{ padding: '8px 12px' }}>
+                        <strong style={{ color: '#0F172A', display: 'block' }}>{f.name_ar}</strong>
+                        <small style={{ color: '#94A3B8' }}>{f.unit}</small>
+                      </td>
+                      <td style={{ padding: '8px 12px' }}>
+                        <span style={{ background: '#F1F5F9', border: '1px solid #CBD5E1', color: '#0F172A', padding: '1px 7px', borderRadius: '4px', fontSize: '10.5px' }}>
+                          {f.category_ar}
+                        </span>
+                      </td>
+                      <td style={{ padding: '8px 12px', fontWeight: 700, color: '#0F172A', fontFamily: 'JetBrains Mono, Cairo' }}>{f.calories} kcal</td>
+                      <td style={{ padding: '8px 12px', fontWeight: 700, color: '#0F172A', fontFamily: 'JetBrains Mono, Cairo' }}>{f.protein}g</td>
+                      <td style={{ padding: '8px 12px', fontWeight: 700, color: '#D97706', fontFamily: 'JetBrains Mono, Cairo' }}>{f.carbs}g</td>
+                      <td style={{ padding: '8px 12px', fontWeight: 700, color: '#16A34A', fontFamily: 'JetBrains Mono, Cairo' }}>{f.fats}g</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </FormSection>
+        )}
 
+        {/* ================= TAB 5: COACH STUDIO & SYSTEM CUSTOMIZATION ================= */}
+        {activeTab === 'system' && (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '18px' }}>
+            
+            {/* Feedback Alert if saved */}
+            {saveSuccessMsg && (
+              <div 
+                style={{ 
+                  background: '#F0FDF4', 
+                  border: '1px solid #BBF7D0', 
+                  padding: '10px 16px', 
+                  borderRadius: '8px', 
+                  color: '#166534', 
+                  fontWeight: 700, 
+                  fontSize: '12.5px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '8px',
+                  boxShadow: '0 2px 6px rgba(22, 101, 52, 0.08)'
+                }}
+              >
+                <CheckCircle2 size={16} color="#16A34A" />
+                <span>{saveSuccessMsg}</span>
               </div>
             )}
 
-            {/* ================= TAB 4: SYSTEM DEFAULTS ================= */}
-            {activeTab === 'system' && (
-              <div className="card-body p-4">
-                <div className="row g-3" style={{ maxWidth: '700px' }}>
-                  <div className="col-12">
-                    <label className="form-label fw-bold text-dark small mb-1" style={{ fontSize: '0.84rem' }}>
-                      اسم الكابتن وتوقيع الاعتماد الافتراضي
+            {/* 1. Theme Color Studio (Live Instant Preview) */}
+            <FormSection
+              title="تخصيص هوية وألوان الواجهة (Realtime Brand Theme)"
+              description="اختر لون الهوية الرسمي لمنظومتك. سيتم تطبيق التغييرات ومعاينتها فوراً على أزرار وشارات النظام بالكامل."
+              actions={(
+                <button
+                  type="button"
+                  onClick={handleResetDefaultTheme}
+                  style={{
+                    height: '30px',
+                    padding: '0 10px',
+                    borderRadius: '6px',
+                    border: '1px solid #CBD5E1',
+                    background: '#FFFFFF',
+                    color: '#475569',
+                    fontSize: '11px',
+                    fontWeight: 700,
+                    cursor: 'pointer',
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '4px'
+                  }}
+                  title="استعادة الكحلي المائل للرمادي"
+                >
+                  <RotateCcw size={12} />
+                  <span>استعادة الافتراضي (Slate Navy)</span>
+                </button>
+              )}
+            >
+              <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1.6fr) minmax(0, 1fr)', gap: '18px', alignItems: 'start', marginTop: '6px' }}>
+                
+                {/* Right: Palettes Grid + Custom Hex */}
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
+                  
+                  {/* Curated Palettes */}
+                  <div>
+                    <label style={{ display: 'block', fontSize: '11.5px', fontWeight: 800, color: '#0F172A', marginBottom: '8px' }}>
+                      بالتات ألوان منتقاة بعناية (Curated Palettes):
                     </label>
+                    
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '10px' }}>
+                      {THEME_PALETTES.map((pal) => {
+                        const isSelected = activePalette.toLowerCase() === pal.primary.toLowerCase();
+                        return (
+                          <div
+                            key={pal.id}
+                            onClick={() => handleSelectPalette(pal)}
+                            style={{
+                              padding: '10px 12px',
+                              borderRadius: '8px',
+                              border: isSelected ? `2px solid ${pal.primary}` : '1px solid #E2E8F0',
+                              background: isSelected ? pal.light : '#FFFFFF',
+                              cursor: 'pointer',
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'space-between',
+                              gap: '10px',
+                              transition: 'all 0.15s ease',
+                              boxShadow: isSelected ? `0 2px 8px ${pal.primary}25` : '0 1px 2px rgba(0,0,0,0.02)'
+                            }}
+                          >
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                              {/* Swatch Circle */}
+                              <div
+                                style={{
+                                  width: '28px',
+                                  height: '28px',
+                                  borderRadius: '50%',
+                                  background: pal.primary,
+                                  border: '2px solid #FFFFFF',
+                                  boxShadow: '0 2px 5px rgba(0,0,0,0.15)',
+                                  flexShrink: 0
+                                }}
+                              />
+                              <div>
+                                <strong style={{ display: 'block', fontSize: '11.5px', color: '#0F172A', fontWeight: 800 }}>
+                                  {pal.name}
+                                </strong>
+                                <span style={{ fontSize: '10px', color: '#64748B', display: 'block' }}>
+                                  {pal.description}
+                                </span>
+                              </div>
+                            </div>
+
+                            {isSelected && (
+                              <div
+                                style={{
+                                  width: '20px',
+                                  height: '20px',
+                                  borderRadius: '50%',
+                                  background: pal.primary,
+                                  color: '#FFFFFF',
+                                  display: 'flex',
+                                  alignItems: 'center',
+                                  justifyContent: 'center',
+                                  flexShrink: 0
+                                }}
+                              >
+                                <Check size={12} strokeWidth={3} />
+                              </div>
+                            )}
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+
+                  {/* Custom Color Wheel & Hex */}
+                  <div style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', padding: '12px 14px', borderRadius: '8px' }}>
+                    <label style={{ display: 'block', fontSize: '11.5px', fontWeight: 800, color: '#0F172A', marginBottom: '8px' }}>
+                      أو تخصيص لون حر مباشر (Custom Hex Picker):
+                    </label>
+
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                      <div style={{ position: 'relative', width: '38px', height: '38px', borderRadius: '8px', overflow: 'hidden', border: '1px solid #CBD5E1', flexShrink: 0 }}>
+                        <input
+                          type="color"
+                          value={customColor}
+                          onChange={(e) => handleCustomColorChange(e.target.value)}
+                          style={{
+                            position: 'absolute',
+                            top: '-8px',
+                            left: '-8px',
+                            width: '54px',
+                            height: '54px',
+                            border: 'none',
+                            cursor: 'pointer'
+                          }}
+                        />
+                      </div>
+
+                      <div style={{ flex: 1 }}>
+                        <input
+                          type="text"
+                          value={customColor}
+                          onChange={(e) => handleCustomColorChange(e.target.value)}
+                          placeholder="#0F172A"
+                          style={{
+                            width: '100%',
+                            height: '34px',
+                            borderRadius: '6px',
+                            border: '1px solid #CBD5E1',
+                            padding: '0 10px',
+                            fontSize: '12px',
+                            fontFamily: 'JetBrains Mono, Cairo',
+                            fontWeight: 700,
+                            outline: 'none',
+                            textTransform: 'uppercase',
+                            background: '#FFFFFF',
+                            boxSizing: 'border-box'
+                          }}
+                        />
+                      </div>
+
+                      <div style={{ fontSize: '11px', color: '#64748B' }}>
+                        <span>يعمل فوراً في المعاينة</span>
+                      </div>
+                    </div>
+                  </div>
+
+                </div>
+
+                {/* Left: Interactive Realtime UI Preview Widget */}
+                <div 
+                  style={{ 
+                    background: '#FFFFFF', 
+                    border: '1px solid #E2E8F0', 
+                    borderRadius: '10px', 
+                    padding: '16px',
+                    boxShadow: '0 4px 14px rgba(15, 23, 42, 0.04)',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    gap: '14px'
+                  }}
+                >
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderBottom: '1px solid #F1F5F9', paddingBottom: '8px' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                      <Eye size={15} color={coachConfig.primaryColor || '#0F172A'} />
+                      <strong style={{ fontSize: '12px', color: '#0F172A' }}>المعاينة الحية الفورية (Live UI Preview)</strong>
+                    </div>
+                    <span style={{ fontSize: '10px', background: '#F1F5F9', color: '#475569', padding: '2px 8px', borderRadius: '4px', fontWeight: 700 }}>
+                      مباشر الآن
+                    </span>
+                  </div>
+
+                  {/* Sample Action Button */}
+                  <div>
+                    <span style={{ fontSize: '10.5px', color: '#64748B', display: 'block', marginBottom: '6px' }}>1. أزرار الإجراءات والقرارات:</span>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                      {/* Soft Style Button */}
+                      <button
+                        type="button"
+                        style={{
+                          width: '100%',
+                          height: '36px',
+                          borderRadius: '6px',
+                          fontSize: '12px',
+                          fontWeight: 800,
+                          background: deriveThemeColors(coachConfig.primaryColor).light,
+                          border: `1px solid ${deriveThemeColors(coachConfig.primaryColor).border}`,
+                          color: coachConfig.primaryColor || '#0F172A',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          gap: '6px',
+                          cursor: 'pointer',
+                          boxShadow: '0 1px 2px rgba(0,0,0,0.02)',
+                          transition: 'all 0.15s ease'
+                        }}
+                      >
+                        <Sparkles size={14} />
+                        <span>معاينة وتوليد الخطة (Soft Button)</span>
+                      </button>
+
+                      {/* Primary Solid Button */}
+                      <button
+                        type="button"
+                        className="btn-primary"
+                        style={{
+                          width: '100%',
+                          height: '38px',
+                          borderRadius: '8px',
+                          fontSize: '12.5px',
+                          fontWeight: 700,
+                          letterSpacing: '0.3px',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          gap: '6px',
+                          cursor: 'pointer',
+                          background: coachConfig.primaryColor || '#0F172A',
+                          color: '#FFFFFF',
+                          border: '1px solid rgba(255, 255, 255, 0.12)',
+                          textShadow: '0 1px 2px rgba(0, 0, 0, 0.45)',
+                          WebkitFontSmoothing: 'antialiased',
+                          MozOsxFontSmoothing: 'grayscale',
+                          textRendering: 'geometricPrecision',
+                          transform: 'translateZ(0)',
+                          boxShadow: '0 1px 3px rgba(0,0,0,0.12)',
+                          transition: 'all 0.15s ease'
+                        }}
+                      >
+                        <Sparkles size={14} />
+                        <span style={{ textShadow: '0 1px 2px rgba(0, 0, 0, 0.45)', letterSpacing: '0.3px' }}>
+                          اعتماد الخطة وإرسالها للمشترك
+                        </span>
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Sample Filter Tab & Badge */}
+                  <div>
+                    <span style={{ fontSize: '10.5px', color: '#64748B', display: 'block', marginBottom: '4px' }}>2. التبويبات والشارات النشطة:</span>
+                    <div style={{ display: 'flex', gap: '8px', alignItems: 'center', flexWrap: 'wrap' }}>
+                      <span
+                        style={{
+                          background: coachConfig.primaryColor || '#0F172A',
+                          color: '#FFFFFF',
+                          border: '1px solid rgba(255, 255, 255, 0.18)',
+                          padding: '4px 10px',
+                          borderRadius: '6px',
+                          fontSize: '11.5px',
+                          fontWeight: 700,
+                          letterSpacing: '0.3px',
+                          textShadow: '0 1px 2px rgba(0, 0, 0, 0.45)',
+                          WebkitFontSmoothing: 'antialiased',
+                          MozOsxFontSmoothing: 'grayscale',
+                          textRendering: 'geometricPrecision',
+                          transform: 'translateZ(0)',
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          gap: '5px',
+                          boxShadow: '0 1px 3px rgba(0, 0, 0, 0.12)'
+                        }}
+                      >
+                        <Check size={12} strokeWidth={2.5} />
+                        <span style={{ textShadow: '0 1px 2px rgba(0, 0, 0, 0.45)' }}>نشط (Active)</span>
+                      </span>
+
+                      <span
+                        style={{
+                          background: deriveThemeColors(coachConfig.primaryColor).light,
+                          border: `1px solid ${deriveThemeColors(coachConfig.primaryColor).border}`,
+                          color: coachConfig.primaryColor || '#0F172A',
+                          padding: '3px 10px',
+                          borderRadius: '6px',
+                          fontSize: '11px',
+                          fontWeight: 800
+                        }}
+                      >
+                        باقة ماكس VIP
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Sample Coach Signature Badge */}
+                  <div style={{ background: '#F8FAFC', border: '1px dashed #CBD5E1', borderRadius: '8px', padding: '10px 12px' }}>
+                    <span style={{ fontSize: '10px', color: '#94A3B8', display: 'block', marginBottom: '2px' }}>معاينة تذييل التقارير للعميل:</span>
+                    <strong style={{ fontSize: '12px', color: '#0F172A', display: 'block' }}>
+                      {coachConfig.signatureText || 'معاً نحو نسختك الأقوى • كابتن Karim Zakaria'}
+                    </strong>
+                    <small style={{ fontSize: '10.5px', color: coachConfig.primaryColor || '#0F172A', fontWeight: 700 }}>
+                      {coachConfig.brandTitle || 'Z COACHING'} • {coachConfig.coachTitle || 'أخصائي تغذية رياضية'}
+                    </small>
+                  </div>
+
+                </div>
+
+              </div>
+            </FormSection>
+
+            {/* 2. Coach Personal & Client-Facing Profile */}
+            <FormSection
+              title="الملف التعريفي للكوتش وتفاصيل التواصل للعملاء"
+              description="هذه البيانات تظهر لمتدربيك في رسائل الواتساب، شاشة الترحيب، تذييل الجداول، وبيانات استقبال التحويلات."
+            >
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '14px', marginTop: '6px' }}>
+                
+                <div>
+                  <label style={{ display: 'block', fontSize: '11.5px', fontWeight: 700, color: '#475569', marginBottom: '3px' }}>
+                    اسم الكوتش الرسمي (يظهر في الهيدر والتقارير) *
+                  </label>
+                  <div style={{ position: 'relative' }}>
                     <input
                       type="text"
-                      className="form-control fw-semibold text-end"
-                      style={{ height: '42px', borderRadius: '10px', fontSize: '0.86rem', border: '1.5px solid #e2e8f0' }}
-                      value={systemConfig.coachName}
-                      onChange={(e) => setSystemConfig({ ...systemConfig, coachName: e.target.value })}
+                      value={coachConfig.coachName}
+                      onChange={(e) => setCoachConfig({ ...coachConfig, coachName: e.target.value })}
+                      placeholder="مثال: كريم زكريا / Karim Zakaria"
+                      style={{ width: '100%', height: '36px', borderRadius: '6px', border: '1px solid #CBD5E1', padding: '0 32px 0 10px', fontSize: '12px', outline: 'none', boxSizing: 'border-box' }}
                     />
+                    <User size={14} color="#94A3B8" style={{ position: 'absolute', right: '10px', top: '11px' }} />
                   </div>
+                </div>
 
-                  <div className="col-6">
-                    <label className="form-label fw-bold text-dark small mb-1" style={{ fontSize: '0.84rem' }}>
-                      هدف الخطوات اليومي الافتراضي
-                    </label>
+                <div>
+                  <label style={{ display: 'block', fontSize: '11.5px', fontWeight: 700, color: '#475569', marginBottom: '3px' }}>
+                    المسمى المهني والتخصص والشهادات *
+                  </label>
+                  <div style={{ position: 'relative' }}>
+                    <input
+                      type="text"
+                      value={coachConfig.coachTitle}
+                      onChange={(e) => setCoachConfig({ ...coachConfig, coachTitle: e.target.value })}
+                      placeholder="مثال: أخصائي تغذية رياضية وإعداد بدني معتمد ISSA"
+                      style={{ width: '100%', height: '36px', borderRadius: '6px', border: '1px solid #CBD5E1', padding: '0 32px 0 10px', fontSize: '12px', outline: 'none', boxSizing: 'border-box' }}
+                    />
+                    <Award size={14} color="#94A3B8" style={{ position: 'absolute', right: '10px', top: '11px' }} />
+                  </div>
+                </div>
+
+                <div>
+                  <label style={{ display: 'block', fontSize: '11.5px', fontWeight: 700, color: '#475569', marginBottom: '3px' }}>
+                    اسم المنصة / البراند التجاري *
+                  </label>
+                  <div style={{ position: 'relative' }}>
+                    <input
+                      type="text"
+                      value={coachConfig.brandTitle}
+                      onChange={(e) => setCoachConfig({ ...coachConfig, brandTitle: e.target.value })}
+                      placeholder="مثال: Z COACHING"
+                      style={{ width: '100%', height: '36px', borderRadius: '6px', border: '1px solid #CBD5E1', padding: '0 32px 0 10px', fontSize: '12px', outline: 'none', boxSizing: 'border-box' }}
+                    />
+                    <Building2 size={14} color="#94A3B8" style={{ position: 'absolute', right: '10px', top: '11px' }} />
+                  </div>
+                </div>
+
+                <div>
+                  <label style={{ display: 'block', fontSize: '11.5px', fontWeight: 700, color: '#475569', marginBottom: '3px' }}>
+                    رقم الواتساب الرسمي المباشر للدعم والتنبيهات *
+                  </label>
+                  <div style={{ position: 'relative' }}>
+                    <input
+                      type="text"
+                      value={coachConfig.whatsappNumber}
+                      onChange={(e) => setCoachConfig({ ...coachConfig, whatsappNumber: e.target.value })}
+                      placeholder="2010XXXXXXXX"
+                      dir="ltr"
+                      style={{ width: '100%', height: '36px', borderRadius: '6px', border: '1px solid #CBD5E1', padding: '0 10px 0 32px', fontSize: '12px', outline: 'none', boxSizing: 'border-box', textAlign: 'right' }}
+                    />
+                    <Phone size={14} color="#94A3B8" style={{ position: 'absolute', left: '10px', top: '11px' }} />
+                  </div>
+                </div>
+
+                <div>
+                  <label style={{ display: 'block', fontSize: '11.5px', fontWeight: 700, color: '#475569', marginBottom: '3px' }}>
+                    معرف إنستاباي للدفع السريع (InstaPay Address) *
+                  </label>
+                  <div style={{ position: 'relative' }}>
+                    <input
+                      type="text"
+                      value={coachConfig.instapayAddress}
+                      onChange={(e) => setCoachConfig({ ...coachConfig, instapayAddress: e.target.value })}
+                      placeholder="مثال: coach@instapay أو رقم الهاتف"
+                      dir="ltr"
+                      style={{ width: '100%', height: '36px', borderRadius: '6px', border: '1px solid #CBD5E1', padding: '0 10px 0 32px', fontSize: '12px', outline: 'none', boxSizing: 'border-box', textAlign: 'right' }}
+                    />
+                    <CreditCard size={14} color="#94A3B8" style={{ position: 'absolute', left: '10px', top: '11px' }} />
+                  </div>
+                </div>
+
+                <div>
+                  <label style={{ display: 'block', fontSize: '11.5px', fontWeight: 700, color: '#475569', marginBottom: '3px' }}>
+                    رابط إنستغرام أو صفحة السوشيال ميديا
+                  </label>
+                  <div style={{ position: 'relative' }}>
+                    <input
+                      type="text"
+                      value={coachConfig.instagramUrl}
+                      onChange={(e) => setCoachConfig({ ...coachConfig, instagramUrl: e.target.value })}
+                      placeholder="https://instagram.com/yourhandle"
+                      dir="ltr"
+                      style={{ width: '100%', height: '36px', borderRadius: '6px', border: '1px solid #CBD5E1', padding: '0 10px 0 32px', fontSize: '12px', outline: 'none', boxSizing: 'border-box', textAlign: 'right' }}
+                    />
+                    <Globe size={14} color="#94A3B8" style={{ position: 'absolute', left: '10px', top: '11px' }} />
+                  </div>
+                </div>
+
+                <div style={{ gridColumn: 'span 2' }}>
+                  <label style={{ display: 'block', fontSize: '11.5px', fontWeight: 700, color: '#475569', marginBottom: '3px' }}>
+                    بيانات الحساب البنكي أو المحافظ الذكية (تظهر للمشترك عند خطوة تأكيد الدفع)
+                  </label>
+                  <input
+                    type="text"
+                    value={coachConfig.bankDetails}
+                    onChange={(e) => setCoachConfig({ ...coachConfig, bankDetails: e.target.value })}
+                    placeholder="مثال: بنك CIB - حساب: 1000XXXXXXXXXX | محفظة فودافون كاش: 010XXXXXXXX"
+                    style={{ width: '100%', height: '36px', borderRadius: '6px', border: '1px solid #CBD5E1', padding: '0 10px', fontSize: '12px', outline: 'none', boxSizing: 'border-box' }}
+                  />
+                </div>
+
+                <div style={{ gridColumn: 'span 2' }}>
+                  <label style={{ display: 'block', fontSize: '11.5px', fontWeight: 700, color: '#475569', marginBottom: '3px' }}>
+                    رسالة الترحيب والتوجيه الافتراضية للمتدرب الجديد
+                  </label>
+                  <textarea
+                    value={coachConfig.welcomeMessage}
+                    onChange={(e) => setCoachConfig({ ...coachConfig, welcomeMessage: e.target.value })}
+                    rows={2}
+                    placeholder="اكتب الترحيب الذي يظهر للمشترك عند فتح حسابه..."
+                    style={{ width: '100%', borderRadius: '6px', border: '1px solid #CBD5E1', padding: '8px 10px', fontSize: '12px', outline: 'none', boxSizing: 'border-box', resize: 'vertical' }}
+                  />
+                </div>
+
+                <div style={{ gridColumn: 'span 2' }}>
+                  <label style={{ display: 'block', fontSize: '11.5px', fontWeight: 700, color: '#475569', marginBottom: '3px' }}>
+                    توقيع الاعتماد والشعار النصي في أسفل الخطط والتقارير
+                  </label>
+                  <input
+                    type="text"
+                    value={coachConfig.signatureText}
+                    onChange={(e) => setCoachConfig({ ...coachConfig, signatureText: e.target.value })}
+                    placeholder="مثال: معاً نحو نسختك الأقوى • كابتن كريم زكريا"
+                    style={{ width: '100%', height: '36px', borderRadius: '6px', border: '1px solid #CBD5E1', padding: '0 10px', fontSize: '12px', outline: 'none', boxSizing: 'border-box' }}
+                  />
+                </div>
+
+              </div>
+            </FormSection>
+
+            {/* 3. System Defaults */}
+            <FormSection
+              title="المعايير السريرية الافتراضية للمنظومة"
+              description="القيم المبدئية التي تُقترح تلقائياً عند توليد الخطط وتحديد الأهداف اليومية للمتدربين."
+            >
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '14px', marginTop: '6px' }}>
+                
+                <div>
+                  <label style={{ display: 'block', fontSize: '11.5px', fontWeight: 700, color: '#475569', marginBottom: '3px' }}>
+                    هدف الخطوات اليومي الافتراضي
+                  </label>
+                  <div style={{ position: 'relative' }}>
                     <input
                       type="number"
-                      className="form-control fw-semibold text-end"
-                      style={{ height: '42px', borderRadius: '10px', fontSize: '0.86rem', border: '1.5px solid #e2e8f0' }}
-                      value={systemConfig.defaultDailySteps}
-                      onChange={(e) => setSystemConfig({ ...systemConfig, defaultDailySteps: Number(e.target.value) })}
+                      value={coachConfig.defaultDailySteps}
+                      onChange={(e) => setCoachConfig({ ...coachConfig, defaultDailySteps: Number(e.target.value) })}
+                      style={{ width: '100%', height: '36px', borderRadius: '6px', border: '1px solid #CBD5E1', padding: '0 32px 0 10px', fontSize: '12px', fontWeight: 800, outline: 'none', boxSizing: 'border-box' }}
                     />
+                    <Footprints size={14} color="#94A3B8" style={{ position: 'absolute', right: '10px', top: '11px' }} />
                   </div>
+                </div>
 
-                  <div className="col-6">
-                    <label className="form-label fw-bold text-dark small mb-1" style={{ fontSize: '0.84rem' }}>
-                      شرب الماء اليومي الافتراضي (لتر)
-                    </label>
+                <div>
+                  <label style={{ display: 'block', fontSize: '11.5px', fontWeight: 700, color: '#475569', marginBottom: '3px' }}>
+                    شرب الماء اليومي الافتراضي (لتر)
+                  </label>
+                  <div style={{ position: 'relative' }}>
                     <input
                       type="number"
                       step="0.5"
-                      className="form-control fw-semibold text-end"
-                      style={{ height: '42px', borderRadius: '10px', fontSize: '0.86rem', border: '1.5px solid #e2e8f0' }}
-                      value={systemConfig.defaultWaterLiters}
-                      onChange={(e) => setSystemConfig({ ...systemConfig, defaultWaterLiters: Number(e.target.value) })}
+                      value={coachConfig.defaultWaterLiters}
+                      onChange={(e) => setCoachConfig({ ...coachConfig, defaultWaterLiters: Number(e.target.value) })}
+                      style={{ width: '100%', height: '36px', borderRadius: '6px', border: '1px solid #CBD5E1', padding: '0 32px 0 10px', fontSize: '12px', fontWeight: 800, outline: 'none', boxSizing: 'border-box' }}
                     />
-                  </div>
-
-                  <div className="col-12 pt-3">
-                    <button
-                      type="button"
-                      onClick={() => alert('تم حفظ إعدادات المنظومة العامة بنجاح')}
-                      className="btn btn-primary rounded-pill px-4 fw-bold shadow-sm d-flex align-items-center gap-2 text-slate-900"
-                      style={{ 
-                        height: '42px', 
-                        fontSize: '0.86rem', 
-                        background: 'linear-gradient(135deg, #58B4E5 0%, #0284C7 100%)', 
-                        border: 'none', 
-                        boxShadow: '0 4px 14px rgba(38, 28, 106, 0.28)' 
-                      }}
-                    >
-                      <i className="ti ti-device-floppy fs-6"></i>
-                      <span>حفظ إعدادات المنظومة</span>
-                    </button>
+                    <Droplets size={14} color="#94A3B8" style={{ position: 'absolute', right: '10px', top: '11px' }} />
                   </div>
                 </div>
+
+                <div>
+                  <label style={{ display: 'block', fontSize: '11.5px', fontWeight: 700, color: '#475569', marginBottom: '3px' }}>
+                    مستوى الجهد المتبقي الافتراضي (RIR)
+                  </label>
+                  <div style={{ position: 'relative' }}>
+                    <input
+                      type="number"
+                      value={coachConfig.defaultRIR}
+                      onChange={(e) => setCoachConfig({ ...coachConfig, defaultRIR: Number(e.target.value) })}
+                      style={{ width: '100%', height: '36px', borderRadius: '6px', border: '1px solid #CBD5E1', padding: '0 32px 0 10px', fontSize: '12px', fontWeight: 800, outline: 'none', boxSizing: 'border-box' }}
+                    />
+                    <Activity size={14} color="#94A3B8" style={{ position: 'absolute', right: '10px', top: '11px' }} />
+                  </div>
+                </div>
+
               </div>
-            )}
+            </FormSection>
+
+            {/* 4. Action Save Bar */}
+            <div style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', gap: '10px', background: '#FFFFFF', border: '1px solid #E2E8F0', padding: '12px 18px', borderRadius: '10px', boxShadow: '0 2px 8px rgba(15, 23, 42, 0.04)' }}>
+              <button
+                type="button"
+                onClick={handleResetDefaultTheme}
+                style={{
+                  height: '38px',
+                  padding: '0 16px',
+                  borderRadius: '6px',
+                  border: '1px solid #CBD5E1',
+                  background: '#FFFFFF',
+                  color: '#475569',
+                  fontSize: '12px',
+                  fontWeight: 700,
+                  cursor: 'pointer'
+                }}
+              >
+                إلغاء التغييرات
+              </button>
+
+              <button
+                type="button"
+                onClick={handleSaveSystemSettings}
+                disabled={saving}
+                className="btn-primary"
+                style={{
+                  height: '40px',
+                  padding: '0 24px',
+                  borderRadius: '8px',
+                  fontSize: '13px',
+                  fontWeight: 800,
+                  cursor: 'pointer',
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '8px',
+                  background: saveSuccessMsg ? '#059669' : undefined,
+                  transition: 'all 0.2s ease'
+                }}
+              >
+                {saving ? (
+                  <>
+                    <Loader2 size={16} className="animate-spin" />
+                    <span>جاري التثبيت...</span>
+                  </>
+                ) : saveSuccessMsg ? (
+                  <>
+                    <CheckCircle2 size={16} />
+                    <span>تم الحفظ والتطبيق بنجاح!</span>
+                  </>
+                ) : (
+                  <>
+                    <Save size={15} />
+                    <span>حفظ إعدادات وتخصيصات الكوتش</span>
+                  </>
+                )}
+              </button>
+            </div>
 
           </div>
+        )}
 
-        </div>
+        {/* ================= FLOATING TOAST NOTIFICATION BANNER ================= */}
+        {saveSuccessMsg && (
+          <div 
+            style={{ 
+              position: 'fixed',
+              bottom: '32px',
+              left: '50%',
+              transform: 'translateX(-50%)',
+              zIndex: 999999,
+              background: '#0F172A',
+              color: '#FFFFFF',
+              padding: '12px 24px',
+              borderRadius: '50px',
+              fontSize: '13.5px',
+              fontWeight: 800,
+              display: 'flex',
+              alignItems: 'center',
+              gap: '10px',
+              boxShadow: '0 12px 35px rgba(0, 0, 0, 0.35)',
+              border: '1.5px solid rgba(255, 255, 255, 0.2)',
+              fontFamily: 'Cairo, Tajawal, sans-serif'
+            }}
+          >
+            <div 
+              style={{ 
+                width: '24px', 
+                height: '24px', 
+                borderRadius: '50%', 
+                background: '#10B981', 
+                display: 'flex', 
+                alignItems: 'center', 
+                justifyContent: 'center', 
+                color: '#FFFFFF', 
+                flexShrink: 0 
+              }}
+            >
+              <Check size={15} strokeWidth={3} />
+            </div>
+            <span>{saveSuccessMsg}</span>
+          </div>
+        )}
+
+        {/* Modals */}
+        {questionModalOpen && (
+          <EditQuestionModal
+            isOpen={questionModalOpen}
+            onClose={() => { setQuestionModalOpen(false); setEditingQuestion(null); }}
+            question={editingQuestion}
+            onSave={handleSaveQuestion}
+            loading={saving}
+          />
+        )}
+
+        {exerciseModalOpen && (
+          <EditExerciseModal
+            isOpen={exerciseModalOpen}
+            onClose={() => { setExerciseModalOpen(false); setEditingExercise(null); }}
+            exercise={editingExercise}
+            onSave={handleSaveExercise}
+            loading={saving}
+          />
+        )}
+
+        {packageModalOpen && (
+          <EditPackageModal
+            isOpen={packageModalOpen}
+            onClose={() => { setPackageModalOpen(false); setEditingPackage(null); }}
+            packageData={editingPackage}
+            onSave={handleSavePackage}
+            saving={saving}
+          />
+        )}
+
       </div>
-
-      {/* Modals */}
-      {questionModalOpen && (
-        <EditQuestionModal
-          isOpen={questionModalOpen}
-          onClose={() => { setQuestionModalOpen(false); setEditingQuestion(null); }}
-          question={editingQuestion}
-          onSave={handleSaveQuestion}
-          loading={saving}
-        />
-      )}
-
-      {exerciseModalOpen && (
-        <EditExerciseModal
-          isOpen={exerciseModalOpen}
-          onClose={() => { setExerciseModalOpen(false); setEditingExercise(null); }}
-          exercise={editingExercise}
-          onSave={handleSaveExercise}
-          loading={saving}
-        />
-      )}
-
-      {packageModalOpen && (
-        <EditPackageModal
-          isOpen={packageModalOpen}
-          onClose={() => { setPackageModalOpen(false); setEditingPackage(null); }}
-          packageData={editingPackage}
-          onSave={handleSavePackage}
-          saving={saving}
-        />
-      )}
-
     </AdminLayout>
   );
 }

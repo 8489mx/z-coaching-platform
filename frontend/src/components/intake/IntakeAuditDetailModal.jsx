@@ -572,7 +572,7 @@ export default function IntakeAuditDetailModal({
                 </div>
                 <div className="d-flex flex-wrap gap-2">
                   {targetFocusMusclesList.map((m, i) => (
-                    <span key={i} className="badge px-3 py-2 fw-bold shadow-sm" style={{ background: '#ffffff', color: '#0284C7', border: '1.5px solid #58B4E5', borderRadius: '8px', fontSize: '0.80rem' }}>
+                    <span key={i} className="badge px-3 py-2 fw-bold shadow-sm" style={{ background: '#ffffff', color: '#0F172A', border: '1.5px solid #CBD5E1', borderRadius: '8px', fontSize: '0.80rem' }}>
                       {FOCUS_MUSCLES_LABELS[m] || m}
                     </span>
                   ))}

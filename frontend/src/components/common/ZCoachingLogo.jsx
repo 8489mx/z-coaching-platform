@@ -12,9 +12,9 @@ export default function ZCoachingLogo({ size = 56 }) {
     >
       <defs>
         <linearGradient id="zBadgeBg" x1="0%" y1="0%" x2="100%" y2="100%">
-          <stop offset="0%" stopColor="#58B4E5" />
-          <stop offset="60%" stopColor="#0284C7" />
-          <stop offset="100%" stopColor="#181145" />
+          <stop offset="0%" stopColor="#334155" />
+          <stop offset="60%" stopColor="#1E293B" />
+          <stop offset="100%" stopColor="#0F172A" />
         </linearGradient>
         <linearGradient id="zAccentGleam" x1="0%" y1="0%" x2="100%" y2="100%">
           <stop offset="0%" stopColor="#e0e7ff" />

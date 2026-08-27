@@ -16,7 +16,7 @@ export default function ExecutiveKpis({
       unit: 'مشترك',
       badge: { text: '+15%', bg: '#E5F0FF', color: '#0284C7', icon: 'ti-trending-up' },
       footer: '+3 هذا الأسبوع',
-      sparkGrad: ['#58B4E5', '#0284C7'],
+      sparkGrad: ['#334155', '#0F172A'],
       sparkPath: 'M1 14C10 14 16 4 24 7C32 10 40 2 50 3C56 5 58 2 59 1',
     },
     {
@@ -114,7 +114,7 @@ export default function ExecutiveKpis({
                   {card.footer}
                 </span>
                 {card.footerLink && (
-                  <Link to={card.footerLink} className="text-decoration-none fw-bold" style={{ fontSize: '0.72rem', color: '#58B4E5' }}>
+                  <Link to={card.footerLink} className="text-decoration-none fw-bold" style={{ fontSize: '0.72rem', color: '#0F172A' }}>
                     عرض التفاصيل &larr;
                   </Link>
                 )}

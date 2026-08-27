@@ -53,7 +53,7 @@ export const getOrders = async (req, res) => {
         {
           model: User,
           as: 'client',
-          attributes: ['id', 'client_code', 'status', 'plan_approval_status']
+          attributes: ['id', 'client_code', 'subscription_status', 'plan_approval_status']
         }
       ]
     });
@@ -109,7 +109,7 @@ export const activateOrder = async (req, res) => {
         payment_status: 'PAID',
         payment_method: order.payment_method,
         plan_approval_status: 'CODE_GENERATED',
-        status: 'CODE_GENERATED',
+        subscription_status: 'ACTIVE',
         subscription_start_date: startDate,
         subscription_end_date: endDate
       });

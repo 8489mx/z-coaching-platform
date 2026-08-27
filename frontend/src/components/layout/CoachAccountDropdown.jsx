@@ -1,13 +1,22 @@
-﻿import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Settings, Users, LogOut, ChevronDown, ShieldCheck } from 'lucide-react';
+import { getStoredCoachConfig } from '../../utils/themeAndCoachConfig';
 
 export default function CoachAccountDropdown() {
   const [isOpen, setIsOpen] = useState(false);
+  const [coachConfig, setCoachConfig] = useState(getStoredCoachConfig());
   const dropdownRef = useRef(null);
   const navigate = useNavigate();
 
   useEffect(() => {
+    const handleConfigUpdate = (e) => {
+      if (e.detail) {
+        setCoachConfig(e.detail);
+      }
+    };
+    window.addEventListener('z-coach-config-updated', handleConfigUpdate);
+
     const handleClickOutside = (event) => {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
         setIsOpen(false);
@@ -23,6 +32,7 @@ export default function CoachAccountDropdown() {
     document.addEventListener('mousedown', handleClickOutside);
     window.addEventListener('keydown', handleKeyDown);
     return () => {
+      window.removeEventListener('z-coach-config-updated', handleConfigUpdate);
       document.removeEventListener('mousedown', handleClickOutside);
       window.removeEventListener('keydown', handleKeyDown);
     };
@@ -37,19 +47,19 @@ export default function CoachAccountDropdown() {
 
   return (
     <div style={{ position: 'relative' }} ref={dropdownRef} dir="rtl">
-      {/* 28px Interactive Trigger Pill */}
+      {/* 32px Interactive Trigger Pill */}
       <button
         type="button"
         onClick={() => setIsOpen(!isOpen)}
         style={{
           display: 'flex',
           alignItems: 'center',
-          gap: '6px',
-          padding: '2px 8px 2px 4px',
-          height: '28px',
+          gap: '8px',
+          padding: '3px 10px 3px 5px',
+          height: '32px',
           background: isOpen ? '#F1F5F9' : '#F8FAFC',
           border: isOpen ? '1px solid #CBD5E1' : '1px solid #E2E8F0',
-          borderRadius: '16px',
+          borderRadius: '20px',
           cursor: 'pointer',
           transition: 'all 0.15s ease',
           outline: 'none',
@@ -59,10 +69,10 @@ export default function CoachAccountDropdown() {
       >
         <div
           style={{
-            width: '22px',
-            height: '22px',
+            width: '24px',
+            height: '24px',
             borderRadius: '50%',
-            background: '#0F172A',
+            background: coachConfig?.primaryColor || '#0F172A',
             color: '#FFFFFF',
             fontWeight: 800,
             fontSize: '11px',
@@ -72,19 +82,18 @@ export default function CoachAccountDropdown() {
             flexShrink: 0
           }}
         >
-          ك
+          {((coachConfig?.coachName || 'K').trim().charAt(0) || 'K').toUpperCase()}
         </div>
-        <div style={{ display: 'flex', flexDirection: 'column', textAlign: 'right', lineHeight: 1.1 }}>
-          <span style={{ fontSize: '11px', fontWeight: 800, color: '#0F172A', whiteSpace: 'nowrap' }}>كابتن كريم زكريا</span>
-          <span style={{ fontSize: '8.5px', color: '#64748B', fontWeight: 600, whiteSpace: 'nowrap' }}>المدرب الرئيسي</span>
-        </div>
+        <span style={{ fontSize: '12px', fontWeight: 800, color: '#0F172A', whiteSpace: 'nowrap' }}>
+          {coachConfig?.coachName || 'Karim Zakaria'}
+        </span>
         <ChevronDown 
-          size={12} 
+          size={13} 
           color="#94A3B8" 
           style={{ 
             transform: isOpen ? 'rotate(180deg)' : 'rotate(0deg)', 
             transition: 'transform 0.2s ease',
-            marginRight: '1px'
+            marginRight: '2px'
           }} 
         />
       </button>
@@ -95,56 +104,16 @@ export default function CoachAccountDropdown() {
           style={{
             position: 'absolute',
             left: 0,
-            top: 'calc(100% + 6px)',
-            width: '240px',
+            top: 'calc(100% + 8px)',
+            width: '210px',
             background: '#FFFFFF',
             border: '1px solid #E2E8F0',
             borderRadius: '10px',
             boxShadow: '0 12px 32px rgba(15, 23, 42, 0.12), 0 4px 12px rgba(15, 23, 42, 0.04)',
-            padding: '8px',
+            padding: '6px',
             zIndex: 1100
           }}
         >
-          {/* Identity Header */}
-          <div
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: '10px',
-              padding: '8px 10px',
-              background: '#F8FAFC',
-              border: '1px solid #E2E8F0',
-              borderRadius: '6px',
-              marginBottom: '6px'
-            }}
-          >
-            <div
-              style={{
-                width: '32px',
-                height: '32px',
-                borderRadius: '6px',
-                background: '#0F172A',
-                color: '#FFFFFF',
-                fontWeight: 900,
-                fontSize: '14px',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                flexShrink: 0
-              }}
-            >
-              ك
-            </div>
-            <div style={{ minWidth: 0, flex: 1, display: 'flex', flexDirection: 'column', gap: '1px' }}>
-              <strong style={{ fontSize: '12.5px', color: '#0F172A', fontWeight: 800 }}>كابتن كريم زكريا</strong>
-              <span style={{ fontSize: '10.5px', color: '#64748B', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>coach@z-coaching.com</span>
-              <div style={{ display: 'inline-flex', alignItems: 'center', gap: '3px', marginTop: '1px' }}>
-                <ShieldCheck size={11} color="#059669" />
-                <span style={{ fontSize: '9.5px', fontWeight: 700, color: '#059669' }}>مشرف عام النظام</span>
-              </div>
-            </div>
-          </div>
-
           {/* Menu Items */}
           <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
             <Link

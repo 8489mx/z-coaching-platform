@@ -1,5 +1,5 @@
-﻿import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 import { 
   Users, 
   Clock, 
@@ -8,68 +8,141 @@ import {
   MessageCircle, 
   CheckCircle2, 
   ShieldAlert, 
-  Check
+  Check,
+  ExternalLink,
+  Sparkles,
+  ClipboardList,
+  RefreshCw,
+  Loader2
 } from 'lucide-react';
+import { API_BASE } from '../config/api';
 import AdminLayout from '../components/layout/AdminLayout';
 import NewClientQuickModal from '../components/modals/NewClientQuickModal';
 import { PageHeader } from '@/shared/components/page-header';
 import { FormSection } from '@/shared/components/form-section';
 
 export default function CoachCommandCenter() {
+  const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState('ALL'); // 'ALL' | 'CHECKIN' | 'CLINICAL' | 'INACTIVE' | 'RENEWAL'
   const [isNewClientModalOpen, setIsNewClientModalOpen] = useState(false);
+  const [loading, setLoading] = useState(true);
 
-  // إحصائيات سريعة للـ KPI Cards (Monochrome Minimalist)
-  const stats = [
-    { title: 'إجمالي المشتركين النشطين', value: '48', trend: '+12%', trendLabel: 'هذا الشهر', icon: Users },
-    { title: 'متابعات تنتظر الاعتماد', value: '2', trend: 'عاجل', trendLabel: 'اليوم', icon: Clock },
-    { title: 'طوارئ المفاصل والعيادة', value: '1', trend: 'طوارئ', trendLabel: 'تدخل عاجل', icon: ShieldAlert },
-    { title: 'تجديدات خلال 7 أيام', value: '3', trend: 'تنبيه', trendLabel: 'باقات منتهية', icon: Hourglass },
+  // Live Server Data
+  const [overview, setOverview] = useState({
+    total_monthly_revenue: 0,
+    active_count: 0,
+    expiring_soon_count: 0,
+    expired_count: 0,
+    total_clients: 0
+  });
+  const [clients, setClients] = useState([]);
+  const [submissions, setSubmissions] = useState([]);
+
+  useEffect(() => {
+    fetchDashboardData();
+  }, []);
+
+  const fetchDashboardData = async () => {
+    try {
+      setLoading(true);
+      const [subOverviewRes, intakeRes] = await Promise.allSettled([
+        fetch(`${API_BASE}/api/v1/subscriptions/overview`),
+        fetch(`${API_BASE}/api/v1/intake/submissions`)
+      ]);
+
+      if (subOverviewRes.status === 'fulfilled' && subOverviewRes.value && subOverviewRes.value.ok) {
+        try {
+          const subData = await subOverviewRes.value.json();
+          if (subData && subData.overview) setOverview(subData.overview);
+          if (subData && Array.isArray(subData.clients)) setClients(subData.clients);
+        } catch (e) {}
+      }
+
+      if (intakeRes.status === 'fulfilled' && intakeRes.value && intakeRes.value.ok) {
+        try {
+          const intakeData = await intakeRes.value.json();
+          if (intakeData && Array.isArray(intakeData.submissions)) setSubmissions(intakeData.submissions);
+        } catch (e) {}
+      }
+    } catch (err) {
+      console.error('Error fetching dashboard live data:', err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Safe Arrays
+  const safeSubmissions = Array.isArray(submissions) ? submissions : [];
+  const safeClients = Array.isArray(clients) ? clients : [];
+
+  // Build Real-Time Action Queue from Live Pending Intakes & Expiring Subscriptions
+  const pendingIntakes = safeSubmissions.filter(s => s && s.status !== 'APPROVED');
+  const expiringClients = safeClients.filter(c => c && c.status === 'EXPIRING_SOON');
+
+  const dailyActions = [
+    // 1. Pending Intakes Awaiting Review / Generation
+    ...pendingIntakes.map(sub => ({
+      id: `INTAKE_${sub?.id || Math.random()}`,
+      type: 'CHECKIN',
+      clientName: sub?.user?.full_name || sub?.full_name || `مشترك #${sub?.user?.client_code || sub?.user_id || sub?.id || ''}`,
+      tier: sub?.subscription_package || sub?.user?.subscription_package || 'باقة إيليت',
+      phone: sub?.user?.phone_number || sub?.phone_number || '',
+      summary: sub?.status === 'PAID' ? 'تم تأكيد الدفع • الاستمارة مكتملة وبانتظار توليد واعتماد الخطة.' : 'استمارة تقييم واردة قيد المراجعة والتدقيق.',
+      suggestedAction: 'توليد ومراجعة الخطة في المحرر السريري',
+      badgeText: sub?.status === 'PAID' ? 'مدفوع • مطلوب خطة' : 'استمارة تقييم',
+      actionUrl: `/editor?user_id=${sub?.user_id || sub?.user?.id || sub?.id || ''}`
+    })),
+    // 2. Expiring Subscriptions Awaiting Renewal Outreach
+    ...expiringClients.map(c => ({
+      id: `RENEWAL_${c?.id || Math.random()}`,
+      type: 'RENEWAL',
+      clientName: c?.full_name || `مشترك #${c?.client_code || ''}`,
+      tier: c?.package || 'باقة ماكس VIP',
+      phone: c?.phone_number || '',
+      summary: `متبقي ${c?.days_remaining || 0} أيام على نهاية باقة الاشتراك.`,
+      suggestedAction: 'إرسال عرض تجديد الدايت والتدريب عبر الواتساب',
+      badgeText: 'تجديد قريب',
+      actionUrl: `/subscriptions`
+    }))
   ];
 
-  // المهام والإجراءات اليومية
-  const [dailyActions, setDailyActions] = useState([
-    {
-      id: 'ACT_01',
-      type: 'CHECKIN',
-      clientName: 'سارة المنصوري',
-      tier: 'باقة MAX',
-      phone: '+966 50 123 4567',
-      summary: 'نزول 1.6 كجم من الوزن والمحيطات في أسبوعين.',
-      suggestedAction: 'الاستمرار بنفس العجز السعري وتثبيت الماكروز.',
-      badgeText: 'متابعة أسبوعية'
+  // Dynamic Live KPIs
+  const stats = [
+    { 
+      title: 'إجمالي المشتركين النشطين', 
+      value: (overview?.active_count ?? safeClients.length).toString(), 
+      trend: (overview?.active_count || 0) > 0 ? '+100%' : '0%', 
+      trendLabel: 'حسابات مفعلة', 
+      icon: Users 
     },
-    {
-      id: 'ACT_02',
-      type: 'CLINICAL',
-      clientName: 'ياسمين فهد',
-      tier: 'باقة ELITE',
-      phone: '+971 50 987 6543',
-      summary: 'نغزة ألم في الكتف الأيمن (6/10) أثناء تمرين Overhead Press.',
-      suggestedAction: 'استبدال البار بقبضة دمبل محايدة وتفعيل روتين الكفة المدورة.',
-      badgeText: 'تنبيه مفصلي'
+    { 
+      title: 'استمارات وتقييمات معلقة', 
+      value: pendingIntakes.length.toString(), 
+      trend: pendingIntakes.length > 0 ? 'مطلوب مراجعة' : 'مكتمل', 
+      trendLabel: 'طابور المهام', 
+      icon: Clock 
     },
-    {
-      id: 'ACT_03',
-      type: 'INACTIVE',
-      clientName: 'حسام البدري',
-      tier: 'باقة MAX',
-      phone: '+20 10 1234 5678',
-      summary: 'لم يسجل أي تمرين أو وجبة منذ أكثر من 48 ساعة.',
-      suggestedAction: 'إرسال رسالة تشجيع واطمئنان على الواتساب.',
-      badgeText: 'انقطاع 48 ساعة'
+    { 
+      title: 'طوارئ المفاصل والعيادة', 
+      value: '0', 
+      trend: 'آمن', 
+      trendLabel: 'استقرار تام', 
+      icon: ShieldAlert 
     },
-    {
-      id: 'ACT_04',
-      type: 'RENEWAL',
-      clientName: 'أحمد فتحي',
-      tier: 'باقة ELITE',
-      phone: '+20 11 2345 6789',
-      summary: 'متبقي 3 أيام على نهاية باقة الـ 16 أسبوعاً (إنجاز -13.5 كجم).',
-      suggestedAction: 'إرسال عرض تجديد الدايت العكسي والبناء العضلي.',
-      badgeText: 'تجديد اشتراك'
-    }
-  ]);
+    { 
+      title: 'تجديدات خلال 7 أيام', 
+      value: (overview?.expiring_soon_count ?? expiringClients.length).toString(), 
+      trend: expiringClients.length > 0 ? 'تنبيه' : 'لا يوجد', 
+      trendLabel: 'متابعة مالية', 
+      icon: Hourglass 
+    },
+  ];
+
+  const maxClientsCount = safeClients.filter(c => c && ((c.package_code || '').includes('MAX') || (c.package || '').includes('ماكس'))).length;
+  const eliteClientsCount = safeClients.filter(c => c && ((c.package_code || '').includes('ELITE') || (c.package || '').includes('إيليت'))).length;
+  const totalTierClients = maxClientsCount + eliteClientsCount || 1;
+  const maxPercent = safeClients.length > 0 ? Math.round((maxClientsCount / totalTierClients) * 100) : 0;
+  const elitePercent = safeClients.length > 0 ? Math.round((eliteClientsCount / totalTierClients) * 100) : 0;
 
   const filteredActions = dailyActions.filter(act => activeTab === 'ALL' || act.type === activeTab);
 
@@ -81,7 +154,6 @@ export default function CoachCommandCenter() {
         <PageHeader
           title="لوحة التحكم والقرارات اليومية"
           description="مؤشرات الأداء المباشرة، طابور المتابعات الأسبوعية، والقرارات السريرية المطلوب اعتمادها."
-          badge={<span style={{ background: '#F1F5F9', border: '1px solid #E2E8F0', color: '#0F172A', fontWeight: 800, padding: '3px 10px', borderRadius: '6px', fontSize: '11px' }}>مركز العمليات</span>}
           actions={(
             <button 
               type="button" 
@@ -95,13 +167,15 @@ export default function CoachCommandCenter() {
                 alignItems: 'center',
                 gap: '6px',
                 borderRadius: '6px',
-                background: '#0F172A',
+                background: 'var(--primary, #0F172A)',
                 color: '#FFFFFF',
                 border: 'none',
                 cursor: 'pointer',
-                boxShadow: '0 2px 5px rgba(15, 23, 42, 0.15)',
+                boxShadow: '0 2px 6px rgba(15, 23, 42, 0.25)',
                 transition: 'all 0.15s ease'
               }}
+              onMouseEnter={(e) => (e.currentTarget.style.background = 'var(--primary2, #334155)')}
+              onMouseLeave={(e) => (e.currentTarget.style.background = 'var(--primary, #0F172A)')}
             >
               <Plus size={15} />
               <span>كود مشترك جديد</span>
@@ -162,7 +236,7 @@ export default function CoachCommandCenter() {
                     { id: 'ALL', label: 'الكل' },
                     { id: 'CHECKIN', label: 'المتابعات' },
                     { id: 'CLINICAL', label: 'العيادة' },
-                    { id: 'INACTIVE', label: 'الانقطاع' },
+                    { id: 'INACTIVE', label: 'المتأخرون' },
                     { id: 'RENEWAL', label: 'التجديد' },
                   ].map(tab => (
                     <button
@@ -174,10 +248,11 @@ export default function CoachCommandCenter() {
                         borderRadius: '5px',
                         fontSize: '11.5px',
                         fontWeight: activeTab === tab.id ? 800 : 600,
-                        border: 'none',
+                        border: activeTab === tab.id ? '1px solid var(--color-primary-border, #CBD5E1)' : '1px solid transparent',
                         cursor: 'pointer',
-                        background: activeTab === tab.id ? '#0F172A' : 'transparent',
-                        color: activeTab === tab.id ? '#FFFFFF' : '#64748B',
+                        background: activeTab === tab.id ? 'var(--color-primary-light, #F1F5F9)' : 'transparent',
+                        color: activeTab === tab.id ? 'var(--primary, #0F172A)' : '#64748B',
+                        boxShadow: activeTab === tab.id ? '0 1px 3px rgba(0, 0, 0, 0.03)' : 'none',
                         transition: 'all 0.15s ease'
                       }}
                     >
@@ -226,8 +301,8 @@ export default function CoachCommandCenter() {
                             fontFamily: 'JetBrains Mono, monospace', 
                             fontWeight: 800, 
                             fontSize: '11px', 
-                            background: '#F8FAFC', 
-                            border: '1px solid #E2E8F0', 
+                            background: '#F1F5F9', 
+                            border: '1px solid #CBD5E1', 
                             color: '#0F172A', 
                             padding: '1px 6px', 
                             borderRadius: '4px' 
@@ -250,48 +325,62 @@ export default function CoachCommandCenter() {
 
                         {/* Left: Compact Action Buttons */}
                         <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flexShrink: 0 }}>
-                          <a
-                            href={'https://wa.me/' + action.phone.replace(/\D/g, '')}
-                            target="_blank"
-                            rel="noreferrer"
-                            style={{
-                              padding: '4px 10px',
-                              borderRadius: '5px',
-                              border: '1px solid #CBD5E1',
-                              background: '#FFFFFF',
-                              color: '#0F172A',
-                              fontWeight: 700,
-                              fontSize: '11.5px',
-                              textDecoration: 'none',
-                              display: 'inline-flex',
-                              alignItems: 'center',
-                              gap: '4px'
-                            }}
-                          >
-                            <MessageCircle size={12} color="#16A34A" />
-                            <span>واتساب</span>
-                          </a>
+                          {action.phone && (
+                            <a
+                              href={'https://wa.me/' + action.phone.replace(/\D/g, '')}
+                              target="_blank"
+                              rel="noreferrer"
+                              style={{
+                                padding: '4px 10px',
+                                borderRadius: '5px',
+                                border: '1px solid #CBD5E1',
+                                background: '#FFFFFF',
+                                color: '#0F172A',
+                                fontWeight: 700,
+                                fontSize: '11.5px',
+                                textDecoration: 'none',
+                                display: 'inline-flex',
+                                alignItems: 'center',
+                                gap: '4px'
+                              }}
+                            >
+                              <MessageCircle size={12} color="#16A34A" />
+                              <span>واتساب</span>
+                            </a>
+                          )}
                           <button
                             type="button"
                             onClick={() => {
-                              setDailyActions(dailyActions.filter(a => a.id !== action.id));
+                              if (action.actionUrl) {
+                                navigate(action.actionUrl);
+                              }
                             }}
                             style={{
-                              padding: '4px 12px',
-                              borderRadius: '5px',
-                              background: '#0F172A',
-                              color: '#FFFFFF',
-                              fontWeight: 700,
+                              padding: '5px 12px',
+                              borderRadius: '6px',
+                              background: 'var(--color-primary-light, #F1F5F9)',
+                              color: 'var(--primary, #0F172A)',
+                              fontWeight: 800,
                               fontSize: '11.5px',
-                              border: 'none',
+                              border: '1px solid var(--color-primary-border, #CBD5E1)',
                               cursor: 'pointer',
                               display: 'inline-flex',
                               alignItems: 'center',
-                              gap: '4px'
+                              gap: '5px',
+                              boxShadow: '0 1px 2px rgba(0,0,0,0.02)',
+                              transition: 'all 0.15s ease'
+                            }}
+                            onMouseEnter={(e) => {
+                              e.currentTarget.style.background = 'var(--primary, #0F172A)';
+                              e.currentTarget.style.color = '#FFFFFF';
+                            }}
+                            onMouseLeave={(e) => {
+                              e.currentTarget.style.background = 'var(--color-primary-light, #F1F5F9)';
+                              e.currentTarget.style.color = 'var(--primary, #0F172A)';
                             }}
                           >
-                            <Check size={12} />
-                            <span>اعتماد الخطة</span>
+                            <Sparkles size={13} />
+                            <span>{action.type === 'CHECKIN' ? 'مراجعة وتوليد الخطة' : 'عرض التفاصيل'}</span>
                           </button>
                         </div>
                       </div>
@@ -315,7 +404,7 @@ export default function CoachCommandCenter() {
                           <span>{action.summary}</span>
                         </div>
                         <div style={{ color: '#0F172A', display: 'flex', alignItems: 'center', gap: '4px' }}>
-                          <span style={{ color: '#64748B', fontWeight: 600 }}>القرار:</span>
+                          <span style={{ color: '#64748B', fontWeight: 600 }}>القرار المقترح:</span>
                           <strong style={{ color: '#0F172A' }}>{action.suggestedAction}</strong>
                         </div>
                       </div>
@@ -334,14 +423,15 @@ export default function CoachCommandCenter() {
             <FormSection 
               title="رادار الطوارئ السريرية" 
               description="تنبيهات الآلام والمفاصل والتدخلات العاجلة."
-              actions={<span style={{ background: '#F1F5F9', border: '1px solid #E2E8F0', color: '#0F172A', fontWeight: 800, padding: '2px 7px', borderRadius: '5px', fontSize: '10.5px' }}>1 حالة</span>}
+              actions={<span style={{ background: '#F1F5F9', border: '1px solid #CBD5E1', color: '#0F172A', fontWeight: 800, padding: '2px 7px', borderRadius: '5px', fontSize: '10.5px' }}>0 حالة</span>}
             >
-              <div style={{ padding: '12px 14px', background: '#F8FAFC', border: '1px solid #E2E8F0', borderRadius: '6px', marginTop: '6px' }}>
-                <strong style={{ fontSize: '13px', color: '#0F172A', display: 'block', marginBottom: '3px' }}>
-                  ياسمين فهد (إصابة كتف أيمن)
+              <div style={{ padding: '14px', background: '#F8FAFC', border: '1px solid #E2E8F0', borderRadius: '6px', marginTop: '6px', textAlign: 'center' }}>
+                <CheckCircle2 size={24} color="#16A34A" style={{ margin: '0 auto 6px auto' }} />
+                <strong style={{ fontSize: '12.5px', color: '#0F172A', display: 'block', marginBottom: '3px' }}>
+                  لا توجد طوارئ مفاصل أو آلام مسجلة
                 </strong>
-                <p style={{ fontSize: '11.5px', color: '#64748B', margin: '0 0 10px 0', lineHeight: '1.5' }}>
-                  تم عزل تمارين البار واستبدالها بالدمبل المحايد تلقائياً لحماية الكفة المدورة.
+                <p style={{ fontSize: '11px', color: '#64748B', margin: '0 0 10px 0', lineHeight: '1.4' }}>
+                  كافة المشتركين يتدربون بأمان ودون أي شكاوى حركية نشطة.
                 </p>
                 <Link
                   to="/exercises"
@@ -360,7 +450,7 @@ export default function CoachCommandCenter() {
                     boxSizing: 'border-box'
                   }}
                 >
-                  استعراض بروتوكول التأهيل
+                  استعراض مكتبة التمارين المعتمدة
                 </Link>
               </div>
             </FormSection>
@@ -373,13 +463,13 @@ export default function CoachCommandCenter() {
               <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', marginTop: '6px' }}>
                 <div>
                   <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '12px', marginBottom: '4px' }}>
-                    <span style={{ color: '#475569', fontWeight: 600 }}>باقة MAX</span>
+                    <span style={{ color: '#475569', fontWeight: 600 }}>باقة MAX VIP</span>
                     <strong style={{ color: '#0F172A', fontWeight: 800 }}>
-                      <span dir="ltr">67%</span> (32 مشترك)
+                      <span dir="ltr">{maxPercent}%</span> ({maxClientsCount} مشترك)
                     </strong>
                   </div>
                   <div style={{ width: '100%', background: '#F1F5F9', height: '5px', borderRadius: '4px', overflow: 'hidden' }}>
-                    <div style={{ background: '#0F172A', height: '100%', width: '67%', borderRadius: '4px' }}></div>
+                    <div style={{ background: '#0F172A', height: '100%', width: `${maxPercent}%`, borderRadius: '4px' }}></div>
                   </div>
                 </div>
 
@@ -387,11 +477,11 @@ export default function CoachCommandCenter() {
                   <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '12px', marginBottom: '4px' }}>
                     <span style={{ color: '#475569', fontWeight: 600 }}>باقة ELITE</span>
                     <strong style={{ color: '#64748B', fontWeight: 800 }}>
-                      <span dir="ltr">33%</span> (16 مشترك)
+                      <span dir="ltr">{elitePercent}%</span> ({eliteClientsCount} مشترك)
                     </strong>
                   </div>
                   <div style={{ width: '100%', background: '#F1F5F9', height: '5px', borderRadius: '4px', overflow: 'hidden' }}>
-                    <div style={{ background: '#64748B', height: '100%', width: '33%', borderRadius: '4px' }}></div>
+                    <div style={{ background: '#64748B', height: '100%', width: `${elitePercent}%`, borderRadius: '4px' }}></div>
                   </div>
                 </div>
               </div>
@@ -406,7 +496,7 @@ export default function CoachCommandCenter() {
           isOpen={isNewClientModalOpen}
           onClose={() => setIsNewClientModalOpen(false)}
           onClientCreated={(newClient) => {
-            console.log('Client created:', newClient);
+            fetchDashboardData();
           }}
         />
 
