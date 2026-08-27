@@ -102,12 +102,12 @@
 
 .dialog-shell h3::before,
 .dialog-shell .document-prototype-section-title::before {
-  background: var(--primary, #170c5c);
-  border-radius: 8px;
+  background: var(--primary, #0F172A);
+  border-radius: 2px;
   content: "";
   flex: none;
-  height: 22px;
-  width: 4px;
+  height: 16px;
+  width: 3.5px;
 }
 
 .dialog-shell p.muted,

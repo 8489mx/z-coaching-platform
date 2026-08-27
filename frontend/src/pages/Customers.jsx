@@ -207,8 +207,8 @@ export default function Customers() {
                 onChange={(e) => setPackageTier(e.target.value)}
                 style={{ width: '100%', height: '34px', borderRadius: '6px', border: '1px solid #CBD5E1', padding: '0 10px', fontSize: '11.5px', fontWeight: 700, color: '#0F172A', background: '#F8FAFC', outline: 'none', boxSizing: 'border-box' }}
               >
-                <option value="MAX_3_PLUS_1">باقة ماكس VIP (متابعة أسبوعية كل 7 أيام) - 16 أسبوعاً</option>
-                <option value="ELITE_3_PLUS_1">باقة إيليت (متابعة كل 14 يوماً) - 16 أسبوعاً</option>
+                <option value="MAX_3_PLUS_1">باقة MAX (متابعة أسبوعية كل 7 أيام) - 16 أسبوعاً</option>
+                <option value="ELITE_3_PLUS_1">باقة ELITE (متابعة كل 14 يوماً) - 16 أسبوعاً</option>
               </select>
             </div>
 
@@ -354,12 +354,12 @@ export default function Customers() {
               <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'right', fontSize: '12px' }}>
                 <thead>
                   <tr style={{ background: '#F8FAFC', borderBottom: '1px solid #E2E8F0', color: '#475569', fontWeight: 700 }}>
-                    <th style={{ padding: '10px 14px' }}>الكود</th>
-                    <th style={{ padding: '10px 14px' }}>المشترك</th>
-                    <th style={{ padding: '10px 14px' }}>الهاتف</th>
-                    <th style={{ padding: '10px 14px' }}>الباقة ودورية المتابعة</th>
-                    <th style={{ padding: '10px 14px' }}>مدة الاشتراك</th>
-                    <th style={{ padding: '10px 14px' }}>حالة الاستمارة</th>
+                    <th style={{ padding: '10px 14px', textAlign: 'center', width: '85px' }}>الكود</th>
+                    <th style={{ padding: '10px 14px', textAlign: 'right' }}>المشترك</th>
+                    <th style={{ padding: '10px 14px', textAlign: 'center' }}>الهاتف</th>
+                    <th style={{ padding: '10px 14px', textAlign: 'center' }}>الباقة ودورية المتابعة</th>
+                    <th style={{ padding: '10px 14px', textAlign: 'center' }}>مدة الاشتراك</th>
+                    <th style={{ padding: '10px 14px', textAlign: 'center' }}>حالة الاستمارة</th>
                     <th style={{ padding: '10px 14px', textAlign: 'left' }}>إجراءات الكوتش والتجاوز الإداري</th>
                   </tr>
                 </thead>
@@ -377,44 +377,53 @@ export default function Customers() {
                         onMouseLeave={(e) => (e.currentTarget.style.background = 'transparent')}
                       >
                         {/* Code */}
-                        <td style={{ padding: '10px 14px' }}>
-                          <span style={{ fontFamily: 'JetBrains Mono, monospace', fontWeight: 800, fontSize: '11px', background: '#F1F5F9', border: '1px solid #CBD5E1', color: '#0F172A', padding: '2px 7px', borderRadius: '4px' }}>
+                        <td style={{ padding: '10px 14px', textAlign: 'center' }}>
+                          <span style={{ fontFamily: 'JetBrains Mono, monospace', fontWeight: 800, fontSize: '11px', background: '#F0F9FF', border: '1px solid #BAE6FD', color: '#0284C7', padding: '2px 7px', borderRadius: '4px', display: 'inline-block' }}>
                             {'#' + cleanCode}
                           </span>
                         </td>
 
                         {/* Name */}
-                        <td style={{ padding: '10px 14px' }}>
+                        <td style={{ padding: '10px 14px', textAlign: 'right' }}>
                           <strong style={{ color: '#0F172A', fontSize: '13px', display: 'block' }}>{client.full_name || 'مشترك جديد'}</strong>
                         </td>
 
                         {/* Phone */}
-                        <td style={{ padding: '10px 14px' }}>
+                        <td style={{ padding: '10px 14px', textAlign: 'center' }}>
                           <span dir="ltr" style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '11.5px', color: '#475569' }}>
                             {client.phone_number}
                           </span>
                         </td>
 
                         {/* Tier */}
-                        <td style={{ padding: '10px 14px' }}>
-                          <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                            <span style={{ background: isMax ? '#F1F5F9' : '#F8FAFC', border: isMax ? '1px solid #CBD5E1' : '1px solid #E2E8F0', color: isMax ? '#0F172A' : '#475569', padding: '1px 6px', borderRadius: '4px', fontSize: '10.5px', fontWeight: 700 }}>
-                              {isMax ? 'باقة MAX' : 'باقة ELITE'}
+                        <td style={{ padding: '10px 14px', textAlign: 'center' }}>
+                          <div style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
+                            <span style={{ 
+                              background: '#F1F5F9', 
+                              border: '1px solid #E2E8F0', 
+                              color: isMax ? '#C4952D' : '#0284C7', 
+                              padding: '2px 8px', 
+                              borderRadius: '4px', 
+                              fontSize: '11px', 
+                              fontWeight: 800, 
+                              fontFamily: 'JetBrains Mono, Cairo, sans-serif'
+                            }}>
+                              {isMax ? 'MAX' : 'ELITE'}
                             </span>
-                            <span style={{ fontSize: '10.5px', color: '#64748B' }}>
+                            <span style={{ fontSize: '10.5px', color: '#64748B', fontWeight: 600 }}>
                               {isMax ? 'متابعة أسبوعية (7 أيام)' : 'متابعة كل 14 يوماً'}
                             </span>
                           </div>
                         </td>
 
                         {/* Duration */}
-                        <td style={{ padding: '10px 14px', color: '#64748B', fontSize: '11.5px' }}>
+                        <td style={{ padding: '10px 14px', color: '#64748B', fontSize: '11.5px', textAlign: 'center' }}>
                           16 أسبوعاً (3+1 مجاناً)
                         </td>
 
                         {/* Status */}
-                        <td style={{ padding: '10px 14px' }}>
-                          <span style={{ background: '#F0FDF4', color: '#16A34A', border: '1px solid #BBF7D0', padding: '1px 7px', borderRadius: '4px', fontSize: '10.5px', fontWeight: 700 }}>
+                        <td style={{ padding: '10px 14px', textAlign: 'center' }}>
+                          <span style={{ background: '#F0FDF4', color: '#16A34A', border: '1px solid #BBF7D0', padding: '1px 7px', borderRadius: '4px', fontSize: '10.5px', fontWeight: 700, display: 'inline-block' }}>
                             ✓ معتمدة ونشطة
                           </span>
                         </td>

@@ -36,8 +36,9 @@ export default function Step2Body({
           />
         </div>
         <div className="form-group">
-          <label className="form-label">
-            محيط الرقبة (سم) <span className="text-muted fw-normal">(اختياري لحساب نسبة الدهون)</span>
+          <label className="form-label d-flex justify-content-between align-items-center">
+            <span>محيط الرقبة (سم)</span>
+            <span className="text-muted fw-normal" style={{ fontSize: '0.75rem' }}>(اختياري لحساب نسبة الدهون)</span>
           </label>
           <input 
             type="number" 
@@ -54,8 +55,9 @@ export default function Step2Body({
         </div>
 
         <div className="form-group">
-          <label className="form-label">
-            محيط الخصر عند السرة (سم) <span className="text-muted fw-normal">(اختياري)</span>
+          <label className="form-label d-flex justify-content-between align-items-center">
+            <span>محيط الخصر عند السرة (سم)</span>
+            <span className="text-muted fw-normal" style={{ fontSize: '0.75rem' }}>(اختياري)</span>
           </label>
           <input 
             type="number" 
@@ -74,8 +76,9 @@ export default function Step2Body({
         {/* Female Hip Circumference for US Navy Formula */}
         {isFemale && (
           <div className="form-group">
-            <label className="form-label">
-              محيط الأرداف / الحوض (سم) <span className="text-muted fw-normal">(اختياري للإناث)</span>
+            <label className="form-label d-flex justify-content-between align-items-center">
+              <span>محيط الأرداف / الحوض (سم)</span>
+              <span className="text-muted fw-normal" style={{ fontSize: '0.75rem' }}>(اختياري للإناث)</span>
             </label>
             <input 
               type="number" 
@@ -93,8 +96,9 @@ export default function Step2Body({
         )}
 
         <div className="form-group">
-          <label className="form-label">
-            نسبة الدهون % <span className="text-muted fw-normal">(اختياري إذا قمت بفحص InBody حديث)</span>
+          <label className="form-label d-flex justify-content-between align-items-center">
+            <span>نسبة الدهون %</span>
+            <span className="text-muted fw-normal" style={{ fontSize: '0.75rem' }}>(اختياري إذا قمت بفحص InBody حديث)</span>
           </label>
           <input 
             type="number" 

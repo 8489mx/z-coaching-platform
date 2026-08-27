@@ -13,7 +13,8 @@ import {
   Sparkles,
   ClipboardList,
   RefreshCw,
-  Loader2
+  Loader2,
+  Search
 } from 'lucide-react';
 import { API_BASE } from '../config/api';
 import AdminLayout from '../components/layout/AdminLayout';
@@ -21,11 +22,133 @@ import NewClientQuickModal from '../components/modals/NewClientQuickModal';
 import { PageHeader } from '@/shared/components/page-header';
 import { FormSection } from '@/shared/components/form-section';
 
+// Smart 1-Click WhatsApp Pre-filled Message Generator
+export function getWhatsAppMessage(action) {
+  const name = action?.clientName ? action.clientName.replace(/مشترك #\d+/g, 'يا بطل').trim() : 'يا بطل';
+  const cleanTier = String(action?.tier || '').includes('MAX') ? 'MAX' : 'ELITE';
+
+  if (action?.type === 'INJURY') {
+    return encodeURIComponent(`أهلاً يا ${name}! قرأت تفاصيل الإصابة / الألم اللي سجلته في الاستمارة، لا تقلق بنعدل التمارين ونحط بدائل آمنة تناسبك 100% 🛡️`);
+  }
+  if (action?.type === 'CHECKIN') {
+    return encodeURIComponent(`أهلاً يا ${name}! استلمت تقييمك الأسبوعي وجاري الآن مراجعة القياسات والأداء وتحديث الخطة 💪`);
+  }
+  if (action?.type === 'RENEWAL') {
+    return encodeURIComponent(`أهلاً يا ${name}! نود تذكيرك بأن اشتراكك في باقة ${cleanTier} قارب على الانتهاء. لتجديد الاشتراك والاستمرار في تحقيق أهدافك تواصل معنا 🌟`);
+  }
+  return encodeURIComponent(`أهلاً يا ${name}! استلمت استمارتك بنجاح وجاري الآن مراجعة بياناتك وتجهيز خطتك التدريبية والغذائية المخصصة 🚀✨`);
+}
+
+// Smart Universal Country & Flag Detector
+export function getClientCountryInfo(phone = '', explicitCountry = '') {
+  if (explicitCountry) {
+    const c = String(explicitCountry).trim().toLowerCase();
+    if (c.includes('مصر') || c.includes('egypt')) return { name: 'مصر', flag: '🇪🇬' };
+    if (c.includes('سعود') || c.includes('saudi') || c.includes('ksa')) return { name: 'السعودية', flag: '🇸🇦' };
+    if (c.includes('إمارات') || c.includes('امارات') || c.includes('uae') || c.includes('emirates')) return { name: 'الإمارات', flag: '🇦🇪' };
+    if (c.includes('كويت') || c.includes('kuwait')) return { name: 'الكويت', flag: '🇰🇼' };
+    if (c.includes('قطر') || c.includes('qatar')) return { name: 'قطر', flag: '🇶🇦' };
+    if (c.includes('عمان') || c.includes('oman')) return { name: 'عُمان', flag: '🇴🇲' };
+    if (c.includes('بحرين') || c.includes('bahrain')) return { name: 'البحرين', flag: '🇧🇭' };
+    if (c.includes('أردن') || c.includes('اردن') || c.includes('jordan')) return { name: 'الأردن', flag: '🇯🇴' };
+    if (c.includes('عراق') || c.includes('iraq')) return { name: 'العراق', flag: '🇮🇶' };
+    if (c.includes('لبنان') || c.includes('lebanon')) return { name: 'لبنان', flag: '🇱🇧' };
+    if (c.includes('فلسطين') || c.includes('palestine')) return { name: 'فلسطين', flag: '🇵🇸' };
+    if (c.includes('مغرب') || c.includes('morocco')) return { name: 'المغرب', flag: '🇲🇦' };
+    if (c.includes('تونس') || c.includes('tunisia')) return { name: 'تونس', flag: '🇹🇳' };
+    if (c.includes('جزائر') || c.includes('algeria')) return { name: 'الجزائر', flag: '🇩🇿' };
+    if (c.includes('ليبيا') || c.includes('libya')) return { name: 'ليبيا', flag: '🇱🇾' };
+    if (c.includes('سودان') || c.includes('sudan')) return { name: 'السودان', flag: '🇸🇩' };
+    if (c.includes('يمن') || c.includes('yemen')) return { name: 'اليمن', flag: '🇾🇪' };
+    if (c.includes('أمريكا') || c.includes('امريكا') || c.includes('usa') || c.includes('united states')) return { name: 'أمريكا', flag: '🇺🇸' };
+    if (c.includes('بريطانيا') || c.includes('uk') || c.includes('england')) return { name: 'بريطانيا', flag: '🇬🇧' };
+    if (c.includes('ألمانيا') || c.includes('المانيا') || c.includes('germany')) return { name: 'ألمانيا', flag: '🇩🇪' };
+    if (c.includes('كندا') || c.includes('canada')) return { name: 'كندا', flag: '🇨🇦' };
+    return { name: explicitCountry, flag: '🌍' };
+  }
+
+  const clean = String(phone).replace(/\D/g, '');
+  if (clean.startsWith('966')) return { name: 'السعودية', flag: '🇸🇦' };
+  if (clean.startsWith('971')) return { name: 'الإمارات', flag: '🇦🇪' };
+  if (clean.startsWith('965')) return { name: 'الكويت', flag: '🇰🇼' };
+  if (clean.startsWith('974')) return { name: 'قطر', flag: '🇶🇦' };
+  if (clean.startsWith('968')) return { name: 'عُمان', flag: '🇴🇲' };
+  if (clean.startsWith('973')) return { name: 'البحرين', flag: '🇧🇭' };
+  if (clean.startsWith('962')) return { name: 'الأردن', flag: '🇯🇴' };
+  if (clean.startsWith('964')) return { name: 'العراق', flag: '🇮🇶' };
+  if (clean.startsWith('961')) return { name: 'لبنان', flag: '🇱🇧' };
+  if (clean.startsWith('970') || clean.startsWith('972')) return { name: 'فلسطين', flag: '🇵🇸' };
+  if (clean.startsWith('212')) return { name: 'المغرب', flag: '🇲🇦' };
+  if (clean.startsWith('216')) return { name: 'تونس', flag: '🇹🇳' };
+  if (clean.startsWith('213')) return { name: 'الجزائر', flag: '🇩🇿' };
+  if (clean.startsWith('218')) return { name: 'ليبيا', flag: '🇱🇾' };
+  if (clean.startsWith('249')) return { name: 'السودان', flag: '🇸🇩' };
+  if (clean.startsWith('967')) return { name: 'اليمن', flag: '🇾🇪' };
+  if (clean.startsWith('44')) return { name: 'بريطانيا', flag: '🇬🇧' };
+  if (clean.startsWith('49')) return { name: 'ألمانيا', flag: '🇩🇪' };
+  if (clean.startsWith('33')) return { name: 'فرنسا', flag: '🇫🇷' };
+  if (clean.startsWith('39')) return { name: 'إيطاليا', flag: '🇮🇹' };
+  if (clean.startsWith('90')) return { name: 'تركيا', flag: '🇹🇷' };
+  if (clean.startsWith('1')) return { name: 'أمريكا / كندا', flag: '🇺🇸' };
+  if (clean.startsWith('20') || clean.startsWith('010') || clean.startsWith('011') || clean.startsWith('012') || clean.startsWith('015')) return { name: 'مصر', flag: '🇪🇬' };
+  
+  return { name: 'مصر', flag: '🇪🇬' }; // Default
+}
+
+// Smart Package Badge Styler (Gold for MAX, Light Blue for ELITE)
+export function getPackageBadgeStyle(pkgStr = '') {
+  const clean = String(pkgStr || '').trim().toUpperCase();
+  const isMax = clean.includes('MAX') || clean.includes('ماكس');
+  
+  let label = String(pkgStr || '')
+    .replace(/_VIP/gi, '')
+    .replace(/_4M/gi, '')
+    .replace(/_8M/gi, '')
+    .replace(/_3_PLUS_1/gi, '')
+    .replace(/_TRANSFORM/gi, '')
+    .replace(/ VIP/gi, '')
+    .replace(/باقة ماكس VIP/g, 'MAX')
+    .replace(/باقة ماكس/g, 'MAX')
+    .replace(/باقة إيليت/g, 'ELITE')
+    .replace(/باقة /g, '')
+    .trim();
+
+  if (!label || label === 'MAX' || label === 'ELITE') label = isMax ? 'MAX' : 'ELITE';
+
+  return {
+    label,
+    background: '#F1F5F9',
+    border: '1px solid #E2E8F0',
+    color: isMax ? '#C4952D' : '#0284C7'
+  };
+}
+
+// Relative / Clean Time Ago Formatter
+export function formatTimeAgo(dateStr) {
+  if (!dateStr) return 'اليوم';
+  try {
+    const d = new Date(dateStr);
+    if (isNaN(d.getTime())) return 'اليوم';
+    const now = new Date();
+    const diffMs = now - d;
+    const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
+    if (diffHours < 1) return 'الآن';
+    if (diffHours < 24) return `منذ ${diffHours} س`;
+    const diffDays = Math.floor(diffHours / 24);
+    if (diffDays === 1) return 'أمس';
+    if (diffDays < 7) return `منذ ${diffDays} أيام`;
+    return d.toLocaleDateString('ar-EG', { month: 'short', day: 'numeric' });
+  } catch (e) {
+    return 'اليوم';
+  }
+}
+
 export default function CoachCommandCenter() {
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState('ALL'); // 'ALL' | 'CHECKIN' | 'CLINICAL' | 'INACTIVE' | 'RENEWAL'
   const [isNewClientModalOpen, setIsNewClientModalOpen] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [searchQuery, setSearchQuery] = useState('');
 
   // Live Server Data
   const [overview, setOverview] = useState({
@@ -81,70 +204,120 @@ export default function CoachCommandCenter() {
 
   const dailyActions = [
     // 1. Pending Intakes Awaiting Review / Generation
-    ...pendingIntakes.map(sub => ({
-      id: `INTAKE_${sub?.id || Math.random()}`,
-      type: 'CHECKIN',
-      clientName: sub?.user?.full_name || sub?.full_name || `مشترك #${sub?.user?.client_code || sub?.user_id || sub?.id || ''}`,
-      tier: sub?.subscription_package || sub?.user?.subscription_package || 'باقة إيليت',
-      phone: sub?.user?.phone_number || sub?.phone_number || '',
-      summary: sub?.status === 'PAID' ? 'تم تأكيد الدفع • الاستمارة مكتملة وبانتظار توليد واعتماد الخطة.' : 'استمارة تقييم واردة قيد المراجعة والتدقيق.',
-      suggestedAction: 'توليد ومراجعة الخطة في المحرر السريري',
-      badgeText: sub?.status === 'PAID' ? 'مدفوع • مطلوب خطة' : 'استمارة تقييم',
-      actionUrl: `/editor?user_id=${sub?.user_id || sub?.user?.id || sub?.id || ''}`
-    })),
+    ...pendingIntakes.map(sub => {
+      const phone = sub?.user?.phone_number || sub?.phone_number || '';
+      const country = getClientCountryInfo(phone, sub?.country || sub?.answers?.personal?.country || sub?.user?.country || '');
+      const hasInjury = Boolean(sub?.answers?.injuries_map?.has_injuries || (sub?.answers?.injuries_map?.selected_areas && sub?.answers?.injuries_map?.selected_areas.length > 0));
+      return {
+        id: `INTAKE_${sub?.id || Math.random()}`,
+        type: hasInjury ? 'INJURY' : 'NEW_INTAKE',
+        hasInjury,
+        clientName: sub?.user?.full_name || sub?.full_name || `مشترك #${sub?.user?.client_code || sub?.user_id || sub?.id || ''}`,
+        country,
+        tier: sub?.subscription_package || sub?.user?.subscription_package || 'ELITE_4M',
+        phone,
+        timeAgo: formatTimeAgo(sub?.created_at || sub?.submitted_at || sub?.user?.created_at),
+        summary: hasInjury
+          ? 'المشترك لديه إصابة / ألم مسجل • مطلوب استبعاد التمارين المجهدة وتجهيز الخطة.'
+          : (sub?.status === 'PAID' ? 'تم تأكيد الدفع • الاستمارة جاهزة لإعداد الخطة.' : 'استمارة جديدة بانتظار تجهيز الخطة.'),
+        suggestedAction: 'تجهيز واعتماد خطة المشترك',
+        badgeText: hasInjury ? 'إصابة مسجلة' : (sub?.status === 'PAID' ? 'مدفوع • بانتظار الخطة' : 'استمارة جديدة'),
+        actionUrl: `/coach/editor?user_id=${sub?.user_id || sub?.user?.id || sub?.id || ''}`
+      };
+    }),
     // 2. Expiring Subscriptions Awaiting Renewal Outreach
-    ...expiringClients.map(c => ({
-      id: `RENEWAL_${c?.id || Math.random()}`,
-      type: 'RENEWAL',
-      clientName: c?.full_name || `مشترك #${c?.client_code || ''}`,
-      tier: c?.package || 'باقة ماكس VIP',
-      phone: c?.phone_number || '',
-      summary: `متبقي ${c?.days_remaining || 0} أيام على نهاية باقة الاشتراك.`,
-      suggestedAction: 'إرسال عرض تجديد الدايت والتدريب عبر الواتساب',
-      badgeText: 'تجديد قريب',
-      actionUrl: `/subscriptions`
-    }))
+    ...expiringClients.map(c => {
+      const phone = c?.phone_number || '';
+      const country = getClientCountryInfo(phone, c?.country || '');
+      return {
+        id: `RENEWAL_${c?.id || Math.random()}`,
+        type: 'RENEWAL',
+        clientName: c?.full_name || `مشترك #${c?.client_code || ''}`,
+        country,
+        tier: c?.package || c?.package_code || 'MAX_4M',
+        phone,
+        timeAgo: formatTimeAgo(c?.created_at || c?.updated_at),
+        summary: `متبقي ${c?.days_remaining || 0} أيام على نهاية باقة الاشتراك.`,
+        suggestedAction: 'مراسلة المشترك لتجديد الاشتراك',
+        badgeText: 'تجديد قريب',
+        actionUrl: `/subscriptions`
+      };
+    })
   ];
 
-  // Dynamic Live KPIs
+  const newIntakeCount = dailyActions.filter(a => a.type === 'NEW_INTAKE').length;
+  const checkinCount = dailyActions.filter(a => a.type === 'CHECKIN').length;
+  const injuryCount = dailyActions.filter(a => a.type === 'INJURY').length;
+  const inactiveCount = dailyActions.filter(a => a.type === 'INACTIVE').length;
+  const renewalCount = dailyActions.filter(a => a.type === 'RENEWAL').length;
+  const allCount = dailyActions.length;
+
+  const TABS = [
+    { id: 'ALL', label: 'الكل', count: allCount },
+    { id: 'NEW_INTAKE', label: 'استمارات جديدة', count: newIntakeCount },
+    { id: 'CHECKIN', label: 'متابعات أسبوعية', count: checkinCount },
+    { id: 'INJURY', label: 'الإصابات والشكاوى', count: injuryCount, isAlert: injuryCount > 0 },
+    { id: 'INACTIVE', label: 'المتأخرون', count: inactiveCount },
+    { id: 'RENEWAL', label: 'تجديد الباقات', count: renewalCount },
+  ];
+
+  // Dynamic Live KPIs (Interactive Click-to-Filter)
   const stats = [
     { 
       title: 'إجمالي المشتركين النشطين', 
       value: (overview?.active_count ?? safeClients.length).toString(), 
       trend: (overview?.active_count || 0) > 0 ? '+100%' : '0%', 
       trendLabel: 'حسابات مفعلة', 
-      icon: Users 
+      icon: Users,
+      onClick: () => navigate('/customers'),
+      tooltip: 'عرض سجل المشتركين (CRM)'
     },
     { 
       title: 'استمارات وتقييمات معلقة', 
       value: pendingIntakes.length.toString(), 
       trend: pendingIntakes.length > 0 ? 'مطلوب مراجعة' : 'مكتمل', 
       trendLabel: 'طابور المهام', 
-      icon: Clock 
+      icon: Clock,
+      onClick: () => setActiveTab('NEW_INTAKE'),
+      tooltip: 'فلترة الاستمارات الجديدة'
     },
     { 
-      title: 'طوارئ المفاصل والعيادة', 
-      value: '0', 
-      trend: 'آمن', 
-      trendLabel: 'استقرار تام', 
-      icon: ShieldAlert 
+      title: 'تنبيهات الإصابات والشكاوى', 
+      value: injuryCount.toString(), 
+      trend: injuryCount > 0 ? 'مطلوب تدخل' : 'آمن', 
+      trendLabel: injuryCount > 0 ? 'حالات نشطة' : 'استقرار تام', 
+      icon: ShieldAlert,
+      onClick: () => setActiveTab('INJURY'),
+      tooltip: 'فلترة الإصابات والشكاوى'
     },
     { 
       title: 'تجديدات خلال 7 أيام', 
       value: (overview?.expiring_soon_count ?? expiringClients.length).toString(), 
       trend: expiringClients.length > 0 ? 'تنبيه' : 'لا يوجد', 
       trendLabel: 'متابعة مالية', 
-      icon: Hourglass 
+      icon: Hourglass,
+      onClick: () => setActiveTab('RENEWAL'),
+      tooltip: 'فلترة اشتراكات التجديد'
     },
   ];
 
-  const maxClientsCount = safeClients.filter(c => c && ((c.package_code || '').includes('MAX') || (c.package || '').includes('ماكس'))).length;
-  const eliteClientsCount = safeClients.filter(c => c && ((c.package_code || '').includes('ELITE') || (c.package || '').includes('إيليت'))).length;
-  const totalTierClients = maxClientsCount + eliteClientsCount || 1;
-  const maxPercent = safeClients.length > 0 ? Math.round((maxClientsCount / totalTierClients) * 100) : 0;
-  const elitePercent = safeClients.length > 0 ? Math.round((eliteClientsCount / totalTierClients) * 100) : 0;
+  const filteredActions = dailyActions.filter(act => {
+    // 1. Tab filter
+    if (activeTab === 'NEW_INTAKE' && !(act.type === 'NEW_INTAKE' || act.type === 'INJURY')) return false;
+    if (activeTab !== 'ALL' && activeTab !== 'NEW_INTAKE' && act.type !== activeTab) return false;
 
-  const filteredActions = dailyActions.filter(act => activeTab === 'ALL' || act.type === activeTab);
+    // 2. Search query filter
+    if (searchQuery.trim()) {
+      const q = searchQuery.trim().toLowerCase();
+      const name = String(act.clientName || '').toLowerCase();
+      const phone = String(act.phone || '').toLowerCase();
+      const id = String(act.id || '').toLowerCase();
+      const tier = String(act.tier || '').toLowerCase();
+      return name.includes(q) || phone.includes(q) || id.includes(q) || tier.includes(q);
+    }
+
+    return true;
+  });
 
   return (
     <AdminLayout onOpenNewClient={() => setIsNewClientModalOpen(true)}>
@@ -152,34 +325,61 @@ export default function CoachCommandCenter() {
         
         {/* 1. Page Header */}
         <PageHeader
-          title="لوحة التحكم والقرارات اليومية"
-          description="مؤشرات الأداء المباشرة، طابور المتابعات الأسبوعية، والقرارات السريرية المطلوب اعتمادها."
+          title="لوحة التحكم والمتابعة اليومية"
+          description="متابعة المشتركين، الاستمارات الجديدة، والخطط المطلوب اعتمادها اليوم."
           actions={(
-            <button 
-              type="button" 
-              onClick={() => setIsNewClientModalOpen(true)}
-              style={{
-                height: '36px',
-                padding: '0 16px',
-                fontSize: '12.5px',
-                fontWeight: 700,
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: '6px',
-                borderRadius: '6px',
-                background: 'var(--primary, #0F172A)',
-                color: '#FFFFFF',
-                border: 'none',
-                cursor: 'pointer',
-                boxShadow: '0 2px 6px rgba(15, 23, 42, 0.25)',
-                transition: 'all 0.15s ease'
-              }}
-              onMouseEnter={(e) => (e.currentTarget.style.background = 'var(--primary2, #334155)')}
-              onMouseLeave={(e) => (e.currentTarget.style.background = 'var(--primary, #0F172A)')}
-            >
-              <Plus size={15} />
-              <span>كود مشترك جديد</span>
-            </button>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <button
+                type="button"
+                onClick={fetchDashboardData}
+                disabled={loading}
+                title="تحديث فوري للبيانات"
+                style={{
+                  height: '36px',
+                  padding: '0 12px',
+                  fontSize: '12px',
+                  fontWeight: 700,
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '6px',
+                  borderRadius: '6px',
+                  background: '#FFFFFF',
+                  color: '#0F172A',
+                  border: '1px solid #CBD5E1',
+                  cursor: 'pointer',
+                  boxShadow: '0 1px 2px rgba(15, 23, 42, 0.04)',
+                  transition: 'all 0.15s ease'
+                }}
+              >
+                <RefreshCw size={13} style={{ animation: loading ? 'spin 1s linear infinite' : 'none' }} />
+                <span>{loading ? 'جاري التحديث...' : 'تحديث'}</span>
+              </button>
+              <button 
+                type="button" 
+                onClick={() => setIsNewClientModalOpen(true)}
+                style={{
+                  height: '36px',
+                  padding: '0 16px',
+                  fontSize: '12.5px',
+                  fontWeight: 700,
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '6px',
+                  borderRadius: '6px',
+                  background: 'var(--primary, #0F172A)',
+                  color: '#FFFFFF',
+                  border: 'none',
+                  cursor: 'pointer',
+                  boxShadow: '0 2px 6px rgba(15, 23, 42, 0.25)',
+                  transition: 'all 0.15s ease'
+                }}
+                onMouseEnter={(e) => (e.currentTarget.style.background = 'var(--primary2, #334155)')}
+                onMouseLeave={(e) => (e.currentTarget.style.background = 'var(--primary, #0F172A)')}
+              >
+                <Plus size={15} />
+                <span>كود مشترك جديد</span>
+              </button>
+            </div>
           )}
         />
 
@@ -190,6 +390,8 @@ export default function CoachCommandCenter() {
             return (
               <div 
                 key={i} 
+                onClick={st.onClick}
+                title={st.tooltip || ''}
                 style={{
                   background: '#FFFFFF',
                   border: '1px solid #E2E8F0',
@@ -198,7 +400,23 @@ export default function CoachCommandCenter() {
                   boxShadow: '0 1px 3px rgba(15, 23, 42, 0.02)',
                   display: 'flex',
                   flexDirection: 'column',
-                  gap: '10px'
+                  gap: '10px',
+                  cursor: st.onClick ? 'pointer' : 'default',
+                  transition: 'all 0.18s ease'
+                }}
+                onMouseEnter={(e) => {
+                  if (st.onClick) {
+                    e.currentTarget.style.transform = 'translateY(-2px)';
+                    e.currentTarget.style.boxShadow = '0 6px 16px rgba(15, 23, 42, 0.06)';
+                    e.currentTarget.style.borderColor = '#CBD5E1';
+                  }
+                }}
+                onMouseLeave={(e) => {
+                  if (st.onClick) {
+                    e.currentTarget.style.transform = 'translateY(0)';
+                    e.currentTarget.style.boxShadow = '0 1px 3px rgba(15, 23, 42, 0.02)';
+                    e.currentTarget.style.borderColor = '#E2E8F0';
+                  }
                 }}
               >
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
@@ -221,51 +439,79 @@ export default function CoachCommandCenter() {
           })}
         </div>
 
-        {/* 3. Balanced Dual Column Layout (70 / 30) */}
-        <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1.85fr) minmax(0, 1fr)', gap: '18px', alignItems: 'start' }}>
-          
-          {/* Main Action Feed (Right in RTL) */}
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
-            
-            <FormSection 
-              title="طابور القرارات والمتابعات اليومية" 
-              description="الإجراءات والمراجعات المطلوب اعتمادها وإرسالها للمشتركين."
-              actions={(
+        {/* 3. Full-Width Unified Action Queue */}
+        <div style={{ width: '100%' }}>
+          <FormSection 
+            title="المتابعات اليومية" 
+            actions={(
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+                {/* Search Box */}
+                <div 
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    background: '#F8FAFC',
+                    border: '1px solid #E2E8F0',
+                    borderRadius: '6px',
+                    padding: '0 8px',
+                    height: '32px',
+                    width: '200px',
+                    gap: '6px'
+                  }}
+                >
+                  <Search size={13} color="#94A3B8" />
+                  <input
+                    type="text"
+                    placeholder="بحث في المتابعات..."
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    style={{
+                      border: 'none',
+                      outline: 'none',
+                      background: 'transparent',
+                      fontSize: '11.5px',
+                      width: '100%',
+                      color: '#0F172A'
+                    }}
+                  />
+                  {searchQuery && (
+                    <button type="button" onClick={() => setSearchQuery('')} style={{ border: 'none', background: 'transparent', cursor: 'pointer', padding: 0, color: '#94A3B8' }}>
+                      <X size={12} />
+                    </button>
+                  )}
+                </div>
+
+                {/* Filter Pills */}
                 <div style={{ display: 'flex', gap: '3px', background: '#F1F5F9', padding: '3px', borderRadius: '6px', border: '1px solid #E2E8F0' }}>
-                  {[
-                    { id: 'ALL', label: 'الكل' },
-                    { id: 'CHECKIN', label: 'المتابعات' },
-                    { id: 'CLINICAL', label: 'العيادة' },
-                    { id: 'INACTIVE', label: 'المتأخرون' },
-                    { id: 'RENEWAL', label: 'التجديد' },
-                  ].map(tab => (
+                  {TABS.map(tab => (
                     <button
                       key={tab.id}
                       type="button"
                       onClick={() => setActiveTab(tab.id)}
                       style={{
-                        padding: '4px 10px',
+                        padding: '4px 9px',
                         borderRadius: '5px',
-                        fontSize: '11.5px',
-                        fontWeight: activeTab === tab.id ? 800 : 600,
-                        border: activeTab === tab.id ? '1px solid var(--color-primary-border, #CBD5E1)' : '1px solid transparent',
+                        fontSize: '11px',
+                        fontWeight: 700,
+                        border: 'none',
                         cursor: 'pointer',
-                        background: activeTab === tab.id ? 'var(--color-primary-light, #F1F5F9)' : 'transparent',
-                        color: activeTab === tab.id ? 'var(--primary, #0F172A)' : '#64748B',
-                        boxShadow: activeTab === tab.id ? '0 1px 3px rgba(0, 0, 0, 0.03)' : 'none',
-                        transition: 'all 0.15s ease'
+                        background: activeTab === tab.id ? '#0F172A' : 'transparent',
+                        color: activeTab === tab.id ? '#FFFFFF' : '#64748B',
+                        boxShadow: activeTab === tab.id ? '0 2px 5px rgba(15, 23, 42, 0.25)' : 'none',
+                        transition: 'background 0.12s ease, color 0.12s ease'
                       }}
                     >
-                      {tab.label}
+                      {tab.label} ({tab.count ?? 0})
                     </button>
                   ))}
                 </div>
-              )}
-            >
-              {/* Ultra-Compact 2-Row Action Cards List */}
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginTop: '10px' }}>
+              </div>
+            )}
+          >
+              {/* 2-Column Responsive Action Cards Grid with Stable Min Height */}
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 480px), 1fr))', gap: '10px', marginTop: '10px', minHeight: '180px', alignContent: 'start' }}>
                 {filteredActions.length === 0 ? (
-                  <div style={{ padding: '30px 16px', textAlign: 'center', background: '#F8FAFC', border: '1px dashed #CBD5E1', borderRadius: '8px' }}>
+                  <div style={{ gridColumn: '1 / -1', minHeight: '160px', padding: '24px 16px', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', textAlign: 'center', background: '#F8FAFC', border: '1px dashed #CBD5E1', borderRadius: '8px' }}>
                     <div style={{ width: '36px', height: '36px', borderRadius: '50%', background: '#F1F5F9', color: '#0F172A', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 8px auto' }}>
                       <CheckCircle2 size={18} />
                     </div>
@@ -292,100 +538,69 @@ export default function CoachCommandCenter() {
                         transition: 'border-color 0.15s ease'
                       }}
                     >
-                      {/* Row 1: Client Details & Badges (Right) + Action Buttons (Left) */}
-                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
-                        
-                        {/* Right: Client Details */}
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
-                          <span style={{ 
-                            fontFamily: 'JetBrains Mono, monospace', 
-                            fontWeight: 800, 
-                            fontSize: '11px', 
-                            background: '#F1F5F9', 
-                            border: '1px solid #CBD5E1', 
-                            color: '#0F172A', 
-                            padding: '1px 6px', 
-                            borderRadius: '4px' 
-                          }}>
-                            {'#' + action.id.replace('ACT_0', '')}
+                      {/* 1. Top Row: Client Details & Badges */}
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+                        <span style={{ 
+                          fontFamily: 'JetBrains Mono, monospace', 
+                          fontWeight: 800, 
+                          fontSize: '11px', 
+                          background: '#F0F9FF', 
+                          border: '1px solid #BAE6FD', 
+                          color: '#0284C7', 
+                          padding: '2px 7px', 
+                          borderRadius: '4px' 
+                        }}>
+                          {'#' + action.id.replace('INTAKE_', '').replace('RENEWAL_', '').replace('ACT_0', '')}
+                        </span>
+                        <strong style={{ fontSize: '13.5px', fontWeight: 800, color: '#0F172A' }}>
+                          {action.clientName}
+                        </strong>
+                        {action.country && (
+                          <span style={{ fontSize: '11px', color: '#1E293B', background: '#F8FAFC', padding: '1px 7px', borderRadius: '4px', border: '1px solid #E2E8F0', fontWeight: 700, display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+                            <span>{action.country.flag}</span>
+                            <span>{action.country.name}</span>
                           </span>
-                          <strong style={{ fontSize: '13.5px', fontWeight: 800, color: '#0F172A' }}>
-                            {action.clientName}
-                          </strong>
-                          <span dir="ltr" style={{ fontSize: '11px', color: '#64748B', fontFamily: 'JetBrains Mono, monospace', background: '#F8FAFC', padding: '1px 6px', borderRadius: '4px', border: '1px solid #F1F5F9' }}>
-                            {action.phone}
-                          </span>
-                          <span style={{ fontSize: '10.5px', background: '#F1F5F9', border: '1px solid #E2E8F0', color: '#334155', padding: '1px 6px', borderRadius: '4px', fontWeight: 700 }}>
-                            {action.tier}
-                          </span>
-                          <span style={{ fontSize: '10.5px', background: '#F8FAFC', border: '1px solid #E2E8F0', color: '#64748B', padding: '1px 6px', borderRadius: '4px', fontWeight: 700 }}>
-                            {action.badgeText}
-                          </span>
-                        </div>
-
-                        {/* Left: Compact Action Buttons */}
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flexShrink: 0 }}>
-                          {action.phone && (
-                            <a
-                              href={'https://wa.me/' + action.phone.replace(/\D/g, '')}
-                              target="_blank"
-                              rel="noreferrer"
-                              style={{
-                                padding: '4px 10px',
-                                borderRadius: '5px',
-                                border: '1px solid #CBD5E1',
-                                background: '#FFFFFF',
-                                color: '#0F172A',
-                                fontWeight: 700,
-                                fontSize: '11.5px',
-                                textDecoration: 'none',
-                                display: 'inline-flex',
-                                alignItems: 'center',
-                                gap: '4px'
-                              }}
-                            >
-                              <MessageCircle size={12} color="#16A34A" />
-                              <span>واتساب</span>
-                            </a>
-                          )}
-                          <button
-                            type="button"
-                            onClick={() => {
-                              if (action.actionUrl) {
-                                navigate(action.actionUrl);
-                              }
-                            }}
-                            style={{
-                              padding: '5px 12px',
-                              borderRadius: '6px',
-                              background: 'var(--color-primary-light, #F1F5F9)',
-                              color: 'var(--primary, #0F172A)',
+                        )}
+                        {(() => {
+                          const pkg = getPackageBadgeStyle(action.tier);
+                          return (
+                            <span style={{ 
+                              fontSize: '11px', 
+                              background: pkg.background, 
+                              border: pkg.border, 
+                              color: pkg.color, 
+                              padding: '1px 7px', 
+                              borderRadius: '4px', 
                               fontWeight: 800,
-                              fontSize: '11.5px',
-                              border: '1px solid var(--color-primary-border, #CBD5E1)',
-                              cursor: 'pointer',
-                              display: 'inline-flex',
-                              alignItems: 'center',
-                              gap: '5px',
-                              boxShadow: '0 1px 2px rgba(0,0,0,0.02)',
-                              transition: 'all 0.15s ease'
-                            }}
-                            onMouseEnter={(e) => {
-                              e.currentTarget.style.background = 'var(--primary, #0F172A)';
-                              e.currentTarget.style.color = '#FFFFFF';
-                            }}
-                            onMouseLeave={(e) => {
-                              e.currentTarget.style.background = 'var(--color-primary-light, #F1F5F9)';
-                              e.currentTarget.style.color = 'var(--primary, #0F172A)';
-                            }}
-                          >
-                            <Sparkles size={13} />
-                            <span>{action.type === 'CHECKIN' ? 'مراجعة وتوليد الخطة' : 'عرض التفاصيل'}</span>
-                          </button>
-                        </div>
+                              fontFamily: 'JetBrains Mono, Cairo, sans-serif'
+                            }}>
+                              {pkg.label}
+                            </span>
+                          );
+                        })()}
+                        <span style={{ fontSize: '10.5px', background: '#F8FAFC', border: '1px solid #E2E8F0', color: '#64748B', padding: '1px 6px', borderRadius: '4px', fontWeight: 700 }}>
+                          {action.badgeText}
+                        </span>
+                        {action.timeAgo && (
+                          <span style={{ 
+                            fontSize: '10.5px', 
+                            color: '#64748B', 
+                            background: '#F8FAFC', 
+                            border: '1px solid #E2E8F0', 
+                            padding: '1px 6px', 
+                            borderRadius: '4px', 
+                            fontWeight: 600,
+                            display: 'inline-flex',
+                            alignItems: 'center',
+                            gap: '3px'
+                          }}>
+                            <Clock size={10} color="#94A3B8" />
+                            <span>{action.timeAgo}</span>
+                          </span>
+                        )}
                       </div>
 
-                      {/* Row 2: Compact Inline Summary & Decision */}
+                      {/* 2. Middle Row: Compact Inline Summary & Decision */}
                       <div style={{ 
                         background: '#F8FAFC', 
                         border: '1px solid #E2E8F0', 
@@ -409,87 +624,85 @@ export default function CoachCommandCenter() {
                         </div>
                       </div>
 
+                      {/* 3. Bottom Row: Compact Action Buttons (Aligned to Left) */}
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginRight: 'auto' }}>
+                        {action.phone && (
+                          <a
+                            href={'https://wa.me/' + action.phone.replace(/\D/g, '') + '?text=' + getWhatsAppMessage(action)}
+                            target="_blank"
+                            rel="noreferrer"
+                            title="مراسلة سريعة برسالة ترحيبية جاهزة"
+                            style={{
+                              padding: '4px 10px',
+                              borderRadius: '5px',
+                              border: '1px solid #22C55E',
+                              background: '#FFFFFF',
+                              color: '#0F172A',
+                              fontWeight: 700,
+                              fontSize: '11.5px',
+                              textDecoration: 'none',
+                              display: 'inline-flex',
+                              alignItems: 'center',
+                              gap: '4px',
+                              transition: 'all 0.15s ease'
+                            }}
+                          >
+                            <span>واتساب</span>
+                          </a>
+                        )}
+                        <button
+                          type="button"
+                          onClick={() => {
+                            if (action.actionUrl) {
+                              window.open(action.actionUrl, '_blank');
+                            }
+                          }}
+                          title="فتح في علامة تبويب جديدة"
+                          style={{
+                            padding: '5px 12px',
+                            borderRadius: '6px',
+                            background: 'var(--color-primary-light, #F1F5F9)',
+                            color: 'var(--primary, #0F172A)',
+                            fontWeight: 800,
+                            fontSize: '11.5px',
+                            border: '1px solid var(--color-primary-border, #CBD5E1)',
+                            cursor: 'pointer',
+                            display: 'inline-flex',
+                            alignItems: 'center',
+                            gap: '5px',
+                            boxShadow: '0 1px 2px rgba(0,0,0,0.02)',
+                            transition: 'all 0.15s ease'
+                          }}
+                          onMouseEnter={(e) => {
+                            e.currentTarget.style.background = 'var(--primary, #0F172A)';
+                            e.currentTarget.style.color = '#FFFFFF';
+                          }}
+                          onMouseLeave={(e) => {
+                            e.currentTarget.style.background = 'var(--color-primary-light, #F1F5F9)';
+                            e.currentTarget.style.color = 'var(--primary, #0F172A)';
+                          }}
+                        >
+                          <span>
+                            {action.type === 'INJURY'
+                              ? 'مراجعة وتعديل التمارين'
+                              : action.type === 'NEW_INTAKE'
+                                ? 'تجهيز واعتماد الخطة'
+                                : action.type === 'CHECKIN'
+                                  ? 'مراجعة التقييم الأسبوعي'
+                                  : action.type === 'RENEWAL'
+                                    ? 'متابعة التجديد'
+                                    : 'تجهيز الخطة'}
+                          </span>
+                          <ExternalLink size={11} style={{ opacity: 0.7 }} />
+                        </button>
+                      </div>
+
                     </div>
                   ))
                 )}
               </div>
             </FormSection>
           </div>
-
-          {/* Side Column (Left in RTL) */}
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
-            
-            {/* Clinical Alerts Card */}
-            <FormSection 
-              title="رادار الطوارئ السريرية" 
-              description="تنبيهات الآلام والمفاصل والتدخلات العاجلة."
-              actions={<span style={{ background: '#F1F5F9', border: '1px solid #CBD5E1', color: '#0F172A', fontWeight: 800, padding: '2px 7px', borderRadius: '5px', fontSize: '10.5px' }}>0 حالة</span>}
-            >
-              <div style={{ padding: '14px', background: '#F8FAFC', border: '1px solid #E2E8F0', borderRadius: '6px', marginTop: '6px', textAlign: 'center' }}>
-                <CheckCircle2 size={24} color="#16A34A" style={{ margin: '0 auto 6px auto' }} />
-                <strong style={{ fontSize: '12.5px', color: '#0F172A', display: 'block', marginBottom: '3px' }}>
-                  لا توجد طوارئ مفاصل أو آلام مسجلة
-                </strong>
-                <p style={{ fontSize: '11px', color: '#64748B', margin: '0 0 10px 0', lineHeight: '1.4' }}>
-                  كافة المشتركين يتدربون بأمان ودون أي شكاوى حركية نشطة.
-                </p>
-                <Link
-                  to="/exercises"
-                  style={{
-                    display: 'block',
-                    width: '100%',
-                    textAlign: 'center',
-                    background: '#FFFFFF',
-                    border: '1px solid #CBD5E1',
-                    color: '#0F172A',
-                    fontSize: '11.5px',
-                    fontWeight: 700,
-                    padding: '6px',
-                    borderRadius: '5px',
-                    textDecoration: 'none',
-                    boxSizing: 'border-box'
-                  }}
-                >
-                  استعراض مكتبة التمارين المعتمدة
-                </Link>
-              </div>
-            </FormSection>
-
-            {/* Package Distribution Card */}
-            <FormSection 
-              title="توزيع الباقات النشطة" 
-              description="نسبة المشتركين بين باقات Elite و Max."
-            >
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', marginTop: '6px' }}>
-                <div>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '12px', marginBottom: '4px' }}>
-                    <span style={{ color: '#475569', fontWeight: 600 }}>باقة MAX VIP</span>
-                    <strong style={{ color: '#0F172A', fontWeight: 800 }}>
-                      <span dir="ltr">{maxPercent}%</span> ({maxClientsCount} مشترك)
-                    </strong>
-                  </div>
-                  <div style={{ width: '100%', background: '#F1F5F9', height: '5px', borderRadius: '4px', overflow: 'hidden' }}>
-                    <div style={{ background: '#0F172A', height: '100%', width: `${maxPercent}%`, borderRadius: '4px' }}></div>
-                  </div>
-                </div>
-
-                <div>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '12px', marginBottom: '4px' }}>
-                    <span style={{ color: '#475569', fontWeight: 600 }}>باقة ELITE</span>
-                    <strong style={{ color: '#64748B', fontWeight: 800 }}>
-                      <span dir="ltr">{elitePercent}%</span> ({eliteClientsCount} مشترك)
-                    </strong>
-                  </div>
-                  <div style={{ width: '100%', background: '#F1F5F9', height: '5px', borderRadius: '4px', overflow: 'hidden' }}>
-                    <div style={{ background: '#64748B', height: '100%', width: `${elitePercent}%`, borderRadius: '4px' }}></div>
-                  </div>
-                </div>
-              </div>
-            </FormSection>
-
-          </div>
-
-        </div>
 
         {/* New Client Modal */}
         <NewClientQuickModal

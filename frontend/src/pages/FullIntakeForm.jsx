@@ -709,9 +709,14 @@ export default function FullIntakeForm() {
                   </div>
 
                   <div>
-                    <label style={{ display: 'block', fontSize: '11.5px', fontWeight: 700, color: '#475569', marginBottom: '4px' }}>
-                      محيط الحوض (سم) {gender === 'female' ? '*' : '(اختياري)'}
-                    </label>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4px' }}>
+                      <label style={{ fontSize: '11.5px', fontWeight: 700, color: '#475569', margin: 0 }}>
+                        محيط الحوض (سم) {gender === 'female' ? '*' : ''}
+                      </label>
+                      {gender !== 'female' && (
+                        <span style={{ fontSize: '10.5px', color: '#94A3B8', fontWeight: 600 }}>(اختياري)</span>
+                      )}
+                    </div>
                     <input 
                       type="number" 
                       placeholder="أعرض نقطة بالحوض"
@@ -1035,9 +1040,12 @@ export default function FullIntakeForm() {
                 </div>
 
                 <div>
-                  <label style={{ display: 'block', fontSize: '12px', fontWeight: 800, color: '#0F172A', marginBottom: '6px' }}>
-                    الأدوية أو المكملات المتوفرة لديك حالياً (اختياري)
-                  </label>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
+                    <label style={{ fontSize: '12px', fontWeight: 800, color: '#0F172A', margin: 0 }}>
+                      الأدوية أو المكملات المتوفرة لديك حالياً
+                    </label>
+                    <span style={{ fontSize: '11px', color: '#94A3B8', fontWeight: 600 }}>(اختياري)</span>
+                  </div>
                   <input 
                     type="text" 
                     placeholder="مثال: كرياتين، أوميجا 3، دواء ضغط، فيتامين د..."

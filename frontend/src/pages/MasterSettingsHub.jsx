@@ -1060,8 +1060,7 @@ export default function MasterSettingsHub() {
                           transition: 'all 0.15s ease'
                         }}
                       >
-                        <Sparkles size={14} />
-                        <span>معاينة وتوليد الخطة (Soft Button)</span>
+                        <span>توليد الخطة</span>
                       </button>
 
                       {/* Primary Solid Button */}
@@ -1078,7 +1077,6 @@ export default function MasterSettingsHub() {
                           display: 'flex',
                           alignItems: 'center',
                           justifyContent: 'center',
-                          gap: '6px',
                           cursor: 'pointer',
                           background: coachConfig.primaryColor || '#0F172A',
                           color: '#FFFFFF',
@@ -1092,7 +1090,6 @@ export default function MasterSettingsHub() {
                           transition: 'all 0.15s ease'
                         }}
                       >
-                        <Sparkles size={14} />
                         <span style={{ textShadow: '0 1px 2px rgba(0, 0, 0, 0.45)', letterSpacing: '0.3px' }}>
                           اعتماد الخطة وإرسالها للمشترك
                         </span>
@@ -1311,8 +1308,8 @@ export default function MasterSettingsHub() {
 
             {/* 3. System Defaults */}
             <FormSection
-              title="المعايير السريرية الافتراضية للمنظومة"
-              description="القيم المبدئية التي تُقترح تلقائياً عند توليد الخطط وتحديد الأهداف اليومية للمتدربين."
+              title="المعايير والخيارات الافتراضية للخطط"
+              description="القيم المبدئية التي تُقترح تلقائياً للخطوات والماء ومستوى الشدة (RIR) عند إنشاء خطط المتدربين."
             >
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '14px', marginTop: '6px' }}>
                 

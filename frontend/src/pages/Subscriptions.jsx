@@ -170,11 +170,11 @@ export default function Subscriptions() {
   const getPackageLabel = (pkg) => {
     switch (pkg) {
       case '1_MONTH': return 'باقة شهر واحد (1M)';
-      case '3_MONTHS': return 'باقة إيليت (3 شهور + 1 مجاناً)';
-      case 'MAX_3_PLUS_1': return 'باقة ماكس VIP (3 شهور + 1 مجاناً)';
+      case '3_MONTHS': return 'باقة ELITE (3 شهور + 1 مجاناً)';
+      case 'MAX_3_PLUS_1': return 'باقة MAX (3 شهور + 1 مجاناً)';
       case '6_MONTHS': return 'باقة 6 شهور (6M)';
       case '12_MONTHS': return 'باقة سنة كاملة';
-      default: return pkg || 'باقة شهرية';
+      default: return (pkg || 'باقة ELITE').replace(/_VIP/gi, '').replace(/باقة ماكس VIP/g, 'باقة MAX');
     }
   };
 
@@ -372,11 +372,11 @@ export default function Subscriptions() {
               <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'right', fontSize: '12px' }}>
                 <thead>
                   <tr style={{ background: '#F8FAFC', borderBottom: '1px solid #E2E8F0', color: '#475569', fontWeight: 700 }}>
-                    <th style={{ padding: '10px 14px' }}>الكود</th>
-                    <th style={{ padding: '10px 14px' }}>المشترك</th>
-                    <th style={{ padding: '10px 14px' }}>الباقة والسعر</th>
-                    <th style={{ padding: '10px 14px' }}>تاريخ البداية والانتهاء</th>
-                    <th style={{ padding: '10px 14px' }}>حالة الاشتراك</th>
+                    <th style={{ padding: '10px 14px', textAlign: 'center', width: '85px' }}>الكود</th>
+                    <th style={{ padding: '10px 14px', textAlign: 'right' }}>المشترك</th>
+                    <th style={{ padding: '10px 14px', textAlign: 'center' }}>الباقة والسعر</th>
+                    <th style={{ padding: '10px 14px', textAlign: 'center' }}>تاريخ البداية والانتهاء</th>
+                    <th style={{ padding: '10px 14px', textAlign: 'center' }}>حالة الاشتراك</th>
                     <th style={{ padding: '10px 14px', textAlign: 'left' }}>الإجراءات المالية</th>
                   </tr>
                 </thead>
@@ -395,14 +395,14 @@ export default function Subscriptions() {
                         onMouseLeave={(e) => (e.currentTarget.style.background = 'transparent')}
                       >
                         {/* Code */}
-                        <td style={{ padding: '10px 14px' }}>
-                          <span style={{ fontFamily: 'JetBrains Mono, monospace', fontWeight: 800, fontSize: '11px', background: '#F1F5F9', border: '1px solid #CBD5E1', color: '#0F172A', padding: '2px 7px', borderRadius: '4px' }}>
+                        <td style={{ padding: '10px 14px', textAlign: 'center' }}>
+                          <span style={{ fontFamily: 'JetBrains Mono, monospace', fontWeight: 800, fontSize: '11px', background: '#F0F9FF', border: '1px solid #BAE6FD', color: '#0284C7', padding: '2px 7px', borderRadius: '4px', display: 'inline-block' }}>
                             {'#' + cleanCode}
                           </span>
                         </td>
 
                         {/* Name & Phone */}
-                        <td style={{ padding: '10px 14px' }}>
+                        <td style={{ padding: '10px 14px', textAlign: 'right' }}>
                           <strong style={{ color: '#0F172A', fontSize: '13px', display: 'block' }}>{client.full_name || 'مشترك جديد'}</strong>
                           <span dir="ltr" style={{ fontSize: '11px', color: '#94A3B8', fontFamily: 'JetBrains Mono, monospace' }}>
                             {client.phone_number}
@@ -410,31 +410,49 @@ export default function Subscriptions() {
                         </td>
 
                         {/* Package & Price */}
-                        <td style={{ padding: '10px 14px' }}>
-                          <div style={{ color: '#0F172A', fontWeight: 600 }}>{getPackageLabel(client.package)}</div>
-                          <span style={{ fontSize: '11px', color: '#64748B', fontFamily: 'JetBrains Mono, monospace' }}>
-                            {client.price ? `${client.price} ج.م` : '2500 ج.م'}
-                          </span>
+                        <td style={{ padding: '10px 14px', textAlign: 'center' }}>
+                          {(() => {
+                            const isMax = String(client.package || '').includes('MAX') || String(client.package || '').includes('ماكس');
+                            return (
+                              <div style={{ display: 'inline-flex', flexDirection: 'column', gap: '3px', alignItems: 'center' }}>
+                                <span style={{
+                                  background: '#F1F5F9',
+                                  border: '1px solid #E2E8F0',
+                                  color: isMax ? '#C4952D' : '#0284C7',
+                                  padding: '1px 7px',
+                                  borderRadius: '4px',
+                                  fontSize: '11px',
+                                  fontWeight: 800,
+                                  fontFamily: 'JetBrains Mono, Cairo, sans-serif'
+                                }}>
+                                  {isMax ? 'MAX' : 'ELITE'}
+                                </span>
+                                <span style={{ fontSize: '11px', color: '#64748B', fontFamily: 'JetBrains Mono, monospace' }}>
+                                  {client.price ? `${client.price} ج.م` : (isMax ? '4500 ج.م' : '3000 ج.م')}
+                                </span>
+                              </div>
+                            );
+                          })()}
                         </td>
 
                         {/* Start and End */}
-                        <td style={{ padding: '10px 14px', fontSize: '11px', color: '#64748B' }}>
+                        <td style={{ padding: '10px 14px', fontSize: '11px', color: '#64748B', textAlign: 'center' }}>
                           <div>من: <span dir="ltr" style={{ fontFamily: 'JetBrains Mono, monospace' }}>{client.start_date || '2026-08-21'}</span></div>
                           <div>إلى: <span dir="ltr" style={{ fontFamily: 'JetBrains Mono, monospace' }}>{client.end_date || '2026-12-19'}</span></div>
                         </td>
 
                         {/* Status */}
-                        <td style={{ padding: '10px 14px' }}>
+                        <td style={{ padding: '10px 14px', textAlign: 'center' }}>
                           {isFrozen ? (
-                            <span style={{ background: '#F1F5F9', border: '1px solid #CBD5E1', color: '#475569', padding: '2px 8px', borderRadius: '4px', fontSize: '10.5px', fontWeight: 700 }}>
+                            <span style={{ background: '#F1F5F9', border: '1px solid #CBD5E1', color: '#475569', padding: '2px 8px', borderRadius: '4px', fontSize: '10.5px', fontWeight: 700, display: 'inline-block' }}>
                               مجمّد
                             </span>
                           ) : isExp ? (
-                            <span style={{ background: '#FEF2F2', border: '1px solid #FECACA', color: '#DC2626', padding: '2px 8px', borderRadius: '4px', fontSize: '10.5px', fontWeight: 700 }}>
+                            <span style={{ background: '#FFF1F2', border: '1px solid #FECDD3', color: '#E11D48', padding: '2px 8px', borderRadius: '4px', fontSize: '10.5px', fontWeight: 700, display: 'inline-block' }}>
                               منتهي
                             </span>
                           ) : isSoon ? (
-                            <span style={{ background: '#FFFBEB', border: '1px solid #FDE68A', color: '#D97706', padding: '2px 8px', borderRadius: '4px', fontSize: '10.5px', fontWeight: 700 }}>
+                            <span style={{ background: '#FFFBEB', border: '1px solid #FDE68A', color: '#D97706', padding: '2px 8px', borderRadius: '4px', fontSize: '10.5px', fontWeight: 700, display: 'inline-block' }}>
                               قارب على الانتهاء ({client.days_remaining} يوم)
                             </span>
                           ) : (

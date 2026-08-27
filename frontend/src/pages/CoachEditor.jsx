@@ -496,12 +496,28 @@ export default function CoachEditor() {
                 <h4 style={{ margin: 0, fontSize: '14.5px', fontWeight: 900, color: '#0F172A' }}>
                   {program.client?.full_name || 'أحمد محمود العوضي'}
                 </h4>
-                <span style={{ background: '#F1F5F9', border: '1px solid #CBD5E1', color: '#0F172A', fontSize: '10.5px', fontWeight: 800, padding: '1px 6px', borderRadius: '4px', fontFamily: 'JetBrains Mono, monospace' }}>
+                <span style={{ background: '#F0F9FF', border: '1px solid #BAE6FD', color: '#0284C7', fontSize: '10.5px', fontWeight: 800, padding: '1px 6px', borderRadius: '4px', fontFamily: 'JetBrains Mono, monospace' }}>
                   #{program.client?.client_code || clientCodeParam}
                 </span>
-                <span style={{ background: '#ECFDF5', border: '1px solid #A7F3D0', color: '#059669', fontSize: '10.5px', fontWeight: 800, padding: '1px 7px', borderRadius: '4px' }}>
-                  {program.client?.package_name || 'باقة ماكس VIP'}
-                </span>
+                {(() => {
+                  const rawPkg = program.client?.package_name || 'MAX_4M';
+                  const isMax = String(rawPkg).toUpperCase().includes('MAX') || String(rawPkg).includes('ماكس');
+                  const label = rawPkg.replace(/_VIP/gi, '').replace(/ VIP/gi, '').replace(/باقة ماكس VIP/g, 'MAX').replace(/باقة /g, '').trim() || (isMax ? 'MAX' : 'ELITE');
+                  return (
+                    <span style={{ 
+                      background: '#F1F5F9', 
+                      border: '1px solid #CBD5E1', 
+                      color: isMax ? '#C4952D' : '#0284C7', 
+                      fontSize: '11px', 
+                      fontWeight: 800, 
+                      padding: '2px 8px', 
+                      borderRadius: '4px',
+                      fontFamily: 'JetBrains Mono, Cairo, sans-serif'
+                    }}>
+                      {label}
+                    </span>
+                  );
+                })()}
               </div>
               <div style={{ fontSize: '11.5px', color: '#64748B', display: 'flex', gap: '10px', marginTop: '2px', flexWrap: 'wrap' }}>
                 <span>السن: <strong>{program.client?.age || 27} سنة</strong></span>
@@ -648,7 +664,7 @@ export default function CoachEditor() {
             >
               <div style={{ display: 'flex', alignItems: 'center', gap: '5px', color: '#059669', fontWeight: 800, fontSize: '10.5px' }}>
                 <BrainCircuit size={13} />
-                <span>تعليل القرار السريري (Clinical Rationale):</span>
+                <span>سبب اختيار السعرات والماكروز:</span>
               </div>
               <p style={{ margin: 0, color: '#334155', lineHeight: '1.45', fontWeight: 600 }}>
                 {program.nutrition?.reasoning?.rationale}
@@ -819,7 +835,7 @@ export default function CoachEditor() {
             >
               <div style={{ display: 'flex', alignItems: 'center', gap: '5px', color: '#4F46E5', fontWeight: 800, fontSize: '10.5px' }}>
                 <BrainCircuit size={13} />
-                <span>تعليل القرار الحركي والبيوميكانيكي (Biomechanical Rationale):</span>
+                <span>سبب اختيار جدول وتمارين التدريب:</span>
               </div>
               <p style={{ margin: 0, color: '#334155', lineHeight: '1.45', fontWeight: 600 }}>
                 {program.training?.reasoning?.rationale}
@@ -831,28 +847,32 @@ export default function CoachEditor() {
 
             {/* 3. Session / Days Switcher Pills */}
             <div style={{ display: 'flex', gap: '4px', background: '#F1F5F9', padding: '3px', borderRadius: '6px' }}>
-              {program.training?.sessions?.map((sess, sIdx) => (
-                <button
-                  key={sess.id || sIdx}
-                  type="button"
-                  onClick={() => setActiveSessionIdx(sIdx)}
-                  style={{
-                    flex: 1,
-                    padding: '5px 8px',
-                    borderRadius: '5px',
-                    fontSize: '11px',
-                    fontWeight: activeSessionIdx === sIdx ? 800 : 600,
-                    border: activeSessionIdx === sIdx ? '1px solid var(--color-primary-border, #CBD5E1)' : '1px solid transparent',
-                    cursor: 'pointer',
-                    background: activeSessionIdx === sIdx ? 'var(--color-primary-light, #EEF2FF)' : 'transparent',
-                    color: activeSessionIdx === sIdx ? 'var(--primary, #0F172A)' : '#64748B',
-                    boxShadow: activeSessionIdx === sIdx ? '0 1px 3px rgba(0, 0, 0, 0.03)' : 'none',
-                    transition: 'all 0.12s ease'
-                  }}
-                >
-                  يوم {sIdx+1} ({sess.name.split('(')[0].replace('يوم 1:', '').replace('يوم 2:', '').replace('يوم 3:', '').trim()})
-                </button>
-              ))}
+              {program.training?.sessions?.map((sess, sIdx) => {
+                const rawName = sess?.name || sess?.title || sess?.day_name || sess?.session_title || `يوم ${sIdx + 1}`;
+                const cleanName = String(rawName).split('(')[0].replace(/يوم\s*\d+[:\-]?/gi, '').trim() || `تمرين ${sIdx + 1}`;
+                return (
+                  <button
+                    key={sess?.id || sIdx}
+                    type="button"
+                    onClick={() => setActiveSessionIdx(sIdx)}
+                    style={{
+                      flex: 1,
+                      padding: '5px 8px',
+                      borderRadius: '5px',
+                      fontSize: '11px',
+                      fontWeight: activeSessionIdx === sIdx ? 800 : 600,
+                      border: activeSessionIdx === sIdx ? '1px solid var(--color-primary-border, #CBD5E1)' : '1px solid transparent',
+                      cursor: 'pointer',
+                      background: activeSessionIdx === sIdx ? 'var(--color-primary-light, #EEF2FF)' : 'transparent',
+                      color: activeSessionIdx === sIdx ? 'var(--primary, #0F172A)' : '#64748B',
+                      boxShadow: activeSessionIdx === sIdx ? '0 1px 3px rgba(0, 0, 0, 0.03)' : 'none',
+                      transition: 'all 0.12s ease'
+                    }}
+                  >
+                    يوم {sIdx + 1} ({cleanName})
+                  </button>
+                );
+              })}
             </div>
 
             {/* 4. Active Session Exercises List (Scrollable) */}
@@ -980,7 +1000,7 @@ export default function CoachEditor() {
             >
               <div style={{ display: 'flex', alignItems: 'center', gap: '5px', color: '#D97706', fontWeight: 800, fontSize: '10.5px' }}>
                 <BrainCircuit size={13} />
-                <span>تعليل قرار الكارديو والأيض (Cardio & NEAT Rationale):</span>
+                <span>سبب اختيار نمط الكارديو والنشاط:</span>
               </div>
               <p style={{ margin: 0, color: '#334155', lineHeight: '1.45', fontWeight: 600 }}>
                 {program.cardio?.reasoning?.rationale}

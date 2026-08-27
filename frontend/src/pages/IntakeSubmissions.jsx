@@ -48,7 +48,21 @@ export default function IntakeSubmissions() {
 
   useEffect(() => {
     fetchSubmissions();
+    const interval = setInterval(fetchSubmissions, 30000);
+    return () => clearInterval(interval);
   }, []);
+
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if (e.key === 'Escape' || e.keyCode === 27) {
+        if (paymentModalSub) setPaymentModalSub(null);
+        if (whatsappClient) setWhatsappClient(null);
+        if (selectedAnswers) setSelectedAnswers(null);
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [paymentModalSub, whatsappClient, selectedAnswers]);
 
   const fetchSubmissions = async () => {
     try {
@@ -160,8 +174,8 @@ export default function IntakeSubmissions() {
   const statCards = [
     { title: 'قيد التعبئة', value: inProgressCount, label: 'استمارات جارية', icon: Edit3 },
     { title: 'بانتظار الاعتماد', value: pendingCount, label: 'مكتملة 100%', icon: Clock },
-    { title: 'مؤكد الدفع', value: paidCount, label: 'InstaPay / كاش', icon: CreditCard },
-    { title: 'مسودات جاهزة', value: draftCount, label: 'تخصيص الكابتن', icon: Sparkles },
+    { title: 'مؤكد الدفع', value: paidCount, label: 'Visa / Wallet', icon: CreditCard },
+    { title: 'مسودات جاهزة', value: draftCount, label: 'تخصيص الكابتن', icon: FileText },
     { title: 'معتمد ومنشور', value: approvedCount, label: 'برامج نشطة', icon: CheckCircle2 },
   ];
 
@@ -329,12 +343,12 @@ export default function IntakeSubmissions() {
               <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'right', fontSize: '12px' }}>
                 <thead>
                   <tr style={{ background: '#F8FAFC', borderBottom: '1px solid #E2E8F0', color: '#475569', fontWeight: 700 }}>
-                    <th style={{ padding: '10px 14px' }}>كود العميل</th>
-                    <th style={{ padding: '10px 14px' }}>اسم المتدرب</th>
-                    <th style={{ padding: '10px 14px' }}>رقم الهاتف</th>
-                    <th style={{ padding: '10px 14px' }}>الباقة والمبلغ</th>
-                    <th style={{ padding: '10px 14px' }}>حالة الدفع</th>
-                    <th style={{ padding: '10px 14px' }}>حالة الاستمارة</th>
+                    <th style={{ padding: '10px 14px', textAlign: 'center', width: '85px' }}>كود العميل</th>
+                    <th style={{ padding: '10px 14px', textAlign: 'right' }}>اسم المتدرب</th>
+                    <th style={{ padding: '10px 14px', textAlign: 'center' }}>رقم الهاتف</th>
+                    <th style={{ padding: '10px 14px', textAlign: 'center' }}>الباقة والمبلغ</th>
+                    <th style={{ padding: '10px 14px', textAlign: 'center' }}>حالة الدفع</th>
+                    <th style={{ padding: '10px 14px', textAlign: 'center' }}>حالة الاستمارة</th>
                     <th style={{ padding: '10px 14px', textAlign: 'left' }}>الإجراءات</th>
                   </tr>
                 </thead>
@@ -353,59 +367,82 @@ export default function IntakeSubmissions() {
                         onMouseLeave={(e) => (e.currentTarget.style.background = 'transparent')}
                       >
                         {/* Code */}
-                        <td style={{ padding: '10px 14px' }}>
-                          <span style={{ fontFamily: 'JetBrains Mono, monospace', fontWeight: 800, fontSize: '11px', background: '#F1F5F9', border: '1px solid #CBD5E1', color: '#0F172A', padding: '2px 7px', borderRadius: '4px' }}>
+                        <td style={{ padding: '10px 14px', textAlign: 'center' }}>
+                          <span style={{ fontFamily: 'JetBrains Mono, monospace', fontWeight: 800, fontSize: '11px', background: '#F0F9FF', border: '1px solid #BAE6FD', color: '#0284C7', padding: '2px 7px', borderRadius: '4px', display: 'inline-block' }}>
                             {'#' + cleanCode}
                           </span>
                         </td>
 
                         {/* Name */}
-                        <td style={{ padding: '10px 14px' }}>
+                        <td style={{ padding: '10px 14px', textAlign: 'right' }}>
                           <strong style={{ color: '#0F172A', fontSize: '13px', display: 'block' }}>{clientName}</strong>
                         </td>
 
                         {/* Phone */}
-                        <td style={{ padding: '10px 14px' }}>
+                        <td style={{ padding: '10px 14px', textAlign: 'center' }}>
                           <span dir="ltr" style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '11.5px', color: '#475569' }}>
                             {clientPhone}
                           </span>
                         </td>
 
                         {/* Package */}
-                        <td style={{ padding: '10px 14px', color: '#475569' }}>
-                          <div>{sub.package_name || sub.subscription_package || 'باقة 3 شهور VIP'}</div>
-                          <small style={{ color: '#94A3B8', fontSize: '10.5px' }}>{sub.amount ? `${sub.amount} ج.م` : '2500 ج.م'}</small>
+                        <td style={{ padding: '10px 14px', textAlign: 'center' }}>
+                          {(() => {
+                            const rawPkg = sub.package_name || sub.subscription_package || 'ELITE_4M';
+                            const clean = String(rawPkg).trim().toUpperCase();
+                            const isMax = clean.includes('MAX') || clean.includes('ماكس');
+                            const label = rawPkg.replace(/_VIP/gi, '').replace(/_4M/gi, '').replace(/_8M/gi, '').replace(/_3_PLUS_1/gi, '').replace(/_TRANSFORM/gi, '').replace(/ VIP/gi, '').replace(/باقة ماكس VIP/g, 'MAX').replace(/باقة /g, '').trim() || (isMax ? 'MAX' : 'ELITE');
+                            return (
+                              <div style={{ display: 'inline-flex', flexDirection: 'column', gap: '3px', alignItems: 'center' }}>
+                                <span style={{
+                                  background: '#F1F5F9',
+                                  border: '1px solid #E2E8F0',
+                                  color: isMax ? '#C4952D' : '#0284C7',
+                                  padding: '1px 7px',
+                                  borderRadius: '4px',
+                                  fontSize: '11px',
+                                  fontWeight: 800,
+                                  fontFamily: 'JetBrains Mono, Cairo, sans-serif'
+                                }}>
+                                  {label}
+                                </span>
+                                <span style={{ color: '#475569', fontSize: '11px', fontWeight: 800, fontFamily: 'JetBrains Mono, Cairo, sans-serif', textAlign: 'center' }}>
+                                  {sub.amount ? `${sub.amount} ج.م` : (isMax ? '4500 ج.م' : '3000 ج.م')}
+                                </span>
+                              </div>
+                            );
+                          })()}
                         </td>
 
                         {/* Payment Status */}
-                        <td style={{ padding: '10px 14px' }}>
+                        <td style={{ padding: '10px 14px', textAlign: 'center' }}>
                           {sub.payment_status === 'PAID' || sub.status === 'PAYMENT_CONFIRMED' || sub.status === 'APPROVED' ? (
-                            <span style={{ background: '#F0FDF4', border: '1px solid #BBF7D0', color: '#16A34A', padding: '2px 8px', borderRadius: '4px', fontSize: '10.5px', fontWeight: 700 }}>
-                              مدفوع (INSTAPAY)
+                            <span style={{ background: '#F0FDF4', border: '1px solid #BBF7D0', color: '#16A34A', padding: '2px 8px', borderRadius: '4px', fontSize: '10.5px', fontWeight: 700, display: 'inline-block' }}>
+                              مدفوع (مؤكد)
                             </span>
                           ) : (
-                            <span style={{ background: '#FFFBEB', border: '1px solid #FDE68A', color: '#D97706', padding: '2px 8px', borderRadius: '4px', fontSize: '10.5px', fontWeight: 700 }}>
+                            <span style={{ background: '#FFFBEB', border: '1px solid #FDE68A', color: '#D97706', padding: '2px 8px', borderRadius: '4px', fontSize: '10.5px', fontWeight: 700, display: 'inline-block' }}>
                               بانتظار الدفع
                             </span>
                           )}
                         </td>
 
                         {/* Intake Status */}
-                        <td style={{ padding: '10px 14px' }}>
+                        <td style={{ padding: '10px 14px', textAlign: 'center' }}>
                           {sub.status === 'APPROVED' ? (
-                            <span style={{ background: '#F0FDF4', border: '1px solid #BBF7D0', color: '#16A34A', padding: '2px 8px', borderRadius: '4px', fontSize: '10.5px', fontWeight: 800 }}>
+                            <span style={{ background: '#F0FDF4', border: '1px solid #BBF7D0', color: '#16A34A', padding: '2px 8px', borderRadius: '4px', fontSize: '10.5px', fontWeight: 800, display: 'inline-block' }}>
                               معتمد ومنشور
                             </span>
                           ) : sub.status === 'DRAFT_GENERATED' ? (
-                            <span style={{ background: '#F1F5F9', border: '1px solid #CBD5E1', color: '#0F172A', padding: '2px 8px', borderRadius: '4px', fontSize: '10.5px', fontWeight: 700 }}>
+                            <span style={{ background: '#F0F9FF', border: '1px solid #BAE6FD', color: '#0284C7', padding: '2px 8px', borderRadius: '4px', fontSize: '10.5px', fontWeight: 700, display: 'inline-block' }}>
                               مسودة جاهزة
                             </span>
                           ) : sub.status === 'PENDING_COACH_REVIEW' ? (
-                            <span style={{ background: '#FFFBEB', border: '1px solid #FDE68A', color: '#D97706', padding: '2px 8px', borderRadius: '4px', fontSize: '10.5px', fontWeight: 700 }}>
+                            <span style={{ background: '#FFFBEB', border: '1px solid #FDE68A', color: '#D97706', padding: '2px 8px', borderRadius: '4px', fontSize: '10.5px', fontWeight: 700, display: 'inline-block' }}>
                               بانتظار المراجعة
                             </span>
                           ) : (
-                            <span style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', color: '#64748B', padding: '2px 8px', borderRadius: '4px', fontSize: '10.5px', fontWeight: 700 }}>
+                            <span style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', color: '#64748B', padding: '2px 8px', borderRadius: '4px', fontSize: '10.5px', fontWeight: 700, display: 'inline-block' }}>
                               قيد التعبئة
                             </span>
                           )}
@@ -504,8 +541,7 @@ export default function IntakeSubmissions() {
                               onMouseEnter={(e) => (e.currentTarget.style.background = '#334155')}
                               onMouseLeave={(e) => (e.currentTarget.style.background = '#0F172A')}
                             >
-                              <Sparkles size={12} />
-                              <span>{sub.status === 'APPROVED' ? 'تعديل الخطة' : 'توليد ومراجعة'}</span>
+                              <span>{sub.status === 'APPROVED' ? 'تعديل الخطة' : 'توليد الخطة'}</span>
                             </button>
                           </div>
                         </td>
@@ -550,6 +586,8 @@ export default function IntakeSubmissions() {
             submission={selectedAnswers}
             isOpen={Boolean(selectedAnswers)}
             onClose={() => setSelectedAnswers(null)}
+            onGenerateDraft={handleGenerateDraft}
+            generatingId={generatingId}
           />
         )}
 

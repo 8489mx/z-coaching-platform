@@ -1,9 +1,20 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { X, Users, AlertCircle, Info, CheckCircle2, ChevronLeft } from 'lucide-react';
 
 export default function SmartSwapModal({ isOpen, onClose, exerciseName, onSwap, onSkip }) {
   const [step, setStep] = useState('CHOICE'); // 'CHOICE', 'SWAPPED', 'SKIPPED'
   const [swappedExercise, setSwappedExercise] = useState('');
+
+  useEffect(() => {
+    if (!isOpen) return;
+    const handleKeyDown = (e) => {
+      if (e.key === 'Escape' || e.keyCode === 27) {
+        if (onClose) onClose();
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [isOpen, onClose]);
 
   if (!isOpen) return null;
 

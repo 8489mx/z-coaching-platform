@@ -35,12 +35,12 @@ export function FormSection({
           marginBottom: '14px', 
           display: 'flex', 
           justifyContent: 'space-between', 
-          alignItems: 'flex-start',
+          alignItems: description ? 'flex-start' : 'center',
           gap: '12px'
         }}
         className={headerClassName}
       >
-        <div>
+        <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
             <span className="section-title-bullet" style={{ width: '3.5px', height: '16px', background: 'var(--primary, #0F172A)', borderRadius: '2px', display: 'inline-block' }} />
             <h3 style={{ margin: 0, fontSize: '15px', fontWeight: 800, color: 'var(--primary, #0F172A)' }}>

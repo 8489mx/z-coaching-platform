@@ -1,7 +1,40 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import './i18n';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider } from './contexts/AuthContext';
+
+// Global Modal Escape Key Listener Component
+function GlobalModalEscapeHandler() {
+  useEffect(() => {
+    const handleGlobalEscape = (e) => {
+      if (e.key === 'Escape' || e.keyCode === 27) {
+        // Find any open modals / dialog shells / lightbox overlays
+        const openModals = document.querySelectorAll(
+          '.dialog-shell, .dialog-overlay, .modal.show, [role="dialog"], [aria-modal="true"], .fixed[style*="z-index"], .modal[style*="display: block"]'
+        );
+        if (openModals.length > 0) {
+          const topModal = openModals[openModals.length - 1];
+          const closeBtn = topModal.querySelector(
+            'button[aria-label*="close" i], button[aria-label*="Close" i], button.dialog-close-button, button.btn-close, [data-dismiss="modal"], button svg.lucide-x, button:has(svg.lucide-x)'
+          );
+          if (closeBtn) {
+            const actualButton = closeBtn.tagName === 'BUTTON' ? closeBtn : closeBtn.closest('button');
+            if (actualButton) {
+              actualButton.click();
+              e.preventDefault();
+              e.stopPropagation();
+            }
+          }
+        }
+      }
+    };
+
+    window.addEventListener('keydown', handleGlobalEscape, { capture: true });
+    return () => window.removeEventListener('keydown', handleGlobalEscape, { capture: true });
+  }, []);
+
+  return null;
+}
 
 // Primary Core Cockpits
 import CoachCommandCenter from './pages/CoachCommandCenter';
@@ -31,6 +64,7 @@ import ClientTimelineProfile from './pages/ClientTimelineProfile';
 function App() {
   return (
     <AuthProvider>
+      <GlobalModalEscapeHandler />
       <Router>
         <Routes>
           {/* Coach Primary Command Center */}

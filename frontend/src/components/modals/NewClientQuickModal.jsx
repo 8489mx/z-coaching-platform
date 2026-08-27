@@ -1,4 +1,4 @@
-﻿import React, { useState } from 'react';
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { 
   Phone, 
@@ -145,79 +145,80 @@ export default function NewClientQuickModal({ isOpen, onClose, onClientCreated }
       open={isOpen}
       onClose={handleClose}
       showCloseButton={true}
-      width="520px"
+      width="500px"
       ariaLabel="إنشاء كود مشترك وتحديد الباقة"
     >
-      <div className="dialog-card" dir="rtl" style={{ padding: '24px 28px' }}>
-        {/* Header Title with Signature Accent Bar */}
-        <div style={{ marginBottom: '20px' }}>
-          <h3 style={{ margin: '0 0 6px 0', fontSize: '1.2rem', fontWeight: 800, color: '#0F172A' }}>
+      <div className="dialog-card" dir="rtl" style={{ padding: '20px 24px', background: '#FFFFFF', borderRadius: '12px' }}>
+        {/* Header Title */}
+        <div style={{ marginBottom: '16px' }}>
+          <h3 style={{ margin: 0, fontSize: '15px', fontWeight: 800, color: '#0F172A' }}>
             إنشاء كود مشترك وتحديد الباقة
           </h3>
-          <p className="dialog-description" style={{ margin: 0, fontSize: '0.84rem', color: '#64748B' }}>
-            اختر نوع الباقة والمدة وأضف شهوراً أو أسابيع هدية لتوليد كود التفعيل
-          </p>
         </div>
 
         {error && (
-          <div className="alert alert-danger py-2 px-3 small rounded-3 mb-3 d-flex align-items-center gap-2" style={{ fontSize: '0.84rem', background: '#FEF2F2', border: '1px solid #FEE2E2', color: '#DC2626', borderRadius: '8px', padding: '8px 12px', marginBottom: '16px' }}>
-            <AlertCircle size={16} />
+          <div style={{ fontSize: '11.5px', background: '#FFF1F2', border: '1px solid #FECDD3', color: '#9F1239', borderRadius: '6px', padding: '8px 12px', marginBottom: '14px', display: 'flex', alignItems: 'center', gap: '6px', fontWeight: 700 }}>
+            <AlertCircle size={14} />
             <span>{error}</span>
           </div>
         )}
 
         {!newClient ? (
-          <form onSubmit={handleCreate} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+          <form onSubmit={handleCreate} style={{ display: 'flex', flexDirection: 'column', gap: '13px' }}>
             
             {/* 1. Client Inputs Grid */}
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
-              <div className="field" style={{ margin: 0 }}>
-                <label style={{ fontSize: '12px', fontWeight: 700, color: '#334155', marginBottom: '4px' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
+              <div style={{ margin: 0 }}>
+                <label style={{ fontSize: '11.5px', fontWeight: 700, color: '#334155', marginBottom: '4px', display: 'block' }}>
                   اسم المشترك:
                 </label>
                 <div style={{ position: 'relative' }}>
                   <input 
                     type="text" 
                     style={{ 
-                      height: '40px', 
-                      borderRadius: '8px', 
-                      fontSize: '13px', 
+                      height: '36px', 
+                      borderRadius: '6px', 
+                      fontSize: '12px', 
                       border: '1px solid #CBD5E1',
-                      paddingRight: '36px',
-                      paddingLeft: '12px',
-                      background: '#FFFFFF',
+                      paddingRight: '32px',
+                      paddingLeft: '10px',
+                      background: '#F8FAFC',
                       width: '100%',
-                      boxSizing: 'border-box'
+                      boxSizing: 'border-box',
+                      color: '#0F172A',
+                      outline: 'none'
                     }}
                     placeholder="مثال: أحمد فتحي"
                     value={clientName}
                     onChange={(e) => setClientName(e.target.value)}
                   />
-                  <div style={{ position: 'absolute', right: '12px', top: '50%', transform: 'translateY(-50%)', color: '#94A3B8', pointerEvents: 'none', display: 'flex' }}>
-                    <User size={16} />
+                  <div style={{ position: 'absolute', right: '10px', top: '50%', transform: 'translateY(-50%)', color: '#94A3B8', pointerEvents: 'none', display: 'flex' }}>
+                    <User size={14} />
                   </div>
                 </div>
               </div>
 
-              <div className="field" style={{ margin: 0 }}>
-                <label style={{ fontSize: '12px', fontWeight: 700, color: '#334155', marginBottom: '4px' }}>
+              <div style={{ margin: 0 }}>
+                <label style={{ fontSize: '11.5px', fontWeight: 700, color: '#334155', marginBottom: '4px', display: 'block' }}>
                   رقم الواتساب: <span style={{ color: '#DC2626' }}>*</span>
                 </label>
                 <div style={{ position: 'relative' }}>
                   <input 
                     type="tel" 
                     style={{ 
-                      height: '40px', 
-                      borderRadius: '8px', 
-                      fontSize: '13px', 
+                      height: '36px', 
+                      borderRadius: '6px', 
+                      fontSize: '12px', 
                       border: '1px solid #CBD5E1',
-                      paddingRight: '36px',
-                      paddingLeft: '12px',
-                      background: '#FFFFFF',
+                      paddingRight: '32px',
+                      paddingLeft: '10px',
+                      background: '#F8FAFC',
                       width: '100%',
                       boxSizing: 'border-box',
                       direction: 'ltr',
-                      textAlign: 'right'
+                      textAlign: 'right',
+                      color: '#0F172A',
+                      outline: 'none'
                     }}
                     placeholder="010XXXXXXXX"
                     value={clientPhone}
@@ -225,37 +226,37 @@ export default function NewClientQuickModal({ isOpen, onClose, onClientCreated }
                     autoFocus
                     required
                   />
-                  <div style={{ position: 'absolute', right: '12px', top: '50%', transform: 'translateY(-50%)', color: '#10B981', pointerEvents: 'none', display: 'flex' }}>
-                    <Phone size={16} />
+                  <div style={{ position: 'absolute', right: '10px', top: '50%', transform: 'translateY(-50%)', color: '#16A34A', pointerEvents: 'none', display: 'flex' }}>
+                    <Phone size={14} />
                   </div>
                 </div>
               </div>
             </div>
 
             {/* 2. Package Tier Selector */}
-            <div className="field" style={{ margin: 0 }}>
-              <label style={{ fontSize: '12px', fontWeight: 700, color: '#334155', marginBottom: '6px' }}>
+            <div style={{ margin: 0 }}>
+              <label style={{ fontSize: '11.5px', fontWeight: 700, color: '#334155', marginBottom: '5px', display: 'block' }}>
                 نوع الباقة:
               </label>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
                 {/* ELITE Card */}
                 <div 
                   onClick={() => setTier('ELITE')}
                   style={{ 
                     cursor: 'pointer',
-                    padding: '12px',
-                    borderRadius: '10px',
+                    padding: '10px',
+                    borderRadius: '8px',
                     textAlign: 'center',
-                    border: tier === 'ELITE' ? '2px solid #170c5c' : '1px solid #CBD5E1',
-                    background: tier === 'ELITE' ? '#EDE9FE' : '#FFFFFF',
-                    boxShadow: tier === 'ELITE' ? '0 4px 12px rgba(23, 12, 92, 0.12)' : 'none',
-                    transition: 'all 0.16s ease'
+                    border: tier === 'ELITE' ? '1.5px solid #0F172A' : '1px solid #E2E8F0',
+                    background: tier === 'ELITE' ? '#F8FAFC' : '#FFFFFF',
+                    boxShadow: tier === 'ELITE' ? '0 2px 6px rgba(15, 23, 42, 0.08)' : 'none',
+                    transition: 'all 0.15s ease'
                   }}
                 >
-                  <div style={{ fontSize: '1.15rem', fontWeight: 900, color: '#170c5c', letterSpacing: '0.5px' }}>
+                  <div style={{ fontSize: '13px', fontWeight: 900, color: '#0284C7', letterSpacing: '0.5px' }}>
                     ELITE
                   </div>
-                  <div style={{ fontSize: '11.5px', color: '#64748B', fontWeight: 600, marginTop: '2px' }}>
+                  <div style={{ fontSize: '11px', color: tier === 'ELITE' ? '#334155' : '#94A3B8', fontWeight: 600, marginTop: '2px' }}>
                     متابعة كل 14 يوم
                   </div>
                 </div>
@@ -265,43 +266,44 @@ export default function NewClientQuickModal({ isOpen, onClose, onClientCreated }
                   onClick={() => setTier('MAX')}
                   style={{ 
                     cursor: 'pointer',
-                    padding: '12px',
-                    borderRadius: '10px',
+                    padding: '10px',
+                    borderRadius: '8px',
                     textAlign: 'center',
-                    border: tier === 'MAX' ? '2px solid #C89327' : '1px solid #CBD5E1',
-                    background: tier === 'MAX' ? '#FFFBEB' : '#FFFFFF',
-                    boxShadow: tier === 'MAX' ? '0 4px 12px rgba(200, 147, 39, 0.15)' : 'none',
-                    transition: 'all 0.16s ease'
+                    border: tier === 'MAX' ? '1.5px solid #0F172A' : '1px solid #E2E8F0',
+                    background: tier === 'MAX' ? '#F8FAFC' : '#FFFFFF',
+                    boxShadow: tier === 'MAX' ? '0 2px 6px rgba(15, 23, 42, 0.08)' : 'none',
+                    transition: 'all 0.15s ease'
                   }}
                 >
-                  <div style={{ fontSize: '1.15rem', fontWeight: 900, color: '#C89327', letterSpacing: '0.5px' }}>
-                    M A X
+                  <div style={{ fontSize: '13px', fontWeight: 900, color: '#C4952D', letterSpacing: '0.5px' }}>
+                    MAX
                   </div>
-                  <div style={{ fontSize: '11.5px', color: '#64748B', fontWeight: 600, marginTop: '2px' }}>
-                    متابعة أسبوعية + صوتي
+                  <div style={{ fontSize: '11px', color: tier === 'MAX' ? '#334155' : '#94A3B8', fontWeight: 600, marginTop: '2px' }}>
+                    متابعة أسبوعية (7 أيام)
                   </div>
                 </div>
               </div>
             </div>
 
             {/* 3. Base Duration Selector */}
-            <div className="field" style={{ margin: 0 }}>
-              <label style={{ fontSize: '12px', fontWeight: 700, color: '#334155', marginBottom: '6px' }}>
+            <div style={{ margin: 0 }}>
+              <label style={{ fontSize: '11.5px', fontWeight: 700, color: '#334155', marginBottom: '5px', display: 'block' }}>
                 مدة الاشتراك الأساسية:
               </label>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
                 <button
                   type="button"
                   onClick={() => setDurationKey('FOUR_MONTHS')}
                   style={{
-                    height: '38px',
-                    borderRadius: '8px',
-                    fontSize: '13px',
+                    height: '34px',
+                    borderRadius: '6px',
+                    fontSize: '11.5px',
                     fontWeight: 700,
                     cursor: 'pointer',
-                    border: durationKey === 'FOUR_MONTHS' ? '2px solid #0F172A' : '1px solid #CBD5E1',
+                    border: durationKey === 'FOUR_MONTHS' ? 'none' : '1px solid #CBD5E1',
                     background: durationKey === 'FOUR_MONTHS' ? '#0F172A' : '#FFFFFF',
                     color: durationKey === 'FOUR_MONTHS' ? '#FFFFFF' : '#475569',
+                    boxShadow: durationKey === 'FOUR_MONTHS' ? '0 2px 5px rgba(15, 23, 42, 0.25)' : 'none',
                     transition: 'all 0.15s ease'
                   }}
                 >
@@ -312,14 +314,15 @@ export default function NewClientQuickModal({ isOpen, onClose, onClientCreated }
                   type="button"
                   onClick={() => setDurationKey('EIGHT_MONTHS')}
                   style={{
-                    height: '38px',
-                    borderRadius: '8px',
-                    fontSize: '13px',
+                    height: '34px',
+                    borderRadius: '6px',
+                    fontSize: '11.5px',
                     fontWeight: 700,
                     cursor: 'pointer',
-                    border: durationKey === 'EIGHT_MONTHS' ? '2px solid #0F172A' : '1px solid #CBD5E1',
+                    border: durationKey === 'EIGHT_MONTHS' ? 'none' : '1px solid #CBD5E1',
                     background: durationKey === 'EIGHT_MONTHS' ? '#0F172A' : '#FFFFFF',
                     color: durationKey === 'EIGHT_MONTHS' ? '#FFFFFF' : '#475569',
+                    boxShadow: durationKey === 'EIGHT_MONTHS' ? '0 2px 5px rgba(15, 23, 42, 0.25)' : 'none',
                     transition: 'all 0.15s ease'
                   }}
                 >
@@ -329,31 +332,32 @@ export default function NewClientQuickModal({ isOpen, onClose, onClientCreated }
             </div>
 
             {/* 4. Bonus Gift Calculator */}
-            <div style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', borderRadius: '10px', padding: '14px 16px' }}>
-              <div style={{ fontSize: '12px', fontWeight: 800, color: '#0F172A', marginBottom: '10px' }}>
+            <div style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', borderRadius: '8px', padding: '10px 12px' }}>
+              <div style={{ fontSize: '11.5px', fontWeight: 800, color: '#0F172A', marginBottom: '8px' }}>
                 إضافة هدايا إضافية للكود (اختياري للكوتش):
               </div>
 
               {/* Bonus Weeks */}
-              <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '8px' }}>
-                <span style={{ fontSize: '12px', fontWeight: 700, color: '#64748B', whiteSpace: 'nowrap' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '6px' }}>
+                <span style={{ fontSize: '11px', fontWeight: 700, color: '#64748B', width: '70px', flexShrink: 0 }}>
                   أسابيع هدية:
                 </span>
-                <div style={{ display: 'flex', gap: '6px' }}>
+                <div style={{ display: 'flex', gap: '4px', flexWrap: 'wrap' }}>
                   {[0, 1, 2, 3].map(w => (
                     <button
                       key={w}
                       type="button"
                       onClick={() => setBonusWeeks(w)}
                       style={{
-                        padding: '4px 12px',
-                        fontSize: '12px',
+                        padding: '3px 9px',
+                        fontSize: '11px',
                         fontWeight: 700,
-                        borderRadius: '6px',
+                        borderRadius: '5px',
                         cursor: 'pointer',
-                        border: bonusWeeks === w ? '1.5px solid #170c5c' : '1px solid #CBD5E1',
-                        background: bonusWeeks === w ? '#170c5c' : '#FFFFFF',
-                        color: bonusWeeks === w ? '#FFFFFF' : '#475569'
+                        border: bonusWeeks === w ? 'none' : '1px solid #CBD5E1',
+                        background: bonusWeeks === w ? '#0F172A' : '#FFFFFF',
+                        color: bonusWeeks === w ? '#FFFFFF' : '#475569',
+                        boxShadow: bonusWeeks === w ? '0 1px 3px rgba(15, 23, 42, 0.2)' : 'none'
                       }}
                     >
                       {w === 0 ? 'بدون' : `+${w} أسبوع`}
@@ -363,25 +367,26 @@ export default function NewClientQuickModal({ isOpen, onClose, onClientCreated }
               </div>
 
               {/* Bonus Months */}
-              <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '10px' }}>
-                <span style={{ fontSize: '12px', fontWeight: 700, color: '#64748B', whiteSpace: 'nowrap' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
+                <span style={{ fontSize: '11px', fontWeight: 700, color: '#64748B', width: '70px', flexShrink: 0 }}>
                   شهور هدية:
                 </span>
-                <div style={{ display: 'flex', gap: '6px' }}>
+                <div style={{ display: 'flex', gap: '4px', flexWrap: 'wrap' }}>
                   {[0, 1, 2].map(m => (
                     <button
                       key={m}
                       type="button"
                       onClick={() => setBonusMonths(m)}
                       style={{
-                        padding: '4px 12px',
-                        fontSize: '12px',
+                        padding: '3px 9px',
+                        fontSize: '11px',
                         fontWeight: 700,
-                        borderRadius: '6px',
+                        borderRadius: '5px',
                         cursor: 'pointer',
-                        border: bonusMonths === m ? '1.5px solid #C89327' : '1px solid #CBD5E1',
-                        background: bonusMonths === m ? '#C89327' : '#FFFFFF',
-                        color: bonusMonths === m ? '#FFFFFF' : '#475569'
+                        border: bonusMonths === m ? 'none' : '1px solid #CBD5E1',
+                        background: bonusMonths === m ? '#0F172A' : '#FFFFFF',
+                        color: bonusMonths === m ? '#FFFFFF' : '#475569',
+                        boxShadow: bonusMonths === m ? '0 1px 3px rgba(15, 23, 42, 0.2)' : 'none'
                       }}
                     >
                       {m === 0 ? 'بدون' : `+${m} شهر`}
@@ -390,150 +395,156 @@ export default function NewClientQuickModal({ isOpen, onClose, onClientCreated }
                 </div>
               </div>
 
-              <div style={{ fontSize: '12.5px', fontWeight: 800, color: '#059669', paddingTop: '4px', borderTop: '1px solid #E2E8F0' }}>
-                إجمالي المدة الممنوحة: {durationText}
+              <div style={{ fontSize: '11.5px', fontWeight: 800, color: '#334155', paddingTop: '6px', borderTop: '1px solid #E2E8F0', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                <span>إجمالي المدة الممنوحة:</span>
+                <span style={{ background: '#ECFDF5', border: '1px solid #A7F3D0', color: '#065F46', padding: '1px 7px', borderRadius: '4px', fontSize: '11px', fontWeight: 800, fontFamily: 'JetBrains Mono, Cairo, sans-serif' }}>
+                  {durationText}
+                </span>
               </div>
             </div>
 
             {/* Footer Buttons */}
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '10px', paddingTop: '12px', borderTop: '1px solid #E2E8F0' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '8px', paddingTop: '8px', borderTop: '1px solid #F1F5F9' }}>
               <button 
                 type="button" 
-                className="button button-secondary"
-                style={{ height: '38px', padding: '0 20px', borderRadius: '8px', fontSize: '13px', fontWeight: 600, border: '1px solid #CBD5E1', background: '#FFFFFF', color: '#475569', cursor: 'pointer' }}
+                style={{ height: '34px', padding: '0 14px', borderRadius: '5px', fontSize: '11.5px', fontWeight: 700, border: '1px solid #CBD5E1', background: '#FFFFFF', color: '#475569', cursor: 'pointer' }}
                 onClick={handleClose}
               >
                 إلغاء
               </button>
               <button 
                 type="submit" 
-                className="button button-primary"
                 disabled={loading || !clientPhone.trim()}
                 style={{ 
-                  height: '38px', 
-                  padding: '0 20px', 
-                  borderRadius: '8px', 
-                  fontSize: '13px', 
+                  height: '34px', 
+                  padding: '0 18px', 
+                  borderRadius: '5px', 
+                  fontSize: '11.5px', 
                   fontWeight: 700, 
-                  background: '#170c5c', 
+                  background: '#0F172A', 
                   color: '#FFFFFF', 
                   border: 'none', 
                   cursor: 'pointer',
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  boxShadow: '0 2px 5px rgba(15, 23, 42, 0.25)',
                   opacity: loading || !clientPhone.trim() ? 0.6 : 1
                 }}
               >
-                {loading ? 'جاري التوليد...' : 'توليد الكود وتجهيز رابط المشترك'}
+                <span>{loading ? 'جاري التوليد...' : 'توليد الخطة'}</span>
               </button>
             </div>
           </form>
         ) : (
-          <div style={{ textAlign: 'center', display: 'flex', flexDirection: 'column', gap: '16px' }}>
+          <div style={{ textAlign: 'center', display: 'flex', flexDirection: 'column', gap: '14px' }}>
             {/* Success Banner */}
             <div style={{
               display: 'inline-flex',
               alignItems: 'center',
               justifyContent: 'center',
-              gap: '8px',
-              padding: '8px 18px',
-              borderRadius: '8px',
-              background: '#ECFDF5',
-              border: '1px solid #A7F3D0',
-              color: '#065F46',
-              fontSize: '13px',
+              gap: '6px',
+              padding: '6px 14px',
+              borderRadius: '6px',
+              background: '#F0FDF4',
+              border: '1px solid #BBF7D0',
+              color: '#166534',
+              fontSize: '12px',
               fontWeight: 700,
               margin: '0 auto'
             }}>
-              <CheckCircle2 size={16} />
+              <CheckCircle2 size={15} />
               <span>تم إنشاء حساب المشترك وتوليد الكود بنجاح</span>
             </div>
 
             {/* Account Details Card */}
-            <div style={{ background: '#F8FAFC', border: '1.5px dashed #CBD5E1', borderRadius: '12px', padding: '18px 20px' }}>
-              <span style={{ fontSize: '12px', color: '#64748B', display: 'block', marginBottom: '6px' }}>
+            <div style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', borderRadius: '8px', padding: '14px 16px' }}>
+              <span style={{ fontSize: '11px', color: '#64748B', display: 'block', marginBottom: '4px', fontWeight: 600 }}>
                 كود المشترك المعتمد:
               </span>
               <span style={{
                 display: 'inline-block',
-                background: themeBg,
-                color: themeColor,
-                border: `1.5px solid ${themeColor}40`,
-                borderRadius: '10px',
-                padding: '8px 36px',
-                fontSize: '1.6rem',
+                background: '#FFFFFF',
+                color: '#0F172A',
+                border: '1px solid #CBD5E1',
+                borderRadius: '6px',
+                padding: '6px 28px',
+                fontSize: '1.4rem',
                 fontWeight: 900,
                 letterSpacing: '2px',
                 fontFamily: 'JetBrains Mono, monospace',
-                marginBottom: '10px'
+                marginBottom: '8px',
+                boxShadow: '0 1px 3px rgba(15, 23, 42, 0.05)'
               }}>
                 {newClient.client_code}
               </span>
               
-              <div style={{ fontSize: '12px', color: '#64748B', borderTop: '1px solid #E2E8F0', paddingTop: '8px' }}>
-                الباقة: <strong style={{ color: themeColor }}>{tierNameLabel}</strong> | إجمالي المدة: <strong>{durationText}</strong>
+              <div style={{ fontSize: '11.5px', color: '#64748B', borderTop: '1px solid #E2E8F0', paddingTop: '6px' }}>
+                الباقة: <strong style={{ color: '#0F172A' }}>{tierNameLabel}</strong> | إجمالي المدة: <strong style={{ color: '#059669' }}>{durationText}</strong>
               </div>
             </div>
 
             {/* Action Buttons */}
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
               <button 
                 type="button" 
                 style={{
-                  height: '42px',
-                  background: 'linear-gradient(135deg, #16A34A 0%, #15803D 100%)',
+                  height: '36px',
+                  background: '#16A34A',
                   border: 'none',
-                  borderRadius: '8px',
+                  borderRadius: '6px',
                   color: '#FFFFFF',
-                  fontSize: '13.5px',
+                  fontSize: '12px',
                   fontWeight: 700,
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
-                  gap: '8px',
+                  gap: '6px',
                   cursor: 'pointer',
-                  boxShadow: '0 2px 8px rgba(22, 163, 74, 0.25)'
+                  boxShadow: '0 2px 5px rgba(22, 163, 74, 0.25)'
                 }}
                 onClick={handleOpenWhatsApp}
               >
-                <MessageCircle size={18} />
+                <MessageCircle size={15} />
                 <span>إرسال الرابط عبر الواتساب مباشرة</span>
               </button>
 
               <button 
                 type="button" 
                 style={{
-                  height: '40px',
+                  height: '34px',
                   border: '1px solid #CBD5E1',
-                  borderRadius: '8px',
+                  borderRadius: '6px',
                   background: '#FFFFFF',
                   color: '#334155',
-                  fontSize: '13px',
+                  fontSize: '11.5px',
                   fontWeight: 600,
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
-                  gap: '8px',
+                  gap: '6px',
                   cursor: 'pointer'
                 }}
                 onClick={handleCopyMessage}
               >
-                {copied ? <Check size={16} color="#16A34A" /> : <Copy size={16} />}
+                {copied ? <Check size={14} color="#16A34A" /> : <Copy size={14} />}
                 <span>{copied ? "تم نسخ رسالة الواتساب ورابط الاستمارة!" : "نسخ دعوة الواتساب والكود"}</span>
               </button>
 
               <button 
                 type="button" 
                 style={{
-                  height: '36px',
-                  background: themeBg,
-                  color: themeColor,
-                  border: `1.5px solid ${themeColor}40`,
-                  borderRadius: '8px',
-                  fontSize: '12.5px',
+                  height: '34px',
+                  background: '#F1F5F9',
+                  color: '#0F172A',
+                  border: '1px solid #CBD5E1',
+                  borderRadius: '6px',
+                  fontSize: '11.5px',
                   fontWeight: 700,
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
-                  gap: '6px',
+                  gap: '5px',
                   cursor: 'pointer'
                 }}
                 onClick={() => {
@@ -541,7 +552,7 @@ export default function NewClientQuickModal({ isOpen, onClose, onClientCreated }
                   navigate(`/intake/form?code=${newClient.client_code}&phone=${newClient.phone_number}`);
                 }}
               >
-                <Edit3 size={14} />
+                <Edit3 size={13} />
                 <span>فتح وتعبئة الاستمارة الآن</span>
               </button>
             </div>
