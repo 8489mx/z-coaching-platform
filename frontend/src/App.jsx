@@ -60,6 +60,7 @@ import WeeklyCheckinForm from './pages/WeeklyCheckinForm';
 import CoachAnalyticsDashboard from './pages/CoachAnalyticsDashboard';
 import CheckinReviewDashboard from './pages/CheckinReviewDashboard';
 import ClientTimelineProfile from './pages/ClientTimelineProfile';
+import MobilityLibrary from './pages/MobilityLibrary';
 
 function App() {
   return (
@@ -107,6 +108,8 @@ function App() {
           <Route path="/customers" element={<Customers />} />
           <Route path="/exercises" element={<ExerciseLibrary />} />
           <Route path="/calculator" element={<MacroCalculator />} />
+          <Route path="/mobility" element={<MobilityLibrary />} />
+          <Route path="/coach/mobility" element={<MobilityLibrary />} />
           <Route path="/subscriptions" element={<Subscriptions />} />
           <Route path="/master-settings" element={<MasterSettingsHub />} />
           <Route path="/settings" element={<Navigate to="/master-settings" replace />} />

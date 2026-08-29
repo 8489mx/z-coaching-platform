@@ -35,7 +35,7 @@ export function evaluateClientRenewalEligibility({
   const discountCode = `KZ-RENEW-${Math.round(weightDropKg)}KG`;
   const discountPercent = 25;
 
-  const renewalPitchAr = `مساء الورد يا ${client_name}! 🌟\n\nألف مبروك وصولك للأسبوع ${current_week} بإنجاز أسطوري (خسارة ${weightDropKg} كجم والتزام بنسبة ${adherence_rate_percent}%)!\n\nعشان نحافظ على الفورمة ونبدأ المرحلة القادمة:\n🎯 ${nextPhaseGoal}\n\nجهزتلك عرض تجديد مبكر كأحد أبطال الـ VIP بخصم ${discountPercent}% بكود: (${discountCode}).\n\nجاهز نثبت إنجازك وننطلق للدورة الجديدة مع بعض؟`;
+  const renewalPitchAr = `مساء الورد يا ${client_name}!\n\nألف مبروك وصولك للأسبوع ${current_week} بإنجاز مميز (خسارة ${weightDropKg} كجم والتزام بنسبة ${adherence_rate_percent}%)!\n\nعشان نحافظ على الفورمة ونبدأ المرحلة القادمة:\n- ${nextPhaseGoal}\n\nجهزتلك عرض تجديد مبكر كأحد أبطال الـ VIP بخصم ${discountPercent}% بكود: (${discountCode}).\n\nجاهز نثبت إنجازك وننطلق للدورة الجديدة مع بعض؟`;
 
   const cleanPhone = String(phone_number || '').replace(/[^0-9]/g, '');
   const normalizedPhone = cleanPhone.startsWith('20')

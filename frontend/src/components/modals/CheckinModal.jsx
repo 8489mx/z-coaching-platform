@@ -299,7 +299,7 @@ export default function CheckinModal({
                         style={{ height: '34px', borderRadius: '8px', fontSize: '0.78rem' }}
                         onClick={() => setHasPain(!hasPain)}
                       >
-                        {hasPain ? '⚠️ نعم، لدي ألم مفصلي' : '✓ سليم تماماً ولا يوجد ألم'}
+                        {hasPain ? 'نعم، لدي ألم مفصلي' : 'سليم تماماً ولا يوجد ألم'}
                       </button>
                     </div>
                   </div>

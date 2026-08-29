@@ -20,7 +20,7 @@ export function getTriageWhatsAppAction(client = {}, triageType = 'DEFAULT') {
   let message = '';
   switch (triageType) {
     case 'RENEWAL_ALERT':
-      message = `عاش يا ${name}! 🚀 حققنا إنجازات ممتازة الشهر ده. اشتراكك بينتهي خلال ${daysRemaining} أيام، جهزت لك مقعدك في باقة الشهر الجديد عشان نكمل التطور، جاهز نجدد؟`;
+      message = `عاش يا ${name}! حققنا إنجازات ممتازة الشهر ده. اشتراكك بينتهي خلال ${daysRemaining} أيام، جهزت لك مقعدك في باقة الشهر الجديد عشان نكمل التطور، جاهز نجدد؟`;
       break;
     case 'RADAR_RENEWAL_UPCOMING':
       message = `يا بطل! ${name}، فخور جداً بالتزامك. باقتك هتنتهي قريب، حبيت أديك خبر مبكر عشان أأكد حجز مكانك في الشهر الجاي ومفيش يوم يضيع من التطور.`;

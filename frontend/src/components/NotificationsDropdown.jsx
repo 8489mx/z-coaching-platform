@@ -101,11 +101,13 @@ export default function NotificationsDropdown() {
       if (intakesData.submissions && intakesData.submissions.length > 0) {
         intakesData.submissions.forEach((sub) => {
           const isApproved = sub.status === 'APPROVED' || sub.status === 'REVIEWED' || completedMap[`intake-${sub.id}`];
+          const rawCode = sub.user?.client_code || sub.answers?.client_code || sub.client_code || '1';
+          const cleanCode = String(rawCode).replace(/^client[-_]?/i, '').replace('#', '');
           list.push({
             id: `intake-${sub.id}`,
             type: 'INTAKE',
             icon: ClipboardList,
-            title: `استمارة صحية واردة (#${sub.user?.client_code || sub.id})`,
+            title: `استمارة صحية واردة (#${cleanCode})`,
             body: `${sub.user?.full_name || 'مشترك جديد'} أكمل استمارة التقييم والمصفوفة الصحية.`,
             time: 'استمارة',
             link: `/intake/submissions?review=${sub.id}`,
@@ -264,14 +266,14 @@ export default function NotificationsDropdown() {
           dir="rtl"
         >
           {/* Header */}
-          <div style={{ padding: '10px 12px', borderBottom: '1px solid #F1F5F9', background: '#FFFFFF' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
+          <div style={{ padding: '10px 14px', borderBottom: '1px solid #F1F5F9', background: '#FFFFFF' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                <strong style={{ fontSize: '13px', color: '#0F172A', fontWeight: 800 }}>
+                <strong style={{ fontSize: '13.5px', color: '#0F172A', fontWeight: 800 }}>
                   الإشعارات
                 </strong>
                 {unreadCount > 0 && (
-                  <span style={{ fontSize: '10px', background: '#F1F5F9', color: '#0F172A', padding: '1px 6px', borderRadius: '8px', fontWeight: 700 }}>
+                  <span style={{ fontSize: '10.5px', background: '#2563EB', color: '#FFFFFF', padding: '1px 7px', borderRadius: '10px', fontWeight: 800 }}>
                     {unreadCount} غير مقروء
                   </span>
                 )}
@@ -281,28 +283,28 @@ export default function NotificationsDropdown() {
                 <button 
                   type="button" 
                   onClick={markAllAsRead}
-                  style={{ fontSize: '11px', color: '#64748B', background: 'transparent', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '3px', fontWeight: 600, padding: 0 }}
+                  style={{ fontSize: '11px', color: '#2563EB', background: 'transparent', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px', fontWeight: 700, padding: 0 }}
                 >
-                  <CheckCheck size={12} />
+                  <CheckCheck size={13} />
                   <span>تحديد الكل كمقروء</span>
                 </button>
               )}
             </div>
 
-            {/* Sub Tabs */}
-            <div style={{ display: 'flex', gap: '3px' }}>
+            {/* Sub Tabs (Facebook Style Pills) */}
+            <div style={{ display: 'flex', gap: '4px' }}>
               <button 
                 type="button"
                 onClick={() => setActiveFilter('ALL')}
                 style={{ 
-                  fontSize: '10.5px', 
-                  padding: '2px 8px', 
-                  borderRadius: '4px', 
+                  fontSize: '11px', 
+                  padding: '3px 10px', 
+                  borderRadius: '6px', 
                   border: 'none', 
                   cursor: 'pointer',
                   fontWeight: activeFilter === 'ALL' ? 800 : 600,
                   background: activeFilter === 'ALL' ? '#0F172A' : '#F1F5F9',
-                  color: activeFilter === 'ALL' ? '#FFFFFF' : '#64748B'
+                  color: activeFilter === 'ALL' ? '#FFFFFF' : '#475569'
                 }}
               >
                 الكل ({notifications.length})
@@ -311,14 +313,14 @@ export default function NotificationsDropdown() {
                 type="button"
                 onClick={() => setActiveFilter('UNREAD')}
                 style={{ 
-                  fontSize: '10.5px', 
-                  padding: '2px 8px', 
-                  borderRadius: '4px', 
+                  fontSize: '11px', 
+                  padding: '3px 10px', 
+                  borderRadius: '6px', 
                   border: 'none', 
                   cursor: 'pointer',
                   fontWeight: activeFilter === 'UNREAD' ? 800 : 600,
-                  background: activeFilter === 'UNREAD' ? '#0F172A' : '#F1F5F9',
-                  color: activeFilter === 'UNREAD' ? '#FFFFFF' : '#64748B'
+                  background: activeFilter === 'UNREAD' ? '#2563EB' : '#F1F5F9',
+                  color: activeFilter === 'UNREAD' ? '#FFFFFF' : '#475569'
                 }}
               >
                 غير المقروءة ({unreadCount})
@@ -326,21 +328,22 @@ export default function NotificationsDropdown() {
             </div>
           </div>
 
-          {/* Notification List */}
-          <div style={{ maxHeight: '320px', overflowY: 'auto' }}>
+          {/* Notification List (Facebook Style Highlighting for Unread) */}
+          <div style={{ maxHeight: '340px', overflowY: 'auto' }}>
             {filteredNotifications.length === 0 ? (
-              <div style={{ textAlign: 'center', padding: '30px 16px' }}>
+              <div style={{ textAlign: 'center', padding: '32px 16px' }}>
                 <div 
-                  style={{ width: '32px', height: '32px', borderRadius: '50%', background: '#F1F5F9', color: '#94A3B8', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 6px auto' }}
+                  style={{ width: '34px', height: '34px', borderRadius: '50%', background: '#F1F5F9', color: '#94A3B8', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 6px auto' }}
                 >
                   <Bell size={16} />
                 </div>
-                <strong style={{ fontSize: '12.5px', color: '#0F172A', display: 'block', marginBottom: '2px' }}>لا توجد إشعارات جديدة</strong>
-                <small style={{ fontSize: '10.5px', color: '#64748B' }}>تمت متابعة واعتماد جميع الحالات بنجاح.</small>
+                <strong style={{ fontSize: '12.5px', color: '#0F172A', display: 'block', marginBottom: '2px' }}>لا توجد إشعارات</strong>
+                <small style={{ fontSize: '10.5px', color: '#64748B' }}>تمت مراجعة واعتماد جميع الإشعارات بنجاح.</small>
               </div>
             ) : (
               filteredNotifications.map((item) => {
                 const IconComponent = item.icon || Bell;
+                const isUnread = !item.isRead;
 
                 return (
                   <div
@@ -348,44 +351,45 @@ export default function NotificationsDropdown() {
                     onClick={() => handleNotificationClick(item)}
                     style={{
                       cursor: 'pointer',
-                      background: !item.isRead ? '#F8FAFC' : '#FFFFFF',
-                      borderBottom: '1px solid #F1F5F9',
-                      padding: '8px 12px',
+                      background: isUnread ? '#EFF6FF' : '#FFFFFF',
+                      borderBottom: isUnread ? '1px solid #DBEAFE' : '1px solid #F1F5F9',
+                      padding: '10px 14px',
                       display: 'flex',
-                      alignItems: 'flex-start',
-                      gap: '8px',
+                      alignItems: 'center',
+                      gap: '10px',
                       transition: 'background 0.15s ease'
                     }}
-                    onMouseEnter={(e) => (e.currentTarget.style.background = '#F1F5F9')}
-                    onMouseLeave={(e) => (e.currentTarget.style.background = !item.isRead ? '#F8FAFC' : '#FFFFFF')}
+                    onMouseEnter={(e) => (e.currentTarget.style.background = isUnread ? '#DBEAFE' : '#F8FAFC')}
+                    onMouseLeave={(e) => (e.currentTarget.style.background = isUnread ? '#EFF6FF' : '#FFFFFF')}
                   >
+                    {/* Notification Icon Badge */}
                     <div 
                       style={{ 
-                        width: '26px', 
-                        height: '26px', 
-                        borderRadius: '5px',
-                        background: '#F1F5F9', 
-                        border: '1px solid #E2E8F0',
-                        color: '#0F172A',
+                        width: '30px', 
+                        height: '30px', 
+                        borderRadius: '6px',
+                        background: isUnread ? '#DBEAFE' : '#F1F5F9', 
+                        border: isUnread ? '1px solid #BFDBFE' : '1px solid #E2E8F0',
+                        color: isUnread ? '#1D4ED8' : '#64748B',
                         display: 'flex',
                         alignItems: 'center',
                         justifyContent: 'center',
-                        flexShrink: 0,
-                        marginTop: '1px'
+                        flexShrink: 0
                       }}
                     >
-                      <IconComponent size={13} />
+                      <IconComponent size={14} />
                     </div>
 
+                    {/* Notification Text Content */}
                     <div style={{ flex: 1, minWidth: 0 }}>
-                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1px' }}>
-                        <strong style={{ fontSize: '12px', color: '#0F172A', fontWeight: !item.isRead ? 800 : 600 }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2px' }}>
+                        <strong style={{ fontSize: '12.5px', color: '#0F172A', fontWeight: isUnread ? 800 : 600 }}>
                           {item.title}
                         </strong>
-                        <span style={{ fontSize: '9.5px', color: '#94A3B8' }}>{item.time}</span>
+                        <span style={{ fontSize: '10px', color: '#94A3B8' }}>{item.time}</span>
                       </div>
 
-                      <p style={{ fontSize: '11px', color: '#64748B', margin: '0 0 4px 0', lineHeight: 1.35 }}>
+                      <p style={{ fontSize: '11px', color: isUnread ? '#334155' : '#64748B', margin: '0 0 4px 0', lineHeight: 1.35 }}>
                         {item.body}
                       </p>
 
@@ -396,13 +400,28 @@ export default function NotificationsDropdown() {
                             <span>{item.actionLabel}</span>
                           </span>
                         ) : (
-                          <span style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', color: '#475569', fontSize: '9.5px', padding: '1px 5px', borderRadius: '3px', fontWeight: 600, display: 'inline-flex', alignItems: 'center', gap: '3px' }}>
+                          <span style={{ background: isUnread ? '#DBEAFE' : '#F8FAFC', border: isUnread ? '1px solid #BFDBFE' : '1px solid #E2E8F0', color: isUnread ? '#1E40AF' : '#475569', fontSize: '9.5px', padding: '1px 5px', borderRadius: '3px', fontWeight: 700, display: 'inline-flex', alignItems: 'center', gap: '3px' }}>
                             <Clock size={9} />
                             <span>{item.actionLabel}</span>
                           </span>
                         )}
                       </div>
                     </div>
+
+                    {/* Facebook Blue Unread Dot */}
+                    {isUnread && (
+                      <span 
+                        style={{ 
+                          width: '8px', 
+                          height: '8px', 
+                          borderRadius: '50%', 
+                          background: '#2563EB', 
+                          flexShrink: 0,
+                          boxShadow: '0 0 0 2px rgba(37, 99, 235, 0.2)'
+                        }} 
+                        title="غير مقروء"
+                      />
+                    )}
                   </div>
                 );
               })

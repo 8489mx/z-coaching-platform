@@ -481,7 +481,7 @@ export default function ClientOnboardingForm() {
                           }}
                         >
                           <span>{tool.label}</span>
-                          <span style={{ fontSize: '0.85rem' }}>{isSelected ? '✓' : '+'}</span>
+                          <span style={{ fontSize: '0.85rem' }}>{isSelected ? '' : '+'}</span>
                         </button>
                       </div>
                     );
@@ -557,7 +557,7 @@ export default function ClientOnboardingForm() {
                       }}
                     >
                       <span>{cond.label}</span>
-                      <span>{isSelected ? '✓' : '+'}</span>
+                      <span>{isSelected ? '' : '+'}</span>
                     </button>
                   </div>
                 );

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { 
   CheckCircle2, 
   MessageCircle, 
@@ -29,386 +29,482 @@ import {
   Target,
   Clock,
   Filter,
-  Check
+  Check,
+  Dumbbell,
+  Droplets,
+  Trophy,
+  Sparkles
 } from 'lucide-react';
 import AdminLayout from '../components/layout/AdminLayout';
 import { PageHeader } from '@/shared/components/page-header';
 import { FormSection } from '@/shared/components/form-section';
 
-// 10 Realistic Multi-Client Mock Check-ins (Scalable Queue)
-const INITIAL_CHECKINS = [
-  {
-    id: 'CHK_104_W4',
+import { SIMULATED_CLIENTS_MATRIX } from '../data/simulatedClientsMatrix';
+
+// Dynamically Generated Deep Simulation Check-ins for All 15 Cases
+export const INITIAL_CHECKINS = SIMULATED_CLIENTS_MATRIX.map(sc => {
+  const latest = sc.latest_checkin;
+  const history = sc.history_weeks;
+  const prevEntry = history.length > 1 ? history[history.length - 2] : history[0];
+  const curEntry = history[history.length - 1];
+
+  return {
+    id: `CHK_${sc.client_code}_W${curEntry.week}`,
     client: {
-      id: 'CL_104',
-      name: 'أحمد محمود العوضي',
-      code: '104',
-      package: 'MAX',
-      phone: '01018017523',
+      id: `CL_${sc.client_code}`,
+      name: sc.full_name,
+      code: sc.client_code,
+      package: sc.package_tier === 'max' ? 'MAX' : 'ELITE',
+      package_name: sc.package_name,
+      phone: sc.phone_number,
       country: { name: 'مصر' },
-      target_goal: 'تنشيف وبناء كتلة عضلية صافية'
+      gender: sc.gender,
+      goal_type: sc.primary_goal.toUpperCase(),
+      target_goal: sc.goal_label,
+      start_weight: sc.start_weight,
+      target_weight: sc.primary_goal === 'fat_loss' ? (sc.start_weight - 10) : (sc.start_weight + 5)
     },
-    week_number: 4,
-    submission_date: 'اليوم، 09:30 ص',
+    week_number: curEntry.week,
+    checkin_number: history.length > 1 ? (history.length - 1) : 1,
+    submission_date: 'اليوم، 10:30 ص',
+    history: history,
     metrics: {
-      previous_weight: 85.0,
-      current_weight: 84.1,
-      weight_change: -0.9,
-      waist_previous: 87.5,
-      waist_current: 86.5,
-      waist_change: -1.0,
-      adherence: 95,
-      workouts_completed: 4,
-      workouts_target: 4,
-      daily_steps_avg: 10400
+      previous_weight: prevEntry.weight,
+      current_weight: curEntry.weight,
+      weight_change: latest.weight_change,
+      waist_previous: prevEntry.waist,
+      waist_current: curEntry.waist,
+      waist_change: latest.waist_change,
+      adherence: curEntry.adherence,
+      workouts_completed: latest.workouts_completed,
+      workouts_target: latest.workouts_target,
+      daily_steps_avg: latest.daily_steps,
+      strength_trend: latest.weight_change >= 0 ? 'INCREASED' : 'MAINTAINED',
+      strength_note: 'أداء مستقر ومحكوم',
+      off_plan_meals: curEntry.adherence < 90 ? 1 : 0,
+      water_liters: 3.5
     },
     biofeedback: {
-      energy: 8,
-      sleep: 7.5,
-      hunger: 7,
-      recovery: 8.5,
-      digestion: 'ممتاز وطبيعي'
+      energy: latest.energy,
+      sleep: latest.sleep,
+      hunger: latest.hunger,
+      recovery: latest.recovery,
+      stress_level: latest.stress,
+      digestion_status: latest.digestion,
+      cycle_phase: null
     },
-    client_notes: 'الأسبوع كان ممتاز جداً والأوزان في التمرين زادت (وصلت 90 كجم بنش بريس)، بس حسيت بجوع خفيف بعد تمرين الخميس والجمعة بالليل، وشرب المياه كان حوالي 3.5 لتر يومياً.',
+    reflections: {
+      nsv_note: 'استقرار تام في مقاسات الجسم والراحة الفسيولوجية.',
+      struggle_note: sc.persona_story
+    },
+    client_notes: latest.client_notes,
     ai_analysis: {
-      recommendation: 'نزول مثالي بمعدل 0.9 كجم (في نطاق 1% من وزن الجسم). للحفاظ على الكتلة العضلية والتحكم في الجوع الليلي بعد أيام التمرين العالي، ينصح بتثبيت السعرات عند 2,150 سعرة مع زيادة الكارب المعقد بمقدار 20g حول توقيت التمرين.',
-      status_badge: 'استجابة أيضية ممتازة',
-      warning: 'تنبيه سريري: المشترك أبلغ عن جوع ليلي؛ ينصح بتأخير موعد وجبة العشاء الغنية بالبروتين البطيء.'
+      recommendation: latest.ai_recommendation,
+      status_badge: latest.status_badge,
+      warning: sc.status === 'EXPIRING_SOON' ? 'تنبيه: الاشتراك ينتهي قريباً؛ يرجى تأكيد التجديد.' : null
     },
     baseline_macros: {
-      calories: 2150,
-      protein: 175,
-      carbs: 210,
-      fats: 55
-    },
-    suggested_reply: 'عاش يا أحمد! أداء بطولي الأسبوع ده ونزول 0.9 كجم مع زيادة الأوزان في التمرين دي علامة ممتازة إننا بنحرق دهون وبنبني عضل. بخصوص الجوع بعد التمرين؛ رحلتلك 20 جم كارب لوجبة بعد التمرين وثبتلك السعرات عشان تحافظ على نفس الحرق العالي. كمل بنفس القوة يا بطل!'
-  },
-  {
-    id: 'CHK_001_W2',
-    client: {
-      id: 'CL_001',
-      name: 'مازن الشناوي',
-      code: '1',
-      package: 'ELITE',
-      phone: '0101184157',
-      country: { name: 'مصر' },
-      target_goal: 'إعادة تشكيل الجسم (Body Recomp)'
-    },
-    week_number: 2,
-    submission_date: 'اليوم، 11:15 ص',
-    metrics: {
-      previous_weight: 78.8,
-      current_weight: 78.4,
-      weight_change: -0.4,
-      waist_previous: 83.5,
-      waist_current: 83.0,
-      waist_change: -0.5,
-      adherence: 88,
-      workouts_completed: 3,
-      workouts_target: 4,
-      daily_steps_avg: 8200
-    },
-    biofeedback: {
-      energy: 7,
-      sleep: 6,
-      hunger: 4,
-      recovery: 7,
-      digestion: 'جيد مع انتفاخ بسيط'
-    },
-    client_notes: 'ملتزم بالوجبات تماماً وشهيتي مظبوطة، بس ضغط الشغل خلاني فوت تمرين يوم الثلاثاء ونومي كان متقطع 5 ساعات بس كل يوم.',
-    ai_analysis: {
-      recommendation: 'معدل النزول متوازن (-0.4 كجم)، ومعدل الشبع مستقر. التحدي الأساسي هو جودة النوم واستمرارية تمرين الأرجل. ينصح بتثبيت السعرات الحالية والتركيز على تنظيم أوقات النوم ومغنيسيوم جلايسينات.',
-      status_badge: 'توازن واستقرار',
-      warning: 'تنبيه: قلة النوم (6/10) قد ترفع هرمون الكورتيزول وتؤخر استشفاء العضلات.'
-    },
-    baseline_macros: {
-      calories: 1950,
-      protein: 160,
-      carbs: 180,
-      fats: 50
-    },
-    suggested_reply: 'أهلاً يا مازن، نزول 400 جم والتزامك بالأكل ممتاز جداً. اللي محتاجين نركز عليه الأسبوع ده هو النوم وتثبيت 4 أيام التمرين بدون غياب. الخطة مستمرة على نفس الماكروز وهنتابع تطور محيط الخصر الأسبوع القادم!'
-  },
-  {
-    id: 'CHK_016_W6',
-    client: {
-      id: 'CL_016',
-      name: 'ميزون الألفي',
-      code: '16',
-      package: 'MAX',
-      phone: '01099887766',
-      country: { name: 'مصر' },
-      target_goal: 'خسارة دهون الحوض والبطن'
-    },
-    week_number: 6,
-    submission_date: 'أمس، 08:45 م',
-    metrics: {
-      previous_weight: 68.2,
-      current_weight: 68.2,
-      weight_change: 0.0,
-      waist_previous: 73.5,
-      waist_current: 72.0,
-      waist_change: -1.5,
-      adherence: 98,
-      workouts_completed: 4,
-      workouts_target: 4,
-      daily_steps_avg: 11600
-    },
-    biofeedback: {
-      energy: 9,
-      sleep: 8.5,
-      hunger: 5,
-      recovery: 9,
-      digestion: 'ممتاز جداً'
-    },
-    client_notes: 'الميزان ثابت بقاله أسبوعين بس اللبس وسع جداً وشكل البطن والوسط فرق كتير وواضح في الصور ومقاس الخصر نزل سم ونص كاملين!',
-    ai_analysis: {
-      recommendation: 'إعادة تشكيل جسم نموذجية (Body Recomposition): ثبات الوزن ناتج عن بناء نسيج عضلي مع خسارة دهون ملحوظة (نزول 1.5 سم محيط خصر). يُوصى بعدم خفض السعرات لتجنب إبطاء الحرق والاستمرار على الخطة.',
-      status_badge: 'إعادة تشكيل مثالية',
-      warning: 'ملاحظة سريرية: لا تقم بخفض السعرات؛ القياسات المترية تؤكد استمرار خسارة الدهون الصافية.'
-    },
-    baseline_macros: {
-      calories: 1750,
+      calories: 2000,
       protein: 140,
-      carbs: 165,
-      fats: 45
-    },
-    suggested_reply: 'عاش يا ميزون! متقلقيش خالص من ثبات الميزان؛ نزول 1.5 سم في محيط الخصر مع وسع اللبس ده دليل قاطع إنك بتبني عضل صافي وبتحرقي دهون في نفس الوقت. هنفضل على نفس السعرات عشان نحافظ على معدل حرقك العالي. استمري بنفس الحماس!'
-  },
-  {
-    id: 'CHK_088_W3',
-    client: {
-      id: 'CL_088',
-      name: 'عمر خالد السعيد',
-      code: '88',
-      package: 'MAX',
-      phone: '01122334455',
-      country: { name: 'مصر' },
-      target_goal: 'تنشيف سريع مع الحفاظ على القوة'
-    },
-    week_number: 3,
-    submission_date: 'أمس، 06:10 م',
-    metrics: {
-      previous_weight: 92.4,
-      current_weight: 91.2,
-      weight_change: -1.2,
-      waist_previous: 95.0,
-      waist_current: 93.8,
-      waist_change: -1.2,
-      adherence: 92,
-      workouts_completed: 4,
-      workouts_target: 4,
-      daily_steps_avg: 12000
-    },
-    biofeedback: {
-      energy: 6.5,
-      sleep: 7,
-      hunger: 8,
-      recovery: 7.5,
-      digestion: 'طبيعي'
-    },
-    client_notes: 'النزول سريع ومبسوط جداً بالنتيجة، بس طاقتي في آخر جولات التمرين كانت بتقل شوية وحاسس بإرهاق عام.',
-    ai_analysis: {
-      recommendation: 'نزول متسارع (-1.2 كجم). لتفادي هبوط الطاقة والإجهاد العصبي، ينصح بإضافة وجبة إعادة تغذية (Refeed) بزيادة 50g كارب في يوم تمرين الأرجل.',
-      status_badge: 'نزول سريع يتطلب تدعيم',
-      warning: 'تنبيه: معدل الجوع 8/10 يستدعي زيادة الألياف والكارب البطيء لتجنب الشراهة.'
-    },
-    baseline_macros: {
-      calories: 2200,
-      protein: 185,
       carbs: 220,
       fats: 60
     },
-    suggested_reply: 'ألف مبروك النزول القوي يا عمر، نزول 1.2 كجم في أسبوع ده إنجاز ممتاز! عشان نحافظ على طاقتك في الجيم، ضفتلك وجبة ريفيد كارب يوم تمرين الأرجل عشان نشحن الجليكوجين. استمر يا وحش!'
-  },
-  {
-    id: 'CHK_042_W5',
-    client: {
-      id: 'CL_042',
-      name: 'ياسمين عبد الرحمن',
-      code: '42',
-      package: 'ELITE',
-      phone: '01233445566',
-      country: { name: 'مصر' },
-      target_goal: 'شد ونحت القوام وزيادة اللياقة'
-    },
-    week_number: 5,
-    submission_date: 'اليوم، 08:00 ص',
-    metrics: {
-      previous_weight: 64.5,
-      current_weight: 63.9,
-      weight_change: -0.6,
-      waist_previous: 70.0,
-      waist_current: 69.2,
-      waist_change: -0.8,
-      adherence: 96,
-      workouts_completed: 4,
-      workouts_target: 4,
-      daily_steps_avg: 9800
-    },
-    biofeedback: {
-      energy: 8.5,
-      sleep: 8,
-      hunger: 5,
-      recovery: 8,
-      digestion: 'ممتاز'
-    },
-    client_notes: 'ملتزمة بكل تفاصيل الدايت والتمرين ومرتاحة جداً مع المواعيد الجديدة، شكراً كوتش على المتابعة.',
-    ai_analysis: {
-      recommendation: 'استجابة فيسيولوجية مثالية ومعدل نزول صحي 600 جم مع ثبات الطاقة والنوم. الاستمرار على نفس الخطة الحالية بدون تعديل.',
-      status_badge: 'تطور منتظم ومثالي',
-      warning: null
-    },
-    baseline_macros: {
-      calories: 1650,
-      protein: 130,
-      carbs: 155,
-      fats: 42
-    },
-    suggested_reply: 'ممتازة جداً يا ياسمين! التزامك 96% ونزول 600 جم مع هبوط محيط الخصر دي النتيجة النموذجية اللي بندور عليها. خطتنا ماشية بالساعة ومكملين على نفس الأرقام الأسبوع ده!'
-  },
-  {
-    id: 'CHK_019_W8',
-    client: {
-      id: 'CL_019',
-      name: 'كريم الدسوقي',
-      code: '19',
-      package: 'MAX',
-      phone: '01055667788',
-      country: { name: 'مصر' },
-      target_goal: 'كسر ثبات الوزن واستكمال التنشيف'
-    },
-    week_number: 8,
-    submission_date: 'أمس، 10:20 م',
-    metrics: {
-      previous_weight: 81.5,
-      current_weight: 80.7,
-      weight_change: -0.8,
-      waist_previous: 85.0,
-      waist_current: 84.0,
-      waist_change: -1.0,
-      adherence: 90,
-      workouts_completed: 4,
-      workouts_target: 4,
-      daily_steps_avg: 11000
-    },
-    biofeedback: {
-      energy: 8,
-      sleep: 7,
-      hunger: 6,
-      recovery: 7.5,
-      digestion: 'جيد'
-    },
-    client_notes: 'بعد تعديل الكارب الأسبوع اللي فات الميزان نزل 800 جم بعد ثبات أسبوعين، والتمرين كان قوي جداً.',
-    ai_analysis: {
-      recommendation: 'تم كسر مرحلة الثبات بنجاح بعد إعادة تدوير الكاربوهيدرات. ينصح بتثبيت السعرات الحالية لمدة أسبوعين إضافيين قبل أي خفض جديد.',
-      status_badge: 'كسر ثبات ناجح',
-      warning: null
-    },
-    baseline_macros: {
-      calories: 2050,
-      protein: 170,
-      carbs: 200,
-      fats: 50
-    },
-    suggested_reply: 'عاش يا كريم، كسرنا الثبات ونزلنا 800 جم زي ما خططنا تماماً. هنثبت على الأرقام دي الأسبوع الحالي عشان نضمن استمرار النزول بدون التأثير على الكتلة العضلية.'
-  },
-  {
-    id: 'CHK_055_W1',
-    client: {
-      id: 'CL_055',
-      name: 'مصطفى كامل رضوان',
-      code: '55',
-      package: 'ELITE',
-      phone: '01199881122',
-      country: { name: 'مصر' },
-      target_goal: 'بداية برنامج خسارة دهون وتحسين اللياقة'
-    },
-    week_number: 1,
-    submission_date: 'اليوم، 12:00 م',
-    metrics: {
-      previous_weight: 98.0,
-      current_weight: 96.5,
-      weight_change: -1.5,
-      waist_previous: 102.0,
-      waist_current: 100.5,
-      waist_change: -1.5,
-      adherence: 100,
-      workouts_completed: 4,
-      workouts_target: 4,
-      daily_steps_avg: 9000
-    },
-    biofeedback: {
-      energy: 8,
-      sleep: 8,
-      hunger: 5,
-      recovery: 7,
-      digestion: 'ممتاز'
-    },
-    client_notes: 'أول أسبوع عدى بسلاسة والتزمت بالجرامات بالحرف وحاسس بخفة وطاقة أفضل بكتير.',
-    ai_analysis: {
-      recommendation: 'نزول أسبوع أول ممتاز يتضمن سوائل محتبسة وبداية تفريغ دهون. الالتزام 100%. الاستمرار على نفس الخطة لاختبار معدل الحرق الحقيقي للأسبوع الثاني.',
-      status_badge: 'انطلاقة قوية للأسبوع الأول',
-      warning: null
-    },
-    baseline_macros: {
-      calories: 2300,
-      protein: 190,
-      carbs: 230,
-      fats: 65
-    },
-    suggested_reply: 'بداية ولا أروع يا درش! نزول 1.5 كجم في أول أسبوع والتزام 100% دي بداية البطل. مكملين بنفس الخطة عشان نثبت النتايج وندخل في حرق الدهون الصافي الأسبوع الجاي!'
-  },
-  {
-    id: 'CHK_073_W4',
-    client: {
-      id: 'CL_073',
-      name: 'نوران حسام الدين',
-      code: '73',
-      package: 'MAX',
-      phone: '01044332211',
-      country: { name: 'مصر' },
-      target_goal: 'تنشيف دهون عامة مع مراعاة إصابة الركبة'
-    },
-    week_number: 4,
-    submission_date: 'اليوم، 10:45 ص',
-    metrics: {
-      previous_weight: 71.0,
-      current_weight: 70.5,
-      weight_change: -0.5,
-      waist_previous: 76.0,
-      waist_current: 75.2,
-      waist_change: -0.8,
-      adherence: 94,
-      workouts_completed: 3,
-      workouts_target: 4,
-      daily_steps_avg: 8500
-    },
-    biofeedback: {
-      energy: 7.5,
-      sleep: 7,
-      hunger: 4,
-      recovery: 7,
-      digestion: 'طبيعي'
-    },
-    client_notes: 'الدايت ممتاز بس حسيت بوجع خفيف في صابونة الركبة الشمال في تمرين السكوات يوم الأربعاء، فبدلت السكوات بجهاز الليج بريس.',
-    ai_analysis: {
-      recommendation: 'نزول 0.5 كجم مستقر. ينصح باستبدال السكوات الحر بتمارين السلسلة المغلقة وتفادي الزوايا الحادة، مع الاستمرار على نفس السعرات.',
-      status_badge: 'تنبيه أمان ميكانيكي',
-      warning: 'تنبيه إصابة: إجهاد بالركبة اليسرى؛ ينصح باستبعاد الـ Barbell Squats وتفعيل تمارين الثبات.'
-    },
-    baseline_macros: {
-      calories: 1700,
-      protein: 135,
-      carbs: 160,
-      fats: 45
-    },
-    suggested_reply: 'عاش يا نوران على النزول، وتصرفك بتعديل السكوات كان صح جداً. عدلتلك جدول التمرين للأسبوع القادم باستبعاد السكوات الحر والتركيز على Leg Press بزاوية مريحة للركبة مع الحفاظ على الدايت بدون تغيير.'
+    suggested_reply: `أهلاً يا ${sc.full_name.split(' ')[0]}، عاش جداً على الالتزام والتطور المستمر. ${latest.ai_recommendation} كمل بنفس القوة!`
+  };
+});
+
+// =========================================================================
+// CLEAN, MINIMAL PROGRESS CHART (Z COACHING SIGNATURE STYLE)
+// =========================================================================
+function ProgressTrendChart({ history = [], isMaxTier = false, targetWeight = null, client = {} }) {
+  const [activeTab, setActiveTab] = useState('weight'); // 'weight' | 'waist' | 'adherence'
+  const [hoveredIdx, setHoveredIdx] = useState(null);
+
+  if (!history || history.length === 0) return null;
+
+  const colorPrimary = isMaxTier ? '#C4952D' : '#0284C7';
+
+  const startPoint = history[0];
+  const startWeightVal = client.start_weight || startPoint.weight;
+  const targetWeightVal = targetWeight || client.target_weight || (startWeightVal - 6);
+
+  // Chart data extraction based on activeTab
+  const data = history.map((item, index) => {
+    let val = item.weight;
+    let unit = 'كجم';
+    let label = 'الوزن';
+    if (activeTab === 'waist') {
+      val = item.waist;
+      unit = 'سم';
+      label = 'محيط الخصر';
+    } else if (activeTab === 'adherence') {
+      val = item.adherence;
+      unit = '%';
+      label = 'الالتزام';
+    }
+    return {
+      index,
+      week: item.week,
+      label: item.week === 0 ? 'البداية' : `أسبوع ${item.week}`,
+      value: val,
+      unit,
+      metricLabel: label,
+      date: item.date,
+      diff: item.diff,
+      raw: item
+    };
+  });
+
+  const values = data.map(d => d.value);
+  const minVal = Math.min(...values);
+  const maxVal = Math.max(...values);
+  const range = maxVal - minVal;
+  const yPad = range === 0 ? 2.5 : Math.max(1.8, range * 0.6);
+  const yMin = Math.max(0, minVal - yPad);
+  const yMax = maxVal + yPad;
+
+  // SVG setup with generous left and top margin so badges never touch Y-axis labels
+  const svgWidth = 720;
+  const svgHeight = 190;
+  const padLeft = 115;  // Substantial space: points start at 115, badge starts at 82, Y-axis text is at 36
+  const padRight = 45;
+  const padTop = 52;
+  const padBottom = 30;
+  const chartW = svgWidth - padLeft - padRight;
+  const chartH = svgHeight - padTop - padBottom;
+
+  const points = data.map((d, i) => {
+    const x = data.length === 1 ? padLeft + chartW / 2 : padLeft + (i / (data.length - 1)) * chartW;
+    const y = padTop + chartH - ((d.value - yMin) / (yMax - yMin || 1)) * chartH;
+    return { ...d, x, y };
+  });
+
+  // Smooth Cubic Spline generator
+  const generateSmoothPath = (pts) => {
+    if (pts.length === 0) return '';
+    if (pts.length === 1) return `M ${pts[0].x} ${pts[0].y}`;
+    if (pts.length === 2) return `M ${pts[0].x} ${pts[0].y} L ${pts[1].x} ${pts[1].y}`;
+
+    let path = `M ${pts[0].x},${pts[0].y}`;
+    for (let i = 0; i < pts.length - 1; i++) {
+      const p0 = pts[i === 0 ? 0 : i - 1];
+      const p1 = pts[i];
+      const p2 = pts[i + 1];
+      const p3 = pts[i + 2] || p2;
+
+      const cp1x = p1.x + (p2.x - p0.x) / 5.5;
+      const cp1y = p1.y + (p2.y - p0.y) / 5.5;
+      const cp2x = p2.x - (p3.x - p1.x) / 5.5;
+      const cp2y = p2.y - (p3.y - p1.y) / 5.5;
+
+      path += ` C ${cp1x},${cp1y} ${cp2x},${cp2y} ${p2.x},${p2.y}`;
+    }
+    return path;
+  };
+
+  const linePath = generateSmoothPath(points);
+  const gradId = `clean-area-grad-${isMaxTier ? 'max' : 'elite'}-${activeTab}`;
+  const beamGradId = `clean-beam-grad-${isMaxTier ? 'max' : 'elite'}`;
+  const shadowFilterId = `clean-shadow-${isMaxTier ? 'max' : 'elite'}`;
+
+  const areaPath = points.length > 0
+    ? `${linePath} L ${points[points.length - 1].x},${padTop + chartH} L ${points[0].x},${padTop + chartH} Z`
+    : '';
+
+  // Target Goal Reference Line calculation (when in weight tab)
+  let targetY = null;
+  if (activeTab === 'weight' && targetWeightVal && targetWeightVal >= yMin && targetWeightVal <= yMax) {
+    targetY = padTop + chartH - ((targetWeightVal - yMin) / (yMax - yMin || 1)) * chartH;
   }
-];
+
+  const activeIdx = hoveredIdx !== null ? hoveredIdx : points.length - 1;
+  const activePoint = points[activeIdx] || points[points.length - 1];
+
+  return (
+    <div style={{
+      background: '#FFFFFF',
+      border: '1px solid #E2E8F0',
+      borderRadius: '8px',
+      padding: '12px 16px',
+      marginTop: '6px'
+    }}>
+      
+      {/* Header Bar: Clean Switcher & Simple Start/Target Hint */}
+      <div style={{
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        marginBottom: '8px',
+        flexWrap: 'wrap',
+        gap: '8px'
+      }}>
+        {/* Switcher Pills */}
+        <div style={{ display: 'flex', background: '#F1F5F9', padding: '2px', borderRadius: '6px', gap: '2px' }}>
+          {[
+            { id: 'weight', label: 'الوزن' },
+            { id: 'waist', label: 'محيط الخصر' },
+            { id: 'adherence', label: 'الالتزام' }
+          ].map(tab => (
+            <button
+              key={tab.id}
+              type="button"
+              onClick={() => setActiveTab(tab.id)}
+              style={{
+                height: '24px',
+                padding: '0 12px',
+                borderRadius: '4px',
+                border: 'none',
+                background: activeTab === tab.id ? colorPrimary : 'transparent',
+                color: activeTab === tab.id ? '#FFFFFF' : '#64748B',
+                fontSize: '11px',
+                fontWeight: 700,
+                cursor: 'pointer',
+                userSelect: 'none',
+                outline: 'none',
+                transition: 'background-color 0.15s ease, color 0.15s ease'
+              }}
+            >
+              {tab.label}
+            </button>
+          ))}
+        </div>
+
+        {/* Simple Clean Meta Note */}
+        <div style={{ fontSize: '11px', color: '#64748B', display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <span>البداية: <strong style={{ color: '#0F172A', fontFamily: 'JetBrains Mono' }}>{startWeightVal} كجم</strong></span>
+          <span style={{ color: '#CBD5E1' }}>•</span>
+          <span>المستهدف: <strong style={{ color: '#16A34A', fontFamily: 'JetBrains Mono' }}>{targetWeightVal} كجم</strong></span>
+        </div>
+      </div>
+
+      {/* SVG Canvas Area */}
+      <div style={{ position: 'relative', width: '100%', height: '190px', userSelect: 'none' }}>
+        <svg
+          viewBox={`0 0 ${svgWidth} ${svgHeight}`}
+          style={{ width: '100%', height: '100%', overflow: 'visible' }}
+        >
+          <defs>
+            {/* Soft Shaded Area Gradient */}
+            <linearGradient id={gradId} x1="0%" y1="0%" x2="0%" y2="100%">
+              <stop offset="0%" stopColor={colorPrimary} stopOpacity="0.25" />
+              <stop offset="65%" stopColor={colorPrimary} stopOpacity="0.04" />
+              <stop offset="100%" stopColor={colorPrimary} stopOpacity="0" />
+            </linearGradient>
+
+            {/* Vertical Light-Beam Highlight Gradient */}
+            <linearGradient id={beamGradId} x1="0%" y1="0%" x2="0%" y2="100%">
+              <stop offset="0%" stopColor={colorPrimary} stopOpacity="0.18" />
+              <stop offset="80%" stopColor={colorPrimary} stopOpacity="0.02" />
+              <stop offset="100%" stopColor={colorPrimary} stopOpacity="0" />
+            </linearGradient>
+
+            {/* Soft Card Drop Shadow for Floating Badges */}
+            <filter id={shadowFilterId} x="-20%" y="-20%" width="140%" height="150%">
+              <feDropShadow dx="0" dy="2" stdDeviation="2.5" floodColor="#0F172A" floodOpacity="0.08" />
+            </filter>
+          </defs>
+
+          {/* Horizontal Grid Lines & Y-Axis Labels (Safely isolated on the left) */}
+          {[0, 0.33, 0.66, 1].map((pct, i) => {
+            const y = padTop + chartH * pct;
+            const gridVal = (yMax - pct * (yMax - yMin)).toFixed(activeTab === 'adherence' ? 0 : 1);
+            return (
+              <g key={i}>
+                <line
+                  x1={45}
+                  y1={y}
+                  x2={svgWidth - padRight}
+                  y2={y}
+                  stroke="#F1F5F9"
+                  strokeWidth="1"
+                  strokeDasharray={pct === 1 ? 'none' : '3 3'}
+                />
+                <text
+                  x={36}
+                  y={y + 3.5}
+                  textAnchor="end"
+                  fontSize="9.5"
+                  fill="#94A3B8"
+                  fontFamily="JetBrains Mono, Cairo"
+                  fontWeight="600"
+                >
+                  {gridVal}
+                </text>
+              </g>
+            );
+          })}
+
+          {/* Target Goal Line if in weight view */}
+          {targetY !== null && (
+            <g>
+              <line
+                x1={45}
+                y1={targetY}
+                x2={svgWidth - padRight}
+                y2={targetY}
+                stroke="#10B981"
+                strokeWidth="1.2"
+                strokeDasharray="4 4"
+                opacity="0.8"
+              />
+              <text
+                x={svgWidth - padRight - 4}
+                y={targetY - 5}
+                textAnchor="end"
+                fontSize="9"
+                fill="#10B981"
+                fontFamily="Cairo, sans-serif"
+                fontWeight="700"
+              >
+                الهدف ({targetWeightVal} كجم)
+              </text>
+            </g>
+          )}
+
+          {/* Vertical Light-Beam Column under Active Point */}
+          {activePoint && (
+            <rect
+              x={activePoint.x - 16}
+              y={activePoint.y}
+              width="32"
+              height={padTop + chartH - activePoint.y}
+              fill={`url(#${beamGradId})`}
+              rx="4"
+            />
+          )}
+
+          {/* Area Fill under Spline */}
+          {areaPath && (
+            <path
+              d={areaPath}
+              fill={`url(#${gradId})`}
+            />
+          )}
+
+          {/* Spline Wave Curve Line */}
+          {linePath && (
+            <path
+              d={linePath}
+              fill="none"
+              stroke={colorPrimary}
+              strokeWidth="2.5"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
+          )}
+
+          {/* Points & Floating Badges */}
+          {points.map((p, i) => {
+            const isActive = i === activeIdx;
+            const badgeW = 66;
+            const badgeH = 22;
+            const badgeX = p.x - badgeW / 2;
+            const badgeY = p.y - 30;
+
+            return (
+              <g 
+                key={i} 
+                style={{ cursor: 'pointer' }}
+                onMouseEnter={() => setHoveredIdx(i)}
+                onMouseLeave={() => setHoveredIdx(null)}
+              >
+                {/* 1. Floating White Card Badge */}
+                <g filter={`url(#${shadowFilterId})`}>
+                  <rect
+                    x={badgeX}
+                    y={badgeY}
+                    width={badgeW}
+                    height={badgeH}
+                    rx="5"
+                    fill="#FFFFFF"
+                    stroke={isActive ? colorPrimary : '#E2E8F0'}
+                    strokeWidth={isActive ? '1.5' : '1'}
+                  />
+
+                  {/* Downward Pointer Triangle */}
+                  <polygon
+                    points={`${p.x - 3.5},${badgeY + badgeH} ${p.x + 3.5},${badgeY + badgeH} ${p.x},${badgeY + badgeH + 3.5}`}
+                    fill="#FFFFFF"
+                    stroke={isActive ? colorPrimary : '#E2E8F0'}
+                    strokeWidth="0.8"
+                  />
+                  <line
+                    x1={p.x - 3}
+                    y1={badgeY + badgeH}
+                    x2={p.x + 3}
+                    y2={badgeY + badgeH}
+                    stroke="#FFFFFF"
+                    strokeWidth="1.5"
+                  />
+
+                  {/* Text inside Badge */}
+                  <text
+                    x={p.x}
+                    y={badgeY + 14.5}
+                    textAnchor="middle"
+                    fontSize="10"
+                    fontFamily="JetBrains Mono, Cairo"
+                    fontWeight="700"
+                    fill={isActive ? colorPrimary : '#0F172A'}
+                  >
+                    {p.value} {p.unit}
+                  </text>
+                </g>
+
+                {/* 2. Interactive Point Dot */}
+                {isActive ? (
+                  <g>
+                    <circle
+                      cx={p.x}
+                      cy={p.y}
+                      r="5.5"
+                      fill="#FFFFFF"
+                      stroke={colorPrimary}
+                      strokeWidth="2.2"
+                    />
+                    <circle
+                      cx={p.x}
+                      cy={p.y}
+                      r="2"
+                      fill={colorPrimary}
+                    />
+                  </g>
+                ) : (
+                  <circle
+                    cx={p.x}
+                    cy={p.y}
+                    r="3.5"
+                    fill="#FFFFFF"
+                    stroke={colorPrimary}
+                    strokeWidth="1.8"
+                  />
+                )}
+
+                {/* 3. X-Axis Label under point */}
+                <text
+                  x={p.x}
+                  y={padTop + chartH + 16}
+                  textAnchor="middle"
+                  fontSize="9.5"
+                  fill={isActive ? colorPrimary : '#64748B'}
+                  fontWeight={isActive ? '700' : '600'}
+                  fontFamily="Cairo, sans-serif"
+                >
+                  {p.label}
+                </text>
+              </g>
+            );
+          })}
+        </svg>
+      </div>
+
+    </div>
+  );
+}
 
 export default function CheckinReviewDashboard() {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const [checkinList, setCheckinList] = useState(INITIAL_CHECKINS);
   const [selectedIdx, setSelectedIdx] = useState(0);
   const [searchQuery, setSearchQuery] = useState('');
@@ -418,16 +514,114 @@ export default function CheckinReviewDashboard() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [approvedCount, setApprovedCount] = useState(0);
 
+  // Read URL query params on mount or param change
+  useEffect(() => {
+    const targetCode = searchParams.get('code') || searchParams.get('client_id');
+    if (targetCode) {
+      const cleanTarget = String(targetCode).replace(/^#+/, '').trim();
+      const existingIdx = checkinList.findIndex((item) => 
+        String(item.client.code).toLowerCase() === cleanTarget.toLowerCase() ||
+        String(item.client.id).toLowerCase() === cleanTarget.toLowerCase() ||
+        String(item.id).toLowerCase() === cleanTarget.toLowerCase() ||
+        item.client.name.toLowerCase().includes(cleanTarget.toLowerCase())
+      );
+
+      if (existingIdx !== -1) {
+        setSelectedIdx(existingIdx);
+      } else {
+        // Dynamically create the new client baseline check-in (Week 0 - New Trainee)
+        const newClientEntry = {
+          id: `CHK_${cleanTarget}_W0`,
+          is_new_client: true,
+          client: {
+            id: `CL_${cleanTarget}`,
+            name: `مشترك جديد (#${cleanTarget})`,
+            code: cleanTarget,
+            package: 'MAX',
+            phone: '010XXXXXXXX',
+            country: { name: 'مصر' },
+            gender: 'MALE',
+            goal_type: 'CUTTING',
+            target_goal: 'خسارة دهون وتنشيف عضلي',
+            start_weight: 85.0,
+            target_weight: 77.0
+          },
+          week_number: 0,
+          submission_date: 'مشترك جديد (الأسبوع التأسيسي)',
+          history: [
+            { week: 0, weight: 85.0, waist: 92.0, adherence: 100, date: 'نقطة البداية', diff: 0 }
+          ],
+          metrics: {
+            previous_weight: 85.0,
+            current_weight: 85.0,
+            weight_change: 0,
+            waist_previous: 92.0,
+            waist_current: 92.0,
+            waist_change: 0,
+            adherence: 100,
+            workouts_completed: 0,
+            workouts_target: 4,
+            daily_steps_avg: 8000,
+            strength_trend: 'STABLE',
+            strength_note: 'بداية البرنامج (الأسبوع الأول)',
+            off_plan_meals: 0,
+            water_liters: 3.0
+          },
+          biofeedback: {
+            energy: 8,
+            sleep: 8,
+            hunger: 5,
+            recovery: 8,
+            stress_level: 3,
+            digestion_status: 'طبيعي وممتاز',
+            cycle_phase: null
+          },
+          reflections: {
+            nsv_note: 'المشترك في مرحلة التأسيس الأولى واستلام الخطة.',
+            struggle_note: 'بانتظار إتمام الأسبوع الأول لإجراء أول تقييم ومقارنة للوزن.'
+          },
+          client_notes: 'تم الاشتراك وتأكيد الباقة بنجاح، بانتظار استلام جدول الوجبات والتمارين للأسبوع الأول.',
+          ai_analysis: {
+            recommendation: 'مشترك جديد (الأسبوع التأسيسي): يوصى باعتماد سعرات العجز المعتدل (-350 سعرة) مع تثبيت البروتين عند 2.0 جم/كجم، وبدء أول 4 أيام تمرين تدريجياً لتقييم الاستجابة العضلية.',
+            status_badge: 'مشترك جديد - مرحلة التأسيس',
+            warning: 'ملاحظة: موعد أول تقييم أسبوعي سيكون بعد 7 أيام من بدء الخطة.'
+          },
+          baseline_macros: {
+            calories: 1950,
+            protein: 160,
+            carbs: 180,
+            fats: 50
+          },
+          suggested_reply: `أهلاً بك يا بطل في Z Coaching! تم اعتماد وتفعيل خطتك للأسبوع الأول (1950 سعرة، 160 جم بروتين، 180 جم كارب، 50 جم دهون). التزم بالوجبات ومواعيد التمرين، وموعدنا في أول تقييم أسبوعي بعد 7 أيام لنقيس التطور والنزول معاً!`
+        };
+
+        setCheckinList(prev => [newClientEntry, ...prev]);
+        setSelectedIdx(0);
+      }
+    }
+  }, [searchParams]);
+
   // Filtered Queue for search and tier
   const filteredQueue = checkinList.filter((item) => {
     if (tierFilter === 'MAX' && !item.client.package.toUpperCase().includes('MAX')) return false;
     if (tierFilter === 'ELITE' && !item.client.package.toUpperCase().includes('ELITE')) return false;
     if (!searchQuery.trim()) return true;
+
     const q = searchQuery.trim().toLowerCase().replace(/^#+/, '');
+    const cleanClientCode = String(item.client.code || '').replace(/^#+/, '').replace(/^client[-_]?/i, '');
+
+    // 1. If searching pure numbers (e.g. 12, 1, 5, #12): Match exact client code or full phone
+    if (/^\d+$/.test(q)) {
+      if (cleanClientCode === q) return true;
+      if (q.length >= 4 && item.client.phone && item.client.phone.includes(q)) return true;
+      return item.client.name.toLowerCase().includes(q);
+    }
+
+    // 2. General name / text search
     return (
       item.client.name.toLowerCase().includes(q) ||
-      String(item.client.code).includes(q) ||
-      item.client.phone.includes(q)
+      cleanClientCode === q ||
+      (item.client.phone && item.client.phone.includes(q))
     );
   });
 
@@ -503,7 +697,7 @@ export default function CheckinReviewDashboard() {
 
   return (
     <AdminLayout>
-      <div className="page-stack" dir="rtl" style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
+      <div dir="rtl" style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
         
         {/* 1. Page Header */}
         <PageHeader
@@ -621,28 +815,56 @@ export default function CheckinReviewDashboard() {
                   { id: 'ALL', label: 'الكل' },
                   { id: 'MAX', label: 'MAX' },
                   { id: 'ELITE', label: 'ELITE' }
-                ].map(t => (
-                  <button
-                    key={t.id}
-                    type="button"
-                    onClick={() => {
-                      setTierFilter(t.id);
-                      setSelectedIdx(0);
-                    }}
-                    style={{
-                      height: '24px',
-                      borderRadius: '4px',
-                      border: tierFilter === t.id ? '1px solid #0F172A' : '1px solid #E2E8F0',
-                      background: tierFilter === t.id ? '#0F172A' : '#FFFFFF',
-                      color: tierFilter === t.id ? '#FFFFFF' : '#475569',
-                      fontSize: '10.5px',
-                      fontWeight: 700,
-                      cursor: 'pointer'
-                    }}
-                  >
-                    {t.label}
-                  </button>
-                ))}
+                ].map(t => {
+                  const isSelected = tierFilter === t.id;
+                  let border = '1px solid #E2E8F0';
+                  let background = '#F8FAFC';
+                  let color = '#64748B';
+                  let shadow = 'none';
+
+                  if (isSelected) {
+                    border = '1px solid #0F172A';
+                    background = '#0F172A';
+                    color = '#FFFFFF';
+                    shadow = '0 1px 3px rgba(15, 23, 42, 0.2)';
+                  } else if (t.id === 'MAX') {
+                    border = '1px solid #E2E8F0';
+                    background = '#F8FAFC';
+                    color = '#B45309';
+                  } else if (t.id === 'ELITE') {
+                    border = '1px solid #E2E8F0';
+                    background = '#F8FAFC';
+                    color = '#0284C7';
+                  }
+
+                  return (
+                    <button
+                      key={t.id}
+                      type="button"
+                      onClick={() => {
+                        setTierFilter(t.id);
+                        setSelectedIdx(0);
+                      }}
+                      style={{
+                        height: '24px',
+                        borderRadius: '4px',
+                        border,
+                        background,
+                        color,
+                        boxShadow: shadow,
+                        fontSize: '10.5px',
+                        fontWeight: 800,
+                        fontFamily: t.id !== 'ALL' ? 'JetBrains Mono, sans-serif' : 'inherit',
+                        cursor: 'pointer',
+                        userSelect: 'none',
+                        outline: 'none',
+                        transition: 'background-color 0.15s ease, color 0.15s ease, border-color 0.15s ease'
+                      }}
+                    >
+                      {t.label}
+                    </button>
+                  );
+                })}
               </div>
             </div>
 
@@ -680,9 +902,9 @@ export default function CheckinReviewDashboard() {
                             fontFamily: 'JetBrains Mono, monospace', 
                             fontWeight: 800, 
                             fontSize: '10.5px', 
-                            background: '#F0F9FF', 
-                            border: '1px solid #BAE6FD', 
-                            color: '#0284C7', 
+                            background: '#F8FAFC', 
+                            border: '1px solid #E2E8F0', 
+                            color: isMax ? '#B45309' : '#0284C7', 
                             padding: '1px 6px', 
                             borderRadius: '4px' 
                           }}>
@@ -696,10 +918,10 @@ export default function CheckinReviewDashboard() {
                         <span style={{
                           fontSize: '10px',
                           fontWeight: 800,
-                          color: isMax ? '#C4952D' : '#0284C7',
-                          background: '#FFFFFF',
-                          padding: '1px 5px',
-                          borderRadius: '3px',
+                          color: isMax ? '#B45309' : '#0284C7',
+                          background: '#F8FAFC',
+                          padding: '1px 6px',
+                          borderRadius: '4px',
                           border: '1px solid #E2E8F0',
                           fontFamily: 'JetBrains Mono, sans-serif'
                         }}>
@@ -707,24 +929,53 @@ export default function CheckinReviewDashboard() {
                         </span>
                       </div>
 
-                      {/* Row 2: Metrics Strip */}
-                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', fontSize: '11px', color: '#475569', background: isSelected ? '#F8FAFC' : '#FFFFFF', padding: '4px 6px', borderRadius: '4px', border: '1px solid #E2E8F0' }}>
-                        <span style={{ fontFamily: 'JetBrains Mono, Cairo', fontWeight: 700, color: '#0F172A' }}>
-                          {item.metrics.current_weight} كجم
-                        </span>
+                      {/* Row 2: Metrics Strip (Clean Right-Aligned Weights + Left Checkin Info) */}
+                      <div style={{ 
+                        display: 'flex', 
+                        alignItems: 'center', 
+                        justifyContent: 'space-between', 
+                        fontSize: '11px', 
+                        color: '#475569', 
+                        background: isSelected ? '#F8FAFC' : '#FFFFFF', 
+                        padding: '4px 8px', 
+                        borderRadius: '5px', 
+                        border: '1px solid #E2E8F0'
+                      }}>
+                        {/* Right: Current Weight + Delta */}
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                          <span style={{ fontFamily: 'JetBrains Mono, Cairo', fontWeight: 700, color: '#0F172A' }}>
+                            {item.metrics.current_weight} كجم
+                          </span>
 
-                        <span style={{ 
-                          fontFamily: 'JetBrains Mono, Cairo', 
-                          fontWeight: 800, 
-                          color: item.metrics.weight_change < 0 ? '#16A34A' : (item.metrics.weight_change === 0 ? '#0284C7' : '#DC2626')
-                        }}>
-                          {item.metrics.weight_change < 0 ? '-' : (item.metrics.weight_change === 0 ? '' : '+')}
-                          {Math.abs(item.metrics.weight_change)} كجم
-                        </span>
+                          <span style={{ 
+                            fontFamily: 'JetBrains Mono, Cairo', 
+                            fontWeight: 800, 
+                            color: item.metrics.weight_change < 0 ? '#16A34A' : (item.metrics.weight_change === 0 ? '#0284C7' : '#DC2626')
+                          }}>
+                            {item.metrics.weight_change < 0 ? '-' : (item.metrics.weight_change === 0 ? '' : '+')}
+                            {Math.abs(item.metrics.weight_change)} كجم
+                          </span>
+                        </div>
 
-                        <span style={{ fontSize: '10px', color: '#64748B', fontWeight: 600 }}>
-                          الأسبوع {item.week_number}
-                        </span>
+                        {/* Left: Checkin Number & Week */}
+                        {(() => {
+                          const chkNumber = item.checkin_number || ((item.history && item.history.length > 1) ? (item.history.length - 1) : item.week_number);
+                          return (
+                            <span style={{ 
+                              fontSize: '10px', 
+                              color: '#64748B', 
+                              fontWeight: 600, 
+                              display: 'inline-flex', 
+                              alignItems: 'center', 
+                              gap: '3px',
+                              whiteSpace: 'nowrap'
+                            }}>
+                              <span>متابعة {chkNumber}</span>
+                              <span style={{ color: '#CBD5E1' }}>•</span>
+                              <span>الأسبوع {item.week_number}</span>
+                            </span>
+                          );
+                        })()}
                       </div>
                     </div>
                   );
@@ -738,134 +989,236 @@ export default function CheckinReviewDashboard() {
               ========================================================================= */}
           <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
             
-            {/* Header Identity Card */}
-            <div style={{ background: '#FFFFFF', border: '1px solid #E2E8F0', borderRadius: '10px', padding: '12px 16px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '12px', flexWrap: 'wrap' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                <span style={{ fontFamily: 'JetBrains Mono, monospace', fontWeight: 800, fontSize: '12px', background: '#F0F9FF', border: '1px solid #BAE6FD', color: '#0284C7', padding: '2px 8px', borderRadius: '4px' }}>
-                  #{activeCheckin.client.code}
-                </span>
-                <div>
-                  <h4 style={{ margin: 0, fontSize: '14px', fontWeight: 800, color: '#0F172A' }}>
-                    {activeCheckin.client.name}
-                  </h4>
-                  <small style={{ fontSize: '11px', color: '#64748B' }}>
-                    الهدف: {activeCheckin.client.target_goal} • إرسال: {activeCheckin.submission_date}
-                  </small>
+            {/* 1. Header Identity Card & Goal Badge */}
+            {(() => {
+              const goalType = activeCheckin.client.goal_type || 'CUTTING';
+              const goalConfig = {
+                CUTTING: { label: 'تنشيف وحرق دهون', bg: '#F8FAFC', border: '#CBD5E1', color: '#0F172A' },
+                BULKING: { label: 'تضخيم وبناء عضلي', bg: '#F8FAFC', border: '#CBD5E1', color: '#0F172A' },
+                RECOMP: { label: 'إعادة تشكيل (Recomp)', bg: '#F8FAFC', border: '#CBD5E1', color: '#0F172A' }
+              }[goalType] || { label: 'تنشيف', bg: '#F8FAFC', border: '#CBD5E1', color: '#0F172A' };
+              const activeChkNumber = activeCheckin.checkin_number || ((activeCheckin.history && activeCheckin.history.length > 1) ? (activeCheckin.history.length - 1) : activeCheckin.week_number);
+
+              return (
+                <div style={{ background: '#FFFFFF', border: '1px solid #E2E8F0', borderRadius: '10px', padding: '12px 16px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '12px', flexWrap: 'wrap' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                    <span style={{ 
+                      fontFamily: 'JetBrains Mono, monospace', 
+                      fontWeight: 800, 
+                      fontSize: '12px', 
+                      background: '#F8FAFC', 
+                      border: '1px solid #E2E8F0', 
+                      color: isMaxTier ? '#B45309' : '#0284C7', 
+                      padding: '2px 8px', 
+                      borderRadius: '4px' 
+                    }}>
+                      #{activeCheckin.client.code}
+                    </span>
+                    <div>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                        <h4 style={{ margin: 0, fontSize: '14px', fontWeight: 800, color: '#0F172A' }}>
+                          {activeCheckin.client.name}
+                        </h4>
+                        <span style={{ 
+                          fontSize: '11px', 
+                          fontWeight: 700, 
+                          background: goalConfig.bg, 
+                          border: `1px solid ${goalConfig.border}`, 
+                          color: goalConfig.color, 
+                          padding: '1px 8px', 
+                          borderRadius: '4px'
+                        }}>
+                          {goalConfig.label}
+                        </span>
+                      </div>
+                      <small style={{ fontSize: '11px', color: '#64748B', display: 'block', marginTop: '2px' }}>
+                        الهدف: {activeCheckin.client.target_goal} • إرسال: {activeCheckin.submission_date}
+                      </small>
+                    </div>
+                  </div>
+
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                    <span style={{ fontSize: '11px', background: '#F8FAFC', border: '1px solid #E2E8F0', color: isMaxTier ? '#B45309' : '#0284C7', padding: '2px 8px', borderRadius: '4px', fontWeight: 800, fontFamily: 'JetBrains Mono, sans-serif' }}>
+                      {activeCheckin.client.package}
+                    </span>
+                    <span style={{ fontSize: '11px', background: '#F1F5F9', border: '1px solid #CBD5E1', color: '#0F172A', padding: '2px 8px', borderRadius: '4px', fontWeight: 700, display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+                      <span>المتابعة #{activeChkNumber}</span>
+                      <span style={{ color: '#94A3B8' }}>•</span>
+                      <span>الأسبوع {activeCheckin.week_number}</span>
+                    </span>
+                  </div>
                 </div>
-              </div>
+              );
+            })()}
 
-              <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                <span style={{ fontSize: '11px', background: '#F8FAFC', border: '1px solid #E2E8F0', color: isMaxTier ? '#C4952D' : '#0284C7', padding: '2px 8px', borderRadius: '4px', fontWeight: 800, fontFamily: 'JetBrains Mono, sans-serif' }}>
-                  {activeCheckin.client.package}
-                </span>
-                <span style={{ fontSize: '11px', background: '#F1F5F9', border: '1px solid #CBD5E1', color: '#0F172A', padding: '2px 8px', borderRadius: '4px', fontWeight: 700 }}>
-                  الأسبوع {activeCheckin.week_number}
-                </span>
-              </div>
-            </div>
+            {/* 2. Numeric & Vital Indicators (Clean & Streamlined) */}
+            {(() => {
+              const goalType = activeCheckin.client.goal_type || 'CUTTING';
+              let deltaEvaluation = '';
+              let deltaColor = '#16A34A';
 
-            {/* Numeric & Vital Indicators */}
-            <FormSection
-              title="المؤشرات الرقمية والقياسات الحيوية"
-              description="تطور الوزن ومحيط الخصر ومعدل الالتزام مقارنة بالأسبوع الماضي."
-            >
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '10px', marginTop: '6px' }}>
-                
-                {/* Current Weight */}
-                <div style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', padding: '10px 12px', borderRadius: '8px' }}>
-                  <span style={{ fontSize: '11px', color: '#64748B', display: 'block', marginBottom: '2px' }}>الوزن الحالي</span>
-                  <strong style={{ fontSize: '17px', color: '#0F172A', fontFamily: 'JetBrains Mono, Cairo' }}>
-                    {activeCheckin.metrics.current_weight} <span style={{ fontSize: '11px', fontWeight: 600 }}>كجم</span>
-                  </strong>
-                  <small style={{ fontSize: '10px', color: '#94A3B8', display: 'block', marginTop: '2px' }}>
-                    السابق: {activeCheckin.metrics.previous_weight} كجم
-                  </small>
-                </div>
+              if (goalType === 'CUTTING') {
+                if (activeCheckin.metrics.weight_change < 0) {
+                  deltaEvaluation = 'نزول دهون ممتاز';
+                  deltaColor = '#16A34A';
+                } else if (activeCheckin.metrics.weight_change === 0) {
+                  deltaEvaluation = 'ثبات متوازن';
+                  deltaColor = '#0284C7';
+                } else {
+                  deltaEvaluation = 'زيادة بالوزن';
+                  deltaColor = '#DC2626';
+                }
+              } else if (goalType === 'BULKING') {
+                if (activeCheckin.metrics.weight_change > 0) {
+                  deltaEvaluation = 'زيادة عضلية ممتازة';
+                  deltaColor = '#16A34A';
+                } else if (activeCheckin.metrics.weight_change === 0) {
+                  deltaEvaluation = 'ثبات';
+                  deltaColor = '#D97706';
+                } else {
+                  deltaEvaluation = 'نزول غير مرغوب بالتضخيم';
+                  deltaColor = '#DC2626';
+                }
+              } else {
+                if (activeCheckin.metrics.weight_change === 0 && activeCheckin.metrics.waist_change < 0) {
+                  deltaEvaluation = 'إعادة تشكيل ممتازة';
+                  deltaColor = '#16A34A';
+                } else if (activeCheckin.metrics.weight_change < 0) {
+                  deltaEvaluation = 'نزول دهون تدريجي';
+                  deltaColor = '#0284C7';
+                } else {
+                  deltaEvaluation = 'زيادة عضلية متزنة';
+                  deltaColor = '#16A34A';
+                }
+              }
 
-                {/* Weight Delta */}
-                <div style={{ 
-                  background: activeCheckin.metrics.weight_change < 0 ? '#F0FDF4' : (activeCheckin.metrics.weight_change === 0 ? '#F8FAFC' : '#FEF2F2'), 
-                  border: activeCheckin.metrics.weight_change < 0 ? '1px solid #BBF7D0' : (activeCheckin.metrics.weight_change === 0 ? '1px solid #E2E8F0' : '1px solid #FECACA'), 
-                  padding: '10px 12px', 
-                  borderRadius: '8px' 
-                }}>
-                  <span style={{ fontSize: '11px', color: activeCheckin.metrics.weight_change < 0 ? '#166534' : '#475569', display: 'block', marginBottom: '2px' }}>فرق الوزن (Δ)</span>
-                  <strong style={{ 
-                    fontSize: '17px', 
-                    color: activeCheckin.metrics.weight_change < 0 ? '#16A34A' : (activeCheckin.metrics.weight_change === 0 ? '#0284C7' : '#DC2626'), 
-                    fontFamily: 'JetBrains Mono, Cairo', 
+              return (
+                <FormSection
+                  title="المؤشرات الرقمية والقياسات الحيوية"
+                  description="تطور الوزن ومحيط الخصر ومعدل الالتزام مقارنة بالأسبوع الماضي."
+                >
+                  <div dir="rtl" style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '10px', marginTop: '6px' }}>
+                    
+                    {/* Current Weight */}
+                    <div style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', padding: '10px 12px', borderRadius: '8px' }}>
+                      <span style={{ fontSize: '11px', color: '#64748B', display: 'block', marginBottom: '2px', fontFamily: 'Cairo, sans-serif' }}>الوزن الحالي</span>
+                      <strong style={{ fontSize: '17px', color: '#0F172A', fontFamily: 'JetBrains Mono, Cairo, sans-serif' }}>
+                        {activeCheckin.metrics.current_weight} <span style={{ fontSize: '11px', fontWeight: 600, fontFamily: 'Cairo, sans-serif' }}>كجم</span>
+                      </strong>
+                      <small style={{ fontSize: '10px', color: '#94A3B8', display: 'block', marginTop: '2px', fontFamily: 'Cairo, sans-serif' }}>
+                        السابق: {activeCheckin.metrics.previous_weight} كجم
+                      </small>
+                    </div>
+
+                    {/* Weight Delta */}
+                    <div style={{ 
+                      background: deltaColor === '#16A34A' ? '#F0FDF4' : (deltaColor === '#0284C7' ? '#F0F9FF' : '#FEF2F2'), 
+                      border: deltaColor === '#16A34A' ? '1px solid #BBF7D0' : (deltaColor === '#0284C7' ? '1px solid #BAE6FD' : '1px solid #FECACA'), 
+                      padding: '10px 12px', 
+                      borderRadius: '8px' 
+                    }}>
+                      <span style={{ fontSize: '11px', color: '#475569', display: 'block', marginBottom: '2px', fontFamily: 'Cairo, sans-serif' }}>فرق الوزن (Δ)</span>
+                      <strong style={{ 
+                        fontSize: '17px', 
+                        color: deltaColor, 
+                        fontFamily: 'JetBrains Mono, Cairo, sans-serif', 
+                        display: 'flex', 
+                        alignItems: 'center', 
+                        gap: '2px' 
+                      }}>
+                        {activeCheckin.metrics.weight_change < 0 ? <TrendingDown size={16} /> : (activeCheckin.metrics.weight_change === 0 ? <Minus size={16} /> : <TrendingUp size={16} />)}
+                        <span dir="ltr">{activeCheckin.metrics.weight_change > 0 ? `+${activeCheckin.metrics.weight_change}` : activeCheckin.metrics.weight_change} كجم</span>
+                      </strong>
+                      <small style={{ fontSize: '10px', color: deltaColor, display: 'block', marginTop: '2px', fontWeight: 700, fontFamily: 'Cairo, sans-serif' }}>
+                        {deltaEvaluation}
+                      </small>
+                    </div>
+
+                    {/* Waist Metric */}
+                    <div style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', padding: '10px 12px', borderRadius: '8px' }}>
+                      <span style={{ fontSize: '11px', color: '#64748B', display: 'block', marginBottom: '2px', fontFamily: 'Cairo, sans-serif' }}>محيط الخصر</span>
+                      <strong style={{ fontSize: '17px', color: '#0F172A', fontFamily: 'JetBrains Mono, Cairo, sans-serif' }}>
+                        {activeCheckin.metrics.waist_current} <span style={{ fontSize: '11px', fontWeight: 600, fontFamily: 'Cairo, sans-serif' }}>سم</span>
+                      </strong>
+                      <small style={{ fontSize: '10px', color: '#16A34A', display: 'block', marginTop: '2px', fontWeight: 700, fontFamily: 'Cairo, sans-serif' }}>
+                        {activeCheckin.metrics.waist_change} سم فرق مقاس
+                      </small>
+                    </div>
+
+                    {/* Adherence */}
+                    <div style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', padding: '10px 12px', borderRadius: '8px' }}>
+                      <span style={{ fontSize: '11px', color: '#64748B', display: 'block', marginBottom: '2px', fontFamily: 'Cairo, sans-serif' }}>الالتزام والتمارين</span>
+                      <strong style={{ fontSize: '17px', color: '#0F172A', fontFamily: 'JetBrains Mono, Cairo, sans-serif' }}>
+                        {activeCheckin.metrics.adherence}%
+                      </strong>
+                      <small style={{ fontSize: '10px', color: '#64748B', display: 'block', marginTop: '2px', fontFamily: 'Cairo, sans-serif' }}>
+                        {activeCheckin.metrics.workouts_completed} من {activeCheckin.metrics.workouts_target} تمارين
+                      </small>
+                    </div>
+                  </div>
+
+                  {/* Compact Unified Biofeedback Summary Bar */}
+                  <div dir="rtl" style={{ 
+                    marginTop: '10px', 
+                    background: '#F8FAFC', 
+                    border: '1px solid #E2E8F0', 
+                    borderRadius: '6px', 
+                    padding: '8px 12px', 
                     display: 'flex', 
                     alignItems: 'center', 
-                    gap: '2px' 
+                    justifyContent: 'space-between', 
+                    flexWrap: 'wrap', 
+                    gap: '10px', 
+                    fontSize: '11.5px' 
                   }}>
-                    {activeCheckin.metrics.weight_change < 0 ? <TrendingDown size={16} /> : (activeCheckin.metrics.weight_change === 0 ? <Minus size={16} /> : <TrendingUp size={16} />)}
-                    <span dir="ltr">{activeCheckin.metrics.weight_change > 0 ? `+${activeCheckin.metrics.weight_change}` : activeCheckin.metrics.weight_change} كجم</span>
-                  </strong>
-                  <small style={{ fontSize: '10px', color: '#64748B', display: 'block', marginTop: '2px' }}>
-                    {activeCheckin.metrics.weight_change < 0 ? 'نزول صحي ممتاز' : (activeCheckin.metrics.weight_change === 0 ? 'ثبات متوازن' : 'زيادة في الوزن')}
-                  </small>
-                </div>
+                    <div>
+                      <span style={{ color: '#64748B' }}>الطاقة:</span> <strong style={{ color: '#0F172A' }}>{activeCheckin.biofeedback.energy}/10</strong>
+                    </div>
+                    <div>
+                      <span style={{ color: '#64748B' }}>النوم:</span> <strong style={{ color: '#0F172A' }}>{activeCheckin.biofeedback.sleep}/10</strong>
+                    </div>
+                    <div>
+                      <span style={{ color: '#64748B' }}>الجوع:</span> <strong style={{ color: activeCheckin.biofeedback.hunger > 6 ? '#B45309' : '#0F172A' }}>{activeCheckin.biofeedback.hunger}/10</strong>
+                    </div>
+                    <div>
+                      <span style={{ color: '#64748B' }}>الهضم:</span> <strong style={{ color: '#0F172A' }}>{activeCheckin.biofeedback.digestion_status || 'طبيعي'}</strong>
+                    </div>
+                    <div>
+                      <span style={{ color: '#64748B' }}>أوزان التمرين:</span> <strong style={{ color: '#0F172A' }}>{activeCheckin.metrics.strength_trend === 'INCREASED' ? 'زيادة' : (activeCheckin.metrics.strength_trend === 'DECREASED' ? 'تراجع' : 'ثبات')}</strong>
+                    </div>
+                    <div>
+                      <span style={{ color: '#64748B' }}>الخطوات:</span> <strong style={{ color: '#0F172A', fontFamily: 'JetBrains Mono, Cairo, sans-serif' }}>{activeCheckin.metrics.daily_steps_avg.toLocaleString()}</strong>
+                    </div>
+                    <div>
+                      <span style={{ color: '#64748B' }}>الماء:</span> <strong style={{ color: '#0F172A' }}>{activeCheckin.metrics.water_liters || 3.0} لتر</strong>
+                    </div>
+                    <div>
+                      <span style={{ color: '#64748B' }}>وجبات خارج الخطة:</span> <strong style={{ color: '#0F172A' }}>{activeCheckin.metrics.off_plan_meals || 0}</strong>
+                    </div>
+                    {activeCheckin.biofeedback.cycle_phase && (
+                      <div style={{ color: '#9D174D', fontWeight: 600 }}>
+                        <span>الدورة:</span> {activeCheckin.biofeedback.cycle_phase}
+                      </div>
+                    )}
+                  </div>
+                </FormSection>
+              );
+            })()}
 
-                {/* Waist Metric */}
-                <div style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', padding: '10px 12px', borderRadius: '8px' }}>
-                  <span style={{ fontSize: '11px', color: '#64748B', display: 'block', marginBottom: '2px' }}>محيط الخصر</span>
-                  <strong style={{ fontSize: '17px', color: '#0F172A', fontFamily: 'JetBrains Mono, Cairo' }}>
-                    {activeCheckin.metrics.waist_current} <span style={{ fontSize: '11px', fontWeight: 600 }}>سم</span>
-                  </strong>
-                  <small style={{ fontSize: '10px', color: '#16A34A', display: 'block', marginTop: '2px', fontWeight: 700 }}>
-                    {activeCheckin.metrics.waist_change} سم فرق مقاس
-                  </small>
-                </div>
-
-                {/* Adherence */}
-                <div style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', padding: '10px 12px', borderRadius: '8px' }}>
-                  <span style={{ fontSize: '11px', color: '#64748B', display: 'block', marginBottom: '2px' }}>الالتزام والتمارين</span>
-                  <strong style={{ fontSize: '17px', color: '#0F172A', fontFamily: 'JetBrains Mono, Cairo' }}>
-                    {activeCheckin.metrics.adherence}%
-                  </strong>
-                  <small style={{ fontSize: '10px', color: '#64748B', display: 'block', marginTop: '2px' }}>
-                    {activeCheckin.metrics.workouts_completed} من {activeCheckin.metrics.workouts_target} تمارين
-                  </small>
-                </div>
-              </div>
-
-              {/* Biofeedback Strip */}
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '8px', marginTop: '10px' }}>
-                <div style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', padding: '8px 10px', borderRadius: '6px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                  <span style={{ fontSize: '11px', color: '#475569' }}>الطاقة:</span>
-                  <strong style={{ fontSize: '11.5px', color: '#0F172A' }}>{activeCheckin.biofeedback.energy} / 10</strong>
-                </div>
-
-                <div style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', padding: '8px 10px', borderRadius: '6px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                  <span style={{ fontSize: '11px', color: '#475569' }}>النوم:</span>
-                  <strong style={{ fontSize: '11.5px', color: '#0F172A' }}>{activeCheckin.biofeedback.sleep} / 10</strong>
-                </div>
-
-                <div style={{ 
-                  background: activeCheckin.biofeedback.hunger > 6 ? '#FFFBEB' : '#F8FAFC', 
-                  border: activeCheckin.biofeedback.hunger > 6 ? '1px solid #FDE68A' : '1px solid #E2E8F0', 
-                  padding: '8px 10px', 
-                  borderRadius: '6px', 
-                  display: 'flex', 
-                  justifyContent: 'space-between', 
-                  alignItems: 'center' 
-                }}>
-                  <span style={{ fontSize: '11px', color: activeCheckin.biofeedback.hunger > 6 ? '#B45309' : '#475569' }}>الجوع:</span>
-                  <strong style={{ fontSize: '11.5px', color: activeCheckin.biofeedback.hunger > 6 ? '#B45309' : '#0F172A' }}>
-                    {activeCheckin.biofeedback.hunger} / 10 {activeCheckin.biofeedback.hunger > 6 ? '(مرتفع)' : ''}
-                  </strong>
-                </div>
-
-                <div style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', padding: '8px 10px', borderRadius: '6px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                  <span style={{ fontSize: '11px', color: '#475569' }}>الخطوات:</span>
-                  <strong style={{ fontSize: '11.5px', color: '#0F172A', fontFamily: 'JetBrains Mono' }}>
-                    {activeCheckin.metrics.daily_steps_avg.toLocaleString()}
-                  </strong>
-                </div>
-              </div>
+            {/* 3. Multi-Week Visual Progress Trajectory Curve */}
+            <FormSection
+              title="منحنى التطور الأسبوعي"
+              description="تتبع مسار الوزن ومحيط الخصر ومعدل الالتزام عبر الأسابيع."
+            >
+              <ProgressTrendChart
+                history={activeCheckin.history || []}
+                isMaxTier={isMaxTier}
+                targetWeight={activeCheckin.client.target_weight}
+                client={activeCheckin.client}
+              />
             </FormSection>
 
-            {/* Photos & Notes */}
+            {/* 4. Photos & Weekly Client Reflections */}
             <FormSection
               title="مقارنة صور التطور ورسالة المتدرب"
               description="المقارنة البصرية وملاحظات المشترك حول أدائه وصعوبات الأسبوع."
@@ -884,10 +1237,30 @@ export default function CheckinReviewDashboard() {
                 </div>
               </div>
 
+              {/* Weekly Client Reflections: Non-Scale Victory & Struggle */}
+              {activeCheckin.reflections && (
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px', marginTop: '10px' }}>
+                  <div style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', padding: '8px 10px', borderRadius: '6px' }}>
+                    <span style={{ fontSize: '11px', color: '#64748B', fontWeight: 700, display: 'block', marginBottom: '2px' }}>أبرز إنجاز هذا الأسبوع:</span>
+                    <p style={{ fontSize: '11.5px', color: '#0F172A', margin: 0, lineHeight: 1.45 }}>
+                      {activeCheckin.reflections.nsv_note}
+                    </p>
+                  </div>
+
+                  <div style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', padding: '8px 10px', borderRadius: '6px' }}>
+                    <span style={{ fontSize: '11px', color: '#64748B', fontWeight: 700, display: 'block', marginBottom: '2px' }}>أبرز صعوبة أو تحدٍ:</span>
+                    <p style={{ fontSize: '11.5px', color: '#0F172A', margin: 0, lineHeight: 1.45 }}>
+                      {activeCheckin.reflections.struggle_note}
+                    </p>
+                  </div>
+                </div>
+              )}
+
+              {/* Client Message */}
               <div style={{ marginTop: '10px', background: '#F8FAFC', border: '1px solid #E2E8F0', padding: '10px 12px', borderRadius: '6px' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '3px' }}>
                   <MessageCircle size={13} color="#475569" />
-                  <strong style={{ fontSize: '11.5px', color: '#475569' }}>رسالة المتدرب للكوتش:</strong>
+                  <strong style={{ fontSize: '11.5px', color: '#475569' }}>رسالة وملاحظات المتدرب:</strong>
                 </div>
                 <p style={{ fontSize: '12px', color: '#0F172A', margin: 0, lineHeight: 1.5, fontWeight: 500 }}>
                   "{activeCheckin.client_notes}"
@@ -895,7 +1268,7 @@ export default function CheckinReviewDashboard() {
               </div>
             </FormSection>
 
-            {/* AI Engine Recommendation Card */}
+            {/* 5. AI Engine Recommendation Card */}
             <FormSection
               title="تحليل وتوصيات المحرك السريري الذكي"
               description="التوصيات التكيفية المبنية على الدلتا الحسابية وسرعة الأيض واستجابة المتدرب."
@@ -928,7 +1301,10 @@ export default function CheckinReviewDashboard() {
                         cursor: 'pointer',
                         display: 'inline-flex',
                         alignItems: 'center',
-                        gap: '4px'
+                        gap: '4px',
+                        userSelect: 'none',
+                        outline: 'none',
+                        transition: 'background-color 0.15s ease'
                       }}
                       title="استعادة الأرقام والرد المقترح تلقائياً"
                     >
@@ -951,7 +1327,160 @@ export default function CheckinReviewDashboard() {
               </div>
             </FormSection>
 
-            {/* 2-Column Subgrid: Macros & Coach Approval */}
+            {/* 6. 1-Click Quick Decision Presets Bar for Coach */}
+            <div style={{ 
+              background: '#FFFFFF', 
+              border: '1px solid #E2E8F0', 
+              borderRadius: '8px', 
+              padding: '10px 14px', 
+              display: 'flex', 
+              alignItems: 'center', 
+              justifyContent: 'space-between', 
+              gap: '8px', 
+              flexWrap: 'wrap' 
+            }}>
+              <span style={{ fontSize: '12px', fontWeight: 700, color: '#0F172A' }}>قرارات سريعة:</span>
+
+              <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flexWrap: 'wrap' }}>
+                {/* Preset 1: Keep Plan */}
+                <button
+                  type="button"
+                  onClick={() => {
+                    setMacroAdjustments(activeCheckin.baseline_macros);
+                    setCoachReply(`عاش يا ${activeCheckin.client.name.split(' ')[0]}! مستواك الأسبوع ده ممتاز ونتايجك ماشية على الخطة بالظبط. هنثبت على نفس السعرات والماكروز عشان نواصل التقدم بنفس الزخم. كمل بنفس القوة يا بطل!`);
+                  }}
+                  style={{
+                    height: '26px',
+                    padding: '0 10px',
+                    fontSize: '11px',
+                    fontWeight: 700,
+                    borderRadius: '4px',
+                    cursor: 'pointer',
+                    userSelect: 'none',
+                    outline: 'none',
+                    background: '#F8FAFC',
+                    color: '#0F172A',
+                    border: '1px solid #CBD5E1',
+                    transition: 'background-color 0.15s ease'
+                  }}
+                  title="تثبيت السعرات والماكروز الحالية"
+                >
+                  تثبيت الخطة
+                </button>
+
+                {/* Preset 2: Deficit -150 */}
+                <button
+                  type="button"
+                  onClick={() => {
+                    const p = activeCheckin.baseline_macros.protein;
+                    const c = Math.max(100, activeCheckin.baseline_macros.carbs - 25);
+                    const f = Math.max(35, activeCheckin.baseline_macros.fats - 5);
+                    const newCals = (p * 4) + (c * 4) + (f * 9);
+                    setMacroAdjustments({ calories: newCals, protein: p, carbs: c, fats: f });
+                    setCoachReply(`أداء ممتاز يا ${activeCheckin.client.name.split(' ')[0]}! بناءً على قراءة الأسبوع، عملنا عجز تدريجي بسيط بمقدار 150 سعرة (خصم 25 جم كارب و 5 جم دهون) لتنشيط معدل الحرق واستمرار نزول الدهون بدون التأثير على طاقتك. ركز على شرب الماء والخطوات!`);
+                  }}
+                  style={{
+                    height: '26px',
+                    padding: '0 10px',
+                    fontSize: '11px',
+                    fontWeight: 700,
+                    borderRadius: '4px',
+                    cursor: 'pointer',
+                    userSelect: 'none',
+                    outline: 'none',
+                    background: '#F8FAFC',
+                    color: '#0F172A',
+                    border: '1px solid #CBD5E1',
+                    transition: 'background-color 0.15s ease'
+                  }}
+                  title="خصم 150 سعرة لكسر الثبات وتنشيط الحرق"
+                >
+                  عجز (-150 سعرة)
+                </button>
+
+                {/* Preset 3: Surplus +150 */}
+                <button
+                  type="button"
+                  onClick={() => {
+                    const p = activeCheckin.baseline_macros.protein + 5;
+                    const c = activeCheckin.baseline_macros.carbs + 30;
+                    const f = activeCheckin.baseline_macros.fats;
+                    const newCals = (p * 4) + (c * 4) + (f * 9);
+                    setMacroAdjustments({ calories: newCals, protein: p, carbs: c, fats: f });
+                    setCoachReply(`عاش يا ${activeCheckin.client.name.split(' ')[0]}! عشان نغذي البناء العضلي ونرفع كفاءة الطاقة في الجيم، زودنالك 150 سعرة إضافية (30 جم كارب و 5 جم بروتين). استغل الطاقة دي في كسر أوزان جديدة في التمرين!`);
+                  }}
+                  style={{
+                    height: '26px',
+                    padding: '0 10px',
+                    fontSize: '11px',
+                    fontWeight: 700,
+                    borderRadius: '4px',
+                    cursor: 'pointer',
+                    userSelect: 'none',
+                    outline: 'none',
+                    background: '#F8FAFC',
+                    color: '#0F172A',
+                    border: '1px solid #CBD5E1',
+                    transition: 'background-color 0.15s ease'
+                  }}
+                  title="زيادة 150 سعرة لدعم البناء أو التضخيم"
+                >
+                  زيادة (+150 سعرة)
+                </button>
+
+                {/* Preset 4: Refeed Day */}
+                <button
+                  type="button"
+                  onClick={() => {
+                    setCoachReply(`أداء بطولي يا ${activeCheckin.client.name.split(' ')[0]}! ضفتلك يوم إعادة شحن (Refeed Day) بزيادة 80 جم كارب مع تقليل الدهون في يوم تمرينك الأثقل، عشان نشحن مخازن الجليكوجين ونحفز هرمون اللبتين ومعدل الأيض. التزم بالوجبة حول التمرين يا وحش!`);
+                  }}
+                  style={{
+                    height: '26px',
+                    padding: '0 10px',
+                    fontSize: '11px',
+                    fontWeight: 700,
+                    borderRadius: '4px',
+                    cursor: 'pointer',
+                    userSelect: 'none',
+                    outline: 'none',
+                    background: '#F8FAFC',
+                    color: '#0F172A',
+                    border: '1px solid #CBD5E1',
+                    transition: 'background-color 0.15s ease'
+                  }}
+                  title="تفعيل بروتوكول يوم إعادة التغذية Refeed"
+                >
+                  يوم Refeed
+                </button>
+
+                {/* Preset 5: Deload Week */}
+                <button
+                  type="button"
+                  onClick={() => {
+                    setCoachReply(`ممتاز جداً يا ${activeCheckin.client.name.split(' ')[0]}! الأسبوع ده هيكون أسبوع استشفاء وتفريغ أحمال (Deload Week)؛ هنقلل مجموعات التمرين بنسبة 40% مع الحفاظ على أوزانك وثبتنا السعرات عند مستوى الصيانة، عشان نريح المفاصل والجهاز العصبي ونرجع الأسبوع اللي بعده بأعلى طاقة!`);
+                  }}
+                  style={{
+                    height: '26px',
+                    padding: '0 10px',
+                    fontSize: '11px',
+                    fontWeight: 700,
+                    borderRadius: '4px',
+                    cursor: 'pointer',
+                    userSelect: 'none',
+                    outline: 'none',
+                    background: '#F8FAFC',
+                    color: '#0F172A',
+                    border: '1px solid #CBD5E1',
+                    transition: 'background-color 0.15s ease'
+                  }}
+                  title="تفعيل أسبوع تفريغ الأحمال والاستشفاء"
+                >
+                  أسبوع Deload
+                </button>
+              </div>
+            </div>
+
+            {/* 7. 2-Column Subgrid: Macros & Coach Approval */}
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '14px', alignItems: 'start' }}>
               
               {/* Macro Adjustment Panel */}
@@ -959,78 +1488,298 @@ export default function CheckinReviewDashboard() {
                 title="تعديل الماكروز للأسبوع القادم"
                 description="ضبط السعرات والجرامات اليومية المعتمدة للبرنامج."
               >
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginTop: '6px' }}>
-                  
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: '#F8FAFC', border: '1px solid #E2E8F0', padding: '6px 10px', borderRadius: '6px' }}>
-                    <span style={{ fontSize: '12px', fontWeight: 700, color: '#0F172A' }}>السعرات الكلية</span>
-                    <input
-                      type="number"
-                      value={macroAdjustments.calories}
-                      onChange={(e) => setMacroAdjustments({ ...macroAdjustments, calories: Number(e.target.value) })}
-                      style={{ width: '85px', height: '30px', borderRadius: '5px', border: '1px solid #CBD5E1', textAlign: 'center', fontWeight: 800, fontSize: '13px', color: '#0F172A', outline: 'none', background: '#FFFFFF' }}
-                    />
-                  </div>
+                {(() => {
+                  const pKcal = (macroAdjustments.protein || 0) * 4;
+                  const cKcal = (macroAdjustments.carbs || 0) * 4;
+                  const fKcal = (macroAdjustments.fats || 0) * 9;
+                  const calcTotal = pKcal + cKcal + fKcal;
+                  const pPct = calcTotal > 0 ? Math.round((pKcal / calcTotal) * 100) : 0;
+                  const cPct = calcTotal > 0 ? Math.round((cKcal / calcTotal) * 100) : 0;
+                  const fPct = calcTotal > 0 ? Math.round((fKcal / calcTotal) * 100) : 0;
 
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: '#F8FAFC', border: '1px solid #E2E8F0', padding: '6px 10px', borderRadius: '6px' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                      <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#DC2626', display: 'inline-block' }} />
-                      <span style={{ fontSize: '12px', fontWeight: 600, color: '#475569' }}>البروتين (g)</span>
+                  return (
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginTop: '6px', fontFamily: 'Cairo, sans-serif' }}>
+                      
+                      {/* 1. Daily Total Calories Hero Box */}
+                      <div 
+                        style={{ 
+                          background: '#F8FAFC', 
+                          border: '1px solid #E2E8F0', 
+                          borderRadius: '8px', 
+                          padding: '8px 12px',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'space-between'
+                        }}
+                      >
+                        <div>
+                          <strong style={{ fontSize: '12px', color: '#0F172A', display: 'block' }}>السعرات الكلية اليومية</strong>
+                          <span style={{ fontSize: '10.5px', color: '#64748B' }}>المستهدف المعتمد للبرنامج</span>
+                        </div>
+
+                        {/* Total Calories Integrated Input */}
+                        <div 
+                          style={{ 
+                            display: 'flex', 
+                            alignItems: 'center', 
+                            background: '#FFFFFF', 
+                            border: '1px solid #CBD5E1', 
+                            borderRadius: '6px', 
+                            padding: '2px 8px', 
+                            height: '34px',
+                            boxSizing: 'border-box'
+                          }}
+                        >
+                          <input
+                            type="number"
+                            value={macroAdjustments.calories || ''}
+                            onChange={(e) => setMacroAdjustments({ ...macroAdjustments, calories: Number(e.target.value) })}
+                            style={{ 
+                              width: '65px', 
+                              border: 'none', 
+                              outline: 'none', 
+                              background: 'transparent',
+                              textAlign: 'center', 
+                              fontWeight: 800, 
+                              fontSize: '15px', 
+                              color: '#0F172A', 
+                              fontFamily: 'JetBrains Mono, Cairo, sans-serif',
+                              padding: 0,
+                              MozAppearance: 'textfield'
+                            }}
+                          />
+                          <span style={{ fontSize: '11px', fontWeight: 700, color: '#94A3B8', marginRight: '4px', userSelect: 'none' }}>سعرة</span>
+                        </div>
+                      </div>
+
+                      {/* 2. 3-Column Macro Grams & Percentage Cards (Clean & Elegant) */}
+                      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '6px' }}>
+                        
+                        {/* Protein */}
+                        <div 
+                          style={{ 
+                            background: '#FFFFFF', 
+                            border: '1px solid #E2E8F0', 
+                            borderRadius: '8px', 
+                            padding: '8px 6px', 
+                            display: 'flex', 
+                            flexDirection: 'column', 
+                            alignItems: 'center', 
+                            textAlign: 'center', 
+                            gap: '5px'
+                          }}
+                        >
+                          <span style={{ fontSize: '11.5px', fontWeight: 800, color: '#0F172A' }}>البروتين</span>
+
+                          <div 
+                            style={{ 
+                              display: 'flex', 
+                              alignItems: 'center', 
+                              justifyContent: 'center',
+                              background: '#F8FAFC', 
+                              border: '1px solid #CBD5E1', 
+                              borderRadius: '6px', 
+                              padding: '2px 6px', 
+                              height: '32px',
+                              width: '100%',
+                              maxWidth: '90px',
+                              boxSizing: 'border-box'
+                            }}
+                          >
+                            <input
+                              type="number"
+                              value={macroAdjustments.protein || ''}
+                              onChange={(e) => {
+                                const val = Number(e.target.value);
+                                const newCals = (val * 4) + (macroAdjustments.carbs * 4) + (macroAdjustments.fats * 9);
+                                setMacroAdjustments({ ...macroAdjustments, protein: val, calories: newCals });
+                              }}
+                              style={{ 
+                                width: '100%', 
+                                border: 'none', 
+                                outline: 'none', 
+                                background: 'transparent',
+                                textAlign: 'center', 
+                                fontWeight: 800, 
+                                fontSize: '15px', 
+                                color: '#0F172A', 
+                                fontFamily: 'JetBrains Mono, Cairo, sans-serif',
+                                padding: 0,
+                                MozAppearance: 'textfield'
+                              }}
+                            />
+                            <span style={{ fontSize: '11px', fontWeight: 700, color: '#94A3B8', marginRight: '2px', userSelect: 'none', flexShrink: 0 }}>جم</span>
+                          </div>
+
+                          <div style={{ fontSize: '9.5px', color: '#64748B', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '3px' }}>
+                            <span style={{ fontFamily: 'JetBrains Mono, Cairo' }}>{pKcal} سعرة</span>
+                            <span style={{ color: '#CBD5E1' }}>•</span>
+                            <span style={{ color: '#0F172A', fontWeight: 800, fontFamily: 'JetBrains Mono, Cairo' }}>{pPct}%</span>
+                          </div>
+                        </div>
+
+                        {/* Carbs */}
+                        <div 
+                          style={{ 
+                            background: '#FFFFFF', 
+                            border: '1px solid #E2E8F0', 
+                            borderRadius: '8px', 
+                            padding: '8px 6px', 
+                            display: 'flex', 
+                            flexDirection: 'column', 
+                            alignItems: 'center', 
+                            textAlign: 'center', 
+                            gap: '5px'
+                          }}
+                        >
+                          <span style={{ fontSize: '11.5px', fontWeight: 800, color: '#0F172A' }}>الكارب</span>
+
+                          <div 
+                            style={{ 
+                              display: 'flex', 
+                              alignItems: 'center', 
+                              justifyContent: 'center',
+                              background: '#F8FAFC', 
+                              border: '1px solid #CBD5E1', 
+                              borderRadius: '6px', 
+                              padding: '2px 6px', 
+                              height: '32px',
+                              width: '100%',
+                              maxWidth: '90px',
+                              boxSizing: 'border-box'
+                            }}
+                          >
+                            <input
+                              type="number"
+                              value={macroAdjustments.carbs || ''}
+                              onChange={(e) => {
+                                const val = Number(e.target.value);
+                                const newCals = (macroAdjustments.protein * 4) + (val * 4) + (macroAdjustments.fats * 9);
+                                setMacroAdjustments({ ...macroAdjustments, carbs: val, calories: newCals });
+                              }}
+                              style={{ 
+                                width: '100%', 
+                                border: 'none', 
+                                outline: 'none', 
+                                background: 'transparent',
+                                textAlign: 'center', 
+                                fontWeight: 800, 
+                                fontSize: '15px', 
+                                color: '#0F172A', 
+                                fontFamily: 'JetBrains Mono, Cairo, sans-serif',
+                                padding: 0,
+                                MozAppearance: 'textfield'
+                              }}
+                            />
+                            <span style={{ fontSize: '11px', fontWeight: 700, color: '#94A3B8', marginRight: '2px', userSelect: 'none', flexShrink: 0 }}>جم</span>
+                          </div>
+
+                          <div style={{ fontSize: '9.5px', color: '#64748B', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '3px' }}>
+                            <span style={{ fontFamily: 'JetBrains Mono, Cairo' }}>{cKcal} سعرة</span>
+                            <span style={{ color: '#CBD5E1' }}>•</span>
+                            <span style={{ color: '#0F172A', fontWeight: 800, fontFamily: 'JetBrains Mono, Cairo' }}>{cPct}%</span>
+                          </div>
+                        </div>
+
+                        {/* Fats */}
+                        <div 
+                          style={{ 
+                            background: '#FFFFFF', 
+                            border: '1px solid #E2E8F0', 
+                            borderRadius: '8px', 
+                            padding: '8px 6px', 
+                            display: 'flex', 
+                            flexDirection: 'column', 
+                            alignItems: 'center', 
+                            textAlign: 'center', 
+                            gap: '5px'
+                          }}
+                        >
+                          <span style={{ fontSize: '11.5px', fontWeight: 800, color: '#0F172A' }}>الدهون</span>
+
+                          <div 
+                            style={{ 
+                              display: 'flex', 
+                              alignItems: 'center', 
+                              justifyContent: 'center',
+                              background: '#F8FAFC', 
+                              border: '1px solid #CBD5E1', 
+                              borderRadius: '6px', 
+                              padding: '2px 6px', 
+                              height: '32px',
+                              width: '100%',
+                              maxWidth: '90px',
+                              boxSizing: 'border-box'
+                            }}
+                          >
+                            <input
+                              type="number"
+                              value={macroAdjustments.fats || ''}
+                              onChange={(e) => {
+                                const val = Number(e.target.value);
+                                const newCals = (macroAdjustments.protein * 4) + (macroAdjustments.carbs * 4) + (val * 9);
+                                setMacroAdjustments({ ...macroAdjustments, fats: val, calories: newCals });
+                              }}
+                              style={{ 
+                                width: '100%', 
+                                border: 'none', 
+                                outline: 'none', 
+                                background: 'transparent',
+                                textAlign: 'center', 
+                                fontWeight: 800, 
+                                fontSize: '15px', 
+                                color: '#0F172A', 
+                                fontFamily: 'JetBrains Mono, Cairo, sans-serif',
+                                padding: 0,
+                                MozAppearance: 'textfield'
+                              }}
+                            />
+                            <span style={{ fontSize: '11px', fontWeight: 700, color: '#94A3B8', marginRight: '2px', userSelect: 'none', flexShrink: 0 }}>جم</span>
+                          </div>
+
+                          <div style={{ fontSize: '9.5px', color: '#64748B', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '3px' }}>
+                            <span style={{ fontFamily: 'JetBrains Mono, Cairo' }}>{fKcal} سعرة</span>
+                            <span style={{ color: '#CBD5E1' }}>•</span>
+                            <span style={{ color: '#0F172A', fontWeight: 800, fontFamily: 'JetBrains Mono, Cairo' }}>{fPct}%</span>
+                          </div>
+                        </div>
+
+                      </div>
+
+                      {/* 3. Reconciled Clean Status Bar (Monochrome & Elegant) */}
+                      <div 
+                        style={{ 
+                          background: '#F8FAFC', 
+                          border: '1px solid #E2E8F0', 
+                          borderRadius: '6px', 
+                          padding: '7px 12px', 
+                          display: 'flex', 
+                          justifyContent: 'space-between', 
+                          alignItems: 'center', 
+                          fontSize: '11px', 
+                          color: '#475569', 
+                          fontWeight: 700
+                        }}
+                      >
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                          <span style={{ color: '#64748B' }}>المجموع المحسوب:</span>
+                          <strong style={{ color: '#0F172A', fontSize: '12px', fontFamily: 'JetBrains Mono, Cairo' }}>
+                            {calcTotal} سعرة
+                          </strong>
+                        </div>
+
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '10.5px' }}>
+                          <span style={{ color: '#334155', fontWeight: 700 }}>بروتين {pKcal}</span>
+                          <span style={{ color: '#CBD5E1' }}>•</span>
+                          <span style={{ color: '#334155', fontWeight: 700 }}>كارب {cKcal}</span>
+                          <span style={{ color: '#CBD5E1' }}>•</span>
+                          <span style={{ color: '#334155', fontWeight: 700 }}>دهون {fKcal}</span>
+                        </div>
+                      </div>
+
                     </div>
-                    <input
-                      type="number"
-                      value={macroAdjustments.protein}
-                      onChange={(e) => {
-                        const val = Number(e.target.value);
-                        const newCals = (val * 4) + (macroAdjustments.carbs * 4) + (macroAdjustments.fats * 9);
-                        setMacroAdjustments({ ...macroAdjustments, protein: val, calories: newCals });
-                      }}
-                      style={{ width: '85px', height: '30px', borderRadius: '5px', border: '1px solid #CBD5E1', textAlign: 'center', fontWeight: 800, fontSize: '13px', color: '#0F172A', outline: 'none', background: '#FFFFFF' }}
-                    />
-                  </div>
-
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: '#F8FAFC', border: '1px solid #E2E8F0', padding: '6px 10px', borderRadius: '6px' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                      <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#2563EB', display: 'inline-block' }} />
-                      <span style={{ fontSize: '12px', fontWeight: 600, color: '#475569' }}>الكاربوهيدرات (g)</span>
-                    </div>
-                    <input
-                      type="number"
-                      value={macroAdjustments.carbs}
-                      onChange={(e) => {
-                        const val = Number(e.target.value);
-                        const newCals = (macroAdjustments.protein * 4) + (val * 4) + (macroAdjustments.fats * 9);
-                        setMacroAdjustments({ ...macroAdjustments, carbs: val, calories: newCals });
-                      }}
-                      style={{ width: '85px', height: '30px', borderRadius: '5px', border: '1px solid #CBD5E1', textAlign: 'center', fontWeight: 800, fontSize: '13px', color: '#0F172A', outline: 'none', background: '#FFFFFF' }}
-                    />
-                  </div>
-
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: '#F8FAFC', border: '1px solid #E2E8F0', padding: '6px 10px', borderRadius: '6px' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                      <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#D97706', display: 'inline-block' }} />
-                      <span style={{ fontSize: '12px', fontWeight: 600, color: '#475569' }}>الدهون الصحية (g)</span>
-                    </div>
-                    <input
-                      type="number"
-                      value={macroAdjustments.fats}
-                      onChange={(e) => {
-                        const val = Number(e.target.value);
-                        const newCals = (macroAdjustments.protein * 4) + (macroAdjustments.carbs * 4) + (val * 9);
-                        setMacroAdjustments({ ...macroAdjustments, fats: val, calories: newCals });
-                      }}
-                      style={{ width: '85px', height: '30px', borderRadius: '5px', border: '1px solid #CBD5E1', textAlign: 'center', fontWeight: 800, fontSize: '13px', color: '#0F172A', outline: 'none', background: '#FFFFFF' }}
-                    />
-                  </div>
-
-                  {/* Macro Distribution Summary */}
-                  <div style={{ marginTop: '2px', background: '#F1F5F9', padding: '6px 8px', borderRadius: '6px', display: 'flex', justifyContent: 'space-between', fontSize: '10.5px', fontWeight: 700, color: '#475569' }}>
-                    <span>P: {macroAdjustments.protein * 4} kcal</span>
-                    <span>C: {macroAdjustments.carbs * 4} kcal</span>
-                    <span>F: {macroAdjustments.fats * 9} kcal</span>
-                    <span style={{ color: '#0F172A', fontWeight: 800 }}>المجموع: {(macroAdjustments.protein * 4) + (macroAdjustments.carbs * 4) + (macroAdjustments.fats * 9)} kcal</span>
-                  </div>
-
-                </div>
+                  );
+                })()}
               </FormSection>
 
               {/* Coach Reply & Approval */}
@@ -1077,10 +1826,13 @@ export default function CheckinReviewDashboard() {
                         fontSize: '11.5px',
                         fontWeight: 700,
                         cursor: 'pointer',
+                        userSelect: 'none',
+                        outline: 'none',
                         display: 'inline-flex',
                         alignItems: 'center',
                         gap: '4px',
-                        flexShrink: 0
+                        flexShrink: 0,
+                        transition: 'background-color 0.15s ease'
                       }}
                       title="نسخ نص الرسالة"
                     >
@@ -1101,10 +1853,13 @@ export default function CheckinReviewDashboard() {
                         fontSize: '11.5px',
                         fontWeight: 700,
                         cursor: 'pointer',
+                        userSelect: 'none',
+                        outline: 'none',
                         display: 'inline-flex',
                         alignItems: 'center',
                         gap: '5px',
-                        flexShrink: 0
+                        flexShrink: 0,
+                        transition: 'background-color 0.15s ease'
                       }}
                       title="فتح واتساب مباشرة بالرسالة"
                     >
@@ -1127,12 +1882,14 @@ export default function CheckinReviewDashboard() {
                         fontSize: '12px',
                         fontWeight: 700,
                         cursor: 'pointer',
+                        userSelect: 'none',
+                        outline: 'none',
                         display: 'flex',
                         alignItems: 'center',
                         justifyContent: 'center',
                         gap: '6px',
                         boxShadow: '0 2px 6px rgba(15, 23, 42, 0.25)',
-                        transition: 'all 0.15s ease'
+                        transition: 'background-color 0.15s ease'
                       }}
                       onMouseEnter={(e) => (e.currentTarget.style.background = '#334155')}
                       onMouseLeave={(e) => (e.currentTarget.style.background = '#0F172A')}

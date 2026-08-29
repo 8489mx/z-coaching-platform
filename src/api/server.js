@@ -379,6 +379,78 @@ app.use("/api/v1/admin", adminSettingsRoutes);
 app.use("/api/v1/checkin", checkinRoutes);
 app.use("/api/v1/orders", orderRoutes);
 
+// Mobility, Stretch & Cardio Catalog API Endpoints
+app.get("/api/v1/mobility", async (req, res) => {
+  try {
+    const catalogPath = path.join(__dirname, "../data/mobility_catalog.json");
+    if (fs.existsSync(catalogPath)) {
+      const data = JSON.parse(fs.readFileSync(catalogPath, 'utf8'));
+      return res.json({ success: true, count: data.length, mobility_drills: data });
+    }
+    return res.json({ success: true, count: 0, mobility_drills: [] });
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+app.post("/api/v1/mobility", async (req, res) => {
+  try {
+    const catalogPath = path.join(__dirname, "../data/mobility_catalog.json");
+    let data = [];
+    if (fs.existsSync(catalogPath)) {
+      data = JSON.parse(fs.readFileSync(catalogPath, 'utf8'));
+    }
+    const newDrill = {
+      id: `MOB_CUSTOM_${Date.now()}`,
+      ...req.body
+    };
+    data.push(newDrill);
+    fs.writeFileSync(catalogPath, JSON.stringify(data, null, 2), 'utf8');
+    res.json({ success: true, message: 'تمت إضافة حركة المرونة بنجاح', drill: newDrill });
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+// Static Serving for Exercise Images from frontend/public
+const publicExercisesPath = path.resolve(__dirname, "../../frontend/public/exercises");
+if (fs.existsSync(publicExercisesPath)) {
+  app.use("/exercises", express.static(publicExercisesPath));
+}
+
+// Upload & Replace Exercise Image endpoint
+app.post("/api/v1/exercises/upload-image", async (req, res) => {
+  try {
+    const { exercise_id, image_index, image_base64 } = req.body;
+    if (!exercise_id || image_index === undefined || !image_base64) {
+      return res.status(400).json({ error: "exercise_id, image_index, and image_base64 are required" });
+    }
+
+    const exFolder = path.resolve(__dirname, "../../frontend/public/exercises", exercise_id);
+    if (!fs.existsSync(exFolder)) {
+      fs.mkdirSync(exFolder, { recursive: true });
+    }
+
+    const filename = `${image_index}.jpg`;
+    const targetPath = path.join(exFolder, filename);
+
+    const base64Data = image_base64.replace(/^data:image\/\w+;base64,/, "");
+    fs.writeFileSync(targetPath, Buffer.from(base64Data, "base64"));
+
+    // Also copy to dist if dist exists
+    const distExFolder = path.resolve(__dirname, "../../frontend/dist/exercises", exercise_id);
+    if (fs.existsSync(distExFolder)) {
+      fs.writeFileSync(path.join(distExFolder, filename), Buffer.from(base64Data, "base64"));
+    }
+
+    const imageUrl = `/exercises/${exercise_id}/${filename}?t=${Date.now()}`;
+    return res.status(200).json({ success: true, message: "تم حفظ الصورة بنجاح", imageUrl });
+  } catch (err) {
+    console.error("upload-image error:", err);
+    return res.status(500).json({ error: "فشل حفظ الصورة", details: err.message });
+  }
+});
+
 // 4. Production Static Frontend SPA Serving (Hostinger / All-in-One)
 if (fs.existsSync(frontendDistPath)) {
   app.use(express.static(frontendDistPath));

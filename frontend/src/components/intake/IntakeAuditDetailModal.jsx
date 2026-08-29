@@ -203,7 +203,7 @@ export default function IntakeAuditDetailModal({
     if (!clientPhone) return;
     let cleanPhone = clientPhone.replace(/\D/g, '');
     if (cleanPhone.startsWith('01')) cleanPhone = '2' + cleanPhone;
-    const msg = `مرحباً يا ${clientName}، استلمت استمارتك في Z Coaching وقمت بمراجعة بياناتك وجاري تجهيز خطتك المخصصة 🚀`;
+    const msg = `مرحباً يا ${clientName}، استلمت استمارتك في Z Coaching وقمت بمراجعة بياناتك وجاري تجهيز خطتك المخصصة`;
     window.open(`https://wa.me/${cleanPhone}?text=${encodeURIComponent(msg)}`, '_blank');
   };
 
@@ -246,9 +246,24 @@ export default function IntakeAuditDetailModal({
             <h4 style={{ margin: 0, fontSize: '13.5px', fontWeight: 800, color: '#0F172A' }}>
               مراجعة استمارة المتدرب: {clientName}
             </h4>
-            <span style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '10.5px', fontWeight: 800, background: '#F0F9FF', border: '1px solid #BAE6FD', color: '#0284C7', padding: '1px 6px', borderRadius: '4px' }}>
-              #{clientCode}
-            </span>
+            {(() => {
+              const rawPkg = submission.package_name || submission.subscription_package || '';
+              const isMax = String(rawPkg).trim().toUpperCase().includes('MAX') || String(rawPkg).includes('ماكس');
+              return (
+                <span style={{ 
+                  fontFamily: 'JetBrains Mono, monospace', 
+                  fontSize: '10.5px', 
+                  fontWeight: 800, 
+                  background: '#F8FAFC', 
+                  border: '1px solid #E2E8F0', 
+                  color: isMax ? '#B45309' : '#0284C7', 
+                  padding: '1px 6px', 
+                  borderRadius: '4px' 
+                }}>
+                  #{clientCode}
+                </span>
+              );
+            })()}
           </div>
 
           <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
@@ -258,18 +273,28 @@ export default function IntakeAuditDetailModal({
                 onClick={handleOpenWhatsApp}
                 style={{
                   padding: '3px 8px',
-                  borderRadius: '4px',
-                  border: '1px solid #22C55E',
-                  background: '#FFFFFF',
-                  color: '#166534',
+                  borderRadius: '6px',
+                  border: '1px solid #86EFAC',
+                  background: '#F0FDF4',
+                  color: '#16A34A',
                   fontSize: '11px',
                   fontWeight: 700,
                   cursor: 'pointer',
                   display: 'inline-flex',
                   alignItems: 'center',
-                  gap: '4px'
+                  gap: '4px',
+                  transition: 'all 0.15s ease'
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.background = '#DCFCE7';
+                  e.currentTarget.style.borderColor = '#4ADE80';
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.background = '#F0FDF4';
+                  e.currentTarget.style.borderColor = '#86EFAC';
                 }}
               >
+                <MessageCircle size={12} />
                 <span>واتساب</span>
               </button>
             )}

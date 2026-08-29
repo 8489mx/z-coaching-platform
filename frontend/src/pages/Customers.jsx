@@ -12,11 +12,14 @@ import {
   ExternalLink, 
   Copy, 
   Check, 
+  CheckCircle2,
   Zap,
+  Activity,
   ActivitySquare,
   X,
   CreditCard,
-  Edit3
+  Edit3,
+  ChevronDown
 } from 'lucide-react';
 import { API_BASE } from '../config/api';
 import AdminLayout from '../components/layout/AdminLayout';
@@ -29,6 +32,7 @@ export default function Customers() {
   const [phone, setPhone] = useState('');
   const [fullName, setFullName] = useState('');
   const [packageTier, setPackageTier] = useState('MAX_3_PLUS_1');
+  const [isTierDropdownOpen, setIsTierDropdownOpen] = useState(false);
   const [clients, setClients] = useState([]);
   const [loading, setLoading] = useState(true);
   const [newlyCreated, setNewlyCreated] = useState(null);
@@ -94,11 +98,21 @@ export default function Customers() {
 
   // Filter Clients
   const filteredClients = clients.filter(client => {
-    const term = searchTerm.trim().toLowerCase();
-    const matchesSearch = !term || 
-      (client.full_name && client.full_name.toLowerCase().includes(term)) ||
-      (client.phone_number && client.phone_number.includes(term)) ||
-      (client.client_code && String(client.client_code).includes(term.replace('#', '')));
+    const term = searchTerm.trim().toLowerCase().replace(/^#+/, '');
+    const cleanClientCode = String(client.client_code || client.id || '').replace(/^#+/, '').replace(/^client[-_]?/i, '');
+
+    let matchesSearch = true;
+    if (term) {
+      if (/^\d+$/.test(term)) {
+        matchesSearch = cleanClientCode === term ||
+          (term.length >= 4 && client.phone_number && client.phone_number.includes(term)) ||
+          (client.full_name && client.full_name.toLowerCase().includes(term));
+      } else {
+        matchesSearch = (client.full_name && client.full_name.toLowerCase().includes(term)) ||
+          cleanClientCode === term ||
+          (client.phone_number && client.phone_number.includes(term));
+      }
+    }
 
     const pkg = (client.subscription_package || '').toUpperCase();
     const isMax = pkg.includes('MAX');
@@ -114,15 +128,15 @@ export default function Customers() {
   const eliteCount = clients.length - maxCount;
 
   const statCards = [
-    { title: 'إجمالي المشتركين النشطين', value: clients.length, label: 'قاعدة البيانات', icon: Users },
-    { title: 'مشتركو باقة MAX', value: maxCount, label: 'متابعة أسبوعية (7 أيام)', icon: Crown },
-    { title: 'مشتركو باقة ELITE', value: eliteCount, label: 'متابعة كل 14 يوماً', icon: Sparkles },
-    { title: 'تجاوز الكوتش الإداري', value: 'مفعل', label: 'صلاحية التدخل الفوري', icon: ShieldCheck },
+    { title: 'إجمالي المشتركين', value: clients.length, unit: 'مشترك', label: 'مسجلين بالنظام', icon: Users },
+    { title: 'مشتركو باقة MAX', value: maxCount, unit: 'مشترك', label: 'متابعة أسبوعية', icon: Crown },
+    { title: 'مشتركو باقة ELITE', value: eliteCount, unit: 'مشترك', label: 'متابعة كل أسبوعين', icon: Sparkles },
+    { title: 'حالة قاعدة البيانات', value: 'نشطة', label: 'مزامنة فورية', icon: ShieldCheck },
   ];
 
   return (
     <AdminLayout>
-      <div className="page-stack" dir="rtl" style={{ display: 'flex', flexDirection: 'column', gap: '18px' }}>
+      <div dir="rtl" style={{ display: 'flex', flexDirection: 'column', gap: '18px' }}>
         
         {/* 1. Page Header */}
         <PageHeader
@@ -141,24 +155,33 @@ export default function Customers() {
                   background: '#FFFFFF',
                   border: '1px solid #E2E8F0',
                   borderRadius: '10px',
-                  padding: '12px 14px',
+                  padding: '16px 18px',
                   boxShadow: '0 1px 3px rgba(15, 23, 42, 0.02)',
                   display: 'flex',
                   flexDirection: 'column',
-                  gap: '8px'
+                  gap: '12px'
                 }}
               >
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                  <span style={{ fontSize: '11.5px', fontWeight: 700, color: '#64748B' }}>{st.title}</span>
-                  <div style={{ width: '28px', height: '28px', borderRadius: '6px', background: '#F8FAFC', border: '1px solid #E2E8F0', color: '#0F172A', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                    <Icon size={14} />
+                  <span style={{ fontSize: '12.5px', fontWeight: 700, color: '#64748B', whiteSpace: 'nowrap' }}>{st.title}</span>
+                  <div style={{ width: '30px', height: '30px', borderRadius: '6px', background: '#F8FAFC', border: '1px solid #E2E8F0', color: '#0F172A', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                    <Icon size={15} />
                   </div>
                 </div>
-                <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between' }}>
-                  <span style={{ fontSize: '1.6rem', fontWeight: 900, color: '#0F172A', fontFamily: 'JetBrains Mono, Cairo, sans-serif', lineHeight: 1 }}>
-                    {st.value}
+                <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', gap: '8px' }}>
+                  <div style={{ display: 'flex', alignItems: 'baseline', gap: '4px' }}>
+                    <span style={{ fontSize: '1.65rem', fontWeight: 900, color: '#0F172A', fontFamily: 'JetBrains Mono, Cairo, sans-serif', lineHeight: 1 }}>
+                      {st.value}
+                    </span>
+                    {st.unit && (
+                      <span style={{ fontSize: '11.5px', fontWeight: 700, color: '#64748B' }}>
+                        {st.unit}
+                      </span>
+                    )}
+                  </div>
+                  <span style={{ fontSize: '11px', color: '#94A3B8', fontWeight: 600, whiteSpace: 'nowrap' }}>
+                    {st.label}
                   </span>
-                  <span style={{ fontSize: '10.5px', color: '#94A3B8', fontWeight: 600 }}>{st.label}</span>
                 </div>
               </div>
             );
@@ -198,18 +221,118 @@ export default function Customers() {
               />
             </div>
 
-            <div>
+            <div style={{ position: 'relative' }}>
               <label style={{ display: 'block', fontSize: '11.5px', fontWeight: 700, color: '#475569', marginBottom: '4px' }}>
                 نوع الباقة المعتمدة *
               </label>
-              <select
-                value={packageTier}
-                onChange={(e) => setPackageTier(e.target.value)}
-                style={{ width: '100%', height: '34px', borderRadius: '6px', border: '1px solid #CBD5E1', padding: '0 10px', fontSize: '11.5px', fontWeight: 700, color: '#0F172A', background: '#F8FAFC', outline: 'none', boxSizing: 'border-box' }}
+              <button
+                type="button"
+                onClick={() => setIsTierDropdownOpen(!isTierDropdownOpen)}
+                style={{
+                  width: '100%',
+                  height: '34px',
+                  borderRadius: '6px',
+                  border: '1px solid #CBD5E1',
+                  padding: '0 10px',
+                  fontSize: '11.5px',
+                  fontWeight: 700,
+                  color: '#0F172A',
+                  background: '#FFFFFF',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                  cursor: 'pointer',
+                  outline: 'none',
+                  boxSizing: 'border-box',
+                  transition: 'border-color 0.15s ease'
+                }}
               >
-                <option value="MAX_3_PLUS_1">باقة MAX (متابعة أسبوعية كل 7 أيام) - 16 أسبوعاً</option>
-                <option value="ELITE_3_PLUS_1">باقة ELITE (متابعة كل 14 يوماً) - 16 أسبوعاً</option>
-              </select>
+                <span>
+                  {packageTier === 'MAX_3_PLUS_1' 
+                    ? 'باقة MAX (متابعة أسبوعية كل 7 أيام)' 
+                    : 'باقة ELITE (متابعة كل 14 يوماً)'}
+                </span>
+                <ChevronDown size={14} color="#64748B" style={{ transform: isTierDropdownOpen ? 'rotate(180deg)' : 'none', transition: 'transform 0.15s ease' }} />
+              </button>
+
+              {isTierDropdownOpen && (
+                <div
+                  style={{
+                    position: 'absolute',
+                    top: 'calc(100% + 4px)',
+                    right: 0,
+                    left: 0,
+                    background: '#FFFFFF',
+                    border: '1px solid #E2E8F0',
+                    borderRadius: '8px',
+                    boxShadow: '0 10px 25px rgba(15, 23, 42, 0.1)',
+                    zIndex: 50,
+                    overflow: 'hidden',
+                    padding: '4px',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    gap: '2px'
+                  }}
+                >
+                  <div
+                    onClick={() => {
+                      setPackageTier('MAX_3_PLUS_1');
+                      setIsTierDropdownOpen(false);
+                    }}
+                    style={{
+                      padding: '8px 10px',
+                      borderRadius: '6px',
+                      fontSize: '11.5px',
+                      fontWeight: 700,
+                      color: packageTier === 'MAX_3_PLUS_1' ? '#B45309' : '#0F172A',
+                      background: packageTier === 'MAX_3_PLUS_1' ? '#FFFBEB' : 'transparent',
+                      cursor: 'pointer',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'space-between',
+                      transition: 'background 0.12s ease'
+                    }}
+                    onMouseEnter={(e) => {
+                      if (packageTier !== 'MAX_3_PLUS_1') e.currentTarget.style.background = '#F8FAFC';
+                    }}
+                    onMouseLeave={(e) => {
+                      if (packageTier !== 'MAX_3_PLUS_1') e.currentTarget.style.background = 'transparent';
+                    }}
+                  >
+                    <span>باقة MAX (متابعة أسبوعية كل 7 أيام)</span>
+                    {packageTier === 'MAX_3_PLUS_1' && <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: '#D97706' }} />}
+                  </div>
+
+                  <div
+                    onClick={() => {
+                      setPackageTier('ELITE_3_PLUS_1');
+                      setIsTierDropdownOpen(false);
+                    }}
+                    style={{
+                      padding: '8px 10px',
+                      borderRadius: '6px',
+                      fontSize: '11.5px',
+                      fontWeight: 700,
+                      color: packageTier === 'ELITE_3_PLUS_1' ? '#0369A1' : '#0F172A',
+                      background: packageTier === 'ELITE_3_PLUS_1' ? '#F0F9FF' : 'transparent',
+                      cursor: 'pointer',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'space-between',
+                      transition: 'background 0.12s ease'
+                    }}
+                    onMouseEnter={(e) => {
+                      if (packageTier !== 'ELITE_3_PLUS_1') e.currentTarget.style.background = '#F8FAFC';
+                    }}
+                    onMouseLeave={(e) => {
+                      if (packageTier !== 'ELITE_3_PLUS_1') e.currentTarget.style.background = 'transparent';
+                    }}
+                  >
+                    <span>باقة ELITE (متابعة كل 14 يوماً)</span>
+                    {packageTier === 'ELITE_3_PLUS_1' && <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: '#0284C7' }} />}
+                  </div>
+                </div>
+              )}
             </div>
 
             <button
@@ -237,31 +360,6 @@ export default function Customers() {
               <span>إضافة المشترك فوراً</span>
             </button>
           </form>
-
-          {/* Newly Created Card Flash */}
-          {newlyCreated && (
-            <div style={{ marginTop: '12px', padding: '10px 14px', background: '#F0FDF4', border: '1px solid #BBF7D0', borderRadius: '6px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                <Check size={16} color="#16A34A" />
-                <span style={{ fontSize: '12px', color: '#166534', fontWeight: 700 }}>
-                  تم إنشاء حساب المشترك بنجاح! الكود: <strong>#{newlyCreated.client_code || newlyCreated.id}</strong>
-                </span>
-              </div>
-              <button
-                type="button"
-                onClick={() => {
-                  const link = `${window.location.protocol}//${window.location.hostname}:5173/intake/form?code=${newlyCreated.client_code}&phone=${newlyCreated.phone_number}`;
-                  copyToClipboard(link);
-                  setCopySuccess(true);
-                  setTimeout(() => setCopySuccess(false), 2000);
-                }}
-                style={{ padding: '3px 10px', background: '#FFFFFF', border: '1px solid #BBF7D0', borderRadius: '4px', fontSize: '11px', color: '#166534', fontWeight: 700, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px' }}
-              >
-                <Copy size={12} />
-                <span>{copySuccess ? 'تم النسخ!' : 'نسخ رابط الاستمارة'}</span>
-              </button>
-            </div>
-          )}
         </FormSection>
 
         {/* 4. Clients Table Section */}
@@ -357,10 +455,9 @@ export default function Customers() {
                     <th style={{ padding: '10px 14px', textAlign: 'center', width: '85px' }}>الكود</th>
                     <th style={{ padding: '10px 14px', textAlign: 'right' }}>المشترك</th>
                     <th style={{ padding: '10px 14px', textAlign: 'center' }}>الهاتف</th>
-                    <th style={{ padding: '10px 14px', textAlign: 'center' }}>الباقة ودورية المتابعة</th>
-                    <th style={{ padding: '10px 14px', textAlign: 'center' }}>مدة الاشتراك</th>
+                    <th style={{ padding: '10px 14px', textAlign: 'center' }}>الباقة</th>
                     <th style={{ padding: '10px 14px', textAlign: 'center' }}>حالة الاستمارة</th>
-                    <th style={{ padding: '10px 14px', textAlign: 'left' }}>إجراءات الكوتش والتجاوز الإداري</th>
+                    <th style={{ padding: '10px 14px', textAlign: 'left' }}>إجراءات الكوتش والمتابعة</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -378,7 +475,17 @@ export default function Customers() {
                       >
                         {/* Code */}
                         <td style={{ padding: '10px 14px', textAlign: 'center' }}>
-                          <span style={{ fontFamily: 'JetBrains Mono, monospace', fontWeight: 800, fontSize: '11px', background: '#F0F9FF', border: '1px solid #BAE6FD', color: '#0284C7', padding: '2px 7px', borderRadius: '4px', display: 'inline-block' }}>
+                          <span style={{ 
+                            fontFamily: 'JetBrains Mono, monospace', 
+                            fontWeight: 800, 
+                            fontSize: '11px', 
+                            background: '#F8FAFC', 
+                            border: '1px solid #E2E8F0', 
+                            color: isMax ? '#B45309' : '#0284C7', 
+                            padding: '2px 7px', 
+                            borderRadius: '4px', 
+                            display: 'inline-block' 
+                          }}>
                             {'#' + cleanCode}
                           </span>
                         </td>
@@ -397,34 +504,25 @@ export default function Customers() {
 
                         {/* Tier */}
                         <td style={{ padding: '10px 14px', textAlign: 'center' }}>
-                          <div style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
-                            <span style={{ 
-                              background: '#F1F5F9', 
-                              border: '1px solid #E2E8F0', 
-                              color: isMax ? '#C4952D' : '#0284C7', 
-                              padding: '2px 8px', 
-                              borderRadius: '4px', 
-                              fontSize: '11px', 
-                              fontWeight: 800, 
-                              fontFamily: 'JetBrains Mono, Cairo, sans-serif'
-                            }}>
-                              {isMax ? 'MAX' : 'ELITE'}
-                            </span>
-                            <span style={{ fontSize: '10.5px', color: '#64748B', fontWeight: 600 }}>
-                              {isMax ? 'متابعة أسبوعية (7 أيام)' : 'متابعة كل 14 يوماً'}
-                            </span>
-                          </div>
-                        </td>
-
-                        {/* Duration */}
-                        <td style={{ padding: '10px 14px', color: '#64748B', fontSize: '11.5px', textAlign: 'center' }}>
-                          16 أسبوعاً (3+1 مجاناً)
+                          <span style={{ 
+                            background: '#F8FAFC', 
+                            border: '1px solid #E2E8F0', 
+                            color: isMax ? '#B45309' : '#0284C7', 
+                            padding: '3px 10px', 
+                            borderRadius: '6px', 
+                            fontSize: '11.5px', 
+                            fontWeight: 800, 
+                            fontFamily: 'JetBrains Mono, Cairo, sans-serif',
+                            display: 'inline-block'
+                          }}>
+                            {isMax ? 'MAX' : 'ELITE'}
+                          </span>
                         </td>
 
                         {/* Status */}
                         <td style={{ padding: '10px 14px', textAlign: 'center' }}>
-                          <span style={{ background: '#F0FDF4', color: '#16A34A', border: '1px solid #BBF7D0', padding: '1px 7px', borderRadius: '4px', fontSize: '10.5px', fontWeight: 700, display: 'inline-block' }}>
-                            ✓ معتمدة ونشطة
+                          <span style={{ background: '#F0FDF4', color: '#16A34A', border: '1px solid #BBF7D0', padding: '2px 8px', borderRadius: '4px', fontSize: '11px', fontWeight: 700, display: 'inline-block' }}>
+                            معتمدة ونشطة
                           </span>
                         </td>
 
@@ -436,21 +534,30 @@ export default function Customers() {
                               type="button"
                               onClick={() => setWhatsappModalClient(client)}
                               style={{
-                                padding: '4px 8px',
-                                borderRadius: '5px',
-                                border: '1px solid #CBD5E1',
-                                background: '#FFFFFF',
-                                color: '#0F172A',
-                                fontSize: '11px',
+                                padding: '4px 10px',
+                                borderRadius: '6px',
+                                border: '1px solid #86EFAC',
+                                background: '#F0FDF4',
+                                color: '#16A34A',
+                                fontSize: '11.5px',
                                 fontWeight: 700,
                                 cursor: 'pointer',
                                 display: 'inline-flex',
                                 alignItems: 'center',
-                                gap: '4px'
+                                gap: '5px',
+                                transition: 'all 0.15s ease'
+                              }}
+                              onMouseEnter={(e) => {
+                                e.currentTarget.style.background = '#DCFCE7';
+                                e.currentTarget.style.borderColor = '#4ADE80';
+                              }}
+                              onMouseLeave={(e) => {
+                                e.currentTarget.style.background = '#F0FDF4';
+                                e.currentTarget.style.borderColor = '#86EFAC';
                               }}
                               title="مركز رسائل الواتساب الذكية"
                             >
-                              <MessageCircle size={12} color="#16A34A" />
+                              <MessageCircle size={13} />
                               <span>واتساب</span>
                             </button>
 
@@ -458,7 +565,7 @@ export default function Customers() {
                             <Link
                               to={`/coach/editor/${cleanCode}`}
                               style={{
-                                padding: '4px 9px',
+                                padding: '4px 10px',
                                 borderRadius: '5px',
                                 border: '1px solid #CBD5E1',
                                 background: '#FFFFFF',
@@ -466,41 +573,35 @@ export default function Customers() {
                                 fontSize: '11px',
                                 fontWeight: 700,
                                 textDecoration: 'none',
-                                display: 'inline-flex',
-                                alignItems: 'center',
-                                gap: '4px'
+                                transition: 'all 0.15s ease'
                               }}
+                              onMouseEnter={(e) => (e.currentTarget.style.background = '#F8FAFC')}
+                              onMouseLeave={(e) => (e.currentTarget.style.background = '#FFFFFF')}
+                              title="تعديل الخطة والوجبات والتمارين"
                             >
-                              <Edit3 size={11} />
-                              <span>تعديل الخطة</span>
+                              تعديل الخطة
                             </Link>
 
-                            {/* Super Admin Override Button */}
-                            <button
-                              type="button"
-                              onClick={() => handleSuperAdminOverrideCheckin(client.id)}
+                            {/* Check-in Review Dashboard Link */}
+                            <Link
+                              to={`/coach/checkin-review?code=${cleanCode}`}
                               style={{
-                                padding: '4px 10px',
+                                padding: '4px 12px',
                                 borderRadius: '5px',
                                 background: '#0F172A',
                                 color: '#FFFFFF',
                                 fontSize: '11px',
                                 fontWeight: 700,
-                                border: 'none',
-                                cursor: 'pointer',
-                                display: 'inline-flex',
-                                alignItems: 'center',
-                                gap: '4px',
+                                textDecoration: 'none',
                                 boxShadow: '0 2px 5px rgba(15, 23, 42, 0.25)',
                                 transition: 'all 0.15s ease'
                               }}
                               onMouseEnter={(e) => (e.currentTarget.style.background = '#334155')}
                               onMouseLeave={(e) => (e.currentTarget.style.background = '#0F172A')}
-                              title="تسجيل تقييم نيابة عن المشترك"
+                              title="الانتقال لمراجعة تقييم المشترك وتعديل الماكروز"
                             >
-                              <Zap size={11} />
-                              <span>متابعة فورية</span>
-                            </button>
+                              مراجعة التقييم
+                            </Link>
                           </div>
                         </td>
                       </tr>
@@ -520,6 +621,284 @@ export default function Customers() {
             client={whatsappModalClient}
           />
         )}
+
+        {/* Newly Created Client Success Dispatch Modal Popup (Exact Matching UI) */}
+        {newlyCreated && (() => {
+          const rawCode = String(newlyCreated.client_code || newlyCreated.id || '').replace(/^client[-_]?/i, '').replace('#', '');
+          const isMaxTier = String(newlyCreated.subscription_package || '').toUpperCase().includes('MAX');
+          const clientPhone = newlyCreated.phone_number || '';
+          const clientName = newlyCreated.full_name || 'مشترك جديد';
+          const formLink = `${window.location.origin}/intake/form?code=${rawCode}&phone=${encodeURIComponent(clientPhone)}`;
+          
+          const cleanPhoneForWa = clientPhone.replace(/\D/g, '').startsWith('01') 
+            ? '2' + clientPhone.replace(/\D/g, '') 
+            : clientPhone.replace(/\D/g, '');
+
+          const waInviteMessage = `مرحباً ${clientName} يا بطل!
+تم تأكيد اشتراكك وتفعيل ملفك في Z Coaching بنجاح.
+
+بيانات دخول استمارتك الخاصة:
+- كود المشترك: #${rawCode}
+- رقم الهاتف: ${clientPhone}
+- الباقة: ${isMaxTier ? 'باقة ماكس MAX (متابعة أسبوعية)' : 'باقة إيليت ELITE (متابعة كل 14 يوماً)'}
+
+رابط استمارتك الصحية والرياضية المباشر:
+${formLink}
+
+يرجى تعبئة الاستمارة بدقة لنبدأ فوراً في إعداد خطتك التدريبية والغذائية!`;
+
+          const waUrl = `https://wa.me/${cleanPhoneForWa}?text=${encodeURIComponent(waInviteMessage)}`;
+
+          return (
+            <div 
+              style={{
+                position: 'fixed',
+                inset: 0,
+                background: 'rgba(15, 23, 42, 0.65)',
+                backdropFilter: 'blur(4px)',
+                zIndex: 9999,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                padding: '16px'
+              }}
+              onClick={() => setNewlyCreated(null)}
+            >
+              <div 
+                onClick={(e) => e.stopPropagation()}
+                dir="rtl"
+                style={{
+                  background: '#FFFFFF',
+                  width: '100%',
+                  maxWidth: '480px',
+                  borderRadius: '16px',
+                  border: '1px solid #E2E8F0',
+                  padding: '24px',
+                  boxShadow: '0 20px 40px rgba(15, 23, 42, 0.15)',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  gap: '16px',
+                  fontFamily: 'Cairo, sans-serif'
+                }}
+              >
+                {/* 1. Header with Blue Bar & Close Button */}
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <span style={{ width: '4px', height: '18px', background: '#0284C7', borderRadius: '2px', display: 'inline-block' }} />
+                    <h3 style={{ margin: 0, fontSize: '16px', fontWeight: 800, color: '#0F172A' }}>
+                      إنشاء كود مشترك وتحديد الباقة
+                    </h3>
+                  </div>
+
+                  <button 
+                    type="button" 
+                    onClick={() => setNewlyCreated(null)}
+                    style={{ 
+                      background: '#F8FAFC', 
+                      border: '1px solid #E2E8F0', 
+                      borderRadius: '8px', 
+                      width: '32px', 
+                      height: '32px', 
+                      display: 'flex', 
+                      alignItems: 'center', 
+                      justifyContent: 'center', 
+                      cursor: 'pointer', 
+                      color: '#64748B',
+                      transition: 'background 0.15s ease'
+                    }}
+                    onMouseEnter={(e) => (e.currentTarget.style.background = '#F1F5F9')}
+                    onMouseLeave={(e) => (e.currentTarget.style.background = '#F8FAFC')}
+                  >
+                    <X size={16} />
+                  </button>
+                </div>
+
+                {/* 2. Green Pill Banner */}
+                <div 
+                  style={{
+                    background: '#F0FDF4',
+                    border: '1px solid #86EFAC',
+                    borderRadius: '8px',
+                    padding: '8px 14px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    gap: '6px',
+                    color: '#15803D',
+                    fontSize: '12.5px',
+                    fontWeight: 700
+                  }}
+                >
+                  <CheckCircle2 size={16} color="#16A34A" />
+                  <span>تم إنشاء حساب المشترك وتوليد الكود بنجاح</span>
+                </div>
+
+                {/* 3. Main Center Code Card */}
+                <div 
+                  style={{
+                    background: '#F8FAFC',
+                    border: '1px solid #E2E8F0',
+                    borderRadius: '12px',
+                    padding: '16px 14px',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    alignItems: 'center',
+                    gap: '12px'
+                  }}
+                >
+                  {/* Code Box */}
+                  <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '6px' }}>
+                    <span style={{ fontSize: '12px', color: '#64748B', fontWeight: 700 }}>كود المشترك المعتمد:</span>
+                    <div 
+                      style={{
+                        background: '#FFFFFF',
+                        border: '1px solid #CBD5E1',
+                        borderRadius: '8px',
+                        minWidth: '85px',
+                        padding: '4px 16px',
+                        height: '46px',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        fontFamily: 'JetBrains Mono, Cairo, sans-serif',
+                        fontSize: '22px',
+                        fontWeight: 900,
+                        color: '#0F172A',
+                        boxShadow: 'inset 0 1px 2px rgba(0,0,0,0.03)'
+                      }}
+                    >
+                      {rawCode}
+                    </div>
+                  </div>
+
+                  {/* Name and Phone Row */}
+                  <div 
+                    style={{ 
+                      width: '100%', 
+                      display: 'flex', 
+                      justifyContent: 'space-around', 
+                      alignItems: 'center', 
+                      background: '#FFFFFF', 
+                      border: '1px solid #E2E8F0', 
+                      borderRadius: '8px', 
+                      padding: '8px 12px', 
+                      fontSize: '12px',
+                      boxSizing: 'border-box'
+                    }}
+                  >
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                      <span style={{ color: '#64748B', fontWeight: 600 }}>المشترك:</span>
+                      <strong style={{ color: '#0F172A' }}>{clientName}</strong>
+                    </div>
+                    <div style={{ width: '1px', height: '14px', background: '#CBD5E1' }} />
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                      <span style={{ color: '#64748B', fontWeight: 600 }}>الهاتف:</span>
+                      <strong dir="ltr" style={{ fontFamily: 'JetBrains Mono', color: '#0F172A' }}>{clientPhone}</strong>
+                    </div>
+                  </div>
+
+                  {/* Package & Duration Row */}
+                  <div style={{ borderTop: '1px solid #E2E8F0', width: '100%', paddingTop: '10px', textAlign: 'center', fontSize: '11.5px', color: '#64748B', fontWeight: 600 }}>
+                    <span>الباقة: </span>
+                    <strong style={{ color: '#0F172A' }}>
+                      {isMaxTier ? 'باقة ماكس (MAX)' : 'باقة إيليت (ELITE)'}
+                    </strong>
+                    <span style={{ margin: '0 6px', color: '#CBD5E1' }}>|</span>
+                    <span>إجمالي المدة: </span>
+                    <strong style={{ color: '#16A34A', fontWeight: 800 }}>4 شهور (16 أسبوعاً)</strong>
+                  </div>
+                </div>
+
+                {/* 4. Action Buttons Stack */}
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginTop: '2px' }}>
+                  {/* Button 1: Direct WhatsApp */}
+                  <a
+                    href={waUrl}
+                    target="_blank"
+                    rel="noreferrer"
+                    style={{
+                      height: '42px',
+                      background: '#16A34A',
+                      color: '#FFFFFF',
+                      borderRadius: '8px',
+                      fontSize: '13px',
+                      fontWeight: 800,
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      gap: '8px',
+                      textDecoration: 'none',
+                      boxShadow: '0 2px 6px rgba(22, 163, 74, 0.25)',
+                      cursor: 'pointer'
+                    }}
+                  >
+                    <MessageCircle size={17} />
+                    <span>إرسال الرابط عبر الواتساب مباشرة</span>
+                  </a>
+
+                  {/* Button 2: Copy WhatsApp Invitation */}
+                  <button
+                    type="button"
+                    onClick={() => {
+                      copyToClipboard(waInviteMessage);
+                      setCopySuccess(true);
+                      setTimeout(() => setCopySuccess(false), 2000);
+                    }}
+                    style={{
+                      height: '40px',
+                      background: '#FFFFFF',
+                      border: '1px solid #CBD5E1',
+                      borderRadius: '8px',
+                      fontSize: '12.5px',
+                      fontWeight: 700,
+                      color: '#0F172A',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      gap: '6px',
+                      cursor: 'pointer',
+                      transition: 'background 0.15s ease'
+                    }}
+                    onMouseEnter={(e) => (e.currentTarget.style.background = '#F8FAFC')}
+                    onMouseLeave={(e) => (e.currentTarget.style.background = '#FFFFFF')}
+                  >
+                    <Copy size={15} />
+                    <span>{copySuccess ? 'تم نسخ دعوة الواتساب والكود بنجاح!' : 'نسخ دعوة الواتساب والكود'}</span>
+                  </button>
+
+                  {/* Button 3: Open & Fill Intake Form Now */}
+                  <a
+                    href={formLink}
+                    target="_blank"
+                    rel="noreferrer"
+                    style={{
+                      height: '40px',
+                      background: '#F8FAFC',
+                      border: '1px solid #CBD5E1',
+                      borderRadius: '8px',
+                      fontSize: '12.5px',
+                      fontWeight: 700,
+                      color: '#0F172A',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      gap: '6px',
+                      textDecoration: 'none',
+                      cursor: 'pointer',
+                      transition: 'background 0.15s ease'
+                    }}
+                    onMouseEnter={(e) => (e.currentTarget.style.background = '#F1F5F9')}
+                    onMouseLeave={(e) => (e.currentTarget.style.background = '#F8FAFC')}
+                  >
+                    <Edit3 size={15} />
+                    <span>فتح وتعبئة الاستمارة الآن</span>
+                  </a>
+                </div>
+
+              </div>
+            </div>
+          );
+        })()}
 
       </div>
     </AdminLayout>

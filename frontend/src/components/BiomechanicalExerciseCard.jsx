@@ -103,7 +103,7 @@ export default function BiomechanicalExerciseCard({
         <button
           type="button"
           onClick={() => setShowWarmups(!showWarmups)}
-          className="text-xs text-amber-400 bg-amber-500/10 border border-amber-500/30 px-3 py-1.5 rounded-lg flex items-center gap-1.5 transition active:scale-95 cursor-pointer"
+          className="text-xs text-amber-400 bg-amber-500/10 border border-amber-500/30 px-3 py-1.5 rounded-lg flex items-center gap-1.5 transition cursor-pointer"
         >
           <span className="inline-block w-2 h-2 rounded-full bg-amber-400"></span>
           <span>{showWarmups ? 'إخفاء جولات الإحماء' : 'عرض سلم الإحماء المقترح (Warm-up Ladder)'}</span>
@@ -192,7 +192,7 @@ export default function BiomechanicalExerciseCard({
           <button
             type="submit"
             disabled={isSyncing}
-            className="w-full bg-emerald-500 hover:bg-emerald-600 active:scale-95 text-slate-950 font-bold text-xs py-2 rounded-lg transition cursor-pointer"
+            className="w-full bg-emerald-500 hover:bg-emerald-600 text-slate-950 font-bold text-xs py-2 rounded-lg transition cursor-pointer"
           >
             + تسجيل
           </button>

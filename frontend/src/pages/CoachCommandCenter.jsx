@@ -24,102 +24,88 @@ import { FormSection } from '@/shared/components/form-section';
 
 // Smart 1-Click WhatsApp Pre-filled Message Generator
 export function getWhatsAppMessage(action) {
-  const name = action?.clientName ? action.clientName.replace(/مشترك #\d+/g, 'يا بطل').trim() : 'يا بطل';
+  const name = action?.clientName ? action.clientName.replace(/مشترك #\d+/g, '').trim() : '';
+  const namePrefix = name ? `أهلاً ${name}، ` : 'أهلاً بك، ';
   const cleanTier = String(action?.tier || '').includes('MAX') ? 'MAX' : 'ELITE';
 
   if (action?.type === 'INJURY') {
-    return encodeURIComponent(`أهلاً يا ${name}! قرأت تفاصيل الإصابة / الألم اللي سجلته في الاستمارة، لا تقلق بنعدل التمارين ونحط بدائل آمنة تناسبك 100% 🛡️`);
+    return encodeURIComponent(`${namePrefix}بخصوص الملاحظات الطبية أو الإصابة المسجلة في الاستمارة، سنقوم بتعديل التمارين وإضافة البدائل المناسبة لك بالكامل.`);
   }
   if (action?.type === 'CHECKIN') {
-    return encodeURIComponent(`أهلاً يا ${name}! استلمت تقييمك الأسبوعي وجاري الآن مراجعة القياسات والأداء وتحديث الخطة 💪`);
+    return encodeURIComponent(`${namePrefix}تم استلام تقييمك الأسبوعي بنجاح، وجاري الآن مراجعة القياسات والأداء وتحديث الخطة.`);
   }
   if (action?.type === 'RENEWAL') {
-    return encodeURIComponent(`أهلاً يا ${name}! نود تذكيرك بأن اشتراكك في باقة ${cleanTier} قارب على الانتهاء. لتجديد الاشتراك والاستمرار في تحقيق أهدافك تواصل معنا 🌟`);
+    return encodeURIComponent(`${namePrefix}نود تذكيرك بأن اشتراكك في باقة ${cleanTier} قارب على الانتهاء. لتأكيد التجديد والاستمرار يرجى التواصل معنا.`);
   }
-  return encodeURIComponent(`أهلاً يا ${name}! استلمت استمارتك بنجاح وجاري الآن مراجعة بياناتك وتجهيز خطتك التدريبية والغذائية المخصصة 🚀✨`);
+  return encodeURIComponent(`${namePrefix}تم استلام استمارتك بنجاح، وجاري مراجعة البيانات وإعداد خطتك التدريبية والغذائية.`);
 }
 
-// Smart Universal Country & Flag Detector
+// Smart Universal Country Detector
 export function getClientCountryInfo(phone = '', explicitCountry = '') {
   if (explicitCountry) {
     const c = String(explicitCountry).trim().toLowerCase();
-    if (c.includes('مصر') || c.includes('egypt')) return { name: 'مصر', flag: '🇪🇬' };
-    if (c.includes('سعود') || c.includes('saudi') || c.includes('ksa')) return { name: 'السعودية', flag: '🇸🇦' };
-    if (c.includes('إمارات') || c.includes('امارات') || c.includes('uae') || c.includes('emirates')) return { name: 'الإمارات', flag: '🇦🇪' };
-    if (c.includes('كويت') || c.includes('kuwait')) return { name: 'الكويت', flag: '🇰🇼' };
-    if (c.includes('قطر') || c.includes('qatar')) return { name: 'قطر', flag: '🇶🇦' };
-    if (c.includes('عمان') || c.includes('oman')) return { name: 'عُمان', flag: '🇴🇲' };
-    if (c.includes('بحرين') || c.includes('bahrain')) return { name: 'البحرين', flag: '🇧🇭' };
-    if (c.includes('أردن') || c.includes('اردن') || c.includes('jordan')) return { name: 'الأردن', flag: '🇯🇴' };
-    if (c.includes('عراق') || c.includes('iraq')) return { name: 'العراق', flag: '🇮🇶' };
-    if (c.includes('لبنان') || c.includes('lebanon')) return { name: 'لبنان', flag: '🇱🇧' };
-    if (c.includes('فلسطين') || c.includes('palestine')) return { name: 'فلسطين', flag: '🇵🇸' };
-    if (c.includes('مغرب') || c.includes('morocco')) return { name: 'المغرب', flag: '🇲🇦' };
-    if (c.includes('تونس') || c.includes('tunisia')) return { name: 'تونس', flag: '🇹🇳' };
-    if (c.includes('جزائر') || c.includes('algeria')) return { name: 'الجزائر', flag: '🇩🇿' };
-    if (c.includes('ليبيا') || c.includes('libya')) return { name: 'ليبيا', flag: '🇱🇾' };
-    if (c.includes('سودان') || c.includes('sudan')) return { name: 'السودان', flag: '🇸🇩' };
-    if (c.includes('يمن') || c.includes('yemen')) return { name: 'اليمن', flag: '🇾🇪' };
-    if (c.includes('أمريكا') || c.includes('امريكا') || c.includes('usa') || c.includes('united states')) return { name: 'أمريكا', flag: '🇺🇸' };
-    if (c.includes('بريطانيا') || c.includes('uk') || c.includes('england')) return { name: 'بريطانيا', flag: '🇬🇧' };
-    if (c.includes('ألمانيا') || c.includes('المانيا') || c.includes('germany')) return { name: 'ألمانيا', flag: '🇩🇪' };
-    if (c.includes('كندا') || c.includes('canada')) return { name: 'كندا', flag: '🇨🇦' };
-    return { name: explicitCountry, flag: '🌍' };
+    if (c.includes('مصر') || c.includes('egypt')) return { name: 'مصر' };
+    if (c.includes('سعود') || c.includes('saudi') || c.includes('ksa')) return { name: 'السعودية' };
+    if (c.includes('إمارات') || c.includes('امارات') || c.includes('uae') || c.includes('emirates')) return { name: 'الإمارات' };
+    if (c.includes('كويت') || c.includes('kuwait')) return { name: 'الكويت' };
+    if (c.includes('قطر') || c.includes('qatar')) return { name: 'قطر' };
+    if (c.includes('عمان') || c.includes('oman')) return { name: 'عُمان' };
+    if (c.includes('بحرين') || c.includes('bahrain')) return { name: 'البحرين' };
+    if (c.includes('أردن') || c.includes('اردن') || c.includes('jordan')) return { name: 'الأردن' };
+    if (c.includes('عراق') || c.includes('iraq')) return { name: 'العراق' };
+    if (c.includes('لبنان') || c.includes('lebanon')) return { name: 'لبنان' };
+    if (c.includes('فلسطين') || c.includes('palestine')) return { name: 'فلسطين' };
+    if (c.includes('مغرب') || c.includes('morocco')) return { name: 'المغرب' };
+    if (c.includes('تونس') || c.includes('tunisia')) return { name: 'تونس' };
+    if (c.includes('جزائر') || c.includes('algeria')) return { name: 'الجزائر' };
+    if (c.includes('ليبيا') || c.includes('libya')) return { name: 'ليبيا' };
+    if (c.includes('سودان') || c.includes('sudan')) return { name: 'السودان' };
+    if (c.includes('يمن') || c.includes('yemen')) return { name: 'اليمن' };
+    if (c.includes('أمريكا') || c.includes('امريكا') || c.includes('usa') || c.includes('united states')) return { name: 'أمريكا' };
+    if (c.includes('بريطانيا') || c.includes('uk') || c.includes('england')) return { name: 'بريطانيا' };
+    if (c.includes('ألمانيا') || c.includes('المانيا') || c.includes('germany')) return { name: 'ألمانيا' };
+    if (c.includes('كندا') || c.includes('canada')) return { name: 'كندا' };
+    return { name: explicitCountry };
   }
 
   const clean = String(phone).replace(/\D/g, '');
-  if (clean.startsWith('966')) return { name: 'السعودية', flag: '🇸🇦' };
-  if (clean.startsWith('971')) return { name: 'الإمارات', flag: '🇦🇪' };
-  if (clean.startsWith('965')) return { name: 'الكويت', flag: '🇰🇼' };
-  if (clean.startsWith('974')) return { name: 'قطر', flag: '🇶🇦' };
-  if (clean.startsWith('968')) return { name: 'عُمان', flag: '🇴🇲' };
-  if (clean.startsWith('973')) return { name: 'البحرين', flag: '🇧🇭' };
-  if (clean.startsWith('962')) return { name: 'الأردن', flag: '🇯🇴' };
-  if (clean.startsWith('964')) return { name: 'العراق', flag: '🇮🇶' };
-  if (clean.startsWith('961')) return { name: 'لبنان', flag: '🇱🇧' };
-  if (clean.startsWith('970') || clean.startsWith('972')) return { name: 'فلسطين', flag: '🇵🇸' };
-  if (clean.startsWith('212')) return { name: 'المغرب', flag: '🇲🇦' };
-  if (clean.startsWith('216')) return { name: 'تونس', flag: '🇹🇳' };
-  if (clean.startsWith('213')) return { name: 'الجزائر', flag: '🇩🇿' };
-  if (clean.startsWith('218')) return { name: 'ليبيا', flag: '🇱🇾' };
-  if (clean.startsWith('249')) return { name: 'السودان', flag: '🇸🇩' };
-  if (clean.startsWith('967')) return { name: 'اليمن', flag: '🇾🇪' };
-  if (clean.startsWith('44')) return { name: 'بريطانيا', flag: '🇬🇧' };
-  if (clean.startsWith('49')) return { name: 'ألمانيا', flag: '🇩🇪' };
-  if (clean.startsWith('33')) return { name: 'فرنسا', flag: '🇫🇷' };
-  if (clean.startsWith('39')) return { name: 'إيطاليا', flag: '🇮🇹' };
-  if (clean.startsWith('90')) return { name: 'تركيا', flag: '🇹🇷' };
-  if (clean.startsWith('1')) return { name: 'أمريكا / كندا', flag: '🇺🇸' };
-  if (clean.startsWith('20') || clean.startsWith('010') || clean.startsWith('011') || clean.startsWith('012') || clean.startsWith('015')) return { name: 'مصر', flag: '🇪🇬' };
+  if (clean.startsWith('966')) return { name: 'السعودية' };
+  if (clean.startsWith('971')) return { name: 'الإمارات' };
+  if (clean.startsWith('965')) return { name: 'الكويت' };
+  if (clean.startsWith('974')) return { name: 'قطر' };
+  if (clean.startsWith('968')) return { name: 'عُمان' };
+  if (clean.startsWith('973')) return { name: 'البحرين' };
+  if (clean.startsWith('962')) return { name: 'الأردن' };
+  if (clean.startsWith('964')) return { name: 'العراق' };
+  if (clean.startsWith('961')) return { name: 'لبنان' };
+  if (clean.startsWith('970') || clean.startsWith('972')) return { name: 'فلسطين' };
+  if (clean.startsWith('212')) return { name: 'المغرب' };
+  if (clean.startsWith('216')) return { name: 'تونس' };
+  if (clean.startsWith('213')) return { name: 'الجزائر' };
+  if (clean.startsWith('218')) return { name: 'ليبيا' };
+  if (clean.startsWith('249')) return { name: 'السودان' };
+  if (clean.startsWith('967')) return { name: 'اليمن' };
+  if (clean.startsWith('44')) return { name: 'بريطانيا' };
+  if (clean.startsWith('49')) return { name: 'ألمانيا' };
+  if (clean.startsWith('33')) return { name: 'فرنسا' };
+  if (clean.startsWith('39')) return { name: 'إيطاليا' };
+  if (clean.startsWith('90')) return { name: 'تركيا' };
+  if (clean.startsWith('1')) return { name: 'أمريكا / كندا' };
+  if (clean.startsWith('20') || clean.startsWith('010') || clean.startsWith('011') || clean.startsWith('012') || clean.startsWith('015')) return { name: 'مصر' };
   
-  return { name: 'مصر', flag: '🇪🇬' }; // Default
+  return { name: 'مصر' }; // Default
 }
 
-// Smart Package Badge Styler (Gold for MAX, Light Blue for ELITE)
+// Smart Package Badge Styler (Neutral Box, Colored Text)
 export function getPackageBadgeStyle(pkgStr = '') {
   const clean = String(pkgStr || '').trim().toUpperCase();
   const isMax = clean.includes('MAX') || clean.includes('ماكس');
   
-  let label = String(pkgStr || '')
-    .replace(/_VIP/gi, '')
-    .replace(/_4M/gi, '')
-    .replace(/_8M/gi, '')
-    .replace(/_3_PLUS_1/gi, '')
-    .replace(/_TRANSFORM/gi, '')
-    .replace(/ VIP/gi, '')
-    .replace(/باقة ماكس VIP/g, 'MAX')
-    .replace(/باقة ماكس/g, 'MAX')
-    .replace(/باقة إيليت/g, 'ELITE')
-    .replace(/باقة /g, '')
-    .trim();
-
-  if (!label || label === 'MAX' || label === 'ELITE') label = isMax ? 'MAX' : 'ELITE';
-
   return {
-    label,
-    background: '#F1F5F9',
+    label: isMax ? 'MAX' : 'ELITE',
+    background: '#F8FAFC',
     border: '1px solid #E2E8F0',
-    color: isMax ? '#C4952D' : '#0284C7'
+    color: isMax ? '#B45309' : '#0284C7'
   };
 }
 
@@ -160,6 +146,7 @@ export default function CoachCommandCenter() {
   });
   const [clients, setClients] = useState([]);
   const [submissions, setSubmissions] = useState([]);
+  const [pendingCheckins, setPendingCheckins] = useState([]);
 
   useEffect(() => {
     fetchDashboardData();
@@ -168,9 +155,10 @@ export default function CoachCommandCenter() {
   const fetchDashboardData = async () => {
     try {
       setLoading(true);
-      const [subOverviewRes, intakeRes] = await Promise.allSettled([
+      const [subOverviewRes, intakeRes, checkinRes] = await Promise.allSettled([
         fetch(`${API_BASE}/api/v1/subscriptions/overview`),
-        fetch(`${API_BASE}/api/v1/intake/submissions`)
+        fetch(`${API_BASE}/api/v1/intake/submissions`),
+        fetch(`${API_BASE}/api/v1/programs/checkin/pending`)
       ]);
 
       if (subOverviewRes.status === 'fulfilled' && subOverviewRes.value && subOverviewRes.value.ok) {
@@ -187,6 +175,13 @@ export default function CoachCommandCenter() {
           if (intakeData && Array.isArray(intakeData.submissions)) setSubmissions(intakeData.submissions);
         } catch (e) {}
       }
+
+      if (checkinRes.status === 'fulfilled' && checkinRes.value && checkinRes.value.ok) {
+        try {
+          const checkinData = await checkinRes.value.json();
+          if (checkinData && Array.isArray(checkinData.checkins)) setPendingCheckins(checkinData.checkins);
+        } catch (e) {}
+      }
     } catch (err) {
       console.error('Error fetching dashboard live data:', err);
     } finally {
@@ -197,22 +192,76 @@ export default function CoachCommandCenter() {
   // Safe Arrays
   const safeSubmissions = Array.isArray(submissions) ? submissions : [];
   const safeClients = Array.isArray(clients) ? clients : [];
+  const safeCheckins = Array.isArray(pendingCheckins) ? pendingCheckins : [];
 
-  // Build Real-Time Action Queue from Live Pending Intakes & Expiring Subscriptions
-  const pendingIntakes = safeSubmissions.filter(s => s && s.status !== 'APPROVED');
+  // Build Real-Time Action Queue from Live Pending Intakes, Checkins & Expiring Subscriptions
+  const pendingIntakes = safeSubmissions.filter(s => s && s.status === 'PENDING');
   const expiringClients = safeClients.filter(c => c && c.status === 'EXPIRING_SOON');
 
-  const dailyActions = [
-    // 1. Pending Intakes Awaiting Review / Generation
-    ...pendingIntakes.map(sub => {
+  const actionsMap = new Map();
+
+  // 1. Expiring Subscriptions (Highest Priority for Renewal Outreach)
+  expiringClients.forEach(c => {
+    const rawCode = c?.client_code || c?.id || '1';
+    const cleanCode = String(rawCode).replace(/^client[-_]?/i, '').replace('#', '');
+    const phone = c?.phone_number || '';
+    const country = getClientCountryInfo(phone, c?.country || '');
+    actionsMap.set(cleanCode, {
+      id: `RENEWAL_${cleanCode}`,
+      clientCode: cleanCode,
+      type: 'RENEWAL',
+      clientName: c?.full_name || `مشترك #${cleanCode}`,
+      country,
+      tier: c?.package || c?.package_code || 'MAX_4M',
+      phone,
+      timeAgo: formatTimeAgo(c?.created_at || c?.updated_at),
+      summary: `متبقي ${c?.days_remaining || 0} أيام على نهاية باقة الاشتراك.`,
+      suggestedAction: 'مراسلة المشترك لتجديد الاشتراك',
+      badgeText: 'تجديد قريب',
+      actionUrl: `/subscriptions`
+    });
+  });
+
+  // 2. Pending Check-ins Awaiting Review
+  safeCheckins.forEach(chk => {
+    const rawCode = chk?.user?.client_code || chk?.client_code || chk?.user_id || '1';
+    const cleanCode = String(rawCode).replace(/^client[-_]?/i, '').replace('#', '');
+    if (!actionsMap.has(cleanCode)) {
+      const phone = chk?.user?.phone_number || '';
+      const country = getClientCountryInfo(phone, chk?.user?.country || '');
+      const isPlateau = chk?.analysis_status === 'PLATEAU_DETECTED';
+      actionsMap.set(cleanCode, {
+        id: `CHECKIN_${cleanCode}`,
+        clientCode: cleanCode,
+        type: isPlateau ? 'INJURY' : 'CHECKIN',
+        hasInjury: isPlateau,
+        clientName: chk?.user?.full_name || `مشترك #${cleanCode}`,
+        country,
+        tier: chk?.user?.subscription_package || 'MAX_4M',
+        phone,
+        timeAgo: formatTimeAgo(chk?.created_at || chk?.updated_at),
+        summary: isPlateau ? 'كشف ثبات وزن أيضي (Plateau) • مطلوب تعديل السعرات أو إضافة يوم Refeed.' : 'متابعة أسبوعية واردة بانتظار المراجعة والاعتماد.',
+        suggestedAction: isPlateau ? 'مراجعة ثبات الوزن وتعديل الخطة' : 'مراجعة واعتماد التقييم الأسبوعي',
+        badgeText: isPlateau ? 'ثبات وزن / تعديل' : 'متابعة واردة',
+        actionUrl: `/checkins/review?code=${cleanCode}`
+      });
+    }
+  });
+
+  // 3. Pending Intakes Awaiting Initial Plan Setup
+  pendingIntakes.forEach(sub => {
+    const rawCode = sub?.user?.client_code || sub?.answers?.client_code || sub?.client_code || sub?.user_id || sub?.id || '1';
+    const cleanCode = String(rawCode).replace(/^client[-_]?/i, '').replace('#', '');
+    if (!actionsMap.has(cleanCode)) {
       const phone = sub?.user?.phone_number || sub?.phone_number || '';
       const country = getClientCountryInfo(phone, sub?.country || sub?.answers?.personal?.country || sub?.user?.country || '');
       const hasInjury = Boolean(sub?.answers?.injuries_map?.has_injuries || (sub?.answers?.injuries_map?.selected_areas && sub?.answers?.injuries_map?.selected_areas.length > 0));
-      return {
-        id: `INTAKE_${sub?.id || Math.random()}`,
+      actionsMap.set(cleanCode, {
+        id: `INTAKE_${cleanCode}`,
+        clientCode: cleanCode,
         type: hasInjury ? 'INJURY' : 'NEW_INTAKE',
         hasInjury,
-        clientName: sub?.user?.full_name || sub?.full_name || `مشترك #${sub?.user?.client_code || sub?.user_id || sub?.id || ''}`,
+        clientName: sub?.user?.full_name || sub?.full_name || `مشترك #${cleanCode}`,
         country,
         tier: sub?.subscription_package || sub?.user?.subscription_package || 'ELITE_4M',
         phone,
@@ -222,28 +271,13 @@ export default function CoachCommandCenter() {
           : (sub?.status === 'PAID' ? 'تم تأكيد الدفع • الاستمارة جاهزة لإعداد الخطة.' : 'استمارة جديدة بانتظار تجهيز الخطة.'),
         suggestedAction: 'تجهيز واعتماد خطة المشترك',
         badgeText: hasInjury ? 'إصابة مسجلة' : (sub?.status === 'PAID' ? 'مدفوع • بانتظار الخطة' : 'استمارة جديدة'),
-        actionUrl: `/coach/editor?user_id=${sub?.user_id || sub?.user?.id || sub?.id || ''}`
-      };
-    }),
-    // 2. Expiring Subscriptions Awaiting Renewal Outreach
-    ...expiringClients.map(c => {
-      const phone = c?.phone_number || '';
-      const country = getClientCountryInfo(phone, c?.country || '');
-      return {
-        id: `RENEWAL_${c?.id || Math.random()}`,
-        type: 'RENEWAL',
-        clientName: c?.full_name || `مشترك #${c?.client_code || ''}`,
-        country,
-        tier: c?.package || c?.package_code || 'MAX_4M',
-        phone,
-        timeAgo: formatTimeAgo(c?.created_at || c?.updated_at),
-        summary: `متبقي ${c?.days_remaining || 0} أيام على نهاية باقة الاشتراك.`,
-        suggestedAction: 'مراسلة المشترك لتجديد الاشتراك',
-        badgeText: 'تجديد قريب',
-        actionUrl: `/subscriptions`
-      };
-    })
-  ];
+        actionUrl: `/coach/editor?user_id=${cleanCode}`
+      });
+    }
+  });
+
+  // Convert map values to array sorted by numeric clientCode
+  const dailyActions = Array.from(actionsMap.values()).sort((a, b) => Number(a.clientCode) - Number(b.clientCode));
 
   const newIntakeCount = dailyActions.filter(a => a.type === 'NEW_INTAKE').length;
   const checkinCount = dailyActions.filter(a => a.type === 'CHECKIN').length;
@@ -264,19 +298,19 @@ export default function CoachCommandCenter() {
   // Dynamic Live KPIs (Interactive Click-to-Filter)
   const stats = [
     { 
-      title: 'إجمالي المشتركين النشطين', 
+      title: 'المشتركون النشطون', 
       value: (overview?.active_count ?? safeClients.length).toString(), 
-      trend: (overview?.active_count || 0) > 0 ? '+100%' : '0%', 
-      trendLabel: 'حسابات مفعلة', 
+      unit: 'مشترك',
+      label: 'حسابات مفعلة', 
       icon: Users,
       onClick: () => navigate('/customers'),
       tooltip: 'عرض سجل المشتركين (CRM)'
     },
     { 
-      title: 'استمارات وتقييمات معلقة', 
+      title: 'استمارات بانتظار المراجعة', 
       value: pendingIntakes.length.toString(), 
-      trend: pendingIntakes.length > 0 ? 'مطلوب مراجعة' : 'مكتمل', 
-      trendLabel: 'طابور المهام', 
+      unit: 'استمارة',
+      label: 'قيد الانتظار', 
       icon: Clock,
       onClick: () => setActiveTab('NEW_INTAKE'),
       tooltip: 'فلترة الاستمارات الجديدة'
@@ -284,17 +318,17 @@ export default function CoachCommandCenter() {
     { 
       title: 'تنبيهات الإصابات والشكاوى', 
       value: injuryCount.toString(), 
-      trend: injuryCount > 0 ? 'مطلوب تدخل' : 'آمن', 
-      trendLabel: injuryCount > 0 ? 'حالات نشطة' : 'استقرار تام', 
+      unit: 'تنبيه',
+      label: injuryCount > 0 ? 'حالات نشطة' : 'لا توجد حالات', 
       icon: ShieldAlert,
       onClick: () => setActiveTab('INJURY'),
       tooltip: 'فلترة الإصابات والشكاوى'
     },
     { 
-      title: 'تجديدات خلال 7 أيام', 
+      title: 'تجديدات قادمة (7 أيام)', 
       value: (overview?.expiring_soon_count ?? expiringClients.length).toString(), 
-      trend: expiringClients.length > 0 ? 'تنبيه' : 'لا يوجد', 
-      trendLabel: 'متابعة مالية', 
+      unit: 'مشترك',
+      label: 'متابعة الاشتراكات', 
       icon: Hourglass,
       onClick: () => setActiveTab('RENEWAL'),
       tooltip: 'فلترة اشتراكات التجديد'
@@ -308,20 +342,21 @@ export default function CoachCommandCenter() {
 
     // 2. Search query filter
     if (searchQuery.trim()) {
-      const q = searchQuery.trim().toLowerCase();
+      const q = searchQuery.trim().toLowerCase().replace('#', '');
       const name = String(act.clientName || '').toLowerCase();
+      const code = String(act.clientCode || '').toLowerCase();
       const phone = String(act.phone || '').toLowerCase();
       const id = String(act.id || '').toLowerCase();
       const tier = String(act.tier || '').toLowerCase();
-      return name.includes(q) || phone.includes(q) || id.includes(q) || tier.includes(q);
+      return name.includes(q) || code.includes(q) || phone.includes(q) || id.includes(q) || tier.includes(q);
     }
 
     return true;
   });
 
   return (
-    <AdminLayout onOpenNewClient={() => setIsNewClientModalOpen(true)}>
-      <div className="page-stack" dir="rtl" style={{ display: 'flex', flexDirection: 'column', gap: '18px' }}>
+    <AdminLayout>
+      <div dir="rtl" style={{ display: 'flex', flexDirection: 'column', gap: '18px' }}>
         
         {/* 1. Page Header */}
         <PageHeader
@@ -350,9 +385,11 @@ export default function CoachCommandCenter() {
                   boxShadow: '0 1px 2px rgba(15, 23, 42, 0.04)',
                   transition: 'all 0.15s ease'
                 }}
+                onMouseEnter={(e) => (e.currentTarget.style.background = '#F8FAFC')}
+                onMouseLeave={(e) => (e.currentTarget.style.background = '#FFFFFF')}
               >
-                <RefreshCw size={13} style={{ animation: loading ? 'spin 1s linear infinite' : 'none' }} />
-                <span>{loading ? 'جاري التحديث...' : 'تحديث'}</span>
+                <RefreshCw size={13} className={loading ? 'animate-spin' : ''} />
+                <span>تحديث</span>
               </button>
               <button 
                 type="button" 
@@ -396,11 +433,11 @@ export default function CoachCommandCenter() {
                   background: '#FFFFFF',
                   border: '1px solid #E2E8F0',
                   borderRadius: '10px',
-                  padding: '14px 16px',
+                  padding: '16px 18px',
                   boxShadow: '0 1px 3px rgba(15, 23, 42, 0.02)',
                   display: 'flex',
                   flexDirection: 'column',
-                  gap: '10px',
+                  gap: '12px',
                   cursor: st.onClick ? 'pointer' : 'default',
                   transition: 'all 0.18s ease'
                 }}
@@ -420,19 +457,25 @@ export default function CoachCommandCenter() {
                 }}
               >
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                  <span style={{ fontSize: '12px', fontWeight: 700, color: '#64748B' }}>{st.title}</span>
-                  <div style={{ width: '30px', height: '30px', borderRadius: '6px', background: '#F8FAFC', border: '1px solid #E2E8F0', color: '#0F172A', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  <span style={{ fontSize: '12.5px', fontWeight: 700, color: '#64748B', whiteSpace: 'nowrap' }}>{st.title}</span>
+                  <div style={{ width: '30px', height: '30px', borderRadius: '6px', background: '#F8FAFC', border: '1px solid #E2E8F0', color: '#0F172A', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
                     <IconComponent size={15} strokeWidth={2} />
                   </div>
                 </div>
-                <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between' }}>
-                  <span style={{ fontSize: '1.75rem', fontWeight: 900, color: '#0F172A', fontFamily: 'JetBrains Mono, Cairo, sans-serif', lineHeight: 1 }}>
-                    {st.value}
-                  </span>
-                  <div style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', background: '#F8FAFC', border: '1px solid #E2E8F0', color: '#475569', padding: '2px 7px', borderRadius: '4px', fontSize: '10.5px', fontWeight: 700 }}>
-                    <span dir="ltr" style={{ fontWeight: 800 }}>{st.trend}</span>
-                    <span>{st.trendLabel}</span>
+                <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', gap: '8px' }}>
+                  <div style={{ display: 'flex', alignItems: 'baseline', gap: '4px' }}>
+                    <span style={{ fontSize: '1.65rem', fontWeight: 900, color: '#0F172A', fontFamily: 'JetBrains Mono, Cairo, sans-serif', lineHeight: 1 }}>
+                      {st.value}
+                    </span>
+                    {st.unit && (
+                      <span style={{ fontSize: '11.5px', fontWeight: 700, color: '#64748B' }}>
+                        {st.unit}
+                      </span>
+                    )}
                   </div>
+                  <span style={{ fontSize: '11px', color: '#94A3B8', fontWeight: 600, whiteSpace: 'nowrap' }}>
+                    {st.label}
+                  </span>
                 </div>
               </div>
             );
@@ -540,25 +583,29 @@ export default function CoachCommandCenter() {
                     >
                       {/* 1. Top Row: Client Details & Badges */}
                       <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
-                        <span style={{ 
-                          fontFamily: 'JetBrains Mono, monospace', 
-                          fontWeight: 800, 
-                          fontSize: '11px', 
-                          background: '#F0F9FF', 
-                          border: '1px solid #BAE6FD', 
-                          color: '#0284C7', 
-                          padding: '2px 7px', 
-                          borderRadius: '4px' 
-                        }}>
-                          {'#' + action.id.replace('INTAKE_', '').replace('RENEWAL_', '').replace('ACT_0', '')}
-                        </span>
+                        {(() => {
+                          const isMax = String(action.tier || '').toUpperCase().includes('MAX') || String(action.tier || '').includes('ماكس');
+                          return (
+                            <span style={{ 
+                              fontFamily: 'JetBrains Mono, monospace', 
+                              fontWeight: 800, 
+                              fontSize: '11px', 
+                              background: '#F8FAFC', 
+                              border: '1px solid #E2E8F0', 
+                              color: isMax ? '#B45309' : '#0284C7', 
+                              padding: '2px 7px', 
+                              borderRadius: '4px' 
+                            }}>
+                              {'#' + action.clientCode}
+                            </span>
+                          );
+                        })()}
                         <strong style={{ fontSize: '13.5px', fontWeight: 800, color: '#0F172A' }}>
                           {action.clientName}
                         </strong>
                         {action.country && (
-                          <span style={{ fontSize: '11px', color: '#1E293B', background: '#F8FAFC', padding: '1px 7px', borderRadius: '4px', border: '1px solid #E2E8F0', fontWeight: 700, display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
-                            <span>{action.country.flag}</span>
-                            <span>{action.country.name}</span>
+                          <span style={{ fontSize: '11px', color: '#1E293B', background: '#F8FAFC', padding: '1px 7px', borderRadius: '4px', border: '1px solid #E2E8F0', fontWeight: 700 }}>
+                            {action.country.name}
                           </span>
                         )}
                         {(() => {
@@ -631,22 +678,31 @@ export default function CoachCommandCenter() {
                             href={'https://wa.me/' + action.phone.replace(/\D/g, '') + '?text=' + getWhatsAppMessage(action)}
                             target="_blank"
                             rel="noreferrer"
-                            title="مراسلة سريعة برسالة ترحيبية جاهزة"
+                            title="مراسلة عبر واتساب"
                             style={{
                               padding: '4px 10px',
-                              borderRadius: '5px',
-                              border: '1px solid #22C55E',
-                              background: '#FFFFFF',
-                              color: '#0F172A',
+                              borderRadius: '6px',
+                              border: '1px solid #86EFAC',
+                              background: '#F0FDF4',
+                              color: '#16A34A',
                               fontWeight: 700,
                               fontSize: '11.5px',
                               textDecoration: 'none',
                               display: 'inline-flex',
                               alignItems: 'center',
-                              gap: '4px',
+                              gap: '5px',
                               transition: 'all 0.15s ease'
                             }}
+                            onMouseEnter={(e) => {
+                              e.currentTarget.style.background = '#DCFCE7';
+                              e.currentTarget.style.borderColor = '#4ADE80';
+                            }}
+                            onMouseLeave={(e) => {
+                              e.currentTarget.style.background = '#F0FDF4';
+                              e.currentTarget.style.borderColor = '#86EFAC';
+                            }}
                           >
+                            <MessageCircle size={13} />
                             <span>واتساب</span>
                           </a>
                         )}

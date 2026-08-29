@@ -8,6 +8,7 @@ const __dirname = path.dirname(__filename);
 const SETTINGS_DIR = path.join(__dirname, '../../../data/settings');
 const INTAKE_QUESTIONS_FILE = path.join(SETTINGS_DIR, 'intake_questions.json');
 const EXERCISES_CATALOG_FILE = path.join(SETTINGS_DIR, 'exercises_catalog.json');
+const FOODS_CATALOG_FILE = path.join(SETTINGS_DIR, 'foods_catalog.json');
 const SYSTEM_SETTINGS_FILE = path.join(SETTINGS_DIR, 'system_settings.json');
 
 // Helper to ensure settings directory exists
@@ -522,7 +523,10 @@ export const saveAdminExercise = (req, res) => {
       video_url: exerciseData.video_url || (video_id ? `https://www.youtube.com/watch?v=${video_id}` : ""),
       video_id: video_id || "",
       cues_ar: exerciseData.cues_ar || "",
-      mistakes_ar: exerciseData.mistakes_ar || ""
+      mistakes_ar: exerciseData.mistakes_ar || "",
+      images: exerciseData.images || (exerciseData.image_stretch ? [exerciseData.image_stretch, exerciseData.image_contraction] : undefined),
+      image_stretch: exerciseData.image_stretch || (exerciseData.images && exerciseData.images[0]),
+      image_contraction: exerciseData.image_contraction || (exerciseData.images && exerciseData.images[1])
     };
 
     if (idx === -1) {
@@ -709,3 +713,87 @@ export const deleteSubscriptionPackage = (req, res) => {
     return res.status(500).json({ error: "فشل حذف الباقة", details: err.message });
   }
 };
+
+// ----------------------------------------------------
+// FOODS & NUTRITION CATALOG CONTROLLERS
+// ----------------------------------------------------
+export function getFoodsCatalogFile() {
+  ensureSettingsDir();
+  if (!fs.existsSync(FOODS_CATALOG_FILE)) {
+    return [];
+  }
+  try {
+    const raw = fs.readFileSync(FOODS_CATALOG_FILE, 'utf8');
+    return JSON.parse(raw);
+  } catch (e) {
+    return [];
+  }
+}
+
+export function saveFoodsCatalogFile(foods) {
+  ensureSettingsDir();
+  fs.writeFileSync(FOODS_CATALOG_FILE, JSON.stringify(foods, null, 2), 'utf8');
+}
+
+export const getAdminFoods = (req, res) => {
+  try {
+    const foods = getFoodsCatalogFile();
+    return res.status(200).json({ success: true, count: foods.length, foods });
+  } catch (err) {
+    return res.status(500).json({ error: "فشل استرجاع مكتبة الأطعمة", details: err.message });
+  }
+};
+
+export const saveAdminFood = (req, res) => {
+  try {
+    const foodData = req.body;
+    let foods = getFoodsCatalogFile();
+
+    const foodId = foodData.id || `FOOD_${Date.now()}`;
+    const idx = foods.findIndex(f => f.id === foodId);
+
+    const fullFood = {
+      id: foodId,
+      name_ar: foodData.name_ar || "صنف جديد",
+      name_en: foodData.name_en || "New Food Item",
+      macro_type: foodData.macro_type || "PROTEIN",
+      category_ar: foodData.category_ar || "عام",
+      food_state: foodData.food_state || "COOKED",
+      calories_per_100g: Number(foodData.calories_per_100g) || 0,
+      protein_per_100g: Number(foodData.protein_per_100g) || 0,
+      carbs_per_100g: Number(foodData.carbs_per_100g) || 0,
+      fat_per_100g: Number(foodData.fat_per_100g) || 0,
+      fiber_per_100g: Number(foodData.fiber_per_100g) || 0,
+      yield_factor: Number(foodData.yield_factor) || 1.0,
+      serving_unit_ar: foodData.serving_unit_ar || "جرام",
+      is_gluten_free: Boolean(foodData.is_gluten_free),
+      is_dairy: Boolean(foodData.is_dairy),
+      allergens: Array.isArray(foodData.allergens) ? foodData.allergens : [],
+      notes_ar: foodData.notes_ar || ""
+    };
+
+    if (idx === -1) {
+      foods.unshift(fullFood);
+    } else {
+      foods[idx] = { ...foods[idx], ...fullFood };
+    }
+
+    saveFoodsCatalogFile(foods);
+    return res.status(200).json({ success: true, message: "تم حفظ بيانات الصنف بنجاح", food: fullFood, foods });
+  } catch (err) {
+    return res.status(500).json({ error: "فشل حفظ صنف الطعام", details: err.message });
+  }
+};
+
+export const deleteAdminFood = (req, res) => {
+  try {
+    const { id } = req.params;
+    let foods = getFoodsCatalogFile();
+    foods = foods.filter(f => f.id !== id);
+    saveFoodsCatalogFile(foods);
+    return res.status(200).json({ success: true, message: "تم حذف الصنف من المكتبة بنجاح", foods });
+  } catch (err) {
+    return res.status(500).json({ error: "فشل حذف الصنف", details: err.message });
+  }
+};
+

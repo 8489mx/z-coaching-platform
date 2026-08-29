@@ -125,8 +125,8 @@ export default function CoachCommandCenter({ clients = [], onUpdateClientPlan = 
                     <span>التزام {client.pending_checkin.adherence_pct}%</span>
                   </div>
                   <div className="text-xs text-slate-700 space-y-1 mb-3">
-                    <p>الوزن: {client.pending_checkin.previous_weight}kg ➔ <strong className="text-slate-900">{client.pending_checkin.current_weight}kg</strong></p>
-                    <p>الخصر: {client.pending_checkin.previous_waist}cm ➔ <strong className="text-slate-900">{client.pending_checkin.current_waist}cm</strong></p>
+                    <p>الوزن: {client.pending_checkin.previous_weight}kg → <strong className="text-slate-900">{client.pending_checkin.current_weight}kg</strong></p>
+                    <p>الخصر: {client.pending_checkin.previous_waist}cm → <strong className="text-slate-900">{client.pending_checkin.current_waist}cm</strong></p>
                   </div>
                   <button
                     onClick={() => handleApproveCheckin(client)}

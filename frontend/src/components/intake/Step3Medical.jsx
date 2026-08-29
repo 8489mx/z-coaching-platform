@@ -94,7 +94,7 @@ export default function Step3Medical({
           style={{ borderColor: noSymptoms ? '#10b981' : '#e2e8f0' }}
         >
           <div className="choice-title" style={{ color: noSymptoms ? '#059669' : 'inherit', fontWeight: '700' }}>
-            ✓ لا أعاني من أي أعراض تحذيرية نهائياً
+            لا أعاني من أي أعراض تحذيرية نهائياً
           </div>
         </div>
       </div>

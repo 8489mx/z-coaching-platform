@@ -87,20 +87,20 @@ export default function CoachAnalyticsDashboard() {
   const expiredPct = Math.round(((overview.expired_count || 0) / total) * 100);
 
   const statCards = [
-    { title: 'الإيرادات الشهرية المتوقعة', value: `${(overview.total_monthly_revenue || 0).toLocaleString()} ج.م`, label: 'تدفق نقدي صحي', icon: Wallet },
-    { title: 'العملاء النشطين (Active)', value: overview.active_count || 0, label: 'معدل تفاعل ممتاز', icon: Users },
-    { title: 'اشتراكات تنتهي قريباً', value: overview.expiring_soon_count || 0, label: 'أقل من 7 أيام', icon: Clock },
-    { title: 'إجمالي قاعدة البيانات', value: overview.total_clients || clients.length, label: 'تاريخ المنصة', icon: ShieldCheck },
+    { title: 'إجمالي الإيرادات المتوقعة', value: Number(overview.total_monthly_revenue || 0).toLocaleString(), unit: 'ج.م', label: 'الشهر الحالي', icon: Wallet },
+    { title: 'المشتركون النشطون', value: overview.active_count || 0, unit: 'مشترك', label: 'سارية ومفعلة', icon: Users },
+    { title: 'اشتراكات قريبة من الانتهاء', value: overview.expiring_soon_count || 0, unit: 'مشترك', label: 'خلال 7 أيام', icon: Clock },
+    { title: 'إجمالي المشتركين', value: overview.total_clients || clients.length, unit: 'مشترك', label: 'قاعدة البيانات', icon: ShieldCheck },
   ];
 
   return (
     <AdminLayout>
-      <div className="page-stack" dir="rtl" style={{ display: 'flex', flexDirection: 'column', gap: '18px' }}>
+      <div dir="rtl" style={{ display: 'flex', flexDirection: 'column', gap: '18px' }}>
         
         {/* 1. Page Header */}
         <PageHeader
           title="إحصائيات الأداء المالي واستقرار المشتركين"
-          description="تحليل التدفقات النقدية، نسب الاستبقاء (Retention)، ومتابعة المشتركين القاربين على التجديد."
+          description="تحليل الإيرادات، معدلات الاستمرارية (Retention)، ومتابعة الاشتراكات القادمة للتجديد."
           actions={(
             <button 
               type="button" 
@@ -141,24 +141,33 @@ export default function CoachAnalyticsDashboard() {
                   background: '#FFFFFF',
                   border: '1px solid #E2E8F0',
                   borderRadius: '10px',
-                  padding: '12px 14px',
+                  padding: '16px 18px',
                   boxShadow: '0 1px 3px rgba(15, 23, 42, 0.02)',
                   display: 'flex',
                   flexDirection: 'column',
-                  gap: '8px'
+                  gap: '12px'
                 }}
               >
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                  <span style={{ fontSize: '11.5px', fontWeight: 700, color: '#64748B' }}>{st.title}</span>
-                  <div style={{ width: '28px', height: '28px', borderRadius: '6px', background: '#F8FAFC', border: '1px solid #E2E8F0', color: '#0F172A', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                    <Icon size={14} />
+                  <span style={{ fontSize: '12.5px', fontWeight: 700, color: '#64748B', whiteSpace: 'nowrap' }}>{st.title}</span>
+                  <div style={{ width: '30px', height: '30px', borderRadius: '6px', background: '#F8FAFC', border: '1px solid #E2E8F0', color: '#0F172A', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                    <Icon size={15} />
                   </div>
                 </div>
-                <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between' }}>
-                  <span style={{ fontSize: '1.6rem', fontWeight: 900, color: '#0F172A', fontFamily: 'JetBrains Mono, Cairo, sans-serif', lineHeight: 1 }}>
-                    {st.value}
+                <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', gap: '8px' }}>
+                  <div style={{ display: 'flex', alignItems: 'baseline', gap: '4px' }}>
+                    <span style={{ fontSize: '1.65rem', fontWeight: 900, color: '#0F172A', fontFamily: 'JetBrains Mono, Cairo, sans-serif', lineHeight: 1 }}>
+                      {st.value}
+                    </span>
+                    {st.unit && (
+                      <span style={{ fontSize: '11.5px', fontWeight: 700, color: '#64748B' }}>
+                        {st.unit}
+                      </span>
+                    )}
+                  </div>
+                  <span style={{ fontSize: '11px', color: '#94A3B8', fontWeight: 600, whiteSpace: 'nowrap' }}>
+                    {st.label}
                   </span>
-                  <span style={{ fontSize: '10.5px', color: '#94A3B8', fontWeight: 600 }}>{st.label}</span>
                 </div>
               </div>
             );

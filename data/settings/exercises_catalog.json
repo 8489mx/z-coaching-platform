@@ -40,7 +40,14 @@
       "GYM",
       "HOME_DUMBBELL"
     ],
-    "thumbnail_url": "/assets/exercises/incline-db-press.webp"
+    "thumbnail_url": "/assets/exercises/incline-db-press.webp",
+    "free_db_id": "Incline_Dumbbell_Press",
+    "image_stretch": "https://cdn.jsdelivr.net/gh/yuhonas/free-exercise-db@main/exercises/Incline_Dumbbell_Press/0.jpg",
+    "image_contraction": "https://cdn.jsdelivr.net/gh/yuhonas/free-exercise-db@main/exercises/Incline_Dumbbell_Press/1.jpg",
+    "images": [
+      "https://cdn.jsdelivr.net/gh/yuhonas/free-exercise-db@main/exercises/Incline_Dumbbell_Press/0.jpg",
+      "https://cdn.jsdelivr.net/gh/yuhonas/free-exercise-db@main/exercises/Incline_Dumbbell_Press/1.jpg"
+    ]
   },
   {
     "id": "chest_flat_barbell_press",
@@ -74,7 +81,14 @@
       "فقدان ثبات لوحي الكتف وارتفاعهما للأمام أثناء الدفع للأعلى."
     ],
     "cues_ar": "ثبّت لوحي الكتف للخلف والأسفل (Scapular Retraction) طوال الحركة. انزل بالبار إلى منتصف عظمة القص بمسار قوسي طفيف وتحكم كامل. ادفع الأرض بقدميك (Leg Drive) للمساعدة في ثبات الجسم والدفع الرأسي.",
-    "mistakes_ar": "ارتداد البار عن القفص الصدري في الأسفل. فقدان ثبات لوحي الكتف وارتفاعهما للأمام أثناء الدفع للأعلى."
+    "mistakes_ar": "ارتداد البار عن القفص الصدري في الأسفل. فقدان ثبات لوحي الكتف وارتفاعهما للأمام أثناء الدفع للأعلى.",
+    "free_db_id": "Barbell_Bench_Press_-_Medium_Grip",
+    "image_stretch": "https://cdn.jsdelivr.net/gh/yuhonas/free-exercise-db@main/exercises/Barbell_Bench_Press_-_Medium_Grip/0.jpg",
+    "image_contraction": "https://cdn.jsdelivr.net/gh/yuhonas/free-exercise-db@main/exercises/Barbell_Bench_Press_-_Medium_Grip/1.jpg",
+    "images": [
+      "https://cdn.jsdelivr.net/gh/yuhonas/free-exercise-db@main/exercises/Barbell_Bench_Press_-_Medium_Grip/0.jpg",
+      "https://cdn.jsdelivr.net/gh/yuhonas/free-exercise-db@main/exercises/Barbell_Bench_Press_-_Medium_Grip/1.jpg"
+    ]
   },
   {
     "id": "chest_incline_machine_press",
@@ -107,7 +121,14 @@
       "انفصال الظهر عن المسند أثناء الدفع القوي."
     ],
     "cues_ar": "اضبط ارتفاع المقعد لتكون المقابض بمحاذاة الترقوة وأعلى الصدر. ادفع للأمام وللأعلى في المسار التقاربي للجهاز مع الحفاظ على ملاصقة الظهر للدكة. تحكم بالوزن أثناء الرجوع للوراء في ثانيتين للشعور بإطالة الصدر.",
-    "mistakes_ar": "استخدام وزن مفرط يمنع المدى الحركي الكامل في الرجوع. انفصال الظهر عن المسند أثناء الدفع القوي."
+    "mistakes_ar": "استخدام وزن مفرط يمنع المدى الحركي الكامل في الرجوع. انفصال الظهر عن المسند أثناء الدفع القوي.",
+    "free_db_id": "Leverage_Incline_Chest_Press",
+    "image_stretch": "https://cdn.jsdelivr.net/gh/yuhonas/free-exercise-db@main/exercises/Leverage_Incline_Chest_Press/0.jpg",
+    "image_contraction": "https://cdn.jsdelivr.net/gh/yuhonas/free-exercise-db@main/exercises/Leverage_Incline_Chest_Press/1.jpg",
+    "images": [
+      "https://cdn.jsdelivr.net/gh/yuhonas/free-exercise-db@main/exercises/Leverage_Incline_Chest_Press/0.jpg",
+      "https://cdn.jsdelivr.net/gh/yuhonas/free-exercise-db@main/exercises/Leverage_Incline_Chest_Press/1.jpg"
+    ]
   },
   {
     "id": "chest_pec_deck_fly",
@@ -139,7 +160,14 @@
       "ثني وفرد الكوعين أثناء الحركة وتحويلها لتمرين دفع."
     ],
     "cues_ar": "حافظ على ثنية طفيفة وثابتة في الكوعين طوال مسار الحركة. اجمع الذراعين أمام منتصف الصدر مع عصر الألياف بقوة لمدة ثانية في قمة الانقباض. ارجع بالوزن ببطء حتى تشعر بتمدد مريح في الصدر دون مبالغة في تمديد الكتف.",
-    "mistakes_ar": "إرجاع الذراعين للخلف أكثر من اللازم مما يسبب إجهاداً لأوتار الكتف الدوارة. ثني وفرد الكوعين أثناء الحركة وتحويلها لتمرين دفع."
+    "mistakes_ar": "إرجاع الذراعين للخلف أكثر من اللازم مما يسبب إجهاداً لأوتار الكتف الدوارة. ثني وفرد الكوعين أثناء الحركة وتحويلها لتمرين دفع.",
+    "free_db_id": "Butterfly",
+    "image_stretch": "https://cdn.jsdelivr.net/gh/yuhonas/free-exercise-db@main/exercises/Butterfly/0.jpg",
+    "image_contraction": "https://cdn.jsdelivr.net/gh/yuhonas/free-exercise-db@main/exercises/Butterfly/1.jpg",
+    "images": [
+      "https://cdn.jsdelivr.net/gh/yuhonas/free-exercise-db@main/exercises/Butterfly/0.jpg",
+      "https://cdn.jsdelivr.net/gh/yuhonas/free-exercise-db@main/exercises/Butterfly/1.jpg"
+    ]
   },
   {
     "id": "chest_low_to_high_cable_fly",
@@ -171,7 +199,14 @@
       "التأرجح بالجسم للخلف لرفع أوزان زائدة."
     ],
     "cues_ar": "اضبط بكرات الكابل في أدنى مستوى مع مسك المقابض وراحة اليد متجهة لأعلى. اسحب المقابض في مسار نصف دائري للأعلى باتجاه الذقن مع ثبات انحناءة الكوع. اعصر أعلى الصدر في قمة الحركة وتحكم في النزول السلبي.",
-    "mistakes_ar": "رفع الوزن بعضلات البايسبس بدلاً من ضم الصدر العلوي. التأرجح بالجسم للخلف لرفع أوزان زائدة."
+    "mistakes_ar": "رفع الوزن بعضلات البايسبس بدلاً من ضم الصدر العلوي. التأرجح بالجسم للخلف لرفع أوزان زائدة.",
+    "free_db_id": "Cable_Crossover",
+    "image_stretch": "https://cdn.jsdelivr.net/gh/yuhonas/free-exercise-db@main/exercises/Cable_Crossover/0.jpg",
+    "image_contraction": "https://cdn.jsdelivr.net/gh/yuhonas/free-exercise-db@main/exercises/Cable_Crossover/1.jpg",
+    "images": [
+      "https://cdn.jsdelivr.net/gh/yuhonas/free-exercise-db@main/exercises/Cable_Crossover/0.jpg",
+      "https://cdn.jsdelivr.net/gh/yuhonas/free-exercise-db@main/exercises/Cable_Crossover/1.jpg"
+    ]
   },
   {
     "id": "chest_dips",
@@ -205,7 +240,14 @@
       "النزول لعمق مفرط يسبب ضغطاً حاداً على كبسولة مفصل الكتف."
     ],
     "cues_ar": "انحنِ بالجذع للأمام بزاوية 30 درجة لتوجيه الحمل للصدر السفلي. افتح الكوعين للخارج قليلاً وانزل حتى يصل الكوع إلى زاوية 90 درجة. ادفع بقوة للأعلى مع التركيز على عصر أسفل الصدر.",
-    "mistakes_ar": "النزول بشكل عمودي مستقيم مما يحول التمرين بالكامل لعضلة الترايسبس. النزول لعمق مفرط يسبب ضغطاً حاداً على كبسولة مفصل الكتف."
+    "mistakes_ar": "النزول بشكل عمودي مستقيم مما يحول التمرين بالكامل لعضلة الترايسبس. النزول لعمق مفرط يسبب ضغطاً حاداً على كبسولة مفصل الكتف.",
+    "free_db_id": "Dips_-_Chest_Version",
+    "image_stretch": "https://cdn.jsdelivr.net/gh/yuhonas/free-exercise-db@main/exercises/Dips_-_Chest_Version/0.jpg",
+    "image_contraction": "https://cdn.jsdelivr.net/gh/yuhonas/free-exercise-db@main/exercises/Dips_-_Chest_Version/1.jpg",
+    "images": [
+      "https://cdn.jsdelivr.net/gh/yuhonas/free-exercise-db@main/exercises/Dips_-_Chest_Version/0.jpg",
+      "https://cdn.jsdelivr.net/gh/yuhonas/free-exercise-db@main/exercises/Dips_-_Chest_Version/1.jpg"
+    ]
   },
   {
     "id": "chest_standard_pushup",
@@ -240,7 +282,14 @@
       "فتح الكوعين بزاوية 90 درجة مما يؤذي الكتف."
     ],
     "cues_ar": "حافظ على استقامة الجسم ككتلة واحدة من الرأس للكعبين مع شد المؤخرة والبطن. انزل حتى يقترب الصدر من الأرض بزاوية كوع 45 درجة مع الجذع. ادفع الأرض بقوة للأعلى حتى استقامة الذراعين التامة.",
-    "mistakes_ar": "سقوط الحوض للأسفل وتقوس القطنية. فتح الكوعين بزاوية 90 درجة مما يؤذي الكتف."
+    "mistakes_ar": "سقوط الحوض للأسفل وتقوس القطنية. فتح الكوعين بزاوية 90 درجة مما يؤذي الكتف.",
+    "free_db_id": "Pushups",
+    "image_stretch": "https://cdn.jsdelivr.net/gh/yuhonas/free-exercise-db@main/exercises/Pushups/0.jpg",
+    "image_contraction": "https://cdn.jsdelivr.net/gh/yuhonas/free-exercise-db@main/exercises/Pushups/1.jpg",
+    "images": [
+      "https://cdn.jsdelivr.net/gh/yuhonas/free-exercise-db@main/exercises/Pushups/0.jpg",
+      "https://cdn.jsdelivr.net/gh/yuhonas/free-exercise-db@main/exercises/Pushups/1.jpg"
+    ]
   },
   {
     "id": "chest_incline_pushup",
@@ -283,7 +332,14 @@
       "BODYWEIGHT",
       "HOME_DUMBBELL"
     ],
-    "thumbnail_url": "/assets/exercises/incline-pushup.webp"
+    "thumbnail_url": "/assets/exercises/incline-pushup.webp",
+    "free_db_id": "Incline_Push-Up",
+    "image_stretch": "https://cdn.jsdelivr.net/gh/yuhonas/free-exercise-db@main/exercises/Incline_Push-Up/0.jpg",
+    "image_contraction": "https://cdn.jsdelivr.net/gh/yuhonas/free-exercise-db@main/exercises/Incline_Push-Up/1.jpg",
+    "images": [
+      "https://cdn.jsdelivr.net/gh/yuhonas/free-exercise-db@main/exercises/Incline_Push-Up/0.jpg",
+      "https://cdn.jsdelivr.net/gh/yuhonas/free-exercise-db@main/exercises/Incline_Push-Up/1.jpg"
+    ]
   },
   {
     "id": "chest_feet_elevated_pushup",
@@ -317,7 +373,14 @@
       "هبوط الحوض مما يفقد التمرين زاوية التركيز على الصدر العلوي."
     ],
     "cues_ar": "ضع قدميك على كرسي أو سرير مع وضع اليدين على الأرض بعرض الكتفين. انزل بجذعك المائل باتجاه الأرض حتى يقترب الصدر من الملامسة. ادفع بقوة للأعلى مع الحفاظ على ثبات الكور واستقامة الظهر.",
-    "mistakes_ar": "تقوس الرقبة لأسفل بدلاً من النزول بالصدر. هبوط الحوض مما يفقد التمرين زاوية التركيز على الصدر العلوي."
+    "mistakes_ar": "تقوس الرقبة لأسفل بدلاً من النزول بالصدر. هبوط الحوض مما يفقد التمرين زاوية التركيز على الصدر العلوي.",
+    "free_db_id": "Push-Ups_With_Feet_Elevated",
+    "image_stretch": "https://cdn.jsdelivr.net/gh/yuhonas/free-exercise-db@main/exercises/Push-Ups_With_Feet_Elevated/0.jpg",
+    "image_contraction": "https://cdn.jsdelivr.net/gh/yuhonas/free-exercise-db@main/exercises/Push-Ups_With_Feet_Elevated/1.jpg",
+    "images": [
+      "https://cdn.jsdelivr.net/gh/yuhonas/free-exercise-db@main/exercises/Push-Ups_With_Feet_Elevated/0.jpg",
+      "https://cdn.jsdelivr.net/gh/yuhonas/free-exercise-db@main/exercises/Push-Ups_With_Feet_Elevated/1.jpg"
+    ]
   },
   {
     "id": "back_pullup_chinup",
@@ -353,7 +416,14 @@
       "عدم استكمال المدى الحركي الكامل في الصعود والهبوط."
     ],
     "cues_ar": "امسك البار بقبضة واسعة (أو مقلوبة للـ Chin-Up) مع ثبات الجسم تماماً. اسحب الصدر باتجاه البار مع إرجاع الكوعين للأسفل والداخل وعصر عضلات الظهر. انزل بمدى حركي كامل وبتحكم حتى استطالة عضلات اللاتس دون ارتخاء مفصل الكتف.",
-    "mistakes_ar": "استخدام ركلات الأرجل (Kipping) للتسلق بدلاً من سحب عضلات الظهر. عدم استكمال المدى الحركي الكامل في الصعود والهبوط."
+    "mistakes_ar": "استخدام ركلات الأرجل (Kipping) للتسلق بدلاً من سحب عضلات الظهر. عدم استكمال المدى الحركي الكامل في الصعود والهبوط.",
+    "free_db_id": "Band_Assisted_Pull-Up",
+    "image_stretch": "https://cdn.jsdelivr.net/gh/yuhonas/free-exercise-db@main/exercises/Band_Assisted_Pull-Up/0.jpg",
+    "image_contraction": "https://cdn.jsdelivr.net/gh/yuhonas/free-exercise-db@main/exercises/Band_Assisted_Pull-Up/1.jpg",
+    "images": [
+      "https://cdn.jsdelivr.net/gh/yuhonas/free-exercise-db@main/exercises/Band_Assisted_Pull-Up/0.jpg",
+      "https://cdn.jsdelivr.net/gh/yuhonas/free-exercise-db@main/exercises/Band_Assisted_Pull-Up/1.jpg"
+    ]
   },
   {
     "id": "back_wide_lat_pulldown",
@@ -387,7 +457,14 @@
       "سحب البار خلف الرقبة مما يضع مفصل الكتف والفقرات العنقية في خطر."
     ],
     "cues_ar": "اجلس مع تثبيت الفخذين بإحكام أسفل الوسائد المخصصة. اسحب البار لأسفل باتجاه أعلى عظمة القص مع فتح الصدر وإرجاع الكوعين للأسفل. اعصر لوحي الكتف في القاع، وتحكم في الصعود البطيء في 2-3 ثوانٍ.",
-    "mistakes_ar": "الميلان المفرط للخلف مما يحول التمرين لسحب أرضي بدلاً من تعريض الظهر. سحب البار خلف الرقبة مما يضع مفصل الكتف والفقرات العنقية في خطر."
+    "mistakes_ar": "الميلان المفرط للخلف مما يحول التمرين لسحب أرضي بدلاً من تعريض الظهر. سحب البار خلف الرقبة مما يضع مفصل الكتف والفقرات العنقية في خطر.",
+    "free_db_id": "Wide-Grip_Lat_Pulldown",
+    "image_stretch": "https://cdn.jsdelivr.net/gh/yuhonas/free-exercise-db@main/exercises/Wide-Grip_Lat_Pulldown/0.jpg",
+    "image_contraction": "https://cdn.jsdelivr.net/gh/yuhonas/free-exercise-db@main/exercises/Wide-Grip_Lat_Pulldown/1.jpg",
+    "images": [
+      "https://cdn.jsdelivr.net/gh/yuhonas/free-exercise-db@main/exercises/Wide-Grip_Lat_Pulldown/0.jpg",
+      "https://cdn.jsdelivr.net/gh/yuhonas/free-exercise-db@main/exercises/Wide-Grip_Lat_Pulldown/1.jpg"
+    ]
   },
   {
     "id": "back_chest_supported_row",
@@ -430,7 +507,14 @@
       "GYM",
       "HOME_DUMBBELL"
     ],
-    "thumbnail_url": "/assets/exercises/chest-supported-row.webp"
+    "thumbnail_url": "/assets/exercises/chest-supported-row.webp",
+    "free_db_id": "Bent_Over_Two-Dumbbell_Row_With_Palms_In",
+    "image_stretch": "https://cdn.jsdelivr.net/gh/yuhonas/free-exercise-db@main/exercises/Bent_Over_Two-Dumbbell_Row_With_Palms_In/0.jpg",
+    "image_contraction": "https://cdn.jsdelivr.net/gh/yuhonas/free-exercise-db@main/exercises/Bent_Over_Two-Dumbbell_Row_With_Palms_In/1.jpg",
+    "images": [
+      "https://cdn.jsdelivr.net/gh/yuhonas/free-exercise-db@main/exercises/Bent_Over_Two-Dumbbell_Row_With_Palms_In/0.jpg",
+      "https://cdn.jsdelivr.net/gh/yuhonas/free-exercise-db@main/exercises/Bent_Over_Two-Dumbbell_Row_With_Palms_In/1.jpg"
+    ]
   },
   {
     "id": "back_single_arm_db_row",
@@ -465,7 +549,14 @@
       "تدوير الجذع للأعلى لرفع وزن مفرط."
     ],
     "cues_ar": "ثبت اليد والركبة على الدكة مع الحفاظ على استقامة الظهر وموازاته للأرض. اسحب الدمبل في مسار قوسي باتجاه عظمة الحوض مع قيادة الحركة بالكوع. اعصر أسفل اللاتس في القمة وانزل بالدمبل للأسفل مع استطالة كاملة.",
-    "mistakes_ar": "سحب الدمبل باتجاه الصدر مما يحول الحمل للبايسبس وأعلى الظهر. تدوير الجذع للأعلى لرفع وزن مفرط."
+    "mistakes_ar": "سحب الدمبل باتجاه الصدر مما يحول الحمل للبايسبس وأعلى الظهر. تدوير الجذع للأعلى لرفع وزن مفرط.",
+    "free_db_id": "One-Arm_Dumbbell_Row",
+    "image_stretch": "https://cdn.jsdelivr.net/gh/yuhonas/free-exercise-db@main/exercises/One-Arm_Dumbbell_Row/0.jpg",
+    "image_contraction": "https://cdn.jsdelivr.net/gh/yuhonas/free-exercise-db@main/exercises/One-Arm_Dumbbell_Row/1.jpg",
+    "images": [
+      "https://cdn.jsdelivr.net/gh/yuhonas/free-exercise-db@main/exercises/One-Arm_Dumbbell_Row/0.jpg",
+      "https://cdn.jsdelivr.net/gh/yuhonas/free-exercise-db@main/exercises/One-Arm_Dumbbell_Row/1.jpg"
+    ]
   },
   {
     "id": "back_seated_cable_row",
@@ -499,7 +590,14 @@
       "تقوس الظهر للأمام عند استطالة الكابل."
     ],
     "cues_ar": "اجلس بظهر مستقيم مع ثنية طفيفة في الركبتين وثبات الجذع. اسحب المقبض باتجاه السرة وأسفل البطن مع إرجاع الكوعين للخلف وضم اللوحين. اثبت لمدة ثانية في قمة الانقباض، ثم تحكم في الرجوع للأمام.",
-    "mistakes_ar": "التأرجح الشديد للأمام والخلف أثناء السحب. تقوس الظهر للأمام عند استطالة الكابل."
+    "mistakes_ar": "التأرجح الشديد للأمام والخلف أثناء السحب. تقوس الظهر للأمام عند استطالة الكابل.",
+    "free_db_id": "Seated_Cable_Rows",
+    "image_stretch": "https://cdn.jsdelivr.net/gh/yuhonas/free-exercise-db@main/exercises/Seated_Cable_Rows/0.jpg",
+    "image_contraction": "https://cdn.jsdelivr.net/gh/yuhonas/free-exercise-db@main/exercises/Seated_Cable_Rows/1.jpg",
+    "images": [
+      "https://cdn.jsdelivr.net/gh/yuhonas/free-exercise-db@main/exercises/Seated_Cable_Rows/0.jpg",
+      "https://cdn.jsdelivr.net/gh/yuhonas/free-exercise-db@main/exercises/Seated_Cable_Rows/1.jpg"
+    ]
   },
   {
     "id": "back_straight_arm_pulldown",
@@ -533,7 +631,14 @@
       "استخدام عزم الجذع للتأرجح."
     ],
     "cues_ar": "انحنِ بالجذع للأمام 30 درجة مع فرد الذراعين بثنية كوع طفيفة وثابتة. اضغط الكابل لأسفل في مسار قوسي باتجاه الفخذين بالاعتماد الكامل على عضلات اللاتس. اعصر اللاتس بقوة في الأسفل، ثم ارفع الذراعين ببطء للشعور بإطالة عميقة.",
-    "mistakes_ar": "ثني الكوعين أثناء السحب وتحويل التمرين لضغط ترايسبس. استخدام عزم الجذع للتأرجح."
+    "mistakes_ar": "ثني الكوعين أثناء السحب وتحويل التمرين لضغط ترايسبس. استخدام عزم الجذع للتأرجح.",
+    "free_db_id": "Straight-Arm_Pulldown",
+    "image_stretch": "https://cdn.jsdelivr.net/gh/yuhonas/free-exercise-db@main/exercises/Straight-Arm_Pulldown/0.jpg",
+    "image_contraction": "https://cdn.jsdelivr.net/gh/yuhonas/free-exercise-db@main/exercises/Straight-Arm_Pulldown/1.jpg",
+    "images": [
+      "https://cdn.jsdelivr.net/gh/yuhonas/free-exercise-db@main/exercises/Straight-Arm_Pulldown/0.jpg",
+      "https://cdn.jsdelivr.net/gh/yuhonas/free-exercise-db@main/exercises/Straight-Arm_Pulldown/1.jpg"
+    ]
   },
   {
     "id": "back_conventional_deadlift",
@@ -568,7 +673,14 @@
       "ابتعاد البار عن الساقين مما يضاعف العزم الضاغط على الفقرات القطنية."
     ],
     "cues_ar": "اجعل البار ملاصقاً لقصبة الساق مع فتح القدمين بعرض الحوض واستقامة الظهر. ادفع الأرض بقدميك مع إحكام عضلات اللاتس وشد الكور (Valsalva Maneuver). قف باستقامة كاملة مع قفل الحوض وعصر الجلوتس دون المبالغة في تقويس الظهر للخلف.",
-    "mistakes_ar": "تقوس أسفل الظهر (Lumbar Flexion) أثناء السحب من الأرض. ابتعاد البار عن الساقين مما يضاعف العزم الضاغط على الفقرات القطنية."
+    "mistakes_ar": "تقوس أسفل الظهر (Lumbar Flexion) أثناء السحب من الأرض. ابتعاد البار عن الساقين مما يضاعف العزم الضاغط على الفقرات القطنية.",
+    "free_db_id": "Barbell_Deadlift",
+    "image_stretch": "https://cdn.jsdelivr.net/gh/yuhonas/free-exercise-db@main/exercises/Barbell_Deadlift/0.jpg",
+    "image_contraction": "https://cdn.jsdelivr.net/gh/yuhonas/free-exercise-db@main/exercises/Barbell_Deadlift/1.jpg",
+    "images": [
+      "https://cdn.jsdelivr.net/gh/yuhonas/free-exercise-db@main/exercises/Barbell_Deadlift/0.jpg",
+      "https://cdn.jsdelivr.net/gh/yuhonas/free-exercise-db@main/exercises/Barbell_Deadlift/1.jpg"
+    ]
   },
   {
     "id": "back_45_hyperextension",
@@ -601,7 +713,14 @@
       "التأرجح السريع واستخدام قوة الاندفاع."
     ],
     "cues_ar": "اضبط وسادة الحوض لتكون أسفل عظمة الحوض مباشرة للسماح بحرية حركة مفصل الورك. انزل بالجذع لأسفل مع الحفاظ على استقامة العمود الفقري أو استدارة خفيفة لعزل الجلوتس. ارفع الجذع للأعلى من خلال دفع الحوض في الوسادة وعصر المؤخرة وعضلات أسفل الظهر.",
-    "mistakes_ar": "المبالغة في تقويس الظهر للأعلى أكثر من خط الاستقامة الطبيعي. التأرجح السريع واستخدام قوة الاندفاع."
+    "mistakes_ar": "المبالغة في تقويس الظهر للأعلى أكثر من خط الاستقامة الطبيعي. التأرجح السريع واستخدام قوة الاندفاع.",
+    "free_db_id": "Hyperextensions_Back_Extensions",
+    "image_stretch": "https://cdn.jsdelivr.net/gh/yuhonas/free-exercise-db@main/exercises/Hyperextensions_Back_Extensions/0.jpg",
+    "image_contraction": "https://cdn.jsdelivr.net/gh/yuhonas/free-exercise-db@main/exercises/Hyperextensions_Back_Extensions/1.jpg",
+    "images": [
+      "https://cdn.jsdelivr.net/gh/yuhonas/free-exercise-db@main/exercises/Hyperextensions_Back_Extensions/0.jpg",
+      "https://cdn.jsdelivr.net/gh/yuhonas/free-exercise-db@main/exercises/Hyperextensions_Back_Extensions/1.jpg"
+    ]
   },
   {
     "id": "back_inverted_row",
@@ -636,7 +755,14 @@
       "سحب الرقبة للأمام بدلاً من لمس الصدر للبار."
     ],
     "cues_ar": "تعلق أسفل بار منخفض بجسم مستقيم تماماً وكعبين ثابتين على الأرض. اسحب الصدر باتجاه البار مع توجيه الكوعين للخلف وعصر لوحي الكتف. انزل ببطء وتحكم حتى استقامة الذراعين.",
-    "mistakes_ar": "سقوط الحوض لأسفل أو ثني الخصر أثناء السحب. سحب الرقبة للأمام بدلاً من لمس الصدر للبار."
+    "mistakes_ar": "سقوط الحوض لأسفل أو ثني الخصر أثناء السحب. سحب الرقبة للأمام بدلاً من لمس الصدر للبار.",
+    "free_db_id": "Inverted_Row",
+    "image_stretch": "https://cdn.jsdelivr.net/gh/yuhonas/free-exercise-db@main/exercises/Inverted_Row/0.jpg",
+    "image_contraction": "https://cdn.jsdelivr.net/gh/yuhonas/free-exercise-db@main/exercises/Inverted_Row/1.jpg",
+    "images": [
+      "https://cdn.jsdelivr.net/gh/yuhonas/free-exercise-db@main/exercises/Inverted_Row/0.jpg",
+      "https://cdn.jsdelivr.net/gh/yuhonas/free-exercise-db@main/exercises/Inverted_Row/1.jpg"
+    ]
   },
   {
     "id": "back_shrugs",
@@ -670,7 +796,14 @@
       "ثني الكوعين لمحاولة رفع أوزان ثقيلة."
     ],
     "cues_ar": "احمل الأوزان بجانبك مع استقامة الظهر وثبات الرأس في وضع محايد. ارفع الكتفين رأسياً لأعلى نقطة باتجاه الأذنين مع ثبات لمدة ثانية في القمة. انزل بالكتفين ببطء لتحقيق أقصى استطالة للترابيس.",
-    "mistakes_ar": "تدوير الكتفين للأمام أو الخلف مما يسبب احتكاكاً ضاراً في المفصل. ثني الكوعين لمحاولة رفع أوزان ثقيلة."
+    "mistakes_ar": "تدوير الكتفين للأمام أو الخلف مما يسبب احتكاكاً ضاراً في المفصل. ثني الكوعين لمحاولة رفع أوزان ثقيلة.",
+    "free_db_id": "Barbell_Shrug",
+    "image_stretch": "https://cdn.jsdelivr.net/gh/yuhonas/free-exercise-db@main/exercises/Barbell_Shrug/0.jpg",
+    "image_contraction": "https://cdn.jsdelivr.net/gh/yuhonas/free-exercise-db@main/exercises/Barbell_Shrug/1.jpg",
+    "images": [
+      "https://cdn.jsdelivr.net/gh/yuhonas/free-exercise-db@main/exercises/Barbell_Shrug/0.jpg",
+      "https://cdn.jsdelivr.net/gh/yuhonas/free-exercise-db@main/exercises/Barbell_Shrug/1.jpg"
+    ]
   },
   {
     "id": "shoulders_seated_db_press",
@@ -704,7 +837,14 @@
       "تقوس مفرط في أسفل الظهر لتعويض ضعف الدفع."
     ],
     "cues_ar": "اجعل مسار الكوع مائلاً للأمام 30 درجة في المستوى الكتفي (Scapular Plane). ادفع الدمبلز رأسياً لأعلى الرأس بسلاسة دون تلامسهما في القمة. انزل بالدمبلز حتى مستوى الأذنين مع تحكم كامل.",
-    "mistakes_ar": "فتح الكوعين للخارج بزاوية 90 درجة بالكامل مما يضغط أوتار الكتف. تقوس مفرط في أسفل الظهر لتعويض ضعف الدفع."
+    "mistakes_ar": "فتح الكوعين للخارج بزاوية 90 درجة بالكامل مما يضغط أوتار الكتف. تقوس مفرط في أسفل الظهر لتعويض ضعف الدفع.",
+    "free_db_id": "Seated_Dumbbell_Press",
+    "image_stretch": "https://cdn.jsdelivr.net/gh/yuhonas/free-exercise-db@main/exercises/Seated_Dumbbell_Press/0.jpg",
+    "image_contraction": "https://cdn.jsdelivr.net/gh/yuhonas/free-exercise-db@main/exercises/Seated_Dumbbell_Press/1.jpg",
+    "images": [
+      "https://cdn.jsdelivr.net/gh/yuhonas/free-exercise-db@main/exercises/Seated_Dumbbell_Press/0.jpg",
+      "https://cdn.jsdelivr.net/gh/yuhonas/free-exercise-db@main/exercises/Seated_Dumbbell_Press/1.jpg"
+    ]
   },
   {
     "id": "shoulders_standing_barbell_ohp",
@@ -739,7 +879,14 @@
       "ثني الركبتين واستخدام دفع الأرجل (Push Press) بدلاً من الدفع الصافي للكتف."
     ],
     "cues_ar": "اضغط عضلات المؤخرة والبطن بقوة لتثبيت الحوض والعمود الفقري. ادفع البار في خط رأسي مستقيم مع إرجاع الرأس للخلف قليلاً لمرور البار ثم تمرير الرأس للأمام في القمة. اقفل الكوعين في القمة مع تثبيت الوزن فوق منتصف القدم.",
-    "mistakes_ar": "الميلان للخلف بشدة واستخدام عضلات الصدر العلوي للدفع. ثني الركبتين واستخدام دفع الأرجل (Push Press) بدلاً من الدفع الصافي للكتف."
+    "mistakes_ar": "الميلان للخلف بشدة واستخدام عضلات الصدر العلوي للدفع. ثني الركبتين واستخدام دفع الأرجل (Push Press) بدلاً من الدفع الصافي للكتف.",
+    "free_db_id": "Standing_Military_Press",
+    "image_stretch": "https://cdn.jsdelivr.net/gh/yuhonas/free-exercise-db@main/exercises/Standing_Military_Press/0.jpg",
+    "image_contraction": "https://cdn.jsdelivr.net/gh/yuhonas/free-exercise-db@main/exercises/Standing_Military_Press/1.jpg",
+    "images": [
+      "https://cdn.jsdelivr.net/gh/yuhonas/free-exercise-db@main/exercises/Standing_Military_Press/0.jpg",
+      "https://cdn.jsdelivr.net/gh/yuhonas/free-exercise-db@main/exercises/Standing_Military_Press/1.jpg"
+    ]
   },
   {
     "id": "shoulders_pike_pushup",
@@ -774,7 +921,14 @@
       "النزول العمودي المباشر بين اليدين مما يقلل تفعيل الكتف."
     ],
     "cues_ar": "ارفع الحوض للأعلى على شكل حرف V مقلوب مع تقريب القدمين من اليدين. انزل بالرأس للأمام قليلاً لصنع شكل مثلث متساوي الساقين مع موضع اليدين. ادفع الأرض بقوة للأعلى وللخلف للعودة لوضعية البايك.",
-    "mistakes_ar": "فتح الكوعين للخارج بزاوية 90 درجة بدلاً من توجيههما للداخل 45 درجة. النزول العمودي المباشر بين اليدين مما يقلل تفعيل الكتف."
+    "mistakes_ar": "فتح الكوعين للخارج بزاوية 90 درجة بدلاً من توجيههما للداخل 45 درجة. النزول العمودي المباشر بين اليدين مما يقلل تفعيل الكتف.",
+    "free_db_id": "Decline_Push-Up",
+    "image_stretch": "https://cdn.jsdelivr.net/gh/yuhonas/free-exercise-db@main/exercises/Decline_Push-Up/0.jpg",
+    "image_contraction": "https://cdn.jsdelivr.net/gh/yuhonas/free-exercise-db@main/exercises/Decline_Push-Up/1.jpg",
+    "images": [
+      "https://cdn.jsdelivr.net/gh/yuhonas/free-exercise-db@main/exercises/Decline_Push-Up/0.jpg",
+      "https://cdn.jsdelivr.net/gh/yuhonas/free-exercise-db@main/exercises/Decline_Push-Up/1.jpg"
+    ]
   },
   {
     "id": "shoulders_db_lateral_raise",
@@ -808,7 +962,14 @@
       "رفع اليدين أعلى من مستوى الكوعين مما يشرك الترابيس بدلاً من الكتف الجانبي."
     ],
     "cues_ar": "انحنِ بالجذع للأمام بزاوية 10-15 درجة مع ثبات الركبتين والجذع. ارفع الذراعين للجانبين في المستوى الكتفي بقيادة الكوعين حتى مستوى الكتف. انزل بالدمبلز ببطء في ثانيتين دون السماح لها بملامسة الفخذين في الأسفل.",
-    "mistakes_ar": "تأرجح الظهر والاعتماد على عزم القصور الذاتي لرفع أوزان زائدة. رفع اليدين أعلى من مستوى الكوعين مما يشرك الترابيس بدلاً من الكتف الجانبي."
+    "mistakes_ar": "تأرجح الظهر والاعتماد على عزم القصور الذاتي لرفع أوزان زائدة. رفع اليدين أعلى من مستوى الكوعين مما يشرك الترابيس بدلاً من الكتف الجانبي.",
+    "free_db_id": "Side_Lateral_Raise",
+    "image_stretch": "https://cdn.jsdelivr.net/gh/yuhonas/free-exercise-db@main/exercises/Side_Lateral_Raise/0.jpg",
+    "image_contraction": "https://cdn.jsdelivr.net/gh/yuhonas/free-exercise-db@main/exercises/Side_Lateral_Raise/1.jpg",
+    "images": [
+      "https://cdn.jsdelivr.net/gh/yuhonas/free-exercise-db@main/exercises/Side_Lateral_Raise/0.jpg",
+      "https://cdn.jsdelivr.net/gh/yuhonas/free-exercise-db@main/exercises/Side_Lateral_Raise/1.jpg"
+    ]
   },
   {
     "id": "shoulders_cable_lateral_raise",
@@ -840,7 +1001,14 @@
       "سحب الكابل بسرعة دون ثبات في القمة."
     ],
     "cues_ar": "اضبط بكرة الكابل في أسفل مستوى واسحب الكابل من خلف الظهر (أو بالميل للجانب). ارفع الذراع للأعلى وللجانب مع الحفاظ على استقامة الذراع وثنية كوع ميكروسكوبية. تحكم بالوزن أثناء النزول للاستفادة من التوتر الميكانيكي المستمر للكابل.",
-    "mistakes_ar": "رفع لوح الكتف للأعلى واستخدام الترابيس. سحب الكابل بسرعة دون ثبات في القمة."
+    "mistakes_ar": "رفع لوح الكتف للأعلى واستخدام الترابيس. سحب الكابل بسرعة دون ثبات في القمة.",
+    "free_db_id": "One-Arm_Side_Laterals",
+    "image_stretch": "https://cdn.jsdelivr.net/gh/yuhonas/free-exercise-db@main/exercises/One-Arm_Side_Laterals/0.jpg",
+    "image_contraction": "https://cdn.jsdelivr.net/gh/yuhonas/free-exercise-db@main/exercises/One-Arm_Side_Laterals/1.jpg",
+    "images": [
+      "https://cdn.jsdelivr.net/gh/yuhonas/free-exercise-db@main/exercises/One-Arm_Side_Laterals/0.jpg",
+      "https://cdn.jsdelivr.net/gh/yuhonas/free-exercise-db@main/exercises/One-Arm_Side_Laterals/1.jpg"
+    ]
   },
   {
     "id": "shoulders_face_pull",
@@ -876,7 +1044,14 @@
       "استخدام أوزان ثقيلة تمنع الدوران الخارجي للكتف."
     ],
     "cues_ar": "اضبط الكابل بمحاذاة العينين واسحب الحبل باتجاه الجبهة والعينين. قم بتدوير المعصمين للخارج (External Rotation) في نهاية السحب مع عصر اللوحين. اثبت لمدة ثانية في القمة لحماية أوتار الكتف الدوارة وتقوية عضلات الظهر العلوية.",
-    "mistakes_ar": "السحب للأسفل باتجاه الصدر بدلاً من الجبهة. استخدام أوزان ثقيلة تمنع الدوران الخارجي للكتف."
+    "mistakes_ar": "السحب للأسفل باتجاه الصدر بدلاً من الجبهة. استخدام أوزان ثقيلة تمنع الدوران الخارجي للكتف.",
+    "free_db_id": "Face_Pull",
+    "image_stretch": "https://cdn.jsdelivr.net/gh/yuhonas/free-exercise-db@main/exercises/Face_Pull/0.jpg",
+    "image_contraction": "https://cdn.jsdelivr.net/gh/yuhonas/free-exercise-db@main/exercises/Face_Pull/1.jpg",
+    "images": [
+      "https://cdn.jsdelivr.net/gh/yuhonas/free-exercise-db@main/exercises/Face_Pull/0.jpg",
+      "https://cdn.jsdelivr.net/gh/yuhonas/free-exercise-db@main/exercises/Face_Pull/1.jpg"
+    ]
   },
   {
     "id": "shoulders_incline_rear_delt_fly",
@@ -911,7 +1086,14 @@
       "رفع الأوزان بثني الكوعين كأنها تمرين تجديف."
     ],
     "cues_ar": "أسند الصدر على دكة مائلة 30 درجة مع تدلي الذراعين للأسفل. ارفع الدمبلز للجانبين في خط مستقيم أو مائل للأمام قليلاً دون ضم لوحي الكتف. اعصر عضلات الكتف الخلفي في القمة وانزل ببطء وتحكم.",
-    "mistakes_ar": "عصر لوحي الكتف بقوة مما يحول التمرين لعضلات الظهر الأوسط. رفع الأوزان بثني الكوعين كأنها تمرين تجديف."
+    "mistakes_ar": "عصر لوحي الكتف بقوة مما يحول التمرين لعضلات الظهر الأوسط. رفع الأوزان بثني الكوعين كأنها تمرين تجديف.",
+    "free_db_id": "Dumbbell_Lying_Rear_Lateral_Raise",
+    "image_stretch": "https://cdn.jsdelivr.net/gh/yuhonas/free-exercise-db@main/exercises/Dumbbell_Lying_Rear_Lateral_Raise/0.jpg",
+    "image_contraction": "https://cdn.jsdelivr.net/gh/yuhonas/free-exercise-db@main/exercises/Dumbbell_Lying_Rear_Lateral_Raise/1.jpg",
+    "images": [
+      "https://cdn.jsdelivr.net/gh/yuhonas/free-exercise-db@main/exercises/Dumbbell_Lying_Rear_Lateral_Raise/0.jpg",
+      "https://cdn.jsdelivr.net/gh/yuhonas/free-exercise-db@main/exercises/Dumbbell_Lying_Rear_Lateral_Raise/1.jpg"
+    ]
   },
   {
     "id": "arms_incline_db_curl",
@@ -945,7 +1127,14 @@
       "رفع الرأس والظهر عن الدكة."
     ],
     "cues_ar": "اضبط الدكة بزاوية 45-60 درجة مع إرجاع الكوعين للخلف خلف الجذع. اثنِ الكوعين للأعلى مع تدوير المعصم للخارج (Supination) في منتصف الحركة. اعصر البايسبس في القمة وانزل ببطء للشعور بإطالة عميقة على الرأس الطويل.",
-    "mistakes_ar": "رفع الكوعين للأمام أثناء الصعود مما يقلل الاستطالة على البايسبس. رفع الرأس والظهر عن الدكة."
+    "mistakes_ar": "رفع الكوعين للأمام أثناء الصعود مما يقلل الاستطالة على البايسبس. رفع الرأس والظهر عن الدكة.",
+    "free_db_id": "Incline_Dumbbell_Curl",
+    "image_stretch": "https://cdn.jsdelivr.net/gh/yuhonas/free-exercise-db@main/exercises/Incline_Dumbbell_Curl/0.jpg",
+    "image_contraction": "https://cdn.jsdelivr.net/gh/yuhonas/free-exercise-db@main/exercises/Incline_Dumbbell_Curl/1.jpg",
+    "images": [
+      "https://cdn.jsdelivr.net/gh/yuhonas/free-exercise-db@main/exercises/Incline_Dumbbell_Curl/0.jpg",
+      "https://cdn.jsdelivr.net/gh/yuhonas/free-exercise-db@main/exercises/Incline_Dumbbell_Curl/1.jpg"
+    ]
   },
   {
     "id": "arms_standing_barbell_curl",
@@ -978,7 +1167,14 @@
       "تحريك الكوعين للأمام وللخلف أثناء التكرارات."
     ],
     "cues_ar": "ثبت الكوعين بجانب الخصر مع الحفاظ على استقامة الظهر التامة. ارفع البار للأعلى من خلال ثني مفصل الكوع فقط مع عصر البايسبس في القمة. انزل بالبار ببطء وتحكم في 2-3 ثوانٍ حتى استقامة الذراعين.",
-    "mistakes_ar": "تأرجح الظهر واستخدام عزم الجسم لرفع أوزان تفوق القدرة العضلية. تحريك الكوعين للأمام وللخلف أثناء التكرارات."
+    "mistakes_ar": "تأرجح الظهر واستخدام عزم الجسم لرفع أوزان تفوق القدرة العضلية. تحريك الكوعين للأمام وللخلف أثناء التكرارات.",
+    "free_db_id": "EZ-Bar_Curl",
+    "image_stretch": "https://cdn.jsdelivr.net/gh/yuhonas/free-exercise-db@main/exercises/EZ-Bar_Curl/0.jpg",
+    "image_contraction": "https://cdn.jsdelivr.net/gh/yuhonas/free-exercise-db@main/exercises/EZ-Bar_Curl/1.jpg",
+    "images": [
+      "https://cdn.jsdelivr.net/gh/yuhonas/free-exercise-db@main/exercises/EZ-Bar_Curl/0.jpg",
+      "https://cdn.jsdelivr.net/gh/yuhonas/free-exercise-db@main/exercises/EZ-Bar_Curl/1.jpg"
+    ]
   },
   {
     "id": "arms_preacher_spider_curl",
@@ -1011,7 +1207,14 @@
       "رفع الجسم عن المقعد للمساعدة في الرفع."
     ],
     "cues_ar": "ثبت أعلى الذراعين على المسند للأمام لمنع أي مساعدة من عضلات الكتف. ارفع الدمبلز للأعلى مع عصر ألياف الرأس القصير للبايسبس في القمة. انزل ببطء حتى استطالة العضلة دون فرد المفصل بعنف في الأسفل.",
-    "mistakes_ar": "فرد الكوعين بعنف في الأسفل مما يضع ضغطاً خطيراً على وتر البايسبس السفلي. رفع الجسم عن المقعد للمساعدة في الرفع."
+    "mistakes_ar": "فرد الكوعين بعنف في الأسفل مما يضع ضغطاً خطيراً على وتر البايسبس السفلي. رفع الجسم عن المقعد للمساعدة في الرفع.",
+    "free_db_id": "Preacher_Curl",
+    "image_stretch": "https://cdn.jsdelivr.net/gh/yuhonas/free-exercise-db@main/exercises/Preacher_Curl/0.jpg",
+    "image_contraction": "https://cdn.jsdelivr.net/gh/yuhonas/free-exercise-db@main/exercises/Preacher_Curl/1.jpg",
+    "images": [
+      "https://cdn.jsdelivr.net/gh/yuhonas/free-exercise-db@main/exercises/Preacher_Curl/0.jpg",
+      "https://cdn.jsdelivr.net/gh/yuhonas/free-exercise-db@main/exercises/Preacher_Curl/1.jpg"
+    ]
   },
   {
     "id": "arms_hammer_curl",
@@ -1044,7 +1247,14 @@
       "أرجحة الكوعين للخلف وللأمام."
     ],
     "cues_ar": "امسك الدمبلز بقبضة محايدة (Neutral Grip - راحة اليد للداخل طوال الحركة). ارفع الدمبلز للأعلى مع ثبات الكوعين بجانب الخصر وعصر العضلة في القمة. انزل ببطء وتحكم للاستفادة من مرحلة الهبوط اللامركزية.",
-    "mistakes_ar": "تدوير المعصم أثناء الرفع وتحويل التمرين لبايسبس كيرل عادي. أرجحة الكوعين للخلف وللأمام."
+    "mistakes_ar": "تدوير المعصم أثناء الرفع وتحويل التمرين لبايسبس كيرل عادي. أرجحة الكوعين للخلف وللأمام.",
+    "free_db_id": "Hammer_Curls",
+    "image_stretch": "https://cdn.jsdelivr.net/gh/yuhonas/free-exercise-db@main/exercises/Hammer_Curls/0.jpg",
+    "image_contraction": "https://cdn.jsdelivr.net/gh/yuhonas/free-exercise-db@main/exercises/Hammer_Curls/1.jpg",
+    "images": [
+      "https://cdn.jsdelivr.net/gh/yuhonas/free-exercise-db@main/exercises/Hammer_Curls/0.jpg",
+      "https://cdn.jsdelivr.net/gh/yuhonas/free-exercise-db@main/exercises/Hammer_Curls/1.jpg"
+    ]
   },
   {
     "id": "arms_overhead_triceps_extension",
@@ -1077,7 +1287,14 @@
       "تقوس مفرط في أسفل الظهر عند حمل أوزان ثقيلة."
     ],
     "cues_ar": "ارفع الذراعين بجانب الرأس مع تثبيت الكوعين للأمام والداخل. انزل بالوزن خلف الرأس للشعور بإطالة عميقة على الرأس الطويل للترايسبس. افرد الكوعين بالكامل للأعلى وللأمام مع عصر الترايسبس في نهاية المدى.",
-    "mistakes_ar": "تأرجح الكوعين للأعلى والأسفل مما يضيع استطالة الرأس الطويل. تقوس مفرط في أسفل الظهر عند حمل أوزان ثقيلة."
+    "mistakes_ar": "تأرجح الكوعين للأعلى والأسفل مما يضيع استطالة الرأس الطويل. تقوس مفرط في أسفل الظهر عند حمل أوزان ثقيلة.",
+    "free_db_id": "Cable_Rope_Overhead_Triceps_Extension",
+    "image_stretch": "https://cdn.jsdelivr.net/gh/yuhonas/free-exercise-db@main/exercises/Cable_Rope_Overhead_Triceps_Extension/0.jpg",
+    "image_contraction": "https://cdn.jsdelivr.net/gh/yuhonas/free-exercise-db@main/exercises/Cable_Rope_Overhead_Triceps_Extension/1.jpg",
+    "images": [
+      "https://cdn.jsdelivr.net/gh/yuhonas/free-exercise-db@main/exercises/Cable_Rope_Overhead_Triceps_Extension/0.jpg",
+      "https://cdn.jsdelivr.net/gh/yuhonas/free-exercise-db@main/exercises/Cable_Rope_Overhead_Triceps_Extension/1.jpg"
+    ]
   },
   {
     "id": "arms_cable_pushdown",
@@ -1109,7 +1326,14 @@
       "استخدام وزن الجسم بالضغط لأسفل بدلاً من عزل الترايسبس."
     ],
     "cues_ar": "ثبت الكوعين بجانب الأضلاع مع ميل خفيف للجذع للأمام. ادفع البار أو الحبل لأسفل بالكامل مع فرد الذراع وعصر الترايسبس بقوة. ارجع بالوزن للأعلى حتى زاوية 90 درجة مع بقاء الكوعين ثابتين في موضعهما.",
-    "mistakes_ar": "ترك الكوعين يتحركان للأعلى مع الكيبل أثناء الصعود. استخدام وزن الجسم بالضغط لأسفل بدلاً من عزل الترايسبس."
+    "mistakes_ar": "ترك الكوعين يتحركان للأعلى مع الكيبل أثناء الصعود. استخدام وزن الجسم بالضغط لأسفل بدلاً من عزل الترايسبس.",
+    "free_db_id": "Triceps_Pushdown",
+    "image_stretch": "https://cdn.jsdelivr.net/gh/yuhonas/free-exercise-db@main/exercises/Triceps_Pushdown/0.jpg",
+    "image_contraction": "https://cdn.jsdelivr.net/gh/yuhonas/free-exercise-db@main/exercises/Triceps_Pushdown/1.jpg",
+    "images": [
+      "https://cdn.jsdelivr.net/gh/yuhonas/free-exercise-db@main/exercises/Triceps_Pushdown/0.jpg",
+      "https://cdn.jsdelivr.net/gh/yuhonas/free-exercise-db@main/exercises/Triceps_Pushdown/1.jpg"
+    ]
   },
   {
     "id": "arms_lying_skull_crushers",
@@ -1142,7 +1366,14 @@
       "فتح الكوعين للخارج بشدة أثناء النزول."
     ],
     "cues_ar": "استلقِ على دكة مستوية مع جعل الذراعين مائلتين للخلف قليلاً بزاوية 15 درجة للحفاظ على التوتر المستمر. اثنِ الكوعين للنزول بالبار باتجاه أعلى الرأس وليس الجبهة مباشرة لحماية الكوع. افرد الذراعين للأعلى مع عصر الترايسبس بالكامل.",
-    "mistakes_ar": "النزول المباشر فوق الجبهة مما يضع ضغطاً حاداً على أوتار الكوع. فتح الكوعين للخارج بشدة أثناء النزول."
+    "mistakes_ar": "النزول المباشر فوق الجبهة مما يضع ضغطاً حاداً على أوتار الكوع. فتح الكوعين للخارج بشدة أثناء النزول.",
+    "free_db_id": "Lying_Triceps_Press",
+    "image_stretch": "https://cdn.jsdelivr.net/gh/yuhonas/free-exercise-db@main/exercises/Lying_Triceps_Press/0.jpg",
+    "image_contraction": "https://cdn.jsdelivr.net/gh/yuhonas/free-exercise-db@main/exercises/Lying_Triceps_Press/1.jpg",
+    "images": [
+      "https://cdn.jsdelivr.net/gh/yuhonas/free-exercise-db@main/exercises/Lying_Triceps_Press/0.jpg",
+      "https://cdn.jsdelivr.net/gh/yuhonas/free-exercise-db@main/exercises/Lying_Triceps_Press/1.jpg"
+    ]
   },
   {
     "id": "arms_close_grip_pushup_dips",
@@ -1176,7 +1407,14 @@
       "تقوس أسفل الظهر أثناء الدفع."
     ],
     "cues_ar": "ضع اليدين بمحاذاة الصدر مع تضييق المسافة بينهما (بعرض الكتف أو أضيق قليلاً). انزل بالصدر مع ملاصقة الكوعين للجذع تماماً لتوجيه الحمل للترايسبس. ادفع الأرض بقوة للأعلى حتى استقامة الذراعين التامة.",
-    "mistakes_ar": "فتح الكوعين للخارج مما يحول الحمل لعضلات الصدر. تقوس أسفل الظهر أثناء الدفع."
+    "mistakes_ar": "فتح الكوعين للخارج مما يحول الحمل لعضلات الصدر. تقوس أسفل الظهر أثناء الدفع.",
+    "free_db_id": "Bench_Dips",
+    "image_stretch": "https://cdn.jsdelivr.net/gh/yuhonas/free-exercise-db@main/exercises/Bench_Dips/0.jpg",
+    "image_contraction": "https://cdn.jsdelivr.net/gh/yuhonas/free-exercise-db@main/exercises/Bench_Dips/1.jpg",
+    "images": [
+      "https://cdn.jsdelivr.net/gh/yuhonas/free-exercise-db@main/exercises/Bench_Dips/0.jpg",
+      "https://cdn.jsdelivr.net/gh/yuhonas/free-exercise-db@main/exercises/Bench_Dips/1.jpg"
+    ]
   },
   {
     "id": "forearms_seated_wrist_curl",
@@ -1209,7 +1447,14 @@
       "استخدام أوزان مفرطة تسبب التواء مفصل الرسغ."
     ],
     "cues_ar": "أسند الساعدين على الفخذين أو حافة الدكة مع ترك المعصمين متدليين بحرية. أنزل الوزن للأصابع ثم ارفعه للأعلى بثني المعصم لأقصى نقطة مع عصر الساعد. انزل بالوزن ببطء وتحكم كامل لتفادي إجهاد أوتار الرسغ.",
-    "mistakes_ar": "رفع الساعدين عن الفخذين أثناء ثني المعصم. استخدام أوزان مفرطة تسبب التواء مفصل الرسغ."
+    "mistakes_ar": "رفع الساعدين عن الفخذين أثناء ثني المعصم. استخدام أوزان مفرطة تسبب التواء مفصل الرسغ.",
+    "free_db_id": "Palms-Up_Dumbbell_Wrist_Curl_Over_A_Bench",
+    "image_stretch": "https://cdn.jsdelivr.net/gh/yuhonas/free-exercise-db@main/exercises/Palms-Up_Dumbbell_Wrist_Curl_Over_A_Bench/0.jpg",
+    "image_contraction": "https://cdn.jsdelivr.net/gh/yuhonas/free-exercise-db@main/exercises/Palms-Up_Dumbbell_Wrist_Curl_Over_A_Bench/1.jpg",
+    "images": [
+      "https://cdn.jsdelivr.net/gh/yuhonas/free-exercise-db@main/exercises/Palms-Up_Dumbbell_Wrist_Curl_Over_A_Bench/0.jpg",
+      "https://cdn.jsdelivr.net/gh/yuhonas/free-exercise-db@main/exercises/Palms-Up_Dumbbell_Wrist_Curl_Over_A_Bench/1.jpg"
+    ]
   },
   {
     "id": "forearms_reverse_wrist_curl",
@@ -1242,7 +1487,14 @@
       "أداء الحركة بسرعة دون عصر العضلات في القمة."
     ],
     "cues_ar": "امسك البار أو الدمبلز بقبضة مقلوبة (راحة اليد متجهة لأسفل). أسند الساعدين على الفخذين وارفع المعصمين للأعلى باتجاه الساعد. اثبت لمدة ثانية في القمة وانزل ببطء، وهو تمرين أساسي للوقاية من آلام الرست والتنس إلبو.",
-    "mistakes_ar": "استخدام أوزان ثقيلة تضغط أوتار المعصم الخارجية. أداء الحركة بسرعة دون عصر العضلات في القمة."
+    "mistakes_ar": "استخدام أوزان ثقيلة تضغط أوتار المعصم الخارجية. أداء الحركة بسرعة دون عصر العضلات في القمة.",
+    "free_db_id": "Palms-Down_Dumbbell_Wrist_Curl_Over_A_Bench",
+    "image_stretch": "https://cdn.jsdelivr.net/gh/yuhonas/free-exercise-db@main/exercises/Palms-Down_Dumbbell_Wrist_Curl_Over_A_Bench/0.jpg",
+    "image_contraction": "https://cdn.jsdelivr.net/gh/yuhonas/free-exercise-db@main/exercises/Palms-Down_Dumbbell_Wrist_Curl_Over_A_Bench/1.jpg",
+    "images": [
+      "https://cdn.jsdelivr.net/gh/yuhonas/free-exercise-db@main/exercises/Palms-Down_Dumbbell_Wrist_Curl_Over_A_Bench/0.jpg",
+      "https://cdn.jsdelivr.net/gh/yuhonas/free-exercise-db@main/exercises/Palms-Down_Dumbbell_Wrist_Curl_Over_A_Bench/1.jpg"
+    ]
   },
   {
     "id": "forearms_reverse_ez_bar_curl",
@@ -1277,7 +1529,14 @@
       "تأرجح الظهر لرفع الوزن."
     ],
     "cues_ar": "امسك البار المتعرج بقبضة مقلوبة (راحة اليد لأسفل) بعرض الكتفين. ارفع البار للأعلى مع ثبات الكوعين بجانب الخصر لعزل الجزء العلوي من الساعد. انزل ببطء وتحكم في مرحلة الهبوط.",
-    "mistakes_ar": "ثني المعصم للأعلى أثناء الرفع بدلاً من الحفاظ على استقامة الرسغ. تأرجح الظهر لرفع الوزن."
+    "mistakes_ar": "ثني المعصم للأعلى أثناء الرفع بدلاً من الحفاظ على استقامة الرسغ. تأرجح الظهر لرفع الوزن.",
+    "free_db_id": "EZ-Bar_Curl",
+    "image_stretch": "https://cdn.jsdelivr.net/gh/yuhonas/free-exercise-db@main/exercises/EZ-Bar_Curl/0.jpg",
+    "image_contraction": "https://cdn.jsdelivr.net/gh/yuhonas/free-exercise-db@main/exercises/EZ-Bar_Curl/1.jpg",
+    "images": [
+      "https://cdn.jsdelivr.net/gh/yuhonas/free-exercise-db@main/exercises/EZ-Bar_Curl/0.jpg",
+      "https://cdn.jsdelivr.net/gh/yuhonas/free-exercise-db@main/exercises/EZ-Bar_Curl/1.jpg"
+    ]
   },
   {
     "id": "forearms_farmers_walk",
@@ -1313,7 +1572,14 @@
       "المشي بخطوات واسعة سريعة مما يفقد التوازن."
     ],
     "cues_ar": "احمل دمبلين ثقيلين بجانبك مع فتح الصدر وشد عضلات البطن والمؤخرة. امشِ بخطوات مستقيمة وثابتة وقصيرة دون السماح للدمبلز بالاهتزاز أو الاصطدام بالفخذين. استمر في المشي لمدة 30-45 ثانية متواصلة مع الحفاظ على استقامة القامة.",
-    "mistakes_ar": "الميلان لأحد الجانبين أو ارتخاء عضلات الكتف والظهر. المشي بخطوات واسعة سريعة مما يفقد التوازن."
+    "mistakes_ar": "الميلان لأحد الجانبين أو ارتخاء عضلات الكتف والظهر. المشي بخطوات واسعة سريعة مما يفقد التوازن.",
+    "free_db_id": "Farmers_Walk",
+    "image_stretch": "https://cdn.jsdelivr.net/gh/yuhonas/free-exercise-db@main/exercises/Farmers_Walk/0.jpg",
+    "image_contraction": "https://cdn.jsdelivr.net/gh/yuhonas/free-exercise-db@main/exercises/Farmers_Walk/1.jpg",
+    "images": [
+      "https://cdn.jsdelivr.net/gh/yuhonas/free-exercise-db@main/exercises/Farmers_Walk/0.jpg",
+      "https://cdn.jsdelivr.net/gh/yuhonas/free-exercise-db@main/exercises/Farmers_Walk/1.jpg"
+    ]
   },
   {
     "id": "forearms_dead_hangs",
@@ -1349,7 +1615,14 @@
       "التأرجح أو محاولة ثني الكوعين."
     ],
     "cues_ar": "امسك بار العقلة بقبضة محكمة بعرض الكتفين مع ترك الجسم معلقاً بحرية. تنفس بعمق وببطء واترك الجاذبية تفك انضغاط فقرات العمود الفقري ومفصل الكتف. اثبت لأقصى مدة ممكنة (30-60 ثانية) لتقوية أوتار الأصابع وقوة القبضة.",
-    "mistakes_ar": "كتم النفس أثناء التعلق. التأرجح أو محاولة ثني الكوعين."
+    "mistakes_ar": "كتم النفس أثناء التعلق. التأرجح أو محاولة ثني الكوعين.",
+    "free_db_id": "Band_Assisted_Pull-Up",
+    "image_stretch": "https://cdn.jsdelivr.net/gh/yuhonas/free-exercise-db@main/exercises/Band_Assisted_Pull-Up/0.jpg",
+    "image_contraction": "https://cdn.jsdelivr.net/gh/yuhonas/free-exercise-db@main/exercises/Band_Assisted_Pull-Up/1.jpg",
+    "images": [
+      "https://cdn.jsdelivr.net/gh/yuhonas/free-exercise-db@main/exercises/Band_Assisted_Pull-Up/0.jpg",
+      "https://cdn.jsdelivr.net/gh/yuhonas/free-exercise-db@main/exercises/Band_Assisted_Pull-Up/1.jpg"
+    ]
   },
   {
     "id": "quads_barbell_squat",
@@ -1384,7 +1657,14 @@
       "ارتفاع الكعبين عن الأرض أو تقوس أسفل الظهر (Butt Wink)."
     ],
     "cues_ar": "ثبت البار على الترابيس مع فتح القدمين بعرض الكتفين وأصابع القدم مائلة للخارج قليلاً. انزل بالحوض للأسفل مع دفع الركبتين في اتجاه أصابع القدم حتى موازاة الفخذ للأرض. ادفع الأرض بكامل باطن القدم مع الحفاظ على استقامة العمود الفقري وتنفس البطن.",
-    "mistakes_ar": "انهيار الركبتين للداخل أثناء الصعود (Knee Valgus). ارتفاع الكعبين عن الأرض أو تقوس أسفل الظهر (Butt Wink)."
+    "mistakes_ar": "انهيار الركبتين للداخل أثناء الصعود (Knee Valgus). ارتفاع الكعبين عن الأرض أو تقوس أسفل الظهر (Butt Wink).",
+    "free_db_id": "Barbell_Full_Squat",
+    "image_stretch": "https://cdn.jsdelivr.net/gh/yuhonas/free-exercise-db@main/exercises/Barbell_Full_Squat/0.jpg",
+    "image_contraction": "https://cdn.jsdelivr.net/gh/yuhonas/free-exercise-db@main/exercises/Barbell_Full_Squat/1.jpg",
+    "images": [
+      "https://cdn.jsdelivr.net/gh/yuhonas/free-exercise-db@main/exercises/Barbell_Full_Squat/0.jpg",
+      "https://cdn.jsdelivr.net/gh/yuhonas/free-exercise-db@main/exercises/Barbell_Full_Squat/1.jpg"
+    ]
   },
   {
     "id": "quads_hack_pendulum_squat",
@@ -1416,7 +1696,14 @@
       "قفل الركبة بعنف (Lockout) في قمة الحركة."
     ],
     "cues_ar": "أسند الظهر بالكامل على المسند مع وضع القدمين في منتصف المنصة. انزل لعمق كامل مع ثني الركبتين للأمام بأمان تام على الفقرات القطنية. ادفع المنصة بكامل القدم للأعلى مع تجنب قفل مفصل الركبة بالكامل في القمة.",
-    "mistakes_ar": "رفع الحوض وأسفل الظهر عن المسند أثناء النزول العميق. قفل الركبة بعنف (Lockout) في قمة الحركة."
+    "mistakes_ar": "رفع الحوض وأسفل الظهر عن المسند أثناء النزول العميق. قفل الركبة بعنف (Lockout) في قمة الحركة.",
+    "free_db_id": "Hack_Squat",
+    "image_stretch": "https://cdn.jsdelivr.net/gh/yuhonas/free-exercise-db@main/exercises/Hack_Squat/0.jpg",
+    "image_contraction": "https://cdn.jsdelivr.net/gh/yuhonas/free-exercise-db@main/exercises/Hack_Squat/1.jpg",
+    "images": [
+      "https://cdn.jsdelivr.net/gh/yuhonas/free-exercise-db@main/exercises/Hack_Squat/0.jpg",
+      "https://cdn.jsdelivr.net/gh/yuhonas/free-exercise-db@main/exercises/Hack_Squat/1.jpg"
+    ]
   },
   {
     "id": "quads_bulgarian_split_squat",
@@ -1452,7 +1739,14 @@
       "ميلان الركبة الأمامية للداخل أثناء الصعود."
     ],
     "cues_ar": "ضع مشط القدم الخلفية على دكة أو كرسي، وتقدم بالساق الأمامية للأمام مسافة خطوة ونصف. انزل عمودياً بالساق الأمامية حتى زاوية 90 درجة مع تركيز الحمل على كعب القدم الأمامية. ادفع الأرض بالساق الأمامية للعودة للأعلى مع الحفاظ على استقامة الجذع.",
-    "mistakes_ar": "الاعتماد على دفع الساق الخلفية بدلاً من الساق الأمامية. ميلان الركبة الأمامية للداخل أثناء الصعود."
+    "mistakes_ar": "الاعتماد على دفع الساق الخلفية بدلاً من الساق الأمامية. ميلان الركبة الأمامية للداخل أثناء الصعود.",
+    "free_db_id": "Split_Squats",
+    "image_stretch": "https://cdn.jsdelivr.net/gh/yuhonas/free-exercise-db@main/exercises/Split_Squats/0.jpg",
+    "image_contraction": "https://cdn.jsdelivr.net/gh/yuhonas/free-exercise-db@main/exercises/Split_Squats/1.jpg",
+    "images": [
+      "https://cdn.jsdelivr.net/gh/yuhonas/free-exercise-db@main/exercises/Split_Squats/0.jpg",
+      "https://cdn.jsdelivr.net/gh/yuhonas/free-exercise-db@main/exercises/Split_Squats/1.jpg"
+    ]
   },
   {
     "id": "quads_goblet_squat",
@@ -1486,7 +1780,14 @@
       "رفع الكعبين عن الأرض أثناء النزول."
     ],
     "cues_ar": "احمل الدمبل بكلتا اليدين ملاصقاً لأعلى الصدر مع فتح الكوعين للأسفل. انزل بالحوض بين الساقين مع الحفاظ على استقامة الجذع التامة حتى لمس الكوعين للفخذين من الداخل. ادفع الأرض بالقدمين للعودة للأعلى مع عصر الفخذ والمؤخرة.",
-    "mistakes_ar": "ميل الجذع للأمام وسقوط الدمبل لأسفل بعيداً عن الصدر. رفع الكعبين عن الأرض أثناء النزول."
+    "mistakes_ar": "ميل الجذع للأمام وسقوط الدمبل لأسفل بعيداً عن الصدر. رفع الكعبين عن الأرض أثناء النزول.",
+    "free_db_id": "Goblet_Squat",
+    "image_stretch": "https://cdn.jsdelivr.net/gh/yuhonas/free-exercise-db@main/exercises/Goblet_Squat/0.jpg",
+    "image_contraction": "https://cdn.jsdelivr.net/gh/yuhonas/free-exercise-db@main/exercises/Goblet_Squat/1.jpg",
+    "images": [
+      "https://cdn.jsdelivr.net/gh/yuhonas/free-exercise-db@main/exercises/Goblet_Squat/0.jpg",
+      "https://cdn.jsdelivr.net/gh/yuhonas/free-exercise-db@main/exercises/Goblet_Squat/1.jpg"
+    ]
   },
   {
     "id": "quads_seated_leg_extension",
@@ -1516,7 +1817,14 @@
       "رفع الحوض عن المقعد أثناء فرد الساقين."
     ],
     "cues_ar": "اضبط مسند الظهر لتكون الركبتان بمحاذاة محور دوران الجهاز والوسادة فوق الكاحلين مباشرة. افرد الساقين بالكامل مع عصر عضلات الفخذ الأمامية لمدة ثانية كاملة في القمة. انزل بالوزن ببطء وتحكم كامل في 3 ثوانٍ.",
-    "mistakes_ar": "ركل الوزن بسرعة واستخدام عزم الاندفاع بدلاً من التحكم العضلي. رفع الحوض عن المقعد أثناء فرد الساقين."
+    "mistakes_ar": "ركل الوزن بسرعة واستخدام عزم الاندفاع بدلاً من التحكم العضلي. رفع الحوض عن المقعد أثناء فرد الساقين.",
+    "free_db_id": "Leg_Extensions",
+    "image_stretch": "https://cdn.jsdelivr.net/gh/yuhonas/free-exercise-db@main/exercises/Leg_Extensions/0.jpg",
+    "image_contraction": "https://cdn.jsdelivr.net/gh/yuhonas/free-exercise-db@main/exercises/Leg_Extensions/1.jpg",
+    "images": [
+      "https://cdn.jsdelivr.net/gh/yuhonas/free-exercise-db@main/exercises/Leg_Extensions/0.jpg",
+      "https://cdn.jsdelivr.net/gh/yuhonas/free-exercise-db@main/exercises/Leg_Extensions/1.jpg"
+    ]
   },
   {
     "id": "quads_sissy_squat",
@@ -1550,7 +1858,14 @@
       "أداء التمرين بدون إحماء كافٍ لمفصل الركبة."
     ],
     "cues_ar": "استند بيد واحدة على حائط أو عمود ثابت مع الوقوف على مشطي القدمين. ادفع الركبتين للأمام مع إرجاع الجذع للخلف في خط مستقيم واحد للشعور بإطالة هائلة في الكوادز. ادفع بأصابع القدمين والكوادز للعودة لوضع البداية.",
-    "mistakes_ar": "ثني الخصر والورك بدلاً من الحفاظ على استقامة الجذع مع الفخذين. أداء التمرين بدون إحماء كافٍ لمفصل الركبة."
+    "mistakes_ar": "ثني الخصر والورك بدلاً من الحفاظ على استقامة الجذع مع الفخذين. أداء التمرين بدون إحماء كافٍ لمفصل الركبة.",
+    "free_db_id": "Bodyweight_Squat",
+    "image_stretch": "https://cdn.jsdelivr.net/gh/yuhonas/free-exercise-db@main/exercises/Bodyweight_Squat/0.jpg",
+    "image_contraction": "https://cdn.jsdelivr.net/gh/yuhonas/free-exercise-db@main/exercises/Bodyweight_Squat/1.jpg",
+    "images": [
+      "https://cdn.jsdelivr.net/gh/yuhonas/free-exercise-db@main/exercises/Bodyweight_Squat/0.jpg",
+      "https://cdn.jsdelivr.net/gh/yuhonas/free-exercise-db@main/exercises/Bodyweight_Squat/1.jpg"
+    ]
   },
   {
     "id": "hamstrings_romanian_deadlift",
@@ -1585,7 +1900,14 @@
       "تقوس الظهر للوصول للأرض بدلاً من الاعتماد على حركة الحوض."
     ],
     "cues_ar": "ارجع الحوض للخلف (Hip Hinge) مع ثنية ركبة طفيفة وثابتة طوال الحركة. انزل بالوزن بمحاذاة الساقين مع استقامة الظهر حتى تشعر بإطالة قوية في أوتار الفخذ الخلفية. ادفع الحوض للأمام من خلال عصر عضلات الفخذ الخلفية والمؤخرة للعودة للوقوف.",
-    "mistakes_ar": "ثني الركبتين كأنه سكوات مما يضيع التركيز على الفخذ الخلفي. تقوس الظهر للوصول للأرض بدلاً من الاعتماد على حركة الحوض."
+    "mistakes_ar": "ثني الركبتين كأنه سكوات مما يضيع التركيز على الفخذ الخلفي. تقوس الظهر للوصول للأرض بدلاً من الاعتماد على حركة الحوض.",
+    "free_db_id": "Romanian_Deadlift",
+    "image_stretch": "https://cdn.jsdelivr.net/gh/yuhonas/free-exercise-db@main/exercises/Romanian_Deadlift/0.jpg",
+    "image_contraction": "https://cdn.jsdelivr.net/gh/yuhonas/free-exercise-db@main/exercises/Romanian_Deadlift/1.jpg",
+    "images": [
+      "https://cdn.jsdelivr.net/gh/yuhonas/free-exercise-db@main/exercises/Romanian_Deadlift/0.jpg",
+      "https://cdn.jsdelivr.net/gh/yuhonas/free-exercise-db@main/exercises/Romanian_Deadlift/1.jpg"
+    ]
   },
   {
     "id": "hamstrings_leg_curl",
@@ -1618,7 +1940,14 @@
       "استخدام أوزان ثقيلة تمنع المدى الحركي الكامل في الثني."
     ],
     "cues_ar": "ثبت الحوض بإحكام في المقعد مع ضبط الوسادة فوق الكعبين مباشرة. اثنِ الساقين للداخل بقوة مع عصر عضلات الفخذ الخلفية لمدة ثانية في القمة. انزل بالوزن ببطء وتحكم في 2-3 ثوانٍ حتى استطالة العضلة.",
-    "mistakes_ar": "رفع الحوض وأسفل الظهر عن المقعد لتسهيل سحب الوزن. استخدام أوزان ثقيلة تمنع المدى الحركي الكامل في الثني."
+    "mistakes_ar": "رفع الحوض وأسفل الظهر عن المقعد لتسهيل سحب الوزن. استخدام أوزان ثقيلة تمنع المدى الحركي الكامل في الثني.",
+    "free_db_id": "Lying_Hamstring",
+    "image_stretch": "https://cdn.jsdelivr.net/gh/yuhonas/free-exercise-db@main/exercises/Lying_Hamstring/0.jpg",
+    "image_contraction": "https://cdn.jsdelivr.net/gh/yuhonas/free-exercise-db@main/exercises/Lying_Hamstring/1.jpg",
+    "images": [
+      "https://cdn.jsdelivr.net/gh/yuhonas/free-exercise-db@main/exercises/Lying_Hamstring/0.jpg",
+      "https://cdn.jsdelivr.net/gh/yuhonas/free-exercise-db@main/exercises/Lying_Hamstring/1.jpg"
+    ]
   },
   {
     "id": "glutes_barbell_hip_thrust",
@@ -1653,7 +1982,14 @@
       "الدفع بأمشاط القدمين بدلاً من الكعبين."
     ],
     "cues_ar": "أسند أعلى الظهر (أسفل لوحي الكتف مباشرة) على حافة الدكة مع وضع البار فوق الحوض. ادفع الحوض للأعلى من خلال كعبي القدمين حتى يصبح الفخذ والجذع في خط أفقي مستقيم. اعصر الجلوتس بقوة لمدة ثانية كاملة في القمة مع توجيه النظر للأمام لتثبيت الحوض.",
-    "mistakes_ar": "تقوس الرقبة والظهر للأعلى بدلاً من تدوير الحوض للأعلى (Posterior Pelvic Tilt). الدفع بأمشاط القدمين بدلاً من الكعبين."
+    "mistakes_ar": "تقوس الرقبة والظهر للأعلى بدلاً من تدوير الحوض للأعلى (Posterior Pelvic Tilt). الدفع بأمشاط القدمين بدلاً من الكعبين.",
+    "free_db_id": "Barbell_Hip_Thrust",
+    "image_stretch": "https://cdn.jsdelivr.net/gh/yuhonas/free-exercise-db@main/exercises/Barbell_Hip_Thrust/0.jpg",
+    "image_contraction": "https://cdn.jsdelivr.net/gh/yuhonas/free-exercise-db@main/exercises/Barbell_Hip_Thrust/1.jpg",
+    "images": [
+      "https://cdn.jsdelivr.net/gh/yuhonas/free-exercise-db@main/exercises/Barbell_Hip_Thrust/0.jpg",
+      "https://cdn.jsdelivr.net/gh/yuhonas/free-exercise-db@main/exercises/Barbell_Hip_Thrust/1.jpg"
+    ]
   },
   {
     "id": "hamstrings_nordic_curl",
@@ -1689,7 +2025,14 @@
       "السقوط الحر السريع دون أي مقاومة عضلية."
     ],
     "cues_ar": "ثبت الكاحلين بإحكام على الأرض مع الحفاظ على استقامة الفخذين مع الجذع. انزل بالجذع للأمام بأقصى بطء وتحكم ممكن مع مقاومة السقوط بعضلات الفخذ الخلفية. المس الأرض بيديك بخفة ثم ادفع نفسك للأعلى للعودة لوضع البداية.",
-    "mistakes_ar": "ثني الخصر للأمام بدلاً من النزول بخط مستقيم من الركبة للكتف. السقوط الحر السريع دون أي مقاومة عضلية."
+    "mistakes_ar": "ثني الخصر للأمام بدلاً من النزول بخط مستقيم من الركبة للكتف. السقوط الحر السريع دون أي مقاومة عضلية.",
+    "free_db_id": "Lying_Leg_Curls",
+    "image_stretch": "https://cdn.jsdelivr.net/gh/yuhonas/free-exercise-db@main/exercises/Lying_Leg_Curls/0.jpg",
+    "image_contraction": "https://cdn.jsdelivr.net/gh/yuhonas/free-exercise-db@main/exercises/Lying_Leg_Curls/1.jpg",
+    "images": [
+      "https://cdn.jsdelivr.net/gh/yuhonas/free-exercise-db@main/exercises/Lying_Leg_Curls/0.jpg",
+      "https://cdn.jsdelivr.net/gh/yuhonas/free-exercise-db@main/exercises/Lying_Leg_Curls/1.jpg"
+    ]
   },
   {
     "id": "hamstrings_slider_towel_curl",
@@ -1724,7 +2067,14 @@
       "دفع الكعبين بسرعة دون تحكم عضلي في مرحلة الفرد."
     ],
     "cues_ar": "استلقِ على الظهر مع وضع الكعبين على منشفة فوق أرضية ملساء (سيراميك/باركية). ارفع الحوض في وضع الجلوت بريدج، ثم اسحب الكعبين باتجاه المؤخرة بثني الركبتين. اعصر الفخذ الخلفي في القمة ثم مد الساقين للأمام ببطء مع بقاء الحوض مرفوعاً.",
-    "mistakes_ar": "سقوط الحوض على الأرض أثناء سحب الكعبين. دفع الكعبين بسرعة دون تحكم عضلي في مرحلة الفرد."
+    "mistakes_ar": "سقوط الحوض على الأرض أثناء سحب الكعبين. دفع الكعبين بسرعة دون تحكم عضلي في مرحلة الفرد.",
+    "free_db_id": "Ball_Leg_Curl",
+    "image_stretch": "https://cdn.jsdelivr.net/gh/yuhonas/free-exercise-db@main/exercises/Ball_Leg_Curl/0.jpg",
+    "image_contraction": "https://cdn.jsdelivr.net/gh/yuhonas/free-exercise-db@main/exercises/Ball_Leg_Curl/1.jpg",
+    "images": [
+      "https://cdn.jsdelivr.net/gh/yuhonas/free-exercise-db@main/exercises/Ball_Leg_Curl/0.jpg",
+      "https://cdn.jsdelivr.net/gh/yuhonas/free-exercise-db@main/exercises/Ball_Leg_Curl/1.jpg"
+    ]
   },
   {
     "id": "glutes_single_leg_bridge",
@@ -1758,7 +2108,14 @@
       "ميلان الحوض لأحد الجانبين أثناء الرفع."
     ],
     "cues_ar": "استلقِ على الظهر مع ثني الركبتين ورفع ساق واحدة في الهواء. ادفع الأرض بكعب الساق الثابتة لرفع الحوض للأعلى حتى استقامة الفخذ مع الجذع. اعصر المؤخرة بقوة في القمة لمدة ثانية ثم انزل ببطء.",
-    "mistakes_ar": "تقوس أسفل الظهر لتعويض ضعف عصر الجلوتس. ميلان الحوض لأحد الجانبين أثناء الرفع."
+    "mistakes_ar": "تقوس أسفل الظهر لتعويض ضعف عصر الجلوتس. ميلان الحوض لأحد الجانبين أثناء الرفع.",
+    "free_db_id": "Single_Leg_Glute_Bridge",
+    "image_stretch": "https://cdn.jsdelivr.net/gh/yuhonas/free-exercise-db@main/exercises/Single_Leg_Glute_Bridge/0.jpg",
+    "image_contraction": "https://cdn.jsdelivr.net/gh/yuhonas/free-exercise-db@main/exercises/Single_Leg_Glute_Bridge/1.jpg",
+    "images": [
+      "https://cdn.jsdelivr.net/gh/yuhonas/free-exercise-db@main/exercises/Single_Leg_Glute_Bridge/0.jpg",
+      "https://cdn.jsdelivr.net/gh/yuhonas/free-exercise-db@main/exercises/Single_Leg_Glute_Bridge/1.jpg"
+    ]
   },
   {
     "id": "adductors_seated_machine",
@@ -1791,7 +2148,14 @@
       "استخدام أوزان ثقيلة تؤدي لتحريك الجذع للمساعدة."
     ],
     "cues_ar": "اجلس بظهر مستقيم مع تثبيت الحوض بالكامل في المقعد. ضم الساقين للداخل بسلاسة مع عصر عضلات الفخذ الداخلي لمدة ثانية في القمة. ارجع بالوزن ببطء وتحكم حتى فتح الساقين بزاوية مريحة دون مبالغة.",
-    "mistakes_ar": "فتح الساقين بزاوية مفرطة تسبب إجهاد أوتار الضامة. استخدام أوزان ثقيلة تؤدي لتحريك الجذع للمساعدة."
+    "mistakes_ar": "فتح الساقين بزاوية مفرطة تسبب إجهاد أوتار الضامة. استخدام أوزان ثقيلة تؤدي لتحريك الجذع للمساعدة.",
+    "free_db_id": "Adductor",
+    "image_stretch": "https://cdn.jsdelivr.net/gh/yuhonas/free-exercise-db@main/exercises/Adductor/0.jpg",
+    "image_contraction": "https://cdn.jsdelivr.net/gh/yuhonas/free-exercise-db@main/exercises/Adductor/1.jpg",
+    "images": [
+      "https://cdn.jsdelivr.net/gh/yuhonas/free-exercise-db@main/exercises/Adductor/0.jpg",
+      "https://cdn.jsdelivr.net/gh/yuhonas/free-exercise-db@main/exercises/Adductor/1.jpg"
+    ]
   },
   {
     "id": "adductors_copenhagen_plank",
@@ -1825,7 +2189,14 @@
       "ثني الركبة العلوية أثناء الثبات."
     ],
     "cues_ar": "استلقِ في وضع البلانك الجانبي مع وضع باطن كاحل الساق العلوية على دكة أو كرسي. ارفع الجسم بالكامل في خط مستقيم مع رفع الساق السفلية لتلاصق أسفل الدكة. اثبت في هذا الوضع لمدة 15-30 ثانية، وهو التمرين المعتمد إكلينيكياً للوقاية من تمزقات الضامة.",
-    "mistakes_ar": "سقوط الحوض للأسفل أو التواء الجذع للأمام. ثني الركبة العلوية أثناء الثبات."
+    "mistakes_ar": "سقوط الحوض للأسفل أو التواء الجذع للأمام. ثني الركبة العلوية أثناء الثبات.",
+    "free_db_id": "Adductor",
+    "image_stretch": "https://cdn.jsdelivr.net/gh/yuhonas/free-exercise-db@main/exercises/Adductor/0.jpg",
+    "image_contraction": "https://cdn.jsdelivr.net/gh/yuhonas/free-exercise-db@main/exercises/Adductor/1.jpg",
+    "images": [
+      "https://cdn.jsdelivr.net/gh/yuhonas/free-exercise-db@main/exercises/Adductor/0.jpg",
+      "https://cdn.jsdelivr.net/gh/yuhonas/free-exercise-db@main/exercises/Adductor/1.jpg"
+    ]
   },
   {
     "id": "abductors_seated_machine",
@@ -1858,7 +2229,14 @@
       "الاستلقاء للخلف بشدة مما يحول الحمل لعضلة الـ TFL بدلاً من الجلوتس."
     ],
     "cues_ar": "انحنِ بالجذع للأمام قليلاً بزاوية 20-30 درجة لزيادة تفعيل ألياف الجلوتس الوسطى. ادفع الركبتين للخارج بقوة وثبات مع عصر زوايا المؤخرة العلوية لمدة ثانية. ارجع بالوزن ببطء وتحكم دون ترك الأوزان تصطدم.",
-    "mistakes_ar": "التحرك السريع وارتداد الأوزان دون ثبات في نقطة القمة. الاستلقاء للخلف بشدة مما يحول الحمل لعضلة الـ TFL بدلاً من الجلوتس."
+    "mistakes_ar": "التحرك السريع وارتداد الأوزان دون ثبات في نقطة القمة. الاستلقاء للخلف بشدة مما يحول الحمل لعضلة الـ TFL بدلاً من الجلوتس.",
+    "free_db_id": "Thigh_Abductor",
+    "image_stretch": "https://cdn.jsdelivr.net/gh/yuhonas/free-exercise-db@main/exercises/Thigh_Abductor/0.jpg",
+    "image_contraction": "https://cdn.jsdelivr.net/gh/yuhonas/free-exercise-db@main/exercises/Thigh_Abductor/1.jpg",
+    "images": [
+      "https://cdn.jsdelivr.net/gh/yuhonas/free-exercise-db@main/exercises/Thigh_Abductor/0.jpg",
+      "https://cdn.jsdelivr.net/gh/yuhonas/free-exercise-db@main/exercises/Thigh_Abductor/1.jpg"
+    ]
   },
   {
     "id": "abductors_cable_band_lateral",
@@ -1892,7 +2270,14 @@
       "تدوير القدم للخارج مما يشرك عضلات الفخذ الأمامية."
     ],
     "cues_ar": "ثبت سوار الكابل على الكاحل واقفاً مع الإمساك بقائم الجهاز لتثبيت الجذع. اسحب الساق للخارج بزاوية 30 درجة للخلف قليلاً لاستهداف زاوية ألياف الجلوتس الوسطى. اعصر المؤخرة الجانبية في القمة وانزل ببطء.",
-    "mistakes_ar": "ميل الجذع للجانب المعاكس لتعويض ضعف مدى حركة الساق. تدوير القدم للخارج مما يشرك عضلات الفخذ الأمامية."
+    "mistakes_ar": "ميل الجذع للجانب المعاكس لتعويض ضعف مدى حركة الساق. تدوير القدم للخارج مما يشرك عضلات الفخذ الأمامية.",
+    "free_db_id": "Cable_Hip_Adduction",
+    "image_stretch": "https://cdn.jsdelivr.net/gh/yuhonas/free-exercise-db@main/exercises/Cable_Hip_Adduction/0.jpg",
+    "image_contraction": "https://cdn.jsdelivr.net/gh/yuhonas/free-exercise-db@main/exercises/Cable_Hip_Adduction/1.jpg",
+    "images": [
+      "https://cdn.jsdelivr.net/gh/yuhonas/free-exercise-db@main/exercises/Cable_Hip_Adduction/0.jpg",
+      "https://cdn.jsdelivr.net/gh/yuhonas/free-exercise-db@main/exercises/Cable_Hip_Adduction/1.jpg"
+    ]
   },
   {
     "id": "calves_standing_raise",
@@ -1927,7 +2312,14 @@
       "ثني الركبتين أثناء الرفع مما يقلل تفعيل عضلة الجاستروكنيميوس."
     ],
     "cues_ar": "قف بمشطي القدمين على حافة عتبة مع ركبتين مفرودتين واستقامة القامة. انزل بالكعبين لأسفل مستوى العتبة للشعور بأقصى استطالة في السمانة مع ثبات ثانية. ادفع لأعلى نقطة على مشط القدم مع عصر السمانة بقوة لمدة ثانيتين.",
-    "mistakes_ar": "الارتداد السريع (Bouncing) والاعتماد على مرونة وتر أكيلس بدلاً من القوة العضلية. ثني الركبتين أثناء الرفع مما يقلل تفعيل عضلة الجاستروكنيميوس."
+    "mistakes_ar": "الارتداد السريع (Bouncing) والاعتماد على مرونة وتر أكيلس بدلاً من القوة العضلية. ثني الركبتين أثناء الرفع مما يقلل تفعيل عضلة الجاستروكنيميوس.",
+    "free_db_id": "Standing_Calf_Raises",
+    "image_stretch": "https://cdn.jsdelivr.net/gh/yuhonas/free-exercise-db@main/exercises/Standing_Calf_Raises/0.jpg",
+    "image_contraction": "https://cdn.jsdelivr.net/gh/yuhonas/free-exercise-db@main/exercises/Standing_Calf_Raises/1.jpg",
+    "images": [
+      "https://cdn.jsdelivr.net/gh/yuhonas/free-exercise-db@main/exercises/Standing_Calf_Raises/0.jpg",
+      "https://cdn.jsdelivr.net/gh/yuhonas/free-exercise-db@main/exercises/Standing_Calf_Raises/1.jpg"
+    ]
   },
   {
     "id": "calves_seated_raise",
@@ -1958,7 +2350,14 @@
       "استخدام أوزان ثقيلة تؤدي إلى تقصير المدى الحركي."
     ],
     "cues_ar": "اجلس مع ثني الركبتين بزاوية 90 درجة لتثبيط عضلة الجاسترو وعزل عضلة السوليوس العميقة. انزل بالكعبين لأسفل نقطة ممكنة للشعور باستطالة كاملة. ادفع لأعلى نقطة واثبت لمدة ثانية في القمة.",
-    "mistakes_ar": "عدم النزول لمدى استطالة كامل أسفل مستوى الدواسة. استخدام أوزان ثقيلة تؤدي إلى تقصير المدى الحركي."
+    "mistakes_ar": "عدم النزول لمدى استطالة كامل أسفل مستوى الدواسة. استخدام أوزان ثقيلة تؤدي إلى تقصير المدى الحركي.",
+    "free_db_id": "Seated_Calf_Raise",
+    "image_stretch": "https://cdn.jsdelivr.net/gh/yuhonas/free-exercise-db@main/exercises/Seated_Calf_Raise/0.jpg",
+    "image_contraction": "https://cdn.jsdelivr.net/gh/yuhonas/free-exercise-db@main/exercises/Seated_Calf_Raise/1.jpg",
+    "images": [
+      "https://cdn.jsdelivr.net/gh/yuhonas/free-exercise-db@main/exercises/Seated_Calf_Raise/0.jpg",
+      "https://cdn.jsdelivr.net/gh/yuhonas/free-exercise-db@main/exercises/Seated_Calf_Raise/1.jpg"
+    ]
   },
   {
     "id": "calves_wall_tibialis_raise",
@@ -1992,7 +2391,14 @@
       "التسرع في النزول دون عصر العضلة في القمة."
     ],
     "cues_ar": "أسند الظهر والمؤخرة على جدار مع مد الساقين للأمام بمسافة خطوتين واستقامة الركبتين. ارفع أمشاط القدمين للأعلى باتجاه الساق لأقصى ارتفاع ممكن مع ارتكاز الكعبين على الأرض. اثبت لمدة ثانية في القمة لعصر عضلة القصبة، وهو تمرين معتمد لعلاج آلام الشين سبلنتس (Shin Splints) وامتصاص صدمات الجري.",
-    "mistakes_ar": "ثني الركبتين أثناء الرفع مما يقلل تفعيل قصبة الساق. التسرع في النزول دون عصر العضلة في القمة."
+    "mistakes_ar": "ثني الركبتين أثناء الرفع مما يقلل تفعيل قصبة الساق. التسرع في النزول دون عصر العضلة في القمة.",
+    "free_db_id": "Calf_Raise_On_A_Dumbbell",
+    "image_stretch": "https://cdn.jsdelivr.net/gh/yuhonas/free-exercise-db@main/exercises/Calf_Raise_On_A_Dumbbell/0.jpg",
+    "image_contraction": "https://cdn.jsdelivr.net/gh/yuhonas/free-exercise-db@main/exercises/Calf_Raise_On_A_Dumbbell/1.jpg",
+    "images": [
+      "https://cdn.jsdelivr.net/gh/yuhonas/free-exercise-db@main/exercises/Calf_Raise_On_A_Dumbbell/0.jpg",
+      "https://cdn.jsdelivr.net/gh/yuhonas/free-exercise-db@main/exercises/Calf_Raise_On_A_Dumbbell/1.jpg"
+    ]
   },
   {
     "id": "core_hanging_leg_raise",
@@ -2028,7 +2434,14 @@
       "رفع الساقين بمفصل الفخذ فقط دون تدوير الحوض مما يشغل عضلات الفخذ بدلاً من البطن."
     ],
     "cues_ar": "تعلق بالعقلة مع ثبات الجذع ومنع أي تأرجح. ارفع الركبتين أو الساقين مع تدوير الحوض للأعلى باتجاه الصدر (Posterior Pelvic Tilt). اعصر البطن في القمة وانزل ببطء وتحكم دون استخدام عزم الاندفاع.",
-    "mistakes_ar": "أرجحة الجسم واستخدام عزم القصور الذاتي. رفع الساقين بمفصل الفخذ فقط دون تدوير الحوض مما يشغل عضلات الفخذ بدلاً من البطن."
+    "mistakes_ar": "أرجحة الجسم واستخدام عزم القصور الذاتي. رفع الساقين بمفصل الفخذ فقط دون تدوير الحوض مما يشغل عضلات الفخذ بدلاً من البطن.",
+    "free_db_id": "Hanging_Leg_Raise",
+    "image_stretch": "https://cdn.jsdelivr.net/gh/yuhonas/free-exercise-db@main/exercises/Hanging_Leg_Raise/0.jpg",
+    "image_contraction": "https://cdn.jsdelivr.net/gh/yuhonas/free-exercise-db@main/exercises/Hanging_Leg_Raise/1.jpg",
+    "images": [
+      "https://cdn.jsdelivr.net/gh/yuhonas/free-exercise-db@main/exercises/Hanging_Leg_Raise/0.jpg",
+      "https://cdn.jsdelivr.net/gh/yuhonas/free-exercise-db@main/exercises/Hanging_Leg_Raise/1.jpg"
+    ]
   },
   {
     "id": "core_cable_kneeling_crunch",
@@ -2061,7 +2474,14 @@
       "سحب الحبل بالذراعين بدلاً من ثني الجذع بعضلات البطن."
     ],
     "cues_ar": "اركع على ركبتيك مع مسك الحبل بجانب الرأس وتثبيت الحوض في موضع ثابت. قم بطحن البطن من خلال ثني العمود الفقري لتقريب الضلوع من عظمة العانة مع تفريغ الهواء بالكامل. اثبت لمدة ثانية في الأسفل، ثم ارجع ببطء حتى استقامة الجذع.",
-    "mistakes_ar": "الجلوس للخلف على الكعبين وتحويل التمرين لحركة فخذ بدلاً من طحن البطن. سحب الحبل بالذراعين بدلاً من ثني الجذع بعضلات البطن."
+    "mistakes_ar": "الجلوس للخلف على الكعبين وتحويل التمرين لحركة فخذ بدلاً من طحن البطن. سحب الحبل بالذراعين بدلاً من ثني الجذع بعضلات البطن.",
+    "free_db_id": "Cable_Crunch",
+    "image_stretch": "https://cdn.jsdelivr.net/gh/yuhonas/free-exercise-db@main/exercises/Cable_Crunch/0.jpg",
+    "image_contraction": "https://cdn.jsdelivr.net/gh/yuhonas/free-exercise-db@main/exercises/Cable_Crunch/1.jpg",
+    "images": [
+      "https://cdn.jsdelivr.net/gh/yuhonas/free-exercise-db@main/exercises/Cable_Crunch/0.jpg",
+      "https://cdn.jsdelivr.net/gh/yuhonas/free-exercise-db@main/exercises/Cable_Crunch/1.jpg"
+    ]
   },
   {
     "id": "core_ab_wheel_rollout",
@@ -2097,7 +2517,14 @@
       "المبالغة في المدى للأمام دون امتلاك القوة الكافية للعودة."
     ],
     "cues_ar": "ابدأ في وضع الركوع مع مسك عجلة البطن أسفل الكتفين مباشرة وتثبيت الحوض. تدحرج بالأمام ببطء في خط مستقيم مع شد عضلات البطن والمؤخرة لمنع تقوس الظهر. اسحب العجلة للعودة من خلال تقليص عضلات البطن واللاتس.",
-    "mistakes_ar": "سقوط الحوض وتقوس القطنية لأسفل مما يسبب ضغطاً سلبياً على الفقرات. المبالغة في المدى للأمام دون امتلاك القوة الكافية للعودة."
+    "mistakes_ar": "سقوط الحوض وتقوس القطنية لأسفل مما يسبب ضغطاً سلبياً على الفقرات. المبالغة في المدى للأمام دون امتلاك القوة الكافية للعودة.",
+    "free_db_id": "Plank",
+    "image_stretch": "https://cdn.jsdelivr.net/gh/yuhonas/free-exercise-db@main/exercises/Plank/0.jpg",
+    "image_contraction": "https://cdn.jsdelivr.net/gh/yuhonas/free-exercise-db@main/exercises/Plank/1.jpg",
+    "images": [
+      "https://cdn.jsdelivr.net/gh/yuhonas/free-exercise-db@main/exercises/Plank/0.jpg",
+      "https://cdn.jsdelivr.net/gh/yuhonas/free-exercise-db@main/exercises/Plank/1.jpg"
+    ]
   },
   {
     "id": "core_pallof_press",
@@ -2140,7 +2567,14 @@
       "GYM",
       "HOME_DUMBBELL"
     ],
-    "thumbnail_url": "/assets/exercises/pallof-press.webp"
+    "thumbnail_url": "/assets/exercises/pallof-press.webp",
+    "free_db_id": "Pallof_Press",
+    "image_stretch": "https://cdn.jsdelivr.net/gh/yuhonas/free-exercise-db@main/exercises/Pallof_Press/0.jpg",
+    "image_contraction": "https://cdn.jsdelivr.net/gh/yuhonas/free-exercise-db@main/exercises/Pallof_Press/1.jpg",
+    "images": [
+      "https://cdn.jsdelivr.net/gh/yuhonas/free-exercise-db@main/exercises/Pallof_Press/0.jpg",
+      "https://cdn.jsdelivr.net/gh/yuhonas/free-exercise-db@main/exercises/Pallof_Press/1.jpg"
+    ]
   },
   {
     "id": "core_cable_woodchopper",
@@ -2174,7 +2608,14 @@
       "التواء مفرط في الركبتين أثناء الدوران."
     ],
     "cues_ar": "اسحب الكابل بشكل قطري عبر الجذع من الأعلى للأسفل (أو العكس) مع تدوير الكتفين. حافظ على ثبات الحوض والركبتين لعصر عضلات الخصر والمائلة بقوة. تحكم بالرجوع للوراء في ثانيتين للاستفادة من المقاومة.",
-    "mistakes_ar": "السحب بالذراعين فقط دون تدوير الجذع وعصر الكور. التواء مفرط في الركبتين أثناء الدوران."
+    "mistakes_ar": "السحب بالذراعين فقط دون تدوير الجذع وعصر الكور. التواء مفرط في الركبتين أثناء الدوران.",
+    "free_db_id": "Standing_Cable_Wood_Chop",
+    "image_stretch": "https://cdn.jsdelivr.net/gh/yuhonas/free-exercise-db@main/exercises/Standing_Cable_Wood_Chop/0.jpg",
+    "image_contraction": "https://cdn.jsdelivr.net/gh/yuhonas/free-exercise-db@main/exercises/Standing_Cable_Wood_Chop/1.jpg",
+    "images": [
+      "https://cdn.jsdelivr.net/gh/yuhonas/free-exercise-db@main/exercises/Standing_Cable_Wood_Chop/0.jpg",
+      "https://cdn.jsdelivr.net/gh/yuhonas/free-exercise-db@main/exercises/Standing_Cable_Wood_Chop/1.jpg"
+    ]
   },
   {
     "id": "core_deadbug_birddog",
@@ -2209,7 +2650,14 @@
       "التسرع في أداء الحركة بدون ثبات عضلي."
     ],
     "cues_ar": "استلقِ على الظهر مع ضغط أسفل الظهر بالكامل على الأرض لمنع أي فراغ هوائي. مد الذراع اليمنى والساق اليسرى ببطء للأمام والأسفل مع الحفاظ على ملاصقة الظهر للأرض. ارجع لوضع البداية وكرر مع الجانب المعاكس بتحكم وتنفس عميق.",
-    "mistakes_ar": "تقوس أسفل الظهر وارتفاعه عن الأرض أثناء مد الساق. التسرع في أداء الحركة بدون ثبات عضلي."
+    "mistakes_ar": "تقوس أسفل الظهر وارتفاعه عن الأرض أثناء مد الساق. التسرع في أداء الحركة بدون ثبات عضلي.",
+    "free_db_id": "Dead_Bug",
+    "image_stretch": "https://cdn.jsdelivr.net/gh/yuhonas/free-exercise-db@main/exercises/Dead_Bug/0.jpg",
+    "image_contraction": "https://cdn.jsdelivr.net/gh/yuhonas/free-exercise-db@main/exercises/Dead_Bug/1.jpg",
+    "images": [
+      "https://cdn.jsdelivr.net/gh/yuhonas/free-exercise-db@main/exercises/Dead_Bug/0.jpg",
+      "https://cdn.jsdelivr.net/gh/yuhonas/free-exercise-db@main/exercises/Dead_Bug/1.jpg"
+    ]
   },
   {
     "id": "legs_bulgarian_split_squat",
@@ -2253,6 +2701,13 @@
     "cues_ar": "وضع مشط القدم الخلفية على دكة أو كرسي مستقر. النزول بالركبة الخلفية باتجاه الأرض مع الحفاظ على استقرار القدم الأمامية. الدفع من كعب القدم الأمامية مع ميل طفيف بالجذع للأمام لتركيز التحميل على الجلوتس.",
     "mistakes_ar": "رفع كعب القدم الأمامية عن الأرض أثناء النزول. الوقوف بمسافة ضيقة جداً تضغط على صابونة الركبة الأمامية.",
     "thumbnail_url": "/assets/exercises/bulgarian-split-squat.webp",
-    "video_url": "https://video.zplatform.com/exercises/bulgarian-split-squat.mp4"
+    "video_url": "https://video.zplatform.com/exercises/bulgarian-split-squat.mp4",
+    "free_db_id": "Split_Squats",
+    "image_stretch": "https://cdn.jsdelivr.net/gh/yuhonas/free-exercise-db@main/exercises/Split_Squats/0.jpg",
+    "image_contraction": "https://cdn.jsdelivr.net/gh/yuhonas/free-exercise-db@main/exercises/Split_Squats/1.jpg",
+    "images": [
+      "https://cdn.jsdelivr.net/gh/yuhonas/free-exercise-db@main/exercises/Split_Squats/0.jpg",
+      "https://cdn.jsdelivr.net/gh/yuhonas/free-exercise-db@main/exercises/Split_Squats/1.jpg"
+    ]
   }
 ]

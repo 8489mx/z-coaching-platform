@@ -175,7 +175,7 @@ export default function MealsSection({
                         الأصناف: {foodsList.length} عناصر
                       </small>
                       <small className="text-success fw-semibold" style={{ fontSize: '0.7rem' }}>
-                        متوافقة مع الماكروز ✓
+                        متوافقة مع الماكروز 
                       </small>
                     </div>
 

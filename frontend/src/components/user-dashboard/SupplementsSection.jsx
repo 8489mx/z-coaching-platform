@@ -57,7 +57,7 @@ export default function SupplementsSection({ supplements }) {
             <p className="text-muted small mb-0" style={{ fontSize: '0.78rem' }}>توقيتات تناول المكملات الموصى بها لتعزيز الأداء والاستشفاء العضلي</p>
           </div>
           <span className="badge rounded-pill px-3 py-1 fw-bold" style={{ background: 'linear-gradient(135deg, #ecfdf5, #d1fae5)', color: '#059669', border: 'none', fontSize: '0.74rem', boxShadow: '0 1px 3px rgba(16,185,129,0.08)' }}>
-            معتمد من الكابتن ✓
+            معتمد من الكابتن 
           </span>
         </div>
 

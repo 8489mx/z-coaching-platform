@@ -109,7 +109,7 @@ export default function CoachTriageQueue({
             href={waAction.url}
             target="_blank"
             rel="noopener noreferrer"
-            className="flex items-center gap-1.5 bg-emerald-600 hover:bg-emerald-500 text-slate-900 text-xs font-bold px-3 py-2 rounded-lg transition active:scale-95 shadow-md shadow-emerald-950 no-underline"
+            className="flex items-center gap-1.5 bg-emerald-600 hover:bg-emerald-500 text-slate-900 text-xs font-bold px-3 py-2 rounded-lg transition shadow-md shadow-emerald-950 no-underline"
           >
             <span>واتساب</span>
             <svg className="w-3.5 h-3.5 fill-current" viewBox="0 0 24 24">

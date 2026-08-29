@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import ReactDOM from 'react-dom';
+import { MessageCircle, X, Copy, Check, Send } from 'lucide-react';
 import { copyToClipboard } from '../../utils/clipboardUtils';
 
 export default function WhatsAppModal({ client, onClose }) {
@@ -7,9 +8,51 @@ export default function WhatsAppModal({ client, onClose }) {
   const [customText, setCustomText] = useState('');
   const [copied, setCopied] = useState(false);
 
+  const clientName = client?.full_name || 'مشتركنا';
+  const clientCode = String(client?.client_code || client?.id || '').replace(/^client[-_]?/i, '');
+  const clientPhone = client?.phone_number || '';
+  const baseUrl = window.location.origin;
+
+  const templates = {
+    intake: `مرحباً ${clientName}،
+تم تأكيد اشتراكك وتفعيل حسابك في المنظومة التدريبية بنجاح.
+
+بيانات دخول استمارتك:
+- كود المشترك: #${clientCode}
+- رقم الهاتف المسجل: ${clientPhone}
+
+رابط استمارتك الصحية والرياضية المباشر:
+${baseUrl}/intake/form?code=${clientCode}&phone=${clientPhone}
+
+يرجى فتح الرابط وتعبئة بياناتك بدقة لنبدأ فوراً في تجهيز خطتك التدريبية والغذائية.`,
+
+    plan_ready: `مرحباً ${clientName}،
+تم الانتهاء من إعداد خطتك التدريبية والغذائية المخصصة واعتمادها بنجاح.
+
+يمكنك الآن الدخول إلى لوحة المتابعة الخاصة بك للاطلاع على جدولك وتفاصيل الوجبات:
+${baseUrl}/user-dashboard?user_id=${clientCode}
+
+بالتوفيق وبداية موفقة.`,
+
+    checkin_reminder: `تذكير المتابعة الأسبوعية
+مرحباً ${clientName}،
+حان موعد تقديم تقرير التقييم الأسبوعي (الوزن، الالتزام، وصور التطور) لتحديث وتعديل برنامجك التدريبي والغذائي.
+
+رابط إرسال التقييم الأسبوعي:
+${baseUrl}/check-in?code=${clientCode}`,
+
+    checkin_approved: `تم اعتماد تقرير المتابعة الأسبوعي
+مرحباً ${clientName}،
+تمت مراجعة نتائج أسبوعك وتحديث السعرات والبرنامج لمواصلة التطور والنتائج المطلوبة.
+
+تفضل بالاطلاع على التحديثات الجديدة في خطتك:
+${baseUrl}/user-dashboard?user_id=${clientCode}`
+  };
+
   useEffect(() => {
     if (client) {
-      applyTemplate('intake', client);
+      setCustomText(templates.intake);
+      setTemplate('intake');
     }
   }, [client]);
 
@@ -25,45 +68,7 @@ export default function WhatsAppModal({ client, onClose }) {
 
   if (!client) return null;
 
-  const clientName = client.full_name || 'بطلنا';
-  const clientCode = client.client_code || client.id || '';
-  const clientPhone = client.phone_number || '';
-  const baseUrl = window.location.origin;
-
-  const templates = {
-    intake: `مرحباً ${clientName} يا بطل!
-تم تأكيد اشتراكك وتفعيل ملفك في المنظومة التدريبية بنجاح!
-
-بيانات دخول استمارتك الخاصة:
-🔑 *كود المشترك:* ${clientCode}
-📱 *رقم الهاتف المسجل:* ${clientPhone}
-
-🔗 *رابط استمارتك الصحية والرياضية المباشر:*
-${baseUrl}/intake/form?code=${clientCode}&phone=${clientPhone}
-
-🔗 *رابط البوابة الموحد:*
-${baseUrl}/intake
-
-(افتح الرابط المباشر واملأ بياناتك وصورك بدقة لنبدأ فوراً في تجهيز خطتك المتكاملة!)`,
-
-    plan_ready: `مرحباً يا ${clientName}! 
-تم إعداد خطتك التدريبية والغذائية المخصصة بنجاح بواسطة محرك Z Coaching الذكي وتم اعتمادها.
-يمكنك الآن تسجيل الدخول للاطلاع على جدولك وتفاصيل الوجبات:
-${baseUrl}/user-dashboard?user_id=${clientCode}
-بالتوفيق وبداية قوية بإذن الله! `,
-
-    checkin_reminder: `تذكير المتابعة الأسبوعية
-مرحباً يا ${clientName}، حان موعد تقديم تقرير المتابعة الأسبوعي (الوزن، الالتزام، والقياسات) لتحديث وتعديل برنامجك التدريبي والغذائي.
-يرجى الدخول وتعبئة تقرير الأسبوع:
-${baseUrl}/user-dashboard?user_id=${clientCode}`,
-
-    checkin_approved: `تم اعتماد تقرير المتابعة بنجاح! 
-عاش يا ${clientName}، تم تحليل نتائج أسبوعك وتعديل السعرات والبرنامج التدريبي لمواصلة التطور والنتائج القياسية.
-تفضل بالاطلاع على التحديثات الجديدة في خطتك:
-${baseUrl}/user-dashboard?user_id=${clientCode}`
-  };
-
-  const applyTemplate = (tplKey, targetClient = client) => {
+  const applyTemplate = (tplKey) => {
     setTemplate(tplKey);
     setCustomText(templates[tplKey] || '');
   };
@@ -72,116 +77,220 @@ ${baseUrl}/user-dashboard?user_id=${clientCode}`
     const success = await copyToClipboard(customText);
     if (success) {
       setCopied(true);
-      setTimeout(() => setCopied(false), 2500);
+      setTimeout(() => setCopied(false), 2000);
     }
   };
 
   const handleSend = () => {
-    const cleanPhone = clientPhone.replace(/\D/g, '');
+    let cleanPhone = clientPhone.replace(/\D/g, '');
+    if (cleanPhone.startsWith('01')) cleanPhone = '2' + cleanPhone;
     const encodedMsg = encodeURIComponent(customText);
     window.open(`https://wa.me/${cleanPhone}?text=${encodedMsg}`, '_blank');
   };
 
   const modalContent = (
     <div 
-      className="modal show d-block" 
-      tabIndex="-1" 
+      dir="rtl"
       style={{ 
-        backgroundColor: 'rgba(15, 23, 42, 0.65)', 
-        backdropFilter: 'blur(4px)', 
-        zIndex: 10000,
         position: 'fixed',
         top: 0,
+        left: 0,
+        right: 0,
         bottom: 0,
-        overflowY: 'auto'
+        backgroundColor: 'rgba(15, 23, 42, 0.65)', 
+        backdropFilter: 'blur(4px)', 
+        zIndex: 99999,
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        padding: '16px',
+        boxSizing: 'border-box',
+        fontFamily: 'Cairo, sans-serif'
       }}
       onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}
     >
-      <div className="modal-dialog modal-dialog-centered modal-lg" style={{ width: '96%', maxWidth: '720px', margin: '1.5rem auto' }}>
-        <div className="modal-content border-0 shadow-sm shadow-slate-200/50" style={{ borderRadius: '20px', overflow: 'hidden' }} dir="rtl">
-          {/* Header */}
-          <div className="modal-header border-bottom p-4 bg-white d-flex justify-content-between align-items-center" style={{ borderColor: '#f1f5f9' }}>
-            <div className="d-flex align-items-center gap-3">
-              <div className="rounded-circle d-flex align-items-center justify-content-center" style={{ width: '38px', height: '38px', background: '#f0fdf4', color: '#16a34a', border: '1px solid #dcfce7' }}>
-                <i className="ti ti-brand-whatsapp fs-5"></i>
-              </div>
-              <div>
-                <h5 className="modal-title fw-bold text-dark mb-0" style={{ fontSize: '1.05rem' }}>مركز رسائل الواتساب الذكية</h5>
-                <small className="text-muted" style={{ fontSize: '0.78rem' }}>المتدرب: {clientName} ({clientPhone})</small>
-              </div>
+      <div 
+        style={{ 
+          width: '100%',
+          maxWidth: '560px',
+          background: '#FFFFFF',
+          borderRadius: '14px',
+          border: '1px solid #E2E8F0',
+          boxShadow: '0 20px 40px rgba(15, 23, 42, 0.2)',
+          overflow: 'hidden',
+          display: 'flex',
+          flexDirection: 'column'
+        }}
+      >
+        {/* Modal Header */}
+        <div 
+          style={{ 
+            padding: '16px 20px',
+            borderBottom: '1px solid #F1F5F9',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            background: '#FFFFFF'
+          }}
+        >
+          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+            <div style={{ width: '3px', height: '18px', background: '#0284C7', borderRadius: '2px' }} />
+            <div>
+              <h3 style={{ margin: 0, fontSize: '15px', fontWeight: 800, color: '#0F172A' }}>
+                مركز رسائل الواتساب الذكية
+              </h3>
+              <span style={{ fontSize: '11px', color: '#64748B' }}>
+                المشترك: <strong style={{ color: '#0F172A' }}>{clientName}</strong> (#{clientCode}) • {clientPhone}
+              </span>
             </div>
-            <button 
-              type="button" 
-              onClick={onClose} 
-              className="btn btn-sm btn-light rounded-circle d-flex align-items-center justify-content-center flex-shrink-0" 
-              style={{ width: '34px', height: '34px', background: '#f8fafc', border: '1px solid #e2e8f0', color: '#64748b' }}
-              title="إغلاق"
-            >
-              <i className="ti ti-x fs-6"></i>
-            </button>
           </div>
 
-          {/* Body */}
-          <div className="modal-body p-4 bg-white">
-            <label className="form-label fw-bold small text-dark mb-2">اختر قالب الرسالة الجاهزة:</label>
-            <div className="d-flex gap-2 mb-3 flex-wrap">
+          <button 
+            type="button" 
+            onClick={onClose}
+            style={{
+              background: '#F8FAFC',
+              border: '1px solid #E2E8F0',
+              borderRadius: '6px',
+              width: '30px',
+              height: '30px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              cursor: 'pointer',
+              color: '#64748B'
+            }}
+          >
+            <X size={16} />
+          </button>
+        </div>
+
+        {/* Modal Body */}
+        <div style={{ padding: '18px 20px', display: 'flex', flexDirection: 'column', gap: '14px' }}>
+          
+          {/* Template Selection */}
+          <div>
+            <label style={{ display: 'block', fontSize: '11.5px', fontWeight: 700, color: '#475569', marginBottom: '6px' }}>
+              اختر نوع الرسالة:
+            </label>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '6px' }}>
               {[
                 { id: 'intake', label: 'رابط استمارة البيانات' },
                 { id: 'plan_ready', label: 'إشعار جاهزية الخطة' },
-                { id: 'checkin_reminder', label: 'تذكير المتابعة الأسبوعية' },
-                { id: 'checkin_approved', label: 'اعتماد المتابعة والتحديث' }
-              ].map(t => (
-                <button 
-                  key={t.id}
-                  type="button"
-                  onClick={() => applyTemplate(t.id)}
-                  className={`btn btn-sm rounded-pill px-3 py-1 fw-semibold transition-all ${template === t.id ? 'text-slate-900 shadow-sm' : 'bg-white text-dark border'}`}
-                  style={{
-                    background: template === t.id ? '#0284C7' : '#ffffff',
-                    borderColor: template === t.id ? '#0284C7' : '#e2e8f0',
-                    fontSize: '0.8rem',
-                    height: '32px'
-                  }}
-                >
-                  {t.label}
-                </button>
-              ))}
-            </div>
-
-            <div className="mb-2">
-              <label className="form-label fw-bold small text-dark">نص الرسالة (يمكنك التعديل عليه بحرية):</label>
-              <textarea 
-                className="form-control" 
-                rows="6" 
-                value={customText}
-                onChange={(e) => setCustomText(e.target.value)}
-                style={{ whiteSpace: 'pre-line', fontSize: '0.86rem', borderRadius: '12px', lineHeight: '1.6' }}
-              ></textarea>
+                { id: 'checkin_reminder', label: 'تذكير التقييم الأسبوعي' },
+                { id: 'checkin_approved', label: 'اعتماد التقييم والتحديث' }
+              ].map(t => {
+                const isActive = template === t.id;
+                return (
+                  <button 
+                    key={t.id}
+                    type="button"
+                    onClick={() => applyTemplate(t.id)}
+                    style={{
+                      height: '34px',
+                      borderRadius: '6px',
+                      border: isActive ? '1px solid #0F172A' : '1px solid #E2E8F0',
+                      background: isActive ? '#0F172A' : '#F8FAFC',
+                      color: isActive ? '#FFFFFF' : '#475569',
+                      fontSize: '11.5px',
+                      fontWeight: 700,
+                      cursor: 'pointer',
+                      transition: 'all 0.15s ease'
+                    }}
+                  >
+                    {t.label}
+                  </button>
+                );
+              })}
             </div>
           </div>
 
-          {/* Footer */}
-          <div className="modal-footer p-3 bg-light d-flex justify-content-between border-top" style={{ borderColor: '#f1f5f9' }}>
-            <button 
-              type="button" 
-              onClick={handleCopy}
-              className="btn btn-sm rounded-pill px-4 fw-semibold bg-white border text-dark"
-              style={{ height: '36px', fontSize: '0.82rem' }}
-            >
-              <i className={copied ? "ti ti-check text-success me-1" : "ti ti-copy me-1"}></i>
-              {copied ? 'تم النسخ!' : 'نسخ النص'}
-            </button>
-            <button 
-              type="button" 
-              onClick={handleSend}
-              className="btn btn-success btn-sm rounded-pill px-4 fw-bold d-flex align-items-center gap-2 shadow-sm text-slate-900"
-              style={{ height: '36px', fontSize: '0.82rem' }}
-            >
-              <i className="ti ti-brand-whatsapp fs-6"></i>
-              <span>إرسال واتساب</span>
-            </button>
+          {/* Message Text Area */}
+          <div>
+            <label style={{ display: 'block', fontSize: '11.5px', fontWeight: 700, color: '#475569', marginBottom: '6px' }}>
+              نص الرسالة (يمكنك التعديل عليه قبل الإرسال):
+            </label>
+            <textarea 
+              rows={8}
+              value={customText}
+              onChange={(e) => setCustomText(e.target.value)}
+              style={{
+                width: '100%',
+                borderRadius: '8px',
+                border: '1px solid #CBD5E1',
+                padding: '10px 12px',
+                fontSize: '12px',
+                lineHeight: 1.6,
+                color: '#0F172A',
+                outline: 'none',
+                resize: 'none',
+                boxSizing: 'border-box',
+                fontFamily: 'Cairo, sans-serif',
+                background: '#FFFFFF'
+              }}
+            />
           </div>
+
         </div>
+
+        {/* Modal Footer */}
+        <div 
+          style={{ 
+            padding: '12px 20px',
+            background: '#F8FAFC',
+            borderTop: '1px solid #E2E8F0',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            gap: '10px'
+          }}
+        >
+          <button 
+            type="button"
+            onClick={handleCopy}
+            style={{
+              height: '36px',
+              padding: '0 16px',
+              borderRadius: '6px',
+              border: '1px solid #CBD5E1',
+              background: '#FFFFFF',
+              color: '#0F172A',
+              fontSize: '11.5px',
+              fontWeight: 700,
+              display: 'flex',
+              alignItems: 'center',
+              gap: '6px',
+              cursor: 'pointer'
+            }}
+          >
+            {copied ? <Check size={14} color="#16A34A" /> : <Copy size={14} />}
+            <span>{copied ? 'تم النسخ بنجاح' : 'نسخ النص'}</span>
+          </button>
+
+          <button 
+            type="button"
+            onClick={handleSend}
+            style={{
+              height: '36px',
+              padding: '0 20px',
+              borderRadius: '6px',
+              border: 'none',
+              background: '#16A34A',
+              color: '#FFFFFF',
+              fontSize: '12px',
+              fontWeight: 800,
+              display: 'flex',
+              alignItems: 'center',
+              gap: '6px',
+              cursor: 'pointer',
+              boxShadow: '0 2px 6px rgba(22, 163, 74, 0.25)'
+            }}
+          >
+            <Send size={14} />
+            <span>إرسال عبر واتساب الآن</span>
+          </button>
+        </div>
+
       </div>
     </div>
   );

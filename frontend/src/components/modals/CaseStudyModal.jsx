@@ -46,7 +46,7 @@ export default function CaseStudyModal({ client, onClose }) {
     legPressFinal: 230
   };
 
-  const socialCaption = `🔥 قصة نجاح ملهمة في 16 أسبوعاً مع كابتن كريم زكريا!\n\nبطلنا ${clientName} نجح في تحقيق نتائج استثنائية:\n📉 خسارة ${metrics.weightLoss} كجم من الدهون الصافية\n📏 نزول ${metrics.waistLoss} سم من محيط الخصر\n💪 مضاعفة قوة تمرين دفع الأرجل من ${metrics.legPressStart}kg إلى ${metrics.legPressFinal}kg!\n\nالتحول مش صدفة، التحول علم وتغذية سريرية وتمرين مبرمج بدقة.\n\n📍 التدريب والمتابعة: منصة كابتن كريم زكريا - Z Coaching`;
+  const socialCaption = `قصة نجاح ملهمة في 16 أسبوعاً مع كابتن كريم زكريا!\n\nبطلنا ${clientName} نجح في تحقيق نتائج استثنائية:\n- خسارة ${metrics.weightLoss} كجم من الدهون الصافية\n- نزول ${metrics.waistLoss} سم من محيط الخصر\n- مضاعفة قوة تمرين دفع الأرجل من ${metrics.legPressStart}kg إلى ${metrics.legPressFinal}kg!\n\nالتحول مش صدفة، التحول علم وتغذية سريرية وتمرين مبرمج بدقة.\n\nالتدريب والمتابعة: منصة كابتن كريم زكريا - Z Coaching`;
 
   const handleCopyCaption = () => {
     navigator.clipboard.writeText(socialCaption);
@@ -157,19 +157,19 @@ export default function CaseStudyModal({ client, onClose }) {
               <div style={{ background: 'rgba(239, 68, 68, 0.12)', border: '1px solid rgba(239, 68, 68, 0.3)', borderRadius: '14px', padding: '12px', textAlign: 'center' }}>
                 <span style={{ fontSize: '10.5px', color: '#FCA5A5', fontWeight: 700, display: 'block' }}>فارق الوزن</span>
                 <strong style={{ fontSize: '1.3rem', color: '#EF4444', fontFamily: 'monospace' }}>-{metrics.weightLoss} kg</strong>
-                <small style={{ display: 'block', fontSize: '10px', color: '#94A3B8' }}>{metrics.startWeight} ➔ {metrics.finalWeight} kg</small>
+                <small style={{ display: 'block', fontSize: '10px', color: '#94A3B8' }}>{metrics.startWeight} → {metrics.finalWeight} kg</small>
               </div>
 
               <div style={{ background: 'rgba(245, 158, 11, 0.12)', border: '1px solid rgba(245, 158, 11, 0.3)', borderRadius: '14px', padding: '12px', textAlign: 'center' }}>
                 <span style={{ fontSize: '10.5px', color: '#FCD34D', fontWeight: 700, display: 'block' }}>محيط الخصر</span>
                 <strong style={{ fontSize: '1.3rem', color: '#F59E0B', fontFamily: 'monospace' }}>-{metrics.waistLoss} cm</strong>
-                <small style={{ display: 'block', fontSize: '10px', color: '#94A3B8' }}>{metrics.startWaist} ➔ {metrics.finalWaist} cm</small>
+                <small style={{ display: 'block', fontSize: '10px', color: '#94A3B8' }}>{metrics.startWaist} → {metrics.finalWaist} cm</small>
               </div>
 
               <div style={{ background: 'rgba(16, 185, 129, 0.12)', border: '1px solid rgba(16, 185, 129, 0.3)', borderRadius: '14px', padding: '12px', textAlign: 'center' }}>
                 <span style={{ fontSize: '10.5px', color: '#6EE7B7', fontWeight: 700, display: 'block' }}>نسبة الدهون</span>
                 <strong style={{ fontSize: '1.3rem', color: '#10B981', fontFamily: 'monospace' }}>-{metrics.bodyFatDrop}%</strong>
-                <small style={{ display: 'block', fontSize: '10px', color: '#94A3B8' }}>{metrics.startBodyFat}% ➔ {metrics.finalBodyFat}%</small>
+                <small style={{ display: 'block', fontSize: '10px', color: '#94A3B8' }}>{metrics.startBodyFat}% → {metrics.finalBodyFat}%</small>
               </div>
 
             </div>
@@ -181,7 +181,7 @@ export default function CaseStudyModal({ client, onClose }) {
                 <span style={{ color: '#E2E8F0', fontWeight: 700 }}>تطور القوة العضلية (Leg Press):</span>
               </div>
               <strong style={{ color: '#38BDF8', fontFamily: 'monospace' }}>
-                {metrics.legPressStart} kg ➔ {metrics.legPressFinal} kg (+110 kg)
+                {metrics.legPressStart} kg → {metrics.legPressFinal} kg (+110 kg)
               </strong>
             </div>
 
@@ -221,7 +221,7 @@ export default function CaseStudyModal({ client, onClose }) {
 
           <button
             type="button"
-            onClick={() => alert('✓ تم تجهيز البطاقة للتحميل بجودة 4K!')}
+            onClick={() => alert('تم تجهيز البطاقة للتحميل بجودة 4K!')}
             style={{ flex: 1, height: '42px', background: '#0284C7', color: '#FFFFFF', border: 'none', borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px', fontSize: '0.84rem', fontWeight: 800, cursor: 'pointer' }}
           >
             <Download style={{ width: '15px', height: '15px' }} />

@@ -213,17 +213,17 @@ export default function ClientOnboardingWizard({ onComplete }) {
             </button>
           )}
           {step < 3 && (
-            <button onClick={() => setStep(step + 1)} className="mr-auto flex items-center gap-2 bg-blue-600 text-slate-900 text-sm font-black px-6 py-3 rounded-xl hover:bg-blue-700 transition shadow-sm shadow-slate-200/50 shadow-blue-500/20 active:scale-95">
+            <button onClick={() => setStep(step + 1)} className="mr-auto flex items-center gap-2 bg-blue-600 text-slate-900 text-sm font-black px-6 py-3 rounded-xl hover:bg-blue-700 transition shadow-sm shadow-slate-200/50 shadow-blue-500/20">
               التالي <ChevronLeft size={18} />
             </button>
           )}
           {step === 3 && (
-            <button onClick={() => { setStep(4); handleFinish(); }} className="mr-auto flex items-center gap-2 bg-emerald-600 text-slate-900 text-sm font-black px-6 py-3 rounded-xl hover:bg-emerald-700 transition shadow-sm shadow-slate-200/50 shadow-emerald-500/20 active:scale-95">
+            <button onClick={() => { setStep(4); handleFinish(); }} className="mr-auto flex items-center gap-2 bg-emerald-600 text-slate-900 text-sm font-black px-6 py-3 rounded-xl hover:bg-emerald-700 transition shadow-sm shadow-slate-200/50 shadow-emerald-500/20">
               إنهاء الاعتماد <CheckCircle2 size={18} />
             </button>
           )}
           {step === 4 && !isGenerating && (
-            <button onClick={() => onComplete(formData)} className="w-full flex items-center justify-center gap-2 bg-blue-600 text-slate-900 text-sm font-black px-6 py-4 rounded-xl hover:bg-blue-700 transition shadow-sm shadow-slate-200/50 shadow-blue-500/20 active:scale-95">
+            <button onClick={() => onComplete(formData)} className="w-full flex items-center justify-center gap-2 bg-blue-600 text-slate-900 text-sm font-black px-6 py-4 rounded-xl hover:bg-blue-700 transition shadow-sm shadow-slate-200/50 shadow-blue-500/20">
               انطلق لخطتك الآن!
             </button>
           )}

@@ -395,8 +395,8 @@ export default function ClientInteractiveApp() {
                     <Crown style={{ width: '10px', height: '10px' }} />
                     <span>{clientData.package}</span>
                   </span>
-                  <span style={{ fontSize: '10px', color: '#F59E0B', fontWeight: 700 }}>
-                    🔥 {clientData.streak} يوم التزام
+                  <span style={{ fontSize: '10px', color: '#D97706', fontWeight: 700 }}>
+                    {clientData.streak} يوم التزام متواصل
                   </span>
                 </div>
               </div>
@@ -602,7 +602,7 @@ export default function ClientInteractiveApp() {
               <div style={{ background: '#FFFFFF', border: '1px solid #E2E8F0', borderRadius: '18px', padding: '14px', boxShadow: '0 2px 6px rgba(15, 23, 42, 0.02)' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                    <span style={{ fontSize: '1rem' }}>⚖️</span>
+                    <Scale style={{ width: '16px', height: '16px', color: '#0F172A' }} />
                     <h3 style={{ margin: 0, fontSize: '0.82rem', fontWeight: 800, color: '#0F172A' }}>
                       طريقة عرض الحصص والكميات
                     </h3>
@@ -625,7 +625,7 @@ export default function ClientInteractiveApp() {
                       cursor: 'pointer'
                     }}
                   >
-                    <span>✈️ خطط المطاعم والسفر</span>
+                    <span>خطط المطاعم والسفر</span>
                   </button>
                 </div>
 
@@ -645,7 +645,7 @@ export default function ClientInteractiveApp() {
                       transition: 'all 0.2s ease'
                     }}
                   >
-                    🔄 عرض مزدوج (الكل)
+                    عرض مزدوج (الكل)
                   </button>
 
                   <button
@@ -663,7 +663,7 @@ export default function ClientInteractiveApp() {
                       transition: 'all 0.2s ease'
                     }}
                   >
-                    ⚖️ بالميزان (نيئ ومطبوخ)
+                    بالميزان (نيئ ومطبوخ)
                   </button>
 
                   <button
@@ -681,7 +681,7 @@ export default function ClientInteractiveApp() {
                       transition: 'all 0.2s ease'
                     }}
                   >
-                    ✋ بالنظر ومقاييس اليد
+                    بالنظر ومقاييس اليد
                   </button>
                 </div>
               </div>
@@ -826,7 +826,7 @@ export default function ClientInteractiveApp() {
                               }}
                               title="أفكار خلطات وطرق إعداد سريعة"
                             >
-                              <span>👨‍🍳 خلطات</span>
+                              <span>خلطات</span>
                             </button>
                           )}
 
@@ -887,7 +887,7 @@ export default function ClientInteractiveApp() {
                       cursor: 'pointer'
                     }}
                   >
-                    <span>📄 تصدير الخطة PDF</span>
+                    <span>تصدير الخطة PDF</span>
                   </button>
                 </div>
 
@@ -960,7 +960,7 @@ export default function ClientInteractiveApp() {
                   >
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                        <span style={{ fontSize: '1.2rem' }}>🛡️</span>
+                        <ShieldCheck style={{ width: '18px', height: '18px', color: prehabCompleted ? '#166534' : '#92400E' }} />
                         <div>
                           <h3 style={{ margin: 0, fontSize: '0.86rem', fontWeight: 800, color: prehabCompleted ? '#166534' : '#92400E' }}>
                             {prehabRoutine.routine_title_ar}
@@ -1015,7 +1015,7 @@ export default function ClientInteractiveApp() {
                               {pEx.prescription}
                             </span>
                             <small style={{ display: 'block', fontSize: '0.7rem', color: '#64748B', marginTop: '2px' }}>
-                              💡 {pEx.cue_ar}
+                              توجيه: {pEx.cue_ar}
                             </small>
                           </div>
                           <span style={{ background: '#F1F5F9', color: '#475569', fontSize: '0.68rem', fontWeight: 700, padding: '2px 8px', borderRadius: '6px', whiteSpace: 'nowrap' }}>
@@ -1044,12 +1044,12 @@ export default function ClientInteractiveApp() {
 
                 <div style={{ background: '#FFFFFF', border: '1px solid #BAE6FD', borderRadius: '12px', padding: '10px 12px', marginBottom: '8px' }}>
                   <p style={{ margin: 0, fontSize: '0.74rem', color: '#0F172A', lineHeight: 1.4 }}>
-                    🗣️ <strong>قاعدة اختبار التحدث (The Talk Test):</strong> {cardioPrescription.talk_test_cue_ar}
+                    <strong>قاعدة اختبار التحدث (The Talk Test):</strong> {cardioPrescription.talk_test_cue_ar}
                   </p>
                 </div>
 
                 <p style={{ margin: 0, fontSize: '0.72rem', color: '#475569' }}>
-                  ⚙️ <strong>الأداة المقترحة:</strong> {cardioPrescription.suggested_settings_ar || cardioPrescription.equipment_recommendation}
+                  <strong>الأداة المقترحة:</strong> {cardioPrescription.suggested_settings_ar || cardioPrescription.equipment_recommendation}
                 </p>
               </div>
 
@@ -1264,7 +1264,7 @@ export default function ClientInteractiveApp() {
                   إعادة تعيين القائمة
                 </button>
                 <a
-                  href={`https://wa.me/?text=${encodeURIComponent('قائمة مشترياتي الأسبوعية من تطبيق كابتن كريم زكريا:\n' + groceryItems.map(i => (i.checked ? '✅ ' : '⬜ ') + i.name + ' (' + i.amount + ')').join('\n'))}`}
+                  href={`https://wa.me/?text=${encodeURIComponent('قائمة مشترياتي الأسبوعية من تطبيق كابتن كريم زكريا:\n' + groceryItems.map(i => (i.checked ? '[x] ' : '[ ] ') + i.name + ' (' + i.amount + ')').join('\n'))}`}
                   target="_blank"
                   rel="noreferrer"
                   style={{ flex: 1, height: '38px', background: '#16A34A', color: '#FFFFFF', borderRadius: '10px', fontSize: '0.78rem', fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px', textDecoration: 'none' }}
@@ -1452,7 +1452,7 @@ export default function ClientInteractiveApp() {
                         </span>
                         <small style={{ display: 'block', fontSize: '0.7rem', color: '#94A3B8', marginTop: '2px' }}>{swapOption.note}</small>
                         {swapResult.clinical_note && (
-                          <small style={{ display: 'block', fontSize: '0.68rem', color: '#D97706', fontWeight: 700, marginTop: '2px' }}>⚠️ {swapResult.clinical_note}</small>
+                          <small style={{ display: 'block', fontSize: '0.68rem', color: '#D97706', fontWeight: 700, marginTop: '2px' }}>{swapResult.clinical_note}</small>
                         )}
                       </div>
 
@@ -1523,7 +1523,7 @@ export default function ClientInteractiveApp() {
               {/* Header */}
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                  <span style={{ fontSize: '1.4rem' }}>👨‍🍳</span>
+                  <Utensils style={{ width: '18px', height: '18px', color: '#0F172A' }} />
                   <div>
                     <h3 style={{ fontSize: '0.96rem', fontWeight: 800, color: '#0F172A', margin: 0 }}>
                       خلطات وطرق تحضير منزلية (3 خيارات)
@@ -1545,7 +1545,7 @@ export default function ClientInteractiveApp() {
               {/* Notice */}
               <div style={{ background: '#F0FDF4', border: '1px solid #BBF7D0', borderRadius: '12px', padding: '10px 14px', marginBottom: '16px' }}>
                 <p style={{ margin: 0, fontSize: '0.74rem', color: '#166534', lineHeight: 1.4 }}>
-                  💡 <strong>ملاحظة هامة:</strong> السعرات والماكروز محسوبة من وزن الصنف الأساسي فقط؛ كافة الإضافات أدناه مجانية وصفرية السعرات لكسر الملل ورفع لذة الوجبة!
+                  <strong>ملاحظة هامة:</strong> السعرات والماكروز محسوبة من وزن الصنف الأساسي فقط؛ كافة الإضافات أدناه مجانية وصفرية السعرات لكسر الملل ورفع لذة الوجبة!
                 </p>
               </div>
 
@@ -1584,7 +1584,7 @@ export default function ClientInteractiveApp() {
               {recipeData.cooking_tip && (
                 <div style={{ background: '#FFFBEB', border: '1px solid #FDE68A', borderRadius: '12px', padding: '10px 14px', marginBottom: '16px' }}>
                   <span style={{ fontSize: '0.74rem', color: '#92400E', fontWeight: 700 }}>
-                    🔥 سر الشيف: {recipeData.cooking_tip}
+                    سر الشيف: {recipeData.cooking_tip}
                   </span>
                 </div>
               )}
@@ -1674,19 +1674,19 @@ export default function ClientInteractiveApp() {
               {/* PDF Summary Content */}
               <div style={{ display: 'flex', flexDirection: 'column', gap: '14px', fontSize: '0.76rem', color: '#334155' }}>
                 <div style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', borderRadius: '14px', padding: '12px' }}>
-                  <h4 style={{ margin: '0 0 6px 0', fontSize: '0.82rem', color: '#0F172A' }}>🥗 خطة التغذية اليومية ({pdfData.nutrition.daily_calories} Kcal)</h4>
+                  <h4 style={{ margin: '0 0 6px 0', fontSize: '0.82rem', color: '#0F172A' }}>خطة التغذية اليومية ({pdfData.nutrition.daily_calories} Kcal)</h4>
                   <p style={{ margin: '0 0 4px 0' }}>• البروتين: {pdfData.nutrition.protein_g}g | الكارب: {pdfData.nutrition.carbs_g}g | الدهون: {pdfData.nutrition.fat_g}g</p>
                   <p style={{ margin: 0, color: '#059669', fontWeight: 700 }}>• متاح عرض الكميات بالميزان أو مقاييس اليد البصرية.</p>
                 </div>
 
                 <div style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', borderRadius: '14px', padding: '12px' }}>
-                  <h4 style={{ margin: '0 0 6px 0', fontSize: '0.82rem', color: '#0F172A' }}>🏋️ الجدول التدريبي المعتمد ({pdfData.training.split_name})</h4>
+                  <h4 style={{ margin: '0 0 6px 0', fontSize: '0.82rem', color: '#0F172A' }}>الجدول التدريبي المعتمد ({pdfData.training.split_name})</h4>
                   <p style={{ margin: '0 0 4px 0' }}>• معايير الشدة: إيقاف الجولات عند <strong>RIR 1-2</strong> مع شارة دروب سيت بالجولة الأخيرة.</p>
                   <p style={{ margin: 0 }}>• الكارديو: {pdfData.cardio.protocol_title} ({pdfData.cardio.prescription})</p>
                 </div>
 
                 <div style={{ background: '#F0FDF4', border: '1px solid #BBF7D0', borderRadius: '14px', padding: '12px' }}>
-                  <h4 style={{ margin: '0 0 6px 0', fontSize: '0.82rem', color: '#166534' }}>📌 إرشادات الالتزام الذهبية</h4>
+                  <h4 style={{ margin: '0 0 6px 0', fontSize: '0.82rem', color: '#166534' }}>إرشادات الالتزام الذهبية</h4>
                   <ul style={{ margin: 0, paddingRight: '16px', lineHeight: 1.5 }}>
                     <li>وزن الأكل بعد الطهي بالجرامات.</li>
                     <li>إيقاف الكافيين قبل النوم بـ 6-8 ساعات.</li>
@@ -1711,7 +1711,7 @@ export default function ClientInteractiveApp() {
                     cursor: 'pointer'
                   }}
                 >
-                  🖨️ طباعة / حفظ كـ PDF
+                  طباعة / حفظ كـ PDF
                 </button>
                 <button
                   type="button"
@@ -1804,7 +1804,7 @@ export default function ClientInteractiveApp() {
                     });
                     setActiveScenario(adaptation);
                     setEmergencyModalOpen(false);
-                    alert('✓ تم تفعيل وضع السفر وتكييف التمارين لجيم الفندق (دامبلز وكابلات) وسعرات الصيانة!');
+                    alert('تم تفعيل وضع السفر وتكييف التمارين لجيم الفندق (دامبلز وكابلات) وسعرات الصيانة!');
                   }}
                   style={{
                     background: 'rgba(255, 255, 255, 0.06)',
@@ -1832,7 +1832,7 @@ export default function ClientInteractiveApp() {
                     });
                     setActiveScenario(adaptation);
                     setEmergencyModalOpen(false);
-                    alert('✓ تم تفعيل تمارين الغرفة بوزن الجسم وأحزمة المقاومة مع تحكم سلبي 3 ثوانٍ!');
+                    alert('تم تفعيل تمارين الغرفة بوزن الجسم وأحزمة المقاومة مع تحكم سلبي 3 ثوانٍ!');
                   }}
                   style={{
                     background: 'rgba(255, 255, 255, 0.06)',
@@ -1859,7 +1859,7 @@ export default function ClientInteractiveApp() {
                     });
                     setActiveScenario(adaptation);
                     setEmergencyModalOpen(false);
-                    alert('✓ تم إيقاف المقاومة وتفعيل سعرات الصيانة وبروتوكول المناعة (فيتامين C، زنك، وترطيب إضافي)!');
+                    alert('تم إيقاف المقاومة وتفعيل سعرات الصيانة وبروتوكول المناعة (فيتامين C، زنك، وترطيب إضافي)!');
                   }}
                   style={{
                     background: 'rgba(239, 68, 68, 0.12)',
@@ -1886,7 +1886,7 @@ export default function ClientInteractiveApp() {
                     });
                     setActiveScenario(adaptation);
                     setEmergencyModalOpen(false);
-                    alert('✓ تم تقليص البرنامج إلى جلستين Full Body أسبوعياً (35 دقيقة) وتثبيت الماكروز!');
+                    alert('تم تقليص البرنامج إلى جلستين Full Body أسبوعياً (35 دقيقة) وتثبيت الماكروز!');
                   }}
                   style={{
                     background: 'rgba(16, 185, 129, 0.12)',

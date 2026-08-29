@@ -64,7 +64,7 @@ export default function QuickChecklistWidget({
             key={idx}
             type="button"
             onClick={() => toggleMeal(idx)}
-            className={`w-full flex items-center justify-between p-3 rounded-xl border text-xs font-semibold transition active:scale-[0.99] cursor-pointer ${
+            className={`w-full flex items-center justify-between p-3 rounded-xl border text-xs font-semibold transition cursor-pointer ${
               completedMeals[idx]
                 ? 'bg-emerald-950/40 border-emerald-600/60 text-emerald-300'
                 : 'bg-slate-100/60 border-slate-300/60 text-slate-700 hover:border-slate-600'
@@ -85,7 +85,7 @@ export default function QuickChecklistWidget({
         <button
           type="button"
           onClick={toggleWorkout}
-          className={`w-full flex items-center justify-between p-3.5 rounded-xl border text-xs font-bold transition active:scale-[0.99] cursor-pointer ${
+          className={`w-full flex items-center justify-between p-3.5 rounded-xl border text-xs font-bold transition cursor-pointer ${
             workoutDone
               ? 'bg-blue-950/50 border-blue-500/60 text-blue-300'
               : 'bg-slate-100/80 border-slate-300 text-slate-200 hover:border-slate-500'

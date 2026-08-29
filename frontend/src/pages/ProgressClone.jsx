@@ -84,7 +84,7 @@ export default function ProgressClone() {
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || 'فشل اعتماد المتابعة');
 
-      alert('✓ تم اعتماد التعديل وتحديث الخطة النشطة للمتدرب بنجاح!');
+      alert('تم اعتماد التعديل وتحديث الخطة النشطة للمتدرب بنجاح!');
       fetchClientCheckins(selectedClientId);
       window.dispatchEvent(new Event('checkin_approved'));
     } catch (err) {

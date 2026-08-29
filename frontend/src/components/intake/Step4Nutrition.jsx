@@ -228,7 +228,7 @@ export default function Step4Nutrition({
               }}
             >
               <div className="choice-title" style={{ color: isSelected ? '#e11d48' : 'inherit' }}>
-                {isSelected ? '✕ ' : ''}{food.label}
+                {isSelected ? 'X ' : ''}{food.label}
               </div>
             </div>
           );
@@ -239,7 +239,7 @@ export default function Step4Nutrition({
           style={{ borderColor: noExclusions ? '#10b981' : '#e2e8f0' }}
         >
           <div className="choice-title" style={{ color: noExclusions ? '#059669' : 'inherit', fontWeight: '700' }}>
-            ✓ لا يوجد استبعاد (أتناول كافة الأطعمة)
+            لا يوجد استبعاد (أتناول كافة الأطعمة)
           </div>
         </div>
       </div>

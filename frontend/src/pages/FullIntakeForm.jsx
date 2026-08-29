@@ -882,7 +882,7 @@ export default function FullIntakeForm() {
                           transition: 'all 0.15s ease'
                         }}
                       >
-                        {isChecked && '✓ '}
+                        {isChecked && ''}
                         {c.label}
                       </button>
                     );
@@ -970,7 +970,7 @@ export default function FullIntakeForm() {
                           transition: 'all 0.15s ease'
                         }}
                       >
-                        {isChecked && '⚠️ '}
+                        {isChecked && '• '}
                         {inj.label}
                       </button>
                     );
@@ -1114,7 +1114,7 @@ export default function FullIntakeForm() {
                           transition: 'all 0.15s ease'
                         }}
                       >
-                        {isChecked && '⛔ '}
+                        {isChecked && '• '}
                         {alg.label}
                       </button>
                     );
@@ -1222,7 +1222,7 @@ export default function FullIntakeForm() {
                           transition: 'all 0.15s ease'
                         }}
                       >
-                        {isChecked ? `✕ ${food}` : food}
+                        {isChecked ? `X ${food}` : food}
                       </button>
                     );
                   })}
@@ -1372,7 +1372,7 @@ export default function FullIntakeForm() {
                           transition: 'all 0.15s ease'
                         }}
                       >
-                        {isChecked && '✓ '}
+                        {isChecked && ''}
                         {m.label}
                       </button>
                     );

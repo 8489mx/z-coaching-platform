@@ -172,16 +172,16 @@ export default function IntakeSubmissions() {
   const approvedCount = submissions.filter(s => s.status === 'APPROVED').length;
 
   const statCards = [
-    { title: 'قيد التعبئة', value: inProgressCount, label: 'استمارات جارية', icon: Edit3 },
-    { title: 'بانتظار الاعتماد', value: pendingCount, label: 'مكتملة 100%', icon: Clock },
-    { title: 'مؤكد الدفع', value: paidCount, label: 'Visa / Wallet', icon: CreditCard },
-    { title: 'مسودات جاهزة', value: draftCount, label: 'تخصيص الكابتن', icon: FileText },
-    { title: 'معتمد ومنشور', value: approvedCount, label: 'برامج نشطة', icon: CheckCircle2 },
+    { title: 'استمارات جارية', value: inProgressCount, unit: 'استمارة', label: 'قيد التعبئة', icon: Edit3 },
+    { title: 'بانتظار المراجعة', value: pendingCount, unit: 'استمارة', label: 'مكتملة الإجابات', icon: Clock },
+    { title: 'مؤكدة الدفع', value: paidCount, unit: 'استمارة', label: 'تم التحويل', icon: CreditCard },
+    { title: 'مسودات الخطط', value: draftCount, unit: 'خطة', label: 'جاهزة للاعتماد', icon: FileText },
+    { title: 'البرامج المعتمدة', value: approvedCount, unit: 'برنامج', label: 'منشورة للمتدرب', icon: CheckCircle2 },
   ];
 
   return (
     <AdminLayout>
-      <div className="page-stack" dir="rtl" style={{ display: 'flex', flexDirection: 'column', gap: '18px' }}>
+      <div dir="rtl" style={{ display: 'flex', flexDirection: 'column', gap: '18px' }}>
         
         {/* 1. Page Header */}
         <PageHeader
@@ -226,24 +226,33 @@ export default function IntakeSubmissions() {
                   background: '#FFFFFF',
                   border: '1px solid #E2E8F0',
                   borderRadius: '10px',
-                  padding: '12px 14px',
+                  padding: '14px 16px',
                   boxShadow: '0 1px 3px rgba(15, 23, 42, 0.02)',
                   display: 'flex',
                   flexDirection: 'column',
-                  gap: '8px'
+                  gap: '10px'
                 }}
               >
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                  <span style={{ fontSize: '11.5px', fontWeight: 700, color: '#64748B' }}>{st.title}</span>
-                  <div style={{ width: '28px', height: '28px', borderRadius: '6px', background: '#F8FAFC', border: '1px solid #E2E8F0', color: '#0F172A', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  <span style={{ fontSize: '12px', fontWeight: 700, color: '#64748B', whiteSpace: 'nowrap' }}>{st.title}</span>
+                  <div style={{ width: '28px', height: '28px', borderRadius: '6px', background: '#F8FAFC', border: '1px solid #E2E8F0', color: '#0F172A', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
                     <Icon size={14} />
                   </div>
                 </div>
-                <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between' }}>
-                  <span style={{ fontSize: '1.6rem', fontWeight: 900, color: '#0F172A', fontFamily: 'JetBrains Mono, Cairo, sans-serif', lineHeight: 1 }}>
-                    {st.value}
+                <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', gap: '6px' }}>
+                  <div style={{ display: 'flex', alignItems: 'baseline', gap: '3px' }}>
+                    <span style={{ fontSize: '1.5rem', fontWeight: 900, color: '#0F172A', fontFamily: 'JetBrains Mono, Cairo, sans-serif', lineHeight: 1 }}>
+                      {st.value}
+                    </span>
+                    {st.unit && (
+                      <span style={{ fontSize: '11px', fontWeight: 700, color: '#64748B' }}>
+                        {st.unit}
+                      </span>
+                    )}
+                  </div>
+                  <span style={{ fontSize: '10.5px', color: '#94A3B8', fontWeight: 600, whiteSpace: 'nowrap' }}>
+                    {st.label}
                   </span>
-                  <span style={{ fontSize: '10.5px', color: '#94A3B8', fontWeight: 600 }}>{st.label}</span>
                 </div>
               </div>
             );
@@ -356,8 +365,8 @@ export default function IntakeSubmissions() {
                   {filteredSubmissions.map((sub) => {
                     const clientName = sub.user?.full_name || sub.answers?.personal?.firstName || 'متدرب جديد';
                     const clientPhone = sub.user?.phone_number || sub.answers?.personal?.phone || '-';
-                    const clientCode = sub.user?.client_code || String(sub.id);
-                    const cleanCode = clientCode.replace(/^client[-_]?/i, '');
+                    const rawCode = sub.user?.client_code || sub.answers?.client_code || sub.client_code || '1';
+                    const cleanCode = String(rawCode).replace(/^client[-_]?/i, '').replace('#', '');
 
                     return (
                       <tr 
@@ -368,9 +377,25 @@ export default function IntakeSubmissions() {
                       >
                         {/* Code */}
                         <td style={{ padding: '10px 14px', textAlign: 'center' }}>
-                          <span style={{ fontFamily: 'JetBrains Mono, monospace', fontWeight: 800, fontSize: '11px', background: '#F0F9FF', border: '1px solid #BAE6FD', color: '#0284C7', padding: '2px 7px', borderRadius: '4px', display: 'inline-block' }}>
-                            {'#' + cleanCode}
-                          </span>
+                          {(() => {
+                            const rawPkg = sub.package_name || sub.subscription_package || 'ELITE_4M';
+                            const isMax = String(rawPkg).trim().toUpperCase().includes('MAX') || String(rawPkg).includes('ماكس');
+                            return (
+                              <span style={{ 
+                                fontFamily: 'JetBrains Mono, monospace', 
+                                fontWeight: 800, 
+                                fontSize: '11px', 
+                                background: '#F8FAFC', 
+                                border: '1px solid #E2E8F0', 
+                                color: isMax ? '#B45309' : '#0284C7', 
+                                padding: '2px 7px', 
+                                borderRadius: '4px', 
+                                display: 'inline-block' 
+                              }}>
+                                {'#' + cleanCode}
+                              </span>
+                            );
+                          })()}
                         </td>
 
                         {/* Name */}
@@ -395,9 +420,9 @@ export default function IntakeSubmissions() {
                             return (
                               <div style={{ display: 'inline-flex', flexDirection: 'column', gap: '3px', alignItems: 'center' }}>
                                 <span style={{
-                                  background: '#F1F5F9',
+                                  background: '#F8FAFC',
                                   border: '1px solid #E2E8F0',
-                                  color: isMax ? '#C4952D' : '#0284C7',
+                                  color: isMax ? '#B45309' : '#0284C7',
                                   padding: '1px 7px',
                                   borderRadius: '4px',
                                   fontSize: '11px',
@@ -453,25 +478,35 @@ export default function IntakeSubmissions() {
                           <div style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
                             
                             {/* WhatsApp Nudge Button */}
+                            {/* WhatsApp Nudge / Chat */}
                             <button
                               type="button"
                               onClick={() => handleSendNudge(sub)}
                               style={{
-                                padding: '4px 8px',
-                                borderRadius: '5px',
-                                border: '1px solid #CBD5E1',
-                                background: '#FFFFFF',
-                                color: '#0F172A',
-                                fontSize: '11px',
+                                padding: '4px 10px',
+                                borderRadius: '6px',
+                                border: '1px solid #86EFAC',
+                                background: '#F0FDF4',
+                                color: '#16A34A',
+                                fontSize: '11.5px',
                                 fontWeight: 700,
                                 cursor: 'pointer',
                                 display: 'inline-flex',
                                 alignItems: 'center',
-                                gap: '4px'
+                                gap: '5px',
+                                transition: 'all 0.15s ease'
+                              }}
+                              onMouseEnter={(e) => {
+                                e.currentTarget.style.background = '#DCFCE7';
+                                e.currentTarget.style.borderColor = '#4ADE80';
+                              }}
+                              onMouseLeave={(e) => {
+                                e.currentTarget.style.background = '#F0FDF4';
+                                e.currentTarget.style.borderColor = '#86EFAC';
                               }}
                               title="تواصل وتذكير واتساب"
                             >
-                              <MessageCircle size={12} color="#16A34A" />
+                              <MessageCircle size={13} />
                               <span>واتساب</span>
                             </button>
 

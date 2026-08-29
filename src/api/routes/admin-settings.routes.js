@@ -8,7 +8,10 @@ import {
   deleteAdminExercise,
   getSubscriptionPackages,
   saveSubscriptionPackage,
-  deleteSubscriptionPackage
+  deleteSubscriptionPackage,
+  getAdminFoods,
+  saveAdminFood,
+  deleteAdminFood
 } from '../controllers/admin-settings.controller.js';
 
 const router = express.Router();
@@ -37,4 +40,14 @@ router.put('/packages/:id', (req, res) => {
 });
 router.delete('/packages/:id', deleteSubscriptionPackage);
 
+// 4. Food & Nutrition Catalog Manager
+router.get('/foods', getAdminFoods);
+router.post('/foods', saveAdminFood);
+router.put('/foods/:id', (req, res) => {
+  req.body.id = req.params.id;
+  return saveAdminFood(req, res);
+});
+router.delete('/foods/:id', deleteAdminFood);
+
 export default router;
+

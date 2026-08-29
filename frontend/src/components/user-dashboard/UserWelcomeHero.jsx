@@ -150,7 +150,7 @@ export default function UserWelcomeHero({ currentUser, coachNotes }) {
                     minWidth: '110px'
                   }}>
                     <span className="text-muted d-block fw-semibold" style={{ fontSize: '0.66rem' }}>التكيف الذكي</span>
-                    <strong className="d-block text-success" style={{ fontSize: '0.84rem' }}>مفعل بنجاح ✓</strong>
+                    <strong className="d-block text-success" style={{ fontSize: '0.84rem' }}>مفعل بنجاح </strong>
                   </div>
                 </div>
 

@@ -254,7 +254,7 @@ export default function ClientDayCockpit({
           <div className="bg-slate-50 border border-slate-200 rounded-2xl p-5 max-w-sm w-full space-y-4">
             <div className="flex justify-between items-center">
               <h4 className="font-bold text-sm text-slate-900">البدائل المتكافئة لـ ({activeSwapItem.name_ar})</h4>
-              <button onClick={() => setActiveSwapItem(null)} className="text-slate-600 text-sm">✕</button>
+              <button onClick={() => setActiveSwapItem(null)} className="text-slate-600 text-sm">X</button>
             </div>
             <div className="space-y-2 max-h-60 overflow-y-auto">
               {getEligibleSwaps(activeSwapItem.id, foodCatalog).map((swapFood) => (

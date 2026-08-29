@@ -150,7 +150,7 @@ export default function SearchableSelect({
                   onClick={() => setSearchTerm('')}
                   style={{ borderColor: '#cbd5e1' }}
                 >
-                  ✕
+                  X
                 </button>
               )}
             </div>

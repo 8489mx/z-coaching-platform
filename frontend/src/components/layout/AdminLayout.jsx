@@ -4,7 +4,8 @@ import AdminHeader from './AdminHeader';
 
 export default function AdminLayout({ 
   children, 
-  onOpenNewClient
+  onOpenNewClient,
+  fullWidth = true
 }) {
   const [isCollapsed, setIsCollapsed] = useState(() => {
     const saved = localStorage.getItem('zsystems_sidebar_collapsed');
@@ -38,7 +39,7 @@ export default function AdminLayout({
 
         {/* Scrollable Content View */}
         <div className="content-wrap">
-          <main className="page-stack" style={{ maxWidth: '1280px', margin: '0 auto', width: '100%', paddingBottom: '60px' }}>
+          <main className="page-stack" style={{ maxWidth: '1440px', margin: '0 auto', width: '100%', padding: '20px 24px 60px 24px', boxSizing: 'border-box' }}>
             {children}
           </main>
         </div>

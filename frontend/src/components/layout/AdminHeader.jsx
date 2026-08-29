@@ -30,7 +30,7 @@ export function AdminHeader() {
     if (path.includes('/customers')) return [{ label: 'العملاء' }, { label: 'إدارة المشتركين' }];
     if (path.includes('/subscriptions')) return [{ label: 'المالية' }, { label: 'الباقات والاشتراكات' }];
     if (path.includes('/exercises')) return [{ label: 'التمارين' }, { label: 'مكتبة التمارين' }];
-    if (path.includes('/calculator')) return [{ label: 'التغذية' }, { label: 'محرك الماكروز' }];
+    if (path.includes('/calculator')) return [{ label: 'التغذية' }, { label: 'مكتبة الأطعمة والماكروز' }];
     if (path.includes('/master-settings')) return [{ label: 'الإعدادات' }, { label: 'إعدادات النظام' }];
     return [{ label: 'الرئيسية' }, { label: 'لوحة التحكم' }];
   };

@@ -6,8 +6,22 @@ import {
   AlertTriangle, 
   Check, 
   X, 
+  Plus,
+  Share2,
+  Copy,
+  CheckCircle2,
+  ShieldCheck,
+  HeartPulse,
+  Video,
+  Edit2,
+  Edit3,
+  Link2,
   Layers,
-  Sparkles
+  Sparkles,
+  ChevronDown,
+  Upload,
+  ArrowRightLeft,
+  FolderOpen
 } from 'lucide-react';
 import { API_BASE } from '../config/api';
 import AdminLayout from '../components/layout/AdminLayout';
@@ -15,13 +29,137 @@ import ExerciseVideoModal from '../components/modals/ExerciseVideoModal';
 import { PageHeader } from '@/shared/components/page-header';
 import { FormSection } from '@/shared/components/form-section';
 
+// Concise Muscle Badge Formatter (1-2 words max)
+export function getShortMuscleName(muscleAr = '', muscleGroup = '') {
+  const m = String(muscleAr || '').trim();
+  const mg = String(muscleGroup || '').toUpperCase();
+  
+  if (m.includes('صدر علوي') || m.includes('الصدر العلوي')) return 'صدر علوي';
+  if (m.includes('صدر سفلي') || m.includes('الصدر السفلي')) return 'صدر سفلي';
+  if (m.includes('صدر أوسط') || m.includes('الصدر الأوسط') || m.includes('الصدر العام')) return 'صدر أوسط';
+  if (m.includes('صدر') || m.includes('الصدر') || mg === 'CHEST') return 'عضلات الصدر';
+
+  if (m.includes('لاتس') || m.includes('اللاتس')) return 'عضلات اللاتس';
+  if (m.includes('ترابيس') || m.includes('الترابيس')) return 'الترابيس';
+  if (m.includes('قطنية') || m.includes('القطنية')) return 'القطنية';
+  if (m.includes('منتصف الظهر') || m.includes('أعلى الظهر') || m.includes('الظهر') || mg === 'BACK') return 'عضلات الظهر';
+
+  if (m.includes('كتف جانبي') || m.includes('الكتف الجانبي')) return 'كتف جانبي';
+  if (m.includes('كتف خلفي') || m.includes('الكتف الخلفي')) return 'كتف خلفي';
+  if (m.includes('كتف أمامي') || m.includes('الكتف الأمامي')) return 'كتف أمامي';
+  if (m.includes('كتف') || m.includes('الكتف') || m.includes('الأكتاف') || mg === 'SHOULDERS') return 'الأكتاف';
+
+  if (m.includes('بايسبس') || m.includes('البايسبس')) return 'بايسبس';
+  if (m.includes('ترايسبس') || m.includes('الترايسبس')) return 'ترايسبس';
+  if (m.includes('ساعد') || m.includes('الساعد') || m.includes('المعصم')) return 'الساعد';
+  if (mg === 'ARMS') return 'الذراعين';
+
+  if (m.includes('فخذ أمامي') || m.includes('الفخذ الأمامي') || m.includes('كوادز')) return 'فخذ أمامي';
+  if (m.includes('فخذ خلفي') || m.includes('الفخذ الخلفي') || m.includes('هامسترينج')) return 'فخذ خلفي';
+  if (m.includes('جلوتس') || m.includes('الجلوتس') || m.includes('الأرداف')) return 'جلوتس';
+  if (m.includes('سمانة') || m.includes('السمانة') || mg === 'CALVES') return 'السمانة';
+  if (m.includes('أرجل') || m.includes('الأرجل') || m.includes('فخذ') || mg === 'LEGS') return 'الأرجل';
+
+  if (m.includes('بطن') || m.includes('البطن') || m.includes('كور') || m.includes('الكور') || m.includes('خواصر') || mg === 'CORE') return 'البطن والكور';
+
+  const words = m.split(/\s+/);
+  if (words.length > 2) return words.slice(0, 2).join(' ');
+  return m || 'عضلة رئيسية';
+}
+
+// Concise Equipment Badge Formatter (1-2 words max)
+export function getShortEquipmentName(equipAr = '', equipment = '') {
+  const e = String(equipAr || '').trim();
+  const eq = String(equipment || '').toUpperCase();
+
+  if (eq === 'BARBELL' || e.includes('بار')) return 'بار أولمبي';
+  if (eq === 'DUMBBELL' || e.includes('دمبل')) return 'دمبلز';
+  if (eq === 'CABLE' || e.includes('كابل')) return 'كابل';
+  if (eq === 'MACHINE' || e.includes('جهاز') || e.includes('ماكينة')) return 'جهاز';
+  if (eq === 'BODYWEIGHT' || e.includes('وزن الجسم') || e.includes('عقلة') || e.includes('متوازي')) return 'وزن الجسم';
+
+  const words = e.split(/\s+/);
+  if (words.length > 2) return words.slice(0, 2).join(' ');
+  return e || 'أداة تمرين';
+}
+
+// Smart Injury Safety Classifier
+export function isExerciseSafeForInjury(ex, injuryType) {
+  if (!injuryType || injuryType === 'ALL') return true;
+
+  const en = String(ex.name_en || '').toLowerCase();
+  const ar = String(ex.name_ar || '').toLowerCase();
+  const eq = String(ex.equipment || '').toUpperCase();
+
+  if (injuryType === 'LOWER_BACK') {
+    const badKeywords = ['deadlift', 'ديدليفت', 'squat', 'سكوات', 'bent over row', 'بار رُو', 'good morning', 'تجديف بالبار'];
+    const isBad = badKeywords.some(k => en.includes(k) || ar.includes(k));
+    if (isBad && !en.includes('chest-supported') && !ar.includes('مسنود') && !en.includes('goblet') && !en.includes('hack')) {
+      return false;
+    }
+    return true;
+  }
+
+  if (injuryType === 'SHOULDER') {
+    const badKeywords = ['behind the neck', 'upright row', 'تجديف عمودي', 'dips', 'متوازي'];
+    const isBad = badKeywords.some(k => en.includes(k) || ar.includes(k));
+    if (isBad) return false;
+    return true;
+  }
+
+  if (injuryType === 'KNEE') {
+    const badKeywords = ['walking lunge', 'jump squat', 'deep barbell squat', 'طعن متحرك'];
+    const isBad = badKeywords.some(k => en.includes(k) || ar.includes(k));
+    if (isBad) return false;
+    return true;
+  }
+
+  if (injuryType === 'WRIST') {
+    if (eq === 'BARBELL' && (en.includes('curl') || ar.includes('بايسبس') || en.includes('skull crusher'))) {
+      return false;
+    }
+    return true;
+  }
+
+  return true;
+}
+
 export default function ExerciseLibrary() {
   const [allExercises, setAllExercises] = useState([]);
   const [loading, setLoading] = useState(true);
   const [muscleFilter, setMuscleFilter] = useState('ALL');
   const [equipmentFilter, setEquipmentFilter] = useState('ALL');
+  const [injuryFilter, setInjuryFilter] = useState('ALL');
   const [searchTerm, setSearchTerm] = useState('');
   const [activeVideo, setActiveVideo] = useState(null);
+  const [expandedView, setExpandedView] = useState({}); // { [exId]: 'CUES' | 'MISTAKES' | null }
+  const [copiedKey, setCopiedKey] = useState(null); // 'VIDEO_1' | 'CUES_1' | 'MISTAKES_1'
+
+  // Add Exercise Modal State
+  const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+  const [savingNewExercise, setSavingNewExercise] = useState(false);
+  const [newExerciseData, setNewExerciseData] = useState({
+    name_en: '',
+    name_ar: '',
+    muscle_group: 'CHEST',
+    equipment: 'BARBELL',
+    video_url: '',
+    cues_ar: '',
+    mistakes_ar: ''
+  });
+
+  // Edit Full Exercise Modal State
+  const [editingExercise, setEditingExercise] = useState(null);
+  const [editFormData, setEditFormData] = useState({
+    name_en: '',
+    name_ar: '',
+    muscle_group: 'CHEST',
+    equipment: 'BARBELL',
+    video_url: '',
+    cues_ar: '',
+    mistakes_ar: ''
+  });
+  const [savingEditExercise, setSavingEditExercise] = useState(false);
 
   useEffect(() => {
     fetchExercises();
@@ -51,111 +189,360 @@ export default function ExerciseLibrary() {
     { id: 'CORE', label: 'البطن والكور' },
   ];
 
+  const toggleCardView = (exId, type) => {
+    setExpandedView(prev => ({
+      ...prev,
+      [exId]: prev[exId] === type ? null : type
+    }));
+  };
+
+  // Generic Copy Handler with visual feedback
+  const handleCopyDirect = (text, key) => {
+    if (!text) return;
+    navigator.clipboard.writeText(text).then(() => {
+      setCopiedKey(key);
+      setTimeout(() => setCopiedKey(null), 2500);
+    }).catch(err => {
+      console.error('Clipboard copy error:', err);
+    });
+  };
+
+  // Quick Copy Exercise Video Link
+  const handleShareVideoLink = (ex) => {
+    let videoLink = ex.video_url || (ex.video_id ? `https://www.youtube.com/watch?v=${ex.video_id}` : '');
+    
+    if (!videoLink) {
+      videoLink = `https://www.youtube.com/results?search_query=${encodeURIComponent(ex.name_en + ' exercise form')}`;
+    }
+
+    handleCopyDirect(videoLink, `VIDEO_${ex.id}`);
+  };
+
+  // Open Full Edit Exercise Modal
+  const openEditExerciseModal = (ex) => {
+    setEditingExercise(ex);
+    setEditFormData({
+      id: ex.id,
+      name_en: ex.name_en || '',
+      name_ar: ex.name_ar || '',
+      muscle_group: ex.muscle_group || 'CHEST',
+      equipment: ex.equipment || 'BARBELL',
+      video_url: ex.video_url || (ex.video_id ? `https://www.youtube.com/watch?v=${ex.video_id}` : ''),
+      cues_ar: ex.cues_ar || '',
+      mistakes_ar: ex.mistakes_ar || '',
+      image_stretch: ex.image_stretch || (ex.images && ex.images[0]) || `/exercises/${ex.id}/0.jpg`,
+      image_contraction: ex.image_contraction || (ex.images && ex.images[1]) || `/exercises/${ex.id}/1.jpg`
+    });
+  };
+
+  // Handle Direct Image File Upload
+  const handleUploadImageFile = (e, imageIndex) => {
+    const file = e.target.files && e.target.files[0];
+    if (!file || !editingExercise) return;
+
+    const reader = new FileReader();
+    reader.onload = async () => {
+      const base64 = reader.result;
+      try {
+        const res = await fetch(`${API_BASE}/api/v1/exercises/upload-image`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            exercise_id: editingExercise.id,
+            image_index: imageIndex,
+            image_base64: base64
+          })
+        });
+        const data = await res.json();
+        if (data.success && data.imageUrl) {
+          if (imageIndex === 0) {
+            setEditFormData(prev => ({ ...prev, image_stretch: data.imageUrl }));
+          } else {
+            setEditFormData(prev => ({ ...prev, image_contraction: data.imageUrl }));
+          }
+          handleCopyDirect('تم رفع الصورة وتحديثها بنجاح', `IMG_UPLOAD_${imageIndex}`);
+        }
+      } catch (err) {
+        console.error('Upload image error:', err);
+      }
+    };
+    reader.readAsDataURL(file);
+  };
+
+  // Handle Save Updated Exercise Data
+  const handleSaveEditedExercise = async (e) => {
+    e.preventDefault();
+    if (!editingExercise) return;
+
+    try {
+      setSavingEditExercise(true);
+      const updatedExercise = {
+        ...editingExercise,
+        ...editFormData,
+        images: [
+          editFormData.image_stretch,
+          editFormData.image_contraction
+        ]
+      };
+
+      const res = await fetch(`${API_BASE}/api/v1/admin-settings/exercises`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(updatedExercise)
+      });
+      const data = await res.json();
+      
+      const saved = (data && data.exercise) ? data.exercise : updatedExercise;
+      setAllExercises(prev => prev.map(e => e.id === editingExercise.id ? { ...e, ...saved } : e));
+      setEditingExercise(null);
+    } catch (err) {
+      console.error('Save edited exercise error:', err);
+      setAllExercises(prev => prev.map(e => e.id === editingExercise.id ? { ...e, ...editFormData } : e));
+      setEditingExercise(null);
+    } finally {
+      setSavingEditExercise(false);
+    }
+  };
+
+  // Handle Save Custom Exercise
+  const handleSaveCustomExercise = async (e) => {
+    e.preventDefault();
+    if (!newExerciseData.name_en.trim() || !newExerciseData.name_ar.trim()) {
+      alert('يرجى إدخال اسم التمرين بالإنجليزي والعربي');
+      return;
+    }
+
+    try {
+      setSavingNewExercise(true);
+      const res = await fetch(`${API_BASE}/api/v1/admin-settings/exercises`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(newExerciseData)
+      });
+      const data = await res.json();
+      if (data && data.exercise) {
+        setAllExercises(prev => [data.exercise, ...prev]);
+      } else {
+        const fallbackEx = {
+          ...newExerciseData,
+          id: `CUSTOM_${Date.now()}`
+        };
+        setAllExercises(prev => [fallbackEx, ...prev]);
+      }
+      setIsAddModalOpen(false);
+      setNewExerciseData({
+        name_en: '',
+        name_ar: '',
+        muscle_group: 'CHEST',
+        equipment: 'BARBELL',
+        video_url: '',
+        cues_ar: '',
+        mistakes_ar: ''
+      });
+    } catch (err) {
+      console.error('Save custom exercise error:', err);
+      const fallbackEx = {
+        ...newExerciseData,
+        id: `CUSTOM_${Date.now()}`
+      };
+      setAllExercises(prev => [fallbackEx, ...prev]);
+      setIsAddModalOpen(false);
+    } finally {
+      setSavingNewExercise(false);
+    }
+  };
+
   const exercises = allExercises.filter(ex => {
     const matchMuscle = muscleFilter === 'ALL' || ex.muscle_group === muscleFilter;
     const matchEquipment = equipmentFilter === 'ALL' || ex.equipment === equipmentFilter;
+    const matchInjury = isExerciseSafeForInjury(ex, injuryFilter);
     const matchSearch = !searchTerm.trim() || 
       ex.name_ar?.toLowerCase().includes(searchTerm.trim().toLowerCase()) ||
       ex.name_en?.toLowerCase().includes(searchTerm.trim().toLowerCase());
-    return matchMuscle && matchEquipment && matchSearch;
+    return matchMuscle && matchEquipment && matchInjury && matchSearch;
   });
 
   return (
     <AdminLayout>
-      <div className="page-stack" dir="rtl" style={{ display: 'flex', flexDirection: 'column', gap: '18px' }}>
+      <div dir="rtl" style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
         
-        {/* 1. Page Header */}
+        {/* 1. Page Header with Add Exercise Button */}
         <PageHeader
           title="مكتبة التمارين والفيديوهات الرياضية"
-          description="استعراض شروحات التكنيك السليم للتمارين الرياضية، العضلات المستهدفة، وتجنب الإصابات."
+          description={`قاعدة بيانات تشريحية شاملة تضم ${allExercises.length} تمريناً مع شروحات التكنيك السليم وتجنب الإصابات وإمكانية تعديل روابط الفيديو.`}
           actions={(
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-              <span style={{ fontSize: '11.5px', color: '#64748B', fontWeight: 700 }}>الأداة:</span>
-              <select 
-                value={equipmentFilter}
-                onChange={(e) => setEquipmentFilter(e.target.value)}
-                style={{ height: '34px', borderRadius: '6px', border: '1px solid #CBD5E1', padding: '0 10px', fontSize: '11.5px', fontWeight: 700, color: '#0F172A', background: '#F8FAFC', outline: 'none' }}
+            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+              <button
+                type="button"
+                onClick={() => setIsAddModalOpen(true)}
+                style={{
+                  padding: '7px 14px',
+                  borderRadius: '6px',
+                  background: '#0F172A',
+                  color: '#FFFFFF',
+                  border: 'none',
+                  fontSize: '12px',
+                  fontWeight: 700,
+                  cursor: 'pointer',
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '6px',
+                  boxShadow: '0 2px 6px rgba(15, 23, 42, 0.25)',
+                  transition: 'all 0.15s ease'
+                }}
+                onMouseEnter={(e) => (e.currentTarget.style.background = '#1E293B')}
+                onMouseLeave={(e) => (e.currentTarget.style.background = '#0F172A')}
               >
-                <option value="ALL">جميع الأدوات</option>
-                <option value="BARBELL">بار أولمبي</option>
-                <option value="DUMBBELL">دمبلز</option>
-                <option value="CABLE">كابلات</option>
-                <option value="MACHINE">أجهزة</option>
-                <option value="BODYWEIGHT">وزن الجسم</option>
-              </select>
+                <Plus size={14} />
+                <span>إضافة تمرين جديد</span>
+              </button>
             </div>
           )}
         />
 
-        {/* 2. Muscle Selector & Search Pills */}
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '10px' }}>
+        {/* 2. Muscle Selector & Search & Filters Controls */}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
           
-          {/* Muscle Pills */}
-          <div style={{ display: 'flex', gap: '4px', flexWrap: 'wrap', background: '#F1F5F9', padding: '4px', borderRadius: '8px', border: '1px solid #E2E8F0' }}>
-            {muscleCategories.map((cat) => (
-              <button
-                key={cat.id}
-                type="button"
-                onClick={() => setMuscleFilter(cat.id)}
+          {/* Top Row: Muscle Tabs */}
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '10px' }}>
+            <div style={{ display: 'flex', gap: '4px', flexWrap: 'wrap', background: '#F1F5F9', padding: '4px', borderRadius: '8px', border: '1px solid #E2E8F0' }}>
+              {muscleCategories.map((cat) => (
+                <button
+                  key={cat.id}
+                  type="button"
+                  onClick={() => setMuscleFilter(cat.id)}
+                  style={{
+                    padding: '5px 12px',
+                    borderRadius: '6px',
+                    fontSize: '11.5px',
+                    fontWeight: 700,
+                    border: 'none',
+                    cursor: 'pointer',
+                    background: muscleFilter === cat.id ? '#0F172A' : 'transparent',
+                    color: muscleFilter === cat.id ? '#FFFFFF' : '#64748B',
+                    boxShadow: muscleFilter === cat.id ? '0 2px 5px rgba(15, 23, 42, 0.25)' : 'none',
+                    transition: 'background 0.12s ease, color 0.12s ease'
+                  }}
+                >
+                  {cat.label}
+                </button>
+              ))}
+            </div>
+
+            {/* Search Box */}
+            <div 
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                background: '#FFFFFF',
+                border: '1px solid #CBD5E1',
+                borderRadius: '6px',
+                padding: '0 10px',
+                height: '34px',
+                width: '260px',
+                gap: '6px'
+              }}
+            >
+              <Search size={13} color="#94A3B8" />
+              <input
+                type="text"
+                placeholder="بحث باسم التمرين (عربي / English)..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
                 style={{
-                  padding: '5px 12px',
-                  borderRadius: '6px',
-                  fontSize: '11.5px',
-                  fontWeight: 700,
                   border: 'none',
-                  cursor: 'pointer',
-                  background: muscleFilter === cat.id ? '#0F172A' : 'transparent',
-                  color: muscleFilter === cat.id ? '#FFFFFF' : '#64748B',
-                  boxShadow: muscleFilter === cat.id ? '0 2px 5px rgba(15, 23, 42, 0.25)' : 'none',
-                  transition: 'background 0.12s ease, color 0.12s ease'
+                  outline: 'none',
+                  background: 'transparent',
+                  fontSize: '11.5px',
+                  width: '100%',
+                  color: '#0F172A'
                 }}
-              >
-                {cat.label}
-              </button>
-            ))}
+              />
+              {searchTerm && (
+                <button type="button" onClick={() => setSearchTerm('')} style={{ border: 'none', background: 'transparent', cursor: 'pointer', padding: 0, color: '#94A3B8' }}>
+                  <X size={12} />
+                </button>
+              )}
+            </div>
           </div>
 
-          {/* Quick Search */}
-          <div 
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              background: '#FFFFFF',
-              border: '1px solid #CBD5E1',
-              borderRadius: '6px',
-              padding: '0 8px',
-              height: '34px',
-              width: '240px',
-              gap: '6px'
-            }}
-          >
-            <Search size={13} color="#94A3B8" />
-            <input
-              type="text"
-              placeholder="بحث باسم التمرين..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              style={{
-                border: 'none',
-                outline: 'none',
-                background: 'transparent',
-                fontSize: '11.5px',
-                width: '100%',
-                color: '#0F172A'
-              }}
-            />
-            {searchTerm && (
-              <button type="button" onClick={() => setSearchTerm('')} style={{ border: 'none', background: 'transparent', cursor: 'pointer', padding: 0, color: '#94A3B8' }}>
-                <X size={12} />
-              </button>
-            )}
+          {/* Secondary Filter Row: Equipment Filter + Injury Safety Filter */}
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '10px', background: '#F8FAFC', padding: '8px 12px', borderRadius: '8px', border: '1px solid #E2E8F0' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '14px', flexWrap: 'wrap' }}>
+              
+              {/* Equipment Selector */}
+              <div style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', whiteSpace: 'nowrap' }}>
+                <span style={{ fontSize: '11.5px', color: '#475569', fontWeight: 700 }}>الأداة:</span>
+                <select 
+                  value={equipmentFilter}
+                  onChange={(e) => setEquipmentFilter(e.target.value)}
+                  style={{ 
+                    height: '32px', 
+                    borderRadius: '6px', 
+                    border: '1px solid #CBD5E1', 
+                    padding: '0 10px', 
+                    fontSize: '11.5px', 
+                    fontWeight: 700, 
+                    color: '#0F172A', 
+                    background: '#FFFFFF', 
+                    outline: 'none', 
+                    cursor: 'pointer' 
+                  }}
+                >
+                  <option value="ALL">جميع الأدوات</option>
+                  <option value="BARBELL">بار أولمبي</option>
+                  <option value="DUMBBELL">دمبلز</option>
+                  <option value="CABLE">كابلات</option>
+                  <option value="MACHINE">أجهزة</option>
+                  <option value="BODYWEIGHT">وزن الجسم</option>
+                </select>
+              </div>
+
+              {/* Injury Safety Selector */}
+              <div style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', whiteSpace: 'nowrap' }}>
+                <span style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', fontSize: '11.5px', color: '#475569', fontWeight: 700 }}>
+                  <ShieldCheck size={14} color={injuryFilter !== 'ALL' ? '#16A34A' : '#64748B'} />
+                  <span>الأمان الطبي:</span>
+                </span>
+                <select 
+                  value={injuryFilter}
+                  onChange={(e) => setInjuryFilter(e.target.value)}
+                  style={{ 
+                    height: '32px', 
+                    borderRadius: '6px', 
+                    border: injuryFilter !== 'ALL' ? '1px solid #86EFAC' : '1px solid #CBD5E1', 
+                    padding: '0 10px', 
+                    fontSize: '11.5px', 
+                    fontWeight: 700, 
+                    color: injuryFilter !== 'ALL' ? '#16A34A' : '#0F172A', 
+                    background: injuryFilter !== 'ALL' ? '#F0FDF4' : '#FFFFFF', 
+                    outline: 'none', 
+                    cursor: 'pointer',
+                    maxWidth: '280px'
+                  }}
+                >
+                  <option value="ALL">الكل (الوضع الطبيعي)</option>
+                  <option value="LOWER_BACK">آمن لأسفل الظهر (بدون ضغط فقرات)</option>
+                  <option value="SHOULDER">آمن للكتف والروتاتور كاف</option>
+                  <option value="KNEE">آمن لمفصل الركبة</option>
+                  <option value="WRIST">آمن للمعصم والساعد</option>
+                </select>
+              </div>
+
+            </div>
+
+            {/* Results Count Badge */}
+            <div style={{ fontSize: '11px', color: '#64748B', fontWeight: 600, whiteSpace: 'nowrap' }}>
+              عرض <strong style={{ color: '#0F172A' }}>{exercises.length}</strong> تمرين مطابق
+            </div>
           </div>
+
         </div>
 
-        {/* 3. Compact Exercise Cards Grid */}
+        {/* 3. Compact 3-Column Premium Exercise Cards Grid */}
         {loading ? (
           <div style={{ padding: '60px', textAlign: 'center', color: '#64748B', fontSize: '13px' }}>
-            جاري استرجاع قائمة التمارين والتكنيك...
+            جاري تحميل التمارين الرياضية...
           </div>
         ) : exercises.length === 0 ? (
           <div style={{ padding: '40px 16px', textAlign: 'center', background: '#F8FAFC', border: '1px dashed #CBD5E1', borderRadius: '8px' }}>
@@ -163,102 +550,825 @@ export default function ExerciseLibrary() {
               <Dumbbell size={18} />
             </div>
             <strong style={{ fontSize: '13px', color: '#0F172A', display: 'block', marginBottom: '2px' }}>لا توجد تمارين مطابقة</strong>
-            <small style={{ fontSize: '11.5px', color: '#64748B' }}>جرب تغيير العضلة أو الأداة أو البحث عن كلمة أخرى.</small>
+            <small style={{ fontSize: '11.5px', color: '#64748B' }}>جرب تغيير العضلة أو الأداة أو فلتر الأمان الطبي.</small>
           </div>
         ) : (
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '14px' }}>
-            {exercises.map((ex) => (
-              <div 
-                key={ex.id}
-                style={{
-                  background: '#FFFFFF',
-                  border: '1px solid #E2E8F0',
-                  borderRadius: '10px',
-                  padding: '14px 16px',
-                  boxShadow: '0 1px 3px rgba(15, 23, 42, 0.02)',
-                  display: 'flex',
-                  flexDirection: 'column',
-                  justifyContent: 'space-between',
-                  gap: '10px'
-                }}
-              >
-                <div>
-                  {/* Card Header & Badges */}
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
-                    <span style={{ background: '#F1F5F9', border: '1px solid #CBD5E1', color: '#0F172A', padding: '1px 8px', borderRadius: '4px', fontSize: '11px', fontWeight: 800 }}>
-                      {ex.muscle_ar}
-                    </span>
-                    <span style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', color: '#475569', padding: '1px 8px', borderRadius: '4px', fontSize: '10.5px', fontWeight: 600 }}>
-                      {ex.equipment_ar}
-                    </span>
-                  </div>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(340px, 1fr))', gap: '12px' }}>
+            {exercises.map((ex) => {
+              const currentExpanded = expandedView[ex.id];
+              const isVideoCopied = copiedKey === `VIDEO_${ex.id}`;
 
-                  {/* Exercise Title */}
-                  <h4 style={{ margin: '0 0 2px 0', fontSize: '14px', fontWeight: 800, color: '#0F172A' }}>
-                    {ex.name_en}
-                  </h4>
-                  <div style={{ fontSize: '11.5px', color: '#64748B', marginBottom: '10px' }}>
-                    {ex.name_ar}
-                  </div>
-
-                  {/* Coaching Cues Box */}
-                  <div style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', borderRight: '3px solid #0F172A', padding: '8px 10px', borderRadius: '6px', marginBottom: '6px' }}>
-                    <div style={{ fontSize: '11px', fontWeight: 800, color: '#0F172A', display: 'flex', alignItems: 'center', gap: '4px', marginBottom: '2px' }}>
-                      <Check size={11} />
-                      <span>التكنيك السليم للأداء:</span>
+              return (
+                <div 
+                  key={ex.id}
+                  style={{
+                    background: '#FFFFFF',
+                    border: '1px solid #E2E8F0',
+                    borderRadius: '10px',
+                    padding: '12px 14px',
+                    boxShadow: '0 1px 3px rgba(15, 23, 42, 0.02)',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    justifyContent: 'space-between',
+                    gap: '10px',
+                    transition: 'border-color 0.15s ease'
+                  }}
+                >
+                  <div>
+                    {/* Top Row: Muscle & Equipment Badges */}
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
+                      <span style={{ background: '#F1F5F9', border: '1px solid #CBD5E1', color: '#0F172A', padding: '1px 7px', borderRadius: '4px', fontSize: '10.5px', fontWeight: 800 }}>
+                        {getShortMuscleName(ex.muscle_ar, ex.muscle_group)}
+                      </span>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                        {injuryFilter !== 'ALL' && (
+                          <span style={{ background: '#F0FDF4', border: '1px solid #86EFAC', color: '#16A34A', padding: '1px 6px', borderRadius: '4px', fontSize: '10px', fontWeight: 700 }}>
+                            آمن للإصابة
+                          </span>
+                        )}
+                        <span style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', color: '#64748B', padding: '1px 7px', borderRadius: '4px', fontSize: '10.5px', fontWeight: 600 }}>
+                          {getShortEquipmentName(ex.equipment_ar, ex.equipment)}
+                        </span>
+                      </div>
                     </div>
-                    <p style={{ margin: 0, fontSize: '11.5px', color: '#334155', lineHeight: 1.4 }}>
-                      {ex.cues_ar}
-                    </p>
-                  </div>
 
-                  {/* Mistakes Box */}
-                  <div style={{ background: '#FFFBEB', border: '1px solid #FDE68A', borderRight: '3px solid #D97706', padding: '8px 10px', borderRadius: '6px' }}>
-                    <div style={{ fontSize: '11px', fontWeight: 800, color: '#B45309', display: 'flex', alignItems: 'center', gap: '4px', marginBottom: '2px' }}>
-                      <AlertTriangle size={11} />
-                      <span>أخطاء شائعة لتجنب الإصابة:</span>
+                    {/* Exercise Titles */}
+                    <h4 style={{ margin: '0 0 2px 0', fontSize: '13.5px', fontWeight: 800, color: '#0F172A', lineHeight: 1.3 }}>
+                      {ex.name_en}
+                    </h4>
+                    <div style={{ fontSize: '11.5px', color: '#64748B', fontWeight: 600, marginBottom: '6px' }}>
+                      {ex.name_ar}
                     </div>
-                    <p style={{ margin: 0, fontSize: '11.5px', color: '#78350F', lineHeight: 1.4 }}>
-                      {ex.mistakes_ar}
-                    </p>
+
+                    {/* Dual-State Accurate Exercise Preview (Start & Finish Positions) */}
+                    <div style={{
+                      display: 'grid',
+                      gridTemplateColumns: '1fr 1fr',
+                      gap: '8px',
+                      marginBottom: '8px',
+                      background: '#F8FAFC',
+                      padding: '6px',
+                      borderRadius: '14px',
+                      border: '1px solid #E2E8F0'
+                    }}>
+                      {/* Frame 1 */}
+                      <div style={{ 
+                        position: 'relative', 
+                        borderRadius: '10px', 
+                        overflow: 'hidden', 
+                        background: '#F8FAFC', 
+                        border: '1px solid #E2E8F0', 
+                        height: '135px', 
+                        display: 'flex', 
+                        alignItems: 'center', 
+                        justifyContent: 'center',
+                        boxShadow: '0 1px 3px rgba(15, 23, 42, 0.04)'
+                      }}>
+                        <img
+                          src={ex.image_stretch || `/exercises/${ex.id}/0.jpg`}
+                          onError={(e) => {
+                            if (ex.images && ex.images[0]) e.currentTarget.src = ex.images[0];
+                            else e.currentTarget.style.display = 'none';
+                          }}
+                          alt={ex.name_en}
+                          style={{ width: '100%', height: '100%', objectFit: 'contain', borderRadius: '9px', padding: '2px' }}
+                          loading="lazy"
+                        />
+                      </div>
+
+                      {/* Frame 2 */}
+                      <div style={{ 
+                        position: 'relative', 
+                        borderRadius: '10px', 
+                        overflow: 'hidden', 
+                        background: '#F8FAFC', 
+                        border: '1px solid #E2E8F0', 
+                        height: '135px', 
+                        display: 'flex', 
+                        alignItems: 'center', 
+                        justifyContent: 'center',
+                        boxShadow: '0 1px 3px rgba(15, 23, 42, 0.04)'
+                      }}>
+                        <img
+                          src={ex.image_contraction || `/exercises/${ex.id}/1.jpg`}
+                          onError={(e) => {
+                            if (ex.images && ex.images[1]) e.currentTarget.src = ex.images[1];
+                            else e.currentTarget.style.display = 'none';
+                          }}
+                          alt={ex.name_en}
+                          style={{ width: '100%', height: '100%', objectFit: 'contain', borderRadius: '9px', padding: '2px' }}
+                          loading="lazy"
+                        />
+                      </div>
+                    </div>
                   </div>
-                </div>
 
-                {/* Footer Video Action */}
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingTop: '8px', borderTop: '1px solid #F1F5F9' }}>
-                  <button
-                    type="button"
-                    onClick={() => setActiveVideo(ex)}
-                    style={{
-                      height: '30px',
-                      padding: '0 12px',
-                      borderRadius: '5px',
-                      background: '#0F172A',
-                      color: '#FFFFFF',
-                      border: 'none',
-                      fontSize: '11.5px',
-                      fontWeight: 700,
-                      cursor: 'pointer',
-                      display: 'inline-flex',
-                      alignItems: 'center',
-                      gap: '5px',
-                      boxShadow: '0 2px 5px rgba(15, 23, 42, 0.25)',
-                      transition: 'all 0.15s ease'
-                    }}
-                    onMouseEnter={(e) => (e.currentTarget.style.background = '#334155')}
-                    onMouseLeave={(e) => (e.currentTarget.style.background = '#0F172A')}
-                  >
-                    <Play size={11} />
-                    <span>مشاهدة الفيديو التوضيحي</span>
-                  </button>
-                </div>
+                  {/* Expandable Technique Box (with In-Header Copy Button) */}
+                  {currentExpanded === 'CUES' && (
+                    <div style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', borderRight: '3px solid #0F172A', padding: '8px 10px', borderRadius: '6px', fontSize: '11.5px', color: '#334155', lineHeight: 1.45 }}>
+                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '4px' }}>
+                        <div style={{ fontSize: '11px', fontWeight: 800, color: '#0F172A', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                          <Check size={11} />
+                          <span>التكنيك السليم للأداء:</span>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => handleCopyDirect(ex.cues_ar, `CUES_${ex.id}`)}
+                          style={{
+                            padding: '2px 7px',
+                            borderRadius: '4px',
+                            border: copiedKey === `CUES_${ex.id}` ? '1px solid #86EFAC' : '1px solid #CBD5E1',
+                            background: copiedKey === `CUES_${ex.id}` ? '#F0FDF4' : '#FFFFFF',
+                            color: copiedKey === `CUES_${ex.id}` ? '#16A34A' : '#475569',
+                            fontSize: '10.5px',
+                            fontWeight: 700,
+                            cursor: 'pointer',
+                            display: 'inline-flex',
+                            alignItems: 'center',
+                            gap: '3px',
+                            transition: 'all 0.15s ease'
+                          }}
+                          title="نسخ نص التكنيك"
+                        >
+                          {copiedKey === `CUES_${ex.id}` ? <CheckCircle2 size={10} color="#16A34A" /> : <Copy size={10} />}
+                          <span>{copiedKey === `CUES_${ex.id}` ? 'تم النسخ' : 'نسخ'}</span>
+                        </button>
+                      </div>
+                      <p style={{ margin: 0 }}>
+                        {ex.cues_ar}
+                      </p>
+                    </div>
+                  )}
 
-              </div>
-            ))}
+                  {/* Expandable Mistakes Box (with In-Header Copy Button) */}
+                  {currentExpanded === 'MISTAKES' && (
+                    <div style={{ background: '#FFFBEB', border: '1px solid #FDE68A', borderRight: '3px solid #D97706', padding: '8px 10px', borderRadius: '6px', fontSize: '11.5px', color: '#78350F', lineHeight: 1.45 }}>
+                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '4px' }}>
+                        <div style={{ fontSize: '11px', fontWeight: 800, color: '#B45309', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                          <AlertTriangle size={11} />
+                          <span>أخطاء شائعة لتجنب الإصابة:</span>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => handleCopyDirect(ex.mistakes_ar, `MISTAKES_${ex.id}`)}
+                          style={{
+                            padding: '2px 7px',
+                            borderRadius: '4px',
+                            border: copiedKey === `MISTAKES_${ex.id}` ? '1px solid #86EFAC' : '1px solid #FDE68A',
+                            background: copiedKey === `MISTAKES_${ex.id}` ? '#F0FDF4' : '#FFFFFF',
+                            color: copiedKey === `MISTAKES_${ex.id}` ? '#16A34A' : '#B45309',
+                            fontSize: '10.5px',
+                            fontWeight: 700,
+                            cursor: 'pointer',
+                            display: 'inline-flex',
+                            alignItems: 'center',
+                            gap: '3px',
+                            transition: 'all 0.15s ease'
+                          }}
+                          title="نسخ نص تجنب الإصابات"
+                        >
+                          {copiedKey === `MISTAKES_${ex.id}` ? <CheckCircle2 size={10} color="#16A34A" /> : <Copy size={10} />}
+                          <span>{copiedKey === `MISTAKES_${ex.id}` ? 'تم النسخ' : 'نسخ'}</span>
+                        </button>
+                      </div>
+                      <p style={{ margin: 0 }}>
+                        {ex.mistakes_ar}
+                      </p>
+                    </div>
+                  )}
+
+                  {/* Action Buttons Row */}
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '6px', paddingTop: '8px', borderTop: '1px solid #F1F5F9' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                      
+                      {/* Technique Toggle Button */}
+                      <button
+                        type="button"
+                        onClick={() => toggleCardView(ex.id, 'CUES')}
+                        style={{
+                          padding: '4px 8px',
+                          borderRadius: '5px',
+                          border: currentExpanded === 'CUES' ? '1px solid #0F172A' : '1px solid #CBD5E1',
+                          background: currentExpanded === 'CUES' ? '#0F172A' : '#FFFFFF',
+                          color: currentExpanded === 'CUES' ? '#FFFFFF' : '#334155',
+                          fontSize: '11px',
+                          fontWeight: 700,
+                          cursor: 'pointer',
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          gap: '4px',
+                          transition: 'all 0.15s ease'
+                        }}
+                        title="عرض / إخفاء التكنيك السليم"
+                      >
+                        <Check size={11} />
+                        <span>التكنيك</span>
+                      </button>
+
+                      {/* Mistakes Toggle Button */}
+                      <button
+                        type="button"
+                        onClick={() => toggleCardView(ex.id, 'MISTAKES')}
+                        style={{
+                          padding: '4px 8px',
+                          borderRadius: '5px',
+                          border: currentExpanded === 'MISTAKES' ? '1px solid #FDE68A' : '1px solid #CBD5E1',
+                          background: currentExpanded === 'MISTAKES' ? '#FFFBEB' : '#FFFFFF',
+                          color: currentExpanded === 'MISTAKES' ? '#B45309' : '#64748B',
+                          fontSize: '11px',
+                          fontWeight: 700,
+                          cursor: 'pointer',
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          gap: '4px',
+                          transition: 'all 0.15s ease'
+                        }}
+                        title="عرض / إخفاء الأخطاء الشائعة لتجنب الإصابة"
+                      >
+                        <AlertTriangle size={11} />
+                        <span>تجنب الإصابات</span>
+                      </button>
+
+                    </div>
+
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                      
+                      {/* Edit Exercise Button */}
+                      <button
+                        type="button"
+                        onClick={() => openEditExerciseModal(ex)}
+                        style={{
+                          padding: '4px 7px',
+                          borderRadius: '5px',
+                          border: '1px solid #CBD5E1',
+                          background: '#FFFFFF',
+                          color: '#475569',
+                          fontSize: '11px',
+                          fontWeight: 700,
+                          cursor: 'pointer',
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          gap: '3px',
+                          transition: 'all 0.15s ease'
+                        }}
+                        onMouseEnter={(e) => { e.currentTarget.style.background = '#F8FAFC'; e.currentTarget.style.color = '#0F172A'; }}
+                        onMouseLeave={(e) => { e.currentTarget.style.background = '#FFFFFF'; e.currentTarget.style.color = '#475569'; }}
+                        title="تعديل بيانات وتكنيك وفيديو التمرين"
+                      >
+                        <Edit3 size={11} />
+                        <span>تعديل</span>
+                      </button>
+
+                      {/* Quick Copy Video Link */}
+                      <button
+                        type="button"
+                        onClick={() => handleShareVideoLink(ex)}
+                        style={{
+                          padding: '4px 7px',
+                          borderRadius: '5px',
+                          border: isVideoCopied ? '1px solid #86EFAC' : '1px solid #CBD5E1',
+                          background: isVideoCopied ? '#F0FDF4' : '#FFFFFF',
+                          color: isVideoCopied ? '#16A34A' : '#475569',
+                          fontSize: '11px',
+                          fontWeight: 700,
+                          cursor: 'pointer',
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          gap: '3px',
+                          transition: 'all 0.15s ease'
+                        }}
+                        title="نسخ رابط فيديو التمرين فقط"
+                      >
+                        {isVideoCopied ? <CheckCircle2 size={11} color="#16A34A" /> : <Copy size={11} />}
+                        <span>{isVideoCopied ? 'تم النسخ' : 'نسخ'}</span>
+                      </button>
+
+                      {/* Video Player Button */}
+                      <button
+                        type="button"
+                        onClick={() => setActiveVideo(ex)}
+                        style={{
+                          padding: '4px 9px',
+                          borderRadius: '5px',
+                          background: '#0F172A',
+                          color: '#FFFFFF',
+                          border: 'none',
+                          fontSize: '11px',
+                          fontWeight: 700,
+                          cursor: 'pointer',
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          gap: '4px',
+                          boxShadow: '0 1px 3px rgba(15, 23, 42, 0.20)',
+                          transition: 'all 0.15s ease'
+                        }}
+                        onMouseEnter={(e) => (e.currentTarget.style.background = '#334155')}
+                        onMouseLeave={(e) => (e.currentTarget.style.background = '#0F172A')}
+                        title="مشاهدة فيديو الأداء والتكنيك"
+                      >
+                        <Play size={10} />
+                        <span>الفيديو</span>
+                      </button>
+                    </div>
+
+                  </div>
+
+                </div>
+              );
+            })}
           </div>
         )}
 
-        {/* Video Modal */}
+        {/* 4. Modal: Add New Custom Exercise */}
+        {isAddModalOpen && (
+          <div style={{
+            position: 'fixed',
+            inset: 0,
+            background: 'rgba(15, 23, 42, 0.55)',
+            backdropFilter: 'blur(3px)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            zIndex: 9999,
+            padding: '16px'
+          }}>
+            <div style={{
+              background: '#FFFFFF',
+              borderRadius: '12px',
+              width: '100%',
+              maxWidth: '560px',
+              boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.2)',
+              overflow: 'hidden',
+              display: 'flex',
+              flexDirection: 'column',
+              maxHeight: '90vh'
+            }}>
+              
+              {/* Modal Header */}
+              <div style={{
+                padding: '14px 18px',
+                borderBottom: '1px solid #E2E8F0',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                background: '#F8FAFC'
+              }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <div style={{ width: '28px', height: '28px', borderRadius: '6px', background: '#0F172A', color: '#FFFFFF', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    <Dumbbell size={14} />
+                  </div>
+                  <div>
+                    <h3 style={{ margin: 0, fontSize: '13.5px', fontWeight: 800, color: '#0F172A' }}>إضافة تمرين رياضي مخصص</h3>
+                    <small style={{ fontSize: '11px', color: '#64748B' }}>إضافة تمرين جديد لقاعدة بيانات الكوتش وفيديوهات الشرح</small>
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setIsAddModalOpen(false)}
+                  style={{ border: 'none', background: 'transparent', cursor: 'pointer', color: '#64748B', padding: '4px' }}
+                >
+                  <X size={16} />
+                </button>
+              </div>
+
+              {/* Modal Form Body */}
+              <form onSubmit={handleSaveCustomExercise} style={{ padding: '16px 18px', overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                
+                {/* Names */}
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
+                  <div>
+                    <label style={{ display: 'block', fontSize: '11px', fontWeight: 700, color: '#334155', marginBottom: '4px' }}>
+                      اسم التمرين بالإنجليزي *
+                    </label>
+                    <input
+                      type="text"
+                      required
+                      placeholder="e.g. Incline Cable Fly"
+                      value={newExerciseData.name_en}
+                      onChange={(e) => setNewExerciseData({ ...newExerciseData, name_en: e.target.value })}
+                      style={{ width: '100%', height: '34px', borderRadius: '6px', border: '1px solid #CBD5E1', padding: '0 10px', fontSize: '12px', outline: 'none', boxSizing: 'border-box' }}
+                    />
+                  </div>
+                  <div>
+                    <label style={{ display: 'block', fontSize: '11px', fontWeight: 700, color: '#334155', marginBottom: '4px' }}>
+                      اسم التمرين بالعربي *
+                    </label>
+                    <input
+                      type="text"
+                      required
+                      placeholder="مثال: تفتيح كابل مائل للصدر العلوي"
+                      value={newExerciseData.name_ar}
+                      onChange={(e) => setNewExerciseData({ ...newExerciseData, name_ar: e.target.value })}
+                      style={{ width: '100%', height: '34px', borderRadius: '6px', border: '1px solid #CBD5E1', padding: '0 10px', fontSize: '12px', outline: 'none', boxSizing: 'border-box' }}
+                    />
+                  </div>
+                </div>
+
+                {/* Muscle & Equipment */}
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
+                  <div>
+                    <label style={{ display: 'block', fontSize: '11px', fontWeight: 700, color: '#334155', marginBottom: '4px' }}>
+                      المجموعة العضلية
+                    </label>
+                    <select
+                      value={newExerciseData.muscle_group}
+                      onChange={(e) => setNewExerciseData({ ...newExerciseData, muscle_group: e.target.value })}
+                      style={{ width: '100%', height: '34px', borderRadius: '6px', border: '1px solid #CBD5E1', padding: '0 8px', fontSize: '11.5px', fontWeight: 700, color: '#0F172A', background: '#FFFFFF', outline: 'none', boxSizing: 'border-box' }}
+                    >
+                      <option value="CHEST">عضلات الصدر</option>
+                      <option value="BACK">الظهر والترابيس</option>
+                      <option value="LEGS">الأرجل والأرداف</option>
+                      <option value="SHOULDERS">الأكتاف</option>
+                      <option value="ARMS">الذراعين والساعد</option>
+                      <option value="CORE">البطن والكور</option>
+                      <option value="CALVES">السمانة</option>
+                    </select>
+                  </div>
+
+                  <div>
+                    <label style={{ display: 'block', fontSize: '11px', fontWeight: 700, color: '#334155', marginBottom: '4px' }}>
+                      الأداة الرياضية
+                    </label>
+                    <select
+                      value={newExerciseData.equipment}
+                      onChange={(e) => setNewExerciseData({ ...newExerciseData, equipment: e.target.value })}
+                      style={{ width: '100%', height: '34px', borderRadius: '6px', border: '1px solid #CBD5E1', padding: '0 8px', fontSize: '11.5px', fontWeight: 700, color: '#0F172A', background: '#FFFFFF', outline: 'none', boxSizing: 'border-box' }}
+                    >
+                      <option value="BARBELL">بار أولمبي</option>
+                      <option value="DUMBBELL">دمبلز</option>
+                      <option value="CABLE">كابلات</option>
+                      <option value="MACHINE">أجهزة</option>
+                      <option value="BODYWEIGHT">وزن الجسم</option>
+                    </select>
+                  </div>
+                </div>
+
+                {/* Video URL */}
+                <div>
+                  <label style={{ display: 'block', fontSize: '11px', fontWeight: 700, color: '#334155', marginBottom: '4px' }}>
+                    رابط فيديو الشرح (YouTube URL)
+                  </label>
+                  <input
+                    type="url"
+                    placeholder="https://www.youtube.com/watch?v=..."
+                    value={newExerciseData.video_url}
+                    onChange={(e) => setNewExerciseData({ ...newExerciseData, video_url: e.target.value })}
+                    style={{ width: '100%', height: '34px', borderRadius: '6px', border: '1px solid #CBD5E1', padding: '0 10px', fontSize: '12px', outline: 'none', boxSizing: 'border-box' }}
+                  />
+                </div>
+
+                {/* Coaching Cues */}
+                <div>
+                  <label style={{ display: 'block', fontSize: '11px', fontWeight: 700, color: '#334155', marginBottom: '4px' }}>
+                    التكنيك السليم وملاحظات الأداء (Coaching Cues)
+                  </label>
+                  <textarea
+                    rows={2}
+                    placeholder="شرح خطوات وضعية الجسم، زاوية الكوع، مسار الحركة والمدى الحركي..."
+                    value={newExerciseData.cues_ar}
+                    onChange={(e) => setNewExerciseData({ ...newExerciseData, cues_ar: e.target.value })}
+                    style={{ width: '100%', borderRadius: '6px', border: '1px solid #CBD5E1', padding: '8px 10px', fontSize: '11.5px', outline: 'none', boxSizing: 'border-box', resize: 'vertical' }}
+                  />
+                </div>
+
+                {/* Mistakes */}
+                <div>
+                  <label style={{ display: 'block', fontSize: '11px', fontWeight: 700, color: '#B45309', marginBottom: '4px' }}>
+                    أخطاء شائعة لتجنب الإصابة (Injury Prevention)
+                  </label>
+                  <textarea
+                    rows={2}
+                    placeholder="أخطاء التكنيك التي قد تسبب ألماً أو إصابة في المفاصل..."
+                    value={newExerciseData.mistakes_ar}
+                    onChange={(e) => setNewExerciseData({ ...newExerciseData, mistakes_ar: e.target.value })}
+                    style={{ width: '100%', borderRadius: '6px', border: '1px solid #CBD5E1', padding: '8px 10px', fontSize: '11.5px', outline: 'none', boxSizing: 'border-box', resize: 'vertical' }}
+                  />
+                </div>
+
+                {/* Footer Submit */}
+                <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px', marginTop: '6px', paddingTop: '10px', borderTop: '1px solid #E2E8F0' }}>
+                  <button
+                    type="button"
+                    onClick={() => setIsAddModalOpen(false)}
+                    style={{ padding: '6px 14px', borderRadius: '6px', border: '1px solid #CBD5E1', background: '#FFFFFF', color: '#475569', fontSize: '11.5px', fontWeight: 700, cursor: 'pointer' }}
+                  >
+                    إلغاء
+                  </button>
+                  <button
+                    type="submit"
+                    disabled={savingNewExercise}
+                    style={{ padding: '6px 16px', borderRadius: '6px', border: 'none', background: '#0F172A', color: '#FFFFFF', fontSize: '11.5px', fontWeight: 700, cursor: 'pointer' }}
+                  >
+                    {savingNewExercise ? 'جاري الحفظ...' : 'حفظ التمرين بالمكتبة'}
+                  </button>
+                </div>
+
+              </form>
+
+            </div>
+          </div>
+        )}
+
+        {/* 5. Modal: Edit Full Existing Exercise Data */}
+        {editingExercise && (
+          <div style={{
+            position: 'fixed',
+            inset: 0,
+            background: 'rgba(15, 23, 42, 0.55)',
+            backdropFilter: 'blur(3px)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            zIndex: 9999,
+            padding: '16px'
+          }}>
+            <div style={{
+              background: '#FFFFFF',
+              borderRadius: '12px',
+              width: '100%',
+              maxWidth: '560px',
+              boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.2)',
+              overflow: 'hidden',
+              display: 'flex',
+              flexDirection: 'column',
+              maxHeight: '90vh'
+            }}>
+              
+              {/* Header */}
+              <div style={{
+                padding: '14px 18px',
+                borderBottom: '1px solid #E2E8F0',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                background: '#F8FAFC'
+              }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <div style={{ width: '28px', height: '28px', borderRadius: '6px', background: '#0F172A', color: '#FFFFFF', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    <Edit3 size={14} />
+                  </div>
+                  <div>
+                    <h3 style={{ margin: 0, fontSize: '13.5px', fontWeight: 800, color: '#0F172A' }}>تعديل بيانات وتكنيك التمرين</h3>
+                    <small style={{ fontSize: '11px', color: '#64748B' }}>تعديل الاسم، التكنيك السليم، أخطاء الإصابة، أو رابط الفيديو</small>
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setEditingExercise(null)}
+                  style={{ border: 'none', background: 'transparent', cursor: 'pointer', color: '#64748B', padding: '4px' }}
+                >
+                  <X size={16} />
+                </button>
+              </div>
+
+              {/* Form Body */}
+              <form onSubmit={handleSaveEditedExercise} style={{ padding: '16px 18px', overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                
+                {/* Names */}
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
+                  <div>
+                    <label style={{ display: 'block', fontSize: '11px', fontWeight: 700, color: '#334155', marginBottom: '4px' }}>
+                      اسم التمرين بالإنجليزي *
+                    </label>
+                    <input
+                      type="text"
+                      required
+                      value={editFormData.name_en}
+                      onChange={(e) => setEditFormData({ ...editFormData, name_en: e.target.value })}
+                      style={{ width: '100%', height: '34px', borderRadius: '6px', border: '1px solid #CBD5E1', padding: '0 10px', fontSize: '12px', outline: 'none', boxSizing: 'border-box' }}
+                    />
+                  </div>
+                  <div>
+                    <label style={{ display: 'block', fontSize: '11px', fontWeight: 700, color: '#334155', marginBottom: '4px' }}>
+                      اسم التمرين بالعربي *
+                    </label>
+                    <input
+                      type="text"
+                      required
+                      value={editFormData.name_ar}
+                      onChange={(e) => setEditFormData({ ...editFormData, name_ar: e.target.value })}
+                      style={{ width: '100%', height: '34px', borderRadius: '6px', border: '1px solid #CBD5E1', padding: '0 10px', fontSize: '12px', outline: 'none', boxSizing: 'border-box' }}
+                    />
+                  </div>
+                </div>
+
+                {/* Muscle & Equipment */}
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
+                  <div>
+                    <label style={{ display: 'block', fontSize: '11px', fontWeight: 700, color: '#334155', marginBottom: '4px' }}>
+                      المجموعة العضلية
+                    </label>
+                    <select
+                      value={editFormData.muscle_group}
+                      onChange={(e) => setEditFormData({ ...editFormData, muscle_group: e.target.value })}
+                      style={{ width: '100%', height: '34px', borderRadius: '6px', border: '1px solid #CBD5E1', padding: '0 8px', fontSize: '11.5px', fontWeight: 700, color: '#0F172A', background: '#FFFFFF', outline: 'none', boxSizing: 'border-box' }}
+                    >
+                      <option value="CHEST">عضلات الصدر</option>
+                      <option value="BACK">الظهر والترابيس</option>
+                      <option value="LEGS">الأرجل والأرداف</option>
+                      <option value="SHOULDERS">الأكتاف</option>
+                      <option value="ARMS">الذراعين والساعد</option>
+                      <option value="CORE">البطن والكور</option>
+                      <option value="CALVES">السمانة</option>
+                    </select>
+                  </div>
+
+                  <div>
+                    <label style={{ display: 'block', fontSize: '11px', fontWeight: 700, color: '#334155', marginBottom: '4px' }}>
+                      الأداة الرياضية
+                    </label>
+                    <select
+                      value={editFormData.equipment}
+                      onChange={(e) => setEditFormData({ ...editFormData, equipment: e.target.value })}
+                      style={{ width: '100%', height: '34px', borderRadius: '6px', border: '1px solid #CBD5E1', padding: '0 8px', fontSize: '11.5px', fontWeight: 700, color: '#0F172A', background: '#FFFFFF', outline: 'none', boxSizing: 'border-box' }}
+                    >
+                      <option value="BARBELL">بار أولمبي</option>
+                      <option value="DUMBBELL">دمبلز</option>
+                      <option value="CABLE">كابلات</option>
+                      <option value="MACHINE">أجهزة</option>
+                      <option value="BODYWEIGHT">وزن الجسم</option>
+                    </select>
+                  </div>
+                </div>
+
+                {/* Video URL */}
+                <div>
+                  <label style={{ display: 'block', fontSize: '11px', fontWeight: 700, color: '#334155', marginBottom: '4px' }}>
+                    رابط فيديو الشرح (YouTube URL)
+                  </label>
+                  <input
+                    type="url"
+                    placeholder="https://www.youtube.com/watch?v=..."
+                    value={editFormData.video_url}
+                    onChange={(e) => setEditFormData({ ...editFormData, video_url: e.target.value })}
+                    style={{ width: '100%', height: '34px', borderRadius: '6px', border: '1px solid #CBD5E1', padding: '0 10px', fontSize: '12px', outline: 'none', boxSizing: 'border-box' }}
+                  />
+                </div>
+
+                {/* Dual Image Thumbnails Settings & Preview */}
+                <div style={{ background: '#F8FAFC', padding: '12px', borderRadius: '8px', border: '1px solid #E2E8F0' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+                    <div>
+                      <div style={{ fontSize: '12px', fontWeight: 800, color: '#0F172A' }}>
+                        صور أداء التمرين (البداية والنهاية)
+                      </div>
+                      <div style={{ fontSize: '10px', color: '#64748B', marginTop: '1px' }}>
+                        المسار في جهازك: <code style={{ background: '#E2E8F0', padding: '1px 4px', borderRadius: '3px', color: '#0F172A', fontSize: '9.5px' }}>D:\zcc\frontend\public\exercises\{editingExercise.id}\</code>
+                      </div>
+                    </div>
+                    
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setEditFormData({
+                          ...editFormData,
+                          image_stretch: editFormData.image_contraction,
+                          image_contraction: editFormData.image_stretch
+                        });
+                      }}
+                      style={{
+                        padding: '3px 8px',
+                        borderRadius: '4px',
+                        border: '1px solid #CBD5E1',
+                        background: '#FFFFFF',
+                        fontSize: '11px',
+                        fontWeight: 700,
+                        color: '#0284C7',
+                        cursor: 'pointer',
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: '4px'
+                      }}
+                      title="تبديل صورتي البداية والنهاية"
+                    >
+                      <ArrowRightLeft size={12} />
+                      <span>عكس الترتيب</span>
+                    </button>
+                  </div>
+                  
+                  {/* Live Preview with Upload Triggers */}
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px', marginBottom: '10px' }}>
+                    {/* Image 1: Start Position */}
+                    <div style={{ border: '1px solid #CBD5E1', borderRadius: '12px', overflow: 'hidden', background: '#FFFFFF', padding: '8px', display: 'flex', flexDirection: 'column', gap: '6px', boxShadow: '0 1px 3px rgba(15, 23, 42, 0.04)' }}>
+                      <div style={{ height: '120px', background: '#F8FAFC', borderRadius: '10px', overflow: 'hidden', display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative' }}>
+                        {editFormData.image_stretch ? (
+                          <img src={editFormData.image_stretch} alt="بداية" style={{ width: '100%', height: '100%', objectFit: 'contain', borderRadius: '10px', padding: '2px' }} />
+                        ) : (
+                          <span style={{ fontSize: '10px', color: '#94A3B8' }}>لا توجد صورة</span>
+                        )}
+                        <span style={{ position: 'absolute', bottom: '4px', right: '4px', background: 'rgba(15, 23, 42, 0.85)', color: '#FFF', fontSize: '9px', fontWeight: 700, padding: '2px 6px', borderRadius: '4px' }}>
+                          1. وضع البداية (0.jpg)
+                        </span>
+                      </div>
+
+                      <label style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '5px', background: '#0F172A', color: '#FFFFFF', borderRadius: '6px', padding: '5px', fontSize: '11px', fontWeight: 700, cursor: 'pointer' }}>
+                        <Upload size={12} />
+                        <span>اختيار صورة من جهازك</span>
+                        <input
+                          type="file"
+                          accept="image/*"
+                          style={{ display: 'none' }}
+                          onChange={(e) => handleUploadImageFile(e, 0)}
+                        />
+                      </label>
+
+                      <input
+                        type="text"
+                        placeholder="أو ضع مسار / رابط صورة البداية"
+                        value={editFormData.image_stretch}
+                        onChange={(e) => setEditFormData({ ...editFormData, image_stretch: e.target.value })}
+                        style={{ width: '100%', height: '26px', borderRadius: '6px', border: '1px solid #E2E8F0', padding: '0 8px', fontSize: '10px', outline: 'none', boxSizing: 'border-box' }}
+                      />
+                    </div>
+
+                    {/* Image 2: Contraction Position */}
+                    <div style={{ border: '1px solid #CBD5E1', borderRadius: '12px', overflow: 'hidden', background: '#FFFFFF', padding: '8px', display: 'flex', flexDirection: 'column', gap: '6px', boxShadow: '0 1px 3px rgba(15, 23, 42, 0.04)' }}>
+                      <div style={{ height: '120px', background: '#F8FAFC', borderRadius: '10px', overflow: 'hidden', display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative' }}>
+                        {editFormData.image_contraction ? (
+                          <img src={editFormData.image_contraction} alt="أداء" style={{ width: '100%', height: '100%', objectFit: 'contain', borderRadius: '10px', padding: '2px' }} />
+                        ) : (
+                          <span style={{ fontSize: '10px', color: '#94A3B8' }}>لا توجد صورة</span>
+                        )}
+                        <span style={{ position: 'absolute', bottom: '4px', right: '4px', background: 'rgba(15, 23, 42, 0.85)', color: '#FFF', fontSize: '9px', fontWeight: 700, padding: '2px 6px', borderRadius: '4px' }}>
+                          2. وضع الانقباض (1.jpg)
+                        </span>
+                      </div>
+
+                      <label style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '5px', background: '#0F172A', color: '#FFFFFF', borderRadius: '6px', padding: '5px', fontSize: '11px', fontWeight: 700, cursor: 'pointer' }}>
+                        <Upload size={12} />
+                        <span>اختيار صورة من جهازك</span>
+                        <input
+                          type="file"
+                          accept="image/*"
+                          style={{ display: 'none' }}
+                          onChange={(e) => handleUploadImageFile(e, 1)}
+                        />
+                      </label>
+
+                      <input
+                        type="text"
+                        placeholder="أو ضع مسار / رابط صورة الانقباض"
+                        value={editFormData.image_contraction}
+                        onChange={(e) => setEditFormData({ ...editFormData, image_contraction: e.target.value })}
+                        style={{ width: '100%', height: '26px', borderRadius: '6px', border: '1px solid #E2E8F0', padding: '0 8px', fontSize: '10px', outline: 'none', boxSizing: 'border-box' }}
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                {/* Coaching Cues */}
+                <div>
+                  <label style={{ display: 'block', fontSize: '11px', fontWeight: 700, color: '#334155', marginBottom: '4px' }}>
+                    التكنيك السليم وملاحظات الأداء (Coaching Cues)
+                  </label>
+                  <textarea
+                    rows={2}
+                    placeholder="شرح خطوات وضعية الجسم، زاوية الكوع، مسار الحركة والمدى الحركي..."
+                    value={editFormData.cues_ar}
+                    onChange={(e) => setEditFormData({ ...editFormData, cues_ar: e.target.value })}
+                    style={{ width: '100%', borderRadius: '6px', border: '1px solid #CBD5E1', padding: '8px 10px', fontSize: '11.5px', outline: 'none', boxSizing: 'border-box', resize: 'vertical' }}
+                  />
+                </div>
+
+                {/* Mistakes */}
+                <div>
+                  <label style={{ display: 'block', fontSize: '11px', fontWeight: 700, color: '#B45309', marginBottom: '4px' }}>
+                    أخطاء شائعة لتجنب الإصابة (Injury Prevention)
+                  </label>
+                  <textarea
+                    rows={2}
+                    placeholder="أخطاء التكنيك التي قد تسبب ألماً أو إصابة في المفاصل..."
+                    value={editFormData.mistakes_ar}
+                    onChange={(e) => setEditFormData({ ...editFormData, mistakes_ar: e.target.value })}
+                    style={{ width: '100%', borderRadius: '6px', border: '1px solid #CBD5E1', padding: '8px 10px', fontSize: '11.5px', outline: 'none', boxSizing: 'border-box', resize: 'vertical' }}
+                  />
+                </div>
+
+                {/* Footer Submit */}
+                <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px', marginTop: '4px', paddingTop: '10px', borderTop: '1px solid #E2E8F0' }}>
+                  <button
+                    type="button"
+                    onClick={() => setEditingExercise(null)}
+                    style={{ padding: '6px 14px', borderRadius: '6px', border: '1px solid #CBD5E1', background: '#FFFFFF', color: '#475569', fontSize: '11.5px', fontWeight: 700, cursor: 'pointer' }}
+                  >
+                    إلغاء
+                  </button>
+                  <button
+                    type="submit"
+                    disabled={savingEditExercise}
+                    style={{ padding: '6px 16px', borderRadius: '6px', border: 'none', background: '#0F172A', color: '#FFFFFF', fontSize: '11.5px', fontWeight: 700, cursor: 'pointer' }}
+                  >
+                    {savingEditExercise ? 'جاري الحفظ...' : 'حفظ وتحديث التمرين بالكامل'}
+                  </button>
+                </div>
+
+              </form>
+
+            </div>
+          </div>
+        )}
+
+        {/* 6. Video Player Modal */}
         {activeVideo && (
           <ExerciseVideoModal
             exercise={activeVideo}

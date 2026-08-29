@@ -3,25 +3,79 @@ import { User } from "../models/index.js";
 export const PACKAGE_CONFIG = {
   "MAX_3_PLUS_1": {
     tier: "max",
-    name: "باقة ماكس (VIP)",
+    name: "باقة ماكس (VIP 4 شهور)",
     name_en: "MAX VIP Coaching (3+1 Free)",
-    duration_days: 112, // 16 weeks
+    duration_days: 120,
     checkin_interval_days: 7,
     price: 3500,
     features: ["متابعة أسبوعية دقيقة كل 7 أيام", "تعديل فوري للبرامج", "أولوية في طابور المراجعة"]
   },
   "ELITE_3_PLUS_1": {
     tier: "elite",
-    name: "باقة إيليت (3 شهور + 1 مجاناً)",
+    name: "باقة إيليت (4 شهور)",
     name_en: "ELITE Transform (3+1 Free)",
-    duration_days: 112, // 16 weeks
+    duration_days: 120,
     checkin_interval_days: 14,
     price: 2500,
     features: ["متابعة نصف شهرية كل 14 يوماً", "تحديث الخطة كل أسبوعين", "دعم كامل للمبادلات الذكية"]
   },
+  "ELITE_6M_PLUS_2": {
+    tier: "elite",
+    name: "باقة إيليت نصف سنوية (8 شهور)",
+    name_en: "ELITE Semi-Annual (6+2 Free)",
+    duration_days: 240,
+    checkin_interval_days: 14,
+    price: 4200,
+    features: ["متابعة كل 14 يوماً", "خطة تحول مستدامة", "دعم كامل للبدائل"]
+  },
+  "REHAB_CLINICAL_3M": {
+    tier: "max",
+    name: "باقة التأهيل والرعاية الطبية (3 شهور)",
+    name_en: "Clinical Rehab & Safety (3 Months)",
+    duration_days: 90,
+    checkin_interval_days: 7,
+    price: 3000,
+    features: ["متابعة أسبوعية حذرة", "تعديل مستمر لمسارات التمارين", "تنسيق كامل مع التحاليل"]
+  },
+  "VIP_PRO_6M": {
+    tier: "max",
+    name: "باقة VIP الاحترافية (6 شهور)",
+    name_en: "VIP Pro Athlete (6 Months)",
+    duration_days: 180,
+    checkin_interval_days: 7,
+    price: 6000,
+    features: ["متابعة VIP كل 7 أيام", "تعديل سعرات أسبوعي", "استجابة فورية على الواتساب"]
+  },
+  "LIFESTYLE_TRANSFORMATION_3M": {
+    tier: "elite",
+    name: "باقة تحول نمط الحياة (3 شهور)",
+    name_en: "Lifestyle Transformation (3 Months)",
+    duration_days: 90,
+    checkin_interval_days: 14,
+    price: 2800,
+    features: ["متابعة نصف شهرية", "تعديل عادات ونشاط NEAT", "مرونة غذائية"]
+  },
+  "MAX_YEARLY_VIP": {
+    tier: "max",
+    name: "باقة VIP السنوية الشاملة (12 شهر)",
+    name_en: "Ultimate Annual VIP (12 Months)",
+    duration_days: 365,
+    checkin_interval_days: 7,
+    price: 9500,
+    features: ["متابعة سنوية كاملة", "أولوية مطلقة لكافة الخطط", "تقييمات دورية شاملة"]
+  },
+  "MAX_1M_TRIAL": {
+    tier: "max",
+    name: "باقة التجربة السريعة (شهر واحد)",
+    name_en: "Fast Kickstart (1 Month)",
+    duration_days: 30,
+    checkin_interval_days: 7,
+    price: 1200,
+    features: ["متابعة أسبوعية لمدة شهر", "خطة مخصصة فورية"]
+  },
   // Aliases & legacy
-  "max": { tier: "max", name: "باقة ماكس (VIP)", duration_days: 112, checkin_interval_days: 7, price: 3500 },
-  "elite": { tier: "elite", name: "باقة إيليت (3 شهور + 1 مجاناً)", duration_days: 112, checkin_interval_days: 14, price: 2500 },
+  "max": { tier: "max", name: "باقة ماكس (VIP)", duration_days: 120, checkin_interval_days: 7, price: 3500 },
+  "elite": { tier: "elite", name: "باقة إيليت (4 شهور)", duration_days: 120, checkin_interval_days: 14, price: 2500 },
   "1_MONTH": { tier: "elite", name: "باقة شهرية", duration_days: 30, checkin_interval_days: 7, price: 1000 },
   "3_MONTHS": { tier: "elite", name: "باقة 3 شهور", duration_days: 90, checkin_interval_days: 14, price: 2000 },
   "6_MONTHS": { tier: "max", name: "باقة 6 شهور VIP", duration_days: 180, checkin_interval_days: 7, price: 5000 },

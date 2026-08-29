@@ -440,12 +440,12 @@ export default function MasterSettingsHub() {
     { title: 'أسئلة الاستمارة', value: questions.length, label: `${questions.filter(q => q.required).length} إجباري`, icon: Layers },
     { title: 'تمارين معتمدة', value: exercises.length, label: `${exercises.filter(e => e.video_url || e.video_id).length} بروابط يوتيوب`, icon: Video },
     { title: 'أصناف غذائية وبدائل', value: `${foods.length}+`, label: 'ماكروز دقيقة', icon: Salad },
-    { title: 'نظام الحفظ والمزامنة', value: '100%', label: 'Hostinger Ready ✓', icon: Database },
+    { title: 'نظام الحفظ والمزامنة', value: '100%', label: 'Hostinger Ready ', icon: Database },
   ];
 
   return (
     <AdminLayout>
-      <div className="page-stack" dir="rtl" style={{ display: 'flex', flexDirection: 'column', gap: '18px' }}>
+      <div dir="rtl" style={{ display: 'flex', flexDirection: 'column', gap: '18px' }}>
         
         {/* 1. Page Header */}
         <PageHeader

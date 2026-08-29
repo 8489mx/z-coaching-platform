@@ -8,6 +8,7 @@ import {
   CreditCard,
   Dumbbell,
   UtensilsCrossed,
+  HeartPulse,
   FileEdit,
   LineChart,
   Settings,
@@ -43,7 +44,8 @@ const SIDEBAR_GROUPS = [
     icon: Dumbbell,
     items: [
       { key: 'exercises', label: 'مكتبة التمارين والأمان', to: '/exercises', icon: Dumbbell },
-      { key: 'calculator', label: 'محرك التغذية والماكروز', to: '/calculator', icon: UtensilsCrossed },
+      { key: 'mobility', label: 'مكتبة المرونة والإطالات', to: '/coach/mobility', icon: HeartPulse },
+      { key: 'calculator', label: 'مكتبة التغذية والأطعمة', to: '/calculator', icon: UtensilsCrossed },
       { key: 'editor', label: 'منشئ ومعدل البرامج', to: '/coach/editor', icon: FileEdit },
     ],
   },
@@ -105,6 +107,12 @@ const NAV_ITEM_THEMES = {
     bg: '#ECFDF5',
     border: '#A7F3D0',
     hoverBg: '#D1FAE5'
+  },
+  mobility: {
+    color: '#0284C7', // Sky Blue
+    bg: '#F0F9FF',
+    border: '#BAE6FD',
+    hoverBg: '#E0F2FE'
   },
   editor: {
     color: '#2563EB', // Royal Electric Blue

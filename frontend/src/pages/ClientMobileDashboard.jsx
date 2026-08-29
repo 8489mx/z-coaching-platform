@@ -106,7 +106,7 @@ export default function ClientMobileDashboard({ client }) {
                 <input type="number" defaultValue="10" className="flex-1 bg-slate-950 border border-slate-200 rounded-lg py-1.5 text-center text-xs text-slate-900" placeholder="التكرار" />
                 <button 
                   onClick={() => handleSetComplete(90)} 
-                  className="w-12 py-1.5 bg-emerald-500 hover:bg-emerald-400 text-slate-950 rounded-lg font-black flex items-center justify-center transition active:scale-90"
+                  className="w-12 py-1.5 bg-emerald-500 hover:bg-emerald-400 text-slate-950 rounded-lg font-black flex items-center justify-center transition"
                 >
                   <Check size={16} />
                 </button>
@@ -119,7 +119,7 @@ export default function ClientMobileDashboard({ client }) {
                 <input type="number" defaultValue="10" className="flex-1 bg-slate-950 border border-slate-200 rounded-lg py-1.5 text-center text-xs text-slate-900" />
                 <button 
                   onClick={() => handleSetComplete(90)} 
-                  className="w-12 py-1.5 bg-slate-100 text-slate-500 rounded-lg font-black flex items-center justify-center transition active:scale-90 hover:bg-emerald-500 hover:text-slate-950"
+                  className="w-12 py-1.5 bg-slate-100 text-slate-500 rounded-lg font-black flex items-center justify-center transition hover:bg-emerald-500 hover:text-slate-950"
                 >
                   <Check size={16} />
                 </button>
@@ -178,7 +178,7 @@ export default function ClientMobileDashboard({ client }) {
       
       {/* الزر العائم لإنهاء اليوم (Bottom Action) */}
       <div className="fixed bottom-4 left-4 right-4">
-        <button className="w-full bg-blue-600 hover:bg-blue-700 text-slate-900 font-black py-4 rounded-2xl shadow-sm shadow-slate-200/50 shadow-blue-600/20 active:scale-95 transition flex items-center justify-center gap-2">
+        <button className="w-full bg-blue-600 hover:bg-blue-700 text-slate-900 font-black py-4 rounded-2xl shadow-sm shadow-slate-200/50 shadow-blue-600/20 transition flex items-center justify-center gap-2">
           <Zap size={18} />
           <span>إرسال وإغلاق يوميات اليوم</span>
         </button>

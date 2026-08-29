@@ -221,7 +221,7 @@ export default function Step5Training({
                 className={`choice-pill ${isSelected ? 'selected' : ''}`} 
                 onClick={() => toggleFocusMuscle(m.code)}
               >
-                <div className="choice-title">{isSelected ? '✓ ' : ''}{m.label}</div>
+                <div className="choice-title">{isSelected ? '' : ''}{m.label}</div>
               </div>
             );
           })}
@@ -245,7 +245,7 @@ export default function Step5Training({
                 }}
               >
                 <div className="choice-title" style={{ color: isSelected ? '#e11d48' : 'inherit' }}>
-                  {isSelected ? '⚠ ' : ''}{inj.label}
+                  {isSelected ? '' : ''}{inj.label}
                 </div>
               </div>
             );
@@ -256,7 +256,7 @@ export default function Step5Training({
             style={{ borderColor: noInjuries ? '#10b981' : '#e2e8f0' }}
           >
             <div className="choice-title" style={{ color: noInjuries ? '#059669' : 'inherit', fontWeight: '700' }}>
-              ✓ لا توجد إصابات (سليم تماماً)
+              لا توجد إصابات (سليم تماماً)
             </div>
           </div>
         </div>
