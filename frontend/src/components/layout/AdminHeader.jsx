@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { RotateCw, Maximize2, Search } from 'lucide-react';
+import { RotateCw, Maximize2, Search, Smartphone } from 'lucide-react';
 import NotificationsDropdown from '../NotificationsDropdown';
 import CoachAccountDropdown from './CoachAccountDropdown';
 import GlobalSearchModal from '../modals/GlobalSearchModal';
@@ -8,19 +8,7 @@ import GlobalSearchModal from '../modals/GlobalSearchModal';
 export function AdminHeader() {
   const location = useLocation();
   const navigate = useNavigate();
-  const [isSearchOpen, setIsSearchOpen] = useState(false);
 
-  useEffect(() => {
-    const handleKeyDown = (e) => {
-      // Trigger on Ctrl+/ or Ctrl+K or Cmd+K
-      if ((e.ctrlKey || e.metaKey) && (e.key === '/' || e.key === 'k' || e.key === 'K')) {
-        e.preventDefault();
-        setIsSearchOpen(true);
-      }
-    };
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
-  }, []);
 
   const getBreadcrumbs = () => {
     const path = location.pathname;
@@ -89,37 +77,34 @@ export function AdminHeader() {
         {/* Center / Left Toolbar Actions */}
         <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
           
-          {/* Quick Search Trigger */}
-          <div 
-            onClick={() => setIsSearchOpen(true)}
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              background: '#F8FAFC',
-              border: '1px solid #E2E8F0',
-              borderRadius: '6px',
-              padding: '0 10px',
-              height: '32px',
-              width: '220px',
-              gap: '8px',
+          <GlobalSearchModal />
+
+          {/* Client App Preview Button */}
+          <button 
+            type="button"
+            style={{ 
+              height: '32px', 
+              padding: '0 10px', 
+              display: 'flex', 
+              alignItems: 'center', 
+              gap: '6px', 
+              backgroundColor: '#F8FAFC', 
+              border: '1px solid #E2E8F0', 
+              borderRadius: '6px', 
               cursor: 'pointer',
-              transition: 'all 0.15s ease'
+              fontSize: '11.5px',
+              fontWeight: 700,
+              color: '#0F172A',
+              transition: 'all 0.12s ease'
             }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.borderColor = '#CBD5E1';
-              e.currentTarget.style.background = '#F1F5F9';
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.borderColor = '#E2E8F0';
-              e.currentTarget.style.background = '#F8FAFC';
-            }}
+            title="معاينة تطبيق المشترك على الجوال"
+            onClick={() => window.open('/client/today', '_blank')}
+            onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = '#EFF6FF'; e.currentTarget.style.borderColor = '#BFDBFE'; }}
+            onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = '#F8FAFC'; e.currentTarget.style.borderColor = '#E2E8F0'; }}
           >
-            <Search size={14} color="#0F172A" style={{ flexShrink: 0 }} />
-            <span style={{ fontSize: '12px', color: '#64748B', flex: 1, whiteSpace: 'nowrap' }}>ابحث في أي مكان...</span>
-            <kbd style={{ fontSize: '10px', background: '#E2E8F0', color: '#475569', padding: '1px 5px', borderRadius: '4px', fontFamily: 'monospace', flexShrink: 0 }}>
-              Ctrl /
-            </kbd>
-          </div>
+            <Smartphone size={14} color="#0284C7" />
+            <span>تطبيق المشترك</span>
+          </button>
 
           {/* Refresh Button */}
           <button 
@@ -150,11 +135,7 @@ export function AdminHeader() {
         </div>
       </header>
 
-      {/* Global Command Palette / Spotlight Search Modal */}
-      <GlobalSearchModal 
-        isOpen={isSearchOpen} 
-        onClose={() => setIsSearchOpen(false)} 
-      />
+      
     </>
   );
 }

@@ -115,7 +115,7 @@ export default function UserWelcomeHero({ currentUser, coachNotes }) {
                     fontSize: '0.78rem'
                   }}>
                     <i className="ti ti-flame text-success"></i>
-                    <span>8,000 خطوة يومياً</span>
+                    <span>جلسة الكارديو 30 دقيقة</span>
                   </span>
                 </div>
               </div>

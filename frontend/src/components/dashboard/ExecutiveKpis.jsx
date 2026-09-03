@@ -2,10 +2,10 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 
 export default function ExecutiveKpis({ 
-  clientsCount = 10, 
-  overdueCount = 2, 
-  expiringCount = 1, 
-  monthlyRevenue = 8500 
+  clientsCount = 0, 
+  overdueCount = 0, 
+  expiringCount = 0, 
+  monthlyRevenue = 0 
 }) {
   const cards = [
     {
@@ -50,7 +50,7 @@ export default function ExecutiveKpis({
       value: Number(monthlyRevenue).toLocaleString(),
       unit: 'ج.م',
       badge: { text: 'نمو مستمر', bg: '#ECFDF5', color: '#059669', icon: 'ti-trending-up' },
-      footer: 'باقات VIP وماكس',
+      footer: 'باقات MAX وإيليت',
       sparkGrad: ['#34D399', '#059669'],
       sparkPath: 'M1 15C10 12 18 3 28 6C38 11 48 2 59 3',
     }

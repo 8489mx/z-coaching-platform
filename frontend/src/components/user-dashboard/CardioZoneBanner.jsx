@@ -29,7 +29,7 @@ export default function CardioZoneBanner({ onOpenCheckin }) {
                   </span>
                 </div>
                 <p className="text-muted mb-0 small" style={{ fontSize: '0.78rem' }}>
-                  النبض المستهدف: <strong className="text-danger fw-bold">115 - 134 نبضة/دقيقة</strong> | 8,000 خطوة موزعة على مدار اليوم
+                  النبض المستهدف: <strong className="text-danger fw-bold">115 - 134 نبضة/دقيقة</strong> | 30 دقيقة مشي مائل أو عجلة ثابتة
                 </p>
               </div>
             </div>

@@ -1,14 +1,11 @@
-import React, { useEffect } from 'react';
-import './i18n';
+import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider } from './contexts/AuthContext';
-
 // Global Modal Escape Key Listener Component
 function GlobalModalEscapeHandler() {
-  useEffect(() => {
+  React.useEffect(() => {
     const handleGlobalEscape = (e) => {
       if (e.key === 'Escape' || e.keyCode === 27) {
-        // Find any open modals / dialog shells / lightbox overlays
         const openModals = document.querySelectorAll(
           '.dialog-shell, .dialog-overlay, .modal.show, [role="dialog"], [aria-modal="true"], .fixed[style*="z-index"], .modal[style*="display: block"]'
         );
@@ -36,12 +33,57 @@ function GlobalModalEscapeHandler() {
   return null;
 }
 
+class ErrorBoundary extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = { hasError: false, error: null };
+  }
+
+  static getDerivedStateFromError(error) {
+    return { hasError: true, error };
+  }
+
+  componentDidCatch(error, errorInfo) {
+    console.error("ErrorBoundary caught an error:", error, errorInfo);
+  }
+
+  render() {
+    if (this.state.hasError) {
+      return (
+        <div style={{ padding: '40px', textAlign: 'center', fontFamily: 'Cairo, sans-serif' }}>
+          <h2 style={{ color: '#E11D48', fontWeight: 800 }}>عذراً، حدث خطأ غير متوقع أثناء تحميل الصفحة</h2>
+          <p style={{ color: '#64748B', fontSize: '14px', marginTop: '10px' }}>
+            {this.state.error?.message || 'خطأ في معالجة البيانات، يرجى إعادة المحاولة'}
+          </p>
+          <button 
+            onClick={() => window.location.reload()} 
+            style={{
+              marginTop: '20px',
+              padding: '10px 24px',
+              background: '#0F172A',
+              color: '#FFFFFF',
+              border: 'none',
+              borderRadius: '8px',
+              fontWeight: 700,
+              cursor: 'pointer'
+            }}
+          >
+            إعادة تحميل الصفحة
+          </button>
+        </div>
+      );
+    }
+    return this.props.children;
+  }
+}
+
 // Primary Core Cockpits
 import CoachCommandCenter from './pages/CoachCommandCenter';
 import ClientInteractiveApp from './pages/ClientInteractiveApp';
 
 // Essential Feature Pages
 import PublicPricingJoin from './pages/PublicPricingJoin';
+import ClientOnlineRenewal from './pages/ClientOnlineRenewal';
 import Customers from './pages/Customers';
 import ExerciseLibrary from './pages/ExerciseLibrary';
 import MacroCalculator from './pages/MacroCalculator';
@@ -58,6 +100,8 @@ import ProgressClone from './pages/ProgressClone';
 import ProfileClone from './pages/ProfileClone';
 import WeeklyCheckinForm from './pages/WeeklyCheckinForm';
 import CoachAnalyticsDashboard from './pages/CoachAnalyticsDashboard';
+import FinancialsRenewalsDashboard from './pages/FinancialsRenewalsDashboard';
+import WhatsAppRemindersHub from './pages/WhatsAppRemindersHub';
 import CheckinReviewDashboard from './pages/CheckinReviewDashboard';
 import ClientTimelineProfile from './pages/ClientTimelineProfile';
 import MobilityLibrary from './pages/MobilityLibrary';
@@ -67,6 +111,7 @@ function App() {
     <AuthProvider>
       <GlobalModalEscapeHandler />
       <Router>
+        <ErrorBoundary>
         <Routes>
           {/* Coach Primary Command Center */}
           <Route path="/" element={<CoachCommandCenter />} />
@@ -80,16 +125,18 @@ function App() {
           <Route path="/client/today" element={<ClientInteractiveApp />} />
           <Route path="/client/meals" element={<ClientInteractiveApp />} />
           <Route path="/client/workout" element={<ClientInteractiveApp />} />
-          <Route path="/client/grocery" element={<ClientInteractiveApp />} />
+          <Route path="/client/grocery" element={<Navigate to="/client/today" replace />} />
           <Route path="/client-app" element={<ClientInteractiveApp />} />
           <Route path="/mobile" element={<ClientInteractiveApp />} />
           <Route path="/program" element={<ClientInteractiveApp />} />
           <Route path="/user-dashboard" element={<ClientInteractiveApp />} />
           <Route path="/user-dashboard.html" element={<Navigate to="/client/today" replace />} />
 
-          {/* Client Onboarding, Intake & Check-in */}
+          {/* Client Onboarding, Pricing, Renewal & Check-in */}
           <Route path="/join" element={<PublicPricingJoin />} />
           <Route path="/pricing" element={<PublicPricingJoin />} />
+          <Route path="/renew" element={<ClientOnlineRenewal />} />
+          <Route path="/client/renew" element={<ClientOnlineRenewal />} />
           <Route path="/onboarding" element={<ClientOnboardingForm />} />
           <Route path="/onboarding/multi" element={<ClientOnboardingForm />} />
           <Route path="/onboarding/classic" element={<ClientOnboarding />} />
@@ -110,13 +157,21 @@ function App() {
           <Route path="/calculator" element={<MacroCalculator />} />
           <Route path="/mobility" element={<MobilityLibrary />} />
           <Route path="/coach/mobility" element={<MobilityLibrary />} />
-          <Route path="/subscriptions" element={<Subscriptions />} />
+          <Route path="/subscriptions" element={<Navigate to="/coach/financials" replace />} />
           <Route path="/master-settings" element={<MasterSettingsHub />} />
           <Route path="/settings" element={<Navigate to="/master-settings" replace />} />
           <Route path="/coach/editor" element={<CoachEditor />} />
           <Route path="/coach/editor/:userId" element={<CoachEditor />} />
           <Route path="/coach/analytics" element={<CoachAnalyticsDashboard />} />
           <Route path="/coach/checkin-review" element={<CheckinReviewDashboard />} />
+          <Route path="/checkins/review" element={<CheckinReviewDashboard />} />
+          <Route path="/checkin/review" element={<CheckinReviewDashboard />} />
+          <Route path="/coach/checkin" element={<CheckinReviewDashboard />} />
+          <Route path="/coach/checkins" element={<CheckinReviewDashboard />} />
+          <Route path="/coach/financials" element={<FinancialsRenewalsDashboard />} />
+          <Route path="/financials" element={<FinancialsRenewalsDashboard />} />
+          <Route path="/coach/reminders" element={<WhatsAppRemindersHub />} />
+          <Route path="/reminders" element={<WhatsAppRemindersHub />} />
           <Route path="/customers/:id" element={<ClientTimelineProfile />} />
           <Route path="/profile" element={<ProfileClone />} />
           <Route path="/profile.html" element={<Navigate to="/profile" replace />} />
@@ -126,6 +181,7 @@ function App() {
           {/* Catch-all fallback */}
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
+        </ErrorBoundary>
       </Router>
     </AuthProvider>
   );

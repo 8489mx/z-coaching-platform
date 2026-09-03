@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { Settings, Users, LogOut, ChevronDown, ShieldCheck } from 'lucide-react';
 import { getStoredCoachConfig } from '../../utils/themeAndCoachConfig';
 

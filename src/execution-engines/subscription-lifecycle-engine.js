@@ -71,7 +71,7 @@ export function evaluateSubscriptionStatus({
 export function generateRenewalWhatsAppDispatch({
   client_name = 'بطل المنظومة',
   phone_number = '01011111110',
-  package_name = 'باقة MAX VIP',
+  package_name = 'باقة MAX',
   remaining_days = 3,
   current_progress_summary = 'خسارة 4.5 كجم وزيادة ملحوظة في القوة العضلية'
 }) {

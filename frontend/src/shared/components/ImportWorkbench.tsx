@@ -347,7 +347,7 @@ export function ImportWorkbench({
 
           {/* Validation Warnings (ONLY IF FILE IS UPLOADED) */}
           {rows.length > 0 && missingRequiredFields.length > 0 && (
-            <div style={{ background: '#fffbeb', border: '1px solid #fde68a', color: '#92400e', padding: '10px 14px', borderRadius: '8px', fontSize: '0.82rem', fontWeight: 600 }}>
+            <div style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', color: '#92400e', padding: '10px 14px', borderRadius: '8px', fontSize: '0.82rem', fontWeight: 600 }}>
               {missingRequiredFields.map((field) => (
                 <div key={field.key}>العمود المطلوب غير موجود: {field.label}</div>
               ))}
@@ -355,7 +355,7 @@ export function ImportWorkbench({
           )}
 
           {rows.length > 0 && rowIssueCount > 0 && (
-            <div style={{ background: '#fffbeb', border: '1px solid #fde68a', color: '#92400e', padding: '10px 14px', borderRadius: '8px', fontSize: '0.82rem', fontWeight: 600 }}>
+            <div style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', color: '#92400e', padding: '10px 14px', borderRadius: '8px', fontSize: '0.82rem', fontWeight: 600 }}>
               يوجد {rowIssueCount} صف يفتقد قيمة واحدة أو أكثر من الحقول المطلوبة.
             </div>
           )}

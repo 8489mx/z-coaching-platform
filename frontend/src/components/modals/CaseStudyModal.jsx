@@ -1,16 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { 
-  X, 
-  Download, 
-  Share2, 
-  Sparkles, 
-  Crown, 
-  TrendingDown, 
-  Award, 
-  Flame, 
-  CheckCircle2, 
-  Copy 
-} from 'lucide-react';
+import { X, Download, Share2, Sparkles, Crown, TrendingDown, Award, Flame, CheckCircle2, Copy } from 'lucide-react';
 
 export default function CaseStudyModal({ client, onClose }) {
   const [copied, setCopied] = useState(false);

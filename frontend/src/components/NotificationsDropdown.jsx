@@ -1,15 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { 
-  Bell, 
-  CheckCheck, 
-  Check, 
-  ClipboardList, 
-  ActivitySquare, 
-  CreditCard, 
-  ShoppingBag, 
-  Clock 
-} from 'lucide-react';
+import { Bell, CheckCheck, Check, ClipboardList, ActivitySquare, CreditCard, ShoppingBag, Clock } from 'lucide-react';
 import { API_BASE } from '../config/api';
 
 export default function NotificationsDropdown() {

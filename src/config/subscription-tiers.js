@@ -46,7 +46,7 @@ export const SUBSCRIPTION_TIERS = {
   MAX: {
     id: 'MAX',
     title: 'M A X',
-    badgeText: 'تجربة التدريب الخاصة VIP',
+    badgeText: 'تجربة التدريب الخاصة MAX',
     themeColor: 'gold',
     colorHex: '#C89327',
     checkinIntervalDays: 7, // مراجعة أسبوعية دقيقة

@@ -1,28 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { 
-  Dumbbell, 
-  Search, 
-  Play, 
-  AlertTriangle, 
-  Check, 
-  X, 
-  Plus,
-  Share2,
-  Copy,
-  CheckCircle2,
-  ShieldCheck,
-  HeartPulse,
-  Video,
-  Edit2,
-  Edit3,
-  Link2,
-  Layers,
-  Sparkles,
-  ChevronDown,
-  Upload,
-  ArrowRightLeft,
-  FolderOpen
-} from 'lucide-react';
+import { Dumbbell, Search, Play, AlertTriangle, Check, X, Plus, Share2, Copy, CheckCircle2, ShieldCheck, HeartPulse, Video, Edit2, Edit3, Link2, Layers, Sparkles, ChevronDown, Upload, ArrowRightLeft, FolderOpen } from 'lucide-react';
 import { API_BASE } from '../config/api';
 import AdminLayout from '../components/layout/AdminLayout';
 import ExerciseVideoModal from '../components/modals/ExerciseVideoModal';
@@ -702,7 +679,7 @@ export default function ExerciseLibrary() {
 
                   {/* Expandable Mistakes Box (with In-Header Copy Button) */}
                   {currentExpanded === 'MISTAKES' && (
-                    <div style={{ background: '#FFFBEB', border: '1px solid #FDE68A', borderRight: '3px solid #D97706', padding: '8px 10px', borderRadius: '6px', fontSize: '11.5px', color: '#78350F', lineHeight: 1.45 }}>
+                    <div style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', borderRight: '3px solid #D97706', padding: '8px 10px', borderRadius: '6px', fontSize: '11.5px', color: '#78350F', lineHeight: 1.45 }}>
                       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '4px' }}>
                         <div style={{ fontSize: '11px', fontWeight: 800, color: '#B45309', display: 'flex', alignItems: 'center', gap: '4px' }}>
                           <AlertTriangle size={11} />

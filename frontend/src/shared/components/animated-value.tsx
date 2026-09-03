@@ -37,7 +37,7 @@ export function AnimatedValue({ value, durationMs = 850, decimals = 0, formatter
   const rendered = useMemo(() => {
     const rounded = Number(displayValue.toFixed(decimals));
     if (formatter) return formatter(rounded);
-    return new Intl.NumberFormat('ar-EG', {
+    return new Intl.NumberFormat('en-US', {
       minimumFractionDigits: decimals,
       maximumFractionDigits: decimals,
     }).format(rounded);

@@ -1,3 +1,4 @@
+import { API_BASE } from '../config/api';
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { 
@@ -39,79 +40,14 @@ import AdminLayout from '../components/layout/AdminLayout';
 import { PageHeader } from '@/shared/components/page-header';
 import { FormSection } from '@/shared/components/form-section';
 
-import { SIMULATED_CLIENTS_MATRIX } from '../data/simulatedClientsMatrix';
+export const INITIAL_CHECKINS = [];
 
-// Dynamically Generated Deep Simulation Check-ins for All 15 Cases
-export const INITIAL_CHECKINS = SIMULATED_CLIENTS_MATRIX.map(sc => {
-  const latest = sc.latest_checkin;
-  const history = sc.history_weeks;
-  const prevEntry = history.length > 1 ? history[history.length - 2] : history[0];
-  const curEntry = history[history.length - 1];
-
-  return {
-    id: `CHK_${sc.client_code}_W${curEntry.week}`,
-    client: {
-      id: `CL_${sc.client_code}`,
-      name: sc.full_name,
-      code: sc.client_code,
-      package: sc.package_tier === 'max' ? 'MAX' : 'ELITE',
-      package_name: sc.package_name,
-      phone: sc.phone_number,
-      country: { name: 'مصر' },
-      gender: sc.gender,
-      goal_type: sc.primary_goal.toUpperCase(),
-      target_goal: sc.goal_label,
-      start_weight: sc.start_weight,
-      target_weight: sc.primary_goal === 'fat_loss' ? (sc.start_weight - 10) : (sc.start_weight + 5)
-    },
-    week_number: curEntry.week,
-    checkin_number: history.length > 1 ? (history.length - 1) : 1,
-    submission_date: 'اليوم، 10:30 ص',
-    history: history,
-    metrics: {
-      previous_weight: prevEntry.weight,
-      current_weight: curEntry.weight,
-      weight_change: latest.weight_change,
-      waist_previous: prevEntry.waist,
-      waist_current: curEntry.waist,
-      waist_change: latest.waist_change,
-      adherence: curEntry.adherence,
-      workouts_completed: latest.workouts_completed,
-      workouts_target: latest.workouts_target,
-      daily_steps_avg: latest.daily_steps,
-      strength_trend: latest.weight_change >= 0 ? 'INCREASED' : 'MAINTAINED',
-      strength_note: 'أداء مستقر ومحكوم',
-      off_plan_meals: curEntry.adherence < 90 ? 1 : 0,
-      water_liters: 3.5
-    },
-    biofeedback: {
-      energy: latest.energy,
-      sleep: latest.sleep,
-      hunger: latest.hunger,
-      recovery: latest.recovery,
-      stress_level: latest.stress,
-      digestion_status: latest.digestion,
-      cycle_phase: null
-    },
-    reflections: {
-      nsv_note: 'استقرار تام في مقاسات الجسم والراحة الفسيولوجية.',
-      struggle_note: sc.persona_story
-    },
-    client_notes: latest.client_notes,
-    ai_analysis: {
-      recommendation: latest.ai_recommendation,
-      status_badge: latest.status_badge,
-      warning: sc.status === 'EXPIRING_SOON' ? 'تنبيه: الاشتراك ينتهي قريباً؛ يرجى تأكيد التجديد.' : null
-    },
-    baseline_macros: {
-      calories: 2000,
-      protein: 140,
-      carbs: 220,
-      fats: 60
-    },
-    suggested_reply: `أهلاً يا ${sc.full_name.split(' ')[0]}، عاش جداً على الالتزام والتطور المستمر. ${latest.ai_recommendation} كمل بنفس القوة!`
-  };
-});
+const DEFAULT_BASELINE_MACROS = {
+  calories: 2000,
+  protein: 140,
+  carbs: 220,
+  fats: 60
+};
 
 // =========================================================================
 // CLEAN, MINIMAL PROGRESS CHART (Z COACHING SIGNATURE STYLE)
@@ -509,10 +445,88 @@ export default function CheckinReviewDashboard() {
   const [selectedIdx, setSelectedIdx] = useState(0);
   const [searchQuery, setSearchQuery] = useState('');
   const [tierFilter, setTierFilter] = useState('ALL'); // ALL | MAX | ELITE
-  const [macroAdjustments, setMacroAdjustments] = useState(INITIAL_CHECKINS[0].baseline_macros);
-  const [coachReply, setCoachReply] = useState(INITIAL_CHECKINS[0].suggested_reply);
+  const [macroAdjustments, setMacroAdjustments] = useState(DEFAULT_BASELINE_MACROS);
+  const [coachReply, setCoachReply] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [approvedCount, setApprovedCount] = useState(0);
+
+  // Live Checkins Fetcher from MariaDB
+  useEffect(() => {
+    const fetchLiveCheckins = async () => {
+      try {
+        const res = await fetch(`${API_BASE}/api/v1/programs/checkin/pending`);
+        if (res.ok) {
+          const data = await res.json();
+          if (data.checkins && Array.isArray(data.checkins) && data.checkins.length > 0) {
+            const liveMapped = data.checkins.map(ch => ({
+              id: `CHK_${ch.id}`,
+              raw_id: ch.id,
+              user_id: ch.user_id,
+              client: {
+                id: `CL_${ch.user_id}`,
+                name: ch.user?.full_name || `مشترك #${ch.user?.client_code || ch.user_id}`,
+                code: ch.user?.client_code || String(ch.user_id),
+                package: String(ch.user?.subscription_package || 'MAX').toUpperCase().includes('MAX') ? 'MAX' : 'ELITE',
+                package_name: String(ch.user?.subscription_package || '').includes('MAX') ? 'باقة ماكس' : 'باقة إليت',
+                phone: ch.user?.phone_number || '',
+                country: { name: 'مصر' },
+                gender: 'male',
+                goal_type: 'FAT_LOSS',
+                target_goal: 'خسارة دهون',
+                start_weight: ch.average_weight_kg || 80,
+                target_weight: (ch.average_weight_kg || 80) - 10
+              },
+              week_number: ch.week_number || 1,
+              checkin_number: ch.week_number || 1,
+              submission_date: new Date(ch.createdAt).toLocaleDateString('en-US'),
+              history: [{
+                week: ch.week_number || 1,
+                weight: ch.average_weight_kg || 0,
+                waist: ch.waist_circumference_cm || 0,
+                adherence: ch.nutrition_adherence_percent || 100
+              }],
+              metrics: {
+                previous_weight: ch.average_weight_kg || 0,
+                current_weight: ch.average_weight_kg || 0,
+                weight_change: ch.weight_change_kg || 0,
+                waist_previous: ch.waist_circumference_cm || 0,
+                waist_current: ch.waist_circumference_cm || 0,
+                waist_change: 0,
+                adherence: ch.nutrition_adherence_percent || 100,
+                workouts_completed: ch.workouts_completed || 0,
+                workouts_target: ch.workouts_scheduled || 4,
+                daily_steps_avg: 8000,
+                strength_trend: 'MAINTAINED',
+                strength_note: 'أداء مستقر',
+                off_plan_meals: 0,
+                water_liters: 3
+              },
+              biofeedback: ch.biofeedback || {
+                energy: 4, sleep: 4, hunger: 3, recovery: 4,
+                stress_level: 3, digestion_status: 'good', cycle_phase: null
+              },
+              reflections: {
+                nsv_note: 'الالتزام الكامل بالخطة',
+                struggle_note: ch.coach_notes || 'لا يوجد صعوبات'
+              },
+              client_notes: ch.coach_notes || '',
+              ai_analysis: {
+                recommendation: ch.analysis_output?.coach_action || 'الاستمرار بالخطة الحالية مع مراقبة مؤشرات الأسبوع القادم.',
+                status_badge: ch.analysis_status || 'ON_TRACK',
+                warning: null
+              },
+              baseline_macros: { calories: 2000, protein: 140, carbs: 220, fats: 60 },
+              suggested_reply: `أهلاً بحضرتك يا بطل، تسلم إيدك على تقرير الأسبوع والالتزام. استمر على نفس الخطة والتركيز، وبالتوفيق دائماً.`
+            }));
+            setCheckinList(liveMapped);
+          }
+        }
+      } catch (e) {
+        console.warn('Failed to load live checkins:', e);
+      }
+    };
+    fetchLiveCheckins();
+  }, []);
 
   // Read URL query params on mount or param change
   useEffect(() => {
@@ -650,36 +664,50 @@ export default function CheckinReviewDashboard() {
     if (!activeCheckin) return;
     setIsSubmitting(true);
 
-    setTimeout(() => {
-      setIsSubmitting(false);
-      const approvedClientName = activeCheckin.client.name;
-      const clientPhone = activeCheckin.client.phone;
-      const replyMsg = coachReply;
+    const checkinDbId = activeCheckin.raw_id;
+    const clientPhone = activeCheckin.client?.phone;
+    const replyMsg = coachReply;
+    const approvedClientName = activeCheckin.client?.name || 'المتدرب';
 
-      // Remove approved client from queue
-      const remaining = checkinList.filter(item => item.id !== activeCheckin.id);
-      setCheckinList(remaining);
-      setApprovedCount(prev => prev + 1);
-
-      if (selectedIdx >= remaining.length && remaining.length > 0) {
-        setSelectedIdx(remaining.length - 1);
+    try {
+      if (checkinDbId) {
+        await fetch(`${API_BASE}/api/v1/checkin/${checkinDbId}/approve`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            coach_notes: replyMsg
+          })
+        });
       }
+    } catch (err) {
+      console.warn('Failed to persist checkin approval to database:', err);
+    }
 
-      // Quick WhatsApp Option
-      const shouldOpenWhatsApp = window.confirm(
-        `تم اعتماد تحديث تقييم (${approvedClientName}) بنجاح وتحديث خطته في التطبيق!\n\nهل تريد فتح واتساب لإرسال رسالة التوجيه للمتدرب الآن؟`
-      );
+    setIsSubmitting(false);
 
-      if (shouldOpenWhatsApp && clientPhone) {
-        let cleanPhone = clientPhone.replace(/\D/g, '');
-        if (cleanPhone.startsWith('01')) cleanPhone = '2' + cleanPhone;
-        window.open(`https://wa.me/${cleanPhone}?text=${encodeURIComponent(replyMsg)}`, '_blank');
-      }
-    }, 300);
+    // Remove approved client from queue
+    const remaining = checkinList.filter(item => item.id !== activeCheckin.id);
+    setCheckinList(remaining);
+    setApprovedCount(prev => prev + 1);
+
+    if (selectedIdx >= remaining.length && remaining.length > 0) {
+      setSelectedIdx(remaining.length - 1);
+    }
+
+    // Quick WhatsApp Option
+    const shouldOpenWhatsApp = window.confirm(
+      `تم اعتماد تحديث تقييم (${approvedClientName}) بنجاح وتحديث خطته في التطبيق.\n\nهل تريد فتح واتساب لإرسال رسالة التوجيه للمتدرب الآن؟`
+    );
+
+    if (shouldOpenWhatsApp && clientPhone) {
+      let cleanPhone = clientPhone.replace(/\D/g, '');
+      if (cleanPhone.startsWith('01')) cleanPhone = '2' + cleanPhone;
+      window.open(`https://wa.me/${cleanPhone}?text=${encodeURIComponent(replyMsg)}`, '_blank');
+    }
   };
 
   const handleResetDemo = () => {
-    setCheckinList(INITIAL_CHECKINS);
+    window.location.reload();
     setSelectedIdx(0);
     setSearchQuery('');
     setTierFilter('ALL');

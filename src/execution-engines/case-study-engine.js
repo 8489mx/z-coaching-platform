@@ -11,7 +11,7 @@
 export function generateClientCaseStudy({
   client_name,
   client_code = '1',
-  package_name = 'باقة ماكس (VIP)',
+  package_name = 'باقة MAX',
   starting_weight_kg = 88.0,
   final_weight_kg = 75.2,
   starting_waist_cm = 98.0,

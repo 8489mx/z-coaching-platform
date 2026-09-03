@@ -1,26 +1,8 @@
+import { getClientTier, getTierColors, ClientCodeBadge, ClientPackageBadge } from '../../utils/tierBadgeHelper';
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import ReactDOM from 'react-dom';
-import { 
-  X, 
-  CheckCircle2, 
-  AlertTriangle, 
-  HeartPulse, 
-  Dumbbell, 
-  Activity, 
-  Apple, 
-  Camera, 
-  MessageCircle, 
-  Sparkles, 
-  User, 
-  ZoomIn, 
-  ShieldAlert, 
-  Utensils, 
-  Flame, 
-  Scale, 
-  Check,
-  Ban,
-  ShieldCheck
-} from 'lucide-react';
+import { X, CheckCircle2, AlertTriangle, HeartPulse, Dumbbell, Activity, Apple, Camera, MessageCircle, Sparkles, User, ZoomIn, ShieldAlert, Utensils, Flame, Scale, Check, Ban, ShieldCheck, Zap, ExternalLink } from 'lucide-react';
 
 // Helpers to translate codes to human-readable Arabic
 const GOALS_MAP = {
@@ -127,6 +109,7 @@ export default function IntakeAuditDetailModal({
   onGenerateDraft,
   generatingId
 }) {
+  const navigate = useNavigate();
   const [previewImage, setPreviewImage] = useState(null);
 
   useEffect(() => {
@@ -248,7 +231,8 @@ export default function IntakeAuditDetailModal({
             </h4>
             {(() => {
               const rawPkg = submission.package_name || submission.subscription_package || '';
-              const isMax = String(rawPkg).trim().toUpperCase().includes('MAX') || String(rawPkg).includes('ماكس');
+              const isMax = getClientTier(submission) === 'MAX';
+              const pkgName = isMax ? 'MAX' : 'ELITE';
               return (
                 <span style={{ 
                   fontFamily: 'JetBrains Mono, monospace', 
@@ -274,8 +258,7 @@ export default function IntakeAuditDetailModal({
                 style={{
                   padding: '3px 8px',
                   borderRadius: '6px',
-                  border: '1px solid #86EFAC',
-                  background: '#F0FDF4',
+                  border: '1px solid #E2E8F0', background: 'transparent',
                   color: '#16A34A',
                   fontSize: '11px',
                   fontWeight: 700,
@@ -286,12 +269,12 @@ export default function IntakeAuditDetailModal({
                   transition: 'all 0.15s ease'
                 }}
                 onMouseEnter={(e) => {
-                  e.currentTarget.style.background = '#DCFCE7';
-                  e.currentTarget.style.borderColor = '#4ADE80';
+                  e.currentTarget.style.background = 'transparent';
+                  e.currentTarget.style.borderColor = '#BBF7D0';
                 }}
                 onMouseLeave={(e) => {
-                  e.currentTarget.style.background = '#F0FDF4';
-                  e.currentTarget.style.borderColor = '#86EFAC';
+                  e.currentTarget.style.background = 'transparent';
+                  e.currentTarget.style.borderColor = '#E2E8F0';
                 }}
               >
                 <MessageCircle size={12} />
@@ -336,7 +319,7 @@ export default function IntakeAuditDetailModal({
                   ممنوعات: {excludedFoodsList.map(f => EXCLUDED_FOODS_LABELS[f] || f).join('، ')}
                 </span>
               ) : (
-                <span style={{ background: '#F0FDF4', border: '1px solid #BBF7D0', color: '#166534', padding: '1px 6px', borderRadius: '4px', fontSize: '10px', fontWeight: 700 }}>
+                <span style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', color: '#166534', padding: '1px 6px', borderRadius: '4px', fontSize: '10px', fontWeight: 700 }}>
                   تغذية مرنة
                 </span>
               )}
@@ -346,13 +329,13 @@ export default function IntakeAuditDetailModal({
                   إصابة: {selectedInjuriesList.map(inj => INJURIES_LABELS[inj] || inj).join('، ')}
                 </span>
               ) : (
-                <span style={{ background: '#F0FDF4', border: '1px solid #BBF7D0', color: '#166534', padding: '1px 6px', borderRadius: '4px', fontSize: '10px', fontWeight: 700 }}>
+                <span style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', color: '#166534', padding: '1px 6px', borderRadius: '4px', fontSize: '10px', fontWeight: 700 }}>
                   سليم بدون إصابات
                 </span>
               )}
 
               {hasDigestive && (
-                <span style={{ background: '#FFFBEB', border: '1px solid #FDE68A', color: '#92400E', padding: '1px 6px', borderRadius: '4px', fontSize: '10px', fontWeight: 700 }}>
+                <span style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', color: '#92400E', padding: '1px 6px', borderRadius: '4px', fontSize: '10px', fontWeight: 700 }}>
                   {digestiveIssuesList.map(d => DIGESTIVE_LABELS[d] || d).join('، ')}
                 </span>
               )}
@@ -510,6 +493,16 @@ export default function IntakeAuditDetailModal({
                       {medicalConditionsList.length > 0 ? medicalConditionsList.map(c => CONDITIONS_LABELS[c] || c).join('، ') : 'صحة ممتازة'} • {lifestyle.sleep?.averageHours || 7}س نوم
                     </strong>
                   </div>
+
+                  {/* Sleep & Shift Work */}
+                  <div style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', borderRadius: '4px', padding: '4px 8px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <span style={{ fontSize: '10.5px', color: '#64748B' }}>النوم والعمل:</span>
+                    <strong style={{ fontSize: '11px', color: (submission.answers?.sleep_schedule?.pattern === 'rotating_shifts' || submission.answers?.sleep_schedule?.pattern === 'night_shift') ? '#D97706' : '#0F172A' }}>
+                      {submission.answers?.sleep_schedule?.pattern === 'rotating_shifts' ? 'شفتات متغيرة (قطع كافيين 6س)' : submission.answers?.sleep_schedule?.pattern === 'night_shift' ? 'شفت ليلي دائم' : submission.answers?.sleep_schedule?.pattern === 'irregular' ? 'نوم غير منتظم' : 'نوم ليلي منتظم'}
+                      {(() => { const h = submission.answers?.sleep_schedule?.average_hours; const map = { less_than_6: 'أقل من 6', '6_7': '6-7', '7_8': '7-8', more_than_8: '+8' }; return h ? ` • ${map[h] || h}س` : ''; })()}
+                    </strong>
+                  </div>
+
                 </div>
               </div>
 
@@ -538,33 +531,70 @@ export default function IntakeAuditDetailModal({
             إغلاق
           </button>
 
-          {onGenerateDraft && (
-            <button
-              type="button"
-              onClick={() => onGenerateDraft(submission)}
-              disabled={generatingId === submission.id}
-              style={{
-                padding: '5px 14px',
-                borderRadius: '4px',
-                border: 'none',
-                background: '#0F172A',
-                color: '#FFFFFF',
-                fontSize: '11.5px',
-                fontWeight: 700,
-                cursor: 'pointer',
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: '4px',
-                boxShadow: '0 2px 4px rgba(15, 23, 42, 0.20)'
-              }}
-            >
-              {generatingId === submission.id ? (
-                <span>جاري التوليد...</span>
-              ) : (
-                <span>توليد الخطة</span>
-              )}
-            </button>
-          )}
+          {(() => {
+            const hasDraft = submission.status === 'DRAFT_GENERATED' || submission.status === 'APPROVED';
+            const clientCode = submission.user?.client_code || submission.user?.id || '1';
+
+            return (
+              <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                {hasDraft && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      onClose?.();
+                      navigate(`/coach/editor?user_id=${clientCode}`);
+                    }}
+                    style={{
+                      padding: '6px 14px',
+                      borderRadius: '5px',
+                      border: '1px solid #93C5FD',
+                      background: '#EFF6FF',
+                      color: '#1D4ED8',
+                      fontSize: '11.5px',
+                      fontWeight: 800,
+                      cursor: 'pointer',
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: '5px',
+                      boxShadow: '0 1px 2px rgba(29, 78, 216, 0.1)'
+                    }}
+                  >
+                    <ExternalLink size={13} />
+                    <span>فتح الخطة في محرر الكوتش</span>
+                  </button>
+                )}
+
+                {onGenerateDraft && !hasDraft && (
+                  <button
+                    type="button"
+                    onClick={() => onGenerateDraft(submission)}
+                    disabled={generatingId === submission.id}
+                    style={{
+                      padding: '6px 16px',
+                      borderRadius: '5px',
+                      border: 'none',
+                      background: 'linear-gradient(135deg, #0F172A 0%, #1E293B 100%)',
+                      color: '#FFFFFF',
+                      fontSize: '12px',
+                      fontWeight: 800,
+                      cursor: 'pointer',
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: '6px',
+                      boxShadow: '0 2px 6px rgba(15, 23, 42, 0.25)'
+                    }}
+                  >
+                    <Zap size={13} color="#FBBF24" />
+                    {generatingId === submission.id ? (
+                      <span>جاري توليد الخطة ونقلك للمحرر...</span>
+                    ) : (
+                      <span>توليد مسودة الخطة وتخصيصها بالمحرر</span>
+                    )}
+                  </button>
+                )}
+              </div>
+            );
+          })()}
         </div>
       </div>
 

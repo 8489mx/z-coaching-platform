@@ -1,18 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { 
-  ShieldCheck, 
-  LogIn, 
-  AlertCircle, 
-  Smartphone, 
-  KeyRound, 
-  Loader2, 
-  ArrowLeft,
-  Lock,
-  Sparkles,
-  ChevronRight,
-  ClipboardList
-} from 'lucide-react';
+import { ShieldCheck, LogIn, AlertCircle, Smartphone, KeyRound, Loader2, ArrowLeft, Lock, Sparkles, ChevronRight, ClipboardList } from 'lucide-react';
 import { API_BASE } from '../config/api';
 import { getStoredCoachConfig } from '../utils/themeAndCoachConfig';
 
@@ -232,8 +220,7 @@ export default function ClientLogin({ onLoginSuccess }) {
           {error && (
             <div 
               style={{
-                background: '#FEF2F2',
-                border: '1px solid #FECACA',
+                background: '#F8FAFC', border: '1px solid #E2E8F0',
                 borderRadius: '8px',
                 padding: '10px 12px',
                 display: 'flex',

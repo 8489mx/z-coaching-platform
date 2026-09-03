@@ -1,19 +1,6 @@
 import React, { useState } from 'react';
 import { NavLink, Outlet, useNavigate, useLocation } from 'react-router-dom';
-import { 
-  LayoutDashboard, 
-  Users, 
-  Dumbbell, 
-  BarChart3, 
-  Settings, 
-  LogOut,
-  Bell,
-  Search,
-  Menu,
-  X,
-  ClipboardList,
-  CheckCircle2
-} from 'lucide-react';
+import { LayoutDashboard, Users, Dumbbell, BarChart3, Settings, LogOut, Bell, Search, Menu, X, ClipboardList, CheckCircle2 } from 'lucide-react';
 
 export default function CoachLayout() {
   const navigate = useNavigate();

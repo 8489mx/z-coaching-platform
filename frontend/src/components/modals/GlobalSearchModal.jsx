@@ -17,10 +17,12 @@ import {
   Phone, 
   ExternalLink,
   ChevronLeft,
-  Sparkles
+  Sparkles,
+  MessageCircle
 } from 'lucide-react';
 import { API_BASE } from '../../config/api';
 import { arabicSearchMatch } from '../../utils/searchUtils';
+import FlexibleRenewalModal from './FlexibleRenewalModal';
 
 const SYSTEM_PAGES = [
   {
@@ -88,6 +90,22 @@ const SYSTEM_PAGES = [
     keywords: 'editor program برنامج دايت تمرين منشئ جداول كوتش'
   },
   {
+    title: 'لوحة المالية والتجديدات ومعدل الاحتفاظ (MRR)',
+    category: 'PAGES',
+    subtitle: 'متابعة الإيراد الشهري، اشتراكات الباقات، والمستحقين للتجديد',
+    path: '/coach/financials',
+    icon: LineChart,
+    keywords: 'financials mrr إيرادات مالية تجديدات دخل ركود'
+  },
+  {
+    title: 'مركز تذكيرات الواتساب الذكية',
+    category: 'PAGES',
+    subtitle: 'تذكيرات الشرب، التمارين، التقييم، والتجديد',
+    path: '/coach/reminders',
+    icon: MessageCircle,
+    keywords: 'reminders whatsapp تذكير واتساب رسائل متابعة'
+  },
+  {
     title: 'داش الداش - إعدادات المنظومة العامة',
     category: 'PAGES',
     subtitle: 'محرر أسئلة الاستمارة، الباقات، الأغذية، والإعدادات',
@@ -96,37 +114,62 @@ const SYSTEM_PAGES = [
     keywords: 'master settings إعدادات داش نظام باقات أغذية استمارة'
   },
   {
-    title: 'التقارير المالية والإحصائيات التحليلية',
-    category: 'PAGES',
-    subtitle: 'تحليل الإيرادات، معدلات التجديد، والاحتفاظ بالمشتركين',
-    path: '/coach/analytics',
-    icon: LineChart,
-    keywords: 'analytics reports تقارير إحصائيات نمو تجديد أرباح'
-  },
-  {
     title: 'استمارة المشترك العامة (رابط مباشر)',
     category: 'PAGES',
     subtitle: 'فتح نموذج إدخال البيانات المخصص للمشتركين الجدد',
     path: '/intake/form',
     icon: ExternalLink,
     keywords: 'form intake استمارة فورمة تعبئة رابط'
-  },
+  }
 ];
 
-export default function GlobalSearchModal({ isOpen, onClose }) {
+export default function GlobalSearchModal() {
+  const [isOpen, setIsOpen] = useState(false);
+  const containerRef = useRef(null);
+  const inputRef = useRef(null);
   const navigate = useNavigate();
+
   const [query, setQuery] = useState('');
   const [activeCategory, setActiveCategory] = useState('ALL'); // ALL | PAGES | CLIENTS | EXERCISES
   const [clients, setClients] = useState([]);
   const [exercises, setExercises] = useState([]);
   const [selectedIndex, setSelectedIndex] = useState(0);
-  const inputRef = useRef(null);
+  const [renewalClient, setRenewalClient] = useState(null);
+
+  // Global Keyboard Shortcut listener (Ctrl+K or Cmd+K or Ctrl+/)
+  useEffect(() => {
+    const handleGlobalKey = (e) => {
+      if ((e.ctrlKey || e.metaKey) && (e.key === 'k' || e.key === 'K' || e.key === '/')) {
+        e.preventDefault();
+        e.stopPropagation();
+        setIsOpen(prev => !prev);
+      }
+    };
+    window.addEventListener('keydown', handleGlobalKey);
+    return () => window.removeEventListener('keydown', handleGlobalKey);
+  }, []);
+
+  // Click outside listener
+  useEffect(() => {
+    const handleClickOutside = (e) => {
+      if (containerRef.current && !containerRef.current.contains(e.target)) {
+        setIsOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  const onClose = () => {
+    setIsOpen(false);
+    setQuery('');
+  };
 
   useEffect(() => {
     if (isOpen) {
       setQuery('');
       setSelectedIndex(0);
-      setTimeout(() => inputRef.current?.focus(), 50);
+      setTimeout(() => inputRef.current?.focus(), 60);
 
       const fetchData = async () => {
         try {
@@ -135,11 +178,11 @@ export default function GlobalSearchModal({ isOpen, onClose }) {
             fetch(`${API_BASE}/api/v1/exercises`)
           ]);
 
-          if (clientsRes.status === 'fulfilled') {
+          if (clientsRes.status === 'fulfilled' && clientsRes.value.ok) {
             const data = await clientsRes.value.json();
             if (data.clients) setClients(data.clients);
           }
-          if (exercisesRes.status === 'fulfilled') {
+          if (exercisesRes.status === 'fulfilled' && exercisesRes.value.ok) {
             const data = await exercisesRes.value.json();
             if (data.exercises) setExercises(data.exercises);
           }
@@ -163,19 +206,34 @@ export default function GlobalSearchModal({ isOpen, onClose }) {
   const filteredClients = clients.filter(c => {
     if (activeCategory !== 'ALL' && activeCategory !== 'CLIENTS') return false;
     if (!query.trim()) return activeCategory === 'CLIENTS';
-    const codeMatch = String(c.client_code || c.id || '').includes(query.replace('#', '').trim());
+    const cleanQ = query.replace('#', '').trim().toLowerCase();
+    const codeMatch = String(c.client_code || c.id || '').toLowerCase().includes(cleanQ);
     return codeMatch || 
            arabicSearchMatch(c.full_name, query) || 
+           arabicSearchMatch(c.name, query) || 
            arabicSearchMatch(c.phone_number, query) ||
            arabicSearchMatch(c.subscription_package, query);
-  }).map(c => ({
-    title: c.full_name || `مشترك #${c.client_code || c.id}`,
-    category: 'CLIENTS',
-    subtitle: `كود #${c.client_code || c.id} • ${c.phone_number || ''} • ${c.subscription_package || 'باقة معتمدة'}`,
-    path: `/coach/editor/${c.id || c.client_code}`,
-    icon: User,
-    rawClient: c
-  }));
+  }).map(c => {
+    const code = c.client_code || c.id || '1';
+    const phone = c.phone_number || '';
+    const cleanPhone = phone.replace(/\D/g, '');
+    const waPhone = cleanPhone.startsWith('01') ? '2' + cleanPhone : cleanPhone;
+    const isMax = String(c.subscription_package || c.package || '').toUpperCase().includes('MAX');
+
+    return {
+      title: c.full_name || c.name || `مشترك #${code}`,
+      category: 'CLIENTS',
+      subtitle: `كود #${code} • ${phone || 'بدون هاتف'} • ${isMax ? 'باقة MAX' : 'باقة ELITE'}`,
+      path: `/coach/editor?user_id=${code}`,
+      pdfPath: `/pdf?user_id=${code}`,
+      crmPath: `/customers?search=${code}`,
+      waUrl: waPhone ? `https://wa.me/${waPhone}` : null,
+      icon: User,
+      clientCode: code,
+      isMax,
+      rawClient: c
+    };
+  });
 
   const filteredExercises = exercises.filter(ex => {
     if (activeCategory !== 'ALL' && activeCategory !== 'EXERCISES') return false;
@@ -221,221 +279,328 @@ export default function GlobalSearchModal({ isOpen, onClose }) {
     }
   };
 
-  if (!isOpen) return null;
-
   return (
-    <div 
-      style={{
-        position: 'fixed',
-        inset: 0,
-        background: 'rgba(15, 23, 42, 0.55)',
-        backdropFilter: 'blur(5px)',
-        zIndex: 99999,
-        display: 'flex',
-        alignItems: 'flex-start',
-        justifyContent: 'center',
-        paddingTop: '8vh',
-        direction: 'rtl',
-        animation: 'fadeIn 0.15s ease-out'
-      }}
-      onClick={onClose}
-    >
+    <div style={{ position: 'relative' }} ref={containerRef}>
+      {/* Inline Search Trigger Bar */}
       <div 
         style={{
-          width: '100%',
-          maxWidth: '640px',
-          background: '#FFFFFF',
-          borderRadius: '12px',
-          border: '1px solid #E2E8F0',
-          boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)',
-          overflow: 'hidden',
           display: 'flex',
-          flexDirection: 'column',
-          maxHeight: '80vh',
-          animation: 'slideDown 0.2s ease-out'
+          alignItems: 'center',
+          background: '#F8FAFC',
+          border: '1px solid',
+          borderColor: isOpen ? '#CBD5E1' : '#E2E8F0',
+          borderRadius: '6px',
+          padding: '0 10px',
+          height: '32px',
+          width: '270px',
+          gap: '8px',
+          cursor: 'pointer',
+          transition: 'all 0.15s ease',
+          backgroundColor: isOpen ? '#F1F5F9' : '#F8FAFC',
+          boxShadow: isOpen ? '0 0 0 2px rgba(15, 23, 42, 0.08)' : 'none'
         }}
-        onClick={(e) => e.stopPropagation()}
+        onClick={() => setIsOpen(true)}
       >
-        {/* 1. Search Input Bar */}
-        <div 
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            padding: '14px 18px',
-            borderBottom: '1px solid #E2E8F0',
-            gap: '12px',
-            background: '#FFFFFF'
+        <Search size={14} color="#0F172A" style={{ flexShrink: 0 }} />
+        <input
+          ref={inputRef}
+          type="text"
+          placeholder="بحث سريع عن مشترك أو صفحة..."
+          value={query}
+          onFocus={() => setIsOpen(true)}
+          onChange={(e) => {
+            setQuery(e.target.value);
+            setSelectedIndex(0);
+            setIsOpen(true);
           }}
-        >
-          <Search size={18} color="#0F172A" style={{ flexShrink: 0 }} />
-          <input
-            ref={inputRef}
-            type="text"
-            placeholder="ابحث عن صفحة، مشترك (اسم، كود، هاتف)، أو تمرين..."
-            value={query}
-            onChange={(e) => {
-              setQuery(e.target.value);
-              setSelectedIndex(0);
-            }}
-            onKeyDown={handleKeyDown}
-            style={{
-              flex: 1,
-              border: 'none',
-              outline: 'none',
-              fontSize: '13.5px',
-              fontFamily: 'Cairo, sans-serif',
-              fontWeight: 600,
-              color: '#0F172A',
-              background: 'transparent'
-            }}
-          />
-          {query && (
-            <button 
-              type="button" 
-              onClick={() => { setQuery(''); inputRef.current?.focus(); }}
-              style={{ border: 'none', background: 'transparent', cursor: 'pointer', padding: 0, color: '#94A3B8' }}
-            >
-              <X size={15} />
-            </button>
-          )}
-          <kbd style={{ fontSize: '10.5px', background: '#F1F5F9', color: '#64748B', padding: '2px 6px', borderRadius: '4px', border: '1px solid #E2E8F0', fontFamily: 'monospace' }}>
-            ESC
-          </kbd>
-        </div>
-
-        {/* 2. Filter Pills */}
-        <div style={{ display: 'flex', gap: '6px', padding: '8px 18px', background: '#F8FAFC', borderBottom: '1px solid #F1F5F9' }}>
-          {[
-            { id: 'ALL', label: 'الكل' },
-            { id: 'PAGES', label: `صفحات النظام (${filteredPages.length})` },
-            { id: 'CLIENTS', label: `المشتركين (${filteredClients.length})` },
-            { id: 'EXERCISES', label: `التمارين (${filteredExercises.length})` },
-          ].map(cat => (
-            <button
-              key={cat.id}
-              type="button"
-              onClick={() => {
-                setActiveCategory(cat.id);
-                setSelectedIndex(0);
-              }}
-              style={{
-                padding: '3px 10px',
-                borderRadius: '5px',
-                fontSize: '11px',
-                fontWeight: 700,
-                border: 'none',
-                cursor: 'pointer',
-                background: activeCategory === cat.id ? '#0F172A' : 'transparent',
-                color: activeCategory === cat.id ? '#FFFFFF' : '#64748B',
-                boxShadow: activeCategory === cat.id ? '0 1px 3px rgba(15, 23, 42, 0.25)' : 'none',
-                transition: 'background 0.12s ease, color 0.12s ease'
-              }}
-            >
-              {cat.label}
-            </button>
-          ))}
-        </div>
-
-        {/* 3. Results List */}
-        <div style={{ flex: 1, overflowY: 'auto', padding: '8px', maxHeight: '420px' }}>
-          {allResults.length === 0 ? (
-            <div style={{ padding: '40px 16px', textAlign: 'center', color: '#94A3B8' }}>
-              <Search size={32} style={{ margin: '0 auto 10px auto', opacity: 0.4 }} />
-              <div style={{ fontSize: '13px', fontWeight: 700, color: '#475569' }}>لم يتم العثور على أي نتائج مطابقة</div>
-              <div style={{ fontSize: '11.5px', marginTop: '4px' }}>جرب البحث باسم صفحة أخرى، أو برقم هاتف أو كود المشترك</div>
-            </div>
-          ) : (
-            allResults.map((item, idx) => {
-              const Icon = item.icon;
-              const isSelected = idx === selectedIndex;
-              return (
-                <div
-                  key={idx}
-                  onClick={() => handleSelect(item)}
-                  onMouseEnter={() => setSelectedIndex(idx)}
-                  style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'space-between',
-                    padding: '9px 12px',
-                    borderRadius: '8px',
-                    cursor: 'pointer',
-                    background: isSelected ? '#F1F5F9' : 'transparent',
-                    border: isSelected ? '1px solid #CBD5E1' : '1px solid transparent',
-                    transition: 'all 0.1s ease',
-                    marginBottom: '3px'
-                  }}
-                >
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '10px', minWidth: 0 }}>
-                    <div 
-                      style={{
-                        width: '32px',
-                        height: '32px',
-                        borderRadius: '6px',
-                        background: isSelected ? '#0F172A' : '#F1F5F9',
-                        color: isSelected ? '#FFFFFF' : '#475569',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        flexShrink: 0,
-                        transition: 'all 0.1s ease'
-                      }}
-                    >
-                      <Icon size={15} />
-                    </div>
-                    <div style={{ display: 'flex', flexDirection: 'column', minWidth: 0 }}>
-                      <span style={{ fontSize: '12.5px', fontWeight: 800, color: '#0F172A', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                        {item.title}
-                      </span>
-                      <span style={{ fontSize: '11px', color: '#64748B', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                        {item.subtitle}
-                      </span>
-                    </div>
-                  </div>
-
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flexShrink: 0 }}>
-                    {item.category === 'CLIENTS' && (
-                      <span style={{ fontSize: '10px', background: '#ECFDF5', color: '#059669', border: '1px solid #A7F3D0', padding: '1px 6px', borderRadius: '4px', fontWeight: 700 }}>
-                        مشترك CRM
-                      </span>
-                    )}
-                    {item.category === 'EXERCISES' && (
-                      <span style={{ fontSize: '10px', background: '#FFFBEB', color: '#D97706', border: '1px solid #FDE68A', padding: '1px 6px', borderRadius: '4px', fontWeight: 700 }}>
-                        تمرين
-                      </span>
-                    )}
-                    <ChevronLeft size={14} color={isSelected ? '#0F172A' : '#CBD5E1'} />
-                  </div>
-                </div>
-              );
-            })
-          )}
-        </div>
-
-        {/* 4. Modal Footer Guide */}
-        <div 
-          style={{
-            display: 'flex',
-            justifyContent: 'space-between',
-            alignItems: 'center',
-            padding: '8px 16px',
-            background: '#F8FAFC',
-            borderTop: '1px solid #E2E8F0',
-            fontSize: '11px',
-            color: '#64748B'
+          onKeyDown={(e) => {
+            if (e.key === 'Escape') {
+              onClose();
+              inputRef.current?.blur();
+            } else {
+              handleKeyDown(e);
+            }
           }}
-        >
-          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-            <span><kbd style={{ background: '#FFFFFF', border: '1px solid #CBD5E1', padding: '1px 4px', borderRadius: '3px', fontFamily: 'monospace' }}>↑</kbd> <kbd style={{ background: '#FFFFFF', border: '1px solid #CBD5E1', padding: '1px 4px', borderRadius: '3px', fontFamily: 'monospace' }}>↓</kbd> للتنقل</span>
-            <span><kbd style={{ background: '#FFFFFF', border: '1px solid #CBD5E1', padding: '1px 4px', borderRadius: '3px', fontFamily: 'monospace' }}>Enter</kbd> للفتح</span>
-          </div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '4px', color: '#0284C7', fontWeight: 700 }}>
-            <Sparkles size={12} />
-            <span>البحث الفوري الذكي</span>
-          </div>
-        </div>
-
+          style={{
+            flex: 1,
+            border: 'none',
+            outline: 'none',
+            boxShadow: 'none',
+            fontSize: '11.5px',
+            fontFamily: 'Cairo, sans-serif',
+            fontWeight: 600,
+            color: '#0F172A',
+            background: 'transparent',
+            width: '100%'
+          }}
+        />
+        {query ? (
+          <button 
+            type="button" 
+            onClick={(e) => { 
+              e.stopPropagation(); 
+              setQuery(''); 
+              inputRef.current?.focus(); 
+            }}
+            style={{ border: 'none', background: 'transparent', cursor: 'pointer', padding: 0, color: '#94A3B8', display: 'flex', alignItems: 'center' }}
+          >
+            <X size={13} />
+          </button>
+        ) : (
+          <span style={{ fontSize: '9.5px', fontWeight: 800, color: '#94A3B8', background: '#FFFFFF', border: '1px solid #E2E8F0', padding: '1px 5px', borderRadius: '4px', fontFamily: 'JetBrains Mono, Cairo', userSelect: 'none' }}>
+            Ctrl K
+          </span>
+        )}
       </div>
+
+      {/* Dropdown Results Menu */}
+      {isOpen && (
+        <div 
+          style={{
+            position: 'absolute',
+            top: 'calc(100% + 8px)',
+            right: 0,
+            width: '520px',
+            maxWidth: '92vw',
+            background: '#FFFFFF',
+            borderRadius: '10px',
+            border: '1px solid #CBD5E1',
+            boxShadow: '0 12px 30px -4px rgba(15, 23, 42, 0.18)',
+            zIndex: 10000,
+            display: 'flex',
+            flexDirection: 'column',
+            maxHeight: '480px',
+            overflow: 'hidden'
+          }}
+        >
+          {/* Filter Pills */}
+          <div style={{ display: 'flex', gap: '6px', padding: '8px 12px', background: '#F8FAFC', borderBottom: '1px solid #E2E8F0', flexWrap: 'wrap' }}>
+            {[
+              { id: 'ALL', label: 'الكل' },
+              { id: 'CLIENTS', label: `المشتركين (${filteredClients.length})` },
+              { id: 'PAGES', label: `صفحات النظام (${filteredPages.length})` },
+              { id: 'EXERCISES', label: `التمارين (${filteredExercises.length})` },
+            ].map(cat => (
+              <button
+                key={cat.id}
+                type="button"
+                onClick={() => {
+                  setActiveCategory(cat.id);
+                  setSelectedIndex(0);
+                }}
+                style={{
+                  padding: '3px 10px',
+                  borderRadius: '5px',
+                  fontSize: '11px',
+                  fontWeight: 700,
+                  border: 'none',
+                  cursor: 'pointer',
+                  background: activeCategory === cat.id ? '#0F172A' : '#FFFFFF',
+                  color: activeCategory === cat.id ? '#FFFFFF' : '#64748B',
+                  border: activeCategory === cat.id ? '1px solid #0F172A' : '1px solid #E2E8F0',
+                  boxShadow: activeCategory === cat.id ? '0 1px 3px rgba(15, 23, 42, 0.2)' : 'none',
+                  transition: 'all 0.12s ease'
+                }}
+              >
+                {cat.label}
+              </button>
+            ))}
+          </div>
+
+          {/* Results List */}
+          <div style={{ flex: 1, overflowY: 'auto', padding: '8px', maxHeight: '400px' }}>
+            {allResults.length === 0 ? (
+              <div style={{ padding: '36px 16px', textAlign: 'center', color: '#94A3B8' }}>
+                <Search size={28} style={{ margin: '0 auto 8px auto', opacity: 0.3 }} />
+                <div style={{ fontSize: '13px', fontWeight: 800, color: '#475569' }}>لم يتم العثور على أي نتائج مطابقة</div>
+                <div style={{ fontSize: '11px', color: '#94A3B8', marginTop: '3px' }}>جرب البحث برقم هاتف المشترك، كوده، أو اسمه</div>
+              </div>
+            ) : (
+              allResults.map((item, idx) => {
+                const Icon = item.icon;
+                const isSelected = idx === selectedIndex;
+                const isClient = item.category === 'CLIENTS';
+
+                return (
+                  <div
+                    key={idx}
+                    onClick={() => handleSelect(item)}
+                    onMouseEnter={() => setSelectedIndex(idx)}
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'space-between',
+                      padding: '8px 10px',
+                      borderRadius: '8px',
+                      cursor: 'pointer',
+                      background: isSelected ? '#F1F5F9' : '#FFFFFF',
+                      border: isSelected ? '1px solid #CBD5E1' : '1px solid #F1F5F9',
+                      transition: 'all 0.1s ease',
+                      marginBottom: '4px',
+                      gap: '8px'
+                    }}
+                  >
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '9px', minWidth: 0, flex: 1 }}>
+                      <div 
+                        style={{
+                          width: '32px',
+                          height: '32px',
+                          borderRadius: '6px',
+                          background: isSelected ? '#0F172A' : (isClient ? '#EFF6FF' : '#F8FAFC'),
+                          color: isSelected ? '#FFFFFF' : (isClient ? '#1D4ED8' : '#475569'),
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          flexShrink: 0,
+                          transition: 'all 0.1s ease'
+                        }}
+                      >
+                        <Icon size={15} />
+                      </div>
+
+                      <div style={{ display: 'flex', flexDirection: 'column', minWidth: 0, flex: 1 }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                          <span style={{ fontSize: '12px', fontWeight: 800, color: '#0F172A', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                            {item.title}
+                          </span>
+                          {isClient && (
+                            <span style={{ fontSize: '9px', fontWeight: 800, padding: '1px 5px', borderRadius: '3px', background: item.isMax ? '#FFFBEB' : '#F0F9FF', color: item.isMax ? '#B45309' : '#0284C7', border: item.isMax ? '1px solid #FDE68A' : '1px solid #BAE6FD' }}>
+                              {item.isMax ? 'MAX' : 'ELITE'}
+                            </span>
+                          )}
+                        </div>
+                        <span style={{ fontSize: '10.5px', color: '#64748B', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                          {item.subtitle}
+                        </span>
+                      </div>
+                    </div>
+
+                    {/* Quick 1-Click Action Buttons for Clients */}
+                    {isClient ? (
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '4px', flexShrink: 0 }} onClick={e => e.stopPropagation()}>
+                        <button
+                          type="button"
+                          onClick={() => { onClose(); navigate(item.path); }}
+                          style={{
+                            padding: '3px 8px',
+                            borderRadius: '4px',
+                            background: '#0F172A',
+                            color: '#FFFFFF',
+                            border: 'none',
+                            fontSize: '10px',
+                            fontWeight: 800,
+                            cursor: 'pointer',
+                            display: 'inline-flex',
+                            alignItems: 'center',
+                            gap: '3px'
+                          }}
+                          title="فتح وتعديل الخطة في المحرر"
+                        >
+                          <FileEdit size={10} />
+                          <span>الخطة</span>
+                        </button>
+
+                        <button
+                          type="button"
+                          onClick={() => setRenewalClient(item.rawClient)}
+                          style={{
+                            padding: '3px 7px',
+                            borderRadius: '4px',
+                            background: '#FEF3C7',
+                            color: '#B45309',
+                            border: '1px solid #FDE68A',
+                            fontSize: '10px',
+                            fontWeight: 800,
+                            cursor: 'pointer',
+                            display: 'inline-flex',
+                            alignItems: 'center',
+                            gap: '2px'
+                          }}
+                          title="تجديد وتحصيل اشتراك المتدرب بمزاجك"
+                        >
+                          <CreditCard size={9} />
+                          <span>تجديد</span>
+                        </button>
+
+                        <button
+                          type="button"
+                          onClick={() => window.open(item.pdfPath, '_blank')}
+                          style={{
+                            padding: '3px 7px',
+                            borderRadius: '4px',
+                            background: '#FFFFFF',
+                            color: '#0F172A',
+                            border: '1px solid #CBD5E1',
+                            fontSize: '10px',
+                            fontWeight: 700,
+                            cursor: 'pointer',
+                            display: 'inline-flex',
+                            alignItems: 'center',
+                            gap: '2px'
+                          }}
+                          title="عرض ملف PDF للبرنامج"
+                        >
+                          <ExternalLink size={9} />
+                          <span>PDF</span>
+                        </button>
+
+                        {item.waUrl && (
+                          <button
+                            type="button"
+                            onClick={() => window.open(item.waUrl, '_blank')}
+                            style={{
+                              padding: '3px 7px',
+                              borderRadius: '4px',
+                              background: '#25D366',
+                              color: '#FFFFFF',
+                              border: 'none',
+                              fontSize: '10px',
+                              fontWeight: 700,
+                              cursor: 'pointer',
+                              display: 'inline-flex',
+                              alignItems: 'center',
+                              gap: '2px'
+                            }}
+                            title="فتح محادثة واتساب"
+                          >
+                            <MessageCircle size={10} />
+                            <span>واتساب</span>
+                          </button>
+                        )}
+                      </div>
+                    ) : (
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '4px', flexShrink: 0 }}>
+                        <span style={{ fontSize: '10px', color: '#94A3B8', fontWeight: 600 }}>
+                          {item.category === 'PAGES' ? 'صفحة' : 'تمرين'}
+                        </span>
+                        <ChevronLeft size={13} color={isSelected ? '#0F172A' : '#CBD5E1'} />
+                      </div>
+                    )}
+                  </div>
+                );
+              })
+            )}
+          </div>
+
+          {/* Footer Guide */}
+          <div style={{ padding: '6px 12px', background: '#F8FAFC', borderTop: '1px solid #E2E8F0', display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '10px', color: '#94A3B8' }}>
+            <span>استخدم الأسهم <strong>↑</strong> <strong>↓</strong> للتنقل و <strong>Enter</strong> للاختيار</span>
+            <span>اضغط <strong>Esc</strong> للإغلاق</span>
+          </div>
+
+        </div>
+      )}
+      {/* Flexible Custom Renewal Modal */}
+      {renewalClient && (
+        <FlexibleRenewalModal
+          isOpen={Boolean(renewalClient)}
+          onClose={() => setRenewalClient(null)}
+          client={renewalClient}
+          onSuccess={() => {
+            setRenewalClient(null);
+          }}
+        />
+      )}
     </div>
   );
 }

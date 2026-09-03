@@ -265,3 +265,18 @@ html::-webkit-scrollbar-thumb:hover {
   visibility: visible;
   transform: translateY(-50%) translateX(0);
 }
+
+/* Forced Pure White Apple Notification Badge */
+.sidebar-badge-apple,
+.sidebar-badge-apple b,
+.sidebar-badge-apple span,
+.sidebar-badge-apple *,
+a.active .sidebar-badge-apple,
+a.active .sidebar-badge-apple b,
+a.active .sidebar-badge-apple span,
+a.active .sidebar-badge-apple * {
+  background-color: #FF3B30 !important;
+  background: #FF3B30 !important;
+  color: #FFFFFF !important;
+  -webkit-text-fill-color: #FFFFFF !important;
+}

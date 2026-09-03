@@ -2,12 +2,14 @@ import fs from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
+import { adaptIntakePayloadToCanonicalEngine } from "../../intake-decision-engine/adapters/intake-adapter.js";
 import { evaluateIntake } from "z-coaching-intake-decision-engine";
 import { buildMasterEngine } from "../../../src/master-engine/build-master-engine.js";
 import { buildMasterEngineV2 } from "../../../src/master-engine-v2/index.js";
 import { evaluateCheckin } from "../../../src/checkin-engine/index.js";
 import { buildAdaptedPlan } from "../../../src/adaptation-engine/index.js";
 import { User, Program, IntakeSubmission, CheckinSubmission } from "../models/index.js";
+import { Op } from "sequelize";
 import { MASTER_EXERCISE_DICTIONARY } from "../../../src/exercise-catalog-v2/index.js";
 import { calculateSmartSwap } from "../../../src/nutrition-swap-engine-v2/calculate-smart-swap.js";
 import { listSmartSwapCandidates, getSmartFoodRegistryItem, SMART_SWAP_REGISTRY } from "../../../src/nutrition-swap-engine-v2/swap-pool-registry.js";
@@ -443,11 +445,14 @@ export const submitWeeklyCheckin = async (req, res) => {
 export const getPendingCheckins = async (req, res) => {
   try {
     const checkins = await CheckinSubmission.findAll({
+      where: {
+        status: { [Op.ne]: "APPROVED" }
+      },
       include: [
         {
           model: User,
           as: "user",
-          attributes: ["id", "client_code", "full_name", "phone_number", "email"]
+          attributes: ["id", "client_code", "full_name", "phone_number", "email", "subscription_package", "subscription_price", "subscription_status"]
         }
       ],
       order: [["createdAt", "DESC"]]
@@ -748,12 +753,14 @@ export const getActiveProgramByUserId = async (req, res) => {
     const program = await Program.findOne({
       where: { user_id: user.id },
       order: [["id", "DESC"]],
-      include: [{ model: User, as: "user", attributes: ["id", "client_code", "full_name", "phone_number", "email", "role", "subscription_package"] }],
+      include: [{ model: User, as: "user", attributes: ["id", "client_code", "full_name", "phone_number", "email", "role", "subscription_package", "plan_approval_status"] }],
     });
 
     if (!program) {
       return res.status(200).json({
         has_program: false,
+        is_pending_review: true,
+        plan_approval_status: user.plan_approval_status || "PENDING_COACH_REVIEW",
         program_id: null,
         user: {
           id: user.id,
@@ -762,6 +769,7 @@ export const getActiveProgramByUserId = async (req, res) => {
           phone_number: user.phone_number,
           email: user.email,
           subscription_package: user.subscription_package,
+          plan_approval_status: user.plan_approval_status,
           role: user.role
         },
         master_program: null,
@@ -769,8 +777,12 @@ export const getActiveProgramByUserId = async (req, res) => {
       });
     }
 
+    const isApproved = program.status === "ACTIVE" || user.plan_approval_status === "APPROVED";
+
     return res.status(200).json({
-      has_program: true,
+      has_program: isApproved,
+      is_pending_review: !isApproved,
+      plan_approval_status: user.plan_approval_status || (isApproved ? "APPROVED" : "PENDING_COACH_REVIEW"),
       program_id: program.id,
       user: program.user || user,
       master_program: program.program_data,
@@ -783,7 +795,7 @@ export const getActiveProgramByUserId = async (req, res) => {
 
 export const updateCustomProgram = async (req, res) => {
   try {
-    const { user_id, client_code, program_data, coach_notes } = req.body;
+    const { user_id, client_code, program_data, coach_notes, is_published, publish } = req.body;
     const lookup = user_id || client_code;
 
     if (!lookup) {
@@ -802,6 +814,8 @@ export const updateCustomProgram = async (req, res) => {
       return res.status(404).json({ error: "User not found" });
     }
 
+    const shouldPublish = Boolean(is_published || publish);
+
     let program = await Program.findOne({
       where: { user_id: user.id },
       order: [["id", "DESC"]]
@@ -810,11 +824,15 @@ export const updateCustomProgram = async (req, res) => {
     if (!program) {
       program = await Program.create({
         user_id: user.id,
-        program_data: program_data || {}
+        program_data: program_data || {},
+        status: shouldPublish ? "ACTIVE" : "DRAFT"
       });
     } else {
       if (program_data) {
         program.program_data = program_data;
+      }
+      if (shouldPublish) {
+        program.status = "ACTIVE";
       }
       await program.save();
     }
@@ -827,8 +845,20 @@ export const updateCustomProgram = async (req, res) => {
       }
     }
 
+    if (shouldPublish) {
+      user.plan_approval_status = "APPROVED";
+      await user.save();
+
+      await IntakeSubmission.update(
+        { status: "APPROVED", coach_notes: coach_notes || "تم اعتماد الخطة ونشرها" },
+        { where: { user_id: user.id, status: ["PENDING_COACH_REVIEW", "DRAFT_GENERATED", "IN_PROGRESS"] } }
+      );
+    }
+
     return res.status(200).json({
-      message: "تم تحديث وحفظ خطة المتدرب وملاحظات الكابتن بنجاح في MariaDB z",
+      message: shouldPublish 
+        ? "تم اعتماد ونشر خطة المتدرب بنجاح وتفعيلها في التطبيق"
+        : "تم تحديث وحفظ مسودة خطة المتدرب بنجاح في MariaDB",
       user,
       program_id: program.id,
       master_program: program.program_data

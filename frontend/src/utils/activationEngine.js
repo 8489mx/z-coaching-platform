@@ -30,12 +30,12 @@ export function activateClientProgram({
       checkinDates.push({
         week_number: week,
         due_date: nextDate.toISOString().split('T')[0],
-        type: isMaxTier ? 'WEEKLY_VIP' : 'BIWEEKLY_ELITE'
+        type: isMaxTier ? 'WEEKLY_MAX' : 'BIWEEKLY_ELITE'
       });
     }
   }
 
-  const welcomeMessage = `أهلاً بك يا ${client_name} في عائلة Z Coaching مع كابتن كريم زكريا!\n\nتم اعتماد وتفعيل خطتك التدريبية والغذائية المخصصة بنسبة 100% وفق أعلى المعايير السريرية والرياضية.\n\n- رابط تطبيقك اليومي التفاعلي (الوجبات، التمرين، وقائمة المشتريات):\n${app_url}\n\n- رابط تحميل نسختك الرسمية المطبوعة (4K PDF مع QR Codes للتمارين):\n${program_pdf_url}\n\nتعليمات اليوم الأول:\n1. شيك على وجبات اليوم وجهز مشترياتك من التطبيق.\n2. موعد متابعتك الدورية كل ${intervalDays} أيام صباحاً على معدة فارغة.\n\nرحلة التحول بدأت رسمياً، وأنا معاك خطوة بخطوة!`;
+  const welcomeMessage = `أهلاً بك يا ${client_name} في عائلة Z Coaching مع كابتن كريم زكريا!\n\nتم اعتماد وتفعيل خطتك التدريبية والغذائية المخصصة بنسبة 100% وفق أعلى المعايير السريرية والرياضية.\n\n- رابط تطبيقك اليومي التفاعلي (الوجبات، التمارين، والمتابعة):\n${app_url}\n\n- رابط تحميل نسختك الرسمية المطبوعة (4K PDF مع QR Codes للتمارين):\n${program_pdf_url}\n\nتعليمات اليوم الأول:\n1. شيك على جدول تمارين اليوم ووجباتك الغذائية من التطبيق.\n2. موعد متابعتك الدورية كل ${intervalDays} أيام صباحاً على معدة فارغة.\n\nرحلة التحول بدأت رسمياً، وأنا معاك خطوة بخطوة!`;
 
   const cleanPhone = String(phone_number || '').replace(/[^0-9]/g, '');
   const normalizedPhone = cleanPhone.startsWith('20')
@@ -48,7 +48,7 @@ export function activateClientProgram({
     success: true,
     client_id,
     new_status: 'ACTIVE',
-    package_tier: isMaxTier ? 'MAX_VIP' : 'ELITE_TRANSFORM',
+    package_tier: isMaxTier ? 'MAX' : 'ELITE_TRANSFORM',
     total_scheduled_checkins: checkinDates.length,
     checkin_schedule: checkinDates,
     welcome_message_ar: welcomeMessage,

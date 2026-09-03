@@ -195,7 +195,7 @@ export function GlobalSearchModal() {
               ref={inputRef}
               className="global-search-input"
               type="text"
-              placeholder={`ابحث في أي مكان... (\u200ECtrl+/\u200E)`}
+              placeholder={`ابحث في أي مكان...`}
               value={globalSearchQuery}
               onChange={(e) => setGlobalSearchQuery(e.target.value)}
             />

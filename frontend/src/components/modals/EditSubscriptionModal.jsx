@@ -1,3 +1,4 @@
+import { getClientTier, getTierColors, ClientCodeBadge, ClientPackageBadge } from '../../utils/tierBadgeHelper';
 import React, { useEffect } from 'react';
 import { X } from 'lucide-react';
 
@@ -116,7 +117,7 @@ export default function EditSubscriptionModal({
                 value={formData.subscription_package}
                 onChange={(e) => {
                   const val = e.target.value;
-                  const isMax = val.includes('MAX');
+                  const isMax = getClientTier(val) === 'MAX';
                   setFormData({
                     ...formData,
                     subscription_package: val,

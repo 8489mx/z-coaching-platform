@@ -45,7 +45,7 @@ export const SMART_GUIDELINES_MATRIX = Object.freeze([
 export function generateMasterPdfExportData({
   client_name = 'المتدرب المعتمد',
   client_code = '101',
-  package_tier = 'MAX_VIP',
+  package_tier = 'MAX',
   current_week = 2,
   nutrition_plan = {
     daily_calories: 1950,
@@ -126,7 +126,7 @@ export function generateMasterPdfExportData({
     client: {
       name: client_name,
       code: `#${client_code}`,
-      package: package_tier === 'MAX_VIP' ? 'باقة ماكس (VIP)' : 'باقة إيليت',
+      package: package_tier === 'MAX' ? 'باقة MAX' : 'باقة ELITE',
       week: `الأسبوع ${current_week}`
     },
     contextual_guidelines: SMART_GUIDELINES_MATRIX,

@@ -2,17 +2,18 @@
  * Circadian & Lab Trigger Engine (محرك مواعيد الكافيين وتنبيه إعادة الفحوصات)
  *
  * 1. Caffeine Cutoff Calculator:
- *    - Strictly calculates caffeine stop time (8 hours prior to bedtime) to protect deep slow-wave / delta sleep.
+ *    - Strictly calculates caffeine stop time (default 6 hours prior to bedtime as per coach protocol) to protect deep slow-wave / delta sleep.
  * 2. Lab Re-Test Scheduler:
  *    - Detects initial abnormal biomarkers (HbA1c >= 5.7%, Vit D < 30, Ferritin < 30).
  *    - Triggers automated re-test milestone at Week 10 for client app & coach center.
  */
 
 /**
- * Computes exact caffeine cutoff time (8 hours prior to bedtime).
+ * Computes exact caffeine cutoff time (default 6 hours prior to bedtime).
  * @param {string} bedtimeStr - e.g. "23:00" or "00:30"
+ * @param {number} bufferHours - hours before bedtime to cut caffeine (default: 6)
  */
-export function getCaffeineCutoffTime(bedtimeStr = "23:00") {
+export function getCaffeineCutoffTime(bedtimeStr = "23:00", bufferHours = 6) {
   const parts = String(bedtimeStr || "23:00").split(":");
   let hours = parseInt(parts[0], 10);
   let minutes = parseInt(parts[1] || "0", 10);
@@ -20,8 +21,8 @@ export function getCaffeineCutoffTime(bedtimeStr = "23:00") {
   if (isNaN(hours)) hours = 23;
   if (isNaN(minutes)) minutes = 0;
 
-  // Subtract 8 hours
-  let cutoffHours = hours - 8;
+  // Subtract bufferHours (default 6 hours as per coach protocol)
+  let cutoffHours = hours - bufferHours;
   if (cutoffHours < 0) {
     cutoffHours = 24 + cutoffHours;
   }
@@ -39,8 +40,8 @@ export function getCaffeineCutoffTime(bedtimeStr = "23:00") {
     bedtime_24h: `${String(hours).padStart(2, '0')}:${formattedMinutes}`,
     caffeine_cutoff_24h: time24,
     caffeine_cutoff_display_ar: time12Ar,
-    buffer_hours: 8,
-    directive_ar: `موعد إيقاف الكافيين والمنبهات اليوم: ${time12Ar} (قبل النوم بـ 8 ساعات لضمان النوم العميق وإفراز هرمون النمو).`
+    buffer_hours: bufferHours,
+    directive_ar: `موعد إيقاف الكافيين والمنبهات: ${time12Ar} (قبل موعد النوم بـ ${bufferHours} ساعات لحماية جودة النوم العميق وموازنة الكورتيزول).`
   };
 }
 

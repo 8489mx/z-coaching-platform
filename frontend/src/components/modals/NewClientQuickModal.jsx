@@ -1,16 +1,7 @@
+import { getClientTier, getTierColors, ClientCodeBadge, ClientPackageBadge } from '../../utils/tierBadgeHelper';
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { 
-  Phone, 
-  User, 
-  CheckCircle2, 
-  MessageCircle, 
-  Copy, 
-  Check, 
-  Edit3, 
-  AlertCircle,
-  Sparkles
-} from 'lucide-react';
+import { Phone, User, CheckCircle2, MessageCircle, Copy, Check, Edit3, AlertCircle, Sparkles } from 'lucide-react';
 import { API_BASE } from '../../config/api';
 import { SUBSCRIPTION_TIERS } from '../../config/subscription-tiers';
 import { copyToClipboard } from '../../utils/clipboardUtils';
@@ -38,7 +29,7 @@ export default function NewClientQuickModal({ isOpen, onClose, onClientCreated }
   const finalTotalDays = baseDays + extraDays;
   const packageCode = `${tier}_${currentDurationData.id}`;
 
-  const isMax = tier === 'MAX';
+  const isMax = getClientTier(tier) === 'MAX';
   const themeColor = isMax ? '#C89327' : '#170c5c';
   const themeBg = isMax ? '#FFFBEB' : '#EDE9FE';
 
@@ -117,11 +108,11 @@ export default function NewClientQuickModal({ isOpen, onClose, onClientCreated }
     : '';
 
   const portalLink = `${window.location.origin}/intake`;
-  const clientNameDisplay = newClient?.full_name ? newClient.full_name : 'يا بطل';
+  const clientNameDisplay = newClient?.full_name ? `أستاذ ${newClient.full_name}` : 'عزيزي المشترك';
   const tierNameLabel = tier === 'MAX' ? 'باقة ماكس (M A X)' : 'باقة إيليت (ELITE)';
 
   const whatsappMessage = newClient
-    ? `أهلاً بك يا ${clientNameDisplay} مع كابتن كريم زكريا!\n\nتم تفعيل اشتراكك في: *${tierNameLabel}*\nإجمالي مدة المتابعة: *${durationText}*\n\nبيانات دخول استمارتك الخاصة:\n*كود المشترك:* ${newClient.client_code}\n*رقم الهاتف المسجل:* ${newClient.phone_number}\n\n*رابط استمارتك المباشر:*\n${intakeLink}\n\n*رابط البوابة الموحد:*\n${portalLink}\n\n(افتح الرابط المباشر واملأ بياناتك بدقة لنبدأ فوراً في تجهيز خطتك المتكاملة!)`
+    ? `أهلاً بحضرتك يا ${clientNameDisplay} مع كابتن كريم زكريا،\n\nتم تفعيل اشتراكك في: *${tierNameLabel}*\nإجمالي مدة المتابعة: *${durationText}*\n\nبيانات الدخول الخاصة بحسابك:\n*كود المشترك:* ${newClient.client_code}\n*رقم الهاتف المسجل:* ${newClient.phone_number}\n\n*رابط الاستمارة المباشر:*\n${intakeLink}\n\n*رابط البوابة الإلكترونية:*\n${portalLink}\n\nيرجى فتح الرابط المباشر وتعبئة البيانات بدقة لنبدأ في تجهيز خطتك التدريبية والغذائية.\nبالتوفيق دائماً، كابتن كريم زكريا.`
     : '';
 
   const handleCopyMessage = async () => {
@@ -446,8 +437,7 @@ export default function NewClientQuickModal({ isOpen, onClose, onClientCreated }
               gap: '6px',
               padding: '6px 14px',
               borderRadius: '6px',
-              background: '#F0FDF4',
-              border: '1px solid #BBF7D0',
+              background: '#F8FAFC', border: '1px solid #E2E8F0',
               color: '#166534',
               fontSize: '12px',
               fontWeight: 700,

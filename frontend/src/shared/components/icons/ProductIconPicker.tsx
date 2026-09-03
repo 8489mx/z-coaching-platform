@@ -1,9 +1,5 @@
 import { useState, useMemo } from 'react';
-import {
-  PRODUCT_SVG_ICONS,
-  PRODUCT_ICON_CATEGORIES,
-  ProductIcon,
-} from './product-svg-catalog';
+import { PRODUCT_SVG_ICONS, PRODUCT_ICON_CATEGORIES, ProductIcon } from './product-svg-catalog';
 import { DialogShell } from '@/shared/components/dialog-shell';
 import { SearchIcon } from './AppIcons';
 

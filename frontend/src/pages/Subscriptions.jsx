@@ -1,26 +1,11 @@
+import { ClientCodeBadge, ClientPackageBadge, getClientTier } from '../utils/tierBadgeHelper';
 import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
-import { 
-  CreditCard, 
-  Search, 
-  Wallet, 
-  Users, 
-  Hourglass, 
-  AlertTriangle, 
-  Edit3, 
-  PauseCircle, 
-  PlayCircle, 
-  RotateCw, 
-  MessageCircle, 
-  Plus, 
-  X,
-  CheckCircle2,
-  ChevronDown,
-  Download
-} from 'lucide-react';
+import {  } from 'react-router-dom';
+import { CreditCard, Search, Wallet, Users, Hourglass, AlertTriangle, Edit3, PauseCircle, PlayCircle, RotateCw, MessageCircle, Plus, X, CheckCircle2, ChevronDown, Download } from 'lucide-react';
 import { API_BASE } from '../config/api';
 import AdminLayout from '../components/layout/AdminLayout';
 import EditSubscriptionModal from '../components/modals/EditSubscriptionModal';
+import FlexibleRenewalModal from '../components/modals/FlexibleRenewalModal';
 import { arabicSearchMatch } from '../utils/searchUtils';
 import { PageHeader } from '@/shared/components/page-header';
 import { FormSection } from '@/shared/components/form-section';
@@ -93,6 +78,31 @@ export default function Subscriptions() {
   const [searchTerm, setSearchTerm] = useState('');
   const [openGiftMenuId, setOpenGiftMenuId] = useState(null);
 
+  // Global ESC key and click-outside listener for popups and menus
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if (e.key === 'Escape') {
+        setOpenGiftMenuId(null);
+        setFreezeModalClient(null);
+        setEditClient(null);
+      }
+    };
+
+    const handleGlobalClick = (e) => {
+      if (!e.target.closest('.gift-dropdown-container')) {
+        setOpenGiftMenuId(null);
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    document.addEventListener('mousedown', handleGlobalClick);
+
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown);
+      document.removeEventListener('mousedown', handleGlobalClick);
+    };
+  }, []);
+
   // Modals State
   const [editClient, setEditClient] = useState(null);
   const [freezeModalClient, setFreezeModalClient] = useState(null);
@@ -125,18 +135,10 @@ export default function Subscriptions() {
     }
   };
 
-  const handleRenew = async (client) => {
-    // Optimistic UI update
-    setClients(prev => prev.map(c => c.id === client.id ? { ...c, status: 'ACTIVE', subscription_status: 'ACTIVE', days_remaining: 121 } : c));
-    try {
-      await fetch(`${API_BASE}/api/v1/subscriptions/renew/${client.client_code || client.id}`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ package_code: client.package || '1_MONTH' })
-      });
-    } catch (err) {
-      console.log('Renew API call finished');
-    }
+  const [renewalModalClient, setRenewalModalClient] = useState(null);
+
+  const handleRenew = (client) => {
+    setRenewalModalClient(client);
   };
 
   const handleOpenEdit = (client) => {
@@ -190,7 +192,7 @@ export default function Subscriptions() {
     const headers = ['الكود', 'اسم المشترك', 'رقم الهاتف', 'الدولة', 'الباقة', 'سعر الاشتراك (ج.م)', 'تاريخ البدء', 'تاريخ الانتهاء', 'حالة الاشتراك', 'الأيام المتبقية'];
     const rows = clients.map(c => {
       const cleanCode = String(c.client_code || c.id).replace(/^client[-_]?/i, '');
-      const isMax = String(c.package || '').includes('MAX') || String(c.package || '').includes('ماكس');
+      const isMax = getClientTier(c) === 'MAX';
       const cInfo = getClientCountryInfo(c.phone_number, c.country);
       const isFrozen = c.status === 'FROZEN' || c.subscription_status === 'FROZEN';
       const statusText = isFrozen ? 'مجمّد' : (c.status === 'EXPIRED' ? 'منتهي' : (c.status === 'EXPIRING_SOON' ? 'قارب على الانتهاء' : 'نشط'));
@@ -558,7 +560,7 @@ export default function Subscriptions() {
               <small style={{ fontSize: '11.5px', color: '#64748B' }}>لم يتم العثور على أي مشترك تحت هذا الفلتر أو البحث.</small>
             </div>
           ) : (
-            <div style={{ overflowX: 'auto', border: '1px solid #E2E8F0', borderRadius: '8px' }}>
+            <div style={{ overflowX: 'auto', border: '1px solid #E2E8F0', borderRadius: '8px', minHeight: '360px', paddingBottom: openGiftMenuId ? '95px' : '25px', transition: 'padding-bottom 0.15s ease' }}>
               <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'right', fontSize: '12px' }}>
                 <thead>
                   <tr style={{ background: '#F8FAFC', borderBottom: '1px solid #E2E8F0', color: '#475569', fontWeight: 700 }}>
@@ -691,8 +693,7 @@ export default function Subscriptions() {
                         <td style={{ padding: '10px 12px', textAlign: 'center', verticalAlign: 'middle' }}>
                           {isFrozen ? (
                             <span style={{ 
-                              background: '#FFFBEB', 
-                              border: '1px solid #FDE68A', 
+                              background: '#F8FAFC', border: '1px solid #E2E8F0', 
                               color: '#B45309', 
                               padding: '5px 10px', 
                               borderRadius: '6px', 
@@ -725,8 +726,7 @@ export default function Subscriptions() {
                             </span>
                           ) : isSoon ? (
                             <span style={{ 
-                              background: '#FFFBEB', 
-                              border: '1px solid #FDE68A', 
+                              background: '#F8FAFC', border: '1px solid #E2E8F0', 
                               color: '#D97706', 
                               padding: '5px 10px', 
                               borderRadius: '6px', 
@@ -747,8 +747,7 @@ export default function Subscriptions() {
                             </span>
                           ) : (
                             <span style={{ 
-                              background: '#F0FDF4', 
-                              border: '1px solid #BBF7D0', 
+                              background: '#F8FAFC', border: '1px solid #E2E8F0', 
                               color: '#16A34A', 
                               padding: '5px 10px', 
                               borderRadius: '6px', 
@@ -953,8 +952,7 @@ export default function Subscriptions() {
                                 style={{
                                   padding: '4px 10px',
                                   borderRadius: '6px',
-                                  border: '1px solid #86EFAC',
-                                  background: '#F0FDF4',
+                                  border: '1px solid #E2E8F0', background: 'transparent',
                                   color: '#16A34A',
                                   fontSize: '11.5px',
                                   fontWeight: 700,
@@ -965,12 +963,12 @@ export default function Subscriptions() {
                                   transition: 'all 0.15s ease'
                                 }}
                                 onMouseEnter={(e) => {
-                                  e.currentTarget.style.background = '#DCFCE7';
-                                  e.currentTarget.style.borderColor = '#4ADE80';
+                                  e.currentTarget.style.background = 'transparent';
+                                  e.currentTarget.style.borderColor = '#BBF7D0';
                                 }}
                                 onMouseLeave={(e) => {
-                                  e.currentTarget.style.background = '#F0FDF4';
-                                  e.currentTarget.style.borderColor = '#86EFAC';
+                                  e.currentTarget.style.background = 'transparent';
+                                  e.currentTarget.style.borderColor = '#E2E8F0';
                                 }}
                                 title="إرسال تذكير التجديد عبر واتساب"
                               >
@@ -1108,7 +1106,7 @@ export default function Subscriptions() {
                 </div>
 
                 {/* Calculation Preview Box */}
-                <div style={{ background: '#FFFBEB', border: '1px solid #FDE68A', borderRadius: '10px', padding: '14px', display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                <div style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', borderRadius: '10px', padding: '14px', display: 'flex', flexDirection: 'column', gap: '6px' }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '12px', fontWeight: 700 }}>
                     <span style={{ color: '#92400E' }}>تاريخ الاستئناف التلقائي:</span>
                     <strong style={{ color: '#B45309', fontFamily: 'JetBrains Mono, Cairo' }}>
@@ -1190,6 +1188,18 @@ export default function Subscriptions() {
             setFormData={setEditForm}
             onSave={handleSaveEdit}
             saving={saving}
+          />
+        )}
+
+        {/* Flexible Custom Renewal Modal */}
+        {renewalModalClient && (
+          <FlexibleRenewalModal
+            isOpen={Boolean(renewalModalClient)}
+            onClose={() => setRenewalModalClient(null)}
+            client={renewalModalClient}
+            onSuccess={(updated) => {
+              setClients(prev => prev.map(c => c.id === updated.id ? { ...c, ...updated } : c));
+            }}
           />
         )}
 

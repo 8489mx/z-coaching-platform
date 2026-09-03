@@ -7,13 +7,13 @@ export interface CustomersListParams {
   page?: number;
   pageSize?: number;
   q?: string;
-  filter?: 'all' | 'vip' | 'debt' | 'cash';
+  filter?: 'all' | 'max' | 'debt' | 'cash';
 }
 
 export interface CustomersPageResponse {
   customers: Customer[];
   pagination: { page: number; pageSize: number; totalItems: number; totalPages: number };
-  summary: { totalCustomers: number; totalBalance: number; totalCredit: number; vipCount: number };
+  summary: { totalCustomers: number; totalBalance: number; totalCredit: number; maxCount: number };
 }
 
 export const customersApi = {

@@ -137,31 +137,31 @@ export default function Step2Body({
 
       <div className="section-divider"></div>
 
-      {/* 2. Unified Smart NEAT Daily Activity */}
-      <h3 className="section-title">النشاط الحركي اليومي ومتوسط الخطوات (Smart NEAT)</h3>
+      {/* 2. Unified Daily Activity */}
+      <h3 className="section-title">طبيعة النشاط والحركة اليومية</h3>
       <div className="form-group mb-3">
-        <label className="form-label">طبيعة حركتك ونشاطك اليومي المعتاد خارج أوقات التمرين:</label>
+        <label className="form-label">طبيعة حركتك ونشاطك المعتاد خارج أوقات التمرين:</label>
         <div className="choices-grid" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))' }}>
           {[
             { 
               v: 'SEDENTARY', 
               t: 'خامل / قليل الحركة', 
-              d: 'عمل مكتبي، قيادة سيارة، جلوس معظم اليوم أمام الشاشات (~4,000 - 5,000 خطوة)' 
+              d: 'عمل مكتبي، قيادة سيارة، جلوس معظم اليوم أمام الشاشات' 
             }, 
             { 
               v: 'LIGHT', 
               t: 'نشاط خفيف', 
-              d: 'حركة متقطعة في المنزل أو العمل، وقوف لبعض الوقت (~6,000 - 7,500 خطوة)' 
+              d: 'حركة متقطعة في المنزل أو العمل، وقوف لبعض الوقت' 
             }, 
             { 
               v: 'MODERATE', 
               t: 'نشاط متوسط / حركي', 
-              d: 'مشي متكرر، طبيعة عمل تتطلب حركة مستمرة ووقوفاً (~8,000 - 10,000 خطوة)' 
+              d: 'طبيعة عمل تتطلب حركة متكررة ومشي أو وقوف مستمر' 
             }, 
             { 
               v: 'HIGH', 
               t: 'نشاط عالي / شاق', 
-              d: 'عمل ميداني أو بدني شاق، مجهود متواصل طوال اليوم (~12,000+ خطوة)' 
+              d: 'عمل ميداني أو بدني شاق، مجهود بدني متواصل طوال اليوم' 
             }
           ].map(l => (
             <div 

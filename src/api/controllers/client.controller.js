@@ -1,4 +1,4 @@
-import { User, IntakeSubmission } from "../models/index.js";
+import { User, IntakeSubmission, Program } from "../models/index.js";
 
 export const addClient = async (req, res) => {
   try {
@@ -74,10 +74,32 @@ export const getClients = async (req, res) => {
       ],
       order: [['createdAt', 'DESC']]
     });
-    
+
     return res.status(200).json({ clients });
   } catch (err) {
     console.error("getClients error:", err);
+    return res.status(500).json({ error: "Internal server error" });
+  }
+};
+
+export const deleteClient = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const client = await User.findOne({ where: { id, role: 'CLIENT' } });
+    if (!client) {
+      return res.status(404).json({ error: "المشترك غير موجود" });
+    }
+
+    // Delete related submissions and programs
+    await IntakeSubmission.destroy({ where: { user_id: id } }).catch(() => {});
+    if (Program) {
+      await Program.destroy({ where: { user_id: id } }).catch(() => {});
+    }
+    await client.destroy();
+
+    return res.status(200).json({ success: true, message: "تم حذف المشترك بنجاح" });
+  } catch (err) {
+    console.error("deleteClient error:", err);
     return res.status(500).json({ error: "Internal server error" });
   }
 };

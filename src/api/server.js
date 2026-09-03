@@ -412,6 +412,38 @@ app.post("/api/v1/mobility", async (req, res) => {
   }
 });
 
+app.put("/api/v1/mobility/:id", async (req, res) => {
+  try {
+    const { id } = req.params;
+    const catalogPath = path.join(__dirname, "../data/mobility_catalog.json");
+    const frontendCatalogPath = path.resolve(__dirname, "../../frontend/src/data/mobilityCatalog.json");
+    
+    if (fs.existsSync(catalogPath)) {
+      let data = JSON.parse(fs.readFileSync(catalogPath, 'utf8'));
+      const idx = data.findIndex(d => String(d.id) === String(id));
+      if (idx !== -1) {
+        // Engine Protection: ID MUST remain invariant!
+        const originalId = data[idx].id;
+        data[idx] = {
+          ...data[idx],
+          ...req.body,
+          id: originalId
+        };
+        fs.writeFileSync(catalogPath, JSON.stringify(data, null, 2), 'utf8');
+        
+        if (fs.existsSync(frontendCatalogPath)) {
+          fs.writeFileSync(frontendCatalogPath, JSON.stringify(data, null, 2), 'utf8');
+        }
+        
+        return res.json({ success: true, message: 'تم تحديث الحركة بنجاح', drill: data[idx] });
+      }
+    }
+    res.status(404).json({ success: false, error: 'التمرين غير موجود' });
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
 // Static Serving for Exercise Images from frontend/public
 const publicExercisesPath = path.resolve(__dirname, "../../frontend/public/exercises");
 if (fs.existsSync(publicExercisesPath)) {
@@ -465,7 +497,7 @@ const startServer = async () => {
   try {
     await sequelize.authenticate();
     console.log("Database connection established successfully.");
-    await sequelize.sync({ alter: true });
+    await sequelize.sync();
     console.log("Database synced.");
   } catch (err) {
     console.warn("Database connection notice: running with in-memory / mock persistence if needed.", err.message);

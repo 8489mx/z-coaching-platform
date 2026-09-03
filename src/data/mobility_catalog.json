@@ -13,8 +13,14 @@
     "cue_ar": "ضبط الميل بين 6-9%، والسرعة 4.5-5.2 كم/ساعة، والحفاظ على نبض القلب بين 115-135 نبضة/دقيقة.",
     "scientific_benefit_ar": "أقصى معدل لأكسدة الأحماض الدهنية المباشرة دون استنزاف الجليكوجين العضلي وبدون أي حمل صدمي على الركبة.",
     "video_url": "https://video.zplatform.com/cardio/incline-treadmill.mp4",
-    "thumbnail": "/assets/cardio/treadmill.webp",
-    "equipment": "TREADMILL"
+    "thumbnail": "/exercises/CARDIO_MOD_01/0.jpg",
+    "equipment": "TREADMILL",
+    "image_stretch": "/exercises/CARDIO_MOD_01/0.jpg",
+    "image_contraction": "/exercises/CARDIO_MOD_01/1.jpg",
+    "images": [
+      "/exercises/CARDIO_MOD_01/0.jpg",
+      "/exercises/CARDIO_MOD_01/1.jpg"
+    ]
   },
   {
     "id": "CARDIO_MOD_ELLIPTICAL",
@@ -30,8 +36,14 @@
     "cue_ar": "الدفع والسحب بالذراعين بالتزامن مع حركة التبديل البيضاوية للأرجل مع الحفاظ على استقامة الجذع.",
     "scientific_benefit_ar": "انعدام كامل لأي حمل صدمي على مفاصل الركبة والورك والعمود الفقري مع زيادة إنفاق السعرات الحرارية عبر إشراك الجزء العلوي.",
     "video_url": "https://video.zplatform.com/cardio/elliptical.mp4",
-    "thumbnail": "/assets/cardio/elliptical.webp",
-    "equipment": "ELLIPTICAL"
+    "thumbnail": "/exercises/CARDIO_MOD_ELLIPTICAL/0.jpg",
+    "equipment": "ELLIPTICAL",
+    "image_stretch": "/exercises/CARDIO_MOD_ELLIPTICAL/0.jpg",
+    "image_contraction": "/exercises/CARDIO_MOD_ELLIPTICAL/1.jpg",
+    "images": [
+      "/exercises/CARDIO_MOD_ELLIPTICAL/0.jpg",
+      "/exercises/CARDIO_MOD_ELLIPTICAL/1.jpg"
+    ]
   },
   {
     "id": "CARDIO_MOD_BURPEES",
@@ -47,8 +59,14 @@
     "cue_ar": "النزول السريع لوضع البلانك مع ملامسة الصدر للأرض، ثم دفع الأرض بقوة والقفز للأعلى مع التصفيق فوق الرأس.",
     "scientific_benefit_ar": "رفع هائل لمعدل الأيض واستهلاك الأكسجين بعد التمرين (EPOC) وتنشيط الدورة الدموية للجسم كامل دون أي أدوات.",
     "video_url": "https://video.zplatform.com/cardio/burpees.mp4",
-    "thumbnail": "/assets/cardio/burpees.webp",
-    "equipment": "BODYWEIGHT"
+    "thumbnail": "/exercises/CARDIO_MOD_BURPEES/0.jpg",
+    "equipment": "BODYWEIGHT",
+    "image_stretch": "/exercises/CARDIO_MOD_BURPEES/0.jpg",
+    "image_contraction": "/exercises/CARDIO_MOD_BURPEES/1.jpg",
+    "images": [
+      "/exercises/CARDIO_MOD_BURPEES/0.jpg",
+      "/exercises/CARDIO_MOD_BURPEES/1.jpg"
+    ]
   },
   {
     "id": "CARDIO_MOD_MOUNTAIN_CLIMBERS",
@@ -64,8 +82,14 @@
     "cue_ar": "تثبيت وضع تمرين الضغط مع استقامة الظهر، وسحب الركبتين باتجاه الصدر بالتبادل وبسرعة عالية.",
     "scientific_benefit_ar": "تقوية عضلات أسفل البطن وثنيات الحوض مع رفع معدل نبضات القلب لحرق السعرات بكفاءة عالية.",
     "video_url": "https://video.zplatform.com/cardio/mountain-climbers.mp4",
-    "thumbnail": "/assets/cardio/climbers.webp",
-    "equipment": "BODYWEIGHT"
+    "thumbnail": "/exercises/CARDIO_MOD_MOUNTAIN_CLIMBERS/0.jpg",
+    "equipment": "BODYWEIGHT",
+    "image_stretch": "/exercises/CARDIO_MOD_MOUNTAIN_CLIMBERS/0.jpg",
+    "image_contraction": "/exercises/CARDIO_MOD_MOUNTAIN_CLIMBERS/1.jpg",
+    "images": [
+      "/exercises/CARDIO_MOD_MOUNTAIN_CLIMBERS/0.jpg",
+      "/exercises/CARDIO_MOD_MOUNTAIN_CLIMBERS/1.jpg"
+    ]
   },
   {
     "id": "CARDIO_MOD_JUMP_ROPE",
@@ -81,8 +105,14 @@
     "cue_ar": "القفز الخفيف على أمشاط القدمين مع دوران الحبل من مفصل المعصم فقط دون تحريك الذراعين بالكامل.",
     "scientific_benefit_ar": "تحسين التوافق العضلي العصبي وقوة الأوتار المرنة مع حرق ما يصل إلى 15-20 سعرة حرارية في الدقيقة.",
     "video_url": "https://video.zplatform.com/cardio/jump-rope.mp4",
-    "thumbnail": "/assets/cardio/jump-rope.webp",
-    "equipment": "JUMP_ROPE"
+    "thumbnail": "/exercises/CARDIO_MOD_JUMP_ROPE/0.jpg",
+    "equipment": "JUMP_ROPE",
+    "image_stretch": "/exercises/CARDIO_MOD_JUMP_ROPE/0.jpg",
+    "image_contraction": "/exercises/CARDIO_MOD_JUMP_ROPE/1.jpg",
+    "images": [
+      "/exercises/CARDIO_MOD_JUMP_ROPE/0.jpg",
+      "/exercises/CARDIO_MOD_JUMP_ROPE/1.jpg"
+    ]
   },
   {
     "id": "CARDIO_MOD_HIGH_KNEES",
@@ -98,8 +128,14 @@
     "cue_ar": "رفع الركبتين لمستوى الخصر بالتناوب مع تحريك الذراعين بقوة والهبوط برفق على أمشاط القدمين.",
     "scientific_benefit_ar": "تفعيل نظام الطاقة اللاهوائي السريع ورفع اللياقة القلبية التنفسية في أقل وقت ممكن.",
     "video_url": "https://video.zplatform.com/cardio/high-knees.mp4",
-    "thumbnail": "/assets/cardio/high-knees.webp",
-    "equipment": "BODYWEIGHT"
+    "thumbnail": "/exercises/CARDIO_MOD_HIGH_KNEES/0.jpg",
+    "equipment": "BODYWEIGHT",
+    "image_stretch": "/exercises/CARDIO_MOD_HIGH_KNEES/0.jpg",
+    "image_contraction": "/exercises/CARDIO_MOD_HIGH_KNEES/1.jpg",
+    "images": [
+      "/exercises/CARDIO_MOD_HIGH_KNEES/0.jpg",
+      "/exercises/CARDIO_MOD_HIGH_KNEES/1.jpg"
+    ]
   },
   {
     "id": "CARDIO_MOD_JUMPING_JACKS",
@@ -115,8 +151,14 @@
     "cue_ar": "القفز وفتح القدمين بعرض الكتفين ورفع اليدين فوق الرأس، ثم العودة بانتظام وسلاسة مع التنفس الطبيعي.",
     "scientific_benefit_ar": "كارديو ممتاز منخفض الضغط ومثالي للإحماء ورفع حرارة الجسم وتهيئة الجهاز الدوري.",
     "video_url": "https://video.zplatform.com/cardio/jumping-jacks.mp4",
-    "thumbnail": "/assets/cardio/jacks.webp",
-    "equipment": "BODYWEIGHT"
+    "thumbnail": "/exercises/CARDIO_MOD_JUMPING_JACKS/0.jpg",
+    "equipment": "BODYWEIGHT",
+    "image_stretch": "/exercises/CARDIO_MOD_JUMPING_JACKS/0.jpg",
+    "image_contraction": "/exercises/CARDIO_MOD_JUMPING_JACKS/1.jpg",
+    "images": [
+      "/exercises/CARDIO_MOD_JUMPING_JACKS/0.jpg",
+      "/exercises/CARDIO_MOD_JUMPING_JACKS/1.jpg"
+    ]
   },
   {
     "id": "CARDIO_MOD_02",
@@ -132,8 +174,14 @@
     "cue_ar": "وتيرة تدوير منتظمة (75-85 RPM) بمقاومة متوسطة، مع تدفق دم ممتاز للأرجل دون صدمات.",
     "scientific_benefit_ar": "ضخ الدم والمغذيات لأنسجة الفخذ والركبة لتسريع التعافي بعد أيام تدريب الأرجل الشاقة.",
     "video_url": "https://video.zplatform.com/cardio/stationary-bike.mp4",
-    "thumbnail": "/assets/cardio/bike.webp",
-    "equipment": "BIKE"
+    "thumbnail": "/exercises/CARDIO_MOD_02/0.jpg",
+    "equipment": "BIKE",
+    "image_stretch": "/exercises/CARDIO_MOD_02/0.jpg",
+    "image_contraction": "/exercises/CARDIO_MOD_02/1.jpg",
+    "images": [
+      "/exercises/CARDIO_MOD_02/0.jpg",
+      "/exercises/CARDIO_MOD_02/1.jpg"
+    ]
   },
   {
     "id": "CARDIO_MOD_03",
@@ -149,8 +197,14 @@
     "cue_ar": "الدفع القوي بالساقين أولاً ثم سحب المقبض لأسفل الصدر، والعودة ببطء وبتحكم.",
     "scientific_benefit_ar": "حرق سعرات مرتفع وتفعيل الظهر والأرجل والكور مع تقوية كفاءة الأوكسجين (VO2 Max).",
     "video_url": "https://video.zplatform.com/cardio/rower.mp4",
-    "thumbnail": "/assets/cardio/rower.webp",
-    "equipment": "ROWER"
+    "thumbnail": "/exercises/CARDIO_MOD_03/0.jpg",
+    "equipment": "ROWER",
+    "image_stretch": "/exercises/CARDIO_MOD_03/0.jpg",
+    "image_contraction": "/exercises/CARDIO_MOD_03/1.jpg",
+    "images": [
+      "/exercises/CARDIO_MOD_03/0.jpg",
+      "/exercises/CARDIO_MOD_03/1.jpg"
+    ]
   },
   {
     "id": "CARDIO_MOD_04",
@@ -166,25 +220,14 @@
     "cue_ar": "الضغط بكامل باطن القدم على الدرجة دون الانحناء الشديد للأمام ودون الاتكاء بالوزن على المقابض.",
     "scientific_benefit_ar": "كثافة حرق سعرات عالية جداً مع شد وتفعيل قوي للأرداف والسمانة.",
     "video_url": "https://video.zplatform.com/cardio/stairmaster.mp4",
-    "thumbnail": "/assets/cardio/stairmaster.webp",
-    "equipment": "STAIRMASTER"
-  },
-  {
-    "id": "CARDIO_MOD_ASSAULT_BIKE",
-    "type": "CARDIO_PROTOCOL",
-    "name_ar": "دراجة الهواء الهجومية (Assault / Air Bike Intervals)",
-    "name_en": "Air Bike HIIT Tabata Protocol",
-    "target_area_ar": "أقصى استهلاك أوكسجيني (VO2 Max) وتفعيل الجسم كامل",
-    "target_area_en": "High Intensity Anaerobic & Caloric Furnace",
-    "category": "CARDIO_MODALITY",
-    "sets": 8,
-    "reps": "20s عمل / 10s راحة (Tabata)",
-    "duration_seconds": 240,
-    "cue_ar": "دفع وسحب الذراعين بكل قوة بالتزامن مع التبديل السريع للأرجل في جولات الـ Sprint القصيرة.",
-    "scientific_benefit_ar": "أعلى كثافة تدريبية ممكنة لرفع القدرة اللاهوائية وحرق الدهون بدون أي تأثير سلبي على تضخيم العضلات.",
-    "video_url": "https://video.zplatform.com/cardio/assault-bike.mp4",
-    "thumbnail": "/assets/cardio/assault-bike.webp",
-    "equipment": "AIR_BIKE"
+    "thumbnail": "/exercises/CARDIO_MOD_04/0.jpg",
+    "equipment": "STAIRMASTER",
+    "image_stretch": "/exercises/CARDIO_MOD_04/0.jpg",
+    "image_contraction": "/exercises/CARDIO_MOD_04/1.jpg",
+    "images": [
+      "/exercises/CARDIO_MOD_04/0.jpg",
+      "/exercises/CARDIO_MOD_04/1.jpg"
+    ]
   },
   {
     "id": "MOB_DYN_01",
@@ -200,8 +243,14 @@
     "cue_ar": "الاندفاع للأمام مع لمس الكوع للأرض ثم فتح الذراع وسحب الصدر لأعلى باتجاه السقف مع التنفس العميق.",
     "scientific_benefit_ar": "تفعيل كامل لسلسلة الحوض والفقرات الصدرية وتحرير مفصل الورك قبل السكوات والدفع.",
     "video_url": "https://video.zplatform.com/mobility/worlds-greatest-stretch.mp4",
-    "thumbnail": "/assets/prehab/worlds-greatest.webp",
-    "equipment": "BODYWEIGHT"
+    "thumbnail": "/exercises/MOB_DYN_01/0.jpg",
+    "equipment": "BODYWEIGHT",
+    "image_stretch": "/exercises/MOB_DYN_01/0.jpg",
+    "image_contraction": "/exercises/MOB_DYN_01/1.jpg",
+    "images": [
+      "/exercises/MOB_DYN_01/0.jpg",
+      "/exercises/MOB_DYN_01/1.jpg"
+    ]
   },
   {
     "id": "MOB_DYN_02",
@@ -217,8 +266,14 @@
     "cue_ar": "الجلوس على الأرض بزاوية 90 درجة للركبتين وتدوير الفخذين من جهة لأخرى ببطء مع ثبات الجذع مستقيماً.",
     "scientific_benefit_ar": "تحسين الدوران الداخلي والخارجي لرأس عظمة الفخذ وتفادي آلام أسفل الظهر في تمارين الأرجل.",
     "video_url": "https://video.zplatform.com/mobility/90-90-hip-switches.mp4",
-    "thumbnail": "/assets/prehab/90-90-hip.webp",
-    "equipment": "BODYWEIGHT"
+    "thumbnail": "/exercises/MOB_DYN_02/0.jpg",
+    "equipment": "BODYWEIGHT",
+    "image_stretch": "/exercises/MOB_DYN_02/0.jpg",
+    "image_contraction": "/exercises/MOB_DYN_02/1.jpg",
+    "images": [
+      "/exercises/MOB_DYN_02/0.jpg",
+      "/exercises/MOB_DYN_02/1.jpg"
+    ]
   },
   {
     "id": "MOB_DYN_03",
@@ -234,8 +289,14 @@
     "cue_ar": "الارتكاز على الأربع، تقويس الظهر لأعلى مع الزفير ثم إنزال البطن ورفع الصدر مع الشهيق بسلاسة.",
     "scientific_benefit_ar": "تليين الأقراص الفقرية وتفعيل حركة لوحي الكتف وتخفيف التوتر العصبي.",
     "video_url": "https://video.zplatform.com/mobility/cat-cow.mp4",
-    "thumbnail": "/assets/prehab/cat-cow.webp",
-    "equipment": "BODYWEIGHT"
+    "thumbnail": "/exercises/MOB_DYN_03/0.jpg",
+    "equipment": "BODYWEIGHT",
+    "image_stretch": "/exercises/MOB_DYN_03/0.jpg",
+    "image_contraction": "/exercises/MOB_DYN_03/1.jpg",
+    "images": [
+      "/exercises/MOB_DYN_03/0.jpg",
+      "/exercises/MOB_DYN_03/1.jpg"
+    ]
   },
   {
     "id": "MOB_DYN_04",
@@ -251,8 +312,14 @@
     "cue_ar": "مسك حبل المقاومة بقبضة واسعة وتمرير الذراعين للأمام والخلف دون ثني الكوعين.",
     "scientific_benefit_ar": "تنشيط الكبسولة المفصلية للكتف وزيادة مساحة حركة عضلات الصدر العلوية قبل تمارين الدفع.",
     "video_url": "https://video.zplatform.com/mobility/banded-dislocates.mp4",
-    "thumbnail": "/assets/prehab/shoulder-dislocates.webp",
-    "equipment": "BAND"
+    "thumbnail": "/exercises/MOB_DYN_04/0.jpg",
+    "equipment": "BAND",
+    "image_stretch": "/exercises/MOB_DYN_04/0.jpg",
+    "image_contraction": "/exercises/MOB_DYN_04/1.jpg",
+    "images": [
+      "/exercises/MOB_DYN_04/0.jpg",
+      "/exercises/MOB_DYN_04/1.jpg"
+    ]
   },
   {
     "id": "MOB_DYN_05",
@@ -268,8 +335,14 @@
     "cue_ar": "تثبيت الكعب على الأرض ودفع الركبة للأمام باتجاه الحائط دون رفع الكعب عن الأرض إطلاقاً.",
     "scientific_benefit_ar": "زيادة عمق السكوات بدون ميل الجذع للأمام وبدون وضع ألواح تحت الكعب.",
     "video_url": "https://video.zplatform.com/mobility/knee-to-wall.mp4",
-    "thumbnail": "/assets/prehab/knee-to-wall.webp",
-    "equipment": "BODYWEIGHT"
+    "thumbnail": "/exercises/MOB_DYN_05/0.jpg",
+    "equipment": "BODYWEIGHT",
+    "image_stretch": "/exercises/MOB_DYN_05/0.jpg",
+    "image_contraction": "/exercises/MOB_DYN_05/1.jpg",
+    "images": [
+      "/exercises/MOB_DYN_05/0.jpg",
+      "/exercises/MOB_DYN_05/1.jpg"
+    ]
   },
   {
     "id": "MOB_DYN_06",
@@ -285,8 +358,14 @@
     "cue_ar": "تثبيت لوحي الكتف للخلف والأسفل وسحب الشريط حتى يلامس الصدر مع عصر الظهر العلوي.",
     "scientific_benefit_ar": "تثبيت لوح الكتف ومنع انضغاط أوتار الكتف أثناء تمارين البنش برس والدفع.",
     "video_url": "https://video.zplatform.com/prehab/banded-pull-apart.mp4",
-    "thumbnail": "/assets/prehab/banded-pull-apart.webp",
-    "equipment": "BAND"
+    "thumbnail": "/exercises/MOB_DYN_06/0.jpg",
+    "equipment": "BAND",
+    "image_stretch": "/exercises/MOB_DYN_06/0.jpg",
+    "image_contraction": "/exercises/MOB_DYN_06/1.jpg",
+    "images": [
+      "/exercises/MOB_DYN_06/0.jpg",
+      "/exercises/MOB_DYN_06/1.jpg"
+    ]
   },
   {
     "id": "MOB_STAT_01",
@@ -302,8 +381,14 @@
     "cue_ar": "إسناد الساعدين على زاويتي الباب والميل بالجذع برفق للأمام مع التنفس البطيء دون تقوس القطنية.",
     "scientific_benefit_ar": "إعادة استطالة ألياف الصدر المشدودة بعد التمارين ومنع تكور الأكتاف للأمام.",
     "video_url": "https://video.zplatform.com/prehab/corner-pec-stretch.mp4",
-    "thumbnail": "/assets/prehab/corner-pec-stretch.webp",
-    "equipment": "DOORWAY"
+    "thumbnail": "/exercises/MOB_STAT_01/0.jpg",
+    "equipment": "DOORWAY",
+    "image_stretch": "/exercises/MOB_STAT_01/0.jpg",
+    "image_contraction": "/exercises/MOB_STAT_01/1.jpg",
+    "images": [
+      "/exercises/MOB_STAT_01/0.jpg",
+      "/exercises/MOB_STAT_01/1.jpg"
+    ]
   },
   {
     "id": "MOB_STAT_02",
@@ -319,8 +404,14 @@
     "cue_ar": "الارتكاز على ركبة واحدة وشد المؤخرة للداخل مع دفع الحوض للأمام بلطف حتى تشعر بشد خفيف في أعلى الفخذ.",
     "scientific_benefit_ar": "إلغاء الشد الزائد على الفقرات القطنية وتعديل ميل الحوض الأمامي (Anterior Pelvic Tilt).",
     "video_url": "https://video.zplatform.com/prehab/hip-flexor-stretch.mp4",
-    "thumbnail": "/assets/prehab/hip-flexor-stretch.webp",
-    "equipment": "MAT"
+    "thumbnail": "/exercises/MOB_STAT_02/0.jpg",
+    "equipment": "MAT",
+    "image_stretch": "/exercises/MOB_STAT_02/0.jpg",
+    "image_contraction": "/exercises/MOB_STAT_02/1.jpg",
+    "images": [
+      "/exercises/MOB_STAT_02/0.jpg",
+      "/exercises/MOB_STAT_02/1.jpg"
+    ]
   },
   {
     "id": "MOB_STAT_03",
@@ -336,8 +427,14 @@
     "cue_ar": "ثني الساق الأمامية على الأرض وفرد الساق الخلفية والميل بالجذع للأمام حتى تشعر باسترخاء عضلات المؤخرة.",
     "scientific_benefit_ar": "تحرير العصب الوركي وتخفيف الضغط عن مفصل الحوض بعد السكوات والرفعات المميتة.",
     "video_url": "https://video.zplatform.com/mobility/pigeon-stretch.mp4",
-    "thumbnail": "/assets/prehab/pigeon.webp",
-    "equipment": "MAT"
+    "thumbnail": "/exercises/MOB_STAT_03/0.jpg",
+    "equipment": "MAT",
+    "image_stretch": "/exercises/MOB_STAT_03/0.jpg",
+    "image_contraction": "/exercises/MOB_STAT_03/1.jpg",
+    "images": [
+      "/exercises/MOB_STAT_03/0.jpg",
+      "/exercises/MOB_STAT_03/1.jpg"
+    ]
   },
   {
     "id": "MOB_STAT_04",
@@ -353,8 +450,14 @@
     "cue_ar": "التعلق الكامل على عقلة اليدين مع إرخاء الكتفين والجذع تماماً والتنفس ببطء وترك الجاذبية تمدد الفقرات.",
     "scientific_benefit_ar": "تخفيف الضغط المحوري عن الديسكات الفقرية بعد التمارين الثقيلة وزيادة قوة القبضة.",
     "video_url": "https://video.zplatform.com/mobility/dead-hang.mp4",
-    "thumbnail": "/assets/prehab/dead-hang.webp",
-    "equipment": "PULLUP_BAR"
+    "thumbnail": "/exercises/MOB_STAT_04/0.jpg",
+    "equipment": "PULLUP_BAR",
+    "image_stretch": "/exercises/MOB_STAT_04/0.jpg",
+    "image_contraction": "/exercises/MOB_STAT_04/1.jpg",
+    "images": [
+      "/exercises/MOB_STAT_04/0.jpg",
+      "/exercises/MOB_STAT_04/1.jpg"
+    ]
   },
   {
     "id": "MOB_STAT_05",
@@ -370,8 +473,14 @@
     "cue_ar": "الاستلقاء على الظهر ووضع شريط المقاومة أسفل باطن القدم ورفع الرجل مستقيمة للأعلى مع شد أصابع القدم لأسفل.",
     "scientific_benefit_ar": "استطالة آمنة للهامسترينج دون أي انحناء أو ضغط على الفقرات القطنية.",
     "video_url": "https://video.zplatform.com/mobility/lying-hamstring.mp4",
-    "thumbnail": "/assets/prehab/lying-hamstring.webp",
-    "equipment": "BAND"
+    "thumbnail": "/exercises/MOB_STAT_05/0.jpg",
+    "equipment": "BAND",
+    "image_stretch": "/exercises/MOB_STAT_05/0.jpg",
+    "image_contraction": "/exercises/MOB_STAT_05/1.jpg",
+    "images": [
+      "/exercises/MOB_STAT_05/0.jpg",
+      "/exercises/MOB_STAT_05/1.jpg"
+    ]
   },
   {
     "id": "MOB_PREHAB_01",
@@ -387,8 +496,14 @@
     "cue_ar": "سحب مطاط للصدر (20 تكرار) + إطالة الصدر في الزاوية (30 ثانية) + تمديد الفقرات بالفوم رولر (10 تكرارات).",
     "scientific_benefit_ar": "تثبيت مفصل الكتف في وضعه الطبيعي وإلغاء الحمل السلبي على أوتار الـ Rotator Cuff.",
     "video_url": "https://video.zplatform.com/prehab/rounded-shoulders-routine.mp4",
-    "thumbnail": "/assets/prehab/rounded-shoulders.webp",
-    "equipment": "BAND_AND_FOAM_ROLLER"
+    "thumbnail": "/exercises/MOB_PREHAB_01/0.jpg",
+    "equipment": "BAND_AND_FOAM_ROLLER",
+    "image_stretch": "/exercises/MOB_PREHAB_01/0.jpg",
+    "image_contraction": "/exercises/MOB_PREHAB_01/1.jpg",
+    "images": [
+      "/exercises/MOB_PREHAB_01/0.jpg",
+      "/exercises/MOB_PREHAB_01/1.jpg"
+    ]
   },
   {
     "id": "MOB_PREHAB_02",
@@ -404,8 +519,14 @@
     "cue_ar": "إطالة ثني الفخذ (30 ثانية) + جسر الأرداف بتدوير الحوض (15 تكرار) + تمرين الحشرة الميتة Deadbug (10 تكرارات).",
     "scientific_benefit_ar": "إعادة استقامة الحوض المحايد (Neutral Pelvis) وتفريغ الضغط عن الفقرات L4-L5 و L5-S1.",
     "video_url": "https://video.zplatform.com/prehab/pelvic-tilt-routine.mp4",
-    "thumbnail": "/assets/prehab/pelvic-tilt.webp",
-    "equipment": "MAT"
+    "thumbnail": "/exercises/MOB_PREHAB_02/0.jpg",
+    "equipment": "MAT",
+    "image_stretch": "/exercises/MOB_PREHAB_02/0.jpg",
+    "image_contraction": "/exercises/MOB_PREHAB_02/1.jpg",
+    "images": [
+      "/exercises/MOB_PREHAB_02/0.jpg",
+      "/exercises/MOB_PREHAB_02/1.jpg"
+    ]
   },
   {
     "id": "MOB_PREHAB_03",
@@ -421,7 +542,13 @@
     "cue_ar": "تدوير الكتف بالمطاط للخارج (15 تكرار) + استرتش النائم (20 ثانية) + انزلاق الساعدين الجداري (10 تكرارات).",
     "scientific_benefit_ar": "علاج احتكاك وتر العضلة فوق الشوكية (Supraspinatus) وتحسين مدى رفع الذراع فوق الرأس.",
     "video_url": "https://video.zplatform.com/prehab/rotator-cuff-routine.mp4",
-    "thumbnail": "/assets/prehab/rotator-cuff.webp",
-    "equipment": "BAND"
+    "thumbnail": "/exercises/MOB_PREHAB_03/0.jpg",
+    "equipment": "BAND",
+    "image_stretch": "/exercises/MOB_PREHAB_03/0.jpg",
+    "image_contraction": "/exercises/MOB_PREHAB_03/1.jpg",
+    "images": [
+      "/exercises/MOB_PREHAB_03/0.jpg",
+      "/exercises/MOB_PREHAB_03/1.jpg"
+    ]
   }
 ]

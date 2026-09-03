@@ -1,3 +1,4 @@
+import { API_BASE } from '../config/api';
 import React, { useState } from 'react';
 import { getTriageWhatsAppAction } from '../utils/whatsapp-generator';
 
@@ -31,7 +32,7 @@ export default function CoachTriageQueue({
     setSaveMessage('');
 
     try {
-      const res = await fetch('/api/v1/coach/update-client', {
+      const res = await fetch(`${API_BASE}/api/v1/coach/update-client`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

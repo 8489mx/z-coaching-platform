@@ -176,7 +176,7 @@ export default function WorkoutSection({
                               {arName}
                             </small>
                             {ex.specific_warmup_protocol && (
-                              <div className="mt-1 d-inline-flex align-items-center gap-1 px-2 py-0.5 rounded-pill" style={{ background: '#fffbeb', border: '1px solid #fde68a', fontSize: '0.68rem', color: '#b45309' }}>
+                              <div className="mt-1 d-inline-flex align-items-center gap-1 px-2 py-0.5 rounded-pill" style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', fontSize: '0.68rem', color: '#b45309' }}>
                                 <i className="ti ti-flame text-warning"></i>
                                 <span>تسخين متدرج: 50%×8 | 70%×4 | 90%×1 قبل مجموعات العمل</span>
                               </div>

@@ -113,6 +113,21 @@ export const activateOrder = async (req, res) => {
         subscription_start_date: startDate,
         subscription_end_date: endDate
       });
+    } else {
+      // Existing client renewing via online portal
+      const currentEnd = new Date(user.subscription_end_date);
+      const now = new Date();
+      const baseDate = (!isNaN(currentEnd.getTime()) && currentEnd > now) ? currentEnd : now;
+      const addedDays = (Number(order.duration_months) || 4) * 30;
+      const newEndDate = new Date(baseDate.getTime() + (addedDays * 24 * 60 * 60 * 1000));
+
+      user.subscription_status = 'ACTIVE';
+      user.subscription_end_date = newEndDate;
+      user.package_tier = order.package_tier || user.package_tier;
+      user.subscription_package = `${order.package_tier || user.package_tier}_${order.duration_months || 4}M`;
+      user.subscription_price = order.amount_paid || user.subscription_price;
+      user.payment_status = 'PAID';
+      await user.save();
     }
 
     // Link client_id to order

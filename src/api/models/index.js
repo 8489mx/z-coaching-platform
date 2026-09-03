@@ -10,33 +10,42 @@ import WorkoutPlan from "./WorkoutPlan.js";
 import RateLimitLog from "./RateLimitLog.js";
 
 // Setup associations
-User.hasMany(Program, { foreignKey: "user_id", as: "programs" });
+User.hasMany(Program, { foreignKey: "user_id", as: "programs", onDelete: "CASCADE" });
+
 Program.belongsTo(User, { foreignKey: "user_id", as: "user" });
 
-User.hasMany(IntakeSubmission, { foreignKey: "user_id", as: "intakeSubmissions" });
+User.hasMany(IntakeSubmission, { foreignKey: "user_id", as: "intakeSubmissions", onDelete: "CASCADE" });
+
 IntakeSubmission.belongsTo(User, { foreignKey: "user_id", as: "user" });
 
-User.hasMany(CheckinSubmission, { foreignKey: "user_id", as: "checkinSubmissions" });
+User.hasMany(CheckinSubmission, { foreignKey: "user_id", as: "checkinSubmissions", onDelete: "CASCADE" });
+
 CheckinSubmission.belongsTo(User, { foreignKey: "user_id", as: "user" });
 
 CheckinSubmission.belongsTo(Program, { foreignKey: "adapted_program_id", as: "adaptedProgram" });
 
-User.hasMany(ProgressPhoto, { foreignKey: "user_id", as: "progressPhotos" });
+User.hasMany(ProgressPhoto, { foreignKey: "user_id", as: "progressPhotos", onDelete: "CASCADE" });
+
 ProgressPhoto.belongsTo(User, { foreignKey: "user_id", as: "user" });
 
-User.hasMany(WorkoutLog, { foreignKey: "user_id", as: "workoutLogs" });
+User.hasMany(WorkoutLog, { foreignKey: "user_id", as: "workoutLogs", onDelete: "CASCADE" });
+
 WorkoutLog.belongsTo(User, { foreignKey: "user_id", as: "user" });
 
-Program.hasMany(WorkoutLog, { foreignKey: "program_id", as: "workoutLogs" });
+Program.hasMany(WorkoutLog, { foreignKey: "program_id", as: "workoutLogs", onDelete: "CASCADE" });
+
 WorkoutLog.belongsTo(Program, { foreignKey: "program_id", as: "program" });
 
-User.hasMany(Order, { foreignKey: "client_id", as: "orders" });
+User.hasMany(Order, { foreignKey: "client_id", as: "orders", onDelete: "CASCADE" });
+
 Order.belongsTo(User, { foreignKey: "client_id", as: "client" });
 
-User.hasMany(NutritionPlan, { foreignKey: "user_id", as: "nutritionPlans" });
+User.hasMany(NutritionPlan, { foreignKey: "user_id", as: "nutritionPlans", onDelete: "CASCADE" });
+
 NutritionPlan.belongsTo(User, { foreignKey: "user_id", as: "user" });
 
-User.hasMany(WorkoutPlan, { foreignKey: "user_id", as: "workoutPlans" });
+User.hasMany(WorkoutPlan, { foreignKey: "user_id", as: "workoutPlans", onDelete: "CASCADE" });
+
 WorkoutPlan.belongsTo(User, { foreignKey: "user_id", as: "user" });
 
 // Aliases for seamless schema terminology

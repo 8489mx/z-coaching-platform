@@ -1,17 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import {
-  HeartPulse,
-  Search,
-  Plus,
-  X,
-  Play,
-  Copy,
-  Check,
-  RotateCw,
-  Flame,
-  ShieldCheck,
-  Layers
-} from 'lucide-react';
+import { HeartPulse, Search, Plus, X, Play, Copy, Check, RotateCw, Flame, ShieldCheck, Layers, Edit3, Upload, ArrowRightLeft, Lock } from 'lucide-react';
 import { API_BASE } from '../config/api';
 import AdminLayout from '../components/layout/AdminLayout';
 import ExerciseVideoModal from '../components/modals/ExerciseVideoModal';
@@ -28,6 +16,7 @@ export default function MobilityLibrary() {
   const [copiedId, setCopiedId] = useState(null);
   const [notification, setNotification] = useState(null);
 
+  // Add Drill Modal State
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [savingNewDrill, setSavingNewDrill] = useState(false);
   const [newDrillData, setNewDrillData] = useState({
@@ -40,6 +29,22 @@ export default function MobilityLibrary() {
     video_url: '',
     equipment: 'BODYWEIGHT'
   });
+
+  // Edit Drill Modal State (With Engine Code Invariance Protection)
+  const [editingDrill, setEditingDrill] = useState(null);
+  const [editFormData, setEditFormData] = useState({
+    id: '',
+    name_ar: '',
+    name_en: '',
+    category: 'CARDIO_MODALITY',
+    equipment: 'BODYWEIGHT',
+    target_area_ar: '',
+    cue_ar: '',
+    video_url: '',
+    image_stretch: '',
+    image_contraction: ''
+  });
+  const [savingEditDrill, setSavingEditDrill] = useState(false);
 
   useEffect(() => {
     fetchMobilityDrills();
@@ -73,6 +78,100 @@ export default function MobilityLibrary() {
     setCopiedId(id);
     setTimeout(() => setCopiedId(null), 2000);
     showToast('تم نسخ التوجيه بنجاح');
+  };
+
+  // Open Edit Modal for any exercise / drill
+  const openEditModal = (drill) => {
+    setEditingDrill(drill);
+    setEditFormData({
+      id: drill.id,
+      name_ar: drill.name_ar || '',
+      name_en: drill.name_en || '',
+      category: drill.category || 'CARDIO_MODALITY',
+      equipment: drill.equipment || 'BODYWEIGHT',
+      target_area_ar: drill.target_area_ar || '',
+      cue_ar: drill.cue_ar || '',
+      video_url: drill.video_url || '',
+      image_stretch: drill.image_stretch || drill.images?.[0] || `/exercises/${drill.id}/0.jpg`,
+      image_contraction: drill.image_contraction || drill.images?.[1] || `/exercises/${drill.id}/1.jpg`
+    });
+  };
+
+  // Upload Image Directly from Computer
+  const handleUploadImageFile = (e, imageIndex) => {
+    const file = e.target.files && e.target.files[0];
+    if (!file || !editingDrill) return;
+
+    const reader = new FileReader();
+    reader.onload = async () => {
+      const base64 = reader.result;
+      try {
+        const res = await fetch(`${API_BASE}/api/v1/exercises/upload-image`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            exercise_id: editingDrill.id,
+            image_index: imageIndex,
+            image_base64: base64
+          })
+        });
+        const data = await res.json();
+        if (data.success && data.imageUrl) {
+          if (imageIndex === 0) {
+            setEditFormData(prev => ({ ...prev, image_stretch: data.imageUrl }));
+          } else {
+            setEditFormData(prev => ({ ...prev, image_contraction: data.imageUrl }));
+          }
+          showToast(`تم رفع وتحديث صورة ${imageIndex === 0 ? 'البداية' : 'الأداء'} بنجاح`);
+        }
+      } catch (err) {
+        console.error('Upload image error:', err);
+        showToast('فشل رفع الصورة');
+      }
+    };
+    reader.readAsDataURL(file);
+  };
+
+  // Save Edited Drill while Strictly Preserving Canonical ID for the Engine
+  const handleSaveEditedDrill = async (e) => {
+    e.preventDefault();
+    if (!editingDrill) return;
+
+    try {
+      setSavingEditDrill(true);
+      const updatedDrill = {
+        ...editingDrill,
+        ...editFormData,
+        id: editingDrill.id, // Immutable Engine Code
+        image_stretch: editFormData.image_stretch,
+        image_contraction: editFormData.image_contraction,
+        images: [
+          editFormData.image_stretch,
+          editFormData.image_contraction
+        ],
+        thumbnail: editFormData.image_stretch
+      };
+
+      const res = await fetch(`${API_BASE}/api/v1/mobility/${editingDrill.id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(updatedDrill)
+      });
+
+      const data = res.ok ? await res.json() : null;
+      const saved = (data && data.drill) ? data.drill : updatedDrill;
+
+      setDrills(prev => prev.map(d => d.id === editingDrill.id ? { ...d, ...saved } : d));
+      showToast(`تم حفظ تعديلات ${editFormData.name_ar} بنجاح`);
+      setEditingDrill(null);
+    } catch (err) {
+      console.error('Save edited drill error:', err);
+      setDrills(prev => prev.map(d => d.id === editingDrill.id ? { ...d, ...editFormData } : d));
+      showToast('تم حفظ التعديلات محلياً');
+      setEditingDrill(null);
+    } finally {
+      setSavingEditDrill(false);
+    }
   };
 
   const handleSaveNewDrill = async (e) => {
@@ -144,7 +243,7 @@ export default function MobilityLibrary() {
         {/* 1. Header */}
         <PageHeader
           title="مكتبة الكارديو والإطالات"
-          subtitle="دليل أجهزة وأنظمة الكارديو وحركات الإحماء والاستشفاء"
+          subtitle="دليل أجهزة وأنظمة الكارديو وحركات الإحماء والاستشفاء وتصحيح القوام"
           actions={(
             <button
               type="button"
@@ -356,6 +455,68 @@ export default function MobilityLibrary() {
                     </div>
                   )}
 
+                  {/* Dual-State Accurate Exercise Preview (Start & Finish Positions) */}
+                  <div style={{
+                    display: 'grid',
+                    gridTemplateColumns: '1fr 1fr',
+                    gap: '8px',
+                    marginBottom: '8px',
+                    background: '#F8FAFC',
+                    padding: '6px',
+                    borderRadius: '14px',
+                    border: '1px solid #E2E8F0'
+                  }}>
+                    {/* Frame 1: Start Position */}
+                    <div style={{ 
+                      position: 'relative', 
+                      borderRadius: '10px', 
+                      overflow: 'hidden', 
+                      background: '#F8FAFC', 
+                      border: '1px solid #E2E8F0', 
+                      height: '135px', 
+                      display: 'flex', 
+                      alignItems: 'center', 
+                      justifyContent: 'center',
+                      boxShadow: '0 1px 3px rgba(15, 23, 42, 0.04)'
+                    }}>
+                      <img
+                        src={drill.image_stretch || drill.images?.[0] || `/exercises/${drill.id}/0.jpg`}
+                        onError={(e) => {
+                          if (drill.images && drill.images[0]) e.currentTarget.src = drill.images[0];
+                          else e.currentTarget.style.display = 'none';
+                        }}
+                        alt={drill.name_en || drill.name_ar}
+                        style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: '9px' }}
+                        loading="lazy"
+                      />
+                    </div>
+
+                    {/* Frame 2: Contraction / Finish Position */}
+                    <div style={{ 
+                      position: 'relative', 
+                      borderRadius: '10px', 
+                      overflow: 'hidden', 
+                      background: '#F8FAFC', 
+                      border: '1px solid #E2E8F0', 
+                      height: '135px', 
+                      display: 'flex', 
+                      alignItems: 'center', 
+                      justifyContent: 'center',
+                      boxShadow: '0 1px 3px rgba(15, 23, 42, 0.04)'
+                    }}>
+                      <img
+                        src={drill.image_contraction || drill.images?.[1] || `/exercises/${drill.id}/1.jpg`}
+                        onError={(e) => {
+                          if (drill.images && drill.images[1]) e.currentTarget.src = drill.images[1];
+                          else e.currentTarget.style.display = 'none';
+                        }}
+                        alt={drill.name_en || drill.name_ar}
+                        style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: '9px' }}
+                        loading="lazy"
+                      />
+                    </div>
+                  </div>
+
                   {/* Technique Cue */}
                   {drill.cue_ar && (
                     <div style={{
@@ -379,6 +540,31 @@ export default function MobilityLibrary() {
                     {drill.target_area_ar}
                   </div>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                    {/* Edit Button */}
+                    <button
+                      type="button"
+                      onClick={() => openEditModal(drill)}
+                      style={{
+                        padding: '3px 9px',
+                        borderRadius: '4px',
+                        background: '#F1F5F9',
+                        border: '1px solid #CBD5E1',
+                        color: '#0F172A',
+                        fontSize: '10.5px',
+                        fontWeight: 700,
+                        cursor: 'pointer',
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: '4px',
+                        transition: 'all 0.12s ease'
+                      }}
+                      title="تعديل بيانات وصور التمرين"
+                    >
+                      <Edit3 size={11} />
+                      <span>تعديل</span>
+                    </button>
+
+                    {/* Copy Cue Button */}
                     <button
                       type="button"
                       onClick={() => handleCopy(drill.cue_ar, drill.id)}
@@ -400,6 +586,8 @@ export default function MobilityLibrary() {
                       {copiedId === drill.id ? <Check size={11} color="#16A34A" /> : <Copy size={11} />}
                       <span>{copiedId === drill.id ? 'تم' : 'نسخ'}</span>
                     </button>
+
+                    {/* Video Button */}
                     {drill.video_url && (
                       <button
                         type="button"
@@ -428,6 +616,308 @@ export default function MobilityLibrary() {
             );
           })}
         </div>
+
+        {/* Edit Drill Modal */}
+        {editingDrill && (
+          <div style={{
+            position: 'fixed',
+            inset: 0,
+            background: 'rgba(15, 23, 42, 0.55)',
+            backdropFilter: 'blur(3px)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            zIndex: 9999,
+            padding: '16px'
+          }} dir="rtl">
+            <div style={{
+              background: '#FFFFFF',
+              borderRadius: '12px',
+              width: '100%',
+              maxWidth: '560px',
+              boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.2)',
+              overflow: 'hidden',
+              display: 'flex',
+              flexDirection: 'column',
+              maxHeight: '90vh'
+            }}>
+              
+              {/* Header */}
+              <div style={{
+                padding: '14px 18px',
+                borderBottom: '1px solid #E2E8F0',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                background: '#F8FAFC'
+              }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <div style={{ width: '28px', height: '28px', borderRadius: '6px', background: '#0F172A', color: '#FFFFFF', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    <Edit3 size={14} />
+                  </div>
+                  <div>
+                    <h3 style={{ margin: 0, fontSize: '13.5px', fontWeight: 800, color: '#0F172A' }}>تعديل بيانات وصور التمرين</h3>
+                    <small style={{ fontSize: '11px', color: '#64748B' }}>تعديل الاسم، التوجيه الحركي، أو تغيير الصور من جهازك</small>
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setEditingDrill(null)}
+                  style={{ border: 'none', background: 'transparent', cursor: 'pointer', color: '#64748B', padding: '4px' }}
+                >
+                  <X size={16} />
+                </button>
+              </div>
+
+              {/* Invariant Engine ID Banner */}
+              <div style={{
+                background: '#EFF6FF',
+                borderBottom: '1px solid #DBEAFE',
+                padding: '8px 18px',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px',
+                fontSize: '11px',
+                color: '#1E40AF'
+              }}>
+                <Lock size={12} color="#1E40AF" />
+                <span>
+                  المعرف البرمجي للمحرك: <strong style={{ fontFamily: 'monospace', fontWeight: 800, background: '#DBEAFE', padding: '2px 6px', borderRadius: '4px' }}>{editingDrill.id}</strong> (محمي وثابت لضمان تطابق الخطط للمشتركين)
+                </span>
+              </div>
+
+              {/* Form Body */}
+              <form onSubmit={handleSaveEditedDrill} style={{ padding: '16px 18px', overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                
+                {/* Names */}
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
+                  <div>
+                    <label style={{ display: 'block', fontSize: '11px', fontWeight: 700, color: '#334155', marginBottom: '4px' }}>
+                      اسم التمرين بالعربي *
+                    </label>
+                    <input
+                      type="text"
+                      required
+                      value={editFormData.name_ar}
+                      onChange={(e) => setEditFormData({ ...editFormData, name_ar: e.target.value })}
+                      style={{ width: '100%', height: '34px', borderRadius: '6px', border: '1px solid #CBD5E1', padding: '0 10px', fontSize: '12px', outline: 'none', boxSizing: 'border-box' }}
+                    />
+                  </div>
+                  <div>
+                    <label style={{ display: 'block', fontSize: '11px', fontWeight: 700, color: '#334155', marginBottom: '4px' }}>
+                      الاسم بالإنجليزي
+                    </label>
+                    <input
+                      type="text"
+                      value={editFormData.name_en}
+                      onChange={(e) => setEditFormData({ ...editFormData, name_en: e.target.value })}
+                      style={{ width: '100%', height: '34px', borderRadius: '6px', border: '1px solid #CBD5E1', padding: '0 10px', fontSize: '12px', outline: 'none', boxSizing: 'border-box' }}
+                    />
+                  </div>
+                </div>
+
+                {/* Category & Equipment */}
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
+                  <div>
+                    <label style={{ display: 'block', fontSize: '11px', fontWeight: 700, color: '#334155', marginBottom: '4px' }}>
+                      القسم
+                    </label>
+                    <select
+                      value={editFormData.category}
+                      onChange={(e) => setEditFormData({ ...editFormData, category: e.target.value })}
+                      style={{ width: '100%', height: '34px', borderRadius: '6px', border: '1px solid #CBD5E1', padding: '0 8px', fontSize: '11.5px', fontWeight: 700, color: '#0F172A', background: '#FFFFFF', outline: 'none', boxSizing: 'border-box' }}
+                    >
+                      <option value="CARDIO_MODALITY">أنظمة الكارديو</option>
+                      <option value="DYNAMIC_WARMUP">إحماء ومرونة ديناميكية</option>
+                      <option value="STATIC_STRETCH">إطالة استشفائية ثابتة</option>
+                      <option value="POSTURAL_PREHAB">تصحيح قوام</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label style={{ display: 'block', fontSize: '11px', fontWeight: 700, color: '#334155', marginBottom: '4px' }}>
+                      الأداة / الجهاز
+                    </label>
+                    <input
+                      type="text"
+                      value={editFormData.equipment}
+                      onChange={(e) => setEditFormData({ ...editFormData, equipment: e.target.value })}
+                      style={{ width: '100%', height: '34px', borderRadius: '6px', border: '1px solid #CBD5E1', padding: '0 10px', fontSize: '12px', outline: 'none', boxSizing: 'border-box' }}
+                    />
+                  </div>
+                </div>
+
+                {/* Target Area */}
+                <div>
+                  <label style={{ display: 'block', fontSize: '11px', fontWeight: 700, color: '#334155', marginBottom: '4px' }}>
+                    المنطقة المستهدفة والتأثير
+                  </label>
+                  <input
+                    type="text"
+                    value={editFormData.target_area_ar}
+                    onChange={(e) => setEditFormData({ ...editFormData, target_area_ar: e.target.value })}
+                    style={{ width: '100%', height: '34px', borderRadius: '6px', border: '1px solid #CBD5E1', padding: '0 10px', fontSize: '12px', outline: 'none', boxSizing: 'border-box' }}
+                  />
+                </div>
+
+                {/* Technique Cue */}
+                <div>
+                  <label style={{ display: 'block', fontSize: '11px', fontWeight: 700, color: '#334155', marginBottom: '4px' }}>
+                    توجيه الأداء السليم (Coaching Cue)
+                  </label>
+                  <textarea
+                    rows={2}
+                    value={editFormData.cue_ar}
+                    onChange={(e) => setEditFormData({ ...editFormData, cue_ar: e.target.value })}
+                    style={{ width: '100%', borderRadius: '6px', border: '1px solid #CBD5E1', padding: '8px 10px', fontSize: '12px', outline: 'none', boxSizing: 'border-box', fontFamily: 'Cairo, sans-serif' }}
+                  />
+                </div>
+
+                {/* Video URL */}
+                <div>
+                  <label style={{ display: 'block', fontSize: '11px', fontWeight: 700, color: '#334155', marginBottom: '4px' }}>
+                    رابط فيديو الشرح (YouTube أو فيديو مباشر)
+                  </label>
+                  <input
+                    type="url"
+                    placeholder="https://..."
+                    value={editFormData.video_url}
+                    onChange={(e) => setEditFormData({ ...editFormData, video_url: e.target.value })}
+                    style={{ width: '100%', height: '34px', borderRadius: '6px', border: '1px solid #CBD5E1', padding: '0 10px', fontSize: '12px', outline: 'none', boxSizing: 'border-box' }}
+                  />
+                </div>
+
+                {/* Dual Image Thumbnails Settings & Preview */}
+                <div style={{ background: '#F8FAFC', padding: '12px', borderRadius: '8px', border: '1px solid #E2E8F0' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+                    <div>
+                      <div style={{ fontSize: '12px', fontWeight: 800, color: '#0F172A' }}>
+                        صور أداء التمرين (البداية والنهاية)
+                      </div>
+                      <div style={{ fontSize: '10px', color: '#64748B', marginTop: '1px' }}>
+                        المسار في جهازك: <code style={{ background: '#E2E8F0', padding: '1px 4px', borderRadius: '3px', color: '#0F172A', fontSize: '9.5px' }}>D:zccrontendpublicexercises{editingDrill.id}</code>
+                      </div>
+                    </div>
+                    
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setEditFormData({
+                          ...editFormData,
+                          image_stretch: editFormData.image_contraction,
+                          image_contraction: editFormData.image_stretch
+                        });
+                      }}
+                      style={{
+                        padding: '3px 8px',
+                        borderRadius: '4px',
+                        border: '1px solid #CBD5E1',
+                        background: '#FFFFFF',
+                        fontSize: '11px',
+                        fontWeight: 700,
+                        color: '#0284C7',
+                        cursor: 'pointer',
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: '4px'
+                      }}
+                      title="تبديل صورتي البداية والنهاية"
+                    >
+                      <ArrowRightLeft size={12} />
+                      <span>عكس الترتيب</span>
+                    </button>
+                  </div>
+                  
+                  {/* Live Preview with Upload Triggers */}
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px', marginBottom: '10px' }}>
+                    {/* Image 1: Start Position */}
+                    <div style={{ border: '1px solid #CBD5E1', borderRadius: '12px', overflow: 'hidden', background: '#FFFFFF', padding: '8px', display: 'flex', flexDirection: 'column', gap: '6px', boxShadow: '0 1px 3px rgba(15, 23, 42, 0.04)' }}>
+                      <div style={{ height: '120px', background: '#F8FAFC', borderRadius: '10px', overflow: 'hidden', display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative' }}>
+                        {editFormData.image_stretch ? (
+                          <img src={editFormData.image_stretch} alt="بداية" style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: '9px' }} />
+                        ) : (
+                          <span style={{ fontSize: '10px', color: '#94A3B8' }}>لا توجد صورة</span>
+                        )}
+                        <span style={{ position: 'absolute', bottom: '4px', right: '4px', background: 'rgba(15, 23, 42, 0.85)', color: '#FFF', fontSize: '9px', fontWeight: 700, padding: '2px 6px', borderRadius: '4px' }}>
+                          1. وضع البداية (0.jpg)
+                        </span>
+                      </div>
+
+                      <label style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '5px', background: '#0F172A', color: '#FFFFFF', borderRadius: '6px', padding: '5px', fontSize: '11px', fontWeight: 700, cursor: 'pointer' }}>
+                        <Upload size={12} />
+                        <span>اختيار صورة من جهازك</span>
+                        <input
+                          type="file"
+                          accept="image/*"
+                          style={{ display: 'none' }}
+                          onChange={(e) => handleUploadImageFile(e, 0)}
+                        />
+                      </label>
+
+                      <input
+                        type="text"
+                        placeholder="أو ضع مسار / رابط صورة البداية"
+                        value={editFormData.image_stretch}
+                        onChange={(e) => setEditFormData({ ...editFormData, image_stretch: e.target.value })}
+                        style={{ width: '100%', height: '26px', borderRadius: '6px', border: '1px solid #E2E8F0', padding: '0 8px', fontSize: '10px', outline: 'none', boxSizing: 'border-box' }}
+                      />
+                    </div>
+
+                    {/* Image 2: Contraction Position */}
+                    <div style={{ border: '1px solid #CBD5E1', borderRadius: '12px', overflow: 'hidden', background: '#FFFFFF', padding: '8px', display: 'flex', flexDirection: 'column', gap: '6px', boxShadow: '0 1px 3px rgba(15, 23, 42, 0.04)' }}>
+                      <div style={{ height: '120px', background: '#F8FAFC', borderRadius: '10px', overflow: 'hidden', display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative' }}>
+                        {editFormData.image_contraction ? (
+                          <img src={editFormData.image_contraction} alt="أداء" style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: '9px' }} />
+                        ) : (
+                          <span style={{ fontSize: '10px', color: '#94A3B8' }}>لا توجد صورة</span>
+                        )}
+                        <span style={{ position: 'absolute', bottom: '4px', right: '4px', background: 'rgba(15, 23, 42, 0.85)', color: '#FFF', fontSize: '9px', fontWeight: 700, padding: '2px 6px', borderRadius: '4px' }}>
+                          2. وضع الأداء (1.jpg)
+                        </span>
+                      </div>
+
+                      <label style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '5px', background: '#0F172A', color: '#FFFFFF', borderRadius: '6px', padding: '5px', fontSize: '11px', fontWeight: 700, cursor: 'pointer' }}>
+                        <Upload size={12} />
+                        <span>اختيار صورة من جهازك</span>
+                        <input
+                          type="file"
+                          accept="image/*"
+                          style={{ display: 'none' }}
+                          onChange={(e) => handleUploadImageFile(e, 1)}
+                        />
+                      </label>
+
+                      <input
+                        type="text"
+                        placeholder="أو ضع مسار / رابط صورة الأداء"
+                        value={editFormData.image_contraction}
+                        onChange={(e) => setEditFormData({ ...editFormData, image_contraction: e.target.value })}
+                        style={{ width: '100%', height: '26px', borderRadius: '6px', border: '1px solid #E2E8F0', padding: '0 8px', fontSize: '10px', outline: 'none', boxSizing: 'border-box' }}
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                {/* Submit & Actions */}
+                <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px', marginTop: '4px' }}>
+                  <button
+                    type="button"
+                    onClick={() => setEditingDrill(null)}
+                    style={{ padding: '7px 16px', borderRadius: '6px', background: '#F1F5F9', border: '1px solid #CBD5E1', color: '#475569', fontSize: '11.5px', fontWeight: 700, cursor: 'pointer' }}
+                  >
+                    إلغاء
+                  </button>
+                  <button
+                    type="submit"
+                    disabled={savingEditDrill}
+                    style={{ padding: '7px 20px', borderRadius: '6px', background: '#0F172A', border: 'none', color: '#FFFFFF', fontSize: '11.5px', fontWeight: 700, cursor: 'pointer' }}
+                  >
+                    {savingEditDrill ? 'جاري الحفظ...' : 'حفظ التعديلات'}
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        )}
 
         {/* Add Drill Modal */}
         {isAddModalOpen && (

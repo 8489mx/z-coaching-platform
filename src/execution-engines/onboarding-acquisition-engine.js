@@ -7,7 +7,7 @@ export const SUPPORTED_PACKAGES = {
   MAX_3_PLUS_1: {
     code: 'MAX_3_PLUS_1',
     id: 'MAX_3_PLUS_1',
-    name_ar: 'باقة ماكس للتحول الشامل (Max 3+1)',
+    name_ar: 'باقة MAX للتحول الشامل (Max 3+1)',
     tier: 'MAX',
     duration_months: 4,
     price_egp: 2800,
@@ -22,13 +22,13 @@ export const SUPPORTED_PACKAGES = {
     duration_months: 4,
     price_egp: 3500,
     price_usd: 120,
-    features: ['متابعة VIP وتدريب شخصي مخصص', 'تعديل فوري للماكروز', 'تحليل حركي متقدم']
+    features: ['متابعة وتدريب شخصي مخصص', 'تعديل فوري للماكروز', 'تحليل حركي متقدم']
   },
-  TRANSFORMATION_VIP: {
-    code: 'TRANSFORMATION_VIP',
-    id: 'TRANSFORMATION_VIP',
-    name_ar: 'الباقة البلاتينية للتحول الشامل (VIP Transformation)',
-    tier: 'VIP',
+  TRANSFORMATION_MAX: {
+    code: 'TRANSFORMATION_MAX',
+    id: 'TRANSFORMATION_MAX',
+    name_ar: 'الباقة البلاتينية للتحول الشامل (MAX Transformation)',
+    tier: 'MAX',
     duration_months: 3,
     price_egp: 2800,
     price_usd: 95,

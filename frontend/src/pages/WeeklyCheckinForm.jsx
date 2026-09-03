@@ -1,9 +1,11 @@
 import React, { useState } from 'react';
 import { Camera, Scale, Battery, Moon, Utensils, ChevronLeft, ChevronRight, CheckCircle2, Loader2, Activity } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
+import { API_BASE } from '../config/api';
 
 export default function WeeklyCheckinForm() {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const [step, setStep] = useState(1);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState('');
@@ -26,7 +28,8 @@ export default function WeeklyCheckinForm() {
     setError('');
     
     try {
-      const clientCode = localStorage.getItem('kz_client_code') || 'guest';
+      const qCode = searchParams.get('code') || searchParams.get('user_id') || '';
+      const clientCode = qCode.trim() || localStorage.getItem('kz_client_code') || sessionStorage.getItem('z_client_code') || 'guest';
       const payload = {
         user_id: clientCode,
         weight_kg: formData.weight_kg,
@@ -37,7 +40,7 @@ export default function WeeklyCheckinForm() {
         client_notes: formData.client_notes
       };
 
-      const res = await fetch('/api/v1/checkin', {
+      const res = await fetch(`${API_BASE}/api/v1/checkin`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload)
@@ -103,7 +106,7 @@ export default function WeeklyCheckinForm() {
             </div>
           </div>
 
-          <div style={{ fontSize: '11.5px', fontWeight: 700, color: '#0284C7', background: '#F0F9FF', border: '1px solid #BAE6FD', padding: '3px 10px', borderRadius: '6px' }}>
+          <div style={{ fontSize: '11.5px', fontWeight: 700, color: '#0284C7', background: '#F8FAFC', border: '1px solid #E2E8F0', padding: '3px 10px', borderRadius: '6px' }}>
             خطوة {step} من 3
           </div>
         </div>
@@ -139,7 +142,7 @@ export default function WeeklyCheckinForm() {
         </div>
 
         {error && (
-          <div style={{ background: '#FEF2F2', border: '1px solid #FECACA', color: '#DC2626', padding: '10px 14px', borderRadius: '8px', fontSize: '12px', fontWeight: 700, textAlign: 'center' }}>
+          <div style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', color: '#DC2626', padding: '10px 14px', borderRadius: '8px', fontSize: '12px', fontWeight: 700, textAlign: 'center' }}>
             {error}
           </div>
         )}
@@ -413,7 +416,7 @@ export default function WeeklyCheckinForm() {
         {/* STEP 4: Success */}
         {step === 4 && (
           <div style={{ background: '#FFFFFF', border: '1px solid #E2E8F0', borderRadius: '12px', padding: '36px 20px', textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '14px', boxShadow: '0 4px 20px rgba(15, 23, 42, 0.05)' }}>
-            <div style={{ width: '56px', height: '56px', borderRadius: '50%', background: '#F0FDF4', border: '1px solid #BBF7D0', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#16A34A' }}>
+            <div style={{ width: '56px', height: '56px', borderRadius: '50%', background: '#F8FAFC', border: '1px solid #E2E8F0', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#16A34A' }}>
               <CheckCircle2 size={32} />
             </div>
             <h2 style={{ margin: 0, fontSize: '18px', fontWeight: 800, color: '#0F172A' }}>تم إرسال التقييم الأسبوعي بنجاح</h2>

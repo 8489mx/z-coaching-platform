@@ -42,20 +42,25 @@ export const loginFast = async (req, res) => {
     }
 
     const cleanCode = String(client_code).trim().replace(/^#+/, '').replace(/^client[-_]?/i, '');
-    const cleanPhone = String(phone_number).trim();
+    const cleanPhoneDigits = String(phone_number).replace(/\D/g, '');
 
-    // Query user by client_code or id and matching phone
-    const user = await User.findOne({ 
-      where: { 
-        client_code: cleanCode,
-        phone_number: cleanPhone
-      } 
-    }) || await User.findOne({ 
-      where: { 
-        id: isNaN(parseInt(cleanCode, 10)) ? 0 : parseInt(cleanCode, 10),
-        phone_number: cleanPhone
-      } 
-    });
+    // Query user by client_code or id
+    let user = await User.findOne({ where: { client_code: cleanCode } }) || 
+               await User.findOne({ where: { id: isNaN(parseInt(cleanCode, 10)) ? 0 : parseInt(cleanCode, 10) } });
+
+    if (user) {
+      const userPhoneDigits = String(user.phone_number || '').replace(/\D/g, '');
+      const isPhoneMatch = (
+        user.phone_number === phone_number.trim() ||
+        userPhoneDigits === cleanPhoneDigits ||
+        (cleanPhoneDigits.length >= 8 && userPhoneDigits.endsWith(cleanPhoneDigits.slice(-8))) ||
+        (userPhoneDigits.length >= 8 && cleanPhoneDigits.endsWith(userPhoneDigits.slice(-8)))
+      );
+
+      if (!isPhoneMatch) {
+        user = null;
+      }
+    }
     
     if (!user) {
       await recordFailedAttempt(ip, client_code);

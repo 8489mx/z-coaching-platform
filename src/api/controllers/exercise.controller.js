@@ -337,3 +337,56 @@ export const swapProgramExerciseHandler = async (req, res) => {
   }
 };
 
+
+import fsUploadSync from 'fs';
+import pathUpload from 'path';
+import { fileURLToPath as fu2p } from 'url';
+
+export const uploadExerciseImage = async (req, res) => {
+  try {
+    const { exercise_id, image_index, image_base64 } = req.body;
+    
+    if (!exercise_id || image_index === undefined || !image_base64) {
+      return res.status(400).json({ success: false, error: "Missing required fields" });
+    }
+
+    const safeExId = String(exercise_id).replace(/[^a-zA-Z0-9_-]/g, "");
+    const safeIndex = parseInt(image_index, 10);
+    if (!safeExId || isNaN(safeIndex) || safeIndex < 0 || safeIndex > 10) {
+      return res.status(400).json({ success: false, error: "Invalid parameters" });
+    }
+
+    const base64Data = image_base64.replace(/^data:image\/\w+;base64,/, "");
+    if (base64Data.length > 5 * 1024 * 1024) {
+      return res.status(400).json({ success: false, error: "Image size exceeds 5MB limit" });
+    }
+    const buffer = Buffer.from(base64Data, 'base64');
+    
+    const currDir = pathUpload.dirname(fu2p(import.meta.url));
+    const basePublicPath = pathUpload.resolve(currDir, '../../../frontend/public/exercises');
+    const publicExercisesDir = pathUpload.resolve(basePublicPath, safeExId);
+    
+    if (!publicExercisesDir.startsWith(basePublicPath)) {
+      return res.status(403).json({ success: false, error: "Access denied" });
+    }
+
+    if (!fsUploadSync.existsSync(publicExercisesDir)) {
+      fsUploadSync.mkdirSync(publicExercisesDir, { recursive: true });
+    }
+    
+    const filePath = pathUpload.resolve(publicExercisesDir, `${safeIndex}.jpg`);
+    if (!filePath.startsWith(publicExercisesDir)) {
+      return res.status(403).json({ success: false, error: "Access denied" });
+    }
+
+    fsUploadSync.writeFileSync(filePath, buffer);
+    
+    return res.status(200).json({ 
+      success: true, 
+      imageUrl: `/exercises/${safeExId}/${safeIndex}.jpg?ts=${Date.now()}` 
+    });
+  } catch (err) {
+    console.error("uploadExerciseImage error:", err);
+    return res.status(500).json({ success: false, error: "فشل حفظ الصورة" });
+  }
+};

@@ -70,7 +70,7 @@ export function GlobalAppToolbar() {
               <span aria-hidden="true">⌕</span>
               <span style={{ flex: 1, textAlign: 'right', color: 'var(--text-muted)' }}>ابحث في أي مكان...</span>
               <div className="purchase-prototype-search-shortcut" dir="ltr">
-                <kbd>Ctrl</kbd> + <kbd>/</kbd>
+                
               </div>
             </button>
           </div>

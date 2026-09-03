@@ -3,13 +3,7 @@ import { useQuery } from '@tanstack/react-query';
 import { queryKeys } from '@/app/query-keys';
 import { settingsApi } from '@/features/settings/api/settings.api';
 import { useAuthStore } from '@/stores/auth-store';
-import {
-  applyDocumentLanguage,
-  getStoredUiLanguage,
-  normalizeUiLanguage,
-  persistUiLanguage,
-  type UiLanguage,
-} from '@/shared/locale/locale-preference';
+import { applyDocumentLanguage, getStoredUiLanguage, normalizeUiLanguage, persistUiLanguage, type UiLanguage } from '@/shared/locale/locale-preference';
 
 type LocaleContextValue = {
   language: UiLanguage;

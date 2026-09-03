@@ -562,7 +562,7 @@ const PACKAGES_FILE = path.join(SETTINGS_DIR, 'subscription_packages.json');
 const DEFAULT_PACKAGES = [
   {
     id: "MAX_4M",
-    name_ar: "باقة ماكس (4 شهور)",
+    name_ar: "باقة MAX (4 شهور)",
     name_en: "MAX (4 Months)",
     badge_ar: "4 شهور",
     duration_months: 4,
@@ -581,7 +581,7 @@ const DEFAULT_PACKAGES = [
   },
   {
     id: "MAX_6M",
-    name_ar: "باقة ماكس (6 شهور)",
+    name_ar: "باقة MAX (6 شهور)",
     name_en: "MAX (6 Months)",
     badge_ar: "6 شهور",
     duration_months: 6,
@@ -608,7 +608,7 @@ const DEFAULT_PACKAGES = [
     total_months: 4,
     price_egp: 3800,
     features: [
-      "متابعة VIP وتدريب شخصي مخصص",
+      "متابعة وتدريب شخصي مخصص",
       "تعديل فوري للماكروز والدايت",
       "تحليل حركي متقدم وبروتوكول استشفاء",
       "دعم سريري وإصابات كامل"
@@ -627,7 +627,7 @@ const DEFAULT_PACKAGES = [
     total_months: 6,
     price_egp: 5800,
     features: [
-      "متابعة VIP وتدريب شخصي مخصص",
+      "متابعة وتدريب شخصي مخصص",
       "تعديل فوري للماكروز والدايت",
       "تحليل حركي متقدم وبروتوكول استشفاء",
       "دعم سريري وإصابات كامل"

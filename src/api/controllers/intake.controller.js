@@ -147,16 +147,17 @@ function generateAiRationaleAudit(intakePayload, masterProgram) {
 // 0. Fetch existing intake draft or submitted status for client
 export const getClientIntakeDraft = async (req, res) => {
   try {
-    const { code, phone } = req.query;
-    const clientCode = (code || "").trim();
-    const clientPhone = (phone || "").trim();
+    const rawCode = req.query.code || req.query.client_code || "";
+    const rawPhone = req.query.phone || req.query.phone_number || "";
+    const clientCode = String(rawCode).replace(/^#+/, '').trim();
+    const clientPhone = String(rawPhone).trim();
 
     if (!clientCode && !clientPhone) {
       return res.status(200).json({ user: null, submission: null });
     }
 
     let user = null;
-    if (clientCode && clientCode !== "COACH-KIMO") {
+    if (clientCode) {
       user = await User.findOne({ where: { client_code: clientCode, role: 'CLIENT' } });
     }
     if (!user && clientPhone) {
@@ -202,14 +203,16 @@ export const getClientIntakeDraft = async (req, res) => {
 // 1. Client saves in-progress draft (Auto-save)
 export const saveDraftIntake = async (req, res) => {
   try {
-    const { client_code, phone_number, full_name, progress_percent = 50, ...intakePayload } = req.body;
-    const rawPhone = phone_number || intakePayload.personal?.phone || "";
+    const { client_code, code, phone_number, phone, full_name, progress_percent = 50, ...intakePayload } = req.body;
+    const rawCode = client_code || code || "";
+    const cleanClientCode = String(rawCode).replace(/^#+/, '').trim();
+    const rawPhone = phone_number || phone || intakePayload.personal?.phone || "";
     const cleanPhone = rawPhone.trim() && rawPhone !== "01000000000" ? rawPhone.trim() : null;
     const name = full_name || `${intakePayload.personal?.firstName || ""} ${intakePayload.personal?.lastName || ""}`.trim() || "متدرب جديد (قيد التعبئة)";
 
     let user = null;
-    if (client_code && client_code !== "COACH-KIMO") {
-      user = await User.findOne({ where: { client_code, role: 'CLIENT' } });
+    if (cleanClientCode) {
+      user = await User.findOne({ where: { client_code: cleanClientCode, role: 'CLIENT' } });
     }
     if (!user && cleanPhone) {
       user = await User.findOne({ where: { phone_number: cleanPhone, role: 'CLIENT' } });
@@ -280,14 +283,16 @@ export const saveDraftIntake = async (req, res) => {
 // 2. Client completes and submits intake form publicly to coach review queue
 export const submitPublicIntake = async (req, res) => {
   try {
-    const { client_code, phone_number, full_name, ...intakePayload } = req.body;
-    const rawPhone = phone_number || intakePayload.personal?.phone || "";
+    const { client_code, code, phone_number, phone, full_name, ...intakePayload } = req.body;
+    const rawCode = client_code || code || "";
+    const cleanClientCode = String(rawCode).replace(/^#+/, '').trim();
+    const rawPhone = phone_number || phone || intakePayload.personal?.phone || "";
     const cleanPhone = rawPhone.trim() && rawPhone !== "01000000000" ? rawPhone.trim() : null;
     const name = full_name || `${intakePayload.personal?.firstName || ""} ${intakePayload.personal?.lastName || ""}`.trim() || "متدرب جديد";
 
     let user = null;
-    if (client_code && client_code !== "COACH-KIMO") {
-      user = await User.findOne({ where: { client_code, role: 'CLIENT' } });
+    if (cleanClientCode) {
+      user = await User.findOne({ where: { client_code: cleanClientCode, role: 'CLIENT' } });
     }
     if (!user && cleanPhone) {
       user = await User.findOne({ where: { phone_number: cleanPhone, role: 'CLIENT' } });
@@ -340,7 +345,7 @@ export const submitPublicIntake = async (req, res) => {
     }
 
     return res.status(201).json({
-      message: "تم استلام استمارتك بنجاح وإرسالها إلى كابتن كيمو للمراجعة وتصميم الخطة المخصصة",
+      message: "تم استلام استمارتك بنجاح وإرسالها إلى كابتن كريم زكريا للمراجعة وتصميم الخطة المخصصة",
       client_code: user.client_code,
       user_id: user.id,
       submission_id: submission.id,
@@ -395,7 +400,7 @@ export const verifyIntakePayment = async (req, res) => {
     if (user) {
       user.payment_status = "PAID";
       user.payment_method = payment_method || "INSTAPAY";
-      user.subscription_package = subscription_package || "3_MONTHS_VIP";
+      user.subscription_package = subscription_package || "3_MONTHS_MAX";
       user.subscription_price = Number(subscription_price) || 2500;
       user.subscription_start_date = startDate;
       user.subscription_end_date = endDate;

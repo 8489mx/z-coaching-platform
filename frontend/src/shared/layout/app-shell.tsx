@@ -18,12 +18,7 @@ import { TrialStatusBanner } from '@/shared/system/trial-status-banner';
 import { ImpersonationBanner } from '@/shared/system/impersonation-banner';
 import { DeveloperActivationPanel } from '@/shared/system/DeveloperActivationPanel';
 import { useOfflineUpdateCheck } from '@/features/updates/hooks/useOfflineUpdateCheck';
-import {
-  POS_SHELL_VISIBILITY_KEY,
-  POS_TOGGLE_CHROME_EVENT,
-  POS_TOGGLE_FULLSCREEN_EVENT,
-  readPosShellPreference,
-} from '@/features/pos/lib/pos-shell';
+import { POS_SHELL_VISIBILITY_KEY, POS_TOGGLE_CHROME_EVENT, POS_TOGGLE_FULLSCREEN_EVENT, readPosShellPreference } from '@/features/pos/lib/pos-shell';
 import { QuickAttendanceShortcut } from '@/shared/layout/quick-attendance-shortcut';
 import { GlobalAppToolbar } from '@/shared/layout/GlobalAppToolbar';
 import { useToolbarStore } from '@/stores/toolbar-store';
@@ -752,7 +747,7 @@ export function AppShell({ children }: PropsWithChildren) {
               <button 
                 type="button" 
                 className="sidebar-search-icon-btn" 
-                data-tooltip={isSidebarCollapsed ? "البحث السريع (Ctrl + K)" : undefined}
+                data-tooltip={isSidebarCollapsed ? "البحث السريع" : undefined}
                 title={isSidebarSearchOpen ? 'بحث' : (isSidebarCollapsed ? undefined : 'بحث سريع في القوائم والتابات')}
                 onClick={(e) => {
                   if (!isSidebarSearchOpen) {

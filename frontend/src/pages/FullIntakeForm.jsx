@@ -1,28 +1,6 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { 
-  Check, 
-  ChevronLeft, 
-  ChevronRight, 
-  Ruler, 
-  Lock, 
-  Camera, 
-  CheckCircle2, 
-  Activity, 
-  HeartPulse, 
-  Utensils, 
-  Dumbbell, 
-  Sparkles, 
-  RotateCw, 
-  User, 
-  Scale, 
-  ShieldAlert, 
-  MessageCircle,
-  AlertCircle,
-  FileCheck2,
-  Info,
-  RefreshCcw
-} from 'lucide-react';
+import { Check, ChevronLeft, ChevronRight, Ruler, Lock, Camera, CheckCircle2, Activity, HeartPulse, Utensils, Dumbbell, Sparkles, RotateCw, User, Scale, ShieldAlert, MessageCircle, AlertCircle, FileCheck2, Info, RefreshCcw } from 'lucide-react';
 import { API_BASE } from '../config/api';
 import { getStoredCoachConfig } from '../utils/themeAndCoachConfig';
 
@@ -80,6 +58,11 @@ const DEFAULT_MASTER_INTAKE = {
   meal_structure: {
     meals_count: '3_meals_snack',
     intermittent_fasting: 'none'
+  },
+  sleep_schedule: {
+    pattern: 'regular_night', // 'regular_night' | 'rotating_shifts' | 'night_shift' | 'irregular'
+    average_hours: '7_8',
+    bedtime_hour: '23:00'
   },
   disliked_foods: [],
   disliked_foods_text: '',
@@ -169,7 +152,7 @@ export default function FullIntakeForm() {
   const fetchInitialData = async (code, phone) => {
     try {
       setLoadingDraft(true);
-      const res = await fetch(`${API_BASE}/api/v1/intake/answers?client_code=${encodeURIComponent(code)}&phone_number=${encodeURIComponent(phone)}`);
+      const res = await fetch(`${API_BASE}/api/v1/intake/client-draft?client_code=${encodeURIComponent(code)}&phone_number=${encodeURIComponent(phone)}`);
       const data = await res.json();
 
       if (data && data.submission) {
@@ -363,12 +346,12 @@ export default function FullIntakeForm() {
             </div>
             <div style={{ display: 'flex', justifyContent: 'space-between' }}>
               <span style={{ color: '#64748B' }}>توقيت الإرسال:</span>
-              <strong style={{ color: '#0F172A', fontFamily: 'JetBrains Mono, Cairo' }}>{new Date().toLocaleDateString('ar-EG')}</strong>
+              <strong style={{ color: '#0F172A', fontFamily: 'JetBrains Mono, Cairo' }}>{new Date().toLocaleDateString('en-US')}</strong>
             </div>
           </div>
 
           <a 
-            href={`https://wa.me/${(coachConfig?.supportWhatsapp || '201000000000').replace(/\D/g, '')}`} 
+            href={`https://wa.me/${(coachConfig?.whatsappNumber || coachConfig?.supportWhatsapp || '201001060503').replace(/\D/g, '')}`} 
             target="_blank" 
             rel="noreferrer"
             style={{ 
@@ -788,9 +771,9 @@ export default function FullIntakeForm() {
                 </label>
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '10px' }}>
                   {[
-                    { id: 'sedentary', title: 'خامل / عمل مكتبي', desc: 'أقل من 5,000 خطوة يومياً' },
-                    { id: 'moderate', title: 'متوسط النشاط', desc: 'من 6,000 إلى 9,000 خطوة يومياً' },
-                    { id: 'very_active', title: 'عالي النشاط / عمل ميداني', desc: 'أكثر من 10,000 خطوة يومياً' }
+                    { id: 'sedentary', title: 'خامل / عمل مكتبي', desc: 'جلوس معظم اليوم أمام الشاشات أو قيادة سيارة' },
+                    { id: 'moderate', title: 'متوسط النشاط', desc: 'حركة متقطعة ومشي أثناء اليوم والعمل' },
+                    { id: 'very_active', title: 'عالي النشاط / عمل ميداني', desc: 'مجهود بدني مستمر أو وقوف شاق طوال اليوم' }
                   ].map((act) => {
                     const isSelected = formData.neat_level === act.id;
                     return (
@@ -891,7 +874,7 @@ export default function FullIntakeForm() {
 
                 {/* Sub-bariatric Questions */}
                 {medSelected.includes('bariatric_surgery') && (
-                  <div style={{ background: '#F0F9FF', border: '1px solid #BAE6FD', borderRadius: '8px', padding: '12px 14px', marginBottom: '12px' }}>
+                  <div style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', borderRadius: '8px', padding: '12px 14px', marginBottom: '12px' }}>
                     <strong style={{ display: 'block', fontSize: '12px', color: '#0369A1', marginBottom: '8px', fontWeight: 800 }}>
                       تخصيص سعة الوجبات لمتكممي المعدة:
                     </strong>
@@ -1228,6 +1211,103 @@ export default function FullIntakeForm() {
                   })}
                 </div>
               </div>
+
+              {/* 5. Sleep Schedule & Shift Work Pattern */}
+              <div style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', borderRadius: '12px', padding: '16px', display: 'flex', flexDirection: 'column', gap: '14px' }}>
+                <div>
+                  <h6 style={{ fontWeight: 900, color: '#0F172A', fontSize: '13.5px', margin: '0 0 3px 0' }}>
+                    🌙 طبيعة النوم ونظام العمل (شفتات / ليلي)
+                  </h6>
+                  <p style={{ margin: 0, fontSize: '11px', color: '#64748B' }}>
+                    تساعدنا في ضبط مواعيد قطع الكافيين (قبل النوم بـ 6 ساعات) وتنظيم توزيع الوجبات.
+                  </p>
+                </div>
+
+                <div>
+                  <label style={{ display: 'block', fontSize: '11.5px', fontWeight: 800, color: '#0F172A', marginBottom: '6px' }}>
+                    نمط عملك ونومك المعتاد:
+                  </label>
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '8px' }}>
+                    {[
+                      { id: 'regular_night', title: 'نوم ليلي منتظم', desc: 'نوم بالليل واستيقاظ صباحاً' },
+                      { id: 'rotating_shifts', title: 'شفتات عمل متغيرة', desc: 'تغير أسبوعي بين صباحي وليلي' },
+                      { id: 'night_shift', title: 'شفت ليلي ثابت (سهر)', desc: 'عمل ليلي ونوم بالنهار' },
+                      { id: 'irregular', title: 'نوم غير منتظم / مضطرب', desc: 'مواعيد نوم عشوائية' }
+                    ].map((pattern) => {
+                      const isSelected = (formData.sleep_schedule?.pattern || 'regular_night') === pattern.id;
+                      return (
+                        <div
+                          key={pattern.id}
+                          onClick={() => setFormData(p => ({
+                            ...p,
+                            sleep_schedule: { ...(p.sleep_schedule || {}), pattern: pattern.id }
+                          }))}
+                          style={{
+                            padding: '10px 12px',
+                            borderRadius: '8px',
+                            border: isSelected ? '2px solid #0F172A' : '1px solid #E2E8F0',
+                            background: isSelected ? '#FFFFFF' : '#F8FAFC',
+                            cursor: 'pointer',
+                            display: 'flex',
+                            flexDirection: 'column',
+                            gap: '2px'
+                          }}
+                        >
+                          <strong style={{ fontSize: '11.5px', color: isSelected ? '#0F172A' : '#475569', fontWeight: 800 }}>
+                            {pattern.title}
+                          </strong>
+                          <span style={{ fontSize: '10px', color: '#64748B' }}>
+                            {pattern.desc}
+                          </span>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '12px' }}>
+                  <div>
+                    <label style={{ display: 'block', fontSize: '11.5px', fontWeight: 800, color: '#0F172A', marginBottom: '6px' }}>
+                      متوسط ساعات النوم اليومية:
+                    </label>
+                    <select
+                      value={formData.sleep_schedule?.average_hours || '7_8'}
+                      onChange={(e) => setFormData(p => ({
+                        ...p,
+                        sleep_schedule: { ...(p.sleep_schedule || {}), average_hours: e.target.value }
+                      }))}
+                      style={{ width: '100%', height: '36px', borderRadius: '6px', border: '1px solid #CBD5E1', padding: '0 10px', fontSize: '12px', background: '#FFFFFF', outline: 'none' }}
+                    >
+                      <option value="less_than_6">أقل من 6 ساعات (نوم قليل)</option>
+                      <option value="6_7">من 6 إلى 7 ساعات</option>
+                      <option value="7_8">من 7 إلى 8 ساعات (مثالي)</option>
+                      <option value="more_than_8">أكثر من 8 ساعات</option>
+                    </select>
+                  </div>
+
+                  <div>
+                    <label style={{ display: 'block', fontSize: '11.5px', fontWeight: 800, color: '#0F172A', marginBottom: '6px' }}>
+                      موعد النوم التقريبي (لحساب توقيت الكافيين):
+                    </label>
+                    <input
+                      type="time"
+                      value={formData.sleep_schedule?.bedtime_hour || '23:00'}
+                      onChange={(e) => setFormData(p => ({
+                        ...p,
+                        sleep_schedule: { ...(p.sleep_schedule || {}), bedtime_hour: e.target.value }
+                      }))}
+                      style={{ width: '100%', height: '36px', borderRadius: '6px', border: '1px solid #CBD5E1', padding: '0 10px', fontSize: '12px', background: '#FFFFFF', outline: 'none' }}
+                    />
+                  </div>
+                </div>
+
+                {(formData.sleep_schedule?.pattern === 'rotating_shifts' || formData.sleep_schedule?.pattern === 'night_shift') && (
+                  <div style={{ background: '#FFFBEB', border: '1px solid #FDE68A', borderRadius: '8px', padding: '8px 12px', fontSize: '11px', color: '#92400E', lineHeight: '1.4' }}>
+                    💡 <strong>توجيه بروتوكولي للشفتات:</strong> سيتم تفعيل مرونة دمج الوجبات في نافذة استيقاظك، مع قاعدة الكابتن الصارمة بقطع الكافيين قبل النوم بـ 6 ساعات أياً كان موعد نومك.
+                  </div>
+                )}
+              </div>
+
 
             </div>
           )}

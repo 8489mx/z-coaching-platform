@@ -1,3 +1,4 @@
+import { API_BASE } from '../config/api';
 import React, { useState } from 'react';
 import { saveWorkoutSetOffline } from '../utils/offline-sync';
 import { calculateWarmupLadder } from '../utils/warmupLadderEngine';
@@ -50,7 +51,7 @@ export default function BiomechanicalExerciseCard({
     setIsSyncing(true);
     try {
       if (typeof navigator !== 'undefined' && navigator.onLine) {
-        await fetch('/api/v1/workouts/evaluate-progression', {
+        await fetch(`${API_BASE}/api/v1/engines/training/evaluate-progression`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({

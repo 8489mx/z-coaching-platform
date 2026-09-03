@@ -1,26 +1,13 @@
+import { ClientCodeBadge, ClientPackageBadge, getClientTier } from '../utils/tierBadgeHelper';
 import React, { useState, useEffect } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
-import { 
-  Users, 
-  Clock, 
-  Hourglass, 
-  Plus, 
-  MessageCircle, 
-  CheckCircle2, 
-  ShieldAlert, 
-  Check,
-  ExternalLink,
-  Sparkles,
-  ClipboardList,
-  RefreshCw,
-  Loader2,
-  Search
-} from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { Users, Clock, Hourglass, Plus, MessageCircle, CheckCircle2, ShieldAlert, Check, ExternalLink, Sparkles, ClipboardList, RefreshCw, Loader2, Search, X } from 'lucide-react';
 import { API_BASE } from '../config/api';
 import AdminLayout from '../components/layout/AdminLayout';
 import NewClientQuickModal from '../components/modals/NewClientQuickModal';
 import { PageHeader } from '@/shared/components/page-header';
 import { FormSection } from '@/shared/components/form-section';
+import { getUpcomingFastingAlert } from '../utils/seasonalFastingRadar';
 
 // Smart 1-Click WhatsApp Pre-filled Message Generator
 export function getWhatsAppMessage(action) {
@@ -33,6 +20,9 @@ export function getWhatsAppMessage(action) {
   }
   if (action?.type === 'CHECKIN') {
     return encodeURIComponent(`${namePrefix}تم استلام تقييمك الأسبوعي بنجاح، وجاري الآن مراجعة القياسات والأداء وتحديث الخطة.`);
+  }
+  if (action?.type === 'INACTIVE') {
+    return encodeURIComponent(`${namePrefix}طمنا عليك يا وحش، لاحظنا غيابك عن تسجيل تمارينك بقالك كام يوم. لو محتاج أي تعديل أو واجهتك أي صعوبة في الخطة، أنا معاك خطوة بخطوة عشان نوصل لهدفك! 💪`);
   }
   if (action?.type === 'RENEWAL') {
     return encodeURIComponent(`${namePrefix}نود تذكيرك بأن اشتراكك في باقة ${cleanTier} قارب على الانتهاء. لتأكيد التجديد والاستمرار يرجى التواصل معنا.`);
@@ -99,7 +89,7 @@ export function getClientCountryInfo(phone = '', explicitCountry = '') {
 // Smart Package Badge Styler (Neutral Box, Colored Text)
 export function getPackageBadgeStyle(pkgStr = '') {
   const clean = String(pkgStr || '').trim().toUpperCase();
-  const isMax = clean.includes('MAX') || clean.includes('ماكس');
+  const isMax = getClientTier(tier) === 'MAX';
   
   return {
     label: isMax ? 'MAX' : 'ELITE',
@@ -123,7 +113,7 @@ export function formatTimeAgo(dateStr) {
     const diffDays = Math.floor(diffHours / 24);
     if (diffDays === 1) return 'أمس';
     if (diffDays < 7) return `منذ ${diffDays} أيام`;
-    return d.toLocaleDateString('ar-EG', { month: 'short', day: 'numeric' });
+    return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
   } catch (e) {
     return 'اليوم';
   }
@@ -135,6 +125,7 @@ export default function CoachCommandCenter() {
   const [isNewClientModalOpen, setIsNewClientModalOpen] = useState(false);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
+  const seasonalFastingInfo = React.useMemo(() => getUpcomingFastingAlert(), []);
 
   // Live Server Data
   const [overview, setOverview] = useState({
@@ -212,13 +203,13 @@ export default function CoachCommandCenter() {
       type: 'RENEWAL',
       clientName: c?.full_name || `مشترك #${cleanCode}`,
       country,
-      tier: c?.package || c?.package_code || 'MAX_4M',
+      tier: getClientTier(cleanCode || c),
       phone,
       timeAgo: formatTimeAgo(c?.created_at || c?.updated_at),
       summary: `متبقي ${c?.days_remaining || 0} أيام على نهاية باقة الاشتراك.`,
       suggestedAction: 'مراسلة المشترك لتجديد الاشتراك',
       badgeText: 'تجديد قريب',
-      actionUrl: `/subscriptions`
+      actionUrl: `/subscriptions?code=${cleanCode}`
     });
   });
 
@@ -237,13 +228,13 @@ export default function CoachCommandCenter() {
         hasInjury: isPlateau,
         clientName: chk?.user?.full_name || `مشترك #${cleanCode}`,
         country,
-        tier: chk?.user?.subscription_package || 'MAX_4M',
-        phone,
+        tier: getClientTier(cleanCode || chk),
+      phone,
         timeAgo: formatTimeAgo(chk?.created_at || chk?.updated_at),
         summary: isPlateau ? 'كشف ثبات وزن أيضي (Plateau) • مطلوب تعديل السعرات أو إضافة يوم Refeed.' : 'متابعة أسبوعية واردة بانتظار المراجعة والاعتماد.',
         suggestedAction: isPlateau ? 'مراجعة ثبات الوزن وتعديل الخطة' : 'مراجعة واعتماد التقييم الأسبوعي',
         badgeText: isPlateau ? 'ثبات وزن / تعديل' : 'متابعة واردة',
-        actionUrl: `/checkins/review?code=${cleanCode}`
+        actionUrl: `/coach/checkin-review?code=${cleanCode}`
       });
     }
   });
@@ -263,8 +254,8 @@ export default function CoachCommandCenter() {
         hasInjury,
         clientName: sub?.user?.full_name || sub?.full_name || `مشترك #${cleanCode}`,
         country,
-        tier: sub?.subscription_package || sub?.user?.subscription_package || 'ELITE_4M',
-        phone,
+        tier: getClientTier(cleanCode || sub),
+      phone,
         timeAgo: formatTimeAgo(sub?.created_at || sub?.submitted_at || sub?.user?.created_at),
         summary: hasInjury
           ? 'المشترك لديه إصابة / ألم مسجل • مطلوب استبعاد التمارين المجهدة وتجهيز الخطة.'
@@ -314,6 +305,15 @@ export default function CoachCommandCenter() {
       icon: Clock,
       onClick: () => setActiveTab('NEW_INTAKE'),
       tooltip: 'فلترة الاستمارات الجديدة'
+    },
+    { 
+      title: 'رادار الغياب (> 3 أيام)', 
+      value: inactiveCount.toString(), 
+      unit: 'مشترك',
+      label: inactiveCount > 0 ? 'يحتاجون تشجيع' : 'لا توجد حالات غياب', 
+      icon: Sparkles,
+      onClick: () => setActiveTab('INACTIVE'),
+      tooltip: 'فلترة المشتركين المتأخرين لتحفيزهم قبل التسرب'
     },
     { 
       title: 'تنبيهات الإصابات والشكاوى', 
@@ -482,6 +482,58 @@ export default function CoachCommandCenter() {
           })}
         </div>
 
+        {/* 30-Day Seasonal Fasting Radar Banner */}
+        {seasonalFastingInfo && (
+          <div style={{
+            background: '#0F172A',
+            border: '1px solid #C4952D',
+            borderRadius: '10px',
+            padding: '12px 16px',
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            gap: '12px',
+            boxShadow: '0 2px 10px rgba(196, 149, 45, 0.12)'
+          }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+              <div style={{ background: 'rgba(196, 149, 45, 0.15)', border: '1px solid rgba(196, 149, 45, 0.3)', borderRadius: '6px', padding: '6px', color: '#F59E0B' }}>
+                <Sparkles size={18} />
+              </div>
+              <div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <strong style={{ fontSize: '13px', color: '#F8FAFC' }}>
+                    رادار التقويم الموسمي: اقتراب {seasonalFastingInfo.name}
+                  </strong>
+                  <span style={{ fontSize: '11px', fontWeight: 800, background: 'rgba(196, 149, 45, 0.2)', color: '#FBBF24', padding: '1px 7px', borderRadius: '4px' }}>
+                    {seasonalFastingInfo.statusText}
+                  </span>
+                </div>
+                <span style={{ fontSize: '11.5px', color: '#94A3B8' }}>
+                  {seasonalFastingInfo.description} يمكنك استعراض المشتركين المسجلين لهذا الصيام وتكييف خططهم مسبقاً.
+                </span>
+              </div>
+            </div>
+
+            <button
+              type="button"
+              onClick={() => setSearchQuery('صيام')}
+              style={{
+                background: '#C4952D',
+                color: '#0F172A',
+                border: 'none',
+                borderRadius: '6px',
+                padding: '6px 12px',
+                fontSize: '11.5px',
+                fontWeight: 800,
+                cursor: 'pointer',
+                whiteSpace: 'nowrap'
+              }}
+            >
+              استعراض المشتركين الصائمين
+            </button>
+          </div>
+        )}
+
         {/* 3. Full-Width Unified Action Queue */}
         <div style={{ width: '100%' }}>
           <FormSection 
@@ -583,23 +635,7 @@ export default function CoachCommandCenter() {
                     >
                       {/* 1. Top Row: Client Details & Badges */}
                       <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
-                        {(() => {
-                          const isMax = String(action.tier || '').toUpperCase().includes('MAX') || String(action.tier || '').includes('ماكس');
-                          return (
-                            <span style={{ 
-                              fontFamily: 'JetBrains Mono, monospace', 
-                              fontWeight: 800, 
-                              fontSize: '11px', 
-                              background: '#F8FAFC', 
-                              border: '1px solid #E2E8F0', 
-                              color: isMax ? '#B45309' : '#0284C7', 
-                              padding: '2px 7px', 
-                              borderRadius: '4px' 
-                            }}>
-                              {'#' + action.clientCode}
-                            </span>
-                          );
-                        })()}
+                        <ClientCodeBadge code={action.clientCode} item={action} />
                         <strong style={{ fontSize: '13.5px', fontWeight: 800, color: '#0F172A' }}>
                           {action.clientName}
                         </strong>
@@ -608,23 +644,7 @@ export default function CoachCommandCenter() {
                             {action.country.name}
                           </span>
                         )}
-                        {(() => {
-                          const pkg = getPackageBadgeStyle(action.tier);
-                          return (
-                            <span style={{ 
-                              fontSize: '11px', 
-                              background: pkg.background, 
-                              border: pkg.border, 
-                              color: pkg.color, 
-                              padding: '1px 7px', 
-                              borderRadius: '4px', 
-                              fontWeight: 800,
-                              fontFamily: 'JetBrains Mono, Cairo, sans-serif'
-                            }}>
-                              {pkg.label}
-                            </span>
-                          );
-                        })()}
+                        <ClientPackageBadge item={action} />
                         <span style={{ fontSize: '10.5px', background: '#F8FAFC', border: '1px solid #E2E8F0', color: '#64748B', padding: '1px 6px', borderRadius: '4px', fontWeight: 700 }}>
                           {action.badgeText}
                         </span>
@@ -675,15 +695,14 @@ export default function CoachCommandCenter() {
                       <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginRight: 'auto' }}>
                         {action.phone && (
                           <a
-                            href={'https://wa.me/' + action.phone.replace(/\D/g, '') + '?text=' + getWhatsAppMessage(action)}
+                            href={'https://wa.me/' + ((action.phone.replace(/\D/g, '').startsWith('01')) ? ('2' + action.phone.replace(/\D/g, '')) : action.phone.replace(/\D/g, '')) + '?text=' + getWhatsAppMessage(action)}
                             target="_blank"
                             rel="noreferrer"
                             title="مراسلة عبر واتساب"
                             style={{
                               padding: '4px 10px',
                               borderRadius: '6px',
-                              border: '1px solid #86EFAC',
-                              background: '#F0FDF4',
+                              border: '1px solid #E2E8F0', background: 'transparent',
                               color: '#16A34A',
                               fontWeight: 700,
                               fontSize: '11.5px',
@@ -694,12 +713,12 @@ export default function CoachCommandCenter() {
                               transition: 'all 0.15s ease'
                             }}
                             onMouseEnter={(e) => {
-                              e.currentTarget.style.background = '#DCFCE7';
-                              e.currentTarget.style.borderColor = '#4ADE80';
+                              e.currentTarget.style.background = 'transparent';
+                              e.currentTarget.style.borderColor = '#BBF7D0';
                             }}
                             onMouseLeave={(e) => {
-                              e.currentTarget.style.background = '#F0FDF4';
-                              e.currentTarget.style.borderColor = '#86EFAC';
+                              e.currentTarget.style.background = 'transparent';
+                              e.currentTarget.style.borderColor = '#E2E8F0';
                             }}
                           >
                             <MessageCircle size={13} />

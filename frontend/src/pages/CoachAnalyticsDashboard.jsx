@@ -1,21 +1,7 @@
+import { API_BASE } from '../config/api';
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { 
-  BarChart3, 
-  TrendingUp, 
-  Users, 
-  AlertTriangle, 
-  Wallet, 
-  Activity, 
-  ChevronRight,
-  ArrowUpRight,
-  Loader2,
-  RefreshCcw,
-  Clock,
-  ShieldCheck,
-  MessageCircle,
-  CheckCircle2
-} from 'lucide-react';
+import { BarChart3, TrendingUp, Users, AlertTriangle, Wallet, Activity, ChevronRight, ArrowUpRight, Loader2, RefreshCcw, Clock, ShieldCheck, MessageCircle, CheckCircle2 } from 'lucide-react';
 import AdminLayout from '../components/layout/AdminLayout';
 import { PageHeader } from '@/shared/components/page-header';
 import { FormSection } from '@/shared/components/form-section';
@@ -31,7 +17,7 @@ export default function CoachAnalyticsDashboard() {
       setLoading(true);
       setError(null);
       
-      const res = await fetch('/api/v1/subscriptions/overview');
+      const res = await fetch(`${API_BASE}/api/v1/subscriptions/overview`);
       const json = await res.json();
       
       if (!res.ok) throw new Error(json.error || 'تعذر جلب البيانات من الخادم');
@@ -81,10 +67,10 @@ export default function CoachAnalyticsDashboard() {
   const { overview = {}, clients = [] } = data || {};
   const expiringClients = clients.filter(c => c.status === 'EXPIRING_SOON');
 
-  const total = overview.total_clients || clients.length || 1;
-  const activePct = Math.round(((overview.active_count || 0) / total) * 100);
-  const expiringPct = Math.round(((overview.expiring_soon_count || 0) / total) * 100);
-  const expiredPct = Math.round(((overview.expired_count || 0) / total) * 100);
+  const total = overview.total_clients || clients.length || 0;
+  const activePct = total > 0 ? Math.round(((overview.active_count || 0) / total) * 100) : 0;
+  const expiringPct = total > 0 ? Math.round(((overview.expiring_soon_count || 0) / total) * 100) : 0;
+  const expiredPct = total > 0 ? Math.round(((overview.expired_count || 0) / total) * 100) : 0;
 
   const statCards = [
     { title: 'إجمالي الإيرادات المتوقعة', value: Number(overview.total_monthly_revenue || 0).toLocaleString(), unit: 'ج.م', label: 'الشهر الحالي', icon: Wallet },
@@ -189,17 +175,17 @@ export default function CoachAnalyticsDashboard() {
 
             {/* Legend Pills */}
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '12px', flexWrap: 'wrap', gap: '8px' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '11.5px', color: '#166534', fontWeight: 700, background: '#F0FDF4', border: '1px solid #BBF7D0', padding: '4px 10px', borderRadius: '6px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '11.5px', color: '#166534', fontWeight: 700, background: '#F8FAFC', border: '1px solid #E2E8F0', padding: '4px 10px', borderRadius: '6px' }}>
                 <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#16A34A' }} />
                 <span>مستقر ونشط: {overview.active_count || 0} ({activePct}%)</span>
               </div>
 
-              <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '11.5px', color: '#B45309', fontWeight: 700, background: '#FFFBEB', border: '1px solid #FDE68A', padding: '4px 10px', borderRadius: '6px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '11.5px', color: '#B45309', fontWeight: 700, background: '#F8FAFC', border: '1px solid #E2E8F0', padding: '4px 10px', borderRadius: '6px' }}>
                 <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#D97706' }} />
                 <span>خطر الانسحاب (قارب على الانتهاء): {overview.expiring_soon_count || 0} ({expiringPct}%)</span>
               </div>
 
-              <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '11.5px', color: '#991B1B', fontWeight: 700, background: '#FEF2F2', border: '1px solid #FECACA', padding: '4px 10px', borderRadius: '6px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '11.5px', color: '#991B1B', fontWeight: 700, background: '#F8FAFC', border: '1px solid #E2E8F0', padding: '4px 10px', borderRadius: '6px' }}>
                 <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#DC2626' }} />
                 <span>منتهي: {overview.expired_count || 0} ({expiredPct}%)</span>
               </div>
@@ -213,7 +199,7 @@ export default function CoachAnalyticsDashboard() {
             title="قائمة التجديدات العاجلة (متبقي أقل من 7 أيام)"
             description="التواصل السريع مع المشتركين لتقديم عروض التجديد والاستمرار."
             actions={(
-              <span style={{ background: '#FFFBEB', border: '1px solid #FDE68A', color: '#B45309', padding: '2px 8px', borderRadius: '4px', fontSize: '11px', fontWeight: 700 }}>
+              <span style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', color: '#B45309', padding: '2px 8px', borderRadius: '4px', fontSize: '11px', fontWeight: 700 }}>
                 {expiringClients.length} متدربين
               </span>
             )}

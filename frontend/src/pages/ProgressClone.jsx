@@ -1,22 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { Link, useSearchParams } from 'react-router-dom';
-import { 
-  ActivitySquare, 
-  Scale, 
-  Ruler, 
-  Sparkles, 
-  CheckCircle2, 
-  AlertTriangle, 
-  TrendingDown, 
-  TrendingUp, 
-  Flame, 
-  Clock, 
-  FileText, 
-  MessageCircle, 
-  ChevronLeft, 
-  Check, 
-  UserCheck 
-} from 'lucide-react';
+import { useSearchParams, Link } from 'react-router-dom';
+import { ActivitySquare, Scale, Ruler, Sparkles, CheckCircle2, AlertTriangle, TrendingDown, TrendingUp, Flame, Clock, FileText, MessageCircle, ChevronLeft, Check, UserCheck } from 'lucide-react';
 import { API_BASE } from '../config/api';
 import AdminLayout from '../components/layout/AdminLayout';
 import CaseStudyModal from '../components/modals/CaseStudyModal';
@@ -239,7 +223,7 @@ export default function ProgressClone() {
                         الأسبوع {chk.week_number}
                       </span>
                       <span style={{ fontSize: '0.82rem', color: '#64748B' }}>
-                        تاريخ التسليم: {new Date(chk.createdAt).toLocaleDateString('ar-EG')}
+                        تاريخ التسليم: {new Date(chk.createdAt).toLocaleDateString('en-US')}
                       </span>
                     </div>
 
@@ -316,7 +300,7 @@ export default function ProgressClone() {
                   </div>
 
                   {/* Smart Adaptation Recommendation Card (Engine 7) */}
-                  <div style={{ background: '#F0F9FF', border: '1px solid #BAE6FD', borderRadius: '18px', padding: '20px', marginBottom: '18px' }}>
+                  <div style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', borderRadius: '18px', padding: '20px', marginBottom: '18px' }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#0369A1', fontWeight: 800, fontSize: '0.9rem', marginBottom: '8px' }}>
                       <Sparkles style={{ width: '18px', height: '18px' }} />
                       <span>توصية محرك التكيف التلقائي (Auto-Regulation Directive):</span>

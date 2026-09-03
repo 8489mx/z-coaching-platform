@@ -45,7 +45,7 @@ export default function SubscriptionCardsView({ onSelectTier }) {
             }}
           >
             <Crown style={{ width: '13px', height: '13px' }} />
-            <span>تجربة التدريب الخاصة VIP</span>
+            <span>تجربة التدريب الخاصة MAX</span>
           </div>
 
           {/* Header */}

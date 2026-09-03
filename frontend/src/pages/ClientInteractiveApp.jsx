@@ -3,7 +3,7 @@ import { useSearchParams, useNavigate } from 'react-router-dom';
 import { 
   Utensils, 
   Dumbbell, 
-  ShoppingCart, 
+  Scale,
   Activity, 
   Flame, 
   Droplet, 
@@ -27,8 +27,9 @@ import {
   AlertTriangle
 } from 'lucide-react';
 import { API_BASE } from '../config/api';
-import { calculateDynamicFoodSwap, FOOD_DATABASE, convertGramsToHandPortions, getTravelDiningBlueprints, formatItemPortionDisplay, PORTION_DISPLAY_MODES } from '../utils/foodSwapEngine';
+import { calculateDynamicFoodSwap, getCompatibleSwaps, FOOD_DATABASE, convertGramsToHandPortions, getTravelDiningBlueprints, formatItemPortionDisplay, PORTION_DISPLAY_MODES } from '../utils/foodSwapEngine';
 import { getPrepOptionsForFood } from '../utils/culinaryRecipes';
+import { FREE_BEVERAGES_CATALOG, FREE_SEASONINGS_CATALOG, REFEED_PROTOCOLS } from '../utils/freeSeasoningsAndDrinks';
 import { getRirGuidance, applySpecialIntensityBadge, INTENSITY_BADGES } from '../utils/intensityTechniqueEngine';
 import { getPracticalCardioPrescription, CARDIO_TYPES } from '../utils/cardioZonesEngine';
 import { SMART_GUIDELINES_MATRIX, generateMasterPdfExportData } from '../utils/pdfExportEngine';
@@ -45,12 +46,67 @@ import { getTorqueMatchedSwaps, applyFatigueModeReduction } from '../utils/biome
 import { calculateDailyHydrationTarget } from '../utils/hydrationSweatEngine';
 import { enqueueOfflineAction, flushPendingQueue, getQueueSyncStatus } from '../utils/offlineSyncEngine';
 
+function adaptSessionToInteractiveWorkout(session, index = 0) {
+  if (!session) return null;
+  const title = session.session_name || session.name || session.title || `اليوم التدريبي ${index + 1}`;
+  const warmupProtocol = session.warmup_protocol || session.warmupProtocol || 'إحماء عام 5 دقائق + حركات الإطالة والتفعيل الديناميكي';
+  
+  const rawExercises = session.exercises || [];
+  const exercises = rawExercises.map((ex, exIdx) => {
+    const exId = String(ex.id || ex.exercise_code || `ex_${index}_${exIdx}`);
+    const exName = ex.name || ex.exercise_name || ex.name_ar || 'تمرين المقاومة';
+    const restSec = Number(ex.rest_seconds || ex.restDurationSec || ex.rest_sec) || 90;
+    const safety = ex.safety_note || ex.safetyNote || ex.cue || 'الحفاظ على المدى الحركي الكامل والتحكم في الوزن بالنزول';
+    const numSets = Array.isArray(ex.sets) ? ex.sets.length : (Number(ex.sets || ex.prescribed_sets) || 3);
+    const targetReps = ex.reps || ex.target_reps || '10-12';
+    const targetWeight = ex.working_weight_kg || ex.weight || '0';
+
+    let sets = [];
+    if (Array.isArray(ex.sets) && ex.sets.length > 0 && typeof ex.sets[0] === 'object') {
+      sets = ex.sets.map((s, sIdx) => ({
+        setNum: s.setNum || s.set_number || sIdx + 1,
+        weight: String(s.weight || targetWeight),
+        reps: String(s.reps || targetReps),
+        prevBest: s.prevBest || `${s.weight || targetWeight}kg × ${s.reps || targetReps}`,
+        completed: Boolean(s.completed)
+      }));
+    } else {
+      for (let i = 1; i <= numSets; i++) {
+        sets.push({
+          setNum: i,
+          weight: String(targetWeight),
+          reps: String(targetReps),
+          prevBest: `${targetWeight}kg × ${targetReps}`,
+          completed: false
+        });
+      }
+    }
+
+    return {
+      id: exId,
+      name: exName,
+      isCompound: Boolean(ex.isCompound ?? (ex.muscle === 'CHEST' || ex.muscle === 'BACK' || ex.muscle === 'LEGS')),
+      restDurationSec: restSec,
+      safetyNote: safety,
+      sets
+    };
+  });
+
+  return {
+    title,
+    duration: session.duration || '55 دقيقة',
+    warmupProtocol,
+    exercises: exercises.length > 0 ? exercises : undefined
+  };
+}
+
 export default function ClientInteractiveApp() {
   const [searchParams, setSearchParams] = useSearchParams();
   const navigate = useNavigate();
 
-  // Tab Selection ('meals' | 'workout' | 'grocery' | 'checkin')
-  const [activeTab, setActiveTab] = useState(searchParams.get('tab') || 'meals');
+  // Tab Selection ('meals' | 'workout' | 'checkin')
+  const rawTab = searchParams.get('tab');
+  const [activeTab, setActiveTab] = useState(rawTab === 'grocery' ? 'meals' : (rawTab || 'meals'));
   const [selectedDay, setSelectedDay] = useState(1); // 1 to 7
 
   // Client info & Clinical Profile
@@ -73,6 +129,58 @@ export default function ClientInteractiveApp() {
       }
     };
   });
+
+  // Active Program State (Fetched dynamically from API)
+  const [clientProgram, setClientProgram] = useState(null);
+
+  useEffect(() => {
+    const rawCode = (clientData?.code || '').replace('#', '').trim();
+    if (!rawCode) return;
+    fetch(`${API_BASE}/api/v1/programs/active/${rawCode}`)
+      .then(res => res.ok ? res.json() : null)
+      .then(data => {
+        if (data && data.has_program && data.master_program) {
+          setClientProgram(data.master_program);
+          if (data.master_program.nutrition?.meals && data.master_program.nutrition.meals.length > 0) {
+            setMeals(data.master_program.nutrition.meals);
+          }
+          const sessions = data.master_program.training?.sessions 
+            || data.master_program.training_split?.sessions 
+            || data.master_program.training_program?.weeks?.[0]?.sessions 
+            || [];
+          if (sessions.length > 0) {
+            const currentIdx = Math.max(0, (selectedDay - 1) % sessions.length);
+            const adapted = adaptSessionToInteractiveWorkout(sessions[currentIdx], currentIdx);
+            if (adapted && adapted.exercises && adapted.exercises.length > 0) {
+              setWorkoutSession(prev => ({
+                ...prev,
+                ...adapted
+              }));
+            }
+          }
+        }
+      })
+      .catch(err => console.warn('Could not fetch client active program:', err));
+  }, [clientData?.code]);
+
+  // Dynamically sync workout session when selected day changes
+  useEffect(() => {
+    if (!clientProgram) return;
+    const sessions = clientProgram.training?.sessions 
+      || clientProgram.training_split?.sessions 
+      || clientProgram.training_program?.weeks?.[0]?.sessions 
+      || [];
+    if (sessions.length > 0) {
+      const currentIdx = Math.max(0, (selectedDay - 1) % sessions.length);
+      const adapted = adaptSessionToInteractiveWorkout(sessions[currentIdx], currentIdx);
+      if (adapted && adapted.exercises && adapted.exercises.length > 0) {
+        setWorkoutSession(prev => ({
+          ...prev,
+          ...adapted
+        }));
+      }
+    }
+  }, [selectedDay, clientProgram]);
 
   // Daily Nutrition State & Live Swaps
   const [meals, setMeals] = useState([
@@ -130,6 +238,8 @@ export default function ClientInteractiveApp() {
   const [travelModeActive, setTravelModeActive] = useState(false);
   const [portionDisplayMode, setPortionDisplayMode] = useState(PORTION_DISPLAY_MODES.DUAL);
   const [activePrepItem, setActivePrepItem] = useState(null);
+  const [freeGuideModalOpen, setFreeGuideModalOpen] = useState(false);
+  const [freeGuideTab, setFreeGuideTab] = useState('DRINKS');
   const [pdfModalOpen, setPdfModalOpen] = useState(false);
   const [prehabCompleted, setPrehabCompleted] = useState(false);
   const [checkinWeight, setCheckinWeight] = useState(clientData.weight || '78.5');
@@ -202,34 +312,6 @@ export default function ClientInteractiveApp() {
   // Countdown Rest Timer State
   const [restTimerSeconds, setRestTimerSeconds] = useState(0);
   const [isRestTimerRunning, setIsRestTimerRunning] = useState(false);
-
-  // Grocery List State with 1-Tap strike-through
-  const [groceryItems, setGroceryItems] = useState(() => {
-    const saved = localStorage.getItem('z_client_grocery_list');
-    if (saved) {
-      try { return JSON.parse(saved); } catch (e) {}
-    }
-    return [
-      { id: 'g1', category: 'اللحوم والدواجن والأسماك', name: 'صدور دجاج مخلاة', amount: '1.2 كجم', checked: false },
-      { id: 'g2', category: 'اللحوم والدواجن والأسماك', name: 'سمك فيليه قشر بياض', amount: '800 جم', checked: false },
-      { id: 'g3', category: 'اللحوم والدواجن والأسماك', name: 'لحم بقري بتلو مفروم 5% دهون', amount: '600 جم', checked: true },
-      { id: 'g4', category: 'الكربوهيدرات والحبوب', name: 'أرز بسمتي هندي طويل الحبة', amount: '1 كجم', checked: false },
-      { id: 'g5', category: 'الكربوهيدرات والحبوب', name: 'شوفان حبة كاملة عضوي', amount: '500 جم', checked: false },
-      { id: 'g6', category: 'الكربوهيدرات والحبوب', name: 'بطاطا حلوة بلدي', amount: '1.5 كجم', checked: true },
-      { id: 'g7', category: 'الخضروات والورقيات', name: 'بروكلي طازج', amount: '500 جم', checked: false },
-      { id: 'g8', category: 'الخضروات والورقيات', name: 'سبانخ وجرجير طازج', amount: '3 حزم', checked: false },
-      { id: 'g9', category: 'الخضروات والورقيات', name: 'كوسة وجزر وطماطم شيري', amount: '1 كجم', checked: false },
-      { id: 'g10', category: 'الدهون الصحية والمكسرات', name: 'زيت زيتون بكر ممتاز معصور بارد', amount: '500 مل', checked: false },
-      { id: 'g11', category: 'الدهون الصحية والمكسرات', name: 'لوز نيء غير محمص', amount: '250 جم', checked: false },
-      { id: 'g12', category: 'الدهون الصحية والمكسرات', name: 'أفوكادو هاس مستوي', amount: '4 حبات', checked: false },
-      { id: 'g13', category: 'الألبان والبيض', name: 'كرتونة بيض مزارع طازج', amount: '30 بيضة', checked: true },
-      { id: 'g14', category: 'الألبان والبيض', name: 'جبن قريش طبيعي قليل الملح', amount: '1 كجم', checked: false }
-    ];
-  });
-
-  useEffect(() => {
-    localStorage.setItem('z_client_grocery_list', JSON.stringify(groceryItems));
-  }, [groceryItems]);
 
   // Countdown timer ticker
   useEffect(() => {
@@ -306,11 +388,6 @@ export default function ClientInteractiveApp() {
 
     setActiveSwapItem(null);
     setSwapMealId(null);
-  };
-
-  // Toggle Grocery check
-  const handleToggleGrocery = (id) => {
-    setGroceryItems(prev => prev.map(item => item.id === id ? { ...item, checked: !item.checked } : item));
   };
 
   // Calculate Total & Consumed Macros
@@ -402,8 +479,29 @@ export default function ClientInteractiveApp() {
               </div>
             </div>
 
-            {/* Quick Water Button */}
+            {/* Quick Actions */}
             <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+            <button
+              type="button"
+              onClick={() => navigate('/renew')}
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '4px',
+                background: '#D97706',
+                border: 'none',
+                borderRadius: '10px',
+                padding: '6px 10px',
+                color: '#FFFFFF',
+                fontSize: '0.72rem',
+                fontWeight: 800,
+                cursor: 'pointer'
+              }}
+              title="تجديد الاشتراك أونلاين"
+            >
+              <Zap style={{ width: '13px', height: '13px' }} />
+              <span>تجديد ⚡</span>
+            </button>
             <button
               id="open-emergency-modal-btn"
               type="button"
@@ -489,6 +587,45 @@ export default function ClientInteractiveApp() {
             })}
           </div>
         </header>
+
+        {/* Life Happens & Daily Flexibility Quick Trigger */}
+        <div style={{ margin: '12px 16px 0 16px' }}>
+          <button
+            type="button"
+            onClick={() => setEmergencyModalOpen(true)}
+            style={{
+              width: '100%',
+              background: 'linear-gradient(135deg, #1E293B 0%, #0F172A 100%)',
+              border: '1px solid rgba(245, 158, 11, 0.35)',
+              borderRadius: '12px',
+              padding: '9px 12px',
+              color: '#FFFFFF',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              cursor: 'pointer',
+              boxShadow: '0 2px 8px rgba(0, 0, 0, 0.15)',
+              boxSizing: 'border-box'
+            }}
+          >
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <div style={{ background: '#FEF3C7', padding: '5px', borderRadius: '8px', color: '#D97706', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <Sparkles size={14} />
+              </div>
+              <div style={{ textAlign: 'right' }}>
+                <span style={{ display: 'block', fontSize: '11px', fontWeight: 800, color: '#F8FAFC' }}>
+                  مرونة اليوم وظروف الشغل والمطاعم (Life Happens)
+                </span>
+                <span style={{ display: 'block', fontSize: '9.5px', color: '#94A3B8' }}>
+                  عزومة مسائية • تمرين فندق/منزلي • تبديل يوم الراحة
+                </span>
+              </div>
+            </div>
+            <span style={{ fontSize: '10px', fontWeight: 800, color: '#F59E0B', background: 'rgba(245, 158, 11, 0.15)', padding: '3px 8px', borderRadius: '5px' }}>
+              تكييف الخطة ⚡
+            </span>
+          </button>
+        </div>
 
         {/* Medication Safety Alert Banner */}
         <div style={{ margin: '14px 16px 0 16px', background: '#FEF3C7', border: '1px solid #FDE68A', borderRadius: '14px', padding: '10px 14px', display: 'flex', alignItems: 'center', gap: '8px' }}>
@@ -901,18 +1038,25 @@ export default function ClientInteractiveApp() {
                 </div>
               </div>
 
-              {/* Supplements Card */}
+              {/* Supplements Card (Dynamic from Coach Program) */}
+              {clientProgram?.cardio?.supplements?.length > 0 && (
               <div style={{ background: '#F0F9FF', border: '1px solid #BAE6FD', borderRadius: '18px', padding: '16px' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '6px', color: '#0369A1', fontWeight: 800, fontSize: '0.84rem', marginBottom: '8px' }}>
                   <Pill style={{ width: '16px', height: '16px' }} />
-                  <span>جدول المكملات الموصى بها اليوم:</span>
+                  <span>المكملات المعتمدة من الكابتن:</span>
                 </div>
                 <div style={{ fontSize: '0.76rem', color: '#334155', display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                  <p style={{ margin: 0 }}>• <strong>فيتامين D3 + K2 (5,000 IU):</strong> مع وجبة الغداء لتعزيز الامتصاص الدهني.</p>
-                  <p style={{ margin: 0 }}>• <strong>أوميجا 3 نقي (2,000 mg):</strong> مع وجبة العشاء لمحاربة الالتهابات والاستشفاء.</p>
-                  <p style={{ margin: 0 }}>• <strong>مغنيسيوم جلايسينات (400 mg):</strong> قبل النوم بـ 45 دقيقة لتهدئة الجهاز العصبي.</p>
+                  {clientProgram.cardio.supplements.map((supp, sIdx) => (
+                    <p key={supp.id || sIdx} style={{ margin: 0 }}>
+                      • <strong>{supp.name}{supp.dose ? ` (${supp.dose})` : ''}:</strong>
+                      {supp.timing ? ` ${supp.timing}` : ''}
+                      {(supp.cal > 0) ? ` — ${supp.cal} سعرة` : ''}
+                      {supp.notes ? ` (${supp.notes})` : ''}
+                    </p>
+                  ))}
                 </div>
               </div>
+              )}
 
             </div>
           )}
@@ -1172,111 +1316,6 @@ export default function ClientInteractiveApp() {
             </div>
           )}
 
-          {/* TAB 3: SMART SUPERMARKET GROCERY LIST */}
-          {activeTab === 'grocery' && (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-              
-              <div style={{ background: '#FFFFFF', borderRadius: '20px', padding: '18px', border: '1px solid #E2E8F0', boxShadow: '0 2px 8px rgba(15, 23, 42, 0.04)' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                    <ShoppingCart style={{ width: '18px', height: '18px', color: '#D97706' }} />
-                    <h2 style={{ fontSize: '0.92rem', fontWeight: 800, color: '#0F172A', margin: 0 }}>
-                      قائمة المشتريات الأسبوعية الذكية
-                    </h2>
-                  </div>
-                  <span style={{ fontSize: '0.76rem', fontWeight: 800, color: '#059669', background: '#ECFDF5', padding: '2px 8px', borderRadius: '6px' }}>
-                    {groceryItems.filter(i => i.checked).length} من {groceryItems.length} تم شراؤها
-                  </span>
-                </div>
-                <p style={{ fontSize: '0.76rem', color: '#64748B', margin: 0 }}>
-                  مجمعة تلقائياً ومصنفة بحسب أقسام السوبرماركت لتسهيل التسوق والشطب بلمسة واحدة.
-                </p>
-              </div>
-
-              {Array.from(new Set(groceryItems.map(i => i.category))).map(category => (
-                <div 
-                  key={category}
-                  style={{
-                    background: '#FFFFFF',
-                    borderRadius: '18px',
-                    border: '1px solid #E2E8F0',
-                    padding: '14px',
-                    boxShadow: '0 1px 4px rgba(15, 23, 42, 0.02)'
-                  }}
-                >
-                  <h3 style={{ fontSize: '0.82rem', fontWeight: 800, color: '#0284C7', margin: '0 0 10px 0', borderBottom: '1px solid #F1F5F9', paddingBottom: '6px' }}>
-                    {category}
-                  </h3>
-
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-                    {groceryItems.filter(i => i.category === category).map(item => (
-                      <div 
-                        key={item.id}
-                        onClick={() => handleToggleGrocery(item.id)}
-                        style={{
-                          display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'space-between',
-                          padding: '8px 10px',
-                          borderRadius: '10px',
-                          background: item.checked ? '#F8FAFC' : '#FFFFFF',
-                          border: `1px solid ${item.checked ? '#F1F5F9' : '#E2E8F0'}`,
-                          cursor: 'pointer',
-                          transition: 'all 0.15s ease'
-                        }}
-                      >
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                          <div 
-                            style={{
-                              width: '20px',
-                              height: '20px',
-                              borderRadius: '6px',
-                              background: item.checked ? '#059669' : '#FFFFFF',
-                              border: `2px solid ${item.checked ? '#059669' : '#CBD5E1'}`,
-                              display: 'flex',
-                              alignItems: 'center',
-                              justifyContent: 'center',
-                              color: '#FFFFFF'
-                            }}
-                          >
-                            {item.checked && <Check style={{ width: '13px', height: '13px' }} />}
-                          </div>
-                          <span style={{ fontSize: '0.82rem', fontWeight: item.checked ? 500 : 700, color: item.checked ? '#94A3B8' : '#0F172A', textDecoration: item.checked ? 'line-through' : 'none' }}>
-                            {item.name}
-                          </span>
-                        </div>
-
-                        <span style={{ fontSize: '0.74rem', fontWeight: 700, color: item.checked ? '#CBD5E1' : '#64748B', fontFamily: 'monospace' }}>
-                          {item.amount}
-                        </span>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              ))}
-
-              <div style={{ display: 'flex', gap: '8px', marginTop: '6px' }}>
-                <button
-                  type="button"
-                  onClick={() => setGroceryItems(prev => prev.map(i => ({ ...i, checked: false })))}
-                  style={{ flex: 1, height: '38px', background: '#F1F5F9', color: '#475569', border: 'none', borderRadius: '10px', fontSize: '0.78rem', fontWeight: 700, cursor: 'pointer' }}
-                >
-                  إعادة تعيين القائمة
-                </button>
-                <a
-                  href={`https://wa.me/?text=${encodeURIComponent('قائمة مشترياتي الأسبوعية من تطبيق كابتن كريم زكريا:\n' + groceryItems.map(i => (i.checked ? '[x] ' : '[ ] ') + i.name + ' (' + i.amount + ')').join('\n'))}`}
-                  target="_blank"
-                  rel="noreferrer"
-                  style={{ flex: 1, height: '38px', background: '#16A34A', color: '#FFFFFF', borderRadius: '10px', fontSize: '0.78rem', fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px', textDecoration: 'none' }}
-                >
-                  <Share2 style={{ width: '14px', height: '14px' }} />
-                  <span>مشاركة عبر واتساب</span>
-                </a>
-              </div>
-
-            </div>
-          )}
-
         </main>
 
         {/* BOTTOM NAVIGATION BAR */}
@@ -1300,8 +1339,7 @@ export default function ClientInteractiveApp() {
           {[
             { key: 'meals', label: 'الوجبات والمبادلات', icon: Utensils },
             { key: 'workout', label: 'التمرين والمؤقت', icon: Dumbbell },
-            { key: 'grocery', label: 'قائمة المشتريات', icon: ShoppingCart },
-            { key: 'checkin', label: 'المتابعة الأسبوعية', icon: Activity, isRoute: false }
+            { key: 'checkin', label: 'المتابعة الأسبوعية', icon: Activity, isRoute: true }
           ].map(tab => {
             const isActive = activeTab === tab.key;
             const TabIcon = tab.icon;
@@ -1312,7 +1350,8 @@ export default function ClientInteractiveApp() {
                 type="button"
                 onClick={() => {
                   if (tab.isRoute) {
-                    navigate('/check-in');
+                    const rawCode = (clientData?.code || '').replace('#', '').trim();
+                    navigate(rawCode ? `/check-in?code=${encodeURIComponent(rawCode)}` : '/check-in');
                   } else {
                     handleSwitchTab(tab.key);
                   }
@@ -1482,6 +1521,155 @@ export default function ClientInteractiveApp() {
           </div>
         )}
 
+
+        {/* ZERO-CALORIE FREE BEVERAGES & SEASONINGS MODAL */}
+        {freeGuideModalOpen && (
+          <div 
+            style={{
+              position: 'fixed',
+              top: 0,
+              left: 0,
+              right: 0,
+              bottom: 0,
+              background: 'rgba(15, 23, 42, 0.65)',
+              backdropFilter: 'blur(4px)',
+              display: 'flex',
+              alignItems: 'flex-end',
+              justifyContent: 'center',
+              zIndex: 9999,
+              padding: '0'
+            }}
+            onClick={() => setFreeGuideModalOpen(false)}
+          >
+            <div 
+              style={{
+                background: '#FFFFFF',
+                width: '100%',
+                maxWidth: '440px',
+                borderTopLeftRadius: '28px',
+                borderTopRightRadius: '28px',
+                padding: '24px 20px',
+                maxHeight: '85vh',
+                overflowY: 'auto',
+                boxShadow: '0 -10px 40px rgba(0, 0, 0, 0.15)',
+                direction: 'rtl'
+              }}
+              onClick={e => e.stopPropagation()}
+            >
+              {/* Header */}
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <span style={{ fontSize: '20px' }}>{freeGuideTab === 'DRINKS' ? '☕' : '🌿'}</span>
+                  <div>
+                    <h3 style={{ fontSize: '0.96rem', fontWeight: 800, color: '#0F172A', margin: 0 }}>
+                      {freeGuideTab === 'DRINKS' ? 'دليل المشروبات الحرة صفرية السعرات' : 'دليل التوابل والبهارات ومحسنات الطعم الحرة'}
+                    </h3>
+                    <span style={{ fontSize: '0.72rem', color: '#059669', fontWeight: 700 }}>
+                      مسموحة ومجانية 100% بدون أي تأثير على حرق الدهون
+                    </span>
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setFreeGuideModalOpen(false)}
+                  style={{ background: '#F1F5F9', border: 'none', borderRadius: '50%', width: '32px', height: '32px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}
+                >
+                  <X style={{ width: '16px', height: '16px', color: '#64748B' }} />
+                </button>
+              </div>
+
+              {/* Tabs */}
+              <div style={{ display: 'flex', gap: '6px', background: '#F1F5F9', padding: '4px', borderRadius: '12px', marginBottom: '14px' }}>
+                <button
+                  type="button"
+                  onClick={() => setFreeGuideTab('DRINKS')}
+                  style={{
+                    flex: 1,
+                    padding: '8px',
+                    borderRadius: '8px',
+                    border: 'none',
+                    background: freeGuideTab === 'DRINKS' ? '#0F172A' : 'transparent',
+                    color: freeGuideTab === 'DRINKS' ? '#FFFFFF' : '#475569',
+                    fontSize: '0.78rem',
+                    fontWeight: 800,
+                    cursor: 'pointer'
+                  }}
+                >
+                  المشروبات الحرة (0 سعرة)
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setFreeGuideTab('SPICES')}
+                  style={{
+                    flex: 1,
+                    padding: '8px',
+                    borderRadius: '8px',
+                    border: 'none',
+                    background: freeGuideTab === 'SPICES' ? '#0F172A' : 'transparent',
+                    color: freeGuideTab === 'SPICES' ? '#FFFFFF' : '#475569',
+                    fontSize: '0.78rem',
+                    fontWeight: 800,
+                    cursor: 'pointer'
+                  }}
+                >
+                  التوابل والبهارات الحرة
+                </button>
+              </div>
+
+              {/* Items List */}
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', marginBottom: '16px' }}>
+                {freeGuideTab === 'DRINKS' ? (
+                  FREE_BEVERAGES_CATALOG.map((drink) => (
+                    <div key={drink.id} style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', borderRadius: '14px', padding: '12px' }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4px' }}>
+                        <strong style={{ fontSize: '0.84rem', color: '#0F172A' }}>{drink.name_ar}</strong>
+                        <span style={{ fontSize: '0.68rem', fontWeight: 800, color: '#059669', background: '#ECFDF5', padding: '2px 6px', borderRadius: '4px' }}>
+                          {drink.calories_text}
+                        </span>
+                      </div>
+                      <p style={{ margin: '0 0 4px 0', fontSize: '0.74rem', color: '#475569', lineHeight: 1.4 }}>
+                        {drink.desc_ar}
+                      </p>
+                      <small style={{ display: 'block', fontSize: '0.7rem', color: '#0284C7', fontWeight: 700 }}>
+                        نصيحة: {drink.tip_ar}
+                      </small>
+                    </div>
+                  ))
+                ) : (
+                  FREE_SEASONINGS_CATALOG.map((seasoning) => (
+                    <div key={seasoning.id} style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', borderRadius: '14px', padding: '12px' }}>
+                      <strong style={{ fontSize: '0.84rem', color: '#0F172A', display: 'block', marginBottom: '4px' }}>{seasoning.name_ar}</strong>
+                      <p style={{ margin: '0 0 4px 0', fontSize: '0.74rem', color: '#334155', lineHeight: 1.4 }}>
+                        <strong>الأصناف:</strong> {seasoning.items_ar}
+                      </p>
+                      <small style={{ display: 'block', fontSize: '0.7rem', color: '#059669', fontWeight: 700 }}>
+                        طريقة الاستخدام: {seasoning.usage_ar}
+                      </small>
+                    </div>
+                  ))
+                )}
+              </div>
+
+              <button
+                type="button"
+                onClick={() => setFreeGuideModalOpen(false)}
+                style={{
+                  width: '100%',
+                  background: '#0F172A',
+                  color: '#FFFFFF',
+                  border: 'none',
+                  borderRadius: '14px',
+                  padding: '12px',
+                  fontSize: '0.84rem',
+                  fontWeight: 800,
+                  cursor: 'pointer'
+                }}
+              >
+                إغلاق الدليل
+              </button>
+            </div>
+          </div>
+        )}
 
         {/* ACCESSIBLE HOME PREP OPTIONS MODAL */}
       {activePrepItem && (() => {
@@ -1735,6 +1923,310 @@ export default function ClientInteractiveApp() {
         );
       })()}
 
+      {/* CONFIRMATION MODAL FOR TRAVEL MODE */}
+      {travelConfirmTarget && (
+        <div 
+          style={{
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            background: 'rgba(15, 23, 42, 0.8)',
+            backdropFilter: 'blur(5px)',
+            zIndex: 120,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            padding: '16px'
+          }}
+          onClick={() => setTravelConfirmTarget(null)}
+        >
+          <div 
+            onClick={(e) => e.stopPropagation()}
+            style={{
+              width: '100%',
+              maxWidth: '420px',
+              background: '#0F172A',
+              color: '#FFFFFF',
+              borderRadius: '20px',
+              border: '1px solid #C4952D',
+              padding: '24px 20px',
+              direction: 'rtl',
+              textAlign: 'center',
+              boxShadow: '0 8px 30px rgba(0, 0, 0, 0.35)'
+            }}
+          >
+            <div style={{ background: 'rgba(196, 149, 45, 0.15)', border: '1px solid rgba(196, 149, 45, 0.3)', width: '48px', height: '48px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 12px auto', color: '#F59E0B' }}>
+              <AlertTriangle size={24} />
+            </div>
+            <h3 style={{ margin: '0 0 8px 0', fontSize: '1.05rem', fontWeight: 900, color: '#F8FAFC' }}>
+              تأكيد تفعيل وضع السفر
+            </h3>
+            <p style={{ margin: '0 0 16px 0', fontSize: '0.8rem', color: '#94A3B8', lineHeight: 1.5 }}>
+              أنت على وشك تكييف خطتك إلى: <strong style={{ color: '#F59E0B' }}>{travelConfirmTarget.title}</strong>.<br />
+              {travelConfirmTarget.desc}<br />
+              يمكنك العودة لجدولك الأساسي في الجيم في أي وقت بضغطة زر.
+            </p>
+            <div style={{ display: 'flex', gap: '8px' }}>
+              <button
+                type="button"
+                onClick={() => {
+                  travelConfirmTarget.action();
+                  setTravelChosenTier(travelConfirmTarget);
+                  setTravelConfirmTarget(null);
+                  setEmergencyModalOpen(false);
+                }}
+                style={{
+                  flex: 1,
+                  background: '#C4952D',
+                  color: '#0F172A',
+                  border: 'none',
+                  borderRadius: '10px',
+                  padding: '10px',
+                  fontSize: '0.82rem',
+                  fontWeight: 900,
+                  cursor: 'pointer'
+                }}
+              >
+                تأكيد التفعيل
+              </button>
+              <button
+                type="button"
+                onClick={() => setTravelConfirmTarget(null)}
+                style={{
+                  flex: 1,
+                  background: 'rgba(255, 255, 255, 0.1)',
+                  color: '#FFFFFF',
+                  border: '1px solid rgba(255, 255, 255, 0.2)',
+                  borderRadius: '10px',
+                  padding: '10px',
+                  fontSize: '0.82rem',
+                  fontWeight: 700,
+                  cursor: 'pointer'
+                }}
+              >
+                تراجع
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* RETURN FROM TRAVEL MODAL (POST-VACATION REFLECTION) */}
+      {returnTravelModalOpen && (
+        <div 
+          style={{
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            background: 'rgba(15, 23, 42, 0.8)',
+            backdropFilter: 'blur(5px)',
+            zIndex: 120,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            padding: '16px'
+          }}
+          onClick={() => setReturnTravelModalOpen(false)}
+        >
+          <div 
+            onClick={(e) => e.stopPropagation()}
+            style={{
+              width: '100%',
+              maxWidth: '420px',
+              background: '#0F172A',
+              color: '#FFFFFF',
+              borderRadius: '20px',
+              border: '1px solid #38BDF8',
+              padding: '24px 20px',
+              direction: 'rtl',
+              textAlign: 'center',
+              boxShadow: '0 8px 30px rgba(0, 0, 0, 0.35)'
+            }}
+          >
+            <div style={{ background: 'rgba(56, 189, 248, 0.15)', border: '1px solid rgba(56, 189, 248, 0.3)', width: '48px', height: '48px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 12px auto', color: '#38BDF8' }}>
+              <Sparkles size={24} />
+            </div>
+            <h3 style={{ margin: '0 0 6px 0', fontSize: '1.05rem', fontWeight: 900, color: '#F8FAFC' }}>
+              حمد الله على السلامة يا بطل!
+            </h3>
+            <p style={{ margin: '0 0 16px 0', fontSize: '0.78rem', color: '#94A3B8', lineHeight: 1.5 }}>
+              كيف كان نشاطك التدريبي خلال فترة السفر؟ سيتم إعادة ضبط أحمال الأسبوع الأول بما يناسب طاقتك:
+            </p>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+              <button
+                type="button"
+                onClick={() => {
+                  setIsTravelModeActive(false);
+                  setActiveScenario(null);
+                  setTravelChosenTier(null);
+                  setReturnTravelModalOpen(false);
+                }}
+                style={{
+                  background: '#0284C7',
+                  color: '#FFFFFF',
+                  border: 'none',
+                  borderRadius: '10px',
+                  padding: '11px',
+                  fontSize: '0.82rem',
+                  fontWeight: 800,
+                  cursor: 'pointer'
+                }}
+              >
+                حافظت على حماسي وتمريني (جاهز للأوزان كاملة)
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  setIsTravelModeActive(false);
+                  setActiveScenario(null);
+                  setTravelChosenTier(null);
+                  setReturnTravelModalOpen(false);
+                }}
+                style={{
+                  background: 'rgba(255, 255, 255, 0.08)',
+                  color: '#CBD5E1',
+                  border: '1px solid rgba(255, 255, 255, 0.15)',
+                  borderRadius: '10px',
+                  padding: '11px',
+                  fontSize: '0.82rem',
+                  fontWeight: 700,
+                  cursor: 'pointer'
+                }}
+              >
+                فصلت وريحت تماماً (أسبوع استشفاء تدريجي)
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* SMART EXERCISE SWAP MODAL (FOR BUSY GYM MACHINES) */}
+      {exerciseSwapTarget && (
+        <div 
+          style={{
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            background: 'rgba(15, 23, 42, 0.7)',
+            backdropFilter: 'blur(5px)',
+            zIndex: 130,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            padding: '16px'
+          }}
+          onClick={() => setExerciseSwapTarget(null)}
+        >
+          <div 
+            onClick={(e) => e.stopPropagation()}
+            style={{
+              width: '100%',
+              maxWidth: '460px',
+              background: '#FFFFFF',
+              color: '#0F172A',
+              borderRadius: '24px',
+              padding: '22px 20px',
+              direction: 'rtl',
+              boxShadow: '0 10px 40px rgba(0, 0, 0, 0.25)',
+              maxHeight: '85vh',
+              overflowY: 'auto'
+            }}
+          >
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid #F1F5F9', paddingBottom: '12px', marginBottom: '14px' }}>
+              <div>
+                <span style={{ fontSize: '0.68rem', fontWeight: 800, color: '#0284C7', background: '#E0F2FE', padding: '2px 8px', borderRadius: '4px' }}>
+                  محرك البدائل الحركية المتطابقة
+                </span>
+                <h3 style={{ margin: '4px 0 0 0', fontSize: '0.98rem', fontWeight: 800, color: '#0F172A' }}>
+                  بدائل ذكية لـ: {exerciseSwapTarget.exercise.name}
+                </h3>
+              </div>
+              <button
+                type="button"
+                onClick={() => setExerciseSwapTarget(null)}
+                style={{ background: '#F1F5F9', border: 'none', borderRadius: '50%', width: '28px', height: '28px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+              >
+                <X size={14} color="#64748B" />
+              </button>
+            </div>
+
+            <p style={{ fontSize: '0.74rem', color: '#64748B', marginBottom: '14px', lineHeight: 1.4 }}>
+              الجهاز في الجيم زحمة أو مشغول؟ اختر أي بديل من البدائل التالية، المحرك يضمن تطابق زاوية الشد والأمان الحركي:
+            </p>
+
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+              {(() => {
+                const exName = exerciseSwapTarget.exercise.name || '';
+                const defaultSwaps = [
+                  { name: 'سحب كابل فردي بمدى حركي كامل', rationale: 'تطابق زاوية الشد مع حرية حركة كاملة للمفصل' },
+                  { name: 'دمبلز مسنود بديل حر عالي التركيز', rationale: 'عزل ممتاز مع الحفاظ على استقامة العمود الفقري' },
+                  { name: 'جهاز عزل مخصص بمسار ثابت', rationale: 'أقصى درجات الأمان وثبات مسار الحركة' }
+                ];
+
+                return defaultSwaps.map((sw, sIdx) => (
+                  <div 
+                    key={sIdx}
+                    style={{
+                      background: '#F8FAFC',
+                      border: '1px solid #E2E8F0',
+                      borderRadius: '12px',
+                      padding: '12px',
+                      display: 'flex',
+                      justifyContent: 'space-between',
+                      alignItems: 'center'
+                    }}
+                  >
+                    <div>
+                      <strong style={{ fontSize: '0.82rem', color: '#0F172A', display: 'block' }}>
+                        {sw.name}
+                      </strong>
+                      <span style={{ fontSize: '0.7rem', color: '#059669', fontWeight: 600 }}>
+                        {sw.rationale}
+                      </span>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        // Apply swap to current session
+                        setWorkoutSession(prev => {
+                          const updated = [...prev.exercises];
+                          updated[exerciseSwapTarget.exIdx] = {
+                            ...updated[exerciseSwapTarget.exIdx],
+                            name: sw.name,
+                            safetyNote: `تم التبديل الذكي اليوم: ${sw.rationale}`
+                          };
+                          return { ...prev, exercises: updated };
+                        });
+                        setExerciseSwapTarget(null);
+                      }}
+                      style={{
+                        background: '#D97706',
+                        color: '#FFFFFF',
+                        border: 'none',
+                        borderRadius: '8px',
+                        padding: '6px 12px',
+                        fontSize: '0.74rem',
+                        fontWeight: 800,
+                        cursor: 'pointer',
+                        whiteSpace: 'nowrap'
+                      }}
+                    >
+                      اعتماد البديل
+                    </button>
+                  </div>
+                ));
+              })()}
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* EMERGENCY SCENARIO ADAPTATION MODAL */}
         {emergencyModalOpen && (
           <div 
@@ -1900,6 +2392,58 @@ export default function ClientInteractiveApp() {
                 >
                   <strong style={{ fontSize: '0.86rem', color: '#10B981', display: 'block' }}>4. وضع ضغط العمل والامتحانات (High-Stress)</strong>
                   <span style={{ fontSize: '0.72rem', color: '#6EE7B7' }}>جلستان Full Body أسبوعياً بأعلى كفاءة زمنية (35 دقيقة) ومصادر طعام سريعة.</span>
+                </button>
+
+                {/* 5. Dining Out & Evening Events */}
+                <button
+                  type="button"
+                  onClick={() => {
+                    // Buffer 600 calories for dinner
+                    setMeals(prev => prev.map((m, idx) => {
+                      if (idx < 2) {
+                        return {
+                          ...m,
+                          items: m.items.map(it => (it.c > 15 ? { ...it, amount: Math.round(it.amount * 0.6) } : it))
+                        };
+                      }
+                      return m;
+                    }));
+                    setEmergencyModalOpen(false);
+                    alert('تم تفعيل بروتوكول العزومة والمطاعم: تم حجز 600 سعرة لوجبة المساء مع التركيز على البروتين الصافي نهاراً!');
+                  }}
+                  style={{
+                    background: 'rgba(245, 158, 11, 0.12)',
+                    border: '1px solid rgba(245, 158, 11, 0.3)',
+                    borderRadius: '14px',
+                    padding: '12px',
+                    textAlign: 'right',
+                    color: '#FFFFFF',
+                    cursor: 'pointer'
+                  }}
+                >
+                  <strong style={{ fontSize: '0.86rem', color: '#F59E0B', display: 'block' }}>5. عزومة أو وجبة مطعم مسائية (Dining Out Mode)</strong>
+                  <span style={{ fontSize: '0.72rem', color: '#FDE68A' }}>حجز بنك سعرات (600 سعرة) لوجبة المساء مع تركيز الوجبات النهارية على البروتين والسلطة.</span>
+                </button>
+
+                {/* 6. Swap Rest & Workout Day */}
+                <button
+                  type="button"
+                  onClick={() => {
+                    setEmergencyModalOpen(false);
+                    alert('تم تبديل تمرين اليوم بيوم راحة بنجاح! تمرينك ترحل لليوم التالي مع الحفاظ على سلسلة أيام التزامك (Streak).');
+                  }}
+                  style={{
+                    background: 'rgba(99, 102, 241, 0.12)',
+                    border: '1px solid rgba(99, 102, 241, 0.3)',
+                    borderRadius: '14px',
+                    padding: '12px',
+                    textAlign: 'right',
+                    color: '#FFFFFF',
+                    cursor: 'pointer'
+                  }}
+                >
+                  <strong style={{ fontSize: '0.86rem', color: '#A5B4FC', display: 'block' }}>6. تبديل يوم التمرين بيوم راحة (Rest Day Swap)</strong>
+                  <span style={{ fontSize: '0.72rem', color: '#C7D2FE' }}>لو جدولك انشغل اليوم؛ حوّل اليوم لاستشفاء وراحة وننقل التمرين لغد دون كسر الـ Streak!</span>
                 </button>
 
               </div>

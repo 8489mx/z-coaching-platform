@@ -19,7 +19,8 @@ import {
   X,
   CreditCard,
   Edit3,
-  ChevronDown
+  ChevronDown,
+  Download
 } from 'lucide-react';
 import { API_BASE } from '../config/api';
 import AdminLayout from '../components/layout/AdminLayout';
@@ -48,6 +49,35 @@ export default function Customers() {
   useEffect(() => {
     fetchClients();
   }, []);
+
+  const exportClientsToCSV = () => {
+    if (!clients || clients.length === 0) {
+      alert('لا توجد بيانات مشتركين لتصديرها حالياً.');
+      return;
+    }
+
+    const headers = ['الكود', 'الاسم بالكامل', 'رقم الهاتف', 'الباقة', 'حالة الاشتراك', 'تاريخ البدء', 'تاريخ الانتهاء', 'الأيام المتبقية'];
+    const rows = clients.map(c => [
+      c.client_code || c.id,
+      `"${(c.full_name || c.name || '').replace(/"/g, '""')}"`,
+      `"${c.phone_number || ''}"`,
+      c.subscription_package || c.package || 'ELITE',
+      c.subscription_status || c.status || 'ACTIVE',
+      c.subscription_start_date ? new Date(c.subscription_start_date).toLocaleDateString('en-CA') : '',
+      c.subscription_end_date ? new Date(c.subscription_end_date).toLocaleDateString('en-CA') : '',
+      c.days_remaining ?? ''
+    ]);
+
+    const csvContent = '\uFEFF' + [headers.join(','), ...rows.map(r => r.join(','))].join('\n');
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.setAttribute('href', url);
+    link.setAttribute('download', `Z_Coaching_Clients_${new Date().toISOString().split('T')[0]}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
 
   const fetchClients = async () => {
     try {
@@ -129,8 +159,22 @@ export default function Customers() {
 
   const statCards = [
     { title: 'إجمالي المشتركين', value: clients.length, unit: 'مشترك', label: 'مسجلين بالنظام', icon: Users },
-    { title: 'مشتركو باقة MAX', value: maxCount, unit: 'مشترك', label: 'متابعة أسبوعية', icon: Crown },
-    { title: 'مشتركو باقة ELITE', value: eliteCount, unit: 'مشترك', label: 'متابعة كل أسبوعين', icon: Sparkles },
+    { 
+      title: 'مشتركو باقة MAX', 
+      value: maxCount, 
+      unit: 'مشترك', 
+      label: 'متابعة أسبوعية',
+      badgeText: 'MAX',
+      badgeColor: '#D97706'
+    },
+    { 
+      title: 'مشتركو باقة ELITE', 
+      value: eliteCount, 
+      unit: 'مشترك', 
+      label: 'متابعة كل أسبوعين',
+      badgeText: 'ELITE',
+      badgeColor: '#0284C7'
+    },
     { title: 'حالة قاعدة البيانات', value: 'نشطة', label: 'مزامنة فورية', icon: ShieldCheck },
   ];
 
@@ -164,9 +208,31 @@ export default function Customers() {
               >
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                   <span style={{ fontSize: '12.5px', fontWeight: 700, color: '#64748B', whiteSpace: 'nowrap' }}>{st.title}</span>
-                  <div style={{ width: '30px', height: '30px', borderRadius: '6px', background: '#F8FAFC', border: '1px solid #E2E8F0', color: '#0F172A', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                    <Icon size={15} />
-                  </div>
+                  {st.badgeText ? (
+                    <div 
+                      style={{ 
+                        height: '28px',
+                        padding: '0 8px',
+                        borderRadius: '6px', 
+                        background: '#F8FAFC', 
+                        border: '1px solid #E2E8F0', 
+                        color: st.badgeColor, 
+                        fontSize: '11px', 
+                        fontWeight: 900, 
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        letterSpacing: '0.5px',
+                        fontFamily: 'JetBrains Mono, Cairo, sans-serif'
+                      }}
+                    >
+                      {st.badgeText}
+                    </div>
+                  ) : (
+                    <div style={{ width: '30px', height: '30px', borderRadius: '6px', background: '#F8FAFC', border: '1px solid #E2E8F0', color: '#0F172A', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                      <Icon size={15} />
+                    </div>
+                  )}
                 </div>
                 <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', gap: '8px' }}>
                   <div style={{ display: 'flex', alignItems: 'baseline', gap: '4px' }}>
@@ -368,6 +434,31 @@ export default function Customers() {
           description="إدارة كافة المشتركين المسجلين في النظام، ومتابعة الخطط والتقييمات."
           actions={(
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+              {/* Export to Excel / CSV */}
+              <button
+                type="button"
+                onClick={exportClientsToCSV}
+                style={{
+                  height: '32px',
+                  padding: '0 12px',
+                  borderRadius: '6px',
+                  border: '1px solid #CBD5E1',
+                  background: '#FFFFFF',
+                  color: '#0F172A',
+                  fontSize: '11.5px',
+                  fontWeight: 800,
+                  cursor: 'pointer',
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '6px',
+                  boxShadow: '0 1px 2px rgba(0, 0, 0, 0.05)'
+                }}
+                title="تصدير جدول المشتركين بترميز عربي متوافق مع Excel"
+              >
+                <Download size={13} color="#16A34A" />
+                <span>تصدير Excel / CSV</span>
+              </button>
+
               {/* Search Box */}
               <div 
                 style={{
@@ -634,18 +725,19 @@ export default function Customers() {
             ? '2' + clientPhone.replace(/\D/g, '') 
             : clientPhone.replace(/\D/g, '');
 
-          const waInviteMessage = `مرحباً ${clientName} يا بطل!
-تم تأكيد اشتراكك وتفعيل ملفك في Z Coaching بنجاح.
+          const waInviteMessage = `أهلاً بحضرتك يا أستاذ ${clientName}،
+تم تأكيد اشتراكك وتفعيل ملفك في منظومة كابتن كريم زكريا بنجاح.
 
 بيانات دخول استمارتك الخاصة:
 - كود المشترك: #${rawCode}
 - رقم الهاتف: ${clientPhone}
-- الباقة: ${isMaxTier ? 'باقة ماكس MAX (متابعة أسبوعية)' : 'باقة إيليت ELITE (متابعة كل 14 يوماً)'}
+- الباقة: ${isMaxTier ? 'باقة ماكس MAX' : 'باقة إيليت ELITE'}
 
 رابط استمارتك الصحية والرياضية المباشر:
 ${formLink}
 
-يرجى تعبئة الاستمارة بدقة لنبدأ فوراً في إعداد خطتك التدريبية والغذائية!`;
+يرجى تعبئة الاستمارة بدقة للبدء في إعداد وتصميم خطتك التدريبية والغذائية.
+بالتوفيق دائماً، كابتن كريم زكريا.`;
 
           const waUrl = `https://wa.me/${cleanPhoneForWa}?text=${encodeURIComponent(waInviteMessage)}`;
 

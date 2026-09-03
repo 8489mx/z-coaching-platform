@@ -1,3 +1,4 @@
+import { API_BASE } from '../config/api';
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 
@@ -51,7 +52,7 @@ export const AuthProvider = ({ children }) => {
   const fetchProgram = async () => {
     setLoadingProgram(true);
     try {
-      const res = await fetch('/api/v1/programs', {
+      const res = await fetch(`${API_BASE}/api/v1/programs`, {
         headers: {
           'Authorization': `Bearer ${token}`
         }
@@ -82,7 +83,7 @@ export const AuthProvider = ({ children }) => {
   };
 
   const clientLogin = async (clientCode, phoneNumber) => {
-    const res = await fetch('/api/v1/auth/login-fast', {
+    const res = await fetch(`${API_BASE}/api/v1/auth/login-fast`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ client_code: clientCode, phone_number: phoneNumber })

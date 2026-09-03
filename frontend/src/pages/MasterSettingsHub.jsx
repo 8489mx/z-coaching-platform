@@ -1,41 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { 
-  Settings, 
-  Layers, 
-  Video, 
-  Crown, 
-  Salad, 
-  Sliders, 
-  Plus, 
-  Search, 
-  Check, 
-  X, 
-  Edit3, 
-  Trash2, 
-  ExternalLink, 
-  ShieldCheck, 
-  Database, 
-  FileText,
-  ChevronUp,
-  ChevronDown,
-  Save,
-  CheckCircle2,
-  Palette,
-  Sparkles,
-  RotateCcw,
-  User,
-  Phone,
-  CreditCard,
-  Globe,
-  MessageSquare,
-  Award,
-  Activity,
-  Droplets,
-  Footprints,
-  Eye,
-  Send,
-  Building2
-} from 'lucide-react';
+import { Settings, Layers, Video, Crown, Salad, Sliders, Plus, Search, Check, X, Edit3, Trash2, ExternalLink, ShieldCheck, Database, FileText, ChevronUp, ChevronDown, Save, CheckCircle2, Palette, Sparkles, RotateCcw, User, Phone, CreditCard, Globe, MessageSquare, Award, Activity, Droplets, Footprints, Eye, Send, Building2, Loader2 } from 'lucide-react';
 import { API_BASE } from '../config/api';
 import AdminLayout from '../components/layout/AdminLayout';
 import EditQuestionModal from '../components/modals/EditQuestionModal';
@@ -43,13 +7,7 @@ import EditExerciseModal from '../components/modals/EditExerciseModal';
 import EditPackageModal from '../components/modals/EditPackageModal';
 import { PageHeader } from '@/shared/components/page-header';
 import { FormSection } from '@/shared/components/form-section';
-import { 
-  THEME_PALETTES, 
-  getStoredCoachConfig, 
-  saveCoachConfig, 
-  applyThemeLive, 
-  deriveThemeColors 
-} from '../utils/themeAndCoachConfig';
+import { THEME_PALETTES, getStoredCoachConfig, saveCoachConfig, applyThemeLive, deriveThemeColors } from '../utils/themeAndCoachConfig';
 
 const SECTION_TRANSLATIONS = {
   personal: '1. البيانات الشخصية والأهداف',
@@ -102,9 +60,9 @@ const DEFAULT_PACKAGES = [
   },
   {
     id: "MAX_3_PLUS_1",
-    name_ar: "باقة ماكس VIP",
-    name_en: "Max VIP Package",
-    badge_ar: "VIP أقصى اهتمام ومتابعة",
+    name_ar: "باقة MAX",
+    name_en: "MAX Package",
+    badge_ar: "أقصى اهتمام ومتابعة",
     duration_months: 3,
     free_months: 1,
     total_months: 4,
@@ -719,7 +677,7 @@ export default function MasterSettingsHub() {
                             href={ex.video_url || `https://www.youtube.com/watch?v=${ex.video_id}`}
                             target="_blank"
                             rel="noreferrer"
-                            style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', background: '#FEF2F2', border: '1px solid #FECACA', color: '#DC2626', padding: '2px 8px', borderRadius: '4px', textDecoration: 'none', fontSize: '11px', fontWeight: 700 }}
+                            style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', background: '#F8FAFC', border: '1px solid #E2E8F0', color: '#DC2626', padding: '2px 8px', borderRadius: '4px', textDecoration: 'none', fontSize: '11px', fontWeight: 700 }}
                           >
                             <Video size={12} />
                             <span>معاينة الفيديو</span>
@@ -754,7 +712,10 @@ export default function MasterSettingsHub() {
                   <div>
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4px' }}>
                       <span style={{ background: '#F1F5F9', border: '1px solid #CBD5E1', color: '#0F172A', padding: '1px 8px', borderRadius: '4px', fontSize: '10.5px', fontWeight: 800 }}>{pkg.badge_ar}</span>
-                      <strong style={{ fontSize: '18px', color: '#0F172A', fontFamily: 'JetBrains Mono, Cairo' }}>{pkg.price_egp} ج.م</strong>
+                      <div style={{ display: 'flex', alignItems: 'baseline', gap: '4px' }}>
+                        <strong style={{ fontSize: '18px', color: '#0F172A', fontFamily: 'JetBrains Mono, Cairo' }}>{pkg.price_egp}</strong>
+                        <span style={{ fontSize: '12px', color: '#64748B', fontFamily: 'Cairo, sans-serif', fontWeight: 700 }}>ج.م</span>
+                      </div>
                     </div>
                     <h4 style={{ margin: '0 0 2px 0', fontSize: '14px', fontWeight: 800, color: '#0F172A' }}>{pkg.name_ar}</h4>
                     <small style={{ color: '#64748B', fontSize: '11px' }}>المدة: {pkg.total_months} شهور ({pkg.duration_months} + {pkg.free_months} مجاناً)</small>
@@ -832,8 +793,7 @@ export default function MasterSettingsHub() {
             {saveSuccessMsg && (
               <div 
                 style={{ 
-                  background: '#F0FDF4', 
-                  border: '1px solid #BBF7D0', 
+                  background: '#F8FAFC', border: '1px solid #E2E8F0', 
                   padding: '10px 16px', 
                   borderRadius: '8px', 
                   color: '#166534', 
@@ -1137,7 +1097,7 @@ export default function MasterSettingsHub() {
                           fontWeight: 800
                         }}
                       >
-                        باقة ماكس VIP
+                        باقة MAX
                       </span>
                     </div>
                   </div>

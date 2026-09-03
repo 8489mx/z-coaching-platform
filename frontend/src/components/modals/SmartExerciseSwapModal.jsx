@@ -1,3 +1,4 @@
+import { API_BASE } from '../../config/api';
 import React, { useEffect, useState } from 'react';
 
 export default function SmartExerciseSwapModal({
@@ -27,7 +28,7 @@ export default function SmartExerciseSwapModal({
 
     const exCode = currentExercise.exercise_code || currentExercise.id || currentExercise;
     setLoading(true);
-    fetch(`/api/v1/exercises/swaps/${encodeURIComponent(exCode)}`)
+    fetch(`${API_BASE}/api/v1/exercises/swaps/${encodeURIComponent(exCode)}`)
       .then((res) => res.json())
       .then((data) => {
         setSwaps(data.swaps || []);
@@ -48,7 +49,7 @@ export default function SmartExerciseSwapModal({
     try {
       setApplyingCode(candidate.exercise_code);
       if (programId) {
-        const res = await fetch(`/api/v1/exercises/swap-in-program/${programId}`, {
+        const res = await fetch(`${API_BASE}/api/v1/exercises/swap-in-program/${programId}`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({

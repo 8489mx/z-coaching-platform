@@ -1,11 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { DialogShell } from '@/shared/components/dialog-shell';
-import {
-  ICON_COLOR_PRESETS,
-  useProductIconSettings,
-  getEffectiveIconColor,
-} from './product-icon-theme';
+import { ICON_COLOR_PRESETS, useProductIconSettings, getEffectiveIconColor } from './product-icon-theme';
 import { ProductIcon } from './product-svg-catalog';
 import { productsApi } from '@/features/products/api/products.api';
 import { guessProductIcon } from '@/features/products/lib/product-smart-matcher';

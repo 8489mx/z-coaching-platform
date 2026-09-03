@@ -37,7 +37,7 @@ const User = sequelize.define("User", {
   },
   subscription_package: {
     type: DataTypes.STRING,
-    defaultValue: "3_MONTHS_VIP",
+    defaultValue: "ELITE",
     allowNull: true,
   },
   subscription_price: {

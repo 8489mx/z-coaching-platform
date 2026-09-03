@@ -1,16 +1,5 @@
 import React, { useState } from 'react';
-import { 
-  User, 
-  Activity, 
-  TrendingUp, 
-  TrendingDown, 
-  Calendar, 
-  Settings2, 
-  ChevronRight,
-  Target,
-  ArrowRightLeft,
-  CheckCircle2
-} from 'lucide-react';
+import { User, Activity, TrendingUp, TrendingDown, Calendar, Settings2, ChevronRight, Target, ArrowRightLeft, CheckCircle2 } from 'lucide-react';
 import { useNavigate, useParams } from 'react-router-dom';
 
 import AdminLayout from '../components/layout/AdminLayout';

@@ -1,44 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { 
-  Calculator, 
-  Flame, 
-  Zap, 
-  Dumbbell, 
-  Droplet, 
-  Footprints, 
-  Copy, 
-  Check, 
-  Save, 
-  RotateCw, 
-  MessageCircle,
-  Sparkles,
-  UtensilsCrossed,
-  Search,
-  Plus,
-  Edit2,
-  Trash2,
-  X,
-  Apple,
-  Fish,
-  Beef,
-  Wheat,
-  ShieldAlert,
-  Info,
-  CheckCircle2,
-  Layers,
-  Scale,
-  LayoutGrid,
-  Table as TableIcon
-} from 'lucide-react';
+import { Calculator, Flame, Zap, Dumbbell, Droplet, Footprints, Activity, Copy, Check, Save, RotateCw, MessageCircle, Sparkles, UtensilsCrossed, Search, Plus, Edit2, Trash2, X, Apple, Fish, Beef, Wheat, ShieldAlert, Info, CheckCircle2, Layers, Scale, LayoutGrid, Table as TableIcon } from 'lucide-react';
 import { API_BASE } from '../config/api';
 import AdminLayout from '../components/layout/AdminLayout';
 import { copyToClipboard } from '../utils/clipboardUtils';
-import {
-  calculateMetabolicMacroProfile,
-  DAILY_ACTIVITY_FACTORS,
-  WORKOUT_FREQUENCY_FACTORS,
-  GOAL_CALORIE_MULTIPLIERS
-} from '../utils/metabolicMacroEngine';
+import { calculateMetabolicMacroProfile, DAILY_ACTIVITY_FACTORS, WORKOUT_FREQUENCY_FACTORS, GOAL_CALORIE_MULTIPLIERS } from '../utils/metabolicMacroEngine';
 import { DEFAULT_FOOD_CATALOG } from '../data/defaultFoodsCatalog';
 
 export default function MacroCalculator() {
@@ -349,7 +314,7 @@ export default function MacroCalculator() {
       `*الكاربوهيدرات:* ${targetCarbGrams} جم (${carbsCalories} kcal)\n` +
       `*الدهون الصحية:* ${targetFatGrams} جم (${fatCalories} kcal)\n\n` +
       `*احتياج الماء:* ${waterTargetLiters} لتر / يوم\n` +
-      `*النشاط والخطوات:* ${stepsTarget.toLocaleString()} خطوة / يوم\n\n` +
+      `*جلسة الكارديو:* 30 دقيقة مشي مائل / عجلة (4 مرات أسبوعياً)\n\n` +
       `*معدل الحرق الأساسي (BMR):* ${bmr} kcal\n` +
       `*استهلاك الطاقة اليومي (TDEE):* ${tdee} kcal\n\n` +
       `منظومة Z-Coaching الاحترافية`;
@@ -627,8 +592,7 @@ export default function MacroCalculator() {
                           {/* Column 2: Calories per 100g */}
                           <td style={{ padding: '9px 12px', textAlign: 'center' }}>
                             <span style={{
-                              background: '#FFFBEB',
-                              border: '1px solid #FDE68A',
+                              background: '#F8FAFC', border: '1px solid #E2E8F0',
                               color: '#92400E',
                               padding: '3px 10px',
                               borderRadius: '6px',
@@ -649,8 +613,7 @@ export default function MacroCalculator() {
                             <div style={{ display: 'inline-flex', alignItems: 'center', gap: '5px', direction: 'ltr' }}>
                               <span style={{
                                 width: '56px',
-                                background: '#F0F9FF',
-                                border: '1px solid #BAE6FD',
+                                background: '#F8FAFC', border: '1px solid #E2E8F0',
                                 color: '#0369A1',
                                 padding: '3px 0',
                                 borderRadius: '5px',
@@ -685,8 +648,7 @@ export default function MacroCalculator() {
                               </span>
                               <span style={{
                                 width: '56px',
-                                background: '#F0FDF4',
-                                border: '1px solid #BBF7D0',
+                                background: '#F8FAFC', border: '1px solid #E2E8F0',
                                 color: '#15803D',
                                 padding: '3px 0',
                                 borderRadius: '5px',
@@ -965,13 +927,13 @@ export default function MacroCalculator() {
 
               {/* Macro 3-Boxes */}
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '8px', marginBottom: '12px' }}>
-                <div style={{ background: '#F0F9FF', border: '1px solid #BAE6FD', padding: '8px', borderRadius: '6px', textAlign: 'center' }}>
+                <div style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', padding: '8px', borderRadius: '6px', textAlign: 'center' }}>
                   <div style={{ fontSize: '10.5px', fontWeight: 800, color: '#0284C7' }}>البروتين</div>
                   <div style={{ fontSize: '16px', fontWeight: 900, color: '#0F172A' }}>{targetProteinGrams} <small style={{ fontSize: '10px' }}>جم</small></div>
                   <div style={{ fontSize: '9.5px', color: '#64748B', fontWeight: 600 }}>{proteinCalories} kcal</div>
                 </div>
 
-                <div style={{ background: '#FFFBEB', border: '1px solid #FDE68A', padding: '8px', borderRadius: '6px', textAlign: 'center' }}>
+                <div style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', padding: '8px', borderRadius: '6px', textAlign: 'center' }}>
                   <div style={{ fontSize: '10.5px', fontWeight: 800, color: '#D97706' }}>الكارب</div>
                   <div style={{ fontSize: '16px', fontWeight: 900, color: '#0F172A' }}>{targetCarbGrams} <small style={{ fontSize: '10px' }}>جم</small></div>
                   <div style={{ fontSize: '9.5px', color: '#64748B', fontWeight: 600 }}>{carbsCalories} kcal</div>
@@ -995,10 +957,10 @@ export default function MacroCalculator() {
                 </div>
 
                 <div style={{ background: '#F8FAFC', padding: '6px 8px', borderRadius: '6px', border: '1px solid #E2E8F0', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                  <Footprints size={14} color="#16A34A" />
+                  <Activity size={14} color="#16A34A" />
                   <div>
-                    <div style={{ fontSize: '9.5px', color: '#64748B', fontWeight: 700 }}>الخطوات اليومية</div>
-                    <div style={{ fontSize: '11.5px', fontWeight: 800, color: '#0F172A' }}>{stepsTarget.toLocaleString()} خطوة</div>
+                    <div style={{ fontSize: '9.5px', color: '#64748B', fontWeight: 700 }}>جلسة الكارديو</div>
+                    <div style={{ fontSize: '11.5px', fontWeight: 800, color: '#0F172A' }}>30 دقيقة / 4 أيام</div>
                   </div>
                 </div>
               </div>

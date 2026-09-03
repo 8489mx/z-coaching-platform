@@ -4,7 +4,7 @@
  * Monitors trainee progress near completion of 16-week lifecycle:
  *   1. Identifies Trainees entering Weeks 14-15.
  *   2. Recommends Next Evolutionary Phase (Cutting -> Reverse Dieting & Lean Hypertrophy).
- *   3. Generates VIP Early-Bird Renewal Offer with custom discount code and WhatsApp pitch.
+ *   3. Generates MAX Early-Bird Renewal Offer with custom discount code and WhatsApp pitch.
  */
 
 export function evaluateClientRenewalEligibility({
@@ -12,7 +12,7 @@ export function evaluateClientRenewalEligibility({
   client_name = 'سارة المنصوري',
   phone_number = '01011111110',
   current_week = 14,
-  package_tier = 'MAX_VIP',
+  package_tier = 'MAX',
   starting_weight_kg = 88.0,
   current_weight_kg = 74.5,
   initial_goal = 'خسارة دهون وتنشيف',
@@ -35,7 +35,7 @@ export function evaluateClientRenewalEligibility({
   const discountCode = `KZ-RENEW-${Math.round(weightDropKg)}KG`;
   const discountPercent = 25;
 
-  const renewalPitchAr = `مساء الورد يا ${client_name}! 🌟\n\nألف مبروك وصولك للأسبوع ${current_week} بإنجاز أسطوري (خسارة ${weightDropKg} كجم والتزام بنسبة ${adherence_rate_percent}%)!\n\nعشان نحافظ على الفورمة ونبدأ المرحلة القادمة:\n🎯 ${nextPhaseGoal}\n\nجهزتلك عرض تجديد مبكر كأحد أبطال الـ VIP بخصم ${discountPercent}% بكود: (${discountCode}).\n\nجاهز نثبت إنجازك وننطلق للدورة الجديدة مع بعض؟`;
+  const renewalPitchAr = `مساء الورد يا ${client_name}! 🌟\n\nألف مبروك وصولك للأسبوع ${current_week} بإنجاز أسطوري (خسارة ${weightDropKg} كجم والتزام بنسبة ${adherence_rate_percent}%)!\n\nعشان نحافظ على الفورمة ونبدأ المرحلة القادمة:\n🎯 ${nextPhaseGoal}\n\nجهزتلك عرض تجديد مبكر كأحد أبطال باقة MAX بخصم ${discountPercent}% بكود: (${discountCode}).\n\nجاهز نثبت إنجازك وننطلق للدورة الجديدة مع بعض؟`;
 
   const cleanPhone = String(phone_number || '').replace(/[^0-9]/g, '');
   const normalizedPhone = cleanPhone.startsWith('20')

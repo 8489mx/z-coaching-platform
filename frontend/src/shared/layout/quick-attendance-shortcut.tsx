@@ -37,7 +37,7 @@ function formatTimeText(value?: string) {
       const match = String(value).match(/(\d{2}):(\d{2})/);
       return match ? `${match[1]}:${match[2]}` : '—';
     }
-    return d.toLocaleTimeString('ar-EG', { hour: '2-digit', minute: '2-digit', hour12: true });
+    return d.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true });
   } catch {
     return '—';
   }
@@ -174,7 +174,7 @@ export function QuickAttendanceShortcut({ onClose }: QuickAttendanceShortcutProp
           checkInAt: nowIso(),
           source: 'manual',
         });
-        setFeedback({ type: 'success', message: `تم تسجيل حضور "${selectedEmployee.displayName || selectedEmployee.firstName}" بنجاح في ${now.toLocaleTimeString('ar-EG', { hour: '2-digit', minute: '2-digit', hour12: true })}` });
+        setFeedback({ type: 'success', message: `تم تسجيل حضور "${selectedEmployee.displayName || selectedEmployee.firstName}" بنجاح في ${now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true })}` });
         await attendanceQuery.refetch();
         return;
       }
@@ -186,7 +186,7 @@ export function QuickAttendanceShortcut({ onClose }: QuickAttendanceShortcutProp
           checkOutAt: nowIso(),
           source: 'manual',
         });
-        setFeedback({ type: 'success', message: `تم تسجيل انصراف "${selectedEmployee.displayName || selectedEmployee.firstName}" بنجاح في ${now.toLocaleTimeString('ar-EG', { hour: '2-digit', minute: '2-digit', hour12: true })}` });
+        setFeedback({ type: 'success', message: `تم تسجيل انصراف "${selectedEmployee.displayName || selectedEmployee.firstName}" بنجاح في ${now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true })}` });
         await attendanceQuery.refetch();
       }
     } catch (err) {
@@ -209,7 +209,7 @@ export function QuickAttendanceShortcut({ onClose }: QuickAttendanceShortcutProp
       });
       setFeedback({
         type: 'success',
-        message: `تم بدء وردية / جلسة جديدة للموظف "${selectedEmployee.displayName || selectedEmployee.firstName}" في ${now.toLocaleTimeString('ar-EG', { hour: '2-digit', minute: '2-digit', hour12: true })}`,
+        message: `تم بدء وردية / جلسة جديدة للموظف "${selectedEmployee.displayName || selectedEmployee.firstName}" في ${now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true })}`,
       });
       await attendanceQuery.refetch();
     } catch (err) {
@@ -238,8 +238,8 @@ export function QuickAttendanceShortcut({ onClose }: QuickAttendanceShortcutProp
     }
   }
 
-  const dateFormatted = now.toLocaleDateString('ar-EG', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
-  const timeFormatted = now.toLocaleTimeString('ar-EG', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: true });
+  const dateFormatted = now.toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+  const timeFormatted = now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: true });
 
   const topQuickEmployees = useMemo(() => employees.slice(0, 6), [employees]);
   const workedDuration = calculateWorkedTime(selectedAttendance?.checkInAt, selectedAttendance?.checkOutAt);

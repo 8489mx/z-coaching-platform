@@ -31,16 +31,26 @@ import { API_BASE } from '../config/api';
 import { FOOD_DATABASE } from '../utils/foodSwapEngine';
 import defaultMobilityCatalog from '../data/mobilityCatalog.json';
 
-const FOOD_DATABASE_LIST = Object.values(FOOD_DATABASE || {}).map(fd => ({
-  ...fd,
-  name: fd.name_ar || fd.name || fd.code,
-  p: Number(fd.protein_per_100g ?? fd.p ?? 0),
-  c: Number(fd.carbs_per_100g ?? fd.c ?? 0),
-  f: Number(fd.fat_per_100g ?? fd.f ?? 0),
-  cal: Number(fd.calories_per_100g ?? fd.cal ?? 0),
-  amount: 100,
-  unit: 'جم'
-}));
+const rawFoodsList = Object.values(FOOD_DATABASE || {})
+  .filter(fd => Boolean(fd && typeof fd === 'object' && (fd.name_ar || fd.name || fd.code)));
+
+const uniqueFoodsMap = new Map();
+rawFoodsList.forEach(fd => {
+  const code = fd.code || fd.id;
+  if (code && !uniqueFoodsMap.has(code)) {
+    uniqueFoodsMap.set(code, {
+      ...fd,
+      name: fd.name_ar || fd.name || code,
+      p: Number(fd.protein_per_100g ?? fd.p ?? 0),
+      c: Number(fd.carbs_per_100g ?? fd.c ?? 0),
+      f: Number(fd.fat_per_100g ?? fd.f ?? 0),
+      cal: Number(fd.calories_per_100g ?? fd.cal ?? 0),
+      amount: 100,
+      unit: 'جم'
+    });
+  }
+});
+const FOOD_DATABASE_LIST = Array.from(uniqueFoodsMap.values())
 
 import { STRESS_TEST_CLIENTS, CLINICAL_MASTER_BLUEPRINTS } from '../data/stressTestClientsBlueprints';
 
@@ -290,6 +300,78 @@ export default function CoachEditor() {
       carbs: Math.round(c),
       fats: Math.round(f)
     };
+  };
+
+  const handleRefreshAllMeals = () => {
+    const alternateProteins = [
+      { code: 'BEEF_LEAN', name: 'لحم بقري أحمر قليل الدهن مشوي', p100: 26, c100: 0, f100: 4, cal100: 140 },
+      { code: 'SALMON_BAKED', name: 'سلمون مخبوز بالفرن مع الليمون', p100: 22, c100: 0, f100: 12, cal100: 200 },
+      { code: 'CHICKEN_BREAST', name: 'صدور دجاج مشوية بتتبيلة الزعتر', p100: 31, c100: 0, f100: 3.6, cal100: 165 },
+      { code: 'WHITE_FISH_FILLET', name: 'سمك فيليه أبيض مشوي بالأعشاب', p100: 24, c100: 0, f100: 1.5, cal100: 110 },
+      { code: 'EGGS_BOILED', name: 'بيض مسلوق طازج', p100: 13, c100: 1, f100: 10, cal100: 155 }
+    ];
+
+    const alternateCarbs = [
+      { code: 'SWEET_POTATO', name: 'بطاطا حلوة مشوية', p100: 2, c100: 24, f100: 0.2, cal100: 105 },
+      { code: 'BASMATI_RICE', name: 'أرز بسمتي أبيض مطبوخ', p100: 2.7, c100: 28, f100: 0.3, cal100: 130 },
+      { code: 'OATMEAL_RAW', name: 'شوفان كامل الحبة مع القرفة', p100: 13.5, c100: 68, f100: 6.5, cal100: 375 },
+      { code: 'POTATO_BOILED', name: 'بطاطس مسلوقة ومهروسة', p100: 2, c100: 20, f100: 0.1, cal100: 87 }
+    ];
+
+    setProgram(prev => {
+      if (!prev?.nutrition?.meals) return prev;
+      const refreshedMeals = prev.nutrition.meals.map((meal, mIdx) => {
+        const refreshedItems = meal.items.map((item, itIdx) => {
+          if (item.p > item.c && item.p > 10) {
+            const nextProt = alternateProteins[(mIdx + itIdx + 1) % alternateProteins.length];
+            const targetProteinGrams = item.p;
+            const newAmount = Math.max(30, Math.round((targetProteinGrams / nextProt.p100) * 100));
+            return {
+              ...item,
+              code: nextProt.code,
+              name: nextProt.name,
+              amount: newAmount,
+              p: Number((nextProt.p100 * (newAmount / 100)).toFixed(1)),
+              c: Number((nextProt.c100 * (newAmount / 100)).toFixed(1)),
+              f: Number((nextProt.f100 * (newAmount / 100)).toFixed(1)),
+              cal: Math.round(nextProt.cal100 * (newAmount / 100))
+            };
+          }
+          if (item.c > item.p && item.c > 15) {
+            const nextCarb = alternateCarbs[(mIdx + itIdx + 1) % alternateCarbs.length];
+            const targetCarbGrams = item.c;
+            const newAmount = Math.max(30, Math.round((targetCarbGrams / nextCarb.c100) * 100));
+            return {
+              ...item,
+              code: nextCarb.code,
+              name: nextCarb.name,
+              amount: newAmount,
+              p: Number((nextCarb.p100 * (newAmount / 100)).toFixed(1)),
+              c: Number((nextCarb.c100 * (newAmount / 100)).toFixed(1)),
+              f: Number((nextCarb.f100 * (newAmount / 100)).toFixed(1)),
+              cal: Math.round(nextCarb.cal100 * (newAmount / 100))
+            };
+          }
+          return item;
+        });
+
+        return {
+          ...meal,
+          items: refreshedItems,
+          macros: recalculateMeal(refreshedItems)
+        };
+      });
+
+      return {
+        ...prev,
+        nutrition: {
+          ...prev.nutrition,
+          meals: refreshedMeals
+        }
+      };
+    });
+
+    showToast('تم تجديد أصناف جميع الوجبات تلقائياً مع الحفاظ الكامل على الماكروز والسعرات');
   };
 
   const handleUpdateFoodAmount = (mealId, itemIdx, newAmount) => {
@@ -1442,6 +1524,102 @@ export default function CoachEditor() {
                 <Plus size={13} />
                 <span>إضافة وجبة</span>
               </button>
+            </div>
+
+            {/* Coach-Authorized Smart Refeed / Free Meal Protocol Controller */}
+            <div style={{ background: program.nutrition?.refeed_authorized ? '#FEFCE8' : '#F8FAFC', border: '1px solid ' + (program.nutrition?.refeed_authorized ? '#FEF08A' : '#E2E8F0'), borderRadius: '8px', padding: '10px 14px', display: 'flex', flexDirection: 'column', gap: '8px', transition: 'all 0.15s ease' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '8px' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <span style={{ fontSize: '16px' }}>🍕</span>
+                  <div>
+                    <div style={{ fontSize: '12px', fontWeight: 800, color: '#0F172A' }}>
+                      تصريح الوجبة المفتوحة الذكية لهذا الأسبوع (Smart Refeed Authorization)
+                    </div>
+                    <div style={{ fontSize: '10.5px', color: '#64748B' }}>
+                      مخفية تماماً عن المتدرب ما لم تقم بتفعيلها بنفسك، لمنع استخدامها كحجة للتخبيص.
+                    </div>
+                  </div>
+                </div>
+
+                <label style={{ display: 'flex', alignItems: 'center', gap: '6px', cursor: 'pointer', background: program.nutrition?.refeed_authorized ? '#CA8A04' : '#E2E8F0', padding: '4px 10px', borderRadius: '6px', color: program.nutrition?.refeed_authorized ? '#FFFFFF' : '#475569', fontSize: '11px', fontWeight: 800 }}>
+                  <input
+                    type="checkbox"
+                    checked={Boolean(program.nutrition?.refeed_authorized)}
+                    onChange={(e) => {
+                      const checked = e.target.checked;
+                      setProgram(prev => ({
+                        ...prev,
+                        nutrition: {
+                          ...prev.nutrition,
+                          refeed_authorized: checked,
+                          refeed_protocol: prev.nutrition?.refeed_protocol || 'HIGH_CARB_CLEAN_REFEED',
+                          refeed_day: prev.nutrition?.refeed_day || 'بعد تمرين الأرجل أو الظهر',
+                          refeed_notes: prev.nutrition?.refeed_notes || 'وجبة كارب عالي نظيفة لملء الجليكوجين بعد تمرين شاق'
+                        }
+                      }));
+                      showToast(checked ? 'تم تفعيل الوجبة المفتوحة لهذا الأسبوع للمتدرب' : 'تم إغلاق وحظر الوجبة المفتوحة');
+                    }}
+                    style={{ cursor: 'pointer' }}
+                  />
+                  <span>{program.nutrition?.refeed_authorized ? 'مصرح بها لهذا الأسبوع' : 'غير مصرح بها (مغلقة)'}</span>
+                </label>
+              </div>
+
+              {program.nutrition?.refeed_authorized && (
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '8px', paddingTop: '6px', borderTop: '1px solid #FEF08A' }}>
+                  <div>
+                    <span style={{ fontSize: '10px', fontWeight: 700, color: '#854D0E', display: 'block', marginBottom: '2px' }}>نوع البروتوكول:</span>
+                    <select
+                      value={program.nutrition?.refeed_protocol || 'HIGH_CARB_CLEAN_REFEED'}
+                      onChange={(e) => {
+                        const val = e.target.value;
+                        setProgram(prev => ({
+                          ...prev,
+                          nutrition: { ...prev.nutrition, refeed_protocol: val }
+                        }));
+                      }}
+                      style={{ width: '100%', height: '28px', borderRadius: '4px', border: '1px solid #CBD5E1', fontSize: '11px', fontWeight: 700, background: '#FFFFFF', padding: '0 6px' }}
+                    >
+                      <option value="HIGH_CARB_CLEAN_REFEED">رفيد نظيف عالي الكاربوهيدرات (سوشي/أرز/مكرونة/بيتزا دايت)</option>
+                      <option value="CONTROLLED_FREE_MEAL">وجبة حرة نفسية بضوابط (45 دقيقة - بروتين وسلطة أولاً)</option>
+                    </select>
+                  </div>
+
+                  <div>
+                    <span style={{ fontSize: '10px', fontWeight: 700, color: '#854D0E', display: 'block', marginBottom: '2px' }}>توقيت الوجبة المسموح:</span>
+                    <input
+                      type="text"
+                      value={program.nutrition?.refeed_day || 'بعد تمرين الأرجل أو الظهر'}
+                      onChange={(e) => {
+                        const val = e.target.value;
+                        setProgram(prev => ({
+                          ...prev,
+                          nutrition: { ...prev.nutrition, refeed_day: val }
+                        }));
+                      }}
+                      placeholder="مثلاً: يوم الخميس بعد تمرين الأرجل"
+                      style={{ width: '100%', height: '28px', borderRadius: '4px', border: '1px solid #CBD5E1', fontSize: '11px', padding: '0 8px', boxSizing: 'border-box' }}
+                    />
+                  </div>
+
+                  <div style={{ gridColumn: '1 / -1' }}>
+                    <span style={{ fontSize: '10px', fontWeight: 700, color: '#854D0E', display: 'block', marginBottom: '2px' }}>تعليمات وتوجيهات الكابتن للوجبة:</span>
+                    <input
+                      type="text"
+                      value={program.nutrition?.refeed_notes || 'وجبة واحدة فقط خلال 45 دقيقة بدون شراهة مع كوبين ماء قبل البدء'}
+                      onChange={(e) => {
+                        const val = e.target.value;
+                        setProgram(prev => ({
+                          ...prev,
+                          nutrition: { ...prev.nutrition, refeed_notes: val }
+                        }));
+                      }}
+                      placeholder="تعليماتك للمتدرب للوجبة المفتوحة..."
+                      style={{ width: '100%', height: '28px', borderRadius: '4px', border: '1px solid #CBD5E1', fontSize: '11px', padding: '0 8px', boxSizing: 'border-box' }}
+                    />
+                  </div>
+                </div>
+              )}
             </div>
 
             {/* Meals Grid (2-Column Balanced Sleek Grid) */}

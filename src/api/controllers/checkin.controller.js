@@ -160,6 +160,10 @@ export async function approveCheckin(req, res) {
           progData.nutrition_program.macro_targets.calories_kcal += analysis.suggested_calorie_delta;
           progData.nutrition_program.macro_targets.carb_g += analysis.suggested_carb_delta_g || Math.round(analysis.suggested_calorie_delta / 4);
         }
+        if (progData.nutrition?.targets) {
+          progData.nutrition.targets.calories = (progData.nutrition.targets.calories || 2000) + analysis.suggested_calorie_delta;
+          progData.nutrition.targets.carbs = (progData.nutrition.targets.carbs || 150) + (analysis.suggested_carb_delta_g || Math.round(analysis.suggested_calorie_delta / 4));
+        }
       }
 
       // Apply Deload if recommended

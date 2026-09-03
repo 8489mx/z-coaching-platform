@@ -15,6 +15,7 @@
  */
 
 export const TASTE_PROFILES = {
+  FRUIT_CARB: 'FRUIT_CARB',
   BREAKFAST_SAVORY_PROTEIN: 'BREAKFAST_SAVORY_PROTEIN',
   SWEET_SHAKE_PROTEIN: 'SWEET_SHAKE_PROTEIN',
   MAIN_MEAL_PROTEIN: 'MAIN_MEAL_PROTEIN',
@@ -466,7 +467,476 @@ export const FOOD_DATABASE = {
     calories_per_100g: 160,
     allergens: [],
     is_gluten_free: true
+  },
+  // --- GULF & EGYPTIAN AUTHENTIC PROTEIN SOURCES ---
+  CAMEL_MEAT_HASHI: {
+    code: 'CAMEL_MEAT_HASHI',
+    name_ar: 'لحم حاشي قليل الدسم (جمل صغير)',
+    name_en: 'Lean Hashi Camel Meat',
+    macro_type: 'PROTEIN',
+    taste_profile: TASTE_PROFILES.MAIN_MEAL_PROTEIN,
+    protein_per_100g: 24,
+    carbs_per_100g: 0,
+    fat_per_100g: 3.0,
+    calories_per_100g: 125,
+    yield_factor_raw_to_cooked: 0.72,
+    allergens: [],
+    purine_level: 'HIGH',
+    is_gluten_free: true,
+    is_legume: false,
+    is_dairy: false
+  },
+  HAMOUR_FISH_GRILLED: {
+    code: 'HAMOUR_FISH_GRILLED',
+    name_ar: 'سمك هامور مشوي على الفحم',
+    name_en: 'Grilled Hamour Grouper',
+    macro_type: 'PROTEIN',
+    taste_profile: TASTE_PROFILES.MAIN_MEAL_PROTEIN,
+    protein_per_100g: 22,
+    carbs_per_100g: 0,
+    fat_per_100g: 1.5,
+    calories_per_100g: 105,
+    yield_factor_raw_to_cooked: 0.80,
+    allergens: ['FISH'],
+    purine_level: 'LOW',
+    is_gluten_free: true,
+    is_legume: false,
+    is_dairy: false
+  },
+  KANAAD_KINGFISH_GRILLED: {
+    code: 'KANAAD_KINGFISH_GRILLED',
+    name_ar: 'سمك كنعد مشوي غني بالأوميجا 3',
+    name_en: 'Grilled Kingfish (Kanad)',
+    macro_type: 'PROTEIN',
+    taste_profile: TASTE_PROFILES.MAIN_MEAL_PROTEIN,
+    protein_per_100g: 23,
+    carbs_per_100g: 0,
+    fat_per_100g: 6.0,
+    calories_per_100g: 150,
+    yield_factor_raw_to_cooked: 0.80,
+    allergens: ['FISH'],
+    purine_level: 'MODERATE',
+    is_gluten_free: true,
+    is_legume: false,
+    is_dairy: false
+  },
+  TILAPIA_BOLTI_GRILLED: {
+    code: 'TILAPIA_BOLTI_GRILLED',
+    name_ar: 'سمك بلطي مشوي بالردة',
+    name_en: 'Grilled Tilapia (Bolti)',
+    macro_type: 'PROTEIN',
+    taste_profile: TASTE_PROFILES.MAIN_MEAL_PROTEIN,
+    protein_per_100g: 26,
+    carbs_per_100g: 0,
+    fat_per_100g: 2.5,
+    calories_per_100g: 128,
+    yield_factor_raw_to_cooked: 0.80,
+    allergens: ['FISH'],
+    purine_level: 'LOW',
+    is_gluten_free: true,
+    is_legume: false,
+    is_dairy: false
+  },
+  BOURI_FISH_GRILLED: {
+    code: 'BOURI_FISH_GRILLED',
+    name_ar: 'سمك بوري مشوي سنجاري لايت',
+    name_en: 'Grilled Grey Mullet (Bouri)',
+    macro_type: 'PROTEIN',
+    taste_profile: TASTE_PROFILES.MAIN_MEAL_PROTEIN,
+    protein_per_100g: 21,
+    carbs_per_100g: 0,
+    fat_per_100g: 5.0,
+    calories_per_100g: 135,
+    yield_factor_raw_to_cooked: 0.80,
+    allergens: ['FISH'],
+    purine_level: 'MODERATE',
+    is_gluten_free: true,
+    is_legume: false,
+    is_dairy: false
+  },
+  DIET_BEEF_KOFTA: {
+    code: 'DIET_BEEF_KOFTA',
+    name_ar: 'كفتة لحم بقري مشوية دايت',
+    name_en: 'Grilled Lean Beef Kofta',
+    macro_type: 'PROTEIN',
+    taste_profile: TASTE_PROFILES.MAIN_MEAL_PROTEIN,
+    protein_per_100g: 22,
+    carbs_per_100g: 3.0,
+    fat_per_100g: 7.0,
+    calories_per_100g: 165,
+    yield_factor_raw_to_cooked: 0.75,
+    allergens: [],
+    purine_level: 'HIGH',
+    is_gluten_free: true,
+    is_legume: false,
+    is_dairy: false
+  },
+  GRILLED_BEEF_LIVER: {
+    code: 'GRILLED_BEEF_LIVER',
+    name_ar: 'كبدة بقري مشوية (غنية بالحديد)',
+    name_en: 'Grilled Beef Liver',
+    macro_type: 'PROTEIN',
+    taste_profile: TASTE_PROFILES.MAIN_MEAL_PROTEIN,
+    protein_per_100g: 26,
+    carbs_per_100g: 4.0,
+    fat_per_100g: 4.5,
+    calories_per_100g: 165,
+    yield_factor_raw_to_cooked: 0.75,
+    allergens: [],
+    purine_level: 'HIGH',
+    is_gluten_free: true,
+    is_legume: false,
+    is_dairy: false
+  },
+  CHICKEN_MADHBI: {
+    code: 'CHICKEN_MADHBI',
+    name_ar: 'دجاج مظبي مشوي على الحجر بدون جلد',
+    name_en: 'Chicken Madhbi Skinless',
+    macro_type: 'PROTEIN',
+    taste_profile: TASTE_PROFILES.MAIN_MEAL_PROTEIN,
+    protein_per_100g: 28,
+    carbs_per_100g: 0,
+    fat_per_100g: 4.0,
+    calories_per_100g: 150,
+    yield_factor_raw_to_cooked: 0.75,
+    allergens: [],
+    purine_level: 'LOW_MODERATE',
+    is_gluten_free: true,
+    is_legume: false,
+    is_dairy: false
+  },
+  CHICKEN_SHAWARMA_LEAN: {
+    code: 'CHICKEN_SHAWARMA_LEAN',
+    name_ar: 'شاورما دجاج بصحن مشوية على الفحم دايت',
+    name_en: 'Grilled Lean Chicken Shawarma Platter',
+    macro_type: 'PROTEIN',
+    taste_profile: TASTE_PROFILES.MAIN_MEAL_PROTEIN,
+    protein_per_100g: 25,
+    carbs_per_100g: 2.0,
+    fat_per_100g: 5.0,
+    calories_per_100g: 155,
+    yield_factor_raw_to_cooked: 0.85,
+    allergens: [],
+    purine_level: 'LOW_MODERATE',
+    is_gluten_free: true,
+    is_legume: false,
+    is_dairy: false
+  },
+
+  // --- ARABIC BREAKFAST & SAVORY PROTEINS ---
+  SHAKSHOUKA_EGGS: {
+    code: 'SHAKSHOUKA_EGGS',
+    name_ar: 'شكشوكة بيض بالطماطم والبصل والكمون',
+    name_en: 'Traditional Arabic Shakshuka',
+    macro_type: 'PROTEIN',
+    taste_profile: TASTE_PROFILES.BREAKFAST_SAVORY_PROTEIN,
+    protein_per_100g: 9.5,
+    carbs_per_100g: 4.0,
+    fat_per_100g: 6.0,
+    calories_per_100g: 110,
+    yield_factor_raw_to_cooked: 1.0,
+    allergens: ['EGGS'],
+    purine_level: 'LOW',
+    is_gluten_free: true,
+    is_legume: false,
+    is_dairy: false
+  },
+  EGGS_OMELETTE: {
+    code: 'EGGS_OMELETTE',
+    name_ar: 'بيض أومليت بالخضار ونقطة زيت زيتون',
+    name_en: 'Vegetable Egg Omelette',
+    macro_type: 'PROTEIN',
+    taste_profile: TASTE_PROFILES.BREAKFAST_SAVORY_PROTEIN,
+    protein_per_100g: 11,
+    carbs_per_100g: 2.5,
+    fat_per_100g: 7.5,
+    calories_per_100g: 125,
+    yield_factor_raw_to_cooked: 1.0,
+    allergens: ['EGGS'],
+    purine_level: 'LOW',
+    is_gluten_free: true,
+    is_legume: false,
+    is_dairy: false
+  },
+  LABNEH_LIGHT: {
+    code: 'LABNEH_LIGHT',
+    name_ar: 'لبنة خفيفة الدسم بالزعتر وزيت الزيتون',
+    name_en: 'Light Labneh',
+    macro_type: 'PROTEIN',
+    taste_profile: TASTE_PROFILES.BREAKFAST_SAVORY_PROTEIN,
+    protein_per_100g: 10,
+    carbs_per_100g: 4.0,
+    fat_per_100g: 4.5,
+    calories_per_100g: 95,
+    yield_factor_raw_to_cooked: 1.0,
+    allergens: ['DAIRY'],
+    purine_level: 'LOW',
+    is_gluten_free: true,
+    is_legume: false,
+    is_dairy: true,
+    is_low_lactose: true
+  },
+  HALLOUMI_LIGHT: {
+    code: 'HALLOUMI_LIGHT',
+    name_ar: 'جبنة حلوم مشوية لايت',
+    name_en: 'Grilled Light Halloumi Cheese',
+    macro_type: 'PROTEIN',
+    taste_profile: TASTE_PROFILES.BREAKFAST_SAVORY_PROTEIN,
+    protein_per_100g: 22,
+    carbs_per_100g: 2.0,
+    fat_per_100g: 12.0,
+    calories_per_100g: 205,
+    yield_factor_raw_to_cooked: 1.0,
+    allergens: ['DAIRY'],
+    purine_level: 'LOW',
+    is_gluten_free: true,
+    is_legume: false,
+    is_dairy: true,
+    is_low_lactose: true
+  },
+  FETA_CHEESE_LIGHT: {
+    code: 'FETA_CHEESE_LIGHT',
+    name_ar: 'جبنة فيتا لايت قليلة الملح والدسم',
+    name_en: 'Light Low-Sodium Feta Cheese',
+    macro_type: 'PROTEIN',
+    taste_profile: TASTE_PROFILES.BREAKFAST_SAVORY_PROTEIN,
+    protein_per_100g: 17,
+    carbs_per_100g: 2.0,
+    fat_per_100g: 9.0,
+    calories_per_100g: 160,
+    yield_factor_raw_to_cooked: 1.0,
+    allergens: ['DAIRY'],
+    purine_level: 'LOW',
+    is_gluten_free: true,
+    is_legume: false,
+    is_dairy: true,
+    is_low_lactose: true
+  },
+  AIRFRYER_FALAFEL: {
+    code: 'AIRFRYER_FALAFEL',
+    name_ar: 'طعمية (فلافل) بيتي في القلاية الهوائية',
+    name_en: 'Air-Fried Homemade Falafel',
+    macro_type: 'PROTEIN',
+    taste_profile: TASTE_PROFILES.BREAKFAST_SAVORY_PROTEIN,
+    protein_per_100g: 12,
+    carbs_per_100g: 25,
+    fat_per_100g: 4.5,
+    calories_per_100g: 190,
+    yield_factor_raw_to_cooked: 1.0,
+    allergens: ['LEGUMES', 'SESAME'],
+    purine_level: 'MODERATE',
+    is_gluten_free: true,
+    is_legume: true,
+    is_dairy: false
+  },
+  TERMIS_LUPINI: {
+    code: 'TERMIS_LUPINI',
+    name_ar: 'ترمس بلدي مسلوق بالليمون والكمون (سناك عالي البروتين)',
+    name_en: 'Boiled Lupini Beans (Termis)',
+    macro_type: 'PROTEIN',
+    taste_profile: TASTE_PROFILES.BREAKFAST_SAVORY_PROTEIN,
+    protein_per_100g: 16,
+    carbs_per_100g: 10,
+    fat_per_100g: 3.0,
+    calories_per_100g: 120,
+    yield_factor_raw_to_cooked: 1.0,
+    allergens: ['LEGUMES'],
+    purine_level: 'MODERATE',
+    is_gluten_free: true,
+    is_legume: true,
+    is_dairy: false
+  },
+
+  // --- TRADITIONAL DAIRY ---
+  LOWFAT_LABAN_ROB: {
+    code: 'LOWFAT_LABAN_ROB',
+    name_ar: 'لبن رائب / روب قليل الدسم',
+    name_en: 'Low-Fat Laban / Rob',
+    macro_type: 'PROTEIN',
+    taste_profile: TASTE_PROFILES.SWEET_SHAKE_PROTEIN,
+    protein_per_100g: 4.0,
+    carbs_per_100g: 4.5,
+    fat_per_100g: 1.2,
+    calories_per_100g: 45,
+    yield_factor_raw_to_cooked: 1.0,
+    allergens: ['DAIRY'],
+    purine_level: 'LOW',
+    is_gluten_free: true,
+    is_legume: false,
+    is_dairy: true,
+    is_low_lactose: true
+  },
+  SKIM_MILK: {
+    code: 'SKIM_MILK',
+    name_ar: 'حليب بقري طازج خالي الدسم',
+    name_en: 'Fresh Skimmed Cow Milk',
+    macro_type: 'PROTEIN',
+    taste_profile: TASTE_PROFILES.SWEET_SHAKE_PROTEIN,
+    protein_per_100g: 3.4,
+    carbs_per_100g: 4.8,
+    fat_per_100g: 0.1,
+    calories_per_100g: 35,
+    yield_factor_raw_to_cooked: 1.0,
+    allergens: ['DAIRY'],
+    purine_level: 'LOW',
+    is_gluten_free: true,
+    is_legume: false,
+    is_dairy: true,
+    is_low_lactose: false
+  },
+
+  // --- GULF & EGYPTIAN MAIN CARBS ---
+  KABSA_SPICED_RICE: {
+    code: 'KABSA_SPICED_RICE',
+    name_ar: 'أرز كبسة / مجبوس خليجي بالبهارات واللومي دايت',
+    name_en: 'Diet Spiced Kabsa / Machboos Rice',
+    macro_type: 'CARBS',
+    taste_profile: TASTE_PROFILES.MAIN_CARB,
+    protein_per_100g: 2.9,
+    carbs_per_100g: 28,
+    fat_per_100g: 1.2,
+    calories_per_100g: 134,
+    yield_factor_raw_to_cooked: 2.6,
+    allergens: [],
+    is_gluten_free: true,
+    is_legume: false
+  },
+  EGYPTIAN_RICE_COOKED: {
+    code: 'EGYPTIAN_RICE_COOKED',
+    name_ar: 'أرز مصري أبيض حبة قصيرة مطبوخ',
+    name_en: 'Cooked Short-Grain Egyptian Rice',
+    macro_type: 'CARBS',
+    taste_profile: TASTE_PROFILES.MAIN_CARB,
+    protein_per_100g: 2.5,
+    carbs_per_100g: 28,
+    fat_per_100g: 0.3,
+    calories_per_100g: 130,
+    yield_factor_raw_to_cooked: 2.5,
+    allergens: [],
+    is_gluten_free: true,
+    is_legume: false
+  },
+  FREEKEH_EGYPTIAN_COOKED: {
+    code: 'FREEKEH_EGYPTIAN_COOKED',
+    name_ar: 'فريك مصري مطبوخ (قمح أخضر بطيء الامتصاص)',
+    name_en: 'Cooked Green Wheat Freekeh',
+    macro_type: 'CARBS',
+    taste_profile: TASTE_PROFILES.MAIN_CARB,
+    protein_per_100g: 4.0,
+    carbs_per_100g: 24,
+    fat_per_100g: 0.8,
+    calories_per_100g: 120,
+    yield_factor_raw_to_cooked: 2.4,
+    allergens: ['WHEAT', 'GLUTEN'],
+    is_gluten_free: false,
+    is_legume: false
+  },
+  JAREEH_CRACKED_WHEAT: {
+    code: 'JAREEH_CRACKED_WHEAT',
+    name_ar: 'جريش قمح مجروش مع اللبن الخفيف',
+    name_en: 'Traditional Cracked Wheat Jareesh',
+    macro_type: 'CARBS',
+    taste_profile: TASTE_PROFILES.MAIN_CARB,
+    protein_per_100g: 4.5,
+    carbs_per_100g: 21,
+    fat_per_100g: 1.5,
+    calories_per_100g: 115,
+    yield_factor_raw_to_cooked: 2.8,
+    allergens: ['WHEAT', 'GLUTEN', 'DAIRY'],
+    is_gluten_free: false,
+    is_legume: false
+  },
+  OKRA_BAMIA_TOMATO: {
+    code: 'OKRA_BAMIA_TOMATO',
+    name_ar: 'بامية مصرية مطبوخة بصلصة خفيفة وثوم',
+    name_en: 'Cooked Bamia Okra in Light Tomato Sauce',
+    macro_type: 'CARBS',
+    taste_profile: TASTE_PROFILES.MAIN_CARB,
+    protein_per_100g: 2.0,
+    carbs_per_100g: 7.0,
+    fat_per_100g: 0.2,
+    calories_per_100g: 38,
+    yield_factor_raw_to_cooked: 1.0,
+    allergens: [],
+    is_gluten_free: true,
+    is_legume: false
+  },
+
+  // --- TRADITIONAL BREADS & PRE-WORKOUT FRUITS ---
+  TAMEES_BREAD_BR: {
+    code: 'TAMEES_BREAD_BR',
+    name_ar: 'خبز تميس بُر بنخالة القمح الكاملة',
+    name_en: 'Whole Wheat Tamees Flatbread',
+    macro_type: 'CARBS',
+    taste_profile: TASTE_PROFILES.BREAKFAST_CARB,
+    protein_per_100g: 8.0,
+    carbs_per_100g: 48,
+    fat_per_100g: 1.5,
+    calories_per_100g: 235,
+    yield_factor_raw_to_cooked: 1.0,
+    allergens: ['WHEAT', 'GLUTEN'],
+    is_gluten_free: false,
+    is_legume: false
+  },
+  WHOLE_WHEAT_TORTILLA: {
+    code: 'WHOLE_WHEAT_TORTILLA',
+    name_ar: 'خبز تورتيلا قمح كامل',
+    name_en: 'Whole Wheat Tortilla Wrap',
+    macro_type: 'CARBS',
+    taste_profile: TASTE_PROFILES.BREAKFAST_CARB,
+    protein_per_100g: 8.5,
+    carbs_per_100g: 46,
+    fat_per_100g: 4.0,
+    calories_per_100g: 250,
+    yield_factor_raw_to_cooked: 1.0,
+    allergens: ['WHEAT', 'GLUTEN'],
+    is_gluten_free: false,
+    is_legume: false
+  },
+  DATES_KHALAS: {
+    code: 'DATES_KHALAS',
+    name_ar: 'تمر خلاص / سكري / عجوة فاخر (قبل التمرين)',
+    name_en: 'Saudi Dates (Khalas / Sukkari / Ajwa)',
+    macro_type: 'CARBS',
+    taste_profile: TASTE_PROFILES.FRUIT_CARB || TASTE_PROFILES.BREAKFAST_CARB,
+    protein_per_100g: 2.0,
+    carbs_per_100g: 75,
+    fat_per_100g: 0.2,
+    calories_per_100g: 282,
+    yield_factor_raw_to_cooked: 1.0,
+    allergens: [],
+    is_gluten_free: true,
+    is_legume: false
+  },
+
+  // --- HEALTHY ARABIC FATS ---
+  RAW_TAHINI_SESAME: {
+    code: 'RAW_TAHINI_SESAME',
+    name_ar: 'طحينة سمسم خام نقية 100%',
+    name_en: '100% Pure Raw Sesame Tahini',
+    macro_type: 'FATS',
+    taste_profile: TASTE_PROFILES.HEALTHY_FAT,
+    protein_per_100g: 18,
+    carbs_per_100g: 18,
+    fat_per_100g: 54,
+    calories_per_100g: 600,
+    allergens: ['SESAME'],
+    is_gluten_free: true
+  },
+  DARK_CHOCOLATE_85: {
+    code: 'DARK_CHOCOLATE_85',
+    name_ar: 'شوكولاتة داكنة 85% كاكاو نقي',
+    name_en: '85% Dark Chocolate',
+    macro_type: 'FATS',
+    taste_profile: TASTE_PROFILES.HEALTHY_FAT,
+    protein_per_100g: 8.0,
+    carbs_per_100g: 28,
+    fat_per_100g: 46,
+    calories_per_100g: 580,
+    allergens: [],
+    is_gluten_free: true
   }
+
 };
 
 export function isFoodClinicallySafe(foodItem, clinicalProfile = {}) {
@@ -542,6 +1012,30 @@ FOOD_DATABASE.cooked_basmati_rice = FOOD_DATABASE.BASMATI_RICE_COOKED;
 FOOD_DATABASE.cooked_potatoes = FOOD_DATABASE.BOILED_POTATOES;
 FOOD_DATABASE.raw_rolled_oats = FOOD_DATABASE.ROLLED_OATS_RAW;
 FOOD_DATABASE.extra_virgin_olive_oil = FOOD_DATABASE.EXTRA_VIRGIN_OLIVE_OIL;
+
+
+// Gulf and Egyptian Authentic Aliases
+FOOD_DATABASE.camel_meat_hashi = FOOD_DATABASE.CAMEL_MEAT_HASHI;
+FOOD_DATABASE.CAMEL_MEAT_LEAN = FOOD_DATABASE.CAMEL_MEAT_HASHI;
+FOOD_DATABASE.hamour_fish_grilled = FOOD_DATABASE.HAMOUR_FISH_GRILLED;
+FOOD_DATABASE.HAMOUR_FISH = FOOD_DATABASE.HAMOUR_FISH_GRILLED;
+FOOD_DATABASE.kanaad_kingfish_grilled = FOOD_DATABASE.KANAAD_KINGFISH_GRILLED;
+FOOD_DATABASE.KANAAD_KINGFISH = FOOD_DATABASE.KANAAD_KINGFISH_GRILLED;
+FOOD_DATABASE.tilapia_bolti_grilled = FOOD_DATABASE.TILAPIA_BOLTI_GRILLED;
+FOOD_DATABASE.TILAPIA_FISH = FOOD_DATABASE.TILAPIA_BOLTI_GRILLED;
+FOOD_DATABASE.bouri_fish_grilled = FOOD_DATABASE.BOURI_FISH_GRILLED;
+FOOD_DATABASE.BOURI_FISH = FOOD_DATABASE.BOURI_FISH_GRILLED;
+FOOD_DATABASE.kabsa_spiced_rice = FOOD_DATABASE.KABSA_SPICED_RICE;
+FOOD_DATABASE.egyptian_rice_cooked = FOOD_DATABASE.EGYPTIAN_RICE_COOKED;
+FOOD_DATABASE.EGYPTIAN_RICE = FOOD_DATABASE.EGYPTIAN_RICE_COOKED;
+FOOD_DATABASE.dates_khalas = FOOD_DATABASE.DATES_KHALAS;
+FOOD_DATABASE.shakshouka_eggs = FOOD_DATABASE.SHAKSHOUKA_EGGS;
+FOOD_DATABASE.eggs_omelette = FOOD_DATABASE.EGGS_OMELETTE;
+FOOD_DATABASE.labneh_light = FOOD_DATABASE.LABNEH_LIGHT;
+FOOD_DATABASE.halloumi_light = FOOD_DATABASE.HALLOUMI_LIGHT;
+FOOD_DATABASE.feta_cheese_light = FOOD_DATABASE.FETA_CHEESE_LIGHT;
+FOOD_DATABASE.tamees_bread_br = FOOD_DATABASE.TAMEES_BREAD_BR;
+FOOD_DATABASE.raw_tahini_sesame = FOOD_DATABASE.RAW_TAHINI_SESAME;
 
 export function calculateDynamicFoodSwap({
   current_food_code,
