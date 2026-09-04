@@ -60,6 +60,7 @@ const DEFAULT_MASTER_INTAKE = {
     meals_count: '3_meals_snack',
     intermittent_fasting: 'none'
   },
+  cravings_pattern: 'controlled',
   sleep_schedule: {
     pattern: 'regular_night', // 'regular_night' | 'rotating_shifts' | 'night_shift' | 'irregular'
     average_hours: '7_8',
@@ -1120,7 +1121,8 @@ export default function FullIntakeForm() {
                     { key: 'soy', label: 'حساسية فول صويا' },
                     { key: 'sesame_seeds', label: 'حساسية سمسم وطحينة وبذور' },
                     { key: 'favism_g6pd', label: 'بقوليات وأنيميا الفول (G6PD)' },
-                    { key: 'strawberries_berries', label: 'حساسية فراولة وتوت' }
+                    { key: 'strawberries_berries', label: 'حساسية فراولة وتوت' },
+                    { key: 'tropical_fruits_mango', label: 'حساسية المانجو والفواكه الاستوائية (مانجو، كيوي)' }
                   ].map((alg) => {
                     const isChecked = strictAllergies.includes(alg.key);
                     return (
@@ -1226,6 +1228,48 @@ export default function FullIntakeForm() {
                     <option value="16_8">نعم، صيام 16 ساعة وإفطار 8 ساعات</option>
                     <option value="14_10">نعم، صيام 14 ساعة وإفطار 10 ساعات</option>
                   </select>
+                </div>
+              </div>
+
+              {/* Cravings & Hunger Timing (Selectable Cards Grid) */}
+              <div>
+                <label style={{ display: 'block', fontSize: '12px', fontWeight: 800, color: '#0F172A', marginBottom: '8px' }}>
+                  توقيت نوبات الجوع واشتهاء السكريات (لتوظيف السناكس الذكية):
+                </label>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '10px' }}>
+                  {[
+                    { id: 'controlled', title: 'شهية منضبطة', desc: 'لا أعاني من نوبات جوع مفاجئة، شبع طبيعي طوال اليوم' },
+                    { id: 'late_night', title: 'اشتهاء مسائي ليلاً', desc: 'جوع ورغبة في الأكل والتسالي بعد العشاء وقبل النوم' },
+                    { id: 'post_meal_sweets', title: 'اشتهاء السكر بعد الوجبات', desc: 'رغبة ملحة في التحلية فور الانتهاء من الغداء أو العشاء' },
+                    { id: 'midday_dip', title: 'هبوط طاقة منتصف النهار', desc: 'جوع شديد وتراجع تركيز في منتصف فترة العمل أو بعد الظهر' }
+                  ].map((cr) => {
+                    const isSelected = (formData.cravings_pattern || 'controlled') === cr.id;
+                    return (
+                      <div
+                        key={cr.id}
+                        onClick={() => setFormData(p => ({ ...p, cravings_pattern: cr.id }))}
+                        style={{
+                          padding: '11px 13px',
+                          borderRadius: '8px',
+                          border: isSelected ? '2px solid #0F172A' : '1px solid #E2E8F0',
+                          background: isSelected ? '#F1F5F9' : '#FFFFFF',
+                          cursor: 'pointer',
+                          transition: 'all 0.15s ease',
+                          display: 'flex',
+                          flexDirection: 'column',
+                          gap: '3px',
+                          boxShadow: isSelected ? '0 2px 6px rgba(15, 23, 42, 0.08)' : 'none'
+                        }}
+                      >
+                        <strong style={{ fontSize: '12px', color: '#0F172A', fontWeight: 800 }}>
+                          {cr.title}
+                        </strong>
+                        <span style={{ fontSize: '10.5px', color: '#64748B', lineHeight: '1.4' }}>
+                          {cr.desc}
+                        </span>
+                      </div>
+                    );
+                  })}
                 </div>
               </div>
 

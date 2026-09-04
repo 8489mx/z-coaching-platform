@@ -1771,6 +1771,14 @@ export function isFoodClinicallySafe(foodItem, clinicalProfile = {}) {
       if ((a.includes('SESAME') || a.includes('سمسم') || a.includes('طحينة')) && foodItem.allergens?.includes('SESAME')) {
         return false;
       }
+      // Tropical Fruits & Mango & Kiwi
+      if ((a.includes('MANGO') || a.includes('TROPICAL') || a.includes('مانجو') || a.includes('كيوي') || a.includes('KIWI')) && (foodItem.code?.includes('MANGO') || foodItem.code?.includes('KIWI') || foodItem.name_ar?.includes('مانجو') || foodItem.name_ar?.includes('كيوي'))) {
+        return false;
+      }
+      // Strawberries & Berries
+      if ((a.includes('STRAWBERR') || a.includes('BERR') || a.includes('فراولة') || a.includes('توت')) && (foodItem.code?.includes('STRAWBERR') || foodItem.code?.includes('BLUEBERR') || foodItem.name_ar?.includes('فراولة') || foodItem.name_ar?.includes('توت'))) {
+        return false;
+      }
       // Raw string token match in allergens
       if (foodItem.allergens && foodItem.allergens.some(itemAllergen => a.includes(itemAllergen))) {
         return false;
@@ -2026,7 +2034,7 @@ export function convertGramsToHandPortions(grams, macroType, foodCode = '') {
     portions_count: 1,
     label_ar: `${g} جرام`,
     label_en: `${g}g`,
-    guide_ar: 'حصة قياسية'
+    guide_ar: 'الميزان الرقمي بالجرام هو الأساس الإلزامي للالتزام (المعايير اليدوية للطوارئ والعزومات فقط)'
   };
 }
 

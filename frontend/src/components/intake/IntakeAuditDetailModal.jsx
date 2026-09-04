@@ -453,6 +453,15 @@ export default function IntakeAuditDetailModal({
                       {nutrition.preferredMealCount || 3} وجبات • ميزانية {nutrition.budget === 'LOW' ? 'اقتصادية' : (nutrition.budget === 'HIGH' ? 'ممتازة' : 'متوازنة')}
                     </strong>
                   </div>
+
+                  {Boolean(submission.answers?.cravings_pattern) && (
+                    <div style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', borderRadius: '4px', padding: '4px 8px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                      <span style={{ fontSize: '10.5px', color: '#64748B' }}>توقيت الشراهة:</span>
+                      <strong style={{ fontSize: '11px', color: submission.answers?.cravings_pattern === 'late_night' ? '#BE123C' : submission.answers?.cravings_pattern === 'post_meal_sweets' ? '#B45309' : '#0F172A' }}>
+                        {submission.answers?.cravings_pattern === 'late_night' ? 'جوع واشتهاء مسائي ليلاً' : submission.answers?.cravings_pattern === 'post_meal_sweets' ? 'اشتهاء السكر بعد الوجبات' : submission.answers?.cravings_pattern === 'midday_dip' ? 'هبوط طاقة منتصف النهار' : 'شهية منضبطة'}
+                      </strong>
+                    </div>
+                  )}
                 </div>
               </div>
 
