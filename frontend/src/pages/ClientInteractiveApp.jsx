@@ -770,54 +770,62 @@ export default function ClientInteractiveApp() {
               </div>
 
               {/* Portion Display Segmented Control */}
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', margin: '2px 0' }}>
-                <div style={{ display: 'inline-flex', background: '#E2E8F0', padding: '2px', borderRadius: '8px', gap: '2px' }}>
-                  {[
-                    { key: PORTION_DISPLAY_MODES.DUAL, label: 'عرض مزدوج' },
-                    { key: PORTION_DISPLAY_MODES.GRAMS, label: 'بالميزان' },
-                    { key: PORTION_DISPLAY_MODES.HAND_PORTIONS, label: 'بالنظر' }
-                  ].map(tab => {
-                    const isSel = portionDisplayMode === tab.key;
-                    return (
-                      <button
-                        key={tab.key}
-                        type="button"
-                        onClick={() => setPortionDisplayMode(tab.key)}
-                        style={{
-                          background: isSel ? '#FFFFFF' : 'transparent',
-                          color: isSel ? '#0F172A' : '#64748B',
-                          border: 'none',
-                          borderRadius: '6px',
-                          padding: '4px 10px',
-                          fontSize: '0.72rem',
-                          fontWeight: isSel ? 700 : 500,
-                          cursor: 'pointer',
-                          boxShadow: isSel ? '0 1px 2px rgba(0, 0, 0, 0.05)' : 'none',
-                          transition: 'all 0.15s ease'
-                        }}
-                      >
-                        {tab.label}
-                      </button>
-                    );
-                  })}
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', margin: '2px 0' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <div style={{ display: 'inline-flex', background: '#E2E8F0', padding: '2px', borderRadius: '8px', gap: '2px' }}>
+                    {[
+                      { key: PORTION_DISPLAY_MODES.DUAL, label: 'عرض مزدوج' },
+                      { key: PORTION_DISPLAY_MODES.GRAMS, label: 'بالميزان' },
+                      { key: PORTION_DISPLAY_MODES.HAND_PORTIONS, label: 'باليد (طوارئ)' }
+                    ].map(tab => {
+                      const isSel = portionDisplayMode === tab.key;
+                      return (
+                        <button
+                          key={tab.key}
+                          type="button"
+                          onClick={() => setPortionDisplayMode(tab.key)}
+                          style={{
+                            background: isSel ? '#FFFFFF' : 'transparent',
+                            color: isSel ? '#0F172A' : '#64748B',
+                            border: 'none',
+                            borderRadius: '6px',
+                            padding: '4px 10px',
+                            fontSize: '0.72rem',
+                            fontWeight: isSel ? 700 : 500,
+                            cursor: 'pointer',
+                            boxShadow: isSel ? '0 1px 2px rgba(0, 0, 0, 0.05)' : 'none',
+                            transition: 'all 0.15s ease'
+                          }}
+                        >
+                          {tab.label}
+                        </button>
+                      );
+                    })}
+                  </div>
+
+                  <button
+                    type="button"
+                    onClick={() => setTravelModeActive(prev => !prev)}
+                    style={{
+                      background: travelModeActive ? '#EFF6FF' : 'transparent',
+                      color: travelModeActive ? '#0284C7' : '#64748B',
+                      border: `1px solid ${travelModeActive ? '#BAE6FD' : '#CBD5E1'}`,
+                      borderRadius: '8px',
+                      padding: '4px 8px',
+                      fontSize: '0.7rem',
+                      fontWeight: 600,
+                      cursor: 'pointer'
+                    }}
+                  >
+                    {travelModeActive ? 'إخفاء خطط المطاعم' : 'خطط المطاعم'}
+                  </button>
                 </div>
 
-                <button
-                  type="button"
-                  onClick={() => setTravelModeActive(prev => !prev)}
-                  style={{
-                    background: travelModeActive ? '#EFF6FF' : 'transparent',
-                    color: travelModeActive ? '#0284C7' : '#64748B',
-                    border: `1px solid ${travelModeActive ? '#BAE6FD' : '#CBD5E1'}`,
-                    borderRadius: '8px',
-                    padding: '4px 8px',
-                    fontSize: '0.7rem',
-                    fontWeight: 600,
-                    cursor: 'pointer'
-                  }}
-                >
-                  {travelModeActive ? 'إخفاء خطط المطاعم' : 'خطط المطاعم'}
-                </button>
+                {portionDisplayMode === PORTION_DISPLAY_MODES.HAND_PORTIONS && (
+                  <div style={{ background: '#FFFBEB', border: '1px solid #FDE68A', borderRadius: '8px', padding: '6px 10px', fontSize: '0.7rem', color: '#92400E' }}>
+                    الميزان الرقمي بالجرام هو الأساس الإلزامي للالتزام؛ المعايير اليدوية مخصصة للعزومات والظروف الطارئة والسفر فقط.
+                  </div>
+                )}
               </div>
 
               {/* Pre-Engineered Dining Blueprints Section (Visible when travelMode is active) */}
@@ -1815,9 +1823,16 @@ export default function ClientInteractiveApp() {
               </div>
 
               {/* Notice */}
-              <div style={{ background: '#F0FDF4', border: '1px solid #BBF7D0', borderRadius: '12px', padding: '10px 14px', marginBottom: '16px' }}>
+              <div style={{ background: '#F0FDF4', border: '1px solid #BBF7D0', borderRadius: '12px', padding: '10px 14px', marginBottom: '10px' }}>
                 <p style={{ margin: 0, fontSize: '0.74rem', color: '#166534', lineHeight: 1.4 }}>
                   <strong>ملاحظة هامة:</strong> السعرات والماكروز محسوبة من وزن الصنف الأساسي فقط؛ كافة الإضافات أدناه مجانية وصفرية السعرات لكسر الملل ورفع لذة الوجبة!
+                </p>
+              </div>
+
+              {/* Equipment Alternative Notice */}
+              <div style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', borderRadius: '12px', padding: '10px 14px', marginBottom: '16px' }}>
+                <p style={{ margin: 0, fontSize: '0.72rem', color: '#475569', lineHeight: 1.4 }}>
+                  <strong>بدائل أدوات الطهي:</strong> في حال عدم توفر قلاية هوائية (Air Fryer)، فإن الفرن المنزلي العادي (صينية بورق زبدة) أو الميكروويف المزود بخاصية الشواء (Grill) بديل ممتاز يعطي نفس القرمشة الصحية.
                 </p>
               </div>
 
