@@ -93,13 +93,23 @@ export const INITIAL_CHECKINS = Array.isArray(STRESS_TEST_CLIENTS) ? STRESS_TEST
     digestion_status: 'ممتاز',
     stress: 3
   },
+  reflections: {
+    nsv_note: 'التزام كامل بالوجبات ومواعيد التمرين دون أي تخريب.',
+    struggle_note: 'لا توجد صعوبات تذكر، الطاقة ممتازة خلال اليوم.'
+  },
+  client_notes: 'الالتزام 100% بالخطة والأوزان في تحسن مستمر.',
+  ai_analysis: {
+    recommendation: 'استجابة أيضية ممتازة مع ثبات القوة العضلية. يوصى بتثبيت السعرات والماكروز لمواصلة التقدم بنفس المعدل.',
+    status_badge: 'تقدم ممتاز',
+    warning: null
+  },
   baseline_macros: {
     calories: 2000,
     protein: 150,
     carbs: 220,
     fats: 55
   },
-  suggested_reply: `عاش يا ${c.full_name.split(' ')[0]}! أداء ممتاز في المتابعة، والالتزام 92% انعكس مباشرة على النتيجة. مستمرون بنفس القوة!`
+  suggested_reply: `عاش يا ${(c.full_name || 'المتدرب').split(' ')[0]}! أداء ممتاز في المتابعة، والالتزام 92% انعكس مباشرة على النتيجة. مستمرون بنفس القوة!`
 })) : [];
 
 const DEFAULT_BASELINE_MACROS = {
@@ -597,7 +607,7 @@ export default function CheckinReviewDashboard() {
         String(item?.client?.code || '').toLowerCase() === cleanTarget.toLowerCase() ||
         String(item?.client?.id || '').toLowerCase() === cleanTarget.toLowerCase() ||
         String(item?.id || '').toLowerCase() === cleanTarget.toLowerCase() ||
-        (item?.client?.name && item.client.name.toLowerCase().includes(cleanTarget.toLowerCase()))
+        (item?.client?.name && item?.client?.name?.toLowerCase().includes(cleanTarget.toLowerCase()))
       );
 
       if (existingIdx !== -1) {
@@ -677,25 +687,25 @@ export default function CheckinReviewDashboard() {
 
   // Filtered Queue for search and tier
   const filteredQueue = checkinList.filter((item) => {
-    if (tierFilter === 'MAX' && !item.client.package.toUpperCase().includes('MAX')) return false;
-    if (tierFilter === 'ELITE' && !item.client.package.toUpperCase().includes('ELITE')) return false;
+    if (tierFilter === 'MAX' && !String(item?.client?.package || '').toUpperCase().includes('MAX')) return false;
+    if (tierFilter === 'ELITE' && !String(item?.client?.package || '').toUpperCase().includes('ELITE')) return false;
     if (!searchQuery.trim()) return true;
 
     const q = searchQuery.trim().toLowerCase().replace(/^#+/, '');
-    const cleanClientCode = String(item.client.code || '').replace(/^#+/, '').replace(/^client[-_]?/i, '');
+    const cleanClientCode = String(item?.client?.code || '').replace(/^#+/, '').replace(/^client[-_]?/i, '');
 
     // 1. If searching pure numbers (e.g. 12, 1, 5, #12): Match exact client code or full phone
     if (/^\d+$/.test(q)) {
       if (cleanClientCode === q) return true;
-      if (q.length >= 4 && item.client.phone && item.client.phone.includes(q)) return true;
-      return item.client.name.toLowerCase().includes(q);
+      if (q.length >= 4 && item?.client?.phone && item?.client?.phone?.includes(q)) return true;
+      return String(item?.client?.name || '').toLowerCase().includes(q);
     }
 
     // 2. General name / text search
     return (
-      item.client.name.toLowerCase().includes(q) ||
+      String(item?.client?.name || '').toLowerCase().includes(q) ||
       cleanClientCode === q ||
-      (item.client.phone && item.client.phone.includes(q))
+      (item?.client?.phone && item?.client?.phone?.includes(q))
     );
   });
 
@@ -704,7 +714,7 @@ export default function CheckinReviewDashboard() {
   // Sync state when switching clients
   useEffect(() => {
     if (activeCheckin) {
-      setMacroAdjustments(activeCheckin.baseline_macros);
+      setMacroAdjustments(safeMacros);
       setCoachReply(activeCheckin.suggested_reply);
     }
   }, [activeCheckin]);
@@ -725,9 +735,9 @@ export default function CheckinReviewDashboard() {
     setIsSubmitting(true);
 
     const checkinDbId = activeCheckin.raw_id;
-    const clientPhone = activeCheckin.client?.phone;
+    const clientPhone = safeClient?.phone;
     const replyMsg = coachReply;
-    const approvedClientName = activeCheckin.client?.name || 'المتدرب';
+    const approvedClientName = safeClient?.name || 'المتدرب';
 
     try {
       if (checkinDbId) {
@@ -965,7 +975,7 @@ export default function CheckinReviewDashboard() {
               ) : (
                 filteredQueue.map((item, idx) => {
                   const isSelected = activeCheckin && item.id === activeCheckin.id;
-                  const isMax = item.client.package.toUpperCase().includes('MAX');
+                  const isMax = String(item?.client?.package || '').toUpperCase().includes('MAX');
                   return (
                     <div
                       key={item.id}
@@ -996,10 +1006,10 @@ export default function CheckinReviewDashboard() {
                             padding: '1px 6px', 
                             borderRadius: '4px' 
                           }}>
-                            #{item.client.code}
+                            #{item?.client?.code || '1'}
                           </span>
                           <strong style={{ fontSize: '12.5px', color: '#0F172A' }}>
-                            {item.client.name}
+                            {item?.client?.name || 'مشترك'}
                           </strong>
                         </div>
 
@@ -1013,7 +1023,7 @@ export default function CheckinReviewDashboard() {
                           border: '1px solid #E2E8F0',
                           fontFamily: 'JetBrains Mono, sans-serif'
                         }}>
-                          {item.client.package}
+                          {item?.client?.package || 'MAX'}
                         </span>
                       </div>
 
@@ -1032,22 +1042,22 @@ export default function CheckinReviewDashboard() {
                         {/* Right: Current Weight + Delta */}
                         <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
                           <span style={{ fontFamily: 'JetBrains Mono, Cairo', fontWeight: 700, color: '#0F172A' }}>
-                            {item.metrics.current_weight} كجم
+                            {item?.metrics?.current_weight || 0} كجم
                           </span>
 
                           <span style={{ 
                             fontFamily: 'JetBrains Mono, Cairo', 
                             fontWeight: 800, 
-                            color: item.metrics.weight_change < 0 ? '#16A34A' : (item.metrics.weight_change === 0 ? '#0284C7' : '#DC2626')
+                            color: (item?.metrics?.weight_change || 0) < 0 ? '#16A34A' : ((item?.metrics?.weight_change || 0) === 0 ? '#0284C7' : '#DC2626')
                           }}>
-                            {item.metrics.weight_change < 0 ? '-' : (item.metrics.weight_change === 0 ? '' : '+')}
-                            {Math.abs(item.metrics.weight_change)} كجم
+                            {(item?.metrics?.weight_change || 0) < 0 ? '-' : ((item?.metrics?.weight_change || 0) === 0 ? '' : '+')}
+                            {Math.abs(item?.metrics?.weight_change || 0)} كجم
                           </span>
                         </div>
 
                         {/* Left: Checkin Number & Week */}
                         {(() => {
-                          const chkNumber = item.checkin_number || ((item.history && item.history.length > 1) ? (item.history.length - 1) : item.week_number);
+                          const chkNumber = item.checkin_number || ((item?.history?.length > 1) ? (item?.history?.length - 1) : item.week_number);
                           return (
                             <span style={{ 
                               fontSize: '10px', 
@@ -1118,16 +1128,30 @@ export default function CheckinReviewDashboard() {
                 </button>
               </div>
             ) : (
+              (() => {
+                const safeClient = activeCheckin?.client || {};
+                const safeMetrics = activeCheckin?.metrics || {};
+                const safeBio = activeCheckin?.biofeedback || {};
+                const safeReflect = activeCheckin?.reflections || {};
+                const safeAi = activeCheckin?.ai_analysis || {
+                  status_badge: safeMetrics.status_badge || 'مستقر',
+                  recommendation: 'الاستمرار على نفس الخطة مع مراقبة مؤشرات الأسبوع القادم.',
+                  warning: null
+                };
+                const safeMacros = activeCheckin?.baseline_macros || DEFAULT_BASELINE_MACROS;
+                const clientFirstName = String(safeClient.name || 'المتدرب').split(' ')[0];
+
+                return (
               <>
             {/* 1. Header Identity Card & Goal Badge */}
             {(() => {
-              const goalType = activeCheckin.client.goal_type || 'CUTTING';
+              const goalType = safeClient.goal_type || 'CUTTING';
               const goalConfig = {
                 CUTTING: { label: 'تنشيف وحرق دهون', bg: '#F8FAFC', border: '#CBD5E1', color: '#0F172A' },
                 BULKING: { label: 'تضخيم وبناء عضلي', bg: '#F8FAFC', border: '#CBD5E1', color: '#0F172A' },
                 RECOMP: { label: 'إعادة تشكيل (Recomp)', bg: '#F8FAFC', border: '#CBD5E1', color: '#0F172A' }
               }[goalType] || { label: 'تنشيف', bg: '#F8FAFC', border: '#CBD5E1', color: '#0F172A' };
-              const activeChkNumber = activeCheckin.checkin_number || ((activeCheckin.history && activeCheckin.history.length > 1) ? (activeCheckin.history.length - 1) : activeCheckin.week_number);
+              const activeChkNumber = activeCheckin.checkin_number || ((activeCheckin?.history?.length > 1) ? (activeCheckin?.history?.length - 1) : activeCheckin.week_number);
 
               return (
                 <div style={{ background: '#FFFFFF', border: '1px solid #E2E8F0', borderRadius: '10px', padding: '12px 16px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '12px', flexWrap: 'wrap' }}>
@@ -1142,12 +1166,12 @@ export default function CheckinReviewDashboard() {
                       padding: '2px 8px', 
                       borderRadius: '4px' 
                     }}>
-                      #{activeCheckin.client.code}
+                      #{safeClient.code}
                     </span>
                     <div>
                       <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                         <h4 style={{ margin: 0, fontSize: '14px', fontWeight: 800, color: '#0F172A' }}>
-                          {activeCheckin.client.name}
+                          {safeClient.name}
                         </h4>
                         <span style={{ 
                           fontSize: '11px', 
@@ -1162,14 +1186,14 @@ export default function CheckinReviewDashboard() {
                         </span>
                       </div>
                       <small style={{ fontSize: '11px', color: '#64748B', display: 'block', marginTop: '2px' }}>
-                        الهدف: {activeCheckin.client.target_goal} • إرسال: {activeCheckin.submission_date}
+                        الهدف: {safeClient.target_goal} • إرسال: {activeCheckin.submission_date}
                       </small>
                     </div>
                   </div>
 
                   <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
                     <span style={{ fontSize: '11px', background: '#F8FAFC', border: '1px solid #E2E8F0', color: isMaxTier ? '#B45309' : '#0284C7', padding: '2px 8px', borderRadius: '4px', fontWeight: 800, fontFamily: 'JetBrains Mono, sans-serif' }}>
-                      {activeCheckin.client.package}
+                      {safeClient.package}
                     </span>
                     <span style={{ fontSize: '11px', background: '#F1F5F9', border: '1px solid #CBD5E1', color: '#0F172A', padding: '2px 8px', borderRadius: '4px', fontWeight: 700, display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
                       <span>المتابعة #{activeChkNumber}</span>
@@ -1183,15 +1207,15 @@ export default function CheckinReviewDashboard() {
 
             {/* 2. Numeric & Vital Indicators (Clean & Streamlined) */}
             {(() => {
-              const goalType = activeCheckin.client.goal_type || 'CUTTING';
+              const goalType = safeClient.goal_type || 'CUTTING';
               let deltaEvaluation = '';
               let deltaColor = '#16A34A';
 
               if (goalType === 'CUTTING') {
-                if (activeCheckin.metrics.weight_change < 0) {
+                if ((safeMetrics.weight_change || 0) < 0) {
                   deltaEvaluation = 'نزول دهون ممتاز';
                   deltaColor = '#16A34A';
-                } else if (activeCheckin.metrics.weight_change === 0) {
+                } else if ((safeMetrics.weight_change || 0) === 0) {
                   deltaEvaluation = 'ثبات متوازن';
                   deltaColor = '#0284C7';
                 } else {
@@ -1199,10 +1223,10 @@ export default function CheckinReviewDashboard() {
                   deltaColor = '#DC2626';
                 }
               } else if (goalType === 'BULKING') {
-                if (activeCheckin.metrics.weight_change > 0) {
+                if ((safeMetrics.weight_change || 0) > 0) {
                   deltaEvaluation = 'زيادة عضلية ممتازة';
                   deltaColor = '#16A34A';
-                } else if (activeCheckin.metrics.weight_change === 0) {
+                } else if ((safeMetrics.weight_change || 0) === 0) {
                   deltaEvaluation = 'ثبات';
                   deltaColor = '#D97706';
                 } else {
@@ -1210,10 +1234,10 @@ export default function CheckinReviewDashboard() {
                   deltaColor = '#DC2626';
                 }
               } else {
-                if (activeCheckin.metrics.weight_change === 0 && activeCheckin.metrics.waist_change < 0) {
+                if ((safeMetrics.weight_change || 0) === 0 && safeMetrics.waist_change < 0) {
                   deltaEvaluation = 'إعادة تشكيل ممتازة';
                   deltaColor = '#16A34A';
-                } else if (activeCheckin.metrics.weight_change < 0) {
+                } else if ((safeMetrics.weight_change || 0) < 0) {
                   deltaEvaluation = 'نزول دهون تدريجي';
                   deltaColor = '#0284C7';
                 } else {
@@ -1233,10 +1257,10 @@ export default function CheckinReviewDashboard() {
                     <div style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', padding: '10px 12px', borderRadius: '8px' }}>
                       <span style={{ fontSize: '11px', color: '#64748B', display: 'block', marginBottom: '2px', fontFamily: 'Cairo, sans-serif' }}>الوزن الحالي</span>
                       <strong style={{ fontSize: '17px', color: '#0F172A', fontFamily: 'JetBrains Mono, Cairo, sans-serif' }}>
-                        {activeCheckin.metrics.current_weight} <span style={{ fontSize: '11px', fontWeight: 600, fontFamily: 'Cairo, sans-serif' }}>كجم</span>
+                        {safeMetrics.current_weight} <span style={{ fontSize: '11px', fontWeight: 600, fontFamily: 'Cairo, sans-serif' }}>كجم</span>
                       </strong>
                       <small style={{ fontSize: '10px', color: '#94A3B8', display: 'block', marginTop: '2px', fontFamily: 'Cairo, sans-serif' }}>
-                        السابق: {activeCheckin.metrics.previous_weight} كجم
+                        السابق: {safeMetrics.previous_weight} كجم
                       </small>
                     </div>
 
@@ -1256,8 +1280,8 @@ export default function CheckinReviewDashboard() {
                         alignItems: 'center', 
                         gap: '2px' 
                       }}>
-                        {activeCheckin.metrics.weight_change < 0 ? <TrendingDown size={16} /> : (activeCheckin.metrics.weight_change === 0 ? <Minus size={16} /> : <TrendingUp size={16} />)}
-                        <span dir="ltr">{activeCheckin.metrics.weight_change > 0 ? `+${activeCheckin.metrics.weight_change}` : activeCheckin.metrics.weight_change} كجم</span>
+                        {(safeMetrics.weight_change || 0) < 0 ? <TrendingDown size={16} /> : ((safeMetrics.weight_change || 0) === 0 ? <Minus size={16} /> : <TrendingUp size={16} />)}
+                        <span dir="ltr">{(safeMetrics.weight_change || 0) > 0 ? `+${(safeMetrics.weight_change || 0)}` : (safeMetrics.weight_change || 0)} كجم</span>
                       </strong>
                       <small style={{ fontSize: '10px', color: deltaColor, display: 'block', marginTop: '2px', fontWeight: 700, fontFamily: 'Cairo, sans-serif' }}>
                         {deltaEvaluation}
@@ -1268,10 +1292,10 @@ export default function CheckinReviewDashboard() {
                     <div style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', padding: '10px 12px', borderRadius: '8px' }}>
                       <span style={{ fontSize: '11px', color: '#64748B', display: 'block', marginBottom: '2px', fontFamily: 'Cairo, sans-serif' }}>محيط الخصر</span>
                       <strong style={{ fontSize: '17px', color: '#0F172A', fontFamily: 'JetBrains Mono, Cairo, sans-serif' }}>
-                        {activeCheckin.metrics.waist_current} <span style={{ fontSize: '11px', fontWeight: 600, fontFamily: 'Cairo, sans-serif' }}>سم</span>
+                        {safeMetrics.waist_current} <span style={{ fontSize: '11px', fontWeight: 600, fontFamily: 'Cairo, sans-serif' }}>سم</span>
                       </strong>
                       <small style={{ fontSize: '10px', color: '#16A34A', display: 'block', marginTop: '2px', fontWeight: 700, fontFamily: 'Cairo, sans-serif' }}>
-                        {activeCheckin.metrics.waist_change} سم فرق مقاس
+                        {safeMetrics.waist_change} سم فرق مقاس
                       </small>
                     </div>
 
@@ -1279,10 +1303,10 @@ export default function CheckinReviewDashboard() {
                     <div style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', padding: '10px 12px', borderRadius: '8px' }}>
                       <span style={{ fontSize: '11px', color: '#64748B', display: 'block', marginBottom: '2px', fontFamily: 'Cairo, sans-serif' }}>الالتزام والتمارين</span>
                       <strong style={{ fontSize: '17px', color: '#0F172A', fontFamily: 'JetBrains Mono, Cairo, sans-serif' }}>
-                        {activeCheckin.metrics.adherence}%
+                        {safeMetrics.adherence}%
                       </strong>
                       <small style={{ fontSize: '10px', color: '#64748B', display: 'block', marginTop: '2px', fontFamily: 'Cairo, sans-serif' }}>
-                        {activeCheckin.metrics.workouts_completed} من {activeCheckin.metrics.workouts_target} تمارين
+                        {safeMetrics.workouts_completed} من {safeMetrics.workouts_target} تمارين
                       </small>
                     </div>
                   </div>
@@ -1302,32 +1326,32 @@ export default function CheckinReviewDashboard() {
                     fontSize: '11.5px' 
                   }}>
                     <div>
-                      <span style={{ color: '#64748B' }}>الطاقة:</span> <strong style={{ color: '#0F172A' }}>{activeCheckin.biofeedback.energy}/10</strong>
+                      <span style={{ color: '#64748B' }}>الطاقة:</span> <strong style={{ color: '#0F172A' }}>{safeBio.energy}/10</strong>
                     </div>
                     <div>
-                      <span style={{ color: '#64748B' }}>النوم:</span> <strong style={{ color: '#0F172A' }}>{activeCheckin.biofeedback.sleep}/10</strong>
+                      <span style={{ color: '#64748B' }}>النوم:</span> <strong style={{ color: '#0F172A' }}>{safeBio.sleep}/10</strong>
                     </div>
                     <div>
-                      <span style={{ color: '#64748B' }}>الجوع:</span> <strong style={{ color: activeCheckin.biofeedback.hunger > 6 ? '#B45309' : '#0F172A' }}>{activeCheckin.biofeedback.hunger}/10</strong>
+                      <span style={{ color: '#64748B' }}>الجوع:</span> <strong style={{ color: safeBio.hunger > 6 ? '#B45309' : '#0F172A' }}>{safeBio.hunger}/10</strong>
                     </div>
                     <div>
-                      <span style={{ color: '#64748B' }}>الهضم:</span> <strong style={{ color: '#0F172A' }}>{activeCheckin.biofeedback.digestion_status || 'طبيعي'}</strong>
+                      <span style={{ color: '#64748B' }}>الهضم:</span> <strong style={{ color: '#0F172A' }}>{safeBio.digestion_status || 'طبيعي'}</strong>
                     </div>
                     <div>
-                      <span style={{ color: '#64748B' }}>أوزان التمرين:</span> <strong style={{ color: '#0F172A' }}>{activeCheckin.metrics.strength_trend === 'INCREASED' ? 'زيادة' : (activeCheckin.metrics.strength_trend === 'DECREASED' ? 'تراجع' : 'ثبات')}</strong>
+                      <span style={{ color: '#64748B' }}>أوزان التمرين:</span> <strong style={{ color: '#0F172A' }}>{safeMetrics.strength_trend === 'INCREASED' ? 'زيادة' : (safeMetrics.strength_trend === 'DECREASED' ? 'تراجع' : 'ثبات')}</strong>
                     </div>
                     <div>
-                      <span style={{ color: '#64748B' }}>الخطوات:</span> <strong style={{ color: '#0F172A', fontFamily: 'JetBrains Mono, Cairo, sans-serif' }}>{activeCheckin.metrics.daily_steps_avg.toLocaleString()}</strong>
+                      <span style={{ color: '#64748B' }}>الخطوات:</span> <strong style={{ color: '#0F172A', fontFamily: 'JetBrains Mono, Cairo, sans-serif' }}>{(safeMetrics.daily_steps_avg || 8000).toLocaleString()}</strong>
                     </div>
                     <div>
-                      <span style={{ color: '#64748B' }}>الماء:</span> <strong style={{ color: '#0F172A' }}>{activeCheckin.metrics.water_liters || 3.0} لتر</strong>
+                      <span style={{ color: '#64748B' }}>الماء:</span> <strong style={{ color: '#0F172A' }}>{safeMetrics.water_liters || 3.0} لتر</strong>
                     </div>
                     <div>
-                      <span style={{ color: '#64748B' }}>وجبات خارج الخطة:</span> <strong style={{ color: '#0F172A' }}>{activeCheckin.metrics.off_plan_meals || 0}</strong>
+                      <span style={{ color: '#64748B' }}>وجبات خارج الخطة:</span> <strong style={{ color: '#0F172A' }}>{safeMetrics.off_plan_meals || 0}</strong>
                     </div>
-                    {activeCheckin.biofeedback.cycle_phase && (
+                    {safeBio.cycle_phase && (
                       <div style={{ color: '#9D174D', fontWeight: 600 }}>
-                        <span>الدورة:</span> {activeCheckin.biofeedback.cycle_phase}
+                        <span>الدورة:</span> {safeBio.cycle_phase}
                       </div>
                     )}
                   </div>
@@ -1343,8 +1367,8 @@ export default function CheckinReviewDashboard() {
               <ProgressTrendChart
                 history={activeCheckin.history || []}
                 isMaxTier={isMaxTier}
-                targetWeight={activeCheckin.client.target_weight}
-                client={activeCheckin.client}
+                targetWeight={safeClient.target_weight}
+                client={safeClient}
               />
             </FormSection>
 
@@ -1356,31 +1380,31 @@ export default function CheckinReviewDashboard() {
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px', marginTop: '6px' }}>
                 <div style={{ background: '#F8FAFC', border: '1px dashed #CBD5E1', borderRadius: '8px', padding: '18px 10px', textAlign: 'center', color: '#64748B' }}>
                   <Camera size={18} style={{ margin: '0 auto 5px auto', color: '#94A3B8' }} />
-                  <span style={{ fontSize: '11.5px', fontWeight: 700, display: 'block', color: '#475569' }}>الأسبوع السابق ({activeCheckin.metrics.previous_weight} كجم)</span>
-                  <small style={{ fontSize: '10.5px', color: '#94A3B8' }}>محيط الخصر: {activeCheckin.metrics.waist_previous} سم</small>
+                  <span style={{ fontSize: '11.5px', fontWeight: 700, display: 'block', color: '#475569' }}>الأسبوع السابق ({safeMetrics.previous_weight} كجم)</span>
+                  <small style={{ fontSize: '10.5px', color: '#94A3B8' }}>محيط الخصر: {safeMetrics.waist_previous} سم</small>
                 </div>
 
                 <div style={{ background: '#F0F9FF', border: '1px dashed #BAE6FD', borderRadius: '8px', padding: '18px 10px', textAlign: 'center', color: '#0284C7' }}>
                   <Camera size={18} style={{ margin: '0 auto 5px auto', color: '#0284C7' }} />
-                  <span style={{ fontSize: '11.5px', fontWeight: 800, display: 'block', color: '#0F172A' }}>هذا الأسبوع ({activeCheckin.metrics.current_weight} كجم)</span>
-                  <small style={{ fontSize: '10.5px', color: '#0284C7', fontWeight: 700 }}>محيط الخصر: {activeCheckin.metrics.waist_current} سم ({activeCheckin.metrics.waist_change} سم)</small>
+                  <span style={{ fontSize: '11.5px', fontWeight: 800, display: 'block', color: '#0F172A' }}>هذا الأسبوع ({safeMetrics.current_weight} كجم)</span>
+                  <small style={{ fontSize: '10.5px', color: '#0284C7', fontWeight: 700 }}>محيط الخصر: {safeMetrics.waist_current} سم ({safeMetrics.waist_change} سم)</small>
                 </div>
               </div>
 
               {/* Weekly Client Reflections: Non-Scale Victory & Struggle */}
-              {activeCheckin.reflections && (
+              {safeReflect && (
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px', marginTop: '10px' }}>
                   <div style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', padding: '8px 10px', borderRadius: '6px' }}>
                     <span style={{ fontSize: '11px', color: '#64748B', fontWeight: 700, display: 'block', marginBottom: '2px' }}>أبرز إنجاز هذا الأسبوع:</span>
                     <p style={{ fontSize: '11.5px', color: '#0F172A', margin: 0, lineHeight: 1.45 }}>
-                      {activeCheckin.reflections.nsv_note}
+                      {safeReflect.nsv_note}
                     </p>
                   </div>
 
                   <div style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', padding: '8px 10px', borderRadius: '6px' }}>
                     <span style={{ fontSize: '11px', color: '#64748B', fontWeight: 700, display: 'block', marginBottom: '2px' }}>أبرز صعوبة أو تحدٍ:</span>
                     <p style={{ fontSize: '11.5px', color: '#0F172A', margin: 0, lineHeight: 1.45 }}>
-                      {activeCheckin.reflections.struggle_note}
+                      {safeReflect.struggle_note}
                     </p>
                   </div>
                 </div>
@@ -1411,12 +1435,12 @@ export default function CheckinReviewDashboard() {
                   </div>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                     <span style={{ fontSize: '10.5px', background: '#E2E8F0', color: '#0F172A', padding: '2px 8px', borderRadius: '4px', fontWeight: 800 }}>
-                      {activeCheckin.ai_analysis.status_badge}
+                      {safeAi.status_badge}
                     </span>
                     <button
                       type="button"
                       onClick={() => {
-                        setMacroAdjustments(activeCheckin.baseline_macros);
+                        setMacroAdjustments(safeMacros);
                         setCoachReply(activeCheckin.suggested_reply);
                       }}
                       style={{
@@ -1445,13 +1469,13 @@ export default function CheckinReviewDashboard() {
                 </div>
                 
                 <p style={{ fontSize: '12px', color: '#334155', margin: '0 0 8px 0', lineHeight: 1.55 }}>
-                  {activeCheckin.ai_analysis.recommendation}
+                  {safeAi.recommendation}
                 </p>
 
-                {activeCheckin.ai_analysis.warning && (
+                {safeAi.warning && (
                   <div style={{ background: '#FFFBEB', border: '1px solid #FDE68A', padding: '6px 10px', borderRadius: '5px', fontSize: '11px', color: '#B45309', display: 'flex', alignItems: 'center', gap: '6px' }}>
                     <AlertTriangle size={13} className="flex-shrink-0" />
-                    <span>{activeCheckin.ai_analysis.warning}</span>
+                    <span>{safeAi.warning}</span>
                   </div>
                 )}
               </div>
@@ -1476,8 +1500,8 @@ export default function CheckinReviewDashboard() {
                 <button
                   type="button"
                   onClick={() => {
-                    setMacroAdjustments(activeCheckin.baseline_macros);
-                    setCoachReply(`عاش يا ${activeCheckin.client.name.split(' ')[0]}! مستواك الأسبوع ده ممتاز ونتايجك ماشية على الخطة بالظبط. هنثبت على نفس السعرات والماكروز عشان نواصل التقدم بنفس الزخم. كمل بنفس القوة يا بطل!`);
+                    setMacroAdjustments(safeMacros);
+                    setCoachReply(`عاش يا ${clientFirstName}! مستواك الأسبوع ده ممتاز ونتايجك ماشية على الخطة بالظبط. هنثبت على نفس السعرات والماكروز عشان نواصل التقدم بنفس الزخم. كمل بنفس القوة يا بطل!`);
                   }}
                   style={{
                     height: '26px',
@@ -1502,12 +1526,12 @@ export default function CheckinReviewDashboard() {
                 <button
                   type="button"
                   onClick={() => {
-                    const p = activeCheckin.baseline_macros.protein;
-                    const c = Math.max(100, activeCheckin.baseline_macros.carbs - 25);
-                    const f = Math.max(35, activeCheckin.baseline_macros.fats - 5);
+                    const p = safeMacros.protein;
+                    const c = Math.max(100, safeMacros.carbs - 25);
+                    const f = Math.max(35, safeMacros.fats - 5);
                     const newCals = (p * 4) + (c * 4) + (f * 9);
                     setMacroAdjustments({ calories: newCals, protein: p, carbs: c, fats: f });
-                    setCoachReply(`أداء ممتاز يا ${activeCheckin.client.name.split(' ')[0]}! بناءً على قراءة الأسبوع، عملنا عجز تدريجي بسيط بمقدار 150 سعرة (خصم 25 جم كارب و 5 جم دهون) لتنشيط معدل الحرق واستمرار نزول الدهون بدون التأثير على طاقتك. ركز على شرب الماء والخطوات!`);
+                    setCoachReply(`أداء ممتاز يا ${clientFirstName}! بناءً على قراءة الأسبوع، عملنا عجز تدريجي بسيط بمقدار 150 سعرة (خصم 25 جم كارب و 5 جم دهون) لتنشيط معدل الحرق واستمرار نزول الدهون بدون التأثير على طاقتك. ركز على شرب الماء والخطوات!`);
                   }}
                   style={{
                     height: '26px',
@@ -1532,12 +1556,12 @@ export default function CheckinReviewDashboard() {
                 <button
                   type="button"
                   onClick={() => {
-                    const p = activeCheckin.baseline_macros.protein + 5;
-                    const c = activeCheckin.baseline_macros.carbs + 30;
-                    const f = activeCheckin.baseline_macros.fats;
+                    const p = safeMacros.protein + 5;
+                    const c = safeMacros.carbs + 30;
+                    const f = safeMacros.fats;
                     const newCals = (p * 4) + (c * 4) + (f * 9);
                     setMacroAdjustments({ calories: newCals, protein: p, carbs: c, fats: f });
-                    setCoachReply(`عاش يا ${activeCheckin.client.name.split(' ')[0]}! عشان نغذي البناء العضلي ونرفع كفاءة الطاقة في الجيم، زودنالك 150 سعرة إضافية (30 جم كارب و 5 جم بروتين). استغل الطاقة دي في كسر أوزان جديدة في التمرين!`);
+                    setCoachReply(`عاش يا ${clientFirstName}! عشان نغذي البناء العضلي ونرفع كفاءة الطاقة في الجيم، زودنالك 150 سعرة إضافية (30 جم كارب و 5 جم بروتين). استغل الطاقة دي في كسر أوزان جديدة في التمرين!`);
                   }}
                   style={{
                     height: '26px',
@@ -1562,7 +1586,7 @@ export default function CheckinReviewDashboard() {
                 <button
                   type="button"
                   onClick={() => {
-                    setCoachReply(`أداء بطولي يا ${activeCheckin.client.name.split(' ')[0]}! ضفتلك يوم إعادة شحن (Refeed Day) بزيادة 80 جم كارب مع تقليل الدهون في يوم تمرينك الأثقل، عشان نشحن مخازن الجليكوجين ونحفز هرمون اللبتين ومعدل الأيض. التزم بالوجبة حول التمرين يا وحش!`);
+                    setCoachReply(`أداء بطولي يا ${clientFirstName}! ضفتلك يوم إعادة شحن (Refeed Day) بزيادة 80 جم كارب مع تقليل الدهون في يوم تمرينك الأثقل، عشان نشحن مخازن الجليكوجين ونحفز هرمون اللبتين ومعدل الأيض. التزم بالوجبة حول التمرين يا وحش!`);
                   }}
                   style={{
                     height: '26px',
@@ -1587,7 +1611,7 @@ export default function CheckinReviewDashboard() {
                 <button
                   type="button"
                   onClick={() => {
-                    setCoachReply(`ممتاز جداً يا ${activeCheckin.client.name.split(' ')[0]}! الأسبوع ده هيكون أسبوع استشفاء وتفريغ أحمال (Deload Week)؛ هنقلل مجموعات التمرين بنسبة 40% مع الحفاظ على أوزانك وثبتنا السعرات عند مستوى الصيانة، عشان نريح المفاصل والجهاز العصبي ونرجع الأسبوع اللي بعده بأعلى طاقة!`);
+                    setCoachReply(`ممتاز جداً يا ${clientFirstName}! الأسبوع ده هيكون أسبوع استشفاء وتفريغ أحمال (Deload Week)؛ هنقلل مجموعات التمرين بنسبة 40% مع الحفاظ على أوزانك وثبتنا السعرات عند مستوى الصيانة، عشان نريح المفاصل والجهاز العصبي ونرجع الأسبوع اللي بعده بأعلى طاقة!`);
                   }}
                   style={{
                     height: '26px',
@@ -2039,6 +2063,8 @@ export default function CheckinReviewDashboard() {
 
             </div>
               </>
+                );
+              })()
             )}
 
           </div>
