@@ -561,20 +561,53 @@ export default function CoachEditor() {
 
   const handleAddFoodToMeal = (mealId, selectedFood) => {
     setProgram(prev => {
+      const targetP = Number(prev.nutrition?.target_protein || prev.nutrition?.protein || 150);
+      const targetC = Number(prev.nutrition?.target_carbs || prev.nutrition?.carbs || 200);
+      const targetF = Number(prev.nutrition?.target_fats || prev.nutrition?.fats || 50);
+
+      let curP = 0, curC = 0, curF = 0;
+      (prev.nutrition?.meals || []).forEach(m => {
+        (m.items || []).forEach(it => {
+          curP += Number(it.p) || 0;
+          curC += Number(it.c) || 0;
+          curF += Number(it.f) || 0;
+        });
+      });
+
+      const macroCat = selectedFood.macro_type || selectedFood.category || 'PROTEIN';
+      const p100 = Number(selectedFood.protein_per_100g || selectedFood.p || 0);
+      const c100 = Number(selectedFood.carbs_per_100g || selectedFood.c || 0);
+      const f100 = Number(selectedFood.fat_per_100g || selectedFood.f || 0);
+      const cal100 = Number(selectedFood.calories_per_100g || selectedFood.cal || 100);
+
+      let smartAmount = selectedFood.default_amount || selectedFood.amount || 100;
+      if (macroCat === 'PROTEIN' && p100 > 0) {
+        const remP = targetP - curP;
+        if (remP > 15) smartAmount = Math.max(30, Math.min(300, Math.round((remP / p100) * 100)));
+      } else if (macroCat === 'CARB' && c100 > 0) {
+        const remC = targetC - curC;
+        if (remC > 15) smartAmount = Math.max(20, Math.min(350, Math.round((remC / c100) * 100)));
+      } else if (macroCat === 'FAT' && f100 > 0) {
+        const remF = targetF - curF;
+        if (remF > 5) smartAmount = Math.max(5, Math.min(60, Math.round((remF / f100) * 100)));
+      }
+
+      const factor = smartAmount / 100;
+      const newItem = {
+        id: `f${Date.now()}`,
+        code: selectedFood.code || `FOOD_${Date.now()}`,
+        name: selectedFood.name_ar || selectedFood.name,
+        amount: smartAmount,
+        unit: selectedFood.serving_unit || selectedFood.unit || 'جم',
+        p: Number((p100 * factor).toFixed(1)),
+        c: Number((c100 * factor).toFixed(1)),
+        f: Number((f100 * factor).toFixed(1)),
+        cal: Math.round(cal100 * factor),
+        category: macroCat
+      };
+
       const updatedMeals = prev.nutrition.meals.map(meal => {
         if (meal.id !== mealId) return meal;
-        const newItem = {
-          id: `f${Date.now()}`,
-          code: selectedFood.code || `FOOD_${Date.now()}`,
-          name: selectedFood.name_ar || selectedFood.name,
-          amount: selectedFood.default_amount || selectedFood.amount || 100,
-          unit: selectedFood.serving_unit || selectedFood.unit || 'جم',
-          p: Number(selectedFood.protein_per_100g || selectedFood.p || 0),
-          c: Number(selectedFood.carbs_per_100g || selectedFood.c || 0),
-          f: Number(selectedFood.fat_per_100g || selectedFood.f || 0),
-          cal: Number(selectedFood.calories_per_100g || selectedFood.cal || 0),
-          category: selectedFood.macro_type || selectedFood.category || 'PROTEIN'
-        };
         const updatedItems = [...meal.items, newItem];
         return {
           ...meal,

@@ -123,13 +123,43 @@ export default function CoachEditorNutritionTab(props) {
 
   const handleAddPresetMeal = (preset) => {
     const newMealNumber = (program.nutrition?.meals?.length || 0) + 1;
-    const newItems = preset.items.map((it, idx) => ({
-      ...it,
-      id: `f_${Date.now()}_${idx}`
-    }));
+    
+    // 1. Proportional Isocaloric Scaling to Client Target Calories
+    const targetCal = Number(program.nutrition?.target_calories || program.nutrition?.calories || 2000);
+    const presetBaselineCal = preset.items.reduce((s, it) => s + (Number(it.cal) || 0), 0) || 550;
+    
+    const currentPlannedCal = (program.nutrition?.meals || []).reduce((sum, m) => {
+      return sum + (m.items || []).reduce((mSum, it) => mSum + (Number(it.cal) || 0), 0);
+    }, 0);
+    const remainingCal = targetCal - currentPlannedCal;
+    
+    let scaleFactor = 1.0;
+    if (remainingCal >= 200) {
+      scaleFactor = Math.max(0.45, Math.min(2.2, remainingCal / presetBaselineCal));
+    } else {
+      const standardMealShare = targetCal / Math.max(3, newMealNumber);
+      scaleFactor = Math.max(0.5, Math.min(2.0, standardMealShare / presetBaselineCal));
+    }
+
+    const newItems = preset.items.map((it, idx) => {
+      const baseAmount = Number(it.amount) || 100;
+      const newAmount = Math.max(5, Math.round(baseAmount * scaleFactor));
+      const factor = newAmount / baseAmount;
+      return {
+        ...it,
+        id: `f_${Date.now()}_${idx}`,
+        amount: newAmount,
+        p: Number(((Number(it.p) || 0) * factor).toFixed(1)),
+        c: Number(((Number(it.c) || 0) * factor).toFixed(1)),
+        f: Number(((Number(it.f) || 0) * factor).toFixed(1)),
+        cal: Math.round((Number(it.cal) || 0) * factor)
+      };
+    });
+
     const newMealObj = {
       id: `m${Date.now()}`,
       name: `الوجبة ${newMealNumber}: ${preset.name}`,
+      workout_timing: newMealNumber === 2 ? 'POST_WORKOUT' : (newMealNumber === 3 ? 'PRE_WORKOUT' : 'NONE'),
       time: newMealNumber === 1 ? '09:00 ص' : newMealNumber === 2 ? '02:00 م' : newMealNumber === 3 ? '06:00 م' : '09:30 م',
       macros: recalculateMeal(newItems),
       items: newItems
