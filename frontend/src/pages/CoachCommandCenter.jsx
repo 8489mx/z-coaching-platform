@@ -186,7 +186,7 @@ export default function CoachCommandCenter() {
   const safeCheckins = Array.isArray(pendingCheckins) ? pendingCheckins : [];
 
   // Build Real-Time Action Queue from Live Pending Intakes, Checkins & Expiring Subscriptions
-  const pendingIntakes = safeSubmissions.filter(s => s && s.status === 'PENDING');
+  const pendingIntakes = safeSubmissions.filter(s => s && (s.status === 'PENDING' || s.status === 'PENDING_COACH_REVIEW' || s.status === 'DRAFT_GENERATED' || s.status === 'PAYMENT_CONFIRMED'));
   const expiringClients = safeClients.filter(c => c && c.status === 'EXPIRING_SOON');
 
   const actionsMap = new Map();
@@ -259,9 +259,9 @@ export default function CoachCommandCenter() {
         timeAgo: formatTimeAgo(sub?.created_at || sub?.submitted_at || sub?.user?.created_at),
         summary: hasInjury
           ? 'المشترك لديه إصابة / ألم مسجل • مطلوب استبعاد التمارين المجهدة وتجهيز الخطة.'
-          : (sub?.status === 'PAID' ? 'تم تأكيد الدفع • الاستمارة جاهزة لإعداد الخطة.' : 'استمارة جديدة بانتظار تجهيز الخطة.'),
+          : (sub?.status === 'PAID' || sub?.status === 'PAYMENT_CONFIRMED' ? 'تم تأكيد الدفع • الاستمارة جاهزة لإعداد الخطة.' : 'استمارة جديدة بانتظار تجهيز الخطة.'),
         suggestedAction: 'تجهيز واعتماد خطة المشترك',
-        badgeText: hasInjury ? 'إصابة مسجلة' : (sub?.status === 'PAID' ? 'مدفوع • بانتظار الخطة' : 'استمارة جديدة'),
+        badgeText: hasInjury ? 'إصابة مسجلة' : (sub?.status === 'PAID' || sub?.status === 'PAYMENT_CONFIRMED' ? 'مدفوع • بانتظار الخطة' : 'استمارة جديدة'),
         actionUrl: `/coach/editor?user_id=${cleanCode}`
       });
     }

@@ -133,23 +133,33 @@ export default function ClientInteractiveApp() {
     fetch(`${API_BASE}/api/v1/programs/active/${rawCode}`)
       .then(res => res.ok ? res.json() : null)
       .then(data => {
-        if (data && data.has_program && data.master_program) {
-          setClientProgram(data.master_program);
-          if (data.master_program.nutrition?.meals && data.master_program.nutrition.meals.length > 0) {
-            setMeals(data.master_program.nutrition.meals);
+        if (data) {
+          if (data.user) {
+            setClientData(prev => ({
+              ...prev,
+              name: data.user.full_name || prev.name,
+              package: data.user.subscription_package || prev.package,
+              tier: data.user.subscription_package || prev.tier
+            }));
           }
-          const sessions = data.master_program.training?.sessions 
-            || data.master_program.training_split?.sessions 
-            || data.master_program.training_program?.weeks?.[0]?.sessions 
-            || [];
-          if (sessions.length > 0) {
-            const currentIdx = Math.max(0, (selectedDay - 1) % sessions.length);
-            const adapted = adaptSessionToInteractiveWorkout(sessions[currentIdx], currentIdx);
-            if (adapted && adapted.exercises && adapted.exercises.length > 0) {
-              setWorkoutSession(prev => ({
-                ...prev,
-                ...adapted
-              }));
+          if (data.has_program && data.master_program) {
+            setClientProgram(data.master_program);
+            if (data.master_program.nutrition?.meals && data.master_program.nutrition.meals.length > 0) {
+              setMeals(data.master_program.nutrition.meals);
+            }
+            const sessions = data.master_program.training?.sessions 
+              || data.master_program.training_split?.sessions 
+              || data.master_program.training_program?.weeks?.[0]?.sessions 
+              || [];
+            if (sessions.length > 0) {
+              const currentIdx = Math.max(0, (selectedDay - 1) % sessions.length);
+              const adapted = adaptSessionToInteractiveWorkout(sessions[currentIdx], currentIdx);
+              if (adapted && adapted.exercises && adapted.exercises.length > 0) {
+                setWorkoutSession(prev => ({
+                  ...prev,
+                  ...adapted
+                }));
+              }
             }
           }
         }
@@ -389,8 +399,52 @@ export default function ClientInteractiveApp() {
     setSwapMealId(null);
   };
 
-  // Calculate Total & Consumed Macros
-  const targetMacros = { p: 155, c: 200, f: 50, cal: 1870 };
+  // Calculate Dynamic Target Macros (Syncs with Coach Editor & Engine Auto-Regulation)
+  const targetMacros = useMemo(() => {
+    const directTargets = clientProgram?.nutrition?.targets;
+    if (directTargets && (directTargets.calories || directTargets.protein)) {
+      return {
+        cal: Number(directTargets.calories) || 0,
+        p: Number(directTargets.protein) || 0,
+        c: Number(directTargets.carbs) || 0,
+        f: Number(directTargets.fats) || 0
+      };
+    }
+
+    const macroTargets = clientProgram?.nutrition_program?.macro_targets 
+      || clientProgram?.nutrition_program?.stages?.macro_targets;
+    if (macroTargets && (macroTargets.calories_kcal || macroTargets.protein_g)) {
+      return {
+        cal: Math.round(Number(macroTargets.calories_kcal || macroTargets.target_calories || 0)),
+        p: Math.round(Number(macroTargets.protein_g || 0)),
+        c: Math.round(Number(macroTargets.carbohydrate_g || macroTargets.carb_g || macroTargets.carbs_g || 0)),
+        f: Math.round(Number(macroTargets.fat_g || 0))
+      };
+    }
+
+    if (meals && meals.length > 0) {
+      const mealSum = meals.reduce((acc, meal) => {
+        (meal.items || []).forEach(item => {
+          acc.p += Number(item.p || 0);
+          acc.c += Number(item.c || 0);
+          acc.f += Number(item.f || 0);
+          acc.cal += Number(item.cal || 0);
+        });
+        return acc;
+      }, { p: 0, c: 0, f: 0, cal: 0 });
+
+      if (mealSum.cal > 0) {
+        return {
+          cal: Math.round(mealSum.cal),
+          p: Math.round(mealSum.p),
+          c: Math.round(mealSum.c),
+          f: Math.round(mealSum.f)
+        };
+      }
+    }
+
+    return { p: 155, c: 200, f: 50, cal: 1870 };
+  }, [clientProgram, meals]);
   const consumedMacros = meals.reduce((acc, meal) => {
     if (meal.completed) {
       meal.items.forEach(item => {

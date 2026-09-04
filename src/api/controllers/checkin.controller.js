@@ -27,12 +27,19 @@ export async function submitCheckin(req, res) {
       return res.status(400).json({ success: false, error: "user_id is required" });
     }
 
-    // Resolve real user ID if client_code was passed
-    if (isNaN(targetUserId)) {
-      const userObj = await User.findOne({ where: { client_code: targetUserId } });
-      if (!userObj) return res.status(404).json({ success: false, error: "Client not found" });
-      targetUserId = userObj.id;
+    // Resolve real user ID if client_code, phone or pk was passed
+    const cleanCode = String(targetUserId).replace('#', '').trim();
+    let userObj = await User.findOne({ where: { client_code: cleanCode } });
+    if (!userObj && !isNaN(cleanCode)) {
+      userObj = await User.findByPk(parseInt(cleanCode, 10));
     }
+    if (!userObj) {
+      userObj = await User.findOne({ where: { phone_number: cleanCode } });
+    }
+    if (!userObj) {
+      return res.status(404).json({ success: false, error: "Client not found" });
+    }
+    targetUserId = userObj.id;
 
 
     // 1. Fetch previous check-in for deltas and consecutive compliance calculation
@@ -118,8 +125,17 @@ export async function submitCheckin(req, res) {
 export async function getClientCheckins(req, res) {
   try {
     const { userId } = req.params;
+    const cleanCode = String(userId).replace('#', '').trim();
+    let userObj = await User.findOne({ where: { client_code: cleanCode } });
+    if (!userObj && !isNaN(cleanCode)) {
+      userObj = await User.findByPk(parseInt(cleanCode, 10));
+    }
+    const resolvedId = userObj ? userObj.id : (!isNaN(cleanCode) ? parseInt(cleanCode, 10) : null);
+    if (!resolvedId) {
+      return res.status(404).json({ success: false, error: "Client not found" });
+    }
     const checkins = await CheckinSubmission.findAll({
-      where: { user_id: userId },
+      where: { user_id: resolvedId },
       order: [["createdAt", "DESC"]],
     });
 

@@ -139,7 +139,11 @@ export const renewSubscription = async (req, res) => {
     const { user_id } = req.params;
     const { package_code, price, payment_method } = req.body;
 
-    const user = await User.findByPk(user_id);
+    const cleanId = String(user_id).replace('#', '').trim();
+    let user = await User.findOne({ where: { client_code: cleanId } });
+    if (!user && !isNaN(cleanId)) {
+      user = await User.findByPk(parseInt(cleanId, 10));
+    }
     if (!user) return res.status(404).json({ error: "Client not found" });
 
     const config = PACKAGE_CONFIG[package_code] || PACKAGE_CONFIG["ELITE"];
@@ -175,7 +179,11 @@ export const updateSubscription = async (req, res) => {
     const { user_id } = req.params;
     const { package_code, price, end_date } = req.body;
 
-    const user = await User.findByPk(user_id);
+    const cleanId = String(user_id).replace('#', '').trim();
+    let user = await User.findOne({ where: { client_code: cleanId } });
+    if (!user && !isNaN(cleanId)) {
+      user = await User.findByPk(parseInt(cleanId, 10));
+    }
     if (!user) return res.status(404).json({ error: "Client not found" });
 
     if (package_code) user.subscription_package = package_code;

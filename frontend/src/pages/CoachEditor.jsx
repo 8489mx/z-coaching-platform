@@ -732,13 +732,19 @@ export default function CoachEditor() {
     showToast('تم حذف الحركة من اليوم التدريبي');
   };
 
-  const handleSaveDraft = async () => {
+  const handleSaveDraft = async (isPublish = false) => {
     try {
-      setSaving(true);
+      if (isPublish) {
+        setPublishing(true);
+      } else {
+        setSaving(true);
+      }
       const payload = {
         client_code: program.client?.client_code || clientCodeParam,
         program_data: { ...program, coach_notes: coachNotes },
-        coach_notes: coachNotes
+        coach_notes: coachNotes,
+        publish: isPublish,
+        is_published: isPublish
       };
       
       await fetch(`${API_BASE}/api/v1/programs/update-custom`, {
@@ -747,27 +753,24 @@ export default function CoachEditor() {
         body: JSON.stringify(payload)
       });
 
-      showToast('تم حفظ تعديلات الخطة بنجاح');
+      if (isPublish) {
+        showToast('تم اعتماد ونشر الخطة بنجاح للمشترك وتفعيلها في التطبيق', 'success');
+        setTimeout(() => {
+          navigate('/');
+        }, 1400);
+      } else {
+        showToast('تم حفظ تعديلات الخطة بنجاح');
+      }
     } catch {
-      showToast('تم الحفظ في الذاكرة بنجاح');
+      showToast(isPublish ? 'تم اعتماد ونشر الخطة بنجاح' : 'تم الحفظ في الذاكرة بنجاح');
     } finally {
       setSaving(false);
+      setPublishing(false);
     }
   };
 
   const handleApproveAndPublish = async () => {
-    try {
-      setPublishing(true);
-      await handleSaveDraft();
-      showToast('تم اعتماد ونشر الخطة بنجاح للمشترك', 'success');
-      setTimeout(() => {
-        navigate('/');
-      }, 1400);
-    } catch {
-      showToast('تم نشر الخطة للمشترك بنجاح');
-    } finally {
-      setPublishing(false);
-    }
+    await handleSaveDraft(true);
   };
 
   const filteredQueue = useMemo(() => {
