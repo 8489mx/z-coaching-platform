@@ -740,7 +740,7 @@ export default function CoachEditor() {
         setSaving(true);
       }
       const payload = {
-        client_code: program.client?.client_code || clientCodeParam,
+        client_code: program?.client?.client_code || clientCodeParam,
         program_data: { ...program, coach_notes: coachNotes },
         coach_notes: coachNotes,
         publish: isPublish,
@@ -913,7 +913,7 @@ export default function CoachEditor() {
               }}
             >
               {filteredQueue.map((client) => {
-                const isSelected = String(program.client?.client_code || clientCodeParam) === String(client.client_code || client.id);
+                const isSelected = String(program?.client?.client_code || clientCodeParam) === String(client.client_code || client.id);
                 const isPending = client.queue_status === 'PENDING_PLAN';
                 const isNeedsUpdate = client.queue_status === 'NEEDS_UPDATE';
 
@@ -1004,37 +1004,37 @@ export default function CoachEditor() {
             <div>
               <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
                 <h4 style={{ margin: 0, fontSize: '15px', fontWeight: 800, color: '#0F172A', display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
-                  <span>{program.client?.full_name || 'أحمد محمود العوضي'}</span>
+                  <span>{program?.client?.full_name || 'أحمد محمود العوضي'}</span>
                   <span style={{ fontSize: '12px', color: '#64748B', fontWeight: 700 }}>
-                    ({program.client?.client_code ? `#${program.client.client_code}` : '#1'})
+                    ({program?.client?.client_code ? `#${program?.client?.client_code}` : '#1'})
                   </span>
                 </h4>
 
                 <span style={{ fontSize: '10.5px', padding: '2px 8px', borderRadius: '4px', background: '#0F172A', color: '#FFFFFF', fontWeight: 700 }}>
-                  {program.client?.package_name || 'باقة ماكس'}
+                  {program?.client?.package_name || 'باقة ماكس'}
                 </span>
               </div>
 
               <div style={{ fontSize: '11px', color: '#64748B', display: 'flex', alignItems: 'center', gap: '8px', marginTop: '3px', flexWrap: 'wrap' }}>
-                <span>{program.client?.age || 27} سنة</span>
+                <span>{program?.client?.age || 27} سنة</span>
                 <span>•</span>
-                <span>{program.client?.weight_kg || 84.5} كجم</span>
+                <span>{program?.client?.weight_kg || 84.5} كجم</span>
                 <span>•</span>
-                <span>{program.client?.height_cm || 180} سم</span>
+                <span>{program?.client?.height_cm || 180} سم</span>
                 <span>•</span>
-                <span style={{ color: '#0F172A', fontWeight: 700 }}>{program.client?.goal_label || 'خسارة دهون وتنشيف'}</span>
+                <span style={{ color: '#0F172A', fontWeight: 700 }}>{program?.client?.goal_label || 'خسارة دهون وتنشيف'}</span>
 
-                {program.client?.injuries && program.client.injuries.length > 0 && (
+                {program?.client?.injuries && program?.client?.injuries.length > 0 && (
                   <span style={{ fontSize: '10px', padding: '1px 6px', borderRadius: '4px', background: '#FEF2F2', border: '1px solid #FECACA', color: '#DC2626', fontWeight: 700, display: 'inline-flex', alignItems: 'center', gap: '3px' }}>
                     <ShieldAlert size={10} />
-                    <span>إصابة: {program.client.injuries.join('، ')}</span>
+                    <span>إصابة: {program?.client?.injuries.join('، ')}</span>
                   </span>
                 )}
 
-                {program.client?.allergies && program.client.allergies.length > 0 && (
+                {program?.client?.allergies && program?.client?.allergies.length > 0 && (
                   <span style={{ fontSize: '10px', padding: '1px 6px', borderRadius: '4px', background: '#F0F9FF', border: '1px solid #BAE6FD', color: '#0284C7', fontWeight: 700, display: 'inline-flex', alignItems: 'center', gap: '3px' }}>
                     <AlertCircle size={10} />
-                    <span>حساسية: {program.client.allergies.join('، ')}</span>
+                    <span>حساسية: {program?.client?.allergies.join('، ')}</span>
                   </span>
                 )}
               </div>
@@ -1068,7 +1068,7 @@ export default function CoachEditor() {
 
             <button
               type="button"
-              onClick={() => window.open(`/pdf?user_id=${program.client?.client_code || clientCodeParam}`, '_blank')}
+              onClick={() => window.open(`/pdf?user_id=${program?.client?.client_code || clientCodeParam}`, '_blank')}
               style={{
                 height: '32px',
                 padding: '0 10px',

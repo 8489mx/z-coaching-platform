@@ -40,7 +40,67 @@ import AdminLayout from '../components/layout/AdminLayout';
 import { PageHeader } from '@/shared/components/page-header';
 import { FormSection } from '@/shared/components/form-section';
 
-export const INITIAL_CHECKINS = [];
+import { STRESS_TEST_CLIENTS } from '../data/stressTestClientsBlueprints';
+
+export const INITIAL_CHECKINS = Array.isArray(STRESS_TEST_CLIENTS) ? STRESS_TEST_CLIENTS.slice(0, 5).map((c) => ({
+  id: `CHK_${c.client_code}`,
+  raw_id: c.id,
+  user_id: c.id,
+  client: {
+    id: `CL_${c.client_code}`,
+    name: c.full_name,
+    code: c.client_code,
+    package: (c.package_name || '').toUpperCase().includes('MAX') ? 'MAX' : 'ELITE',
+    package_name: c.package_name || 'باقة ماكس',
+    phone: c.phone_number,
+    country: { name: 'مصر' },
+    gender: c.gender,
+    goal_type: c.primary_goal === 'fat_loss' ? 'CUTTING' : (c.primary_goal === 'lean_bulk' ? 'BULKING' : 'RECOMP'),
+    target_goal: c.goal_label,
+    start_weight: c.weight_kg,
+    target_weight: c.primary_goal === 'fat_loss' ? (c.weight_kg - 8) : (c.weight_kg + 4)
+  },
+  week_number: 1,
+  checkin_number: 1,
+  submission_date: 'اليوم • وارد حديثاً',
+  history: [
+    { week: 0, weight: c.weight_kg, waist: 88, adherence: 100, date: 'نقطة البداية', diff: 0 },
+    { week: 1, weight: c.primary_goal === 'fat_loss' ? (c.weight_kg - 0.8) : (c.weight_kg + 0.3), waist: 87, adherence: 92, date: 'الأسبوع 1', diff: c.primary_goal === 'fat_loss' ? -0.8 : 0.3 }
+  ],
+  metrics: {
+    previous_weight: c.weight_kg,
+    current_weight: c.primary_goal === 'fat_loss' ? (c.weight_kg - 0.8) : (c.weight_kg + 0.3),
+    weight_change: c.primary_goal === 'fat_loss' ? -0.8 : 0.3,
+    waist_previous: 88,
+    waist_current: 87,
+    waist_change: -1,
+    adherence: 92,
+    workouts_completed: c.training_days || 4,
+    workouts_target: c.training_days || 4,
+    daily_steps_avg: 8200,
+    strength_trend: 'INCREASED',
+    strength_note: 'تطور ملحوظ في الأوزان',
+    water_liters: 3.5,
+    off_plan_meals: 0,
+    rpe_average: 8.0,
+    status_badge: 'تقدم ممتاز',
+    warning: null
+  },
+  biofeedback: {
+    energy: 8,
+    sleep: 8,
+    hunger: 4,
+    digestion_status: 'ممتاز',
+    stress: 3
+  },
+  baseline_macros: {
+    calories: 2000,
+    protein: 150,
+    carbs: 220,
+    fats: 55
+  },
+  suggested_reply: `عاش يا ${c.full_name.split(' ')[0]}! أداء ممتاز في المتابعة، والالتزام 92% انعكس مباشرة على النتيجة. مستمرون بنفس القوة!`
+})) : [];
 
 const DEFAULT_BASELINE_MACROS = {
   calories: 2000,
@@ -534,10 +594,10 @@ export default function CheckinReviewDashboard() {
     if (targetCode) {
       const cleanTarget = String(targetCode).replace(/^#+/, '').trim();
       const existingIdx = checkinList.findIndex((item) => 
-        String(item.client.code).toLowerCase() === cleanTarget.toLowerCase() ||
-        String(item.client.id).toLowerCase() === cleanTarget.toLowerCase() ||
-        String(item.id).toLowerCase() === cleanTarget.toLowerCase() ||
-        item.client.name.toLowerCase().includes(cleanTarget.toLowerCase())
+        String(item?.client?.code || '').toLowerCase() === cleanTarget.toLowerCase() ||
+        String(item?.client?.id || '').toLowerCase() === cleanTarget.toLowerCase() ||
+        String(item?.id || '').toLowerCase() === cleanTarget.toLowerCase() ||
+        (item?.client?.name && item.client.name.toLowerCase().includes(cleanTarget.toLowerCase()))
       );
 
       if (existingIdx !== -1) {
@@ -716,7 +776,7 @@ export default function CheckinReviewDashboard() {
 
   const handleOpenDirectWhatsApp = () => {
     if (!activeCheckin?.client?.phone) return;
-    let cleanPhone = activeCheckin.client.phone.replace(/\D/g, '');
+    let cleanPhone = String(activeCheckin?.client?.phone || '').replace(/\D/g, '');
     if (cleanPhone.startsWith('01')) cleanPhone = '2' + cleanPhone;
     window.open(`https://wa.me/${cleanPhone}?text=${encodeURIComponent(coachReply)}`, '_blank');
   };
@@ -904,7 +964,7 @@ export default function CheckinReviewDashboard() {
                 </div>
               ) : (
                 filteredQueue.map((item, idx) => {
-                  const isSelected = item.id === activeCheckin.id;
+                  const isSelected = activeCheckin && item.id === activeCheckin.id;
                   const isMax = item.client.package.toUpperCase().includes('MAX');
                   return (
                     <div
@@ -1016,7 +1076,49 @@ export default function CheckinReviewDashboard() {
               LEFT WORKSPACE: The Active Client Assessment & Decision Panel
               ========================================================================= */}
           <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
-            
+            {!activeCheckin ? (
+              <div style={{
+                background: '#FFFFFF',
+                border: '1px solid #E2E8F0',
+                borderRadius: '12px',
+                padding: '60px 20px',
+                textAlign: 'center',
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: '12px',
+                color: '#64748B'
+              }}>
+                <div style={{ width: '48px', height: '48px', borderRadius: '50%', background: '#F1F5F9', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#0F172A' }}>
+                  <CheckCircle2 size={24} color="#16A34A" />
+                </div>
+                <h3 style={{ margin: 0, fontSize: '16px', fontWeight: 800, color: '#0F172A' }}>
+                  لا توجد متابعة محددة للمراجعة
+                </h3>
+                <p style={{ margin: 0, fontSize: '13px', color: '#64748B', maxWidth: '380px', lineHeight: 1.5 }}>
+                  يرجى اختيار متدرب من القائمة الجانبية أو انتظار ورود متابعات أسبوعية جديدة من المشتركين.
+                </p>
+                <button
+                  type="button"
+                  onClick={() => navigate('/')}
+                  style={{
+                    marginTop: '8px',
+                    padding: '8px 18px',
+                    background: '#0F172A',
+                    color: '#FFFFFF',
+                    border: 'none',
+                    borderRadius: '8px',
+                    fontSize: '12px',
+                    fontWeight: 700,
+                    cursor: 'pointer'
+                  }}
+                >
+                  العودة لغرفة القيادة
+                </button>
+              </div>
+            ) : (
+              <>
             {/* 1. Header Identity Card & Goal Badge */}
             {(() => {
               const goalType = activeCheckin.client.goal_type || 'CUTTING';
@@ -1936,6 +2038,8 @@ export default function CheckinReviewDashboard() {
               </FormSection>
 
             </div>
+              </>
+            )}
 
           </div>
 
