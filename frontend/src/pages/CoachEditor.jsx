@@ -29,6 +29,8 @@ import {
 import AdminLayout from '../components/layout/AdminLayout';
 import { API_BASE } from '../config/api';
 import { FOOD_DATABASE } from '../utils/foodSwapEngine';
+import { dynamicRippleRebalanceDailyPlan } from '../utils/mealPortionBalancer';
+import CoachEditorNutritionTab from '../features/coach/components/CoachEditorNutritionTab';
 import defaultMobilityCatalog from '../data/mobilityCatalog.json';
 
 const rawFoodsList = Object.values(FOOD_DATABASE || {})
@@ -142,6 +144,7 @@ export default function CoachEditor() {
   const [activeSessionIdx, setActiveSessionIdx] = useState(0);
   const [activeWorkspaceTab, setActiveWorkspaceTab] = useState('TRAINING');
   const [notification, setNotification] = useState(null);
+  const [autoRippleEnabled, setAutoRippleEnabled] = useState(true);
 
   // Clients Queue State & Filters
   const [clientsList, setClientsList] = useState([]);
@@ -471,11 +474,25 @@ export default function CoachEditor() {
         };
       });
 
+      const rebalancedMeals = autoRippleEnabled ? dynamicRippleRebalanceDailyPlan({
+        meals: updatedMeals,
+        supplements: prev.cardio?.supplements || [],
+        targets: {
+          calories: prev.nutrition?.targets?.calories || 2000,
+          protein: prev.nutrition?.targets?.protein || 150,
+          carbs: prev.nutrition?.targets?.carbs || 200,
+          fats: prev.nutrition?.targets?.fats || 50
+        },
+        anchorMealId: mealId,
+        beverageSugarSpoons: prev.nutrition?.beverage_sugar_spoons || 0,
+        autoRippleEnabled: true
+      }) : updatedMeals;
+
       return {
         ...prev,
         nutrition: {
           ...prev.nutrition,
-          meals: updatedMeals
+          meals: rebalancedMeals
         }
       };
     });
@@ -493,15 +510,29 @@ export default function CoachEditor() {
         };
       });
 
+      const rebalancedMeals = autoRippleEnabled ? dynamicRippleRebalanceDailyPlan({
+        meals: updatedMeals,
+        supplements: prev.cardio?.supplements || [],
+        targets: {
+          calories: prev.nutrition?.targets?.calories || 2000,
+          protein: prev.nutrition?.targets?.protein || 150,
+          carbs: prev.nutrition?.targets?.carbs || 200,
+          fats: prev.nutrition?.targets?.fats || 50
+        },
+        anchorMealId: mealId,
+        beverageSugarSpoons: prev.nutrition?.beverage_sugar_spoons || 0,
+        autoRippleEnabled: true
+      }) : updatedMeals;
+
       return {
         ...prev,
         nutrition: {
           ...prev.nutrition,
-          meals: updatedMeals
+          meals: rebalancedMeals
         }
       };
     });
-    showToast('تم حذف الصنف من الوجبة');
+    showToast('تم حذف الصنف وموازنة بقية الوجبات تلقائياً');
   };
 
   const handleAddPresetMeal = (preset) => {
@@ -549,14 +580,31 @@ export default function CoachEditor() {
   };
 
   const handleDeleteMeal = (mealId) => {
-    setProgram(prev => ({
-      ...prev,
-      nutrition: {
-        ...prev.nutrition,
-        meals: prev.nutrition.meals.filter(m => m.id !== mealId)
-      }
-    }));
-    showToast('تم حذف الوجبة بالكامل');
+    setProgram(prev => {
+      const remainingMeals = prev.nutrition.meals.filter(m => m.id !== mealId);
+      const rebalancedMeals = autoRippleEnabled ? dynamicRippleRebalanceDailyPlan({
+        meals: remainingMeals,
+        supplements: prev.cardio?.supplements || [],
+        targets: {
+          calories: prev.nutrition?.targets?.calories || 2000,
+          protein: prev.nutrition?.targets?.protein || 150,
+          carbs: prev.nutrition?.targets?.carbs || 200,
+          fats: prev.nutrition?.targets?.fats || 50
+        },
+        anchorMealId: null,
+        beverageSugarSpoons: prev.nutrition?.beverage_sugar_spoons || 0,
+        autoRippleEnabled: true
+      }) : remainingMeals;
+
+      return {
+        ...prev,
+        nutrition: {
+          ...prev.nutrition,
+          meals: rebalancedMeals
+        }
+      };
+    });
+    showToast('تم حذف الوجبة وموازنة اليوم بالكامل');
   };
 
   const handleAddFoodToMeal = (mealId, selectedFood) => {
@@ -649,17 +697,31 @@ export default function CoachEditor() {
         };
       });
 
+      const rebalancedMeals = autoRippleEnabled ? dynamicRippleRebalanceDailyPlan({
+        meals: updatedMeals,
+        supplements: prev.cardio?.supplements || [],
+        targets: {
+          calories: prev.nutrition?.targets?.calories || 2000,
+          protein: prev.nutrition?.targets?.protein || 150,
+          carbs: prev.nutrition?.targets?.carbs || 200,
+          fats: prev.nutrition?.targets?.fats || 50
+        },
+        anchorMealId: mealId,
+        beverageSugarSpoons: prev.nutrition?.beverage_sugar_spoons || 0,
+        autoRippleEnabled: true
+      }) : updatedMeals;
+
       return {
         ...prev,
         nutrition: {
           ...prev.nutrition,
-          meals: updatedMeals
+          meals: rebalancedMeals
         }
       };
     });
 
     setAddFoodModal({ open: false, mealId: null });
-    showToast(`تمت إضافة ${selectedFood.name_ar || selectedFood.name} إلى الوجبة`);
+    showToast(`تمت إضافة ${selectedFood.name_ar || selectedFood.name} وموازنة الوجبات تلقائياً`);
   };
 
   const handleExecuteFoodSwap = (mealId, itemIdx, targetFood) => {
@@ -714,16 +776,30 @@ export default function CoachEditor() {
         };
       });
 
+      const rebalancedMeals = autoRippleEnabled ? dynamicRippleRebalanceDailyPlan({
+        meals: updatedMeals,
+        supplements: prev.cardio?.supplements || [],
+        targets: {
+          calories: prev.nutrition?.targets?.calories || 2000,
+          protein: prev.nutrition?.targets?.protein || 150,
+          carbs: prev.nutrition?.targets?.carbs || 200,
+          fats: prev.nutrition?.targets?.fats || 50
+        },
+        anchorMealId: mealId,
+        beverageSugarSpoons: prev.nutrition?.beverage_sugar_spoons || 0,
+        autoRippleEnabled: true
+      }) : updatedMeals;
+
       return {
         ...prev,
         nutrition: {
           ...prev.nutrition,
-          meals: updatedMeals
+          meals: rebalancedMeals
         }
       };
     });
     setSwapFoodModal({ open: false, mealId: null, itemIdx: null, currentItem: null });
-    showToast('تم استبدال الصنف وإعادة احتساب الماكروز بالمللي بنجاح');
+    showToast('تم استبدال الصنف وموازنة اليوم بالكامل تلقائياً');
   };
 
   const handleExecuteExerciseSwap = (sessionIdx, exIdx, targetEx) => {
@@ -1617,363 +1693,83 @@ export default function CoachEditor() {
 
         {/* 4. TAB 2: NUTRITION & MACROS */}
         {activeWorkspaceTab === 'NUTRITION' && (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-            
-            {/* Engine Clinical Nutrition Reasoning Card */}
-            {program.nutrition?.reasoning && (
-              <div style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', borderRadius: '8px', padding: '10px 14px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '10px', boxShadow: '0 1px 2px rgba(15, 23, 42, 0.02)' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                  <div style={{ width: '28px', height: '28px', borderRadius: '6px', background: '#F0FDF4', border: '1px solid #BBF7D0', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#16A34A', flexShrink: 0 }}>
-                    <Zap size={14} />
-                  </div>
-                  <div>
-                    <div style={{ fontSize: '11.5px', fontWeight: 800, color: '#0F172A' }}>تحليل محرك التغذية وهندسة الماكروز</div>
-                    <div style={{ fontSize: '11px', color: '#64748B', marginTop: '1px' }}>
-                      {typeof program.nutrition.reasoning === 'string' ? program.nutrition.reasoning : (program.nutrition.reasoning?.rationale || 'احتساب دقيق للعجز/الفائض السعري ونسبة البروتين للحفاظ على الكتلة العضلية.')}
-                    </div>
-                  </div>
-                </div>
-                {program.nutrition?.deficit_pct && (
-                  <span style={{ fontSize: '10.5px', fontWeight: 700, padding: '2px 8px', borderRadius: '4px', background: '#FFFFFF', border: '1px solid #CBD5E1', color: '#0F172A', whiteSpace: 'nowrap' }}>
-                    عجز {program.nutrition.deficit_pct}%
-                  </span>
-                )}
-              </div>
-            )}
-
-            {/* Top Macro Summary Bar */}
-            <div style={{ background: '#FFFFFF', border: '1px solid #E2E8F0', borderRadius: '8px', padding: '10px 14px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '8px', boxShadow: '0 1px 2px rgba(15, 23, 42, 0.02)' }}>
-              <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap', alignItems: 'center' }}>
-                <div style={{ background: '#0F172A', color: '#FFFFFF', padding: '5px 12px', borderRadius: '5px', textAlign: 'center' }}>
-                  <span style={{ fontSize: '9.5px', opacity: 0.8, display: 'block' }}>السعرات اليومية</span>
-                  <strong style={{ fontSize: '13px', fontWeight: 800 }}>{program.nutrition?.targets?.calories} kcal</strong>
-                </div>
-                <div style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', color: '#0F172A', padding: '5px 12px', borderRadius: '5px', textAlign: 'center' }}>
-                  <span style={{ fontSize: '9.5px', color: '#64748B', display: 'block' }}>البروتين</span>
-                  <strong style={{ fontSize: '13px', fontWeight: 700 }}>{program.nutrition?.targets?.protein}g</strong>
-                </div>
-                <div style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', color: '#0F172A', padding: '5px 12px', borderRadius: '5px', textAlign: 'center' }}>
-                  <span style={{ fontSize: '9.5px', color: '#64748B', display: 'block' }}>الكارب</span>
-                  <strong style={{ fontSize: '13px', fontWeight: 700 }}>{program.nutrition?.targets?.carbs}g</strong>
-                </div>
-                <div style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', color: '#0F172A', padding: '5px 12px', borderRadius: '5px', textAlign: 'center' }}>
-                  <span style={{ fontSize: '9.5px', color: '#64748B', display: 'block' }}>الدهون</span>
-                  <strong style={{ fontSize: '13px', fontWeight: 700 }}>{program.nutrition?.targets?.fats}g</strong>
-                </div>
-                <div style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', color: '#0F172A', padding: '5px 12px', borderRadius: '5px', textAlign: 'center' }}>
-                  <span style={{ fontSize: '9.5px', color: '#64748B', display: 'block' }}>الماء</span>
-                  <strong style={{ fontSize: '13px', fontWeight: 700 }}>{program.nutrition?.targets?.water_liters || 3.8}L</strong>
-                </div>
-              </div>
-
-              <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                <button
-                  type="button"
-                  onClick={handleRefreshAllMeals}
-                  style={{ height: '30px', padding: '0 10px', borderRadius: '5px', background: '#F8FAFC', color: '#0F172A', border: '1px solid #CBD5E1', fontSize: '11px', fontWeight: 700, cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: '4px' }}
-                  title="تجديد أصناف الخطة مع الحفاظ الكامل على الماكروز"
-                >
-                  <RotateCw size={12} />
-                  <span>تجديد الأصناف</span>
-                </button>
-                <button
-                  type="button"
-                  onClick={handleAddNewMeal}
-                  style={{ height: '30px', padding: '0 12px', borderRadius: '5px', background: '#0F172A', color: '#FFFFFF', border: 'none', fontSize: '11px', fontWeight: 700, cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: '4px', boxShadow: '0 1px 3px rgba(15, 23, 42, 0.15)' }}
-                >
-                  <Plus size={13} />
-                  <span>إضافة وجبة</span>
-                </button>
-              </div>
-            </div>
-
-            {/* Quick Meal Presets Toolbar */}
-            <div style={{ background: '#FFFFFF', border: '1px solid #E2E8F0', borderRadius: '8px', padding: '8px 12px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '8px' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flexWrap: 'wrap' }}>
-                <span style={{ fontSize: '11px', fontWeight: 800, color: '#0F172A' }}>نماذج وجبات معتمدة بضغطة زر:</span>
-                <div style={{ display: 'flex', gap: '5px', flexWrap: 'wrap' }}>
-                  {QUICK_MEAL_PRESETS.map((preset, pIdx) => (
-                    <button
-                      key={pIdx}
-                      type="button"
-                      onClick={() => handleAddPresetMeal(preset)}
-                      style={{
-                        padding: '3px 8px',
-                        borderRadius: '4px',
-                        border: '1px solid #CBD5E1',
-                        background: '#F8FAFC',
-                        color: '#0F172A',
-                        fontSize: '10.5px',
-                        fontWeight: 700,
-                        cursor: 'pointer',
-                        display: 'inline-flex',
-                        alignItems: 'center',
-                        gap: '3px',
-                        transition: 'all 0.12s ease'
-                      }}
-                      onMouseEnter={(e) => { e.currentTarget.style.background = '#0F172A'; e.currentTarget.style.color = '#FFFFFF'; }}
-                      onMouseLeave={(e) => { e.currentTarget.style.background = '#F8FAFC'; e.currentTarget.style.color = '#0F172A'; }}
-                    >
-                      <Plus size={10} />
-                      <span>{preset.name}</span>
-                    </button>
-                  ))}
-                </div>
-              </div>
-            </div>
-
-            {/* Coach-Authorized Smart Refeed / Free Meal Protocol Controller */}
-            <div style={{ background: program.nutrition?.refeed_authorized ? '#FEFCE8' : '#F8FAFC', border: '1px solid ' + (program.nutrition?.refeed_authorized ? '#FEF08A' : '#E2E8F0'), borderRadius: '8px', padding: '10px 14px', display: 'flex', flexDirection: 'column', gap: '8px', transition: 'all 0.15s ease' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '8px' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                  <Utensils size={16} color="#CA8A04" />
-                  <div>
-                    <div style={{ fontSize: '12px', fontWeight: 800, color: '#0F172A' }}>
-                      تصريح الوجبة المفتوحة الذكية لهذا الأسبوع (Smart Refeed Authorization)
-                    </div>
-                    <div style={{ fontSize: '10.5px', color: '#64748B' }}>
-                      مخفية تماماً عن المتدرب ما لم تقم بتفعيلها بنفسك، لمنع استخدامها كحجة للتخبيص.
-                    </div>
-                  </div>
-                </div>
-
-                <label style={{ display: 'flex', alignItems: 'center', gap: '6px', cursor: 'pointer', background: program.nutrition?.refeed_authorized ? '#CA8A04' : '#E2E8F0', padding: '4px 10px', borderRadius: '6px', color: program.nutrition?.refeed_authorized ? '#FFFFFF' : '#475569', fontSize: '11px', fontWeight: 800 }}>
-                  <input
-                    type="checkbox"
-                    checked={Boolean(program.nutrition?.refeed_authorized)}
-                    onChange={(e) => {
-                      const checked = e.target.checked;
-                      setProgram(prev => ({
-                        ...prev,
-                        nutrition: {
-                          ...prev.nutrition,
-                          refeed_authorized: checked,
-                          refeed_protocol: prev.nutrition?.refeed_protocol || 'HIGH_CARB_CLEAN_REFEED',
-                          refeed_day: prev.nutrition?.refeed_day || 'بعد تمرين الأرجل أو الظهر',
-                          refeed_notes: prev.nutrition?.refeed_notes || 'وجبة كارب عالي نظيفة لملء الجليكوجين بعد تمرين شاق'
-                        }
-                      }));
-                      showToast(checked ? 'تم تفعيل الوجبة المفتوحة لهذا الأسبوع للمتدرب' : 'تم إغلاق وحظر الوجبة المفتوحة');
-                    }}
-                    style={{ cursor: 'pointer' }}
-                  />
-                  <span>{program.nutrition?.refeed_authorized ? 'مصرح بها لهذا الأسبوع' : 'غير مصرح بها (مغلقة)'}</span>
-                </label>
-              </div>
-
-              {program.nutrition?.refeed_authorized && (
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '8px', paddingTop: '6px', borderTop: '1px solid #FEF08A' }}>
-                  <div>
-                    <span style={{ fontSize: '10px', fontWeight: 700, color: '#854D0E', display: 'block', marginBottom: '2px' }}>نوع البروتوكول:</span>
-                    <select
-                      value={program.nutrition?.refeed_protocol || 'HIGH_CARB_CLEAN_REFEED'}
-                      onChange={(e) => {
-                        const val = e.target.value;
-                        setProgram(prev => ({
-                          ...prev,
-                          nutrition: { ...prev.nutrition, refeed_protocol: val }
-                        }));
-                      }}
-                      style={{ width: '100%', height: '28px', borderRadius: '4px', border: '1px solid #CBD5E1', fontSize: '11px', fontWeight: 700, background: '#FFFFFF', padding: '0 6px' }}
-                    >
-                      <option value="HIGH_CARB_CLEAN_REFEED">رفيد نظيف عالي الكاربوهيدرات (سوشي/أرز/مكرونة/بيتزا دايت)</option>
-                      <option value="CONTROLLED_FREE_MEAL">وجبة حرة نفسية بضوابط (45 دقيقة - بروتين وسلطة أولاً)</option>
-                    </select>
-                  </div>
-
-                  <div>
-                    <span style={{ fontSize: '10px', fontWeight: 700, color: '#854D0E', display: 'block', marginBottom: '2px' }}>توقيت الوجبة المسموح:</span>
-                    <input
-                      type="text"
-                      value={program.nutrition?.refeed_day || 'بعد تمرين الأرجل أو الظهر'}
-                      onChange={(e) => {
-                        const val = e.target.value;
-                        setProgram(prev => ({
-                          ...prev,
-                          nutrition: { ...prev.nutrition, refeed_day: val }
-                        }));
-                      }}
-                      placeholder="مثلاً: يوم الخميس بعد تمرين الأرجل"
-                      style={{ width: '100%', height: '28px', borderRadius: '4px', border: '1px solid #CBD5E1', fontSize: '11px', padding: '0 8px', boxSizing: 'border-box' }}
-                    />
-                  </div>
-
-                  <div style={{ gridColumn: '1 / -1' }}>
-                    <span style={{ fontSize: '10px', fontWeight: 700, color: '#854D0E', display: 'block', marginBottom: '2px' }}>تعليمات وتوجيهات الكابتن للوجبة:</span>
-                    <input
-                      type="text"
-                      value={program.nutrition?.refeed_notes || 'وجبة واحدة فقط خلال 45 دقيقة بدون شراهة مع كوبين ماء قبل البدء'}
-                      onChange={(e) => {
-                        const val = e.target.value;
-                        setProgram(prev => ({
-                          ...prev,
-                          nutrition: { ...prev.nutrition, refeed_notes: val }
-                        }));
-                      }}
-                      placeholder="تعليماتك للمتدرب للوجبة المفتوحة..."
-                      style={{ width: '100%', height: '28px', borderRadius: '4px', border: '1px solid #CBD5E1', fontSize: '11px', padding: '0 8px', boxSizing: 'border-box' }}
-                    />
-                  </div>
-                </div>
-              )}
-            </div>
-
-            {/* Meals Grid (2-Column Balanced Sleek Grid) */}
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(460px, 1fr))', gap: '12px' }}>
-              {program.nutrition?.meals?.map((meal) => (
-                <div
-                  key={meal.id}
-                  style={{
-                    background: '#FFFFFF',
-                    border: '1px solid #E2E8F0',
-                    borderRadius: '8px',
-                    padding: '12px 14px',
-                    display: 'flex',
-                    flexDirection: 'column',
-                    justifyContent: 'space-between',
-                    gap: '10px',
-                    boxShadow: '0 1px 2px rgba(15, 23, 42, 0.02)'
-                  }}
-                >
-                  {/* Meal Header */}
-                  <div>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid #F1F5F9', paddingBottom: '6px', marginBottom: '8px' }}>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                        <strong style={{ fontSize: '12.5px', color: '#0F172A', fontWeight: 800 }}>{meal.name}</strong>
-                        <span style={{ fontSize: '10px', color: '#64748B', background: '#F8FAFC', border: '1px solid #E2E8F0', padding: '1px 5px', borderRadius: '3px', fontWeight: 600 }}>{meal.time}</span>
-                      </div>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                        <button
-                          type="button"
-                          onClick={() => setAddFoodModal({ open: true, mealId: meal.id })}
-                          style={{ padding: '2px 7px', borderRadius: '4px', background: '#F8FAFC', border: '1px solid #CBD5E1', color: '#0F172A', fontSize: '10px', fontWeight: 700, cursor: 'pointer' }}
-                        >
-                          + صنف غذائي
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => handleDeleteMeal(meal.id)}
-                          style={{ border: 'none', background: 'transparent', color: '#94A3B8', cursor: 'pointer', padding: '2px', display: 'flex', alignItems: 'center' }}
-                          title="حذف الوجبة"
-                          onMouseEnter={(e) => { e.currentTarget.style.color = '#DC2626'; }}
-                          onMouseLeave={(e) => { e.currentTarget.style.color = '#94A3B8'; }}
-                        >
-                          <Trash2 size={12} />
-                        </button>
-                      </div>
-                    </div>
-
-                    {/* Meal Food Items (Precision Grid: Aligned Grams, Centered Calories, English Macros & Swap Action) */}
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>
-                      {meal.items?.map((item, iIdx) => (
-                        <div
-                          key={item.id || iIdx}
-                          style={{
-                            background: '#F8FAFC',
-                            border: '1px solid #E2E8F0',
-                            borderRadius: '6px',
-                            padding: '6px 10px',
-                            display: 'grid',
-                            gridTemplateColumns: 'minmax(105px, 1fr) 95px 75px 210px 48px',
-                            alignItems: 'center',
-                            gap: '8px'
-                          }}
-                        >
-                          {/* 1. Food Name & Category Badge */}
-                          <div style={{ display: 'flex', alignItems: 'center', gap: '6px', minWidth: 0, overflow: 'hidden' }}>
-                            <span style={{ color: '#0F172A', fontWeight: 700, fontSize: '12px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                              {item.name}
-                            </span>
-                            {item.category && (
-                              <span style={{ fontSize: '9.5px', fontWeight: 600, padding: '1px 5px', borderRadius: '3px', background: '#FFFFFF', color: '#64748B', border: '1px solid #E2E8F0', flexShrink: 0 }}>
-                                {item.category === 'PROTEIN' ? 'بروتين' : item.category === 'CARB' ? 'نشويات' : item.category === 'FAT' ? 'دهون' : 'خضار'}
-                              </span>
-                            )}
-                          </div>
-                          
-                          {/* 2. Grams Amount Box (Fixed width, vertically aligned, no spin-arrow crop) */}
-                          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                            <div style={{ display: 'inline-flex', alignItems: 'center', background: '#FFFFFF', border: '1px solid #CBD5E1', borderRadius: '5px', padding: '0 6px', height: '27px', width: '74px', boxSizing: 'border-box' }}>
-                              <input
-                                type="text"
-                                inputMode="numeric"
-                                pattern="[0-9]*"
-                                dir="ltr"
-                                value={item.amount !== undefined ? item.amount : 100}
-                                onChange={(e) => {
-                                  const val = e.target.value.replace(/[^0-9]/g, '');
-                                  handleUpdateFoodAmount(meal.id, iIdx, val);
-                                }}
-                                style={{
-                                  width: '38px',
-                                  border: 'none',
-                                  textAlign: 'center',
-                                  fontWeight: 800,
-                                  fontSize: '12px',
-                                  outline: 'none',
-                                  color: '#0F172A',
-                                  background: 'transparent',
-                                  direction: 'ltr',
-                                  padding: 0
-                                }}
-                              />
-                              <span style={{ fontSize: '10.5px', fontWeight: 700, color: '#64748B', marginRight: '2px', flexShrink: 0 }}>{item.unit || 'جم'}</span>
-                            </div>
-                          </div>
-
-                          {/* 3. Calories (Fixed width, centered) */}
-                          <div style={{ textAlign: 'center', direction: 'ltr', whiteSpace: 'nowrap' }}>
-                            <span style={{ fontSize: '11.5px', fontWeight: 800, color: '#0F172A' }}>
-                              {item.cal || 0} kcal
-                            </span>
-                          </div>
-
-                          {/* 4. Macros (Fixed width, English Protein/Carbs/Fat with bold numbers) */}
-                          <div style={{ fontSize: '10px', color: '#64748B', textAlign: 'left', direction: 'ltr', whiteSpace: 'nowrap' }}>
-                            <span>Protein: <strong style={{ color: '#0F172A', fontWeight: 800 }}>{item.p || 0}g</strong> · Carbs: <strong style={{ color: '#0F172A', fontWeight: 800 }}>{item.c || 0}g</strong> · Fat: <strong style={{ color: '#0F172A', fontWeight: 800 }}>{item.f || 0}g</strong></span>
-                          </div>
-
-                          {/* 5. Actions: Smart Swap + Delete */}
-                          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '4px' }}>
-                            <button
-                              type="button"
-                              onClick={() => setSwapFoodModal({ open: true, mealId: meal.id, itemIdx: iIdx, currentItem: item })}
-                              style={{ border: 'none', background: 'transparent', color: '#64748B', cursor: 'pointer', padding: '2px', display: 'flex', alignItems: 'center' }}
-                              title="تبديل الصنف ببديل متكافئ بالمللي"
-                              onMouseEnter={(e) => { e.currentTarget.style.color = '#2563EB'; }}
-                              onMouseLeave={(e) => { e.currentTarget.style.color = '#64748B'; }}
-                            >
-                              <ArrowRightLeft size={12} />
-                            </button>
-
-                            <button
-                              type="button"
-                              onClick={() => handleDeleteFood(meal.id, iIdx)}
-                              style={{ border: 'none', background: 'transparent', color: '#94A3B8', cursor: 'pointer', padding: '2px', display: 'flex', alignItems: 'center' }}
-                              title="حذف الصنف"
-                              onMouseEnter={(e) => { e.currentTarget.style.color = '#DC2626'; }}
-                              onMouseLeave={(e) => { e.currentTarget.style.color = '#94A3B8'; }}
-                            >
-                              <Trash2 size={12} />
-                            </button>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-
-                  {/* Meal Footer Macros */}
-                  <div style={{ borderTop: '1px solid #F1F5F9', paddingTop: '6px', marginTop: '2px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '10.5px', color: '#64748B' }}>
-                    <span style={{ fontWeight: 700, color: '#475569' }}>المجموع: <strong style={{ color: '#0F172A', fontSize: '11.5px' }}>{meal.macros?.calories || 0} kcal</strong></span>
-                    <span style={{ fontWeight: 600 }}>
-                      بروتين: <strong style={{ color: '#0F172A' }}>{meal.macros?.protein || 0}g</strong> • كارب: <strong style={{ color: '#0F172A' }}>{meal.macros?.carbs || 0}g</strong> • دهون: <strong style={{ color: '#0F172A' }}>{meal.macros?.fats || 0}g</strong>
-                    </span>
-                  </div>
-                </div>
-              ))}
-            </div>
-
-          </div>
+          <CoachEditorNutritionTab
+            searchParams={searchParams}
+            setSearchParams={setSearchParams}
+            loading={loading}
+            setLoading={setLoading}
+            saving={saving}
+            setSaving={setSaving}
+            publishing={publishing}
+            setPublishing={setPublishing}
+            program={program}
+            setProgram={setProgram}
+            coachNotes={coachNotes}
+            setCoachNotes={setCoachNotes}
+            activeSessionIdx={activeSessionIdx}
+            setActiveSessionIdx={setActiveSessionIdx}
+            activeWorkspaceTab={activeWorkspaceTab}
+            setActiveWorkspaceTab={setActiveWorkspaceTab}
+            notification={notification}
+            setNotification={setNotification}
+            clientsList={clientsList}
+            setClientsList={setClientsList}
+            queueFilter={queueFilter}
+            setQueueFilter={setQueueFilter}
+            queueSearch={queueSearch}
+            setQueueSearch={setQueueSearch}
+            showQueueSlider={showQueueSlider}
+            setShowQueueSlider={setShowQueueSlider}
+            allExercisesList={allExercisesList}
+            setAllExercisesList={setAllExercisesList}
+            cardioSwapModal={cardioSwapModal}
+            setCardioSwapModal={setCardioSwapModal}
+            addFoodModal={addFoodModal}
+            setAddFoodModal={setAddFoodModal}
+            swapFoodModal={swapFoodModal}
+            setSwapFoodModal={setSwapFoodModal}
+            addExModal={addExModal}
+            setAddExModal={setAddExModal}
+            swapExModal={swapExModal}
+            setSwapExModal={setSwapExModal}
+            mobilityModal={mobilityModal}
+            setMobilityModal={setMobilityModal}
+            allMobilityList={allMobilityList}
+            setAllMobilityList={setAllMobilityList}
+            showReasoning={showReasoning}
+            setShowReasoning={setShowReasoning}
+            exModalSearch={exModalSearch}
+            setExModalSearch={setExModalSearch}
+            foodModalSearch={foodModalSearch}
+            setFoodModalSearch={setFoodModalSearch}
+            mobilityModalSearch={mobilityModalSearch}
+            setMobilityModalSearch={setMobilityModalSearch}
+            swapFoodSearch={swapFoodSearch}
+            setSwapFoodSearch={setSwapFoodSearch}
+            swapExSearch={swapExSearch}
+            setSwapExSearch={setSwapExSearch}
+            handleSelectClient={handleSelectClient}
+            handleUpdateFoodAmount={handleUpdateFoodAmount}
+            handleDeleteFood={handleDeleteFood}
+            handleAddNewMeal={handleAddNewMeal}
+            handleDeleteMeal={handleDeleteMeal}
+            handleAddFoodToMeal={handleAddFoodToMeal}
+            handleExecuteFoodSwap={handleExecuteFoodSwap}
+            handleExecuteExerciseSwap={handleExecuteExerciseSwap}
+            handleUpdateExerciseParam={handleUpdateExerciseParam}
+            handleDeleteExercise={handleDeleteExercise}
+            handleAddExerciseToSession={handleAddExerciseToSession}
+            handleSelectCardioModality={handleSelectCardioModality}
+            handleAddMobilityToSession={handleAddMobilityToSession}
+            handleRemoveMobilityFromSession={handleRemoveMobilityFromSession}
+            handleSaveDraft={handleSaveDraft}
+            handleApproveAndPublish={handleApproveAndPublish}
+            showToast={showToast}
+            autoRippleEnabled={autoRippleEnabled}
+            setAutoRippleEnabled={setAutoRippleEnabled}
+            FOOD_DATABASE_LIST={FOOD_DATABASE_LIST}
+            CARDIO_MODALITY_OPTIONS={CARDIO_MODALITY_OPTIONS}
+          />
         )}
 
         {/* 5. TAB 3: CARDIO & HABITS */}

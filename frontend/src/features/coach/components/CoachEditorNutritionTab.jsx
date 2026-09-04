@@ -1,6 +1,6 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Save, Send, Dumbbell, Utensils, FileText, Activity, Loader2, Plus, Trash2, RotateCw, HeartPulse, Printer, X, ArrowRightLeft, Users, Clock, AlertCircle, CheckCircle2, Search, Check, Zap, Target, ShieldAlert, Flame, Sparkles } from 'lucide-react';
-import { balanceMealItems, balanceAllDayMeals } from '../../../utils/mealPortionBalancer.js';
+import { balanceMealItems, balanceAllDayMeals, dynamicRippleRebalanceDailyPlan } from '../../../utils/mealPortionBalancer.js';
 
 // Quick Meal Presets for Instant Precision Nutrition Building
 const QUICK_MEAL_PRESETS = [
@@ -85,10 +85,54 @@ const QUICK_MEAL_PRESETS = [
 export default function CoachEditorNutritionTab(props) {
   const { searchParams, setSearchParams, loading, setLoading, saving, setSaving, publishing, setPublishing, program, setProgram, coachNotes, setCoachNotes, activeSessionIdx, setActiveSessionIdx, activeWorkspaceTab, setActiveWorkspaceTab, notification, setNotification, clientsList, setClientsList, queueFilter, setQueueFilter, queueSearch, setQueueSearch, showQueueSlider, setShowQueueSlider, allExercisesList, setAllExercisesList, cardioSwapModal, setCardioSwapModal, addFoodModal, setAddFoodModal, swapFoodModal, setSwapFoodModal, addExModal, setAddExModal, swapExModal, setSwapExModal, mobilityModal, setMobilityModal, allMobilityList, setAllMobilityList, showReasoning, setShowReasoning, exModalSearch, setExModalSearch, foodModalSearch, setFoodModalSearch, mobilityModalSearch, setMobilityModalSearch, swapFoodSearch, setSwapFoodSearch, swapExSearch, setSwapExSearch, handleSelectClient, handleUpdateFoodAmount, handleDeleteFood, handleAddNewMeal, handleDeleteMeal, handleAddFoodToMeal, handleExecuteFoodSwap, handleExecuteExerciseSwap, handleUpdateExerciseParam, handleDeleteExercise, handleAddExerciseToSession, handleSelectCardioModality, handleAddMobilityToSession, handleRemoveMobilityFromSession, handleSaveDraft, handleApproveAndPublish, FOOD_DATABASE_LIST, CARDIO_MODALITY_OPTIONS } = props;
 
+  const showToast = props.showToast || ((msg) => console.log(msg));
+
+  const [localAutoRipple, setLocalAutoRipple] = useState(true);
+  const isAutoRippleOn = props.autoRippleEnabled !== undefined ? props.autoRippleEnabled : localAutoRipple;
+  const toggleAutoRipple = () => {
+    if (props.setAutoRippleEnabled) {
+      props.setAutoRippleEnabled(!isAutoRippleOn);
+    } else {
+      setLocalAutoRipple(!isAutoRippleOn);
+    }
+    showToast(!isAutoRippleOn ? 'تم تفعيل الموازنة التلقائية اللحظية لكامل اليوم' : 'تم إيقاف الموازنة التلقائية (وضع يدوي ثابت)');
+  };
+
   const targetCal = Number(program?.nutrition?.targets?.calories) || 2000;
   const targetP = Number(program?.nutrition?.targets?.protein) || 150;
   const targetC = Number(program?.nutrition?.targets?.carbs) || 200;
   const targetF = Number(program?.nutrition?.targets?.fats) || 60;
+
+  const handleUpdateSupplementsWithRipple = (newSupps) => {
+    setProgram(prev => {
+      const currentMeals = prev.nutrition?.meals || [];
+      const rebalancedMeals = isAutoRippleOn ? dynamicRippleRebalanceDailyPlan({
+        meals: currentMeals,
+        supplements: newSupps,
+        targets: {
+          calories: targetCal,
+          protein: targetP,
+          carbs: targetC,
+          fats: targetF
+        },
+        anchorMealId: null,
+        beverageSugarSpoons: prev.nutrition?.beverage_sugar_spoons || 0,
+        autoRippleEnabled: true
+      }) : currentMeals;
+
+      return {
+        ...prev,
+        nutrition: {
+          ...prev.nutrition,
+          meals: rebalancedMeals
+        },
+        cardio: {
+          ...(prev.cardio || {}),
+          supplements: newSupps
+        }
+      };
+    });
+  };
 
   const mealsCal = program?.nutrition?.meals?.reduce((sum, m) => sum + (Number(m.macros?.calories) || 0), 0) || 0;
   const mealsP = program?.nutrition?.meals?.reduce((sum, m) => sum + (Number(m.macros?.protein) || 0), 0) || 0;
@@ -324,6 +368,30 @@ export default function CoachEditorNutritionTab(props) {
                     {Math.abs(diffCal) <= 25 ? 'مطابق للتارجت بالملي' : diffCal > 0 ? `فائض +${diffCal} kcal` : `متبقي ${Math.abs(diffCal)} kcal`}
                   </span>
                 )}
+
+                <button
+                  type="button"
+                  onClick={toggleAutoRipple}
+                  style={{
+                    height: '30px',
+                    padding: '0 10px',
+                    borderRadius: '5px',
+                    background: isAutoRippleOn ? '#EFF6FF' : '#F8FAFC',
+                    color: isAutoRippleOn ? '#1D4ED8' : '#64748B',
+                    border: '1px solid ' + (isAutoRippleOn ? '#BFDBFE' : '#CBD5E1'),
+                    fontSize: '11px',
+                    fontWeight: 700,
+                    cursor: 'pointer',
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '5px',
+                    boxShadow: isAutoRippleOn ? '0 1px 2px rgba(37, 99, 235, 0.1)' : 'none'
+                  }}
+                  title="الموازنة التلقائية اللحظية: عند إضافة أو تعديل أو حذف أي صنف تتعدل بقية الوجبات تلقائياً لتغلق الماكروز بالملي"
+                >
+                  <span style={{ width: '7px', height: '7px', borderRadius: '50%', background: isAutoRippleOn ? '#2563EB' : '#94A3B8', display: 'inline-block' }}></span>
+                  <span>الموازنة اللحظية: {isAutoRippleOn ? 'مفعلة' : 'متوقفة'}</span>
+                </button>
 
                 <button
                   type="button"
@@ -615,7 +683,7 @@ export default function CoachEditorNutritionTab(props) {
                   onClick={() => {
                     const currentSupps = [...(program.cardio?.supplements || [])];
                     currentSupps.push({ id: `supp-${Date.now()}`, name: '', dose: '', timing: '', cal: 0, p: 0, c: 0, f: 0, notes: '' });
-                    setProgram(prev => ({ ...prev, cardio: { ...(prev.cardio || {}), supplements: currentSupps } }));
+                    handleUpdateSupplementsWithRipple(currentSupps);
                   }}
                   style={{ padding: '4px 10px', borderRadius: '5px', background: '#0F172A', color: '#FFFFFF', border: 'none', fontSize: '11px', fontWeight: 700, cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: '4px' }}
                 >
@@ -640,7 +708,7 @@ export default function CoachEditorNutritionTab(props) {
                         onChange={(e) => {
                           const updated = [...program.cardio.supplements];
                           updated[sIdx] = { ...updated[sIdx], name: e.target.value };
-                          setProgram(prev => ({ ...prev, cardio: { ...prev.cardio, supplements: updated } }));
+                          handleUpdateSupplementsWithRipple(updated);
                         }}
                         style={{ height: '30px', borderRadius: '4px', border: '1px solid #CBD5E1', padding: '0 8px', fontSize: '11px', fontWeight: 700, outline: 'none', background: '#FFFFFF' }}
                       />
@@ -651,7 +719,7 @@ export default function CoachEditorNutritionTab(props) {
                         onChange={(e) => {
                           const updated = [...program.cardio.supplements];
                           updated[sIdx] = { ...updated[sIdx], dose: e.target.value };
-                          setProgram(prev => ({ ...prev, cardio: { ...prev.cardio, supplements: updated } }));
+                          handleUpdateSupplementsWithRipple(updated);
                         }}
                         style={{ height: '30px', borderRadius: '4px', border: '1px solid #CBD5E1', padding: '0 8px', fontSize: '11px', outline: 'none', background: '#FFFFFF' }}
                       />
@@ -662,7 +730,7 @@ export default function CoachEditorNutritionTab(props) {
                         onChange={(e) => {
                           const updated = [...program.cardio.supplements];
                           updated[sIdx] = { ...updated[sIdx], timing: e.target.value };
-                          setProgram(prev => ({ ...prev, cardio: { ...prev.cardio, supplements: updated } }));
+                          handleUpdateSupplementsWithRipple(updated);
                         }}
                         style={{ height: '30px', borderRadius: '4px', border: '1px solid #CBD5E1', padding: '0 8px', fontSize: '11px', outline: 'none', background: '#FFFFFF' }}
                       />
@@ -670,7 +738,7 @@ export default function CoachEditorNutritionTab(props) {
                         type="button"
                         onClick={() => {
                           const updated = program.cardio.supplements.filter((_, i) => i !== sIdx);
-                          setProgram(prev => ({ ...prev, cardio: { ...prev.cardio, supplements: updated } }));
+                          handleUpdateSupplementsWithRipple(updated);
                         }}
                         style={{ border: 'none', background: 'transparent', color: '#94A3B8', cursor: 'pointer', padding: '2px' }}
                         title="حذف المكمل"
@@ -691,7 +759,7 @@ export default function CoachEditorNutritionTab(props) {
                           onChange={(e) => {
                             const updated = [...program.cardio.supplements];
                             updated[sIdx] = { ...updated[sIdx], cal: Number(e.target.value) || 0 };
-                            setProgram(prev => ({ ...prev, cardio: { ...prev.cardio, supplements: updated } }));
+                            handleUpdateSupplementsWithRipple(updated);
                           }}
                           style={{ width: '100%', height: '28px', borderRadius: '4px', border: '1px solid #CBD5E1', textAlign: 'center', fontSize: '12px', fontWeight: 700, outline: 'none', background: '#FFFFFF' }}
                         />
@@ -705,7 +773,7 @@ export default function CoachEditorNutritionTab(props) {
                           onChange={(e) => {
                             const updated = [...program.cardio.supplements];
                             updated[sIdx] = { ...updated[sIdx], p: Number(e.target.value) || 0 };
-                            setProgram(prev => ({ ...prev, cardio: { ...prev.cardio, supplements: updated } }));
+                            handleUpdateSupplementsWithRipple(updated);
                           }}
                           style={{ width: '100%', height: '28px', borderRadius: '4px', border: '1px solid #CBD5E1', textAlign: 'center', fontSize: '12px', fontWeight: 700, outline: 'none', background: '#FFFFFF' }}
                         />
@@ -719,7 +787,7 @@ export default function CoachEditorNutritionTab(props) {
                           onChange={(e) => {
                             const updated = [...program.cardio.supplements];
                             updated[sIdx] = { ...updated[sIdx], c: Number(e.target.value) || 0 };
-                            setProgram(prev => ({ ...prev, cardio: { ...prev.cardio, supplements: updated } }));
+                            handleUpdateSupplementsWithRipple(updated);
                           }}
                           style={{ width: '100%', height: '28px', borderRadius: '4px', border: '1px solid #CBD5E1', textAlign: 'center', fontSize: '12px', fontWeight: 700, outline: 'none', background: '#FFFFFF' }}
                         />
@@ -733,7 +801,7 @@ export default function CoachEditorNutritionTab(props) {
                           onChange={(e) => {
                             const updated = [...program.cardio.supplements];
                             updated[sIdx] = { ...updated[sIdx], f: Number(e.target.value) || 0 };
-                            setProgram(prev => ({ ...prev, cardio: { ...prev.cardio, supplements: updated } }));
+                            handleUpdateSupplementsWithRipple(updated);
                           }}
                           style={{ width: '100%', height: '28px', borderRadius: '4px', border: '1px solid #CBD5E1', textAlign: 'center', fontSize: '12px', fontWeight: 700, outline: 'none', background: '#FFFFFF' }}
                         />
@@ -747,7 +815,7 @@ export default function CoachEditorNutritionTab(props) {
                       onChange={(e) => {
                         const updated = [...program.cardio.supplements];
                         updated[sIdx] = { ...updated[sIdx], notes: e.target.value };
-                        setProgram(prev => ({ ...prev, cardio: { ...prev.cardio, supplements: updated } }));
+                        handleUpdateSupplementsWithRipple(updated);
                       }}
                       style={{ width: '100%', height: '28px', borderRadius: '4px', border: '1px solid #E2E8F0', padding: '0 8px', fontSize: '10.5px', color: '#64748B', outline: 'none', background: '#FFFFFF', marginTop: '6px', boxSizing: 'border-box' }}
                     />

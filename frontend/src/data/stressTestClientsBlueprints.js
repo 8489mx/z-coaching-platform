@@ -107,11 +107,7 @@ export const CLINICAL_MASTER_BLUEPRINTS = {
       daily_water_target_liters: 3.8,
       sleep_target_hours: 8,
       caffeine_cutoff_time: '04:00 عصراً',
-      supplements: [
-        { name: 'أوميجا 3 (Omega-3 Fish Oil)', dose: '2 كبسولة يومياً مع الغداء' },
-        { name: 'فيتامين D3 + K2', dose: '5,000 IU يومياً صباحاً مع وجبة دهنية' },
-        { name: 'مغنيسيوم جلايسينات (Magnesium Glycinate)', dose: '400 مجم قبل النوم' }
-      ]
+      supplements: []
     }
   },
 
@@ -180,10 +176,7 @@ export const CLINICAL_MASTER_BLUEPRINTS = {
       daily_water_target_liters: 3.5,
       sleep_target_hours: 8,
       caffeine_cutoff_time: '03:00 عصراً',
-      supplements: [
-        { name: 'إينوزيتول (Myo-Inositol & D-Chiro)', dose: '2,000 مجم صباحاً لضبط التبويض وحساسية الإنسولين' },
-        { name: 'أوميجا 3 (Omega-3 Fish Oil)', dose: '2 كبسولة مع الغداء' }
-      ]
+      supplements: []
     }
   },
 
@@ -251,10 +244,7 @@ export const CLINICAL_MASTER_BLUEPRINTS = {
       daily_water_target_liters: 2.5,
       sleep_target_hours: 8,
       caffeine_cutoff_time: '01:00 ظهراً',
-      supplements: [
-        { name: 'فيتامين D3', dose: '2,000 IU يومياً بعد الفحص الطبي' },
-        { name: 'أوميجا 3 نقي', dose: '1 كبسولة يومياً مع الغداء' }
-      ]
+      supplements: []
     }
   },
 
@@ -324,10 +314,7 @@ export const CLINICAL_MASTER_BLUEPRINTS = {
       daily_water_target_liters: 3.0,
       sleep_target_hours: 8,
       caffeine_cutoff_time: '02:00 ظهراً',
-      supplements: [
-        { name: 'فيتامين D3 + K2', dose: '4,000 IU صباحاً' },
-        { name: 'كالسيوم سترات', dose: '500 مجم مع العشاء' }
-      ]
+      supplements: []
     }
   }
 };
@@ -453,11 +440,7 @@ STRESS_TEST_CLIENTS.forEach(c => {
         daily_water_target_liters: water,
         sleep_target_hours: 8,
         caffeine_cutoff_time: '03:00 عصراً',
-        supplements: [
-          { name: 'أوميجا 3 (Omega-3 Fish Oil)', dose: '2 كبسولة يومياً مع الغداء' },
-          { name: 'فيتامين D3 + K2', dose: '5,000 IU صباحاً' },
-          { name: 'مغنيسيوم جلايسينات', dose: '350 مجم قبل النوم' }
-        ]
+        supplements: []
       }
     };
   }

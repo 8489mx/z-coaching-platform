@@ -1,45 +1,7 @@
 import React from 'react';
 
-const DEFAULT_SUPPLEMENTS = [
-  {
-    name_ar: "كرياتين مونوهايدرات (Creatine Monohydrate)",
-    dosage: "5 جرام يومياً",
-    timing: "يومياً بعد التمرين مباشرة مع ماء أو عصير",
-    purpose: "زيادة القوة الانفجارية، تسريع الاستشفاء العضلي، وتحسين الحجم المائي داخل الخلايا.",
-    instructions: "لا حاجة لفترة تحميل (Loading Phase). الاستمرار اليومي المنتظم هو الأساس."
-  },
-  {
-    name_ar: "واي بروتين (Whey Protein)",
-    dosage: "1 مكيال (30 جم بروتين)",
-    timing: "بعد التمرين أو كوجبة خفيفة سريعة لتغطية الاحتياج اليومي",
-    purpose: "تغطية الاحتياج اليومي من البروتين عالي الجودة وتفعيل تخليق البروتين العضلي (MPS).",
-    instructions: "يُمزج مع 250-300 مل ماء بارد."
-  },
-  {
-    name_ar: "أوميجا 3 عالي التركيز (Omega-3 Fish Oil)",
-    dosage: "1000 - 2000 مجم (EPA + DHA)",
-    timing: "مع وجبة تحتوي على دهون صحية (مثل الإفطار أو الغداء)",
-    purpose: "تقليل الالتهابات المفصلية، دعم صحة القلب، وتحسين حساسية الإنسولين.",
-    instructions: "يُفضل حفظ العبوة في مكان بارد ومظلم."
-  },
-  {
-    name_ar: "فيتامين D3 + K2",
-    dosage: "5000 IU يومياً",
-    timing: "صباحاً مع أول وجبة تحتوي على دهون",
-    purpose: "دعم صحة العظام، رفع كفاءة الجهاز المناعي، ودعم مستويات التستوستيرون الطبيعية.",
-    instructions: "فيتامين يذوب في الدهون، لذا تناوله مع وجبة الإفطار ضروري للامتصاص."
-  },
-  {
-    name_ar: "ماغنيسيوم جلايسينات (Magnesium)",
-    dosage: "200 - 400 مجم",
-    timing: "قبل النوم بـ 30 - 45 دقيقة",
-    purpose: "استرخاء الجهاز العصبي، تحسين جودة النوم العميق، ومنع التقلصات العضلية الليلية.",
-    instructions: "تجنب تناوله مع منتجات غنية بالكالسيوم في نفس اللحظة."
-  }
-];
-
 export default function SupplementsSection({ supplements }) {
-  const list = supplements || DEFAULT_SUPPLEMENTS;
+  const list = supplements || [];
 
   return (
     <div className="z-glass-card mt-4 mb-4 z-animate-in" id="supplements-plan">
@@ -61,8 +23,16 @@ export default function SupplementsSection({ supplements }) {
           </span>
         </div>
 
-        <div className="row g-3">
-          {list.map((sup, idx) => (
+        {list.length === 0 ? (
+          <div className="p-4 text-center rounded-3" style={{ background: '#f8fafc', border: '1px dashed #cbd5e1' }}>
+            <p className="text-muted small mb-1 fw-bold">لا توجد مكملات غذائية موصوفة في الخطة الحالية.</p>
+            <span className="text-secondary small" style={{ fontSize: '0.75rem' }}>
+              خطتك الغذائية مصممة لتغطية 100% من احتياجاتك من السعرات والماكروز والمغذيات الدقيقة عبر الأغذية الطبيعية المتكاملة.
+            </span>
+          </div>
+        ) : (
+          <div className="row g-3">
+            {list.map((sup, idx) => (
             <div className="col-lg-4 col-md-6" key={idx}>
               <div 
                 className="card border h-100 p-3 transition-all" 
