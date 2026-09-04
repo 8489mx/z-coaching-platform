@@ -222,6 +222,106 @@ export const CULINARY_PREP_CATALOG = {
         technique_ar: "خلط الطحينة مع الليمون ورشة ماء حتى تبيض، وصبها فوق الفول الساخن المهروس."
       }
     ]
+  },
+
+  GREEK_YOGURT: {
+    title_ar: "طرق تحضير الزبادي اليوناني وبودينغ البروتين",
+    cooking_tip: "الزبادي اليوناني قوام كثيف رائع؛ خفقه مع الفاكهة المجمدة والكاكاو والستيفيا يحوله إلى آيس كريم صحي فوري بدون دهون.",
+    prep_options: [
+      {
+        id: "FROZEN_BERRY_PARFAIT",
+        name_ar: "بارفيه الزبادي اليوناني بالتوت والستيفيا المثلج",
+        free_ingredients_ar: "توت طازج أو مجمد، سكر ستيفيا، قطرات فانيليا، رشة قرفة",
+        technique_ar: "خلط الزبادي اليوناني مع الفانيليا والستيفيا ووضع طبقات بالتبادل مع حبات التوت وتقديمه بارداً جداً."
+      },
+      {
+        id: "SAVORY_GARLIC_CUCUMBER_DIP",
+        name_ar: "سلطة الزبادي اليوناني بالخيار والنعناع والثوم (Tzatziki دايت)",
+        free_ingredients_ar: "خيار مبشور ومعصور من الماء، فص ثوم مهروس، نعناع مجفف، عصرة ليمون، رشة ملح",
+        technique_ar: "خلط الزبادي مع الخيار المعصور والثوم والنعناع والليمون؛ غموس منعش جداً يقدم بجانب اللحوم والدجاج المشوي."
+      },
+      {
+        id: "DARK_CHOCO_PROTEIN_PUDDING",
+        name_ar: "بودينغ الشوكولاتة الداكنة الغني بالبروتين",
+        free_ingredients_ar: "ملعقة كاكاو خام غير محلى، سكر ستيفيا، رشة نسكافيه خفيفة لإبراز الشوكولاتة",
+        technique_ar: "خفق الزبادي مع الكاكاو والستيفيا والنسكافيه حتى يمتزج تماماً؛ يعطي قوام موس الشوكولاتة الفاخر لسناك الليل."
+      }
+    ]
+  },
+
+  PASTA: {
+    title_ar: "طرق إعداد المكرونة الصحية بنكهة إيطالية فاخرة",
+    cooking_tip: "اسلق المكرونة بدرجة Al Dente (متماسكة خفيفاً)؛ ذلك يخفض مؤشر السكر ويزيد الإحساس بالشبع لعدة ساعات.",
+    prep_options: [
+      {
+        id: "TUSCAN_POMODORO_BASIL",
+        name_ar: "مكرونة بومودورو بصلصة الطماطم الطبيعية والريحان",
+        free_ingredients_ar: "طماطم طازجة معصورة، فص ثوم مهروس، ريحان طازج أو مجفف، رشة أوريجانو وفلفل أسود",
+        technique_ar: "تسبيك عصير الطماطم مع الثوم والأعشاب بدون زيت، وتقليب المكرونة المسلوقة الساخنة فيها لامتصاص النكهة."
+      },
+      {
+        id: "MEDITERRANEAN_TUNA_PASTA_SALAD",
+        name_ar: "سلطة مكرونة متوسطية بالتونة والليمون والأعشاب",
+        free_ingredients_ar: "تونة مصفاة، عصير ليمونة، شرائح فلفل ألوان، زيتون الخطة، بقدونس مفروم",
+        technique_ar: "تقليب المكرونة المسلوقة الباردة مع التونة وعصير الليمون والخضار المقطع لوجبة غداء منعشة وسريعة."
+      },
+      {
+        id: "CREAMY_RICOTTA_STYLE_PASTA",
+        name_ar: "مكرونة بالصلصة البيضاء الصحية (قريش مخفوقة)",
+        free_ingredients_ar: "جبنة قريش مضروبة ناعمة مع نقطة حليب خفيف، ثوم بودرة، فلفل أبيض، رشة جوزة الطيب",
+        technique_ar: "خلط القريش المخفوقة مع المكرونة الساخنة لتعطي قوام الصوص الأبيض الإيطالي الكريمي بدون كريمة أو زبدة."
+      }
+    ]
+  },
+
+  TUNA: {
+    title_ar: "وصفات التونة الشهية المقاومة للزفارة تماماً",
+    cooking_tip: "تصفية التونة وشطفها بخل مخفف ثم تتبيلها بالليمون والخردل والكمون يجعلها أشهى وجبة بروتين فورية بدون أي زفارة.",
+    prep_options: [
+      {
+        id: "CRUNCHY_MUSTARD_TUNA_SALAD",
+        name_ar: "سلطة التونة المقرمشة بالخردل والليمون والخيار",
+        free_ingredients_ar: "ملعقة مسطردة (خردل بدون سكر)، عصير ليمون وفير، مكعبات خيار وبصل أحمر، رشة فلفل أسود",
+        technique_ar: "خلط التونة المصفاة مع الخردل والليمون والخضار المقرمش لكسر رتابة التونة التقليدية."
+      },
+      {
+        id: "AIRFRYER_CRISP_TUNA_PATTIES",
+        name_ar: "أقراص كفتة التونة المشوية في القلاية الهوائية",
+        free_ingredients_ar: "بياض بيضة، بقدونس مفروم، بهارات سمك، رشة كمون وبابريكا، ملعقة شوفان مطحون",
+        technique_ar: "عجن التونة مع المكونات وتشكيلها أقراص كفتة وشواؤها في الإيرفراير 7 دقائق حتى تقرمش من الجانبين."
+      },
+      {
+        id: "MEDITERRANEAN_SPICY_TUNA_BOWL",
+        name_ar: "سلطة التونة الحارة بالهالبينو والكمون والجرجير",
+        free_ingredients_ar: "شرائح هالبينو أو فلفل حار، أوراق جرجير طازجة، ليمون، كمون، مسحة زيت زيتون",
+        technique_ar: "فرك أوراق الجرجير بالليمون وزيت الزيتون وتوزيع التونة مع الهالبينو والكمون فوقها لوجبة غداء لايت مشبعة."
+      }
+    ]
+  },
+
+  AIRFRYER_VEGGIES: {
+    title_ar: "خضار مشوي ومقرمش في القلاية الهوائية لرفع الشبع",
+    cooking_tip: "استخدم بهارات مدخنة مثل البابريكا وبودرة الثوم والأوريجانو لتحويل الخضار المسلوق الممل إلى خضار مقرمش مشهي وممتع.",
+    prep_options: [
+      {
+        id: "CRISPY_SPICED_ZUCCHINI_FRIES",
+        name_ar: "أصابع الكوسا والباذنجان المقرمشة بالبابريكا والأعشاب",
+        free_ingredients_ar: "بابريكا مدخنة، زعتر بري، بودرة ثوم، رشة ملح خفيف، مسحة زيت زيتون",
+        technique_ar: "تقطيع الكوسا والباذنجان أصابع سميكة وتقليبها بالتوابل وشواؤها في الإيرفراير 10 دقائق على 200 درجة."
+      },
+      {
+        id: "ROASTED_GARLIC_BROCCOLI",
+        name_ar: "بروكلي وزهرة مشوية مقرمشة بالثوم والليمون",
+        free_ingredients_ar: "فصوص ثوم مفرومة، عصير ليمون، فلفل أسود، رشة كمون",
+        technique_ar: "تقطيع زهرات البروكلي والقرنبيط وتتبيلها بالثوم والليمون وشواؤها حتى تتحمص أطرافها وتصبح مقرمشة ولذيذة."
+      },
+      {
+        id: "HERB_GLAZED_GREEN_BEANS",
+        name_ar: "فاصوليا خضراء مشوية بالثوم والروزماري",
+        free_ingredients_ar: "فاصوليا خضراء طازجة، ثوم مفروم، روزماري مجفف، رشة ملح وفلفل",
+        technique_ar: "تشويح الفاصوليا في مقلاة ساخنة أو إيرفراير 8 دقائق حتى تحافظ على قرمشتها الطبيعية ولونها الأخضر الزاهي."
+      }
+    ]
   }
 };
 
@@ -230,14 +330,18 @@ export function getPrepOptionsForFood(foodIdentifier = '') {
   const upper = String(foodIdentifier).toUpperCase();
 
   if (upper.includes('OAT') || upper.includes('شوفان')) return CULINARY_PREP_CATALOG.OATS;
+  if (upper.includes('YOGURT') || upper.includes('زبادي') || upper.includes('SKYR') || upper.includes('سكاير') || upper.includes('LABNEH') || upper.includes('لبنة')) return CULINARY_PREP_CATALOG.GREEK_YOGURT;
   if (upper.includes('COTTAGE') || upper.includes('قريش') || upper.includes('FETA') || upper.includes('فيتا')) return CULINARY_PREP_CATALOG.COTTAGE_CHEESE;
   if (upper.includes('EGG') || upper.includes('بيض') || upper.includes('SHAKSHOUKA') || upper.includes('شكشوكة') || upper.includes('OMELETTE')) return CULINARY_PREP_CATALOG.EGGS;
+  if (upper.includes('TUNA') || upper.includes('تونة')) return CULINARY_PREP_CATALOG.TUNA;
   if (upper.includes('CHICKEN') || upper.includes('دجاج') || upper.includes('فراخ') || upper.includes('SHAWARMA') || upper.includes('MADHBI')) return CULINARY_PREP_CATALOG.CHICKEN_BREAST;
-  if (upper.includes('FISH') || upper.includes('سمك') || upper.includes('TILAPIA') || upper.includes('بلطي') || upper.includes('HAMOUR') || upper.includes('هامور') || upper.includes('BOURI') || upper.includes('بوري') || upper.includes('KANAAD') || upper.includes('كنعد') || upper.includes('TUNA') || upper.includes('تونة')) return CULINARY_PREP_CATALOG.FISH;
+  if (upper.includes('FISH') || upper.includes('سمك') || upper.includes('TILAPIA') || upper.includes('بلطي') || upper.includes('HAMOUR') || upper.includes('هامور') || upper.includes('BOURI') || upper.includes('بوري') || upper.includes('KANAAD') || upper.includes('كنعد')) return CULINARY_PREP_CATALOG.FISH;
   if (upper.includes('BEEF') || upper.includes('لحم') || upper.includes('KOFTA') || upper.includes('كفتة') || upper.includes('LIVER') || upper.includes('كبدة') || upper.includes('HASHI') || upper.includes('حاشي')) return CULINARY_PREP_CATALOG.LEAN_BEEF;
+  if (upper.includes('PASTA') || upper.includes('مكرونة') || upper.includes('NOODLES') || upper.includes('نودلز') || upper.includes('SPAGHETTI') || upper.includes('سباغيتي')) return CULINARY_PREP_CATALOG.PASTA;
   if (upper.includes('RICE') || upper.includes('أرز') || upper.includes('ارز') || upper.includes('KABSA') || upper.includes('كبسة') || upper.includes('FREEKEH') || upper.includes('فريك')) return CULINARY_PREP_CATALOG.RICE;
   if (upper.includes('POTATO') || upper.includes('بطاطس') || upper.includes('بطاطا')) return CULINARY_PREP_CATALOG.POTATO;
   if (upper.includes('FOUL') || upper.includes('فول') || upper.includes('FALAFEL') || upper.includes('طعمية')) return CULINARY_PREP_CATALOG.FOUL;
+  if (upper.includes('VEG') || upper.includes('خضار') || upper.includes('BROCCOLI') || upper.includes('بروكلي') || upper.includes('ZUCCHINI') || upper.includes('كوسا') || upper.includes('BEANS') || upper.includes('فاصوليا') || upper.includes('CAULIFLOWER') || upper.includes('قرنبيط') || upper.includes('EGGPLANT') || upper.includes('باذنجان')) return CULINARY_PREP_CATALOG.AIRFRYER_VEGGIES;
 
   return null;
 }

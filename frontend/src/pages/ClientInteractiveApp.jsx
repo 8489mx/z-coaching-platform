@@ -259,6 +259,7 @@ export default function ClientInteractiveApp() {
   const [cardioPrescription, setCardioPrescription] = useState(() => getPracticalCardioPrescription({ type: CARDIO_TYPES.LISS_TALK_TEST }));
   const [diningBlueprints, setDiningBlueprints] = useState(() => getTravelDiningBlueprints());
   const [swapMealId, setSwapMealId] = useState(null);
+  const [clientSwapSearch, setClientSwapSearch] = useState('');
 
   // Workout Session State & Sets with Previous Week Benchmarks
   const [workoutSession, setWorkoutSession] = useState({
@@ -1374,7 +1375,7 @@ export default function ClientInteractiveApp() {
               alignItems: 'flex-end',
               justifyContent: 'center'
             }}
-            onClick={() => setActiveSwapItem(null)}
+            onClick={() => { setActiveSwapItem(null); setClientSwapSearch(''); }}
           >
             <div 
               onClick={(e) => e.stopPropagation()}
@@ -1420,81 +1421,137 @@ export default function ClientInteractiveApp() {
                 </div>
               </div>
 
+              {/* Search & Filter Controls for Smart Swaps */}
+              <div style={{ marginBottom: '12px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                <input
+                  type="text"
+                  placeholder="ابحث باسم أي صنف بديل تحبه..."
+                  value={clientSwapSearch}
+                  onChange={(e) => setClientSwapSearch(e.target.value)}
+                  style={{
+                    width: '100%',
+                    height: '38px',
+                    borderRadius: '10px',
+                    border: '1px solid #CBD5E1',
+                    padding: '0 12px',
+                    fontSize: '0.82rem',
+                    fontWeight: 600,
+                    outline: 'none',
+                    background: '#F8FAFC',
+                    color: '#0F172A',
+                    boxSizing: 'border-box'
+                  }}
+                />
+              </div>
+
               {/* Calculated Swap Alternatives List */}
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-                {[
-                  { targetCode: 'WHITE_FISH_FILLET', name: 'سمك فيليه أبيض مشوي', note: 'خفيف جداً على المعدة وغني باليود' },
-                  { targetCode: 'LEAN_VEAL_BEEF', name: 'لحم بقري بتلو خالي الدهن', note: 'غني بالزنك والحديد وفيتامين B12' },
-                  { targetCode: 'SHRIMP_GRILLED', name: 'جمبري مشوي أو مسلوق', note: 'بروتين نقي 100% بدون دهون' },
-                  { targetCode: 'CANNED_TUNA_IN_WATER', name: 'تونة مصفاة من الزيت', note: 'سريعة التحضير وغنية بأوميجا 3' },
-                  { targetCode: 'COTTAGE_CHEESE_NATURAL', name: 'جبن قريش طبيعي', note: 'بروتين كازين بطيء الامتصاص' },
-                  { targetCode: 'BOILED_POTATOES', name: 'بطاطس مسلوقة', note: 'مؤشر شبع عالي جداً وغنية بالبوتاسيوم' },
-                  { targetCode: 'SWEET_POTATO_BAKED', name: 'بطاطا حلوة مشوية', note: 'كارب معقد غني بمضادات الأكسدة' },
-                  { targetCode: 'FRESH_AVOCADO', name: 'أفوكادو طازج', note: 'دهون أحادية غير مشبعة مع ألياف عالية' },
-                  { targetCode: 'RAW_ALMONDS', name: 'لوز نيء غير محمص', note: 'فيتامين E ومغنيسيوم لصحة العضلات' }
-                ].filter(s => s.targetCode !== activeSwapItem.code).slice(0, 5).map((swapOption, sIdx) => {
-                  let swapResult = null;
-                  try {
-                    const fromCode = FOOD_DATABASE[activeSwapItem.code] ? activeSwapItem.code : 'CHICKEN_BREAST';
-                    const toCode = FOOD_DATABASE[swapOption.targetCode] ? swapOption.targetCode : 'WHITE_FISH_FILLET';
-                    
-                    if (FOOD_DATABASE[fromCode].macro_type === FOOD_DATABASE[toCode].macro_type) {
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', maxHeight: '45vh', overflowY: 'auto' }}>
+                {(() => {
+                  const currentItemCode = activeSwapItem.code || '';
+                  const currentItemObj = FOOD_DATABASE[currentItemCode] || Object.values(FOOD_DATABASE).find(f => f.name_ar === activeSwapItem.name) || {};
+                  const currentMacroType = currentItemObj.macro_type || (activeSwapItem.p > activeSwapItem.c && activeSwapItem.p > activeSwapItem.f ? 'PROTEIN' : (activeSwapItem.c > 5 ? 'CARBS' : 'FATS'));
+                  const currentPortion = Number(activeSwapItem.amount) || 100;
+
+                  // Find eligible foods from full FOOD_DATABASE
+                  const allCandidateFoods = Object.values(FOOD_DATABASE).filter(f => {
+                    if (!f || !f.code || !f.name_ar) return false;
+                    // Only standard upper keys to avoid duplicate aliases
+                    if (f.code !== f.code.toUpperCase()) return false;
+                    if (f.code === currentItemCode) return false;
+                    if (f.macro_type !== currentMacroType) return false;
+                    if (clientSwapSearch.trim()) {
+                      const q = clientSwapSearch.trim().toLowerCase();
+                      return (f.name_ar && f.name_ar.includes(q)) || (f.name_en && f.name_en.toLowerCase().includes(q));
+                    }
+                    return true;
+                  });
+
+                  if (allCandidateFoods.length === 0) {
+                    return (
+                      <div style={{ padding: '24px', textAlign: 'center', color: '#64748B', fontSize: '0.78rem' }}>
+                        {"لا توجد بدائل مطابقة للبحث من نفس فئة المغذي (" + (currentMacroType === 'PROTEIN' ? 'البروتين' : currentMacroType === 'CARBS' ? 'النشويات' : 'الدهون') + ")."}
+                      </div>
+                    );
+                  }
+
+                  return allCandidateFoods.slice(0, 20).map((targetFood, sIdx) => {
+                    let swapResult = null;
+                    try {
+                      const fromCode = currentItemObj.code ? currentItemObj.code : (currentMacroType === 'PROTEIN' ? 'CHICKEN_BREAST' : (currentMacroType === 'CARBS' ? 'BASMATI_RICE_COOKED' : 'EXTRA_VIRGIN_OLIVE_OIL'));
                       swapResult = calculateDynamicFoodSwap({
                         current_food_code: fromCode,
-                        current_portion_g: activeSwapItem.amount || 150,
-                        target_food_code: toCode,
-                        clinical_profile: clientData.clinicalProfile
+                        current_portion_g: currentPortion,
+                        target_food_code: targetFood.code,
+                        clinical_profile: clientData.clinicalProfile,
+                        enforce_taste_profile: false
                       });
-                    }
-                  } catch (e) {}
+                    } catch (e) {}
 
-                  if (!swapResult) return null;
+                    if (!swapResult) return null;
 
-                  return (
-                    <div 
-                      key={sIdx}
-                      style={{
-                        background: '#FFFFFF',
-                        border: '1px solid #E2E8F0',
-                        borderRadius: '14px',
-                        padding: '14px',
-                        display: 'flex',
-                        justifyContent: 'space-between',
-                        alignItems: 'center',
-                        transition: 'all 0.15s ease'
-                      }}
-                    >
-                      <div>
-                        <strong style={{ fontSize: '0.88rem', color: '#0F172A', display: 'block' }}>{swapResult.replacement_food.name_ar}</strong>
-                        <span style={{ fontSize: '0.76rem', fontWeight: 800, color: '#059669', fontFamily: 'monospace' }}>
-                          الكمية المكافئة: {swapResult.replacement_food.portion_g} جم ({swapResult.replacement_food.macros.calories_kcal} Kcal | P: {swapResult.replacement_food.macros.protein_g}g)
-                        </span>
-                        <small style={{ display: 'block', fontSize: '0.7rem', color: '#94A3B8', marginTop: '2px' }}>{swapOption.note}</small>
-                        {swapResult.clinical_note && (
-                          <small style={{ display: 'block', fontSize: '0.68rem', color: '#D97706', fontWeight: 700, marginTop: '2px' }}>{swapResult.clinical_note}</small>
-                        )}
-                      </div>
-
-                      <button
-                        type="button"
-                        onClick={() => handleExecuteSwap(swapResult)}
+                    return (
+                      <div 
+                        key={targetFood.code || sIdx}
                         style={{
-                          background: '#0F172A',
-                          color: '#FFFFFF',
-                          border: 'none',
-                          borderRadius: '10px',
-                          padding: '6px 14px',
-                          fontSize: '0.78rem',
-                          fontWeight: 800,
-                          cursor: 'pointer',
-                          boxShadow: '0 2px 6px rgba(15, 23, 42, 0.15)'
+                          background: '#FFFFFF',
+                          border: '1px solid #E2E8F0',
+                          borderRadius: '12px',
+                          padding: '10px 12px',
+                          display: 'flex',
+                          justifyContent: 'space-between',
+                          alignItems: 'center',
+                          gap: '10px',
+                          transition: 'all 0.15s ease'
                         }}
                       >
-                        تبديل الآن
-                      </button>
-                    </div>
-                  );
-                })}
+                        <div style={{ flex: 1, minWidth: 0 }}>
+                          <strong style={{ fontSize: '0.84rem', color: '#0F172A', display: 'block', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                            {swapResult.replacement_food.name_ar}
+                          </strong>
+                          <span style={{ fontSize: '0.74rem', fontWeight: 800, color: '#059669', fontFamily: 'monospace' }}>
+                            الكمية المكافئة: {swapResult.replacement_food.portion_g} جم
+                          </span>
+                          <div style={{ fontSize: '0.68rem', color: '#64748B', marginTop: '2px' }} dir="ltr">
+                            <span>{swapResult.replacement_food.macros.calories_kcal} kcal</span>
+                            <span style={{ margin: '0 4px' }}>•</span>
+                            <span>P: {swapResult.replacement_food.macros.protein_g}g</span>
+                            <span style={{ margin: '0 4px' }}>•</span>
+                            <span>C: {swapResult.replacement_food.macros.carbs_g}g</span>
+                            <span style={{ margin: '0 4px' }}>•</span>
+                            <span>F: {swapResult.replacement_food.macros.fat_g}g</span>
+                          </div>
+                          {swapResult.clinical_note && (
+                            <small style={{ display: 'block', fontSize: '0.66rem', color: '#D97706', fontWeight: 700, marginTop: '2px' }}>
+                              {swapResult.clinical_note}
+                            </small>
+                          )}
+                        </div>
+
+                        <button
+                          type="button"
+                          onClick={() => {
+                            handleExecuteSwap(swapResult);
+                            setClientSwapSearch('');
+                          }}
+                          style={{
+                            background: '#0F172A',
+                            color: '#FFFFFF',
+                            border: 'none',
+                            borderRadius: '8px',
+                            padding: '7px 12px',
+                            fontSize: '0.74rem',
+                            fontWeight: 800,
+                            cursor: 'pointer',
+                            flexShrink: 0,
+                            boxShadow: '0 1px 4px rgba(15, 23, 42, 0.15)'
+                          }}
+                        >
+                          تبديل الآن
+                        </button>
+                      </div>
+                    );
+                  });
+                })()}
               </div>
 
             </div>

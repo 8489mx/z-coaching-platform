@@ -1143,6 +1143,475 @@ export const FOOD_DATABASE = {
     calories_per_100g: 580,
     allergens: [],
     is_gluten_free: true
+  },
+
+  // --- EXTENDED PREMIUM PROTEINS ---
+  FRESH_TURKEY_BREAST: {
+    code: 'FRESH_TURKEY_BREAST',
+    name_ar: 'صدور ديك رومي طازجة مشوية',
+    name_en: 'Grilled Fresh Turkey Breast',
+    macro_type: 'PROTEIN',
+    taste_profile: TASTE_PROFILES.MAIN_MEAL_PROTEIN,
+    protein_per_100g: 30,
+    carbs_per_100g: 0,
+    fat_per_100g: 1.5,
+    calories_per_100g: 135,
+    yield_factor_raw_to_cooked: 0.75,
+    allergens: [],
+    purine_level: 'LOW_MODERATE',
+    is_gluten_free: true,
+    is_legume: false,
+    is_dairy: false
+  },
+  CHICKEN_LIVER_GRILLED: {
+    code: 'CHICKEN_LIVER_GRILLED',
+    name_ar: 'كبدة دجاج متبلة مشوية (غنية بالحديد)',
+    name_en: 'Grilled Seasoned Chicken Liver',
+    macro_type: 'PROTEIN',
+    taste_profile: TASTE_PROFILES.MAIN_MEAL_PROTEIN,
+    protein_per_100g: 24,
+    carbs_per_100g: 1.0,
+    fat_per_100g: 4.5,
+    calories_per_100g: 140,
+    yield_factor_raw_to_cooked: 0.80,
+    allergens: [],
+    purine_level: 'HIGH',
+    is_gluten_free: true,
+    is_legume: false,
+    is_dairy: false
+  },
+  LIGHT_MOZZARELLA: {
+    code: 'LIGHT_MOZZARELLA',
+    name_ar: 'جبنة موتزاريلا لايت قليلة الدسم',
+    name_en: 'Part-Skim Light Mozzarella Cheese',
+    macro_type: 'PROTEIN',
+    taste_profile: TASTE_PROFILES.BREAKFAST_SAVORY_PROTEIN,
+    protein_per_100g: 24,
+    carbs_per_100g: 2.5,
+    fat_per_100g: 10.0,
+    calories_per_100g: 196,
+    yield_factor_raw_to_cooked: 1.0,
+    allergens: ['DAIRY'],
+    purine_level: 'LOW',
+    is_gluten_free: true,
+    is_legume: false,
+    is_dairy: true,
+    is_low_lactose: true
+  },
+  LIQUID_EGG_WHITES: {
+    code: 'LIQUID_EGG_WHITES',
+    name_ar: 'بياض بيض سائل مبستر',
+    name_en: 'Liquid Pasteurized Egg Whites',
+    macro_type: 'PROTEIN',
+    taste_profile: TASTE_PROFILES.BREAKFAST_SAVORY_PROTEIN,
+    protein_per_100g: 11,
+    carbs_per_100g: 0.7,
+    fat_per_100g: 0.1,
+    calories_per_100g: 48,
+    yield_factor_raw_to_cooked: 1.0,
+    allergens: ['EGGS'],
+    purine_level: 'LOW',
+    is_gluten_free: true,
+    is_legume: false,
+    is_dairy: false
+  },
+  MICELLAR_CASEIN: {
+    code: 'MICELLAR_CASEIN',
+    name_ar: 'ميسيلار كازين بروتين (بطيء الامتصاص قبل النوم)',
+    name_en: 'Micellar Casein Protein Powder',
+    macro_type: 'PROTEIN',
+    taste_profile: TASTE_PROFILES.SWEET_SHAKE_PROTEIN,
+    protein_per_100g: 78,
+    carbs_per_100g: 4.0,
+    fat_per_100g: 1.5,
+    calories_per_100g: 360,
+    yield_factor_raw_to_cooked: 1.0,
+    allergens: ['DAIRY'],
+    purine_level: 'LOW',
+    is_gluten_free: true,
+    is_legume: false,
+    is_dairy: true,
+    is_low_lactose: true
+  },
+  PROTEIN_SKYR_PUDDING: {
+    code: 'PROTEIN_SKYR_PUDDING',
+    name_ar: 'زبادي بروتين سكير / بودينغ بروتين عالي',
+    name_en: 'High-Protein Skyr / Protein Pudding',
+    macro_type: 'PROTEIN',
+    taste_profile: TASTE_PROFILES.SWEET_SHAKE_PROTEIN,
+    protein_per_100g: 11,
+    carbs_per_100g: 4.0,
+    fat_per_100g: 0.2,
+    calories_per_100g: 62,
+    yield_factor_raw_to_cooked: 1.0,
+    allergens: ['DAIRY'],
+    purine_level: 'LOW',
+    is_gluten_free: true,
+    is_legume: false,
+    is_dairy: true,
+    is_low_lactose: true
+  },
+  GROUND_BEEF_90_10: {
+    code: 'GROUND_BEEF_90_10',
+    name_ar: 'لحم بقري مفروم أحمر (90/10)',
+    name_en: 'Lean Ground Beef 90/10',
+    macro_type: 'PROTEIN',
+    taste_profile: TASTE_PROFILES.MAIN_MEAL_PROTEIN,
+    protein_per_100g: 25,
+    carbs_per_100g: 0,
+    fat_per_100g: 10.0,
+    calories_per_100g: 190,
+    yield_factor_raw_to_cooked: 0.72,
+    allergens: [],
+    purine_level: 'HIGH',
+    is_gluten_free: true,
+    is_legume: false,
+    is_dairy: false
+  },
+
+  // --- EXTENDED COMPLEX CARBS ---
+  BROWN_BASMATI_RICE: {
+    code: 'BROWN_BASMATI_RICE',
+    name_ar: 'أرز بسمتي بني مسلوق',
+    name_en: 'Cooked Brown Basmati Rice',
+    macro_type: 'CARBS',
+    taste_profile: TASTE_PROFILES.MAIN_CARB,
+    protein_per_100g: 2.8,
+    carbs_per_100g: 25,
+    fat_per_100g: 0.9,
+    calories_per_100g: 120,
+    yield_factor_raw_to_cooked: 2.5,
+    allergens: [],
+    is_gluten_free: true,
+    is_legume: false
+  },
+  COOKED_QUINOA: {
+    code: 'COOKED_QUINOA',
+    name_ar: 'كينوا حبوب كاملة مسلوقة',
+    name_en: 'Cooked Whole Grain Quinoa',
+    macro_type: 'CARBS',
+    taste_profile: TASTE_PROFILES.MAIN_CARB,
+    protein_per_100g: 4.4,
+    carbs_per_100g: 21,
+    fat_per_100g: 1.9,
+    calories_per_100g: 120,
+    yield_factor_raw_to_cooked: 2.7,
+    allergens: [],
+    is_gluten_free: true,
+    is_legume: false
+  },
+  COOKED_WHITE_PASTA: {
+    code: 'COOKED_WHITE_PASTA',
+    name_ar: 'مكرونة قمح عادي بيضاء مسلوقة',
+    name_en: 'Cooked White Durum Pasta',
+    macro_type: 'CARBS',
+    taste_profile: TASTE_PROFILES.MAIN_CARB,
+    protein_per_100g: 5.0,
+    carbs_per_100g: 28,
+    fat_per_100g: 0.6,
+    calories_per_100g: 138,
+    yield_factor_raw_to_cooked: 2.2,
+    allergens: ['WHEAT', 'GLUTEN'],
+    is_gluten_free: false,
+    is_legume: false
+  },
+  SUGAR_FREE_CORNFLAKES: {
+    code: 'SUGAR_FREE_CORNFLAKES',
+    name_ar: 'كورن فليكس حبوب ذرة خالي من السكر',
+    name_en: 'Sugar-Free Corn Flakes',
+    macro_type: 'CARBS',
+    taste_profile: TASTE_PROFILES.BREAKFAST_CARB,
+    protein_per_100g: 7.5,
+    carbs_per_100g: 84,
+    fat_per_100g: 0.9,
+    calories_per_100g: 375,
+    yield_factor_raw_to_cooked: 1.0,
+    allergens: [],
+    is_gluten_free: true,
+    is_legume: false
+  },
+  AIRFRYER_POTATO_WEDGES: {
+    code: 'AIRFRYER_POTATO_WEDGES',
+    name_ar: 'بطاطس ودجز مشوية في القلاية الهوائية (بدون زيت)',
+    name_en: 'Air-Fried Potato Wedges (No Oil)',
+    macro_type: 'CARBS',
+    taste_profile: TASTE_PROFILES.MAIN_CARB,
+    protein_per_100g: 2.5,
+    carbs_per_100g: 22,
+    fat_per_100g: 0.2,
+    calories_per_100g: 100,
+    yield_factor_raw_to_cooked: 0.85,
+    allergens: [],
+    is_gluten_free: true,
+    is_legume: false
+  },
+  COOKED_BULGUR: {
+    code: 'COOKED_BULGUR',
+    name_ar: 'برغل حبة كاملة مطبوخ بالبخار',
+    name_en: 'Steamed Whole Grain Bulgur',
+    macro_type: 'CARBS',
+    taste_profile: TASTE_PROFILES.MAIN_CARB,
+    protein_per_100g: 3.1,
+    carbs_per_100g: 18.5,
+    fat_per_100g: 0.2,
+    calories_per_100g: 83,
+    yield_factor_raw_to_cooked: 2.4,
+    allergens: ['WHEAT', 'GLUTEN'],
+    is_gluten_free: false,
+    is_legume: false
+  },
+
+  // --- EXTENDED ATHLETIC FRUITS ---
+  FRESH_WATERMELON: {
+    code: 'FRESH_WATERMELON',
+    name_ar: 'بطيخ أحمر طازج (أعلى مؤشر ترطيب وشبع)',
+    name_en: 'Fresh Red Watermelon',
+    macro_type: 'CARBS',
+    taste_profile: TASTE_PROFILES.FRUIT_CARB,
+    protein_per_100g: 0.6,
+    carbs_per_100g: 7.5,
+    fat_per_100g: 0.1,
+    calories_per_100g: 30,
+    allergens: [],
+    is_gluten_free: true,
+    is_legume: false
+  },
+  FRESH_BLUEBERRIES: {
+    code: 'FRESH_BLUEBERRIES',
+    name_ar: 'توت أزرق / بلوبيري طازج (مضاد أكسدة فائق)',
+    name_en: 'Fresh Blueberries',
+    macro_type: 'CARBS',
+    taste_profile: TASTE_PROFILES.FRUIT_CARB,
+    protein_per_100g: 0.7,
+    carbs_per_100g: 14,
+    fat_per_100g: 0.3,
+    calories_per_100g: 57,
+    allergens: [],
+    is_gluten_free: true,
+    is_legume: false
+  },
+  FRESH_CANTALOUPE: {
+    code: 'FRESH_CANTALOUPE',
+    name_ar: 'كانتالوب / شمام طازج',
+    name_en: 'Fresh Cantaloupe Melon',
+    macro_type: 'CARBS',
+    taste_profile: TASTE_PROFILES.FRUIT_CARB,
+    protein_per_100g: 0.8,
+    carbs_per_100g: 8.0,
+    fat_per_100g: 0.2,
+    calories_per_100g: 34,
+    allergens: [],
+    is_gluten_free: true,
+    is_legume: false
+  },
+  FRESH_GRAPES: {
+    code: 'FRESH_GRAPES',
+    name_ar: 'عنب طازج أحمر / أخضر (كارب سريع قبل التمرين)',
+    name_en: 'Fresh Red / Green Grapes',
+    macro_type: 'CARBS',
+    taste_profile: TASTE_PROFILES.FRUIT_CARB,
+    protein_per_100g: 0.7,
+    carbs_per_100g: 18,
+    fat_per_100g: 0.2,
+    calories_per_100g: 69,
+    allergens: [],
+    is_gluten_free: true,
+    is_legume: false
+  },
+  FRESH_KIWI: {
+    code: 'FRESH_KIWI',
+    name_ar: 'كيوي طازج (غني بإنزيمات الهضم وفيتامين C)',
+    name_en: 'Fresh Green Kiwi',
+    macro_type: 'CARBS',
+    taste_profile: TASTE_PROFILES.FRUIT_CARB,
+    protein_per_100g: 1.1,
+    carbs_per_100g: 15,
+    fat_per_100g: 0.5,
+    calories_per_100g: 61,
+    allergens: [],
+    is_gluten_free: true,
+    is_legume: false
+  },
+  FRESH_GUAVA: {
+    code: 'FRESH_GUAVA',
+    name_ar: 'جوافة طازجة (عالية الألياف ومنخفضة السكر)',
+    name_en: 'Fresh Guava with Pulp',
+    macro_type: 'CARBS',
+    taste_profile: TASTE_PROFILES.FRUIT_CARB,
+    protein_per_100g: 2.6,
+    carbs_per_100g: 14,
+    fat_per_100g: 1.0,
+    calories_per_100g: 68,
+    allergens: [],
+    is_gluten_free: true,
+    is_legume: false
+  },
+  FRESH_POMEGRANATE: {
+    code: 'FRESH_POMEGRANATE',
+    name_ar: 'حبوب رمان طازجة',
+    name_en: 'Fresh Pomegranate Arils',
+    macro_type: 'CARBS',
+    taste_profile: TASTE_PROFILES.FRUIT_CARB,
+    protein_per_100g: 1.7,
+    carbs_per_100g: 18.5,
+    fat_per_100g: 1.2,
+    calories_per_100g: 83,
+    allergens: [],
+    is_gluten_free: true,
+    is_legume: false
+  },
+
+  // --- EXTENDED HEALTHY FATS ---
+  NATURAL_BUTTER_GHEE: {
+    code: 'NATURAL_BUTTER_GHEE',
+    name_ar: 'زبدة طبيعية بقري نيوزيلندي / سمن بلدي نقي',
+    name_en: 'Pure Grass-Fed Butter / Ghee',
+    macro_type: 'FATS',
+    taste_profile: TASTE_PROFILES.HEALTHY_FAT,
+    protein_per_100g: 0.8,
+    carbs_per_100g: 0.1,
+    fat_per_100g: 82,
+    calories_per_100g: 740,
+    allergens: ['DAIRY'],
+    is_gluten_free: true
+  },
+  VIRGIN_COCONUT_OIL: {
+    code: 'VIRGIN_COCONUT_OIL',
+    name_ar: 'زيت جوز هند بكر معصور على البارد (MCTs)',
+    name_en: 'Extra Virgin Cold-Pressed Coconut Oil',
+    macro_type: 'FATS',
+    taste_profile: TASTE_PROFILES.HEALTHY_FAT,
+    protein_per_100g: 0,
+    carbs_per_100g: 0,
+    fat_per_100g: 100,
+    calories_per_100g: 890,
+    allergens: [],
+    is_gluten_free: true
+  },
+  CHIA_SEEDS: {
+    code: 'CHIA_SEEDS',
+    name_ar: 'بذور الشيا السوداء الخام (أوميجا 3 وألياف)',
+    name_en: 'Raw Black Chia Seeds',
+    macro_type: 'FATS',
+    taste_profile: TASTE_PROFILES.HEALTHY_FAT,
+    protein_per_100g: 17,
+    carbs_per_100g: 42,
+    fat_per_100g: 31,
+    calories_per_100g: 486,
+    allergens: [],
+    is_gluten_free: true
+  },
+  RAW_CASHEWS: {
+    code: 'RAW_CASHEWS',
+    name_ar: 'كاجو نيء غير محمص',
+    name_en: 'Raw Unsalted Cashews',
+    macro_type: 'FATS',
+    taste_profile: TASTE_PROFILES.HEALTHY_FAT,
+    protein_per_100g: 18,
+    carbs_per_100g: 30,
+    fat_per_100g: 44,
+    calories_per_100g: 553,
+    allergens: ['TREE_NUTS'],
+    is_gluten_free: true
+  },
+  NATURAL_OLIVES: {
+    code: 'NATURAL_OLIVES',
+    name_ar: 'زيتون كلاماتا / أخضر طبيعي مخلل قليل الملح',
+    name_en: 'Natural Kalamata / Green Olives',
+    macro_type: 'FATS',
+    taste_profile: TASTE_PROFILES.HEALTHY_FAT,
+    protein_per_100g: 0.8,
+    carbs_per_100g: 3.8,
+    fat_per_100g: 15.0,
+    calories_per_100g: 145,
+    allergens: [],
+    is_gluten_free: true
+  },
+
+  // --- EXTENDED FREE VEGETABLES ---
+  ICEBERG_LETTUCE: {
+    code: 'ICEBERG_LETTUCE',
+    name_ar: 'خس كابوتشا / خس روماني طازج',
+    name_en: 'Fresh Iceberg / Romaine Lettuce',
+    macro_type: 'CARBS',
+    taste_profile: TASTE_PROFILES.FREE_VEGETABLE,
+    protein_per_100g: 1.2,
+    carbs_per_100g: 3.0,
+    fat_per_100g: 0.1,
+    calories_per_100g: 15,
+    allergens: [],
+    is_gluten_free: true,
+    is_legume: false
+  },
+  FRESH_ARUGULA: {
+    code: 'FRESH_ARUGULA',
+    name_ar: 'جرجير بلدي طازج (غني بالنترات ومضادات الأكسدة)',
+    name_en: 'Fresh Arugula (Rocket)',
+    macro_type: 'CARBS',
+    taste_profile: TASTE_PROFILES.FREE_VEGETABLE,
+    protein_per_100g: 2.6,
+    carbs_per_100g: 3.6,
+    fat_per_100g: 0.7,
+    calories_per_100g: 25,
+    allergens: [],
+    is_gluten_free: true,
+    is_legume: false
+  },
+  STEAMED_CAULIFLOWER: {
+    code: 'STEAMED_CAULIFLOWER',
+    name_ar: 'قرنبيط / زهرة مطبوخة بالبخار (بديل النشويات في الكيتو)',
+    name_en: 'Steamed Cauliflower',
+    macro_type: 'CARBS',
+    taste_profile: TASTE_PROFILES.FREE_VEGETABLE,
+    protein_per_100g: 1.9,
+    carbs_per_100g: 5.0,
+    fat_per_100g: 0.3,
+    calories_per_100g: 25,
+    allergens: [],
+    is_gluten_free: true,
+    is_legume: false
+  },
+  GREEN_BEANS: {
+    code: 'GREEN_BEANS',
+    name_ar: 'فاصوليا خضراء سوتيه',
+    name_en: 'Sauteed Tender Green Beans',
+    macro_type: 'CARBS',
+    taste_profile: TASTE_PROFILES.FREE_VEGETABLE,
+    protein_per_100g: 1.8,
+    carbs_per_100g: 7.0,
+    fat_per_100g: 0.2,
+    calories_per_100g: 31,
+    allergens: [],
+    is_gluten_free: true,
+    is_legume: false
+  },
+  GRILLED_EGGPLANT: {
+    code: 'GRILLED_EGGPLANT',
+    name_ar: 'باذنجان رومي مشوي / بابا غنوج دايت بدون زيت',
+    name_en: 'Grilled Eggplant / Diet Baba Ghanoush',
+    macro_type: 'CARBS',
+    taste_profile: TASTE_PROFILES.FREE_VEGETABLE,
+    protein_per_100g: 1.0,
+    carbs_per_100g: 6.0,
+    fat_per_100g: 0.2,
+    calories_per_100g: 25,
+    allergens: [],
+    is_gluten_free: true,
+    is_legume: false
+  },
+  FRESH_TOMATOES: {
+    code: 'FRESH_TOMATOES',
+    name_ar: 'طماطم بلدي طازجة',
+    name_en: 'Fresh Tomatoes',
+    macro_type: 'CARBS',
+    taste_profile: TASTE_PROFILES.FREE_VEGETABLE,
+    protein_per_100g: 0.9,
+    carbs_per_100g: 3.9,
+    fat_per_100g: 0.2,
+    calories_per_100g: 18,
+    allergens: [],
+    is_gluten_free: true,
+    is_legume: false
   }
 };
 
@@ -1243,6 +1712,39 @@ FOOD_DATABASE.halloumi_light = FOOD_DATABASE.HALLOUMI_LIGHT;
 FOOD_DATABASE.feta_cheese_light = FOOD_DATABASE.FETA_CHEESE_LIGHT;
 FOOD_DATABASE.tamees_bread_br = FOOD_DATABASE.TAMEES_BREAD_BR;
 FOOD_DATABASE.raw_tahini_sesame = FOOD_DATABASE.RAW_TAHINI_SESAME;
+
+// New Athletic & Regional Aliases
+FOOD_DATABASE.fresh_turkey_breast = FOOD_DATABASE.FRESH_TURKEY_BREAST;
+FOOD_DATABASE.chicken_liver_grilled = FOOD_DATABASE.CHICKEN_LIVER_GRILLED;
+FOOD_DATABASE.light_mozzarella = FOOD_DATABASE.LIGHT_MOZZARELLA;
+FOOD_DATABASE.liquid_egg_whites = FOOD_DATABASE.LIQUID_EGG_WHITES;
+FOOD_DATABASE.micellar_casein = FOOD_DATABASE.MICELLAR_CASEIN;
+FOOD_DATABASE.protein_skyr_pudding = FOOD_DATABASE.PROTEIN_SKYR_PUDDING;
+FOOD_DATABASE.ground_beef_90_10 = FOOD_DATABASE.GROUND_BEEF_90_10;
+FOOD_DATABASE.brown_basmati_rice = FOOD_DATABASE.BROWN_BASMATI_RICE;
+FOOD_DATABASE.cooked_quinoa = FOOD_DATABASE.COOKED_QUINOA;
+FOOD_DATABASE.cooked_white_pasta = FOOD_DATABASE.COOKED_WHITE_PASTA;
+FOOD_DATABASE.sugar_free_cornflakes = FOOD_DATABASE.SUGAR_FREE_CORNFLAKES;
+FOOD_DATABASE.airfryer_potato_wedges = FOOD_DATABASE.AIRFRYER_POTATO_WEDGES;
+FOOD_DATABASE.cooked_bulgur = FOOD_DATABASE.COOKED_BULGUR;
+FOOD_DATABASE.fresh_watermelon = FOOD_DATABASE.FRESH_WATERMELON;
+FOOD_DATABASE.fresh_blueberries = FOOD_DATABASE.FRESH_BLUEBERRIES;
+FOOD_DATABASE.fresh_cantaloupe = FOOD_DATABASE.FRESH_CANTALOUPE;
+FOOD_DATABASE.fresh_grapes = FOOD_DATABASE.FRESH_GRAPES;
+FOOD_DATABASE.fresh_kiwi = FOOD_DATABASE.FRESH_KIWI;
+FOOD_DATABASE.fresh_guava = FOOD_DATABASE.FRESH_GUAVA;
+FOOD_DATABASE.fresh_pomegranate = FOOD_DATABASE.FRESH_POMEGRANATE;
+FOOD_DATABASE.natural_butter_ghee = FOOD_DATABASE.NATURAL_BUTTER_GHEE;
+FOOD_DATABASE.virgin_coconut_oil = FOOD_DATABASE.VIRGIN_COCONUT_OIL;
+FOOD_DATABASE.chia_seeds = FOOD_DATABASE.CHIA_SEEDS;
+FOOD_DATABASE.raw_cashews = FOOD_DATABASE.RAW_CASHEWS;
+FOOD_DATABASE.natural_olives = FOOD_DATABASE.NATURAL_OLIVES;
+FOOD_DATABASE.iceberg_lettuce = FOOD_DATABASE.ICEBERG_LETTUCE;
+FOOD_DATABASE.fresh_arugula = FOOD_DATABASE.FRESH_ARUGULA;
+FOOD_DATABASE.steamed_cauliflower = FOOD_DATABASE.STEAMED_CAULIFLOWER;
+FOOD_DATABASE.green_beans = FOOD_DATABASE.GREEN_BEANS;
+FOOD_DATABASE.grilled_eggplant = FOOD_DATABASE.GRILLED_EGGPLANT;
+FOOD_DATABASE.fresh_tomatoes = FOOD_DATABASE.FRESH_TOMATOES;
 
 export function calculateDynamicFoodSwap({
   current_food_code,
