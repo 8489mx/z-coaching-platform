@@ -10,32 +10,63 @@
 
 import { FOOD_DATABASE } from './foodSwapEngine.js';
 
-export function detectFoodMacroRole(item) {
+export function hasAnyWord(text, words = []) {
+  if (!text) return false;
+  const upper = String(text).toUpperCase();
+  const tokens = upper.split(/[_\s,.-]+/);
+  return words.some(w => {
+    const uw = w.toUpperCase();
+    return tokens.some(t => t === uw || (t.startsWith(uw) && uw.length >= 4) || (uw.startsWith(t) && t.length >= 4));
+  });
+}
+
+export function checkIsEggItem(item) {
+  if (!item) return false;
   const code = String(item.code || item.id || '').toUpperCase();
-  const name = String(item.name || item.name_ar || '').toUpperCase();
+  const name = String(item.name || item.name_ar || '');
+  const unit = String(item.unit || '');
+  if (unit === 'بيضة' || unit === 'حبة') return true;
+  if (hasAnyWord(code, ['EGG', 'EGGS', 'OMELETTE', 'SHAKSHOUKA'])) return true;
+  const tokens = name.split(/[_\s,.-]+/);
+  return tokens.some(t => t === 'بيض' || t === 'بياض' || t === 'صفار' || t === 'أومليت' || t === 'اومليت' || t === 'شكشوكة');
+}
+
+export function detectFoodMacroRole(item) {
+  const code = item.code || item.id || '';
+  const name = item.name || item.name_ar || '';
   const cat = String(item.category || '').toUpperCase();
 
+  if (cat === 'VEG' || cat === 'VEGETABLE') return 'VEGETABLE';
+  if (cat === 'FAT') return 'FAT';
+  if (cat === 'CARB') return 'CARB';
+  if (cat === 'PROTEIN') return 'PROTEIN';
+
+  // Check Vegetables
   if (
-    cat === 'VEG' || cat === 'VEGETABLE' ||
-    ['BROCCOLI', 'CUCUMBER', 'LETTUCE', 'ARUGULA', 'TOMATO', 'PEPPER', 'SPINACH', 'ZUCCHINI', 'MUSHROOM', 'GREEN_BEANS', 'خيار', 'طماطم', 'بروكلي', 'خس', 'جرجير', 'فلفل', 'كوسة', 'سبانخ', 'فاصوليا خضراء'].some(k => code.includes(k) || name.includes(k))
+    hasAnyWord(code, ['BROCCOLI', 'CUCUMBER', 'LETTUCE', 'ARUGULA', 'TOMATO', 'PEPPER', 'SPINACH', 'ZUCCHINI', 'MUSHROOM']) ||
+    hasAnyWord(name, ['خيار', 'طماطم', 'بروكلي', 'خس', 'جرجير', 'فلفل', 'كوسة', 'سبانخ', 'مشروم'])
   ) {
     return 'VEGETABLE';
   }
 
+  // Check Fats (Oil, Butter, Nuts, Olives, Tahini)
   if (
-    cat === 'FAT' ||
-    ['OIL', 'BUTTER', 'PEANUT_BUTTER', 'ALMOND', 'WALNUT', 'CASHEW', 'OLIVE', 'زيت', 'زبدة', 'مكسرات', 'لوز', 'جوز', 'فول سوداني'].some(k => code.includes(k) || name.includes(k))
+    hasAnyWord(code, ['OIL', 'BUTTER', 'ALMOND', 'WALNUT', 'CASHEW', 'OLIVE', 'OLIVES', 'TAHINI', 'PEANUT_BUTTER']) ||
+    hasAnyWord(name, ['زيت', 'زبدة', 'مكسرات', 'لوز', 'جوز', 'كاجو', 'جمل', 'سوداني', 'زيتون', 'طحينة'])
   ) {
     return 'FAT';
   }
 
+  // Check Protein (Chicken, Beef, Meat, Fish, Tuna, Salmon, Eggs, Cottage, Whey, Casein)
   if (
-    cat === 'PROTEIN' ||
-    ['CHICKEN', 'BEEF', 'MEAT', 'STEAK', 'FISH', 'TUNA', 'SALMON', 'EGG', 'COTTAGE', 'WHEY', 'CASEIN', 'دجاج', 'لحم', 'كفتة', 'سمك', 'فيليه', 'تونة', 'بيض', 'قريش', 'واي'].some(k => code.includes(k) || name.includes(k))
+    hasAnyWord(code, ['CHICKEN', 'BEEF', 'MEAT', 'STEAK', 'FISH', 'TUNA', 'SALMON', 'EGG', 'EGGS', 'COTTAGE', 'WHEY', 'CASEIN', 'SARDINES', 'TILAPIA']) ||
+    hasAnyWord(name, ['دجاج', 'لحم', 'كفتة', 'سمك', 'فيليه', 'تونة', 'سردين', 'بلطي', 'قريش', 'واي']) ||
+    checkIsEggItem(item)
   ) {
     return 'PROTEIN';
   }
 
+  // Fallback to Carbs (Rice, Oats, Pasta, Potato, Sweet Potato, Fruits, Legumes, Bread)
   return 'CARB';
 }
 
@@ -43,7 +74,7 @@ export function getItemPer100gMacros(item) {
   const code = item.code || item.id;
   const dbItem = FOOD_DATABASE[code] || (FOOD_DATABASE[String(code).toLowerCase()]);
 
-  const isEgg = String(item.code || item.name || '').toUpperCase().includes('EGG') || String(item.name || '').includes('بيض') || item.unit === 'بيضة' || item.unit === 'حبة';
+  const isEgg = checkIsEggItem(item);
   const effectiveGrams = isEgg ? (Math.max(1, Number(item.amount) || 1) * 50) : Math.max(1, Number(item.amount) || 100);
 
   const p100 = Number(dbItem?.protein_per_100g ?? ((Number(item.p) || (isEgg ? 6.5 : 20)) / effectiveGrams) * 100);
@@ -120,7 +151,7 @@ export function balanceMealItems(items = [], mealTarget = { p: 40, c: 50, f: 15,
   if (proteinItems.length > 0) {
     const perItemP = remainingP / proteinItems.length;
     proteinItems.forEach(p => {
-      const isEgg = String(p.item.code || p.item.name).toUpperCase().includes('EGG') || String(p.item.name || '').includes('بيض');
+      const isEgg = checkIsEggItem(p.item);
       const isCottage = String(p.item.code || p.item.name).toUpperCase().includes('COTTAGE') || String(p.item.name || '').includes('قريش');
       
       let amount = (perItemP / Math.max(1, p.density.p100)) * 100;
@@ -166,7 +197,7 @@ export function balanceMealItems(items = [], mealTarget = { p: 40, c: 50, f: 15,
   return items.map((orig, idx) => {
     const amt = solvedAmounts[idx] || orig.amount || 100;
     const d = getItemPer100gMacros(orig);
-    const isEgg = String(orig.code || orig.name).toUpperCase().includes('EGG') || String(orig.name || '').includes('بيض');
+    const isEgg = checkIsEggItem(orig);
     const factor = isEgg ? (amt * 0.5) : (amt / 100);
 
     return {
@@ -257,10 +288,10 @@ export function dynamicRippleRebalanceDailyPlan({
   // 1. Calculate supplements contribution
   let suppCal = 0, suppP = 0, suppC = 0, suppF = 0;
   (supplements || []).forEach(s => {
-    suppCal += Number(s.cal || 0);
-    suppP += Number(s.p || 0);
-    suppC += Number(s.c || 0);
-    suppF += Number(s.f || 0);
+    suppCal += Number(s.calories ?? s.cal ?? 0);
+    suppP += Number(s.protein ?? s.p ?? 0);
+    suppC += Number(s.carbs ?? s.c ?? 0);
+    suppF += Number(s.fats ?? s.f ?? 0);
   });
 
   // 2. Calculate beverage sugar contribution
@@ -313,7 +344,7 @@ export function dynamicRippleRebalanceDailyPlan({
     const classifiedItems = (m.items || []).map(it => {
       const role = detectFoodMacroRole(it);
       const density = getItemPer100gMacros(it);
-      const isEgg = String(it.code || it.name).toUpperCase().includes('EGG') || String(it.name || '').includes('بيض');
+      const isEgg = checkIsEggItem(it);
 
       if (role === 'PROTEIN') {
         currPrimaryP += Number(it.p || 0);
@@ -451,7 +482,7 @@ export function dynamicRippleRebalanceDailyPlan({
     let bestProteinMeal = null;
     for (const m of updatedRecipientMeals) {
       for (const it of m.items) {
-        if (detectFoodMacroRole(it) === 'PROTEIN' && !String(it.code || it.name).toUpperCase().includes('EGG') && it.unit !== 'بيضة') {
+        if (detectFoodMacroRole(it) === 'PROTEIN' && !checkIsEggItem(it)) {
           if (!bestProteinItem || (it.amount || 0) > (bestProteinItem.amount || 0)) {
             bestProteinItem = it;
             bestProteinMeal = m;

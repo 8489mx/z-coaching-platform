@@ -1619,7 +1619,7 @@ export default function ClientInteractiveApp() {
                         clinical_profile: clientData.clinicalProfile,
                         enforce_taste_profile: false
                       });
-                    } catch (e) {}
+                    } catch {}
 
                     if (!swapResult) return null;
 
@@ -2404,7 +2404,6 @@ export default function ClientInteractiveApp() {
 
             <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
               {(() => {
-                const exName = exerciseSwapTarget.exercise.name || '';
                 const defaultSwaps = [
                   { name: 'سحب كابل فردي بمدى حركي كامل', rationale: 'تطابق زاوية الشد مع حرية حركة كاملة للمفصل' },
                   { name: 'دمبلز مسنود بديل حر عالي التركيز', rationale: 'عزل ممتاز مع الحفاظ على استقامة العمود الفقري' },

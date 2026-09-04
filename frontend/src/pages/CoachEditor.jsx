@@ -18,13 +18,9 @@ import {
   Users,
   Clock,
   AlertCircle,
-  CheckCircle2,
   Search,
-  Check,
   Zap,
-  Target,
-  ShieldAlert,
-  Flame
+  ShieldAlert
 } from 'lucide-react';
 import AdminLayout from '../components/layout/AdminLayout';
 import { API_BASE } from '../config/api';
@@ -58,63 +54,6 @@ import { STRESS_TEST_CLIENTS, CLINICAL_MASTER_BLUEPRINTS } from '../data/stressT
 
 // 15 Master Clinical Archetypes for Instant Switching
 const CLIENT_BLUEPRINTS = CLINICAL_MASTER_BLUEPRINTS;
-
-// Quick Meal Presets for Instant Precision Nutrition Building
-const QUICK_MEAL_PRESETS = [
-  {
-    name: 'شوفان بالبروتين والتوت',
-    items: [
-      { code: 'OATMEAL_RAW', name: 'شوفان كامل الحبة', amount: 60, unit: 'جم', p: 8.1, c: 40.8, f: 3.9, cal: 225, category: 'CARB' },
-      { code: 'SKIM_MILK', name: 'حليب خالي الدسم', amount: 200, unit: 'مل', p: 6.8, c: 10.0, f: 0.2, cal: 70, category: 'CARB' },
-      { code: 'WHEY_PROTEIN_ISOLATE', name: 'واي بروتين معزول (Whey Isolate)', amount: 30, unit: 'جم', p: 27.0, c: 1.0, f: 0.5, cal: 115, category: 'PROTEIN' },
-      { code: 'FRESH_BLUEBERRIES', name: 'توت أزرق طازج', amount: 50, unit: 'جم', p: 0.4, c: 7.2, f: 0.2, cal: 29, category: 'CARB' }
-    ]
-  },
-  {
-    name: 'دجاج مشوي وأرز بسمتي وبروكلي',
-    items: [
-      { code: 'CHICKEN_BREAST', name: 'صدور دجاج مشوية', amount: 180, unit: 'جم', p: 55.8, c: 0.0, f: 6.5, cal: 297, category: 'PROTEIN' },
-      { code: 'BASMATI_RICE', name: 'أرز بسمتي أبيض مطبوخ', amount: 160, unit: 'جم', p: 4.3, c: 44.8, f: 0.5, cal: 208, category: 'CARB' },
-      { code: 'STEAMED_BROCCOLI', name: 'بروكلي مطبوخ على البخار', amount: 100, unit: 'جم', p: 2.8, c: 7.2, f: 0.4, cal: 35, category: 'CARB' },
-      { code: 'EXTRA_VIRGIN_OLIVE_OIL', name: 'زيت زيتون بكر ممتاز', amount: 7, unit: 'مل', p: 0.0, c: 0.0, f: 7.0, cal: 62, category: 'FAT' }
-    ]
-  },
-  {
-    name: 'كفتة لحم بقري وبطاطس ودجز',
-    items: [
-      { code: 'GROUND_BEEF_90_10', name: 'لحم بقري مفروم قليل الدهن (90/10)', amount: 160, unit: 'جم', p: 41.6, c: 0.0, f: 16.0, cal: 315, category: 'PROTEIN' },
-      { code: 'AIRFRYER_POTATO_WEDGES', name: 'بطاطس ودجز بالقلاية الهوائية', amount: 180, unit: 'جم', p: 3.6, c: 37.8, f: 1.8, cal: 184, category: 'CARB' },
-      { code: 'FRESH_TOMATOES', name: 'طماطم طازجة', amount: 100, unit: 'جم', p: 0.9, c: 3.9, f: 0.2, cal: 18, category: 'CARB' }
-    ]
-  },
-  {
-    name: 'فيليه أبيض وبطاطا حلوة مشوية',
-    items: [
-      { code: 'WHITE_FISH_FILLET', name: 'سمك فيليه أبيض مشوي بالأعشاب', amount: 200, unit: 'جم', p: 48.0, c: 0.0, f: 3.0, cal: 220, category: 'PROTEIN' },
-      { code: 'SWEET_POTATO', name: 'بطاطا حلوة مشوية', amount: 180, unit: 'جم', p: 3.6, c: 43.2, f: 0.4, cal: 189, category: 'CARB' },
-      { code: 'GREEN_BEANS', name: 'فاصوليا خضراء سوتيه', amount: 100, unit: 'جم', p: 1.8, c: 7.0, f: 0.2, cal: 31, category: 'CARB' },
-      { code: 'EXTRA_VIRGIN_OLIVE_OIL', name: 'زيت زيتون بكر ممتاز', amount: 5, unit: 'مل', p: 0.0, c: 0.0, f: 5.0, cal: 44, category: 'FAT' }
-    ]
-  },
-  {
-    name: 'عشاء جبنة قريش بالبيض وزيت الزيتون',
-    items: [
-      { code: 'COTTAGE_CHEESE', name: 'جبن قريش طبيعي', amount: 200, unit: 'جم', p: 24.0, c: 6.8, f: 2.0, cal: 144, category: 'PROTEIN' },
-      { code: 'EGGS_BOILED', name: 'بيض مسلوق كامل', amount: 1, unit: 'بيضة', p: 6.3, c: 0.4, f: 5.0, cal: 72, category: 'PROTEIN' },
-      { code: 'EXTRA_VIRGIN_OLIVE_OIL', name: 'زيت زيتون بكر ممتاز', amount: 7, unit: 'مل', p: 0.0, c: 0.0, f: 7.0, cal: 62, category: 'FAT' },
-      { code: 'FRESH_CUCUMBER', name: 'خيار طازج', amount: 120, unit: 'جم', p: 0.8, c: 4.3, f: 0.1, cal: 18, category: 'CARB' }
-    ]
-  },
-  {
-    name: 'سلطة مكرونة وتونة رياضية',
-    items: [
-      { code: 'CANNED_TUNA_WATER', name: 'تونة مصفاة من الماء والملح', amount: 150, unit: 'جم', p: 39.0, c: 0.0, f: 1.2, cal: 174, category: 'PROTEIN' },
-      { code: 'COOKED_WHITE_PASTA', name: 'مكرونة مسلوقة (Al Dente)', amount: 150, unit: 'جم', p: 7.5, c: 45.0, f: 1.5, cal: 237, category: 'CARB' },
-      { code: 'NATURAL_OLIVES', name: 'زيتون كلاماتا طبيعي', amount: 25, unit: 'جم', p: 0.2, c: 1.5, f: 3.8, cal: 40, category: 'FAT' },
-      { code: 'BELL_PEPPERS', name: 'فلفل رومي ملون', amount: 80, unit: 'جم', p: 0.8, c: 4.8, f: 0.2, cal: 24, category: 'CARB' }
-    ]
-  }
-];
 
 const CARDIO_MODALITY_OPTIONS = [
   { id: 'incline_treadmill', name: 'مشي على سير مائل (Incline Treadmill)', desc: 'ميل 6-8%، سرعة 4.5-5.0 كم/س • حرق دهون بدون صدمات' },
@@ -362,78 +301,6 @@ export default function CoachEditor() {
     };
   };
 
-  const handleRefreshAllMeals = () => {
-    const alternateProteins = [
-      { code: 'BEEF_LEAN', name: 'لحم بقري أحمر قليل الدهن مشوي', p100: 26, c100: 0, f100: 4, cal100: 140 },
-      { code: 'SALMON_BAKED', name: 'سلمون مخبوز بالفرن مع الليمون', p100: 22, c100: 0, f100: 12, cal100: 200 },
-      { code: 'CHICKEN_BREAST', name: 'صدور دجاج مشوية بتتبيلة الزعتر', p100: 31, c100: 0, f100: 3.6, cal100: 165 },
-      { code: 'WHITE_FISH_FILLET', name: 'سمك فيليه أبيض مشوي بالأعشاب', p100: 24, c100: 0, f100: 1.5, cal100: 110 },
-      { code: 'EGGS_BOILED', name: 'بيض مسلوق طازج', p100: 13, c100: 1, f100: 10, cal100: 155 }
-    ];
-
-    const alternateCarbs = [
-      { code: 'SWEET_POTATO', name: 'بطاطا حلوة مشوية', p100: 2, c100: 24, f100: 0.2, cal100: 105 },
-      { code: 'BASMATI_RICE', name: 'أرز بسمتي أبيض مطبوخ', p100: 2.7, c100: 28, f100: 0.3, cal100: 130 },
-      { code: 'OATMEAL_RAW', name: 'شوفان كامل الحبة مع القرفة', p100: 13.5, c100: 68, f100: 6.5, cal100: 375 },
-      { code: 'POTATO_BOILED', name: 'بطاطس مسلوقة ومهروسة', p100: 2, c100: 20, f100: 0.1, cal100: 87 }
-    ];
-
-    setProgram(prev => {
-      if (!prev?.nutrition?.meals) return prev;
-      const refreshedMeals = prev.nutrition.meals.map((meal, mIdx) => {
-        const refreshedItems = meal.items.map((item, itIdx) => {
-          if (item.p > item.c && item.p > 10) {
-            const nextProt = alternateProteins[(mIdx + itIdx + 1) % alternateProteins.length];
-            const targetProteinGrams = item.p;
-            const newAmount = Math.max(30, Math.round((targetProteinGrams / nextProt.p100) * 100));
-            return {
-              ...item,
-              code: nextProt.code,
-              name: nextProt.name,
-              amount: newAmount,
-              p: Number((nextProt.p100 * (newAmount / 100)).toFixed(1)),
-              c: Number((nextProt.c100 * (newAmount / 100)).toFixed(1)),
-              f: Number((nextProt.f100 * (newAmount / 100)).toFixed(1)),
-              cal: Math.round(nextProt.cal100 * (newAmount / 100))
-            };
-          }
-          if (item.c > item.p && item.c > 15) {
-            const nextCarb = alternateCarbs[(mIdx + itIdx + 1) % alternateCarbs.length];
-            const targetCarbGrams = item.c;
-            const newAmount = Math.max(30, Math.round((targetCarbGrams / nextCarb.c100) * 100));
-            return {
-              ...item,
-              code: nextCarb.code,
-              name: nextCarb.name,
-              amount: newAmount,
-              p: Number((nextCarb.p100 * (newAmount / 100)).toFixed(1)),
-              c: Number((nextCarb.c100 * (newAmount / 100)).toFixed(1)),
-              f: Number((nextCarb.f100 * (newAmount / 100)).toFixed(1)),
-              cal: Math.round(nextCarb.cal100 * (newAmount / 100))
-            };
-          }
-          return item;
-        });
-
-        return {
-          ...meal,
-          items: refreshedItems,
-          macros: recalculateMeal(refreshedItems)
-        };
-      });
-
-      return {
-        ...prev,
-        nutrition: {
-          ...prev.nutrition,
-          meals: refreshedMeals
-        }
-      };
-    });
-
-    showToast('تم تجديد أصناف جميع الوجبات تلقائياً مع الحفاظ الكامل على الماكروز والسعرات');
-  };
-
   const handleUpdateFoodAmount = (mealId, itemIdx, newAmount) => {
     const amt = Number(newAmount) || 0;
     setProgram(prev => {
@@ -533,30 +400,6 @@ export default function CoachEditor() {
       };
     });
     showToast('تم حذف الصنف وموازنة بقية الوجبات تلقائياً');
-  };
-
-  const handleAddPresetMeal = (preset) => {
-    const newMealNumber = (program.nutrition?.meals?.length || 0) + 1;
-    const newItems = preset.items.map((it, idx) => ({
-      ...it,
-      id: `f_${Date.now()}_${idx}`
-    }));
-    const newMealObj = {
-      id: `m${Date.now()}`,
-      name: `الوجبة ${newMealNumber}: ${preset.name}`,
-      time: newMealNumber === 1 ? '09:00 ص' : newMealNumber === 2 ? '02:00 م' : newMealNumber === 3 ? '06:00 م' : '09:30 م',
-      macros: recalculateMeal(newItems),
-      items: newItems
-    };
-
-    setProgram(prev => ({
-      ...prev,
-      nutrition: {
-        ...prev.nutrition,
-        meals: [...(prev.nutrition?.meals || []), newMealObj]
-      }
-    }));
-    showToast(`تمت إضافة وجبة: ${preset.name}`);
   };
 
   const handleAddNewMeal = () => {

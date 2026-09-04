@@ -140,10 +140,10 @@ export default function CoachEditorNutritionTab(props) {
   const mealsF = program?.nutrition?.meals?.reduce((sum, m) => sum + (Number(m.macros?.fats) || 0), 0) || 0;
 
   const supps = program?.cardio?.supplements || [];
-  const suppsCal = supps.reduce((sum, s) => sum + (Number(s.cal) || 0), 0);
-  const suppsP = supps.reduce((sum, s) => sum + (Number(s.p) || 0), 0);
-  const suppsC = supps.reduce((sum, s) => sum + (Number(s.c) || 0), 0);
-  const suppsF = supps.reduce((sum, s) => sum + (Number(s.f) || 0), 0);
+  const suppsCal = supps.reduce((sum, s) => sum + (Number(s.calories ?? s.cal) || 0), 0);
+  const suppsP = supps.reduce((sum, s) => sum + (Number(s.protein ?? s.p) || 0), 0);
+  const suppsC = supps.reduce((sum, s) => sum + (Number(s.carbs ?? s.c) || 0), 0);
+  const suppsF = supps.reduce((sum, s) => sum + (Number(s.fats ?? s.f) || 0), 0);
 
   const totalPlannedCal = mealsCal + suppsCal;
   const totalPlannedP = mealsP + suppsP;

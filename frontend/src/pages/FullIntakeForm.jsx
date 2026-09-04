@@ -1349,7 +1349,7 @@ export default function FullIntakeForm() {
                               transition: 'all 0.15s ease'
                             }}
                           >
-                            {isChecked ? `استبعاد: ${food} ✕` : food}
+                            {isChecked ? `${food} (مستبعد)` : food}
                           </button>
                         );
                       })}
@@ -1379,7 +1379,7 @@ export default function FullIntakeForm() {
                               transition: 'all 0.15s ease'
                             }}
                           >
-                            {isChecked ? `استبعاد: ${food} ✕` : food}
+                            {isChecked ? `${food} (مستبعد)` : food}
                           </button>
                         );
                       })}
@@ -1409,7 +1409,7 @@ export default function FullIntakeForm() {
                               transition: 'all 0.15s ease'
                             }}
                           >
-                            {isChecked ? `استبعاد: ${food} ✕` : food}
+                            {isChecked ? `${food} (مستبعد)` : food}
                           </button>
                         );
                       })}
@@ -1439,7 +1439,7 @@ export default function FullIntakeForm() {
                               transition: 'all 0.15s ease'
                             }}
                           >
-                            {isChecked ? `استبعاد: ${food} ✕` : food}
+                            {isChecked ? `${food} (مستبعد)` : food}
                           </button>
                         );
                       })}
