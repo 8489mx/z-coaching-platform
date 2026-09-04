@@ -3,10 +3,7 @@ import { useSearchParams, useNavigate } from 'react-router-dom';
 import { 
   Utensils, 
   Dumbbell, 
-  Scale,
   Activity, 
-  Flame, 
-  Droplet, 
   Check, 
   RotateCcw, 
   ArrowLeftRight, 
@@ -17,15 +14,11 @@ import {
   ShieldCheck, 
   Info, 
   CheckCircle2, 
-  Sparkles, 
   ChevronDown, 
   ChevronUp, 
   X,
   Share2,
-  Crown,
-  Pill,
-  AlertTriangle,
-  Zap
+  AlertTriangle
 } from 'lucide-react';
 import { API_BASE } from '../config/api';
 import { calculateDynamicFoodSwap, getCompatibleSwaps, FOOD_DATABASE, convertGramsToHandPortions, getTravelDiningBlueprints, formatItemPortionDisplay, PORTION_DISPLAY_MODES } from '../utils/foodSwapEngine';
@@ -442,131 +435,124 @@ export default function ClientInteractiveApp() {
           style={{
             background: '#0F172A',
             color: '#FFFFFF',
-            padding: '20px 18px 16px 18px',
-            borderBottomLeftRadius: '24px',
-            borderBottomRightRadius: '24px',
-            boxShadow: '0 4px 20px rgba(15, 23, 42, 0.15)',
+            padding: '16px 18px 14px 18px',
+            borderBottomLeftRadius: '20px',
+            borderBottomRightRadius: '20px',
+            boxShadow: '0 4px 20px rgba(15, 23, 42, 0.1)',
             position: 'sticky',
             top: 0,
             zIndex: 40
           }}
         >
+          {/* Top Client & Status Row */}
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
               <div 
                 style={{
-                  width: '42px',
-                  height: '42px',
-                  borderRadius: '14px',
-                  background: 'linear-gradient(135deg, #D97706 0%, #F59E0B 100%)',
-                  color: '#FFFFFF',
+                  width: '38px',
+                  height: '38px',
+                  borderRadius: '10px',
+                  background: '#1E293B',
+                  border: '1px solid #334155',
+                  color: '#F8FAFC',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
-                  fontWeight: 900,
-                  fontSize: '0.92rem'
+                  fontWeight: 800,
+                  fontSize: '0.85rem'
                 }}
               >
                 KZ
               </div>
               <div>
-                <h1 style={{ fontSize: '0.94rem', fontWeight: 900, margin: 0, color: '#FFFFFF', lineHeight: 1.2 }}>
+                <h1 style={{ fontSize: '0.94rem', fontWeight: 800, margin: 0, color: '#FFFFFF', lineHeight: 1.2 }}>
                   {clientData.name}
                 </h1>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginTop: '2px' }}>
-                  <span style={{ fontSize: '9.5px', background: '#FEF3C7', color: '#92400E', padding: '1px 6px', borderRadius: '4px', fontWeight: 800, display: 'flex', alignItems: 'center', gap: '3px' }}>
-                    <Crown style={{ width: '10px', height: '10px' }} />
-                    <span>{clientData.package}</span>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginTop: '3px' }}>
+                  <span style={{ 
+                    fontSize: '10px', 
+                    color: clientData.package?.includes('ELITE') ? '#38BDF8' : '#F59E0B', 
+                    background: clientData.package?.includes('ELITE') ? 'rgba(56, 189, 248, 0.1)' : 'rgba(245, 158, 11, 0.1)', 
+                    border: `1px solid ${clientData.package?.includes('ELITE') ? 'rgba(56, 189, 248, 0.25)' : 'rgba(245, 158, 11, 0.25)'}`,
+                    padding: '1px 7px', 
+                    borderRadius: '5px', 
+                    fontWeight: 700 
+                  }}>
+                    {clientData.package}
                   </span>
-                  <span style={{ fontSize: '10px', color: '#D97706', fontWeight: 700 }}>
-                    {clientData.streak} يوم التزام متواصل
+                  <span style={{ fontSize: '10px', color: '#94A3B8', fontWeight: 600 }}>
+                    {clientData.streak} يوم التزام
                   </span>
                 </div>
               </div>
             </div>
 
-            {/* Quick Actions */}
+            {/* Clean Quick Actions */}
             <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-            <button
-              type="button"
-              onClick={() => navigate('/renew')}
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: '4px',
-                background: '#D97706',
-                border: 'none',
-                borderRadius: '10px',
-                padding: '6px 10px',
-                color: '#FFFFFF',
-                fontSize: '0.72rem',
-                fontWeight: 800,
-                cursor: 'pointer'
-              }}
-              title="تجديد الاشتراك أونلاين"
-            >
-              <Zap style={{ width: '13px', height: '13px' }} />
-              <span>تجديد</span>
-            </button>
-            <button
-              id="open-emergency-modal-btn"
-              type="button"
-              onClick={() => setEmergencyModalOpen(true)}
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: '4px',
-                background: '#EF4444',
-                border: 'none',
-                borderRadius: '10px',
-                padding: '6px 10px',
-                color: '#FFFFFF',
-                fontSize: '0.72rem',
-                fontWeight: 800,
-                cursor: 'pointer'
-              }}
-              title="وضع الطوارئ والسفر"
-            >
-              <AlertTriangle style={{ width: '13px', height: '13px' }} />
-              <span>طوارئ/سفر</span>
-            </button>
-            <button
-              type="button"
-              onClick={() => setClientData(prev => ({ ...prev, waterGlasses: Math.min(prev.waterTarget, prev.waterGlasses + 1) }))}
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: '5px',
-                background: 'rgba(255, 255, 255, 0.12)',
-                border: '1px solid rgba(255, 255, 255, 0.2)',
-                borderRadius: '12px',
-                padding: '6px 10px',
-                color: '#38BDF8',
-                fontSize: '0.78rem',
-                fontWeight: 700,
-                cursor: 'pointer'
-              }}
-              title="تسجيل كوب ماء"
-            >
-              <Droplet style={{ width: '14px', height: '14px' }} />
-              <span>{clientData.waterGlasses}/{clientData.waterTarget}</span>
-            </button>
-          </div>
+              <button
+                type="button"
+                onClick={() => setClientData(prev => ({ ...prev, waterGlasses: Math.min(prev.waterTarget, prev.waterGlasses + 1) }))}
+                style={{
+                  background: 'rgba(255, 255, 255, 0.08)',
+                  border: '1px solid rgba(255, 255, 255, 0.14)',
+                  borderRadius: '8px',
+                  padding: '5px 9px',
+                  color: '#E2E8F0',
+                  fontSize: '0.72rem',
+                  fontWeight: 600,
+                  cursor: 'pointer'
+                }}
+                title="تسجيل كوب ماء"
+              >
+                ماء: {clientData.waterGlasses}/{clientData.waterTarget}
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setEmergencyModalOpen(true)}
+                style={{
+                  background: 'rgba(255, 255, 255, 0.08)',
+                  border: '1px solid rgba(255, 255, 255, 0.14)',
+                  borderRadius: '8px',
+                  padding: '5px 9px',
+                  color: '#E2E8F0',
+                  fontSize: '0.72rem',
+                  fontWeight: 600,
+                  cursor: 'pointer'
+                }}
+                title="تكييف الخطة وظروف السفر والعزومات"
+              >
+                مرونة اليوم
+              </button>
+
+              <button
+                type="button"
+                onClick={() => navigate('/renew')}
+                style={{
+                  background: 'rgba(217, 119, 6, 0.18)',
+                  border: '1px solid rgba(217, 119, 6, 0.35)',
+                  borderRadius: '8px',
+                  padding: '5px 9px',
+                  color: '#FDE68A',
+                  fontSize: '0.72rem',
+                  fontWeight: 700,
+                  cursor: 'pointer'
+                }}
+                title="تجديد الاشتراك أونلاين"
+              >
+                تجديد
+              </button>
+            </div>
           </div>
 
-          {/* Circadian Caffeine & NEAT Live Bar */}
-          <div style={{ background: 'rgba(255, 255, 255, 0.08)', border: '1px solid rgba(255, 255, 255, 0.15)', borderRadius: '12px', padding: '6px 12px', marginBottom: '12px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '0.72rem', color: '#F1F5F9' }}>
-            <span style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
-              <Clock style={{ width: '12px', height: '12px', color: '#F59E0B' }} />
-              <span>{getCaffeineCutoffTime("23:00").directive_ar}</span>
-            </span>
-            <span style={{ background: '#0284C7', color: '#FFFFFF', padding: '2px 8px', borderRadius: '6px', fontWeight: 800 }}>
-              8,500 خطوة (NEAT مستقر)
-            </span>
+          {/* Clean Muted Status Line (Circadian & NEAT) */}
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '0.7rem', color: '#94A3B8', borderTop: '1px solid rgba(255, 255, 255, 0.07)', paddingTop: '8px', marginBottom: '10px' }}>
+            <span>{getCaffeineCutoffTime("23:00").directive_ar}</span>
+            <span style={{ color: '#CBD5E1', fontWeight: 600 }}>8,500 خطوة (مستقر)</span>
           </div>
 
-          {/* Days Selector Pill Carousel */}
-          <div style={{ display: 'flex', gap: '6px', overflowX: 'auto', paddingBottom: '4px', scrollbarWidth: 'none' }}>
+          {/* Days Selector Strip */}
+          <div style={{ display: 'flex', gap: '6px', overflowX: 'auto', paddingBottom: '2px', scrollbarWidth: 'none' }}>
             {['السبت', 'الأحد', 'الإثنين', 'الثلاثاء', 'الأربعاء', 'الخميس', 'الجمعة'].map((dayName, idx) => {
               const dayNum = idx + 1;
               const isSelected = selectedDay === dayNum;
@@ -577,11 +563,11 @@ export default function ClientInteractiveApp() {
                   style={{
                     flex: '0 0 auto',
                     padding: '5px 12px',
-                    borderRadius: '10px',
+                    borderRadius: '8px',
                     fontSize: '0.74rem',
-                    fontWeight: isSelected ? 800 : 600,
-                    background: isSelected ? '#D97706' : 'rgba(255, 255, 255, 0.08)',
-                    color: isSelected ? '#FFFFFF' : '#94A3B8',
+                    fontWeight: isSelected ? 800 : 500,
+                    background: isSelected ? '#FFFFFF' : 'rgba(255, 255, 255, 0.06)',
+                    color: isSelected ? '#0F172A' : '#94A3B8',
                     border: 'none',
                     cursor: 'pointer',
                     transition: 'all 0.15s ease'
@@ -594,263 +580,178 @@ export default function ClientInteractiveApp() {
           </div>
         </header>
 
-        {/* Life Happens & Daily Flexibility Quick Trigger */}
-        <div style={{ margin: '12px 16px 0 16px' }}>
-          <button
-            type="button"
-            onClick={() => setEmergencyModalOpen(true)}
-            style={{
-              width: '100%',
-              background: 'linear-gradient(135deg, #1E293B 0%, #0F172A 100%)',
-              border: '1px solid rgba(245, 158, 11, 0.35)',
-              borderRadius: '12px',
-              padding: '9px 12px',
-              color: '#FFFFFF',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'space-between',
-              cursor: 'pointer',
-              boxShadow: '0 2px 8px rgba(0, 0, 0, 0.15)',
-              boxSizing: 'border-box'
-            }}
-          >
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-              <div style={{ background: '#FEF3C7', padding: '5px', borderRadius: '8px', color: '#D97706', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                <Sparkles size={14} />
-              </div>
-              <div style={{ textAlign: 'right' }}>
-                <span style={{ display: 'block', fontSize: '11px', fontWeight: 800, color: '#F8FAFC' }}>
-                  مرونة اليوم وظروف الشغل والمطاعم (Life Happens)
-                </span>
-                <span style={{ display: 'block', fontSize: '9.5px', color: '#94A3B8' }}>
-                  عزومة مسائية • تمرين فندق/منزلي • تبديل يوم الراحة
-                </span>
-              </div>
-            </div>
-            <span style={{ fontSize: '10px', fontWeight: 800, color: '#F59E0B', background: 'rgba(245, 158, 11, 0.15)', padding: '3px 8px', borderRadius: '5px' }}>
-              تكييف الخطة
-            </span>
-          </button>
+        {/* Clinical Medication Safety Notice (Unobtrusive) */}
+        <div style={{ margin: '12px 16px 0 16px', background: '#F8FAFC', border: '1px solid #E2E8F0', borderRadius: '10px', padding: '8px 12px', fontSize: '0.72rem', color: '#475569', lineHeight: '1.4' }}>
+          <strong style={{ color: '#0F172A' }}>تنبيه علاجي (Eltroxin):</strong> حظر تناول الألبان، مكملات الكالسيوم أو الحديد لمدة 4 ساعات من جرعة الصباح لضمان الامتصاص الكامل.
         </div>
 
-        {/* Medication Safety Alert Banner */}
-        <div style={{ margin: '14px 16px 0 16px', background: '#FEF3C7', border: '1px solid #FDE68A', borderRadius: '14px', padding: '10px 14px', display: 'flex', alignItems: 'center', gap: '8px' }}>
-          <Pill style={{ width: '18px', height: '18px', color: '#D97706', flexShrink: 0 }} />
-          <p style={{ fontSize: '0.74rem', color: '#92400E', margin: 0, lineHeight: '1.4' }}>
-            <strong>تنبيه دواء الغدة (Eltroxin):</strong> حظر تناول الألبان، مكملات الكالسيوم أو الحديد لمدة 4 ساعات من حبة الصباح لضمان الامتصاص الكامل.
-          </p>
-        </div>
-
-        {/* Live Rest Timer Floating Pill (Always visible when running) */}
+        {/* Live Rest Timer Floating Pill (Minimalist) */}
         {restTimerSeconds > 0 && (
           <div 
             style={{
               position: 'fixed',
-              top: '100px',
+              top: '90px',
               left: '50%',
               transform: 'translateX(-50%)',
               zIndex: 50,
               background: '#0F172A',
               color: '#FFFFFF',
-              borderRadius: '50px',
-              padding: '8px 18px',
+              borderRadius: '30px',
+              padding: '6px 16px',
               display: 'flex',
               alignItems: 'center',
-              gap: '12px',
-              boxShadow: '0 10px 25px rgba(0, 0, 0, 0.3)',
-              border: '2px solid #38BDF8'
+              gap: '10px',
+              boxShadow: '0 8px 24px rgba(0, 0, 0, 0.25)',
+              border: '1px solid #334155'
             }}
           >
-            <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-              <Clock style={{ width: '16px', height: '16px', color: '#38BDF8' }} />
-              <span style={{ fontSize: '0.8rem', fontWeight: 700, color: '#94A3B8' }}>راحة:</span>
-              <strong style={{ fontSize: '1.1rem', color: '#38BDF8', fontFamily: 'monospace' }}>
-                {Math.floor(restTimerSeconds / 60)}:{(restTimerSeconds % 60).toString().padStart(2, '0')}
-              </strong>
-            </div>
-
-            <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-              <button
-                type="button"
-                onClick={() => setRestTimerSeconds(prev => prev + 30)}
-                style={{ background: 'rgba(255, 255, 255, 0.15)', border: 'none', color: '#FFFFFF', borderRadius: '6px', fontSize: '10px', fontWeight: 800, padding: '3px 6px', cursor: 'pointer' }}
-              >
-                +30s
-              </button>
-              <button
-                type="button"
-                onClick={() => { setRestTimerSeconds(0); setIsRestTimerRunning(false); }}
-                style={{ background: '#EF4444', border: 'none', color: '#FFFFFF', borderRadius: '50%', width: '22px', height: '22px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}
-              >
-                <X style={{ width: '12px', height: '12px' }} />
-              </button>
-            </div>
+            <span style={{ fontSize: '0.76rem', color: '#94A3B8', fontWeight: 600 }}>راحة:</span>
+            <strong style={{ fontSize: '1rem', color: '#38BDF8', fontFamily: 'monospace' }}>
+              {Math.floor(restTimerSeconds / 60)}:{(restTimerSeconds % 60).toString().padStart(2, '0')}
+            </strong>
+            <button
+              type="button"
+              onClick={() => setRestTimerSeconds(prev => prev + 30)}
+              style={{ background: 'rgba(255, 255, 255, 0.12)', border: 'none', color: '#FFFFFF', borderRadius: '5px', fontSize: '10px', fontWeight: 700, padding: '2px 5px', cursor: 'pointer' }}
+            >
+              +30s
+            </button>
+            <button
+              type="button"
+              onClick={() => { setRestTimerSeconds(0); setIsRestTimerRunning(false); }}
+              style={{ background: 'transparent', border: 'none', color: '#94A3B8', cursor: 'pointer', display: 'flex', alignItems: 'center' }}
+            >
+              <X style={{ width: '13px', height: '13px' }} />
+            </button>
           </div>
         )}
 
-        {/* MAIN BODY CONTENT */}
+{/* MAIN BODY CONTENT */}
         <main style={{ padding: '16px', flex: 1 }}>
           
           {/* TAB 1: MEALS & SMART SWAPS */}
           {activeTab === 'meals' && (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
               
-              {/* Daily Macros Target Progress Card */}
-              <div style={{ background: '#FFFFFF', borderRadius: '20px', padding: '18px', border: '1px solid #E2E8F0', boxShadow: '0 2px 8px rgba(15, 23, 42, 0.04)' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                    <Sparkles style={{ width: '16px', height: '16px', color: '#D97706' }} />
-                    <h2 style={{ fontSize: '0.88rem', fontWeight: 800, color: '#0F172A', margin: 0 }}>
-                      الماكروز المحققة اليوم
-                    </h2>
+              {/* Daily Macros Target Progress Card - Executive Clean */}
+              <div style={{ background: '#FFFFFF', borderRadius: '16px', padding: '14px 16px', border: '1px solid #E2E8F0', boxShadow: '0 1px 3px rgba(0, 0, 0, 0.04)' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: '10px' }}>
+                  <div>
+                    <span style={{ fontSize: '0.7rem', color: '#64748B', fontWeight: 600, display: 'block' }}>إجمالي السعرات اليومية</span>
+                    <strong style={{ fontSize: '1rem', color: '#0F172A', fontWeight: 900 }}>
+                      {Math.round(consumedMacros.cal)} <span style={{ fontSize: '0.76rem', color: '#94A3B8', fontWeight: 500 }}>/ {targetMacros.cal} سعرة</span>
+                    </strong>
                   </div>
-                  <span style={{ fontSize: '0.8rem', fontWeight: 900, color: '#0F172A', fontFamily: 'monospace' }}>
-                    {Math.round(consumedMacros.cal)} / {targetMacros.cal} Kcal
+                  <span style={{ fontSize: '0.72rem', color: '#64748B', fontWeight: 600 }}>
+                    متبقي: <strong style={{ color: '#0F172A' }}>{Math.max(0, targetMacros.cal - Math.round(consumedMacros.cal))}</strong> سعرة
                   </span>
                 </div>
 
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '8px' }}>
-                  
                   {/* Protein */}
-                  <div style={{ background: '#F8FAFC', padding: '10px', borderRadius: '12px', textAlign: 'center', border: '1px solid #F1F5F9' }}>
-                    <span style={{ fontSize: '10.5px', color: '#64748B', fontWeight: 700, display: 'block' }}>البروتين</span>
-                    <strong style={{ fontSize: '0.9rem', color: '#0284C7', fontFamily: 'monospace' }}>{Math.round(consumedMacros.p)}/{targetMacros.p}g</strong>
-                    <div style={{ width: '100%', height: '4px', background: '#E2E8F0', borderRadius: '4px', marginTop: '4px', overflow: 'hidden' }}>
+                  <div style={{ background: '#F8FAFC', padding: '8px 10px', borderRadius: '10px', border: '1px solid #F1F5F9' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '10.5px', color: '#64748B', fontWeight: 600 }}>
+                      <span>بروتين</span>
+                      <span style={{ color: '#0F172A', fontWeight: 700 }} dir="ltr">{Math.round(consumedMacros.p)}/{targetMacros.p}g</span>
+                    </div>
+                    <div style={{ width: '100%', height: '3px', background: '#E2E8F0', borderRadius: '2px', marginTop: '5px', overflow: 'hidden' }}>
                       <div style={{ width: `${Math.min(100, (consumedMacros.p / targetMacros.p) * 100)}%`, height: '100%', background: '#0284C7' }}></div>
                     </div>
                   </div>
 
                   {/* Carbs */}
-                  <div style={{ background: '#F8FAFC', padding: '10px', borderRadius: '12px', textAlign: 'center', border: '1px solid #F1F5F9' }}>
-                    <span style={{ fontSize: '10.5px', color: '#64748B', fontWeight: 700, display: 'block' }}>الكارب</span>
-                    <strong style={{ fontSize: '0.9rem', color: '#D97706', fontFamily: 'monospace' }}>{Math.round(consumedMacros.c)}/{targetMacros.c}g</strong>
-                    <div style={{ width: '100%', height: '4px', background: '#E2E8F0', borderRadius: '4px', marginTop: '4px', overflow: 'hidden' }}>
+                  <div style={{ background: '#F8FAFC', padding: '8px 10px', borderRadius: '10px', border: '1px solid #F1F5F9' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '10.5px', color: '#64748B', fontWeight: 600 }}>
+                      <span>كارب</span>
+                      <span style={{ color: '#0F172A', fontWeight: 700 }} dir="ltr">{Math.round(consumedMacros.c)}/{targetMacros.c}g</span>
+                    </div>
+                    <div style={{ width: '100%', height: '3px', background: '#E2E8F0', borderRadius: '2px', marginTop: '5px', overflow: 'hidden' }}>
                       <div style={{ width: `${Math.min(100, (consumedMacros.c / targetMacros.c) * 100)}%`, height: '100%', background: '#D97706' }}></div>
                     </div>
                   </div>
 
                   {/* Fats */}
-                  <div style={{ background: '#F8FAFC', padding: '10px', borderRadius: '12px', textAlign: 'center', border: '1px solid #F1F5F9' }}>
-                    <span style={{ fontSize: '10.5px', color: '#64748B', fontWeight: 700, display: 'block' }}>الدهون</span>
-                    <strong style={{ fontSize: '0.9rem', color: '#059669', fontFamily: 'monospace' }}>{Math.round(consumedMacros.f)}/{targetMacros.f}g</strong>
-                    <div style={{ width: '100%', height: '4px', background: '#E2E8F0', borderRadius: '4px', marginTop: '4px', overflow: 'hidden' }}>
+                  <div style={{ background: '#F8FAFC', padding: '8px 10px', borderRadius: '10px', border: '1px solid #F1F5F9' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '10.5px', color: '#64748B', fontWeight: 600 }}>
+                      <span>دهون</span>
+                      <span style={{ color: '#0F172A', fontWeight: 700 }} dir="ltr">{Math.round(consumedMacros.f)}/{targetMacros.f}g</span>
+                    </div>
+                    <div style={{ width: '100%', height: '3px', background: '#E2E8F0', borderRadius: '2px', marginTop: '5px', overflow: 'hidden' }}>
                       <div style={{ width: `${Math.min(100, (consumedMacros.f / targetMacros.f) * 100)}%`, height: '100%', background: '#059669' }}></div>
                     </div>
                   </div>
-
                 </div>
               </div>
 
-              {/* Dual Portion Mode & Travel Controls */}
-              <div style={{ background: '#FFFFFF', border: '1px solid #E2E8F0', borderRadius: '18px', padding: '14px', boxShadow: '0 2px 6px rgba(15, 23, 42, 0.02)' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                    <Scale style={{ width: '16px', height: '16px', color: '#0F172A' }} />
-                    <h3 style={{ margin: 0, fontSize: '0.82rem', fontWeight: 800, color: '#0F172A' }}>
-                      طريقة عرض الحصص والكميات
-                    </h3>
-                  </div>
-
-                  <button
-                    type="button"
-                    onClick={() => setTravelModeActive(prev => !prev)}
-                    style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: '4px',
-                      background: travelModeActive ? '#EFF6FF' : '#F8FAFC',
-                      color: travelModeActive ? '#0284C7' : '#64748B',
-                      border: `1px solid ${travelModeActive ? '#BAE6FD' : '#E2E8F0'}`,
-                      borderRadius: '8px',
-                      padding: '4px 10px',
-                      fontSize: '0.72rem',
-                      fontWeight: 700,
-                      cursor: 'pointer'
-                    }}
-                  >
-                    <span>خطط المطاعم والسفر</span>
-                  </button>
+              {/* Portion Display Segmented Control */}
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', margin: '2px 0' }}>
+                <div style={{ display: 'inline-flex', background: '#E2E8F0', padding: '2px', borderRadius: '8px', gap: '2px' }}>
+                  {[
+                    { key: PORTION_DISPLAY_MODES.DUAL, label: 'عرض مزدوج' },
+                    { key: PORTION_DISPLAY_MODES.GRAMS, label: 'بالميزان' },
+                    { key: PORTION_DISPLAY_MODES.HAND_PORTIONS, label: 'بالنظر' }
+                  ].map(tab => {
+                    const isSel = portionDisplayMode === tab.key;
+                    return (
+                      <button
+                        key={tab.key}
+                        type="button"
+                        onClick={() => setPortionDisplayMode(tab.key)}
+                        style={{
+                          background: isSel ? '#FFFFFF' : 'transparent',
+                          color: isSel ? '#0F172A' : '#64748B',
+                          border: 'none',
+                          borderRadius: '6px',
+                          padding: '4px 10px',
+                          fontSize: '0.72rem',
+                          fontWeight: isSel ? 700 : 500,
+                          cursor: 'pointer',
+                          boxShadow: isSel ? '0 1px 2px rgba(0, 0, 0, 0.05)' : 'none',
+                          transition: 'all 0.15s ease'
+                        }}
+                      >
+                        {tab.label}
+                      </button>
+                    );
+                  })}
                 </div>
 
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '6px' }}>
-                  <button
-                    type="button"
-                    onClick={() => setPortionDisplayMode(PORTION_DISPLAY_MODES.DUAL)}
-                    style={{
-                      background: portionDisplayMode === PORTION_DISPLAY_MODES.DUAL ? '#0284C7' : '#F1F5F9',
-                      color: portionDisplayMode === PORTION_DISPLAY_MODES.DUAL ? '#FFFFFF' : '#475569',
-                      border: 'none',
-                      borderRadius: '10px',
-                      padding: '8px 4px',
-                      fontSize: '0.74rem',
-                      fontWeight: 700,
-                      cursor: 'pointer',
-                      transition: 'all 0.2s ease'
-                    }}
-                  >
-                    عرض مزدوج (الكل)
-                  </button>
-
-                  <button
-                    type="button"
-                    onClick={() => setPortionDisplayMode(PORTION_DISPLAY_MODES.GRAMS)}
-                    style={{
-                      background: portionDisplayMode === PORTION_DISPLAY_MODES.GRAMS ? '#0284C7' : '#F1F5F9',
-                      color: portionDisplayMode === PORTION_DISPLAY_MODES.GRAMS ? '#FFFFFF' : '#475569',
-                      border: 'none',
-                      borderRadius: '10px',
-                      padding: '8px 4px',
-                      fontSize: '0.74rem',
-                      fontWeight: 700,
-                      cursor: 'pointer',
-                      transition: 'all 0.2s ease'
-                    }}
-                  >
-                    بالميزان (نيئ ومطبوخ)
-                  </button>
-
-                  <button
-                    type="button"
-                    onClick={() => setPortionDisplayMode(PORTION_DISPLAY_MODES.HAND_PORTIONS)}
-                    style={{
-                      background: portionDisplayMode === PORTION_DISPLAY_MODES.HAND_PORTIONS ? '#0284C7' : '#F1F5F9',
-                      color: portionDisplayMode === PORTION_DISPLAY_MODES.HAND_PORTIONS ? '#FFFFFF' : '#475569',
-                      border: 'none',
-                      borderRadius: '10px',
-                      padding: '8px 4px',
-                      fontSize: '0.74rem',
-                      fontWeight: 700,
-                      cursor: 'pointer',
-                      transition: 'all 0.2s ease'
-                    }}
-                  >
-                    بالنظر ومقاييس اليد
-                  </button>
-                </div>
+                <button
+                  type="button"
+                  onClick={() => setTravelModeActive(prev => !prev)}
+                  style={{
+                    background: travelModeActive ? '#EFF6FF' : 'transparent',
+                    color: travelModeActive ? '#0284C7' : '#64748B',
+                    border: `1px solid ${travelModeActive ? '#BAE6FD' : '#CBD5E1'}`,
+                    borderRadius: '8px',
+                    padding: '4px 8px',
+                    fontSize: '0.7rem',
+                    fontWeight: 600,
+                    cursor: 'pointer'
+                  }}
+                >
+                  {travelModeActive ? 'إخفاء خطط المطاعم' : 'خطط المطاعم'}
+                </button>
               </div>
 
               {/* Pre-Engineered Dining Blueprints Section (Visible when travelMode is active) */}
               {travelModeActive && (
-                <div style={{ background: '#F8FAFC', border: '1px solid #CBD5E1', borderRadius: '18px', padding: '16px' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '12px' }}>
-                    <Crown style={{ width: '16px', height: '16px', color: '#0284C7' }} />
-                    <h3 style={{ margin: 0, fontSize: '0.86rem', fontWeight: 800, color: '#0F172A' }}>
-                      خطط المطاعم والسفر الجاهزة (Dining Blueprints)
-                    </h3>
-                  </div>
-
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                <div style={{ background: '#F8FAFC', border: '1px solid #CBD5E1', borderRadius: '16px', padding: '14px' }}>
+                  <h3 style={{ margin: '0 0 10px 0', fontSize: '0.84rem', fontWeight: 800, color: '#0F172A' }}>
+                    خطط المطاعم والسفر الجاهزة (Dining Blueprints)
+                  </h3>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
                     {diningBlueprints.map(bp => (
-                      <div key={bp.id} style={{ background: '#FFFFFF', border: '1px solid #E2E8F0', borderRadius: '14px', padding: '12px' }}>
-                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
-                          <strong style={{ fontSize: '0.82rem', color: '#0369A1' }}>{bp.title_ar}</strong>
-                          <span style={{ fontSize: '0.72rem', fontWeight: 800, color: '#059669', background: '#ECFDF5', padding: '2px 6px', borderRadius: '6px' }}>
-                            ~{bp.estimated_macros.calories_kcal} Kcal | P: {bp.estimated_macros.protein_g}g
+                      <div key={bp.id} style={{ background: '#FFFFFF', border: '1px solid #E2E8F0', borderRadius: '12px', padding: '10px 12px' }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4px' }}>
+                          <strong style={{ fontSize: '0.8rem', color: '#0369A1' }}>{bp.title_ar}</strong>
+                          <span style={{ fontSize: '0.7rem', fontWeight: 700, color: '#059669', background: '#ECFDF5', padding: '1px 6px', borderRadius: '4px' }} dir="ltr">
+                            ~{bp.estimated_macros.calories_kcal} kcal • P: {bp.estimated_macros.protein_g}g
                           </span>
                         </div>
-                        <ul style={{ margin: 0, paddingRight: '16px', fontSize: '0.74rem', color: '#334155' }}>
+                        <ul style={{ margin: 0, paddingRight: '16px', fontSize: '0.72rem', color: '#334155', lineHeight: 1.4 }}>
                           {bp.ordered_items_ar.map((item, idx) => (
-                            <li key={idx} style={{ marginBottom: '2px' }}>{item}</li>
+                            <li key={idx}>{item}</li>
                           ))}
                         </ul>
                       </div>
@@ -865,19 +766,19 @@ export default function ClientInteractiveApp() {
                   key={meal.id}
                   style={{
                     background: '#FFFFFF',
-                    borderRadius: '20px',
+                    borderRadius: '16px',
                     border: '1px solid #E2E8F0',
-                    padding: '16px',
-                    boxShadow: '0 2px 6px rgba(15, 23, 42, 0.03)'
+                    padding: '14px 16px',
+                    boxShadow: '0 1px 3px rgba(0, 0, 0, 0.03)'
                   }}
                 >
                   {/* Meal Header */}
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid #F1F5F9', paddingBottom: '10px', marginBottom: '12px' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid #F1F5F9', paddingBottom: '10px', marginBottom: '10px' }}>
                     <div>
-                      <h3 style={{ fontSize: '0.86rem', fontWeight: 800, color: '#0F172A', margin: 0 }}>
+                      <h3 style={{ fontSize: '0.88rem', fontWeight: 800, color: '#0F172A', margin: 0 }}>
                         {meal.title}
                       </h3>
-                      <span style={{ fontSize: '0.72rem', color: '#94A3B8' }}>{meal.time}</span>
+                      <span style={{ fontSize: '0.7rem', color: '#94A3B8' }}>{meal.time}</span>
                     </div>
 
                     <button
@@ -887,129 +788,130 @@ export default function ClientInteractiveApp() {
                         display: 'flex',
                         alignItems: 'center',
                         gap: '4px',
-                        background: meal.completed ? '#ECFDF5' : '#F8FAFC',
-                        color: meal.completed ? '#059669' : '#64748B',
-                        border: `1px solid ${meal.completed ? '#A7F3D0' : '#E2E8F0'}`,
-                        borderRadius: '10px',
+                        background: meal.completed ? '#0F172A' : '#F8FAFC',
+                        color: meal.completed ? '#FFFFFF' : '#475569',
+                        border: `1px solid ${meal.completed ? '#0F172A' : '#CBD5E1'}`,
+                        borderRadius: '8px',
                         padding: '4px 10px',
-                        fontSize: '0.74rem',
+                        fontSize: '0.72rem',
                         fontWeight: 700,
-                        cursor: 'pointer'
+                        cursor: 'pointer',
+                        transition: 'all 0.15s ease'
                       }}
                     >
-                      <Check style={{ width: '13px', height: '13px' }} />
+                      {meal.completed && <Check style={{ width: '12px', height: '12px' }} />}
                       <span>{meal.completed ? 'تم التناول' : 'تسجيل التناول'}</span>
                     </button>
                   </div>
 
                   {/* Meal Items */}
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                    {meal.items.map(item => (
-                      <div 
-                        key={item.id}
-                        style={{
-                          display: 'flex',
-                          justifyContent: 'space-between',
-                          alignItems: 'center',
-                          padding: '8px 10px',
-                          background: '#F8FAFC',
-                          borderRadius: '12px',
-                          border: '1px solid #F1F5F9'
-                        }}
-                      >
-                        <div style={{ flex: 1, minWidth: 0 }}>
-                          <p style={{ margin: 0, fontSize: '0.82rem', fontWeight: 700, color: '#0F172A' }}>
-                            {item.name}
-                          </p>
-                          {(() => {
-                            const formatted = formatItemPortionDisplay({
-                              food_code: item.code || item.name,
-                              amount_g: item.amount,
-                              unit: item.unit,
-                              macro_type: item.p > item.c ? 'PROTEIN' : (item.c > 5 ? 'CARBS' : 'FATS')
-                            }, portionDisplayMode);
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                    {meal.items.map(item => {
+                      const prepOptions = getPrepOptionsForFood(item.code || item.name);
+                      const formatted = formatItemPortionDisplay({
+                        food_code: item.code || item.name, 
+                        amount_g: item.amount, 
+                        unit: item.unit, 
+                        macro_type: item.p > item.c ? 'PROTEIN' : (item.c > 5 ? 'CARBS' : 'FATS')
+                      }, portionDisplayMode);
 
-                            return (
-                              <div style={{ display: 'flex', flexDirection: 'column', gap: '2px', marginTop: '2px' }}>
-                                <span style={{ fontSize: '0.74rem', color: '#0284C7', fontWeight: 700 }}>
-                                  {formatted.mode === PORTION_DISPLAY_MODES.DUAL ? (
-                                    <span>
-                                      {formatted.primary_text} <span style={{ color: '#059669', marginRight: '4px' }}>↔ {formatted.secondary_text}</span>
-                                    </span>
-                                  ) : (
-                                    formatted.primary_text
-                                  )}
-                                </span>
-                                <span style={{ fontSize: '0.7rem', color: '#94A3B8', fontFamily: 'monospace' }}>
-                                  ({Math.round(item.cal)} Kcal | P: {item.p}g | C: {item.c}g | F: {item.f}g)
-                                </span>
-                              </div>
-                            );
-                          })()}
-                        </div>
+                      return (
+                        <div 
+                          key={item.id}
+                          style={{
+                            display: 'flex',
+                            justifyContent: 'space-between',
+                            alignItems: 'center',
+                            padding: '8px 10px',
+                            background: '#F8FAFC',
+                            borderRadius: '10px',
+                            border: '1px solid #F1F5F9'
+                          }}
+                        >
+                          <div style={{ flex: 1, minWidth: 0 }}>
+                            <div style={{ display: 'flex', alignItems: 'baseline', gap: '6px', flexWrap: 'wrap' }}>
+                              <span style={{ fontSize: '0.84rem', fontWeight: 700, color: '#0F172A' }}>
+                                {item.name}
+                              </span>
+                              <span style={{ fontSize: '0.75rem', color: '#0284C7', fontWeight: 700 }}>
+                                {formatted.mode === PORTION_DISPLAY_MODES.DUAL ? (
+                                  <span>{formatted.primary_text} <span style={{ color: '#64748B', fontWeight: 500 }}>({formatted.secondary_text})</span></span>
+                                ) : (
+                                  formatted.primary_text
+                                )}
+                              </span>
+                            </div>
 
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                          {/* Prep Options Button */}
-                          {getPrepOptionsForFood(item.code || item.name) && (
+                            {/* Clean, Non-scrambled LTR Macros */}
+                            <div style={{ marginTop: '2px', fontSize: '0.68rem', color: '#64748B' }} dir="ltr">
+                              <span style={{ fontWeight: 600, color: '#334155' }}>{Math.round(item.cal)} kcal</span>
+                              <span style={{ margin: '0 4px', color: '#CBD5E1' }}>•</span>
+                              <span>P: {item.p}g</span>
+                              <span style={{ margin: '0 4px', color: '#CBD5E1' }}>•</span>
+                              <span>C: {item.c}g</span>
+                              <span style={{ margin: '0 4px', color: '#CBD5E1' }}>•</span>
+                              <span>F: {item.f}g</span>
+                            </div>
+                          </div>
+
+                          {/* Clean Action Buttons */}
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                            {prepOptions && (
+                              <button
+                                type="button"
+                                onClick={() => setActivePrepItem(item)}
+                                style={{
+                                  background: '#FFFFFF',
+                                  color: '#475569',
+                                  border: '1px solid #E2E8F0',
+                                  borderRadius: '6px',
+                                  padding: '3px 7px',
+                                  fontSize: '0.68rem',
+                                  fontWeight: 600,
+                                  cursor: 'pointer'
+                                }}
+                                title="أفكار خلطات وطرق إعداد"
+                              >
+                                خلطات
+                              </button>
+                            )}
+
                             <button
                               type="button"
-                              onClick={() => setActivePrepItem(item)}
+                              onClick={() => { setActiveSwapItem(item); setSwapMealId(meal.id); }}
                               style={{
                                 display: 'flex',
                                 alignItems: 'center',
-                                gap: '4px',
-                                background: '#ECFDF5',
-                                color: '#047857',
-                                border: '1px solid #A7F3D0',
-                                borderRadius: '8px',
-                                padding: '4px 8px',
-                                fontSize: '0.72rem',
+                                gap: '3px',
+                                background: '#FFFFFF',
+                                color: '#0F172A',
+                                border: '1px solid #CBD5E1',
+                                borderRadius: '6px',
+                                padding: '3px 8px',
+                                fontSize: '0.68rem',
                                 fontWeight: 700,
                                 cursor: 'pointer'
                               }}
-                              title="أفكار خلطات وطرق إعداد سريعة"
+                              title="تبديل الصنف ببديل مكافئ"
                             >
-                              <span>خلطات</span>
+                              <ArrowLeftRight style={{ width: '11px', height: '11px' }} />
+                              <span>بديل</span>
                             </button>
-                          )}
-
-                          {/* 1-Tap Smart Swap Button */}
-                          <button
-                            type="button"
-                            onClick={() => { setActiveSwapItem(item); setSwapMealId(meal.id); }}
-                            style={{
-                              display: 'flex',
-                              alignItems: 'center',
-                              gap: '4px',
-                              background: '#FEF3C7',
-                              color: '#92400E',
-                              border: '1px solid #FDE68A',
-                              borderRadius: '8px',
-                              padding: '4px 8px',
-                              fontSize: '0.72rem',
-                              fontWeight: 700,
-                              cursor: 'pointer'
-                            }}
-                            title="بديل مكافئ فوراً"
-                          >
-                            <ArrowLeftRight style={{ width: '12px', height: '12px' }} />
-                            <span>بديل ذكي</span>
-                          </button>
+                          </div>
                         </div>
-                      </div>
-                    ))}
+                      );
+                    })}
                   </div>
-
                 </div>
               ))}
 
               {/* SMART CONTEXTUAL GUIDELINES MATRIX */}
-              <div style={{ background: '#FFFFFF', border: '1px solid #E2E8F0', borderRadius: '18px', padding: '16px', boxShadow: '0 2px 6px rgba(15, 23, 42, 0.02)' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
+              <div style={{ background: '#FFFFFF', border: '1px solid #E2E8F0', borderRadius: '16px', padding: '14px 16px', boxShadow: '0 1px 3px rgba(0, 0, 0, 0.02)' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                    <ShieldCheck style={{ width: '16px', height: '16px', color: '#0284C7' }} />
-                    <h3 style={{ margin: 0, fontSize: '0.84rem', fontWeight: 800, color: '#0F172A' }}>
-                      القواعد والإرشادات الذهبية للخطة
+                    <ShieldCheck style={{ width: '15px', height: '15px', color: '#0F172A' }} />
+                    <h3 style={{ margin: 0, fontSize: '0.82rem', fontWeight: 800, color: '#0F172A' }}>
+                      إرشادات وقواعد الخطة
                     </h3>
                   </div>
 
@@ -1017,28 +919,25 @@ export default function ClientInteractiveApp() {
                     type="button"
                     onClick={() => setPdfModalOpen(true)}
                     style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: '4px',
                       background: '#0F172A',
                       color: '#FFFFFF',
                       border: 'none',
-                      borderRadius: '8px',
-                      padding: '5px 10px',
-                      fontSize: '0.72rem',
-                      fontWeight: 800,
+                      borderRadius: '6px',
+                      padding: '4px 8px',
+                      fontSize: '0.7rem',
+                      fontWeight: 700,
                       cursor: 'pointer'
                     }}
                   >
-                    <span>تصدير الخطة PDF</span>
+                    تصدير PDF
                   </button>
                 </div>
 
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
                   {SMART_GUIDELINES_MATRIX.map((guide) => (
-                    <div key={guide.id} style={{ background: '#F8FAFC', border: '1px solid #F1F5F9', borderRadius: '10px', padding: '8px 12px' }}>
-                      <strong style={{ fontSize: '0.76rem', color: '#0369A1', display: 'block', marginBottom: '2px' }}>{guide.title_ar}</strong>
-                      <span style={{ fontSize: '0.72rem', color: '#475569', lineHeight: 1.4 }}>{guide.instruction_ar}</span>
+                    <div key={guide.id} style={{ background: '#F8FAFC', border: '1px solid #F1F5F9', borderRadius: '8px', padding: '8px 10px' }}>
+                      <strong style={{ fontSize: '0.74rem', color: '#0F172A', display: 'block', marginBottom: '2px' }}>{guide.title_ar}</strong>
+                      <span style={{ fontSize: '0.7rem', color: '#64748B', lineHeight: 1.4 }}>{guide.instruction_ar}</span>
                     </div>
                   ))}
                 </div>
@@ -1046,12 +945,11 @@ export default function ClientInteractiveApp() {
 
               {/* Supplements Card (Dynamic from Coach Program) */}
               {clientProgram?.cardio?.supplements?.length > 0 && (
-              <div style={{ background: '#F0F9FF', border: '1px solid #BAE6FD', borderRadius: '18px', padding: '16px' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '6px', color: '#0369A1', fontWeight: 800, fontSize: '0.84rem', marginBottom: '8px' }}>
-                  <Pill style={{ width: '16px', height: '16px' }} />
-                  <span>المكملات المعتمدة من الكابتن:</span>
+              <div style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', borderRadius: '16px', padding: '14px 16px' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '6px', color: '#0F172A', fontWeight: 800, fontSize: '0.84rem', marginBottom: '8px' }}>
+                  <span>المكملات المعتمدة من الكابتن</span>
                 </div>
-                <div style={{ fontSize: '0.76rem', color: '#334155', display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                <div style={{ fontSize: '0.74rem', color: '#334155', display: 'flex', flexDirection: 'column', gap: '4px' }}>
                   {clientProgram.cardio.supplements.map((supp, sIdx) => (
                     <p key={supp.id || sIdx} style={{ margin: 0 }}>
                       • <strong>{supp.name}{supp.dose ? ` (${supp.dose})` : ''}:</strong>
@@ -1067,15 +965,15 @@ export default function ClientInteractiveApp() {
             </div>
           )}
 
-          {/* TAB 2: LIVE WORKOUT TRACKER & TIMER */}
+{/* TAB 2: LIVE WORKOUT TRACKER & TIMER */}
           {activeTab === 'workout' && (
             <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
               
               {/* Workout Session Banner */}
               <div style={{ background: 'linear-gradient(135deg, #0F172A 0%, #1E293B 100%)', color: '#FFFFFF', borderRadius: '20px', padding: '18px', boxShadow: '0 4px 15px rgba(15, 23, 42, 0.15)' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4px' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '6px', color: '#38BDF8', fontSize: '0.75rem', fontWeight: 800 }}>
-                    <Flame style={{ width: '14px', height: '14px' }} />
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '6px', color: '#94A3B8', fontSize: '0.72rem', fontWeight: 700 }}>
+                    
                     <span>وضع التدريب الحي المباشر</span>
                   </div>
                   <span style={{ fontSize: '0.76rem', color: '#F59E0B', fontWeight: 800, fontFamily: 'monospace' }}>
@@ -1232,9 +1130,9 @@ export default function ClientInteractiveApp() {
                         display: 'flex',
                         alignItems: 'center',
                         gap: '4px',
-                        background: '#FEF3C7',
-                        color: '#92400E',
-                        border: '1px solid #FDE68A',
+                        background: '#FFFFFF',
+                        color: '#0F172A',
+                        border: '1px solid #CBD5E1',
                         borderRadius: '8px',
                         padding: '4px 8px',
                         fontSize: '0.72rem',
@@ -1325,7 +1223,7 @@ export default function ClientInteractiveApp() {
                     {/* Smart Double Progression Live Feedback */}
                     {ex.sets.every(s => s.completed) && (
                       <div style={{ marginTop: '10px', background: '#ECFDF5', border: '1px solid #6EE7B7', borderRadius: '10px', padding: '8px 12px', fontSize: '0.74rem', color: '#065F46', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '6px' }}>
-                        <Sparkles style={{ width: '14px', height: '14px', flexShrink: 0, color: '#059669' }} />
+                        
                         <span>
                           {evaluateDoubleProgression({
                             exercise_name: ex.name,
@@ -1361,13 +1259,13 @@ export default function ClientInteractiveApp() {
             justifyContent: 'space-around',
             padding: '8px 0',
             zIndex: 40,
-            boxShadow: '0 -4px 20px rgba(0, 0, 0, 0.05)'
+            boxShadow: '0 -2px 10px rgba(0, 0, 0, 0.04)'
           }}
         >
           {[
-            { key: 'meals', label: 'الوجبات والمبادلات', icon: Utensils },
-            { key: 'workout', label: 'التمرين والمؤقت', icon: Dumbbell },
-            { key: 'checkin', label: 'المتابعة الأسبوعية', icon: Activity, isRoute: true }
+            { key: 'meals', label: 'الوجبات', icon: Utensils },
+            { key: 'workout', label: 'التمرين', icon: Dumbbell },
+            { key: 'checkin', label: 'المتابعة', icon: Activity, isRoute: true }
           ].map(tab => {
             const isActive = activeTab === tab.key;
             const TabIcon = tab.icon;
@@ -1388,25 +1286,25 @@ export default function ClientInteractiveApp() {
                   display: 'flex',
                   flexDirection: 'column',
                   alignItems: 'center',
-                  gap: '3px',
+                  gap: '2px',
                   background: 'transparent',
                   border: 'none',
-                  color: isActive ? '#D97706' : '#94A3B8',
-                  fontSize: '10px',
-                  fontWeight: isActive ? 800 : 600,
+                  color: isActive ? '#0F172A' : '#94A3B8',
+                  fontSize: '11px',
+                  fontWeight: isActive ? 800 : 500,
                   cursor: 'pointer',
-                  padding: '4px 12px',
+                  padding: '4px 16px',
                   transition: 'color 0.15s ease'
                 }}
               >
-                <TabIcon style={{ width: '20px', height: '20px' }} />
+                <TabIcon style={{ width: '18px', height: '18px', strokeWidth: isActive ? 2.5 : 2 }} />
                 <span>{tab.label}</span>
               </button>
             );
           })}
         </nav>
 
-        {/* SMART FOOD SWAP POPUP MODAL WITH CLINICAL FILTERS */}
+{/* SMART FOOD SWAP POPUP MODAL WITH CLINICAL FILTERS */}
         {activeSwapItem && (
           <div 
             style={{
@@ -2076,7 +1974,7 @@ export default function ClientInteractiveApp() {
             }}
           >
             <div style={{ background: 'rgba(56, 189, 248, 0.15)', border: '1px solid rgba(56, 189, 248, 0.3)', width: '48px', height: '48px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 12px auto', color: '#38BDF8' }}>
-              <Sparkles size={24} />
+              <CheckCircle2 size={24} color="#0284C7" />
             </div>
             <h3 style={{ margin: '0 0 6px 0', fontSize: '1.05rem', fontWeight: 900, color: '#F8FAFC' }}>
               حمد الله على السلامة يا بطل!
