@@ -2115,8 +2115,14 @@ export const PORTION_DISPLAY_MODES = {
   DUAL: 'DUAL'
 };
 
+export const COOKING_STATE_MODES = {
+  BOTH: 'BOTH',       // عرض الوزنين معاً (مطبوخ ونيء)
+  COOKED: 'COOKED',   // مطبوخ ومجهز فقط
+  RAW: 'RAW'          // نيء قبل الطهي فقط
+};
+
 /**
- * Enhanced portion visualizer delivering both precision scale grams and intuitive hand metrics.
+ * Enhanced portion visualizer delivering precision scale grams, raw/cooked states, and intuitive hand metrics.
  */
 export function formatItemPortionDisplay({
   food_code = '',
@@ -2124,26 +2130,76 @@ export function formatItemPortionDisplay({
   unit = 'جم',
   macro_type = 'PROTEIN',
   food_state = 'COOKED'
-}, mode = PORTION_DISPLAY_MODES.DUAL) {
+}, mode = PORTION_DISPLAY_MODES.DUAL, cooking_state_mode = COOKING_STATE_MODES.BOTH) {
   const g = Number(amount_g) || 0;
   const upperCode = String(food_code).toUpperCase();
 
-  // 1. Calculate Raw vs Cooked Equivalents
+  // 1. Calculate Precision Raw vs Cooked Equivalents based on cooking_state_mode
   let rawCookedNote = '';
-  if (['CHICKEN_BREAST', 'SKINLESS_CHICKEN_THIGHS', 'LEAN_GROUND_BEEF_95_5', 'LEAN_VEAL_BEEF'].some(c => upperCode.includes(c))) {
+
+  if (['CHICKEN_BREAST', 'SKINLESS_CHICKEN_THIGHS', 'TURKEY', 'CHICKEN', 'دجاج', 'فراخ', 'شاورما'].some(c => upperCode.includes(c))) {
     const rawG = Math.round(g / 0.75);
-    rawCookedNote = `${g} جم مطبوخ (${rawG} جم نيئ)`;
-  } else if (['WHITE_FISH_FILLET', 'SHRIMP_GRILLED', 'SALMON_ATLANTIC_COOKED'].some(c => upperCode.includes(c))) {
+    if (cooking_state_mode === COOKING_STATE_MODES.COOKED) {
+      rawCookedNote = `${g} جم مطبوخ`;
+    } else if (cooking_state_mode === COOKING_STATE_MODES.RAW) {
+      rawCookedNote = `${rawG} جم نيئ قبل الطهي`;
+    } else {
+      rawCookedNote = `${g} جم مطبوخ (${rawG} جم نيئ)`;
+    }
+  } else if (['LEAN_GROUND_BEEF', 'LEAN_VEAL_BEEF', 'BEEF', 'لحم', 'كفتة', 'كبدة'].some(c => upperCode.includes(c))) {
+    const rawG = Math.round(g / 0.72);
+    if (cooking_state_mode === COOKING_STATE_MODES.COOKED) {
+      rawCookedNote = `${g} جم مطبوخ`;
+    } else if (cooking_state_mode === COOKING_STATE_MODES.RAW) {
+      rawCookedNote = `${rawG} جم نيئ قبل الطهي`;
+    } else {
+      rawCookedNote = `${g} جم مطبوخ (${rawG} جم نيئ)`;
+    }
+  } else if (['WHITE_FISH_FILLET', 'SHRIMP_GRILLED', 'SALMON', 'FISH', 'سمك', 'بلطي', 'جمبري', 'بوري', 'فيليه'].some(c => upperCode.includes(c))) {
     const rawG = Math.round(g / 0.80);
-    rawCookedNote = `${g} جم مطبوخ (${rawG} جم نيئ)`;
-  } else if (['BASMATI_RICE_COOKED', 'WHOLE_WHEAT_PASTA_COOKED'].some(c => upperCode.includes(c))) {
+    if (cooking_state_mode === COOKING_STATE_MODES.COOKED) {
+      rawCookedNote = `${g} جم مطبوخ`;
+    } else if (cooking_state_mode === COOKING_STATE_MODES.RAW) {
+      rawCookedNote = `${rawG} جم نيئ قبل الطهي`;
+    } else {
+      rawCookedNote = `${g} جم مطبوخ (${rawG} جم نيئ)`;
+    }
+  } else if (['BASMATI_RICE', 'WHITE_RICE', 'EGYPTIAN_RICE', 'BROWN_RICE', 'RICE', 'أرز', 'ارز', 'PASTA', 'SPAGHETTI', 'NOODLES', 'مكرونة', 'سباغيتي'].some(c => upperCode.includes(c))) {
     const rawG = Math.round(g / 2.5);
-    rawCookedNote = `${g} جم مطبوخ (${rawG} جم نيئ)`;
-  } else if (upperCode.includes('ROLLED_OATS')) {
+    if (cooking_state_mode === COOKING_STATE_MODES.COOKED) {
+      rawCookedNote = `${g} جم مطبوخ`;
+    } else if (cooking_state_mode === COOKING_STATE_MODES.RAW) {
+      rawCookedNote = `${rawG} جم نيئ جاف`;
+    } else {
+      rawCookedNote = `${g} جم مطبوخ (${rawG} جم نيئ)`;
+    }
+  } else if (['ROLLED_OATS', 'OATS', 'شوفان'].some(c => upperCode.includes(c))) {
     const cookedG = Math.round(g * 2.8);
-    rawCookedNote = `${g} جم نيئ جاف (~ ${cookedG} جم بعد الطهي)`;
-  } else if (upperCode.includes('SWEET_POTATO') || upperCode.includes('BOILED_POTATOES')) {
-    rawCookedNote = `${g} جم مشوي/مسلوق`;
+    if (cooking_state_mode === COOKING_STATE_MODES.COOKED) {
+      rawCookedNote = `~ ${cookedG} جم بعد الطهي`;
+    } else if (cooking_state_mode === COOKING_STATE_MODES.RAW) {
+      rawCookedNote = `${g} جم نيئ جاف`;
+    } else {
+      rawCookedNote = `${g} جم نيئ جاف (~ ${cookedG} جم بعد الطهي)`;
+    }
+  } else if (['SWEET_POTATO', 'BOILED_POTATOES', 'POTATO', 'بطاطس', 'بطاطا'].some(c => upperCode.includes(c))) {
+    const rawG = Math.round(g / 0.95);
+    if (cooking_state_mode === COOKING_STATE_MODES.COOKED) {
+      rawCookedNote = `${g} جم مشوي/مسلوق`;
+    } else if (cooking_state_mode === COOKING_STATE_MODES.RAW) {
+      rawCookedNote = `${rawG} جم نيئ`;
+    } else {
+      rawCookedNote = `${g} جم مشوي/مسلوق`;
+    }
+  } else if (['LENTILS', 'CHICKPEAS', 'WHITE_BEANS', 'عدس', 'حمص'].some(c => upperCode.includes(c))) {
+    const rawG = Math.round(g / 2.2);
+    if (cooking_state_mode === COOKING_STATE_MODES.COOKED) {
+      rawCookedNote = `${g} جم مسلوق`;
+    } else if (cooking_state_mode === COOKING_STATE_MODES.RAW) {
+      rawCookedNote = `${rawG} جم نيئ جاف`;
+    } else {
+      rawCookedNote = `${g} جم مسلوق (${rawG} جم نيئ)`;
+    }
   } else {
     rawCookedNote = `${g} ${unit}`;
   }

@@ -21,7 +21,7 @@ import {
   AlertTriangle
 } from 'lucide-react';
 import { API_BASE } from '../config/api';
-import { calculateDynamicFoodSwap, getCompatibleSwaps, FOOD_DATABASE, convertGramsToHandPortions, getTravelDiningBlueprints, formatItemPortionDisplay, PORTION_DISPLAY_MODES } from '../utils/foodSwapEngine';
+import { calculateDynamicFoodSwap, getCompatibleSwaps, FOOD_DATABASE, convertGramsToHandPortions, getTravelDiningBlueprints, formatItemPortionDisplay, PORTION_DISPLAY_MODES, COOKING_STATE_MODES } from '../utils/foodSwapEngine';
 import { getPrepOptionsForFood } from '../utils/culinaryRecipes';
 import { FREE_BEVERAGES_CATALOG, FREE_SEASONINGS_CATALOG, REFEED_PROTOCOLS } from '../utils/freeSeasoningsAndDrinks';
 import { getRirGuidance, applySpecialIntensityBadge, INTENSITY_BADGES } from '../utils/intensityTechniqueEngine';
@@ -222,6 +222,7 @@ export default function ClientInteractiveApp() {
     {
       id: 'm1',
       title: 'الوجبة الأولى: إفطار التأسيس الأيضي',
+      workout_timing: 'NONE',
       time: '08:30 ص',
       completed: true,
       items: [
@@ -233,6 +234,7 @@ export default function ClientInteractiveApp() {
     {
       id: 'm2',
       title: 'الوجبة الثانية: غداء التعافي والبناء',
+      workout_timing: 'POST_WORKOUT',
       time: '02:00 م',
       completed: false,
       items: [
@@ -245,6 +247,7 @@ export default function ClientInteractiveApp() {
     {
       id: 'm3',
       title: 'الوجبة الثالثة: وجبة ما قبل التمرين',
+      workout_timing: 'PRE_WORKOUT',
       time: '05:30 م',
       completed: false,
       items: [
@@ -256,6 +259,7 @@ export default function ClientInteractiveApp() {
     {
       id: 'm4',
       title: 'الوجبة الرابعة: عشاء الاستشفاء الليلي',
+      workout_timing: 'NONE',
       time: '09:30 م',
       completed: false,
       items: [
@@ -277,6 +281,7 @@ export default function ClientInteractiveApp() {
   const [returnTravelModalOpen, setReturnTravelModalOpen] = useState(false);
   const [exerciseSwapTarget, setExerciseSwapTarget] = useState(null);
   const [portionDisplayMode, setPortionDisplayMode] = useState(PORTION_DISPLAY_MODES.DUAL);
+  const [cookingStateMode, setCookingStateMode] = useState(COOKING_STATE_MODES.BOTH);
   const [activePrepItem, setActivePrepItem] = useState(null);
   const [freeGuideModalOpen, setFreeGuideModalOpen] = useState(false);
   const [freeGuideTab, setFreeGuideTab] = useState('DRINKS');
@@ -769,40 +774,45 @@ export default function ClientInteractiveApp() {
                 </div>
               </div>
 
-              {/* Portion Display Segmented Control */}
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', margin: '2px 0' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                  <div style={{ display: 'inline-flex', background: '#E2E8F0', padding: '2px', borderRadius: '8px', gap: '2px' }}>
-                    {[
-                      { key: PORTION_DISPLAY_MODES.DUAL, label: 'عرض مزدوج' },
-                      { key: PORTION_DISPLAY_MODES.GRAMS, label: 'بالميزان' },
-                      { key: PORTION_DISPLAY_MODES.HAND_PORTIONS, label: 'باليد (طوارئ)' }
-                    ].map(tab => {
-                      const isSel = portionDisplayMode === tab.key;
-                      return (
-                        <button
-                          key={tab.key}
-                          type="button"
-                          onClick={() => setPortionDisplayMode(tab.key)}
-                          style={{
-                            background: isSel ? '#FFFFFF' : 'transparent',
-                            color: isSel ? '#0F172A' : '#64748B',
-                            border: 'none',
-                            borderRadius: '6px',
-                            padding: '4px 10px',
-                            fontSize: '0.72rem',
-                            fontWeight: isSel ? 700 : 500,
-                            cursor: 'pointer',
-                            boxShadow: isSel ? '0 1px 2px rgba(0, 0, 0, 0.05)' : 'none',
-                            transition: 'all 0.15s ease'
-                          }}
-                        >
-                          {tab.label}
-                        </button>
-                      );
-                    })}
+              {/* Portion Display & Cooking State Controls */}
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', margin: '4px 0 10px 0' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '8px' }}>
+                  {/* Left: Grams vs Hand Portions */}
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                    <span style={{ fontSize: '0.72rem', fontWeight: 700, color: '#475569' }}>المعيار:</span>
+                    <div style={{ display: 'inline-flex', background: '#E2E8F0', padding: '2px', borderRadius: '8px', gap: '2px' }}>
+                      {[
+                        { key: PORTION_DISPLAY_MODES.DUAL, label: 'عرض مزدوج' },
+                        { key: PORTION_DISPLAY_MODES.GRAMS, label: 'بالميزان' },
+                        { key: PORTION_DISPLAY_MODES.HAND_PORTIONS, label: 'باليد (طوارئ)' }
+                      ].map(tab => {
+                        const isSel = portionDisplayMode === tab.key;
+                        return (
+                          <button
+                            key={tab.key}
+                            type="button"
+                            onClick={() => setPortionDisplayMode(tab.key)}
+                            style={{
+                              background: isSel ? '#FFFFFF' : 'transparent',
+                              color: isSel ? '#0F172A' : '#64748B',
+                              border: 'none',
+                              borderRadius: '6px',
+                              padding: '4px 10px',
+                              fontSize: '0.72rem',
+                              fontWeight: isSel ? 700 : 500,
+                              cursor: 'pointer',
+                              boxShadow: isSel ? '0 1px 2px rgba(0, 0, 0, 0.05)' : 'none',
+                              transition: 'all 0.15s ease'
+                            }}
+                          >
+                            {tab.label}
+                          </button>
+                        );
+                      })}
+                    </div>
                   </div>
 
+                  {/* Travel Blueprints Button */}
                   <button
                     type="button"
                     onClick={() => setTravelModeActive(prev => !prev)}
@@ -819,6 +829,41 @@ export default function ClientInteractiveApp() {
                   >
                     {travelModeActive ? 'إخفاء خطط المطاعم' : 'خطط المطاعم'}
                   </button>
+                </div>
+
+                {/* Cooking State Segmented Control (Raw vs Cooked vs Both) */}
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: '#F8FAFC', padding: '6px 10px', borderRadius: '10px', border: '1px solid #E2E8F0' }}>
+                  <span style={{ fontSize: '0.72rem', fontWeight: 800, color: '#0F172A' }}>حالة وزن الطعام:</span>
+                  <div style={{ display: 'inline-flex', background: '#E2E8F0', padding: '2px', borderRadius: '8px', gap: '2px' }}>
+                    {[
+                      { key: COOKING_STATE_MODES.BOTH, label: 'الوزنان معاً' },
+                      { key: COOKING_STATE_MODES.COOKED, label: 'مطبوخ ومجهز' },
+                      { key: COOKING_STATE_MODES.RAW, label: 'نيء قبل الطهي' }
+                    ].map(cTab => {
+                      const isSel = cookingStateMode === cTab.key;
+                      return (
+                        <button
+                          key={cTab.key}
+                          type="button"
+                          onClick={() => setCookingStateMode(cTab.key)}
+                          style={{
+                            background: isSel ? '#0F172A' : 'transparent',
+                            color: isSel ? '#FFFFFF' : '#64748B',
+                            border: 'none',
+                            borderRadius: '6px',
+                            padding: '3px 8px',
+                            fontSize: '0.7rem',
+                            fontWeight: isSel ? 800 : 500,
+                            cursor: 'pointer',
+                            boxShadow: isSel ? '0 1px 2px rgba(15, 23, 42, 0.15)' : 'none',
+                            transition: 'all 0.15s ease'
+                          }}
+                        >
+                          {cTab.label}
+                        </button>
+                      );
+                    })}
+                  </div>
                 </div>
 
                 {portionDisplayMode === PORTION_DISPLAY_MODES.HAND_PORTIONS && (
@@ -854,6 +899,13 @@ export default function ClientInteractiveApp() {
                 </div>
               )}
 
+              {/* Workout Timing & Flexibility Guidance Banner */}
+              <div style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', borderRadius: '12px', padding: '10px 14px', marginBottom: '12px' }}>
+                <p style={{ margin: 0, fontSize: '0.73rem', color: '#334155', lineHeight: 1.5 }}>
+                  <strong>ملاحظة مرونة التوقيت:</strong> توزيع وتوقيت الوجبات حول التمرين استرشادي لتحقيق أقصى طاقة واستشفاء؛ ولديك كامل المرونة في تقديم أو تأخير أي وجبة وفق جدول يومك ومواعيد دوامك، فالفيصل الرياضي والأيضي هو إكمال إجمالي السعرات والماكروز المقررة لك في نهاية اليوم.
+                </p>
+              </div>
+
               {/* Meals List */}
               {meals.map((meal) => (
                 <div 
@@ -869,9 +921,21 @@ export default function ClientInteractiveApp() {
                   {/* Meal Header */}
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid #F1F5F9', paddingBottom: '10px', marginBottom: '10px' }}>
                     <div>
-                      <h3 style={{ fontSize: '0.88rem', fontWeight: 800, color: '#0F172A', margin: 0 }}>
-                        {meal.title}
-                      </h3>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flexWrap: 'wrap', marginBottom: '2px' }}>
+                        <h3 style={{ fontSize: '0.88rem', fontWeight: 800, color: '#0F172A', margin: 0 }}>
+                          {meal.title}
+                        </h3>
+                        {(meal.workout_timing === 'PRE_WORKOUT' || meal.title?.includes('قبل التمرين')) && (
+                          <span style={{ background: '#FEF3C7', color: '#92400E', border: '1px solid #FDE68A', padding: '1px 6px', borderRadius: '4px', fontSize: '0.67rem', fontWeight: 800 }}>
+                            وجبة ما قبل التمرين (طاقة وجليكوجين)
+                          </span>
+                        )}
+                        {(meal.workout_timing === 'POST_WORKOUT' || meal.title?.includes('بعد التمرين') || meal.title?.includes('التعافي')) && (
+                          <span style={{ background: '#DCFCE7', color: '#166534', border: '1px solid #BBF7D0', padding: '1px 6px', borderRadius: '4px', fontSize: '0.67rem', fontWeight: 800 }}>
+                            وجبة ما بعد التمرين (بناء عضلي واستشفاء)
+                          </span>
+                        )}
+                      </div>
                       <span style={{ fontSize: '0.7rem', color: '#94A3B8' }}>{meal.time}</span>
                     </div>
 
@@ -906,8 +970,9 @@ export default function ClientInteractiveApp() {
                         food_code: item.code || item.name, 
                         amount_g: item.amount, 
                         unit: item.unit, 
-                        macro_type: item.p > item.c ? 'PROTEIN' : (item.c > 5 ? 'CARBS' : 'FATS')
-                      }, portionDisplayMode);
+                        macro_type: item.p > item.c ? 'PROTEIN' : (item.c > 5 ? 'CARBS' : 'FATS'),
+                        food_state: cookingStateMode
+                      }, portionDisplayMode, cookingStateMode);
 
                       return (
                         <div 

@@ -290,9 +290,37 @@ export default function CoachEditorNutritionTab(props) {
                   {/* Meal Header */}
                   <div>
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid #F1F5F9', paddingBottom: '6px', marginBottom: '8px' }}>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flexWrap: 'wrap' }}>
                         <strong style={{ fontSize: '12.5px', color: '#0F172A', fontWeight: 800 }}>{meal.name}</strong>
                         <span style={{ fontSize: '10px', color: '#64748B', background: '#F8FAFC', border: '1px solid #E2E8F0', padding: '1px 5px', borderRadius: '3px', fontWeight: 600 }}>{meal.time}</span>
+                        <select
+                          value={meal.workout_timing || 'NONE'}
+                          onChange={(e) => {
+                            const val = e.target.value;
+                            setProgram(prev => ({
+                              ...prev,
+                              nutrition: {
+                                ...prev.nutrition,
+                                meals: prev.nutrition.meals.map(m => m.id === meal.id ? { ...m, workout_timing: val } : m)
+                              }
+                            }));
+                          }}
+                          style={{
+                            fontSize: '9.5px',
+                            fontWeight: 700,
+                            padding: '1px 5px',
+                            borderRadius: '4px',
+                            border: '1px solid #CBD5E1',
+                            background: meal.workout_timing === 'PRE_WORKOUT' ? '#FEF3C7' : meal.workout_timing === 'POST_WORKOUT' ? '#DCFCE7' : '#FFFFFF',
+                            color: meal.workout_timing === 'PRE_WORKOUT' ? '#92400E' : meal.workout_timing === 'POST_WORKOUT' ? '#166534' : '#475569',
+                            cursor: 'pointer',
+                            outline: 'none'
+                          }}
+                        >
+                          <option value="NONE">وجبة اعتيادية</option>
+                          <option value="PRE_WORKOUT">وجبة ما قبل التمرين (طاقة)</option>
+                          <option value="POST_WORKOUT">وجبة ما بعد التمرين (استشفاء)</option>
+                        </select>
                       </div>
                       <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
                         <button
@@ -331,11 +359,25 @@ export default function CoachEditorNutritionTab(props) {
                             gap: '8px'
                           }}
                         >
-                          {/* 1. Food Name & Category Badge */}
+                          {/* 1. Food Name & Category Badge & Raw/Cooked Hint */}
                           <div style={{ display: 'flex', alignItems: 'center', gap: '6px', minWidth: 0, overflow: 'hidden' }}>
                             <span style={{ color: '#0F172A', fontWeight: 700, fontSize: '12px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                               {item.name}
                             </span>
+                            {/* Raw / Cooked equivalence hint */}
+                            {(() => {
+                              const upper = String(item.code || item.name).toUpperCase();
+                              const amt = Number(item.amount) || 0;
+                              let hint = '';
+                              if (['CHICKEN', 'دجاج', 'فراخ', 'TURKEY'].some(c => upper.includes(c))) hint = `(~${Math.round(amt / 0.75)} جم نيء)`;
+                              else if (['BEEF', 'لحم', 'كفتة'].some(c => upper.includes(c))) hint = `(~${Math.round(amt / 0.72)} جم نيء)`;
+                              else if (['FISH', 'سمك', 'فيليه', 'SHRIMP', 'جمبري', 'SALMON'].some(c => upper.includes(c))) hint = `(~${Math.round(amt / 0.80)} جم نيء)`;
+                              else if (['RICE', 'أرز', 'ارز'].some(c => upper.includes(c))) hint = `(~${Math.round(amt / 2.6)} جم جاف)`;
+                              else if (['PASTA', 'مكرونة'].some(c => upper.includes(c))) hint = `(~${Math.round(amt / 2.3)} جم جافة)`;
+                              else if (['OATS', 'شوفان'].some(c => upper.includes(c))) hint = `(~${Math.round(amt * 2.8)} جم مطبوخ)`;
+                              if (!hint) return null;
+                              return <span style={{ fontSize: '9px', color: '#0284C7', fontWeight: 700, whiteSpace: 'nowrap' }}>{hint}</span>;
+                            })()}
                             {item.category && (
                               <span style={{ fontSize: '9.5px', fontWeight: 600, padding: '1px 5px', borderRadius: '3px', background: '#FFFFFF', color: '#64748B', border: '1px solid #E2E8F0', flexShrink: 0 }}>
                                 {item.category === 'PROTEIN' ? 'بروتين' : item.category === 'CARB' ? 'نشويات' : item.category === 'FAT' ? 'دهون' : 'خضار'}
