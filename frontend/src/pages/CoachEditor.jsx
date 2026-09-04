@@ -580,25 +580,58 @@ export default function CoachEditor() {
       const f100 = Number(selectedFood.fat_per_100g || selectedFood.f || 0);
       const cal100 = Number(selectedFood.calories_per_100g || selectedFood.cal || 100);
 
+      const targetMeal = (prev.nutrition?.meals || []).find(m => m.id === mealId);
+      const totalMeals = Math.max(1, (prev.nutrition?.meals || []).length);
+      const mealShareP = Math.max(25, Math.round(targetP / totalMeals));
+      const mealShareC = Math.max(30, Math.round(targetC / totalMeals));
+      const mealShareF = Math.max(8, Math.round(targetF / totalMeals));
+
+      // Calculate what this specific meal already contains
+      let mealCurP = 0, mealCurC = 0, mealCurF = 0;
+      (targetMeal?.items || []).forEach(it => {
+        mealCurP += Number(it.p) || 0;
+        mealCurC += Number(it.c) || 0;
+        mealCurF += Number(it.f) || 0;
+      });
+
       let smartAmount = selectedFood.default_amount || selectedFood.amount || 100;
+      const isEgg = String(selectedFood.code || selectedFood.name).toUpperCase().includes('EGG') || String(selectedFood.name || '').includes('بيض');
+
       if (macroCat === 'PROTEIN' && p100 > 0) {
-        const remP = targetP - curP;
-        if (remP > 15) smartAmount = Math.max(30, Math.min(300, Math.round((remP / p100) * 100)));
+        const remDailyP = targetP - curP;
+        const neededP = Math.max(20, Math.min(remDailyP > 0 ? remDailyP : mealShareP, mealShareP - mealCurP));
+        if (isEgg) {
+          smartAmount = Math.max(2, Math.min(4, Math.round(neededP / 6.5)));
+        } else {
+          smartAmount = Math.max(90, Math.min(220, Math.round((neededP / p100) * 20) * 5));
+        }
       } else if (macroCat === 'CARB' && c100 > 0) {
-        const remC = targetC - curC;
-        if (remC > 15) smartAmount = Math.max(20, Math.min(350, Math.round((remC / c100) * 100)));
+        const remDailyC = targetC - curC;
+        const neededC = Math.max(25, Math.min(remDailyC > 0 ? remDailyC : mealShareC, mealShareC - mealCurC));
+        const isOat = String(selectedFood.code || selectedFood.name).toUpperCase().includes('OAT') || String(selectedFood.name || '').includes('شوفان');
+        if (isOat) {
+          smartAmount = Math.max(35, Math.min(80, Math.round((neededC / c100) * 20) * 5));
+        } else {
+          smartAmount = Math.max(100, Math.min(220, Math.round((neededC / c100) * 20) * 5));
+        }
       } else if (macroCat === 'FAT' && f100 > 0) {
-        const remF = targetF - curF;
-        if (remF > 5) smartAmount = Math.max(5, Math.min(60, Math.round((remF / f100) * 100)));
+        const remDailyF = targetF - curF;
+        const neededF = Math.max(5, Math.min(remDailyF > 0 ? remDailyF : mealShareF, mealShareF - mealCurF));
+        const isOil = String(selectedFood.code || selectedFood.name).toUpperCase().includes('OIL') || String(selectedFood.name || '').includes('زيت');
+        if (isOil) {
+          smartAmount = Math.max(5, Math.min(12, Math.round(neededF)));
+        } else {
+          smartAmount = Math.max(15, Math.min(30, Math.round((neededF / f100) * 20) * 5));
+        }
       }
 
-      const factor = smartAmount / 100;
+      const factor = isEgg ? (smartAmount * 0.5) : (smartAmount / 100);
       const newItem = {
         id: `f${Date.now()}`,
         code: selectedFood.code || `FOOD_${Date.now()}`,
         name: selectedFood.name_ar || selectedFood.name,
         amount: smartAmount,
-        unit: selectedFood.serving_unit || selectedFood.unit || 'جم',
+        unit: selectedFood.serving_unit || selectedFood.unit || (isEgg ? 'بيضة' : 'جم'),
         p: Number((p100 * factor).toFixed(1)),
         c: Number((c100 * factor).toFixed(1)),
         f: Number((f100 * factor).toFixed(1)),

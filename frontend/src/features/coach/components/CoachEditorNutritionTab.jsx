@@ -1,5 +1,6 @@
 import React from 'react';
-import { Save, Send, Dumbbell, Utensils, FileText, Activity, Loader2, Plus, Trash2, RotateCw, HeartPulse, Printer, X, ArrowRightLeft, Users, Clock, AlertCircle, CheckCircle2, Search, Check, Zap, Target, ShieldAlert, Flame } from 'lucide-react';
+import { Save, Send, Dumbbell, Utensils, FileText, Activity, Loader2, Plus, Trash2, RotateCw, HeartPulse, Printer, X, ArrowRightLeft, Users, Clock, AlertCircle, CheckCircle2, Search, Check, Zap, Target, ShieldAlert, Flame, Sparkles } from 'lucide-react';
+import { balanceMealItems, balanceAllDayMeals } from '../../../utils/mealPortionBalancer.js';
 
 // Quick Meal Presets for Instant Precision Nutrition Building
 const QUICK_MEAL_PRESETS = [
@@ -174,6 +175,66 @@ export default function CoachEditorNutritionTab(props) {
     }));
   };
 
+  const handleAutoBalanceMeal = (mealId) => {
+    setProgram(prev => {
+      const meals = prev.nutrition?.meals || [];
+      const meal = meals.find(m => m.id === mealId);
+      if (!meal || !meal.items || meal.items.length === 0) return prev;
+
+      const totalMeals = Math.max(1, meals.length);
+      const weight = 1 / totalMeals;
+      const mealTarget = {
+        p: Math.round(targetP * weight),
+        c: Math.round(targetC * weight),
+        f: Math.round(targetF * weight),
+        cal: Math.round(targetCal * weight)
+      };
+
+      const balancedItems = balanceMealItems(meal.items, mealTarget);
+      const updatedMeals = meals.map(m => {
+        if (m.id !== mealId) return m;
+        return {
+          ...m,
+          items: balancedItems,
+          macros: recalculateMeal(balancedItems)
+        };
+      });
+
+      return {
+        ...prev,
+        nutrition: {
+          ...prev.nutrition,
+          meals: updatedMeals
+        }
+      };
+    });
+    showToast('تمت موازنة أصناف الوجبة بجرامات واقعية متناسقة');
+  };
+
+  const handleAutoBalanceAllMeals = () => {
+    setProgram(prev => {
+      const meals = prev.nutrition?.meals || [];
+      if (meals.length === 0) return prev;
+
+      const dailyTarget = {
+        calories: targetCal,
+        protein: targetP,
+        carbs: targetC,
+        fats: targetF
+      };
+
+      const balanced = balanceAllDayMeals(meals, dailyTarget);
+      return {
+        ...prev,
+        nutrition: {
+          ...prev.nutrition,
+          meals: balanced
+        }
+      };
+    });
+    showToast('تمت موازنة جميع وجبات اليوم تلقائياً بنسب واقعية');
+  };
+
   return (
 <>
         {/* 4. TAB 2: NUTRITION & MACROS */}
@@ -263,6 +324,16 @@ export default function CoachEditorNutritionTab(props) {
                     {Math.abs(diffCal) <= 25 ? 'مطابق للتارجت بالملي' : diffCal > 0 ? `فائض +${diffCal} kcal` : `متبقي ${Math.abs(diffCal)} kcal`}
                   </span>
                 )}
+
+                <button
+                  type="button"
+                  onClick={handleAutoBalanceAllMeals}
+                  style={{ height: '30px', padding: '0 12px', borderRadius: '5px', background: '#047857', color: '#FFFFFF', border: 'none', fontSize: '11px', fontWeight: 700, cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: '4px', boxShadow: '0 1px 3px rgba(4, 120, 87, 0.2)' }}
+                  title="موازنة جرامات جميع الوجبات تلقائياً لتطابق سعرات وماكروز اليوم بنسب واقعية"
+                >
+                  <Sparkles size={13} />
+                  <span>موازنة اليوم بالكامل</span>
+                </button>
 
                 <button
                   type="button"
@@ -363,6 +434,29 @@ export default function CoachEditorNutritionTab(props) {
                         </select>
                       </div>
                       <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                        {meal.items && meal.items.length > 0 && (
+                          <button
+                            type="button"
+                            onClick={() => handleAutoBalanceMeal(meal.id)}
+                            style={{
+                              padding: '2px 8px',
+                              borderRadius: '4px',
+                              background: '#ECFDF5',
+                              border: '1px solid #A7F3D0',
+                              color: '#065F46',
+                              fontSize: '10px',
+                              fontWeight: 700,
+                              cursor: 'pointer',
+                              display: 'inline-flex',
+                              alignItems: 'center',
+                              gap: '3px'
+                            }}
+                            title="موازنة أصناف هذه الوجبة بجرامات واقعية متناسقة تسد حصتها من الماكروز"
+                          >
+                            <Sparkles size={10} />
+                            <span>موازنة الوجبة ذكياً</span>
+                          </button>
+                        )}
                         <button
                           type="button"
                           onClick={() => setAddFoodModal({ open: true, mealId: meal.id })}
