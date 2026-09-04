@@ -487,6 +487,34 @@ export default function IntakeAuditDetailModal({
                     </div>
                   )}
 
+                  {/* Current Meds & Supplements */}
+                  {Boolean((submission.answers?.current_meds_supplements_list?.length > 0 && !submission.answers?.current_meds_supplements_list?.includes('none')) || submission.answers?.current_meds_supplements) && (
+                    <div style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', borderRadius: '4px', padding: '4px 8px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                      <span style={{ fontSize: '10.5px', color: '#64748B' }}>المكملات والأدوية:</span>
+                      <strong style={{ fontSize: '11px', color: '#0F172A' }}>
+                        {(() => {
+                          const MEDS_LABELS = {
+                            creatine: 'كرياتين',
+                            whey_protein: 'واي بروتين',
+                            omega3: 'أوميجا 3',
+                            vitamin_d: 'فيتامين د',
+                            multivitamin: 'ملتي فيتامين',
+                            magnesium: 'مغنيسيوم',
+                            pre_workout: 'بري وورك آوت',
+                            hypertension_meds: 'علاج ضغط',
+                            diabetes_meds: 'علاج سكر',
+                            thyroid_meds: 'علاج غدة'
+                          };
+                          const list = (submission.answers?.current_meds_supplements_list || []).filter(x => x !== 'none').map(k => MEDS_LABELS[k] || k);
+                          const note = submission.answers?.current_meds_supplements;
+                          const parts = [...list];
+                          if (note) parts.push(note);
+                          return parts.join('، ') || 'لا توجد';
+                        })()}
+                      </strong>
+                    </div>
+                  )}
+
                   <div style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', borderRadius: '4px', padding: '4px 8px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                     <span style={{ fontSize: '10.5px', color: '#64748B' }}>الصحة ونمط اليوم:</span>
                     <strong style={{ fontSize: '11px', color: '#0F172A' }}>

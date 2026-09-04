@@ -49,6 +49,7 @@ const DEFAULT_MASTER_INTAKE = {
     pain_relieved_by_rest: true
   },
   smoking_status: 'non_smoker',
+  current_meds_supplements_list: [],
   current_meds_supplements: '',
 
   // Screen 3: Nutrition & Lifestyle
@@ -998,13 +999,13 @@ export default function FullIntakeForm() {
                 )}
               </div>
 
-              {/* Smoking & Meds */}
-              <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1fr) minmax(0, 1.5fr)', gap: '12px', alignItems: 'end' }}>
+              {/* Smoking & Meds Matrix */}
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
                 <div>
                   <label style={{ display: 'block', fontSize: '12px', fontWeight: 800, color: '#0F172A', marginBottom: '6px' }}>
-                    حالة التدخين
+                    حالة التدخين *
                   </label>
-                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '6px' }}>
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '8px' }}>
                     <button 
                       type="button" 
                       onClick={() => setFormData(p => ({ ...p, smoking_status: 'non_smoker' }))}
@@ -1023,18 +1024,64 @@ export default function FullIntakeForm() {
                 </div>
 
                 <div>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
-                    <label style={{ fontSize: '12px', fontWeight: 800, color: '#0F172A', margin: 0 }}>
-                      الأدوية أو المكملات المتوفرة لديك حالياً
-                    </label>
-                    <span style={{ fontSize: '11px', color: '#94A3B8', fontWeight: 600 }}>(اختياري)</span>
+                  <label style={{ display: 'block', fontSize: '12px', fontWeight: 800, color: '#0F172A', marginBottom: '6px' }}>
+                    المكملات الغذائية أو الأدوية التي تتناولها حالياً (اختر كل ما ينطبق):
+                  </label>
+                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', marginBottom: '8px' }}>
+                    {[
+                      { key: 'none', label: 'لا أتناول أي مكملات أو أدوية' },
+                      { key: 'creatine', label: 'كرياتين مونوهيدرات' },
+                      { key: 'whey_protein', label: 'واي بروتين / مكمل بروتين' },
+                      { key: 'omega3', label: 'أوميجا 3 (زيت سمك)' },
+                      { key: 'vitamin_d', label: 'فيتامين د3' },
+                      { key: 'multivitamin', label: 'مالتي فيتامين ومعادن' },
+                      { key: 'magnesium', label: 'مغنيسيوم جلايسينات' },
+                      { key: 'pre_workout', label: 'مشروب طاقة / كافيين بري وورك آوت' },
+                      { key: 'hypertension_meds', label: 'أدوية ضغط الدم' },
+                      { key: 'diabetes_meds', label: 'أدوية السكر أو الأنسولين' },
+                      { key: 'thyroid_meds', label: 'علاج الغدة الدرقية' }
+                    ].map((item) => {
+                      const currentList = Array.isArray(formData.current_meds_supplements_list) ? formData.current_meds_supplements_list : [];
+                      const isChecked = currentList.includes(item.key);
+                      return (
+                        <button
+                          key={item.key}
+                          type="button"
+                          onClick={() => {
+                            if (item.key === 'none') {
+                              setFormData(p => ({ ...p, current_meds_supplements_list: ['none'] }));
+                            } else {
+                              setFormData(p => {
+                                const list = Array.isArray(p.current_meds_supplements_list) ? p.current_meds_supplements_list.filter(x => x !== 'none') : [];
+                                const next = list.includes(item.key) ? list.filter(x => x !== item.key) : [...list, item.key];
+                                return { ...p, current_meds_supplements_list: next };
+                              });
+                            }
+                          }}
+                          style={{
+                            padding: '7px 14px',
+                            borderRadius: '20px',
+                            fontSize: '11.5px',
+                            fontWeight: 700,
+                            cursor: 'pointer',
+                            border: isChecked ? '1px solid #0F172A' : '1px solid #CBD5E1',
+                            background: isChecked ? '#0F172A' : '#FFFFFF',
+                            color: isChecked ? '#FFFFFF' : '#475569',
+                            transition: 'all 0.15s ease'
+                          }}
+                        >
+                          {isChecked && '• '}
+                          {item.label}
+                        </button>
+                      );
+                    })}
                   </div>
                   <input 
                     type="text" 
-                    placeholder="مثال: كرياتين، أوميجا 3، دواء ضغط، فيتامين د..."
+                    placeholder="ملاحظات تفصيلية إضافية عن أسماء الأدوية أو الجرعات للكوتش (اختياري)..."
                     value={formData.current_meds_supplements || ''}
                     onChange={(e) => setFormData(p => ({ ...p, current_meds_supplements: e.target.value }))}
-                    style={{ width: '100%', height: '38px', borderRadius: '6px', border: '1px solid #CBD5E1', padding: '0 10px', fontSize: '12px', boxSizing: 'border-box' }}
+                    style={{ width: '100%', height: '36px', borderRadius: '6px', border: '1px solid #CBD5E1', padding: '0 10px', fontSize: '11.5px', boxSizing: 'border-box' }}
                   />
                 </div>
               </div>
@@ -1071,7 +1118,9 @@ export default function FullIntakeForm() {
                     { key: 'peanuts_tree_nuts', label: 'حساسية مكسرات وفول سوداني' },
                     { key: 'fish_shellfish', label: 'حساسية أسماك ومأكولات بحرية' },
                     { key: 'soy', label: 'حساسية فول صويا' },
-                    { key: 'sesame_seeds', label: 'حساسية سمسم وبذور' }
+                    { key: 'sesame_seeds', label: 'حساسية سمسم وطحينة وبذور' },
+                    { key: 'favism_g6pd', label: 'بقوليات وأنيميا الفول (G6PD)' },
+                    { key: 'strawberries_berries', label: 'حساسية فراولة وتوت' }
                   ].map((alg) => {
                     const isChecked = strictAllergies.includes(alg.key);
                     return (
@@ -1180,35 +1229,135 @@ export default function FullIntakeForm() {
                 </div>
               </div>
 
-              {/* Disliked Foods Capsules */}
+              {/* Disliked Foods Categorized Capsules */}
               <div>
-                <label style={{ display: 'block', fontSize: '12px', fontWeight: 800, color: '#0F172A', marginBottom: '6px' }}>
-                  الأطعمة غير المرغوبة (استبعاد اختياري من الوصفات):
+                <label style={{ display: 'block', fontSize: '12px', fontWeight: 800, color: '#0F172A', marginBottom: '4px' }}>
+                  الأطعمة غير المرغوبة (استبعاد اختياري من جدول وجباتك):
                 </label>
-                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
-                  {['جبن قريش', 'تونة', 'كبدة', 'بيض مسلوق', 'شوفان', 'سمك سلمون'].map((food) => {
-                    const isChecked = dislikedFoods.includes(food);
-                    return (
-                      <button 
-                        key={food}
-                        type="button"
-                        onClick={() => toggleArrayItem('disliked_foods', food)}
-                        style={{
-                          padding: '6px 12px',
-                          borderRadius: '16px',
-                          fontSize: '11.5px',
-                          fontWeight: 700,
-                          cursor: 'pointer',
-                          border: isChecked ? '1px solid #475569' : '1px solid #CBD5E1',
-                          background: isChecked ? '#E2E8F0' : '#FFFFFF',
-                          color: isChecked ? '#0F172A' : '#64748B',
-                          transition: 'all 0.15s ease'
-                        }}
-                      >
-                        {isChecked ? `X ${food}` : food}
-                      </button>
-                    );
-                  })}
+                <p style={{ fontSize: '11px', color: '#64748B', margin: '0 0 10px 0' }}>
+                  اضغط على أي صنف لا تستسيغه لاستبعاده فوراً من خطتك واقتراح بدائل مكافئة مكانه:
+                </p>
+
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                  {/* Proteins */}
+                  <div>
+                    <span style={{ fontSize: '11px', fontWeight: 800, color: '#475569', display: 'block', marginBottom: '4px' }}>مصادر بروتينية:</span>
+                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
+                      {['جبن قريش', 'تونة', 'كبدة بقري', 'بيض مسلوق', 'سمك سلمون', 'صدور دجاج', 'لحم بقري مفروم', 'أوراك دجاج', 'سمك بلطي', 'جمبري'].map((food) => {
+                        const isChecked = dislikedFoods.includes(food);
+                        return (
+                          <button 
+                            key={food}
+                            type="button"
+                            onClick={() => toggleArrayItem('disliked_foods', food)}
+                            style={{
+                              padding: '5px 11px',
+                              borderRadius: '16px',
+                              fontSize: '11px',
+                              fontWeight: 700,
+                              cursor: 'pointer',
+                              border: isChecked ? '1px solid #DC2626' : '1px solid #CBD5E1',
+                              background: isChecked ? '#FEF2F2' : '#FFFFFF',
+                              color: isChecked ? '#DC2626' : '#475569',
+                              transition: 'all 0.15s ease'
+                            }}
+                          >
+                            {isChecked ? `استبعاد: ${food} ✕` : food}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+
+                  {/* Carbs & Legumes */}
+                  <div>
+                    <span style={{ fontSize: '11px', fontWeight: 800, color: '#475569', display: 'block', marginBottom: '4px' }}>نشويات وبقوليات:</span>
+                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
+                      {['شوفان', 'أرز أبيض', 'بطاطا حلوة', 'بطاطس مسلوقة', 'مكرونة', 'عدس', 'حمص', 'فول مدمس', 'فاصوليا بيضاء', 'ترمس'].map((food) => {
+                        const isChecked = dislikedFoods.includes(food);
+                        return (
+                          <button 
+                            key={food}
+                            type="button"
+                            onClick={() => toggleArrayItem('disliked_foods', food)}
+                            style={{
+                              padding: '5px 11px',
+                              borderRadius: '16px',
+                              fontSize: '11px',
+                              fontWeight: 700,
+                              cursor: 'pointer',
+                              border: isChecked ? '1px solid #DC2626' : '1px solid #CBD5E1',
+                              background: isChecked ? '#FEF2F2' : '#FFFFFF',
+                              color: isChecked ? '#DC2626' : '#475569',
+                              transition: 'all 0.15s ease'
+                            }}
+                          >
+                            {isChecked ? `استبعاد: ${food} ✕` : food}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+
+                  {/* Vegetables */}
+                  <div>
+                    <span style={{ fontSize: '11px', fontWeight: 800, color: '#475569', display: 'block', marginBottom: '4px' }}>خضروات:</span>
+                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
+                      {['بروكلي', 'سبانخ', 'باذنجان', 'كوسة', 'فاصوليا خضراء', 'قرنبيط', 'مشروم', 'شمندر / بنجر'].map((food) => {
+                        const isChecked = dislikedFoods.includes(food);
+                        return (
+                          <button 
+                            key={food}
+                            type="button"
+                            onClick={() => toggleArrayItem('disliked_foods', food)}
+                            style={{
+                              padding: '5px 11px',
+                              borderRadius: '16px',
+                              fontSize: '11px',
+                              fontWeight: 700,
+                              cursor: 'pointer',
+                              border: isChecked ? '1px solid #DC2626' : '1px solid #CBD5E1',
+                              background: isChecked ? '#FEF2F2' : '#FFFFFF',
+                              color: isChecked ? '#DC2626' : '#475569',
+                              transition: 'all 0.15s ease'
+                            }}
+                          >
+                            {isChecked ? `استبعاد: ${food} ✕` : food}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+
+                  {/* Fats */}
+                  <div>
+                    <span style={{ fontSize: '11px', fontWeight: 800, color: '#475569', display: 'block', marginBottom: '4px' }}>دهون صحية:</span>
+                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
+                      {['زبدة فول سوداني', 'أفوكادو', 'زيت زيتون', 'مكسرات ولوز', 'طحينة سمسم'].map((food) => {
+                        const isChecked = dislikedFoods.includes(food);
+                        return (
+                          <button 
+                            key={food}
+                            type="button"
+                            onClick={() => toggleArrayItem('disliked_foods', food)}
+                            style={{
+                              padding: '5px 11px',
+                              borderRadius: '16px',
+                              fontSize: '11px',
+                              fontWeight: 700,
+                              cursor: 'pointer',
+                              border: isChecked ? '1px solid #DC2626' : '1px solid #CBD5E1',
+                              background: isChecked ? '#FEF2F2' : '#FFFFFF',
+                              color: isChecked ? '#DC2626' : '#475569',
+                              transition: 'all 0.15s ease'
+                            }}
+                          >
+                            {isChecked ? `استبعاد: ${food} ✕` : food}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
                 </div>
               </div>
 
@@ -1410,6 +1559,49 @@ export default function FullIntakeForm() {
                     <option value="intermediate">متوسط (1 إلى 3 سنوات تمرين منتظم)</option>
                     <option value="advanced">متقدم (أكثر من 3 سنوات مع إتقان التكنيك)</option>
                   </select>
+                </div>
+              </div>
+
+              {/* Additional Sports Selectable Pills */}
+              <div>
+                <label style={{ display: 'block', fontSize: '12px', fontWeight: 800, color: '#0F172A', marginBottom: '6px' }}>
+                  ممارسة رياضات أخرى بجانب الجيم:
+                </label>
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
+                  {[
+                    { key: 'none', label: 'لا أمارس رياضات أخرى (حديد وجيم فقط)' },
+                    { key: 'football_padel', label: 'كرة قدم / بادل' },
+                    { key: 'swimming', label: 'سباحة' },
+                    { key: 'running_cardio', label: 'جري وماراثون' },
+                    { key: 'martial_arts', label: 'فنون قتالية وملاكمة' },
+                    { key: 'crossfit', label: 'كروس فيت وتمارين وظيفية' }
+                  ].map((sp) => {
+                    const isChecked = (trainingLogistics.sports_name || 'none') === sp.key;
+                    return (
+                      <button
+                        key={sp.key}
+                        type="button"
+                        onClick={() => {
+                          updateNested('training_logistics', 'has_other_sports', sp.key !== 'none');
+                          updateNested('training_logistics', 'sports_name', sp.key);
+                        }}
+                        style={{
+                          padding: '6px 13px',
+                          borderRadius: '16px',
+                          fontSize: '11.5px',
+                          fontWeight: 700,
+                          cursor: 'pointer',
+                          border: isChecked ? '1px solid #0F172A' : '1px solid #CBD5E1',
+                          background: isChecked ? '#0F172A' : '#FFFFFF',
+                          color: isChecked ? '#FFFFFF' : '#475569',
+                          transition: 'all 0.15s ease'
+                        }}
+                      >
+                        {isChecked && '• '}
+                        {sp.label}
+                      </button>
+                    );
+                  })}
                 </div>
               </div>
 

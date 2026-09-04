@@ -1641,6 +1641,55 @@ export const FOOD_DATABASE = {
     allergens: [],
     is_gluten_free: true,
     is_legume: false
+  },
+
+  // --- ATHLETIC HIGH-SATIETY SNACKS ---
+  AIR_POPPED_POPCORN: {
+    code: 'AIR_POPPED_POPCORN',
+    name_ar: 'فشار منزلي خفيف بدون زيت / قلاية هوائية (سناك شبع عالي)',
+    name_en: 'Air-Popped Home Popcorn',
+    macro_type: 'CARBS',
+    taste_profile: TASTE_PROFILES.BREAKFAST_CARB,
+    protein_per_100g: 12.0,
+    carbs_per_100g: 74.0,
+    fat_per_100g: 4.0,
+    calories_per_100g: 380,
+    yield_factor_raw_to_cooked: 1.0,
+    allergens: [],
+    is_gluten_free: true,
+    is_legume: false
+  },
+  HALABESSA_CHICKPEAS: {
+    code: 'HALABESSA_CHICKPEAS',
+    name_ar: 'حمص الشام دايت بالليمون والكمون والشطة (حلبسة رياضية مشبعة)',
+    name_en: 'Spiced Diet Chickpeas (Halabessa Snack)',
+    macro_type: 'CARBS',
+    taste_profile: TASTE_PROFILES.BREAKFAST_CARB,
+    protein_per_100g: 8.5,
+    carbs_per_100g: 25.0,
+    fat_per_100g: 2.4,
+    calories_per_100g: 155,
+    yield_factor_raw_to_cooked: 1.0,
+    allergens: ['LEGUMES'],
+    purine_level: 'MODERATE',
+    is_gluten_free: true,
+    is_legume: true
+  },
+  CRUNCHY_ROASTED_CHICKPEAS: {
+    code: 'CRUNCHY_ROASTED_CHICKPEAS',
+    name_ar: 'حمص محمص مقرمش بالقلاية الهوائية مع الكمون والبابريكا',
+    name_en: 'Air-Fried Crunchy Roasted Chickpeas',
+    macro_type: 'CARBS',
+    taste_profile: TASTE_PROFILES.BREAKFAST_CARB,
+    protein_per_100g: 14.0,
+    carbs_per_100g: 42.0,
+    fat_per_100g: 5.0,
+    calories_per_100g: 270,
+    yield_factor_raw_to_cooked: 1.0,
+    allergens: ['LEGUMES'],
+    purine_level: 'MODERATE',
+    is_gluten_free: true,
+    is_legume: true
   }
 };
 
@@ -1834,6 +1883,22 @@ FOOD_DATABASE.MUSHROOMS = FOOD_DATABASE.FRESH_MUSHROOMS;
 FOOD_DATABASE.boiled_beetroot = FOOD_DATABASE.BOILED_BEETROOT;
 FOOD_DATABASE.BOILED_BEETROOT = FOOD_DATABASE.BOILED_BEETROOT;
 FOOD_DATABASE.BEETROOT = FOOD_DATABASE.BOILED_BEETROOT;
+
+// Snacks & Athletic Aliases
+FOOD_DATABASE.air_popped_popcorn = FOOD_DATABASE.AIR_POPPED_POPCORN;
+FOOD_DATABASE.AIR_POPPED_POPCORN = FOOD_DATABASE.AIR_POPPED_POPCORN;
+FOOD_DATABASE.POPCORN = FOOD_DATABASE.AIR_POPPED_POPCORN;
+FOOD_DATABASE.halabessa_chickpeas = FOOD_DATABASE.HALABESSA_CHICKPEAS;
+FOOD_DATABASE.HALABESSA_CHICKPEAS = FOOD_DATABASE.HALABESSA_CHICKPEAS;
+FOOD_DATABASE.HALABESSA = FOOD_DATABASE.HALABESSA_CHICKPEAS;
+FOOD_DATABASE.crunchy_roasted_chickpeas = FOOD_DATABASE.CRUNCHY_ROASTED_CHICKPEAS;
+FOOD_DATABASE.CRUNCHY_ROASTED_CHICKPEAS = FOOD_DATABASE.CRUNCHY_ROASTED_CHICKPEAS;
+FOOD_DATABASE.ROASTED_CHICKPEAS = FOOD_DATABASE.CRUNCHY_ROASTED_CHICKPEAS;
+FOOD_DATABASE.termis_lupini = FOOD_DATABASE.TERMIS_LUPINI;
+FOOD_DATABASE.TERMIS = FOOD_DATABASE.TERMIS_LUPINI;
+FOOD_DATABASE.LUPINI = FOOD_DATABASE.TERMIS_LUPINI;
+FOOD_DATABASE.dark_chocolate_85 = FOOD_DATABASE.DARK_CHOCOLATE_85;
+FOOD_DATABASE.DARK_CHOCOLATE = FOOD_DATABASE.DARK_CHOCOLATE_85;
 
 export function calculateDynamicFoodSwap({
   current_food_code,
@@ -2108,6 +2173,17 @@ export function formatItemPortionDisplay({
   } else if (upperCode.includes('TOAST')) {
     const slices = Math.max(1, Math.round(g / 35));
     handDesc = `ما يعادل ${slices} شريحة توست أسمر`;
+  } else if (upperCode.includes('POPCORN')) {
+    const cups = Math.max(1, Math.round(g / 8));
+    handDesc = `ما يعادل ${cups} أكواب فشار منفوخ (شبع حجمي هائل)`;
+  } else if (upperCode.includes('TERMIS')) {
+    const cups = Math.round((g / 100) * 10) / 10;
+    handDesc = `ما يعادل ${cups} كوب ترمس مسلوق بالليمون والكمون (~16 جم بروتين)`;
+  } else if (upperCode.includes('HALABESSA')) {
+    handDesc = 'ما يعادل كوب حمص شام بالمرقة والليمون';
+  } else if (upperCode.includes('DARK_CHOCOLATE')) {
+    const pieces = Math.max(1, Math.round(g / 10));
+    handDesc = `ما يعادل ${pieces} مكعبات شوكولاتة داكنة 85%`;
   } else if (upperCode.includes('RICE_CAKES')) {
     const cakes = Math.max(1, Math.round(g / 9));
     handDesc = `ما يعادل ${cakes} أقراص رايس كيك`;

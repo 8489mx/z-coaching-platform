@@ -55,6 +55,29 @@ const QUICK_MEAL_PRESETS = [
       { code: 'NATURAL_OLIVES', name: 'زيتون كلاماتا طبيعي', amount: 25, unit: 'جم', p: 0.2, c: 1.5, f: 3.8, cal: 40, category: 'FAT' },
       { code: 'BELL_PEPPERS', name: 'فلفل رومي ملون', amount: 80, unit: 'جم', p: 0.8, c: 4.8, f: 0.2, cal: 24, category: 'CARB' }
     ]
+  },
+  {
+    name: 'سناك ترمس بلدي مسلوق ورايس كيك وزبدة فول سوداني',
+    items: [
+      { code: 'TERMIS_LUPINI', name: 'ترمس بلدي مسلوق بالليمون والكمون', amount: 120, unit: 'جم', p: 19.2, c: 12.0, f: 3.6, cal: 144, category: 'PROTEIN' },
+      { code: 'RICE_CAKES', name: 'رايس كيك (3 أقراص)', amount: 27, unit: 'جم', p: 2.2, c: 22.1, f: 0.4, cal: 101, category: 'CARB' },
+      { code: 'NATURAL_PEANUT_BUTTER', name: 'زبدة فول سوداني طبيعية', amount: 15, unit: 'جم', p: 3.8, c: 3.0, f: 7.5, cal: 88, category: 'FAT' }
+    ]
+  },
+  {
+    name: 'سناك حمص الشام دايت وشوكولاتة داكنة 85%',
+    items: [
+      { code: 'HALABESSA_CHICKPEAS', name: 'حمص الشام دايت بالليمون والكمون (حلبسة)', amount: 150, unit: 'جم', p: 12.8, c: 37.5, f: 3.6, cal: 232, category: 'CARB' },
+      { code: 'DARK_CHOCOLATE_85', name: 'شوكولاتة داكنة 85% كاكاو نقي', amount: 15, unit: 'جم', p: 1.2, c: 4.2, f: 6.9, cal: 87, category: 'FAT' }
+    ]
+  },
+  {
+    name: 'سناك فشار منزلي خفيف وزبادي يوناني بالتوت',
+    items: [
+      { code: 'AIR_POPPED_POPCORN', name: 'فشار منزلي خفيف بالقلاية الهوائية', amount: 30, unit: 'جم', p: 3.6, c: 22.2, f: 1.2, cal: 114, category: 'CARB' },
+      { code: 'GREEK_YOGURT_NONFAT', name: 'زبادي يوناني سادة خالي الدسم', amount: 150, unit: 'جم', p: 15.0, c: 5.4, f: 0.6, cal: 88, category: 'PROTEIN' },
+      { code: 'FRESH_BLUEBERRIES', name: 'توت أزرق طازج', amount: 40, unit: 'جم', p: 0.3, c: 5.6, f: 0.1, cal: 23, category: 'CARB' }
+    ]
   }
 ];
 
