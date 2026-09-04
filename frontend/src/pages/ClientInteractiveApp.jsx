@@ -24,7 +24,8 @@ import {
   Share2,
   Crown,
   Pill,
-  AlertTriangle
+  AlertTriangle,
+  Zap
 } from 'lucide-react';
 import { API_BASE } from '../config/api';
 import { calculateDynamicFoodSwap, getCompatibleSwaps, FOOD_DATABASE, convertGramsToHandPortions, getTravelDiningBlueprints, formatItemPortionDisplay, PORTION_DISPLAY_MODES } from '../utils/foodSwapEngine';
