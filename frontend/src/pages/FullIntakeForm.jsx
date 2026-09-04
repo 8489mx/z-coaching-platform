@@ -61,6 +61,7 @@ const DEFAULT_MASTER_INTAKE = {
     intermittent_fasting: 'none'
   },
   cravings_pattern: 'controlled',
+  beverage_sugar_intake: 'zero_or_sweetener',
   sleep_schedule: {
     pattern: 'regular_night', // 'regular_night' | 'rotating_shifts' | 'night_shift' | 'irregular'
     average_hours: '7_8',
@@ -1266,6 +1267,48 @@ export default function FullIntakeForm() {
                         </strong>
                         <span style={{ fontSize: '10.5px', color: '#64748B', lineHeight: '1.4' }}>
                           {cr.desc}
+                        </span>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* Beverage Sugar Allowance (Tea / Coffee / Drinks) */}
+              <div>
+                <label style={{ display: 'block', fontSize: '12px', fontWeight: 800, color: '#0F172A', marginBottom: '8px' }}>
+                  استهلاك السكر اليومي في الشاي والقهوة والمشروبات (لتضمينه بدقة في السعرات):
+                </label>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '10px' }}>
+                  {[
+                    { id: 'zero_or_sweetener', title: 'بدون سكر / بدائل دايت', desc: 'أشرب بدون سكر أو أستخدم محليات صفرية (ستيفيا / سكرالوز)' },
+                    { id: '1_tsp', title: 'ملعقة صغيرة واحدة (5 جم)', desc: 'تخصيص 20 سعرة (5 جم كارب) للشاي أو القهوة يومياً' },
+                    { id: '2_tsp', title: 'ملعقتين صغيرتين (10 جم)', desc: 'تخصيص 40 سعرة (10 جم كارب) للشاي أو القهوة يومياً' },
+                    { id: '3_plus_tsp', title: '3 ملاعق أو أكثر', desc: 'تخصيص 60+ سعرة كارب مع توجيه للتحويل للبدائل تدريجياً' }
+                  ].map((sug) => {
+                    const isSelected = (formData.beverage_sugar_intake || 'zero_or_sweetener') === sug.id;
+                    return (
+                      <div
+                        key={sug.id}
+                        onClick={() => setFormData(p => ({ ...p, beverage_sugar_intake: sug.id }))}
+                        style={{
+                          padding: '11px 13px',
+                          borderRadius: '8px',
+                          border: isSelected ? '2px solid #0F172A' : '1px solid #E2E8F0',
+                          background: isSelected ? '#F1F5F9' : '#FFFFFF',
+                          cursor: 'pointer',
+                          transition: 'all 0.15s ease',
+                          display: 'flex',
+                          flexDirection: 'column',
+                          gap: '3px',
+                          boxShadow: isSelected ? '0 2px 6px rgba(15, 23, 42, 0.08)' : 'none'
+                        }}
+                      >
+                        <strong style={{ fontSize: '12px', color: '#0F172A', fontWeight: 800 }}>
+                          {sug.title}
+                        </strong>
+                        <span style={{ fontSize: '10.5px', color: '#64748B', lineHeight: '1.4' }}>
+                          {sug.desc}
                         </span>
                       </div>
                     );

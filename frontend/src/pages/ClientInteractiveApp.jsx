@@ -22,9 +22,14 @@ import {
 } from 'lucide-react';
 import { API_BASE } from '../config/api';
 import { calculateDynamicFoodSwap, getCompatibleSwaps, FOOD_DATABASE, convertGramsToHandPortions, getTravelDiningBlueprints, formatItemPortionDisplay, PORTION_DISPLAY_MODES, COOKING_STATE_MODES } from '../utils/foodSwapEngine';
-import { getPrepOptionsForFood } from '../utils/culinaryRecipes';
-import { FREE_BEVERAGES_CATALOG, FREE_SEASONINGS_CATALOG, REFEED_PROTOCOLS } from '../utils/freeSeasoningsAndDrinks';
-import { getRirGuidance, applySpecialIntensityBadge, INTENSITY_BADGES } from '../utils/intensityTechniqueEngine';
+import { 
+  FREE_BEVERAGES_CATALOG, 
+  FREE_SEASONINGS_CATALOG, 
+  COOKING_OILS_AND_SAUCES_GUIDE,
+  SODIUM_AND_WATER_GUIDE,
+  DINING_OUT_SURVIVAL_GUIDE,
+  REFEED_PROTOCOLS 
+} from '../utils/freeSeasoningsAndDrinks';
 import { getPracticalCardioPrescription, CARDIO_TYPES } from '../utils/cardioZonesEngine';
 import { SMART_GUIDELINES_MATRIX, generateMasterPdfExportData } from '../utils/pdfExportEngine';
 import { getPrehabRoutine } from '../utils/posturalPrehabEngine';
@@ -828,6 +833,24 @@ export default function ClientInteractiveApp() {
                     }}
                   >
                     {travelModeActive ? 'إخفاء خطط المطاعم' : 'خطط المطاعم'}
+                  </button>
+
+                  {/* Smart Adherence & Free Guides Button */}
+                  <button
+                    type="button"
+                    onClick={() => setFreeGuideModalOpen(true)}
+                    style={{
+                      background: '#F0FDF4',
+                      color: '#166534',
+                      border: '1px solid #BBF7D0',
+                      borderRadius: '8px',
+                      padding: '4px 9px',
+                      fontSize: '0.7rem',
+                      fontWeight: 700,
+                      cursor: 'pointer'
+                    }}
+                  >
+                    دليل الالتزام والزيوت والمشروبات
                   </button>
                 </div>
 
@@ -1716,13 +1739,17 @@ export default function ClientInteractiveApp() {
               {/* Header */}
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                  <Utensils size={18} color={freeGuideTab === 'DRINKS' ? '#78350F' : '#059669'} />
+                  <Utensils size={18} color="#0F172A" />
                   <div>
                     <h3 style={{ fontSize: '0.96rem', fontWeight: 800, color: '#0F172A', margin: 0 }}>
-                      {freeGuideTab === 'DRINKS' ? 'دليل المشروبات الحرة صفرية السعرات' : 'دليل التوابل والبهارات ومحسنات الطعم الحرة'}
+                      {freeGuideTab === 'DRINKS' ? 'المشروبات الحرة وسكر الشاي والقهوة' :
+                       freeGuideTab === 'OILS' ? 'زيوت الطهي وبخاخ الزيت والصوصات' :
+                       freeGuideTab === 'SODIUM' ? 'بروتوكول الصوديوم وثبات الميزان' :
+                       freeGuideTab === 'RESTAURANT' ? 'دليل الأكل بالمطاعم والعزومات' :
+                       'دليل التوابل والبهارات ومحسنات الطعم'}
                     </h3>
                     <span style={{ fontSize: '0.72rem', color: '#059669', fontWeight: 700 }}>
-                      مسموحة ومجانية 100% بدون أي تأثير على حرق الدهون
+                      إرشادات علمية دقيقة لضمان أقصى التزام وحرق دهون
                     </span>
                   </div>
                 </div>
@@ -1736,51 +1763,48 @@ export default function ClientInteractiveApp() {
               </div>
 
               {/* Tabs */}
-              <div style={{ display: 'flex', gap: '6px', background: '#F1F5F9', padding: '4px', borderRadius: '12px', marginBottom: '14px' }}>
-                <button
-                  type="button"
-                  onClick={() => setFreeGuideTab('DRINKS')}
-                  style={{
-                    flex: 1,
-                    padding: '8px',
-                    borderRadius: '8px',
-                    border: 'none',
-                    background: freeGuideTab === 'DRINKS' ? '#0F172A' : 'transparent',
-                    color: freeGuideTab === 'DRINKS' ? '#FFFFFF' : '#475569',
-                    fontSize: '0.78rem',
-                    fontWeight: 800,
-                    cursor: 'pointer'
-                  }}
-                >
-                  المشروبات الحرة (0 سعرة)
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setFreeGuideTab('SPICES')}
-                  style={{
-                    flex: 1,
-                    padding: '8px',
-                    borderRadius: '8px',
-                    border: 'none',
-                    background: freeGuideTab === 'SPICES' ? '#0F172A' : 'transparent',
-                    color: freeGuideTab === 'SPICES' ? '#FFFFFF' : '#475569',
-                    fontSize: '0.78rem',
-                    fontWeight: 800,
-                    cursor: 'pointer'
-                  }}
-                >
-                  التوابل والبهارات الحرة
-                </button>
+              <div style={{ display: 'flex', gap: '4px', background: '#F1F5F9', padding: '4px', borderRadius: '12px', marginBottom: '14px', overflowX: 'auto', scrollbarWidth: 'none' }}>
+                {[
+                  { id: 'DRINKS', label: 'المشروبات والسكر' },
+                  { id: 'OILS', label: 'الزيوت والصوصات' },
+                  { id: 'SODIUM', label: 'الصوديوم والميزان' },
+                  { id: 'RESTAURANT', label: 'أكل المطاعم' },
+                  { id: 'SPICES', label: 'البهارات والتوابل' }
+                ].map(t => {
+                  const isSel = freeGuideTab === t.id;
+                  return (
+                    <button
+                      key={t.id}
+                      type="button"
+                      onClick={() => setFreeGuideTab(t.id)}
+                      style={{
+                        flex: '1 0 auto',
+                        padding: '7px 10px',
+                        borderRadius: '8px',
+                        border: 'none',
+                        background: isSel ? '#0F172A' : 'transparent',
+                        color: isSel ? '#FFFFFF' : '#475569',
+                        fontSize: '0.74rem',
+                        fontWeight: isSel ? 800 : 600,
+                        cursor: 'pointer',
+                        whiteSpace: 'nowrap',
+                        transition: 'all 0.15s ease'
+                      }}
+                    >
+                      {t.label}
+                    </button>
+                  );
+                })}
               </div>
 
               {/* Items List */}
               <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', marginBottom: '16px' }}>
-                {freeGuideTab === 'DRINKS' ? (
+                {freeGuideTab === 'DRINKS' && (
                   FREE_BEVERAGES_CATALOG.map((drink) => (
                     <div key={drink.id} style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', borderRadius: '14px', padding: '12px' }}>
                       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4px' }}>
                         <strong style={{ fontSize: '0.84rem', color: '#0F172A' }}>{drink.name_ar}</strong>
-                        <span style={{ fontSize: '0.68rem', fontWeight: 800, color: '#059669', background: '#ECFDF5', padding: '2px 6px', borderRadius: '4px' }}>
+                        <span style={{ fontSize: '0.68rem', fontWeight: 800, color: drink.id === 'TABLE_SUGAR_ALLOWANCE' ? '#D97706' : '#059669', background: drink.id === 'TABLE_SUGAR_ALLOWANCE' ? '#FEF3C7' : '#ECFDF5', padding: '2px 6px', borderRadius: '4px' }}>
                           {drink.calories_text}
                         </span>
                       </div>
@@ -1792,7 +1816,61 @@ export default function ClientInteractiveApp() {
                       </small>
                     </div>
                   ))
-                ) : (
+                )}
+
+                {freeGuideTab === 'OILS' && (
+                  COOKING_OILS_AND_SAUCES_GUIDE.map((oil) => (
+                    <div key={oil.id} style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', borderRadius: '14px', padding: '12px' }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4px' }}>
+                        <strong style={{ fontSize: '0.84rem', color: '#0F172A' }}>{oil.title_ar}</strong>
+                        <span style={{ fontSize: '0.68rem', fontWeight: 800, color: oil.id === 'BANNED_SAUCES' ? '#BE123C' : '#059669', background: oil.id === 'BANNED_SAUCES' ? '#FFE4E6' : '#ECFDF5', padding: '2px 6px', borderRadius: '4px' }}>
+                          {oil.badge_ar}
+                        </span>
+                      </div>
+                      <p style={{ margin: '0 0 4px 0', fontSize: '0.74rem', color: '#475569', lineHeight: 1.4 }}>
+                        {oil.desc_ar}
+                      </p>
+                      <small style={{ display: 'block', fontSize: '0.7rem', color: '#0F172A', fontWeight: 700 }}>
+                        القاعدة الذهبية: {oil.rule_ar}
+                      </small>
+                    </div>
+                  ))
+                )}
+
+                {freeGuideTab === 'SODIUM' && (
+                  <div style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', borderRadius: '14px', padding: '14px' }}>
+                    <h4 style={{ margin: '0 0 10px 0', fontSize: '0.88rem', fontWeight: 800, color: '#0F172A' }}>
+                      {SODIUM_AND_WATER_GUIDE.title_ar}
+                    </h4>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                      {SODIUM_AND_WATER_GUIDE.key_points_ar.map((point, pIdx) => (
+                        <div key={pIdx} style={{ display: 'flex', gap: '8px', alignItems: 'flex-start' }}>
+                          <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: '#0284C7', marginTop: '6px', flexShrink: 0 }} />
+                          <span style={{ fontSize: '0.74rem', color: '#334155', lineHeight: 1.5 }}>
+                            {point}
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {freeGuideTab === 'RESTAURANT' && (
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                    {DINING_OUT_SURVIVAL_GUIDE.rules_ar.map((r, rIdx) => (
+                      <div key={rIdx} style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', borderRadius: '14px', padding: '12px' }}>
+                        <strong style={{ fontSize: '0.84rem', color: '#0F172A', display: 'block', marginBottom: '3px' }}>
+                          {r.rule_title_ar}
+                        </strong>
+                        <p style={{ margin: 0, fontSize: '0.74rem', color: '#475569', lineHeight: 1.4 }}>
+                          {r.detail_ar}
+                        </p>
+                      </div>
+                    ))}
+                  </div>
+                )}
+
+                {freeGuideTab === 'SPICES' && (
                   FREE_SEASONINGS_CATALOG.map((seasoning) => (
                     <div key={seasoning.id} style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', borderRadius: '14px', padding: '12px' }}>
                       <strong style={{ fontSize: '0.84rem', color: '#0F172A', display: 'block', marginBottom: '4px' }}>{seasoning.name_ar}</strong>

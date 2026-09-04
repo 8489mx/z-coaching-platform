@@ -462,6 +462,17 @@ export default function IntakeAuditDetailModal({
                       </strong>
                     </div>
                   )}
+
+                  {Boolean(submission.answers?.beverage_sugar_intake) && (
+                    <div style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', borderRadius: '4px', padding: '4px 8px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                      <span style={{ fontSize: '10.5px', color: '#64748B' }}>سكر المشروبات اليومي:</span>
+                      <strong style={{ fontSize: '11px', color: submission.answers?.beverage_sugar_intake === '2_tsp' ? '#B45309' : submission.answers?.beverage_sugar_intake === '3_plus_tsp' ? '#BE123C' : '#0F172A' }}>
+                        {submission.answers?.beverage_sugar_intake === '1_tsp' ? 'ملعقة صغيرة (20 سعرة / 5جم كارب)' :
+                         submission.answers?.beverage_sugar_intake === '2_tsp' ? 'ملعقتين صغيرتين (40 سعرة / 10جم كارب)' :
+                         submission.answers?.beverage_sugar_intake === '3_plus_tsp' ? '3 ملاعق أو أكثر (ينصح بالبدائل)' : 'بدون سكر / محليات دايت صفرية'}
+                      </strong>
+                    </div>
+                  )}
                 </div>
               </div>
 

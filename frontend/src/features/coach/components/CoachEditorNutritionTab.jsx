@@ -238,6 +238,16 @@ export default function CoachEditorNutritionTab(props) {
                   <span style={{ fontSize: '9.5px', color: '#64748B', display: 'block' }}>الدهون</span>
                   <strong style={{ fontSize: '12.5px', fontWeight: 700 }}>{totalPlannedF}g / {targetF}g</strong>
                 </div>
+
+                {Boolean(program.nutrition?.beverage_sugar_intake && program.nutrition.beverage_sugar_intake !== 'zero_or_sweetener') && (
+                  <div style={{ background: '#FEF3C7', border: '1px solid #FCD34D', color: '#92400E', padding: '5px 10px', borderRadius: '5px', textAlign: 'center' }}>
+                    <span style={{ fontSize: '9px', display: 'block', opacity: 0.85 }}>سكر المشروبات</span>
+                    <strong style={{ fontSize: '12px' }}>
+                      {program.nutrition.beverage_sugar_intake === '1_tsp' ? '+5g C (20 kcal)' :
+                       program.nutrition.beverage_sugar_intake === '2_tsp' ? '+10g C (40 kcal)' : '+15g C (60 kcal)'}
+                    </strong>
+                  </div>
+                )}
               </div>
 
               <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>

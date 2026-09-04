@@ -1690,6 +1690,53 @@ export const FOOD_DATABASE = {
     purine_level: 'MODERATE',
     is_gluten_free: true,
     is_legume: true
+  },
+
+  // --- PANTRY ESSENTIALS, SWEETENERS & COOKING SPRAYS ---
+  TABLE_SUGAR: {
+    code: 'TABLE_SUGAR',
+    name_ar: 'سكر مائدة أبيض (شاي وقهوة ومشروبات)',
+    name_en: 'Table White Sugar',
+    macro_type: 'CARBS',
+    taste_profile: TASTE_PROFILES.BREAKFAST_CARB,
+    protein_per_100g: 0.0,
+    carbs_per_100g: 100.0,
+    fat_per_100g: 0.0,
+    calories_per_100g: 400,
+    yield_factor_raw_to_cooked: 1.0,
+    allergens: [],
+    is_gluten_free: true,
+    is_legume: false
+  },
+  PURE_BEE_HONEY: {
+    code: 'PURE_BEE_HONEY',
+    name_ar: 'عسل نحل طبيعي نقي',
+    name_en: 'Pure Bee Honey',
+    macro_type: 'CARBS',
+    taste_profile: TASTE_PROFILES.BREAKFAST_CARB,
+    protein_per_100g: 0.3,
+    carbs_per_100g: 82.4,
+    fat_per_100g: 0.0,
+    calories_per_100g: 304,
+    yield_factor_raw_to_cooked: 1.0,
+    allergens: [],
+    is_gluten_free: true,
+    is_legume: false
+  },
+  COOKING_OIL_SPRAY: {
+    code: 'COOKING_OIL_SPRAY',
+    name_ar: 'بخاخ زيت طهي للمقلاة (0 سعرة تقريبية)',
+    name_en: 'Zero-Calorie Cooking Oil Spray',
+    macro_type: 'FATS',
+    taste_profile: TASTE_PROFILES.HEALTHY_FAT,
+    protein_per_100g: 0.0,
+    carbs_per_100g: 0.0,
+    fat_per_100g: 0.0,
+    calories_per_100g: 0,
+    yield_factor_raw_to_cooked: 1.0,
+    allergens: [],
+    is_gluten_free: true,
+    is_legume: false
   }
 };
 
@@ -1907,6 +1954,24 @@ FOOD_DATABASE.TERMIS = FOOD_DATABASE.TERMIS_LUPINI;
 FOOD_DATABASE.LUPINI = FOOD_DATABASE.TERMIS_LUPINI;
 FOOD_DATABASE.dark_chocolate_85 = FOOD_DATABASE.DARK_CHOCOLATE_85;
 FOOD_DATABASE.DARK_CHOCOLATE = FOOD_DATABASE.DARK_CHOCOLATE_85;
+
+// Pantry, Sweeteners & Oils Aliases
+FOOD_DATABASE.table_sugar = FOOD_DATABASE.TABLE_SUGAR;
+FOOD_DATABASE.white_sugar = FOOD_DATABASE.TABLE_SUGAR;
+FOOD_DATABASE.sugar = FOOD_DATABASE.TABLE_SUGAR;
+FOOD_DATABASE.TABLE_SUGAR = FOOD_DATABASE.TABLE_SUGAR;
+FOOD_DATABASE.WHITE_SUGAR = FOOD_DATABASE.TABLE_SUGAR;
+FOOD_DATABASE.SUGAR = FOOD_DATABASE.TABLE_SUGAR;
+
+FOOD_DATABASE.pure_bee_honey = FOOD_DATABASE.PURE_BEE_HONEY;
+FOOD_DATABASE.bee_honey = FOOD_DATABASE.PURE_BEE_HONEY;
+FOOD_DATABASE.honey = FOOD_DATABASE.PURE_BEE_HONEY;
+FOOD_DATABASE.PURE_BEE_HONEY = FOOD_DATABASE.PURE_BEE_HONEY;
+FOOD_DATABASE.HONEY = FOOD_DATABASE.PURE_BEE_HONEY;
+
+FOOD_DATABASE.cooking_oil_spray = FOOD_DATABASE.COOKING_OIL_SPRAY;
+FOOD_DATABASE.oil_spray = FOOD_DATABASE.COOKING_OIL_SPRAY;
+FOOD_DATABASE.COOKING_OIL_SPRAY = FOOD_DATABASE.COOKING_OIL_SPRAY;
 
 export function calculateDynamicFoodSwap({
   current_food_code,
