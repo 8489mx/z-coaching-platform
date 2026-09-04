@@ -535,7 +535,7 @@ export default function IntakeSubmissions() {
                               onMouseEnter={(e) => (e.currentTarget.style.background = '#334155')}
                               onMouseLeave={(e) => (e.currentTarget.style.background = '#0F172A')}
                             >
-                              <span>{sub.status === 'APPROVED' ? 'تعديل الخطة' : sub.status === 'DRAFT_GENERATED' ? 'فتح بالمحرر' : 'توليد الخطة ⚡'}</span>
+                              <span>{sub.status === 'APPROVED' ? 'تعديل الخطة' : sub.status === 'DRAFT_GENERATED' ? 'فتح بالمحرر' : 'توليد الخطة'}</span>
                             </button>
                           </div>
                         </td>

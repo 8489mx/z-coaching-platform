@@ -1216,7 +1216,7 @@ export default function FullIntakeForm() {
               <div style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', borderRadius: '12px', padding: '16px', display: 'flex', flexDirection: 'column', gap: '14px' }}>
                 <div>
                   <h6 style={{ fontWeight: 900, color: '#0F172A', fontSize: '13.5px', margin: '0 0 3px 0' }}>
-                    🌙 طبيعة النوم ونظام العمل (شفتات / ليلي)
+                    طبيعة النوم ونظام العمل (شفتات / ليلي)
                   </h6>
                   <p style={{ margin: 0, fontSize: '11px', color: '#64748B' }}>
                     تساعدنا في ضبط مواعيد قطع الكافيين (قبل النوم بـ 6 ساعات) وتنظيم توزيع الوجبات.
@@ -1303,7 +1303,7 @@ export default function FullIntakeForm() {
 
                 {(formData.sleep_schedule?.pattern === 'rotating_shifts' || formData.sleep_schedule?.pattern === 'night_shift') && (
                   <div style={{ background: '#FFFBEB', border: '1px solid #FDE68A', borderRadius: '8px', padding: '8px 12px', fontSize: '11px', color: '#92400E', lineHeight: '1.4' }}>
-                    💡 <strong>توجيه بروتوكولي للشفتات:</strong> سيتم تفعيل مرونة دمج الوجبات في نافذة استيقاظك، مع قاعدة الكابتن الصارمة بقطع الكافيين قبل النوم بـ 6 ساعات أياً كان موعد نومك.
+                    <strong>توجيه بروتوكولي للشفتات:</strong> سيتم تفعيل مرونة دمج الوجبات في نافذة استيقاظك، مع قاعدة الكابتن الصارمة بقطع الكافيين قبل النوم بـ 6 ساعات أياً كان موعد نومك.
                   </div>
                 )}
               </div>

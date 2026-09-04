@@ -112,7 +112,7 @@ export default function ClientCheckinStudio({ clientData = {}, onSubmitSuccess }
           </div>
         </div>
         <p style={{ margin: 0, fontSize: '0.74rem', color: '#CBD5E1', lineHeight: 1.4 }}>
-          💡 كافة إجاباتك وصورك تُحلل مباشرة بواسطة المحرك السريري لضبط السعرات والتمارين للأسبوع القادم.
+          كافة إجاباتك وصورك تُحلل مباشرة بواسطة المحرك السريري لضبط السعرات والتمارين للأسبوع القادم.
         </p>
       </div>
 
@@ -132,7 +132,7 @@ export default function ClientCheckinStudio({ clientData = {}, onSubmitSuccess }
 
           <div style={{ background: '#FFFFFF', borderRadius: '14px', padding: '14px', border: '1px solid #DCFCE7' }}>
             <strong style={{ fontSize: '0.84rem', color: '#0F172A', display: 'block', marginBottom: '8px' }}>
-              ⚡ التعديلات الفسيولوجية الموجهة لخطتك:
+              التعديلات الفسيولوجية الموجهة لخطتك:
             </strong>
             <ul style={{ margin: 0, paddingRight: '18px', fontSize: '0.78rem', color: '#475569', lineHeight: 1.6 }}>
               {auditResult.recommendedActions.map((act, aIdx) => (
@@ -250,7 +250,7 @@ export default function ClientCheckinStudio({ clientData = {}, onSubmitSuccess }
                     {photoData ? (
                       <div>
                         <img src={photoData} alt={p.label} style={{ width: '100%', height: '110px', objectFit: 'cover', borderRadius: '8px', marginBottom: '6px' }} />
-                        <span style={{ fontSize: '0.72rem', fontWeight: 800, color: '#166534', display: 'block' }}>{p.label} ✅</span>
+                        <span style={{ fontSize: '0.72rem', fontWeight: 800, color: '#166534', display: 'block' }}>{p.label} (تم الرفع)</span>
                         <button
                           type="button"
                           onClick={() => setPhotos(prev => ({ ...prev, [p.view]: null }))}
@@ -297,10 +297,10 @@ export default function ClientCheckinStudio({ clientData = {}, onSubmitSuccess }
                   onChange={(e) => setWorkoutsDone(Number(e.target.value))}
                   style={{ width: '100%', height: '40px', borderRadius: '10px', border: '1px solid #CBD5E1', padding: '0 10px', fontSize: '0.82rem', fontWeight: 700, color: '#0F172A', outline: 'none' }}
                 >
-                  <option value={4}>4 من 4 (التزام 100% 🟢)</option>
-                  <option value={3}>3 من 4 (فاتني تمرين 🟡)</option>
-                  <option value={2}>2 من 4 (تمرينين فقط 🟠)</option>
-                  <option value={1}>1 من 4 (أسبوع صعب 🔴)</option>
+                  <option value={4}>4 من 4 (التزام 100%)</option>
+                  <option value={3}>3 من 4 (فاتني تمرين)</option>
+                  <option value={2}>2 من 4 (تمرينين فقط)</option>
+                  <option value={1}>1 من 4 (أسبوع صعب)</option>
                 </select>
               </div>
 
@@ -313,10 +313,10 @@ export default function ClientCheckinStudio({ clientData = {}, onSubmitSuccess }
                   onChange={(e) => setDietAdherence(Number(e.target.value))}
                   style={{ width: '100%', height: '40px', borderRadius: '10px', border: '1px solid #CBD5E1', padding: '0 10px', fontSize: '0.82rem', fontWeight: 700, color: '#0F172A', outline: 'none' }}
                 >
-                  <option value={100}>100% بدون أي خروج 🟢</option>
-                  <option value={90}>90% خروج طفيف محسوب 🟢</option>
-                  <option value={80}>80% وجبة مفتوحة واحدة 🟡</option>
-                  <option value={60}>أقل من 70% تخبيص وخروج 🔴</option>
+                  <option value={100}>100% بدون أي خروج</option>
+                  <option value={90}>90% خروج طفيف محسوب</option>
+                  <option value={80}>80% وجبة مفتوحة واحدة</option>
+                  <option value={60}>أقل من 70% تخبيص وخروج</option>
                 </select>
               </div>
             </div>
@@ -365,12 +365,12 @@ export default function ClientCheckinStudio({ clientData = {}, onSubmitSuccess }
 
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '6px', marginBottom: '10px' }}>
               {[
-                { id: 'NONE', label: 'لا يوجد ألم ✅', bg: '#F0FDF4', color: '#166534' },
-                { id: 'LOWER_BACK', label: 'أسفل الظهر ⚠️', bg: '#FFFBEB', color: '#B45309' },
-                { id: 'KNEE', label: 'الركبة ⚠️', bg: '#FFFBEB', color: '#B45309' },
-                { id: 'SHOULDER', label: 'الكتف ⚠️', bg: '#FFFBEB', color: '#B45309' },
-                { id: 'ELBOW', label: 'الكوع / المرفق ⚠️', bg: '#FFFBEB', color: '#B45309' },
-                { id: 'NECK', label: 'الرقبة ⚠️', bg: '#FFFBEB', color: '#B45309' }
+                { id: 'NONE', label: 'لا يوجد ألم', bg: '#F0FDF4', color: '#166534' },
+                { id: 'LOWER_BACK', label: 'أسفل الظهر', bg: '#FFFBEB', color: '#B45309' },
+                { id: 'KNEE', label: 'الركبة', bg: '#FFFBEB', color: '#B45309' },
+                { id: 'SHOULDER', label: 'الكتف', bg: '#FFFBEB', color: '#B45309' },
+                { id: 'ELBOW', label: 'الكوع / المرفق', bg: '#FFFBEB', color: '#B45309' },
+                { id: 'NECK', label: 'الرقبة', bg: '#FFFBEB', color: '#B45309' }
               ].map(jp => (
                 <button
                   key={jp.id}
@@ -420,15 +420,15 @@ export default function ClientCheckinStudio({ clientData = {}, onSubmitSuccess }
             {/* Hunger Scale */}
             <div style={{ marginBottom: '14px' }}>
               <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 800, color: '#0F172A', marginBottom: '6px' }}>
-                🍽️ مقياس الجوع والشبع الأسبوعي (Hunger Index):
+                مقياس الجوع والشبع الأسبوعي (Hunger Index):
               </label>
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: '6px' }}>
                 {[
-                  { val: 1, label: 'شبع تام', icon: '🟢' },
-                  { val: 2, label: 'طبيعي', icon: '🟢' },
-                  { val: 3, label: 'متوسط', icon: '🟡' },
-                  { val: 4, label: 'عالي', icon: '🟠' },
-                  { val: 5, label: 'قارس', icon: '🔴' }
+                  { val: 1, label: 'شبع تام', icon: '1' },
+                  { val: 2, label: 'طبيعي', icon: '2' },
+                  { val: 3, label: 'متوسط', icon: '3' },
+                  { val: 4, label: 'عالي', icon: '4' },
+                  { val: 5, label: 'قارس', icon: '5' }
                 ].map(h => (
                   <button
                     key={h.val}
@@ -445,7 +445,7 @@ export default function ClientCheckinStudio({ clientData = {}, onSubmitSuccess }
                       cursor: 'pointer'
                     }}
                   >
-                    <span style={{ fontSize: '12px', display: 'block', marginBottom: '2px' }}>{h.icon}</span>
+                    <span style={{ fontSize: '12px', fontWeight: 800, display: 'block', marginBottom: '2px' }}>{h.icon}</span>
                     <span>{h.label}</span>
                   </button>
                 ))}
@@ -455,13 +455,13 @@ export default function ClientCheckinStudio({ clientData = {}, onSubmitSuccess }
             {/* Strength Progression */}
             <div style={{ marginBottom: '14px' }}>
               <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 800, color: '#0F172A', marginBottom: '6px' }}>
-                🏋️‍♂️ أداء القوة والأوزان في التمرين:
+                أداء القوة والأوزان في التمرين:
               </label>
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '6px' }}>
                 {[
-                  { id: 'INCREASING', label: 'أوزاني زادت ↗', bg: '#ECFDF5', color: '#059669' },
-                  { id: 'MAINTAINED', label: 'أوزاني ثابتة ➔', bg: '#F8FAFC', color: '#475569' },
-                  { id: 'DECREASING', label: 'هبوط بالقوة ↘', bg: '#FEF2F2', color: '#DC2626' }
+                  { id: 'INCREASING', label: 'أوزاني زادت', bg: '#ECFDF5', color: '#059669' },
+                  { id: 'MAINTAINED', label: 'أوزاني ثابتة', bg: '#F8FAFC', color: '#475569' },
+                  { id: 'DECREASING', label: 'هبوط بالقوة', bg: '#FEF2F2', color: '#DC2626' }
                 ].map(s => (
                   <button
                     key={s.id}
@@ -487,7 +487,7 @@ export default function ClientCheckinStudio({ clientData = {}, onSubmitSuccess }
             {/* Stress & Cortisol */}
             <div style={{ marginBottom: '14px' }}>
               <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 800, color: '#0F172A', marginBottom: '6px' }}>
-                🧠 مستوى التوتر وضغط العمل (Cortisol):
+                مستوى التوتر وضغط العمل (Cortisol):
               </label>
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '6px' }}>
                 {[
@@ -520,7 +520,7 @@ export default function ClientCheckinStudio({ clientData = {}, onSubmitSuccess }
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px', marginBottom: '14px' }}>
               <div>
                 <label style={{ display: 'block', fontSize: '0.76rem', fontWeight: 800, color: '#0F172A', marginBottom: '4px' }}>
-                  😴 جودة النوم:
+                  جودة النوم:
                 </label>
                 <select
                   value={sleep}
@@ -553,7 +553,7 @@ export default function ClientCheckinStudio({ clientData = {}, onSubmitSuccess }
             {/* Cardio Protocol Adherence */}
             <div>
               <label style={{ display: 'block', fontSize: '0.76rem', fontWeight: 800, color: '#0F172A', marginBottom: '4px' }}>
-                🏃‍♂️ مدى الالتزام بجلسات الكارديو المحددة:
+                مدى الالتزام بجلسات الكارديو المحددة:
               </label>
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '6px' }}>
                 {[
@@ -608,7 +608,7 @@ export default function ClientCheckinStudio({ clientData = {}, onSubmitSuccess }
             <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
               <div>
                 <label style={{ display: 'block', fontSize: '0.76rem', fontWeight: 700, color: '#166534', marginBottom: '4px' }}>
-                  🏆 أبرز إنجاز حققته هذا الأسبوع (Non-Scale Victory):
+                  أبرز إنجاز حققته هذا الأسبوع (Non-Scale Victory):
                 </label>
                 <input
                   type="text"
@@ -621,7 +621,7 @@ export default function ClientCheckinStudio({ clientData = {}, onSubmitSuccess }
 
               <div>
                 <label style={{ display: 'block', fontSize: '0.76rem', fontWeight: 700, color: '#92400E', marginBottom: '4px' }}>
-                  ⚠️ أكبر صعوبة أو تحدٍ واجهك:
+                  أكبر صعوبة أو تحدٍ واجهك:
                 </label>
                 <input
                   type="text"
@@ -634,7 +634,7 @@ export default function ClientCheckinStudio({ clientData = {}, onSubmitSuccess }
 
               <div>
                 <label style={{ display: 'block', fontSize: '0.76rem', fontWeight: 700, color: '#475569', marginBottom: '4px' }}>
-                  📝 رسالة أو ملاحظات إضافية للكوتش:
+                  رسالة أو ملاحظات إضافية للكوتش:
                 </label>
                 <textarea
                   value={coachNotes}
@@ -670,7 +670,7 @@ export default function ClientCheckinStudio({ clientData = {}, onSubmitSuccess }
             }}
           >
             <Zap style={{ width: '18px', height: '18px' }} />
-            <span>إرسال التقييم الأسبوعي وتوليد التحليل الأيضي الفوري ⚡</span>
+            <span>إرسال التقييم الأسبوعي وتوليد التحليل الأيضي الفوري</span>
           </button>
 
         </div>

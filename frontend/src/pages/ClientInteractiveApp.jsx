@@ -500,7 +500,7 @@ export default function ClientInteractiveApp() {
               title="تجديد الاشتراك أونلاين"
             >
               <Zap style={{ width: '13px', height: '13px' }} />
-              <span>تجديد ⚡</span>
+              <span>تجديد</span>
             </button>
             <button
               id="open-emergency-modal-btn"
@@ -622,7 +622,7 @@ export default function ClientInteractiveApp() {
               </div>
             </div>
             <span style={{ fontSize: '10px', fontWeight: 800, color: '#F59E0B', background: 'rgba(245, 158, 11, 0.15)', padding: '3px 8px', borderRadius: '5px' }}>
-              تكييف الخطة ⚡
+              تكييف الخطة
             </span>
           </button>
         </div>
@@ -1559,7 +1559,7 @@ export default function ClientInteractiveApp() {
               {/* Header */}
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                  <span style={{ fontSize: '20px' }}>{freeGuideTab === 'DRINKS' ? '☕' : '🌿'}</span>
+                  <Utensils size={18} color={freeGuideTab === 'DRINKS' ? '#78350F' : '#059669'} />
                   <div>
                     <h3 style={{ fontSize: '0.96rem', fontWeight: 800, color: '#0F172A', margin: 0 }}>
                       {freeGuideTab === 'DRINKS' ? 'دليل المشروبات الحرة صفرية السعرات' : 'دليل التوابل والبهارات ومحسنات الطعم الحرة'}

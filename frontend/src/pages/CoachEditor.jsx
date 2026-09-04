@@ -1530,7 +1530,7 @@ export default function CoachEditor() {
             <div style={{ background: program.nutrition?.refeed_authorized ? '#FEFCE8' : '#F8FAFC', border: '1px solid ' + (program.nutrition?.refeed_authorized ? '#FEF08A' : '#E2E8F0'), borderRadius: '8px', padding: '10px 14px', display: 'flex', flexDirection: 'column', gap: '8px', transition: 'all 0.15s ease' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '8px' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                  <span style={{ fontSize: '16px' }}>🍕</span>
+                  <Utensils size={16} color="#CA8A04" />
                   <div>
                     <div style={{ fontSize: '12px', fontWeight: 800, color: '#0F172A' }}>
                       تصريح الوجبة المفتوحة الذكية لهذا الأسبوع (Smart Refeed Authorization)

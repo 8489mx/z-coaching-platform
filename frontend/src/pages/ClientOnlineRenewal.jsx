@@ -110,13 +110,13 @@ export default function ClientOnlineRenewal() {
                          paymentMethod === 'VCASH' ? 'فودافون كاش' : 'تحويل بنكي';
     
     const waText = encodeURIComponent(
-      `مساء الخير يا كابتن كريم! 💪🔥\n` +
+      `مساء الخير يا كابتن كريم!\n` +
       `أنا المشترك: ${clientName || 'بطل'}\n` +
       `كود الاشتراك: #${clientCode}\n` +
       `قمت بطلب تجديد: باقة ${selectedDuration} شهور (${selectedTier}) بمبلغ ${currentPrice.toLocaleString('en-US')} ج.م.\n` +
       `طريقة التحويل: ${methodArabic}\n` +
       `الرقم المرجعي / اسم المحول: ${refNumber || 'تم الإرسال'}\n` +
-      `برجاء تأكيد التفعيل واستمرار الخطة! 🦅`
+      `برجاء تأكيد التفعيل واستمرار الخطة!`
     );
 
     // Open WhatsApp
@@ -197,7 +197,7 @@ export default function ClientOnlineRenewal() {
             </div>
 
             <h3 style={{ fontSize: '18px', fontWeight: 800, color: '#0F172A', marginBottom: '8px' }}>
-              تم إرسال طلب التجديد بنجاح! 🦅🔥
+              تم إرسال طلب التجديد بنجاح!
             </h3>
             <p style={{ fontSize: '12.5px', color: '#64748B', lineHeight: 1.6, marginBottom: '24px' }}>
               تم تسجيل بيانات التجديد بنجاح وفتح محادثة الواتساب مع الكابتن لتأكيد التفعيل الفوري لحسابك واستمرار خطتك.
@@ -292,9 +292,9 @@ export default function ClientOnlineRenewal() {
 
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '8px' }}>
                 {[
-                  { duration: 4, label: '4 شهور 🏆', sub: 'الباقة الأساسية', badge: 'الأكثر توفيراً' },
-                  { duration: 2, label: 'شهرين ⚡', sub: 'نصف باقة', badge: null },
-                  { duration: 1, label: 'شهر واحد 🌟', sub: 'تجديد شهري', badge: null },
+                  { duration: 4, label: '4 شهور', sub: 'الباقة الأساسية', badge: 'الأكثر توفيراً' },
+                  { duration: 2, label: 'شهرين', sub: 'نصف باقة', badge: null },
+                  { duration: 1, label: 'شهر واحد', sub: 'تجديد شهري', badge: null },
                 ].map((item) => {
                   const isActive = selectedDuration === item.duration;
                   return (
@@ -373,9 +373,9 @@ export default function ClientOnlineRenewal() {
 
               <div style={{ display: 'flex', gap: '8px', marginBottom: '10px' }}>
                 {[
-                  { id: 'INSTAPAY', label: 'إنستاباي (InstaPay) ⚡' },
-                  { id: 'VCASH', label: 'فودافون كاش 📱' },
-                  { id: 'BANK', label: 'تحويل بنكي 🏦' },
+                  { id: 'INSTAPAY', label: 'إنستاباي (InstaPay)' },
+                  { id: 'VCASH', label: 'فودافون كاش' },
+                  { id: 'BANK', label: 'تحويل بنكي' },
                 ].map(m => (
                   <button
                     key={m.id}
@@ -537,7 +537,7 @@ export default function ClientOnlineRenewal() {
               }}
             >
               <MessageCircle size={18} />
-              <span>تأكيد التحويل وإرسال إشعار التجديد للكابتن عبر واتساب ⚡</span>
+              <span>تأكيد التحويل وإرسال إشعار التجديد للكابتن عبر واتساب</span>
             </button>
 
           </form>

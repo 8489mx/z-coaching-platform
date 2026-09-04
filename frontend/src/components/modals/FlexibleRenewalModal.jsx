@@ -413,12 +413,12 @@ export default function FlexibleRenewalModal({
                   outline: 'none'
                 }}
               >
-                <option value="INSTAPAY">إنستاباي (InstaPay) ⚡</option>
-                <option value="VCASH">فودافون كاش 📱</option>
-                <option value="BANK">تحويل بنكي 🏦</option>
-                <option value="ONLINE">دفع أونلاين عبر الموقع 🌐</option>
-                <option value="CASH">كاش نقدي 💵</option>
-                <option value="OTHER">طريقة أخرى ✏️</option>
+                <option value="INSTAPAY">إنستاباي (InstaPay)</option>
+                <option value="VCASH">فودافون كاش</option>
+                <option value="BANK">تحويل بنكي</option>
+                <option value="ONLINE">دفع أونلاين عبر الموقع</option>
+                <option value="CASH">كاش نقدي</option>
+                <option value="OTHER">طريقة أخرى</option>
               </select>
             </div>
           </div>
@@ -496,7 +496,7 @@ export default function FlexibleRenewalModal({
             }}
           >
             <MessageCircle size={15} />
-            <span>اعتماد وإرسال واتساب فوراً ⚡</span>
+            <span>اعتماد وإرسال واتساب فوراً</span>
           </button>
 
           <button

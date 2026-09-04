@@ -22,7 +22,7 @@ export function getWhatsAppMessage(action) {
     return encodeURIComponent(`${namePrefix}تم استلام تقييمك الأسبوعي بنجاح، وجاري الآن مراجعة القياسات والأداء وتحديث الخطة.`);
   }
   if (action?.type === 'INACTIVE') {
-    return encodeURIComponent(`${namePrefix}طمنا عليك يا وحش، لاحظنا غيابك عن تسجيل تمارينك بقالك كام يوم. لو محتاج أي تعديل أو واجهتك أي صعوبة في الخطة، أنا معاك خطوة بخطوة عشان نوصل لهدفك! 💪`);
+    return encodeURIComponent(`${namePrefix}طمنا عليك يا بطل، لاحظنا غيابك عن تسجيل تمارينك بقالك كام يوم. لو محتاج أي تعديل أو واجهتك أي صعوبة في الخطة، أنا معاك خطوة بخطوة عشان نوصل لهدفك!`);
   }
   if (action?.type === 'RENEWAL') {
     return encodeURIComponent(`${namePrefix}نود تذكيرك بأن اشتراكك في باقة ${cleanTier} قارب على الانتهاء. لتأكيد التجديد والاستمرار يرجى التواصل معنا.`);
@@ -89,7 +89,7 @@ export function getClientCountryInfo(phone = '', explicitCountry = '') {
 // Smart Package Badge Styler (Neutral Box, Colored Text)
 export function getPackageBadgeStyle(pkgStr = '') {
   const clean = String(pkgStr || '').trim().toUpperCase();
-  const isMax = getClientTier(tier) === 'MAX';
+  const isMax = getClientTier(clean) === 'MAX';
   
   return {
     label: isMax ? 'MAX' : 'ELITE',

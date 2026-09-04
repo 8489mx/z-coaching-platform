@@ -101,7 +101,7 @@ export default function CoachEditorNutritionTab(props) {
                     background: Math.abs(diffCal) <= 25 ? '#DCFCE7' : diffCal > 0 ? '#FEF3C7' : '#E0F2FE',
                     color: Math.abs(diffCal) <= 25 ? '#15803D' : diffCal > 0 ? '#B45309' : '#0369A1'
                   }}>
-                    {Math.abs(diffCal) <= 25 ? 'مطابق للتارجت بالملي ✅' : diffCal > 0 ? `فائض +${diffCal} kcal` : `متبقي ${Math.abs(diffCal)} kcal`}
+                    {Math.abs(diffCal) <= 25 ? 'مطابق للتارجت بالملي' : diffCal > 0 ? `فائض +${diffCal} kcal` : `متبقي ${Math.abs(diffCal)} kcal`}
                   </span>
                 )}
 
@@ -275,7 +275,7 @@ export default function CoachEditorNutritionTab(props) {
             <div style={{ background: '#FFFFFF', border: '1px solid #E2E8F0', borderRadius: '8px', padding: '12px 14px', boxShadow: '0 1px 2px rgba(15, 23, 42, 0.02)' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
                 <div>
-                  <strong style={{ fontSize: '13px', color: '#0F172A' }}>💊 المكملات الغذائية والجينر المعتمدة (تُحسب ضمن السعرات):</strong>
+                  <strong style={{ fontSize: '13px', color: '#0F172A' }}>المكملات الغذائية والجينر المعتمدة (تُحسب ضمن السعرات):</strong>
                   <span style={{ fontSize: '10.5px', color: '#64748B', display: 'block' }}>
                     أي سعرات أو ماكروز تدونها هنا تندمج فوراً وتؤثر على إجمالي اليوم.
                   </span>

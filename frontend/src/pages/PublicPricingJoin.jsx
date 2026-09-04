@@ -68,7 +68,7 @@ export default function PublicPricingJoin() {
               fontSize: '0.85rem'
             }}
           >
-            <span>أنا مشترك وأرغب في تجديد باقتي أونلاين ⚡</span>
+            <span>أنا مشترك وأرغب في تجديد باقتي أونلاين</span>
           </button>
 
           <button

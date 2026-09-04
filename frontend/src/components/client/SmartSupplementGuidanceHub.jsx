@@ -307,10 +307,10 @@ export const SUPPLEMENTS_CATALOG = [
 
 export const TIMING_CATEGORIES = [
   { id: 'ALL', label: 'كافة المكملات', icon: Pill },
-  { id: 'MORNING', label: '☀️ الصباح والإفطار', icon: Sun },
-  { id: 'WORKOUT', label: '🏋️‍♂️ حول التمرين', icon: Dumbbell },
-  { id: 'NIGHT', label: '🌙 المساء والنوم', icon: Moon },
-  { id: 'MEALS', label: '🍽️ مع الوجبات', icon: Flame }
+  { id: 'MORNING', label: 'الصباح والإفطار', icon: Sun },
+  { id: 'WORKOUT', label: 'حول التمرين', icon: Dumbbell },
+  { id: 'NIGHT', label: 'المساء والنوم', icon: Moon },
+  { id: 'MEALS', label: 'مع الوجبات', icon: Flame }
 ];
 
 export const GOLDEN_INTERACTION_RULES = [
@@ -406,7 +406,7 @@ export default function SmartSupplementGuidanceHub() {
           </div>
 
           <h1 style={{ fontSize: '20px', fontWeight: 900, margin: '0 0 6px 0', letterSpacing: '-0.3px', color: '#FFFFFF' }}>
-            دليل وتوقيتات المكملات والفيتامينات الذكي 💊
+            دليل وتوقيتات المكملات والفيتامينات الذكي
           </h1>
           <p style={{ fontSize: '12.5px', color: '#CBD5E1', margin: 0, lineHeight: 1.6, maxWidth: '680px' }}>
             دليلك الشامل لمعرفة التوقيت المثالي لكل مكمل، قواعد أقصى امتصاص في الأمعاء، وما لا يجب خلطه معاً لتستفيد من كل قرص تتناوله بنسبة 100%.
@@ -461,7 +461,7 @@ export default function SmartSupplementGuidanceHub() {
                   {rule.title}
                 </span>
                 <span style={{ fontSize: '9.5px', color: '#64748B', fontWeight: 600 }}>
-                  {rule.pair.join(' ⚡ ')}
+                  {rule.pair.join(' + ')}
                 </span>
               </div>
               <p style={{ fontSize: '11px', color: '#334155', margin: 0, lineHeight: 1.4 }}>
@@ -638,7 +638,7 @@ export default function SmartSupplementGuidanceHub() {
                       {item.purpose}
                     </p>
                     <div style={{ fontSize: '10.5px', color: '#0F172A', fontWeight: 750 }}>
-                      💊 الجرعة الموصى بها: <span style={{ color: '#2563EB' }}>{item.dosage}</span>
+                      الجرعة الموصى بها: <span style={{ color: '#2563EB' }}>{item.dosage}</span>
                     </div>
                   </div>
 
@@ -675,11 +675,11 @@ export default function SmartSupplementGuidanceHub() {
                       <strong style={{ fontSize: '11.5px', color: '#991B1B' }}>تنبيهات وموانع التعارض:</strong>
                     </div>
                     <p style={{ fontSize: '10.5px', color: '#B91C1C', margin: '0 0 4px 0', lineHeight: 1.4 }}>
-                      ⚠️ {item.warnings}
+                      {item.warnings}
                     </p>
                     {item.conflicts && item.conflicts.length > 0 && (
                       <div style={{ fontSize: '10px', color: '#7F1D1D', fontWeight: 700 }}>
-                        ⛔ لا تخلط مع: {item.conflicts.join(' ، ')}
+                        ممنوع الخلط مع: {item.conflicts.join(' ، ')}
                       </div>
                     )}
                   </div>
