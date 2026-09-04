@@ -135,11 +135,42 @@ export default function ClientInteractiveApp() {
       .then(data => {
         if (data) {
           if (data.user) {
+            const rawAllergies = (data.user.allergies || data.master_program?.client?.allergies || []).map(a => String(a));
+            const isCeliac = rawAllergies.some(a => {
+              const s = a.toUpperCase();
+              return s.includes('CELIAC') || s.includes('GLUTEN') || a.includes('قمح') || a.includes('جلوتين');
+            });
+            const isG6pd = rawAllergies.some(a => {
+              const s = a.toUpperCase();
+              return s.includes('G6PD') || s.includes('FAVISM') || a.includes('فول') || a.includes('بقول');
+            });
+            const isLactose = rawAllergies.some(a => {
+              const s = a.toUpperCase();
+              return s.includes('LACTOSE') || a.includes('لاكتوز');
+            });
+            const isGout = rawAllergies.some(a => {
+              const s = a.toUpperCase();
+              return s.includes('GOUT') || a.includes('نقرس') || a.includes('يوريك');
+            });
+            const isBariatric = (data.user.injuries || data.master_program?.client?.injuries || []).some(inj => {
+              const s = String(inj).toUpperCase();
+              return s.includes('SLEEVE') || s.includes('BYPASS') || inj.includes('تكميم') || inj.includes('تحويل مسار');
+            });
+
             setClientData(prev => ({
               ...prev,
               name: data.user.full_name || prev.name,
               package: data.user.subscription_package || prev.package,
-              tier: data.user.subscription_package || prev.tier
+              tier: data.user.subscription_package || prev.tier,
+              clinicalProfile: {
+                ...prev.clinicalProfile,
+                is_celiac: isCeliac,
+                is_g6pd: isG6pd,
+                is_lactose_intolerant: isLactose,
+                is_gout: isGout,
+                is_bariatric: isBariatric,
+                allergies: rawAllergies
+              }
             }));
           }
           if (data.has_program && data.master_program) {
@@ -1474,7 +1505,14 @@ export default function ClientInteractiveApp() {
                     );
                   }
 
-                  return allCandidateFoods.slice(0, 20).map((targetFood, sIdx) => {
+                  // Sort candidates: same taste profile first to ensure highest culinary harmony and palatability
+                  const sortedCandidateFoods = [...allCandidateFoods].sort((a, b) => {
+                    const aMatches = a.taste_profile && currentItemObj.taste_profile && a.taste_profile === currentItemObj.taste_profile ? 1 : 0;
+                    const bMatches = b.taste_profile && currentItemObj.taste_profile && b.taste_profile === currentItemObj.taste_profile ? 1 : 0;
+                    return bMatches - aMatches;
+                  });
+
+                  return sortedCandidateFoods.slice(0, 25).map((targetFood, sIdx) => {
                     let swapResult = null;
                     try {
                       const fromCode = currentItemObj.code ? currentItemObj.code : (currentMacroType === 'PROTEIN' ? 'CHICKEN_BREAST' : (currentMacroType === 'CARBS' ? 'BASMATI_RICE_COOKED' : 'EXTRA_VIRGIN_OLIVE_OIL'));
@@ -1489,12 +1527,14 @@ export default function ClientInteractiveApp() {
 
                     if (!swapResult) return null;
 
+                    const isMatchingTaste = Boolean(targetFood.taste_profile && currentItemObj.taste_profile && targetFood.taste_profile === currentItemObj.taste_profile);
+
                     return (
                       <div 
                         key={targetFood.code || sIdx}
                         style={{
-                          background: '#FFFFFF',
-                          border: '1px solid #E2E8F0',
+                          background: isMatchingTaste ? '#FFFFFF' : '#FAFAFA',
+                          border: isMatchingTaste ? '1px solid #CBD5E1' : '1px solid #E2E8F0',
                           borderRadius: '12px',
                           padding: '10px 12px',
                           display: 'flex',
@@ -1505,9 +1545,16 @@ export default function ClientInteractiveApp() {
                         }}
                       >
                         <div style={{ flex: 1, minWidth: 0 }}>
-                          <strong style={{ fontSize: '0.84rem', color: '#0F172A', display: 'block', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                            {swapResult.replacement_food.name_ar}
-                          </strong>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flexWrap: 'wrap' }}>
+                            <strong style={{ fontSize: '0.84rem', color: '#0F172A', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                              {swapResult.replacement_food.name_ar}
+                            </strong>
+                            {isMatchingTaste && (
+                              <span style={{ fontSize: '9px', fontWeight: 800, padding: '1px 5px', borderRadius: '3px', background: '#F0FDF4', color: '#16A34A', border: '1px solid #BBF7D0' }}>
+                                تناسق وجبة مثالي
+                              </span>
+                            )}
+                          </div>
                           <span style={{ fontSize: '0.74rem', fontWeight: 800, color: '#059669', fontFamily: 'monospace' }}>
                             الكمية المكافئة: {swapResult.replacement_food.portion_g} جم
                           </span>

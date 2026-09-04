@@ -482,7 +482,8 @@ export const FOOD_DATABASE = {
     fat_per_100g: 50,
     calories_per_100g: 588,
     allergens: ['PEANUTS'],
-    is_gluten_free: true
+    is_gluten_free: true,
+    is_legume: true
   },
   RAW_WALNUTS: {
     code: 'RAW_WALNUTS',
@@ -1612,6 +1613,34 @@ export const FOOD_DATABASE = {
     allergens: [],
     is_gluten_free: true,
     is_legume: false
+  },
+  FRESH_MUSHROOMS: {
+    code: 'FRESH_MUSHROOMS',
+    name_ar: 'مشروم أبيض طازج سوتيه (عالي الألياف والشبع)',
+    name_en: 'Sauteed Fresh White Mushrooms',
+    macro_type: 'CARBS',
+    taste_profile: TASTE_PROFILES.FREE_VEGETABLE,
+    protein_per_100g: 3.1,
+    carbs_per_100g: 3.3,
+    fat_per_100g: 0.3,
+    calories_per_100g: 22,
+    allergens: [],
+    is_gluten_free: true,
+    is_legume: false
+  },
+  BOILED_BEETROOT: {
+    code: 'BOILED_BEETROOT',
+    name_ar: 'شمندر / بنجر أحمر مسلوق (معزز أكسيد النيتريك)',
+    name_en: 'Boiled Red Beetroot',
+    macro_type: 'CARBS',
+    taste_profile: TASTE_PROFILES.MAIN_CARB,
+    protein_per_100g: 1.7,
+    carbs_per_100g: 10.0,
+    fat_per_100g: 0.2,
+    calories_per_100g: 44,
+    allergens: [],
+    is_gluten_free: true,
+    is_legume: false
   }
 };
 
@@ -1626,23 +1655,77 @@ export function isFoodClinicallySafe(foodItem, clinicalProfile = {}) {
     allergies = []
   } = clinicalProfile;
 
-  // 1. G6PD: Ban all legumes
-  if (is_g6pd && foodItem.is_legume) return false;
+  const allergyList = Array.isArray(allergies) ? allergies : (typeof allergies === 'string' ? [allergies] : []);
+
+  // 1. G6PD (Favism): Ban all legumes and peanuts
+  const g6pdActive = Boolean(is_g6pd) || allergyList.some(a => {
+    const s = String(a).toUpperCase();
+    return s.includes('G6PD') || s.includes('FAVISM') || s.includes('فول') || s.includes('بقول');
+  });
+  if (g6pdActive && foodItem.is_legume) return false;
 
   // 2. CELIAC: Ban gluten
-  if (is_celiac && !foodItem.is_gluten_free) return false;
+  const celiacActive = Boolean(is_celiac) || allergyList.some(a => {
+    const s = String(a).toUpperCase();
+    return s.includes('CELIAC') || s.includes('GLUTEN') || s.includes('قمح') || s.includes('جلوتين');
+  });
+  if (celiacActive && !foodItem.is_gluten_free) return false;
 
-  // 3. GOUT: Ban high purine items
-  if (is_gout && foodItem.purine_level === 'HIGH') return false;
+  // 3. GOUT: Ban high purine items (organ meats, high-purine beef, seafood)
+  const goutActive = Boolean(is_gout) || allergyList.some(a => {
+    const s = String(a).toUpperCase();
+    return s.includes('GOUT') || s.includes('نقرس') || s.includes('يوريك') || s.includes('URIC');
+  });
+  if (goutActive && foodItem.purine_level === 'HIGH') return false;
 
   // 4. LACTOSE: Ban non-low-lactose dairy
-  if (is_lactose_intolerant && foodItem.is_dairy && !foodItem.is_low_lactose) return false;
+  const lactoseActive = Boolean(is_lactose_intolerant) || allergyList.some(a => {
+    const s = String(a).toUpperCase();
+    return s.includes('LACTOSE') || s.includes('لاكتوز');
+  });
+  if (lactoseActive && foodItem.is_dairy && !foodItem.is_low_lactose) return false;
 
-  // 5. Explicit Allergies
-  if (Array.isArray(allergies)) {
-    const allergenUpper = allergies.map(a => a.toUpperCase());
-    if (foodItem.allergens && foodItem.allergens.some(a => allergenUpper.includes(a))) {
-      return false;
+  // 5. Explicit Allergies (Bilingual Arabic/English Semantic Matching)
+  if (allergyList.length > 0) {
+    for (const allergy of allergyList) {
+      const a = String(allergy).toUpperCase();
+      
+      // Fish
+      if ((a.includes('FISH') || a.includes('سمك')) && (foodItem.allergens?.includes('FISH') || (foodItem.taste_profile === TASTE_PROFILES.MAIN_MEAL_PROTEIN && foodItem.name_ar?.includes('سمك')))) {
+        return false;
+      }
+      // Shellfish
+      if ((a.includes('SHELLFISH') || a.includes('جمبري') || a.includes('بحري') || a.includes('روبيان') || a.includes('سيفود')) && foodItem.allergens?.includes('SHELLFISH')) {
+        return false;
+      }
+      // Eggs
+      if ((a.includes('EGG') || a.includes('بيض')) && (foodItem.allergens?.includes('EGGS') || foodItem.code?.includes('EGG'))) {
+        return false;
+      }
+      // Peanuts
+      if ((a.includes('PEANUT') || a.includes('سوداني')) && (foodItem.allergens?.includes('PEANUTS') || foodItem.code?.includes('PEANUT') || foodItem.is_legume && foodItem.code?.includes('PEANUT'))) {
+        return false;
+      }
+      // Tree Nuts
+      if ((a.includes('TREE_NUT') || a.includes('NUTS') || a.includes('مكسرات') || a.includes('لوز') || a.includes('جوز') || a.includes('كاجو')) && foodItem.allergens?.includes('TREE_NUTS')) {
+        return false;
+      }
+      // Dairy
+      if ((a.includes('DAIRY') || a.includes('لبن') || a.includes('حليب') || a.includes('ألبان') || a.includes('جبن')) && foodItem.is_dairy) {
+        return false;
+      }
+      // Wheat / Gluten
+      if ((a.includes('WHEAT') || a.includes('GLUTEN') || a.includes('قمح') || a.includes('جلوتين')) && !foodItem.is_gluten_free) {
+        return false;
+      }
+      // Sesame
+      if ((a.includes('SESAME') || a.includes('سمسم') || a.includes('طحينة')) && foodItem.allergens?.includes('SESAME')) {
+        return false;
+      }
+      // Raw string token match in allergens
+      if (foodItem.allergens && foodItem.allergens.some(itemAllergen => a.includes(itemAllergen))) {
+        return false;
+      }
     }
   }
 
@@ -1745,6 +1828,12 @@ FOOD_DATABASE.steamed_cauliflower = FOOD_DATABASE.STEAMED_CAULIFLOWER;
 FOOD_DATABASE.green_beans = FOOD_DATABASE.GREEN_BEANS;
 FOOD_DATABASE.grilled_eggplant = FOOD_DATABASE.GRILLED_EGGPLANT;
 FOOD_DATABASE.fresh_tomatoes = FOOD_DATABASE.FRESH_TOMATOES;
+FOOD_DATABASE.fresh_mushrooms = FOOD_DATABASE.FRESH_MUSHROOMS;
+FOOD_DATABASE.FRESH_MUSHROOMS = FOOD_DATABASE.FRESH_MUSHROOMS;
+FOOD_DATABASE.MUSHROOMS = FOOD_DATABASE.FRESH_MUSHROOMS;
+FOOD_DATABASE.boiled_beetroot = FOOD_DATABASE.BOILED_BEETROOT;
+FOOD_DATABASE.BOILED_BEETROOT = FOOD_DATABASE.BOILED_BEETROOT;
+FOOD_DATABASE.BEETROOT = FOOD_DATABASE.BOILED_BEETROOT;
 
 export function calculateDynamicFoodSwap({
   current_food_code,
