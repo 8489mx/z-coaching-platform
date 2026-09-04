@@ -237,6 +237,11 @@ export default function ClientInteractiveApp() {
   const [emergencyModalOpen, setEmergencyModalOpen] = useState(false);
   const [activeScenario, setActiveScenario] = useState(null);
   const [travelModeActive, setTravelModeActive] = useState(false);
+  const setIsTravelModeActive = setTravelModeActive;
+  const [travelConfirmTarget, setTravelConfirmTarget] = useState(null);
+  const [travelChosenTier, setTravelChosenTier] = useState(null);
+  const [returnTravelModalOpen, setReturnTravelModalOpen] = useState(false);
+  const [exerciseSwapTarget, setExerciseSwapTarget] = useState(null);
   const [portionDisplayMode, setPortionDisplayMode] = useState(PORTION_DISPLAY_MODES.DUAL);
   const [activePrepItem, setActivePrepItem] = useState(null);
   const [freeGuideModalOpen, setFreeGuideModalOpen] = useState(false);
@@ -1219,6 +1224,28 @@ export default function ClientInteractiveApp() {
                         {exIdx + 1}. {ex.name}
                       </h3>
                     </div>
+
+                    <button
+                      type="button"
+                      onClick={() => setExerciseSwapTarget({ exercise: ex, exIdx })}
+                      style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '4px',
+                        background: '#FEF3C7',
+                        color: '#92400E',
+                        border: '1px solid #FDE68A',
+                        borderRadius: '8px',
+                        padding: '4px 8px',
+                        fontSize: '0.72rem',
+                        fontWeight: 700,
+                        cursor: 'pointer'
+                      }}
+                      title="تبديل التمرين في حال انشغال الجهاز"
+                    >
+                      <ArrowLeftRight style={{ width: '12px', height: '12px' }} />
+                      <span>بديل الجهاز</span>
+                    </button>
                   </div>
 
                   {/* Safety Note */}
@@ -2061,7 +2088,7 @@ export default function ClientInteractiveApp() {
               <button
                 type="button"
                 onClick={() => {
-                  setIsTravelModeActive(false);
+                  setTravelModeActive(false);
                   setActiveScenario(null);
                   setTravelChosenTier(null);
                   setReturnTravelModalOpen(false);
@@ -2082,7 +2109,7 @@ export default function ClientInteractiveApp() {
               <button
                 type="button"
                 onClick={() => {
-                  setIsTravelModeActive(false);
+                  setTravelModeActive(false);
                   setActiveScenario(null);
                   setTravelChosenTier(null);
                   setReturnTravelModalOpen(false);
