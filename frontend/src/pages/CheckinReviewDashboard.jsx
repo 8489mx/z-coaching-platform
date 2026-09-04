@@ -711,11 +711,23 @@ export default function CheckinReviewDashboard() {
 
   const activeCheckin = filteredQueue[selectedIdx] || filteredQueue[0] || checkinList[0];
 
+  const safeClient = activeCheckin?.client || {};
+  const safeMetrics = activeCheckin?.metrics || {};
+  const safeBio = activeCheckin?.biofeedback || {};
+  const safeReflect = activeCheckin?.reflections || {};
+  const safeAi = activeCheckin?.ai_analysis || {
+    status_badge: safeMetrics?.status_badge || 'مستقر',
+    recommendation: 'الاستمرار على نفس الخطة مع مراقبة مؤشرات الأسبوع القادم.',
+    warning: null
+  };
+  const safeMacros = activeCheckin?.baseline_macros || DEFAULT_BASELINE_MACROS;
+  const clientFirstName = String(safeClient?.name || 'المتدرب').split(' ')[0];
+
   // Sync state when switching clients
   useEffect(() => {
     if (activeCheckin) {
-      setMacroAdjustments(safeMacros);
-      setCoachReply(activeCheckin.suggested_reply);
+      setMacroAdjustments(activeCheckin?.baseline_macros || DEFAULT_BASELINE_MACROS);
+      setCoachReply(activeCheckin?.suggested_reply || "");
     }
   }, [activeCheckin]);
 
@@ -1128,20 +1140,6 @@ export default function CheckinReviewDashboard() {
                 </button>
               </div>
             ) : (
-              (() => {
-                const safeClient = activeCheckin?.client || {};
-                const safeMetrics = activeCheckin?.metrics || {};
-                const safeBio = activeCheckin?.biofeedback || {};
-                const safeReflect = activeCheckin?.reflections || {};
-                const safeAi = activeCheckin?.ai_analysis || {
-                  status_badge: safeMetrics.status_badge || 'مستقر',
-                  recommendation: 'الاستمرار على نفس الخطة مع مراقبة مؤشرات الأسبوع القادم.',
-                  warning: null
-                };
-                const safeMacros = activeCheckin?.baseline_macros || DEFAULT_BASELINE_MACROS;
-                const clientFirstName = String(safeClient.name || 'المتدرب').split(' ')[0];
-
-                return (
               <>
             {/* 1. Header Identity Card & Goal Badge */}
             {(() => {
@@ -1417,7 +1415,7 @@ export default function CheckinReviewDashboard() {
                   <strong style={{ fontSize: '11.5px', color: '#475569' }}>رسالة وملاحظات المتدرب:</strong>
                 </div>
                 <p style={{ fontSize: '12px', color: '#0F172A', margin: 0, lineHeight: 1.5, fontWeight: 500 }}>
-                  "{activeCheckin.client_notes}"
+                  "{activeCheckin?.client_notes || 'لا توجد ملاحظات إضافية'}"
                 </p>
               </div>
             </FormSection>
@@ -2063,8 +2061,6 @@ export default function CheckinReviewDashboard() {
 
             </div>
               </>
-                );
-              })()
             )}
 
           </div>
