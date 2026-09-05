@@ -697,9 +697,9 @@ export default function CoachCommandCenter() {
                 <div style={{ display: 'flex', gap: '4px', flexWrap: 'wrap' }}>
                   {[
                     { id: 'ALL', label: 'كافة المتابعات', count: dailyActions.length, bg: '#0F172A', color: '#FFFFFF' },
-                    { id: 'COPTIC', label: 'صيام مسيحي / قبطي', count: copticCount, bg: '#6D28D9', color: '#FFFFFF' },
+                    { id: 'INTERMITTENT', label: 'صيام متقطع', count: intermittentCount, bg: '#0369A1', color: '#FFFFFF' },
                     { id: 'RAMADAN', label: 'صيام رمضان المبارك', count: ramadanCount, bg: '#B45309', color: '#FFFFFF' },
-                    { id: 'INTERMITTENT', label: 'صيام متقطع', count: intermittentCount, bg: '#0369A1', color: '#FFFFFF' }
+                    { id: 'COPTIC', label: 'صيام مسيحي / قبطي', count: copticCount, bg: '#6D28D9', color: '#FFFFFF' }
                   ].map(f => {
                     const isSelected = fastingFilter === f.id;
                     return (
