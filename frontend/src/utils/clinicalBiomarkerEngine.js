@@ -99,11 +99,12 @@ export function calculateHomaIR(fastingGlucose, fastingInsulin) {
 
 /**
  * المحرك السريري الرئيسي لتحليل الفحوصات الطبية وتطبيق بروتوكول الغذاء أولاً
+ * المبدأ الحاكم لمنظومة Z Coaching: "الغذاء أولاً دائمًا"، والفيتامينات والمكملات ملاذ أخير فقط.
  */
 export function evaluateClinicalBiomarkers({
   values = {},
   client = {},
-  supplementAdherence = 'FULL' // 'FULL' (يأخذ مكملات) أو 'NONE' (غذاء طبيعي فقط 100%)
+  supplementAdherence = 'NONE' // الغذاء أولاً هو الأساس الدائم للمنظومة، والمكملات ملاذ أخير فقط
 }) {
   const gender = (client.gender || 'MALE').toUpperCase();
   const isMale = gender === 'MALE';
@@ -390,7 +391,31 @@ export function evaluateClinicalBiomarkers({
     }
   }
 
-  // فرز الأولوية في التدخل الغذائي
+  // -------------------------------------------------------------
+  // 9. نقص الماغنسيوم (Serum Magnesium)
+  // -------------------------------------------------------------
+  if (mg !== null && mg < 1.8) {
+    flags.push({
+      panel: 'MICRONUTRIENTS',
+      severity: 'MODERATE',
+      title_ar: 'انخفاض مستوى الماغنسيوم (تشنجات عضلية وصعوبة استشفاء)',
+      details_ar: `مستوى الماغنسيوم الحالي (${mg} mg/dL). يؤثر سلباً على استرخاء الألياف العضلية، عمق النوم، ومعدل تخليق البروتين.`
+    });
+
+    supplementRecommendations.push({
+      name_ar: 'ماغنسيوم جلايسينات (Magnesium Bisglycinate)',
+      dosage_ar: '300 إلى 400 مجم قبل النوم بـ 45 دقيقة',
+      purpose_ar: 'لتحسين جودة النوم وتقليل التشنجات العضلية (ملاذ أخير عند تعذر التعويض الغذائي)'
+    });
+
+    wholeFoodInterventions.push({
+      food_title_ar: 'بروتوكول الماغنسيوم الطبيعي من البذور والمكسرات والخضار الداكن',
+      rationale_ar: 'إدراج 30 جم بذور يقطين مقشرة (Pumpkin Seeds) يومياً، وحفنة سبانخ طازجة، و30 جم لوز نيئ، ومربعين شوكولاتة داكنة (85% كاكاو) لتعويض الاحتياج اليومي للماغنسيوم طبيعياً 100%.',
+      priority: 'HIGH'
+    });
+  }
+
+  // فرز الأولوية في التدخل الغذائي (الغذاء أولاً دائمًا هو المبدأ الحاكم للمنظومة)
   const isFoodOnly = supplementAdherence === 'NONE';
 
   return {
@@ -402,11 +427,15 @@ export function evaluateClinicalBiomarkers({
     is_food_only_mode: isFoodOnly,
     dietary_modifications: dietaryModifications,
     training_modifications: trainingModifications,
-    supplement_recommendations: isFoodOnly ? [] : supplementRecommendations,
+    supplement_recommendations: isFoodOnly ? [] : supplementRecommendations.map(s => ({
+      ...s,
+      is_last_resort: true,
+      last_resort_note_ar: 'ملاذ أخير: يُنصح بالاعتماد على الأغذية الطبيعية المقترحة أولاً قبل اللجوء للمكمل.'
+    })),
     whole_food_interventions: wholeFoodInterventions,
     medical_referrals: medicalReferrals,
     summary_directive_ar: isFoodOnly 
-      ? 'تم تفعيل بروتوكول "الغذاء أولاً (Food-First)"؛ حيث تمت هندسة وجبات المشترك اليومية لتعويض كافة المؤشرات الناقصة من مصادر طبيعية 100% دون أي مكملات.' 
-      : 'تم إعداد خطة المكملات التعويضية وجدران الحماية الغذائية لمطابقة التحاليل المخبرية بأعلى درجات الأمان.'
+      ? 'بروتوكول المنظومة الأساسي: "الغذاء أولاً (Food-First)"؛ تمت هندسة وجبات المتدرب لتعويض كافة النواقص الفسيولوجية من مصادر غذائية طبيعية 100% دون أي مكملات.' 
+      : 'بروتوكول المكملات الاستثنائي: تم إدراج المكملات كملاذ أخير مساعد مع الحفاظ على الأولوية التامة للأغذية الطبيعية وجدران الحماية.'
   };
 }

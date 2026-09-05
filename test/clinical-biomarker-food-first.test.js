@@ -115,3 +115,25 @@ test('6. Biomarker Engine - Issues Medical Referral on dangerous diabetes or ren
   assert.strictEqual(allText.toLowerCase().includes('insulin dose'), false);
   assert.strictEqual(allText.toLowerCase().includes('statin'), false);
 });
+
+test('7. Biomarker Engine - Defaults to Food-First mode (NONE) and treats magnesium deficiency with whole food interventions first', () => {
+  // Calling with NO supplementAdherence parameter must default to Food-First ('NONE')
+  const result = evaluateClinicalBiomarkers({
+    values: { magnesium: 1.5 },
+    client: { gender: 'MALE', weight_kg: 80 }
+  });
+
+  assert.strictEqual(result.has_flags, true);
+  assert.strictEqual(result.supplement_adherence, 'NONE');
+  assert.strictEqual(result.is_food_only_mode, true);
+  // Supplements must be empty because food is the primary default
+  assert.strictEqual(result.supplement_recommendations.length, 0);
+
+  // Must include magnesium food-first intervention (pumpkin seeds, spinach, almonds, dark chocolate)
+  const mgProtocol = result.whole_food_interventions.find(i => i.food_title_ar.includes('الماغنسيوم'));
+  assert.ok(mgProtocol);
+  assert.ok(mgProtocol.rationale_ar.includes('بذور يقطين'));
+  assert.ok(mgProtocol.rationale_ar.includes('سبانخ'));
+  assert.ok(mgProtocol.rationale_ar.includes('لوز'));
+});
+

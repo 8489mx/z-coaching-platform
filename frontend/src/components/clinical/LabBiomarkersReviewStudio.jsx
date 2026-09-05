@@ -203,10 +203,10 @@ export default function LabBiomarkersReviewStudio({
                 alignItems: 'center',
                 gap: '4px'
               }}
-              title="تغذية طبيعية 100% بدون أي مكملات"
+              title="تغذية طبيعية 100% لتعويض النواقص من الطعام أولاً دائمًا"
             >
               <Apple size={12} />
-              <span>الغذاء أولاً (طبيعي 100%)</span>
+              <span>الغذاء أولاً (طبيعي 100% - أساسي)</span>
             </button>
 
             <button
@@ -225,10 +225,10 @@ export default function LabBiomarkersReviewStudio({
                 alignItems: 'center',
                 gap: '4px'
               }}
-              title="إدراج مكملات غذائية استشفائية"
+              title="إدراج مكملات غذائية كملاذ أخير فقط"
             >
               <Pill size={12} />
-              <span>مكملات وفيتامينات</span>
+              <span>مكملات وفيتامينات (ملاذ أخير)</span>
             </button>
           </div>
 
@@ -540,15 +540,23 @@ export default function LabBiomarkersReviewStudio({
                 </div>
               )}
 
-              {/* المكملات المقترحة (في حال نمط المكملات) */}
+              {/* المكملات المقترحة (في حال نمط المكملات الاستثنائي) */}
               {supplementAdherence === 'FULL' && clinicalResult.supplement_recommendations.length > 0 && (
                 <div style={{ background: '#FFFFFF', border: '1px solid #CBD5E1', borderRadius: '8px', padding: '10px 12px', marginBottom: '12px' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '6px' }}>
-                    <Pill size={14} color="#C4952D" />
-                    <strong style={{ fontSize: '11.5px', color: '#0F172A' }}>
-                      المكملات الغذائية التعويضية المقترحة:
-                    </strong>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '4px' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                      <Pill size={14} color="#C4952D" />
+                      <strong style={{ fontSize: '11.5px', color: '#0F172A' }}>
+                        المكملات الغذائية التعويضية:
+                      </strong>
+                    </div>
+                    <span style={{ fontSize: '10px', background: '#FEF3C7', color: '#92400E', padding: '1px 6px', borderRadius: '4px', fontWeight: 800 }}>
+                      ملاذ أخير عند تعذر التعويض الغذائي
+                    </span>
                   </div>
+                  <p style={{ fontSize: '10.5px', color: '#64748B', margin: '0 0 6px 0', lineHeight: 1.4 }}>
+                    المبدأ الحاكم للمنظومة هو الغذاء أولاً؛ تُستخدم هذه المكملات فقط كدعم استثنائي مؤقت بجانب هندسة الوجبات.
+                  </p>
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
                     {clinicalResult.supplement_recommendations.map((supp, idx) => (
                       <div key={idx} style={{ fontSize: '11px', color: '#334155' }}>
