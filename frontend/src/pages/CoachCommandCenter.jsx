@@ -842,35 +842,24 @@ export default function CoachCommandCenter() {
                 gap: '12px',
                 boxShadow: '0 1px 3px rgba(15, 23, 42, 0.04)'
               }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                  <div style={{
-                    background: '#F8FAFC',
-                    border: '1px solid #CBD5E1',
-                    borderRadius: '6px',
-                    padding: '8px',
-                    color: fastingFilter === 'COPTIC' ? '#6D28D9' : (fastingFilter === 'RAMADAN' ? '#B45309' : '#0369A1')
-                  }}>
-                    <Clock size={18} />
+                <div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+                    <strong style={{ fontSize: '13.5px', color: '#0F172A' }}>
+                      {selectedFastingDetails.name}
+                    </strong>
+                    <span style={{
+                      fontSize: '11px',
+                      fontWeight: 800,
+                      background: fastingFilter === 'COPTIC' ? '#EDE9FE' : (fastingFilter === 'RAMADAN' ? '#FEF3C7' : '#E0F2FE'),
+                      color: fastingFilter === 'COPTIC' ? '#6D28D9' : (fastingFilter === 'RAMADAN' ? '#B45309' : '#0369A1'),
+                      padding: '2px 8px',
+                      borderRadius: '4px'
+                    }}>
+                      {selectedFastingDetails.statusText}
+                    </span>
                   </div>
-                  <div>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
-                      <strong style={{ fontSize: '13.5px', color: '#0F172A' }}>
-                        {selectedFastingDetails.name}
-                      </strong>
-                      <span style={{
-                        fontSize: '11px',
-                        fontWeight: 800,
-                        background: fastingFilter === 'COPTIC' ? '#EDE9FE' : (fastingFilter === 'RAMADAN' ? '#FEF3C7' : '#E0F2FE'),
-                        color: fastingFilter === 'COPTIC' ? '#6D28D9' : (fastingFilter === 'RAMADAN' ? '#B45309' : '#0369A1'),
-                        padding: '2px 8px',
-                        borderRadius: '4px'
-                      }}>
-                        {selectedFastingDetails.statusText}
-                      </span>
-                    </div>
-                    <div style={{ fontSize: '11px', color: '#64748B', marginTop: '3px' }}>
-                      {selectedFastingDetails.description}
-                    </div>
+                  <div style={{ fontSize: '11px', color: '#64748B', marginTop: '3px' }}>
+                    {selectedFastingDetails.description}
                   </div>
                 </div>
 
