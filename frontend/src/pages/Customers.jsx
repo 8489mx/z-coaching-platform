@@ -29,6 +29,7 @@ import { copyToClipboard } from '../utils/clipboardUtils';
 import { PageHeader } from '@/shared/components/page-header';
 import { FormSection } from '@/shared/components/form-section';
 import { extractClientFastingProfile } from '../utils/seasonalFastingRadar';
+import InteractivePhotoComparisonStudio from '../components/checkin/InteractivePhotoComparisonStudio';
 
 export default function Customers() {
   const [phone, setPhone] = useState('');
@@ -46,6 +47,9 @@ export default function Customers() {
 
   // WhatsApp Hub State
   const [whatsappModalClient, setWhatsappModalClient] = useState(null);
+
+  // Transformation Studio State
+  const [transformationModalClient, setTransformationModalClient] = useState(null);
 
   useEffect(() => {
     fetchClients();
@@ -653,6 +657,38 @@ export default function Customers() {
                               <span>واتساب</span>
                             </button>
 
+                            {/* Transformation Studio Button */}
+                            <button
+                              type="button"
+                              onClick={() => setTransformationModalClient(client)}
+                              style={{
+                                padding: '4px 10px',
+                                borderRadius: '6px',
+                                border: '1px solid #FEF08A',
+                                background: '#FEFCE8',
+                                color: '#A16207',
+                                fontSize: '11.5px',
+                                fontWeight: 700,
+                                cursor: 'pointer',
+                                display: 'inline-flex',
+                                alignItems: 'center',
+                                gap: '5px',
+                                transition: 'all 0.15s ease'
+                              }}
+                              onMouseEnter={(e) => {
+                                e.currentTarget.style.background = '#FEF9C3';
+                                e.currentTarget.style.borderColor = '#FDE047';
+                              }}
+                              onMouseLeave={(e) => {
+                                e.currentTarget.style.background = '#FEFCE8';
+                                e.currentTarget.style.borderColor = '#FEF08A';
+                              }}
+                              title="استوديو صور التطور وكروت التحول التسويقية"
+                            >
+                              <Sparkles size={13} color="#A16207" />
+                              <span>التحول</span>
+                            </button>
+
                             {/* Program Editor Button */}
                             <Link
                               to={`/coach/editor/${cleanCode}`}
@@ -712,6 +748,87 @@ export default function Customers() {
             onClose={() => setWhatsappModalClient(null)}
             client={whatsappModalClient}
           />
+        )}
+
+        {/* Transformation Studio Modal */}
+        {transformationModalClient && (
+          <div 
+            style={{
+              position: 'fixed',
+              inset: 0,
+              backgroundColor: 'rgba(15, 23, 42, 0.85)',
+              backdropFilter: 'blur(8px)',
+              zIndex: 1400,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              padding: '16px'
+            }}
+            dir="rtl"
+            onClick={() => setTransformationModalClient(null)}
+          >
+            <div 
+              onClick={(e) => e.stopPropagation()}
+              style={{
+                background: '#FFFFFF',
+                borderRadius: '12px',
+                width: '940px',
+                maxWidth: '96vw',
+                maxHeight: '94vh',
+                overflowY: 'auto',
+                display: 'flex',
+                flexDirection: 'column',
+                boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.4)',
+                border: '1px solid #CBD5E1'
+              }}
+            >
+              <div style={{ padding: '12px 18px', borderBottom: '1px solid #E2E8F0', display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: '#F8FAFC' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <Sparkles size={16} color="#C4952D" />
+                  <h3 style={{ margin: 0, fontSize: '14px', fontWeight: 800, color: '#0F172A' }}>
+                    استوديو صور التطور وكروت التحول: {transformationModalClient.full_name} (#{transformationModalClient.client_code || transformationModalClient.id})
+                  </h3>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setTransformationModalClient(null)}
+                  style={{
+                    border: '1px solid #E2E8F0',
+                    background: '#FFFFFF',
+                    borderRadius: '6px',
+                    width: '30px',
+                    height: '30px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    cursor: 'pointer',
+                    color: '#64748B'
+                  }}
+                >
+                  <X size={15} />
+                </button>
+              </div>
+
+              <div style={{ padding: '16px' }}>
+                <InteractivePhotoComparisonStudio
+                  history={transformationModalClient.history || [
+                    { week: 0, weight: transformationModalClient.weight_kg || 80, waist: 88, date: 'البداية', photos: { front: null, side: null, back: null } },
+                    { week: 4, weight: (transformationModalClient.weight_kg ? Number((transformationModalClient.weight_kg - 3.2).toFixed(1)) : 76.8), waist: 83, date: 'التقييم الحالي', photos: { front: null, side: null, back: null } }
+                  ]}
+                  activeCheckin={{
+                    week_number: 4,
+                    submission_date: 'الأسبوع 4',
+                    metrics: {
+                      current_weight: (transformationModalClient.weight_kg ? Number((transformationModalClient.weight_kg - 3.2).toFixed(1)) : 76.8),
+                      waist_current: 83
+                    }
+                  }}
+                  client={transformationModalClient}
+                  onClose={() => setTransformationModalClient(null)}
+                />
+              </div>
+            </div>
+          </div>
         )}
 
         {/* Newly Created Client Success Dispatch Modal Popup (Exact Matching UI) */}

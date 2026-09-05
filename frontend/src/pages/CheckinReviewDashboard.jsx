@@ -39,6 +39,7 @@ import {
 import AdminLayout from '../components/layout/AdminLayout';
 import { PageHeader } from '@/shared/components/page-header';
 import { FormSection } from '@/shared/components/form-section';
+import InteractivePhotoComparisonStudio from '../components/checkin/InteractivePhotoComparisonStudio';
 
 import { STRESS_TEST_CLIENTS } from '../data/stressTestClientsBlueprints';
 
@@ -1372,21 +1373,15 @@ export default function CheckinReviewDashboard() {
 
             {/* 4. Photos & Weekly Client Reflections */}
             <FormSection
-              title="مقارنة صور التطور ورسالة المتدرب"
-              description="المقارنة البصرية وملاحظات المشترك حول أدائه وصعوبات الأسبوع."
+              title="استوديو مقارنة صور التطور ورسالة المتدرب"
+              description="المقارنة البصرية التفاعلية لصور التطور وتوليد كروت التحول التسويقية الاحترافية."
             >
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px', marginTop: '6px' }}>
-                <div style={{ background: '#F8FAFC', border: '1px dashed #CBD5E1', borderRadius: '8px', padding: '18px 10px', textAlign: 'center', color: '#64748B' }}>
-                  <Camera size={18} style={{ margin: '0 auto 5px auto', color: '#94A3B8' }} />
-                  <span style={{ fontSize: '11.5px', fontWeight: 700, display: 'block', color: '#475569' }}>الأسبوع السابق ({safeMetrics.previous_weight} كجم)</span>
-                  <small style={{ fontSize: '10.5px', color: '#94A3B8' }}>محيط الخصر: {safeMetrics.waist_previous} سم</small>
-                </div>
-
-                <div style={{ background: '#F0F9FF', border: '1px dashed #BAE6FD', borderRadius: '8px', padding: '18px 10px', textAlign: 'center', color: '#0284C7' }}>
-                  <Camera size={18} style={{ margin: '0 auto 5px auto', color: '#0284C7' }} />
-                  <span style={{ fontSize: '11.5px', fontWeight: 800, display: 'block', color: '#0F172A' }}>هذا الأسبوع ({safeMetrics.current_weight} كجم)</span>
-                  <small style={{ fontSize: '10.5px', color: '#0284C7', fontWeight: 700 }}>محيط الخصر: {safeMetrics.waist_current} سم ({safeMetrics.waist_change} سم)</small>
-                </div>
+              <div style={{ marginTop: '6px', marginBottom: '12px' }}>
+                <InteractivePhotoComparisonStudio
+                  history={activeCheckin.history || []}
+                  activeCheckin={activeCheckin}
+                  client={safeClient}
+                />
               </div>
 
               {/* Weekly Client Reflections: Non-Scale Victory & Struggle */}

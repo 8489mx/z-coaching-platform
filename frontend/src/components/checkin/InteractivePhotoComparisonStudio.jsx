@@ -1,15 +1,38 @@
-import React, { useState } from 'react';
-import { Maximize2, X, Sparkles, Eye } from 'lucide-react';
+import React, { useState, useRef, useEffect } from 'react';
+import { 
+  Maximize2, 
+  X, 
+  Sparkles, 
+  Eye, 
+  EyeOff, 
+  Sliders, 
+  Columns, 
+  Camera, 
+  Upload, 
+  Download, 
+  Share2, 
+  Shield, 
+  RefreshCw, 
+  Check,
+  ChevronLeft,
+  ChevronRight
+} from 'lucide-react';
+import { 
+  CARD_FORMATS, 
+  calculateTransformationStats, 
+  renderTransformationCard, 
+  downloadCanvasAsPng, 
+  buildTransformationWhatsAppShare 
+} from '../../utils/transformationCardGenerator';
 
 /**
- * Anatomical Body Silhouette Vector Generator
- * Renders high-fidelity anatomical outlines that visually reflect weight and body composition changes
+ * مجسم تشريحي بمسارات فيكتور دقيقة يوضح تغير تكوين الجسم
+ * يُعرض تلقائياً في حال عدم توفر صورة حقيقية مرفوعة
  */
 function BodyProgressCanvas({ gender = 'MALE', angle = 'FRONT', progressStage = 'CURRENT', weight = 75, waist = 80 }) {
-  const isMale = gender === 'MALE';
+  const isMale = (gender || '').toUpperCase() === 'MALE';
   const isBefore = progressStage === 'BEFORE';
   
-  // Visual subtle adaptations between before and after
   const waistWidth = isBefore ? 64 : 54;
   const chestWidth = isBefore ? 78 : 82;
   const shoulderWidth = isBefore ? 86 : 92;
@@ -17,14 +40,13 @@ function BodyProgressCanvas({ gender = 'MALE', angle = 'FRONT', progressStage = 
   const hipWidth = isBefore ? 68 : 60;
   const legThick = isBefore ? 24 : 22;
 
-  // Base colors
   const primaryColor = isBefore ? '#64748B' : '#0F172A';
   const accentColor = isBefore ? '#94A3B8' : (isMale ? '#0284C7' : '#E11D48');
   const bgGradStart = isBefore ? '#F8FAFC' : '#F0F9FF';
   const bgGradEnd = isBefore ? '#EDF2F7' : '#E0F2FE';
 
   return (
-    <svg viewBox="0 0 200 320" width="100%" height="100%" style={{ maxHeight: '250px', filter: 'drop-shadow(0 4px 10px rgba(15,23,42,0.05))' }}>
+    <svg viewBox="0 0 200 320" width="100%" height="100%" style={{ maxHeight: '270px', filter: 'drop-shadow(0 4px 10px rgba(15,23,42,0.05))' }}>
       <defs>
         <linearGradient id={`bodyGrad_${progressStage}_${angle}`} x1="0%" y1="0%" x2="100%" y2="100%">
           <stop offset="0%" stopColor={bgGradStart} />
@@ -36,82 +58,57 @@ function BodyProgressCanvas({ gender = 'MALE', angle = 'FRONT', progressStage = 
         </linearGradient>
       </defs>
 
-      {/* Grid Floor Reflection */}
       <ellipse cx="100" cy="305" rx="55" ry="8" fill="rgba(15, 23, 42, 0.08)" />
 
       {angle === 'FRONT' && (
         <g id="front_body" transform="translate(100, 20)">
-          {/* Head */}
           <circle cx="0" cy="20" r="16" fill={primaryColor} />
-          {/* Neck */}
           <rect x="-6" y="34" width="12" height="12" fill={primaryColor} rx="2" />
-          {/* Shoulders & Traps */}
           <path d={`M -${shoulderWidth/2} 48 Q 0 40 ${shoulderWidth/2} 48 L ${chestWidth/2} 80 L -${chestWidth/2} 80 Z`} fill={primaryColor} />
-          {/* Torso & Core */}
           <path d={`M -${chestWidth/2} 80 Q -${waistWidth/2} 115 -${hipWidth/2} 150 L ${hipWidth/2} 150 Q ${waistWidth/2} 115 ${chestWidth/2} 80 Z`} fill={primaryColor} />
-          {/* Muscle Definition Highlights */}
           {!isBefore && (
             <g stroke="#FFFFFF" strokeWidth="1.5" strokeLinecap="round" opacity="0.4">
-              {/* Pecs */}
               <path d="M -22 68 Q 0 74 0 82 M 22 68 Q 0 74 0 82" fill="none" />
-              {/* Abs */}
               <line x1="0" y1="90" x2="0" y2="135" />
               <line x1="-12" y1="102" x2="12" y2="102" />
               <line x1="-10" y1="118" x2="10" y2="118" />
               <line x1="-8" y1="132" x2="8" y2="132" />
             </g>
           )}
-          {/* Left Arm */}
           <path d={`M -${shoulderWidth/2} 50 Q -${shoulderWidth/2 + 16} 95 -${shoulderWidth/2 + 8} 145`} stroke={primaryColor} strokeWidth={armThick} strokeLinecap="round" fill="none" />
-          {/* Right Arm */}
           <path d={`M ${shoulderWidth/2} 50 Q ${shoulderWidth/2 + 16} 95 ${shoulderWidth/2 + 8} 145`} stroke={primaryColor} strokeWidth={armThick} strokeLinecap="round" fill="none" />
-          {/* Left Leg */}
           <path d={`M -${hipWidth/2 - 6} 150 Q -24 215 -18 280`} stroke={primaryColor} strokeWidth={legThick} strokeLinecap="round" fill="none" />
-          {/* Right Leg */}
           <path d={`M ${hipWidth/2 - 6} 150 Q 24 215 18 280`} stroke={primaryColor} strokeWidth={legThick} strokeLinecap="round" fill="none" />
         </g>
       )}
 
       {angle === 'SIDE' && (
         <g id="side_body" transform="translate(100, 20)">
-          {/* Head Profile */}
           <circle cx="0" cy="20" r="16" fill={primaryColor} />
-          {/* Torso Profile */}
           <path d={`M -12 44 Q -${isBefore ? 24 : 16} 100 -12 150 L 14 150 Q 18 100 12 44 Z`} fill={primaryColor} />
-          {/* Arm Profile */}
           <path d="M 2 50 Q 12 95 6 145" stroke={primaryColor} strokeWidth={armThick} strokeLinecap="round" fill="none" />
-          {/* Leg Profile */}
           <path d="M 0 150 Q 8 215 2 280" stroke={primaryColor} strokeWidth={legThick * 1.1} strokeLinecap="round" fill="none" />
         </g>
       )}
 
       {angle === 'BACK' && (
         <g id="back_body" transform="translate(100, 20)">
-          {/* Head Back */}
           <circle cx="0" cy="20" r="16" fill={primaryColor} />
-          {/* Traps & Lats */}
           <path d={`M -${shoulderWidth/2} 48 Q 0 42 ${shoulderWidth/2} 48 L ${chestWidth/2} 80 L -${chestWidth/2} 80 Z`} fill={primaryColor} />
-          {/* V-Taper Lats */}
           <path d={`M -${chestWidth/2} 80 Q -${waistWidth/2} 115 -${hipWidth/2} 150 L ${hipWidth/2} 150 Q ${waistWidth/2} 115 ${chestWidth/2} 80 Z`} fill={primaryColor} />
-          {/* Back muscle definition lines */}
           {!isBefore && (
             <g stroke="#FFFFFF" strokeWidth="1.5" strokeLinecap="round" opacity="0.4">
               <path d="M -26 62 Q 0 74 26 62" fill="none" />
               <path d="M 0 54 L 0 140" fill="none" />
             </g>
           )}
-          {/* Left Arm */}
           <path d={`M -${shoulderWidth/2} 50 Q -${shoulderWidth/2 + 14} 95 -${shoulderWidth/2 + 6} 145`} stroke={primaryColor} strokeWidth={armThick} strokeLinecap="round" fill="none" />
-          {/* Right Arm */}
           <path d={`M ${shoulderWidth/2} 50 Q ${shoulderWidth/2 + 14} 95 ${shoulderWidth/2 + 6} 145`} stroke={primaryColor} strokeWidth={armThick} strokeLinecap="round" fill="none" />
-          {/* Left Leg */}
           <path d={`M -${hipWidth/2 - 6} 150 Q -24 215 -18 280`} stroke={primaryColor} strokeWidth={legThick} strokeLinecap="round" fill="none" />
-          {/* Right Leg */}
           <path d={`M ${hipWidth/2 - 6} 150 Q 24 215 18 280`} stroke={primaryColor} strokeWidth={legThick} strokeLinecap="round" fill="none" />
         </g>
       )}
 
-      {/* Label Badge */}
       <rect x="25" y="290" width="150" height="22" rx="5" fill="#FFFFFF" stroke="#E2E8F0" />
       <text x="100" y="305" textAnchor="middle" fill="#0F172A" fontSize="10.5" fontWeight="800" fontFamily="Cairo, sans-serif">
         {progressStage === 'BEFORE' ? 'صورة الأساس (قبل)' : 'التقييم الحالي (بعد)'}
@@ -123,31 +120,197 @@ function BodyProgressCanvas({ gender = 'MALE', angle = 'FRONT', progressStage = 
 export default function InteractivePhotoComparisonStudio({
   history = [],
   activeCheckin = {},
-  client = {}
+  client = {},
+  onClose = null
 }) {
+  // 1. الحالات الأساسية
   const [angle, setAngle] = useState('FRONT'); // 'FRONT' | 'SIDE' | 'BACK'
+  const [viewMode, setViewMode] = useState('SIDE_BY_SIDE'); // 'SIDE_BY_SIDE' | 'SLIDER'
+  const [sliderPosition, setSliderPosition] = useState(50); // 0 to 100%
+  const [isDraggingSlider, setIsDraggingSlider] = useState(false);
   const [isFullscreen, setIsFullscreen] = useState(false);
+  const [blurFace, setBlurFace] = useState(false);
 
-  // Available weeks from history
+  // 2. صور مخصصة مرفوعة محلياً داخل الاستوديو
+  const [uploadedPhotos, setUploadedPhotos] = useState({
+    before: { FRONT: null, SIDE: null, BACK: null },
+    after: { FRONT: null, SIDE: null, BACK: null }
+  });
+
+  // 3. حالة نافذة توليد كارت التسويق
+  const [showMarketingModal, setShowMarketingModal] = useState(false);
+  const [selectedFormat, setSelectedFormat] = useState('PORTRAIT_4_5');
+  const [hideClientName, setHideClientName] = useState(true);
+  const [customCardTitle, setCustomCardTitle] = useState('تحول رياضي معتمد');
+  const [isGeneratingCard, setIsGeneratingCard] = useState(false);
+  const canvasRef = useRef(null);
+  const sliderContainerRef = useRef(null);
+
+  // استخراج قائمة الأسابيع المتوفرة
   const availableWeeks = history && history.length > 0 ? history : [
-    { week: 0, weight: client.start_weight || 75, waist: 82, date: 'البداية' },
-    { week: activeCheckin.week_number || 8, weight: activeCheckin.metrics?.current_weight || 72, waist: 78, date: 'اليوم' }
+    { 
+      week: 0, 
+      weight: client.start_weight || client.weight_kg || 78.5, 
+      waist: 88, 
+      date: 'نقطة البداية',
+      photos: { front: null, side: null, back: null }
+    },
+    { 
+      week: activeCheckin.week_number || 4, 
+      weight: activeCheckin.metrics?.current_weight || 74.0, 
+      waist: activeCheckin.metrics?.waist_current || 82, 
+      date: activeCheckin.submission_date || 'التقييم الحالي',
+      photos: activeCheckin.photos || { front: null, side: null, back: null }
+    }
   ];
 
-  const [beforeWeekIdx, setBeforeWeekIdx] = useState(0); // Baseline (Week 0)
-  const [afterWeekIdx, setAfterWeekIdx] = useState(availableWeeks.length - 1); // Latest week
+  const [beforeWeekIdx, setBeforeWeekIdx] = useState(0);
+  const [afterWeekIdx, setAfterWeekIdx] = useState(Math.max(0, availableWeeks.length - 1));
 
   const beforeEntry = availableWeeks[beforeWeekIdx] || availableWeeks[0];
   const afterEntry = availableWeeks[afterWeekIdx] || availableWeeks[availableWeeks.length - 1];
 
-  // Weight & Waist Deltas
-  const weightDiff = (afterEntry.weight - beforeEntry.weight).toFixed(1);
-  const waistDiff = ((afterEntry.waist || 80) - (beforeEntry.waist || 80)).toFixed(1);
+  // استخراج رابط الصورة الفعلي لكل مرحلة وزاوية
+  const getPhotoFor = (stage, selectedAngle) => {
+    const angleKey = selectedAngle.toLowerCase();
+    if (stage === 'BEFORE') {
+      if (uploadedPhotos.before[selectedAngle]) return uploadedPhotos.before[selectedAngle];
+      return beforeEntry.photos?.[angleKey] || beforeEntry[`${angleKey}_url`] || null;
+    } else {
+      if (uploadedPhotos.after[selectedAngle]) return uploadedPhotos.after[selectedAngle];
+      return afterEntry.photos?.[angleKey] || afterEntry[`${angleKey}_url`] || null;
+    }
+  };
+
+  const beforePhoto = getPhotoFor('BEFORE', angle);
+  const afterPhoto = getPhotoFor('CURRENT', angle);
+
+  // إحصائيات التحول
+  const stats = calculateTransformationStats({
+    beforeWeight: beforeEntry.weight,
+    afterWeight: afterEntry.weight,
+    beforeWaist: beforeEntry.waist || 85,
+    afterWaist: afterEntry.waist || 80,
+    beforeWeek: beforeEntry.week,
+    afterWeek: afterEntry.week,
+    adherence: afterEntry.adherence || 94
+  });
+
+  // معالجة رفع صورة محلياً
+  const handlePhotoUpload = (stage, selectedAngle, e) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        setUploadedPhotos(prev => ({
+          ...prev,
+          [stage]: {
+            ...prev[stage],
+            [selectedAngle]: event.target.result
+          }
+        }));
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  // التحكم بشريط التمرير التفاعلي (Split-Screen Slider)
+  const handleSliderMove = (clientX) => {
+    if (!sliderContainerRef.current) return;
+    const rect = sliderContainerRef.current.getBoundingClientRect();
+    const x = clientX - rect.left;
+    const percentage = Math.max(0, Math.min(100, (x / rect.width) * 100));
+    setSliderPosition(percentage);
+  };
+
+  const handleTouchMove = (e) => {
+    if (isDraggingSlider && e.touches[0]) {
+      handleSliderMove(e.touches[0].clientX);
+    }
+  };
+
+  const handleMouseMove = (e) => {
+    if (isDraggingSlider) {
+      handleSliderMove(e.clientX);
+    }
+  };
+
+  useEffect(() => {
+    const handleUp = () => setIsDraggingSlider(false);
+    window.addEventListener('mouseup', handleUp);
+    window.addEventListener('touchend', handleUp);
+    return () => {
+      window.removeEventListener('mouseup', handleUp);
+      window.removeEventListener('touchend', handleUp);
+    };
+  }, []);
+
+  // إعادة رسم كارت التسويق عند فتح النافذة أو تغيير الإعدادات
+  useEffect(() => {
+    if (showMarketingModal && canvasRef.current) {
+      setIsGeneratingCard(true);
+      const format = CARD_FORMATS[selectedFormat] || CARD_FORMATS.PORTRAIT_4_5;
+      
+      renderTransformationCard(canvasRef.current, {
+        format,
+        client: {
+          name: client.full_name || client.name || 'المشترك المعتمد',
+          code: client.client_code || client.code || '101'
+        },
+        beforeData: {
+          week: beforeEntry.week,
+          weight: beforeEntry.weight,
+          waist: beforeEntry.waist || 85,
+          date: beforeEntry.date,
+          photoUrl: beforePhoto
+        },
+        afterData: {
+          week: afterEntry.week,
+          weight: afterEntry.weight,
+          waist: afterEntry.waist || 80,
+          date: afterEntry.date,
+          photoUrl: afterPhoto
+        },
+        privacy: {
+          blurFace,
+          hideClientName,
+          customTitle: customCardTitle
+        },
+        stats
+      }).then(() => {
+        setIsGeneratingCard(false);
+      });
+    }
+  }, [showMarketingModal, selectedFormat, hideClientName, customCardTitle, blurFace, angle, beforeWeekIdx, afterWeekIdx, uploadedPhotos]);
+
+  // تنزيل كارت التحول
+  const handleDownloadCard = () => {
+    if (!canvasRef.current) return;
+    const cleanCode = client.client_code || client.code || '101';
+    downloadCanvasAsPng(canvasRef.current, `z_transformation_${cleanCode}_w${afterEntry.week}.png`);
+  };
+
+  // مشاركة عبر واتساب
+  const handleWhatsAppShare = () => {
+    const msg = buildTransformationWhatsAppShare({
+      client: {
+        code: client.client_code || client.code || '101',
+        name: client.full_name || client.name || 'المشترك'
+      },
+      stats,
+      beforeData: beforeEntry,
+      afterData: afterEntry
+    });
+    const phone = client.phone_number || '';
+    const cleanPhone = phone.replace(/[^0-9]/g, '');
+    const url = `https://wa.me/${cleanPhone}?text=${encodeURIComponent(msg)}`;
+    window.open(url, '_blank');
+  };
 
   return (
-    <div style={{ background: '#FFFFFF', border: '1px solid #E2E8F0', borderRadius: '10px', overflow: 'hidden', display: 'flex', flexDirection: 'column', gap: '0' }}>
+    <div style={{ background: '#FFFFFF', border: '1px solid #E2E8F0', borderRadius: '10px', overflow: 'hidden', display: 'flex', flexDirection: 'column', gap: '0' }} dir="rtl">
       
-      {/* 1. Header Studio Controls */}
+      {/* 1. ترويسة الاستوديو وأدوات التحكم الرئيسية */}
       <div style={{ 
         padding: '10px 14px', 
         background: '#F8FAFC', 
@@ -156,43 +319,122 @@ export default function InteractivePhotoComparisonStudio({
         justifyContent: 'space-between', 
         alignItems: 'center', 
         flexWrap: 'wrap', 
-        gap: '8px' 
+        gap: '10px' 
       }}>
-        {/* Left: Angle Switcher */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-          <span style={{ fontSize: '11px', fontWeight: 700, color: '#64748B' }}>الزاوية:</span>
-          <div style={{ display: 'inline-flex', background: '#FFFFFF', border: '1px solid #CBD5E1', borderRadius: '6px', padding: '2px' }}>
-            {[
-              { id: 'FRONT', label: 'أمامي' },
-              { id: 'SIDE', label: 'جانبي' },
-              { id: 'BACK', label: 'خلفي' }
-            ].map(a => (
+        {/* الزاوية ونمط العرض */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap' }}>
+          
+          {/* مبدل زاوية التصوير */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
+            <span style={{ fontSize: '11px', fontWeight: 700, color: '#64748B' }}>الزاوية:</span>
+            <div style={{ display: 'inline-flex', background: '#FFFFFF', border: '1px solid #CBD5E1', borderRadius: '6px', padding: '2px' }}>
+              {[
+                { id: 'FRONT', label: 'أمامي' },
+                { id: 'SIDE', label: 'جانبي' },
+                { id: 'BACK', label: 'خلفي' }
+              ].map(a => (
+                <button
+                  key={a.id}
+                  type="button"
+                  onClick={() => setAngle(a.id)}
+                  style={{
+                    border: 'none',
+                    background: angle === a.id ? '#0F172A' : 'transparent',
+                    color: angle === a.id ? '#FFFFFF' : '#64748B',
+                    padding: '4px 10px',
+                    borderRadius: '4px',
+                    fontSize: '11px',
+                    fontWeight: 700,
+                    cursor: 'pointer',
+                    transition: 'all 0.12s ease'
+                  }}
+                >
+                  {a.label}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* مبدل وضع المقارنة (متجاور أو شريط تمرير) */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
+            <span style={{ fontSize: '11px', fontWeight: 700, color: '#64748B' }}>العرض:</span>
+            <div style={{ display: 'inline-flex', background: '#FFFFFF', border: '1px solid #CBD5E1', borderRadius: '6px', padding: '2px' }}>
               <button
-                key={a.id}
                 type="button"
-                onClick={() => setAngle(a.id)}
+                onClick={() => setViewMode('SIDE_BY_SIDE')}
+                title="عرض متجاور"
                 style={{
                   border: 'none',
-                  background: angle === a.id ? '#0F172A' : 'transparent',
-                  color: angle === a.id ? '#FFFFFF' : '#64748B',
-                  padding: '4px 10px',
+                  background: viewMode === 'SIDE_BY_SIDE' ? '#0F172A' : 'transparent',
+                  color: viewMode === 'SIDE_BY_SIDE' ? '#FFFFFF' : '#64748B',
+                  padding: '4px 8px',
                   borderRadius: '4px',
                   fontSize: '11px',
                   fontWeight: 700,
                   cursor: 'pointer',
-                  transition: 'all 0.12s ease'
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '4px'
                 }}
               >
-                {a.label}
+                <Columns size={12} />
+                <span>متجاور</span>
               </button>
-            ))}
+
+              <button
+                type="button"
+                onClick={() => setViewMode('SLIDER')}
+                title="شريط التمرير التفاعلي"
+                style={{
+                  border: 'none',
+                  background: viewMode === 'SLIDER' ? '#0F172A' : 'transparent',
+                  color: viewMode === 'SLIDER' ? '#FFFFFF' : '#64748B',
+                  padding: '4px 8px',
+                  borderRadius: '4px',
+                  fontSize: '11px',
+                  fontWeight: 700,
+                  cursor: 'pointer',
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '4px'
+                }}
+              >
+                <Sliders size={12} />
+                <span>شريط سحب</span>
+              </button>
+            </div>
           </div>
+
+          {/* زر طمس الوجه للخصوصية */}
+          <button
+            type="button"
+            onClick={() => setBlurFace(prev => !prev)}
+            title="طمس ملامح الوجه لحماية الخصوصية"
+            style={{
+              padding: '4px 9px',
+              borderRadius: '6px',
+              border: blurFace ? '1px solid #C4952D' : '1px solid #CBD5E1',
+              background: blurFace ? '#FEF3C7' : '#FFFFFF',
+              color: blurFace ? '#92400E' : '#475569',
+              fontSize: '11px',
+              fontWeight: 700,
+              cursor: 'pointer',
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '4px',
+              transition: 'all 0.12s ease'
+            }}
+          >
+            {blurFace ? <Shield size={12} color="#92400E" /> : <Eye size={12} color="#64748B" />}
+            <span>{blurFace ? 'درع الخصوصية نشط' : 'حماية الوجه'}</span>
+          </button>
+
         </div>
 
-        {/* Right: Week Comparators & Fullscreen Button */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+        {/* محددات الأسابيع وزر توليد الكارت */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
           
-          {/* Before Week Selector */}
+          {/* محدد أسبوع قبل */}
           <div style={{ display: 'flex', alignItems: 'center', gap: '4px', fontSize: '11px' }}>
             <span style={{ color: '#64748B', fontWeight: 600 }}>من:</span>
             <select
@@ -220,7 +462,7 @@ export default function InteractivePhotoComparisonStudio({
 
           <span style={{ color: '#94A3B8', fontWeight: 800 }}>←</span>
 
-          {/* After Week Selector */}
+          {/* محدد أسبوع بعد */}
           <div style={{ display: 'flex', alignItems: 'center', gap: '4px', fontSize: '11px' }}>
             <span style={{ color: '#64748B', fontWeight: 600 }}>إلى:</span>
             <select
@@ -246,7 +488,30 @@ export default function InteractivePhotoComparisonStudio({
             </select>
           </div>
 
-          {/* Fullscreen HD Studio Button */}
+          {/* زر توليد كارت التحول التسويقي */}
+          <button
+            type="button"
+            onClick={() => setShowMarketingModal(true)}
+            style={{
+              padding: '4px 12px',
+              borderRadius: '6px',
+              border: 'none',
+              background: '#0F172A',
+              color: '#C4952D',
+              fontSize: '11px',
+              fontWeight: 800,
+              cursor: 'pointer',
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '6px',
+              boxShadow: '0 2px 5px rgba(15, 23, 42, 0.2)'
+            }}
+          >
+            <Sparkles size={13} color="#C4952D" />
+            <span>كارت التحول التسويقي</span>
+          </button>
+
+          {/* زر التكبير لملء الشاشة */}
           <button
             type="button"
             onClick={() => setIsFullscreen(true)}
@@ -260,8 +525,7 @@ export default function InteractivePhotoComparisonStudio({
               cursor: 'pointer',
               display: 'inline-flex',
               alignItems: 'center',
-              justifyContent: 'center',
-              transition: 'all 0.12s ease'
+              justifyContent: 'center'
             }}
           >
             <Maximize2 size={13} />
@@ -270,96 +534,572 @@ export default function InteractivePhotoComparisonStudio({
         </div>
       </div>
 
-      {/* 2. Side-by-Side Visual Comparison Canvas */}
-      <div style={{ position: 'relative', background: '#FAFAFA', padding: '14px', minHeight: '300px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '14px', width: '100%', maxWidth: '680px' }}>
-          
-          {/* Card 1: BEFORE */}
-          <div style={{ background: '#FFFFFF', border: '1px solid #E2E8F0', borderRadius: '8px', padding: '12px', display: 'flex', flexDirection: 'column', alignItems: 'center', position: 'relative', boxShadow: '0 1px 4px rgba(0,0,0,0.02)' }}>
-            <div style={{ width: '100%', display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid #F1F5F9', paddingBottom: '6px', marginBottom: '8px' }}>
-              <span style={{ fontSize: '11.5px', fontWeight: 800, color: '#64748B' }}>
-                الأسبوع {beforeEntry.week} (البداية)
-              </span>
-              <span style={{ fontSize: '10.5px', color: '#94A3B8' }}>{beforeEntry.date}</span>
+      {/* 2. منطقة المقارنة البصرية (متجاور أو شريط تمرير) */}
+      <div style={{ position: 'relative', background: '#FAFAFA', padding: '16px', minHeight: '320px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        
+        {viewMode === 'SIDE_BY_SIDE' ? (
+          /* الوضع الأول: متجاور (Side-by-Side) */
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '14px', width: '100%', maxWidth: '720px' }}>
+            
+            {/* كارت قبل (BEFORE) */}
+            <div style={{ background: '#FFFFFF', border: '1px solid #E2E8F0', borderRadius: '8px', padding: '12px', display: 'flex', flexDirection: 'column', alignItems: 'center', position: 'relative' }}>
+              <div style={{ width: '100%', display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid #F1F5F9', paddingBottom: '6px', marginBottom: '8px' }}>
+                <span style={{ fontSize: '11.5px', fontWeight: 800, color: '#64748B' }}>
+                  الأسبوع {beforeEntry.week} (البداية)
+                </span>
+                <span style={{ fontSize: '10.5px', color: '#94A3B8' }}>{beforeEntry.date}</span>
+              </div>
+
+              {/* الصورة أو المجسم */}
+              <div style={{ height: '240px', width: '100%', position: 'relative', overflow: 'hidden', borderRadius: '6px', background: '#F8FAFC', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                {beforePhoto ? (
+                  <img 
+                    src={beforePhoto} 
+                    alt="صورة قبل" 
+                    style={{ width: '100%', height: '100%', objectFit: 'cover' }} 
+                  />
+                ) : (
+                  <BodyProgressCanvas 
+                    gender={client.gender} 
+                    angle={angle} 
+                    progressStage="BEFORE" 
+                    weight={beforeEntry.weight} 
+                    waist={beforeEntry.waist || 85} 
+                  />
+                )}
+
+                {/* طبقة طمس الوجه إن كانت مفعلة */}
+                {blurFace && (
+                  <div style={{
+                    position: 'absolute',
+                    top: '12px',
+                    left: '50%',
+                    transform: 'translateX(-50%)',
+                    width: '45%',
+                    height: '35px',
+                    background: '#0F172A',
+                    borderRadius: '16px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    color: '#94A3B8',
+                    fontSize: '10px',
+                    fontWeight: 700,
+                    boxShadow: '0 2px 6px rgba(0,0,0,0.3)'
+                  }}>
+                    محمي للخصوصية
+                  </div>
+                )}
+
+                {/* زر رفع أو استبدال الصورة */}
+                <label 
+                  style={{
+                    position: 'absolute',
+                    bottom: '8px',
+                    right: '8px',
+                    background: 'rgba(15, 23, 42, 0.8)',
+                    color: '#FFFFFF',
+                    padding: '4px 8px',
+                    borderRadius: '4px',
+                    fontSize: '10px',
+                    fontWeight: 700,
+                    cursor: 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '4px'
+                  }}
+                  title="رفع صورة حقيقية لهذه المرحلة"
+                >
+                  <Camera size={11} />
+                  <span>{beforePhoto ? 'تغيير' : 'رفع صورة'}</span>
+                  <input 
+                    type="file" 
+                    accept="image/*" 
+                    style={{ display: 'none' }} 
+                    onChange={(e) => handlePhotoUpload('before', angle, e)} 
+                  />
+                </label>
+              </div>
+
+              {/* أرقام القياسات */}
+              <div style={{ width: '100%', background: '#F8FAFC', border: '1px solid #E2E8F0', borderRadius: '6px', padding: '6px 8px', display: 'flex', justifyContent: 'space-around', fontSize: '11px', marginTop: '8px' }}>
+                <span>الوزن: <strong style={{ color: '#0F172A', fontFamily: 'JetBrains Mono' }}>{beforeEntry.weight} كجم</strong></span>
+                {beforeEntry.waist && <span>الخصر: <strong style={{ color: '#0F172A', fontFamily: 'JetBrains Mono' }}>{beforeEntry.waist} سم</strong></span>}
+              </div>
             </div>
 
-            <div style={{ height: '220px', width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              <BodyProgressCanvas 
-                gender={client.gender || 'MALE'} 
-                angle={angle} 
-                progressStage="BEFORE" 
-                weight={beforeEntry.weight} 
-                waist={beforeEntry.waist || 82} 
-              />
+            {/* كارت بعد (AFTER) */}
+            <div style={{ background: '#FFFFFF', border: '1.5px solid #CBD5E1', borderRadius: '8px', padding: '12px', display: 'flex', flexDirection: 'column', alignItems: 'center', position: 'relative' }}>
+              <div style={{ width: '100%', display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid #F1F5F9', paddingBottom: '6px', marginBottom: '8px' }}>
+                <span style={{ fontSize: '11.5px', fontWeight: 800, color: '#0F172A' }}>
+                  الأسبوع {afterEntry.week} (التقييم الحالي)
+                </span>
+                <span style={{ fontSize: '10.5px', color: '#64748B' }}>{afterEntry.date}</span>
+              </div>
+
+              {/* الصورة أو المجسم */}
+              <div style={{ height: '240px', width: '100%', position: 'relative', overflow: 'hidden', borderRadius: '6px', background: '#F0F9FF', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                {afterPhoto ? (
+                  <img 
+                    src={afterPhoto} 
+                    alt="صورة بعد" 
+                    style={{ width: '100%', height: '100%', objectFit: 'cover' }} 
+                  />
+                ) : (
+                  <BodyProgressCanvas 
+                    gender={client.gender} 
+                    angle={angle} 
+                    progressStage="CURRENT" 
+                    weight={afterEntry.weight} 
+                    waist={afterEntry.waist || 80} 
+                  />
+                )}
+
+                {/* طبقة طمس الوجه إن كانت مفعلة */}
+                {blurFace && (
+                  <div style={{
+                    position: 'absolute',
+                    top: '12px',
+                    left: '50%',
+                    transform: 'translateX(-50%)',
+                    width: '45%',
+                    height: '35px',
+                    background: '#0F172A',
+                    borderRadius: '16px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    color: '#C4952D',
+                    fontSize: '10px',
+                    fontWeight: 700,
+                    boxShadow: '0 2px 6px rgba(0,0,0,0.3)'
+                  }}>
+                    محمي للخصوصية
+                  </div>
+                )}
+
+                {/* زر رفع أو استبدال الصورة */}
+                <label 
+                  style={{
+                    position: 'absolute',
+                    bottom: '8px',
+                    right: '8px',
+                    background: 'rgba(15, 23, 42, 0.8)',
+                    color: '#FFFFFF',
+                    padding: '4px 8px',
+                    borderRadius: '4px',
+                    fontSize: '10px',
+                    fontWeight: 700,
+                    cursor: 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '4px'
+                  }}
+                  title="رفع صورة حقيقية لهذه المرحلة"
+                >
+                  <Camera size={11} />
+                  <span>{afterPhoto ? 'تغيير' : 'رفع صورة'}</span>
+                  <input 
+                    type="file" 
+                    accept="image/*" 
+                    style={{ display: 'none' }} 
+                    onChange={(e) => handlePhotoUpload('after', angle, e)} 
+                  />
+                </label>
+              </div>
+
+              {/* أرقام القياسات */}
+              <div style={{ width: '100%', background: '#F8FAFC', border: '1px solid #E2E8F0', borderRadius: '6px', padding: '6px 8px', display: 'flex', justifyContent: 'space-around', fontSize: '11px', marginTop: '8px' }}>
+                <span>الوزن: <strong style={{ color: '#0F172A', fontFamily: 'JetBrains Mono' }}>{afterEntry.weight} كجم</strong></span>
+                {afterEntry.waist && <span>الخصر: <strong style={{ color: '#0F172A', fontFamily: 'JetBrains Mono' }}>{afterEntry.waist} سم</strong></span>}
+              </div>
             </div>
 
-            <div style={{ width: '100%', background: '#F8FAFC', border: '1px solid #E2E8F0', borderRadius: '6px', padding: '6px 8px', display: 'flex', justifyContent: 'space-around', fontSize: '11px', marginTop: '8px' }}>
-              <span>الوزن: <strong style={{ color: '#0F172A', fontFamily: 'JetBrains Mono' }}>{beforeEntry.weight} كجم</strong></span>
-              {beforeEntry.waist && <span>الخصر: <strong style={{ color: '#0F172A', fontFamily: 'JetBrains Mono' }}>{beforeEntry.waist} سم</strong></span>}
-            </div>
           </div>
+        ) : (
+          /* الوضع الثاني: شريط التمرير التفاعلي (Interactive Split-Screen Slider) */
+          <div 
+            ref={sliderContainerRef}
+            onMouseMove={handleMouseMove}
+            onTouchMove={handleTouchMove}
+            style={{
+              position: 'relative',
+              width: '100%',
+              maxWidth: '480px',
+              height: '340px',
+              borderRadius: '10px',
+              overflow: 'hidden',
+              userSelect: 'none',
+              cursor: isDraggingSlider ? 'ew-resize' : 'default',
+              boxShadow: '0 4px 15px rgba(0,0,0,0.06)',
+              background: '#0F172A'
+            }}
+          >
+            {/* صورة بعد (الخلفية الكاملة) */}
+            <div style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              {afterPhoto ? (
+                <img src={afterPhoto} alt="بعد" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+              ) : (
+                <BodyProgressCanvas gender={client.gender} angle={angle} progressStage="CURRENT" weight={afterEntry.weight} waist={afterEntry.waist || 80} />
+              )}
 
-          {/* Card 2: AFTER */}
-          <div style={{ background: '#FFFFFF', border: '1.5px solid #CBD5E1', borderRadius: '8px', padding: '12px', display: 'flex', flexDirection: 'column', alignItems: 'center', position: 'relative', boxShadow: '0 2px 8px rgba(15,23,42,0.04)' }}>
-            <div style={{ width: '100%', display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid #F1F5F9', paddingBottom: '6px', marginBottom: '8px' }}>
-              <span style={{ fontSize: '11.5px', fontWeight: 800, color: '#0F172A' }}>
-                الأسبوع {afterEntry.week} (التقييم الحالي)
+              {/* وسم بعد */}
+              <span style={{ position: 'absolute', top: '12px', left: '12px', background: 'rgba(15, 23, 42, 0.85)', color: '#C4952D', padding: '4px 10px', borderRadius: '4px', fontSize: '11px', fontWeight: 800 }}>
+                الأسبوع {afterEntry.week} ({afterEntry.weight} كجم)
               </span>
-              <span style={{ fontSize: '10.5px', color: '#64748B' }}>{afterEntry.date}</span>
             </div>
 
-            <div style={{ height: '220px', width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              <BodyProgressCanvas 
-                gender={client.gender || 'MALE'} 
-                angle={angle} 
-                progressStage="CURRENT" 
-                weight={afterEntry.weight} 
-                waist={afterEntry.waist || 80} 
-              />
+            {/* صورة قبل (مقتصة بحسب موضع المقبض sliderPosition) */}
+            <div 
+              style={{ 
+                position: 'absolute', 
+                inset: 0, 
+                width: `${sliderPosition}%`, 
+                height: '100%', 
+                overflow: 'hidden',
+                borderLeft: '2px solid #C4952D',
+                background: '#1E293B',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center'
+              }}
+            >
+              <div style={{ position: 'absolute', top: 0, right: 0, width: '480px', height: '340px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                {beforePhoto ? (
+                  <img src={beforePhoto} alt="قبل" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                ) : (
+                  <BodyProgressCanvas gender={client.gender} angle={angle} progressStage="BEFORE" weight={beforeEntry.weight} waist={beforeEntry.waist || 85} />
+                )}
+              </div>
+
+              {/* وسم قبل */}
+              <span style={{ position: 'absolute', top: '12px', right: '12px', background: 'rgba(15, 23, 42, 0.85)', color: '#FFFFFF', padding: '4px 10px', borderRadius: '4px', fontSize: '11px', fontWeight: 800 }}>
+                الأسبوع {beforeEntry.week} ({beforeEntry.weight} كجم)
+              </span>
             </div>
 
-            <div style={{ width: '100%', background: '#F8FAFC', border: '1px solid #E2E8F0', borderRadius: '6px', padding: '6px 8px', display: 'flex', justifyContent: 'space-around', fontSize: '11px', marginTop: '8px' }}>
-              <span>الوزن: <strong style={{ color: '#0F172A', fontFamily: 'JetBrains Mono' }}>{afterEntry.weight} كجم</strong></span>
-              {afterEntry.waist && <span>الخصر: <strong style={{ color: '#0F172A', fontFamily: 'JetBrains Mono' }}>{afterEntry.waist} سم</strong></span>}
+            {/* مقبض السحب (Draggable Divider Handle) */}
+            <div 
+              onMouseDown={() => setIsDraggingSlider(true)}
+              onTouchStart={() => setIsDraggingSlider(true)}
+              style={{
+                position: 'absolute',
+                top: 0,
+                bottom: 0,
+                left: `${sliderPosition}%`,
+                transform: 'translateX(-50%)',
+                width: '32px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                cursor: 'ew-resize',
+                zIndex: 10
+              }}
+            >
+              <div style={{
+                width: '30px',
+                height: '30px',
+                borderRadius: '50%',
+                background: '#0F172A',
+                border: '2px solid #C4952D',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                boxShadow: '0 2px 8px rgba(0,0,0,0.4)',
+                color: '#C4952D'
+              }}>
+                <Sliders size={13} />
+              </div>
             </div>
+
           </div>
+        )}
 
-        </div>
       </div>
 
-      {/* 3. Clinical Transformation Metric Strip */}
-      <div style={{ padding: '8px 14px', background: '#F8FAFC', borderTop: '1px solid #E2E8F0', display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '11.5px', flexWrap: 'wrap', gap: '8px' }}>
+      {/* 3. شريط إحصائيات التحول الدقيقة */}
+      <div style={{ padding: '10px 14px', background: '#F8FAFC', borderTop: '1px solid #E2E8F0', display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '11.5px', flexWrap: 'wrap', gap: '8px' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
           <Sparkles size={13} color="#0F172A" />
-          <strong style={{ color: '#0F172A' }}>صافي التحول البصري والقياسي:</strong>
+          <strong style={{ color: '#0F172A' }}>صافي نتائج التحول والقياسات:</strong>
         </div>
 
         <div style={{ display: 'flex', alignItems: 'center', gap: '14px', fontSize: '11px' }}>
           <span>
-            فارق الوزن: <strong style={{ color: Number(weightDiff) < 0 ? '#16A34A' : (Number(weightDiff) === 0 ? '#0284C7' : '#DC2626'), fontFamily: 'JetBrains Mono' }}>
-              {Number(weightDiff) > 0 ? `+${weightDiff}` : weightDiff} كجم
+            فارق الوزن: <strong style={{ color: stats.weightDiff < 0 ? '#16A34A' : (stats.weightDiff === 0 ? '#0284C7' : '#DC2626'), fontFamily: 'JetBrains Mono' }}>
+              {stats.weightDiff > 0 ? `+${stats.weightDiff}` : stats.weightDiff} كجم
             </strong>
           </span>
           <span>
-            تغير الخصر: <strong style={{ color: Number(waistDiff) <= 0 ? '#16A34A' : '#DC2626', fontFamily: 'JetBrains Mono' }}>
-              {Number(waistDiff) > 0 ? `+${waistDiff}` : waistDiff} سم
+            تغير الخصر: <strong style={{ color: stats.waistDiff <= 0 ? '#16A34A' : '#DC2626', fontFamily: 'JetBrains Mono' }}>
+              {stats.waistDiff > 0 ? `+${stats.waistDiff}` : stats.waistDiff} سم
             </strong>
           </span>
           <span style={{ color: '#64748B' }}>
-            المدة: <strong style={{ color: '#0F172A' }}>{Math.abs(afterEntry.week - beforeEntry.week)} أسابيع</strong>
+            المدة: <strong style={{ color: '#0F172A' }}>{stats.weeksCount} أسابيع</strong>
+          </span>
+          <span style={{ color: '#64748B' }}>
+            الالتزام: <strong style={{ color: '#C4952D' }}>{stats.adherenceRate}%</strong>
           </span>
         </div>
       </div>
 
       {/* =========================================================================
-          FULLSCREEN LIGHTBOX MODAL
+          نافذة توليد كارت التحول التسويقي (Marketing Transformation Card Modal)
+          ========================================================================= */}
+      {showMarketingModal && (
+        <div 
+          style={{
+            position: 'fixed',
+            inset: 0,
+            backgroundColor: 'rgba(15, 23, 42, 0.85)',
+            backdropFilter: 'blur(8px)',
+            zIndex: 2000,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            padding: '16px'
+          }}
+          onClick={() => setShowMarketingModal(false)}
+        >
+          <div 
+            onClick={(e) => e.stopPropagation()}
+            style={{
+              background: '#FFFFFF',
+              borderRadius: '12px',
+              width: '940px',
+              maxWidth: '96vw',
+              maxHeight: '94vh',
+              overflowY: 'auto',
+              display: 'flex',
+              flexDirection: 'column',
+              boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.4)',
+              border: '1px solid #CBD5E1'
+            }}
+          >
+            {/* ترويسة النافذة */}
+            <div style={{ padding: '12px 18px', borderBottom: '1px solid #E2E8F0', display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: '#F8FAFC' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <Sparkles size={16} color="#C4952D" />
+                <h3 style={{ margin: 0, fontSize: '14px', fontWeight: 800, color: '#0F172A' }}>
+                  توليد كارت التحول التسويقي الفاخر (Z Marketing Studio)
+                </h3>
+              </div>
+              <button
+                type="button"
+                onClick={() => setShowMarketingModal(false)}
+                style={{
+                  border: '1px solid #E2E8F0',
+                  background: '#FFFFFF',
+                  borderRadius: '6px',
+                  width: '30px',
+                  height: '30px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  cursor: 'pointer',
+                  color: '#64748B'
+                }}
+              >
+                <X size={15} />
+              </button>
+            </div>
+
+            {/* محتوى النافذة */}
+            <div style={{ padding: '16px', display: 'grid', gridTemplateColumns: '1fr 340px', gap: '16px', background: '#F1F5F9' }}>
+              
+              {/* المعاينة الحية للكارت */}
+              <div style={{ background: '#0F172A', borderRadius: '10px', padding: '14px', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: '440px', position: 'relative' }}>
+                <canvas 
+                  ref={canvasRef} 
+                  style={{ 
+                    maxWidth: '100%', 
+                    maxHeight: '480px', 
+                    borderRadius: '8px', 
+                    boxShadow: '0 10px 25px rgba(0,0,0,0.5)',
+                    border: '1px solid rgba(196, 149, 45, 0.3)'
+                  }} 
+                />
+                {isGeneratingCard && (
+                  <div style={{ position: 'absolute', background: 'rgba(15,23,42,0.7)', color: '#FFFFFF', padding: '8px 16px', borderRadius: '6px', fontSize: '12px', fontWeight: 700 }}>
+                    جاري إعداد الكارت عالي الدقة...
+                  </div>
+                )}
+              </div>
+
+              {/* لوحة خيارات التخصيص */}
+              <div style={{ background: '#FFFFFF', padding: '16px', borderRadius: '10px', border: '1px solid #E2E8F0', display: 'flex', flexDirection: 'column', gap: '14px' }}>
+                
+                {/* 1. اختيار مقاس الكارت */}
+                <div>
+                  <label style={{ fontSize: '11.5px', fontWeight: 800, color: '#0F172A', display: 'block', marginBottom: '6px' }}>
+                    مقاس الكارت (Aspect Ratio):
+                  </label>
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '6px' }}>
+                    {Object.values(CARD_FORMATS).map(f => (
+                      <button
+                        key={f.id}
+                        type="button"
+                        onClick={() => setSelectedFormat(f.id)}
+                        style={{
+                          textAlign: 'right',
+                          padding: '7px 10px',
+                          borderRadius: '6px',
+                          border: selectedFormat === f.id ? '1.5px solid #0F172A' : '1px solid #E2E8F0',
+                          background: selectedFormat === f.id ? '#F8FAFC' : '#FFFFFF',
+                          cursor: 'pointer',
+                          display: 'flex',
+                          justifyContent: 'space-between',
+                          alignItems: 'center'
+                        }}
+                      >
+                        <div>
+                          <strong style={{ fontSize: '11.5px', color: '#0F172A', display: 'block' }}>{f.name}</strong>
+                          <span style={{ fontSize: '10px', color: '#64748B' }}>{f.recommendedFor}</span>
+                        </div>
+                        {selectedFormat === f.id && <Check size={14} color="#C4952D" />}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* 2. عنوان الكارت */}
+                <div>
+                  <label style={{ fontSize: '11.5px', fontWeight: 800, color: '#0F172A', display: 'block', marginBottom: '4px' }}>
+                    عنوان التحول:
+                  </label>
+                  <input 
+                    type="text"
+                    value={customCardTitle}
+                    onChange={(e) => setCustomCardTitle(e.target.value)}
+                    placeholder="مثال: تحول رياضي استثنائي"
+                    style={{
+                      width: '100%',
+                      padding: '7px 10px',
+                      borderRadius: '6px',
+                      border: '1px solid #CBD5E1',
+                      fontSize: '11.5px',
+                      color: '#0F172A',
+                      outline: 'none'
+                    }}
+                  />
+                </div>
+
+                {/* 3. خيارات الخصوصية */}
+                <div style={{ background: '#F8FAFC', padding: '10px', borderRadius: '8px', border: '1px solid #E2E8F0', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                  <span style={{ fontSize: '11px', fontWeight: 800, color: '#475569' }}>إعدادات الخصوصية وحماية الهوية:</span>
+                  
+                  <label style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '11.5px', cursor: 'pointer' }}>
+                    <input 
+                      type="checkbox"
+                      checked={blurFace}
+                      onChange={(e) => setBlurFace(e.target.checked)}
+                      style={{ accentColor: '#C4952D', cursor: 'pointer' }}
+                    />
+                    <span>طمس ملامح الوجه لحماية الخصوصية</span>
+                  </label>
+
+                  <label style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '11.5px', cursor: 'pointer' }}>
+                    <input 
+                      type="checkbox"
+                      checked={hideClientName}
+                      onChange={(e) => setHideClientName(e.target.checked)}
+                      style={{ accentColor: '#C4952D', cursor: 'pointer' }}
+                    />
+                    <span>إخفاء الاسم الكامل (إظهار كود المشترك فقط)</span>
+                  </label>
+                </div>
+
+                {/* 4. أزرار الإجراءات */}
+                <div style={{ marginTop: 'auto', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                  <button
+                    type="button"
+                    onClick={handleDownloadCard}
+                    style={{
+                      width: '100%',
+                      padding: '10px',
+                      borderRadius: '6px',
+                      border: 'none',
+                      background: '#0F172A',
+                      color: '#FFFFFF',
+                      fontSize: '12px',
+                      fontWeight: 800,
+                      cursor: 'pointer',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      gap: '8px',
+                      boxShadow: '0 2px 6px rgba(15,23,42,0.25)'
+                    }}
+                  >
+                    <Download size={14} color="#C4952D" />
+                    <span>تحميل الكارت بصيغة PNG عالية الدقة</span>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={handleWhatsAppShare}
+                    style={{
+                      width: '100%',
+                      padding: '8px',
+                      borderRadius: '6px',
+                      border: '1px solid #86EFAC',
+                      background: '#F0FDF4',
+                      color: '#16A34A',
+                      fontSize: '11.5px',
+                      fontWeight: 700,
+                      cursor: 'pointer',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      gap: '6px'
+                    }}
+                  >
+                    <Share2 size={13} />
+                    <span>مشاركة البيانات عبر واتساب</span>
+                  </button>
+                </div>
+
+              </div>
+
+            </div>
+
+            {/* فوتر النافذة */}
+            <div style={{ padding: '10px 18px', background: '#FFFFFF', borderTop: '1px solid #E2E8F0', display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '11.5px' }}>
+              <span style={{ color: '#64748B' }}>
+                الكارت يوثق نزول <strong>{Math.abs(stats.weightDiff)} كجم</strong> خلال <strong>{stats.weeksCount} أسابيع</strong> بنسبة التزام <strong>{stats.adherenceRate}%</strong>
+              </span>
+              <button
+                type="button"
+                onClick={() => setShowMarketingModal(false)}
+                style={{
+                  padding: '5px 14px',
+                  borderRadius: '5px',
+                  border: '1px solid #CBD5E1',
+                  background: '#FFFFFF',
+                  color: '#0F172A',
+                  fontSize: '11.5px',
+                  fontWeight: 700,
+                  cursor: 'pointer'
+                }}
+              >
+                إغلاق
+              </button>
+            </div>
+
+          </div>
+        </div>
+      )}
+
+      {/* =========================================================================
+          نافذة ملء الشاشة عالية الدقة (Fullscreen Modal)
           ========================================================================= */}
       {isFullscreen && (
         <div 
           style={{
             position: 'fixed',
             inset: 0,
-            backgroundColor: 'rgba(15, 23, 42, 0.85)',
+            backgroundColor: 'rgba(15, 23, 42, 0.9)',
             backdropFilter: 'blur(8px)',
             zIndex: 1500,
             display: 'flex',
@@ -367,7 +1107,6 @@ export default function InteractivePhotoComparisonStudio({
             justifyContent: 'center',
             padding: '20px'
           }}
-          dir="rtl"
           onClick={() => setIsFullscreen(false)}
         >
           <div 
@@ -375,7 +1114,7 @@ export default function InteractivePhotoComparisonStudio({
             style={{
               background: '#FFFFFF',
               borderRadius: '12px',
-              width: '900px',
+              width: '920px',
               maxWidth: '96vw',
               maxHeight: '92vh',
               overflow: 'hidden',
@@ -385,101 +1124,64 @@ export default function InteractivePhotoComparisonStudio({
               border: '1px solid #CBD5E1'
             }}
           >
-            {/* Modal Header */}
             <div style={{ padding: '12px 18px', borderBottom: '1px solid #E2E8F0', display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: '#F8FAFC' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                 <Maximize2 size={16} color="#0F172A" />
-                <h3 style={{ margin: 0, fontSize: '14px', fontWeight: 800, color: '#0F172A' }}>
-                  استوديو المقارنة البصرية عالي الدقة: {client.name} (#{client.code})
+                <h3 style={{ margin: 0, fontSize: '13.5px', fontWeight: 800, color: '#0F172A' }}>
+                  استوديو المقارنة عالي الدقة: {client.full_name || client.name} (#{client.client_code || client.code})
                 </h3>
               </div>
-
-              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                {/* Angle Selector inside modal */}
-                <div style={{ display: 'inline-flex', background: '#FFFFFF', border: '1px solid #CBD5E1', borderRadius: '6px', padding: '2px' }}>
-                  {['FRONT', 'SIDE', 'BACK'].map(a => (
-                    <button
-                      key={a}
-                      type="button"
-                      onClick={() => setAngle(a)}
-                      style={{
-                        border: 'none',
-                        background: angle === a ? '#0F172A' : 'transparent',
-                        color: angle === a ? '#FFFFFF' : '#64748B',
-                        padding: '4px 10px',
-                        borderRadius: '4px',
-                        fontSize: '11px',
-                        fontWeight: 700,
-                        cursor: 'pointer'
-                      }}
-                    >
-                      {a === 'FRONT' ? 'أمامي' : a === 'SIDE' ? 'جانبي' : 'خلفي'}
-                    </button>
-                  ))}
-                </div>
-
-                <button
-                  type="button"
-                  onClick={() => setIsFullscreen(false)}
-                  style={{
-                    border: '1px solid #E2E8F0',
-                    background: '#FFFFFF',
-                    borderRadius: '6px',
-                    width: '30px',
-                    height: '30px',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    cursor: 'pointer',
-                    color: '#64748B'
-                  }}
-                >
-                  <X size={15} />
-                </button>
-              </div>
+              <button
+                type="button"
+                onClick={() => setIsFullscreen(false)}
+                style={{ border: '1px solid #E2E8F0', background: '#FFFFFF', borderRadius: '6px', width: '30px', height: '30px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: '#64748B' }}
+              >
+                <X size={15} />
+              </button>
             </div>
 
-            {/* Modal Body: Large Comparison Canvas */}
-            <div style={{ padding: '24px', display: 'flex', justifyContent: 'center', alignItems: 'center', background: '#F1F5F9', minHeight: '400px' }}>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px', width: '100%', maxWidth: '780px' }}>
+            <div style={{ padding: '24px', display: 'flex', justifyContent: 'center', alignItems: 'center', background: '#F1F5F9', minHeight: '420px' }}>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px', width: '100%', maxWidth: '800px' }}>
+                
+                {/* كارت قبل في ملء الشاشة */}
                 <div style={{ background: '#FFFFFF', padding: '16px', borderRadius: '10px', border: '1px solid #E2E8F0', textAlign: 'center' }}>
                   <span style={{ fontSize: '13px', fontWeight: 800, color: '#64748B', display: 'block', marginBottom: '8px' }}>
                     الأسبوع {beforeEntry.week} (البداية) • {beforeEntry.weight} كجم
                   </span>
-                  <div style={{ height: '300px' }}>
-                    <BodyProgressCanvas gender={client.gender} angle={angle} progressStage="BEFORE" weight={beforeEntry.weight} waist={beforeEntry.waist} />
+                  <div style={{ height: '320px', overflow: 'hidden', borderRadius: '6px', background: '#F8FAFC', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    {beforePhoto ? (
+                      <img src={beforePhoto} alt="قبل" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                    ) : (
+                      <BodyProgressCanvas gender={client.gender} angle={angle} progressStage="BEFORE" weight={beforeEntry.weight} waist={beforeEntry.waist} />
+                    )}
                   </div>
                 </div>
 
+                {/* كارت بعد في ملء الشاشة */}
                 <div style={{ background: '#FFFFFF', padding: '16px', borderRadius: '10px', border: '1.5px solid #0F172A', textAlign: 'center', boxShadow: '0 4px 12px rgba(15,23,42,0.08)' }}>
                   <span style={{ fontSize: '13px', fontWeight: 800, color: '#0F172A', display: 'block', marginBottom: '8px' }}>
                     الأسبوع {afterEntry.week} (التقييم الحالي) • {afterEntry.weight} كجم
                   </span>
-                  <div style={{ height: '300px' }}>
-                    <BodyProgressCanvas gender={client.gender} angle={angle} progressStage="CURRENT" weight={afterEntry.weight} waist={afterEntry.waist} />
+                  <div style={{ height: '320px', overflow: 'hidden', borderRadius: '6px', background: '#F0F9FF', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    {afterPhoto ? (
+                      <img src={afterPhoto} alt="بعد" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                    ) : (
+                      <BodyProgressCanvas gender={client.gender} angle={angle} progressStage="CURRENT" weight={afterEntry.weight} waist={afterEntry.waist} />
+                    )}
                   </div>
                 </div>
+
               </div>
             </div>
 
-            {/* Modal Footer */}
             <div style={{ padding: '12px 18px', background: '#FFFFFF', borderTop: '1px solid #E2E8F0', display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '12px' }}>
               <span style={{ color: '#64748B' }}>
-                مقارنة بين الأسبوع <strong>{beforeEntry.week}</strong> والأسبوع <strong>{afterEntry.week}</strong> ({Math.abs(afterEntry.week - beforeEntry.week)} أسابيع)
+                مقارنة بين الأسبوع <strong>{beforeEntry.week}</strong> والأسبوع <strong>{afterEntry.week}</strong> ({stats.weeksCount} أسابيع)
               </span>
               <button
                 type="button"
                 onClick={() => setIsFullscreen(false)}
-                style={{
-                  padding: '6px 16px',
-                  borderRadius: '6px',
-                  border: 'none',
-                  background: '#0F172A',
-                  color: '#FFFFFF',
-                  fontSize: '12px',
-                  fontWeight: 700,
-                  cursor: 'pointer'
-                }}
+                style={{ padding: '6px 16px', borderRadius: '6px', border: 'none', background: '#0F172A', color: '#FFFFFF', fontSize: '12px', fontWeight: 700, cursor: 'pointer' }}
               >
                 إغلاق الاستوديو
               </button>
