@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { Check, ChevronLeft, ChevronRight, Ruler, Lock, Camera, CheckCircle2, Activity, HeartPulse, Utensils, Dumbbell, Sparkles, RotateCw, User, Scale, ShieldAlert, MessageCircle, AlertCircle, FileCheck2, Info, RefreshCcw } from 'lucide-react';
+import { Check, ChevronLeft, ChevronRight, Ruler, Lock, Camera, CheckCircle2, Activity, HeartPulse, Utensils, Dumbbell, Sparkles, RotateCw, User, Scale, ShieldAlert, MessageCircle, AlertCircle, FileCheck2, Info, RefreshCcw, Upload } from 'lucide-react';
 import { API_BASE } from '../config/api';
 import { getStoredCoachConfig } from '../utils/themeAndCoachConfig';
 
@@ -235,6 +235,26 @@ export default function FullIntakeForm() {
       } else {
         return { ...prev, [arrayField]: [...current, item] };
       }
+    });
+  };
+
+  const handleLabReportsUpload = (e) => {
+    const files = Array.from(e.target.files || []);
+    files.forEach(file => {
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        setFormData(prev => ({
+          ...prev,
+          media_uploads: {
+            ...(prev.media_uploads || {}),
+            medical_reports_urls: [
+              ...(prev.media_uploads?.medical_reports_urls || []),
+              event.target.result
+            ]
+          }
+        }));
+      };
+      reader.readAsDataURL(file);
     });
   };
 
@@ -1087,6 +1107,52 @@ export default function FullIntakeForm() {
                     onChange={(e) => setFormData(p => ({ ...p, current_meds_supplements: e.target.value }))}
                     style={{ width: '100%', height: '36px', borderRadius: '6px', border: '1px solid #CBD5E1', padding: '0 10px', fontSize: '11.5px', boxSizing: 'border-box' }}
                   />
+                </div>
+              </div>
+
+              {/* 4. Recent Bloodwork & Lab Reports Upload Box (اختياري) */}
+              <div style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', borderRadius: '10px', padding: '14px 16px', marginTop: '6px' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '6px' }}>
+                  <HeartPulse size={16} color="#0284C7" />
+                  <strong style={{ fontSize: '12.5px', color: '#0F172A', fontWeight: 800 }}>
+                    الفحوصات والتحاليل المخبرية الحديثة (اختياري):
+                  </strong>
+                </div>
+                <p style={{ fontSize: '11.5px', color: '#64748B', margin: '0 0 10px 0', lineHeight: '1.5' }}>
+                  إذا قمت بإجراء تحاليل دم حديثة (خلال آخر 6 أشهر) أو تقرير InBody، يمكنك إرفاق الصور أو ملف PDF هنا ليفحصها الكوتش ويضبط خطتك بدقة إكلينيكية.
+                </p>
+
+                <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap' }}>
+                  <label style={{
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '6px',
+                    padding: '8px 16px',
+                    borderRadius: '6px',
+                    background: '#0F172A',
+                    color: '#FFFFFF',
+                    fontSize: '11.5px',
+                    fontWeight: 700,
+                    cursor: 'pointer',
+                    boxShadow: '0 2px 4px rgba(15,23,42,0.1)'
+                  }}>
+                    <Upload size={14} color="#C4952D" />
+                    <span>اختيار ملف أو صورة من جهازك (JPG / PNG / PDF)</span>
+                    <input 
+                      type="file" 
+                      accept="image/*,application/pdf" 
+                      multiple
+                      style={{ display: 'none' }}
+                      onChange={handleLabReportsUpload}
+                    />
+                  </label>
+
+                  {(formData.media_uploads?.medical_reports_urls?.length > 0) && (
+                    <span style={{ fontSize: '11.5px', color: '#16A34A', fontWeight: 700, display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+                      <CheckCircle2 size={14} />
+                      تم إرفاق {formData.media_uploads.medical_reports_urls.length} ملف بنجاح
+                    </span>
+                  )}
                 </div>
               </div>
 

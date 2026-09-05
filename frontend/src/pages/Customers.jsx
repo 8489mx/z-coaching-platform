@@ -20,7 +20,8 @@ import {
   CreditCard,
   Edit3,
   ChevronDown,
-  Download
+  Download,
+  HeartPulse
 } from 'lucide-react';
 import { API_BASE } from '../config/api';
 import AdminLayout from '../components/layout/AdminLayout';
@@ -30,6 +31,7 @@ import { PageHeader } from '@/shared/components/page-header';
 import { FormSection } from '@/shared/components/form-section';
 import { extractClientFastingProfile } from '../utils/seasonalFastingRadar';
 import InteractivePhotoComparisonStudio from '../components/checkin/InteractivePhotoComparisonStudio';
+import LabBiomarkersReviewStudio from '../components/clinical/LabBiomarkersReviewStudio';
 
 export default function Customers() {
   const [phone, setPhone] = useState('');
@@ -50,6 +52,9 @@ export default function Customers() {
 
   // Transformation Studio State
   const [transformationModalClient, setTransformationModalClient] = useState(null);
+
+  // Clinical Lab Studio State
+  const [labModalClient, setLabModalClient] = useState(null);
 
   useEffect(() => {
     fetchClients();
@@ -689,6 +694,38 @@ export default function Customers() {
                               <span>التحول</span>
                             </button>
 
+                            {/* Clinical Lab Review Studio Button */}
+                            <button
+                              type="button"
+                              onClick={() => setLabModalClient(client)}
+                              style={{
+                                padding: '4px 10px',
+                                borderRadius: '6px',
+                                border: '1px solid #BAE6FD',
+                                background: '#F0F9FF',
+                                color: '#0284C7',
+                                fontSize: '11.5px',
+                                fontWeight: 700,
+                                cursor: 'pointer',
+                                display: 'inline-flex',
+                                alignItems: 'center',
+                                gap: '5px',
+                                transition: 'all 0.15s ease'
+                              }}
+                              onMouseEnter={(e) => {
+                                e.currentTarget.style.background = '#E0F2FE';
+                                e.currentTarget.style.borderColor = '#7DD3FC';
+                              }}
+                              onMouseLeave={(e) => {
+                                e.currentTarget.style.background = '#F0F9FF';
+                                e.currentTarget.style.borderColor = '#BAE6FD';
+                              }}
+                              title="فحص التحاليل المخبرية والمؤشرات الفسيولوجية"
+                            >
+                              <HeartPulse size={13} color="#0284C7" />
+                              <span>التحاليل</span>
+                            </button>
+
                             {/* Program Editor Button */}
                             <Link
                               to={`/coach/editor/${cleanCode}`}
@@ -827,6 +864,51 @@ export default function Customers() {
                   onClose={() => setTransformationModalClient(null)}
                 />
               </div>
+            </div>
+          </div>
+        )}
+
+        {/* Clinical Labs Modal */}
+        {labModalClient && (
+          <div 
+            style={{
+              position: 'fixed',
+              inset: 0,
+              backgroundColor: 'rgba(15, 23, 42, 0.85)',
+              backdropFilter: 'blur(8px)',
+              zIndex: 1400,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              padding: '16px'
+            }}
+            dir="rtl"
+            onClick={() => setLabModalClient(null)}
+          >
+            <div 
+              onClick={(e) => e.stopPropagation()}
+              style={{
+                background: '#FFFFFF',
+                borderRadius: '12px',
+                width: '1100px',
+                maxWidth: '98vw',
+                height: '92vh',
+                overflow: 'hidden',
+                display: 'flex',
+                flexDirection: 'column',
+                boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.4)',
+                border: '1px solid #CBD5E1'
+              }}
+            >
+              <LabBiomarkersReviewStudio
+                client={labModalClient}
+                initialValues={labModalClient.biomarkers || labModalClient.baseline_biomarkers || {}}
+                medicalReportsUrls={labModalClient.medical_reports_urls || labModalClient.reports || []}
+                onSave={() => {
+                  setLabModalClient(null);
+                }}
+                onClose={() => setLabModalClient(null)}
+              />
             </div>
           </div>
         )}

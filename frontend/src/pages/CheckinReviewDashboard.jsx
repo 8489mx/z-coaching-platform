@@ -40,6 +40,7 @@ import AdminLayout from '../components/layout/AdminLayout';
 import { PageHeader } from '@/shared/components/page-header';
 import { FormSection } from '@/shared/components/form-section';
 import InteractivePhotoComparisonStudio from '../components/checkin/InteractivePhotoComparisonStudio';
+import LabBiomarkersReviewStudio from '../components/clinical/LabBiomarkersReviewStudio';
 
 import { STRESS_TEST_CLIENTS } from '../data/stressTestClientsBlueprints';
 
@@ -520,6 +521,7 @@ export default function CheckinReviewDashboard() {
   const [coachReply, setCoachReply] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [approvedCount, setApprovedCount] = useState(0);
+  const [showLabModal, setShowLabModal] = useState(false);
 
   // Live Checkins Fetcher from MariaDB
   useEffect(() => {
@@ -1413,6 +1415,81 @@ export default function CheckinReviewDashboard() {
                   "{activeCheckin?.client_notes || 'لا توجد ملاحظات إضافية'}"
                 </p>
               </div>
+
+              {/* Clinical Labs & Biomarkers Quick Trigger Banner */}
+              <div style={{
+                marginTop: '12px',
+                background: 'linear-gradient(135deg, #F0FDF4 0%, #F8FAFC 100%)',
+                border: '1px solid #86EFAC',
+                borderRadius: '8px',
+                padding: '12px 14px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                flexWrap: 'wrap',
+                gap: '10px'
+              }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                  <div style={{
+                    width: '36px',
+                    height: '36px',
+                    borderRadius: '8px',
+                    background: '#DCFCE7',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    color: '#16A34A',
+                    flexShrink: 0
+                  }}>
+                    <HeartPulse size={20} />
+                  </div>
+                  <div>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                      <strong style={{ fontSize: '12.5px', color: '#0F172A' }}>بروتوكول التحاليل والمؤشرات الحيوية السريرية</strong>
+                      {(activeCheckin?.medical_reports_urls?.length > 0 || safeClient?.medical_reports_urls?.length > 0) ? (
+                        <span style={{ fontSize: '10px', background: '#DCFCE7', color: '#166534', padding: '1px 7px', borderRadius: '4px', fontWeight: 800 }}>
+                          مرفق تقرير طبي
+                        </span>
+                      ) : (
+                        <span style={{ fontSize: '10px', background: '#F1F5F9', color: '#475569', padding: '1px 7px', borderRadius: '4px', fontWeight: 700 }}>
+                          فحص وقائي
+                        </span>
+                      )}
+                    </div>
+                    <p style={{ fontSize: '11px', color: '#475569', margin: '2px 0 0 0', lineHeight: 1.4 }}>
+                      فحص CBC، الكلى، الكبد، الأيض والسكر، والفيتامينات مع بروتوكول الغذاء أولاً لتعويض النواقص غذائياً.
+                    </p>
+                  </div>
+                </div>
+
+                <button
+                  type="button"
+                  onClick={() => setShowLabModal(true)}
+                  style={{
+                    height: '32px',
+                    padding: '0 14px',
+                    borderRadius: '6px',
+                    border: '1px solid #16A34A',
+                    background: '#16A34A',
+                    color: '#FFFFFF',
+                    fontSize: '11.5px',
+                    fontWeight: 700,
+                    cursor: 'pointer',
+                    userSelect: 'none',
+                    outline: 'none',
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '6px',
+                    boxShadow: '0 1px 3px rgba(22, 163, 74, 0.2)',
+                    transition: 'all 0.15s ease'
+                  }}
+                  onMouseEnter={(e) => (e.currentTarget.style.background = '#15803D')}
+                  onMouseLeave={(e) => (e.currentTarget.style.background = '#16A34A')}
+                >
+                  <Activity size={14} />
+                  <span>فتح استوديو التحاليل</span>
+                </button>
+              </div>
             </FormSection>
 
             {/* 5. AI Engine Recommendation Card */}
@@ -2061,6 +2138,79 @@ export default function CheckinReviewDashboard() {
           </div>
 
         </div>
+
+        {/* نافذة استوديو فحص التحاليل والمؤشرات الحيوية السريرية */}
+        {showLabModal && (
+          <div 
+            style={{
+              position: 'fixed',
+              inset: 0,
+              background: 'rgba(15, 23, 42, 0.75)',
+              backdropFilter: 'blur(4px)',
+              zIndex: 9999,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              padding: '16px'
+            }}
+            onClick={() => setShowLabModal(false)}
+          >
+            <div 
+              onClick={(e) => e.stopPropagation()}
+              style={{
+                background: '#FFFFFF',
+                borderRadius: '12px',
+                width: '1100px',
+                maxWidth: '98vw',
+                height: '92vh',
+                overflow: 'hidden',
+                display: 'flex',
+                flexDirection: 'column',
+                boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.4)',
+                border: '1px solid #CBD5E1'
+              }}
+            >
+              <LabBiomarkersReviewStudio
+                client={safeClient}
+                initialValues={activeCheckin?.biomarkers || safeClient?.biomarkers || {}}
+                medicalReportsUrls={activeCheckin?.medical_reports_urls || safeClient?.medical_reports_urls || []}
+                onSave={(savedData) => {
+                  if (savedData?.clinicalResult) {
+                    const { dietaryModifications, wholeFoodInterventions } = savedData.clinicalResult;
+                    
+                    // تطبيق سقف البروتين إن وجد مؤشر لإجهاد كلوي
+                    if (dietaryModifications?.protein_cap_g_per_kg && (safeClient?.start_weight || safeClient?.weight_kg)) {
+                      const clientWeight = safeClient.start_weight || safeClient.weight_kg || 80;
+                      const capG = Math.round(dietaryModifications.protein_cap_g_per_kg * clientWeight);
+                      setMacroAdjustments(prev => {
+                        if (prev.protein > capG) {
+                          const diff = prev.protein - capG;
+                          return {
+                            ...prev,
+                            protein: capG,
+                            carbs: prev.carbs + Math.round((diff * 4) / 4)
+                          };
+                        }
+                        return prev;
+                      });
+                    }
+
+                    // تحديث رسالة التوجيه التشجيعي ببروتوكول الغذاء أولاً
+                    if (wholeFoodInterventions && wholeFoodInterventions.length > 0) {
+                      const foodText = wholeFoodInterventions.map(f => `• ${f.food_title_ar}: ${f.rationale_ar}`).join('\n');
+                      setCoachReply(prev => {
+                        const base = prev ? `${prev}\n\n` : '';
+                        return `${base}توجيهات التغذية السريرية وبروتوكول الغذاء أولاً:\n${foodText}`;
+                      });
+                    }
+                  }
+                  setShowLabModal(false);
+                }}
+                onClose={() => setShowLabModal(false)}
+              />
+            </div>
+          </div>
+        )}
 
       </div>
     </AdminLayout>
