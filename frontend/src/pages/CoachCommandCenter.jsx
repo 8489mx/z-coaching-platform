@@ -7,7 +7,7 @@ import AdminLayout from '../components/layout/AdminLayout';
 import NewClientQuickModal from '../components/modals/NewClientQuickModal';
 import { PageHeader } from '@/shared/components/page-header';
 import { FormSection } from '@/shared/components/form-section';
-import { getUpcomingFastingAlert, extractClientFastingProfile } from '../utils/seasonalFastingRadar';
+import { getUpcomingFastingAlert, extractClientFastingProfile, getFastingCountdown } from '../utils/seasonalFastingRadar';
 
 // Smart 1-Click WhatsApp Pre-filled Message Generator
 export function getWhatsAppMessage(action) {
@@ -320,6 +320,62 @@ export default function CoachCommandCenter() {
   const copticCount = dailyActions.filter(a => a.isCoptic).length;
   const ramadanCount = dailyActions.filter(a => a.isRamadan).length;
   const intermittentCount = dailyActions.filter(a => a.isIntermittent).length;
+
+  // Full Database Clients Registry (Merged from active clients and submissions)
+  const allKnownClients = React.useMemo(() => {
+    const map = new Map();
+    safeClients.forEach(c => {
+      const code = String(c.client_code || c.id || '').replace(/^client[-_]?/i, '').replace('#', '');
+      if (code) {
+        map.set(code, {
+          id: c.id || code,
+          client_code: code,
+          full_name: c.full_name || c.name || `مشترك #${code}`,
+          phone_number: c.phone_number || c.phone || '',
+          tier: c.package_tier || c.tier || 'MAX',
+          status: c.status || 'ACTIVE',
+          answers: c.answers,
+          ...c
+        });
+      }
+    });
+    safeSubmissions.forEach(s => {
+      const code = String(s?.user?.client_code || s?.answers?.client_code || s?.client_code || s?.user_id || s?.id || '').replace(/^client[-_]?/i, '').replace('#', '');
+      if (code && !map.has(code)) {
+        map.set(code, {
+          id: s?.id || code,
+          client_code: code,
+          full_name: s?.user?.full_name || s?.full_name || `مشترك #${code}`,
+          phone_number: s?.user?.phone_number || s?.phone_number || '',
+          tier: s?.tier || 'MAX',
+          status: s?.status || 'PENDING',
+          answers: s?.answers,
+          country: s?.country || s?.answers?.personal?.country || ''
+        });
+      }
+    });
+    return Array.from(map.values()).sort((a, b) => Number(a.client_code) - Number(b.client_code));
+  }, [safeClients, safeSubmissions]);
+
+  const totalCopticClients = React.useMemo(() => allKnownClients.filter(c => extractClientFastingProfile(c).isCoptic).length, [allKnownClients]);
+  const totalRamadanClients = React.useMemo(() => allKnownClients.filter(c => extractClientFastingProfile(c).isRamadan).length, [allKnownClients]);
+  const totalIntermittentClients = React.useMemo(() => allKnownClients.filter(c => extractClientFastingProfile(c).isIntermittent).length, [allKnownClients]);
+
+  const matchingFastingClients = React.useMemo(() => {
+    if (fastingFilter === 'ALL') return [];
+    return allKnownClients.filter(c => {
+      const fp = extractClientFastingProfile(c);
+      if (fastingFilter === 'INTERMITTENT') return fp.isIntermittent;
+      if (fastingFilter === 'RAMADAN') return fp.isRamadan;
+      if (fastingFilter === 'COPTIC') return fp.isCoptic;
+      return false;
+    });
+  }, [allKnownClients, fastingFilter]);
+
+  const selectedFastingDetails = React.useMemo(() => {
+    if (fastingFilter === 'ALL') return null;
+    return getFastingCountdown(fastingFilter);
+  }, [fastingFilter]);
 
   const TABS = [
     { id: 'ALL', label: 'الكل', count: allCount },
@@ -718,9 +774,9 @@ export default function CoachCommandCenter() {
                 <div style={{ display: 'flex', gap: '4px', flexWrap: 'wrap' }}>
                   {[
                     { id: 'ALL', label: 'كافة المتابعات', count: dailyActions.length, bg: '#0F172A', color: '#FFFFFF' },
-                    { id: 'INTERMITTENT', label: 'صيام متقطع', count: intermittentCount, bg: '#0369A1', color: '#FFFFFF' },
-                    { id: 'RAMADAN', label: 'صيام رمضان المبارك', count: ramadanCount, bg: '#B45309', color: '#FFFFFF' },
-                    { id: 'COPTIC', label: 'صيام مسيحي / قبطي', count: copticCount, bg: '#6D28D9', color: '#FFFFFF' }
+                    { id: 'INTERMITTENT', label: 'صيام متقطع', count: totalIntermittentClients, bg: '#0369A1', color: '#FFFFFF' },
+                    { id: 'RAMADAN', label: 'صيام رمضان المبارك', count: totalRamadanClients, bg: '#B45309', color: '#FFFFFF' },
+                    { id: 'COPTIC', label: 'صيام مسيحي / قبطي', count: totalCopticClients, bg: '#6D28D9', color: '#FFFFFF' }
                   ].map(f => {
                     const isSelected = fastingFilter === f.id;
                     return (
@@ -770,44 +826,84 @@ export default function CoachCommandCenter() {
               )}
             </div>
 
-            {/* 2-Column Responsive Action Cards Grid with Stable Min Height */}
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 480px), 1fr))', gap: '10px', marginTop: '10px', minHeight: '180px', alignContent: 'start' }}>
-              {filteredActions.length === 0 ? (
-                <div style={{ gridColumn: '1 / -1', minHeight: '160px', padding: '24px 16px', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', textAlign: 'center', background: '#F8FAFC', border: '1px dashed #CBD5E1', borderRadius: '8px' }}>
-                  <div style={{ width: '36px', height: '36px', borderRadius: '50%', background: '#F1F5F9', color: '#0F172A', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 8px auto' }}>
-                    <CheckCircle2 size={18} />
+            {/* Smart Fasting Countdown & Radar Card (يظهر عند النقر على محدد الصيام) */}
+            {selectedFastingDetails && (
+              <div style={{
+                background: '#FFFFFF',
+                border: '1px solid #E2E8F0',
+                borderRight: `4px solid ${fastingFilter === 'COPTIC' ? '#6D28D9' : (fastingFilter === 'RAMADAN' ? '#B45309' : '#0369A1')}`,
+                borderRadius: '8px',
+                padding: '12px 16px',
+                marginBottom: '14px',
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                flexWrap: 'wrap',
+                gap: '12px',
+                boxShadow: '0 1px 3px rgba(15, 23, 42, 0.04)'
+              }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                  <div style={{
+                    background: '#F8FAFC',
+                    border: '1px solid #CBD5E1',
+                    borderRadius: '6px',
+                    padding: '8px',
+                    color: fastingFilter === 'COPTIC' ? '#6D28D9' : (fastingFilter === 'RAMADAN' ? '#B45309' : '#0369A1')
+                  }}>
+                    <Clock size={18} />
                   </div>
-                  <div style={{ fontSize: '13px', fontWeight: 800, color: '#0F172A', marginBottom: '2px' }}>
-                    {fastingFilter !== 'ALL' ? 'لا توجد إجراءات معلقة حالياً لهذا النوع من الصيام' : 'تم إنهاء كافة الإجراءات والمتابعات لليوم'}
+                  <div>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+                      <strong style={{ fontSize: '13.5px', color: '#0F172A' }}>
+                        {selectedFastingDetails.name}
+                      </strong>
+                      <span style={{
+                        fontSize: '11px',
+                        fontWeight: 800,
+                        background: fastingFilter === 'COPTIC' ? '#EDE9FE' : (fastingFilter === 'RAMADAN' ? '#FEF3C7' : '#E0F2FE'),
+                        color: fastingFilter === 'COPTIC' ? '#6D28D9' : (fastingFilter === 'RAMADAN' ? '#B45309' : '#0369A1'),
+                        padding: '2px 8px',
+                        borderRadius: '4px'
+                      }}>
+                        {selectedFastingDetails.statusText}
+                      </span>
+                    </div>
+                    <div style={{ fontSize: '11px', color: '#64748B', marginTop: '3px' }}>
+                      {selectedFastingDetails.description}
+                    </div>
                   </div>
-                  <p style={{ fontSize: '11.5px', color: '#64748B', margin: '0 0 10px 0' }}>
-                    {fastingFilter !== 'ALL'
-                      ? 'كافة المشتركين المندرجين تحت هذا التصنيف معتمدة خططهم ومتابعاتهم، أو لم يحن موعد تقييمهم اليوم.'
-                      : 'كافة المراجعات والتنبيهات المندرجة تحت هذا التبويب معتمدة بنسبة 100%.'}
-                  </p>
-                  {fastingFilter !== 'ALL' && (
-                    <button
-                      type="button"
-                      onClick={() => navigate(`/customers?fasting=${fastingFilter}`)}
-                      style={{
-                        background: '#0F172A',
-                        color: '#FFFFFF',
-                        border: 'none',
-                        borderRadius: '6px',
-                        padding: '7px 14px',
-                        fontSize: '11.5px',
-                        fontWeight: 700,
-                        cursor: 'pointer',
-                        display: 'inline-flex',
-                        alignItems: 'center',
-                        gap: '6px'
-                      }}
-                    >
-                      <span>عرض كافة مشتركي هذا الصيام في قاعدة البيانات (CRM)</span>
-                      <ExternalLink size={12} />
-                    </button>
-                  )}
                 </div>
+
+                <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap' }}>
+                  <div style={{ fontSize: '11px', color: '#475569' }}>
+                    <span>إجمالي المشتركين المسجلين: </span>
+                    <strong style={{ color: '#0F172A', fontSize: '13px' }}>{matchingFastingClients.length} مشترك</strong>
+                    {filteredActions.length > 0 && (
+                      <span style={{ marginRight: '6px', color: '#16A34A', fontWeight: 800 }}>
+                        ({filteredActions.length} إجراء لليوم)
+                      </span>
+                    )}
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* 2-Column Responsive Action Cards Grid with Stable Min Height */}
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 480px), 1fr))', gap: '10px', marginTop: '10px', minHeight: fastingFilter === 'ALL' ? '180px' : 'auto', alignContent: 'start' }}>
+              {filteredActions.length === 0 ? (
+                fastingFilter === 'ALL' ? (
+                  <div style={{ gridColumn: '1 / -1', minHeight: '160px', padding: '24px 16px', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', textAlign: 'center', background: '#F8FAFC', border: '1px dashed #CBD5E1', borderRadius: '8px' }}>
+                    <div style={{ width: '36px', height: '36px', borderRadius: '50%', background: '#F1F5F9', color: '#0F172A', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 8px auto' }}>
+                      <CheckCircle2 size={18} />
+                    </div>
+                    <div style={{ fontSize: '13px', fontWeight: 800, color: '#0F172A', marginBottom: '2px' }}>
+                      تم إنهاء كافة الإجراءات والمتابعات لليوم
+                    </div>
+                    <p style={{ fontSize: '11.5px', color: '#64748B', margin: '0 0 10px 0' }}>
+                      كافة المراجعات والتنبيهات المندرجة تحت هذا التبويب معتمدة بنسبة 100%.
+                    </p>
+                  </div>
+                ) : null
               ) : (
                 filteredActions.map(action => (
                   <div
@@ -993,6 +1089,196 @@ export default function CoachCommandCenter() {
                   ))
                 )}
               </div>
+
+              {/* عرض كافة المشتركين المسجلين في هذا النمط من الصيام */}
+              {fastingFilter !== 'ALL' && (
+                <div style={{ marginTop: '20px', borderTop: '1px solid #E2E8F0', paddingTop: '16px' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '12px', flexWrap: 'wrap', gap: '8px' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                      <Users size={16} color="#0F172A" />
+                      <strong style={{ fontSize: '13px', color: '#0F172A' }}>
+                        كافة المشتركين المسجلين في {selectedFastingDetails?.name} ({matchingFastingClients.length} مشترك)
+                      </strong>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => navigate(`/customers?fasting=${fastingFilter}`)}
+                      style={{
+                        background: 'transparent',
+                        border: 'none',
+                        color: '#0369A1',
+                        fontSize: '11px',
+                        fontWeight: 700,
+                        cursor: 'pointer',
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: '4px'
+                      }}
+                    >
+                      <span>عرض في سجل المشتركين (CRM)</span>
+                      <ExternalLink size={12} />
+                    </button>
+                  </div>
+
+                  {matchingFastingClients.length === 0 ? (
+                    <div style={{ padding: '24px 16px', textAlign: 'center', background: '#F8FAFC', border: '1px dashed #CBD5E1', borderRadius: '8px' }}>
+                      <div style={{ fontSize: '13px', fontWeight: 800, color: '#0F172A', marginBottom: '4px' }}>
+                        لا يوجد مشتركون مسجلون حالياً بنمط {selectedFastingDetails?.name} في قاعدة البيانات
+                      </div>
+                      <p style={{ fontSize: '11.5px', color: '#64748B', margin: '0 0 12px 0' }}>
+                        يمكنك تسجيل متدرب جديد وتحديد نمط صيامه في الاستمارة، أو تعديل نمط صيام متدرب حالي من سجل المشتركين.
+                      </p>
+                      <button
+                        type="button"
+                        onClick={() => setIsNewClientModalOpen(true)}
+                        style={{
+                          background: '#0F172A',
+                          color: '#FFFFFF',
+                          border: 'none',
+                          borderRadius: '6px',
+                          padding: '7px 14px',
+                          fontSize: '11.5px',
+                          fontWeight: 700,
+                          cursor: 'pointer'
+                        }}
+                      >
+                        + كود مشترك جديد
+                      </button>
+                    </div>
+                  ) : (
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 340px), 1fr))', gap: '10px' }}>
+                      {matchingFastingClients.map(client => {
+                        const cleanCode = String(client.client_code || client.id).replace(/^client[-_]?/i, '').replace('#', '');
+                        const fastingProfile = extractClientFastingProfile(client);
+                        const cleanPhone = String(client.phone_number || client.phone || '').replace(/[^0-9]/g, '');
+                        const normalizedPhone = cleanPhone.startsWith('20') ? cleanPhone : (cleanPhone.startsWith('0') ? '20' + cleanPhone.substring(1) : (cleanPhone ? '20' + cleanPhone : ''));
+                        return (
+                          <div
+                            key={cleanCode}
+                            style={{
+                              background: '#FFFFFF',
+                              border: '1px solid #E2E8F0',
+                              borderRadius: '8px',
+                              padding: '12px 14px',
+                              display: 'flex',
+                              flexDirection: 'column',
+                              justifyContent: 'space-between',
+                              gap: '10px',
+                              boxShadow: '0 1px 2px rgba(15, 23, 42, 0.02)'
+                            }}
+                          >
+                            <div>
+                              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '6px' }}>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                  <ClientCodeBadge code={cleanCode} item={client} />
+                                  <strong style={{ fontSize: '13px', fontWeight: 800, color: '#0F172A' }}>
+                                    {client.full_name || client.name || `مشترك #${cleanCode}`}
+                                  </strong>
+                                </div>
+                                <ClientPackageBadge item={client} />
+                              </div>
+
+                              <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flexWrap: 'wrap', marginTop: '4px' }}>
+                                {fastingProfile.primaryFastingBadge && (
+                                  <span style={{
+                                    fontSize: '10.5px',
+                                    background: fastingProfile.primaryFastingBadge.bg,
+                                    border: `1px solid ${fastingProfile.primaryFastingBadge.border}`,
+                                    color: fastingProfile.primaryFastingBadge.color,
+                                    padding: '1px 7px',
+                                    borderRadius: '4px',
+                                    fontWeight: 800
+                                  }}>
+                                    {fastingProfile.primaryFastingBadge.label}
+                                  </span>
+                                )}
+                                {fastingProfile.intermittentBadge && fastingFilter !== 'INTERMITTENT' && (
+                                  <span style={{
+                                    fontSize: '10.5px',
+                                    background: fastingProfile.intermittentBadge.bg,
+                                    border: `1px solid ${fastingProfile.intermittentBadge.border}`,
+                                    color: fastingProfile.intermittentBadge.color,
+                                    padding: '1px 7px',
+                                    borderRadius: '4px',
+                                    fontWeight: 800
+                                  }}>
+                                    {fastingProfile.intermittentBadge.label}
+                                  </span>
+                                )}
+                                {client.country && (
+                                  <span style={{ fontSize: '10.5px', color: '#64748B', background: '#F8FAFC', padding: '1px 6px', borderRadius: '4px', border: '1px solid #E2E8F0' }}>
+                                    {client.country.name || client.country}
+                                  </span>
+                                )}
+                              </div>
+                            </div>
+
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '6px', borderTop: '1px solid #F1F5F9', paddingTop: '8px', flexWrap: 'wrap' }}>
+                              <button
+                                type="button"
+                                onClick={() => navigate(`/coach/editor?user_id=${cleanCode}`)}
+                                style={{
+                                  flex: 1,
+                                  background: '#0F172A',
+                                  color: '#FFFFFF',
+                                  border: 'none',
+                                  borderRadius: '5px',
+                                  padding: '5px 10px',
+                                  fontSize: '11px',
+                                  fontWeight: 800,
+                                  cursor: 'pointer',
+                                  textAlign: 'center'
+                                }}
+                              >
+                                تكييف الخطة / المحرر
+                              </button>
+
+                              {normalizedPhone && (
+                                <a
+                                  href={`https://wa.me/${normalizedPhone}?text=${encodeURIComponent(`أهلاً بك يا ${client.full_name || ''}، معك كابتن كريم زكريا - بخصوص برنامجك التدريبي والتغذوي...`)}`}
+                                  target="_blank"
+                                  rel="noreferrer"
+                                  style={{
+                                    background: '#25D366',
+                                    color: '#FFFFFF',
+                                    borderRadius: '5px',
+                                    padding: '5px 8px',
+                                    display: 'inline-flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    textDecoration: 'none'
+                                  }}
+                                  title="مراسلة واتساب"
+                                >
+                                  <MessageCircle size={14} />
+                                </a>
+                              )}
+
+                              <button
+                                type="button"
+                                onClick={() => navigate(`/customers?search=${cleanCode}`)}
+                                style={{
+                                  background: '#F8FAFC',
+                                  color: '#475569',
+                                  border: '1px solid #CBD5E1',
+                                  borderRadius: '5px',
+                                  padding: '5px 8px',
+                                  fontSize: '11px',
+                                  fontWeight: 700,
+                                  cursor: 'pointer'
+                                }}
+                                title="عرض في المشتركين"
+                              >
+                                الملف
+                              </button>
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  )}
+                </div>
+              )}
             </FormSection>
           </div>
 

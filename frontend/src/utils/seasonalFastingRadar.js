@@ -7,51 +7,51 @@
  * 3. Coptic Nativity Fast (صوم الميلاد)
  */
 
-export function getUpcomingFastingAlert(now = new Date()) {
-  const seasons = [
-    {
-      id: 'RAMADAN_2026',
-      name: 'شهر رمضان المبارك 1447هـ',
-      type: 'ISLAMIC',
-      startDate: new Date(2026, 1, 18),
-      endDate: new Date(2026, 2, 20),
-      description: 'موسم الصيام الجاف (Dry Fasting) مع جدولة نوافذ الإفطار والسحور والترطيب الليلي.'
-    },
-    {
-      id: 'COPTIC_LENT_2026',
-      name: 'الصوم الكبير (Coptic Great Lent)',
-      type: 'COPTIC',
-      startDate: new Date(2026, 1, 16),
-      endDate: new Date(2026, 3, 12),
-      description: 'صيام صيامي نباتي خالي من اللحوم والألبان مع التركيز على البقوليات والبروتين النباتي الكامل.'
-    },
-    {
-      id: 'COPTIC_NATIVITY_2026',
-      name: 'صوم الميلاد المجيد',
-      type: 'COPTIC',
-      startDate: new Date(2026, 10, 25),
-      endDate: new Date(2027, 0, 7),
-      description: 'صيام صيامي نباتي مع السماح بالأسماك والمأكولات البحرية لتأمين احتياج البروتين الكامل.'
-    },
-    {
-      id: 'RAMADAN_2027',
-      name: 'شهر رمضان المبارك 1448هـ',
-      type: 'ISLAMIC',
-      startDate: new Date(2027, 1, 8),
-      endDate: new Date(2027, 2, 9),
-      description: 'موسم الصيام الجاف وتوزيع وجبات الإفطار وبعد التمرين والسحور.'
-    },
-    {
-      id: 'COPTIC_LENT_2027',
-      name: 'الصوم الكبير (Coptic Great Lent)',
-      type: 'COPTIC',
-      startDate: new Date(2027, 2, 8),
-      endDate: new Date(2027, 4, 2),
-      description: 'صيام نباتي خالي من الروح، يتطلب تأمين بروتين عالي من مصادر نباتية مركبة.'
-    }
-  ];
+export const SEASONAL_FASTING_CALENDAR = [
+  {
+    id: 'RAMADAN_2026',
+    name: 'شهر رمضان المبارك 1447هـ',
+    type: 'ISLAMIC',
+    startDate: new Date(2026, 1, 18),
+    endDate: new Date(2026, 2, 20),
+    description: 'موسم الصيام الجاف (Dry Fasting) مع جدولة نوافذ الإفطار والسحور والترطيب الليلي.'
+  },
+  {
+    id: 'COPTIC_LENT_2026',
+    name: 'الصوم الكبير للأقباط',
+    type: 'COPTIC',
+    startDate: new Date(2026, 1, 16),
+    endDate: new Date(2026, 3, 12),
+    description: 'صيام صيامي نباتي خالي من اللحوم والألبان مع التركيز على البقوليات والبروتين النباتي الكامل.'
+  },
+  {
+    id: 'COPTIC_NATIVITY_2026',
+    name: 'صوم الميلاد المجيد',
+    type: 'COPTIC',
+    startDate: new Date(2026, 10, 25),
+    endDate: new Date(2027, 0, 7),
+    description: 'صيام صيامي نباتي مع السماح بالأسماك والمأكولات البحرية لتأمين احتياج البروتين الكامل.'
+  },
+  {
+    id: 'RAMADAN_2027',
+    name: 'شهر رمضان المبارك 1448هـ',
+    type: 'ISLAMIC',
+    startDate: new Date(2027, 1, 8),
+    endDate: new Date(2027, 2, 9),
+    description: 'موسم الصيام الجاف وتوزيع وجبات الإفطار وبعد التمرين والسحور.'
+  },
+  {
+    id: 'COPTIC_LENT_2027',
+    name: 'الصوم الكبير للأقباط',
+    type: 'COPTIC',
+    startDate: new Date(2027, 2, 8),
+    endDate: new Date(2027, 4, 2),
+    description: 'صيام نباتي خالي من الروح، يتطلب تأمين بروتين عالي من مصادر نباتية مركبة.'
+  }
+];
 
-  for (const season of seasons) {
+export function getUpcomingFastingAlert(now = new Date()) {
+  for (const season of SEASONAL_FASTING_CALENDAR) {
     const diffMs = season.startDate.getTime() - now.getTime();
     const daysLeft = Math.ceil(diffMs / (1000 * 60 * 60 * 24));
 
@@ -80,6 +80,52 @@ export function getUpcomingFastingAlert(now = new Date()) {
 
   // إذا لم يكن هناك موسم نشط حالياً أو قادم خلال شهر (30 يوماً أو أقل)، لا يظهر أي رادار أو تنبيه
   return null;
+}
+
+/**
+ * حساب تفاصيل وعداد الأيام لمحدد الصيام المطلوب بدقة عند النقر
+ */
+export function getFastingCountdown(fastingType, now = new Date()) {
+  if (fastingType === 'INTERMITTENT') {
+    return {
+      type: 'INTERMITTENT',
+      name: 'الصيام المتقطع (Intermittent Fasting)',
+      statusText: 'بروتوكول يومي مستمر',
+      daysLeft: null,
+      isActive: true,
+      description: 'بروتوكول تغذوي يومي مستمر قائم على نوافذ الإطعام (16/8 أو 14/10) لضبط مستويات الإنسولين وتحسين الاستجابة الأيضية.'
+    };
+  }
+
+  const targetType = fastingType === 'COPTIC' ? 'COPTIC' : 'ISLAMIC';
+  const relevantSeasons = SEASONAL_FASTING_CALENDAR.filter(s => s.type === targetType);
+
+  // 1. هل الموسم نشط حالياً؟
+  const activeSeason = relevantSeasons.find(s => now >= s.startDate && now <= s.endDate);
+  if (activeSeason) {
+    return {
+      type: targetType,
+      name: activeSeason.name,
+      statusText: 'الموسم نشط حالياً',
+      daysLeft: 0,
+      isActive: true,
+      description: activeSeason.description
+    };
+  }
+
+  // 2. أقرب موسم قادم
+  const upcoming = relevantSeasons.find(s => s.startDate > now) || relevantSeasons[relevantSeasons.length - 1];
+  const diffMs = upcoming.startDate.getTime() - now.getTime();
+  const daysLeft = Math.max(1, Math.ceil(diffMs / (1000 * 60 * 60 * 24)));
+
+  return {
+    type: targetType,
+    name: upcoming.name,
+    statusText: `متبقي عليه ${daysLeft} يوماً`,
+    daysLeft,
+    isActive: false,
+    description: upcoming.description
+  };
 }
 
 /**
