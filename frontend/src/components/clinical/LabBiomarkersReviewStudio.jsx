@@ -453,11 +453,32 @@ export default function LabBiomarkersReviewStudio({
                 const maxVal = (isFastingMetric && sampleFastingState === 'NON_FASTING') ? 140 : (isMale ? metric.normal_max_m : metric.normal_max_f);
 
                 let statusColor = '#CBD5E1'; // رمادي محايد
+                let statusBadge = null;
                 if (hasValue && !isNaN(numVal)) {
-                  if (numVal < minVal || numVal > maxVal) {
-                    statusColor = '#EF4444'; // خارج النطاق الطبيعي (أحمر)
+                  if (numVal >= minVal && numVal <= maxVal) {
+                    statusColor = '#16A34A'; // أخضر مثالي
+                    statusBadge = { label: 'طبيعي', bg: '#DCFCE7', color: '#166534' };
                   } else {
-                    statusColor = '#22C55E'; // نطاق طبيعي آمن (أخضر)
+                    // حساب الهامش الفسيولوجي المعتاد للرياضيين
+                    let bufferMin = minVal * 0.88;
+                    let bufferMax = maxVal * 1.12;
+                    if (metric.key === 'creatinine') bufferMax = isMale ? 1.45 : 1.25;
+                    else if (metric.key === 'fasting_glucose') bufferMax = sampleFastingState === 'NON_FASTING' ? 150 : 109;
+                    else if (metric.key === 'alt' || metric.key === 'ast') bufferMax = maxVal * 1.30;
+                    else if (metric.key === 'triglycerides') bufferMax = sampleFastingState === 'NON_FASTING' ? 200 : 175;
+                    else if (metric.key === 'uric_acid') bufferMax = isMale ? 7.8 : 6.6;
+                    else if (metric.key === 'creatine_kinase') bufferMax = isMale ? 500 : 350;
+                    else if (metric.key === 'vitamin_d') bufferMin = 24;
+                    else if (metric.key === 'ferritin') bufferMin = isMale ? 25 : 20;
+                    else if (metric.key === 'magnesium') bufferMin = 1.70;
+
+                    if (numVal >= bufferMin && numVal <= bufferMax) {
+                      statusColor = '#94A3B8'; // رمادي هادئ ضمن الهامش المقبول
+                      statusBadge = { label: 'هامش مقبول', bg: '#F1F5F9', color: '#475569' };
+                    } else {
+                      statusColor = '#DC2626'; // انحراف سريري حقيقي
+                      statusBadge = { label: numVal > bufferMax ? 'مرتفع' : 'منخفض', bg: '#FEF2F2', color: '#DC2626' };
+                    }
                   }
                 }
 
@@ -475,9 +496,16 @@ export default function LabBiomarkersReviewStudio({
                     }}
                   >
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                      <span style={{ fontSize: '11px', fontWeight: 800, color: '#0F172A' }}>
-                        {displayName}
-                      </span>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
+                        <span style={{ fontSize: '11px', fontWeight: 800, color: '#0F172A' }}>
+                          {displayName}
+                        </span>
+                        {statusBadge && (
+                          <span style={{ fontSize: '9px', fontWeight: 800, background: statusBadge.bg, color: statusBadge.color, padding: '1px 5px', borderRadius: '3px' }}>
+                            {statusBadge.label}
+                          </span>
+                        )}
+                      </div>
                       <span style={{ fontSize: '9.5px', color: '#64748B', fontFamily: 'JetBrains Mono' }}>
                         {minVal} - {maxVal} {metric.unit}
                       </span>

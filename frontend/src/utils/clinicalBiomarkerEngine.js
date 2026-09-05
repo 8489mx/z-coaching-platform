@@ -165,9 +165,10 @@ export function evaluateClinicalBiomarkers({
   const homaIR = isFasting ? calculateHomaIR(fbg, fInsulin) : null;
 
   // -------------------------------------------------------------
-  // 1. فحص كفاءة الكلى (Renal Safety Guardrails)
+  // 1. فحص كفاءة الكلى (Renal Safety Guardrails) مع الهامش الفسيولوجي للرياضيين
   // -------------------------------------------------------------
-  const isCreatinineHigh = creat !== null && (isMale ? creat > 1.3 : creat > 1.1);
+  // الكرياتينين حتى 1.45 للرجال ذوي الكتلة العضلية يعتبر تذبذباً فسيولوجياً طبيعياً لا يستدعي قلقاً
+  const isCreatinineHigh = creat !== null && (isMale ? creat > 1.45 : creat > 1.25);
   const isEgfrLow = egfr !== null && egfr < 60;
 
   if (isCreatinineHigh || isEgfrLow) {
@@ -188,8 +189,8 @@ export function evaluateClinicalBiomarkers({
     }
   }
 
-  // حمض اليوريك (Uric Acid)
-  if (uric !== null && (isMale ? uric > 7.2 : uric > 6.0)) {
+  // حمض اليوريك (Uric Acid) - فقط عند الارتفاع الفعلي ذو الدلالة
+  if (uric !== null && (isMale ? uric > 7.8 : uric > 6.6)) {
     flags.push({
       panel: 'RENAL',
       severity: 'MODERATE',
@@ -207,14 +208,15 @@ export function evaluateClinicalBiomarkers({
   // -------------------------------------------------------------
   // 2. فحص الأيض، السكر، ومقاومة الأنسولين (Glycemic Panel)
   // -------------------------------------------------------------
+  // التباين الصباحي بين 100-109 لا يعتبر مشكلة إلا إذا كان السكر >= 110 أو التراكمي >= 5.8%
   const isGlucoseElevated = isFasting 
-    ? (fbg !== null && fbg >= 100) 
-    : (fbg !== null && fbg >= 140);
+    ? (fbg !== null && fbg >= 110) 
+    : (fbg !== null && fbg >= 150);
   const isGlucoseDiabetic = isFasting 
     ? (fbg !== null && fbg >= 126) 
     : (fbg !== null && fbg >= 200);
 
-  const isPreDiabetes = (hba1c !== null && hba1c >= 5.7) || isGlucoseElevated || (homaIR !== null && homaIR >= 2.5);
+  const isPreDiabetes = (hba1c !== null && hba1c >= 5.8) || isGlucoseElevated || (homaIR !== null && homaIR >= 2.8);
   const isDiabetesRange = (hba1c !== null && hba1c >= 6.5) || isGlucoseDiabetic;
 
   if (isPreDiabetes) {
@@ -250,9 +252,10 @@ export function evaluateClinicalBiomarkers({
   // -------------------------------------------------------------
   // 3. صحة الكبد والدهون الثلاثية (Hepatic & Lipids)
   // -------------------------------------------------------------
-  const isLiverElevated = (alt !== null && alt > 45) || (ast !== null && ast > 40);
-  const isTriglyceridesHigh = tg !== null && tg > 150;
-  const isLdlHigh = ldl !== null && ldl > 130;
+  // تمارين المقاومة ترفع الإنزيمات مؤقتاً؛ الارتفاع السريري المعتبر يبدأ فوق 58 لـ ALT و 52 لـ AST
+  const isLiverElevated = (alt !== null && alt > 58) || (ast !== null && ast > 52);
+  const isTriglyceridesHigh = isFasting ? (tg !== null && tg > 175) : (tg !== null && tg > 200);
+  const isLdlHigh = ldl !== null && ldl > 140;
 
   if (isLiverElevated || isTriglyceridesHigh || isLdlHigh) {
     flags.push({
@@ -280,8 +283,11 @@ export function evaluateClinicalBiomarkers({
   // -------------------------------------------------------------
   // 4. نقص فيتامين د (Vitamin D3)
   // -------------------------------------------------------------
-  if (vitD !== null && vitD < 30) {
-    const isSevere = vitD < 20;
+  // -------------------------------------------------------------
+  // 4. نقص فيتامين د (Vitamin D3) - النقص السريري الفعلي تحت 24 ng/mL
+  // -------------------------------------------------------------
+  if (vitD !== null && vitD < 24) {
+    const isSevere = vitD < 15;
     flags.push({
       panel: 'MICRONUTRIENTS',
       severity: isSevere ? 'HIGH' : 'MODERATE',
@@ -305,7 +311,7 @@ export function evaluateClinicalBiomarkers({
   // -------------------------------------------------------------
   // 5. نقص مخزون الحديد (Ferritin) والأنيميا (Hemoglobin)
   // -------------------------------------------------------------
-  const isFerritinLow = ferr !== null && (isMale ? ferr < 30 : ferr < 20);
+  const isFerritinLow = ferr !== null && (isMale ? ferr < 25 : ferr < 20);
   const isAnemia = hb !== null && (isMale ? hb < 13.0 : hb < 11.5);
 
   if (isFerritinLow || isAnemia) {
@@ -335,7 +341,7 @@ export function evaluateClinicalBiomarkers({
   // -------------------------------------------------------------
   // 6. نقص فيتامين ب12 (Vitamin B12)
   // -------------------------------------------------------------
-  if (b12 !== null && b12 < 250) {
+  if (b12 !== null && b12 < 200) {
     flags.push({
       panel: 'MICRONUTRIENTS',
       severity: 'MODERATE',
@@ -357,9 +363,9 @@ export function evaluateClinicalBiomarkers({
   }
 
   // -------------------------------------------------------------
-  // 7. إنزيم تكسير العضلات (Creatine Kinase - CK)
+  // 7. إنزيم تكسير العضلات (Creatine Kinase - CK) - تمارين المقاومة ترفعه طبيعياً حتى 400-500
   // -------------------------------------------------------------
-  if (ck !== null && ck > (isMale ? 350 : 250)) {
+  if (ck !== null && ck > (isMale ? 500 : 350)) {
     const isRhabdoRisk = ck > 1000;
     flags.push({
       panel: 'MICRONUTRIENTS',
@@ -381,7 +387,7 @@ export function evaluateClinicalBiomarkers({
   // -------------------------------------------------------------
   // 8. الغدة الدرقية (TSH)
   // -------------------------------------------------------------
-  if (tsh !== null && tsh > 4.5) {
+  if (tsh !== null && tsh > 4.8) {
     flags.push({
       panel: 'MICRONUTRIENTS',
       severity: tsh > 7.0 ? 'HIGH' : 'MODERATE',
@@ -401,9 +407,9 @@ export function evaluateClinicalBiomarkers({
   }
 
   // -------------------------------------------------------------
-  // 9. نقص الماغنسيوم (Serum Magnesium)
+  // 9. نقص الماغنسيوم (Serum Magnesium) - النقص المعتبر سريرياً تحت 1.70 mg/dL
   // -------------------------------------------------------------
-  if (mg !== null && mg < 1.8) {
+  if (mg !== null && mg < 1.70) {
     flags.push({
       panel: 'MICRONUTRIENTS',
       severity: 'MODERATE',
