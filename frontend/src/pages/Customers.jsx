@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import { 
   Users, 
   Search, 
@@ -28,6 +28,7 @@ import WhatsAppModal from '../components/modals/WhatsAppModal';
 import { copyToClipboard } from '../utils/clipboardUtils';
 import { PageHeader } from '@/shared/components/page-header';
 import { FormSection } from '@/shared/components/form-section';
+import { extractClientFastingProfile } from '../utils/seasonalFastingRadar';
 
 export default function Customers() {
   const [phone, setPhone] = useState('');

@@ -91,3 +91,85 @@ export function getUpcomingFastingAlert(now = new Date()) {
     description: upcoming.description
   };
 }
+
+/**
+ * Helper to extract and categorize client fasting profile:
+ * - Coptic/Christian Fasting (PESCATARIAN_ALLOWED | STRICT_VEGAN)
+ * - Ramadan Fasting (Muslim dry fasting)
+ * - Intermittent Fasting (16/8, 14/10, etc.)
+ */
+export function extractClientFastingProfile(clientOrSubmission = {}, explicitAnswers = null) {
+  const answers = explicitAnswers || 
+    clientOrSubmission?.answers || 
+    clientOrSubmission?.intakeSubmissions?.[0]?.answers || 
+    {};
+
+  const rawReligion = answers?.personal?.religion || 
+    answers?.religion || 
+    clientOrSubmission?.religion || 
+    '';
+  
+  const religion = String(rawReligion).trim().toUpperCase();
+
+  const christianFastingStyle = answers?.personal?.christianFastingStyle || 
+    answers?.diet?.christianFastingStyle || 
+    answers?.christianFastingStyle || 
+    clientOrSubmission?.christianFastingStyle || 
+    clientOrSubmission?.christian_fasting_style || 
+    'PESCATARIAN_ALLOWED';
+
+  const intermittentFasting = answers?.meal_structure?.intermittent_fasting || 
+    answers?.diet?.meal_structure?.intermittent_fasting || 
+    answers?.intermittent_fasting || 
+    clientOrSubmission?.intermittent_fasting || 
+    'none';
+
+  const isCoptic = religion === 'CHRISTIAN';
+  const isRamadan = religion === 'MUSLIM' || (!religion && !isCoptic);
+  const isIntermittent = Boolean(intermittentFasting && intermittentFasting !== 'none');
+
+  let primaryFastingBadge = null;
+  if (isCoptic) {
+    primaryFastingBadge = {
+      type: 'COPTIC',
+      label: christianFastingStyle === 'STRICT_VEGAN' ? 'صيام مسيحي (نباتي صرف)' : 'صيام مسيحي (سمك مسموح)',
+      shortLabel: 'صيام مسيحي',
+      bg: '#EDE9FE',
+      border: '#DDD6FE',
+      color: '#6D28D9'
+    };
+  } else if (isRamadan) {
+    primaryFastingBadge = {
+      type: 'RAMADAN',
+      label: 'صيام شهر رمضان المبارك',
+      shortLabel: 'صيام رمضان',
+      bg: '#FEF3C7',
+      border: '#FDE68A',
+      color: '#B45309'
+    };
+  }
+
+  let intermittentBadge = null;
+  if (isIntermittent) {
+    const hoursText = intermittentFasting === '16_8' ? '16/8' : (intermittentFasting === '14_10' ? '14/10' : intermittentFasting);
+    intermittentBadge = {
+      type: 'INTERMITTENT',
+      label: `صيام متقطع (${hoursText})`,
+      shortLabel: `متقطع ${hoursText}`,
+      bg: '#E0F2FE',
+      border: '#BAE6FD',
+      color: '#0369A1'
+    };
+  }
+
+  return {
+    religion: religion || 'MUSLIM',
+    christianFastingStyle,
+    intermittentFasting,
+    isCoptic,
+    isRamadan,
+    isIntermittent,
+    primaryFastingBadge,
+    intermittentBadge
+  };
+}

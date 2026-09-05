@@ -57,4 +57,77 @@ test('Religious Calendar & Seasonal Fasting Engine Suite', async (t) => {
     assert.equal(schedule.meals_distribution.length, 4);
   });
 
+  await t.test('5. Tripartite Fasting: Correctly categorizes Coptic fasting (Pescatarian & Strict Vegan)', async () => {
+    const { extractClientFastingProfile } = await import('../frontend/src/utils/seasonalFastingRadar.js');
+
+    const copticPescatarian = extractClientFastingProfile({
+      religion: 'CHRISTIAN',
+      christianFastingStyle: 'PESCATARIAN_ALLOWED'
+    });
+    assert.equal(copticPescatarian.isCoptic, true);
+    assert.equal(copticPescatarian.isRamadan, false);
+    assert.equal(copticPescatarian.primaryFastingBadge.type, 'COPTIC');
+    assert.ok(copticPescatarian.primaryFastingBadge.label.includes('سمك مسموح'));
+
+    const copticVegan = extractClientFastingProfile({
+      answers: {
+        personal: { religion: 'CHRISTIAN' },
+        diet: { christianFastingStyle: 'STRICT_VEGAN' }
+      }
+    });
+    assert.equal(copticVegan.isCoptic, true);
+    assert.equal(copticVegan.isRamadan, false);
+    assert.ok(copticVegan.primaryFastingBadge.label.includes('نباتي صرف'));
+  });
+
+  await t.test('6. Tripartite Fasting: Correctly categorizes Ramadan fasting', async () => {
+    const { extractClientFastingProfile } = await import('../frontend/src/utils/seasonalFastingRadar.js');
+
+    const ramadanClient = extractClientFastingProfile({
+      answers: {
+        personal: { religion: 'MUSLIM' }
+      }
+    });
+    assert.equal(ramadanClient.isRamadan, true);
+    assert.equal(ramadanClient.isCoptic, false);
+    assert.equal(ramadanClient.primaryFastingBadge.type, 'RAMADAN');
+  });
+
+  await t.test('7. Tripartite Fasting: Correctly categorizes Intermittent Fasting (16/8 & 14/10)', async () => {
+    const { extractClientFastingProfile } = await import('../frontend/src/utils/seasonalFastingRadar.js');
+
+    const intermittentClient = extractClientFastingProfile({
+      answers: {
+        personal: { religion: 'MUSLIM' },
+        meal_structure: { intermittent_fasting: '16_8' }
+      }
+    });
+    assert.equal(intermittentClient.isIntermittent, true);
+    assert.equal(intermittentClient.intermittentBadge.type, 'INTERMITTENT');
+    assert.ok(intermittentClient.intermittentBadge.label.includes('16/8'));
+
+    const noFastingClient = extractClientFastingProfile({
+      answers: {
+        personal: { religion: 'MUSLIM' },
+        meal_structure: { intermittent_fasting: 'none' }
+      }
+    });
+    assert.equal(noFastingClient.isIntermittent, false);
+    assert.equal(noFastingClient.intermittentBadge, null);
+  });
+
+  await t.test('8. Tripartite Fasting: Multi-mode synergy (Coptic + 16/8 Intermittent Fasting)', async () => {
+    const { extractClientFastingProfile } = await import('../frontend/src/utils/seasonalFastingRadar.js');
+
+    const multiFastingClient = extractClientFastingProfile({
+      religion: 'CHRISTIAN',
+      christianFastingStyle: 'PESCATARIAN_ALLOWED',
+      intermittent_fasting: '16_8'
+    });
+    assert.equal(multiFastingClient.isCoptic, true);
+    assert.equal(multiFastingClient.isIntermittent, true);
+    assert.ok(multiFastingClient.primaryFastingBadge);
+    assert.ok(multiFastingClient.intermittentBadge);
+  });
+
 });

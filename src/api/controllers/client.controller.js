@@ -69,7 +69,7 @@ export const getClients = async (req, res) => {
         {
           model: IntakeSubmission,
           as: "intakeSubmissions",
-          attributes: ['id', 'status', 'createdAt']
+          attributes: ['id', 'status', 'answers', 'createdAt']
         }
       ],
       order: [['createdAt', 'DESC']]

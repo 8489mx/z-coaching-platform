@@ -53,6 +53,8 @@ const DEFAULT_MASTER_INTAKE = {
   current_meds_supplements: '',
 
   // Screen 3: Nutrition & Lifestyle
+  religion: 'MUSLIM',
+  christianFastingStyle: 'PESCATARIAN_ALLOWED',
   strict_allergies: [],
   other_allergies: '',
   cuisine_preference: 'egyptian_traditional',
@@ -1230,6 +1232,40 @@ export default function FullIntakeForm() {
                     <option value="14_10">نعم، صيام 14 ساعة وإفطار 10 ساعات</option>
                   </select>
                 </div>
+              </div>
+
+              {/* Religion & Religious Fasting Preference */}
+              <div style={{ display: 'grid', gridTemplateColumns: formData.religion === 'CHRISTIAN' ? '1fr 1fr' : '1fr', gap: '14px' }}>
+                <div>
+                  <label style={{ display: 'block', fontSize: '12px', fontWeight: 800, color: '#0F172A', marginBottom: '6px' }}>
+                    الديانة وتزامن الصيام الموسمي:
+                  </label>
+                  <select
+                    value={formData.religion || 'MUSLIM'}
+                    onChange={(e) => setFormData(p => ({ ...p, religion: e.target.value }))}
+                    style={{ width: '100%', height: '40px', borderRadius: '6px', border: '1px solid #CBD5E1', padding: '0 10px', fontSize: '12.5px' }}
+                  >
+                    <option value="MUSLIM">مسلم (مزامنة تلقائية مع صيام شهر رمضان المبارك)</option>
+                    <option value="CHRISTIAN">مسيحي (مزامنة تلقائية مع الصيام الكبير وصوم الميلاد)</option>
+                    <option value="OTHER">عام / نظام غذائي مستمر طوال العام</option>
+                  </select>
+                </div>
+
+                {formData.religion === 'CHRISTIAN' && (
+                  <div>
+                    <label style={{ display: 'block', fontSize: '12px', fontWeight: 800, color: '#0F172A', marginBottom: '6px' }}>
+                      نمط الصيام المسيحي المتبع:
+                    </label>
+                    <select
+                      value={formData.christianFastingStyle || 'PESCATARIAN_ALLOWED'}
+                      onChange={(e) => setFormData(p => ({ ...p, christianFastingStyle: e.target.value }))}
+                      style={{ width: '100%', height: '40px', borderRadius: '6px', border: '1px solid #CBD5E1', padding: '0 10px', fontSize: '12.5px' }}
+                    >
+                      <option value="PESCATARIAN_ALLOWED">صيام نباتي مع السماح بالأسماك والمأكولات البحرية</option>
+                      <option value="STRICT_VEGAN">صيام نباتي صارم (Vegan) بدون أي أسماك أو ألبان</option>
+                    </select>
+                  </div>
+                )}
               </div>
 
               {/* Cravings & Hunger Timing (Selectable Cards Grid) */}

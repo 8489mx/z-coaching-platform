@@ -7,7 +7,7 @@ import AdminLayout from '../components/layout/AdminLayout';
 import NewClientQuickModal from '../components/modals/NewClientQuickModal';
 import { PageHeader } from '@/shared/components/page-header';
 import { FormSection } from '@/shared/components/form-section';
-import { getUpcomingFastingAlert } from '../utils/seasonalFastingRadar';
+import { getUpcomingFastingAlert, extractClientFastingProfile } from '../utils/seasonalFastingRadar';
 
 // Smart 1-Click WhatsApp Pre-filled Message Generator
 export function getWhatsAppMessage(action) {
@@ -122,6 +122,7 @@ export function formatTimeAgo(dateStr) {
 export default function CoachCommandCenter() {
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState('ALL'); // 'ALL' | 'CHECKIN' | 'CLINICAL' | 'INACTIVE' | 'RENEWAL'
+  const [fastingFilter, setFastingFilter] = useState('ALL'); // 'ALL' | 'COPTIC' | 'RAMADAN' | 'INTERMITTENT'
   const [isNewClientModalOpen, setIsNewClientModalOpen] = useState(false);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
@@ -189,6 +190,20 @@ export default function CoachCommandCenter() {
   const pendingIntakes = safeSubmissions.filter(s => s && (s.status === 'PENDING' || s.status === 'PENDING_COACH_REVIEW' || s.status === 'DRAFT_GENERATED' || s.status === 'PAYMENT_CONFIRMED'));
   const expiringClients = safeClients.filter(c => c && c.status === 'EXPIRING_SOON');
 
+  // Index client intake submissions for instant fasting profile lookup
+  const clientIntakeMap = new Map();
+  safeSubmissions.forEach(sub => {
+    const rawCode = sub?.user?.client_code || sub?.answers?.client_code || sub?.client_code || sub?.user_id || sub?.id || '';
+    const cleanCode = String(rawCode).replace(/^client[-_]?/i, '').replace('#', '');
+    if (cleanCode && !clientIntakeMap.has(cleanCode)) {
+      clientIntakeMap.set(cleanCode, sub);
+    }
+    const ph = String(sub?.user?.phone_number || sub?.phone_number || '').trim();
+    if (ph && !clientIntakeMap.has(ph)) {
+      clientIntakeMap.set(ph, sub);
+    }
+  });
+
   const actionsMap = new Map();
 
   // 1. Expiring Subscriptions (Highest Priority for Renewal Outreach)
@@ -197,6 +212,9 @@ export default function CoachCommandCenter() {
     const cleanCode = String(rawCode).replace(/^client[-_]?/i, '').replace('#', '');
     const phone = c?.phone_number || '';
     const country = getClientCountryInfo(phone, c?.country || '');
+    const intakeSub = clientIntakeMap.get(cleanCode) || clientIntakeMap.get(phone);
+    const fasting = extractClientFastingProfile(c, intakeSub?.answers);
+
     actionsMap.set(cleanCode, {
       id: `RENEWAL_${cleanCode}`,
       clientCode: cleanCode,
@@ -209,7 +227,11 @@ export default function CoachCommandCenter() {
       summary: `متبقي ${c?.days_remaining || 0} أيام على نهاية باقة الاشتراك.`,
       suggestedAction: 'مراسلة المشترك لتجديد الاشتراك',
       badgeText: 'تجديد قريب',
-      actionUrl: `/subscriptions?code=${cleanCode}`
+      actionUrl: `/subscriptions?code=${cleanCode}`,
+      fastingProfile: fasting,
+      isCoptic: fasting.isCoptic,
+      isRamadan: fasting.isRamadan,
+      isIntermittent: fasting.isIntermittent
     });
   });
 
@@ -221,6 +243,9 @@ export default function CoachCommandCenter() {
       const phone = chk?.user?.phone_number || '';
       const country = getClientCountryInfo(phone, chk?.user?.country || '');
       const isPlateau = chk?.analysis_status === 'PLATEAU_DETECTED';
+      const intakeSub = clientIntakeMap.get(cleanCode) || clientIntakeMap.get(phone);
+      const fasting = extractClientFastingProfile(chk?.user || chk, intakeSub?.answers);
+
       actionsMap.set(cleanCode, {
         id: `CHECKIN_${cleanCode}`,
         clientCode: cleanCode,
@@ -229,12 +254,16 @@ export default function CoachCommandCenter() {
         clientName: chk?.user?.full_name || `مشترك #${cleanCode}`,
         country,
         tier: getClientTier(cleanCode || chk),
-      phone,
+        phone,
         timeAgo: formatTimeAgo(chk?.created_at || chk?.updated_at),
         summary: isPlateau ? 'كشف ثبات وزن أيضي (Plateau) • مطلوب تعديل السعرات أو إضافة يوم Refeed.' : 'متابعة أسبوعية واردة بانتظار المراجعة والاعتماد.',
         suggestedAction: isPlateau ? 'مراجعة ثبات الوزن وتعديل الخطة' : 'مراجعة واعتماد التقييم الأسبوعي',
         badgeText: isPlateau ? 'ثبات وزن / تعديل' : 'متابعة واردة',
-        actionUrl: `/coach/checkin-review?code=${cleanCode}`
+        actionUrl: `/coach/checkin-review?code=${cleanCode}`,
+        fastingProfile: fasting,
+        isCoptic: fasting.isCoptic,
+        isRamadan: fasting.isRamadan,
+        isIntermittent: fasting.isIntermittent
       });
     }
   });
@@ -247,6 +276,8 @@ export default function CoachCommandCenter() {
       const phone = sub?.user?.phone_number || sub?.phone_number || '';
       const country = getClientCountryInfo(phone, sub?.country || sub?.answers?.personal?.country || sub?.user?.country || '');
       const hasInjury = Boolean(sub?.answers?.injuries_map?.has_injuries || (sub?.answers?.injuries_map?.selected_areas && sub?.answers?.injuries_map?.selected_areas.length > 0));
+      const fasting = extractClientFastingProfile(sub?.user || sub, sub?.answers);
+
       actionsMap.set(cleanCode, {
         id: `INTAKE_${cleanCode}`,
         clientCode: cleanCode,
@@ -255,14 +286,18 @@ export default function CoachCommandCenter() {
         clientName: sub?.user?.full_name || sub?.full_name || `مشترك #${cleanCode}`,
         country,
         tier: getClientTier(cleanCode || sub),
-      phone,
+        phone,
         timeAgo: formatTimeAgo(sub?.created_at || sub?.submitted_at || sub?.user?.created_at),
         summary: hasInjury
           ? 'المشترك لديه إصابة / ألم مسجل • مطلوب استبعاد التمارين المجهدة وتجهيز الخطة.'
           : (sub?.status === 'PAID' || sub?.status === 'PAYMENT_CONFIRMED' ? 'تم تأكيد الدفع • الاستمارة جاهزة لإعداد الخطة.' : 'استمارة جديدة بانتظار تجهيز الخطة.'),
         suggestedAction: 'تجهيز واعتماد خطة المشترك',
         badgeText: hasInjury ? 'إصابة مسجلة' : (sub?.status === 'PAID' || sub?.status === 'PAYMENT_CONFIRMED' ? 'مدفوع • بانتظار الخطة' : 'استمارة جديدة'),
-        actionUrl: `/coach/editor?user_id=${cleanCode}`
+        actionUrl: `/coach/editor?user_id=${cleanCode}`,
+        fastingProfile: fasting,
+        isCoptic: fasting.isCoptic,
+        isRamadan: fasting.isRamadan,
+        isIntermittent: fasting.isIntermittent
       });
     }
   });
@@ -276,6 +311,9 @@ export default function CoachCommandCenter() {
   const inactiveCount = dailyActions.filter(a => a.type === 'INACTIVE').length;
   const renewalCount = dailyActions.filter(a => a.type === 'RENEWAL').length;
   const allCount = dailyActions.length;
+  const copticCount = dailyActions.filter(a => a.isCoptic).length;
+  const ramadanCount = dailyActions.filter(a => a.isRamadan).length;
+  const intermittentCount = dailyActions.filter(a => a.isIntermittent).length;
 
   const TABS = [
     { id: 'ALL', label: 'الكل', count: allCount },
@@ -340,7 +378,12 @@ export default function CoachCommandCenter() {
     if (activeTab === 'NEW_INTAKE' && !(act.type === 'NEW_INTAKE' || act.type === 'INJURY')) return false;
     if (activeTab !== 'ALL' && activeTab !== 'NEW_INTAKE' && act.type !== activeTab) return false;
 
-    // 2. Search query filter
+    // 2. Fasting filter
+    if (fastingFilter === 'COPTIC' && !act.isCoptic) return false;
+    if (fastingFilter === 'RAMADAN' && !act.isRamadan) return false;
+    if (fastingFilter === 'INTERMITTENT' && !act.isIntermittent) return false;
+
+    // 3. Search query filter
     if (searchQuery.trim()) {
       const q = searchQuery.trim().toLowerCase().replace('#', '');
       const name = String(act.clientName || '').toLowerCase();
@@ -348,7 +391,9 @@ export default function CoachCommandCenter() {
       const phone = String(act.phone || '').toLowerCase();
       const id = String(act.id || '').toLowerCase();
       const tier = String(act.tier || '').toLowerCase();
-      return name.includes(q) || code.includes(q) || phone.includes(q) || id.includes(q) || tier.includes(q);
+      const fastingLabel = String(act.fastingProfile?.primaryFastingBadge?.label || '').toLowerCase();
+      const intermittentLabel = String(act.fastingProfile?.intermittentBadge?.label || '').toLowerCase();
+      return name.includes(q) || code.includes(q) || phone.includes(q) || id.includes(q) || tier.includes(q) || fastingLabel.includes(q) || intermittentLabel.includes(q);
     }
 
     return true;
@@ -514,23 +559,47 @@ export default function CoachCommandCenter() {
               </div>
             </div>
 
-            <button
-              type="button"
-              onClick={() => setSearchQuery('صيام')}
-              style={{
-                background: '#C4952D',
-                color: '#0F172A',
-                border: 'none',
-                borderRadius: '6px',
-                padding: '6px 12px',
-                fontSize: '11.5px',
-                fontWeight: 800,
-                cursor: 'pointer',
-                whiteSpace: 'nowrap'
-              }}
-            >
-              استعراض المشتركين الصائمين
-            </button>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+              <button
+                type="button"
+                onClick={() => {
+                  setSearchQuery('');
+                  setActiveTab('ALL');
+                  setFastingFilter(seasonalFastingInfo.type === 'COPTIC' ? 'COPTIC' : 'RAMADAN');
+                }}
+                style={{
+                  background: '#C4952D',
+                  color: '#0F172A',
+                  border: 'none',
+                  borderRadius: '6px',
+                  padding: '7px 14px',
+                  fontSize: '11.5px',
+                  fontWeight: 800,
+                  cursor: 'pointer',
+                  whiteSpace: 'nowrap'
+                }}
+              >
+                {seasonalFastingInfo.type === 'COPTIC' ? 'استعراض مشتركي الصيام المسيحي' : 'استعراض مشتركي صيام رمضان'}
+              </button>
+
+              <button
+                type="button"
+                onClick={() => navigate(`/customers?fasting=${seasonalFastingInfo.type === 'COPTIC' ? 'COPTIC' : 'RAMADAN'}`)}
+                style={{
+                  background: 'rgba(255, 255, 255, 0.12)',
+                  color: '#F8FAFC',
+                  border: '1px solid rgba(255, 255, 255, 0.25)',
+                  borderRadius: '6px',
+                  padding: '7px 12px',
+                  fontSize: '11.5px',
+                  fontWeight: 700,
+                  cursor: 'pointer',
+                  whiteSpace: 'nowrap'
+                }}
+              >
+                كافة المشتركين في قاعدة البيانات
+              </button>
+            </div>
           </div>
         )}
 
@@ -603,51 +672,173 @@ export default function CoachCommandCenter() {
               </div>
             )}
           >
-              {/* 2-Column Responsive Action Cards Grid with Stable Min Height */}
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 480px), 1fr))', gap: '10px', marginTop: '10px', minHeight: '180px', alignContent: 'start' }}>
-                {filteredActions.length === 0 ? (
-                  <div style={{ gridColumn: '1 / -1', minHeight: '160px', padding: '24px 16px', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', textAlign: 'center', background: '#F8FAFC', border: '1px dashed #CBD5E1', borderRadius: '8px' }}>
-                    <div style={{ width: '36px', height: '36px', borderRadius: '50%', background: '#F1F5F9', color: '#0F172A', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 8px auto' }}>
-                      <CheckCircle2 size={18} />
-                    </div>
-                    <div style={{ fontSize: '13px', fontWeight: 800, color: '#0F172A', marginBottom: '2px' }}>
-                      تم إنهاء كافة الإجراءات والمتابعات لليوم
-                    </div>
-                    <p style={{ fontSize: '11.5px', color: '#64748B', margin: 0 }}>
-                      كافة المراجعات والتنبيهات المندرجة تحت هذا التبويب معتمدة بنسبة 100%.
-                    </p>
+            {/* Fasting Tripartite Filter Bar */}
+            <div style={{ 
+              display: 'flex', 
+              alignItems: 'center', 
+              justifyContent: 'space-between', 
+              padding: '8px 12px', 
+              background: '#F8FAFC', 
+              border: '1px solid #E2E8F0', 
+              borderRadius: '6px', 
+              marginBottom: '10px', 
+              flexWrap: 'wrap', 
+              gap: '8px' 
+            }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+                <span style={{ fontSize: '11.5px', fontWeight: 800, color: '#475569' }}>
+                  فلترة أنماط الصيام:
+                </span>
+                <div style={{ display: 'flex', gap: '4px', flexWrap: 'wrap' }}>
+                  {[
+                    { id: 'ALL', label: 'كافة المتابعات', count: dailyActions.length, bg: '#0F172A', color: '#FFFFFF' },
+                    { id: 'COPTIC', label: 'صيام مسيحي / قبطي', count: copticCount, bg: '#6D28D9', color: '#FFFFFF' },
+                    { id: 'RAMADAN', label: 'صيام رمضان المبارك', count: ramadanCount, bg: '#B45309', color: '#FFFFFF' },
+                    { id: 'INTERMITTENT', label: 'صيام متقطع', count: intermittentCount, bg: '#0369A1', color: '#FFFFFF' }
+                  ].map(f => {
+                    const isSelected = fastingFilter === f.id;
+                    return (
+                      <button
+                        key={f.id}
+                        type="button"
+                        onClick={() => setFastingFilter(f.id)}
+                        style={{
+                          padding: '4px 10px',
+                          borderRadius: '5px',
+                          fontSize: '11px',
+                          fontWeight: 800,
+                          border: isSelected ? 'none' : '1px solid #CBD5E1',
+                          cursor: 'pointer',
+                          background: isSelected ? f.bg : '#FFFFFF',
+                          color: isSelected ? f.color : '#475569',
+                          boxShadow: isSelected ? '0 2px 4px rgba(0,0,0,0.12)' : 'none',
+                          transition: 'all 0.15s ease'
+                        }}
+                      >
+                        {f.label} ({f.count})
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {fastingFilter !== 'ALL' && (
+                <button
+                  type="button"
+                  onClick={() => setFastingFilter('ALL')}
+                  style={{
+                    background: 'transparent',
+                    border: 'none',
+                    color: '#64748B',
+                    fontSize: '11px',
+                    fontWeight: 700,
+                    cursor: 'pointer',
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '4px'
+                  }}
+                >
+                  <X size={12} />
+                  <span>إلغاء فلتر الصيام (عرض الكل)</span>
+                </button>
+              )}
+            </div>
+
+            {/* 2-Column Responsive Action Cards Grid with Stable Min Height */}
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 480px), 1fr))', gap: '10px', marginTop: '10px', minHeight: '180px', alignContent: 'start' }}>
+              {filteredActions.length === 0 ? (
+                <div style={{ gridColumn: '1 / -1', minHeight: '160px', padding: '24px 16px', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', textAlign: 'center', background: '#F8FAFC', border: '1px dashed #CBD5E1', borderRadius: '8px' }}>
+                  <div style={{ width: '36px', height: '36px', borderRadius: '50%', background: '#F1F5F9', color: '#0F172A', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 8px auto' }}>
+                    <CheckCircle2 size={18} />
                   </div>
-                ) : (
-                  filteredActions.map(action => (
-                    <div
-                      key={action.id}
+                  <div style={{ fontSize: '13px', fontWeight: 800, color: '#0F172A', marginBottom: '2px' }}>
+                    {fastingFilter !== 'ALL' ? 'لا توجد إجراءات معلقة حالياً لهذا النوع من الصيام' : 'تم إنهاء كافة الإجراءات والمتابعات لليوم'}
+                  </div>
+                  <p style={{ fontSize: '11.5px', color: '#64748B', margin: '0 0 10px 0' }}>
+                    {fastingFilter !== 'ALL'
+                      ? 'كافة المشتركين المندرجين تحت هذا التصنيف معتمدة خططهم ومتابعاتهم، أو لم يحن موعد تقييمهم اليوم.'
+                      : 'كافة المراجعات والتنبيهات المندرجة تحت هذا التبويب معتمدة بنسبة 100%.'}
+                  </p>
+                  {fastingFilter !== 'ALL' && (
+                    <button
+                      type="button"
+                      onClick={() => navigate(`/customers?fasting=${fastingFilter}`)}
                       style={{
-                        background: '#FFFFFF',
-                        border: '1px solid #E2E8F0',
-                        borderRadius: '8px',
-                        padding: '10px 14px',
-                        boxShadow: '0 1px 2px rgba(15, 23, 42, 0.02)',
-                        display: 'flex',
-                        flexDirection: 'column',
-                        gap: '7px',
-                        transition: 'border-color 0.15s ease'
+                        background: '#0F172A',
+                        color: '#FFFFFF',
+                        border: 'none',
+                        borderRadius: '6px',
+                        padding: '7px 14px',
+                        fontSize: '11.5px',
+                        fontWeight: 700,
+                        cursor: 'pointer',
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: '6px'
                       }}
                     >
-                      {/* 1. Top Row: Client Details & Badges */}
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
-                        <ClientCodeBadge code={action.clientCode} item={action} />
-                        <strong style={{ fontSize: '13.5px', fontWeight: 800, color: '#0F172A' }}>
-                          {action.clientName}
-                        </strong>
-                        {action.country && (
-                          <span style={{ fontSize: '11px', color: '#1E293B', background: '#F8FAFC', padding: '1px 7px', borderRadius: '4px', border: '1px solid #E2E8F0', fontWeight: 700 }}>
-                            {action.country.name}
-                          </span>
-                        )}
-                        <ClientPackageBadge item={action} />
-                        <span style={{ fontSize: '10.5px', background: '#F8FAFC', border: '1px solid #E2E8F0', color: '#64748B', padding: '1px 6px', borderRadius: '4px', fontWeight: 700 }}>
-                          {action.badgeText}
+                      <span>عرض كافة مشتركي هذا الصيام في قاعدة البيانات (CRM)</span>
+                      <ExternalLink size={12} />
+                    </button>
+                  )}
+                </div>
+              ) : (
+                filteredActions.map(action => (
+                  <div
+                    key={action.id}
+                    style={{
+                      background: '#FFFFFF',
+                      border: '1px solid #E2E8F0',
+                      borderRadius: '8px',
+                      padding: '10px 14px',
+                      boxShadow: '0 1px 2px rgba(15, 23, 42, 0.02)',
+                      display: 'flex',
+                      flexDirection: 'column',
+                      gap: '7px',
+                      transition: 'border-color 0.15s ease'
+                    }}
+                  >
+                    {/* 1. Top Row: Client Details & Badges */}
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+                      <ClientCodeBadge code={action.clientCode} item={action} />
+                      <strong style={{ fontSize: '13.5px', fontWeight: 800, color: '#0F172A' }}>
+                        {action.clientName}
+                      </strong>
+                      {action.country && (
+                        <span style={{ fontSize: '11px', color: '#1E293B', background: '#F8FAFC', padding: '1px 7px', borderRadius: '4px', border: '1px solid #E2E8F0', fontWeight: 700 }}>
+                          {action.country.name}
                         </span>
+                      )}
+                      <ClientPackageBadge item={action} />
+                      <span style={{ fontSize: '10.5px', background: '#F8FAFC', border: '1px solid #E2E8F0', color: '#64748B', padding: '1px 6px', borderRadius: '4px', fontWeight: 700 }}>
+                        {action.badgeText}
+                      </span>
+                      {action.fastingProfile?.primaryFastingBadge && (
+                        <span style={{ 
+                          fontSize: '10.5px', 
+                          background: action.fastingProfile.primaryFastingBadge.bg, 
+                          border: `1px solid ${action.fastingProfile.primaryFastingBadge.border}`, 
+                          color: action.fastingProfile.primaryFastingBadge.color, 
+                          padding: '1px 7px', 
+                          borderRadius: '4px', 
+                          fontWeight: 800 
+                        }}>
+                          {action.fastingProfile.primaryFastingBadge.label}
+                        </span>
+                      )}
+                      {action.fastingProfile?.intermittentBadge && (
+                        <span style={{ 
+                          fontSize: '10.5px', 
+                          background: action.fastingProfile.intermittentBadge.bg, 
+                          border: `1px solid ${action.fastingProfile.intermittentBadge.border}`, 
+                          color: action.fastingProfile.intermittentBadge.color, 
+                          padding: '1px 7px', 
+                          borderRadius: '4px', 
+                          fontWeight: 800 
+                        }}>
+                          {action.fastingProfile.intermittentBadge.label}
+                        </span>
+                      )}
                         {action.timeAgo && (
                           <span style={{ 
                             fontSize: '10.5px', 

@@ -1,4 +1,4 @@
-import { User } from "../models/index.js";
+import { User, IntakeSubmission } from "../models/index.js";
 
 export const PACKAGE_CONFIG = {
   "MAX_3_PLUS_1": {
@@ -73,6 +73,13 @@ export const getSubscriptionOverview = async (req, res) => {
   try {
     const clients = await User.findAll({
       where: { role: "CLIENT" },
+      include: [
+        {
+          model: IntakeSubmission,
+          as: "intakeSubmissions",
+          attributes: ["id", "status", "answers", "createdAt"]
+        }
+      ],
       order: [["id", "DESC"]]
     });
 
