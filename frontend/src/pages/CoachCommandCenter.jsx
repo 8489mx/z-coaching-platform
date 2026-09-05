@@ -125,6 +125,7 @@ export default function CoachCommandCenter() {
   const [fastingFilter, setFastingFilter] = useState('ALL'); // 'ALL' | 'COPTIC' | 'RAMADAN' | 'INTERMITTENT'
   const [isNewClientModalOpen, setIsNewClientModalOpen] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [searchQuery, setSearchQuery] = useState('');
   const seasonalFastingInfo = React.useMemo(() => getUpcomingFastingAlert(), []);
   const [isFastingAlertDismissed, setIsFastingAlertDismissed] = useState(false);
 
