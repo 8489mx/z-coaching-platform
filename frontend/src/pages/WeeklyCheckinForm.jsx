@@ -1,7 +1,8 @@
-import React, { useState } from 'react';
-import { Camera, Scale, Battery, Moon, Utensils, ChevronLeft, ChevronRight, CheckCircle2, Loader2, Activity } from 'lucide-react';
+import React, { useState, useMemo } from 'react';
+import { Camera, Scale, Battery, Moon, Utensils, ChevronLeft, ChevronRight, CheckCircle2, Loader2, Activity, Sparkles } from 'lucide-react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { API_BASE } from '../config/api';
+import { getUpcomingFastingAlert } from '../utils/seasonalFastingRadar';
 
 export default function WeeklyCheckinForm() {
   const navigate = useNavigate();
@@ -9,6 +10,11 @@ export default function WeeklyCheckinForm() {
   const [step, setStep] = useState(1);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState('');
+
+  const upcomingFasting = useMemo(() => {
+    const alert = getUpcomingFastingAlert();
+    return alert && (alert.isActive || (alert.daysLeft > 0 && alert.daysLeft <= 35)) ? alert : null;
+  }, []);
 
   const [formData, setFormData] = useState({
     weight_kg: '',
@@ -20,7 +26,8 @@ export default function WeeklyCheckinForm() {
       sleepQuality: 7,
       hungerLevel: 5
     },
-    client_notes: ''
+    client_notes: '',
+    fasting_transition: 'MAINTAIN_BASELINE'
   });
 
   const handleSubmit = async () => {
@@ -37,7 +44,8 @@ export default function WeeklyCheckinForm() {
         nutrition_adherence_percent: formData.nutrition_adherence_percent,
         workouts_completed: formData.workouts_completed,
         biofeedback: formData.biofeedback,
-        client_notes: formData.client_notes
+        client_notes: formData.client_notes,
+        fasting_transition: formData.fasting_transition
       };
 
       const res = await fetch(`${API_BASE}/api/v1/checkin`, {
@@ -408,6 +416,55 @@ export default function WeeklyCheckinForm() {
                   }}
                 />
               </div>
+
+              {/* Seasonal Fasting Transition Confirmation */}
+              {upcomingFasting && (
+                <div style={{ background: '#F8FAFC', border: '1px solid #CBD5E1', borderRadius: '8px', padding: '12px 14px' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '6px' }}>
+                    <Sparkles size={16} color="#B45309" />
+                    <strong style={{ fontSize: '12.5px', color: '#0F172A' }}>
+                      تنسيق مواعيد الصيام: {upcomingFasting.name} ({upcomingFasting.statusText})
+                    </strong>
+                  </div>
+                  <span style={{ fontSize: '11px', color: '#64748B', display: 'block', marginBottom: '10px' }}>
+                    {upcomingFasting.description} هل تود بدء تكييف برنامجك الغذائي والتدريبي للأسبوع القادم مع الصيام؟
+                  </span>
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
+                    <button
+                      type="button"
+                      onClick={() => setFormData({ ...formData, fasting_transition: 'ACTIVE' })}
+                      style={{
+                        padding: '8px 10px',
+                        borderRadius: '6px',
+                        fontSize: '11.5px',
+                        fontWeight: 800,
+                        cursor: 'pointer',
+                        background: formData.fasting_transition === 'ACTIVE' ? '#0F172A' : '#FFFFFF',
+                        color: formData.fasting_transition === 'ACTIVE' ? '#FFFFFF' : '#475569',
+                        border: formData.fasting_transition === 'ACTIVE' ? '1px solid #0F172A' : '1px solid #CBD5E1'
+                      }}
+                    >
+                      نعم، تكييف خطة الصيام
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setFormData({ ...formData, fasting_transition: 'MAINTAIN_BASELINE' })}
+                      style={{
+                        padding: '8px 10px',
+                        borderRadius: '6px',
+                        fontSize: '11.5px',
+                        fontWeight: 700,
+                        cursor: 'pointer',
+                        background: formData.fasting_transition === 'MAINTAIN_BASELINE' ? '#0F172A' : '#FFFFFF',
+                        color: formData.fasting_transition === 'MAINTAIN_BASELINE' ? '#FFFFFF' : '#475569',
+                        border: formData.fasting_transition === 'MAINTAIN_BASELINE' ? '1px solid #0F172A' : '1px solid #CBD5E1'
+                      }}
+                    >
+                      لا، الاستمرار في خطتي الحالية
+                    </button>
+                  </div>
+                </div>
+              )}
 
             </div>
           </div>

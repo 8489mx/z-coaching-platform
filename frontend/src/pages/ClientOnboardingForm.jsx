@@ -619,28 +619,28 @@ export default function ClientOnboardingForm() {
               </div>
 
               <div className="col-md-6">
-                <label style={labelStyle}>الديانة ونمط الصيام الديني التلقائي:</label>
+                <label style={labelStyle}>تفضيلات الصيام الموسمي والديني (لتكييف الوجبات تلقائياً):</label>
                 <select
                   value={formData.religion}
                   onChange={(e) => setFormData({ ...formData, religion: e.target.value })}
                   style={inputStyle}
                 >
-                  <option value="MUSLIM">مسلم (مزامنة تلقائية مع صيام شهر رمضان المبارك)</option>
-                  <option value="CHRISTIAN">مسيحي (مزامنة تلقائية مع الصيام الكبير والصغير)</option>
-                  <option value="OTHER">عام / نظام غذائي مستمر طوال العام</option>
+                  <option value="MUSLIM">مزامنة صيام شهر رمضان المبارك (صيام جاف وتوقيت ليلي)</option>
+                  <option value="CHRISTIAN">مزامنة الصيام الكنسي / المسيحي (صوم الميلاد، الصوم الكبير)</option>
+                  <option value="OTHER">نظام غذائي اعتيادي مستمر طوال العام (بدون أصوام دينية)</option>
                 </select>
               </div>
 
               {formData.religion === 'CHRISTIAN' && (
                 <div className="col-md-6">
-                  <label style={labelStyle}>نمط الصيام المسيحي المتبع:</label>
+                  <label style={labelStyle}>نمط الصيام المسيحي المتبع في الوجبات:</label>
                   <select
                     value={formData.christianFastingStyle}
                     onChange={(e) => setFormData({ ...formData, christianFastingStyle: e.target.value })}
                     style={inputStyle}
                   >
-                    <option value="PESCATARIAN_ALLOWED">صيام نباتي مع السماح بالأسماك والمأكولات البحرية</option>
-                    <option value="STRICT_VEGAN">صيام نباتي صارم (Vegan) بدون أي أسماك أو ألبان</option>
+                    <option value="PESCATARIAN_ALLOWED">صيام نباتي مع السماح بالأسماك والمأكولات البحرية (الموصى به)</option>
+                    <option value="STRICT_VEGAN">صيام نباتي صارم خالي من الأسماك وذوات الأرواح</option>
                   </select>
                 </div>
               )}

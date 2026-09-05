@@ -243,6 +243,7 @@ export default function CoachCommandCenter() {
       const phone = chk?.user?.phone_number || '';
       const country = getClientCountryInfo(phone, chk?.user?.country || '');
       const isPlateau = chk?.analysis_status === 'PLATEAU_DETECTED';
+      const isFastingTransition = chk?.fasting_transition === 'ACTIVE';
       const intakeSub = clientIntakeMap.get(cleanCode) || clientIntakeMap.get(phone);
       const fasting = extractClientFastingProfile(chk?.user || chk, intakeSub?.answers);
 
@@ -256,9 +257,13 @@ export default function CoachCommandCenter() {
         tier: getClientTier(cleanCode || chk),
         phone,
         timeAgo: formatTimeAgo(chk?.created_at || chk?.updated_at),
-        summary: isPlateau ? 'كشف ثبات وزن أيضي (Plateau) • مطلوب تعديل السعرات أو إضافة يوم Refeed.' : 'متابعة أسبوعية واردة بانتظار المراجعة والاعتماد.',
-        suggestedAction: isPlateau ? 'مراجعة ثبات الوزن وتعديل الخطة' : 'مراجعة واعتماد التقييم الأسبوعي',
-        badgeText: isPlateau ? 'ثبات وزن / تعديل' : 'متابعة واردة',
+        summary: isPlateau 
+          ? 'كشف ثبات وزن أيضي (Plateau) • مطلوب تعديل السعرات أو إضافة يوم Refeed.' 
+          : (isFastingTransition 
+              ? 'طلب تكييف خطة الصيام للأسبوع القادم • مطلوب مراجعة واعتماد جدول الوجبات الجديد.' 
+              : 'متابعة أسبوعية واردة بانتظار المراجعة والاعتماد.'),
+        suggestedAction: isPlateau ? 'مراجعة ثبات الوزن وتعديل الخطة' : (isFastingTransition ? 'اعتماد خطة الصيام وتعديل الوجبات' : 'مراجعة واعتماد التقييم الأسبوعي'),
+        badgeText: isPlateau ? 'ثبات وزن / تعديل' : (isFastingTransition ? 'تكييف الصيام' : 'متابعة واردة'),
         actionUrl: `/coach/checkin-review?code=${cleanCode}`,
         fastingProfile: fasting,
         isCoptic: fasting.isCoptic,
