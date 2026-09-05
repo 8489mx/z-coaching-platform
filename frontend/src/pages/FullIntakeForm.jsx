@@ -3,6 +3,7 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import { Check, ChevronLeft, ChevronRight, Ruler, Lock, Camera, CheckCircle2, Activity, HeartPulse, Utensils, Dumbbell, RotateCw, User, Scale, ShieldAlert, MessageCircle, AlertCircle, FileCheck2, Info, RefreshCcw, Upload } from 'lucide-react';
 import { API_BASE } from '../config/api';
 import { getStoredCoachConfig } from '../utils/themeAndCoachConfig';
+import { optimizeImageFile, optimizeMultipleFiles } from '../utils/imageOptimizer';
 
 const DEFAULT_MASTER_INTAKE = {
   // Screen 1: Biometrics & Target
@@ -238,24 +239,26 @@ export default function FullIntakeForm() {
     });
   };
 
-  const handleLabReportsUpload = (e) => {
+  const handleLabReportsUpload = async (e) => {
     const files = Array.from(e.target.files || []);
-    files.forEach(file => {
-      const reader = new FileReader();
-      reader.onload = (event) => {
+    if (files.length === 0) return;
+    try {
+      const optimizedUrls = await optimizeMultipleFiles(files, { maxWidth: 1800, maxHeight: 1800, quality: 0.84 });
+      if (optimizedUrls.length > 0) {
         setFormData(prev => ({
           ...prev,
           media_uploads: {
             ...(prev.media_uploads || {}),
             medical_reports_urls: [
               ...(prev.media_uploads?.medical_reports_urls || []),
-              event.target.result
+              ...optimizedUrls
             ]
           }
         }));
-      };
-      reader.readAsDataURL(file);
-    });
+      }
+    } catch (err) {
+      console.warn('Error optimizing lab report files:', err);
+    }
   };
 
   const toggleCondition = (conditionKey) => {

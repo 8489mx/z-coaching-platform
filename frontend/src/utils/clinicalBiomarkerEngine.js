@@ -104,8 +104,10 @@ export function calculateHomaIR(fastingGlucose, fastingInsulin) {
 export function evaluateClinicalBiomarkers({
   values = {},
   client = {},
-  supplementAdherence = 'NONE' // بروتوكول التغذية الحيوية الكاملة (الغذاء أولاً) هو الأساس المعتمد
+  supplementAdherence = 'NONE', // بروتوكول التغذية الحيوية الكاملة (الغذاء أولاً) هو الأساس المعتمد
+  sampleFastingState = 'FASTING' // 'FASTING' (صائم 8-12 ساعة) | 'NON_FASTING' (فاطر / عشوائي)
 }) {
+  const isFasting = sampleFastingState === 'FASTING';
   const gender = (client.gender || 'MALE').toUpperCase();
   const isMale = gender === 'MALE';
   const weightKg = Number(client.weight_kg || client.weight || 75);
@@ -159,8 +161,8 @@ export function evaluateClinicalBiomarkers({
   const ck = num('creatine_kinase');
   const tsh = num('tsh');
 
-  // حساب HOMA-IR تلقائياً
-  const homaIR = calculateHomaIR(fbg, fInsulin);
+  // حساب HOMA-IR تلقائياً (حصراً في حال كانت العينة صائمة لتفادي الإنذار الكاذب)
+  const homaIR = isFasting ? calculateHomaIR(fbg, fInsulin) : null;
 
   // -------------------------------------------------------------
   // 1. فحص كفاءة الكلى (Renal Safety Guardrails)
@@ -205,15 +207,22 @@ export function evaluateClinicalBiomarkers({
   // -------------------------------------------------------------
   // 2. فحص الأيض، السكر، ومقاومة الأنسولين (Glycemic Panel)
   // -------------------------------------------------------------
-  const isPreDiabetes = (hba1c !== null && hba1c >= 5.7) || (fbg !== null && fbg >= 100) || (homaIR !== null && homaIR >= 2.5);
-  const isDiabetesRange = (hba1c !== null && hba1c >= 6.5) || (fbg !== null && fbg >= 126);
+  const isGlucoseElevated = isFasting 
+    ? (fbg !== null && fbg >= 100) 
+    : (fbg !== null && fbg >= 140);
+  const isGlucoseDiabetic = isFasting 
+    ? (fbg !== null && fbg >= 126) 
+    : (fbg !== null && fbg >= 200);
+
+  const isPreDiabetes = (hba1c !== null && hba1c >= 5.7) || isGlucoseElevated || (homaIR !== null && homaIR >= 2.5);
+  const isDiabetesRange = (hba1c !== null && hba1c >= 6.5) || isGlucoseDiabetic;
 
   if (isPreDiabetes) {
     flags.push({
       panel: 'GLYCEMIC',
       severity: isDiabetesRange ? 'CRITICAL' : 'MODERATE',
       title_ar: isDiabetesRange ? 'مؤشرات سكر دم مرتفعة (نطاق السكري)' : 'مؤشرات مقاومة أنسولين أو مرحلة ما قبل السكري',
-      details_ar: `HbA1c: ${hba1c || '-'}% | سكر صائم: ${fbg || '-'} mg/dL | HOMA-IR: ${homaIR || '-'}`
+      details_ar: `HbA1c: ${hba1c || '-'}% | سكر ${isFasting ? 'صائم' : 'عشوائي/فاطر'}: ${fbg || '-'} mg/dL | HOMA-IR: ${homaIR !== null ? homaIR : (isFasting ? '-' : 'معطل (عينة غير صائمة)')}`
     });
 
     dietaryModifications.min_fiber_g = 35;
@@ -423,6 +432,8 @@ export function evaluateClinicalBiomarkers({
     flags_count: flags.length,
     flags,
     homa_ir: homaIR,
+    sample_fasting_state: sampleFastingState,
+    is_sample_fasting: isFasting,
     supplement_adherence: supplementAdherence,
     is_food_only_mode: isFoodOnly,
     dietary_modifications: dietaryModifications,

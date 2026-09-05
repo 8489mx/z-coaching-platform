@@ -137,3 +137,32 @@ test('7. Biomarker Engine - Defaults to Food-First mode (NONE) and treats magnes
   assert.ok(mgProtocol.rationale_ar.includes('لوز'));
 });
 
+test('8. Biomarker Engine - Fasting state computes HOMA-IR and evaluates fasting glucose (70-99 mg/dL)', () => {
+  const fastingResult = evaluateClinicalBiomarkers({
+    values: { fasting_glucose: 105, fasting_insulin: 12 },
+    client: { gender: 'MALE', weight_kg: 80 },
+    sampleFastingState: 'FASTING'
+  });
+
+  assert.strictEqual(fastingResult.is_sample_fasting, true);
+  assert.strictEqual(fastingResult.sample_fasting_state, 'FASTING');
+  assert.strictEqual(fastingResult.homa_ir, 3.11); // (105 * 12) / 405 = 3.11
+  assert.ok(fastingResult.flags.some(f => f.panel === 'GLYCEMIC'));
+});
+
+test('9. Biomarker Engine - Non-Fasting (فاطر / عشوائي) disables HOMA-IR to prevent false positives and adapts glucose threshold (<140)', () => {
+  // Client has glucose 120 after eating (postprandial), which is completely normal (<140), and HbA1c 5.2% (normal)
+  const nonFastingResult = evaluateClinicalBiomarkers({
+    values: { fasting_glucose: 120, fasting_insulin: 18, hba1c: 5.2 },
+    client: { gender: 'MALE', weight_kg: 80 },
+    sampleFastingState: 'NON_FASTING'
+  });
+
+  assert.strictEqual(nonFastingResult.is_sample_fasting, false);
+  assert.strictEqual(nonFastingResult.sample_fasting_state, 'NON_FASTING');
+  // HOMA-IR MUST be null to prevent false positive insulin resistance diagnosis on postprandial blood
+  assert.strictEqual(nonFastingResult.homa_ir, null);
+  // Glucose 120 after meal is safe, so no glycemic flags should be triggered
+  assert.strictEqual(nonFastingResult.flags.some(f => f.panel === 'GLYCEMIC'), false);
+});
+

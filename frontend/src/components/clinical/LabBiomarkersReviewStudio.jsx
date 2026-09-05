@@ -17,7 +17,8 @@ import {
   ChevronRight,
   Info,
   Pill,
-  Apple
+  Apple,
+  Clock
 } from 'lucide-react';
 import { 
   BIOMARKER_PANELS, 
@@ -25,6 +26,7 @@ import {
   calculateHomaIR, 
   evaluateClinicalBiomarkers 
 } from '../../utils/clinicalBiomarkerEngine';
+import { optimizeImageFile } from '../../utils/imageOptimizer';
 
 export default function LabBiomarkersReviewStudio({
   client = {},
@@ -35,7 +37,10 @@ export default function LabBiomarkersReviewStudio({
 }) {
   const isMale = (client.gender || 'MALE').toUpperCase() === 'MALE';
 
-  // 1. حالة القيم المخبرية المدخلة
+  // 1. حالة سحب العينة: 'FASTING' (صائم 8-12 ساعة) أو 'NON_FASTING' (فاطر / عشوائي)
+  const [sampleFastingState, setSampleFastingState] = useState('FASTING');
+
+  // 2. حالة القيم المخبرية المدخلة
   const [labValues, setLabValues] = useState(() => ({
     hemoglobin: initialValues.hemoglobin || '',
     wbc: initialValues.wbc || '',
@@ -87,16 +92,19 @@ export default function LabBiomarkersReviewStudio({
     setLabValues(prev => ({ ...prev, [key]: val }));
   };
 
-  // رفع ملف جديد محلياً (صورة أو PDF)
-  const handleFileUpload = (e) => {
+  // رفع ملف جديد محلياً (صورة مضغوطة فائقة الوضوح أو PDF)
+  const handleFileUpload = async (e) => {
     const file = e.target.files?.[0];
     if (file) {
-      const reader = new FileReader();
-      reader.onload = (event) => {
-        setReportsList(prev => [...prev, event.target.result]);
-        setSelectedReportIdx(reportsList.length);
-      };
-      reader.readAsDataURL(file);
+      try {
+        const optimizedUrl = await optimizeImageFile(file, { maxWidth: 1800, maxHeight: 1800, quality: 0.84 });
+        if (optimizedUrl) {
+          setReportsList(prev => [...prev, optimizedUrl]);
+          setSelectedReportIdx(reportsList.length);
+        }
+      } catch (err) {
+        console.warn('Image optimization error:', err);
+      }
     }
   };
 
@@ -105,14 +113,16 @@ export default function LabBiomarkersReviewStudio({
     return evaluateClinicalBiomarkers({
       values: labValues,
       client,
-      supplementAdherence
+      supplementAdherence,
+      sampleFastingState
     });
-  }, [labValues, client, supplementAdherence]);
+  }, [labValues, client, supplementAdherence, sampleFastingState]);
 
-  // حساب HOMA-IR التلقائي للعرض
+  // حساب HOMA-IR التلقائي للعرض (فقط في حال كانت العينة صائمة)
   const homaIR = useMemo(() => {
+    if (sampleFastingState !== 'FASTING') return null;
     return calculateHomaIR(labValues.fasting_glucose, labValues.fasting_insulin);
-  }, [labValues.fasting_glucose, labValues.fasting_insulin]);
+  }, [labValues.fasting_glucose, labValues.fasting_insulin, sampleFastingState]);
 
   // حفظ واعتماد
   const handleSaveDecisions = () => {
@@ -182,53 +192,106 @@ export default function LabBiomarkersReviewStudio({
           </div>
         </div>
 
-        {/* مفتاح التبديل: مكملات أو غذاء طبيعي أولاً */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-          <span style={{ fontSize: '11px', fontWeight: 700, color: '#475569' }}>نمط الخطة:</span>
-          <div style={{ display: 'inline-flex', background: '#FFFFFF', border: '1px solid #CBD5E1', borderRadius: '6px', padding: '2px' }}>
-            <button
-              type="button"
-              onClick={() => setSupplementAdherence('NONE')}
-              style={{
-                border: 'none',
-                background: supplementAdherence === 'NONE' ? '#16A34A' : 'transparent',
-                color: supplementAdherence === 'NONE' ? '#FFFFFF' : '#475569',
-                padding: '4px 10px',
-                borderRadius: '4px',
-                fontSize: '11px',
-                fontWeight: 800,
-                cursor: 'pointer',
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: '4px'
-              }}
-              title="بروتوكول التغذية الحيوية الكاملة بالاعتماد التام على الأطعمة الطبيعية"
-            >
-              <Apple size={12} />
-              <span>التغذية الحيوية (الغذاء أولاً)</span>
-            </button>
+        {/* مفاتيح التبديل: حالة العينة + نمط الخطة */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap' }}>
+          {/* محدد حالة العينة */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+            <span style={{ fontSize: '11px', fontWeight: 700, color: '#475569' }}>سحب العينة:</span>
+            <div style={{ display: 'inline-flex', background: '#FFFFFF', border: '1px solid #CBD5E1', borderRadius: '6px', padding: '2px' }}>
+              <button
+                type="button"
+                onClick={() => setSampleFastingState('FASTING')}
+                style={{
+                  border: 'none',
+                  background: sampleFastingState === 'FASTING' ? '#0F172A' : 'transparent',
+                  color: sampleFastingState === 'FASTING' ? '#FFFFFF' : '#64748B',
+                  padding: '4px 9px',
+                  borderRadius: '4px',
+                  fontSize: '11px',
+                  fontWeight: 800,
+                  cursor: 'pointer',
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '4px'
+                }}
+                title="عينة مسحوبة بعد صيام 8-12 ساعة (مطلوب لحساب HOMA-IR بدقة)"
+              >
+                <Clock size={11} />
+                <span>صائم (8-12 س)</span>
+              </button>
 
-            <button
-              type="button"
-              onClick={() => setSupplementAdherence('FULL')}
-              style={{
-                border: 'none',
-                background: supplementAdherence === 'FULL' ? '#0F172A' : 'transparent',
-                color: supplementAdherence === 'FULL' ? '#C4952D' : '#64748B',
-                padding: '4px 10px',
-                borderRadius: '4px',
-                fontSize: '11px',
-                fontWeight: 800,
-                cursor: 'pointer',
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: '4px'
-              }}
-              title="إدراج مكملات غذائية استشفائية موجهة"
-            >
-              <Pill size={12} />
-              <span>بروتوكول التدعيم المتقدم</span>
-            </button>
+              <button
+                type="button"
+                onClick={() => setSampleFastingState('NON_FASTING')}
+                style={{
+                  border: 'none',
+                  background: sampleFastingState === 'NON_FASTING' ? '#B45309' : 'transparent',
+                  color: sampleFastingState === 'NON_FASTING' ? '#FFFFFF' : '#64748B',
+                  padding: '4px 9px',
+                  borderRadius: '4px',
+                  fontSize: '11px',
+                  fontWeight: 800,
+                  cursor: 'pointer',
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '4px'
+                }}
+                title="عينة مسحوبة بعد الأكل أو عشوائية (تعطيل HOMA-IR واعتماد التراكمي)"
+              >
+                <Activity size={11} />
+                <span>فاطر (عشوائي)</span>
+              </button>
+            </div>
+          </div>
+
+          {/* محدد التزام المكملات أو الغذاء أولاً */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+            <span style={{ fontSize: '11px', fontWeight: 700, color: '#475569' }}>نمط الخطة:</span>
+            <div style={{ display: 'inline-flex', background: '#FFFFFF', border: '1px solid #CBD5E1', borderRadius: '6px', padding: '2px' }}>
+              <button
+                type="button"
+                onClick={() => setSupplementAdherence('NONE')}
+                style={{
+                  border: 'none',
+                  background: supplementAdherence === 'NONE' ? '#16A34A' : 'transparent',
+                  color: supplementAdherence === 'NONE' ? '#FFFFFF' : '#475569',
+                  padding: '4px 9px',
+                  borderRadius: '4px',
+                  fontSize: '11px',
+                  fontWeight: 800,
+                  cursor: 'pointer',
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '4px'
+                }}
+                title="بروتوكول التغذية الحيوية الكاملة بالاعتماد التام على الأطعمة الطبيعية"
+              >
+                <Apple size={12} />
+                <span>التغذية الحيوية (الغذاء أولاً)</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setSupplementAdherence('FULL')}
+                style={{
+                  border: 'none',
+                  background: supplementAdherence === 'FULL' ? '#0F172A' : 'transparent',
+                  color: supplementAdherence === 'FULL' ? '#C4952D' : '#64748B',
+                  padding: '4px 9px',
+                  borderRadius: '4px',
+                  fontSize: '11px',
+                  fontWeight: 800,
+                  cursor: 'pointer',
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '4px'
+                }}
+                title="إدراج مكملات غذائية استشفائية موجهة"
+              >
+                <Pill size={12} />
+                <span>بروتوكول التدعيم المتقدم</span>
+              </button>
+            </div>
           </div>
 
           {onClose && (
@@ -379,11 +442,15 @@ export default function LabBiomarkersReviewStudio({
             {/* 1. شبكة إدخال المؤشرات الحيوية */}
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))', gap: '10px' }}>
               {BIOMARKER_CATALOG.filter(item => activePanelTab === 'ALL' || item.panel === activePanelTab).map(metric => {
+                const isFastingMetric = metric.key === 'fasting_glucose';
+                const displayName = (isFastingMetric && sampleFastingState === 'NON_FASTING')
+                  ? 'السكر (عشوائي / بعد الأكل)'
+                  : metric.name_ar;
                 const val = labValues[metric.key];
                 const hasValue = val !== '' && val !== null && val !== undefined;
                 const numVal = Number(val);
-                const minVal = isMale ? metric.normal_min_m : metric.normal_min_f;
-                const maxVal = isMale ? metric.normal_max_m : metric.normal_max_f;
+                const minVal = (isFastingMetric && sampleFastingState === 'NON_FASTING') ? 70 : (isMale ? metric.normal_min_m : metric.normal_min_f);
+                const maxVal = (isFastingMetric && sampleFastingState === 'NON_FASTING') ? 140 : (isMale ? metric.normal_max_m : metric.normal_max_f);
 
                 let statusColor = '#CBD5E1'; // رمادي محايد
                 if (hasValue && !isNaN(numVal)) {
@@ -409,7 +476,7 @@ export default function LabBiomarkersReviewStudio({
                   >
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                       <span style={{ fontSize: '11px', fontWeight: 800, color: '#0F172A' }}>
-                        {metric.name_ar}
+                        {displayName}
                       </span>
                       <span style={{ fontSize: '9.5px', color: '#64748B', fontFamily: 'JetBrains Mono' }}>
                         {minVal} - {maxVal} {metric.unit}
@@ -445,8 +512,16 @@ export default function LabBiomarkersReviewStudio({
               })}
             </div>
 
-            {/* حساب HOMA-IR التلقائي إن توافر السكر والإنسولين الصائمين */}
-            {homaIR && (
+            {/* حساب HOMA-IR التلقائي أو تنبيه العينة غير الصائمة */}
+            {sampleFastingState === 'NON_FASTING' && (labValues.fasting_glucose || labValues.fasting_insulin) && (
+              <div style={{ marginTop: '12px', background: '#FEF3C7', border: '1px solid #FDE68A', borderRadius: '8px', padding: '8px 12px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <Info size={15} color="#B45309" />
+                <span style={{ fontSize: '11px', color: '#92400E', fontWeight: 700 }}>
+                  تنبيه سريري: تم تعطيل احتساب HOMA-IR نظراً لسحب العينة في وضع غير صائم (فاطر) لمنع القراءات الإيجابية الكاذبة، ويتم الاعتماد على السكر التراكمي (HbA1c) الموثوق كمعيار أيضي رئيسي.
+                </span>
+              </div>
+            )}
+            {homaIR && sampleFastingState === 'FASTING' && (
               <div style={{ marginTop: '12px', background: homaIR >= 2.5 ? '#FEF2F2' : '#F0FDF4', border: `1px solid ${homaIR >= 2.5 ? '#FCA5A5' : '#86EFAC'}`, borderRadius: '8px', padding: '8px 12px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                 <span style={{ fontSize: '11.5px', fontWeight: 800, color: '#0F172A' }}>
                   معامل مقاومة الأنسولين المحسوب آلياً (HOMA-IR): <strong style={{ color: homaIR >= 2.5 ? '#DC2626' : '#16A34A', fontFamily: 'JetBrains Mono' }}>{homaIR}</strong>

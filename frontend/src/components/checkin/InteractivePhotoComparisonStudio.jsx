@@ -25,6 +25,7 @@ import {
   downloadCanvasAsPng, 
   buildTransformationWhatsAppShare 
 } from '../../utils/transformationCardGenerator';
+import { optimizeImageFile } from '../../utils/imageOptimizer';
 
 /**
  * مجسم تشريحي بمسارات فيكتور دقيقة يوضح تغير تكوين الجسم
@@ -197,21 +198,24 @@ export default function InteractivePhotoComparisonStudio({
     adherence: afterEntry.adherence || 94
   });
 
-  // معالجة رفع صورة محلياً
-  const handlePhotoUpload = (stage, selectedAngle, e) => {
+  // معالجة رفع صورة محلياً (مضغوطة بدقة فائقة)
+  const handlePhotoUpload = async (stage, selectedAngle, e) => {
     const file = e.target.files?.[0];
     if (file) {
-      const reader = new FileReader();
-      reader.onload = (event) => {
-        setUploadedPhotos(prev => ({
-          ...prev,
-          [stage]: {
-            ...prev[stage],
-            [selectedAngle]: event.target.result
-          }
-        }));
-      };
-      reader.readAsDataURL(file);
+      try {
+        const optimized = await optimizeImageFile(file, { maxWidth: 1600, maxHeight: 1600, quality: 0.82 });
+        if (optimized) {
+          setUploadedPhotos(prev => ({
+            ...prev,
+            [stage]: {
+              ...prev[stage],
+              [selectedAngle]: optimized
+            }
+          }));
+        }
+      } catch (err) {
+        console.warn('Error optimizing photo for comparison:', err);
+      }
     }
   };
 

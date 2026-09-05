@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
-import { Scale, Camera, Upload, Dumbbell, AlertTriangle, Zap, Sparkles, Sliders, CheckCircle2, Activity } from 'lucide-react';
+import { Scale, Camera, Upload, Dumbbell, AlertTriangle, Zap, Sliders, CheckCircle2, Activity } from 'lucide-react';
 import { evaluateWeeklyBiofeedback } from '../../utils/biofeedbackDecisionEngine';
+import { optimizeImageFile } from '../../utils/imageOptimizer';
 
 export default function ClientCheckinStudio({ clientData = {}, onSubmitSuccess }) {
   // 1. Weight & Circumferences State
@@ -48,14 +49,17 @@ export default function ClientCheckinStudio({ clientData = {}, onSubmitSuccess }
   const [submitted, setSubmitted] = useState(false);
   const [auditResult, setAuditResult] = useState(null);
 
-  const handlePhotoUpload = (view, e) => {
+  const handlePhotoUpload = async (view, e) => {
     const file = e.target.files?.[0];
     if (file) {
-      const reader = new FileReader();
-      reader.onload = (event) => {
-        setPhotos(prev => ({ ...prev, [view]: event.target.result }));
-      };
-      reader.readAsDataURL(file);
+      try {
+        const optimized = await optimizeImageFile(file, { maxWidth: 1600, maxHeight: 1600, quality: 0.82 });
+        if (optimized) {
+          setPhotos(prev => ({ ...prev, [view]: optimized }));
+        }
+      } catch (err) {
+        console.warn('Error optimizing checkin photo:', err);
+      }
     }
   };
 

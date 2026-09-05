@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { API_BASE } from '../../config/api';
+import { optimizeImageFile } from '../../utils/imageOptimizer';
 
 export default function UploadPhotoModal({
   isOpen = true,
@@ -28,19 +29,19 @@ export default function UploadPhotoModal({
 
   if (!isOpen) return null;
 
-  const handleFileUpload = (e) => {
+  const handleFileUpload = async (e) => {
     const file = e.target.files[0];
     if (file) {
-      if (file.size > 5 * 1024 * 1024) {
-        setErrorMsg('حجم الصورة كبير جداً. الحد الأقصى 5 ميجابايت.');
-        return;
-      }
       setErrorMsg('');
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setPhotoUrl(reader.result);
-      };
-      reader.readAsDataURL(file);
+      try {
+        const optimized = await optimizeImageFile(file, { maxWidth: 1600, maxHeight: 1600, quality: 0.82 });
+        if (optimized) {
+          setPhotoUrl(optimized);
+        }
+      } catch (err) {
+        setErrorMsg('حدث خطأ أثناء معالجة وضغط الصورة.');
+        console.warn('Error optimizing photo:', err);
+      }
     }
   };
 

@@ -1,4 +1,5 @@
 import React from 'react';
+import { optimizeImageFile } from '../../utils/imageOptimizer';
 
 export default function Step2Body({
   formData,
@@ -256,17 +257,20 @@ export default function Step2Body({
                     id={inputId}
                     accept="image/*"
                     className="d-none"
-                    onChange={(e) => {
+                    onChange={async (e) => {
                       const file = e.target.files?.[0];
                       if (file) {
-                        const reader = new FileReader();
-                        reader.onload = () => {
-                          const currentPhotos = formData.body?.photos || {};
-                          const updatedPhotos = { ...currentPhotos, [box.key]: reader.result };
-                          updateField('body', 'photos', updatedPhotos);
-                          updateField('body', 'progressPhotosAvailable', true);
-                        };
-                        reader.readAsDataURL(file);
+                        try {
+                          const optimized = await optimizeImageFile(file, { maxWidth: 1600, maxHeight: 1600, quality: 0.82 });
+                          if (optimized) {
+                            const currentPhotos = formData.body?.photos || {};
+                            const updatedPhotos = { ...currentPhotos, [box.key]: optimized };
+                            updateField('body', 'photos', updatedPhotos);
+                            updateField('body', 'progressPhotosAvailable', true);
+                          }
+                        } catch (err) {
+                          console.warn('Error optimizing body photo:', err);
+                        }
                       }
                     }}
                   />
