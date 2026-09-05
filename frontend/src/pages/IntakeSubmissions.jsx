@@ -1,7 +1,7 @@
 import { ClientCodeBadge, ClientPackageBadge, getClientTier } from '../utils/tierBadgeHelper';
 import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { ExternalLink, Search, Clock, CheckCircle2, CreditCard, FileText, Send, Check, MessageCircle, Eye, Sparkles, Edit3, X } from 'lucide-react';
+import { ExternalLink, Search, Clock, CheckCircle2, CreditCard, FileText, Send, Check, MessageCircle, Eye, Edit3, X } from 'lucide-react';
 import { API_BASE } from '../config/api';
 import AdminLayout from '../components/layout/AdminLayout';
 import WhatsAppModal from '../components/modals/WhatsAppModal';

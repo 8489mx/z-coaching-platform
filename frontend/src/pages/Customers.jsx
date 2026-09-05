@@ -6,7 +6,7 @@ import {
   Plus, 
   Crown, 
   ShieldCheck, 
-  Sparkles, 
+  Award, 
   Clock, 
   MessageCircle, 
   ExternalLink, 
@@ -690,7 +690,7 @@ export default function Customers() {
                               }}
                               title="استوديو صور التطور وكروت التحول التسويقية"
                             >
-                              <Sparkles size={13} color="#A16207" />
+                              <Award size={13} color="#A16207" />
                               <span>التحول</span>
                             </button>
 
@@ -821,7 +821,7 @@ export default function Customers() {
             >
               <div style={{ padding: '12px 18px', borderBottom: '1px solid #E2E8F0', display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: '#F8FAFC' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                  <Sparkles size={16} color="#C4952D" />
+                  <Award size={16} color="#C4952D" />
                   <h3 style={{ margin: 0, fontSize: '14px', fontWeight: 800, color: '#0F172A' }}>
                     استوديو صور التطور وكروت التحول: {transformationModalClient.full_name} (#{transformationModalClient.client_code || transformationModalClient.id})
                   </h3>

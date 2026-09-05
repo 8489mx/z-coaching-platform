@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { X, Download, Share2, Sparkles, Crown, TrendingDown, Award, Flame, CheckCircle2, Copy } from 'lucide-react';
+import { X, Download, Share2, Crown, TrendingDown, Award, Flame, CheckCircle2, Copy } from 'lucide-react';
 
 export default function CaseStudyModal({ client, onClose }) {
   const [copied, setCopied] = useState(false);
@@ -82,7 +82,7 @@ export default function CaseStudyModal({ client, onClose }) {
         {/* Header */}
         <div style={{ padding: '20px 24px', borderBottom: '1px solid rgba(255, 255, 255, 0.1)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <Sparkles style={{ width: '20px', height: '20px', color: '#F59E0B' }} />
+            <Award style={{ width: '20px', height: '20px', color: '#F59E0B' }} />
             <h3 style={{ fontSize: '1.15rem', fontWeight: 900, margin: 0, color: '#FFFFFF' }}>
               بطاقة قصة النجاح التسويقية (16-Week Case Study)
             </h3>

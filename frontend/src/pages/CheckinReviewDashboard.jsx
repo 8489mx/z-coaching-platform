@@ -33,8 +33,7 @@ import {
   Check,
   Dumbbell,
   Droplets,
-  Trophy,
-  Sparkles
+  Trophy
 } from 'lucide-react';
 import AdminLayout from '../components/layout/AdminLayout';
 import { PageHeader } from '@/shared/components/page-header';

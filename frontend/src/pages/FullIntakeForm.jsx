@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { Check, ChevronLeft, ChevronRight, Ruler, Lock, Camera, CheckCircle2, Activity, HeartPulse, Utensils, Dumbbell, Sparkles, RotateCw, User, Scale, ShieldAlert, MessageCircle, AlertCircle, FileCheck2, Info, RefreshCcw, Upload } from 'lucide-react';
+import { Check, ChevronLeft, ChevronRight, Ruler, Lock, Camera, CheckCircle2, Activity, HeartPulse, Utensils, Dumbbell, RotateCw, User, Scale, ShieldAlert, MessageCircle, AlertCircle, FileCheck2, Info, RefreshCcw, Upload } from 'lucide-react';
 import { API_BASE } from '../config/api';
 import { getStoredCoachConfig } from '../utils/themeAndCoachConfig';
 

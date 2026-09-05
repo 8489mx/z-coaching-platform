@@ -104,7 +104,7 @@ export function generateSecureIntakeToken({
     ? cleanPhone
     : (cleanPhone.startsWith('0') ? '20' + cleanPhone.substring(1) : (cleanPhone ? '20' + cleanPhone : '201011111110'));
 
-  const welcomeMessageAr = `أهلاً بك يا ${client_name} في عائلة Z Coaching مع كابتن كريم زكريا! 🚀\n\nتم تأكيد اشتراكك في ${selectedPkg.name_ar}.\nالخطوة الأولى والأهم هي ملء استمارة الدخول الطبية والتدريبية لتجهيز برنامجك بدقة عبر الرابط المخصص لك:\n${intakeUrl}\n\n(صلاحية الرابط 72 ساعة فقط). ننتظر بياناتك للانطلاق!`;
+  const welcomeMessageAr = `أهلاً بك يا ${client_name} في منصة Z Coaching مع كابتن كريم زكريا.\n\nتم تأكيد اشتراكك في ${selectedPkg.name_ar}.\nالخطوة الأولى والأهم هي ملء استمارة الدخول الطبية والتدريبية لتجهيز برنامجك بدقة عبر الرابط المخصص لك:\n${intakeUrl}\n\n(صلاحية الرابط 72 ساعة فقط). ننتظر بياناتك لبدء إعداد الخطة.`;
 
   return {
     success: true,

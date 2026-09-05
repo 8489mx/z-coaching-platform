@@ -1,7 +1,7 @@
 import { getClientTier, getTierColors, ClientCodeBadge, ClientPackageBadge } from '../../utils/tierBadgeHelper';
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Phone, User, CheckCircle2, MessageCircle, Copy, Check, Edit3, AlertCircle, Sparkles } from 'lucide-react';
+import { Phone, User, CheckCircle2, MessageCircle, Copy, Check, Edit3, AlertCircle } from 'lucide-react';
 import { API_BASE } from '../../config/api';
 import { SUBSCRIPTION_TIERS } from '../../config/subscription-tiers';
 import { copyToClipboard } from '../../utils/clipboardUtils';

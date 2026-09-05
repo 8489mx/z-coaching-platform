@@ -46,7 +46,7 @@ export function generatePrintablePlanHTML({ client, plan, date = new Date().toIS
 
   ${prehab && prehab.has_prehab ? `
     <div class="section-title">
-      <span>🛡️ روتين تجهيز المفاصل (${prehab.total_duration_minutes} دقائق)</span>
+      <span>روتين تجهيز المفاصل والإحماء (${prehab.total_duration_minutes} دقائق)</span>
     </div>
     <table class="table">
       <thead>
@@ -61,7 +61,7 @@ export function generatePrintablePlanHTML({ client, plan, date = new Date().toIS
   ` : ''}
 
   <div class="section-title">
-    <span>🏋️‍♂️ جدول التمارين</span>
+    <span>جدول التمارين البرمجية</span>
   </div>
   <table class="table">
     <thead>
@@ -81,7 +81,7 @@ export function generatePrintablePlanHTML({ client, plan, date = new Date().toIS
   </table>
 
   <div class="section-title">
-    <span>🥗 خطة الوجبات</span>
+    <span>خطة الوجبات التغذوية</span>
   </div>
   <table class="table">
     <thead>

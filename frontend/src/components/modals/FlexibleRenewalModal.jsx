@@ -7,7 +7,6 @@ import {
   Clock, 
   Wallet, 
   ShieldCheck, 
-  Sparkles,
   Zap
 } from 'lucide-react';
 import { API_BASE } from '../../config/api';

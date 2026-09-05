@@ -75,6 +75,6 @@ export function calculateNeatTitrationStep({
     weekly_cardio_sessions: cardioSessions,
     daily_calories_target: nextCalories,
     calories_cut_applied: 150,
-    protocol_rationale_ar: `المستوى 3 (الملاذ الأخير بعد استنفاد سقف الحركة والكارديو): خفض السعرات بمقدار -150 سعرة حرارية لتصبح (${nextCalories} Kcal) لكسر ثبات الوزن واستئناف النزول.`
+    protocol_rationale_ar: `المستوى 3 (المعايرة المتقدمة بعد استيفاء مستهدفات النشاط والكارديو): خفض السعرات بمقدار -150 سعرة حرارية لتصبح (${nextCalories} Kcal) لكسر ثبات الوزن واستئناف النزول.`
   };
 }

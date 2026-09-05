@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Save, Send, Dumbbell, Utensils, FileText, Activity, Loader2, Plus, Trash2, RotateCw, HeartPulse, Printer, X, ArrowRightLeft, Users, Clock, AlertCircle, CheckCircle2, Search, Check, Zap, Target, ShieldAlert, Flame, Sparkles } from 'lucide-react';
+import { Save, Send, Dumbbell, Utensils, FileText, Activity, Loader2, Plus, Trash2, RotateCw, HeartPulse, Printer, X, ArrowRightLeft, Users, Clock, AlertCircle, CheckCircle2, Search, Check, Zap, Target, ShieldAlert, Flame } from 'lucide-react';
 import { balanceMealItems, balanceAllDayMeals, dynamicRippleRebalanceDailyPlan } from '../../../utils/mealPortionBalancer.js';
 
 // Quick Meal Presets for Instant Precision Nutrition Building
@@ -399,7 +399,7 @@ export default function CoachEditorNutritionTab(props) {
                   style={{ height: '30px', padding: '0 12px', borderRadius: '5px', background: '#047857', color: '#FFFFFF', border: 'none', fontSize: '11px', fontWeight: 700, cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: '4px', boxShadow: '0 1px 3px rgba(4, 120, 87, 0.2)' }}
                   title="موازنة جرامات جميع الوجبات تلقائياً لتطابق سعرات وماكروز اليوم بنسب واقعية"
                 >
-                  <Sparkles size={13} />
+                  <Zap size={13} />
                   <span>موازنة اليوم بالكامل</span>
                 </button>
 
@@ -521,7 +521,7 @@ export default function CoachEditorNutritionTab(props) {
                             }}
                             title="موازنة أصناف هذه الوجبة بجرامات واقعية متناسقة تسد حصتها من الماكروز"
                           >
-                            <Sparkles size={10} />
+                            <Zap size={10} />
                             <span>موازنة الوجبة ذكياً</span>
                           </button>
                         )}

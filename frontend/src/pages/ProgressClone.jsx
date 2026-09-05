@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useSearchParams, Link } from 'react-router-dom';
-import { ActivitySquare, Scale, Ruler, Sparkles, CheckCircle2, AlertTriangle, TrendingDown, TrendingUp, Flame, Clock, FileText, MessageCircle, ChevronLeft, Check, UserCheck } from 'lucide-react';
+import { ActivitySquare, Scale, Ruler, Award, Activity, CheckCircle2, AlertTriangle, TrendingDown, TrendingUp, Flame, Clock, FileText, MessageCircle, ChevronLeft, Check, UserCheck } from 'lucide-react';
 import { API_BASE } from '../config/api';
 import AdminLayout from '../components/layout/AdminLayout';
 import CaseStudyModal from '../components/modals/CaseStudyModal';
@@ -143,7 +143,7 @@ export default function ProgressClone() {
                 cursor: 'pointer'
               }}
             >
-              <Sparkles style={{ width: '14px', height: '14px', color: '#D97706' }} />
+              <Award style={{ width: '14px', height: '14px', color: '#D97706' }} />
               <span>بطاقة التحول (Case Study)</span>
             </button>
 
@@ -302,7 +302,7 @@ export default function ProgressClone() {
                   {/* Smart Adaptation Recommendation Card (Engine 7) */}
                   <div style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', borderRadius: '18px', padding: '20px', marginBottom: '18px' }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#0369A1', fontWeight: 800, fontSize: '0.9rem', marginBottom: '8px' }}>
-                      <Sparkles style={{ width: '18px', height: '18px' }} />
+                      <Activity style={{ width: '18px', height: '18px' }} />
                       <span>توصية محرك التكيف التلقائي (Auto-Regulation Directive):</span>
                     </div>
 

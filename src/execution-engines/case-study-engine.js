@@ -72,6 +72,6 @@ export function generateClientCaseStudy({
       after: after_photo_url
     },
     coach_testimonial_ar: coach_quote_ar,
-    social_caption_template_ar: `🔥 قصة نجاح ملهمة في ${total_weeks} أسبوعاً!\nبطلنا ${client_name} نجح في خسارة ${weightLossKg} كجم ونزول ${waistLossCm} سم من محيط الخصر، مع مضاعفة أوزان التمرين والتزام بنسبة ${adherence_rate_percent}%!\n\nالسر مش حرمان، السر هو دايت علمي وتمرين مبرمج بدقة سريرية.\n\n📍 تدريب ومتابعة: كابتن كريم زكريا - Z Coaching`
+    social_caption_template_ar: `قصة نجاح في ${total_weeks} أسبوعاً:\nالمتدرب ${client_name} نجح في خسارة ${weightLossKg} كجم ونزول ${waistLossCm} سم من محيط الخصر، مع مضاعفة أوزان التمرين والتزام بنسبة ${adherence_rate_percent}%.\n\nالتحول نتاج تخطيط علمي وتغذية سريرية وتدريب مبرمج بدقة فسيولوجية.\n\nتدريب ومتابعة: كابتن كريم زكريا - Z Coaching`
   };
 }

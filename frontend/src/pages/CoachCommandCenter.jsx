@@ -1,7 +1,7 @@
 import { ClientCodeBadge, ClientPackageBadge, getClientTier } from '../utils/tierBadgeHelper';
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Users, Clock, Hourglass, Plus, MessageCircle, CheckCircle2, ShieldAlert, Check, ExternalLink, Sparkles, ClipboardList, RefreshCw, Loader2, Search, X } from 'lucide-react';
+import { Users, Clock, Hourglass, Plus, MessageCircle, CheckCircle2, ShieldAlert, Check, ExternalLink, Activity, ClipboardList, RefreshCw, Loader2, Search, X } from 'lucide-react';
 import { API_BASE } from '../config/api';
 import AdminLayout from '../components/layout/AdminLayout';
 import NewClientQuickModal from '../components/modals/NewClientQuickModal';
@@ -354,7 +354,7 @@ export default function CoachCommandCenter() {
       value: inactiveCount.toString(), 
       unit: 'مشترك',
       label: inactiveCount > 0 ? 'يحتاجون تشجيع' : 'لا توجد حالات غياب', 
-      icon: Sparkles,
+      icon: Hourglass,
       onClick: () => setActiveTab('INACTIVE'),
       tooltip: 'فلترة المشتركين المتأخرين لتحفيزهم قبل التسرب'
     },
@@ -547,7 +547,7 @@ export default function CoachCommandCenter() {
           }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
               <div style={{ background: 'rgba(196, 149, 45, 0.15)', border: '1px solid rgba(196, 149, 45, 0.3)', borderRadius: '6px', padding: '6px', color: '#F59E0B' }}>
-                <Sparkles size={18} />
+                <Clock size={18} />
               </div>
               <div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>

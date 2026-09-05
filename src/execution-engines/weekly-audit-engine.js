@@ -124,18 +124,18 @@ export function evaluateWeeklyCheckinAudit({
   const waistSign = waistDelta > 0 ? '+' : '';
 
   const messageAr = [
-    `تحياتي يا ${clientName}، تم اعتماد تقرير متابعتك الأسبوعية بنجاح!`,
+    `تحياتي يا ${clientName}، تم اعتماد تقرير متابعتك الأسبوعية بنجاح.`,
     '',
-    '📊 ملخص نتائج أسبوعك:',
+    'ملخص نتائج الأسبوع:',
     `- الوزن الحالي: ${currentWeight} كجم (تغير ${weightSign}${weightDelta} كجم)`,
     `- محيط الخصر: ${currentWaist} سم (تغير ${waistSign}${waistDelta} سم)`,
     `- نسبة الالتزام: ${adherencePercent}%`,
     '',
-    '🎯 قرار وتوجيهات الأسبوع القادم:',
+    'قرارات وتوجيهات الأسبوع القادم:',
     `- ${coachRecommendationAr}`,
     `- مستهدف السعرات اليومي: ${nextWeekCalories} Kcal (بروتين: ${nextMacros.protein_g}g | كارب: ${nextMacros.carbs_g}g | دهون: ${nextMacros.fat_g}g)`,
     '',
-    'عاش يا بطل، ومستمرون معاً بأعلى تركيز لتحقيق هدفنا!'
+    'استمر في التركيز والانضباط لمواصلة التقدم نحو الهدف المحدد.'
   ].join('\n');
 
   return {

@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from 'react';
-import { Camera, Scale, Battery, Moon, Utensils, ChevronLeft, ChevronRight, CheckCircle2, Loader2, Activity, Sparkles } from 'lucide-react';
+import { Camera, Scale, Battery, Moon, Utensils, ChevronLeft, ChevronRight, CheckCircle2, Loader2, Activity, Clock } from 'lucide-react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { API_BASE } from '../config/api';
 import { getUpcomingFastingAlert } from '../utils/seasonalFastingRadar';
@@ -421,7 +421,7 @@ export default function WeeklyCheckinForm() {
               {upcomingFasting && (
                 <div style={{ background: '#F8FAFC', border: '1px solid #CBD5E1', borderRadius: '8px', padding: '12px 14px' }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '6px' }}>
-                    <Sparkles size={16} color="#B45309" />
+                    <Clock size={16} color="#B45309" />
                     <strong style={{ fontSize: '12.5px', color: '#0F172A' }}>
                       تنسيق مواعيد الصيام: {upcomingFasting.name} ({upcomingFasting.statusText})
                     </strong>

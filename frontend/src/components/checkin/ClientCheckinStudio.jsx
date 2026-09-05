@@ -535,7 +535,7 @@ export default function ClientCheckinStudio({ clientData = {}, onSubmitSuccess }
 
               <div>
                 <label style={{ display: 'block', fontSize: '0.76rem', fontWeight: 800, color: '#0F172A', marginBottom: '4px' }}>
-                  🩺 صحة الهضم والإخراج:
+                  صحة الهضم والإخراج:
                 </label>
                 <select
                   value={digestion}
@@ -599,7 +599,7 @@ export default function ClientCheckinStudio({ clientData = {}, onSubmitSuccess }
           {/* 6. WEEKLY REFLECTIONS & NOTES */}
           <div style={{ background: '#FFFFFF', borderRadius: '20px', border: '1px solid #E2E8F0', padding: '18px', boxShadow: '0 2px 8px rgba(15, 23, 42, 0.03)' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '12px', borderBottom: '1px solid #F1F5F9', paddingBottom: '8px' }}>
-              <Sparkles style={{ width: '18px', height: '18px', color: '#D97706' }} />
+              <Activity style={{ width: '18px', height: '18px', color: '#0F172A' }} />
               <h3 style={{ fontSize: '0.92rem', fontWeight: 800, color: '#0F172A', margin: 0 }}>
                 6. إنجازات وتحديات الأسبوع والملاحظات
               </h3>

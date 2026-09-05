@@ -99,12 +99,12 @@ export function calculateHomaIR(fastingGlucose, fastingInsulin) {
 
 /**
  * المحرك السريري الرئيسي لتحليل الفحوصات الطبية وتطبيق بروتوكول الغذاء أولاً
- * المبدأ الحاكم لمنظومة Z Coaching: "الغذاء أولاً دائمًا"، والفيتامينات والمكملات ملاذ أخير فقط.
+ * المبدأ الحاكم لمنظومة Z Coaching: "بروتوكول الغذاء أولاً"، مع إتاحة التدعيم التكميلي المتقدم عند الحاجة الفسيولوجية.
  */
 export function evaluateClinicalBiomarkers({
   values = {},
   client = {},
-  supplementAdherence = 'NONE' // الغذاء أولاً هو الأساس الدائم للمنظومة، والمكملات ملاذ أخير فقط
+  supplementAdherence = 'NONE' // بروتوكول التغذية الحيوية الكاملة (الغذاء أولاً) هو الأساس المعتمد
 }) {
   const gender = (client.gender || 'MALE').toUpperCase();
   const isMale = gender === 'MALE';
@@ -405,7 +405,7 @@ export function evaluateClinicalBiomarkers({
     supplementRecommendations.push({
       name_ar: 'ماغنسيوم جلايسينات (Magnesium Bisglycinate)',
       dosage_ar: '300 إلى 400 مجم قبل النوم بـ 45 دقيقة',
-      purpose_ar: 'لتحسين جودة النوم وتقليل التشنجات العضلية (ملاذ أخير عند تعذر التعويض الغذائي)'
+      purpose_ar: 'لتحسين جودة النوم وتقليل التشنجات العضلية بالتكامل مع الخطة الغذائية'
     });
 
     wholeFoodInterventions.push({
@@ -415,7 +415,7 @@ export function evaluateClinicalBiomarkers({
     });
   }
 
-  // فرز الأولوية في التدخل الغذائي (الغذاء أولاً دائمًا هو المبدأ الحاكم للمنظومة)
+  // فرز الأولوية في التدخل الغذائي (بروتوكول الغذاء أولاً هو الأساس المعتمد للمنظومة)
   const isFoodOnly = supplementAdherence === 'NONE';
 
   return {
@@ -429,13 +429,13 @@ export function evaluateClinicalBiomarkers({
     training_modifications: trainingModifications,
     supplement_recommendations: isFoodOnly ? [] : supplementRecommendations.map(s => ({
       ...s,
-      is_last_resort: true,
-      last_resort_note_ar: 'ملاذ أخير: يُنصح بالاعتماد على الأغذية الطبيعية المقترحة أولاً قبل اللجوء للمكمل.'
+      is_targeted_support: true,
+      clinical_guidance_ar: 'توجيه سريري متقدم: الأولوية المعتمدة للمصادر الغذائية الحيوية، مع توظيف المكمل كعنصر داعم موجه.'
     })),
     whole_food_interventions: wholeFoodInterventions,
     medical_referrals: medicalReferrals,
     summary_directive_ar: isFoodOnly 
-      ? 'بروتوكول المنظومة الأساسي: "الغذاء أولاً (Food-First)"؛ تمت هندسة وجبات المتدرب لتعويض كافة النواقص الفسيولوجية من مصادر غذائية طبيعية 100% دون أي مكملات.' 
-      : 'بروتوكول المكملات الاستثنائي: تم إدراج المكملات كملاذ أخير مساعد مع الحفاظ على الأولوية التامة للأغذية الطبيعية وجدران الحماية.'
+      ? 'بروتوكول المنظومة الأساسي: "التغذية الوظيفية الحيوية (الغذاء أولاً)"؛ تمت هندسة وجبات المتدرب لتعويض كافة النواقص الفسيولوجية من مصادر غذائية طبيعية 100% دون الحاجة لمكملات.' 
+      : 'بروتوكول التدعيم المتقدم: تم إدراج المكملات التكميلية بالتكامل مع الأغذية الطبيعية وجدران الحماية السريرية.'
   };
 }

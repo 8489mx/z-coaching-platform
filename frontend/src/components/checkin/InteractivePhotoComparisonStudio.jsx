@@ -2,7 +2,8 @@ import React, { useState, useRef, useEffect } from 'react';
 import { 
   Maximize2, 
   X, 
-  Sparkles, 
+  Award,
+  TrendingUp, 
   Eye, 
   EyeOff, 
   Sliders, 
@@ -507,7 +508,7 @@ export default function InteractivePhotoComparisonStudio({
               boxShadow: '0 2px 5px rgba(15, 23, 42, 0.2)'
             }}
           >
-            <Sparkles size={13} color="#C4952D" />
+            <Award size={13} color="#C4952D" />
             <span>كارت التحول التسويقي</span>
           </button>
 
@@ -820,7 +821,7 @@ export default function InteractivePhotoComparisonStudio({
       {/* 3. شريط إحصائيات التحول الدقيقة */}
       <div style={{ padding: '10px 14px', background: '#F8FAFC', borderTop: '1px solid #E2E8F0', display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '11.5px', flexWrap: 'wrap', gap: '8px' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-          <Sparkles size={13} color="#0F172A" />
+          <TrendingUp size={14} color="#0F172A" />
           <strong style={{ color: '#0F172A' }}>صافي نتائج التحول والقياسات:</strong>
         </div>
 
@@ -880,7 +881,7 @@ export default function InteractivePhotoComparisonStudio({
             {/* ترويسة النافذة */}
             <div style={{ padding: '12px 18px', borderBottom: '1px solid #E2E8F0', display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: '#F8FAFC' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                <Sparkles size={16} color="#C4952D" />
+                <Award size={16} color="#C4952D" />
                 <h3 style={{ margin: 0, fontSize: '14px', fontWeight: 800, color: '#0F172A' }}>
                   توليد كارت التحول التسويقي الفاخر (Z Marketing Studio)
                 </h3>

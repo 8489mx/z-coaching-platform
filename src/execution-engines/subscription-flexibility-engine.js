@@ -65,7 +65,7 @@ export function freezeSubscription({
     return chk;
   });
 
-  const messageAr = `تم تجميد اشتراكك بنجاح لمدة ${freeze_days} أيام يا ${client_name}! ⏸️\n\nالسبب: ${reason}\nتاريخ الاستئناف التلقائي: ${autoResumeDate.toISOString().split('T')[0]}\nالموعد النهائي الجديد لاشتراكك: ${newEndDate.toISOString().split('T')[0]}\n\nتم ترحيل مواعيد متابعاتك تلقائياً بنفس المدة. استمتع بإجازتك ونشوفك على خير قريباً!`;
+  const messageAr = `تم تجميد اشتراكك بنجاح لمدة ${freeze_days} أيام يا ${client_name}.\n\nالسبب: ${reason}\nتاريخ الاستئناف التلقائي: ${autoResumeDate.toISOString().split('T')[0]}\nالموعد النهائي الجديد لاشتراكك: ${newEndDate.toISOString().split('T')[0]}\n\nتم ترحيل مواعيد متابعاتك تلقائياً بنفس المدة. تمنياتنا لك بالتوفيق ونلتقي قريباً لمواصلة التقدم.`;
 
   const cleanPhone = String(phone_number || '').replace(/[^0-9]/g, '');
   const normalizedPhone = cleanPhone.startsWith('20')
@@ -115,7 +115,7 @@ export function resumeSubscription({
   const endObj = new Date(current_end_date);
   endObj.setDate(endObj.getDate() - unusedDays);
 
-  const messageAr = `حمد الله على السلامة يا ${client_name}! تم استئناف اشتراكك بنجاح. 🚀\n\nالأيام المستخدمة في التجميد: ${actualDaysFrozen} يوماً.\nتاريخ انتهاء الاشتراك المعتمد: ${endObj.toISOString().split('T')[0]}.\n\nتطبيقك جاهز بالخطة الكاملة، ومستنيين أول تمرين ووجبة تسجلهم اليوم!`;
+  const messageAr = `حمد الله على السلامة يا ${client_name}. تم استئناف اشتراكك بنجاح.\n\nالأيام المستخدمة في التجميد: ${actualDaysFrozen} يوماً.\nتاريخ انتهاء الاشتراك المعتمد: ${endObj.toISOString().split('T')[0]}.\n\nتطبيقك جاهز بالخطة الكاملة، وبانتظار تسجيل أول تمرين ووجبة اليوم.`;
 
   const cleanPhone = String(phone_number || '').replace(/[^0-9]/g, '');
   const normalizedPhone = cleanPhone.startsWith('20')
@@ -314,7 +314,7 @@ export function evaluateReEntryProtocol({
     };
   }
 
-  const welcomeBackScriptAr = `أهلاً بعودتك يا ${client_name}! جاهزين للرجوع بقوة واستكمال فورمتك. 🚀\n\n📋 خطة العودة للأسبوع الأول:\n🏋️‍♂️ التدريب: ${workoutDecision.rationale_ar}\n🥗 التغذية: ${nutritionDecision.rationale_ar}\n\nشيك على تطبيقك الآن هتلاقي خطة أسبوع العودة جاهزة ومبرمجة بدقة!`;
+  const welcomeBackScriptAr = `أهلاً بعودتك يا ${client_name}. جاهزون لاستئناف التدريب واستكمال خطتك.\n\nخطة العودة للأسبوع الأول:\n- التدريب: ${workoutDecision.rationale_ar}\n- التغذية: ${nutritionDecision.rationale_ar}\n\nيرجى مراجعة تطبيقك الآن للاطلاع على خطة أسبوع العودة المبرمجة بدقة.`;
 
   const cleanPhone = String(phone_number || '').replace(/[^0-9]/g, '');
   const normalizedPhone = cleanPhone.startsWith('20')

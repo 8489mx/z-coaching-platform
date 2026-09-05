@@ -43,7 +43,7 @@ export function evaluateDailyHabits({
   }
 
   let tier = totalDailyScore >= 85 ? 'EXCELLENT' : totalDailyScore >= 70 ? 'GOOD' : 'NEEDS_IMPROVEMENT';
-  let badge_ar = totalDailyScore >= 85 ? 'التزام مثالي 🏆' : totalDailyScore >= 70 ? 'يوم قوي وإيجابي 💪' : 'بحاجة لمزيد من التركيز';
+  let badge_ar = totalDailyScore >= 85 ? 'التزام استثنائي' : totalDailyScore >= 70 ? 'أداء يومي منضبط' : 'بحاجة لمزيد من التركيز';
 
   return {
     daily_score: totalDailyScore,
@@ -63,7 +63,7 @@ export function evaluateDailyHabits({
 
 export function calculateStreakStatus(habitLogs = [], thresholdScore = 70) {
   if (!habitLogs || habitLogs.length === 0) {
-    return { current_streak_days: 0, longest_streak_days: 0, consistency_rate_pct: 0, rank_title_ar: 'بداية جديدة 🌱' };
+    return { current_streak_days: 0, longest_streak_days: 0, consistency_rate_pct: 0, rank_title_ar: 'المرحلة التأسيسية' };
   }
 
   let currentStreak = 0;
@@ -87,7 +87,7 @@ export function calculateStreakStatus(habitLogs = [], thresholdScore = 70) {
   }
 
   const consistencyRate = Math.round((successfulDays / habitLogs.length) * 100);
-  let rankTitle = currentStreak >= 30 ? 'الوحش الأسطوري 💎 (30+ يوم)' : currentStreak >= 14 ? 'المحارب الذهبي 🥇' : currentStreak >= 7 ? 'المتدرب المنضبط 🥈' : 'مبتدئ واعد 🌱';
+  let rankTitle = currentStreak >= 30 ? 'المتدرب النخبوي (30+ يوم)' : currentStreak >= 14 ? 'المتدرب المتقدم (14+ يوم)' : currentStreak >= 7 ? 'المتدرب المنضبط (7+ أيام)' : 'المتدرب في المرحلة التأسيسية';
 
   return {
     current_streak_days: currentStreak,

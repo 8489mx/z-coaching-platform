@@ -5,7 +5,6 @@ import {
   AlertTriangle, 
   CheckCircle2, 
   X, 
-  Sparkles, 
   FileText, 
   Upload, 
   ZoomIn, 
@@ -136,7 +135,7 @@ export default function LabBiomarkersReviewStudio({
     const lines = [
       `التقرير السريري للتحاليل المخبرية • منصة Z Coaching`,
       `المشترك: ${clientName} (#${cleanCode})`,
-      `نمط الخطة: ${supplementAdherence === 'NONE' ? 'بروتوكول التغذية الطبيعية 100% (الغذاء أولاً)' : 'بروتوكول متكامل (تغذية ومكملات)'}`,
+      `نمط الخطة: ${supplementAdherence === 'NONE' ? 'بروتوكول التغذية الحيوية (الغذاء أولاً)' : 'بروتوكول التدعيم المتكامل (تغذية ومكملات)'}`,
       ``,
       `أبرز القرارات والتوصيات المعتمدة:`
     ];
@@ -185,7 +184,7 @@ export default function LabBiomarkersReviewStudio({
 
         {/* مفتاح التبديل: مكملات أو غذاء طبيعي أولاً */}
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-          <span style={{ fontSize: '11px', fontWeight: 700, color: '#475569' }}>نمط التعويض:</span>
+          <span style={{ fontSize: '11px', fontWeight: 700, color: '#475569' }}>نمط الخطة:</span>
           <div style={{ display: 'inline-flex', background: '#FFFFFF', border: '1px solid #CBD5E1', borderRadius: '6px', padding: '2px' }}>
             <button
               type="button"
@@ -203,10 +202,10 @@ export default function LabBiomarkersReviewStudio({
                 alignItems: 'center',
                 gap: '4px'
               }}
-              title="تغذية طبيعية 100% لتعويض النواقص من الطعام أولاً دائمًا"
+              title="بروتوكول التغذية الحيوية الكاملة بالاعتماد التام على الأطعمة الطبيعية"
             >
               <Apple size={12} />
-              <span>الغذاء أولاً (طبيعي 100% - أساسي)</span>
+              <span>التغذية الحيوية (الغذاء أولاً)</span>
             </button>
 
             <button
@@ -225,10 +224,10 @@ export default function LabBiomarkersReviewStudio({
                 alignItems: 'center',
                 gap: '4px'
               }}
-              title="إدراج مكملات غذائية كملاذ أخير فقط"
+              title="إدراج مكملات غذائية استشفائية موجهة"
             >
               <Pill size={12} />
-              <span>مكملات وفيتامينات (ملاذ أخير)</span>
+              <span>بروتوكول التدعيم المتقدم</span>
             </button>
           </div>
 
@@ -462,13 +461,13 @@ export default function LabBiomarkersReviewStudio({
             <div style={{ marginTop: '16px', background: '#F8FAFC', border: '1px solid #E2E8F0', borderRadius: '10px', padding: '14px' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                  <Sparkles size={15} color="#C4952D" />
+                  <ShieldCheck size={16} color="#0F172A" />
                   <strong style={{ fontSize: '12.5px', color: '#0F172A' }}>
                     خطة العمل الإكلينيكية والقرارات الفسيولوجية المعتمدة:
                   </strong>
                 </div>
-                <span style={{ fontSize: '10.5px', background: supplementAdherence === 'NONE' ? '#DCFCE7' : '#FEF3C7', color: supplementAdherence === 'NONE' ? '#166534' : '#92400E', padding: '2px 8px', borderRadius: '4px', fontWeight: 800 }}>
-                  {supplementAdherence === 'NONE' ? 'بروتوكول الغذاء أولاً (طبيعي 100%)' : 'بروتوكول مكملات وفيتامينات'}
+                <span style={{ fontSize: '10.5px', background: supplementAdherence === 'NONE' ? '#DCFCE7' : '#F1F5F9', color: supplementAdherence === 'NONE' ? '#166534' : '#0F172A', padding: '2px 8px', borderRadius: '4px', fontWeight: 800 }}>
+                  {supplementAdherence === 'NONE' ? 'بروتوكول الغذاء أولاً' : 'بروتوكول التدعيم المتقدم'}
                 </span>
               </div>
 
@@ -540,22 +539,22 @@ export default function LabBiomarkersReviewStudio({
                 </div>
               )}
 
-              {/* المكملات المقترحة (في حال نمط المكملات الاستثنائي) */}
+              {/* المكملات المقترحة (في حال نمط التدعيم المتقدم) */}
               {supplementAdherence === 'FULL' && clinicalResult.supplement_recommendations.length > 0 && (
                 <div style={{ background: '#FFFFFF', border: '1px solid #CBD5E1', borderRadius: '8px', padding: '10px 12px', marginBottom: '12px' }}>
                   <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '4px' }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                      <Pill size={14} color="#C4952D" />
+                      <Pill size={14} color="#0F172A" />
                       <strong style={{ fontSize: '11.5px', color: '#0F172A' }}>
-                        المكملات الغذائية التعويضية:
+                        المكملات الغذائية الإضافية (تدعيم سريري موجه):
                       </strong>
                     </div>
-                    <span style={{ fontSize: '10px', background: '#FEF3C7', color: '#92400E', padding: '1px 6px', borderRadius: '4px', fontWeight: 800 }}>
-                      ملاذ أخير عند تعذر التعويض الغذائي
+                    <span style={{ fontSize: '10px', background: '#F1F5F9', color: '#0F172A', padding: '1px 6px', borderRadius: '4px', fontWeight: 800 }}>
+                      تدعيم سريري موجه
                     </span>
                   </div>
                   <p style={{ fontSize: '10.5px', color: '#64748B', margin: '0 0 6px 0', lineHeight: 1.4 }}>
-                    المبدأ الحاكم للمنظومة هو الغذاء أولاً؛ تُستخدم هذه المكملات فقط كدعم استثنائي مؤقت بجانب هندسة الوجبات.
+                    توجيه سريري متقدم: الأولوية المعتمدة للمصادر الغذائية الحيوية، مع توظيف المكمل كعنصر داعم موجه.
                   </p>
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
                     {clinicalResult.supplement_recommendations.map((supp, idx) => (

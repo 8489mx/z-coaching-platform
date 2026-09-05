@@ -4,6 +4,7 @@ import { useAuthStore } from '@/stores/auth-store';
 import { saasAdminApi } from '@/features/saas-admin/api/saas-admin.api';
 import { resetAuthenticatedClient } from '@/lib/query-client-session';
 import { EyeIcon } from '@/shared/components/icons/AppIcons';
+import { ArrowLeft } from 'lucide-react';
 
 export function ImpersonationBanner() {
   const user = useAuthStore((state) => state.user);
@@ -89,7 +90,7 @@ export function ImpersonationBanner() {
           if (!isExiting) (e.currentTarget as HTMLElement).style.background = '#4f46e5';
         }}
       >
-        <span style={{ fontSize: '1rem', lineHeight: 1 }}>⬅</span>
+        <ArrowLeft size={16} />
         <span>{isExiting ? 'جاري العودة...' : 'العودة إلى لوحة المنصة (Super Admin)'}</span>
       </button>
     </div>

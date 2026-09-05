@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from 'react';
-import { Pill, Sun, Moon, Zap, Dumbbell, AlertTriangle, CheckCircle2, ShieldAlert, Info, Search, Clock, Sparkles, Activity, HeartPulse, Flame, HelpCircle } from 'lucide-react';
+import { Pill, Sun, Moon, Zap, Dumbbell, AlertTriangle, CheckCircle2, ShieldAlert, Info, Search, Clock, Activity, HeartPulse, Flame, HelpCircle } from 'lucide-react';
 
 export const SUPPLEMENTS_CATALOG = [
   // 1. الفيتامينات والمناعة (Vitamins & Immunity)
@@ -656,13 +656,13 @@ export default function SmartSupplementGuidanceHub() {
                   {/* Synergies & Best Stack */}
                   <div style={{ background: '#F0FDF4', padding: '10px 12px', borderRadius: '8px', border: '1px solid #BBF7D0' }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '5px', marginBottom: '4px' }}>
-                      <Sparkles size={13} color="#16A34A" />
+                      <Zap size={13} color="#16A34A" />
                       <strong style={{ fontSize: '11.5px', color: '#14532D' }}>أفضل تآزر (Stacking):</strong>
                     </div>
                     <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px', marginTop: '4px' }}>
                       {item.synergies.map((syn, sIdx) => (
                         <span key={sIdx} style={{ fontSize: '10px', background: '#DCFCE7', color: '#15803D', padding: '1px 6px', borderRadius: '4px', fontWeight: 700 }}>
-                          ✓ {syn}
+                          {syn}
                         </span>
                       ))}
                     </div>

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Dumbbell, Search, Play, AlertTriangle, Check, X, Plus, Share2, Copy, CheckCircle2, ShieldCheck, HeartPulse, Video, Edit2, Edit3, Link2, Layers, Sparkles, ChevronDown, Upload, ArrowRightLeft, FolderOpen } from 'lucide-react';
+import { Dumbbell, Search, Play, AlertTriangle, Check, X, Plus, Share2, Copy, CheckCircle2, ShieldCheck, HeartPulse, Video, Edit2, Edit3, Link2, Layers, ChevronDown, Upload, ArrowRightLeft, FolderOpen } from 'lucide-react';
 import { API_BASE } from '../config/api';
 import AdminLayout from '../components/layout/AdminLayout';
 import ExerciseVideoModal from '../components/modals/ExerciseVideoModal';

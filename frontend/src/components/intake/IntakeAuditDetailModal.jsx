@@ -2,7 +2,7 @@ import { getClientTier, getTierColors, ClientCodeBadge, ClientPackageBadge } fro
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import ReactDOM from 'react-dom';
-import { X, CheckCircle2, AlertTriangle, HeartPulse, Dumbbell, Activity, Apple, Camera, MessageCircle, Sparkles, User, ZoomIn, ShieldAlert, Utensils, Flame, Scale, Check, Ban, ShieldCheck, Zap, ExternalLink } from 'lucide-react';
+import { X, CheckCircle2, AlertTriangle, HeartPulse, Dumbbell, Activity, Apple, Camera, MessageCircle, User, ZoomIn, ShieldAlert, Utensils, Flame, Scale, Check, Ban, ShieldCheck, Zap, ExternalLink } from 'lucide-react';
 
 // Helpers to translate codes to human-readable Arabic
 const GOALS_MAP = {

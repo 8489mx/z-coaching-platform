@@ -84,10 +84,10 @@ export function evaluateDailyHabits({
   let badge_ar = 'بحاجة لمزيد من التركيز';
   if (totalDailyScore >= 85) {
     tier = 'EXCELLENT';
-    badge_ar = 'التزام مثالي 🏆';
+    badge_ar = 'التزام استثنائي';
   } else if (totalDailyScore >= 70) {
     tier = 'GOOD';
-    badge_ar = 'يوم قوي وإيجابي 💪';
+    badge_ar = 'أداء يومي منضبط';
   }
 
   return {
@@ -115,7 +115,7 @@ export function calculateStreakStatus(habitLogs = [], thresholdScore = 70) {
       current_streak_days: 0,
       longest_streak_days: 0,
       consistency_rate_pct: 0,
-      rank_title_ar: 'بداية جديدة 🌱'
+      rank_title_ar: 'المرحلة التأسيسية'
     };
   }
 
@@ -149,13 +149,13 @@ export function calculateStreakStatus(habitLogs = [], thresholdScore = 70) {
   const consistencyRate = Math.round((successfulDays / habitLogs.length) * 100);
 
   // تصنيف رتبة المشترك السلوكية
-  let rankTitle = 'مبتدئ واعد 🌱';
+  let rankTitle = 'المتدرب في المرحلة التأسيسية';
   if (currentStreak >= 30) {
-    rankTitle = 'الوحش الأسطوري 💎 (30+ يوم التزام متواصل)';
+    rankTitle = 'المتدرب النخبوي (30+ يوم التزام متواصل)';
   } else if (currentStreak >= 14) {
-    rankTitle = 'المحارب الذهبي 🥇 (أسبوعان التزام)';
+    rankTitle = 'المتدرب المتقدم (أسبوعان التزام)';
   } else if (currentStreak >= 7) {
-    rankTitle = 'المتدرب المنضبط 🥈 (أسبوع متواصل)';
+    rankTitle = 'المتدرب المنضبط (أسبوع متواصل)';
   }
 
   return {

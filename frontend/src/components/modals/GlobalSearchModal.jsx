@@ -17,7 +17,6 @@ import {
   Phone, 
   ExternalLink,
   ChevronLeft,
-  Sparkles,
   MessageCircle
 } from 'lucide-react';
 import { API_BASE } from '../../config/api';

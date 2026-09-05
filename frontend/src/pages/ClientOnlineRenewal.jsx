@@ -11,7 +11,6 @@ import {
   CreditCard, 
   ShieldCheck, 
   Clock,
-  Sparkles,
   Phone,
   User
 } from 'lucide-react';
