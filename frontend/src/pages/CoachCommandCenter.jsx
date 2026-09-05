@@ -125,8 +125,8 @@ export default function CoachCommandCenter() {
   const [fastingFilter, setFastingFilter] = useState('ALL'); // 'ALL' | 'COPTIC' | 'RAMADAN' | 'INTERMITTENT'
   const [isNewClientModalOpen, setIsNewClientModalOpen] = useState(false);
   const [loading, setLoading] = useState(true);
-  const [searchQuery, setSearchQuery] = useState('');
   const seasonalFastingInfo = React.useMemo(() => getUpcomingFastingAlert(), []);
+  const [isFastingAlertDismissed, setIsFastingAlertDismissed] = useState(false);
 
   // Live Server Data
   const [overview, setOverview] = useState({
@@ -532,34 +532,35 @@ export default function CoachCommandCenter() {
           })}
         </div>
 
-        {/* 30-Day Seasonal Fasting Radar Banner */}
-        {seasonalFastingInfo && (
+        {/* 30-Day Seasonal Fasting Radar Banner (يظهر فقط قبل الموسم بشهر أو أثناء نشاطه) */}
+        {seasonalFastingInfo && !isFastingAlertDismissed && (
           <div style={{
-            background: '#0F172A',
-            border: '1px solid #C4952D',
+            background: '#FFFFFF',
+            border: '1px solid #E2E8F0',
+            borderRight: '4px solid #0F172A',
             borderRadius: '10px',
             padding: '12px 16px',
             display: 'flex',
             justifyContent: 'space-between',
             alignItems: 'center',
             gap: '12px',
-            boxShadow: '0 2px 10px rgba(196, 149, 45, 0.12)'
+            boxShadow: '0 1px 3px rgba(15, 23, 42, 0.04)'
           }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-              <div style={{ background: 'rgba(196, 149, 45, 0.15)', border: '1px solid rgba(196, 149, 45, 0.3)', borderRadius: '6px', padding: '6px', color: '#F59E0B' }}>
-                <Clock size={18} />
+              <div style={{ background: '#F8FAFC', border: '1px solid #CBD5E1', borderRadius: '6px', padding: '6px', color: '#0F172A' }}>
+                <Clock size={16} />
               </div>
               <div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                  <strong style={{ fontSize: '13px', color: '#F8FAFC' }}>
+                  <strong style={{ fontSize: '13px', color: '#0F172A' }}>
                     رادار التقويم الموسمي: اقتراب {seasonalFastingInfo.name}
                   </strong>
-                  <span style={{ fontSize: '11px', fontWeight: 800, background: 'rgba(196, 149, 45, 0.2)', color: '#FBBF24', padding: '1px 7px', borderRadius: '4px' }}>
+                  <span style={{ fontSize: '11px', fontWeight: 800, background: '#F1F5F9', color: '#0F172A', border: '1px solid #E2E8F0', padding: '1px 8px', borderRadius: '4px' }}>
                     {seasonalFastingInfo.statusText}
                   </span>
                 </div>
-                <span style={{ fontSize: '11.5px', color: '#94A3B8' }}>
-                  {seasonalFastingInfo.description} يمكنك استعراض المشتركين المسجلين لهذا الصيام وتكييف خططهم مسبقاً.
+                <span style={{ fontSize: '11px', color: '#64748B' }}>
+                  {seasonalFastingInfo.description} يمكنك استعراض المشتركين وتكييف خططهم مسبقاً.
                 </span>
               </div>
             </div>
@@ -573,12 +574,12 @@ export default function CoachCommandCenter() {
                   setFastingFilter(seasonalFastingInfo.type === 'COPTIC' ? 'COPTIC' : 'RAMADAN');
                 }}
                 style={{
-                  background: '#C4952D',
-                  color: '#0F172A',
+                  background: '#0F172A',
+                  color: '#FFFFFF',
                   border: 'none',
                   borderRadius: '6px',
-                  padding: '7px 14px',
-                  fontSize: '11.5px',
+                  padding: '6px 14px',
+                  fontSize: '11px',
                   fontWeight: 800,
                   cursor: 'pointer',
                   whiteSpace: 'nowrap'
@@ -591,18 +592,37 @@ export default function CoachCommandCenter() {
                 type="button"
                 onClick={() => navigate(`/customers?fasting=${seasonalFastingInfo.type === 'COPTIC' ? 'COPTIC' : 'RAMADAN'}`)}
                 style={{
-                  background: 'rgba(255, 255, 255, 0.12)',
-                  color: '#F8FAFC',
-                  border: '1px solid rgba(255, 255, 255, 0.25)',
+                  background: '#FFFFFF',
+                  color: '#475569',
+                  border: '1px solid #CBD5E1',
                   borderRadius: '6px',
-                  padding: '7px 12px',
-                  fontSize: '11.5px',
+                  padding: '6px 12px',
+                  fontSize: '11px',
                   fontWeight: 700,
                   cursor: 'pointer',
                   whiteSpace: 'nowrap'
                 }}
               >
-                كافة المشتركين في قاعدة البيانات
+                كافة المشتركين
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setIsFastingAlertDismissed(true)}
+                title="إغلاق التنبيه"
+                style={{
+                  background: 'transparent',
+                  border: 'none',
+                  color: '#94A3B8',
+                  borderRadius: '4px',
+                  padding: '4px',
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center'
+                }}
+              >
+                <X size={15} />
               </button>
             </div>
           </div>

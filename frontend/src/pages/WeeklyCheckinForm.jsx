@@ -11,10 +11,7 @@ export default function WeeklyCheckinForm() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState('');
 
-  const upcomingFasting = useMemo(() => {
-    const alert = getUpcomingFastingAlert();
-    return alert && (alert.isActive || (alert.daysLeft > 0 && alert.daysLeft <= 35)) ? alert : null;
-  }, []);
+  const upcomingFasting = useMemo(() => getUpcomingFastingAlert(), []);
 
   const [formData, setFormData] = useState({
     weight_kg: '',

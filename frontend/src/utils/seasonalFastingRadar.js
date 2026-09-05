@@ -66,7 +66,7 @@ export function getUpcomingFastingAlert(now = new Date()) {
       };
     }
 
-    if (daysLeft > 0 && daysLeft <= 35) {
+    if (daysLeft > 0 && daysLeft <= 30) {
       return {
         isActive: false,
         name: season.name,
@@ -78,18 +78,8 @@ export function getUpcomingFastingAlert(now = new Date()) {
     }
   }
 
-  const upcoming = seasons.find(s => s.startDate > now) || seasons[0];
-  const diffMs = upcoming.startDate.getTime() - now.getTime();
-  const daysLeft = Math.max(1, Math.ceil(diffMs / (1000 * 60 * 60 * 24)));
-
-  return {
-    isActive: false,
-    name: upcoming.name,
-    type: upcoming.type,
-    statusText: `متبقي ${daysLeft} يوماً`,
-    daysLeft,
-    description: upcoming.description
-  };
+  // إذا لم يكن هناك موسم نشط حالياً أو قادم خلال شهر (30 يوماً أو أقل)، لا يظهر أي رادار أو تنبيه
+  return null;
 }
 
 /**
