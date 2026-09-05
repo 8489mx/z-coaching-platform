@@ -113,7 +113,8 @@ export function generateMasterPdfExportData({
     protocol_title: 'كارديو LISS باختبار التحدث (Talk Test Protocol)',
     prescription: '3 جلسات أسبوعياً × 25 دقيقة مشي مائل (Incline 10% / Speed 4.5 km/h)',
     talk_test_cue: 'مجهود هوائي معتدل يسمح لك بالتحدث بجمل كاملة دون نهجان حاد.'
-  }
+  },
+  supplements_plan = []
 }) {
   return {
     document_title: `البرنامج التدريبي والغذائي المتكامل - ${client_name}`,
@@ -133,6 +134,7 @@ export function generateMasterPdfExportData({
     nutrition: nutrition_plan,
     training: workout_plan,
     cardio: cardio_plan,
+    supplements: supplements_plan?.length > 0 ? supplements_plan : (cardio_plan?.supplements || nutrition_plan?.supplements || []),
     footer_note: 'هذا البرنامج صُمم خصيصاً لحالتك البيوميكانيكية والغذائية وفق معايير Z Coaching - كابتن كريم زكريا.'
   };
 }
@@ -143,7 +145,7 @@ export function generateMasterPdfExportData({
  * Formats a clean, high-density, printable HTML document for 1-click PDF export
  */
 export function generatePrintablePlanHTML({ client = {}, plan = {}, date = new Date().toISOString().split('T')[0] }) {
-  const { prehab, workout = {}, meals = [], guidelines } = plan;
+  const { prehab, workout = {}, meals = [], cardio = {}, supplements = [], guidelines } = plan;
 
   return `
 <!DOCTYPE html>
@@ -281,6 +283,64 @@ export function generatePrintablePlanHTML({ client = {}, plan = {}, date = new D
       `).join('')}
     </tbody>
   </table>
+
+  <!-- Supplements & Micronutrition Protocol -->
+  ${supplements && supplements.length > 0 ? `
+  <div class="section-title">
+    <span>المكملات الغذائية المعتمدة وبروتوكول الاستشفاء</span>
+    <span class="badge">دعم البناء والتعافي</span>
+  </div>
+  <table class="table">
+    <thead>
+      <tr>
+        <th style="width: 25px;">#</th>
+        <th>اسم المكمل</th>
+        <th style="width: 120px;">الجرعة المحددة</th>
+        <th style="width: 140px;">توقيت التناول</th>
+        <th style="width: 110px;">السعرات والماكروز</th>
+        <th>ملاحظات الاستخدام</th>
+      </tr>
+    </thead>
+    <tbody>
+      ${supplements.map((s, sIdx) => `
+        <tr>
+          <td>${sIdx + 1}</td>
+          <td><strong>${s.name || 'مكمل غذائي'}</strong></td>
+          <td>${s.dose || '-'}</td>
+          <td>${s.timing || '-'}</td>
+          <td>${(s.cal || s.calories) ? `${s.cal || s.calories} Kcal (P:${s.p || s.protein || 0}g C:${s.c || s.carbs || 0}g F:${s.f || s.fats || 0}g)` : 'صفرية السعرات'}</td>
+          <td>${s.notes || 'الالتزام بالجرعة والتوقيت الموصى به.'}</td>
+        </tr>
+      `).join('')}
+    </tbody>
+  </table>
+  ` : ''}
+
+  <!-- Cardio & Aerobic Conditioning Protocol -->
+  ${(cardio && (cardio.protocol_title || cardio.prescription || cardio.modality || cardio.sessions_per_week)) ? `
+  <div class="section-title">
+    <span>بروتوكول اللياقة الهوائية والكارديو (Cardio Conditioning)</span>
+    <span class="badge">${cardio.modality || 'LISS'}</span>
+  </div>
+  <table class="table">
+    <thead>
+      <tr>
+        <th>البروتوكول المستهدف</th>
+        <th>التكرار الأسبوعي</th>
+        <th>المدة الزمنية</th>
+        <th>مؤشر الشدة والتنفس (Talk Test Cue)</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><strong>${cardio.protocol_title || 'كارديو معتدل الشدة'}</strong></td>
+        <td>${cardio.prescription || `${cardio.sessions_per_week || 3} جلسات أسبوعياً`}</td>
+        <td>${cardio.session_duration_min ? `${cardio.session_duration_min} دقيقة` : (cardio.duration || '25-30 دقيقة')}</td>
+        <td>${cardio.talk_test_cue || 'سرعة منتظمة تسمح بالحديث المتقطع دون انقطاع النفس الحاد.'}</td>
+      </tr>
+    </tbody>
+  </table>
+  ` : ''}
 
   <!-- Clinical & Lifestyle Guidelines -->
   <div class="section-title">

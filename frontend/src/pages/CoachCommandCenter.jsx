@@ -1,10 +1,11 @@
 import { ClientCodeBadge, ClientPackageBadge, getClientTier } from '../utils/tierBadgeHelper';
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Users, Clock, Hourglass, Plus, MessageCircle, CheckCircle2, ShieldAlert, Check, ExternalLink, Activity, ClipboardList, RefreshCw, Loader2, Search, X } from 'lucide-react';
+import { Users, Clock, Hourglass, Plus, MessageCircle, CheckCircle2, ShieldAlert, Check, ExternalLink, Activity, ClipboardList, RefreshCw, Loader2, Search, X, HeartPulse } from 'lucide-react';
 import { API_BASE } from '../config/api';
 import AdminLayout from '../components/layout/AdminLayout';
 import NewClientQuickModal from '../components/modals/NewClientQuickModal';
+import LabBiomarkersReviewStudio from '../components/clinical/LabBiomarkersReviewStudio';
 import { PageHeader } from '@/shared/components/page-header';
 import { FormSection } from '@/shared/components/form-section';
 import { getUpcomingFastingAlert, extractClientFastingProfile, getFastingCountdown } from '../utils/seasonalFastingRadar';
@@ -128,6 +129,7 @@ export default function CoachCommandCenter() {
   const [searchQuery, setSearchQuery] = useState('');
   const seasonalFastingInfo = React.useMemo(() => getUpcomingFastingAlert(), []);
   const [isFastingAlertDismissed, setIsFastingAlertDismissed] = useState(false);
+  const [labModalClient, setLabModalClient] = useState(null);
 
   // Live Server Data
   const [overview, setOverview] = useState({
@@ -1027,6 +1029,51 @@ export default function CoachCommandCenter() {
                             <span>واتساب</span>
                           </a>
                         )}
+
+                        {/* Clinical Labs Direct Modal Launcher */}
+                        <button
+                          type="button"
+                          onClick={() => {
+                            const rawCode = String(action.clientCode || '').replace(/^client[-_]?/i, '').replace('#', '');
+                            const clientMatch = safeClients.find(c => String(c.client_code || c.id || '').replace(/^client[-_]?/i, '').replace('#', '') === rawCode);
+                            const subMatch = safeSubmissions.find(s => String(s.client_code || s.user_id || s.id || '').replace(/^client[-_]?/i, '').replace('#', '') === rawCode);
+                            const chkMatch = safeCheckins.find(k => String(k.client_code || k.user_id || '').replace(/^client[-_]?/i, '').replace('#', '') === rawCode);
+
+                            const clientObj = clientMatch || subMatch?.user || subMatch || chkMatch?.user || chkMatch || { 
+                              client_code: rawCode, 
+                              full_name: action.clientName,
+                              biomarkers: {},
+                              medical_reports_urls: []
+                            };
+                            setLabModalClient(clientObj);
+                          }}
+                          style={{
+                            padding: '4px 10px',
+                            borderRadius: '6px',
+                            border: '1px solid #BAE6FD',
+                            background: '#F0F9FF',
+                            color: '#0284C7',
+                            fontSize: '11.5px',
+                            fontWeight: 700,
+                            cursor: 'pointer',
+                            display: 'inline-flex',
+                            alignItems: 'center',
+                            gap: '4px',
+                            transition: 'all 0.15s ease'
+                          }}
+                          onMouseEnter={(e) => {
+                            e.currentTarget.style.background = '#E0F2FE';
+                            e.currentTarget.style.borderColor = '#7DD3FC';
+                          }}
+                          onMouseLeave={(e) => {
+                            e.currentTarget.style.background = '#F0F9FF';
+                            e.currentTarget.style.borderColor = '#BAE6FD';
+                          }}
+                          title="فحص التحاليل المخبرية والمؤشرات الفسيولوجية للمشترك"
+                        >
+                          <HeartPulse size={13} color="#0284C7" />
+                          <span>التحاليل</span>
+                        </button>
                         <button
                           type="button"
                           onClick={() => {
@@ -1279,6 +1326,52 @@ export default function CoachCommandCenter() {
             fetchDashboardData();
           }}
         />
+
+        {/* Clinical Labs Modal */}
+        {labModalClient && (
+          <div 
+            style={{
+              position: 'fixed',
+              inset: 0,
+              backgroundColor: 'rgba(15, 23, 42, 0.85)',
+              backdropFilter: 'blur(8px)',
+              zIndex: 1400,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              padding: '16px'
+            }}
+            dir="rtl"
+            onClick={() => setLabModalClient(null)}
+          >
+            <div 
+              onClick={(e) => e.stopPropagation()}
+              style={{
+                background: '#FFFFFF',
+                borderRadius: '12px',
+                width: '1100px',
+                maxWidth: '98vw',
+                height: '92vh',
+                overflow: 'hidden',
+                display: 'flex',
+                flexDirection: 'column',
+                boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.4)',
+                border: '1px solid #CBD5E1'
+              }}
+            >
+              <LabBiomarkersReviewStudio
+                client={labModalClient}
+                initialValues={labModalClient.biomarkers || labModalClient.baseline_biomarkers || {}}
+                medicalReportsUrls={labModalClient.medical_reports_urls || labModalClient.reports || []}
+                onSave={() => {
+                  setLabModalClient(null);
+                  fetchDashboardData();
+                }}
+                onClose={() => setLabModalClient(null)}
+              />
+            </div>
+          </div>
+        )}
 
       </div>
     </AdminLayout>

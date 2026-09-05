@@ -68,6 +68,12 @@ export default function ProgramPdfView() {
   const fatsG = Math.round(program?.nutrition_program?.stages?.macro_targets?.fat_g || 68);
   const hydrationLiters = '3.8 - 4.2 Liters/Day';
 
+  // Supplements
+  const supplements = program?.cardio?.supplements 
+    || program?.supplements 
+    || program?.nutrition?.supplements 
+    || [];
+
   // Meals
   const meals = program?.nutrition_program?.quantized_plan?.meals || [
     {
@@ -350,8 +356,41 @@ export default function ProgramPdfView() {
             </tbody>
           </table>
 
+          {/* Supplements Protocol Table */}
+          {supplements && supplements.length > 0 && (
+            <div style={{ marginBottom: '12px' }}>
+              <div className="section-title">4. بروتوكول المكملات الغذائية المعتمدة (Supplements Protocol)</div>
+              <table className="pdf-table">
+                <thead>
+                  <tr>
+                    <th style={{ width: '28%' }}>المكمل الغذائي</th>
+                    <th style={{ width: '22%' }}>الجرعة المحددة</th>
+                    <th style={{ width: '26%' }}>توقيت التناول</th>
+                    <th style={{ width: '12%', textAlign: 'center' }}>السعرات</th>
+                    <th style={{ width: '12%' }}>الماكروز</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {supplements.map((supp, sIdx) => (
+                    <tr key={sIdx}>
+                      <td style={{ fontWeight: '700', color: '#0F172A' }}>{supp.name}</td>
+                      <td>{supp.dose || '-'}</td>
+                      <td>{supp.timing || '-'}</td>
+                      <td style={{ textAlign: 'center', fontWeight: '700' }} className="font-monospace">
+                        {supp.cal || 0}
+                      </td>
+                      <td style={{ fontSize: '7.5pt', color: '#64748B' }} dir="ltr">
+                        {supp.p || supp.c || supp.f ? `P:${supp.p||0} C:${supp.c||0} F:${supp.f||0}` : '-'}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+
           {/* Culinary Notes & Chef Secrets */}
-          <div className="section-title">4. إرشادات التحضير وقواعد الطهي الصحي (Culinary Guidelines)</div>
+          <div className="section-title">{supplements && supplements.length > 0 ? '5.' : '4.'} إرشادات التحضير وقواعد الطهي الصحي (Culinary Guidelines)</div>
           <div className="pdf-card" style={{ fontSize: '8pt', lineHeight: '1.6', marginBottom: '14px' }}>
             <p style={{ margin: '0 0 4px 0' }}>
               <strong>1. معايير وزن الأغذية:</strong> اللحوم والدواجن والأسماك تُوزن (نيئة قبل الطهي). الأرز والمكرونة والبطاطس تُوزن (مطبوخة وجاهزة للأكل).
@@ -365,7 +404,7 @@ export default function ProgramPdfView() {
           </div>
 
           {/* Smart Food Swaps Table */}
-          <div className="section-title">5. جدول المبادلات الذكية الفورية (Smart Food Swaps)</div>
+          <div className="section-title">{supplements && supplements.length > 0 ? '6.' : '5.'} جدول المبادلات الذكية الفورية (Smart Food Swaps)</div>
           <table className="pdf-table">
             <thead>
               <tr>

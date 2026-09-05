@@ -1,5 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
+import { extractClientFastingProfile } from '../utils/seasonalFastingRadar';
 import { 
   Utensils, 
   Dumbbell, 
@@ -162,11 +163,15 @@ export default function ClientInteractiveApp() {
               return s.includes('SLEEVE') || s.includes('BYPASS') || inj.includes('تكميم') || inj.includes('تحويل مسار');
             });
 
+            const clientOrUser = data.user || data.master_program?.client || {};
+            const extractedFasting = extractClientFastingProfile(clientOrUser, clientOrUser.answers);
+
             setClientData(prev => ({
               ...prev,
               name: data.user.full_name || prev.name,
               package: data.user.subscription_package || prev.package,
               tier: data.user.subscription_package || prev.tier,
+              fastingProfile: extractedFasting,
               clinicalProfile: {
                 ...prev.clinicalProfile,
                 is_celiac: isCeliac,
@@ -487,17 +492,74 @@ export default function ClientInteractiveApp() {
 
     return { p: 155, c: 200, f: 50, cal: 1870 };
   }, [clientProgram, meals]);
-  const consumedMacros = meals.reduce((acc, meal) => {
-    if (meal.completed) {
-      meal.items.forEach(item => {
-        acc.p += item.p;
-        acc.c += item.c;
-        acc.f += item.f;
-        acc.cal += item.cal;
-      });
+  // Supplements State & Interactive Checklist Tracking
+  const [supplementsTaken, setSupplementsTaken] = useState(() => {
+    try {
+      const todayStr = new Date().toISOString().split('T')[0];
+      const saved = localStorage.getItem(`kz_supps_taken_${todayStr}`);
+      return saved ? JSON.parse(saved) : {};
+    } catch {
+      return {};
     }
+  });
+
+  const toggleSupplementTaken = (suppId) => {
+    setSupplementsTaken(prev => {
+      const next = { ...prev, [suppId]: !prev[suppId] };
+      try {
+        const todayStr = new Date().toISOString().split('T')[0];
+        localStorage.setItem(`kz_supps_taken_${todayStr}`, JSON.stringify(next));
+      } catch (e) {
+        console.warn(e);
+      }
+      return next;
+    });
+  };
+
+  const supplementsList = useMemo(() => {
+    const rawSupps = clientProgram?.cardio?.supplements 
+      || clientProgram?.supplements 
+      || clientProgram?.nutrition?.supplements;
+    if (rawSupps && rawSupps.length > 0) {
+      return rawSupps.map((s, idx) => ({
+        id: s.id || `supp_${idx}`,
+        name: s.name || 'مكمل غذائي',
+        dose: s.dose || '',
+        timing: s.timing || '',
+        notes: s.notes || '',
+        cal: Number(s.cal ?? s.calories) || 0,
+        p: Number(s.p ?? s.protein) || 0,
+        c: Number(s.c ?? s.carbs) || 0,
+        f: Number(s.f ?? s.fats) || 0
+      }));
+    }
+    return [];
+  }, [clientProgram]);
+
+  const consumedMacros = useMemo(() => {
+    const acc = meals.reduce((mealAcc, meal) => {
+      if (meal.completed) {
+        (meal.items || []).forEach(item => {
+          mealAcc.p += Number(item.p || 0);
+          mealAcc.c += Number(item.c || 0);
+          mealAcc.f += Number(item.f || 0);
+          mealAcc.cal += Number(item.cal || 0);
+        });
+      }
+      return mealAcc;
+    }, { p: 0, c: 0, f: 0, cal: 0 });
+
+    supplementsList.forEach(supp => {
+      if (supplementsTaken[supp.id]) {
+        acc.p += supp.p;
+        acc.c += supp.c;
+        acc.f += supp.f;
+        acc.cal += supp.cal;
+      }
+    });
+
     return acc;
-  }, { p: 0, c: 0, f: 0, cal: 0 });
+  }, [meals, supplementsList, supplementsTaken]);
 
   // Total Volume Lifted in Live Session
   const totalVolumeKg = workoutSession.exercises.reduce((sum, ex) => {
@@ -579,6 +641,45 @@ export default function ClientInteractiveApp() {
                   <span style={{ fontSize: '10px', color: '#94A3B8', fontWeight: 600 }}>
                     {clientData.streak} يوم التزام
                   </span>
+                  {clientData.fastingProfile?.isCoptic && (
+                    <span style={{ 
+                      fontSize: '10px', 
+                      color: '#C4B5FD', 
+                      background: 'rgba(196, 181, 253, 0.12)', 
+                      border: '1px solid rgba(196, 181, 253, 0.25)', 
+                      padding: '1px 7px', 
+                      borderRadius: '5px', 
+                      fontWeight: 700 
+                    }}>
+                      {clientData.fastingProfile.christianFastingStyle === 'STRICT_VEGAN' ? 'صيام نباتي صرف' : 'صيام مع أسماك'}
+                    </span>
+                  )}
+                  {clientData.fastingProfile?.isRamadan && (
+                    <span style={{ 
+                      fontSize: '10px', 
+                      color: '#FDE68A', 
+                      background: 'rgba(253, 230, 138, 0.12)', 
+                      border: '1px solid rgba(253, 230, 138, 0.25)', 
+                      padding: '1px 7px', 
+                      borderRadius: '5px', 
+                      fontWeight: 700 
+                    }}>
+                      صيام رمضان
+                    </span>
+                  )}
+                  {clientData.fastingProfile?.isIntermittent && (
+                    <span style={{ 
+                      fontSize: '10px', 
+                      color: '#7DD3FC', 
+                      background: 'rgba(125, 211, 252, 0.12)', 
+                      border: '1px solid rgba(125, 211, 252, 0.25)', 
+                      padding: '1px 7px', 
+                      borderRadius: '5px', 
+                      fontWeight: 700 
+                    }}>
+                      {clientData.fastingProfile.intermittentBadge?.shortLabel || 'متقطع'}
+                    </span>
+                  )}
                 </div>
               </div>
             </div>
@@ -680,6 +781,43 @@ export default function ClientInteractiveApp() {
         <div style={{ margin: '12px 16px 0 16px', background: '#F8FAFC', border: '1px solid #E2E8F0', borderRadius: '10px', padding: '8px 12px', fontSize: '0.72rem', color: '#475569', lineHeight: '1.4' }}>
           <strong style={{ color: '#0F172A' }}>تنبيه علاجي (Eltroxin):</strong> حظر تناول الألبان، مكملات الكالسيوم أو الحديد لمدة 4 ساعات من جرعة الصباح لضمان الامتصاص الكامل.
         </div>
+
+        {/* Active Fasting Mode Status Banner */}
+        {clientData.fastingProfile && (clientData.fastingProfile.isCoptic || clientData.fastingProfile.isIntermittent || clientData.fastingProfile.isRamadan) && (
+          <div style={{
+            margin: '10px 16px 0 16px',
+            background: '#FFFFFF',
+            border: `1px solid ${clientData.fastingProfile.isCoptic ? '#DDD6FE' : (clientData.fastingProfile.isRamadan ? '#FDE68A' : '#BAE6FD')}`,
+            borderRight: `4px solid ${clientData.fastingProfile.isCoptic ? '#7C3AED' : (clientData.fastingProfile.isRamadan ? '#D97706' : '#0284C7')}`,
+            borderRadius: '10px',
+            padding: '9px 12px',
+            boxShadow: '0 1px 3px rgba(0, 0, 0, 0.03)'
+          }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '3px' }}>
+              <strong style={{ fontSize: '0.76rem', color: '#0F172A' }}>
+                {clientData.fastingProfile.isCoptic 
+                  ? (clientData.fastingProfile.christianFastingStyle === 'STRICT_VEGAN' ? 'نمط الصيام المسيحي (نباتي صرف خالي من الأسماك)' : 'نمط الصيام المسيحي (نباتي مع السماح بالأسماك)')
+                  : (clientData.fastingProfile.isRamadan 
+                      ? 'نمط صيام شهر رمضان المبارك (مواقيت الإفطار والسحور)'
+                      : `نمط الصيام المتقطع (${clientData.fastingProfile.intermittentBadge?.label || '16/8'})`)}
+              </strong>
+              <span style={{ 
+                fontSize: '0.68rem', 
+                color: clientData.fastingProfile.isCoptic ? '#6D28D9' : (clientData.fastingProfile.isRamadan ? '#B45309' : '#0369A1'), 
+                fontWeight: 700 
+              }}>
+                بروتوكول نشط
+              </span>
+            </div>
+            <span style={{ fontSize: '0.7rem', color: '#475569', lineHeight: 1.4, display: 'block' }}>
+              {clientData.fastingProfile.isCoptic
+                ? 'الخطة التغذوية مهيأة لتأمين كامل احتياجك من البروتين والأحماض الأمينية النباتية المركبة دون الإخلال بهدفك.'
+                : (clientData.fastingProfile.isRamadan
+                    ? 'تمت جدولة الوجبات وتوزيع كميات الماء والسوائل بين وجبتي الإفطار والسحور لدعم الاستشفاء والأداء التدريبي.'
+                    : 'نافذة الإطعام نشطة؛ حافظ على مواعيد تناول وجباتك ضمن الساعات المحددة مع استمرار الترطيب بالماء على مدار اليوم.')}
+            </span>
+          </div>
+        )}
 
         {/* Live Rest Timer Floating Pill (Minimalist) */}
         {restTimerSeconds > 0 && (
@@ -1125,23 +1263,91 @@ export default function ClientInteractiveApp() {
                 </div>
               </div>
 
-              {/* Supplements Card (Dynamic from Coach Program) */}
-              {clientProgram?.cardio?.supplements?.length > 0 && (
-              <div style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', borderRadius: '16px', padding: '14px 16px' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '6px', color: '#0F172A', fontWeight: 800, fontSize: '0.84rem', marginBottom: '8px' }}>
-                  <span>المكملات المعتمدة من الكابتن</span>
+              {/* Interactive Supplements & Micronutrition Checklist Card */}
+              {supplementsList.length > 0 && (
+                <div style={{ background: '#FFFFFF', border: '1px solid #E2E8F0', borderRadius: '16px', padding: '14px 16px', boxShadow: '0 1px 3px rgba(0, 0, 0, 0.03)' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                      <strong style={{ fontSize: '0.84rem', color: '#0F172A', fontWeight: 800 }}>المكملات الغذائية المعتمدة وبروتوكول الاستشفاء</strong>
+                    </div>
+                    <span style={{ fontSize: '0.7rem', color: '#64748B', fontWeight: 600 }}>
+                      تم تناول: <strong style={{ color: '#0F172A' }}>{supplementsList.filter(s => supplementsTaken[s.id]).length}</strong> / {supplementsList.length}
+                    </span>
+                  </div>
+
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                    {supplementsList.map((supp) => {
+                      const isDone = Boolean(supplementsTaken[supp.id]);
+                      return (
+                        <div
+                          key={supp.id}
+                          onClick={() => toggleSupplementTaken(supp.id)}
+                          style={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'space-between',
+                            padding: '8px 10px',
+                            borderRadius: '8px',
+                            border: `1px solid ${isDone ? '#BBF7D0' : '#E2E8F0'}`,
+                            background: isDone ? '#F0FDF4' : '#F8FAFC',
+                            cursor: 'pointer',
+                            transition: 'all 0.15s ease'
+                          }}
+                        >
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flex: 1 }}>
+                            <button
+                              type="button"
+                              style={{
+                                width: '20px',
+                                height: '20px',
+                                borderRadius: '5px',
+                                border: isDone ? 'none' : '1px solid #CBD5E1',
+                                background: isDone ? '#16A34A' : '#FFFFFF',
+                                color: '#FFFFFF',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                cursor: 'pointer',
+                                flexShrink: 0
+                              }}
+                            >
+                              {isDone && <Check size={13} strokeWidth={3} />}
+                            </button>
+                            <div>
+                              <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flexWrap: 'wrap' }}>
+                                <strong style={{ fontSize: '0.76rem', color: isDone ? '#166534' : '#0F172A', textDecoration: isDone ? 'line-through' : 'none' }}>
+                                  {supp.name}
+                                </strong>
+                                {supp.dose && (
+                                  <span style={{ fontSize: '0.68rem', color: '#64748B', background: '#E2E8F0', padding: '1px 5px', borderRadius: '4px', fontWeight: 600 }}>
+                                    {supp.dose}
+                                  </span>
+                                )}
+                                {supp.timing && (
+                                  <span style={{ fontSize: '0.68rem', color: '#0284C7', background: '#E0F2FE', padding: '1px 5px', borderRadius: '4px', fontWeight: 600 }}>
+                                    {supp.timing}
+                                  </span>
+                                )}
+                              </div>
+                              {supp.notes && (
+                                <span style={{ fontSize: '0.68rem', color: '#64748B', display: 'block', marginTop: '2px' }}>
+                                  {supp.notes}
+                                </span>
+                              )}
+                            </div>
+                          </div>
+
+                          {supp.cal > 0 && (
+                            <div style={{ textAlign: 'left', flexShrink: 0, paddingRight: '8px' }}>
+                              <strong style={{ fontSize: '0.74rem', color: '#0F172A', display: 'block' }}>{supp.cal} kcal</strong>
+                              <span style={{ fontSize: '0.65rem', color: '#64748B' }} dir="ltr">P:{supp.p} C:{supp.c} F:{supp.f}</span>
+                            </div>
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
                 </div>
-                <div style={{ fontSize: '0.74rem', color: '#334155', display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                  {clientProgram.cardio.supplements.map((supp, sIdx) => (
-                    <p key={supp.id || sIdx} style={{ margin: 0 }}>
-                      • <strong>{supp.name}{supp.dose ? ` (${supp.dose})` : ''}:</strong>
-                      {supp.timing ? ` ${supp.timing}` : ''}
-                      {(supp.cal > 0) ? ` — ${supp.cal} سعرة` : ''}
-                      {supp.notes ? ` (${supp.notes})` : ''}
-                    </p>
-                  ))}
-                </div>
-              </div>
               )}
 
             </div>
