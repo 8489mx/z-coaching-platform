@@ -6,6 +6,7 @@ import AdminLayout from '../components/layout/AdminLayout';
 import ExerciseVideoModal from '../components/modals/ExerciseVideoModal';
 import { PageHeader } from '@/shared/components/page-header';
 import { arabicSearchMatch } from '../utils/searchUtils';
+import { getExerciseDisplayNames } from '../utils/exerciseTranslator';
 
 // Concise Muscle Badge Formatter (1-2 words max)
 export function getShortMuscleName(muscleAr = '', muscleGroup = '') {
@@ -187,11 +188,14 @@ function AlternativesManager({ currentExId, alternatives = [], onChange, allExer
           style={{ flex: '2 1 180px', height: '32px', borderRadius: '6px', border: '1px solid #CBD5E1', padding: '0 8px', fontSize: '11px', color: '#0F172A', background: '#FFFFFF', outline: 'none' }}
         >
           <option value="">-- اختر تمريناً لربطه تبادلياً ({candidateExercises.length} متاح) --</option>
-          {candidateExercises.map(cand => (
-            <option key={cand.id} value={cand.id}>
-              {cand.name_ar} ({cand.name_en}) - {getShortEquipmentName(cand.equipment_ar, cand.equipment)}
-            </option>
-          ))}
+          {candidateExercises.map(cand => {
+            const candNames = getExerciseDisplayNames(cand);
+            return (
+              <option key={cand.id} value={cand.id}>
+                {candNames.nameEn} ({candNames.nameAr}) - {getShortEquipmentName(cand.equipment_ar, cand.equipment)}
+              </option>
+            );
+          })}
         </select>
         <button
           type="button"
@@ -224,32 +228,34 @@ function AlternativesManager({ currentExId, alternatives = [], onChange, allExer
             لا توجد بدائل توأم مرتبطة حالياً. اختر تمريناً من القائمة أعلاه للربط التبادلي التلقائي.
           </div>
         ) : (
-          linkedExercises.map(alt => (
-            <div
-              key={alt.id}
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'space-between',
-                background: '#FFFFFF',
-                border: '1px solid #BAE6FD',
-                borderRadius: '6px',
-                padding: '6px 10px',
-                boxShadow: '0 1px 2px rgba(15, 23, 42, 0.03)'
-              }}
-            >
-              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', overflow: 'hidden' }}>
-                <ArrowRightLeft size={13} color="#0284C7" />
-                <span style={{ fontSize: '11.5px', fontWeight: 700, color: '#0F172A' }}>
-                  {alt.name_ar}
-                </span>
-                <span style={{ fontSize: '10.5px', color: '#64748B' }}>
-                  ({alt.name_en})
-                </span>
-                <span style={{ background: '#F1F5F9', border: '1px solid #E2E8F0', padding: '1px 6px', borderRadius: '3px', fontSize: '9.5px', fontWeight: 600, color: '#475569' }}>
-                  {getShortEquipmentName(alt.equipment_ar, alt.equipment)}
-                </span>
-              </div>
+          linkedExercises.map(alt => {
+            const altNames = getExerciseDisplayNames(alt);
+            return (
+              <div
+                key={alt.id}
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                  background: '#FFFFFF',
+                  border: '1px solid #BAE6FD',
+                  borderRadius: '6px',
+                  padding: '6px 10px',
+                  boxShadow: '0 1px 2px rgba(15, 23, 42, 0.03)'
+                }}
+              >
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', overflow: 'hidden' }}>
+                  <ArrowRightLeft size={13} color="#0284C7" />
+                  <span style={{ fontSize: '11.5px', fontWeight: 700, color: '#0F172A' }}>
+                    {altNames.nameEn}
+                  </span>
+                  <span style={{ fontSize: '10.5px', color: '#64748B' }}>
+                    ({altNames.nameAr})
+                  </span>
+                  <span style={{ background: '#F1F5F9', border: '1px solid #E2E8F0', padding: '1px 6px', borderRadius: '6px', fontSize: '9.5px', fontWeight: 600, color: '#475569' }}>
+                    {getShortEquipmentName(alt.equipment_ar, alt.equipment)}
+                  </span>
+                </div>
               <button
                 type="button"
                 onClick={() => handleRemove(alt.id)}
@@ -257,7 +263,7 @@ function AlternativesManager({ currentExId, alternatives = [], onChange, allExer
                   border: 'none',
                   background: '#FEE2E2',
                   color: '#DC2626',
-                  borderRadius: '4px',
+                  borderRadius: '6px',
                   padding: '3px 6px',
                   cursor: 'pointer',
                   display: 'inline-flex',
@@ -273,8 +279,9 @@ function AlternativesManager({ currentExId, alternatives = [], onChange, allExer
                 <span>فك الارتباط</span>
               </button>
             </div>
-          ))
-        )}
+          );
+        })
+      )}
       </div>
     </div>
   );
@@ -884,6 +891,7 @@ export default function ExerciseLibrary() {
             {exercises.map((ex) => {
               const currentExpanded = expandedView[ex.id];
               const isVideoCopied = copiedKey === `VIDEO_${ex.id}`;
+              const displayNames = getExerciseDisplayNames(ex);
 
               return (
                 <div 
@@ -902,38 +910,43 @@ export default function ExerciseLibrary() {
                   }}
                 >
                   <div>
-                    {/* Top Row: Muscle & Equipment Badges */}
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
-                      <span style={{ background: '#F1F5F9', border: '1px solid #CBD5E1', color: '#0F172A', padding: '1px 7px', borderRadius: '4px', fontSize: '10.5px', fontWeight: 800 }}>
-                        {getShortMuscleName(ex.muscle_ar, ex.muscle_group)}
-                      </span>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                        {injuryFilter !== 'ALL' && (
-                          <span style={{ background: '#F0FDF4', border: '1px solid #86EFAC', color: '#16A34A', padding: '1px 6px', borderRadius: '4px', fontSize: '10px', fontWeight: 700 }}>
-                            آمن للإصابة
-                          </span>
-                        )}
-                        <span style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', color: '#64748B', padding: '1px 7px', borderRadius: '4px', fontSize: '10.5px', fontWeight: 600 }}>
-                          {getShortEquipmentName(ex.equipment_ar, ex.equipment)}
-                        </span>
+                    {/* 1. Exercise Titles (First Element at Top) */}
+                    <div style={{ marginBottom: '8px' }}>
+                      <h4 style={{ 
+                        margin: '0 0 2px 0', 
+                        fontSize: '14.5px', 
+                        fontWeight: 800, 
+                        color: '#0F172A', 
+                        lineHeight: 1.25,
+                        letterSpacing: '-0.01em'
+                      }}>
+                        {displayNames.nameEn || ex.name_en}
+                      </h4>
+                      <div style={{ 
+                        fontSize: '11.5px', 
+                        color: '#64748B', 
+                        fontWeight: 600, 
+                        lineHeight: 1.3 
+                      }}>
+                        {displayNames.nameAr || ex.name_ar}
                       </div>
                     </div>
 
-                    {/* Exercise Titles */}
-                    <h4 style={{ margin: '0 0 2px 0', fontSize: '13.5px', fontWeight: 800, color: '#0F172A', lineHeight: 1.3 }}>
-                      {ex.name_en}
-                    </h4>
-                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '6px', flexWrap: 'wrap', gap: '4px' }}>
-                      <span style={{ fontSize: '11.5px', color: '#64748B', fontWeight: 600 }}>
-                        {ex.name_ar}
+                    {/* 2. Unified Badges Cluster (Directly below titles) */}
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '5px', flexWrap: 'wrap', marginBottom: '9px' }}>
+                      <span style={{ background: '#F1F5F9', border: '1px solid #CBD5E1', color: '#0F172A', padding: '2px 8px', borderRadius: '6px', fontSize: '10.5px', fontWeight: 700 }}>
+                        {getShortMuscleName(ex.muscle_ar, ex.muscle_group)}
+                      </span>
+                      <span style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', color: '#475569', padding: '2px 8px', borderRadius: '6px', fontSize: '10.5px', fontWeight: 600 }}>
+                        {getShortEquipmentName(ex.equipment_ar, ex.equipment)}
                       </span>
                       {Array.isArray(ex.alternatives) && ex.alternatives.length > 0 && (
                         <span style={{
                           background: '#F0F9FF',
                           border: '1px solid #BAE6FD',
                           color: '#0284C7',
-                          padding: '1px 6px',
-                          borderRadius: '4px',
+                          padding: '2px 8px',
+                          borderRadius: '6px',
                           fontSize: '10px',
                           fontWeight: 700,
                           display: 'inline-flex',
@@ -941,7 +954,12 @@ export default function ExerciseLibrary() {
                           gap: '3px'
                         }}>
                           <ArrowRightLeft size={10} />
-                          <span>{ex.alternatives.length} بديل توأم</span>
+                          <span>{ex.alternatives.length} بدائل توأم</span>
+                        </span>
+                      )}
+                      {injuryFilter !== 'ALL' && (
+                        <span style={{ background: '#F0FDF4', border: '1px solid #86EFAC', color: '#16A34A', padding: '2px 7px', borderRadius: '6px', fontSize: '10px', fontWeight: 700 }}>
+                          آمن للإصابة
                         </span>
                       )}
                     </div>
@@ -983,7 +1001,7 @@ export default function ExerciseLibrary() {
                           onClick={() => handleCopyDirect(ex.cues_ar, `CUES_${ex.id}`)}
                           style={{
                             padding: '2px 7px',
-                            borderRadius: '4px',
+                            borderRadius: '6px',
                             border: copiedKey === `CUES_${ex.id}` ? '1px solid #86EFAC' : '1px solid #CBD5E1',
                             background: copiedKey === `CUES_${ex.id}` ? '#F0FDF4' : '#FFFFFF',
                             color: copiedKey === `CUES_${ex.id}` ? '#16A34A' : '#475569',
@@ -1020,7 +1038,7 @@ export default function ExerciseLibrary() {
                           onClick={() => handleCopyDirect(ex.mistakes_ar, `MISTAKES_${ex.id}`)}
                           style={{
                             padding: '2px 7px',
-                            borderRadius: '4px',
+                            borderRadius: '6px',
                             border: copiedKey === `MISTAKES_${ex.id}` ? '1px solid #86EFAC' : '1px solid #FDE68A',
                             background: copiedKey === `MISTAKES_${ex.id}` ? '#F0FDF4' : '#FFFFFF',
                             color: copiedKey === `MISTAKES_${ex.id}` ? '#16A34A' : '#B45309',
@@ -1064,20 +1082,19 @@ export default function ExerciseLibrary() {
                         <div style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>
                           {ex.alternatives.map(altId => {
                             const target = allExercises.find(e => e.id === altId || e.code === altId);
+                            const targetNames = target ? getExerciseDisplayNames(target) : { nameEn: altId, nameAr: altId };
                             return (
-                              <div key={altId} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: '#FFFFFF', padding: '4px 8px', borderRadius: '5px', border: '1px solid #E0F2FE' }}>
+                              <div key={altId} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: '#FFFFFF', padding: '5px 9px', borderRadius: '6px', border: '1px solid #E0F2FE' }}>
                                 <div style={{ display: 'flex', alignItems: 'center', gap: '6px', overflow: 'hidden' }}>
                                   <span style={{ fontWeight: 700, color: '#0F172A', fontSize: '11px' }}>
-                                    {target ? target.name_ar : altId}
+                                    {targetNames.nameEn}
                                   </span>
-                                  {target && (
-                                    <span style={{ color: '#64748B', fontSize: '10px' }}>
-                                      ({target.name_en})
-                                    </span>
-                                  )}
+                                  <span style={{ color: '#64748B', fontSize: '10px' }}>
+                                    ({targetNames.nameAr})
+                                  </span>
                                 </div>
                                 {target && (
-                                  <span style={{ background: '#F1F5F9', border: '1px solid #CBD5E1', color: '#334155', padding: '1px 5px', borderRadius: '3px', fontSize: '9.5px', fontWeight: 600, flexShrink: 0 }}>
+                                  <span style={{ background: '#F1F5F9', border: '1px solid #CBD5E1', color: '#334155', padding: '1px 6px', borderRadius: '6px', fontSize: '9.5px', fontWeight: 600, flexShrink: 0 }}>
                                     {getShortEquipmentName(target.equipment_ar, target.equipment)}
                                   </span>
                                 )}
