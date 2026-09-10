@@ -333,7 +333,7 @@ export default function Sidebar({ isCollapsed = false, onToggleSidebar }) {
           display: 'flex',
           alignItems: 'center',
           justifyContent: isCollapsed ? 'center' : 'space-between',
-          padding: isCollapsed ? '0' : '0 12px',
+          padding: isCollapsed ? '0' : '0 14px',
           gap: '8px',
           boxSizing: 'border-box',
         }}
@@ -343,7 +343,7 @@ export default function Sidebar({ isCollapsed = false, onToggleSidebar }) {
           style={{
             display: 'flex',
             alignItems: 'center',
-            gap: '8px',
+            gap: '10px',
             textDecoration: 'none',
             overflow: 'hidden',
           }}
@@ -351,49 +351,79 @@ export default function Sidebar({ isCollapsed = false, onToggleSidebar }) {
           {/* Logo Squircle Badge */}
           <div
             style={{
-              width: '32px',
-              height: '32px',
-              minWidth: '32px',
-              borderRadius: '8px',
-              background: '#0F172A',
-              color: '#FFFFFF',
+              width: '34px',
+              height: '34px',
+              minWidth: '34px',
+              borderRadius: '10px',
+              background: 'linear-gradient(145deg, #090D16 0%, #1E293B 100%)',
+              border: '1px solid rgba(255, 255, 255, 0.12)',
+              boxShadow: '0 4px 12px rgba(15, 23, 42, 0.2), inset 0 1px 1px rgba(255, 255, 255, 0.25)',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              fontWeight: 900,
-              fontSize: '15px',
-              letterSpacing: '-0.5px',
-              boxShadow: '0 2px 6px rgba(15, 23, 42, 0.25)',
-              fontFamily: 'Cairo, sans-serif'
+              flexShrink: 0,
+              transition: 'transform 0.2s ease, box-shadow 0.2s ease',
             }}
           >
-            Z
+            <svg
+              width="18"
+              height="18"
+              viewBox="0 0 24 24"
+              fill="none"
+              xmlns="http://www.w3.org/2000/svg"
+              style={{ display: 'block' }}
+            >
+              <path
+                d="M5 6H19L5 18H19"
+                stroke="url(#sidebar-z-logo-grad)"
+                strokeWidth="3.2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+              <defs>
+                <linearGradient
+                  id="sidebar-z-logo-grad"
+                  x1="5"
+                  y1="6"
+                  x2="19"
+                  y2="18"
+                  gradientUnits="userSpaceOnUse"
+                >
+                  <stop offset="0%" stopColor="#FFFFFF" />
+                  <stop offset="60%" stopColor="#F8FAFC" />
+                  <stop offset="100%" stopColor="#CBD5E1" />
+                </linearGradient>
+              </defs>
+            </svg>
           </div>
 
           {!isCollapsed && (
-            <div style={{ display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+            <div style={{ display: 'flex', flexDirection: 'column', overflow: 'hidden', justifyContent: 'center' }}>
               <span
                 style={{
                   fontSize: '12.5px',
                   fontWeight: 900,
                   color: '#0F172A',
-                  letterSpacing: '-0.2px',
+                  letterSpacing: '1.4px',
                   lineHeight: '1.2',
                   whiteSpace: 'nowrap',
                   overflow: 'hidden',
                   textOverflow: 'ellipsis',
                   textTransform: 'uppercase',
+                  fontFamily: "'Montserrat', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
                 }}
               >
                 {coachConfig?.systemName || 'Z COACHING'}
               </span>
               <span
                 style={{
-                  fontSize: '9.5px',
-                  fontWeight: 600,
+                  fontSize: '10px',
+                  fontWeight: 700,
                   color: '#64748B',
-                  lineHeight: '1.2',
+                  lineHeight: '1.25',
+                  marginTop: '1.5px',
                   whiteSpace: 'nowrap',
+                  fontFamily: 'Cairo, sans-serif',
                 }}
               >
                 منظومة التدريب والمتابعة
