@@ -14,6 +14,8 @@
  *    - Practical talk-test cardio prescriptions and warm-up protocols.
  */
 
+import { getExerciseDisplayNames } from './exerciseTranslator.js';
+
 export const SMART_GUIDELINES_MATRIX = Object.freeze([
   {
     id: 'COOKED_WEIGHT_RULE',
@@ -240,17 +242,19 @@ export function generatePrintablePlanHTML({ client = {}, plan = {}, date = new D
       </tr>
     </thead>
     <tbody>
-      ${(workout.exercises || []).map((ex, idx) => `
+      ${(workout.exercises || []).map((ex, idx) => {
+        const { nameEn, nameAr } = getExerciseDisplayNames(ex);
+        return `
         <tr>
           <td>${idx + 1}</td>
-          <td><strong>${ex.name_ar}</strong><br><span style="color:#64748b; font-size:9px;">${ex.name_en || ''}</span></td>
+          <td><strong style="direction:ltr; text-align:right; display:block;">${nameEn}</strong><span style="color:#64748b; font-size:9px;">${nameAr}</span></td>
           <td>${ex.sets}</td>
           <td>${ex.reps}</td>
           <td><span class="badge badge-rir">RIR ${ex.target_rir ?? 2}</span></td>
           <td>${ex.rest_minutes || 2} دقيقة</td>
           <td>${ex.cue || ex.cues?.[0] || 'أداء بمدى حركي كامل وتحكم بالنزول.'}</td>
         </tr>
-      `).join('')}
+      `;}).join('')}
     </tbody>
   </table>
 

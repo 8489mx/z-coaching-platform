@@ -65,10 +65,10 @@ export const CLINICAL_MASTER_BLUEPRINTS = {
             { id: 'm1', name: 'تنفس بطني عميق مع فتح المجرى التنفسي', target: 'الحجاب الحاجز وجدار البطن', sets: 2, reps: '10 أنفاس', cue: 'زفير كامل مع كل تمدد' }
           ],
           exercises: [
-            { id: 'e1', code: 'INCLINE_DUMBBELL_PRESS', name: 'ضغط دمبلز بنش مائل 30°', sets: 3, reps: '10 - 12', rir: 1, restSec: 90, profile: 'LENGTHENED_OVERLOAD', equipment: 'DUMBBELL', safetyNote: 'زفير مستمر عند الدفع لمنع الضغط على الفتق' },
-            { id: 'e2', code: 'CHEST_SUPPORTED_ROW', name: 'سحب ظهر على جهاز مسنود الصدر', sets: 3, reps: '10 - 12', rir: 1, restSec: 90, profile: 'MID_RANGE_COMPOUND', equipment: 'MACHINE', safetyNote: 'إلغاء الضغط على عضلات البطن وأسفل الظهر' },
-            { id: 'e3', code: 'SEATED_DUMBBELL_LATERAL_RAISE', name: 'رفرفة كتف جانبي دمبلز جالس', sets: 3, reps: '12 - 15', rir: 1, restSec: 60, profile: 'SHORTENED_OVERLOAD', equipment: 'DUMBBELL', safetyNote: 'الجلوس يمنع المرجحة والشد على البطن' },
-            { id: 'e4', code: 'CABLE_ROPE_TRICEPS_PUSHDOWN', name: 'سحب ترايسبس حبل كابل', sets: 3, reps: '12 - 14', rir: 1, restSec: 60, profile: 'SHORTENED_OVERLOAD', equipment: 'CABLE', safetyNote: 'كوع ثابت بجانب الجسم' }
+            { id: 'e1', code: 'INCLINE_DUMBBELL_PRESS', name: 'Incline Dumbbell Bench Press 30°', name_en: 'Incline Dumbbell Bench Press 30°', name_ar: 'ضغط دمبلز بنش مائل 30°', sets: 3, reps: '10 - 12', rir: 1, restSec: 90, profile: 'LENGTHENED_OVERLOAD', equipment: 'DUMBBELL', safetyNote: 'زفير مستمر عند الدفع لمنع الضغط على الفتق' },
+            { id: 'e2', code: 'CHEST_SUPPORTED_ROW', name: 'Chest-Supported Machine Row', name_en: 'Chest-Supported Machine Row', name_ar: 'سحب ظهر على جهاز مسنود الصدر', sets: 3, reps: '10 - 12', rir: 1, restSec: 90, profile: 'MID_RANGE_COMPOUND', equipment: 'MACHINE', safetyNote: 'إلغاء الضغط على عضلات البطن وأسفل الظهر' },
+            { id: 'e3', code: 'SEATED_DUMBBELL_LATERAL_RAISE', name: 'Seated Dumbbell Lateral Raise', name_en: 'Seated Dumbbell Lateral Raise', name_ar: 'رفرفة كتف جانبي دمبلز جالس', sets: 3, reps: '12 - 15', rir: 1, restSec: 60, profile: 'SHORTENED_OVERLOAD', equipment: 'DUMBBELL', safetyNote: 'الجلوس يمنع المرجحة والشد على البطن' },
+            { id: 'e4', code: 'CABLE_ROPE_TRICEPS_PUSHDOWN', name: 'Cable Rope Triceps Pushdown', name_en: 'Cable Rope Triceps Pushdown', name_ar: 'سحب ترايسبس حبل كابل', sets: 3, reps: '12 - 14', rir: 1, restSec: 60, profile: 'SHORTENED_OVERLOAD', equipment: 'CABLE', safetyNote: 'كوع ثابت بجانب الجسم' }
           ],
           post_workout_stretches: [
             { id: 'st1', name: 'إطالة الصدر على الباب', target: 'الصدر والكتف الأمامي', sets: 2, reps: '30 ثانية', cue: 'تنفس هادئ بدون حبس نفس' }
@@ -82,10 +82,10 @@ export const CLINICAL_MASTER_BLUEPRINTS = {
             { id: 'm3', name: 'مرونة مفصل الكاحل والحوض', target: 'الكاحل والحوض', sets: 2, reps: '12 تكرار', cue: 'حركة بطيئة' }
           ],
           exercises: [
-            { id: 'e5', code: 'LEG_EXTENSION', name: 'فرد أرجل أمامي على الجهاز (Leg Extension)', sets: 3, reps: '12 - 15', rir: 1, restSec: 75, profile: 'SHORTENED_OVERLOAD', equipment: 'MACHINE', safetyNote: 'عزل تام للرباعية بدون ضغط بطني' },
-            { id: 'e6', code: 'SEATED_LEG_CURL', name: 'ثني أرجل خلفي جالس (Seated Hamstring Curl)', sets: 3, reps: '10 - 12', rir: 1, restSec: 75, profile: 'LENGTHENED_OVERLOAD', equipment: 'MACHINE', safetyNote: 'تثبيت الفخذ والظهر بالمسند' },
-            { id: 'e7', code: 'DB_SPLIT_SQUAT', name: 'دمبلز سبليت سكوات قائم بوزن خفيف', sets: 3, reps: '10 - 12', rir: 2, restSec: 90, profile: 'MID_RANGE_COMPOUND', equipment: 'DUMBBELL', safetyNote: 'جذع مستقيم وتنفس مفتوح' },
-            { id: 'e8', code: 'STANDING_CALF_RAISE', name: 'رفع سمانة واقف على الجهاز', sets: 4, reps: '12 - 15', rir: 1, restSec: 60, profile: 'SHORTENED_OVERLOAD', equipment: 'MACHINE', safetyNote: 'ثانية توقف في الأسفل' }
+            { id: 'e5', code: 'LEG_EXTENSION', name: 'Leg Extension Machine', name_en: 'Leg Extension Machine', name_ar: 'فرد أرجل أمامي على الجهاز', sets: 3, reps: '12 - 15', rir: 1, restSec: 75, profile: 'SHORTENED_OVERLOAD', equipment: 'MACHINE', safetyNote: 'عزل تام للرباعية بدون ضغط بطني' },
+            { id: 'e6', code: 'SEATED_LEG_CURL', name: 'Seated Hamstring Leg Curl', name_en: 'Seated Hamstring Leg Curl', name_ar: 'ثني أرجل خلفي جالس على الجهاز', sets: 3, reps: '10 - 12', rir: 1, restSec: 75, profile: 'LENGTHENED_OVERLOAD', equipment: 'MACHINE', safetyNote: 'تثبيت الفخذ والظهر بالمسند' },
+            { id: 'e7', code: 'DB_SPLIT_SQUAT', name: 'Dumbbell Split Squat', name_en: 'Dumbbell Split Squat', name_ar: 'دمبلز سبليت سكوات قائم بوزن خفيف', sets: 3, reps: '10 - 12', rir: 2, restSec: 90, profile: 'MID_RANGE_COMPOUND', equipment: 'DUMBBELL', safetyNote: 'جذع مستقيم وتنفس مفتوح' },
+            { id: 'e8', code: 'STANDING_CALF_RAISE', name: 'Standing Machine Calf Raise', name_en: 'Standing Machine Calf Raise', name_ar: 'رفع سمانة واقف على الجهاز', sets: 4, reps: '12 - 15', rir: 1, restSec: 60, profile: 'SHORTENED_OVERLOAD', equipment: 'MACHINE', safetyNote: 'ثانية توقف في الأسفل' }
           ],
           post_workout_stretches: [
             { id: 'st2', name: 'إطالة عضلات الفخذ الخلفية', target: 'الهامسترينج', sets: 2, reps: '30 ثانية', cue: 'إرخاء العضلات بهدوء' }
@@ -151,10 +151,10 @@ export const CLINICAL_MASTER_BLUEPRINTS = {
             { id: 'm1', name: 'دوران الذراعين في مستوى اللوح (Scapular Plane)', target: 'الكفة المدورة', sets: 2, reps: '12 تكرار', cue: 'حركة دائرية هادئة' }
           ],
           exercises: [
-            { id: 'e1', code: 'DB_FLOOR_PRESS', name: 'ضغط صدر دمبلز من الأرض (Floor Press)', sets: 3, reps: '10 - 12', rir: 1, restSec: 75, profile: 'MID_RANGE_COMPOUND', equipment: 'DUMBBELL', safetyNote: 'الأرض توقف الكوع عند 90 درجة وتمنع اختناق وتر الكتف' },
-            { id: 'e2', code: 'CHEST_SUPPORTED_DB_ROW', name: 'سحب دمبلز مسنود على كرسي (Neutral Grip Row)', sets: 3, reps: '10 - 12', rir: 1, restSec: 75, profile: 'MID_RANGE_COMPOUND', equipment: 'DUMBBELL', safetyNote: 'قبضة محايدة وضم اللوحين للخلف' },
-            { id: 'e3', code: 'CHAIR_GOBLET_SQUAT', name: 'سكوات جوبلت دمبلز للكرسي', sets: 3, reps: '12 - 15', rir: 1, restSec: 90, profile: 'MID_RANGE_COMPOUND', equipment: 'DUMBBELL', safetyNote: 'لمس الكرسي والصعود بضغط الكعب' },
-            { id: 'e4', code: 'DB_ROMANIAN_DEADLIFT', name: 'ديدليفت روماني بدمبلز خفيفة', sets: 3, reps: '10 - 12', rir: 1, restSec: 75, profile: 'LENGTHENED_OVERLOAD', equipment: 'DUMBBELL', safetyNote: 'دفع الحوض للخلف واستقامة الظهر' }
+            { id: 'e1', code: 'DB_FLOOR_PRESS', name: 'Dumbbell Floor Press', name_en: 'Dumbbell Floor Press', name_ar: 'ضغط صدر دمبلز من الأرض', sets: 3, reps: '10 - 12', rir: 1, restSec: 75, profile: 'MID_RANGE_COMPOUND', equipment: 'DUMBBELL', safetyNote: 'الأرض توقف الكوع عند 90 درجة وتمنع اختناق وتر الكتف' },
+            { id: 'e2', code: 'CHEST_SUPPORTED_DB_ROW', name: 'Chest-Supported Dumbbell Row', name_en: 'Chest-Supported Dumbbell Row', name_ar: 'سحب دمبلز مسنود على كرسي', sets: 3, reps: '10 - 12', rir: 1, restSec: 75, profile: 'MID_RANGE_COMPOUND', equipment: 'DUMBBELL', safetyNote: 'قبضة محايدة وضم اللوحين للخلف' },
+            { id: 'e3', code: 'CHAIR_GOBLET_SQUAT', name: 'Chair Goblet Squat', name_en: 'Chair Goblet Squat', name_ar: 'سكوات جوبلت دمبلز للكرسي', sets: 3, reps: '12 - 15', rir: 1, restSec: 90, profile: 'MID_RANGE_COMPOUND', equipment: 'DUMBBELL', safetyNote: 'لمس الكرسي والصعود بضغط الكعب' },
+            { id: 'e4', code: 'DB_ROMANIAN_DEADLIFT', name: 'Dumbbell Romanian Deadlift', name_en: 'Dumbbell Romanian Deadlift', name_ar: 'ديدليفت روماني بدمبلز خفيفة', sets: 3, reps: '10 - 12', rir: 1, restSec: 75, profile: 'LENGTHENED_OVERLOAD', equipment: 'DUMBBELL', safetyNote: 'دفع الحوض للخلف واستقامة الظهر' }
           ],
           post_workout_stretches: [
             { id: 'st1', name: 'إطالة وتر الترايسبس والكتف', target: 'الكتف الخلفي', sets: 2, reps: '30 ثانية', cue: 'سحب الذراع بهدوء' }
@@ -219,10 +219,10 @@ export const CLINICAL_MASTER_BLUEPRINTS = {
             { id: 'm1', name: 'دوران الذراعين وتمارين التنفس الهادئ', target: 'الكتف والصدر', sets: 2, reps: '10 تكرارات', cue: 'تنفس مستمر دون حبس نفس' }
           ],
           exercises: [
-            { id: 'e1', code: 'SEATED_LEG_PRESS_MODERATE', name: 'دفع أرجل على الجهاز بوزن معتدل وتكرار عالي', sets: 3, reps: '12 - 15', rir: 3, restSec: 90, profile: 'MID_RANGE_COMPOUND', equipment: 'MACHINE', safetyNote: 'منع حبس النفس تماماً لسلامة الضغط' },
-            { id: 'e2', code: 'SEATED_CHEST_PRESS', name: 'جهاز دفع صدر جالس مسنود', sets: 3, reps: '12 - 15', rir: 3, restSec: 75, profile: 'MID_RANGE_COMPOUND', equipment: 'MACHINE', safetyNote: 'حركة انسيابية محكومة' },
-            { id: 'e3', code: 'SEATED_CABLE_ROW', name: 'سحب ظهر كابل جالس مسنود', sets: 3, reps: '12 - 15', rir: 3, restSec: 75, profile: 'MID_RANGE_COMPOUND', equipment: 'CABLE', safetyNote: 'تثبيت الجذع' },
-            { id: 'e4', code: 'SEATED_LEG_CURL', name: 'ثني أرجل خلفي جالس', sets: 3, reps: '12 - 15', rir: 3, restSec: 60, profile: 'LENGTHENED_OVERLOAD', equipment: 'MACHINE', safetyNote: 'أداء هادئ' }
+            { id: 'e1', code: 'SEATED_LEG_PRESS_MODERATE', name: 'Seated Leg Press Machine', name_en: 'Seated Leg Press Machine', name_ar: 'دفع أرجل على الجهاز بوزن معتدل وتكرار عالي', sets: 3, reps: '12 - 15', rir: 3, restSec: 90, profile: 'MID_RANGE_COMPOUND', equipment: 'MACHINE', safetyNote: 'منع حبس النفس تماماً لسلامة الضغط' },
+            { id: 'e2', code: 'SEATED_CHEST_PRESS', name: 'Seated Chest Press Machine', name_en: 'Seated Chest Press Machine', name_ar: 'جهاز دفع صدر جالس مسنود', sets: 3, reps: '12 - 15', rir: 3, restSec: 75, profile: 'MID_RANGE_COMPOUND', equipment: 'MACHINE', safetyNote: 'حركة انسيابية محكومة' },
+            { id: 'e3', code: 'SEATED_CABLE_ROW', name: 'Seated Cable Row', name_en: 'Seated Cable Row', name_ar: 'سحب ظهر كابل جالس مسنود', sets: 3, reps: '12 - 15', rir: 3, restSec: 75, profile: 'MID_RANGE_COMPOUND', equipment: 'CABLE', safetyNote: 'تثبيت الجذع' },
+            { id: 'e4', code: 'SEATED_LEG_CURL', name: 'Seated Leg Curl Machine', name_en: 'Seated Leg Curl Machine', name_ar: 'ثني أرجل خلفي جالس على الجهاز', sets: 3, reps: '12 - 15', rir: 3, restSec: 60, profile: 'LENGTHENED_OVERLOAD', equipment: 'MACHINE', safetyNote: 'أداء هادئ' }
           ],
           post_workout_stretches: [
             { id: 'st1', name: 'إطالة الصدر والظهر', target: 'الجزء العلوي', sets: 2, reps: '25 ثانية', cue: 'إرخاء العضلات' }
@@ -289,10 +289,10 @@ export const CLINICAL_MASTER_BLUEPRINTS = {
             { id: 'm1', name: 'حركة انسيابية للعمود الفقري والمفاصل', target: 'الفقرات والحوض', sets: 2, reps: '10 تكرارات', cue: 'بدون انحناء حاد' }
           ],
           exercises: [
-            { id: 'e1', code: 'SEATED_LEG_PRESS', name: 'دفع أرجل جالس مع استقامة العمود الفقري', sets: 3, reps: '12 - 15', rir: 2, restSec: 90, profile: 'MID_RANGE_COMPOUND', equipment: 'MACHINE', safetyNote: 'تحفيز عظام الفخذ بأمان تام' },
-            { id: 'e2', code: 'MACHINE_CHEST_PRESS', name: 'جهاز دفع صدر مسنود', sets: 3, reps: '10 - 12', rir: 2, restSec: 75, profile: 'MID_RANGE_COMPOUND', equipment: 'MACHINE', safetyNote: 'تثبيت اللوحين' },
-            { id: 'e3', code: 'CHEST_SUPPORTED_ROW', name: 'سحب ظهر مسنود الصدر', sets: 3, reps: '10 - 12', rir: 2, restSec: 75, profile: 'MID_RANGE_COMPOUND', equipment: 'MACHINE', safetyNote: 'حماية أسفل الظهر' },
-            { id: 'e4', code: 'SEATED_LEG_CURL', name: 'ثني أرجل خلفي جالس', sets: 3, reps: '12 - 15', rir: 2, restSec: 60, profile: 'LENGTHENED_OVERLOAD', equipment: 'MACHINE', safetyNote: 'أداء هادئ' }
+            { id: 'e1', code: 'SEATED_LEG_PRESS', name: 'Seated Leg Press Machine', name_en: 'Seated Leg Press Machine', name_ar: 'دفع أرجل جالس مع استقامة العمود الفقري', sets: 3, reps: '12 - 15', rir: 2, restSec: 90, profile: 'MID_RANGE_COMPOUND', equipment: 'MACHINE', safetyNote: 'تحفيز عظام الفخذ بأمان تام' },
+            { id: 'e2', code: 'MACHINE_CHEST_PRESS', name: 'Machine Chest Press', name_en: 'Machine Chest Press', name_ar: 'جهاز دفع صدر مسنود', sets: 3, reps: '10 - 12', rir: 2, restSec: 75, profile: 'MID_RANGE_COMPOUND', equipment: 'MACHINE', safetyNote: 'تثبيت اللوحين' },
+            { id: 'e3', code: 'CHEST_SUPPORTED_ROW', name: 'Chest-Supported Machine Row', name_en: 'Chest-Supported Machine Row', name_ar: 'سحب ظهر مسنود الصدر', sets: 3, reps: '10 - 12', rir: 2, restSec: 75, profile: 'MID_RANGE_COMPOUND', equipment: 'MACHINE', safetyNote: 'حماية أسفل الظهر' },
+            { id: 'e4', code: 'SEATED_LEG_CURL', name: 'Seated Leg Curl Machine', name_en: 'Seated Leg Curl Machine', name_ar: 'ثني أرجل خلفي جالس على الجهاز', sets: 3, reps: '12 - 15', rir: 2, restSec: 60, profile: 'LENGTHENED_OVERLOAD', equipment: 'MACHINE', safetyNote: 'أداء هادئ' }
           ],
           post_workout_stretches: [
             { id: 'st1', name: 'إطالات استشفاء لطيفة', target: 'العضلات المدربة', sets: 2, reps: '25 ثانية', cue: 'تنفس هادئ' }
@@ -415,10 +415,10 @@ STRESS_TEST_CLIENTS.forEach(c => {
               { id: 'm1', name: 'إحماء ديناميكي مخصص لسلامة المفاصل', target: 'المفاصل الحركية', sets: 2, reps: '12 تكرار', cue: 'حركة انسيابية هادئة' }
             ],
             exercises: [
-              { id: 'e1', code: 'MACHINE_CHEST_PRESS', name: 'جهاز دفع صدر مسنود (Machine Chest Press)', sets: 3, reps: '10 - 12', rir: 1, restSec: 75, profile: 'MID_RANGE_COMPOUND', equipment: 'MACHINE', safetyNote: 'مسار حركة موجه يحمي المفاصل' },
-              { id: 'e2', code: 'CHEST_SUPPORTED_ROW', name: 'سحب ظهر مسنود الصدر على الجهاز', sets: 3, reps: '10 - 12', rir: 1, restSec: 75, profile: 'MID_RANGE_COMPOUND', equipment: 'MACHINE', safetyNote: 'إلغاء أي ضغط على الفقرات القطنية' },
-              { id: 'e3', code: 'SEATED_LEG_PRESS', name: 'دفع أرجل جالس مع تثبيت مسند الظهر', sets: 3, reps: '12 - 15', rir: 2, restSec: 90, profile: 'MID_RANGE_COMPOUND', equipment: 'MACHINE', safetyNote: 'حماية الركبة وأسفل الظهر' },
-              { id: 'e4', code: 'SEATED_LEG_CURL', name: 'ثني أرجل خلفي جالس على الجهاز', sets: 3, reps: '12 - 15', rir: 1, restSec: 60, profile: 'LENGTHENED_OVERLOAD', equipment: 'MACHINE', safetyNote: 'استطالة كاملة لأوتار الركبة' }
+              { id: 'e1', code: 'MACHINE_CHEST_PRESS', name: 'Machine Chest Press', name_en: 'Machine Chest Press', name_ar: 'جهاز دفع صدر مسنود', sets: 3, reps: '10 - 12', rir: 1, restSec: 75, profile: 'MID_RANGE_COMPOUND', equipment: 'MACHINE', safetyNote: 'مسار حركة موجه يحمي المفاصل' },
+              { id: 'e2', code: 'CHEST_SUPPORTED_ROW', name: 'Chest-Supported Machine Row', name_en: 'Chest-Supported Machine Row', name_ar: 'سحب ظهر مسنود الصدر على الجهاز', sets: 3, reps: '10 - 12', rir: 1, restSec: 75, profile: 'MID_RANGE_COMPOUND', equipment: 'MACHINE', safetyNote: 'إلغاء أي ضغط على الفقرات القطنية' },
+              { id: 'e3', code: 'SEATED_LEG_PRESS', name: 'Seated Leg Press Machine', name_en: 'Seated Leg Press Machine', name_ar: 'دفع أرجل جالس مع تثبيت مسند الظهر', sets: 3, reps: '12 - 15', rir: 2, restSec: 90, profile: 'MID_RANGE_COMPOUND', equipment: 'MACHINE', safetyNote: 'حماية الركبة وأسفل الظهر' },
+              { id: 'e4', code: 'SEATED_LEG_CURL', name: 'Seated Leg Curl Machine', name_en: 'Seated Leg Curl Machine', name_ar: 'ثني أرجل خلفي جالس على الجهاز', sets: 3, reps: '12 - 15', rir: 1, restSec: 60, profile: 'LENGTHENED_OVERLOAD', equipment: 'MACHINE', safetyNote: 'استطالة كاملة لأوتار الركبة' }
             ],
             post_workout_stretches: [
               { id: 'st1', name: 'إطالات استشفائية خفيفة', target: 'العضلات المدربة', sets: 2, reps: '25 ثانية', cue: 'تنفس هادئ وعميق' }

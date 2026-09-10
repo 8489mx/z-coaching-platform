@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { API_BASE } from '../config/api';
 import { getStoredCoachConfig } from '../utils/themeAndCoachConfig';
 import { extractClientFastingProfile } from '../utils/seasonalFastingRadar';
+import { getExerciseDisplayNames } from '../utils/exerciseTranslator';
 
 const CSS_STYLES = "\n  @page {\n    size: A4 portrait;\n    margin: 15mm;\n  }\n\n  @media screen {\n    .pdf-page-container {\n      width: 210mm;\n      min-height: 297mm;\n      margin: 0 auto 20px auto;\n      background: #FFFFFF;\n      box-shadow: 0 4px 25px rgba(15, 23, 42, 0.08);\n      border: 1px solid #E2E8F0;\n      padding: 15mm;\n      box-sizing: border-box;\n      display: flex;\n      flex-direction: column;\n      justify-content: space-between;\n      position: relative;\n    }\n  }\n\n  @media print {\n    body {\n      background: #FFFFFF !important;\n      padding: 0 !important;\n      margin: 0 !important;\n      -webkit-print-color-adjust: exact !important;\n      print-color-adjust: exact !important;\n    }\n    .no-print {\n      display: none !important;\n    }\n    .pdf-page-container {\n      width: 100% !important;\n      height: 100% !important;\n      min-height: 297mm !important;\n      max-height: 297mm !important;\n      margin: 0 !important;\n      padding: 0 !important;\n      border: none !important;\n      box-shadow: none !important;\n      page-break-after: always !important;\n      break-after: page !important;\n      display: flex !important;\n      flex-direction: column !important;\n      justify-content: space-between !important;\n      overflow: hidden !important;\n    }\n  }\n\n  .running-header {\n    border-bottom: 0.5pt solid #E2E8F0;\n    padding-bottom: 6px;\n    margin-bottom: 12px;\n    display: flex;\n    justify-content: space-between;\n    align-items: center;\n    font-size: 8pt;\n    font-weight: 700;\n    color: #475569;\n    letter-spacing: 0.5px;\n  }\n\n  .running-footer {\n    border-top: 0.5pt solid #E2E8F0;\n    padding-top: 6px;\n    margin-top: 12px;\n    display: flex;\n    justify-content: space-between;\n    align-items: center;\n    font-size: 8pt;\n    color: #64748B;\n    font-weight: 600;\n  }\n\n  .pdf-table {\n    width: 100%;\n    border-collapse: collapse;\n    margin-bottom: 12px;\n    font-size: 8.5pt;\n    page-break-inside: avoid;\n    break-inside: avoid;\n  }\n\n  .pdf-table th {\n    background-color: #F8FAFC;\n    color: #0F172A;\n    font-weight: 700;\n    border: 0.5pt solid #E2E8F0;\n    padding: 6px 8px;\n    text-align: right;\n  }\n\n  .pdf-table td {\n    border: 0.5pt solid #E2E8F0;\n    padding: 6px 8px;\n    color: #0F172A;\n    vertical-align: middle;\n  }\n\n  .pdf-card {\n    background-color: #F8FAFC;\n    border: 0.5pt solid #E2E8F0;\n    border-radius: 8px;\n    padding: 10px 12px;\n    margin-bottom: 10px;\n    page-break-inside: avoid;\n    break-inside: avoid;\n  }\n\n  .section-title {\n    font-size: 10pt;\n    font-weight: 800;\n    color: #0F172A;\n    margin-bottom: 8px;\n    display: flex;\n    align-items: center;\n    gap: 6px;\n    border-right: 3pt solid #0284C7;\n    padding-right: 8px;\n  }\n";
 
@@ -545,21 +546,26 @@ export default function ProgramPdfView() {
                     </tr>
                   </thead>
                   <tbody>
-                    {session.exercises?.map((ex, eIdx) => (
-                      <tr key={eIdx}>
-                        <td>
-                          <strong>{ex.name_ar || ex.name || ex.name_en}</strong>
-                          {ex.name_en && (
-                            <small className="d-block text-muted font-monospace" style={{ fontSize: '7pt' }}>{ex.name_en}</small>
-                          )}
-                        </td>
+                    {session.exercises?.map((ex, eIdx) => {
+                      const exNames = getExerciseDisplayNames(ex);
+                      return (
+                        <tr key={eIdx}>
+                          <td>
+                            <strong style={{ display: 'block', fontSize: '8.5pt', color: '#0F172A', direction: 'ltr', textAlign: 'right' }}>
+                              {exNames.nameEn}
+                            </strong>
+                            <small className="d-block text-muted" style={{ fontSize: '7.5pt', marginTop: '1px' }}>
+                              {exNames.nameAr}
+                            </small>
+                          </td>
                         <td style={{ color: '#475569' }}>{ex.muscle || 'عضلة رئيسية'}</td>
                         <td style={{ textAlign: 'center', fontWeight: '700' }} className="font-monospace">{ex.sets || (Array.isArray(ex.sets) ? ex.sets.length : 3)}</td>
                         <td style={{ textAlign: 'center', fontWeight: '700' }} className="font-monospace">{ex.reps || ex.target_reps || '8 - 10'}</td>
                         <td style={{ textAlign: 'center', fontWeight: '700', color: '#0284C7' }} className="font-monospace">{ex.rir || '1 - 2'}</td>
                         <td style={{ textAlign: 'center', fontWeight: '600' }} className="font-monospace">{ex.rest || `${ex.rest_seconds || 90}s`}</td>
-                      </tr>
-                    ))}
+                        </tr>
+                      );
+                    })}
                   </tbody>
                 </table>
               </div>

@@ -34,6 +34,7 @@ import LabBiomarkersReviewStudio from '../components/clinical/LabBiomarkersRevie
 import { extractClientFastingProfile } from '../utils/seasonalFastingRadar';
 import { arabicSearchMatch } from '../utils/searchUtils';
 import ExerciseVideoModal from '../components/modals/ExerciseVideoModal';
+import { getExerciseDisplayNames } from '../utils/exerciseTranslator';
 
 const ADD_EX_MUSCLE_CATEGORIES = [
   { id: 'ALL', label: 'الكل' },
@@ -321,12 +322,14 @@ export default function CoachEditor() {
             const rir = presc.target_rir !== undefined ? presc.target_rir : (ex.rir !== undefined ? ex.rir : (w.target_rir || 2));
             const rest = presc.rest_seconds || ex.restSec || ex.rest_seconds || 75;
 
+            const names = getExerciseDisplayNames(ex);
+
             return {
               id: code || `ex_${sIdx}_${exIdx}`,
               code: code,
-              name: ex.name_ar || ex.name || ex.exercise_name || ex.name_en || code,
-              name_ar: ex.name_ar || ex.name || code,
-              name_en: ex.name_en || ex.exercise_name_en || '',
+              name: names.nameEn,
+              name_ar: names.nameAr,
+              name_en: names.nameEn,
               sets: Number(sets),
               reps: String(reps),
               rir: Number(rir),
@@ -342,7 +345,18 @@ export default function CoachEditor() {
       }));
       mappedSessions = mappedWeeks[0]?.sessions || [];
     } else if (rawTraining && Array.isArray(rawTraining.sessions)) {
-      mappedSessions = rawTraining.sessions;
+      mappedSessions = rawTraining.sessions.map(s => ({
+        ...s,
+        exercises: (s.exercises || []).map(ex => {
+          const names = getExerciseDisplayNames(ex);
+          return {
+            ...ex,
+            name: names.nameEn,
+            name_en: names.nameEn,
+            name_ar: names.nameAr
+          };
+        })
+      }));
     }
 
     const resolvedTraining = {
@@ -844,13 +858,14 @@ export default function CoachEditor() {
       const oldEx = curExercises[exIdx] || {};
 
       const code = targetEx.code || targetEx.id;
+      const names = getExerciseDisplayNames(targetEx);
       curExercises[exIdx] = {
         ...oldEx,
         id: targetEx.id || `e_${Date.now()}`,
         code: code,
-        name: targetEx.name_ar || targetEx.name,
-        name_ar: targetEx.name_ar || targetEx.name,
-        name_en: targetEx.name_en || '',
+        name: names.nameEn,
+        name_ar: names.nameAr,
+        name_en: names.nameEn,
         equipment: targetEx.equipment || oldEx.equipment,
         safetyNote: targetEx.safety_tip_ar || targetEx.safetyNote || 'أداء محكوم مع عزل المفاصل',
         profile: targetEx.profile || targetEx.mechanics || oldEx.profile,
@@ -895,12 +910,13 @@ export default function CoachEditor() {
 
   const handleAddExerciseToSession = (sIdx, ex) => {
     const code = ex.id || ex.code || `EX_${Date.now()}`;
+    const names = getExerciseDisplayNames(ex);
     const newEx = {
       id: `e${Date.now()}`,
       code: code,
-      name: ex.name_ar || ex.name,
-      name_ar: ex.name_ar || ex.name,
-      name_en: ex.name_en || '',
+      name: names.nameEn,
+      name_ar: names.nameAr,
+      name_en: names.nameEn,
       muscle_group: ex.muscle_group || '',
       muscle_ar: ex.muscle_ar || ex.target_muscle || '',
       equipment: ex.equipment || 'MACHINE',
@@ -925,7 +941,7 @@ export default function CoachEditor() {
     });
 
     setAddExModal({ open: false, sessionIdx: null });
-    showToast(`تمت إضافة ${ex.name_ar || ex.name} للجدول بنجاح`);
+    showToast(`تمت إضافة ${names.nameEn} (${names.nameAr}) للجدول بنجاح`);
   };
 
   const handleSelectCardioModality = (opt) => {
@@ -1849,20 +1865,50 @@ export default function CoachEditor() {
                       </button>
                     </div>
 
-                    <div>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flexWrap: 'wrap' }}>
-                        <strong style={{ fontSize: '13.5px', color: '#0F172A' }}>{ex.name}</strong>
+                    <div style={{ minWidth: 0 }}>
+                      {/* Primary English Exercise Name (Large & Prominent) */}
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+                        <strong
+                          style={{
+                            fontSize: '13.5px',
+                            fontWeight: 800,
+                            color: '#0F172A',
+                            fontFamily: "'Montserrat', 'Inter', -apple-system, BlinkMacSystemFont, sans-serif",
+                            letterSpacing: '0.2px',
+                            direction: 'ltr',
+                            display: 'inline-block',
+                          }}
+                        >
+                          {getExerciseDisplayNames(ex).nameEn}
+                        </strong>
+
                         {ex.equipment && (
                           <span style={{ fontSize: '10px', padding: '1px 6px', borderRadius: '4px', background: '#F1F5F9', color: '#475569', border: '1px solid #E2E8F0', fontWeight: 600 }}>
                             {ex.equipment}
                           </span>
                         )}
-                        {ex.code && (
-                          <span style={{ fontSize: '9px', color: '#94A3B8', fontFamily: 'monospace' }}>
-                            {ex.code}
+                      </div>
+
+                      {/* Secondary Arabic Exercise Name (Smaller, Muted & Secondary) */}
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginTop: '2px', flexWrap: 'wrap' }}>
+                        <span
+                          style={{
+                            fontSize: '11px',
+                            fontWeight: 600,
+                            color: '#64748B',
+                            fontFamily: 'Cairo, sans-serif',
+                          }}
+                        >
+                          {getExerciseDisplayNames(ex).nameAr}
+                        </span>
+
+                        {ex.code && ex.code !== getExerciseDisplayNames(ex).nameEn && (
+                          <span style={{ fontSize: '8.5px', color: '#94A3B8', fontFamily: 'monospace' }}>
+                            ({ex.code})
                           </span>
                         )}
                       </div>
+
                       {ex.safetyNote && (
                         <div style={{ fontSize: '11px', color: '#64748B', marginTop: '2px' }}>
                           {ex.safetyNote}
@@ -2407,7 +2453,7 @@ export default function CoachEditor() {
                   <div>
                     <h4 style={{ margin: 0, fontSize: '13.5px', fontWeight: 800, color: '#0F172A', display: 'flex', alignItems: 'center', gap: '6px' }}>
                       <ArrowRightLeft size={14} color="#0284C7" />
-                      <span>البدائل المتطابقة ميكانيكياً لـ ({swapExModal.currentEx.name})</span>
+                      <span>البدائل المتطابقة ميكانيكياً لـ ({getExerciseDisplayNames(swapExModal.currentEx).nameEn})</span>
                     </h4>
                     <span style={{ fontSize: '10.5px', color: '#64748B', marginTop: '2px', display: 'block' }}>
                       نفس الزاوية العضلية ومنحنى المقاومة مع مراعاة أمان المفاصل والربط التبادلي
@@ -2461,12 +2507,16 @@ export default function CoachEditor() {
                         >
                           <div>
                             <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                              <strong style={{ fontSize: '12px', color: '#0F172A' }}>{twinEx.name_ar || twinEx.name}</strong>
+                              <strong style={{ fontSize: '12px', color: '#0F172A', direction: 'ltr', display: 'inline-block' }}>
+                                {getExerciseDisplayNames(twinEx).nameEn}
+                              </strong>
                               <span style={{ fontSize: '9.5px', background: '#E0F2FE', color: '#0284C7', padding: '1px 5px', borderRadius: '3px', fontWeight: 700 }}>
                                 بديل توأم مباشر
                               </span>
                             </div>
-                            <div style={{ fontSize: '10.5px', color: '#64748B', marginTop: '2px', display: 'flex', gap: '6px' }}>
+                            <div style={{ fontSize: '10.5px', color: '#64748B', marginTop: '2px', display: 'flex', gap: '6px', alignItems: 'center' }}>
+                              <span>{getExerciseDisplayNames(twinEx).nameAr}</span>
+                              <span>•</span>
                               <span>{twinEx.equipment_ar || twinEx.equipment || 'أداة تمرين'}</span>
                               <span>•</span>
                               <span>{twinEx.muscle_ar || twinEx.muscle_group || 'عضلة رئيسية'}</span>
@@ -2519,8 +2569,12 @@ export default function CoachEditor() {
                         }}
                       >
                         <div>
-                          <strong style={{ fontSize: '12px', color: '#0F172A', display: 'block' }}>{targetEx.name_ar || targetEx.name}</strong>
-                          <div style={{ fontSize: '10.5px', color: '#64748B', marginTop: '2px', display: 'flex', gap: '6px' }}>
+                          <strong style={{ fontSize: '12px', color: '#0F172A', display: 'block', direction: 'ltr', textAlign: 'right' }}>
+                            {getExerciseDisplayNames(targetEx).nameEn}
+                          </strong>
+                          <div style={{ fontSize: '10.5px', color: '#64748B', marginTop: '2px', display: 'flex', gap: '6px', alignItems: 'center' }}>
+                            <span>{getExerciseDisplayNames(targetEx).nameAr}</span>
+                            <span>•</span>
                             <span>{targetEx.equipment_ar || targetEx.equipment || 'جهاز / أوزان'}</span>
                             <span>•</span>
                             <span>{targetEx.muscle_ar || targetEx.muscle_group || 'عضلة رئيسية'}</span>
@@ -2792,10 +2846,14 @@ export default function CoachEditor() {
                           >
                             <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
                               <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                                <strong style={{ fontSize: '12px', color: '#0F172A' }}>{ex.name_ar || ex.name}</strong>
-                                {ex.name_en && (
-                                  <span style={{ fontSize: '10px', color: '#94A3B8' }}>({ex.name_en})</span>
-                                )}
+                                <strong style={{ fontSize: '12.5px', color: '#0F172A', direction: 'ltr', display: 'inline-block' }}>
+                                  {getExerciseDisplayNames(ex).nameEn}
+                                </strong>
+                              </div>
+                              <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '2px' }}>
+                                <span style={{ fontSize: '10.5px', color: '#64748B', fontWeight: 600 }}>
+                                  {getExerciseDisplayNames(ex).nameAr}
+                                </span>
                               </div>
                               <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
                                 <span style={{ background: '#E2E8F0', color: '#334155', padding: '1px 6px', borderRadius: '3px', fontSize: '9.5px', fontWeight: 600 }}>

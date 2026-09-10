@@ -26,6 +26,7 @@ import {
 } from 'lucide-react';
 import { API_BASE } from '../config/api';
 import ExerciseVideoModal from '../components/modals/ExerciseVideoModal';
+import { getExerciseDisplayNames } from '../utils/exerciseTranslator';
 import { calculateDynamicFoodSwap, getCompatibleSwaps, FOOD_DATABASE, convertGramsToHandPortions, getTravelDiningBlueprints, formatItemPortionDisplay, PORTION_DISPLAY_MODES, COOKING_STATE_MODES } from '../utils/foodSwapEngine';
 import { 
   FREE_BEVERAGES_CATALOG, 
@@ -111,8 +112,8 @@ function adaptSessionToInteractiveWorkout(session, index = 0) {
   
   const rawExercises = session.exercises || [];
   const exercises = rawExercises.map((ex, exIdx) => {
+    const names = getExerciseDisplayNames(ex);
     const exId = String(ex.id || ex.exercise_code || ex.code || `ex_${index}_${exIdx}`);
-    const exName = ex.name || ex.exercise_name || ex.name_ar || 'تمرين المقاومة';
     const presc = ex.prescription || {};
     const numSets = presc.sets || (Array.isArray(ex.sets) ? ex.sets.length : (Number(ex.sets || ex.prescribed_sets) || 3));
     const targetReps = (presc.target_min && presc.target_max)
@@ -153,8 +154,9 @@ function adaptSessionToInteractiveWorkout(session, index = 0) {
     return {
       id: exId,
       code: ex.code || ex.exercise_code || exId,
-      name: exName,
-      nameEn: ex.name_en || ex.exercise_name_en || '',
+      name: names.nameEn,
+      nameEn: names.nameEn,
+      nameAr: names.nameAr,
       isCompound: Boolean(ex.isCompound ?? (ex.muscle === 'CHEST' || ex.muscle === 'BACK' || ex.muscle === 'LEGS')),
       restDurationSec: restSec,
       targetRir: targetRir,
@@ -2143,12 +2145,12 @@ export default function ClientInteractiveApp() {
                             </span>
                           )}
                         </div>
-                        <h3 style={{ fontSize: '0.92rem', fontWeight: 800, color: '#0F172A', margin: '0 0 2px 0' }}>
-                          {exIdx + 1}. {ex.name}
+                        <h3 style={{ fontSize: '0.92rem', fontWeight: 800, color: '#0F172A', margin: '0 0 2px 0', direction: 'ltr', textAlign: 'right' }}>
+                          {exIdx + 1}. {ex.nameEn || ex.name}
                         </h3>
-                        {ex.nameEn && (
+                        {(ex.nameAr || ex.name) && (
                           <div style={{ fontSize: '0.74rem', color: '#64748B', fontWeight: 600 }}>
-                            {ex.nameEn}
+                            {ex.nameAr || ex.name}
                           </div>
                         )}
                       </div>
@@ -3436,17 +3438,17 @@ export default function ClientInteractiveApp() {
                       >
                         <div style={{ flex: 1 }}>
                           <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flexWrap: 'wrap', marginBottom: '2px' }}>
-                            <strong style={{ fontSize: '0.82rem', color: '#0F172A' }}>
-                              {sw.name_ar || sw.name}
+                            <strong style={{ fontSize: '0.82rem', color: '#0F172A', direction: 'ltr', display: 'inline-block' }}>
+                              {getExerciseDisplayNames(sw).nameEn}
                             </strong>
-                            {sw.name_en && (
-                              <span style={{ fontSize: '0.68rem', color: '#64748B' }}>({sw.name_en})</span>
-                            )}
                             {isTwin && (
                               <span style={{ fontSize: '0.65rem', background: '#0284C7', color: '#FFFFFF', padding: '1px 6px', borderRadius: '3px', fontWeight: 800 }}>
                                 بديل توأم مباشر
                               </span>
                             )}
+                          </div>
+                          <div style={{ fontSize: '0.72rem', color: '#64748B', fontWeight: 600, marginBottom: '2px' }}>
+                            {getExerciseDisplayNames(sw).nameAr}
                           </div>
                           <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flexWrap: 'wrap' }}>
                             <span style={{ fontSize: '0.68rem', color: '#059669', fontWeight: 600 }}>
