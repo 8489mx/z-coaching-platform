@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { Dumbbell, Search, Play, AlertTriangle, Check, X, Plus, Copy, CheckCircle2, ShieldCheck, Edit3, Upload, ArrowRightLeft, BookOpen, HeartPulse } from 'lucide-react';
+import { Dumbbell, Search, Play, AlertTriangle, Check, X, Plus, Copy, CheckCircle2, ShieldCheck, Edit3, Upload, ArrowRightLeft, BookOpen, HeartPulse, Target } from 'lucide-react';
 import { API_BASE } from '../config/api';
 import AdminLayout from '../components/layout/AdminLayout';
 import ExerciseVideoModal from '../components/modals/ExerciseVideoModal';
@@ -910,58 +910,122 @@ export default function ExerciseLibrary() {
                   }}
                 >
                   <div>
-                    {/* 1. Exercise Titles (First Element at Top) */}
-                    <div style={{ marginBottom: '8px' }}>
-                      <h4 style={{ 
-                        margin: '0 0 2px 0', 
-                        fontSize: '14.5px', 
-                        fontWeight: 800, 
-                        color: '#0F172A', 
-                        lineHeight: 1.25,
-                        letterSpacing: '-0.01em'
-                      }}>
-                        {displayNames.nameEn || ex.name_en}
-                      </h4>
-                      <div style={{ 
-                        fontSize: '11.5px', 
-                        color: '#64748B', 
-                        fontWeight: 600, 
-                        lineHeight: 1.3 
-                      }}>
-                        {displayNames.nameAr || ex.name_ar}
-                      </div>
-                    </div>
-
-                    {/* 2. Unified Badges Cluster (Directly below titles) */}
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '5px', flexWrap: 'wrap', marginBottom: '9px' }}>
-                      <span style={{ background: '#F1F5F9', border: '1px solid #CBD5E1', color: '#0F172A', padding: '2px 8px', borderRadius: '6px', fontSize: '10.5px', fontWeight: 700 }}>
-                        {getShortMuscleName(ex.muscle_ar, ex.muscle_group)}
-                      </span>
-                      <span style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', color: '#475569', padding: '2px 8px', borderRadius: '6px', fontSize: '10.5px', fontWeight: 600 }}>
-                        {getShortEquipmentName(ex.equipment_ar, ex.equipment)}
-                      </span>
-                      {Array.isArray(ex.alternatives) && ex.alternatives.length > 0 && (
-                        <span style={{
-                          background: '#F0F9FF',
-                          border: '1px solid #BAE6FD',
-                          color: '#0284C7',
-                          padding: '2px 8px',
-                          borderRadius: '6px',
-                          fontSize: '10px',
-                          fontWeight: 700,
-                          display: 'inline-flex',
-                          alignItems: 'center',
-                          gap: '3px'
+                    {/* Balanced Executive Header: Title on Right (First to Read in RTL) & Badges on Left */}
+                    <div style={{
+                      display: 'flex',
+                      justifyContent: 'space-between',
+                      alignItems: 'flex-start',
+                      gap: '10px',
+                      marginBottom: '10px'
+                    }}>
+                      {/* Exercise Titles (Right Side in RTL) */}
+                      <div style={{ flex: '1 1 auto', minWidth: 0 }}>
+                        <h4 style={{ 
+                          margin: '0 0 2px 0', 
+                          fontSize: '14.5px', 
+                          fontWeight: 800, 
+                          color: '#0F172A', 
+                          lineHeight: 1.25,
+                          letterSpacing: '-0.01em',
+                          wordBreak: 'break-word'
                         }}>
-                          <ArrowRightLeft size={10} />
-                          <span>{ex.alternatives.length} بدائل توأم</span>
-                        </span>
-                      )}
-                      {injuryFilter !== 'ALL' && (
-                        <span style={{ background: '#F0FDF4', border: '1px solid #86EFAC', color: '#16A34A', padding: '2px 7px', borderRadius: '6px', fontSize: '10px', fontWeight: 700 }}>
-                          آمن للإصابة
-                        </span>
-                      )}
+                          {displayNames.nameEn || ex.name_en}
+                        </h4>
+                        <div style={{ 
+                          fontSize: '11.5px', 
+                          color: '#64748B', 
+                          fontWeight: 600, 
+                          lineHeight: 1.3 
+                        }}>
+                          {displayNames.nameAr || ex.name_ar}
+                        </div>
+                      </div>
+
+                      {/* Balanced Badges Cluster (Left Side in RTL) */}
+                      <div style={{
+                        display: 'flex',
+                        flexDirection: 'column',
+                        alignItems: 'flex-end',
+                        gap: '4px',
+                        flexShrink: 0
+                      }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '4px', flexWrap: 'wrap', justifyContent: 'flex-end' }}>
+                          <span style={{
+                            background: '#F1F5F9',
+                            border: '1px solid #CBD5E1',
+                            color: '#0F172A',
+                            padding: '2px 7px',
+                            borderRadius: '6px',
+                            fontSize: '10.5px',
+                            fontWeight: 700,
+                            display: 'inline-flex',
+                            alignItems: 'center',
+                            gap: '4px',
+                            whiteSpace: 'nowrap'
+                          }}>
+                            <Target size={11} color="#0284C7" />
+                            <span>{getShortMuscleName(ex.muscle_ar, ex.muscle_group)}</span>
+                          </span>
+
+                          <span style={{
+                            background: '#F8FAFC',
+                            border: '1px solid #E2E8F0',
+                            color: '#475569',
+                            padding: '2px 7px',
+                            borderRadius: '6px',
+                            fontSize: '10.5px',
+                            fontWeight: 600,
+                            display: 'inline-flex',
+                            alignItems: 'center',
+                            gap: '4px',
+                            whiteSpace: 'nowrap'
+                          }}>
+                            <Dumbbell size={11} color="#64748B" />
+                            <span>{getShortEquipmentName(ex.equipment_ar, ex.equipment)}</span>
+                          </span>
+                        </div>
+
+                        {(injuryFilter !== 'ALL' || (Array.isArray(ex.alternatives) && ex.alternatives.length > 0)) && (
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '4px', flexWrap: 'wrap', justifyContent: 'flex-end' }}>
+                            {Array.isArray(ex.alternatives) && ex.alternatives.length > 0 && (
+                              <span style={{
+                                background: '#F0F9FF',
+                                border: '1px solid #BAE6FD',
+                                color: '#0284C7',
+                                padding: '1.5px 6px',
+                                borderRadius: '6px',
+                                fontSize: '10px',
+                                fontWeight: 700,
+                                display: 'inline-flex',
+                                alignItems: 'center',
+                                gap: '3px',
+                                whiteSpace: 'nowrap'
+                              }}>
+                                <ArrowRightLeft size={10} />
+                                <span>{ex.alternatives.length} بدائل توأم</span>
+                              </span>
+                            )}
+                            {injuryFilter !== 'ALL' && (
+                              <span style={{
+                                background: '#F0FDF4',
+                                border: '1px solid #86EFAC',
+                                color: '#16A34A',
+                                padding: '1.5px 6px',
+                                borderRadius: '6px',
+                                fontSize: '10px',
+                                fontWeight: 700,
+                                display: 'inline-flex',
+                                alignItems: 'center',
+                                gap: '3px',
+                                whiteSpace: 'nowrap'
+                              }}>
+                                <ShieldCheck size={10} />
+                                <span>آمن للإصابة</span>
+                              </span>
+                            )}
+                          </div>
+                        )}
+                      </div>
                     </div>
 
                     {/* Dual-State Accurate Exercise Preview (Start & Finish Positions) */}
