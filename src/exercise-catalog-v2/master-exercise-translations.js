@@ -3,6 +3,26 @@
  * Every exercise has an English Display Title and a clear, professional Arabic Subtitle.
  */
 export const MASTER_EXERCISE_DICTIONARY = Object.freeze({
+  HIGH_TO_LOW_CABLE_FLY: {
+    name_en: "High-to-Low Cable Fly",
+    name_ar: "تفتيح كابل من أعلى لأسفل (عزل الصدر السفلي)",
+  },
+  STRAIGHT_ARM_LAT_PULLDOWN: {
+    name_en: "Straight-Arm Cable Lat Pulldown",
+    name_ar: "سحب مستقيم الذراعين بالكابل (عزل اللاتس الكامل)",
+  },
+  ROTATOR_CUFF_EXTERNAL_ROTATION: {
+    name_en: "Cable / DB Rotator Cuff External Rotation",
+    name_ar: "تدوير الكتف الخارجي (وقاية وتثبيت الكفة المدورة)",
+  },
+  SEATED_HIP_ADDUCTION_MACHINE: {
+    name_en: "Seated Machine Hip Adductor",
+    name_ar: "جهاز ضم الفخذ جالس (عضلات الفخذ الضامة)",
+  },
+  COPENHAGEN_PLANK: {
+    name_en: "Copenhagen Adductor Plank",
+    name_ar: "بلانك كوبنهاجن لتقوية الضامة وثبات الركبة",
+  },
   KAS_GLUTE_BRIDGE: {
     name_en: "Kas Glute Bridge",
     name_ar: "كاس جلوت بريدج بالبار (عزل قصر وانقباض الجلوتس)",

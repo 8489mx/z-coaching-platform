@@ -11,6 +11,164 @@ export function adaptIntakePayloadToCanonicalEngine(raw) {
   }
   const intake = JSON.parse(JSON.stringify(raw));
 
+  // Pre-normalization for direct FullIntakeForm payload (flat structure)
+  if (!intake.personal && (intake.age || intake.gender || intake.height_cm || intake.weight_kg)) {
+    intake.personal = {
+      firstName: (intake.full_name || '').split(' ')[0] || "متدرب",
+      lastName: (intake.full_name || '').split(' ').slice(1).join(' ') || "جديد",
+      age: intake.age,
+      sex: String(intake.gender || 'male').toUpperCase() === 'FEMALE' ? 'FEMALE' : 'MALE'
+    };
+  }
+
+  if (!intake.goals && intake.primary_goal) {
+    const pGoal = String(intake.primary_goal).toUpperCase();
+    intake.goals = {
+      primary: (pGoal === 'RECOMPOSITION' || pGoal === 'RECOMP') ? 'BODY_RECOMPOSITION'
+        : (pGoal === 'MUSCLE_GAIN' || pGoal === 'BULK') ? 'MUSCLE_GAIN'
+        : pGoal === 'MAINTENANCE' ? 'WEIGHT_MAINTENANCE'
+        : 'FAT_LOSS'
+    };
+  }
+
+  if (!intake.body && (intake.height_cm || intake.weight_kg || intake.circumferences)) {
+    intake.body = {
+      heightCm: Number(intake.height_cm) || 175,
+      weightKg: Number(intake.weight_kg) || 75,
+      waistCm: Number(intake.circumferences?.waist_cm) || null,
+      neckCm: Number(intake.circumferences?.neck_cm) || null,
+      hipCm: Number(intake.circumferences?.hips_cm) || null,
+      photos: {
+        front: intake.media_uploads?.front_url || null,
+        side: intake.media_uploads?.side_url || null,
+        back: intake.media_uploads?.back_url || null,
+        inbody: intake.media_uploads?.inbody_report_url || null
+      }
+    };
+  }
+
+  if (!intake.lifestyle && (intake.neat_level || intake.sleep_schedule)) {
+    const neatMap = {
+      sedentary: 'SEDENTARY',
+      light: 'LIGHT',
+      moderate: 'MODERATE',
+      high: 'HIGH'
+    };
+    const sleepHoursMap = {
+      less_6: 5.5,
+      '6_7': 6.5,
+      '7_8': 7.5,
+      more_8: 8.5
+    };
+    const avgSleep = sleepHoursMap[intake.sleep_schedule?.average_hours] || 7.5;
+    intake.lifestyle = {
+      dailyActivity: neatMap[intake.neat_level] || 'MODERATE',
+      sleep: {
+        averageHours: avgSleep,
+        quality: intake.sleep_schedule?.pattern === 'regular_night' ? 'GOOD' : 'AVERAGE'
+      },
+      workSchedule: {
+        type: (intake.sleep_schedule?.pattern === 'rotating_shifts' || intake.sleep_schedule?.pattern === 'night_shift') ? 'SHIFT_BASED' : 'FIXED'
+      }
+    };
+  }
+
+  if (!intake.medical && intake.medical_conditions) {
+    const conds = [];
+    const selected = Array.isArray(intake.medical_conditions?.selected) ? intake.medical_conditions.selected : [];
+    selected.forEach(s => {
+      if (s && s !== 'none') {
+        conds.push({ conditionCode: String(s).toUpperCase(), stability: 'STABLE' });
+      }
+    });
+    if (intake.medical_conditions?.diabetes?.type) {
+      if (!conds.some(c => c.conditionCode === 'DIABETES')) {
+        conds.push({ conditionCode: 'DIABETES', stability: 'STABLE' });
+      }
+    }
+    if (intake.medical_conditions?.hypertension) {
+      if (!conds.some(c => c.conditionCode === 'HYPERTENSION')) {
+        conds.push({ conditionCode: 'HYPERTENSION', stability: 'STABLE' });
+      }
+    }
+    if (intake.medical_conditions?.female_cases?.is_pcos) {
+      if (!conds.some(c => c.conditionCode === 'PCOS')) {
+        conds.push({ conditionCode: 'PCOS', stability: 'STABLE' });
+      }
+    }
+    intake.medical = {
+      conditions: conds,
+      pregnancyStatus: intake.medical_conditions?.female_cases?.is_lactating ? 'BREASTFEEDING' : (intake.medical_conditions?.female_cases?.is_postpartum ? 'POSTPARTUM_LESS_THAN_12_MONTHS' : 'NOT_PREGNANT'),
+      medications: intake.current_meds_supplements_list || []
+    };
+  }
+
+  if (!intake.training && (intake.training_environment || intake.training_logistics || intake.injuries_map)) {
+    const locMap = {
+      commercial_gym: 'GYM',
+      home_gym: 'HOME',
+      minimal_equipment: 'HOME',
+      calisthenics_bands: 'HOME'
+    };
+    const injAreas = Array.isArray(intake.injuries_map?.selected_areas) ? intake.injuries_map.selected_areas : [];
+    const trainingInjuries = [];
+    const AREA_MAP = {
+      spine_back: 'LOWER_BACK',
+      knee: 'KNEE',
+      shoulder: 'SHOULDER',
+      core: 'LOWER_BACK',
+      other_joints: 'ELBOW_WRIST'
+    };
+    injAreas.forEach(a => {
+      if (a && a !== 'none') {
+        const canonicalArea = AREA_MAP[a] || String(a).toUpperCase();
+        trainingInjuries.push({ area: canonicalArea, painLevel: 4, movementImpact: 'NONE' });
+      }
+    });
+
+    intake.training = {
+      location: locMap[intake.training_environment] || 'GYM',
+      preferredDaysPerWeek: Number(intake.training_logistics?.days_per_week) || 4,
+      maxDaysPerWeek: Number(intake.training_logistics?.days_per_week) || 4,
+      experience: String(intake.training_logistics?.experience_level || 'intermediate').toUpperCase(),
+      selectedInjuries: trainingInjuries.map(i => i.area),
+      injuries: trainingInjuries,
+      targetFocusMuscles: Array.isArray(intake.focus_muscles) ? intake.focus_muscles.map(m => m.toUpperCase()) : []
+    };
+  }
+
+  if (!intake.nutrition && (intake.strict_allergies || intake.meal_structure || intake.disliked_foods)) {
+    const mealCountMap = {
+      '2_meals': 2,
+      '3_meals': 3,
+      '3_meals_snack': 3,
+      '4_meals': 4,
+      '5_meals': 5
+    };
+    const allergens = (intake.strict_allergies || []).map(a => ({ substance: String(a).toUpperCase(), medicallyConfirmed: true }));
+    intake.nutrition = {
+      preferredMealCount: mealCountMap[intake.meal_structure?.meals_count] || 3,
+      allergies: allergens,
+      excludedFoodsList: (intake.strict_allergies || []).map(a => String(a).toUpperCase()),
+      dislikedFoods: Array.isArray(intake.disliked_foods) ? intake.disliked_foods : []
+    };
+  }
+
+  if (!intake.cardio && intake.training_logistics) {
+    const sports = [];
+    if (intake.training_logistics?.has_other_sports && intake.training_logistics?.sports_name && intake.training_logistics.sports_name !== 'none') {
+      sports.push({
+        sportCode: intake.training_logistics.sports_name.toUpperCase(),
+        days: ["WEDNESDAY"],
+        minutesPerSession: 60,
+        intensity: "MODERATE"
+      });
+    }
+    intake.cardio = {
+      additionalSports: sports
+    };
+  }
+
   // 1. Personal
   const personal = intake.personal || {};
   let dob = personal.dateOfBirth;
@@ -130,7 +288,10 @@ export function adaptIntakePayloadToCanonicalEngine(raw) {
   const CONDITION_MAP = {
     DIABETES: "DIABETES",
     TYPE_2_DIABETES: "DIABETES",
+    TYPE_1_DIABETES: "DIABETES",
+    INSULIN_RESISTANCE: "INSULIN_RESISTANCE",
     HYPERTENSION: "HYPERTENSION",
+    HIGH_BLOOD_PRESSURE: "HYPERTENSION",
     HEART: "HEART_CONDITION",
     HEART_CONDITION: "HEART_CONDITION",
     CARDIOVASCULAR: "HEART_CONDITION",
@@ -138,20 +299,51 @@ export function adaptIntakePayloadToCanonicalEngine(raw) {
     THYROID: "THYROID_CONDITION",
     THYROID_CONDITION: "THYROID_CONDITION",
     THYROID_DISORDER: "THYROID_CONDITION",
+    HYPOTHYROIDISM: "THYROID_CONDITION",
+    HYPERTHYROIDISM: "THYROID_CONDITION",
     ANEMIA: "ANEMIA",
     ASTHMA: "ASTHMA_OR_RESPIRATORY_CONDITION",
     ASTHMA_OR_RESPIRATORY_CONDITION: "ASTHMA_OR_RESPIRATORY_CONDITION",
-    PCOS: "PCOS"
+    RESPIRATORY: "ASTHMA_OR_RESPIRATORY_CONDITION",
+    DIGESTIVE: "DIAGNOSED_DIGESTIVE_CONDITION",
+    DIAGNOSED_DIGESTIVE_CONDITION: "DIAGNOSED_DIGESTIVE_CONDITION",
+    IBS: "DIAGNOSED_DIGESTIVE_CONDITION",
+    CROHNS: "DIAGNOSED_DIGESTIVE_CONDITION",
+    COLITIS: "DIAGNOSED_DIGESTIVE_CONDITION",
+    GERD: "DIAGNOSED_DIGESTIVE_CONDITION",
+    PCOS: "PCOS",
+    POLYCYSTIC_OVARY: "PCOS",
+    KIDNEY: "KIDNEY_CONDITION",
+    KIDNEY_CONDITION: "KIDNEY_CONDITION",
+    LIVER: "LIVER_CONDITION",
+    LIVER_CONDITION: "LIVER_CONDITION"
   };
 
+  const VALID_CANONICAL_CONDITIONS = new Set([
+    "DIABETES",
+    "INSULIN_RESISTANCE",
+    "HYPERTENSION",
+    "HEART_CONDITION",
+    "KIDNEY_CONDITION",
+    "LIVER_CONDITION",
+    "THYROID_CONDITION",
+    "ANEMIA",
+    "ASTHMA_OR_RESPIRATORY_CONDITION",
+    "DIAGNOSED_DIGESTIVE_CONDITION",
+    "PCOS"
+  ]);
+
   const conditions = [];
+  const detectedMedicalInjuries = [];
+  const unclassifiedConditions = [];
+
   const rawConditions = Array.isArray(medical.conditions) && medical.conditions.length > 0
     ? medical.conditions
     : (Array.isArray(medical.selectedConditions) ? medical.selectedConditions : []);
 
   rawConditions.forEach(c => {
     if (c && c.conditionCode && c.conditionCode !== "NONE") {
-      const canonicalCode = CONDITION_MAP[c.conditionCode] || c.conditionCode;
+      const canonicalCode = CONDITION_MAP[c.conditionCode] || (VALID_CANONICAL_CONDITIONS.has(c.conditionCode) ? c.conditionCode : null);
       if (canonicalCode && !conditions.some(existing => existing.conditionCode === canonicalCode)) {
         conditions.push({
           conditionCode: canonicalCode,
@@ -159,6 +351,13 @@ export function adaptIntakePayloadToCanonicalEngine(raw) {
           otherConditionText: null,
           physicianInstructions: Array.isArray(c.physicianInstructions) ? c.physicianInstructions : [],
         });
+      } else if (!canonicalCode) {
+        const rawUpper = String(c.conditionCode).toUpperCase();
+        if (['DISC', 'HERNIATION', 'IMPINGEMENT', 'KNEE', 'SHOULDER', 'BACK', 'LUMBAR', 'SPINE', 'JOINT', 'INJURY', 'TENDON', 'TEAR'].some(k => rawUpper.includes(k))) {
+          detectedMedicalInjuries.push(rawUpper);
+        } else {
+          unclassifiedConditions.push(c.label || c.conditionCode);
+        }
       }
     }
   });
@@ -170,7 +369,7 @@ export function adaptIntakePayloadToCanonicalEngine(raw) {
     eatingDisorderHistory: "NONE",
     pregnancyStatus: ["NOT_PREGNANT", "PREGNANT", "POSTPARTUM_LESS_THAN_12_MONTHS", "BREASTFEEDING"].includes(medical.pregnancyStatus) ? medical.pregnancyStatus : "NOT_PREGNANT",
     menstrualStatus: ["REGULAR", "IRREGULAR", "ABSENT", "NOT_APPLICABLE"].includes(medical.menstrualStatus) ? medical.menstrualStatus : (canonicalPersonal.sex === "FEMALE" ? "REGULAR" : "NOT_APPLICABLE"),
-    unclassifiedText: []
+    unclassifiedText: unclassifiedConditions
   };
 
   // 6. Nutrition
@@ -322,7 +521,10 @@ export function adaptIntakePayloadToCanonicalEngine(raw) {
 
   // 7. Training
   const training = intake.training || {};
-  const selectedInjuries = Array.isArray(training.selectedInjuries) ? training.selectedInjuries : [];
+  const rawMedicalInjuries = Array.isArray(medical.injuries) ? medical.injuries : [];
+  const rawTrainingInjuriesList = Array.isArray(training.selectedInjuries) ? training.selectedInjuries : [];
+  const combinedInjuryPool = [...rawTrainingInjuriesList, ...detectedMedicalInjuries, ...rawMedicalInjuries];
+
   const INJURY_MOVEMENT_MAP = {
     LOWER_BACK: ["HINGE"],
     SPINE: ["HINGE"],
@@ -334,50 +536,84 @@ export function adaptIntakePayloadToCanonicalEngine(raw) {
     CERVICAL_SPINE: ["OVERHEAD"]
   };
 
+  const normalizeInjuryArea = (raw) => {
+    const s = String(raw).toUpperCase();
+    if (['DISC', 'HERNIATION', 'LUMBAR', 'L4', 'L5', 'S1', 'LOWER_BACK', 'BACK', 'SPINE'].some(k => s.includes(k))) {
+      return { area: "LOWER_BACK", movements: ["HINGE"] };
+    }
+    if (['SHOULDER', 'IMPINGEMENT', 'ROTATOR', 'DELTOID'].some(k => s.includes(k))) {
+      return { area: "SHOULDER", movements: ["OVERHEAD"] };
+    }
+    if (['KNEE', 'PATELLA', 'MENISCUS'].some(k => s.includes(k))) {
+      return { area: "KNEE", movements: ["SQUAT"] };
+    }
+    if (['NECK', 'CERVICAL'].some(k => s.includes(k))) {
+      return { area: "NECK", movements: ["OVERHEAD"] };
+    }
+    if (['ELBOW'].some(k => s.includes(k))) {
+      return { area: "ELBOW", movements: ["PUSH", "PULL"] };
+    }
+    if (['WRIST'].some(k => s.includes(k))) {
+      return { area: "WRIST", movements: ["PUSH"] };
+    }
+    if (['HIP'].some(k => s.includes(k))) {
+      return { area: "HIP", movements: ["SQUAT", "HINGE"] };
+    }
+    if (['ANKLE'].some(k => s.includes(k))) {
+      return { area: "ANKLE", movements: ["SQUAT"] };
+    }
+    return { area: s, movements: INJURY_MOVEMENT_MAP[s] || [] };
+  };
+
   // Format Injuries: [{ area: "LOWER_BACK", painLevel: 4, movementImpact: "NONE", worsening: false, numbnessOrWeakness: false, affectedMovements: [], medicalRestrictions: [] }]
   const injuries = [];
   if (Array.isArray(training.injuries)) {
     training.injuries.forEach(inj => {
-      const area = (inj.area || inj.bodyPart || "").toUpperCase();
-      if (area) {
-        const defaultMovements = INJURY_MOVEMENT_MAP[area] || [];
-        const affectedMovements = Array.isArray(inj.affectedMovements) && inj.affectedMovements.length > 0
+      const rawArea = typeof inj === 'string' ? inj : (inj.area || inj.bodyPart || "");
+      if (rawArea) {
+        const norm = normalizeInjuryArea(rawArea);
+        const affectedMovements = (typeof inj === 'object' && Array.isArray(inj.affectedMovements) && inj.affectedMovements.length > 0)
           ? inj.affectedMovements
-          : defaultMovements;
+          : norm.movements;
 
-        const formattedRestrictions = (Array.isArray(inj.medicalRestrictions) ? inj.medicalRestrictions : [])
+        const formattedRestrictions = (typeof inj === 'object' && Array.isArray(inj.medicalRestrictions) ? inj.medicalRestrictions : [])
           .map(r => {
             if (typeof r === "object" && r !== null && r.movement && r.instruction && r.source) return r;
             return null;
           })
           .filter(Boolean);
 
-        injuries.push({
-          area: String(area),
-          painLevel: Number(inj.painLevel) || 4,
-          movementImpact: ["NONE", "LIMITS", "PREVENTS"].includes(inj.movementImpact) ? inj.movementImpact : "LIMITS",
-          worsening: Boolean(inj.worsening),
-          numbnessOrWeakness: Boolean(inj.numbnessOrWeakness),
-          affectedMovements,
-          medicalRestrictions: formattedRestrictions
-        });
+        if (!injuries.some(i => i.area === norm.area)) {
+          injuries.push({
+            area: norm.area,
+            painLevel: (typeof inj === 'object' && Number(inj.painLevel)) || 4,
+            movementImpact: (typeof inj === 'object' && ["NONE", "LIMITS", "PREVENTS"].includes(inj.movementImpact)) ? inj.movementImpact : "LIMITS",
+            worsening: Boolean(typeof inj === 'object' && inj.worsening),
+            numbnessOrWeakness: Boolean(typeof inj === 'object' && inj.numbnessOrWeakness),
+            affectedMovements,
+            medicalRestrictions: formattedRestrictions
+          });
+        }
       }
     });
   }
 
-  selectedInjuries.forEach(rawInj => {
-    const inj = String(rawInj).toUpperCase();
-    if (inj && inj !== "NONE" && !injuries.some(i => i.area === inj)) {
-      const defaultMovements = INJURY_MOVEMENT_MAP[inj] || [];
-      injuries.push({
-        area: inj,
-        painLevel: 4,
-        movementImpact: "LIMITS",
-        worsening: false,
-        numbnessOrWeakness: false,
-        affectedMovements: defaultMovements,
-        medicalRestrictions: []
-      });
+  combinedInjuryPool.forEach(rawInj => {
+    const rawStr = typeof rawInj === 'string' ? rawInj : (rawInj.area || rawInj.conditionCode || "");
+    const inj = String(rawStr).toUpperCase();
+    if (inj && inj !== "NONE") {
+      const norm = normalizeInjuryArea(inj);
+      if (!injuries.some(i => i.area === norm.area)) {
+        injuries.push({
+          area: norm.area,
+          painLevel: 4,
+          movementImpact: "LIMITS",
+          worsening: false,
+          numbnessOrWeakness: false,
+          affectedMovements: norm.movements,
+          medicalRestrictions: []
+        });
+      }
     }
   });
 

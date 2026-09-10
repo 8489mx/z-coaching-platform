@@ -10,7 +10,7 @@ function getYouTubeEmbedUrl(exercise) {
     return urlOrId.includes('?') ? `${urlOrId}&autoplay=1` : `${urlOrId}?autoplay=1`;
   }
 
-  const match = urlOrId.match(/(?:youtu\.be\/|youtube\.com\/(?:embed\/|v\/|watch\?v=|watch\?.+&v=))([\w-]{11})/);
+  const match = urlOrId.match(/(?:youtu\.be\/|youtube\.com\/(?:embed\/|v\/|watch\?v=|watch\?.+&v=|shorts\/))([\w-]{11})/);
   if (match && match[1]) {
     return `https://www.youtube-nocookie.com/embed/${match[1]}?autoplay=1&rel=0`;
   }

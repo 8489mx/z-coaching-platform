@@ -174,6 +174,55 @@ aside * {
   box-sizing: border-box;
 }
 
+/* Sidebar Navigation Items: High-Contrast Executive Style */
+aside a {
+  transition: all 0.12s ease;
+}
+
+aside a.active {
+  background-color: #F1F5F9 !important;
+  border-right: none !important;
+  border: none !important;
+}
+
+aside a.active > div:first-child {
+  background-color: #0F172A !important;
+  border: 1px solid #0F172A !important;
+  box-shadow: 0 2px 6px rgba(15, 23, 42, 0.25) !important;
+}
+
+aside a.active > div:first-child svg {
+  stroke: #FFFFFF !important;
+  color: #FFFFFF !important;
+}
+
+aside a.active > span.sidebar-nav-label,
+aside a.active > span:not(.sidebar-badge-apple) {
+  color: #0F172A !important;
+  font-weight: 800 !important;
+}
+
+/* Inactive Sidebar Nav Hover */
+aside a:hover:not(.active) {
+  background-color: #F8FAFC !important;
+  color: #0F172A !important;
+}
+
+aside a:hover:not(.active) > div:first-child {
+  background-color: #F1F5F9 !important;
+  border-color: #CBD5E1 !important;
+}
+
+aside a:hover:not(.active) > div:first-child svg {
+  stroke: #0F172A !important;
+  color: #0F172A !important;
+}
+
+aside a:hover:not(.active) > span.sidebar-nav-label,
+aside a:hover:not(.active) > span:not(.sidebar-badge-apple) {
+  color: #0F172A !important;
+}
+
 /* ========================================================
    GLOBAL ANTI-LAYOUT SHIFT & TAB STABILITY RULES
    ======================================================== */
@@ -266,17 +315,70 @@ html::-webkit-scrollbar-thumb:hover {
   transform: translateY(-50%) translateX(0);
 }
 
-/* Forced Pure White Apple Notification Badge */
+/* Authentic Apple iOS/macOS Notification Badge */
 .sidebar-badge-apple,
 .sidebar-badge-apple b,
 .sidebar-badge-apple span,
 .sidebar-badge-apple *,
-a.active .sidebar-badge-apple,
-a.active .sidebar-badge-apple b,
-a.active .sidebar-badge-apple span,
-a.active .sidebar-badge-apple * {
+aside .sidebar-badge-apple,
+aside .sidebar-badge-apple b,
+aside .sidebar-badge-apple *,
+aside a .sidebar-badge-apple,
+aside a .sidebar-badge-apple b,
+aside a .sidebar-badge-apple *,
+aside a.active .sidebar-badge-apple,
+aside a.active .sidebar-badge-apple b,
+aside a.active .sidebar-badge-apple *,
+aside a:hover .sidebar-badge-apple,
+aside a:hover .sidebar-badge-apple b,
+aside a:hover .sidebar-badge-apple * {
   background-color: #FF3B30 !important;
   background: #FF3B30 !important;
   color: #FFFFFF !important;
   -webkit-text-fill-color: #FFFFFF !important;
+  border: none !important;
+  box-shadow: none !important;
 }
+
+/* ========================================================
+   GLOBAL SYSTEM CURVED AESTHETICS (ZERO SHARP CORNERS MANDATE)
+   ======================================================== */
+button:not(.btn-link):not(.close):not([class*="rounded-none"]),
+.btn:not(.btn-link),
+.button:not(.btn-link) {
+  border-radius: 8px;
+}
+
+input:not([type="checkbox"]):not([type="radio"]):not([type="range"]),
+textarea,
+select,
+.form-control,
+.form-select {
+  border-radius: 8px !important;
+}
+
+.modal-content,
+.dialog-card,
+.dialog-shell,
+.dropdown-menu,
+[role="menu"],
+[role="listbox"] {
+  border-radius: 12px !important;
+}
+
+/* Global suppression of ugly browser number input spinners */
+input[type="number"]::-webkit-outer-spin-button,
+input[type="number"]::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+input[type="number"] {
+  -moz-appearance: textfield;
+}
+
+.card,
+.panel,
+.box-surface {
+  border-radius: 10px;
+}
+

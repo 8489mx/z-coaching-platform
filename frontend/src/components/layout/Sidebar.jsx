@@ -35,13 +35,13 @@ const PRIMARY_NAV_ITEMS = [
 const SIDEBAR_GROUPS = [
   {
     key: 'coaching-group',
-    label: 'متابعة وتدريب المشتركين',
+    label: 'المشتركين والمتابعة اليومية',
     icon: Users,
     items: [
       { key: 'customers', label: 'قائمة المشتركين', to: '/customers', icon: Users },
+      { key: 'checkins', label: 'مراجعة التقييمات', to: '/coach/checkin-review', icon: CheckCircle2, badgeKey: 'checkins' },
       { key: 'intakes', label: 'الاستمارات الجديدة', to: '/intake/submissions', icon: ClipboardList, badgeKey: 'intakes' },
       { key: 'editor', label: 'محرر البرامج', to: '/coach/editor', icon: FileEdit },
-      { key: 'checkins', label: 'التقييمات الأسبوعية', to: '/coach/checkin-review', icon: CheckCircle2, badgeKey: 'checkins' },
       { key: 'reminders', label: 'رسائل الواتساب', to: '/coach/reminders', icon: MessageSquare, badgeKey: 'reminders' },
     ],
   },
@@ -51,115 +51,20 @@ const SIDEBAR_GROUPS = [
     icon: Dumbbell,
     items: [
       { key: 'exercises', label: 'دليل التمارين', to: '/exercises', icon: Dumbbell },
+      { key: 'mobility', label: 'المرونة والاستشفاء', to: '/coach/mobility', icon: HeartPulse },
       { key: 'calculator', label: 'الأغذية والماكروز', to: '/calculator', icon: UtensilsCrossed },
-      { key: 'mobility', label: 'المرونة والتأهيل', to: '/coach/mobility', icon: HeartPulse },
     ],
   },
   {
     key: 'financials-group',
-    label: 'الاشتراكات والمالية',
+    label: 'الإدارة والمالية',
     icon: Wallet,
     items: [
-      { key: 'financials', label: 'الحسابات والتجديد', to: '/coach/financials', icon: Wallet },
-    ],
-  },
-  {
-    key: 'system-group',
-    label: 'الإدارة والنظام',
-    icon: Settings,
-    items: [
+      { key: 'financials', label: 'الاشتراكات والمالية', to: '/coach/financials', icon: Wallet },
       { key: 'settings', label: 'إعدادات المنظومة', to: '/master-settings', icon: Settings },
     ],
   },
 ];
-
-// 3. ألوان البوردر والأيقونات المخصصة لكل عنصر بفخامة متناهية
-const NAV_ITEM_THEMES = {
-  // 1. مسار العمليات والمهام اليومية
-  dashboard: {
-    color: '#2563EB', // Royal Sapphire Blue
-    bg: '#EFF6FF',
-    border: '#93C5FD'
-  },
-  intakes: {
-    color: '#0891B2', // Sky Cyan Teal
-    bg: '#ECFEFF',
-    border: '#67E8F9'
-  },
-  editor: {
-    color: '#7C3AED', // Royal Violet Purple
-    bg: '#F5F3FF',
-    border: '#C4B5FD'
-  },
-  checkins: {
-    color: '#059669', // Vivid Emerald Green
-    bg: '#ECFDF5',
-    border: '#6EE7B7'
-  },
-  reminders: {
-    color: '#16A34A', // WhatsApp Leaf Green
-    bg: '#F0FDF4',
-    border: '#86EFAC'
-  },
-  client_app: {
-    color: '#0284C7', // Electric Sky Blue
-    bg: '#F0F9FF',
-    border: '#7DD3FC'
-  },
-
-  // 2. المشتركين والمالية
-  customers: {
-    color: '#4F46E5', // Deep Indigo
-    bg: '#EEF2FF',
-    border: '#A5B4FC'
-  },
-  subscriptions: {
-    color: '#D97706', // Rich Amber Gold
-    bg: '#FFFBEB',
-    border: '#FCD34D'
-  },
-  financials: {
-    color: '#0D9488', // Dark Teal
-    bg: '#F0FDFA',
-    border: '#5EEAD4'
-  },
-
-  // 3. المكتبات والمراجع
-  exercises: {
-    color: '#E11D48', // Coral Ruby Rose
-    bg: '#FFF1F2',
-    border: '#FDA4AF'
-  },
-  calculator: {
-    color: '#10B981', // Fresh Green Mint
-    bg: '#ECFDF5',
-    border: '#6EE7B7'
-  },
-  mobility: {
-    color: '#DB2777', // Magenta Pink
-    bg: '#FDF2F8',
-    border: '#F472B6'
-  },
-
-  // 4. النظام
-  analytics: {
-    color: '#9333EA', // Vivid Purple
-    bg: '#FAF5FF',
-    border: '#D8B4FE'
-  },
-  settings: {
-    color: '#475569', // Titanium Slate
-    bg: '#F8FAFC',
-    border: '#CBD5E1'
-  }
-};
-
-const GROUP_THEMES = {
-  'coaching-group': { color: '#2563EB', bg: '#EFF6FF' },
-  'financials-group': { color: '#0D9488', bg: '#F0FDFA' },
-  'engines-group': { color: '#E11D48', bg: '#FFF1F2' },
-  'system-group': { color: '#475569', bg: '#F1F5F9' },
-};
 
 export default function Sidebar({ isCollapsed = false, onToggleSidebar }) {
   const navigate = useNavigate();
@@ -248,11 +153,6 @@ export default function Sidebar({ isCollapsed = false, onToggleSidebar }) {
   // Render a Single Nav Link Item
   const renderNavItem = (item, isSubItem = false) => {
     const Icon = item.icon;
-    const theme = NAV_ITEM_THEMES[item.key] || {
-      color: '#334155',
-      bg: '#F8FAFC',
-      border: '#E2E8F0'
-    };
 
     return (
       <div
@@ -270,15 +170,16 @@ export default function Sidebar({ isCollapsed = false, onToggleSidebar }) {
             display: 'flex',
             alignItems: 'center',
             justifyContent: isCollapsed ? 'center' : 'flex-start',
-            gap: isCollapsed ? '0' : '11px',
-            padding: isCollapsed ? '4px 0' : (isSubItem ? '7px 10px' : '7.5px 10px'),
-            borderRadius: '8px',
+            gap: isCollapsed ? '0' : '10px',
+            padding: isCollapsed ? '5px 0' : (isSubItem ? '6.5px 10px' : '7.5px 10px'),
+            borderRadius: '7px',
             textDecoration: 'none',
-            color: isActive ? theme.color : '#334155',
-            background: isActive && !isCollapsed ? theme.bg : 'transparent',
-            fontSize: isSubItem ? '12.5px' : '13px',
+            color: isActive ? '#0F172A' : '#475569',
+            background: isActive && !isCollapsed ? '#F1F5F9' : 'transparent',
+            border: 'none',
+            fontSize: isSubItem ? '12px' : '12.5px',
             fontWeight: isActive ? 800 : 600,
-            transition: 'all 0.15s ease',
+            transition: 'all 0.12s ease',
             width: '100%',
             boxSizing: 'border-box'
           })}
@@ -287,70 +188,79 @@ export default function Sidebar({ isCollapsed = false, onToggleSidebar }) {
             <>
               <div
                 style={{
-                  width: '28px',
-                  height: '28px',
-                  borderRadius: '7.5px',
-                  background: theme.bg || '#F8FAFC',
-                  border: isActive ? `1.8px solid ${theme.color}` : `1.5px solid ${theme.border}`,
-                  color: theme.color,
+                  width: '26px',
+                  height: '26px',
+                  borderRadius: '6px',
+                  background: isActive ? '#0F172A' : '#F8FAFC',
+                  border: isActive ? '1px solid #0F172A' : '1px solid #E2E8F0',
+                  color: isActive ? '#FFFFFF' : '#64748B',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
                   flexShrink: 0,
-                  transition: 'all 0.15s ease',
-                  boxShadow: isActive ? `0 2px 5px ${theme.color}25` : 'none',
+                  transition: 'all 0.12s ease',
+                  boxShadow: isActive ? '0 2px 5px rgba(15, 23, 42, 0.20)' : 'none',
                   position: 'relative'
                 }}
               >
                 <Icon 
-                  size={14} 
-                  strokeWidth={2.4} 
-                  color={theme.color}
-                  style={{ 
-                    color: theme.color,
-                    stroke: theme.color,
-                    display: 'block'
-                  }}
+                  size={13} 
+                  strokeWidth={2.2} 
+                  color={isActive ? '#FFFFFF' : '#64748B'}
+                  style={{ display: 'block' }}
                 />
 
-                {/* Floating Apple Red Notification Badge on top-right corner */}
+                {/* Floating Apple-Style Notification Badge on top-right corner */}
                 {item.badgeKey && liveBadges[item.badgeKey] > 0 && (
                   <span
                     className="sidebar-badge-apple"
                     style={{
                       position: 'absolute',
-                      top: '-4px',
-                      right: '-4px',
-                      transform: 'translate(35%, -35%)',
+                      top: '-8px',
+                      right: '-6px',
                       backgroundColor: '#FF3B30',
                       background: '#FF3B30',
                       color: '#FFFFFF',
                       WebkitTextFillColor: '#FFFFFF',
+                      border: 'none',
                       fontSize: '9.5px',
-                      fontWeight: 900,
+                      fontWeight: 800,
+                      fontVariantNumeric: 'tabular-nums',
                       minWidth: '17px',
+                      width: liveBadges[item.badgeKey] > 9 ? 'auto' : '17px',
                       height: '17px',
-                      padding: '0 4px',
-                      borderRadius: '20px',
+                      padding: liveBadges[item.badgeKey] > 9 ? '0 5px' : '0',
+                      borderRadius: '9999px',
                       display: 'flex',
                       alignItems: 'center',
                       justifyContent: 'center',
-                      fontFamily: 'Cairo, system-ui, -apple-system, sans-serif',
-                      border: 'none',
-                      boxShadow: '0 2px 6px rgba(0, 0, 0, 0.3)',
+                      textAlign: 'center',
+                      fontFamily: '-apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", Roboto, Helvetica, Arial, sans-serif',
+                      boxShadow: 'none',
                       lineHeight: 1,
-                      zIndex: 10,
-                      pointerEvents: 'none'
+                      zIndex: 20,
+                      pointerEvents: 'none',
+                      boxSizing: 'border-box'
                     }}
                   >
-                    <b style={{ color: '#FFFFFF', WebkitTextFillColor: '#FFFFFF', fontWeight: 900, fontSize: '9.5px', lineHeight: 1 }}>
+                    <span
+                      style={{
+                        display: 'block',
+                        lineHeight: 1,
+                        transform: 'translateY(-0.5px)',
+                        color: '#FFFFFF',
+                        WebkitTextFillColor: '#FFFFFF',
+                        fontWeight: 800,
+                        fontSize: '9.5px'
+                      }}
+                    >
                       {liveBadges[item.badgeKey]}
-                    </b>
+                    </span>
                   </span>
                 )}
               </div>
               {!isCollapsed && (
-                <span style={{ flex: 1, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', fontSize: '12.5px', fontWeight: isActive ? 800 : 600 }}>
+                <span className="sidebar-nav-label" style={{ flex: 1, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', fontSize: isSubItem ? '12px' : '12.5px' }}>
                   {item.label}
                 </span>
               )}
@@ -396,6 +306,7 @@ export default function Sidebar({ isCollapsed = false, onToggleSidebar }) {
   return (
     <aside
       dir="rtl"
+      className={isCollapsed ? 'sidebar-collapsed' : ''}
       style={{
         width: isCollapsed ? '60px' : '230px',
         minWidth: isCollapsed ? '60px' : '230px',
@@ -510,8 +421,6 @@ export default function Sidebar({ isCollapsed = false, onToggleSidebar }) {
         {/* Accordion Groups */}
         {SIDEBAR_GROUPS.map((group) => {
           const isOpen = openGroupKeys.includes(group.key);
-          const GroupIcon = group.icon;
-          const gTheme = GROUP_THEMES[group.key] || { color: '#64748B', bg: '#F8FAFC' };
 
           return (
             <div key={group.key} style={{ marginTop: '8px' }}>

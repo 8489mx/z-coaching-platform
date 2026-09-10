@@ -21,6 +21,7 @@ import {
 } from 'lucide-react';
 import { API_BASE } from '../../config/api';
 import { arabicSearchMatch } from '../../utils/searchUtils';
+import { formatWhatsAppPhone } from '../../utils/whatsappRemindersEngine';
 import FlexibleRenewalModal from './FlexibleRenewalModal';
 
 const SYSTEM_PAGES = [
@@ -205,8 +206,10 @@ export default function GlobalSearchModal() {
   const filteredClients = clients.filter(c => {
     if (activeCategory !== 'ALL' && activeCategory !== 'CLIENTS') return false;
     if (!query.trim()) return activeCategory === 'CLIENTS';
-    const cleanQ = query.replace('#', '').trim().toLowerCase();
-    const codeMatch = String(c.client_code || c.id || '').toLowerCase().includes(cleanQ);
+    const cleanQ = query.replace(/^#+/, '').trim().toLowerCase();
+    const cleanClientCode = String(c.client_code || c.id || '').replace(/^client[-_]?/i, '').replace(/^#+/, '').toLowerCase();
+    const qCode = cleanQ.replace(/^client[-_]?/i, '');
+    const codeMatch = cleanClientCode === qCode || cleanClientCode.includes(qCode) || String(c.client_code || c.id || '').toLowerCase().includes(cleanQ);
     return codeMatch || 
            arabicSearchMatch(c.full_name, query) || 
            arabicSearchMatch(c.name, query) || 
@@ -215,8 +218,8 @@ export default function GlobalSearchModal() {
   }).map(c => {
     const code = c.client_code || c.id || '1';
     const phone = c.phone_number || '';
-    const cleanPhone = phone.replace(/\D/g, '');
-    const waPhone = cleanPhone.startsWith('01') ? '2' + cleanPhone : cleanPhone;
+    const cleanPhone = formatWhatsAppPhone(phone);
+    const waPhone = cleanPhone || null;
     const isMax = String(c.subscription_package || c.package || '').toUpperCase().includes('MAX');
 
     return {
@@ -392,7 +395,6 @@ export default function GlobalSearchModal() {
                   borderRadius: '5px',
                   fontSize: '11px',
                   fontWeight: 700,
-                  border: 'none',
                   cursor: 'pointer',
                   background: activeCategory === cat.id ? '#0F172A' : '#FFFFFF',
                   color: activeCategory === cat.id ? '#FFFFFF' : '#64748B',

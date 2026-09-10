@@ -5,6 +5,7 @@ import AdminLayout from '../components/layout/AdminLayout';
 import { copyToClipboard } from '../utils/clipboardUtils';
 import { calculateMetabolicMacroProfile, DAILY_ACTIVITY_FACTORS, WORKOUT_FREQUENCY_FACTORS, GOAL_CALORIE_MULTIPLIERS } from '../utils/metabolicMacroEngine';
 import { DEFAULT_FOOD_CATALOG } from '../data/defaultFoodsCatalog';
+import { arabicSearchMatch } from '../utils/searchUtils';
 
 export default function MacroCalculator() {
   // Navigation Tabs: 'CATALOG' (Food Library) or 'CALCULATOR' (Macro Engine)
@@ -212,10 +213,9 @@ export default function MacroCalculator() {
 
     // 3. Search Term
     if (searchTerm && searchTerm.trim() !== '') {
-      const q = searchTerm.toLowerCase().trim();
-      const matchNameAr = f.name_ar && f.name_ar.toLowerCase().includes(q);
-      const matchNameEn = f.name_en && f.name_en.toLowerCase().includes(q);
-      const matchCategory = f.category_ar && f.category_ar.toLowerCase().includes(q);
+      const matchNameAr = arabicSearchMatch(f.name_ar, searchTerm);
+      const matchNameEn = arabicSearchMatch(f.name_en, searchTerm);
+      const matchCategory = arabicSearchMatch(f.category_ar, searchTerm);
       if (!matchNameAr && !matchNameEn && !matchCategory) {
         return false;
       }
@@ -914,6 +914,19 @@ export default function MacroCalculator() {
                 <div style={{ background: '#F8FAFC', padding: '8px 10px', borderRadius: '6px', border: '1px solid #E2E8F0', textAlign: 'center' }}>
                   <div style={{ fontSize: '10px', fontWeight: 700, color: '#64748B' }}>استهلاك الطاقة (TDEE)</div>
                   <div style={{ fontSize: '15px', fontWeight: 900, color: '#0F172A' }}>{tdee} <small style={{ fontSize: '10px' }}>kcal</small></div>
+                </div>
+              </div>
+
+              {/* Scientific Methodology Clarification Badge */}
+              <div style={{ background: '#F0F9FF', border: '1px solid #BAE6FD', borderRadius: '6px', padding: '6px 10px', marginBottom: '10px', fontSize: '10.5px', color: '#0369A1', display: 'flex', flexDirection: 'column', gap: '2px' }}>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', fontWeight: 800 }}>
+                  <span>منهجية الحساب السريرية:</span>
+                  <span style={{ background: '#FFFFFF', padding: '1px 6px', borderRadius: '4px', border: '1px solid #BAE6FD' }}>
+                    {calcForm.bodyFat ? 'معادلة Katch-McArdle (الكتلة اللادهنية LBM)' : 'معادلة Mifflin-St Jeor السريرية المعتمدة'}
+                  </span>
+                </div>
+                <div style={{ fontSize: '9.5px', color: '#0284C7', opacity: 0.9 }}>
+                  معامل النشاط الحركي التراكمي: نشاط اليوم (NEAT x{DAILY_ACTIVITY_FACTORS[calcForm.dailyActivity]?.value || 1.3}) + تمرين المقاومة (EAT +{WORKOUT_FREQUENCY_FACTORS[calcForm.workoutFrequency]?.value || 0.15})
                 </div>
               </div>
 

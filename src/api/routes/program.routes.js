@@ -23,24 +23,24 @@ import { requireAuth } from "../middlewares/auth.middleware.js";
 const router = express.Router();
 
 router.post("/generate", requireAuth, generateProgram);
-router.post("/generate-preview", generateProgramPreview); // Unauthenticated route for dashboard testing
-router.post("/generate-and-save", generateAndSaveProgram); // Save client & program to MariaDB z
+router.post("/generate-preview", requireAuth, generateProgramPreview);
+router.post("/generate-and-save", requireAuth, generateAndSaveProgram);
 router.post("/generate-from-submission/:submission_id", requireAuth, generateProgramFromSubmission);
-router.post("/generate-for-client/:user_id", generateProgramForClient);
+router.post("/generate-for-client/:user_id", requireAuth, generateProgramForClient);
 router.get("/", requireAuth, getUserPrograms);
-router.get("/active/:user_id", getActiveProgramByUserId); // Fetch active program from MariaDB
+router.get("/active/:user_id", requireAuth, getActiveProgramByUserId);
 
 // Custom Program Editing & Catalog
-router.put("/update-custom", updateCustomProgram);
+router.put("/update-custom", requireAuth, updateCustomProgram);
 router.get("/exercises-catalog", getExercisesCatalog);
 
 // Check-in & Adaptation V2 endpoints
-router.post("/checkin/evaluate", evaluateCheckinHandler);
-router.post("/checkin/submit", submitWeeklyCheckin);
-router.get("/checkin/pending", getPendingCheckins);
-router.get("/checkin/history/:user_id", getCheckinHistory);
-router.post("/checkin/approve", approveWeeklyCheckin);
-router.post("/adapt", adaptProgramHandler);
+router.post("/checkin/evaluate", requireAuth, evaluateCheckinHandler);
+router.post("/checkin/submit", requireAuth, submitWeeklyCheckin);
+router.get("/checkin/pending", requireAuth, getPendingCheckins);
+router.get("/checkin/history/:user_id", requireAuth, getCheckinHistory);
+router.post("/checkin/approve", requireAuth, approveWeeklyCheckin);
+router.post("/adapt", requireAuth, adaptProgramHandler);
 
 // Context-Aware Smart Food Swap V2 endpoints
 router.post("/swap-candidates", getSwapCandidatesHandler);

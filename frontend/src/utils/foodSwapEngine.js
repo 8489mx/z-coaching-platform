@@ -1787,11 +1787,11 @@ export function isFoodClinicallySafe(foodItem, clinicalProfile = {}) {
       const a = String(allergy).toUpperCase();
       
       // Fish
-      if ((a.includes('FISH') || a.includes('سمك')) && (foodItem.allergens?.includes('FISH') || (foodItem.taste_profile === TASTE_PROFILES.MAIN_MEAL_PROTEIN && foodItem.name_ar?.includes('سمك')))) {
+      if ((a.includes('FISH') || a.includes('SEAFOOD') || a.includes('سمك') || a.includes('بحري')) && (foodItem.allergens?.includes('FISH') || foodItem.allergens?.includes('SHELLFISH') || (foodItem.taste_profile === TASTE_PROFILES.MAIN_MEAL_PROTEIN && (foodItem.name_ar?.includes('سمك') || foodItem.name_ar?.includes('جمبري'))))) {
         return false;
       }
       // Shellfish
-      if ((a.includes('SHELLFISH') || a.includes('جمبري') || a.includes('بحري') || a.includes('روبيان') || a.includes('سيفود')) && foodItem.allergens?.includes('SHELLFISH')) {
+      if ((a.includes('SHELLFISH') || a.includes('SEAFOOD') || a.includes('جمبري') || a.includes('بحري') || a.includes('روبيان') || a.includes('سيفود') || a.includes('مأكولات بحرية')) && (foodItem.allergens?.includes('SHELLFISH') || foodItem.allergens?.includes('FISH') || foodItem.code?.includes('SHRIMP') || foodItem.name_ar?.includes('جمبري'))) {
         return false;
       }
       // Eggs

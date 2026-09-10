@@ -9,6 +9,8 @@
  * Guarantees 1-to-1 biomechanical equivalence when a trainee swaps a busy gym machine.
  */
 
+import { arabicSearchMatch } from './searchUtils.js';
+
 export const RESISTANCE_PROFILES = {
   LENGTHENED_OVERLOAD: 'LENGTHENED_OVERLOAD',
   SHORTENED_OVERLOAD: 'SHORTENED_OVERLOAD',
@@ -122,7 +124,7 @@ export function getTorqueMatchedSwaps(exerciseIdentifier) {
   const query = String(exerciseIdentifier || '').toUpperCase();
 
   for (const [key, item] of Object.entries(TORQUE_EXERCISE_DATABASE)) {
-    if (key === query || item.name_ar.includes(query) || item.code === query) {
+    if (key === query || item.code === query || item.name_ar.includes(query) || arabicSearchMatch(item.name_ar, exerciseIdentifier)) {
       return {
         original_exercise: item.name_ar,
         muscle_group: item.muscle_group,

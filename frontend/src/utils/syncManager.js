@@ -20,11 +20,14 @@ export class SyncManager {
     }
 
     try {
-      const res = await fetch(endpoint, {
+      const options = {
         method,
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload)
-      });
+        headers: { 'Content-Type': 'application/json' }
+      };
+      if (method && method.toUpperCase() !== 'GET' && method.toUpperCase() !== 'HEAD' && payload !== undefined) {
+        options.body = JSON.stringify(payload);
+      }
+      const res = await fetch(endpoint, options);
 
       if (!res.ok) {
         const errorData = await res.json().catch(() => ({}));

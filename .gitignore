@@ -58,3 +58,8 @@ Desktop.ini
 # Local tooling and archives
 .agents/
 *.zip
+backups/
+data/fcm-device-tokens.json
+data/notifications-log.json
+data/self-hosted-notifications.json
+data/settings/system_settings.json

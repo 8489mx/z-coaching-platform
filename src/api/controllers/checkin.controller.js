@@ -1,5 +1,7 @@
-import { CheckinSubmission, Program, User, WorkoutLog } from "../models/index.js";
+import { CheckinSubmission, Program, User, WorkoutLog, ProgressPhoto } from "../models/index.js";
 import { evaluateCheckin } from "../../checkin-engine/evaluate-checkin.js";
+import { saveProgressPhotoToDisk } from "../utils/photoStorage.js";
+import { buildAdaptedPlan } from "../../adaptation-engine/build-adapted-plan.js";
 
 /**
  * Submit weekly check-in
@@ -107,10 +109,34 @@ export async function submitCheckin(req, res) {
       status: "PENDING_REVIEW",
     });
 
+    // 3.1 Save attached progress photos locally to Hostinger file storage
+    const savedPhotos = [];
+    if (Array.isArray(photos) && photos.length > 0) {
+      for (const p of photos) {
+        const pUrl = typeof p === 'string' ? p : (p.photo_url || p.data || p.url);
+        if (typeof pUrl === 'string' && pUrl.trim()) {
+          const pose = (p.pose || 'FRONT').toUpperCase();
+          const clientCode = userObj.client_code || userObj.id || targetUserId;
+          const savedUrl = saveProgressPhotoToDisk(clientCode, pUrl, Number(week_number) || 1, pose);
+          if (savedUrl) {
+            const photoRecord = await ProgressPhoto.create({
+              user_id: targetUserId,
+              week_number: Number(week_number) || 1,
+              pose,
+              photo_url: savedUrl,
+              notes: p.notes || null,
+            });
+            savedPhotos.push(photoRecord);
+          }
+        }
+      }
+    }
+
     return res.status(201).json({
       success: true,
       message: "Check-in evaluated and saved successfully",
       checkin,
+      photos: savedPhotos,
       analysis: analysisOutput,
     });
   } catch (error) {
@@ -139,7 +165,17 @@ export async function getClientCheckins(req, res) {
       order: [["createdAt", "DESC"]],
     });
 
-    return res.status(200).json({ success: true, checkins });
+    const photos = await ProgressPhoto.findAll({
+      where: { user_id: resolvedId },
+      order: [["createdAt", "DESC"]],
+    });
+
+    return res.status(200).json({
+      success: true,
+      user: userObj,
+      checkins,
+      photos
+    });
   } catch (error) {
     return res.status(500).json({ success: false, error: error.message });
   }
@@ -151,7 +187,7 @@ export async function getClientCheckins(req, res) {
 export async function approveCheckin(req, res) {
   try {
     const { checkinId } = req.params;
-    const { coach_notes } = req.body;
+    const { coach_notes, custom_macros } = req.body;
 
     const checkin = await CheckinSubmission.findByPk(checkinId);
     if (!checkin) {
@@ -160,35 +196,113 @@ export async function approveCheckin(req, res) {
 
     const latestProgram = await Program.findOne({
       where: { user_id: checkin.user_id },
-      order: [["createdAt", "DESC"]],
+      order: [["id", "DESC"]],
     });
 
-    if (latestProgram) {
+    if (latestProgram && latestProgram.program_data) {
       const progData = typeof latestProgram.program_data === "string"
         ? JSON.parse(latestProgram.program_data)
         : JSON.parse(JSON.stringify(latestProgram.program_data));
 
-      const analysis = checkin.analysis_output || {};
+      let adapted = null;
+      try {
+        adapted = buildAdaptedPlan({
+          currentMasterProgram: progData,
+          checkinAnalysis: checkin.analysis_output || {},
+          options: {}
+        });
+      } catch (e) {
+        console.warn("buildAdaptedPlan fallback in checkin.controller:", e.message);
+      }
 
-      // Apply Calorie / Carb Adjustment if recommended
-      if (analysis.suggested_calorie_delta && analysis.suggested_calorie_delta !== 0) {
-        if (progData.nutrition_program?.macro_targets) {
-          progData.nutrition_program.macro_targets.calories_kcal += analysis.suggested_calorie_delta;
-          progData.nutrition_program.macro_targets.carb_g += analysis.suggested_carb_delta_g || Math.round(analysis.suggested_calorie_delta / 4);
+      // Determine final nutrition targets (coach custom macros override engine output)
+      let finalCalories = adapted?.adapted_nutrition?.target_calories_kcal;
+      let finalProtein = adapted?.adapted_nutrition?.protein_g;
+      let finalCarbs = adapted?.adapted_nutrition?.carbohydrate_g;
+      let finalFats = adapted?.adapted_nutrition?.fat_g;
+
+      if (custom_macros && typeof custom_macros === 'object' && custom_macros.calories) {
+        finalCalories = Number(custom_macros.calories);
+        finalProtein = Number(custom_macros.protein || finalProtein || 140);
+        finalCarbs = Number(custom_macros.carbs || finalCarbs || 200);
+        finalFats = Number(custom_macros.fats || finalFats || 50);
+      } else if (!finalCalories && checkin.analysis_output?.suggested_calorie_delta) {
+        const baseCal = progData.nutrition_program?.macro_targets?.calories_kcal || progData.nutrition?.targets?.calories || 2000;
+        finalCalories = baseCal + checkin.analysis_output.suggested_calorie_delta;
+        finalCarbs = (progData.nutrition_program?.macro_targets?.carb_g || progData.nutrition?.targets?.carbs || 200) +
+          (checkin.analysis_output.suggested_carb_delta_g || Math.round(checkin.analysis_output.suggested_calorie_delta / 4));
+        finalProtein = progData.nutrition_program?.macro_targets?.protein_g || progData.nutrition?.targets?.protein || 140;
+        finalFats = progData.nutrition_program?.macro_targets?.fat_g || progData.nutrition?.targets?.fats || 50;
+      }
+
+      // SMART MERGE: Update nutrition targets INSIDE the existing program WITHOUT destroying meals/exercises
+      if (finalCalories) {
+        if (!progData.nutrition) progData.nutrition = {};
+        if (!progData.nutrition.targets) progData.nutrition.targets = {};
+        progData.nutrition.targets.calories = finalCalories;
+        progData.nutrition.targets.protein = finalProtein;
+        progData.nutrition.targets.carbs = finalCarbs;
+        progData.nutrition.targets.fats = finalFats;
+
+        if (!progData.nutrition_program) progData.nutrition_program = {};
+        if (!progData.nutrition_program.macro_targets) progData.nutrition_program.macro_targets = {};
+        progData.nutrition_program.macro_targets.calories_kcal = finalCalories;
+        progData.nutrition_program.macro_targets.protein_g = finalProtein;
+        progData.nutrition_program.macro_targets.carb_g = finalCarbs;
+        progData.nutrition_program.macro_targets.fat_g = finalFats;
+
+        if (progData.nutrition_program.targets) {
+          progData.nutrition_program.targets.target_calories = finalCalories;
+          progData.nutrition_program.targets.target_calories_kcal = finalCalories;
+          progData.nutrition_program.targets.calories_kcal = finalCalories;
+          progData.nutrition_program.targets.protein_g = finalProtein;
+          progData.nutrition_program.targets.total_protein_g = finalProtein;
+          progData.nutrition_program.targets.carbohydrate_g = finalCarbs;
+          progData.nutrition_program.targets.carb_g = finalCarbs;
+          progData.nutrition_program.targets.total_carbs_g = finalCarbs;
+          progData.nutrition_program.targets.fat_g = finalFats;
+          progData.nutrition_program.targets.total_fat_g = finalFats;
         }
-        if (progData.nutrition?.targets) {
-          progData.nutrition.targets.calories = (progData.nutrition.targets.calories || 2000) + analysis.suggested_calorie_delta;
-          progData.nutrition.targets.carbs = (progData.nutrition.targets.carbs || 150) + (analysis.suggested_carb_delta_g || Math.round(analysis.suggested_calorie_delta / 4));
+
+        if (progData.nutrition_program.quantized_plan && progData.nutrition_program.quantized_plan.daily_totals) {
+          progData.nutrition_program.quantized_plan.daily_totals.calories_kcal = finalCalories;
+          progData.nutrition_program.quantized_plan.daily_totals.protein_g = finalProtein;
+          progData.nutrition_program.quantized_plan.daily_totals.carbs_g = finalCarbs;
+          progData.nutrition_program.quantized_plan.daily_totals.fat_g = finalFats;
+        }
+      }
+
+      // Update training week if adaptation engine provided a new one
+      if (adapted?.adapted_training_week && progData.training_program && progData.training_program.weeks) {
+        const targetIdx = Math.min(
+          (adapted.adapted_week_number || 2) - 1,
+          progData.training_program.weeks.length - 1
+        );
+        if (targetIdx >= 0 && targetIdx < progData.training_program.weeks.length) {
+          progData.training_program.weeks[targetIdx] = adapted.adapted_training_week;
         }
       }
 
       // Apply Deload if recommended
-      if (analysis.is_deload_recommended) {
+      if (checkin.analysis_output?.is_deload_recommended) {
         if (progData.training_program) {
           progData.training_program.is_deload = true;
           progData.training_program.deload_note = "أسبوع تفريغ أحمال تلقائي بناءً على مؤشرات الإجهاد وآلام المفاصل";
         }
       }
+
+      // Update cardio step target if changed
+      if (adapted?.adapted_cardio && progData.cardio_program?.prescription) {
+        progData.cardio_program.prescription.daily_step_target = adapted.adapted_cardio.daily_step_target;
+      }
+
+      // Store adaptation metadata
+      progData._last_adaptation = {
+        action: adapted?.adaptation_action || 'APPROVED',
+        reasons: adapted?.adaptation_reasons || [],
+        adapted_week: adapted?.adapted_week_number || checkin.week_number,
+        timestamp: new Date().toISOString()
+      };
 
       await latestProgram.update({
         program_data: progData,

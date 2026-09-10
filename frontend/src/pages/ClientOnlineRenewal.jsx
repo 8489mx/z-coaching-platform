@@ -15,6 +15,8 @@ import {
   User
 } from 'lucide-react';
 import { API_BASE } from '../config/api';
+import { getStoredCoachConfig } from '../utils/themeAndCoachConfig';
+import { formatWhatsAppPhone } from '../utils/whatsappRemindersEngine';
 
 export default function ClientOnlineRenewal() {
   const navigate = useNavigate();
@@ -47,17 +49,21 @@ export default function ClientOnlineRenewal() {
   // Auto-fetch client info if code provided
   useEffect(() => {
     if (clientCode) {
-      const clean = String(clientCode).replace(/\D/g, '');
+      const clean = String(clientCode).replace(/^#+/, '').replace(/^client[-_]?/i, '').trim().toLowerCase();
       if (clean) {
         fetch(`${API_BASE}/api/v1/clients`)
           .then(res => res.json())
           .then(data => {
             if (data.clients && Array.isArray(data.clients)) {
-              const found = data.clients.find(c => String(c.client_code || c.id) === clean);
+              const found = data.clients.find(c => {
+                const cCode = String(c.client_code || '').replace(/^#+/, '').trim().toLowerCase();
+                const cId = String(c.id || '').trim().toLowerCase();
+                return cCode === clean || cId === clean;
+              });
               if (found) {
                 setClientName(found.full_name || found.name || '');
                 setClientPhone(found.phone_number || '');
-                const isMax = String(found.package || found.subscription_package || '').includes('MAX');
+                const isMax = String(found.package || found.subscription_package || found.package_tier || '').toUpperCase().includes('MAX');
                 setSelectedTier(isMax ? 'MAX' : 'ELITE');
               }
             }
@@ -78,9 +84,11 @@ export default function ClientOnlineRenewal() {
     setSubmitting(true);
 
     const durationMonths = Number(selectedDuration);
+    const cleanCode = String(clientCode || '').replace(/^#+/, '').replace(/^client[-_]?/i, '').trim();
     const orderPayload = {
       id: `#RENEW-${Date.now().toString().slice(-6)}`,
-      customer_name: clientName || `مشترك #${clientCode || '1'}`,
+      client_code: cleanCode,
+      customer_name: clientName || `مشترك #${cleanCode || '1'}`,
       phone_number: clientPhone || '01000000000',
       package_tier: selectedTier,
       duration_months: durationMonths,
@@ -111,15 +119,17 @@ export default function ClientOnlineRenewal() {
     const waText = encodeURIComponent(
       `مساء الخير يا كابتن كريم!\n` +
       `أنا المشترك: ${clientName || 'بطل'}\n` +
-      `كود الاشتراك: #${clientCode}\n` +
-      `قمت بطلب تجديد: باقة ${selectedDuration} شهور (${selectedTier}) بمبلغ ${currentPrice.toLocaleString('en-US')} ج.م.\n` +
+      `كود الاشتراك: #${cleanCode || clientCode}\n` +
+      `قمت بطلب تجديد: باقة ${selectedDuration} شهور (${selectedTier === 'MAX' ? 'باقة ماكس MAX' : 'باقة إيليت ELITE'}) بمبلغ ${currentPrice.toLocaleString('en-US')} ج.م.\n` +
       `طريقة التحويل: ${methodArabic}\n` +
       `الرقم المرجعي / اسم المحول: ${refNumber || 'تم الإرسال'}\n` +
       `برجاء تأكيد التفعيل واستمرار الخطة!`
     );
 
     // Open WhatsApp
-    window.open(`https://wa.me/201001060503?text=${waText}`, '_blank');
+    const coachConfig = getStoredCoachConfig();
+    const coachWhatsApp = formatWhatsAppPhone(coachConfig?.whatsappNumber || coachConfig?.supportWhatsapp || '201001060503');
+    window.open(`https://wa.me/${coachWhatsApp}?text=${waText}`, '_blank');
   };
 
   return (

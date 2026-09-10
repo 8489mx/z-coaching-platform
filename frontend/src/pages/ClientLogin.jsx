@@ -32,7 +32,7 @@ export default function ClientLogin({ onLoginSuccess }) {
     if (!normalizedPhone.startsWith('01') && normalizedPhone.startsWith('1')) {
       normalizedPhone = '0' + normalizedPhone;
     }
-    const cleanCode = code.replace('#', '').trim();
+    const cleanCode = code.replace(/^#+/, '').replace(/^client[-_]?/i, '').trim();
 
     try {
       // Save session credentials for intake & client app
@@ -68,14 +68,13 @@ export default function ClientLogin({ onLoginSuccess }) {
           }
         }
       } else {
-        // Fallback: If code exists, allow proceeding directly to intake form
         setIsLoading(false);
-        navigate(`/intake/form?code=${encodeURIComponent(cleanCode)}&phone=${encodeURIComponent(normalizedPhone)}`);
+        setError(data.error || 'بيانات الدخول غير صحيحة. يرجى التأكد من كتابة كود المشترك ورقم الهاتف المسجل بشكل دقيق.');
       }
     } catch (err) {
-      // Offline / direct pass-through for intake filling
+      console.error("Client login error:", err);
       setIsLoading(false);
-      navigate(`/intake/form?code=${encodeURIComponent(cleanCode)}&phone=${encodeURIComponent(normalizedPhone)}`);
+      setError('تعذر الاتصال بالخادم. يرجى التحقق من اتصال الإنترنت والمحاولة مرة أخرى.');
     }
   };
 

@@ -255,7 +255,9 @@ export const getExercisesList = (req, res) => {
         (e) =>
           normalizeArabicText(e.name_ar).includes(q) ||
           normalizeArabicText(e.name_en).includes(q) ||
-          normalizeArabicText(e.muscle_ar).includes(q)
+          normalizeArabicText(e.muscle_ar).includes(q) ||
+          normalizeArabicText(e.id).includes(q) ||
+          (Array.isArray(e.aliases) && e.aliases.some((a) => normalizeArabicText(a).includes(q)))
       );
     }
 

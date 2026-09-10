@@ -6,13 +6,14 @@ import {
   uploadExerciseImage,
 } from "../controllers/exercise.controller.js";
 
+import { requireAuth } from "../middlewares/auth.middleware.js";
+
 const router = express.Router();
 
 router.get("/", getExercisesList);
 router.get("/swaps/:exercise_code", getExerciseSwapsHandler);
-router.post("/swap-in-program/:programId", swapProgramExerciseHandler);
+router.post("/swap-in-program/:programId", requireAuth, swapProgramExerciseHandler);
 
-router.post("/upload-image", uploadExerciseImage);
+router.post("/upload-image", requireAuth, uploadExerciseImage);
 
 export default router;
-

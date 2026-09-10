@@ -1,4 +1,5 @@
 import { User, ProgressPhoto } from "../models/index.js";
+import { saveProgressPhotoToDisk } from "../utils/photoStorage.js";
 
 export const getUserPhotos = async (req, res) => {
   try {
@@ -48,11 +49,14 @@ export const uploadUserPhoto = async (req, res) => {
       return res.status(400).json({ error: "photo_url is required" });
     }
 
+    const clientCode = user.client_code || user.id;
+    const persistentUrl = saveProgressPhotoToDisk(clientCode, photo_url, Number(week_number) || 1, pose || "FRONT") || photo_url;
+
     const photo = await ProgressPhoto.create({
       user_id: user.id,
       week_number: Number(week_number) || 1,
       pose: pose || "FRONT",
-      photo_url,
+      photo_url: persistentUrl,
       notes: notes || null,
     });
 

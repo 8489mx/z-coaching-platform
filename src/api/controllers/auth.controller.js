@@ -1,10 +1,16 @@
+import fs from "fs";
+import path from "path";
 import jwt from "jsonwebtoken";
 import bcrypt from "bcrypt";
 import { User } from "../models/index.js";
 import { recordFailedAttempt, resetAttempts } from "../middlewares/rateLimiter.js";
 
 const generateToken = (userId) => {
-  return jwt.sign({ id: userId }, process.env.JWT_SECRET || "super_secret_jwt_key_123", {
+  const secret = process.env.JWT_SECRET;
+  if (!secret) {
+    throw new Error("FATAL: JWT_SECRET environment variable is not defined");
+  }
+  return jwt.sign({ id: userId }, secret, {
     expiresIn: "30d",
   });
 };
@@ -69,6 +75,12 @@ export const loginFast = async (req, res) => {
       });
     }
 
+    if (user.subscription_status === 'DEACTIVATED') {
+      return res.status(403).json({ 
+        error: "تم إغلاق هذا الحساب بناءً على طلبكم المسبق لحذف الحساب. لإعادة التفعيل واستعادة البيانات يرجى التواصل مع الإدارة." 
+      });
+    }
+
     resetAttempts(ip);
     const token = generateToken(user.id);
     return res.status(200).json({ user, token });
@@ -96,6 +108,12 @@ export const loginEmail = async (req, res) => {
       return res.status(401).json({ error: "Invalid email or password" });
     }
 
+    if (user.subscription_status === 'DEACTIVATED') {
+      return res.status(403).json({ 
+        error: "تم إغلاق هذا الحساب بناءً على طلبكم المسبق لحذف الحساب. لإعادة التفعيل واستعادة البيانات يرجى التواصل مع الإدارة." 
+      });
+    }
+
     const token = generateToken(user.id);
     return res.status(200).json({ user, token });
   } catch (err) {
@@ -115,3 +133,44 @@ export const getProfile = async (req, res) => {
     return res.status(500).json({ error: "Internal server error" });
   }
 };
+
+/**
+ * طلب حذف الحساب من جانب المتدرب (Soft Deletion حصراً)
+ * يستوفي متطلبات متجر أبل ومتجر جوجل دون حذف أي بيانات أو صور فعلياً
+ * تظل كافة البيانات والصور وسجلات التمارين والتغذية محفوظة بالكامل للأبد للكوتش
+ */
+export const deleteAccount = async (req, res) => {
+  try {
+    const userId = req.user?.id || req.body?.user_id;
+    const clientCode = req.body?.client_code;
+
+    let user = null;
+    if (userId) {
+      user = await User.findByPk(userId);
+    }
+    if (!user && clientCode) {
+      user = await User.findOne({ where: { client_code: String(clientCode).trim() } });
+    }
+
+    if (!user) {
+      return res.status(404).json({ error: "المستخدم غير موجود" });
+    }
+
+    // تعطيل الحساب صلب المنظومة دون حذف أي سجلات أو مجلدات صور
+    const dateStr = new Date().toISOString().replace('T', ' ').substring(0, 19);
+    const existingNotes = user.notes ? `${user.notes}\n` : '';
+    await user.update({
+      subscription_status: 'DEACTIVATED',
+      notes: `${existingNotes}[تم طلب حذف الحساب من تطبيق الهاتف الذكي في ${dateStr} - الحساب معطل مع الحفاظ على الأرشيف]`
+    });
+
+    return res.status(200).json({
+      success: true,
+      message: "تم حذف الحساب وإلغاء تسجيل الدخول بنجاح وفق سياسة الخصوصية المعتمدة."
+    });
+  } catch (err) {
+    console.error("deleteAccount error:", err);
+    return res.status(500).json({ error: "فشل تنفيذ العملية: " + err.message });
+  }
+};
+

@@ -1,10 +1,12 @@
 import { Order, User } from "../models/index.js";
 
-// Receive Order from Marketing Website Checkout Funnel
+// Receive Order from Marketing Website Checkout Funnel or Client Online Renewal
 export const createOrder = async (req, res) => {
   try {
     const { 
-      id, // e.g. #KZ-4819
+      id,
+      client_code,
+      client_id,
       customer_name, 
       phone_number, 
       package_tier = 'ELITE', 
@@ -19,22 +21,43 @@ export const createOrder = async (req, res) => {
       return res.status(400).json({ error: "customer_name, phone_number, and amount_paid are required" });
     }
 
-    const orderId = id || `#KZ-${Math.floor(1000 + Math.random() * 9000)}`;
+    // Try to link existing client record
+    let resolvedClientId = null;
+    const cleanClientCode = String(client_code || client_id || '').replace(/^#+/, '').replace(/^client[-_]?/i, '').trim();
+    if (cleanClientCode) {
+      let matched = await User.findOne({ where: { client_code: cleanClientCode } });
+      if (!matched && !isNaN(cleanClientCode)) {
+        matched = await User.findByPk(parseInt(cleanClientCode, 10));
+      }
+      if (matched) resolvedClientId = matched.id;
+    }
+    if (!resolvedClientId && phone_number) {
+      const cleanPhone = phone_number.trim();
+      let matched = await User.findOne({ where: { phone_number: cleanPhone } });
+      if (!matched && cleanPhone.startsWith('0')) {
+        matched = await User.findOne({ where: { phone_number: cleanPhone.substring(1) } });
+      }
+      if (matched) resolvedClientId = matched.id;
+    }
+
+    const orderId = id || `#RENEW-${Date.now().toString().slice(-6)}`;
 
     const newOrder = await Order.create({
       id: orderId,
+      client_id: resolvedClientId,
       customer_name,
       phone_number: phone_number.trim(),
-      package_tier: package_tier.toUpperCase(),
+      package_tier: String(package_tier || 'ELITE').toUpperCase().includes('MAX') ? 'MAX' : 'ELITE',
       duration_months: Number(duration_months) || 4,
       payment_method,
       amount_paid,
       currency,
-      payment_status: payment_method === 'CARD' ? 'COMPLETED' : 'PENDING',
+      payment_status: 'PENDING',
       transaction_reference
     });
 
     return res.status(201).json({
+      success: true,
       message: "Order created successfully",
       order: newOrder
     });
@@ -76,22 +99,29 @@ export const activateOrder = async (req, res) => {
     }
 
     // Check if user already exists
-    let user = await User.findOne({ where: { phone_number: order.phone_number } });
+    let user = null;
+    if (order.client_id) {
+      user = await User.findByPk(order.client_id);
+    }
+    if (!user && order.phone_number) {
+      const cleanPhone = order.phone_number.trim();
+      user = await User.findOne({ where: { phone_number: cleanPhone } });
+      if (!user && cleanPhone.startsWith('0')) {
+        user = await User.findOne({ where: { phone_number: cleanPhone.substring(1) } });
+      }
+    }
+
+    const targetTier = String(order.package_tier || 'ELITE').toUpperCase().includes('MAX') ? 'MAX' : 'ELITE';
 
     if (!user) {
-      // Find last sequential client code
-      const lastUser = await User.findOne({
-        where: { role: 'CLIENT' },
-        order: [['id', 'DESC']]
-      });
-
-      let nextCode = 1;
-      if (lastUser && lastUser.client_code) {
-        const parsed = parseInt(lastUser.client_code, 10);
-        if (!isNaN(parsed)) {
-          nextCode = parsed + 1;
-        }
+      // Find highest numerical code among CLIENTS (base offset 1000)
+      const allClients = await User.findAll({ where: { role: 'CLIENT' }, attributes: ['client_code'] });
+      let maxCode = 1000;
+      for (const c of allClients) {
+        const num = parseInt(c.client_code, 10);
+        if (!isNaN(num) && num > maxCode) maxCode = num;
       }
+      const nextCode = (maxCode + 1).toString();
 
       const startDate = new Date();
       const endDate = new Date();
@@ -102,9 +132,9 @@ export const activateOrder = async (req, res) => {
         phone_number: order.phone_number,
         full_name: order.customer_name,
         role: 'CLIENT',
-        package_tier: order.package_tier,
+        package_tier: targetTier,
         duration_months: order.duration_months,
-        subscription_package: `${order.package_tier}_${order.duration_months}M`,
+        subscription_package: `${targetTier}_${order.duration_months}M`,
         subscription_price: order.amount_paid,
         payment_status: 'PAID',
         payment_method: order.payment_method,
@@ -123,8 +153,8 @@ export const activateOrder = async (req, res) => {
 
       user.subscription_status = 'ACTIVE';
       user.subscription_end_date = newEndDate;
-      user.package_tier = order.package_tier || user.package_tier;
-      user.subscription_package = `${order.package_tier || user.package_tier}_${order.duration_months || 4}M`;
+      user.package_tier = targetTier;
+      user.subscription_package = `${targetTier}_${order.duration_months || 4}M`;
       user.subscription_price = order.amount_paid || user.subscription_price;
       user.payment_status = 'PAID';
       await user.save();

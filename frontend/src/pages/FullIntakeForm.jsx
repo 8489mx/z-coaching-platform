@@ -1,9 +1,10 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { Check, ChevronLeft, ChevronRight, Ruler, Lock, Camera, CheckCircle2, Activity, HeartPulse, Utensils, Dumbbell, RotateCw, User, Scale, ShieldAlert, MessageCircle, AlertCircle, FileCheck2, Info, RefreshCcw, Upload } from 'lucide-react';
+import { Check, ChevronLeft, ChevronRight, Ruler, Lock, Camera, CheckCircle2, Activity, HeartPulse, Utensils, Dumbbell, RotateCw, User, Scale, ShieldAlert, MessageCircle, AlertCircle, FileCheck2, Info, RefreshCcw, Upload, Trash2 } from 'lucide-react';
 import { API_BASE } from '../config/api';
 import { getStoredCoachConfig } from '../utils/themeAndCoachConfig';
 import { optimizeImageFile, optimizeMultipleFiles } from '../utils/imageOptimizer';
+import { formatWhatsAppPhone } from '../utils/whatsappRemindersEngine';
 
 const DEFAULT_MASTER_INTAKE = {
   // Screen 1: Biometrics & Target
@@ -261,6 +262,35 @@ export default function FullIntakeForm() {
     }
   };
 
+  const handleSingleMediaUpload = async (field, e) => {
+    const file = e.target?.files?.[0];
+    if (!file) return;
+    try {
+      const optimizedUrl = await optimizeImageFile(file, { maxWidth: 1600, maxHeight: 1600, quality: 0.85 });
+      if (optimizedUrl) {
+        setFormData(prev => ({
+          ...prev,
+          media_uploads: {
+            ...(prev.media_uploads || {}),
+            [field]: optimizedUrl
+          }
+        }));
+      }
+    } catch (err) {
+      console.warn(`Error optimizing media upload for ${field}:`, err);
+    }
+  };
+
+  const handleRemoveMedia = (field) => {
+    setFormData(prev => ({
+      ...prev,
+      media_uploads: {
+        ...(prev.media_uploads || {}),
+        [field]: ''
+      }
+    }));
+  };
+
   const toggleCondition = (conditionKey) => {
     setFormData(prev => {
       const med = prev.medical_conditions || {};
@@ -309,8 +339,9 @@ export default function FullIntakeForm() {
 
     try {
       setSubmitting(true);
-      const code = sessionStorage.getItem('z_client_code') || '1';
-      const phone = sessionStorage.getItem('z_client_phone') || '01000000000';
+      const rawCode = sessionStorage.getItem('z_client_code') || localStorage.getItem('kz_client_code') || '1';
+      const code = String(rawCode).replace(/^#+/, '').trim();
+      const phone = sessionStorage.getItem('z_client_phone') || localStorage.getItem('kz_client_phone') || '01000000000';
 
       const res = await fetch(`${API_BASE}/api/v1/intake/submit`, {
         method: 'POST',
@@ -356,7 +387,7 @@ export default function FullIntakeForm() {
           </div>
 
           <span style={{ display: 'inline-block', background: '#F1F5F9', color: '#0F172A', border: '1px solid #CBD5E1', padding: '3px 12px', borderRadius: '6px', fontSize: '11px', fontWeight: 800, marginBottom: '12px' }}>
-            كود المشترك: #{sessionStorage.getItem('z_client_code') || '1'}
+            كود المشترك: #{String(sessionStorage.getItem('z_client_code') || localStorage.getItem('kz_client_code') || '1').replace(/^#+/, '')}
           </span>
 
           <h3 style={{ fontWeight: 900, color: '#0F172A', fontSize: '20px', margin: '0 0 10px 0' }}>
@@ -379,7 +410,7 @@ export default function FullIntakeForm() {
           </div>
 
           <a 
-            href={`https://wa.me/${(coachConfig?.whatsappNumber || coachConfig?.supportWhatsapp || '201001060503').replace(/\D/g, '')}`} 
+            href={`https://wa.me/${formatWhatsAppPhone(coachConfig?.whatsappNumber || coachConfig?.supportWhatsapp || '201001060503')}`} 
             target="_blank" 
             rel="noreferrer"
             style={{ 
@@ -1861,27 +1892,130 @@ export default function FullIntakeForm() {
                   تُرفع الصور بأمان تام وتُشفر على الخزينة السحابية لتقييم توزيع الدهون ونقاط الضعف العضلية (3 زوايا: أمامية، جانبية، خلفية).
                 </p>
 
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '10px' }}>
-                  {['أمامية (Front)', 'جانبية (Side)', 'خلفية (Back)'].map((angle, idx) => (
-                    <div 
-                      key={idx}
-                      style={{
-                        padding: '16px 8px',
-                        background: '#FFFFFF',
-                        border: '1.5px dashed #CBD5E1',
-                        borderRadius: '8px',
-                        textAlign: 'center',
-                        display: 'flex',
-                        flexDirection: 'column',
-                        alignItems: 'center',
-                        gap: '4px'
-                      }}
-                    >
-                      <Camera size={22} color="#94A3B8" />
-                      <strong style={{ fontSize: '11.5px', color: '#0F172A' }}>{angle}</strong>
-                      <span style={{ fontSize: '10.5px', color: '#16A34A', fontWeight: 700 }}>جاهز للرفع</span>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '10px', marginBottom: '14px' }}>
+                  {[
+                    { field: 'front_url', title: 'أمامية (Front)' },
+                    { field: 'side_url', title: 'جانبية (Side)' },
+                    { field: 'back_url', title: 'خلفية (Back)' }
+                  ].map((angle) => {
+                    const uploadedUrl = formData.media_uploads?.[angle.field];
+                    return (
+                      <div 
+                        key={angle.field}
+                        style={{
+                          padding: uploadedUrl ? '8px' : '14px 8px',
+                          background: '#FFFFFF',
+                          border: uploadedUrl ? '1.5px solid #16A34A' : '1.5px dashed #CBD5E1',
+                          borderRadius: '8px',
+                          textAlign: 'center',
+                          display: 'flex',
+                          flexDirection: 'column',
+                          alignItems: 'center',
+                          gap: '6px',
+                          position: 'relative'
+                        }}
+                      >
+                        {uploadedUrl ? (
+                          <>
+                            <div style={{ width: '100%', height: '90px', borderRadius: '6px', overflow: 'hidden', background: '#0F172A' }}>
+                              <img 
+                                src={uploadedUrl} 
+                                alt={angle.title} 
+                                style={{ width: '100%', height: '100%', objectFit: 'cover' }} 
+                              />
+                            </div>
+                            <strong style={{ fontSize: '11px', color: '#0F172A', fontWeight: 800 }}>
+                              {angle.title}
+                            </strong>
+                            <div style={{ display: 'flex', gap: '6px', width: '100%' }}>
+                              <label style={{ flex: 1, padding: '4px 0', background: '#F1F5F9', border: '1px solid #CBD5E1', borderRadius: '4px', fontSize: '10.5px', fontWeight: 700, color: '#334155', cursor: 'pointer', textAlign: 'center' }}>
+                                تغيير
+                                <input 
+                                  type="file" 
+                                  accept="image/*" 
+                                  style={{ display: 'none' }} 
+                                  onChange={(e) => handleSingleMediaUpload(angle.field, e)} 
+                                />
+                              </label>
+                              <button 
+                                type="button" 
+                                onClick={() => handleRemoveMedia(angle.field)}
+                                style={{ padding: '4px 8px', background: '#FEE2E2', border: '1px solid #FCA5A5', borderRadius: '4px', color: '#DC2626', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                              >
+                                <Trash2 size={13} />
+                              </button>
+                            </div>
+                          </>
+                        ) : (
+                          <label style={{ cursor: 'pointer', width: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px' }}>
+                            <Camera size={22} color="#94A3B8" />
+                            <strong style={{ fontSize: '11.5px', color: '#0F172A' }}>{angle.title}</strong>
+                            <span style={{ fontSize: '10.5px', color: '#16A34A', fontWeight: 700, padding: '2px 8px', background: '#ECFDF5', borderRadius: '4px' }}>
+                              اختيار صورة
+                            </span>
+                            <input 
+                              type="file" 
+                              accept="image/*" 
+                              style={{ display: 'none' }} 
+                              onChange={(e) => handleSingleMediaUpload(angle.field, e)} 
+                            />
+                          </label>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+
+                {/* InBody Report Section */}
+                <div style={{ borderTop: '1px solid #E2E8F0', paddingTop: '10px' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '8px' }}>
+                    <div>
+                      <strong style={{ fontSize: '12px', color: '#0F172A', display: 'block' }}>
+                        تقرير InBody أو فحص نسبة الدهون (اختياري):
+                      </strong>
+                      <span style={{ fontSize: '11px', color: '#64748B' }}>
+                        إذا كان لديك فحص جهاز InBody أو DEXA حديث يمكنك إرفاقه هنا لمطابقة السوائل والكتلة العضلية.
+                      </span>
                     </div>
-                  ))}
+
+                    {formData.media_uploads?.inbody_report_url ? (
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                        <span style={{ fontSize: '11px', color: '#16A34A', fontWeight: 800, display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+                          <CheckCircle2 size={14} />
+                          تم إرفاق تقرير InBody
+                        </span>
+                        <button 
+                          type="button" 
+                          onClick={() => handleRemoveMedia('inbody_report_url')}
+                          style={{ padding: '4px 8px', background: '#FEE2E2', border: '1px solid #FCA5A5', borderRadius: '4px', color: '#DC2626', cursor: 'pointer', fontSize: '11px', fontWeight: 700 }}
+                        >
+                          حذف
+                        </button>
+                      </div>
+                    ) : (
+                      <label style={{
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: '6px',
+                        padding: '6px 14px',
+                        borderRadius: '6px',
+                        background: '#0F172A',
+                        color: '#FFFFFF',
+                        fontSize: '11.5px',
+                        fontWeight: 700,
+                        cursor: 'pointer'
+                      }}>
+                        <Upload size={13} color="#C4952D" />
+                        <span>إرفاق تقرير InBody</span>
+                        <input 
+                          type="file" 
+                          accept="image/*,application/pdf" 
+                          style={{ display: 'none' }} 
+                          onChange={(e) => handleSingleMediaUpload('inbody_report_url', e)} 
+                        />
+                      </label>
+                    )}
+                  </div>
                 </div>
               </div>
 

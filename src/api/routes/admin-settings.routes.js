@@ -11,7 +11,9 @@ import {
   deleteSubscriptionPackage,
   getAdminFoods,
   saveAdminFood,
-  deleteAdminFood
+  deleteAdminFood,
+  getAdminSystemSettings,
+  saveAdminSystemSettings
 } from '../controllers/admin-settings.controller.js';
 
 const router = express.Router();
@@ -48,6 +50,14 @@ router.put('/foods/:id', (req, res) => {
   return saveAdminFood(req, res);
 });
 router.delete('/foods/:id', deleteAdminFood);
+
+// 5. Global System & Coach Settings
+router.get('/system', getAdminSystemSettings);
+router.post('/system', saveAdminSystemSettings);
+router.put('/system', saveAdminSystemSettings);
+router.get('/settings/system', getAdminSystemSettings);
+router.post('/settings/system', saveAdminSystemSettings);
+router.put('/settings/system', saveAdminSystemSettings);
 
 export default router;
 

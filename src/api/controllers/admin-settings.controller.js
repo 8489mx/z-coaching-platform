@@ -411,7 +411,15 @@ const DEFAULT_EXERCISES_CATALOG = [
 
 export function getExercisesCatalogFile() {
   ensureSettingsDir();
+  const srcCatalogFile = path.join(__dirname, '../../data/exercises-catalog.json');
   if (!fs.existsSync(EXERCISES_CATALOG_FILE)) {
+    if (fs.existsSync(srcCatalogFile)) {
+      const srcRaw = fs.readFileSync(srcCatalogFile, 'utf-8');
+      fs.writeFileSync(EXERCISES_CATALOG_FILE, srcRaw, 'utf-8');
+      try {
+        return JSON.parse(srcRaw);
+      } catch (_) {}
+    }
     fs.writeFileSync(EXERCISES_CATALOG_FILE, JSON.stringify(DEFAULT_EXERCISES_CATALOG, null, 2), 'utf-8');
     return DEFAULT_EXERCISES_CATALOG;
   }
@@ -419,13 +427,24 @@ export function getExercisesCatalogFile() {
     const raw = fs.readFileSync(EXERCISES_CATALOG_FILE, 'utf-8');
     return JSON.parse(raw);
   } catch (e) {
+    if (fs.existsSync(srcCatalogFile)) {
+      try {
+        return JSON.parse(fs.readFileSync(srcCatalogFile, 'utf-8'));
+      } catch (_) {}
+    }
     return DEFAULT_EXERCISES_CATALOG;
   }
 }
 
 export function saveExercisesCatalogFile(data) {
   ensureSettingsDir();
-  fs.writeFileSync(EXERCISES_CATALOG_FILE, JSON.stringify(data, null, 2), 'utf-8');
+  const jsonStr = JSON.stringify(data, null, 2);
+  fs.writeFileSync(EXERCISES_CATALOG_FILE, jsonStr, 'utf-8');
+  try {
+    if (fs.existsSync(srcCatalogFile)) {
+      fs.writeFileSync(srcCatalogFile, jsonStr, 'utf-8');
+    }
+  } catch (_) {}
 }
 
 // ----------------------------------------------------
@@ -501,18 +520,35 @@ export const saveAdminExercise = (req, res) => {
     const exerciseData = req.body;
     let exercises = getExercisesCatalogFile();
 
-    // Extract video ID from youtube URL if provided
+    // Extract video ID from youtube URL if provided (supports standard, shorts, embed, youtu.be)
     let video_id = exerciseData.video_id;
     if (exerciseData.video_url && !video_id) {
-      const match = exerciseData.video_url.match(/(?:v=|\/embed\/|\.be\/)([\w-]{11})/);
-      if (match) video_id = match[1];
+      const match = exerciseData.video_url.match(/(?:youtu\.be\/|youtube\.com\/(?:embed\/|v\/|watch\?v=|watch\?.+&v=|shorts\/))([\w-]{11})/);
+      if (match && match[1]) {
+        video_id = match[1];
+      } else if (/^[\w-]{11}$/.test(exerciseData.video_url.trim())) {
+        video_id = exerciseData.video_url.trim();
+      }
     }
 
     const exId = exerciseData.id || `EX_${Date.now()}`;
-    const idx = exercises.findIndex(e => e.id === exId);
+    const idx = exercises.findIndex(e => e.id === exId || e.code === exId);
+
+    // Extract normalized alternatives (array of IDs)
+    const rawAlternatives = exerciseData.alternatives || [];
+    const newAlternatives = Array.isArray(rawAlternatives)
+      ? Array.from(new Set(rawAlternatives.map(a => String(a?.id || a?.exercise_code || a).trim()).filter(id => id && id !== exId)))
+      : [];
+
+    const existingExercise = idx !== -1 ? exercises[idx] : null;
+    const oldAlternatives = (existingExercise && Array.isArray(existingExercise.alternatives))
+      ? existingExercise.alternatives.map(a => String(a?.id || a?.exercise_code || a).trim())
+      : [];
 
     const fullExercise = {
+      ...(existingExercise || {}),
       id: exId,
+      code: exId,
       name_ar: exerciseData.name_ar || "تمرين جديد",
       name_en: exerciseData.name_en || "New Exercise",
       muscle_group: exerciseData.muscle_group || "CHEST",
@@ -526,7 +562,8 @@ export const saveAdminExercise = (req, res) => {
       mistakes_ar: exerciseData.mistakes_ar || "",
       images: exerciseData.images || (exerciseData.image_stretch ? [exerciseData.image_stretch, exerciseData.image_contraction] : undefined),
       image_stretch: exerciseData.image_stretch || (exerciseData.images && exerciseData.images[0]),
-      image_contraction: exerciseData.image_contraction || (exerciseData.images && exerciseData.images[1])
+      image_contraction: exerciseData.image_contraction || (exerciseData.images && exerciseData.images[1]),
+      alternatives: newAlternatives
     };
 
     if (idx === -1) {
@@ -535,8 +572,41 @@ export const saveAdminExercise = (req, res) => {
       exercises[idx] = { ...exercises[idx], ...fullExercise };
     }
 
+    // Bidirectional Smart Linking Engine:
+    // 1. Automatically link current exId in all added alternatives (A -> B implies B -> A)
+    const toAdd = newAlternatives.filter(altId => !oldAlternatives.includes(altId));
+    toAdd.forEach(altId => {
+      const targetIdx = exercises.findIndex(e => e.id === altId || e.code === altId);
+      if (targetIdx !== -1) {
+        const targetAlts = Array.isArray(exercises[targetIdx].alternatives)
+          ? [...exercises[targetIdx].alternatives]
+          : [];
+        if (!targetAlts.includes(exId)) {
+          targetAlts.push(exId);
+          exercises[targetIdx] = { ...exercises[targetIdx], alternatives: targetAlts };
+        }
+      }
+    });
+
+    // 2. Automatically unlink current exId from removed alternatives (removing A -> B unlinks B -> A)
+    const toRemove = oldAlternatives.filter(altId => !newAlternatives.includes(altId));
+    toRemove.forEach(altId => {
+      const targetIdx = exercises.findIndex(e => e.id === altId || e.code === altId);
+      if (targetIdx !== -1 && Array.isArray(exercises[targetIdx].alternatives)) {
+        exercises[targetIdx] = {
+          ...exercises[targetIdx],
+          alternatives: exercises[targetIdx].alternatives.filter(id => id !== exId)
+        };
+      }
+    });
+
     saveExercisesCatalogFile(exercises);
-    return res.status(200).json({ success: true, message: "تم حفظ التمرين بنجاح", exercise: fullExercise, exercises });
+    return res.status(200).json({ 
+      success: true, 
+      message: "تم حفظ التمرين ومزامنة البدائل التبادلية بنجاح", 
+      exercise: fullExercise, 
+      exercises 
+    });
   } catch (err) {
     return res.status(500).json({ error: "فشل حفظ التمرين", details: err.message });
   }
@@ -546,9 +616,23 @@ export const deleteAdminExercise = (req, res) => {
   try {
     const { id } = req.params;
     let exercises = getExercisesCatalogFile();
-    exercises = exercises.filter(e => e.id !== id);
+    
+    // 1. Remove the exercise itself
+    exercises = exercises.filter(e => e.id !== id && e.code !== id);
+
+    // 2. Clean up bidirectional links in all other exercises
+    exercises = exercises.map(e => {
+      if (Array.isArray(e.alternatives) && (e.alternatives.includes(id) || e.alternatives.some(a => (a?.id || a) === id))) {
+        return {
+          ...e,
+          alternatives: e.alternatives.filter(altId => (altId?.id || altId) !== id)
+        };
+      }
+      return e;
+    });
+
     saveExercisesCatalogFile(exercises);
-    return res.status(200).json({ success: true, message: "تم حذف التمرين بنجاح", exercises });
+    return res.status(200).json({ success: true, message: "تم حذف التمرين وتطهير كافة البدائل المرتبطة بنجاح", exercises });
   } catch (err) {
     return res.status(500).json({ error: "فشل حذف التمرين", details: err.message });
   }
@@ -794,6 +878,80 @@ export const deleteAdminFood = (req, res) => {
     return res.status(200).json({ success: true, message: "تم حذف الصنف من المكتبة بنجاح", foods });
   } catch (err) {
     return res.status(500).json({ error: "فشل حذف الصنف", details: err.message });
+  }
+};
+
+// ----------------------------------------------------
+// GLOBAL SYSTEM & COACH SETTINGS CONTROLLERS
+// ----------------------------------------------------
+export const DEFAULT_SYSTEM_SETTINGS = {
+  // Brand & Theme
+  primaryColor: '#0F172A',
+  hoverColor: '#334155',
+  paletteId: 'slate-navy',
+
+  // Coach Business & Client-facing Info
+  coachName: 'Karim Zakaria',
+  coachTitle: 'أخصائي تغذية رياضية وإعداد بدني معتمد',
+  brandTitle: 'Z COACHING',
+  phone: '01001060503',
+  whatsappNumber: '201001060503',
+  instapayAddress: 'karim@instapay',
+  bankDetails: 'بنك CIB - حساب: 1000XXXXXXXX',
+  instagramUrl: 'https://instagram.com/zcoaching',
+  welcomeMessage: 'أهلاً بك في عائلة Z Coaching! تم تجهيز وتخصيص خطتك التدريبية والغذائية بعناية فائقة لتناسب أهدافك الحيوية.',
+  signatureText: 'معاً نحو نسختك الأقوى • كابتن Karim Zakaria',
+
+  // System Clinical Defaults
+  defaultDailySteps: 8000,
+  defaultWaterLiters: 3.5,
+  defaultRIR: 2,
+  smartAdaptationEnabled: true,
+  autoSaveIntake: true
+};
+
+export function getSystemSettingsFile() {
+  ensureSettingsDir();
+  if (!fs.existsSync(SYSTEM_SETTINGS_FILE)) {
+    try {
+      fs.writeFileSync(SYSTEM_SETTINGS_FILE, JSON.stringify(DEFAULT_SYSTEM_SETTINGS, null, 2), 'utf8');
+      return { ...DEFAULT_SYSTEM_SETTINGS };
+    } catch (e) {
+      return { ...DEFAULT_SYSTEM_SETTINGS };
+    }
+  }
+  try {
+    const raw = fs.readFileSync(SYSTEM_SETTINGS_FILE, 'utf8');
+    const parsed = JSON.parse(raw);
+    return { ...DEFAULT_SYSTEM_SETTINGS, ...parsed };
+  } catch (e) {
+    return { ...DEFAULT_SYSTEM_SETTINGS };
+  }
+}
+
+export function saveSystemSettingsFile(settings) {
+  ensureSettingsDir();
+  const current = getSystemSettingsFile();
+  const updated = { ...current, ...settings };
+  fs.writeFileSync(SYSTEM_SETTINGS_FILE, JSON.stringify(updated, null, 2), 'utf8');
+  return updated;
+}
+
+export const getAdminSystemSettings = (req, res) => {
+  try {
+    const settings = getSystemSettingsFile();
+    return res.status(200).json({ success: true, settings });
+  } catch (err) {
+    return res.status(500).json({ error: "فشل استرجاع إعدادات المنظومة", details: err.message });
+  }
+};
+
+export const saveAdminSystemSettings = (req, res) => {
+  try {
+    const updated = saveSystemSettingsFile(req.body);
+    return res.status(200).json({ success: true, message: "تم حفظ وتحديث إعدادات المنظومة بنجاح", settings: updated });
+  } catch (err) {
+    return res.status(500).json({ error: "فشل حفظ إعدادات المنظومة", details: err.message });
   }
 };
 

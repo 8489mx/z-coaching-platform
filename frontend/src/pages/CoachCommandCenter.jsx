@@ -9,26 +9,27 @@ import LabBiomarkersReviewStudio from '../components/clinical/LabBiomarkersRevie
 import { PageHeader } from '@/shared/components/page-header';
 import { FormSection } from '@/shared/components/form-section';
 import { getUpcomingFastingAlert, extractClientFastingProfile, getFastingCountdown } from '../utils/seasonalFastingRadar';
+import { arabicSearchMatch } from '../utils/searchUtils';
+import { generateWhatsAppUrl } from '../utils/whatsappRemindersEngine';
 
 // Smart 1-Click WhatsApp Pre-filled Message Generator
-export function getWhatsAppMessage(action) {
+export function getWhatsAppMessage(action, raw = false) {
   const name = action?.clientName ? action.clientName.replace(/مشترك #\d+/g, '').trim() : '';
   const namePrefix = name ? `أهلاً ${name}، ` : 'أهلاً بك، ';
   const cleanTier = String(action?.tier || '').includes('MAX') ? 'MAX' : 'ELITE';
 
+  let msg = `${namePrefix}تم استلام استمارتك بنجاح، وجاري مراجعة البيانات وإعداد خطتك التدريبية والغذائية.`;
   if (action?.type === 'INJURY') {
-    return encodeURIComponent(`${namePrefix}بخصوص الملاحظات الطبية أو الإصابة المسجلة في الاستمارة، سنقوم بتعديل التمارين وإضافة البدائل المناسبة لك بالكامل.`);
+    msg = `${namePrefix}بخصوص الملاحظات الطبية أو الإصابة المسجلة في الاستمارة، سنقوم بتعديل التمارين وإضافة البدائل المناسبة لك بالكامل.`;
+  } else if (action?.type === 'CHECKIN') {
+    msg = `${namePrefix}تم استلام تقييمك الأسبوعي بنجاح، وجاري الآن مراجعة القياسات والأداء وتحديث الخطة.`;
+  } else if (action?.type === 'INACTIVE') {
+    msg = `${namePrefix}طمنا عليك يا بطل، لاحظنا غيابك عن تسجيل تمارينك بقالك كام يوم. لو محتاج أي تعديل أو واجهتك أي صعوبة في الخطة، أنا معاك خطوة بخطوة عشان نوصل لهدفك!`;
+  } else if (action?.type === 'RENEWAL') {
+    msg = `${namePrefix}نود تذكيرك بأن اشتراكك في باقة ${cleanTier} قارب على الانتهاء. لتأكيد التجديد والاستمرار يرجى التواصل معنا.`;
   }
-  if (action?.type === 'CHECKIN') {
-    return encodeURIComponent(`${namePrefix}تم استلام تقييمك الأسبوعي بنجاح، وجاري الآن مراجعة القياسات والأداء وتحديث الخطة.`);
-  }
-  if (action?.type === 'INACTIVE') {
-    return encodeURIComponent(`${namePrefix}طمنا عليك يا بطل، لاحظنا غيابك عن تسجيل تمارينك بقالك كام يوم. لو محتاج أي تعديل أو واجهتك أي صعوبة في الخطة، أنا معاك خطوة بخطوة عشان نوصل لهدفك!`);
-  }
-  if (action?.type === 'RENEWAL') {
-    return encodeURIComponent(`${namePrefix}نود تذكيرك بأن اشتراكك في باقة ${cleanTier} قارب على الانتهاء. لتأكيد التجديد والاستمرار يرجى التواصل معنا.`);
-  }
-  return encodeURIComponent(`${namePrefix}تم استلام استمارتك بنجاح، وجاري مراجعة البيانات وإعداد خطتك التدريبية والغذائية.`);
+
+  return raw ? msg : encodeURIComponent(msg);
 }
 
 // Smart Universal Country Detector
@@ -230,7 +231,7 @@ export default function CoachCommandCenter() {
       summary: `متبقي ${c?.days_remaining || 0} أيام على نهاية باقة الاشتراك.`,
       suggestedAction: 'مراسلة المشترك لتجديد الاشتراك',
       badgeText: 'تجديد قريب',
-      actionUrl: `/subscriptions?code=${cleanCode}`,
+      actionUrl: `/coach/financials?code=${cleanCode}`,
       fastingProfile: fasting,
       isCoptic: fasting.isCoptic,
       isRamadan: fasting.isRamadan,
@@ -301,7 +302,7 @@ export default function CoachCommandCenter() {
           : (sub?.status === 'PAID' || sub?.status === 'PAYMENT_CONFIRMED' ? 'تم تأكيد الدفع • الاستمارة جاهزة لإعداد الخطة.' : 'استمارة جديدة بانتظار تجهيز الخطة.'),
         suggestedAction: 'تجهيز واعتماد خطة المشترك',
         badgeText: hasInjury ? 'إصابة مسجلة' : (sub?.status === 'PAID' || sub?.status === 'PAYMENT_CONFIRMED' ? 'مدفوع • بانتظار الخطة' : 'استمارة جديدة'),
-        actionUrl: `/coach/editor?user_id=${cleanCode}`,
+        actionUrl: `/coach/editor/${cleanCode}`,
         fastingProfile: fasting,
         isCoptic: fasting.isCoptic,
         isRamadan: fasting.isRamadan,
@@ -449,19 +450,37 @@ export default function CoachCommandCenter() {
 
     // 3. Search query filter
     if (searchQuery.trim()) {
-      const q = searchQuery.trim().toLowerCase().replace('#', '');
-      const name = String(act.clientName || '').toLowerCase();
-      const code = String(act.clientCode || '').toLowerCase();
-      const phone = String(act.phone || '').toLowerCase();
-      const id = String(act.id || '').toLowerCase();
-      const tier = String(act.tier || '').toLowerCase();
-      const fastingLabel = String(act.fastingProfile?.primaryFastingBadge?.label || '').toLowerCase();
-      const intermittentLabel = String(act.fastingProfile?.intermittentBadge?.label || '').toLowerCase();
-      return name.includes(q) || code.includes(q) || phone.includes(q) || id.includes(q) || tier.includes(q) || fastingLabel.includes(q) || intermittentLabel.includes(q);
+      const q = searchQuery.trim();
+      const qClean = q.replace(/^#+/, '');
+      const code = String(act.clientCode || '').replace(/^client[-_]?/i, '').replace('#', '');
+      const phone = String(act.phone || '');
+      const id = String(act.id || '');
+      const tier = String(act.tier || '');
+      const fastingLabel = String(act.fastingProfile?.primaryFastingBadge?.label || '');
+      const intermittentLabel = String(act.fastingProfile?.intermittentBadge?.label || '');
+      return (
+        arabicSearchMatch(act.clientName, q) ||
+        code.toLowerCase().includes(qClean.toLowerCase()) ||
+        phone.includes(qClean) ||
+        id.toLowerCase().includes(qClean.toLowerCase()) ||
+        tier.toLowerCase().includes(qClean.toLowerCase()) ||
+        arabicSearchMatch(fastingLabel, q) ||
+        arabicSearchMatch(intermittentLabel, q)
+      );
     }
 
     return true;
   });
+
+  const [actionsPage, setActionsPage] = useState(1);
+  const actionsPageSize = 25;
+
+  useEffect(() => {
+    setActionsPage(1);
+  }, [activeTab, fastingFilter, searchQuery]);
+
+  const totalActionPages = Math.ceil(filteredActions.length / actionsPageSize) || 1;
+  const paginatedActions = filteredActions.slice((actionsPage - 1) * actionsPageSize, actionsPage * actionsPageSize);
 
   return (
     <AdminLayout>
@@ -530,7 +549,7 @@ export default function CoachCommandCenter() {
         />
 
         {/* 2. Executive KPI Metric Cards */}
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '14px' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '14px' }}>
           {stats.map((st, i) => {
             const IconComponent = st.icon;
             return (
@@ -896,7 +915,7 @@ export default function CoachCommandCenter() {
                   </div>
                 ) : null
               ) : (
-                filteredActions.map(action => (
+                paginatedActions.map(action => (
                   <div
                     key={action.id}
                     style={{
@@ -914,7 +933,11 @@ export default function CoachCommandCenter() {
                     {/* 1. Top Row: Client Details & Badges */}
                     <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
                       <ClientCodeBadge code={action.clientCode} item={action} />
-                      <strong style={{ fontSize: '13.5px', fontWeight: 800, color: '#0F172A' }}>
+                      <strong 
+                        style={{ fontSize: '13.5px', fontWeight: 800, color: '#0F172A', cursor: 'pointer' }}
+                        onClick={() => navigate(`/customers?code=${action.clientCode}`)}
+                        title="فتح ملف المشترك في لوح المتابعة السريع"
+                      >
                         {action.clientName}
                       </strong>
                       {action.country && (
@@ -999,7 +1022,7 @@ export default function CoachCommandCenter() {
                       <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginRight: 'auto' }}>
                         {action.phone && (
                           <a
-                            href={'https://wa.me/' + ((action.phone.replace(/\D/g, '').startsWith('01')) ? ('2' + action.phone.replace(/\D/g, '')) : action.phone.replace(/\D/g, '')) + '?text=' + getWhatsAppMessage(action)}
+                            href={generateWhatsAppUrl(action.phone, getWhatsAppMessage(action, true))}
                             target="_blank"
                             rel="noreferrer"
                             title="مراسلة عبر واتساب"
@@ -1074,6 +1097,38 @@ export default function CoachCommandCenter() {
                           <HeartPulse size={13} color="#0284C7" />
                           <span>التحاليل</span>
                         </button>
+
+                        {/* Client Slide-over Profile Button */}
+                        <button
+                          type="button"
+                          onClick={() => navigate(`/customers?code=${action.clientCode}`)}
+                          style={{
+                            padding: '4px 10px',
+                            borderRadius: '6px',
+                            border: '1px solid #E2E8F0',
+                            background: '#F8FAFC',
+                            color: '#334155',
+                            fontSize: '11.5px',
+                            fontWeight: 700,
+                            cursor: 'pointer',
+                            display: 'inline-flex',
+                            alignItems: 'center',
+                            gap: '4px',
+                            transition: 'all 0.15s ease'
+                          }}
+                          onMouseEnter={(e) => {
+                            e.currentTarget.style.background = '#F1F5F9';
+                            e.currentTarget.style.borderColor = '#CBD5E1';
+                          }}
+                          onMouseLeave={(e) => {
+                            e.currentTarget.style.background = '#F8FAFC';
+                            e.currentTarget.style.borderColor = '#E2E8F0';
+                          }}
+                          title="عرض سجل التطور الزمني والمقارنة البصرية"
+                        >
+                          <Clock size={13} color="#475569" />
+                          <span>الملف الزمني</span>
+                        </button>
                         <button
                           type="button"
                           onClick={() => {
@@ -1120,9 +1175,73 @@ export default function CoachCommandCenter() {
                           <ExternalLink size={11} style={{ opacity: 0.7 }} />
                         </button>
                       </div>
-
                     </div>
                   ))
+                )}
+
+                {/* Clean Executive Pagination Controls for Daily Actions */}
+                {totalActionPages > 1 && (
+                  <div style={{
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    alignItems: 'center',
+                    padding: '10px 14px',
+                    background: '#F8FAFC',
+                    border: '1px solid #E2E8F0',
+                    borderRadius: '8px',
+                    fontSize: '11.5px',
+                    color: '#64748B',
+                    fontWeight: 600,
+                    flexWrap: 'wrap',
+                    gap: '8px',
+                    marginTop: '10px'
+                  }}>
+                    <span>
+                      عرض الإجراءات من {(actionsPage - 1) * actionsPageSize + 1} إلى {Math.min(actionsPage * actionsPageSize, filteredActions.length)} من أصل {filteredActions.length} إجراء
+                    </span>
+
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                      <button
+                        type="button"
+                        onClick={() => setActionsPage(p => Math.max(1, p - 1))}
+                        disabled={actionsPage === 1}
+                        style={{
+                          padding: '4px 10px',
+                          borderRadius: '5px',
+                          border: '1px solid #CBD5E1',
+                          background: actionsPage === 1 ? '#F1F5F9' : '#FFFFFF',
+                          color: actionsPage === 1 ? '#94A3B8' : '#0F172A',
+                          cursor: actionsPage === 1 ? 'not-allowed' : 'pointer',
+                          fontWeight: 700,
+                          fontSize: '11px'
+                        }}
+                      >
+                        السابق
+                      </button>
+
+                      <span style={{ padding: '0 8px', color: '#0F172A', fontWeight: 800 }}>
+                        صفحة {actionsPage} من {totalActionPages}
+                      </span>
+
+                      <button
+                        type="button"
+                        onClick={() => setActionsPage(p => Math.min(totalActionPages, p + 1))}
+                        disabled={actionsPage === totalActionPages}
+                        style={{
+                          padding: '4px 10px',
+                          borderRadius: '5px',
+                          border: '1px solid #CBD5E1',
+                          background: actionsPage === totalActionPages ? '#F1F5F9' : '#FFFFFF',
+                          color: actionsPage === totalActionPages ? '#94A3B8' : '#0F172A',
+                          cursor: actionsPage === totalActionPages ? 'not-allowed' : 'pointer',
+                          fontWeight: 700,
+                          fontSize: '11px'
+                        }}
+                      >
+                        التالي
+                      </button>
+                    </div>
+                  </div>
                 )}
               </div>
 
@@ -1252,7 +1371,7 @@ export default function CoachCommandCenter() {
                             <div style={{ display: 'flex', alignItems: 'center', gap: '6px', borderTop: '1px solid #F1F5F9', paddingTop: '8px', flexWrap: 'wrap' }}>
                               <button
                                 type="button"
-                                onClick={() => navigate(`/coach/editor?user_id=${cleanCode}`)}
+                                onClick={() => window.open(`/coach/editor/${cleanCode}`, '_blank')}
                                 style={{
                                   flex: 1,
                                   background: '#0F172A',
@@ -1269,9 +1388,9 @@ export default function CoachCommandCenter() {
                                 تكييف الخطة / المحرر
                               </button>
 
-                              {normalizedPhone && (
+                              {(client.phone_number || client.phone) && (
                                 <a
-                                  href={`https://wa.me/${normalizedPhone}?text=${encodeURIComponent(`أهلاً بك يا ${client.full_name || ''}، معك كابتن كريم زكريا - بخصوص برنامجك التدريبي والتغذوي...`)}`}
+                                  href={generateWhatsAppUrl(client.phone_number || client.phone, `أهلاً بك يا ${client.full_name || ''}، معك كابتن كريم زكريا - بخصوص برنامجك التدريبي والتغذوي...`)}
                                   target="_blank"
                                   rel="noreferrer"
                                   style={{
@@ -1292,7 +1411,7 @@ export default function CoachCommandCenter() {
 
                               <button
                                 type="button"
-                                onClick={() => navigate(`/customers?search=${cleanCode}`)}
+                                onClick={() => navigate(`/customers?code=${cleanCode}`)}
                                 style={{
                                   background: '#F8FAFC',
                                   color: '#475569',
@@ -1303,9 +1422,9 @@ export default function CoachCommandCenter() {
                                   fontWeight: 700,
                                   cursor: 'pointer'
                                 }}
-                                title="عرض في المشتركين"
+                                title="عرض ملف المشترك في لوح المتابعة السريع"
                               >
-                                الملف
+                                الملف الزمني
                               </button>
                             </div>
                           </div>

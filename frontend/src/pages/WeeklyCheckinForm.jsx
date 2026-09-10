@@ -1,8 +1,11 @@
-import React, { useState, useMemo } from 'react';
-import { Camera, Scale, Battery, Moon, Utensils, ChevronLeft, ChevronRight, CheckCircle2, Loader2, Activity, Clock } from 'lucide-react';
+import React, { useState, useMemo, useRef } from 'react';
+import { Camera, Scale, Battery, Moon, Utensils, ChevronLeft, ChevronRight, CheckCircle2, Loader2, Activity, Clock, Trash2, Check, UploadCloud, MessageCircle, User, AlertCircle } from 'lucide-react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { API_BASE } from '../config/api';
 import { getUpcomingFastingAlert } from '../utils/seasonalFastingRadar';
+import { optimizeImageFile } from '../utils/imageOptimizer';
+import { getStoredCoachConfig } from '../utils/themeAndCoachConfig';
+import { formatWhatsAppPhone } from '../utils/whatsappRemindersEngine';
 
 export default function WeeklyCheckinForm() {
   const navigate = useNavigate();
@@ -11,7 +14,20 @@ export default function WeeklyCheckinForm() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState('');
 
+  // Client Identification (URL Query > localStorage > sessionStorage)
+  const initialClientCode = useMemo(() => {
+    const qCode = searchParams.get('code') || searchParams.get('user_id') || '';
+    if (qCode.trim() && qCode.trim().toLowerCase() !== 'guest') return qCode.trim();
+    const stored = localStorage.getItem('kz_client_code') || sessionStorage.getItem('z_client_code') || '';
+    return stored && stored.toLowerCase() !== 'guest' ? stored : '';
+  }, [searchParams]);
+
+  const [clientIdentifier, setClientIdentifier] = useState(initialClientCode);
+  const [isEditingCode, setIsEditingCode] = useState(!initialClientCode);
+
   const upcomingFasting = useMemo(() => getUpcomingFastingAlert(), []);
+  const coachConfig = useMemo(() => getStoredCoachConfig(), []);
+  const coachWhatsApp = useMemo(() => formatWhatsAppPhone(coachConfig?.whatsappNumber || coachConfig?.supportWhatsapp || '201001060503'), [coachConfig]);
 
   const [formData, setFormData] = useState({
     weight_kg: '',
@@ -27,22 +43,88 @@ export default function WeeklyCheckinForm() {
     fasting_transition: 'MAINTAIN_BASELINE'
   });
 
+  // Weekly Progress Photos (Front, Side, Back)
+  const [photos, setPhotos] = useState({
+    FRONT: null,
+    SIDE: null,
+    BACK: null
+  });
+  const [compressingAngle, setCompressingAngle] = useState(null);
+
+  const handlePhotoSelect = async (angle, file) => {
+    if (!file) return;
+    try {
+      setCompressingAngle(angle);
+      const originalSizeKB = Math.round(file.size / 1024);
+
+      // Compress locally in browser via Canvas/WebP (Zero External Dependencies)
+      const compressedDataUrl = await optimizeImageFile(file, {
+        maxWidth: 1600,
+        maxHeight: 1600,
+        quality: 0.82,
+        preferredFormat: 'image/webp'
+      });
+
+      const base64Length = compressedDataUrl.length - (compressedDataUrl.indexOf(',') + 1);
+      const compressedSizeKB = Math.round((base64Length * 3) / 4 / 1024);
+
+      setPhotos(prev => ({
+        ...prev,
+        [angle]: {
+          dataUrl: compressedDataUrl,
+          originalSizeKB,
+          compressedSizeKB,
+          name: file.name
+        }
+      }));
+    } catch (err) {
+      console.warn('Image optimization error:', err);
+    } finally {
+      setCompressingAngle(null);
+    }
+  };
+
+  const handleRemovePhoto = (angle) => {
+    setPhotos(prev => ({
+      ...prev,
+      [angle]: null
+    }));
+  };
+
   const handleSubmit = async () => {
     setIsSubmitting(true);
     setError('');
     
     try {
-      const qCode = searchParams.get('code') || searchParams.get('user_id') || '';
-      const clientCode = qCode.trim() || localStorage.getItem('kz_client_code') || sessionStorage.getItem('z_client_code') || 'guest';
+      const rawCode = clientIdentifier.trim() || searchParams.get('code') || searchParams.get('user_id') || localStorage.getItem('kz_client_code') || sessionStorage.getItem('z_client_code') || '';
+      const clientCode = String(rawCode).replace(/^#+/, '').replace(/^client[-_]?/i, '').trim();
+      
+      if (!clientCode || clientCode.toLowerCase() === 'guest') {
+        setError('يرجى إدخال كود المشترك أو رقم الهاتف المسجل أولاً لربط التقييم بملفك');
+        setStep(1);
+        setIsSubmitting(false);
+        return;
+      }
+
+      const photosPayload = Object.entries(photos)
+        .filter(([_, p]) => p && p.dataUrl)
+        .map(([pose, p]) => ({
+          pose,
+          photo_url: p.dataUrl,
+          notes: `حجم مضغوط: ${p.compressedSizeKB}KB (توفير ${Math.max(0, Math.round((1 - p.compressedSizeKB / p.originalSizeKB) * 100))}%)`
+        }));
+
       const payload = {
         user_id: clientCode,
+        client_code: clientCode,
         weight_kg: formData.weight_kg,
         waist_circumference_cm: formData.waist_circumference_cm || null,
         nutrition_adherence_percent: formData.nutrition_adherence_percent,
         workouts_completed: formData.workouts_completed,
         biofeedback: formData.biofeedback,
         client_notes: formData.client_notes,
-        fasting_transition: formData.fasting_transition
+        fasting_transition: formData.fasting_transition,
+        photos: photosPayload
       };
 
       const res = await fetch(`${API_BASE}/api/v1/checkin`, {
@@ -51,13 +133,24 @@ export default function WeeklyCheckinForm() {
         body: JSON.stringify(payload)
       });
 
-      if (!res.ok) {
-        // Fallback for demo
+      const data = await res.json().catch(() => null);
+
+      if (!res.ok || (data && data.success === false)) {
+        const errorMsg = data?.error === 'Client not found'
+          ? `تعذر العثور على حساب المشترك بالكود أو الرقم المدخل (#${clientCode}). يرجى التأكد من كتابة الكود أو رقم الهاتف المسجل لدى الكابتن والمحاولة ثانية.`
+          : (data?.error || 'حدث خطأ أثناء حفظ التقييم الأسبوعي. يرجى مراجعة البيانات والمحاولة مجدداً.');
+        setError(errorMsg);
+        setStep(1);
+        return;
       }
 
+      // Success: persist code for future check-ins
+      localStorage.setItem('kz_client_code', clientCode);
       setStep(4); // Success step
     } catch (err) {
-      setStep(4);
+      console.error('Submit checkin error:', err);
+      setError('تعذر الاتصال بالخادم لإرسال التقييم الأسبوعي. يرجى التحقق من اتصال الإنترنت والمحاولة مرة أخرى دون قلق، فبياناتك وصورك محفوظة.');
+      setStep(1);
     } finally {
       setIsSubmitting(false);
     }
@@ -147,8 +240,9 @@ export default function WeeklyCheckinForm() {
         </div>
 
         {error && (
-          <div style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', color: '#DC2626', padding: '10px 14px', borderRadius: '8px', fontSize: '12px', fontWeight: 700, textAlign: 'center' }}>
-            {error}
+          <div style={{ background: '#FEF2F2', border: '1px solid #FCA5A5', color: '#B91C1C', padding: '12px 16px', borderRadius: '8px', fontSize: '12.5px', fontWeight: 700, textAlign: 'right', display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <AlertCircle size={18} color="#DC2626" style={{ flexShrink: 0 }} />
+            <span>{error}</span>
           </div>
         )}
 
@@ -157,6 +251,73 @@ export default function WeeklyCheckinForm() {
           <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
             <div style={{ background: '#FFFFFF', border: '1px solid #E2E8F0', borderRadius: '12px', padding: '20px', display: 'flex', flexDirection: 'column', gap: '16px', boxShadow: '0 1px 3px rgba(15, 23, 42, 0.04)' }}>
               
+              {/* Client Identification Card */}
+              <div style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', borderRadius: '8px', padding: '14px' }}>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: isEditingCode ? '8px' : '0' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                    <User size={16} color="#0284C7" />
+                    <span style={{ fontSize: '12px', fontWeight: 700, color: '#0F172A' }}>
+                      بيانات المشترك
+                    </span>
+                  </div>
+                  {clientIdentifier && (
+                    <button
+                      type="button"
+                      onClick={() => setIsEditingCode(!isEditingCode)}
+                      style={{
+                        background: 'transparent',
+                        border: 'none',
+                        color: '#0284C7',
+                        fontSize: '11px',
+                        fontWeight: 700,
+                        cursor: 'pointer',
+                        padding: '2px 6px'
+                      }}
+                    >
+                      {isEditingCode ? 'إغلاق' : 'تعديل الكود أو الهاتف'}
+                    </button>
+                  )}
+                </div>
+
+                {isEditingCode ? (
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                    <label style={{ fontSize: '11px', color: '#64748B', fontWeight: 600 }}>
+                      أدخل كود اشتراكك (مثال: #1001) أو رقم الهاتف المسجل لربط التقييم بملفك لدى الكوتش *
+                    </label>
+                    <input
+                      type="text"
+                      value={clientIdentifier}
+                      onChange={(e) => {
+                        setClientIdentifier(e.target.value);
+                        if (error) setError('');
+                      }}
+                      placeholder="مثال: #1001 أو 010XXXXXXXX"
+                      style={{
+                        width: '100%',
+                        height: '38px',
+                        borderRadius: '6px',
+                        border: '1px solid #CBD5E1',
+                        padding: '0 12px',
+                        fontSize: '13px',
+                        fontWeight: 700,
+                        fontFamily: 'JetBrains Mono, Cairo',
+                        color: '#0F172A',
+                        outline: 'none',
+                        background: '#FFFFFF',
+                        boxSizing: 'border-box'
+                      }}
+                    />
+                  </div>
+                ) : (
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: '4px' }}>
+                    <span style={{ fontSize: '11.5px', color: '#64748B' }}>الكود المسجل للتقييم الأسبوعي:</span>
+                    <span style={{ fontSize: '12.5px', fontWeight: 800, color: '#0F172A', fontFamily: 'JetBrains Mono, Cairo', background: '#FFFFFF', padding: '3px 10px', borderRadius: '4px', border: '1px solid #CBD5E1' }}>
+                      #{clientIdentifier.replace(/^#+/, '')}
+                    </span>
+                  </div>
+                )}
+              </div>
+
               <div style={{ display: 'flex', alignItems: 'center', gap: '8px', borderBottom: '1px solid #F1F5F9', paddingBottom: '10px' }}>
                 <Scale size={18} color="#0284C7" />
                 <strong style={{ fontSize: '14px', color: '#0F172A' }}>الوزن الحالي والمقاسات</strong>
@@ -226,36 +387,118 @@ export default function WeeklyCheckinForm() {
 
             </div>
 
-            {/* Photo Upload Section */}
-            <div style={{ background: '#FFFFFF', border: '1px solid #E2E8F0', borderRadius: '12px', padding: '20px', display: 'flex', flexDirection: 'column', gap: '12px', boxShadow: '0 1px 3px rgba(15, 23, 42, 0.04)' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                <Camera size={18} color="#D97706" />
-                <strong style={{ fontSize: '14px', color: '#0F172A' }}>صور التطور الأسبوعي</strong>
+            {/* Photo Upload Section with Self-Contained Local Compression */}
+            <div style={{ background: '#FFFFFF', border: '1px solid #E2E8F0', borderRadius: '12px', padding: '16px', display: 'flex', flexDirection: 'column', gap: '10px', boxShadow: '0 1px 3px rgba(15, 23, 42, 0.04)' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <Camera size={18} color="#D97706" />
+                  <strong style={{ fontSize: '13.5px', color: '#0F172A' }}>صور التطور الأسبوعي (3 زوايا)</strong>
+                </div>
+                <span style={{ fontSize: '10.5px', color: '#16A34A', background: '#F0FDF4', padding: '2px 8px', borderRadius: '4px', fontWeight: 700 }}>
+                  ضغط محلي ذكي فائق الوضوح
+                </span>
               </div>
-              <span style={{ fontSize: '11px', color: '#64748B' }}>يرجى رفع صور واضحة بنفس الإضاءة وزاوية التصوير (الأمام، الجنب، الخلف).</span>
+              <span style={{ fontSize: '11px', color: '#64748B' }}>يرجى رفع صور واضحة بنفس الإضاءة وزاوية التصوير للمقارنة الدقيقة قبل وبعد.</span>
 
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '10px', marginTop: '6px' }}>
-                {['الأمام', 'الجانب', 'الظهر'].map((label, idx) => (
-                  <div 
-                    key={idx}
-                    style={{
-                      border: '2px dashed #CBD5E1',
-                      borderRadius: '8px',
-                      background: '#F8FAFC',
-                      padding: '24px 8px',
-                      display: 'flex',
-                      flexDirection: 'column',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      gap: '6px',
-                      cursor: 'pointer',
-                      color: '#64748B'
-                    }}
-                  >
-                    <Camera size={20} />
-                    <span style={{ fontSize: '11px', fontWeight: 700 }}>{label}</span>
-                  </div>
-                ))}
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '10px', marginTop: '4px' }}>
+                {[
+                  { id: 'FRONT', label: 'الأمام' },
+                  { id: 'SIDE', label: 'الجانب' },
+                  { id: 'BACK', label: 'الظهر' }
+                ].map((item) => {
+                  const photoData = photos[item.id];
+                  const isCompressing = compressingAngle === item.id;
+
+                  return (
+                    <div
+                      key={item.id}
+                      style={{
+                        border: photoData ? '1px solid #10B981' : '2px dashed #CBD5E1',
+                        borderRadius: '8px',
+                        background: photoData ? '#F0FDF4' : '#F8FAFC',
+                        padding: '10px',
+                        display: 'flex',
+                        flexDirection: 'column',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        position: 'relative',
+                        minHeight: '135px',
+                        boxSizing: 'border-box'
+                      }}
+                    >
+                      {isCompressing ? (
+                        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '6px' }}>
+                          <Loader2 size={22} color="#0284C7" className="animate-spin" />
+                          <span style={{ fontSize: '10px', color: '#0369A1', fontWeight: 700 }}>جاري الضغط...</span>
+                        </div>
+                      ) : photoData ? (
+                        <div style={{ width: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '6px' }}>
+                          <img
+                            src={photoData.dataUrl}
+                            alt={item.label}
+                            style={{
+                              width: '100%',
+                              height: '90px',
+                              objectFit: 'cover',
+                              borderRadius: '6px',
+                              border: '1px solid #E2E8F0'
+                            }}
+                          />
+                          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%' }}>
+                            <span style={{ fontSize: '10px', fontWeight: 800, color: '#166534' }}>
+                              {item.label} (~{photoData.compressedSizeKB}KB)
+                            </span>
+                            <button
+                              type="button"
+                              onClick={() => handleRemovePhoto(item.id)}
+                              style={{
+                                background: '#FEE2E2',
+                                border: 'none',
+                                borderRadius: '4px',
+                                padding: '3px',
+                                color: '#EF4444',
+                                cursor: 'pointer',
+                                display: 'inline-flex',
+                                alignItems: 'center'
+                              }}
+                              title="حذف الصورة"
+                            >
+                              <Trash2 size={12} />
+                            </button>
+                          </div>
+                        </div>
+                      ) : (
+                        <label
+                          style={{
+                            width: '100%',
+                            height: '100%',
+                            display: 'flex',
+                            flexDirection: 'column',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            gap: '6px',
+                            cursor: 'pointer',
+                            color: '#64748B'
+                          }}
+                        >
+                          <Camera size={22} color="#94A3B8" />
+                          <span style={{ fontSize: '11.5px', fontWeight: 700, color: '#0F172A' }}>{item.label}</span>
+                          <span style={{ fontSize: '9.5px', color: '#94A3B8' }}>اضغط للرفع</span>
+                          <input
+                            type="file"
+                            accept="image/*"
+                            onChange={(e) => {
+                              if (e.target.files && e.target.files[0]) {
+                                handlePhotoSelect(item.id, e.target.files[0]);
+                              }
+                            }}
+                            style={{ display: 'none' }}
+                          />
+                        </label>
+                      )}
+                    </div>
+                  );
+                })}
               </div>
             </div>
           </div>
@@ -469,32 +712,102 @@ export default function WeeklyCheckinForm() {
 
         {/* STEP 4: Success */}
         {step === 4 && (
-          <div style={{ background: '#FFFFFF', border: '1px solid #E2E8F0', borderRadius: '12px', padding: '36px 20px', textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '14px', boxShadow: '0 4px 20px rgba(15, 23, 42, 0.05)' }}>
-            <div style={{ width: '56px', height: '56px', borderRadius: '50%', background: '#F8FAFC', border: '1px solid #E2E8F0', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#16A34A' }}>
+          <div style={{ background: '#FFFFFF', border: '1px solid #E2E8F0', borderRadius: '12px', padding: '32px 20px', textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '14px', boxShadow: '0 4px 20px rgba(15, 23, 42, 0.05)' }}>
+            <div style={{ width: '56px', height: '56px', borderRadius: '50%', background: '#ECFDF5', border: '1px solid #A7F3D0', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#16A34A' }}>
               <CheckCircle2 size={32} />
             </div>
-            <h2 style={{ margin: 0, fontSize: '18px', fontWeight: 800, color: '#0F172A' }}>تم إرسال التقييم الأسبوعي بنجاح</h2>
-            <p style={{ margin: 0, fontSize: '12px', color: '#64748B', maxWidth: '380px', lineHeight: 1.6 }}>
-              سيقوم الكوتش بمراجعة تطورك وأوزانك وتحديث خطتك وتوجيهات الأسبوع القادم في أقرب وقت.
-            </p>
-            <button 
-              type="button" 
-              onClick={() => navigate('/coach/checkin-review')} 
-              style={{
-                marginTop: '10px',
-                height: '38px',
-                padding: '0 24px',
-                background: '#0F172A',
-                color: '#FFFFFF',
-                borderRadius: '8px',
-                fontSize: '12px',
-                fontWeight: 700,
-                border: 'none',
-                cursor: 'pointer'
-              }}
-            >
-              الانتقال للوحة مراجعة التقييمات
-            </button>
+            
+            <div>
+              <h2 style={{ margin: '0 0 6px 0', fontSize: '18px', fontWeight: 800, color: '#0F172A' }}>تم إرسال التقييم الأسبوعي بنجاح</h2>
+              <p style={{ margin: 0, fontSize: '12px', color: '#64748B', maxWidth: '420px', lineHeight: 1.6 }}>
+                تم استلام قياساتك ومؤشراتك الحيوية وصور التطور بنجاح. يقوم الكوتش بمراجعة أدائك لتحديث الخطة وتوجيهات الأسبوع القادم.
+              </p>
+            </div>
+
+            {/* Quick Metrics Summary Box */}
+            <div style={{ width: '100%', maxWidth: '400px', background: '#F8FAFC', border: '1px solid #E2E8F0', borderRadius: '8px', padding: '12px 16px', textAlign: 'right', fontSize: '12px', display: 'flex', flexDirection: 'column', gap: '6px' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                <span style={{ color: '#64748B' }}>الوزن المسجل:</span>
+                <strong style={{ color: '#0F172A', fontFamily: 'JetBrains Mono, Cairo' }}>{formData.weight_kg} كجم</strong>
+              </div>
+              {formData.waist_circumference_cm && (
+                <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                  <span style={{ color: '#64748B' }}>محيط الخصر:</span>
+                  <strong style={{ color: '#0F172A', fontFamily: 'JetBrains Mono, Cairo' }}>{formData.waist_circumference_cm} سم</strong>
+                </div>
+              )}
+              <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                <span style={{ color: '#64748B' }}>نسبة الالتزام بالدايت:</span>
+                <strong style={{ color: '#16A34A' }}>{formData.nutrition_adherence_percent}%</strong>
+              </div>
+              <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                <span style={{ color: '#64748B' }}>جلسات التمرين المنجزة:</span>
+                <strong style={{ color: '#0F172A' }}>{formData.workouts_completed} أيام</strong>
+              </div>
+            </div>
+
+            {/* Actions Grid */}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', width: '100%', maxWidth: '400px', marginTop: '6px' }}>
+              <a 
+                href={`https://wa.me/${coachWhatsApp}?text=${encodeURIComponent(`كابتن، قمت بإرسال تقييم المتابعة الأسبوعية.\nالوزن الحالي: ${formData.weight_kg} كجم\nالالتزام بالدايت: ${formData.nutrition_adherence_percent}%\nجلسات التمرين: ${formData.workouts_completed} أيام`)}`}
+                target="_blank"
+                rel="noreferrer"
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: '8px',
+                  background: '#16A34A',
+                  color: '#FFFFFF',
+                  height: '42px',
+                  borderRadius: '8px',
+                  fontWeight: 800,
+                  fontSize: '13px',
+                  textDecoration: 'none',
+                  boxShadow: '0 3px 10px rgba(22, 163, 74, 0.25)'
+                }}
+              >
+                <MessageCircle size={16} />
+                <span>إشعار الكابتن عبر WhatsApp بتحديث الوزن</span>
+              </a>
+
+              <button 
+                type="button" 
+                onClick={() => navigate('/client/today')} 
+                style={{
+                  height: '40px',
+                  borderRadius: '8px',
+                  background: '#0F172A',
+                  color: '#FFFFFF',
+                  fontSize: '12.5px',
+                  fontWeight: 700,
+                  border: 'none',
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center'
+                }}
+              >
+                العودة إلى تطبيقي اليومي
+              </button>
+
+              <button 
+                type="button" 
+                onClick={() => navigate('/coach/checkin-review')} 
+                style={{
+                  height: '34px',
+                  borderRadius: '6px',
+                  background: '#FFFFFF',
+                  color: '#64748B',
+                  fontSize: '11px',
+                  fontWeight: 600,
+                  border: '1px solid #CBD5E1',
+                  cursor: 'pointer'
+                }}
+              >
+                معاينة لوحة مراجعة التقييمات للكوتش
+              </button>
+            </div>
           </div>
         )}
 
@@ -531,9 +844,16 @@ export default function WeeklyCheckinForm() {
               <button 
                 type="button"
                 onClick={() => {
-                  if (step === 1 && !formData.weight_kg) {
-                    setError('يرجى إدخال وزنك الحالي قبل المتابعة');
-                    return;
+                  if (step === 1) {
+                    const clean = clientIdentifier.trim().replace(/^#+/, '').replace(/^client[-_]?/i, '');
+                    if (!clean || clean.toLowerCase() === 'guest') {
+                      setError('يرجى إدخال كود المشترك أو رقم الهاتف المسجل للمتابعة');
+                      return;
+                    }
+                    if (!formData.weight_kg) {
+                      setError('يرجى إدخال وزنك الحالي قبل المتابعة');
+                      return;
+                    }
                   }
                   setError('');
                   setStep(step + 1);

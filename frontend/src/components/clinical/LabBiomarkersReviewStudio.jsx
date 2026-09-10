@@ -27,6 +27,7 @@ import {
   evaluateClinicalBiomarkers 
 } from '../../utils/clinicalBiomarkerEngine';
 import { optimizeImageFile } from '../../utils/imageOptimizer';
+import { generateWhatsAppUrl } from '../../utils/whatsappRemindersEngine';
 
 export default function LabBiomarkersReviewStudio({
   client = {},
@@ -167,9 +168,7 @@ export default function LabBiomarkersReviewStudio({
       });
     }
 
-    const phone = client.phone_number || '';
-    const cleanPhone = phone.replace(/[^0-9]/g, '');
-    const url = `https://wa.me/${cleanPhone}?text=${encodeURIComponent(lines.join('\n'))}`;
+    const url = generateWhatsAppUrl(client.phone_number, lines.join('\n'));
     window.open(url, '_blank');
   };
 

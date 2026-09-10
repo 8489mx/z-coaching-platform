@@ -3,6 +3,8 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import ReactDOM from 'react-dom';
 import { X, CheckCircle2, AlertTriangle, HeartPulse, Dumbbell, Activity, Apple, Camera, MessageCircle, User, ZoomIn, ShieldAlert, Utensils, Flame, Scale, Check, Ban, ShieldCheck, Zap, ExternalLink } from 'lucide-react';
+import { formatWhatsAppPhone } from '../../utils/whatsappRemindersEngine';
+import { extractClientFastingProfile } from '../../utils/seasonalFastingRadar';
 
 // Helpers to translate codes to human-readable Arabic
 const GOALS_MAP = {
@@ -132,28 +134,63 @@ export default function IntakeAuditDetailModal({
   if (!submission) return null;
 
   const answers = submission.answers || {};
-  const personal = answers.personal || {};
-  const goals = answers.goals || {};
-  const body = answers.body || {};
-  const lifestyle = answers.lifestyle || {};
-  const medical = answers.medical || {};
-  const nutrition = answers.nutrition || {};
-  const training = answers.training || {};
+  const personal = answers.personal || {
+    firstName: (submission.user?.full_name || answers.full_name || '').split(' ')[0] || '',
+    lastName: (submission.user?.full_name || answers.full_name || '').split(' ').slice(1).join(' ') || '',
+    age: answers.age,
+    sex: answers.gender === 'female' ? 'FEMALE' : 'MALE'
+  };
+  const goals = answers.goals || {
+    primary: answers.primary_goal ? String(answers.primary_goal).toUpperCase() : 'FAT_LOSS'
+  };
+  const body = answers.body || {
+    heightCm: answers.height_cm,
+    weightKg: answers.weight_kg,
+    waistCm: answers.circumferences?.waist_cm,
+    neckCm: answers.circumferences?.neck_cm,
+    hipCm: answers.circumferences?.hips_cm
+  };
+  const circumferences = answers.circumferences || body.circumferences || {};
+  const lifestyle = answers.lifestyle || {
+    dailyActivity: answers.neat_level ? String(answers.neat_level).toUpperCase() : 'MODERATE'
+  };
+  const medical = answers.medical || {
+    conditions: Array.isArray(answers.medical_conditions?.selected) ? answers.medical_conditions.selected.map(c => ({ conditionCode: String(c).toUpperCase() })) : []
+  };
+  const nutrition = answers.nutrition || {
+    preferredMealCount: answers.meal_structure?.meals_count === '2_meals' ? 2 : (answers.meal_structure?.meals_count === '4_meals' ? 4 : (answers.meal_structure?.meals_count === '5_meals' ? 5 : 3)),
+    excludedFoodsList: answers.strict_allergies || [],
+    dislikedFoods: answers.disliked_foods || []
+  };
+  const training = answers.training || {
+    location: answers.training_environment === 'home_gym' ? 'HOME' : 'GYM',
+    preferredDaysPerWeek: answers.training_logistics?.days_per_week || 4,
+    experience: answers.training_logistics?.experience_level ? String(answers.training_logistics.experience_level).toUpperCase() : 'INTERMEDIATE',
+    selectedInjuries: Array.isArray(answers.injuries_map?.selected_areas) ? answers.injuries_map.selected_areas : [],
+    targetFocusMuscles: answers.focus_muscles || []
+  };
   const cardio = answers.cardio || {};
-  const photos = body.photos || {};
+  const photos = body.photos || {
+    front: answers.media_uploads?.front_url,
+    side: answers.media_uploads?.side_url,
+    back: answers.media_uploads?.back_url,
+    inbody: answers.media_uploads?.inbody_report_url
+  };
+  const inbodyPhoto = photos.inbody || answers.media_uploads?.inbody_report_url;
+  const medicalReportsList = answers.media_uploads?.medical_reports_urls || [];
 
   const clientName = submission.user?.full_name || `${personal.firstName || ''} ${personal.lastName || ''}`.trim() || 'متدرب جديد';
   const clientCode = String(submission.user?.client_code || submission.id || '1').replace(/^client[-_]?/i, '');
   const clientPhone = submission.user?.phone_number || personal.phone || '';
 
   // Calculations
-  const heightCm = Number(body.heightCm) || 170;
+  const heightCm = Number(body.heightCm || answers.height_cm) || 170;
   const heightM = heightCm / 100;
-  const weightKg = Number(body.weightKg) || 70;
+  const weightKg = Number(body.weightKg || answers.weight_kg) || 70;
   const bmi = (weightKg / (heightM * heightM)).toFixed(1);
 
-  const ageNum = Number(personal.age) || (personal.dateOfBirth ? (new Date().getFullYear() - new Date(personal.dateOfBirth).getFullYear()) : 30);
-  const sexIsFemale = personal.sex === 'FEMALE';
+  const ageNum = Number(personal.age || answers.age) || (personal.dateOfBirth ? (new Date().getFullYear() - new Date(personal.dateOfBirth).getFullYear()) : 30);
+  const sexIsFemale = personal.sex === 'FEMALE' || answers.gender === 'female';
   const bmr = Math.round(10 * weightKg + 6.25 * heightCm - 5 * ageNum + (sexIsFemale ? -161 : 5));
   const activityMultipliers = { SEDENTARY: 1.2, LIGHT: 1.375, MODERATE: 1.55, HIGH: 1.725 };
   const tdee = Math.round(bmr * (activityMultipliers[lifestyle.dailyActivity] || 1.375));
@@ -184,8 +221,7 @@ export default function IntakeAuditDetailModal({
 
   const handleOpenWhatsApp = () => {
     if (!clientPhone) return;
-    let cleanPhone = clientPhone.replace(/\D/g, '');
-    if (cleanPhone.startsWith('01')) cleanPhone = '2' + cleanPhone;
+    const cleanPhone = formatWhatsAppPhone(clientPhone);
     const msg = `مرحباً يا ${clientName}، استلمت استمارتك في Z Coaching وقمت بمراجعة بياناتك وجاري تجهيز خطتك المخصصة`;
     window.open(`https://wa.me/${cleanPhone}?text=${encodeURIComponent(msg)}`, '_blank');
   };
@@ -246,6 +282,39 @@ export default function IntakeAuditDetailModal({
                 }}>
                   #{clientCode}
                 </span>
+              );
+            })()}
+            {(() => {
+              const fasting = extractClientFastingProfile(submission, answers);
+              return (
+                <>
+                  {fasting.primaryFastingBadge && (
+                    <span style={{ 
+                      fontSize: '10px', 
+                      padding: '1px 6px', 
+                      borderRadius: '4px', 
+                      background: fasting.primaryFastingBadge.bg, 
+                      border: `1px solid ${fasting.primaryFastingBadge.border}`, 
+                      color: fasting.primaryFastingBadge.color, 
+                      fontWeight: 800 
+                    }}>
+                      {fasting.primaryFastingBadge.label}
+                    </span>
+                  )}
+                  {fasting.intermittentBadge && (
+                    <span style={{ 
+                      fontSize: '10px', 
+                      padding: '1px 6px', 
+                      borderRadius: '4px', 
+                      background: fasting.intermittentBadge.bg, 
+                      border: `1px solid ${fasting.intermittentBadge.border}`, 
+                      color: fasting.intermittentBadge.color, 
+                      fontWeight: 800 
+                    }}>
+                      {fasting.intermittentBadge.label}
+                    </span>
+                  )}
+                </>
               );
             })()}
           </div>
@@ -384,28 +453,50 @@ export default function IntakeAuditDetailModal({
                       BMR ~{bmr}  |  TDEE ~{tdee} سعرة
                     </strong>
                   </div>
+
+                  {(circumferences.neck_cm || circumferences.waist_cm || circumferences.hips_cm || circumferences.chest_cm) && (
+                    <div style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', borderRadius: '4px', padding: '4px 8px', display: 'flex', flexDirection: 'column', gap: '2px' }}>
+                      <span style={{ fontSize: '10px', color: '#64748B', fontWeight: 700 }}>المحيطات المترية:</span>
+                      <div style={{ fontSize: '10.5px', color: '#0F172A', display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
+                        {circumferences.neck_cm && <span>رقبة: <strong>{circumferences.neck_cm}</strong>سم</span>}
+                        {circumferences.waist_cm && <span>وسط: <strong>{circumferences.waist_cm}</strong>سم</span>}
+                        {circumferences.hips_cm && <span>حوض: <strong>{circumferences.hips_cm}</strong>سم</span>}
+                        {circumferences.chest_cm && <span>صدر: <strong>{circumferences.chest_cm}</strong>سم</span>}
+                        {circumferences.arm_cm && <span>ذراع: <strong>{circumferences.arm_cm}</strong>سم</span>}
+                        {circumferences.thigh_cm && <span>فخذ: <strong>{circumferences.thigh_cm}</strong>سم</span>}
+                      </div>
+                    </div>
+                  )}
                 </div>
               </div>
 
               {/* Card 2: Photos Box */}
               <div style={{ background: '#FFFFFF', border: '1px solid #E2E8F0', borderRadius: '8px', padding: '9px 11px' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '5px', marginBottom: '6px' }}>
-                  <span style={{ width: '2.5px', height: '11px', background: '#0F172A', borderRadius: '1px', display: 'inline-block' }} />
-                  <strong style={{ fontSize: '11.5px', color: '#0F172A' }}>صور القوام (Front / Side / Back)</strong>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '6px' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
+                    <span style={{ width: '2.5px', height: '11px', background: '#0F172A', borderRadius: '1px', display: 'inline-block' }} />
+                    <strong style={{ fontSize: '11.5px', color: '#0F172A' }}>صور القوام وتقرير InBody</strong>
+                  </div>
+                  {medicalReportsList.length > 0 && (
+                    <span style={{ fontSize: '9.5px', color: '#16A34A', fontWeight: 800, background: '#ECFDF5', padding: '1px 6px', borderRadius: '4px' }}>
+                      {medicalReportsList.length} تحاليل مرفقة
+                    </span>
+                  )}
                 </div>
 
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '6px' }}>
+                <div style={{ display: 'grid', gridTemplateColumns: inbodyPhoto ? 'repeat(4, 1fr)' : 'repeat(3, 1fr)', gap: '6px' }}>
                   {[
                     { key: 'front', title: 'الأمام', src: photos.front },
                     { key: 'side', title: 'الجانب', src: photos.side },
-                    { key: 'back', title: 'الخلف', src: photos.back }
+                    { key: 'back', title: 'الخلف', src: photos.back },
+                    ...(inbodyPhoto ? [{ key: 'inbody', title: 'InBody', src: inbodyPhoto }] : [])
                   ].map(item => (
                     <div key={item.key} style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', borderRadius: '4px', padding: '4px', textAlign: 'center', height: '88px', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
                       <span style={{ fontSize: '9.5px', fontWeight: 700, color: '#64748B', marginBottom: '2px' }}>{item.title}</span>
                       {item.src ? (
                         <div 
                           style={{ position: 'relative', width: '100%', height: '62px', borderRadius: '3px', overflow: 'hidden', cursor: 'pointer' }}
-                          onClick={() => setPreviewImage({ title: `صورة من ${item.title}`, src: item.src })}
+                          onClick={() => setPreviewImage({ title: `صورة ${item.title}`, src: item.src })}
                         >
                           <img src={item.src} alt={item.title} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                           <div style={{ position: 'absolute', bottom: '2px', right: '2px', background: 'rgba(15, 23, 42, 0.75)', color: '#FFFFFF', padding: '1px 3px', borderRadius: '2px', fontSize: '8.5px', display: 'flex', alignItems: 'center', gap: '2px' }}>
@@ -453,6 +544,35 @@ export default function IntakeAuditDetailModal({
                       {nutrition.preferredMealCount || 3} وجبات • ميزانية {nutrition.budget === 'LOW' ? 'اقتصادية' : (nutrition.budget === 'HIGH' ? 'ممتازة' : 'متوازنة')}
                     </strong>
                   </div>
+
+                  {(() => {
+                    const fasting = extractClientFastingProfile(submission, answers);
+                    return (
+                      <div style={{ 
+                        background: fasting.primaryFastingBadge?.bg || '#F8FAFC', 
+                        border: `1px solid ${fasting.primaryFastingBadge?.border || '#E2E8F0'}`, 
+                        borderRadius: '4px', 
+                        padding: '4px 8px', 
+                        display: 'flex', 
+                        justifyContent: 'space-between', 
+                        alignItems: 'center' 
+                      }}>
+                        <span style={{ fontSize: '10.5px', color: '#475569' }}>نمط الصيام الفسيولوجي:</span>
+                        <div style={{ display: 'flex', gap: '6px', alignItems: 'center' }}>
+                          {fasting.primaryFastingBadge && (
+                            <strong style={{ fontSize: '11px', color: fasting.primaryFastingBadge.color }}>
+                              {fasting.primaryFastingBadge.label}
+                            </strong>
+                          )}
+                          {fasting.intermittentBadge && (
+                            <strong style={{ fontSize: '11px', color: fasting.intermittentBadge.color }}>
+                              • {fasting.intermittentBadge.label}
+                            </strong>
+                          )}
+                        </div>
+                      </div>
+                    );
+                  })()}
 
                   {Boolean(submission.answers?.cravings_pattern) && (
                     <div style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', borderRadius: '4px', padding: '4px 8px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
@@ -589,8 +709,7 @@ export default function IntakeAuditDetailModal({
                   <button
                     type="button"
                     onClick={() => {
-                      onClose?.();
-                      navigate(`/coach/editor?user_id=${clientCode}`);
+                      window.open(`/coach/editor?user_id=${clientCode}`, '_blank');
                     }}
                     style={{
                       padding: '6px 14px',

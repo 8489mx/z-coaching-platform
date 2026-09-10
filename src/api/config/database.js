@@ -12,6 +12,12 @@ const sequelize = new Sequelize(
     port: Number(process.env.DB_PORT || 3306),
     dialect: "mysql",
     logging: false, // Set to true to see SQL queries in console
+    pool: {
+      max: 25,
+      min: 2,
+      acquire: 30000,
+      idle: 10000,
+    },
   }
 );
 

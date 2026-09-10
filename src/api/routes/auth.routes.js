@@ -1,5 +1,5 @@
 import express from "express";
-import { loginFast, loginEmail, registerFast, getProfile } from "../controllers/auth.controller.js";
+import { loginFast, loginEmail, registerFast, getProfile, deleteAccount } from "../controllers/auth.controller.js";
 import { requireAuth } from "../middlewares/auth.middleware.js";
 import { intakeRateLimiter } from "../middlewares/rateLimiter.js";
 
@@ -9,5 +9,7 @@ router.post("/register-fast", registerFast);
 router.post("/login-fast", intakeRateLimiter, loginFast);
 router.post("/login-email", loginEmail);
 router.get("/profile", requireAuth, getProfile);
+router.delete("/delete-account", deleteAccount);
+router.post("/delete-account", deleteAccount);
 
 export default router;

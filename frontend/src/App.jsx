@@ -87,19 +87,13 @@ import ClientOnlineRenewal from './pages/ClientOnlineRenewal';
 import Customers from './pages/Customers';
 import ExerciseLibrary from './pages/ExerciseLibrary';
 import MacroCalculator from './pages/MacroCalculator';
-import Subscriptions from './pages/Subscriptions';
 import MasterSettingsHub from './pages/MasterSettingsHub';
 import IntakeSubmissions from './pages/IntakeSubmissions';
 import FullIntakeForm from './pages/FullIntakeForm';
 import ClientLogin from './pages/ClientLogin';
-import ClientOnboarding from './pages/ClientOnboarding';
-import ClientOnboardingForm from './pages/ClientOnboardingForm';
 import CoachEditor from './pages/CoachEditor';
 import ProgramPdfView from './pages/ProgramPdfView';
-import ProgressClone from './pages/ProgressClone';
-import ProfileClone from './pages/ProfileClone';
 import WeeklyCheckinForm from './pages/WeeklyCheckinForm';
-import CoachAnalyticsDashboard from './pages/CoachAnalyticsDashboard';
 import FinancialsRenewalsDashboard from './pages/FinancialsRenewalsDashboard';
 import WhatsAppRemindersHub from './pages/WhatsAppRemindersHub';
 import CheckinReviewDashboard from './pages/CheckinReviewDashboard';
@@ -137,9 +131,9 @@ function App() {
           <Route path="/pricing" element={<PublicPricingJoin />} />
           <Route path="/renew" element={<ClientOnlineRenewal />} />
           <Route path="/client/renew" element={<ClientOnlineRenewal />} />
-          <Route path="/onboarding" element={<ClientOnboardingForm />} />
-          <Route path="/onboarding/multi" element={<ClientOnboardingForm />} />
-          <Route path="/onboarding/classic" element={<ClientOnboarding />} />
+          <Route path="/onboarding" element={<Navigate to="/intake/form" replace />} />
+          <Route path="/onboarding/multi" element={<Navigate to="/intake/form" replace />} />
+          <Route path="/onboarding/classic" element={<Navigate to="/intake/form" replace />} />
           <Route path="/intake" element={<ClientLogin />} />
           <Route path="/client/login" element={<ClientLogin />} />
           <Route path="/login" element={<ClientLogin />} />
@@ -147,9 +141,9 @@ function App() {
           <Route path="/intake/submissions" element={<IntakeSubmissions />} />
           <Route path="/check-in" element={<WeeklyCheckinForm />} />
           <Route path="/client/check-in" element={<WeeklyCheckinForm />} />
-          <Route path="/progress" element={<ProgressClone />} />
-          <Route path="/progress.html" element={<Navigate to="/progress" replace />} />
-          <Route path="/check-ins" element={<ProgressClone />} />
+          <Route path="/progress" element={<Navigate to="/coach/checkin-review" replace />} />
+          <Route path="/progress.html" element={<Navigate to="/coach/checkin-review" replace />} />
+          <Route path="/check-ins" element={<Navigate to="/coach/checkin-review" replace />} />
 
           {/* Coach Management Tools */}
           <Route path="/customers" element={<Customers />} />
@@ -162,7 +156,7 @@ function App() {
           <Route path="/settings" element={<Navigate to="/master-settings" replace />} />
           <Route path="/coach/editor" element={<CoachEditor />} />
           <Route path="/coach/editor/:userId" element={<CoachEditor />} />
-          <Route path="/coach/analytics" element={<CoachAnalyticsDashboard />} />
+          <Route path="/coach/analytics" element={<Navigate to="/coach/financials" replace />} />
           <Route path="/coach/checkin-review" element={<CheckinReviewDashboard />} />
           <Route path="/checkins/review" element={<CheckinReviewDashboard />} />
           <Route path="/checkin/review" element={<CheckinReviewDashboard />} />
@@ -173,8 +167,8 @@ function App() {
           <Route path="/coach/reminders" element={<WhatsAppRemindersHub />} />
           <Route path="/reminders" element={<WhatsAppRemindersHub />} />
           <Route path="/customers/:id" element={<ClientTimelineProfile />} />
-          <Route path="/profile" element={<ProfileClone />} />
-          <Route path="/profile.html" element={<Navigate to="/profile" replace />} />
+          <Route path="/profile" element={<Navigate to="/master-settings" replace />} />
+          <Route path="/profile.html" element={<Navigate to="/master-settings" replace />} />
           <Route path="/pdf" element={<ProgramPdfView />} />
           <Route path="/test-engine" element={<Navigate to="/" replace />} />
 

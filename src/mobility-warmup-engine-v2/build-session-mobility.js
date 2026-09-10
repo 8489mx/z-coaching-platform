@@ -270,10 +270,20 @@ export function buildSessionMobilityProtocol(sessionCode = "FULL_BODY", exercise
   const conditions = Array.isArray(medicalContext?.conditions) ? medicalContext.conditions : [];
   const restrictions = Array.isArray(medicalContext?.movementRestrictions) ? medicalContext.movementRestrictions : [];
 
-  const hasLumbarDisc = medicalContext?.hasHerniation || conditions.some(c => c.includes("DISC") || c.includes("LUMBAR") || c.includes("HERNIATION")) || restrictions.includes("NO_AXIAL_SPINAL_LOADING");
-  const hasDiastasisRecti = medicalContext?.hasDiastasisRecti || conditions.includes("DIASTASIS_RECTI") || restrictions.includes("NO_CRUNCHES");
-  const hasRotatorCuff = medicalContext?.hasRotatorCuff || conditions.some(c => c.includes("ROTATOR") || c.includes("SHOULDER_IMPINGEMENT")) || restrictions.includes("NO_BEHIND_NECK_PRESS");
-  const hasKneeIssues = medicalContext?.hasKneeIssues || conditions.some(c => c.includes("PATELLAR") || c.includes("KNEE") || c.includes("MENISCUS")) || restrictions.includes("NO_DEEP_SQUATS");
+  const getConditionStr = (c) => typeof c === 'string' ? c : (c?.conditionCode || c?.label || '');
+  const hasLumbarDisc = medicalContext?.hasHerniation || conditions.some(c => {
+    const s = getConditionStr(c);
+    return s.includes("DISC") || s.includes("LUMBAR") || s.includes("HERNIATION");
+  }) || restrictions.includes("NO_AXIAL_SPINAL_LOADING");
+  const hasDiastasisRecti = medicalContext?.hasDiastasisRecti || conditions.some(c => getConditionStr(c).includes("DIASTASIS_RECTI")) || restrictions.includes("NO_CRUNCHES");
+  const hasRotatorCuff = medicalContext?.hasRotatorCuff || conditions.some(c => {
+    const s = getConditionStr(c);
+    return s.includes("ROTATOR") || s.includes("SHOULDER_IMPINGEMENT");
+  }) || restrictions.includes("NO_BEHIND_NECK_PRESS");
+  const hasKneeIssues = medicalContext?.hasKneeIssues || conditions.some(c => {
+    const s = getConditionStr(c);
+    return s.includes("PATELLAR") || s.includes("KNEE") || s.includes("MENISCUS");
+  }) || restrictions.includes("NO_DEEP_SQUATS");
 
   const contraindicationsBypassed = [];
 

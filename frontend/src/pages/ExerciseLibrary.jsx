@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { Dumbbell, Search, Play, AlertTriangle, Check, X, Plus, Share2, Copy, CheckCircle2, ShieldCheck, HeartPulse, Video, Edit2, Edit3, Link2, Layers, ChevronDown, Upload, ArrowRightLeft, FolderOpen } from 'lucide-react';
+import { Link } from 'react-router-dom';
+import { Dumbbell, Search, Play, AlertTriangle, Check, X, Plus, Copy, CheckCircle2, ShieldCheck, Edit3, Upload, ArrowRightLeft, BookOpen, HeartPulse } from 'lucide-react';
 import { API_BASE } from '../config/api';
 import AdminLayout from '../components/layout/AdminLayout';
 import ExerciseVideoModal from '../components/modals/ExerciseVideoModal';
 import { PageHeader } from '@/shared/components/page-header';
-import { FormSection } from '@/shared/components/form-section';
+import { arabicSearchMatch } from '../utils/searchUtils';
 
 // Concise Muscle Badge Formatter (1-2 words max)
 export function getShortMuscleName(muscleAr = '', muscleGroup = '') {
@@ -101,6 +102,254 @@ export function isExerciseSafeForInjury(ex, injuryType) {
   return true;
 }
 
+// Bidirectional Smart Alternatives Manager Component
+function AlternativesManager({ currentExId, alternatives = [], onChange, allExercises = [] }) {
+  const [searchQuery, setSearchQuery] = useState('');
+  const [selectedMuscle, setSelectedMuscle] = useState('ALL');
+  const [selectedToAdd, setSelectedToAdd] = useState('');
+
+  const currentAlts = Array.isArray(alternatives) ? alternatives : [];
+
+  const linkedExercises = currentAlts.map(altId => {
+    const found = allExercises.find(e => e.id === altId || e.code === altId);
+    return found || { id: altId, name_ar: altId, name_en: altId, equipment: 'OTHER', muscle_group: 'OTHER' };
+  });
+
+  const candidateExercises = allExercises.filter(e => {
+    if (currentExId && (e.id === currentExId || e.code === currentExId)) return false;
+    if (currentAlts.includes(e.id) || currentAlts.includes(e.code)) return false;
+    if (selectedMuscle !== 'ALL' && e.muscle_group !== selectedMuscle) return false;
+    if (searchQuery.trim()) {
+      const matchNameAr = arabicSearchMatch(e.name_ar, searchQuery);
+      const matchNameEn = arabicSearchMatch(e.name_en, searchQuery);
+      const matchId = arabicSearchMatch(e.id, searchQuery);
+      if (!matchNameAr && !matchNameEn && !matchId) return false;
+    }
+    return true;
+  });
+
+  const handleAdd = () => {
+    if (!selectedToAdd) return;
+    if (!currentAlts.includes(selectedToAdd)) {
+      onChange([...currentAlts, selectedToAdd]);
+    }
+    setSelectedToAdd('');
+  };
+
+  const handleRemove = (altId) => {
+    onChange(currentAlts.filter(id => id !== altId));
+  };
+
+  return (
+    <div style={{ background: '#F8FAFC', padding: '12px', borderRadius: '8px', border: '1px solid #E2E8F0' }}>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+          <ArrowRightLeft size={14} color="#0284C7" />
+          <span style={{ fontSize: '12px', fontWeight: 800, color: '#0F172A' }}>
+            الربط التبادلي التلقائي للبدائل التوأم
+          </span>
+        </div>
+        <span style={{ fontSize: '10.5px', color: '#0284C7', fontWeight: 700, background: '#F0F9FF', padding: '2px 8px', borderRadius: '4px', border: '1px solid #BAE6FD' }}>
+          {currentAlts.length} بدائل مرتبطة
+        </span>
+      </div>
+
+      <p style={{ margin: '0 0 10px 0', fontSize: '10.5px', color: '#64748B', lineHeight: 1.4 }}>
+        الربط التبادلي التلقائي مفعل: بمجرد اختيار تمرين كبديل هنا، سيتم إدراجه تلقائياً كبديل توأم في بطاقة التمرين المقابل بدون تكرار يدوي.
+      </p>
+
+      {/* Selector Controls */}
+      <div style={{ display: 'flex', gap: '6px', marginBottom: '10px', flexWrap: 'wrap' }}>
+        <input
+          type="text"
+          placeholder="بحث سريع عن تمرين بديل..."
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+          style={{ flex: '1 1 140px', height: '32px', borderRadius: '6px', border: '1px solid #CBD5E1', padding: '0 8px', fontSize: '11px', outline: 'none' }}
+        />
+        <select
+          value={selectedMuscle}
+          onChange={(e) => setSelectedMuscle(e.target.value)}
+          style={{ width: '120px', height: '32px', borderRadius: '6px', border: '1px solid #CBD5E1', padding: '0 6px', fontSize: '11px', fontWeight: 600, color: '#334155', background: '#FFFFFF', outline: 'none' }}
+        >
+          <option value="ALL">كل العضلات</option>
+          <option value="CHEST">الصدر</option>
+          <option value="BACK">الظهر</option>
+          <option value="LEGS">الأرجل</option>
+          <option value="SHOULDERS">الأكتاف</option>
+          <option value="ARMS">الذراعين</option>
+          <option value="CORE">البطن</option>
+          <option value="CALVES">السمانة</option>
+        </select>
+        <select
+          value={selectedToAdd}
+          onChange={(e) => setSelectedToAdd(e.target.value)}
+          style={{ flex: '2 1 180px', height: '32px', borderRadius: '6px', border: '1px solid #CBD5E1', padding: '0 8px', fontSize: '11px', color: '#0F172A', background: '#FFFFFF', outline: 'none' }}
+        >
+          <option value="">-- اختر تمريناً لربطه تبادلياً ({candidateExercises.length} متاح) --</option>
+          {candidateExercises.map(cand => (
+            <option key={cand.id} value={cand.id}>
+              {cand.name_ar} ({cand.name_en}) - {getShortEquipmentName(cand.equipment_ar, cand.equipment)}
+            </option>
+          ))}
+        </select>
+        <button
+          type="button"
+          onClick={handleAdd}
+          disabled={!selectedToAdd}
+          style={{
+            height: '32px',
+            padding: '0 12px',
+            borderRadius: '6px',
+            border: 'none',
+            background: selectedToAdd ? '#0284C7' : '#CBD5E1',
+            color: '#FFFFFF',
+            fontSize: '11px',
+            fontWeight: 700,
+            cursor: selectedToAdd ? 'pointer' : 'not-allowed',
+            display: 'inline-flex',
+            alignItems: 'center',
+            gap: '4px'
+          }}
+        >
+          <Plus size={12} />
+          <span>ربط بديل</span>
+        </button>
+      </div>
+
+      {/* Linked Alternatives List */}
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>
+        {linkedExercises.length === 0 ? (
+          <div style={{ padding: '10px', textAlign: 'center', background: '#FFFFFF', border: '1px dashed #CBD5E1', borderRadius: '6px', fontSize: '11px', color: '#64748B' }}>
+            لا توجد بدائل توأم مرتبطة حالياً. اختر تمريناً من القائمة أعلاه للربط التبادلي التلقائي.
+          </div>
+        ) : (
+          linkedExercises.map(alt => (
+            <div
+              key={alt.id}
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                background: '#FFFFFF',
+                border: '1px solid #BAE6FD',
+                borderRadius: '6px',
+                padding: '6px 10px',
+                boxShadow: '0 1px 2px rgba(15, 23, 42, 0.03)'
+              }}
+            >
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', overflow: 'hidden' }}>
+                <ArrowRightLeft size={13} color="#0284C7" />
+                <span style={{ fontSize: '11.5px', fontWeight: 700, color: '#0F172A' }}>
+                  {alt.name_ar}
+                </span>
+                <span style={{ fontSize: '10.5px', color: '#64748B' }}>
+                  ({alt.name_en})
+                </span>
+                <span style={{ background: '#F1F5F9', border: '1px solid #E2E8F0', padding: '1px 6px', borderRadius: '3px', fontSize: '9.5px', fontWeight: 600, color: '#475569' }}>
+                  {getShortEquipmentName(alt.equipment_ar, alt.equipment)}
+                </span>
+              </div>
+              <button
+                type="button"
+                onClick={() => handleRemove(alt.id)}
+                style={{
+                  border: 'none',
+                  background: '#FEE2E2',
+                  color: '#DC2626',
+                  borderRadius: '4px',
+                  padding: '3px 6px',
+                  cursor: 'pointer',
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '2px',
+                  fontSize: '10px',
+                  fontWeight: 700,
+                  transition: 'background 0.15s ease'
+                }}
+                title="فك الارتباط التبادلي"
+              >
+                <X size={12} />
+                <span>فك الارتباط</span>
+              </button>
+            </div>
+          ))
+        )}
+      </div>
+    </div>
+  );
+}
+
+// Resilient Exercise Image Frame with graceful fallback and smooth fade-in
+function ExerciseImageFrame({ src, label, icon: Icon = Dumbbell }) {
+  const [hasError, setHasError] = useState(false);
+  const [isLoading, setIsLoading] = useState(Boolean(src));
+
+  useEffect(() => {
+    setHasError(false);
+    setIsLoading(Boolean(src));
+  }, [src]);
+
+  return (
+    <div style={{ 
+      position: 'relative', 
+      borderRadius: '10px', 
+      overflow: 'hidden', 
+      background: '#F1F5F9', 
+      border: '1px solid #E2E8F0', 
+      height: '135px', 
+      display: 'flex', 
+      alignItems: 'center', 
+      justifyContent: 'center',
+      boxShadow: '0 1px 3px rgba(15, 23, 42, 0.04)'
+    }}>
+      {/* 1. Underlying Fallback Placeholder */}
+      <div style={{ 
+        position: 'absolute', 
+        inset: 0, 
+        display: 'flex', 
+        flexDirection: 'column', 
+        alignItems: 'center', 
+        justifyContent: 'center', 
+        gap: '6px', 
+        color: '#94A3B8',
+        background: '#F8FAFC'
+      }}>
+        <Icon size={24} strokeWidth={1.5} color="#94A3B8" />
+        <span style={{ fontSize: '10.5px', fontWeight: 700, color: '#64748B' }}>{label}</span>
+      </div>
+
+      {/* 2. Image Element */}
+      {src && !hasError && (
+        <img
+          src={src}
+          alt=""
+          onLoad={(e) => {
+            if (e.currentTarget.naturalWidth === 0) {
+              setHasError(true);
+            } else {
+              setIsLoading(false);
+            }
+          }}
+          onError={() => setHasError(true)}
+          style={{ 
+            position: 'relative', 
+            zIndex: 1, 
+            width: '100%', 
+            height: '100%', 
+            objectFit: 'contain', 
+            borderRadius: '9px', 
+            padding: '2px',
+            opacity: isLoading ? 0 : 1,
+            transition: 'opacity 0.2s ease'
+          }}
+          loading="lazy"
+        />
+      )}
+    </div>
+  );
+}
+
 export default function ExerciseLibrary() {
   const [allExercises, setAllExercises] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -109,7 +358,7 @@ export default function ExerciseLibrary() {
   const [injuryFilter, setInjuryFilter] = useState('ALL');
   const [searchTerm, setSearchTerm] = useState('');
   const [activeVideo, setActiveVideo] = useState(null);
-  const [expandedView, setExpandedView] = useState({}); // { [exId]: 'CUES' | 'MISTAKES' | null }
+  const [expandedView, setExpandedView] = useState({}); // { [exId]: 'CUES' | 'MISTAKES' | 'ALTERNATIVES' | null }
   const [copiedKey, setCopiedKey] = useState(null); // 'VIDEO_1' | 'CUES_1' | 'MISTAKES_1'
 
   // Add Exercise Modal State
@@ -122,7 +371,11 @@ export default function ExerciseLibrary() {
     equipment: 'BARBELL',
     video_url: '',
     cues_ar: '',
-    mistakes_ar: ''
+    mistakes_ar: '',
+    image_stretch: '',
+    image_contraction: '',
+    tempId: '',
+    alternatives: []
   });
 
   // Edit Full Exercise Modal State
@@ -134,7 +387,8 @@ export default function ExerciseLibrary() {
     equipment: 'BARBELL',
     video_url: '',
     cues_ar: '',
-    mistakes_ar: ''
+    mistakes_ar: '',
+    alternatives: []
   });
   const [savingEditExercise, setSavingEditExercise] = useState(false);
 
@@ -208,14 +462,22 @@ export default function ExerciseLibrary() {
       cues_ar: ex.cues_ar || '',
       mistakes_ar: ex.mistakes_ar || '',
       image_stretch: ex.image_stretch || (ex.images && ex.images[0]) || `/exercises/${ex.id}/0.jpg`,
-      image_contraction: ex.image_contraction || (ex.images && ex.images[1]) || `/exercises/${ex.id}/1.jpg`
+      image_contraction: ex.image_contraction || (ex.images && ex.images[1]) || `/exercises/${ex.id}/1.jpg`,
+      alternatives: Array.isArray(ex.alternatives) ? ex.alternatives.map(a => typeof a === 'object' ? (a.id || a.exercise_code) : a) : []
     });
   };
 
-  // Handle Direct Image File Upload
-  const handleUploadImageFile = (e, imageIndex) => {
+  // Handle Direct Image File Upload (supports both editing and new exercise creation)
+  const handleUploadImageFile = (e, imageIndex, isNew = false) => {
     const file = e.target.files && e.target.files[0];
-    if (!file || !editingExercise) return;
+    if (!file) return;
+
+    let targetExId = isNew ? (newExerciseData.tempId || `EX_${Date.now()}`) : editingExercise?.id;
+    if (!targetExId) return;
+
+    if (isNew && !newExerciseData.tempId) {
+      setNewExerciseData(prev => ({ ...prev, tempId: targetExId }));
+    }
 
     const reader = new FileReader();
     reader.onload = async () => {
@@ -225,17 +487,25 @@ export default function ExerciseLibrary() {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
-            exercise_id: editingExercise.id,
+            exercise_id: targetExId,
             image_index: imageIndex,
             image_base64: base64
           })
         });
         const data = await res.json();
         if (data.success && data.imageUrl) {
-          if (imageIndex === 0) {
-            setEditFormData(prev => ({ ...prev, image_stretch: data.imageUrl }));
+          if (isNew) {
+            if (imageIndex === 0) {
+              setNewExerciseData(prev => ({ ...prev, image_stretch: data.imageUrl }));
+            } else {
+              setNewExerciseData(prev => ({ ...prev, image_contraction: data.imageUrl }));
+            }
           } else {
-            setEditFormData(prev => ({ ...prev, image_contraction: data.imageUrl }));
+            if (imageIndex === 0) {
+              setEditFormData(prev => ({ ...prev, image_stretch: data.imageUrl }));
+            } else {
+              setEditFormData(prev => ({ ...prev, image_contraction: data.imageUrl }));
+            }
           }
           handleCopyDirect('تم رفع الصورة وتحديثها بنجاح', `IMG_UPLOAD_${imageIndex}`);
         }
@@ -256,6 +526,7 @@ export default function ExerciseLibrary() {
       const updatedExercise = {
         ...editingExercise,
         ...editFormData,
+        alternatives: editFormData.alternatives || [],
         images: [
           editFormData.image_stretch,
           editFormData.image_contraction
@@ -269,8 +540,12 @@ export default function ExerciseLibrary() {
       });
       const data = await res.json();
       
-      const saved = (data && data.exercise) ? data.exercise : updatedExercise;
-      setAllExercises(prev => prev.map(e => e.id === editingExercise.id ? { ...e, ...saved } : e));
+      if (data && data.exercises) {
+        setAllExercises(data.exercises);
+      } else {
+        const saved = (data && data.exercise) ? data.exercise : updatedExercise;
+        setAllExercises(prev => prev.map(e => e.id === editingExercise.id ? { ...e, ...saved } : e));
+      }
       setEditingExercise(null);
     } catch (err) {
       console.error('Save edited exercise error:', err);
@@ -289,22 +564,31 @@ export default function ExerciseLibrary() {
       return;
     }
 
+    const exId = newExerciseData.tempId || `EX_${Date.now()}`;
+    const payload = {
+      ...newExerciseData,
+      id: exId,
+      alternatives: newExerciseData.alternatives || [],
+      images: [
+        newExerciseData.image_stretch,
+        newExerciseData.image_contraction
+      ]
+    };
+
     try {
       setSavingNewExercise(true);
       const res = await fetch(`${API_BASE}/api/v1/admin-settings/exercises`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(newExerciseData)
+        body: JSON.stringify(payload)
       });
       const data = await res.json();
-      if (data && data.exercise) {
+      if (data && data.exercises) {
+        setAllExercises(data.exercises);
+      } else if (data && data.exercise) {
         setAllExercises(prev => [data.exercise, ...prev]);
       } else {
-        const fallbackEx = {
-          ...newExerciseData,
-          id: `CUSTOM_${Date.now()}`
-        };
-        setAllExercises(prev => [fallbackEx, ...prev]);
+        setAllExercises(prev => [payload, ...prev]);
       }
       setIsAddModalOpen(false);
       setNewExerciseData({
@@ -314,15 +598,15 @@ export default function ExerciseLibrary() {
         equipment: 'BARBELL',
         video_url: '',
         cues_ar: '',
-        mistakes_ar: ''
+        mistakes_ar: '',
+        image_stretch: '',
+        image_contraction: '',
+        tempId: '',
+        alternatives: []
       });
     } catch (err) {
       console.error('Save custom exercise error:', err);
-      const fallbackEx = {
-        ...newExerciseData,
-        id: `CUSTOM_${Date.now()}`
-      };
-      setAllExercises(prev => [fallbackEx, ...prev]);
+      setAllExercises(prev => [payload, ...prev]);
       setIsAddModalOpen(false);
     } finally {
       setSavingNewExercise(false);
@@ -330,12 +614,17 @@ export default function ExerciseLibrary() {
   };
 
   const exercises = allExercises.filter(ex => {
-    const matchMuscle = muscleFilter === 'ALL' || ex.muscle_group === muscleFilter;
+    const matchMuscle = muscleFilter === 'ALL' || 
+      ex.muscle_group === muscleFilter || 
+      (muscleFilter === 'LEGS' && (ex.muscle_group === 'LEGS' || ex.muscle_group === 'CALVES')) ||
+      (muscleFilter === 'CALVES' && (ex.muscle_group === 'CALVES' || ex.id === 'WALL_TIBIALIS_RAISE' || ex.name_ar?.includes('سمانة') || ex.name_ar?.includes('الساق')));
     const matchEquipment = equipmentFilter === 'ALL' || ex.equipment === equipmentFilter;
     const matchInjury = isExerciseSafeForInjury(ex, injuryFilter);
     const matchSearch = !searchTerm.trim() || 
-      ex.name_ar?.toLowerCase().includes(searchTerm.trim().toLowerCase()) ||
-      ex.name_en?.toLowerCase().includes(searchTerm.trim().toLowerCase());
+      arabicSearchMatch(ex.name_ar, searchTerm) ||
+      arabicSearchMatch(ex.name_en, searchTerm) ||
+      arabicSearchMatch(ex.id, searchTerm) ||
+      (Array.isArray(ex.aliases) && ex.aliases.some(a => arabicSearchMatch(a, searchTerm)));
     return matchMuscle && matchEquipment && matchInjury && matchSearch;
   });
 
@@ -351,7 +640,22 @@ export default function ExerciseLibrary() {
             <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
               <button
                 type="button"
-                onClick={() => setIsAddModalOpen(true)}
+                onClick={() => {
+                  setNewExerciseData({
+                    name_en: '',
+                    name_ar: '',
+                    muscle_group: 'CHEST',
+                    equipment: 'BARBELL',
+                    video_url: '',
+                    cues_ar: '',
+                    mistakes_ar: '',
+                    image_stretch: '',
+                    image_contraction: '',
+                    tempId: `EX_${Date.now()}`,
+                    alternatives: []
+                  });
+                  setIsAddModalOpen(true);
+                }}
                 style={{
                   padding: '7px 14px',
                   borderRadius: '6px',
@@ -376,6 +680,52 @@ export default function ExerciseLibrary() {
             </div>
           )}
         />
+
+        {/* Exercise & Mobility Studio Switcher */}
+        <div style={{ display: 'flex', gap: '6px', background: '#F8FAFC', padding: '4px', borderRadius: '8px', border: '1px solid #E2E8F0', width: 'fit-content' }}>
+          <button
+            type="button"
+            style={{
+              padding: '6px 14px',
+              borderRadius: '6px',
+              fontSize: '12px',
+              fontWeight: 800,
+              border: 'none',
+              cursor: 'default',
+              background: '#0F172A',
+              color: '#FFFFFF',
+              boxShadow: '0 2px 5px rgba(15, 23, 42, 0.25)',
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '6px'
+            }}
+          >
+            <Dumbbell size={14} />
+            <span>تمارين القوة والمقاومة والأجهزة ({allExercises.length})</span>
+          </button>
+          <Link
+            to="/coach/mobility"
+            style={{
+              padding: '6px 14px',
+              borderRadius: '6px',
+              fontSize: '12px',
+              fontWeight: 700,
+              border: 'none',
+              textDecoration: 'none',
+              color: '#64748B',
+              background: 'transparent',
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '6px',
+              transition: 'color 0.12s ease'
+            }}
+            onMouseEnter={(e) => (e.currentTarget.style.color = '#0F172A')}
+            onMouseLeave={(e) => (e.currentTarget.style.color = '#64748B')}
+          >
+            <HeartPulse size={14} />
+            <span>بروتوكولات المرونة والتأهيل الحركي</span>
+          </Link>
+        </div>
 
         {/* 2. Muscle Selector & Search & Filters Controls */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
@@ -573,8 +923,27 @@ export default function ExerciseLibrary() {
                     <h4 style={{ margin: '0 0 2px 0', fontSize: '13.5px', fontWeight: 800, color: '#0F172A', lineHeight: 1.3 }}>
                       {ex.name_en}
                     </h4>
-                    <div style={{ fontSize: '11.5px', color: '#64748B', fontWeight: 600, marginBottom: '6px' }}>
-                      {ex.name_ar}
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '6px', flexWrap: 'wrap', gap: '4px' }}>
+                      <span style={{ fontSize: '11.5px', color: '#64748B', fontWeight: 600 }}>
+                        {ex.name_ar}
+                      </span>
+                      {Array.isArray(ex.alternatives) && ex.alternatives.length > 0 && (
+                        <span style={{
+                          background: '#F0F9FF',
+                          border: '1px solid #BAE6FD',
+                          color: '#0284C7',
+                          padding: '1px 6px',
+                          borderRadius: '4px',
+                          fontSize: '10px',
+                          fontWeight: 700,
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          gap: '3px'
+                        }}>
+                          <ArrowRightLeft size={10} />
+                          <span>{ex.alternatives.length} بديل توأم</span>
+                        </span>
+                      )}
                     </div>
 
                     {/* Dual-State Accurate Exercise Preview (Start & Finish Positions) */}
@@ -588,55 +957,16 @@ export default function ExerciseLibrary() {
                       borderRadius: '14px',
                       border: '1px solid #E2E8F0'
                     }}>
-                      {/* Frame 1 */}
-                      <div style={{ 
-                        position: 'relative', 
-                        borderRadius: '10px', 
-                        overflow: 'hidden', 
-                        background: '#F8FAFC', 
-                        border: '1px solid #E2E8F0', 
-                        height: '135px', 
-                        display: 'flex', 
-                        alignItems: 'center', 
-                        justifyContent: 'center',
-                        boxShadow: '0 1px 3px rgba(15, 23, 42, 0.04)'
-                      }}>
-                        <img
-                          src={ex.image_stretch || `/exercises/${ex.id}/0.jpg`}
-                          onError={(e) => {
-                            if (ex.images && ex.images[0]) e.currentTarget.src = ex.images[0];
-                            else e.currentTarget.style.display = 'none';
-                          }}
-                          alt={ex.name_en}
-                          style={{ width: '100%', height: '100%', objectFit: 'contain', borderRadius: '9px', padding: '2px' }}
-                          loading="lazy"
-                        />
-                      </div>
-
-                      {/* Frame 2 */}
-                      <div style={{ 
-                        position: 'relative', 
-                        borderRadius: '10px', 
-                        overflow: 'hidden', 
-                        background: '#F8FAFC', 
-                        border: '1px solid #E2E8F0', 
-                        height: '135px', 
-                        display: 'flex', 
-                        alignItems: 'center', 
-                        justifyContent: 'center',
-                        boxShadow: '0 1px 3px rgba(15, 23, 42, 0.04)'
-                      }}>
-                        <img
-                          src={ex.image_contraction || `/exercises/${ex.id}/1.jpg`}
-                          onError={(e) => {
-                            if (ex.images && ex.images[1]) e.currentTarget.src = ex.images[1];
-                            else e.currentTarget.style.display = 'none';
-                          }}
-                          alt={ex.name_en}
-                          style={{ width: '100%', height: '100%', objectFit: 'contain', borderRadius: '9px', padding: '2px' }}
-                          loading="lazy"
-                        />
-                      </div>
+                      <ExerciseImageFrame
+                        src={ex.image_stretch || (ex.images && ex.images[0]) || `/exercises/${ex.id}/0.jpg`}
+                        label="وضع البداية"
+                        icon={Dumbbell}
+                      />
+                      <ExerciseImageFrame
+                        src={ex.image_contraction || (ex.images && ex.images[1]) || `/exercises/${ex.id}/1.jpg`}
+                        label="وضع الانقباض"
+                        icon={Dumbbell}
+                      />
                     </div>
                   </div>
 
@@ -714,6 +1044,51 @@ export default function ExerciseLibrary() {
                     </div>
                   )}
 
+                  {/* Expandable Alternatives Box */}
+                  {currentExpanded === 'ALTERNATIVES' && (
+                    <div style={{ background: '#F0F9FF', border: '1px solid #BAE6FD', borderRight: '3px solid #0284C7', padding: '8px 10px', borderRadius: '6px', fontSize: '11.5px', color: '#0C4A6E', lineHeight: 1.45 }}>
+                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '6px' }}>
+                        <div style={{ fontSize: '11px', fontWeight: 800, color: '#0284C7', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                          <ArrowRightLeft size={12} />
+                          <span>البدائل التوأم المباشرة (الربط التبادلي):</span>
+                        </div>
+                        <span style={{ fontSize: '10px', color: '#64748B' }}>
+                          {(!ex.alternatives || ex.alternatives.length === 0) ? 'لا توجد بدائل' : `${ex.alternatives.length} بديل`}
+                        </span>
+                      </div>
+                      {(!ex.alternatives || ex.alternatives.length === 0) ? (
+                        <p style={{ margin: 0, fontSize: '11px', color: '#64748B' }}>
+                          لا توجد بدائل توأم مرتبطة حالياً. يمكنك الضغط على زر "تعديل" لربط بدائل فورية بهذا التمرين.
+                        </p>
+                      ) : (
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>
+                          {ex.alternatives.map(altId => {
+                            const target = allExercises.find(e => e.id === altId || e.code === altId);
+                            return (
+                              <div key={altId} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: '#FFFFFF', padding: '4px 8px', borderRadius: '5px', border: '1px solid #E0F2FE' }}>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '6px', overflow: 'hidden' }}>
+                                  <span style={{ fontWeight: 700, color: '#0F172A', fontSize: '11px' }}>
+                                    {target ? target.name_ar : altId}
+                                  </span>
+                                  {target && (
+                                    <span style={{ color: '#64748B', fontSize: '10px' }}>
+                                      ({target.name_en})
+                                    </span>
+                                  )}
+                                </div>
+                                {target && (
+                                  <span style={{ background: '#F1F5F9', border: '1px solid #CBD5E1', color: '#334155', padding: '1px 5px', borderRadius: '3px', fontSize: '9.5px', fontWeight: 600, flexShrink: 0 }}>
+                                    {getShortEquipmentName(target.equipment_ar, target.equipment)}
+                                  </span>
+                                )}
+                              </div>
+                            );
+                          })}
+                        </div>
+                      )}
+                    </div>
+                  )}
+
                   {/* Action Buttons Row */}
                   <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '6px', paddingTop: '8px', borderTop: '1px solid #F1F5F9' }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
@@ -738,7 +1113,7 @@ export default function ExerciseLibrary() {
                         }}
                         title="عرض / إخفاء التكنيك السليم"
                       >
-                        <Check size={11} />
+                        <BookOpen size={11} />
                         <span>التكنيك</span>
                       </button>
 
@@ -764,6 +1139,30 @@ export default function ExerciseLibrary() {
                       >
                         <AlertTriangle size={11} />
                         <span>تجنب الإصابات</span>
+                      </button>
+
+                      {/* Alternatives Toggle Button */}
+                      <button
+                        type="button"
+                        onClick={() => toggleCardView(ex.id, 'ALTERNATIVES')}
+                        style={{
+                          padding: '4px 8px',
+                          borderRadius: '5px',
+                          border: currentExpanded === 'ALTERNATIVES' ? '1px solid #0284C7' : (ex.alternatives?.length > 0 ? '1px solid #BAE6FD' : '1px solid #E2E8F0'),
+                          background: currentExpanded === 'ALTERNATIVES' ? '#F0F9FF' : (ex.alternatives?.length > 0 ? '#F0F9FF' : '#FFFFFF'),
+                          color: currentExpanded === 'ALTERNATIVES' ? '#0284C7' : (ex.alternatives?.length > 0 ? '#0284C7' : '#94A3B8'),
+                          fontSize: '11px',
+                          fontWeight: 700,
+                          cursor: 'pointer',
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          gap: '4px',
+                          transition: 'all 0.15s ease'
+                        }}
+                        title="عرض / إخفاء البدائل التوأم المرتبطة تبادلياً"
+                      >
+                        <ArrowRightLeft size={11} />
+                        <span>البدائل{ex.alternatives?.length > 0 ? ` (${ex.alternatives.length})` : ''}</span>
                       </button>
 
                     </div>
@@ -814,10 +1213,10 @@ export default function ExerciseLibrary() {
                           gap: '3px',
                           transition: 'all 0.15s ease'
                         }}
-                        title="نسخ رابط فيديو التمرين فقط"
+                        title="نسخ رابط فيديو التمرين"
                       >
                         {isVideoCopied ? <CheckCircle2 size={11} color="#16A34A" /> : <Copy size={11} />}
-                        <span>{isVideoCopied ? 'تم النسخ' : 'نسخ'}</span>
+                        <span>{isVideoCopied ? 'تم النسخ' : 'رابط'}</span>
                       </button>
 
                       {/* Video Player Button */}
@@ -983,16 +1382,135 @@ export default function ExerciseLibrary() {
                 {/* Video URL */}
                 <div>
                   <label style={{ display: 'block', fontSize: '11px', fontWeight: 700, color: '#334155', marginBottom: '4px' }}>
-                    رابط فيديو الشرح (YouTube URL)
+                    رابط فيديو الشرح (YouTube URL أو مقاطع Shorts)
                   </label>
                   <input
                     type="url"
-                    placeholder="https://www.youtube.com/watch?v=..."
+                    placeholder="https://www.youtube.com/watch?v=... أو رابط Shorts"
                     value={newExerciseData.video_url}
                     onChange={(e) => setNewExerciseData({ ...newExerciseData, video_url: e.target.value })}
                     style={{ width: '100%', height: '34px', borderRadius: '6px', border: '1px solid #CBD5E1', padding: '0 10px', fontSize: '12px', outline: 'none', boxSizing: 'border-box' }}
                   />
                 </div>
+
+                {/* Dual Image Thumbnails Settings & Preview for New Exercise */}
+                <div style={{ background: '#F8FAFC', padding: '12px', borderRadius: '8px', border: '1px solid #E2E8F0' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+                    <div>
+                      <div style={{ fontSize: '12px', fontWeight: 800, color: '#0F172A' }}>
+                        صور أداء التمرين (البداية والنهاية)
+                      </div>
+                      <div style={{ fontSize: '10px', color: '#64748B', marginTop: '1px' }}>
+                        يمكنك اختيار صور من جهازك أو وضع روابط مباشرة
+                      </div>
+                    </div>
+                    
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setNewExerciseData({
+                          ...newExerciseData,
+                          image_stretch: newExerciseData.image_contraction,
+                          image_contraction: newExerciseData.image_stretch
+                        });
+                      }}
+                      style={{
+                        padding: '3px 8px',
+                        borderRadius: '4px',
+                        border: '1px solid #CBD5E1',
+                        background: '#FFFFFF',
+                        fontSize: '11px',
+                        fontWeight: 700,
+                        color: '#0284C7',
+                        cursor: 'pointer',
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: '4px'
+                      }}
+                      title="تبديل صورتي البداية والنهاية"
+                    >
+                      <ArrowRightLeft size={12} />
+                      <span>عكس الترتيب</span>
+                    </button>
+                  </div>
+                  
+                  {/* Live Preview with Upload Triggers */}
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px', marginBottom: '10px' }}>
+                    {/* Image 1: Start Position */}
+                    <div style={{ border: '1px solid #CBD5E1', borderRadius: '12px', overflow: 'hidden', background: '#FFFFFF', padding: '8px', display: 'flex', flexDirection: 'column', gap: '6px', boxShadow: '0 1px 3px rgba(15, 23, 42, 0.04)' }}>
+                      <div style={{ height: '120px', background: '#F8FAFC', borderRadius: '10px', overflow: 'hidden', display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative' }}>
+                        {newExerciseData.image_stretch ? (
+                          <img src={newExerciseData.image_stretch} alt="بداية" style={{ width: '100%', height: '100%', objectFit: 'contain', borderRadius: '10px', padding: '2px' }} />
+                        ) : (
+                          <span style={{ fontSize: '10px', color: '#94A3B8' }}>لا توجد صورة</span>
+                        )}
+                        <span style={{ position: 'absolute', bottom: '4px', right: '4px', background: 'rgba(15, 23, 42, 0.85)', color: '#FFF', fontSize: '9px', fontWeight: 700, padding: '2px 6px', borderRadius: '4px' }}>
+                          1. وضع البداية
+                        </span>
+                      </div>
+
+                      <label style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '5px', background: '#0F172A', color: '#FFFFFF', borderRadius: '6px', padding: '5px', fontSize: '11px', fontWeight: 700, cursor: 'pointer' }}>
+                        <Upload size={12} />
+                        <span>اختيار صورة من جهازك</span>
+                        <input
+                          type="file"
+                          accept="image/*"
+                          style={{ display: 'none' }}
+                          onChange={(e) => handleUploadImageFile(e, 0, true)}
+                        />
+                      </label>
+
+                      <input
+                        type="text"
+                        placeholder="أو ضع مسار / رابط صورة البداية"
+                        value={newExerciseData.image_stretch}
+                        onChange={(e) => setNewExerciseData({ ...newExerciseData, image_stretch: e.target.value })}
+                        style={{ width: '100%', height: '26px', borderRadius: '6px', border: '1px solid #E2E8F0', padding: '0 8px', fontSize: '10px', outline: 'none', boxSizing: 'border-box' }}
+                      />
+                    </div>
+
+                    {/* Image 2: Contraction Position */}
+                    <div style={{ border: '1px solid #CBD5E1', borderRadius: '12px', overflow: 'hidden', background: '#FFFFFF', padding: '8px', display: 'flex', flexDirection: 'column', gap: '6px', boxShadow: '0 1px 3px rgba(15, 23, 42, 0.04)' }}>
+                      <div style={{ height: '120px', background: '#F8FAFC', borderRadius: '10px', overflow: 'hidden', display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative' }}>
+                        {newExerciseData.image_contraction ? (
+                          <img src={newExerciseData.image_contraction} alt="أداء" style={{ width: '100%', height: '100%', objectFit: 'contain', borderRadius: '10px', padding: '2px' }} />
+                        ) : (
+                          <span style={{ fontSize: '10px', color: '#94A3B8' }}>لا توجد صورة</span>
+                        )}
+                        <span style={{ position: 'absolute', bottom: '4px', right: '4px', background: 'rgba(15, 23, 42, 0.85)', color: '#FFF', fontSize: '9px', fontWeight: 700, padding: '2px 6px', borderRadius: '4px' }}>
+                          2. وضع الانقباض
+                        </span>
+                      </div>
+
+                      <label style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '5px', background: '#0F172A', color: '#FFFFFF', borderRadius: '6px', padding: '5px', fontSize: '11px', fontWeight: 700, cursor: 'pointer' }}>
+                        <Upload size={12} />
+                        <span>اختيار صورة من جهازك</span>
+                        <input
+                          type="file"
+                          accept="image/*"
+                          style={{ display: 'none' }}
+                          onChange={(e) => handleUploadImageFile(e, 1, true)}
+                        />
+                      </label>
+
+                      <input
+                        type="text"
+                        placeholder="أو ضع مسار / رابط صورة الانقباض"
+                        value={newExerciseData.image_contraction}
+                        onChange={(e) => setNewExerciseData({ ...newExerciseData, image_contraction: e.target.value })}
+                        style={{ width: '100%', height: '26px', borderRadius: '6px', border: '1px solid #E2E8F0', padding: '0 8px', fontSize: '10px', outline: 'none', boxSizing: 'border-box' }}
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                {/* Bidirectional Smart Linker */}
+                <AlternativesManager
+                  currentExId={newExerciseData.tempId}
+                  alternatives={newExerciseData.alternatives}
+                  onChange={(newAlts) => setNewExerciseData(prev => ({ ...prev, alternatives: newAlts }))}
+                  allExercises={allExercises}
+                />
 
                 {/* Coaching Cues */}
                 <div>
@@ -1190,7 +1708,7 @@ export default function ExerciseLibrary() {
                         صور أداء التمرين (البداية والنهاية)
                       </div>
                       <div style={{ fontSize: '10px', color: '#64748B', marginTop: '1px' }}>
-                        المسار في جهازك: <code style={{ background: '#E2E8F0', padding: '1px 4px', borderRadius: '3px', color: '#0F172A', fontSize: '9.5px' }}>D:\zcc\frontend\public\exercises\{editingExercise.id}\</code>
+                        معاينة الصورتين الحركيتين للتكنيك السليم (وضع البداية والاستطالة / وضع الانقباض)
                       </div>
                     </div>
                     
@@ -1292,6 +1810,14 @@ export default function ExerciseLibrary() {
                     </div>
                   </div>
                 </div>
+
+                {/* Bidirectional Smart Linker */}
+                <AlternativesManager
+                  currentExId={editingExercise?.id}
+                  alternatives={editFormData.alternatives}
+                  onChange={(newAlts) => setEditFormData(prev => ({ ...prev, alternatives: newAlts }))}
+                  allExercises={allExercises}
+                />
 
                 {/* Coaching Cues */}
                 <div>

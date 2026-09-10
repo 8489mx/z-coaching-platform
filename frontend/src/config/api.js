@@ -14,9 +14,13 @@ const originalFetch = window.fetch;
 window.fetch = async (...args) => {
   let [resource, config] = args;
   
-  // Exclude external URLs (like youtube or whatsapp) from interception
-  if (typeof resource === 'string' && resource.startsWith('http') && !resource.includes(API_BASE) && !resource.includes(window.location.hostname)) {
-    return originalFetch(resource, config);
+  // Exclude external URLs (like youtube or whatsapp or third-party APIs) from token injection
+  if (typeof resource === 'string' && resource.startsWith('http')) {
+    const isOurBackend = (Boolean(API_BASE) && resource.includes(API_BASE)) || 
+      (typeof window !== 'undefined' && resource.includes(window.location.hostname));
+    if (!isOurBackend) {
+      return originalFetch(resource, config);
+    }
   }
 
   // Inject Authorization Header
@@ -37,11 +41,21 @@ window.fetch = async (...args) => {
   
   const response = await originalFetch(resource, config);
   
-  // Handle Global 401 Unauthorized
-  if (response.status === 401 && !resource.includes('/auth/login')) {
-    localStorage.removeItem('token');
-    localStorage.removeItem('kz_client_token');
-    window.location.href = '/login'; // Or wherever login is
+  // Handle Global 401 Unauthorized safely without disrupting public or client intake/checkin forms
+  if (response.status === 401 && typeof resource === 'string' && !resource.includes('/auth/login') && !resource.includes('/auth/login-fast')) {
+    const isPublicOrClientPage = typeof window !== 'undefined' && (
+      window.location.pathname.startsWith('/client') ||
+      window.location.pathname.startsWith('/check-in') ||
+      window.location.pathname.startsWith('/intake') ||
+      window.location.pathname.startsWith('/join') ||
+      window.location.pathname.startsWith('/pricing') ||
+      window.location.pathname.startsWith('/login')
+    );
+    if (!isPublicOrClientPage) {
+      localStorage.removeItem('token');
+      localStorage.removeItem('kz_client_token');
+      window.location.href = '/login';
+    }
   }
   
   return response;

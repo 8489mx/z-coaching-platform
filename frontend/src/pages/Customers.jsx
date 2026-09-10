@@ -1,64 +1,78 @@
 import React, { useState, useEffect } from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useSearchParams } from 'react-router-dom';
 import { 
   Users, 
   Search, 
   Plus, 
-  Crown, 
   ShieldCheck, 
-  Award, 
   Clock, 
   MessageCircle, 
-  ExternalLink, 
-  Copy, 
-  Check, 
-  CheckCircle2,
-  Zap,
-  Activity,
-  ActivitySquare,
-  X,
-  CreditCard,
-  Edit3,
-  ChevronDown,
+  X, 
   Download,
-  HeartPulse
+  Pause,
+  Play,
+  CreditCard
 } from 'lucide-react';
 import { API_BASE } from '../config/api';
 import AdminLayout from '../components/layout/AdminLayout';
 import WhatsAppModal from '../components/modals/WhatsAppModal';
-import { copyToClipboard } from '../utils/clipboardUtils';
+import FlexibleRenewalModal from '../components/modals/FlexibleRenewalModal';
 import { PageHeader } from '@/shared/components/page-header';
 import { FormSection } from '@/shared/components/form-section';
+import NewClientQuickModal from '../components/modals/NewClientQuickModal';
+import { ClientCodeBadge, ClientPackageBadge, getClientTier } from '../utils/tierBadgeHelper';
+import { arabicSearchMatch } from '../utils/searchUtils';
 import { extractClientFastingProfile } from '../utils/seasonalFastingRadar';
-import InteractivePhotoComparisonStudio from '../components/checkin/InteractivePhotoComparisonStudio';
-import LabBiomarkersReviewStudio from '../components/clinical/LabBiomarkersReviewStudio';
+import ClientSlideOverDrawer from '../components/customers/ClientSlideOverDrawer';
 
 export default function Customers() {
-  const [phone, setPhone] = useState('');
-  const [fullName, setFullName] = useState('');
-  const [packageTier, setPackageTier] = useState('MAX_3_PLUS_1');
-  const [isTierDropdownOpen, setIsTierDropdownOpen] = useState(false);
+  const [searchParams] = useSearchParams();
   const [clients, setClients] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [newlyCreated, setNewlyCreated] = useState(null);
-  const [copySuccess, setCopySuccess] = useState(false);
+  const [isNewClientModalOpen, setIsNewClientModalOpen] = useState(false);
+  const [selectedDrawerClient, setSelectedDrawerClient] = useState(null);
 
   // Filters
   const [searchTerm, setSearchTerm] = useState('');
   const [tierFilter, setTierFilter] = useState('ALL'); // 'ALL' | 'MAX' | 'ELITE'
+  const [fastingFilter, setFastingFilter] = useState('ALL'); // 'ALL' | 'INTERMITTENT' | 'RAMADAN' | 'COPTIC'
+  const [currentPage, setCurrentPage] = useState(1);
+  const pageSize = 25;
 
-  // WhatsApp Hub State
+  // WhatsApp & Renewal Hub State
   const [whatsappModalClient, setWhatsappModalClient] = useState(null);
-
-  // Transformation Studio State
-  const [transformationModalClient, setTransformationModalClient] = useState(null);
-
-  // Clinical Lab Studio State
-  const [labModalClient, setLabModalClient] = useState(null);
+  const [renewalModalClient, setRenewalModalClient] = useState(null);
+  const [freezingClientId, setFreezingClientId] = useState(null);
 
   useEffect(() => {
     fetchClients();
   }, []);
+
+  // Handle URL query parameters (code, fasting, search)
+  useEffect(() => {
+    const codeParam = searchParams.get('code') || searchParams.get('id') || searchParams.get('client_code');
+    const fastingParam = searchParams.get('fasting');
+    const searchParam = searchParams.get('search') || searchParams.get('q');
+
+    if (fastingParam && ['INTERMITTENT', 'RAMADAN', 'COPTIC', 'ALL'].includes(fastingParam.toUpperCase())) {
+      setFastingFilter(fastingParam.toUpperCase());
+    }
+
+    if (searchParam) {
+      setSearchTerm(searchParam);
+    }
+
+    if (codeParam && clients.length > 0) {
+      const cleanParam = String(codeParam).replace(/^#+/, '').replace(/^client[-_]?/i, '').toLowerCase();
+      const matched = clients.find(c => {
+        const cCode = String(c.client_code || c.id || '').replace(/^#+/, '').replace(/^client[-_]?/i, '').toLowerCase();
+        return cCode === cleanParam || String(c.id).toLowerCase() === cleanParam;
+      });
+      if (matched) {
+        setSelectedDrawerClient(matched);
+      }
+    }
+  }, [searchParams, clients]);
 
   const exportClientsToCSV = () => {
     if (!clients || clients.length === 0) {
@@ -102,33 +116,39 @@ export default function Customers() {
     }
   };
 
-  const handleCreateClient = async (e) => {
-    e.preventDefault();
-    if (!phone) return;
+  const handleToggleFreeze = async (client) => {
+    const isCurrentlyFrozen = client.subscription_status === 'FROZEN';
+    const targetStatus = isCurrentlyFrozen ? 'ACTIVE' : 'FROZEN';
+    const confirmMsg = isCurrentlyFrozen 
+      ? `هل ترغب في استئناف اشتراك المشترك (${client.full_name || client.name}) وإضافة أيام التجميد لتاريخ الانتهاء الجديد؟`
+      : `هل ترغب في تجميد اشتراك المشترك (${client.full_name || client.name}) مؤقتاً؟`;
+
+    if (!window.confirm(confirmMsg)) return;
 
     try {
-      const res = await fetch(`${API_BASE}/api/v1/clients`, {
+      setFreezingClientId(client.id);
+      const res = await fetch(`${API_BASE}/api/v1/coach/toggle-freeze`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          phone_number: phone.trim(),
-          full_name: fullName.trim() || undefined,
-          subscription_package: packageTier,
-          subscription_price: packageTier === 'MAX_3_PLUS_1' ? 3500 : 2500
+          client_id: client.client_code || client.id,
+          status: targetStatus
         })
       });
-
       const data = await res.json();
-      if (res.ok) {
-        setNewlyCreated(data.client || data.user);
-        setPhone('');
-        setFullName('');
+      if (data.success) {
+        if (selectedDrawerClient && (selectedDrawerClient.id === client.id || selectedDrawerClient.client_code === client.client_code)) {
+          setSelectedDrawerClient(prev => prev ? ({ ...prev, subscription_status: targetStatus }) : null);
+        }
         fetchClients();
       } else {
-        alert(data.error || 'حدث خطأ أثناء إنشاء المشترك');
+        alert(data.message || 'حدث خطأ أثناء تعديل حالة التجميد');
       }
-    } catch (e) {
-      alert('خطأ في الاتصال بالخادم');
+    } catch (err) {
+      console.error('Toggle freeze error:', err);
+      alert('تعذر الاتصال بالخادم لتعديل حالة التجميد');
+    } finally {
+      setFreezingClientId(null);
     }
   };
 
@@ -140,32 +160,50 @@ export default function Customers() {
   const filteredClients = clients.filter(client => {
     const term = searchTerm.trim().toLowerCase().replace(/^#+/, '');
     const cleanClientCode = String(client.client_code || client.id || '').replace(/^#+/, '').replace(/^client[-_]?/i, '');
+    const termCode = term.replace(/^client[-_]?/i, '');
+
+    const fasting = extractClientFastingProfile(client);
+
+    // Fasting Filter
+    if (fastingFilter === 'COPTIC' && !fasting.isCoptic) return false;
+    if (fastingFilter === 'RAMADAN' && !fasting.isRamadan) return false;
+    if (fastingFilter === 'INTERMITTENT' && !fasting.isIntermittent) return false;
 
     let matchesSearch = true;
     if (term) {
-      if (/^\d+$/.test(term)) {
-        matchesSearch = cleanClientCode === term ||
+      if (/^\d+$/.test(termCode)) {
+        matchesSearch = cleanClientCode === termCode ||
           (term.length >= 4 && client.phone_number && client.phone_number.includes(term)) ||
-          (client.full_name && client.full_name.toLowerCase().includes(term));
+          arabicSearchMatch(client.full_name, term);
       } else {
-        matchesSearch = (client.full_name && client.full_name.toLowerCase().includes(term)) ||
-          cleanClientCode === term ||
-          (client.phone_number && client.phone_number.includes(term));
+        matchesSearch = arabicSearchMatch(client.full_name, term) ||
+          cleanClientCode === termCode ||
+          (client.phone_number && client.phone_number.includes(term)) ||
+          (fasting.primaryFastingBadge && arabicSearchMatch(fasting.primaryFastingBadge.label, term)) ||
+          (fasting.intermittentBadge && arabicSearchMatch(fasting.intermittentBadge.label, term));
       }
     }
 
-    const pkg = (client.subscription_package || '').toUpperCase();
-    const isMax = pkg.includes('MAX');
-    const isElite = !isMax;
+    const resolvedTier = getClientTier(client);
 
-    if (tierFilter === 'MAX' && !isMax) return false;
-    if (tierFilter === 'ELITE' && !isElite) return false;
+    if (tierFilter === 'MAX' && resolvedTier !== 'MAX') return false;
+    if (tierFilter === 'ELITE' && resolvedTier !== 'ELITE') return false;
 
     return matchesSearch;
   });
 
-  const maxCount = clients.filter(c => (c.subscription_package || '').toUpperCase().includes('MAX')).length;
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchTerm, tierFilter, fastingFilter]);
+
+  const totalPages = Math.ceil(filteredClients.length / pageSize) || 1;
+  const paginatedClients = filteredClients.slice((currentPage - 1) * pageSize, currentPage * pageSize);
+
+  const maxCount = clients.filter(c => getClientTier(c) === 'MAX').length;
   const eliteCount = clients.length - maxCount;
+  const totalCoptic = clients.filter(c => extractClientFastingProfile(c).isCoptic).length;
+  const totalRamadan = clients.filter(c => extractClientFastingProfile(c).isRamadan).length;
+  const totalIntermittent = clients.filter(c => extractClientFastingProfile(c).isIntermittent).length;
 
   const statCards = [
     { title: 'إجمالي المشتركين', value: clients.length, unit: 'مشترك', label: 'مسجلين بالنظام', icon: Users },
@@ -196,6 +234,30 @@ export default function Customers() {
         <PageHeader
           title="قاعدة بيانات المشتركين والباقات المعتمدة"
           description="إدارة حسابات المشتركين، إنشاء وتفعيل الأكواد الجديدة، وإجراء المتابعات الفورية."
+          actions={(
+            <button
+              type="button"
+              onClick={() => setIsNewClientModalOpen(true)}
+              style={{
+                height: '36px',
+                padding: '0 16px',
+                background: '#0F172A',
+                color: '#FFFFFF',
+                border: 'none',
+                borderRadius: '6px',
+                fontSize: '12px',
+                fontWeight: 800,
+                cursor: 'pointer',
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '6px',
+                boxShadow: '0 2px 5px rgba(15, 23, 42, 0.25)'
+              }}
+            >
+              <Plus size={15} />
+              <span>إضافة مشترك جديد +</span>
+            </button>
+          )}
         />
 
         {/* 2. 4-Column KPI Stats */}
@@ -264,181 +326,7 @@ export default function Customers() {
           })}
         </div>
 
-        {/* 3. Quick Register Client Form */}
-        <FormSection
-          title="تسجيل مشترك جديد برقم الهاتف والباقة"
-          description="توليد كود المشترك وتجهيز حسابه فوراً للبدء وتعبئة الاستمارة."
-        >
-          <form onSubmit={handleCreateClient} style={{ display: 'grid', gridTemplateColumns: '1.2fr 1.2fr 1.5fr auto', gap: '12px', alignItems: 'end', marginTop: '6px' }}>
-            <div>
-              <label style={{ display: 'block', fontSize: '11.5px', fontWeight: 700, color: '#475569', marginBottom: '4px' }}>
-                رقم الهاتف (الواتساب) *
-              </label>
-              <input
-                type="text"
-                required
-                placeholder="010XXXXXXXX"
-                value={phone}
-                onChange={(e) => setPhone(e.target.value)}
-                style={{ width: '100%', height: '34px', borderRadius: '6px', border: '1px solid #CBD5E1', padding: '0 10px', fontSize: '12px', direction: 'ltr', outline: 'none', boxSizing: 'border-box' }}
-              />
-            </div>
-
-            <div>
-              <label style={{ display: 'block', fontSize: '11.5px', fontWeight: 700, color: '#475569', marginBottom: '4px' }}>
-                اسم المشترك (اختياري)
-              </label>
-              <input
-                type="text"
-                placeholder="الاسم الكامل"
-                value={fullName}
-                onChange={(e) => setFullName(e.target.value)}
-                style={{ width: '100%', height: '34px', borderRadius: '6px', border: '1px solid #CBD5E1', padding: '0 10px', fontSize: '12px', outline: 'none', boxSizing: 'border-box' }}
-              />
-            </div>
-
-            <div style={{ position: 'relative' }}>
-              <label style={{ display: 'block', fontSize: '11.5px', fontWeight: 700, color: '#475569', marginBottom: '4px' }}>
-                نوع الباقة المعتمدة *
-              </label>
-              <button
-                type="button"
-                onClick={() => setIsTierDropdownOpen(!isTierDropdownOpen)}
-                style={{
-                  width: '100%',
-                  height: '34px',
-                  borderRadius: '6px',
-                  border: '1px solid #CBD5E1',
-                  padding: '0 10px',
-                  fontSize: '11.5px',
-                  fontWeight: 700,
-                  color: '#0F172A',
-                  background: '#FFFFFF',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'space-between',
-                  cursor: 'pointer',
-                  outline: 'none',
-                  boxSizing: 'border-box',
-                  transition: 'border-color 0.15s ease'
-                }}
-              >
-                <span>
-                  {packageTier === 'MAX_3_PLUS_1' 
-                    ? 'باقة MAX (متابعة أسبوعية كل 7 أيام)' 
-                    : 'باقة ELITE (متابعة كل 14 يوماً)'}
-                </span>
-                <ChevronDown size={14} color="#64748B" style={{ transform: isTierDropdownOpen ? 'rotate(180deg)' : 'none', transition: 'transform 0.15s ease' }} />
-              </button>
-
-              {isTierDropdownOpen && (
-                <div
-                  style={{
-                    position: 'absolute',
-                    top: 'calc(100% + 4px)',
-                    right: 0,
-                    left: 0,
-                    background: '#FFFFFF',
-                    border: '1px solid #E2E8F0',
-                    borderRadius: '8px',
-                    boxShadow: '0 10px 25px rgba(15, 23, 42, 0.1)',
-                    zIndex: 50,
-                    overflow: 'hidden',
-                    padding: '4px',
-                    display: 'flex',
-                    flexDirection: 'column',
-                    gap: '2px'
-                  }}
-                >
-                  <div
-                    onClick={() => {
-                      setPackageTier('MAX_3_PLUS_1');
-                      setIsTierDropdownOpen(false);
-                    }}
-                    style={{
-                      padding: '8px 10px',
-                      borderRadius: '6px',
-                      fontSize: '11.5px',
-                      fontWeight: 700,
-                      color: packageTier === 'MAX_3_PLUS_1' ? '#B45309' : '#0F172A',
-                      background: packageTier === 'MAX_3_PLUS_1' ? '#FFFBEB' : 'transparent',
-                      cursor: 'pointer',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'space-between',
-                      transition: 'background 0.12s ease'
-                    }}
-                    onMouseEnter={(e) => {
-                      if (packageTier !== 'MAX_3_PLUS_1') e.currentTarget.style.background = '#F8FAFC';
-                    }}
-                    onMouseLeave={(e) => {
-                      if (packageTier !== 'MAX_3_PLUS_1') e.currentTarget.style.background = 'transparent';
-                    }}
-                  >
-                    <span>باقة MAX (متابعة أسبوعية كل 7 أيام)</span>
-                    {packageTier === 'MAX_3_PLUS_1' && <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: '#D97706' }} />}
-                  </div>
-
-                  <div
-                    onClick={() => {
-                      setPackageTier('ELITE_3_PLUS_1');
-                      setIsTierDropdownOpen(false);
-                    }}
-                    style={{
-                      padding: '8px 10px',
-                      borderRadius: '6px',
-                      fontSize: '11.5px',
-                      fontWeight: 700,
-                      color: packageTier === 'ELITE_3_PLUS_1' ? '#0369A1' : '#0F172A',
-                      background: packageTier === 'ELITE_3_PLUS_1' ? '#F0F9FF' : 'transparent',
-                      cursor: 'pointer',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'space-between',
-                      transition: 'background 0.12s ease'
-                    }}
-                    onMouseEnter={(e) => {
-                      if (packageTier !== 'ELITE_3_PLUS_1') e.currentTarget.style.background = '#F8FAFC';
-                    }}
-                    onMouseLeave={(e) => {
-                      if (packageTier !== 'ELITE_3_PLUS_1') e.currentTarget.style.background = 'transparent';
-                    }}
-                  >
-                    <span>باقة ELITE (متابعة كل 14 يوماً)</span>
-                    {packageTier === 'ELITE_3_PLUS_1' && <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: '#0284C7' }} />}
-                  </div>
-                </div>
-              )}
-            </div>
-
-            <button
-              type="submit"
-              style={{
-                height: '34px',
-                padding: '0 18px',
-                background: '#0F172A',
-                color: '#FFFFFF',
-                border: 'none',
-                borderRadius: '6px',
-                fontSize: '12px',
-                fontWeight: 700,
-                cursor: 'pointer',
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: '6px',
-                boxShadow: '0 2px 5px rgba(15, 23, 42, 0.25)',
-                whiteSpace: 'nowrap'
-              }}
-              onMouseEnter={(e) => (e.currentTarget.style.background = '#334155')}
-              onMouseLeave={(e) => (e.currentTarget.style.background = '#0F172A')}
-            >
-              <Plus size={14} />
-              <span>إضافة المشترك فوراً</span>
-            </button>
-          </form>
-        </FormSection>
-
-        {/* 4. Clients Table Section */}
+        {/* 3. Clients Table Section */}
         <FormSection
           title="قائمة المشتركين المعتمدين"
           description="إدارة كافة المشتركين المسجلين في النظام، ومتابعة الخطط والتقييمات."
@@ -533,6 +421,36 @@ export default function Customers() {
                   </button>
                 ))}
               </div>
+
+              {/* Fasting Filter Pills */}
+              <div style={{ display: 'flex', gap: '3px', background: '#F1F5F9', padding: '3px', borderRadius: '6px', border: '1px solid #E2E8F0' }}>
+                {[
+                  { id: 'ALL', label: 'كافة الأنماط', count: clients.length },
+                  { id: 'INTERMITTENT', label: 'متقطع', count: totalIntermittent },
+                  { id: 'RAMADAN', label: 'رمضان', count: totalRamadan },
+                  { id: 'COPTIC', label: 'مسيحي', count: totalCoptic }
+                ].map(f => (
+                  <button
+                    key={f.id}
+                    type="button"
+                    onClick={() => setFastingFilter(f.id)}
+                    style={{
+                      padding: '4px 8px',
+                      borderRadius: '5px',
+                      fontSize: '11px',
+                      fontWeight: 700,
+                      border: 'none',
+                      cursor: 'pointer',
+                      background: fastingFilter === f.id ? '#0F172A' : 'transparent',
+                      color: fastingFilter === f.id ? '#FFFFFF' : '#64748B',
+                      boxShadow: fastingFilter === f.id ? '0 2px 5px rgba(15, 23, 42, 0.25)' : 'none',
+                      transition: 'background 0.12s ease, color 0.12s ease'
+                    }}
+                  >
+                    {f.label} ({f.count})
+                  </button>
+                ))}
+              </div>
             </div>
           )}
         >
@@ -557,14 +475,12 @@ export default function Customers() {
                     <th style={{ padding: '10px 14px', textAlign: 'right' }}>المشترك</th>
                     <th style={{ padding: '10px 14px', textAlign: 'center' }}>الهاتف</th>
                     <th style={{ padding: '10px 14px', textAlign: 'center' }}>الباقة</th>
-                    <th style={{ padding: '10px 14px', textAlign: 'center' }}>حالة الاستمارة</th>
+                    <th style={{ padding: '10px 14px', textAlign: 'center' }}>حالة الاشتراك</th>
                     <th style={{ padding: '10px 14px', textAlign: 'left' }}>إجراءات الكوتش والمتابعة</th>
                   </tr>
                 </thead>
                 <tbody>
-                  {filteredClients.map((client) => {
-                    const pkg = (client.subscription_package || '').toUpperCase();
-                    const isMax = pkg.includes('MAX');
+                  {paginatedClients.map((client) => {
                     const cleanCode = String(client.client_code || client.id).replace(/^client[-_]?/i, '');
 
                     return (
@@ -576,24 +492,59 @@ export default function Customers() {
                       >
                         {/* Code */}
                         <td style={{ padding: '10px 14px', textAlign: 'center' }}>
-                          <span style={{ 
-                            fontFamily: 'JetBrains Mono, monospace', 
-                            fontWeight: 800, 
-                            fontSize: '11px', 
-                            background: '#F8FAFC', 
-                            border: '1px solid #E2E8F0', 
-                            color: isMax ? '#B45309' : '#0284C7', 
-                            padding: '2px 7px', 
-                            borderRadius: '4px', 
-                            display: 'inline-block' 
-                          }}>
-                            {'#' + cleanCode}
+                          <span
+                            onClick={() => setSelectedDrawerClient(client)}
+                            style={{ cursor: 'pointer', display: 'inline-block' }}
+                            title="فتح لوح تفاصيل المشترك السريع"
+                          >
+                            <ClientCodeBadge code={cleanCode} item={client} />
                           </span>
                         </td>
 
                         {/* Name */}
                         <td style={{ padding: '10px 14px', textAlign: 'right' }}>
-                          <strong style={{ color: '#0F172A', fontSize: '13px', display: 'block' }}>{client.full_name || 'مشترك جديد'}</strong>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flexWrap: 'wrap' }}>
+                            <strong 
+                              onClick={() => setSelectedDrawerClient(client)}
+                              style={{ color: '#0F172A', fontSize: '13px', cursor: 'pointer' }}
+                              title="فتح لوح تفاصيل المشترك السريع"
+                            >
+                              {client.full_name || 'مشترك جديد'}
+                            </strong>
+                            {(() => {
+                              const fasting = extractClientFastingProfile(client);
+                              return (
+                                <>
+                                  {fasting.primaryFastingBadge && (
+                                    <span style={{
+                                      fontSize: '10px',
+                                      padding: '1px 6px',
+                                      borderRadius: '4px',
+                                      background: fasting.primaryFastingBadge.bg,
+                                      border: `1px solid ${fasting.primaryFastingBadge.border}`,
+                                      color: fasting.primaryFastingBadge.color,
+                                      fontWeight: 800
+                                    }}>
+                                      {fasting.primaryFastingBadge.label}
+                                    </span>
+                                  )}
+                                  {fasting.intermittentBadge && (
+                                    <span style={{
+                                      fontSize: '10px',
+                                      padding: '1px 6px',
+                                      borderRadius: '4px',
+                                      background: fasting.intermittentBadge.bg,
+                                      border: `1px solid ${fasting.intermittentBadge.border}`,
+                                      color: fasting.intermittentBadge.color,
+                                      fontWeight: 800
+                                    }}>
+                                      {fasting.intermittentBadge.label}
+                                    </span>
+                                  )}
+                                </>
+                              );
+                            })()}
+                          </div>
                         </td>
 
                         {/* Phone */}
@@ -605,47 +556,49 @@ export default function Customers() {
 
                         {/* Tier */}
                         <td style={{ padding: '10px 14px', textAlign: 'center' }}>
-                          <span style={{ 
-                            background: '#F8FAFC', 
-                            border: '1px solid #E2E8F0', 
-                            color: isMax ? '#B45309' : '#0284C7', 
-                            padding: '3px 10px', 
-                            borderRadius: '6px', 
-                            fontSize: '11.5px', 
-                            fontWeight: 800, 
-                            fontFamily: 'JetBrains Mono, Cairo, sans-serif',
-                            display: 'inline-block'
-                          }}>
-                            {isMax ? 'MAX' : 'ELITE'}
-                          </span>
+                          <ClientPackageBadge item={client} />
                         </td>
 
                         {/* Status */}
                         <td style={{ padding: '10px 14px', textAlign: 'center' }}>
-                          <span style={{ background: '#F0FDF4', color: '#16A34A', border: '1px solid #BBF7D0', padding: '2px 8px', borderRadius: '4px', fontSize: '11px', fontWeight: 700, display: 'inline-block' }}>
-                            معتمدة ونشطة
-                          </span>
+                          {client.subscription_status === 'FROZEN' ? (
+                            <span style={{ background: '#FEF3C7', color: '#B45309', border: '1px solid #FDE68A', padding: '2px 8px', borderRadius: '4px', fontSize: '11px', fontWeight: 800, display: 'inline-block' }}>
+                              مجمد مؤقتاً
+                            </span>
+                          ) : client.subscription_status === 'EXPIRED' ? (
+                            <span style={{ background: '#FEF2F2', color: '#DC2626', border: '1px solid #FECACA', padding: '2px 8px', borderRadius: '4px', fontSize: '11px', fontWeight: 800, display: 'inline-block' }}>
+                              منتهي الصلاحية
+                            </span>
+                          ) : client.subscription_status === 'EXPIRING_SOON' ? (
+                            <span style={{ background: '#FFFBEB', color: '#D97706', border: '1px solid #FDE68A', padding: '2px 8px', borderRadius: '4px', fontSize: '11px', fontWeight: 800, display: 'inline-block' }}>
+                              ينتهي خلال {client.days_remaining} يوم
+                            </span>
+                          ) : (
+                            <span style={{ background: '#F0FDF4', color: '#16A34A', border: '1px solid #BBF7D0', padding: '2px 8px', borderRadius: '4px', fontSize: '11px', fontWeight: 800, display: 'inline-block' }}>
+                              نشط ({client.days_remaining !== undefined ? `${client.days_remaining} يوم` : 'معتمد'})
+                            </span>
+                          )}
                         </td>
 
                         {/* Actions */}
                         <td style={{ padding: '10px 14px', textAlign: 'left' }}>
-                          <div style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
+                          <div style={{ display: 'inline-flex', alignItems: 'center', gap: '5px' }}>
                             {/* WhatsApp Modal Trigger */}
                             <button
                               type="button"
                               onClick={() => setWhatsappModalClient(client)}
                               style={{
-                                padding: '4px 10px',
+                                padding: '4px 8px',
                                 borderRadius: '6px',
                                 border: '1px solid #86EFAC',
                                 background: '#F0FDF4',
                                 color: '#16A34A',
-                                fontSize: '11.5px',
+                                fontSize: '11px',
                                 fontWeight: 700,
                                 cursor: 'pointer',
                                 display: 'inline-flex',
                                 alignItems: 'center',
-                                gap: '5px',
+                                gap: '4px',
                                 transition: 'all 0.15s ease'
                               }}
                               onMouseEnter={(e) => {
@@ -658,79 +611,98 @@ export default function Customers() {
                               }}
                               title="مركز رسائل الواتساب الذكية"
                             >
-                              <MessageCircle size={13} />
+                              <MessageCircle size={12} />
                               <span>واتساب</span>
                             </button>
 
-                            {/* Transformation Studio Button */}
+                            {/* Client Slide-over Drawer Trigger */}
                             <button
                               type="button"
-                              onClick={() => setTransformationModalClient(client)}
+                              onClick={() => setSelectedDrawerClient(client)}
                               style={{
-                                padding: '4px 10px',
+                                padding: '4px 8px',
                                 borderRadius: '6px',
-                                border: '1px solid #FEF08A',
-                                background: '#FEFCE8',
-                                color: '#A16207',
-                                fontSize: '11.5px',
+                                border: '1px solid #E2E8F0',
+                                background: '#F8FAFC',
+                                color: '#334155',
+                                fontSize: '11px',
                                 fontWeight: 700,
                                 cursor: 'pointer',
                                 display: 'inline-flex',
                                 alignItems: 'center',
-                                gap: '5px',
+                                gap: '4px',
                                 transition: 'all 0.15s ease'
                               }}
                               onMouseEnter={(e) => {
-                                e.currentTarget.style.background = '#FEF9C3';
-                                e.currentTarget.style.borderColor = '#FDE047';
+                                e.currentTarget.style.background = '#F1F5F9';
+                                e.currentTarget.style.borderColor = '#CBD5E1';
                               }}
                               onMouseLeave={(e) => {
-                                e.currentTarget.style.background = '#FEFCE8';
-                                e.currentTarget.style.borderColor = '#FEF08A';
+                                e.currentTarget.style.background = '#F8FAFC';
+                                e.currentTarget.style.borderColor = '#E2E8F0';
                               }}
-                              title="استوديو صور التطور وكروت التحول التسويقية"
+                              title="عرض تفاصيل المشترك والتقييمات باللوح الجانبي"
                             >
-                              <Award size={13} color="#A16207" />
-                              <span>التحول</span>
+                              <Clock size={12} color="#475569" />
+                              <span>الملف</span>
                             </button>
 
-                            {/* Clinical Lab Review Studio Button */}
+                            {/* Freeze / Resume Button */}
                             <button
                               type="button"
-                              onClick={() => setLabModalClient(client)}
+                              disabled={freezingClientId === client.id}
+                              onClick={() => handleToggleFreeze(client)}
                               style={{
-                                padding: '4px 10px',
-                                borderRadius: '6px',
+                                padding: '4px 8px',
+                                borderRadius: '5px',
+                                border: client.subscription_status === 'FROZEN' ? '1px solid #86EFAC' : '1px solid #CBD5E1',
+                                background: client.subscription_status === 'FROZEN' ? '#F0FDF4' : '#FFFFFF',
+                                color: client.subscription_status === 'FROZEN' ? '#16A34A' : '#475569',
+                                fontSize: '11px',
+                                fontWeight: 700,
+                                cursor: freezingClientId === client.id ? 'wait' : 'pointer',
+                                display: 'inline-flex',
+                                alignItems: 'center',
+                                gap: '3px',
+                                transition: 'all 0.15s ease'
+                              }}
+                              title={client.subscription_status === 'FROZEN' ? 'استئناف الاشتراك وتمديد تاريخ الانتهاء' : 'تجميد الاشتراك وتثبيت الأيام المتبقية'}
+                            >
+                              {client.subscription_status === 'FROZEN' ? <Play size={11} /> : <Pause size={11} />}
+                              <span>{client.subscription_status === 'FROZEN' ? 'استئناف' : 'تجميد'}</span>
+                            </button>
+
+                            {/* Quick Renew Button */}
+                            <button
+                              type="button"
+                              onClick={() => setRenewalModalClient(client)}
+                              style={{
+                                padding: '4px 8px',
+                                borderRadius: '5px',
                                 border: '1px solid #BAE6FD',
                                 background: '#F0F9FF',
                                 color: '#0284C7',
-                                fontSize: '11.5px',
+                                fontSize: '11px',
                                 fontWeight: 700,
                                 cursor: 'pointer',
                                 display: 'inline-flex',
                                 alignItems: 'center',
-                                gap: '5px',
+                                gap: '3px',
                                 transition: 'all 0.15s ease'
                               }}
-                              onMouseEnter={(e) => {
-                                e.currentTarget.style.background = '#E0F2FE';
-                                e.currentTarget.style.borderColor = '#7DD3FC';
-                              }}
-                              onMouseLeave={(e) => {
-                                e.currentTarget.style.background = '#F0F9FF';
-                                e.currentTarget.style.borderColor = '#BAE6FD';
-                              }}
-                              title="فحص التحاليل المخبرية والمؤشرات الفسيولوجية"
+                              title="تسجيل سداد وتجديد الاشتراك وتمديد المدة"
                             >
-                              <HeartPulse size={13} color="#0284C7" />
-                              <span>التحاليل</span>
+                              <CreditCard size={11} />
+                              <span>تجديد</span>
                             </button>
 
-                            {/* Program Editor Button */}
-                            <Link
-                              to={`/coach/editor/${cleanCode}`}
+                            {/* Program Editor Button (New Tab) */}
+                            <a
+                              href={`/coach/editor/${cleanCode}`}
+                              target="_blank"
+                              rel="noopener noreferrer"
                               style={{
-                                padding: '4px 10px',
+                                padding: '4px 8px',
                                 borderRadius: '5px',
                                 border: '1px solid #CBD5E1',
                                 background: '#FFFFFF',
@@ -738,20 +710,25 @@ export default function Customers() {
                                 fontSize: '11px',
                                 fontWeight: 700,
                                 textDecoration: 'none',
+                                display: 'inline-flex',
+                                alignItems: 'center',
+                                gap: '3px',
                                 transition: 'all 0.15s ease'
                               }}
                               onMouseEnter={(e) => (e.currentTarget.style.background = '#F8FAFC')}
                               onMouseLeave={(e) => (e.currentTarget.style.background = '#FFFFFF')}
-                              title="تعديل الخطة والوجبات والتمارين"
+                              title="فتح محرر الخطة في تبويب مستقل"
                             >
-                              تعديل الخطة
-                            </Link>
+                              الخطة
+                            </a>
 
-                            {/* Check-in Review Dashboard Link */}
-                            <Link
-                              to={`/coach/checkin-review?code=${cleanCode}`}
+                            {/* Check-in Review Dashboard Link (New Tab) */}
+                            <a
+                              href={`/coach/checkin-review?code=${cleanCode}`}
+                              target="_blank"
+                              rel="noopener noreferrer"
                               style={{
-                                padding: '4px 12px',
+                                padding: '4px 10px',
                                 borderRadius: '5px',
                                 background: '#0F172A',
                                 color: '#FFFFFF',
@@ -759,14 +736,17 @@ export default function Customers() {
                                 fontWeight: 700,
                                 textDecoration: 'none',
                                 boxShadow: '0 2px 5px rgba(15, 23, 42, 0.25)',
+                                display: 'inline-flex',
+                                alignItems: 'center',
+                                gap: '3px',
                                 transition: 'all 0.15s ease'
                               }}
                               onMouseEnter={(e) => (e.currentTarget.style.background = '#334155')}
                               onMouseLeave={(e) => (e.currentTarget.style.background = '#0F172A')}
-                              title="الانتقال لمراجعة تقييم المشترك وتعديل الماكروز"
+                              title="الانتقال لمراجعة تقييم المشترك في تبويب مستقل"
                             >
-                              مراجعة التقييم
-                            </Link>
+                              التقييم
+                            </a>
                           </div>
                         </td>
                       </tr>
@@ -774,6 +754,69 @@ export default function Customers() {
                   })}
                 </tbody>
               </table>
+
+              {/* Clean Executive Pagination Bar */}
+              {totalPages > 1 && (
+                <div style={{
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  alignItems: 'center',
+                  padding: '10px 14px',
+                  background: '#F8FAFC',
+                  borderTop: '1px solid #E2E8F0',
+                  fontSize: '11.5px',
+                  color: '#64748B',
+                  fontWeight: 600,
+                  flexWrap: 'wrap',
+                  gap: '8px'
+                }}>
+                  <span>
+                    عرض المشتركين من {(currentPage - 1) * pageSize + 1} إلى {Math.min(currentPage * pageSize, filteredClients.length)} من أصل {filteredClients.length} مشترك
+                  </span>
+
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                    <button
+                      type="button"
+                      onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                      disabled={currentPage === 1}
+                      style={{
+                        padding: '4px 10px',
+                        borderRadius: '5px',
+                        border: '1px solid #CBD5E1',
+                        background: currentPage === 1 ? '#F1F5F9' : '#FFFFFF',
+                        color: currentPage === 1 ? '#94A3B8' : '#0F172A',
+                        cursor: currentPage === 1 ? 'not-allowed' : 'pointer',
+                        fontWeight: 700,
+                        fontSize: '11px'
+                      }}
+                    >
+                      السابق
+                    </button>
+
+                    <span style={{ padding: '0 8px', color: '#0F172A', fontWeight: 800 }}>
+                      صفحة {currentPage} من {totalPages}
+                    </span>
+
+                    <button
+                      type="button"
+                      onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+                      disabled={currentPage === totalPages}
+                      style={{
+                        padding: '4px 10px',
+                        borderRadius: '5px',
+                        border: '1px solid #CBD5E1',
+                        background: currentPage === totalPages ? '#F1F5F9' : '#FFFFFF',
+                        color: currentPage === totalPages ? '#94A3B8' : '#0F172A',
+                        cursor: currentPage === totalPages ? 'not-allowed' : 'pointer',
+                        fontWeight: 700,
+                        fontSize: '11px'
+                      }}
+                    >
+                      التالي
+                    </button>
+                  </div>
+                </div>
+              )}
             </div>
           )}
         </FormSection>
@@ -787,410 +830,34 @@ export default function Customers() {
           />
         )}
 
-        {/* Transformation Studio Modal */}
-        {transformationModalClient && (
-          <div 
-            style={{
-              position: 'fixed',
-              inset: 0,
-              backgroundColor: 'rgba(15, 23, 42, 0.85)',
-              backdropFilter: 'blur(8px)',
-              zIndex: 1400,
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              padding: '16px'
-            }}
-            dir="rtl"
-            onClick={() => setTransformationModalClient(null)}
-          >
-            <div 
-              onClick={(e) => e.stopPropagation()}
-              style={{
-                background: '#FFFFFF',
-                borderRadius: '12px',
-                width: '940px',
-                maxWidth: '96vw',
-                maxHeight: '94vh',
-                overflowY: 'auto',
-                display: 'flex',
-                flexDirection: 'column',
-                boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.4)',
-                border: '1px solid #CBD5E1'
-              }}
-            >
-              <div style={{ padding: '12px 18px', borderBottom: '1px solid #E2E8F0', display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: '#F8FAFC' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                  <Award size={16} color="#C4952D" />
-                  <h3 style={{ margin: 0, fontSize: '14px', fontWeight: 800, color: '#0F172A' }}>
-                    استوديو صور التطور وكروت التحول: {transformationModalClient.full_name} (#{transformationModalClient.client_code || transformationModalClient.id})
-                  </h3>
-                </div>
-                <button
-                  type="button"
-                  onClick={() => setTransformationModalClient(null)}
-                  style={{
-                    border: '1px solid #E2E8F0',
-                    background: '#FFFFFF',
-                    borderRadius: '6px',
-                    width: '30px',
-                    height: '30px',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    cursor: 'pointer',
-                    color: '#64748B'
-                  }}
-                >
-                  <X size={15} />
-                </button>
-              </div>
+        {/* New Client Quick Creation Modal */}
+        <NewClientQuickModal
+          isOpen={isNewClientModalOpen}
+          onClose={() => setIsNewClientModalOpen(false)}
+          onClientCreated={() => fetchClients()}
+        />
 
-              <div style={{ padding: '16px' }}>
-                <InteractivePhotoComparisonStudio
-                  history={transformationModalClient.history || [
-                    { week: 0, weight: transformationModalClient.weight_kg || 80, waist: 88, date: 'البداية', photos: { front: null, side: null, back: null } },
-                    { week: 4, weight: (transformationModalClient.weight_kg ? Number((transformationModalClient.weight_kg - 3.2).toFixed(1)) : 76.8), waist: 83, date: 'التقييم الحالي', photos: { front: null, side: null, back: null } }
-                  ]}
-                  activeCheckin={{
-                    week_number: 4,
-                    submission_date: 'الأسبوع 4',
-                    metrics: {
-                      current_weight: (transformationModalClient.weight_kg ? Number((transformationModalClient.weight_kg - 3.2).toFixed(1)) : 76.8),
-                      waist_current: 83
-                    }
-                  }}
-                  client={transformationModalClient}
-                  onClose={() => setTransformationModalClient(null)}
-                />
-              </div>
-            </div>
-          </div>
-        )}
+        {/* Flexible Renewal Modal */}
+        <FlexibleRenewalModal
+          isOpen={Boolean(renewalModalClient)}
+          onClose={() => setRenewalModalClient(null)}
+          client={renewalModalClient}
+          onSuccess={() => {
+            setRenewalModalClient(null);
+            fetchClients();
+          }}
+        />
 
-        {/* Clinical Labs Modal */}
-        {labModalClient && (
-          <div 
-            style={{
-              position: 'fixed',
-              inset: 0,
-              backgroundColor: 'rgba(15, 23, 42, 0.85)',
-              backdropFilter: 'blur(8px)',
-              zIndex: 1400,
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              padding: '16px'
-            }}
-            dir="rtl"
-            onClick={() => setLabModalClient(null)}
-          >
-            <div 
-              onClick={(e) => e.stopPropagation()}
-              style={{
-                background: '#FFFFFF',
-                borderRadius: '12px',
-                width: '1100px',
-                maxWidth: '98vw',
-                height: '92vh',
-                overflow: 'hidden',
-                display: 'flex',
-                flexDirection: 'column',
-                boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.4)',
-                border: '1px solid #CBD5E1'
-              }}
-            >
-              <LabBiomarkersReviewStudio
-                client={labModalClient}
-                initialValues={labModalClient.biomarkers || labModalClient.baseline_biomarkers || {}}
-                medicalReportsUrls={labModalClient.medical_reports_urls || labModalClient.reports || []}
-                onSave={() => {
-                  setLabModalClient(null);
-                }}
-                onClose={() => setLabModalClient(null)}
-              />
-            </div>
-          </div>
-        )}
-
-        {/* Newly Created Client Success Dispatch Modal Popup (Exact Matching UI) */}
-        {newlyCreated && (() => {
-          const rawCode = String(newlyCreated.client_code || newlyCreated.id || '').replace(/^client[-_]?/i, '').replace('#', '');
-          const isMaxTier = String(newlyCreated.subscription_package || '').toUpperCase().includes('MAX');
-          const clientPhone = newlyCreated.phone_number || '';
-          const clientName = newlyCreated.full_name || 'مشترك جديد';
-          const formLink = `${window.location.origin}/intake/form?code=${rawCode}&phone=${encodeURIComponent(clientPhone)}`;
-          
-          const cleanPhoneForWa = clientPhone.replace(/\D/g, '').startsWith('01') 
-            ? '2' + clientPhone.replace(/\D/g, '') 
-            : clientPhone.replace(/\D/g, '');
-
-          const waInviteMessage = `أهلاً بحضرتك يا أستاذ ${clientName}،
-تم تأكيد اشتراكك وتفعيل ملفك في منظومة كابتن كريم زكريا بنجاح.
-
-بيانات دخول استمارتك الخاصة:
-- كود المشترك: #${rawCode}
-- رقم الهاتف: ${clientPhone}
-- الباقة: ${isMaxTier ? 'باقة ماكس MAX' : 'باقة إيليت ELITE'}
-
-رابط استمارتك الصحية والرياضية المباشر:
-${formLink}
-
-يرجى تعبئة الاستمارة بدقة للبدء في إعداد وتصميم خطتك التدريبية والغذائية.
-بالتوفيق دائماً، كابتن كريم زكريا.`;
-
-          const waUrl = `https://wa.me/${cleanPhoneForWa}?text=${encodeURIComponent(waInviteMessage)}`;
-
-          return (
-            <div 
-              style={{
-                position: 'fixed',
-                inset: 0,
-                background: 'rgba(15, 23, 42, 0.65)',
-                backdropFilter: 'blur(4px)',
-                zIndex: 9999,
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                padding: '16px'
-              }}
-              onClick={() => setNewlyCreated(null)}
-            >
-              <div 
-                onClick={(e) => e.stopPropagation()}
-                dir="rtl"
-                style={{
-                  background: '#FFFFFF',
-                  width: '100%',
-                  maxWidth: '480px',
-                  borderRadius: '16px',
-                  border: '1px solid #E2E8F0',
-                  padding: '24px',
-                  boxShadow: '0 20px 40px rgba(15, 23, 42, 0.15)',
-                  display: 'flex',
-                  flexDirection: 'column',
-                  gap: '16px',
-                  fontFamily: 'Cairo, sans-serif'
-                }}
-              >
-                {/* 1. Header with Blue Bar & Close Button */}
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                    <span style={{ width: '4px', height: '18px', background: '#0284C7', borderRadius: '2px', display: 'inline-block' }} />
-                    <h3 style={{ margin: 0, fontSize: '16px', fontWeight: 800, color: '#0F172A' }}>
-                      إنشاء كود مشترك وتحديد الباقة
-                    </h3>
-                  </div>
-
-                  <button 
-                    type="button" 
-                    onClick={() => setNewlyCreated(null)}
-                    style={{ 
-                      background: '#F8FAFC', 
-                      border: '1px solid #E2E8F0', 
-                      borderRadius: '8px', 
-                      width: '32px', 
-                      height: '32px', 
-                      display: 'flex', 
-                      alignItems: 'center', 
-                      justifyContent: 'center', 
-                      cursor: 'pointer', 
-                      color: '#64748B',
-                      transition: 'background 0.15s ease'
-                    }}
-                    onMouseEnter={(e) => (e.currentTarget.style.background = '#F1F5F9')}
-                    onMouseLeave={(e) => (e.currentTarget.style.background = '#F8FAFC')}
-                  >
-                    <X size={16} />
-                  </button>
-                </div>
-
-                {/* 2. Green Pill Banner */}
-                <div 
-                  style={{
-                    background: '#F0FDF4',
-                    border: '1px solid #86EFAC',
-                    borderRadius: '8px',
-                    padding: '8px 14px',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    gap: '6px',
-                    color: '#15803D',
-                    fontSize: '12.5px',
-                    fontWeight: 700
-                  }}
-                >
-                  <CheckCircle2 size={16} color="#16A34A" />
-                  <span>تم إنشاء حساب المشترك وتوليد الكود بنجاح</span>
-                </div>
-
-                {/* 3. Main Center Code Card */}
-                <div 
-                  style={{
-                    background: '#F8FAFC',
-                    border: '1px solid #E2E8F0',
-                    borderRadius: '12px',
-                    padding: '16px 14px',
-                    display: 'flex',
-                    flexDirection: 'column',
-                    alignItems: 'center',
-                    gap: '12px'
-                  }}
-                >
-                  {/* Code Box */}
-                  <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '6px' }}>
-                    <span style={{ fontSize: '12px', color: '#64748B', fontWeight: 700 }}>كود المشترك المعتمد:</span>
-                    <div 
-                      style={{
-                        background: '#FFFFFF',
-                        border: '1px solid #CBD5E1',
-                        borderRadius: '8px',
-                        minWidth: '85px',
-                        padding: '4px 16px',
-                        height: '46px',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        fontFamily: 'JetBrains Mono, Cairo, sans-serif',
-                        fontSize: '22px',
-                        fontWeight: 900,
-                        color: '#0F172A',
-                        boxShadow: 'inset 0 1px 2px rgba(0,0,0,0.03)'
-                      }}
-                    >
-                      {rawCode}
-                    </div>
-                  </div>
-
-                  {/* Name and Phone Row */}
-                  <div 
-                    style={{ 
-                      width: '100%', 
-                      display: 'flex', 
-                      justifyContent: 'space-around', 
-                      alignItems: 'center', 
-                      background: '#FFFFFF', 
-                      border: '1px solid #E2E8F0', 
-                      borderRadius: '8px', 
-                      padding: '8px 12px', 
-                      fontSize: '12px',
-                      boxSizing: 'border-box'
-                    }}
-                  >
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                      <span style={{ color: '#64748B', fontWeight: 600 }}>المشترك:</span>
-                      <strong style={{ color: '#0F172A' }}>{clientName}</strong>
-                    </div>
-                    <div style={{ width: '1px', height: '14px', background: '#CBD5E1' }} />
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                      <span style={{ color: '#64748B', fontWeight: 600 }}>الهاتف:</span>
-                      <strong dir="ltr" style={{ fontFamily: 'JetBrains Mono', color: '#0F172A' }}>{clientPhone}</strong>
-                    </div>
-                  </div>
-
-                  {/* Package & Duration Row */}
-                  <div style={{ borderTop: '1px solid #E2E8F0', width: '100%', paddingTop: '10px', textAlign: 'center', fontSize: '11.5px', color: '#64748B', fontWeight: 600 }}>
-                    <span>الباقة: </span>
-                    <strong style={{ color: '#0F172A' }}>
-                      {isMaxTier ? 'باقة ماكس (MAX)' : 'باقة إيليت (ELITE)'}
-                    </strong>
-                    <span style={{ margin: '0 6px', color: '#CBD5E1' }}>|</span>
-                    <span>إجمالي المدة: </span>
-                    <strong style={{ color: '#16A34A', fontWeight: 800 }}>4 شهور (16 أسبوعاً)</strong>
-                  </div>
-                </div>
-
-                {/* 4. Action Buttons Stack */}
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginTop: '2px' }}>
-                  {/* Button 1: Direct WhatsApp */}
-                  <a
-                    href={waUrl}
-                    target="_blank"
-                    rel="noreferrer"
-                    style={{
-                      height: '42px',
-                      background: '#16A34A',
-                      color: '#FFFFFF',
-                      borderRadius: '8px',
-                      fontSize: '13px',
-                      fontWeight: 800,
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      gap: '8px',
-                      textDecoration: 'none',
-                      boxShadow: '0 2px 6px rgba(22, 163, 74, 0.25)',
-                      cursor: 'pointer'
-                    }}
-                  >
-                    <MessageCircle size={17} />
-                    <span>إرسال الرابط عبر الواتساب مباشرة</span>
-                  </a>
-
-                  {/* Button 2: Copy WhatsApp Invitation */}
-                  <button
-                    type="button"
-                    onClick={() => {
-                      copyToClipboard(waInviteMessage);
-                      setCopySuccess(true);
-                      setTimeout(() => setCopySuccess(false), 2000);
-                    }}
-                    style={{
-                      height: '40px',
-                      background: '#FFFFFF',
-                      border: '1px solid #CBD5E1',
-                      borderRadius: '8px',
-                      fontSize: '12.5px',
-                      fontWeight: 700,
-                      color: '#0F172A',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      gap: '6px',
-                      cursor: 'pointer',
-                      transition: 'background 0.15s ease'
-                    }}
-                    onMouseEnter={(e) => (e.currentTarget.style.background = '#F8FAFC')}
-                    onMouseLeave={(e) => (e.currentTarget.style.background = '#FFFFFF')}
-                  >
-                    <Copy size={15} />
-                    <span>{copySuccess ? 'تم نسخ دعوة الواتساب والكود بنجاح!' : 'نسخ دعوة الواتساب والكود'}</span>
-                  </button>
-
-                  {/* Button 3: Open & Fill Intake Form Now */}
-                  <a
-                    href={formLink}
-                    target="_blank"
-                    rel="noreferrer"
-                    style={{
-                      height: '40px',
-                      background: '#F8FAFC',
-                      border: '1px solid #CBD5E1',
-                      borderRadius: '8px',
-                      fontSize: '12.5px',
-                      fontWeight: 700,
-                      color: '#0F172A',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      gap: '6px',
-                      textDecoration: 'none',
-                      cursor: 'pointer',
-                      transition: 'background 0.15s ease'
-                    }}
-                    onMouseEnter={(e) => (e.currentTarget.style.background = '#F1F5F9')}
-                    onMouseLeave={(e) => (e.currentTarget.style.background = '#F8FAFC')}
-                  >
-                    <Edit3 size={15} />
-                    <span>فتح وتعبئة الاستمارة الآن</span>
-                  </a>
-                </div>
-
-              </div>
-            </div>
-          );
-        })()}
+        {/* Client Slide-Over Details Drawer */}
+        <ClientSlideOverDrawer
+          isOpen={Boolean(selectedDrawerClient)}
+          onClose={() => setSelectedDrawerClient(null)}
+          client={selectedDrawerClient}
+          onToggleFreeze={handleToggleFreeze}
+          freezingClientId={freezingClientId}
+          onOpenWhatsApp={(client) => setWhatsappModalClient(client)}
+          onOpenRenewal={(client) => setRenewalModalClient(client)}
+        />
 
       </div>
     </AdminLayout>

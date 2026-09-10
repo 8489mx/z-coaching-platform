@@ -4,6 +4,7 @@ import React, { useState, useMemo } from 'react';
 import { Send, MessageSquare, Clock, CheckCircle2, AlertCircle, Copy, Search, RotateCw, ExternalLink, Smartphone, ShieldAlert, Filter, Check, Zap, Flame, CreditCard, UserCheck, Bell, Edit3 } from 'lucide-react';
 import AdminLayout from '../components/layout/AdminLayout';
 import { REMINDER_CATEGORIES, MESSAGE_TEMPLATES, compileReminderMessage, generateWhatsAppUrl, formatWhatsAppPhone } from '../utils/whatsappRemindersEngine';
+import { arabicSearchMatch } from '../utils/searchUtils';
 
 export default function WhatsAppRemindersHub() {
   const [selectedCategory, setSelectedCategory] = useState('ALL'); // 'ALL' | REMINDER_CATEGORIES keys
@@ -28,25 +29,39 @@ export default function WhatsAppRemindersHub() {
         if (res.ok) {
           const data = await res.json();
           if (data.clients) {
-            const enriched = data.clients.map((client, idx) => {
+            const enriched = data.clients.map((client) => {
+              const isMax = getClientTier(client) === 'MAX';
+              const checkinInterval = isMax ? 7 : 14;
               let defaultCat = REMINDER_CATEGORIES.MOTIVATION;
               let daysLeft = client.days_remaining || 0;
               let lastCheckinDays = 0;
               let triggerStatus = 'NORMAL';
 
-              if (client.status === 'EXPIRING_SOON') {
-                defaultCat = REMINDER_CATEGORIES.RENEWAL_UPCOMING;
-                triggerStatus = 'EXPIRING_SOON';
-              } else if (client.status === 'EXPIRED') {
-                 defaultCat = REMINDER_CATEGORIES.RENEWAL_UPCOMING;
-                 triggerStatus = 'EXPIRED';
-              } else if (idx % 3 === 0) {
-                 defaultCat = REMINDER_CATEGORIES.CHECKIN_OVERDUE;
-                 triggerStatus = 'CHECKIN_OVERDUE';
-                 lastCheckinDays = 8;
+              if (client.checkinSubmissions && client.checkinSubmissions.length > 0) {
+                const latestCheckin = client.checkinSubmissions[0];
+                const checkinDate = new Date(latestCheckin.createdAt || latestCheckin.created_at || Date.now());
+                lastCheckinDays = Math.max(0, Math.round((Date.now() - checkinDate.getTime()) / (1000 * 60 * 60 * 24)));
+              } else if (client.createdAt) {
+                const joinDate = new Date(client.createdAt);
+                lastCheckinDays = Math.max(0, Math.round((Date.now() - joinDate.getTime()) / (1000 * 60 * 60 * 24)));
               }
 
-              const isMax = getClientTier(client) === 'MAX';
+              if (client.status === 'FROZEN') {
+                defaultCat = REMINDER_CATEGORIES.MOTIVATION;
+                triggerStatus = 'FROZEN';
+              } else if (client.status === 'EXPIRING_SOON' || (daysLeft > 0 && daysLeft <= 3)) {
+                defaultCat = REMINDER_CATEGORIES.RENEWAL_UPCOMING;
+                triggerStatus = 'EXPIRING_SOON';
+              } else if (client.status === 'EXPIRED' || daysLeft <= 0) {
+                defaultCat = REMINDER_CATEGORIES.RENEWAL_UPCOMING;
+                triggerStatus = 'EXPIRED';
+              } else if (lastCheckinDays > checkinInterval) {
+                defaultCat = REMINDER_CATEGORIES.CHECKIN_OVERDUE;
+                triggerStatus = 'CHECKIN_OVERDUE';
+              } else if (lastCheckinDays >= checkinInterval - 1) {
+                defaultCat = REMINDER_CATEGORIES.CHECKIN_DUE;
+                triggerStatus = 'CHECKIN_DUE';
+              }
 
               return {
                 ...client,
@@ -76,11 +91,12 @@ export default function WhatsAppRemindersHub() {
   const filteredClients = useMemo(() => {
     return clientsData.filter(c => {
       // Search
-      const q = searchQuery.toLowerCase().trim();
-      const matchSearch = !q || 
-        String(c.client_code || c.id).includes(q) ||
-        (c.full_name || c.name || '').toLowerCase().includes(q) ||
-        (c.phone_number || '').includes(q);
+      const q = searchQuery.trim();
+      const qClean = q.toLowerCase().replace(/^#+/, '');
+      const matchSearch = !qClean || 
+        String(c.client_code || c.id).includes(qClean) ||
+        arabicSearchMatch(c.full_name || c.name, q) ||
+        (c.phone_number || '').includes(qClean);
 
       if (!matchSearch) return false;
 
@@ -409,6 +425,10 @@ export default function WhatsAppRemindersHub() {
                     reasonBadge = { label: `متأخر ${client.lastCheckinDays} أيام`, bg: '#FEF2F2', border: '#FECACA', color: '#DC2626' };
                   } else if (client.triggerStatus === 'EXPIRING_SOON') {
                     reasonBadge = { label: `تجديد خلال ${client.daysLeft} يوم`, bg: '#FFFBEB', border: '#FDE68A', color: '#B45309' };
+                  } else if (client.triggerStatus === 'EXPIRED') {
+                    reasonBadge = { label: 'اشتراك منتهي', bg: '#FEF2F2', border: '#FECACA', color: '#DC2626' };
+                  } else if (client.triggerStatus === 'FROZEN') {
+                    reasonBadge = { label: 'اشتراك مجمد', bg: '#FFFBEB', border: '#FDE68A', color: '#D97706' };
                   } else if (client.triggerStatus === 'PLAN_UPDATED') {
                     reasonBadge = { label: 'خطة جديدة جاهزة', bg: '#ECFDF5', border: '#A7F3D0', color: '#059669' };
                   }
@@ -442,18 +462,7 @@ export default function WhatsAppRemindersHub() {
                             <strong style={{ fontSize: '12px', color: '#0F172A' }}>
                               {client.full_name || client.name}
                             </strong>
-                            <span style={{
-                              fontSize: '9px',
-                              fontWeight: 800,
-                              fontFamily: 'JetBrains Mono, sans-serif',
-                              padding: '1px 5px',
-                              borderRadius: '3px',
-                              background: client.isMax ? '#FFFBEB' : '#F0F9FF',
-                              border: client.isMax ? '1px solid #FDE68A' : '1px solid #BAE6FD',
-                              color: client.isMax ? '#B45309' : '#0284C7'
-                            }}>
-                              {client.pkgLabel}
-                            </span>
+                            <ClientPackageBadge item={client} size="xs" />
                           </div>
                           
                           <div style={{ fontSize: '10.5px', color: '#64748B', display: 'flex', alignItems: 'center', gap: '6px', marginTop: '2px' }}>
@@ -547,18 +556,7 @@ export default function WhatsAppRemindersHub() {
                 </span>
               </div>
 
-              <span style={{
-                fontSize: '10px',
-                fontWeight: 800,
-                padding: '2px 7px',
-                borderRadius: '4px',
-                background: activeClient?.isMax ? '#FFFBEB' : '#F0F9FF',
-                border: activeClient?.isMax ? '1px solid #FDE68A' : '1px solid #BAE6FD',
-                color: activeClient?.isMax ? '#B45309' : '#0284C7',
-                fontFamily: 'JetBrains Mono'
-              }}>
-                {activeClient?.pkgLabel}
-              </span>
+              <ClientPackageBadge item={activeClient} size="xs" />
             </div>
 
             {/* Template Selector Dropdown */}

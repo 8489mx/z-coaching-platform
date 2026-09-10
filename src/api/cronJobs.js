@@ -1,5 +1,11 @@
+/**
+ * [DEPRECATED / DISABLED]
+ * هذا الملف يحتوي على كود مهمل بنمط استعلامات غير متوافق، وهو معطل حالياً وغير مستورد في server.js.
+ * يتم إدارة إرسال التنبيهات ورسائل الواتساب يدوياً من لوحة تحكم الكوتش وفق سياسة المنظومة.
+ */
+
 import cron from 'node-cron';
-import db from './config/database.js'; // Assuming src/api/config/database.js
+import db from './config/database.js';
 
 // نصوص الرسائل القابلة للتعديل بالكامل من الكوتش (لن يتدخل الذكاء الاصطناعي في تأليفها)
 // بدون أي إيموجي (Zero Emojis Rule)

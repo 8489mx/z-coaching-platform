@@ -33,85 +33,120 @@ import {
   Check,
   Dumbbell,
   Droplets,
-  Trophy
+  Trophy,
+  ExternalLink
 } from 'lucide-react';
 import AdminLayout from '../components/layout/AdminLayout';
 import { PageHeader } from '@/shared/components/page-header';
 import { FormSection } from '@/shared/components/form-section';
 import InteractivePhotoComparisonStudio from '../components/checkin/InteractivePhotoComparisonStudio';
 import LabBiomarkersReviewStudio from '../components/clinical/LabBiomarkersReviewStudio';
+import { ClientCodeBadge, ClientPackageBadge, getClientTier } from '../utils/tierBadgeHelper';
+import { arabicSearchMatch } from '../utils/searchUtils';
+import { extractClientFastingProfile } from '../utils/seasonalFastingRadar';
+import { formatWhatsAppPhone } from '../utils/whatsappRemindersEngine';
 
-import { STRESS_TEST_CLIENTS } from '../data/stressTestClientsBlueprints';
+import { STRESS_TEST_CLIENTS, CLINICAL_MASTER_BLUEPRINTS } from '../data/stressTestClientsBlueprints';
 
-export const INITIAL_CHECKINS = Array.isArray(STRESS_TEST_CLIENTS) ? STRESS_TEST_CLIENTS.slice(0, 5).map((c) => ({
-  id: `CHK_${c.client_code}`,
-  raw_id: c.id,
-  user_id: c.id,
-  client: {
-    id: `CL_${c.client_code}`,
-    name: c.full_name,
-    code: c.client_code,
-    package: (c.package_name || '').toUpperCase().includes('MAX') ? 'MAX' : 'ELITE',
-    package_name: c.package_name || 'باقة ماكس',
-    phone: c.phone_number,
-    country: { name: 'مصر' },
-    gender: c.gender,
-    goal_type: c.primary_goal === 'fat_loss' ? 'CUTTING' : (c.primary_goal === 'lean_bulk' ? 'BULKING' : 'RECOMP'),
-    target_goal: c.goal_label,
-    start_weight: c.weight_kg,
-    target_weight: c.primary_goal === 'fat_loss' ? (c.weight_kg - 8) : (c.weight_kg + 4)
-  },
-  week_number: 1,
-  checkin_number: 1,
-  submission_date: 'اليوم • وارد حديثاً',
-  history: [
-    { week: 0, weight: c.weight_kg, waist: 88, adherence: 100, date: 'نقطة البداية', diff: 0 },
-    { week: 1, weight: c.primary_goal === 'fat_loss' ? (c.weight_kg - 0.8) : (c.weight_kg + 0.3), waist: 87, adherence: 92, date: 'الأسبوع 1', diff: c.primary_goal === 'fat_loss' ? -0.8 : 0.3 }
-  ],
-  metrics: {
-    previous_weight: c.weight_kg,
-    current_weight: c.primary_goal === 'fat_loss' ? (c.weight_kg - 0.8) : (c.weight_kg + 0.3),
-    weight_change: c.primary_goal === 'fat_loss' ? -0.8 : 0.3,
-    waist_previous: 88,
-    waist_current: 87,
-    waist_change: -1,
-    adherence: 92,
-    workouts_completed: c.training_days || 4,
-    workouts_target: c.training_days || 4,
-    daily_steps_avg: 8200,
-    strength_trend: 'INCREASED',
-    strength_note: 'تطور ملحوظ في الأوزان',
-    water_liters: 3.5,
-    off_plan_meals: 0,
-    rpe_average: 8.0,
-    status_badge: 'تقدم ممتاز',
-    warning: null
-  },
-  biofeedback: {
-    energy: 8,
-    sleep: 8,
-    hunger: 4,
-    digestion_status: 'ممتاز',
-    stress: 3
-  },
-  reflections: {
-    nsv_note: 'التزام كامل بالوجبات ومواعيد التمرين دون أي تخريب.',
-    struggle_note: 'لا توجد صعوبات تذكر، الطاقة ممتازة خلال اليوم.'
-  },
-  client_notes: 'الالتزام 100% بالخطة والأوزان في تحسن مستمر.',
-  ai_analysis: {
-    recommendation: 'استجابة أيضية ممتازة مع ثبات القوة العضلية. يوصى بتثبيت السعرات والماكروز لمواصلة التقدم بنفس المعدل.',
-    status_badge: 'تقدم ممتاز',
-    warning: null
-  },
-  baseline_macros: {
-    calories: 2000,
-    protein: 150,
-    carbs: 220,
-    fats: 55
-  },
-  suggested_reply: `عاش يا ${(c.full_name || 'المتدرب').split(' ')[0]}! أداء ممتاز في المتابعة، والالتزام 92% انعكس مباشرة على النتيجة. مستمرون بنفس القوة!`
-})) : [];
+export const INITIAL_CHECKINS = Array.isArray(STRESS_TEST_CLIENTS) ? STRESS_TEST_CLIENTS.map((c) => {
+  const bp = (CLINICAL_MASTER_BLUEPRINTS && CLINICAL_MASTER_BLUEPRINTS[c.client_code]) || {};
+  const bpTargets = bp?.nutrition?.targets || {};
+  const isFatLoss = c.primary_goal === 'fat_loss';
+  const isLeanBulk = c.primary_goal === 'lean_bulk';
+  const isRecomp = c.primary_goal === 'recomp';
+
+  const baseWeight = c.weight_kg || 75;
+  const baseWaist = Math.round(baseWeight * (c.gender === 'female' ? 0.95 : 1.05));
+  
+  // Realistic delta matching physiological primary goal
+  const w1Delta = isFatLoss ? -0.7 : (isLeanBulk ? 0.3 : -0.2);
+  const w2Delta = isFatLoss ? -0.6 : (isLeanBulk ? 0.2 : 0.0);
+  const w3Delta = isFatLoss ? -0.8 : (isLeanBulk ? 0.3 : -0.1);
+
+  const curWeight = Number((baseWeight + w1Delta + w2Delta + w3Delta).toFixed(1));
+  const curWaist = Math.round(baseWaist - (isFatLoss ? 3 : (isRecomp ? 2 : 0)));
+  const weightChangeThisWeek = w3Delta;
+
+  const baselineMacros = {
+    calories: bpTargets.calories || (isFatLoss ? 1800 : (isLeanBulk ? 2500 : 2000)),
+    protein: bpTargets.protein || (isFatLoss ? 150 : (isLeanBulk ? 140 : 130)),
+    carbs: bpTargets.carbs || (isFatLoss ? 170 : (isLeanBulk ? 320 : 220)),
+    fats: bpTargets.fats || (isFatLoss ? 48 : (isLeanBulk ? 65 : 55))
+  };
+
+  const clientFirstName = (c.full_name || 'المتدرب').split(' ')[0];
+
+  return {
+    id: `CHK_${c.client_code}`,
+    raw_id: c.id,
+    user_id: c.id,
+    client: {
+      id: `CL_${c.client_code}`,
+      name: c.full_name,
+      code: c.client_code,
+      package: (c.package_name || '').toUpperCase().includes('MAX') ? 'MAX' : 'ELITE',
+      package_name: c.package_name || 'باقة ماكس',
+      phone: c.phone_number,
+      country: { name: 'مصر' },
+      gender: c.gender,
+      goal_type: isFatLoss ? 'CUTTING' : (isLeanBulk ? 'BULKING' : 'RECOMP'),
+      target_goal: c.goal_label,
+      start_weight: baseWeight,
+      target_weight: isFatLoss ? (baseWeight - 8) : (baseWeight + 4)
+    },
+    week_number: 3,
+    checkin_number: 3,
+    submission_date: 'اليوم • وارد حديثاً',
+    history: [
+      { week: 0, weight: baseWeight, waist: baseWaist, adherence: 100, date: 'نقطة البداية', diff: 0 },
+      { week: 1, weight: Number((baseWeight + w1Delta).toFixed(1)), waist: baseWaist - 1, adherence: 95, date: 'الأسبوع 1', diff: w1Delta },
+      { week: 2, weight: Number((baseWeight + w1Delta + w2Delta).toFixed(1)), waist: baseWaist - 2, adherence: 90, date: 'الأسبوع 2', diff: w2Delta },
+      { week: 3, weight: curWeight, waist: curWaist, adherence: 93, date: 'الأسبوع 3', diff: w3Delta }
+    ],
+    metrics: {
+      previous_weight: Number((curWeight - weightChangeThisWeek).toFixed(1)),
+      current_weight: curWeight,
+      weight_change: weightChangeThisWeek,
+      waist_previous: curWaist + 1,
+      waist_current: curWaist,
+      waist_change: -1,
+      adherence: 93,
+      workouts_completed: c.training_days || 4,
+      workouts_target: c.training_days || 4,
+      daily_steps_avg: 8200,
+      strength_trend: 'INCREASED',
+      strength_note: 'تطور ملحوظ في الأوزان',
+      water_liters: bpTargets.water_liters || 3.5,
+      off_plan_meals: 0,
+      rpe_average: 8.0,
+      status_badge: 'تقدم ممتاز',
+      warning: null
+    },
+    biofeedback: {
+      energy: 8,
+      sleep: 8,
+      hunger: 4,
+      digestion_status: 'ممتاز',
+      stress: 3
+    },
+    reflections: {
+      nsv_note: 'التزام كامل بالوجبات ومواعيد التمرين دون أي تخريب.',
+      struggle_note: 'لا توجد صعوبات تذكر، الطاقة ممتازة خلال اليوم.'
+    },
+    client_notes: 'الالتزام 100% بالخطة والأوزان في تحسن مستمر.',
+    ai_analysis: {
+      recommendation: isFatLoss
+        ? 'استجابة أيضية ممتازة ومعدل نزول دهون متزن. يوصى بتثبيت السعرات والماكروز لمواصلة التقدم بنفس المعدل.'
+        : (isLeanBulk
+          ? 'زيادة عضلية صافية متزنة دون تراكم دهون زائدة. يوصى بالاستمرار على السعرات الحالية.'
+          : 'إعادة تشكيل متميزة مع انخفاض محيط الخصر وثبات الوزن. استمر على نفس الماكروز.'),
+      status_badge: 'تقدم ممتاز',
+      warning: null
+    },
+    baseline_macros: baselineMacros,
+    suggested_reply: `عاش يا ${clientFirstName}! أداء ممتاز في المتابعة، والالتزام 93% انعكس مباشرة على النتيجة. مستمرون بنفس القوة!`
+  };
+}) : [];
 
 const DEFAULT_BASELINE_MACROS = {
   calories: 2000,
@@ -530,66 +565,102 @@ export default function CheckinReviewDashboard() {
         if (res.ok) {
           const data = await res.json();
           if (data.checkins && Array.isArray(data.checkins) && data.checkins.length > 0) {
-            const liveMapped = data.checkins.map(ch => ({
-              id: `CHK_${ch.id}`,
-              raw_id: ch.id,
-              user_id: ch.user_id,
-              client: {
-                id: `CL_${ch.user_id}`,
-                name: ch.user?.full_name || `مشترك #${ch.user?.client_code || ch.user_id}`,
-                code: ch.user?.client_code || String(ch.user_id),
-                package: String(ch.user?.subscription_package || 'MAX').toUpperCase().includes('MAX') ? 'MAX' : 'ELITE',
-                package_name: String(ch.user?.subscription_package || '').includes('MAX') ? 'باقة ماكس' : 'باقة إليت',
-                phone: ch.user?.phone_number || '',
-                country: { name: 'مصر' },
-                gender: 'male',
-                goal_type: 'FAT_LOSS',
-                target_goal: 'خسارة دهون',
-                start_weight: ch.average_weight_kg || 80,
-                target_weight: (ch.average_weight_kg || 80) - 10
-              },
-              week_number: ch.week_number || 1,
-              checkin_number: ch.week_number || 1,
-              submission_date: new Date(ch.createdAt).toLocaleDateString('en-US'),
-              history: [{
-                week: ch.week_number || 1,
-                weight: ch.average_weight_kg || 0,
-                waist: ch.waist_circumference_cm || 0,
-                adherence: ch.nutrition_adherence_percent || 100
-              }],
-              metrics: {
-                previous_weight: ch.average_weight_kg || 0,
-                current_weight: ch.average_weight_kg || 0,
-                weight_change: ch.weight_change_kg || 0,
-                waist_previous: ch.waist_circumference_cm || 0,
-                waist_current: ch.waist_circumference_cm || 0,
-                waist_change: 0,
-                adherence: ch.nutrition_adherence_percent || 100,
-                workouts_completed: ch.workouts_completed || 0,
-                workouts_target: ch.workouts_scheduled || 4,
-                daily_steps_avg: 8000,
-                strength_trend: 'MAINTAINED',
-                strength_note: 'أداء مستقر',
-                off_plan_meals: 0,
-                water_liters: 3
-              },
-              biofeedback: ch.biofeedback || {
-                energy: 4, sleep: 4, hunger: 3, recovery: 4,
-                stress_level: 3, digestion_status: 'good', cycle_phase: null
-              },
-              reflections: {
-                nsv_note: 'الالتزام الكامل بالخطة',
-                struggle_note: ch.coach_notes || 'لا يوجد صعوبات'
-              },
-              client_notes: ch.coach_notes || '',
-              ai_analysis: {
-                recommendation: ch.analysis_output?.coach_action || 'الاستمرار بالخطة الحالية مع مراقبة مؤشرات الأسبوع القادم.',
-                status_badge: ch.analysis_status || 'ON_TRACK',
-                warning: null
-              },
-              baseline_macros: { calories: 2000, protein: 140, carbs: 220, fats: 60 },
-              suggested_reply: `أهلاً بحضرتك يا بطل، تسلم إيدك على تقرير الأسبوع والالتزام. استمر على نفس الخطة والتركيز، وبالتوفيق دائماً.`
-            }));
+            const liveMapped = data.checkins.map(ch => {
+              const userPhotos = ch.user?.progressPhotos || [];
+              const weekPhotos = userPhotos.filter(p => Number(p.week_number) === Number(ch.week_number));
+              const currentWeekPhotos = {
+                front: (weekPhotos.find(p => String(p.pose).toUpperCase() === 'FRONT') || {}).photo_url || null,
+                side: (weekPhotos.find(p => String(p.pose).toUpperCase() === 'SIDE') || {}).photo_url || null,
+                back: (weekPhotos.find(p => String(p.pose).toUpperCase() === 'BACK') || {}).photo_url || null,
+              };
+
+              // Build comprehensive multi-week progression history
+              const allUserCheckins = (ch.user?.checkinSubmissions || []).slice().sort((a, b) => (Number(a.week_number) || 0) - (Number(b.week_number) || 0));
+              let clientHistory = [];
+              if (allUserCheckins.length > 0) {
+                clientHistory = allUserCheckins.map(pc => {
+                  const pcPhotos = userPhotos.filter(p => Number(p.week_number) === Number(pc.week_number));
+                  return {
+                    week: Number(pc.week_number) || 1,
+                    weight: Number(pc.average_weight_kg) || 0,
+                    waist: Number(pc.waist_circumference_cm) || 0,
+                    adherence: Number(pc.nutrition_adherence_percent) || 100,
+                    date: `الأسبوع ${pc.week_number}`,
+                    photos: {
+                      front: (pcPhotos.find(p => String(p.pose).toUpperCase() === 'FRONT') || {}).photo_url || null,
+                      side: (pcPhotos.find(p => String(p.pose).toUpperCase() === 'SIDE') || {}).photo_url || null,
+                      back: (pcPhotos.find(p => String(p.pose).toUpperCase() === 'BACK') || {}).photo_url || null,
+                    }
+                  };
+                });
+              } else {
+                clientHistory = [{
+                  week: ch.week_number || 1,
+                  weight: ch.average_weight_kg || 0,
+                  waist: ch.waist_circumference_cm || 0,
+                  adherence: ch.nutrition_adherence_percent || 100,
+                  date: `الأسبوع ${ch.week_number || 1}`,
+                  photos: currentWeekPhotos
+                }];
+              }
+
+              return {
+                id: `CHK_${ch.id}`,
+                raw_id: ch.id,
+                user_id: ch.user_id,
+                client: {
+                  id: `CL_${ch.user_id}`,
+                  name: ch.user?.full_name || `مشترك #${ch.user?.client_code || ch.user_id}`,
+                  code: ch.user?.client_code || String(ch.user_id),
+                  package: String(ch.user?.subscription_package || 'MAX').toUpperCase().includes('MAX') ? 'MAX' : 'ELITE',
+                  package_name: String(ch.user?.subscription_package || '').includes('MAX') ? 'باقة ماكس' : 'باقة إليت',
+                  phone: ch.user?.phone_number || '',
+                  country: { name: 'مصر' },
+                  gender: 'male',
+                  goal_type: 'FAT_LOSS',
+                  target_goal: 'خسارة دهون',
+                  start_weight: ch.average_weight_kg || 80,
+                  target_weight: (ch.average_weight_kg || 80) - 10
+                },
+                week_number: ch.week_number || 1,
+                checkin_number: ch.week_number || 1,
+                submission_date: new Date(ch.createdAt).toLocaleDateString('en-US'),
+                photos: currentWeekPhotos,
+                history: clientHistory,
+                metrics: {
+                  previous_weight: ch.average_weight_kg || 0,
+                  current_weight: ch.average_weight_kg || 0,
+                  weight_change: ch.weight_change_kg || 0,
+                  waist_previous: ch.waist_circumference_cm || 0,
+                  waist_current: ch.waist_circumference_cm || 0,
+                  waist_change: 0,
+                  adherence: ch.nutrition_adherence_percent || 100,
+                  workouts_completed: ch.workouts_completed || 0,
+                  workouts_target: ch.workouts_scheduled || 4,
+                  daily_steps_avg: 8000,
+                  strength_trend: 'MAINTAINED',
+                  strength_note: 'أداء مستقر',
+                  off_plan_meals: 0,
+                  water_liters: 3
+                },
+                biofeedback: ch.biofeedback || {
+                  energy: 4, sleep: 4, hunger: 3, recovery: 4,
+                  stress_level: 3, digestion_status: 'good', cycle_phase: null
+                },
+                reflections: {
+                  nsv_note: 'الالتزام الكامل بالخطة',
+                  struggle_note: ch.coach_notes || 'لا يوجد صعوبات'
+                },
+                client_notes: ch.coach_notes || '',
+                ai_analysis: {
+                  recommendation: ch.analysis_output?.coach_action || 'الاستمرار بالخطة الحالية مع مراقبة مؤشرات الأسبوع القادم.',
+                  status_badge: ch.analysis_status || 'ON_TRACK',
+                  warning: null
+                },
+                baseline_macros: { calories: 2000, protein: 140, carbs: 220, fats: 60 },
+                suggested_reply: `أهلاً بحضرتك يا بطل، تسلم إيدك على تقرير الأسبوع والالتزام. استمر على نفس الخطة والتركيز، وبالتوفيق دائماً.`
+              };
+            });
             setCheckinList(liveMapped);
           }
         }
@@ -609,7 +680,7 @@ export default function CheckinReviewDashboard() {
         String(item?.client?.code || '').toLowerCase() === cleanTarget.toLowerCase() ||
         String(item?.client?.id || '').toLowerCase() === cleanTarget.toLowerCase() ||
         String(item?.id || '').toLowerCase() === cleanTarget.toLowerCase() ||
-        (item?.client?.name && item?.client?.name?.toLowerCase().includes(cleanTarget.toLowerCase()))
+        arabicSearchMatch(item?.client?.name, cleanTarget)
       );
 
       if (existingIdx !== -1) {
@@ -693,20 +764,21 @@ export default function CheckinReviewDashboard() {
     if (tierFilter === 'ELITE' && !String(item?.client?.package || '').toUpperCase().includes('ELITE')) return false;
     if (!searchQuery.trim()) return true;
 
-    const q = searchQuery.trim().toLowerCase().replace(/^#+/, '');
+    const q = searchQuery.trim();
     const cleanClientCode = String(item?.client?.code || '').replace(/^#+/, '').replace(/^client[-_]?/i, '');
 
     // 1. If searching pure numbers (e.g. 12, 1, 5, #12): Match exact client code or full phone
-    if (/^\d+$/.test(q)) {
-      if (cleanClientCode === q) return true;
-      if (q.length >= 4 && item?.client?.phone && item?.client?.phone?.includes(q)) return true;
-      return String(item?.client?.name || '').toLowerCase().includes(q);
+    const qNum = q.replace(/^#+/, '');
+    if (/^\d+$/.test(qNum)) {
+      if (cleanClientCode === qNum) return true;
+      if (qNum.length >= 4 && item?.client?.phone && item?.client?.phone?.includes(qNum)) return true;
+      return arabicSearchMatch(item?.client?.name, qNum);
     }
 
-    // 2. General name / text search
+    // 2. General name / text search with Arabic normalization
     return (
-      String(item?.client?.name || '').toLowerCase().includes(q) ||
-      cleanClientCode === q ||
+      arabicSearchMatch(item?.client?.name, q) ||
+      cleanClientCode.toLowerCase() === q.toLowerCase().replace(/^#+/, '') ||
       (item?.client?.phone && item?.client?.phone?.includes(q))
     );
   });
@@ -733,16 +805,18 @@ export default function CheckinReviewDashboard() {
     }
   }, [activeCheckin]);
 
-  // Global Escape key handler to return
+  // Handle Escape key to close active modals safely without losing queue position
   useEffect(() => {
     const handleKeyDown = (e) => {
       if (e.key === 'Escape') {
-        navigate('/');
+        if (showLabModal) {
+          setShowLabModal(false);
+        }
       }
     };
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [navigate]);
+  }, [showLabModal]);
 
   const handleApprove = async () => {
     if (!activeCheckin) return;
@@ -759,7 +833,8 @@ export default function CheckinReviewDashboard() {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
-            coach_notes: replyMsg
+            coach_notes: replyMsg,
+            custom_macros: macroAdjustments
           })
         });
       }
@@ -784,8 +859,7 @@ export default function CheckinReviewDashboard() {
     );
 
     if (shouldOpenWhatsApp && clientPhone) {
-      let cleanPhone = clientPhone.replace(/\D/g, '');
-      if (cleanPhone.startsWith('01')) cleanPhone = '2' + cleanPhone;
+      const cleanPhone = formatWhatsAppPhone(clientPhone);
       window.open(`https://wa.me/${cleanPhone}?text=${encodeURIComponent(replyMsg)}`, '_blank');
     }
   };
@@ -800,8 +874,7 @@ export default function CheckinReviewDashboard() {
 
   const handleOpenDirectWhatsApp = () => {
     if (!activeCheckin?.client?.phone) return;
-    let cleanPhone = String(activeCheckin?.client?.phone || '').replace(/\D/g, '');
-    if (cleanPhone.startsWith('01')) cleanPhone = '2' + cleanPhone;
+    const cleanPhone = formatWhatsAppPhone(activeCheckin?.client?.phone);
     window.open(`https://wa.me/${cleanPhone}?text=${encodeURIComponent(coachReply)}`, '_blank');
   };
 
@@ -817,6 +890,31 @@ export default function CheckinReviewDashboard() {
           description={`طابور اتخاذ القرارات الأسبوعية • ${checkinList.length} تقييم بانتظار المراجعة والاعتماد`}
           actions={(
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <button 
+                type="button" 
+                onClick={() => window.open(`/coach/editor/${safeClient?.code || safeClient?.id || '1'}`, '_blank')}
+                style={{
+                  height: '34px',
+                  padding: '0 12px',
+                  fontSize: '11.5px',
+                  fontWeight: 700,
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '6px',
+                  borderRadius: '6px',
+                  background: '#0F172A',
+                  color: '#FFFFFF',
+                  border: 'none',
+                  cursor: 'pointer',
+                  boxShadow: '0 1px 3px rgba(15, 23, 42, 0.2)',
+                  transition: 'all 0.15s ease'
+                }}
+                title="فتح خطة المتدرب بالكامل في محرر الكوتش لتعديل التمارين والوجبات"
+              >
+                <Dumbbell size={13} />
+                <span>محرر خطة المتدرب</span>
+              </button>
+
               <button 
                 type="button" 
                 onClick={handleResetDemo}
@@ -1010,35 +1108,53 @@ export default function CheckinReviewDashboard() {
                       {/* Row 1: Code, Name, Package */}
                       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                         <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                          <span style={{ 
-                            fontFamily: 'JetBrains Mono, monospace', 
-                            fontWeight: 800, 
-                            fontSize: '10.5px', 
-                            background: '#F8FAFC', 
-                            border: '1px solid #E2E8F0', 
-                            color: isMax ? '#B45309' : '#0284C7', 
-                            padding: '1px 6px', 
-                            borderRadius: '4px' 
-                          }}>
-                            #{item?.client?.code || '1'}
-                          </span>
+                          <ClientCodeBadge code={item?.client?.code || '1'} item={item?.client} size="xs" />
                           <strong style={{ fontSize: '12.5px', color: '#0F172A' }}>
                             {item?.client?.name || 'مشترك'}
                           </strong>
                         </div>
 
-                        <span style={{
-                          fontSize: '10px',
-                          fontWeight: 800,
-                          color: isMax ? '#B45309' : '#0284C7',
-                          background: '#F8FAFC',
-                          padding: '1px 6px',
-                          borderRadius: '4px',
-                          border: '1px solid #E2E8F0',
-                          fontFamily: 'JetBrains Mono, sans-serif'
-                        }}>
-                          {item?.client?.package || 'MAX'}
-                        </span>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                          {(item?.medical_reports_urls?.length > 0 || item?.client?.medical_reports_urls?.length > 0) && (
+                            <span style={{ fontSize: '9px', background: '#DCFCE7', color: '#166534', border: '1px solid #86EFAC', padding: '0px 4px', borderRadius: '3px', fontWeight: 800 }}>
+                              تحاليل
+                            </span>
+                          )}
+                          <ClientPackageBadge item={item?.client} size="xs" />
+                          {(() => {
+                            const fasting = extractClientFastingProfile(item?.client);
+                            return (
+                              <>
+                                {fasting.primaryFastingBadge && (
+                                  <span style={{
+                                    fontSize: '9px',
+                                    padding: '0px 4px',
+                                    borderRadius: '3px',
+                                    background: fasting.primaryFastingBadge.bg,
+                                    border: `1px solid ${fasting.primaryFastingBadge.border}`,
+                                    color: fasting.primaryFastingBadge.color,
+                                    fontWeight: 800
+                                  }}>
+                                    {fasting.primaryFastingBadge.shortLabel}
+                                  </span>
+                                )}
+                                {fasting.intermittentBadge && (
+                                  <span style={{
+                                    fontSize: '9px',
+                                    padding: '0px 4px',
+                                    borderRadius: '3px',
+                                    background: fasting.intermittentBadge.bg,
+                                    border: `1px solid ${fasting.intermittentBadge.border}`,
+                                    color: fasting.intermittentBadge.color,
+                                    fontWeight: 800
+                                  }}>
+                                    {fasting.intermittentBadge.shortLabel}
+                                  </span>
+                                )}
+                              </>
+                            );
+                          })()}
+                        </div>
                       </div>
 
                       {/* Row 2: Metrics Strip (Clean Right-Aligned Weights + Left Checkin Info) */}
@@ -1156,18 +1272,7 @@ export default function CheckinReviewDashboard() {
               return (
                 <div style={{ background: '#FFFFFF', border: '1px solid #E2E8F0', borderRadius: '10px', padding: '12px 16px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '12px', flexWrap: 'wrap' }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                    <span style={{ 
-                      fontFamily: 'JetBrains Mono, monospace', 
-                      fontWeight: 800, 
-                      fontSize: '12px', 
-                      background: '#F8FAFC', 
-                      border: '1px solid #E2E8F0', 
-                      color: isMaxTier ? '#B45309' : '#0284C7', 
-                      padding: '2px 8px', 
-                      borderRadius: '4px' 
-                    }}>
-                      #{safeClient.code}
-                    </span>
+                    <ClientCodeBadge code={safeClient.code} item={safeClient} size="md" />
                     <div>
                       <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                         <h4 style={{ margin: 0, fontSize: '14px', fontWeight: 800, color: '#0F172A' }}>
@@ -1192,14 +1297,69 @@ export default function CheckinReviewDashboard() {
                   </div>
 
                   <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                    <span style={{ fontSize: '11px', background: '#F8FAFC', border: '1px solid #E2E8F0', color: isMaxTier ? '#B45309' : '#0284C7', padding: '2px 8px', borderRadius: '4px', fontWeight: 800, fontFamily: 'JetBrains Mono, sans-serif' }}>
-                      {safeClient.package}
-                    </span>
+                    <ClientPackageBadge item={safeClient} size="sm" />
+                    {(() => {
+                      const fasting = extractClientFastingProfile(safeClient);
+                      return (
+                        <>
+                          {fasting.primaryFastingBadge && (
+                            <span style={{
+                              fontSize: '11px',
+                              padding: '2px 8px',
+                              borderRadius: '4px',
+                              background: fasting.primaryFastingBadge.bg,
+                              border: `1px solid ${fasting.primaryFastingBadge.border}`,
+                              color: fasting.primaryFastingBadge.color,
+                              fontWeight: 800
+                            }}>
+                              {fasting.primaryFastingBadge.label}
+                            </span>
+                          )}
+                          {fasting.intermittentBadge && (
+                            <span style={{
+                              fontSize: '11px',
+                              padding: '2px 8px',
+                              borderRadius: '4px',
+                              background: fasting.intermittentBadge.bg,
+                              border: `1px solid ${fasting.intermittentBadge.border}`,
+                              color: fasting.intermittentBadge.color,
+                              fontWeight: 800
+                            }}>
+                              {fasting.intermittentBadge.label}
+                            </span>
+                          )}
+                        </>
+                      );
+                    })()}
                     <span style={{ fontSize: '11px', background: '#F1F5F9', border: '1px solid #CBD5E1', color: '#0F172A', padding: '2px 8px', borderRadius: '4px', fontWeight: 700, display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
                       <span>المتابعة #{activeChkNumber}</span>
                       <span style={{ color: '#94A3B8' }}>•</span>
                       <span>الأسبوع {activeCheckin.week_number}</span>
                     </span>
+                    <button
+                      type="button"
+                      onClick={() => window.open(`/coach/editor/${safeClient.code || safeClient.id || '1'}`, '_blank')}
+                      style={{
+                        height: '26px',
+                        padding: '0 8px',
+                        fontSize: '11px',
+                        fontWeight: 700,
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: '4px',
+                        borderRadius: '4px',
+                        background: '#F0F9FF',
+                        color: '#0284C7',
+                        border: '1px solid #BAE6FD',
+                        cursor: 'pointer',
+                        transition: 'all 0.15s ease'
+                      }}
+                      title="فتح خطة المتدرب بالكامل في محرر الكوتش في تبويب مستقل"
+                    >
+                      <Dumbbell size={12} />
+                      <span>تعديل الخطة بالمحرر</span>
+                      <ExternalLink size={10} color="#0284C7" />
+                    </button>
                   </div>
                 </div>
               );
@@ -2088,6 +2248,35 @@ export default function CheckinReviewDashboard() {
                     >
                       <MessageCircle size={15} />
                       <span>واتساب</span>
+                    </button>
+
+                    {/* Open Program in Coach Editor Bridge */}
+                    <button
+                      type="button"
+                      onClick={() => window.open(`/coach/editor/${safeClient.code || safeClient.id || '1'}`, '_blank')}
+                      style={{
+                        height: '36px',
+                        padding: '0 12px',
+                        borderRadius: '6px',
+                        border: '1px solid #CBD5E1',
+                        background: '#FFFFFF',
+                        color: '#0F172A',
+                        fontSize: '11.5px',
+                        fontWeight: 700,
+                        cursor: 'pointer',
+                        userSelect: 'none',
+                        outline: 'none',
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: '5px',
+                        flexShrink: 0,
+                        transition: 'background-color 0.15s ease'
+                      }}
+                      title="فتح خطة المتدرب بالكامل في محرر الكوتش لتعديل التمارين أو الأغذية في تبويب مستقل"
+                    >
+                      <Dumbbell size={14} />
+                      <span>فتح الخطة بالمحرر</span>
+                      <ExternalLink size={11} color="#64748B" />
                     </button>
 
                     {/* Primary Approve & Next Button */}

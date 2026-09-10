@@ -1,6 +1,8 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Crown, MessageCircle } from 'lucide-react';
+import { getStoredCoachConfig } from '../utils/themeAndCoachConfig';
+import { formatWhatsAppPhone } from '../utils/whatsappRemindersEngine';
 
 export default function PublicPricingJoin() {
   const navigate = useNavigate();
@@ -27,28 +29,35 @@ export default function PublicPricingJoin() {
         </p>
 
         <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-          <a
-            href="https://wa.me/201001060503?text=مرحباً%20كابتن%20كريم،%20أرغب%20في%20الاستفسار%20عن%20تفاصيل%20الاشتراك%20والباقات%20المتاحة"
-            target="_blank"
-            rel="noopener noreferrer"
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              gap: '8px',
-              background: '#16A34A',
-              color: '#FFFFFF',
-              padding: '13px 20px',
-              borderRadius: '12px',
-              textDecoration: 'none',
-              fontWeight: 800,
-              fontSize: '0.92rem',
-              boxShadow: '0 4px 12px rgba(22, 163, 74, 0.25)'
-            }}
-          >
-            <MessageCircle size={18} />
-            <span>تواصل مباشرة عبر الواتساب للاشتراك</span>
-          </a>
+          {(() => {
+            const coachConfig = getStoredCoachConfig();
+            const coachWhatsApp = formatWhatsAppPhone(coachConfig?.whatsappNumber || coachConfig?.supportWhatsapp || '201001060503');
+            return (
+              <a
+                href={`https://wa.me/${coachWhatsApp}?text=مرحباً%20كابتن%20كريم،%20أرغب%20في%20الاستفسار%20عن%20تفاصيل%20الاشتراك%20والباقات%20المتاحة`}
+                target="_blank"
+                rel="noopener noreferrer"
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: '8px',
+                  background: '#16A34A',
+                  color: '#FFFFFF',
+                  padding: '13px 20px',
+                  borderRadius: '12px',
+                  textDecoration: 'none',
+                  fontWeight: 800,
+                  fontSize: '0.92rem',
+                  boxShadow: '0 4px 12px rgba(22, 163, 74, 0.25)',
+                  transition: 'all 0.15s ease'
+                }}
+              >
+                <MessageCircle style={{ width: '18px', height: '18px' }} />
+                <span>تواصل مباشرة عبر WhatsApp</span>
+              </a>
+            );
+          })()}
 
           <button
             type="button"

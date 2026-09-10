@@ -1,4 +1,4 @@
-import { User, IntakeSubmission } from "../models/index.js";
+import { User, IntakeSubmission, CheckinSubmission } from "../models/index.js";
 
 export const PACKAGE_CONFIG = {
   "MAX_3_PLUS_1": {
@@ -78,6 +78,11 @@ export const getSubscriptionOverview = async (req, res) => {
           model: IntakeSubmission,
           as: "intakeSubmissions",
           attributes: ["id", "status", "answers", "createdAt"]
+        },
+        {
+          model: CheckinSubmission,
+          as: "checkinSubmissions",
+          attributes: ["id", "status", "createdAt", "created_at"]
         }
       ],
       order: [["id", "DESC"]]
@@ -88,6 +93,7 @@ export const getSubscriptionOverview = async (req, res) => {
     let activeCount = 0;
     let expiringSoonCount = 0;
     let expiredCount = 0;
+    let frozenCount = 0;
 
     const enrichedClients = clients.map((c) => {
       const pkgCode = c.subscription_package || "ELITE_3_PLUS_1";
@@ -96,7 +102,14 @@ export const getSubscriptionOverview = async (req, res) => {
       let daysRemaining = 0;
       let status = "INACTIVE";
 
-      if (c.subscription_start_date && c.subscription_end_date) {
+      if (c.subscription_status === 'FROZEN') {
+        status = "FROZEN";
+        frozenCount++;
+        if (c.subscription_end_date) {
+          const endDate = new Date(c.subscription_end_date);
+          daysRemaining = Math.max(0, Math.ceil((endDate.getTime() - now.getTime()) / (1000 * 3600 * 24)));
+        }
+      } else if (c.subscription_start_date && c.subscription_end_date) {
         const endDate = new Date(c.subscription_end_date);
         daysRemaining = Math.ceil((endDate.getTime() - now.getTime()) / (1000 * 3600 * 24));
         
@@ -130,6 +143,7 @@ export const getSubscriptionOverview = async (req, res) => {
         active_count: activeCount,
         expiring_soon_count: expiringSoonCount,
         expired_count: expiredCount,
+        frozen_count: frozenCount,
         total_clients: clients.length
       },
       clients: enrichedClients
@@ -144,40 +158,66 @@ export const getSubscriptionOverview = async (req, res) => {
 export const renewSubscription = async (req, res) => {
   try {
     const { user_id } = req.params;
-    const { package_code, price, payment_method } = req.body;
+    const { 
+      package_code, 
+      price, 
+      amount_paid_egp, 
+      payment_method, 
+      duration_days, 
+      new_end_date 
+    } = req.body;
 
-    const cleanId = String(user_id).replace('#', '').trim();
+    const cleanId = String(user_id).replace(/^#+/, '').replace(/^client[-_]?/i, '').trim();
     let user = await User.findOne({ where: { client_code: cleanId } });
     if (!user && !isNaN(cleanId)) {
       user = await User.findByPk(parseInt(cleanId, 10));
     }
+    if (!user) {
+      user = await User.findOne({ where: { phone_number: cleanId } });
+    }
     if (!user) return res.status(404).json({ error: "Client not found" });
 
-    const config = PACKAGE_CONFIG[package_code] || PACKAGE_CONFIG["ELITE"];
-    const durationDays = config.duration_days || 120;
-    const actualPrice = price || config.price;
+    // Determine target package tier
+    const rawTier = String(package_code || user.package_tier || user.subscription_package || 'ELITE').toUpperCase();
+    const targetTier = rawTier.includes('MAX') ? 'MAX' : 'ELITE';
+
+    const actualPrice = amount_paid_egp !== undefined 
+      ? Number(amount_paid_egp) 
+      : (price !== undefined ? Number(price) : (targetTier === 'MAX' ? 6000 : 4500));
 
     let startDate = new Date();
-    if (user.subscription_end_date && new Date(user.subscription_end_date) > new Date()) {
-       startDate = new Date(user.subscription_end_date);
+    const now = new Date();
+    if (user.subscription_end_date && new Date(user.subscription_end_date) > now) {
+      startDate = new Date(user.subscription_end_date);
     }
     
-    const endDate = new Date(startDate);
-    endDate.setDate(endDate.getDate() + durationDays);
+    let endDate;
+    if (new_end_date && !isNaN(new Date(new_end_date).getTime())) {
+      endDate = new Date(new_end_date);
+    } else {
+      const addedDays = Number(duration_days) || 120;
+      endDate = new Date(startDate.getTime() + (addedDays * 24 * 60 * 60 * 1000));
+    }
 
-    user.subscription_package = package_code;
+    user.package_tier = targetTier;
+    user.subscription_package = targetTier;
     user.subscription_price = actualPrice;
-    user.subscription_start_date = startDate;
+    user.subscription_start_date = user.subscription_start_date || now;
     user.subscription_end_date = endDate;
-    user.payment_method = payment_method || "INSTAPAY";
+    user.payment_method = payment_method || user.payment_method || "INSTAPAY";
     user.payment_status = "PAID";
     user.subscription_status = "ACTIVE";
     
     await user.save();
 
-    return res.status(200).json({ message: "تم التجديد بنجاح!", user });
+    return res.status(200).json({ 
+      success: true, 
+      message: `تم تجديد وتحديث الاشتراك بنجاح إلى (${targetTier === 'MAX' ? 'باقة ماكس' : 'باقة إليت'})`, 
+      user 
+    });
   } catch (err) {
-    return res.status(500).json({ error: "فشل تجديد الاشتراك" });
+    console.error("renewSubscription error:", err);
+    return res.status(500).json({ error: "فشل تجديد الاشتراك", details: err.message });
   }
 };
 

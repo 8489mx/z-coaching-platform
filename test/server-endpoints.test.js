@@ -83,4 +83,21 @@ test('Server Deterministic Endpoints Logic Test Suite', async (t) => {
     assert.ok(csvContent.includes('أحمد علي'));
   });
 
+  await t.test('7. Admin System Settings persistence logic test', async () => {
+    const { getSystemSettingsFile, saveSystemSettingsFile, DEFAULT_SYSTEM_SETTINGS } = await import('../src/api/controllers/admin-settings.controller.js');
+    
+    assert.ok(DEFAULT_SYSTEM_SETTINGS.coachName);
+    assert.ok(DEFAULT_SYSTEM_SETTINGS.whatsappNumber);
+
+    const initial = getSystemSettingsFile();
+    assert.ok(initial.coachName);
+
+    // Test updating settings
+    const updated = saveSystemSettingsFile({ coachTitle: 'كوتش معتمد ومبرمج أحمال' });
+    assert.equal(updated.coachTitle, 'كوتش معتمد ومبرمج أحمال');
+
+    // Restore default
+    saveSystemSettingsFile({ coachTitle: initial.coachTitle });
+  });
+
 });

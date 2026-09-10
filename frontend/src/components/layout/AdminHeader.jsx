@@ -16,9 +16,12 @@ export function AdminHeader() {
     if (path.includes('/intake')) return [{ label: 'الاستبيانات' }, { label: 'استمارات العملاء' }];
     if (path.includes('/checkin')) return [{ label: 'المتابعة' }, { label: 'مراجعة التقييمات' }];
     if (path.includes('/customers')) return [{ label: 'العملاء' }, { label: 'إدارة المشتركين' }];
-    if (path.includes('/subscriptions')) return [{ label: 'المالية' }, { label: 'الباقات والاشتراكات' }];
+    if (path.includes('/financials') || path.includes('/subscriptions')) return [{ label: 'المالية' }, { label: 'الحسابات والتجديد' }];
+    if (path.includes('/editor')) return [{ label: 'التدريب' }, { label: 'محرر البرامج' }];
     if (path.includes('/exercises')) return [{ label: 'التمارين' }, { label: 'مكتبة التمارين' }];
     if (path.includes('/calculator')) return [{ label: 'التغذية' }, { label: 'مكتبة الأطعمة والماكروز' }];
+    if (path.includes('/mobility')) return [{ label: 'التأهيل' }, { label: 'المرونة والتأهيل' }];
+    if (path.includes('/reminders')) return [{ label: 'المراسلات' }, { label: 'رسائل الواتساب' }];
     if (path.includes('/master-settings')) return [{ label: 'الإعدادات' }, { label: 'إعدادات النظام' }];
     return [{ label: 'الرئيسية' }, { label: 'لوحة التحكم' }];
   };

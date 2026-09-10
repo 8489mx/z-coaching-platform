@@ -6,12 +6,14 @@ import {
   logWorkout,
   getWorkoutLogs,
 } from "../controllers/checkin.controller.js";
+import { requireAuth } from "../middlewares/auth.middleware.js";
 
 const router = express.Router();
 
 router.post("/", submitCheckin);
 router.get("/user/:userId", getClientCheckins);
-router.post("/:checkinId/approve", approveCheckin);
+router.get("/client/:userId", getClientCheckins);
+router.post("/:checkinId/approve", requireAuth, approveCheckin);
 
 router.post("/workout-logs", logWorkout);
 router.get("/workout-logs/program/:programId", getWorkoutLogs);

@@ -35,6 +35,25 @@ const User = sequelize.define("User", {
     defaultValue: "CLIENT",
     allowNull: false,
   },
+  package_tier: {
+    type: DataTypes.VIRTUAL,
+    get() {
+      return this.getDataValue('subscription_package') || 'ELITE';
+    },
+    set(val) {
+      this.setDataValue('package_tier', val);
+      this.setDataValue('subscription_package', val);
+    }
+  },
+  duration_months: {
+    type: DataTypes.VIRTUAL,
+    get() {
+      return this.getDataValue('_duration_months') || 4;
+    },
+    set(val) {
+      this.setDataValue('_duration_months', val);
+    }
+  },
   subscription_package: {
     type: DataTypes.STRING,
     defaultValue: "ELITE",

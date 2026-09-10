@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import { extractClientFastingProfile } from '../utils/seasonalFastingRadar';
+import { arabicSearchMatch } from '../utils/searchUtils';
 import { 
   Utensils, 
   Dumbbell, 
@@ -19,9 +20,12 @@ import {
   ChevronUp, 
   X,
   Share2,
-  AlertTriangle
+  AlertTriangle,
+  BookOpen,
+  HelpCircle
 } from 'lucide-react';
 import { API_BASE } from '../config/api';
+import ExerciseVideoModal from '../components/modals/ExerciseVideoModal';
 import { calculateDynamicFoodSwap, getCompatibleSwaps, FOOD_DATABASE, convertGramsToHandPortions, getTravelDiningBlueprints, formatItemPortionDisplay, PORTION_DISPLAY_MODES, COOKING_STATE_MODES } from '../utils/foodSwapEngine';
 import { 
   FREE_BEVERAGES_CATALOG, 
@@ -44,7 +48,61 @@ import { convertPortionCookingYield } from '../utils/kitchenYieldEngine';
 import { generateScientificRampWarmup, calculateBarbellPlates } from '../utils/warmupPlateEngine';
 import { getTorqueMatchedSwaps, applyFatigueModeReduction } from '../utils/biomechanicalSwapEngine';
 import { calculateDailyHydrationTarget } from '../utils/hydrationSweatEngine';
-import { enqueueOfflineAction, flushPendingQueue, getQueueSyncStatus } from '../utils/offlineSyncEngine';
+import { enqueueOfflineAction, flushPendingQueue, getQueueSyncStatus, ACTION_TYPES } from '../utils/offlineSyncEngine';
+import { getPrepOptionsForFood } from '../utils/culinaryRecipes';
+
+function adaptProgramToInteractiveMeals(masterProgram) {
+  if (!masterProgram) return [];
+  const rawNutrition = masterProgram.nutrition || masterProgram.nutrition_program;
+  
+  if (masterProgram.nutrition_program && Array.isArray(masterProgram.nutrition_program.culinary_meals) && masterProgram.nutrition_program.culinary_meals.length > 0) {
+    return masterProgram.nutrition_program.culinary_meals.map((cm, cmIdx) => ({
+      id: cm.id || `m${cm.meal_number || cmIdx + 1}`,
+      title: cm.recipe_title_ar || cm.meal_name_ar || cm.title || cm.name || `الوجبة ${cm.meal_number || cmIdx + 1}`,
+      workout_timing: cm.timing_relation || cm.workout_timing || 'NONE',
+      time: cm.timing || (cmIdx === 0 ? '08:30 ص' : (cmIdx === 1 ? '02:00 م' : (cmIdx === 2 ? '05:30 م' : '09:30 م'))),
+      completed: false,
+      macros: {
+        calories: Math.round(cm.actual_macros?.calories || cm.target_macros?.calories || cm.macros?.calories || 500),
+        protein: Math.round(cm.actual_macros?.protein || cm.target_macros?.protein || cm.macros?.protein || 40),
+        carbs: Math.round(cm.actual_macros?.carbs || cm.target_macros?.carbs || cm.macros?.carbs || 50),
+        fats: Math.round(cm.actual_macros?.fats || cm.target_macros?.fats || cm.macros?.fats || 15)
+      },
+      items: (cm.items || []).map((it, itIdx) => ({
+        id: it.id || `i_${cmIdx + 1}_${itIdx + 1}`,
+        code: it.food_code || it.code,
+        name: it.name_ar || it.name || it.name_en || 'صنف غذائي',
+        amount: Number(it.portion_g || it.amount || 100),
+        unit: it.unit || 'جم',
+        p: Number((it.protein_g ?? it.p ?? 0).toFixed ? (it.protein_g ?? it.p ?? 0).toFixed(1) : (it.protein_g ?? it.p ?? 0)),
+        c: Number((it.carb_g ?? it.c ?? 0).toFixed ? (it.carb_g ?? it.c ?? 0).toFixed(1) : (it.carb_g ?? it.c ?? 0)),
+        f: Number((it.fat_g ?? it.f ?? 0).toFixed ? (it.fat_g ?? it.f ?? 0).toFixed(1) : (it.fat_g ?? it.f ?? 0)),
+        cal: Math.round(it.calories_kcal ?? it.cal ?? 0),
+        category: it.category || 'MAIN',
+        taste_profile: it.taste_profile
+      }))
+    }));
+  }
+
+  if (rawNutrition?.meals && Array.isArray(rawNutrition.meals) && rawNutrition.meals.length > 0) {
+    return rawNutrition.meals.map((m, mIdx) => ({
+      ...m,
+      id: m.id || `m${mIdx + 1}`,
+      title: m.title || m.name || `الوجبة ${mIdx + 1}`,
+      completed: !!m.completed,
+      items: (m.items || []).map((it, itIdx) => ({
+        ...it,
+        id: it.id || `i_${mIdx + 1}_${itIdx + 1}`,
+        code: it.code || it.food_code,
+        name: it.name || it.name_ar || 'صنف غذائي',
+        amount: Number(it.amount || it.portion_g || 100),
+        unit: it.unit || 'جم'
+      }))
+    }));
+  }
+
+  return [];
+}
 
 function adaptSessionToInteractiveWorkout(session, index = 0) {
   if (!session) return null;
@@ -53,12 +111,16 @@ function adaptSessionToInteractiveWorkout(session, index = 0) {
   
   const rawExercises = session.exercises || [];
   const exercises = rawExercises.map((ex, exIdx) => {
-    const exId = String(ex.id || ex.exercise_code || `ex_${index}_${exIdx}`);
+    const exId = String(ex.id || ex.exercise_code || ex.code || `ex_${index}_${exIdx}`);
     const exName = ex.name || ex.exercise_name || ex.name_ar || 'تمرين المقاومة';
-    const restSec = Number(ex.rest_seconds || ex.restDurationSec || ex.rest_sec) || 90;
+    const presc = ex.prescription || {};
+    const numSets = presc.sets || (Array.isArray(ex.sets) ? ex.sets.length : (Number(ex.sets || ex.prescribed_sets) || 3));
+    const targetReps = (presc.target_min && presc.target_max)
+      ? `${presc.target_min}-${presc.target_max}`
+      : (ex.reps || ex.target_reps || '10-12');
+    const restSec = Number(presc.rest_seconds || ex.rest_seconds || ex.restDurationSec || ex.rest_sec) || 75;
+    const targetRir = presc.target_rir !== undefined ? presc.target_rir : (ex.rir !== undefined ? ex.rir : 2);
     const safety = ex.safety_note || ex.safetyNote || ex.cue || 'الحفاظ على المدى الحركي الكامل والتحكم في الوزن بالنزول';
-    const numSets = Array.isArray(ex.sets) ? ex.sets.length : (Number(ex.sets || ex.prescribed_sets) || 3);
-    const targetReps = ex.reps || ex.target_reps || '10-12';
     const targetWeight = ex.working_weight_kg || ex.weight || '0';
 
     let sets = [];
@@ -82,12 +144,32 @@ function adaptSessionToInteractiveWorkout(session, index = 0) {
       }
     }
 
+    const videoUrl = ex.video_url || (ex.video_id ? `https://www.youtube.com/watch?v=${ex.video_id}` : '');
+    const cues = ex.cues_ar || ex.cues || safety;
+    const mistakes = ex.mistakes_ar || ex.mistakes || '';
+    const imgStretch = ex.image_stretch || (ex.images && ex.images[0]) || `/exercises/${exId}/0.jpg`;
+    const imgContraction = ex.image_contraction || (ex.images && ex.images[1]) || `/exercises/${exId}/1.jpg`;
+
     return {
       id: exId,
+      code: ex.code || ex.exercise_code || exId,
       name: exName,
+      nameEn: ex.name_en || ex.exercise_name_en || '',
       isCompound: Boolean(ex.isCompound ?? (ex.muscle === 'CHEST' || ex.muscle === 'BACK' || ex.muscle === 'LEGS')),
       restDurationSec: restSec,
+      targetRir: targetRir,
+      prescription: presc,
       safetyNote: safety,
+      cues_ar: cues,
+      mistakes_ar: mistakes,
+      video_url: videoUrl,
+      video_id: ex.video_id || '',
+      image_stretch: imgStretch,
+      image_contraction: imgContraction,
+      targetSets: numSets,
+      targetReps: targetReps,
+      targetWeight: targetWeight,
+      completed: Boolean(ex.completed || (sets.length > 0 && sets.every(s => s.completed))),
       sets
     };
   });
@@ -106,7 +188,7 @@ export default function ClientInteractiveApp() {
 
   // Tab Selection ('meals' | 'workout' | 'checkin')
   const rawTab = searchParams.get('tab');
-  const [activeTab, setActiveTab] = useState(rawTab === 'grocery' ? 'meals' : (rawTab || 'meals'));
+  const [activeTab, setActiveTab] = useState(rawTab || 'meals');
   const [selectedDay, setSelectedDay] = useState(1); // 1 to 7
 
   // Client info & Clinical Profile
@@ -117,15 +199,15 @@ export default function ClientInteractiveApp() {
       name: storedName,
       code: storedCode.startsWith('#') ? storedCode : `#${storedCode}`,
       package: 'الخطة المخصصة',
-      isVIP: false,
       streak: 1,
-      waterGlasses: 0,
-      waterTarget: 8,
       clinicalProfile: {
         is_g6pd: false,
         is_bariatric: false,
         is_celiac: false,
-        medications: []
+        medications: [],
+        takes_thyroid_med: false,
+        medical_conditions: [],
+        injuries: []
       }
     };
   });
@@ -133,8 +215,24 @@ export default function ClientInteractiveApp() {
   // Active Program State (Fetched dynamically from API)
   const [clientProgram, setClientProgram] = useState(null);
 
+  // Mesocycle Week State (1 to 5)
+  const [currentTrainingWeek, setCurrentTrainingWeek] = useState(1);
+
+  const trainingWeeks = useMemo(() => {
+    return clientProgram?.master_program?.training_program?.weeks
+      || clientProgram?.training_program?.weeks
+      || clientProgram?.master_program?.training?.weeks
+      || clientProgram?.training?.weeks
+      || [];
+  }, [clientProgram]);
+
+  const selectedWeekData = useMemo(() => {
+    if (!trainingWeeks || trainingWeeks.length === 0) return null;
+    return trainingWeeks.find(w => w.week_number === currentTrainingWeek) || trainingWeeks[0];
+  }, [trainingWeeks, currentTrainingWeek]);
+
   useEffect(() => {
-    const rawCode = (clientData?.code || '').replace('#', '').trim();
+    const rawCode = String(clientData?.code || '').replace(/^#+/, '').replace(/^client[-_]?/i, '').trim();
     if (!rawCode) return;
     fetch(`${API_BASE}/api/v1/programs/active/${rawCode}`)
       .then(res => res.ok ? res.json() : null)
@@ -158,9 +256,25 @@ export default function ClientInteractiveApp() {
               const s = a.toUpperCase();
               return s.includes('GOUT') || a.includes('نقرس') || a.includes('يوريك');
             });
-            const isBariatric = (data.user.injuries || data.master_program?.client?.injuries || []).some(inj => {
+            const rawInjuries = (data.user.injuries || data.master_program?.client?.injuries || []).map(i => String(i));
+            const isBariatric = rawInjuries.some(inj => {
               const s = String(inj).toUpperCase();
               return s.includes('SLEEVE') || s.includes('BYPASS') || inj.includes('تكميم') || inj.includes('تحويل مسار');
+            });
+            const rawMedications = (data.user.medications || data.master_program?.client?.medications || []).map(m => String(m));
+            const rawDiseases = (data.user.chronic_diseases || data.master_program?.client?.chronic_diseases || []).map(d => String(d));
+            const allClinicalStrings = [...rawAllergies, ...rawMedications, ...rawDiseases, ...rawInjuries];
+
+            const takesThyroidMed = allClinicalStrings.some(s => {
+              const u = s.toUpperCase();
+              return u.includes('ELTROXIN') || u.includes('THYROX') || u.includes('LEVOTHYROXINE') ||
+                     s.includes('التروكسين') || s.includes('الغدة الدرقية') || s.includes('كسل الغدة');
+            });
+
+            // Map injuries/conditions for prehab
+            const prehabConditions = rawInjuries.filter(inj => {
+              const s = inj.trim();
+              return s && !s.includes('لا يوجد') && !s.includes('سليم') && !s.includes('متابعة سريرية');
             });
 
             const clientOrUser = data.user || data.master_program?.client || {};
@@ -179,18 +293,42 @@ export default function ClientInteractiveApp() {
                 is_lactose_intolerant: isLactose,
                 is_gout: isGout,
                 is_bariatric: isBariatric,
-                allergies: rawAllergies
+                allergies: rawAllergies,
+                medications: rawMedications,
+                takes_thyroid_med: takesThyroidMed,
+                medical_conditions: prehabConditions,
+                injuries: rawInjuries
               }
             }));
           }
           if (data.has_program && data.master_program) {
             setClientProgram(data.master_program);
-            if (data.master_program.nutrition?.meals && data.master_program.nutrition.meals.length > 0) {
-              setMeals(data.master_program.nutrition.meals);
+
+            // Invalidate stale local day caches when coach publishes an updated program version
+            const serverVersion = String(data.version || data.master_program.version || data.updated_at || data.program_id || 'v1');
+            const cachedVersion = localStorage.getItem(`kz_prog_ver_${rawCode}`);
+            if (cachedVersion && cachedVersion !== serverVersion) {
+              for (let d = 1; d <= 7; d++) {
+                localStorage.removeItem(`kz_meals_${rawCode}_day_${d}`);
+                localStorage.removeItem(`kz_workout_${rawCode}_day_${d}`);
+              }
             }
-            const sessions = data.master_program.training?.sessions 
+            localStorage.setItem(`kz_prog_ver_${rawCode}`, serverVersion);
+
+            const programMeals = adaptProgramToInteractiveMeals(data.master_program);
+            if (programMeals.length > 0) {
+              const currentCachedMeals = localStorage.getItem(`kz_meals_${rawCode}_day_${selectedDay}`);
+              if (!currentCachedMeals) {
+                setMeals(programMeals);
+              }
+            }
+            const tWeeks = data.master_program?.training_program?.weeks 
+              || data.master_program?.training?.weeks 
+              || [];
+            const wData = tWeeks.find(w => w.week_number === currentTrainingWeek) || tWeeks[0];
+            const sessions = wData?.sessions 
+              || data.master_program.training?.sessions 
               || data.master_program.training_split?.sessions 
-              || data.master_program.training_program?.weeks?.[0]?.sessions 
               || [];
             if (sessions.length > 0) {
               const currentIdx = Math.max(0, (selectedDay - 1) % sessions.length);
@@ -208,12 +346,20 @@ export default function ClientInteractiveApp() {
       .catch(err => console.warn('Could not fetch client active program:', err));
   }, [clientData?.code]);
 
-  // Dynamically sync workout session when selected day changes
+  // Dynamically sync workout session when selected day or training week changes
   useEffect(() => {
     if (!clientProgram) return;
-    const sessions = clientProgram.training?.sessions 
+    const tWeeks = clientProgram?.master_program?.training_program?.weeks
+      || clientProgram?.training_program?.weeks
+      || clientProgram?.master_program?.training?.weeks
+      || clientProgram?.training?.weeks
+      || [];
+    const wData = tWeeks.find(w => w.week_number === currentTrainingWeek) || tWeeks[0];
+    const sessions = wData?.sessions 
+      || clientProgram.training?.sessions 
       || clientProgram.training_split?.sessions 
-      || clientProgram.training_program?.weeks?.[0]?.sessions 
+      || clientProgram.master_program?.training?.sessions
+      || clientProgram.master_program?.training_split?.sessions
       || [];
     if (sessions.length > 0) {
       const currentIdx = Math.max(0, (selectedDay - 1) % sessions.length);
@@ -225,7 +371,40 @@ export default function ClientInteractiveApp() {
         }));
       }
     }
-  }, [selectedDay, clientProgram]);
+  }, [selectedDay, currentTrainingWeek, clientProgram]);
+
+  // Persistent Offline Sync Queue
+  const [offlineQueue, setOfflineQueue] = useState(() => {
+    try {
+      const raw = localStorage.getItem('kz_offline_queue');
+      return raw ? JSON.parse(raw) : [];
+    } catch {
+      return [];
+    }
+  });
+  const [isSyncing, setIsSyncing] = useState(false);
+
+  // Restore logged meals from localStorage for this day if present
+  useEffect(() => {
+    const cleanCode = String(clientData?.code || '').replace(/^#+/, '').replace(/^client[-_]?/i, '').trim();
+    if (!cleanCode) return;
+    try {
+      const cached = localStorage.getItem(`kz_meals_${cleanCode}_day_${selectedDay}`);
+      if (cached) {
+        const parsed = JSON.parse(cached);
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          setMeals(parsed);
+          return;
+        }
+      }
+      if (clientProgram) {
+        const progMeals = adaptProgramToInteractiveMeals(clientProgram);
+        if (progMeals.length > 0) {
+          setMeals(progMeals);
+        }
+      }
+    } catch (e) {}
+  }, [selectedDay, clientData?.code, clientProgram]);
 
   // Daily Nutrition State & Live Swaps
   const [meals, setMeals] = useState([
@@ -290,12 +469,44 @@ export default function ClientInteractiveApp() {
   const [travelChosenTier, setTravelChosenTier] = useState(null);
   const [returnTravelModalOpen, setReturnTravelModalOpen] = useState(false);
   const [exerciseSwapTarget, setExerciseSwapTarget] = useState(null);
+  const [exerciseSwapsList, setExerciseSwapsList] = useState([]);
+  const [loadingExerciseSwaps, setLoadingExerciseSwaps] = useState(false);
+  const [exerciseSwapFilter, setExerciseSwapFilter] = useState('ALL'); // ALL | GYM | HOME
+
+  useEffect(() => {
+    if (!exerciseSwapTarget?.exercise) {
+      setExerciseSwapsList([]);
+      setExerciseSwapFilter('ALL');
+      return;
+    }
+    const targetEx = exerciseSwapTarget.exercise;
+    const exCode = targetEx.code || targetEx.id || targetEx.exercise_code || targetEx.name;
+    setLoadingExerciseSwaps(true);
+    fetch(`${API_BASE}/api/v1/exercises/swaps/${encodeURIComponent(exCode)}`)
+      .then(res => res.json())
+      .then(data => {
+        if (data && Array.isArray(data.swaps) && data.swaps.length > 0) {
+          setExerciseSwapsList(data.swaps);
+        } else {
+          setExerciseSwapsList([]);
+        }
+      })
+      .catch(err => {
+        console.warn('Failed to load exercise swaps:', err);
+        setExerciseSwapsList([]);
+      })
+      .finally(() => {
+        setLoadingExerciseSwaps(false);
+      });
+  }, [exerciseSwapTarget]);
+
   const [portionDisplayMode, setPortionDisplayMode] = useState(PORTION_DISPLAY_MODES.DUAL);
   const [cookingStateMode, setCookingStateMode] = useState(COOKING_STATE_MODES.BOTH);
   const [activePrepItem, setActivePrepItem] = useState(null);
   const [freeGuideModalOpen, setFreeGuideModalOpen] = useState(false);
   const [freeGuideTab, setFreeGuideTab] = useState('DRINKS');
   const [pdfModalOpen, setPdfModalOpen] = useState(false);
+  const [guidelinesOpen, setGuidelinesOpen] = useState(false);
   const [prehabCompleted, setPrehabCompleted] = useState(false);
   const [checkinWeight, setCheckinWeight] = useState(clientData.weight || '78.5');
   const [checkinWaist, setCheckinWaist] = useState('82.0');
@@ -306,6 +517,47 @@ export default function ClientInteractiveApp() {
   const [diningBlueprints, setDiningBlueprints] = useState(() => getTravelDiningBlueprints());
   const [swapMealId, setSwapMealId] = useState(null);
   const [clientSwapSearch, setClientSwapSearch] = useState('');
+  const [activeVideoExercise, setActiveVideoExercise] = useState(null);
+  const [expandedTechnique, setExpandedTechnique] = useState({});
+
+  // Daily Readiness & Autoregulation State (RPE & Energy)
+  const [dailyReadiness, setDailyReadiness] = useState(() => {
+    try {
+      return localStorage.getItem('kz_daily_readiness') || 'OPTIMAL';
+    } catch {
+      return 'OPTIMAL';
+    }
+  });
+
+  const handleSetDailyReadiness = (status) => {
+    setDailyReadiness(status);
+    try {
+      localStorage.setItem('kz_daily_readiness', status);
+    } catch (e) {}
+  };
+
+  // Optional Single-Tap Working Weight Memory
+  const [exerciseWorkingWeights, setExerciseWorkingWeights] = useState(() => {
+    try {
+      const stored = localStorage.getItem('kz_exercise_working_weights');
+      return stored ? JSON.parse(stored) : {};
+    } catch (e) {
+      return {};
+    }
+  });
+
+  const handleUpdateExerciseWeight = (exId, val) => {
+    setExerciseWorkingWeights(prev => {
+      const next = { ...prev, [exId]: val };
+      try {
+        localStorage.setItem('kz_exercise_working_weights', JSON.stringify(next));
+      } catch (e) {}
+      return next;
+    });
+  };
+
+  // Workout Execution & Reading Guide Toggle
+  const [showWorkoutGuide, setShowWorkoutGuide] = useState(false);
 
   // Workout Session State & Sets with Previous Week Benchmarks
   const [workoutSession, setWorkoutSession] = useState({
@@ -320,10 +572,10 @@ export default function ClientInteractiveApp() {
         restDurationSec: 90,
         safetyNote: 'الحفاظ على صدر مرفوع وتفادي أرجحة الجذع لحماية أسفل الظهر',
         sets: [
-          { setNum: 1, weight: '45', reps: '12', prevBest: '40kg × 12', completed: true },
-          { setNum: 2, weight: '50', reps: '11', prevBest: '45kg × 10', completed: true },
-          { setNum: 3, weight: '50', reps: '10', prevBest: '45kg × 10', completed: false },
-          { setNum: 4, weight: '50', reps: '10', prevBest: '45kg × 8', completed: false }
+          { setNum: 1, weight: '0', reps: '10-12', completed: false },
+          { setNum: 2, weight: '0', reps: '10-12', completed: false },
+          { setNum: 3, weight: '0', reps: '10-12', completed: false },
+          { setNum: 4, weight: '0', reps: '10-12', completed: false }
         ]
       },
       {
@@ -333,9 +585,9 @@ export default function ClientInteractiveApp() {
         restDurationSec: 90,
         safetyNote: 'تثبيت الصدر على المسند يمنع التحميل الضاغط على الفقرات القطنية L5-S1',
         sets: [
-          { setNum: 1, weight: '40', reps: '12', prevBest: '35kg × 12', completed: false },
-          { setNum: 2, weight: '45', reps: '10', prevBest: '40kg × 10', completed: false },
-          { setNum: 3, weight: '45', reps: '10', prevBest: '40kg × 8', completed: false }
+          { setNum: 1, weight: '0', reps: '10-12', completed: false },
+          { setNum: 2, weight: '0', reps: '10-12', completed: false },
+          { setNum: 3, weight: '0', reps: '10-12', completed: false }
         ]
       },
       {
@@ -345,9 +597,9 @@ export default function ClientInteractiveApp() {
         restDurationSec: 60,
         safetyNote: 'مد كامل للذراع في الأسفل مع ثبات الكوعين لعزل الرأس الطويل للبايسبس',
         sets: [
-          { setNum: 1, weight: '12.5', reps: '14', prevBest: '10kg × 12', completed: false },
-          { setNum: 2, weight: '12.5', reps: '12', prevBest: '10kg × 12', completed: false },
-          { setNum: 3, weight: '12.5', reps: '12', prevBest: '10kg × 10', completed: false }
+          { setNum: 1, weight: '0', reps: '12-15', completed: false },
+          { setNum: 2, weight: '0', reps: '12-15', completed: false },
+          { setNum: 3, weight: '0', reps: '12-15', completed: false }
         ]
       },
       {
@@ -357,70 +609,97 @@ export default function ClientInteractiveApp() {
         restDurationSec: 60,
         safetyNote: 'شد عضلات البطن والمؤخرة معاً لمنع تقوس أسفل الظهر (McGill Big 3)',
         sets: [
-          { setNum: 1, weight: '0', reps: '40 ثانية', prevBest: '30 ثانية', completed: false },
-          { setNum: 2, weight: '0', reps: '35 ثانية', prevBest: '30 ثانية', completed: false },
-          { setNum: 3, weight: '0', reps: '30 ثانية', prevBest: '25 ثانية', completed: false }
+          { setNum: 1, weight: '0', reps: '40 ثانية', completed: false },
+          { setNum: 2, weight: '0', reps: '35 ثانية', completed: false },
+          { setNum: 3, weight: '0', reps: '30 ثانية', completed: false }
         ]
       }
     ]
   });
 
-  // Countdown Rest Timer State
-  const [restTimerSeconds, setRestTimerSeconds] = useState(0);
-  const [isRestTimerRunning, setIsRestTimerRunning] = useState(false);
 
-  // Countdown timer ticker
-  useEffect(() => {
-    let interval = null;
-    if (isRestTimerRunning && restTimerSeconds > 0) {
-      interval = setInterval(() => {
-        setRestTimerSeconds(prev => {
-          if (prev <= 1) {
-            setIsRestTimerRunning(false);
-            return 0;
-          }
-          return prev - 1;
-        });
-      }, 1000);
-    }
-    return () => clearInterval(interval);
-  }, [isRestTimerRunning, restTimerSeconds]);
 
   const handleSwitchTab = (tab) => {
     setActiveTab(tab);
     setSearchParams({ tab });
   };
 
-  // Set toggle & Timer Trigger
-  const handleToggleSet = (exerciseId, setIndex) => {
+  // Optional 1-Tap Toggle Exercise Completed
+  const handleToggleExerciseCompleted = (exerciseId) => {
+    const cleanCode = String(clientData?.code || '').replace(/^#+/, '').replace(/^client[-_]?/i, '').trim();
     setWorkoutSession(prev => {
-      return {
+      if (!prev || !prev.exercises) return prev;
+      const updatedExercises = prev.exercises.map(ex => {
+        if (ex.id !== exerciseId) return ex;
+        const newlyCompleted = !ex.completed;
+        return {
+          ...ex,
+          completed: newlyCompleted
+        };
+      });
+
+      const nextSession = {
         ...prev,
-        exercises: prev.exercises.map(ex => {
-          if (ex.id !== exerciseId) return ex;
-          const nextSets = [...ex.sets];
-          const currentSet = nextSets[setIndex];
-          const newCompleted = !currentSet.completed;
-          nextSets[setIndex] = { ...currentSet, completed: newCompleted };
-
-          if (newCompleted) {
-            const duration = ex.restDurationSec || (ex.isCompound ? 90 : 60);
-            setRestTimerSeconds(duration);
-            setIsRestTimerRunning(true);
-          }
-
-          return { ...ex, sets: nextSets };
-        })
+        exercises: updatedExercises
       };
+
+      if (cleanCode) {
+        try {
+          localStorage.setItem(`kz_workout_${cleanCode}_day_${selectedDay}`, JSON.stringify(nextSession));
+        } catch (e) {}
+      }
+
+      return nextSession;
     });
   };
 
-  // 1-Tap Swap Execution
+  // Handle meal toggle with persistent storage and offline action
+  const handleToggleMealCompleted = (mealId) => {
+    const cleanCode = String(clientData?.code || '').replace(/^#+/, '').replace(/^client[-_]?/i, '').trim();
+    setMeals(prev => {
+      let targetMeal = null;
+      const updated = prev.map(m => {
+        if (m.id !== mealId) return m;
+        const nextCompleted = !m.completed;
+        targetMeal = { ...m, completed: nextCompleted };
+        return targetMeal;
+      });
+
+      if (cleanCode) {
+        try {
+          localStorage.setItem(`kz_meals_${cleanCode}_day_${selectedDay}`, JSON.stringify(updated));
+        } catch {}
+
+        if (targetMeal) {
+          const res = enqueueOfflineAction({
+            queue: offlineQueue,
+            actionType: ACTION_TYPES.CHECK_MEAL,
+            clientId: cleanCode,
+            payload: {
+              day: selectedDay,
+              mealId,
+              mealTitle: targetMeal.title,
+              completed: targetMeal.completed
+            }
+          });
+          setOfflineQueue(res.queue);
+          try {
+            localStorage.setItem('kz_offline_queue', JSON.stringify(res.queue));
+          } catch {}
+        }
+      }
+
+      return updated;
+    });
+  };
+
+  // 1-Tap Swap Execution with persistence
   const handleExecuteSwap = (swapResult) => {
     if (!activeSwapItem || !swapMealId) return;
+    const cleanCode = String(clientData?.code || '').replace(/^#+/, '').replace(/^client[-_]?/i, '').trim();
 
     setMeals(prevMeals => {
-      return prevMeals.map(meal => {
+      const updated = prevMeals.map(meal => {
         if (meal.id !== swapMealId) return meal;
         return {
           ...meal,
@@ -440,11 +719,49 @@ export default function ClientInteractiveApp() {
           })
         };
       });
+
+      if (cleanCode) {
+        try {
+          localStorage.setItem(`kz_meals_${cleanCode}_day_${selectedDay}`, JSON.stringify(updated));
+        } catch {}
+      }
+
+      return updated;
     });
 
     setActiveSwapItem(null);
     setSwapMealId(null);
   };
+
+
+  // Trigger manual sync or flush
+  const handleTriggerSync = async () => {
+    if (isSyncing || offlineQueue.length === 0) return;
+    setIsSyncing(true);
+    try {
+      const res = await flushPendingQueue({
+        queue: offlineQueue,
+        syncHandler: async () => ({ success: true })
+      });
+      setOfflineQueue(res.queue);
+      try {
+        localStorage.setItem('kz_offline_queue', JSON.stringify(res.queue));
+      } catch {}
+    } catch (err) {
+      console.warn('Sync flush error:', err);
+    } finally {
+      setIsSyncing(false);
+    }
+  };
+
+  // Automatic sync flush when device regains internet connection
+  useEffect(() => {
+    const onOnline = () => {
+      handleTriggerSync();
+    };
+    window.addEventListener('online', onOnline);
+    return () => window.removeEventListener('online', onOnline);
+  }, [offlineQueue]);
 
   // Calculate Dynamic Target Macros (Syncs with Coach Editor & Engine Auto-Regulation)
   const targetMacros = useMemo(() => {
@@ -561,15 +878,8 @@ export default function ClientInteractiveApp() {
     return acc;
   }, [meals, supplementsList, supplementsTaken]);
 
-  // Total Volume Lifted in Live Session
-  const totalVolumeKg = workoutSession.exercises.reduce((sum, ex) => {
-    return sum + ex.sets.reduce((exSum, set) => {
-      if (set.completed && !isNaN(parseFloat(set.weight))) {
-        return exSum + (parseFloat(set.weight) * (parseInt(set.reps, 10) || 0));
-      }
-      return exSum;
-    }, 0);
-  }, 0);
+
+  const syncStatus = getQueueSyncStatus(offlineQueue);
 
   return (
     <div className="min-h-screen bg-slate-100 flex justify-center font-sans" dir="rtl" style={{ fontFamily: 'Alexandria, Cairo, sans-serif' }}>
@@ -684,11 +994,54 @@ export default function ClientInteractiveApp() {
               </div>
             </div>
 
-            {/* Clean Quick Actions */}
+            {/* Clean Quick Actions & Sync Badge */}
             <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-              <button
-                type="button"
-                onClick={() => setClientData(prev => ({ ...prev, waterGlasses: Math.min(prev.waterTarget, prev.waterGlasses + 1) }))}
+              {/* Sync Status Badge */}
+              <div
+                style={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '4px',
+                  background: syncStatus.is_fully_synced ? 'rgba(34, 197, 94, 0.12)' : 'rgba(234, 179, 8, 0.15)',
+                  border: `1px solid ${syncStatus.is_fully_synced ? 'rgba(34, 197, 94, 0.3)' : 'rgba(234, 179, 8, 0.35)'}`,
+                  borderRadius: '6px',
+                  padding: '3px 7px',
+                  fontSize: '10px',
+                  fontWeight: 700,
+                  color: syncStatus.is_fully_synced ? '#86EFAC' : '#FDE047'
+                }}
+                title={syncStatus.status_badge_ar}
+              >
+                <div style={{ width: '6px', height: '6px', borderRadius: '50%', background: syncStatus.is_fully_synced ? '#22C55E' : '#EAB308' }}></div>
+                <span>{syncStatus.is_fully_synced ? 'متزامن' : `${syncStatus.pending_count} محلي`}</span>
+              </div>
+
+              {!syncStatus.is_fully_synced && (
+                <button
+                  type="button"
+                  onClick={handleTriggerSync}
+                  disabled={isSyncing}
+                  style={{
+                    background: '#38BDF8',
+                    color: '#0F172A',
+                    border: 'none',
+                    borderRadius: '6px',
+                    padding: '3px 7px',
+                    fontSize: '10px',
+                    fontWeight: 800,
+                    cursor: isSyncing ? 'not-allowed' : 'pointer',
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '3px'
+                  }}
+                  title="مزامنة التعديلات الآن"
+                >
+                  <RotateCcw style={{ width: '10px', height: '10px', animation: isSyncing ? 'spin 1s linear infinite' : 'none' }} />
+                  <span>{isSyncing ? 'مزامنة...' : 'مزامنة'}</span>
+                </button>
+              )}
+
+              <div
                 style={{
                   background: 'rgba(255, 255, 255, 0.08)',
                   border: '1px solid rgba(255, 255, 255, 0.14)',
@@ -697,12 +1050,13 @@ export default function ClientInteractiveApp() {
                   color: '#E2E8F0',
                   fontSize: '0.72rem',
                   fontWeight: 600,
-                  cursor: 'pointer'
+                  display: 'inline-flex',
+                  alignItems: 'center'
                 }}
-                title="تسجيل كوب ماء"
+                title="المعدل الاسترشادي لاستهلاك الماء يومياً"
               >
-                ماء: {clientData.waterGlasses}/{clientData.waterTarget}
-              </button>
+                الماء المستهدف: 3.5 - 4.0 لتر/اليوم
+              </div>
 
               <button
                 type="button"
@@ -720,6 +1074,27 @@ export default function ClientInteractiveApp() {
                 title="تكييف الخطة وظروف السفر والعزومات"
               >
                 مرونة اليوم
+              </button>
+
+              <button
+                type="button"
+                onClick={() => {
+                  const rawCode = String(clientData?.code || '').replace(/^#+/, '').replace(/^client[-_]?/i, '').trim();
+                  window.open(`/pdf?code=${encodeURIComponent(rawCode || '1')}`, '_blank');
+                }}
+                style={{
+                  background: 'rgba(56, 189, 248, 0.16)',
+                  border: '1px solid rgba(56, 189, 248, 0.35)',
+                  borderRadius: '8px',
+                  padding: '5px 9px',
+                  color: '#38BDF8',
+                  fontSize: '0.72rem',
+                  fontWeight: 700,
+                  cursor: 'pointer'
+                }}
+                title="استعراض وطباعة وثيقة الخطة التنفيذية الرسمية A4 PDF"
+              >
+                الخطة التنفيذية (PDF)
               </button>
 
               <button
@@ -777,10 +1152,12 @@ export default function ClientInteractiveApp() {
           </div>
         </header>
 
-        {/* Clinical Medication Safety Notice (Unobtrusive) */}
-        <div style={{ margin: '12px 16px 0 16px', background: '#F8FAFC', border: '1px solid #E2E8F0', borderRadius: '10px', padding: '8px 12px', fontSize: '0.72rem', color: '#475569', lineHeight: '1.4' }}>
-          <strong style={{ color: '#0F172A' }}>تنبيه علاجي (Eltroxin):</strong> حظر تناول الألبان، مكملات الكالسيوم أو الحديد لمدة 4 ساعات من جرعة الصباح لضمان الامتصاص الكامل.
-        </div>
+        {/* Clinical Medication Safety Notice (Unobtrusive - Only for thyroid medication users) */}
+        {clientData.clinicalProfile?.takes_thyroid_med && (
+          <div style={{ margin: '12px 16px 0 16px', background: '#F8FAFC', border: '1px solid #E2E8F0', borderRadius: '10px', padding: '8px 12px', fontSize: '0.72rem', color: '#475569', lineHeight: '1.4' }}>
+            <strong style={{ color: '#0F172A' }}>تنبيه علاجي (Eltroxin):</strong> حظر تناول الألبان، مكملات الكالسيوم أو الحديد لمدة 4 ساعات من جرعة الصباح لضمان الامتصاص الكامل.
+          </div>
+        )}
 
         {/* Active Fasting Mode Status Banner */}
         {clientData.fastingProfile && (clientData.fastingProfile.isCoptic || clientData.fastingProfile.isIntermittent || clientData.fastingProfile.isRamadan) && (
@@ -819,46 +1196,6 @@ export default function ClientInteractiveApp() {
           </div>
         )}
 
-        {/* Live Rest Timer Floating Pill (Minimalist) */}
-        {restTimerSeconds > 0 && (
-          <div 
-            style={{
-              position: 'fixed',
-              top: '90px',
-              left: '50%',
-              transform: 'translateX(-50%)',
-              zIndex: 50,
-              background: '#0F172A',
-              color: '#FFFFFF',
-              borderRadius: '30px',
-              padding: '6px 16px',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '10px',
-              boxShadow: '0 8px 24px rgba(0, 0, 0, 0.25)',
-              border: '1px solid #334155'
-            }}
-          >
-            <span style={{ fontSize: '0.76rem', color: '#94A3B8', fontWeight: 600 }}>راحة:</span>
-            <strong style={{ fontSize: '1rem', color: '#38BDF8', fontFamily: 'monospace' }}>
-              {Math.floor(restTimerSeconds / 60)}:{(restTimerSeconds % 60).toString().padStart(2, '0')}
-            </strong>
-            <button
-              type="button"
-              onClick={() => setRestTimerSeconds(prev => prev + 30)}
-              style={{ background: 'rgba(255, 255, 255, 0.12)', border: 'none', color: '#FFFFFF', borderRadius: '5px', fontSize: '10px', fontWeight: 700, padding: '2px 5px', cursor: 'pointer' }}
-            >
-              +30s
-            </button>
-            <button
-              type="button"
-              onClick={() => { setRestTimerSeconds(0); setIsRestTimerRunning(false); }}
-              style={{ background: 'transparent', border: 'none', color: '#94A3B8', cursor: 'pointer', display: 'flex', alignItems: 'center' }}
-            >
-              <X style={{ width: '13px', height: '13px' }} />
-            </button>
-          </div>
-        )}
 
 {/* MAIN BODY CONTENT */}
         <main style={{ padding: '16px', flex: 1 }}>
@@ -917,89 +1254,62 @@ export default function ClientInteractiveApp() {
                 </div>
               </div>
 
-              {/* Portion Display & Cooking State Controls */}
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', margin: '4px 0 10px 0' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '8px' }}>
-                  {/* Left: Grams vs Hand Portions */}
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                    <span style={{ fontSize: '0.72rem', fontWeight: 700, color: '#475569' }}>المعيار:</span>
-                    <div style={{ display: 'inline-flex', background: '#E2E8F0', padding: '2px', borderRadius: '8px', gap: '2px' }}>
-                      {[
-                        { key: PORTION_DISPLAY_MODES.DUAL, label: 'عرض مزدوج' },
-                        { key: PORTION_DISPLAY_MODES.GRAMS, label: 'بالميزان' },
-                        { key: PORTION_DISPLAY_MODES.HAND_PORTIONS, label: 'باليد (طوارئ)' }
-                      ].map(tab => {
-                        const isSel = portionDisplayMode === tab.key;
-                        return (
-                          <button
-                            key={tab.key}
-                            type="button"
-                            onClick={() => setPortionDisplayMode(tab.key)}
-                            style={{
-                              background: isSel ? '#FFFFFF' : 'transparent',
-                              color: isSel ? '#0F172A' : '#64748B',
-                              border: 'none',
-                              borderRadius: '6px',
-                              padding: '4px 10px',
-                              fontSize: '0.72rem',
-                              fontWeight: isSel ? 700 : 500,
-                              cursor: 'pointer',
-                              boxShadow: isSel ? '0 1px 2px rgba(0, 0, 0, 0.05)' : 'none',
-                              transition: 'all 0.15s ease'
-                            }}
-                          >
-                            {tab.label}
-                          </button>
-                        );
-                      })}
-                    </div>
+              {/* Unified Compact Meal Controls Bar (حالة الوزن، المعيار، والخطط الإضافية في سطر تنفيذي أنيق) */}
+              <div 
+                style={{ 
+                  display: 'flex', 
+                  alignItems: 'center', 
+                  justifyContent: 'space-between', 
+                  flexWrap: 'wrap', 
+                  gap: '6px', 
+                  background: '#FFFFFF', 
+                  border: '1px solid #E2E8F0', 
+                  borderRadius: '10px', 
+                  padding: '6px 10px', 
+                  margin: '4px 0 10px 0' 
+                }}
+              >
+                {/* Portion Mode & Cooking State Capsules */}
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+                  {/* Portion Mode */}
+                  <div style={{ display: 'inline-flex', background: '#F1F5F9', padding: '2px', borderRadius: '6px', gap: '2px' }}>
+                    {[
+                      { key: PORTION_DISPLAY_MODES.DUAL, label: 'مزدوج' },
+                      { key: PORTION_DISPLAY_MODES.GRAMS, label: 'ميزان' },
+                      { key: PORTION_DISPLAY_MODES.HAND_PORTIONS, label: 'يد' }
+                    ].map(tab => {
+                      const isSel = portionDisplayMode === tab.key;
+                      return (
+                        <button
+                          key={tab.key}
+                          type="button"
+                          onClick={() => setPortionDisplayMode(tab.key)}
+                          style={{
+                            background: isSel ? '#0F172A' : 'transparent',
+                            color: isSel ? '#FFFFFF' : '#64748B',
+                            border: 'none',
+                            borderRadius: '4px',
+                            padding: '3px 8px',
+                            fontSize: '0.68rem',
+                            fontWeight: isSel ? 800 : 600,
+                            cursor: 'pointer',
+                            transition: 'all 0.12s ease'
+                          }}
+                        >
+                          {tab.label}
+                        </button>
+                      );
+                    })}
                   </div>
 
-                  {/* Travel Blueprints Button */}
-                  <button
-                    type="button"
-                    onClick={() => setTravelModeActive(prev => !prev)}
-                    style={{
-                      background: travelModeActive ? '#EFF6FF' : 'transparent',
-                      color: travelModeActive ? '#0284C7' : '#64748B',
-                      border: `1px solid ${travelModeActive ? '#BAE6FD' : '#CBD5E1'}`,
-                      borderRadius: '8px',
-                      padding: '4px 8px',
-                      fontSize: '0.7rem',
-                      fontWeight: 600,
-                      cursor: 'pointer'
-                    }}
-                  >
-                    {travelModeActive ? 'إخفاء خطط المطاعم' : 'خطط المطاعم'}
-                  </button>
+                  <span style={{ color: '#CBD5E1', fontSize: '10px' }}>•</span>
 
-                  {/* Smart Adherence & Free Guides Button */}
-                  <button
-                    type="button"
-                    onClick={() => setFreeGuideModalOpen(true)}
-                    style={{
-                      background: '#F0FDF4',
-                      color: '#166534',
-                      border: '1px solid #BBF7D0',
-                      borderRadius: '8px',
-                      padding: '4px 9px',
-                      fontSize: '0.7rem',
-                      fontWeight: 700,
-                      cursor: 'pointer'
-                    }}
-                  >
-                    دليل الالتزام والزيوت والمشروبات
-                  </button>
-                </div>
-
-                {/* Cooking State Segmented Control (Raw vs Cooked vs Both) */}
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: '#F8FAFC', padding: '6px 10px', borderRadius: '10px', border: '1px solid #E2E8F0' }}>
-                  <span style={{ fontSize: '0.72rem', fontWeight: 800, color: '#0F172A' }}>حالة وزن الطعام:</span>
-                  <div style={{ display: 'inline-flex', background: '#E2E8F0', padding: '2px', borderRadius: '8px', gap: '2px' }}>
+                  {/* Cooking State */}
+                  <div style={{ display: 'inline-flex', background: '#F1F5F9', padding: '2px', borderRadius: '6px', gap: '2px' }}>
                     {[
-                      { key: COOKING_STATE_MODES.BOTH, label: 'الوزنان معاً' },
-                      { key: COOKING_STATE_MODES.COOKED, label: 'مطبوخ ومجهز' },
-                      { key: COOKING_STATE_MODES.RAW, label: 'نيء قبل الطهي' }
+                      { key: COOKING_STATE_MODES.BOTH, label: 'معاً' },
+                      { key: COOKING_STATE_MODES.COOKED, label: 'مطبوخ' },
+                      { key: COOKING_STATE_MODES.RAW, label: 'نيء' }
                     ].map(cTab => {
                       const isSel = cookingStateMode === cTab.key;
                       return (
@@ -1011,13 +1321,12 @@ export default function ClientInteractiveApp() {
                             background: isSel ? '#0F172A' : 'transparent',
                             color: isSel ? '#FFFFFF' : '#64748B',
                             border: 'none',
-                            borderRadius: '6px',
+                            borderRadius: '4px',
                             padding: '3px 8px',
-                            fontSize: '0.7rem',
-                            fontWeight: isSel ? 800 : 500,
+                            fontSize: '0.68rem',
+                            fontWeight: isSel ? 800 : 600,
                             cursor: 'pointer',
-                            boxShadow: isSel ? '0 1px 2px rgba(15, 23, 42, 0.15)' : 'none',
-                            transition: 'all 0.15s ease'
+                            transition: 'all 0.12s ease'
                           }}
                         >
                           {cTab.label}
@@ -1027,11 +1336,42 @@ export default function ClientInteractiveApp() {
                   </div>
                 </div>
 
-                {portionDisplayMode === PORTION_DISPLAY_MODES.HAND_PORTIONS && (
-                  <div style={{ background: '#FFFBEB', border: '1px solid #FDE68A', borderRadius: '8px', padding: '6px 10px', fontSize: '0.7rem', color: '#92400E' }}>
-                    الميزان الرقمي بالجرام هو الأساس الإلزامي للالتزام؛ المعايير اليدوية مخصصة للعزومات والظروف الطارئة والسفر فقط.
-                  </div>
-                )}
+                {/* Secondary Quick Action Buttons */}
+                <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                  <button
+                    type="button"
+                    onClick={() => setTravelModeActive(prev => !prev)}
+                    style={{
+                      background: travelModeActive ? '#EFF6FF' : '#F8FAFC',
+                      color: travelModeActive ? '#0284C7' : '#64748B',
+                      border: `1px solid ${travelModeActive ? '#BAE6FD' : '#E2E8F0'}`,
+                      borderRadius: '6px',
+                      padding: '3px 8px',
+                      fontSize: '0.68rem',
+                      fontWeight: 700,
+                      cursor: 'pointer'
+                    }}
+                  >
+                    {travelModeActive ? 'إخفاء المطاعم' : 'خطط المطاعم'}
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => setFreeGuideModalOpen(true)}
+                    style={{
+                      background: '#F0FDF4',
+                      color: '#166534',
+                      border: '1px solid #BBF7D0',
+                      borderRadius: '6px',
+                      padding: '3px 8px',
+                      fontSize: '0.68rem',
+                      fontWeight: 700,
+                      cursor: 'pointer'
+                    }}
+                  >
+                    دليل الالتزام
+                  </button>
+                </div>
               </div>
 
               {/* Pre-Engineered Dining Blueprints Section (Visible when travelMode is active) */}
@@ -1102,7 +1442,7 @@ export default function ClientInteractiveApp() {
 
                     <button
                       type="button"
-                      onClick={() => setMeals(prev => prev.map(m => m.id === meal.id ? { ...m, completed: !m.completed } : m))}
+                      onClick={() => handleToggleMealCompleted(meal.id)}
                       style={{
                         display: 'flex',
                         alignItems: 'center',
@@ -1225,14 +1565,18 @@ export default function ClientInteractiveApp() {
                 </div>
               ))}
 
-              {/* SMART CONTEXTUAL GUIDELINES MATRIX */}
-              <div style={{ background: '#FFFFFF', border: '1px solid #E2E8F0', borderRadius: '16px', padding: '14px 16px', boxShadow: '0 1px 3px rgba(0, 0, 0, 0.02)' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+              {/* SMART PLAN GUIDELINES ACCORDION (مطوي افتراضياً لمنع الزحمة) */}
+              <div style={{ background: '#FFFFFF', border: '1px solid #E2E8F0', borderRadius: '12px', padding: '10px 14px', boxShadow: '0 1px 2px rgba(0, 0, 0, 0.02)' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <div 
+                    onClick={() => setGuidelinesOpen(prev => !prev)}
+                    style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', userSelect: 'none' }}
+                  >
                     <ShieldCheck style={{ width: '15px', height: '15px', color: '#0F172A' }} />
-                    <h3 style={{ margin: 0, fontSize: '0.82rem', fontWeight: 800, color: '#0F172A' }}>
-                      إرشادات وقواعد الخطة
-                    </h3>
+                    <strong style={{ fontSize: '0.8rem', color: '#0F172A' }}>إرشادات وقواعد الخطة</strong>
+                    <span style={{ fontSize: '0.68rem', color: '#64748B', background: '#F1F5F9', padding: '1px 6px', borderRadius: '4px' }}>
+                      {guidelinesOpen ? 'طي' : 'عرض (5 إرشادات)'}
+                    </span>
                   </div>
 
                   <button
@@ -1243,7 +1587,7 @@ export default function ClientInteractiveApp() {
                       color: '#FFFFFF',
                       border: 'none',
                       borderRadius: '6px',
-                      padding: '4px 8px',
+                      padding: '4px 10px',
                       fontSize: '0.7rem',
                       fontWeight: 700,
                       cursor: 'pointer'
@@ -1253,14 +1597,16 @@ export default function ClientInteractiveApp() {
                   </button>
                 </div>
 
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-                  {SMART_GUIDELINES_MATRIX.map((guide) => (
-                    <div key={guide.id} style={{ background: '#F8FAFC', border: '1px solid #F1F5F9', borderRadius: '8px', padding: '8px 10px' }}>
-                      <strong style={{ fontSize: '0.74rem', color: '#0F172A', display: 'block', marginBottom: '2px' }}>{guide.title_ar}</strong>
-                      <span style={{ fontSize: '0.7rem', color: '#64748B', lineHeight: 1.4 }}>{guide.instruction_ar}</span>
-                    </div>
-                  ))}
-                </div>
+                {guidelinesOpen && (
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', marginTop: '10px', borderTop: '1px solid #F1F5F9', paddingTop: '10px' }}>
+                    {SMART_GUIDELINES_MATRIX.map((guide) => (
+                      <div key={guide.id} style={{ background: '#F8FAFC', border: '1px solid #F1F5F9', borderRadius: '8px', padding: '8px 10px' }}>
+                        <strong style={{ fontSize: '0.74rem', color: '#0F172A', display: 'block', marginBottom: '2px' }}>{guide.title_ar}</strong>
+                        <span style={{ fontSize: '0.7rem', color: '#64748B', lineHeight: 1.4 }}>{guide.instruction_ar}</span>
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
 
               {/* Interactive Supplements & Micronutrition Checklist Card */}
@@ -1353,19 +1699,94 @@ export default function ClientInteractiveApp() {
             </div>
           )}
 
-{/* TAB 2: LIVE WORKOUT TRACKER & TIMER */}
+{/* TAB 2: WORKOUT PLAN REFERENCE */}
           {activeTab === 'workout' && (
             <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
               
+              {/* Mesocycle Weeks Selector (دورة الميزوسايكل الفسيولوجية) */}
+              {trainingWeeks.length > 0 && (
+                <div style={{
+                  background: '#FFFFFF',
+                  borderRadius: '16px',
+                  border: '1px solid #E2E8F0',
+                  padding: '12px 14px',
+                  boxShadow: '0 1px 3px rgba(0, 0, 0, 0.03)',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  gap: '8px'
+                }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '6px' }}>
+                    <div>
+                      <strong style={{ fontSize: '0.82rem', color: '#0F172A', display: 'block' }}>
+                        دورة التدريب (الميزوسايكل)
+                      </strong>
+                      <span style={{ fontSize: '0.7rem', color: '#64748B' }}>
+                        5 أسابيع متدرجة الحمل والاستشفاء
+                      </span>
+                    </div>
+                    {selectedWeekData && (
+                      <span style={{
+                        fontSize: '0.72rem',
+                        fontWeight: 800,
+                        padding: '2px 8px',
+                        borderRadius: '6px',
+                        background: selectedWeekData.phase === 'DELOAD' ? '#DCFCE7' : '#EFF6FF',
+                        color: selectedWeekData.phase === 'DELOAD' ? '#166534' : '#1D4ED8',
+                        border: selectedWeekData.phase === 'DELOAD' ? '1px solid #BBF7D0' : '1px solid #BFDBFE'
+                      }}>
+                        {selectedWeekData.phase === 'DELOAD' ? 'أسبوع كسر الإجهاد والاستشفاء (Deload -40% حجم)' : `الأسبوع ${selectedWeekData.week_number} • RIR ${selectedWeekData.target_rir ?? 2}`}
+                      </span>
+                    )}
+                  </div>
+
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: '6px' }}>
+                    {trainingWeeks.map(w => {
+                      const isCurrent = currentTrainingWeek === w.week_number;
+                      const isDeload = w.phase === 'DELOAD';
+                      return (
+                        <button
+                          key={w.week_number}
+                          type="button"
+                          onClick={() => setCurrentTrainingWeek(w.week_number)}
+                          style={{
+                            padding: '6px 4px',
+                            borderRadius: '8px',
+                            border: isCurrent 
+                              ? (isDeload ? '2px solid #16A34A' : '2px solid #0F172A')
+                              : '1px solid #E2E8F0',
+                            background: isCurrent 
+                              ? (isDeload ? '#DCFCE7' : '#0F172A') 
+                              : (isDeload ? '#F0FDF4' : '#F8FAFC'),
+                            color: isCurrent 
+                              ? (isDeload ? '#166534' : '#FFFFFF') 
+                              : (isDeload ? '#15803D' : '#475569'),
+                            fontSize: '0.72rem',
+                            fontWeight: isCurrent ? 800 : 600,
+                            cursor: 'pointer',
+                            textAlign: 'center',
+                            lineHeight: 1.2
+                          }}
+                        >
+                          <div>أسبوع {w.week_number}</div>
+                          <div style={{ fontSize: '0.62rem', opacity: 0.8, marginTop: '2px' }}>
+                            {isDeload ? 'استشفاء' : `RIR ${w.target_rir ?? 2}`}
+                          </div>
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
+
               {/* Workout Session Banner */}
               <div style={{ background: 'linear-gradient(135deg, #0F172A 0%, #1E293B 100%)', color: '#FFFFFF', borderRadius: '20px', padding: '18px', boxShadow: '0 4px 15px rgba(15, 23, 42, 0.15)' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4px' }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '6px', color: '#94A3B8', fontSize: '0.72rem', fontWeight: 700 }}>
-                    
-                    <span>وضع التدريب الحي المباشر</span>
+                    <Dumbbell style={{ width: '13px', height: '13px', color: '#38BDF8' }} />
+                    <span>جدول تمارين اليوم (دليل استرشادي سريع)</span>
                   </div>
-                  <span style={{ fontSize: '0.76rem', color: '#F59E0B', fontWeight: 800, fontFamily: 'monospace' }}>
-                    الحمولة: {totalVolumeKg} kg
+                  <span style={{ fontSize: '0.74rem', color: '#94A3B8', fontWeight: 700 }}>
+                    {workoutSession.exercises?.length || 0} تمارين
                   </span>
                 </div>
                 <h2 style={{ fontSize: '1.05rem', fontWeight: 900, color: '#FFFFFF', margin: '0 0 6px 0' }}>
@@ -1376,12 +1797,210 @@ export default function ClientInteractiveApp() {
                 </div>
               </div>
 
-              {/* POSTURAL & JOINT PREHAB PRIMER CARD */}
+              {/* Autoregulation & Daily Readiness Hub */}
+              <div style={{
+                background: '#FFFFFF',
+                borderRadius: '16px',
+                border: '1px solid #E2E8F0',
+                padding: '12px 16px',
+                boxShadow: '0 1px 3px rgba(0, 0, 0, 0.03)'
+              }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px', flexWrap: 'wrap', gap: '8px' }}>
+                  <div>
+                    <strong style={{ fontSize: '0.82rem', color: '#0F172A', display: 'block' }}>
+                      الجاهزية اليومية والتنظيم الذاتي (RPE)
+                    </strong>
+                    <span style={{ fontSize: '0.7rem', color: '#64748B' }}>
+                      حدد حالتك البدنية لتكييف الشدة ورفع الحرج العصبي
+                    </span>
+                  </div>
+                  
+                  <div style={{ display: 'inline-flex', gap: '4px', background: '#F1F5F9', padding: '3px', borderRadius: '8px' }}>
+                    {[
+                      { id: 'OPTIMAL', label: 'نشيط ومستعد' },
+                      { id: 'MODERATE', label: 'طاقة معتدلة' },
+                      { id: 'FATIGUED', label: 'خمول / إجهاد' }
+                    ].map(opt => {
+                      const active = dailyReadiness === opt.id;
+                      return (
+                        <button
+                          key={opt.id}
+                          type="button"
+                          onClick={() => handleSetDailyReadiness(opt.id)}
+                          style={{
+                            padding: '4px 10px',
+                            borderRadius: '6px',
+                            fontSize: '0.72rem',
+                            fontWeight: active ? 800 : 600,
+                            background: active 
+                              ? (opt.id === 'FATIGUED' ? '#FEE2E2' : (opt.id === 'OPTIMAL' ? '#DCFCE7' : '#FFFFFF'))
+                              : 'transparent',
+                            color: active 
+                              ? (opt.id === 'FATIGUED' ? '#991B1B' : (opt.id === 'OPTIMAL' ? '#166534' : '#0F172A'))
+                              : '#64748B',
+                            border: active ? '1px solid rgba(0,0,0,0.06)' : 'none',
+                            cursor: 'pointer',
+                            transition: 'all 0.15s ease'
+                          }}
+                        >
+                          {opt.label}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                {dailyReadiness === 'FATIGUED' ? (
+                  <div style={{
+                    background: '#FEF2F2',
+                    borderRight: '3px solid #EF4444',
+                    borderRadius: '8px',
+                    padding: '8px 12px',
+                    fontSize: '0.72rem',
+                    color: '#991B1B',
+                    lineHeight: '1.5'
+                  }}>
+                    <strong style={{ display: 'block', marginBottom: '2px' }}>توجيه فسيولوجي ليوم الإجهاد:</strong>
+                    طاقتك تتأثر بنومك وضغوط يومك وهذا تذبذب عصبي طبيعي مؤقت. من الاحترافية خفض الأوزان بنسبة 10-20% والتركيز على المدى الحركي الكامل وتفادي الوصول للفشل العضلي التام اليوم. قوتك الحقيقية ستعود بكامل كفاءتها الأسبوع القادم.
+                  </div>
+                ) : (
+                  <div style={{
+                    background: '#F8FAFC',
+                    borderRight: '3px solid #0284C7',
+                    borderRadius: '8px',
+                    padding: '8px 12px',
+                    fontSize: '0.72rem',
+                    color: '#475569',
+                    lineHeight: '1.4'
+                  }}>
+                    <strong style={{ color: '#0F172A' }}>قاعدة الجاهزية (RPE):</strong> تمرن بأوزان تتحدى عضلاتك مع إبقاء 1-2 تكرار في الاحتياط قبل الفشل العضلي بتكنيك آمن ومحكم؛ الاستمرارية وضبط الأداء هما أساس التطور.
+                  </div>
+                )}
+              </div>
+
+              {/* Workout Execution & Reading Guide Card (دليل تنفيذ وفهم رموز الخطة) */}
+              <div style={{
+                background: '#FFFFFF',
+                borderRadius: '16px',
+                border: '1px solid #E2E8F0',
+                padding: '12px 16px',
+                boxShadow: '0 1px 3px rgba(0, 0, 0, 0.03)'
+              }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '8px' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <BookOpen style={{ width: '17px', height: '17px', color: '#0284C7' }} />
+                    <div>
+                      <strong style={{ fontSize: '0.82rem', color: '#0F172A', display: 'block' }}>
+                        دليل تنفيذ الخطة وفهم الرموز
+                      </strong>
+                      <span style={{ fontSize: '0.7rem', color: '#64748B' }}>
+                        كيف تتدرب باحترافية، ماذا تعني الأرقام، وكيف تحدد أوزانك؟
+                      </span>
+                    </div>
+                  </div>
+
+                  <button
+                    type="button"
+                    onClick={() => setShowWorkoutGuide(prev => !prev)}
+                    style={{
+                      background: showWorkoutGuide ? '#F1F5F9' : '#E0F2FE',
+                      color: showWorkoutGuide ? '#475569' : '#0369A1',
+                      border: 'none',
+                      borderRadius: '8px',
+                      padding: '5px 12px',
+                      fontSize: '0.72rem',
+                      fontWeight: 800,
+                      cursor: 'pointer',
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: '4px'
+                    }}
+                  >
+                    <span>{showWorkoutGuide ? 'إخفاء الدليل' : 'استعراض الدليل الشامل'}</span>
+                    {showWorkoutGuide ? <ChevronUp style={{ width: '12px', height: '12px' }} /> : <ChevronDown style={{ width: '12px', height: '12px' }} />}
+                  </button>
+                </div>
+
+                {showWorkoutGuide && (
+                  <div style={{ marginTop: '12px', borderTop: '1px solid #F1F5F9', paddingTop: '12px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                    
+                    {/* Rule 1: Working Sets */}
+                    <div style={{ background: '#F8FAFC', borderRadius: '10px', padding: '10px 12px', border: '1px solid #E2E8F0' }}>
+                      <strong style={{ fontSize: '0.78rem', color: '#0F172A', display: 'block', marginBottom: '3px' }}>
+                        1. مجموعات العمل الفعالة (Working Sets)
+                      </strong>
+                      <p style={{ margin: 0, fontSize: '0.72rem', color: '#475569', lineHeight: '1.5' }}>
+                        المجموعات المكتوبة في الجدول (مثال: 3 جولات) هي مجموعات عمل أساسية بنفس الوزن التشغيلي. التسخين يتم مسبقاً بوزن خفيف (بروتوكول RAMP) ولا يُحسب ضمن جولات الجدول إطلاقاً.
+                      </p>
+                    </div>
+
+                    {/* Rule 2: Initial Weight Selection */}
+                    <div style={{ background: '#F8FAFC', borderRadius: '10px', padding: '10px 12px', border: '1px solid #E2E8F0' }}>
+                      <strong style={{ fontSize: '0.78rem', color: '#0F172A', display: 'block', marginBottom: '3px' }}>
+                        2. كيف تحدد وزنك لأول مرة؟
+                      </strong>
+                      <p style={{ margin: 0, fontSize: '0.72rem', color: '#475569', lineHeight: '1.5' }}>
+                        لا نحدد لك وزناً ثابتاً مسبقاً في البداية لاختلاف القوة بين الأفراد واختلاف معايرة الأجهزة في الجيم. اختر وزناً تجريبياً آمناً وتدرج به حتى تصل لوزن يمكنك من إتمام التكرارات المطلوبة وأنت قادر على أداء 1-2 عدة فقط في الاحتياط قبل الفشل العضلي (RPE 8-9) بتكنيك سليم، ثم اكتب هذا الوزن في خانة "أفضل وزن اليوم" ليظل مرجعك الدائم.
+                      </p>
+                    </div>
+
+                    {/* Rule 3: Rep Range */}
+                    <div style={{ background: '#F8FAFC', borderRadius: '10px', padding: '10px 12px', border: '1px solid #E2E8F0' }}>
+                      <strong style={{ fontSize: '0.78rem', color: '#0F172A', display: 'block', marginBottom: '3px' }}>
+                        3. ماذا يعني النطاق التكراري (مثال: 8-10 عدات)؟
+                      </strong>
+                      <p style={{ margin: 0, fontSize: '0.72rem', color: '#475569', lineHeight: '1.5' }}>
+                        يعني اختيار وزن لا تستطيع عمل أقل من 8 عدات به، ولا تستطيع تجاوز 10 عدات به بتكنيك محكم. إذا تمكنت من عمل 11 عدة، فالوزن خفيف؛ وإذا عجزت قبل 8 عدات، فالوزن ثقيل.
+                      </p>
+                    </div>
+
+                    {/* Rule 4: Rest Periods */}
+                    <div style={{ background: '#F8FAFC', borderRadius: '10px', padding: '10px 12px', border: '1px solid #E2E8F0' }}>
+                      <strong style={{ fontSize: '0.78rem', color: '#0F172A', display: 'block', marginBottom: '3px' }}>
+                        4. فترات الراحة بين الجولات (مثال: 60 - 90 ثانية)
+                      </strong>
+                      <p style={{ margin: 0, fontSize: '0.72rem', color: '#475569', lineHeight: '1.5' }}>
+                        الراحة المحددة إلزامية لإعادة شحن مركبات الطاقة الخلوية (ATP) واستشفاء الجهاز العصبي، مما يمكنك من رفع نفس الوزن في المجموعة التالية بكامل التوتر الميكانيكي.
+                      </p>
+                    </div>
+
+                    {/* Rule 5: Progressive Overload */}
+                    <div style={{ background: '#F8FAFC', borderRadius: '10px', padding: '10px 12px', border: '1px solid #E2E8F0' }}>
+                      <strong style={{ fontSize: '0.78rem', color: '#0F172A', display: 'block', marginBottom: '3px' }}>
+                        5. متى ترفع الوزن؟ (الزيادة التدريجية)
+                      </strong>
+                      <p style={{ margin: 0, fontSize: '0.72rem', color: '#475569', lineHeight: '1.5' }}>
+                        ترفع الوزن في الأسبوع التالي فقط بمقدار 2.5 إلى 5 كجم عندما تنجح في أداء الحد الأقصى للتكرارات (مثلاً 10 عدات كاملة) في كافة المجموعات الثلاث بنفس الوزن الحالي.
+                      </p>
+                    </div>
+
+                    {/* Rule 6: Equipment Swap */}
+                    <div style={{ background: '#F8FAFC', borderRadius: '10px', padding: '10px 12px', border: '1px solid #E2E8F0' }}>
+                      <strong style={{ fontSize: '0.78rem', color: '#0F172A', display: 'block', marginBottom: '3px' }}>
+                        6. زر "بديل الجهاز"
+                      </strong>
+                      <p style={{ margin: 0, fontSize: '0.72rem', color: '#475569', lineHeight: '1.5' }}>
+                        في حال كان الجهاز المطلوب مشغولاً في الصالة، اضغط على "بديل الجهاز" لتحصل فوراً على التمرين الميكانيكي المطابق لنفس الزاوية العضلية دون تضييع وقتك.
+                      </p>
+                    </div>
+
+                  </div>
+                )}
+              </div>
+
+              {/* POSTURAL & JOINT PREHAB PRIMER CARD (يظهر فقط لمن لديهم إصابات أو مشاكل قوامية مسجلة) */}
               {(() => {
+                const userConditions = clientData.clinicalProfile?.medical_conditions || [];
+                if (!userConditions || userConditions.length === 0) return null;
+
                 const prehabRoutine = getPrehabRoutine(
-                  clientData.clinicalProfile?.medical_conditions || ['ROUNDED_SHOULDERS', 'KNEE_DISCOMFORT'],
+                  userConditions,
                   'UPPER'
                 );
+
+                if (!prehabRoutine || !prehabRoutine.has_prehab || !prehabRoutine.exercises || prehabRoutine.exercises.length === 0) {
+                  return null;
+                }
 
                 return (
                   <div 
@@ -1489,143 +2108,287 @@ export default function ClientInteractiveApp() {
                 </p>
               </div>
 
-              {/* Exercises Set-by-Set List */}
-              {workoutSession.exercises.map((ex, exIdx) => (
-                <div 
-                  key={ex.id}
-                  style={{
-                    background: '#FFFFFF',
-                    borderRadius: '20px',
-                    border: '1px solid #E2E8F0',
-                    padding: '16px',
-                    boxShadow: '0 2px 6px rgba(15, 23, 42, 0.03)'
-                  }}
-                >
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '8px' }}>
-                    <div>
-                      <span style={{ fontSize: '0.7rem', fontWeight: 800, color: ex.isCompound ? '#D97706' : '#0284C7', background: ex.isCompound ? '#FEF3C7' : '#E0F2FE', padding: '2px 6px', borderRadius: '4px' }}>
-                        {ex.isCompound ? 'تمرين مركب (90s راحة)' : 'تمرين عزل (60s راحة)'}
-                      </span>
-                      <h3 style={{ fontSize: '0.88rem', fontWeight: 800, color: '#0F172A', margin: '4px 0 0 0' }}>
-                        {exIdx + 1}. {ex.name}
-                      </h3>
-                    </div>
+              {/* Exercises Streamlined Visual Workout Cards */}
+              {workoutSession.exercises.map((ex, exIdx) => {
+                const isCompleted = Boolean(ex.completed || (ex.sets && ex.sets.length > 0 && ex.sets.every(s => s.completed)));
+                const isTechniqueExpanded = Boolean(expandedTechnique[ex.id]);
+                const restSec = ex.restDurationSec || (ex.isCompound ? 90 : 60);
 
-                    <button
-                      type="button"
-                      onClick={() => setExerciseSwapTarget({ exercise: ex, exIdx })}
-                      style={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: '4px',
-                        background: '#FFFFFF',
-                        color: '#0F172A',
-                        border: '1px solid #CBD5E1',
-                        borderRadius: '8px',
-                        padding: '4px 8px',
-                        fontSize: '0.72rem',
-                        fontWeight: 700,
-                        cursor: 'pointer'
-                      }}
-                      title="تبديل التمرين في حال انشغال الجهاز"
-                    >
-                      <ArrowLeftRight style={{ width: '12px', height: '12px' }} />
-                      <span>بديل الجهاز</span>
-                    </button>
-                  </div>
+                return (
+                  <div 
+                    key={ex.id}
+                    style={{
+                      background: isCompleted ? '#F0FDF4' : '#FFFFFF',
+                      borderRadius: '16px',
+                      border: isCompleted ? '1.5px solid #86EFAC' : '1px solid #E2E8F0',
+                      padding: '14px',
+                      boxShadow: '0 2px 8px rgba(15, 23, 42, 0.04)',
+                      display: 'flex',
+                      flexDirection: 'column',
+                      gap: '10px',
+                      transition: 'all 0.2s ease'
+                    }}
+                  >
+                    {/* Top Row: Exercise Name, Type Badge & Swap Action */}
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '8px' }}>
+                      <div>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flexWrap: 'wrap', marginBottom: '2px' }}>
+                          <span style={{ fontSize: '0.68rem', fontWeight: 800, color: ex.isCompound ? '#B45309' : '#0284C7', background: ex.isCompound ? '#FEF3C7' : '#E0F2FE', padding: '1px 6px', borderRadius: '4px' }}>
+                            {ex.isCompound ? 'تمرين مركب' : 'تمرين عزل'}
+                          </span>
+                          {isCompleted && (
+                            <span style={{ fontSize: '0.68rem', fontWeight: 800, color: '#16A34A', background: '#DCFCE7', padding: '1px 6px', borderRadius: '4px', display: 'inline-flex', alignItems: 'center', gap: '2px' }}>
+                              <CheckCircle2 style={{ width: '10px', height: '10px' }} />
+                              <span>مكتمل</span>
+                            </span>
+                          )}
+                        </div>
+                        <h3 style={{ fontSize: '0.92rem', fontWeight: 800, color: '#0F172A', margin: '0 0 2px 0' }}>
+                          {exIdx + 1}. {ex.name}
+                        </h3>
+                        {ex.nameEn && (
+                          <div style={{ fontSize: '0.74rem', color: '#64748B', fontWeight: 600 }}>
+                            {ex.nameEn}
+                          </div>
+                        )}
+                      </div>
 
-                  {/* Safety Note */}
-                  <div style={{ background: '#FEF3C7', border: '1px solid #FDE68A', borderRadius: '10px', padding: '6px 10px', display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '12px', fontSize: '0.72rem', color: '#92400E' }}>
-                    <ShieldCheck style={{ width: '14px', height: '14px', flexShrink: 0, color: '#D97706' }} />
-                    <span>{ex.safetyNote}</span>
-                  </div>
-
-                  {/* Sets Table with Previous Week Benchmarks */}
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-                    <div style={{ display: 'grid', gridTemplateColumns: '35px 1fr 1fr 1fr 38px', gap: '6px', fontSize: '0.7rem', fontWeight: 700, color: '#94A3B8', textAlign: 'center', padding: '0 4px' }}>
-                      <span>الجولة</span>
-                      <span>الأسبوع السابق</span>
-                      <span>الوزن (kg)</span>
-                      <span>العدات</span>
-                      <span>إتمام</span>
-                    </div>
-
-                    {ex.sets.map((set, sIdx) => (
-                      <div 
-                        key={sIdx}
+                      <button
+                        type="button"
+                        onClick={() => setExerciseSwapTarget({ exercise: ex, exIdx })}
                         style={{
-                          display: 'grid',
-                          gridTemplateColumns: '35px 1fr 1fr 1fr 38px',
-                          gap: '6px',
+                          display: 'inline-flex',
                           alignItems: 'center',
-                          padding: '6px',
-                          background: set.completed ? '#ECFDF5' : '#F8FAFC',
-                          borderRadius: '10px',
-                          border: `1px solid ${set.completed ? '#A7F3D0' : '#F1F5F9'}`
+                          gap: '4px',
+                          background: '#FFFFFF',
+                          color: '#0F172A',
+                          border: '1px solid #CBD5E1',
+                          borderRadius: '8px',
+                          padding: '4px 8px',
+                          fontSize: '0.72rem',
+                          fontWeight: 700,
+                          cursor: 'pointer',
+                          flexShrink: 0
+                        }}
+                        title="تبديل التمرين في حال انشغال الجهاز في الجيم"
+                      >
+                        <ArrowLeftRight style={{ width: '12px', height: '12px' }} />
+                        <span>بديل الجهاز</span>
+                      </button>
+                    </div>
+
+                    {/* Prescription Target Summary Bar */}
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap', background: '#F8FAFC', padding: '8px 10px', borderRadius: '8px', border: '1px solid #E2E8F0', fontSize: '0.78rem' }}>
+                      <span style={{ fontWeight: 800, color: '#0F172A' }}>
+                        {ex.targetSets || (ex.sets && ex.sets.length) || 3} جولات × {ex.targetReps || '10-12'} تكرار
+                      </span>
+                      <span style={{ color: '#94A3B8' }}>•</span>
+                      <span style={{ fontWeight: 700, color: '#475569' }}>
+                        راحة: {restSec} ثانية
+                      </span>
+                      {ex.targetRir !== undefined && (
+                        <>
+                          <span style={{ color: '#94A3B8' }}>•</span>
+                          <span style={{ fontWeight: 700, color: '#2563EB' }}>
+                            الشدة: RIR {ex.targetRir}
+                          </span>
+                        </>
+                      )}
+                      {exerciseWorkingWeights[ex.id] && (
+                        <>
+                          <span style={{ color: '#94A3B8' }}>•</span>
+                          <span style={{ fontWeight: 700, color: '#16A34A' }}>
+                            وزنك الحالي: {exerciseWorkingWeights[ex.id]} كجم
+                          </span>
+                        </>
+                      )}
+                    </div>
+
+                    {/* Visual Movement Frames (Start & Finish Positions) */}
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
+                      <div style={{ position: 'relative', height: '115px', borderRadius: '10px', overflow: 'hidden', background: '#F1F5F9', border: '1px solid #E2E8F0', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                        <img
+                          src={ex.image_stretch || `/exercises/${ex.id}/0.jpg`}
+                          alt="وضع البداية"
+                          style={{ width: '100%', height: '100%', objectFit: 'contain', padding: '2px' }}
+                          onError={(e) => { 
+                            e.currentTarget.style.display = 'none';
+                            const fallback = e.currentTarget.parentElement?.querySelector('.img-fallback');
+                            if (fallback) fallback.style.display = 'flex';
+                          }}
+                          loading="lazy"
+                        />
+                        <div className="img-fallback" style={{ display: 'none', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '4px', color: '#94A3B8', fontSize: '0.68rem', fontWeight: 700 }}>
+                          <Dumbbell style={{ width: '18px', height: '18px', opacity: 0.6 }} />
+                          <span>وضعية البداية</span>
+                        </div>
+                        <span style={{ position: 'absolute', bottom: '4px', right: '4px', background: 'rgba(15, 23, 42, 0.85)', color: '#FFFFFF', fontSize: '9px', fontWeight: 700, padding: '1px 5px', borderRadius: '4px' }}>
+                          1. وضع البداية
+                        </span>
+                      </div>
+
+                      <div style={{ position: 'relative', height: '115px', borderRadius: '10px', overflow: 'hidden', background: '#F1F5F9', border: '1px solid #E2E8F0', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                        <img
+                          src={ex.image_contraction || `/exercises/${ex.id}/1.jpg`}
+                          alt="وضع الانقباض"
+                          style={{ width: '100%', height: '100%', objectFit: 'contain', padding: '2px' }}
+                          onError={(e) => { 
+                            e.currentTarget.style.display = 'none';
+                            const fallback = e.currentTarget.parentElement?.querySelector('.img-fallback');
+                            if (fallback) fallback.style.display = 'flex';
+                          }}
+                          loading="lazy"
+                        />
+                        <div className="img-fallback" style={{ display: 'none', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '4px', color: '#94A3B8', fontSize: '0.68rem', fontWeight: 700 }}>
+                          <Dumbbell style={{ width: '18px', height: '18px', opacity: 0.6 }} />
+                          <span>وضعية الانقباض</span>
+                        </div>
+                        <span style={{ position: 'absolute', bottom: '4px', right: '4px', background: 'rgba(15, 23, 42, 0.85)', color: '#FFFFFF', fontSize: '9px', fontWeight: 700, padding: '1px 5px', borderRadius: '4px' }}>
+                          2. وضع الانقباض
+                        </span>
+                      </div>
+                    </div>
+
+                    {/* Technique & Video Trigger Buttons */}
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                      {/* Watch Video / Short */}
+                      <button
+                        type="button"
+                        onClick={() => setActiveVideoExercise(ex)}
+                        style={{
+                          flex: 1,
+                          height: '32px',
+                          borderRadius: '8px',
+                          background: '#0F172A',
+                          color: '#FFFFFF',
+                          border: 'none',
+                          fontSize: '0.75rem',
+                          fontWeight: 700,
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          gap: '6px',
+                          cursor: 'pointer'
                         }}
                       >
-                        <span style={{ fontSize: '0.78rem', fontWeight: 800, color: set.completed ? '#059669' : '#0F172A', textAlign: 'center' }}>
-                          #{set.setNum}
-                        </span>
+                        <Play style={{ width: '12px', height: '12px' }} />
+                        <span>مشاهدة التكنيك بالفيديو</span>
+                      </button>
 
-                        <span style={{ fontSize: '0.7rem', color: '#64748B', fontFamily: 'monospace', textAlign: 'center' }}>
-                          {set.prevBest}
-                        </span>
+                      {/* Expand Cues & Safety */}
+                      <button
+                        type="button"
+                        onClick={() => setExpandedTechnique(prev => ({ ...prev, [ex.id]: !prev[ex.id] }))}
+                        style={{
+                          height: '32px',
+                          padding: '0 10px',
+                          borderRadius: '8px',
+                          background: '#FFFFFF',
+                          color: '#475569',
+                          border: '1px solid #CBD5E1',
+                          fontSize: '0.74rem',
+                          fontWeight: 700,
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          gap: '4px',
+                          cursor: 'pointer'
+                        }}
+                      >
+                        <ShieldCheck style={{ width: '13px', height: '13px', color: '#D97706' }} />
+                        <span>إرشادات التكنيك</span>
+                        {isTechniqueExpanded ? <ChevronUp style={{ width: '12px', height: '12px' }} /> : <ChevronDown style={{ width: '12px', height: '12px' }} />}
+                      </button>
+                    </div>
 
-                        <input 
-                          type="text"
-                          defaultValue={set.weight}
-                          style={{ height: '32px', borderRadius: '6px', border: '1px solid #CBD5E1', textAlign: 'center', fontSize: '0.8rem', fontWeight: 700, color: '#0F172A', background: '#FFFFFF', outline: 'none' }}
-                        />
-
-                        <input 
-                          type="text"
-                          defaultValue={set.reps}
-                          style={{ height: '32px', borderRadius: '6px', border: '1px solid #CBD5E1', textAlign: 'center', fontSize: '0.8rem', fontWeight: 700, color: '#0F172A', background: '#FFFFFF', outline: 'none' }}
-                        />
-
-                        {/* Checkmark Button */}
-                        <button
-                          type="button"
-                          onClick={() => handleToggleSet(ex.id, sIdx)}
-                          style={{
-                            width: '32px',
-                            height: '32px',
-                            borderRadius: '8px',
-                            background: set.completed ? '#059669' : '#FFFFFF',
-                            color: set.completed ? '#FFFFFF' : '#CBD5E1',
-                            border: `1px solid ${set.completed ? '#059669' : '#CBD5E1'}`,
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            cursor: 'pointer',
-                            transition: 'all 0.15s ease'
-                          }}
-                          title="إتمام الجولة وبدء مؤقت الراحة"
-                        >
-                          <Check style={{ width: '16px', height: '16px' }} />
-                        </button>
-                      </div>
-                    ))}
-
-                    {/* Smart Double Progression Live Feedback */}
-                    {ex.sets.every(s => s.completed) && (
-                      <div style={{ marginTop: '10px', background: '#ECFDF5', border: '1px solid #6EE7B7', borderRadius: '10px', padding: '8px 12px', fontSize: '0.74rem', color: '#065F46', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '6px' }}>
-                        
-                        <span>
-                          {evaluateDoubleProgression({
-                            exercise_name: ex.name,
-                            category: ex.isCompound ? EXERCISE_CATEGORIES.COMPOUND_BARBELL : EXERCISE_CATEGORIES.ISOLATION_DUMBBELL,
-                            current_weight_kg: parseFloat(ex.sets[0].weight) || 10,
-                            completed_sets: ex.sets
-                          }).directive_ar}
-                        </span>
+                    {/* Collapsible Coaching Cues & Injury Avoidance */}
+                    {isTechniqueExpanded && (
+                      <div style={{ background: '#FFFBEB', border: '1px solid #FDE68A', borderRadius: '10px', padding: '10px', fontSize: '0.74rem', display: 'flex', flexDirection: 'column', gap: '6px', color: '#92400E' }}>
+                        <div>
+                          <strong style={{ color: '#0F172A', display: 'block', marginBottom: '2px' }}>التكنيك السليم:</strong>
+                          <span>{ex.cues_ar || ex.safetyNote || 'الحفاظ على المدى الحركي الكامل والتحكم في الوزن أثناء النزول.'}</span>
+                        </div>
+                        {ex.mistakes_ar && (
+                          <div style={{ borderTop: '1px dashed #FCD34D', paddingTop: '6px', marginTop: '2px' }}>
+                            <strong style={{ color: '#B45309', display: 'block', marginBottom: '2px' }}>أخطاء شائعة لتجنب الإصابة:</strong>
+                            <span>{ex.mistakes_ar}</span>
+                          </div>
+                        )}
                       </div>
                     )}
-                  </div>
 
-                </div>
-              ))}
+                    {/* Optional Single Working Weight Field (اختياري لراحتك) */}
+                    <div style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'space-between',
+                      background: '#F8FAFC',
+                      border: '1px solid #E2E8F0',
+                      borderRadius: '10px',
+                      padding: '7px 12px',
+                      fontSize: '0.74rem'
+                    }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                        <span style={{ fontWeight: 700, color: '#334155' }}>أفضل وزن اليوم:</span>
+                        <div style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+                          <input
+                            type="text"
+                            inputMode="decimal"
+                            placeholder="0"
+                            value={exerciseWorkingWeights[ex.id] ?? ''}
+                            onChange={(e) => handleUpdateExerciseWeight(ex.id, e.target.value)}
+                            style={{
+                              width: '62px',
+                              height: '28px',
+                              padding: '2px 6px',
+                              borderRadius: '6px',
+                              border: '1px solid #CBD5E1',
+                              background: '#FFFFFF',
+                              fontSize: '0.8rem',
+                              fontWeight: 800,
+                              textAlign: 'center',
+                              color: '#0F172A',
+                              outline: 'none'
+                            }}
+                          />
+                          <span style={{ color: '#64748B', fontWeight: 700, fontSize: '0.72rem' }}>كجم</span>
+                        </div>
+                      </div>
+
+                      <span style={{ fontSize: '0.7rem', color: exerciseWorkingWeights[ex.id] ? '#16A34A' : '#94A3B8', fontWeight: 600 }}>
+                        {exerciseWorkingWeights[ex.id] 
+                          ? 'محفوظ كمرجع لأسبوعك القادم' 
+                          : 'يُحدد بالتجربة الميدانية (RPE 8)'}
+                      </span>
+                    </div>
+
+                    {/* Optional Reference Mark (بدون أي مؤقت أو عد تنازلي) */}
+                    <button
+                      type="button"
+                      onClick={() => handleToggleExerciseCompleted(ex.id)}
+                      style={{
+                        width: '100%',
+                        height: '34px',
+                        borderRadius: '8px',
+                        background: isCompleted ? '#F0FDF4' : '#F8FAFC',
+                        color: isCompleted ? '#166534' : '#64748B',
+                        border: `1px solid ${isCompleted ? '#BBF7D0' : '#E2E8F0'}`,
+                        fontSize: '0.76rem',
+                        fontWeight: 700,
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        gap: '6px',
+                        cursor: 'pointer',
+                        transition: 'all 0.15s ease'
+                      }}
+                    >
+                      <Check style={{ width: '14px', height: '14px', color: isCompleted ? '#16A34A' : '#94A3B8' }} />
+                      <span>{isCompleted ? 'تم إنجاز هذا التمرين' : 'تحديد كمنجز (اختياري)'}</span>
+                    </button>
+
+                  </div>
+                );
+              })}
 
             </div>
           )}
@@ -1664,7 +2427,7 @@ export default function ClientInteractiveApp() {
                 type="button"
                 onClick={() => {
                   if (tab.isRoute) {
-                    const rawCode = (clientData?.code || '').replace('#', '').trim();
+                    const rawCode = String(clientData?.code || '').replace(/^#+/, '').replace(/^client[-_]?/i, '').trim();
                     navigate(rawCode ? `/check-in?code=${encodeURIComponent(rawCode)}` : '/check-in');
                   } else {
                     handleSwitchTab(tab.key);
@@ -1793,8 +2556,13 @@ export default function ClientInteractiveApp() {
                     if (f.code === currentItemCode) return false;
                     if (f.macro_type !== currentMacroType) return false;
                     if (clientSwapSearch.trim()) {
-                      const q = clientSwapSearch.trim().toLowerCase();
-                      return (f.name_ar && f.name_ar.includes(q)) || (f.name_en && f.name_en.toLowerCase().includes(q));
+                      const matchNameAr = arabicSearchMatch(f.name_ar, clientSwapSearch);
+                      const matchNameEn = arabicSearchMatch(f.name_en, clientSwapSearch);
+                      const matchCode = arabicSearchMatch(f.code, clientSwapSearch);
+                      const matchAliases = Array.isArray(f.aliases) 
+                        ? f.aliases.some(a => arabicSearchMatch(a, clientSwapSearch)) 
+                        : (typeof f.aliases === 'string' && arabicSearchMatch(f.aliases, clientSwapSearch));
+                      return matchNameAr || matchNameEn || matchCode || matchAliases;
                     }
                     return true;
                   });
@@ -2252,7 +3020,7 @@ export default function ClientInteractiveApp() {
         const pdfData = generateMasterPdfExportData({
           client_name: 'أحمد محمد',
           client_code: '882',
-          package_tier: 'MAX_VIP',
+          package_tier: 'MAX',
           current_week: 2
         });
 
@@ -2575,24 +3343,24 @@ export default function ClientInteractiveApp() {
             onClick={(e) => e.stopPropagation()}
             style={{
               width: '100%',
-              maxWidth: '460px',
+              maxWidth: '480px',
               background: '#FFFFFF',
               color: '#0F172A',
-              borderRadius: '24px',
-              padding: '22px 20px',
+              borderRadius: '20px',
+              padding: '20px',
               direction: 'rtl',
               boxShadow: '0 10px 40px rgba(0, 0, 0, 0.25)',
               maxHeight: '85vh',
               overflowY: 'auto'
             }}
           >
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid #F1F5F9', paddingBottom: '12px', marginBottom: '14px' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid #F1F5F9', paddingBottom: '10px', marginBottom: '12px' }}>
               <div>
                 <span style={{ fontSize: '0.68rem', fontWeight: 800, color: '#0284C7', background: '#E0F2FE', padding: '2px 8px', borderRadius: '4px' }}>
                   محرك البدائل الحركية المتطابقة
                 </span>
                 <h3 style={{ margin: '4px 0 0 0', fontSize: '0.98rem', fontWeight: 800, color: '#0F172A' }}>
-                  بدائل ذكية لـ: {exerciseSwapTarget.exercise.name}
+                  بدائل لـ: {exerciseSwapTarget.exercise.name}
                 </h3>
               </div>
               <button
@@ -2604,12 +3372,138 @@ export default function ClientInteractiveApp() {
               </button>
             </div>
 
-            <p style={{ fontSize: '0.74rem', color: '#64748B', marginBottom: '14px', lineHeight: 1.4 }}>
-              الجهاز في الجيم زحمة أو مشغول؟ اختر أي بديل من البدائل التالية، المحرك يضمن تطابق زاوية الشد والأمان الحركي:
+            {/* Filter Chips: All, Gym, Home */}
+            <div style={{ display: 'flex', gap: '4px', background: '#F8FAFC', padding: '4px', borderRadius: '8px', border: '1px solid #E2E8F0', marginBottom: '12px' }}>
+              {[
+                { id: 'ALL', label: 'كافة البدائل' },
+                { id: 'GYM', label: 'بدائل الجيم' },
+                { id: 'HOME', label: 'المنزل / دمبلز' }
+              ].map(f => (
+                <button
+                  key={f.id}
+                  type="button"
+                  onClick={() => setExerciseSwapFilter(f.id)}
+                  style={{
+                    flex: 1,
+                    padding: '4px 8px',
+                    borderRadius: '6px',
+                    border: 'none',
+                    fontSize: '0.72rem',
+                    fontWeight: 700,
+                    cursor: 'pointer',
+                    background: exerciseSwapFilter === f.id ? '#0F172A' : 'transparent',
+                    color: exerciseSwapFilter === f.id ? '#FFFFFF' : '#64748B',
+                    transition: 'all 0.12s ease'
+                  }}
+                >
+                  {f.label}
+                </button>
+              ))}
+            </div>
+
+            <p style={{ fontSize: '0.74rem', color: '#64748B', marginBottom: '12px', lineHeight: 1.4 }}>
+              الجهاز في الجيم زحمة أو مشغول؟ اختر أي بديل من البدائل التالية، يضمن المحرك تطابق زاوية الشد والأمان الحركي الكامل:
             </p>
 
             <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-              {(() => {
+              {loadingExerciseSwaps ? (
+                <div style={{ padding: '24px', textAlign: 'center', color: '#64748B', fontSize: '0.78rem' }}>
+                  جاري فحص البدائل المطابقة حركياً وميكانيكياً...
+                </div>
+              ) : (() => {
+                const filtered = exerciseSwapsList.filter(s => {
+                  if (exerciseSwapFilter === 'GYM') return s.environment === 'GYM' || s.environment === 'GYM_OR_HOME';
+                  if (exerciseSwapFilter === 'HOME') return s.environment === 'HOME' || s.environment === 'GYM_OR_HOME' || s.equipment === 'DUMBBELL' || s.equipment === 'BODYWEIGHT' || s.equipment === 'RESISTANCE_BAND';
+                  return true;
+                });
+
+                if (filtered.length > 0) {
+                  return filtered.map((sw, sIdx) => {
+                    const isTwin = Boolean(sw.is_coach_twin);
+                    return (
+                      <div 
+                        key={sIdx}
+                        style={{
+                          background: isTwin ? '#F0F9FF' : '#F8FAFC',
+                          border: `1px solid ${isTwin ? '#BAE6FD' : '#E2E8F0'}`,
+                          borderRadius: '12px',
+                          padding: '10px 12px',
+                          display: 'flex',
+                          justifyContent: 'space-between',
+                          alignItems: 'center',
+                          gap: '8px'
+                        }}
+                      >
+                        <div style={{ flex: 1 }}>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flexWrap: 'wrap', marginBottom: '2px' }}>
+                            <strong style={{ fontSize: '0.82rem', color: '#0F172A' }}>
+                              {sw.name_ar || sw.name}
+                            </strong>
+                            {sw.name_en && (
+                              <span style={{ fontSize: '0.68rem', color: '#64748B' }}>({sw.name_en})</span>
+                            )}
+                            {isTwin && (
+                              <span style={{ fontSize: '0.65rem', background: '#0284C7', color: '#FFFFFF', padding: '1px 6px', borderRadius: '3px', fontWeight: 800 }}>
+                                بديل توأم مباشر
+                              </span>
+                            )}
+                          </div>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flexWrap: 'wrap' }}>
+                            <span style={{ fontSize: '0.68rem', color: '#059669', fontWeight: 600 }}>
+                              {sw.rationale_ar || sw.rationale || 'تطابق زاوية الشد والأمان الحركي'}
+                            </span>
+                            {sw.equipment_ar && (
+                              <span style={{ fontSize: '0.65rem', background: '#E2E8F0', color: '#334155', padding: '1px 5px', borderRadius: '3px', fontWeight: 600 }}>
+                                {sw.equipment_ar}
+                              </span>
+                            )}
+                          </div>
+                        </div>
+
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setWorkoutSession(prev => {
+                              const updated = [...prev.exercises];
+                              const oldEx = updated[exerciseSwapTarget.exIdx];
+                              updated[exerciseSwapTarget.exIdx] = {
+                                ...oldEx,
+                                id: sw.exercise_code || sw.id || oldEx.id,
+                                code: sw.exercise_code || sw.id,
+                                name: sw.name_ar || sw.name,
+                                nameEn: sw.name_en || oldEx.nameEn,
+                                equipment: sw.equipment || oldEx.equipment,
+                                cues_ar: sw.cues_ar || oldEx.cues_ar,
+                                mistakes_ar: sw.mistakes_ar || oldEx.mistakes_ar,
+                                image_stretch: sw.image_stretch || (sw.images && sw.images[0]) || oldEx.image_stretch,
+                                image_contraction: sw.image_contraction || (sw.images && sw.images[1]) || oldEx.image_contraction,
+                                video_url: sw.video_url || oldEx.video_url,
+                                safetyNote: isTwin ? 'تم الاستبدال بالبديل التوأم المباشر' : `تم التبديل الذكي اليوم: ${sw.rationale_ar || sw.rationale || 'تطابق زاوية الشد'}`
+                              };
+                              return { ...prev, exercises: updated };
+                            });
+                            setExerciseSwapTarget(null);
+                          }}
+                          style={{
+                            background: isTwin ? '#0284C7' : '#0F172A',
+                            color: '#FFFFFF',
+                            border: 'none',
+                            borderRadius: '8px',
+                            padding: '6px 12px',
+                            fontSize: '0.74rem',
+                            fontWeight: 800,
+                            cursor: 'pointer',
+                            whiteSpace: 'nowrap',
+                            flexShrink: 0
+                          }}
+                        >
+                          اعتماد البديل
+                        </button>
+                      </div>
+                    );
+                  });
+                }
+
                 const defaultSwaps = [
                   { name: 'سحب كابل فردي بمدى حركي كامل', rationale: 'تطابق زاوية الشد مع حرية حركة كاملة للمفصل' },
                   { name: 'دمبلز مسنود بديل حر عالي التركيز', rationale: 'عزل ممتاز مع الحفاظ على استقامة العمود الفقري' },
@@ -2640,7 +3534,6 @@ export default function ClientInteractiveApp() {
                     <button
                       type="button"
                       onClick={() => {
-                        // Apply swap to current session
                         setWorkoutSession(prev => {
                           const updated = [...prev.exercises];
                           updated[exerciseSwapTarget.exIdx] = {
@@ -2653,7 +3546,7 @@ export default function ClientInteractiveApp() {
                         setExerciseSwapTarget(null);
                       }}
                       style={{
-                        background: '#D97706',
+                        background: '#0F172A',
                         color: '#FFFFFF',
                         border: 'none',
                         borderRadius: '8px',
@@ -2896,6 +3789,14 @@ export default function ClientInteractiveApp() {
               </div>
             </div>
           </div>
+        )}
+
+        {/* Exercise Video Modal for Client Workout */}
+        {activeVideoExercise && (
+          <ExerciseVideoModal
+            exercise={activeVideoExercise}
+            onClose={() => setActiveVideoExercise(null)}
+          />
         )}
 
       </div>

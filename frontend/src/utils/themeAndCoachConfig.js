@@ -4,6 +4,8 @@
  * and Coach Profile persistence across the application.
  */
 
+import { API_BASE } from '../config/api';
+
 export const THEME_PALETTES = [
   {
     id: 'slate-navy',
@@ -271,20 +273,74 @@ export function applyThemeLive(primaryHex) {
       font-weight: 800 !important;
     }
 
-    /* 3. Active Sidebar Navigation Items */
-    aside a.active > div:first-child {
+    /* 3. Active & Hover Sidebar Navigation Items (Executive High Contrast) */
+    aside a.active {
       background-color: ${colors.light} !important;
-      border: 1px solid ${colors.border} !important;
-      color: ${colors.primary} !important;
+      border-right: none !important;
+      border: none !important;
     }
 
-    aside a.active span {
+    aside a.active > div:first-child {
+      background-color: ${colors.primary} !important;
+      border: 1px solid ${colors.primary} !important;
+      box-shadow: 0 2px 6px rgba(15, 23, 42, 0.25) !important;
+    }
+
+    aside a.active > div:first-child svg {
+      stroke: #FFFFFF !important;
+      color: #FFFFFF !important;
+    }
+
+    aside a.active > span.sidebar-nav-label,
+    aside a.active > span:not(.sidebar-badge-apple) {
       color: ${colors.primary} !important;
       font-weight: 800 !important;
     }
 
-    aside a.active {
-      background-color: ${colors.light} !important;
+    /* Hover state for inactive sidebar links: crisp, dark, 100% visible */
+    aside a:hover:not(.active) {
+      background-color: #F8FAFC !important;
+      color: #0F172A !important;
+    }
+
+    aside a:hover:not(.active) > div:first-child {
+      background-color: #F1F5F9 !important;
+      border-color: #CBD5E1 !important;
+    }
+
+    aside a:hover:not(.active) > div:first-child svg {
+      stroke: #0F172A !important;
+      color: #0F172A !important;
+    }
+
+    aside a:hover:not(.active) > span.sidebar-nav-label,
+    aside a:hover:not(.active) > span:not(.sidebar-badge-apple) {
+      color: #0F172A !important;
+    }
+
+    /* Guaranteed pure white text on red notification badges */
+    .sidebar-badge-apple,
+    .sidebar-badge-apple b,
+    .sidebar-badge-apple span,
+    .sidebar-badge-apple *,
+    aside .sidebar-badge-apple,
+    aside .sidebar-badge-apple b,
+    aside .sidebar-badge-apple *,
+    aside a .sidebar-badge-apple,
+    aside a .sidebar-badge-apple b,
+    aside a .sidebar-badge-apple *,
+    aside a.active .sidebar-badge-apple,
+    aside a.active .sidebar-badge-apple b,
+    aside a.active .sidebar-badge-apple *,
+    aside a:hover .sidebar-badge-apple,
+    aside a:hover .sidebar-badge-apple b,
+    aside a:hover .sidebar-badge-apple * {
+      background-color: #FF3B30 !important;
+      background: #FF3B30 !important;
+      color: #FFFFFF !important;
+      -webkit-text-fill-color: #FFFFFF !important;
+      border: none !important;
+      box-shadow: none !important;
     }
 
     /* 4. Sidebar Brand Logo */
@@ -348,7 +404,7 @@ export function getStoredCoachConfig() {
 }
 
 /** Save Coach Config & Broadcast Event */
-export function saveCoachConfig(newConfig) {
+export function saveCoachConfig(newConfig, syncToServer = false) {
   try {
     const updated = { ...getStoredCoachConfig(), ...newConfig };
     localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
@@ -356,11 +412,54 @@ export function saveCoachConfig(newConfig) {
     
     // Broadcast for immediate reaction in listening components
     window.dispatchEvent(new CustomEvent('z-coach-config-updated', { detail: updated }));
+    if (syncToServer) {
+      persistCoachConfigToServer(updated).catch(() => {});
+    }
     return updated;
   } catch (e) {
     console.error('saveCoachConfig error:', e);
     return null;
   }
+}
+
+/** Persist Coach Config to Backend Server Storage */
+export async function persistCoachConfigToServer(config) {
+  try {
+    const targetConfig = config || getStoredCoachConfig();
+    const res = await fetch(`${API_BASE}/api/v1/admin-settings/system`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(targetConfig)
+    });
+    if (res.ok) {
+      const data = await res.json();
+      return data.settings || targetConfig;
+    }
+  } catch (e) {
+    console.warn('persistCoachConfigToServer error:', e);
+  }
+  return null;
+}
+
+/** Synchronize Coach Config from Server to LocalStorage & DOM */
+export async function syncCoachConfigFromServer() {
+  try {
+    const res = await fetch(`${API_BASE}/api/v1/admin-settings/system`);
+    if (res.ok) {
+      const data = await res.json();
+      if (data && data.settings) {
+        const local = getStoredCoachConfig();
+        const merged = { ...local, ...data.settings };
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(merged));
+        applyThemeLive(merged.primaryColor);
+        window.dispatchEvent(new CustomEvent('z-coach-config-updated', { detail: merged }));
+        return merged;
+      }
+    }
+  } catch (err) {
+    // Network or server offline - silent fallback to local storage
+  }
+  return getStoredCoachConfig();
 }
 
 /** Initialize Theme on App Startup */
@@ -369,4 +468,6 @@ export function initThemeOnBoot() {
   if (config && config.primaryColor) {
     applyThemeLive(config.primaryColor);
   }
+  // Asynchronously synchronize latest system settings from server
+  syncCoachConfigFromServer().catch(() => {});
 }

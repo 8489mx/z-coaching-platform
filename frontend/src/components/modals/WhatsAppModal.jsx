@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import ReactDOM from 'react-dom';
 import { MessageCircle, X, Copy, Check, Send } from 'lucide-react';
 import { copyToClipboard } from '../../utils/clipboardUtils';
+import { formatWhatsAppPhone } from '../../utils/whatsappRemindersEngine';
 
 export default function WhatsAppModal({ client, onClose }) {
   const [template, setTemplate] = useState('intake');
@@ -82,8 +83,7 @@ ${baseUrl}/user-dashboard?user_id=${clientCode}`
   };
 
   const handleSend = () => {
-    let cleanPhone = clientPhone.replace(/\D/g, '');
-    if (cleanPhone.startsWith('01')) cleanPhone = '2' + cleanPhone;
+    const cleanPhone = formatWhatsAppPhone(clientPhone);
     const encodedMsg = encodeURIComponent(customText);
     window.open(`https://wa.me/${cleanPhone}?text=${encodedMsg}`, '_blank');
   };
@@ -151,14 +151,15 @@ ${baseUrl}/user-dashboard?user_id=${clientCode}`
             style={{
               background: '#F8FAFC',
               border: '1px solid #E2E8F0',
-              borderRadius: '6px',
-              width: '30px',
-              height: '30px',
+              borderRadius: '8px',
+              width: '32px',
+              height: '32px',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
               cursor: 'pointer',
-              color: '#64748B'
+              color: '#64748B',
+              transition: 'all 0.15s ease'
             }}
           >
             <X size={16} />
@@ -173,7 +174,7 @@ ${baseUrl}/user-dashboard?user_id=${clientCode}`
             <label style={{ display: 'block', fontSize: '11.5px', fontWeight: 700, color: '#475569', marginBottom: '6px' }}>
               اختر نوع الرسالة:
             </label>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '6px' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '8px' }}>
               {[
                 { id: 'intake', label: 'رابط استمارة البيانات' },
                 { id: 'plan_ready', label: 'إشعار جاهزية الخطة' },
@@ -187,9 +188,9 @@ ${baseUrl}/user-dashboard?user_id=${clientCode}`
                     type="button"
                     onClick={() => applyTemplate(t.id)}
                     style={{
-                      height: '34px',
-                      borderRadius: '6px',
-                      border: isActive ? '1px solid #0F172A' : '1px solid #E2E8F0',
+                      height: '36px',
+                      borderRadius: '8px',
+                      border: isActive ? '1.5px solid #0F172A' : '1px solid #E2E8F0',
                       background: isActive ? '#0F172A' : '#F8FAFC',
                       color: isActive ? '#FFFFFF' : '#475569',
                       fontSize: '11.5px',
@@ -216,7 +217,7 @@ ${baseUrl}/user-dashboard?user_id=${clientCode}`
               onChange={(e) => setCustomText(e.target.value)}
               style={{
                 width: '100%',
-                borderRadius: '8px',
+                borderRadius: '10px',
                 border: '1px solid #CBD5E1',
                 padding: '10px 12px',
                 fontSize: '12px',
@@ -249,9 +250,9 @@ ${baseUrl}/user-dashboard?user_id=${clientCode}`
             type="button"
             onClick={handleCopy}
             style={{
-              height: '36px',
+              height: '38px',
               padding: '0 16px',
-              borderRadius: '6px',
+              borderRadius: '8px',
               border: '1px solid #CBD5E1',
               background: '#FFFFFF',
               color: '#0F172A',
@@ -260,7 +261,8 @@ ${baseUrl}/user-dashboard?user_id=${clientCode}`
               display: 'flex',
               alignItems: 'center',
               gap: '6px',
-              cursor: 'pointer'
+              cursor: 'pointer',
+              transition: 'all 0.15s ease'
             }}
           >
             {copied ? <Check size={14} color="#16A34A" /> : <Copy size={14} />}
@@ -271,9 +273,9 @@ ${baseUrl}/user-dashboard?user_id=${clientCode}`
             type="button"
             onClick={handleSend}
             style={{
-              height: '36px',
+              height: '38px',
               padding: '0 20px',
-              borderRadius: '6px',
+              borderRadius: '8px',
               border: 'none',
               background: '#16A34A',
               color: '#FFFFFF',
@@ -283,7 +285,8 @@ ${baseUrl}/user-dashboard?user_id=${clientCode}`
               alignItems: 'center',
               gap: '6px',
               cursor: 'pointer',
-              boxShadow: '0 2px 6px rgba(22, 163, 74, 0.25)'
+              boxShadow: '0 2px 6px rgba(22, 163, 74, 0.25)',
+              transition: 'all 0.15s ease'
             }}
           >
             <Send size={14} />

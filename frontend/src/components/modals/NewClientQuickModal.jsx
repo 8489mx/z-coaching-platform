@@ -5,6 +5,7 @@ import { Phone, User, CheckCircle2, MessageCircle, Copy, Check, Edit3, AlertCirc
 import { API_BASE } from '../../config/api';
 import { SUBSCRIPTION_TIERS } from '../../config/subscription-tiers';
 import { copyToClipboard } from '../../utils/clipboardUtils';
+import { formatWhatsAppPhone } from '../../utils/whatsappRemindersEngine';
 import { DialogShell } from '@/shared/components/dialog-shell';
 
 export default function NewClientQuickModal({ isOpen, onClose, onClientCreated }) {
@@ -78,26 +79,11 @@ export default function NewClientQuickModal({ isOpen, onClose, onClientCreated }
         setNewClient(data.client);
         if (onClientCreated) onClientCreated(data.client);
       } else {
-        const fallbackCode = Math.floor(1000 + Math.random() * 9000).toString();
-        const fallbackClient = {
-          client_code: fallbackCode,
-          phone_number: clientPhone.trim(),
-          full_name: clientName.trim() || 'يا بطل',
-          subscription_package: packageCode
-        };
-        setNewClient(fallbackClient);
-        if (onClientCreated) onClientCreated(fallbackClient);
+        setError(data.error || 'فشل تسجيل المشترك في قاعدة البيانات. يرجى التحقق من الاتصال والمحاولة مرة أخرى.');
       }
     } catch (err) {
-      const fallbackCode = Math.floor(1000 + Math.random() * 9000).toString();
-      const fallbackClient = {
-        client_code: fallbackCode,
-        phone_number: clientPhone.trim(),
-        full_name: clientName.trim() || 'يا بطل',
-        subscription_package: packageCode
-      };
-      setNewClient(fallbackClient);
-      if (onClientCreated) onClientCreated(fallbackClient);
+      console.error("Client creation error:", err);
+      setError('تعذر الاتصال بالخادم لتسجيل المشترك. يرجى التحقق من اتصال الإنترنت ثم المحاولة ثانية.');
     } finally {
       setLoading(false);
     }
@@ -125,8 +111,7 @@ export default function NewClientQuickModal({ isOpen, onClose, onClientCreated }
 
   const handleOpenWhatsApp = () => {
     if (!newClient) return;
-    let cleanPhone = newClient.phone_number.replace(/\D/g, '');
-    if (cleanPhone.startsWith('01')) cleanPhone = '2' + cleanPhone;
+    const cleanPhone = formatWhatsAppPhone(newClient.phone_number);
     const waUrl = `https://wa.me/${cleanPhone}?text=${encodeURIComponent(whatsappMessage)}`;
     window.open(waUrl, '_blank');
   };
@@ -167,8 +152,8 @@ export default function NewClientQuickModal({ isOpen, onClose, onClientCreated }
                   <input 
                     type="text" 
                     style={{ 
-                      height: '36px', 
-                      borderRadius: '6px', 
+                      height: '38px', 
+                      borderRadius: '8px', 
                       fontSize: '12px', 
                       border: '1px solid #CBD5E1',
                       paddingRight: '32px',
@@ -177,7 +162,8 @@ export default function NewClientQuickModal({ isOpen, onClose, onClientCreated }
                       width: '100%',
                       boxSizing: 'border-box',
                       color: '#0F172A',
-                      outline: 'none'
+                      outline: 'none',
+                      transition: 'border-color 0.15s ease'
                     }}
                     placeholder="مثال: أحمد فتحي"
                     value={clientName}
@@ -197,8 +183,8 @@ export default function NewClientQuickModal({ isOpen, onClose, onClientCreated }
                   <input 
                     type="tel" 
                     style={{ 
-                      height: '36px', 
-                      borderRadius: '6px', 
+                      height: '38px', 
+                      borderRadius: '8px', 
                       fontSize: '12px', 
                       border: '1px solid #CBD5E1',
                       paddingRight: '32px',
@@ -209,7 +195,8 @@ export default function NewClientQuickModal({ isOpen, onClose, onClientCreated }
                       direction: 'ltr',
                       textAlign: 'right',
                       color: '#0F172A',
-                      outline: 'none'
+                      outline: 'none',
+                      transition: 'border-color 0.15s ease'
                     }}
                     placeholder="010XXXXXXXX"
                     value={clientPhone}
@@ -286,8 +273,8 @@ export default function NewClientQuickModal({ isOpen, onClose, onClientCreated }
                   type="button"
                   onClick={() => setDurationKey('FOUR_MONTHS')}
                   style={{
-                    height: '34px',
-                    borderRadius: '6px',
+                    height: '36px',
+                    borderRadius: '8px',
                     fontSize: '11.5px',
                     fontWeight: 700,
                     cursor: 'pointer',
@@ -305,8 +292,8 @@ export default function NewClientQuickModal({ isOpen, onClose, onClientCreated }
                   type="button"
                   onClick={() => setDurationKey('EIGHT_MONTHS')}
                   style={{
-                    height: '34px',
-                    borderRadius: '6px',
+                    height: '36px',
+                    borderRadius: '8px',
                     fontSize: '11.5px',
                     fontWeight: 700,
                     cursor: 'pointer',
@@ -398,7 +385,7 @@ export default function NewClientQuickModal({ isOpen, onClose, onClientCreated }
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '8px', paddingTop: '8px', borderTop: '1px solid #F1F5F9' }}>
               <button 
                 type="button" 
-                style={{ height: '34px', padding: '0 14px', borderRadius: '5px', fontSize: '11.5px', fontWeight: 700, border: '1px solid #CBD5E1', background: '#FFFFFF', color: '#475569', cursor: 'pointer' }}
+                style={{ height: '36px', padding: '0 16px', borderRadius: '8px', fontSize: '11.5px', fontWeight: 700, border: '1px solid #CBD5E1', background: '#FFFFFF', color: '#475569', cursor: 'pointer', transition: 'all 0.15s ease' }}
                 onClick={handleClose}
               >
                 إلغاء
@@ -407,9 +394,9 @@ export default function NewClientQuickModal({ isOpen, onClose, onClientCreated }
                 type="submit" 
                 disabled={loading || !clientPhone.trim()}
                 style={{ 
-                  height: '34px', 
-                  padding: '0 18px', 
-                  borderRadius: '5px', 
+                  height: '36px', 
+                  padding: '0 20px', 
+                  borderRadius: '8px', 
                   fontSize: '11.5px', 
                   fontWeight: 700, 
                   background: '#0F172A', 
@@ -420,7 +407,8 @@ export default function NewClientQuickModal({ isOpen, onClose, onClientCreated }
                   alignItems: 'center',
                   justifyContent: 'center',
                   boxShadow: '0 2px 5px rgba(15, 23, 42, 0.25)',
-                  opacity: loading || !clientPhone.trim() ? 0.6 : 1
+                  opacity: loading || !clientPhone.trim() ? 0.6 : 1,
+                  transition: 'all 0.15s ease'
                 }}
               >
                 <span>{loading ? 'جاري التوليد...' : 'توليد الخطة'}</span>
@@ -435,8 +423,8 @@ export default function NewClientQuickModal({ isOpen, onClose, onClientCreated }
               alignItems: 'center',
               justifyContent: 'center',
               gap: '6px',
-              padding: '6px 14px',
-              borderRadius: '6px',
+              padding: '8px 16px',
+              borderRadius: '8px',
               background: '#F8FAFC', border: '1px solid #E2E8F0',
               color: '#166534',
               fontSize: '12px',
@@ -448,7 +436,7 @@ export default function NewClientQuickModal({ isOpen, onClose, onClientCreated }
             </div>
 
             {/* Account Details Card */}
-            <div style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', borderRadius: '8px', padding: '14px 16px' }}>
+            <div style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', borderRadius: '10px', padding: '14px 16px' }}>
               <span style={{ fontSize: '11px', color: '#64748B', display: 'block', marginBottom: '4px', fontWeight: 600 }}>
                 كود المشترك المعتمد:
               </span>
@@ -457,7 +445,7 @@ export default function NewClientQuickModal({ isOpen, onClose, onClientCreated }
                 background: '#FFFFFF',
                 color: '#0F172A',
                 border: '1px solid #CBD5E1',
-                borderRadius: '6px',
+                borderRadius: '8px',
                 padding: '6px 28px',
                 fontSize: '1.4rem',
                 fontWeight: 900,
@@ -479,10 +467,10 @@ export default function NewClientQuickModal({ isOpen, onClose, onClientCreated }
               <button 
                 type="button" 
                 style={{
-                  height: '36px',
+                  height: '38px',
                   background: '#16A34A',
                   border: 'none',
-                  borderRadius: '6px',
+                  borderRadius: '8px',
                   color: '#FFFFFF',
                   fontSize: '12px',
                   fontWeight: 700,
@@ -491,7 +479,8 @@ export default function NewClientQuickModal({ isOpen, onClose, onClientCreated }
                   justifyContent: 'center',
                   gap: '6px',
                   cursor: 'pointer',
-                  boxShadow: '0 2px 5px rgba(22, 163, 74, 0.25)'
+                  boxShadow: '0 2px 5px rgba(22, 163, 74, 0.25)',
+                  transition: 'all 0.15s ease'
                 }}
                 onClick={handleOpenWhatsApp}
               >
@@ -502,9 +491,9 @@ export default function NewClientQuickModal({ isOpen, onClose, onClientCreated }
               <button 
                 type="button" 
                 style={{
-                  height: '34px',
+                  height: '36px',
                   border: '1px solid #CBD5E1',
-                  borderRadius: '6px',
+                  borderRadius: '8px',
                   background: '#FFFFFF',
                   color: '#334155',
                   fontSize: '11.5px',
@@ -513,7 +502,8 @@ export default function NewClientQuickModal({ isOpen, onClose, onClientCreated }
                   alignItems: 'center',
                   justifyContent: 'center',
                   gap: '6px',
-                  cursor: 'pointer'
+                  cursor: 'pointer',
+                  transition: 'all 0.15s ease'
                 }}
                 onClick={handleCopyMessage}
               >
@@ -524,18 +514,19 @@ export default function NewClientQuickModal({ isOpen, onClose, onClientCreated }
               <button 
                 type="button" 
                 style={{
-                  height: '34px',
+                  height: '36px',
                   background: '#F1F5F9',
                   color: '#0F172A',
                   border: '1px solid #CBD5E1',
-                  borderRadius: '6px',
+                  borderRadius: '8px',
                   fontSize: '11.5px',
                   fontWeight: 700,
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
                   gap: '5px',
-                  cursor: 'pointer'
+                  cursor: 'pointer',
+                  transition: 'all 0.15s ease'
                 }}
                 onClick={() => {
                   handleClose();

@@ -21,6 +21,20 @@ const loadFoodCatalog = async () => {
   return nutritionFoodCatalog;
 };
 
+// Helper: Format and decrypt intake submission answers safely
+function formatSubmissionWithDecryptedAnswers(submissionInstance) {
+  if (!submissionInstance) return null;
+  const sub = submissionInstance.toJSON ? submissionInstance.toJSON() : { ...submissionInstance };
+  if (sub.answers && sub.answers._isEncrypted && sub.answers.data) {
+    try {
+      sub.answers = decryptMedicalData(sub.answers.data);
+    } catch (e) {
+      console.warn("Failed to decrypt submission answers:", e.message);
+    }
+  }
+  return sub;
+}
+
 // Helper: Build Explainable AI Safety & Rationale Audit
 function generateAiRationaleAudit(intakePayload, masterProgram) {
   const personal = intakePayload.personal || intakePayload.client || {};
@@ -184,13 +198,7 @@ export const getClientIntakeDraft = async (req, res) => {
         phone_number: user.phone_number,
         payment_status: user.payment_status
       },
-      submission: submission ? {
-        id: submission.id,
-        status: submission.status,
-        progress_percent: submission.progress_percent,
-        answers: submission.answers,
-        updatedAt: submission.updatedAt
-      } : null,
+      submission: submission ? formatSubmissionWithDecryptedAnswers(submission) : null,
       isSubmitted,
       isApproved
     });
@@ -219,9 +227,9 @@ export const saveDraftIntake = async (req, res) => {
     }
 
     if (!user) {
-      // Find highest numerical code among CLIENTS
+      // Find highest numerical code among CLIENTS (base offset 1000)
       const allClients = await User.findAll({ where: { role: 'CLIENT' }, attributes: ['client_code'] });
-      let maxCode = 0;
+      let maxCode = 1000;
       for (const c of allClients) {
         const num = parseInt(c.client_code, 10);
         if (!isNaN(num) && num > maxCode) maxCode = num;
@@ -299,9 +307,9 @@ export const submitPublicIntake = async (req, res) => {
     }
 
     if (!user) {
-      // Find highest numerical code among CLIENTS
+      // Find highest numerical code among CLIENTS (base offset 1000)
       const allClients = await User.findAll({ where: { role: 'CLIENT' }, attributes: ['client_code'] });
-      let maxCode = 0;
+      let maxCode = 1000;
       for (const c of allClients) {
         const num = parseInt(c.client_code, 10);
         if (!isNaN(num) && num > maxCode) maxCode = num;
@@ -371,7 +379,9 @@ export const getAllIntakeSubmissions = async (req, res) => {
       order: [["createdAt", "DESC"]]
     });
 
-    return res.status(200).json({ submissions });
+    const formattedSubmissions = submissions.map(formatSubmissionWithDecryptedAnswers);
+
+    return res.status(200).json({ submissions: formattedSubmissions });
   } catch (err) {
     console.error("getAllIntakeSubmissions error:", err);
     return res.status(500).json({ error: "فشل استرجاع الاستمارات", details: err.message });
@@ -579,7 +589,7 @@ export const getIntakeSubmission = async (req, res) => {
       include: [{ model: User, as: "user" }]
     });
     if (!submission) return res.status(404).json({ error: "Submission not found" });
-    return res.status(200).json({ submission });
+    return res.status(200).json({ submission: formatSubmissionWithDecryptedAnswers(submission) });
   } catch (err) {
     return res.status(500).json({ error: err.message });
   }

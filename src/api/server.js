@@ -1,7 +1,6 @@
 process.env.TZ = 'Africa/Cairo';
 
 import express from "express";
-import mysql from "mysql2/promise";
 import cors from "cors";
 import dotenv from "dotenv";
 import path from "path";
@@ -20,6 +19,13 @@ import exerciseRoutes from "./routes/exercise.routes.js";
 import adminSettingsRoutes from "./routes/admin-settings.routes.js";
 import checkinRoutes from "./routes/checkin.routes.js";
 import orderRoutes from "./routes/order.routes.js";
+import legalRoutes from "./routes/legal.routes.js";
+import backupRoutes from "./routes/backup.routes.js";
+import notificationRoutes from "./routes/notification.routes.js";
+import { initDailyBackupScheduler } from "./services/backup.service.js";
+import { getPrivacyPolicy, getTermsOfService, getDeleteAccountPage } from "./controllers/legal.controller.js";
+import { requireAuth } from "./middlewares/auth.middleware.js";
+import { User } from "./models/index.js";
 
 // Deterministic Clinical Execution Engines
 import { getPrehabRoutine } from "../execution-engines/postural-prehab-engine.js";
@@ -36,25 +42,6 @@ import { generatePrintablePlanHTML } from "../utils/pdf-plan-exporter.js";
 
 dotenv.config();
 
-// MySQL Pool with Keep-Alive for Hostinger
-let pool = null;
-try {
-  pool = mysql.createPool({
-    host: process.env.DB_HOST || 'localhost',
-    port: Number(process.env.DB_PORT) || 3306,
-    user: process.env.DB_USER || 'root',
-    password: process.env.DB_PASSWORD || '',
-    database: process.env.DB_NAME || 'antigravity_db',
-    waitForConnections: true,
-    connectionLimit: 10,
-    queueLimit: 0,
-    enableKeepAlive: true,
-    keepAliveInitialDelay: 10000 // إرسال Ping كل 10 ثوانٍ لمنع موت الاتصال
-  });
-} catch (err) {
-  console.warn('MySQL pool init warning:', err.message);
-}
-
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -67,26 +54,8 @@ const PORT = process.env.PORT || 3000;
 app.use(cors());
 app.use(express.json({ limit: "50mb" }));
 
-// 1. Health Endpoint
-app.post("/api/v1/client/login", (req, res) => {
-  const { client_code, phone, phone_number } = req.body;
-  const targetPhone = phone || phone_number;
-  if (!client_code || !targetPhone) {
-    return res.status(400).json({ success: false, message: "يرجى إدخال كود المشترك ورقم الهاتف المسجل معاً" });
-  }
-  return res.json({
-    success: true,
-    client: {
-      id: client_code,
-      client_code: client_code,
-      phone: targetPhone,
-      name: "مشترك رقم " + client_code,
-      full_name: "مشترك رقم " + client_code
-    },
-    message: "تم تسجيل الدخول بنجاح"
-  });
-});
 
+// 1. Health Endpoint
 app.get("/api/v1/health", (req, res) => {
   res.json({
     status: "HEALTHY",
@@ -208,21 +177,20 @@ app.post("/api/v1/pdf/export", (req, res) => {
 
 
 // Coach Update Client Endpoint
-app.post('/api/v1/coach/update-client', async (req, res) => {
+app.post('/api/v1/coach/update-client', requireAuth, async (req, res) => {
   try {
-    const { client_id, phone, name, subscription_status } = req.body;
+    const { client_id, phone, phone_number, name, full_name, subscription_status } = req.body;
     if (!client_id) return res.status(400).json({ success: false, message: 'Client ID required' });
 
-    if (pool) {
-      try {
-        await pool.execute(
-          'UPDATE clients SET phone = COALESCE(?, phone), name = COALESCE(?, name), subscription_status = COALESCE(?, subscription_status) WHERE id = ?',
-          [phone || null, name || null, subscription_status || null, client_id]
-        );
-      } catch (dbErr) {
-        console.warn('MySQL pool execute error:', dbErr.message);
-      }
-    }
+    const user = await User.findByPk(client_id);
+    if (!user) return res.status(404).json({ success: false, message: 'المشترك غير موجود' });
+
+    const updates = {};
+    if (phone || phone_number) updates.phone_number = phone || phone_number;
+    if (name || full_name) updates.full_name = name || full_name;
+    if (subscription_status) updates.subscription_status = subscription_status;
+
+    await user.update(updates);
     res.json({ success: true, message: 'تم تحديث بيانات المشترك بنجاح' });
   } catch (err) {
     res.status(500).json({ success: false, error: err.message });
@@ -230,34 +198,21 @@ app.post('/api/v1/coach/update-client', async (req, res) => {
 });
 
 // Coach CSV Export Endpoint
-app.get("/api/v1/coach/export-clients-csv", async (req, res) => {
+app.get("/api/v1/coach/export-clients-csv", requireAuth, async (req, res) => {
   try {
-    let clients = [];
-    if (pool) {
-      try {
-        const [rows] = await pool.query('SELECT * FROM clients ORDER BY created_at DESC');
-        clients = rows;
-      } catch {
-        if (sequelize && sequelize.models && sequelize.models.Client) {
-          clients = await sequelize.models.Client.findAll({ order: [['createdAt', 'DESC']] });
-        }
-      }
-    } else if (sequelize && sequelize.models && sequelize.models.Client) {
-      clients = await sequelize.models.Client.findAll({ order: [['createdAt', 'DESC']] });
-    }
+    const clients = await User.findAll({ order: [['createdAt', 'DESC']] });
 
     const headers = ['ID', 'الاسم', 'الهاتف', 'الهدف', 'الوزن الحالي', 'السعرات المستهدفة', 'حالة الاشتراك'];
     const csvRows = clients.map(c => [
       c.id,
-      `"${c.name || ''}"`,
-      `"${c.phone || ''}"`,
+      `"${(c.full_name || c.name || '').replace(/"/g, '""')}"`,
+      `"${c.phone_number || ''}"`,
       c.goal || '',
       c.current_weight_kg || c.starting_weight_kg || '',
       c.target_calories || '',
       c.subscription_status || 'ACTIVE'
     ].join(','));
 
-    // UTF-8 BOM (\uFEFF) لفتح الملف في Microsoft Excel باللغة العربية بدون تشفير خاطئ
     const csvContent = '\uFEFF' + [headers.join(','), ...csvRows].join('\n');
 
     res.setHeader('Content-Type', 'text/csv; charset=utf-8');
@@ -269,22 +224,15 @@ app.get("/api/v1/coach/export-clients-csv", async (req, res) => {
 });
 
 // CSV Export Endpoint for Clients
-app.get("/api/v1/clients/export/csv", async (req, res) => {
+app.get("/api/v1/clients/export/csv", requireAuth, async (req, res) => {
   try {
-    const headers = ['المعرف', 'الاسم', 'الهاتف', 'النوع', 'الهدف', 'الوزن الحالي (كجم)', 'السعرات المستهدفة', 'حالة الاشتراك'];
-    let clientsData = [];
-    try {
-      if (sequelize && sequelize.models && sequelize.models.Client) {
-        clientsData = await sequelize.models.Client.findAll();
-      }
-    } catch {
-      clientsData = [];
-    }
+    const clientsData = await User.findAll({ order: [['createdAt', 'DESC']] });
 
+    const headers = ['المعرف', 'الاسم', 'الهاتف', 'النوع', 'الهدف', 'الوزن الحالي (كجم)', 'السعرات المستهدفة', 'حالة الاشتراك'];
     const rows = clientsData.map((c) => [
       c.id,
-      `"${(c.name || '').replace(/"/g, '""')}"`,
-      c.phone || '',
+      `"${(c.full_name || c.name || '').replace(/"/g, '""')}"`,
+      c.phone_number || '',
       c.gender || '',
       c.goal || '',
       c.current_weight_kg || c.starting_weight_kg || '',
@@ -308,17 +256,18 @@ app.get("/api/v1/clients/export/csv", async (req, res) => {
 // =========================================================================
 
 // 1. Add Gift Days (+7, +14, +30)
-app.post('/api/v1/coach/add-gift-days', async (req, res) => {
+app.post('/api/v1/coach/add-gift-days', requireAuth, async (req, res) => {
   try {
     const { client_id, days = 7 } = req.body;
     if (!client_id) return res.status(400).json({ success: false, message: 'Client ID required' });
 
-    if (pool) {
-      await pool.execute(
-        'UPDATE clients SET subscription_end_date = DATE_ADD(COALESCE(subscription_end_date, NOW()), INTERVAL ? DAY) WHERE id = ?',
-        [Number(days), client_id]
-      );
-    }
+    const user = await User.findByPk(client_id);
+    if (!user) return res.status(404).json({ success: false, message: 'المشترك غير موجود' });
+
+    const currentEnd = user.subscription_end_date ? new Date(user.subscription_end_date) : new Date();
+    currentEnd.setDate(currentEnd.getDate() + Number(days));
+    await user.update({ subscription_end_date: currentEnd });
+
     res.json({ success: true, message: `تمت إضافة ${days} يوماً مجانية بنجاح` });
   } catch (err) {
     res.status(500).json({ success: false, error: err.message });
@@ -326,40 +275,90 @@ app.post('/api/v1/coach/add-gift-days', async (req, res) => {
 });
 
 // 2. Toggle Freeze / Unfreeze
-app.post('/api/v1/coach/toggle-freeze', async (req, res) => {
+app.post('/api/v1/coach/toggle-freeze', requireAuth, async (req, res) => {
   try {
     const { client_id, status } = req.body; // 'FROZEN' or 'ACTIVE'
     if (!client_id) return res.status(400).json({ success: false, message: 'Client ID required' });
 
-    const newStatus = status === 'FROZEN' ? 'FROZEN' : 'ACTIVE';
-    if (pool) {
-      await pool.execute(
-        'UPDATE clients SET subscription_status = ? WHERE id = ?',
-        [newStatus, client_id]
-      );
+    let user = await User.findByPk(client_id);
+    if (!user) {
+      const cleanCode = String(client_id).replace(/^#+/, '').replace(/^client[-_]?/i, '').trim();
+      user = await User.findOne({ where: { client_code: cleanCode } });
     }
-    res.json({ 
-      success: true, 
-      subscription_status: newStatus,
-      message: newStatus === 'FROZEN' ? 'تم تجميد الاشتراك بنجاح' : 'تم استئناف الاشتراك بنجاح' 
-    });
+    if (!user && !isNaN(client_id)) {
+      user = await User.findByPk(parseInt(client_id, 10));
+    }
+    if (!user) return res.status(404).json({ success: false, message: 'المشترك غير موجود' });
+
+    const newStatus = status === 'FROZEN' ? 'FROZEN' : 'ACTIVE';
+    const now = new Date();
+
+    if (newStatus === 'FROZEN') {
+      let notes = user.notes || '';
+      if (!notes.includes('[FREEZE_START:')) {
+        notes = `${notes}\n[FREEZE_START:${now.toISOString()}]`.trim();
+      }
+      await user.update({ subscription_status: 'FROZEN', notes });
+      return res.json({ 
+        success: true, 
+        subscription_status: 'FROZEN',
+        user,
+        message: 'تم تجميد الاشتراك بنجاح وتثبيت الأيام المتبقية' 
+      });
+    } else {
+      let notes = user.notes || '';
+      let freezeStartDate = null;
+      const match = notes.match(/\[FREEZE_START:(.*?)\]/);
+      if (match && match[1]) {
+        freezeStartDate = new Date(match[1]);
+        notes = notes.replace(/\[FREEZE_START:.*?\]/g, '').trim();
+      }
+
+      if (freezeStartDate && !isNaN(freezeStartDate.getTime())) {
+        const freezeDays = Math.max(1, Math.round((now.getTime() - freezeStartDate.getTime()) / (1000 * 60 * 60 * 24)));
+        if (user.subscription_end_date) {
+          const currentEnd = new Date(user.subscription_end_date);
+          const newEndDate = new Date(currentEnd.getTime() + (freezeDays * 24 * 60 * 60 * 1000));
+          await user.update({ subscription_status: 'ACTIVE', subscription_end_date: newEndDate, notes });
+        } else {
+          await user.update({ subscription_status: 'ACTIVE', notes });
+        }
+        return res.json({ 
+          success: true, 
+          subscription_status: 'ACTIVE',
+          freeze_days_added: freezeDays,
+          user,
+          message: `تم استئناف الاشتراك بنجاح وإضافة ${freezeDays} أيام تعويضية لتاريخ الانتهاء` 
+        });
+      } else {
+        await user.update({ subscription_status: 'ACTIVE', notes });
+        return res.json({ 
+          success: true, 
+          subscription_status: 'ACTIVE',
+          user,
+          message: 'تم استئناف وتفعيل الاشتراك بنجاح' 
+        });
+      }
+    }
   } catch (err) {
     res.status(500).json({ success: false, error: err.message });
   }
 });
 
 // 3. Adjust Tier & Package
-app.post('/api/v1/coach/adjust-package', async (req, res) => {
+app.post('/api/v1/coach/adjust-package', requireAuth, async (req, res) => {
   try {
     const { client_id, tier, duration_months } = req.body;
     if (!client_id) return res.status(400).json({ success: false, message: 'Client ID required' });
 
-    if (pool) {
-      await pool.execute(
-        'UPDATE clients SET tier = COALESCE(?, tier), subscription_duration_months = COALESCE(?, subscription_duration_months) WHERE id = ?',
-        [tier, duration_months, client_id]
-      );
-    }
+    const user = await User.findByPk(client_id);
+    if (!user) return res.status(404).json({ success: false, message: 'المشترك غير موجود' });
+
+    const updates = {};
+    if (tier) updates.tier = tier;
+    if (duration_months) updates.subscription_duration_months = duration_months;
+    await user.update(updates);
+
     res.json({ success: true, message: 'تم تحديث باقة المشترك بنجاح' });
   } catch (err) {
     res.status(500).json({ success: false, error: err.message });
@@ -378,6 +377,17 @@ app.use("/api/v1/admin-settings", adminSettingsRoutes);
 app.use("/api/v1/admin", adminSettingsRoutes);
 app.use("/api/v1/checkin", checkinRoutes);
 app.use("/api/v1/orders", orderRoutes);
+app.use("/api/v1/legal", legalRoutes);
+app.use("/api/v1/admin/backup", backupRoutes);
+app.use("/api/v1/notifications", notificationRoutes);
+
+// مسارات الامتثال والخصوصية العامة لمتجري Apple App Store و Google Play
+app.get("/privacy-policy", getPrivacyPolicy);
+app.get("/privacy", getPrivacyPolicy);
+app.get("/terms-of-service", getTermsOfService);
+app.get("/terms", getTermsOfService);
+app.get("/eula", getTermsOfService);
+app.get("/delete-account", getDeleteAccountPage);
 
 // Mobility, Stretch & Cardio Catalog API Endpoints
 app.get("/api/v1/mobility", async (req, res) => {
@@ -393,7 +403,7 @@ app.get("/api/v1/mobility", async (req, res) => {
   }
 });
 
-app.post("/api/v1/mobility", async (req, res) => {
+app.post("/api/v1/mobility", requireAuth, async (req, res) => {
   try {
     const catalogPath = path.join(__dirname, "../data/mobility_catalog.json");
     let data = [];
@@ -412,7 +422,7 @@ app.post("/api/v1/mobility", async (req, res) => {
   }
 });
 
-app.put("/api/v1/mobility/:id", async (req, res) => {
+app.put("/api/v1/mobility/:id", requireAuth, async (req, res) => {
   try {
     const { id } = req.params;
     const catalogPath = path.join(__dirname, "../data/mobility_catalog.json");
@@ -450,32 +460,47 @@ if (fs.existsSync(publicExercisesPath)) {
   app.use("/exercises", express.static(publicExercisesPath));
 }
 
-// Upload & Replace Exercise Image endpoint
-app.post("/api/v1/exercises/upload-image", async (req, res) => {
+// Upload & Replace Exercise Image endpoint (Hardened with Path Traversal Protection & Auth)
+app.post("/api/v1/exercises/upload-image", requireAuth, async (req, res) => {
   try {
     const { exercise_id, image_index, image_base64 } = req.body;
     if (!exercise_id || image_index === undefined || !image_base64) {
       return res.status(400).json({ error: "exercise_id, image_index, and image_base64 are required" });
     }
 
-    const exFolder = path.resolve(__dirname, "../../frontend/public/exercises", exercise_id);
+    const safeExId = String(exercise_id).replace(/[^a-zA-Z0-9_-]/g, "");
+    const safeIndex = parseInt(image_index, 10);
+    if (!safeExId || isNaN(safeIndex) || safeIndex < 0 || safeIndex > 10) {
+      return res.status(400).json({ error: "معرف التمرين أو رقم الصورة غير صالح" });
+    }
+
+    const basePublicDir = path.resolve(__dirname, "../../frontend/public/exercises");
+    const exFolder = path.resolve(basePublicDir, safeExId);
+    if (!exFolder.startsWith(basePublicDir)) {
+      return res.status(403).json({ error: "محاولة وصول غير مصرح بها للمسار" });
+    }
+
     if (!fs.existsSync(exFolder)) {
       fs.mkdirSync(exFolder, { recursive: true });
     }
 
-    const filename = `${image_index}.jpg`;
+    const filename = `${safeIndex}.jpg`;
     const targetPath = path.join(exFolder, filename);
 
     const base64Data = image_base64.replace(/^data:image\/\w+;base64,/, "");
     fs.writeFileSync(targetPath, Buffer.from(base64Data, "base64"));
 
     // Also copy to dist if dist exists
-    const distExFolder = path.resolve(__dirname, "../../frontend/dist/exercises", exercise_id);
-    if (fs.existsSync(distExFolder)) {
+    const distBase = path.resolve(__dirname, "../../frontend/dist/exercises");
+    const distExFolder = path.resolve(distBase, safeExId);
+    if (fs.existsSync(distBase) && distExFolder.startsWith(distBase)) {
+      if (!fs.existsSync(distExFolder)) {
+        fs.mkdirSync(distExFolder, { recursive: true });
+      }
       fs.writeFileSync(path.join(distExFolder, filename), Buffer.from(base64Data, "base64"));
     }
 
-    const imageUrl = `/exercises/${exercise_id}/${filename}?t=${Date.now()}`;
+    const imageUrl = `/exercises/${safeExId}/${filename}?t=${Date.now()}`;
     return res.status(200).json({ success: true, message: "تم حفظ الصورة بنجاح", imageUrl });
   } catch (err) {
     console.error("upload-image error:", err);
@@ -483,7 +508,15 @@ app.post("/api/v1/exercises/upload-image", async (req, res) => {
   }
 });
 
-// 4. Production Static Frontend SPA Serving (Hostinger / All-in-One)
+// 4. Persistent Static Uploads Directory (Hostinger Local Storage - Protected)
+const uploadsPath = path.resolve(__dirname, "../../uploads");
+const progressPhotosPath = path.resolve(uploadsPath, "progress_photos");
+if (!fs.existsSync(progressPhotosPath)) {
+  fs.mkdirSync(progressPhotosPath, { recursive: true });
+}
+app.use("/uploads", requireAuth, express.static(uploadsPath));
+
+// 5. Production Static Frontend SPA Serving (Hostinger / All-in-One)
 if (fs.existsSync(frontendDistPath)) {
   app.use(express.static(frontendDistPath));
   app.use((req, res, next) => {
@@ -499,8 +532,10 @@ const startServer = async () => {
     console.log("Database connection established successfully.");
     await sequelize.sync();
     console.log("Database synced.");
+    initDailyBackupScheduler();
   } catch (err) {
     console.warn("Database connection notice: running with in-memory / mock persistence if needed.", err.message);
+    initDailyBackupScheduler();
   }
 
   app.listen(PORT, "0.0.0.0", () => {

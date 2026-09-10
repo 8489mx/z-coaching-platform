@@ -1,10 +1,82 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { HeartPulse, Search, Plus, X, Play, Copy, Check, RotateCw, Flame, ShieldCheck, Layers, Edit3, Upload, ArrowRightLeft, Lock } from 'lucide-react';
+import { Link } from 'react-router-dom';
+import { HeartPulse, Search, Plus, X, Play, Copy, Check, RotateCw, Flame, ShieldCheck, Layers, Edit3, Upload, ArrowRightLeft, Lock, Activity, Dumbbell } from 'lucide-react';
 import { API_BASE } from '../config/api';
 import AdminLayout from '../components/layout/AdminLayout';
 import ExerciseVideoModal from '../components/modals/ExerciseVideoModal';
 import { PageHeader } from '@/shared/components/page-header';
 import defaultMobilityCatalog from '../data/mobilityCatalog.json';
+import { arabicSearchMatch } from '../utils/searchUtils';
+
+// Resilient Mobility Image Frame with graceful fallback and smooth fade-in
+function MobilityImageFrame({ src, label, icon: Icon = Activity }) {
+  const [hasError, setHasError] = useState(false);
+  const [isLoading, setIsLoading] = useState(Boolean(src));
+
+  useEffect(() => {
+    setHasError(false);
+    setIsLoading(Boolean(src));
+  }, [src]);
+
+  return (
+    <div style={{ 
+      position: 'relative', 
+      borderRadius: '10px', 
+      overflow: 'hidden', 
+      background: '#F1F5F9', 
+      border: '1px solid #E2E8F0', 
+      height: '135px', 
+      display: 'flex', 
+      alignItems: 'center', 
+      justifyContent: 'center',
+      boxShadow: '0 1px 3px rgba(15, 23, 42, 0.04)'
+    }}>
+      {/* 1. Underlying Fallback Placeholder */}
+      <div style={{ 
+        position: 'absolute', 
+        inset: 0, 
+        display: 'flex', 
+        flexDirection: 'column', 
+        alignItems: 'center', 
+        justifyContent: 'center', 
+        gap: '6px', 
+        color: '#94A3B8',
+        background: '#F8FAFC'
+      }}>
+        <Icon size={24} strokeWidth={1.5} color="#94A3B8" />
+        <span style={{ fontSize: '10.5px', fontWeight: 700, color: '#64748B' }}>{label}</span>
+      </div>
+
+      {/* 2. Image Element */}
+      {src && !hasError && (
+        <img
+          src={src}
+          alt=""
+          onLoad={(e) => {
+            if (e.currentTarget.naturalWidth === 0) {
+              setHasError(true);
+            } else {
+              setIsLoading(false);
+            }
+          }}
+          onError={() => setHasError(true)}
+          style={{ 
+            position: 'relative', 
+            zIndex: 1, 
+            width: '100%', 
+            height: '100%', 
+            objectFit: 'contain', 
+            borderRadius: '9px', 
+            padding: '2px',
+            opacity: isLoading ? 0 : 1,
+            transition: 'opacity 0.2s ease'
+          }}
+          loading="lazy"
+        />
+      )}
+    </div>
+  );
+}
 
 export default function MobilityLibrary() {
   const [drills, setDrills] = useState(defaultMobilityCatalog || []);
@@ -221,11 +293,11 @@ export default function MobilityLibrary() {
   const filteredDrills = useMemo(() => {
     return drills.filter(d => {
       const matchTab = activeTab === 'ALL' || d.category === activeTab;
-      const matchSearch = !searchTerm ||
-        (d.name_ar && d.name_ar.toLowerCase().includes(searchTerm.toLowerCase())) ||
-        (d.name_en && d.name_en.toLowerCase().includes(searchTerm.toLowerCase())) ||
-        (d.target_area_ar && d.target_area_ar.includes(searchTerm)) ||
-        (d.cue_ar && d.cue_ar.includes(searchTerm));
+      const matchSearch = !searchTerm.trim() ||
+        arabicSearchMatch(d.name_ar, searchTerm) ||
+        arabicSearchMatch(d.name_en, searchTerm) ||
+        arabicSearchMatch(d.target_area_ar, searchTerm) ||
+        arabicSearchMatch(d.cue_ar, searchTerm);
       let matchArea = true;
       if (selectedArea === 'SHOULDERS') matchArea = d.target_area_ar?.includes('كتف') || d.target_area_ar?.includes('ترقوة');
       if (selectedArea === 'HIPS') matchArea = d.target_area_ar?.includes('حوض') || d.target_area_ar?.includes('ورك') || d.target_area_ar?.includes('قطنية') || d.target_area_ar?.includes('جلوتس');
@@ -269,6 +341,52 @@ export default function MobilityLibrary() {
             </button>
           )}
         />
+
+        {/* Exercise & Mobility Studio Switcher */}
+        <div style={{ display: 'flex', gap: '6px', background: '#F8FAFC', padding: '4px', borderRadius: '8px', border: '1px solid #E2E8F0', width: 'fit-content' }}>
+          <Link
+            to="/exercises"
+            style={{
+              padding: '6px 14px',
+              borderRadius: '6px',
+              fontSize: '12px',
+              fontWeight: 700,
+              border: 'none',
+              textDecoration: 'none',
+              color: '#64748B',
+              background: 'transparent',
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '6px',
+              transition: 'color 0.12s ease'
+            }}
+            onMouseEnter={(e) => (e.currentTarget.style.color = '#0F172A')}
+            onMouseLeave={(e) => (e.currentTarget.style.color = '#64748B')}
+          >
+            <Dumbbell size={14} />
+            <span>تمارين القوة والمقاومة والأجهزة</span>
+          </Link>
+          <button
+            type="button"
+            style={{
+              padding: '6px 14px',
+              borderRadius: '6px',
+              fontSize: '12px',
+              fontWeight: 800,
+              border: 'none',
+              cursor: 'default',
+              background: '#0F172A',
+              color: '#FFFFFF',
+              boxShadow: '0 2px 5px rgba(15, 23, 42, 0.25)',
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '6px'
+            }}
+          >
+            <HeartPulse size={14} />
+            <span>بروتوكولات المرونة والتأهيل والاستشفاء ({drills.length})</span>
+          </button>
+        </div>
 
         {/* 2. Unified Control Bar (Tabs + Search + Sub-filters) */}
         <div style={{ background: '#FFFFFF', border: '1px solid #E2E8F0', borderRadius: '10px', padding: '14px 18px', display: 'flex', flexDirection: 'column', gap: '12px', boxShadow: '0 1px 3px rgba(15, 23, 42, 0.02)' }}>
@@ -466,55 +584,16 @@ export default function MobilityLibrary() {
                     borderRadius: '14px',
                     border: '1px solid #E2E8F0'
                   }}>
-                    {/* Frame 1: Start Position */}
-                    <div style={{ 
-                      position: 'relative', 
-                      borderRadius: '10px', 
-                      overflow: 'hidden', 
-                      background: '#F8FAFC', 
-                      border: '1px solid #E2E8F0', 
-                      height: '135px', 
-                      display: 'flex', 
-                      alignItems: 'center', 
-                      justifyContent: 'center',
-                      boxShadow: '0 1px 3px rgba(15, 23, 42, 0.04)'
-                    }}>
-                      <img
-                        src={drill.image_stretch || drill.images?.[0] || `/exercises/${drill.id}/0.jpg`}
-                        onError={(e) => {
-                          if (drill.images && drill.images[0]) e.currentTarget.src = drill.images[0];
-                          else e.currentTarget.style.display = 'none';
-                        }}
-                        alt={drill.name_en || drill.name_ar}
-                        style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: '9px' }}
-                        loading="lazy"
-                      />
-                    </div>
-
-                    {/* Frame 2: Contraction / Finish Position */}
-                    <div style={{ 
-                      position: 'relative', 
-                      borderRadius: '10px', 
-                      overflow: 'hidden', 
-                      background: '#F8FAFC', 
-                      border: '1px solid #E2E8F0', 
-                      height: '135px', 
-                      display: 'flex', 
-                      alignItems: 'center', 
-                      justifyContent: 'center',
-                      boxShadow: '0 1px 3px rgba(15, 23, 42, 0.04)'
-                    }}>
-                      <img
-                        src={drill.image_contraction || drill.images?.[1] || `/exercises/${drill.id}/1.jpg`}
-                        onError={(e) => {
-                          if (drill.images && drill.images[1]) e.currentTarget.src = drill.images[1];
-                          else e.currentTarget.style.display = 'none';
-                        }}
-                        alt={drill.name_en || drill.name_ar}
-                        style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: '9px' }}
-                        loading="lazy"
-                      />
-                    </div>
+                    <MobilityImageFrame
+                      src={drill.image_stretch || drill.images?.[0] || `/exercises/${drill.id}/0.jpg`}
+                      label="وضع البداية"
+                      icon={Activity}
+                    />
+                    <MobilityImageFrame
+                      src={drill.image_contraction || drill.images?.[1] || `/exercises/${drill.id}/1.jpg`}
+                      label="وضع الانقباض"
+                      icon={Activity}
+                    />
                   </div>
 
                   {/* Technique Cue */}
@@ -794,7 +873,7 @@ export default function MobilityLibrary() {
                         صور أداء التمرين (البداية والنهاية)
                       </div>
                       <div style={{ fontSize: '10px', color: '#64748B', marginTop: '1px' }}>
-                        المسار في جهازك: <code style={{ background: '#E2E8F0', padding: '1px 4px', borderRadius: '3px', color: '#0F172A', fontSize: '9.5px' }}>D:zccrontendpublicexercises{editingDrill.id}</code>
+                        معاينة الصورتين الحركيتين للتكنيك السليم (وضع البداية والاستطالة / وضع الانقباض)
                       </div>
                     </div>
                     

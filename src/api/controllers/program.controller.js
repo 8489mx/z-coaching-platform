@@ -8,7 +8,8 @@ import { buildMasterEngine } from "../../../src/master-engine/build-master-engin
 import { buildMasterEngineV2 } from "../../../src/master-engine-v2/index.js";
 import { evaluateCheckin } from "../../../src/checkin-engine/index.js";
 import { buildAdaptedPlan } from "../../../src/adaptation-engine/index.js";
-import { User, Program, IntakeSubmission, CheckinSubmission } from "../models/index.js";
+import { User, Program, IntakeSubmission, CheckinSubmission, ProgressPhoto } from "../models/index.js";
+import { saveProgressPhotoToDisk } from "../utils/photoStorage.js";
 import { Op } from "sequelize";
 import { MASTER_EXERCISE_DICTIONARY } from "../../../src/exercise-catalog-v2/index.js";
 import { calculateSmartSwap } from "../../../src/nutrition-swap-engine-v2/calculate-smart-swap.js";
@@ -378,7 +379,8 @@ export const submitWeeklyCheckin = async (req, res) => {
       workouts_completed = 4,
       workouts_scheduled = 4,
       biofeedback = {},
-      pain_reports = []
+      pain_reports = [],
+      photos = []
     } = req.body;
 
     // Find User
@@ -392,12 +394,14 @@ export const submitWeeklyCheckin = async (req, res) => {
     }
 
     if (!user) {
-      user = await User.findOne({ order: [["id", "DESC"]] });
+      return res.status(400).json({ error: "يجب تقديم كود المشترك أو معرف المستخدم الصحيح لإرسال المتابعة" });
     }
 
-    const weights = Array.isArray(daily_weights_kg) && daily_weights_kg.length > 0
-      ? daily_weights_kg.map(w => Number(w))
-      : [85, 84.8, 84.7, 84.5, 84.4, 84.3, 84.2];
+    if (!Array.isArray(daily_weights_kg) || daily_weights_kg.length === 0) {
+      return res.status(400).json({ error: "يجب إرسال أوزان يومية حقيقية (daily_weights_kg) مع المتابعة الأسبوعية" });
+    }
+
+    const weights = daily_weights_kg.map(w => Number(w));
 
     const analysis = evaluateCheckin({
       daily_weights_kg: weights,
@@ -430,10 +434,34 @@ export const submitWeeklyCheckin = async (req, res) => {
       status: "PENDING_REVIEW"
     });
 
+    // Save attached progress photos locally to Hostinger file storage
+    const savedPhotos = [];
+    if (Array.isArray(photos) && photos.length > 0) {
+      for (const p of photos) {
+        const pUrl = typeof p === 'string' ? p : (p.photo_url || p.data || p.url);
+        if (typeof pUrl === 'string' && pUrl.trim()) {
+          const pose = (p.pose || 'FRONT').toUpperCase();
+          const targetCode = user ? (user.client_code || user.id) : (client_code || user_id || '1');
+          const savedUrl = saveProgressPhotoToDisk(targetCode, pUrl, Number(week_number) || 1, pose);
+          if (savedUrl) {
+            const photoRecord = await ProgressPhoto.create({
+              user_id: user ? user.id : 1,
+              week_number: Number(week_number) || 1,
+              pose,
+              photo_url: savedUrl,
+              notes: p.notes || null,
+            });
+            savedPhotos.push(photoRecord);
+          }
+        }
+      }
+    }
+
     return res.status(201).json({
       message: "تم إرسال المتابعة الأسبوعية بنجاح، وهي الآن معلقة في انتظار مراجعة الكابتن",
       checkin_id: checkin.id,
       analysis,
+      photos: savedPhotos,
       checkin
     });
   } catch (err) {
@@ -452,7 +480,19 @@ export const getPendingCheckins = async (req, res) => {
         {
           model: User,
           as: "user",
-          attributes: ["id", "client_code", "full_name", "phone_number", "email", "subscription_package", "subscription_price", "subscription_status"]
+          attributes: ["id", "client_code", "full_name", "phone_number", "email", "subscription_package", "subscription_price", "subscription_status"],
+          include: [
+            {
+              model: ProgressPhoto,
+              as: "progressPhotos",
+              attributes: ["id", "week_number", "pose", "photo_url", "notes", "createdAt"]
+            },
+            {
+              model: CheckinSubmission,
+              as: "checkinSubmissions",
+              attributes: ["id", "week_number", "average_weight_kg", "waist_circumference_cm", "nutrition_adherence_percent", "createdAt"]
+            }
+          ]
         }
       ],
       order: [["createdAt", "DESC"]]
@@ -466,7 +506,7 @@ export const getPendingCheckins = async (req, res) => {
 
 export const approveWeeklyCheckin = async (req, res) => {
   try {
-    const { checkin_id, coach_notes } = req.body;
+    const { checkin_id, coach_notes, custom_macros } = req.body;
     const checkin = await CheckinSubmission.findByPk(checkin_id, {
       include: [{ model: User, as: "user" }]
     });
@@ -488,7 +528,80 @@ export const approveWeeklyCheckin = async (req, res) => {
           checkinAnalysis: checkin.analysis_output,
           options: {}
         });
-        program.program_data = adapted;
+
+        // Determine final nutrition targets (coach custom macros override engine output)
+        let finalCalories = adapted.adapted_nutrition?.target_calories_kcal;
+        let finalProtein = adapted.adapted_nutrition?.protein_g;
+        let finalCarbs = adapted.adapted_nutrition?.carbohydrate_g;
+        let finalFats = adapted.adapted_nutrition?.fat_g;
+
+        if (custom_macros && typeof custom_macros === 'object' && custom_macros.calories) {
+          finalCalories = Number(custom_macros.calories);
+          finalProtein = Number(custom_macros.protein || finalProtein || 140);
+          finalCarbs = Number(custom_macros.carbs || finalCarbs || 200);
+          finalFats = Number(custom_macros.fats || finalFats || 50);
+        }
+
+        // SMART MERGE: Update nutrition targets INSIDE the existing program WITHOUT destroying meals/exercises
+        const mergedProgramData = JSON.parse(JSON.stringify(program.program_data));
+
+        // Update nutrition macro targets at all known paths
+        if (mergedProgramData.nutrition_program) {
+          if (mergedProgramData.nutrition_program.targets) {
+            mergedProgramData.nutrition_program.targets.target_calories = finalCalories;
+            mergedProgramData.nutrition_program.targets.target_calories_kcal = finalCalories;
+            mergedProgramData.nutrition_program.targets.calories_kcal = finalCalories;
+            mergedProgramData.nutrition_program.targets.protein_g = finalProtein;
+            mergedProgramData.nutrition_program.targets.total_protein_g = finalProtein;
+            mergedProgramData.nutrition_program.targets.carbohydrate_g = finalCarbs;
+            mergedProgramData.nutrition_program.targets.carb_g = finalCarbs;
+            mergedProgramData.nutrition_program.targets.total_carbs_g = finalCarbs;
+            mergedProgramData.nutrition_program.targets.fat_g = finalFats;
+            mergedProgramData.nutrition_program.targets.total_fat_g = finalFats;
+          }
+          if (mergedProgramData.nutrition_program.macro_targets) {
+            mergedProgramData.nutrition_program.macro_targets.calories_kcal = finalCalories;
+            mergedProgramData.nutrition_program.macro_targets.protein_g = finalProtein;
+            mergedProgramData.nutrition_program.macro_targets.carbohydrate_g = finalCarbs;
+            mergedProgramData.nutrition_program.macro_targets.fat_g = finalFats;
+          }
+          if (mergedProgramData.nutrition_program.quantized_plan && mergedProgramData.nutrition_program.quantized_plan.daily_totals) {
+            mergedProgramData.nutrition_program.quantized_plan.daily_totals.calories_kcal = finalCalories;
+            mergedProgramData.nutrition_program.quantized_plan.daily_totals.protein_g = finalProtein;
+            mergedProgramData.nutrition_program.quantized_plan.daily_totals.carbs_g = finalCarbs;
+            mergedProgramData.nutrition_program.quantized_plan.daily_totals.fat_g = finalFats;
+          }
+        }
+
+        // Update training week if adaptation engine provided a new one
+        if (adapted.adapted_training_week && mergedProgramData.training_program && mergedProgramData.training_program.weeks) {
+          const targetIdx = Math.min(
+            (adapted.adapted_week_number || 2) - 1,
+            mergedProgramData.training_program.weeks.length - 1
+          );
+          if (targetIdx >= 0 && targetIdx < mergedProgramData.training_program.weeks.length) {
+            mergedProgramData.training_program.weeks[targetIdx] = adapted.adapted_training_week;
+          }
+        }
+
+        // Update cardio step target if changed
+        if (adapted.adapted_cardio && mergedProgramData.cardio_program) {
+          if (mergedProgramData.cardio_program.prescription) {
+            mergedProgramData.cardio_program.prescription.daily_step_target = adapted.adapted_cardio.daily_step_target;
+          }
+        }
+
+        // Store adaptation metadata for coach reference
+        mergedProgramData._last_adaptation = {
+          action: adapted.adaptation_action,
+          reasons: adapted.adaptation_reasons,
+          adapted_week: adapted.adapted_week_number,
+          requires_coach_approval: adapted.requires_coach_approval,
+          timestamp: new Date().toISOString()
+        };
+
+        program.program_data = mergedProgramData;
+        program.changed("program_data", true);
         await program.save();
       } catch (adaptErr) {
         console.warn("buildAdaptedPlan fallback notice:", adaptErr.message);
@@ -784,6 +897,8 @@ export const getActiveProgramByUserId = async (req, res) => {
       is_pending_review: !isApproved,
       plan_approval_status: user.plan_approval_status || (isApproved ? "APPROVED" : "PENDING_COACH_REVIEW"),
       program_id: program.id,
+      version: program.version || 1,
+      updated_at: program.updatedAt || program.updated_at,
       user: program.user || user,
       master_program: program.program_data,
     });
@@ -833,6 +948,7 @@ export const updateCustomProgram = async (req, res) => {
       }
       if (shouldPublish) {
         program.status = "ACTIVE";
+        program.version = (Number(program.version) || 1) + 1;
       }
       await program.save();
     }

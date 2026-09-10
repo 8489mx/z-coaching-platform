@@ -1,8 +1,9 @@
 import { API_BASE } from '../config/api';
 import { ClientCodeBadge, ClientPackageBadge, getClientTier } from '../utils/tierBadgeHelper';
+import { arabicSearchMatch } from '../utils/searchUtils';
 import React, { useState, useMemo, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { DollarSign, CreditCard, TrendingUp, Users, AlertCircle, Clock, CheckCircle2, Send, Search, Filter, Calendar, ArrowUpRight, Check, Plus, X, RotateCw, BadgePercent, Wallet, Receipt, ArrowRight } from 'lucide-react';
+import { DollarSign, CreditCard, TrendingUp, Users, AlertCircle, Clock, CheckCircle2, Send, Search, Filter, Calendar, ArrowUpRight, Check, Plus, X, RotateCw, BadgePercent, Wallet, Receipt, ArrowRight, Pause, Play } from 'lucide-react';
 import AdminLayout from '../components/layout/AdminLayout';
 import FlexibleRenewalModal from '../components/modals/FlexibleRenewalModal';
 import { generateWhatsAppUrl, MESSAGE_TEMPLATES, compileReminderMessage, REMINDER_CATEGORIES } from '../utils/whatsappRemindersEngine';
@@ -14,7 +15,6 @@ export default function FinancialsRenewalsDashboard() {
   const [renewalFilter, setRenewalFilter] = useState('ALL'); // 'ALL' | 'URGENT_3D' | 'WEEK_7D' | 'OVERDUE' | 'PAID'
   const [tierFilter, setTierFilter] = useState('ALL'); // 'ALL' | 'MAX' | 'ELITE'
   const [searchQuery, setSearchQuery] = useState(urlParam ? `#${urlParam}` : '');
-  const [paymentModal, setPaymentModal] = useState({ open: false, client: null, amount: '' });
   const [renewedMap, setRenewedMap] = useState({});
   const [toast, setToast] = useState(null);
 
@@ -46,15 +46,22 @@ export default function FinancialsRenewalsDashboard() {
             let daysRemaining = c.days_remaining || 0;
             let status = c.status || 'INACTIVE';
 
+            if (c.subscription_status === 'FROZEN') {
+              status = 'FROZEN';
+            }
+
             if (renewedMap[c.id]) {
                status = 'RENEWED';
                daysRemaining = 30;
             }
 
-            const expiryDate = new Date();
-            expiryDate.setDate(expiryDate.getDate() + daysRemaining);
+            const expiryDate = c.subscription_end_date 
+              ? new Date(c.subscription_end_date) 
+              : new Date(Date.now() + daysRemaining * 86400000);
             const monthsAr = ['يناير', 'فبراير', 'مارس', 'أبريل', 'مايو', 'يونيو', 'يوليو', 'أغسطس', 'سبتمبر', 'أكتوبر', 'نوفمبر', 'ديسمبر'];
-            const formattedExpiry = `${expiryDate.getDate()} ${monthsAr[expiryDate.getMonth()]} ${expiryDate.getFullYear()}`;
+            const formattedExpiry = !isNaN(expiryDate.getTime())
+              ? `${expiryDate.getDate()} ${monthsAr[expiryDate.getMonth()]} ${expiryDate.getFullYear()}`
+              : '--';
 
             return {
               ...c,
@@ -113,13 +120,14 @@ export default function FinancialsRenewalsDashboard() {
   const filteredClients = useMemo(() => {
     return financialsData.filter(c => {
       // Search
-      const q = searchQuery.toLowerCase().trim().replace(/^#+/, '');
+      const q = searchQuery.trim();
+      const qClean = q.toLowerCase().replace(/^#+/, '');
       const codeStr = String(c.client_code || c.id || '').replace(/^client[-_]?/i, '');
-      const matchSearch = !q || 
-        codeStr === q ||
-        codeStr.includes(q) ||
-        (c.full_name || c.name || '').toLowerCase().includes(q) ||
-        (c.phone_number || '').includes(q);
+      const matchSearch = !qClean || 
+        codeStr === qClean ||
+        codeStr.includes(qClean) ||
+        arabicSearchMatch(c.full_name || c.name, q) ||
+        (c.phone_number || '').includes(qClean);
 
       if (!matchSearch) return false;
 
@@ -128,8 +136,9 @@ export default function FinancialsRenewalsDashboard() {
       if (tierFilter === 'ELITE' && c.isMax) return false;
 
       // Renewal Status Filter
-      if (renewalFilter === 'URGENT_3D') return c.daysRemaining > 0 && c.daysRemaining <= 3;
-      if (renewalFilter === 'WEEK_7D') return c.daysRemaining > 0 && c.daysRemaining <= 7;
+      if (renewalFilter === 'URGENT_3D') return c.daysRemaining > 0 && c.daysRemaining <= 3 && c.status !== 'FROZEN';
+      if (renewalFilter === 'WEEK_7D') return c.daysRemaining > 0 && c.daysRemaining <= 7 && c.status !== 'FROZEN';
+      if (renewalFilter === 'FROZEN') return c.status === 'FROZEN';
       if (renewalFilter === 'OVERDUE') return c.daysRemaining < 0 && c.status === 'OVERDUE';
       if (renewalFilter === 'PAID') return c.status === 'ACTIVE' || c.status === 'RENEWED';
 
@@ -146,6 +155,37 @@ export default function FinancialsRenewalsDashboard() {
 
   const handleQuickRenew = (client) => {
     setFlexibleRenewalClient(client);
+  };
+
+  const handleToggleFreeze = async (client) => {
+    const isCurrentlyFrozen = client.status === 'FROZEN';
+    const targetStatus = isCurrentlyFrozen ? 'ACTIVE' : 'FROZEN';
+    const confirmMsg = isCurrentlyFrozen 
+      ? `هل ترغب في استئناف اشتراك المشترك (${client.full_name || client.name}) وإضافة أيام التجميد لتاريخ الانتهاء الجديد؟`
+      : `هل ترغب في تجميد اشتراك المشترك (${client.full_name || client.name}) مؤقتاً؟`;
+
+    if (!window.confirm(confirmMsg)) return;
+
+    try {
+      const res = await fetch(`${API_BASE}/api/v1/coach/toggle-freeze`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          client_id: client.client_code || client.id,
+          status: targetStatus
+        })
+      });
+      const data = await res.json();
+      if (data.success) {
+        showToast(data.message || (isCurrentlyFrozen ? 'تم استئناف الاشتراك بنجاح' : 'تم تجميد الاشتراك بنجاح'));
+        fetchFinancials();
+      } else {
+        alert(data.message || 'حدث خطأ أثناء تعديل حالة التجميد');
+      }
+    } catch (err) {
+      console.error('Toggle freeze error:', err);
+      alert('تعذر الاتصال بالخادم لتعديل حالة التجميد');
+    }
   };
 
   const handleSendRenewalWhatsApp = (client) => {
@@ -273,10 +313,20 @@ export default function FinancialsRenewalsDashboard() {
               <strong style={{ fontSize: '20px', fontWeight: 800, color: '#0F172A', fontFamily: 'JetBrains Mono, Cairo, sans-serif' }}>
                 {retentionRate}%
               </strong>
-              <span style={{ fontSize: '11px', color: '#0284C7', fontWeight: 700, fontFamily: 'Cairo, sans-serif' }}>ممتاز جداً</span>
+              {financialsData.length === 0 ? (
+                <span style={{ fontSize: '11px', color: '#94A3B8', fontWeight: 700, fontFamily: 'Cairo, sans-serif' }}>لا توجد بيانات</span>
+              ) : retentionRate >= 80 ? (
+                <span style={{ fontSize: '11px', color: '#059669', fontWeight: 700, fontFamily: 'Cairo, sans-serif' }}>ممتاز جداً</span>
+              ) : retentionRate >= 50 ? (
+                <span style={{ fontSize: '11px', color: '#0284C7', fontWeight: 700, fontFamily: 'Cairo, sans-serif' }}>مستقر</span>
+              ) : (
+                <span style={{ fontSize: '11px', color: '#D97706', fontWeight: 700, fontFamily: 'Cairo, sans-serif' }}>بحاجة للمتابعة</span>
+              )}
             </div>
             <div style={{ fontSize: '10px', color: '#64748B', marginTop: '4px', fontFamily: 'Cairo, sans-serif' }}>
-              معدل تسرب منخفض &lt; 7.6% (عرض الكل)
+              {financialsData.length === 0 
+                ? 'في انتظار تسجيل أول اشتراك (عرض الكل)' 
+                : `${financialsData.filter(c => c.status === 'ACTIVE' || c.status === 'RENEWED').length} مشترك نشط ومجدد من أصل ${financialsData.length}`}
             </div>
           </div>
 
@@ -429,6 +479,7 @@ export default function FinancialsRenewalsDashboard() {
                 { id: 'ALL', label: 'كافة الاشتراكات', count: financialsData.length },
                 { id: 'URGENT_3D', label: 'عاجل (≤ 3 أيام)', count: urgentRenewals.length },
                 { id: 'WEEK_7D', label: 'خلال أسبوع' },
+                { id: 'FROZEN', label: 'مجمد مؤقتاً', count: financialsData.filter(c => c.status === 'FROZEN').length },
                 { id: 'OVERDUE', label: 'منتهية متأخرة', count: overdueCount },
                 { id: 'PAID', label: 'نشطة ومسددة' }
               ].map(f => {
@@ -518,7 +569,7 @@ export default function FinancialsRenewalsDashboard() {
           {/* Table Header */}
           <div style={{
             display: 'grid',
-            gridTemplateColumns: '80px 1.5fr 110px 110px 140px 110px 180px',
+            gridTemplateColumns: '80px 1.5fr 100px 105px 135px 105px 220px',
             padding: '8px 14px',
             background: '#F1F5F9',
             fontSize: '11px',
@@ -529,10 +580,10 @@ export default function FinancialsRenewalsDashboard() {
             <div>الكود</div>
             <div>اسم المشترك والتواصل</div>
             <div>الباقة</div>
-            <div>قيمة الاشتراك</div>
+            <div>المعدل الشهري</div>
             <div>تاريخ وموعد التجديد</div>
             <div>طريقة السداد</div>
-            <div style={{ textAlign: 'center' }}>الإجراء المالي</div>
+            <div style={{ textAlign: 'center' }}>الإجراء المالي والمتابعة</div>
           </div>
 
           {/* Table Body */}
@@ -546,13 +597,14 @@ export default function FinancialsRenewalsDashboard() {
                 const isUrgent = client.daysRemaining > 0 && client.daysRemaining <= 3;
                 const isOverdue = client.daysRemaining < 0;
                 const isRenewed = client.status === 'RENEWED';
+                const cleanCode = String(client.client_code || client.id || '').replace(/^client[-_]?/i, '').replace('#', '');
 
                 return (
                   <div
                     key={client.id}
                     style={{
                       display: 'grid',
-                      gridTemplateColumns: '80px 1.5fr 110px 110px 140px 110px 180px',
+                      gridTemplateColumns: '80px 1.5fr 100px 105px 135px 105px 220px',
                       padding: '10px 14px',
                       alignItems: 'center',
                       borderBottom: '1px solid #F1F5F9',
@@ -568,7 +620,11 @@ export default function FinancialsRenewalsDashboard() {
 
                     {/* Col 2: Name + Phone */}
                     <div>
-                      <strong style={{ fontSize: '12px', color: '#0F172A', display: 'block' }}>
+                      <strong 
+                        style={{ fontSize: '12px', color: '#0F172A', display: 'block', cursor: 'pointer' }}
+                        onClick={() => window.open(`/customers/${cleanCode}`, '_blank')}
+                        title="عرض ملف التطور الزمني للمشترك"
+                      >
                         {client.full_name || client.name}
                       </strong>
                       <span style={{ fontSize: '10.5px', color: '#64748B', fontFamily: 'JetBrains Mono, Cairo, sans-serif' }}>
@@ -578,26 +634,15 @@ export default function FinancialsRenewalsDashboard() {
 
                     {/* Col 3: Package Badge */}
                     <div>
-                      <span style={{
-                        fontSize: '9.5px',
-                        fontWeight: 800,
-                        fontFamily: 'JetBrains Mono, Cairo, sans-serif',
-                        padding: '1px 6px',
-                        borderRadius: '3px',
-                        background: client.isMax ? '#FFFBEB' : '#F0F9FF',
-                        border: client.isMax ? '1px solid #FDE68A' : '1px solid #BAE6FD',
-                        color: client.isMax ? '#B45309' : '#0284C7'
-                      }}>
-                        {client.pkgLabel}
-                      </span>
+                      <ClientPackageBadge item={client} size="xs" />
                     </div>
 
                     {/* Col 4: Fee */}
                     <div style={{ display: 'flex', alignItems: 'baseline', gap: '3px' }}>
                       <strong style={{ fontFamily: 'JetBrains Mono, Cairo, sans-serif', fontSize: '12.5px', color: '#0F172A' }}>
-                        {client.monthlyFee.toLocaleString('en-US')}
+                        {Math.round(client.monthlyFee).toLocaleString('en-US')}
                       </strong>
-                      <span style={{ fontSize: '10.5px', fontWeight: 700, color: '#64748B', fontFamily: 'Cairo, sans-serif' }}>ج.م</span>
+                      <span style={{ fontSize: '10px', fontWeight: 700, color: '#64748B', fontFamily: 'Cairo, sans-serif' }}>ج.م/شهر</span>
                     </div>
 
                     {/* Col 5: Expiry & Days Left */}
@@ -608,9 +653,9 @@ export default function FinancialsRenewalsDashboard() {
                       <span style={{
                         fontSize: '9.5px',
                         fontWeight: 700,
-                        color: isRenewed ? '#059669' : isOverdue ? '#DC2626' : isUrgent ? '#B45309' : '#475569'
+                        color: isRenewed ? '#059669' : client.status === 'FROZEN' ? '#B45309' : isOverdue ? '#DC2626' : isUrgent ? '#B45309' : '#475569'
                       }}>
-                        {isRenewed ? 'تم التجديد (نشط 30 يوم)' : isOverdue ? `منتهي منذ ${Math.abs(client.daysRemaining)} يوم` : `متبقي ${client.daysRemaining} يوم`}
+                        {isRenewed ? 'تم التجديد (نشط 30 يوم)' : client.status === 'FROZEN' ? 'مجمد مؤقتاً (الأيام محفوظة)' : isOverdue ? `منتهي منذ ${Math.abs(client.daysRemaining)} يوم` : `متبقي ${client.daysRemaining} يوم`}
                       </span>
                     </div>
 
@@ -620,7 +665,7 @@ export default function FinancialsRenewalsDashboard() {
                     </div>
 
                     {/* Col 7: Actions */}
-                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '5px' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '5px', flexWrap: 'wrap' }}>
                       {isRenewed ? (
                         <span style={{ fontSize: '10.5px', color: '#059669', fontWeight: 700, display: 'inline-flex', alignItems: 'center', gap: '3px' }}>
                           <CheckCircle2 size={12} />
@@ -650,6 +695,29 @@ export default function FinancialsRenewalsDashboard() {
                             <span>تجديد</span>
                           </button>
 
+                          {/* Freeze / Resume Button */}
+                          <button
+                            type="button"
+                            onClick={() => handleToggleFreeze(client)}
+                            style={{
+                              padding: '3px 7px',
+                              borderRadius: '4px',
+                              background: client.status === 'FROZEN' ? '#F0FDF4' : '#F8FAFC',
+                              color: client.status === 'FROZEN' ? '#16A34A' : '#475569',
+                              border: client.status === 'FROZEN' ? '1px solid #86EFAC' : '1px solid #CBD5E1',
+                              fontSize: '10.5px',
+                              fontWeight: 700,
+                              cursor: 'pointer',
+                              display: 'inline-flex',
+                              alignItems: 'center',
+                              gap: '3px'
+                            }}
+                            title={client.status === 'FROZEN' ? 'استئناف الاشتراك وتمديد تاريخ الانتهاء' : 'تجميد الاشتراك وتثبيت الأيام المتبقية'}
+                          >
+                            {client.status === 'FROZEN' ? <Play size={11} /> : <Pause size={11} />}
+                            <span>{client.status === 'FROZEN' ? 'استئناف' : 'تجميد'}</span>
+                          </button>
+
                           <button
                             type="button"
                             onClick={() => handleSendRenewalWhatsApp(client)}
@@ -673,6 +741,28 @@ export default function FinancialsRenewalsDashboard() {
                           </button>
                         </>
                       )}
+
+                      <button
+                        type="button"
+                        onClick={() => window.open(`/customers/${cleanCode}`, '_blank')}
+                        style={{
+                          padding: '3px 7px',
+                          borderRadius: '4px',
+                          background: '#F8FAFC',
+                          color: '#334155',
+                          border: '1px solid #CBD5E1',
+                          fontSize: '10.5px',
+                          fontWeight: 700,
+                          cursor: 'pointer',
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          gap: '3px'
+                        }}
+                        title="عرض ملف التطور الزمني والمقارنة البصرية للمشترك"
+                      >
+                        <Clock size={11} color="#475569" />
+                        <span>الملف</span>
+                      </button>
                     </div>
 
                   </div>
@@ -702,6 +792,18 @@ export default function FinancialsRenewalsDashboard() {
             {toast}
           </div>
         )}
+
+        {/* Flexible Renewal Modal */}
+        <FlexibleRenewalModal
+          isOpen={Boolean(flexibleRenewalClient)}
+          onClose={() => setFlexibleRenewalClient(null)}
+          client={flexibleRenewalClient}
+          onSuccess={() => {
+            setFlexibleRenewalClient(null);
+            fetchFinancials();
+            showToast('تم تجديد وتمديد اشتراك المشترك بنجاح!');
+          }}
+        />
 
       </div>
     </AdminLayout>

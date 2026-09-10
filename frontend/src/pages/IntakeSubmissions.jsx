@@ -1,17 +1,18 @@
 import { ClientCodeBadge, ClientPackageBadge, getClientTier } from '../utils/tierBadgeHelper';
 import React, { useState, useEffect } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { ExternalLink, Search, Clock, CheckCircle2, CreditCard, FileText, Send, Check, MessageCircle, Eye, Edit3, X } from 'lucide-react';
 import { API_BASE } from '../config/api';
 import AdminLayout from '../components/layout/AdminLayout';
 import WhatsAppModal from '../components/modals/WhatsAppModal';
 import IntakeAuditDetailModal from '../components/intake/IntakeAuditDetailModal';
 import { arabicSearchMatch } from '../utils/searchUtils';
+import { extractClientFastingProfile } from '../utils/seasonalFastingRadar';
+import { formatWhatsAppPhone } from '../utils/whatsappRemindersEngine';
 import { PageHeader } from '@/shared/components/page-header';
 import { FormSection } from '@/shared/components/form-section';
 
 export default function IntakeSubmissions() {
-  const navigate = useNavigate();
   const [submissions, setSubmissions] = useState([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState('ALL'); // ALL | IN_PROGRESS | PENDING | PAID | DRAFT | APPROVED
@@ -19,15 +20,9 @@ export default function IntakeSubmissions() {
 
   // Modals state
   const [selectedAnswers, setSelectedAnswers] = useState(null);
-  const [paymentModalSub, setPaymentModalSub] = useState(null);
-  const [paymentForm, setPaymentForm] = useState({
-    subscription_package: '3_MONTHS_MAX',
-    subscription_price: 2500,
-    payment_method: 'INSTAPAY',
-    duration_months: 3
-  });
   const [whatsappClient, setWhatsappClient] = useState(null);
   const [generatingId, setGeneratingId] = useState(null);
+  const [verifyingPaymentId, setVerifyingPaymentId] = useState(null);
 
   const handleToggleAnswers = (sub) => {
     setSelectedAnswers(sub);
@@ -42,14 +37,13 @@ export default function IntakeSubmissions() {
   useEffect(() => {
     const handleKeyDown = (e) => {
       if (e.key === 'Escape' || e.keyCode === 27) {
-        if (paymentModalSub) setPaymentModalSub(null);
         if (whatsappClient) setWhatsappClient(null);
         if (selectedAnswers) setSelectedAnswers(null);
       }
     };
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [paymentModalSub, whatsappClient, selectedAnswers]);
+  }, [whatsappClient, selectedAnswers]);
 
   const fetchSubmissions = async () => {
     try {
@@ -66,32 +60,46 @@ export default function IntakeSubmissions() {
     }
   };
 
-  const handleVerifyPayment = async (e) => {
-    e.preventDefault();
-    if (!paymentModalSub) return;
+  const handleVerifyPayment = async (sub) => {
+    const clientName = sub.user?.full_name || sub.answers?.personal?.firstName || 'المشترك';
+    const isMax = getClientTier(sub) === 'MAX';
+    const rawPkg = sub.user?.subscription_package || sub.package_name || (isMax ? 'MAX_3_PLUS_1' : 'ELITE_3_PLUS_1');
+    const rawPrice = sub.user?.subscription_price || sub.subscription_price || (isMax ? 3500 : 2500);
+
+    if (!window.confirm(`هل ترغب في تأكيد استلام سداد اشتراك (${clientName}) وتفعيل الحساب فوراً؟`)) {
+      return;
+    }
 
     try {
-      const res = await fetch(`${API_BASE}/api/v1/intake/${paymentModalSub.id}/verify-payment`, {
+      setVerifyingPaymentId(sub.id);
+      const res = await fetch(`${API_BASE}/api/v1/intake/${sub.id}/verify-payment`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(paymentForm)
+        body: JSON.stringify({
+          subscription_package: rawPkg,
+          subscription_price: rawPrice,
+          payment_method: sub.user?.payment_method || 'INSTAPAY',
+          duration_months: 4
+        })
       });
 
       if (res.ok) {
-        setPaymentModalSub(null);
         fetchSubmissions();
       } else {
-        alert('حدث خطأ أثناء تأكيد الدفع');
+        const data = await res.json().catch(() => ({}));
+        alert(data.error || 'حدث خطأ أثناء تأكيد الدفع');
       }
     } catch (e) {
       alert('خطأ في الاتصال بالخادم');
+    } finally {
+      setVerifyingPaymentId(null);
     }
   };
 
   const handleGenerateDraft = async (submission) => {
     const lookup = submission.user?.client_code || submission.user?.id || '1';
     if (submission.status === 'DRAFT_GENERATED' || submission.status === 'APPROVED') {
-      navigate(`/coach/editor?user_id=${lookup}`);
+      window.open(`/coach/editor?user_id=${lookup}`, '_blank');
       return;
     }
 
@@ -104,7 +112,8 @@ export default function IntakeSubmissions() {
 
       const data = await res.json();
       if (res.ok) {
-        navigate(`/coach/editor?user_id=${lookup}&submission_id=${submission.id}`);
+        window.open(`/coach/editor?user_id=${lookup}&submission_id=${submission.id}`, '_blank');
+        fetchSubmissions();
       } else {
         alert(data.error || 'فشل توليد مسودة الخطة');
       }
@@ -121,8 +130,7 @@ export default function IntakeSubmissions() {
     const clientPhone = user.phone_number || sub.answers?.personal?.phone || '';
     const intakeUrl = `${window.location.origin}/intake/form?code=${user.client_code}&phone=${clientPhone}`;
 
-    let cleanPhone = clientPhone.replace(/\D/g, '');
-    if (cleanPhone.startsWith('01')) cleanPhone = '2' + cleanPhone;
+    const cleanPhone = formatWhatsAppPhone(clientPhone);
 
     const message = `أهلاً يا ${clientName}!\nلاحظنا أنك اقتربت من إنهاء استمارة اشتراكك في Z Coaching (متبقي خطوات بسيطة فقط).\nاضغط على الرابط التالي لإكمالها وسيبدأ الكابتن بتجهيز وتفعيل خطتك فوراً:\n\n${intakeUrl}\n\nبالتوفيق!`;
     const waUrl = `https://wa.me/${cleanPhone}?text=${encodeURIComponent(message)}`;
@@ -346,11 +354,12 @@ export default function IntakeSubmissions() {
                   <tr style={{ background: '#F8FAFC', borderBottom: '1px solid #E2E8F0', color: '#475569', fontWeight: 700 }}>
                     <th style={{ padding: '10px 14px', textAlign: 'center', width: '85px' }}>كود العميل</th>
                     <th style={{ padding: '10px 14px', textAlign: 'right' }}>اسم المتدرب</th>
-                    <th style={{ padding: '10px 14px', textAlign: 'center' }}>رقم الهاتف</th>
-                    <th style={{ padding: '10px 14px', textAlign: 'center' }}>الباقة والمبلغ</th>
-                    <th style={{ padding: '10px 14px', textAlign: 'center' }}>حالة الدفع</th>
-                    <th style={{ padding: '10px 14px', textAlign: 'center' }}>حالة الاستمارة</th>
-                    <th style={{ padding: '10px 14px', textAlign: 'left' }}>الإجراءات</th>
+                    <th style={{ padding: '10px 14px', textAlign: 'center', width: '110px' }}>رقم الهاتف</th>
+                    <th style={{ padding: '10px 14px', textAlign: 'center', width: '85px' }}>الباقة</th>
+                    <th style={{ padding: '10px 14px', textAlign: 'center', width: '90px' }}>السعر</th>
+                    <th style={{ padding: '10px 14px', textAlign: 'center', width: '100px' }}>حالة الدفع</th>
+                    <th style={{ padding: '10px 14px', textAlign: 'center', width: '100px' }}>حالة الاستمارة</th>
+                    <th style={{ padding: '10px 14px', textAlign: 'left', minWidth: '300px' }}>الإجراءات</th>
                   </tr>
                 </thead>
                                 <tbody>
@@ -379,7 +388,42 @@ export default function IntakeSubmissions() {
 
                         {/* 2. Name */}
                         <td style={{ padding: '10px 14px', textAlign: 'right' }}>
-                          <strong style={{ color: '#0F172A', fontSize: '13px', display: 'block' }}>{clientName}</strong>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flexWrap: 'wrap' }}>
+                            <strong style={{ color: '#0F172A', fontSize: '13px' }}>{clientName}</strong>
+                            {(() => {
+                              const fasting = extractClientFastingProfile(sub, sub.answers);
+                              return (
+                                <>
+                                  {fasting.primaryFastingBadge && (
+                                    <span style={{
+                                      fontSize: '10px',
+                                      padding: '1px 6px',
+                                      borderRadius: '4px',
+                                      background: fasting.primaryFastingBadge.bg,
+                                      border: `1px solid ${fasting.primaryFastingBadge.border}`,
+                                      color: fasting.primaryFastingBadge.color,
+                                      fontWeight: 800
+                                    }}>
+                                      {fasting.primaryFastingBadge.label}
+                                    </span>
+                                  )}
+                                  {fasting.intermittentBadge && (
+                                    <span style={{
+                                      fontSize: '10px',
+                                      padding: '1px 6px',
+                                      borderRadius: '4px',
+                                      background: fasting.intermittentBadge.bg,
+                                      border: `1px solid ${fasting.intermittentBadge.border}`,
+                                      color: fasting.intermittentBadge.color,
+                                      fontWeight: 800
+                                    }}>
+                                      {fasting.intermittentBadge.label}
+                                    </span>
+                                  )}
+                                </>
+                              );
+                            })()}
+                          </div>
                         </td>
 
                         {/* 3. Phone */}
@@ -389,14 +433,40 @@ export default function IntakeSubmissions() {
                           </span>
                         </td>
 
-                        {/* 4. Package & Price */}
+                        {/* 4. Package */}
                         <td style={{ padding: '10px 14px', textAlign: 'center' }}>
-                          <div style={{ display: 'inline-flex', flexDirection: 'column', gap: '3px', alignItems: 'center' }}>
-                            <ClientPackageBadge item={sub} />
-                            <span style={{ color: '#475569', fontSize: '11px', fontWeight: 800, fontFamily: 'JetBrains Mono, Cairo, sans-serif', textAlign: 'center' }}>
-                              {`${Number(rawPrice).toLocaleString('en-US')} ج.م`}
+                          <ClientPackageBadge item={sub} />
+                        </td>
+
+                        {/* 5. Price */}
+                        <td style={{ padding: '10px 14px', textAlign: 'center', whiteSpace: 'nowrap' }}>
+                          <span style={{ 
+                            background: '#F8FAFC', 
+                            border: '1px solid #E2E8F0', 
+                            padding: '2px 8px', 
+                            borderRadius: '4px', 
+                            display: 'inline-flex',
+                            alignItems: 'baseline',
+                            gap: '3px',
+                            justifyContent: 'center'
+                          }}>
+                            <span style={{ 
+                              color: '#0F172A', 
+                              fontSize: '11px', 
+                              fontWeight: 800, 
+                              fontFamily: 'JetBrains Mono, Cairo, sans-serif'
+                            }}>
+                              {Number(rawPrice).toLocaleString('en-US')}
                             </span>
-                          </div>
+                            <span style={{ 
+                              fontSize: '9.5px', 
+                              fontWeight: 700, 
+                              color: '#64748B', 
+                              fontFamily: 'Cairo, sans-serif' 
+                            }}>
+                              ج.م
+                            </span>
+                          </span>
                         </td>
 
                         {/* 5. Payment Status */}
@@ -441,7 +511,18 @@ export default function IntakeSubmissions() {
                             {/* WhatsApp Nudge / Chat */}
                             <button
                               type="button"
-                              onClick={() => handleSendNudge(sub)}
+                              onClick={() => {
+                                if (sub.status === 'IN_PROGRESS') {
+                                  handleSendNudge(sub);
+                                } else {
+                                  setWhatsappClient({
+                                    ...(sub.user || {}),
+                                    client_code: sub.user?.client_code || sub.answers?.client_code || sub.client_code,
+                                    full_name: sub.user?.full_name || sub.answers?.personal?.firstName || 'مشتركنا',
+                                    phone_number: sub.user?.phone_number || sub.answers?.personal?.phone || ''
+                                  });
+                                }
+                              }}
                               style={{
                                 padding: '4px 10px',
                                 borderRadius: '6px',
@@ -463,7 +544,7 @@ export default function IntakeSubmissions() {
                                 e.currentTarget.style.background = 'transparent';
                                 e.currentTarget.style.borderColor = '#E2E8F0';
                               }}
-                              title="تواصل وتذكير واتساب"
+                              title={sub.status === 'IN_PROGRESS' ? 'إرسال تذكير لإكمال الاستمارة' : 'مركز رسائل الواتساب'}
                             >
                               <MessageCircle size={13} />
                               <span>واتساب</span>
@@ -492,23 +573,25 @@ export default function IntakeSubmissions() {
                               <span>إجابات</span>
                             </button>
 
-                            {/* Verify Payment Modal trigger if not paid */}
+                            {/* Direct Verify Payment trigger if not paid */}
                             {sub.status !== 'APPROVED' && sub.payment_status !== 'PAID' && (
                               <button
                                 type="button"
-                                onClick={() => setPaymentModalSub(sub)}
+                                disabled={verifyingPaymentId === sub.id}
+                                onClick={() => handleVerifyPayment(sub)}
                                 style={{
-                                  padding: '4px 8px',
+                                  padding: '4px 9px',
                                   borderRadius: '5px',
-                                  border: '1px solid #CBD5E1',
-                                  background: '#FFFFFF',
-                                  color: '#0F172A',
+                                  border: '1px solid #86EFAC',
+                                  background: '#F0FDF4',
+                                  color: '#16A34A',
                                   fontSize: '11px',
                                   fontWeight: 700,
-                                  cursor: 'pointer'
+                                  cursor: verifyingPaymentId === sub.id ? 'wait' : 'pointer'
                                 }}
+                                title="تأكيد استلام التحويل وتفعيل الحساب فوراً"
                               >
-                                تأكيد الدفع
+                                {verifyingPaymentId === sub.id ? 'جاري التأكيد...' : 'تأكيد الدفع'}
                               </button>
                             )}
 
@@ -547,32 +630,6 @@ export default function IntakeSubmissions() {
             </div>
           )}
         </FormSection>
-
-        {/* Payment Confirmation Modal */}
-        {paymentModalSub && (
-          <div style={{ position: 'fixed', inset: 0, background: 'rgba(15, 23, 42, 0.5)', backdropFilter: 'blur(4px)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1200 }}>
-            <div style={{ background: '#FFFFFF', borderRadius: '12px', width: '400px', maxWidth: '90vw', padding: '20px', border: '1px solid #E2E8F0', boxShadow: '0 20px 40px rgba(15, 23, 42, 0.15)' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px' }}>
-                <strong style={{ fontSize: '14px', color: '#0F172A' }}>تأكيد استلام الدفع وتفعيل الباقة</strong>
-                <button type="button" onClick={() => setPaymentModalSub(null)} style={{ border: 'none', background: 'transparent', cursor: 'pointer' }}><X size={16} /></button>
-              </div>
-              <form onSubmit={handleVerifyPayment} style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                <div>
-                  <label style={{ fontSize: '11.5px', color: '#64748B', display: 'block', marginBottom: '4px' }}>اسم المشترك</label>
-                  <input type="text" disabled value={paymentModalSub.user?.full_name || 'متدرب جديد'} style={{ width: '100%', padding: '7px 10px', borderRadius: '6px', border: '1px solid #E2E8F0', background: '#F8FAFC', fontSize: '12px' }} />
-                </div>
-                <div>
-                  <label style={{ fontSize: '11.5px', color: '#64748B', display: 'block', marginBottom: '4px' }}>المبلغ المستلم (ج.م)</label>
-                  <input type="number" value={paymentForm.subscription_price} onChange={(e) => setPaymentForm({ ...paymentForm, subscription_price: Number(e.target.value) })} style={{ width: '100%', padding: '7px 10px', borderRadius: '6px', border: '1px solid #E2E8F0', fontSize: '12px' }} />
-                </div>
-                <div style={{ display: 'flex', gap: '8px', marginTop: '6px' }}>
-                  <button type="button" onClick={() => setPaymentModalSub(null)} style={{ flex: 1, padding: '8px', borderRadius: '6px', border: '1px solid #E2E8F0', background: '#FFFFFF', color: '#475569', fontSize: '12px', fontWeight: 700, cursor: 'pointer' }}>إلغاء</button>
-                  <button type="submit" style={{ flex: 1, padding: '8px', borderRadius: '6px', border: 'none', background: '#0F172A', color: '#FFFFFF', fontSize: '12px', fontWeight: 700, cursor: 'pointer' }}>تأكيد وتفعيل</button>
-                </div>
-              </form>
-            </div>
-          </div>
-        )}
 
         {/* Intake Audit Details Modal */}
         {selectedAnswers && (
