@@ -1,6 +1,16 @@
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import {
+  getExercisesCache,
+  invalidateExercisesCache,
+  getExercisesEtag,
+  getFoodsCache,
+  invalidateFoodsCache,
+  getFoodsEtag,
+  handleConditionalGet,
+  getCacheStats
+} from '../services/catalogCache.service.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -410,34 +420,37 @@ const DEFAULT_EXERCISES_CATALOG = [
 ];
 
 export function getExercisesCatalogFile() {
-  ensureSettingsDir();
-  const srcCatalogFile = path.join(__dirname, '../../data/exercises-catalog.json');
-  if (!fs.existsSync(EXERCISES_CATALOG_FILE)) {
-    if (fs.existsSync(srcCatalogFile)) {
-      const srcRaw = fs.readFileSync(srcCatalogFile, 'utf-8');
-      fs.writeFileSync(EXERCISES_CATALOG_FILE, srcRaw, 'utf-8');
-      try {
-        return JSON.parse(srcRaw);
-      } catch (_) {}
+  return getExercisesCache(() => {
+    ensureSettingsDir();
+    const srcCatalogFile = path.join(__dirname, '../../data/exercises-catalog.json');
+    if (!fs.existsSync(EXERCISES_CATALOG_FILE)) {
+      if (fs.existsSync(srcCatalogFile)) {
+        const srcRaw = fs.readFileSync(srcCatalogFile, 'utf-8');
+        fs.writeFileSync(EXERCISES_CATALOG_FILE, srcRaw, 'utf-8');
+        try {
+          return JSON.parse(srcRaw);
+        } catch (_) {}
+      }
+      fs.writeFileSync(EXERCISES_CATALOG_FILE, JSON.stringify(DEFAULT_EXERCISES_CATALOG, null, 2), 'utf-8');
+      return DEFAULT_EXERCISES_CATALOG;
     }
-    fs.writeFileSync(EXERCISES_CATALOG_FILE, JSON.stringify(DEFAULT_EXERCISES_CATALOG, null, 2), 'utf-8');
-    return DEFAULT_EXERCISES_CATALOG;
-  }
-  try {
-    const raw = fs.readFileSync(EXERCISES_CATALOG_FILE, 'utf-8');
-    return JSON.parse(raw);
-  } catch (e) {
-    if (fs.existsSync(srcCatalogFile)) {
-      try {
-        return JSON.parse(fs.readFileSync(srcCatalogFile, 'utf-8'));
-      } catch (_) {}
+    try {
+      const raw = fs.readFileSync(EXERCISES_CATALOG_FILE, 'utf-8');
+      return JSON.parse(raw);
+    } catch (e) {
+      if (fs.existsSync(srcCatalogFile)) {
+        try {
+          return JSON.parse(fs.readFileSync(srcCatalogFile, 'utf-8'));
+        } catch (_) {}
+      }
+      return DEFAULT_EXERCISES_CATALOG;
     }
-    return DEFAULT_EXERCISES_CATALOG;
-  }
+  });
 }
 
 export function saveExercisesCatalogFile(data) {
   ensureSettingsDir();
+  const srcCatalogFile = path.join(__dirname, '../../data/exercises-catalog.json');
   const jsonStr = JSON.stringify(data, null, 2);
   fs.writeFileSync(EXERCISES_CATALOG_FILE, jsonStr, 'utf-8');
   try {
@@ -445,6 +458,8 @@ export function saveExercisesCatalogFile(data) {
       fs.writeFileSync(srcCatalogFile, jsonStr, 'utf-8');
     }
   } catch (_) {}
+  // Write-Through: Immediately update in-memory cache
+  invalidateExercisesCache(data);
 }
 
 // ----------------------------------------------------
@@ -508,6 +523,10 @@ export const deleteIntakeQuestion = (req, res) => {
 // 2. Exercise Catalog Endpoints
 export const getAdminExercises = (req, res) => {
   try {
+    const etag = getExercisesEtag();
+    if (handleConditionalGet(req, res, etag)) {
+      return;
+    }
     const exercises = getExercisesCatalogFile();
     return res.status(200).json({ success: true, total: exercises.length, exercises });
   } catch (err) {
@@ -802,29 +821,49 @@ export const deleteSubscriptionPackage = (req, res) => {
 // FOODS & NUTRITION CATALOG CONTROLLERS
 // ----------------------------------------------------
 export function getFoodsCatalogFile() {
-  ensureSettingsDir();
-  if (!fs.existsSync(FOODS_CATALOG_FILE)) {
-    return [];
-  }
-  try {
-    const raw = fs.readFileSync(FOODS_CATALOG_FILE, 'utf8');
-    return JSON.parse(raw);
-  } catch (e) {
-    return [];
-  }
+  return getFoodsCache(() => {
+    ensureSettingsDir();
+    if (!fs.existsSync(FOODS_CATALOG_FILE)) {
+      return [];
+    }
+    try {
+      const raw = fs.readFileSync(FOODS_CATALOG_FILE, 'utf8');
+      return JSON.parse(raw);
+    } catch (e) {
+      return [];
+    }
+  });
 }
 
 export function saveFoodsCatalogFile(foods) {
   ensureSettingsDir();
   fs.writeFileSync(FOODS_CATALOG_FILE, JSON.stringify(foods, null, 2), 'utf8');
+  // Write-Through: Immediately update in-memory cache
+  invalidateFoodsCache(foods);
 }
 
 export const getAdminFoods = (req, res) => {
   try {
+    const etag = getFoodsEtag();
+    if (handleConditionalGet(req, res, etag)) {
+      return;
+    }
     const foods = getFoodsCatalogFile();
     return res.status(200).json({ success: true, count: foods.length, foods });
   } catch (err) {
     return res.status(500).json({ error: "فشل استرجاع مكتبة الأطعمة", details: err.message });
+  }
+};
+
+/**
+ * Controller to fetch in-memory cache monitoring metrics
+ */
+export const getAdminCacheStats = (req, res) => {
+  try {
+    const stats = getCacheStats();
+    return res.status(200).json({ success: true, cache: stats });
+  } catch (err) {
+    return res.status(500).json({ error: "فشل استرجاع إحصائيات الذاكرة المؤقتة", details: err.message });
   }
 };
 

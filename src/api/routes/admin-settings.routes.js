@@ -13,7 +13,8 @@ import {
   saveAdminFood,
   deleteAdminFood,
   getAdminSystemSettings,
-  saveAdminSystemSettings
+  saveAdminSystemSettings,
+  getAdminCacheStats
 } from '../controllers/admin-settings.controller.js';
 import { requireAuth, requireAdmin } from '../middlewares/auth.middleware.js';
 
@@ -59,6 +60,9 @@ router.put('/system', requireAuth, requireAdmin, saveAdminSystemSettings);
 router.get('/settings/system', requireAuth, requireAdmin, getAdminSystemSettings);
 router.post('/settings/system', requireAuth, requireAdmin, saveAdminSystemSettings);
 router.put('/settings/system', requireAuth, requireAdmin, saveAdminSystemSettings);
+
+// 6. In-Memory Cache Monitoring
+router.get('/cache-stats', requireAuth, requireAdmin, getAdminCacheStats);
 
 export default router;
 

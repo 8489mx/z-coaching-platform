@@ -1,5 +1,6 @@
 import { MASTER_EXERCISE_DICTIONARY } from "../../exercise-catalog-v2/master-exercise-translations.js";
 import { getExercisesCatalogFile } from "./admin-settings.controller.js";
+import { getExercisesEtag, handleConditionalGet } from "../services/catalogCache.service.js";
 
 // Enriched Exercise Catalog with muscle classifications, equipment, coaching cues and video tutorials
 const EXERCISES_DATABASE = [
@@ -241,6 +242,15 @@ function normalizeArabicText(text) {
 export const getExercisesList = (req, res) => {
   try {
     const { muscle, equipment, search } = req.query;
+
+    const isUnfiltered = (!muscle || muscle === "ALL") && (!equipment || equipment === "ALL") && !search;
+    if (isUnfiltered) {
+      const etag = getExercisesEtag();
+      if (handleConditionalGet(req, res, etag)) {
+        return;
+      }
+    }
+
     let results = getExercisesCatalogFile();
 
     if (muscle && muscle !== "ALL") {
@@ -259,6 +269,12 @@ export const getExercisesList = (req, res) => {
           normalizeArabicText(e.id).includes(q) ||
           (Array.isArray(e.aliases) && e.aliases.some((a) => normalizeArabicText(a).includes(q)))
       );
+    }
+
+    if (isUnfiltered) {
+      const etag = getExercisesEtag();
+      res.setHeader('ETag', `"${etag}"`);
+      res.setHeader('Cache-Control', 'public, max-age=300, must-revalidate');
     }
 
     return res.status(200).json({

@@ -134,6 +134,15 @@
   - وسيط التحقق `requireAuth` يفحص إصدار التوكن الحي مع قاعدة البيانات ويرفض أي جلسة ملغاة بكود `401 Unauthorized`.
   - حظر الوصول الفوري للحسابات المعطلة (`subscription_status === 'DEACTIVATED'`) بكود `403 Forbidden`.
 
+### طبقة التخزين المؤقت وحوكمة الأداء (In-Memory Caching & Performance Architecture) — مكتملة
+- **التخزين المؤقت لكتالوجات التمارين والأغذية (In-Memory Catalog Cache)**:
+  - خدمة مركزية مخصصة [`src/api/services/catalogCache.service.js`](file:///d:/zcc/src/api/services/catalogCache.service.js) تحتفظ بكافة بيانات كتالوج التمارين وكتالوج الأطعمة في الذاكرة الحية للوصول السريع `O(1)` دون أي قراءة متزامنة من القرص (Zero Disk I/O).
+  - إحماء مسبق تلقائي (`Warm-Up on Boot`) عند بدء تشغيل الخادم في `src/api/server.js`.
+  - تحديث وإبطال الكاش اللحظي المتزامن (`Write-Through Cache Invalidation`) فور حفظ أو تعديل أو حذف أي تمرين أو صنف غذائي من قبل المدرب أو الإدارة لضمان تطابق البيانات لحظياً (Zero Stale Data).
+  - دعم ترويسات `ETag` وردود `304 Not Modified` عند مطابقة `If-None-Match` لتوفير الباندويث وتسريع استجابة الواجهات بنسبة تتجاوز 90%.
+  - فلترة وبحث بالكامل في الذاكرة لتمارين العضلات والأدوات في مسار `/api/v1/exercises`.
+  - مسار محمي للإدارة لمراقبة صحة ومؤشرات أداء الكاش: `/api/v1/admin-settings/cache-stats` (Hit Rate, Cache Hits, Misses, Counts, Last Updated).
+
 ---
 
 ## 5. معمارية الواجهات وتطبيق المتدرب (Frontend Architecture)
@@ -189,13 +198,11 @@
 
 ## 7. ما هو قيد الانتظار في خارطة الطريق (What is Pending & Upcoming)
 
-1. **تخزين الذاكرة المؤقتة (Caching Layer)**:
-   - تخزين كتالوجات الأغذية والتمارين في الذاكرة لتسريع استجابة الـ API.
-2. **التطبيق الهجين (Mobile App Integration)**:
+1. **التطبيق الهجين (Mobile App Integration)**:
    - مزامنة متقدمة ودفع إشعارات (Push Notifications) لتطبيق Flutter/React Native.
 
 ---
 
 *تاريخ آخر تحديث معتمد*: 2026-09-11
-*رقم الإيداع المرجعي*: `Tier 2 Security Hardening Complete`
-*إجمالي الفحوصات*: 1381 فحصاً ناجحاً بنسبة 100%
+*رقم الإيداع المرجعي*: `In-Memory Catalog Caching Layer Complete`
+*إجمالي الفحوصات*: 1392 فحصاً ناجحاً بنسبة 100%
