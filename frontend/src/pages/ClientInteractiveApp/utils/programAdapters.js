@@ -1,4 +1,4 @@
-import { getExerciseDisplayNames } from '../../../utils/exerciseTranslator';
+import { getExerciseDisplayNames } from '../../../utils/exerciseTranslator.js';
 
 export function adaptProgramToInteractiveMeals(masterProgram) {
   if (!masterProgram) return [];
