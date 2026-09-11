@@ -1166,7 +1166,7 @@ export default function CoachEditor() {
                       onClick={() => setQueueFilter(qf.id)}
                       style={{
                         padding: '3px 8px',
-                        borderRadius: '4px',
+                        borderRadius: '7px',
                         fontSize: '11px',
                         fontWeight: isSel ? 800 : 600,
                         border: isSel ? '1px solid #0F172A' : '1px solid #E2E8F0',
@@ -1198,7 +1198,7 @@ export default function CoachEditor() {
 
             {/* Quick Search & Toggle Slider */}
             <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-              <div style={{ display: 'flex', alignItems: 'center', background: '#F8FAFC', border: '1px solid #CBD5E1', borderRadius: '4px', padding: '0 6px', height: '26px', width: '160px', gap: '4px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', background: '#F8FAFC', border: '1px solid #CBD5E1', borderRadius: '8px', padding: '0 6px', height: '26px', width: '160px', gap: '4px' }}>
                 <Search size={11} color="#94A3B8" />
                 <input
                   type="text"
@@ -1212,7 +1212,7 @@ export default function CoachEditor() {
               <button
                 type="button"
                 onClick={() => setShowQueueSlider(!showQueueSlider)}
-                style={{ height: '26px', padding: '0 8px', borderRadius: '4px', background: '#FFFFFF', border: '1px solid #CBD5E1', color: '#64748B', fontSize: '10.5px', fontWeight: 700, cursor: 'pointer' }}
+                style={{ height: '26px', padding: '0 8px', borderRadius: '8px', background: '#FFFFFF', border: '1px solid #CBD5E1', color: '#64748B', fontSize: '10.5px', fontWeight: 700, cursor: 'pointer' }}
               >
                 {showQueueSlider ? 'إخفاء الشريط' : 'إظهار المشتركين'}
               </button>
@@ -1265,7 +1265,7 @@ export default function CoachEditor() {
                         fontFamily: 'monospace',
                         fontWeight: 800,
                         padding: '1px 4px',
-                        borderRadius: '3px',
+                        borderRadius: '6px',
                         background: isSelected ? 'rgba(255,255,255,0.2)' : '#F1F5F9',
                         color: isSelected ? '#FFFFFF' : '#475569'
                       }}>
@@ -1279,7 +1279,7 @@ export default function CoachEditor() {
                         fontSize: '9.5px',
                         fontWeight: 800,
                         padding: '1px 5px',
-                        borderRadius: '3px',
+                        borderRadius: '6px',
                         background: isSelected 
                           ? (isPending ? '#FEF08A' : isNeedsUpdate ? '#BAE6FD' : 'rgba(255,255,255,0.15)')
                           : (isPending ? '#FEF9C3' : isNeedsUpdate ? '#E0F2FE' : '#F1F5F9'),
@@ -1348,7 +1348,7 @@ export default function CoachEditor() {
                   </span>
                 </h4>
 
-                <span style={{ fontSize: '10.5px', padding: '2px 8px', borderRadius: '4px', background: '#0F172A', color: '#FFFFFF', fontWeight: 700 }}>
+                <span style={{ fontSize: '10.5px', padding: '2px 8px', borderRadius: '6px', background: '#0F172A', color: '#FFFFFF', fontWeight: 700 }}>
                   {program?.client?.package_name || 'باقة ماكس'}
                 </span>
               </div>
@@ -1363,14 +1363,14 @@ export default function CoachEditor() {
                 <span style={{ color: '#0F172A', fontWeight: 700 }}>{program?.client?.goal_label || 'خسارة دهون وتنشيف'}</span>
 
                 {program?.client?.injuries && program?.client?.injuries.length > 0 && (
-                  <span style={{ fontSize: '10px', padding: '1px 6px', borderRadius: '4px', background: '#FEF2F2', border: '1px solid #FECACA', color: '#DC2626', fontWeight: 700, display: 'inline-flex', alignItems: 'center', gap: '3px' }}>
+                  <span style={{ fontSize: '10px', padding: '1px 6px', borderRadius: '6px', background: '#FEF2F2', border: '1px solid #FECACA', color: '#DC2626', fontWeight: 700, display: 'inline-flex', alignItems: 'center', gap: '3px' }}>
                     <ShieldAlert size={10} />
                     <span>إصابة: {program?.client?.injuries.join('، ')}</span>
                   </span>
                 )}
 
                 {program?.client?.allergies && program?.client?.allergies.length > 0 && (
-                  <span style={{ fontSize: '10px', padding: '1px 6px', borderRadius: '4px', background: '#F0F9FF', border: '1px solid #BAE6FD', color: '#0284C7', fontWeight: 700, display: 'inline-flex', alignItems: 'center', gap: '3px' }}>
+                  <span style={{ fontSize: '10px', padding: '1px 6px', borderRadius: '6px', background: '#F0F9FF', border: '1px solid #BAE6FD', color: '#0284C7', fontWeight: 700, display: 'inline-flex', alignItems: 'center', gap: '3px' }}>
                     <AlertCircle size={10} />
                     <span>حساسية: {program?.client?.allergies.join('، ')}</span>
                   </span>
@@ -1384,7 +1384,7 @@ export default function CoachEditor() {
                         <span style={{ 
                           fontSize: '10px', 
                           padding: '1px 6px', 
-                          borderRadius: '4px', 
+                          borderRadius: '6px', 
                           background: fasting.primaryFastingBadge.bg, 
                           border: `1px solid ${fasting.primaryFastingBadge.border}`, 
                           color: fasting.primaryFastingBadge.color, 
@@ -1397,7 +1397,7 @@ export default function CoachEditor() {
                         <span style={{ 
                           fontSize: '10px', 
                           padding: '1px 6px', 
-                          borderRadius: '4px', 
+                          borderRadius: '6px', 
                           background: fasting.intermittentBadge.bg, 
                           border: `1px solid ${fasting.intermittentBadge.border}`, 
                           color: fasting.intermittentBadge.color, 
@@ -1422,7 +1422,7 @@ export default function CoachEditor() {
               style={{
                 height: '32px',
                 padding: '0 12px',
-                borderRadius: '5px',
+                borderRadius: '8px',
                 background: '#FFFFFF',
                 color: '#0F172A',
                 border: '1px solid #CBD5E1',
@@ -1449,7 +1449,7 @@ export default function CoachEditor() {
               style={{
                 height: '32px',
                 padding: '0 10px',
-                borderRadius: '5px',
+                borderRadius: '8px',
                 background: '#F8FAFC',
                 color: '#475569',
                 border: '1px solid #E2E8F0',
@@ -1471,7 +1471,7 @@ export default function CoachEditor() {
               style={{
                 height: '32px',
                 padding: '0 11px',
-                borderRadius: '5px',
+                borderRadius: '8px',
                 background: '#F0F9FF',
                 color: '#0284C7',
                 border: '1px solid #BAE6FD',
@@ -1495,7 +1495,7 @@ export default function CoachEditor() {
               style={{
                 height: '32px',
                 padding: '0 14px',
-                borderRadius: '5px',
+                borderRadius: '8px',
                 background: '#0F172A',
                 color: '#FFFFFF',
                 border: 'none',
@@ -1593,7 +1593,7 @@ export default function CoachEditor() {
                   </div>
                 </div>
                 {program.training?.target_split && (
-                  <span style={{ fontSize: '10.5px', fontWeight: 700, padding: '2px 8px', borderRadius: '4px', background: '#FFFFFF', border: '1px solid #CBD5E1', color: '#0F172A', whiteSpace: 'nowrap' }}>
+                  <span style={{ fontSize: '10.5px', fontWeight: 700, padding: '2px 8px', borderRadius: '6px', background: '#FFFFFF', border: '1px solid #CBD5E1', color: '#0F172A', whiteSpace: 'nowrap' }}>
                     {program.training.target_split}
                   </span>
                 )}
@@ -1610,7 +1610,7 @@ export default function CoachEditor() {
                   </div>
                   {currentWeekData && (
                     <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '11px' }}>
-                      <span style={{ fontWeight: 700, color: currentWeekData.phase === 'DELOAD' ? '#16A34A' : '#2563EB', background: currentWeekData.phase === 'DELOAD' ? '#F0FDF4' : '#EFF6FF', padding: '2px 8px', borderRadius: '4px', border: currentWeekData.phase === 'DELOAD' ? '1px solid #BBF7D0' : '1px solid #BFDBFE' }}>
+                      <span style={{ fontWeight: 700, color: currentWeekData.phase === 'DELOAD' ? '#16A34A' : '#2563EB', background: currentWeekData.phase === 'DELOAD' ? '#F0FDF4' : '#EFF6FF', padding: '2px 8px', borderRadius: '6px', border: currentWeekData.phase === 'DELOAD' ? '1px solid #BBF7D0' : '1px solid #BFDBFE' }}>
                         {currentWeekData.phase === 'INTRO' && 'الأسبوع 1: مرحلة التعود والتأسيس'}
                         {currentWeekData.phase === 'OVERLOAD' && 'الأسبوع 2: زيادة الأحمال التدريجية'}
                         {currentWeekData.phase === 'PEAK' && 'الأسبوع 3: ذروة الحجم التدريبي'}
@@ -1619,7 +1619,7 @@ export default function CoachEditor() {
                         {!['INTRO', 'OVERLOAD', 'PEAK', 'OVERREACH', 'DELOAD'].includes(currentWeekData.phase) && `الأسبوع ${currentWeekData.week_number}: ${currentWeekData.phase || ''}`}
                       </span>
                       {currentWeekData.target_rir !== undefined && (
-                        <span style={{ color: '#475569', fontWeight: 600, background: '#F1F5F9', padding: '2px 6px', borderRadius: '4px' }}>
+                        <span style={{ color: '#475569', fontWeight: 600, background: '#F1F5F9', padding: '2px 7px', borderRadius: '6px' }}>
                           معدل الشدة: RIR {currentWeekData.target_rir}
                         </span>
                       )}
@@ -1672,7 +1672,7 @@ export default function CoachEditor() {
                 </div>
 
                 {currentWeekData?.focus_note && (
-                  <div style={{ fontSize: '10.5px', color: '#64748B', background: '#F8FAFC', padding: '6px 10px', borderRadius: '4px', border: '1px dashed #CBD5E1' }}>
+                  <div style={{ fontSize: '10.5px', color: '#64748B', background: '#F8FAFC', padding: '6px 10px', borderRadius: '8px', border: '1px dashed #CBD5E1' }}>
                     توجيه الأسبوع: <span style={{ color: '#0F172A', fontWeight: 600 }}>{currentWeekData.focus_note}</span>
                   </div>
                 )}
@@ -1735,7 +1735,7 @@ export default function CoachEditor() {
                 ) : (
                   <div style={{ display: 'flex', gap: '4px', flexWrap: 'wrap' }}>
                     {activeSession.pre_workout_mobility.map((m, mIdx) => (
-                      <span key={mIdx} style={{ background: '#FFFFFF', border: '1px solid #CBD5E1', padding: '2px 6px', borderRadius: '4px', fontSize: '10.5px', color: '#0F172A', display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+                      <span key={mIdx} style={{ background: '#FFFFFF', border: '1px solid #CBD5E1', padding: '2px 7px', borderRadius: '6px', fontSize: '10.5px', color: '#0F172A', display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
                         <span>{m.name || m.name_ar}</span>
                         <button type="button" onClick={() => handleRemoveMobilityFromSession(activeSessionIdx, mIdx, 'WARMUP')} style={{ border: 'none', background: 'transparent', cursor: 'pointer', padding: 0, color: '#DC2626' }}>
                           <X size={10} />
@@ -1749,7 +1749,7 @@ export default function CoachEditor() {
               <button
                 type="button"
                 onClick={() => setMobilityModal({ open: true, type: 'WARMUP', sessionIdx: activeSessionIdx })}
-                style={{ padding: '3px 8px', background: '#FFFFFF', border: '1px solid #CBD5E1', color: '#0F172A', borderRadius: '4px', fontSize: '10.5px', fontWeight: 700, cursor: 'pointer' }}
+                style={{ padding: '4px 10px', background: '#FFFFFF', border: '1px solid #CBD5E1', color: '#0F172A', borderRadius: '7px', fontSize: '10.5px', fontWeight: 700, cursor: 'pointer' }}
               >
                 + إضافة إحماء
               </button>
@@ -1815,7 +1815,7 @@ export default function CoachEditor() {
                           onError={(e) => { e.currentTarget.style.display = 'none'; }}
                           loading="lazy"
                         />
-                        <span style={{ position: 'absolute', bottom: '1px', right: '2px', fontSize: '8px', fontWeight: 800, color: '#64748B', background: 'rgba(255,255,255,0.85)', padding: '0 2px', borderRadius: '2px' }}>1</span>
+                        <span style={{ position: 'absolute', bottom: '1px', right: '2px', fontSize: '8px', fontWeight: 800, color: '#64748B', background: 'rgba(255,255,255,0.85)', padding: '0 4px', borderRadius: '6px' }}>1</span>
                       </div>
                       <div 
                         style={{ 
@@ -1839,7 +1839,7 @@ export default function CoachEditor() {
                           onError={(e) => { e.currentTarget.style.display = 'none'; }}
                           loading="lazy"
                         />
-                        <span style={{ position: 'absolute', bottom: '1px', right: '2px', fontSize: '8px', fontWeight: 800, color: '#64748B', background: 'rgba(255,255,255,0.85)', padding: '0 2px', borderRadius: '2px' }}>2</span>
+                        <span style={{ position: 'absolute', bottom: '1px', right: '2px', fontSize: '8px', fontWeight: 800, color: '#64748B', background: 'rgba(255,255,255,0.85)', padding: '0 4px', borderRadius: '6px' }}>2</span>
                       </div>
                       
                       {/* Video Trigger Button */}
@@ -1883,7 +1883,7 @@ export default function CoachEditor() {
                         </strong>
 
                         {ex.equipment && (
-                          <span style={{ fontSize: '10px', padding: '1px 6px', borderRadius: '4px', background: '#F1F5F9', color: '#475569', border: '1px solid #E2E8F0', fontWeight: 600 }}>
+                          <span style={{ fontSize: '10px', padding: '2px 7px', borderRadius: '6px', background: '#F1F5F9', color: '#475569', border: '1px solid #E2E8F0', fontWeight: 600 }}>
                             {ex.equipment}
                           </span>
                         )}
@@ -2007,7 +2007,7 @@ export default function CoachEditor() {
                 ) : (
                   <div style={{ display: 'flex', gap: '4px', flexWrap: 'wrap' }}>
                     {activeSession.post_workout_stretches.map((m, mIdx) => (
-                      <span key={mIdx} style={{ background: '#FFFFFF', border: '1px solid #CBD5E1', padding: '3px 8px', borderRadius: '4px', fontSize: '11px', color: '#0F172A', display: 'inline-flex', alignItems: 'center', gap: '4px', fontWeight: 600 }}>
+                      <span key={mIdx} style={{ background: '#FFFFFF', border: '1px solid #CBD5E1', padding: '3px 9px', borderRadius: '6px', fontSize: '11px', color: '#0F172A', display: 'inline-flex', alignItems: 'center', gap: '4px', fontWeight: 600 }}>
                         <span>{m.name || m.name_ar}</span>
                         <button type="button" onClick={() => handleRemoveMobilityFromSession(activeSessionIdx, mIdx, 'STRETCH')} style={{ border: 'none', background: 'transparent', cursor: 'pointer', padding: 0, color: '#DC2626' }}>
                           <X size={11} />
@@ -2021,7 +2021,7 @@ export default function CoachEditor() {
               <button
                 type="button"
                 onClick={() => setMobilityModal({ open: true, type: 'STRETCH', sessionIdx: activeSessionIdx })}
-                style={{ padding: '4px 10px', background: '#FFFFFF', border: '1px solid #CBD5E1', color: '#0F172A', borderRadius: '5px', fontSize: '11px', fontWeight: 700, cursor: 'pointer' }}
+                style={{ padding: '4px 12px', background: '#FFFFFF', border: '1px solid #CBD5E1', color: '#0F172A', borderRadius: '7px', fontSize: '11px', fontWeight: 700, cursor: 'pointer' }}
               >
                 + إضافة إطالة
               </button>
@@ -2033,9 +2033,9 @@ export default function CoachEditor() {
                 type="button"
                 onClick={() => setAddExModal({ open: true, sessionIdx: activeSessionIdx })}
                 style={{
-                  height: '34px',
+                  height: '36px',
                   padding: '0 18px',
-                  borderRadius: '6px',
+                  borderRadius: '8px',
                   border: '1px solid #CBD5E1',
                   background: '#FFFFFF',
                   color: '#0F172A',
@@ -2156,7 +2156,7 @@ export default function CoachEditor() {
                   </div>
                 </div>
                 {program.cardio?.target_heart_rate_zone && (
-                  <span style={{ fontSize: '10.5px', fontWeight: 700, padding: '2px 8px', borderRadius: '4px', background: '#FFFFFF', border: '1px solid #CBD5E1', color: '#0F172A', whiteSpace: 'nowrap' }}>
+                  <span style={{ fontSize: '10.5px', fontWeight: 700, padding: '2px 8px', borderRadius: '6px', background: '#FFFFFF', border: '1px solid #CBD5E1', color: '#0F172A', whiteSpace: 'nowrap' }}>
                     {program.cardio.target_heart_rate_zone}
                   </span>
                 )}
@@ -2164,27 +2164,27 @@ export default function CoachEditor() {
             )}
 
             {/* Cardio Modality Card */}
-            <div style={{ background: '#FFFFFF', border: '1px solid #E2E8F0', borderRadius: '8px', padding: '12px 14px' }}>
+            <div style={{ background: '#FFFFFF', border: '1px solid #E2E8F0', borderRadius: '10px', padding: '12px 14px' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
                 <strong style={{ fontSize: '13px', color: '#0F172A' }}>نظام وجهاز الكارديو:</strong>
                 <button
                   type="button"
                   onClick={() => setCardioSwapModal(true)}
-                  style={{ padding: '4px 10px', borderRadius: '4px', background: '#0F172A', color: '#FFFFFF', border: 'none', fontSize: '11px', fontWeight: 700, cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: '4px' }}
+                  style={{ padding: '4px 12px', borderRadius: '7px', background: '#0F172A', color: '#FFFFFF', border: 'none', fontSize: '11px', fontWeight: 700, cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: '4px' }}
                 >
                   <ArrowRightLeft size={12} />
                   <span>تبديل الجهاز / النمط</span>
                 </button>
               </div>
 
-              <div style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', borderRadius: '6px', padding: '10px 12px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+              <div style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', borderRadius: '8px', padding: '10px 12px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
                 <strong style={{ color: '#0F172A', fontSize: '12.5px' }}>{program.cardio?.modality || 'مشي على سير مائل (Incline Treadmill)'}</strong>
                 
                 {/* Cardio Volume Controls */}
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: '8px', paddingTop: '6px', borderTop: '1px solid #E2E8F0' }}>
                   <div>
                     <label style={{ fontSize: '10.5px', color: '#64748B', display: 'block', marginBottom: '2px', fontWeight: 600 }}>الجلسات أسبوعياً</label>
-                    <div style={{ display: 'flex', alignItems: 'center', background: '#FFFFFF', border: '1px solid #CBD5E1', borderRadius: '5px', height: '28px', padding: '0 4px' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', background: '#FFFFFF', border: '1px solid #CBD5E1', borderRadius: '7px', height: '28px', padding: '0 4px' }}>
                       <button type="button" onClick={() => handleUpdateCardioParam('weekly_sessions', Math.max(1, (Number(program.cardio?.weekly_sessions) || 3) - 1))} style={{ border: 'none', background: 'transparent', cursor: 'pointer', fontWeight: 800, padding: '0 5px' }}>-</button>
                       <span style={{ flex: 1, textAlign: 'center', fontSize: '11.5px', fontWeight: 700, color: '#0F172A' }}>{program.cardio?.weekly_sessions || 3} جلسات</span>
                       <button type="button" onClick={() => handleUpdateCardioParam('weekly_sessions', (Number(program.cardio?.weekly_sessions) || 3) + 1)} style={{ border: 'none', background: 'transparent', cursor: 'pointer', fontWeight: 800, padding: '0 5px' }}>+</button>
@@ -2193,7 +2193,7 @@ export default function CoachEditor() {
 
                   <div>
                     <label style={{ fontSize: '10.5px', color: '#64748B', display: 'block', marginBottom: '2px', fontWeight: 600 }}>مدة الجلسة (دقيقة)</label>
-                    <div style={{ display: 'flex', alignItems: 'center', background: '#FFFFFF', border: '1px solid #CBD5E1', borderRadius: '5px', height: '28px', padding: '0 4px' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', background: '#FFFFFF', border: '1px solid #CBD5E1', borderRadius: '7px', height: '28px', padding: '0 4px' }}>
                       <button type="button" onClick={() => handleUpdateCardioParam('session_duration_min', Math.max(10, (Number(program.cardio?.session_duration_min) || 30) - 5))} style={{ border: 'none', background: 'transparent', cursor: 'pointer', fontWeight: 800, padding: '0 5px' }}>-</button>
                       <span style={{ flex: 1, textAlign: 'center', fontSize: '11.5px', fontWeight: 700, color: '#0F172A' }}>{program.cardio?.session_duration_min || 30} دقيقة</span>
                       <button type="button" onClick={() => handleUpdateCardioParam('session_duration_min', (Number(program.cardio?.session_duration_min) || 30) + 5)} style={{ border: 'none', background: 'transparent', cursor: 'pointer', fontWeight: 800, padding: '0 5px' }}>+</button>
@@ -2205,7 +2205,7 @@ export default function CoachEditor() {
                     <select
                       value={program.cardio?.target_heart_rate_zone || 'Zone 2'}
                       onChange={(e) => handleUpdateCardioParam('target_heart_rate_zone', e.target.value)}
-                      style={{ width: '100%', height: '28px', borderRadius: '5px', border: '1px solid #CBD5E1', padding: '0 6px', fontSize: '11px', fontWeight: 700, color: '#0F172A', background: '#FFFFFF', outline: 'none' }}
+                      style={{ width: '100%', height: '28px', borderRadius: '7px', border: '1px solid #CBD5E1', padding: '0 6px', fontSize: '11px', fontWeight: 700, color: '#0F172A', background: '#FFFFFF', outline: 'none' }}
                     >
                       <option value="Zone 1">Zone 1 (استشفاء خفيف)</option>
                       <option value="Zone 2">Zone 2 (حرق دهون وتحمل - موصى به)</option>
@@ -2236,7 +2236,7 @@ export default function CoachEditor() {
                       max="30000"
                       value={program.cardio?.neat_target_steps || 8500}
                       onChange={(e) => handleUpdateCardioParam('neat_target_steps', Number(e.target.value) || 8500)}
-                      style={{ width: '100%', height: '30px', borderRadius: '5px', border: '1px solid #CBD5E1', padding: '0 8px', fontSize: '13px', fontWeight: 800, color: '#0F172A', outline: 'none', background: '#FFFFFF' }}
+                      style={{ width: '100%', height: '30px', borderRadius: '8px', border: '1px solid #CBD5E1', padding: '0 8px', fontSize: '13px', fontWeight: 800, color: '#0F172A', outline: 'none', background: '#FFFFFF' }}
                     />
                     <span style={{ fontSize: '11px', color: '#64748B', whiteSpace: 'nowrap' }}>خطوة</span>
                   </div>
@@ -2253,7 +2253,7 @@ export default function CoachEditor() {
                       max="10"
                       value={program.cardio?.daily_water_target_liters || 3.8}
                       onChange={(e) => handleUpdateCardioParam('daily_water_target_liters', Number(e.target.value) || 3.8)}
-                      style={{ width: '100%', height: '30px', borderRadius: '5px', border: '1px solid #CBD5E1', padding: '0 8px', fontSize: '13px', fontWeight: 800, color: '#0F172A', outline: 'none', background: '#FFFFFF' }}
+                      style={{ width: '100%', height: '30px', borderRadius: '8px', border: '1px solid #CBD5E1', padding: '0 8px', fontSize: '13px', fontWeight: 800, color: '#0F172A', outline: 'none', background: '#FFFFFF' }}
                     />
                     <span style={{ fontSize: '11px', color: '#64748B', whiteSpace: 'nowrap' }}>لتر</span>
                   </div>
@@ -2270,7 +2270,7 @@ export default function CoachEditor() {
                       max="12"
                       value={program.cardio?.sleep_target_hours || 8}
                       onChange={(e) => handleUpdateCardioParam('sleep_target_hours', Number(e.target.value) || 8)}
-                      style={{ width: '100%', height: '30px', borderRadius: '5px', border: '1px solid #CBD5E1', padding: '0 8px', fontSize: '13px', fontWeight: 800, color: '#0F172A', outline: 'none', background: '#FFFFFF' }}
+                      style={{ width: '100%', height: '30px', borderRadius: '8px', border: '1px solid #CBD5E1', padding: '0 8px', fontSize: '13px', fontWeight: 800, color: '#0F172A', outline: 'none', background: '#FFFFFF' }}
                     />
                     <span style={{ fontSize: '11px', color: '#64748B', whiteSpace: 'nowrap' }}>ساعات</span>
                   </div>
@@ -2397,7 +2397,7 @@ export default function CoachEditor() {
                           style={{
                             height: '28px',
                             padding: '0 12px',
-                            borderRadius: '5px',
+                            borderRadius: '7px',
                             background: '#0F172A',
                             color: '#FFFFFF',
                             border: 'none',
@@ -2446,7 +2446,7 @@ export default function CoachEditor() {
 
           return (
             <div style={{ position: 'fixed', inset: 0, background: 'rgba(15, 23, 42, 0.5)', backdropFilter: 'blur(4px)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 9999, padding: '16px' }} dir="rtl">
-              <div style={{ maxWidth: '560px', width: '100%', background: '#FFFFFF', borderRadius: '8px', border: '1px solid #E2E8F0', padding: '16px', display: 'flex', flexDirection: 'column', gap: '12px', maxHeight: '85vh', boxShadow: '0 10px 25px rgba(0,0,0,0.1)' }}>
+              <div style={{ maxWidth: '560px', width: '100%', background: '#FFFFFF', borderRadius: '16px', border: '1px solid #E2E8F0', padding: '16px', display: 'flex', flexDirection: 'column', gap: '12px', maxHeight: '85vh', boxShadow: '0 20px 50px rgba(0,0,0,0.15)' }}>
                 
                 {/* Header */}
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid #F1F5F9', paddingBottom: '8px' }}>
@@ -2459,9 +2459,7 @@ export default function CoachEditor() {
                       نفس الزاوية العضلية ومنحنى المقاومة مع مراعاة أمان المفاصل والربط التبادلي
                     </span>
                   </div>
-                  <button type="button" onClick={() => setSwapExModal({ open: false, sessionIdx: null, exIdx: null, currentEx: null })} style={{ background: 'transparent', border: 'none', cursor: 'pointer', color: '#64748B' }}>
-                    <X size={15} />
-                  </button>
+                  <button type="button" onClick={() => setSwapExModal({ open: false, sessionIdx: null, exIdx: null, currentEx: null })} style={{ background: 'transparent', border: 'none', cursor: 'pointer', color: '#64748B' }}><X size={15} /></button>
                 </div>
 
                 {/* Search */}
@@ -2471,7 +2469,7 @@ export default function CoachEditor() {
                     placeholder="ابحث في التمارين البديلة..."
                     value={swapExSearch}
                     onChange={(e) => setSwapExSearch(e.target.value)}
-                    style={{ width: '100%', height: '32px', borderRadius: '6px', border: '1px solid #CBD5E1', padding: '0 28px 0 10px', fontSize: '11.5px', outline: 'none', boxSizing: 'border-box' }}
+                    style={{ width: '100%', height: '32px', borderRadius: '8px', border: '1px solid #CBD5E1', padding: '0 28px 0 10px', fontSize: '11.5px', outline: 'none', boxSizing: 'border-box' }}
                   />
                   <Search size={13} style={{ position: 'absolute', right: '9px', top: '10px', color: '#94A3B8' }} />
                 </div>
@@ -2482,7 +2480,7 @@ export default function CoachEditor() {
                   {/* Direct Twin Swaps Section */}
                   {twinExercises.length > 0 && !swapExSearch && (
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: '#F0F9FF', border: '1px solid #BAE6FD', padding: '4px 8px', borderRadius: '5px' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: '#F0F9FF', border: '1px solid #BAE6FD', padding: '4px 8px', borderRadius: '8px' }}>
                         <span style={{ fontSize: '11px', fontWeight: 800, color: '#0284C7', display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
                           <ArrowRightLeft size={12} />
                           <span>البدائل التوأم المباشرة (الربط التبادلي الذكي)</span>
@@ -2510,7 +2508,7 @@ export default function CoachEditor() {
                               <strong style={{ fontSize: '12px', color: '#0F172A', direction: 'ltr', display: 'inline-block' }}>
                                 {getExerciseDisplayNames(twinEx).nameEn}
                               </strong>
-                              <span style={{ fontSize: '9.5px', background: '#E0F2FE', color: '#0284C7', padding: '1px 5px', borderRadius: '3px', fontWeight: 700 }}>
+                              <span style={{ fontSize: '9.5px', background: '#E0F2FE', color: '#0284C7', padding: '1px 5px', borderRadius: '6px', fontWeight: 700 }}>
                                 بديل توأم مباشر
                               </span>
                             </div>
@@ -2529,7 +2527,7 @@ export default function CoachEditor() {
                             style={{
                               height: '28px',
                               padding: '0 12px',
-                              borderRadius: '5px',
+                              borderRadius: '7px',
                               background: '#0284C7',
                               color: '#FFFFFF',
                               border: 'none',
@@ -2560,7 +2558,7 @@ export default function CoachEditor() {
                         style={{
                           background: '#F8FAFC',
                           border: '1px solid #E2E8F0',
-                          borderRadius: '6px',
+                          borderRadius: '8px',
                           padding: '8px 10px',
                           display: 'flex',
                           justifyContent: 'space-between',
@@ -2587,7 +2585,7 @@ export default function CoachEditor() {
                           style={{
                             height: '28px',
                             padding: '0 12px',
-                            borderRadius: '5px',
+                            borderRadius: '7px',
                             background: '#0F172A',
                             color: '#FFFFFF',
                             border: 'none',
@@ -2618,7 +2616,7 @@ export default function CoachEditor() {
         {/* Cardio Swap Modal */}
         {cardioSwapModal && (
           <div style={{ position: 'fixed', inset: 0, background: 'rgba(15, 23, 42, 0.5)', backdropFilter: 'blur(4px)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 9999, padding: '16px' }} dir="rtl">
-            <div style={{ maxWidth: '460px', width: '100%', background: '#FFFFFF', borderRadius: '8px', border: '1px solid #E2E8F0', padding: '16px', display: 'flex', flexDirection: 'column', gap: '10px' }}>
+            <div style={{ maxWidth: '460px', width: '100%', background: '#FFFFFF', borderRadius: '16px', border: '1px solid #E2E8F0', padding: '16px', display: 'flex', flexDirection: 'column', gap: '10px', boxShadow: '0 20px 50px rgba(0, 0, 0, 0.15)' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid #F1F5F9', paddingBottom: '6px' }}>
                 <h4 style={{ margin: 0, fontSize: '13.5px', fontWeight: 800, color: '#0F172A' }}>اختيار نمط الكارديو</h4>
                 <button type="button" onClick={() => setCardioSwapModal(false)} style={{ background: 'transparent', border: 'none', cursor: 'pointer', color: '#64748B' }}><X size={15} /></button>
@@ -2629,13 +2627,13 @@ export default function CoachEditor() {
                   <div
                     key={opt.id}
                     onClick={() => handleSelectCardioModality(opt)}
-                    style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', borderRadius: '6px', padding: '8px 10px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', cursor: 'pointer' }}
+                    style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', borderRadius: '8px', padding: '8px 10px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', cursor: 'pointer' }}
                   >
                     <div>
                       <strong style={{ fontSize: '11.5px', color: '#0F172A', display: 'block' }}>{opt.name}</strong>
                       <span style={{ fontSize: '10px', color: '#64748B' }}>{opt.desc}</span>
                     </div>
-                    <button type="button" style={{ padding: '3px 8px', background: '#0F172A', color: '#FFFFFF', border: 'none', borderRadius: '4px', fontSize: '10.5px', fontWeight: 700 }}>اختيار</button>
+                    <button type="button" style={{ padding: '3px 8px', background: '#0F172A', color: '#FFFFFF', border: 'none', borderRadius: '7px', fontSize: '10.5px', fontWeight: 700 }}>اختيار</button>
                   </div>
                 ))}
               </div>
@@ -2646,7 +2644,7 @@ export default function CoachEditor() {
         {/* Mobility Selection Modal */}
         {mobilityModal.open && (
           <div style={{ position: 'fixed', inset: 0, background: 'rgba(15, 23, 42, 0.5)', backdropFilter: 'blur(4px)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 9999, padding: '16px' }} dir="rtl">
-            <div style={{ maxWidth: '480px', width: '100%', background: '#FFFFFF', borderRadius: '8px', border: '1px solid #E2E8F0', padding: '16px', display: 'flex', flexDirection: 'column', gap: '10px', maxHeight: '85vh' }}>
+            <div style={{ maxWidth: '480px', width: '100%', background: '#FFFFFF', borderRadius: '16px', border: '1px solid #E2E8F0', padding: '16px', display: 'flex', flexDirection: 'column', gap: '10px', maxHeight: '85vh', boxShadow: '0 20px 50px rgba(0, 0, 0, 0.15)' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid #F1F5F9', paddingBottom: '6px' }}>
                 <h4 style={{ margin: 0, fontSize: '13.5px', fontWeight: 800, color: '#0F172A' }}>
                   {mobilityModal.type === 'WARMUP' ? 'اختيار حركة إحماء ديناميكي' : 'اختيار حركة إطالة استشفائية'}
@@ -2659,7 +2657,7 @@ export default function CoachEditor() {
                 placeholder="بحث باسم الحركة أو المنطقة..."
                 value={mobilityModalSearch}
                 onChange={(e) => setMobilityModalSearch(e.target.value)}
-                style={{ width: '100%', height: '30px', borderRadius: '5px', border: '1px solid #CBD5E1', padding: '0 8px', fontSize: '11px', outline: 'none', boxSizing: 'border-box' }}
+                style={{ width: '100%', height: '32px', borderRadius: '8px', border: '1px solid #CBD5E1', padding: '0 10px', fontSize: '11px', outline: 'none', boxSizing: 'border-box' }}
               />
 
               <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', maxHeight: '320px', overflowY: 'auto' }}>
@@ -2678,13 +2676,13 @@ export default function CoachEditor() {
                     <div
                       key={drill.id}
                       onClick={() => handleAddMobilityToSession(drill, mobilityModal.type)}
-                      style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', borderRadius: '5px', padding: '6px 10px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', cursor: 'pointer' }}
+                      style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', borderRadius: '8px', padding: '6px 10px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', cursor: 'pointer' }}
                     >
                       <div>
                         <strong style={{ fontSize: '11.5px', color: '#0F172A', display: 'block' }}>{drill.name_ar}</strong>
                         <span style={{ fontSize: '10px', color: '#64748B' }}>المنطقة: {drill.target_area_ar}</span>
                       </div>
-                      <button type="button" style={{ padding: '2px 7px', background: '#0F172A', color: '#FFFFFF', border: 'none', borderRadius: '3px', fontSize: '10px', fontWeight: 700 }}>إضافة</button>
+                      <button type="button" style={{ padding: '2px 7px', background: '#0F172A', color: '#FFFFFF', border: 'none', borderRadius: '6px', fontSize: '10px', fontWeight: 700 }}>إضافة</button>
                     </div>
                   ))}
               </div>
@@ -2738,7 +2736,7 @@ export default function CoachEditor() {
                       onClick={() => setAddExMuscleFilter(cat.id)}
                       style={{
                         padding: '4px 10px',
-                        borderRadius: '4px',
+                        borderRadius: '6px',
                         fontSize: '11px',
                         fontWeight: 700,
                         border: 'none',
@@ -2856,14 +2854,14 @@ export default function CoachEditor() {
                                 </span>
                               </div>
                               <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                                <span style={{ background: '#E2E8F0', color: '#334155', padding: '1px 6px', borderRadius: '3px', fontSize: '9.5px', fontWeight: 600 }}>
+                                <span style={{ background: '#E2E8F0', color: '#334155', padding: '1px 6px', borderRadius: '6px', fontSize: '9.5px', fontWeight: 600 }}>
                                   {getShortMuscleName(ex.muscle_ar || ex.target_muscle, ex.muscle_group)}
                                 </span>
-                                <span style={{ background: '#F1F5F9', border: '1px solid #E2E8F0', color: '#64748B', padding: '1px 6px', borderRadius: '3px', fontSize: '9.5px' }}>
+                                <span style={{ background: '#F1F5F9', border: '1px solid #E2E8F0', color: '#64748B', padding: '1px 6px', borderRadius: '6px', fontSize: '9.5px' }}>
                                   {getShortEquipmentName(ex.equipment_ar, ex.equipment)}
                                 </span>
                                 {altCount > 0 && (
-                                  <span style={{ background: '#E0F2FE', color: '#0369A1', padding: '1px 6px', borderRadius: '3px', fontSize: '9.5px', fontWeight: 600, display: 'inline-flex', alignItems: 'center', gap: '2px' }}>
+                                  <span style={{ background: '#E0F2FE', color: '#0369A1', padding: '1px 6px', borderRadius: '6px', fontSize: '9.5px', fontWeight: 600, display: 'inline-flex', alignItems: 'center', gap: '2px' }}>
                                     <ArrowRightLeft size={10} />
                                     <span>{altCount} بدائل توأم</span>
                                   </span>
@@ -2877,7 +2875,7 @@ export default function CoachEditor() {
                                 background: '#0F172A',
                                 color: '#FFFFFF',
                                 border: 'none',
-                                borderRadius: '4px',
+                                borderRadius: '7px',
                                 fontSize: '11px',
                                 fontWeight: 700,
                                 cursor: 'pointer',
@@ -2899,7 +2897,7 @@ export default function CoachEditor() {
         {/* Add Food Modal */}
         {addFoodModal.open && (
           <div style={{ position: 'fixed', inset: 0, background: 'rgba(15, 23, 42, 0.5)', backdropFilter: 'blur(4px)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 9999, padding: '16px' }} dir="rtl">
-            <div style={{ maxWidth: '480px', width: '100%', background: '#FFFFFF', borderRadius: '8px', border: '1px solid #E2E8F0', padding: '16px', display: 'flex', flexDirection: 'column', gap: '10px', maxHeight: '85vh' }}>
+            <div style={{ maxWidth: '480px', width: '100%', background: '#FFFFFF', borderRadius: '16px', border: '1px solid #E2E8F0', padding: '16px', display: 'flex', flexDirection: 'column', gap: '10px', maxHeight: '85vh', boxShadow: '0 20px 50px rgba(0, 0, 0, 0.15)' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid #F1F5F9', paddingBottom: '6px' }}>
                 <h4 style={{ margin: 0, fontSize: '13.5px', fontWeight: 800, color: '#0F172A' }}>إضافة صنف غذائي</h4>
                 <button type="button" onClick={() => setAddFoodModal({ open: false, mealId: null })} style={{ background: 'transparent', border: 'none', cursor: 'pointer', color: '#64748B' }}><X size={15} /></button>
@@ -2910,7 +2908,7 @@ export default function CoachEditor() {
                 placeholder="ابحث باسم الصنف الغذائي..."
                 value={foodModalSearch}
                 onChange={(e) => setFoodModalSearch(e.target.value)}
-                style={{ width: '100%', height: '30px', borderRadius: '5px', border: '1px solid #CBD5E1', padding: '0 8px', fontSize: '11px', outline: 'none', boxSizing: 'border-box' }}
+                style={{ width: '100%', height: '32px', borderRadius: '8px', border: '1px solid #CBD5E1', padding: '0 10px', fontSize: '11px', outline: 'none', boxSizing: 'border-box' }}
               />
 
               <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', maxHeight: '320px', overflowY: 'auto' }}>
@@ -2918,7 +2916,7 @@ export default function CoachEditor() {
                   .filter(fd => !foodModalSearch || 
                     arabicSearchMatch(fd.name, foodModalSearch) || 
                     arabicSearchMatch(fd.name_ar, foodModalSearch) || 
-                    arabicSearchMatch(fd.name_en, foodModalSearch) ||
+                    arabicSearchMatch(fd.name_en, foodModalSearch) || 
                     arabicSearchMatch(fd.code, foodModalSearch) ||
                     (Array.isArray(fd.aliases) && fd.aliases.some(a => arabicSearchMatch(a, foodModalSearch))))
                   .slice(0, 30)
@@ -2926,13 +2924,13 @@ export default function CoachEditor() {
                     <div
                       key={fd.code}
                       onClick={() => handleAddFoodToMeal(addFoodModal.mealId, fd)}
-                      style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', borderRadius: '5px', padding: '6px 10px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', cursor: 'pointer' }}
+                      style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', borderRadius: '8px', padding: '6px 10px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', cursor: 'pointer' }}
                     >
                       <div>
                         <strong style={{ fontSize: '11.5px', color: '#0F172A', display: 'block' }}>{fd.name}</strong>
                         <span style={{ fontSize: '10px', color: '#64748B' }}>P: {fd.p}g • C: {fd.c}g • F: {fd.f}g</span>
                       </div>
-                      <button type="button" style={{ padding: '2px 7px', background: '#0F172A', color: '#FFFFFF', border: 'none', borderRadius: '3px', fontSize: '10px', fontWeight: 700 }}>+ إضافة</button>
+                      <button type="button" style={{ padding: '2px 7px', background: '#0F172A', color: '#FFFFFF', border: 'none', borderRadius: '6px', fontSize: '10px', fontWeight: 700 }}>+ إضافة</button>
                     </div>
                   ))}
               </div>

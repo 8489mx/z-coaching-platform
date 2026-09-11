@@ -490,11 +490,11 @@ export default function MobilityLibrary() {
                     type="button"
                     onClick={() => setSelectedArea(a.id)}
                     style={{
-                      padding: '3px 9px',
-                      borderRadius: '5px',
+                      padding: '4px 10px',
+                      borderRadius: '6px',
                       fontSize: '11px',
                       fontWeight: selectedArea === a.id ? 800 : 600,
-                      border: selectedArea === a.id ? '1px solid #0F172A' : '1px solid #E2E8F0',
+                      border: selectedArea === a.id ? '1px solid #0F172A' : '1px solid #CBD5E1',
                       background: selectedArea === a.id ? '#0F172A' : '#F8FAFC',
                       color: selectedArea === a.id ? '#FFFFFF' : '#475569',
                       cursor: 'pointer'
@@ -537,41 +537,81 @@ export default function MobilityLibrary() {
                 onMouseLeave={(e) => { e.currentTarget.style.borderColor = '#E2E8F0'; }}
               >
                 <div>
-                  {/* Top Badges */}
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
-                    <span style={{
-                      background: '#F1F5F9',
-                      border: '1px solid #CBD5E1',
-                      color: '#0F172A',
-                      padding: '2px 8px',
-                      borderRadius: '4px',
-                      fontSize: '11px',
-                      fontWeight: 800
-                    }}>
-                      {tagLabel}
-                    </span>
-                    <span style={{
-                      background: '#F8FAFC',
-                      border: '1px solid #E2E8F0',
-                      color: '#64748B',
-                      padding: '2px 8px',
-                      borderRadius: '4px',
-                      fontSize: '10.5px',
-                      fontWeight: 600
-                    }}>
-                      {drill.equipment || 'وزن الجسم'}
-                    </span>
-                  </div>
-
-                  {/* Titles */}
-                  <h4 style={{ margin: '0 0 3px 0', fontSize: '14px', fontWeight: 800, color: '#0F172A', lineHeight: 1.35 }}>
-                    {drill.name_ar}
-                  </h4>
-                  {drill.name_en && (
-                    <div style={{ fontSize: '11px', color: '#64748B', fontWeight: 600, marginBottom: '8px' }}>
-                      {drill.name_en}
+                  {/* Balanced Executive Header: Title on Right (First to Read in RTL) & Badges on Left */}
+                  <div style={{
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    alignItems: 'flex-start',
+                    gap: '10px',
+                    marginBottom: '10px'
+                  }}>
+                    {/* Drill Titles (Right Side in RTL) */}
+                    <div style={{ flex: '1 1 auto', minWidth: 0 }}>
+                      <h4 style={{ 
+                        margin: '0 0 2px 0', 
+                        fontSize: '14.5px', 
+                        fontWeight: 800, 
+                        color: '#0F172A', 
+                        lineHeight: 1.25,
+                        letterSpacing: '-0.01em',
+                        wordBreak: 'break-word'
+                      }}>
+                        {drill.name_en || drill.name_ar}
+                      </h4>
+                      <div style={{ 
+                        fontSize: '11.5px', 
+                        color: '#64748B', 
+                        fontWeight: 600, 
+                        lineHeight: 1.3 
+                      }}>
+                        {drill.name_ar}
+                      </div>
                     </div>
-                  )}
+
+                    {/* Balanced Badges Cluster (Left Side in RTL) */}
+                    <div style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '4px',
+                      flexWrap: 'wrap',
+                      justifyContent: 'flex-end',
+                      flexShrink: 0
+                    }}>
+                      <span style={{
+                        background: '#F1F5F9',
+                        border: '1px solid #CBD5E1',
+                        color: '#0F172A',
+                        padding: '2px 7px',
+                        borderRadius: '6px',
+                        fontSize: '10.5px',
+                        fontWeight: 700,
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: '4px',
+                        whiteSpace: 'nowrap'
+                      }}>
+                        <Activity size={11} color="#0284C7" />
+                        <span>{tagLabel}</span>
+                      </span>
+
+                      <span style={{
+                        background: '#F8FAFC',
+                        border: '1px solid #E2E8F0',
+                        color: '#475569',
+                        padding: '2px 7px',
+                        borderRadius: '6px',
+                        fontSize: '10.5px',
+                        fontWeight: 600,
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: '4px',
+                        whiteSpace: 'nowrap'
+                      }}>
+                        <Dumbbell size={11} color="#475569" />
+                        <span>{drill.equipment || 'وزن الجسم'}</span>
+                      </span>
+                    </div>
+                  </div>
 
                   {/* Dual-State Accurate Exercise Preview (Start & Finish Positions) */}
                   <div style={{
@@ -624,8 +664,8 @@ export default function MobilityLibrary() {
                       type="button"
                       onClick={() => openEditModal(drill)}
                       style={{
-                        padding: '3px 9px',
-                        borderRadius: '4px',
+                        padding: '4px 10px',
+                        borderRadius: '7px',
                         background: '#F1F5F9',
                         border: '1px solid #CBD5E1',
                         color: '#0F172A',
@@ -648,8 +688,8 @@ export default function MobilityLibrary() {
                       type="button"
                       onClick={() => handleCopy(drill.cue_ar, drill.id)}
                       style={{
-                        padding: '3px 9px',
-                        borderRadius: '4px',
+                        padding: '4px 10px',
+                        borderRadius: '7px',
                         background: '#F8FAFC',
                         border: '1px solid #CBD5E1',
                         color: '#475569',
@@ -672,8 +712,8 @@ export default function MobilityLibrary() {
                         type="button"
                         onClick={() => setActiveVideo({ url: drill.video_url, name: drill.name_ar })}
                         style={{
-                          padding: '3px 10px',
-                          borderRadius: '4px',
+                          padding: '4px 10px',
+                          borderRadius: '7px',
                           background: '#0F172A',
                           border: 'none',
                           color: '#FFFFFF',
@@ -761,7 +801,7 @@ export default function MobilityLibrary() {
               }}>
                 <Lock size={12} color="#1E40AF" />
                 <span>
-                  المعرف البرمجي للمحرك: <strong style={{ fontFamily: 'monospace', fontWeight: 800, background: '#DBEAFE', padding: '2px 6px', borderRadius: '4px' }}>{editingDrill.id}</strong> (محمي وثابت لضمان تطابق الخطط للمشتركين)
+                  المعرف البرمجي للمحرك: <strong style={{ fontFamily: 'monospace', fontWeight: 800, background: '#DBEAFE', padding: '2px 6px', borderRadius: '6px' }}>{editingDrill.id}</strong> (محمي وثابت لضمان تطابق الخطط للمشتركين)
                 </span>
               </div>
 
@@ -779,7 +819,7 @@ export default function MobilityLibrary() {
                       required
                       value={editFormData.name_ar}
                       onChange={(e) => setEditFormData({ ...editFormData, name_ar: e.target.value })}
-                      style={{ width: '100%', height: '34px', borderRadius: '6px', border: '1px solid #CBD5E1', padding: '0 10px', fontSize: '12px', outline: 'none', boxSizing: 'border-box' }}
+                      style={{ width: '100%', height: '34px', borderRadius: '8px', border: '1px solid #CBD5E1', padding: '0 10px', fontSize: '12px', outline: 'none', boxSizing: 'border-box' }}
                     />
                   </div>
                   <div>
@@ -790,7 +830,7 @@ export default function MobilityLibrary() {
                       type="text"
                       value={editFormData.name_en}
                       onChange={(e) => setEditFormData({ ...editFormData, name_en: e.target.value })}
-                      style={{ width: '100%', height: '34px', borderRadius: '6px', border: '1px solid #CBD5E1', padding: '0 10px', fontSize: '12px', outline: 'none', boxSizing: 'border-box' }}
+                      style={{ width: '100%', height: '34px', borderRadius: '8px', border: '1px solid #CBD5E1', padding: '0 10px', fontSize: '12px', outline: 'none', boxSizing: 'border-box' }}
                     />
                   </div>
                 </div>
@@ -804,7 +844,7 @@ export default function MobilityLibrary() {
                     <select
                       value={editFormData.category}
                       onChange={(e) => setEditFormData({ ...editFormData, category: e.target.value })}
-                      style={{ width: '100%', height: '34px', borderRadius: '6px', border: '1px solid #CBD5E1', padding: '0 8px', fontSize: '11.5px', fontWeight: 700, color: '#0F172A', background: '#FFFFFF', outline: 'none', boxSizing: 'border-box' }}
+                      style={{ width: '100%', height: '34px', borderRadius: '8px', border: '1px solid #CBD5E1', padding: '0 8px', fontSize: '11.5px', fontWeight: 700, color: '#0F172A', background: '#FFFFFF', outline: 'none', boxSizing: 'border-box' }}
                     >
                       <option value="CARDIO_MODALITY">أنظمة الكارديو</option>
                       <option value="DYNAMIC_WARMUP">إحماء ومرونة ديناميكية</option>
@@ -820,7 +860,7 @@ export default function MobilityLibrary() {
                       type="text"
                       value={editFormData.equipment}
                       onChange={(e) => setEditFormData({ ...editFormData, equipment: e.target.value })}
-                      style={{ width: '100%', height: '34px', borderRadius: '6px', border: '1px solid #CBD5E1', padding: '0 10px', fontSize: '12px', outline: 'none', boxSizing: 'border-box' }}
+                      style={{ width: '100%', height: '34px', borderRadius: '8px', border: '1px solid #CBD5E1', padding: '0 10px', fontSize: '12px', outline: 'none', boxSizing: 'border-box' }}
                     />
                   </div>
                 </div>
@@ -834,7 +874,7 @@ export default function MobilityLibrary() {
                     type="text"
                     value={editFormData.target_area_ar}
                     onChange={(e) => setEditFormData({ ...editFormData, target_area_ar: e.target.value })}
-                    style={{ width: '100%', height: '34px', borderRadius: '6px', border: '1px solid #CBD5E1', padding: '0 10px', fontSize: '12px', outline: 'none', boxSizing: 'border-box' }}
+                    style={{ width: '100%', height: '34px', borderRadius: '8px', border: '1px solid #CBD5E1', padding: '0 10px', fontSize: '12px', outline: 'none', boxSizing: 'border-box' }}
                   />
                 </div>
 
@@ -861,7 +901,7 @@ export default function MobilityLibrary() {
                     placeholder="https://..."
                     value={editFormData.video_url}
                     onChange={(e) => setEditFormData({ ...editFormData, video_url: e.target.value })}
-                    style={{ width: '100%', height: '34px', borderRadius: '6px', border: '1px solid #CBD5E1', padding: '0 10px', fontSize: '12px', outline: 'none', boxSizing: 'border-box' }}
+                    style={{ width: '100%', height: '34px', borderRadius: '8px', border: '1px solid #CBD5E1', padding: '0 10px', fontSize: '12px', outline: 'none', boxSizing: 'border-box' }}
                   />
                 </div>
 
@@ -887,8 +927,8 @@ export default function MobilityLibrary() {
                         });
                       }}
                       style={{
-                        padding: '3px 8px',
-                        borderRadius: '4px',
+                        padding: '4px 10px',
+                        borderRadius: '7px',
                         border: '1px solid #CBD5E1',
                         background: '#FFFFFF',
                         fontSize: '11px',
@@ -916,12 +956,12 @@ export default function MobilityLibrary() {
                         ) : (
                           <span style={{ fontSize: '10px', color: '#94A3B8' }}>لا توجد صورة</span>
                         )}
-                        <span style={{ position: 'absolute', bottom: '4px', right: '4px', background: 'rgba(15, 23, 42, 0.85)', color: '#FFF', fontSize: '9px', fontWeight: 700, padding: '2px 6px', borderRadius: '4px' }}>
+                        <span style={{ position: 'absolute', bottom: '4px', right: '4px', background: 'rgba(15, 23, 42, 0.85)', color: '#FFF', fontSize: '9px', fontWeight: 700, padding: '2px 6px', borderRadius: '6px' }}>
                           1. وضع البداية (0.jpg)
                         </span>
                       </div>
 
-                      <label style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '5px', background: '#0F172A', color: '#FFFFFF', borderRadius: '6px', padding: '5px', fontSize: '11px', fontWeight: 700, cursor: 'pointer' }}>
+                      <label style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '5px', background: '#0F172A', color: '#FFFFFF', borderRadius: '8px', padding: '6px', fontSize: '11px', fontWeight: 700, cursor: 'pointer' }}>
                         <Upload size={12} />
                         <span>اختيار صورة من جهازك</span>
                         <input
@@ -937,7 +977,7 @@ export default function MobilityLibrary() {
                         placeholder="أو ضع مسار / رابط صورة البداية"
                         value={editFormData.image_stretch}
                         onChange={(e) => setEditFormData({ ...editFormData, image_stretch: e.target.value })}
-                        style={{ width: '100%', height: '26px', borderRadius: '6px', border: '1px solid #E2E8F0', padding: '0 8px', fontSize: '10px', outline: 'none', boxSizing: 'border-box' }}
+                        style={{ width: '100%', height: '28px', borderRadius: '8px', border: '1px solid #E2E8F0', padding: '0 8px', fontSize: '10px', outline: 'none', boxSizing: 'border-box' }}
                       />
                     </div>
 
@@ -949,12 +989,12 @@ export default function MobilityLibrary() {
                         ) : (
                           <span style={{ fontSize: '10px', color: '#94A3B8' }}>لا توجد صورة</span>
                         )}
-                        <span style={{ position: 'absolute', bottom: '4px', right: '4px', background: 'rgba(15, 23, 42, 0.85)', color: '#FFF', fontSize: '9px', fontWeight: 700, padding: '2px 6px', borderRadius: '4px' }}>
+                        <span style={{ position: 'absolute', bottom: '4px', right: '4px', background: 'rgba(15, 23, 42, 0.85)', color: '#FFF', fontSize: '9px', fontWeight: 700, padding: '2px 6px', borderRadius: '6px' }}>
                           2. وضع الأداء (1.jpg)
                         </span>
                       </div>
 
-                      <label style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '5px', background: '#0F172A', color: '#FFFFFF', borderRadius: '6px', padding: '5px', fontSize: '11px', fontWeight: 700, cursor: 'pointer' }}>
+                      <label style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '5px', background: '#0F172A', color: '#FFFFFF', borderRadius: '8px', padding: '6px', fontSize: '11px', fontWeight: 700, cursor: 'pointer' }}>
                         <Upload size={12} />
                         <span>اختيار صورة من جهازك</span>
                         <input
@@ -970,7 +1010,7 @@ export default function MobilityLibrary() {
                         placeholder="أو ضع مسار / رابط صورة الأداء"
                         value={editFormData.image_contraction}
                         onChange={(e) => setEditFormData({ ...editFormData, image_contraction: e.target.value })}
-                        style={{ width: '100%', height: '26px', borderRadius: '6px', border: '1px solid #E2E8F0', padding: '0 8px', fontSize: '10px', outline: 'none', boxSizing: 'border-box' }}
+                        style={{ width: '100%', height: '28px', borderRadius: '8px', border: '1px solid #E2E8F0', padding: '0 8px', fontSize: '10px', outline: 'none', boxSizing: 'border-box' }}
                       />
                     </div>
                   </div>
@@ -981,14 +1021,14 @@ export default function MobilityLibrary() {
                   <button
                     type="button"
                     onClick={() => setEditingDrill(null)}
-                    style={{ padding: '7px 16px', borderRadius: '6px', background: '#F1F5F9', border: '1px solid #CBD5E1', color: '#475569', fontSize: '11.5px', fontWeight: 700, cursor: 'pointer' }}
+                    style={{ padding: '8px 18px', borderRadius: '8px', background: '#F1F5F9', border: '1px solid #CBD5E1', color: '#475569', fontSize: '11.5px', fontWeight: 700, cursor: 'pointer' }}
                   >
                     إلغاء
                   </button>
                   <button
                     type="submit"
                     disabled={savingEditDrill}
-                    style={{ padding: '7px 20px', borderRadius: '6px', background: '#0F172A', border: 'none', color: '#FFFFFF', fontSize: '11.5px', fontWeight: 700, cursor: 'pointer' }}
+                    style={{ padding: '8px 22px', borderRadius: '8px', background: '#0F172A', border: 'none', color: '#FFFFFF', fontSize: '11.5px', fontWeight: 700, cursor: 'pointer' }}
                   >
                     {savingEditDrill ? 'جاري الحفظ...' : 'حفظ التعديلات'}
                   </button>
@@ -1001,20 +1041,20 @@ export default function MobilityLibrary() {
         {/* Add Drill Modal */}
         {isAddModalOpen && (
           <div style={{ position: 'fixed', inset: 0, background: 'rgba(15, 23, 42, 0.5)', backdropFilter: 'blur(4px)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 9999, padding: '16px' }} dir="rtl">
-            <div style={{ maxWidth: '460px', width: '100%', background: '#FFFFFF', borderRadius: '8px', border: '1px solid #E2E8F0', padding: '16px', boxShadow: '0 20px 40px rgba(15, 23, 42, 0.15)', display: 'flex', flexDirection: 'column', gap: '10px' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid #F1F5F9', paddingBottom: '6px' }}>
-                <h4 style={{ margin: 0, fontSize: '13.5px', fontWeight: 800, color: '#0F172A' }}>إضافة حركة كارديو / إطالة جديدة</h4>
+            <div style={{ maxWidth: '480px', width: '100%', background: '#FFFFFF', borderRadius: '16px', border: '1px solid #E2E8F0', padding: '18px 20px', boxShadow: '0 20px 40px rgba(15, 23, 42, 0.15)', display: 'flex', flexDirection: 'column', gap: '12px' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid #F1F5F9', paddingBottom: '8px' }}>
+                <h4 style={{ margin: 0, fontSize: '14px', fontWeight: 800, color: '#0F172A' }}>إضافة حركة كارديو / إطالة جديدة</h4>
                 <button type="button" onClick={() => setIsAddModalOpen(false)} style={{ background: 'transparent', border: 'none', cursor: 'pointer', color: '#64748B' }}><X size={15} /></button>
               </div>
-              <form onSubmit={handleSaveNewDrill} style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+              <form onSubmit={handleSaveNewDrill} style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
                 <div>
-                  <label style={{ display: 'block', fontSize: '10.5px', fontWeight: 700, color: '#475569', marginBottom: '2px' }}>الاسم بالعربي *</label>
-                  <input type="text" required placeholder="مثال: قفز الحبل السريع" value={newDrillData.name_ar} onChange={(e) => setNewDrillData(prev => ({ ...prev, name_ar: e.target.value }))} style={{ width: '100%', height: '30px', borderRadius: '5px', border: '1px solid #CBD5E1', padding: '0 8px', fontSize: '11px', outline: 'none', boxSizing: 'border-box' }} />
+                  <label style={{ display: 'block', fontSize: '11px', fontWeight: 700, color: '#475569', marginBottom: '4px' }}>الاسم بالعربي *</label>
+                  <input type="text" required placeholder="مثال: قفز الحبل السريع" value={newDrillData.name_ar} onChange={(e) => setNewDrillData(prev => ({ ...prev, name_ar: e.target.value }))} style={{ width: '100%', height: '34px', borderRadius: '8px', border: '1px solid #CBD5E1', padding: '0 10px', fontSize: '11.5px', outline: 'none', boxSizing: 'border-box' }} />
                 </div>
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
                   <div>
-                    <label style={{ display: 'block', fontSize: '10.5px', fontWeight: 700, color: '#475569', marginBottom: '2px' }}>القسم</label>
-                    <select value={newDrillData.category} onChange={(e) => setNewDrillData(prev => ({ ...prev, category: e.target.value }))} style={{ width: '100%', height: '30px', borderRadius: '5px', border: '1px solid #CBD5E1', padding: '0 6px', fontSize: '11px', outline: 'none', background: '#FFFFFF' }}>
+                    <label style={{ display: 'block', fontSize: '11px', fontWeight: 700, color: '#475569', marginBottom: '4px' }}>القسم</label>
+                    <select value={newDrillData.category} onChange={(e) => setNewDrillData(prev => ({ ...prev, category: e.target.value }))} style={{ width: '100%', height: '34px', borderRadius: '8px', border: '1px solid #CBD5E1', padding: '0 8px', fontSize: '11.5px', fontWeight: 700, color: '#0F172A', outline: 'none', background: '#FFFFFF' }}>
                       <option value="CARDIO_MODALITY">أنظمة الكارديو</option>
                       <option value="DYNAMIC_WARMUP">إحماء ومرونة ديناميكية</option>
                       <option value="STATIC_STRETCH">إطالة استشفائية ثابتة</option>
@@ -1022,17 +1062,17 @@ export default function MobilityLibrary() {
                     </select>
                   </div>
                   <div>
-                    <label style={{ display: 'block', fontSize: '10.5px', fontWeight: 700, color: '#475569', marginBottom: '2px' }}>المنطقة المستهدفة</label>
-                    <input type="text" placeholder="مثال: القلب وحرق الدهون" value={newDrillData.target_area_ar} onChange={(e) => setNewDrillData(prev => ({ ...prev, target_area_ar: e.target.value }))} style={{ width: '100%', height: '30px', borderRadius: '5px', border: '1px solid #CBD5E1', padding: '0 8px', fontSize: '11px', outline: 'none', boxSizing: 'border-box' }} />
+                    <label style={{ display: 'block', fontSize: '11px', fontWeight: 700, color: '#475569', marginBottom: '4px' }}>المنطقة المستهدفة</label>
+                    <input type="text" placeholder="مثال: القلب وحرق الدهون" value={newDrillData.target_area_ar} onChange={(e) => setNewDrillData(prev => ({ ...prev, target_area_ar: e.target.value }))} style={{ width: '100%', height: '34px', borderRadius: '8px', border: '1px solid #CBD5E1', padding: '0 10px', fontSize: '11.5px', outline: 'none', boxSizing: 'border-box' }} />
                   </div>
                 </div>
                 <div>
-                  <label style={{ display: 'block', fontSize: '10.5px', fontWeight: 700, color: '#475569', marginBottom: '2px' }}>توجيه الأداء</label>
-                  <textarea rows={2} placeholder="اكتب التوجيه الحركي باختصار..." value={newDrillData.cue_ar} onChange={(e) => setNewDrillData(prev => ({ ...prev, cue_ar: e.target.value }))} style={{ width: '100%', borderRadius: '5px', border: '1px solid #CBD5E1', padding: '5px 8px', fontSize: '11px', outline: 'none', boxSizing: 'border-box', fontFamily: 'Cairo, sans-serif' }} />
+                  <label style={{ display: 'block', fontSize: '11px', fontWeight: 700, color: '#475569', marginBottom: '4px' }}>توجيه الأداء</label>
+                  <textarea rows={2} placeholder="اكتب التوجيه الحركي باختصار..." value={newDrillData.cue_ar} onChange={(e) => setNewDrillData(prev => ({ ...prev, cue_ar: e.target.value }))} style={{ width: '100%', borderRadius: '8px', border: '1px solid #CBD5E1', padding: '6px 10px', fontSize: '11.5px', outline: 'none', boxSizing: 'border-box', fontFamily: 'Cairo, sans-serif' }} />
                 </div>
-                <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '6px', marginTop: '4px' }}>
-                  <button type="button" onClick={() => setIsAddModalOpen(false)} style={{ padding: '5px 10px', borderRadius: '5px', background: '#F1F5F9', border: '1px solid #CBD5E1', color: '#475569', fontSize: '11px', fontWeight: 700, cursor: 'pointer' }}>إلغاء</button>
-                  <button type="submit" disabled={savingNewDrill} style={{ padding: '5px 14px', borderRadius: '5px', background: '#0F172A', border: 'none', color: '#FFFFFF', fontSize: '11px', fontWeight: 700, cursor: 'pointer' }}>{savingNewDrill ? 'جاري الحفظ...' : 'حفظ'}</button>
+                <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px', marginTop: '6px' }}>
+                  <button type="button" onClick={() => setIsAddModalOpen(false)} style={{ padding: '6px 14px', borderRadius: '8px', background: '#F1F5F9', border: '1px solid #CBD5E1', color: '#475569', fontSize: '11.5px', fontWeight: 700, cursor: 'pointer' }}>إلغاء</button>
+                  <button type="submit" disabled={savingNewDrill} style={{ padding: '6px 18px', borderRadius: '8px', background: '#0F172A', border: 'none', color: '#FFFFFF', fontSize: '11.5px', fontWeight: 700, cursor: 'pointer' }}>{savingNewDrill ? 'جاري الحفظ...' : 'حفظ'}</button>
                 </div>
               </form>
             </div>
@@ -1046,7 +1086,7 @@ export default function MobilityLibrary() {
 
         {/* Notification Toast */}
         {notification && (
-          <div style={{ position: 'fixed', bottom: '20px', left: '50%', transform: 'translateX(-50%)', background: '#0F172A', color: '#FFFFFF', padding: '6px 14px', borderRadius: '6px', fontSize: '11.5px', fontWeight: 700, zIndex: 99999 }}>
+          <div style={{ position: 'fixed', bottom: '20px', left: '50%', transform: 'translateX(-50%)', background: '#0F172A', color: '#FFFFFF', padding: '8px 16px', borderRadius: '8px', fontSize: '11.5px', fontWeight: 700, zIndex: 99999 }}>
             {notification}
           </div>
         )}

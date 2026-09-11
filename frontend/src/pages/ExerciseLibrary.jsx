@@ -150,7 +150,7 @@ function AlternativesManager({ currentExId, alternatives = [], onChange, allExer
             الربط التبادلي التلقائي للبدائل التوأم
           </span>
         </div>
-        <span style={{ fontSize: '10.5px', color: '#0284C7', fontWeight: 700, background: '#F0F9FF', padding: '2px 8px', borderRadius: '4px', border: '1px solid #BAE6FD' }}>
+        <span style={{ fontSize: '10.5px', color: '#0284C7', fontWeight: 700, background: '#F0F9FF', padding: '2px 8px', borderRadius: '6px', border: '1px solid #BAE6FD' }}>
           {currentAlts.length} بدائل مرتبطة
         </span>
       </div>
@@ -1179,8 +1179,8 @@ export default function ExerciseLibrary() {
                         type="button"
                         onClick={() => toggleCardView(ex.id, 'CUES')}
                         style={{
-                          padding: '4px 8px',
-                          borderRadius: '5px',
+                          padding: '5px 9px',
+                          borderRadius: '7px',
                           border: currentExpanded === 'CUES' ? '1px solid #0F172A' : '1px solid #CBD5E1',
                           background: currentExpanded === 'CUES' ? '#0F172A' : '#FFFFFF',
                           color: currentExpanded === 'CUES' ? '#FFFFFF' : '#334155',
@@ -1203,8 +1203,8 @@ export default function ExerciseLibrary() {
                         type="button"
                         onClick={() => toggleCardView(ex.id, 'MISTAKES')}
                         style={{
-                          padding: '4px 8px',
-                          borderRadius: '5px',
+                          padding: '5px 9px',
+                          borderRadius: '7px',
                           border: currentExpanded === 'MISTAKES' ? '1px solid #FDE68A' : '1px solid #CBD5E1',
                           background: currentExpanded === 'MISTAKES' ? '#FFFBEB' : '#FFFFFF',
                           color: currentExpanded === 'MISTAKES' ? '#B45309' : '#64748B',
@@ -1227,8 +1227,8 @@ export default function ExerciseLibrary() {
                         type="button"
                         onClick={() => toggleCardView(ex.id, 'ALTERNATIVES')}
                         style={{
-                          padding: '4px 8px',
-                          borderRadius: '5px',
+                          padding: '5px 9px',
+                          borderRadius: '7px',
                           border: currentExpanded === 'ALTERNATIVES' ? '1px solid #0284C7' : (ex.alternatives?.length > 0 ? '1px solid #BAE6FD' : '1px solid #E2E8F0'),
                           background: currentExpanded === 'ALTERNATIVES' ? '#F0F9FF' : (ex.alternatives?.length > 0 ? '#F0F9FF' : '#FFFFFF'),
                           color: currentExpanded === 'ALTERNATIVES' ? '#0284C7' : (ex.alternatives?.length > 0 ? '#0284C7' : '#94A3B8'),
@@ -1255,8 +1255,8 @@ export default function ExerciseLibrary() {
                         type="button"
                         onClick={() => openEditExerciseModal(ex)}
                         style={{
-                          padding: '4px 7px',
-                          borderRadius: '5px',
+                          padding: '5px 9px',
+                          borderRadius: '7px',
                           border: '1px solid #CBD5E1',
                           background: '#FFFFFF',
                           color: '#475569',
@@ -1281,8 +1281,8 @@ export default function ExerciseLibrary() {
                         type="button"
                         onClick={() => handleShareVideoLink(ex)}
                         style={{
-                          padding: '4px 7px',
-                          borderRadius: '5px',
+                          padding: '5px 9px',
+                          borderRadius: '7px',
                           border: isVideoCopied ? '1px solid #86EFAC' : '1px solid #CBD5E1',
                           background: isVideoCopied ? '#F0FDF4' : '#FFFFFF',
                           color: isVideoCopied ? '#16A34A' : '#475569',
@@ -1305,8 +1305,8 @@ export default function ExerciseLibrary() {
                         type="button"
                         onClick={() => setActiveVideo(ex)}
                         style={{
-                          padding: '4px 9px',
-                          borderRadius: '5px',
+                          padding: '5px 11px',
+                          borderRadius: '7px',
                           background: '#0F172A',
                           color: '#FFFFFF',
                           border: 'none',
@@ -1321,10 +1321,10 @@ export default function ExerciseLibrary() {
                         }}
                         onMouseEnter={(e) => (e.currentTarget.style.background = '#334155')}
                         onMouseLeave={(e) => (e.currentTarget.style.background = '#0F172A')}
-                        title="مشاهدة فيديو الأداء والتكنيك"
+                        title="مشاهدة فيديو التكنيك العملي"
                       >
-                        <Play size={10} />
-                        <span>الفيديو</span>
+                        <Play size={10} fill="#FFFFFF" />
+                        <span>فيديو</span>
                       </button>
                     </div>
 
@@ -1496,8 +1496,8 @@ export default function ExerciseLibrary() {
                         });
                       }}
                       style={{
-                        padding: '3px 8px',
-                        borderRadius: '4px',
+                        padding: '4px 10px',
+                        borderRadius: '7px',
                         border: '1px solid #CBD5E1',
                         background: '#FFFFFF',
                         fontSize: '11px',
@@ -1525,12 +1525,12 @@ export default function ExerciseLibrary() {
                         ) : (
                           <span style={{ fontSize: '10px', color: '#94A3B8' }}>لا توجد صورة</span>
                         )}
-                        <span style={{ position: 'absolute', bottom: '4px', right: '4px', background: 'rgba(15, 23, 42, 0.85)', color: '#FFF', fontSize: '9px', fontWeight: 700, padding: '2px 6px', borderRadius: '4px' }}>
+                        <span style={{ position: 'absolute', bottom: '4px', right: '4px', background: 'rgba(15, 23, 42, 0.85)', color: '#FFF', fontSize: '9px', fontWeight: 700, padding: '2px 6px', borderRadius: '6px' }}>
                           1. وضع البداية
                         </span>
                       </div>
 
-                      <label style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '5px', background: '#0F172A', color: '#FFFFFF', borderRadius: '6px', padding: '5px', fontSize: '11px', fontWeight: 700, cursor: 'pointer' }}>
+                      <label style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '5px', background: '#0F172A', color: '#FFFFFF', borderRadius: '8px', padding: '6px', fontSize: '11px', fontWeight: 700, cursor: 'pointer' }}>
                         <Upload size={12} />
                         <span>اختيار صورة من جهازك</span>
                         <input
@@ -1546,7 +1546,7 @@ export default function ExerciseLibrary() {
                         placeholder="أو ضع مسار / رابط صورة البداية"
                         value={newExerciseData.image_stretch}
                         onChange={(e) => setNewExerciseData({ ...newExerciseData, image_stretch: e.target.value })}
-                        style={{ width: '100%', height: '26px', borderRadius: '6px', border: '1px solid #E2E8F0', padding: '0 8px', fontSize: '10px', outline: 'none', boxSizing: 'border-box' }}
+                        style={{ width: '100%', height: '28px', borderRadius: '8px', border: '1px solid #E2E8F0', padding: '0 8px', fontSize: '10px', outline: 'none', boxSizing: 'border-box' }}
                       />
                     </div>
 
@@ -1558,12 +1558,12 @@ export default function ExerciseLibrary() {
                         ) : (
                           <span style={{ fontSize: '10px', color: '#94A3B8' }}>لا توجد صورة</span>
                         )}
-                        <span style={{ position: 'absolute', bottom: '4px', right: '4px', background: 'rgba(15, 23, 42, 0.85)', color: '#FFF', fontSize: '9px', fontWeight: 700, padding: '2px 6px', borderRadius: '4px' }}>
+                        <span style={{ position: 'absolute', bottom: '4px', right: '4px', background: 'rgba(15, 23, 42, 0.85)', color: '#FFF', fontSize: '9px', fontWeight: 700, padding: '2px 6px', borderRadius: '6px' }}>
                           2. وضع الانقباض
                         </span>
                       </div>
 
-                      <label style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '5px', background: '#0F172A', color: '#FFFFFF', borderRadius: '6px', padding: '5px', fontSize: '11px', fontWeight: 700, cursor: 'pointer' }}>
+                      <label style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '5px', background: '#0F172A', color: '#FFFFFF', borderRadius: '8px', padding: '6px', fontSize: '11px', fontWeight: 700, cursor: 'pointer' }}>
                         <Upload size={12} />
                         <span>اختيار صورة من جهازك</span>
                         <input
@@ -1803,8 +1803,8 @@ export default function ExerciseLibrary() {
                         });
                       }}
                       style={{
-                        padding: '3px 8px',
-                        borderRadius: '4px',
+                        padding: '4px 10px',
+                        borderRadius: '7px',
                         border: '1px solid #CBD5E1',
                         background: '#FFFFFF',
                         fontSize: '11px',
@@ -1832,12 +1832,12 @@ export default function ExerciseLibrary() {
                         ) : (
                           <span style={{ fontSize: '10px', color: '#94A3B8' }}>لا توجد صورة</span>
                         )}
-                        <span style={{ position: 'absolute', bottom: '4px', right: '4px', background: 'rgba(15, 23, 42, 0.85)', color: '#FFF', fontSize: '9px', fontWeight: 700, padding: '2px 6px', borderRadius: '4px' }}>
+                        <span style={{ position: 'absolute', bottom: '4px', right: '4px', background: 'rgba(15, 23, 42, 0.85)', color: '#FFF', fontSize: '9px', fontWeight: 700, padding: '2px 6px', borderRadius: '6px' }}>
                           1. وضع البداية (0.jpg)
                         </span>
                       </div>
 
-                      <label style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '5px', background: '#0F172A', color: '#FFFFFF', borderRadius: '6px', padding: '5px', fontSize: '11px', fontWeight: 700, cursor: 'pointer' }}>
+                      <label style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '5px', background: '#0F172A', color: '#FFFFFF', borderRadius: '8px', padding: '6px', fontSize: '11px', fontWeight: 700, cursor: 'pointer' }}>
                         <Upload size={12} />
                         <span>اختيار صورة من جهازك</span>
                         <input
@@ -1853,7 +1853,7 @@ export default function ExerciseLibrary() {
                         placeholder="أو ضع مسار / رابط صورة البداية"
                         value={editFormData.image_stretch}
                         onChange={(e) => setEditFormData({ ...editFormData, image_stretch: e.target.value })}
-                        style={{ width: '100%', height: '26px', borderRadius: '6px', border: '1px solid #E2E8F0', padding: '0 8px', fontSize: '10px', outline: 'none', boxSizing: 'border-box' }}
+                        style={{ width: '100%', height: '28px', borderRadius: '8px', border: '1px solid #E2E8F0', padding: '0 8px', fontSize: '10px', outline: 'none', boxSizing: 'border-box' }}
                       />
                     </div>
 
@@ -1865,12 +1865,12 @@ export default function ExerciseLibrary() {
                         ) : (
                           <span style={{ fontSize: '10px', color: '#94A3B8' }}>لا توجد صورة</span>
                         )}
-                        <span style={{ position: 'absolute', bottom: '4px', right: '4px', background: 'rgba(15, 23, 42, 0.85)', color: '#FFF', fontSize: '9px', fontWeight: 700, padding: '2px 6px', borderRadius: '4px' }}>
+                        <span style={{ position: 'absolute', bottom: '4px', right: '4px', background: 'rgba(15, 23, 42, 0.85)', color: '#FFF', fontSize: '9px', fontWeight: 700, padding: '2px 6px', borderRadius: '6px' }}>
                           2. وضع الانقباض (1.jpg)
                         </span>
                       </div>
 
-                      <label style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '5px', background: '#0F172A', color: '#FFFFFF', borderRadius: '6px', padding: '5px', fontSize: '11px', fontWeight: 700, cursor: 'pointer' }}>
+                      <label style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '5px', background: '#0F172A', color: '#FFFFFF', borderRadius: '8px', padding: '6px', fontSize: '11px', fontWeight: 700, cursor: 'pointer' }}>
                         <Upload size={12} />
                         <span>اختيار صورة من جهازك</span>
                         <input
@@ -1883,10 +1883,10 @@ export default function ExerciseLibrary() {
 
                       <input
                         type="text"
-                        placeholder="أو ضع مسار / رابط صورة الانقباض"
+                        placeholder="أو ضع مسار / رابط صورة الأداء"
                         value={editFormData.image_contraction}
                         onChange={(e) => setEditFormData({ ...editFormData, image_contraction: e.target.value })}
-                        style={{ width: '100%', height: '26px', borderRadius: '6px', border: '1px solid #E2E8F0', padding: '0 8px', fontSize: '10px', outline: 'none', boxSizing: 'border-box' }}
+                        style={{ width: '100%', height: '28px', borderRadius: '8px', border: '1px solid #E2E8F0', padding: '0 8px', fontSize: '10px', outline: 'none', boxSizing: 'border-box' }}
                       />
                     </div>
                   </div>

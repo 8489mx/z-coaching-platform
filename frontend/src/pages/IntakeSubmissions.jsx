@@ -316,8 +316,8 @@ export default function IntakeSubmissions() {
                     type="button"
                     onClick={() => setFilter(tab.id)}
                     style={{
-                      padding: '4px 9px',
-                      borderRadius: '5px',
+                      padding: '4px 10px',
+                      borderRadius: '6px',
                       fontSize: '11px',
                       fontWeight: 700,
                       border: 'none',
@@ -397,8 +397,8 @@ export default function IntakeSubmissions() {
                                   {fasting.primaryFastingBadge && (
                                     <span style={{
                                       fontSize: '10px',
-                                      padding: '1px 6px',
-                                      borderRadius: '4px',
+                                      padding: '2px 7px',
+                                      borderRadius: '6px',
                                       background: fasting.primaryFastingBadge.bg,
                                       border: `1px solid ${fasting.primaryFastingBadge.border}`,
                                       color: fasting.primaryFastingBadge.color,
@@ -410,8 +410,8 @@ export default function IntakeSubmissions() {
                                   {fasting.intermittentBadge && (
                                     <span style={{
                                       fontSize: '10px',
-                                      padding: '1px 6px',
-                                      borderRadius: '4px',
+                                      padding: '2px 7px',
+                                      borderRadius: '6px',
                                       background: fasting.intermittentBadge.bg,
                                       border: `1px solid ${fasting.intermittentBadge.border}`,
                                       color: fasting.intermittentBadge.color,
@@ -443,8 +443,8 @@ export default function IntakeSubmissions() {
                           <span style={{ 
                             background: '#F8FAFC', 
                             border: '1px solid #E2E8F0', 
-                            padding: '2px 8px', 
-                            borderRadius: '4px', 
+                            padding: '3px 9px', 
+                            borderRadius: '6px', 
                             display: 'inline-flex',
                             alignItems: 'baseline',
                             gap: '3px',
@@ -472,11 +472,11 @@ export default function IntakeSubmissions() {
                         {/* 5. Payment Status */}
                         <td style={{ padding: '10px 14px', textAlign: 'center' }}>
                           {sub.payment_status === 'PAID' || sub.status === 'PAYMENT_CONFIRMED' || sub.status === 'APPROVED' ? (
-                            <span style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', color: '#16A34A', padding: '2px 8px', borderRadius: '4px', fontSize: '10.5px', fontWeight: 700, display: 'inline-block' }}>
+                            <span style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', color: '#16A34A', padding: '2px 8px', borderRadius: '6px', fontSize: '10.5px', fontWeight: 700, display: 'inline-block' }}>
                               مدفوع (مؤكد)
                             </span>
                           ) : (
-                            <span style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', color: '#D97706', padding: '2px 8px', borderRadius: '4px', fontSize: '10.5px', fontWeight: 700, display: 'inline-block' }}>
+                            <span style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', color: '#D97706', padding: '2px 8px', borderRadius: '6px', fontSize: '10.5px', fontWeight: 700, display: 'inline-block' }}>
                               بانتظار الدفع
                             </span>
                           )}
@@ -485,19 +485,19 @@ export default function IntakeSubmissions() {
                         {/* 6. Intake Status */}
                         <td style={{ padding: '10px 14px', textAlign: 'center' }}>
                           {sub.status === 'APPROVED' ? (
-                            <span style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', color: '#16A34A', padding: '2px 8px', borderRadius: '4px', fontSize: '10.5px', fontWeight: 800, display: 'inline-block' }}>
+                            <span style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', color: '#16A34A', padding: '2px 8px', borderRadius: '6px', fontSize: '10.5px', fontWeight: 800, display: 'inline-block' }}>
                               معتمد ومنشور
                             </span>
                           ) : sub.status === 'DRAFT_GENERATED' ? (
-                            <span style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', color: '#0284C7', padding: '2px 8px', borderRadius: '4px', fontSize: '10.5px', fontWeight: 700, display: 'inline-block' }}>
+                            <span style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', color: '#0284C7', padding: '2px 8px', borderRadius: '6px', fontSize: '10.5px', fontWeight: 700, display: 'inline-block' }}>
                               مسودة جاهزة
                             </span>
                           ) : sub.status === 'PENDING_COACH_REVIEW' ? (
-                            <span style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', color: '#D97706', padding: '2px 8px', borderRadius: '4px', fontSize: '10.5px', fontWeight: 700, display: 'inline-block' }}>
+                            <span style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', color: '#D97706', padding: '2px 8px', borderRadius: '6px', fontSize: '10.5px', fontWeight: 700, display: 'inline-block' }}>
                               بانتظار المراجعة
                             </span>
                           ) : (
-                            <span style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', color: '#64748B', padding: '2px 8px', borderRadius: '4px', fontSize: '10.5px', fontWeight: 700, display: 'inline-block' }}>
+                            <span style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', color: '#64748B', padding: '2px 8px', borderRadius: '6px', fontSize: '10.5px', fontWeight: 700, display: 'inline-block' }}>
                               قيد التعبئة
                             </span>
                           )}
@@ -555,8 +555,8 @@ export default function IntakeSubmissions() {
                               type="button"
                               onClick={() => handleToggleAnswers(sub)}
                               style={{
-                                padding: '4px 8px',
-                                borderRadius: '5px',
+                                padding: '5px 9px',
+                                borderRadius: '7px',
                                 border: '1px solid #CBD5E1',
                                 background: '#FFFFFF',
                                 color: '#475569',
@@ -580,8 +580,8 @@ export default function IntakeSubmissions() {
                                 disabled={verifyingPaymentId === sub.id}
                                 onClick={() => handleVerifyPayment(sub)}
                                 style={{
-                                  padding: '4px 9px',
-                                  borderRadius: '5px',
+                                  padding: '5px 10px',
+                                  borderRadius: '7px',
                                   border: '1px solid #86EFAC',
                                   background: '#F0FDF4',
                                   color: '#16A34A',
@@ -601,8 +601,8 @@ export default function IntakeSubmissions() {
                               onClick={() => handleGenerateDraft(sub)}
                               disabled={generatingId === sub.id}
                               style={{
-                                padding: '4px 12px',
-                                borderRadius: '5px',
+                                padding: '5px 12px',
+                                borderRadius: '7px',
                                 background: '#0F172A',
                                 color: '#FFFFFF',
                                 fontSize: '11px',

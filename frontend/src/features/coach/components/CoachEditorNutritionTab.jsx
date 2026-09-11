@@ -300,22 +300,22 @@ export default function CoachEditorNutritionTab(props) {
                   </div>
                 </div>
                 {program.nutrition?.deficit_pct && (
-                  <span style={{ fontSize: '10.5px', fontWeight: 700, padding: '2px 8px', borderRadius: '4px', background: '#FFFFFF', border: '1px solid #CBD5E1', color: '#0F172A', whiteSpace: 'nowrap' }}>
+                  <span style={{ fontSize: '10.5px', fontWeight: 700, padding: '2px 8px', borderRadius: '6px', background: '#FFFFFF', border: '1px solid #CBD5E1', color: '#0F172A', whiteSpace: 'nowrap' }}>
                     عجز {program.nutrition.deficit_pct}%
                   </span>
                 )}
               </div>
             )}
 
-                        {/* Top Macro Summary Bar with Live Calories & Supplements Integration */}
-            <div style={{ background: '#FFFFFF', border: '1px solid #E2E8F0', borderRadius: '8px', padding: '10px 14px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '8px', boxShadow: '0 1px 2px rgba(15, 23, 42, 0.02)' }}>
+            {/* Top Macro Summary Bar with Live Calories & Supplements Integration */}
+            <div style={{ background: '#FFFFFF', border: '1px solid #E2E8F0', borderRadius: '12px', padding: '10px 14px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '8px', boxShadow: '0 1px 2px rgba(15, 23, 42, 0.02)' }}>
               <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap', alignItems: 'center' }}>
-                <div style={{ background: '#0F172A', color: '#FFFFFF', padding: '5px 12px', borderRadius: '5px', textAlign: 'center' }}>
+                <div style={{ background: '#0F172A', color: '#FFFFFF', padding: '5px 12px', borderRadius: '8px', textAlign: 'center' }}>
                   <span style={{ fontSize: '9.5px', opacity: 0.8, display: 'block' }}>المستهدف</span>
                   <strong style={{ fontSize: '13px', fontWeight: 800 }}>{targetCal} kcal</strong>
                 </div>
 
-                <div style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', color: '#0F172A', padding: '5px 12px', borderRadius: '5px', textAlign: 'center' }}>
+                <div style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', color: '#0F172A', padding: '5px 12px', borderRadius: '8px', textAlign: 'center' }}>
                   <span style={{ fontSize: '9.5px', color: '#64748B', display: 'block' }}>المخطط الفعلي (أكل + مكملات)</span>
                   <strong style={{ fontSize: '13px', fontWeight: 800, color: totalPlannedCal === 0 ? '#64748B' : Math.abs(diffCal) <= 30 ? '#16A34A' : diffCal > 0 ? '#D97706' : '#0284C7' }}>
                     {totalPlannedCal} kcal
@@ -323,29 +323,29 @@ export default function CoachEditorNutritionTab(props) {
                 </div>
 
                 {suppsCal > 0 && (
-                  <div style={{ background: '#EFF6FF', border: '1px solid #BFDBFE', color: '#1E40AF', padding: '5px 10px', borderRadius: '5px', textAlign: 'center' }}>
+                  <div style={{ background: '#EFF6FF', border: '1px solid #BFDBFE', color: '#1E40AF', padding: '5px 10px', borderRadius: '8px', textAlign: 'center' }}>
                     <span style={{ fontSize: '9px', display: 'block', opacity: 0.8 }}>أكل / مكملات</span>
                     <strong style={{ fontSize: '12px' }}>{mealsCal} + {suppsCal}</strong>
                   </div>
                 )}
 
-                <div style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', color: '#0F172A', padding: '5px 10px', borderRadius: '5px', textAlign: 'center' }}>
+                <div style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', color: '#0F172A', padding: '5px 10px', borderRadius: '8px', textAlign: 'center' }}>
                   <span style={{ fontSize: '9.5px', color: '#64748B', display: 'block' }}>البروتين</span>
                   <strong style={{ fontSize: '12.5px', fontWeight: 700 }}>{totalPlannedP}g / {targetP}g</strong>
                 </div>
 
-                <div style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', color: '#0F172A', padding: '5px 10px', borderRadius: '5px', textAlign: 'center' }}>
+                <div style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', color: '#0F172A', padding: '5px 10px', borderRadius: '8px', textAlign: 'center' }}>
                   <span style={{ fontSize: '9.5px', color: '#64748B', display: 'block' }}>الكارب</span>
                   <strong style={{ fontSize: '12.5px', fontWeight: 700 }}>{totalPlannedC}g / {targetC}g</strong>
                 </div>
 
-                <div style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', color: '#0F172A', padding: '5px 10px', borderRadius: '5px', textAlign: 'center' }}>
+                <div style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', color: '#0F172A', padding: '5px 10px', borderRadius: '8px', textAlign: 'center' }}>
                   <span style={{ fontSize: '9.5px', color: '#64748B', display: 'block' }}>الدهون</span>
                   <strong style={{ fontSize: '12.5px', fontWeight: 700 }}>{totalPlannedF}g / {targetF}g</strong>
                 </div>
 
                 {Boolean(program.nutrition?.beverage_sugar_intake && program.nutrition.beverage_sugar_intake !== 'zero_or_sweetener') && (
-                  <div style={{ background: '#FEF3C7', border: '1px solid #FCD34D', color: '#92400E', padding: '5px 10px', borderRadius: '5px', textAlign: 'center' }}>
+                  <div style={{ background: '#FEF3C7', border: '1px solid #FCD34D', color: '#92400E', padding: '5px 10px', borderRadius: '8px', textAlign: 'center' }}>
                     <span style={{ fontSize: '9px', display: 'block', opacity: 0.85 }}>سكر المشروبات</span>
                     <strong style={{ fontSize: '12px' }}>
                       {program.nutrition.beverage_sugar_intake === '1_tsp' ? '+5g C (20 kcal)' :
@@ -361,7 +361,7 @@ export default function CoachEditorNutritionTab(props) {
                     fontSize: '11px',
                     fontWeight: 700,
                     padding: '4px 8px',
-                    borderRadius: '5px',
+                    borderRadius: '6px',
                     background: Math.abs(diffCal) <= 25 ? '#DCFCE7' : diffCal > 0 ? '#FEF3C7' : '#E0F2FE',
                     color: Math.abs(diffCal) <= 25 ? '#15803D' : diffCal > 0 ? '#B45309' : '#0369A1'
                   }}>
@@ -375,7 +375,7 @@ export default function CoachEditorNutritionTab(props) {
                   style={{
                     height: '30px',
                     padding: '0 10px',
-                    borderRadius: '5px',
+                    borderRadius: '8px',
                     background: isAutoRippleOn ? '#EFF6FF' : '#F8FAFC',
                     color: isAutoRippleOn ? '#1D4ED8' : '#64748B',
                     border: '1px solid ' + (isAutoRippleOn ? '#BFDBFE' : '#CBD5E1'),
@@ -396,7 +396,7 @@ export default function CoachEditorNutritionTab(props) {
                 <button
                   type="button"
                   onClick={handleAutoBalanceAllMeals}
-                  style={{ height: '30px', padding: '0 12px', borderRadius: '5px', background: '#047857', color: '#FFFFFF', border: 'none', fontSize: '11px', fontWeight: 700, cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: '4px', boxShadow: '0 1px 3px rgba(4, 120, 87, 0.2)' }}
+                  style={{ height: '30px', padding: '0 12px', borderRadius: '8px', background: '#047857', color: '#FFFFFF', border: 'none', fontSize: '11px', fontWeight: 700, cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: '4px', boxShadow: '0 1px 3px rgba(4, 120, 87, 0.2)' }}
                   title="موازنة جرامات جميع الوجبات تلقائياً لتطابق سعرات وماكروز اليوم بنسب واقعية"
                 >
                   <Zap size={13} />
@@ -406,7 +406,7 @@ export default function CoachEditorNutritionTab(props) {
                 <button
                   type="button"
                   onClick={handleAddNewMeal}
-                  style={{ height: '30px', padding: '0 12px', borderRadius: '5px', background: '#0F172A', color: '#FFFFFF', border: 'none', fontSize: '11px', fontWeight: 700, cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: '4px', boxShadow: '0 1px 3px rgba(15, 23, 42, 0.15)' }}
+                  style={{ height: '30px', padding: '0 12px', borderRadius: '8px', background: '#0F172A', color: '#FFFFFF', border: 'none', fontSize: '11px', fontWeight: 700, cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: '4px', boxShadow: '0 1px 3px rgba(15, 23, 42, 0.15)' }}
                 >
                   <Plus size={13} />
                   <span>إضافة وجبة</span>
@@ -426,7 +426,7 @@ export default function CoachEditorNutritionTab(props) {
                       onClick={() => handleAddPresetMeal(preset)}
                       style={{
                         padding: '3px 8px',
-                        borderRadius: '4px',
+                        borderRadius: '7px',
                         border: '1px solid #CBD5E1',
                         background: '#F8FAFC',
                         color: '#0F172A',
@@ -471,7 +471,7 @@ export default function CoachEditorNutritionTab(props) {
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid #F1F5F9', paddingBottom: '6px', marginBottom: '8px' }}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flexWrap: 'wrap' }}>
                         <strong style={{ fontSize: '12.5px', color: '#0F172A', fontWeight: 800 }}>{meal.name}</strong>
-                        <span style={{ fontSize: '10px', color: '#64748B', background: '#F8FAFC', border: '1px solid #E2E8F0', padding: '1px 5px', borderRadius: '3px', fontWeight: 600 }}>{meal.time}</span>
+                        <span style={{ fontSize: '10px', color: '#64748B', background: '#F8FAFC', border: '1px solid #E2E8F0', padding: '1px 5px', borderRadius: '6px', fontWeight: 600 }}>{meal.time}</span>
                         <select
                           value={meal.workout_timing || 'NONE'}
                           onChange={(e) => {
@@ -488,7 +488,7 @@ export default function CoachEditorNutritionTab(props) {
                             fontSize: '9.5px',
                             fontWeight: 700,
                             padding: '1px 5px',
-                            borderRadius: '4px',
+                            borderRadius: '6px',
                             border: '1px solid #CBD5E1',
                             background: meal.workout_timing === 'PRE_WORKOUT' ? '#FEF3C7' : meal.workout_timing === 'POST_WORKOUT' ? '#DCFCE7' : '#FFFFFF',
                             color: meal.workout_timing === 'PRE_WORKOUT' ? '#92400E' : meal.workout_timing === 'POST_WORKOUT' ? '#166534' : '#475569',
@@ -508,7 +508,7 @@ export default function CoachEditorNutritionTab(props) {
                             onClick={() => handleAutoBalanceMeal(meal.id)}
                             style={{
                               padding: '2px 8px',
-                              borderRadius: '4px',
+                              borderRadius: '7px',
                               background: '#ECFDF5',
                               border: '1px solid #A7F3D0',
                               color: '#065F46',
@@ -528,7 +528,7 @@ export default function CoachEditorNutritionTab(props) {
                         <button
                           type="button"
                           onClick={() => setAddFoodModal({ open: true, mealId: meal.id })}
-                          style={{ padding: '2px 7px', borderRadius: '4px', background: '#F8FAFC', border: '1px solid #CBD5E1', color: '#0F172A', fontSize: '10px', fontWeight: 700, cursor: 'pointer' }}
+                          style={{ padding: '2px 7px', borderRadius: '7px', background: '#F8FAFC', border: '1px solid #CBD5E1', color: '#0F172A', fontSize: '10px', fontWeight: 700, cursor: 'pointer' }}
                         >
                           + صنف غذائي
                         </button>
@@ -581,7 +581,7 @@ export default function CoachEditorNutritionTab(props) {
                               return <span style={{ fontSize: '9px', color: '#0284C7', fontWeight: 700, whiteSpace: 'nowrap' }}>{hint}</span>;
                             })()}
                             {item.category && (
-                              <span style={{ fontSize: '9.5px', fontWeight: 600, padding: '1px 5px', borderRadius: '3px', background: '#FFFFFF', color: '#64748B', border: '1px solid #E2E8F0', flexShrink: 0 }}>
+                              <span style={{ fontSize: '9.5px', fontWeight: 600, padding: '1px 5px', borderRadius: '6px', background: '#FFFFFF', color: '#64748B', border: '1px solid #E2E8F0', flexShrink: 0 }}>
                                 {item.category === 'PROTEIN' ? 'بروتين' : item.category === 'CARB' ? 'نشويات' : item.category === 'FAT' ? 'دهون' : 'خضار'}
                               </span>
                             )}
@@ -589,7 +589,7 @@ export default function CoachEditorNutritionTab(props) {
                           
                           {/* 2. Grams Amount Box (Fixed width, vertically aligned, no spin-arrow crop) */}
                           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                            <div style={{ display: 'inline-flex', alignItems: 'center', background: '#FFFFFF', border: '1px solid #CBD5E1', borderRadius: '5px', padding: '0 6px', height: '27px', width: '74px', boxSizing: 'border-box' }}>
+                            <div style={{ display: 'inline-flex', alignItems: 'center', background: '#FFFFFF', border: '1px solid #CBD5E1', borderRadius: '8px', padding: '0 6px', height: '27px', width: '74px', boxSizing: 'border-box' }}>
                               <input
                                 type="text"
                                 inputMode="numeric"
@@ -685,21 +685,21 @@ export default function CoachEditorNutritionTab(props) {
                     currentSupps.push({ id: `supp-${Date.now()}`, name: '', dose: '', timing: '', cal: 0, p: 0, c: 0, f: 0, notes: '' });
                     handleUpdateSupplementsWithRipple(currentSupps);
                   }}
-                  style={{ padding: '4px 10px', borderRadius: '5px', background: '#0F172A', color: '#FFFFFF', border: 'none', fontSize: '11px', fontWeight: 700, cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: '4px' }}
+                  style={{ padding: '4px 10px', borderRadius: '8px', background: '#0F172A', color: '#FFFFFF', border: 'none', fontSize: '11px', fontWeight: 700, cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: '4px' }}
                 >
                   <Plus size={12} /> إضافة مكمل
                 </button>
               </div>
 
               {(!program.cardio?.supplements || program.cardio.supplements.length === 0) && (
-                <div style={{ background: '#F8FAFC', border: '1px dashed #CBD5E1', borderRadius: '6px', padding: '12px', textAlign: 'center', fontSize: '11px', color: '#94A3B8' }}>
+                <div style={{ background: '#F8FAFC', border: '1px dashed #CBD5E1', borderRadius: '8px', padding: '12px', textAlign: 'center', fontSize: '11px', color: '#94A3B8' }}>
                   لا توجد مكملات مضافة حالياً. اضغط "إضافة مكمل" لإدراج واي بروتين، ماس جينر، كرياتين، أو فيتامينات.
                 </div>
               )}
 
               <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
                 {program.cardio?.supplements?.map((supp, sIdx) => (
-                  <div key={supp.id || sIdx} style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', borderRadius: '6px', padding: '8px 10px' }}>
+                  <div key={supp.id || sIdx} style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', borderRadius: '8px', padding: '8px 10px' }}>
                     <div style={{ display: 'grid', gridTemplateColumns: '1.2fr 1fr 1fr auto', gap: '6px', alignItems: 'center', marginBottom: '6px' }}>
                       <input
                         type="text"
@@ -710,7 +710,7 @@ export default function CoachEditorNutritionTab(props) {
                           updated[sIdx] = { ...updated[sIdx], name: e.target.value };
                           handleUpdateSupplementsWithRipple(updated);
                         }}
-                        style={{ height: '30px', borderRadius: '4px', border: '1px solid #CBD5E1', padding: '0 8px', fontSize: '11px', fontWeight: 700, outline: 'none', background: '#FFFFFF' }}
+                        style={{ height: '30px', borderRadius: '8px', border: '1px solid #CBD5E1', padding: '0 8px', fontSize: '11px', fontWeight: 700, outline: 'none', background: '#FFFFFF' }}
                       />
                       <input
                         type="text"
@@ -721,7 +721,7 @@ export default function CoachEditorNutritionTab(props) {
                           updated[sIdx] = { ...updated[sIdx], dose: e.target.value };
                           handleUpdateSupplementsWithRipple(updated);
                         }}
-                        style={{ height: '30px', borderRadius: '4px', border: '1px solid #CBD5E1', padding: '0 8px', fontSize: '11px', outline: 'none', background: '#FFFFFF' }}
+                        style={{ height: '30px', borderRadius: '8px', border: '1px solid #CBD5E1', padding: '0 8px', fontSize: '11px', outline: 'none', background: '#FFFFFF' }}
                       />
                       <input
                         type="text"
@@ -732,7 +732,7 @@ export default function CoachEditorNutritionTab(props) {
                           updated[sIdx] = { ...updated[sIdx], timing: e.target.value };
                           handleUpdateSupplementsWithRipple(updated);
                         }}
-                        style={{ height: '30px', borderRadius: '4px', border: '1px solid #CBD5E1', padding: '0 8px', fontSize: '11px', outline: 'none', background: '#FFFFFF' }}
+                        style={{ height: '30px', borderRadius: '8px', border: '1px solid #CBD5E1', padding: '0 8px', fontSize: '11px', outline: 'none', background: '#FFFFFF' }}
                       />
                       <button
                         type="button"
@@ -761,7 +761,7 @@ export default function CoachEditorNutritionTab(props) {
                             updated[sIdx] = { ...updated[sIdx], cal: Number(e.target.value) || 0 };
                             handleUpdateSupplementsWithRipple(updated);
                           }}
-                          style={{ width: '100%', height: '28px', borderRadius: '4px', border: '1px solid #CBD5E1', textAlign: 'center', fontSize: '12px', fontWeight: 700, outline: 'none', background: '#FFFFFF' }}
+                          style={{ width: '100%', height: '28px', borderRadius: '8px', border: '1px solid #CBD5E1', textAlign: 'center', fontSize: '12px', fontWeight: 700, outline: 'none', background: '#FFFFFF' }}
                         />
                       </div>
                       <div style={{ textAlign: 'center' }}>
@@ -775,7 +775,7 @@ export default function CoachEditorNutritionTab(props) {
                             updated[sIdx] = { ...updated[sIdx], p: Number(e.target.value) || 0 };
                             handleUpdateSupplementsWithRipple(updated);
                           }}
-                          style={{ width: '100%', height: '28px', borderRadius: '4px', border: '1px solid #CBD5E1', textAlign: 'center', fontSize: '12px', fontWeight: 700, outline: 'none', background: '#FFFFFF' }}
+                          style={{ width: '100%', height: '28px', borderRadius: '8px', border: '1px solid #CBD5E1', textAlign: 'center', fontSize: '12px', fontWeight: 700, outline: 'none', background: '#FFFFFF' }}
                         />
                       </div>
                       <div style={{ textAlign: 'center' }}>
@@ -789,7 +789,7 @@ export default function CoachEditorNutritionTab(props) {
                             updated[sIdx] = { ...updated[sIdx], c: Number(e.target.value) || 0 };
                             handleUpdateSupplementsWithRipple(updated);
                           }}
-                          style={{ width: '100%', height: '28px', borderRadius: '4px', border: '1px solid #CBD5E1', textAlign: 'center', fontSize: '12px', fontWeight: 700, outline: 'none', background: '#FFFFFF' }}
+                          style={{ width: '100%', height: '28px', borderRadius: '8px', border: '1px solid #CBD5E1', textAlign: 'center', fontSize: '12px', fontWeight: 700, outline: 'none', background: '#FFFFFF' }}
                         />
                       </div>
                       <div style={{ textAlign: 'center' }}>
@@ -803,7 +803,7 @@ export default function CoachEditorNutritionTab(props) {
                             updated[sIdx] = { ...updated[sIdx], f: Number(e.target.value) || 0 };
                             handleUpdateSupplementsWithRipple(updated);
                           }}
-                          style={{ width: '100%', height: '28px', borderRadius: '4px', border: '1px solid #CBD5E1', textAlign: 'center', fontSize: '12px', fontWeight: 700, outline: 'none', background: '#FFFFFF' }}
+                          style={{ width: '100%', height: '28px', borderRadius: '8px', border: '1px solid #CBD5E1', textAlign: 'center', fontSize: '12px', fontWeight: 700, outline: 'none', background: '#FFFFFF' }}
                         />
                       </div>
                     </div>
@@ -817,7 +817,7 @@ export default function CoachEditorNutritionTab(props) {
                         updated[sIdx] = { ...updated[sIdx], notes: e.target.value };
                         handleUpdateSupplementsWithRipple(updated);
                       }}
-                      style={{ width: '100%', height: '28px', borderRadius: '4px', border: '1px solid #E2E8F0', padding: '0 8px', fontSize: '10.5px', color: '#64748B', outline: 'none', background: '#FFFFFF', marginTop: '6px', boxSizing: 'border-box' }}
+                      style={{ width: '100%', height: '28px', borderRadius: '8px', border: '1px solid #E2E8F0', padding: '0 8px', fontSize: '10.5px', color: '#64748B', outline: 'none', background: '#FFFFFF', marginTop: '6px', boxSizing: 'border-box' }}
                     />
                   </div>
                 ))}

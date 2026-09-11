@@ -945,7 +945,7 @@ export default function ClientInteractiveApp() {
                     background: clientData.package?.includes('ELITE') ? 'rgba(56, 189, 248, 0.1)' : 'rgba(245, 158, 11, 0.1)', 
                     border: `1px solid ${clientData.package?.includes('ELITE') ? 'rgba(56, 189, 248, 0.25)' : 'rgba(245, 158, 11, 0.25)'}`,
                     padding: '1px 7px', 
-                    borderRadius: '5px', 
+                    borderRadius: '6px', 
                     fontWeight: 700 
                   }}>
                     {clientData.package}
@@ -960,7 +960,7 @@ export default function ClientInteractiveApp() {
                       background: 'rgba(196, 181, 253, 0.12)', 
                       border: '1px solid rgba(196, 181, 253, 0.25)', 
                       padding: '1px 7px', 
-                      borderRadius: '5px', 
+                      borderRadius: '6px', 
                       fontWeight: 700 
                     }}>
                       {clientData.fastingProfile.christianFastingStyle === 'STRICT_VEGAN' ? 'صيام نباتي صرف' : 'صيام مع أسماك'}
@@ -973,7 +973,7 @@ export default function ClientInteractiveApp() {
                       background: 'rgba(253, 230, 138, 0.12)', 
                       border: '1px solid rgba(253, 230, 138, 0.25)', 
                       padding: '1px 7px', 
-                      borderRadius: '5px', 
+                      borderRadius: '6px', 
                       fontWeight: 700 
                     }}>
                       صيام رمضان
@@ -986,7 +986,7 @@ export default function ClientInteractiveApp() {
                       background: 'rgba(125, 211, 252, 0.12)', 
                       border: '1px solid rgba(125, 211, 252, 0.25)', 
                       padding: '1px 7px', 
-                      borderRadius: '5px', 
+                      borderRadius: '6px', 
                       fontWeight: 700 
                     }}>
                       {clientData.fastingProfile.intermittentBadge?.shortLabel || 'متقطع'}
@@ -1227,7 +1227,7 @@ export default function ClientInteractiveApp() {
                       <span>بروتين</span>
                       <span style={{ color: '#0F172A', fontWeight: 700 }} dir="ltr">{Math.round(consumedMacros.p)}/{targetMacros.p}g</span>
                     </div>
-                    <div style={{ width: '100%', height: '3px', background: '#E2E8F0', borderRadius: '2px', marginTop: '5px', overflow: 'hidden' }}>
+                    <div style={{ width: '100%', height: '3px', background: '#E2E8F0', borderRadius: '9999px', marginTop: '5px', overflow: 'hidden' }}>
                       <div style={{ width: `${Math.min(100, (consumedMacros.p / targetMacros.p) * 100)}%`, height: '100%', background: '#0284C7' }}></div>
                     </div>
                   </div>
@@ -1238,7 +1238,7 @@ export default function ClientInteractiveApp() {
                       <span>كارب</span>
                       <span style={{ color: '#0F172A', fontWeight: 700 }} dir="ltr">{Math.round(consumedMacros.c)}/{targetMacros.c}g</span>
                     </div>
-                    <div style={{ width: '100%', height: '3px', background: '#E2E8F0', borderRadius: '2px', marginTop: '5px', overflow: 'hidden' }}>
+                    <div style={{ width: '100%', height: '3px', background: '#E2E8F0', borderRadius: '9999px', marginTop: '5px', overflow: 'hidden' }}>
                       <div style={{ width: `${Math.min(100, (consumedMacros.c / targetMacros.c) * 100)}%`, height: '100%', background: '#D97706' }}></div>
                     </div>
                   </div>
@@ -1249,7 +1249,7 @@ export default function ClientInteractiveApp() {
                       <span>دهون</span>
                       <span style={{ color: '#0F172A', fontWeight: 700 }} dir="ltr">{Math.round(consumedMacros.f)}/{targetMacros.f}g</span>
                     </div>
-                    <div style={{ width: '100%', height: '3px', background: '#E2E8F0', borderRadius: '2px', marginTop: '5px', overflow: 'hidden' }}>
+                    <div style={{ width: '100%', height: '3px', background: '#E2E8F0', borderRadius: '9999px', marginTop: '5px', overflow: 'hidden' }}>
                       <div style={{ width: `${Math.min(100, (consumedMacros.f / targetMacros.f) * 100)}%`, height: '100%', background: '#059669' }}></div>
                     </div>
                   </div>
@@ -1263,10 +1263,10 @@ export default function ClientInteractiveApp() {
                   alignItems: 'center', 
                   justifyContent: 'space-between', 
                   flexWrap: 'wrap', 
-                  gap: '6px', 
-                  background: '#FFFFFF', 
+                  gap: '8px', 
+                  background: '#F8FAFC', 
                   border: '1px solid #E2E8F0', 
-                  borderRadius: '10px', 
+                  borderRadius: '12px', 
                   padding: '6px 10px', 
                   margin: '4px 0 10px 0' 
                 }}
@@ -1274,7 +1274,7 @@ export default function ClientInteractiveApp() {
                 {/* Portion Mode & Cooking State Capsules */}
                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
                   {/* Portion Mode */}
-                  <div style={{ display: 'inline-flex', background: '#F1F5F9', padding: '2px', borderRadius: '6px', gap: '2px' }}>
+                  <div style={{ display: 'inline-flex', background: '#F1F5F9', padding: '2px', borderRadius: '8px', gap: '2px' }}>
                     {[
                       { key: PORTION_DISPLAY_MODES.DUAL, label: 'مزدوج' },
                       { key: PORTION_DISPLAY_MODES.GRAMS, label: 'ميزان' },
@@ -1290,7 +1290,7 @@ export default function ClientInteractiveApp() {
                             background: isSel ? '#0F172A' : 'transparent',
                             color: isSel ? '#FFFFFF' : '#64748B',
                             border: 'none',
-                            borderRadius: '4px',
+                            borderRadius: '6px',
                             padding: '3px 8px',
                             fontSize: '0.68rem',
                             fontWeight: isSel ? 800 : 600,
@@ -1307,7 +1307,7 @@ export default function ClientInteractiveApp() {
                   <span style={{ color: '#CBD5E1', fontSize: '10px' }}>•</span>
 
                   {/* Cooking State */}
-                  <div style={{ display: 'inline-flex', background: '#F1F5F9', padding: '2px', borderRadius: '6px', gap: '2px' }}>
+                  <div style={{ display: 'inline-flex', background: '#F1F5F9', padding: '2px', borderRadius: '8px', gap: '2px' }}>
                     {[
                       { key: COOKING_STATE_MODES.BOTH, label: 'معاً' },
                       { key: COOKING_STATE_MODES.COOKED, label: 'مطبوخ' },
@@ -1323,7 +1323,7 @@ export default function ClientInteractiveApp() {
                             background: isSel ? '#0F172A' : 'transparent',
                             color: isSel ? '#FFFFFF' : '#64748B',
                             border: 'none',
-                            borderRadius: '4px',
+                            borderRadius: '6px',
                             padding: '3px 8px',
                             fontSize: '0.68rem',
                             fontWeight: isSel ? 800 : 600,
@@ -1387,7 +1387,7 @@ export default function ClientInteractiveApp() {
                       <div key={bp.id} style={{ background: '#FFFFFF', border: '1px solid #E2E8F0', borderRadius: '12px', padding: '10px 12px' }}>
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4px' }}>
                           <strong style={{ fontSize: '0.8rem', color: '#0369A1' }}>{bp.title_ar}</strong>
-                          <span style={{ fontSize: '0.7rem', fontWeight: 700, color: '#059669', background: '#ECFDF5', padding: '1px 6px', borderRadius: '4px' }} dir="ltr">
+                          <span style={{ fontSize: '0.7rem', fontWeight: 700, color: '#059669', background: '#ECFDF5', padding: '1px 6px', borderRadius: '6px' }} dir="ltr">
                             ~{bp.estimated_macros.calories_kcal} kcal • P: {bp.estimated_macros.protein_g}g
                           </span>
                         </div>
@@ -1429,12 +1429,12 @@ export default function ClientInteractiveApp() {
                           {meal.title}
                         </h3>
                         {(meal.workout_timing === 'PRE_WORKOUT' || meal.title?.includes('قبل التمرين')) && (
-                          <span style={{ background: '#FEF3C7', color: '#92400E', border: '1px solid #FDE68A', padding: '1px 6px', borderRadius: '4px', fontSize: '0.67rem', fontWeight: 800 }}>
+                          <span style={{ background: '#FEF3C7', color: '#92400E', border: '1px solid #FDE68A', padding: '1px 6px', borderRadius: '6px', fontSize: '0.67rem', fontWeight: 800 }}>
                             وجبة ما قبل التمرين (طاقة وجليكوجين)
                           </span>
                         )}
                         {(meal.workout_timing === 'POST_WORKOUT' || meal.title?.includes('بعد التمرين') || meal.title?.includes('التعافي')) && (
-                          <span style={{ background: '#DCFCE7', color: '#166534', border: '1px solid #BBF7D0', padding: '1px 6px', borderRadius: '4px', fontSize: '0.67rem', fontWeight: 800 }}>
+                          <span style={{ background: '#DCFCE7', color: '#166534', border: '1px solid #BBF7D0', padding: '1px 6px', borderRadius: '6px', fontSize: '0.67rem', fontWeight: 800 }}>
                             وجبة ما بعد التمرين (بناء عضلي واستشفاء)
                           </span>
                         )}
@@ -1576,7 +1576,7 @@ export default function ClientInteractiveApp() {
                   >
                     <ShieldCheck style={{ width: '15px', height: '15px', color: '#0F172A' }} />
                     <strong style={{ fontSize: '0.8rem', color: '#0F172A' }}>إرشادات وقواعد الخطة</strong>
-                    <span style={{ fontSize: '0.68rem', color: '#64748B', background: '#F1F5F9', padding: '1px 6px', borderRadius: '4px' }}>
+                    <span style={{ fontSize: '0.68rem', color: '#64748B', background: '#F1F5F9', padding: '1px 6px', borderRadius: '6px' }}>
                       {guidelinesOpen ? 'طي' : 'عرض (5 إرشادات)'}
                     </span>
                   </div>
@@ -1648,7 +1648,7 @@ export default function ClientInteractiveApp() {
                               style={{
                                 width: '20px',
                                 height: '20px',
-                                borderRadius: '5px',
+                                borderRadius: '6px',
                                 border: isDone ? 'none' : '1px solid #CBD5E1',
                                 background: isDone ? '#16A34A' : '#FFFFFF',
                                 color: '#FFFFFF',
@@ -1667,12 +1667,12 @@ export default function ClientInteractiveApp() {
                                   {supp.name}
                                 </strong>
                                 {supp.dose && (
-                                  <span style={{ fontSize: '0.68rem', color: '#64748B', background: '#E2E8F0', padding: '1px 5px', borderRadius: '4px', fontWeight: 600 }}>
+                                  <span style={{ fontSize: '0.68rem', color: '#64748B', background: '#E2E8F0', padding: '1px 5px', borderRadius: '6px', fontWeight: 600 }}>
                                     {supp.dose}
                                   </span>
                                 )}
                                 {supp.timing && (
-                                  <span style={{ fontSize: '0.68rem', color: '#0284C7', background: '#E0F2FE', padding: '1px 5px', borderRadius: '4px', fontWeight: 600 }}>
+                                  <span style={{ fontSize: '0.68rem', color: '#0284C7', background: '#E0F2FE', padding: '1px 5px', borderRadius: '6px', fontWeight: 600 }}>
                                     {supp.timing}
                                   </span>
                                 )}
@@ -2135,11 +2135,11 @@ export default function ClientInteractiveApp() {
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '8px' }}>
                       <div>
                         <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flexWrap: 'wrap', marginBottom: '2px' }}>
-                          <span style={{ fontSize: '0.68rem', fontWeight: 800, color: ex.isCompound ? '#B45309' : '#0284C7', background: ex.isCompound ? '#FEF3C7' : '#E0F2FE', padding: '1px 6px', borderRadius: '4px' }}>
+                          <span style={{ fontSize: '0.68rem', fontWeight: 800, color: ex.isCompound ? '#B45309' : '#0284C7', background: ex.isCompound ? '#FEF3C7' : '#E0F2FE', padding: '1px 6px', borderRadius: '6px' }}>
                             {ex.isCompound ? 'تمرين مركب' : 'تمرين عزل'}
                           </span>
                           {isCompleted && (
-                            <span style={{ fontSize: '0.68rem', fontWeight: 800, color: '#16A34A', background: '#DCFCE7', padding: '1px 6px', borderRadius: '4px', display: 'inline-flex', alignItems: 'center', gap: '2px' }}>
+                            <span style={{ fontSize: '0.68rem', fontWeight: 800, color: '#16A34A', background: '#DCFCE7', padding: '1px 6px', borderRadius: '6px', display: 'inline-flex', alignItems: 'center', gap: '2px' }}>
                               <CheckCircle2 style={{ width: '10px', height: '10px' }} />
                               <span>مكتمل</span>
                             </span>
@@ -2224,7 +2224,7 @@ export default function ClientInteractiveApp() {
                           <Dumbbell style={{ width: '18px', height: '18px', opacity: 0.6 }} />
                           <span>وضعية البداية</span>
                         </div>
-                        <span style={{ position: 'absolute', bottom: '4px', right: '4px', background: 'rgba(15, 23, 42, 0.85)', color: '#FFFFFF', fontSize: '9px', fontWeight: 700, padding: '1px 5px', borderRadius: '4px' }}>
+                        <span style={{ position: 'absolute', bottom: '4px', right: '4px', background: 'rgba(15, 23, 42, 0.85)', color: '#FFFFFF', fontSize: '9px', fontWeight: 700, padding: '1px 5px', borderRadius: '6px' }}>
                           1. وضع البداية
                         </span>
                       </div>
@@ -2245,7 +2245,7 @@ export default function ClientInteractiveApp() {
                           <Dumbbell style={{ width: '18px', height: '18px', opacity: 0.6 }} />
                           <span>وضعية الانقباض</span>
                         </div>
-                        <span style={{ position: 'absolute', bottom: '4px', right: '4px', background: 'rgba(15, 23, 42, 0.85)', color: '#FFFFFF', fontSize: '9px', fontWeight: 700, padding: '1px 5px', borderRadius: '4px' }}>
+                        <span style={{ position: 'absolute', bottom: '4px', right: '4px', background: 'rgba(15, 23, 42, 0.85)', color: '#FFFFFF', fontSize: '9px', fontWeight: 700, padding: '1px 5px', borderRadius: '6px' }}>
                           2. وضع الانقباض
                         </span>
                       </div>
@@ -2492,7 +2492,7 @@ export default function ClientInteractiveApp() {
             >
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid #F1F5F9', paddingBottom: '12px', marginBottom: '16px' }}>
                 <div>
-                  <span style={{ fontSize: '10px', fontWeight: 800, color: '#D97706', background: '#FEF3C7', padding: '2px 6px', borderRadius: '4px' }}>
+                  <span style={{ fontSize: '10px', fontWeight: 800, color: '#D97706', background: '#FEF3C7', padding: '2px 6px', borderRadius: '6px' }}>
                     محرك المبادلات الذكية (Clinical Smart Swaps)
                   </span>
                   <h3 style={{ fontSize: '1.05rem', fontWeight: 800, color: '#0F172A', margin: '4px 0 0 0' }}>
@@ -2622,7 +2622,7 @@ export default function ClientInteractiveApp() {
                               {swapResult.replacement_food.name_ar}
                             </strong>
                             {isMatchingTaste && (
-                              <span style={{ fontSize: '9px', fontWeight: 800, padding: '1px 5px', borderRadius: '3px', background: '#F0FDF4', color: '#16A34A', border: '1px solid #BBF7D0' }}>
+                              <span style={{ fontSize: '9px', fontWeight: 800, padding: '1px 5px', borderRadius: '6px', background: '#F0FDF4', color: '#16A34A', border: '1px solid #BBF7D0' }}>
                                 تناسق وجبة مثالي
                               </span>
                             )}
@@ -2780,7 +2780,7 @@ export default function ClientInteractiveApp() {
                     <div key={drink.id} style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', borderRadius: '14px', padding: '12px' }}>
                       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4px' }}>
                         <strong style={{ fontSize: '0.84rem', color: '#0F172A' }}>{drink.name_ar}</strong>
-                        <span style={{ fontSize: '0.68rem', fontWeight: 800, color: drink.id === 'TABLE_SUGAR_ALLOWANCE' ? '#D97706' : '#059669', background: drink.id === 'TABLE_SUGAR_ALLOWANCE' ? '#FEF3C7' : '#ECFDF5', padding: '2px 6px', borderRadius: '4px' }}>
+                        <span style={{ fontSize: '0.68rem', fontWeight: 800, color: drink.id === 'TABLE_SUGAR_ALLOWANCE' ? '#D97706' : '#059669', background: drink.id === 'TABLE_SUGAR_ALLOWANCE' ? '#FEF3C7' : '#ECFDF5', padding: '2px 6px', borderRadius: '6px' }}>
                           {drink.calories_text}
                         </span>
                       </div>
@@ -2799,7 +2799,7 @@ export default function ClientInteractiveApp() {
                     <div key={oil.id} style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', borderRadius: '14px', padding: '12px' }}>
                       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4px' }}>
                         <strong style={{ fontSize: '0.84rem', color: '#0F172A' }}>{oil.title_ar}</strong>
-                        <span style={{ fontSize: '0.68rem', fontWeight: 800, color: oil.id === 'BANNED_SAUCES' ? '#BE123C' : '#059669', background: oil.id === 'BANNED_SAUCES' ? '#FFE4E6' : '#ECFDF5', padding: '2px 6px', borderRadius: '4px' }}>
+                        <span style={{ fontSize: '0.68rem', fontWeight: 800, color: oil.id === 'BANNED_SAUCES' ? '#BE123C' : '#059669', background: oil.id === 'BANNED_SAUCES' ? '#FFE4E6' : '#ECFDF5', padding: '2px 6px', borderRadius: '6px' }}>
                           {oil.badge_ar}
                         </span>
                       </div>
@@ -3060,7 +3060,7 @@ export default function ClientInteractiveApp() {
               {/* PDF Header */}
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid #E2E8F0', paddingBottom: '14px', marginBottom: '16px' }}>
                 <div>
-                  <span style={{ fontSize: '0.7rem', fontWeight: 800, color: '#0284C7', background: '#E0F2FE', padding: '2px 6px', borderRadius: '4px' }}>
+                  <span style={{ fontSize: '0.7rem', fontWeight: 800, color: '#0284C7', background: '#E0F2FE', padding: '2px 6px', borderRadius: '6px' }}>
                     {pdfData.branding.badge}
                   </span>
                   <h3 style={{ margin: '4px 0 0 0', fontSize: '0.96rem', fontWeight: 900, color: '#0F172A' }}>
@@ -3358,7 +3358,7 @@ export default function ClientInteractiveApp() {
           >
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid #F1F5F9', paddingBottom: '10px', marginBottom: '12px' }}>
               <div>
-                <span style={{ fontSize: '0.68rem', fontWeight: 800, color: '#0284C7', background: '#E0F2FE', padding: '2px 8px', borderRadius: '4px' }}>
+                <span style={{ fontSize: '0.68rem', fontWeight: 800, color: '#0284C7', background: '#E0F2FE', padding: '2px 8px', borderRadius: '6px' }}>
                   محرك البدائل الحركية المتطابقة
                 </span>
                 <h3 style={{ margin: '4px 0 0 0', fontSize: '0.98rem', fontWeight: 800, color: '#0F172A' }}>
@@ -3442,7 +3442,7 @@ export default function ClientInteractiveApp() {
                               {getExerciseDisplayNames(sw).nameEn}
                             </strong>
                             {isTwin && (
-                              <span style={{ fontSize: '0.65rem', background: '#0284C7', color: '#FFFFFF', padding: '1px 6px', borderRadius: '3px', fontWeight: 800 }}>
+                              <span style={{ fontSize: '0.65rem', background: '#0284C7', color: '#FFFFFF', padding: '1px 6px', borderRadius: '6px', fontWeight: 800 }}>
                                 بديل توأم مباشر
                               </span>
                             )}
@@ -3455,7 +3455,7 @@ export default function ClientInteractiveApp() {
                               {sw.rationale_ar || sw.rationale || 'تطابق زاوية الشد والأمان الحركي'}
                             </span>
                             {sw.equipment_ar && (
-                              <span style={{ fontSize: '0.65rem', background: '#E2E8F0', color: '#334155', padding: '1px 5px', borderRadius: '3px', fontWeight: 600 }}>
+                              <span style={{ fontSize: '0.65rem', background: '#E2E8F0', color: '#334155', padding: '1px 5px', borderRadius: '6px', fontWeight: 600 }}>
                                 {sw.equipment_ar}
                               </span>
                             )}
