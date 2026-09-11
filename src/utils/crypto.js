@@ -2,8 +2,15 @@ import crypto from 'crypto';
 import dotenv from 'dotenv';
 dotenv.config();
 
-// Use a 32-byte secret key for AES-256 (from env, or fallback for dev)
-const ENCRYPTION_KEY = process.env.MEDICAL_ENCRYPTION_KEY || 'super_secret_medical_key_32_bytes'; 
+// Use a 32-byte secret key for AES-256 (from env, strictly enforced in production)
+let rawKey = process.env.MEDICAL_ENCRYPTION_KEY;
+if (!rawKey) {
+  if (process.env.NODE_ENV === 'production') {
+    throw new Error("FATAL: MEDICAL_ENCRYPTION_KEY environment variable is not defined in production");
+  }
+  rawKey = 'super_secret_medical_key_32_bytes';
+}
+const ENCRYPTION_KEY = rawKey;
 // Ensure it's exactly 32 bytes for aes-256-cbc
 const normalizedKey = crypto.createHash('sha256').update(String(ENCRYPTION_KEY)).digest();
 const ALGORITHM = 'aes-256-cbc';

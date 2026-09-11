@@ -1,4 +1,5 @@
 import jwt from "jsonwebtoken";
+import { User } from "../models/index.js";
 
 export const requireAuth = (req, res, next) => {
   const authHeader = req.headers.authorization;
@@ -26,5 +27,28 @@ export const requireAuth = (req, res, next) => {
     next();
   } catch (err) {
     return res.status(401).json({ error: "Unauthorized: Token expired or invalid" });
+  }
+};
+
+export const requireAdmin = async (req, res, next) => {
+  if (!req.user || !req.user.id) {
+    return res.status(401).json({ error: "Unauthorized: Missing authentication" });
+  }
+
+  try {
+    const user = await User.findByPk(req.user.id);
+    if (!user) {
+      return res.status(401).json({ error: "Unauthorized: User account not found" });
+    }
+
+    if (user.role !== "ADMIN" && user.role !== "COACH") {
+      return res.status(403).json({ error: "Forbidden: Admin privileges required" });
+    }
+
+    req.adminUser = user;
+    next();
+  } catch (err) {
+    console.error("requireAdmin error:", err);
+    return res.status(500).json({ error: "Internal authorization error" });
   }
 };

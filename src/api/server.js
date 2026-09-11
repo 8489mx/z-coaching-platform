@@ -24,7 +24,7 @@ import backupRoutes from "./routes/backup.routes.js";
 import notificationRoutes from "./routes/notification.routes.js";
 import { initDailyBackupScheduler } from "./services/backup.service.js";
 import { getPrivacyPolicy, getTermsOfService, getDeleteAccountPage } from "./controllers/legal.controller.js";
-import { requireAuth } from "./middlewares/auth.middleware.js";
+import { requireAuth, requireAdmin } from "./middlewares/auth.middleware.js";
 import { User } from "./models/index.js";
 
 // Deterministic Clinical Execution Engines
@@ -129,7 +129,7 @@ app.post("/api/v1/engines/habits/evaluate-daily", (req, res) => {
   }
 });
 
-app.post("/api/v1/engines/coach/capacity", (req, res) => {
+app.post("/api/v1/engines/coach/capacity", requireAuth, requireAdmin, (req, res) => {
   try {
     const result = evaluateCoachCapacity(req.body);
     res.json({ success: true, data: result });
@@ -138,7 +138,7 @@ app.post("/api/v1/engines/coach/capacity", (req, res) => {
   }
 });
 
-app.post("/api/v1/engines/coach/triage", (req, res) => {
+app.post("/api/v1/engines/coach/triage", requireAuth, requireAdmin, (req, res) => {
   try {
     const result = generateDailyCoachTriage(req.body.clients || []);
     res.json({ success: true, data: result });
@@ -177,7 +177,7 @@ app.post("/api/v1/pdf/export", (req, res) => {
 
 
 // Coach Update Client Endpoint
-app.post('/api/v1/coach/update-client', requireAuth, async (req, res) => {
+app.post('/api/v1/coach/update-client', requireAuth, requireAdmin, async (req, res) => {
   try {
     const { client_id, phone, phone_number, name, full_name, subscription_status } = req.body;
     if (!client_id) return res.status(400).json({ success: false, message: 'Client ID required' });
@@ -198,7 +198,7 @@ app.post('/api/v1/coach/update-client', requireAuth, async (req, res) => {
 });
 
 // Coach CSV Export Endpoint
-app.get("/api/v1/coach/export-clients-csv", requireAuth, async (req, res) => {
+app.get("/api/v1/coach/export-clients-csv", requireAuth, requireAdmin, async (req, res) => {
   try {
     const clients = await User.findAll({ order: [['createdAt', 'DESC']] });
 
@@ -224,7 +224,7 @@ app.get("/api/v1/coach/export-clients-csv", requireAuth, async (req, res) => {
 });
 
 // CSV Export Endpoint for Clients
-app.get("/api/v1/clients/export/csv", requireAuth, async (req, res) => {
+app.get("/api/v1/clients/export/csv", requireAuth, requireAdmin, async (req, res) => {
   try {
     const clientsData = await User.findAll({ order: [['createdAt', 'DESC']] });
 
@@ -256,7 +256,7 @@ app.get("/api/v1/clients/export/csv", requireAuth, async (req, res) => {
 // =========================================================================
 
 // 1. Add Gift Days (+7, +14, +30)
-app.post('/api/v1/coach/add-gift-days', requireAuth, async (req, res) => {
+app.post('/api/v1/coach/add-gift-days', requireAuth, requireAdmin, async (req, res) => {
   try {
     const { client_id, days = 7 } = req.body;
     if (!client_id) return res.status(400).json({ success: false, message: 'Client ID required' });
@@ -275,7 +275,7 @@ app.post('/api/v1/coach/add-gift-days', requireAuth, async (req, res) => {
 });
 
 // 2. Toggle Freeze / Unfreeze
-app.post('/api/v1/coach/toggle-freeze', requireAuth, async (req, res) => {
+app.post('/api/v1/coach/toggle-freeze', requireAuth, requireAdmin, async (req, res) => {
   try {
     const { client_id, status } = req.body; // 'FROZEN' or 'ACTIVE'
     if (!client_id) return res.status(400).json({ success: false, message: 'Client ID required' });
@@ -346,7 +346,7 @@ app.post('/api/v1/coach/toggle-freeze', requireAuth, async (req, res) => {
 });
 
 // 3. Adjust Tier & Package
-app.post('/api/v1/coach/adjust-package', requireAuth, async (req, res) => {
+app.post('/api/v1/coach/adjust-package', requireAuth, requireAdmin, async (req, res) => {
   try {
     const { client_id, tier, duration_months } = req.body;
     if (!client_id) return res.status(400).json({ success: false, message: 'Client ID required' });
@@ -403,7 +403,7 @@ app.get("/api/v1/mobility", async (req, res) => {
   }
 });
 
-app.post("/api/v1/mobility", requireAuth, async (req, res) => {
+app.post("/api/v1/mobility", requireAuth, requireAdmin, async (req, res) => {
   try {
     const catalogPath = path.join(__dirname, "../data/mobility_catalog.json");
     let data = [];
@@ -422,7 +422,7 @@ app.post("/api/v1/mobility", requireAuth, async (req, res) => {
   }
 });
 
-app.put("/api/v1/mobility/:id", requireAuth, async (req, res) => {
+app.put("/api/v1/mobility/:id", requireAuth, requireAdmin, async (req, res) => {
   try {
     const { id } = req.params;
     const catalogPath = path.join(__dirname, "../data/mobility_catalog.json");
@@ -461,7 +461,7 @@ if (fs.existsSync(publicExercisesPath)) {
 }
 
 // Upload & Replace Exercise Image endpoint (Hardened with Path Traversal Protection & Auth)
-app.post("/api/v1/exercises/upload-image", requireAuth, async (req, res) => {
+app.post("/api/v1/exercises/upload-image", requireAuth, requireAdmin, async (req, res) => {
   try {
     const { exercise_id, image_index, image_base64 } = req.body;
     if (!exercise_id || image_index === undefined || !image_base64) {
@@ -543,6 +543,9 @@ const startServer = async () => {
   });
 };
 
-startServer();
+const isTestEnv = process.env.NODE_ENV === 'test' || (process.argv[1] && process.argv[1].includes('test'));
+if (!isTestEnv) {
+  startServer();
+}
 
 export default app;

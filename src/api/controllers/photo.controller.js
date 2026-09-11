@@ -1,6 +1,14 @@
 import { User, ProgressPhoto } from "../models/index.js";
 import { saveProgressPhotoToDisk } from "../utils/photoStorage.js";
 
+// Helper: التحقق من ملكية المشترك لبياناته أو امتلاك صلاحية المدرب/المشرف
+async function isAuthorizedUserOrCoach(req, targetUserId) {
+  if (!req.user || !req.user.id) return false;
+  if (req.user.id === targetUserId) return true;
+  const requester = await User.findByPk(req.user.id);
+  return !!(requester && (requester.role === 'COACH' || requester.role === 'ADMIN'));
+}
+
 export const getUserPhotos = async (req, res) => {
   try {
     const { user_id } = req.params;
@@ -15,6 +23,12 @@ export const getUserPhotos = async (req, res) => {
 
     if (!user) {
       return res.status(404).json({ error: "User not found" });
+    }
+
+    // التحقق من الملكية: المتدرب يعرض صوره فقط، والمدرب له حق الوصول لكافة المتدربين
+    const authorized = await isAuthorizedUserOrCoach(req, user.id);
+    if (!authorized) {
+      return res.status(403).json({ error: "غير مصرح لك بعرض صور متدرب آخر" });
     }
 
     const photos = await ProgressPhoto.findAll({
@@ -45,6 +59,12 @@ export const uploadUserPhoto = async (req, res) => {
       return res.status(404).json({ error: "User not found" });
     }
 
+    // التحقق من الملكية: رفع الصور لصاحب الحساب فقط أو بواسطة المدرب
+    const authorized = await isAuthorizedUserOrCoach(req, user.id);
+    if (!authorized) {
+      return res.status(403).json({ error: "غير مصرح لك برفع صور لمتدرب آخر" });
+    }
+
     if (!photo_url) {
       return res.status(400).json({ error: "photo_url is required" });
     }
@@ -73,11 +93,19 @@ export const uploadUserPhoto = async (req, res) => {
 export const deleteUserPhoto = async (req, res) => {
   try {
     const { photo_id } = req.params;
-    const deleted = await ProgressPhoto.destroy({ where: { id: photo_id } });
+    const photo = await ProgressPhoto.findByPk(photo_id);
 
-    if (!deleted) {
+    if (!photo) {
       return res.status(404).json({ error: "الصورة غير موجودة" });
     }
+
+    // التحقق من الملكية قبل الحذف
+    const authorized = await isAuthorizedUserOrCoach(req, photo.user_id);
+    if (!authorized) {
+      return res.status(403).json({ error: "غير مصرح لك بحذف صور متدرب آخر" });
+    }
+
+    await photo.destroy();
 
     return res.status(200).json({ message: "تم حذف الصورة بنجاح" });
   } catch (err) {

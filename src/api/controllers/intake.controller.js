@@ -163,22 +163,30 @@ export const getClientIntakeDraft = async (req, res) => {
   try {
     const rawCode = req.query.code || req.query.client_code || "";
     const rawPhone = req.query.phone || req.query.phone_number || "";
-    const clientCode = String(rawCode).replace(/^#+/, '').trim();
-    const clientPhone = String(rawPhone).trim();
+    const clientCode = String(rawCode).trim().replace(/^#+/, '').replace(/^client[-_]?/i, '');
+    const cleanPhoneDigits = String(rawPhone).replace(/\D/g, '');
 
-    if (!clientCode && !clientPhone) {
+    // إحباط التخمين والتعداد: يلزم تمرير الكود ورقم الهاتف معاً
+    if (!clientCode || !cleanPhoneDigits) {
       return res.status(200).json({ user: null, submission: null });
     }
 
-    let user = null;
-    if (clientCode) {
-      user = await User.findOne({ where: { client_code: clientCode, role: 'CLIENT' } });
-    }
-    if (!user && clientPhone) {
-      user = await User.findOne({ where: { phone_number: clientPhone, role: 'CLIENT' } });
-    }
+    let user = await User.findOne({ where: { client_code: clientCode, role: 'CLIENT' } }) ||
+               await User.findOne({ where: { id: isNaN(parseInt(clientCode, 10)) ? 0 : parseInt(clientCode, 10), role: 'CLIENT' } });
 
     if (!user) {
+      return res.status(200).json({ user: null, submission: null });
+    }
+
+    const userPhoneDigits = String(user.phone_number || '').replace(/\D/g, '');
+    const isPhoneMatch = (
+      user.phone_number === String(rawPhone).trim() ||
+      userPhoneDigits === cleanPhoneDigits ||
+      (cleanPhoneDigits.length >= 8 && userPhoneDigits.endsWith(cleanPhoneDigits.slice(-8))) ||
+      (userPhoneDigits.length >= 8 && cleanPhoneDigits.endsWith(userPhoneDigits.slice(-8)))
+    );
+
+    if (!isPhoneMatch) {
       return res.status(200).json({ user: null, submission: null });
     }
 

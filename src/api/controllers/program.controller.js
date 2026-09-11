@@ -29,6 +29,14 @@ const loadFoodCatalog = async () => {
   return nutritionFoodCatalog;
 };
 
+// Helper: التحقق من ملكية المشترك لبياناته أو امتلاك صلاحية المدرب/المشرف
+async function isAuthorizedUserOrCoach(req, targetUserId) {
+  if (!req.user || !req.user.id) return false;
+  if (req.user.id === targetUserId) return true;
+  const requester = await User.findByPk(req.user.id);
+  return !!(requester && (requester.role === 'COACH' || requester.role === 'ADMIN'));
+}
+
 export const generateProgram = async (req, res) => {
   try {
     const { meta, options, ...intakePayload } = req.body; // Strip meta/options before validation
@@ -637,6 +645,12 @@ export const getCheckinHistory = async (req, res) => {
       return res.status(404).json({ error: "User not found" });
     }
 
+    // التحقق من الملكية: المتدرب يعرض متابعاته فقط والمدرب يعرض للجميع
+    const authorized = await isAuthorizedUserOrCoach(req, user.id);
+    if (!authorized) {
+      return res.status(403).json({ error: "غير مصرح لك بعرض سجل متابعات متدرب آخر" });
+    }
+
     const checkins = await CheckinSubmission.findAll({
       where: { user_id: user.id },
       order: [["createdAt", "ASC"]]
@@ -861,6 +875,12 @@ export const getActiveProgramByUserId = async (req, res) => {
 
     if (!user) {
       return res.status(404).json({ error: "المتدرب غير موجود" });
+    }
+
+    // التحقق من الملكية: المتدرب يطلع على برنامجه فقط والمدرب يطلع على برامج الجميع
+    const authorized = await isAuthorizedUserOrCoach(req, user.id);
+    if (!authorized) {
+      return res.status(403).json({ error: "غير مصرح لك بعرض برنامج متدرب آخر" });
     }
 
     const program = await Program.findOne({

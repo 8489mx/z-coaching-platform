@@ -11,11 +11,11 @@ import { requireAuth } from "../middlewares/auth.middleware.js";
 const router = express.Router();
 
 router.post("/", submitCheckin);
-router.get("/user/:userId", getClientCheckins);
-router.get("/client/:userId", getClientCheckins);
+router.get("/user/:userId", requireAuth, getClientCheckins);
+router.get("/client/:userId", requireAuth, getClientCheckins);
 router.post("/:checkinId/approve", requireAuth, approveCheckin);
 
-router.post("/workout-logs", logWorkout);
-router.get("/workout-logs/program/:programId", getWorkoutLogs);
+router.post("/workout-logs", requireAuth, logWorkout);
+router.get("/workout-logs/program/:programId", requireAuth, getWorkoutLogs);
 
 export default router;

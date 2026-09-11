@@ -160,6 +160,16 @@ export async function getClientCheckins(req, res) {
     if (!resolvedId) {
       return res.status(404).json({ success: false, error: "Client not found" });
     }
+
+    // فحص الملكية: المتدرب يطّلع على سجل متابعاته وصوره فقط، والمدرب له حق الوصول لكافة السجلات
+    if (req.user && req.user.id !== resolvedId) {
+      const requester = await User.findByPk(req.user.id);
+      const isCoach = requester && (requester.role === 'COACH' || requester.role === 'ADMIN');
+      if (!isCoach) {
+        return res.status(403).json({ success: false, error: "غير مصرح لك بعرض متابعات متدرب آخر" });
+      }
+    }
+
     const checkins = await CheckinSubmission.findAll({
       where: { user_id: resolvedId },
       order: [["createdAt", "DESC"]],

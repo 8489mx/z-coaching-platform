@@ -8,14 +8,15 @@ import {
   notifyCheckinReminder,
   registerDeviceToken
 } from "../services/notification.service.js";
+import { requireAuth, requireAdmin } from "../middlewares/auth.middleware.js";
 
 const router = express.Router();
 
 /**
  * بث مباشر لحظي للإشعارات عبر Server-Sent Events مباشرة من سيرفرك لهاتف المتدرب
- * (بدون فايربيس - بدون وسيط خارجي - بدون كوتا أو حدود)
+ * (محمي بالمصادقة الصارمة لمنع اعتراض إشعارات المتدربين)
  */
-router.get("/stream/:clientCode", (req, res) => {
+router.get("/stream/:clientCode", requireAuth, (req, res) => {
   const { clientCode } = req.params;
   if (!clientCode) {
     return res.status(400).end("clientCode is required");
@@ -26,7 +27,7 @@ router.get("/stream/:clientCode", (req, res) => {
 /**
  * جلب قائمة الإشعارات وصندوق الوارد لمتدرب محدد
  */
-router.get("/client/:clientCode", (req, res) => {
+router.get("/client/:clientCode", requireAuth, (req, res) => {
   try {
     const { clientCode } = req.params;
     const notifications = getClientNotifications(clientCode);
@@ -46,7 +47,7 @@ router.get("/client/:clientCode", (req, res) => {
 /**
  * تحديد إشعار أو كافة الإشعارات كمقروءة
  */
-router.post("/mark-read", (req, res) => {
+router.post("/mark-read", requireAuth, (req, res) => {
   try {
     const { client_code, notification_id } = req.body;
     if (!client_code) {
@@ -63,7 +64,7 @@ router.post("/mark-read", (req, res) => {
 /**
  * إرسال إشعار يدوي ذاتي فوري
  */
-router.post("/send", (req, res) => {
+router.post("/send", requireAuth, requireAdmin, (req, res) => {
   try {
     const { client_code, title, body, payload } = req.body;
     if (!client_code || !title || !body) {
@@ -86,7 +87,7 @@ router.post("/send", (req, res) => {
 /**
  * إرسال تذكير بالشيك إن
  */
-router.post("/remind-checkin", (req, res) => {
+router.post("/remind-checkin", requireAuth, requireAdmin, (req, res) => {
   try {
     const { client_code } = req.body;
     if (!client_code) {
@@ -103,7 +104,7 @@ router.post("/remind-checkin", (req, res) => {
 /**
  * استعراض سجل الإشعارات
  */
-router.get("/history", (req, res) => {
+router.get("/history", requireAuth, requireAdmin, (req, res) => {
   try {
     const logs = getNotificationsLog();
     return res.status(200).json({ success: true, total: logs.length, notifications: logs });
@@ -115,7 +116,7 @@ router.get("/history", (req, res) => {
 /**
  * التوافقية مع مسار تسجيل الأجهزة
  */
-router.post("/register-token", async (req, res) => {
+router.post("/register-token", requireAuth, async (req, res) => {
   const { client_code, token, device_info } = req.body;
   const result = await registerDeviceToken(client_code, token, device_info);
   return res.status(200).json({ success: true, result });

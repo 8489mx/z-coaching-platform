@@ -3,6 +3,14 @@ import dotenv from "dotenv";
 
 dotenv.config();
 
+if (process.env.NODE_ENV === "production") {
+  const pwd = String(process.env.DB_PASSWORD || "").trim();
+  const weakPasswords = ["123456", "12345678", "123456789", "password", "admin", "root", "toor", "12345", "qwerty", "secret"];
+  if (!pwd || pwd.length < 16 || weakPasswords.includes(pwd.toLowerCase()) || pwd.includes("REPLACE_WITH")) {
+    throw new Error("FATAL: A cryptographically strong DB_PASSWORD (minimum 16 characters, non-trivial) must be configured in production. Weak or placeholder passwords are strictly forbidden.");
+  }
+}
+
 const sequelize = new Sequelize(
   process.env.DB_NAME || "z",
   process.env.DB_USER || "root",

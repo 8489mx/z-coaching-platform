@@ -1,12 +1,13 @@
 import express from "express";
 import { performFullBackup, getBackupManifest } from "../services/backup.service.js";
+import { requireAuth, requireAdmin } from "../middlewares/auth.middleware.js";
 
 const router = express.Router();
 
 /**
  * الحصول على تقرير وسجل النسخ الاحتياطية
  */
-router.get("/status", async (req, res) => {
+router.get("/status", requireAuth, requireAdmin, async (req, res) => {
   try {
     const manifest = getBackupManifest();
     return res.status(200).json({
@@ -23,7 +24,7 @@ router.get("/status", async (req, res) => {
 /**
  * بدء تشغيل نسخة احتياطية فورية يدوياً من لوحة التحكم
  */
-router.post("/trigger", async (req, res) => {
+router.post("/trigger", requireAuth, requireAdmin, async (req, res) => {
   try {
     const result = await performFullBackup("ADMIN_MANUAL_TRIGGER");
     return res.status(200).json({

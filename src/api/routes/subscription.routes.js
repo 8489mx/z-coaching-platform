@@ -4,12 +4,12 @@ import {
   renewSubscription,
   updateSubscription
 } from "../controllers/subscription.controller.js";
-import { requireAuth } from "../middlewares/auth.middleware.js";
+import { requireAuth, requireAdmin } from "../middlewares/auth.middleware.js";
 
 const router = express.Router();
 
-router.get("/overview", requireAuth, getSubscriptionOverview);
-router.put("/renew/:user_id", requireAuth, renewSubscription);
-router.put("/update/:user_id", requireAuth, updateSubscription);
+router.get("/overview", requireAuth, requireAdmin, getSubscriptionOverview);
+router.put("/renew/:user_id", requireAuth, requireAdmin, renewSubscription);
+router.put("/update/:user_id", requireAuth, requireAdmin, updateSubscription);
 
 export default router;
