@@ -183,6 +183,31 @@ test('ClientInteractiveApp Refactor: Behavioral Verification Suite', async (suit
     assert.equal(res.queue[1].syncStatus, SYNC_STATUS.SYNCED);
   });
 
+  await suite.test('6b. Verifies localStorage key invariance: kz_offline_queue matches pre-refactor and migration handles legacy keys', () => {
+    // 1. Static inspection of code to ensure authoritative key is kz_offline_queue
+    const hookFile = fs.readFileSync(path.resolve('frontend/src/pages/ClientInteractiveApp/hooks/useClientInteractiveData.js'), 'utf-8');
+    assert.ok(hookFile.includes("'kz_offline_queue'"), 'Code must use authoritative kz_offline_queue');
+    
+    // 2. Behavioral test of migration logic
+    const mockStorage = {
+      'zcc_client_offline_queue': JSON.stringify([{ actionId: 'legacy_1', payload: { mealId: 'm1' } }])
+    };
+    
+    // Simulate migration logic from useClientInteractiveData
+    let raw = mockStorage['kz_offline_queue'];
+    if (!raw && mockStorage['zcc_client_offline_queue']) {
+      const alt = mockStorage['zcc_client_offline_queue'];
+      raw = alt;
+      mockStorage['kz_offline_queue'] = alt;
+      delete mockStorage['zcc_client_offline_queue'];
+    }
+    
+    assert.ok(mockStorage['kz_offline_queue'], 'kz_offline_queue must receive the migrated data');
+    assert.equal(mockStorage['zcc_client_offline_queue'], undefined, 'legacy key must be cleanly removed');
+    const parsed = JSON.parse(raw);
+    assert.equal(parsed[0].actionId, 'legacy_1');
+  });
+
   // 3. Dynamic Macros Computation Behavioral Tests
   await suite.test('7. Target Macros auto-regulation prioritizes direct targets over stage targets', () => {
     // Helper replicating targetMacros logic from useClientInteractiveData

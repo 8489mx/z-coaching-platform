@@ -50,7 +50,17 @@ export function useClientInteractiveData() {
   // 4. Offline Sync Queue
   const [offlineQueue, setOfflineQueue] = useState(() => {
     try {
-      const raw = localStorage.getItem('kz_offline_queue');
+      // Authoritative storage key: kz_offline_queue (matches pre-refactor contract 100%)
+      let raw = typeof localStorage !== 'undefined' ? localStorage.getItem('kz_offline_queue') : null;
+      // Defensive migration: seamlessly migrate any legacy/alternate key without data loss
+      if (!raw && typeof localStorage !== 'undefined') {
+        const alt = localStorage.getItem('zcc_client_offline_queue');
+        if (alt) {
+          raw = alt;
+          localStorage.setItem('kz_offline_queue', alt);
+          localStorage.removeItem('zcc_client_offline_queue');
+        }
+      }
       return raw ? JSON.parse(raw) : [];
     } catch {
       return [];
