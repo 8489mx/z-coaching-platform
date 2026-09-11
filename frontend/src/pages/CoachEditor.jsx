@@ -44,13 +44,15 @@ import {
   STRESS_TEST_CLIENTS
 } from './CoachEditor/constants/coachEditorConstants';
 import {
+  CoachClientsQueue,
+  CoachHeaderBar,
   CoachSwapFoodModal,
   CoachAddFoodModal,
   CoachSwapExerciseModal,
   CoachAddExerciseModal,
   CoachCardioSwapModal,
   CoachMobilityModal
-} from './CoachEditor/components/modals';
+} from './CoachEditor/components';
 
 export default function CoachEditor() {
   const { userId } = useParams();
@@ -1084,392 +1086,38 @@ export default function CoachEditor() {
       >
         
         {/* =========================================================================
-            0. CLIENTS ACTION QUEUE SLIDER BAR (شريط وطابور المشتركين بدون أي إيموجي)
+            0. CLIENTS ACTION QUEUE SLIDER BAR
             ========================================================================= */}
-        <div 
-          style={{ 
-            background: '#FFFFFF', 
-            border: '1px solid #E2E8F0', 
-            borderRadius: '8px', 
-            padding: '10px 14px', 
-            display: 'flex', 
-            flexDirection: 'column', 
-            gap: '8px',
-            boxShadow: '0 1px 2px rgba(15, 23, 42, 0.02)'
-          }}
-        >
-          {/* Header row of Queue Bar */}
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '8px' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                <Users size={15} color="#0F172A" />
-                <strong style={{ fontSize: '12.5px', color: '#0F172A' }}>طابور المشتركين والإجراءات:</strong>
-              </div>
+        <CoachClientsQueue
+          urgentCount={urgentCount}
+          pendingPlanCount={pendingPlanCount}
+          needsUpdateCount={needsUpdateCount}
+          clientsList={clientsList}
+          queueFilter={queueFilter}
+          setQueueFilter={setQueueFilter}
+          queueSearch={queueSearch}
+          setQueueSearch={setQueueSearch}
+          showQueueSlider={showQueueSlider}
+          setShowQueueSlider={setShowQueueSlider}
+          displayedQueue={displayedQueue}
+          filteredQueue={filteredQueue}
+          program={program}
+          clientCodeParam={clientCodeParam}
+          handleSelectClient={handleSelectClient}
+        />
 
-              {/* Filter Pills */}
-              <div style={{ display: 'flex', gap: '4px', flexWrap: 'wrap' }}>
-                {[
-                  { id: 'ACTION_NEEDED', label: 'مطلوب إجراء', icon: AlertCircle, count: urgentCount },
-                  { id: 'PENDING_PLAN', label: 'بانتظار خطة', icon: Clock, count: pendingPlanCount },
-                  { id: 'NEEDS_UPDATE', label: 'مطلوب تعديل', icon: RotateCw, count: needsUpdateCount },
-                  { id: 'ALL', label: 'كافة المشتركين', icon: Users, count: clientsList.length }
-                ].map((qf) => {
-                  const Icon = qf.icon;
-                  const isSel = queueFilter === qf.id;
-                  return (
-                    <button
-                      key={qf.id}
-                      type="button"
-                      onClick={() => setQueueFilter(qf.id)}
-                      style={{
-                        padding: '3px 8px',
-                        borderRadius: '7px',
-                        fontSize: '11px',
-                        fontWeight: isSel ? 800 : 600,
-                        border: isSel ? '1px solid #0F172A' : '1px solid #E2E8F0',
-                        background: isSel ? '#0F172A' : '#F8FAFC',
-                        color: isSel ? '#FFFFFF' : '#475569',
-                        cursor: 'pointer',
-                        display: 'inline-flex',
-                        alignItems: 'center',
-                        gap: '4px'
-                      }}
-                    >
-                      <Icon size={11} color={isSel ? '#FFFFFF' : '#64748B'} />
-                      <span>{qf.label}</span>
-                      <span style={{
-                        fontSize: '9.5px',
-                        fontWeight: 800,
-                        padding: '0 4px',
-                        borderRadius: '8px',
-                        background: isSel ? 'rgba(255,255,255,0.2)' : '#E2E8F0',
-                        color: isSel ? '#FFFFFF' : '#0F172A'
-                      }}>
-                        {qf.count}
-                      </span>
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
-
-            {/* Quick Search & Toggle Slider */}
-            <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-              <div style={{ display: 'flex', alignItems: 'center', background: '#F8FAFC', border: '1px solid #CBD5E1', borderRadius: '8px', padding: '0 6px', height: '26px', width: '160px', gap: '4px' }}>
-                <Search size={11} color="#94A3B8" />
-                <input
-                  type="text"
-                  placeholder="بحث سريع..."
-                  value={queueSearch}
-                  onChange={(e) => setQueueSearch(e.target.value)}
-                  style={{ border: 'none', background: 'transparent', fontSize: '10.5px', outline: 'none', width: '100%' }}
-                />
-              </div>
-
-              <button
-                type="button"
-                onClick={() => setShowQueueSlider(!showQueueSlider)}
-                style={{ height: '26px', padding: '0 8px', borderRadius: '8px', background: '#FFFFFF', border: '1px solid #CBD5E1', color: '#64748B', fontSize: '10.5px', fontWeight: 700, cursor: 'pointer' }}
-              >
-                {showQueueSlider ? 'إخفاء الشريط' : 'إظهار المشتركين'}
-              </button>
-            </div>
-          </div>
-
-          {/* Horizontal Slider Cards Container */}
-          {showQueueSlider && (
-            <div 
-              style={{ 
-                display: 'flex', 
-                gap: '8px', 
-                overflowX: 'auto', 
-                paddingBottom: '4px',
-                scrollbarWidth: 'thin'
-              }}
-            >
-              {displayedQueue.map((client) => {
-                const isSelected = String(program?.client?.client_code || clientCodeParam) === String(client.client_code || client.id);
-                const isPending = client.queue_status === 'PENDING_PLAN';
-                const isNeedsUpdate = client.queue_status === 'NEEDS_UPDATE';
-
-                return (
-                  <div
-                    key={client.id || client.client_code}
-                    onClick={() => handleSelectClient(client.client_code || client.id)}
-                    style={{
-                      minWidth: '210px',
-                      flexShrink: 0,
-                      background: isSelected ? '#0F172A' : '#FFFFFF',
-                      color: isSelected ? '#FFFFFF' : '#0F172A',
-                      border: isSelected ? '1px solid #0F172A' : '1px solid #E2E8F0',
-                      borderRadius: '6px',
-                      padding: '8px 10px',
-                      cursor: 'pointer',
-                      display: 'flex',
-                      flexDirection: 'column',
-                      gap: '4px',
-                      boxShadow: isSelected ? '0 2px 6px rgba(15, 23, 42, 0.25)' : 'none',
-                      transition: 'all 0.12s ease'
-                    }}
-                  >
-                    {/* Top Row: Name + Code */}
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                      <strong style={{ fontSize: '12px', fontWeight: 800, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: '140px' }}>
-                        {client.full_name || client.name}
-                      </strong>
-                      <span style={{
-                        fontSize: '9.5px',
-                        fontFamily: 'monospace',
-                        fontWeight: 800,
-                        padding: '1px 4px',
-                        borderRadius: '6px',
-                        background: isSelected ? 'rgba(255,255,255,0.2)' : '#F1F5F9',
-                        color: isSelected ? '#FFFFFF' : '#475569'
-                      }}>
-                        #{client.client_code || client.id}
-                      </span>
-                    </div>
-
-                    {/* Status Pill */}
-                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: '2px' }}>
-                      <span style={{
-                        fontSize: '9.5px',
-                        fontWeight: 800,
-                        padding: '1px 5px',
-                        borderRadius: '6px',
-                        background: isSelected 
-                          ? (isPending ? '#FEF08A' : isNeedsUpdate ? '#BAE6FD' : 'rgba(255,255,255,0.15)')
-                          : (isPending ? '#FEF9C3' : isNeedsUpdate ? '#E0F2FE' : '#F1F5F9'),
-                        color: isSelected
-                          ? (isPending ? '#854D0E' : isNeedsUpdate ? '#0369A1' : '#FFFFFF')
-                          : (isPending ? '#854D0E' : isNeedsUpdate ? '#0369A1' : '#475569')
-                      }}>
-                        {client.queue_label}
-                      </span>
-
-                      <span style={{ fontSize: '9.5px', color: isSelected ? 'rgba(255,255,255,0.7)' : '#94A3B8' }}>
-                        {client.package_name || 'باقة إليت'}
-                      </span>
-                    </div>
-                  </div>
-                );
-              })}
-
-              {filteredQueue.length > 35 && (
-                <div style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  minWidth: '150px',
-                  flexShrink: 0,
-                  background: '#F8FAFC',
-                  border: '1px dashed #CBD5E1',
-                  borderRadius: '6px',
-                  padding: '8px 12px',
-                  fontSize: '11px',
-                  color: '#64748B',
-                  textAlign: 'center',
-                  fontWeight: 600
-                }}>
-                  + {filteredQueue.length - 35} مشترك آخر (استخدم البحث للوصول المباشر)
-                </div>
-              )}
-            </div>
-          )}
-        </div>
-
-        {/* 1. Sleek Top Command Bar */}
-        {/* 1. Executive Client Bar & Action Header */}
-        <div 
-          style={{ 
-            background: '#FFFFFF', 
-            border: '1px solid #E2E8F0', 
-            borderRadius: '8px', 
-            padding: '10px 14px', 
-            display: 'flex', 
-            justifyContent: 'space-between', 
-            alignItems: 'center', 
-            flexWrap: 'wrap', 
-            gap: '10px',
-            boxShadow: '0 1px 2px rgba(15, 23, 42, 0.02)'
-          }}
-        >
-          {/* Client Bio Info */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap' }}>
-            <div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
-                <h4 style={{ margin: 0, fontSize: '15px', fontWeight: 800, color: '#0F172A', display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
-                  <span>{program?.client?.full_name || 'أحمد محمود العوضي'}</span>
-                  <span style={{ fontSize: '12px', color: '#64748B', fontWeight: 700 }}>
-                    ({program?.client?.client_code ? `#${program?.client?.client_code}` : '#1'})
-                  </span>
-                </h4>
-
-                <span style={{ fontSize: '10.5px', padding: '2px 8px', borderRadius: '6px', background: '#0F172A', color: '#FFFFFF', fontWeight: 700 }}>
-                  {program?.client?.package_name || 'باقة ماكس'}
-                </span>
-              </div>
-
-              <div style={{ fontSize: '11px', color: '#64748B', display: 'flex', alignItems: 'center', gap: '8px', marginTop: '3px', flexWrap: 'wrap' }}>
-                <span>{program?.client?.age || 27} سنة</span>
-                <span>•</span>
-                <span>{program?.client?.weight_kg || 84.5} كجم</span>
-                <span>•</span>
-                <span>{program?.client?.height_cm || 180} سم</span>
-                <span>•</span>
-                <span style={{ color: '#0F172A', fontWeight: 700 }}>{program?.client?.goal_label || 'خسارة دهون وتنشيف'}</span>
-
-                {program?.client?.injuries && program?.client?.injuries.length > 0 && (
-                  <span style={{ fontSize: '10px', padding: '1px 6px', borderRadius: '6px', background: '#FEF2F2', border: '1px solid #FECACA', color: '#DC2626', fontWeight: 700, display: 'inline-flex', alignItems: 'center', gap: '3px' }}>
-                    <ShieldAlert size={10} />
-                    <span>إصابة: {program?.client?.injuries.join('، ')}</span>
-                  </span>
-                )}
-
-                {program?.client?.allergies && program?.client?.allergies.length > 0 && (
-                  <span style={{ fontSize: '10px', padding: '1px 6px', borderRadius: '6px', background: '#F0F9FF', border: '1px solid #BAE6FD', color: '#0284C7', fontWeight: 700, display: 'inline-flex', alignItems: 'center', gap: '3px' }}>
-                    <AlertCircle size={10} />
-                    <span>حساسية: {program?.client?.allergies.join('، ')}</span>
-                  </span>
-                )}
-
-                {(() => {
-                  const fasting = extractClientFastingProfile(program?.client);
-                  return (
-                    <>
-                      {fasting.primaryFastingBadge && (
-                        <span style={{ 
-                          fontSize: '10px', 
-                          padding: '1px 6px', 
-                          borderRadius: '6px', 
-                          background: fasting.primaryFastingBadge.bg, 
-                          border: `1px solid ${fasting.primaryFastingBadge.border}`, 
-                          color: fasting.primaryFastingBadge.color, 
-                          fontWeight: 800 
-                        }}>
-                          {fasting.primaryFastingBadge.label}
-                        </span>
-                      )}
-                      {fasting.intermittentBadge && (
-                        <span style={{ 
-                          fontSize: '10px', 
-                          padding: '1px 6px', 
-                          borderRadius: '6px', 
-                          background: fasting.intermittentBadge.bg, 
-                          border: `1px solid ${fasting.intermittentBadge.border}`, 
-                          color: fasting.intermittentBadge.color, 
-                          fontWeight: 800 
-                        }}>
-                          {fasting.intermittentBadge.label}
-                        </span>
-                      )}
-                    </>
-                  );
-                })()}
-              </div>
-            </div>
-          </div>
-
-          {/* Actions */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flexWrap: 'wrap' }}>
-            <button
-              type="button"
-              onClick={handleSaveDraft}
-              disabled={saving}
-              style={{
-                height: '32px',
-                padding: '0 12px',
-                borderRadius: '8px',
-                background: '#FFFFFF',
-                color: '#0F172A',
-                border: '1px solid #CBD5E1',
-                fontSize: '11.5px',
-                fontWeight: 700,
-                cursor: 'pointer',
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: '5px'
-              }}
-            >
-              {saving ? <Loader2 size={12} className="animate-spin" /> : <Save size={12} />}
-              <span>حفظ المسودة</span>
-            </button>
-
-            <button
-              type="button"
-              onClick={async () => {
-                try {
-                  await handleSaveDraft(false);
-                } catch {}
-                window.open(`/pdf?user_id=${program?.client?.client_code || clientCodeParam}`, '_blank');
-              }}
-              style={{
-                height: '32px',
-                padding: '0 10px',
-                borderRadius: '8px',
-                background: '#F8FAFC',
-                color: '#475569',
-                border: '1px solid #E2E8F0',
-                fontSize: '11.5px',
-                fontWeight: 700,
-                cursor: 'pointer',
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: '4px'
-              }}
-            >
-              <Printer size={12} />
-              <span>معاينة PDF</span>
-            </button>
-
-            <button
-              type="button"
-              onClick={() => setIsLabModalOpen(true)}
-              style={{
-                height: '32px',
-                padding: '0 11px',
-                borderRadius: '8px',
-                background: '#F0F9FF',
-                color: '#0284C7',
-                border: '1px solid #BAE6FD',
-                fontSize: '11.5px',
-                fontWeight: 800,
-                cursor: 'pointer',
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: '5px'
-              }}
-              title="فحص المؤشرات الحيوية والتحاليل المخبرية للمشترك"
-            >
-              <HeartPulse size={13} color="#0284C7" />
-              <span>فحص التحاليل</span>
-            </button>
-
-            <button
-              type="button"
-              onClick={handleApproveAndPublish}
-              disabled={publishing}
-              style={{
-                height: '32px',
-                padding: '0 14px',
-                borderRadius: '8px',
-                background: '#0F172A',
-                color: '#FFFFFF',
-                border: 'none',
-                fontSize: '11.5px',
-                fontWeight: 800,
-                cursor: 'pointer',
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: '5px',
-                boxShadow: '0 2px 4px rgba(15, 23, 42, 0.2)'
-              }}
-            >
-              {publishing ? <Loader2 size={13} className="animate-spin" /> : <Send size={13} />}
-              <span>اعتماد ونشر الخطة</span>
-            </button>
-          </div>
-        </div>
+        {/* =========================================================================
+            1. Executive Client Bar & Action Header
+            ========================================================================= */}
+        <CoachHeaderBar
+          program={program}
+          clientCodeParam={clientCodeParam}
+          handleSaveDraft={handleSaveDraft}
+          saving={saving}
+          setIsLabModalOpen={setIsLabModalOpen}
+          handleApproveAndPublish={handleApproveAndPublish}
+          publishing={publishing}
+        />
 
         {/* 2. Unified Clean Workspace Tabs */}
         <div 
