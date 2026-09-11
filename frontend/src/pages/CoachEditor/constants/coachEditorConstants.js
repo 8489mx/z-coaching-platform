@@ -1,5 +1,5 @@
-import { FOOD_DATABASE } from '../../../utils/foodSwapEngine';
-import { STRESS_TEST_CLIENTS, CLINICAL_MASTER_BLUEPRINTS } from '../../../data/stressTestClientsBlueprints';
+import { FOOD_DATABASE } from '../../../utils/foodSwapEngine.js';
+import { STRESS_TEST_CLIENTS, CLINICAL_MASTER_BLUEPRINTS } from '../../../data/stressTestClientsBlueprints.js';
 
 export const ADD_EX_MUSCLE_CATEGORIES = [
   { id: 'ALL', label: 'الكل' },
