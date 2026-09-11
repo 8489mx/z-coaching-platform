@@ -9,7 +9,6 @@ import {
   evaluateCheckinHandler,
   submitWeeklyCheckin,
   getPendingCheckins,
-  approveWeeklyCheckin,
   adaptProgramHandler,
   calculateSwapHandler,
   getActiveProgramByUserId,
@@ -39,7 +38,6 @@ router.post("/checkin/evaluate", requireAuth, evaluateCheckinHandler);
 router.post("/checkin/submit", requireAuth, submitWeeklyCheckin);
 router.get("/checkin/pending", requireAuth, getPendingCheckins);
 router.get("/checkin/history/:user_id", requireAuth, getCheckinHistory);
-router.post("/checkin/approve", requireAuth, approveWeeklyCheckin);
 router.post("/adapt", requireAuth, adaptProgramHandler);
 
 // Context-Aware Smart Food Swap V2 endpoints

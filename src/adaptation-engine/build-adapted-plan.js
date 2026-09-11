@@ -38,22 +38,32 @@ export function buildAdaptedPlan(inputs) {
   const baseEnergy =
     energyTargetStage?.target_calories ||
     energyTargetStage?.target_calories_kcal ||
+    currentMasterProgram.nutrition_program?.macro_targets?.calories_kcal ||
+    currentMasterProgram.nutrition?.targets?.calories ||
     2000;
   const baseProtein =
     macroTargetsStage?.protein?.target_g ||
     macroTargetsStage?.protein_g ||
+    currentMasterProgram.nutrition_program?.macro_targets?.protein_g ||
+    currentMasterProgram.nutrition?.targets?.protein ||
     160;
   const baseCarbs =
     macroTargetsStage?.carbohydrate?.target_g ||
     macroTargetsStage?.carbohydrate_g ||
+    currentMasterProgram.nutrition_program?.macro_targets?.carb_g ||
+    currentMasterProgram.nutrition_program?.macro_targets?.carbohydrate_g ||
+    currentMasterProgram.nutrition?.targets?.carbs ||
     200;
   const baseFat =
     macroTargetsStage?.fat?.target_g ||
     macroTargetsStage?.fat_g ||
+    currentMasterProgram.nutrition_program?.macro_targets?.fat_g ||
+    currentMasterProgram.nutrition?.targets?.fats ||
     60;
   const baseFiber =
     macroTargetsStage?.fiber_target_g ||
     macroTargetsStage?.fiber_g ||
+    currentMasterProgram.nutrition_program?.macro_targets?.fiber_g ||
     30;
 
   // Base Cardio extraction
@@ -155,16 +165,26 @@ export function buildAdaptedPlan(inputs) {
       message_ar: "معدل النزول سريع (>1.5% أسبوعياً). تمت إضافة 150 سعرة لحماية الكتلة العضلية ومنع الهبوط الأيضي.",
       message_en: "Rapid weight loss rate detected (>1.5%/wk). Added +150 kcal to protect lean mass.",
     });
-  } else if (status === CheckinAnalysisStatus.PLATEAU_DETECTED) {
+  } else if (
+    status === CheckinAnalysisStatus.PLATEAU_DETECTED || 
+    status === "TRUE_PLATEAU" || 
+    (typeof checkinAnalysis.suggested_calorie_delta === "number" && checkinAnalysis.suggested_calorie_delta < 0)
+  ) {
     adaptationAction = AdaptationAction.REDUCE_CALORIES_FOR_PLATEAU;
-    adaptedCalories -= 125;
-    adaptedCarbs -= 25; // -100 kcal
+    const calDelta = typeof checkinAnalysis.suggested_calorie_delta === "number"
+      ? Math.abs(checkinAnalysis.suggested_calorie_delta)
+      : 125;
+    const carbDelta = typeof checkinAnalysis.suggested_carb_delta_g === "number"
+      ? Math.abs(checkinAnalysis.suggested_carb_delta_g)
+      : 25;
+    adaptedCalories -= calDelta;
+    adaptedCarbs -= carbDelta;
     adaptedFat -= 3;    // -27 kcal
     adaptedDailySteps += 500;
     reasons.push({
       code: AdaptationReasonCode.PLATEAU_DEFICIT_APPLIED,
-      message_ar: "ثبات في الوزن مع التزام تام. تم خفض 125 سعرة يومياً من الكارب والدهون وزيادة 500 خطوة لكسر الثبات.",
-      message_en: "Weight plateau broken with a moderate 125 kcal reduction and +500 daily step increase.",
+      message_ar: `ثبات في الوزن مع التزام تام. تم خفض ${calDelta} سعرة يومياً وزيادة النشاط لكسر الثبات.`,
+      message_en: `Weight plateau broken with a moderate ${calDelta} kcal reduction.`,
     });
   } else {
     adaptationAction = AdaptationAction.MAINTAIN_TRAJECTORY;
