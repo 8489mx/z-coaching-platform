@@ -25,6 +25,9 @@ import notificationRoutes from "./routes/notification.routes.js";
 import { initDailyBackupScheduler } from "./services/backup.service.js";
 import { getPrivacyPolicy, getTermsOfService, getDeleteAccountPage } from "./controllers/legal.controller.js";
 import { requireAuth, requireAdmin } from "./middlewares/auth.middleware.js";
+import { securityHeaders } from "./middlewares/securityHeaders.js";
+import { exportRateLimiter, uploadRateLimiter } from "./middlewares/rateLimiter.js";
+import { recordAuditEvent, readRecentAuditEvents } from "./services/auditLog.service.js";
 import { User } from "./models/index.js";
 
 // Deterministic Clinical Execution Engines
@@ -53,6 +56,7 @@ const PORT = process.env.PORT || 3000;
 // Core Middleware
 app.use(cors());
 app.use(express.json({ limit: "50mb" }));
+app.use(securityHeaders);
 
 
 // 1. Health Endpoint
@@ -198,7 +202,7 @@ app.post('/api/v1/coach/update-client', requireAuth, requireAdmin, async (req, r
 });
 
 // Coach CSV Export Endpoint
-app.get("/api/v1/coach/export-clients-csv", requireAuth, requireAdmin, async (req, res) => {
+app.get("/api/v1/coach/export-clients-csv", requireAuth, requireAdmin, exportRateLimiter, async (req, res) => {
   try {
     const clients = await User.findAll({ order: [['createdAt', 'DESC']] });
 
@@ -215,16 +219,29 @@ app.get("/api/v1/coach/export-clients-csv", requireAuth, requireAdmin, async (re
 
     const csvContent = '\uFEFF' + [headers.join(','), ...csvRows].join('\n');
 
+    recordAuditEvent({
+      event: 'EXPORT_CLIENTS_CSV',
+      req,
+      status: 'SUCCESS',
+      details: { endpoint: '/api/v1/coach/export-clients-csv', count: clients.length }
+    });
+
     res.setHeader('Content-Type', 'text/csv; charset=utf-8');
     res.setHeader('Content-Disposition', 'attachment; filename=antigravity_clients.csv');
     res.send(csvContent);
   } catch (err) {
+    recordAuditEvent({
+      event: 'EXPORT_CLIENTS_CSV',
+      req,
+      status: 'FAILURE',
+      details: { error: err.message }
+    });
     res.status(500).json({ success: false, error: err.message });
   }
 });
 
 // CSV Export Endpoint for Clients
-app.get("/api/v1/clients/export/csv", requireAuth, requireAdmin, async (req, res) => {
+app.get("/api/v1/clients/export/csv", requireAuth, requireAdmin, exportRateLimiter, async (req, res) => {
   try {
     const clientsData = await User.findAll({ order: [['createdAt', 'DESC']] });
 
@@ -242,10 +259,23 @@ app.get("/api/v1/clients/export/csv", requireAuth, requireAdmin, async (req, res
 
     const csvContent = '\uFEFF' + [headers.join(','), ...rows.map((r) => r.join(','))].join('\n');
 
+    recordAuditEvent({
+      event: 'EXPORT_CLIENTS_CSV',
+      req,
+      status: 'SUCCESS',
+      details: { endpoint: '/api/v1/clients/export/csv', count: clientsData.length }
+    });
+
     res.setHeader('Content-Type', 'text/csv; charset=utf-8');
     res.setHeader('Content-Disposition', 'attachment; filename="clients_export.csv"');
     res.send(csvContent);
   } catch (err) {
+    recordAuditEvent({
+      event: 'EXPORT_CLIENTS_CSV',
+      req,
+      status: 'FAILURE',
+      details: { error: err.message }
+    });
     res.status(500).json({ success: false, error: err.message });
   }
 });
@@ -460,8 +490,8 @@ if (fs.existsSync(publicExercisesPath)) {
   app.use("/exercises", express.static(publicExercisesPath));
 }
 
-// Upload & Replace Exercise Image endpoint (Hardened with Path Traversal Protection & Auth)
-app.post("/api/v1/exercises/upload-image", requireAuth, requireAdmin, async (req, res) => {
+// Upload & Replace Exercise Image endpoint (Hardened with Path Traversal Protection, Auth, & Rate Limit)
+app.post("/api/v1/exercises/upload-image", requireAuth, requireAdmin, uploadRateLimiter, async (req, res) => {
   try {
     const { exercise_id, image_index, image_base64 } = req.body;
     if (!exercise_id || image_index === undefined || !image_base64) {
@@ -500,11 +530,36 @@ app.post("/api/v1/exercises/upload-image", requireAuth, requireAdmin, async (req
       fs.writeFileSync(path.join(distExFolder, filename), Buffer.from(base64Data, "base64"));
     }
 
+    recordAuditEvent({
+      event: 'UPLOAD_EXERCISE_IMAGE',
+      req,
+      status: 'SUCCESS',
+      details: { exercise_id: safeExId, image_index: safeIndex }
+    });
+
     const imageUrl = `/exercises/${safeExId}/${filename}?t=${Date.now()}`;
     return res.status(200).json({ success: true, message: "تم حفظ الصورة بنجاح", imageUrl });
   } catch (err) {
+    recordAuditEvent({
+      event: 'UPLOAD_EXERCISE_IMAGE',
+      req,
+      status: 'FAILURE',
+      details: { error: err.message }
+    });
     console.error("upload-image error:", err);
     return res.status(500).json({ error: "فشل حفظ الصورة", details: err.message });
+  }
+});
+
+// Administrative Audit Logs Endpoint (Protected with Admin Auth)
+app.get("/api/v1/admin/audit-logs", requireAuth, requireAdmin, (req, res) => {
+  try {
+    const limit = Math.min(100, parseInt(req.query.limit, 10) || 50);
+    const dateStr = req.query.date || null;
+    const logs = readRecentAuditEvents({ limit, dateStr });
+    res.json({ success: true, count: logs.length, logs });
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message });
   }
 });
 
