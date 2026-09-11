@@ -4,13 +4,17 @@ import jwt from "jsonwebtoken";
 import bcrypt from "bcrypt";
 import { User } from "../models/index.js";
 import { recordFailedAttempt, resetAttempts } from "../middlewares/rateLimiter.js";
+import { recordAuditEvent } from "../services/auditLog.service.js";
+import { generateCsrfToken } from "../middlewares/csrfProtection.js";
 
-const generateToken = (userId) => {
+const generateToken = (userOrId, tokenVersion = 1) => {
   const secret = process.env.JWT_SECRET;
   if (!secret) {
     throw new Error("FATAL: JWT_SECRET environment variable is not defined");
   }
-  return jwt.sign({ id: userId }, secret, {
+  const id = (userOrId && typeof userOrId === 'object') ? userOrId.id : userOrId;
+  const version = (userOrId && typeof userOrId === 'object') ? (userOrId.token_version || 1) : (tokenVersion || 1);
+  return jwt.sign({ id, token_version: version }, secret, {
     expiresIn: "30d",
   });
 };
@@ -29,7 +33,7 @@ export const registerFast = async (req, res) => {
     }
 
     const newUser = await User.create({ client_code, phone_number, full_name });
-    const token = generateToken(newUser.id);
+    const token = generateToken(newUser);
 
     return res.status(201).json({ user: newUser, token });
   } catch (err) {
@@ -82,7 +86,7 @@ export const loginFast = async (req, res) => {
     }
 
     resetAttempts(ip);
-    const token = generateToken(user.id);
+    const token = generateToken(user);
     return res.status(200).json({ user, token });
   } catch (err) {
     console.error("loginFast error:", err);
@@ -114,7 +118,7 @@ export const loginEmail = async (req, res) => {
       });
     }
 
-    const token = generateToken(user.id);
+    const token = generateToken(user);
     return res.status(200).json({ user, token });
   } catch (err) {
     console.error("loginEmail error:", err);
@@ -173,4 +177,120 @@ export const deleteAccount = async (req, res) => {
     return res.status(500).json({ error: "فشل تنفيذ العملية: " + err.message });
   }
 };
+
+/**
+ * تغيير كلمة المرور مع إلغاء كافة الجلسات النشطة الأخرى فوراً (Session Revocation)
+ */
+export const changePassword = async (req, res) => {
+  try {
+    const userId = req.user?.id;
+    const { current_password, new_password } = req.body;
+
+    if (!current_password || !new_password) {
+      return res.status(400).json({ error: "كلمة المرور الحالية وكلمة المرور الجديدة مطلوبتان معاً" });
+    }
+
+    const user = await User.findByPk(userId);
+    if (!user) {
+      return res.status(404).json({ error: "المستخدم غير موجود" });
+    }
+
+    // التحقق من كلمة المرور الحالية
+    if (user.password) {
+      const isMatch = await bcrypt.compare(current_password, user.password);
+      if (!isMatch) {
+        return res.status(401).json({ error: "كلمة المرور الحالية غير صحيحة" });
+      }
+    }
+
+    // معايير قوة كلمة المرور
+    const weakPasswords = ["123456", "12345678", "123456789", "password", "admin", "root", "toor", "12345", "qwerty", "secret"];
+    if (new_password.length < 8) {
+      return res.status(400).json({ error: "يجب ألا تقل كلمة المرور الجديدة عن 8 أحرف" });
+    }
+    if (weakPasswords.includes(new_password.toLowerCase())) {
+      return res.status(400).json({ error: "كلمة المرور ضعيفة جداً وشائعة، يرجى اختيار كلمة مرور قوية" });
+    }
+    if (current_password === new_password) {
+      return res.status(400).json({ error: "كلمة المرور الجديدة يجب أن تكون مختلفة عن كلمة المرور الحالية" });
+    }
+
+    // تشفير كلمة المرور الجديدة ورفع إصدار التوكن لإلغاء جميع الجلسات القديمة
+    const hashedPassword = await bcrypt.hash(new_password, 10);
+    const nextVersion = (user.token_version || 1) + 1;
+
+    await user.update({
+      password: hashedPassword,
+      token_version: nextVersion
+    });
+
+    recordAuditEvent({
+      event: 'PASSWORD_CHANGE_SESSION_REVOKED',
+      req,
+      status: 'SUCCESS',
+      details: {
+        userId: user.id,
+        new_token_version: nextVersion
+      }
+    });
+
+    // إصدار توكن جديد محدث للجلسة الحالية
+    const freshToken = generateToken(user.id, nextVersion);
+
+    return res.status(200).json({
+      success: true,
+      message: "تم تغيير كلمة المرور بنجاح، وإلغاء كافة الجلسات النشطة على الأجهزة الأخرى.",
+      token: freshToken
+    });
+  } catch (err) {
+    console.error("changePassword error:", err);
+    return res.status(500).json({ error: "فشل تغيير كلمة المرور: " + err.message });
+  }
+};
+
+/**
+ * تسجيل الخروج من كافة الأجهزة وإلغاء الجلسات النشطة (Revoke All Sessions)
+ */
+export const logoutAll = async (req, res) => {
+  try {
+    const userId = req.user?.id;
+    const user = await User.findByPk(userId);
+    if (!user) {
+      return res.status(404).json({ error: "المستخدم غير موجود" });
+    }
+
+    const nextVersion = (user.token_version || 1) + 1;
+    await user.update({ token_version: nextVersion });
+
+    recordAuditEvent({
+      event: 'LOGOUT_ALL_SESSIONS',
+      req,
+      status: 'SUCCESS',
+      details: {
+        userId: user.id,
+        new_token_version: nextVersion
+      }
+    });
+
+    return res.status(200).json({
+      success: true,
+      message: "تم تسجيل الخروج من كافة الأجهزة وإلغاء جميع الجلسات النشطة بنجاح."
+    });
+  } catch (err) {
+    console.error("logoutAll error:", err);
+    return res.status(500).json({ error: "فشل تسجيل الخروج: " + err.message });
+  }
+};
+
+/**
+ * نقطة الحصول على توكن CSRF للعمليات التحويلية
+ */
+export const getCsrfTokenController = (req, res) => {
+  const identifier = req.user?.id || req.ip || 'guest';
+  const csrfToken = generateCsrfToken(identifier);
+  return res.status(200).json({
+    csrf_token: csrfToken
+  });
+};
+
 

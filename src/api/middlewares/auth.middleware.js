@@ -1,7 +1,7 @@
 import jwt from "jsonwebtoken";
 import { User } from "../models/index.js";
 
-export const requireAuth = (req, res, next) => {
+export const requireAuth = async (req, res, next) => {
   const authHeader = req.headers.authorization;
   let token = null;
 
@@ -24,6 +24,33 @@ export const requireAuth = (req, res, next) => {
   try {
     const decoded = jwt.verify(token, secret);
     req.user = decoded;
+
+    if (decoded && decoded.id) {
+      const user = await User.findByPk(decoded.id, {
+        attributes: ['id', 'role', 'subscription_status', 'token_version']
+      });
+
+      if (!user) {
+        return res.status(401).json({ error: "Unauthorized: User account not found" });
+      }
+
+      if (user.subscription_status === 'DEACTIVATED') {
+        return res.status(403).json({ 
+          error: "تم إغلاق هذا الحساب بناءً على طلبكم المسبق لحذف الحساب. يرجى التواصل مع الإدارة." 
+        });
+      }
+
+      const tokenVer = decoded.token_version || 1;
+      const userVer = user.token_version || 1;
+      if (tokenVer !== userVer) {
+        return res.status(401).json({ 
+          error: "Unauthorized: Session has been revoked. Please log in again." 
+        });
+      }
+
+      req.dbUser = user;
+    }
+
     next();
   } catch (err) {
     return res.status(401).json({ error: "Unauthorized: Token expired or invalid" });

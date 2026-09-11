@@ -26,6 +26,7 @@ import { initDailyBackupScheduler } from "./services/backup.service.js";
 import { getPrivacyPolicy, getTermsOfService, getDeleteAccountPage } from "./controllers/legal.controller.js";
 import { requireAuth, requireAdmin } from "./middlewares/auth.middleware.js";
 import { securityHeaders } from "./middlewares/securityHeaders.js";
+import { csrfProtection } from "./middlewares/csrfProtection.js";
 import { exportRateLimiter, uploadRateLimiter } from "./middlewares/rateLimiter.js";
 import { recordAuditEvent, readRecentAuditEvents } from "./services/auditLog.service.js";
 import { User } from "./models/index.js";
@@ -57,6 +58,7 @@ const PORT = process.env.PORT || 3000;
 app.use(cors());
 app.use(express.json({ limit: "50mb" }));
 app.use(securityHeaders);
+app.use(csrfProtection);
 
 
 // 1. Health Endpoint

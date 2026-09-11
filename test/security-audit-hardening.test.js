@@ -288,6 +288,7 @@ test('Security Audit & Hardening Suite (IDOR, Ownership, Router Coverage & DB Pa
       'admin-settings:GET:/exercises': 'دليل التمارين العام المرجعي للعرض فقط دون صلاحيات تعديل',
       'admin-settings:GET:/packages': 'عرض الباقات والأسعار المتاحة للجمهور في صفحة الاشتراك',
       'admin-settings:GET:/foods': 'قاعدة بيانات الأطعمة المرجعية للاستعلام العام عن القيم الغذائية',
+      'auth:GET:/csrf-token': 'توليد توكن الحماية ضد التزوير عبر المواقع للعمليات التحويلية والحساسة',
       'auth:POST:/register-fast': 'بوابة التسجيل السريع لإنشاء حساب متدرب جديد لأول مرة',
       'auth:POST:/login-fast': 'بوابة الدخول السريع للمتدربين بالهاتف وكود العميل لإصدار توكن الجلسة',
       'auth:POST:/login-email': 'بوابة تسجيل دخول المدرب والإدارة بالبريد وكلمة المرور',

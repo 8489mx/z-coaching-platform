@@ -26,6 +26,11 @@ const User = sequelize.define("User", {
     type: DataTypes.STRING,
     allowNull: true,
   },
+  token_version: {
+    type: DataTypes.INTEGER,
+    defaultValue: 1,
+    allowNull: false,
+  },
   full_name: {
     type: DataTypes.STRING,
     allowNull: true,
