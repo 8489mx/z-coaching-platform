@@ -1,49 +1,25 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import { extractClientFastingProfile } from '../utils/seasonalFastingRadar';
-import { 
-  Utensils, 
-  Dumbbell, 
-  Activity, 
-  Check, 
-  ArrowLeftRight, 
-  Play, 
-  Pause, 
-  Plus, 
-  Clock, 
-  ShieldCheck, 
-  Info, 
-  CheckCircle2, 
-  ChevronDown, 
-  ChevronUp, 
-  X,
-  Share2,
-  AlertTriangle,
-  BookOpen,
-  HelpCircle
-} from 'lucide-react';
 import { API_BASE } from '../config/api';
 import ExerciseVideoModal from '../components/modals/ExerciseVideoModal';
 import { getPracticalCardioPrescription, CARDIO_TYPES } from '../utils/cardioZonesEngine';
-import { evaluateWeeklyCheckinAudit, CHECKIN_DECISION_CODES } from '../utils/weeklyAuditEngine';
-import { applyEmergencyScenarioAdaptation, TRAVEL_EQUIPMENT_TYPES } from '../utils/emergencyScenarioEngine';
-import { evaluateDoubleProgression, EXERCISE_CATEGORIES, evaluateAutoDeloadRequirement } from '../utils/progressiveOverloadEngine';
-import { calculateReverseDietingStep, REVERSE_DIET_STATUS } from '../utils/reverseDietingEngine';
-import { calculateNeatTitrationStep, NEAT_LEVELS } from '../utils/neatTitrationEngine';
-import { convertPortionCookingYield } from '../utils/kitchenYieldEngine';
-import { generateScientificRampWarmup, calculateBarbellPlates } from '../utils/warmupPlateEngine';
-import { getTorqueMatchedSwaps, applyFatigueModeReduction } from '../utils/biomechanicalSwapEngine';
-import { calculateDailyHydrationTarget } from '../utils/hydrationSweatEngine';
 import { enqueueOfflineAction, flushPendingQueue, getQueueSyncStatus, ACTION_TYPES } from '../utils/offlineSyncEngine';
 import { adaptProgramToInteractiveMeals, adaptSessionToInteractiveWorkout } from './ClientInteractiveApp/utils/programAdapters';
-import ClientHeader from './ClientInteractiveApp/components/ClientHeader';
-import MealsTab from './ClientInteractiveApp/components/MealsTab';
-import WorkoutTab from './ClientInteractiveApp/components/WorkoutTab';
-import FreeGuidesModal from './ClientInteractiveApp/components/FreeGuidesModal';
-import FoodPrepModal from './ClientInteractiveApp/components/FoodPrepModal';
-import MasterPdfModal from './ClientInteractiveApp/components/MasterPdfModal';
-import FoodSwapModal from './ClientInteractiveApp/components/FoodSwapModal';
-import ExerciseSwapModal from './ClientInteractiveApp/components/ExerciseSwapModal';
+import {
+  ClientHeader,
+  MealsTab,
+  WorkoutTab,
+  FreeGuidesModal,
+  FoodPrepModal,
+  MasterPdfModal,
+  FoodSwapModal,
+  ExerciseSwapModal,
+  EmergencyScenarioModal,
+  TravelConfirmModal,
+  ReturnTravelModal,
+  ClientBottomNav
+} from './ClientInteractiveApp/components';
 
 export default function ClientInteractiveApp() {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -336,11 +312,6 @@ export default function ClientInteractiveApp() {
   const [freeGuideTab, setFreeGuideTab] = useState('DRINKS');
   const [pdfModalOpen, setPdfModalOpen] = useState(false);
   const [prehabCompleted, setPrehabCompleted] = useState(false);
-  const [checkinWeight, setCheckinWeight] = useState(clientData.weight || '78.5');
-  const [checkinWaist, setCheckinWaist] = useState('82.0');
-  const [checkinAdherence, setCheckinAdherence] = useState(90);
-  const [checkinPmsActive, setCheckinPmsActive] = useState(false);
-  const [checkinAuditResult, setCheckinAuditResult] = useState(null);
   const [cardioPrescription, setCardioPrescription] = useState(() => getPracticalCardioPrescription({ type: CARDIO_TYPES.LISS_TALK_TEST }));
   const [swapMealId, setSwapMealId] = useState(null);
   const [activeVideoExercise, setActiveVideoExercise] = useState(null);
@@ -778,64 +749,11 @@ export default function ClientInteractiveApp() {
         </main>
 
         {/* BOTTOM NAVIGATION BAR */}
-        <nav 
-          style={{
-            position: 'fixed',
-            bottom: 0,
-            left: '50%',
-            transform: 'translateX(-50%)',
-            width: '100%',
-            maxWidth: '480px',
-            background: '#FFFFFF',
-            borderTop: '1px solid #E2E8F0',
-            display: 'flex',
-            justifyContent: 'space-around',
-            padding: '8px 0',
-            zIndex: 40,
-            boxShadow: '0 -2px 10px rgba(0, 0, 0, 0.04)'
-          }}
-        >
-          {[
-            { key: 'meals', label: 'الوجبات', icon: Utensils },
-            { key: 'workout', label: 'التمرين', icon: Dumbbell },
-            { key: 'checkin', label: 'المتابعة', icon: Activity, isRoute: true }
-          ].map(tab => {
-            const isActive = activeTab === tab.key;
-            const TabIcon = tab.icon;
-
-            return (
-              <button
-                key={tab.key}
-                type="button"
-                onClick={() => {
-                  if (tab.isRoute) {
-                    const rawCode = String(clientData?.code || '').replace(/^#+/, '').replace(/^client[-_]?/i, '').trim();
-                    navigate(rawCode ? `/check-in?code=${encodeURIComponent(rawCode)}` : '/check-in');
-                  } else {
-                    handleSwitchTab(tab.key);
-                  }
-                }}
-                style={{
-                  display: 'flex',
-                  flexDirection: 'column',
-                  alignItems: 'center',
-                  gap: '2px',
-                  background: 'transparent',
-                  border: 'none',
-                  color: isActive ? '#0F172A' : '#94A3B8',
-                  fontSize: '11px',
-                  fontWeight: isActive ? 800 : 500,
-                  cursor: 'pointer',
-                  padding: '4px 16px',
-                  transition: 'color 0.15s ease'
-                }}
-              >
-                <TabIcon style={{ width: '18px', height: '18px', strokeWidth: isActive ? 2.5 : 2 }} />
-                <span>{tab.label}</span>
-              </button>
-            );
-          })}
-        </nav>
+        <ClientBottomNav
+          activeTab={activeTab}
+          onSwitchTab={handleSwitchTab}
+          clientCode={clientData?.code}
+        />
 
         {/* SMART FOOD SWAP POPUP MODAL WITH CLINICAL FILTERS */}
         <FoodSwapModal
@@ -871,185 +789,27 @@ export default function ClientInteractiveApp() {
       />
 
       {/* CONFIRMATION MODAL FOR TRAVEL MODE */}
-      {travelConfirmTarget && (
-        <div 
-          style={{
-            position: 'fixed',
-            top: 0,
-            left: 0,
-            right: 0,
-            bottom: 0,
-            background: 'rgba(15, 23, 42, 0.8)',
-            backdropFilter: 'blur(5px)',
-            zIndex: 120,
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            padding: '16px'
-          }}
-          onClick={() => setTravelConfirmTarget(null)}
-        >
-          <div 
-            onClick={(e) => e.stopPropagation()}
-            style={{
-              width: '100%',
-              maxWidth: '420px',
-              background: '#0F172A',
-              color: '#FFFFFF',
-              borderRadius: '20px',
-              border: '1px solid #C4952D',
-              padding: '24px 20px',
-              direction: 'rtl',
-              textAlign: 'center',
-              boxShadow: '0 8px 30px rgba(0, 0, 0, 0.35)'
-            }}
-          >
-            <div style={{ background: 'rgba(196, 149, 45, 0.15)', border: '1px solid rgba(196, 149, 45, 0.3)', width: '48px', height: '48px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 12px auto', color: '#F59E0B' }}>
-              <AlertTriangle size={24} />
-            </div>
-            <h3 style={{ margin: '0 0 8px 0', fontSize: '1.05rem', fontWeight: 900, color: '#F8FAFC' }}>
-              تأكيد تفعيل وضع السفر
-            </h3>
-            <p style={{ margin: '0 0 16px 0', fontSize: '0.8rem', color: '#94A3B8', lineHeight: 1.5 }}>
-              أنت على وشك تكييف خطتك إلى: <strong style={{ color: '#F59E0B' }}>{travelConfirmTarget.title}</strong>.<br />
-              {travelConfirmTarget.desc}<br />
-              يمكنك العودة لجدولك الأساسي في الجيم في أي وقت بضغطة زر.
-            </p>
-            <div style={{ display: 'flex', gap: '8px' }}>
-              <button
-                type="button"
-                onClick={() => {
-                  travelConfirmTarget.action();
-                  setTravelChosenTier(travelConfirmTarget);
-                  setTravelConfirmTarget(null);
-                  setEmergencyModalOpen(false);
-                }}
-                style={{
-                  flex: 1,
-                  background: '#C4952D',
-                  color: '#0F172A',
-                  border: 'none',
-                  borderRadius: '10px',
-                  padding: '10px',
-                  fontSize: '0.82rem',
-                  fontWeight: 900,
-                  cursor: 'pointer'
-                }}
-              >
-                تأكيد التفعيل
-              </button>
-              <button
-                type="button"
-                onClick={() => setTravelConfirmTarget(null)}
-                style={{
-                  flex: 1,
-                  background: 'rgba(255, 255, 255, 0.1)',
-                  color: '#FFFFFF',
-                  border: '1px solid rgba(255, 255, 255, 0.2)',
-                  borderRadius: '10px',
-                  padding: '10px',
-                  fontSize: '0.82rem',
-                  fontWeight: 700,
-                  cursor: 'pointer'
-                }}
-              >
-                تراجع
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+      <TravelConfirmModal
+        travelConfirmTarget={travelConfirmTarget}
+        onClose={() => setTravelConfirmTarget(null)}
+        onConfirm={() => {
+          if (travelConfirmTarget?.action) travelConfirmTarget.action();
+          setTravelChosenTier(travelConfirmTarget);
+          setTravelConfirmTarget(null);
+          setEmergencyModalOpen(false);
+        }}
+      />
 
       {/* RETURN FROM TRAVEL MODAL (POST-VACATION REFLECTION) */}
-      {returnTravelModalOpen && (
-        <div 
-          style={{
-            position: 'fixed',
-            top: 0,
-            left: 0,
-            right: 0,
-            bottom: 0,
-            background: 'rgba(15, 23, 42, 0.8)',
-            backdropFilter: 'blur(5px)',
-            zIndex: 120,
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            padding: '16px'
-          }}
-          onClick={() => setReturnTravelModalOpen(false)}
-        >
-          <div 
-            onClick={(e) => e.stopPropagation()}
-            style={{
-              width: '100%',
-              maxWidth: '420px',
-              background: '#0F172A',
-              color: '#FFFFFF',
-              borderRadius: '20px',
-              border: '1px solid #38BDF8',
-              padding: '24px 20px',
-              direction: 'rtl',
-              textAlign: 'center',
-              boxShadow: '0 8px 30px rgba(0, 0, 0, 0.35)'
-            }}
-          >
-            <div style={{ background: 'rgba(56, 189, 248, 0.15)', border: '1px solid rgba(56, 189, 248, 0.3)', width: '48px', height: '48px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 12px auto', color: '#38BDF8' }}>
-              <CheckCircle2 size={24} color="#0284C7" />
-            </div>
-            <h3 style={{ margin: '0 0 6px 0', fontSize: '1.05rem', fontWeight: 900, color: '#F8FAFC' }}>
-              حمد الله على السلامة يا بطل!
-            </h3>
-            <p style={{ margin: '0 0 16px 0', fontSize: '0.78rem', color: '#94A3B8', lineHeight: 1.5 }}>
-              كيف كان نشاطك التدريبي خلال فترة السفر؟ سيتم إعادة ضبط أحمال الأسبوع الأول بما يناسب طاقتك:
-            </p>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-              <button
-                type="button"
-                onClick={() => {
-                  setTravelModeActive(false);
-                  setActiveScenario(null);
-                  setTravelChosenTier(null);
-                  setReturnTravelModalOpen(false);
-                }}
-                style={{
-                  background: '#0284C7',
-                  color: '#FFFFFF',
-                  border: 'none',
-                  borderRadius: '10px',
-                  padding: '11px',
-                  fontSize: '0.82rem',
-                  fontWeight: 800,
-                  cursor: 'pointer'
-                }}
-              >
-                حافظت على حماسي وتمريني (جاهز للأوزان كاملة)
-              </button>
-              <button
-                type="button"
-                onClick={() => {
-                  setTravelModeActive(false);
-                  setActiveScenario(null);
-                  setTravelChosenTier(null);
-                  setReturnTravelModalOpen(false);
-                }}
-                style={{
-                  background: 'rgba(255, 255, 255, 0.08)',
-                  color: '#CBD5E1',
-                  border: '1px solid rgba(255, 255, 255, 0.15)',
-                  borderRadius: '10px',
-                  padding: '11px',
-                  fontSize: '0.82rem',
-                  fontWeight: 700,
-                  cursor: 'pointer'
-                }}
-              >
-                فصلت وريحت تماماً (أسبوع استشفاء تدريجي)
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+      <ReturnTravelModal
+        isOpen={returnTravelModalOpen}
+        onClose={() => setReturnTravelModalOpen(false)}
+        onReset={() => {
+          setActiveScenario(null);
+          setTravelChosenTier(null);
+          setReturnTravelModalOpen(false);
+        }}
+      />
 
       {/* SMART EXERCISE SWAP MODAL (FOR BUSY GYM MACHINES) */}
       <ExerciseSwapModal
@@ -1059,228 +819,12 @@ export default function ClientInteractiveApp() {
       />
 
       {/* EMERGENCY SCENARIO ADAPTATION MODAL */}
-        {emergencyModalOpen && (
-          <div 
-            style={{
-              position: 'fixed',
-              top: 0,
-              left: 0,
-              right: 0,
-              bottom: 0,
-              background: 'rgba(15, 23, 42, 0.75)',
-              backdropFilter: 'blur(5px)',
-              zIndex: 110,
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              padding: '16px'
-            }}
-            onClick={() => setEmergencyModalOpen(false)}
-          >
-            <div 
-              onClick={(e) => e.stopPropagation()}
-              style={{
-                width: '100%',
-                maxWidth: '440px',
-                background: '#0F172A',
-                color: '#FFFFFF',
-                borderRadius: '24px',
-                border: '1px solid rgba(255, 255, 255, 0.15)',
-                padding: '20px',
-                direction: 'rtl',
-                maxHeight: '90vh',
-                overflowY: 'auto'
-              }}
-            >
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px', borderBottom: '1px solid rgba(255, 255, 255, 0.1)', paddingBottom: '10px' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                  <AlertTriangle style={{ width: '20px', height: '20px', color: '#EF4444' }} />
-                  <h3 style={{ fontSize: '1rem', fontWeight: 900, margin: 0, color: '#FFFFFF' }}>
-                    محرك التكيف اللحظي وحالات الطوارئ
-                  </h3>
-                </div>
-                <button
-                  type="button"
-                  onClick={() => setEmergencyModalOpen(false)}
-                  style={{ background: 'rgba(255, 255, 255, 0.1)', border: 'none', borderRadius: '50%', width: '28px', height: '28px', color: '#FFFFFF', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
-                >
-                  <X style={{ width: '14px', height: '14px' }} />
-                </button>
-              </div>
-
-              <p style={{ fontSize: '0.76rem', color: '#94A3B8', marginBottom: '16px', lineHeight: '1.4' }}>
-                اختر ظرفك الطارئ وسيقوم المحرك بإعادة تشكيل الخطة التدريبية والغذائية فوراً بضغطة زر واحدة:
-              </p>
-
-              {/* Scenarios Options */}
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-                
-                {/* 1. Travel Hotel Gym */}
-                <button
-                  type="button"
-                  onClick={() => {
-                    const adaptation = applyEmergencyScenarioAdaptation({
-                      scenario_type: 'TRAVEL',
-                      equipment_tier: TRAVEL_EQUIPMENT_TYPES.HOTEL_LIMITED_GYM,
-                      base_calories: 1870,
-                      base_protein_g: 155
-                    });
-                    setActiveScenario(adaptation);
-                    setEmergencyModalOpen(false);
-                    alert('تم تفعيل وضع السفر وتكييف التمارين لجيم الفندق (دامبلز وكابلات) وسعرات الصيانة!');
-                  }}
-                  style={{
-                    background: 'rgba(255, 255, 255, 0.06)',
-                    border: '1px solid rgba(255, 255, 255, 0.15)',
-                    borderRadius: '14px',
-                    padding: '12px',
-                    textAlign: 'right',
-                    color: '#FFFFFF',
-                    cursor: 'pointer'
-                  }}
-                >
-                  <strong style={{ fontSize: '0.86rem', color: '#F59E0B', display: 'block' }}>1. وضع السفر - جيم فندق محدود (Hotel Gym)</strong>
-                  <span style={{ fontSize: '0.72rem', color: '#CBD5E1' }}>تحويل أوتوماتيكي للأجهزة الحرة إلى دامبلز وكابلات وسعرات صيانة لتفادي الإجهاد.</span>
-                </button>
-
-                {/* 2. Travel Room Bodyweight */}
-                <button
-                  type="button"
-                  onClick={() => {
-                    const adaptation = applyEmergencyScenarioAdaptation({
-                      scenario_type: 'TRAVEL',
-                      equipment_tier: TRAVEL_EQUIPMENT_TYPES.NO_GYM_ROOM,
-                      base_calories: 1870,
-                      base_protein_g: 155
-                    });
-                    setActiveScenario(adaptation);
-                    setEmergencyModalOpen(false);
-                    alert('تم تفعيل تمارين الغرفة بوزن الجسم وأحزمة المقاومة مع تحكم سلبي 3 ثوانٍ!');
-                  }}
-                  style={{
-                    background: 'rgba(255, 255, 255, 0.06)',
-                    border: '1px solid rgba(255, 255, 255, 0.15)',
-                    borderRadius: '14px',
-                    padding: '12px',
-                    textAlign: 'right',
-                    color: '#FFFFFF',
-                    cursor: 'pointer'
-                  }}
-                >
-                  <strong style={{ fontSize: '0.86rem', color: '#38BDF8', display: 'block' }}>2. وضع السفر - بدون جيم (Room Workout)</strong>
-                  <span style={{ fontSize: '0.72rem', color: '#CBD5E1' }}>تمارين بوزن الجسم وأحزمة المقاومة مع التركيز على سرعة النزول السلبي 3s.</span>
-                </button>
-
-                {/* 3. Sickness & Recovery */}
-                <button
-                  type="button"
-                  onClick={() => {
-                    const adaptation = applyEmergencyScenarioAdaptation({
-                      scenario_type: 'SICKNESS',
-                      base_calories: 1870,
-                      base_protein_g: 155
-                    });
-                    setActiveScenario(adaptation);
-                    setEmergencyModalOpen(false);
-                    alert('تم إيقاف المقاومة وتفعيل سعرات الصيانة وبروتوكول المناعة (فيتامين C، زنك، وترطيب إضافي)!');
-                  }}
-                  style={{
-                    background: 'rgba(239, 68, 68, 0.12)',
-                    border: '1px solid rgba(239, 68, 68, 0.3)',
-                    borderRadius: '14px',
-                    padding: '12px',
-                    textAlign: 'right',
-                    color: '#FFFFFF',
-                    cursor: 'pointer'
-                  }}
-                >
-                  <strong style={{ fontSize: '0.86rem', color: '#EF4444', display: 'block' }}>3. وضع المرض والوعكة الصحية (Sickness Recovery)</strong>
-                  <span style={{ fontSize: '0.72rem', color: '#FCA5A5' }}>إيقاف الأوزان فوراً، رفع السوائل (+1L)، سعرات الصيانة، ومغذيات المناعة.</span>
-                </button>
-
-                {/* 4. High Stress & Exams */}
-                <button
-                  type="button"
-                  onClick={() => {
-                    const adaptation = applyEmergencyScenarioAdaptation({
-                      scenario_type: 'HIGH_STRESS',
-                      base_calories: 1870,
-                      base_protein_g: 155
-                    });
-                    setActiveScenario(adaptation);
-                    setEmergencyModalOpen(false);
-                    alert('تم تقليص البرنامج إلى جلستين Full Body أسبوعياً (35 دقيقة) وتثبيت الماكروز!');
-                  }}
-                  style={{
-                    background: 'rgba(16, 185, 129, 0.12)',
-                    border: '1px solid rgba(16, 185, 129, 0.3)',
-                    borderRadius: '14px',
-                    padding: '12px',
-                    textAlign: 'right',
-                    color: '#FFFFFF',
-                    cursor: 'pointer'
-                  }}
-                >
-                  <strong style={{ fontSize: '0.86rem', color: '#10B981', display: 'block' }}>4. وضع ضغط العمل والامتحانات (High-Stress)</strong>
-                  <span style={{ fontSize: '0.72rem', color: '#6EE7B7' }}>جلستان Full Body أسبوعياً بأعلى كفاءة زمنية (35 دقيقة) ومصادر طعام سريعة.</span>
-                </button>
-
-                {/* 5. Dining Out & Evening Events */}
-                <button
-                  type="button"
-                  onClick={() => {
-                    // Buffer 600 calories for dinner
-                    setMeals(prev => prev.map((m, idx) => {
-                      if (idx < 2) {
-                        return {
-                          ...m,
-                          items: m.items.map(it => (it.c > 15 ? { ...it, amount: Math.round(it.amount * 0.6) } : it))
-                        };
-                      }
-                      return m;
-                    }));
-                    setEmergencyModalOpen(false);
-                    alert('تم تفعيل بروتوكول العزومة والمطاعم: تم حجز 600 سعرة لوجبة المساء مع التركيز على البروتين الصافي نهاراً!');
-                  }}
-                  style={{
-                    background: 'rgba(245, 158, 11, 0.12)',
-                    border: '1px solid rgba(245, 158, 11, 0.3)',
-                    borderRadius: '14px',
-                    padding: '12px',
-                    textAlign: 'right',
-                    color: '#FFFFFF',
-                    cursor: 'pointer'
-                  }}
-                >
-                  <strong style={{ fontSize: '0.86rem', color: '#F59E0B', display: 'block' }}>5. عزومة أو وجبة مطعم مسائية (Dining Out Mode)</strong>
-                  <span style={{ fontSize: '0.72rem', color: '#FDE68A' }}>حجز بنك سعرات (600 سعرة) لوجبة المساء مع تركيز الوجبات النهارية على البروتين والسلطة.</span>
-                </button>
-
-                {/* 6. Swap Rest & Workout Day */}
-                <button
-                  type="button"
-                  onClick={() => {
-                    setEmergencyModalOpen(false);
-                    alert('تم تبديل تمرين اليوم بيوم راحة بنجاح! تمرينك ترحل لليوم التالي مع الحفاظ على سلسلة أيام التزامك (Streak).');
-                  }}
-                  style={{
-                    background: 'rgba(99, 102, 241, 0.12)',
-                    border: '1px solid rgba(99, 102, 241, 0.3)',
-                    borderRadius: '14px',
-                    padding: '12px',
-                    textAlign: 'right',
-                    color: '#FFFFFF',
-                    cursor: 'pointer'
-                  }}
-                >
-                  <strong style={{ fontSize: '0.86rem', color: '#A5B4FC', display: 'block' }}>6. تبديل يوم التمرين بيوم راحة (Rest Day Swap)</strong>
-                  <span style={{ fontSize: '0.72rem', color: '#C7D2FE' }}>لو جدولك انشغل اليوم؛ حوّل اليوم لاستشفاء وراحة وننقل التمرين لغد دون كسر الـ Streak!</span>
-                </button>
-
-              </div>
-            </div>
-          </div>
-        )}
+      <EmergencyScenarioModal
+        isOpen={emergencyModalOpen}
+        onClose={() => setEmergencyModalOpen(false)}
+        setActiveScenario={setActiveScenario}
+        setMeals={setMeals}
+      />
 
         {/* Exercise Video Modal for Client Workout */}
         {activeVideoExercise && (
