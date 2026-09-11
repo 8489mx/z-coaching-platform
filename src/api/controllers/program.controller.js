@@ -391,29 +391,54 @@ export const submitWeeklyCheckin = async (req, res) => {
       photos = []
     } = req.body;
 
-    // Find User
+    // Find User (Strict validation with Zero fallback)
     let user = null;
     const lookupId = user_id || client_code;
-    if (lookupId) {
-      user = await User.findOne({ where: { client_code: lookupId } });
-      if (!user && !isNaN(lookupId)) {
-        user = await User.findByPk(parseInt(lookupId, 10));
-      }
-    }
-
-    if (!user) {
+    if (!lookupId) {
       return res.status(400).json({ error: "يجب تقديم كود المشترك أو معرف المستخدم الصحيح لإرسال المتابعة" });
     }
 
-    if (!Array.isArray(daily_weights_kg) || daily_weights_kg.length === 0) {
-      return res.status(400).json({ error: "يجب إرسال أوزان يومية حقيقية (daily_weights_kg) مع المتابعة الأسبوعية" });
+    const cleanCode = String(lookupId).replace('#', '').trim();
+    user = await User.findOne({ where: { client_code: cleanCode } });
+    if (!user && !isNaN(cleanCode)) {
+      user = await User.findByPk(parseInt(cleanCode, 10));
+    }
+    if (!user) {
+      user = await User.findOne({ where: { phone_number: cleanCode } });
+    }
+
+    if (!user) {
+      return res.status(400).json({ error: "المستخدم غير موجود، يرجى التحقق من معرف المشترك" });
+    }
+
+    // Strict 7-Day Weights Validation: Require exactly 7 valid numbers > 20kg (Zero Injected Fake Weights)
+    if (
+      !Array.isArray(daily_weights_kg) ||
+      daily_weights_kg.length !== 7 ||
+      daily_weights_kg.some(w => typeof w !== 'number' || isNaN(w) || w <= 20 || w > 300)
+    ) {
+      return res.status(400).json({
+        error: "يجب تسجيل أوزان الأيام السبعة كاملة وحقيقية (7 أوزان يومية صالحة > 20 كجم) لإرسال المتابعة الأسبوعية"
+      });
     }
 
     const weights = daily_weights_kg.map(w => Number(w));
 
+    // Resolve real previous average weight without injecting fake 85.5 kg
+    let prevAvgWeight = null;
+    if (previous_average_weight_kg && !isNaN(Number(previous_average_weight_kg)) && Number(previous_average_weight_kg) > 20) {
+      prevAvgWeight = Number(previous_average_weight_kg);
+    } else {
+      const pastCheckin = await CheckinSubmission.findOne({
+        where: { user_id: user.id },
+        order: [["createdAt", "DESC"]]
+      });
+      prevAvgWeight = pastCheckin ? pastCheckin.average_weight_kg : null;
+    }
+
     const analysis = evaluateCheckin({
       daily_weights_kg: weights,
-      previous_week_average_weight_kg: Number(previous_average_weight_kg) || 85.5,
+      previous_week_average_weight_kg: prevAvgWeight,
       waist_circumference_cm: Number(waist_circumference_cm) || null,
       nutrition_adherence_percent: Number(nutrition_adherence_percent) || 95,
       workouts_completed: Number(workouts_completed) || 4,
@@ -423,10 +448,10 @@ export const submitWeeklyCheckin = async (req, res) => {
     });
 
     const avgWeight = Math.round((weights.reduce((a, b) => a + b, 0) / weights.length) * 100) / 100;
-    const weightChange = previous_average_weight_kg ? Math.round((avgWeight - Number(previous_average_weight_kg)) * 100) / 100 : null;
+    const weightChange = prevAvgWeight ? Math.round((avgWeight - prevAvgWeight) * 100) / 100 : null;
 
     const checkin = await CheckinSubmission.create({
-      user_id: user ? user.id : 1,
+      user_id: user.id,
       week_number: Number(week_number) || 1,
       daily_weights_kg: weights,
       average_weight_kg: avgWeight,
@@ -449,11 +474,11 @@ export const submitWeeklyCheckin = async (req, res) => {
         const pUrl = typeof p === 'string' ? p : (p.photo_url || p.data || p.url);
         if (typeof pUrl === 'string' && pUrl.trim()) {
           const pose = (p.pose || 'FRONT').toUpperCase();
-          const targetCode = user ? (user.client_code || user.id) : (client_code || user_id || '1');
+          const targetCode = user.client_code || String(user.id);
           const savedUrl = saveProgressPhotoToDisk(targetCode, pUrl, Number(week_number) || 1, pose);
           if (savedUrl) {
             const photoRecord = await ProgressPhoto.create({
-              user_id: user ? user.id : 1,
+              user_id: user.id,
               week_number: Number(week_number) || 1,
               pose,
               photo_url: savedUrl,

@@ -209,6 +209,46 @@ test('Tier 1 Suite: Check-in Plan Preservation & Idempotent Plan Merge Engine', 
     assert.equal(merged.current_training_week, 3);
   });
 
+  await t.test('4b. Non-sequential week insertion (gaps & lower-numbered weeks) preserves all weeks and sorts chronologically', () => {
+    // Start with a program that has weeks 2 and 4 (gap present, week 1 missing)
+    const progWithGap = {
+      ...sampleMasterProgram,
+      training_program: {
+        weeks: [
+          { week_number: 2, phase: 'WEEK_2_ORIGINAL' },
+          { week_number: 4, phase: 'WEEK_4_ORIGINAL' }
+        ]
+      }
+    };
+
+    // 1. Insert lower-numbered week (Week 1)
+    const withLowerWeek = mergeAdaptedPlanIntoProgram(progWithGap, {
+      adapted_week_number: 1,
+      adapted_training_week: { week_number: 1, phase: 'WEEK_1_NEW' }
+    });
+
+    assert.equal(withLowerWeek.training_program.weeks.length, 3, 'Length should be 3 (week 1 prepended without overwriting week 2)');
+    assert.equal(withLowerWeek.training_program.weeks[0].week_number, 1);
+    assert.equal(withLowerWeek.training_program.weeks[0].phase, 'WEEK_1_NEW');
+    assert.equal(withLowerWeek.training_program.weeks[1].week_number, 2);
+    assert.equal(withLowerWeek.training_program.weeks[1].phase, 'WEEK_2_ORIGINAL');
+    assert.equal(withLowerWeek.training_program.weeks[2].week_number, 4);
+    assert.equal(withLowerWeek.training_program.weeks[2].phase, 'WEEK_4_ORIGINAL');
+
+    // 2. Insert week with large gap (Week 7)
+    const withGapWeek = mergeAdaptedPlanIntoProgram(withLowerWeek, {
+      adapted_week_number: 7,
+      adapted_training_week: { week_number: 7, phase: 'WEEK_7_FUTURE' }
+    });
+
+    assert.equal(withGapWeek.training_program.weeks.length, 4);
+    assert.deepEqual(
+      withGapWeek.training_program.weeks.map(w => w.week_number),
+      [1, 2, 4, 7],
+      'Weeks must be sorted chronologically without data loss or crashes'
+    );
+  });
+
   await t.test('5. Deload flag and cardio step targets are safely applied without touching meals', () => {
     const adaptationResult = {
       adapted_week_number: 2,

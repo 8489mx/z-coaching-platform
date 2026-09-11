@@ -40,9 +40,21 @@ export async function submitCheckin(req, res) {
       userObj = await User.findOne({ where: { phone_number: cleanCode } });
     }
     if (!userObj) {
-      return res.status(404).json({ success: false, error: "Client not found" });
+      return res.status(400).json({ success: false, error: "المستخدم غير موجود، يرجى تقديم معرف صالح" });
     }
     targetUserId = userObj.id;
+
+    // Validate weight inputs: require valid positive weight > 20kg
+    const validSingleWeight = typeof weight_kg === 'number' && !isNaN(weight_kg) && weight_kg > 20 && weight_kg <= 300;
+    const validDailyWeights = Array.isArray(req.body.daily_weights_kg) && req.body.daily_weights_kg.length === 7 && req.body.daily_weights_kg.every(w => typeof w === 'number' && !isNaN(w) && w > 20 && w <= 300);
+
+    if (Array.isArray(req.body.daily_weights_kg) && req.body.daily_weights_kg.length !== 7) {
+      return res.status(400).json({ success: false, error: "يجب تسجيل أوزان الأيام السبعة كاملة وحقيقية (7 أوزان يومية) لإرسال المتابعة الأسبوعية" });
+    }
+
+    if (!validSingleWeight && !validDailyWeights) {
+      return res.status(400).json({ success: false, error: "يجب إدخال وزن حقيقي وصالح (> 20 كجم) لإرسال المتابعة" });
+    }
 
 
     // 1. Fetch previous check-in for deltas and consecutive compliance calculation

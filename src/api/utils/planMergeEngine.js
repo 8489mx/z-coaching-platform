@@ -122,18 +122,9 @@ export function mergeAdaptedPlanIntoProgram(currentMasterProgram, adaptationResu
         ...formattedAdaptedWeek
       };
     } else {
-      // Insertion logic:
-      const targetSlot = targetWeekNumber - 1;
-      if (targetSlot >= 0 && targetSlot < weeks.length) {
-        weeks[targetSlot] = {
-          ...weeks[targetSlot],
-          ...formattedAdaptedWeek
-        };
-      } else {
-        // Append and sort chronologically to prevent gaps or disorder
-        weeks.push(formattedAdaptedWeek);
-        weeks.sort((a, b) => (Number(a.week_number) || 0) - (Number(b.week_number) || 0));
-      }
+      // Safe insertion: Append and sort chronologically by week_number to preserve all existing weeks (handles gaps & out-of-order)
+      weeks.push(formattedAdaptedWeek);
+      weeks.sort((a, b) => (Number(a.week_number) || 0) - (Number(b.week_number) || 0));
     }
   }
 
