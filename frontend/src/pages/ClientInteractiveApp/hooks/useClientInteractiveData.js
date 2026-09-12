@@ -1,9 +1,47 @@
 import { useState, useEffect, useMemo } from 'react';
-import { API_BASE } from '../../../config/api';
-import { extractClientFastingProfile } from '../../../utils/seasonalFastingRadar';
-import { getPracticalCardioPrescription, CARDIO_TYPES } from '../../../utils/cardioZonesEngine';
-import { enqueueOfflineAction, flushPendingQueue, getQueueSyncStatus, ACTION_TYPES } from '../../../utils/offlineSyncEngine';
-import { adaptProgramToInteractiveMeals, adaptSessionToInteractiveWorkout } from '../utils/programAdapters';
+import { API_BASE } from '../../../config/api.js';
+import { extractClientFastingProfile } from '../../../utils/seasonalFastingRadar.js';
+import { getPracticalCardioPrescription, CARDIO_TYPES } from '../../../utils/cardioZonesEngine.js';
+import { enqueueOfflineAction, flushPendingQueue, getQueueSyncStatus, ACTION_TYPES } from '../../../utils/offlineSyncEngine.js';
+import { adaptProgramToInteractiveMeals, adaptSessionToInteractiveWorkout } from '../utils/programAdapters.js';
+
+export const DEFAULT_FALLBACK_WEEKS = [
+  {
+    week_number: 1,
+    phase: 'ACCUMULATION',
+    target_rir: 3,
+    volume_modifier: 1.0,
+    focus_note: 'تأسيس التكنيك والمدى الحركي الكامل',
+  },
+  {
+    week_number: 2,
+    phase: 'ACCUMULATION',
+    target_rir: 2,
+    volume_modifier: 1.05,
+    focus_note: 'زيادة الحمل التدريبي والتوتر الميكانيكي',
+  },
+  {
+    week_number: 3,
+    phase: 'OVERREACHING',
+    target_rir: 1,
+    volume_modifier: 1.1,
+    focus_note: 'أقصى استثارة عضلية وتكثيف الحمل',
+  },
+  {
+    week_number: 4,
+    phase: 'PEAK',
+    target_rir: 0,
+    volume_modifier: 1.15,
+    focus_note: 'قمة الأداء التدريبي والاقتراب من الفشل العضلي الآمن',
+  },
+  {
+    week_number: 5,
+    phase: 'DELOAD',
+    target_rir: 3,
+    volume_modifier: 0.6,
+    focus_note: 'أسبوع كسر الإجهاد والاستشفاء العضلي (-40% حجم)',
+  }
+];
 
 export function useClientInteractiveData() {
   // 1. Day & Week Selection
@@ -35,11 +73,14 @@ export function useClientInteractiveData() {
   const [clientProgram, setClientProgram] = useState(null);
 
   const trainingWeeks = useMemo(() => {
-    return clientProgram?.master_program?.training_program?.weeks
+    const fromProg = clientProgram?.master_program?.training_program?.weeks
       || clientProgram?.training_program?.weeks
       || clientProgram?.master_program?.training?.weeks
-      || clientProgram?.training?.weeks
-      || [];
+      || clientProgram?.training?.weeks;
+    if (Array.isArray(fromProg) && fromProg.length > 0) {
+      return fromProg;
+    }
+    return DEFAULT_FALLBACK_WEEKS;
   }, [clientProgram]);
 
   const selectedWeekData = useMemo(() => {
@@ -308,9 +349,11 @@ export function useClientInteractiveData() {
                 setMeals(programMeals);
               }
             }
-            const tWeeks = data.master_program?.training_program?.weeks 
-              || data.master_program?.training?.weeks 
-              || [];
+            const tWeeks = (Array.isArray(data.master_program?.training_program?.weeks) && data.master_program.training_program.weeks.length > 0)
+              ? data.master_program.training_program.weeks 
+              : ((Array.isArray(data.master_program?.training?.weeks) && data.master_program.training.weeks.length > 0)
+                ? data.master_program.training.weeks 
+                : DEFAULT_FALLBACK_WEEKS);
             const wData = tWeeks.find(w => w.week_number === currentTrainingWeek) || tWeeks[0];
             const sessions = wData?.sessions 
               || data.master_program.training?.sessions 
@@ -318,7 +361,7 @@ export function useClientInteractiveData() {
               || [];
             if (sessions.length > 0) {
               const currentIdx = Math.max(0, (selectedDay - 1) % sessions.length);
-              const adapted = adaptSessionToInteractiveWorkout(sessions[currentIdx], currentIdx);
+              const adapted = adaptSessionToInteractiveWorkout(sessions[currentIdx], currentIdx, wData);
               if (adapted && adapted.exercises && adapted.exercises.length > 0) {
                 setWorkoutSession(prev => ({
                   ...prev,
@@ -334,13 +377,32 @@ export function useClientInteractiveData() {
 
   // 8. Sync Workout Session on Day or Meso Week change
   useEffect(() => {
-    if (!clientProgram) return;
-    const tWeeks = clientProgram?.master_program?.training_program?.weeks
-      || clientProgram?.training_program?.weeks
-      || clientProgram?.master_program?.training?.weeks
-      || clientProgram?.training?.weeks
-      || [];
+    const tWeeks = (Array.isArray(clientProgram?.master_program?.training_program?.weeks) && clientProgram.master_program.training_program.weeks.length > 0)
+      ? clientProgram.master_program.training_program.weeks
+      : ((Array.isArray(clientProgram?.training_program?.weeks) && clientProgram.training_program.weeks.length > 0)
+        ? clientProgram.training_program.weeks
+        : ((Array.isArray(clientProgram?.master_program?.training?.weeks) && clientProgram.master_program.training.weeks.length > 0)
+          ? clientProgram.master_program.training.weeks
+          : ((Array.isArray(clientProgram?.training?.weeks) && clientProgram.training.weeks.length > 0)
+            ? clientProgram.training.weeks
+            : DEFAULT_FALLBACK_WEEKS)));
     const wData = tWeeks.find(w => w.week_number === currentTrainingWeek) || tWeeks[0];
+
+    if (!clientProgram) {
+      setWorkoutSession(prev => ({
+        ...prev,
+        exercises: (prev.exercises || []).map(ex => ({
+          ...ex,
+          targetRir: wData.target_rir ?? 2,
+          prescription: {
+            ...(ex.prescription || {}),
+            target_rir: wData.target_rir ?? 2
+          }
+        }))
+      }));
+      return;
+    }
+
     const sessions = wData?.sessions 
       || clientProgram.training?.sessions 
       || clientProgram.training_split?.sessions 
@@ -349,7 +411,7 @@ export function useClientInteractiveData() {
       || [];
     if (sessions.length > 0) {
       const currentIdx = Math.max(0, (selectedDay - 1) % sessions.length);
-      const adapted = adaptSessionToInteractiveWorkout(sessions[currentIdx], currentIdx);
+      const adapted = adaptSessionToInteractiveWorkout(sessions[currentIdx], currentIdx, wData);
       if (adapted && adapted.exercises && adapted.exercises.length > 0) {
         setWorkoutSession(prev => ({
           ...prev,

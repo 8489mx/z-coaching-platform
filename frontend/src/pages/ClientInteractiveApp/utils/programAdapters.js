@@ -53,7 +53,7 @@ export function adaptProgramToInteractiveMeals(masterProgram) {
   return [];
 }
 
-export function adaptSessionToInteractiveWorkout(session, index = 0) {
+export function adaptSessionToInteractiveWorkout(session, index = 0, weekContext = null) {
   if (!session) return null;
   const title = session.session_name || session.name || session.title || `اليوم التدريبي ${index + 1}`;
   const warmupProtocol = session.warmup_protocol || session.warmupProtocol || 'إحماء عام 5 دقائق + حركات الإطالة والتفعيل الديناميكي';
@@ -68,7 +68,9 @@ export function adaptSessionToInteractiveWorkout(session, index = 0) {
       ? `${presc.target_min}-${presc.target_max}`
       : (ex.reps || ex.target_reps || '10-12');
     const restSec = Number(presc.rest_seconds || ex.rest_seconds || ex.restDurationSec || ex.rest_sec) || 75;
-    const targetRir = presc.target_rir !== undefined ? presc.target_rir : (ex.rir !== undefined ? ex.rir : 2);
+    const targetRir = presc.target_rir !== undefined 
+      ? presc.target_rir 
+      : (ex.rir !== undefined ? ex.rir : (weekContext?.target_rir ?? 2));
     const safety = ex.safety_note || ex.safetyNote || ex.cue || 'الحفاظ على المدى الحركي الكامل والتحكم في الوزن بالنزول';
     const targetWeight = ex.working_weight_kg || ex.weight || '0';
 

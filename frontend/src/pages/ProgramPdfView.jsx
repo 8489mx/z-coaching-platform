@@ -148,7 +148,7 @@ export default function ProgramPdfView() {
     }
   ];
 
-  // Workout Meso-Cycle
+  // Workout Meso-Cycle (All Weeks Periodization)
   const rawSessions = program?.training?.sessions 
     || program?.training_split?.sessions 
     || program?.training_program?.weeks?.[0]?.sessions 
@@ -173,12 +173,45 @@ export default function ProgramPdfView() {
     }
   ];
 
-  const sessions = rawSessions;
-  const sessionChunks = [];
-  for (let i = 0; i < sessions.length; i += 2) {
-    sessionChunks.push(sessions.slice(i, i + 2));
-  }
-  const totalPages = 3 + sessionChunks.length;
+  // Resolve all periodized weeks from any supported program container
+  const rawWeeks = (
+    (Array.isArray(program?.training_program?.weeks) && program.training_program.weeks.length > 0 && program.training_program.weeks) ||
+    (Array.isArray(program?.training?.weeks) && program.training.weeks.length > 0 && program.training.weeks) ||
+    (Array.isArray(program?.master_program?.training_program?.weeks) && program.master_program.training_program.weeks.length > 0 && program.master_program.training_program.weeks) ||
+    (Array.isArray(program?.master_program?.training?.weeks) && program.master_program.training.weeks.length > 0 && program.master_program.training.weeks) ||
+    (Array.isArray(program?.weeks) && program.weeks.length > 0 && program.weeks) ||
+    []
+  );
+
+  const effectiveWeeks = rawWeeks.length > 0 ? rawWeeks : [
+    {
+      week_number: 1,
+      phase: 'ACCUMULATION',
+      target_rir: '1 - 2',
+      focus_note: 'نظام: Push / Pull / Legs — تركيز: التضخيم العضلي والتوتر الميكانيكي المستمر',
+      sessions: rawSessions
+    }
+  ];
+
+  // Flatten periodized weeks into printable A4 page chunks (2 sessions per page)
+  const trainingPages = [];
+  effectiveWeeks.forEach((week) => {
+    const wSessions = (Array.isArray(week.sessions) && week.sessions.length > 0) ? week.sessions : rawSessions;
+    const numChunks = Math.max(1, Math.ceil(wSessions.length / 2));
+    for (let c = 0; c < numChunks; c++) {
+      trainingPages.push({
+        weekNumber: week.week_number || 1,
+        phase: week.phase || 'ACCUMULATION',
+        targetRir: week.target_rir !== undefined ? week.target_rir : '1 - 2',
+        focusNote: week.focus_note || (week.phase === 'DELOAD' ? 'أسبوع كسر الإجهاد والاستشفاء العضلي (-40% حجم تدريبي)' : 'دورة تدريبية متقدمة للبناء العضلي وزيادة القوة'),
+        sessions: wSessions.slice(c * 2, c * 2 + 2),
+        chunkIndex: c,
+        totalChunksInWeek: numChunks,
+      });
+    }
+  });
+
+  const totalPages = 3 + trainingPages.length;
 
   return (
     <div className="pdf-view-wrapper" dir="rtl" style={{ background: '#F1F5F9', minHeight: '100vh', padding: '20px 0', fontFamily: 'var(--font-sans)' }}>
@@ -502,98 +535,127 @@ export default function ProgramPdfView() {
       </div>
 
       {/* =========================================================================
-          PAGE 3+: جدول الميزوسايكل التدريبي (Periodized Training Plan)
+          PAGES 3+: جدول الميزوسايكل التدريبي (Periodized Training Plan - All Weeks)
           ========================================================================= */}
-      {sessionChunks.map((chunk, chunkIdx) => (
-        <div className="pdf-page-container" id={`page-3-${chunkIdx}`} key={chunkIdx}>
-          <div>
-            {/* Running Header */}
-            <div className="running-header">
-              <span>Z COACHING | KARIM ZAKARIA</span>
-              <span className="font-monospace">CLIENT CODE: #{clientCode}</span>
-            </div>
-
-            {/* Split Overview Banner */}
-            <div className="d-flex justify-content-between align-items-center pdf-card" style={{ marginBottom: '14px', background: '#F8FAFC', borderRight: '3pt solid #0284C7' }}>
-              <div>
-                <h5 style={{ fontSize: '11pt', fontWeight: '900', color: '#0F172A', margin: 0 }}>
-                  {chunkIdx === 0 ? '6. جدول الميزوسايكل وتوزيع الحصص التدريبية (5-Week Meso-Cycle)' : `تابع جدول الميزوسايكل التدريبي - الجزء ${chunkIdx + 1}`}
-                </h5>
-                <small style={{ fontSize: '8pt', color: '#64748B' }}>نظام: Push / Pull / Legs — تركيز: التضخيم العضلي والتوتر الميكانيكي المستمر</small>
+      {trainingPages.map((page, pIdx) => {
+        const isDeload = page.phase === 'DELOAD';
+        return (
+          <div className="pdf-page-container" id={`page-training-${pIdx}`} key={`page-training-${pIdx}`}>
+            <div>
+              {/* Running Header */}
+              <div className="running-header">
+                <span>Z COACHING | KARIM ZAKARIA</span>
+                <span className="font-monospace">CLIENT CODE: #{clientCode}</span>
               </div>
-              <div style={{ textAlign: 'left' }}>
-                <span className="badge font-monospace" style={{ background: '#E5F0FF', color: '#0284C7', fontSize: '8pt', border: '1px solid #BAE6FD' }}>
-                  TARGET RIR: 1 - 2
-                </span>
-              </div>
-            </div>
 
-            {/* Sessions & Workout Tables */}
-            {chunk.map((session, sIdx) => (
-              <div key={sIdx} style={{ marginBottom: '14px' }}>
-                <div style={{ fontSize: '9pt', fontWeight: '800', color: '#0F172A', marginBottom: '6px', background: '#F1F5F9', padding: '4px 8px', borderRadius: '4px' }}>
-                  {session.session_name || session.name || `الحصة ${chunkIdx * 2 + sIdx + 1}`}
-                </div>
-                <table className="pdf-table">
-                  <thead>
-                    <tr>
-                      <th style={{ width: '32%' }}>التمرين</th>
-                      <th style={{ width: '22%' }}>العضلة المستهدفة</th>
-                      <th style={{ width: '10%', textAlign: 'center' }}>المجموعات</th>
-                      <th style={{ width: '12%', textAlign: 'center' }}>العدات</th>
-                      <th style={{ width: '10%', textAlign: 'center' }}>RIR</th>
-                      <th style={{ width: '14%', textAlign: 'center' }}>الراحة</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {session.exercises?.map((ex, eIdx) => {
-                      const exNames = getExerciseDisplayNames(ex);
-                      return (
-                        <tr key={eIdx}>
-                          <td>
-                            <strong style={{ display: 'block', fontSize: '8.5pt', color: '#0F172A', direction: 'ltr', textAlign: 'right' }}>
-                              {exNames.nameEn}
-                            </strong>
-                            <small className="d-block text-muted" style={{ fontSize: '7.5pt', marginTop: '1px' }}>
-                              {exNames.nameAr}
-                            </small>
-                          </td>
-                        <td style={{ color: '#475569' }}>{ex.muscle || 'عضلة رئيسية'}</td>
-                        <td style={{ textAlign: 'center', fontWeight: '700' }} className="font-monospace">{ex.sets || (Array.isArray(ex.sets) ? ex.sets.length : 3)}</td>
-                        <td style={{ textAlign: 'center', fontWeight: '700' }} className="font-monospace">{ex.reps || ex.target_reps || '8 - 10'}</td>
-                        <td style={{ textAlign: 'center', fontWeight: '700', color: '#0284C7' }} className="font-monospace">{ex.rir || '1 - 2'}</td>
-                        <td style={{ textAlign: 'center', fontWeight: '600' }} className="font-monospace">{ex.rest || `${ex.rest_seconds || 90}s`}</td>
-                        </tr>
-                      );
-                    })}
-                  </tbody>
-                </table>
-              </div>
-            ))}
-
-            {/* QR Code & Video Technique Block */}
-            {chunkIdx === 0 && (
-              <div className="pdf-card" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: '#F0F9FF', borderColor: '#BAE6FD', marginTop: '10px' }}>
+              {/* Split Overview Banner */}
+              <div 
+                className="d-flex justify-content-between align-items-center pdf-card" 
+                style={{ 
+                  marginBottom: '14px', 
+                  background: isDeload ? '#F0FDF4' : '#F8FAFC', 
+                  borderRight: isDeload ? '3pt solid #16A34A' : '3pt solid #0284C7',
+                  borderColor: isDeload ? '#BBF7D0' : '#E2E8F0'
+                }}
+              >
                 <div>
-                  <strong style={{ fontSize: '8.5pt', color: '#0369A1', display: 'block' }}>مكتبة فيديوهات التكنيك والشرح الحركي (Video Technique Guide)</strong>
-                  <small style={{ fontSize: '7.5pt', color: '#475569' }}>
-                    امسح رمز الاستجابة السريعة (QR) بكاميرا هاتفك لفتح مكتبة الفيديوهات عالية الدقة والتكنيك المعتمد لكل تمرين.
+                  <h5 style={{ fontSize: '11pt', fontWeight: '900', color: isDeload ? '#166534' : '#0F172A', margin: 0 }}>
+                    {isDeload
+                      ? `الأسبوع ${page.weekNumber}: أسبوع كسر الإجهاد والاستشفاء (Deload Week) ${page.totalChunksInWeek > 1 ? `[جزء ${page.chunkIndex + 1}/${page.totalChunksInWeek}]` : ''}`
+                      : `الأسبوع ${page.weekNumber}: ${page.phase === 'PEAK' ? 'مرحلة قمة الأداء (Peak Phase)' : page.phase === 'OVERREACHING' ? 'مرحلة الحمل المكثف (Overreaching)' : 'مرحلة البناء والتراكم (Accumulation)'} ${page.totalChunksInWeek > 1 ? `[جزء ${page.chunkIndex + 1}/${page.totalChunksInWeek}]` : ''}`}
+                  </h5>
+                  <small style={{ fontSize: '8pt', color: isDeload ? '#15803D' : '#64748B' }}>
+                    {page.focusNote}
                   </small>
                 </div>
-                <div style={{ width: '56px', height: '56px', background: '#FFFFFF', border: '1px solid #CBD5E1', borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: '900', fontSize: '7pt', color: '#0F172A', textAlign: 'center', flexShrink: 0 }}>
-                  SCAN QR
+                <div style={{ textAlign: 'left' }}>
+                  <span className="badge font-monospace" style={{ 
+                    background: isDeload ? '#DCFCE7' : '#E5F0FF', 
+                    color: isDeload ? '#166534' : '#0284C7', 
+                    fontSize: '8pt', 
+                    border: isDeload ? '1px solid #86EFAC' : '1px solid #BAE6FD' 
+                  }}>
+                    {isDeload ? 'DELOAD • RIR 3-4' : `TARGET RIR: ${page.targetRir}`}
+                  </span>
                 </div>
               </div>
-            )}
-          </div>
 
-          {/* Running Footer */}
-          <div className="running-footer">
-            <span>CONFIDENTIAL & PROPRIETARY — Z COACHING</span>
-            <span className="font-monospace">PAGE {3 + chunkIdx} OF {totalPages}</span>
+              {/* Sessions & Workout Tables */}
+              {page.sessions.map((session, sIdx) => (
+                <div key={sIdx} style={{ marginBottom: '14px' }}>
+                  <div style={{ fontSize: '9pt', fontWeight: '800', color: '#0F172A', marginBottom: '6px', background: '#F1F5F9', padding: '4px 8px', borderRadius: '4px' }}>
+                    {session.session_name || session.name || `الحصة ${page.chunkIndex * 2 + sIdx + 1}`}
+                  </div>
+                  <table className="pdf-table">
+                    <thead>
+                      <tr>
+                        <th style={{ width: '32%' }}>التمرين</th>
+                        <th style={{ width: '22%' }}>العضلة المستهدفة</th>
+                        <th style={{ width: '10%', textAlign: 'center' }}>المجموعات</th>
+                        <th style={{ width: '12%', textAlign: 'center' }}>العدات</th>
+                        <th style={{ width: '10%', textAlign: 'center' }}>RIR</th>
+                        <th style={{ width: '14%', textAlign: 'center' }}>الراحة</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {session.exercises?.map((ex, eIdx) => {
+                        const exNames = getExerciseDisplayNames(ex);
+                        const effectiveRir = ex.rir || (ex.prescription && ex.prescription.target_rir) || page.targetRir;
+                        return (
+                          <tr key={eIdx}>
+                            <td>
+                              <strong style={{ display: 'block', fontSize: '8.5pt', color: '#0F172A', direction: 'ltr', textAlign: 'right' }}>
+                                {exNames.nameEn}
+                              </strong>
+                              <small className="d-block text-muted" style={{ fontSize: '7.5pt', marginTop: '1px' }}>
+                                {exNames.nameAr}
+                              </small>
+                            </td>
+                            <td style={{ color: '#475569' }}>{ex.muscle || 'عضلة رئيسية'}</td>
+                            <td style={{ textAlign: 'center', fontWeight: '700' }} className="font-monospace">
+                              {ex.sets || (Array.isArray(ex.sets) ? ex.sets.length : (ex.prescription?.sets || 3))}
+                            </td>
+                            <td style={{ textAlign: 'center', fontWeight: '700' }} className="font-monospace">
+                              {ex.reps || ex.target_reps || (ex.prescription?.target_min ? `${ex.prescription.target_min}-${ex.prescription.target_max}` : '8 - 10')}
+                            </td>
+                            <td style={{ textAlign: 'center', fontWeight: '700', color: isDeload ? '#166534' : '#0284C7' }} className="font-monospace">
+                              {effectiveRir}
+                            </td>
+                            <td style={{ textAlign: 'center', fontWeight: '600' }} className="font-monospace">
+                              {ex.rest || (ex.rest_seconds ? `${ex.rest_seconds}s` : '75s')}
+                            </td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+                </div>
+              ))}
+
+              {/* QR Code & Video Technique Block on First Training Page */}
+              {pIdx === 0 && (
+                <div className="pdf-card" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: '#F0F9FF', borderColor: '#BAE6FD', marginTop: '10px' }}>
+                  <div>
+                    <strong style={{ fontSize: '8.5pt', color: '#0369A1', display: 'block' }}>مكتبة فيديوهات التكنيك والشرح الحركي (Video Technique Guide)</strong>
+                    <small style={{ fontSize: '7.5pt', color: '#475569' }}>
+                      امسح رمز الاستجابة السريعة (QR) بكاميرا هاتفك لفتح مكتبة الفيديوهات عالية الدقة والتكنيك المعتمد لكل تمرين.
+                    </small>
+                  </div>
+                  <div style={{ width: '56px', height: '56px', background: '#FFFFFF', border: '1px solid #CBD5E1', borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: '900', fontSize: '7pt', color: '#0F172A', textAlign: 'center', flexShrink: 0 }}>
+                    SCAN QR
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* Running Footer */}
+            <div className="running-footer">
+              <span>CONFIDENTIAL & PROPRIETARY — Z COACHING</span>
+              <span className="font-monospace">PAGE {3 + pIdx} OF {totalPages}</span>
+            </div>
           </div>
-        </div>
-      ))}
+        );
+      })}
 
       {/* =========================================================================
           PAGE 4: بروتوكول الكارديو، الإحماء، والسلامة المفصلية (Cardio & Mobility Matrix)
@@ -687,7 +749,7 @@ export default function ProgramPdfView() {
         {/* Running Footer */}
         <div className="running-footer">
           <span>CONFIDENTIAL & PROPRIETARY — Z COACHING</span>
-          <span className="font-monospace">PAGE {3 + sessionChunks.length} OF {totalPages}</span>
+          <span className="font-monospace">PAGE {totalPages} OF {totalPages}</span>
         </div>
       </div>
 

@@ -504,6 +504,7 @@ export const generateDraftFromIntake = async (req, res) => {
         meals: rawProgram.nutrition_program?.culinary_meals || []
       },
       training: {
+        weeks: rawProgram.training_program?.weeks || [],
         sessions: rawProgram.training_program?.weeks?.[0]?.sessions || []
       }
     };
