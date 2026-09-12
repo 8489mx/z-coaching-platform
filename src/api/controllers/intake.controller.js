@@ -99,49 +99,49 @@ function generateAiRationaleAudit(intakePayload, masterProgram) {
   const isMale = personal.sex !== 'FEMALE';
   const bodyFat = Number(body.bodyFat) || null;
 
-  // 1. Calculate BMR
-  let bmr = 0;
-  if (bodyFat && bodyFat > 0 && bodyFat < 50) {
-    const lbm = weight * (1 - bodyFat / 100);
-    bmr = Math.round(370 + (21.6 * lbm));
-  } else {
-    bmr = Math.round(10 * weight + 6.25 * height - 5 * age + (isMale ? 5 : -161));
+  // Unify with masterProgram deterministic nutrition targets if available
+  const targets = masterProgram?.nutrition_program?.targets || {};
+  const macroTargets = masterProgram?.nutrition_program?.macro_targets || {};
+
+  // 1. Calculate / Extract BMR
+  let bmr = targets.bmr;
+  if (!bmr) {
+    if (bodyFat && bodyFat > 0 && bodyFat < 50) {
+      const lbm = weight * (1 - bodyFat / 100);
+      bmr = Math.round(370 + (21.6 * lbm));
+    } else {
+      bmr = Math.round(10 * weight + 6.25 * height - 5 * age + (isMale ? 5 : -161));
+    }
   }
 
-  // 2. Activity multiplier based on steps & training days
-  const steps = Number(cardio.averageDailySteps) || 6000;
-  const trainDays = Number(training.preferredDaysPerWeek) || 3;
-  let activityMultiplier = 1.35;
-  if (steps >= 10000) activityMultiplier += 0.15;
-  else if (steps >= 7000) activityMultiplier += 0.10;
-  if (trainDays >= 4) activityMultiplier += 0.10;
-  else if (trainDays >= 3) activityMultiplier += 0.05;
-
-  const tdee = Math.round(bmr * activityMultiplier);
-
-  // 3. Calorie Deficit / Surplus based on Goal
-  let targetCalories = tdee;
-  let proteinPerKg = 2.0;
-  if (goals.primary === 'FAT_LOSS') {
-    targetCalories = Math.round(tdee * 0.80); // 20% Deficit
-    proteinPerKg = 2.2; // High protein for muscle sparing
-  } else if (goals.primary === 'MUSCLE_GAIN') {
-    targetCalories = Math.round(tdee * 1.10); // 10% Surplus
-    proteinPerKg = 2.0;
+  // 2. Activity multiplier & TDEE
+  let tdee = targets.tdee;
+  if (!tdee) {
+    const steps = Number(cardio.averageDailySteps) || 6000;
+    const trainDays = Number(training.preferredDaysPerWeek) || 3;
+    let activityMultiplier = 1.35;
+    if (steps >= 10000) activityMultiplier += 0.15;
+    else if (steps >= 7000) activityMultiplier += 0.10;
+    if (trainDays >= 4) activityMultiplier += 0.10;
+    else if (trainDays >= 3) activityMultiplier += 0.05;
+    tdee = Math.round(bmr * (targets.activity_factor || activityMultiplier));
   }
 
-  const proteinG = Math.round(weight * proteinPerKg);
-  const fatCalories = Math.round(targetCalories * 0.22);
-  const fatG = Math.round(fatCalories / 9);
-  const carbCalories = Math.max(0, targetCalories - (proteinG * 4) - (fatG * 9));
-  const carbG = Math.round(carbCalories / 4);
+  // 3. Calorie Deficit / Surplus and Target Macros
+  const targetCalories = targets.target_calories || macroTargets.calories_kcal || tdee;
+  const proteinG = targets.protein_g || macroTargets.protein_g || Math.round(weight * 2.0);
+  const fatG = targets.fat_g || macroTargets.fat_g || Math.round((targetCalories * 0.22) / 9);
+  const carbG = targets.carbohydrate_g || targets.carb_g || macroTargets.carbohydrate_g || Math.max(0, Math.round((targetCalories - (proteinG * 4) - (fatG * 9)) / 4));
+  const proteinPerKg = targets.protein_per_kg || (weight > 0 ? (proteinG / weight).toFixed(1) : 2.0);
 
-  const mealCount = Number(nutrition.preferredMealCount) || 3;
+  const mealCount = targets.meals_count || Number(nutrition.preferredMealCount) || 3;
   const mealProtein = Math.round(proteinG / mealCount);
   const mealFat = Math.round(fatG / mealCount);
   const mealCarb = Math.round(carbG / mealCount);
 
-  const macroRationale = `سعرات الصيانة (TDEE): ~${tdee} kcal. تم تطبيق عجز 20% للتنشيف لتصبح السعرات المستهدفة (${targetCalories} kcal) مقسمة بدقة: بروتين (${proteinG} جم بمعدل ${proteinPerKg} جم/كجم) + دهون صحية (${fatG} جم) + كاربوهيدرات (${carbG} جم). متوسط كل وجبة من الوجبات الـ (${mealCount}): ~${mealProtein} جم بروتين، ~${mealCarb} جم كارب، ~${mealFat} جم دهون مع رفع الكارب في وجبة ما قبل التمرين.`;
+  const goalDesc = targets.calorie_adjustment_desc || (goals.primary === 'FAT_LOSS' ? 'عجز 20% للتنشيف' : goals.primary === 'MUSCLE_GAIN' ? 'فائض 10% للبناء العضلي' : 'سعرات صيانة وتثبيت');
+
+  const macroRationale = `سعرات الصيانة (TDEE): ~${tdee} kcal. تم تطبيق ${goalDesc} لتصبح السعرات المستهدفة (${targetCalories} kcal) مقسمة بدقة: بروتين (${proteinG} جم بمعدل ${proteinPerKg} جم/كجم) + دهون صحية (${fatG} جم) + كاربوهيدرات (${carbG} جم). متوسط كل وجبة من الوجبات الـ (${mealCount}): ~${mealProtein} جم بروتين، ~${mealCarb} جم كارب، ~${mealFat} جم دهون مع توزيع الوجبات بما يخدم الشبع والأداء الرياضي.`;
 
   return {
     injury_exclusions: injuryExclusions,
