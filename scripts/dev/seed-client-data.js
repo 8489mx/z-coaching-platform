@@ -1,7 +1,7 @@
 import fs from "node:fs";
-import sequelize from "./config/database.js";
-import { User, Program, IntakeSubmission } from "./models/index.js";
-import { buildMasterEngineV2 } from "../master-engine-v2/index.js";
+import sequelize from "../../src/api/config/database.js";
+import { User, Program, IntakeSubmission } from "../../src/api/models/index.js";
+import { buildMasterEngineV2 } from "../../src/master-engine-v2/index.js";
 import { COMPLETE_INTAKE } from "../../test/fixtures/complete-intake.js";
 
 const nutritionFoodCatalog = JSON.parse(

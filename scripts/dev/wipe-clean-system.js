@@ -1,9 +1,9 @@
-import sequelize from "./config/database.js";
-import User from "./models/User.js";
-import Program from "./models/Program.js";
-import IntakeSubmission from "./models/IntakeSubmission.js";
-import CheckinSubmission from "./models/CheckinSubmission.js";
-import ProgressPhoto from "./models/ProgressPhoto.js";
+import sequelize from "../../src/api/config/database.js";
+import User from "../../src/api/models/User.js";
+import Program from "../../src/api/models/Program.js";
+import IntakeSubmission from "../../src/api/models/IntakeSubmission.js";
+import CheckinSubmission from "../../src/api/models/CheckinSubmission.js";
+import ProgressPhoto from "../../src/api/models/ProgressPhoto.js";
 import fs from "fs";
 import path from "path";
 import { fileURLToPath } from "url";

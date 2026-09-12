@@ -1,10 +1,10 @@
-import sequelize from "./config/database.js";
+import sequelize from "../../src/api/config/database.js";
 import fs from "fs";
-import { User, Program, IntakeSubmission, CheckinSubmission, ProgressPhoto, Order, NutritionPlan, WorkoutPlan, RateLimitLog } from "./models/index.js";
-import { evaluateIntake } from "../intake-decision-engine/index.js";
-import { buildMasterEngineV2 } from "../master-engine-v2/index.js";
+import { User, Program, IntakeSubmission, CheckinSubmission, ProgressPhoto, Order, NutritionPlan, WorkoutPlan, RateLimitLog } from "../../src/api/models/index.js";
+import { evaluateIntake } from "../../src/intake-decision-engine/index.js";
+import { buildMasterEngineV2 } from "../../src/master-engine-v2/index.js";
 import { completeIntake, ASSESSMENT_CONTEXT } from "../../test/fixtures/complete-intake.js";
-import { Sex, PrimaryGoal, ActivityLevel, SleepQuality, StressLevel, EquipmentCode, EquipmentLoadCapacity } from "../intake-decision-engine/index.js";
+import { Sex, PrimaryGoal, ActivityLevel, SleepQuality, StressLevel, EquipmentCode, EquipmentLoadCapacity } from "../../src/intake-decision-engine/index.js";
 import path from "path";
 import { fileURLToPath } from "url";
 
