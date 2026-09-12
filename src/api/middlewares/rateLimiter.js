@@ -8,19 +8,33 @@ export function createRateLimiter({
   maxAttempts = 5,
   message = "تم تجاوز الحد الأقصى للمحاولات المسموحة. يرجى الانتظار قبل المحاولة مرة أخرى.",
   keyPrefix = "global",
-  countAllRequests = false
+  countAllRequests = false,
+  keyGenerator = null
 }) {
   const store = new Map();
+
+  const cleanupStaleRecords = (now) => {
+    if (store.size > 1000) {
+      for (const [k, rec] of store.entries()) {
+        if (now - rec.firstAttempt >= windowMs) {
+          store.delete(k);
+        }
+      }
+    }
+  };
 
   const limiter = async (req, res, next) => {
     try {
       const ip = req.headers['x-forwarded-for'] 
-        || req.socket.remoteAddress 
+        || req.socket?.remoteAddress 
         || req.ip 
         || '127.0.0.1';
       
-      const key = `${keyPrefix}:${ip}`;
+      const identifier = typeof keyGenerator === 'function' ? keyGenerator(req, ip) : ip;
+      const key = `${keyPrefix}:${identifier}`;
       const now = Date.now();
+
+      cleanupStaleRecords(now);
 
       let record = store.get(key);
 
@@ -121,6 +135,19 @@ export const intakeRateLimiter = createRateLimiter({
   keyPrefix: "intake",
   countAllRequests: false, // Counts on failure via recordFailedAttempt
   message: (remainingMins) => `تم تجاوز الحد الأقصى للمحاولات الخاطئة (5 محاولات). يرجى الانتظار لمدة ${remainingMins} دقيقة قبل المحاولة مرة أخرى.`
+});
+
+// 5. Check-in Rate Limiter (Protection against spam/DoS on weekly check-in submission)
+export const checkinRateLimiter = createRateLimiter({
+  windowMs: 60 * 60 * 1000, // 1 hour window
+  maxAttempts: 10, // 10 submissions per hour per client
+  keyPrefix: "checkin",
+  countAllRequests: true,
+  keyGenerator: (req, ip) => {
+    const userId = req.user?.id || req.body?.user_id || req.body?.client_id;
+    return userId ? `user_${userId}` : `ip_${ip}`;
+  },
+  message: (remainingMins) => `تم تجاوز الحد الأقصى المسموح لتقديم المتابعة (10 طلبات خلال ساعة). يرجى الانتظار لمدة ${remainingMins} دقيقة قبل المحاولة مجدداً.`
 });
 
 // Retain legacy helpers for full backward compatibility

@@ -7,10 +7,11 @@ import {
   getWorkoutLogs,
 } from "../controllers/checkin.controller.js";
 import { requireAuth } from "../middlewares/auth.middleware.js";
+import { checkinRateLimiter } from "../middlewares/rateLimiter.js";
 
 const router = express.Router();
 
-router.post("/", submitCheckin);
+router.post("/", checkinRateLimiter, submitCheckin);
 router.get("/user/:userId", requireAuth, getClientCheckins);
 router.get("/client/:userId", requireAuth, getClientCheckins);
 router.post("/:checkinId/approve", requireAuth, approveCheckin);
