@@ -8,6 +8,7 @@ coverage/
 # Environment files and credentials
 .env
 .env.*
+!.env.example
 .npmrc
 .netrc
 _netrc
