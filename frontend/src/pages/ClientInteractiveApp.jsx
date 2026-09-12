@@ -217,6 +217,7 @@ export default function ClientInteractiveApp() {
         {/* SMART EXERCISE SWAP MODAL (FOR BUSY GYM MACHINES) */}
         <ExerciseSwapModal
           exerciseSwapTarget={exerciseSwapTarget}
+          clientInjuries={clientData?.injuries || clientData?.training?.injuries || clientData?.medical?.conditions || []}
           onClose={() => setExerciseSwapTarget(null)}
           setWorkoutSession={setWorkoutSession}
         />

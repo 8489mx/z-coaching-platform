@@ -49,6 +49,25 @@ export function mergeAdaptedPlanIntoProgram(currentMasterProgram, adaptationResu
     finalFats = merged.nutrition_program?.macro_targets?.fat_g || merged.nutrition?.targets?.fats || 50;
   }
 
+  // Clinical Preservation: If trainee has a capped protein guardrail (e.g. KIDNEY_CONDITION),
+  // ensure the merged protein does not exceed the clinical threshold UNLESS the coach has an active documented override
+  const clinicalGuardrails = merged.nutrition_program?.targets?.clinical_guardrails 
+    || merged.nutrition?.targets?.clinical_guardrails
+    || merged.clinical_guardrails;
+
+  if (clinicalGuardrails?.kidney_protein_capped && clinicalGuardrails?.max_protein_g && finalProtein !== null) {
+    if (clinicalGuardrails.coach_override_protein_g) {
+      // Coach consciously approved a specific protein override; respect this documented clinical decision
+      if (!customMacros?.protein) {
+        finalProtein = Number(clinicalGuardrails.coach_override_protein_g);
+      }
+    } else if (finalProtein > clinicalGuardrails.max_protein_g) {
+      // Strict clinical baseline ceiling applies
+      finalProtein = clinicalGuardrails.max_protein_g;
+    }
+  }
+
+
   // 3. Update nutrition targets across all known schema paths WITHOUT touching meals
   if (finalCalories) {
     // Path A: Client Interactive App / Standard Nutrition targets

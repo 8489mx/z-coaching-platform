@@ -110,6 +110,7 @@ import { sanitizeMealPlan, buildCulinaryRecipeMeals } from "../nutrition-meal-co
 import { quantizeNutritionPlan } from "../nutrition-serving-quantizer-v2/index.js";
 import { adaptIntakePayloadToCanonicalEngine } from "../intake-decision-engine/adapters/intake-adapter.js";
 import { MASTER_ENGINE_V2_VERSION } from "./domain/enums.js";
+import { CLINICAL_GUIDELINES } from "../config/clinical-guidelines.js";
 
 
 function requireObject(value, name) {
@@ -247,6 +248,34 @@ export function calculateUniversalNutritionTargets(canonicalIntake, evaluationCo
     targetCalories += 450;
     calorieAdjustmentDesc = "خطة خسارة دهون تدريجية للمرضعات (+450 سعرة حرارية مضافة لحماية إدرار حليب الأم والوقاية من جفاف الرضاعة)";
   }
+
+  // Clinical Guard: Kidney Disease & Renal Impairment Protein Cap (KDOQI Guideline)
+  const conditionsList = [
+    ...(Array.isArray(medical.conditions) ? medical.conditions : []),
+    ...(Array.isArray(rawIntake?.medical?.conditions) ? rawIntake.medical.conditions : [])
+  ].map(c => typeof c === 'string' ? c.toUpperCase() : String(c?.conditionCode || c?.code || '').toUpperCase());
+
+  const hasKidneyCondition =
+    medical.hasKidneyCondition === true ||
+    rawIntake?.medical?.hasKidneyCondition === true ||
+    conditionsList.some(c => c.includes("KIDNEY") || c.includes("RENAL"));
+
+  let kidneyProteinCapped = false;
+  if (hasKidneyCondition) {
+    if (proteinPerKg > CLINICAL_GUIDELINES.KIDNEY.MAX_PROTEIN_PER_KG) {
+      proteinPerKg = CLINICAL_GUIDELINES.KIDNEY.MAX_PROTEIN_PER_KG;
+      kidneyProteinCapped = true;
+      calorieAdjustmentDesc += ` (${CLINICAL_GUIDELINES.KIDNEY.RATIONALE_AR})`;
+    }
+  }
+
+  // Clinical Guard: Diabetes & Insulin Resistance Hypoglycemia Protection (ADA Guidelines)
+  const hasDiabetesOrInsulinResistance =
+    medical.hasDiabetes === true ||
+    medical.hasInsulinResistance === true ||
+    rawIntake?.medical?.hasDiabetes === true ||
+    rawIntake?.medical?.hasInsulinResistance === true ||
+    conditionsList.some(c => c.includes("DIABETES") || c.includes("INSULIN_RESISTANCE"));
 
   // 4. Macro Grams Breakdown
   const proteinG = Math.round(weight * proteinPerKg);
@@ -457,6 +486,15 @@ export function calculateUniversalNutritionTargets(canonicalIntake, evaluationCo
     reverse_dieting: reverseDietConfig,
     low_fodmap: lowFodmapConfig,
     mediterranean_health: mediterraneanConfig,
+    clinical_guardrails: {
+      kidney_protein_capped: Boolean(kidneyProteinCapped),
+      max_protein_per_kg: kidneyProteinCapped ? CLINICAL_GUIDELINES.KIDNEY.MAX_PROTEIN_PER_KG : null,
+      max_protein_g: kidneyProteinCapped ? proteinG : null,
+      rationale_ar: kidneyProteinCapped ? CLINICAL_GUIDELINES.KIDNEY.RATIONALE_AR : null,
+      hypoglycemia_guard_active: Boolean(hasDiabetesOrInsulinResistance),
+      hypoglycemia_guidance_ar: hasDiabetesOrInsulinResistance ? CLINICAL_GUIDELINES.DIABETES.SAFETY_GUIDANCE_AR : null,
+      hypoglycemia_rescue_carbs_grams: hasDiabetesOrInsulinResistance ? CLINICAL_GUIDELINES.DIABETES.HYPOGLYCEMIA_RESCUE_CARBS_GRAMS : null,
+    },
   };
 
 }
@@ -502,9 +540,23 @@ export function buildMasterEngineV2(inputs) {
         Object.freeze({
           ...session,
           mobility_protocol: Object.freeze(
-            buildSessionMobilityProtocol(session.session_code, session.exercises, { ...(canonicalIntake.medical || {}), ...(intake?.medical || {}) }),
+            buildSessionMobilityProtocol(session.session_code, session.exercises, {
+              ...(canonicalIntake.medical || {}),
+              ...(intake?.medical || {}),
+              injuries: [
+                ...(canonicalIntake.training?.injuries || []),
+                ...(intake?.training?.injuries || []),
+                ...(canonicalIntake.medical?.injuries || []),
+                ...(intake?.medical?.injuries || []),
+              ],
+              movementRestrictions: [
+                ...(canonicalIntake.training?.medicalMovementRestrictions || []),
+                ...(intake?.training?.medicalMovementRestrictions || []),
+              ],
+            }),
           ),
         }),
+
       ),
     }),
   );
@@ -537,23 +589,50 @@ export function buildMasterEngineV2(inputs) {
     syntheticWeeklyPlan,
   );
 
+  const medical = canonicalIntake?.medical || {};
+  const rawMedical = intake?.medical || {};
+  const rawConditions = [
+    ...(Array.isArray(medical.conditions) ? medical.conditions : []),
+    ...(Array.isArray(rawMedical.conditions) ? rawMedical.conditions : []),
+    ...(Array.isArray(intake_decision.profile?.medical_conditions) ? intake_decision.profile.medical_conditions : []),
+    ...(Array.isArray(intake_decision.hard_constraints) ? intake_decision.hard_constraints.map(c => c.code) : [])
+  ].map(c => typeof c === 'string' ? c.toUpperCase() : String(c?.conditionCode || c?.code || '').toUpperCase());
+
+  const hasAsthma =
+    medical.hasAsthma === true ||
+    rawMedical.hasAsthma === true ||
+    rawConditions.some(c => c.includes("ASTHMA") || c.includes("RESPIRATORY"));
+
   const enrichedCardioSessions = (baseCardioProgram.weekly_schedule?.sessions || []).map(
-    (session) =>
-      Object.freeze({
+    (session) => {
+      const isHiit = String(session.modality_type || "").toUpperCase().includes("HIIT");
+      const safeModality = (hasAsthma && isHiit) ? "LISS" : session.modality_type;
+      return Object.freeze({
         ...session,
+        modality_type: safeModality,
+        clinical_guidance_ar: hasAsthma ? CLINICAL_GUIDELINES.RESPIRATORY.SAFETY_GUIDANCE_AR : null,
         heart_rate_target: {
           estimated_hr_max: estimatedMaxHr,
           zone: "ZONE_2",
           target_range_bpm: `${zone2LowBpm} - ${zone2HighBpm} BPM`,
           target_low_bpm: zone2LowBpm,
           target_high_bpm: zone2HighBpm,
-          guidance_ar: `معدل نبضات القلب المستهدف أثناء جلسة الكارديو: بين ${zone2LowBpm} و ${zone2HighBpm} نبضة/دقيقة لحرق الدهون بكفاءة.`,
+          guidance_ar: hasAsthma
+            ? `${CLINICAL_GUIDELINES.RESPIRATORY.SAFETY_GUIDANCE_AR} معدل نبضات القلب المستهدف: بين ${zone2LowBpm} و ${zone2HighBpm} نبضة/دقيقة.`
+            : `معدل نبضات القلب المستهدف أثناء جلسة الكارديو: بين ${zone2LowBpm} و ${zone2HighBpm} نبضة/دقيقة لحرق الدهون بكفاءة.`,
         },
-      }),
+      });
+    },
   );
 
   const cardio_program_v2 = Object.freeze({
     ...baseCardioProgram,
+    clinical_guardrails: {
+      asthma_guard_active: Boolean(hasAsthma),
+      hiit_banned: Boolean(hasAsthma),
+      preferred_modality: hasAsthma ? "LISS_ZONE_2" : null,
+      guidance_ar: hasAsthma ? CLINICAL_GUIDELINES.RESPIRATORY.SAFETY_GUIDANCE_AR : null,
+    },
     weekly_schedule: Object.freeze({
       ...baseCardioProgram.weekly_schedule,
       sessions: Object.freeze(enrichedCardioSessions),
@@ -624,8 +703,22 @@ export function buildMasterEngineV2(inputs) {
     sanitized_plan: sanitizedMealPlan,
     quantized_plan: enhancedQuantizedPlan,
     culinary_meals: culinaryRecipeMeals,
+    hypoglycemia_guard: universalTargets.clinical_guardrails?.hypoglycemia_guard_active ? Object.freeze({
+      active: true,
+      guidance_ar: CLINICAL_GUIDELINES.DIABETES.SAFETY_GUIDANCE_AR,
+      rescue_carbs_grams: CLINICAL_GUIDELINES.DIABETES.HYPOGLYCEMIA_RESCUE_CARBS_GRAMS,
+      session_threshold_minutes: CLINICAL_GUIDELINES.DIABETES.SESSION_DURATION_THRESHOLD_MINUTES,
+      scientific_source: "ADA Standards of Care in Diabetes: Physical Activity & Hypoglycemia Management",
+    }) : null,
   });
 
+  const masterHypoglycemiaGuard = universalTargets.clinical_guardrails?.hypoglycemia_guard_active ? Object.freeze({
+    active: true,
+    guidance_ar: CLINICAL_GUIDELINES.DIABETES.SAFETY_GUIDANCE_AR,
+    rescue_carbs_grams: CLINICAL_GUIDELINES.DIABETES.HYPOGLYCEMIA_RESCUE_CARBS_GRAMS,
+    session_threshold_minutes: CLINICAL_GUIDELINES.DIABETES.SESSION_DURATION_THRESHOLD_MINUTES,
+    scientific_source: "ADA Standards of Care in Diabetes: Physical Activity & Hypoglycemia Management",
+  }) : null;
 
   return Object.freeze({
     engine_version: MASTER_ENGINE_V2_VERSION,
@@ -634,6 +727,7 @@ export function buildMasterEngineV2(inputs) {
     cardio_program: cardio_program_v2,
     mobility_program,
     nutrition_program: nutrition_program_v2,
+    hypoglycemia_guard: masterHypoglycemiaGuard,
   });
 
 }

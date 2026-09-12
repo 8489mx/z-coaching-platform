@@ -269,27 +269,54 @@ export function buildSessionMobilityProtocol(sessionCode = "FULL_BODY", exercise
 
   const conditions = Array.isArray(medicalContext?.conditions) ? medicalContext.conditions : [];
   const restrictions = Array.isArray(medicalContext?.movementRestrictions) ? medicalContext.movementRestrictions : [];
+  const injuries = Array.isArray(medicalContext?.injuries) ? medicalContext.injuries : [];
 
-  const getConditionStr = (c) => typeof c === 'string' ? c : (c?.conditionCode || c?.label || '');
-  const hasLumbarDisc = medicalContext?.hasHerniation || conditions.some(c => {
-    const s = getConditionStr(c);
-    return s.includes("DISC") || s.includes("LUMBAR") || s.includes("HERNIATION");
+  const getConditionStr = (c) => {
+    if (!c) return '';
+    if (typeof c === 'string') return c;
+    return [c.conditionCode, c.label, c.area, c.name, c.substance].filter(Boolean).join(' ');
+  };
+  const allInjuryTokens = conditions.concat(restrictions).concat(injuries).map(getConditionStr);
+
+  const hasLumbarDisc = medicalContext?.hasHerniation || allInjuryTokens.some(c => {
+    const s = String(c).toUpperCase();
+    return s.includes("DISC") || s.includes("LUMBAR") || s.includes("HERNIATION") || s.includes("L4") || s.includes("L5") || s.includes("SPINE") || s.includes("LOWER_BACK") || s.includes("BACK");
   }) || restrictions.includes("NO_AXIAL_SPINAL_LOADING");
-  const hasDiastasisRecti = medicalContext?.hasDiastasisRecti || conditions.some(c => getConditionStr(c).includes("DIASTASIS_RECTI")) || restrictions.includes("NO_CRUNCHES");
-  const hasRotatorCuff = medicalContext?.hasRotatorCuff || conditions.some(c => {
-    const s = getConditionStr(c);
-    return s.includes("ROTATOR") || s.includes("SHOULDER_IMPINGEMENT");
+
+  const hasDiastasisRecti = medicalContext?.hasDiastasisRecti || allInjuryTokens.some(c => String(c).toUpperCase().includes("DIASTASIS_RECTI")) || restrictions.includes("NO_CRUNCHES");
+
+  const hasRotatorCuff = medicalContext?.hasRotatorCuff || allInjuryTokens.some(c => {
+    const s = String(c).toUpperCase();
+    return s.includes("ROTATOR") || s.includes("SHOULDER_IMPINGEMENT") || s.includes("IMPINGEMENT") || s.includes("SHOULDER");
   }) || restrictions.includes("NO_BEHIND_NECK_PRESS");
-  const hasKneeIssues = medicalContext?.hasKneeIssues || conditions.some(c => {
-    const s = getConditionStr(c);
-    return s.includes("PATELLAR") || s.includes("KNEE") || s.includes("MENISCUS");
+
+  const hasKneeIssues = medicalContext?.hasKneeIssues || allInjuryTokens.some(c => {
+    const s = String(c).toUpperCase();
+    return s.includes("PATELLAR") || s.includes("KNEE") || s.includes("MENISCUS") || s.includes("CHONDROMALACIA");
   }) || restrictions.includes("NO_DEEP_SQUATS");
 
   const contraindicationsBypassed = [];
 
-  // 1. Lumbar Disc Herniation (Sultan Al-Shamsi)
+
+  // 1. Lumbar Disc Herniation & Spine Safety
   if (hasLumbarDisc) {
-    // Remove deep seated hamstring flexion with rounded back
+    // Dynamic Warm-Up: Filter out deep spinal flexion movements (e.g. SQUAT_TO_STAND)
+    const hadSquatToStand = dynamicWarmup.some(d => d.id === "SQUAT_TO_STAND");
+    dynamicWarmup = dynamicWarmup.filter(d => d.id !== "SQUAT_TO_STAND");
+    if (hadSquatToStand && !dynamicWarmup.some(d => d.id === "BIRD_DOG_NEUTRAL_SPINE")) {
+      dynamicWarmup.push({
+        id: "BIRD_DOG_NEUTRAL_SPINE",
+        name_ar: "تمرين بيرد دوج لتثبيت فقرات الظهر المحايدة (Bird Dog)",
+        name_en: "Bird Dog Core & Lumbar Stabilizer",
+        dose: "8 تكرارات لكل جانب مع ثبات ثانيتين",
+        target_joints_ar: "العمود الفقري القطني وعضلات الكور العميقة",
+        cues_ar: "مد الذراع المعاكس والساق في خط مستقيم مع تثبيت الحوض والعمود الفقري في وضع محايد تماماً بدون تقوس.",
+        video_query: "bird dog neutral spine form"
+      });
+      contraindicationsBypassed.push("استبعاد حركات الإحماء ذات الثني العميق للظهر (Squat to Stand) واستبدالها بتمرين Bird Dog المحايد للفقرات القطنية");
+    }
+
+    // Static Cool-down: Remove deep seated hamstring flexion with rounded back
     staticCooldown = staticCooldown.filter(s => s.id !== "SEATED_HAMSTRING_STRETCH");
     staticCooldown.push({
       id: "NEUTRAL_SPINE_HAMSTRING_STRAP",
@@ -303,15 +330,30 @@ export function buildSessionMobilityProtocol(sessionCode = "FULL_BODY", exercise
     contraindicationsBypassed.push("حظر استطالات ثني العمود الفقري وتدوير الجذع الحاد لحماية الغضاريف L4-L5");
   }
 
-  // 2. Diastasis Recti (Mariam Al-Kandari)
+  // 2. Diastasis Recti
   if (hasDiastasisRecti) {
-    // Ensure no abdominal wall hyperextension
     contraindicationsBypassed.push("حظر استطالات التمدد البطني العنيف كالكوبرا ووضعيات التقوس الخلفي لحماية الخط الأبيض");
   }
 
-  // 3. Rotator Cuff Impingement (Tariq Al-Haydos)
+  // 3. Rotator Cuff Impingement & Shoulder Safety
   if (hasRotatorCuff) {
-    // Remove forced cross-body internal rotation stretch
+    // Dynamic Warm-Up: Gentle band dislocates instead of full unrestricted arm swings
+    const hadArmCircles = dynamicWarmup.some(d => d.id === "ARM_CIRCLES_SWINGS");
+    if (hadArmCircles) {
+      dynamicWarmup = dynamicWarmup.filter(d => d.id !== "ARM_CIRCLES_SWINGS");
+      dynamicWarmup.unshift({
+        id: "BANDED_DISLOCATES_GENTLE",
+        name_ar: "تدوير الكتف بحبل مطاطي واسع بنطاق مريح (Band Dislocates)",
+        name_en: "Gentle Band Dislocates (Wide Grip)",
+        dose: "10 تكرارات سلسة وبطيئة بدون أي ألم",
+        target_joints_ar: "مفصل الكتف واللوحين بأمان تام",
+        cues_ar: "امسك الحبل بقبضة واسعة وحركه فوق رأسك برفق مع التوقف قبل أي نقطة انضغاط لوتر الروتاتور كاف.",
+        video_query: "band dislocates shoulder mobility"
+      });
+      contraindicationsBypassed.push("استبدال دوائر الذراعين بتدوير الحبل الواسع لتجنب انحصار وتر الروتاتور كاف");
+    }
+
+    // Static Cool-down: Remove forced cross-body internal rotation stretch
     staticCooldown = staticCooldown.filter(s => s.id !== "CROSS_BODY_SHOULDER_STRETCH");
     staticCooldown.push({
       id: "DOORWAY_CHEST_NEUTRAL",
@@ -325,8 +367,25 @@ export function buildSessionMobilityProtocol(sessionCode = "FULL_BODY", exercise
     contraindicationsBypassed.push("حظر استطالات الضغط الحاد والالتواء الداخلي لمفصل الكتف لتفادي تهيج وتر الروتاتور كاف");
   }
 
-  // 4. Patellar Tendonitis & Knee Osteoarthritis (Noura Al-Balushi & Emad)
+  // 4. Patellar Tendonitis & Knee Joint Issues
   if (hasKneeIssues) {
+    // Dynamic Warm-Up: Filter out deep knee flexion movements (e.g. SQUAT_TO_STAND)
+    const hadSquatToStand = dynamicWarmup.some(d => d.id === "SQUAT_TO_STAND");
+    dynamicWarmup = dynamicWarmup.filter(d => d.id !== "SQUAT_TO_STAND");
+    if (hadSquatToStand && !dynamicWarmup.some(d => d.id === "GLUTE_BRIDGE_ACTIVATION")) {
+      dynamicWarmup.push({
+        id: "GLUTE_BRIDGE_ACTIVATION",
+        name_ar: "جسر الحوض لتفعيل المؤخرة بدون إجهاد للركبة (Glute Bridge)",
+        name_en: "Floor Glute Bridge Activation",
+        dose: "12 تكرار مع عصر المؤخرة ثانيتين",
+        target_joints_ar: "مفصل الحوض وعضلات المؤخرة",
+        cues_ar: "ادفع الأرض بكعبيك وارفع حوضك مع الحفاظ على زاوية ركبة مريحة لتجنب أي إجهاد لغضروف الركبة أو صابونة الركبة.",
+        video_query: "glute bridge knee friendly warm up"
+      });
+      contraindicationsBypassed.push("استبعاد حركات الإحماء ذات الثني الحاد للركبة (Squat to Stand) واستبدالها بتفعيل الجسر الحوضي الآمن للركبة");
+    }
+
+    // Static Cool-down
     staticCooldown = staticCooldown.filter(s => s.id !== "STANDING_QUAD_STRETCH");
     staticCooldown.push({
       id: "SUPPORTED_WALL_QUAD_STRETCH",

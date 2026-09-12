@@ -980,7 +980,8 @@
     "images": [
       "/exercises/BARBELL_FLAT_BENCH_PRESS/0.jpg",
       "/exercises/BARBELL_FLAT_BENCH_PRESS/1.jpg"
-    ]
+    ],
+    "alternatives": []
   },
   {
     "id": "DUMBBELL_FLAT_BENCH_PRESS",

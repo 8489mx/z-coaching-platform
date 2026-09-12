@@ -296,7 +296,16 @@ export const getExerciseSwapsHandler = async (req, res) => {
     const { environment, injury } = req.query;
     const { getSmartExerciseSwaps } = await import("../../exercise-swap-engine/index.js");
 
-    const injuryFlags = injury ? (Array.isArray(injury) ? injury : [injury]) : [];
+    let injuryFlags = [];
+    if (injury) {
+      if (Array.isArray(injury)) {
+        injuryFlags = injury.flatMap((i) => String(i).split(","));
+      } else {
+        injuryFlags = String(injury).split(",");
+      }
+      injuryFlags = injuryFlags.map((s) => s.trim().toUpperCase()).filter(Boolean);
+    }
+
     const swaps = getSmartExerciseSwaps(exercise_code, {
       environment: environment || "GYM",
       injuryFlags,

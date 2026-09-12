@@ -318,13 +318,20 @@ export function useCoachEditorData() {
       mappedMeals = rawNutrition.meals;
     }
 
+    const rawClinicalGuardrails = master.clinical_guardrails ||
+      rawNutrition?.targets?.clinical_guardrails ||
+      rawNutrition?.clinical_guardrails ||
+      null;
+
     const resolvedNutrition = {
       targets: {
         calories: rawNutrition?.macro_targets?.calories_kcal || rawNutrition?.targets?.calories || 2000,
         protein: rawNutrition?.macro_targets?.protein_g || rawNutrition?.targets?.protein || 150,
         carbs: rawNutrition?.macro_targets?.carbohydrate_g || rawNutrition?.targets?.carbs || 200,
-        fats: rawNutrition?.macro_targets?.fat_g || rawNutrition?.targets?.fats || 50
+        fats: rawNutrition?.macro_targets?.fat_g || rawNutrition?.targets?.fats || 50,
+        clinical_guardrails: rawClinicalGuardrails
       },
+      clinical_guardrails: rawClinicalGuardrails,
       meals: mappedMeals.length > 0 ? mappedMeals : (CLIENT_BLUEPRINTS['1']?.nutrition?.meals || []),
       reasoning: rawNutrition?.reasoning || 'خطة غذائية متوازنة مصممة بأصناف دقيقة تلبي احتياج الجسم دون حرمان.'
     };
@@ -359,11 +366,13 @@ export function useCoachEditorData() {
         package_name: clientInfo.package_name || pkg,
         injuries: rawInjuries,
         allergies: rawAllergies,
+        medical_conditions: user.medical_conditions || clientInfo.medical_conditions || master.intake?.medical?.conditions || master.intake_decision?.profile?.medical_conditions || [],
         training_env: clientInfo.training_env || 'commercial_gym',
         training_env_label: clientInfo.training_env_label || 'صالة ألعاب رياضية متكاملة',
         training_days: clientInfo.training_days || resolvedTraining.sessions?.length || 3,
         experience_level: clientInfo.experience_level || 'متوسط'
       },
+      clinical_guardrails: rawClinicalGuardrails,
       nutrition: resolvedNutrition,
       training: resolvedTraining,
       cardio: resolvedCardio
@@ -959,6 +968,101 @@ export function useCoachEditorData() {
 
   const handleSaveDraft = async (isPublish = false) => {
     try {
+      // Clinical Safety Verification: Tier CS-0 (Kidney, Hypertension, Asthma)
+      const clinicalGuardrails = program?.clinical_guardrails || program?.nutrition?.clinical_guardrails || program?.nutrition?.targets?.clinical_guardrails;
+      const clientConditions = [
+        ...(Array.isArray(program?.client?.injuries) ? program.client.injuries : []),
+        ...(Array.isArray(program?.client?.allergies) ? program.client.allergies : []),
+        ...(Array.isArray(program?.client?.medical_conditions) ? program.client.medical_conditions : []),
+      ];
+
+      const clinicalAlerts = [];
+
+      // 1. Kidney Protein Cap Check
+      const hasKidneyCondition = Boolean(
+        clinicalGuardrails?.kidney_protein_capped ||
+        clientConditions.some(c => {
+          const s = typeof c === 'string' ? c : (c?.conditionCode || c?.name || c?.area || '');
+          return /kidney|ckd|كلى|قصور.*كلوي|وظائف.*الكلى/i.test(s);
+        })
+      );
+      const clientWeightKg = Number(program?.client?.weight_kg) || 80;
+      const maxSafeProtein = Number(clinicalGuardrails?.max_protein_g) || Math.round(clientWeightKg * 1.0);
+      const targetP = Number(program?.nutrition?.targets?.protein) || 0;
+      const mealsP = (program?.nutrition?.meals || []).reduce((sum, m) => sum + (Number(m.macros?.protein) || 0), 0);
+      const suppsP = (program?.cardio?.supplements || []).reduce((sum, s) => sum + (Number(s.protein ?? s.p) || 0), 0);
+      const currentEffectiveP = Math.max(targetP, mealsP + suppsP);
+
+      if (hasKidneyCondition && currentEffectiveP > maxSafeProtein) {
+        clinicalAlerts.push(`• الكلى (KDOQI): البروتين المحدد (${currentEffectiveP} جم) يتجاوز السقف السريري الآمن (${maxSafeProtein} جم بمعدل 1.0 جم/كجم لوزن ${clientWeightKg} كجم).`);
+      }
+
+      // 2. Hypertension Contraindicated Exercises & RIR Check
+      const hasHypertension = Boolean(
+        clinicalGuardrails?.hypertension_guard_active ||
+        clientConditions.some(c => {
+          const s = typeof c === 'string' ? c : (c?.conditionCode || c?.name || c?.area || '');
+          return /hypertension|ضغط|ارتفاع.*الضغط/i.test(s);
+        })
+      );
+
+      if (hasHypertension && program?.training) {
+        const allExercises = [];
+        if (Array.isArray(program.training.weeks)) {
+          program.training.weeks.forEach(w => {
+            (w.sessions || []).forEach(s => {
+              (s.exercises || []).forEach(e => allExercises.push(e));
+            });
+          });
+        }
+        if (Array.isArray(program.training.sessions)) {
+          program.training.sessions.forEach(s => {
+            (s.exercises || []).forEach(e => allExercises.push(e));
+          });
+        }
+
+        const bannedCodes = ['LEG_PRESS_MACHINE', 'INCLINE_LEG_PRESS', 'DECLINE_CRUNCH', 'DECLINE_BENCH_PRESS', 'INVERTED_BODYWEIGHT_ROW'];
+        const bannedEx = allExercises.filter(e => bannedCodes.includes(String(e.code || e.exercise_code || '')));
+        const lowRirEx = allExercises.filter(e => {
+          const rir = e.rir ?? e.prescription?.target_rir;
+          return rir !== undefined && rir !== null && Number(rir) < 2;
+        });
+
+        if (bannedEx.length > 0) {
+          const names = bannedEx.map(e => e.name_ar || e.name || e.code).slice(0, 3).join('، ');
+          clinicalAlerts.push(`• ضغط الدم (ACSM/AHA): وجود تمارين ترفع الضغط الشرياني ومناورة فالسافا: (${names}).`);
+        }
+        if (lowRirEx.length > 0) {
+          clinicalAlerts.push(`• ضغط الدم (ACSM/AHA): تمارين بشدة قصوى (RIR < 2) غير مسموح بها لمرضى الضغط الشرياني.`);
+        }
+      }
+
+      // 3. Asthma / Respiratory HIIT Cardio Check
+      const hasAsthma = Boolean(
+        clientConditions.some(c => {
+          const s = typeof c === 'string' ? c : (c?.conditionCode || c?.name || c?.area || '');
+          return /asthma|ربو|تنفسي|respiratory/i.test(s);
+        })
+      );
+
+      if (hasAsthma && program?.cardio) {
+        const modality = String(program.cardio.modality || '');
+        const zone = String(program.cardio.target_heart_rate_zone || '');
+        const isHiitCardio = /hiit|sprint|كثافة عالية/i.test(modality) || /hiit|zone 4/i.test(zone);
+
+        if (isHiitCardio) {
+          clinicalAlerts.push(`• الربو والجهاز التنفسي (GINA): نمط الكارديو المختار (${modality || zone}) عالي الشدة (HIIT) ويرفع خطر نوبات ضيق التنفس التحسسية (EIB).`);
+        }
+      }
+
+      // Show confirmation dialog if any clinical alerts exist
+      if (clinicalAlerts.length > 0) {
+        const confirmMsg = `تنبيه سريري هام للمدرب (Tier CS-0 Guardrails):\nتم رصد الملاحظات الطبية التالية في الخطة المعدلة:\n\n${clinicalAlerts.join('\n')}\n\nهل ترغب باعتماد وحفظ هذه الخطة تحت مسؤوليتك المهنية وإشرافك؟\n(سيتم توثيق هذا الإجراء في سجل المتابعة السريرية للبرنامج)`;
+        if (typeof window !== 'undefined' && window.confirm && !window.confirm(confirmMsg)) {
+          return;
+        }
+      }
+
       if (isPublish) {
         setPublishing(true);
       } else {
@@ -972,13 +1076,16 @@ export function useCoachEditorData() {
         is_published: isPublish
       };
       
-      await fetch(`${API_BASE}/api/v1/programs/update-custom`, {
+      const res = await fetch(`${API_BASE}/api/v1/programs/update-custom`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload)
       });
+      const data = await res.json().catch(() => ({}));
 
-      if (isPublish) {
+      if (data.clinical_warning) {
+        showToast(data.clinical_warning, 'warning');
+      } else if (isPublish) {
         showToast('تم اعتماد ونشر الخطة بنجاح للمشترك وتفعيلها في التطبيق', 'success');
         setTimeout(() => {
           navigate('/');

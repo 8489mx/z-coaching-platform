@@ -23,13 +23,30 @@ export const CARDIO_EQUIPMENT = {
   ROWER: 'جهاز التجديف (Rowing Machine)'
 };
 
+import { CLINICAL_GUIDELINES } from '../config/clinical-guidelines.js';
+
 export function getPracticalCardioPrescription({
   type = CARDIO_TYPES.LISS_TALK_TEST,
   duration_minutes = 25,
   sessions_per_week = 3,
-  equipment = CARDIO_EQUIPMENT.INCLINE_TREADMILL
+  equipment = CARDIO_EQUIPMENT.INCLINE_TREADMILL,
+  medicalConditions = []
 }) {
-  const upperType = String(type).toUpperCase();
+  const conds = (Array.isArray(medicalConditions) ? medicalConditions : [medicalConditions])
+    .map(c => typeof c === 'string' ? c.toUpperCase() : String(c?.conditionCode || c?.code || '').toUpperCase());
+
+  const hasAsthma = conds.some(c => c.includes("ASTHMA") || c.includes("RESPIRATORY"));
+
+  let resolvedType = String(type).toUpperCase();
+  let asthmaClinicalNote = null;
+
+  // GINA Clinical Guideline: Restrict HIIT for asthma / respiratory conditions
+  if (hasAsthma && (resolvedType === CARDIO_TYPES.HIIT_INTERVALS || resolvedType.includes('HIIT'))) {
+    resolvedType = CARDIO_TYPES.LISS_TALK_TEST;
+    asthmaClinicalNote = CLINICAL_GUIDELINES.RESPIRATORY.SAFETY_GUIDANCE_AR;
+  }
+
+  const upperType = resolvedType;
 
   if (upperType === CARDIO_TYPES.HIIT_INTERVALS || upperType.includes('HIIT')) {
     return {
@@ -79,6 +96,11 @@ export function getPracticalCardioPrescription({
       'التأكد المستمر من القدرة على التحدث بجملة كاملة دون توقف لالتقاط النفس.'
     ],
     fat_oxidation_rationale_ar: 'أقصى كفاءة لأكسدة الدهون كوقود أساسي وتنشيط الميتوكوندريا دون أي تداخل مع استشفاء العضلات.',
-    equipment_recommendation: equipment
+    equipment_recommendation: equipment,
+    clinical_guidance_ar: asthmaClinicalNote,
+    clinical_guardrails: {
+      asthma_hiit_banned: Boolean(hasAsthma),
+      preferred_modality: hasAsthma ? 'LISS_TALK_TEST' : null,
+    }
   };
 }

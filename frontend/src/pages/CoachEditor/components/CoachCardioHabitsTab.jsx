@@ -1,5 +1,5 @@
 import React from 'react';
-import { Zap, ArrowRightLeft, FileText } from 'lucide-react';
+import { Zap, ArrowRightLeft, FileText, ShieldAlert } from 'lucide-react';
 
 export function CoachCardioHabitsTab({
   program,
@@ -8,9 +8,74 @@ export function CoachCardioHabitsTab({
   coachNotes,
   setCoachNotes
 }) {
+  const clientConditions = [
+    ...(Array.isArray(program?.client?.injuries) ? program.client.injuries : []),
+    ...(Array.isArray(program?.client?.allergies) ? program.client.allergies : []),
+    ...(Array.isArray(program?.client?.medical_conditions) ? program.client.medical_conditions : []),
+  ];
+
+  const hasAsthma = Boolean(
+    clientConditions.some(c => {
+      const s = typeof c === 'string' ? c : (c?.conditionCode || c?.name || c?.area || '');
+      return /asthma|ربو|تنفسي|respiratory/i.test(s);
+    })
+  );
+
+  const modality = String(program?.cardio?.modality || '');
+  const zone = String(program?.cardio?.target_heart_rate_zone || '');
+  const isHiitCardio = /hiit|sprint|كثافة عالية/i.test(modality) || /hiit|zone 4/i.test(zone);
+
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }} dir="rtl">
       
+      {/* Asthma & Respiratory GINA Guardrail Banner */}
+      {hasAsthma && (
+        <div style={{
+          background: isHiitCardio ? '#FEF2F2' : '#F0FDF4',
+          border: isHiitCardio ? '1.5px solid #F87171' : '1px solid #BBF7D0',
+          borderRadius: '12px',
+          padding: '10px 14px',
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          gap: '12px',
+          boxShadow: isHiitCardio ? '0 3px 10px rgba(239, 68, 68, 0.12)' : 'none'
+        }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+            <div style={{
+              width: '32px',
+              height: '32px',
+              borderRadius: '8px',
+              background: isHiitCardio ? '#FEE2E2' : '#DCFCE7',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              color: isHiitCardio ? '#DC2626' : '#166534',
+              flexShrink: 0
+            }}>
+              <ShieldAlert size={18} />
+            </div>
+            <div>
+              <div style={{ fontSize: '12px', fontWeight: 800, color: isHiitCardio ? '#991B1B' : '#166534' }}>
+                {isHiitCardio
+                  ? 'تحذير سريري: نمط الكارديو المختار (HIIT) غير آمن لمرضى الربو والجهاز التنفسي'
+                  : 'حماية سريرية نشطة لمرضى الربو والجهاز التنفسي (GINA Protocol - Zone 2 LISS)'}
+              </div>
+              <div style={{ fontSize: '11px', color: isHiitCardio ? '#B91C1C' : '#15803D', marginTop: '2px' }}>
+                {isHiitCardio
+                  ? 'تمارين الـ HIIT تسبب فرط تهوية مستمر وجفاف المجرى الهوائي مما يحفز نوبات تضيق القصبات (EIB). الموصى به: Zone 2.'
+                  : 'تم تقييد الكارديو في النطاق الهوائي المعتدل مع اختبار التحدث لضمان استقرار الشعب الهوائية.'}
+              </div>
+            </div>
+          </div>
+          {isHiitCardio && (
+            <span style={{ fontSize: '10.5px', fontWeight: 800, background: '#DC2626', color: '#FFFFFF', padding: '4px 10px', borderRadius: '7px', whiteSpace: 'nowrap' }}>
+              مطلوب مراجعة المدرب
+            </span>
+          )}
+        </div>
+      )}
+
       {/* Engine Cardio & Recovery Reasoning Card */}
       {program.cardio?.reasoning && (
         <div style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', borderRadius: '8px', padding: '10px 14px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '10px', boxShadow: '0 1px 2px rgba(15, 23, 42, 0.02)' }}>
@@ -75,7 +140,18 @@ export function CoachCardioHabitsTab({
               <select
                 value={program.cardio?.target_heart_rate_zone || 'Zone 2'}
                 onChange={(e) => handleUpdateCardioParam('target_heart_rate_zone', e.target.value)}
-                style={{ width: '100%', height: '28px', borderRadius: '7px', border: '1px solid #CBD5E1', padding: '0 6px', fontSize: '11px', fontWeight: 700, color: '#0F172A', background: '#FFFFFF', outline: 'none' }}
+                style={{
+                  width: '100%',
+                  height: '28px',
+                  borderRadius: '7px',
+                  border: hasAsthma && isHiitCardio ? '1.5px solid #EF4444' : '1px solid #CBD5E1',
+                  background: hasAsthma && isHiitCardio ? '#FEF2F2' : '#FFFFFF',
+                  color: hasAsthma && isHiitCardio ? '#DC2626' : '#0F172A',
+                  padding: '0 6px',
+                  fontSize: '11px',
+                  fontWeight: 700,
+                  outline: 'none'
+                }}
               >
                 <option value="Zone 1">Zone 1 (استشفاء خفيف)</option>
                 <option value="Zone 2">Zone 2 (حرق دهون وتحمل - موصى به)</option>

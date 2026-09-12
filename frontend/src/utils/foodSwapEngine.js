@@ -25,6 +25,18 @@ export const TASTE_PROFILES = {
   FREE_VEGETABLE: 'FREE_VEGETABLE'
 };
 
+export const GLYCEMIC_INDEX_LEVELS = Object.freeze({
+  LOW: 'LOW',
+  MEDIUM: 'MEDIUM',
+  HIGH: 'HIGH'
+});
+
+export const FODMAP_LEVELS = Object.freeze({
+  LOW: 'LOW',
+  MEDIUM: 'MEDIUM',
+  HIGH: 'HIGH'
+});
+
 export const FOOD_DATABASE = {
   // --- MAIN MEAL PROTEINS ---
   CHICKEN_BREAST: {
@@ -1771,6 +1783,129 @@ for (const [aliasCode, targetCode] of Object.entries(UNIFIED_FOOD_CODE_ALIASES))
   }
 }
 
+export const FOOD_CLINICAL_OVERRIDES = Object.freeze({
+  // HIGH GLYCEMIC INDEX (GI >= 70) - ADA Contraindicated for Diabetes/Insulin Resistance
+  TABLE_SUGAR: { glycemic_index: 'HIGH', fodmap_level: 'LOW' },
+  WHITE_SUGAR: { glycemic_index: 'HIGH', fodmap_level: 'LOW' },
+  SUGAR: { glycemic_index: 'HIGH', fodmap_level: 'LOW' },
+  PURE_BEE_HONEY: { glycemic_index: 'HIGH', fodmap_level: 'HIGH' },
+  HONEY: { glycemic_index: 'HIGH', fodmap_level: 'HIGH' },
+  RICE_CAKES: { glycemic_index: 'HIGH', fodmap_level: 'LOW' },
+  EGYPTIAN_BALADI_BREAD: { glycemic_index: 'HIGH', fodmap_level: 'HIGH' },
+  TAMEES_BREAD_BR: { glycemic_index: 'HIGH', fodmap_level: 'HIGH' },
+  EGYPTIAN_RICE_COOKED: { glycemic_index: 'HIGH', fodmap_level: 'LOW' },
+  EGYPTIAN_RICE: { glycemic_index: 'HIGH', fodmap_level: 'LOW' },
+  KABSA_SPICED_RICE: { glycemic_index: 'HIGH', fodmap_level: 'LOW' },
+  COOKED_WHITE_PASTA: { glycemic_index: 'HIGH', fodmap_level: 'HIGH' },
+  SUGAR_FREE_CORNFLAKES: { glycemic_index: 'HIGH', fodmap_level: 'LOW' },
+  FRESH_WATERMELON: { glycemic_index: 'HIGH', fodmap_level: 'HIGH' },
+  DATES_KHALAS: { glycemic_index: 'HIGH', fodmap_level: 'HIGH' },
+
+  // MEDIUM GLYCEMIC INDEX (GI 56-69)
+  BASMATI_RICE_COOKED: { glycemic_index: 'MEDIUM', fodmap_level: 'LOW' },
+  BROWN_BASMATI_RICE: { glycemic_index: 'MEDIUM', fodmap_level: 'LOW' },
+  BOILED_POTATOES: { glycemic_index: 'MEDIUM', fodmap_level: 'LOW' },
+  AIRFRYER_POTATO_WEDGES: { glycemic_index: 'MEDIUM', fodmap_level: 'LOW' },
+  SWEET_POTATO_BAKED: { glycemic_index: 'MEDIUM', fodmap_level: 'MEDIUM' },
+  WHOLE_WHEAT_TOAST: { glycemic_index: 'MEDIUM', fodmap_level: 'HIGH' },
+  WHOLE_WHEAT_TORTILLA: { glycemic_index: 'MEDIUM', fodmap_level: 'HIGH' },
+  COOKED_BULGUR: { glycemic_index: 'MEDIUM', fodmap_level: 'HIGH' },
+  JAREEH_CRACKED_WHEAT: { glycemic_index: 'MEDIUM', fodmap_level: 'HIGH' },
+  FREEKEH_EGYPTIAN_COOKED: { glycemic_index: 'MEDIUM', fodmap_level: 'HIGH' },
+  BANANA: { glycemic_index: 'MEDIUM', fodmap_level: 'MEDIUM' },
+  FRESH_CANTALOUPE: { glycemic_index: 'MEDIUM', fodmap_level: 'MEDIUM' },
+  FRESH_GRAPES: { glycemic_index: 'MEDIUM', fodmap_level: 'LOW' },
+  FRESH_KIWI: { glycemic_index: 'MEDIUM', fodmap_level: 'LOW' },
+  FRESH_POMEGRANATE: { glycemic_index: 'MEDIUM', fodmap_level: 'MEDIUM' },
+  BOILED_BEETROOT: { glycemic_index: 'MEDIUM', fodmap_level: 'MEDIUM' },
+  BEETROOT: { glycemic_index: 'MEDIUM', fodmap_level: 'MEDIUM' },
+  AIR_POPPED_POPCORN: { glycemic_index: 'MEDIUM', fodmap_level: 'LOW' },
+  POPCORN: { glycemic_index: 'MEDIUM', fodmap_level: 'LOW' },
+  FAVA_BEANS: { glycemic_index: 'MEDIUM', fodmap_level: 'HIGH' },
+
+  // LOW GLYCEMIC INDEX (GI <= 55) & HIGH FODMAP (Monash Contraindicated for IBS)
+  APPLE: { glycemic_index: 'LOW', fodmap_level: 'HIGH' },
+  COOKED_LENTILS: { glycemic_index: 'LOW', fodmap_level: 'HIGH' },
+  COOKED_CHICKPEAS: { glycemic_index: 'LOW', fodmap_level: 'HIGH' },
+  COOKED_WHITE_BEANS: { glycemic_index: 'LOW', fodmap_level: 'HIGH' },
+  HALABESSA_CHICKPEAS: { glycemic_index: 'LOW', fodmap_level: 'HIGH' },
+  HALABESSA: { glycemic_index: 'LOW', fodmap_level: 'HIGH' },
+  CRUNCHY_ROASTED_CHICKPEAS: { glycemic_index: 'LOW', fodmap_level: 'HIGH' },
+  ROASTED_CHICKPEAS: { glycemic_index: 'LOW', fodmap_level: 'HIGH' },
+  TERMIS_LUPINI: { glycemic_index: 'LOW', fodmap_level: 'HIGH' },
+  TERMIS: { glycemic_index: 'LOW', fodmap_level: 'HIGH' },
+  LUPINI: { glycemic_index: 'LOW', fodmap_level: 'HIGH' },
+  AIRFRYER_FALAFEL: { glycemic_index: 'LOW', fodmap_level: 'HIGH' },
+  WHOLE_WHEAT_PASTA_COOKED: { glycemic_index: 'LOW', fodmap_level: 'HIGH' },
+  STEAMED_CAULIFLOWER: { glycemic_index: 'LOW', fodmap_level: 'HIGH' },
+  FRESH_MUSHROOMS: { glycemic_index: 'LOW', fodmap_level: 'HIGH' },
+  MUSHROOMS: { glycemic_index: 'LOW', fodmap_level: 'HIGH' },
+  SKIM_MILK: { glycemic_index: 'LOW', fodmap_level: 'HIGH' },
+  LOWFAT_LABAN_ROB: { glycemic_index: 'LOW', fodmap_level: 'HIGH' },
+
+  // LOW GLYCEMIC INDEX (GI <= 55) & LOW FODMAP
+  ROLLED_OATS_RAW: { glycemic_index: 'LOW', fodmap_level: 'LOW' },
+  COOKED_QUINOA: { glycemic_index: 'LOW', fodmap_level: 'LOW' },
+  STRAWBERRIES: { glycemic_index: 'LOW', fodmap_level: 'LOW' },
+  FRESH_BLUEBERRIES: { glycemic_index: 'LOW', fodmap_level: 'LOW' },
+  ORANGE: { glycemic_index: 'LOW', fodmap_level: 'LOW' },
+  FRESH_GUAVA: { glycemic_index: 'LOW', fodmap_level: 'LOW' },
+  PLAIN_MOLOKHIA: { glycemic_index: 'LOW', fodmap_level: 'LOW' },
+  STEAMED_BROCCOLI: { glycemic_index: 'LOW', fodmap_level: 'LOW' },
+  SAUTEED_ZUCCHINI: { glycemic_index: 'LOW', fodmap_level: 'LOW' },
+  FRESH_CUCUMBER: { glycemic_index: 'LOW', fodmap_level: 'LOW' },
+  BELL_PEPPERS: { glycemic_index: 'LOW', fodmap_level: 'LOW' },
+  FRESH_SPINACH: { glycemic_index: 'LOW', fodmap_level: 'LOW' },
+  OKRA_BAMIA_TOMATO: { glycemic_index: 'LOW', fodmap_level: 'LOW' },
+  ICEBERG_LETTUCE: { glycemic_index: 'LOW', fodmap_level: 'LOW' },
+  FRESH_ARUGULA: { glycemic_index: 'LOW', fodmap_level: 'LOW' },
+  GREEN_BEANS: { glycemic_index: 'LOW', fodmap_level: 'LOW' },
+  GRILLED_EGGPLANT: { glycemic_index: 'LOW', fodmap_level: 'LOW' },
+  FRESH_TOMATOES: { glycemic_index: 'LOW', fodmap_level: 'LOW' },
+});
+
+export function getFoodClinicalProperties(code, foodItem) {
+  const upperCode = String(code || foodItem?.code || "").toUpperCase().trim();
+  if (FOOD_CLINICAL_OVERRIDES[upperCode]) {
+    return FOOD_CLINICAL_OVERRIDES[upperCode];
+  }
+
+  // Fallback defaults according to macronutrient and food characteristics
+  let gi = 'LOW';
+  let fodmap = 'LOW';
+
+  if (foodItem?.macro_type === 'CARBS') {
+    gi = 'MEDIUM';
+    if (!foodItem.is_gluten_free || foodItem.is_legume) {
+      fodmap = 'HIGH';
+    }
+  } else if (foodItem?.macro_type === 'PROTEIN') {
+    gi = 'LOW';
+    if (foodItem.is_legume) {
+      gi = 'MEDIUM';
+      fodmap = 'HIGH';
+    } else if (foodItem.is_dairy && !foodItem.is_low_lactose) {
+      fodmap = 'HIGH';
+    } else {
+      fodmap = 'LOW';
+    }
+  } else if (foodItem?.macro_type === 'FATS') {
+    gi = 'LOW';
+    fodmap = 'LOW';
+  }
+
+  return { glycemic_index: gi, fodmap_level: fodmap };
+}
+
+// Automatically enrich all items in FOOD_DATABASE with GI and FODMAP levels
+for (const [key, food] of Object.entries(FOOD_DATABASE)) {
+  if (food && typeof food === 'object') {
+    const props = getFoodClinicalProperties(key, food);
+    food.glycemic_index = food.glycemic_index || props.glycemic_index;
+    food.fodmap_level = food.fodmap_level || props.fodmap_level;
+  }
+}
+
 export function isFoodClinicallySafe(foodItem, clinicalProfile = {}) {
   if (!foodItem) return false;
 
@@ -1779,38 +1914,62 @@ export function isFoodClinicallySafe(foodItem, clinicalProfile = {}) {
     is_celiac = false,
     is_lactose_intolerant = false,
     is_gout = false,
-    allergies = []
+    is_diabetic = false,
+    is_insulin_resistant = false,
+    is_ibs = false,
+    allergies = [],
+    conditions = []
   } = clinicalProfile;
 
   const allergyList = Array.isArray(allergies) ? allergies : (typeof allergies === 'string' ? [allergies] : []);
+  const conditionList = Array.isArray(conditions) ? conditions : (typeof conditions === 'string' ? [conditions] : []);
+  const allClinicalTokens = allergyList.concat(conditionList);
 
   // 1. G6PD (Favism): Ban all legumes and peanuts
-  const g6pdActive = Boolean(is_g6pd) || allergyList.some(a => {
-    const s = String(a).toUpperCase();
+  const g6pdActive = Boolean(is_g6pd) || allClinicalTokens.some(a => {
+    const s = String(a?.conditionCode || a || '').toUpperCase();
     return s.includes('G6PD') || s.includes('FAVISM') || s.includes('فول') || s.includes('بقول');
   });
   if (g6pdActive && foodItem.is_legume) return false;
 
   // 2. CELIAC: Ban gluten
-  const celiacActive = Boolean(is_celiac) || allergyList.some(a => {
-    const s = String(a).toUpperCase();
+  const celiacActive = Boolean(is_celiac) || allClinicalTokens.some(a => {
+    const s = String(a?.conditionCode || a || '').toUpperCase();
     return s.includes('CELIAC') || s.includes('GLUTEN') || s.includes('قمح') || s.includes('جلوتين');
   });
   if (celiacActive && !foodItem.is_gluten_free) return false;
 
   // 3. GOUT: Ban high purine items (organ meats, high-purine beef, seafood)
-  const goutActive = Boolean(is_gout) || allergyList.some(a => {
-    const s = String(a).toUpperCase();
+  const goutActive = Boolean(is_gout) || allClinicalTokens.some(a => {
+    const s = String(a?.conditionCode || a || '').toUpperCase();
     return s.includes('GOUT') || s.includes('نقرس') || s.includes('يوريك') || s.includes('URIC');
   });
   if (goutActive && foodItem.purine_level === 'HIGH') return false;
 
   // 4. LACTOSE: Ban non-low-lactose dairy
-  const lactoseActive = Boolean(is_lactose_intolerant) || allergyList.some(a => {
-    const s = String(a).toUpperCase();
+  const lactoseActive = Boolean(is_lactose_intolerant) || allClinicalTokens.some(a => {
+    const s = String(a?.conditionCode || a || '').toUpperCase();
     return s.includes('LACTOSE') || s.includes('لاكتوز');
   });
   if (lactoseActive && foodItem.is_dairy && !foodItem.is_low_lactose) return false;
+
+  // 5. DIABETES & INSULIN RESISTANCE: Ban HIGH Glycemic Index foods (ADA Standards of Care)
+  const diabetesActive = Boolean(is_diabetic) || Boolean(is_insulin_resistant) || allClinicalTokens.some(a => {
+    const s = String(a?.conditionCode || a || '').toUpperCase();
+    return s === 'DIABETES' || s === 'INSULIN_RESISTANCE' || s.includes('DIABET') || s.includes('سكر') || s.includes('أنسولين');
+  });
+  if (diabetesActive && foodItem.glycemic_index === 'HIGH') {
+    return false;
+  }
+
+  // 6. IBS & DIGESTIVE CONDITIONS: Ban HIGH FODMAP foods (Monash University Low-FODMAP Protocol)
+  const ibsActive = Boolean(is_ibs) || allClinicalTokens.some(a => {
+    const s = String(a?.conditionCode || a || '').toUpperCase();
+    return s === 'IBS' || s === 'GASTROINTESTINAL_CONDITION' || s.includes('IBS') || s.includes('قولون') || s.includes('FODMAP') || s.includes('هضم');
+  });
+  if (ibsActive && foodItem.fodmap_level === 'HIGH') {
+    return false;
+  }
 
   // 5. Explicit Allergies (Bilingual Arabic/English Semantic Matching)
   if (allergyList.length > 0) {

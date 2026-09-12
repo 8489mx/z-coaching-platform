@@ -6,7 +6,8 @@ import { getExerciseDisplayNames } from '../../../utils/exerciseTranslator';
 export default function ExerciseSwapModal({
   exerciseSwapTarget,
   onClose,
-  setWorkoutSession
+  setWorkoutSession,
+  clientInjuries = []
 }) {
   const [exerciseSwapFilter, setExerciseSwapFilter] = useState('ALL'); // ALL | GYM | HOME
   const [exerciseSwapsList, setExerciseSwapsList] = useState([]);
@@ -20,8 +21,12 @@ export default function ExerciseSwapModal({
     }
     const targetEx = exerciseSwapTarget.exercise;
     const exCode = targetEx.code || targetEx.id || targetEx.exercise_code || targetEx.name;
+    const rawInjuries = exerciseSwapTarget.injuries || targetEx.injuries || clientInjuries || [];
+    const injuryArray = Array.isArray(rawInjuries) ? rawInjuries : [rawInjuries];
+    const injuryQuery = injuryArray.map(i => typeof i === 'string' ? i : (i?.name || i?.code || '')).filter(Boolean).join(',');
+
     setLoadingExerciseSwaps(true);
-    fetch(`${API_BASE}/api/v1/exercises/swaps/${encodeURIComponent(exCode)}`)
+    fetch(`${API_BASE}/api/v1/exercises/swaps/${encodeURIComponent(exCode)}?environment=${encodeURIComponent(exerciseSwapFilter)}&injury=${encodeURIComponent(injuryQuery)}`)
       .then(res => res.json())
       .then(data => {
         if (data && Array.isArray(data.swaps) && data.swaps.length > 0) {
@@ -37,7 +42,7 @@ export default function ExerciseSwapModal({
       .finally(() => {
         setLoadingExerciseSwaps(false);
       });
-  }, [exerciseSwapTarget]);
+  }, [exerciseSwapTarget, exerciseSwapFilter, clientInjuries]);
 
   if (!exerciseSwapTarget) return null;
 

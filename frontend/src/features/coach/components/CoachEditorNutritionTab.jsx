@@ -103,6 +103,60 @@ export default function CoachEditorNutritionTab(props) {
   const targetC = Number(program?.nutrition?.targets?.carbs) || 200;
   const targetF = Number(program?.nutrition?.targets?.fats) || 60;
 
+  // Clinical Guardrails & Kidney Disease Safety Analysis
+  const clinicalGuardrails = program?.clinical_guardrails ||
+    program?.nutrition?.clinical_guardrails ||
+    program?.nutrition?.targets?.clinical_guardrails;
+
+  const clientConditions = [
+    ...(Array.isArray(program?.client?.injuries) ? program.client.injuries : []),
+    ...(Array.isArray(program?.client?.allergies) ? program.client.allergies : []),
+    ...(Array.isArray(program?.client?.medical_conditions) ? program.client.medical_conditions : []),
+  ];
+
+  const hasKidneyCondition = Boolean(
+    clinicalGuardrails?.kidney_protein_capped ||
+    clientConditions.some(c => {
+      const s = typeof c === 'string' ? c : (c?.conditionCode || c?.name || c?.area || '');
+      return /kidney|ckd|كلى|قصور.*كلوي|وظائف.*الكلى/i.test(s);
+    })
+  );
+
+  const clientWeightKg = Number(program?.client?.weight_kg) || 80;
+  const maxSafeProtein = Number(clinicalGuardrails?.max_protein_g) || Math.round(clientWeightKg * 1.0);
+
+  // Quick Targets Edit Modal State
+  const [showEditTargetsModal, setShowEditTargetsModal] = useState(false);
+  const [editTargetsState, setEditTargetsState] = useState({
+    calories: targetCal,
+    protein: targetP,
+    carbs: targetC,
+    fats: targetF
+  });
+
+  const handleSaveCustomTargets = () => {
+    const newCal = Number(editTargetsState.calories) || targetCal;
+    const newP = Number(editTargetsState.protein) || targetP;
+    const newC = Number(editTargetsState.carbs) || targetC;
+    const newF = Number(editTargetsState.fats) || targetF;
+
+    setProgram(prev => ({
+      ...prev,
+      nutrition: {
+        ...prev.nutrition,
+        targets: {
+          ...(prev.nutrition?.targets || {}),
+          calories: newCal,
+          protein: newP,
+          carbs: newC,
+          fats: newF
+        }
+      }
+    }));
+    setShowEditTargetsModal(false);
+    showToast('تم حفظ المستهدفات اليومية وتحديث الموازنة بنجاح');
+  };
+
   const handleUpdateSupplementsWithRipple = (newSupps) => {
     setProgram(prev => {
       const currentMeals = prev.nutrition?.meals || [];
@@ -150,6 +204,9 @@ export default function CoachEditorNutritionTab(props) {
   const totalPlannedC = mealsC + suppsC;
   const totalPlannedF = mealsF + suppsF;
   const diffCal = totalPlannedCal - targetCal;
+
+  const effectiveCurrentProtein = Math.max(totalPlannedP, targetP);
+  const isProteinExceeded = hasKidneyCondition && effectiveCurrentProtein > maxSafeProtein;
   const recalculateMeal = (items) => {
     let cal = 0, p = 0, c = 0, f = 0;
     items.forEach(item => {
@@ -285,6 +342,63 @@ export default function CoachEditorNutritionTab(props) {
         {activeWorkspaceTab === 'NUTRITION' && (
           <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
             
+            {/* Clinical Guardrail Alert: Kidney Disease Protein Ceiling (KDOQI Guideline) */}
+            {hasKidneyCondition && (
+              <div style={{
+                background: isProteinExceeded ? '#FEF2F2' : '#F0FDF4',
+                border: isProteinExceeded ? '1.5px solid #F87171' : '1px solid #BBF7D0',
+                borderRadius: '12px',
+                padding: '12px 16px',
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                gap: '12px',
+                boxShadow: isProteinExceeded ? '0 3px 10px rgba(239, 68, 68, 0.12)' : '0 1px 2px rgba(15, 23, 42, 0.02)',
+                transition: 'all 0.2s ease'
+              }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                  <div style={{
+                    width: '38px',
+                    height: '38px',
+                    borderRadius: '10px',
+                    background: isProteinExceeded ? '#FEE2E2' : '#DCFCE7',
+                    border: isProteinExceeded ? '1px solid #FECACA' : '1px solid #BBF7D0',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    color: isProteinExceeded ? '#DC2626' : '#166534',
+                    flexShrink: 0
+                  }}>
+                    <ShieldAlert size={20} />
+                  </div>
+                  <div>
+                    <div style={{ fontSize: '13px', fontWeight: 800, color: isProteinExceeded ? '#991B1B' : '#166534', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                      <span>{isProteinExceeded ? 'تحذير سريري حرج: تجاوز سقف البروتين لمرضى القصور الكلوي' : 'حماية سريرية نشطة: سقف بروتين الكلى مفعل (KDOQI 1.0 جم/كجم)'}</span>
+                    </div>
+                    <div style={{ fontSize: '11.5px', color: isProteinExceeded ? '#B91C1C' : '#15803D', marginTop: '3px', lineHeight: '1.5' }}>
+                      {isProteinExceeded
+                        ? `المشترك لديه قصور كلوي مسجل. إجمالي البروتين الحالي (${effectiveCurrentProtein} جم) يتجاوز السقف السريري الآمن (${maxSafeProtein} جم بمعدل 1.0 جم/كجم لوزن ${clientWeightKg} كجم). رفع البروتين يزيد العبء النيتروجيني على ترشيح الكبيبات الكلوية.`
+                        : `تم تقييد البروتين بالسقف السريري الآمن (${maxSafeProtein} جم) لضمان حماية وظائف الكلى وترشيح الكبيبات.`}
+                    </div>
+                  </div>
+                </div>
+                <div style={{ textAlign: 'center', flexShrink: 0 }}>
+                  <span style={{
+                    fontSize: '11px',
+                    fontWeight: 800,
+                    background: isProteinExceeded ? '#DC2626' : '#16A34A',
+                    color: '#FFFFFF',
+                    padding: '6px 12px',
+                    borderRadius: '8px',
+                    display: 'inline-block',
+                    whiteSpace: 'nowrap'
+                  }}>
+                    {isProteinExceeded ? `زيادة +${effectiveCurrentProtein - maxSafeProtein} جم فوق السقف` : `السقف: ${maxSafeProtein} جم`}
+                  </span>
+                </div>
+              </div>
+            )}
+
             {/* Engine Clinical Nutrition Reasoning Card */}
             {program.nutrition?.reasoning && (
               <div style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', borderRadius: '8px', padding: '10px 14px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '10px', boxShadow: '0 1px 2px rgba(15, 23, 42, 0.02)' }}>
@@ -310,10 +424,31 @@ export default function CoachEditorNutritionTab(props) {
             {/* Top Macro Summary Bar with Live Calories & Supplements Integration */}
             <div style={{ background: '#FFFFFF', border: '1px solid #E2E8F0', borderRadius: '12px', padding: '10px 14px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '8px', boxShadow: '0 1px 2px rgba(15, 23, 42, 0.02)' }}>
               <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap', alignItems: 'center' }}>
-                <div style={{ background: '#0F172A', color: '#FFFFFF', padding: '5px 12px', borderRadius: '8px', textAlign: 'center' }}>
-                  <span style={{ fontSize: '9.5px', opacity: 0.8, display: 'block' }}>المستهدف</span>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setEditTargetsState({ calories: targetCal, protein: targetP, carbs: targetC, fats: targetF });
+                    setShowEditTargetsModal(true);
+                  }}
+                  style={{
+                    background: '#0F172A',
+                    color: '#FFFFFF',
+                    padding: '5px 12px',
+                    borderRadius: '8px',
+                    border: 'none',
+                    textAlign: 'center',
+                    cursor: 'pointer',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    transition: 'all 0.15s ease'
+                  }}
+                  title="تعديل أرقام المستهدفات يدوياً (سعرات وماكروز)"
+                >
+                  <span style={{ fontSize: '9px', opacity: 0.8, display: 'block' }}>المستهدف (تعديل)</span>
                   <strong style={{ fontSize: '13px', fontWeight: 800 }}>{targetCal} kcal</strong>
-                </div>
+                </button>
 
                 <div style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', color: '#0F172A', padding: '5px 12px', borderRadius: '8px', textAlign: 'center' }}>
                   <span style={{ fontSize: '9.5px', color: '#64748B', display: 'block' }}>المخطط الفعلي (أكل + مكملات)</span>
@@ -329,9 +464,33 @@ export default function CoachEditorNutritionTab(props) {
                   </div>
                 )}
 
-                <div style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', color: '#0F172A', padding: '5px 10px', borderRadius: '8px', textAlign: 'center' }}>
-                  <span style={{ fontSize: '9.5px', color: '#64748B', display: 'block' }}>البروتين</span>
-                  <strong style={{ fontSize: '12.5px', fontWeight: 700 }}>{totalPlannedP}g / {targetP}g</strong>
+                <div style={{
+                  background: isProteinExceeded ? '#FEF2F2' : '#F8FAFC',
+                  border: isProteinExceeded ? '1.5px solid #EF4444' : '1px solid #E2E8F0',
+                  color: isProteinExceeded ? '#991B1B' : '#0F172A',
+                  padding: '5px 10px',
+                  borderRadius: '8px',
+                  textAlign: 'center'
+                }}>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '4px' }}>
+                    <span style={{ fontSize: '9.5px', color: isProteinExceeded ? '#DC2626' : '#64748B' }}>البروتين</span>
+                    {hasKidneyCondition && (
+                      <span style={{
+                        fontSize: '8px',
+                        fontWeight: 800,
+                        padding: '1px 4px',
+                        borderRadius: '4px',
+                        background: isProteinExceeded ? '#FEE2E2' : '#DCFCE7',
+                        color: isProteinExceeded ? '#DC2626' : '#166534',
+                        border: isProteinExceeded ? '1px solid #FECACA' : '1px solid #BBF7D0'
+                      }}>
+                        سقف الكلى: {maxSafeProtein}g
+                      </span>
+                    )}
+                  </div>
+                  <strong style={{ fontSize: '12.5px', fontWeight: 800, color: isProteinExceeded ? '#DC2626' : '#0F172A' }}>
+                    {totalPlannedP}g / {targetP}g
+                  </strong>
                 </div>
 
                 <div style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', color: '#0F172A', padding: '5px 10px', borderRadius: '8px', textAlign: 'center' }}>
@@ -824,6 +983,229 @@ export default function CoachEditorNutritionTab(props) {
               </div>
             </div>
 
+          </div>
+        )}
+
+        {/* Quick Targets Edit Modal with Clinical Kidney Guardrail Live Check */}
+        {showEditTargetsModal && (
+          <div
+            style={{
+              position: 'fixed',
+              inset: 0,
+              background: 'rgba(15, 23, 42, 0.55)',
+              backdropFilter: 'blur(4px)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              zIndex: 9999,
+              padding: '16px'
+            }}
+            dir="rtl"
+            onClick={(e) => {
+              if (e.target === e.currentTarget) setShowEditTargetsModal(false);
+            }}
+          >
+            <div
+              style={{
+                background: '#FFFFFF',
+                borderRadius: '16px',
+                border: '1px solid #E2E8F0',
+                width: '100%',
+                maxWidth: '460px',
+                padding: '24px',
+                boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1)',
+                display: 'flex',
+                flexDirection: 'column',
+                gap: '16px'
+              }}
+            >
+              {/* Modal Header */}
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid #F1F5F9', paddingBottom: '12px' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <div style={{ width: '34px', height: '34px', borderRadius: '10px', background: '#F1F5F9', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#0F172A' }}>
+                    <Target size={18} />
+                  </div>
+                  <div>
+                    <h3 style={{ margin: 0, fontSize: '15px', fontWeight: 800, color: '#0F172A' }}>تعديل المستهدفات اليومية</h3>
+                    <span style={{ fontSize: '11px', color: '#64748B' }}>تحديد مستهدفات السعرات والماكروز اليومية للخطة</span>
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setShowEditTargetsModal(false)}
+                  style={{ background: 'none', border: 'none', color: '#94A3B8', cursor: 'pointer', padding: '4px', borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                >
+                  <X size={18} />
+                </button>
+              </div>
+
+              {/* Kidney Warning in Modal if Exceeded */}
+              {hasKidneyCondition && (
+                <div
+                  style={{
+                    background: Number(editTargetsState.protein) > maxSafeProtein ? '#FEF2F2' : '#F0FDF4',
+                    border: Number(editTargetsState.protein) > maxSafeProtein ? '1.5px solid #F87171' : '1px solid #BBF7D0',
+                    borderRadius: '12px',
+                    padding: '10px 14px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '10px'
+                  }}
+                >
+                  <ShieldAlert size={18} color={Number(editTargetsState.protein) > maxSafeProtein ? '#DC2626' : '#166534'} style={{ flexShrink: 0 }} />
+                  <div style={{ fontSize: '11.5px', lineHeight: '1.4', color: Number(editTargetsState.protein) > maxSafeProtein ? '#991B1B' : '#166534' }}>
+                    {Number(editTargetsState.protein) > maxSafeProtein
+                      ? `تنبيه سريري: البروتين المدخل (${editTargetsState.protein} جم) يتجاوز السقف السريري الآمن لمرضى الكلى (${maxSafeProtein} جم بمعدل 1.0 جم/كجم). سيتم توثيق هذا التجاوز في سجل المراجعة السريرية.`
+                      : `حماية الكلى مفعلة: السقف السريري الآمن هو ${maxSafeProtein} جم/يوم (KDOQI 1.0 جم/كجم).`}
+                  </div>
+                </div>
+              )}
+
+              {/* Inputs Grid */}
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+                <div>
+                  <label style={{ fontSize: '11px', fontWeight: 700, color: '#475569', display: 'block', marginBottom: '4px' }}>
+                    السعرات اليومية (kcal)
+                  </label>
+                  <input
+                    type="number"
+                    min="1000"
+                    max="6000"
+                    value={editTargetsState.calories}
+                    onChange={(e) => setEditTargetsState(prev => ({ ...prev, calories: e.target.value }))}
+                    style={{
+                      width: '100%',
+                      height: '38px',
+                      borderRadius: '8px',
+                      border: '1px solid #CBD5E1',
+                      padding: '0 10px',
+                      fontSize: '13px',
+                      fontWeight: 700,
+                      outline: 'none',
+                      boxSizing: 'border-box'
+                    }}
+                  />
+                </div>
+
+                <div>
+                  <label style={{ fontSize: '11px', fontWeight: 700, color: hasKidneyCondition && Number(editTargetsState.protein) > maxSafeProtein ? '#DC2626' : '#475569', display: 'flex', justifyContent: 'space-between', marginBottom: '4px' }}>
+                    <span>البروتين (جم)</span>
+                    {hasKidneyCondition && <span style={{ fontSize: '9.5px', color: '#DC2626' }}>سقف: {maxSafeProtein}g</span>}
+                  </label>
+                  <input
+                    type="number"
+                    min="30"
+                    max="400"
+                    value={editTargetsState.protein}
+                    onChange={(e) => setEditTargetsState(prev => ({ ...prev, protein: e.target.value }))}
+                    style={{
+                      width: '100%',
+                      height: '38px',
+                      borderRadius: '8px',
+                      border: hasKidneyCondition && Number(editTargetsState.protein) > maxSafeProtein ? '1.5px solid #EF4444' : '1px solid #CBD5E1',
+                      background: hasKidneyCondition && Number(editTargetsState.protein) > maxSafeProtein ? '#FEF2F2' : '#FFFFFF',
+                      padding: '0 10px',
+                      fontSize: '13px',
+                      fontWeight: 700,
+                      outline: 'none',
+                      boxSizing: 'border-box'
+                    }}
+                  />
+                </div>
+
+                <div>
+                  <label style={{ fontSize: '11px', fontWeight: 700, color: '#475569', display: 'block', marginBottom: '4px' }}>
+                    الكاربوهيدرات (جم)
+                  </label>
+                  <input
+                    type="number"
+                    min="20"
+                    max="700"
+                    value={editTargetsState.carbs}
+                    onChange={(e) => setEditTargetsState(prev => ({ ...prev, carbs: e.target.value }))}
+                    style={{
+                      width: '100%',
+                      height: '38px',
+                      borderRadius: '8px',
+                      border: '1px solid #CBD5E1',
+                      padding: '0 10px',
+                      fontSize: '13px',
+                      fontWeight: 700,
+                      outline: 'none',
+                      boxSizing: 'border-box'
+                    }}
+                  />
+                </div>
+
+                <div>
+                  <label style={{ fontSize: '11px', fontWeight: 700, color: '#475569', display: 'block', marginBottom: '4px' }}>
+                    الدهون الصحية (جم)
+                  </label>
+                  <input
+                    type="number"
+                    min="10"
+                    max="200"
+                    value={editTargetsState.fats}
+                    onChange={(e) => setEditTargetsState(prev => ({ ...prev, fats: e.target.value }))}
+                    style={{
+                      width: '100%',
+                      height: '38px',
+                      borderRadius: '8px',
+                      border: '1px solid #CBD5E1',
+                      padding: '0 10px',
+                      fontSize: '13px',
+                      fontWeight: 700,
+                      outline: 'none',
+                      boxSizing: 'border-box'
+                    }}
+                  />
+                </div>
+              </div>
+
+              {/* Calculated Cals from Entered Macros */}
+              <div style={{ fontSize: '11px', color: '#64748B', background: '#F8FAFC', padding: '8px 12px', borderRadius: '8px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <span>مجموع سعرات الماكروز المحسوبة:</span>
+                <strong style={{ color: '#0F172A' }}>
+                  {Math.round((Number(editTargetsState.protein) || 0) * 4 + (Number(editTargetsState.carbs) || 0) * 4 + (Number(editTargetsState.fats) || 0) * 9)} kcal
+                </strong>
+              </div>
+
+              {/* Modal Actions */}
+              <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px', marginTop: '4px' }}>
+                <button
+                  type="button"
+                  onClick={() => setShowEditTargetsModal(false)}
+                  style={{
+                    padding: '8px 16px',
+                    borderRadius: '8px',
+                    border: '1px solid #CBD5E1',
+                    background: '#FFFFFF',
+                    color: '#475569',
+                    fontSize: '12px',
+                    fontWeight: 700,
+                    cursor: 'pointer'
+                  }}
+                >
+                  إلغاء
+                </button>
+                <button
+                  type="button"
+                  onClick={handleSaveCustomTargets}
+                  style={{
+                    padding: '8px 18px',
+                    borderRadius: '8px',
+                    border: 'none',
+                    background: '#0F172A',
+                    color: '#FFFFFF',
+                    fontSize: '12px',
+                    fontWeight: 700,
+                    cursor: 'pointer'
+                  }}
+                >
+                  حفظ وتحديث المستهدفات
+                </button>
+              </div>
+            </div>
           </div>
         )}
 

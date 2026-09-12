@@ -14,6 +14,7 @@ import { Op } from "sequelize";
 import { MASTER_EXERCISE_DICTIONARY } from "../../../src/exercise-catalog-v2/index.js";
 import { calculateSmartSwap } from "../../../src/nutrition-swap-engine-v2/calculate-smart-swap.js";
 import { listSmartSwapCandidates, getSmartFoodRegistryItem, SMART_SWAP_REGISTRY } from "../../../src/nutrition-swap-engine-v2/swap-pool-registry.js";
+import { CLINICAL_GUIDELINES } from "../../config/clinical-guidelines.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -884,6 +885,145 @@ export const updateCustomProgram = async (req, res) => {
 
     const shouldPublish = Boolean(is_published || publish);
 
+    // Clinical Guard: Comprehensive Tier CS-0 Check during Coach Manual Updates (Kidney, Hypertension, Asthma, Diabetes)
+    const clinicalWarnings = [];
+    const userConditions = [
+      ...(Array.isArray(user.medical_conditions) ? user.medical_conditions : []),
+      ...(Array.isArray(program_data?.client?.injuries) ? program_data.client.injuries : []),
+      ...(Array.isArray(program_data?.client?.allergies) ? program_data.client.allergies : []),
+      ...(Array.isArray(program_data?.client?.medical_conditions) ? program_data.client.medical_conditions : []),
+    ];
+
+    // 1. Kidney Disease Protein Cap Check (KDOQI 1.0 g/kg)
+    const hasKidneyCondition = Boolean(
+      program_data?.clinical_guardrails?.kidney_protein_capped ||
+      program_data?.nutrition?.targets?.clinical_guardrails?.kidney_protein_capped ||
+      program_data?.nutrition?.clinical_guardrails?.kidney_protein_capped ||
+      userConditions.some(c => {
+        const s = typeof c === 'string' ? c : (c?.conditionCode || c?.name || c?.area || '');
+        return /kidney|ckd|كلى|قصور.*كلوي|وظائف.*الكلى/i.test(s);
+      })
+    );
+
+    if (hasKidneyCondition && program_data) {
+      const weight = Number(user.weight || user.weight_kg || program_data?.client?.weight_kg || 80);
+      const maxAllowedProtein = Number(program_data?.clinical_guardrails?.max_protein_g) ||
+        Number(program_data?.nutrition?.targets?.clinical_guardrails?.max_protein_g) ||
+        Math.round(weight * (CLINICAL_GUIDELINES?.KIDNEY?.MAX_PROTEIN_PER_KG || 1.0));
+
+      const targetProtein = Number(program_data?.nutrition?.targets?.protein || program_data?.nutrition?.targets?.protein_g || 0);
+      const mealsProtein = (program_data?.nutrition?.meals || []).reduce((sum, m) => sum + (Number(m.macros?.protein) || 0), 0);
+      const suppsProtein = (program_data?.cardio?.supplements || []).reduce((sum, s) => sum + (Number(s.protein ?? s.p) || 0), 0);
+      const effectiveProtein = Math.max(targetProtein, mealsProtein + suppsProtein);
+
+      if (effectiveProtein > maxAllowedProtein) {
+        clinicalWarnings.push(`تنبيه سريري (كلى): تم رصد تجاوز يدوي لسقف البروتين الآمن لمرضى القصور الكلوي (البروتين المسجل: ${effectiveProtein} جم، الحد الأقصى الآمن: ${maxAllowedProtein} جم بمعدل 1.0 جم/كجم بناءً على KDOQI).`);
+        if (typeof program_data === "object" && program_data !== null) {
+          program_data.clinical_guardrails = {
+            ...(program_data.clinical_guardrails || {}),
+            kidney_protein_capped: true,
+            max_protein_g: maxAllowedProtein,
+            coach_override_protein_g: effectiveProtein,
+          };
+        }
+      }
+    }
+
+    // 2. Hypertension & Heart Failure Prevention Check (ACSM/AHA)
+    const hasHypertension = Boolean(
+      program_data?.clinical_guardrails?.hypertension_guard_active ||
+      userConditions.some(c => {
+        const s = typeof c === 'string' ? c : (c?.conditionCode || c?.name || c?.area || '');
+        return /hypertension|ضغط|ارتفاع.*الضغط/i.test(s);
+      })
+    );
+
+    if (hasHypertension && program_data?.training) {
+      const allExercises = [];
+      if (Array.isArray(program_data.training.weeks)) {
+        program_data.training.weeks.forEach(w => {
+          (w.sessions || []).forEach(s => {
+            (s.exercises || []).forEach(e => allExercises.push(e));
+          });
+        });
+      }
+      if (Array.isArray(program_data.training.sessions)) {
+        program_data.training.sessions.forEach(s => {
+          (s.exercises || []).forEach(e => allExercises.push(e));
+        });
+      }
+
+      const bannedList = CLINICAL_GUIDELINES?.HYPERTENSION?.CONTRAINDICATED_EXERCISES || [
+        "LEG_PRESS_MACHINE", "INCLINE_LEG_PRESS", "DECLINE_CRUNCH", "DECLINE_BENCH_PRESS", "INVERTED_BODYWEIGHT_ROW"
+      ];
+
+      const foundBanned = allExercises.filter(e => {
+        const code = String(e.code || e.exercise_code || '');
+        return bannedList.includes(code);
+      });
+
+      const foundLowRir = allExercises.filter(e => {
+        const rir = e.rir ?? e.prescription?.target_rir;
+        return rir !== undefined && rir !== null && Number(rir) < (CLINICAL_GUIDELINES?.HYPERTENSION?.MIN_RIR || 2);
+      });
+
+      if (foundBanned.length > 0 || foundLowRir.length > 0) {
+        const details = [];
+        if (foundBanned.length > 0) {
+          const names = foundBanned.map(e => e.name_ar || e.name || e.code).slice(0, 3).join('، ');
+          details.push(`تمارين محظورة ترفع الضغط الشرياني ومناورة فالسافا: (${names})`);
+        }
+        if (foundLowRir.length > 0) {
+          details.push(`شدة تدريبية قصوى دون الحد الآمن (RIR < 2)`);
+        }
+        clinicalWarnings.push(`تنبيه سريري (ضغط الدم): تم رصد مخالفة لمعايير ACSM/AHA لمرضى الضغط: ${details.join(' مع ')}.`);
+        if (typeof program_data === "object" && program_data !== null) {
+          program_data.clinical_guardrails = {
+            ...(program_data.clinical_guardrails || {}),
+            hypertension_guard_active: true,
+            coach_override_hypertension: true,
+          };
+        }
+      }
+    }
+
+    // 3. Asthma & Respiratory Conditions Check (GINA Protocol)
+    const hasAsthma = Boolean(
+      userConditions.some(c => {
+        const s = typeof c === 'string' ? c : (c?.conditionCode || c?.name || c?.area || '');
+        return /asthma|ربو|تنفسي|respiratory/i.test(s);
+      })
+    );
+
+    if (hasAsthma && program_data?.cardio) {
+      const modality = String(program_data.cardio.modality || '');
+      const zone = String(program_data.cardio.target_heart_rate_zone || '');
+      const isHiit = /hiit|sprint|كثافة عالية/i.test(modality) || /hiit|zone 4/i.test(zone);
+
+      if (isHiit) {
+        clinicalWarnings.push(`تنبيه سريري (الربو): تم رصد كارديو عالي الشدة (HIIT / Zone 4) لمتدرب مصاب بالربو، مما يرفع خطر نوبات تضيق القصبات الهوائية الناجم عن الجهد (EIB) الممنوعة ببروتوكول GINA.`);
+        if (typeof program_data === "object" && program_data !== null) {
+          program_data.clinical_guardrails = {
+            ...(program_data.clinical_guardrails || {}),
+            coach_override_asthma: true,
+          };
+        }
+      }
+    }
+
+    let clinicalWarning = null;
+    if (clinicalWarnings.length > 0) {
+      clinicalWarning = clinicalWarnings.join(' — ');
+      if (typeof program_data === "object" && program_data !== null) {
+        program_data.clinical_guardrails = {
+          ...(program_data.clinical_guardrails || {}),
+          coach_override_warning: clinicalWarning,
+          coach_override_warnings: clinicalWarnings,
+          coach_override_at: new Date().toISOString(),
+        };
+      }
+    }
+
     let program = await Program.findOne({
       where: { user_id: user.id },
       order: [["id", "DESC"]]
@@ -909,7 +1049,9 @@ export const updateCustomProgram = async (req, res) => {
     if (coach_notes !== undefined) {
       if (typeof program.program_data === "object" && program.program_data !== null) {
         program.program_data.coach_notes = coach_notes;
-        program.changed("program_data", true);
+        if (typeof program.changed === "function") {
+          program.changed("program_data", true);
+        }
         await program.save();
       }
     }
@@ -930,7 +1072,8 @@ export const updateCustomProgram = async (req, res) => {
         : "تم تحديث وحفظ مسودة خطة المتدرب بنجاح في MariaDB",
       user,
       program_id: program.id,
-      master_program: program.program_data
+      master_program: program.program_data,
+      clinical_warning: clinicalWarning
     });
   } catch (err) {
     console.error("updateCustomProgram error:", err);

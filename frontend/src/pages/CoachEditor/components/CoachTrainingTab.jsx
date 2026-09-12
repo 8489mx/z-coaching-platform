@@ -7,7 +7,8 @@ import {
   Trash2, 
   HeartPulse, 
   Plus, 
-  X 
+  X,
+  ShieldAlert
 } from 'lucide-react';
 import { getExerciseDisplayNames } from '../../../utils/exerciseTranslator';
 
@@ -28,9 +29,106 @@ export function CoachTrainingTab({
   handleDeleteExercise,
   setAddExModal
 }) {
+  const clientConditions = [
+    ...(Array.isArray(program?.client?.injuries) ? program.client.injuries : []),
+    ...(Array.isArray(program?.client?.allergies) ? program.client.allergies : []),
+    ...(Array.isArray(program?.client?.medical_conditions) ? program.client.medical_conditions : []),
+  ];
+
+  const hasHypertension = Boolean(
+    program?.clinical_guardrails?.hypertension_guard_active ||
+    clientConditions.some(c => {
+      const s = typeof c === 'string' ? c : (c?.conditionCode || c?.name || c?.area || '');
+      return /hypertension|ضغط|ارتفاع.*الضغط/i.test(s);
+    })
+  );
+
+  const hasDiabetes = Boolean(
+    clientConditions.some(c => {
+      const s = typeof c === 'string' ? c : (c?.conditionCode || c?.name || c?.area || '');
+      return /diabetes|سكري|مقاومة.*أنسولين|insulin/i.test(s);
+    })
+  );
+
+  const bannedExercisesList = ['LEG_PRESS_MACHINE', 'INCLINE_LEG_PRESS', 'DECLINE_CRUNCH', 'DECLINE_BENCH_PRESS', 'INVERTED_BODYWEIGHT_ROW'];
+
+  // Check active session for violations
+  const sessionBannedExercises = (activeSession?.exercises || []).filter(e => bannedExercisesList.includes(String(e.code || '')));
+  const sessionLowRirExercises = (activeSession?.exercises || []).filter(e => {
+    const r = e.rir ?? 1;
+    return Number(r) < 2;
+  });
+  const hasHypertensionViolation = hasHypertension && (sessionBannedExercises.length > 0 || sessionLowRirExercises.length > 0);
+
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }} dir="rtl">
       
+      {/* Hypertension Clinical Warning Banner */}
+      {hasHypertension && (
+        <div style={{
+          background: hasHypertensionViolation ? '#FEF2F2' : '#F0FDF4',
+          border: hasHypertensionViolation ? '1.5px solid #F87171' : '1px solid #BBF7D0',
+          borderRadius: '12px',
+          padding: '10px 14px',
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          gap: '12px',
+          boxShadow: hasHypertensionViolation ? '0 3px 10px rgba(239, 68, 68, 0.12)' : 'none'
+        }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+            <div style={{
+              width: '32px',
+              height: '32px',
+              borderRadius: '8px',
+              background: hasHypertensionViolation ? '#FEE2E2' : '#DCFCE7',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              color: hasHypertensionViolation ? '#DC2626' : '#166534',
+              flexShrink: 0
+            }}>
+              <ShieldAlert size={18} />
+            </div>
+            <div>
+              <div style={{ fontSize: '12px', fontWeight: 800, color: hasHypertensionViolation ? '#991B1B' : '#166534' }}>
+                {hasHypertensionViolation
+                  ? 'تحذير سريري: تم رصد تمارين مضادة للاستطباب أو شدة دون الحد الآمن لمرضى الضغط'
+                  : 'حماية سريرية نشطة لمرضى ارتفاع ضغط الدم (ACSM/AHA RIR >= 2)'}
+              </div>
+              <div style={{ fontSize: '11px', color: hasHypertensionViolation ? '#B91C1C' : '#15803D', marginTop: '2px' }}>
+                {hasHypertensionViolation
+                  ? 'يمنع حبس النفس (Valsalva) وتمارين الانقلاب أو مكابس الأرجل الثقيلة لمنع الارتفاع الحاد في الضغط الشرياني.'
+                  : 'تم تفعيل معايير الأمان الميكانيكي ومنع إجهاد الصمامات القلبية والضغط الشرياني.'}
+              </div>
+            </div>
+          </div>
+          {hasHypertensionViolation && (
+            <span style={{ fontSize: '10.5px', fontWeight: 800, background: '#DC2626', color: '#FFFFFF', padding: '4px 10px', borderRadius: '7px', whiteSpace: 'nowrap' }}>
+              مطلوب مراجعة المدرب
+            </span>
+          )}
+        </div>
+      )}
+
+      {/* Diabetes ADA Safety Protocol Card */}
+      {hasDiabetes && (
+        <div style={{
+          background: '#EFF6FF',
+          border: '1px solid #BFDBFE',
+          borderRadius: '10px',
+          padding: '8px 12px',
+          display: 'flex',
+          alignItems: 'center',
+          gap: '8px',
+          fontSize: '11px',
+          color: '#1E40AF'
+        }}>
+          <ShieldAlert size={15} style={{ flexShrink: 0 }} />
+          <span><strong>بروتوكول ADA لمرضى السكري:</strong> يجب توفير 15-20 جم كربوهيدرات سريعة الامتصاص أثناء التمارين التي تتجاوز 45 دقيقة لإنقاذ هبوط السكر المفاجئ.</span>
+        </div>
+      )}
+
       {/* Engine Clinical & Biomechanical Reasoning Card */}
       {program.training?.reasoning && (
         <div style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', borderRadius: '8px', padding: '10px 14px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '10px', boxShadow: '0 1px 2px rgba(15, 23, 42, 0.02)' }}>
@@ -210,241 +308,265 @@ export function CoachTrainingTab({
 
       {/* Exercise Cards */}
       <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-        {activeSession?.exercises?.map((ex, eIdx) => (
-          <div
-            key={ex.id || eIdx}
-            style={{
-              background: '#FFFFFF',
-              border: '1px solid #E2E8F0',
-              borderRadius: '10px',
-              padding: '12px 16px',
-              display: 'flex',
-              justifyContent: 'space-between',
-              alignItems: 'center',
-              flexWrap: 'wrap',
-              gap: '12px',
-              boxShadow: '0 1px 3px rgba(15, 23, 42, 0.02)'
-            }}
-          >
-            {/* Title & Info & Visuals */}
-            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-              <span style={{
-                width: '26px',
-                height: '26px',
-                borderRadius: '6px',
-                background: '#0F172A',
-                color: '#FFFFFF',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                fontSize: '12px',
-                fontWeight: 800,
-                flexShrink: 0
-              }}>
-                {eIdx + 1}
-              </span>
+        {activeSession?.exercises?.map((ex, eIdx) => {
+          const isContraindicated = hasHypertension && bannedExercisesList.includes(String(ex.code || ''));
+          const isLowRir = hasHypertension && Number(ex.rir ?? 1) < 2;
 
-              {/* Visual Thumbnails (Stretch & Contraction) & Video Button */}
-              <div style={{ display: 'flex', alignItems: 'center', gap: '4px', flexShrink: 0 }}>
-                <div 
-                  style={{ 
-                    width: '42px', 
-                    height: '42px', 
-                    borderRadius: '6px', 
-                    overflow: 'hidden', 
-                    background: '#F1F5F9', 
-                    border: '1px solid #E2E8F0', 
-                    display: 'flex', 
-                    alignItems: 'center', 
-                    justifyContent: 'center',
-                    position: 'relative'
-                  }}
-                  title="وضعية البداية والاستطالة"
-                >
-                  <img 
-                    src={ex.image_stretch || `/exercises/${ex.code}/0.jpg`} 
-                    alt="" 
-                    style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-                    onError={(e) => { e.currentTarget.style.display = 'none'; }}
-                    loading="lazy"
-                  />
-                  <span style={{ position: 'absolute', bottom: '1px', right: '2px', fontSize: '8px', fontWeight: 800, color: '#64748B', background: 'rgba(255,255,255,0.85)', padding: '0 4px', borderRadius: '6px' }}>1</span>
+          return (
+            <div
+              key={ex.id || eIdx}
+              style={{
+                background: isContraindicated ? '#FEF2F2' : '#FFFFFF',
+                border: isContraindicated ? '1.5px solid #F87171' : '1px solid #E2E8F0',
+                borderRadius: '10px',
+                padding: '12px 16px',
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                flexWrap: 'wrap',
+                gap: '12px',
+                boxShadow: isContraindicated ? '0 3px 10px rgba(239, 68, 68, 0.1)' : '0 1px 3px rgba(15, 23, 42, 0.02)'
+              }}
+            >
+              {/* Title & Info & Visuals */}
+              <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                <span style={{
+                  width: '26px',
+                  height: '26px',
+                  borderRadius: '6px',
+                  background: isContraindicated ? '#DC2626' : '#0F172A',
+                  color: '#FFFFFF',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  fontSize: '12px',
+                  fontWeight: 800,
+                  flexShrink: 0
+                }}>
+                  {eIdx + 1}
+                </span>
+
+                {/* Visual Thumbnails (Stretch & Contraction) & Video Button */}
+                <div style={{ display: 'flex', alignItems: 'center', gap: '4px', flexShrink: 0 }}>
+                  <div 
+                    style={{ 
+                      width: '42px', 
+                      height: '42px', 
+                      borderRadius: '6px', 
+                      overflow: 'hidden', 
+                      background: '#F1F5F9', 
+                      border: '1px solid #E2E8F0', 
+                      display: 'flex', 
+                      alignItems: 'center', 
+                      justifyContent: 'center',
+                      position: 'relative'
+                    }}
+                    title="وضعية البداية والاستطالة"
+                  >
+                    <img 
+                      src={ex.image_stretch || `/exercises/${ex.code}/0.jpg`} 
+                      alt="" 
+                      style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                      onError={(e) => { e.currentTarget.style.display = 'none'; }}
+                      loading="lazy"
+                    />
+                    <span style={{ position: 'absolute', bottom: '1px', right: '2px', fontSize: '8px', fontWeight: 800, color: '#64748B', background: 'rgba(255,255,255,0.85)', padding: '0 4px', borderRadius: '6px' }}>1</span>
+                  </div>
+                  <div 
+                    style={{ 
+                      width: '42px', 
+                      height: '42px', 
+                      borderRadius: '6px', 
+                      overflow: 'hidden', 
+                      background: '#F1F5F9', 
+                      border: '1px solid #E2E8F0', 
+                      display: 'flex', 
+                      alignItems: 'center', 
+                      justifyContent: 'center',
+                      position: 'relative'
+                    }}
+                    title="وضعية الانقباض العضلي"
+                  >
+                    <img 
+                      src={ex.image_contraction || `/exercises/${ex.code}/1.jpg`} 
+                      alt="" 
+                      style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                      onError={(e) => { e.currentTarget.style.display = 'none'; }}
+                      loading="lazy"
+                    />
+                    <span style={{ position: 'absolute', bottom: '1px', right: '2px', fontSize: '8px', fontWeight: 800, color: '#64748B', background: 'rgba(255,255,255,0.85)', padding: '0 4px', borderRadius: '6px' }}>2</span>
+                  </div>
+                  
+                  {/* Video Trigger Button */}
+                  <button
+                    type="button"
+                    onClick={() => setActiveVideoModalEx(ex)}
+                    title="مشاهدة الفيديو التوضيحي للأداء"
+                    style={{
+                      width: '32px',
+                      height: '42px',
+                      borderRadius: '6px',
+                      background: '#EFF6FF',
+                      border: '1px solid #BFDBFE',
+                      color: '#2563EB',
+                      cursor: 'pointer',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      flexShrink: 0
+                    }}
+                  >
+                    <Play size={14} />
+                  </button>
                 </div>
-                <div 
-                  style={{ 
-                    width: '42px', 
-                    height: '42px', 
-                    borderRadius: '6px', 
-                    overflow: 'hidden', 
-                    background: '#F1F5F9', 
-                    border: '1px solid #E2E8F0', 
-                    display: 'flex', 
-                    alignItems: 'center', 
-                    justifyContent: 'center',
-                    position: 'relative'
-                  }}
-                  title="وضعية الانقباض العضلي"
-                >
-                  <img 
-                    src={ex.image_contraction || `/exercises/${ex.code}/1.jpg`} 
-                    alt="" 
-                    style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-                    onError={(e) => { e.currentTarget.style.display = 'none'; }}
-                    loading="lazy"
-                  />
-                  <span style={{ position: 'absolute', bottom: '1px', right: '2px', fontSize: '8px', fontWeight: 800, color: '#64748B', background: 'rgba(255,255,255,0.85)', padding: '0 4px', borderRadius: '6px' }}>2</span>
+
+                <div style={{ minWidth: 0 }}>
+                  {/* Primary English Exercise Name (Large & Prominent) */}
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+                    <strong
+                      style={{
+                        fontSize: '13.5px',
+                        fontWeight: 800,
+                        color: isContraindicated ? '#991B1B' : '#0F172A',
+                        fontFamily: "'Montserrat', 'Inter', -apple-system, BlinkMacSystemFont, sans-serif",
+                        letterSpacing: '0.2px',
+                        direction: 'ltr',
+                        display: 'inline-block',
+                      }}
+                    >
+                      {getExerciseDisplayNames(ex).nameEn}
+                    </strong>
+
+                    {ex.equipment && (
+                      <span style={{ fontSize: '10px', padding: '2px 7px', borderRadius: '6px', background: '#F1F5F9', color: '#475569', border: '1px solid #E2E8F0', fontWeight: 600 }}>
+                        {ex.equipment}
+                      </span>
+                    )}
+
+                    {isContraindicated && (
+                      <span style={{ fontSize: '9.5px', fontWeight: 800, background: '#DC2626', color: '#FFFFFF', padding: '2px 8px', borderRadius: '6px' }}>
+                        محظور لمرضى الضغط (فالسافا)
+                      </span>
+                    )}
+                  </div>
+
+                  {/* Secondary Arabic Exercise Name (Smaller, Muted & Secondary) */}
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginTop: '2px', flexWrap: 'wrap' }}>
+                    <span
+                      style={{
+                        fontSize: '11px',
+                        fontWeight: 600,
+                        color: isContraindicated ? '#B91C1C' : '#64748B',
+                        fontFamily: 'Cairo, sans-serif',
+                      }}
+                    >
+                      {getExerciseDisplayNames(ex).nameAr}
+                    </span>
+
+                    {ex.code && ex.code !== getExerciseDisplayNames(ex).nameEn && (
+                      <span style={{ fontSize: '8.5px', color: '#94A3B8', fontFamily: 'monospace' }}>
+                        ({ex.code})
+                      </span>
+                    )}
+                  </div>
+
+                  {ex.safetyNote && (
+                    <div style={{ fontSize: '11px', color: '#64748B', marginTop: '2px' }}>
+                      {ex.safetyNote}
+                    </div>
+                  )}
                 </div>
-                
-                {/* Video Trigger Button */}
+              </div>
+
+              {/* Inline Parameters */}
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+                {/* Sets */}
+                <div style={{ display: 'flex', alignItems: 'center', border: '1px solid #CBD5E1', borderRadius: '6px', background: '#F8FAFC', padding: '0 6px', height: '30px' }}>
+                  <span style={{ fontSize: '11px', color: '#64748B', marginLeft: '6px', fontWeight: 700 }}>جولات:</span>
+                  <button type="button" onClick={() => handleUpdateExerciseParam(activeSessionIdx, eIdx, 'sets', Math.max(1, (ex.sets || 3) - 1))} style={{ border: 'none', background: 'transparent', cursor: 'pointer', fontWeight: 800, padding: '0 4px', fontSize: '13px' }}>-</button>
+                  <strong style={{ fontSize: '13px', minWidth: '18px', textAlign: 'center', margin: '0 2px', color: '#0F172A' }}>{ex.sets}</strong>
+                  <button type="button" onClick={() => handleUpdateExerciseParam(activeSessionIdx, eIdx, 'sets', (ex.sets || 3) + 1)} style={{ border: 'none', background: 'transparent', cursor: 'pointer', fontWeight: 800, padding: '0 4px', fontSize: '13px' }}>+</button>
+                </div>
+
+                {/* Reps */}
+                <div style={{ display: 'flex', alignItems: 'center', border: '1px solid #CBD5E1', borderRadius: '6px', background: '#F8FAFC', padding: '0 8px', height: '30px' }}>
+                  <span style={{ fontSize: '11px', color: '#64748B', marginLeft: '6px', fontWeight: 700 }}>تكرار:</span>
+                  <input
+                    type="text"
+                    value={ex.reps}
+                    onChange={(e) => handleUpdateExerciseParam(activeSessionIdx, eIdx, 'reps', e.target.value)}
+                    style={{ width: '70px', border: 'none', background: 'transparent', textAlign: 'center', fontWeight: 800, fontSize: '12px', outline: 'none', color: '#0F172A', direction: 'ltr' }}
+                  />
+                </div>
+
+                {/* RIR */}
+                <div style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  border: isLowRir ? '1.5px solid #EF4444' : '1px solid #CBD5E1',
+                  borderRadius: '6px',
+                  background: isLowRir ? '#FEF2F2' : '#F8FAFC',
+                  padding: '0 8px',
+                  height: '30px'
+                }}>
+                  <span style={{ fontSize: '11px', color: isLowRir ? '#DC2626' : '#64748B', marginLeft: '6px', fontWeight: 700 }}>الشدة:</span>
+                  <select
+                    value={ex.rir ?? 1}
+                    onChange={(e) => handleUpdateExerciseParam(activeSessionIdx, eIdx, 'rir', Number(e.target.value))}
+                    style={{ border: 'none', background: 'transparent', fontWeight: 800, fontSize: '11.5px', outline: 'none', cursor: 'pointer', color: isLowRir ? '#DC2626' : '#0F172A' }}
+                  >
+                    <option value="0">RIR 0 (فشل تام)</option>
+                    <option value="1">RIR 1 (عدة قبل الفشل)</option>
+                    <option value="2">RIR 2 (عدتان قبل الفشل)</option>
+                    <option value="3">RIR 3</option>
+                  </select>
+                  {isLowRir && (
+                    <span style={{ fontSize: '9px', fontWeight: 800, color: '#DC2626', marginRight: '4px' }}>
+                      (الحد: 2)
+                    </span>
+                  )}
+                </div>
+
+                {/* Rest */}
+                <div style={{ display: 'flex', alignItems: 'center', border: '1px solid #CBD5E1', borderRadius: '6px', background: '#F8FAFC', padding: '0 8px', height: '30px' }}>
+                  <span style={{ fontSize: '11px', color: '#64748B', marginLeft: '6px', fontWeight: 700 }}>راحة:</span>
+                  <select
+                    value={ex.restSec || 75}
+                    onChange={(e) => handleUpdateExerciseParam(activeSessionIdx, eIdx, 'restSec', Number(e.target.value))}
+                    style={{ border: 'none', background: 'transparent', fontWeight: 800, fontSize: '11.5px', outline: 'none', cursor: 'pointer', color: '#0F172A' }}
+                  >
+                    <option value="45">45s</option>
+                    <option value="60">60s</option>
+                    <option value="75">75s</option>
+                    <option value="90">90s</option>
+                    <option value="120">120s</option>
+                  </select>
+                </div>
+
+                {/* Smart Swap Button */}
                 <button
                   type="button"
-                  onClick={() => setActiveVideoModalEx(ex)}
-                  title="مشاهدة الفيديو التوضيحي للأداء"
-                  style={{
-                    width: '32px',
-                    height: '42px',
-                    borderRadius: '6px',
-                    background: '#EFF6FF',
-                    border: '1px solid #BFDBFE',
-                    color: '#2563EB',
-                    cursor: 'pointer',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    flexShrink: 0
-                  }}
+                  onClick={() => setSwapExModal({ open: true, sessionIdx: activeSessionIdx, exIdx: eIdx, currentEx: ex })}
+                  style={{ height: '30px', padding: '0 8px', borderRadius: '6px', background: '#FFFFFF', border: '1px solid #CBD5E1', color: '#0F172A', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px', fontSize: '11px', fontWeight: 700 }}
+                  title="تبديل التمرين الذكي بنفس الزاوية والأمان"
                 >
-                  <Play size={14} />
+                  <ArrowRightLeft size={12} color="#2563EB" />
+                  <span>بديل</span>
+                </button>
+
+                {/* Delete */}
+                <button
+                  type="button"
+                  onClick={() => handleDeleteExercise(activeSessionIdx, eIdx)}
+                  style={{ height: '30px', width: '30px', borderRadius: '6px', background: '#FFFFFF', border: '1px solid #CBD5E1', color: '#DC2626', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                  title="حذف التمرين"
+                >
+                  <Trash2 size={13} />
                 </button>
               </div>
-
-              <div style={{ minWidth: 0 }}>
-                {/* Primary English Exercise Name (Large & Prominent) */}
-                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
-                  <strong
-                    style={{
-                      fontSize: '13.5px',
-                      fontWeight: 800,
-                      color: '#0F172A',
-                      fontFamily: "'Montserrat', 'Inter', -apple-system, BlinkMacSystemFont, sans-serif",
-                      letterSpacing: '0.2px',
-                      direction: 'ltr',
-                      display: 'inline-block',
-                    }}
-                  >
-                    {getExerciseDisplayNames(ex).nameEn}
-                  </strong>
-
-                  {ex.equipment && (
-                    <span style={{ fontSize: '10px', padding: '2px 7px', borderRadius: '6px', background: '#F1F5F9', color: '#475569', border: '1px solid #E2E8F0', fontWeight: 600 }}>
-                      {ex.equipment}
-                    </span>
-                  )}
-                </div>
-
-                {/* Secondary Arabic Exercise Name (Smaller, Muted & Secondary) */}
-                <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginTop: '2px', flexWrap: 'wrap' }}>
-                  <span
-                    style={{
-                      fontSize: '11px',
-                      fontWeight: 600,
-                      color: '#64748B',
-                      fontFamily: 'Cairo, sans-serif',
-                    }}
-                  >
-                    {getExerciseDisplayNames(ex).nameAr}
-                  </span>
-
-                  {ex.code && ex.code !== getExerciseDisplayNames(ex).nameEn && (
-                    <span style={{ fontSize: '8.5px', color: '#94A3B8', fontFamily: 'monospace' }}>
-                      ({ex.code})
-                    </span>
-                  )}
-                </div>
-
-                {ex.safetyNote && (
-                  <div style={{ fontSize: '11px', color: '#64748B', marginTop: '2px' }}>
-                    {ex.safetyNote}
-                  </div>
-                )}
-              </div>
             </div>
-
-            {/* Inline Parameters */}
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
-              {/* Sets */}
-              <div style={{ display: 'flex', alignItems: 'center', border: '1px solid #CBD5E1', borderRadius: '6px', background: '#F8FAFC', padding: '0 6px', height: '30px' }}>
-                <span style={{ fontSize: '11px', color: '#64748B', marginLeft: '6px', fontWeight: 700 }}>جولات:</span>
-                <button type="button" onClick={() => handleUpdateExerciseParam(activeSessionIdx, eIdx, 'sets', Math.max(1, (ex.sets || 3) - 1))} style={{ border: 'none', background: 'transparent', cursor: 'pointer', fontWeight: 800, padding: '0 4px', fontSize: '13px' }}>-</button>
-                <strong style={{ fontSize: '13px', minWidth: '18px', textAlign: 'center', margin: '0 2px', color: '#0F172A' }}>{ex.sets}</strong>
-                <button type="button" onClick={() => handleUpdateExerciseParam(activeSessionIdx, eIdx, 'sets', (ex.sets || 3) + 1)} style={{ border: 'none', background: 'transparent', cursor: 'pointer', fontWeight: 800, padding: '0 4px', fontSize: '13px' }}>+</button>
-              </div>
-
-              {/* Reps */}
-              <div style={{ display: 'flex', alignItems: 'center', border: '1px solid #CBD5E1', borderRadius: '6px', background: '#F8FAFC', padding: '0 8px', height: '30px' }}>
-                <span style={{ fontSize: '11px', color: '#64748B', marginLeft: '6px', fontWeight: 700 }}>تكرار:</span>
-                <input
-                  type="text"
-                  value={ex.reps}
-                  onChange={(e) => handleUpdateExerciseParam(activeSessionIdx, eIdx, 'reps', e.target.value)}
-                  style={{ width: '70px', border: 'none', background: 'transparent', textAlign: 'center', fontWeight: 800, fontSize: '12px', outline: 'none', color: '#0F172A', direction: 'ltr' }}
-                />
-              </div>
-
-              {/* RIR */}
-              <div style={{ display: 'flex', alignItems: 'center', border: '1px solid #CBD5E1', borderRadius: '6px', background: '#F8FAFC', padding: '0 8px', height: '30px' }}>
-                <span style={{ fontSize: '11px', color: '#64748B', marginLeft: '6px', fontWeight: 700 }}>الشدة:</span>
-                <select
-                  value={ex.rir ?? 1}
-                  onChange={(e) => handleUpdateExerciseParam(activeSessionIdx, eIdx, 'rir', Number(e.target.value))}
-                  style={{ border: 'none', background: 'transparent', fontWeight: 800, fontSize: '11.5px', outline: 'none', cursor: 'pointer', color: '#0F172A' }}
-                >
-                  <option value="0">RIR 0 (فشل تام)</option>
-                  <option value="1">RIR 1 (عدة قبل الفشل)</option>
-                  <option value="2">RIR 2 (عدتان قبل الفشل)</option>
-                  <option value="3">RIR 3</option>
-                </select>
-              </div>
-
-              {/* Rest */}
-              <div style={{ display: 'flex', alignItems: 'center', border: '1px solid #CBD5E1', borderRadius: '6px', background: '#F8FAFC', padding: '0 8px', height: '30px' }}>
-                <span style={{ fontSize: '11px', color: '#64748B', marginLeft: '6px', fontWeight: 700 }}>راحة:</span>
-                <select
-                  value={ex.restSec || 75}
-                  onChange={(e) => handleUpdateExerciseParam(activeSessionIdx, eIdx, 'restSec', Number(e.target.value))}
-                  style={{ border: 'none', background: 'transparent', fontWeight: 800, fontSize: '11.5px', outline: 'none', cursor: 'pointer', color: '#0F172A' }}
-                >
-                  <option value="45">45s</option>
-                  <option value="60">60s</option>
-                  <option value="75">75s</option>
-                  <option value="90">90s</option>
-                  <option value="120">120s</option>
-                </select>
-              </div>
-
-              {/* Smart Swap Button */}
-              <button
-                type="button"
-                onClick={() => setSwapExModal({ open: true, sessionIdx: activeSessionIdx, exIdx: eIdx, currentEx: ex })}
-                style={{ height: '30px', padding: '0 8px', borderRadius: '6px', background: '#FFFFFF', border: '1px solid #CBD5E1', color: '#0F172A', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px', fontSize: '11px', fontWeight: 700 }}
-                title="تبديل التمرين الذكي بنفس الزاوية والأمان"
-              >
-                <ArrowRightLeft size={12} color="#2563EB" />
-                <span>بديل</span>
-              </button>
-
-              {/* Delete */}
-              <button
-                type="button"
-                onClick={() => handleDeleteExercise(activeSessionIdx, eIdx)}
-                style={{ height: '30px', width: '30px', borderRadius: '6px', background: '#FFFFFF', border: '1px solid #CBD5E1', color: '#DC2626', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
-                title="حذف التمرين"
-              >
-                <Trash2 size={13} />
-              </button>
-            </div>
-          </div>
-        ))}
+          );
+        })}
       </div>
 
       {/* Post-Workout Stretches Bar */}

@@ -1,6 +1,7 @@
 import fs from "fs";
 import path from "path";
 import { fileURLToPath } from "url";
+import { CLINICAL_GUIDELINES } from "../config/clinical-guidelines.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -1240,6 +1241,86 @@ export const CANONICAL_SWAP_ALIASES = Object.freeze({
   "CORE_CABLE_WOODCHOPPER": "DEAD_BUG"
 });
 
+export const EXERCISE_JOINT_STRESS_MAP = Object.freeze({
+  // KNEE
+  BARBELL_BACK_SQUAT: ["KNEE", "LOWER_BACK"],
+  BARBELL_FRONT_SQUAT: ["KNEE", "WRIST"],
+  LEG_PRESS_MACHINE: ["KNEE"],
+  INCLINE_LEG_PRESS: ["KNEE"],
+  HACK_SQUAT_MACHINE: ["KNEE"],
+  SMITH_MACHINE_SQUAT: ["KNEE", "LOWER_BACK"],
+  LEG_EXTENSION_MACHINE: ["KNEE"],
+  LEG_EXTENSION: ["KNEE"],
+  BULGARIAN_SPLIT_SQUAT: ["KNEE"],
+  DEFICIT_REVERSE_LUNGE: ["KNEE"],
+  WALKING_LUNGE: ["KNEE"],
+  LUNGES: ["KNEE"],
+  BODYWEIGHT_AIR_SQUAT: ["KNEE"],
+  GOBLET_SQUAT: ["KNEE"],
+
+  // LOWER BACK / SPINE
+  BARBELL_CONVENTIONAL_DEADLIFT: ["LOWER_BACK"],
+  BARBELL_DEADLIFT: ["LOWER_BACK"],
+  BARBELL_ROMANIAN_DEADLIFT: ["LOWER_BACK"],
+  DUMBBELL_ROMANIAN_DEADLIFT: ["LOWER_BACK"],
+  BARBELL_BENT_OVER_ROW: ["LOWER_BACK"],
+  T_BAR_ROW: ["LOWER_BACK"],
+  GOOD_MORNING: ["LOWER_BACK"],
+
+  // SHOULDER
+  BARBELL_OVERHEAD_PRESS: ["SHOULDER", "WRIST"],
+  STANDING_DUMBBELL_SHOULDER_PRESS: ["SHOULDER"],
+  BEHIND_NECK_PRESS: ["SHOULDER", "NECK"],
+  UPRIGHT_ROW: ["SHOULDER", "WRIST"],
+  DIPS: ["SHOULDER"],
+  CHEST_DIPS: ["SHOULDER"],
+  INCLINE_BARBELL_BENCH_PRESS: ["SHOULDER"],
+  INCLINE_DUMBBELL_BENCH_PRESS: ["SHOULDER"],
+  BARBELL_BENCH_PRESS: ["SHOULDER"],
+
+  // WRIST
+  STRAIGHT_BAR_CURL: ["WRIST"],
+  BARBELL_WRIST_CURL: ["WRIST"],
+  CLEAN_AND_JERK: ["WRIST", "SHOULDER", "LOWER_BACK"],
+
+  // NECK
+  BEHIND_NECK_PULLDOWN: ["NECK", "SHOULDER"],
+  BARBELL_SHRUG: ["NECK"],
+
+  // HIP
+  SUMO_DEADLIFT: ["HIP", "LOWER_BACK"],
+  WIDE_STANCE_SQUAT: ["HIP"],
+});
+
+export function getExerciseJointStress(exerciseCode, candidateObj = null) {
+  const code = String(exerciseCode || "").toUpperCase().trim();
+  if (candidateObj && Array.isArray(candidateObj.joint_stress) && candidateObj.joint_stress.length > 0) {
+    return candidateObj.joint_stress;
+  }
+  if (EXERCISE_JOINT_STRESS_MAP[code]) {
+    return EXERCISE_JOINT_STRESS_MAP[code];
+  }
+
+  // Dynamic semantic matching
+  const stress = new Set();
+  if (code.includes("SQUAT") || code.includes("LEG_EXT") || code.includes("LUNGE") || code.includes("LEG_PRESS") || code.includes("HACK")) {
+    stress.add("KNEE");
+  }
+  if (code.includes("DEADLIFT") || code.includes("BENT_OVER_ROW") || code.includes("GOOD_MORNING") || code.includes("T_BAR_ROW")) {
+    stress.add("LOWER_BACK");
+  }
+  if (code.includes("OVERHEAD") || code.includes("SHOULDER") || code.includes("UPRIGHT_ROW") || code.includes("DIP") || code.includes("INCLINE_BENCH")) {
+    stress.add("SHOULDER");
+  }
+  if (code.includes("STRAIGHT_BAR_CURL") || code.includes("WRIST")) {
+    stress.add("WRIST");
+  }
+  if (code.includes("BEHIND_NECK") || code.includes("SHRUG")) {
+    stress.add("NECK");
+  }
+  return Array.from(stress);
+}
+
 function getCatalogExercises() {
   try {
     const settingsPath = path.resolve(__dirname, "../../data/settings/exercises_catalog.json");
@@ -1342,16 +1423,37 @@ export function getSmartExerciseSwaps(exerciseCode, options = {}) {
     );
   }
 
-  // 4. Injury & Joint-Pain Bypass
-  if (injuryFlags.includes("LOWER_BACK")) {
-    candidates = candidates.filter(
-      (c) => !c.exercise_code.includes("BARBELL_ROMANIAN_DEADLIFT") && !c.exercise_code.includes("BARBELL_BACK_SQUAT")
-    );
-  }
-  if (injuryFlags.includes("SHOULDER")) {
-    candidates = candidates.filter(
-      (c) => (c.joint_safety_benefit_ar && c.joint_safety_benefit_ar.includes("كتف")) || c.equipment === "CABLE" || c.equipment === "MACHINE" || c.equipment === "DUMBBELL"
-    );
+  // 4. Clinical Joint Stress & Injury Bypass (Covering LOWER_BACK, KNEE, SHOULDER, WRIST, NECK, HIP)
+  const normalizedInjuries = injuryFlags.map((f) => String(f).toUpperCase().trim()).filter(Boolean);
+  if (normalizedInjuries.length > 0) {
+    candidates = candidates.filter((c) => {
+      const exCode = String(c.exercise_code || "").toUpperCase().trim();
+      const stressList = getExerciseJointStress(exCode, c);
+
+      const hasConflict = normalizedInjuries.some((injury) => {
+        if (injury === "LOWER_BACK" || injury.includes("BACK") || injury.includes("DISC") || injury.includes("SPINE")) {
+          return stressList.includes("LOWER_BACK");
+        }
+        if (injury === "KNEE" || injury.includes("PATELLAR") || injury.includes("MENISCUS")) {
+          return stressList.includes("KNEE");
+        }
+        if (injury === "SHOULDER" || injury.includes("ROTATOR")) {
+          return stressList.includes("SHOULDER");
+        }
+        if (injury === "WRIST") {
+          return stressList.includes("WRIST");
+        }
+        if (injury === "NECK" || injury.includes("CERVICAL")) {
+          return stressList.includes("NECK");
+        }
+        if (injury === "HIP") {
+          return stressList.includes("HIP");
+        }
+        return stressList.includes(injury);
+      });
+
+      return !hasConflict;
+    });
   }
 
   const defaultPattern = entry?.movement_pattern || catalogEx?.biomechanical_focus || "STRENGTH_HYPERTROPHY";
@@ -1360,6 +1462,7 @@ export function getSmartExerciseSwaps(exerciseCode, options = {}) {
 
   return candidates.map((c) => ({
     ...c,
+    joint_stress: getExerciseJointStress(c.exercise_code, c),
     base_movement_pattern: c.base_movement_pattern || defaultPattern,
     target_muscle_ar: c.target_muscle_ar || defaultMuscleAr,
     target_head_ar: c.target_head_ar || defaultHeadAr,

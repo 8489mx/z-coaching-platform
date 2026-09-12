@@ -6,6 +6,7 @@ import {
   MesoCyclePhase,
   VolumeProgressionStrategy,
 } from "./domain/enums.js";
+import { CLINICAL_GUIDELINES } from "../config/clinical-guidelines.js";
 
 const DEFAULT_MESOCYCLE_CONFIG = Object.freeze([
   {
@@ -166,10 +167,28 @@ export function buildTrainingMesoCycle(intakeDecision, options = {}) {
       (c.instructions && c.instructions.some((i) => i.affected_movement === "SQUAT")),
   );
 
+  // Clinical Guard: Hypertension & Cardiovascular Conditions (ACSM/AHA Guidelines)
+  const rawIntake = options.rawIntake || {};
+  const medical = rawIntake.medical || {};
+  const rawMedicalConditions = [
+    ...(Array.isArray(medical.conditions) ? medical.conditions : []),
+    ...(Array.isArray(intakeDecision.profile?.medical_conditions) ? intakeDecision.profile.medical_conditions : []),
+    ...(Array.isArray(intakeDecision.constraints) ? intakeDecision.constraints.map(c => c.code) : [])
+  ].map(c => typeof c === 'string' ? c.toUpperCase() : String(c?.conditionCode || c?.code || '').toUpperCase());
+
+  const hasHypertensionOrHeart =
+    medical.hasHypertension === true ||
+    medical.hasHeartCondition === true ||
+    rawIntake.hasHypertension === true ||
+    rawMedicalConditions.some(c => c.includes("HYPERTENSION") || c.includes("HEART_CONDITION") || c.includes("HIGH_BLOOD_PRESSURE"));
+
   // 2. Generate Periodized Weeks
   const weekConfigs = DEFAULT_MESOCYCLE_CONFIG.slice(0, Math.min(weeksCount, DEFAULT_MESOCYCLE_CONFIG.length));
 
   const periodizedWeeks = weekConfigs.map((config) => {
+    const weekTargetRir = hasHypertensionOrHeart
+      ? Math.max(config.target_rir, CLINICAL_GUIDELINES.HYPERTENSION.MIN_RIR)
+      : config.target_rir;
     const periodizedSessions = basePlan.sessions.map((baseSession, sessionIdx) => {
       // Create session-specific exercise layout to prevent repetitive duplicates
       let sessionExerciseTemplates = [...(baseSession.exercises || [])];
@@ -267,6 +286,19 @@ export function buildTrainingMesoCycle(intakeDecision, options = {}) {
           finalCode = "CHEST_SUPPORTED_ROW";
         }
 
+        // Hypertension & Cardiovascular Guard: Exclude inverted postures & excessive Valsalva compressive exercises
+        if (hasHypertensionOrHeart && CLINICAL_GUIDELINES.HYPERTENSION.CONTRAINDICATED_EXERCISES.includes(finalCode)) {
+          if (finalCode === "LEG_PRESS_MACHINE" || finalCode === "INCLINE_LEG_PRESS") {
+            finalCode = "GOBLET_SQUAT";
+          } else if (finalCode === "DECLINE_CRUNCH") {
+            finalCode = "DEAD_BUG";
+          } else if (finalCode === "DECLINE_BENCH_PRESS") {
+            finalCode = "DUMBBELL_BENCH_PRESS";
+          } else {
+            finalCode = "CHEST_SUPPORTED_ROW";
+          }
+        }
+
         const v2Exercise = getExerciseV2ByCode(finalCode);
 
         // Calculate Evidence-Based Reps, Sets, Rest Intervals, and RIR
@@ -332,7 +364,10 @@ export function buildTrainingMesoCycle(intakeDecision, options = {}) {
         }
 
         // Adjust RIR across weeks (Intro RIR 3 -> Loading RIR 2 -> Intensify RIR 1 -> Peak RIR 0 -> Deload RIR 4)
-        const effectiveRir = config.target_rir !== undefined ? config.target_rir : baseRir;
+        let effectiveRir = weekTargetRir !== undefined ? weekTargetRir : baseRir;
+        if (hasHypertensionOrHeart) {
+          effectiveRir = Math.max(effectiveRir, CLINICAL_GUIDELINES.HYPERTENSION.MIN_RIR);
+        }
 
         const isFirstExerciseInSession = exIdx === 0;
         const isPrimaryHeavy = isFirstExerciseInSession || HEAVY_PRIMARY_COMPOUNDS.has(finalCode);
@@ -385,6 +420,7 @@ export function buildTrainingMesoCycle(intakeDecision, options = {}) {
             rest_seconds: restSeconds,
             unit: "REPS",
             target_rir: effectiveRir,
+            clinical_valsalva_cue_ar: hasHypertensionOrHeart ? CLINICAL_GUIDELINES.HYPERTENSION.VALSALVA_SAFETY_CUE_AR : null,
           }),
         });
 
@@ -399,9 +435,11 @@ export function buildTrainingMesoCycle(intakeDecision, options = {}) {
     return Object.freeze({
       week_number: config.week_number,
       phase: config.phase,
-      target_rir: config.target_rir,
+      target_rir: weekTargetRir,
       volume_modifier: config.volume_modifier,
-      focus_note: config.focus_note,
+      focus_note: hasHypertensionOrHeart && config.target_rir < CLINICAL_GUIDELINES.HYPERTENSION.MIN_RIR
+        ? `${config.focus_note} (تم تقييد RIR >= 2 لمرضى الضغط والقلب لحظر الفشل العضلي وحبس النفس)`
+        : config.focus_note,
       sessions: Object.freeze(periodizedSessions),
     });
   });
@@ -413,6 +451,11 @@ export function buildTrainingMesoCycle(intakeDecision, options = {}) {
     schedule_mode: basePlan.schedule_mode,
     strategy: VolumeProgressionStrategy.LINEAR_RIR_DROP,
     muscle_bias: muscleBias,
+    clinical_guardrails: {
+      hypertension_guard_active: Boolean(hasHypertensionOrHeart),
+      min_rir_enforced: hasHypertensionOrHeart ? CLINICAL_GUIDELINES.HYPERTENSION.MIN_RIR : null,
+      valsalva_safety_cue_ar: hasHypertensionOrHeart ? CLINICAL_GUIDELINES.HYPERTENSION.VALSALVA_SAFETY_CUE_AR : null,
+    },
     weeks: Object.freeze(periodizedWeeks),
     preflight_report: preflight,
   });
