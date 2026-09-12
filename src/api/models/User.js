@@ -106,10 +106,6 @@ const User = sequelize.define("User", {
     type: DataTypes.TEXT,
     allowNull: true,
   },
-  legacy_uuid: {
-    type: DataTypes.STRING(36),
-    allowNull: true,
-  },
 }, {
   tableName: "users",
   timestamps: true,
