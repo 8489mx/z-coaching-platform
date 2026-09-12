@@ -1,5 +1,6 @@
 import fs from "fs";
 import path from "path";
+import sequelize from "../config/database.js";
 import { 
   User, 
   IntakeSubmission, 
@@ -121,11 +122,20 @@ export const getClients = async (req, res) => {
 export const deleteClient = async (req, res) => {
   try {
     const { id } = req.params;
-    const client = await User.findOne({ where: { id, role: 'CLIENT' } });
+    let client = await User.findOne({ where: { id, role: 'CLIENT' } });
+    if (!client && !isNaN(id)) {
+      client = await User.findOne({ where: { id: parseInt(id, 10), role: 'CLIENT' } });
+    }
+    if (!client) {
+      const cleanCode = String(id).replace(/^#+/, '').replace(/^client[-_]?/i, '').trim();
+      client = await User.findOne({ where: { client_code: cleanCode, role: 'CLIENT' } });
+    }
+
     if (!client) {
       return res.status(404).json({ error: "المشترك غير موجود" });
     }
 
+    const clientId = client.id;
     const targetCode = client.client_code;
 
     // 1. حذف المجلد الفيزيائي لصور المشترك إن وجد
@@ -140,16 +150,18 @@ export const deleteClient = async (req, res) => {
       }
     }
 
-    // 2. حذف الجداول المرتبطة وحساب المشترك بصورة تتابعية كاملة
-    await CheckinSubmission.destroy({ where: { user_id: id } }).catch(() => {});
-    await ProgressPhoto.destroy({ where: { user_id: id } }).catch(() => {});
-    await WorkoutLog.destroy({ where: { user_id: id } }).catch(() => {});
-    await Order.destroy({ where: { client_id: id } }).catch(() => {});
-    await NutritionPlan.destroy({ where: { user_id: id } }).catch(() => {});
-    await WorkoutPlan.destroy({ where: { user_id: id } }).catch(() => {});
-    await IntakeSubmission.destroy({ where: { user_id: id } }).catch(() => {});
-    await Program.destroy({ where: { user_id: id } }).catch(() => {});
-    await client.destroy();
+    // 2. حذف الجداول المرتبطة وحساب المشترك داخل معاملة ذرية متتالية
+    await sequelize.transaction(async (t) => {
+      await WorkoutLog.destroy({ where: { user_id: clientId }, transaction: t });
+      await ProgressPhoto.destroy({ where: { user_id: clientId }, transaction: t });
+      await CheckinSubmission.destroy({ where: { user_id: clientId }, transaction: t });
+      await Order.destroy({ where: { client_id: clientId }, transaction: t });
+      await NutritionPlan.destroy({ where: { user_id: clientId }, transaction: t });
+      await WorkoutPlan.destroy({ where: { user_id: clientId }, transaction: t });
+      await IntakeSubmission.destroy({ where: { user_id: clientId }, transaction: t });
+      await Program.destroy({ where: { user_id: clientId }, transaction: t });
+      await User.destroy({ where: { id: clientId }, transaction: t });
+    });
 
     return res.status(200).json({ success: true, message: "تم حذف المشترك وكافة بياناته وصوره بنجاح" });
   } catch (err) {
