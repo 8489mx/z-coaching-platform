@@ -12,6 +12,7 @@ import {
   NutritionPlan, 
   WorkoutPlan 
 } from "../models/index.js";
+import { recordAuditEvent } from "../services/auditLog.service.js";
 
 export const addClient = async (req, res) => {
   try {
@@ -161,6 +162,16 @@ export const deleteClient = async (req, res) => {
       await IntakeSubmission.destroy({ where: { user_id: clientId }, transaction: t });
       await Program.destroy({ where: { user_id: clientId }, transaction: t });
       await User.destroy({ where: { id: clientId }, transaction: t });
+    });
+
+    recordAuditEvent({
+      event: 'CLIENT_DELETED_CASCADE',
+      req,
+      status: 'SUCCESS',
+      details: {
+        deletedClientId: clientId,
+        deletedClientCode: targetCode
+      }
     });
 
     return res.status(200).json({ success: true, message: "تم حذف المشترك وكافة بياناته وصوره بنجاح" });

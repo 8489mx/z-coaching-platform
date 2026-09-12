@@ -168,6 +168,16 @@ export const deleteAccount = async (req, res) => {
       notes: `${existingNotes}[تم طلب حذف الحساب من تطبيق الهاتف الذكي في ${dateStr} - الحساب معطل مع الحفاظ على الأرشيف]`
     });
 
+    recordAuditEvent({
+      event: 'ACCOUNT_DEACTIVATED_APP_STORE_COMPLIANCE',
+      req,
+      status: 'SUCCESS',
+      details: {
+        userId: user.id,
+        clientCode: user.client_code
+      }
+    });
+
     return res.status(200).json({
       success: true,
       message: "تم حذف الحساب وإلغاء تسجيل الدخول بنجاح وفق سياسة الخصوصية المعتمدة."
