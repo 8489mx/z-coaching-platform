@@ -72,13 +72,16 @@ export function isTrustedOrigin(originHeader, hostHeader) {
       }
     }
 
-    // 3. Check environment-configured allowed domains
+    // 3. Check official platform domains and environment-configured allowed domains
+    const officialDomains = ['z-coaching.com'];
     const envAllowed = (process.env.ALLOWED_ORIGINS || process.env.CORS_ORIGIN || '')
       .split(',')
       .map(s => s.trim().toLowerCase())
       .filter(Boolean);
 
-    for (const allowed of envAllowed) {
+    const allowedList = [...officialDomains, ...envAllowed];
+
+    for (const allowed of allowedList) {
       try {
         const allowedHostname = allowed.startsWith('http') ? new URL(allowed).hostname.toLowerCase() : allowed;
         if (originHostname === allowedHostname || originHostname.endsWith(`.${allowedHostname}`)) {

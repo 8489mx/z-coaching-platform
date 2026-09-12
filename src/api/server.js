@@ -27,7 +27,7 @@ import { warmUpCatalogCache } from "./services/catalogCache.service.js";
 import { getPrivacyPolicy, getTermsOfService, getDeleteAccountPage } from "./controllers/legal.controller.js";
 import { requireAuth, requireAdmin } from "./middlewares/auth.middleware.js";
 import { securityHeaders } from "./middlewares/securityHeaders.js";
-import { csrfProtection } from "./middlewares/csrfProtection.js";
+import { csrfProtection, isTrustedOrigin } from "./middlewares/csrfProtection.js";
 import { exportRateLimiter, uploadRateLimiter } from "./middlewares/rateLimiter.js";
 import { recordAuditEvent, readRecentAuditEvents } from "./services/auditLog.service.js";
 import { User } from "./models/index.js";
@@ -55,8 +55,21 @@ const frontendDistPath = path.resolve(__dirname, "../../frontend/dist");
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// Core Middleware
-app.use(cors());
+// Core Middleware & Strict Origin Restriction
+const corsOptionsDelegate = (req, callback) => {
+  const origin = req.header('Origin');
+  const host = req.header('Host');
+  const isAllowed = !origin || isTrustedOrigin(origin, host);
+
+  callback(null, {
+    origin: isAllowed,
+    credentials: true,
+    methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "Authorization", "X-Requested-With", "Accept", "X-CSRF-Token"]
+  });
+};
+
+app.use(cors(corsOptionsDelegate));
 app.use(express.json({ limit: "50mb" }));
 app.use(securityHeaders);
 app.use(csrfProtection);
