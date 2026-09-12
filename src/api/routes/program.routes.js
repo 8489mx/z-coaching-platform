@@ -28,6 +28,7 @@ router.post("/generate-from-submission/:submission_id", requireAuth, generatePro
 router.post("/generate-for-client/:user_id", requireAuth, generateProgramForClient);
 router.get("/", requireAuth, getUserPrograms);
 router.get("/active/:user_id", requireAuth, getActiveProgramByUserId);
+router.get("/mobile/:code", requireAuth, getActiveProgramByUserId);
 
 // Custom Program Editing & Catalog
 router.put("/update-custom", requireAuth, updateCustomProgram);

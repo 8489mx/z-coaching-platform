@@ -281,14 +281,28 @@ export const generateProgramFromSubmission = async (req, res) => {
 
 export const generateProgramForClient = async (req, res) => {
   try {
-    const { user_id } = req.params;
-    let user = await User.findOne({ where: { client_code: user_id } });
-    if (!user && !isNaN(user_id)) {
-      user = await User.findByPk(parseInt(user_id, 10));
+    const rawTarget = req.params.user_id || req.params.code || "";
+    const rawCode = String(rawTarget).trim();
+    const cleanCode = rawCode.replace(/^#+/, '').replace(/^client[-_]?/i, '').trim();
+
+    let user = await User.findOne({ where: { client_code: cleanCode } });
+    if (!user && rawCode !== cleanCode) {
+      user = await User.findOne({ where: { client_code: rawCode } });
+    }
+    if (!user && !isNaN(cleanCode) && cleanCode !== "") {
+      user = await User.findByPk(parseInt(cleanCode, 10));
     }
     if (!user) {
-      user = await User.findOne({ where: { phone_number: user_id } });
+      user = await User.findOne({ where: { phone_number: cleanCode } });
     }
+    if (!user && rawCode !== cleanCode) {
+      user = await User.findOne({ where: { phone_number: rawCode } });
+    }
+
+    if (!user) {
+      return res.status(404).json({ error: "المتدرب غير موجود" });
+    }
+
     let clientIntake = null;
     const latestSubmission = await IntakeSubmission.findOne({
       where: { user_id: user.id },
@@ -769,15 +783,27 @@ export const calculateSwapHandler = async (req, res) => {
 
 export const getActiveProgramByUserId = async (req, res) => {
   try {
-    const { user_id } = req.params;
-    
-    // Look up user by client_code first, then by id, then by phone_number
-    let user = await User.findOne({ where: { client_code: user_id } });
-    if (!user && !isNaN(user_id)) {
-      user = await User.findByPk(parseInt(user_id, 10));
+    const rawTarget = req.params.user_id || req.params.code || "";
+    const rawCode = String(rawTarget).trim();
+    const cleanCode = rawCode.replace(/^#+/, '').replace(/^client[-_]?/i, '').trim();
+
+    // 1. Look up user by client_code (clean and raw)
+    let user = await User.findOne({ where: { client_code: cleanCode } });
+    if (!user && rawCode !== cleanCode) {
+      user = await User.findOne({ where: { client_code: rawCode } });
     }
+
+    // 2. Look up user by primary key ID (if numeric)
+    if (!user && !isNaN(cleanCode) && cleanCode !== "") {
+      user = await User.findByPk(parseInt(cleanCode, 10));
+    }
+
+    // 3. Look up user by phone_number
     if (!user) {
-      user = await User.findOne({ where: { phone_number: user_id } });
+      user = await User.findOne({ where: { phone_number: cleanCode } });
+    }
+    if (!user && rawCode !== cleanCode) {
+      user = await User.findOne({ where: { phone_number: rawCode } });
     }
 
     if (!user) {
