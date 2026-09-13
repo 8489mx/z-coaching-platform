@@ -21,6 +21,60 @@ export const ADD_EX_EQUIPMENT_OPTIONS = [
   { id: 'BODYWEIGHT', label: 'وزن الجسم' },
 ];
 
+function getRealisticDefaultPortion(fd) {
+  if (fd.default_amount) return { amount: fd.default_amount, unit: fd.serving_unit || 'جم' };
+  if (fd.default_portion) return { amount: fd.default_portion, unit: fd.unit_name_ar || fd.serving_unit || 'جم' };
+
+  const str = String((fd.code || '') + ' ' + (fd.name_ar || '') + ' ' + (fd.name || '')).toUpperCase();
+
+  // Eggs
+  if (/EGG|بيض/.test(str)) {
+    return { amount: 1, unit: 'بيضة' };
+  }
+  // Ghee & Butter (5g)
+  if (/GHEE|BUTTER|سمن|زبدة/.test(str) && !/PEANUT|فول/.test(str)) {
+    return { amount: 5, unit: 'جم' };
+  }
+  // Oils (10g / 10ml)
+  if (/OIL|زيت/.test(str)) {
+    return { amount: 10, unit: 'مل' };
+  }
+  // Chia Seeds & Flax Seeds (10g)
+  if (/CHIA|SEEDS|FLAX|شيا|بذور|كتان/.test(str)) {
+    return { amount: 10, unit: 'جم' };
+  }
+  // Tahini & Peanut Butter (15g)
+  if (/TAHINI|PEANUT|طحينة|فول سوداني/.test(str)) {
+    return { amount: 15, unit: 'جم' };
+  }
+  // Raw Nuts (20g)
+  if (/ALMOND|WALNUT|CASHEW|NUTS|لوز|جوز|كاجو|مكسرات/.test(str)) {
+    return { amount: 20, unit: 'جم' };
+  }
+  // Dark Chocolate (15g)
+  if (/CHOCOLATE|شوكولاتة/.test(str)) {
+    return { amount: 15, unit: 'جم' };
+  }
+  // Oats (50g)
+  if (/OAT|شوفان/.test(str)) {
+    return { amount: 50, unit: 'جم' };
+  }
+  // Whey Protein / Casein (30g)
+  if (/WHEY|CASEIN|ISOLATE|بروتين معزول|واي/.test(str)) {
+    return { amount: 30, unit: 'جم' };
+  }
+  // Milk & Beverages (200ml)
+  if (/MILK|حليب|لبن/.test(str)) {
+    return { amount: 200, unit: 'مل' };
+  }
+  // Fruits (120g)
+  if (/BANANA|APPLE|ORANGE|GUAVA|موز|تفاح|برتقال|جوافة/.test(str)) {
+    return { amount: 120, unit: 'جم' };
+  }
+  // Default for meats, carbs, veg
+  return { amount: 100, unit: 'جم' };
+}
+
 const rawFoodsList = Object.values(FOOD_DATABASE || {})
   .filter(fd => Boolean(fd && typeof fd === 'object' && (fd.name_ar || fd.name || fd.code)));
 
@@ -28,6 +82,7 @@ const uniqueFoodsMap = new Map();
 rawFoodsList.forEach(fd => {
   const code = fd.code || fd.id;
   if (code && !uniqueFoodsMap.has(code)) {
+    const realisticPortion = getRealisticDefaultPortion(fd);
     uniqueFoodsMap.set(code, {
       ...fd,
       name: fd.name_ar || fd.name || code,
@@ -35,8 +90,8 @@ rawFoodsList.forEach(fd => {
       c: Number(fd.carbs_per_100g ?? fd.c ?? 0),
       f: Number(fd.fat_per_100g ?? fd.f ?? 0),
       cal: Number(fd.calories_per_100g ?? fd.cal ?? 0),
-      amount: 100,
-      unit: 'جم'
+      amount: realisticPortion.amount,
+      unit: realisticPortion.unit
     });
   }
 });

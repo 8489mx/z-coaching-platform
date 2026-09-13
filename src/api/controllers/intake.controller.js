@@ -4,6 +4,7 @@ import { fileURLToPath } from "node:url";
 
 import { evaluateIntake } from "z-coaching-intake-decision-engine";
 import { adaptIntakePayloadToCanonicalEngine } from "../../intake-decision-engine/adapters/intake-adapter.js";
+import { IntakeValidationError } from "../../intake-decision-engine/validation/intake-validation-error.js";
 import { buildMasterEngineV2 } from "../../../src/master-engine-v2/index.js";
 import { User, Program, IntakeSubmission } from "../models/index.js";
 import { encryptMedicalData, decryptMedicalData } from "../../utils/crypto.js";
@@ -223,6 +224,10 @@ export const getClientIntakeDraft = async (req, res) => {
 export const saveDraftIntake = async (req, res) => {
   try {
     const { client_code, code, phone_number, phone, full_name, progress_percent = 50, ...intakePayload } = req.body;
+
+    // Strict validation: reject impossible biometrics or invalid field values even in draft
+    adaptIntakePayloadToCanonicalEngine(intakePayload);
+
     const rawCode = client_code || code || "";
     const cleanClientCode = String(rawCode).replace(/^#+/, '').trim();
     const rawPhone = phone_number || phone || intakePayload.personal?.phone || "";
@@ -294,6 +299,15 @@ export const saveDraftIntake = async (req, res) => {
       progress_percent: submission.progress_percent
     });
   } catch (err) {
+    if (err instanceof IntakeValidationError || err.name === "IntakeValidationError" || err.code === "INVALID_BIOMETRICS" || err.code === "INVALID_FIELD_VALUE") {
+      return res.status(400).json({
+        error: err.message,
+        code: err.code || "VALIDATION_ERROR",
+        field: err.field,
+        value: err.value,
+        issues: err.issues || []
+      });
+    }
     console.error("saveDraftIntake error:", err);
     return res.status(500).json({ error: "فشل حفظ المسودة", details: err.message });
   }
@@ -303,6 +317,10 @@ export const saveDraftIntake = async (req, res) => {
 export const submitPublicIntake = async (req, res) => {
   try {
     const { client_code, code, phone_number, phone, full_name, ...intakePayload } = req.body;
+
+    // Strict validation: reject impossible biometrics or invalid field values
+    adaptIntakePayloadToCanonicalEngine(intakePayload);
+
     const rawCode = client_code || code || "";
     const cleanClientCode = String(rawCode).replace(/^#+/, '').trim();
     const rawPhone = phone_number || phone || intakePayload.personal?.phone || "";
@@ -371,6 +389,15 @@ export const submitPublicIntake = async (req, res) => {
       user
     });
   } catch (err) {
+    if (err instanceof IntakeValidationError || err.name === "IntakeValidationError" || err.code === "INVALID_BIOMETRICS" || err.code === "INVALID_FIELD_VALUE") {
+      return res.status(400).json({
+        error: err.message,
+        code: err.code || "VALIDATION_ERROR",
+        field: err.field,
+        value: err.value,
+        issues: err.issues || []
+      });
+    }
     console.error("submitPublicIntake error:", err);
     return res.status(500).json({ error: "فشل إرسال الاستمارة", details: err.message });
   }
@@ -537,6 +564,15 @@ export const generateDraftFromIntake = async (req, res) => {
       master_program: masterProgram
     });
   } catch (err) {
+    if (err instanceof IntakeValidationError || err.name === "IntakeValidationError" || err.code === "INVALID_BIOMETRICS" || err.code === "INVALID_FIELD_VALUE") {
+      return res.status(400).json({
+        error: err.message,
+        code: err.code || "VALIDATION_ERROR",
+        field: err.field,
+        value: err.value,
+        issues: err.issues || []
+      });
+    }
     console.error("generateDraftFromIntake error:", err);
     return res.status(500).json({ error: "فشل توليد مسودة الخطة", details: err.message });
   }

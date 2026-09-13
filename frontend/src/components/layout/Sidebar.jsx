@@ -1,6 +1,6 @@
 import { API_BASE } from '../../config/api';
 import React, { useState, useRef, useMemo, useEffect } from 'react';
-import { NavLink, useLocation, useNavigate } from 'react-router-dom';
+import { Link, NavLink, useLocation, useNavigate } from 'react-router-dom';
 import {
   LayoutDashboard,
   ClipboardList,
@@ -332,23 +332,79 @@ export default function Sidebar({ isCollapsed = false, onToggleSidebar }) {
           borderBottom: '1px solid #F1F5F9',
           display: 'flex',
           alignItems: 'center',
-          justifyContent: isCollapsed ? 'center' : 'space-between',
-          padding: isCollapsed ? '0' : '0 14px',
-          gap: '8px',
+          justifyContent: isCollapsed ? 'center' : 'stretch',
+          padding: isCollapsed ? '0' : '0 12px',
           boxSizing: 'border-box',
+          background: '#FFFFFF',
         }}
       >
-        <NavLink
+        <Link
           to="/"
+          className="sidebar-brand-link"
           style={{
             display: 'flex',
             alignItems: 'center',
-            gap: '10px',
+            justifyContent: isCollapsed ? 'center' : 'space-between',
+            gap: isCollapsed ? '0' : '10px',
+            width: '100%',
+            height: '100%',
             textDecoration: 'none',
-            overflow: 'hidden',
+            background: 'transparent',
           }}
         >
-          {/* Logo Squircle Badge */}
+          {/* Centered Brand Titles (Centered in the remaining space next to the badge) */}
+          {!isCollapsed && (
+            <div
+              style={{
+                flex: 1,
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                justifyContent: 'center',
+                textAlign: 'center',
+                minWidth: 0,
+                overflow: 'hidden',
+              }}
+            >
+              <span
+                style={{
+                  fontSize: '12.5px',
+                  fontWeight: 900,
+                  color: '#0F172A',
+                  letterSpacing: '1.2px',
+                  lineHeight: '1.2',
+                  whiteSpace: 'nowrap',
+                  overflow: 'hidden',
+                  textOverflow: 'ellipsis',
+                  textTransform: 'uppercase',
+                  textAlign: 'center',
+                  width: '100%',
+                  fontFamily: "'Montserrat', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
+                }}
+              >
+                {coachConfig?.systemName || 'Z COACHING'}
+              </span>
+              <span
+                style={{
+                  fontSize: '10px',
+                  fontWeight: 700,
+                  color: '#64748B',
+                  lineHeight: '1.25',
+                  marginTop: '2.5px',
+                  whiteSpace: 'nowrap',
+                  overflow: 'hidden',
+                  textOverflow: 'ellipsis',
+                  textAlign: 'center',
+                  width: '100%',
+                  fontFamily: 'Cairo, sans-serif',
+                }}
+              >
+                منظومة التدريب والمتابعة
+              </span>
+            </div>
+          )}
+
+          {/* Logo Squircle Badge (Positioned on the Left / الشمال) */}
           <div
             style={{
               width: '34px',
@@ -396,41 +452,7 @@ export default function Sidebar({ isCollapsed = false, onToggleSidebar }) {
               </defs>
             </svg>
           </div>
-
-          {!isCollapsed && (
-            <div style={{ display: 'flex', flexDirection: 'column', overflow: 'hidden', justifyContent: 'center' }}>
-              <span
-                style={{
-                  fontSize: '12.5px',
-                  fontWeight: 900,
-                  color: '#0F172A',
-                  letterSpacing: '1.4px',
-                  lineHeight: '1.2',
-                  whiteSpace: 'nowrap',
-                  overflow: 'hidden',
-                  textOverflow: 'ellipsis',
-                  textTransform: 'uppercase',
-                  fontFamily: "'Montserrat', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
-                }}
-              >
-                {coachConfig?.systemName || 'Z COACHING'}
-              </span>
-              <span
-                style={{
-                  fontSize: '10px',
-                  fontWeight: 700,
-                  color: '#64748B',
-                  lineHeight: '1.25',
-                  marginTop: '1.5px',
-                  whiteSpace: 'nowrap',
-                  fontFamily: 'Cairo, sans-serif',
-                }}
-              >
-                منظومة التدريب والمتابعة
-              </span>
-            </div>
-          )}
-        </NavLink>
+        </Link>
       </div>
 
       {/* 3. Navigation List (Scrollable) */}

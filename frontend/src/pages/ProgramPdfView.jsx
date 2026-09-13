@@ -92,7 +92,10 @@ export default function ProgramPdfView() {
     program?.nutrition_program?.stages?.macro_targets?.fat_g || 
     68
   );
-  const hydrationLiters = '3.8 - 4.2 Liters/Day';
+  const hydrationLiters = program?.nutrition_program?.targets?.hydration?.recommended_range_liters
+    || program?.nutrition_program?.hydration?.recommended_range_liters 
+    || program?.nutrition?.hydration?.recommended_range_liters
+    || `${(weightKg * 0.040).toFixed(1)} - ${(weightKg * 0.040 + 0.5).toFixed(1)} لتر/اليوم`;
 
   // Supplements
   const supplements = program?.cardio?.supplements 

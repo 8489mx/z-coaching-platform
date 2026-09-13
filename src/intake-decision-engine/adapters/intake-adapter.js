@@ -4,6 +4,8 @@
  * Guarantees zero schema validation errors while preserving 100% of user safety & decision data.
  */
 
+import { IntakeValidationError } from "../validation/intake-validation-error.js";
+
 export function parseCleanNumber(val, fallback = null) {
   if (val === null || val === undefined || val === '') return fallback;
   if (typeof val === 'number') return Number.isFinite(val) ? val : fallback;
@@ -18,11 +20,237 @@ export function parseCleanNumber(val, fallback = null) {
 
 export function adaptIntakePayloadToCanonicalEngine(raw) {
   if (!raw || typeof raw !== 'object') return {};
+
+  const base = (raw.answers && typeof raw.answers === 'object') ? { ...raw.answers, ...raw } : raw;
+  const intake = JSON.parse(JSON.stringify(base));
+
+  // =========================================================================
+  // 1. STRICT BIOMETRIC VALIDATION (Rejects impossible human biometrics)
+  // Human Physiological Bounds: Height [120, 250] cm, Weight [30, 300] kg, Waist [40, 200] cm
+  // =========================================================================
+  const rawHeight = intake.body?.heightCm ?? intake.height_cm ?? intake.body?.height_cm;
+  if (rawHeight !== undefined && rawHeight !== null && String(rawHeight).trim() !== '') {
+    const parsedHeight = parseCleanNumber(rawHeight, null);
+    if (parsedHeight === null || parsedHeight < 120 || parsedHeight > 250) {
+      throw new IntakeValidationError(
+        [{ path: 'body.heightCm', code: 'INVALID_BIOMETRICS', message: `قيمة الطول غير منطقية (${rawHeight} سم). يجب أن يتراوح الطول البشري المنطقي بين 120 و 250 سم.` }],
+        `قيمة الطول غير منطقية (${rawHeight} سم). يجب أن يتراوح الطول البشري المنطقي بين 120 و 250 سم.`,
+        'INVALID_BIOMETRICS',
+        'height_cm',
+        rawHeight
+      );
+    }
+  }
+
+  const rawWeight = intake.body?.weightKg ?? intake.weight_kg ?? intake.body?.weight_kg;
+  if (rawWeight !== undefined && rawWeight !== null && String(rawWeight).trim() !== '') {
+    const parsedWeight = parseCleanNumber(rawWeight, null);
+    if (parsedWeight === null || parsedWeight < 30 || parsedWeight > 300) {
+      throw new IntakeValidationError(
+        [{ path: 'body.weightKg', code: 'INVALID_BIOMETRICS', message: `قيمة الوزن غير منطقية (${rawWeight} كجم). يجب أن يتراوح الوزن البشري المنطقي بين 30 و 300 كجم.` }],
+        `قيمة الوزن غير منطقية (${rawWeight} كجم). يجب أن يتراوح الوزن البشري المنطقي بين 30 و 300 كجم.`,
+        'INVALID_BIOMETRICS',
+        'weight_kg',
+        rawWeight
+      );
+    }
+  }
+
+  const rawWaist = intake.body?.waistCm ?? intake.waist_cm ?? intake.body?.waist_cm ?? intake.circumferences?.waist_cm;
+  if (rawWaist !== undefined && rawWaist !== null && String(rawWaist).trim() !== '') {
+    const parsedWaist = parseCleanNumber(rawWaist, null);
+    if (parsedWaist === null || parsedWaist < 40 || parsedWaist > 200) {
+      throw new IntakeValidationError(
+        [{ path: 'body.waistCm', code: 'INVALID_BIOMETRICS', message: `قيمة محيط الخصر غير منطقية (${rawWaist} سم). يجب أن يتراوح محيط الخصر المنطقي بين 40 و 200 سم.` }],
+        `قيمة محيط الخصر غير منطقية (${rawWaist} سم). يجب أن يتراوح محيط الخصر المنطقي بين 40 و 200 سم.`,
+        'INVALID_BIOMETRICS',
+        'waist_cm',
+        rawWaist
+      );
+    }
+  }
+
+  // =========================================================================
+  // 2. STRICT FIELD VALUE VALIDATION (Rejects unknown random text)
+  // Fields: primary_goal, daily_activity, sex, experience_level, training_location
+  // =========================================================================
+  const rawSex = intake.personal?.sex ?? intake.sex ?? intake.gender ?? intake.personal?.gender;
+  let canonicalSex = undefined;
+  if (rawSex !== undefined && rawSex !== null && String(rawSex).trim() !== '') {
+    const s = String(rawSex).trim().toUpperCase();
+    if (['MALE', 'M', 'MAN', 'ذكر', 'رجل', 'ولد'].includes(s)) {
+      canonicalSex = 'MALE';
+    } else if (['FEMALE', 'F', 'WOMAN', 'أنثى', 'انثى', 'سيدة', 'امراة', 'امرأة', 'بنت'].includes(s)) {
+      canonicalSex = 'FEMALE';
+    } else {
+      throw new IntakeValidationError(
+        [{ path: 'personal.sex', code: 'INVALID_FIELD_VALUE', message: `قيمة غير صالحة لحقل الجنس: '${rawSex}'. القيم المسموحة: MALE أو FEMALE.` }],
+        `قيمة غير صالحة لحقل الجنس: '${rawSex}'. القيم المسموحة: MALE أو FEMALE.`,
+        'INVALID_FIELD_VALUE',
+        'sex',
+        rawSex
+      );
+    }
+  }
+
+  const rawGoal = intake.goals?.primary ?? intake.primary_goal;
+  let canonicalGoal = undefined;
+  if (rawGoal !== undefined && rawGoal !== null && String(rawGoal).trim() !== '') {
+    const g = String(rawGoal).trim().toUpperCase();
+    const VALID_GOALS_MAP = {
+      FAT_LOSS: 'FAT_LOSS',
+      CUT: 'FAT_LOSS',
+      FATLOSS: 'FAT_LOSS',
+      'تنشيف': 'FAT_LOSS',
+      'خسارة دهون': 'FAT_LOSS',
+      'حرق دهون': 'FAT_LOSS',
+      'إنقاص وزن': 'FAT_LOSS',
+      'انقاص وزن': 'FAT_LOSS',
+      MUSCLE_GAIN: 'MUSCLE_GAIN',
+      BULK: 'MUSCLE_GAIN',
+      LEAN_BULK: 'MUSCLE_GAIN',
+      HYPERTROPHY: 'MUSCLE_GAIN',
+      'تضخيم': 'MUSCLE_GAIN',
+      'بناء عضل': 'MUSCLE_GAIN',
+      'زيادة عضل': 'MUSCLE_GAIN',
+      RECOMPOSITION: 'FAT_LOSS',
+      BODY_RECOMPOSITION: 'FAT_LOSS',
+      RECOMP: 'FAT_LOSS',
+      'إعادة تكوين': 'FAT_LOSS',
+      'اعادة تكوين': 'FAT_LOSS',
+      WEIGHT_MAINTENANCE: 'WEIGHT_MAINTENANCE',
+      MAINTENANCE: 'WEIGHT_MAINTENANCE',
+      'تثبيت وزن': 'WEIGHT_MAINTENANCE',
+      'صيانة': 'WEIGHT_MAINTENANCE',
+      ATHLETIC_PERFORMANCE: 'PERFORMANCE',
+      PERFORMANCE: 'PERFORMANCE',
+      GENERAL_HEALTH: 'GENERAL_HEALTH',
+      'لياقة عامة': 'PERFORMANCE',
+      'صحة عامة': 'GENERAL_HEALTH',
+      OTHER: 'OTHER',
+      'أخرى': 'OTHER',
+      'اخرى': 'OTHER'
+    };
+    if (VALID_GOALS_MAP[g]) {
+      canonicalGoal = VALID_GOALS_MAP[g];
+    } else {
+      throw new IntakeValidationError(
+        [{ path: 'goals.primary', code: 'INVALID_FIELD_VALUE', message: `قيمة غير صالحة للهدف الرئيسي: '${rawGoal}'. القيم المسموحة: FAT_LOSS, MUSCLE_GAIN, RECOMPOSITION, WEIGHT_MAINTENANCE, ATHLETIC_PERFORMANCE.` }],
+        `قيمة غير صالحة للهدف الرئيسي: '${rawGoal}'. القيم المسموحة: FAT_LOSS, MUSCLE_GAIN, RECOMPOSITION, WEIGHT_MAINTENANCE, ATHLETIC_PERFORMANCE.`,
+        'INVALID_FIELD_VALUE',
+        'primary_goal',
+        rawGoal
+      );
+    }
+  }
+
+  const rawActivity = intake.lifestyle?.dailyActivity ?? intake.daily_activity ?? intake.neat_level;
+  let canonicalActivity = undefined;
+  if (rawActivity !== undefined && rawActivity !== null && String(rawActivity).trim() !== '') {
+    const act = String(rawActivity).trim().toUpperCase();
+    const VALID_ACTIVITY_MAP = {
+      SEDENTARY: 'SEDENTARY',
+      'مكتبي خامل': 'SEDENTARY',
+      'خامل': 'SEDENTARY',
+      'قليل جداً': 'SEDENTARY',
+      'قليل جدا': 'SEDENTARY',
+      LIGHT: 'LIGHT',
+      'نشاط خفيف': 'LIGHT',
+      'خفيف': 'LIGHT',
+      MODERATE: 'MODERATE',
+      'نشاط معتدل': 'MODERATE',
+      'معتدل': 'MODERATE',
+      'متوسط': 'MODERATE',
+      HIGH: 'HIGH',
+      VERY_ACTIVE: 'HIGH',
+      'نشاط عالي': 'HIGH',
+      'عالي': 'HIGH',
+      'نشط جداً': 'HIGH',
+      'نشط جدا': 'HIGH',
+      'شاق': 'HIGH'
+    };
+    if (VALID_ACTIVITY_MAP[act]) {
+      canonicalActivity = VALID_ACTIVITY_MAP[act];
+    } else {
+      throw new IntakeValidationError(
+        [{ path: 'lifestyle.dailyActivity', code: 'INVALID_FIELD_VALUE', message: `قيمة غير صالحة لمستوى النشاط اليومي: '${rawActivity}'. القيم المسموحة: SEDENTARY, LIGHT, MODERATE, HIGH, VERY_ACTIVE.` }],
+        `قيمة غير صالحة لمستوى النشاط اليومي: '${rawActivity}'. القيم المسموحة: SEDENTARY, LIGHT, MODERATE, HIGH, VERY_ACTIVE.`,
+        'INVALID_FIELD_VALUE',
+        'daily_activity',
+        rawActivity
+      );
+    }
+  }
+
+  const rawExp = intake.training?.experience ?? intake.experience_level ?? intake.training_logistics?.experience_level;
+  let canonicalExp = undefined;
+  if (rawExp !== undefined && rawExp !== null && String(rawExp).trim() !== '') {
+    const exp = String(rawExp).trim().toUpperCase();
+    const VALID_EXPERIENCE_MAP = {
+      BEGINNER: 'BEGINNER',
+      NOVICE: 'BEGINNER',
+      'مبتدئ': 'BEGINNER',
+      'مبتدىء': 'BEGINNER',
+      'أقل من 6 شهور': 'BEGINNER',
+      'اقل من 6 شهور': 'BEGINNER',
+      INTERMEDIATE: 'INTERMEDIATE',
+      'متوسط': 'INTERMEDIATE',
+      'من 6 شهور لسنتين': 'INTERMEDIATE',
+      ADVANCED: 'ADVANCED',
+      'متقدم': 'ADVANCED',
+      'أكثر من سنتين': 'ADVANCED',
+      'اكثر من سنتين': 'ADVANCED',
+      'محترف': 'ADVANCED'
+    };
+    if (VALID_EXPERIENCE_MAP[exp]) {
+      canonicalExp = VALID_EXPERIENCE_MAP[exp];
+    } else {
+      throw new IntakeValidationError(
+        [{ path: 'training.experience', code: 'INVALID_FIELD_VALUE', message: `قيمة غير صالحة لمستوى الخبرة الرياضية: '${rawExp}'. القيم المسموحة: BEGINNER, INTERMEDIATE, ADVANCED.` }],
+        `قيمة غير صالحة لمستوى الخبرة الرياضية: '${rawExp}'. القيم المسموحة: BEGINNER, INTERMEDIATE, ADVANCED.`,
+        'INVALID_FIELD_VALUE',
+        'experience_level',
+        rawExp
+      );
+    }
+  }
+
+  const rawLoc = intake.training?.location ?? intake.training_location ?? intake.training_environment;
+  let canonicalLoc = undefined;
+  if (rawLoc !== undefined && rawLoc !== null && String(rawLoc).trim() !== '') {
+    const loc = String(rawLoc).trim().toUpperCase();
+    const VALID_LOCATION_MAP = {
+      GYM: 'GYM',
+      COMMERCIAL_GYM: 'GYM',
+      'جيم': 'GYM',
+      'صالة رياضية': 'GYM',
+      HOME: 'HOME',
+      HOME_FULL: 'HOME',
+      HOME_DUMBBELLS: 'HOME',
+      HOME_BODYWEIGHT: 'HOME',
+      'منزل': 'HOME',
+      'بيت': 'HOME',
+      BOTH: 'BOTH',
+      HYBRID: 'BOTH',
+      'كلاهما': 'BOTH',
+      'جيم ومنزل': 'BOTH'
+    };
+    if (VALID_LOCATION_MAP[loc]) {
+      canonicalLoc = VALID_LOCATION_MAP[loc];
+    } else {
+      throw new IntakeValidationError(
+        [{ path: 'training.location', code: 'INVALID_FIELD_VALUE', message: `قيمة غير صالحة لمكان التدريب: '${rawLoc}'. القيم المسموحة: GYM, HOME, BOTH.` }],
+        `قيمة غير صالحة لمكان التدريب: '${rawLoc}'. القيم المسموحة: GYM, HOME, BOTH.`,
+        'INVALID_FIELD_VALUE',
+        'training_location',
+        rawLoc
+      );
+    }
+  }
+
   if (raw.client && raw.body && raw.goals && raw.training && raw.medical) {
     return raw;
   }
-  const base = (raw.answers && typeof raw.answers === 'object') ? { ...raw.answers, ...raw } : raw;
-  const intake = JSON.parse(JSON.stringify(base));
 
   // Pre-normalization for direct FullIntakeForm payload (flat structure & 28-questions catalog)
   if (!intake.personal && (intake.first_name || intake.last_name || intake.age || intake.gender || intake.sex || intake.date_of_birth || intake.height_cm || intake.weight_kg)) {
@@ -31,17 +259,13 @@ export function adaptIntakePayloadToCanonicalEngine(raw) {
       lastName: intake.last_name || (intake.full_name || '').split(' ').slice(1).join(' ') || "جديد",
       dateOfBirth: intake.date_of_birth,
       age: parseCleanNumber(intake.age, null),
-      sex: String(intake.sex || intake.gender || 'male').toUpperCase() === 'FEMALE' ? 'FEMALE' : 'MALE'
+      sex: canonicalSex || 'MALE'
     };
   }
 
-  if (!intake.goals && intake.primary_goal) {
-    const pGoal = String(intake.primary_goal).toUpperCase();
+  if (!intake.goals && (intake.primary_goal || canonicalGoal)) {
     intake.goals = {
-      primary: (pGoal === 'RECOMPOSITION' || pGoal === 'RECOMP') ? 'BODY_RECOMPOSITION'
-        : (pGoal === 'MUSCLE_GAIN' || pGoal === 'BULK') ? 'MUSCLE_GAIN'
-        : pGoal === 'MAINTENANCE' ? 'WEIGHT_MAINTENANCE'
-        : 'FAT_LOSS'
+      primary: canonicalGoal || 'FAT_LOSS'
     };
   }
 
@@ -145,6 +369,7 @@ export function adaptIntakePayloadToCanonicalEngine(raw) {
       minimal_equipment: 'HOME',
       calisthenics_bands: 'HOME',
       GYM: 'GYM',
+      HOME: 'HOME',
       HOME_DUMBBELLS: 'HOME',
       HOME_BODYWEIGHT: 'HOME'
     };
@@ -263,7 +488,7 @@ export function adaptIntakePayloadToCanonicalEngine(raw) {
     firstName: String(personal.firstName || "متدرب").trim() || "متدرب",
     lastName: String(personal.lastName || "جديد").trim() || "جديد",
     dateOfBirth: dob,
-    sex: personal.sex === "FEMALE" ? "FEMALE" : "MALE",
+    sex: canonicalSex || (personal.sex === "FEMALE" ? "FEMALE" : "MALE"),
     residenceCountry: personal.residenceCountry && personal.residenceCountry.length === 2 ? personal.residenceCountry.toUpperCase() : "EG",
     guardianConsent: personal.guardianConsent !== undefined ? personal.guardianConsent : null
   };
@@ -286,7 +511,7 @@ export function adaptIntakePayloadToCanonicalEngine(raw) {
     OTHER: "OTHER"
   };
   const canonicalGoals = {
-    primary: primaryGoalMap[goals.primary] || "FAT_LOSS",
+    primary: canonicalGoal || primaryGoalMap[goals.primary] || "FAT_LOSS",
     secondaryTraining: goals.secondaryTraining || "NONE"
   };
 
@@ -324,9 +549,9 @@ export function adaptIntakePayloadToCanonicalEngine(raw) {
   }
 
   const canonicalBody = {
-    heightCm: Math.max(100, Math.min(250, height)),
-    weightKg: Math.max(30, Math.min(300, weight)),
-    waistCm: Math.max(40, Math.min(200, waist)),
+    heightCm: height,
+    weightKg: weight,
+    waistCm: waist,
     weightTrend: ["LOSING", "STABLE", "GAINING"].includes(body.weightTrend) ? body.weightTrend : "STABLE",
     measurementQuality: quality,
     progressPhotosAvailable: Boolean(body.progressPhotosAvailable || (body.photos && Object.keys(body.photos).length > 0))
@@ -339,7 +564,7 @@ export function adaptIntakePayloadToCanonicalEngine(raw) {
   const activityLevel = validActivity.includes(lifestyle.dailyActivity) ? lifestyle.dailyActivity : "LIGHT";
 
   const canonicalLifestyle = {
-    dailyActivity: activityLevel,
+    dailyActivity: canonicalActivity || activityLevel,
     workSchedule: {
       type: ["FIXED", "VARIABLE", "SHIFT_BASED"].includes(lifestyle.workSchedule?.type) ? lifestyle.workSchedule.type : "FIXED",
       physicallyDemandingDays: Array.isArray(lifestyle.workSchedule?.physicallyDemandingDays) ? lifestyle.workSchedule.physicallyDemandingDays : []
@@ -448,7 +673,11 @@ export function adaptIntakePayloadToCanonicalEngine(raw) {
     conditions,
     dangerousSymptoms,
     medications: Array.isArray(medical.medications) ? medical.medications : [],
-    eatingDisorderHistory: "NONE",
+    eatingDisorderHistory: ["NONE", "PAST", "ACTIVE", "SUSPECTED", "UNKNOWN"].includes(medical.eatingDisorderHistory)
+      ? medical.eatingDisorderHistory
+      : (["NONE", "PAST", "ACTIVE", "SUSPECTED", "UNKNOWN"].includes(intake.eating_disorder_history)
+        ? intake.eating_disorder_history
+        : "NONE"),
     pregnancyStatus: ["NOT_PREGNANT", "PREGNANT", "POSTPARTUM_LESS_THAN_12_MONTHS", "BREASTFEEDING"].includes(medical.pregnancyStatus) ? medical.pregnancyStatus : "NOT_PREGNANT",
     menstrualStatus: ["REGULAR", "IRREGULAR", "ABSENT", "NOT_APPLICABLE"].includes(medical.menstrualStatus) ? medical.menstrualStatus : (canonicalPersonal.sex === "FEMALE" ? "REGULAR" : "NOT_APPLICABLE"),
     unclassifiedText: unclassifiedConditions
@@ -456,20 +685,48 @@ export function adaptIntakePayloadToCanonicalEngine(raw) {
 
   // 6. Nutrition
   const nutrition = intake.nutrition || {};
-  const rawExcluded = Array.isArray(nutrition.excludedFoodsList)
-    ? nutrition.excludedFoodsList
-    : (Array.isArray(nutrition.excludedFoodCodes)
-      ? nutrition.excludedFoodCodes
-      : (Array.isArray(nutrition.excluded_foods) ? nutrition.excluded_foods : []));
-  const excludedFoods = rawExcluded.map(x => (typeof x === "string" ? x.toUpperCase() : ""));
+  const rawExcluded = [
+    ...(Array.isArray(nutrition.excludedFoodsList) ? nutrition.excludedFoodsList : []),
+    ...(Array.isArray(nutrition.excludedFoodCodes) ? nutrition.excludedFoodCodes : []),
+    ...(Array.isArray(nutrition.excluded_foods) ? nutrition.excluded_foods : []),
+    ...(Array.isArray(nutrition.strict_allergies) ? nutrition.strict_allergies : []),
+    ...(Array.isArray(intake.strict_allergies) ? intake.strict_allergies : []),
+    ...(Array.isArray(intake.allergies_and_dislikes) ? intake.allergies_and_dislikes : []),
+    ...(Array.isArray(nutrition.allergies_and_dislikes) ? nutrition.allergies_and_dislikes : []),
+    ...(Array.isArray(nutrition.allergies) ? nutrition.allergies.map(a => typeof a === 'string' ? a : a?.substance) : []),
+    ...(Array.isArray(intake.allergies) ? intake.allergies.map(a => typeof a === 'string' ? a : a?.substance) : []),
+  ].filter(Boolean);
 
-  
+  if (typeof intake.strict_allergies === 'string' && intake.strict_allergies.trim()) {
+    rawExcluded.push(...intake.strict_allergies.split(',').map(s => s.trim()));
+  }
+  if (typeof intake.allergies_and_dislikes === 'string' && intake.allergies_and_dislikes.trim()) {
+    rawExcluded.push(...intake.allergies_and_dislikes.split(',').map(s => s.trim()));
+  }
+  if (typeof nutrition.strict_allergies === 'string' && nutrition.strict_allergies.trim()) {
+    rawExcluded.push(...nutrition.strict_allergies.split(',').map(s => s.trim()));
+  }
+
+  const excludedFoods = Array.from(new Set(rawExcluded.map(x => (typeof x === "string" ? x.toUpperCase() : ""))));
+
   // Format Allergies: [{ substance: "EGG", medicallyConfirmed: true }]
   const allergies = [];
   if (Array.isArray(nutrition.allergies)) {
     nutrition.allergies.forEach(a => {
-      if (a && a.substance) {
+      if (typeof a === 'string' && a.trim()) {
+        allergies.push({ substance: a.trim().toUpperCase(), medicallyConfirmed: true });
+      } else if (a && a.substance) {
         allergies.push({ substance: a.substance.toUpperCase(), medicallyConfirmed: Boolean(a.medicallyConfirmed !== false) });
+      }
+    });
+  }
+  if (Array.isArray(intake.allergies)) {
+    intake.allergies.forEach(a => {
+      if (typeof a === 'string' && a.trim()) {
+        const sub = a.trim().toUpperCase();
+        if (!allergies.some(ex => ex.substance === sub)) {
+          allergies.push({ substance: sub, medicallyConfirmed: true });
+        }
       }
     });
   }
@@ -501,6 +758,9 @@ export function adaptIntakePayloadToCanonicalEngine(raw) {
   if (excludedFoods.includes("GLUTEN_WHEAT") || excludedFoods.includes("WHEAT_GLUTEN") || excludedFoods.includes("GLUTEN") || excludedFoods.includes("WHEAT")) {
     addAllergy("WHEAT");
     addAllergy("GLUTEN");
+  }
+  if (excludedFoods.includes("LEGUMES") || excludedFoods.includes("LEGUME") || excludedFoods.includes("SOY") || excludedFoods.includes("SOYA")) {
+    addAllergy("LEGUMES");
   }
 
   // Format Disliked Foods: Array of uppercase Strings
@@ -741,11 +1001,18 @@ export function adaptIntakePayloadToCanonicalEngine(raw) {
   });
 
   if (location === "HOME" && equipment.length === 0) {
-    equipment = [{
-      equipmentCode: "BODYWEIGHT",
-      otherEquipmentText: null,
-      loadCapacity: "BODYWEIGHT_ONLY"
-    }];
+    equipment = [
+      {
+        equipmentCode: "DUMBBELLS",
+        otherEquipmentText: null,
+        loadCapacity: "MODERATE"
+      },
+      {
+        equipmentCode: "BODYWEIGHT",
+        otherEquipmentText: null,
+        loadCapacity: "BODYWEIGHT_ONLY"
+      }
+    ];
   } else if (location === "GYM" && equipment.length === 0) {
     equipment = [
       { equipmentCode: "DUMBBELLS", otherEquipmentText: null, loadCapacity: "HEAVY" },
@@ -766,7 +1033,7 @@ export function adaptIntakePayloadToCanonicalEngine(raw) {
   };
 
   const canonicalTraining = {
-    location,
+    location: canonicalLoc || location,
     equipment,
     maxDaysPerWeek: prefDays,
     preferredDaysPerWeek: prefDays,
@@ -776,7 +1043,7 @@ export function adaptIntakePayloadToCanonicalEngine(raw) {
       : (defaultDaysByCount[prefDays] || ["MONDAY", "WEDNESDAY", "FRIDAY"]),
     unavailableTrainingDays: [],
     maxSessionMinutes: Number(training.maxSessionMinutes) || 60,
-    experience: ["BEGINNER", "INTERMEDIATE", "ADVANCED"].includes(training.experience) ? training.experience : "BEGINNER",
+    experience: canonicalExp || (["BEGINNER", "INTERMEDIATE", "ADVANCED"].includes(training.experience) ? training.experience : "BEGINNER"),
     recentTraining: (training.recentTraining === "CONSISTENT_LAST_3_MONTHS" || training.recentTraining === "ACTIVE") ? "ACTIVE" : (training.recentTraining === "INTERMITTENT_LAST_6_MONTHS" || training.recentTraining === "INCONSISTENT") ? "INCONSISTENT" : ["NONE_LAST_4_WEEKS", "RETURNING_AFTER_LONG_BREAK", "UNKNOWN"].includes(training.recentTraining) ? training.recentTraining : "ACTIVE",
     injuries,
     medicalMovementRestrictions: []

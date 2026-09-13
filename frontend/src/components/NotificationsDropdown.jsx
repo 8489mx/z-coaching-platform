@@ -38,11 +38,10 @@ export default function NotificationsDropdown() {
 
   const fetchLiveNotifications = async () => {
     try {
-      const [checkinsRes, subsRes, intakesRes, ordersRes] = await Promise.all([
+      const [checkinsRes, subsRes, intakesRes] = await Promise.all([
         fetch(`${API_BASE}/api/v1/programs/checkin/pending`).catch(() => ({ json: () => ({ checkins: [] }) })),
         fetch(`${API_BASE}/api/v1/subscriptions/overview`).catch(() => ({ json: () => ({ clients: [] }) })),
-        fetch(`${API_BASE}/api/v1/intake/submissions`).catch(() => ({ json: () => ({ submissions: [] }) })),
-        fetch(`${API_BASE}/api/v1/orders`).catch(() => ({ json: () => ({ orders: [] }) }))
+        fetch(`${API_BASE}/api/v1/intake/submissions`).catch(() => ({ json: () => ({ submissions: [] }) }))
       ]);
 
       const safeJson = async (res) => {
@@ -55,7 +54,6 @@ export default function NotificationsDropdown() {
       const checkinsData = await safeJson(checkinsRes);
       const subsData = await safeJson(subsRes);
       const intakesData = await safeJson(intakesRes);
-      const ordersData = await safeJson(ordersRes);
 
       let readMap = {};
       let completedMap = {};

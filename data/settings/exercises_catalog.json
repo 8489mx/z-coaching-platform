@@ -6012,5 +6012,306 @@
       "cable_woodchopper"
     ],
     "thumbnail_url": "/exercises/CABLE_WOODCHOPPER/0.jpg"
+  },
+  {
+    "id": "HACK_SQUAT_MACHINE",
+    "code": "HACK_SQUAT_MACHINE",
+    "legacy_id": "hack_squat_machine",
+    "aliases": [
+      "HACK_SQUAT_MACHINE",
+      "hack_squat_machine",
+      "HACK_SQUAT",
+      "hack_squat"
+    ],
+    "name_en": "Hack Squat Machine",
+    "name_ar": "هاك سكوات على الجهاز",
+    "target_muscle": "QUADS",
+    "muscle_group": "LEGS",
+    "muscle_ar": "عضلات الفخذ الأمامية (Quadriceps)",
+    "primary_muscle": "QUADS",
+    "secondary_muscles": [
+      "GLUTES"
+    ],
+    "synergist_muscles": [
+      "GLUTES"
+    ],
+    "synergists": [
+      "GLUTES"
+    ],
+    "equipment": "MACHINE",
+    "equipment_ar": "جهاز هاك سكوات مخصص",
+    "environment": [
+      "GYM",
+      "MIXED"
+    ],
+    "environments": [
+      "GYM",
+      "MIXED"
+    ],
+    "biomechanical_focus": "COMPOUND_HEAVY",
+    "difficulty_level": "INTERMEDIATE",
+    "difficulty": "متوسط",
+    "video_id": "0tn5K9NlCfo",
+    "video_url": "https://www.youtube.com/watch?v=0tn5K9NlCfo",
+    "cues": [
+      "النزول ببطء وتحكم لعزل الفخذ الأمامي.",
+      "الحفاظ على ثبات الظهر وأسفل الظهر ملاصقاً للمسند.",
+      "الضغط بكامل باطن القدم دون إغلاق مفصل الركبة تماماً في القمة."
+    ],
+    "common_mistakes": [
+      "رفع الكعبين عن المنصة أثناء النزول.",
+      "إقفال الركبتين بقوة عند الصعود."
+    ],
+    "cues_ar": "تثبيت الظهر بالكامل على المسند المائل، النزول المنضبط لمدى حركي كامل حتى 90 درجة أو أعمق، ثم الدفع بكامل باطن القدم لعزل عضلات الكوادز بأمان كامل للعمود الفقري.",
+    "mistakes_ar": "رفع أسفل الظهر عن المسند أثناء النزول العميق أو قفل الركبتين بالكامل في القمة.",
+    "thumbnail_url": "/exercises/HACK_SQUAT_MACHINE/0.jpg",
+    "image_stretch": "/exercises/HACK_SQUAT_MACHINE/0.jpg",
+    "image_contraction": "/exercises/HACK_SQUAT_MACHINE/1.jpg",
+    "images": [
+      "/exercises/HACK_SQUAT_MACHINE/0.jpg",
+      "/exercises/HACK_SQUAT_MACHINE/1.jpg"
+    ]
+  },
+  {
+    "id": "DUMBBELL_PULLOVER",
+    "code": "DUMBBELL_PULLOVER",
+    "legacy_id": "dumbbell_pullover",
+    "aliases": [
+      "DUMBBELL_PULLOVER",
+      "dumbbell_pullover"
+    ],
+    "name_en": "Dumbbell Pullover",
+    "name_ar": "بلوفر بالدمبل على الدكة المستوية",
+    "target_muscle": "LATS",
+    "muscle_group": "BACK",
+    "muscle_ar": "عضلات الظهر العريضة والصدر (Lats & Chest)",
+    "primary_muscle": "LATS",
+    "secondary_muscles": [
+      "CHEST",
+      "TRICEPS"
+    ],
+    "synergist_muscles": [
+      "CHEST",
+      "TRICEPS"
+    ],
+    "synergists": [
+      "CHEST",
+      "TRICEPS"
+    ],
+    "equipment": "DUMBBELL",
+    "equipment_ar": "دمبل ودكة مستوية",
+    "environment": [
+      "GYM",
+      "HOME",
+      "MIXED"
+    ],
+    "environments": [
+      "GYM",
+      "HOME",
+      "MIXED"
+    ],
+    "biomechanical_focus": "LENGTHENED",
+    "difficulty_level": "INTERMEDIATE",
+    "difficulty": "متوسط",
+    "video_id": "jbcuVz09c5o",
+    "video_url": "https://www.youtube.com/watch?v=jbcuVz09c5o",
+    "cues": [
+      "إنزال الدمبل للخلف بنعومة للشعور بتمدد كامل القفص الصدري واللاتس.",
+      "تثبيت انثناء خفيف في الكوعين طوال الحركة.",
+      "السحب باللاتس حتى مستوى الصدر فقط دون إهدار الشد العضلي."
+    ],
+    "common_mistakes": [
+      "ثني الكوعين بشكل مفرط وتحويل التمرين إلى ترايسبس.",
+      "استخدام وزن ثقيل يضغط على مفصل الكتف."
+    ],
+    "cues_ar": "الاستلقاء بعرض الدكة أو طولياً، مسك الدمبل بكلتا اليدين على شكل ماسة، والنزول خلف الرأس بتحكم بطيء للشعور بتمدد كامل عضلات اللاتس والصدر ثم السحب بالظهر.",
+    "mistakes_ar": "تحريك مفصل الكوع بدلاً من الكتف مما يحول التمرين إلى مد ترايسبس.",
+    "thumbnail_url": "/exercises/DUMBBELL_PULLOVER/0.jpg",
+    "image_stretch": "/exercises/DUMBBELL_PULLOVER/0.jpg",
+    "image_contraction": "/exercises/DUMBBELL_PULLOVER/1.jpg",
+    "images": [
+      "/exercises/DUMBBELL_PULLOVER/0.jpg",
+      "/exercises/DUMBBELL_PULLOVER/1.jpg"
+    ]
+  },
+  {
+    "id": "ARNOLD_DUMBBELL_PRESS",
+    "code": "ARNOLD_DUMBBELL_PRESS",
+    "legacy_id": "arnold_dumbbell_press",
+    "aliases": [
+      "ARNOLD_DUMBBELL_PRESS",
+      "arnold_dumbbell_press",
+      "ARNOLD_PRESS"
+    ],
+    "name_en": "Arnold Dumbbell Press",
+    "name_ar": "ضغط أرنولد للأكتاف بالدمبل",
+    "target_muscle": "SHOULDERS",
+    "muscle_group": "SHOULDERS",
+    "muscle_ar": "عضلات الكتف الأمامية والجانبية (Anterior & Lateral Deltoids)",
+    "primary_muscle": "SHOULDERS",
+    "secondary_muscles": [
+      "TRICEPS"
+    ],
+    "synergist_muscles": [
+      "TRICEPS"
+    ],
+    "synergists": [
+      "TRICEPS"
+    ],
+    "equipment": "DUMBBELL",
+    "equipment_ar": "دمبلز ودكة قابلة للتعديل",
+    "environment": [
+      "GYM",
+      "HOME",
+      "MIXED"
+    ],
+    "environments": [
+      "GYM",
+      "HOME",
+      "MIXED"
+    ],
+    "biomechanical_focus": "COMPOUND_MODERATE",
+    "difficulty_level": "INTERMEDIATE",
+    "difficulty": "متوسط",
+    "video_id": "6Z15_WdXmVw",
+    "video_url": "https://www.youtube.com/watch?v=6Z15_WdXmVw",
+    "cues": [
+      "البدء من قبضة عكسية بمستوى الذقن وتدوير المعصمين بسلاسة للأعلى.",
+      "الدفع للأعلى دون إقفال مفصل الكوع بقوة.",
+      "النزول البطيء وعكس الدوران للعودة لنقطة البداية."
+    ],
+    "common_mistakes": [
+      "التدوير السريع بعزم الاندفاع دون تحكم.",
+      "تقويس أسفل الظهر أثناء الدفع."
+    ],
+    "cues_ar": "ابدأ والكفان يواجهان صدرك، ثم ادفع للأعلى مع تدوير المعصمين للخارج بنعومة حتى استقامة الذراعين فوق الرأس، مع النزول بنفس التحكم الدوراني لتفعيل شامل لألياف الكتف.",
+    "mistakes_ar": "التسرع في الدوران واستخدام أوزان ثقيلة تعرقل المدى الحركي السلس.",
+    "thumbnail_url": "/exercises/ARNOLD_DUMBBELL_PRESS/0.jpg",
+    "image_stretch": "/exercises/ARNOLD_DUMBBELL_PRESS/0.jpg",
+    "image_contraction": "/exercises/ARNOLD_DUMBBELL_PRESS/1.jpg",
+    "images": [
+      "/exercises/ARNOLD_DUMBBELL_PRESS/0.jpg",
+      "/exercises/ARNOLD_DUMBBELL_PRESS/1.jpg"
+    ]
+  },
+  {
+    "id": "DUMBBELL_CONCENTRATION_CURL",
+    "code": "DUMBBELL_CONCENTRATION_CURL",
+    "legacy_id": "dumbbell_concentration_curl",
+    "aliases": [
+      "DUMBBELL_CONCENTRATION_CURL",
+      "dumbbell_concentration_curl",
+      "CONCENTRATION_CURL"
+    ],
+    "name_en": "Dumbbell Concentration Curl",
+    "name_ar": "تبادل ارتكاز بالدمبل للبايسبس",
+    "target_muscle": "BICEPS",
+    "muscle_group": "ARMS",
+    "muscle_ar": "عضلة البايسبس ذروة الانقباض (Biceps Brachii)",
+    "primary_muscle": "BICEPS",
+    "secondary_muscles": [
+      "FOREARMS"
+    ],
+    "synergist_muscles": [
+      "FOREARMS"
+    ],
+    "synergists": [
+      "FOREARMS"
+    ],
+    "equipment": "DUMBBELL",
+    "equipment_ar": "دمبل ودكة مستوية",
+    "environment": [
+      "GYM",
+      "HOME",
+      "MIXED"
+    ],
+    "environments": [
+      "GYM",
+      "HOME",
+      "MIXED"
+    ],
+    "biomechanical_focus": "SHORTENED",
+    "difficulty_level": "BEGINNER",
+    "difficulty": "مبتدئ",
+    "video_id": "Jvj2wV0vOYU",
+    "video_url": "https://www.youtube.com/watch?v=Jvj2wV0vOYU",
+    "cues": [
+      "تثبيت الكوع على الجزء الداخلي من الفخذ لمنع أي تأرجح.",
+      "رفع الدمبل بالتركيز الكامل على قمة البايسبس وعصر العضلة ثانية كاملة.",
+      "النزول السلبي البطيء في ثانيتين لمدى حركي كامل."
+    ],
+    "common_mistakes": [
+      "تحريك الجذع لمساعدة الذراع في الرفع.",
+      "عدم فتح الذراع بالكامل في الأسفل."
+    ],
+    "cues_ar": "اجلس على حافة الدكة، ثبت كوعك بإحكام على الفخذ الداخلي، وارفع الدمبل نحو كتفك بعصر انقباضي كامل في القمة مع نزول بطيء وتحكم مطلق بدون أي مساعدة من الجذع.",
+    "mistakes_ar": "أرجحة الجسم وتغيير زاوية الكوع أثناء الرفع.",
+    "thumbnail_url": "/exercises/DUMBBELL_CONCENTRATION_CURL/0.jpg",
+    "image_stretch": "/exercises/DUMBBELL_CONCENTRATION_CURL/0.jpg",
+    "image_contraction": "/exercises/DUMBBELL_CONCENTRATION_CURL/1.jpg",
+    "images": [
+      "/exercises/DUMBBELL_CONCENTRATION_CURL/0.jpg",
+      "/exercises/DUMBBELL_CONCENTRATION_CURL/1.jpg"
+    ]
+  },
+  {
+    "id": "DECLINE_DUMBBELL_BENCH_PRESS",
+    "code": "DECLINE_DUMBBELL_BENCH_PRESS",
+    "legacy_id": "decline_dumbbell_bench_press",
+    "aliases": [
+      "DECLINE_DUMBBELL_BENCH_PRESS",
+      "decline_dumbbell_bench_press"
+    ],
+    "name_en": "Decline Dumbbell Bench Press",
+    "name_ar": "بنش برس مائل لأسفل بالدمبل (عزل الصدر السفلي)",
+    "target_muscle": "CHEST",
+    "muscle_group": "CHEST",
+    "muscle_ar": "عضلات الصدر السفلية (Lower Pectoralis)",
+    "primary_muscle": "CHEST",
+    "secondary_muscles": [
+      "TRICEPS",
+      "FRONT_DELTOID"
+    ],
+    "synergist_muscles": [
+      "TRICEPS",
+      "FRONT_DELTOID"
+    ],
+    "synergists": [
+      "TRICEPS",
+      "FRONT_DELTOID"
+    ],
+    "equipment": "DUMBBELL",
+    "equipment_ar": "دمبلز ودكة مائلة لأسفل",
+    "environment": [
+      "GYM",
+      "MIXED"
+    ],
+    "environments": [
+      "GYM",
+      "MIXED"
+    ],
+    "biomechanical_focus": "COMPOUND_HEAVY",
+    "difficulty_level": "INTERMEDIATE",
+    "difficulty": "متوسط",
+    "video_id": "0xRvl4Qv3EY",
+    "video_url": "https://www.youtube.com/watch?v=0xRvl4Qv3EY",
+    "cues": [
+      "تثبيت القدمين في وسائد الدكة المائلة بإحكام.",
+      "النزول المنضبط بالدمبلز نحو خط الصدر السفلي بزاوية كوع 45-60 درجة.",
+      "الدفع بقوة الصدر وعصر العضلة في القمة دون تصادم الأوزان."
+    ],
+    "common_mistakes": [
+      "فتح الكوعين بزاوية 90 درجة مما يجهد مفصل الكتف.",
+      "إسقاط الوزن بسرعة على الصدر."
+    ],
+    "cues_ar": "استلقِ على دكة مائلة للأسفل مع تثبيت الساقين، انزل بالدمبلز بتحكم حتى ملامسة مستوى الصدر السفلي، ثم ادفع للأعلى في مسار قوسي خفيف لعصر ألياف الصدر السفلية بكفاءة تامة وأمان على الكتف.",
+    "mistakes_ar": "فتح المرفقين للخارج بشكل مفرط، أو التسرع في الرفع والتصادم بين الدمبلين في القمة.",
+    "thumbnail_url": "/exercises/DECLINE_DUMBBELL_BENCH_PRESS/0.jpg",
+    "image_stretch": "/exercises/DECLINE_DUMBBELL_BENCH_PRESS/0.jpg",
+    "image_contraction": "/exercises/DECLINE_DUMBBELL_BENCH_PRESS/1.jpg",
+    "images": [
+      "/exercises/DECLINE_DUMBBELL_BENCH_PRESS/0.jpg",
+      "/exercises/DECLINE_DUMBBELL_BENCH_PRESS/1.jpg"
+    ]
   }
 ]

@@ -564,7 +564,12 @@ export function useCoachEditorData() {
         });
       });
 
-      const macroCat = selectedFood.macro_type || selectedFood.category || 'PROTEIN';
+      const rawCat = String(selectedFood.macro_type || selectedFood.category || 'PROTEIN').toUpperCase();
+      const macroCat = (rawCat === 'FATS' || rawCat === 'FAT') ? 'FAT'
+        : (rawCat === 'CARBS' || rawCat === 'CARB') ? 'CARB'
+        : (rawCat === 'PROTEINS' || rawCat === 'PROTEIN') ? 'PROTEIN'
+        : rawCat;
+
       const p100 = Number(selectedFood.protein_per_100g || selectedFood.p || 0);
       const c100 = Number(selectedFood.carbs_per_100g || selectedFood.c || 0);
       const f100 = Number(selectedFood.fat_per_100g || selectedFood.f || 0);
@@ -584,7 +589,7 @@ export function useCoachEditorData() {
         mealCurF += Number(it.f) || 0;
       });
 
-      let smartAmount = selectedFood.default_amount || selectedFood.amount || 100;
+      let smartAmount = selectedFood.default_amount || selectedFood.default_portion || selectedFood.amount || 100;
       const isEgg = String(selectedFood.code || selectedFood.name).toUpperCase().includes('EGG') || String(selectedFood.name || '').includes('بيض');
 
       if (macroCat === 'PROTEIN' && p100 > 0) {
@@ -606,12 +611,19 @@ export function useCoachEditorData() {
         }
       } else if (macroCat === 'FAT' && f100 > 0) {
         const remDailyF = targetF - curF;
-        const neededF = Math.max(5, Math.min(remDailyF > 0 ? remDailyF : mealShareF, mealShareF - mealCurF));
-        const isOil = String(selectedFood.code || selectedFood.name).toUpperCase().includes('OIL') || String(selectedFood.name || '').includes('زيت');
-        if (isOil) {
-          smartAmount = Math.max(5, Math.min(12, Math.round(neededF)));
+        const neededF = Math.max(3, Math.min(remDailyF > 0 ? remDailyF : mealShareF, mealShareF - mealCurF));
+        const foodStr = String((selectedFood.code || '') + ' ' + (selectedFood.name_ar || '') + ' ' + (selectedFood.name || '')).toUpperCase();
+        const isOilOrGhee = /OIL|GHEE|BUTTER|زيت|سمن|زبدة/.test(foodStr) && !/PEANUT|فول/.test(foodStr);
+        const isSeeds = /CHIA|SEEDS|FLAX|شيا|بذور|كتان/.test(foodStr);
+        const isNutButter = /TAHINI|PEANUT|طحينة|فول سوداني/.test(foodStr);
+        if (isOilOrGhee) {
+          smartAmount = Math.max(5, Math.min(10, Math.round(neededF)));
+        } else if (isSeeds) {
+          smartAmount = Math.max(5, Math.min(10, Math.round((neededF / f100) * 100)));
+        } else if (isNutButter) {
+          smartAmount = Math.max(10, Math.min(15, Math.round((neededF / f100) * 100)));
         } else {
-          smartAmount = Math.max(15, Math.min(30, Math.round((neededF / f100) * 20) * 5));
+          smartAmount = Math.max(15, Math.min(25, Math.round((neededF / f100) * 20) * 5));
         }
       }
 
@@ -676,18 +688,37 @@ export function useCoachEditorData() {
         let newAmount = 100;
         let newP = 0, newC = 0, newF = 0, newCal = 0;
 
-        if (curItem.category === 'PROTEIN') {
+        const curCat = String(curItem.category || '').toUpperCase();
+        const normCurCat = (curCat === 'FATS' || curCat === 'FAT') ? 'FAT'
+          : (curCat === 'CARBS' || curCat === 'CARB') ? 'CARB'
+          : (curCat === 'PROTEINS' || curCat === 'PROTEIN') ? 'PROTEIN'
+          : curCat;
+
+        if (normCurCat === 'PROTEIN') {
           const curProtein = Number(curItem.p) || 25;
           const targetPer100 = Number(targetFood.protein_per_100g || targetFood.p || 25);
           newAmount = Math.max(10, Math.round((curProtein / targetPer100) * 100));
-        } else if (curItem.category === 'CARB') {
+        } else if (normCurCat === 'CARB') {
           const curCarbs = Number(curItem.c) || 30;
           const targetPer100 = Number(targetFood.carbs_per_100g || targetFood.c || 25);
           newAmount = Math.max(10, Math.round((curCarbs / targetPer100) * 100));
-        } else if (curItem.category === 'FAT') {
+        } else if (normCurCat === 'FAT') {
           const curFats = Number(curItem.f) || 8;
           const targetPer100 = Number(targetFood.fat_per_100g || targetFood.f || 10);
-          newAmount = Math.max(5, Math.round((curFats / targetPer100) * 100));
+          const rawEquiv = Math.round((curFats / targetPer100) * 100);
+          const foodStr = String((targetFood.code || '') + ' ' + (targetFood.name_ar || '') + ' ' + (targetFood.name || '')).toUpperCase();
+          const isOilOrGhee = /OIL|GHEE|BUTTER|زيت|سمن|زبدة/.test(foodStr) && !/PEANUT|فول/.test(foodStr);
+          const isSeeds = /CHIA|SEEDS|FLAX|شيا|بذور|كتان/.test(foodStr);
+          const isNutButter = /TAHINI|PEANUT|طحينة|فول سوداني/.test(foodStr);
+          if (isOilOrGhee) {
+            newAmount = Math.max(5, Math.min(10, rawEquiv));
+          } else if (isSeeds) {
+            newAmount = Math.max(5, Math.min(10, rawEquiv));
+          } else if (isNutButter) {
+            newAmount = Math.max(10, Math.min(15, rawEquiv));
+          } else {
+            newAmount = Math.max(15, Math.min(30, rawEquiv));
+          }
         } else {
           newAmount = curItem.amount || 150;
         }

@@ -48,8 +48,17 @@ export function CoachSwapFoodModal({
         <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', overflowY: 'auto', maxHeight: '340px', paddingRight: '2px' }}>
           {FOOD_DATABASE_LIST
             .filter(f => {
-              const curCat = swapFoodModal.currentItem.category;
-              const matchCategory = !curCat || f.category === curCat || f.macro_type === curCat;
+              const curCat = String(swapFoodModal.currentItem.category || '').toUpperCase();
+              const fCat = String(f.category || f.macro_type || '').toUpperCase();
+              const normCur = (curCat === 'FATS' || curCat === 'FAT') ? 'FAT'
+                : (curCat === 'CARBS' || curCat === 'CARB') ? 'CARB'
+                : (curCat === 'PROTEINS' || curCat === 'PROTEIN') ? 'PROTEIN'
+                : curCat;
+              const normF = (fCat === 'FATS' || fCat === 'FAT') ? 'FAT'
+                : (fCat === 'CARBS' || fCat === 'CARB') ? 'CARB'
+                : (fCat === 'PROTEINS' || fCat === 'PROTEIN') ? 'PROTEIN'
+                : fCat;
+              const matchCategory = !normCur || normF === normCur;
               const matchSearch = !swapFoodSearch || 
                 arabicSearchMatch(f.name, swapFoodSearch) || 
                 arabicSearchMatch(f.name_ar, swapFoodSearch) || 
@@ -58,18 +67,37 @@ export function CoachSwapFoodModal({
             })
             .map((targetFood, tfIdx) => {
               let equivGrams = 100;
-              if (swapFoodModal.currentItem.category === 'PROTEIN') {
+              const curCat = String(swapFoodModal.currentItem.category || '').toUpperCase();
+              const normCat = (curCat === 'FATS' || curCat === 'FAT') ? 'FAT'
+                : (curCat === 'CARBS' || curCat === 'CARB') ? 'CARB'
+                : (curCat === 'PROTEINS' || curCat === 'PROTEIN') ? 'PROTEIN'
+                : curCat;
+
+              if (normCat === 'PROTEIN') {
                 const curP = Number(swapFoodModal.currentItem.p) || 25;
                 const targetP = Number(targetFood.protein_per_100g || targetFood.p || 25);
                 equivGrams = Math.max(10, Math.round((curP / targetP) * 100));
-              } else if (swapFoodModal.currentItem.category === 'CARB') {
+              } else if (normCat === 'CARB') {
                 const curC = Number(swapFoodModal.currentItem.c) || 30;
                 const targetC = Number(targetFood.carbs_per_100g || targetFood.c || 25);
                 equivGrams = Math.max(10, Math.round((curC / targetC) * 100));
-              } else if (swapFoodModal.currentItem.category === 'FAT') {
+              } else if (normCat === 'FAT') {
                 const curF = Number(swapFoodModal.currentItem.f) || 8;
                 const targetF = Number(targetFood.fat_per_100g || targetFood.f || 10);
-                equivGrams = Math.max(5, Math.round((curF / targetF) * 100));
+                const rawEquiv = Math.round((curF / targetF) * 100);
+                const foodStr = String((targetFood.code || '') + ' ' + (targetFood.name || '')).toUpperCase();
+                const isOilOrGhee = /OIL|GHEE|BUTTER|زيت|سمن|زبدة/.test(foodStr) && !/PEANUT|فول/.test(foodStr);
+                const isSeeds = /CHIA|SEEDS|FLAX|شيا|بذور|كتان/.test(foodStr);
+                const isNutButter = /TAHINI|PEANUT|طحينة|فول سوداني/.test(foodStr);
+                if (isOilOrGhee) {
+                  equivGrams = Math.max(5, Math.min(10, rawEquiv));
+                } else if (isSeeds) {
+                  equivGrams = Math.max(5, Math.min(10, rawEquiv));
+                } else if (isNutButter) {
+                  equivGrams = Math.max(10, Math.min(15, rawEquiv));
+                } else {
+                  equivGrams = Math.max(15, Math.min(30, rawEquiv));
+                }
               }
 
               const factor = equivGrams / 100;
@@ -163,19 +191,29 @@ export function CoachAddFoodModal({
               arabicSearchMatch(fd.code, foodModalSearch) ||
               (Array.isArray(fd.aliases) && fd.aliases.some(a => arabicSearchMatch(a, foodModalSearch))))
             .slice(0, 30)
-            .map((fd) => (
-              <div
-                key={fd.code}
-                onClick={() => handleAddFoodToMeal(addFoodModal.mealId, fd)}
-                style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', borderRadius: '8px', padding: '6px 10px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', cursor: 'pointer' }}
-              >
-                <div>
-                  <strong style={{ fontSize: '11.5px', color: '#0F172A', display: 'block' }}>{fd.name}</strong>
-                  <span style={{ fontSize: '10px', color: '#64748B' }}>P: {fd.p}g • C: {fd.c}g • F: {fd.f}g</span>
+            .map((fd) => {
+              const portionFactor = (fd.amount || 100) / 100;
+              const portionCal = Math.round((fd.cal || 0) * portionFactor);
+              const portionP = Number(((fd.p || 0) * portionFactor).toFixed(1));
+              const portionC = Number(((fd.c || 0) * portionFactor).toFixed(1));
+              const portionF = Number(((fd.f || 0) * portionFactor).toFixed(1));
+
+              return (
+                <div
+                  key={fd.code}
+                  onClick={() => handleAddFoodToMeal(addFoodModal.mealId, fd)}
+                  style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', borderRadius: '8px', padding: '6px 10px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', cursor: 'pointer' }}
+                >
+                  <div>
+                    <strong style={{ fontSize: '11.5px', color: '#0F172A', display: 'block' }}>{fd.name}</strong>
+                    <span style={{ fontSize: '10px', color: '#64748B' }}>
+                      حصة معتمدة: <strong style={{ color: '#0F172A' }}>{fd.amount} {fd.unit}</strong> ({portionCal} kcal) • P: {portionP}g • C: {portionC}g • F: {portionF}g
+                    </span>
+                  </div>
+                  <button type="button" style={{ padding: '2px 7px', background: '#0F172A', color: '#FFFFFF', border: 'none', borderRadius: '6px', fontSize: '10px', fontWeight: 700 }}>+ إضافة</button>
                 </div>
-                <button type="button" style={{ padding: '2px 7px', background: '#0F172A', color: '#FFFFFF', border: 'none', borderRadius: '6px', fontSize: '10px', fontWeight: 700 }}>+ إضافة</button>
-              </div>
-            ))}
+              );
+            })}
         </div>
       </div>
     </div>

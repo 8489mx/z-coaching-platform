@@ -111,10 +111,12 @@ export function evaluateCheckin(submission) {
   if (menstrual_phase === "LUTEAL" || menstrual_phase === "MENSTRUATION") falsePlateauScore++;
   const isFalsePlateau = falsePlateauScore >= 2;
 
-  // 5c. NEAT Lock Detection
+  // 5c. NEAT Lock Detection (Occupational baseline or temporary lifestyle drop like vacation)
   const isOccupationalNeatLock = (
-    lifestyle_variance === "NORMAL_WORK" &&
-    (occupation_type === "DESK_OFFICE" || occupation_type === "STUDENT") &&
+    (
+      (lifestyle_variance === "NORMAL_WORK" && (occupation_type === "DESK_OFFICE" || occupation_type === "STUDENT")) ||
+      (lifestyle_variance === "HOME_VACATION" || lifestyle_variance === "TRAVEL_AWAY" || lifestyle_variance === "SICK_RECOVERY")
+    ) &&
     weightChangeKg !== null &&
     Math.abs(weightChangeKg) < 0.3
   );

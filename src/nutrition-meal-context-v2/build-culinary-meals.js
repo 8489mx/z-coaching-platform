@@ -230,6 +230,7 @@ export const FOOD_SWAP_DATABASE = Object.freeze({
     is_fish_free: true,
     is_economic: true,
     is_gout_safe: false, // High purine
+    is_legume: true,
   },
 
   // --- CARBOHYDRATE SOURCES ---
@@ -499,6 +500,8 @@ export const FOOD_SWAP_DATABASE = Object.freeze({
     is_vegan: true,
     is_economic: true,
     is_gout_safe: false,
+    is_legume: true,
+    is_fava: true,
   },
   LUPINI_BEANS: {
     code: "LUPINI_BEANS",
@@ -516,7 +519,8 @@ export const FOOD_SWAP_DATABASE = Object.freeze({
     is_dairy_free: true,
     is_vegan: true,
     is_economic: true,
-    is_gout_safe: true,
+    is_gout_safe: false, // High-purine legume, unsafe in gout
+    is_legume: true,
   },
   SHAKSHOUKA_EGGS: {
     code: "SHAKSHOUKA_EGGS",
@@ -903,6 +907,130 @@ export const FOOD_SWAP_DATABASE = Object.freeze({
     is_economic: false,
     is_gout_safe: true,
   },
+  FREEKEH_COOKED: {
+    code: "FREEKEH_COOKED",
+    name_ar: "فريك مصري / برغل مسلوق بالبهارات",
+    name_en: "Cooked Freekeh / Bulgur",
+    protein_per_100g: 5.5,
+    carb_per_100g: 31,
+    fat_per_100g: 1,
+    kcal_per_100g: 150,
+    unit_label: "جم مطبوخ (5-7 ملاعق طعام)",
+    category: "CARBS",
+    meal_suitability: ["LUNCH", "DINNER"],
+    is_gluten_free: false,
+    is_dairy_free: true,
+    is_vegan: true,
+    is_economic: true,
+    is_gout_safe: true,
+  },
+  SKIM_MILK: {
+    code: "SKIM_MILK",
+    name_ar: "حليب بقري خالي الدسم 0%",
+    name_en: "Skimmed Milk (0% Fat)",
+    protein_per_100g: 3.4,
+    carb_per_100g: 4.8,
+    fat_per_100g: 0.1,
+    kcal_per_100g: 35,
+    unit_label: "مل (كوب متوسط 200 مل)",
+    category: "BEVERAGE",
+    meal_suitability: ["BREAKFAST", "SNACK"],
+    is_gluten_free: true,
+    is_dairy: true,
+    is_dairy_free: false,
+    is_low_lactose: false,
+    is_economic: true,
+    is_gout_safe: true,
+  },
+  LACTOSE_FREE_MILK: {
+    code: "LACTOSE_FREE_MILK",
+    name_ar: "حليب بقري خالي من اللاكتوز (لايت / قليل الدسم)",
+    name_en: "Lactose-Free Milk (Low-Fat / Skim)",
+    protein_per_100g: 3.4,
+    carb_per_100g: 4.8,
+    fat_per_100g: 0.5,
+    kcal_per_100g: 38,
+    unit_label: "مل (كوب متوسط 200 مل)",
+    category: "BEVERAGE",
+    meal_suitability: ["BREAKFAST", "SNACK"],
+    is_gluten_free: true,
+    is_dairy: true,
+    is_dairy_free: false,
+    is_low_lactose: true,
+    is_economic: true,
+    is_gout_safe: true,
+  },
+  ALMOND_MILK_UNSWEETENED: {
+    code: "ALMOND_MILK_UNSWEETENED",
+    name_ar: "حليب لوز غير محلى (خالي من السكر واللاكتوز)",
+    name_en: "Unsweetened Almond Milk",
+    protein_per_100g: 0.5,
+    carb_per_100g: 0.3,
+    fat_per_100g: 1.1,
+    kcal_per_100g: 13,
+    unit_label: "مل (كوب متوسط 200 مل)",
+    category: "BEVERAGE",
+    meal_suitability: ["BREAKFAST", "SNACK"],
+    is_gluten_free: true,
+    is_dairy_free: true,
+    is_vegan: true,
+    is_nut_free: false,
+    is_economic: false,
+    is_gout_safe: true,
+  },
+  LOW_FAT_MOZZARELLA: {
+    code: "LOW_FAT_MOZZARELLA",
+    name_ar: "جبن موزاريلا طبيعي قليل الدسم لايت",
+    name_en: "Part-Skim Mozzarella Cheese",
+    protein_per_100g: 28,
+    carb_per_100g: 2,
+    fat_per_100g: 15,
+    kcal_per_100g: 250,
+    fat_tier: FoodFatTier.FATTY,
+    unit_label: "جم مبشور",
+    category: "PROTEIN",
+    meal_suitability: ["BREAKFAST", "DINNER"],
+    is_gluten_free: true,
+    is_dairy: true,
+    is_dairy_free: false,
+    is_fish_free: true,
+    is_economic: false,
+    is_gout_safe: true,
+  },
+  FRESH_GUAVA: {
+    code: "FRESH_GUAVA",
+    name_ar: "جوافة طازجة غنية بفيتامين C والألياف",
+    name_en: "Fresh Guava",
+    protein_per_100g: 2.5,
+    carb_per_100g: 14,
+    fat_per_100g: 1,
+    kcal_per_100g: 68,
+    unit_label: "ثمرة جوافة متوسطة (~100 جم = 14 جم كارب)",
+    category: "CARBS",
+    meal_suitability: ["SNACK", "BREAKFAST"],
+    is_gluten_free: true,
+    is_dairy_free: true,
+    is_vegan: true,
+    is_economic: true,
+    is_gout_safe: true,
+  },
+  CHIA_SEEDS: {
+    code: "CHIA_SEEDS",
+    name_ar: "بذور الشيا الطبيعية الكاملة",
+    name_en: "Organic Whole Chia Seeds",
+    protein_per_100g: 17,
+    carb_per_100g: 42,
+    fat_per_100g: 31,
+    kcal_per_100g: 486,
+    unit_label: "ملعقة صغيرة إلى ملعقة طعام ممسوحة (5 - 10 جم)",
+    category: "FATS",
+    meal_suitability: ["BREAKFAST", "SNACK"],
+    is_gluten_free: true,
+    is_dairy_free: true,
+    is_vegan: true,
+    is_economic: true,
+    is_gout_safe: true,
+  },
 
   // --- VEGETABLES & SALADS ---
   MEDITERRANEAN_SALAD: {
@@ -923,7 +1051,7 @@ export const FOOD_SWAP_DATABASE = Object.freeze({
   },
   SAUTEED_VEGGIES: {
     code: "SAUTEED_VEGGIES",
-    name_ar: "طبق خضار سوتيه/مشوي (كوسة، بروكلي، جزر، فاصوليا خضراء)",
+    name_ar: "طبق خضار سوتيه/مشوي (كوسة، بروكلي، جزر، فلفل ألوان)",
     name_en: "Sautéed Garden Veggies",
     protein_per_100g: 2,
     carb_per_100g: 4,
@@ -938,6 +1066,30 @@ export const FOOD_SWAP_DATABASE = Object.freeze({
     is_gout_safe: true,
   },
 });
+
+/**
+ * Evaluates whether a food code is clinically safe given the client's allergen, intolerance,
+ * and clinical context (gout, legumes allergy, favism, celiac/gluten, dairy, eggs, etc.).
+ */
+export function isFoodClinicallySafe(foodCode, allergenContext = {}) {
+  const food = FOOD_SWAP_DATABASE[foodCode];
+  if (!food) return false;
+
+  if (allergenContext.isVegan && !food.is_vegan) return false;
+  if (allergenContext.isDairyExcluded && food.is_dairy) return false;
+  if (allergenContext.isEggsExcluded && (foodCode === "EGGS_OMELETTE" || foodCode === "SHAKSHOUKA_EGGS")) return false;
+  if (allergenContext.isFishExcluded && food.is_fish) return false;
+  if (allergenContext.isPoultryExcluded && (foodCode === "CHICKEN_BREAST" || foodCode === "SMOKED_TURKEY")) return false;
+  if (allergenContext.isRedMeatExcluded && (foodCode === "LEAN_BEEF" || foodCode === "CAMEL_MEAT_LEAN")) return false;
+  if (allergenContext.isGout && !food.is_gout_safe) return false;
+  if (allergenContext.isLegumesExcluded && food.is_legume) return false;
+  if (allergenContext.isFavism && (food.is_fava || food.is_legume || foodCode === "FOUL_MUDAMMAS")) return false;
+  if (allergenContext.isGlutenExcluded && !food.is_gluten_free) return false;
+  if (allergenContext.isSoyExcluded && !food.is_soy_free) return false;
+  if (allergenContext.isNutsExcluded && !food.is_nut_free) return false;
+
+  return true;
+}
 
 /**
  * Generates equivalent smart swaps for a given food item with Dynamic Fat Offset
@@ -1001,14 +1153,8 @@ export function generateSmartSwaps(category, baseGrams, baseFoodCode, mealContex
       const candidate = FOOD_SWAP_DATABASE[code];
       if (!candidate || candidate.protein_per_100g <= 0) continue;
 
-      // Allergen, Diet & Disease Filters
-      if (allergenContext.isVegan && !candidate.is_vegan) continue;
-      if (allergenContext.isDairyExcluded && candidate.is_dairy) continue;
-      if (allergenContext.isEggsExcluded && (code === "EGGS_OMELETTE" || code === "SHAKSHOUKA_EGGS")) continue;
-      if (allergenContext.isFishExcluded && candidate.is_fish) continue;
-      if (allergenContext.isPoultryExcluded && (code === "CHICKEN_BREAST" || code === "SMOKED_TURKEY")) continue;
-      if (allergenContext.isRedMeatExcluded && (code === "LEAN_BEEF" || code === "CAMEL_MEAT_LEAN")) continue;
-      if (allergenContext.isGout && !candidate.is_gout_safe) continue;
+      // Clinical Safety & Allergen Filters
+      if (!isFoodClinicallySafe(code, allergenContext)) continue;
       if (allergenContext.isLowBudget && !candidate.is_economic) continue;
 
       const equivGrams = Math.round((baseProtein / candidate.protein_per_100g) * 100);
@@ -1656,6 +1802,74 @@ export const CULINARY_RECIPES_DATABASE = Object.freeze({
     ],
     cooking_tip: "الترمس من أعظم السناكات البروتينية النباتية؛ غني بالألياف والبروتين ويشبع الشهية فوراً.",
   },
+  HIGH_PROTEIN_OAT_PANCAKES: {
+    title_ar: "بان كيك الشوفان عالي البروتين بالقرفة والفانيليا",
+    title_en: "High-Protein Fluffy Oat Pancakes",
+    prep_time_ar: "8 دقائق",
+    prep_time_minutes: 8,
+    prep_options: [
+      {
+        id: "CLASSIC_CINNAMON_PANCAKE",
+        name_ar: "بان كيك الشوفان الكلاسيكي بالقرفة (Classic Cinnamon)",
+        free_ingredients_ar: "رشة قرفة مطحونة، قطرات فانيليا سائلة، كيس ستيفيا، ونصف ملعقة بيكنج بودر",
+        technique_ar: "خلط الشوفان المطحون مع بياض البيض وسكر الدايت، والطهي على مقلاة ساخنة مدهونة برذاذ خفيف دقيقة ونصف لكل وجه."
+      },
+      {
+        id: "CHOCOLATE_WHEY_PANCAKE",
+        name_ar: "بان كيك الشوكولاتة والواي بروتين (Chocolate Whey Pancake)",
+        free_ingredients_ar: "سكوب بروتين شوكولاتة أو ملعقة كاكاو خام، ماء دافئ، رشة بيكنج صودا",
+        technique_ar: "خفق المكونات في الخلاط حتى الحصول على مزيج متجانس سميك وصبه على مقلاة تيفال حتى ظهور الفقاعات ثم قلبه."
+      }
+    ],
+    ingredients_breakdown: [
+      { name_ar: "شوفان كامل مطحون", portion_desc: "حسب حصة الكارب بالخطة (50-70 جم)" },
+      { name_ar: "بياض بيض أو بيض كامل", portion_desc: "3-4 بياض بيض أو بيضتان كاملتان" },
+      { name_ar: "مكمل بروتين اختياري", portion_desc: "نصف سكوب إلى سكوب حسب الاحتياج" },
+      { name_ar: "منكهات ومحليات حرة", portion_desc: "قرفة، فانيليا، بيكنج بودر، سكر دايت ستيفيا" }
+    ],
+    cooking_instructions: [
+      "في الخلاط الكهربائي، اطحن الشوفان ناعماً ثم أضف بياض البيض ورشة الفانيليا والقرفة والبيكنج بودر وسكر الستيفيا.",
+      "اخلط المزيج لمدة 30 ثانية حتى يتكون خليط متجانس متوسط الكثافة.",
+      "سخن مقلاة جرانيت أو تيفال غير لاصقة على نار متوسطة مع مسحة زيت خفيفة جداً.",
+      "اسكب الخليط لتشكيل أقراص البان كيك، واتركها لمدة دقيقة ونصف حتى تظهر فقاعات على السطح، ثم اقلبها على الوجه الآخر لمدة دقيقة حتى تصبح ذهبية.",
+      "قدمها ساخنة وزينها بقطع الفاكهة أو القرفة المحددة في وجبتك."
+    ],
+    cooking_tip: "إضافة ملعقة صغيرة من البيكنج بودر مع خفق بياض البيض يمنح البان كيك قواماً هشاً ومنتفخاً يشبه البان كيك التقليدي تماماً ولكن بقيمة غذائية رياضية خارقة."
+  },
+  HEALTHY_BEEF_HAWAWSHI: {
+    title_ar: "حواوشي اللحم البقري الدايت بالخبز البلدي على الجريل",
+    title_en: "Healthy Grilled Beef Baladi Hawawshi",
+    prep_time_ar: "12 دقيقة",
+    prep_time_minutes: 12,
+    prep_options: [
+      {
+        id: "GRILLED_STOVE_HAWAWSHI",
+        name_ar: "حواوشي الجريل على الطاسة (Stovetop Pan Hawawshi)",
+        free_ingredients_ar: "بصل مفروم، فلفل أخضر ورومي مفروم، بهارات حواوشي (كمون، كزبرة، قرفة، جوزة الطيب)، شطة اختيارية",
+        technique_ar: "حشو الخبز البلدي بخليط اللحم المفروم النيء والضغط عليه، وتسويته في مقلاة مغطاة ممسوحة برذاذ خفيف 5 دقائق لكل وجه."
+      },
+      {
+        id: "OVEN_CRISP_HAWAWSHI",
+        name_ar: "حواوشي الفرن المقرمش (Oven Crisp Hawawshi)",
+        free_ingredients_ar: "نفس تتبيلة الخضار والبهارات الحرة مع لفه بورق زبدة",
+        technique_ar: "وضعه في فرن ساخن على حرارة 200 درجة لمدة 15 دقيقة حتى يتحمص الخبز ويستوي اللحم من الداخل."
+      }
+    ],
+    ingredients_breakdown: [
+      { name_ar: "لحم بقري مفروم قليل الدسم (95/5)", portion_desc: "100-150 جم (حسب حصة البروتين)" },
+      { name_ar: "خبز بلدي مصري بالردة", portion_desc: "رغيف بلدي متوسط (حسب حصة الكارب)" },
+      { name_ar: "خضار تتبيل مفروم ناعم", portion_desc: "بصل، فلفل أخضر، طماطم صغيرة منزوعة البذر، بقدونس" },
+      { name_ar: "توابل حواوشي حرة", portion_desc: "بهار حواوشي، فلفل أسود، كمون، كزبرة جافة، رشة ملح خفيف" }
+    ],
+    cooking_instructions: [
+      "في وعاء، اخلط اللحم المفروم قليل الدسم مع البصل والفلفل المفرومين وتوابل الحواوشي حتى يتجانس الخليط تماماً.",
+      "افتح رغيف الخبز البلدي المخصص بالخطة وافرد حشوة اللحم داخله بالتساوي حتى الأطراف.",
+      "سخن مقلاة جريل غير لاصقة وادهن الخبز بمسحة خفيفة جداً من زيت الزيتون المخصص لوجبتك.",
+      "ضع الرغيف في الطاسة وغطّها على نار هادئة إلى متوسطة لمدة 5-6 دقائق حتى يتحمص القاع ويستوي اللحم.",
+      "اقلب الرغيف على الوجه الآخر واضغط عليه برفق، واستمر في الطهي لـ 4 دقائق حتى يكتسب لوناً ذهبياً مقرمشاً وينضج اللحم تماماً."
+    ],
+    cooking_tip: "فرم البصل والفلفل ناعماً جداً وعصر مائهم الخفيف يضمن نضج اللحم الداخلي وتوزيعه بسلاسة داخل الرغيف مع منح طعم الحواوشي الشرقي الأصلي 100% دون جرام دهون غير محسوب."
+  },
 });
 
 export function getRecipeDetailsForFood(foodCode) {
@@ -1665,6 +1879,8 @@ export function getRecipeDetailsForFood(foodCode) {
     return CULINARY_RECIPES_DATABASE[upperCode];
   }
   // Check common aliases (order matters)
+  if (upperCode.includes("PANCAKE")) return CULINARY_RECIPES_DATABASE.HIGH_PROTEIN_OAT_PANCAKES;
+  if (upperCode.includes("HAWAWSHI")) return CULINARY_RECIPES_DATABASE.HEALTHY_BEEF_HAWAWSHI;
   if (upperCode.includes("SAUTEED") || upperCode.includes("VEGG")) return CULINARY_RECIPES_DATABASE.SAUTEED_VEGGIES;
   if (upperCode.includes("SALAD")) return CULINARY_RECIPES_DATABASE.MEDITERRANEAN_SALAD;
   if (upperCode.includes("COTTAGE") || upperCode.includes("CHEESE")) return CULINARY_RECIPES_DATABASE.COTTAGE_CHEESE;
@@ -1694,11 +1910,14 @@ export function getRecipeDetailsForFood(foodCode) {
   return null;
 }
 
-export function buildCulinaryRecipeMeals(universalTargets, canonicalIntake = {}) {
+export function buildCulinaryRecipeMeals(universalTargets, canonicalIntake = {}, rawIntake = {}) {
   const { meal_distribution = [] } = universalTargets;
   const nutrition = canonicalIntake.nutrition || {};
   const medical = canonicalIntake.medical || {};
   const training = canonicalIntake.training || {};
+  const effectiveRaw = (rawIntake?.answers && typeof rawIntake.answers === 'object')
+    ? { ...rawIntake.answers, ...rawIntake }
+    : (rawIntake || {});
   const isAdvanced = (training.experience || "").toUpperCase() === "ADVANCED";
   const proteinPowderAvailable = Boolean(nutrition.proteinPowderAvailable ?? nutrition.protein_powder_available ?? true);
   const budgetTier = (nutrition.budget || nutrition.budgetTier || "MODERATE").toUpperCase();
@@ -1712,6 +1931,11 @@ export function buildCulinaryRecipeMeals(universalTargets, canonicalIntake = {})
     ...(nutrition.intolerances || []),
     ...(canonicalIntake.medical?.allergies || []),
     ...(canonicalIntake.medical?.conditions || []).map(c => c.conditionCode),
+    ...(Array.isArray(effectiveRaw.strict_allergies) ? effectiveRaw.strict_allergies : []),
+    ...(Array.isArray(effectiveRaw.allergies_and_dislikes) ? effectiveRaw.allergies_and_dislikes : []),
+    ...(Array.isArray(effectiveRaw.nutrition?.strict_allergies) ? effectiveRaw.nutrition.strict_allergies : []),
+    ...(Array.isArray(effectiveRaw.nutrition?.allergies) ? effectiveRaw.nutrition.allergies : []),
+    ...(Array.isArray(effectiveRaw.nutrition?.excludedFoodsList) ? effectiveRaw.nutrition.excludedFoodsList : []),
   ];
 
   const excludedFoods = new Set(
@@ -1789,6 +2013,27 @@ export function buildCulinaryRecipeMeals(universalTargets, canonicalIntake = {})
     excludedFoods.has("URIC_ACID") ||
     (medical.conditions || []).some(c => (c.conditionCode || "").includes("GOUT") || (c.conditionCode || "").includes("URIC"));
 
+  const isFavism =
+    excludedFoods.has("FAVISM") ||
+    excludedFoods.has("G6PD") ||
+    excludedFoods.has("FAVA") ||
+    excludedFoods.has("FAVA_BEANS") ||
+    (medical.conditions || []).some(c => {
+      const code = (c.conditionCode || "").toUpperCase();
+      return code.includes("G6PD") || code.includes("FAVISM");
+    });
+
+  const isLegumesExcluded =
+    isFavism ||
+    isGout ||
+    excludedFoods.has("LEGUMES") ||
+    excludedFoods.has("LENTILS") ||
+    excludedFoods.has("CHICKPEAS") ||
+    excludedFoods.has("BEANS") ||
+    excludedFoods.has("FAVA_BEANS") ||
+    excludedFoods.has("LUPIN") ||
+    excludedFoods.has("LUPINI");
+
   const isLowBudget =
     budgetTier === "LOW" ||
     budgetTier === "ECONOMIC" ||
@@ -1806,6 +2051,8 @@ export function buildCulinaryRecipeMeals(universalTargets, canonicalIntake = {})
     isSoyExcluded,
     isNutsExcluded,
     isGout,
+    isFavism,
+    isLegumesExcluded,
     isLowBudget,
   };
 
@@ -1902,187 +2149,341 @@ export function buildCulinaryRecipeMeals(universalTargets, canonicalIntake = {})
         });
 
       } else if (mealNum === 2) {
-        recipeNameAr = "طبق الأداء النباتي (يخنة البقوليات المشكلة مع أرز بسمتي وسكوب بروتين معزول)";
-        recipeConceptDesc = "وجبة أداء عضلي غنية بالكاربوهيدرات المعقدة والبروتين النباتي التكاملي لملء مخازن الجليكوجين.";
+        const canUseLegumes = !isGout && !isLegumesExcluded && !isFavism;
 
-        // Legumes Stew (250g)
-        const legumeGrams = 250;
-        const legP = Math.round(legumeGrams * 0.09);
-        const legC = Math.round(legumeGrams * 0.20);
-        const legF = Math.round(legumeGrams * 0.03);
-        items.push({
-          food_code: "MIXED_LEGUMES_STEW",
-          name_ar: "يخنة البقوليات المشكلة (عدس بني، حمص، فاصوليا حمراء متبلة بالكمون وزيت الزيتون)",
-          name_en: "Mixed Legumes Stew",
-          category: "PROTEIN",
-          portion_g: legumeGrams,
-          household_measurement: `${legumeGrams} جم مطبوخ (طبق عميق متبل)`,
-          protein_g: legP,
-          carb_g: legC,
-          fat_g: legF,
-          calories_kcal: Math.round(legumeGrams * 1.3),
-          swaps: generateSmartSwaps("PROTEIN", legumeGrams, "MIXED_LEGUMES_STEW", "LUNCH", 8, allergenContext),
-        });
+        if (canUseLegumes) {
+          recipeNameAr = "طبق الأداء النباتي (يخنة البقوليات المشكلة مع أرز بسمتي وسكوب بروتين معزول)";
+          recipeConceptDesc = "وجبة أداء عضلي غنية بالكاربوهيدرات المعقدة والبروتين النباتي التكاملي لملء مخازن الجليكوجين.";
 
-        // Veggies
-        items.push({
-          food_code: "SAUTEED_VEGGIES",
-          name_ar: "طبق خضار سوتيه مشكل (كوسة، بروكلي، جزر)",
-          name_en: "Sautéed Veggies",
-          category: "VEGGIES",
-          portion_g: 150,
-          household_measurement: "طبق خضار سوتيه متوسط",
-          protein_g: 2,
-          carb_g: 4,
-          fat_g: 0,
-          calories_kcal: 25,
-          swaps: [],
-        });
-
-        // Basmati Rice
-        const remC = Math.max(10, targetC - legC - 4);
-        const riceGrams = Math.round(remC / 0.28);
-        const riceP = Math.round(riceGrams * 0.028);
-        items.push({
-          food_code: "BASMATI_RICE",
-          name_ar: "أرز بسمتي أبيض مطبوخ",
-          name_en: "Cooked Basmati Rice",
-          category: "CARBS",
-          portion_g: riceGrams,
-          household_measurement: `${riceGrams} جم مطبوخ (${Math.round(riceGrams / 25)} ملاعق كبيرة)`,
-          protein_g: riceP,
-          carb_g: remC,
-          fat_g: 0.8,
-          calories_kcal: Math.round(riceGrams * 1.3),
-          swaps: generateSmartSwaps("CARBS", riceGrams, "BASMATI_RICE", "LUNCH", 8, allergenContext),
-        });
-
-        // Pea & Rice Protein Isolate
-        const remP = Math.max(15, targetP - legP - riceP - 2);
-        const powderGrams = Math.round(remP / 0.80);
-        items.push({
-          food_code: "PEA_RICE_PROTEIN_POWDER",
-          name_ar: "سكوب بروتين نباتي معزول (Plant Protein Isolate Scoop)",
-          name_en: "Plant Protein Isolate Scoop",
-          category: "PROTEIN",
-          portion_g: powderGrams,
-          household_measurement: `${powderGrams} جم (${(powderGrams / 30).toFixed(1)} سكوب مع ماء)`,
-          protein_g: remP,
-          carb_g: 1,
-          fat_g: 0.5,
-          calories_kcal: Math.round(powderGrams * 3.5),
-          swaps: [],
-        });
-
-        // Olive oil
-        const remF = Math.max(0, targetF - legF - 0.8 - 0.5);
-        const oilGrams = Math.round(remF);
-        if (oilGrams > 0) {
+          // Legumes Stew (250g)
+          const legumeGrams = 250;
+          const legP = Math.round(legumeGrams * 0.09);
+          const legC = Math.round(legumeGrams * 0.20);
+          const legF = Math.round(legumeGrams * 0.03);
           items.push({
-            food_code: "OLIVE_OIL",
-            name_ar: "زيت زيتون بكر ممتاز للطهي والتتبيل",
-            name_en: "Extra Virgin Olive Oil",
-            category: "FATS",
-            portion_g: oilGrams,
-            household_measurement: `${oilGrams} جم (1 ملعقة طعام)`,
-            protein_g: 0,
-            carb_g: 0,
-            fat_g: oilGrams,
-            calories_kcal: oilGrams * 9,
+            food_code: "MIXED_LEGUMES_STEW",
+            name_ar: "يخنة البقوليات المشكلة (عدس بني، حمص، فاصوليا حمراء متبلة بالكمون وزيت الزيتون)",
+            name_en: "Mixed Legumes Stew",
+            category: "PROTEIN",
+            portion_g: legumeGrams,
+            household_measurement: `${legumeGrams} جم مطبوخ (طبق عميق متبل)`,
+            protein_g: legP,
+            carb_g: legC,
+            fat_g: legF,
+            calories_kcal: Math.round(legumeGrams * 1.3),
+            swaps: generateSmartSwaps("PROTEIN", legumeGrams, "MIXED_LEGUMES_STEW", "LUNCH", 8, allergenContext),
+          });
+
+          // Veggies
+          items.push({
+            food_code: "SAUTEED_VEGGIES",
+            name_ar: "طبق خضار سوتيه مشكل (كوسة، بروكلي، جزر)",
+            name_en: "Sautéed Veggies",
+            category: "VEGGIES",
+            portion_g: 150,
+            household_measurement: "طبق خضار سوتيه متوسط",
+            protein_g: 2,
+            carb_g: 4,
+            fat_g: 0,
+            calories_kcal: 25,
             swaps: [],
           });
+
+          // Basmati Rice
+          const remC = Math.max(10, targetC - legC - 4);
+          const riceGrams = Math.round(remC / 0.28);
+          const riceP = Math.round(riceGrams * 0.028);
+          items.push({
+            food_code: "BASMATI_RICE",
+            name_ar: "أرز بسمتي أبيض مطبوخ",
+            name_en: "Cooked Basmati Rice",
+            category: "CARBS",
+            portion_g: riceGrams,
+            household_measurement: `${riceGrams} جم مطبوخ (${Math.round(riceGrams / 25)} ملاعق كبيرة)`,
+            protein_g: riceP,
+            carb_g: remC,
+            fat_g: 0.8,
+            calories_kcal: Math.round(riceGrams * 1.3),
+            swaps: generateSmartSwaps("CARBS", riceGrams, "BASMATI_RICE", "LUNCH", 8, allergenContext),
+          });
+
+          // Pea & Rice Protein Isolate
+          const remP = Math.max(15, targetP - legP - riceP - 2);
+          const powderGrams = Math.round(remP / 0.80);
+          items.push({
+            food_code: "PEA_RICE_PROTEIN_POWDER",
+            name_ar: "سكوب بروتين نباتي معزول (Plant Protein Isolate Scoop)",
+            name_en: "Plant Protein Isolate Scoop",
+            category: "PROTEIN",
+            portion_g: powderGrams,
+            household_measurement: `${powderGrams} جم (${(powderGrams / 30).toFixed(1)} سكوب مع ماء)`,
+            protein_g: remP,
+            carb_g: 1,
+            fat_g: 0.5,
+            calories_kcal: Math.round(powderGrams * 3.5),
+            swaps: [],
+          });
+
+          // Olive oil
+          const remF = Math.max(0, targetF - legF - 0.8 - 0.5);
+          const oilGrams = Math.round(remF);
+          if (oilGrams > 0) {
+            items.push({
+              food_code: "OLIVE_OIL",
+              name_ar: "زيت زيتون بكر ممتاز للطهي والتتبيل",
+              name_en: "Extra Virgin Olive Oil",
+              category: "FATS",
+              portion_g: oilGrams,
+              household_measurement: `${oilGrams} جم (1 ملعقة طعام)`,
+              protein_g: 0,
+              carb_g: 0,
+              fat_g: oilGrams,
+              calories_kcal: oilGrams * 9,
+              swaps: [],
+            });
+          }
+        } else {
+          // CLINICAL PURINE/ALLERGEN SAFETY: Pure Vegan Lunch without Legumes
+          recipeNameAr = "طبق الأداء النباتي النقي الآمن (أرز بسمتي بالخضار مع سكوب بروتين نباتي معزول وزيت زيتون)";
+          recipeConceptDesc = "وجبة غداء نباتية نقية آمنة لحمض اليوريك والمفاصل، مصممة بأعلى معايير الحماية السريرية مع تغطية كامل الماكروز.";
+
+          // Veggies
+          items.push({
+            food_code: "SAUTEED_VEGGIES",
+            name_ar: "طبق خضار سوتيه مشكل (كوسة، بروكلي، جزر)",
+            name_en: "Sautéed Veggies",
+            category: "VEGGIES",
+            portion_g: 150,
+            household_measurement: "طبق خضار سوتيه متوسط",
+            protein_g: 2,
+            carb_g: 4,
+            fat_g: 0,
+            calories_kcal: 25,
+            swaps: [],
+          });
+
+          // Basmati Rice
+          const remC = Math.max(15, targetC - 4);
+          const riceGrams = Math.round(remC / 0.28);
+          const riceP = Math.round(riceGrams * 0.028);
+          items.push({
+            food_code: "BASMATI_RICE",
+            name_ar: "أرز بسمتي أبيض مطبوخ",
+            name_en: "Cooked Basmati Rice",
+            category: "CARBS",
+            portion_g: riceGrams,
+            household_measurement: `${riceGrams} جم مطبوخ (${Math.round(riceGrams / 25)} ملاعق كبيرة)`,
+            protein_g: riceP,
+            carb_g: remC,
+            fat_g: 0.8,
+            calories_kcal: Math.round(riceGrams * 1.3),
+            swaps: generateSmartSwaps("CARBS", riceGrams, "BASMATI_RICE", "LUNCH", 8, allergenContext),
+          });
+
+          // Pea & Rice Protein Isolate
+          const remP = Math.max(20, targetP - riceP - 2);
+          const powderGrams = Math.round(remP / 0.80);
+          items.push({
+            food_code: "PEA_RICE_PROTEIN_POWDER",
+            name_ar: "سكوب بروتين نباتي معزول (Plant Protein Isolate Scoop)",
+            name_en: "Plant Protein Isolate Scoop",
+            category: "PROTEIN",
+            portion_g: powderGrams,
+            household_measurement: `${powderGrams} جم (${(powderGrams / 30).toFixed(1)} سكوب مع ماء)`,
+            protein_g: remP,
+            carb_g: 1,
+            fat_g: 0.5,
+            calories_kcal: Math.round(powderGrams * 3.5),
+            swaps: [],
+          });
+
+          // Olive oil
+          const remF = Math.max(0, targetF - 0.8 - 0.5);
+          const oilGrams = Math.round(remF);
+          if (oilGrams > 0) {
+            items.push({
+              food_code: "OLIVE_OIL",
+              name_ar: "زيت زيتون بكر ممتاز للطهي والتتبيل",
+              name_en: "Extra Virgin Olive Oil",
+              category: "FATS",
+              portion_g: oilGrams,
+              household_measurement: `${oilGrams} جم (${Math.max(1, Math.round(oilGrams / 10))} ملعقة طعام)`,
+              protein_g: 0,
+              carb_g: 0,
+              fat_g: oilGrams,
+              calories_kcal: oilGrams * 9,
+              swaps: [],
+            });
+          }
         }
 
       } else {
-        recipeNameAr = "طبق العشاء النباتي المشبع (يخنة حمص وعدس بالكمون مع بطاطس مشوية وسلطة خضراء)";
-        recipeConceptDesc = "عشاء نباتي مريح للهضم غني بالألياف والمعادن لتعزيز الاستشفاء الليلي.";
+        const canUseLegumes = !isGout && !isLegumesExcluded && !isFavism;
 
-        // Legumes Stew (250g)
-        const legumeGrams = 250;
-        const legP = Math.round(legumeGrams * 0.09);
-        const legC = Math.round(legumeGrams * 0.20);
-        const legF = Math.round(legumeGrams * 0.03);
-        items.push({
-          food_code: "MIXED_LEGUMES_STEW",
-          name_ar: "يخنة الحمص والعدس البني بزيت الزيتون والليمون والكمون",
-          name_en: "Mixed Chickpeas & Lentils Stew",
-          category: "PROTEIN",
-          portion_g: legumeGrams,
-          household_measurement: `${legumeGrams} جم مطبوخ (طبق عميق متبل)`,
-          protein_g: legP,
-          carb_g: legC,
-          fat_g: legF,
-          calories_kcal: Math.round(legumeGrams * 1.3),
-          swaps: generateSmartSwaps("PROTEIN", legumeGrams, "MIXED_LEGUMES_STEW", "DINNER", 8, allergenContext),
-        });
+        if (canUseLegumes) {
+          recipeNameAr = "طبق العشاء النباتي المشبع (يخنة حمص وعدس بالكمون مع بطاطس مشوية وسلطة خضراء)";
+          recipeConceptDesc = "عشاء نباتي مريح للهضم غني بالألياف والمعادن لتعزيز الاستشفاء الليلي.";
 
-        // Salad
-        items.push({
-          food_code: "MEDITERRANEAN_SALAD",
-          name_ar: "طبق سلطة خضراء طازجة (خيار، طماطم، جرجير، بقدونس، رشة ليمون)",
-          name_en: "Fresh Green Salad",
-          category: "VEGGIES",
-          portion_g: 150,
-          household_measurement: "طبق سلطة خضراء متوسط",
-          protein_g: 2,
-          carb_g: 4,
-          fat_g: 0,
-          calories_kcal: 25,
-          swaps: [],
-        });
-
-        // Roasted Potatoes
-        const remC = Math.max(10, targetC - legC - 4);
-        const potGrams = Math.round(remC / 0.20);
-        const potP = Math.round(potGrams * 0.02);
-        items.push({
-          food_code: "ROASTED_POTATOES",
-          name_ar: "بطاطس ودجز مشوية بالأعشاب في الإيرفراير",
-          name_en: "Air-Fryer Herb Roasted Potatoes",
-          category: "CARBS",
-          portion_g: potGrams,
-          household_measurement: `${potGrams} جم (حوالي ${Math.round(potGrams / 150)} ثمرات مشوية بالأعشاب)`,
-          protein_g: potP,
-          carb_g: remC,
-          fat_g: 0.2,
-          calories_kcal: Math.round(potGrams * 0.9),
-          swaps: generateSmartSwaps("CARBS", potGrams, "ROASTED_POTATOES", "DINNER", 8, allergenContext),
-        });
-
-        // Pea & Rice Protein Isolate
-        const remP = Math.max(15, targetP - legP - potP - 2);
-        const powderGrams = Math.round(remP / 0.80);
-        items.push({
-          food_code: "PEA_RICE_PROTEIN_POWDER",
-          name_ar: "سكوب بروتين نباتي معزول من البازلاء والأرز",
-          name_en: "Plant Protein Isolate Scoop",
-          category: "PROTEIN",
-          portion_g: powderGrams,
-          household_measurement: `${powderGrams} جم (${(powderGrams / 30).toFixed(1)} سكوب مع ماء)`,
-          protein_g: remP,
-          carb_g: 1,
-          fat_g: 0.5,
-          calories_kcal: Math.round(powderGrams * 3.5),
-          swaps: [],
-        });
-
-        // Olive oil
-        const remF = Math.max(0, targetF - legF - 0.2 - 0.5);
-        const oilGrams = Math.round(remF);
-        if (oilGrams > 0) {
+          // Legumes Stew (250g)
+          const legumeGrams = 250;
+          const legP = Math.round(legumeGrams * 0.09);
+          const legC = Math.round(legumeGrams * 0.20);
+          const legF = Math.round(legumeGrams * 0.03);
           items.push({
-            food_code: "OLIVE_OIL",
-            name_ar: "زيت زيتون بكر ممتاز",
-            name_en: "Extra Virgin Olive Oil",
-            category: "FATS",
-            portion_g: oilGrams,
-            household_measurement: `${oilGrams} جم (1 ملعقة طعام)`,
-            protein_g: 0,
-            carb_g: 0,
-            fat_g: oilGrams,
-            calories_kcal: oilGrams * 9,
+            food_code: "MIXED_LEGUMES_STEW",
+            name_ar: "يخنة الحمص والعدس البني بزيت الزيتون والليمون والكمون",
+            name_en: "Mixed Chickpeas & Lentils Stew",
+            category: "PROTEIN",
+            portion_g: legumeGrams,
+            household_measurement: `${legumeGrams} جم مطبوخ (طبق عميق متبل)`,
+            protein_g: legP,
+            carb_g: legC,
+            fat_g: legF,
+            calories_kcal: Math.round(legumeGrams * 1.3),
+            swaps: generateSmartSwaps("PROTEIN", legumeGrams, "MIXED_LEGUMES_STEW", "DINNER", 8, allergenContext),
+          });
+
+          // Salad
+          items.push({
+            food_code: "MEDITERRANEAN_SALAD",
+            name_ar: "طبق سلطة خضراء طازجة (خيار، طماطم، جرجير، بقدونس، رشة ليمون)",
+            name_en: "Fresh Green Salad",
+            category: "VEGGIES",
+            portion_g: 150,
+            household_measurement: "طبق سلطة خضراء متوسط",
+            protein_g: 2,
+            carb_g: 4,
+            fat_g: 0,
+            calories_kcal: 25,
             swaps: [],
           });
+
+          // Roasted Potatoes
+          const remC = Math.max(10, targetC - legC - 4);
+          const potGrams = Math.round(remC / 0.20);
+          const potP = Math.round(potGrams * 0.02);
+          items.push({
+            food_code: "ROASTED_POTATOES",
+            name_ar: "بطاطس ودجز مشوية بالأعشاب في الإيرفراير",
+            name_en: "Air-Fryer Herb Roasted Potatoes",
+            category: "CARBS",
+            portion_g: potGrams,
+            household_measurement: `${potGrams} جم (حوالي ${Math.round(potGrams / 150)} ثمرات مشوية بالأعشاب)`,
+            protein_g: potP,
+            carb_g: remC,
+            fat_g: 0.2,
+            calories_kcal: Math.round(potGrams * 0.9),
+            swaps: generateSmartSwaps("CARBS", potGrams, "ROASTED_POTATOES", "DINNER", 8, allergenContext),
+          });
+
+          // Pea & Rice Protein Isolate
+          const remP = Math.max(15, targetP - legP - potP - 2);
+          const powderGrams = Math.round(remP / 0.80);
+          items.push({
+            food_code: "PEA_RICE_PROTEIN_POWDER",
+            name_ar: "سكوب بروتين نباتي معزول من البازلاء والأرز",
+            name_en: "Plant Protein Isolate Scoop",
+            category: "PROTEIN",
+            portion_g: powderGrams,
+            household_measurement: `${powderGrams} جم (${(powderGrams / 30).toFixed(1)} سكوب مع ماء)`,
+            protein_g: remP,
+            carb_g: 1,
+            fat_g: 0.5,
+            calories_kcal: Math.round(powderGrams * 3.5),
+            swaps: [],
+          });
+
+          // Olive oil
+          const remF = Math.max(0, targetF - legF - 0.2 - 0.5);
+          const oilGrams = Math.round(remF);
+          if (oilGrams > 0) {
+            items.push({
+              food_code: "OLIVE_OIL",
+              name_ar: "زيت زيتون بكر ممتاز",
+              name_en: "Extra Virgin Olive Oil",
+              category: "FATS",
+              portion_g: oilGrams,
+              household_measurement: `${oilGrams} جم (1 ملعقة طعام)`,
+              protein_g: 0,
+              carb_g: 0,
+              fat_g: oilGrams,
+              calories_kcal: oilGrams * 9,
+              swaps: [],
+            });
+          }
+        } else {
+          // CLINICAL PURINE/ALLERGEN SAFETY: Pure Vegan Dinner without Legumes
+          recipeNameAr = "طبق العشاء النباتي الخفيف الآمن (بطاطس مشوية بالأعشاب مع سلطة وسكوب بروتين معزول)";
+          recipeConceptDesc = "عشاء نباتي مريح للهضم وخالي من البيورين ومسببات إجهاد المفاصل، يعزز الاستشفاء العضلي الليلي بأمان سريري تام.";
+
+          // Salad
+          items.push({
+            food_code: "MEDITERRANEAN_SALAD",
+            name_ar: "طبق سلطة خضراء طازجة (خيار، طماطم، جرجير، بقدونس، رشة ليمون)",
+            name_en: "Fresh Green Salad",
+            category: "VEGGIES",
+            portion_g: 150,
+            household_measurement: "طبق سلطة خضراء متوسط",
+            protein_g: 2,
+            carb_g: 4,
+            fat_g: 0,
+            calories_kcal: 25,
+            swaps: [],
+          });
+
+          // Roasted Potatoes
+          const remC = Math.max(15, targetC - 4);
+          const potGrams = Math.round(remC / 0.20);
+          const potP = Math.round(potGrams * 0.02);
+          items.push({
+            food_code: "ROASTED_POTATOES",
+            name_ar: "بطاطس ودجز مشوية بالأعشاب في الإيرفراير",
+            name_en: "Air-Fryer Herb Roasted Potatoes",
+            category: "CARBS",
+            portion_g: potGrams,
+            household_measurement: `${potGrams} جم (حوالي ${Math.round(potGrams / 150)} ثمرات مشوية بالأعشاب)`,
+            protein_g: potP,
+            carb_g: remC,
+            fat_g: 0.2,
+            calories_kcal: Math.round(potGrams * 0.9),
+            swaps: generateSmartSwaps("CARBS", potGrams, "ROASTED_POTATOES", "DINNER", 8, allergenContext),
+          });
+
+          // Pea & Rice Protein Isolate
+          const remP = Math.max(20, targetP - potP - 2);
+          const powderGrams = Math.round(remP / 0.80);
+          items.push({
+            food_code: "PEA_RICE_PROTEIN_POWDER",
+            name_ar: "سكوب بروتين نباتي معزول من البازلاء والأرز",
+            name_en: "Plant Protein Isolate Scoop",
+            category: "PROTEIN",
+            portion_g: powderGrams,
+            household_measurement: `${powderGrams} جم (${(powderGrams / 30).toFixed(1)} سكوب مع ماء)`,
+            protein_g: remP,
+            carb_g: 1,
+            fat_g: 0.5,
+            calories_kcal: Math.round(powderGrams * 3.5),
+            swaps: [],
+          });
+
+          // Olive oil
+          const remF = Math.max(0, targetF - 0.2 - 0.5);
+          const oilGrams = Math.round(remF);
+          if (oilGrams > 0) {
+            items.push({
+              food_code: "OLIVE_OIL",
+              name_ar: "زيت زيتون بكر ممتاز",
+              name_en: "Extra Virgin Olive Oil",
+              category: "FATS",
+              portion_g: oilGrams,
+              household_measurement: `${oilGrams} جم (${Math.max(1, Math.round(oilGrams / 10))} ملعقة طعام)`,
+              protein_g: 0,
+              carb_g: 0,
+              fat_g: oilGrams,
+              calories_kcal: oilGrams * 9,
+              swaps: [],
+            });
+          }
         }
       }
     }
@@ -2298,22 +2699,38 @@ export function buildCulinaryRecipeMeals(universalTargets, canonicalIntake = {})
         // Total Plate Weight = 80 + 55 + 20 + 30 + 6 = 191g -> Total Macros: P:36.3g, C:15g, F:8.5g, Kcal: ~291 kcal.
 
       } else if (mealNum === 4) {
-        recipeNameAr = "الوجبة 4: سناك تونة لايت وبطاطا حلوة مركزة (وزن الطبق 165 جم)";
-
-        // Canned Tuna (90g = 23.4g P, 0.9g F, 104 kcal)
-        items.push({
-          food_code: "CANNED_TUNA",
-          name_ar: "تونة لايت مصفاة تماماً بالليمون والكمون",
-          name_en: "Drained Light Tuna",
-          category: "PROTEIN",
-          portion_g: 90,
-          household_measurement: "90 جم مصفى (ثلثي علبة تونة)",
-          protein_g: 23.4,
-          carb_g: 0,
-          fat_g: 0.9,
-          calories_kcal: 104,
-          swaps: [],
-        });
+        if (isGout || isFishExcluded) {
+          recipeNameAr = "الوجبة 4: سناك صدور دجاج وبطاطا حلوة مركزة (وزن الطبق 155 جم)";
+          items.push({
+            food_code: "CHICKEN_BREAST",
+            name_ar: "صدور دجاج مشوية متبلة بالليمون والأعشاب",
+            name_en: "Grilled Chicken Breast Cubes",
+            category: "PROTEIN",
+            portion_g: 80,
+            household_measurement: "80 جم مطبوخ مقطع مكعبات",
+            protein_g: 24.8,
+            carb_g: 0,
+            fat_g: 2.4,
+            calories_kcal: 120,
+            swaps: [],
+          });
+        } else {
+          recipeNameAr = "الوجبة 4: سناك تونة لايت وبطاطا حلوة مركزة (وزن الطبق 165 جم)";
+          // Canned Tuna (90g = 23.4g P, 0.9g F, 104 kcal)
+          items.push({
+            food_code: "CANNED_TUNA",
+            name_ar: "تونة لايت مصفاة تماماً بالليمون والكمون",
+            name_en: "Drained Light Tuna",
+            category: "PROTEIN",
+            portion_g: 90,
+            household_measurement: "90 جم مصفى (ثلثي علبة تونة)",
+            protein_g: 23.4,
+            carb_g: 0,
+            fat_g: 0.9,
+            calories_kcal: 104,
+            swaps: [],
+          });
+        }
 
         // Sweet Potato (50g = 10.5g C, 1g P, 48 kcal)
         items.push({
@@ -2872,7 +3289,7 @@ export function buildCulinaryRecipeMeals(universalTargets, canonicalIntake = {})
             const chkF = Math.round(chickenGrams * 0.03);
             items.push({
               food_code: "CHICKEN_BREAST",
-              name_ar: "صدور دجاج مشوية خفيفة للإفطار (لتغطية البروتين دون زيادة القريش)",
+              name_ar: "صدور دجاج مشوية خفيفة للإفطار (شريحة إضافية لتغطية البروتين)",
               name_en: "Grilled Chicken Breast Slices",
               category: "PROTEIN",
               portion_g: chickenGrams,
@@ -2910,7 +3327,7 @@ export function buildCulinaryRecipeMeals(universalTargets, canonicalIntake = {})
         if (oilGrams > 0) {
           items.push({
             food_code: "OLIVE_OIL",
-            name_ar: "زيت زيتون بكر ممتاز (مسحة خفيفة للطهي أو على الجبن والسلطة)",
+            name_ar: "زيت زيتون بكر ممتاز (مسحة خفيفة للطهي أو تتبيل الوجبة)",
             name_en: "Extra Virgin Olive Oil",
             category: "FATS",
             portion_g: oilGrams,
@@ -2936,7 +3353,7 @@ export function buildCulinaryRecipeMeals(universalTargets, canonicalIntake = {})
         // Sautéed Veggies (150g = 2g P, 4g C, 25 kcal)
         items.push({
           food_code: "SAUTEED_VEGGIES",
-          name_ar: "طبق خضار سوتيه/مشوي (كوسة، بروكلي، جزر، فاصوليا خضراء)",
+          name_ar: "طبق خضار سوتيه/مشوي (كوسة، بروكلي، جزر، فلفل ألوان)",
           name_en: "Sautéed Garden Veggies",
           category: "VEGGIES",
           portion_g: 150,
@@ -3092,7 +3509,7 @@ export function buildCulinaryRecipeMeals(universalTargets, canonicalIntake = {})
         const remP = Math.max(15, targetP - 2 - carbP);
         let protF = 0;
 
-        if (isLowBudget && !isDairyExcluded && !isFishExcluded && remP >= 45) {
+        if (isLowBudget && !isDairyExcluded && !isFishExcluded && !isGout && remP >= 45) {
           // Multi-component economic dinner: 150g cottage cheese (CAPPED) + Canned Tuna
           const cheeseGrams = 150; // Capped strictly at 150g
           const cheeseP = 18;

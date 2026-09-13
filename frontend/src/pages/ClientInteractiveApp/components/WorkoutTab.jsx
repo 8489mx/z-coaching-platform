@@ -9,113 +9,9 @@ import {
   CheckCircle2, 
   ArrowLeftRight, 
   BookOpen, 
-  Activity,
-  Clock
+  Activity
 } from 'lucide-react';
 import { getPrehabRoutine } from '../../../utils/posturalPrehabEngine';
-
-function RestTimerWidget({ restSec = 60 }) {
-  const [timeLeft, setTimeLeft] = useState(restSec);
-  const [isRunning, setIsRunning] = useState(false);
-
-  useEffect(() => {
-    let timer = null;
-    if (isRunning && timeLeft > 0) {
-      timer = setInterval(() => {
-        setTimeLeft(prev => {
-          if (prev <= 1) {
-            setIsRunning(false);
-            return 0;
-          }
-          return prev - 1;
-        });
-      }, 1000);
-    }
-    return () => {
-      if (timer) clearInterval(timer);
-    };
-  }, [isRunning, timeLeft]);
-
-  const handleStart = () => {
-    if (timeLeft === 0) setTimeLeft(restSec);
-    setIsRunning(true);
-  };
-
-  const handlePause = () => setIsRunning(false);
-  const handleReset = () => {
-    setIsRunning(false);
-    setTimeLeft(restSec);
-  };
-
-  return (
-    <div style={{
-      display: 'inline-flex',
-      alignItems: 'center',
-      gap: '5px',
-      background: isRunning ? '#FEF3C7' : '#EFF6FF',
-      border: isRunning ? '1px solid #FCD34D' : '1px solid #BFDBFE',
-      padding: '2px 8px',
-      borderRadius: '8px',
-      fontSize: '0.72rem',
-      fontWeight: 700,
-      color: isRunning ? '#92400E' : '#1E40AF'
-    }}>
-      <Clock style={{ width: '12px', height: '12px' }} />
-      <span>{timeLeft} ث</span>
-      {!isRunning ? (
-        <button
-          type="button"
-          onClick={handleStart}
-          style={{
-            background: '#1D4ED8',
-            color: '#FFFFFF',
-            border: 'none',
-            borderRadius: '4px',
-            padding: '1px 6px',
-            fontSize: '0.65rem',
-            fontWeight: 800,
-            cursor: 'pointer'
-          }}
-        >
-          {timeLeft === 0 ? 'إعادة' : 'بدء الراحة'}
-        </button>
-      ) : (
-        <button
-          type="button"
-          onClick={handlePause}
-          style={{
-            background: '#D97706',
-            color: '#FFFFFF',
-            border: 'none',
-            borderRadius: '4px',
-            padding: '1px 6px',
-            fontSize: '0.65rem',
-            fontWeight: 800,
-            cursor: 'pointer'
-          }}
-        >
-          إيقاف
-        </button>
-      )}
-      {timeLeft < restSec && (
-        <button
-          type="button"
-          onClick={handleReset}
-          style={{
-            background: 'transparent',
-            color: '#64748B',
-            border: 'none',
-            fontSize: '0.65rem',
-            cursor: 'pointer',
-            padding: '0 2px'
-          }}
-        >
-          ضبط
-        </button>
-      )}
-    </div>
-  );
-}
 
 export default function WorkoutTab({
   trainingWeeks = [],
@@ -138,7 +34,6 @@ export default function WorkoutTab({
   const [showWorkoutGuide, setShowWorkoutGuide] = useState(false);
   const [expandedTechnique, setExpandedTechnique] = useState({});
   const enableWeightLogging = Boolean(clientData?.enable_weight_logging);
-  const enableRestTimer = Boolean(clientData?.enable_rest_timer);
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
@@ -625,9 +520,8 @@ export default function WorkoutTab({
                 {ex.targetSets || (ex.sets && ex.sets.length) || 3} جولات × {ex.targetReps || '10-12'} تكرار
               </span>
               <span style={{ color: '#94A3B8' }}>•</span>
-              <span style={{ fontWeight: 700, color: '#475569', display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
-                <span>راحة: {restSec} ثانية</span>
-                {enableRestTimer && <RestTimerWidget restSec={restSec} />}
+              <span style={{ fontWeight: 700, color: '#475569' }}>
+                راحة: {restSec} ثانية
               </span>
               {ex.targetRir !== undefined && (
                 <>

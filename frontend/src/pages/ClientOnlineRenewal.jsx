@@ -83,31 +83,7 @@ export default function ClientOnlineRenewal() {
     if (e) e.preventDefault();
     setSubmitting(true);
 
-    const durationMonths = Number(selectedDuration);
     const cleanCode = String(clientCode || '').replace(/^#+/, '').replace(/^client[-_]?/i, '').trim();
-    const orderPayload = {
-      id: `#RENEW-${Date.now().toString().slice(-6)}`,
-      client_code: cleanCode,
-      customer_name: clientName || `مشترك #${cleanCode || '1'}`,
-      phone_number: clientPhone || '01000000000',
-      package_tier: selectedTier,
-      duration_months: durationMonths,
-      payment_method: paymentMethod,
-      amount_paid: currentPrice,
-      currency: 'EGP',
-      transaction_reference: refNumber || 'تم التحويل من التطبيق'
-    };
-
-    try {
-      // Create order in backend
-      await fetch(`${API_BASE}/api/v1/orders`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(orderPayload)
-      });
-    } catch (err) {
-      console.log('Order submission sent');
-    }
 
     setSubmittedSuccess(true);
     setSubmitting(false);

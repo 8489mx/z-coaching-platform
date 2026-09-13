@@ -245,10 +245,10 @@ function validateBody(input, issues) {
     "body",
     issues,
   );
-  numberInRange(body.heightCm, "body.heightCm", issues, 50, 260);
-  numberInRange(body.weightKg, "body.weightKg", issues, 20, 400);
+  numberInRange(body.heightCm, "body.heightCm", issues, 120, 250);
+  numberInRange(body.weightKg, "body.weightKg", issues, 30, 300);
   if (body.waistCm !== undefined && body.waistCm !== null) {
-    numberInRange(body.waistCm, "body.waistCm", issues, 30, 300);
+    numberInRange(body.waistCm, "body.waistCm", issues, 40, 200);
   }
   enumValue(body.weightTrend, WeightTrend, "body.weightTrend", issues);
   enumValue(body.measurementQuality, MeasurementQuality, "body.measurementQuality", issues);

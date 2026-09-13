@@ -170,3 +170,84 @@ export function ClientPackageBadge({ item, tier, size = 'md', style = {} }) {
     </span>
   );
 }
+
+/**
+ * Universal Country Detector based on explicit country string or international phone prefix
+ */
+export function getClientCountryInfo(phone = '', explicitCountry = '') {
+  if (explicitCountry) {
+    const c = String(explicitCountry).trim().toLowerCase();
+    if (c.includes('مصر') || c.includes('egypt')) return { name: 'مصر' };
+    if (c.includes('سعود') || c.includes('saudi') || c.includes('ksa')) return { name: 'السعودية' };
+    if (c.includes('إمارات') || c.includes('امارات') || c.includes('uae') || c.includes('emirates')) return { name: 'الإمارات' };
+    if (c.includes('كويت') || c.includes('kuwait')) return { name: 'الكويت' };
+    if (c.includes('قطر') || c.includes('qatar')) return { name: 'قطر' };
+    if (c.includes('عمان') || c.includes('oman')) return { name: 'عُمان' };
+    if (c.includes('بحرين') || c.includes('bahrain')) return { name: 'البحرين' };
+    if (c.includes('أردن') || c.includes('اردن') || c.includes('jordan')) return { name: 'الأردن' };
+    if (c.includes('عراق') || c.includes('iraq')) return { name: 'العراق' };
+    if (c.includes('لبنان') || c.includes('lebanon')) return { name: 'لبنان' };
+    if (c.includes('فلسطين') || c.includes('palestine')) return { name: 'فلسطين' };
+    if (c.includes('مغرب') || c.includes('morocco')) return { name: 'المغرب' };
+    if (c.includes('تونس') || c.includes('tunisia')) return { name: 'تونس' };
+    if (c.includes('جزائر') || c.includes('algeria')) return { name: 'الجزائر' };
+    if (c.includes('ليبيا') || c.includes('libya')) return { name: 'ليبيا' };
+    if (c.includes('سودان') || c.includes('sudan')) return { name: 'السودان' };
+    if (c.includes('يمن') || c.includes('yemen')) return { name: 'اليمن' };
+    if (c.includes('أمريكا') || c.includes('امريكا') || c.includes('usa') || c.includes('united states')) return { name: 'أمريكا' };
+    if (c.includes('بريطانيا') || c.includes('uk') || c.includes('england')) return { name: 'بريطانيا' };
+    if (c.includes('ألمانيا') || c.includes('المانيا') || c.includes('germany')) return { name: 'ألمانيا' };
+    if (c.includes('كندا') || c.includes('canada')) return { name: 'كندا' };
+    return { name: explicitCountry };
+  }
+
+  const clean = String(phone).replace(/\D/g, '');
+  if (clean.startsWith('966')) return { name: 'السعودية' };
+  if (clean.startsWith('971')) return { name: 'الإمارات' };
+  if (clean.startsWith('965')) return { name: 'الكويت' };
+  if (clean.startsWith('974')) return { name: 'قطر' };
+  if (clean.startsWith('968')) return { name: 'عُمان' };
+  if (clean.startsWith('973')) return { name: 'البحرين' };
+  if (clean.startsWith('962')) return { name: 'الأردن' };
+  if (clean.startsWith('964')) return { name: 'العراق' };
+  if (clean.startsWith('961')) return { name: 'لبنان' };
+  if (clean.startsWith('970') || clean.startsWith('972')) return { name: 'فلسطين' };
+  if (clean.startsWith('212')) return { name: 'المغرب' };
+  if (clean.startsWith('216')) return { name: 'تونس' };
+  if (clean.startsWith('213')) return { name: 'الجزائر' };
+  if (clean.startsWith('218')) return { name: 'ليبيا' };
+  if (clean.startsWith('249')) return { name: 'السودان' };
+  if (clean.startsWith('967')) return { name: 'اليمن' };
+  if (clean.startsWith('44')) return { name: 'بريطانيا' };
+  if (clean.startsWith('49')) return { name: 'ألمانيا' };
+  if (clean.startsWith('33')) return { name: 'فرنسا' };
+  if (clean.startsWith('39')) return { name: 'إيطاليا' };
+  if (clean.startsWith('90')) return { name: 'تركيا' };
+  if (clean.startsWith('1')) return { name: 'أمريكا / كندا' };
+  if (clean.startsWith('20') || clean.startsWith('010') || clean.startsWith('011') || clean.startsWith('012') || clean.startsWith('015')) return { name: 'مصر' };
+  
+  return { name: 'مصر' };
+}
+
+/**
+ * Relative / Clean Time Ago Formatter
+ */
+export function formatTimeAgo(dateStr) {
+  if (!dateStr) return 'اليوم';
+  try {
+    const d = new Date(dateStr);
+    if (isNaN(d.getTime())) return 'اليوم';
+    const now = new Date();
+    const diffMs = now - d;
+    const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
+    if (diffHours < 1) return 'الآن';
+    if (diffHours < 24) return `منذ ${diffHours} س`;
+    const diffDays = Math.floor(diffHours / 24);
+    if (diffDays === 1) return 'أمس';
+    if (diffDays < 7) return `منذ ${diffDays} أيام`;
+    return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+  } catch (e) {
+    return 'اليوم';
+  }
+}
+

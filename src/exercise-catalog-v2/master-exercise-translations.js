@@ -567,6 +567,26 @@ export const MASTER_EXERCISE_DICTIONARY = Object.freeze({
     name_en: "Side Plank",
     name_ar: "بلانك جانبي لعضلات الخصر",
   },
+  HACK_SQUAT_MACHINE: {
+    name_en: "Hack Squat Machine",
+    name_ar: "هاك سكوات على الجهاز للرجلين",
+  },
+  DUMBBELL_PULLOVER: {
+    name_en: "Dumbbell Pullover",
+    name_ar: "بلوفر بالدمبل على الدكة المستوية",
+  },
+  ARNOLD_DUMBBELL_PRESS: {
+    name_en: "Arnold Dumbbell Press",
+    name_ar: "ضغط أرنولد للأكتاف بالدمبل",
+  },
+  DUMBBELL_CONCENTRATION_CURL: {
+    name_en: "Dumbbell Concentration Curl",
+    name_ar: "تبادل ارتكاز بالدمبل للبايسبس",
+  },
+  DECLINE_DUMBBELL_BENCH_PRESS: {
+    name_en: "Decline Dumbbell Bench Press",
+    name_ar: "بنش برس مائل لأسفل بالدمبل للصدر السفلي",
+  },
 });
 
 /**

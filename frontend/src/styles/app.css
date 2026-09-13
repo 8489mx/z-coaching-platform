@@ -179,48 +179,58 @@ aside a {
   transition: all 0.12s ease;
 }
 
-aside a.active {
+aside a:not(.sidebar-brand-link).active {
   background-color: #F1F5F9 !important;
   border-right: none !important;
   border: none !important;
 }
 
-aside a.active > div:first-child {
+aside a:not(.sidebar-brand-link).active > div:first-child {
   background-color: #0F172A !important;
   border: 1px solid #0F172A !important;
   box-shadow: 0 2px 6px rgba(15, 23, 42, 0.25) !important;
 }
 
-aside a.active > div:first-child svg {
+aside a:not(.sidebar-brand-link).active > div:first-child svg {
   stroke: #FFFFFF !important;
   color: #FFFFFF !important;
 }
 
-aside a.active > span.sidebar-nav-label,
-aside a.active > span:not(.sidebar-badge-apple) {
+aside a:not(.sidebar-brand-link).active > span.sidebar-nav-label,
+aside a:not(.sidebar-brand-link).active > span:not(.sidebar-badge-apple) {
   color: #0F172A !important;
   font-weight: 800 !important;
 }
 
 /* Inactive Sidebar Nav Hover */
-aside a:hover:not(.active) {
+aside a:not(.sidebar-brand-link):hover:not(.active) {
   background-color: #F8FAFC !important;
   color: #0F172A !important;
 }
 
-aside a:hover:not(.active) > div:first-child {
+aside a:not(.sidebar-brand-link):hover:not(.active) > div:first-child {
   background-color: #F1F5F9 !important;
   border-color: #CBD5E1 !important;
 }
 
-aside a:hover:not(.active) > div:first-child svg {
+aside a:not(.sidebar-brand-link):hover:not(.active) > div:first-child svg {
   stroke: #0F172A !important;
   color: #0F172A !important;
 }
 
-aside a:hover:not(.active) > span.sidebar-nav-label,
-aside a:hover:not(.active) > span:not(.sidebar-badge-apple) {
+aside a:not(.sidebar-brand-link):hover:not(.active) > span.sidebar-nav-label,
+aside a:not(.sidebar-brand-link):hover:not(.active) > span:not(.sidebar-badge-apple) {
   color: #0F172A !important;
+}
+
+/* Brand Link Isolation */
+aside a.sidebar-brand-link,
+aside a.sidebar-brand-link:hover,
+aside a.sidebar-brand-link.active {
+  background-color: transparent !important;
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
 }
 
 /* ========================================================

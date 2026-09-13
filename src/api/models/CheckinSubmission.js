@@ -130,6 +130,13 @@ const CheckinSubmission = sequelize.define(
   {
     tableName: "checkin_submissions",
     timestamps: true,
+    indexes: [
+      {
+        unique: true,
+        fields: ["user_id", "week_number"],
+        name: "unique_user_week_checkin",
+      },
+    ],
   },
 );
 

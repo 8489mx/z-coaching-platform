@@ -40,13 +40,28 @@ export function mergeAdaptedPlanIntoProgram(currentMasterProgram, adaptationResu
     finalFats = Number(adaptationResult.adapted_nutrition.fat_g);
   } else if (adaptationResult?.suggested_calorie_delta) {
     const baseCal = merged.nutrition_program?.macro_targets?.calories_kcal 
+      || merged.nutrition_program?.targets?.target_calories_kcal
+      || merged.nutrition_program?.targets?.calories_kcal
       || merged.nutrition?.targets?.calories 
       || 2000;
     finalCalories = baseCal + Number(adaptationResult.suggested_calorie_delta);
-    finalCarbs = (merged.nutrition_program?.macro_targets?.carb_g || merged.nutrition?.targets?.carbs || 200)
-      + (adaptationResult.suggested_carb_delta_g || Math.round(Number(adaptationResult.suggested_calorie_delta) / 4));
-    finalProtein = merged.nutrition_program?.macro_targets?.protein_g || merged.nutrition?.targets?.protein || 140;
-    finalFats = merged.nutrition_program?.macro_targets?.fat_g || merged.nutrition?.targets?.fats || 50;
+    const baseCarb = merged.nutrition_program?.macro_targets?.carbohydrate_g
+      || merged.nutrition_program?.macro_targets?.carb_g
+      || merged.nutrition_program?.targets?.carbohydrate_g
+      || merged.nutrition_program?.targets?.carb_g
+      || merged.nutrition?.targets?.carbs
+      || 200;
+    finalCarbs = baseCarb + (adaptationResult.suggested_carb_delta_g !== undefined 
+      ? Number(adaptationResult.suggested_carb_delta_g) 
+      : Math.round(Number(adaptationResult.suggested_calorie_delta) / 4));
+    finalProtein = merged.nutrition_program?.macro_targets?.protein_g 
+      || merged.nutrition_program?.targets?.protein_g
+      || merged.nutrition?.targets?.protein 
+      || 140;
+    finalFats = merged.nutrition_program?.macro_targets?.fat_g 
+      || merged.nutrition_program?.targets?.fat_g
+      || merged.nutrition?.targets?.fats 
+      || 50;
   }
 
   // Clinical Preservation: If trainee has a capped protein guardrail (e.g. KIDNEY_CONDITION),
@@ -108,6 +123,31 @@ export function mergeAdaptedPlanIntoProgram(currentMasterProgram, adaptationResu
       merged.nutrition_program.quantized_plan.daily_totals.protein_g = finalProtein;
       merged.nutrition_program.quantized_plan.daily_totals.carbs_g = finalCarbs;
       merged.nutrition_program.quantized_plan.daily_totals.fat_g = finalFats;
+    }
+
+    // 3.1 Rebalance culinary meal ingredient grams and macros to match final targets
+    const targetPayload = { finalCalories, finalProtein, finalCarbs, finalFats };
+
+    if (Array.isArray(merged.nutrition_program?.culinary_meals)) {
+      rebalanceCulinaryMeals(merged.nutrition_program.culinary_meals, targetPayload);
+    }
+
+    if (Array.isArray(merged.nutrition_program?.quantized_plan?.meals)) {
+      rebalanceCulinaryMeals(merged.nutrition_program.quantized_plan.meals, targetPayload);
+    }
+
+    if (Array.isArray(merged.nutrition_program?.targets?.meals)) {
+      rebalanceCulinaryMeals(merged.nutrition_program.targets.meals, targetPayload);
+    }
+
+    if (Array.isArray(merged.nutrition?.culinary_meals)) {
+      rebalanceCulinaryMeals(merged.nutrition.culinary_meals, targetPayload);
+    }
+
+    // Rebalance merged.nutrition.meals ONLY if it contains structured culinary items
+    if (Array.isArray(merged.nutrition?.meals) &&
+        merged.nutrition.meals.some(m => Array.isArray(m?.items) && m.items.some(it => Boolean(it?.category || it?.food_code)))) {
+      rebalanceCulinaryMeals(merged.nutrition.meals, targetPayload);
     }
   }
 
@@ -171,3 +211,152 @@ export function mergeAdaptedPlanIntoProgram(currentMasterProgram, adaptationResu
 
   return merged;
 }
+
+/**
+ * Proportionally rebalances portion grams and macros in culinary meals to match
+ * new nutrition target macros (e.g. after automated check-in deficit titration or coach overrides).
+ * 
+ * Clinical & Nutritional Invariants:
+ * - VEGGIES & non-caloric BEVERAGE items are locked at 1.0 (never reduced) to safeguard micronutrients, satiety, and gut fiber.
+ * - Minimum portion clamp: 5g (prevents absurd 0g or micro portions).
+ * - Equivalent swap grams and macros are scaled synchronously with the parent item.
+ * - Household measurements starting with portion gram amounts are updated to reflect the new portion.
+ * - meal.actual_macros and meal.target_macros are recomputed to guarantee end-to-end mathematical consistency.
+ * 
+ * @param {Array<Object>} meals - Array of culinary meal objects
+ * @param {Object} targets - { finalCalories, finalProtein, finalCarbs, finalFats }
+ * @returns {Array<Object>} Rebalanced meals array
+ */
+export function rebalanceCulinaryMeals(meals, { finalCalories, finalProtein, finalCarbs, finalFats } = {}) {
+  if (!Array.isArray(meals) || meals.length === 0) return meals;
+
+  // Calculate current actual macronutrient totals across all meal items
+  let currentTotalP = 0;
+  let currentTotalC = 0;
+  let currentTotalF = 0;
+  let currentTotalKcal = 0;
+
+  for (const meal of meals) {
+    if (Array.isArray(meal?.items)) {
+      for (const item of meal.items) {
+        currentTotalP += Number(item.protein_g) || 0;
+        currentTotalC += Number(item.carb_g) || 0;
+        currentTotalF += Number(item.fat_g) || 0;
+        currentTotalKcal += Number(item.calories_kcal) || 0;
+      }
+    }
+  }
+
+  // If no items with caloric content exist, return untouched
+  if (currentTotalKcal === 0) return meals;
+
+  const calRatio = (Number(finalCalories) > 0 && currentTotalKcal > 0)
+    ? (Number(finalCalories) / currentTotalKcal)
+    : 1.0;
+
+  const carbRatio = (Number(finalCarbs) > 0 && currentTotalC > 0)
+    ? (Number(finalCarbs) / currentTotalC)
+    : calRatio;
+
+  const proteinRatio = (Number(finalProtein) > 0 && currentTotalP > 0)
+    ? (Number(finalProtein) / currentTotalP)
+    : calRatio;
+
+  const fatRatio = (Number(finalFats) > 0 && currentTotalF > 0)
+    ? (Number(finalFats) / currentTotalF)
+    : calRatio;
+
+  for (const meal of meals) {
+    if (!Array.isArray(meal?.items)) continue;
+
+    for (const item of meal.items) {
+      const cat = String(item.category || '').toUpperCase();
+      let ratio = 1.0;
+
+      if (cat === 'CARBS') {
+        ratio = carbRatio;
+      } else if (cat === 'PROTEIN') {
+        ratio = proteinRatio;
+      } else if (cat === 'FATS') {
+        ratio = fatRatio;
+      } else if (cat === 'VEGGIES' || cat === 'BEVERAGE') {
+        ratio = 1.0;
+      } else {
+        ratio = calRatio;
+      }
+
+      const origPortion = Number(item.portion_g ?? item.amount_g ?? item.amount) || 0;
+      if (origPortion > 0 && Math.abs(ratio - 1.0) > 0.0001) {
+        const newPortion = Math.max(5, Math.round(origPortion * ratio));
+        item.portion_g = newPortion;
+        if (item.amount_g !== undefined) item.amount_g = newPortion;
+        if (item.amount !== undefined) item.amount = newPortion;
+
+        const effectiveRatio = newPortion / origPortion;
+
+        if (item.calories_kcal !== undefined) item.calories_kcal = Math.round(item.calories_kcal * effectiveRatio);
+        if (item.protein_g !== undefined) item.protein_g = Math.round(item.protein_g * effectiveRatio);
+        if (item.carb_g !== undefined) item.carb_g = Math.round(item.carb_g * effectiveRatio);
+        if (item.fat_g !== undefined) item.fat_g = Math.round(item.fat_g * effectiveRatio);
+
+        // Update leading portion number in household measurement if it matches origPortion
+        if (typeof item.household_measurement === 'string') {
+          const m = item.household_measurement.match(/^(\d+(?:\.\d+)?)/);
+          if (m && Math.abs(Number(m[1]) - origPortion) <= 1) {
+            item.household_measurement = item.household_measurement.replace(/^(\d+(?:\.\d+)?)/, String(newPortion));
+          }
+        }
+
+        // Synchronously rebalance swap alternatives
+        if (Array.isArray(item.swaps)) {
+          for (const swap of item.swaps) {
+            const origSwap = Number(swap.equivalent_grams ?? swap.portion_g) || 0;
+            if (origSwap > 0) {
+              const newSwap = Math.max(5, Math.round(origSwap * effectiveRatio));
+              swap.equivalent_grams = newSwap;
+              if (swap.portion_g !== undefined) swap.portion_g = newSwap;
+
+              const swapRatio = newSwap / origSwap;
+              if (swap.calories_kcal !== undefined) swap.calories_kcal = Math.round(swap.calories_kcal * swapRatio);
+              if (swap.protein_g !== undefined) swap.protein_g = Math.round(swap.protein_g * swapRatio);
+              if (swap.carb_g !== undefined) swap.carb_g = Math.round(swap.carb_g * swapRatio);
+              if (swap.fat_g !== undefined) swap.fat_g = Math.round(swap.fat_g * swapRatio);
+
+              if (typeof swap.household_measurement === 'string') {
+                const sm = swap.household_measurement.match(/^(\d+(?:\.\d+)?)/);
+                if (sm && Math.abs(Number(sm[1]) - origSwap) <= 1) {
+                  swap.household_measurement = swap.household_measurement.replace(/^(\d+(?:\.\d+)?)/, String(newSwap));
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+
+    // Recompute actual meal macros
+    const mealP = meal.items.reduce((sum, it) => sum + (Number(it.protein_g) || 0), 0);
+    const mealC = meal.items.reduce((sum, it) => sum + (Number(it.carb_g) || 0), 0);
+    const mealF = meal.items.reduce((sum, it) => sum + (Number(it.fat_g) || 0), 0);
+    const mealKcal = meal.items.reduce((sum, it) => sum + (Number(it.calories_kcal) || 0), 0);
+
+    meal.actual_macros = {
+      protein_g: Math.round(mealP),
+      carb_g: Math.round(mealC),
+      fat_g: Math.round(mealF),
+      calories_kcal: Math.round(mealKcal),
+    };
+
+    if (meal.target_macros && typeof meal.target_macros === 'object') {
+      meal.target_macros = {
+        protein_g: Math.round((Number(meal.target_macros.protein_g) || mealP) * proteinRatio),
+        carb_g: Math.round((Number(meal.target_macros.carb_g) || mealC) * carbRatio),
+        fat_g: Math.round((Number(meal.target_macros.fat_g) || mealF) * fatRatio),
+        calories_kcal: Math.round((Number(meal.target_macros.calories_kcal) || mealKcal) * calRatio),
+      };
+    }
+  }
+
+  return meals;
+}
+

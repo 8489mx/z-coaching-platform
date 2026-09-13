@@ -34,12 +34,12 @@ export function checkIsEggItem(item) {
 export function detectFoodMacroRole(item) {
   const code = item.code || item.id || '';
   const name = item.name || item.name_ar || '';
-  const cat = String(item.category || '').toUpperCase();
+  const cat = String(item.category || item.macro_type || '').toUpperCase();
 
-  if (cat === 'VEG' || cat === 'VEGETABLE') return 'VEGETABLE';
-  if (cat === 'FAT') return 'FAT';
-  if (cat === 'CARB') return 'CARB';
-  if (cat === 'PROTEIN') return 'PROTEIN';
+  if (cat === 'VEG' || cat === 'VEGETABLE' || cat === 'VEGETABLES') return 'VEGETABLE';
+  if (cat === 'FAT' || cat === 'FATS') return 'FAT';
+  if (cat === 'CARB' || cat === 'CARBS') return 'CARB';
+  if (cat === 'PROTEIN' || cat === 'PROTEINS') return 'PROTEIN';
 
   // Check Vegetables
   if (
@@ -49,10 +49,10 @@ export function detectFoodMacroRole(item) {
     return 'VEGETABLE';
   }
 
-  // Check Fats (Oil, Butter, Nuts, Olives, Tahini)
+  // Check Fats (Oil, Butter, Ghee, Nuts, Olives, Tahini, Chia, Seeds)
   if (
-    hasAnyWord(code, ['OIL', 'BUTTER', 'ALMOND', 'WALNUT', 'CASHEW', 'OLIVE', 'OLIVES', 'TAHINI', 'PEANUT_BUTTER']) ||
-    hasAnyWord(name, ['زيت', 'زبدة', 'مكسرات', 'لوز', 'جوز', 'كاجو', 'جمل', 'سوداني', 'زيتون', 'طحينة'])
+    hasAnyWord(code, ['OIL', 'BUTTER', 'GHEE', 'ALMOND', 'WALNUT', 'CASHEW', 'OLIVE', 'OLIVES', 'TAHINI', 'PEANUT_BUTTER', 'CHIA', 'SEEDS', 'FLAX']) ||
+    hasAnyWord(name, ['زيت', 'زبدة', 'سمن', 'مكسرات', 'لوز', 'جوز', 'كاجو', 'جمل', 'سوداني', 'زيتون', 'طحينة', 'شيا', 'بذور', 'كتان'])
   ) {
     return 'FAT';
   }
@@ -129,12 +129,19 @@ export function balanceMealItems(items = [], mealTarget = { p: 40, c: 50, f: 15,
     const perItemFat = targetFatToCover / fatItems.length;
 
     fatItems.forEach(f => {
-      const isOil = String(f.item.code || f.item.name).toUpperCase().includes('OIL') || String(f.item.name || '').includes('زيت');
+      const foodStr = String((f.item.code || '') + ' ' + (f.item.name || '')).toUpperCase();
+      const isOilOrGhee = /OIL|GHEE|BUTTER|زيت|سمن|زبدة/.test(foodStr) && !/PEANUT|فول/.test(foodStr);
+      const isSeeds = /CHIA|SEEDS|FLAX|شيا|بذور|كتان/.test(foodStr);
+      const isNutButter = /TAHINI|PEANUT|طحينة|فول سوداني/.test(foodStr);
       let amount = (perItemFat / Math.max(1, f.density.f100)) * 100;
-      if (isOil) {
-        amount = Math.max(5, Math.min(15, Math.round(amount))); // 5g to 15g oil
+      if (isOilOrGhee) {
+        amount = Math.max(5, Math.min(10, Math.round(amount))); // 5g to 10g oil / ghee
+      } else if (isSeeds) {
+        amount = Math.max(5, Math.min(10, Math.round(amount / 5) * 5)); // 5g to 10g chia / flax seeds
+      } else if (isNutButter) {
+        amount = Math.max(10, Math.min(15, Math.round(amount / 5) * 5)); // 10g to 15g nut butter / tahini
       } else {
-        amount = Math.max(15, Math.min(35, Math.round(amount / 5) * 5)); // 15g to 35g nuts
+        amount = Math.max(15, Math.min(25, Math.round(amount / 5) * 5)); // 15g to 25g nuts
       }
       solvedAmounts[f.originalIndex] = amount;
       const factor = amount / 100;
@@ -415,12 +422,19 @@ export function dynamicRippleRebalanceDailyPlan({
         }
       } else if (role === 'FAT') {
         const scaledAmt = amount * scaleF;
-        const isOil = String(it.code || it.name).toUpperCase().includes('OIL') || String(it.name || '').includes('زيت');
-        if (isOil) {
-          amount = Math.max(4, Math.min(18, Math.round(scaledAmt)));
+        const foodStr = String((it.code || '') + ' ' + (it.name || '')).toUpperCase();
+        const isOilOrGhee = /OIL|GHEE|BUTTER|زيت|سمن|زبدة/.test(foodStr) && !/PEANUT|فول/.test(foodStr);
+        const isSeeds = /CHIA|SEEDS|FLAX|شيا|بذور|كتان/.test(foodStr);
+        const isNutButter = /TAHINI|PEANUT|طحينة|فول سوداني/.test(foodStr);
+        if (isOilOrGhee) {
+          amount = Math.max(4, Math.min(10, Math.round(scaledAmt)));
+        } else if (isSeeds) {
+          amount = Math.max(5, Math.min(10, Math.round(scaledAmt / 5) * 5));
+        } else if (isNutButter) {
+          amount = Math.max(10, Math.min(15, Math.round(scaledAmt / 5) * 5));
         } else {
-          // Nuts / PB
-          amount = Math.max(10, Math.min(35, Math.round(scaledAmt / 5) * 5));
+          // Nuts
+          amount = Math.max(15, Math.min(25, Math.round(scaledAmt / 5) * 5));
         }
       }
       // VEGETABLE remains unchanged (fiber/digestion standard serving)

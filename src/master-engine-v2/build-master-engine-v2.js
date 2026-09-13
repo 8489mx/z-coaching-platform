@@ -18,6 +18,25 @@ export function resolveOptimalDietFramework(canonicalIntake, rawIntake = {}) {
   const rawMedical = effectiveRaw?.medical || {};
   const rawNutrition = effectiveRaw?.nutrition || {};
 
+  // 0. Pregnancy Check -> Strict Contraindication to Low-Carb & Fasting (IOM / ACOG Guidelines)
+  const isPregnant =
+    medical.pregnancyStatus === "PREGNANT" ||
+    rawMedical.pregnancyStatus === "PREGNANT" ||
+    effectiveRaw?.pregnancyStatus === "PREGNANT" ||
+    effectiveRaw?.female_pregnancy === "PREGNANT" ||
+    effectiveRaw?.isPregnant === true ||
+    effectiveRaw?.is_pregnant === true ||
+    rawMedical.isPregnant === true ||
+    rawMedical.is_pregnant === true;
+
+  if (isPregnant) {
+    return {
+      framework: "BALANCED_HIGH_PROTEIN",
+      reason_ar: "تم اختيار النظام المتوازن عالي البروتين والمعقد غذائياً تلقائياً لحماية نمو الجنين وتوفير الجلوكوز الكافي للدماغ العصبي وتجنب الحالة الكيتونية الضارة.",
+      reason_en: "Balanced High-Protein auto-selected to protect fetal development, ensure brain glucose supply, and prevent ketosis.",
+    };
+  }
+
   // 1. IBS / Severe Digestion Bloating -> LOW_FODMAP
   const hasIbs =
     medical.hasIbs === true ||
@@ -165,8 +184,25 @@ export function calculateUniversalNutritionTargets(canonicalIntake, evaluationCo
   const medical = canonicalIntake.medical || {};
   const rawMedical = effectiveRaw?.medical || {};
 
-  const weight = Number(body.weightKg || body.weight_kg) || 75;
-  const height = Number(body.heightCm || body.height_cm) || 175;
+  // Strict Physiological Validation: weight and height must be strictly positive and physiologically valid
+  const rawWeight = body.weightKg ?? body.weight_kg ?? canonicalIntake.weight_kg ?? effectiveRaw?.weight_kg;
+  if (rawWeight === undefined || rawWeight === null || String(rawWeight).trim() === '') {
+    throw new RangeError("الوزن مطلوب لبناء خطة التغذية ولم يتم توفيره.");
+  }
+  const weight = Number(rawWeight);
+  if (!Number.isFinite(weight) || weight < 30 || weight > 300) {
+    throw new RangeError(`قيمة الوزن غير فسيولوجية (${rawWeight} كجم). يجب أن يتراوح الوزن البشري بين 30 و 300 كجم لبناء خطة التغذية.`);
+  }
+
+  const rawHeight = body.heightCm ?? body.height_cm ?? canonicalIntake.height_cm ?? effectiveRaw?.height_cm;
+  if (rawHeight === undefined || rawHeight === null || String(rawHeight).trim() === '') {
+    throw new RangeError("الطول مطلوب لبناء خطة التغذية ولم يتم توفيره.");
+  }
+  const height = Number(rawHeight);
+  if (!Number.isFinite(height) || height < 120 || height > 250) {
+    throw new RangeError(`قيمة الطول غير فسيولوجية (${rawHeight} سم). يجب أن يتراوح الطول البشري بين 120 و 250 سم لبناء خطة التغذية.`);
+  }
+
   const age = personal.dateOfBirth
     ? calculateAge(personal.dateOfBirth, evaluationContext.assessmentDate)
     : Number(personal.age) || 28;
@@ -246,6 +282,24 @@ export function calculateUniversalNutritionTargets(canonicalIntake, evaluationCo
     calorieAdjustmentDesc = "سعرات صيانة وتثبيت الوزن مع تحسين اللياقة";
   }
 
+  // Pregnancy Energy Adjustment (+340 kcal for 2nd trimester, zero calorie deficit permitted)
+  const isPregnant =
+    medical.pregnancyStatus === "PREGNANT" ||
+    rawMedical.pregnancyStatus === "PREGNANT" ||
+    effectiveRaw?.pregnancyStatus === "PREGNANT" ||
+    effectiveRaw?.female_pregnancy === "PREGNANT" ||
+    effectiveRaw?.isPregnant === true ||
+    effectiveRaw?.is_pregnant === true ||
+    rawMedical.isPregnant === true ||
+    rawMedical.is_pregnant === true;
+
+  if (isPregnant) {
+    const surplus = CLINICAL_GUIDELINES.PREGNANCY?.SURPLUS_TRIMESTER_2_KCAL || 340;
+    targetCalories = Math.round(tdee + surplus);
+    proteinPerKg = Math.max(1.8, proteinPerKg);
+    calorieAdjustmentDesc = "خطة تغذية داعمة للحمل (+340 سعرة حرارية فائض آمن ومدروس لنمو الجنين وصحة الأم بدون أي عجز حراري)";
+  }
+
   // Lactation Energy Adjustment (+450 kcal to protect milk supply)
   const isLactating =
     medical.pregnancyStatus === "BREASTFEEDING" ||
@@ -305,9 +359,15 @@ export function calculateUniversalNutritionTargets(canonicalIntake, evaluationCo
   const carbKcal = Math.max(0, targetCalories - proteinKcal - (fatG * 9));
   let carbG = Math.round(carbKcal / 4);
 
+  // Clinical Guard: Pregnancy Minimum Carbohydrates (IOM 175g/day minimum)
+  if (isPregnant && carbG < 175) {
+    carbG = 175;
+    const proteinFatRemaining = Math.max(minFatG * 9, targetCalories - (proteinG * 4) - (carbG * 4));
+    fatG = Math.round(proteinFatRemaining / 9);
+    targetCalories = (proteinG * 4) + (carbG * 4) + (fatG * 9);
+  }
 
-  
-    // 5. Diet Framework Resolution
+  // 5. Diet Framework Resolution
   const rawDietChoice = (
     nutrition.dietFramework ||
     nutrition.diet_framework ||
@@ -326,7 +386,15 @@ export function calculateUniversalNutritionTargets(canonicalIntake, evaluationCo
     rawDietChoice !== "BALANCED_HIGH_PROTEIN" &&
     rawDietChoice !== ""
   ) {
-    dietFramework = rawDietChoice;
+    if (isPregnant && (rawDietChoice === "TARGETED_LOW_CARB" || rawDietChoice === "INTERMITTENT_FASTING")) {
+      dietFramework = "BALANCED_HIGH_PROTEIN";
+    } else {
+      dietFramework = rawDietChoice;
+    }
+  }
+
+  if (isPregnant && (dietFramework === "TARGETED_LOW_CARB" || dietFramework === "INTERMITTENT_FASTING")) {
+    dietFramework = "BALANCED_HIGH_PROTEIN";
   }
 
 
@@ -469,6 +537,9 @@ export function calculateUniversalNutritionTargets(canonicalIntake, evaluationCo
     });
   }
 
+  if (!Number.isFinite(targetCalories) || Number.isNaN(targetCalories) || targetCalories < 1000) {
+    throw new RangeError(`حساب السعرات المستهدفة غير صالح (${targetCalories}). تم منع توليد الخطة لحماية المتدرب.`);
+  }
 
   return {
     bmr,
@@ -546,6 +617,16 @@ export function buildMasterEngineV2(inputs) {
     : (intake || {});
 
   const canonicalIntake = adaptIntakePayloadToCanonicalEngine(effectiveIntake);
+
+  // Strict Physiological Validation Firewall
+  const bodyWeight = Number(canonicalIntake.body?.weightKg ?? canonicalIntake.weight_kg ?? effectiveIntake?.weight_kg);
+  if (!Number.isFinite(bodyWeight) || bodyWeight < 30 || bodyWeight > 300) {
+    throw new RangeError(`قيمة الوزن غير صالحة فسيولوجياً (${canonicalIntake.body?.weightKg} كجم). لا يمكن بناء خطة بوزن غير صالح.`);
+  }
+  const bodyHeight = Number(canonicalIntake.body?.heightCm ?? canonicalIntake.height_cm ?? effectiveIntake?.height_cm);
+  if (!Number.isFinite(bodyHeight) || bodyHeight < 120 || bodyHeight > 250) {
+    throw new RangeError(`قيمة الطول غير صالحة فسيولوجياً (${canonicalIntake.body?.heightCm} سم). لا يمكن بناء خطة بطول غير صالح.`);
+  }
 
   // 1. Evaluate Intake
   const intake_decision = evaluateIntake(canonicalIntake, evaluationContext);

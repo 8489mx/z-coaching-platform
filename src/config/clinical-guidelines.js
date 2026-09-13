@@ -36,8 +36,10 @@ export const CLINICAL_GUIDELINES = Object.freeze({
     CONTRAINDICATED_EXERCISES: Object.freeze([
       "LEG_PRESS_MACHINE",
       "INCLINE_LEG_PRESS",
+      "HACK_SQUAT_MACHINE",
       "DECLINE_CRUNCH",
       "DECLINE_BENCH_PRESS",
+      "DECLINE_DUMBBELL_BENCH_PRESS",
       "INVERTED_BODYWEIGHT_ROW",
     ]),
     VALSALVA_SAFETY_CUE_AR: "توجيه سريري إلزامي: ممنوع حبس النفس (Valsalva Maneuver) نهائياً؛ يجب الزفير ببطء أثناء دفع الوزن والشهيق أثناء النزول لتفادي أي ارتفاع مفاجئ في ضغط الدم الشرياني.",
@@ -108,5 +110,22 @@ export const CLINICAL_GUIDELINES = Object.freeze({
     WRIST: "WRIST",
     NECK: "NECK",
     HIP: "HIP",
+  }),
+
+  // ==========================================
+  // 7. PREGNANCY & MATERNAL HEALTH
+  // ==========================================
+  PREGNANCY: Object.freeze({
+    /**
+     * Scientific Source:
+     * Institute of Medicine (IOM) Dietary Reference Intakes & ACOG Guidelines.
+     * Minimum 175g/day carbohydrates required for fetal neurodevelopment and ketosis prevention.
+     * Severe calorie deficits, ketogenic diets, and prolonged fasting are strictly contraindicated.
+     */
+    MIN_CARBS_GRAMS: 175,
+    SURPLUS_TRIMESTER_2_KCAL: 340,
+    SURPLUS_TRIMESTER_3_KCAL: 450,
+    BANNED_FRAMEWORKS: Object.freeze(["TARGETED_LOW_CARB", "INTERMITTENT_FASTING"]),
+    RATIONALE_AR: "فرض حد أدنى 175 جم كربوهيدرات يومياً وحظر الكيتو والصيام المتقطع للحوامل بناءً على توصيات معهد الطب الأمريكي (IOM) والكلية الأمريكية لأطباء النساء والتوليد (ACOG) لتغذية دماغ الجنين ومنع الكيتوزس.",
   }),
 });

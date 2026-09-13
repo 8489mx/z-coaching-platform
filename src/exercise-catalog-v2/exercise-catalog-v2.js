@@ -1280,12 +1280,26 @@ const EXERCISES_V2_BY_CODE = new Map(
   EXERCISE_CATALOG_V2.exercises.map((exercise) => [exercise.exercise_code, exercise]),
 );
 
+export const EXERCISE_CODE_ALIASES = Object.freeze({
+  LATERAL_RAISE: "DUMBBELL_LATERAL_RAISE",
+  FACE_PULL: "CABLE_FACE_PULL",
+  TRICEPS_ROPE_PUSHDOWN: "CABLE_TRICEPS_ROPE_PUSHDOWN",
+  OVERHEAD_DUMBBELL_TRICEPS_EXTENSION: "DUMBBELL_OVERHEAD_TRICEPS_EXTENSION",
+  OVERHEAD_CABLE_TRICEPS_EXTENSION: "CABLE_OVERHEAD_TRICEPS_EXTENSION",
+  OVERHEAD_PRESS: "BARBELL_OVERHEAD_PRESS",
+  DUMBBELL_SHOULDER_PRESS: "STANDING_DUMBBELL_SHOULDER_PRESS",
+});
+
 /**
  * @param {string} exerciseCode
  * @returns {import("./domain/contracts.js").ExerciseRecordV2|null}
  */
 export function getExerciseV2ByCode(exerciseCode) {
-  return EXERCISES_V2_BY_CODE.get(exerciseCode) ?? null;
+  const direct = EXERCISES_V2_BY_CODE.get(exerciseCode);
+  if (direct) return direct;
+  const alias = EXERCISE_CODE_ALIASES[exerciseCode];
+  if (alias) return EXERCISES_V2_BY_CODE.get(alias) ?? null;
+  return null;
 }
 
 /**

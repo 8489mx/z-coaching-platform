@@ -274,7 +274,6 @@ test('Security Audit & Hardening Suite (IDOR, Ownership, Router Coverage & DB Pa
       '/api/v1/admin-settings': 'admin-settings',
       '/api/v1/admin': 'admin-settings',
       '/api/v1/checkin': 'checkin',
-      '/api/v1/orders': 'order',
       '/api/v1/legal': 'legal',
       '/api/v1/admin/backup': 'backup',
       '/api/v1/notifications': 'notification',

@@ -568,6 +568,7 @@ export default function CheckinReviewDashboard() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [approvedCount, setApprovedCount] = useState(0);
   const [showLabModal, setShowLabModal] = useState(false);
+  const [inspectionTab, setInspectionTab] = useState('PHOTOS'); // 'PHOTOS' | 'CHART' | 'LABS'
 
   // Live Checkins Fetcher from MariaDB
   useEffect(() => {
@@ -909,77 +910,28 @@ export default function CheckinReviewDashboard() {
           title="مراجعة التقييمات الدورية (Check-in Review)"
           description={`طابور اتخاذ القرارات الأسبوعية • ${checkinList.length} تقييم بانتظار المراجعة والاعتماد`}
           actions={(
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-              <button 
-                type="button" 
-                onClick={() => window.open(`/coach/editor/${safeClient?.code || safeClient?.id || '1'}`, '_blank')}
-                style={{
-                  height: '34px',
-                  padding: '0 12px',
-                  fontSize: '11.5px',
-                  fontWeight: 700,
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  gap: '6px',
-                  borderRadius: '6px',
-                  background: '#0F172A',
-                  color: '#FFFFFF',
-                  border: 'none',
-                  cursor: 'pointer',
-                  boxShadow: '0 1px 3px rgba(15, 23, 42, 0.2)',
-                  transition: 'all 0.15s ease'
-                }}
-                title="فتح خطة المتدرب بالكامل في محرر الكوتش لتعديل التمارين والوجبات"
-              >
-                <Dumbbell size={13} />
-                <span>محرر خطة المتدرب</span>
-              </button>
-
-              <button 
-                type="button" 
-                onClick={handleResetDemo}
-                style={{
-                  height: '34px',
-                  padding: '0 12px',
-                  fontSize: '11.5px',
-                  fontWeight: 700,
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  gap: '5px',
-                  borderRadius: '6px',
-                  background: '#F8FAFC',
-                  color: '#475569',
-                  border: '1px solid #E2E8F0',
-                  cursor: 'pointer'
-                }}
-                title="إعادة ضبط قائمة التقييمات"
-              >
-                <RotateCcw size={13} />
-                <span>إعادة ضبط القائمة</span>
-              </button>
-
-              <button 
-                type="button" 
-                onClick={() => navigate('/')}
-                style={{
-                  height: '34px',
-                  padding: '0 14px',
-                  fontSize: '12px',
-                  fontWeight: 700,
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  gap: '6px',
-                  borderRadius: '6px',
-                  background: '#FFFFFF',
-                  color: '#0F172A',
-                  border: '1px solid #CBD5E1',
-                  cursor: 'pointer'
-                }}
-              >
-                <ChevronRight size={14} />
-                <span>لوحة القيادة (Esc)</span>
-              </button>
-            </div>
+            <button 
+              type="button" 
+              onClick={() => navigate('/')}
+              style={{
+                height: '34px',
+                padding: '0 14px',
+                fontSize: '12px',
+                fontWeight: 700,
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '6px',
+                borderRadius: '6px',
+                background: '#FFFFFF',
+                color: '#0F172A',
+                border: '1px solid #CBD5E1',
+                cursor: 'pointer',
+                transition: 'all 0.15s ease'
+              }}
+            >
+              <ChevronRight size={14} />
+              <span>لوحة القيادة (Esc)</span>
+            </button>
           )}
         />
 
@@ -1077,7 +1029,7 @@ export default function CheckinReviewDashboard() {
                       }}
                       style={{
                         height: '24px',
-                        borderRadius: '4px',
+                        borderRadius: '6px',
                         border,
                         background,
                         color,
@@ -1136,7 +1088,7 @@ export default function CheckinReviewDashboard() {
 
                         <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
                           {(item?.medical_reports_urls?.length > 0 || item?.client?.medical_reports_urls?.length > 0) && (
-                            <span style={{ fontSize: '9px', background: '#DCFCE7', color: '#166534', border: '1px solid #86EFAC', padding: '0px 4px', borderRadius: '3px', fontWeight: 800 }}>
+                            <span style={{ fontSize: '9px', background: '#DCFCE7', color: '#166534', border: '1px solid #86EFAC', padding: '0px 4px', borderRadius: '6px', fontWeight: 800 }}>
                               تحاليل
                             </span>
                           )}
@@ -1149,26 +1101,13 @@ export default function CheckinReviewDashboard() {
                                   <span style={{
                                     fontSize: '9px',
                                     padding: '0px 4px',
-                                    borderRadius: '3px',
+                                    borderRadius: '6px',
                                     background: fasting.primaryFastingBadge.bg,
                                     border: `1px solid ${fasting.primaryFastingBadge.border}`,
                                     color: fasting.primaryFastingBadge.color,
                                     fontWeight: 800
                                   }}>
                                     {fasting.primaryFastingBadge.shortLabel}
-                                  </span>
-                                )}
-                                {fasting.intermittentBadge && (
-                                  <span style={{
-                                    fontSize: '9px',
-                                    padding: '0px 4px',
-                                    borderRadius: '3px',
-                                    background: fasting.intermittentBadge.bg,
-                                    border: `1px solid ${fasting.intermittentBadge.border}`,
-                                    color: fasting.intermittentBadge.color,
-                                    fontWeight: 800
-                                  }}>
-                                    {fasting.intermittentBadge.shortLabel}
                                   </span>
                                 )}
                               </>
@@ -1186,7 +1125,7 @@ export default function CheckinReviewDashboard() {
                         color: '#475569', 
                         background: isSelected ? '#F8FAFC' : '#FFFFFF', 
                         padding: '4px 8px', 
-                        borderRadius: '5px', 
+                        borderRadius: '6px', 
                         border: '1px solid #E2E8F0'
                       }}>
                         {/* Right: Current Weight + Delta */}
@@ -1305,7 +1244,7 @@ export default function CheckinReviewDashboard() {
                           border: `1px solid ${goalConfig.border}`, 
                           color: goalConfig.color, 
                           padding: '1px 8px', 
-                          borderRadius: '4px'
+                          borderRadius: '6px'
                         }}>
                           {goalConfig.label}
                         </span>
@@ -1326,7 +1265,7 @@ export default function CheckinReviewDashboard() {
                             <span style={{
                               fontSize: '11px',
                               padding: '2px 8px',
-                              borderRadius: '4px',
+                              borderRadius: '6px',
                               background: fasting.primaryFastingBadge.bg,
                               border: `1px solid ${fasting.primaryFastingBadge.border}`,
                               color: fasting.primaryFastingBadge.color,
@@ -1335,23 +1274,10 @@ export default function CheckinReviewDashboard() {
                               {fasting.primaryFastingBadge.label}
                             </span>
                           )}
-                          {fasting.intermittentBadge && (
-                            <span style={{
-                              fontSize: '11px',
-                              padding: '2px 8px',
-                              borderRadius: '4px',
-                              background: fasting.intermittentBadge.bg,
-                              border: `1px solid ${fasting.intermittentBadge.border}`,
-                              color: fasting.intermittentBadge.color,
-                              fontWeight: 800
-                            }}>
-                              {fasting.intermittentBadge.label}
-                            </span>
-                          )}
                         </>
                       );
                     })()}
-                    <span style={{ fontSize: '11px', background: '#F1F5F9', border: '1px solid #CBD5E1', color: '#0F172A', padding: '2px 8px', borderRadius: '4px', fontWeight: 700, display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+                    <span style={{ fontSize: '11px', background: '#F1F5F9', border: '1px solid #CBD5E1', color: '#0F172A', padding: '2px 8px', borderRadius: '6px', fontWeight: 700, display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
                       <span>المتابعة #{activeChkNumber}</span>
                       <span style={{ color: '#94A3B8' }}>•</span>
                       <span>الأسبوع {activeCheckin.week_number}</span>
@@ -1360,14 +1286,14 @@ export default function CheckinReviewDashboard() {
                       type="button"
                       onClick={() => window.open(`/coach/editor/${safeClient.code || safeClient.id || '1'}`, '_blank')}
                       style={{
-                        height: '26px',
-                        padding: '0 8px',
+                        height: '28px',
+                        padding: '0 10px',
                         fontSize: '11px',
                         fontWeight: 700,
                         display: 'inline-flex',
                         alignItems: 'center',
                         gap: '4px',
-                        borderRadius: '4px',
+                        borderRadius: '8px',
                         background: '#F0F9FF',
                         color: '#0284C7',
                         border: '1px solid #BAE6FD',
@@ -1491,70 +1417,101 @@ export default function CheckinReviewDashboard() {
                     </div>
                   </div>
 
-                  {/* Compact Unified Biofeedback Summary Bar */}
-                  <div dir="rtl" style={{ 
-                    marginTop: '10px', 
-                    background: '#F8FAFC', 
-                    border: '1px solid #E2E8F0', 
-                    borderRadius: '6px', 
-                    padding: '8px 12px', 
-                    display: 'flex', 
-                    alignItems: 'center', 
-                    justifyContent: 'space-between', 
-                    flexWrap: 'wrap', 
-                    gap: '10px', 
-                    fontSize: '11.5px' 
-                  }}>
-                    <div>
-                      <span style={{ color: '#64748B' }}>الطاقة:</span> <strong style={{ color: '#0F172A' }}>{safeBio.energy}/10</strong>
-                    </div>
-                    <div>
-                      <span style={{ color: '#64748B' }}>النوم:</span> <strong style={{ color: '#0F172A' }}>{safeBio.sleep}/10</strong>
-                    </div>
-                    <div>
-                      <span style={{ color: '#64748B' }}>الجوع:</span> <strong style={{ color: safeBio.hunger > 6 ? '#B45309' : '#0F172A' }}>{safeBio.hunger}/10</strong>
-                    </div>
-                    <div>
-                      <span style={{ color: '#64748B' }}>الهضم:</span> <strong style={{ color: '#0F172A' }}>{safeBio.digestion_status || 'طبيعي'}</strong>
-                    </div>
-                    <div>
-                      <span style={{ color: '#64748B' }}>أوزان التمرين:</span> <strong style={{ color: '#0F172A' }}>{safeMetrics.strength_trend === 'INCREASED' ? 'زيادة' : (safeMetrics.strength_trend === 'DECREASED' ? 'تراجع' : 'ثبات')}</strong>
-                    </div>
-                    <div>
-                      <span style={{ color: '#64748B' }}>الخطوات:</span> <strong style={{ color: '#0F172A', fontFamily: 'JetBrains Mono, Cairo, sans-serif' }}>{(safeMetrics.daily_steps_avg || 8000).toLocaleString()}</strong>
-                    </div>
-                    <div>
-                      <span style={{ color: '#64748B' }}>الماء:</span> <strong style={{ color: '#0F172A' }}>{safeMetrics.water_liters || 3.0} لتر</strong>
-                    </div>
-                    <div>
-                      <span style={{ color: '#64748B' }}>وجبات خارج الخطة:</span> <strong style={{ color: '#0F172A' }}>{safeMetrics.off_plan_meals || 0}</strong>
-                    </div>
-                    {safeBio.cycle_phase && (
-                      <div style={{ color: '#9D174D', fontWeight: 600 }}>
-                        <span>الدورة:</span> {safeBio.cycle_phase}
+                  {/* Structured Biofeedback 3-Card Grid */}
+                  <div dir="rtl" style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '10px', marginTop: '10px' }}>
+                    {/* بطاقة 1: الاستشفاء والأداء البدني */}
+                    <div style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', borderRadius: '10px', padding: '10px 12px' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '8px', paddingBottom: '6px', borderBottom: '1px solid #E2E8F0' }}>
+                        <Dumbbell size={14} color="#0F172A" />
+                        <strong style={{ fontSize: '11.5px', color: '#0F172A' }}>الاستشفاء والأداء البدني</strong>
                       </div>
-                    )}
-                    {activeCheckin?.bowel_regularity && (
-                      <div>
-                        <span style={{ color: '#64748B' }}>حركة الأمعاء:</span> <strong style={{ color: activeCheckin.bowel_regularity === 'constipated_3plus' ? '#DC2626' : '#0F172A' }}>
-                          {activeCheckin.bowel_regularity === 'constipated_3plus' ? 'إمساك (3 أيام+)' : (activeCheckin.bowel_regularity === 'diarrhea_upset' ? 'عسر هضم / إسهال' : 'طبيعي')}
-                        </strong>
+                      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px', fontSize: '11px' }}>
+                        <div>
+                          <span style={{ color: '#64748B', display: 'block', fontSize: '10.5px' }}>أوزان التمرين:</span>
+                          <strong style={{ color: safeMetrics.strength_trend === 'INCREASED' ? '#16A34A' : (safeMetrics.strength_trend === 'DECREASED' ? '#DC2626' : '#0F172A') }}>
+                            {safeMetrics.strength_trend === 'INCREASED' ? 'زيادة ملحوظة' : (safeMetrics.strength_trend === 'DECREASED' ? 'تراجع' : 'ثبات')}
+                          </strong>
+                        </div>
+                        <div>
+                          <span style={{ color: '#64748B', display: 'block', fontSize: '10.5px' }}>مستوى الطاقة:</span>
+                          <strong style={{ color: '#0F172A' }}>{safeBio.energy}/10</strong>
+                        </div>
+                        <div>
+                          <span style={{ color: '#64748B', display: 'block', fontSize: '10.5px' }}>جودة النوم:</span>
+                          <strong style={{ color: '#0F172A' }}>{safeBio.sleep}/10</strong>
+                        </div>
+                        <div>
+                          <span style={{ color: '#64748B', display: 'block', fontSize: '10.5px' }}>تراكم السهر:</span>
+                          <strong style={{ color: Number(activeCheckin?.sleep_stress_composite || 0) >= 4 ? '#D97706' : '#0F172A' }}>
+                            {activeCheckin?.sleep_stress_composite !== undefined ? `${activeCheckin.sleep_stress_composite}/5` : 'طبيعي'}
+                          </strong>
+                        </div>
                       </div>
-                    )}
-                    {activeCheckin?.sleep_stress_composite !== undefined && (
-                      <div>
-                        <span style={{ color: '#64748B' }}>تراكم السهر:</span> <strong style={{ color: Number(activeCheckin.sleep_stress_composite) >= 4 ? '#D97706' : '#0F172A' }}>
-                          {activeCheckin.sleep_stress_composite}/5
-                        </strong>
+                    </div>
+
+                    {/* بطاقة 2: العادات اليومية والتغذية */}
+                    <div style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', borderRadius: '10px', padding: '10px 12px' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '8px', paddingBottom: '6px', borderBottom: '1px solid #E2E8F0' }}>
+                        <Utensils size={14} color="#0F172A" />
+                        <strong style={{ fontSize: '11.5px', color: '#0F172A' }}>العادات اليومية والتغذية</strong>
                       </div>
-                    )}
-                    {activeCheckin?.lifestyle_variance && (
-                      <div>
-                        <span style={{ color: '#64748B' }}>نمط الدوام:</span> <strong style={{ color: '#0F172A' }}>
-                          {activeCheckin.lifestyle_variance === 'active_spurt' ? 'حركة مضاعفة' : (activeCheckin.lifestyle_variance === 'lazy_vacation' ? 'خمول / إجازة' : 'طبيعي')}
-                        </strong>
+                      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px', fontSize: '11px' }}>
+                        <div>
+                          <span style={{ color: '#64748B', display: 'block', fontSize: '10.5px' }}>متوسط الخطوات:</span>
+                          <strong style={{ color: '#0F172A', fontFamily: 'JetBrains Mono, Cairo, sans-serif' }}>
+                            {(safeMetrics.daily_steps_avg || 8000).toLocaleString()}
+                          </strong>
+                        </div>
+                        <div>
+                          <span style={{ color: '#64748B', display: 'block', fontSize: '10.5px' }}>استهلاك الماء:</span>
+                          <strong style={{ color: '#0F172A' }}>{safeMetrics.water_liters || 3.0} لتر</strong>
+                        </div>
+                        <div>
+                          <span style={{ color: '#64748B', display: 'block', fontSize: '10.5px' }}>مستوى الجوع:</span>
+                          <strong style={{ color: safeBio.hunger > 6 ? '#B45309' : '#0F172A' }}>{safeBio.hunger}/10</strong>
+                        </div>
+                        <div>
+                          <span style={{ color: '#64748B', display: 'block', fontSize: '10.5px' }}>وجبات خارج الخطة:</span>
+                          <strong style={{ color: (safeMetrics.off_plan_meals || 0) > 0 ? '#D97706' : '#16A34A' }}>
+                            {safeMetrics.off_plan_meals || 0}
+                          </strong>
+                        </div>
                       </div>
-                    )}
+                    </div>
+
+                    {/* بطاقة 3: الحالة الفسيولوجية والهضم */}
+                    <div style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', borderRadius: '10px', padding: '10px 12px' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '8px', paddingBottom: '6px', borderBottom: '1px solid #E2E8F0' }}>
+                        <HeartPulse size={14} color="#0F172A" />
+                        <strong style={{ fontSize: '11.5px', color: '#0F172A' }}>الحالة الفسيولوجية والهضم</strong>
+                      </div>
+                      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px', fontSize: '11px' }}>
+                        <div>
+                          <span style={{ color: '#64748B', display: 'block', fontSize: '10.5px' }}>كفاءة الهضم:</span>
+                          <strong style={{ color: '#0F172A' }}>{safeBio.digestion_status || 'طبيعي'}</strong>
+                        </div>
+                        <div>
+                          <span style={{ color: '#64748B', display: 'block', fontSize: '10.5px' }}>حركة الأمعاء:</span>
+                          <strong style={{ color: activeCheckin?.bowel_regularity === 'constipated_3plus' ? '#DC2626' : '#0F172A' }}>
+                            {activeCheckin?.bowel_regularity === 'constipated_3plus' ? 'إمساك (3+ أيام)' : (activeCheckin?.bowel_regularity === 'diarrhea_upset' ? 'عسر هضم' : 'منتظم')}
+                          </strong>
+                        </div>
+                        <div>
+                          <span style={{ color: '#64748B', display: 'block', fontSize: '10.5px' }}>
+                            {safeBio.cycle_phase ? 'مرحلة الدورة:' : 'نمط الدوام:'}
+                          </span>
+                          <strong style={{ color: safeBio.cycle_phase ? '#9D174D' : '#0F172A' }}>
+                            {safeBio.cycle_phase || (activeCheckin?.lifestyle_variance === 'active_spurt' ? 'حركة مضاعفة' : (activeCheckin?.lifestyle_variance === 'lazy_vacation' ? 'خمول / إجازة' : 'طبيعي'))}
+                          </strong>
+                        </div>
+                        <div>
+                          <span style={{ color: '#64748B', display: 'block', fontSize: '10.5px' }}>مستوى الإجهاد والتوتر:</span>
+                          <strong style={{ color: Number(safeBio.stress_level || 0) > 6 ? '#B45309' : '#0F172A' }}>
+                            {safeBio.stress_level ? `${safeBio.stress_level}/10` : 'معتدل'}
+                          </strong>
+                        </div>
+                      </div>
+                    </div>
                   </div>
 
                   {/* False Plateau Triad Alert Banner */}
@@ -1592,119 +1549,21 @@ export default function CheckinReviewDashboard() {
               );
             })()}
 
-            {/* 3. Multi-Week Visual Progress Trajectory Curve */}
+            {/* 3. Unified Inspection Workspace with Fast Interactive Tabs */}
             <FormSection
-              title="منحنى التطور الأسبوعي"
-              description="تتبع مسار الوزن ومحيط الخصر ومعدل الالتزام عبر الأسابيع."
+              title="استوديو الفحص والمقارنة البصرية"
+              description="التحليل البصري التفاعلي لصور التطور، مسار المنحنى الرقمي، والفحوصات المخبرية في مساحة موحدة مدمجة."
             >
-              <ProgressTrendChart
-                history={activeCheckin.history || []}
-                isMaxTier={isMaxTier}
-                targetWeight={safeClient.target_weight}
-                client={safeClient}
-              />
-            </FormSection>
-
-            {/* 4. Photos & Weekly Client Reflections */}
-            <FormSection
-              title="استوديو مقارنة صور التطور ورسالة المتدرب"
-              description="المقارنة البصرية التفاعلية لصور التطور وتوليد كروت التحول التسويقية الاحترافية."
-            >
-              <div style={{ marginTop: '6px', marginBottom: '12px' }}>
-                <InteractivePhotoComparisonStudio
-                  history={activeCheckin.history || []}
-                  activeCheckin={activeCheckin}
-                  client={safeClient}
-                />
-              </div>
-
-              {/* Weekly Client Reflections: Non-Scale Victory & Struggle */}
-              {safeReflect && (
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px', marginTop: '10px' }}>
-                  <div style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', padding: '8px 10px', borderRadius: '6px' }}>
-                    <span style={{ fontSize: '11px', color: '#64748B', fontWeight: 700, display: 'block', marginBottom: '2px' }}>أبرز إنجاز هذا الأسبوع:</span>
-                    <p style={{ fontSize: '11.5px', color: '#0F172A', margin: 0, lineHeight: 1.45 }}>
-                      {safeReflect.nsv_note}
-                    </p>
-                  </div>
-
-                  <div style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', padding: '8px 10px', borderRadius: '6px' }}>
-                    <span style={{ fontSize: '11px', color: '#64748B', fontWeight: 700, display: 'block', marginBottom: '2px' }}>أبرز صعوبة أو تحدٍ:</span>
-                    <p style={{ fontSize: '11.5px', color: '#0F172A', margin: 0, lineHeight: 1.45 }}>
-                      {safeReflect.struggle_note}
-                    </p>
-                  </div>
-                </div>
-              )}
-
-              {/* Client Message */}
-              <div style={{ marginTop: '10px', background: '#F8FAFC', border: '1px solid #E2E8F0', padding: '10px 12px', borderRadius: '6px' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '3px' }}>
-                  <MessageCircle size={13} color="#475569" />
-                  <strong style={{ fontSize: '11.5px', color: '#475569' }}>رسالة وملاحظات المتدرب:</strong>
-                </div>
-                <p style={{ fontSize: '12px', color: '#0F172A', margin: 0, lineHeight: 1.5, fontWeight: 500 }}>
-                  "{activeCheckin?.client_notes || 'لا توجد ملاحظات إضافية'}"
-                </p>
-              </div>
-
-              {/* Clinical Labs & Biomarkers Quick Trigger Banner */}
-              <div style={{
-                marginTop: '12px',
-                background: 'linear-gradient(135deg, #F0FDF4 0%, #F8FAFC 100%)',
-                border: '1px solid #86EFAC',
-                borderRadius: '8px',
-                padding: '12px 14px',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'space-between',
-                flexWrap: 'wrap',
-                gap: '10px'
-              }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                  <div style={{
-                    width: '36px',
-                    height: '36px',
-                    borderRadius: '8px',
-                    background: '#DCFCE7',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    color: '#16A34A',
-                    flexShrink: 0
-                  }}>
-                    <HeartPulse size={20} />
-                  </div>
-                  <div>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                      <strong style={{ fontSize: '12.5px', color: '#0F172A' }}>بروتوكول التحاليل والمؤشرات الحيوية السريرية</strong>
-                      {(activeCheckin?.medical_reports_urls?.length > 0 || safeClient?.medical_reports_urls?.length > 0) ? (
-                        <span style={{ fontSize: '10px', background: '#DCFCE7', color: '#166534', padding: '1px 7px', borderRadius: '4px', fontWeight: 800 }}>
-                          مرفق تقرير طبي
-                        </span>
-                      ) : (
-                        <span style={{ fontSize: '10px', background: '#F1F5F9', color: '#475569', padding: '1px 7px', borderRadius: '4px', fontWeight: 700 }}>
-                          فحص وقائي
-                        </span>
-                      )}
-                    </div>
-                    <p style={{ fontSize: '11px', color: '#475569', margin: '2px 0 0 0', lineHeight: 1.4 }}>
-                      فحص CBC، الكلى، الكبد، الأيض والسكر، والفيتامينات مع بروتوكول الغذاء أولاً لتعويض النواقص غذائياً.
-                    </p>
-                  </div>
-                </div>
-
+              {/* Inspection Tab Switcher Bar */}
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '14px', borderBottom: '1px solid #E2E8F0', paddingBottom: '10px' }}>
                 <button
                   type="button"
-                  onClick={() => setShowLabModal(true)}
+                  onClick={() => setInspectionTab('PHOTOS')}
                   style={{
                     height: '32px',
                     padding: '0 14px',
-                    borderRadius: '6px',
-                    border: '1px solid #16A34A',
-                    background: '#16A34A',
-                    color: '#FFFFFF',
-                    fontSize: '11.5px',
+                    borderRadius: '8px',
+                    fontSize: '12px',
                     fontWeight: 700,
                     cursor: 'pointer',
                     userSelect: 'none',
@@ -1712,302 +1571,556 @@ export default function CheckinReviewDashboard() {
                     display: 'inline-flex',
                     alignItems: 'center',
                     gap: '6px',
-                    boxShadow: '0 1px 3px rgba(22, 163, 74, 0.2)',
+                    border: inspectionTab === 'PHOTOS' ? '1px solid #0F172A' : '1px solid #CBD5E1',
+                    background: inspectionTab === 'PHOTOS' ? '#0F172A' : '#FFFFFF',
+                    color: inspectionTab === 'PHOTOS' ? '#FFFFFF' : '#475569',
                     transition: 'all 0.15s ease'
                   }}
-                  onMouseEnter={(e) => (e.currentTarget.style.background = '#15803D')}
-                  onMouseLeave={(e) => (e.currentTarget.style.background = '#16A34A')}
+                >
+                  <Camera size={14} />
+                  <span>مقارنة صور التطور</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => setInspectionTab('CHART')}
+                  style={{
+                    height: '32px',
+                    padding: '0 14px',
+                    borderRadius: '8px',
+                    fontSize: '12px',
+                    fontWeight: 700,
+                    cursor: 'pointer',
+                    userSelect: 'none',
+                    outline: 'none',
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '6px',
+                    border: inspectionTab === 'CHART' ? '1px solid #0F172A' : '1px solid #CBD5E1',
+                    background: inspectionTab === 'CHART' ? '#0F172A' : '#FFFFFF',
+                    color: inspectionTab === 'CHART' ? '#FFFFFF' : '#475569',
+                    transition: 'all 0.15s ease'
+                  }}
                 >
                   <Activity size={14} />
-                  <span>فتح استوديو التحاليل</span>
+                  <span>منحنى التطور الأسبوعي</span>
                 </button>
+
+                {(() => {
+                  const hasReports = (activeCheckin?.medical_reports_urls?.length > 0 || safeClient?.medical_reports_urls?.length > 0);
+                  return (
+                    <button
+                      type="button"
+                      onClick={() => setInspectionTab('LABS')}
+                      style={{
+                        height: '32px',
+                        padding: '0 14px',
+                        borderRadius: '8px',
+                        fontSize: '12px',
+                        fontWeight: 700,
+                        cursor: 'pointer',
+                        userSelect: 'none',
+                        outline: 'none',
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: '6px',
+                        border: inspectionTab === 'LABS' ? '1px solid #0F172A' : '1px solid #CBD5E1',
+                        background: inspectionTab === 'LABS' ? '#0F172A' : '#FFFFFF',
+                        color: inspectionTab === 'LABS' ? '#FFFFFF' : (hasReports ? '#1E293B' : '#94A3B8'),
+                        opacity: hasReports ? 1 : 0.85,
+                        transition: 'all 0.15s ease'
+                      }}
+                      title={hasReports ? "عرض الفحوصات والتحاليل المرفقة" : "لا توجد تقارير طبية مرفقة لهذا المتدرب"}
+                    >
+                      <HeartPulse size={14} color={hasReports ? (inspectionTab === 'LABS' ? '#FFFFFF' : '#16A34A') : '#94A3B8'} />
+                      <span>الفحوصات والتحاليل الطبية</span>
+                      {hasReports ? (
+                        <span style={{ 
+                          fontSize: '9.5px', 
+                          background: inspectionTab === 'LABS' ? '#16A34A' : '#DCFCE7', 
+                          color: inspectionTab === 'LABS' ? '#FFFFFF' : '#166534', 
+                          padding: '1px 6px', 
+                          borderRadius: '9999px', 
+                          fontWeight: 800 
+                        }}>
+                          مرفق تقرير
+                        </span>
+                      ) : (
+                        <span style={{ 
+                          fontSize: '9.5px', 
+                          background: '#F1F5F9', 
+                          color: '#94A3B8', 
+                          padding: '1px 6px', 
+                          borderRadius: '9999px', 
+                          fontWeight: 600 
+                        }}>
+                          لا توجد مرفقات
+                        </span>
+                      )}
+                    </button>
+                  );
+                })()}
               </div>
-            </FormSection>
 
-            {/* 4.5 Prospective Forward-Looking Next Week Preview */}
-            <FormSection
-              title="استشراف وتخطيط الأسبوع القادم"
-              description="الرؤية الاستباقية لظروف السفر والجيم وتوافر الأيام لضبط الخطة بدقة."
-            >
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '10px', marginTop: '6px' }}>
-                {/* 1. Travel Status */}
-                <div style={{
-                  background: activeCheckin?.next_week_travel ? '#FEF3C7' : '#F8FAFC',
-                  border: activeCheckin?.next_week_travel ? '1px solid #FCD34D' : '1px solid #E2E8F0',
-                  borderRadius: '10px',
-                  padding: '10px 12px'
-                }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '4px' }}>
-                    <Plane size={14} color={activeCheckin?.next_week_travel ? '#B45309' : '#64748B'} />
-                    <span style={{ fontSize: '11px', color: '#64748B', fontWeight: 700 }}>حالة السفر والتنقل:</span>
-                  </div>
-                  <strong style={{ fontSize: '12.5px', color: activeCheckin?.next_week_travel ? '#B45309' : '#0F172A' }}>
-                    {activeCheckin?.next_week_travel ? 'مسافر / خارج المدينة' : 'مستقر محلياً (لا يوجد سفر)'}
-                  </strong>
+              {/* Tab 1: Photos Studio */}
+              {inspectionTab === 'PHOTOS' && (
+                <div style={{ minHeight: '340px' }}>
+                  <InteractivePhotoComparisonStudio
+                    history={activeCheckin.history || []}
+                    activeCheckin={activeCheckin}
+                    client={safeClient}
+                  />
                 </div>
+              )}
 
-                {/* 2. Gym Availability */}
-                <div style={{
-                  background: activeCheckin?.next_week_gym_available === false ? '#FEF2F2' : '#F8FAFC',
-                  border: activeCheckin?.next_week_gym_available === false ? '1px solid #FECACA' : '1px solid #E2E8F0',
-                  borderRadius: '10px',
-                  padding: '10px 12px'
-                }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '4px' }}>
-                    <Dumbbell size={14} color={activeCheckin?.next_week_gym_available === false ? '#DC2626' : '#16A34A'} />
-                    <span style={{ fontSize: '11px', color: '#64748B', fontWeight: 700 }}>توفر صالة التدريب (الجيم):</span>
-                  </div>
-                  <strong style={{ fontSize: '12.5px', color: activeCheckin?.next_week_gym_available === false ? '#DC2626' : '#16A34A' }}>
-                    {activeCheckin?.next_week_gym_available === false ? 'الجيم غير متوفر (يحتاج خطة سفر/منزل)' : 'الجيم متوفر بانتظام'}
-                  </strong>
+              {/* Tab 2: Trajectory Chart */}
+              {inspectionTab === 'CHART' && (
+                <div style={{ minHeight: '340px' }}>
+                  <ProgressTrendChart
+                    history={activeCheckin.history || []}
+                    isMaxTier={isMaxTier}
+                    targetWeight={safeClient.target_weight}
+                    client={safeClient}
+                  />
                 </div>
+              )}
 
-                {/* 3. Realistic Training Days */}
-                <div style={{
-                  background: '#F8FAFC',
-                  border: '1px solid #E2E8F0',
-                  borderRadius: '10px',
-                  padding: '10px 12px'
+              {/* Tab 3: Clinical Labs & Biomarkers */}
+              {inspectionTab === 'LABS' && (
+                <div style={{ 
+                  background: 'linear-gradient(135deg, #F0FDF4 0%, #F8FAFC 100%)', 
+                  border: '1px solid #86EFAC', 
+                  borderRadius: '12px', 
+                  padding: '18px 20px',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  gap: '14px'
                 }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '4px' }}>
-                    <Calendar size={14} color="#0284C7" />
-                    <span style={{ fontSize: '11px', color: '#64748B', fontWeight: 700 }}>الأيام الواقعية للتمرين:</span>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '12px' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                      <div style={{
+                        width: '44px',
+                        height: '44px',
+                        borderRadius: '10px',
+                        background: '#DCFCE7',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        color: '#16A34A',
+                        flexShrink: 0
+                      }}>
+                        <HeartPulse size={24} />
+                      </div>
+                      <div>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                          <strong style={{ fontSize: '13.5px', color: '#0F172A' }}>بروتوكول الفحوصات المخبرية والمؤشرات السريرية</strong>
+                          {(activeCheckin?.medical_reports_urls?.length > 0 || safeClient?.medical_reports_urls?.length > 0) ? (
+                            <span style={{ fontSize: '10.5px', background: '#DCFCE7', color: '#166534', padding: '2px 8px', borderRadius: '6px', fontWeight: 800 }}>
+                              مرفق تقرير معتمد
+                            </span>
+                          ) : (
+                            <span style={{ fontSize: '10.5px', background: '#F1F5F9', color: '#475569', padding: '2px 8px', borderRadius: '6px', fontWeight: 700 }}>
+                              فحص استرشادي
+                            </span>
+                          )}
+                        </div>
+                        <p style={{ fontSize: '12px', color: '#475569', margin: '4px 0 0 0', lineHeight: 1.5 }}>
+                          متابعة وظائف الكلى، إنزيمات الكبد، صورة الدم الكاملة CBC، مقاومة الأنسولين، والفيتامينات مع التغذية العلاجية المعوضة.
+                        </p>
+                      </div>
+                    </div>
+
+                    <button
+                      type="button"
+                      onClick={() => setShowLabModal(true)}
+                      style={{
+                        height: '36px',
+                        padding: '0 16px',
+                        borderRadius: '8px',
+                        border: '1px solid #16A34A',
+                        background: '#16A34A',
+                        color: '#FFFFFF',
+                        fontSize: '12px',
+                        fontWeight: 700,
+                        cursor: 'pointer',
+                        userSelect: 'none',
+                        outline: 'none',
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: '6px',
+                        boxShadow: '0 2px 6px rgba(22, 163, 74, 0.25)',
+                        transition: 'all 0.15s ease'
+                      }}
+                      onMouseEnter={(e) => (e.currentTarget.style.background = '#15803D')}
+                      onMouseLeave={(e) => (e.currentTarget.style.background = '#16A34A')}
+                    >
+                      <Activity size={15} />
+                      <span>فتح استوديو التحاليل المتقدم</span>
+                    </button>
                   </div>
-                  <strong style={{ fontSize: '12.5px', color: '#0F172A' }}>
-                    {activeCheckin?.next_week_realistic_days ? `${activeCheckin.next_week_realistic_days} أيام بالأسبوع` : 'حسب الخطة الأساسية'}
-                  </strong>
-                </div>
-              </div>
 
-              {activeCheckin?.next_week_notes && (
-                <div style={{
-                  marginTop: '10px',
-                  background: '#F8FAFC',
-                  border: '1px solid #E2E8F0',
-                  borderRadius: '10px',
-                  padding: '10px 12px'
-                }}>
-                  <span style={{ fontSize: '11px', color: '#64748B', fontWeight: 700, display: 'block', marginBottom: '2px' }}>
-                    ملاحظات وظروف الأسبوع المقبل من المتدرب:
-                  </span>
-                  <p style={{ margin: 0, fontSize: '12px', color: '#0F172A', lineHeight: 1.5 }}>
-                    "{activeCheckin.next_week_notes}"
-                  </p>
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '10px', marginTop: '4px' }}>
+                    <div style={{ background: '#FFFFFF', border: '1px solid #E2E8F0', borderRadius: '8px', padding: '10px 12px' }}>
+                      <span style={{ fontSize: '11px', color: '#64748B', display: 'block', marginBottom: '2px' }}>الحالة الطبية العامة</span>
+                      <strong style={{ fontSize: '12px', color: '#0F172A' }}>
+                        {safeClient.medical_conditions?.length > 0 ? safeClient.medical_conditions.join('، ') : 'سليم ولا توجد موانع طبية'}
+                      </strong>
+                    </div>
+                    <div style={{ background: '#FFFFFF', border: '1px solid #E2E8F0', borderRadius: '8px', padding: '10px 12px' }}>
+                      <span style={{ fontSize: '11px', color: '#64748B', display: 'block', marginBottom: '2px' }}>التقارير المرفوعة</span>
+                      <strong style={{ fontSize: '12px', color: (activeCheckin?.medical_reports_urls?.length > 0 || safeClient?.medical_reports_urls?.length > 0) ? '#16A34A' : '#64748B' }}>
+                        {(activeCheckin?.medical_reports_urls?.length || safeClient?.medical_reports_urls?.length || 0)} تقرير متاح بالفحص
+                      </strong>
+                    </div>
+                    <div style={{ background: '#FFFFFF', border: '1px solid #E2E8F0', borderRadius: '8px', padding: '10px 12px' }}>
+                      <span style={{ fontSize: '11px', color: '#64748B', display: 'block', marginBottom: '2px' }}>توجيه البروتوكول</span>
+                      <strong style={{ fontSize: '12px', color: '#0F172A' }}>الغذاء أولاً والتدخل المحسوب</strong>
+                    </div>
+                  </div>
                 </div>
               )}
             </FormSection>
 
-            {/* 5. AI Engine Recommendation Card */}
+            {/* 4. Unified Weekly Context & Forward Outlook */}
             <FormSection
-              title="تحليل وتوصيات المحرك السريري الذكي"
-              description="التوصيات التكيفية المبنية على الدلتا الحسابية وسرعة الأيض واستجابة المتدرب."
+              title="سياق الأسبوع واستشراف القادم"
+              description="إنجازات وملاحظات المتدرب في الأسبوع الحالي ورؤيته الاستباقية لظروف الأسبوع القادم."
             >
-              <div style={{ background: '#F8FAFC', border: '1px solid #CBD5E1', padding: '12px 14px', borderRadius: '8px', marginTop: '6px' }}>
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '6px', flexWrap: 'wrap', gap: '8px' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                    <BrainCircuit size={16} color="#0F172A" />
-                    <strong style={{ fontSize: '12.5px', color: '#0F172A' }}>اقتراح المحرك التكيفي</strong>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', alignItems: 'stretch' }}>
+                {/* Column 1: Current Week Feedback & Reflection */}
+                <div style={{ 
+                  background: '#F8FAFC', 
+                  border: '1px solid #E2E8F0', 
+                  borderRadius: '10px', 
+                  padding: '12px 14px',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  gap: '10px'
+                }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '6px', paddingBottom: '6px', borderBottom: '1px solid #E2E8F0' }}>
+                    <Trophy size={14} color="#0F172A" />
+                    <strong style={{ fontSize: '12px', color: '#0F172A' }}>إنجازات وملاحظات الأسبوع المنقضي</strong>
                   </div>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                    <span style={{ fontSize: '10.5px', background: '#E2E8F0', color: '#0F172A', padding: '2px 8px', borderRadius: '4px', fontWeight: 800 }}>
-                      {safeAi.status_badge}
+
+                  {safeReflect && (
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
+                      <div style={{ background: '#FFFFFF', border: '1px solid #E2E8F0', borderRadius: '8px', padding: '8px 10px' }}>
+                        <span style={{ fontSize: '10.5px', color: '#16A34A', fontWeight: 700, display: 'block', marginBottom: '2px' }}>أبرز إنجاز (NSV):</span>
+                        <p style={{ fontSize: '11.5px', color: '#0F172A', margin: 0, lineHeight: 1.45 }}>
+                          {safeReflect.nsv_note || 'لا توجد ملاحظة مسجلة'}
+                        </p>
+                      </div>
+                      <div style={{ background: '#FFFFFF', border: '1px solid #E2E8F0', borderRadius: '8px', padding: '8px 10px' }}>
+                        <span style={{ fontSize: '10.5px', color: '#D97706', fontWeight: 700, display: 'block', marginBottom: '2px' }}>أبرز تحدٍ أو صعوبة:</span>
+                        <p style={{ fontSize: '11.5px', color: '#0F172A', margin: 0, lineHeight: 1.45 }}>
+                          {safeReflect.struggle_note || 'لا توجد صعوبة مسجلة'}
+                        </p>
+                      </div>
+                    </div>
+                  )}
+
+                  <div style={{ background: '#FFFFFF', border: '1px solid #E2E8F0', borderRadius: '8px', padding: '10px 12px', flex: 1 }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '4px' }}>
+                      <MessageCircle size={13} color="#475569" />
+                      <strong style={{ fontSize: '11px', color: '#475569' }}>رسالة المتدرب الإضافية:</strong>
+                    </div>
+                    <p style={{ fontSize: '11.5px', color: '#0F172A', margin: 0, lineHeight: 1.5, fontWeight: 500 }}>
+                      "{activeCheckin?.client_notes || 'لا توجد ملاحظات إضافية'}"
+                    </p>
+                  </div>
+                </div>
+
+                {/* Column 2: Forward-Looking Next Week Preview */}
+                <div style={{ 
+                  background: '#F8FAFC', 
+                  border: '1px solid #E2E8F0', 
+                  borderRadius: '10px', 
+                  padding: '12px 14px',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  gap: '10px'
+                }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '6px', paddingBottom: '6px', borderBottom: '1px solid #E2E8F0' }}>
+                    <Calendar size={14} color="#0F172A" />
+                    <strong style={{ fontSize: '12px', color: '#0F172A' }}>استشراف وظروف الأسبوع القادم</strong>
+                  </div>
+
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '8px' }}>
+                    {/* Travel */}
+                    <div style={{
+                      background: activeCheckin?.next_week_travel ? '#FEF3C7' : '#FFFFFF',
+                      border: activeCheckin?.next_week_travel ? '1px solid #FCD34D' : '1px solid #E2E8F0',
+                      borderRadius: '8px',
+                      padding: '8px 10px'
+                    }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '4px', marginBottom: '2px' }}>
+                        <Plane size={12} color={activeCheckin?.next_week_travel ? '#B45309' : '#64748B'} />
+                        <span style={{ fontSize: '10px', color: '#64748B', fontWeight: 700 }}>السفر:</span>
+                      </div>
+                      <strong style={{ fontSize: '11px', color: activeCheckin?.next_week_travel ? '#B45309' : '#0F172A' }}>
+                        {activeCheckin?.next_week_travel ? 'مسافر خارج المدينة' : 'مستقر محلياً'}
+                      </strong>
+                    </div>
+
+                    {/* Gym */}
+                    <div style={{
+                      background: activeCheckin?.next_week_gym_available === false ? '#FEF2F2' : '#FFFFFF',
+                      border: activeCheckin?.next_week_gym_available === false ? '1px solid #FECACA' : '1px solid #E2E8F0',
+                      borderRadius: '8px',
+                      padding: '8px 10px'
+                    }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '4px', marginBottom: '2px' }}>
+                        <Dumbbell size={12} color={activeCheckin?.next_week_gym_available === false ? '#DC2626' : '#16A34A'} />
+                        <span style={{ fontSize: '10px', color: '#64748B', fontWeight: 700 }}>صالة الجيم:</span>
+                      </div>
+                      <strong style={{ fontSize: '11px', color: activeCheckin?.next_week_gym_available === false ? '#DC2626' : '#16A34A' }}>
+                        {activeCheckin?.next_week_gym_available === false ? 'غير متوفرة' : 'متوفرة بانتظام'}
+                      </strong>
+                    </div>
+
+                    {/* Realistic Days */}
+                    <div style={{
+                      background: '#FFFFFF',
+                      border: '1px solid #E2E8F0',
+                      borderRadius: '8px',
+                      padding: '8px 10px'
+                    }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '4px', marginBottom: '2px' }}>
+                        <Target size={12} color="#0284C7" />
+                        <span style={{ fontSize: '10px', color: '#64748B', fontWeight: 700 }}>أيام التمرين:</span>
+                      </div>
+                      <strong style={{ fontSize: '11px', color: '#0F172A' }}>
+                        {activeCheckin?.next_week_realistic_days ? `${activeCheckin.next_week_realistic_days} أيام` : 'كامل الخطة'}
+                      </strong>
+                    </div>
+                  </div>
+
+                  <div style={{ background: '#FFFFFF', border: '1px solid #E2E8F0', borderRadius: '8px', padding: '10px 12px', flex: 1 }}>
+                    <span style={{ fontSize: '10.5px', color: '#64748B', fontWeight: 700, display: 'block', marginBottom: '2px' }}>
+                      ملاحظات واستعدادات الأسبوع المقبل:
                     </span>
+                    <p style={{ margin: 0, fontSize: '11.5px', color: '#0F172A', lineHeight: 1.5 }}>
+                      {activeCheckin?.next_week_notes ? `"${activeCheckin.next_week_notes}"` : 'جاهز للالتزام التام بالخطة.'}
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </FormSection>
+
+            {/* 5. AI Engine Recommendation Cockpit & Quick Decision Bar */}
+            <FormSection
+              title="تحليل وتوصيات المحرك السريري وقمرة اتخاذ القرار"
+              description="التوصيات التكيفية المبنية على الدلتا الحسابية وسرعة الأيض، مع قرارات وتعديلات سريعة بنقرة واحدة."
+            >
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', marginTop: '6px' }}>
+                {/* 5.1 AI Recommendation Card */}
+                <div style={{ background: '#F8FAFC', border: '1px solid #CBD5E1', padding: '12px 14px', borderRadius: '10px' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '6px', flexWrap: 'wrap', gap: '8px' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                      <BrainCircuit size={16} color="#0F172A" />
+                      <strong style={{ fontSize: '12.5px', color: '#0F172A' }}>اقتراح المحرك التكيفي</strong>
+                    </div>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                      <span style={{ fontSize: '10.5px', background: '#E2E8F0', color: '#0F172A', padding: '2px 8px', borderRadius: '6px', fontWeight: 800 }}>
+                        {safeAi.status_badge}
+                      </span>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setMacroAdjustments(safeMacros);
+                          setCoachReply(activeCheckin.suggested_reply);
+                        }}
+                        style={{
+                          height: '26px',
+                          padding: '0 10px',
+                          fontSize: '10.5px',
+                          fontWeight: 700,
+                          background: '#0F172A',
+                          color: '#FFFFFF',
+                          border: 'none',
+                          borderRadius: '8px',
+                          cursor: 'pointer',
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          gap: '4px',
+                          userSelect: 'none',
+                          outline: 'none',
+                          transition: 'background-color 0.15s ease'
+                        }}
+                        title="استعادة الأرقام والرد المقترح تلقائياً"
+                      >
+                        <Zap size={11} />
+                        <span>تطبيق المقترح</span>
+                      </button>
+                    </div>
+                  </div>
+                  
+                  <p style={{ fontSize: '12px', color: '#334155', margin: '0 0 8px 0', lineHeight: 1.55 }}>
+                    {safeAi.recommendation}
+                  </p>
+
+                  {safeAi.warning && (
+                    <div style={{ background: '#FFFBEB', border: '1px solid #FDE68A', padding: '6px 10px', borderRadius: '8px', fontSize: '11px', color: '#B45309', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                      <AlertTriangle size={13} className="flex-shrink-0" />
+                      <span>{safeAi.warning}</span>
+                    </div>
+                  )}
+                </div>
+
+                {/* 5.2 1-Click Quick Decision Presets Bar for Coach */}
+                <div style={{ 
+                  background: '#FFFFFF', 
+                  border: '1px solid #E2E8F0', 
+                  borderRadius: '10px', 
+                  padding: '10px 14px', 
+                  display: 'flex', 
+                  alignItems: 'center', 
+                  justifyContent: 'space-between', 
+                  gap: '8px', 
+                  flexWrap: 'wrap' 
+                }}>
+                  <span style={{ fontSize: '12px', fontWeight: 700, color: '#0F172A' }}>قرارات وتعديلات سريعة بنقرة واحدة:</span>
+
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flexWrap: 'wrap' }}>
+                    {/* Preset 1: Keep Plan */}
                     <button
                       type="button"
                       onClick={() => {
                         setMacroAdjustments(safeMacros);
-                        setCoachReply(activeCheckin.suggested_reply);
+                        setCoachReply(`عاش يا ${clientFirstName}! مستواك الأسبوع ده ممتاز ونتايجك ماشية على الخطة بالظبط. هنثبت على نفس السعرات والماكروز عشان نواصل التقدم بنفس الزخم. كمل بنفس القوة يا بطل!`);
                       }}
                       style={{
-                        height: '24px',
-                        padding: '0 8px',
-                        fontSize: '10.5px',
+                        height: '28px',
+                        padding: '0 12px',
+                        fontSize: '11px',
                         fontWeight: 700,
-                        background: '#0F172A',
-                        color: '#FFFFFF',
-                        border: 'none',
-                        borderRadius: '4px',
+                        borderRadius: '8px',
                         cursor: 'pointer',
-                        display: 'inline-flex',
-                        alignItems: 'center',
-                        gap: '4px',
                         userSelect: 'none',
                         outline: 'none',
-                        transition: 'background-color 0.15s ease'
+                        background: '#F8FAFC',
+                        color: '#0F172A',
+                        border: '1px solid #CBD5E1',
+                        transition: 'all 0.15s ease'
                       }}
-                      title="استعادة الأرقام والرد المقترح تلقائياً"
+                      title="تثبيت السعرات والماكروز الحالية"
                     >
-                      <Zap size={11} />
-                      <span>تطبيق المقترح</span>
+                      تثبيت الخطة
+                    </button>
+
+                    {/* Preset 2: Deficit -150 */}
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const p = safeMacros.protein;
+                        const c = Math.max(100, safeMacros.carbs - 25);
+                        const f = Math.max(35, safeMacros.fats - 5);
+                        const newCals = (p * 4) + (c * 4) + (f * 9);
+                        setMacroAdjustments({ calories: newCals, protein: p, carbs: c, fats: f });
+                        setCoachReply(`أداء ممتاز يا ${clientFirstName}! بناءً على قراءة الأسبوع، عملنا عجز تدريجي بسيط بمقدار 150 سعرة (خصم 25 جم كارب و 5 جم دهون) لتنشيط معدل الحرق واستمرار نزول الدهون بدون التأثير على طاقتك. ركز على شرب الماء والخطوات!`);
+                      }}
+                      style={{
+                        height: '28px',
+                        padding: '0 12px',
+                        fontSize: '11px',
+                        fontWeight: 700,
+                        borderRadius: '8px',
+                        cursor: 'pointer',
+                        userSelect: 'none',
+                        outline: 'none',
+                        background: '#F8FAFC',
+                        color: '#0F172A',
+                        border: '1px solid #CBD5E1',
+                        transition: 'all 0.15s ease'
+                      }}
+                      title="خصم 150 سعرة لكسر الثبات وتنشيط الحرق"
+                    >
+                      عجز (-150 سعرة)
+                    </button>
+
+                    {/* Preset 3: Surplus +150 */}
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const p = safeMacros.protein + 5;
+                        const c = safeMacros.carbs + 30;
+                        const f = safeMacros.fats;
+                        const newCals = (p * 4) + (c * 4) + (f * 9);
+                        setMacroAdjustments({ calories: newCals, protein: p, carbs: c, fats: f });
+                        setCoachReply(`عاش يا ${clientFirstName}! عشان نغذي البناء العضلي ونرفع كفاءة الطاقة في الجيم، زودنالك 150 سعرة إضافية (30 جم كارب و 5 جم بروتين). استغل الطاقة دي في كسر أوزان جديدة في التمرين!`);
+                      }}
+                      style={{
+                        height: '28px',
+                        padding: '0 12px',
+                        fontSize: '11px',
+                        fontWeight: 700,
+                        borderRadius: '8px',
+                        cursor: 'pointer',
+                        userSelect: 'none',
+                        outline: 'none',
+                        background: '#F8FAFC',
+                        color: '#0F172A',
+                        border: '1px solid #CBD5E1',
+                        transition: 'all 0.15s ease'
+                      }}
+                      title="زيادة 150 سعرة لدعم البناء أو التضخيم"
+                    >
+                      زيادة (+150 سعرة)
+                    </button>
+
+                    {/* Preset 4: Refeed Day */}
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setCoachReply(`أداء بطولي يا ${clientFirstName}! ضفتلك يوم إعادة شحن (Refeed Day) بزيادة 80 جم كارب مع تقليل الدهون في يوم تمرينك الأثقل، عشان نشحن مخازن الجليكوجين ونحفز هرمون اللبتين ومعدل الأيض. التزم بالوجبة حول التمرين يا وحش!`);
+                      }}
+                      style={{
+                        height: '28px',
+                        padding: '0 12px',
+                        fontSize: '11px',
+                        fontWeight: 700,
+                        borderRadius: '8px',
+                        cursor: 'pointer',
+                        userSelect: 'none',
+                        outline: 'none',
+                        background: '#F8FAFC',
+                        color: '#0F172A',
+                        border: '1px solid #CBD5E1',
+                        transition: 'all 0.15s ease'
+                      }}
+                      title="تفعيل بروتوكول يوم إعادة التغذية Refeed"
+                    >
+                      يوم Refeed
+                    </button>
+
+                    {/* Preset 5: Deload Week */}
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setCoachReply(`ممتاز جداً يا ${clientFirstName}! الأسبوع ده هيكون أسبوع استشفاء وتفريغ أحمال (Deload Week)؛ هنقلل مجموعات التمرين بنسبة 40% مع الحفاظ على أوزانك وثبتنا السعرات عند مستوى الصيانة، عشان نريح المفاصل والجهاز العصبي ونرجع الأسبوع اللي بعده بأعلى طاقة!`);
+                      }}
+                      style={{
+                        height: '28px',
+                        padding: '0 12px',
+                        fontSize: '11px',
+                        fontWeight: 700,
+                        borderRadius: '8px',
+                        cursor: 'pointer',
+                        userSelect: 'none',
+                        outline: 'none',
+                        background: '#F8FAFC',
+                        color: '#0F172A',
+                        border: '1px solid #CBD5E1',
+                        transition: 'all 0.15s ease'
+                      }}
+                      title="تفعيل أسبوع تفريغ الأحمال والاستشفاء"
+                    >
+                      أسبوع Deload
                     </button>
                   </div>
                 </div>
-                
-                <p style={{ fontSize: '12px', color: '#334155', margin: '0 0 8px 0', lineHeight: 1.55 }}>
-                  {safeAi.recommendation}
-                </p>
-
-                {safeAi.warning && (
-                  <div style={{ background: '#FFFBEB', border: '1px solid #FDE68A', padding: '6px 10px', borderRadius: '5px', fontSize: '11px', color: '#B45309', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                    <AlertTriangle size={13} className="flex-shrink-0" />
-                    <span>{safeAi.warning}</span>
-                  </div>
-                )}
               </div>
             </FormSection>
-
-            {/* 6. 1-Click Quick Decision Presets Bar for Coach */}
-            <div style={{ 
-              background: '#FFFFFF', 
-              border: '1px solid #E2E8F0', 
-              borderRadius: '8px', 
-              padding: '10px 14px', 
-              display: 'flex', 
-              alignItems: 'center', 
-              justifyContent: 'space-between', 
-              gap: '8px', 
-              flexWrap: 'wrap' 
-            }}>
-              <span style={{ fontSize: '12px', fontWeight: 700, color: '#0F172A' }}>قرارات سريعة:</span>
-
-              <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flexWrap: 'wrap' }}>
-                {/* Preset 1: Keep Plan */}
-                <button
-                  type="button"
-                  onClick={() => {
-                    setMacroAdjustments(safeMacros);
-                    setCoachReply(`عاش يا ${clientFirstName}! مستواك الأسبوع ده ممتاز ونتايجك ماشية على الخطة بالظبط. هنثبت على نفس السعرات والماكروز عشان نواصل التقدم بنفس الزخم. كمل بنفس القوة يا بطل!`);
-                  }}
-                  style={{
-                    height: '26px',
-                    padding: '0 10px',
-                    fontSize: '11px',
-                    fontWeight: 700,
-                    borderRadius: '4px',
-                    cursor: 'pointer',
-                    userSelect: 'none',
-                    outline: 'none',
-                    background: '#F8FAFC',
-                    color: '#0F172A',
-                    border: '1px solid #CBD5E1',
-                    transition: 'background-color 0.15s ease'
-                  }}
-                  title="تثبيت السعرات والماكروز الحالية"
-                >
-                  تثبيت الخطة
-                </button>
-
-                {/* Preset 2: Deficit -150 */}
-                <button
-                  type="button"
-                  onClick={() => {
-                    const p = safeMacros.protein;
-                    const c = Math.max(100, safeMacros.carbs - 25);
-                    const f = Math.max(35, safeMacros.fats - 5);
-                    const newCals = (p * 4) + (c * 4) + (f * 9);
-                    setMacroAdjustments({ calories: newCals, protein: p, carbs: c, fats: f });
-                    setCoachReply(`أداء ممتاز يا ${clientFirstName}! بناءً على قراءة الأسبوع، عملنا عجز تدريجي بسيط بمقدار 150 سعرة (خصم 25 جم كارب و 5 جم دهون) لتنشيط معدل الحرق واستمرار نزول الدهون بدون التأثير على طاقتك. ركز على شرب الماء والخطوات!`);
-                  }}
-                  style={{
-                    height: '26px',
-                    padding: '0 10px',
-                    fontSize: '11px',
-                    fontWeight: 700,
-                    borderRadius: '4px',
-                    cursor: 'pointer',
-                    userSelect: 'none',
-                    outline: 'none',
-                    background: '#F8FAFC',
-                    color: '#0F172A',
-                    border: '1px solid #CBD5E1',
-                    transition: 'background-color 0.15s ease'
-                  }}
-                  title="خصم 150 سعرة لكسر الثبات وتنشيط الحرق"
-                >
-                  عجز (-150 سعرة)
-                </button>
-
-                {/* Preset 3: Surplus +150 */}
-                <button
-                  type="button"
-                  onClick={() => {
-                    const p = safeMacros.protein + 5;
-                    const c = safeMacros.carbs + 30;
-                    const f = safeMacros.fats;
-                    const newCals = (p * 4) + (c * 4) + (f * 9);
-                    setMacroAdjustments({ calories: newCals, protein: p, carbs: c, fats: f });
-                    setCoachReply(`عاش يا ${clientFirstName}! عشان نغذي البناء العضلي ونرفع كفاءة الطاقة في الجيم، زودنالك 150 سعرة إضافية (30 جم كارب و 5 جم بروتين). استغل الطاقة دي في كسر أوزان جديدة في التمرين!`);
-                  }}
-                  style={{
-                    height: '26px',
-                    padding: '0 10px',
-                    fontSize: '11px',
-                    fontWeight: 700,
-                    borderRadius: '4px',
-                    cursor: 'pointer',
-                    userSelect: 'none',
-                    outline: 'none',
-                    background: '#F8FAFC',
-                    color: '#0F172A',
-                    border: '1px solid #CBD5E1',
-                    transition: 'background-color 0.15s ease'
-                  }}
-                  title="زيادة 150 سعرة لدعم البناء أو التضخيم"
-                >
-                  زيادة (+150 سعرة)
-                </button>
-
-                {/* Preset 4: Refeed Day */}
-                <button
-                  type="button"
-                  onClick={() => {
-                    setCoachReply(`أداء بطولي يا ${clientFirstName}! ضفتلك يوم إعادة شحن (Refeed Day) بزيادة 80 جم كارب مع تقليل الدهون في يوم تمرينك الأثقل، عشان نشحن مخازن الجليكوجين ونحفز هرمون اللبتين ومعدل الأيض. التزم بالوجبة حول التمرين يا وحش!`);
-                  }}
-                  style={{
-                    height: '26px',
-                    padding: '0 10px',
-                    fontSize: '11px',
-                    fontWeight: 700,
-                    borderRadius: '4px',
-                    cursor: 'pointer',
-                    userSelect: 'none',
-                    outline: 'none',
-                    background: '#F8FAFC',
-                    color: '#0F172A',
-                    border: '1px solid #CBD5E1',
-                    transition: 'background-color 0.15s ease'
-                  }}
-                  title="تفعيل بروتوكول يوم إعادة التغذية Refeed"
-                >
-                  يوم Refeed
-                </button>
-
-                {/* Preset 5: Deload Week */}
-                <button
-                  type="button"
-                  onClick={() => {
-                    setCoachReply(`ممتاز جداً يا ${clientFirstName}! الأسبوع ده هيكون أسبوع استشفاء وتفريغ أحمال (Deload Week)؛ هنقلل مجموعات التمرين بنسبة 40% مع الحفاظ على أوزانك وثبتنا السعرات عند مستوى الصيانة، عشان نريح المفاصل والجهاز العصبي ونرجع الأسبوع اللي بعده بأعلى طاقة!`);
-                  }}
-                  style={{
-                    height: '26px',
-                    padding: '0 10px',
-                    fontSize: '11px',
-                    fontWeight: 700,
-                    borderRadius: '4px',
-                    cursor: 'pointer',
-                    userSelect: 'none',
-                    outline: 'none',
-                    background: '#F8FAFC',
-                    color: '#0F172A',
-                    border: '1px solid #CBD5E1',
-                    transition: 'background-color 0.15s ease'
-                  }}
-                  title="تفعيل أسبوع تفريغ الأحمال والاستشفاء"
-                >
-                  أسبوع Deload
-                </button>
-              </div>
-            </div>
 
             {/* 7. 2-Column Subgrid: Macros & Coach Approval */}
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '14px', alignItems: 'start' }}>
@@ -2053,7 +2166,7 @@ export default function CheckinReviewDashboard() {
                             alignItems: 'center', 
                             background: '#FFFFFF', 
                             border: '1px solid #CBD5E1', 
-                            borderRadius: '6px', 
+                            borderRadius: '8px', 
                             padding: '2px 8px', 
                             height: '34px',
                             boxSizing: 'border-box'
@@ -2061,6 +2174,7 @@ export default function CheckinReviewDashboard() {
                         >
                           <input
                             type="number"
+                            className="no-spinner"
                             value={macroAdjustments.calories || ''}
                             onChange={(e) => setMacroAdjustments({ ...macroAdjustments, calories: Number(e.target.value) })}
                             style={{ 
@@ -2107,7 +2221,7 @@ export default function CheckinReviewDashboard() {
                               justifyContent: 'center',
                               background: '#F8FAFC', 
                               border: '1px solid #CBD5E1', 
-                              borderRadius: '6px', 
+                              borderRadius: '8px', 
                               padding: '2px 6px', 
                               height: '32px',
                               width: '100%',
@@ -2117,6 +2231,7 @@ export default function CheckinReviewDashboard() {
                           >
                             <input
                               type="number"
+                              className="no-spinner"
                               value={macroAdjustments.protein || ''}
                               onChange={(e) => {
                                 const val = Number(e.target.value);
@@ -2170,7 +2285,7 @@ export default function CheckinReviewDashboard() {
                               justifyContent: 'center',
                               background: '#F8FAFC', 
                               border: '1px solid #CBD5E1', 
-                              borderRadius: '6px', 
+                              borderRadius: '8px', 
                               padding: '2px 6px', 
                               height: '32px',
                               width: '100%',
@@ -2180,6 +2295,7 @@ export default function CheckinReviewDashboard() {
                           >
                             <input
                               type="number"
+                              className="no-spinner"
                               value={macroAdjustments.carbs || ''}
                               onChange={(e) => {
                                 const val = Number(e.target.value);
@@ -2233,7 +2349,7 @@ export default function CheckinReviewDashboard() {
                               justifyContent: 'center',
                               background: '#F8FAFC', 
                               border: '1px solid #CBD5E1', 
-                              borderRadius: '6px', 
+                              borderRadius: '8px', 
                               padding: '2px 6px', 
                               height: '32px',
                               width: '100%',
@@ -2243,6 +2359,7 @@ export default function CheckinReviewDashboard() {
                           >
                             <input
                               type="number"
+                              className="no-spinner"
                               value={macroAdjustments.fats || ''}
                               onChange={(e) => {
                                 const val = Number(e.target.value);
@@ -2280,7 +2397,7 @@ export default function CheckinReviewDashboard() {
                         style={{ 
                           background: '#F8FAFC', 
                           border: '1px solid #E2E8F0', 
-                          borderRadius: '6px', 
+                          borderRadius: '8px', 
                           padding: '7px 12px', 
                           display: 'flex', 
                           justifyContent: 'space-between', 
@@ -2324,14 +2441,14 @@ export default function CheckinReviewDashboard() {
                     style={{
                       width: '100%',
                       height: '115px',
-                      padding: '8px 10px',
-                      borderRadius: '6px',
+                      padding: '10px 12px',
+                      borderRadius: '8px',
                       border: '1px solid #CBD5E1',
                       fontSize: '12px',
                       outline: 'none',
                       resize: 'none',
                       boxSizing: 'border-box',
-                      lineHeight: 1.45,
+                      lineHeight: 1.5,
                       color: '#0F172A',
                       fontFamily: 'Cairo, sans-serif'
                     }}
@@ -2347,8 +2464,8 @@ export default function CheckinReviewDashboard() {
                       }}
                       style={{
                         height: '36px',
-                        padding: '0 10px',
-                        borderRadius: '6px',
+                        padding: '0 12px',
+                        borderRadius: '8px',
                         border: '1px solid #CBD5E1',
                         background: '#FFFFFF',
                         color: '#475569',
@@ -2361,7 +2478,7 @@ export default function CheckinReviewDashboard() {
                         alignItems: 'center',
                         gap: '4px',
                         flexShrink: 0,
-                        transition: 'background-color 0.15s ease'
+                        transition: 'all 0.15s ease'
                       }}
                       title="نسخ نص الرسالة"
                     >
@@ -2374,8 +2491,8 @@ export default function CheckinReviewDashboard() {
                       onClick={handleOpenDirectWhatsApp}
                       style={{
                         height: '36px',
-                        padding: '0 12px',
-                        borderRadius: '6px',
+                        padding: '0 14px',
+                        borderRadius: '8px',
                         border: '1px solid #86EFAC',
                         background: '#F0FDF4',
                         color: '#16A34A',
@@ -2388,41 +2505,12 @@ export default function CheckinReviewDashboard() {
                         alignItems: 'center',
                         gap: '5px',
                         flexShrink: 0,
-                        transition: 'background-color 0.15s ease'
+                        transition: 'all 0.15s ease'
                       }}
                       title="فتح واتساب مباشرة بالرسالة"
                     >
                       <MessageCircle size={15} />
                       <span>واتساب</span>
-                    </button>
-
-                    {/* Open Program in Coach Editor Bridge */}
-                    <button
-                      type="button"
-                      onClick={() => window.open(`/coach/editor/${safeClient.code || safeClient.id || '1'}`, '_blank')}
-                      style={{
-                        height: '36px',
-                        padding: '0 12px',
-                        borderRadius: '6px',
-                        border: '1px solid #CBD5E1',
-                        background: '#FFFFFF',
-                        color: '#0F172A',
-                        fontSize: '11.5px',
-                        fontWeight: 700,
-                        cursor: 'pointer',
-                        userSelect: 'none',
-                        outline: 'none',
-                        display: 'inline-flex',
-                        alignItems: 'center',
-                        gap: '5px',
-                        flexShrink: 0,
-                        transition: 'background-color 0.15s ease'
-                      }}
-                      title="فتح خطة المتدرب بالكامل في محرر الكوتش لتعديل التمارين أو الأغذية في تبويب مستقل"
-                    >
-                      <Dumbbell size={14} />
-                      <span>فتح الخطة بالمحرر</span>
-                      <ExternalLink size={11} color="#64748B" />
                     </button>
 
                     {/* Primary Approve & Next Button */}
@@ -2436,7 +2524,7 @@ export default function CheckinReviewDashboard() {
                         background: '#0F172A',
                         color: '#FFFFFF',
                         border: 'none',
-                        borderRadius: '6px',
+                        borderRadius: '8px',
                         fontSize: '12px',
                         fontWeight: 700,
                         cursor: 'pointer',
@@ -2447,7 +2535,7 @@ export default function CheckinReviewDashboard() {
                         justifyContent: 'center',
                         gap: '6px',
                         boxShadow: '0 2px 6px rgba(15, 23, 42, 0.25)',
-                        transition: 'background-color 0.15s ease'
+                        transition: 'all 0.15s ease'
                       }}
                       onMouseEnter={(e) => (e.currentTarget.style.background = '#334155')}
                       onMouseLeave={(e) => (e.currentTarget.style.background = '#0F172A')}

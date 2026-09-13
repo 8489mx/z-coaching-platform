@@ -1005,6 +1005,26 @@ export const FOOD_DATABASE = {
     is_dairy: true,
     is_low_lactose: false
   },
+  LACTOSE_FREE_MILK: {
+    code: 'LACTOSE_FREE_MILK',
+    name_ar: 'حليب بقري خالي من اللاكتوز (لايت / قليل الدسم)',
+    name_en: 'Lactose-Free Milk (Low-Fat / Skim)',
+    macro_type: 'PROTEIN',
+    taste_profile: TASTE_PROFILES.SWEET_SHAKE_PROTEIN,
+    protein_per_100g: 3.4,
+    carbs_per_100g: 4.8,
+    fat_per_100g: 0.5,
+    calories_per_100g: 38,
+    default_amount: 200,
+    serving_unit: 'مل (كوب متوسط)',
+    yield_factor_raw_to_cooked: 1.0,
+    allergens: ['DAIRY'],
+    purine_level: 'LOW',
+    is_gluten_free: true,
+    is_legume: false,
+    is_dairy: true,
+    is_low_lactose: true
+  },
 
   // --- GULF & EGYPTIAN MAIN CARBS ---
   KABSA_SPICED_RICE: {
@@ -1511,6 +1531,8 @@ export const FOOD_DATABASE = {
     carbs_per_100g: 42,
     fat_per_100g: 31,
     calories_per_100g: 486,
+    default_amount: 10,
+    serving_unit: 'جرام / ملعقة (10 جم)',
     allergens: [],
     is_gluten_free: true
   },
@@ -1844,6 +1866,7 @@ export const FOOD_CLINICAL_OVERRIDES = Object.freeze({
   LOWFAT_LABAN_ROB: { glycemic_index: 'LOW', fodmap_level: 'HIGH' },
 
   // LOW GLYCEMIC INDEX (GI <= 55) & LOW FODMAP
+  LACTOSE_FREE_MILK: { glycemic_index: 'LOW', fodmap_level: 'LOW' },
   ROLLED_OATS_RAW: { glycemic_index: 'LOW', fodmap_level: 'LOW' },
   COOKED_QUINOA: { glycemic_index: 'LOW', fodmap_level: 'LOW' },
   STRAWBERRIES: { glycemic_index: 'LOW', fodmap_level: 'LOW' },

@@ -31,8 +31,24 @@ export function evaluateWeeklyCheckinAudit({
   previousWeekData = {},
   currentCheckin = {}
 }) {
-  const currentWeight = Number(currentCheckin.current_weight_kg) || 75;
-  const previousWeight = Number(previousWeekData.weight_kg) || currentWeight;
+  const rawCurrentWeight = currentCheckin?.current_weight_kg;
+  if (rawCurrentWeight === undefined || rawCurrentWeight === null || String(rawCurrentWeight).trim() === '') {
+    throw new RangeError("الوزن الحالي مطلوب لإجراء المتابعة الأسبوعية.");
+  }
+  const currentWeight = Number(rawCurrentWeight);
+  if (!Number.isFinite(currentWeight) || currentWeight <= 20 || currentWeight > 300) {
+    throw new RangeError(`قيمة الوزن الحالي غير صالحة (${rawCurrentWeight} كجم). يجب إدخال وزن حقيقي موجب أكبر من 20 كجم وأقل من 300 كجم.`);
+  }
+
+  const rawPrevWeight = previousWeekData?.weight_kg;
+  let previousWeight = currentWeight;
+  if (rawPrevWeight !== undefined && rawPrevWeight !== null && String(rawPrevWeight).trim() !== '') {
+    const parsedPrev = Number(rawPrevWeight);
+    if (!Number.isFinite(parsedPrev) || parsedPrev <= 20 || parsedPrev > 300) {
+      throw new RangeError(`قيمة الوزن السابق غير صالحة (${rawPrevWeight} كجم). يجب أن يكون رقماً موجباً أكبر من 20 كجم.`);
+    }
+    previousWeight = parsedPrev;
+  }
   const weightDelta = Math.round((currentWeight - previousWeight) * 100) / 100;
 
   const currentWaist = Number(currentCheckin.waist_circumference_cm) || 80;
@@ -42,7 +58,15 @@ export function evaluateWeeklyCheckinAudit({
   const adherencePercent = Math.max(0, Math.min(100, Number(currentCheckin.overall_adherence_percent) || 85));
   const consecutivePlateauWeeks = Number(previousWeekData.consecutive_plateau_weeks || 0) + (weightDelta >= 0 && waistDelta >= 0 ? 1 : 0);
 
-  const currentCalories = Number(clientProfile.current_daily_calories) || 1900;
+  const rawCalories = clientProfile?.current_daily_calories;
+  if (rawCalories === undefined || rawCalories === null || String(rawCalories).trim() === '') {
+    throw new TypeError("قيمة السعرات الحالية (current_daily_calories) غير محددة أو مفقودة.");
+  }
+  const currentCalories = Number(rawCalories);
+  if (!Number.isFinite(currentCalories) || currentCalories <= 500 || currentCalories > 10000) {
+    throw new RangeError(`قيمة السعرات الحالية غير صالحة (${rawCalories}). يجب أن تكون رقماً صالحاً وموجباً (بين 500 و 10000 سعرة).`);
+  }
+
   const currentProtein = Number(clientProfile.protein_g) || 160;
   const currentCarbs = Number(clientProfile.carbs_g) || 200;
   const currentFat = Number(clientProfile.fat_g) || 50;
@@ -71,10 +95,12 @@ export function evaluateWeeklyCheckinAudit({
   if (currentCheckin.menstrual_phase === 'LUTEAL' || currentCheckin.menstrual_phase === 'MENSTRUATION' || currentCheckin.is_pms_active) falsePlateauScore++;
   const isFalsePlateau = falsePlateauScore >= 2;
 
-  // 2c. Occupational NEAT Lock
+  // 2c. Occupational NEAT Lock (Baseline or temporary lifestyle drop like vacation)
   const isOccupationalNeatLock = (
-    currentCheckin.lifestyle_variance === 'NORMAL_WORK' &&
-    (clientProfile.occupation_type === 'DESK_OFFICE' || clientProfile.occupation_type === 'STUDENT') &&
+    (
+      (currentCheckin.lifestyle_variance === 'NORMAL_WORK' && (clientProfile.occupation_type === 'DESK_OFFICE' || clientProfile.occupation_type === 'STUDENT')) ||
+      (currentCheckin.lifestyle_variance === 'HOME_VACATION' || currentCheckin.lifestyle_variance === 'TRAVEL_AWAY' || currentCheckin.lifestyle_variance === 'SICK_RECOVERY')
+    ) &&
     Math.abs(weightDelta) < 0.3
   );
 
@@ -118,13 +144,13 @@ export function evaluateWeeklyCheckinAudit({
     calorieAdjustment = 0;
     coachRecommendationAr = 'ثبات زائف على الميزان ناتج عن احتباس السوائل أو الإمساك؛ تم قفل خفض السعرات تماماً لتفادي الإجهاد الأيضي.';
     clinicalReasoningAr = 'عوامل احتباس الماء (الجهاز الهضمي أو التوتر أو الهرمونات) تحجب نزول الدهون الحقيقي؛ السعرات تبقى ثابتة.';
-  } else if (consecutivePlateauWeeks >= 2 && adherencePercent >= 85 && isOccupationalNeatLock) {
-    // Occupational NEAT Lock: Low movement is occupational baseline
+  } else if (consecutivePlateauWeeks >= 1 && adherencePercent >= 85 && isOccupationalNeatLock) {
+    // Occupational / Lifestyle NEAT Lock: Low movement is occupational baseline or temporary drop
     decisionCode = CHECKIN_DECISION_CODES.OCCUPATIONAL_NEAT_LOCK;
     actionType = 'MAINTAIN';
     calorieAdjustment = 0;
-    coachRecommendationAr = 'ثبات الوزن متوافق مع نمط العمل المكتبي الأساسي؛ تثبيت السعرات ومراقبة أسبوع إضافي قبل أي تعديل.';
-    clinicalReasoningAr = 'مستوى النشاط الحركي غير الرياضي NEAT يمثل الأساس المهني للمتدرب وليس تراجعاً سلوكياً.';
+    coachRecommendationAr = 'ثبات الوزن متوافق مع نمط العمل المكتبي أو إجازة مؤقتة؛ تثبيت السعرات ومراقبة أسبوع إضافي قبل أي تعديل.';
+    clinicalReasoningAr = 'مستوى النشاط الحركي غير الرياضي NEAT يمثل الأساس المهني أو ظرفاً مؤقتاً للمتدرب وليس تراجعاً سلوكياً.';
   } else if (consecutivePlateauWeeks >= 2 && adherencePercent >= 85) {
     // Case 3: True Plateau Titration
     decisionCode = CHECKIN_DECISION_CODES.TRUE_PLATEAU_TITRATION;
@@ -226,8 +252,32 @@ export function evaluateWeeklyProgress({
   lifestyleVariance = 'NORMAL_WORK',
   occupationType = null
 }) {
-  const deltaWeight = +(currentWeightKg - previousWeightKg).toFixed(2);
-  const deltaWaist = +(currentWaistCm - previousWaistCm).toFixed(2);
+  if (currentWeightKg === undefined || currentWeightKg === null || String(currentWeightKg).trim() === '') {
+    throw new RangeError("قيمة الوزن الحالي (currentWeightKg) مطلوبة.");
+  }
+  const parsedCurrentWeight = Number(currentWeightKg);
+  if (!Number.isFinite(parsedCurrentWeight) || parsedCurrentWeight <= 20 || parsedCurrentWeight > 300) {
+    throw new RangeError(`قيمة الوزن الحالي غير صالحة (${currentWeightKg} كجم). يجب إدخال وزن حقيقي موجب أكبر من 20 كجم وأقل من 300 كجم.`);
+  }
+
+  if (previousWeightKg === undefined || previousWeightKg === null || String(previousWeightKg).trim() === '') {
+    throw new RangeError("قيمة الوزن السابق (previousWeightKg) مطلوبة.");
+  }
+  const parsedPrevWeight = Number(previousWeightKg);
+  if (!Number.isFinite(parsedPrevWeight) || parsedPrevWeight <= 20 || parsedPrevWeight > 300) {
+    throw new RangeError(`قيمة الوزن السابق غير صالحة (${previousWeightKg} كجم). يجب أن يكون الوزن السابق رقماً موجباً أكبر من 20 كجم.`);
+  }
+
+  if (currentCalories === undefined || currentCalories === null || String(currentCalories).trim() === '') {
+    throw new TypeError("قيمة السعرات الحالية (currentCalories) غير محددة أو مفقودة.");
+  }
+  const parsedCalories = Number(currentCalories);
+  if (!Number.isFinite(parsedCalories) || parsedCalories <= 500 || parsedCalories > 10000) {
+    throw new RangeError(`قيمة السعرات الحالية غير صالحة (${currentCalories}). يجب أن تكون رقماً صالحاً وموجباً (بين 500 و 10000 سعرة).`);
+  }
+
+  const deltaWeight = +(parsedCurrentWeight - parsedPrevWeight).toFixed(2);
+  const deltaWaist = +(Number(currentWaistCm || 80) - Number(previousWaistCm || 80)).toFixed(2);
 
   // 1. Female Safety Firewall: Lock deficit adjustments during fluid-retention phases
   if (isFemale && isMenstrualPhase && goalType === 'FAT_LOSS') {
@@ -235,7 +285,7 @@ export function evaluateWeeklyProgress({
       status: 'MENSTRUAL_RETENTION_LOCK',
       decision: 'MAINTAIN_CALORIES',
       calorie_adjustment: 0,
-      new_calories: currentCalories,
+      new_calories: parsedCalories,
       message_ar: 'تم قفل تعديل السعرات تلقائياً لاحتباس السوائل الطبيعي في هذه الفترة. حافظي على نفس الخطة دون قلق.',
       action_required: false
     };
@@ -247,7 +297,7 @@ export function evaluateWeeklyProgress({
       status: 'ADHERENCE_WARNING',
       decision: 'MAINTAIN_CALORIES',
       calorie_adjustment: 0,
-      new_calories: currentCalories,
+      new_calories: parsedCalories,
       message_ar: 'ثبات الأرقام ناتج عن انخفاض الالتزام هذا الأسبوع (أقل من 85%). نوصي بالالتزام التام دون خفض السعرات لتفادي الإرهاق.',
       action_required: false
     };
@@ -261,7 +311,7 @@ export function evaluateWeeklyProgress({
         status: 'EXCELLENT_PROGRESS',
         decision: 'MAINTAIN_CALORIES',
         calorie_adjustment: 0,
-        new_calories: currentCalories,
+        new_calories: parsedCalories,
         message_ar: 'معدل الحرق ممتاز ونزول الوزن والقياسات يسير بسلاسة. يتم تثبيت السعرات الحالية للحفاظ على الاستدامة.',
         action_required: false
       };
@@ -273,7 +323,7 @@ export function evaluateWeeklyProgress({
         status: 'STEADY_PROGRESS',
         decision: 'MAINTAIN_CALORIES',
         calorie_adjustment: 0,
-        new_calories: currentCalories,
+        new_calories: parsedCalories,
         message_ar: 'تقدم ثابت ومستمر. نستمر على نفس السعرات دون حرق أوراق الخفض مبكراً.',
         action_required: false
       };
@@ -292,7 +342,7 @@ export function evaluateWeeklyProgress({
           status: 'FALSE_PLATEAU_DETECTED',
           decision: 'MAINTAIN_CALORIES',
           calorie_adjustment: 0,
-          new_calories: currentCalories,
+          new_calories: parsedCalories,
           message_ar: 'ثبات زائف على الميزان ناتج عن احتباس السوائل أو اضطراب الهضم. يتم تثبيت السعرات لتفادي الإجهاد الأيضي.',
           action_required: false
         };
@@ -303,7 +353,7 @@ export function evaluateWeeklyProgress({
           status: 'OCCUPATIONAL_NEAT_LOCK',
           decision: 'MAINTAIN_CALORIES',
           calorie_adjustment: 0,
-          new_calories: currentCalories,
+          new_calories: parsedCalories,
           message_ar: 'ثبات الوزن متوافق مع نمط العمل المكتبي الأساسي. يتم تثبيت السعرات دون خفض إضافي.',
           action_required: false
         };
@@ -313,11 +363,15 @@ export function evaluateWeeklyProgress({
     // State C: True Plateau (>= 2 weeks without progress with >= 90% adherence)
     if (weeksOnCurrentCalories >= 2 && adherenceRatePct >= 90 && deltaWeight >= 0 && deltaWaist >= 0) {
       const calorieDrop = -125; // Controlled conservative drop from carbs
+      const calculatedNewCalories = Math.max(1200, parsedCalories + calorieDrop);
+      if (!Number.isFinite(calculatedNewCalories) || Number.isNaN(calculatedNewCalories)) {
+        throw new RangeError("خطأ في حساب السعرات الجديدة: القيمة الناتجة غير صالحة (NaN).");
+      }
       return {
         status: 'CONFIRMED_PLATEAU',
         decision: 'REDUCE_CALORIES',
         calorie_adjustment: calorieDrop,
-        new_calories: Math.max(1200, currentCalories + calorieDrop),
+        new_calories: calculatedNewCalories,
         message_ar: 'تم رصد ثبات حقيقي لمدة أسبوعين متتاليين مع التزام كامل. تم تطبيق خفض تدريجي مقنن بمقدار 125 سعرة لكسر الثبات.',
         action_required: true,
         recommended_cardio_addition_mins: 15
@@ -329,7 +383,7 @@ export function evaluateWeeklyProgress({
       status: 'MONITOR_WEEK_ONE',
       decision: 'MAINTAIN_CALORIES',
       calorie_adjustment: 0,
-      new_calories: currentCalories,
+      new_calories: parsedCalories,
       message_ar: 'ثبات مؤقت للأسبوع الأول قد يعود لتوتر عضلي أو ماء زائد. نثبت السعرات ونراقب الأسبوع القادم بدقة.',
       action_required: false
     };
@@ -340,7 +394,7 @@ export function evaluateWeeklyProgress({
     status: 'MAINTENANCE_LOCKED',
     decision: 'MAINTAIN_CALORIES',
     calorie_adjustment: 0,
-    new_calories: currentCalories,
+    new_calories: parsedCalories,
     message_ar: 'الاستمرار على نفس السعرات المحددة مسبقاً.',
     action_required: false
   };

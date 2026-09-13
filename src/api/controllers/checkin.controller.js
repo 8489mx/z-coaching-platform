@@ -72,6 +72,24 @@ export async function submitCheckin(req, res) {
       return res.status(400).json({ success: false, error: "يجب إدخال وزن حقيقي وصالح (> 20 كجم) لإرسال المتابعة" });
     }
 
+    const targetWeekNumber = Number(week_number) || 1;
+
+    // Prevent duplicate check-in submission for the same trainee and week
+    const existingCheckin = await CheckinSubmission.findOne({
+      where: {
+        user_id: targetUserId,
+        week_number: targetWeekNumber,
+      },
+    });
+
+    if (existingCheckin) {
+      return res.status(409).json({
+        success: false,
+        error: `تم إرسال متابعة الأسبوع (${targetWeekNumber}) مسبقاً، ولا يمكن تسجيل أكثر من متابعة لنفس الأسبوع`,
+        code: "DUPLICATE_CHECKIN_SUBMISSION",
+        existing_checkin_id: existingCheckin.id,
+      });
+    }
 
     // 1. Fetch previous check-in for deltas and consecutive compliance calculation
     const pastCheckins = await CheckinSubmission.findAll({
@@ -133,7 +151,7 @@ export async function submitCheckin(req, res) {
     // 3. Save Checkin Submission
     const checkin = await CheckinSubmission.create({
       user_id: targetUserId,
-      week_number: Number(week_number) || 1,
+      week_number: targetWeekNumber,
       daily_weights_kg: [Number(weight_kg)],
       average_weight_kg: Number(weight_kg),
       weight_change_kg: analysisOutput.weight_change_kg,
@@ -164,11 +182,11 @@ export async function submitCheckin(req, res) {
         if (typeof pUrl === 'string' && pUrl.trim()) {
           const pose = (p.pose || 'FRONT').toUpperCase();
           const clientCode = userObj.client_code || userObj.id || targetUserId;
-          const savedUrl = saveProgressPhotoToDisk(clientCode, pUrl, Number(week_number) || 1, pose);
+          const savedUrl = saveProgressPhotoToDisk(clientCode, pUrl, targetWeekNumber, pose);
           if (savedUrl) {
             const photoRecord = await ProgressPhoto.create({
               user_id: targetUserId,
-              week_number: Number(week_number) || 1,
+              week_number: targetWeekNumber,
               pose,
               photo_url: savedUrl,
               notes: p.notes || null,
@@ -187,6 +205,13 @@ export async function submitCheckin(req, res) {
       analysis: analysisOutput,
     });
   } catch (error) {
+    if (error?.name === "SequelizeUniqueConstraintError" || error?.original?.code === "ER_DUP_ENTRY" || error?.code === "ER_DUP_ENTRY") {
+      return res.status(409).json({
+        success: false,
+        error: "تم إرسال متابعة لنفس الأسبوع مسبقاً، قيد التفرد يمنع تسجيل متابعة مكررة",
+        code: "DUPLICATE_CHECKIN_SUBMISSION",
+      });
+    }
     console.error("Error evaluating check-in:", error);
     return res.status(500).json({ success: false, error: error.message });
   }
