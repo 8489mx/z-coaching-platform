@@ -44,6 +44,8 @@
   "scripts": {
     "test": "node --test test/*.test.js",
     "test:coverage": "node --test --experimental-test-coverage test/*.test.js",
+    "db:sync": "node src/api/migrations/sync-database.js",
+    "db:unify": "node src/api/migrations/unify-users-clients-migration.js",
     "food:excel:template": "node tools/nutrition-food-catalog-excel/create-template.js data-templates/nutrition-food-catalog-v1.xlsx",
     "food:excel:import": "node tools/nutrition-food-catalog-excel/cli.js",
     "food:core:build": "node tools/nutrition-food-catalog-excel/cli.js data/catalogs/core-global-food-batch-v1.xlsx data/catalogs/core-global-food-batch-v1.json",
