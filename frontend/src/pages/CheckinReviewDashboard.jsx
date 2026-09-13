@@ -34,7 +34,9 @@ import {
   Dumbbell,
   Droplets,
   Trophy,
-  ExternalLink
+  ExternalLink,
+  Plane,
+  Calendar
 } from 'lucide-react';
 import AdminLayout from '../components/layout/AdminLayout';
 import { PageHeader } from '@/shared/components/page-header';
@@ -134,6 +136,16 @@ export const INITIAL_CHECKINS = Array.isArray(STRESS_TEST_CLIENTS) ? STRESS_TEST
       struggle_note: 'لا توجد صعوبات تذكر، الطاقة ممتازة خلال اليوم.'
     },
     client_notes: 'الالتزام 100% بالخطة والأوزان في تحسن مستمر.',
+    // Retrospective deep check-in fields
+    lifestyle_variance: 'normal_routine',
+    bowel_regularity: c.client_code === 'CL_FAT_LOSS_STALL' ? 'constipated_3plus' : 'regular_daily',
+    sleep_stress_composite: c.client_code === 'CL_FAT_LOSS_STALL' ? 5 : 2,
+    menstrual_phase: null,
+    // Prospective forward-looking preview fields
+    next_week_travel: c.client_code === 'CL_FAT_LOSS_STALL',
+    next_week_gym_available: c.client_code !== 'CL_FAT_LOSS_STALL',
+    next_week_realistic_days: c.training_days || 4,
+    next_week_notes: c.client_code === 'CL_FAT_LOSS_STALL' ? 'مسافر لحضور مؤتمر عمل 4 أيام وهتمرن بوزن الجسم' : '',
     ai_analysis: {
       recommendation: isFatLoss
         ? 'استجابة أيضية ممتازة ومعدل نزول دهون متزن. يوصى بتثبيت السعرات والماكروز لمواصلة التقدم بنفس المعدل.'
@@ -652,6 +664,14 @@ export default function CheckinReviewDashboard() {
                   struggle_note: ch.coach_notes || 'لا يوجد صعوبات'
                 },
                 client_notes: ch.coach_notes || '',
+                lifestyle_variance: ch.lifestyle_variance || 'normal_routine',
+                bowel_regularity: ch.bowel_regularity || 'regular_daily',
+                sleep_stress_composite: ch.sleep_stress_composite || (ch.biofeedback?.sleep_stress_composite ?? 2),
+                menstrual_phase: ch.menstrual_phase || null,
+                next_week_travel: Boolean(ch.next_week_travel),
+                next_week_gym_available: ch.next_week_gym_available !== undefined ? Boolean(ch.next_week_gym_available) : true,
+                next_week_realistic_days: ch.next_week_realistic_days || null,
+                next_week_notes: ch.next_week_notes || '',
                 ai_analysis: {
                   recommendation: ch.analysis_output?.coach_action || 'الاستمرار بالخطة الحالية مع مراقبة مؤشرات الأسبوع القادم.',
                   status_badge: ch.analysis_status || 'ON_TRACK',
@@ -1514,7 +1534,60 @@ export default function CheckinReviewDashboard() {
                         <span>الدورة:</span> {safeBio.cycle_phase}
                       </div>
                     )}
+                    {activeCheckin?.bowel_regularity && (
+                      <div>
+                        <span style={{ color: '#64748B' }}>حركة الأمعاء:</span> <strong style={{ color: activeCheckin.bowel_regularity === 'constipated_3plus' ? '#DC2626' : '#0F172A' }}>
+                          {activeCheckin.bowel_regularity === 'constipated_3plus' ? 'إمساك (3 أيام+)' : (activeCheckin.bowel_regularity === 'diarrhea_upset' ? 'عسر هضم / إسهال' : 'طبيعي')}
+                        </strong>
+                      </div>
+                    )}
+                    {activeCheckin?.sleep_stress_composite !== undefined && (
+                      <div>
+                        <span style={{ color: '#64748B' }}>تراكم السهر:</span> <strong style={{ color: Number(activeCheckin.sleep_stress_composite) >= 4 ? '#D97706' : '#0F172A' }}>
+                          {activeCheckin.sleep_stress_composite}/5
+                        </strong>
+                      </div>
+                    )}
+                    {activeCheckin?.lifestyle_variance && (
+                      <div>
+                        <span style={{ color: '#64748B' }}>نمط الدوام:</span> <strong style={{ color: '#0F172A' }}>
+                          {activeCheckin.lifestyle_variance === 'active_spurt' ? 'حركة مضاعفة' : (activeCheckin.lifestyle_variance === 'lazy_vacation' ? 'خمول / إجازة' : 'طبيعي')}
+                        </strong>
+                      </div>
+                    )}
                   </div>
+
+                  {/* False Plateau Triad Alert Banner */}
+                  {(() => {
+                    const isConstipated = activeCheckin?.bowel_regularity === 'constipated_3plus';
+                    const isHighSleepStress = Number(activeCheckin?.sleep_stress_composite || 0) >= 4;
+                    const isHighAdherence = (safeMetrics.adherence || 100) >= 85;
+                    const isWeightStalled = Math.abs(safeMetrics.weight_change || 0) <= 0.2;
+                    const isFalsePlateau = (isConstipated || isHighSleepStress) && (isWeightStalled || activeCheckin?.analysis_output?.lock_reason === 'FALSE_PLATEAU_DETECTED' || activeCheckin?.ai_analysis?.status_badge?.includes('FALSE_PLATEAU') || activeCheckin?.ai_analysis?.recommendation?.includes('ثبات زائف'));
+
+                    if (!isFalsePlateau) return null;
+
+                    return (
+                      <div style={{
+                        marginTop: '10px',
+                        background: 'linear-gradient(135deg, #FFFBEB 0%, #FEF3C7 100%)',
+                        border: '1.5px solid #F59E0B',
+                        borderRadius: '10px',
+                        padding: '12px 14px',
+                        display: 'flex',
+                        alignItems: 'flex-start',
+                        gap: '10px'
+                      }}>
+                        <AlertTriangle size={18} color="#D97706" style={{ marginTop: '2px', flexShrink: 0 }} />
+                        <div style={{ fontSize: '11.5px', color: '#92400E', lineHeight: 1.5 }}>
+                          <strong style={{ color: '#78350F', display: 'block', fontSize: '12.5px', marginBottom: '2px' }}>
+                            تنبيه سريري: رصد ثالوث الثبات الزائف (False Plateau Triad Detected)
+                          </strong>
+                          ثبات الوزن هنا ظاهري ومؤقت ناتج عن احتباس السوائل وتراكم الفضلات بسبب {isConstipated ? 'الإمساك لأكثر من 3 أيام' : 'إجهاد وقلة النوم'} مع التزام عالي بالخطة ({safeMetrics.adherence}%). يوصى بتثبيت السعرات والماكروز وعدم تقليل السعرات لتجنب إدخال المشترك في عجز حاد غير حقيقي.
+                        </div>
+                      </div>
+                    );
+                  })()}
                 </FormSection>
               );
             })()}
@@ -1649,6 +1722,79 @@ export default function CheckinReviewDashboard() {
                   <span>فتح استوديو التحاليل</span>
                 </button>
               </div>
+            </FormSection>
+
+            {/* 4.5 Prospective Forward-Looking Next Week Preview */}
+            <FormSection
+              title="استشراف وتخطيط الأسبوع القادم"
+              description="الرؤية الاستباقية لظروف السفر والجيم وتوافر الأيام لضبط الخطة بدقة."
+            >
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '10px', marginTop: '6px' }}>
+                {/* 1. Travel Status */}
+                <div style={{
+                  background: activeCheckin?.next_week_travel ? '#FEF3C7' : '#F8FAFC',
+                  border: activeCheckin?.next_week_travel ? '1px solid #FCD34D' : '1px solid #E2E8F0',
+                  borderRadius: '10px',
+                  padding: '10px 12px'
+                }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '4px' }}>
+                    <Plane size={14} color={activeCheckin?.next_week_travel ? '#B45309' : '#64748B'} />
+                    <span style={{ fontSize: '11px', color: '#64748B', fontWeight: 700 }}>حالة السفر والتنقل:</span>
+                  </div>
+                  <strong style={{ fontSize: '12.5px', color: activeCheckin?.next_week_travel ? '#B45309' : '#0F172A' }}>
+                    {activeCheckin?.next_week_travel ? 'مسافر / خارج المدينة' : 'مستقر محلياً (لا يوجد سفر)'}
+                  </strong>
+                </div>
+
+                {/* 2. Gym Availability */}
+                <div style={{
+                  background: activeCheckin?.next_week_gym_available === false ? '#FEF2F2' : '#F8FAFC',
+                  border: activeCheckin?.next_week_gym_available === false ? '1px solid #FECACA' : '1px solid #E2E8F0',
+                  borderRadius: '10px',
+                  padding: '10px 12px'
+                }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '4px' }}>
+                    <Dumbbell size={14} color={activeCheckin?.next_week_gym_available === false ? '#DC2626' : '#16A34A'} />
+                    <span style={{ fontSize: '11px', color: '#64748B', fontWeight: 700 }}>توفر صالة التدريب (الجيم):</span>
+                  </div>
+                  <strong style={{ fontSize: '12.5px', color: activeCheckin?.next_week_gym_available === false ? '#DC2626' : '#16A34A' }}>
+                    {activeCheckin?.next_week_gym_available === false ? 'الجيم غير متوفر (يحتاج خطة سفر/منزل)' : 'الجيم متوفر بانتظام'}
+                  </strong>
+                </div>
+
+                {/* 3. Realistic Training Days */}
+                <div style={{
+                  background: '#F8FAFC',
+                  border: '1px solid #E2E8F0',
+                  borderRadius: '10px',
+                  padding: '10px 12px'
+                }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '4px' }}>
+                    <Calendar size={14} color="#0284C7" />
+                    <span style={{ fontSize: '11px', color: '#64748B', fontWeight: 700 }}>الأيام الواقعية للتمرين:</span>
+                  </div>
+                  <strong style={{ fontSize: '12.5px', color: '#0F172A' }}>
+                    {activeCheckin?.next_week_realistic_days ? `${activeCheckin.next_week_realistic_days} أيام بالأسبوع` : 'حسب الخطة الأساسية'}
+                  </strong>
+                </div>
+              </div>
+
+              {activeCheckin?.next_week_notes && (
+                <div style={{
+                  marginTop: '10px',
+                  background: '#F8FAFC',
+                  border: '1px solid #E2E8F0',
+                  borderRadius: '10px',
+                  padding: '10px 12px'
+                }}>
+                  <span style={{ fontSize: '11px', color: '#64748B', fontWeight: 700, display: 'block', marginBottom: '2px' }}>
+                    ملاحظات وظروف الأسبوع المقبل من المتدرب:
+                  </span>
+                  <p style={{ margin: 0, fontSize: '12px', color: '#0F172A', lineHeight: 1.5 }}>
+                    "{activeCheckin.next_week_notes}"
+                  </p>
+                </div>
+              )}
             </FormSection>
 
             {/* 5. AI Engine Recommendation Card */}

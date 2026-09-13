@@ -22,8 +22,10 @@ const DEFAULT_MASTER_INTAKE = {
   },
   primary_goal: 'recomposition',
   neat_level: 'moderate',
+  occupation_type: 'DESK_OFFICE',
 
   // Screen 2: Clinical & Injury Matrix
+  dangerous_symptoms: ['NONE'],
   medical_conditions: {
     has_conditions: false,
     selected: [],
@@ -60,6 +62,8 @@ const DEFAULT_MASTER_INTAKE = {
   strict_allergies: [],
   other_allergies: '',
   cuisine_preference: 'egyptian_traditional',
+  food_budget: 'MEDIUM',
+  food_prep_ability: 'FULL_KITCHEN',
   meal_structure: {
     meals_count: '3_meals_snack',
     intermittent_fasting: 'none'
@@ -83,6 +87,7 @@ const DEFAULT_MASTER_INTAKE = {
     sports_name: '',
     hours_per_week: ''
   },
+  recent_training: 'ACTIVE',
   focus_muscles: [],
   media_uploads: {
     front_url: '',
@@ -865,6 +870,50 @@ export default function FullIntakeForm() {
                 </div>
               </div>
 
+              {/* Occupation Type (نوع وظيفتك أو عملك الأساسي لضبط النشاط المهني) */}
+              <div>
+                <label style={{ display: 'block', fontSize: '12px', fontWeight: 800, color: '#0F172A', marginBottom: '8px' }}>
+                  طبيعة وظيفتك أو عملك الأساسي (تحديد خط الأساس لنشاط NEAT) *
+                </label>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '10px' }}>
+                  {[
+                    { id: 'DESK_OFFICE', title: 'مكتبي ثابت', desc: 'جلوس مستمر أمام الكمبيوتر أو المكتب' },
+                    { id: 'FIELD_MOBILE', title: 'ميداني متحرك', desc: 'حركة مستمرة وتنقلات وإشراف' },
+                    { id: 'MANUAL_LABOR', title: 'عمل بدني شاق', desc: 'جهد عضلي ورفع أحمال طوال اليوم' },
+                    { id: 'STUDENT', title: 'طالب جامعي / دراسي', desc: 'حضور محاضرات ودراسة مكتبية' },
+                    { id: 'UNEMPLOYED', title: 'لا أعمل حالياً / عمل منزلي', desc: 'نمط حياة منزلي مرن' }
+                  ].map((occ) => {
+                    const isSelected = (formData.occupation_type || 'DESK_OFFICE') === occ.id;
+                    return (
+                      <div
+                        key={occ.id}
+                        onClick={() => setFormData(p => ({ ...p, occupation_type: occ.id }))}
+                        style={{
+                          padding: '12px',
+                          borderRadius: '8px',
+                          border: isSelected ? '2px solid #0F172A' : '1px solid #E2E8F0',
+                          background: isSelected ? '#F1F5F9' : '#FFFFFF',
+                          cursor: 'pointer',
+                          textAlign: 'center',
+                          transition: 'all 0.15s ease',
+                          display: 'flex',
+                          flexDirection: 'column',
+                          gap: '3px',
+                          boxShadow: isSelected ? '0 2px 6px rgba(15, 23, 42, 0.08)' : 'none'
+                        }}
+                      >
+                        <strong style={{ fontSize: '12px', color: '#0F172A', fontWeight: 800 }}>
+                          {occ.title}
+                        </strong>
+                        <span style={{ fontSize: '10.5px', color: '#64748B' }}>
+                          {occ.desc}
+                        </span>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+
             </div>
           )}
 
@@ -881,6 +930,61 @@ export default function FullIntakeForm() {
                 <p style={{ fontSize: '12px', color: '#64748B', margin: 0 }}>
                   لتفعيل محددات الأمان السريري واستبعاد التمارين أو الأغذية الممنوعة تلقائياً.
                 </p>
+              </div>
+
+              {/* Dangerous Cardiovascular / Exertional Symptoms */}
+              <div style={{ background: '#FEF2F2', border: '1px solid #FECACA', borderRadius: '10px', padding: '14px 16px' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '4px' }}>
+                  <ShieldAlert size={16} color="#DC2626" />
+                  <strong style={{ fontSize: '12.5px', color: '#991B1B', fontWeight: 800 }}>
+                    فحص الأمان القلبي والوعائي أثناء المجهود البدني:
+                  </strong>
+                </div>
+                <p style={{ fontSize: '11px', color: '#7F1D1D', margin: '0 0 10px 0', lineHeight: 1.4 }}>
+                  هل تعاني من أي من هذه الأعراض أثناء ممارسة الرياضة أو بذل مجهود؟ (اختر ما ينطبق)
+                </p>
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
+                  {[
+                    { key: 'NONE', label: 'لا توجد أي أعراض مقلقة (طبيعي)' },
+                    { key: 'CHEST_PAIN', label: 'ألم أو ضغط في الصدر' },
+                    { key: 'FAINTING', label: 'دوخة شديدة أو إغماء' },
+                    { key: 'SHORTNESS_OF_BREATH', label: 'ضيق تنفس غير طبيعي' },
+                    { key: 'PALPITATIONS', label: 'خفقان قلب غير منتظم' }
+                  ].map((symptom) => {
+                    const currentList = Array.isArray(formData.dangerous_symptoms) ? formData.dangerous_symptoms : ['NONE'];
+                    const isChecked = currentList.includes(symptom.key);
+                    return (
+                      <button
+                        key={symptom.key}
+                        type="button"
+                        onClick={() => {
+                          if (symptom.key === 'NONE') {
+                            setFormData(p => ({ ...p, dangerous_symptoms: ['NONE'] }));
+                          } else {
+                            const withoutNone = currentList.filter(k => k !== 'NONE');
+                            const next = withoutNone.includes(symptom.key)
+                              ? withoutNone.filter(k => k !== symptom.key)
+                              : [...withoutNone, symptom.key];
+                            setFormData(p => ({ ...p, dangerous_symptoms: next.length === 0 ? ['NONE'] : next }));
+                          }
+                        }}
+                        style={{
+                          padding: '7px 14px',
+                          borderRadius: '20px',
+                          fontSize: '11.5px',
+                          fontWeight: 700,
+                          cursor: 'pointer',
+                          border: isChecked ? '1px solid #DC2626' : '1px solid #FCA5A5',
+                          background: isChecked ? '#DC2626' : '#FFFFFF',
+                          color: isChecked ? '#FFFFFF' : '#7F1D1D',
+                          transition: 'all 0.15s ease'
+                        }}
+                      >
+                        {symptom.label}
+                      </button>
+                    );
+                  })}
+                </div>
               </div>
 
               {/* Medical Conditions Multi-Select */}
@@ -1334,6 +1438,39 @@ export default function FullIntakeForm() {
                 </div>
               </div>
 
+              {/* Food Budget & Kitchen Prep Logistics */}
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '12px' }}>
+                <div>
+                  <label style={{ display: 'block', fontSize: '12px', fontWeight: 800, color: '#0F172A', marginBottom: '6px' }}>
+                    الميزانية الأسبوعية لتسوق الأكل الصحي *
+                  </label>
+                  <select 
+                    value={formData.food_budget || 'MEDIUM'}
+                    onChange={(e) => setFormData(p => ({ ...p, food_budget: e.target.value }))}
+                    style={{ width: '100%', height: '40px', borderRadius: '6px', border: '1px solid #CBD5E1', padding: '0 10px', fontSize: '12.5px', background: '#FFFFFF' }}
+                  >
+                    <option value="LOW">اقتصادية وموفرة (بيض، تونة، جبن قريش، بقوليات، دجاج محلي)</option>
+                    <option value="MEDIUM">متوسطة ومتوازنة (لحوم، دواجن، أسماك، أرز وشوفان)</option>
+                    <option value="HIGH">مرتفعة ومفتوحة (ستيك، سلمون، مأكولات بحرية، مكملات وأجبان مستوردة)</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label style={{ display: 'block', fontSize: '12px', fontWeight: 800, color: '#0F172A', marginBottom: '6px' }}>
+                    قدرتك على تحضير وتجهيز الوجبات *
+                  </label>
+                  <select 
+                    value={formData.food_prep_ability || 'FULL_KITCHEN'}
+                    onChange={(e) => setFormData(p => ({ ...p, food_prep_ability: e.target.value }))}
+                    style={{ width: '100%', height: '40px', borderRadius: '6px', border: '1px solid #CBD5E1', padding: '0 10px', fontSize: '12.5px', background: '#FFFFFF' }}
+                  >
+                    <option value="FULL_KITCHEN">مطبخ متكامل (أطبخ وأخزن وجباتي يومياً أو أسبوعياً)</option>
+                    <option value="REHEAT_ONLY">تسخين فقط (وجبات جاهزة/مجمدة تحتاج تسخين سريع)</option>
+                    <option value="NO_KITCHEN">بدون مطبخ (اعتماد كامل على مطاعم صحية وتجهيز خارجي)</option>
+                  </select>
+                </div>
+              </div>
+
               {/* Seasonal & Religious Dietary Fasting Preference */}
               <div style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', borderRadius: '8px', padding: '14px', marginTop: '4px' }}>
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px', flexWrap: 'wrap', gap: '6px' }}>
@@ -1745,8 +1882,8 @@ export default function FullIntakeForm() {
                 </div>
               </div>
 
-              {/* Training Days & Level */}
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '12px' }}>
+              {/* Training Days, Level & Recent Background */}
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '12px' }}>
                 <div>
                   <label style={{ display: 'block', fontSize: '12px', fontWeight: 800, color: '#0F172A', marginBottom: '6px' }}>
                     أيام التمرين المتاحة أسبوعياً
@@ -1781,11 +1918,27 @@ export default function FullIntakeForm() {
                   <select 
                     value={trainingLogistics.experience_level || 'intermediate'}
                     onChange={(e) => updateNested('training_logistics', 'experience_level', e.target.value)}
-                    style={{ width: '100%', height: '38px', borderRadius: '6px', border: '1px solid #CBD5E1', padding: '0 10px', fontSize: '12px' }}
+                    style={{ width: '100%', height: '38px', borderRadius: '6px', border: '1px solid #CBD5E1', padding: '0 10px', fontSize: '12px', background: '#FFFFFF' }}
                   >
                     <option value="beginner">مبتدئ (أقل من سنة تمرين منتظم)</option>
                     <option value="intermediate">متوسط (1 إلى 3 سنوات تمرين منتظم)</option>
                     <option value="advanced">متقدم (أكثر من 3 سنوات مع إتقان التكنيك)</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label style={{ display: 'block', fontSize: '12px', fontWeight: 800, color: '#0F172A', marginBottom: '6px' }}>
+                    آخر عهد لك بالتمرين المنتظم *
+                  </label>
+                  <select 
+                    value={formData.recent_training || 'ACTIVE'}
+                    onChange={(e) => setFormData(p => ({ ...p, recent_training: e.target.value }))}
+                    style={{ width: '100%', height: '38px', borderRadius: '6px', border: '1px solid #CBD5E1', padding: '0 10px', fontSize: '12px', background: '#FFFFFF' }}
+                  >
+                    <option value="ACTIVE">أتمرن حالياً بانتظام (جاهز لحمل تدريبي مباشر)</option>
+                    <option value="INCONSISTENT">متقطع في آخر 6 شهور (حاجة لضبط الالتزام)</option>
+                    <option value="NONE_LAST_4_WEEKS">منقطع منذ شهر إلى 3 شهور (تدرج في الأوزان)</option>
+                    <option value="RETURNING_AFTER_LONG_BREAK">عودة بعد انقطاع طويل (تأسيس تدريجي تفادياً للـ DOMS)</option>
                   </select>
                 </div>
               </div>

@@ -56,6 +56,8 @@ export function useClientInteractiveData() {
       name: storedName,
       code: storedCode.startsWith('#') ? storedCode : `#${storedCode}`,
       package: 'الخطة المخصصة',
+      enable_rest_timer: false,
+      enable_weight_logging: false,
       streak: 1,
       clinicalProfile: {
         is_g6pd: false,
@@ -313,6 +315,8 @@ export function useClientInteractiveData() {
               name: data.user.full_name || prev.name,
               package: data.user.subscription_package || prev.package,
               tier: data.user.subscription_package || prev.tier,
+              enable_rest_timer: Boolean(data.user.enable_rest_timer ?? prev.enable_rest_timer),
+              enable_weight_logging: Boolean(data.user.enable_weight_logging ?? prev.enable_weight_logging),
               fastingProfile: extractedFasting,
               clinicalProfile: {
                 ...prev.clinicalProfile,
