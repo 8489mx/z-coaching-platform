@@ -7,6 +7,7 @@ import {
   EquipmentLoadCapacity,
   MeasurementQuality,
   MenstrualStatus,
+  OccupationType,
   PregnancyStatus,
   PrimaryGoal,
   RecentTraining,
@@ -43,6 +44,7 @@ export const COMPLETE_INTAKE = Object.freeze({
   },
   lifestyle: {
     dailyActivity: ActivityLevel.MODERATE,
+    occupationType: OccupationType.DESK_OFFICE,
     workSchedule: {
       type: WorkScheduleType.FIXED,
       physicallyDemandingDays: [],
@@ -52,6 +54,7 @@ export const COMPLETE_INTAKE = Object.freeze({
       quality: SleepQuality.GOOD,
     },
     stressLevel: StressLevel.LOW,
+    occupationType: OccupationType.DESK_OFFICE,
   },
   medical: {
     conditions: [],

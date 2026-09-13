@@ -180,3 +180,58 @@ export const deleteClient = async (req, res) => {
     return res.status(500).json({ error: "Internal server error" });
   }
 };
+
+export const updateClientFeatureFlags = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { enable_rest_timer, enable_weight_logging } = req.body;
+
+    let client = await User.findOne({ where: { id, role: 'CLIENT' } });
+    if (!client && !isNaN(id)) {
+      client = await User.findOne({ where: { id: parseInt(id, 10), role: 'CLIENT' } });
+    }
+    if (!client) {
+      const cleanCode = String(id).replace(/^#+/, '').replace(/^client[-_]?/i, '').trim();
+      client = await User.findOne({ where: { client_code: cleanCode, role: 'CLIENT' } });
+    }
+
+    if (!client) {
+      return res.status(404).json({ success: false, error: "المشترك غير موجود" });
+    }
+
+    const updates = {};
+    if (typeof enable_rest_timer === 'boolean') {
+      updates.enable_rest_timer = enable_rest_timer;
+    }
+    if (typeof enable_weight_logging === 'boolean') {
+      updates.enable_weight_logging = enable_weight_logging;
+    }
+
+    await client.update(updates);
+
+    recordAuditEvent({
+      event: 'CLIENT_FEATURE_FLAGS_UPDATED',
+      req,
+      status: 'SUCCESS',
+      details: {
+        clientId: client.id,
+        clientCode: client.client_code,
+        flags: updates
+      }
+    });
+
+    return res.status(200).json({
+      success: true,
+      message: "تم تحديث إعدادات الميزات للمشترك بنجاح",
+      client: {
+        id: client.id,
+        client_code: client.client_code,
+        enable_rest_timer: client.enable_rest_timer,
+        enable_weight_logging: client.enable_weight_logging
+      }
+    });
+  } catch (err) {
+    console.error("updateClientFeatureFlags error:", err);
+    return res.status(500).json({ success: false, error: "Internal server error" });
+  }
+};

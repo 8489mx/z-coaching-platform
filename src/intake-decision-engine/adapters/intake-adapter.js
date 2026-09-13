@@ -58,11 +58,18 @@ export function adaptIntakePayloadToCanonicalEngine(raw) {
       less_6: 5.5,
       '6_7': 6.5,
       '7_8': 7.5,
-      more_8: 8.5
+      more_8: 8.5,
+      // Deep intake form v2 pill-select values
+      LESS_5: 4.5,
+      HOURS_5_6: 5.5,
+      HOURS_6_7: 6.5,
+      HOURS_7_8: 7.5,
+      MORE_8: 8.5
     };
     const avgSleep = sleepHoursMap[intake.sleep_schedule?.average_hours] || 7.5;
     intake.lifestyle = {
-      dailyActivity: neatMap[intake.neat_level] || 'MODERATE',
+      dailyActivity: neatMap[intake.neat_level] || intake.daily_activity || 'MODERATE',
+      occupationType: intake.occupation_type || undefined,
       sleep: {
         averageHours: avgSleep,
         quality: intake.sleep_schedule?.pattern === 'regular_night' ? 'GOOD' : 'AVERAGE'
@@ -98,7 +105,8 @@ export function adaptIntakePayloadToCanonicalEngine(raw) {
     }
     intake.medical = {
       conditions: conds,
-      pregnancyStatus: intake.medical_conditions?.female_cases?.is_lactating ? 'BREASTFEEDING' : (intake.medical_conditions?.female_cases?.is_postpartum ? 'POSTPARTUM_LESS_THAN_12_MONTHS' : 'NOT_PREGNANT'),
+      pregnancyStatus: intake.female_pregnancy || (intake.medical_conditions?.female_cases?.is_lactating ? 'BREASTFEEDING' : (intake.medical_conditions?.female_cases?.is_postpartum ? 'POSTPARTUM_LESS_THAN_12_MONTHS' : 'NOT_PREGNANT')),
+      menstrualStatus: intake.female_menstrual || undefined,
       medications: intake.current_meds_supplements_list || []
     };
   }
@@ -110,7 +118,8 @@ export function adaptIntakePayloadToCanonicalEngine(raw) {
       minimal_equipment: 'HOME',
       calisthenics_bands: 'HOME'
     };
-    const injAreas = Array.isArray(intake.injuries_map?.selected_areas) ? intake.injuries_map.selected_areas : [];
+    const injAreas = Array.isArray(intake.injuries_map?.selected_areas) ? intake.injuries_map.selected_areas
+      : (Array.isArray(intake.injuries) ? intake.injuries : []);
     const trainingInjuries = [];
     const AREA_MAP = {
       spine_back: 'LOWER_BACK',
@@ -119,10 +128,13 @@ export function adaptIntakePayloadToCanonicalEngine(raw) {
       core: 'LOWER_BACK',
       other_joints: 'ELBOW_WRIST'
     };
+    // Deep intake form v2: injury_severity maps to painLevel
+    const severityPainMap = { MILD: 3, MODERATE: 5, SEVERE: 8 };
+    const injPainLevel = severityPainMap[intake.injury_severity] || 4;
     injAreas.forEach(a => {
-      if (a && a !== 'none') {
+      if (a && a !== 'none' && a !== 'NONE') {
         const canonicalArea = AREA_MAP[a] || String(a).toUpperCase();
-        trainingInjuries.push({ area: canonicalArea, painLevel: 4, movementImpact: 'NONE' });
+        trainingInjuries.push({ area: canonicalArea, painLevel: injPainLevel, movementImpact: injPainLevel >= 8 ? 'PREVENTS' : (injPainLevel >= 5 ? 'LIMITS' : 'NONE') });
       }
     });
 
@@ -133,11 +145,12 @@ export function adaptIntakePayloadToCanonicalEngine(raw) {
       experience: String(intake.training_logistics?.experience_level || 'intermediate').toUpperCase(),
       selectedInjuries: trainingInjuries.map(i => i.area),
       injuries: trainingInjuries,
-      targetFocusMuscles: Array.isArray(intake.focus_muscles) ? intake.focus_muscles.map(m => m.toUpperCase()) : []
+      targetFocusMuscles: Array.isArray(intake.focus_muscles) ? intake.focus_muscles.map(m => m.toUpperCase()) : [],
+      recentTraining: intake.recent_training || undefined
     };
   }
 
-  if (!intake.nutrition && (intake.strict_allergies || intake.meal_structure || intake.disliked_foods)) {
+  if (!intake.nutrition && (intake.strict_allergies || intake.meal_structure || intake.disliked_foods || intake.digestive_issues || intake.food_budget || intake.food_prep_ability || intake.allergies_and_dislikes || intake.preferred_meal_count)) {
     const mealCountMap = {
       '2_meals': 2,
       '3_meals': 3,
@@ -145,18 +158,40 @@ export function adaptIntakePayloadToCanonicalEngine(raw) {
       '4_meals': 4,
       '5_meals': 5
     };
-    const allergens = (intake.strict_allergies || []).map(a => ({ substance: String(a).toUpperCase(), medicallyConfirmed: true }));
+    // Deep intake form v2: allergies_and_dislikes is multi-pill-select array
+    const rawAllergyDislikes = Array.isArray(intake.allergies_and_dislikes)
+      ? intake.allergies_and_dislikes.filter(v => v !== 'NONE')
+      : [];
+    const allergens = (intake.strict_allergies || rawAllergyDislikes).map(a => ({ substance: String(a).toUpperCase(), medicallyConfirmed: true }));
     intake.nutrition = {
-      preferredMealCount: mealCountMap[intake.meal_structure?.meals_count] || 3,
+      preferredMealCount: Number(intake.preferred_meal_count) || mealCountMap[intake.meal_structure?.meals_count] || 3,
       allergies: allergens,
-      excludedFoodsList: (intake.strict_allergies || []).map(a => String(a).toUpperCase()),
-      dislikedFoods: Array.isArray(intake.disliked_foods) ? intake.disliked_foods : []
+      excludedFoodsList: (intake.strict_allergies || rawAllergyDislikes).map(a => String(a).toUpperCase()),
+      dislikedFoods: Array.isArray(intake.disliked_foods) ? intake.disliked_foods : rawAllergyDislikes,
+      // Deep intake form v2: structured digestive, budget, and food prep fields
+      digestiveIssues: (intake.digestive_issues && intake.digestive_issues !== 'NONE')
+        ? [{ name: intake.digestive_issues === 'IBS' ? 'IBS' : (intake.digestive_issues === 'GERD' ? 'ACID_REFLUX' : 'BLOATING'), severity: 'MODERATE' }]
+        : [],
+      budget: intake.food_budget || undefined,
+      foodStorageAvailable: intake.food_prep_ability ? (intake.food_prep_ability === 'FULL_KITCHEN' || intake.food_prep_ability === 'REHEAT_ONLY') : undefined,
+      foodReheatingAvailable: intake.food_prep_ability ? (intake.food_prep_ability !== 'NO_KITCHEN') : undefined
     };
   }
 
-  if (!intake.cardio && intake.training_logistics) {
+  if (!intake.cardio && (intake.training_logistics || intake.additional_sports)) {
     const sports = [];
-    if (intake.training_logistics?.has_other_sports && intake.training_logistics?.sports_name && intake.training_logistics.sports_name !== 'none') {
+    // Deep intake form v2: additional_sports comes as a direct code
+    if (intake.additional_sports && intake.additional_sports !== 'NONE' && intake.additional_sports !== 'none') {
+      const sportCode = intake.additional_sports === 'OTHER' ? null : intake.additional_sports.toUpperCase();
+      sports.push({
+        sportCode: sportCode,
+        otherSportText: sportCode ? null : 'Other sport',
+        days: ["WEDNESDAY"],
+        minutesPerSession: 60,
+        intensity: "MODERATE",
+        participationLevel: "RECREATIONAL"
+      });
+    } else if (intake.training_logistics?.has_other_sports && intake.training_logistics?.sports_name && intake.training_logistics.sports_name !== 'none') {
       sports.push({
         sportCode: intake.training_logistics.sports_name.toUpperCase(),
         days: ["WEDNESDAY"],
@@ -269,13 +304,15 @@ export function adaptIntakePayloadToCanonicalEngine(raw) {
       averageHours: Number(lifestyle.sleep?.averageHours) || 7,
       quality: ["POOR", "AVERAGE", "GOOD"].includes(lifestyle.sleep?.quality) ? lifestyle.sleep.quality : "GOOD"
     },
-    stressLevel: ["LOW", "MODERATE", "HIGH", "SEVERE"].includes(lifestyle.stressLevel) ? lifestyle.stressLevel : "MODERATE"
+    stressLevel: ["LOW", "MODERATE", "HIGH", "SEVERE"].includes(lifestyle.stressLevel) ? lifestyle.stressLevel : "MODERATE",
+    occupationType: ["DESK_OFFICE", "FIELD_MOBILE", "MANUAL_LABOR", "STUDENT", "UNEMPLOYED"].includes(lifestyle.occupationType) ? lifestyle.occupationType : undefined
   };
 
 
   // 5. Medical
   const medical = intake.medical || {};
-  const dangerousList = Array.isArray(medical.dangerousSymptomsList) ? medical.dangerousSymptomsList : [];
+  const dangerousList = Array.isArray(medical.dangerousSymptomsList) ? medical.dangerousSymptomsList
+    : (Array.isArray(medical.dangerous_symptoms) ? medical.dangerous_symptoms : []);
   const dangerousSymptoms = {
     chestPainOrPressure: (dangerousList.includes("CHEST_PAIN") || medical.dangerousSymptoms?.chestPainOrPressure === "YES") ? "YES" : "NO",
     fainting: (dangerousList.includes("FAINTING") || medical.dangerousSymptoms?.fainting === "YES") ? "YES" : "NO",

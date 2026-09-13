@@ -106,6 +106,16 @@ const User = sequelize.define("User", {
     type: DataTypes.TEXT,
     allowNull: true,
   },
+  enable_rest_timer: {
+    type: DataTypes.BOOLEAN,
+    defaultValue: false,
+    allowNull: false,
+  },
+  enable_weight_logging: {
+    type: DataTypes.BOOLEAN,
+    defaultValue: false,
+    allowNull: false,
+  },
 }, {
   tableName: "users",
   timestamps: true,

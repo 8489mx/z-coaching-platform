@@ -328,4 +328,13 @@ export const MobilityStrategy = Object.freeze({
   NONE: "NONE",
 });
 
+export const OccupationType = Object.freeze({
+  DESK_OFFICE: "DESK_OFFICE",
+  FIELD_MOBILE: "FIELD_MOBILE",
+  MANUAL_LABOR: "MANUAL_LABOR",
+  STUDENT: "STUDENT",
+  UNEMPLOYED: "UNEMPLOYED",
+  UNKNOWN: "UNKNOWN",
+});
+
 export const enumValues = (runtimeEnum) => Object.values(runtimeEnum);

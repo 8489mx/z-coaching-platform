@@ -11,6 +11,7 @@ import {
   MenstrualStatus,
   Movement,
   MovementImpact,
+  OccupationType,
   PregnancyStatus,
   PrimaryGoal,
   RecentTraining,
@@ -256,7 +257,7 @@ function validateBody(input, issues) {
 
 function validateLifestyle(input, issues) {
   const lifestyle = requiredObject(input.lifestyle, "lifestyle", issues);
-  rejectUnknownKeys(lifestyle, ["dailyActivity", "workSchedule", "sleep", "stressLevel"], "lifestyle", issues);
+  rejectUnknownKeys(lifestyle, ["dailyActivity", "occupationType", "workSchedule", "sleep", "stressLevel"], "lifestyle", issues);
   enumValue(lifestyle.dailyActivity, ActivityLevel, "lifestyle.dailyActivity", issues);
   const work = requiredObject(lifestyle.workSchedule, "lifestyle.workSchedule", issues);
   rejectUnknownKeys(work, ["type", "physicallyDemandingDays"], "lifestyle.workSchedule", issues);
@@ -267,6 +268,11 @@ function validateLifestyle(input, issues) {
   numberInRange(sleep.averageHours, "lifestyle.sleep.averageHours", issues, 0, 24);
   enumValue(sleep.quality, SleepQuality, "lifestyle.sleep.quality", issues);
   enumValue(lifestyle.stressLevel, StressLevel, "lifestyle.stressLevel", issues);
+
+  // Optional occupationType for NEAT baseline (introduced for OCCUPATIONAL_NEAT_LOCK)
+  if (lifestyle.occupationType !== undefined && lifestyle.occupationType !== null) {
+    enumValue(lifestyle.occupationType, OccupationType, "lifestyle.occupationType", issues);
+  }
 }
 
 function validateMedical(input, issues) {

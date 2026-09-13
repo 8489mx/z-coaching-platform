@@ -10,7 +10,7 @@ import {
 
 test("Check-in Engine Suite", async (t) => {
   await t.test("version is stable", () => {
-    assert.equal(CHECKIN_ENGINE_VERSION, "checkin-engine-v2");
+    assert.equal(CHECKIN_ENGINE_VERSION, "checkin-engine-v3");
   });
 
   await t.test("supports single weekly morning weigh-in", () => {

@@ -6,279 +6,481 @@
     "type": "text",
     "required": true,
     "active": true,
-    "placeholder_ar": "مثال: أحمد",
-    "order": 1
+    "options": null,
+    "order": 1,
+    "wizard_step": 1,
+    "condition": null,
+    "engine_variable": "personal.firstName"
   },
   {
     "id": "last_name",
     "section": "personal",
-    "title_ar": "اسم العائلة / اللقب",
+    "title_ar": "اسم العائلة",
     "type": "text",
     "required": true,
     "active": true,
-    "placeholder_ar": "مثال: سمير",
-    "order": 2
+    "options": null,
+    "order": 2,
+    "wizard_step": 1,
+    "condition": null,
+    "engine_variable": "personal.lastName"
   },
   {
     "id": "phone_number",
     "section": "personal",
-    "title_ar": "رقم الواتساب للتواصل ومتابعة الخطة",
+    "title_ar": "رقم الهاتف",
     "type": "text",
     "required": true,
     "active": true,
-    "placeholder_ar": "010XXXXXXXX",
-    "order": 3
+    "options": null,
+    "order": 3,
+    "wizard_step": 1,
+    "condition": null,
+    "engine_variable": "User.phone_number"
   },
   {
     "id": "date_of_birth",
     "section": "personal",
-    "title_ar": "تاريخ الميلاد / السن",
+    "title_ar": "تاريخ الميلاد",
     "type": "date",
     "required": true,
     "active": true,
-    "order": 4
+    "options": null,
+    "order": 4,
+    "wizard_step": 1,
+    "condition": null,
+    "engine_variable": "personal.dateOfBirth"
   },
   {
     "id": "sex",
     "section": "personal",
-    "title_ar": "النوع",
-    "type": "select",
+    "title_ar": "الجنس",
+    "type": "pill-select",
     "required": true,
     "active": true,
     "options": [
-      {
-        "value": "MALE",
-        "label": "ذكر"
-      },
-      {
-        "value": "FEMALE",
-        "label": "أنثى"
-      }
+      { "value": "MALE", "label": "ذكر" },
+      { "value": "FEMALE", "label": "أنثى" }
     ],
-    "order": 5
+    "order": 5,
+    "wizard_step": 1,
+    "condition": null,
+    "engine_variable": "personal.sex"
   },
   {
     "id": "primary_goal",
-    "section": "personal",
-    "title_ar": "الهدف الرئيسي من الاشتراك",
-    "type": "select",
+    "section": "goals",
+    "title_ar": "الهدف الأساسي",
+    "type": "pill-select",
     "required": true,
     "active": true,
     "options": [
-      {
-        "value": "FAT_LOSS",
-        "label": "حرق الدهون ونحت الجسم (تنشيف)"
-      },
-      {
-        "value": "MUSCLE_GAIN",
-        "label": "زيادة الكتلة العضلية (تضخيم)"
-      },
-      {
-        "value": "RECOMPOSITION",
-        "label": "إعادة التكوين الجسدي (حرق دهون وبناء عضلات معاً)"
-      },
-      {
-        "value": "ATHLETIC_PERFORMANCE",
-        "label": "تحسين اللياقة والأداء الرياضي"
-      }
+      { "value": "FAT_LOSS", "label": "تنشيف" },
+      { "value": "MUSCLE_GAIN", "label": "تضخيم" },
+      { "value": "RECOMPOSITION", "label": "إعادة تكوين" },
+      { "value": "ATHLETIC_PERFORMANCE", "label": "لياقة عامة" }
     ],
-    "order": 6
+    "order": 6,
+    "wizard_step": 1,
+    "condition": null,
+    "engine_variable": "goals.primary"
   },
   {
     "id": "height_cm",
-    "section": "body",
+    "section": "measurements",
     "title_ar": "الطول (سم)",
     "type": "number",
     "required": true,
     "active": true,
-    "placeholder_ar": "175",
-    "order": 7
+    "options": null,
+    "order": 7,
+    "wizard_step": 2,
+    "condition": null,
+    "engine_variable": "body.heightCm"
   },
   {
     "id": "weight_kg",
-    "section": "body",
-    "title_ar": "الوزن الحالي الصباحي (كجم)",
+    "section": "measurements",
+    "title_ar": "الوزن (كجم)",
     "type": "number",
     "required": true,
     "active": true,
-    "placeholder_ar": "80",
-    "order": 8
+    "options": null,
+    "order": 8,
+    "wizard_step": 2,
+    "condition": null,
+    "engine_variable": "body.weightKg"
   },
   {
     "id": "waist_cm",
-    "section": "body",
-    "title_ar": "محيط الخصر عند السرة (سم)",
+    "section": "measurements",
+    "title_ar": "محيط الخصر (سم)",
     "type": "number",
     "required": true,
     "active": true,
-    "placeholder_ar": "85",
-    "order": 9
+    "options": null,
+    "order": 9,
+    "wizard_step": 2,
+    "condition": null,
+    "engine_variable": "body.waistCm"
   },
   {
     "id": "daily_activity",
-    "section": "body",
-    "title_ar": "طبيعة النشاط والعمل اليومي",
-    "type": "select",
+    "section": "lifestyle",
+    "title_ar": "مستوى النشاط اليومي",
+    "type": "pill-select",
     "required": true,
     "active": true,
     "options": [
-      {
-        "value": "SEDENTARY",
-        "label": "مكتبي خامل (قليل الحركة)"
-      },
-      {
-        "value": "LIGHT",
-        "label": "نشاط خفيف (حركة متوسطة)"
-      },
-      {
-        "value": "MODERATE",
-        "label": "نشاط معتدل (وقوف وحركة مستمرة)"
-      },
-      {
-        "value": "VERY_ACTIVE",
-        "label": "نشاط عالي (عمل بدني شاق / رياضي)"
-      }
+      { "value": "SEDENTARY", "label": "مكتبي خامل" },
+      { "value": "LIGHT", "label": "نشاط خفيف" },
+      { "value": "MODERATE", "label": "نشاط معتدل" },
+      { "value": "VERY_ACTIVE", "label": "نشاط عالي" }
     ],
-    "order": 10
+    "order": 10,
+    "wizard_step": 2,
+    "condition": null,
+    "engine_variable": "lifestyle.dailyActivity"
+  },
+  {
+    "id": "occupation_type",
+    "section": "lifestyle",
+    "title_ar": "نوع وظيفتك أو عملك الأساسي",
+    "type": "pill-select",
+    "required": true,
+    "active": true,
+    "options": [
+      { "value": "DESK_OFFICE", "label": "مكتبي ثابت" },
+      { "value": "FIELD_MOBILE", "label": "ميداني متحرك" },
+      { "value": "MANUAL_LABOR", "label": "عمل بدني شاق" },
+      { "value": "STUDENT", "label": "طالب" },
+      { "value": "UNEMPLOYED", "label": "لا يعمل حالياً" }
+    ],
+    "order": 11,
+    "wizard_step": 2,
+    "condition": null,
+    "engine_variable": "lifestyle.occupationType"
   },
   {
     "id": "sleep_hours",
-    "section": "body",
-    "title_ar": "متوسط عدد ساعات النوم يومياً",
-    "type": "number",
+    "section": "lifestyle",
+    "title_ar": "متوسط ساعات نومك يومياً",
+    "type": "pill-select",
     "required": true,
     "active": true,
-    "placeholder_ar": "7",
-    "order": 11
+    "options": [
+      { "value": "LESS_5", "label": "أقل من 5 ساعات" },
+      { "value": "HOURS_5_6", "label": "5 إلى 6 ساعات" },
+      { "value": "HOURS_6_7", "label": "6 إلى 7 ساعات" },
+      { "value": "HOURS_7_8", "label": "7 إلى 8 ساعات" },
+      { "value": "MORE_8", "label": "أكثر من 8 ساعات" }
+    ],
+    "order": 12,
+    "wizard_step": 2,
+    "condition": null,
+    "engine_variable": "lifestyle.sleep.averageHours"
   },
   {
     "id": "medical_conditions",
     "section": "medical",
-    "title_ar": "هل تعاني من أي أمراض مزمنة؟ (ضغط، سكر، غدة، حساسية، إلخ)",
-    "type": "textarea",
-    "required": false,
+    "title_ar": "هل تعاني من أي أمراض مزمنة؟",
+    "type": "multi-pill-select",
+    "required": true,
     "active": true,
-    "placeholder_ar": "اكتب 'لا يوجد' إن لم تكن تعاني من شيء",
-    "order": 12
+    "options": [
+      { "value": "NONE", "label": "لا يوجد" },
+      { "value": "HYPERTENSION", "label": "ضغط دم مرتفع" },
+      { "value": "DIABETES", "label": "سكري" },
+      { "value": "THYROID_CONDITION", "label": "غدة درقية" },
+      { "value": "ASTHMA_OR_RESPIRATORY_CONDITION", "label": "ربو" },
+      { "value": "DIAGNOSED_DIGESTIVE_CONDITION", "label": "قولون عصبي" },
+      { "value": "KIDNEY_CONDITION", "label": "أمراض كلى" },
+      { "value": "LIVER_CONDITION", "label": "أمراض كبد" },
+      { "value": "ANEMIA", "label": "أنيميا" },
+      { "value": "PCOS", "label": "تكيس مبايض" },
+      { "value": "INSULIN_RESISTANCE", "label": "مقاومة أنسولين" },
+      { "value": "HEART_CONDITION", "label": "مرض قلبي" },
+      { "value": "OTHER", "label": "حالة أخرى" }
+    ],
+    "order": 13,
+    "wizard_step": 3,
+    "condition": null,
+    "engine_variable": "medical.conditions[].conditionCode"
+  },
+  {
+    "id": "dangerous_symptoms",
+    "section": "medical",
+    "title_ar": "هل تعاني من أي من هذه الأعراض أثناء المجهود البدني؟",
+    "type": "multi-pill-select",
+    "required": true,
+    "active": true,
+    "options": [
+      { "value": "NONE", "label": "لا يوجد" },
+      { "value": "CHEST_PAIN", "label": "ألم أو ضغط في الصدر أثناء المجهود" },
+      { "value": "FAINTING", "label": "إغماء أو دوخة شديدة" },
+      { "value": "SHORTNESS_OF_BREATH", "label": "ضيق تنفس غير طبيعي" },
+      { "value": "PALPITATIONS", "label": "خفقان قلب غير منتظم" }
+    ],
+    "order": 14,
+    "wizard_step": 3,
+    "condition": null,
+    "engine_variable": "medical.dangerousSymptoms"
   },
   {
     "id": "injuries",
-    "section": "medical",
-    "title_ar": "هل تعاني من إصابات سابقة أو آلام مفاصل (ركبة، كتف، أسفل ظهر)؟",
-    "type": "textarea",
-    "required": false,
+    "section": "training",
+    "title_ar": "هل تعاني من إصابات أو آلام في المفاصل؟",
+    "type": "multi-pill-select",
+    "required": true,
     "active": true,
-    "placeholder_ar": "اذكر مكان الإصابة وطبيعة الألم إن وجد",
-    "order": 13
+    "options": [
+      { "value": "NONE", "label": "لا يوجد" },
+      { "value": "LOWER_BACK", "label": "أسفل الظهر" },
+      { "value": "KNEE", "label": "الركبة" },
+      { "value": "SHOULDER", "label": "الكتف" },
+      { "value": "NECK", "label": "الرقبة" },
+      { "value": "ELBOW_WRIST", "label": "الكوع أو الرسغ" },
+      { "value": "HIP", "label": "الورك" }
+    ],
+    "order": 15,
+    "wizard_step": 3,
+    "condition": null,
+    "engine_variable": "training.injuries[].area"
+  },
+  {
+    "id": "injury_severity",
+    "section": "training",
+    "title_ar": "مستوى الألم أو الإصابة",
+    "type": "pill-select",
+    "required": true,
+    "active": true,
+    "options": [
+      { "value": "MILD", "label": "خفيف ولا يمنعني" },
+      { "value": "MODERATE", "label": "متوسط ويحد من بعض الحركات" },
+      { "value": "SEVERE", "label": "شديد ويمنعني من التمرين" }
+    ],
+    "order": 16,
+    "wizard_step": 3,
+    "condition": { "field": "injuries", "not_equals": "NONE" },
+    "engine_variable": "training.injuries[].painLevel"
+  },
+  {
+    "id": "female_pregnancy",
+    "section": "medical",
+    "title_ar": "الحالة الحالية",
+    "type": "pill-select",
+    "required": true,
+    "active": true,
+    "options": [
+      { "value": "NOT_PREGNANT", "label": "غير حامل" },
+      { "value": "PREGNANT", "label": "حامل" },
+      { "value": "BREASTFEEDING", "label": "مرضعة" }
+    ],
+    "order": 17,
+    "wizard_step": 3,
+    "condition": { "field": "sex", "equals": "FEMALE" },
+    "engine_variable": "medical.pregnancyStatus"
+  },
+  {
+    "id": "female_menstrual",
+    "section": "medical",
+    "title_ar": "انتظام الدورة الشهرية",
+    "type": "pill-select",
+    "required": true,
+    "active": true,
+    "options": [
+      { "value": "REGULAR", "label": "منتظمة" },
+      { "value": "IRREGULAR", "label": "غير منتظمة" },
+      { "value": "ABSENT", "label": "منقطعة" }
+    ],
+    "order": 18,
+    "wizard_step": 3,
+    "condition": { "field": "sex", "equals": "FEMALE", "and": { "field": "female_pregnancy", "equals": "NOT_PREGNANT" } },
+    "engine_variable": "medical.menstrualStatus"
   },
   {
     "id": "preferred_meal_count",
     "section": "nutrition",
-    "title_ar": "عدد الوجبات المفضلة لك يومياً",
-    "type": "select",
+    "title_ar": "عدد الوجبات المفضل",
+    "type": "pill-select",
     "required": true,
     "active": true,
     "options": [
-      {
-        "value": "2",
-        "label": "وجبتين رئيسيتين"
-      },
-      {
-        "value": "3",
-        "label": "3 وجبات رئيسية (موصى به)"
-      },
-      {
-        "value": "4",
-        "label": "4 وجبات موزعة"
-      },
-      {
-        "value": "5",
-        "label": "5 وجبات"
-      }
+      { "value": "2", "label": "وجبتين" },
+      { "value": "3", "label": "3 وجبات" },
+      { "value": "4", "label": "4 وجبات" },
+      { "value": "5", "label": "5 وجبات" }
     ],
-    "order": 14
+    "order": 19,
+    "wizard_step": 4,
+    "condition": null,
+    "engine_variable": "nutrition.preferredMealCount"
   },
   {
     "id": "allergies_and_dislikes",
     "section": "nutrition",
-    "title_ar": "أطعمة تسبب لك حساسية أو لا تحب تناولها إطلاقاً",
-    "type": "textarea",
-    "required": false,
+    "title_ar": "أطعمة تسبب لك حساسية أو لا تحب تناولها نهائياً",
+    "type": "multi-pill-select",
+    "required": true,
     "active": true,
-    "placeholder_ar": "مثل: حساسية لاكتوز، كاره للسمك، كاره للبيض...",
-    "order": 15
+    "options": [
+      { "value": "NONE", "label": "لا يوجد" },
+      { "value": "EGGS", "label": "بيض" },
+      { "value": "DAIRY", "label": "ألبان وأجبان" },
+      { "value": "FISH_SEAFOOD", "label": "أسماك ومأكولات بحرية" },
+      { "value": "PEANUTS_NUTS", "label": "مكسرات وفول سوداني" },
+      { "value": "GLUTEN_WHEAT", "label": "قمح وجلوتين" },
+      { "value": "LEGUMES", "label": "بقوليات" },
+      { "value": "RED_MEAT", "label": "لحوم حمراء" },
+      { "value": "OATS", "label": "شوفان" },
+      { "value": "EGGPLANT", "label": "باذنجان" }
+    ],
+    "order": 20,
+    "wizard_step": 4,
+    "condition": null,
+    "engine_variable": "nutrition.allergies + nutrition.dislikedFoods"
+  },
+  {
+    "id": "digestive_issues",
+    "section": "nutrition",
+    "title_ar": "هل تعاني من مشاكل هضمية مزمنة؟",
+    "type": "pill-select",
+    "required": true,
+    "active": true,
+    "options": [
+      { "value": "NONE", "label": "لا يوجد" },
+      { "value": "IBS", "label": "قولون عصبي" },
+      { "value": "GERD", "label": "ارتجاع مريئي" },
+      { "value": "BLOATING", "label": "انتفاخ مزمن" }
+    ],
+    "order": 21,
+    "wizard_step": 4,
+    "condition": null,
+    "engine_variable": "nutrition.digestiveIssues[]"
+  },
+  {
+    "id": "food_budget",
+    "section": "nutrition",
+    "title_ar": "ميزانيتك الأسبوعية للأكل الصحي",
+    "type": "pill-select",
+    "required": true,
+    "active": true,
+    "options": [
+      { "value": "LOW", "label": "اقتصادية" },
+      { "value": "MEDIUM", "label": "متوسطة" },
+      { "value": "HIGH", "label": "مرتفعة" }
+    ],
+    "order": 22,
+    "wizard_step": 4,
+    "condition": null,
+    "engine_variable": "nutrition.budget"
+  },
+  {
+    "id": "food_prep_ability",
+    "section": "nutrition",
+    "title_ar": "قدرتك على تحضير وتخزين الوجبات",
+    "type": "pill-select",
+    "required": true,
+    "active": true,
+    "options": [
+      { "value": "FULL_KITCHEN", "label": "أقدر أطبخ وأخزن وأسخن" },
+      { "value": "REHEAT_ONLY", "label": "أقدر أسخن بس مش أطبخ" },
+      { "value": "NO_KITCHEN", "label": "لا آكل من بره" }
+    ],
+    "order": 23,
+    "wizard_step": 4,
+    "condition": null,
+    "engine_variable": "nutrition.foodStorageAvailable + foodReheatingAvailable"
   },
   {
     "id": "training_location",
     "section": "training",
-    "title_ar": "مكان التمرين المتاح",
-    "type": "select",
+    "title_ar": "مكان التمرين المفضل",
+    "type": "pill-select",
     "required": true,
     "active": true,
     "options": [
-      {
-        "value": "GYM",
-        "label": "جيم تجاري كامل التجهيزات"
-      },
-      {
-        "value": "HOME_DUMBBELLS",
-        "label": "المنزل مع أوزان ودمبلز"
-      },
-      {
-        "value": "HOME_BODYWEIGHT",
-        "label": "المنزل بوزن الجسم فقط"
-      }
+      { "value": "HOME", "label": "المنزل" },
+      { "value": "GYM", "label": "الجيم" }
     ],
-    "order": 16
+    "order": 24,
+    "wizard_step": 5,
+    "condition": null,
+    "engine_variable": "training.location"
   },
   {
     "id": "available_days_per_week",
     "section": "training",
-    "title_ar": "عدد الأيام المتاحة للتمرين أسبوعياً",
-    "type": "select",
+    "title_ar": "عدد أيام التمرين المتاحة أسبوعياً",
+    "type": "pill-select",
     "required": true,
     "active": true,
     "options": [
-      {
-        "value": "3",
-        "label": "3 أيام أسبوعياً"
-      },
-      {
-        "value": "4",
-        "label": "4 أيام أسبوعياً (مثالي)"
-      },
-      {
-        "value": "5",
-        "label": "5 أيام أسبوعياً"
-      },
-      {
-        "value": "6",
-        "label": "6 أيام أسبوعياً"
-      }
+      { "value": "2", "label": "يومين" },
+      { "value": "3", "label": "3 أيام" },
+      { "value": "4", "label": "4 أيام" },
+      { "value": "5", "label": "5 أيام" },
+      { "value": "6", "label": "6 أيام" }
     ],
-    "order": 17
+    "order": 25,
+    "wizard_step": 5,
+    "condition": null,
+    "engine_variable": "training.preferredDaysPerWeek"
   },
   {
     "id": "experience_level",
     "section": "training",
-    "title_ar": "مستوى خبرتك السابقة في الجيم",
-    "type": "select",
+    "title_ar": "مستوى خبرتك في التمرين",
+    "type": "pill-select",
     "required": true,
     "active": true,
     "options": [
-      {
-        "value": "BEGINNER",
-        "label": "مبتدئ تماماً (أول مرة أتمرن بانتظام)"
-      },
-      {
-        "value": "INTERMEDIATE",
-        "label": "متوسط (أتمرن منذ 6 شهور إلى سنتين)"
-      },
-      {
-        "value": "ADVANCED",
-        "label": "متقدم (خبرة أكثر من سنتين وأعرف التكنيك جيداً)"
-      }
+      { "value": "BEGINNER", "label": "مبتدئ" },
+      { "value": "INTERMEDIATE", "label": "متوسط" },
+      { "value": "ADVANCED", "label": "متقدم" }
     ],
-    "order": 18
+    "order": 26,
+    "wizard_step": 5,
+    "condition": null,
+    "engine_variable": "training.experience"
+  },
+  {
+    "id": "recent_training",
+    "section": "training",
+    "title_ar": "آخر مرة تمرنت فيها بانتظام",
+    "type": "pill-select",
+    "required": true,
+    "active": true,
+    "options": [
+      { "value": "ACTIVE", "label": "بتمرن حالياً بانتظام" },
+      { "value": "INCONSISTENT", "label": "متقطع آخر 6 شهور" },
+      { "value": "NONE_LAST_4_WEEKS", "label": "واقف من أكثر من شهر" },
+      { "value": "RETURNING_AFTER_LONG_BREAK", "label": "راجع بعد انقطاع طويل" }
+    ],
+    "order": 27,
+    "wizard_step": 5,
+    "condition": null,
+    "engine_variable": "training.recentTraining"
+  },
+  {
+    "id": "additional_sports",
+    "section": "training",
+    "title_ar": "هل تمارس رياضة تانية غير تمارين الحديد؟",
+    "type": "pill-select",
+    "required": false,
+    "active": true,
+    "options": [
+      { "value": "NONE", "label": "لا" },
+      { "value": "FOOTBALL", "label": "كورة قدم" },
+      { "value": "RUNNING", "label": "جري" },
+      { "value": "SWIMMING", "label": "سباحة" },
+      { "value": "BOXING", "label": "ملاكمة أو فنون قتالية" },
+      { "value": "CROSSFIT_OR_FUNCTIONAL", "label": "كروس فت" },
+      { "value": "OTHER", "label": "رياضة تانية" }
+    ],
+    "order": 28,
+    "wizard_step": 5,
+    "condition": null,
+    "engine_variable": "cardio.additionalSports[]"
   }
 ]

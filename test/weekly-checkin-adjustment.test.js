@@ -217,4 +217,63 @@ test('Weekly Check-in & Dynamic Adjustment Engine Suite', async (t) => {
       Program.findOne = origFindProgram;
     }
   });
+
+  await t.test('11. Case 11: FALSE_PLATEAU_DETECTED locks calories when plateau is driven by constipation + poor sleep (False Plateau Triad)', () => {
+    const result = evaluateWeeklyCheckinAudit({
+      clientProfile: { name: 'سامح', current_daily_calories: 2100, protein_g: 170, carbs_g: 225, fat_g: 55 },
+      previousWeekData: { weight_kg: 82.0, waist_cm: 86.0, consecutive_plateau_weeks: 1 },
+      currentCheckin: {
+        current_weight_kg: 82.0,
+        waist_circumference_cm: 86.0,
+        overall_adherence_percent: 92,
+        bowel_regularity: 'CONSTIPATED',
+        sleep_stress_composite: 2
+      }
+    });
+
+    assert.equal(result.decision_code, CHECKIN_DECISION_CODES.FALSE_PLATEAU_DETECTED);
+    assert.equal(result.action_type, 'MAINTAIN');
+    assert.equal(result.calorie_adjustment, 0);
+    assert.equal(result.next_week_calories, 2100);
+    assert.ok(result.coach_action_summary_ar.includes('ثبات زائف'));
+  });
+
+  await t.test('12. Case 12: OCCUPATIONAL_NEAT_LOCK prevents calorie cut for desk worker during normal work week', () => {
+    const result = evaluateWeeklyCheckinAudit({
+      clientProfile: { name: 'كريم', occupation_type: 'DESK_OFFICE', current_daily_calories: 2000, protein_g: 160, carbs_g: 210, fat_g: 50 },
+      previousWeekData: { weight_kg: 85.0, waist_cm: 89.0, consecutive_plateau_weeks: 1 },
+      currentCheckin: {
+        current_weight_kg: 85.1,
+        waist_circumference_cm: 89.0,
+        overall_adherence_percent: 90,
+        lifestyle_variance: 'NORMAL_WORK',
+        bowel_regularity: 'REGULAR',
+        sleep_stress_composite: 4
+      }
+    });
+
+    assert.equal(result.decision_code, CHECKIN_DECISION_CODES.OCCUPATIONAL_NEAT_LOCK);
+    assert.equal(result.action_type, 'MAINTAIN');
+    assert.equal(result.calorie_adjustment, 0);
+    assert.equal(result.next_week_calories, 2000);
+    assert.ok(result.coach_action_summary_ar.includes('العمل المكتبي') || result.coach_action_summary_ar.includes('مكتبي'));
+  });
+
+  await t.test('13. Case 13: TRAVEL_WEEK_PREVIEW triggers travel preparation forward-looking guidance', () => {
+    const result = evaluateWeeklyCheckinAudit({
+      clientProfile: { name: 'ماجد', current_daily_calories: 2200, protein_g: 180, carbs_g: 240, fat_g: 60 },
+      previousWeekData: { weight_kg: 79.0, waist_cm: 83.0 },
+      currentCheckin: {
+        current_weight_kg: 78.8,
+        waist_circumference_cm: 82.8,
+        overall_adherence_percent: 88,
+        next_week_travel: true
+      }
+    });
+
+    assert.equal(result.decision_code, CHECKIN_DECISION_CODES.TRAVEL_WEEK_PREVIEW);
+    assert.equal(result.action_type, 'TRAVEL_PREP');
+    assert.equal(result.calorie_adjustment, 0);
+    assert.ok(result.coach_action_summary_ar.includes('سفر مرتقب') || result.coach_action_summary_ar.includes('السفر'));
+  });
 });

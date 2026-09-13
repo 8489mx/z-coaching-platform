@@ -75,6 +75,52 @@ const CheckinSubmission = sequelize.define(
       type: DataTypes.TEXT,
       allowNull: true,
     },
+    // Deep check-in v3: Lifestyle variance classification
+    lifestyle_variance: {
+      type: DataTypes.STRING,
+      allowNull: true,
+      defaultValue: "NORMAL_WORK",
+    },
+    // Deep check-in v3: Bowel regularity (False Plateau Triad element)
+    bowel_regularity: {
+      type: DataTypes.STRING,
+      allowNull: true,
+      defaultValue: "REGULAR",
+    },
+    // Deep check-in v3: Composite sleep/stress score (1-5)
+    sleep_stress_composite: {
+      type: DataTypes.INTEGER,
+      allowNull: true,
+      defaultValue: 3,
+    },
+    // Deep check-in v3: Menstrual phase for female clients
+    menstrual_phase: {
+      type: DataTypes.STRING,
+      allowNull: true,
+      defaultValue: "NOT_APPLICABLE",
+    },
+    // Deep check-in v3: Forward-looking — travel next week
+    next_week_travel: {
+      type: DataTypes.BOOLEAN,
+      allowNull: true,
+      defaultValue: false,
+    },
+    // Deep check-in v3: Forward-looking — gym availability next week
+    next_week_gym_available: {
+      type: DataTypes.BOOLEAN,
+      allowNull: true,
+      defaultValue: true,
+    },
+    // Deep check-in v3: Forward-looking — realistic training days
+    next_week_realistic_days: {
+      type: DataTypes.INTEGER,
+      allowNull: true,
+    },
+    // Deep check-in v3: Forward-looking — free text notes
+    next_week_notes: {
+      type: DataTypes.TEXT,
+      allowNull: true,
+    },
     status: {
       type: DataTypes.ENUM("PENDING_REVIEW", "APPROVED", "AUTO_APPLIED"),
       allowNull: false,

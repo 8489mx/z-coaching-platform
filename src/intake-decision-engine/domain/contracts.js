@@ -16,7 +16,14 @@
 /** @typedef {{dateOfBirth:string, sex:string, residenceCountry:string, guardianConsent?:boolean|null}} PersonalData */
 /** @typedef {{primary:string, secondaryTraining?:string|null}} GoalData */
 /** @typedef {{heightCm:number, weightKg:number, waistCm?:number|null, weightTrend:string, measurementQuality:string, progressPhotosAvailable:boolean}} BodyData */
-/** @typedef {{dailyActivity:string, workSchedule:{type:string, physicallyDemandingDays:string[]}, sleep:{averageHours:number, quality:string}, stressLevel:string}} LifestyleData */
+/**
+ * @typedef {Object} LifestyleData
+ * @property {string} dailyActivity
+ * @property {string} [occupationType] - Client's primary occupation type for NEAT baseline classification.
+ * @property {{type:string, physicallyDemandingDays:string[]}} workSchedule
+ * @property {{averageHours:number, quality:string}} sleep
+ * @property {string} stressLevel
+ */
 /** @typedef {{conditionCode:string, otherConditionText:null|string, stability:string, physicianInstructions:string[], unclassifiedInstructionsText?:string|null}} ClassifiedMedicalCondition `otherConditionText` must be null or the empty string. */
 /** @typedef {{conditionCode:null, otherConditionText:string, stability:string, physicianInstructions:string[], unclassifiedInstructionsText?:string|null}} OtherMedicalCondition `otherConditionText` is preserved verbatim and must contain non-whitespace text. */
 /** @typedef {ClassifiedMedicalCondition|OtherMedicalCondition} MedicalCondition */

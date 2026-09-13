@@ -19,7 +19,11 @@ export const CHECKIN_DECISION_CODES = {
   TRUE_PLATEAU_TITRATION: 'TRUE_PLATEAU_TITRATION',
   FEMALE_PMS_BUFFER: 'FEMALE_PMS_BUFFER',
   DELOAD_ACTIVATION: 'DELOAD_ACTIVATION',
-  MAINTAIN_PLAN: 'MAINTAIN_PLAN'
+  MAINTAIN_PLAN: 'MAINTAIN_PLAN',
+  // Deep check-in v3: new decision codes
+  FALSE_PLATEAU_DETECTED: 'FALSE_PLATEAU_DETECTED',
+  OCCUPATIONAL_NEAT_LOCK: 'OCCUPATIONAL_NEAT_LOCK',
+  TRAVEL_WEEK_PREVIEW: 'TRAVEL_WEEK_PREVIEW'
 };
 
 export function evaluateWeeklyCheckinAudit({
@@ -60,6 +64,23 @@ export function evaluateWeeklyCheckinAudit({
     joint_ache_flag: Boolean(currentCheckin.joint_ache_flag)
   });
 
+  // 2b. False Plateau Triad Detection (2 of 3)
+  let falsePlateauScore = 0;
+  if (currentCheckin.bowel_regularity && currentCheckin.bowel_regularity !== 'REGULAR') falsePlateauScore++;
+  if (currentCheckin.sleep_stress_composite && Number(currentCheckin.sleep_stress_composite) <= 2) falsePlateauScore++;
+  if (currentCheckin.menstrual_phase === 'LUTEAL' || currentCheckin.menstrual_phase === 'MENSTRUATION' || currentCheckin.is_pms_active) falsePlateauScore++;
+  const isFalsePlateau = falsePlateauScore >= 2;
+
+  // 2c. Occupational NEAT Lock
+  const isOccupationalNeatLock = (
+    currentCheckin.lifestyle_variance === 'NORMAL_WORK' &&
+    (clientProfile.occupation_type === 'DESK_OFFICE' || clientProfile.occupation_type === 'STUDENT') &&
+    Math.abs(weightDelta) < 0.3
+  );
+
+  // 2d. Next week travel preview
+  const isTravelPreview = Boolean(currentCheckin.next_week_travel);
+
   // 3. Deterministic Decision Matrix
   let decisionCode = CHECKIN_DECISION_CODES.MAINTAIN_PLAN;
   let actionType = 'MAINTAIN';
@@ -90,6 +111,20 @@ export function evaluateWeeklyCheckinAudit({
     actionType = 'WARN_ADHERENCE';
     coachRecommendationAr = 'تنبيه المشترك لرفع نسبة الالتزام إلى 90%+ مع تثبيت السعرات الحالية تماماً.';
     clinicalReasoningAr = 'ثبات الوزن ناتج عن عدم الالتزام وليس تكيف الأيض؛ خفض السعرات الآن سيزيد من الشراهة.';
+  } else if (consecutivePlateauWeeks >= 2 && adherencePercent >= 85 && isFalsePlateau) {
+    // False Plateau Triad: Stall under high adherence is temporary water retention
+    decisionCode = CHECKIN_DECISION_CODES.FALSE_PLATEAU_DETECTED;
+    actionType = 'MAINTAIN';
+    calorieAdjustment = 0;
+    coachRecommendationAr = 'ثبات زائف على الميزان ناتج عن احتباس السوائل أو الإمساك؛ تم قفل خفض السعرات تماماً لتفادي الإجهاد الأيضي.';
+    clinicalReasoningAr = 'عوامل احتباس الماء (الجهاز الهضمي أو التوتر أو الهرمونات) تحجب نزول الدهون الحقيقي؛ السعرات تبقى ثابتة.';
+  } else if (consecutivePlateauWeeks >= 2 && adherencePercent >= 85 && isOccupationalNeatLock) {
+    // Occupational NEAT Lock: Low movement is occupational baseline
+    decisionCode = CHECKIN_DECISION_CODES.OCCUPATIONAL_NEAT_LOCK;
+    actionType = 'MAINTAIN';
+    calorieAdjustment = 0;
+    coachRecommendationAr = 'ثبات الوزن متوافق مع نمط العمل المكتبي الأساسي؛ تثبيت السعرات ومراقبة أسبوع إضافي قبل أي تعديل.';
+    clinicalReasoningAr = 'مستوى النشاط الحركي غير الرياضي NEAT يمثل الأساس المهني للمتدرب وليس تراجعاً سلوكياً.';
   } else if (consecutivePlateauWeeks >= 2 && adherencePercent >= 85) {
     // Case 3: True Plateau Titration
     decisionCode = CHECKIN_DECISION_CODES.TRUE_PLATEAU_TITRATION;
@@ -97,6 +132,12 @@ export function evaluateWeeklyCheckinAudit({
     calorieAdjustment = -120; // 30g carbs cut
     coachRecommendationAr = 'ثبات حقيقي مع التزام ممتاز لأسبوعين؛ خفض تدريجي بمقدار -120 سعرة من الكارب لدفع الحرق.';
     clinicalReasoningAr = 'تكيف أيضي طفيف بعد أسابيع من النزول؛ خفض 30 جم كارب كافٍ لإعادة تحفيز أكسدة الدهون.';
+  } else if (isTravelPreview) {
+    // Forward-Looking: Travel next week
+    decisionCode = CHECKIN_DECISION_CODES.TRAVEL_WEEK_PREVIEW;
+    actionType = 'TRAVEL_PREP';
+    coachRecommendationAr = 'تم رصد سفر مرتقب الأسبوع القادم؛ تجهيز إرشادات المطاعم والتمرين المرن مع تثبيت الخطة.';
+    clinicalReasoningAr = 'الاستباق يمنع التخبط ويوفر خيارات مرنة أثناء السفر دون كسر الالتزام.';
   } else {
     // Default: Normal Progress / Maintenance
     decisionCode = CHECKIN_DECISION_CODES.MAINTAIN_PLAN;
@@ -179,7 +220,11 @@ export function evaluateWeeklyProgress({
   weeksOnCurrentCalories = 1,
   goalType = 'FAT_LOSS', // 'FAT_LOSS' | 'MAINTENANCE' | 'LEAN_BULK'
   isFemale = false,
-  isMenstrualPhase = false // Menstrual safety firewall
+  isMenstrualPhase = false, // Menstrual safety firewall
+  bowelRegularity = 'REGULAR',
+  sleepStressComposite = 3,
+  lifestyleVariance = 'NORMAL_WORK',
+  occupationType = null
 }) {
   const deltaWeight = +(currentWeightKg - previousWeightKg).toFixed(2);
   const deltaWaist = +(currentWaistCm - previousWaistCm).toFixed(2);
@@ -232,6 +277,37 @@ export function evaluateWeeklyProgress({
         message_ar: 'تقدم ثابت ومستمر. نستمر على نفس السعرات دون حرق أوراق الخفض مبكراً.',
         action_required: false
       };
+    }
+
+    // False Plateau Triad Detection (2 of 3)
+    let falsePlateauScore = 0;
+    if (bowelRegularity !== 'REGULAR') falsePlateauScore++;
+    if (Number(sleepStressComposite) <= 2) falsePlateauScore++;
+    if (isMenstrualPhase) falsePlateauScore++;
+
+    // State C: True Plateau vs False Plateau vs NEAT Lock
+    if (weeksOnCurrentCalories >= 2 && adherenceRatePct >= 90 && deltaWeight >= 0 && deltaWaist >= 0) {
+      if (falsePlateauScore >= 2) {
+        return {
+          status: 'FALSE_PLATEAU_DETECTED',
+          decision: 'MAINTAIN_CALORIES',
+          calorie_adjustment: 0,
+          new_calories: currentCalories,
+          message_ar: 'ثبات زائف على الميزان ناتج عن احتباس السوائل أو اضطراب الهضم. يتم تثبيت السعرات لتفادي الإجهاد الأيضي.',
+          action_required: false
+        };
+      }
+
+      if (lifestyleVariance === 'NORMAL_WORK' && (occupationType === 'DESK_OFFICE' || occupationType === 'STUDENT') && Math.abs(deltaWeight) < 0.3) {
+        return {
+          status: 'OCCUPATIONAL_NEAT_LOCK',
+          decision: 'MAINTAIN_CALORIES',
+          calorie_adjustment: 0,
+          new_calories: currentCalories,
+          message_ar: 'ثبات الوزن متوافق مع نمط العمل المكتبي الأساسي. يتم تثبيت السعرات دون خفض إضافي.',
+          action_required: false
+        };
+      }
     }
 
     // State C: True Plateau (>= 2 weeks without progress with >= 90% adherence)

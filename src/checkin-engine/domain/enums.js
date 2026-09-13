@@ -1,4 +1,4 @@
-export const CHECKIN_ENGINE_VERSION = "checkin-engine-v2";
+export const CHECKIN_ENGINE_VERSION = "checkin-engine-v3";
 
 export const CheckinAnalysisStatus = Object.freeze({
   ON_TRACK: "ON_TRACK",
@@ -11,6 +11,10 @@ export const CheckinAnalysisStatus = Object.freeze({
   REFEED_RECOMMENDED: "REFEED_RECOMMENDED",
   POOR_ADHERENCE: "POOR_ADHERENCE",
   INJURY_FLAGGED: "INJURY_FLAGGED",
+  // Deep check-in v3: new decision codes
+  FALSE_PLATEAU_DETECTED: "FALSE_PLATEAU_DETECTED",
+  OCCUPATIONAL_NEAT_LOCK: "OCCUPATIONAL_NEAT_LOCK",
+  TRAVEL_WEEK_PREVIEW: "TRAVEL_WEEK_PREVIEW",
 });
 
 export const AdherenceTier = Object.freeze({
@@ -27,3 +31,27 @@ export const BiofeedbackAlert = Object.freeze({
   JOINT_DISCOMFORT: "JOINT_DISCOMFORT",
 });
 
+// Deep check-in v3: Lifestyle Variance classification
+export const LifestyleVariance = Object.freeze({
+  NORMAL_WORK: "NORMAL_WORK",
+  HOME_VACATION: "HOME_VACATION",
+  TRAVEL_AWAY: "TRAVEL_AWAY",
+  DOUBLED_EFFORT: "DOUBLED_EFFORT",
+  SICK_RECOVERY: "SICK_RECOVERY",
+});
+
+// Deep check-in v3: Bowel Regularity for False Plateau Triad
+export const BowelRegularity = Object.freeze({
+  REGULAR: "REGULAR",
+  IRREGULAR: "IRREGULAR",
+  CONSTIPATED: "CONSTIPATED",
+});
+
+// Deep check-in v3: Menstrual Phase for female clients
+export const MenstrualPhase = Object.freeze({
+  NOT_APPLICABLE: "NOT_APPLICABLE",
+  FOLLICULAR: "FOLLICULAR",
+  OVULATION: "OVULATION",
+  LUTEAL: "LUTEAL",
+  MENSTRUATION: "MENSTRUATION",
+});

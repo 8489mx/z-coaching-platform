@@ -36,6 +36,15 @@ export function evaluateCheckin(submission) {
     biofeedback = {},
     pain_reports = [],
     is_consecutive_plateau = false,
+    // Deep check-in v3: new fields
+    lifestyle_variance = "NORMAL_WORK",
+    bowel_regularity = "REGULAR",
+    sleep_stress_composite = 3,
+    menstrual_phase = "NOT_APPLICABLE",
+    occupation_type = null,
+    next_week_travel = false,
+    next_week_gym_available = true,
+    next_week_realistic_days = null,
   } = submission;
 
   // 1. Calculate Current Weight (Single morning weigh-in or rolling average)
@@ -95,6 +104,21 @@ export function evaluateCheckin(submission) {
     alerts.push(BiofeedbackAlert.JOINT_DISCOMFORT);
   }
 
+  // 5b. False Plateau Triad Detection (2 of 3 must be true)
+  let falsePlateauScore = 0;
+  if (bowel_regularity !== "REGULAR") falsePlateauScore++;
+  if (sleep_stress_composite <= 2) falsePlateauScore++;
+  if (menstrual_phase === "LUTEAL" || menstrual_phase === "MENSTRUATION") falsePlateauScore++;
+  const isFalsePlateau = falsePlateauScore >= 2;
+
+  // 5c. NEAT Lock Detection
+  const isOccupationalNeatLock = (
+    lifestyle_variance === "NORMAL_WORK" &&
+    (occupation_type === "DESK_OFFICE" || occupation_type === "STUDENT") &&
+    weightChangeKg !== null &&
+    Math.abs(weightChangeKg) < 0.3
+  );
+
   // 6. Auto-Regulation Decision Tree
   let analysisStatus = CheckinAnalysisStatus.ON_TRACK;
   const recommendationsAr = [];
@@ -151,6 +175,38 @@ export function evaluateCheckin(submission) {
     recommendationsEn.push("Elevated hunger and low energy detected under high adherence. Schedule a structured high-carb Refeed Day.");
   }
 
+  // RULE F1 (NEW): False Plateau Triad — Block calorie cuts if plateau is caused by water retention
+  else if (
+    weightChangeKg !== null &&
+    Math.abs(weightChangeKg) < 0.2 &&
+    (waistChangeCm === null || waistChangeCm > -0.3) &&
+    adherenceTier === AdherenceTier.OPTIMAL &&
+    isFalsePlateau
+  ) {
+    analysisStatus = CheckinAnalysisStatus.FALSE_PLATEAU_DETECTED;
+    // No calorie adjustment — the stall is temporary fluid retention
+    const triadReasons = [];
+    if (bowel_regularity !== "REGULAR") triadReasons.push("إمساك أو عدم انتظام حركة الأمعاء");
+    if (sleep_stress_composite <= 2) triadReasons.push("نوم سيئ أو توتر مرتفع");
+    if (menstrual_phase === "LUTEAL" || menstrual_phase === "MENSTRUATION") triadReasons.push("المرحلة الهرمونية للدورة الشهرية");
+    recommendationsAr.push(`الثبات على الميزان ناتج عن احتباس سوائل مؤقت بسبب: ${triadReasons.join(" + ")}. هذا ليس ثبات أيضي حقيقي. تُثبت السعرات تماماً ويُراقب الأسبوع القادم.`);
+    recommendationsEn.push(`False plateau detected — weight stall is due to temporary fluid retention (${triadReasons.length} triad factors). Calories remain locked. Monitor next week.`);
+    requiresCoachReview = true;
+  }
+
+  // RULE F2 (NEW): Occupational NEAT Lock — Don't cut calories if low NEAT is occupational baseline
+  else if (
+    weightChangeKg !== null &&
+    Math.abs(weightChangeKg) < 0.2 &&
+    (waistChangeCm === null || waistChangeCm > -0.3) &&
+    adherenceTier === AdherenceTier.OPTIMAL &&
+    isOccupationalNeatLock
+  ) {
+    analysisStatus = CheckinAnalysisStatus.OCCUPATIONAL_NEAT_LOCK;
+    // No calorie adjustment — low NEAT is the client's occupational baseline, not a behavioral regression
+    recommendationsAr.push("ثبات في الوزن مع نمط حركة مكتبي طبيعي. النشاط المنخفض هو جزء من طبيعة عملك وليس تراجعاً سلوكياً. يُثبت البرنامج ويُراقب لأسبوع إضافي قبل أي تعديل.");
+    recommendationsEn.push("Weight plateau with normal desk-based NEAT baseline. Low activity is occupational, not behavioral. Program is held steady for an additional monitoring week.");
+  }
 
   // RULE F: True Plateau (Weight & Waist stagnant under high adherence)
   else if (
@@ -193,6 +249,21 @@ export function evaluateCheckin(submission) {
     recommendations_ar: Object.freeze(recommendationsAr),
     recommendations_en: Object.freeze(recommendationsEn),
     requires_coach_review: requiresCoachReview,
+    // Deep check-in v3: enriched output
+    false_plateau_triad: Object.freeze({
+      is_false_plateau: isFalsePlateau,
+      score: falsePlateauScore,
+      bowel_regularity,
+      sleep_stress_composite,
+      menstrual_phase,
+    }),
+    lifestyle_variance,
+    occupational_neat_lock: isOccupationalNeatLock,
+    forward_looking: Object.freeze({
+      next_week_travel,
+      next_week_gym_available,
+      next_week_realistic_days,
+    }),
   });
 }
 

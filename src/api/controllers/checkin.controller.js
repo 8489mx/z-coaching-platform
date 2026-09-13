@@ -23,6 +23,15 @@ export async function submitCheckin(req, res) {
       pain_reports = [],
       client_notes = "",
       photos = [],
+      // Deep check-in v3: new fields
+      lifestyle_variance = "NORMAL_WORK",
+      bowel_regularity = "REGULAR",
+      sleep_stress_composite = 3,
+      menstrual_phase = "NOT_APPLICABLE",
+      next_week_travel = false,
+      next_week_gym_available = true,
+      next_week_realistic_days = null,
+      next_week_notes = null,
     } = req.body;
 
     let targetUserId = user_id || client_id;
@@ -43,6 +52,9 @@ export async function submitCheckin(req, res) {
       return res.status(400).json({ success: false, error: "المستخدم غير موجود، يرجى تقديم معرف صالح" });
     }
     targetUserId = userObj.id;
+
+    // Resolve Trainee Occupational Baseline (for OCCUPATIONAL_NEAT_LOCK)
+    const traineeOccupation = req.body.occupation_type || null;
 
     // Validate weight inputs: require valid positive weight > 20kg
     const validSingleWeight = typeof weight_kg === 'number' && !isNaN(weight_kg) && weight_kg > 20 && weight_kg <= 300;
@@ -100,6 +112,16 @@ export async function submitCheckin(req, res) {
       },
       pain_reports: Array.isArray(pain_reports) ? pain_reports : [],
       is_consecutive_plateau: isConsecutivePlateau,
+      // Deep check-in v3 fields
+      lifestyle_variance,
+      bowel_regularity,
+      sleep_stress_composite: Number(sleep_stress_composite) || 3,
+      menstrual_phase,
+      occupation_type: traineeOccupation,
+      next_week_travel: Boolean(next_week_travel),
+      next_week_gym_available: next_week_gym_available !== false,
+      next_week_realistic_days: next_week_realistic_days ? Number(next_week_realistic_days) : null,
+      next_week_notes,
     };
 
     const analysisOutput = evaluateCheckin(evalInput);
@@ -120,6 +142,14 @@ export async function submitCheckin(req, res) {
       analysis_status: analysisOutput.analysis_status,
       analysis_output: analysisOutput,
       status: "PENDING_REVIEW",
+      lifestyle_variance,
+      bowel_regularity,
+      sleep_stress_composite: Number(sleep_stress_composite) || 3,
+      menstrual_phase,
+      next_week_travel: Boolean(next_week_travel),
+      next_week_gym_available: next_week_gym_available !== false,
+      next_week_realistic_days: next_week_realistic_days ? Number(next_week_realistic_days) : null,
+      next_week_notes,
     });
 
     // 3.1 Save attached progress photos locally to Hostinger file storage

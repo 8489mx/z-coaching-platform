@@ -26,6 +26,15 @@
  * @property {BiofeedbackScores} biofeedback
  * @property {PainReport[]} [pain_reports]
  * @property {string|null} [client_notes]
+ * @property {string} [lifestyle_variance] - NORMAL_WORK, HOME_VACATION, TRAVEL_AWAY, DOUBLED_EFFORT, SICK_RECOVERY
+ * @property {string} [bowel_regularity] - REGULAR, IRREGULAR, CONSTIPATED
+ * @property {number} [sleep_stress_composite] - 1 to 5
+ * @property {string} [menstrual_phase] - NOT_APPLICABLE, FOLLICULAR, OVULATION, LUTEAL, MENSTRUATION
+ * @property {string} [occupation_type] - Trainee occupational baseline
+ * @property {boolean} [next_week_travel]
+ * @property {boolean} [next_week_gym_available]
+ * @property {number} [next_week_realistic_days]
+ * @property {string} [next_week_notes]
  */
 
 /**
@@ -42,4 +51,8 @@
  * @property {string[]} recommendations_ar
  * @property {string[]} recommendations_en
  * @property {boolean} requires_coach_review
+ * @property {Object} [false_plateau_triad]
+ * @property {string} [lifestyle_variance]
+ * @property {boolean} [occupational_neat_lock]
+ * @property {Object} [forward_looking]
  */

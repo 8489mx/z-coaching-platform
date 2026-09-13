@@ -19,6 +19,7 @@
   },
   "lifestyle": {
     "dailyActivity": "LIGHT",
+    "occupationType": "FIELD_MOBILE",
     "workSchedule": {
       "type": "VARIABLE",
       "physicallyDemandingDays": []

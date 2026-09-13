@@ -100,4 +100,43 @@ test('Server Deterministic Endpoints Logic Test Suite', async (t) => {
     saveSystemSettingsFile({ coachTitle: initial.coachTitle });
   });
 
+  await t.test('8. Client Feature Flags toggle logic test (Rest Timer & Weight Logging)', async () => {
+    const { updateClientFeatureFlags } = await import('../src/api/controllers/client.controller.js');
+    const { User } = await import('../src/api/models/index.js');
+    
+    let mockClient = {
+      id: 999,
+      client_code: 'CLIENT_999',
+      enable_rest_timer: false,
+      enable_weight_logging: false,
+      update: async function(fields) {
+        Object.assign(this, fields);
+      }
+    };
+    
+    const origFindOne = User.findOne;
+    User.findOne = async () => mockClient;
+    
+    try {
+      let statusCode = null;
+      let jsonPayload = null;
+      const req = {
+        params: { id: '999' },
+        body: { enable_rest_timer: true, enable_weight_logging: true }
+      };
+      const res = {
+        status: (c) => { statusCode = c; return { json: (p) => { jsonPayload = p; } }; }
+      };
+      
+      await updateClientFeatureFlags(req, res);
+      
+      assert.equal(statusCode, 200);
+      assert.equal(jsonPayload.success, true);
+      assert.equal(mockClient.enable_rest_timer, true);
+      assert.equal(mockClient.enable_weight_logging, true);
+    } finally {
+      User.findOne = origFindOne;
+    }
+  });
+
 });
