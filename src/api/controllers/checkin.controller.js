@@ -57,8 +57,12 @@ export async function submitCheckin(req, res) {
     const traineeOccupation = req.body.occupation_type || null;
 
     // Validate weight inputs: require valid positive weight > 20kg
-    const validSingleWeight = typeof weight_kg === 'number' && !isNaN(weight_kg) && weight_kg > 20 && weight_kg <= 300;
-    const validDailyWeights = Array.isArray(req.body.daily_weights_kg) && req.body.daily_weights_kg.length === 7 && req.body.daily_weights_kg.every(w => typeof w === 'number' && !isNaN(w) && w > 20 && w <= 300);
+    const parsedWeight = typeof weight_kg === 'number' ? weight_kg : parseFloat(weight_kg);
+    const validSingleWeight = !isNaN(parsedWeight) && parsedWeight > 20 && parsedWeight <= 300;
+    const validDailyWeights = Array.isArray(req.body.daily_weights_kg) && req.body.daily_weights_kg.length === 7 && req.body.daily_weights_kg.every(w => {
+      const nw = typeof w === 'number' ? w : parseFloat(w);
+      return !isNaN(nw) && nw > 20 && nw <= 300;
+    });
 
     if (Array.isArray(req.body.daily_weights_kg) && req.body.daily_weights_kg.length !== 7) {
       return res.status(400).json({ success: false, error: "يجب تسجيل أوزان الأيام السبعة كاملة وحقيقية (7 أوزان يومية) لإرسال المتابعة الأسبوعية" });
@@ -95,7 +99,7 @@ export async function submitCheckin(req, res) {
 
     // 2. Evaluate with Auto-Regulation Engine
     const evalInput = {
-      weight_kg: Number(weight_kg),
+      weight_kg: parsedWeight,
       previous_weight_kg: prevWeight,
       waist_circumference_cm: waist_circumference_cm ? Number(waist_circumference_cm) : null,
       previous_waist_circumference_cm: prevWaist,
@@ -104,11 +108,11 @@ export async function submitCheckin(req, res) {
       workouts_completed: Number(workouts_completed),
       workouts_scheduled: Number(workouts_scheduled),
       biofeedback: {
-        hunger_level: Number(biofeedback.hunger_level || 2),
-        energy_level: Number(biofeedback.energy_level || biofeedback.energy_in_gym || 4),
-        sleep_quality: Number(biofeedback.sleep_quality || 4),
-        sleep_hours: Number(biofeedback.sleep_hours || 7),
-        stress_level: Number(biofeedback.stress_level || 2),
+        hunger_level: Number(biofeedback.hunger_level ?? biofeedback.hungerLevel ?? 2),
+        energy_level: Number(biofeedback.energy_level ?? biofeedback.energyLevel ?? biofeedback.energy_in_gym ?? 4),
+        sleep_quality: Number(biofeedback.sleep_quality ?? biofeedback.sleepQuality ?? 4),
+        sleep_hours: Number(biofeedback.sleep_hours ?? biofeedback.sleepHours ?? 7),
+        stress_level: Number(biofeedback.stress_level ?? biofeedback.stressLevel ?? 2),
       },
       pain_reports: Array.isArray(pain_reports) ? pain_reports : [],
       is_consecutive_plateau: isConsecutivePlateau,

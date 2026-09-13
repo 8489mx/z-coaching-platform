@@ -1,5 +1,5 @@
 import React, { useState, useMemo, useRef } from 'react';
-import { Camera, Scale, Battery, Moon, Utensils, ChevronLeft, ChevronRight, CheckCircle2, Loader2, Activity, Clock, Trash2, Check, UploadCloud, MessageCircle, User, AlertCircle } from 'lucide-react';
+import { Camera, Scale, Battery, Moon, Utensils, ChevronLeft, ChevronRight, CheckCircle2, Loader2, Activity, Clock, Trash2, Check, UploadCloud, MessageCircle, User, AlertCircle, Calendar } from 'lucide-react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { API_BASE } from '../config/api';
 import { getUpcomingFastingAlert } from '../utils/seasonalFastingRadar';
@@ -40,7 +40,17 @@ export default function WeeklyCheckinForm() {
       hungerLevel: 5
     },
     client_notes: '',
-    fasting_transition: 'MAINTAIN_BASELINE'
+    fasting_transition: 'MAINTAIN_BASELINE',
+    // Retrospective deep check-in fields
+    lifestyle_variance: 'NORMAL_WORK',
+    bowel_regularity: 'REGULAR',
+    sleep_stress_composite: 3,
+    menstrual_phase: 'NOT_APPLICABLE',
+    // Prospective forward-looking preview fields
+    next_week_travel: false,
+    next_week_gym_available: true,
+    next_week_realistic_days: 4,
+    next_week_notes: ''
   });
 
   // Weekly Progress Photos (Front, Side, Back)
@@ -117,14 +127,31 @@ export default function WeeklyCheckinForm() {
       const payload = {
         user_id: clientCode,
         client_code: clientCode,
-        weight_kg: formData.weight_kg,
-        waist_circumference_cm: formData.waist_circumference_cm || null,
-        nutrition_adherence_percent: formData.nutrition_adherence_percent,
-        workouts_completed: formData.workouts_completed,
-        biofeedback: formData.biofeedback,
+        weight_kg: Number(formData.weight_kg),
+        waist_circumference_cm: formData.waist_circumference_cm ? Number(formData.waist_circumference_cm) : null,
+        nutrition_adherence_percent: Number(formData.nutrition_adherence_percent),
+        workouts_completed: Number(formData.workouts_completed),
+        biofeedback: {
+          energy_level: Number(formData.biofeedback.energyLevel),
+          sleep_quality: Number(formData.biofeedback.sleepQuality),
+          hunger_level: Number(formData.biofeedback.hungerLevel),
+          energyLevel: Number(formData.biofeedback.energyLevel),
+          sleepQuality: Number(formData.biofeedback.sleepQuality),
+          hungerLevel: Number(formData.biofeedback.hungerLevel)
+        },
         client_notes: formData.client_notes,
         fasting_transition: formData.fasting_transition,
-        photos: photosPayload
+        photos: photosPayload,
+        // Retrospective deep check-in fields
+        lifestyle_variance: formData.lifestyle_variance,
+        bowel_regularity: formData.bowel_regularity,
+        sleep_stress_composite: Number(formData.sleep_stress_composite),
+        menstrual_phase: formData.menstrual_phase,
+        // Prospective forward-looking preview fields
+        next_week_travel: Boolean(formData.next_week_travel),
+        next_week_gym_available: Boolean(formData.next_week_gym_available),
+        next_week_realistic_days: formData.next_week_realistic_days ? Number(formData.next_week_realistic_days) : null,
+        next_week_notes: formData.next_week_notes
       };
 
       const res = await fetch(`${API_BASE}/api/v1/checkin`, {
@@ -573,6 +600,146 @@ export default function WeeklyCheckinForm() {
                 </div>
               </div>
 
+              {/* Retrospective: Lifestyle Variance */}
+              <div>
+                <label style={{ display: 'block', fontSize: '12px', fontWeight: 700, color: '#475569', marginBottom: '8px' }}>
+                  طبيعة حركة وروتين الأسبوع المنقضي:
+                </label>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '8px' }}>
+                  {[
+                    { id: 'NORMAL_WORK', label: 'روتين عمل طبيعي' },
+                    { id: 'HOME_VACATION', label: 'إجازة بالمنزل (حركة أقل)' },
+                    { id: 'TRAVEL_AWAY', label: 'سفر وتنقلات' },
+                    { id: 'DOUBLED_EFFORT', label: 'مجهود ونشاط مضاعف' },
+                    { id: 'SICK_RECOVERY', label: 'وعكة صحية / إرهاق' }
+                  ].map(item => (
+                    <button
+                      key={item.id}
+                      type="button"
+                      onClick={() => setFormData({ ...formData, lifestyle_variance: item.id })}
+                      style={{
+                        padding: '10px 12px',
+                        borderRadius: '8px',
+                        fontSize: '11.5px',
+                        fontWeight: 700,
+                        cursor: 'pointer',
+                        background: formData.lifestyle_variance === item.id ? '#0F172A' : '#F8FAFC',
+                        color: formData.lifestyle_variance === item.id ? '#FFFFFF' : '#475569',
+                        border: formData.lifestyle_variance === item.id ? '1px solid #0F172A' : '1px solid #CBD5E1',
+                        transition: 'all 0.15s ease'
+                      }}
+                    >
+                      {item.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Retrospective: Bowel Regularity */}
+              <div>
+                <label style={{ display: 'block', fontSize: '12px', fontWeight: 700, color: '#475569', marginBottom: '8px' }}>
+                  حركة الأمعاء والهضم خلال الأسبوع:
+                </label>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '8px' }}>
+                  {[
+                    { id: 'REGULAR', label: 'منتظمة ومريحة' },
+                    { id: 'IRREGULAR', label: 'متقلبة / عسر هضم' },
+                    { id: 'CONSTIPATED', label: 'إمساك أو انتفاخ' }
+                  ].map(item => (
+                    <button
+                      key={item.id}
+                      type="button"
+                      onClick={() => setFormData({ ...formData, bowel_regularity: item.id })}
+                      style={{
+                        padding: '10px 8px',
+                        borderRadius: '8px',
+                        fontSize: '11px',
+                        fontWeight: 700,
+                        cursor: 'pointer',
+                        background: formData.bowel_regularity === item.id ? '#0F172A' : '#F8FAFC',
+                        color: formData.bowel_regularity === item.id ? '#FFFFFF' : '#475569',
+                        border: formData.bowel_regularity === item.id ? '1px solid #0F172A' : '1px solid #CBD5E1',
+                        transition: 'all 0.15s ease'
+                      }}
+                    >
+                      {item.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Retrospective: Sleep Stress Composite */}
+              <div style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', borderRadius: '8px', padding: '12px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '12px', fontWeight: 700 }}>
+                  <span style={{ color: '#0F172A' }}>مؤشر الاستشفاء والضغط التراكمي (1 = إجهاد شديد، 5 = استشفاء ممتاز)</span>
+                  <strong style={{ color: '#6366F1', fontFamily: 'JetBrains Mono' }}>{formData.sleep_stress_composite} / 5</strong>
+                </div>
+                <div style={{ display: 'flex', gap: '6px' }}>
+                  {[
+                    { val: 1, label: '1 - إجهاد حاد' },
+                    { val: 2, label: '2 - ضغط وقلق' },
+                    { val: 3, label: '3 - معتدل' },
+                    { val: 4, label: '4 - نوم جيد' },
+                    { val: 5, label: '5 - استشفاء مثالي' }
+                  ].map(item => (
+                    <button
+                      key={item.val}
+                      type="button"
+                      onClick={() => setFormData({ ...formData, sleep_stress_composite: item.val })}
+                      style={{
+                        flex: 1,
+                        padding: '8px 4px',
+                        borderRadius: '8px',
+                        fontSize: '10px',
+                        fontWeight: 700,
+                        cursor: 'pointer',
+                        background: formData.sleep_stress_composite === item.val ? '#6366F1' : '#FFFFFF',
+                        color: formData.sleep_stress_composite === item.val ? '#FFFFFF' : '#475569',
+                        border: formData.sleep_stress_composite === item.val ? '1px solid #6366F1' : '1px solid #CBD5E1',
+                        transition: 'all 0.15s ease'
+                      }}
+                    >
+                      {item.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Retrospective: Menstrual Phase */}
+              <div>
+                <label style={{ display: 'block', fontSize: '12px', fontWeight: 700, color: '#475569', marginBottom: '8px' }}>
+                  المرحلة الهرمونية الحالية (خاص بالإناث):
+                </label>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '8px' }}>
+                  {[
+                    { id: 'NOT_APPLICABLE', label: 'غير منطبق / ذكر' },
+                    { id: 'FOLLICULAR', label: 'الطور الجريبي (بعد الدورة مباشرة)' },
+                    { id: 'OVULATION', label: 'فترة التبويض (منتصف الشهر)' },
+                    { id: 'LUTEAL', label: 'الطور الأصفري (ما قبل الدورة بأيام)' },
+                    { id: 'MENSTRUATION', label: 'فترة الدورة الشهرية الحالية' }
+                  ].map(item => (
+                    <button
+                      key={item.id}
+                      type="button"
+                      onClick={() => setFormData({ ...formData, menstrual_phase: item.id })}
+                      style={{
+                        padding: '10px 10px',
+                        borderRadius: '8px',
+                        fontSize: '11px',
+                        fontWeight: 700,
+                        cursor: 'pointer',
+                        background: formData.menstrual_phase === item.id ? '#0F172A' : '#F8FAFC',
+                        color: formData.menstrual_phase === item.id ? '#FFFFFF' : '#475569',
+                        border: formData.menstrual_phase === item.id ? '1px solid #0F172A' : '1px solid #CBD5E1',
+                        transition: 'all 0.15s ease'
+                      }}
+                    >
+                      {item.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
             </div>
           </div>
         )}
@@ -655,6 +822,157 @@ export default function WeeklyCheckinForm() {
                     fontFamily: 'Cairo, sans-serif'
                   }}
                 />
+              </div>
+
+              {/* Prospective: Forward-Looking Week Preview */}
+              <div style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', borderRadius: '12px', padding: '16px', display: 'flex', flexDirection: 'column', gap: '14px' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', borderBottom: '1px solid #E2E8F0', paddingBottom: '8px' }}>
+                  <Calendar size={16} color="#0284C7" />
+                  <strong style={{ fontSize: '13px', color: '#0F172A' }}>استشراف واستعدادات الأسبوع القادم</strong>
+                </div>
+
+                {/* Travel Toggle */}
+                <div>
+                  <label style={{ display: 'block', fontSize: '11.5px', fontWeight: 700, color: '#475569', marginBottom: '6px' }}>
+                    هل لديك سفر أو تنقلات خارج مدينتك الأسبوع القادم؟
+                  </label>
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
+                    <button
+                      type="button"
+                      onClick={() => setFormData({ ...formData, next_week_travel: true })}
+                      style={{
+                        padding: '9px 12px',
+                        borderRadius: '8px',
+                        fontSize: '11.5px',
+                        fontWeight: 700,
+                        cursor: 'pointer',
+                        background: formData.next_week_travel ? '#0F172A' : '#FFFFFF',
+                        color: formData.next_week_travel ? '#FFFFFF' : '#475569',
+                        border: formData.next_week_travel ? '1px solid #0F172A' : '1px solid #CBD5E1',
+                        transition: 'all 0.15s ease'
+                      }}
+                    >
+                      نعم، لدي سفر
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setFormData({ ...formData, next_week_travel: false })}
+                      style={{
+                        padding: '9px 12px',
+                        borderRadius: '8px',
+                        fontSize: '11.5px',
+                        fontWeight: 700,
+                        cursor: 'pointer',
+                        background: !formData.next_week_travel ? '#0F172A' : '#FFFFFF',
+                        color: !formData.next_week_travel ? '#FFFFFF' : '#475569',
+                        border: !formData.next_week_travel ? '1px solid #0F172A' : '1px solid #CBD5E1',
+                        transition: 'all 0.15s ease'
+                      }}
+                    >
+                      لا، متواجد في مكاني
+                    </button>
+                  </div>
+                </div>
+
+                {/* Gym Available Toggle */}
+                <div>
+                  <label style={{ display: 'block', fontSize: '11.5px', fontWeight: 700, color: '#475569', marginBottom: '6px' }}>
+                    هل الجيم / مكان التمرين متاح لك بانتظام الأسبوع القادم؟
+                  </label>
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
+                    <button
+                      type="button"
+                      onClick={() => setFormData({ ...formData, next_week_gym_available: true })}
+                      style={{
+                        padding: '9px 12px',
+                        borderRadius: '8px',
+                        fontSize: '11.5px',
+                        fontWeight: 700,
+                        cursor: 'pointer',
+                        background: formData.next_week_gym_available ? '#0F172A' : '#FFFFFF',
+                        color: formData.next_week_gym_available ? '#FFFFFF' : '#475569',
+                        border: formData.next_week_gym_available ? '1px solid #0F172A' : '1px solid #CBD5E1',
+                        transition: 'all 0.15s ease'
+                      }}
+                    >
+                      متاح وجاهز للتمرين
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setFormData({ ...formData, next_week_gym_available: false })}
+                      style={{
+                        padding: '9px 12px',
+                        borderRadius: '8px',
+                        fontSize: '11.5px',
+                        fontWeight: 700,
+                        cursor: 'pointer',
+                        background: !formData.next_week_gym_available ? '#0F172A' : '#FFFFFF',
+                        color: !formData.next_week_gym_available ? '#FFFFFF' : '#475569',
+                        border: !formData.next_week_gym_available ? '1px solid #0F172A' : '1px solid #CBD5E1',
+                        transition: 'all 0.15s ease'
+                      }}
+                    >
+                      غير متاح / بديل منزلي
+                    </button>
+                  </div>
+                </div>
+
+                {/* Realistic Days Next Week */}
+                <div>
+                  <label style={{ display: 'block', fontSize: '11.5px', fontWeight: 700, color: '#475569', marginBottom: '6px' }}>
+                    كم يوماً تستطيع الالتزام بالتمرين واقعياً الأسبوع القادم؟
+                  </label>
+                  <div style={{ display: 'flex', gap: '6px' }}>
+                    {[1, 2, 3, 4, 5, 6, 7].map(num => (
+                      <button
+                        key={num}
+                        type="button"
+                        onClick={() => setFormData({ ...formData, next_week_realistic_days: num })}
+                        style={{
+                          flex: 1,
+                          height: '34px',
+                          borderRadius: '8px',
+                          fontWeight: 800,
+                          fontSize: '12px',
+                          fontFamily: 'JetBrains Mono',
+                          border: formData.next_week_realistic_days === num ? '1px solid #0284C7' : '1px solid #CBD5E1',
+                          background: formData.next_week_realistic_days === num ? '#0284C7' : '#FFFFFF',
+                          color: formData.next_week_realistic_days === num ? '#FFFFFF' : '#475569',
+                          cursor: 'pointer',
+                          transition: 'all 0.15s ease'
+                        }}
+                      >
+                        {num}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Next Week Notes */}
+                <div>
+                  <label style={{ display: 'block', fontSize: '11.5px', fontWeight: 700, color: '#475569', marginBottom: '6px' }}>
+                    أي مناسبات، ضغوط عمل، أو ظروف خاصة بالأسبوع القادم تود إخبار الكوتش بها؟
+                  </label>
+                  <input
+                    type="text"
+                    value={formData.next_week_notes}
+                    onChange={(e) => setFormData({ ...formData, next_week_notes: e.target.value })}
+                    placeholder="مثال: عندي امتحانات يومين، أو عزومة عائلية في الويك إند..."
+                    style={{
+                      width: '100%',
+                      height: '38px',
+                      borderRadius: '8px',
+                      border: '1px solid #CBD5E1',
+                      padding: '0 12px',
+                      fontSize: '12px',
+                      color: '#0F172A',
+                      outline: 'none',
+                      background: '#FFFFFF',
+                      boxSizing: 'border-box',
+                      fontFamily: 'Cairo, sans-serif'
+                    }}
+                  />
+                </div>
               </div>
 
               {/* Seasonal Fasting Transition Confirmation */}

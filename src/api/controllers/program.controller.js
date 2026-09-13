@@ -403,7 +403,16 @@ export const submitWeeklyCheckin = async (req, res) => {
       workouts_scheduled = 4,
       biofeedback = {},
       pain_reports = [],
-      photos = []
+      photos = [],
+      // Deep check-in v3 fields
+      lifestyle_variance = "NORMAL_WORK",
+      bowel_regularity = "REGULAR",
+      sleep_stress_composite = 3,
+      menstrual_phase = "NOT_APPLICABLE",
+      next_week_travel = false,
+      next_week_gym_available = true,
+      next_week_realistic_days = null,
+      next_week_notes = null
     } = req.body;
 
     // Find User (Strict validation with Zero fallback)
@@ -459,7 +468,16 @@ export const submitWeeklyCheckin = async (req, res) => {
       workouts_completed: Number(workouts_completed) || 4,
       workouts_scheduled: Number(workouts_scheduled) || 4,
       biofeedback: biofeedback || { hunger_level: 2, energy_in_gym: 4, sleep_quality: 4, stress_level: 2 },
-      pain_reports: pain_reports || []
+      pain_reports: pain_reports || [],
+      lifestyle_variance,
+      bowel_regularity,
+      sleep_stress_composite: Number(sleep_stress_composite) || 3,
+      menstrual_phase,
+      occupation_type: req.body.occupation_type || null,
+      next_week_travel: Boolean(next_week_travel),
+      next_week_gym_available: next_week_gym_available !== false,
+      next_week_realistic_days: next_week_realistic_days ? Number(next_week_realistic_days) : null,
+      next_week_notes
     });
 
     const avgWeight = Math.round((weights.reduce((a, b) => a + b, 0) / weights.length) * 100) / 100;
@@ -477,9 +495,17 @@ export const submitWeeklyCheckin = async (req, res) => {
       workouts_scheduled: Number(workouts_scheduled) || 4,
       biofeedback: biofeedback,
       pain_reports: pain_reports,
-      analysis_status: analysis.status,
+      analysis_status: analysis.analysis_status || analysis.status || "ON_TRACK",
       analysis_output: analysis,
-      status: "PENDING_REVIEW"
+      status: "PENDING_REVIEW",
+      lifestyle_variance,
+      bowel_regularity,
+      sleep_stress_composite: Number(sleep_stress_composite) || 3,
+      menstrual_phase,
+      next_week_travel: Boolean(next_week_travel),
+      next_week_gym_available: next_week_gym_available !== false,
+      next_week_realistic_days: next_week_realistic_days ? Number(next_week_realistic_days) : null,
+      next_week_notes
     });
 
     // Save attached progress photos locally to Hostinger file storage

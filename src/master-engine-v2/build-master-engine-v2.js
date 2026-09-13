@@ -21,7 +21,12 @@ export function resolveOptimalDietFramework(canonicalIntake, rawIntake = {}) {
     rawMedical.hasIbs === true ||
     medical.digestionIssues?.includes("IBS") ||
     rawMedical.digestionIssues?.includes("IBS") ||
-    rawNutrition.hasBloating === true;
+    rawNutrition.hasBloating === true ||
+    rawIntake?.digestive_issues === "IBS" ||
+    rawIntake?.digestive_issues === "GERD" ||
+    rawIntake?.digestive_issues === "BLOATING" ||
+    (Array.isArray(nutrition.digestiveIssues) && nutrition.digestiveIssues.some(d => d.name === "IBS" || d.name === "ACID_REFLUX" || d.name === "BLOATING")) ||
+    (Array.isArray(medical.conditions) && medical.conditions.some(c => c.conditionCode === "DIAGNOSED_DIGESTIVE_CONDITION"));
 
   if (hasIbs) {
     return {
@@ -38,7 +43,9 @@ export function resolveOptimalDietFramework(canonicalIntake, rawIntake = {}) {
     medical.hasInsulinResistance === true ||
     rawMedical.hasInsulinResistance === true ||
     rawMedical.conditions?.includes("PCOS") ||
-    rawMedical.conditions?.includes("INSULIN_RESISTANCE");
+    rawMedical.conditions?.includes("INSULIN_RESISTANCE") ||
+    (Array.isArray(rawIntake?.medical_conditions) && (rawIntake.medical_conditions.includes("PCOS") || rawIntake.medical_conditions.includes("INSULIN_RESISTANCE"))) ||
+    (Array.isArray(medical.conditions) && medical.conditions.some(c => c.conditionCode === "PCOS" || c.conditionCode === "INSULIN_RESISTANCE"));
 
   if (hasPcosOrIr) {
     return {
@@ -148,6 +155,8 @@ export function calculateUniversalNutritionTargets(canonicalIntake, evaluationCo
   const cardio = canonicalIntake.cardio || {};
   const training = canonicalIntake.training || {};
   const nutrition = canonicalIntake.nutrition || {};
+  const medical = canonicalIntake.medical || {};
+  const rawMedical = rawIntake?.medical || {};
 
   const weight = Number(body.weightKg || body.weight_kg) || 75;
   const height = Number(body.heightCm || body.height_cm) || 175;
@@ -231,7 +240,6 @@ export function calculateUniversalNutritionTargets(canonicalIntake, evaluationCo
   }
 
   // Lactation Energy Adjustment (+450 kcal to protect milk supply)
-  const medical = canonicalIntake.medical || {};
   const isLactating =
     medical.pregnancyStatus === "BREASTFEEDING" ||
     medical.isLactating === true ||
@@ -252,7 +260,8 @@ export function calculateUniversalNutritionTargets(canonicalIntake, evaluationCo
   // Clinical Guard: Kidney Disease & Renal Impairment Protein Cap (KDOQI Guideline)
   const conditionsList = [
     ...(Array.isArray(medical.conditions) ? medical.conditions : []),
-    ...(Array.isArray(rawIntake?.medical?.conditions) ? rawIntake.medical.conditions : [])
+    ...(Array.isArray(rawMedical.conditions) ? rawMedical.conditions : []),
+    ...(Array.isArray(rawIntake?.medical_conditions) ? rawIntake.medical_conditions : [])
   ].map(c => typeof c === 'string' ? c.toUpperCase() : String(c?.conditionCode || c?.code || '').toUpperCase());
 
   const hasKidneyCondition =
@@ -594,6 +603,7 @@ export function buildMasterEngineV2(inputs) {
   const rawConditions = [
     ...(Array.isArray(medical.conditions) ? medical.conditions : []),
     ...(Array.isArray(rawMedical.conditions) ? rawMedical.conditions : []),
+    ...(Array.isArray(intake?.medical_conditions) ? intake.medical_conditions : []),
     ...(Array.isArray(intake_decision.profile?.medical_conditions) ? intake_decision.profile.medical_conditions : []),
     ...(Array.isArray(intake_decision.hard_constraints) ? intake_decision.hard_constraints.map(c => c.code) : [])
   ].map(c => typeof c === 'string' ? c.toUpperCase() : String(c?.conditionCode || c?.code || '').toUpperCase());
