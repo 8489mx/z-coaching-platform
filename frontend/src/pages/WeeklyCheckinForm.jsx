@@ -7,6 +7,15 @@ import { optimizeImageFile } from '../utils/imageOptimizer';
 import { getStoredCoachConfig } from '../utils/themeAndCoachConfig';
 import { formatWhatsAppPhone } from '../utils/whatsappRemindersEngine';
 
+function cleanArabicNumStr(val) {
+  if (val === null || val === undefined) return '';
+  return String(val)
+    .replace(/[٠١٢٣٤٥٦٧٨٩]/g, d => '٠١٢٣٤٥٦٧٨٩'.indexOf(d))
+    .replace(/[۰۱۲۳۴۵۶۷۸۹]/g, d => '۰۱۲۳۴۵۶۷۸۹'.indexOf(d))
+    .replace(/,/g, '.')
+    .replace(/[^\d.]/g, '');
+}
+
 export default function WeeklyCheckinForm() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
@@ -127,8 +136,8 @@ export default function WeeklyCheckinForm() {
       const payload = {
         user_id: clientCode,
         client_code: clientCode,
-        weight_kg: Number(formData.weight_kg),
-        waist_circumference_cm: formData.waist_circumference_cm ? Number(formData.waist_circumference_cm) : null,
+        weight_kg: Number(cleanArabicNumStr(formData.weight_kg)),
+        waist_circumference_cm: formData.waist_circumference_cm ? Number(cleanArabicNumStr(formData.waist_circumference_cm)) : null,
         nutrition_adherence_percent: Number(formData.nutrition_adherence_percent),
         workouts_completed: Number(formData.workouts_completed),
         biofeedback: {
@@ -356,10 +365,10 @@ export default function WeeklyCheckinForm() {
                 </label>
                 <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
                   <input 
-                    type="number" 
-                    step="0.1"
+                    type="text" 
+                    inputMode="decimal"
                     value={formData.weight_kg}
-                    onChange={(e) => setFormData({...formData, weight_kg: e.target.value})}
+                    onChange={(e) => setFormData({...formData, weight_kg: cleanArabicNumStr(e.target.value)})}
                     placeholder="مثال: 78.5"
                     style={{
                       width: '100%',
@@ -387,10 +396,10 @@ export default function WeeklyCheckinForm() {
                 </label>
                 <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
                   <input 
-                    type="number" 
-                    step="0.5"
+                    type="text" 
+                    inputMode="decimal"
                     value={formData.waist_circumference_cm}
-                    onChange={(e) => setFormData({...formData, waist_circumference_cm: e.target.value})}
+                    onChange={(e) => setFormData({...formData, waist_circumference_cm: cleanArabicNumStr(e.target.value)})}
                     placeholder="مثال: 84"
                     style={{
                       width: '100%',
