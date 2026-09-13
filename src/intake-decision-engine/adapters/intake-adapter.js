@@ -11,13 +11,14 @@ export function adaptIntakePayloadToCanonicalEngine(raw) {
   }
   const intake = JSON.parse(JSON.stringify(raw));
 
-  // Pre-normalization for direct FullIntakeForm payload (flat structure)
-  if (!intake.personal && (intake.age || intake.gender || intake.height_cm || intake.weight_kg)) {
+  // Pre-normalization for direct FullIntakeForm payload (flat structure & 28-questions catalog)
+  if (!intake.personal && (intake.first_name || intake.last_name || intake.age || intake.gender || intake.sex || intake.date_of_birth || intake.height_cm || intake.weight_kg)) {
     intake.personal = {
-      firstName: (intake.full_name || '').split(' ')[0] || "متدرب",
-      lastName: (intake.full_name || '').split(' ').slice(1).join(' ') || "جديد",
+      firstName: intake.first_name || (intake.full_name || '').split(' ')[0] || "متدرب",
+      lastName: intake.last_name || (intake.full_name || '').split(' ').slice(1).join(' ') || "جديد",
+      dateOfBirth: intake.date_of_birth,
       age: intake.age,
-      sex: String(intake.gender || 'male').toUpperCase() === 'FEMALE' ? 'FEMALE' : 'MALE'
+      sex: String(intake.sex || intake.gender || 'male').toUpperCase() === 'FEMALE' ? 'FEMALE' : 'MALE'
     };
   }
 
@@ -31,11 +32,11 @@ export function adaptIntakePayloadToCanonicalEngine(raw) {
     };
   }
 
-  if (!intake.body && (intake.height_cm || intake.weight_kg || intake.circumferences)) {
+  if (!intake.body && (intake.height_cm || intake.weight_kg || intake.circumferences || intake.waist_cm)) {
     intake.body = {
       heightCm: Number(intake.height_cm) || 175,
       weightKg: Number(intake.weight_kg) || 75,
-      waistCm: Number(intake.circumferences?.waist_cm) || null,
+      waistCm: Number(intake.waist_cm || intake.circumferences?.waist_cm) || null,
       neckCm: Number(intake.circumferences?.neck_cm) || null,
       hipCm: Number(intake.circumferences?.hips_cm) || null,
       photos: {
@@ -47,12 +48,17 @@ export function adaptIntakePayloadToCanonicalEngine(raw) {
     };
   }
 
-  if (!intake.lifestyle && (intake.neat_level || intake.sleep_schedule)) {
+  if (!intake.lifestyle && (intake.neat_level || intake.sleep_schedule || intake.daily_activity || intake.occupation_type || intake.sleep_hours)) {
     const neatMap = {
       sedentary: 'SEDENTARY',
       light: 'LIGHT',
       moderate: 'MODERATE',
-      high: 'HIGH'
+      high: 'HIGH',
+      SEDENTARY: 'SEDENTARY',
+      LIGHT: 'LIGHT',
+      MODERATE: 'MODERATE',
+      HIGH: 'HIGH',
+      VERY_ACTIVE: 'HIGH'
     };
     const sleepHoursMap = {
       less_6: 5.5,
@@ -66,13 +72,14 @@ export function adaptIntakePayloadToCanonicalEngine(raw) {
       HOURS_7_8: 7.5,
       MORE_8: 8.5
     };
-    const avgSleep = sleepHoursMap[intake.sleep_schedule?.average_hours] || 7.5;
+    const rawSleepVal = intake.sleep_schedule?.average_hours || intake.sleep_hours;
+    const avgSleep = typeof rawSleepVal === 'number' ? rawSleepVal : (sleepHoursMap[rawSleepVal] || 7.5);
     intake.lifestyle = {
-      dailyActivity: neatMap[intake.neat_level] || intake.daily_activity || 'MODERATE',
+      dailyActivity: neatMap[intake.neat_level] || neatMap[intake.daily_activity] || 'MODERATE',
       occupationType: intake.occupation_type || undefined,
       sleep: {
         averageHours: avgSleep,
-        quality: intake.sleep_schedule?.pattern === 'regular_night' ? 'GOOD' : 'AVERAGE'
+        quality: intake.sleep_schedule?.pattern === 'regular_night' ? 'GOOD' : 'FAIR'
       },
       workSchedule: {
         type: (intake.sleep_schedule?.pattern === 'rotating_shifts' || intake.sleep_schedule?.pattern === 'night_shift') ? 'SHIFT_BASED' : 'FIXED'
@@ -80,11 +87,13 @@ export function adaptIntakePayloadToCanonicalEngine(raw) {
     };
   }
 
-  if (!intake.medical && intake.medical_conditions) {
+  if (!intake.medical && (intake.medical_conditions || intake.dangerous_symptoms || intake.female_pregnancy || intake.female_menstrual)) {
     const conds = [];
-    const selected = Array.isArray(intake.medical_conditions?.selected) ? intake.medical_conditions.selected : [];
+    const selected = Array.isArray(intake.medical_conditions)
+      ? intake.medical_conditions
+      : (Array.isArray(intake.medical_conditions?.selected) ? intake.medical_conditions.selected : []);
     selected.forEach(s => {
-      if (s && s !== 'none') {
+      if (s && s !== 'none' && s !== 'NONE') {
         conds.push({ conditionCode: String(s).toUpperCase(), stability: 'STABLE' });
       }
     });
@@ -103,30 +112,45 @@ export function adaptIntakePayloadToCanonicalEngine(raw) {
         conds.push({ conditionCode: 'PCOS', stability: 'STABLE' });
       }
     }
+    const dangerousList = Array.isArray(intake.dangerous_symptoms)
+      ? intake.dangerous_symptoms.filter(s => s !== 'NONE')
+      : (Array.isArray(intake.dangerousSymptomsList) ? intake.dangerousSymptomsList : []);
+
     intake.medical = {
       conditions: conds,
+      dangerousSymptomsList: dangerousList,
       pregnancyStatus: intake.female_pregnancy || (intake.medical_conditions?.female_cases?.is_lactating ? 'BREASTFEEDING' : (intake.medical_conditions?.female_cases?.is_postpartum ? 'POSTPARTUM_LESS_THAN_12_MONTHS' : 'NOT_PREGNANT')),
       menstrualStatus: intake.female_menstrual || undefined,
       medications: intake.current_meds_supplements_list || []
     };
   }
 
-  if (!intake.training && (intake.training_environment || intake.training_logistics || intake.injuries_map)) {
+  if (!intake.training && (intake.training_environment || intake.training_logistics || intake.injuries_map || intake.training_location || intake.available_days_per_week || intake.experience_level || intake.injuries)) {
     const locMap = {
       commercial_gym: 'GYM',
       home_gym: 'HOME',
       minimal_equipment: 'HOME',
-      calisthenics_bands: 'HOME'
+      calisthenics_bands: 'HOME',
+      GYM: 'GYM',
+      HOME_DUMBBELLS: 'HOME',
+      HOME_BODYWEIGHT: 'HOME'
     };
-    const injAreas = Array.isArray(intake.injuries_map?.selected_areas) ? intake.injuries_map.selected_areas
-      : (Array.isArray(intake.injuries) ? intake.injuries : []);
+    const injAreas = Array.isArray(intake.injuries)
+      ? intake.injuries
+      : (Array.isArray(intake.injuries_map?.selected_areas) ? intake.injuries_map.selected_areas : []);
     const trainingInjuries = [];
     const AREA_MAP = {
       spine_back: 'LOWER_BACK',
       knee: 'KNEE',
       shoulder: 'SHOULDER',
       core: 'LOWER_BACK',
-      other_joints: 'ELBOW_WRIST'
+      other_joints: 'ELBOW_WRIST',
+      LOWER_BACK: 'LOWER_BACK',
+      KNEE: 'KNEE',
+      SHOULDER: 'SHOULDER',
+      NECK: 'NECK',
+      ELBOW_WRIST: 'ELBOW_WRIST',
+      HIP: 'HIP'
     };
     // Deep intake form v2: injury_severity maps to painLevel
     const severityPainMap = { MILD: 3, MODERATE: 5, SEVERE: 8 };
@@ -138,11 +162,17 @@ export function adaptIntakePayloadToCanonicalEngine(raw) {
       }
     });
 
+    const expMap = {
+      BEGINNER: 'BEGINNER',
+      INTERMEDIATE: 'INTERMEDIATE',
+      ADVANCED: 'ADVANCED'
+    };
+
     intake.training = {
-      location: locMap[intake.training_environment] || 'GYM',
-      preferredDaysPerWeek: Number(intake.training_logistics?.days_per_week) || 4,
-      maxDaysPerWeek: Number(intake.training_logistics?.days_per_week) || 4,
-      experience: String(intake.training_logistics?.experience_level || 'intermediate').toUpperCase(),
+      location: locMap[intake.training_location] || locMap[intake.training_environment] || 'GYM',
+      preferredDaysPerWeek: Number(intake.available_days_per_week || intake.training_logistics?.days_per_week) || 4,
+      maxDaysPerWeek: Number(intake.available_days_per_week || intake.training_logistics?.days_per_week) || 4,
+      experience: expMap[intake.experience_level] || String(intake.training_logistics?.experience_level || 'intermediate').toUpperCase(),
       selectedInjuries: trainingInjuries.map(i => i.area),
       injuries: trainingInjuries,
       targetFocusMuscles: Array.isArray(intake.focus_muscles) ? intake.focus_muscles.map(m => m.toUpperCase()) : [],
@@ -302,9 +332,9 @@ export function adaptIntakePayloadToCanonicalEngine(raw) {
     },
     sleep: {
       averageHours: Number(lifestyle.sleep?.averageHours) || 7,
-      quality: ["POOR", "AVERAGE", "GOOD"].includes(lifestyle.sleep?.quality) ? lifestyle.sleep.quality : "GOOD"
+      quality: ["POOR", "FAIR", "GOOD", "UNKNOWN"].includes(lifestyle.sleep?.quality) ? lifestyle.sleep.quality : "GOOD"
     },
-    stressLevel: ["LOW", "MODERATE", "HIGH", "SEVERE"].includes(lifestyle.stressLevel) ? lifestyle.stressLevel : "MODERATE",
+    stressLevel: ["LOW", "MODERATE", "HIGH", "UNKNOWN"].includes(lifestyle.stressLevel) ? lifestyle.stressLevel : (lifestyle.stressLevel === "SEVERE" ? "HIGH" : "MODERATE"),
     occupationType: ["DESK_OFFICE", "FIELD_MOBILE", "MANUAL_LABOR", "STUDENT", "UNEMPLOYED"].includes(lifestyle.occupationType) ? lifestyle.occupationType : undefined
   };
 

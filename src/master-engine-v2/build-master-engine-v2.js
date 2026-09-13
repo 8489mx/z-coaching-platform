@@ -308,12 +308,17 @@ export function calculateUniversalNutritionTargets(canonicalIntake, evaluationCo
     "BALANCED_HIGH_PROTEIN"
   ).toUpperCase();
 
-  let resolvedFrameworkObj = null;
-  let dietFramework = rawDietChoice;
+  let resolvedFrameworkObj = resolveOptimalDietFramework(canonicalIntake, rawIntake);
+  let dietFramework = resolvedFrameworkObj.framework;
 
-  if (rawDietChoice === "AUTO_COACH_MATCH" || rawDietChoice === "AUTO" || rawDietChoice === "SMART_COACH_RECOMMENDATION") {
-    resolvedFrameworkObj = resolveOptimalDietFramework(canonicalIntake, rawIntake);
-    dietFramework = resolvedFrameworkObj.framework;
+  if (
+    rawDietChoice !== "AUTO_COACH_MATCH" &&
+    rawDietChoice !== "AUTO" &&
+    rawDietChoice !== "SMART_COACH_RECOMMENDATION" &&
+    rawDietChoice !== "BALANCED_HIGH_PROTEIN" &&
+    rawDietChoice !== ""
+  ) {
+    dietFramework = rawDietChoice;
   }
 
 
