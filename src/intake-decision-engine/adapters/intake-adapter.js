@@ -4,6 +4,18 @@
  * Guarantees zero schema validation errors while preserving 100% of user safety & decision data.
  */
 
+export function parseCleanNumber(val, fallback = null) {
+  if (val === null || val === undefined || val === '') return fallback;
+  if (typeof val === 'number') return Number.isFinite(val) ? val : fallback;
+  const str = String(val)
+    .trim()
+    .replace(/[٠١٢٣٤٥٦٧٨٩]/g, d => '٠١٢٣٤٥٦٧٨٩'.indexOf(d))
+    .replace(/[۰۱۲۳۴۵۶۷۸۹]/g, d => '۰۱۲۳۴۵۶۷۸۹'.indexOf(d))
+    .replace(/,/g, '.');
+  const num = Number(str);
+  return Number.isFinite(num) ? num : fallback;
+}
+
 export function adaptIntakePayloadToCanonicalEngine(raw) {
   if (!raw || typeof raw !== 'object') return {};
   if (raw.client && raw.body && raw.goals && raw.training && raw.medical) {
@@ -18,7 +30,7 @@ export function adaptIntakePayloadToCanonicalEngine(raw) {
       firstName: intake.first_name || (intake.full_name || '').split(' ')[0] || "متدرب",
       lastName: intake.last_name || (intake.full_name || '').split(' ').slice(1).join(' ') || "جديد",
       dateOfBirth: intake.date_of_birth,
-      age: intake.age,
+      age: parseCleanNumber(intake.age, null),
       sex: String(intake.sex || intake.gender || 'male').toUpperCase() === 'FEMALE' ? 'FEMALE' : 'MALE'
     };
   }
@@ -35,11 +47,11 @@ export function adaptIntakePayloadToCanonicalEngine(raw) {
 
   if (!intake.body && (intake.height_cm || intake.weight_kg || intake.circumferences || intake.waist_cm)) {
     intake.body = {
-      heightCm: Number(intake.height_cm) || 175,
-      weightKg: Number(intake.weight_kg) || 75,
-      waistCm: Number(intake.waist_cm || intake.circumferences?.waist_cm) || null,
-      neckCm: Number(intake.circumferences?.neck_cm) || null,
-      hipCm: Number(intake.circumferences?.hips_cm) || null,
+      heightCm: parseCleanNumber(intake.height_cm, 175),
+      weightKg: parseCleanNumber(intake.weight_kg, 75),
+      waistCm: parseCleanNumber(intake.waist_cm || intake.circumferences?.waist_cm, null),
+      neckCm: parseCleanNumber(intake.circumferences?.neck_cm, null),
+      hipCm: parseCleanNumber(intake.circumferences?.hips_cm, null),
       photos: {
         front: intake.media_uploads?.front_url || null,
         side: intake.media_uploads?.side_url || null,
@@ -238,8 +250,9 @@ export function adaptIntakePayloadToCanonicalEngine(raw) {
   // 1. Personal
   const personal = intake.personal || {};
   let dob = personal.dateOfBirth;
-  if (!dob && personal.age) {
-    const birthYear = new Date().getFullYear() - Number(personal.age);
+  const ageNum = parseCleanNumber(personal.age || intake.age, null);
+  if (!dob && ageNum) {
+    const birthYear = new Date().getFullYear() - ageNum;
     dob = `${birthYear}-01-01`;
   }
   if (!dob || typeof dob !== 'string' || !/^\d{4}-\d{2}-\d{2}$/.test(dob)) {
@@ -284,12 +297,12 @@ export function adaptIntakePayloadToCanonicalEngine(raw) {
   else if (quality === "APPROXIMATE" || quality === "LOW") quality = "LOW";
   else if (!["HIGH", "MEDIUM", "LOW", "UNKNOWN"].includes(quality)) quality = "HIGH";
 
-  const height = Number(body.heightCm) || 175;
-  const weight = Number(body.weightKg) || 75;
-  const waist = Number(body.waistCm) || Math.round(height * 0.45);
-  const neck = Number(body.neckCm) || null;
-  const hip = Number(body.hipCm) || null;
-  let bodyFat = Number(body.bodyFat) || null;
+  const height = parseCleanNumber(body.heightCm, parseCleanNumber(intake.height_cm, 175));
+  const weight = parseCleanNumber(body.weightKg, parseCleanNumber(intake.weight_kg, 75));
+  const waist = parseCleanNumber(body.waistCm, parseCleanNumber(intake.waist_cm || intake.circumferences?.waist_cm, Math.round(height * 0.45)));
+  const neck = parseCleanNumber(body.neckCm, parseCleanNumber(intake.circumferences?.neck_cm, null));
+  const hip = parseCleanNumber(body.hipCm, parseCleanNumber(intake.circumferences?.hips_cm, null));
+  let bodyFat = parseCleanNumber(body.bodyFat, null);
 
   // Calculate US Navy Body Fat if neckCm and waistCm are provided and direct bodyFat is missing
   if (!bodyFat && neck && waist && waist > neck) {

@@ -119,6 +119,15 @@ function deepMerge(target, source) {
   return result;
 }
 
+function cleanArabicNumStr(val) {
+  if (val === null || val === undefined) return '';
+  return String(val)
+    .replace(/[٠١٢٣٤٥٦٧٨٩]/g, d => '٠١٢٣٤٥٦٧٨٩'.indexOf(d))
+    .replace(/[۰۱۲۳۴۵۶۷۸۹]/g, d => '۰۱۲۳۴۵۶۷۸۹'.indexOf(d))
+    .replace(/,/g, '.')
+    .replace(/[^\d.]/g, '');
+}
+
 export default function FullIntakeForm() {
   const navigate = useNavigate();
   const location = useLocation();
@@ -627,14 +636,15 @@ export default function FullIntakeForm() {
                     السن (بالسنوات) *
                   </label>
                   <input 
-                    type="number" 
+                    type="text" 
+                    inputMode="numeric"
                     placeholder="مثال: 26"
                     value={formData.age || ''}
-                    onChange={(e) => setFormData(p => ({ ...p, age: e.target.value }))}
+                    onChange={(e) => setFormData(p => ({ ...p, age: cleanArabicNumStr(e.target.value) }))}
                     style={{
                       width: '100%',
                       height: '40px',
-                      borderRadius: '6px',
+                      borderRadius: '8px',
                       border: '1px solid #CBD5E1',
                       padding: '0 10px',
                       fontSize: '13px',
@@ -651,14 +661,15 @@ export default function FullIntakeForm() {
                     الطول (سم) *
                   </label>
                   <input 
-                    type="number" 
+                    type="text" 
+                    inputMode="numeric"
                     placeholder="مثال: 180"
                     value={formData.height_cm || ''}
-                    onChange={(e) => setFormData(p => ({ ...p, height_cm: e.target.value }))}
+                    onChange={(e) => setFormData(p => ({ ...p, height_cm: cleanArabicNumStr(e.target.value) }))}
                     style={{
                       width: '100%',
                       height: '40px',
-                      borderRadius: '6px',
+                      borderRadius: '8px',
                       border: '1px solid #CBD5E1',
                       padding: '0 10px',
                       fontSize: '13px',
@@ -675,14 +686,15 @@ export default function FullIntakeForm() {
                     الوزن الحالي (كجم) *
                   </label>
                   <input 
-                    type="number" 
+                    type="text" 
+                    inputMode="decimal"
                     placeholder="مثال: 82.5"
                     value={formData.weight_kg || ''}
-                    onChange={(e) => setFormData(p => ({ ...p, weight_kg: e.target.value }))}
+                    onChange={(e) => setFormData(p => ({ ...p, weight_kg: cleanArabicNumStr(e.target.value) }))}
                     style={{
                       width: '100%',
                       height: '40px',
-                      borderRadius: '6px',
+                      borderRadius: '8px',
                       border: '1px solid #CBD5E1',
                       padding: '0 10px',
                       fontSize: '13px',
@@ -710,14 +722,15 @@ export default function FullIntakeForm() {
                       محيط الرقبة (سم) *
                     </label>
                     <input 
-                      type="number" 
+                      type="text" 
+                      inputMode="decimal"
                       placeholder="عند أضيق نقطة"
                       value={circumferences.neck_cm || ''}
-                      onChange={(e) => updateNested('circumferences', 'neck_cm', e.target.value)}
+                      onChange={(e) => updateNested('circumferences', 'neck_cm', cleanArabicNumStr(e.target.value))}
                       style={{
                         width: '100%',
                         height: '38px',
-                        borderRadius: '6px',
+                        borderRadius: '8px',
                         border: '1px solid #CBD5E1',
                         background: '#FFFFFF',
                         padding: '0 10px',
@@ -735,14 +748,15 @@ export default function FullIntakeForm() {
                       محيط الوسط / البطن (سم) *
                     </label>
                     <input 
-                      type="number" 
+                      type="text" 
+                      inputMode="decimal"
                       placeholder="عند مستوى السرة"
                       value={circumferences.waist_cm || ''}
-                      onChange={(e) => updateNested('circumferences', 'waist_cm', e.target.value)}
+                      onChange={(e) => updateNested('circumferences', 'waist_cm', cleanArabicNumStr(e.target.value))}
                       style={{
                         width: '100%',
                         height: '38px',
-                        borderRadius: '6px',
+                        borderRadius: '8px',
                         border: '1px solid #CBD5E1',
                         background: '#FFFFFF',
                         padding: '0 10px',
@@ -765,14 +779,15 @@ export default function FullIntakeForm() {
                       )}
                     </div>
                     <input 
-                      type="number" 
+                      type="text" 
+                      inputMode="decimal"
                       placeholder="أعرض نقطة بالحوض"
                       value={circumferences.hips_cm || ''}
-                      onChange={(e) => updateNested('circumferences', 'hips_cm', e.target.value)}
+                      onChange={(e) => updateNested('circumferences', 'hips_cm', cleanArabicNumStr(e.target.value))}
                       style={{
                         width: '100%',
                         height: '38px',
-                        borderRadius: '6px',
+                        borderRadius: '8px',
                         border: '1px solid #CBD5E1',
                         background: '#FFFFFF',
                         padding: '0 10px',
