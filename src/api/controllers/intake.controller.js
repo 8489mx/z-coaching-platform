@@ -37,13 +37,16 @@ function formatSubmissionWithDecryptedAnswers(submissionInstance) {
 
 // Helper: Build Explainable AI Safety & Rationale Audit
 function generateAiRationaleAudit(intakePayload, masterProgram) {
-  const personal = intakePayload.personal || intakePayload.client || {};
-  const training = intakePayload.training || {};
-  const medical = intakePayload.medical || {};
-  const nutrition = intakePayload.nutrition || {};
-  const body = intakePayload.body || {};
-  const goals = intakePayload.goals || {};
-  const cardio = intakePayload.cardio || {};
+  const base = (intakePayload?.answers && typeof intakePayload.answers === 'object')
+    ? { ...intakePayload.answers, ...intakePayload }
+    : (intakePayload || {});
+  const personal = base.personal || base.client || {};
+  const training = base.training || {};
+  const medical = base.medical || {};
+  const nutrition = base.nutrition || {};
+  const body = base.body || {};
+  const goals = base.goals || {};
+  const cardio = base.cardio || {};
 
   const injuryExclusions = [];
   if (medical.conditions && medical.conditions.length > 0) {
@@ -93,11 +96,11 @@ function generateAiRationaleAudit(intakePayload, masterProgram) {
   const cardioBpm = "120 - 135 bpm";
   const cardioStrategy = `تم تحديد ${cardio.maxSessionsPerWeek || 3} جلسات كارديو أسبوعياً بنطاق نبضات حرق الدهون Zone 2 (${cardioBpm}) بالإضافة إلى مستهدف ${cardio.averageDailySteps || 10000} خطوة يومياً لتحفيز نزول الدهون دون التأثير على الاستشفاء العضلي.`;
 
-  const weight = Number(body.weightKg) || 75;
-  const height = Number(body.heightCm) || 175;
-  const age = Number(personal.age) || (personal.dateOfBirth ? (new Date().getFullYear() - new Date(personal.dateOfBirth).getFullYear()) : 28);
-  const isMale = personal.sex !== 'FEMALE';
-  const bodyFat = Number(body.bodyFat) || null;
+  const weight = Number(body.weightKg || base.weight_kg) || 75;
+  const height = Number(body.heightCm || base.height_cm) || 175;
+  const age = Number(personal.age || base.age) || (personal.dateOfBirth ? (new Date().getFullYear() - new Date(personal.dateOfBirth).getFullYear()) : 28);
+  const isMale = (personal.sex || base.sex || base.gender) !== 'FEMALE';
+  const bodyFat = Number(body.bodyFat || base.body_fat) || null;
 
   // Unify with masterProgram deterministic nutrition targets if available
   const targets = masterProgram?.nutrition_program?.targets || {};

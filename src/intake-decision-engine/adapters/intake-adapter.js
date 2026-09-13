@@ -9,7 +9,8 @@ export function adaptIntakePayloadToCanonicalEngine(raw) {
   if (raw.client && raw.body && raw.goals && raw.training && raw.medical) {
     return raw;
   }
-  const intake = JSON.parse(JSON.stringify(raw));
+  const base = (raw.answers && typeof raw.answers === 'object') ? { ...raw.answers, ...raw } : raw;
+  const intake = JSON.parse(JSON.stringify(base));
 
   // Pre-normalization for direct FullIntakeForm payload (flat structure & 28-questions catalog)
   if (!intake.personal && (intake.first_name || intake.last_name || intake.age || intake.gender || intake.sex || intake.date_of_birth || intake.height_cm || intake.weight_kg)) {
@@ -335,14 +336,15 @@ export function adaptIntakePayloadToCanonicalEngine(raw) {
       quality: ["POOR", "FAIR", "GOOD", "UNKNOWN"].includes(lifestyle.sleep?.quality) ? lifestyle.sleep.quality : "GOOD"
     },
     stressLevel: ["LOW", "MODERATE", "HIGH", "UNKNOWN"].includes(lifestyle.stressLevel) ? lifestyle.stressLevel : (lifestyle.stressLevel === "SEVERE" ? "HIGH" : "MODERATE"),
-    occupationType: ["DESK_OFFICE", "FIELD_MOBILE", "MANUAL_LABOR", "STUDENT", "UNEMPLOYED"].includes(lifestyle.occupationType) ? lifestyle.occupationType : undefined
+    occupationType: ["DESK_OFFICE", "FIELD_MOBILE", "MANUAL_LABOR", "STUDENT", "UNEMPLOYED"].includes(lifestyle.occupationType || intake.occupation_type) ? (lifestyle.occupationType || intake.occupation_type) : undefined
   };
 
 
   // 5. Medical
   const medical = intake.medical || {};
   const dangerousList = Array.isArray(medical.dangerousSymptomsList) ? medical.dangerousSymptomsList
-    : (Array.isArray(medical.dangerous_symptoms) ? medical.dangerous_symptoms : []);
+    : (Array.isArray(medical.dangerous_symptoms) ? medical.dangerous_symptoms
+    : (Array.isArray(intake.dangerous_symptoms) ? intake.dangerous_symptoms : []));
   const dangerousSymptoms = {
     chestPainOrPressure: (dangerousList.includes("CHEST_PAIN") || medical.dangerousSymptoms?.chestPainOrPressure === "YES") ? "YES" : "NO",
     fainting: (dangerousList.includes("FAINTING") || medical.dangerousSymptoms?.fainting === "YES") ? "YES" : "NO",
