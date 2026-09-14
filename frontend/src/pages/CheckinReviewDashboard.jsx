@@ -306,7 +306,7 @@ function ProgressTrendChart({ history = [], isMaxTier = false, targetWeight = nu
               style={{
                 height: '24px',
                 padding: '0 12px',
-                borderRadius: '4px',
+                borderRadius: '6px',
                 border: 'none',
                 background: activeTab === tab.id ? colorPrimary : 'transparent',
                 color: activeTab === tab.id ? '#FFFFFF' : '#64748B',
@@ -921,7 +921,7 @@ export default function CheckinReviewDashboard() {
                 display: 'inline-flex',
                 alignItems: 'center',
                 gap: '6px',
-                borderRadius: '6px',
+                borderRadius: '8px',
                 background: '#FFFFFF',
                 color: '#0F172A',
                 border: '1px solid #CBD5E1',
@@ -944,7 +944,7 @@ export default function CheckinReviewDashboard() {
           <div style={{ 
             background: '#FFFFFF', 
             border: '1px solid #E2E8F0', 
-            borderRadius: '10px', 
+            borderRadius: '12px', 
             overflow: 'hidden',
             display: 'flex',
             flexDirection: 'column',
@@ -961,7 +961,7 @@ export default function CheckinReviewDashboard() {
                     طابور المشتركين ({filteredQueue.length})
                   </strong>
                 </div>
-                <span style={{ fontSize: '11px', background: '#0F172A', color: '#FFFFFF', padding: '1px 6px', borderRadius: '4px', fontWeight: 800 }}>
+                <span style={{ fontSize: '11px', background: '#0F172A', color: '#FFFFFF', padding: '1px 6px', borderRadius: '6px', fontWeight: 800 }}>
                   معلق
                 </span>
               </div>
@@ -980,7 +980,7 @@ export default function CheckinReviewDashboard() {
                   style={{
                     width: '100%',
                     height: '30px',
-                    borderRadius: '6px',
+                    borderRadius: '8px',
                     border: '1px solid #CBD5E1',
                     padding: '0 28px 0 8px',
                     fontSize: '11px',
@@ -1029,7 +1029,7 @@ export default function CheckinReviewDashboard() {
                       }}
                       style={{
                         height: '24px',
-                        borderRadius: '6px',
+                        borderRadius: '8px',
                         border,
                         background,
                         color,

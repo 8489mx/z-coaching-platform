@@ -347,7 +347,7 @@ export default function WeeklyCheckinForm() {
                 ) : (
                   <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: '4px' }}>
                     <span style={{ fontSize: '11.5px', color: '#64748B' }}>الكود المسجل للتقييم الأسبوعي:</span>
-                    <span style={{ fontSize: '12.5px', fontWeight: 800, color: '#0F172A', fontFamily: 'JetBrains Mono, Cairo', background: '#FFFFFF', padding: '3px 10px', borderRadius: '4px', border: '1px solid #CBD5E1' }}>
+                    <span style={{ fontSize: '12.5px', fontWeight: 800, color: '#0F172A', fontFamily: 'JetBrains Mono, Cairo', background: '#FFFFFF', padding: '3px 10px', borderRadius: '6px', border: '1px solid #CBD5E1' }}>
                       #{clientIdentifier.replace(/^#+/, '')}
                     </span>
                   </div>
@@ -430,7 +430,7 @@ export default function WeeklyCheckinForm() {
                   <Camera size={18} color="#D97706" />
                   <strong style={{ fontSize: '13.5px', color: '#0F172A' }}>صور التطور الأسبوعي (3 زوايا)</strong>
                 </div>
-                <span style={{ fontSize: '10.5px', color: '#16A34A', background: '#F0FDF4', padding: '2px 8px', borderRadius: '4px', fontWeight: 700 }}>
+                <span style={{ fontSize: '10.5px', color: '#16A34A', background: '#F0FDF4', padding: '2px 8px', borderRadius: '6px', fontWeight: 700 }}>
                   ضغط محلي ذكي فائق الوضوح
                 </span>
               </div>
@@ -490,7 +490,7 @@ export default function WeeklyCheckinForm() {
                               style={{
                                 background: '#FEE2E2',
                                 border: 'none',
-                                borderRadius: '4px',
+                                borderRadius: '6px',
                                 padding: '3px',
                                 color: '#EF4444',
                                 cursor: 'pointer',

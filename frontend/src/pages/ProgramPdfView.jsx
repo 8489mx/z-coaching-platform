@@ -586,7 +586,7 @@ export default function ProgramPdfView() {
               {/* Sessions & Workout Tables */}
               {page.sessions.map((session, sIdx) => (
                 <div key={sIdx} style={{ marginBottom: '14px' }}>
-                  <div style={{ fontSize: '9pt', fontWeight: '800', color: '#0F172A', marginBottom: '6px', background: '#F1F5F9', padding: '4px 8px', borderRadius: '4px' }}>
+                  <div style={{ fontSize: '9pt', fontWeight: '800', color: '#0F172A', marginBottom: '6px', background: '#F1F5F9', padding: '4px 8px', borderRadius: '6px' }}>
                     {session.session_name || session.name || `الحصة ${page.chunkIndex * 2 + sIdx + 1}`}
                   </div>
                   <table className="pdf-table">

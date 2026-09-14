@@ -369,7 +369,7 @@ export default function CoachCommandCenter() {
                 style={{
                   background: isActive ? '#F8FAFC' : '#FFFFFF',
                   border: isActive ? '2px solid #0F172A' : '1px solid #E2E8F0',
-                  borderRadius: '10px',
+                  borderRadius: '12px',
                   padding: isActive ? '15px 17px' : '16px 18px',
                   boxShadow: isActive ? '0 4px 14px rgba(15, 23, 42, 0.08)' : '0 1px 3px rgba(15, 23, 42, 0.02)',
                   display: 'flex',
@@ -444,7 +444,7 @@ export default function CoachCommandCenter() {
             background: '#FFFFFF',
             border: '1px solid #E2E8F0',
             borderRight: '4px solid #0F172A',
-            borderRadius: '8px',
+            borderRadius: '12px',
             padding: '8px 14px',
             display: 'flex',
             justifyContent: 'space-between',
@@ -478,7 +478,7 @@ export default function CoachCommandCenter() {
                   background: '#0F172A',
                   color: '#FFFFFF',
                   border: 'none',
-                  borderRadius: '6px',
+                  borderRadius: '8px',
                   padding: '5px 12px',
                   fontSize: '11px',
                   fontWeight: 800,
@@ -497,7 +497,7 @@ export default function CoachCommandCenter() {
                   background: 'transparent',
                   border: 'none',
                   color: '#94A3B8',
-                  borderRadius: '6px',
+                  borderRadius: '8px',
                   padding: '4px',
                   cursor: 'pointer',
                   display: 'flex',
@@ -540,7 +540,7 @@ export default function CoachCommandCenter() {
                       color: '#475569',
                       background: '#F1F5F9',
                       border: '1px solid #CBD5E1',
-                      borderRadius: '6px',
+                      borderRadius: '8px',
                       padding: '2px 8px',
                       cursor: 'pointer',
                       fontWeight: 700,
@@ -603,7 +603,7 @@ export default function CoachCommandCenter() {
                 padding: '8px 12px',
                 background: '#F8FAFC',
                 border: '1px solid #E2E8F0',
-                borderRadius: '8px',
+                borderRadius: '10px',
                 marginBottom: '10px'
               }}>
                 <span style={{ fontSize: '11.5px', color: '#475569', fontWeight: 700 }}>
@@ -634,7 +634,7 @@ export default function CoachCommandCenter() {
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 480px), 1fr))', gap: '10px', marginTop: '6px', minHeight: fastingFilter === 'ALL' ? '180px' : 'auto', alignContent: 'start' }}>
               {filteredActions.length === 0 ? (
                 fastingFilter === 'ALL' ? (
-                  <div style={{ gridColumn: '1 / -1', minHeight: '160px', padding: '24px 16px', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', textAlign: 'center', background: '#F8FAFC', border: '1px dashed #CBD5E1', borderRadius: '10px' }}>
+                  <div style={{ gridColumn: '1 / -1', minHeight: '160px', padding: '24px 16px', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', textAlign: 'center', background: '#F8FAFC', border: '1px dashed #CBD5E1', borderRadius: '12px' }}>
                     <div style={{ width: '36px', height: '36px', borderRadius: '50%', background: '#F1F5F9', color: '#0F172A', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 8px auto' }}>
                       <CheckCircle2 size={18} />
                     </div>
@@ -653,7 +653,7 @@ export default function CoachCommandCenter() {
                     style={{
                       background: '#FFFFFF',
                       border: '1px solid #E2E8F0',
-                      borderRadius: '10px',
+                      borderRadius: '12px',
                       padding: '12px 14px',
                       boxShadow: '0 1px 2px rgba(15, 23, 42, 0.02)',
                       display: 'flex',

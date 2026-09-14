@@ -148,7 +148,7 @@ export default function ClientTimelineProfile() {
               <button 
                 type="button" 
                 onClick={() => navigate('/customers')} 
-                style={{ background: '#F8FAFC', border: '1px solid #CBD5E1', borderRadius: '6px', width: '34px', height: '34px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: '#475569' }}
+                style={{ background: '#F8FAFC', border: '1px solid #CBD5E1', borderRadius: '8px', width: '34px', height: '34px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: '#475569' }}
                 title="الرجوع لقائمة المتدربين"
               >
                 <ChevronRight size={18} />
@@ -162,21 +162,21 @@ export default function ClientTimelineProfile() {
                     const fasting = extractClientFastingProfile(client);
                     if (fasting?.isCoptic) {
                       return (
-                        <span style={{ fontSize: '11px', fontWeight: 800, color: '#6D28D9', background: '#F5F3FF', border: '1px solid #DDD6FE', padding: '2px 8px', borderRadius: '4px' }}>
+                        <span style={{ fontSize: '11px', fontWeight: 800, color: '#6D28D9', background: '#F5F3FF', border: '1px solid #DDD6FE', padding: '2px 8px', borderRadius: '6px' }}>
                           {fasting.christianFastingStyle === 'STRICT_VEGAN' ? 'صيام نباتي صرف' : 'صيام مع أسماك'}
                         </span>
                       );
                     }
                     if (fasting?.isRamadan) {
                       return (
-                        <span style={{ fontSize: '11px', fontWeight: 800, color: '#B45309', background: '#FEF3C7', border: '1px solid #FDE68A', padding: '2px 8px', borderRadius: '4px' }}>
+                        <span style={{ fontSize: '11px', fontWeight: 800, color: '#B45309', background: '#FEF3C7', border: '1px solid #FDE68A', padding: '2px 8px', borderRadius: '6px' }}>
                           صيام رمضان
                         </span>
                       );
                     }
                     if (fasting?.isIntermittent) {
                       return (
-                        <span style={{ fontSize: '11px', fontWeight: 800, color: '#0369A1', background: '#E0F2FE', border: '1px solid #BAE6FD', padding: '2px 8px', borderRadius: '4px' }}>
+                        <span style={{ fontSize: '11px', fontWeight: 800, color: '#0369A1', background: '#E0F2FE', border: '1px solid #BAE6FD', padding: '2px 8px', borderRadius: '6px' }}>
                           {fasting.intermittentBadge?.label || 'صيام متقطع'}
                         </span>
                       );
@@ -199,7 +199,7 @@ export default function ClientTimelineProfile() {
                   background: '#0F172A',
                   color: '#FFFFFF',
                   padding: '7px 14px',
-                  borderRadius: '6px',
+                  borderRadius: '8px',
                   fontSize: '11.5px',
                   fontWeight: 800,
                   textDecoration: 'none',
@@ -220,7 +220,7 @@ export default function ClientTimelineProfile() {
                   border: '1px solid #CBD5E1',
                   color: '#0F172A',
                   padding: '7px 14px',
-                  borderRadius: '6px',
+                  borderRadius: '8px',
                   fontSize: '11.5px',
                   fontWeight: 800,
                   textDecoration: 'none'
@@ -231,7 +231,7 @@ export default function ClientTimelineProfile() {
               </Link>
 
               <button 
-                type="button"
+                type="button" 
                 onClick={() => setIsLabModalOpen(true)}
                 style={{
                   display: 'inline-flex',
@@ -241,7 +241,7 @@ export default function ClientTimelineProfile() {
                   border: '1px solid #BAE6FD',
                   color: '#0284C7',
                   padding: '7px 14px',
-                  borderRadius: '6px',
+                  borderRadius: '8px',
                   fontSize: '11.5px',
                   fontWeight: 800,
                   cursor: 'pointer'
@@ -265,7 +265,7 @@ export default function ClientTimelineProfile() {
                     border: '1px solid #86EFAC',
                     color: '#16A34A',
                     padding: '7px 12px',
-                    borderRadius: '6px',
+                    borderRadius: '8px',
                     fontSize: '11.5px',
                     fontWeight: 800,
                     textDecoration: 'none'
@@ -292,35 +292,35 @@ export default function ClientTimelineProfile() {
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(310px, 1fr))', gap: '14px' }}>
             
             {/* Identity & Vitals Summary */}
-            <div style={{ background: '#FFFFFF', border: '1px solid #E2E8F0', borderRadius: '10px', padding: '16px', display: 'flex', flexDirection: 'column', gap: '10px', boxShadow: '0 1px 3px rgba(15, 23, 42, 0.04)' }}>
+            <div style={{ background: '#FFFFFF', border: '1px solid #E2E8F0', borderRadius: '12px', padding: '16px', display: 'flex', flexDirection: 'column', gap: '10px', boxShadow: '0 1px 3px rgba(15, 23, 42, 0.04)' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '6px', borderBottom: '1px solid #F1F5F9', paddingBottom: '8px' }}>
                 <Scale size={16} color="#0284C7" />
                 <strong style={{ fontSize: '13px', color: '#0F172A' }}>بيانات الاشتراك والحالة البدنية</strong>
               </div>
 
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
-                <div style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', borderRadius: '6px', padding: '8px 10px' }}>
+                <div style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', borderRadius: '8px', padding: '8px 10px' }}>
                   <span style={{ fontSize: '10.5px', color: '#64748B', display: 'block' }}>رقم الهاتف:</span>
                   <strong dir="ltr" style={{ fontSize: '12px', color: '#0F172A', fontFamily: 'JetBrains Mono', display: 'block', textAlign: 'right' }}>
                     {client?.phone_number || '--'}
                   </strong>
                 </div>
 
-                <div style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', borderRadius: '6px', padding: '8px 10px' }}>
+                <div style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', borderRadius: '8px', padding: '8px 10px' }}>
                   <span style={{ fontSize: '10.5px', color: '#64748B', display: 'block' }}>الأيام المتبقية:</span>
                   <strong style={{ fontSize: '12px', color: '#0F172A' }}>
                     {client?.days_remaining !== undefined ? `${client.days_remaining} يوم` : 'نشط'}
                   </strong>
                 </div>
 
-                <div style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', borderRadius: '6px', padding: '8px 10px' }}>
+                <div style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', borderRadius: '8px', padding: '8px 10px' }}>
                   <span style={{ fontSize: '10.5px', color: '#64748B', display: 'block' }}>الوزن الحالي المسجل:</span>
                   <strong style={{ fontSize: '12px', color: '#0F172A', fontFamily: 'JetBrains Mono' }}>
                     {checkins[0]?.average_weight_kg ? `${checkins[0].average_weight_kg} كجم` : '--'}
                   </strong>
                 </div>
 
-                <div style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', borderRadius: '6px', padding: '8px 10px' }}>
+                <div style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', borderRadius: '8px', padding: '8px 10px' }}>
                   <span style={{ fontSize: '10.5px', color: '#64748B', display: 'block' }}>إجمالي التقييمات:</span>
                   <strong style={{ fontSize: '12px', color: '#16A34A', fontFamily: 'JetBrains Mono' }}>
                     {checkins.length} أسابيع متابعة
@@ -330,7 +330,7 @@ export default function ClientTimelineProfile() {
             </div>
 
             {/* Periodization Stage Controller */}
-            <div style={{ background: '#FFFFFF', border: '1px solid #E2E8F0', borderRadius: '10px', padding: '16px', display: 'flex', flexDirection: 'column', gap: '10px', boxShadow: '0 1px 3px rgba(15, 23, 42, 0.04)' }}>
+            <div style={{ background: '#FFFFFF', border: '1px solid #E2E8F0', borderRadius: '12px', padding: '16px', display: 'flex', flexDirection: 'column', gap: '10px', boxShadow: '0 1px 3px rgba(15, 23, 42, 0.04)' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid #F1F5F9', paddingBottom: '8px' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
                   <Target size={16} color="#D97706" />
@@ -340,7 +340,7 @@ export default function ClientTimelineProfile() {
                   <button 
                     type="button" 
                     onClick={() => setIsChangingPhase(true)}
-                    style={{ background: '#F8FAFC', border: '1px solid #CBD5E1', borderRadius: '4px', padding: '3px 8px', fontSize: '11px', fontWeight: 800, color: '#0F172A', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: '4px' }}
+                    style={{ background: '#F8FAFC', border: '1px solid #CBD5E1', borderRadius: '8px', padding: '3px 8px', fontSize: '11px', fontWeight: 800, color: '#0F172A', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: '4px' }}
                   >
                     <ArrowRightLeft size={11} />
                     <span>تغيير المرحلة</span>
@@ -361,7 +361,7 @@ export default function ClientTimelineProfile() {
                           onClick={() => handlePhaseChange(phase.id)}
                           style={{
                             padding: '8px',
-                            borderRadius: '6px',
+                            borderRadius: '8px',
                             border: isSelected ? `1.5px solid ${phase.color}` : '1px solid #E2E8F0',
                             background: isSelected ? phase.bg : '#FFFFFF',
                             cursor: 'pointer',
@@ -392,7 +392,7 @@ export default function ClientTimelineProfile() {
                   const activeStage = PERIODIZATION_PHASES.find(p => p.id === currentPhase) || PERIODIZATION_PHASES[0];
                   const ActiveIcon = activeStage.icon;
                   return (
-                    <div style={{ background: activeStage.bg, border: `1px solid ${activeStage.color}33`, borderRadius: '8px', padding: '12px 14px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                    <div style={{ background: activeStage.bg, border: `1px solid ${activeStage.color}33`, borderRadius: '10px', padding: '12px 14px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                       <div>
                         <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '3px' }}>
                           <ActiveIcon size={16} color={activeStage.color} />
@@ -422,7 +422,7 @@ export default function ClientTimelineProfile() {
                 </h3>
                 <span style={{ fontSize: '11px', color: '#64748B' }}>مقارنة أسبوع البداية مع أحدث أسبوع مسجل بالزوايا الثلاث</span>
               </div>
-              <span style={{ fontSize: '11px', color: '#0284C7', background: '#F0F9FF', border: '1px solid #BAE6FD', padding: '2px 8px', borderRadius: '4px', fontWeight: 700 }}>
+              <span style={{ fontSize: '11px', color: '#0284C7', background: '#F0F9FF', border: '1px solid #BAE6FD', padding: '2px 8px', borderRadius: '6px', fontWeight: 700 }}>
                 {photos.length} صور مرفوعة
               </span>
             </div>
@@ -443,7 +443,7 @@ export default function ClientTimelineProfile() {
                   const latestPhoto = anglePhotos[0]; // Most recent
 
                   return (
-                    <div key={angle} style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', borderRadius: '8px', padding: '10px' }}>
+                    <div key={angle} style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', borderRadius: '12px', padding: '10px' }}>
                       <strong style={{ display: 'block', fontSize: '12px', color: '#0F172A', fontWeight: 800, marginBottom: '8px', textAlign: 'center' }}>
                         {title}
                       </strong>
@@ -454,16 +454,16 @@ export default function ClientTimelineProfile() {
                           <span style={{ fontSize: '10px', color: '#64748B', fontWeight: 700 }}>البداية (Baseline)</span>
                           {oldestPhoto ? (
                             <div 
-                              style={{ width: '100%', height: '140px', borderRadius: '6px', overflow: 'hidden', background: '#0F172A', position: 'relative', cursor: 'pointer' }}
+                              style={{ width: '100%', height: '140px', borderRadius: '8px', overflow: 'hidden', background: '#0F172A', position: 'relative', cursor: 'pointer' }}
                               onClick={() => setPreviewPhoto({ title: `${title} - البداية`, url: oldestPhoto.photo_url })}
                             >
                               <img src={oldestPhoto.photo_url} alt="البداية" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                              <div style={{ position: 'absolute', bottom: '4px', right: '4px', background: 'rgba(15, 23, 42, 0.75)', color: '#FFFFFF', padding: '2px 4px', borderRadius: '3px', fontSize: '9px', display: 'flex', alignItems: 'center', gap: '2px' }}>
+                              <div style={{ position: 'absolute', bottom: '4px', right: '4px', background: 'rgba(15, 23, 42, 0.75)', color: '#FFFFFF', padding: '2px 4px', borderRadius: '6px', fontSize: '9px', display: 'flex', alignItems: 'center', gap: '2px' }}>
                                 <ZoomIn size={10} />
                               </div>
                             </div>
                           ) : (
-                            <div style={{ width: '100%', height: '140px', borderRadius: '6px', border: '1px dashed #CBD5E1', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#94A3B8', fontSize: '10px' }}>
+                            <div style={{ width: '100%', height: '140px', borderRadius: '8px', border: '1px dashed #CBD5E1', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#94A3B8', fontSize: '10px' }}>
                               غير متوفرة
                             </div>
                           )}
@@ -474,16 +474,16 @@ export default function ClientTimelineProfile() {
                           <span style={{ fontSize: '10px', color: '#16A34A', fontWeight: 800 }}>الأحدث (Current)</span>
                           {latestPhoto ? (
                             <div 
-                              style={{ width: '100%', height: '140px', borderRadius: '6px', overflow: 'hidden', background: '#0F172A', position: 'relative', cursor: 'pointer', border: '1.5px solid #16A34A' }}
+                              style={{ width: '100%', height: '140px', borderRadius: '8px', overflow: 'hidden', background: '#0F172A', position: 'relative', cursor: 'pointer', border: '1.5px solid #16A34A' }}
                               onClick={() => setPreviewPhoto({ title: `${title} - الأحدث`, url: latestPhoto.photo_url })}
                             >
                               <img src={latestPhoto.photo_url} alt="الأحدث" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                              <div style={{ position: 'absolute', bottom: '4px', right: '4px', background: 'rgba(15, 23, 42, 0.75)', color: '#FFFFFF', padding: '2px 4px', borderRadius: '3px', fontSize: '9px', display: 'flex', alignItems: 'center', gap: '2px' }}>
+                              <div style={{ position: 'absolute', bottom: '4px', right: '4px', background: 'rgba(15, 23, 42, 0.75)', color: '#FFFFFF', padding: '2px 4px', borderRadius: '6px', fontSize: '9px', display: 'flex', alignItems: 'center', gap: '2px' }}>
                                 <ZoomIn size={10} />
                               </div>
                             </div>
                           ) : (
-                            <div style={{ width: '100%', height: '140px', borderRadius: '6px', border: '1px dashed #CBD5E1', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#94A3B8', fontSize: '10px' }}>
+                            <div style={{ width: '100%', height: '140px', borderRadius: '8px', border: '1px dashed #CBD5E1', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#94A3B8', fontSize: '10px' }}>
                               غير متوفرة
                             </div>
                           )}
@@ -527,7 +527,7 @@ export default function ClientTimelineProfile() {
                       style={{
                         background: '#F8FAFC',
                         border: '1px solid #E2E8F0',
-                        borderRadius: '8px',
+                        borderRadius: '10px',
                         padding: '12px 14px',
                         display: 'flex',
                         flexDirection: 'column',
@@ -546,7 +546,7 @@ export default function ClientTimelineProfile() {
                         </div>
 
                         <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                          <span style={{ fontSize: '11px', fontWeight: 800, background: '#FFFFFF', border: '1px solid #CBD5E1', padding: '2px 8px', borderRadius: '4px', color: '#0F172A' }}>
+                          <span style={{ fontSize: '11px', fontWeight: 800, background: '#FFFFFF', border: '1px solid #CBD5E1', padding: '2px 8px', borderRadius: '6px', color: '#0F172A' }}>
                             الوزن: {item.average_weight_kg || item.weight_kg || '--'} كجم
                           </span>
                           {weightDiff !== null && (
@@ -554,7 +554,7 @@ export default function ClientTimelineProfile() {
                               fontSize: '10.5px',
                               fontWeight: 800,
                               padding: '2px 6px',
-                              borderRadius: '4px',
+                              borderRadius: '6px',
                               background: Number(weightDiff) < 0 ? '#ECFDF5' : (Number(weightDiff) > 0 ? '#FFF1F2' : '#F1F5F9'),
                               color: Number(weightDiff) < 0 ? '#16A34A' : (Number(weightDiff) > 0 ? '#E11D48' : '#64748B')
                             }}>
@@ -566,19 +566,19 @@ export default function ClientTimelineProfile() {
 
                       {/* Biofeedback metrics row */}
                       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(130px, 1fr))', gap: '6px', fontSize: '11px' }}>
-                        <div style={{ background: '#FFFFFF', border: '1px solid #E2E8F0', padding: '5px 8px', borderRadius: '4px' }}>
+                        <div style={{ background: '#FFFFFF', border: '1px solid #E2E8F0', padding: '5px 8px', borderRadius: '6px' }}>
                           <span style={{ color: '#64748B' }}>الخصر: </span>
                           <strong style={{ color: '#0F172A' }}>{item.waist_circumference_cm ? `${item.waist_circumference_cm} سم` : '--'}</strong>
                         </div>
-                        <div style={{ background: '#FFFFFF', border: '1px solid #E2E8F0', padding: '5px 8px', borderRadius: '4px' }}>
+                        <div style={{ background: '#FFFFFF', border: '1px solid #E2E8F0', padding: '5px 8px', borderRadius: '6px' }}>
                           <span style={{ color: '#64748B' }}>التزام الدايت: </span>
                           <strong style={{ color: '#16A34A' }}>{item.nutrition_adherence_percent || 100}%</strong>
                         </div>
-                        <div style={{ background: '#FFFFFF', border: '1px solid #E2E8F0', padding: '5px 8px', borderRadius: '4px' }}>
+                        <div style={{ background: '#FFFFFF', border: '1px solid #E2E8F0', padding: '5px 8px', borderRadius: '6px' }}>
                           <span style={{ color: '#64748B' }}>جلسات التمرين: </span>
                           <strong style={{ color: '#0F172A' }}>{item.workouts_completed || 0} أيام</strong>
                         </div>
-                        <div style={{ background: '#FFFFFF', border: '1px solid #E2E8F0', padding: '5px 8px', borderRadius: '4px' }}>
+                        <div style={{ background: '#FFFFFF', border: '1px solid #E2E8F0', padding: '5px 8px', borderRadius: '6px' }}>
                           <span style={{ color: '#64748B' }}>الطاقة / النوم: </span>
                           <strong style={{ color: '#0284C7' }}>
                             {item.biofeedback?.energyLevel || 7}/10 • {item.biofeedback?.sleepQuality || 7}/10
@@ -587,7 +587,7 @@ export default function ClientTimelineProfile() {
                       </div>
 
                       {item.coach_notes && (
-                        <div style={{ background: '#EFF6FF', border: '1px solid #BFDBFE', borderRadius: '4px', padding: '6px 10px', fontSize: '11px', color: '#1E40AF' }}>
+                        <div style={{ background: '#EFF6FF', border: '1px solid #BFDBFE', borderRadius: '8px', padding: '6px 10px', fontSize: '11px', color: '#1E40AF' }}>
                           <strong>توجيه الكابتن: </strong>
                           <span>{item.coach_notes}</span>
                         </div>
@@ -620,7 +620,7 @@ export default function ClientTimelineProfile() {
             <div 
               style={{
                 background: '#FFFFFF',
-                borderRadius: '12px',
+                borderRadius: '16px',
                 maxWidth: '600px',
                 width: '100%',
                 maxHeight: '90vh',
@@ -645,7 +645,7 @@ export default function ClientTimelineProfile() {
                 <img 
                   src={previewPhoto.url} 
                   alt={previewPhoto.title} 
-                  style={{ maxWidth: '100%', maxHeight: '72vh', objectFit: 'contain', borderRadius: '4px' }} 
+                  style={{ maxWidth: '100%', maxHeight: '72vh', objectFit: 'contain', borderRadius: '8px' }} 
                 />
               </div>
             </div>

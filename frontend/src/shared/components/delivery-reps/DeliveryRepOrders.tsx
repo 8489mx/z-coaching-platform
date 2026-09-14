@@ -210,7 +210,7 @@ export function DeliveryRepOrders({ repId }: { repId: number | null }) {
                   </td>
                   <td style={{ padding: '8px 4px', textAlign: 'center', whiteSpace: 'nowrap' }}>
                     {isSettled ? (
-                      <span style={{ color: '#16a34a', fontSize: '13px', fontWeight: 'bold', background: '#dcfce7', padding: '4px 8px', borderRadius: '4px' }}>
+                      <span style={{ color: '#16a34a', fontSize: '13px', fontWeight: 'bold', background: '#dcfce7', padding: '4px 8px', borderRadius: '6px' }}>
                         تم السداد
                       </span>
                     ) : order.collectionStatus !== 'cod' ? (

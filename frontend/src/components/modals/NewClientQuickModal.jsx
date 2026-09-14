@@ -359,7 +359,7 @@ export default function NewClientQuickModal({ isOpen, onClose, onClientCreated }
                         padding: '3px 9px',
                         fontSize: '11px',
                         fontWeight: 700,
-                        borderRadius: '5px',
+                        borderRadius: '8px',
                         cursor: 'pointer',
                         border: bonusMonths === m ? 'none' : '1px solid #CBD5E1',
                         background: bonusMonths === m ? '#0F172A' : '#FFFFFF',
@@ -375,7 +375,7 @@ export default function NewClientQuickModal({ isOpen, onClose, onClientCreated }
 
               <div style={{ fontSize: '11.5px', fontWeight: 800, color: '#334155', paddingTop: '6px', borderTop: '1px solid #E2E8F0', display: 'flex', alignItems: 'center', gap: '6px' }}>
                 <span>إجمالي المدة الممنوحة:</span>
-                <span style={{ background: '#ECFDF5', border: '1px solid #A7F3D0', color: '#065F46', padding: '1px 7px', borderRadius: '4px', fontSize: '11px', fontWeight: 800, fontFamily: 'JetBrains Mono, Cairo, sans-serif' }}>
+                <span style={{ background: '#ECFDF5', border: '1px solid #A7F3D0', color: '#065F46', padding: '1px 7px', borderRadius: '6px', fontSize: '11px', fontWeight: 800, fontFamily: 'JetBrains Mono, Cairo, sans-serif' }}>
                   {durationText}
                 </span>
               </div>

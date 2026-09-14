@@ -379,7 +379,7 @@ export function DeliveryRepsList({ selectedRepId, onSelectRep }: { selectedRepId
                         </span>
                       ) : null}
                       {rep.vehicle_plate ? (
-                        <span style={{ fontSize: '10px', color: '#475569', background: '#f1f5f9', padding: '1px 6px', borderRadius: '4px', border: '1px solid #e2e8f0' }}>
+                        <span style={{ fontSize: '10px', color: '#475569', background: '#f1f5f9', padding: '1px 6px', borderRadius: '6px', border: '1px solid #e2e8f0' }}>
                           لوحة: {rep.vehicle_plate}
                         </span>
                       ) : null}

@@ -172,7 +172,7 @@ export default function Sidebar({ isCollapsed = false, onToggleSidebar }) {
             justifyContent: isCollapsed ? 'center' : 'flex-start',
             gap: isCollapsed ? '0' : '10px',
             padding: isCollapsed ? '5px 0' : (isSubItem ? '6.5px 10px' : '7.5px 10px'),
-            borderRadius: '7px',
+            borderRadius: '8px',
             textDecoration: 'none',
             color: isActive ? '#0F172A' : '#475569',
             background: isActive && !isCollapsed ? '#F1F5F9' : 'transparent',
@@ -279,7 +279,7 @@ export default function Sidebar({ isCollapsed = false, onToggleSidebar }) {
               background: '#0F172A',
               color: '#FFFFFF',
               padding: '6px 12px',
-              borderRadius: '6px',
+              borderRadius: '8px',
               fontSize: '12px',
               fontWeight: 700,
               whiteSpace: 'nowrap',
@@ -293,7 +293,7 @@ export default function Sidebar({ isCollapsed = false, onToggleSidebar }) {
           >
             <span>{item.label}</span>
             {item.badgeKey && liveBadges[item.badgeKey] > 0 && (
-              <span style={{ background: '#FF3B30', color: '#FFFFFF', fontSize: '10px', padding: '1px 5px', borderRadius: '4px' }}>
+              <span style={{ background: '#FF3B30', color: '#FFFFFF', fontSize: '10px', padding: '1px 5px', borderRadius: '6px' }}>
                 {liveBadges[item.badgeKey]}
               </span>
             )}
@@ -611,7 +611,7 @@ export default function Sidebar({ isCollapsed = false, onToggleSidebar }) {
               alignItems: 'center',
               justifyContent: 'center',
               padding: '5px 0',
-              borderRadius: '6px',
+              borderRadius: '8px',
               border: '1px solid #F1F5F9',
               background: '#F8FAFC',
               color: '#64748B',

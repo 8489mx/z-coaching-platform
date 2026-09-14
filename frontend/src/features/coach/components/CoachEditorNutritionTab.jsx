@@ -479,7 +479,7 @@ export default function CoachEditorNutritionTab(props) {
                         fontSize: '8px',
                         fontWeight: 800,
                         padding: '1px 4px',
-                        borderRadius: '4px',
+                        borderRadius: '6px',
                         background: isProteinExceeded ? '#FEE2E2' : '#DCFCE7',
                         color: isProteinExceeded ? '#DC2626' : '#166534',
                         border: isProteinExceeded ? '1px solid #FECACA' : '1px solid #BBF7D0'
@@ -585,7 +585,7 @@ export default function CoachEditorNutritionTab(props) {
                       onClick={() => handleAddPresetMeal(preset)}
                       style={{
                         padding: '3px 8px',
-                        borderRadius: '7px',
+                        borderRadius: '8px',
                         border: '1px solid #CBD5E1',
                         background: '#F8FAFC',
                         color: '#0F172A',
@@ -677,7 +677,7 @@ export default function CoachEditorNutritionTab(props) {
                             onClick={() => handleAutoBalanceMeal(meal.id)}
                             style={{
                               padding: '2px 8px',
-                              borderRadius: '7px',
+                              borderRadius: '8px',
                               background: '#ECFDF5',
                               border: '1px solid #A7F3D0',
                               color: '#065F46',
@@ -697,7 +697,7 @@ export default function CoachEditorNutritionTab(props) {
                         <button
                           type="button"
                           onClick={() => setAddFoodModal({ open: true, mealId: meal.id })}
-                          style={{ padding: '2px 7px', borderRadius: '7px', background: '#F8FAFC', border: '1px solid #CBD5E1', color: '#0F172A', fontSize: '10px', fontWeight: 700, cursor: 'pointer' }}
+                          style={{ padding: '2px 7px', borderRadius: '8px', background: '#F8FAFC', border: '1px solid #CBD5E1', color: '#0F172A', fontSize: '10px', fontWeight: 700, cursor: 'pointer' }}
                         >
                           + صنف غذائي
                         </button>

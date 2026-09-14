@@ -107,7 +107,7 @@ export function TaxIntegrationSection() {
                 fontSize: '0.72rem',
                 fontWeight: 700,
                 padding: '2px 8px',
-                borderRadius: '4px',
+                borderRadius: '6px',
                 background: isActive ? '#ecfdf5' : '#f1f5f9',
                 color: isActive ? '#047857' : '#64748b',
                 border: isActive ? '1px solid #a7f3d0' : '1px solid #e2e8f0',

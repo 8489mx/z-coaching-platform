@@ -130,7 +130,7 @@ export function DeveloperActivationPanel() {
                 fontSize: '0.72rem',
                 fontWeight: 800,
                 padding: '2px 8px',
-                borderRadius: '5px',
+                borderRadius: '6px',
                 letterSpacing: '0.04em',
               }}>
                 DEV CONSOLE
@@ -150,7 +150,7 @@ export function DeveloperActivationPanel() {
               color: '#94a3b8',
               width: '32px',
               height: '32px',
-              borderRadius: '6px',
+              borderRadius: '8px',
               cursor: 'pointer',
               fontSize: '18px',
               display: 'flex',
@@ -200,7 +200,7 @@ export function DeveloperActivationPanel() {
               style={{
                 width: '100%',
                 padding: '9px 14px',
-                borderRadius: '7px',
+                borderRadius: '8px',
                 border: '1px solid #cbd5e1',
                 fontSize: '0.9rem',
                 outline: 'none',
@@ -315,12 +315,12 @@ export function DeveloperActivationPanel() {
                         {feat.name}
                       </span>
                       {isBaseIncluded && isExcluded && (
-                        <span style={{ background: '#fef2f2', color: '#dc2626', fontSize: '0.68rem', fontWeight: 700, padding: '1px 6px', borderRadius: '4px', border: '1px solid #fee2e2' }}>
+                        <span style={{ background: '#fef2f2', color: '#dc2626', fontSize: '0.68rem', fontWeight: 700, padding: '1px 6px', borderRadius: '6px', border: '1px solid #fee2e2' }}>
                           مستثناة
                         </span>
                       )}
                       {!isBaseIncluded && isExtraIncluded && (
-                        <span style={{ background: '#eff6ff', color: '#1d4ed8', fontSize: '0.68rem', fontWeight: 700, padding: '1px 6px', borderRadius: '4px', border: '1px solid #dbeafe' }}>
+                        <span style={{ background: '#eff6ff', color: '#1d4ed8', fontSize: '0.68rem', fontWeight: 700, padding: '1px 6px', borderRadius: '6px', border: '1px solid #dbeafe' }}>
                           إضافية
                         </span>
                       )}
@@ -344,8 +344,8 @@ export function DeveloperActivationPanel() {
                         position: 'absolute',
                         top: '2px',
                         right: isChecked ? '16px' : '2px',
-                        transition: 'right 0.2s cubic-bezier(0.34, 1.56, 0.64, 1)',
-                        boxShadow: '0 1px 2px rgba(0,0,0,0.2)',
+                        transition: 'right 0.2s ease',
+                        boxShadow: '0 1px 3px rgba(0,0,0,0.2)',
                       }} />
                     </div>
                   </div>
@@ -365,7 +365,7 @@ export function DeveloperActivationPanel() {
               padding: '8px 20px',
               fontSize: '0.84rem',
               fontWeight: 600,
-              borderRadius: '7px',
+              borderRadius: '8px',
               border: '1px solid #e2e8f0',
               background: '#f8fafc',
               color: '#334155',
@@ -385,7 +385,7 @@ export function DeveloperActivationPanel() {
               padding: '8px 24px',
               fontSize: '0.84rem',
               fontWeight: 700,
-              borderRadius: '7px',
+              borderRadius: '8px',
               border: '1px solid #0f172a',
               background: '#0f172a',
               color: '#ffffff',

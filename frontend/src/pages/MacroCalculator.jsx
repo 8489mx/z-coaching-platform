@@ -527,7 +527,7 @@ export default function MacroCalculator() {
                         color: isSelected ? '#FFFFFF' : '#64748B',
                         fontSize: '9.5px',
                         padding: '0 4px',
-                        borderRadius: '4px',
+                        borderRadius: '6px',
                         fontWeight: 800
                       }}>
                         {cat.count}
@@ -584,7 +584,7 @@ export default function MacroCalculator() {
                                 fontSize: '9.5px',
                                 fontWeight: 700,
                                 padding: '1px 6px',
-                                borderRadius: '4px',
+                                borderRadius: '6px',
                                 background: food.food_state === 'COOKED' ? '#F1F5F9' : '#FEF2F2',
                                 border: `1px solid ${food.food_state === 'COOKED' ? '#CBD5E1' : '#FECACA'}`,
                                 color: food.food_state === 'COOKED' ? '#334155' : '#DC2626'
@@ -595,7 +595,7 @@ export default function MacroCalculator() {
                                 fontSize: '9.5px',
                                 fontWeight: 700,
                                 padding: '1px 6px',
-                                borderRadius: '4px',
+                                borderRadius: '6px',
                                 background: food.macro_type === 'PROTEIN' ? '#F0F9FF' : food.macro_type === 'CARBS' ? '#FFFBEB' : food.macro_type === 'FATS' ? '#F0FDF4' : '#F8FAFC',
                                 border: `1px solid ${food.macro_type === 'PROTEIN' ? '#BAE6FD' : food.macro_type === 'CARBS' ? '#FDE68A' : food.macro_type === 'FATS' ? '#BBF7D0' : '#E2E8F0'}`,
                                 color: food.macro_type === 'PROTEIN' ? '#0369A1' : food.macro_type === 'CARBS' ? '#B45309' : food.macro_type === 'FATS' ? '#15803D' : '#475569'
@@ -918,7 +918,7 @@ export default function MacroCalculator() {
                   <span style={{ fontSize: '11.5px', fontWeight: 700, color: '#334155' }}>
                     احتياج البروتين لكل كجم وزن
                   </span>
-                  <span style={{ fontSize: '12px', fontWeight: 900, color: '#0284C7', background: '#E0F2FE', padding: '1px 6px', borderRadius: '4px' }}>
+                  <span style={{ fontSize: '12px', fontWeight: 900, color: '#0284C7', background: '#E0F2FE', padding: '1px 6px', borderRadius: '6px' }}>
                     {calcForm.proteinPerKg} جم / كجم
                   </span>
                 </div>
@@ -961,7 +961,7 @@ export default function MacroCalculator() {
               <div style={{ background: '#F0F9FF', border: '1px solid #BAE6FD', borderRadius: '6px', padding: '6px 10px', marginBottom: '10px', fontSize: '10.5px', color: '#0369A1', display: 'flex', flexDirection: 'column', gap: '2px' }}>
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', fontWeight: 800 }}>
                   <span>منهجية الحساب السريرية:</span>
-                  <span style={{ background: '#FFFFFF', padding: '1px 6px', borderRadius: '4px', border: '1px solid #BAE6FD' }}>
+                  <span style={{ background: '#FFFFFF', padding: '1px 6px', borderRadius: '6px', border: '1px solid #BAE6FD' }}>
                     {calcForm.bodyFat ? 'معادلة Katch-McArdle (الكتلة اللادهنية LBM)' : 'معادلة Mifflin-St Jeor السريرية المعتمدة'}
                   </span>
                 </div>
@@ -1146,7 +1146,7 @@ export default function MacroCalculator() {
                       placeholder="مثال: صدور دجاج مشوية"
                       value={foodFormData.name_ar}
                       onChange={(e) => setFoodFormData({ ...foodFormData, name_ar: e.target.value })}
-                      style={{ width: '100%', height: '32px', borderRadius: '5px', border: '1px solid #CBD5E1', padding: '0 8px', fontSize: '11.5px', outline: 'none', boxSizing: 'border-box' }}
+                      style={{ width: '100%', height: '32px', borderRadius: '8px', border: '1px solid #CBD5E1', padding: '0 8px', fontSize: '11.5px', outline: 'none', boxSizing: 'border-box' }}
                     />
                   </div>
 
@@ -1159,7 +1159,7 @@ export default function MacroCalculator() {
                       placeholder="e.g. Grilled Chicken Breast"
                       value={foodFormData.name_en}
                       onChange={(e) => setFoodFormData({ ...foodFormData, name_en: e.target.value })}
-                      style={{ width: '100%', height: '32px', borderRadius: '5px', border: '1px solid #CBD5E1', padding: '0 8px', fontSize: '11.5px', outline: 'none', boxSizing: 'border-box' }}
+                      style={{ width: '100%', height: '32px', borderRadius: '8px', border: '1px solid #CBD5E1', padding: '0 8px', fontSize: '11.5px', outline: 'none', boxSizing: 'border-box' }}
                     />
                   </div>
                 </div>
@@ -1173,7 +1173,7 @@ export default function MacroCalculator() {
                     <select
                       value={foodFormData.macro_type}
                       onChange={(e) => setFoodFormData({ ...foodFormData, macro_type: e.target.value })}
-                      style={{ width: '100%', height: '32px', borderRadius: '5px', border: '1px solid #CBD5E1', padding: '0 6px', fontSize: '11px', fontWeight: 700, outline: 'none' }}
+                      style={{ width: '100%', height: '32px', borderRadius: '8px', border: '1px solid #CBD5E1', padding: '0 6px', fontSize: '11px', fontWeight: 700, outline: 'none' }}
                     >
                       <option value="PROTEIN">بروتين (Protein)</option>
                       <option value="CARBS">كاربوهيدرات (Carbs)</option>
@@ -1192,7 +1192,7 @@ export default function MacroCalculator() {
                       placeholder="لحوم، حبوب، مكسرات..."
                       value={foodFormData.category_ar}
                       onChange={(e) => setFoodFormData({ ...foodFormData, category_ar: e.target.value })}
-                      style={{ width: '100%', height: '32px', borderRadius: '5px', border: '1px solid #CBD5E1', padding: '0 8px', fontSize: '11px', outline: 'none', boxSizing: 'border-box' }}
+                      style={{ width: '100%', height: '32px', borderRadius: '8px', border: '1px solid #CBD5E1', padding: '0 8px', fontSize: '11px', outline: 'none', boxSizing: 'border-box' }}
                     />
                   </div>
 
@@ -1203,7 +1203,7 @@ export default function MacroCalculator() {
                     <select
                       value={foodFormData.food_state}
                       onChange={(e) => setFoodFormData({ ...foodFormData, food_state: e.target.value })}
-                      style={{ width: '100%', height: '32px', borderRadius: '5px', border: '1px solid #CBD5E1', padding: '0 6px', fontSize: '11px', fontWeight: 700, outline: 'none' }}
+                      style={{ width: '100%', height: '32px', borderRadius: '8px', border: '1px solid #CBD5E1', padding: '0 6px', fontSize: '11px', fontWeight: 700, outline: 'none' }}
                     >
                       <option value="COOKED">مطبوخ ومجهز</option>
                       <option value="RAW">طازج / نيء</option>
@@ -1226,7 +1226,7 @@ export default function MacroCalculator() {
                         type="number"
                         value={foodFormData.calories_per_100g}
                         onChange={(e) => setFoodFormData({ ...foodFormData, calories_per_100g: Number(e.target.value) })}
-                        style={{ width: '100%', height: '30px', borderRadius: '4px', border: '1px solid #CBD5E1', padding: '0 4px', fontSize: '11.5px', fontWeight: 800, textAlign: 'center', outline: 'none', boxSizing: 'border-box' }}
+                        style={{ width: '100%', height: '30px', borderRadius: '8px', border: '1px solid #CBD5E1', padding: '0 4px', fontSize: '11.5px', fontWeight: 800, textAlign: 'center', outline: 'none', boxSizing: 'border-box' }}
                       />
                     </div>
 
@@ -1239,7 +1239,7 @@ export default function MacroCalculator() {
                         step="0.1"
                         value={foodFormData.protein_per_100g}
                         onChange={(e) => setFoodFormData({ ...foodFormData, protein_per_100g: Number(e.target.value) })}
-                        style={{ width: '100%', height: '30px', borderRadius: '4px', border: '1px solid #CBD5E1', padding: '0 4px', fontSize: '11.5px', fontWeight: 800, textAlign: 'center', outline: 'none', boxSizing: 'border-box' }}
+                        style={{ width: '100%', height: '30px', borderRadius: '8px', border: '1px solid #CBD5E1', padding: '0 4px', fontSize: '11.5px', fontWeight: 800, textAlign: 'center', outline: 'none', boxSizing: 'border-box' }}
                       />
                     </div>
 
@@ -1252,7 +1252,7 @@ export default function MacroCalculator() {
                         step="0.1"
                         value={foodFormData.carbs_per_100g}
                         onChange={(e) => setFoodFormData({ ...foodFormData, carbs_per_100g: Number(e.target.value) })}
-                        style={{ width: '100%', height: '30px', borderRadius: '4px', border: '1px solid #CBD5E1', padding: '0 4px', fontSize: '11.5px', fontWeight: 800, textAlign: 'center', outline: 'none', boxSizing: 'border-box' }}
+                        style={{ width: '100%', height: '30px', borderRadius: '8px', border: '1px solid #CBD5E1', padding: '0 4px', fontSize: '11.5px', fontWeight: 800, textAlign: 'center', outline: 'none', boxSizing: 'border-box' }}
                       />
                     </div>
 
@@ -1265,7 +1265,7 @@ export default function MacroCalculator() {
                         step="0.1"
                         value={foodFormData.fat_per_100g}
                         onChange={(e) => setFoodFormData({ ...foodFormData, fat_per_100g: Number(e.target.value) })}
-                        style={{ width: '100%', height: '30px', borderRadius: '4px', border: '1px solid #CBD5E1', padding: '0 4px', fontSize: '11.5px', fontWeight: 800, textAlign: 'center', outline: 'none', boxSizing: 'border-box' }}
+                        style={{ width: '100%', height: '30px', borderRadius: '8px', border: '1px solid #CBD5E1', padding: '0 4px', fontSize: '11.5px', fontWeight: 800, textAlign: 'center', outline: 'none', boxSizing: 'border-box' }}
                       />
                     </div>
 
@@ -1278,7 +1278,7 @@ export default function MacroCalculator() {
                         step="0.1"
                         value={foodFormData.fiber_per_100g}
                         onChange={(e) => setFoodFormData({ ...foodFormData, fiber_per_100g: Number(e.target.value) })}
-                        style={{ width: '100%', height: '30px', borderRadius: '4px', border: '1px solid #CBD5E1', padding: '0 4px', fontSize: '11.5px', fontWeight: 800, textAlign: 'center', outline: 'none', boxSizing: 'border-box' }}
+                        style={{ width: '100%', height: '30px', borderRadius: '8px', border: '1px solid #CBD5E1', padding: '0 4px', fontSize: '11.5px', fontWeight: 800, textAlign: 'center', outline: 'none', boxSizing: 'border-box' }}
                       />
                     </div>
                   </div>
@@ -1294,7 +1294,7 @@ export default function MacroCalculator() {
                     placeholder="نصائح تناول الصنف، الفوائد الهرمونية، وقت التناول المقترح..."
                     value={foodFormData.notes_ar}
                     onChange={(e) => setFoodFormData({ ...foodFormData, notes_ar: e.target.value })}
-                    style={{ width: '100%', borderRadius: '5px', border: '1px solid #CBD5E1', padding: '6px 8px', fontSize: '11px', outline: 'none', resize: 'vertical', boxSizing: 'border-box' }}
+                    style={{ width: '100%', borderRadius: '8px', border: '1px solid #CBD5E1', padding: '6px 8px', fontSize: '11px', outline: 'none', resize: 'vertical', boxSizing: 'border-box' }}
                   />
                 </div>
 
@@ -1303,14 +1303,14 @@ export default function MacroCalculator() {
                   <button
                     type="button"
                     onClick={() => setIsModalOpen(false)}
-                    style={{ padding: '0 14px', height: '34px', borderRadius: '6px', border: '1px solid #CBD5E1', background: '#FFFFFF', color: '#475569', fontSize: '11.5px', fontWeight: 700, cursor: 'pointer' }}
+                    style={{ padding: '0 14px', height: '34px', borderRadius: '8px', border: '1px solid #CBD5E1', background: '#FFFFFF', color: '#475569', fontSize: '11.5px', fontWeight: 700, cursor: 'pointer' }}
                   >
                     إلغاء
                   </button>
                   <button
                     type="submit"
                     disabled={savingFood}
-                    style={{ padding: '0 18px', height: '34px', borderRadius: '6px', border: 'none', background: '#0F172A', color: '#FFFFFF', fontSize: '11.5px', fontWeight: 800, cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: '4px' }}
+                    style={{ padding: '0 18px', height: '34px', borderRadius: '8px', border: 'none', background: '#0F172A', color: '#FFFFFF', fontSize: '11.5px', fontWeight: 800, cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: '4px' }}
                   >
                     <Save size={13} />
                     <span>{savingFood ? 'جاري الحفظ...' : 'حفظ الصنف في المكتبة'}</span>

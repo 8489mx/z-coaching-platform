@@ -265,7 +265,7 @@ export function ImportWorkbench({
                 style={{
                   background: '#f1f5f9',
                   border: '1px solid #e2e8f0',
-                  borderRadius: '4px',
+                  borderRadius: '6px',
                   padding: '2px 8px',
                   fontSize: '0.75rem',
                   fontWeight: 600,
@@ -317,14 +317,14 @@ export function ImportWorkbench({
                       fontSize: '0.72rem',
                       fontWeight: 800,
                       padding: '3px 8px',
-                      borderRadius: '5px',
+                      borderRadius: '6px',
                     }}>
                       ملف محدد
                     </div>
                     <span style={{ fontSize: '0.88rem', fontWeight: 700, color: '#0f172a' }}>
                       {fileName}
                     </span>
-                    <span style={{ fontSize: '0.78rem', color: '#64748b', background: '#f1f5f9', padding: '2px 8px', borderRadius: '4px' }}>
+                    <span style={{ fontSize: '0.78rem', color: '#64748b', background: '#f1f5f9', padding: '2px 8px', borderRadius: '6px' }}>
                       {rows.length} صف
                     </span>
                   </div>

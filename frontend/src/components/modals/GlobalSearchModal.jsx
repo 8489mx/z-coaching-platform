@@ -291,7 +291,7 @@ export default function GlobalSearchModal() {
           background: '#F8FAFC',
           border: '1px solid',
           borderColor: isOpen ? '#CBD5E1' : '#E2E8F0',
-          borderRadius: '6px',
+          borderRadius: '8px',
           padding: '0 10px',
           height: '32px',
           width: '270px',
@@ -349,7 +349,7 @@ export default function GlobalSearchModal() {
             <X size={13} />
           </button>
         ) : (
-          <span style={{ fontSize: '9.5px', fontWeight: 800, color: '#94A3B8', background: '#FFFFFF', border: '1px solid #E2E8F0', padding: '1px 5px', borderRadius: '4px', fontFamily: 'JetBrains Mono, Cairo', userSelect: 'none' }}>
+          <span style={{ fontSize: '9.5px', fontWeight: 800, color: '#94A3B8', background: '#FFFFFF', border: '1px solid #E2E8F0', padding: '1px 5px', borderRadius: '6px', fontFamily: 'JetBrains Mono, Cairo', userSelect: 'none' }}>
             Ctrl K
           </span>
         )}
@@ -365,7 +365,7 @@ export default function GlobalSearchModal() {
             width: '520px',
             maxWidth: '92vw',
             background: '#FFFFFF',
-            borderRadius: '10px',
+            borderRadius: '12px',
             border: '1px solid #CBD5E1',
             boxShadow: '0 12px 30px -4px rgba(15, 23, 42, 0.18)',
             zIndex: 10000,
@@ -392,7 +392,7 @@ export default function GlobalSearchModal() {
                 }}
                 style={{
                   padding: '3px 10px',
-                  borderRadius: '5px',
+                  borderRadius: '8px',
                   fontSize: '11px',
                   fontWeight: 700,
                   cursor: 'pointer',
@@ -465,7 +465,7 @@ export default function GlobalSearchModal() {
                             {item.title}
                           </span>
                           {isClient && (
-                            <span style={{ fontSize: '9px', fontWeight: 800, padding: '1px 5px', borderRadius: '3px', background: item.isMax ? '#FFFBEB' : '#F0F9FF', color: item.isMax ? '#B45309' : '#0284C7', border: item.isMax ? '1px solid #FDE68A' : '1px solid #BAE6FD' }}>
+                            <span style={{ fontSize: '9px', fontWeight: 800, padding: '1px 5px', borderRadius: '6px', background: item.isMax ? '#FFFBEB' : '#F0F9FF', color: item.isMax ? '#B45309' : '#0284C7', border: item.isMax ? '1px solid #FDE68A' : '1px solid #BAE6FD' }}>
                               {item.isMax ? 'MAX' : 'ELITE'}
                             </span>
                           )}
@@ -484,7 +484,7 @@ export default function GlobalSearchModal() {
                           onClick={() => { onClose(); navigate(item.path); }}
                           style={{
                             padding: '3px 8px',
-                            borderRadius: '4px',
+                            borderRadius: '8px',
                             background: '#0F172A',
                             color: '#FFFFFF',
                             border: 'none',
@@ -506,7 +506,7 @@ export default function GlobalSearchModal() {
                           onClick={() => setRenewalClient(item.rawClient)}
                           style={{
                             padding: '3px 7px',
-                            borderRadius: '4px',
+                            borderRadius: '8px',
                             background: '#FEF3C7',
                             color: '#B45309',
                             border: '1px solid #FDE68A',
@@ -528,7 +528,7 @@ export default function GlobalSearchModal() {
                           onClick={() => window.open(item.pdfPath, '_blank')}
                           style={{
                             padding: '3px 7px',
-                            borderRadius: '4px',
+                            borderRadius: '8px',
                             background: '#FFFFFF',
                             color: '#0F172A',
                             border: '1px solid #CBD5E1',
@@ -551,7 +551,7 @@ export default function GlobalSearchModal() {
                             onClick={() => window.open(item.waUrl, '_blank')}
                             style={{
                               padding: '3px 7px',
-                              borderRadius: '4px',
+                              borderRadius: '8px',
                               background: '#25D366',
                               color: '#FFFFFF',
                               border: 'none',

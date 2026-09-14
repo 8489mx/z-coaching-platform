@@ -354,7 +354,7 @@ export default function MasterSettingsHub() {
                     style={{ border: 'none', outline: 'none', background: 'transparent', fontSize: '11px', width: '100%' }}
                   />
                 </div>
-                <div style={{ display: 'flex', gap: '2px', background: '#F1F5F9', padding: '2px', borderRadius: '6px' }}>
+                <div style={{ display: 'flex', gap: '2px', background: '#F1F5F9', padding: '2px', borderRadius: '8px' }}>
                   {sectionsList.map(sec => (
                     <button
                       key={sec.id}
@@ -362,7 +362,7 @@ export default function MasterSettingsHub() {
                       onClick={() => setSelectedSection(sec.id)}
                       style={{
                         padding: '3px 8px',
-                        borderRadius: '4px',
+                        borderRadius: '6px',
                         fontSize: '10.5px',
                         fontWeight: 700,
                         border: 'none',
@@ -410,13 +410,13 @@ export default function MasterSettingsHub() {
                       </td>
 
                       <td style={{ padding: '8px 12px' }}>
-                        <span style={{ background: '#F1F5F9', border: '1px solid #CBD5E1', color: '#0F172A', padding: '1px 7px', borderRadius: '4px', fontSize: '10.5px', fontWeight: 700 }}>
+                        <span style={{ background: '#F1F5F9', border: '1px solid #CBD5E1', color: '#0F172A', padding: '1px 7px', borderRadius: '6px', fontSize: '10.5px', fontWeight: 700 }}>
                           {SECTION_TRANSLATIONS[q.section] || q.section}
                         </span>
                       </td>
 
                       <td style={{ padding: '8px 12px' }}>
-                        <span style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', color: '#475569', padding: '1px 7px', borderRadius: '4px', fontSize: '10.5px' }}>
+                        <span style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', color: '#475569', padding: '1px 7px', borderRadius: '6px', fontSize: '10.5px' }}>
                           {TYPE_TRANSLATIONS[q.type] || q.type}
                         </span>
                       </td>
@@ -426,14 +426,14 @@ export default function MasterSettingsHub() {
                           <button
                             type="button"
                             onClick={() => handleToggleQuestionRequired(q)}
-                            style={{ padding: '2px 6px', borderRadius: '4px', border: 'none', background: q.required ? '#FEE2E2' : '#F1F5F9', color: q.required ? '#DC2626' : '#64748B', fontSize: '10.5px', fontWeight: 700, cursor: 'pointer' }}
+                            style={{ padding: '2px 6px', borderRadius: '6px', border: 'none', background: q.required ? '#FEE2E2' : '#F1F5F9', color: q.required ? '#DC2626' : '#64748B', fontSize: '10.5px', fontWeight: 700, cursor: 'pointer' }}
                           >
                             {q.required ? 'إجباري *' : 'اختياري'}
                           </button>
                           <button
                             type="button"
                             onClick={() => handleToggleQuestionActive(q)}
-                            style={{ padding: '2px 6px', borderRadius: '4px', border: 'none', background: q.active ? '#DCFCE7' : '#F1F5F9', color: q.active ? '#16A34A' : '#64748B', fontSize: '10.5px', fontWeight: 700, cursor: 'pointer' }}
+                            style={{ padding: '2px 6px', borderRadius: '6px', border: 'none', background: q.active ? '#DCFCE7' : '#F1F5F9', color: q.active ? '#16A34A' : '#64748B', fontSize: '10.5px', fontWeight: 700, cursor: 'pointer' }}
                           >
                             {q.active ? 'مفعّل' : 'مخفي'}
                           </button>
@@ -442,8 +442,8 @@ export default function MasterSettingsHub() {
 
                       <td style={{ padding: '8px 12px', textAlign: 'left' }}>
                         <div style={{ display: 'inline-flex', gap: '4px' }}>
-                          <button type="button" onClick={() => { setEditingQuestion(q); setQuestionModalOpen(true); }} style={{ padding: '3px 6px', borderRadius: '4px', border: '1px solid #CBD5E1', background: '#FFFFFF', color: '#0F172A', cursor: 'pointer' }}><Edit3 size={12} /></button>
-                          <button type="button" onClick={() => handleDeleteQuestion(q.id)} style={{ padding: '3px 6px', borderRadius: '4px', border: '1px solid #FECACA', background: '#FEF2F2', color: '#DC2626', cursor: 'pointer' }}><Trash2 size={12} /></button>
+                          <button type="button" onClick={() => { setEditingQuestion(q); setQuestionModalOpen(true); }} style={{ padding: '3px 6px', borderRadius: '6px', border: '1px solid #CBD5E1', background: '#FFFFFF', color: '#0F172A', cursor: 'pointer' }}><Edit3 size={12} /></button>
+                          <button type="button" onClick={() => handleDeleteQuestion(q.id)} style={{ padding: '3px 6px', borderRadius: '6px', border: '1px solid #FECACA', background: '#FEF2F2', color: '#DC2626', cursor: 'pointer' }}><Trash2 size={12} /></button>
                         </div>
                       </td>
                     </tr>
@@ -465,7 +465,7 @@ export default function MasterSettingsHub() {
                 <div key={pkg.id} style={{ background: '#FFFFFF', border: '1px solid #E2E8F0', borderRadius: '10px', padding: '16px', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', gap: '12px', boxShadow: '0 1px 3px rgba(15, 23, 42, 0.03)' }}>
                   <div>
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
-                      <span style={{ background: '#F1F5F9', border: '1px solid #CBD5E1', color: '#0F172A', padding: '2px 8px', borderRadius: '4px', fontSize: '10.5px', fontWeight: 800 }}>{pkg.badge_ar}</span>
+                      <span style={{ background: '#F1F5F9', border: '1px solid #CBD5E1', color: '#0F172A', padding: '2px 8px', borderRadius: '6px', fontSize: '10.5px', fontWeight: 800 }}>{pkg.badge_ar}</span>
                       <div style={{ display: 'flex', alignItems: 'baseline', gap: '4px' }}>
                         <strong style={{ fontSize: '18px', color: '#0F172A', fontFamily: 'JetBrains Mono, Cairo' }}>{pkg.price_egp}</strong>
                         <span style={{ fontSize: '12px', color: '#64748B', fontFamily: 'Cairo, sans-serif', fontWeight: 700 }}>ج.م</span>
@@ -487,8 +487,8 @@ export default function MasterSettingsHub() {
                       <span>{pkg.active ? 'باقة نشطة' : 'معطلة'}</span>
                     </label>
                     <div style={{ display: 'flex', gap: '6px' }}>
-                      <button type="button" onClick={() => { setEditingPackage(pkg); setPackageModalOpen(true); }} style={{ padding: '4px 10px', borderRadius: '5px', border: '1px solid #CBD5E1', background: '#FFFFFF', color: '#0F172A', fontSize: '11px', fontWeight: 700, cursor: 'pointer' }}>تعديل</button>
-                      <button type="button" onClick={() => handleDeletePackage(pkg.id)} style={{ padding: '4px 10px', borderRadius: '5px', border: '1px solid #FECACA', background: '#FEF2F2', color: '#DC2626', fontSize: '11px', fontWeight: 700, cursor: 'pointer' }}>حذف</button>
+                      <button type="button" onClick={() => { setEditingPackage(pkg); setPackageModalOpen(true); }} style={{ padding: '4px 10px', borderRadius: '8px', border: '1px solid #CBD5E1', background: '#FFFFFF', color: '#0F172A', fontSize: '11px', fontWeight: 700, cursor: 'pointer' }}>تعديل</button>
+                      <button type="button" onClick={() => handleDeletePackage(pkg.id)} style={{ padding: '4px 10px', borderRadius: '8px', border: '1px solid #FECACA', background: '#FEF2F2', color: '#DC2626', fontSize: '11px', fontWeight: 700, cursor: 'pointer' }}>حذف</button>
                     </div>
                   </div>
                 </div>
@@ -702,7 +702,7 @@ export default function MasterSettingsHub() {
                       <Eye size={15} color={coachConfig.primaryColor || '#0F172A'} />
                       <strong style={{ fontSize: '12px', color: '#0F172A' }}>المعاينة الحية الفورية (Live UI Preview)</strong>
                     </div>
-                    <span style={{ fontSize: '10px', background: '#F1F5F9', color: '#475569', padding: '2px 8px', borderRadius: '4px', fontWeight: 700 }}>
+                    <span style={{ fontSize: '10px', background: '#F1F5F9', color: '#475569', padding: '2px 8px', borderRadius: '6px', fontWeight: 700 }}>
                       مباشر الآن
                     </span>
                   </div>
@@ -717,7 +717,7 @@ export default function MasterSettingsHub() {
                         style={{
                           width: '100%',
                           height: '36px',
-                          borderRadius: '6px',
+                          borderRadius: '8px',
                           fontSize: '12px',
                           fontWeight: 800,
                           background: deriveThemeColors(coachConfig.primaryColor).light,
@@ -847,7 +847,7 @@ export default function MasterSettingsHub() {
                       value={coachConfig.coachName}
                       onChange={(e) => setCoachConfig({ ...coachConfig, coachName: e.target.value })}
                       placeholder="مثال: كريم زكريا / Karim Zakaria"
-                      style={{ width: '100%', height: '36px', borderRadius: '6px', border: '1px solid #CBD5E1', padding: '0 32px 0 10px', fontSize: '12px', outline: 'none', boxSizing: 'border-box' }}
+                      style={{ width: '100%', height: '36px', borderRadius: '8px', border: '1px solid #CBD5E1', padding: '0 32px 0 10px', fontSize: '12px', outline: 'none', boxSizing: 'border-box' }}
                     />
                     <User size={14} color="#94A3B8" style={{ position: 'absolute', right: '10px', top: '11px' }} />
                   </div>
@@ -863,7 +863,7 @@ export default function MasterSettingsHub() {
                       value={coachConfig.coachTitle}
                       onChange={(e) => setCoachConfig({ ...coachConfig, coachTitle: e.target.value })}
                       placeholder="مثال: أخصائي تغذية رياضية وإعداد بدني معتمد ISSA"
-                      style={{ width: '100%', height: '36px', borderRadius: '6px', border: '1px solid #CBD5E1', padding: '0 32px 0 10px', fontSize: '12px', outline: 'none', boxSizing: 'border-box' }}
+                      style={{ width: '100%', height: '36px', borderRadius: '8px', border: '1px solid #CBD5E1', padding: '0 32px 0 10px', fontSize: '12px', outline: 'none', boxSizing: 'border-box' }}
                     />
                     <Award size={14} color="#94A3B8" style={{ position: 'absolute', right: '10px', top: '11px' }} />
                   </div>
@@ -879,7 +879,7 @@ export default function MasterSettingsHub() {
                       value={coachConfig.brandTitle}
                       onChange={(e) => setCoachConfig({ ...coachConfig, brandTitle: e.target.value })}
                       placeholder="مثال: Z COACHING"
-                      style={{ width: '100%', height: '36px', borderRadius: '6px', border: '1px solid #CBD5E1', padding: '0 32px 0 10px', fontSize: '12px', outline: 'none', boxSizing: 'border-box' }}
+                      style={{ width: '100%', height: '36px', borderRadius: '8px', border: '1px solid #CBD5E1', padding: '0 32px 0 10px', fontSize: '12px', outline: 'none', boxSizing: 'border-box' }}
                     />
                     <Building2 size={14} color="#94A3B8" style={{ position: 'absolute', right: '10px', top: '11px' }} />
                   </div>
@@ -896,7 +896,7 @@ export default function MasterSettingsHub() {
                       onChange={(e) => setCoachConfig({ ...coachConfig, whatsappNumber: e.target.value })}
                       placeholder="2010XXXXXXXX"
                       dir="ltr"
-                      style={{ width: '100%', height: '36px', borderRadius: '6px', border: '1px solid #CBD5E1', padding: '0 10px 0 32px', fontSize: '12px', outline: 'none', boxSizing: 'border-box', textAlign: 'right' }}
+                      style={{ width: '100%', height: '36px', borderRadius: '8px', border: '1px solid #CBD5E1', padding: '0 10px 0 32px', fontSize: '12px', outline: 'none', boxSizing: 'border-box', textAlign: 'right' }}
                     />
                     <Phone size={14} color="#94A3B8" style={{ position: 'absolute', left: '10px', top: '11px' }} />
                   </div>
@@ -913,7 +913,7 @@ export default function MasterSettingsHub() {
                       onChange={(e) => setCoachConfig({ ...coachConfig, instapayAddress: e.target.value })}
                       placeholder="مثال: coach@instapay أو رقم الهاتف"
                       dir="ltr"
-                      style={{ width: '100%', height: '36px', borderRadius: '6px', border: '1px solid #CBD5E1', padding: '0 10px 0 32px', fontSize: '12px', outline: 'none', boxSizing: 'border-box', textAlign: 'right' }}
+                      style={{ width: '100%', height: '36px', borderRadius: '8px', border: '1px solid #CBD5E1', padding: '0 10px 0 32px', fontSize: '12px', outline: 'none', boxSizing: 'border-box', textAlign: 'right' }}
                     />
                     <CreditCard size={14} color="#94A3B8" style={{ position: 'absolute', left: '10px', top: '11px' }} />
                   </div>
@@ -930,7 +930,7 @@ export default function MasterSettingsHub() {
                       onChange={(e) => setCoachConfig({ ...coachConfig, instagramUrl: e.target.value })}
                       placeholder="https://instagram.com/yourhandle"
                       dir="ltr"
-                      style={{ width: '100%', height: '36px', borderRadius: '6px', border: '1px solid #CBD5E1', padding: '0 10px 0 32px', fontSize: '12px', outline: 'none', boxSizing: 'border-box', textAlign: 'right' }}
+                      style={{ width: '100%', height: '36px', borderRadius: '8px', border: '1px solid #CBD5E1', padding: '0 10px 0 32px', fontSize: '12px', outline: 'none', boxSizing: 'border-box', textAlign: 'right' }}
                     />
                     <Globe size={14} color="#94A3B8" style={{ position: 'absolute', left: '10px', top: '11px' }} />
                   </div>
@@ -945,7 +945,7 @@ export default function MasterSettingsHub() {
                     value={coachConfig.bankDetails}
                     onChange={(e) => setCoachConfig({ ...coachConfig, bankDetails: e.target.value })}
                     placeholder="مثال: بنك CIB - حساب: 1000XXXXXXXXXX | محفظة فودافون كاش: 010XXXXXXXX"
-                    style={{ width: '100%', height: '36px', borderRadius: '6px', border: '1px solid #CBD5E1', padding: '0 10px', fontSize: '12px', outline: 'none', boxSizing: 'border-box' }}
+                    style={{ width: '100%', height: '36px', borderRadius: '8px', border: '1px solid #CBD5E1', padding: '0 10px', fontSize: '12px', outline: 'none', boxSizing: 'border-box' }}
                   />
                 </div>
 
@@ -958,7 +958,7 @@ export default function MasterSettingsHub() {
                     onChange={(e) => setCoachConfig({ ...coachConfig, welcomeMessage: e.target.value })}
                     rows={2}
                     placeholder="اكتب الترحيب الذي يظهر للمشترك عند فتح حسابه..."
-                    style={{ width: '100%', borderRadius: '6px', border: '1px solid #CBD5E1', padding: '8px 10px', fontSize: '12px', outline: 'none', boxSizing: 'border-box', resize: 'vertical' }}
+                    style={{ width: '100%', borderRadius: '8px', border: '1px solid #CBD5E1', padding: '8px 10px', fontSize: '12px', outline: 'none', boxSizing: 'border-box', resize: 'vertical' }}
                   />
                 </div>
 
@@ -971,7 +971,7 @@ export default function MasterSettingsHub() {
                     value={coachConfig.signatureText}
                     onChange={(e) => setCoachConfig({ ...coachConfig, signatureText: e.target.value })}
                     placeholder="مثال: معاً نحو نسختك الأقوى • كابتن كريم زكريا"
-                    style={{ width: '100%', height: '36px', borderRadius: '6px', border: '1px solid #CBD5E1', padding: '0 10px', fontSize: '12px', outline: 'none', boxSizing: 'border-box' }}
+                    style={{ width: '100%', height: '36px', borderRadius: '8px', border: '1px solid #CBD5E1', padding: '0 10px', fontSize: '12px', outline: 'none', boxSizing: 'border-box' }}
                   />
                 </div>
 
@@ -994,7 +994,7 @@ export default function MasterSettingsHub() {
                       type="number"
                       value={coachConfig.defaultDailySteps}
                       onChange={(e) => setCoachConfig({ ...coachConfig, defaultDailySteps: Number(e.target.value) })}
-                      style={{ width: '100%', height: '36px', borderRadius: '6px', border: '1px solid #CBD5E1', padding: '0 32px 0 10px', fontSize: '12px', fontWeight: 800, outline: 'none', boxSizing: 'border-box' }}
+                      style={{ width: '100%', height: '36px', borderRadius: '8px', border: '1px solid #CBD5E1', padding: '0 32px 0 10px', fontSize: '12px', fontWeight: 800, outline: 'none', boxSizing: 'border-box' }}
                     />
                     <Footprints size={14} color="#94A3B8" style={{ position: 'absolute', right: '10px', top: '11px' }} />
                   </div>
@@ -1010,7 +1010,7 @@ export default function MasterSettingsHub() {
                       step="0.5"
                       value={coachConfig.defaultWaterLiters}
                       onChange={(e) => setCoachConfig({ ...coachConfig, defaultWaterLiters: Number(e.target.value) })}
-                      style={{ width: '100%', height: '36px', borderRadius: '6px', border: '1px solid #CBD5E1', padding: '0 32px 0 10px', fontSize: '12px', fontWeight: 800, outline: 'none', boxSizing: 'border-box' }}
+                      style={{ width: '100%', height: '36px', borderRadius: '8px', border: '1px solid #CBD5E1', padding: '0 32px 0 10px', fontSize: '12px', fontWeight: 800, outline: 'none', boxSizing: 'border-box' }}
                     />
                     <Droplets size={14} color="#94A3B8" style={{ position: 'absolute', right: '10px', top: '11px' }} />
                   </div>
@@ -1025,7 +1025,7 @@ export default function MasterSettingsHub() {
                       type="number"
                       value={coachConfig.defaultRIR}
                       onChange={(e) => setCoachConfig({ ...coachConfig, defaultRIR: Number(e.target.value) })}
-                      style={{ width: '100%', height: '36px', borderRadius: '6px', border: '1px solid #CBD5E1', padding: '0 32px 0 10px', fontSize: '12px', fontWeight: 800, outline: 'none', boxSizing: 'border-box' }}
+                      style={{ width: '100%', height: '36px', borderRadius: '8px', border: '1px solid #CBD5E1', padding: '0 32px 0 10px', fontSize: '12px', fontWeight: 800, outline: 'none', boxSizing: 'border-box' }}
                     />
                     <Activity size={14} color="#94A3B8" style={{ position: 'absolute', right: '10px', top: '11px' }} />
                   </div>
@@ -1042,7 +1042,7 @@ export default function MasterSettingsHub() {
                 style={{
                   height: '38px',
                   padding: '0 16px',
-                  borderRadius: '6px',
+                  borderRadius: '8px',
                   border: '1px solid #CBD5E1',
                   background: '#FFFFFF',
                   color: '#475569',

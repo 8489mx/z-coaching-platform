@@ -320,7 +320,7 @@ export function BrandCombobox({
                   <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
                     <span>{brandName}</span>
                     {isCustom && (
-                      <span style={{ fontSize: '0.68rem', background: '#e2e8f0', color: '#475569', padding: '1px 5px', borderRadius: '4px', fontWeight: 600 }}>
+                      <span style={{ fontSize: '0.68rem', background: '#e2e8f0', color: '#475569', padding: '1px 5px', borderRadius: '6px', fontWeight: 600 }}>
                         محفوظة
                       </span>
                     )}

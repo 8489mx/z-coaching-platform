@@ -204,15 +204,15 @@ export default function ClientSlideOverDrawer({
               <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginTop: '2px' }}>
                 <ClientPackageBadge item={client} />
                 {client.subscription_status === 'FROZEN' ? (
-                  <span style={{ fontSize: '10.5px', fontWeight: 800, padding: '1px 6px', borderRadius: '4px', background: '#FEF3C7', color: '#B45309', border: '1px solid #FDE68A' }}>
+                  <span style={{ fontSize: '10.5px', fontWeight: 800, padding: '1px 6px', borderRadius: '6px', background: '#FEF3C7', color: '#B45309', border: '1px solid #FDE68A' }}>
                     مجمد مؤقتاً
                   </span>
                 ) : client.subscription_status === 'EXPIRED' ? (
-                  <span style={{ fontSize: '10.5px', fontWeight: 800, padding: '1px 6px', borderRadius: '4px', background: '#FEF2F2', color: '#DC2626', border: '1px solid #FECACA' }}>
+                  <span style={{ fontSize: '10.5px', fontWeight: 800, padding: '1px 6px', borderRadius: '6px', background: '#FEF2F2', color: '#DC2626', border: '1px solid #FECACA' }}>
                     منتهي الصلاحية
                   </span>
                 ) : (
-                  <span style={{ fontSize: '10.5px', fontWeight: 800, padding: '1px 6px', borderRadius: '4px', background: '#F0FDF4', color: '#16A34A', border: '1px solid #BBF7D0' }}>
+                  <span style={{ fontSize: '10.5px', fontWeight: 800, padding: '1px 6px', borderRadius: '6px', background: '#F0FDF4', color: '#16A34A', border: '1px solid #BBF7D0' }}>
                     نشط ({client.days_remaining !== undefined ? `${client.days_remaining} يوم متبقي` : 'ساري'})
                   </span>
                 )}
@@ -368,7 +368,7 @@ export default function ClientSlideOverDrawer({
                     style={{
                       border: '1px solid #CBD5E1',
                       background: '#FFFFFF',
-                      borderRadius: '4px',
+                      borderRadius: '8px',
                       padding: '2px 5px',
                       cursor: 'pointer',
                       display: 'flex',
@@ -400,7 +400,7 @@ export default function ClientSlideOverDrawer({
                 onClick={() => onToggleFreeze(client)}
                 style={{
                   padding: '3px 9px',
-                  borderRadius: '5px',
+                  borderRadius: '8px',
                   border: client.subscription_status === 'FROZEN' ? '1px solid #86EFAC' : '1px solid #CBD5E1',
                   background: client.subscription_status === 'FROZEN' ? '#F0FDF4' : '#FFFFFF',
                   color: client.subscription_status === 'FROZEN' ? '#16A34A' : '#475569',
@@ -425,7 +425,7 @@ export default function ClientSlideOverDrawer({
                   <span style={{
                     fontSize: '10.5px',
                     padding: '2px 7px',
-                    borderRadius: '4px',
+                    borderRadius: '6px',
                     background: fasting.primaryFastingBadge.bg,
                     border: `1px solid ${fasting.primaryFastingBadge.border}`,
                     color: fasting.primaryFastingBadge.color,
@@ -438,7 +438,7 @@ export default function ClientSlideOverDrawer({
                   <span style={{
                     fontSize: '10.5px',
                     padding: '2px 7px',
-                    borderRadius: '4px',
+                    borderRadius: '6px',
                     background: fasting.intermittentBadge.bg,
                     border: `1px solid ${fasting.intermittentBadge.border}`,
                     color: fasting.intermittentBadge.color,
@@ -602,19 +602,19 @@ export default function ClientSlideOverDrawer({
 
                 {/* Latest Check-in Snapshot */}
                 {latestSubmission && (
-                  <div style={{ background: '#F8FAFC', padding: '10px 12px', borderRadius: '6px', border: '1px solid #E2E8F0', display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                  <div style={{ background: '#F8FAFC', padding: '10px 12px', borderRadius: '8px', border: '1px solid #E2E8F0', display: 'flex', flexDirection: 'column', gap: '6px' }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                       <span style={{ fontSize: '11px', fontWeight: 800, color: '#334155' }}>
                         آخر تقييم: {latestSubmission.createdAt ? new Date(latestSubmission.createdAt).toLocaleDateString('en-CA') : 'أسبوعي'}
                       </span>
                       {latestSubmission.compliance_score && (
-                        <span style={{ fontSize: '10.5px', fontWeight: 700, padding: '1px 6px', borderRadius: '4px', background: '#EFF6FF', color: '#1D4ED8', border: '1px solid #DBEAFE' }}>
+                        <span style={{ fontSize: '10.5px', fontWeight: 700, padding: '1px 6px', borderRadius: '6px', background: '#EFF6FF', color: '#1D4ED8', border: '1px solid #DBEAFE' }}>
                           الالتزام: {latestSubmission.compliance_score}%
                         </span>
                       )}
                     </div>
                     {latestSubmission.notes && (
-                      <p style={{ margin: 0, fontSize: '11.5px', color: '#475569', lineHeight: 1.5, background: '#FFFFFF', padding: '6px 8px', borderRadius: '4px', border: '1px solid #E2E8F0' }}>
+                      <p style={{ margin: 0, fontSize: '11.5px', color: '#475569', lineHeight: 1.5, background: '#FFFFFF', padding: '6px 8px', borderRadius: '8px', border: '1px solid #E2E8F0' }}>
                         "{latestSubmission.notes}"
                       </p>
                     )}

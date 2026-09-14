@@ -324,7 +324,7 @@ export default function InteractivePhotoComparisonStudio({
                     background: angle === a.id ? '#0F172A' : 'transparent',
                     color: angle === a.id ? '#FFFFFF' : '#64748B',
                     padding: '4px 10px',
-                    borderRadius: '4px',
+                    borderRadius: '6px',
                     fontSize: '11px',
                     fontWeight: 700,
                     cursor: 'pointer',
@@ -352,7 +352,7 @@ export default function InteractivePhotoComparisonStudio({
                 fontSize: '11px',
                 fontWeight: 700,
                 padding: '3px 6px',
-                borderRadius: '5px',
+                borderRadius: '8px',
                 border: '1px solid #CBD5E1',
                 background: '#FFFFFF',
                 color: '#0F172A',
@@ -380,7 +380,7 @@ export default function InteractivePhotoComparisonStudio({
                 fontSize: '11px',
                 fontWeight: 700,
                 padding: '3px 6px',
-                borderRadius: '5px',
+                borderRadius: '8px',
                 border: '1px solid #CBD5E1',
                 background: '#FFFFFF',
                 color: '#0F172A',
@@ -402,7 +402,7 @@ export default function InteractivePhotoComparisonStudio({
             onClick={() => setShowMarketingModal(true)}
             style={{
               padding: '4px 12px',
-              borderRadius: '6px',
+              borderRadius: '8px',
               border: 'none',
               background: '#0F172A',
               color: '#C4952D',
@@ -426,7 +426,7 @@ export default function InteractivePhotoComparisonStudio({
             title="تكبير شاشة المقارنة"
             style={{
               padding: '5px 8px',
-              borderRadius: '5px',
+              borderRadius: '8px',
               border: '1px solid #CBD5E1',
               background: '#FFFFFF',
               color: '#0F172A',
@@ -482,7 +482,7 @@ export default function InteractivePhotoComparisonStudio({
                   background: 'rgba(15, 23, 42, 0.8)',
                   color: '#FFFFFF',
                   padding: '4px 8px',
-                  borderRadius: '4px',
+                  borderRadius: '6px',
                   fontSize: '10px',
                   fontWeight: 700,
                   cursor: 'pointer',
@@ -546,7 +546,7 @@ export default function InteractivePhotoComparisonStudio({
                   background: 'rgba(15, 23, 42, 0.8)',
                   color: '#FFFFFF',
                   padding: '4px 8px',
-                  borderRadius: '4px',
+                  borderRadius: '6px',
                   fontSize: '10px',
                   fontWeight: 700,
                   cursor: 'pointer',
@@ -825,7 +825,7 @@ export default function InteractivePhotoComparisonStudio({
                 onClick={() => setShowMarketingModal(false)}
                 style={{
                   padding: '5px 14px',
-                  borderRadius: '5px',
+                  borderRadius: '8px',
                   border: '1px solid #CBD5E1',
                   background: '#FFFFFF',
                   color: '#0F172A',
@@ -885,7 +885,7 @@ export default function InteractivePhotoComparisonStudio({
               <button
                 type="button"
                 onClick={() => setIsFullscreen(false)}
-                style={{ border: '1px solid #E2E8F0', background: '#FFFFFF', borderRadius: '6px', width: '30px', height: '30px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: '#64748B' }}
+                style={{ border: '1px solid #E2E8F0', background: '#FFFFFF', borderRadius: '8px', width: '30px', height: '30px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: '#64748B' }}
               >
                 <X size={15} />
               </button>
@@ -932,7 +932,7 @@ export default function InteractivePhotoComparisonStudio({
               <button
                 type="button"
                 onClick={() => setIsFullscreen(false)}
-                style={{ padding: '6px 16px', borderRadius: '6px', border: 'none', background: '#0F172A', color: '#FFFFFF', fontSize: '12px', fontWeight: 700, cursor: 'pointer' }}
+                style={{ padding: '6px 16px', borderRadius: '8px', border: 'none', background: '#0F172A', color: '#FFFFFF', fontSize: '12px', fontWeight: 700, cursor: 'pointer' }}
               >
                 إغلاق الاستوديو
               </button>

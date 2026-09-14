@@ -477,7 +477,7 @@ export function QuickAttendanceShortcut({ onClose }: QuickAttendanceShortcutProp
                       {!hasCheckIn ? 'لم يسجل' : !hasCheckOut ? 'حاضر بالعمل' : 'اكتملت الجلسة'}
                     </strong>
                     {workedDuration && (
-                      <span style={{ fontSize: '0.7rem', color: '#64748b', background: '#ffffff', padding: '1px 6px', borderRadius: '4px', border: '1px solid #e2e8f0' }}>
+                      <span style={{ fontSize: '0.7rem', color: '#64748b', background: '#ffffff', padding: '1px 6px', borderRadius: '6px', border: '1px solid #e2e8f0' }}>
                         {workedDuration}
                       </span>
                     )}
@@ -521,7 +521,7 @@ export function QuickAttendanceShortcut({ onClose }: QuickAttendanceShortcutProp
                         background: '#16a34a',
                         color: '#ffffff',
                         border: 'none',
-                        borderRadius: '6px',
+                        borderRadius: '8px',
                         padding: '9px 20px',
                         fontSize: '0.85rem',
                         fontWeight: 700,
@@ -544,7 +544,7 @@ export function QuickAttendanceShortcut({ onClose }: QuickAttendanceShortcutProp
                         background: '#dc2626',
                         color: '#ffffff',
                         border: 'none',
-                        borderRadius: '6px',
+                        borderRadius: '8px',
                         padding: '9px 20px',
                         fontSize: '0.85rem',
                         fontWeight: 700,
@@ -568,7 +568,7 @@ export function QuickAttendanceShortcut({ onClose }: QuickAttendanceShortcutProp
                           background: '#16a34a',
                           color: '#ffffff',
                           border: 'none',
-                          borderRadius: '6px',
+                          borderRadius: '8px',
                           padding: '9px 18px',
                           fontSize: '0.82rem',
                           fontWeight: 700,
@@ -591,7 +591,7 @@ export function QuickAttendanceShortcut({ onClose }: QuickAttendanceShortcutProp
                           background: '#ffffff',
                           color: '#475569',
                           border: '1px solid #cbd5e1',
-                          borderRadius: '6px',
+                          borderRadius: '8px',
                           padding: '8px 14px',
                           fontSize: '0.8rem',
                           fontWeight: 600,

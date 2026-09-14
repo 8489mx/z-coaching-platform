@@ -552,13 +552,13 @@ export default function FullIntakeForm() {
           </div>
 
           {/* Progress Track */}
-          <div style={{ height: '4px', width: '100%', background: '#F1F5F9', borderRadius: '4px', overflow: 'hidden' }}>
+          <div style={{ height: '6px', width: '100%', background: '#F1F5F9', borderRadius: '9999px', overflow: 'hidden' }}>
             <div 
               style={{ 
                 width: `${(currentStep / 4) * 100}%`,
                 background: '#0F172A',
                 height: '100%',
-                borderRadius: '4px',
+                borderRadius: '9999px',
                 transition: 'width 0.3s ease'
               }}
             />
@@ -2096,7 +2096,7 @@ export default function FullIntakeForm() {
                               {angle.title}
                             </strong>
                             <div style={{ display: 'flex', gap: '6px', width: '100%' }}>
-                              <label style={{ flex: 1, padding: '4px 0', background: '#F1F5F9', border: '1px solid #CBD5E1', borderRadius: '4px', fontSize: '10.5px', fontWeight: 700, color: '#334155', cursor: 'pointer', textAlign: 'center' }}>
+                              <label style={{ flex: 1, padding: '4px 0', background: '#F1F5F9', border: '1px solid #CBD5E1', borderRadius: '6px', fontSize: '10.5px', fontWeight: 700, color: '#334155', cursor: 'pointer', textAlign: 'center' }}>
                                 تغيير
                                 <input 
                                   type="file" 
@@ -2108,7 +2108,7 @@ export default function FullIntakeForm() {
                               <button 
                                 type="button" 
                                 onClick={() => handleRemoveMedia(angle.field)}
-                                style={{ padding: '4px 8px', background: '#FEE2E2', border: '1px solid #FCA5A5', borderRadius: '4px', color: '#DC2626', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                                style={{ padding: '4px 8px', background: '#FEE2E2', border: '1px solid #FCA5A5', borderRadius: '6px', color: '#DC2626', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
                               >
                                 <Trash2 size={13} />
                               </button>
@@ -2118,7 +2118,7 @@ export default function FullIntakeForm() {
                           <label style={{ cursor: 'pointer', width: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px' }}>
                             <Camera size={22} color="#94A3B8" />
                             <strong style={{ fontSize: '11.5px', color: '#0F172A' }}>{angle.title}</strong>
-                            <span style={{ fontSize: '10.5px', color: '#16A34A', fontWeight: 700, padding: '2px 8px', background: '#ECFDF5', borderRadius: '4px' }}>
+                            <span style={{ fontSize: '10.5px', color: '#16A34A', fontWeight: 700, padding: '2px 8px', background: '#ECFDF5', borderRadius: '6px' }}>
                               اختيار صورة
                             </span>
                             <input 
@@ -2155,7 +2155,7 @@ export default function FullIntakeForm() {
                         <button 
                           type="button" 
                           onClick={() => handleRemoveMedia('inbody_report_url')}
-                          style={{ padding: '4px 8px', background: '#FEE2E2', border: '1px solid #FCA5A5', borderRadius: '4px', color: '#DC2626', cursor: 'pointer', fontSize: '11px', fontWeight: 700 }}
+                          style={{ padding: '4px 8px', background: '#FEE2E2', border: '1px solid #FCA5A5', borderRadius: '6px', color: '#DC2626', cursor: 'pointer', fontSize: '11px', fontWeight: 700 }}
                         >
                           حذف
                         </button>
@@ -2166,7 +2166,7 @@ export default function FullIntakeForm() {
                         alignItems: 'center',
                         gap: '6px',
                         padding: '6px 14px',
-                        borderRadius: '6px',
+                        borderRadius: '8px',
                         background: '#0F172A',
                         color: '#FFFFFF',
                         fontSize: '11.5px',

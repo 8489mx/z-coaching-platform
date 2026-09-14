@@ -482,7 +482,7 @@ export default function WhatsAppRemindersHub() {
                           fontSize: '9.5px',
                           fontWeight: 700,
                           padding: '2px 7px',
-                          borderRadius: '4px',
+                          borderRadius: '6px',
                           background: reasonBadge.bg,
                           border: `1px solid ${reasonBadge.border}`,
                           color: reasonBadge.color
@@ -511,7 +511,7 @@ export default function WhatsAppRemindersHub() {
                           }}
                           style={{
                             padding: '4px 9px',
-                            borderRadius: '4px',
+                            borderRadius: '8px',
                             background: '#25D366',
                             color: '#FFFFFF',
                             border: 'none',

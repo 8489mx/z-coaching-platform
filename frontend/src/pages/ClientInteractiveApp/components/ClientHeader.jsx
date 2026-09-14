@@ -145,7 +145,7 @@ export default function ClientHeader({
                   background: '#38BDF8',
                   color: '#0F172A',
                   border: 'none',
-                  borderRadius: '6px',
+                  borderRadius: '8px',
                   padding: '3px 7px',
                   fontSize: '10px',
                   fontWeight: 800,

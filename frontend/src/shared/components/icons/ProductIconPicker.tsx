@@ -273,7 +273,7 @@ export function ProductIconPicker({
                 >
                   <span>{cat.title}</span>
                   <span style={{ fontSize: '0.7rem', opacity: 0.85 }}>({count})</span>
-                  {isTenantIndustry && <span style={{ fontSize: '0.65rem', background: '#3b82f6', color: '#fff', borderRadius: '4px', padding: '1px 4px' }}>نشاطك</span>}
+                  {isTenantIndustry && <span style={{ fontSize: '0.65rem', background: '#3b82f6', color: '#fff', borderRadius: '6px', padding: '1px 4px' }}>نشاطك</span>}
                 </button>
               );
             })}

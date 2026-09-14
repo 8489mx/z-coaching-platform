@@ -529,7 +529,7 @@ export default function Customers() {
                                     <span style={{
                                       fontSize: '10px',
                                       padding: '1px 6px',
-                                      borderRadius: '4px',
+                                      borderRadius: '6px',
                                       background: fasting.primaryFastingBadge.bg,
                                       border: `1px solid ${fasting.primaryFastingBadge.border}`,
                                       color: fasting.primaryFastingBadge.color,
@@ -542,7 +542,7 @@ export default function Customers() {
                                     <span style={{
                                       fontSize: '10px',
                                       padding: '1px 6px',
-                                      borderRadius: '4px',
+                                      borderRadius: '6px',
                                       background: fasting.intermittentBadge.bg,
                                       border: `1px solid ${fasting.intermittentBadge.border}`,
                                       color: fasting.intermittentBadge.color,
@@ -572,19 +572,19 @@ export default function Customers() {
                         {/* Status */}
                         <td style={{ padding: '10px 14px', textAlign: 'center' }}>
                           {client.subscription_status === 'FROZEN' ? (
-                            <span style={{ background: '#FEF3C7', color: '#B45309', border: '1px solid #FDE68A', padding: '2px 8px', borderRadius: '4px', fontSize: '11px', fontWeight: 800, display: 'inline-block' }}>
+                            <span style={{ background: '#FEF3C7', color: '#B45309', border: '1px solid #FDE68A', padding: '2px 8px', borderRadius: '6px', fontSize: '11px', fontWeight: 800, display: 'inline-block' }}>
                               مجمد مؤقتاً
                             </span>
                           ) : client.subscription_status === 'EXPIRED' ? (
-                            <span style={{ background: '#FEF2F2', color: '#DC2626', border: '1px solid #FECACA', padding: '2px 8px', borderRadius: '4px', fontSize: '11px', fontWeight: 800, display: 'inline-block' }}>
+                            <span style={{ background: '#FEF2F2', color: '#DC2626', border: '1px solid #FECACA', padding: '2px 8px', borderRadius: '6px', fontSize: '11px', fontWeight: 800, display: 'inline-block' }}>
                               منتهي الصلاحية
                             </span>
                           ) : client.subscription_status === 'EXPIRING_SOON' ? (
-                            <span style={{ background: '#FFFBEB', color: '#D97706', border: '1px solid #FDE68A', padding: '2px 8px', borderRadius: '4px', fontSize: '11px', fontWeight: 800, display: 'inline-block' }}>
+                            <span style={{ background: '#FFFBEB', color: '#D97706', border: '1px solid #FDE68A', padding: '2px 8px', borderRadius: '6px', fontSize: '11px', fontWeight: 800, display: 'inline-block' }}>
                               ينتهي خلال {client.days_remaining} يوم
                             </span>
                           ) : (
-                            <span style={{ background: '#F0FDF4', color: '#16A34A', border: '1px solid #BBF7D0', padding: '2px 8px', borderRadius: '4px', fontSize: '11px', fontWeight: 800, display: 'inline-block' }}>
+                            <span style={{ background: '#F0FDF4', color: '#16A34A', border: '1px solid #BBF7D0', padding: '2px 8px', borderRadius: '6px', fontSize: '11px', fontWeight: 800, display: 'inline-block' }}>
                               نشط ({client.days_remaining !== undefined ? `${client.days_remaining} يوم` : 'معتمد'})
                             </span>
                           )}
@@ -599,7 +599,7 @@ export default function Customers() {
                               onClick={() => setWhatsappModalClient(client)}
                               style={{
                                 padding: '4px 8px',
-                                borderRadius: '6px',
+                                borderRadius: '8px',
                                 border: '1px solid #86EFAC',
                                 background: '#F0FDF4',
                                 color: '#16A34A',
@@ -631,7 +631,7 @@ export default function Customers() {
                               onClick={() => setSelectedDrawerClient(client)}
                               style={{
                                 padding: '4px 8px',
-                                borderRadius: '6px',
+                                borderRadius: '8px',
                                 border: '1px solid #E2E8F0',
                                 background: '#F8FAFC',
                                 color: '#334155',
@@ -664,7 +664,7 @@ export default function Customers() {
                               onClick={() => handleToggleFreeze(client)}
                               style={{
                                 padding: '4px 8px',
-                                borderRadius: '5px',
+                                borderRadius: '8px',
                                 border: client.subscription_status === 'FROZEN' ? '1px solid #86EFAC' : '1px solid #CBD5E1',
                                 background: client.subscription_status === 'FROZEN' ? '#F0FDF4' : '#FFFFFF',
                                 color: client.subscription_status === 'FROZEN' ? '#16A34A' : '#475569',
@@ -688,7 +688,7 @@ export default function Customers() {
                               onClick={() => setRenewalModalClient(client)}
                               style={{
                                 padding: '4px 8px',
-                                borderRadius: '5px',
+                                borderRadius: '8px',
                                 border: '1px solid #BAE6FD',
                                 background: '#F0F9FF',
                                 color: '#0284C7',
@@ -713,7 +713,7 @@ export default function Customers() {
                               rel="noopener noreferrer"
                               style={{
                                 padding: '4px 8px',
-                                borderRadius: '5px',
+                                borderRadius: '8px',
                                 border: '1px solid #CBD5E1',
                                 background: '#FFFFFF',
                                 color: '#0F172A',
@@ -739,7 +739,7 @@ export default function Customers() {
                               rel="noopener noreferrer"
                               style={{
                                 padding: '4px 10px',
-                                borderRadius: '5px',
+                                borderRadius: '8px',
                                 background: '#0F172A',
                                 color: '#FFFFFF',
                                 fontSize: '11px',

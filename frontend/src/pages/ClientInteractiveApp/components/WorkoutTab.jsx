@@ -164,7 +164,7 @@ export default function WorkoutTab({
                   onClick={() => handleSetDailyReadiness(opt.id)}
                   style={{
                     padding: '4px 10px',
-                    borderRadius: '6px',
+                    borderRadius: '8px',
                     fontSize: '0.72rem',
                     fontWeight: active ? 800 : 600,
                     background: active 
@@ -678,7 +678,7 @@ export default function WorkoutTab({
                         width: '62px',
                         height: '28px',
                         padding: '2px 6px',
-                        borderRadius: '6px',
+                        borderRadius: '8px',
                         border: '1px solid #CBD5E1',
                         background: '#FFFFFF',
                         fontSize: '0.8rem',

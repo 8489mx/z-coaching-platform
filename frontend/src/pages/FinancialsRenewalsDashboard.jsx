@@ -257,7 +257,7 @@ export default function FinancialsRenewalsDashboard() {
             style={{ 
               background: '#FFFFFF', 
               border: renewalFilter === 'PAID' ? '2px solid #059669' : '1px solid #E2E8F0', 
-              borderRadius: '8px', 
+              borderRadius: '12px', 
               padding: '12px 14px', 
               boxShadow: renewalFilter === 'PAID' ? '0 4px 12px rgba(5, 150, 105, 0.12)' : '0 1px 2px rgba(15, 23, 42, 0.02)',
               cursor: 'pointer',
@@ -267,7 +267,7 @@ export default function FinancialsRenewalsDashboard() {
           >
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
               <span style={{ fontSize: '11px', fontWeight: 700, color: '#64748B', fontFamily: 'Cairo, sans-serif' }}>الإيراد الشهري المتكرر (MRR)</span>
-              <div style={{ background: '#ECFDF5', padding: '4px', borderRadius: '4px' }}>
+              <div style={{ background: '#ECFDF5', padding: '4px', borderRadius: '8px' }}>
                 <DollarSign size={14} color="#059669" />
               </div>
             </div>
@@ -295,7 +295,7 @@ export default function FinancialsRenewalsDashboard() {
             style={{ 
               background: '#FFFFFF', 
               border: (renewalFilter === 'ALL' && tierFilter === 'ALL') ? '2px solid #0284C7' : '1px solid #E2E8F0', 
-              borderRadius: '8px', 
+              borderRadius: '12px', 
               padding: '12px 14px', 
               boxShadow: (renewalFilter === 'ALL' && tierFilter === 'ALL') ? '0 4px 12px rgba(2, 132, 199, 0.12)' : '0 1px 2px rgba(15, 23, 42, 0.02)',
               cursor: 'pointer',
@@ -305,7 +305,7 @@ export default function FinancialsRenewalsDashboard() {
           >
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
               <span style={{ fontSize: '11px', fontWeight: 700, color: '#64748B' }}>معدل تجديد المشتركين (Retention)</span>
-              <div style={{ background: '#F0F9FF', padding: '4px', borderRadius: '4px' }}>
+              <div style={{ background: '#F0F9FF', padding: '4px', borderRadius: '8px' }}>
                 <BadgePercent size={14} color="#0284C7" />
               </div>
             </div>
@@ -336,7 +336,7 @@ export default function FinancialsRenewalsDashboard() {
             style={{ 
               background: '#FFFFFF', 
               border: renewalFilter === 'URGENT_3D' ? '2px solid #B45309' : '1px solid #E2E8F0', 
-              borderRadius: '8px', 
+              borderRadius: '12px', 
               padding: '12px 14px', 
               boxShadow: renewalFilter === 'URGENT_3D' ? '0 4px 12px rgba(180, 83, 9, 0.15)' : '0 1px 2px rgba(15, 23, 42, 0.02)',
               cursor: 'pointer',
@@ -346,7 +346,7 @@ export default function FinancialsRenewalsDashboard() {
           >
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
               <span style={{ fontSize: '11px', fontWeight: 700, color: '#64748B', fontFamily: 'Cairo, sans-serif' }}>تجديدات مستحقة (≤ 3 أيام)</span>
-              <div style={{ background: '#FFFBEB', padding: '4px', borderRadius: '4px' }}>
+              <div style={{ background: '#FFFBEB', padding: '4px', borderRadius: '8px' }}>
                 <Clock size={14} color="#B45309" />
               </div>
             </div>
@@ -369,7 +369,7 @@ export default function FinancialsRenewalsDashboard() {
             style={{ 
               background: '#FFFFFF', 
               border: renewalFilter === 'OVERDUE' ? '2px solid #DC2626' : '1px solid #E2E8F0', 
-              borderRadius: '8px', 
+              borderRadius: '12px', 
               padding: '12px 14px', 
               boxShadow: renewalFilter === 'OVERDUE' ? '0 4px 12px rgba(220, 38, 38, 0.15)' : '0 1px 2px rgba(15, 23, 42, 0.02)',
               cursor: 'pointer',
@@ -379,7 +379,7 @@ export default function FinancialsRenewalsDashboard() {
           >
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
               <span style={{ fontSize: '11px', fontWeight: 700, color: '#64748B', fontFamily: 'Cairo, sans-serif' }}>اشتراكات منتهية تحتاج استعادة</span>
-              <div style={{ background: '#FEF2F2', padding: '4px', borderRadius: '4px' }}>
+              <div style={{ background: '#FEF2F2', padding: '4px', borderRadius: '8px' }}>
                 <AlertCircle size={14} color="#DC2626" />
               </div>
             </div>
@@ -491,7 +491,7 @@ export default function FinancialsRenewalsDashboard() {
                     onClick={() => setRenewalFilter(f.id)}
                     style={{
                       padding: '3px 8px',
-                      borderRadius: '4px',
+                      borderRadius: '8px',
                       fontSize: '11px',
                       fontWeight: isSel ? 800 : 600,
                       border: isSel ? '1px solid #0F172A' : '1px solid #E2E8F0',
@@ -537,7 +537,7 @@ export default function FinancialsRenewalsDashboard() {
                       onClick={() => setTierFilter(t.id)}
                       style={{
                         padding: '2px 8px',
-                        borderRadius: '4px',
+                        borderRadius: '8px',
                         fontSize: '10.5px',
                         fontWeight: 800,
                         fontFamily: t.id !== 'ALL' ? 'JetBrains Mono, Cairo, sans-serif' : 'inherit',
@@ -553,7 +553,7 @@ export default function FinancialsRenewalsDashboard() {
                 })}
               </div>
 
-              <div style={{ display: 'flex', alignItems: 'center', background: '#FFFFFF', border: '1px solid #CBD5E1', borderRadius: '5px', padding: '0 8px', height: '28px', width: '160px', gap: '4px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', background: '#FFFFFF', border: '1px solid #CBD5E1', borderRadius: '8px', padding: '0 8px', height: '28px', width: '160px', gap: '4px' }}>
                 <Search size={12} color="#94A3B8" />
                 <input
                   type="text"
@@ -678,7 +678,7 @@ export default function FinancialsRenewalsDashboard() {
                             onClick={() => handleQuickRenew(client)}
                             style={{
                               padding: '3px 8px',
-                              borderRadius: '4px',
+                              borderRadius: '8px',
                               background: '#0F172A',
                               color: '#FFFFFF',
                               border: 'none',
@@ -701,7 +701,7 @@ export default function FinancialsRenewalsDashboard() {
                             onClick={() => handleToggleFreeze(client)}
                             style={{
                               padding: '3px 7px',
-                              borderRadius: '4px',
+                              borderRadius: '8px',
                               background: client.status === 'FROZEN' ? '#F0FDF4' : '#F8FAFC',
                               color: client.status === 'FROZEN' ? '#16A34A' : '#475569',
                               border: client.status === 'FROZEN' ? '1px solid #86EFAC' : '1px solid #CBD5E1',
@@ -723,7 +723,7 @@ export default function FinancialsRenewalsDashboard() {
                             onClick={() => handleSendRenewalWhatsApp(client)}
                             style={{
                               padding: '3px 7px',
-                              borderRadius: '4px',
+                              borderRadius: '8px',
                               background: '#25D366',
                               color: '#FFFFFF',
                               border: 'none',
@@ -747,7 +747,7 @@ export default function FinancialsRenewalsDashboard() {
                         onClick={() => window.open(`/customers/${cleanCode}`, '_blank')}
                         style={{
                           padding: '3px 7px',
-                          borderRadius: '4px',
+                          borderRadius: '8px',
                           background: '#F8FAFC',
                           color: '#334155',
                           border: '1px solid #CBD5E1',
@@ -783,7 +783,7 @@ export default function FinancialsRenewalsDashboard() {
             background: '#0F172A',
             color: '#FFFFFF',
             padding: '8px 18px',
-            borderRadius: '6px',
+            borderRadius: '8px',
             fontSize: '12px',
             fontWeight: 700,
             zIndex: 99999,

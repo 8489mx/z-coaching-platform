@@ -278,7 +278,7 @@ export default function IntakeAuditDetailModal({
                   border: '1px solid #E2E8F0', 
                   color: isMax ? '#B45309' : '#0284C7', 
                   padding: '1px 6px', 
-                  borderRadius: '4px' 
+                  borderRadius: '6px' 
                 }}>
                   #{clientCode}
                 </span>
@@ -292,7 +292,7 @@ export default function IntakeAuditDetailModal({
                     <span style={{ 
                       fontSize: '10px', 
                       padding: '1px 6px', 
-                      borderRadius: '4px', 
+                      borderRadius: '6px', 
                       background: fasting.primaryFastingBadge.bg, 
                       border: `1px solid ${fasting.primaryFastingBadge.border}`, 
                       color: fasting.primaryFastingBadge.color, 
@@ -305,7 +305,7 @@ export default function IntakeAuditDetailModal({
                     <span style={{ 
                       fontSize: '10px', 
                       padding: '1px 6px', 
-                      borderRadius: '4px', 
+                      borderRadius: '6px', 
                       background: fasting.intermittentBadge.bg, 
                       border: `1px solid ${fasting.intermittentBadge.border}`, 
                       color: fasting.intermittentBadge.color, 
@@ -326,7 +326,7 @@ export default function IntakeAuditDetailModal({
                 onClick={handleOpenWhatsApp}
                 style={{
                   padding: '3px 8px',
-                  borderRadius: '6px',
+                  borderRadius: '8px',
                   border: '1px solid #E2E8F0', background: 'transparent',
                   color: '#16A34A',
                   fontSize: '11px',
@@ -356,7 +356,7 @@ export default function IntakeAuditDetailModal({
               style={{
                 width: '26px',
                 height: '26px',
-                borderRadius: '4px',
+                borderRadius: '8px',
                 border: '1px solid #E2E8F0',
                 background: '#F8FAFC',
                 color: '#64748B',
@@ -384,27 +384,27 @@ export default function IntakeAuditDetailModal({
 
             <div style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
               {hasExclusions ? (
-                <span style={{ background: '#FFF1F2', border: '1px solid #FECDD3', color: '#9F1239', padding: '1px 6px', borderRadius: '4px', fontSize: '10px', fontWeight: 700 }}>
+                <span style={{ background: '#FFF1F2', border: '1px solid #FECDD3', color: '#9F1239', padding: '1px 6px', borderRadius: '6px', fontSize: '10px', fontWeight: 700 }}>
                   ممنوعات: {excludedFoodsList.map(f => EXCLUDED_FOODS_LABELS[f] || f).join('، ')}
                 </span>
               ) : (
-                <span style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', color: '#166534', padding: '1px 6px', borderRadius: '4px', fontSize: '10px', fontWeight: 700 }}>
+                <span style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', color: '#166534', padding: '1px 6px', borderRadius: '6px', fontSize: '10px', fontWeight: 700 }}>
                   تغذية مرنة
                 </span>
               )}
 
               {hasInjuries ? (
-                <span style={{ background: '#FFF7ED', border: '1px solid #FED7AA', color: '#9A3412', padding: '1px 6px', borderRadius: '4px', fontSize: '10px', fontWeight: 700 }}>
+                <span style={{ background: '#FFF7ED', border: '1px solid #FED7AA', color: '#9A3412', padding: '1px 6px', borderRadius: '6px', fontSize: '10px', fontWeight: 700 }}>
                   إصابة: {selectedInjuriesList.map(inj => INJURIES_LABELS[inj] || inj).join('، ')}
                 </span>
               ) : (
-                <span style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', color: '#166534', padding: '1px 6px', borderRadius: '4px', fontSize: '10px', fontWeight: 700 }}>
+                <span style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', color: '#166534', padding: '1px 6px', borderRadius: '6px', fontSize: '10px', fontWeight: 700 }}>
                   سليم بدون إصابات
                 </span>
               )}
 
               {hasDigestive && (
-                <span style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', color: '#92400E', padding: '1px 6px', borderRadius: '4px', fontSize: '10px', fontWeight: 700 }}>
+                <span style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', color: '#92400E', padding: '1px 6px', borderRadius: '6px', fontSize: '10px', fontWeight: 700 }}>
                   {digestiveIssuesList.map(d => DIGESTIVE_LABELS[d] || d).join('، ')}
                 </span>
               )}
@@ -425,29 +425,29 @@ export default function IntakeAuditDetailModal({
                 </div>
 
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                  <div style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', borderRadius: '4px', padding: '4px 8px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <div style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', borderRadius: '8px', padding: '4px 8px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                     <span style={{ fontSize: '10.5px', color: '#64748B' }}>الوزن / الطول:</span>
                     <strong style={{ fontSize: '11.5px', color: '#0F172A', fontFamily: 'JetBrains Mono, sans-serif' }}>
                       {body.weightKg ? `${body.weightKg} كجم` : '--'} / {body.heightCm ? `${body.heightCm} سم` : '--'}
                     </strong>
                   </div>
 
-                  <div style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', borderRadius: '4px', padding: '4px 8px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <div style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', borderRadius: '8px', padding: '4px 8px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                     <span style={{ fontSize: '10.5px', color: '#64748B' }}>محيط الخصر & BMI:</span>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
                       <strong style={{ fontSize: '11px', color: '#0F172A' }}>{body.waistCm ? `${body.waistCm} سم` : '--'}</strong>
-                      <span style={{ background: bmiBadge.bg, color: bmiBadge.color, fontSize: '9.5px', fontWeight: 800, padding: '0 4px', borderRadius: '3px' }}>
+                      <span style={{ background: bmiBadge.bg, color: bmiBadge.color, fontSize: '9.5px', fontWeight: 800, padding: '0 4px', borderRadius: '6px' }}>
                         BMI {bmi}
                       </span>
                     </div>
                   </div>
 
-                  <div style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', borderRadius: '4px', padding: '4px 8px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <div style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', borderRadius: '8px', padding: '4px 8px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                     <span style={{ fontSize: '10.5px', color: '#64748B' }}>السن والجنس:</span>
                     <strong style={{ fontSize: '11px', color: '#0F172A' }}>{ageNum} سنة ({sexIsFemale ? 'أنثى' : 'ذكر'})</strong>
                   </div>
 
-                  <div style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', borderRadius: '4px', padding: '4px 8px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <div style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', borderRadius: '8px', padding: '4px 8px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                     <span style={{ fontSize: '10.5px', color: '#64748B' }}>الحرق (Mifflin):</span>
                     <strong style={{ fontSize: '11px', color: '#059669', fontFamily: 'JetBrains Mono, Cairo, sans-serif' }}>
                       BMR ~{bmr}  |  TDEE ~{tdee} سعرة
@@ -455,7 +455,7 @@ export default function IntakeAuditDetailModal({
                   </div>
 
                   {(circumferences.neck_cm || circumferences.waist_cm || circumferences.hips_cm || circumferences.chest_cm) && (
-                    <div style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', borderRadius: '4px', padding: '4px 8px', display: 'flex', flexDirection: 'column', gap: '2px' }}>
+                    <div style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', borderRadius: '8px', padding: '4px 8px', display: 'flex', flexDirection: 'column', gap: '2px' }}>
                       <span style={{ fontSize: '10px', color: '#64748B', fontWeight: 700 }}>المحيطات المترية:</span>
                       <div style={{ fontSize: '10.5px', color: '#0F172A', display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
                         {circumferences.neck_cm && <span>رقبة: <strong>{circumferences.neck_cm}</strong>سم</span>}
@@ -478,7 +478,7 @@ export default function IntakeAuditDetailModal({
                     <strong style={{ fontSize: '11.5px', color: '#0F172A' }}>صور القوام وتقرير InBody</strong>
                   </div>
                   {medicalReportsList.length > 0 && (
-                    <span style={{ fontSize: '9.5px', color: '#16A34A', fontWeight: 800, background: '#ECFDF5', padding: '1px 6px', borderRadius: '4px' }}>
+                    <span style={{ fontSize: '9.5px', color: '#16A34A', fontWeight: 800, background: '#ECFDF5', padding: '1px 6px', borderRadius: '6px' }}>
                       {medicalReportsList.length} تحاليل مرفقة
                     </span>
                   )}
@@ -491,15 +491,15 @@ export default function IntakeAuditDetailModal({
                     { key: 'back', title: 'الخلف', src: photos.back },
                     ...(inbodyPhoto ? [{ key: 'inbody', title: 'InBody', src: inbodyPhoto }] : [])
                   ].map(item => (
-                    <div key={item.key} style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', borderRadius: '4px', padding: '4px', textAlign: 'center', height: '88px', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
+                    <div key={item.key} style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', borderRadius: '8px', padding: '4px', textAlign: 'center', height: '88px', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
                       <span style={{ fontSize: '9.5px', fontWeight: 700, color: '#64748B', marginBottom: '2px' }}>{item.title}</span>
                       {item.src ? (
                         <div 
-                          style={{ position: 'relative', width: '100%', height: '62px', borderRadius: '3px', overflow: 'hidden', cursor: 'pointer' }}
+                          style={{ position: 'relative', width: '100%', height: '62px', borderRadius: '6px', overflow: 'hidden', cursor: 'pointer' }}
                           onClick={() => setPreviewImage({ title: `صورة ${item.title}`, src: item.src })}
                         >
                           <img src={item.src} alt={item.title} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                          <div style={{ position: 'absolute', bottom: '2px', right: '2px', background: 'rgba(15, 23, 42, 0.75)', color: '#FFFFFF', padding: '1px 3px', borderRadius: '2px', fontSize: '8.5px', display: 'flex', alignItems: 'center', gap: '2px' }}>
+                          <div style={{ position: 'absolute', bottom: '2px', right: '2px', background: 'rgba(15, 23, 42, 0.75)', color: '#FFFFFF', padding: '1px 3px', borderRadius: '6px', fontSize: '8.5px', display: 'flex', alignItems: 'center', gap: '2px' }}>
                             <ZoomIn size={8} />
                           </div>
                         </div>
@@ -524,21 +524,21 @@ export default function IntakeAuditDetailModal({
                 </div>
 
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                  <div style={{ background: hasExclusions ? '#FFF1F2' : '#F8FAFC', border: `1px solid ${hasExclusions ? '#FECDD3' : '#E2E8F0'}`, borderRadius: '4px', padding: '4px 8px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <div style={{ background: hasExclusions ? '#FFF1F2' : '#F8FAFC', border: `1px solid ${hasExclusions ? '#FECDD3' : '#E2E8F0'}`, borderRadius: '8px', padding: '4px 8px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                     <span style={{ fontSize: '10.5px', color: hasExclusions ? '#9F1239' : '#64748B' }}>الممنوعات والحساسية:</span>
                     <strong style={{ fontSize: '11px', color: hasExclusions ? '#BE123C' : '#166534' }}>
                       {hasExclusions ? excludedFoodsList.map(f => EXCLUDED_FOODS_LABELS[f] || f).join('، ') : 'لا توجد ممنوعات'}
                     </strong>
                   </div>
 
-                  <div style={{ background: hasDigestive ? '#FFFBEB' : '#F8FAFC', border: `1px solid ${hasDigestive ? '#FDE68A' : '#E2E8F0'}`, borderRadius: '4px', padding: '4px 8px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <div style={{ background: hasDigestive ? '#FFFBEB' : '#F8FAFC', border: `1px solid ${hasDigestive ? '#FDE68A' : '#E2E8F0'}`, borderRadius: '8px', padding: '4px 8px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                     <span style={{ fontSize: '10.5px', color: hasDigestive ? '#92400E' : '#64748B' }}>القولون والهضم:</span>
                     <strong style={{ fontSize: '11px', color: hasDigestive ? '#B45309' : '#166534' }}>
                       {hasDigestive ? digestiveIssuesList.map(d => DIGESTIVE_LABELS[d] || d).join('، ') : 'سليم تماماً'}
                     </strong>
                   </div>
 
-                  <div style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', borderRadius: '4px', padding: '4px 8px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <div style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', borderRadius: '8px', padding: '4px 8px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                     <span style={{ fontSize: '10.5px', color: '#64748B' }}>الوجبات والميزانية:</span>
                     <strong style={{ fontSize: '11px', color: '#0F172A' }}>
                       {nutrition.preferredMealCount || 3} وجبات • ميزانية {nutrition.budget === 'LOW' ? 'اقتصادية' : (nutrition.budget === 'HIGH' ? 'ممتازة' : 'متوازنة')}
@@ -551,7 +551,7 @@ export default function IntakeAuditDetailModal({
                       <div style={{ 
                         background: fasting.primaryFastingBadge?.bg || '#F8FAFC', 
                         border: `1px solid ${fasting.primaryFastingBadge?.border || '#E2E8F0'}`, 
-                        borderRadius: '4px', 
+                        borderRadius: '8px', 
                         padding: '4px 8px', 
                         display: 'flex', 
                         justifyContent: 'space-between', 
@@ -575,7 +575,7 @@ export default function IntakeAuditDetailModal({
                   })()}
 
                   {Boolean(submission.answers?.cravings_pattern) && (
-                    <div style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', borderRadius: '4px', padding: '4px 8px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <div style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', borderRadius: '8px', padding: '4px 8px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                       <span style={{ fontSize: '10.5px', color: '#64748B' }}>توقيت الشراهة:</span>
                       <strong style={{ fontSize: '11px', color: submission.answers?.cravings_pattern === 'late_night' ? '#BE123C' : submission.answers?.cravings_pattern === 'post_meal_sweets' ? '#B45309' : '#0F172A' }}>
                         {submission.answers?.cravings_pattern === 'late_night' ? 'جوع واشتهاء مسائي ليلاً' : submission.answers?.cravings_pattern === 'post_meal_sweets' ? 'اشتهاء السكر بعد الوجبات' : submission.answers?.cravings_pattern === 'midday_dip' ? 'هبوط طاقة منتصف النهار' : 'شهية منضبطة'}
@@ -584,7 +584,7 @@ export default function IntakeAuditDetailModal({
                   )}
 
                   {Boolean(submission.answers?.beverage_sugar_intake) && (
-                    <div style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', borderRadius: '4px', padding: '4px 8px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <div style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', borderRadius: '8px', padding: '4px 8px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                       <span style={{ fontSize: '10.5px', color: '#64748B' }}>سكر المشروبات اليومي:</span>
                       <strong style={{ fontSize: '11px', color: submission.answers?.beverage_sugar_intake === '2_tsp' ? '#B45309' : submission.answers?.beverage_sugar_intake === '3_plus_tsp' ? '#BE123C' : '#0F172A' }}>
                         {submission.answers?.beverage_sugar_intake === '1_tsp' ? 'ملعقة صغيرة (20 سعرة / 5جم كارب)' :
@@ -604,14 +604,14 @@ export default function IntakeAuditDetailModal({
                 </div>
 
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                  <div style={{ background: hasInjuries ? '#FFF7ED' : '#F8FAFC', border: `1px solid ${hasInjuries ? '#FED7AA' : '#E2E8F0'}`, borderRadius: '4px', padding: '4px 8px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <div style={{ background: hasInjuries ? '#FFF7ED' : '#F8FAFC', border: `1px solid ${hasInjuries ? '#FED7AA' : '#E2E8F0'}`, borderRadius: '8px', padding: '4px 8px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                     <span style={{ fontSize: '10.5px', color: hasInjuries ? '#9A3412' : '#64748B' }}>الإصابات الحركية:</span>
                     <strong style={{ fontSize: '11px', color: hasInjuries ? '#C2410C' : '#166534' }}>
                       {hasInjuries ? selectedInjuriesList.map(inj => INJURIES_LABELS[inj] || inj).join('، ') : 'سليم وبدون إصابات'}
                     </strong>
                   </div>
 
-                  <div style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', borderRadius: '4px', padding: '4px 8px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <div style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', borderRadius: '8px', padding: '4px 8px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                     <span style={{ fontSize: '10.5px', color: '#64748B' }}>نظام التمرين:</span>
                     <strong style={{ fontSize: '11px', color: '#0F172A' }}>
                       {training.location === 'HOME' ? 'المنزل' : 'الجيم'} • {training.preferredDaysPerWeek || 4} أيام • {training.maxSessionMinutes || 60} د • {EXPERIENCE_MAP[training.experience] || 'مبتدئ'}
@@ -619,7 +619,7 @@ export default function IntakeAuditDetailModal({
                   </div>
 
                   {targetFocusMusclesList.length > 0 && (
-                    <div style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', borderRadius: '4px', padding: '4px 8px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <div style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', borderRadius: '8px', padding: '4px 8px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                       <span style={{ fontSize: '10.5px', color: '#64748B' }}>عضلات التركيز:</span>
                       <strong style={{ fontSize: '11px', color: '#0F172A' }}>
                         {targetFocusMusclesList.map(m => FOCUS_MUSCLES_LABELS[m] || m).join('، ')}
@@ -629,7 +629,7 @@ export default function IntakeAuditDetailModal({
 
                   {/* Current Meds & Supplements */}
                   {Boolean((submission.answers?.current_meds_supplements_list?.length > 0 && !submission.answers?.current_meds_supplements_list?.includes('none')) || submission.answers?.current_meds_supplements) && (
-                    <div style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', borderRadius: '4px', padding: '4px 8px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <div style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', borderRadius: '8px', padding: '4px 8px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                       <span style={{ fontSize: '10.5px', color: '#64748B' }}>المكملات والأدوية:</span>
                       <strong style={{ fontSize: '11px', color: '#0F172A' }}>
                         {(() => {
@@ -655,7 +655,7 @@ export default function IntakeAuditDetailModal({
                     </div>
                   )}
 
-                  <div style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', borderRadius: '4px', padding: '4px 8px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <div style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', borderRadius: '8px', padding: '4px 8px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                     <span style={{ fontSize: '10.5px', color: '#64748B' }}>الصحة ونمط اليوم:</span>
                     <strong style={{ fontSize: '11px', color: '#0F172A' }}>
                       {medicalConditionsList.length > 0 ? medicalConditionsList.map(c => CONDITIONS_LABELS[c] || c).join('، ') : 'صحة ممتازة'} • {lifestyle.sleep?.averageHours || 7}س نوم
@@ -663,7 +663,7 @@ export default function IntakeAuditDetailModal({
                   </div>
 
                   {/* Sleep & Shift Work */}
-                  <div style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', borderRadius: '4px', padding: '4px 8px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <div style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', borderRadius: '8px', padding: '4px 8px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                     <span style={{ fontSize: '10.5px', color: '#64748B' }}>النوم والعمل:</span>
                     <strong style={{ fontSize: '11px', color: (submission.answers?.sleep_schedule?.pattern === 'rotating_shifts' || submission.answers?.sleep_schedule?.pattern === 'night_shift') ? '#D97706' : '#0F172A' }}>
                       {submission.answers?.sleep_schedule?.pattern === 'rotating_shifts' ? 'شفتات متغيرة (قطع كافيين 6س)' : submission.answers?.sleep_schedule?.pattern === 'night_shift' ? 'شفت ليلي دائم' : submission.answers?.sleep_schedule?.pattern === 'irregular' ? 'نوم غير منتظم' : 'نوم ليلي منتظم'}
@@ -687,7 +687,7 @@ export default function IntakeAuditDetailModal({
             onClick={onClose}
             style={{
               padding: '4px 12px',
-              borderRadius: '4px',
+              borderRadius: '8px',
               border: '1px solid #CBD5E1',
               background: '#FFFFFF',
               color: '#475569',
