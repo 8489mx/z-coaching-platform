@@ -1,7 +1,7 @@
 import { ClientCodeBadge, ClientPackageBadge, getClientTier } from '../utils/tierBadgeHelper';
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { ExternalLink, Search, Clock, CheckCircle2, CreditCard, FileText, Send, Check, MessageCircle, Eye, Edit3, X } from 'lucide-react';
+import { ExternalLink, Search, Clock, CheckCircle2, CreditCard, FileText, Send, Check, MessageCircle, Eye, Edit3, X, Layers } from 'lucide-react';
 import { API_BASE } from '../config/api';
 import AdminLayout from '../components/layout/AdminLayout';
 import WhatsAppModal from '../components/modals/WhatsAppModal';
@@ -172,11 +172,12 @@ export default function IntakeSubmissions() {
   const approvedCount = submissions.filter(s => s.status === 'APPROVED').length;
 
   const statCards = [
-    { title: 'استمارات جارية', value: inProgressCount, unit: 'استمارة', label: 'قيد التعبئة', icon: Edit3 },
-    { title: 'بانتظار المراجعة', value: pendingCount, unit: 'استمارة', label: 'مكتملة الإجابات', icon: Clock },
-    { title: 'مؤكدة الدفع', value: paidCount, unit: 'استمارة', label: 'تم التحويل', icon: CreditCard },
-    { title: 'مسودات الخطط', value: draftCount, unit: 'خطة', label: 'جاهزة للاعتماد', icon: FileText },
-    { title: 'البرامج المعتمدة', value: approvedCount, unit: 'برنامج', label: 'منشورة للمتدرب', icon: CheckCircle2 },
+    { id: 'ALL', title: 'كافة الاستمارات', value: submissions.length, unit: 'استمارة', label: 'إجمالي المسجلين', icon: Layers },
+    { id: 'IN_PROGRESS', title: 'استمارات جارية', value: inProgressCount, unit: 'استمارة', label: 'قيد التعبئة', icon: Edit3 },
+    { id: 'PENDING', title: 'بانتظار المراجعة', value: pendingCount, unit: 'استمارة', label: 'مكتملة الإجابات', icon: Clock },
+    { id: 'PAID', title: 'مؤكدة الدفع', value: paidCount, unit: 'استمارة', label: 'تم التحويل', icon: CreditCard },
+    { id: 'DRAFT', title: 'مسودات الخطط', value: draftCount, unit: 'خطة', label: 'جاهزة للاعتماد', icon: FileText },
+    { id: 'APPROVED', title: 'البرامج المعتمدة', value: approvedCount, unit: 'برنامج', label: 'منشورة للمتدرب', icon: CheckCircle2 },
   ];
 
   return (
@@ -199,7 +200,7 @@ export default function IntakeSubmissions() {
                 display: 'inline-flex',
                 alignItems: 'center',
                 gap: '6px',
-                borderRadius: '6px',
+                borderRadius: '8px',
                 background: '#0F172A',
                 color: '#FFFFFF',
                 textDecoration: 'none',
@@ -215,27 +216,45 @@ export default function IntakeSubmissions() {
           )}
         />
 
-        {/* 2. 5-Column Horizontal Balanced KPI Grid */}
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: '12px' }}>
+        {/* 2. 6-Column Interactive KPI Filter Grid */}
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: '12px' }}>
           {statCards.map((st, i) => {
             const Icon = st.icon;
+            const isSel = filter === st.id;
             return (
               <div 
                 key={i} 
+                onClick={() => setFilter(st.id)}
+                role="button"
+                tabIndex={0}
                 style={{
-                  background: '#FFFFFF',
-                  border: '1px solid #E2E8F0',
+                  background: isSel ? '#F8FAFC' : '#FFFFFF',
+                  border: isSel ? '2px solid #0F172A' : '1px solid #E2E8F0',
                   borderRadius: '10px',
                   padding: '14px 16px',
-                  boxShadow: '0 1px 3px rgba(15, 23, 42, 0.02)',
+                  boxShadow: isSel ? '0 4px 12px rgba(15, 23, 42, 0.08)' : '0 1px 3px rgba(15, 23, 42, 0.02)',
                   display: 'flex',
                   flexDirection: 'column',
-                  gap: '10px'
+                  gap: '10px',
+                  cursor: 'pointer',
+                  transition: 'all 0.15s ease'
                 }}
               >
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                  <span style={{ fontSize: '12px', fontWeight: 700, color: '#64748B', whiteSpace: 'nowrap' }}>{st.title}</span>
-                  <div style={{ width: '28px', height: '28px', borderRadius: '6px', background: '#F8FAFC', border: '1px solid #E2E8F0', color: '#0F172A', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                  <span style={{ fontSize: '12px', fontWeight: isSel ? 800 : 700, color: isSel ? '#0F172A' : '#64748B', whiteSpace: 'nowrap' }}>{st.title}</span>
+                  <div style={{
+                    width: '28px',
+                    height: '28px',
+                    borderRadius: '8px',
+                    background: isSel ? '#0F172A' : '#F8FAFC',
+                    border: isSel ? '1px solid #0F172A' : '1px solid #E2E8F0',
+                    color: isSel ? '#FFFFFF' : '#0F172A',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    flexShrink: 0,
+                    transition: 'all 0.15s ease'
+                  }}>
                     <Icon size={14} />
                   </div>
                 </div>
@@ -250,7 +269,7 @@ export default function IntakeSubmissions() {
                       </span>
                     )}
                   </div>
-                  <span style={{ fontSize: '10.5px', color: '#94A3B8', fontWeight: 600, whiteSpace: 'nowrap' }}>
+                  <span style={{ fontSize: '10.5px', color: isSel ? '#0F172A' : '#94A3B8', fontWeight: isSel ? 700 : 600, whiteSpace: 'nowrap' }}>
                     {st.label}
                   </span>
                 </div>
@@ -259,7 +278,7 @@ export default function IntakeSubmissions() {
           })}
         </div>
 
-        {/* 3. Submissions Table & Filter Section */}
+        {/* 3. Submissions Table & Clean Toolbar */}
         <FormSection
           title="قائمة الاستمارات المسجلة"
           description="كافة الاستمارات الواردة مع إمكانية مراجعة الإجابات، تأكيد التحويل، وتوليد البرامج."
@@ -272,10 +291,10 @@ export default function IntakeSubmissions() {
                   alignItems: 'center',
                   background: '#F8FAFC',
                   border: '1px solid #E2E8F0',
-                  borderRadius: '6px',
+                  borderRadius: '8px',
                   padding: '0 8px',
                   height: '32px',
-                  width: '200px',
+                  width: '210px',
                   gap: '6px'
                 }}
               >
@@ -301,37 +320,20 @@ export default function IntakeSubmissions() {
                 )}
               </div>
 
-              {/* Filter Pills */}
-              <div style={{ display: 'flex', gap: '3px', background: '#F1F5F9', padding: '3px', borderRadius: '6px', border: '1px solid #E2E8F0' }}>
-                {[
-                  { id: 'ALL', label: `الكل (${submissions.length})` },
-                  { id: 'IN_PROGRESS', label: `قيد التعبئة (${inProgressCount})` },
-                  { id: 'PENDING', label: `بانتظار الاعتماد (${pendingCount})` },
-                  { id: 'PAID', label: `مؤكد الدفع (${paidCount})` },
-                  { id: 'DRAFT', label: `مسودات (${draftCount})` },
-                  { id: 'APPROVED', label: `معتمد (${approvedCount})` },
-                ].map(tab => (
+              {/* Active Filter Indicator Tag */}
+              {filter !== 'ALL' && (
+                <div style={{ display: 'flex', alignItems: 'center', gap: '6px', background: '#F1F5F9', padding: '4px 10px', borderRadius: '8px', border: '1px solid #CBD5E1', fontSize: '11px', color: '#0F172A', fontWeight: 700 }}>
+                  <span>التصفية: {statCards.find(c => c.id === filter)?.title}</span>
                   <button
-                    key={tab.id}
                     type="button"
-                    onClick={() => setFilter(tab.id)}
-                    style={{
-                      padding: '4px 10px',
-                      borderRadius: '6px',
-                      fontSize: '11px',
-                      fontWeight: 700,
-                      border: 'none',
-                      cursor: 'pointer',
-                      background: filter === tab.id ? '#0F172A' : 'transparent',
-                      color: filter === tab.id ? '#FFFFFF' : '#64748B',
-                      boxShadow: filter === tab.id ? '0 2px 5px rgba(15, 23, 42, 0.25)' : 'none',
-                      transition: 'background 0.12s ease, color 0.12s ease'
-                    }}
+                    onClick={() => setFilter('ALL')}
+                    style={{ border: 'none', background: 'transparent', cursor: 'pointer', padding: 0, display: 'flex', alignItems: 'center', color: '#64748B' }}
+                    title="إلغاء التصفية وعرض الكل"
                   >
-                    {tab.label}
+                    <X size={12} />
                   </button>
-                ))}
-              </div>
+                </div>
+              )}
             </div>
           )}
         >

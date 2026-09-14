@@ -166,12 +166,12 @@ function AlternativesManager({ currentExId, alternatives = [], onChange, allExer
           placeholder="بحث سريع عن تمرين بديل..."
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
-          style={{ flex: '1 1 140px', height: '32px', borderRadius: '6px', border: '1px solid #CBD5E1', padding: '0 8px', fontSize: '11px', outline: 'none' }}
+          style={{ flex: '1 1 140px', height: '32px', borderRadius: '8px', border: '1px solid #CBD5E1', padding: '0 8px', fontSize: '11px', outline: 'none' }}
         />
         <select
           value={selectedMuscle}
           onChange={(e) => setSelectedMuscle(e.target.value)}
-          style={{ width: '120px', height: '32px', borderRadius: '6px', border: '1px solid #CBD5E1', padding: '0 6px', fontSize: '11px', fontWeight: 600, color: '#334155', background: '#FFFFFF', outline: 'none' }}
+          style={{ width: '120px', height: '32px', borderRadius: '8px', border: '1px solid #CBD5E1', padding: '0 6px', fontSize: '11px', fontWeight: 600, color: '#334155', background: '#FFFFFF', outline: 'none' }}
         >
           <option value="ALL">كل العضلات</option>
           <option value="CHEST">الصدر</option>
@@ -185,7 +185,7 @@ function AlternativesManager({ currentExId, alternatives = [], onChange, allExer
         <select
           value={selectedToAdd}
           onChange={(e) => setSelectedToAdd(e.target.value)}
-          style={{ flex: '2 1 180px', height: '32px', borderRadius: '6px', border: '1px solid #CBD5E1', padding: '0 8px', fontSize: '11px', color: '#0F172A', background: '#FFFFFF', outline: 'none' }}
+          style={{ flex: '2 1 180px', height: '32px', borderRadius: '8px', border: '1px solid #CBD5E1', padding: '0 8px', fontSize: '11px', color: '#0F172A', background: '#FFFFFF', outline: 'none' }}
         >
           <option value="">-- اختر تمريناً لربطه تبادلياً ({candidateExercises.length} متاح) --</option>
           {candidateExercises.map(cand => {
@@ -204,7 +204,7 @@ function AlternativesManager({ currentExId, alternatives = [], onChange, allExer
           style={{
             height: '32px',
             padding: '0 12px',
-            borderRadius: '6px',
+            borderRadius: '8px',
             border: 'none',
             background: selectedToAdd ? '#0284C7' : '#CBD5E1',
             color: '#FFFFFF',
@@ -812,7 +812,7 @@ export default function ExerciseLibrary() {
                   onChange={(e) => setEquipmentFilter(e.target.value)}
                   style={{ 
                     height: '32px', 
-                    borderRadius: '6px', 
+                    borderRadius: '8px', 
                     border: '1px solid #CBD5E1', 
                     padding: '0 10px', 
                     fontSize: '11.5px', 
@@ -843,7 +843,7 @@ export default function ExerciseLibrary() {
                   onChange={(e) => setInjuryFilter(e.target.value)}
                   style={{ 
                     height: '32px', 
-                    borderRadius: '6px', 
+                    borderRadius: '8px', 
                     border: injuryFilter !== 'ALL' ? '1px solid #86EFAC' : '1px solid #CBD5E1', 
                     padding: '0 10px', 
                     fontSize: '11.5px', 
@@ -1430,7 +1430,7 @@ export default function ExerciseLibrary() {
                     <select
                       value={newExerciseData.muscle_group}
                       onChange={(e) => setNewExerciseData({ ...newExerciseData, muscle_group: e.target.value })}
-                      style={{ width: '100%', height: '34px', borderRadius: '6px', border: '1px solid #CBD5E1', padding: '0 8px', fontSize: '11.5px', fontWeight: 700, color: '#0F172A', background: '#FFFFFF', outline: 'none', boxSizing: 'border-box' }}
+                      style={{ width: '100%', height: '34px', borderRadius: '8px', border: '1px solid #CBD5E1', padding: '0 8px', fontSize: '11.5px', fontWeight: 700, color: '#0F172A', background: '#FFFFFF', outline: 'none', boxSizing: 'border-box' }}
                     >
                       <option value="CHEST">عضلات الصدر</option>
                       <option value="BACK">الظهر والترابيس</option>
@@ -1449,7 +1449,7 @@ export default function ExerciseLibrary() {
                     <select
                       value={newExerciseData.equipment}
                       onChange={(e) => setNewExerciseData({ ...newExerciseData, equipment: e.target.value })}
-                      style={{ width: '100%', height: '34px', borderRadius: '6px', border: '1px solid #CBD5E1', padding: '0 8px', fontSize: '11.5px', fontWeight: 700, color: '#0F172A', background: '#FFFFFF', outline: 'none', boxSizing: 'border-box' }}
+                      style={{ width: '100%', height: '34px', borderRadius: '8px', border: '1px solid #CBD5E1', padding: '0 8px', fontSize: '11.5px', fontWeight: 700, color: '#0F172A', background: '#FFFFFF', outline: 'none', boxSizing: 'border-box' }}
                     >
                       <option value="BARBELL">بار أولمبي</option>
                       <option value="DUMBBELL">دمبلز</option>
@@ -1737,7 +1737,7 @@ export default function ExerciseLibrary() {
                     <select
                       value={editFormData.muscle_group}
                       onChange={(e) => setEditFormData({ ...editFormData, muscle_group: e.target.value })}
-                      style={{ width: '100%', height: '34px', borderRadius: '6px', border: '1px solid #CBD5E1', padding: '0 8px', fontSize: '11.5px', fontWeight: 700, color: '#0F172A', background: '#FFFFFF', outline: 'none', boxSizing: 'border-box' }}
+                      style={{ width: '100%', height: '34px', borderRadius: '8px', border: '1px solid #CBD5E1', padding: '0 8px', fontSize: '11.5px', fontWeight: 700, color: '#0F172A', background: '#FFFFFF', outline: 'none', boxSizing: 'border-box' }}
                     >
                       <option value="CHEST">عضلات الصدر</option>
                       <option value="BACK">الظهر والترابيس</option>
@@ -1756,7 +1756,7 @@ export default function ExerciseLibrary() {
                     <select
                       value={editFormData.equipment}
                       onChange={(e) => setEditFormData({ ...editFormData, equipment: e.target.value })}
-                      style={{ width: '100%', height: '34px', borderRadius: '6px', border: '1px solid #CBD5E1', padding: '0 8px', fontSize: '11.5px', fontWeight: 700, color: '#0F172A', background: '#FFFFFF', outline: 'none', boxSizing: 'border-box' }}
+                      style={{ width: '100%', height: '34px', borderRadius: '8px', border: '1px solid #CBD5E1', padding: '0 8px', fontSize: '11.5px', fontWeight: 700, color: '#0F172A', background: '#FFFFFF', outline: 'none', boxSizing: 'border-box' }}
                     >
                       <option value="BARBELL">بار أولمبي</option>
                       <option value="DUMBBELL">دمبلز</option>

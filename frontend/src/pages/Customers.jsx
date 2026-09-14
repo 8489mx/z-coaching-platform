@@ -201,29 +201,34 @@ export default function Customers() {
 
   const maxCount = clients.filter(c => getClientTier(c) === 'MAX').length;
   const eliteCount = clients.length - maxCount;
+  const activeCount = clients.filter(c => (c.subscription_status || c.status) === 'ACTIVE').length;
   const totalCoptic = clients.filter(c => extractClientFastingProfile(c).isCoptic).length;
   const totalRamadan = clients.filter(c => extractClientFastingProfile(c).isRamadan).length;
   const totalIntermittent = clients.filter(c => extractClientFastingProfile(c).isIntermittent).length;
 
   const statCards = [
-    { title: 'إجمالي المشتركين', value: clients.length, unit: 'مشترك', label: 'مسجلين بالنظام', icon: Users },
+    { id: 'ALL', title: 'إجمالي المشتركين', value: clients.length, unit: 'مشترك', label: 'كافة المسجلين', icon: Users, isFilter: true },
     { 
+      id: 'MAX',
       title: 'مشتركو باقة MAX', 
       value: maxCount, 
       unit: 'مشترك', 
       label: 'متابعة أسبوعية',
       badgeText: 'MAX',
-      badgeColor: '#D97706'
+      badgeColor: '#D97706',
+      isFilter: true
     },
     { 
+      id: 'ELITE',
       title: 'مشتركو باقة ELITE', 
       value: eliteCount, 
       unit: 'مشترك', 
       label: 'متابعة كل أسبوعين',
       badgeText: 'ELITE',
-      badgeColor: '#0284C7'
+      badgeColor: '#0284C7',
+      isFilter: true
     },
-    { title: 'حالة قاعدة البيانات', value: 'نشطة', label: 'مزامنة فورية', icon: ShieldCheck },
+    { id: 'ACTIVE_STAT', title: 'الاشتراكات السارية', value: activeCount, unit: 'مشترك', label: 'حسابات نشطة', icon: ShieldCheck, isFilter: false },
   ];
 
   return (
@@ -260,48 +265,67 @@ export default function Customers() {
           )}
         />
 
-        {/* 2. 4-Column KPI Stats */}
+        {/* 2. 4-Column KPI Stats (Interactive Filter Cards) */}
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '14px' }}>
           {statCards.map((st, i) => {
             const Icon = st.icon;
+            const isSel = st.isFilter && tierFilter === st.id;
             return (
               <div 
                 key={i} 
+                onClick={() => { if (st.isFilter) setTierFilter(st.id); }}
+                role={st.isFilter ? "button" : undefined}
+                tabIndex={st.isFilter ? 0 : undefined}
                 style={{
-                  background: '#FFFFFF',
-                  border: '1px solid #E2E8F0',
+                  background: isSel ? '#F8FAFC' : '#FFFFFF',
+                  border: isSel ? '2px solid #0F172A' : '1px solid #E2E8F0',
                   borderRadius: '10px',
                   padding: '16px 18px',
-                  boxShadow: '0 1px 3px rgba(15, 23, 42, 0.02)',
+                  boxShadow: isSel ? '0 4px 12px rgba(15, 23, 42, 0.08)' : '0 1px 3px rgba(15, 23, 42, 0.02)',
                   display: 'flex',
                   flexDirection: 'column',
-                  gap: '12px'
+                  gap: '12px',
+                  cursor: st.isFilter ? 'pointer' : 'default',
+                  transition: 'all 0.15s ease'
                 }}
               >
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                  <span style={{ fontSize: '12.5px', fontWeight: 700, color: '#64748B', whiteSpace: 'nowrap' }}>{st.title}</span>
+                  <span style={{ fontSize: '12.5px', fontWeight: isSel ? 800 : 700, color: isSel ? '#0F172A' : '#64748B', whiteSpace: 'nowrap' }}>{st.title}</span>
                   {st.badgeText ? (
                     <div 
                       style={{ 
                         height: '28px',
                         padding: '0 8px',
-                        borderRadius: '6px', 
-                        background: '#F8FAFC', 
-                        border: '1px solid #E2E8F0', 
-                        color: st.badgeColor, 
+                        borderRadius: '8px', 
+                        background: isSel ? '#0F172A' : '#F8FAFC', 
+                        border: isSel ? '1px solid #0F172A' : '1px solid #E2E8F0', 
+                        color: isSel ? '#FFFFFF' : st.badgeColor, 
                         fontSize: '11px', 
                         fontWeight: 900, 
                         display: 'inline-flex',
                         alignItems: 'center',
                         justifyContent: 'center',
                         letterSpacing: '0.5px',
-                        fontFamily: 'JetBrains Mono, Cairo, sans-serif'
+                        fontFamily: 'JetBrains Mono, Cairo, sans-serif',
+                        transition: 'all 0.15s ease'
                       }}
                     >
                       {st.badgeText}
                     </div>
                   ) : (
-                    <div style={{ width: '30px', height: '30px', borderRadius: '6px', background: '#F8FAFC', border: '1px solid #E2E8F0', color: '#0F172A', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                    <div style={{
+                      width: '30px',
+                      height: '30px',
+                      borderRadius: '8px',
+                      background: isSel ? '#0F172A' : '#F8FAFC',
+                      border: isSel ? '1px solid #0F172A' : '1px solid #E2E8F0',
+                      color: isSel ? '#FFFFFF' : '#0F172A',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      flexShrink: 0,
+                      transition: 'all 0.15s ease'
+                    }}>
                       <Icon size={15} />
                     </div>
                   )}
@@ -317,7 +341,7 @@ export default function Customers() {
                       </span>
                     )}
                   </div>
-                  <span style={{ fontSize: '11px', color: '#94A3B8', fontWeight: 600, whiteSpace: 'nowrap' }}>
+                  <span style={{ fontSize: '11px', color: isSel ? '#0F172A' : '#94A3B8', fontWeight: isSel ? 700 : 600, whiteSpace: 'nowrap' }}>
                     {st.label}
                   </span>
                 </div>
@@ -339,7 +363,7 @@ export default function Customers() {
                 style={{
                   height: '32px',
                   padding: '0 12px',
-                  borderRadius: '6px',
+                  borderRadius: '8px',
                   border: '1px solid #CBD5E1',
                   background: '#FFFFFF',
                   color: '#0F172A',
@@ -364,7 +388,7 @@ export default function Customers() {
                   alignItems: 'center',
                   background: '#F8FAFC',
                   border: '1px solid #E2E8F0',
-                  borderRadius: '6px',
+                  borderRadius: '8px',
                   padding: '0 8px',
                   height: '32px',
                   width: '210px',
@@ -393,34 +417,20 @@ export default function Customers() {
                 )}
               </div>
 
-              {/* Tier Filter Pills */}
-              <div style={{ display: 'flex', gap: '3px', background: '#F1F5F9', padding: '3px', borderRadius: '6px', border: '1px solid #E2E8F0' }}>
-                {[
-                  { id: 'ALL', label: `الكل (${clients.length})` },
-                  { id: 'MAX', label: `باقة ماكس (${maxCount})` },
-                  { id: 'ELITE', label: `باقة إيليت (${eliteCount})` },
-                ].map(tab => (
+              {/* Active Tier Filter Indicator Tag */}
+              {tierFilter !== 'ALL' && (
+                <div style={{ display: 'flex', alignItems: 'center', gap: '6px', background: '#F1F5F9', padding: '4px 10px', borderRadius: '8px', border: '1px solid #CBD5E1', fontSize: '11px', color: '#0F172A', fontWeight: 700 }}>
+                  <span>باقة: {tierFilter === 'MAX' ? 'ماكس (MAX)' : 'إيليت (ELITE)'}</span>
                   <button
-                    key={tab.id}
                     type="button"
-                    onClick={() => setTierFilter(tab.id)}
-                    style={{
-                      padding: '4px 10px',
-                      borderRadius: '5px',
-                      fontSize: '11px',
-                      fontWeight: 700,
-                      border: 'none',
-                      cursor: 'pointer',
-                      background: tierFilter === tab.id ? '#0F172A' : 'transparent',
-                      color: tierFilter === tab.id ? '#FFFFFF' : '#64748B',
-                      boxShadow: tierFilter === tab.id ? '0 2px 5px rgba(15, 23, 42, 0.25)' : 'none',
-                      transition: 'background 0.12s ease, color 0.12s ease'
-                    }}
+                    onClick={() => setTierFilter('ALL')}
+                    style={{ border: 'none', background: 'transparent', cursor: 'pointer', padding: 0, display: 'flex', alignItems: 'center', color: '#64748B' }}
+                    title="إلغاء التصفية وعرض كافة الباقات"
                   >
-                    {tab.label}
+                    <X size={12} />
                   </button>
-                ))}
-              </div>
+                </div>
+              )}
 
               {/* Fasting Filter Pills */}
               <div style={{ display: 'flex', gap: '3px', background: '#F1F5F9', padding: '3px', borderRadius: '6px', border: '1px solid #E2E8F0' }}>

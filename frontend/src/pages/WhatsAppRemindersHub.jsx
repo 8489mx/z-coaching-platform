@@ -212,6 +212,7 @@ export default function WhatsAppRemindersHub() {
           </div>
 
           {/* Quick Metrics Strip (Interactive Filters) */}
+          {/* Quick Metrics Strip (Interactive Filters) */}
           <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
             <div 
               onClick={() => setSelectedCategory(selectedCategory === REMINDER_CATEGORIES.CHECKIN_DUE ? 'ALL' : REMINDER_CATEGORIES.CHECKIN_DUE)}
@@ -219,7 +220,7 @@ export default function WhatsAppRemindersHub() {
                 background: selectedCategory === REMINDER_CATEGORIES.CHECKIN_DUE ? '#E0F2FE' : '#F0F9FF', 
                 border: selectedCategory === REMINDER_CATEGORIES.CHECKIN_DUE ? '1.5px solid #0284C7' : '1px solid #BAE6FD', 
                 padding: '6px 12px', 
-                borderRadius: '6px', 
+                borderRadius: '8px', 
                 textAlign: 'center',
                 cursor: 'pointer',
                 transition: 'all 0.12s ease'
@@ -236,7 +237,7 @@ export default function WhatsAppRemindersHub() {
                 background: selectedCategory === REMINDER_CATEGORIES.CHECKIN_OVERDUE ? '#FEE2E2' : '#FEF2F2', 
                 border: selectedCategory === REMINDER_CATEGORIES.CHECKIN_OVERDUE ? '1.5px solid #DC2626' : '1px solid #FECACA', 
                 padding: '6px 12px', 
-                borderRadius: '6px', 
+                borderRadius: '8px', 
                 textAlign: 'center',
                 cursor: 'pointer',
                 transition: 'all 0.12s ease'
@@ -253,7 +254,7 @@ export default function WhatsAppRemindersHub() {
                 background: selectedCategory === REMINDER_CATEGORIES.RENEWAL_UPCOMING ? '#FEF3C7' : '#FFFBEB', 
                 border: selectedCategory === REMINDER_CATEGORIES.RENEWAL_UPCOMING ? '1.5px solid #B45309' : '1px solid #FDE68A', 
                 padding: '6px 12px', 
-                borderRadius: '6px', 
+                borderRadius: '8px', 
                 textAlign: 'center',
                 cursor: 'pointer',
                 transition: 'all 0.12s ease'
@@ -270,7 +271,7 @@ export default function WhatsAppRemindersHub() {
                 background: selectedCategory === 'ALL' ? '#D1FAE5' : '#ECFDF5', 
                 border: selectedCategory === 'ALL' ? '1.5px solid #059669' : '1px solid #A7F3D0', 
                 padding: '6px 12px', 
-                borderRadius: '6px', 
+                borderRadius: '8px', 
                 textAlign: 'center',
                 cursor: 'pointer',
                 transition: 'all 0.12s ease'
@@ -287,7 +288,7 @@ export default function WhatsAppRemindersHub() {
         <div style={{
           background: '#FFFFFF',
           border: '1px solid #E2E8F0',
-          borderRadius: '8px',
+          borderRadius: '10px',
           padding: '10px 14px',
           display: 'flex',
           justifyContent: 'space-between',
@@ -296,7 +297,7 @@ export default function WhatsAppRemindersHub() {
           gap: '10px'
         }}>
           {/* Category Tabs */}
-          <div style={{ display: 'flex', gap: '4px', flexWrap: 'wrap' }}>
+          <div style={{ display: 'flex', gap: '5px', flexWrap: 'wrap' }}>
             {[
               { id: 'ALL', label: 'كافة التنبيهات', count: clientsData.length },
               { id: REMINDER_CATEGORIES.CHECKIN_DUE, label: 'تذكير التقييم', count: dueCheckinsCount },
@@ -312,8 +313,8 @@ export default function WhatsAppRemindersHub() {
                   type="button"
                   onClick={() => setSelectedCategory(cat.id)}
                   style={{
-                    padding: '3px 8px',
-                    borderRadius: '4px',
+                    padding: '4px 10px',
+                    borderRadius: '8px',
                     fontSize: '11px',
                     fontWeight: isSel ? 800 : 600,
                     border: isSel ? '1px solid #0F172A' : '1px solid #E2E8F0',
@@ -323,6 +324,7 @@ export default function WhatsAppRemindersHub() {
                     display: 'inline-flex',
                     alignItems: 'center',
                     gap: '4px',
+                    boxShadow: isSel ? '0 1px 3px rgba(15, 23, 42, 0.15)' : 'none',
                     transition: 'all 0.12s ease'
                   }}
                 >
@@ -331,8 +333,8 @@ export default function WhatsAppRemindersHub() {
                     <span style={{
                       fontSize: '9.5px',
                       fontWeight: 800,
-                      padding: '0 4px',
-                      borderRadius: '6px',
+                      padding: '0 5px',
+                      borderRadius: '8px',
                       background: isSel ? 'rgba(255,255,255,0.2)' : '#E2E8F0',
                       color: isSel ? '#FFFFFF' : '#0F172A'
                     }}>
@@ -346,7 +348,7 @@ export default function WhatsAppRemindersHub() {
 
           {/* Tier Tabs & Search */}
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <div style={{ display: 'flex', gap: '3px' }}>
+            <div style={{ display: 'flex', gap: '4px', background: '#F1F5F9', padding: '2px', borderRadius: '8px', border: '1px solid #E2E8F0' }}>
               {[
                 { id: 'ALL', label: 'الكل' },
                 { id: 'MAX', label: 'MAX' },
@@ -359,15 +361,16 @@ export default function WhatsAppRemindersHub() {
                     type="button"
                     onClick={() => setSelectedTier(t.id)}
                     style={{
-                      padding: '2px 8px',
-                      borderRadius: '4px',
+                      padding: '3px 9px',
+                      borderRadius: '6px',
                       fontSize: '10.5px',
                       fontWeight: 800,
                       fontFamily: t.id !== 'ALL' ? 'JetBrains Mono, sans-serif' : 'inherit',
-                      border: isSel ? '1px solid #0F172A' : '1px solid #E2E8F0',
-                      background: isSel ? '#0F172A' : '#F8FAFC',
+                      border: 'none',
+                      background: isSel ? '#0F172A' : 'transparent',
                       color: isSel ? '#FFFFFF' : (t.id === 'MAX' ? '#B45309' : t.id === 'ELITE' ? '#0284C7' : '#64748B'),
-                      cursor: 'pointer'
+                      cursor: 'pointer',
+                      transition: 'all 0.12s ease'
                     }}
                   >
                     {t.label}
@@ -376,8 +379,8 @@ export default function WhatsAppRemindersHub() {
               })}
             </div>
 
-            <div style={{ display: 'flex', alignItems: 'center', background: '#F8FAFC', border: '1px solid #CBD5E1', borderRadius: '5px', padding: '0 8px', height: '28px', width: '170px', gap: '4px' }}>
-              <Search size={12} color="#94A3B8" />
+            <div style={{ display: 'flex', alignItems: 'center', background: '#F8FAFC', border: '1px solid #CBD5E1', borderRadius: '8px', padding: '0 8px', height: '30px', width: '180px', gap: '5px' }}>
+              <Search size={13} color="#94A3B8" />
               <input
                 type="text"
                 placeholder="بحث باسم أو رقم..."

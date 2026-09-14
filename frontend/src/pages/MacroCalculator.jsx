@@ -431,16 +431,37 @@ export default function MacroCalculator() {
                 </div>
 
                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                  {/* Food State Filter */}
-                  <select
-                    value={stateFilter}
-                    onChange={(e) => setStateFilter(e.target.value)}
-                    style={{ height: '32px', borderRadius: '6px', border: '1px solid #CBD5E1', padding: '0 8px', fontSize: '11px', fontWeight: 700, color: '#0F172A', background: '#FFFFFF', outline: 'none', cursor: 'pointer' }}
-                  >
-                    <option value="ALL">جميع حالات الطهي</option>
-                    <option value="COOKED">مطبوخ ومجهز (Cooked)</option>
-                    <option value="RAW">طازج / نيء (Raw)</option>
-                  </select>
+                  {/* Food State Filter (Curved Segmented Control) */}
+                  <div style={{ display: 'inline-flex', background: '#F1F5F9', padding: '2px', borderRadius: '8px', border: '1px solid #E2E8F0', gap: '2px' }}>
+                    {[
+                      { id: 'ALL', label: 'جميع الحالات' },
+                      { id: 'COOKED', label: 'مطبوخ' },
+                      { id: 'RAW', label: 'طازج / نيء' }
+                    ].map((st) => {
+                      const isAct = stateFilter === st.id;
+                      return (
+                        <button
+                          key={st.id}
+                          type="button"
+                          onClick={() => setStateFilter(st.id)}
+                          style={{
+                            border: 'none',
+                            cursor: 'pointer',
+                            padding: '4px 9px',
+                            fontSize: '11px',
+                            fontWeight: 700,
+                            borderRadius: '6px',
+                            background: isAct ? '#0F172A' : 'transparent',
+                            color: isAct ? '#FFFFFF' : '#64748B',
+                            boxShadow: isAct ? '0 1px 3px rgba(15, 23, 42, 0.12)' : 'none',
+                            transition: 'all 0.12s ease'
+                          }}
+                        >
+                          {st.label}
+                        </button>
+                      );
+                    })}
+                  </div>
 
                   {/* Add Food Button */}
                   <button
@@ -763,14 +784,33 @@ export default function MacroCalculator() {
                   <label style={{ display: 'block', fontSize: '11px', fontWeight: 700, color: '#475569', marginBottom: '4px' }}>
                     النوع (الجنس)
                   </label>
-                  <select
-                    value={calcForm.gender}
-                    onChange={(e) => setCalcForm({ ...calcForm, gender: e.target.value })}
-                    style={{ width: '100%', height: '34px', borderRadius: '6px', border: '1px solid #CBD5E1', padding: '0 8px', fontSize: '11.5px', fontWeight: 700, color: '#0F172A', outline: 'none' }}
-                  >
-                    <option value="MALE">ذكر</option>
-                    <option value="FEMALE">أنثى</option>
-                  </select>
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '6px', height: '34px' }}>
+                    {[
+                      { id: 'MALE', label: 'ذكر' },
+                      { id: 'FEMALE', label: 'أنثى' }
+                    ].map((g) => {
+                      const isAct = calcForm.gender === g.id;
+                      return (
+                        <button
+                          key={g.id}
+                          type="button"
+                          onClick={() => setCalcForm({ ...calcForm, gender: g.id })}
+                          style={{
+                            border: isAct ? '1.5px solid #0F172A' : '1px solid #CBD5E1',
+                            borderRadius: '8px',
+                            background: isAct ? '#0F172A' : '#FFFFFF',
+                            color: isAct ? '#FFFFFF' : '#475569',
+                            fontWeight: 800,
+                            fontSize: '11.5px',
+                            cursor: 'pointer',
+                            transition: 'all 0.12s ease'
+                          }}
+                        >
+                          {g.label}
+                        </button>
+                      );
+                    })}
+                  </div>
                 </div>
 
                 <div>
@@ -781,7 +821,7 @@ export default function MacroCalculator() {
                     type="number"
                     value={calcForm.age}
                     onChange={(e) => setCalcForm({ ...calcForm, age: Number(e.target.value) })}
-                    style={{ width: '100%', height: '34px', borderRadius: '6px', border: '1px solid #CBD5E1', padding: '0 8px', fontSize: '11.5px', fontWeight: 700, color: '#0F172A', outline: 'none', boxSizing: 'border-box' }}
+                    style={{ width: '100%', height: '34px', borderRadius: '8px', border: '1px solid #CBD5E1', padding: '0 8px', fontSize: '11.5px', fontWeight: 700, color: '#0F172A', outline: 'none', boxSizing: 'border-box' }}
                   />
                 </div>
               </div>
@@ -795,7 +835,7 @@ export default function MacroCalculator() {
                     type="number"
                     value={calcForm.weight}
                     onChange={(e) => setCalcForm({ ...calcForm, weight: Number(e.target.value) })}
-                    style={{ width: '100%', height: '34px', borderRadius: '6px', border: '1px solid #CBD5E1', padding: '0 8px', fontSize: '11.5px', fontWeight: 700, color: '#0F172A', outline: 'none', boxSizing: 'border-box' }}
+                    style={{ width: '100%', height: '34px', borderRadius: '8px', border: '1px solid #CBD5E1', padding: '0 8px', fontSize: '11.5px', fontWeight: 700, color: '#0F172A', outline: 'none', boxSizing: 'border-box' }}
                   />
                 </div>
 
@@ -807,7 +847,7 @@ export default function MacroCalculator() {
                     type="number"
                     value={calcForm.height}
                     onChange={(e) => setCalcForm({ ...calcForm, height: Number(e.target.value) })}
-                    style={{ width: '100%', height: '34px', borderRadius: '6px', border: '1px solid #CBD5E1', padding: '0 8px', fontSize: '11.5px', fontWeight: 700, color: '#0F172A', outline: 'none', boxSizing: 'border-box' }}
+                    style={{ width: '100%', height: '34px', borderRadius: '8px', border: '1px solid #CBD5E1', padding: '0 8px', fontSize: '11.5px', fontWeight: 700, color: '#0F172A', outline: 'none', boxSizing: 'border-box' }}
                   />
                 </div>
 
@@ -820,7 +860,7 @@ export default function MacroCalculator() {
                     value={calcForm.bodyFat}
                     onChange={(e) => setCalcForm({ ...calcForm, bodyFat: Number(e.target.value) })}
                     placeholder="اختياري"
-                    style={{ width: '100%', height: '34px', borderRadius: '6px', border: '1px solid #CBD5E1', padding: '0 8px', fontSize: '11.5px', fontWeight: 700, color: '#0F172A', outline: 'none', boxSizing: 'border-box' }}
+                    style={{ width: '100%', height: '34px', borderRadius: '8px', border: '1px solid #CBD5E1', padding: '0 8px', fontSize: '11.5px', fontWeight: 700, color: '#0F172A', outline: 'none', boxSizing: 'border-box' }}
                   />
                 </div>
               </div>
@@ -833,7 +873,7 @@ export default function MacroCalculator() {
                   <select
                     value={calcForm.dailyActivity}
                     onChange={(e) => setCalcForm({ ...calcForm, dailyActivity: e.target.value })}
-                    style={{ width: '100%', height: '34px', borderRadius: '6px', border: '1px solid #CBD5E1', padding: '0 8px', fontSize: '11px', fontWeight: 700, color: '#0F172A', outline: 'none' }}
+                    style={{ width: '100%', height: '34px', borderRadius: '8px', border: '1px solid #CBD5E1', padding: '0 8px', fontSize: '11px', fontWeight: 700, color: '#0F172A', outline: 'none' }}
                   >
                     {Object.entries(DAILY_ACTIVITY_FACTORS).map(([k, v]) => (
                       <option key={k} value={k}>{v.label_ar} (x{v.factor})</option>
@@ -848,7 +888,7 @@ export default function MacroCalculator() {
                   <select
                     value={calcForm.workoutFrequency}
                     onChange={(e) => setCalcForm({ ...calcForm, workoutFrequency: e.target.value })}
-                    style={{ width: '100%', height: '34px', borderRadius: '6px', border: '1px solid #CBD5E1', padding: '0 8px', fontSize: '11px', fontWeight: 700, color: '#0F172A', outline: 'none' }}
+                    style={{ width: '100%', height: '34px', borderRadius: '8px', border: '1px solid #CBD5E1', padding: '0 8px', fontSize: '11px', fontWeight: 700, color: '#0F172A', outline: 'none' }}
                   >
                     {Object.entries(WORKOUT_FREQUENCY_FACTORS).map(([k, v]) => (
                       <option key={k} value={k}>{v.label_ar} (+{v.factor})</option>
@@ -864,7 +904,7 @@ export default function MacroCalculator() {
                 <select
                   value={calcForm.goal}
                   onChange={(e) => setCalcForm({ ...calcForm, goal: e.target.value })}
-                  style={{ width: '100%', height: '34px', borderRadius: '6px', border: '1px solid #CBD5E1', padding: '0 8px', fontSize: '11.5px', fontWeight: 800, color: '#0284C7', background: '#F0F9FF', outline: 'none' }}
+                  style={{ width: '100%', height: '34px', borderRadius: '8px', border: '1px solid #CBD5E1', padding: '0 8px', fontSize: '11.5px', fontWeight: 800, color: '#0284C7', background: '#F0F9FF', outline: 'none' }}
                 >
                   {Object.entries(GOAL_CALORIE_MULTIPLIERS).map(([k, v]) => (
                     <option key={k} value={k}>{v.label_ar}</option>

@@ -631,34 +631,44 @@ export default function CoachEditorNutritionTab(props) {
                       <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flexWrap: 'wrap' }}>
                         <strong style={{ fontSize: '12.5px', color: '#0F172A', fontWeight: 800 }}>{meal.name}</strong>
                         <span style={{ fontSize: '10px', color: '#64748B', background: '#F8FAFC', border: '1px solid #E2E8F0', padding: '1px 5px', borderRadius: '6px', fontWeight: 600 }}>{meal.time}</span>
-                        <select
-                          value={meal.workout_timing || 'NONE'}
-                          onChange={(e) => {
-                            const val = e.target.value;
-                            setProgram(prev => ({
-                              ...prev,
-                              nutrition: {
-                                ...prev.nutrition,
-                                meals: prev.nutrition.meals.map(m => m.id === meal.id ? { ...m, workout_timing: val } : m)
-                              }
-                            }));
-                          }}
-                          style={{
-                            fontSize: '9.5px',
-                            fontWeight: 700,
-                            padding: '1px 5px',
-                            borderRadius: '6px',
-                            border: '1px solid #CBD5E1',
-                            background: meal.workout_timing === 'PRE_WORKOUT' ? '#FEF3C7' : meal.workout_timing === 'POST_WORKOUT' ? '#DCFCE7' : '#FFFFFF',
-                            color: meal.workout_timing === 'PRE_WORKOUT' ? '#92400E' : meal.workout_timing === 'POST_WORKOUT' ? '#166534' : '#475569',
-                            cursor: 'pointer',
-                            outline: 'none'
-                          }}
-                        >
-                          <option value="NONE">وجبة اعتيادية</option>
-                          <option value="PRE_WORKOUT">وجبة ما قبل التمرين (طاقة)</option>
-                          <option value="POST_WORKOUT">وجبة ما بعد التمرين (استشفاء)</option>
-                        </select>
+                        <div style={{ display: 'inline-flex', background: '#F1F5F9', padding: '2px', borderRadius: '8px', border: '1px solid #E2E8F0', gap: '2px' }}>
+                          {[
+                            { id: 'NONE', label: 'اعتيادية' },
+                            { id: 'PRE_WORKOUT', label: 'قبل التمرين' },
+                            { id: 'POST_WORKOUT', label: 'بعد التمرين' }
+                          ].map((opt) => {
+                            const isAct = (meal.workout_timing || 'NONE') === opt.id;
+                            return (
+                              <button
+                                key={opt.id}
+                                type="button"
+                                onClick={() => {
+                                  setProgram(prev => ({
+                                    ...prev,
+                                    nutrition: {
+                                      ...prev.nutrition,
+                                      meals: prev.nutrition.meals.map(m => m.id === meal.id ? { ...m, workout_timing: opt.id } : m)
+                                    }
+                                  }));
+                                }}
+                                style={{
+                                  border: 'none',
+                                  cursor: 'pointer',
+                                  padding: '2px 7px',
+                                  fontSize: '9.5px',
+                                  fontWeight: 700,
+                                  borderRadius: '6px',
+                                  background: isAct ? (opt.id === 'PRE_WORKOUT' ? '#FEF3C7' : opt.id === 'POST_WORKOUT' ? '#DCFCE7' : '#0F172A') : 'transparent',
+                                  color: isAct ? (opt.id === 'PRE_WORKOUT' ? '#92400E' : opt.id === 'POST_WORKOUT' ? '#166534' : '#FFFFFF') : '#64748B',
+                                  boxShadow: isAct ? '0 1px 2px rgba(0,0,0,0.08)' : 'none',
+                                  transition: 'all 0.12s ease'
+                                }}
+                              >
+                                {opt.label}
+                              </button>
+                            );
+                          })}
+                        </div>
                       </div>
                       <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
                         {meal.items && meal.items.length > 0 && (
