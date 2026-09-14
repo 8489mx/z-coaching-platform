@@ -1,7 +1,25 @@
 import { ClientCodeBadge, ClientPackageBadge, getClientTier, getClientCountryInfo, formatTimeAgo } from '../utils/tierBadgeHelper';
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Clock, Plus, MessageCircle, CheckCircle2, ShieldAlert, ExternalLink, ClipboardList, Search, X, Layers } from 'lucide-react';
+import { 
+  Clock, 
+  Plus, 
+  MessageCircle, 
+  CheckCircle2, 
+  ShieldAlert, 
+  ExternalLink, 
+  ClipboardList, 
+  Search, 
+  X, 
+  Layers,
+  RotateCw,
+  Copy,
+  Check,
+  Smartphone,
+  ArrowUpDown,
+  AlertCircle,
+  ChevronDown
+} from 'lucide-react';
 import { API_BASE } from '../config/api';
 import AdminLayout from '../components/layout/AdminLayout';
 import NewClientQuickModal from '../components/modals/NewClientQuickModal';
@@ -31,15 +49,38 @@ export function getWhatsAppMessage(action, raw = false) {
   return raw ? msg : encodeURIComponent(msg);
 }
 
+const SORT_OPTIONS = [
+  { id: 'DEFAULT', label: 'كود المشترك' },
+  { id: 'OLDEST_WAITING', label: 'الأقدم انتظاراً (FIFO)' },
+  { id: 'TIER_PRIORITY', label: 'أولوية باقات MAX' },
+  { id: 'INJURY_FIRST', label: 'الإصابات وثبات الوزن' }
+];
+
 export default function CoachCommandCenter() {
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState('ALL'); // 'ALL' | 'NEW_INTAKE' | 'CHECKIN' | 'INJURY' | 'RENEWAL'
   const [fastingFilter, setFastingFilter] = useState('ALL'); // 'ALL' | 'COPTIC' | 'RAMADAN' | 'INTERMITTENT'
+  const [tierFilter, setTierFilter] = useState('ALL'); // 'ALL' | 'MAX' | 'ELITE'
+  const [sortBy, setSortBy] = useState('DEFAULT'); // 'DEFAULT' | 'OLDEST_WAITING' | 'TIER_PRIORITY' | 'INJURY_FIRST'
+  const [isSortOpen, setIsSortOpen] = useState(false);
+  const sortRef = React.useRef(null);
   const [isNewClientModalOpen, setIsNewClientModalOpen] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [lastRefreshed, setLastRefreshed] = useState(new Date());
+  const [copiedKey, setCopiedKey] = useState(null);
   const [searchQuery, setSearchQuery] = useState('');
   const seasonalFastingInfo = React.useMemo(() => getUpcomingFastingAlert(), []);
   const [isFastingAlertDismissed, setIsFastingAlertDismissed] = useState(false);
+
+  useEffect(() => {
+    function handleClickOutside(event) {
+      if (sortRef.current && !sortRef.current.contains(event.target)) {
+        setIsSortOpen(false);
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
 
   const [clients, setClients] = useState([]);
   const [submissions, setSubmissions] = useState([]);
@@ -48,6 +89,13 @@ export default function CoachCommandCenter() {
   useEffect(() => {
     fetchDashboardData();
   }, []);
+
+  const handleCopy = (text, key) => {
+    if (!text) return;
+    navigator.clipboard?.writeText(String(text));
+    setCopiedKey(key);
+    setTimeout(() => setCopiedKey(null), 1800);
+  };
 
   const fetchDashboardData = async () => {
     try {
@@ -78,6 +126,7 @@ export default function CoachCommandCenter() {
           if (checkinData && Array.isArray(checkinData.checkins)) setPendingCheckins(checkinData.checkins);
         } catch (e) {}
       }
+      setLastRefreshed(new Date());
     } catch (err) {
       console.error('Error fetching dashboard live data:', err);
     } finally {
@@ -118,9 +167,12 @@ export default function CoachCommandCenter() {
     const country = getClientCountryInfo(phone, c?.country || '');
     const intakeSub = clientIntakeMap.get(cleanCode) || clientIntakeMap.get(phone);
     const fasting = extractClientFastingProfile(c, intakeSub?.answers);
+    const rawDate = c?.created_at || c?.updated_at;
+    const rawTimestamp = rawDate ? new Date(rawDate).getTime() : Date.now();
+    const actionId = `RENEWAL_${cleanCode}`;
 
-    actionsMap.set(cleanCode, {
-      id: `RENEWAL_${cleanCode}`,
+    actionsMap.set(actionId, {
+      id: actionId,
       clientCode: cleanCode,
       type: 'RENEWAL',
       hasInjury: false,
@@ -128,7 +180,10 @@ export default function CoachCommandCenter() {
       country,
       tier: getClientTier(cleanCode || c),
       phone,
-      timeAgo: formatTimeAgo(c?.created_at || c?.updated_at),
+      rawTimestamp,
+      isOverdue: false,
+      hoursWaiting: 0,
+      timeAgo: formatTimeAgo(rawDate),
       summary: `متبقي ${c?.days_remaining || 0} أيام على نهاية باقة الاشتراك.`,
       suggestedAction: 'مراسلة المشترك لتجديد الاشتراك',
       badgeText: 'تجديد قريب',
@@ -144,16 +199,20 @@ export default function CoachCommandCenter() {
   safeCheckins.forEach(chk => {
     const rawCode = chk?.user?.client_code || chk?.client_code || chk?.user_id || '1';
     const cleanCode = String(rawCode).replace(/^client[-_]?/i, '').replace('#', '');
-    if (!actionsMap.has(cleanCode)) {
+    const actionId = `CHECKIN_${cleanCode}`;
+    if (!actionsMap.has(actionId)) {
       const phone = chk?.user?.phone_number || '';
       const country = getClientCountryInfo(phone, chk?.user?.country || '');
       const isPlateau = chk?.analysis_status === 'PLATEAU_DETECTED';
       const isFastingTransition = chk?.fasting_transition === 'ACTIVE';
       const intakeSub = clientIntakeMap.get(cleanCode) || clientIntakeMap.get(phone);
       const fasting = extractClientFastingProfile(chk?.user || chk, intakeSub?.answers);
+      const rawDate = chk?.submitted_at || chk?.created_at;
+      const rawTimestamp = rawDate ? new Date(rawDate).getTime() : Date.now();
+      const hoursWaiting = Math.max(0, Math.floor((Date.now() - rawTimestamp) / (1000 * 60 * 60)));
 
-      actionsMap.set(cleanCode, {
-        id: `CHECKIN_${cleanCode}`,
+      actionsMap.set(actionId, {
+        id: actionId,
         clientCode: cleanCode,
         type: 'CHECKIN',
         hasInjury: isPlateau,
@@ -161,7 +220,10 @@ export default function CoachCommandCenter() {
         country,
         tier: getClientTier(cleanCode || chk),
         phone,
-        timeAgo: formatTimeAgo(chk?.created_at || chk?.submitted_at),
+        rawTimestamp,
+        isOverdue: hoursWaiting >= 24,
+        hoursWaiting,
+        timeAgo: formatTimeAgo(rawDate),
         summary: isPlateau
           ? 'تم رصد ثبات وزن للأسبوع الثاني على التوالي • يحتاج مراجعة السعرات والنشاط.'
           : (isFastingTransition ? 'انتقال نشط لبروتوكول الصيام • يحتاج اعتماد الوجبات المحدثة.' : 'تم إرسال التقييم الأسبوعي والصور • بانتظار المراجعة والاعتماد.'),
@@ -180,14 +242,18 @@ export default function CoachCommandCenter() {
   pendingIntakes.forEach(sub => {
     const rawCode = sub?.user?.client_code || sub?.answers?.client_code || sub?.client_code || sub?.user_id || sub?.id || '1';
     const cleanCode = String(rawCode).replace(/^client[-_]?/i, '').replace('#', '');
-    if (!actionsMap.has(cleanCode)) {
+    const actionId = `INTAKE_${cleanCode}`;
+    if (!actionsMap.has(actionId)) {
       const phone = sub?.user?.phone_number || sub?.phone_number || '';
       const country = getClientCountryInfo(phone, sub?.country || sub?.answers?.personal?.country || sub?.user?.country || '');
       const hasInjury = Boolean(sub?.answers?.injuries_map?.has_injuries || (sub?.answers?.injuries_map?.selected_areas && sub?.answers?.injuries_map?.selected_areas.length > 0));
       const fasting = extractClientFastingProfile(sub?.user || sub, sub?.answers);
+      const rawDate = sub?.submitted_at || sub?.created_at || sub?.user?.created_at;
+      const rawTimestamp = rawDate ? new Date(rawDate).getTime() : Date.now();
+      const hoursWaiting = Math.max(0, Math.floor((Date.now() - rawTimestamp) / (1000 * 60 * 60)));
 
-      actionsMap.set(cleanCode, {
-        id: `INTAKE_${cleanCode}`,
+      actionsMap.set(actionId, {
+        id: actionId,
         clientCode: cleanCode,
         type: 'NEW_INTAKE',
         hasInjury,
@@ -195,7 +261,10 @@ export default function CoachCommandCenter() {
         country,
         tier: getClientTier(cleanCode || sub),
         phone,
-        timeAgo: formatTimeAgo(sub?.created_at || sub?.submitted_at || sub?.user?.created_at),
+        rawTimestamp,
+        isOverdue: hoursWaiting >= 24,
+        hoursWaiting,
+        timeAgo: formatTimeAgo(rawDate),
         summary: hasInjury
           ? 'المشترك لديه إصابة / ألم مسجل • مطلوب استبعاد التمارين المجهدة وتجهيز الخطة.'
           : (sub?.status === 'PAID' || sub?.status === 'PAYMENT_CONFIRMED' ? 'تم تأكيد الدفع • الاستمارة جاهزة لإعداد الخطة.' : 'استمارة جديدة بانتظار تجهيز الخطة.'),
@@ -210,8 +279,8 @@ export default function CoachCommandCenter() {
     }
   });
 
-  // Convert map values to array sorted by numeric clientCode
-  const dailyActions = Array.from(actionsMap.values()).sort((a, b) => Number(a.clientCode) - Number(b.clientCode));
+  // Convert map values to array
+  const dailyActions = Array.from(actionsMap.values());
 
   const newIntakeCount = dailyActions.filter(a => a.type === 'NEW_INTAKE').length;
   const checkinCount = dailyActions.filter(a => a.type === 'CHECKIN').length;
@@ -285,7 +354,14 @@ export default function CoachCommandCenter() {
     if (fastingFilter === 'RAMADAN' && !act.isRamadan) return false;
     if (fastingFilter === 'INTERMITTENT' && !act.isIntermittent) return false;
 
-    // 3. Search query filter
+    // 3. Package tier filter
+    if (tierFilter !== 'ALL') {
+      const cleanTier = String(act.tier || '').toUpperCase();
+      if (tierFilter === 'MAX' && !cleanTier.includes('MAX')) return false;
+      if (tierFilter === 'ELITE' && cleanTier.includes('MAX')) return false;
+    }
+
+    // 4. Search query filter
     if (searchQuery.trim()) {
       const q = searchQuery.trim();
       const qClean = q.replace(/^#+/, '');
@@ -309,15 +385,36 @@ export default function CoachCommandCenter() {
     return true;
   });
 
+  // Smart Sorting
+  const sortedActions = [...filteredActions].sort((a, b) => {
+    if (sortBy === 'OLDEST_WAITING') {
+      return (a.rawTimestamp || 0) - (b.rawTimestamp || 0); // oldest first
+    }
+    if (sortBy === 'TIER_PRIORITY') {
+      const aTierScore = String(a.tier || '').includes('MAX') ? 2 : 1;
+      const bTierScore = String(b.tier || '').includes('MAX') ? 2 : 1;
+      if (bTierScore !== aTierScore) return bTierScore - aTierScore;
+      return (a.rawTimestamp || 0) - (b.rawTimestamp || 0);
+    }
+    if (sortBy === 'INJURY_FIRST') {
+      const aScore = a.hasInjury ? 2 : 1;
+      const bScore = b.hasInjury ? 2 : 1;
+      if (bScore !== aScore) return bScore - aScore;
+      return (a.rawTimestamp || 0) - (b.rawTimestamp || 0);
+    }
+    // DEFAULT: Numeric client code
+    return Number(a.clientCode) - Number(b.clientCode);
+  });
+
   const [actionsPage, setActionsPage] = useState(1);
   const actionsPageSize = 25;
 
   useEffect(() => {
     setActionsPage(1);
-  }, [activeTab, fastingFilter, searchQuery]);
+  }, [activeTab, fastingFilter, tierFilter, sortBy, searchQuery]);
 
-  const totalActionPages = Math.ceil(filteredActions.length / actionsPageSize) || 1;
-  const paginatedActions = filteredActions.slice((actionsPage - 1) * actionsPageSize, actionsPage * actionsPageSize);
+  const totalActionPages = Math.ceil(sortedActions.length / actionsPageSize) || 1;
+  const paginatedActions = sortedActions.slice((actionsPage - 1) * actionsPageSize, actionsPage * actionsPageSize);
 
   return (
     <AdminLayout>
@@ -328,31 +425,70 @@ export default function CoachCommandCenter() {
           title="لوحة التحكم والمتابعة اليومية"
           description="متابعة المشتركين، الاستمارات الجديدة، والخطط المطلوب اعتمادها اليوم."
           actions={(
-            <button 
-              type="button" 
-              onClick={() => setIsNewClientModalOpen(true)}
-              style={{
-                height: '36px',
-                padding: '0 16px',
-                fontSize: '12.5px',
-                fontWeight: 700,
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: '6px',
-                borderRadius: '8px',
-                background: 'var(--primary, #0F172A)',
-                color: '#FFFFFF',
-                border: 'none',
-                cursor: 'pointer',
-                boxShadow: '0 2px 6px rgba(15, 23, 42, 0.25)',
-                transition: 'all 0.15s ease'
-              }}
-              onMouseEnter={(e) => (e.currentTarget.style.background = 'var(--primary2, #334155)')}
-              onMouseLeave={(e) => (e.currentTarget.style.background = 'var(--primary, #0F172A)')}
-            >
-              <Plus size={15} />
-              <span>كود مشترك جديد</span>
-            </button>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <button
+                type="button"
+                onClick={fetchDashboardData}
+                disabled={loading}
+                title="تحديث البيانات اللحظية من الخادم"
+                style={{
+                  height: '36px',
+                  padding: '0 14px',
+                  fontSize: '12px',
+                  fontWeight: 700,
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '6px',
+                  borderRadius: '8px',
+                  background: '#FFFFFF',
+                  color: '#1E293B',
+                  border: '1px solid #CBD5E1',
+                  cursor: loading ? 'not-allowed' : 'pointer',
+                  opacity: loading ? 0.7 : 1,
+                  boxShadow: '0 1px 2px rgba(15, 23, 42, 0.05)',
+                  transition: 'all 0.15s ease'
+                }}
+                onMouseEnter={(e) => {
+                  if (!loading) {
+                    e.currentTarget.style.background = '#F8FAFC';
+                    e.currentTarget.style.borderColor = '#94A3B8';
+                  }
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.background = '#FFFFFF';
+                  e.currentTarget.style.borderColor = '#CBD5E1';
+                }}
+              >
+                <RotateCw size={14} className={loading ? 'animate-spin' : ''} />
+                <span>تحديث البيانات</span>
+              </button>
+
+              <button 
+                type="button" 
+                onClick={() => setIsNewClientModalOpen(true)}
+                style={{
+                  height: '36px',
+                  padding: '0 16px',
+                  fontSize: '12.5px',
+                  fontWeight: 700,
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '6px',
+                  borderRadius: '8px',
+                  background: 'var(--primary, #0F172A)',
+                  color: '#FFFFFF',
+                  border: 'none',
+                  cursor: 'pointer',
+                  boxShadow: '0 2px 6px rgba(15, 23, 42, 0.25)',
+                  transition: 'all 0.15s ease'
+                }}
+                onMouseEnter={(e) => (e.currentTarget.style.background = 'var(--primary2, #334155)')}
+                onMouseLeave={(e) => (e.currentTarget.style.background = 'var(--primary, #0F172A)')}
+              >
+                <Plus size={15} />
+                <span>كود مشترك جديد</span>
+              </button>
+            </div>
           )}
         />
 
@@ -526,8 +662,8 @@ export default function CoachCommandCenter() {
               flexWrap: 'wrap',
               marginBottom: '12px'
             }}>
-              {/* Active Queue Status Indicator (No redundant duplicate tabs) */}
-              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              {/* Active Queue Status Indicator & Tier Filter Pills */}
+              <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap' }}>
                 <span style={{ fontSize: '12px', color: '#64748B', fontWeight: 600 }}>
                   طابور العرض: <strong style={{ color: '#0F172A' }}>{stats.find(s => s.type === activeTab)?.title || 'كافة المهام اليومية'}</strong> ({filteredActions.length} إجراء)
                 </span>
@@ -554,43 +690,165 @@ export default function CoachCommandCenter() {
                     <span>عرض الكل</span>
                   </button>
                 )}
+
+                {/* Tier Filter Pills */}
+                <div style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', background: '#F1F5F9', padding: '3px', borderRadius: '8px', border: '1px solid #E2E8F0' }}>
+                  {[
+                    { id: 'ALL', label: 'كافة الباقات' },
+                    { id: 'MAX', label: 'باقات MAX' },
+                    { id: 'ELITE', label: 'باقات ELITE' }
+                  ].map(pill => {
+                    const isSelected = tierFilter === pill.id;
+                    return (
+                      <button
+                        key={pill.id}
+                        type="button"
+                        onClick={() => setTierFilter(pill.id)}
+                        style={{
+                          height: '26px',
+                          padding: '0 9px',
+                          fontSize: '11px',
+                          fontWeight: isSelected ? 800 : 600,
+                          color: isSelected ? '#0F172A' : '#64748B',
+                          background: isSelected ? '#FFFFFF' : 'transparent',
+                          border: 'none',
+                          borderRadius: '6px',
+                          cursor: 'pointer',
+                          boxShadow: isSelected ? '0 1px 3px rgba(15, 23, 42, 0.08)' : 'none',
+                          transition: 'all 0.15s ease'
+                        }}
+                      >
+                        {pill.label}
+                      </button>
+                    );
+                  })}
+                </div>
               </div>
 
-              {/* Search Box */}
-              <div 
-                style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  background: '#FFFFFF',
-                  border: '1px solid #CBD5E1',
-                  borderRadius: '8px',
-                  padding: '0 10px',
-                  height: '34px',
-                  minWidth: '260px',
-                  gap: '6px'
-                }}
-              >
-                <Search size={14} color="#94A3B8" />
-                <input
-                  type="text"
-                  placeholder="بحث بالاسم أو الكود أو الهاتف..."
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  style={{
-                    border: 'none',
-                    outline: 'none',
-                    background: 'transparent',
-                    fontSize: '12px',
-                    width: '100%',
-                    color: '#0F172A',
-                    fontFamily: 'Cairo, sans-serif'
-                  }}
-                />
-                {searchQuery && (
-                  <button type="button" onClick={() => setSearchQuery('')} style={{ border: 'none', background: 'transparent', cursor: 'pointer', padding: 0, color: '#94A3B8' }}>
-                    <X size={13} />
+              {/* Smart Sort & Search Box */}
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+                {/* Custom Curved Dropdown for Smart Sorting */}
+                <div style={{ position: 'relative' }} ref={sortRef}>
+                  <button
+                    type="button"
+                    onClick={() => setIsSortOpen(!isSortOpen)}
+                    style={{
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: '6px',
+                      height: '34px',
+                      padding: '0 12px',
+                      background: '#FFFFFF',
+                      border: '1px solid #CBD5E1',
+                      borderRadius: '8px',
+                      fontSize: '11.5px',
+                      fontWeight: 700,
+                      color: '#1E293B',
+                      cursor: 'pointer',
+                      boxShadow: '0 1px 2px rgba(15, 23, 42, 0.04)',
+                      transition: 'all 0.15s ease'
+                    }}
+                    title="فرز وترتيب الإجراءات"
+                  >
+                    <ArrowUpDown size={13} color="#64748B" />
+                    <span>{SORT_OPTIONS.find(o => o.id === sortBy)?.label || 'الترتيب'}</span>
+                    <ChevronDown size={12} color="#94A3B8" />
                   </button>
-                )}
+
+                  {isSortOpen && (
+                    <div style={{
+                      position: 'absolute',
+                      top: 'calc(100% + 4px)',
+                      left: 0,
+                      width: '190px',
+                      background: '#FFFFFF',
+                      borderRadius: '12px',
+                      border: '1px solid #E2E8F0',
+                      boxShadow: '0 10px 25px -4px rgba(15, 23, 42, 0.15), 0 4px 6px -2px rgba(15, 23, 42, 0.05)',
+                      padding: '5px',
+                      zIndex: 50,
+                      display: 'flex',
+                      flexDirection: 'column',
+                      gap: '2px'
+                    }}>
+                      {SORT_OPTIONS.map(opt => {
+                        const isSelected = sortBy === opt.id;
+                        return (
+                          <button
+                            key={opt.id}
+                            type="button"
+                            onClick={() => {
+                              setSortBy(opt.id);
+                              setIsSortOpen(false);
+                            }}
+                            style={{
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'space-between',
+                              width: '100%',
+                              padding: '7px 10px',
+                              borderRadius: '8px',
+                              border: 'none',
+                              background: isSelected ? '#F1F5F9' : 'transparent',
+                              color: isSelected ? '#0F172A' : '#475569',
+                              fontSize: '11.5px',
+                              fontWeight: isSelected ? 800 : 600,
+                              cursor: 'pointer',
+                              textAlign: 'right',
+                              transition: 'background 0.1s ease'
+                            }}
+                            onMouseEnter={(e) => {
+                              if (!isSelected) e.currentTarget.style.background = '#F8FAFC';
+                            }}
+                            onMouseLeave={(e) => {
+                              if (!isSelected) e.currentTarget.style.background = 'transparent';
+                            }}
+                          >
+                            <span>{opt.label}</span>
+                            {isSelected && <Check size={13} color="#0F172A" />}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  )}
+                </div>
+
+                {/* Search Box */}
+                <div 
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    background: '#FFFFFF',
+                    border: '1px solid #CBD5E1',
+                    borderRadius: '8px',
+                    padding: '0 10px',
+                    height: '34px',
+                    minWidth: '240px',
+                    gap: '6px'
+                  }}
+                >
+                  <Search size={14} color="#94A3B8" />
+                  <input
+                    type="text"
+                    placeholder="بحث بالاسم أو الكود أو الهاتف..."
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    style={{
+                      border: 'none',
+                      outline: 'none',
+                      background: 'transparent',
+                      fontSize: '12px',
+                      width: '100%',
+                      color: '#0F172A',
+                      fontFamily: 'Cairo, sans-serif'
+                    }}
+                  />
+                  {searchQuery && (
+                    <button type="button" onClick={() => setSearchQuery('')} style={{ border: 'none', background: 'transparent', cursor: 'pointer', padding: 0, color: '#94A3B8' }}>
+                      <X size={13} />
+                    </button>
+                  )}
+                </div>
               </div>
             </div>
 
@@ -664,7 +922,28 @@ export default function CoachCommandCenter() {
                   >
                     {/* 1. Top Row: Client Details & Badges */}
                     <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
-                      <ClientCodeBadge code={action.clientCode} item={action} />
+                      <div style={{ display: 'inline-flex', alignItems: 'center', gap: '3px' }}>
+                        <ClientCodeBadge code={action.clientCode} item={action} />
+                        <button
+                          type="button"
+                          onClick={() => handleCopy(action.clientCode, `code_${action.id}`)}
+                          title="نسخ كود المشترك"
+                          style={{
+                            background: 'transparent',
+                            border: 'none',
+                            padding: '2px',
+                            cursor: 'pointer',
+                            color: copiedKey === `code_${action.id}` ? '#16A34A' : '#94A3B8',
+                            display: 'inline-flex',
+                            alignItems: 'center',
+                            borderRadius: '4px',
+                            transition: 'color 0.15s ease'
+                          }}
+                        >
+                          {copiedKey === `code_${action.id}` ? <Check size={12} /> : <Copy size={12} />}
+                        </button>
+                      </div>
+
                       <strong 
                         style={{ fontSize: '13.5px', fontWeight: 800, color: '#0F172A', cursor: 'pointer' }}
                         onClick={() => navigate(`/customers?code=${action.clientCode}`)}
@@ -678,6 +957,25 @@ export default function CoachCommandCenter() {
                         </span>
                       )}
                       <ClientPackageBadge item={action} />
+
+                      {/* Overdue Alert SLA Badge (> 24h) */}
+                      {action.isOverdue && (
+                        <span style={{
+                          fontSize: '10.5px',
+                          background: '#FEF2F2',
+                          border: '1px solid #FECACA',
+                          color: '#DC2626',
+                          padding: '2px 8px',
+                          borderRadius: '6px',
+                          fontWeight: 800,
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          gap: '4px'
+                        }} title={`مر على هذا الإجراء أكثر من 24 ساعة (${Math.round(action.hoursWaiting)} ساعة)`}>
+                          <AlertCircle size={11} />
+                          <span>متأخر</span>
+                        </span>
+                      )}
 
                       {/* High-priority Clinical / Status Badges only (No routine duplicates) */}
                       {action.hasInjury && (
@@ -706,9 +1004,9 @@ export default function CoachCommandCenter() {
                       {action.timeAgo && (
                         <span style={{ 
                           fontSize: '10.5px', 
-                          color: '#64748B', 
-                          background: '#F8FAFC', 
-                          border: '1px solid #E2E8F0', 
+                          color: action.isOverdue ? '#DC2626' : '#64748B', 
+                          background: action.isOverdue ? '#FFF5F5' : '#F8FAFC', 
+                          border: `1px solid ${action.isOverdue ? '#FED7D7' : '#E2E8F0'}`, 
                           padding: '2px 8px', 
                           borderRadius: '6px', 
                           fontWeight: 600,
@@ -717,7 +1015,7 @@ export default function CoachCommandCenter() {
                           gap: '4px',
                           marginRight: 'auto'
                         }}>
-                          <Clock size={11} color="#94A3B8" />
+                          <Clock size={11} color={action.isOverdue ? '#DC2626' : '#94A3B8'} />
                           <span>{action.timeAgo}</span>
                         </span>
                       )}
@@ -741,7 +1039,41 @@ export default function CoachCommandCenter() {
                     </div>
 
                     {/* 3. Bottom Row: Streamlined Action Buttons (Aligned to Left) */}
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginRight: 'auto', marginTop: '2px' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginRight: 'auto', marginTop: '2px', flexWrap: 'wrap' }}>
+                      {/* Copy Phone Number Quick Action */}
+                      {action.phone && (
+                        <button
+                          type="button"
+                          onClick={() => handleCopy(action.phone, `phone_${action.id}`)}
+                          title="نسخ رقم الهاتف"
+                          style={{
+                            height: '32px',
+                            padding: '0 10px',
+                            borderRadius: '8px',
+                            border: '1px solid #E2E8F0',
+                            background: '#F8FAFC',
+                            color: copiedKey === `phone_${action.id}` ? '#16A34A' : '#475569',
+                            fontWeight: 700,
+                            fontSize: '11.5px',
+                            cursor: 'pointer',
+                            display: 'inline-flex',
+                            alignItems: 'center',
+                            gap: '4px',
+                            transition: 'all 0.15s ease'
+                          }}
+                          onMouseEnter={(e) => {
+                            e.currentTarget.style.background = '#F1F5F9';
+                          }}
+                          onMouseLeave={(e) => {
+                            e.currentTarget.style.background = '#F8FAFC';
+                          }}
+                        >
+                          {copiedKey === `phone_${action.id}` ? <Check size={13} /> : <Copy size={13} />}
+                          <span>{copiedKey === `phone_${action.id}` ? 'تم النسخ' : 'نسخ الهاتف'}</span>
+                        </button>
+                      )}
+
+                      {/* WhatsApp 1-Click Message */}
                       {action.phone && (
                         <a
                           href={generateWhatsAppUrl(action.phone, getWhatsAppMessage(action, true))}
@@ -777,6 +1109,41 @@ export default function CoachCommandCenter() {
                         </a>
                       )}
 
+                      {/* Client App Portal Quick View */}
+                      <a
+                        href={`/client?code=${action.clientCode}`}
+                        target="_blank"
+                        rel="noreferrer"
+                        title="معاينة حية لتطبيق المتدرب"
+                        style={{
+                          height: '32px',
+                          padding: '0 10px',
+                          borderRadius: '8px',
+                          border: '1px solid #E2E8F0',
+                          background: '#F8FAFC',
+                          color: '#475569',
+                          fontWeight: 700,
+                          fontSize: '11.5px',
+                          textDecoration: 'none',
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          gap: '5px',
+                          transition: 'all 0.15s ease'
+                        }}
+                        onMouseEnter={(e) => {
+                          e.currentTarget.style.background = '#F1F5F9';
+                          e.currentTarget.style.color = '#0F172A';
+                        }}
+                        onMouseLeave={(e) => {
+                          e.currentTarget.style.background = '#F8FAFC';
+                          e.currentTarget.style.color = '#475569';
+                        }}
+                      >
+                        <Smartphone size={13} />
+                        <span>تطبيق المتدرب</span>
+                      </a>
+
+                      {/* Main Operational Action Button */}
                       <button
                         type="button"
                         onClick={() => {
