@@ -36,7 +36,8 @@ import {
   Trophy,
   ExternalLink,
   Plane,
-  Calendar
+  Calendar,
+  X
 } from 'lucide-react';
 import AdminLayout from '../components/layout/AdminLayout';
 import { PageHeader } from '@/shared/components/page-header';
@@ -94,7 +95,8 @@ export const INITIAL_CHECKINS = Array.isArray(STRESS_TEST_CLIENTS) ? STRESS_TEST
       goal_type: isFatLoss ? 'CUTTING' : (isLeanBulk ? 'BULKING' : 'RECOMP'),
       target_goal: c.goal_label,
       start_weight: baseWeight,
-      target_weight: isFatLoss ? (baseWeight - 8) : (baseWeight + 4)
+      target_weight: isFatLoss ? (baseWeight - 8) : (baseWeight + 4),
+      injuries: c.injuries || bp?.client?.injuries || []
     },
     week_number: 3,
     checkin_number: 3,
@@ -568,6 +570,7 @@ export default function CheckinReviewDashboard() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [approvedCount, setApprovedCount] = useState(0);
   const [showLabModal, setShowLabModal] = useState(false);
+  const [approvalToast, setApprovalToast] = useState(null);
   const [inspectionTab, setInspectionTab] = useState('PHOTOS'); // 'PHOTOS' | 'CHART' | 'LABS'
 
   // Live Checkins Fetcher from MariaDB
@@ -633,7 +636,8 @@ export default function CheckinReviewDashboard() {
                   goal_type: 'FAT_LOSS',
                   target_goal: 'خسارة دهون',
                   start_weight: ch.average_weight_kg || 80,
-                  target_weight: (ch.average_weight_kg || 80) - 10
+                  target_weight: (ch.average_weight_kg || 80) - 10,
+                  injuries: ch.user?.injuries || []
                 },
                 week_number: ch.week_number || 1,
                 checkin_number: ch.week_number || 1,
@@ -818,6 +822,18 @@ export default function CheckinReviewDashboard() {
   const safeMacros = activeCheckin?.baseline_macros || DEFAULT_BASELINE_MACROS;
   const clientFirstName = String(safeClient?.name || 'المتدرب').split(' ')[0];
 
+  const handlePrevCheckin = () => {
+    if (selectedIdx > 0) {
+      setSelectedIdx(selectedIdx - 1);
+    }
+  };
+
+  const handleNextCheckin = () => {
+    if (selectedIdx < filteredQueue.length - 1) {
+      setSelectedIdx(selectedIdx + 1);
+    }
+  };
+
   // Sync state when switching clients
   useEffect(() => {
     if (activeCheckin) {
@@ -826,18 +842,33 @@ export default function CheckinReviewDashboard() {
     }
   }, [activeCheckin]);
 
-  // Handle Escape key to close active modals safely without losing queue position
+  // Auto dismiss approval toast after 7 seconds
+  useEffect(() => {
+    if (!approvalToast) return;
+    const timer = setTimeout(() => {
+      setApprovalToast(null);
+    }, 7000);
+    return () => clearTimeout(timer);
+  }, [approvalToast]);
+
+  // Handle Keyboard shortcuts safely without losing queue position or interfering with input typing
   useEffect(() => {
     const handleKeyDown = (e) => {
+      if (['INPUT', 'TEXTAREA'].includes(e.target?.tagName)) return;
+
       if (e.key === 'Escape') {
         if (showLabModal) {
           setShowLabModal(false);
         }
+      } else if (e.key === 'ArrowRight' || e.key === ']' || (e.altKey && e.key === 'ArrowUp')) {
+        handlePrevCheckin();
+      } else if (e.key === 'ArrowLeft' || e.key === '[' || (e.altKey && e.key === 'ArrowDown')) {
+        handleNextCheckin();
       }
     };
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [showLabModal]);
+  }, [showLabModal, selectedIdx, filteredQueue.length]);
 
   const handleApprove = async () => {
     if (!activeCheckin) return;
@@ -874,15 +905,12 @@ export default function CheckinReviewDashboard() {
       setSelectedIdx(remaining.length - 1);
     }
 
-    // Quick WhatsApp Option
-    const shouldOpenWhatsApp = window.confirm(
-      `تم اعتماد تحديث تقييم (${approvedClientName}) بنجاح وتحديث خطته في التطبيق.\n\nهل تريد فتح واتساب لإرسال رسالة التوجيه للمتدرب الآن؟`
-    );
-
-    if (shouldOpenWhatsApp && clientPhone) {
-      const cleanPhone = formatWhatsAppPhone(clientPhone);
-      window.open(`https://wa.me/${cleanPhone}?text=${encodeURIComponent(replyMsg)}`, '_blank');
-    }
+    // Trigger non-blocking luxury floating toast with 1-click WhatsApp action
+    setApprovalToast({
+      clientName: approvedClientName,
+      phone: clientPhone,
+      reply: replyMsg
+    });
   };
 
   const handleResetDemo = () => {
@@ -956,7 +984,7 @@ export default function CheckinReviewDashboard() {
             <div style={{ padding: '12px 14px', borderBottom: '1px solid #F1F5F9', background: '#F8FAFC' }}>
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                  <span style={{ width: '3px', height: '14px', background: '#0F172A', borderRadius: '2px', display: 'inline-block' }} />
+                  <span style={{ width: '3px', height: '14px', background: '#0F172A', borderRadius: '9999px', display: 'inline-block' }} />
                   <strong style={{ fontSize: '13px', color: '#0F172A' }}>
                     طابور المشتركين ({filteredQueue.length})
                   </strong>
@@ -1092,6 +1120,19 @@ export default function CheckinReviewDashboard() {
                               تحاليل
                             </span>
                           )}
+                          {(() => {
+                            const injs = Array.isArray(item?.client?.injuries) ? item.client.injuries : [];
+                            const hasInj = injs.some(inj => {
+                              const s = typeof inj === 'string' ? inj : (inj?.name || inj?.area || inj?.conditionCode || '');
+                              return s && !/سليم|لا توجد|متابعة اعتيادية|لا يوجد/i.test(s);
+                            });
+                            if (!hasInj) return null;
+                            return (
+                              <span style={{ fontSize: '9px', background: '#FEE2E2', color: '#B91C1C', border: '1px solid #FECACA', padding: '0px 4px', borderRadius: '6px', fontWeight: 800 }}>
+                                إصابة
+                              </span>
+                            );
+                          })()}
                           <ClientPackageBadge item={item?.client} size="xs" />
                           {(() => {
                             const fasting = extractClientFastingProfile(item?.client);
@@ -1306,6 +1347,86 @@ export default function CheckinReviewDashboard() {
                       <span>تعديل الخطة بالمحرر</span>
                       <ExternalLink size={10} color="#0284C7" />
                     </button>
+
+                    {safeClient?.phone && (
+                      <button
+                        type="button"
+                        onClick={handleOpenDirectWhatsApp}
+                        style={{
+                          height: '28px',
+                          padding: '0 10px',
+                          fontSize: '11px',
+                          fontWeight: 700,
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          gap: '4px',
+                          borderRadius: '8px',
+                          background: '#ECFDF5',
+                          color: '#047857',
+                          border: '1px solid #A7F3D0',
+                          cursor: 'pointer',
+                          transition: 'all 0.15s ease'
+                        }}
+                        title="محادثة المتدرب مباشرة على واتساب"
+                      >
+                        <MessageCircle size={12} />
+                        <span>واتساب</span>
+                      </button>
+                    )}
+
+                    <div style={{ display: 'inline-flex', alignItems: 'center', gap: '2px', background: '#F8FAFC', border: '1px solid #E2E8F0', padding: '2px', borderRadius: '8px' }}>
+                      <button
+                        type="button"
+                        disabled={selectedIdx <= 0}
+                        onClick={handlePrevCheckin}
+                        style={{
+                          height: '24px',
+                          padding: '0 6px',
+                          borderRadius: '6px',
+                          border: 'none',
+                          background: selectedIdx <= 0 ? 'transparent' : '#FFFFFF',
+                          color: selectedIdx <= 0 ? '#CBD5E1' : '#0F172A',
+                          cursor: selectedIdx <= 0 ? 'not-allowed' : 'pointer',
+                          fontSize: '10.5px',
+                          fontWeight: 700,
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          gap: '2px',
+                          boxShadow: selectedIdx > 0 ? '0 1px 2px rgba(0,0,0,0.06)' : 'none'
+                        }}
+                        title="المتدرب السابق (اختصار: Alt + ArrowUp أو ])"
+                      >
+                        <ChevronRight size={12} />
+                        <span>السابق</span>
+                      </button>
+                      <span style={{ fontSize: '10px', color: '#64748B', fontWeight: 700, padding: '0 4px', userSelect: 'none' }}>
+                        {selectedIdx + 1} / {filteredQueue.length}
+                      </span>
+                      <button
+                        type="button"
+                        disabled={selectedIdx >= filteredQueue.length - 1}
+                        onClick={handleNextCheckin}
+                        style={{
+                          height: '24px',
+                          padding: '0 6px',
+                          borderRadius: '6px',
+                          border: 'none',
+                          background: selectedIdx >= filteredQueue.length - 1 ? 'transparent' : '#FFFFFF',
+                          color: selectedIdx >= filteredQueue.length - 1 ? '#CBD5E1' : '#0F172A',
+                          cursor: selectedIdx >= filteredQueue.length - 1 ? 'not-allowed' : 'pointer',
+                          fontSize: '10.5px',
+                          fontWeight: 700,
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          gap: '2px',
+                          boxShadow: selectedIdx < filteredQueue.length - 1 ? '0 1px 2px rgba(0,0,0,0.06)' : 'none'
+                        }}
+                        title="المتدرب التالي (اختصار: Alt + ArrowDown أو [)"
+                      >
+                        <span>التالي</span>
+                        <ChevronLeft size={12} />
+                      </button>
+                    </div>
                   </div>
                 </div>
               );
@@ -2631,6 +2752,86 @@ export default function CheckinReviewDashboard() {
                 onClose={() => setShowLabModal(false)}
               />
             </div>
+          </div>
+        )}
+
+        {/* إشعار عائم راقٍ باعتماد التقييم مع إمكانية فتح واتساب بنقرة واحدة */}
+        {approvalToast && (
+          <div 
+            style={{
+              position: 'fixed',
+              bottom: '24px',
+              left: '24px',
+              zIndex: 9999,
+              background: '#0F172A',
+              color: '#FFFFFF',
+              borderRadius: '12px',
+              padding: '12px 18px',
+              boxShadow: '0 10px 30px rgba(0, 0, 0, 0.35)',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '12px',
+              maxWidth: '480px',
+              border: '1px solid #334155'
+            }}
+            dir="rtl"
+          >
+            <div style={{ width: '30px', height: '30px', borderRadius: '50%', background: '#16A34A', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+              <CheckCircle2 size={18} color="#FFFFFF" />
+            </div>
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <div style={{ fontSize: '13px', fontWeight: 800, color: '#FFFFFF' }}>
+                تم اعتماد تقييم {approvalToast.clientName} بنجاح
+              </div>
+              <div style={{ fontSize: '11px', color: '#94A3B8', marginTop: '2px' }}>
+                تم تحديث الخطة في تطبيق المتدرب وحفظ الماكروز.
+              </div>
+            </div>
+            {approvalToast.phone && (
+              <button
+                type="button"
+                onClick={() => {
+                  const cleanPhone = formatWhatsAppPhone(approvalToast.phone);
+                  window.open(`https://wa.me/${cleanPhone}?text=${encodeURIComponent(approvalToast.reply)}`, '_blank');
+                  setApprovalToast(null);
+                }}
+                style={{
+                  height: '30px',
+                  padding: '0 10px',
+                  borderRadius: '8px',
+                  background: '#22C55E',
+                  color: '#FFFFFF',
+                  border: 'none',
+                  fontSize: '11px',
+                  fontWeight: 700,
+                  cursor: 'pointer',
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '4px',
+                  flexShrink: 0,
+                  transition: 'all 0.15s ease'
+                }}
+              >
+                <MessageCircle size={13} />
+                <span>إرسال واتساب</span>
+              </button>
+            )}
+            <button
+              type="button"
+              onClick={() => setApprovalToast(null)}
+              style={{
+                background: 'transparent',
+                border: 'none',
+                color: '#64748B',
+                cursor: 'pointer',
+                padding: '2px',
+                display: 'flex',
+                alignItems: 'center'
+              }}
+              title="إغلاق"
+            >
+              <X size={14} />
+            </button>
           </div>
         )}
 
