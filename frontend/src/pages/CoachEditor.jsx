@@ -94,11 +94,14 @@ export default function CoachEditor() {
     handleUpdateFoodAmount,
     handleDeleteFood,
     handleAddNewMeal,
+    handleDuplicateMeal,
     handleDeleteMeal,
     handleAddFoodToMeal,
     handleExecuteFoodSwap,
     handleExecuteExerciseSwap,
     handleUpdateExerciseParam,
+    handleMoveExercise,
+    handleDuplicateSession,
     handleDeleteExercise,
     handleAddExerciseToSession,
     handleSelectCardioModality,
@@ -165,6 +168,8 @@ export default function CoachEditor() {
           setIsLabModalOpen={setIsLabModalOpen}
           handleApproveAndPublish={handleApproveAndPublish}
           publishing={publishing}
+          clientsList={clientsList}
+          handleSelectClient={handleSelectClient}
         />
 
         {/* 2. Unified Clean Workspace Tabs */}
@@ -245,6 +250,8 @@ export default function CoachEditor() {
             setSwapExModal={setSwapExModal}
             handleDeleteExercise={handleDeleteExercise}
             setAddExModal={setAddExModal}
+            handleMoveExercise={handleMoveExercise}
+            handleDuplicateSession={handleDuplicateSession}
           />
         )}
 
@@ -309,6 +316,7 @@ export default function CoachEditor() {
             handleUpdateFoodAmount={handleUpdateFoodAmount}
             handleDeleteFood={handleDeleteFood}
             handleAddNewMeal={handleAddNewMeal}
+            handleDuplicateMeal={handleDuplicateMeal}
             handleDeleteMeal={handleDeleteMeal}
             handleAddFoodToMeal={handleAddFoodToMeal}
             handleExecuteFoodSwap={handleExecuteFoodSwap}

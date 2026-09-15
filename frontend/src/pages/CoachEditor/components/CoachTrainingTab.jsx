@@ -8,7 +8,10 @@ import {
   HeartPulse, 
   Plus, 
   X,
-  ShieldAlert
+  ShieldAlert,
+  ArrowUp,
+  ArrowDown,
+  Copy
 } from 'lucide-react';
 import { getExerciseDisplayNames } from '../../../utils/exerciseTranslator';
 
@@ -27,7 +30,9 @@ export function CoachTrainingTab({
   handleUpdateExerciseParam,
   setSwapExModal,
   handleDeleteExercise,
-  setAddExModal
+  setAddExModal,
+  handleMoveExercise,
+  handleDuplicateSession
 }) {
   const clientConditions = [
     ...(Array.isArray(program?.client?.injuries) ? program.client.injuries : []),
@@ -262,6 +267,32 @@ export function CoachTrainingTab({
                 </button>
               );
             })}
+
+            {/* Duplicate Workout Day Button */}
+            {handleDuplicateSession && currentSessions.length > 0 && (
+              <button
+                type="button"
+                onClick={() => handleDuplicateSession(activeSessionIdx)}
+                style={{
+                  padding: '6px 12px',
+                  borderRadius: '6px',
+                  border: '1px dashed #CBD5E1',
+                  background: '#F8FAFC',
+                  color: '#475569',
+                  fontSize: '11.5px',
+                  fontWeight: 700,
+                  cursor: 'pointer',
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '4px',
+                  transition: 'all 0.15s ease'
+                }}
+                title="تكرار ونسخ تمارين اليوم التدريبي الحالي بالكامل"
+              >
+                <Copy size={12} />
+                <span>نسخ هذا اليوم</span>
+              </button>
+            )}
           </div>
 
           {/* Target Muscle Summary */}
@@ -499,27 +530,34 @@ export function CoachTrainingTab({
                   />
                 </div>
 
-                {/* RIR */}
+                {/* RIR Stepper Control (No Sharp Native Dropdowns) */}
                 <div style={{
                   display: 'flex',
                   alignItems: 'center',
                   border: isLowRir ? '1.5px solid #EF4444' : '1px solid #CBD5E1',
-                  borderRadius: '6px',
+                  borderRadius: '8px',
                   background: isLowRir ? '#FEF2F2' : '#F8FAFC',
-                  padding: '0 8px',
+                  padding: '0 6px',
                   height: '30px'
                 }}>
                   <span style={{ fontSize: '11px', color: isLowRir ? '#DC2626' : '#64748B', marginLeft: '6px', fontWeight: 700 }}>الشدة:</span>
-                  <select
-                    value={ex.rir ?? 1}
-                    onChange={(e) => handleUpdateExerciseParam(activeSessionIdx, eIdx, 'rir', Number(e.target.value))}
-                    style={{ border: 'none', background: 'transparent', fontWeight: 800, fontSize: '11.5px', outline: 'none', cursor: 'pointer', color: isLowRir ? '#DC2626' : '#0F172A' }}
+                  <button 
+                    type="button" 
+                    onClick={() => handleUpdateExerciseParam(activeSessionIdx, eIdx, 'rir', Math.max(0, (ex.rir ?? 1) - 1))} 
+                    style={{ border: 'none', background: 'transparent', cursor: 'pointer', fontWeight: 800, padding: '0 4px', fontSize: '13px', color: isLowRir ? '#DC2626' : '#0F172A' }}
                   >
-                    <option value="0">RIR 0 (فشل تام)</option>
-                    <option value="1">RIR 1 (عدة قبل الفشل)</option>
-                    <option value="2">RIR 2 (عدتان قبل الفشل)</option>
-                    <option value="3">RIR 3</option>
-                  </select>
+                    -
+                  </button>
+                  <strong style={{ fontSize: '11.5px', minWidth: '38px', textAlign: 'center', margin: '0 2px', color: isLowRir ? '#DC2626' : '#0F172A' }}>
+                    RIR {ex.rir ?? 1}
+                  </strong>
+                  <button 
+                    type="button" 
+                    onClick={() => handleUpdateExerciseParam(activeSessionIdx, eIdx, 'rir', Math.min(3, (ex.rir ?? 1) + 1))} 
+                    style={{ border: 'none', background: 'transparent', cursor: 'pointer', fontWeight: 800, padding: '0 4px', fontSize: '13px', color: isLowRir ? '#DC2626' : '#0F172A' }}
+                  >
+                    +
+                  </button>
                   {isLowRir && (
                     <span style={{ fontSize: '9px', fontWeight: 800, color: '#DC2626', marginRight: '4px' }}>
                       (الحد: 2)
@@ -527,27 +565,81 @@ export function CoachTrainingTab({
                   )}
                 </div>
 
-                {/* Rest */}
-                <div style={{ display: 'flex', alignItems: 'center', border: '1px solid #CBD5E1', borderRadius: '6px', background: '#F8FAFC', padding: '0 8px', height: '30px' }}>
+                {/* Rest Stepper Control (Steps by 15s - No Sharp Native Dropdowns) */}
+                <div style={{ display: 'flex', alignItems: 'center', border: '1px solid #CBD5E1', borderRadius: '8px', background: '#F8FAFC', padding: '0 6px', height: '30px' }}>
                   <span style={{ fontSize: '11px', color: '#64748B', marginLeft: '6px', fontWeight: 700 }}>راحة:</span>
-                  <select
-                    value={ex.restSec || 75}
-                    onChange={(e) => handleUpdateExerciseParam(activeSessionIdx, eIdx, 'restSec', Number(e.target.value))}
-                    style={{ border: 'none', background: 'transparent', fontWeight: 800, fontSize: '11.5px', outline: 'none', cursor: 'pointer', color: '#0F172A' }}
+                  <button 
+                    type="button" 
+                    onClick={() => handleUpdateExerciseParam(activeSessionIdx, eIdx, 'restSec', Math.max(30, (ex.restSec || 75) - 15))} 
+                    style={{ border: 'none', background: 'transparent', cursor: 'pointer', fontWeight: 800, padding: '0 4px', fontSize: '13px', color: '#0F172A' }}
                   >
-                    <option value="45">45s</option>
-                    <option value="60">60s</option>
-                    <option value="75">75s</option>
-                    <option value="90">90s</option>
-                    <option value="120">120s</option>
-                  </select>
+                    -
+                  </button>
+                  <strong style={{ fontSize: '11.5px', minWidth: '32px', textAlign: 'center', margin: '0 2px', color: '#0F172A' }}>
+                    {ex.restSec || 75}s
+                  </strong>
+                  <button 
+                    type="button" 
+                    onClick={() => handleUpdateExerciseParam(activeSessionIdx, eIdx, 'restSec', Math.min(180, (ex.restSec || 75) + 15))} 
+                    style={{ border: 'none', background: 'transparent', cursor: 'pointer', fontWeight: 800, padding: '0 4px', fontSize: '13px', color: '#0F172A' }}
+                  >
+                    +
+                  </button>
                 </div>
+
+                {/* Move Up / Move Down Order Controls */}
+                {handleMoveExercise && (
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '2px', background: '#F1F5F9', padding: '2px', borderRadius: '8px', border: '1px solid #E2E8F0' }}>
+                    <button
+                      type="button"
+                      onClick={() => handleMoveExercise(activeSessionIdx, eIdx, 'UP')}
+                      disabled={eIdx === 0}
+                      title="تقديم التمرين للأعلى"
+                      style={{
+                        height: '26px',
+                        width: '26px',
+                        borderRadius: '6px',
+                        border: 'none',
+                        background: eIdx === 0 ? 'transparent' : '#FFFFFF',
+                        color: eIdx === 0 ? '#CBD5E1' : '#0F172A',
+                        cursor: eIdx === 0 ? 'not-allowed' : 'pointer',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        boxShadow: eIdx === 0 ? 'none' : '0 1px 2px rgba(15, 23, 42, 0.05)'
+                      }}
+                    >
+                      <ArrowUp size={12} />
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => handleMoveExercise(activeSessionIdx, eIdx, 'DOWN')}
+                      disabled={eIdx === (activeSession?.exercises?.length || 0) - 1}
+                      title="تأخير التمرين للأسفل"
+                      style={{
+                        height: '26px',
+                        width: '26px',
+                        borderRadius: '6px',
+                        border: 'none',
+                        background: eIdx === (activeSession?.exercises?.length || 0) - 1 ? 'transparent' : '#FFFFFF',
+                        color: eIdx === (activeSession?.exercises?.length || 0) - 1 ? '#CBD5E1' : '#0F172A',
+                        cursor: eIdx === (activeSession?.exercises?.length || 0) - 1 ? 'not-allowed' : 'pointer',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        boxShadow: eIdx === (activeSession?.exercises?.length || 0) - 1 ? 'none' : '0 1px 2px rgba(15, 23, 42, 0.05)'
+                      }}
+                    >
+                      <ArrowDown size={12} />
+                    </button>
+                  </div>
+                )}
 
                 {/* Smart Swap Button */}
                 <button
                   type="button"
                   onClick={() => setSwapExModal({ open: true, sessionIdx: activeSessionIdx, exIdx: eIdx, currentEx: ex })}
-                  style={{ height: '30px', padding: '0 8px', borderRadius: '6px', background: '#FFFFFF', border: '1px solid #CBD5E1', color: '#0F172A', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px', fontSize: '11px', fontWeight: 700 }}
+                  style={{ height: '30px', padding: '0 10px', borderRadius: '8px', background: '#FFFFFF', border: '1px solid #CBD5E1', color: '#0F172A', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px', fontSize: '11px', fontWeight: 700 }}
                   title="تبديل التمرين الذكي بنفس الزاوية والأمان"
                 >
                   <ArrowRightLeft size={12} color="#2563EB" />
@@ -558,7 +650,7 @@ export function CoachTrainingTab({
                 <button
                   type="button"
                   onClick={() => handleDeleteExercise(activeSessionIdx, eIdx)}
-                  style={{ height: '30px', width: '30px', borderRadius: '6px', background: '#FFFFFF', border: '1px solid #CBD5E1', color: '#DC2626', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                  style={{ height: '30px', width: '30px', borderRadius: '8px', background: '#FFFFFF', border: '1px solid #CBD5E1', color: '#DC2626', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
                   title="حذف التمرين"
                 >
                   <Trash2 size={13} />

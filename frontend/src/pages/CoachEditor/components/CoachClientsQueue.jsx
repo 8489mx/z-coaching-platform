@@ -23,7 +23,7 @@ export function CoachClientsQueue({
       style={{ 
         background: '#FFFFFF', 
         border: '1px solid #E2E8F0', 
-        borderRadius: '8px', 
+        borderRadius: '12px', 
         padding: '10px 14px', 
         display: 'flex', 
         flexDirection: 'column', 
@@ -57,7 +57,7 @@ export function CoachClientsQueue({
                   onClick={() => setQueueFilter(qf.id)}
                   style={{
                     padding: '3px 8px',
-                    borderRadius: '7px',
+                    borderRadius: '8px',
                     fontSize: '11px',
                     fontWeight: isSel ? 800 : 600,
                     border: isSel ? '1px solid #0F172A' : '1px solid #E2E8F0',
@@ -125,6 +125,11 @@ export function CoachClientsQueue({
             const isSelected = String(program?.client?.client_code || clientCodeParam) === String(client.client_code || client.id);
             const isPending = client.queue_status === 'PENDING_PLAN';
             const isNeedsUpdate = client.queue_status === 'NEEDS_UPDATE';
+            const injuries = Array.isArray(client.injuries) ? client.injuries : [];
+            const hasInjury = injuries.some(inj => {
+              const s = typeof inj === 'string' ? inj : (inj?.name || inj?.area || inj?.conditionCode || '');
+              return s && !/سليم|لا توجد|متابعة اعتيادية|لا يوجد/i.test(s);
+            });
 
             return (
               <div
@@ -136,7 +141,7 @@ export function CoachClientsQueue({
                   background: isSelected ? '#0F172A' : '#FFFFFF',
                   color: isSelected ? '#FFFFFF' : '#0F172A',
                   border: isSelected ? '1px solid #0F172A' : '1px solid #E2E8F0',
-                  borderRadius: '6px',
+                  borderRadius: '10px',
                   padding: '8px 10px',
                   cursor: 'pointer',
                   display: 'flex',
@@ -164,22 +169,38 @@ export function CoachClientsQueue({
                   </span>
                 </div>
 
-                {/* Status Pill */}
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: '2px' }}>
-                  <span style={{
-                    fontSize: '9.5px',
-                    fontWeight: 800,
-                    padding: '1px 5px',
-                    borderRadius: '6px',
-                    background: isSelected 
-                      ? (isPending ? '#FEF08A' : isNeedsUpdate ? '#BAE6FD' : 'rgba(255,255,255,0.15)')
-                      : (isPending ? '#FEF9C3' : isNeedsUpdate ? '#E0F2FE' : '#F1F5F9'),
-                    color: isSelected
-                      ? (isPending ? '#854D0E' : isNeedsUpdate ? '#0369A1' : '#FFFFFF')
-                      : (isPending ? '#854D0E' : isNeedsUpdate ? '#0369A1' : '#475569')
-                  }}>
-                    {client.queue_label}
-                  </span>
+                {/* Status Row: Queue Status + Optional Injury Badge + Package */}
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: '2px', gap: '4px' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                    <span style={{
+                      fontSize: '9.5px',
+                      fontWeight: 800,
+                      padding: '1px 5px',
+                      borderRadius: '6px',
+                      background: isSelected 
+                        ? (isPending ? '#FEF08A' : isNeedsUpdate ? '#BAE6FD' : 'rgba(255,255,255,0.15)')
+                        : (isPending ? '#FEF9C3' : isNeedsUpdate ? '#E0F2FE' : '#F1F5F9'),
+                      color: isSelected
+                        ? (isPending ? '#854D0E' : isNeedsUpdate ? '#0369A1' : '#FFFFFF')
+                        : (isPending ? '#854D0E' : isNeedsUpdate ? '#0369A1' : '#475569')
+                    }}>
+                      {client.queue_label}
+                    </span>
+
+                    {hasInjury && (
+                      <span style={{
+                        fontSize: '9px',
+                        fontWeight: 800,
+                        padding: '1px 4px',
+                        borderRadius: '6px',
+                        background: isSelected ? '#DC2626' : '#FEE2E2',
+                        color: isSelected ? '#FFFFFF' : '#B91C1C',
+                        border: isSelected ? 'none' : '1px solid #FECACA'
+                      }}>
+                        إصابة
+                      </span>
+                    )}
+                  </div>
 
                   <span style={{ fontSize: '9.5px', color: isSelected ? 'rgba(255,255,255,0.7)' : '#94A3B8' }}>
                     {client.package_name || 'باقة إليت'}
@@ -198,7 +219,7 @@ export function CoachClientsQueue({
               flexShrink: 0,
               background: '#F8FAFC',
               border: '1px dashed #CBD5E1',
-              borderRadius: '6px',
+              borderRadius: '10px',
               padding: '8px 12px',
               fontSize: '11px',
               color: '#64748B',

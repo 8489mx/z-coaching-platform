@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Save, Send, Dumbbell, Utensils, FileText, Activity, Loader2, Plus, Trash2, RotateCw, HeartPulse, Printer, X, ArrowRightLeft, Users, Clock, AlertCircle, CheckCircle2, Search, Check, Zap, Target, ShieldAlert, Flame } from 'lucide-react';
+import { Save, Send, Dumbbell, Utensils, FileText, Activity, Loader2, Plus, Trash2, RotateCw, HeartPulse, Printer, X, ArrowRightLeft, Users, Clock, AlertCircle, CheckCircle2, Search, Check, Zap, Target, ShieldAlert, Flame, Copy } from 'lucide-react';
 import { balanceMealItems, balanceAllDayMeals, dynamicRippleRebalanceDailyPlan } from '../../../utils/mealPortionBalancer.js';
 
 // Quick Meal Presets for Instant Precision Nutrition Building
@@ -83,7 +83,7 @@ const QUICK_MEAL_PRESETS = [
 ];
 
 export default function CoachEditorNutritionTab(props) {
-  const { searchParams, setSearchParams, loading, setLoading, saving, setSaving, publishing, setPublishing, program, setProgram, coachNotes, setCoachNotes, activeSessionIdx, setActiveSessionIdx, activeWorkspaceTab, setActiveWorkspaceTab, notification, setNotification, clientsList, setClientsList, queueFilter, setQueueFilter, queueSearch, setQueueSearch, showQueueSlider, setShowQueueSlider, allExercisesList, setAllExercisesList, cardioSwapModal, setCardioSwapModal, addFoodModal, setAddFoodModal, swapFoodModal, setSwapFoodModal, addExModal, setAddExModal, swapExModal, setSwapExModal, mobilityModal, setMobilityModal, allMobilityList, setAllMobilityList, showReasoning, setShowReasoning, exModalSearch, setExModalSearch, foodModalSearch, setFoodModalSearch, mobilityModalSearch, setMobilityModalSearch, swapFoodSearch, setSwapFoodSearch, swapExSearch, setSwapExSearch, handleSelectClient, handleUpdateFoodAmount, handleDeleteFood, handleAddNewMeal, handleDeleteMeal, handleAddFoodToMeal, handleExecuteFoodSwap, handleExecuteExerciseSwap, handleUpdateExerciseParam, handleDeleteExercise, handleAddExerciseToSession, handleSelectCardioModality, handleAddMobilityToSession, handleRemoveMobilityFromSession, handleSaveDraft, handleApproveAndPublish, FOOD_DATABASE_LIST, CARDIO_MODALITY_OPTIONS } = props;
+  const { searchParams, setSearchParams, loading, setLoading, saving, setSaving, publishing, setPublishing, program, setProgram, coachNotes, setCoachNotes, activeSessionIdx, setActiveSessionIdx, activeWorkspaceTab, setActiveWorkspaceTab, notification, setNotification, clientsList, setClientsList, queueFilter, setQueueFilter, queueSearch, setQueueSearch, showQueueSlider, setShowQueueSlider, allExercisesList, setAllExercisesList, cardioSwapModal, setCardioSwapModal, addFoodModal, setAddFoodModal, swapFoodModal, setSwapFoodModal, addExModal, setAddExModal, swapExModal, setSwapExModal, mobilityModal, setMobilityModal, allMobilityList, setAllMobilityList, showReasoning, setShowReasoning, exModalSearch, setExModalSearch, foodModalSearch, setFoodModalSearch, mobilityModalSearch, setMobilityModalSearch, swapFoodSearch, setSwapFoodSearch, swapExSearch, setSwapExSearch, handleSelectClient, handleUpdateFoodAmount, handleDeleteFood, handleAddNewMeal, handleDuplicateMeal, handleDeleteMeal, handleAddFoodToMeal, handleExecuteFoodSwap, handleExecuteExerciseSwap, handleUpdateExerciseParam, handleDeleteExercise, handleAddExerciseToSession, handleSelectCardioModality, handleAddMobilityToSession, handleRemoveMobilityFromSession, handleSaveDraft, handleApproveAndPublish, FOOD_DATABASE_LIST, CARDIO_MODALITY_OPTIONS } = props;
 
   const showToast = props.showToast || ((msg) => console.log(msg));
 
@@ -204,6 +204,9 @@ export default function CoachEditorNutritionTab(props) {
   const totalPlannedC = mealsC + suppsC;
   const totalPlannedF = mealsF + suppsF;
   const diffCal = totalPlannedCal - targetCal;
+  const deltaP = totalPlannedP - targetP;
+  const deltaC = totalPlannedC - targetC;
+  const deltaF = totalPlannedF - targetF;
 
   const effectiveCurrentProtein = Math.max(totalPlannedP, targetP);
   const isProteinExceeded = hasKidneyCondition && effectiveCurrentProtein > maxSafeProtein;
@@ -488,19 +491,55 @@ export default function CoachEditorNutritionTab(props) {
                       </span>
                     )}
                   </div>
-                  <strong style={{ fontSize: '12.5px', fontWeight: 800, color: isProteinExceeded ? '#DC2626' : '#0F172A' }}>
-                    {totalPlannedP}g / {targetP}g
-                  </strong>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '4px', marginTop: '1px' }}>
+                    <strong style={{ fontSize: '12.5px', fontWeight: 800, color: isProteinExceeded ? '#DC2626' : '#0F172A' }}>
+                      {totalPlannedP}g / {targetP}g
+                    </strong>
+                    <span style={{
+                      fontSize: '9px',
+                      fontWeight: 800,
+                      padding: '1px 5px',
+                      borderRadius: '6px',
+                      background: Math.abs(deltaP) <= 2 ? '#DCFCE7' : deltaP > 0 ? '#FEF3C7' : '#EFF6FF',
+                      color: Math.abs(deltaP) <= 2 ? '#15803D' : deltaP > 0 ? '#B45309' : '#1D4ED8'
+                    }}>
+                      {Math.abs(deltaP) <= 2 ? 'مطابق' : deltaP > 0 ? `+${deltaP}g` : `${deltaP}g`}
+                    </span>
+                  </div>
                 </div>
 
                 <div style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', color: '#0F172A', padding: '5px 10px', borderRadius: '8px', textAlign: 'center' }}>
                   <span style={{ fontSize: '9.5px', color: '#64748B', display: 'block' }}>الكارب</span>
-                  <strong style={{ fontSize: '12.5px', fontWeight: 700 }}>{totalPlannedC}g / {targetC}g</strong>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '4px', marginTop: '1px' }}>
+                    <strong style={{ fontSize: '12.5px', fontWeight: 700 }}>{totalPlannedC}g / {targetC}g</strong>
+                    <span style={{
+                      fontSize: '9px',
+                      fontWeight: 800,
+                      padding: '1px 5px',
+                      borderRadius: '6px',
+                      background: Math.abs(deltaC) <= 3 ? '#DCFCE7' : deltaC > 0 ? '#FEF3C7' : '#EFF6FF',
+                      color: Math.abs(deltaC) <= 3 ? '#15803D' : deltaC > 0 ? '#B45309' : '#1D4ED8'
+                    }}>
+                      {Math.abs(deltaC) <= 3 ? 'مطابق' : deltaC > 0 ? `+${deltaC}g` : `${deltaC}g`}
+                    </span>
+                  </div>
                 </div>
 
                 <div style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', color: '#0F172A', padding: '5px 10px', borderRadius: '8px', textAlign: 'center' }}>
                   <span style={{ fontSize: '9.5px', color: '#64748B', display: 'block' }}>الدهون</span>
-                  <strong style={{ fontSize: '12.5px', fontWeight: 700 }}>{totalPlannedF}g / {targetF}g</strong>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '4px', marginTop: '1px' }}>
+                    <strong style={{ fontSize: '12.5px', fontWeight: 700 }}>{totalPlannedF}g / {targetF}g</strong>
+                    <span style={{
+                      fontSize: '9px',
+                      fontWeight: 800,
+                      padding: '1px 5px',
+                      borderRadius: '6px',
+                      background: Math.abs(deltaF) <= 2 ? '#DCFCE7' : deltaF > 0 ? '#FEF3C7' : '#EFF6FF',
+                      color: Math.abs(deltaF) <= 2 ? '#15803D' : deltaF > 0 ? '#B45309' : '#1D4ED8'
+                    }}>
+                      {Math.abs(deltaF) <= 2 ? 'مطابق' : deltaF > 0 ? `+${deltaF}g` : `${deltaF}g`}
+                    </span>
+                  </div>
                 </div>
 
                 {Boolean(program.nutrition?.beverage_sugar_intake && program.nutrition.beverage_sugar_intake !== 'zero_or_sweetener') && (
@@ -701,6 +740,30 @@ export default function CoachEditorNutritionTab(props) {
                         >
                           + صنف غذائي
                         </button>
+                        {handleDuplicateMeal && (
+                          <button
+                            type="button"
+                            onClick={() => handleDuplicateMeal(meal.id)}
+                            style={{
+                              padding: '2px 7px',
+                              borderRadius: '8px',
+                              background: '#F8FAFC',
+                              border: '1px solid #CBD5E1',
+                              color: '#0F172A',
+                              fontSize: '10px',
+                              fontWeight: 700,
+                              cursor: 'pointer',
+                              display: 'inline-flex',
+                              alignItems: 'center',
+                              gap: '3px',
+                              transition: 'all 0.12s ease'
+                            }}
+                            title="نسخ هذه الوجبة بالكامل بجميع أصنافها"
+                          >
+                            <Copy size={11} />
+                            <span>نسخ الوجبة</span>
+                          </button>
+                        )}
                         <button
                           type="button"
                           onClick={() => handleDeleteMeal(meal.id)}

@@ -6,9 +6,14 @@ import {
   HeartPulse, 
   Loader2, 
   ShieldAlert, 
-  AlertCircle 
+  AlertCircle,
+  Smartphone,
+  MessageCircle,
+  ChevronRight,
+  ChevronLeft
 } from 'lucide-react';
 import { extractClientFastingProfile } from '../../../utils/seasonalFastingRadar';
+import { generateWhatsAppUrl } from '../../../utils/whatsappRemindersEngine';
 
 export function CoachHeaderBar({
   program,
@@ -17,8 +22,15 @@ export function CoachHeaderBar({
   saving,
   setIsLabModalOpen,
   handleApproveAndPublish,
-  publishing
+  publishing,
+  clientsList = [],
+  handleSelectClient
 }) {
+  const currentCode = String(program?.client?.client_code || clientCodeParam || '');
+  const currentIndex = clientsList.findIndex(c => String(c.client_code || c.id) === currentCode);
+  const prevClient = currentIndex > 0 ? clientsList[currentIndex - 1] : null;
+  const nextClient = currentIndex >= 0 && currentIndex < clientsList.length - 1 ? clientsList[currentIndex + 1] : null;
+  const clientPhone = program?.client?.phone_number || program?.client?.phone || '';
   return (
     <div 
       style={{ 
@@ -113,6 +125,115 @@ export function CoachHeaderBar({
 
       {/* Actions */}
       <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flexWrap: 'wrap' }}>
+        {/* Previous / Next Client Quick Switcher */}
+        {clientsList.length > 1 && handleSelectClient && (
+          <div style={{ display: 'flex', alignItems: 'center', gap: '2px', background: '#F1F5F9', padding: '2px', borderRadius: '8px', border: '1px solid #E2E8F0', marginLeft: '4px' }}>
+            <button
+              type="button"
+              onClick={() => prevClient && handleSelectClient(prevClient.client_code || prevClient.id)}
+              disabled={!prevClient}
+              title={prevClient ? `المشترك السابق: ${prevClient.full_name || prevClient.name}` : 'لا يوجد مشترك سابق'}
+              style={{
+                height: '28px',
+                padding: '0 8px',
+                borderRadius: '6px',
+                border: 'none',
+                background: prevClient ? '#FFFFFF' : 'transparent',
+                color: prevClient ? '#0F172A' : '#94A3B8',
+                fontSize: '11px',
+                fontWeight: 700,
+                cursor: prevClient ? 'pointer' : 'not-allowed',
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '2px',
+                boxShadow: prevClient ? '0 1px 2px rgba(15, 23, 42, 0.05)' : 'none'
+              }}
+            >
+              <ChevronRight size={13} />
+              <span>السابق</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => nextClient && handleSelectClient(nextClient.client_code || nextClient.id)}
+              disabled={!nextClient}
+              title={nextClient ? `المشترك التالي: ${nextClient.full_name || nextClient.name}` : 'لا يوجد مشترك تالي'}
+              style={{
+                height: '28px',
+                padding: '0 8px',
+                borderRadius: '6px',
+                border: 'none',
+                background: nextClient ? '#FFFFFF' : 'transparent',
+                color: nextClient ? '#0F172A' : '#94A3B8',
+                fontSize: '11px',
+                fontWeight: 700,
+                cursor: nextClient ? 'pointer' : 'not-allowed',
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '2px',
+                boxShadow: nextClient ? '0 1px 2px rgba(15, 23, 42, 0.05)' : 'none'
+              }}
+            >
+              <span>التالي</span>
+              <ChevronLeft size={13} />
+            </button>
+          </div>
+        )}
+
+        {/* 1-Click WhatsApp Direct Chat */}
+        {clientPhone && (
+          <a
+            href={generateWhatsAppUrl(clientPhone, `أهلاً ${program?.client?.full_name ? program.client.full_name.replace(/مشترك #\d+/g, '').trim() : ''}، بخصوص خطتك التدريبية والغذائية:`)}
+            target="_blank"
+            rel="noreferrer"
+            title="مراسلة المتدرب مباشرة عبر واتساب"
+            style={{
+              height: '32px',
+              padding: '0 10px',
+              borderRadius: '8px',
+              background: '#F0FDF4',
+              color: '#16A34A',
+              border: '1px solid #BBF7D0',
+              fontSize: '11.5px',
+              fontWeight: 700,
+              textDecoration: 'none',
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '4px',
+              transition: 'all 0.15s ease'
+            }}
+          >
+            <MessageCircle size={13} />
+            <span>واتساب</span>
+          </a>
+        )}
+
+        {/* Live Client App Preview */}
+        <a
+          href={`/client?code=${currentCode || '1'}`}
+          target="_blank"
+          rel="noreferrer"
+          title="معاينة حية لتطبيق المتدرب على الموبايل"
+          style={{
+            height: '32px',
+            padding: '0 10px',
+            borderRadius: '8px',
+            background: '#F8FAFC',
+            color: '#475569',
+            border: '1px solid #CBD5E1',
+            fontSize: '11.5px',
+            fontWeight: 700,
+            textDecoration: 'none',
+            display: 'inline-flex',
+            alignItems: 'center',
+            gap: '4px',
+            transition: 'all 0.15s ease'
+          }}
+        >
+          <Smartphone size={13} />
+          <span>تطبيق المتدرب</span>
+        </a>
+
         <button
           type="button"
           onClick={handleSaveDraft}

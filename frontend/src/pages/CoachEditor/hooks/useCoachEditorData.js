@@ -521,6 +521,30 @@ export function useCoachEditorData() {
     showToast('تمت إضافة وجبة جديدة');
   };
 
+  const handleDuplicateMeal = (mealId) => {
+    setProgram(prev => {
+      const sourceMeal = (prev.nutrition?.meals || []).find(m => m.id === mealId);
+      if (!sourceMeal) return prev;
+      const newMealObj = {
+        ...sourceMeal,
+        id: `m_${Date.now()}`,
+        name: `${sourceMeal.name || 'وجبة'} (نسخة)`,
+        items: (sourceMeal.items || []).map(it => ({
+          ...it,
+          id: `f_${Date.now()}_${Math.random().toString(36).substr(2, 4)}`
+        }))
+      };
+      return {
+        ...prev,
+        nutrition: {
+          ...prev.nutrition,
+          meals: [...(prev.nutrition?.meals || []), newMealObj]
+        }
+      };
+    });
+    showToast('تم نسخ الوجبة بالكامل بنجاح');
+  };
+
   const handleDeleteMeal = (mealId) => {
     setProgram(prev => {
       const remainingMeals = prev.nutrition.meals.filter(m => m.id !== mealId);
@@ -864,6 +888,43 @@ export function useCoachEditorData() {
       return list;
     });
     showToast('تم حذف التمرين من اليوم التدريبي');
+  };
+
+  const handleMoveExercise = (sIdx, eIdx, direction) => {
+    updateProgramTrainingSessions(sessionsList => {
+      const list = [...sessionsList];
+      const session = { ...list[sIdx] };
+      const exList = [...(session.exercises || [])];
+      const targetIdx = direction === 'UP' ? eIdx - 1 : eIdx + 1;
+      if (targetIdx < 0 || targetIdx >= exList.length) return list;
+      const temp = exList[eIdx];
+      exList[eIdx] = exList[targetIdx];
+      exList[targetIdx] = temp;
+      session.exercises = exList;
+      list[sIdx] = session;
+      return list;
+    });
+  };
+
+  const handleDuplicateSession = (sIdx) => {
+    updateProgramTrainingSessions(sessionsList => {
+      const list = [...sessionsList];
+      const sourceSession = list[sIdx];
+      if (!sourceSession) return list;
+      const newSession = {
+        ...sourceSession,
+        id: `sess_copy_${Date.now()}`,
+        name: `${sourceSession.name || 'اليوم التدريبي'} (نسخة)`,
+        exercises: (sourceSession.exercises || []).map((ex, idx) => ({
+          ...ex,
+          id: `ex_copy_${Date.now()}_${idx}`
+        }))
+      };
+      list.splice(sIdx + 1, 0, newSession);
+      return list;
+    });
+    setActiveSessionIdx(sIdx + 1);
+    showToast('تم نسخ اليوم التدريبي بالكامل بنجاح');
   };
 
   const handleAddExerciseToSession = (sIdx, ex) => {
@@ -1245,12 +1306,15 @@ export function useCoachEditorData() {
     handleUpdateFoodAmount,
     handleDeleteFood,
     handleAddNewMeal,
+    handleDuplicateMeal,
     handleDeleteMeal,
     handleAddFoodToMeal,
     handleExecuteFoodSwap,
     updateProgramTrainingSessions,
     handleExecuteExerciseSwap,
     handleUpdateExerciseParam,
+    handleMoveExercise,
+    handleDuplicateSession,
     handleDeleteExercise,
     handleAddExerciseToSession,
     handleSelectCardioModality,
