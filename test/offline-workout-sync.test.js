@@ -1,7 +1,15 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 
-import { completeSingleSet, completeWorkoutSession, getCachedWorkoutLog } from '../src/execution-engines/offline-workout-sync-engine.js';
+import {
+  completeSingleSet,
+  completeWorkoutSession,
+  getCachedWorkoutLog,
+  cacheProgramLocally,
+  getCachedProgram,
+  cacheGymRushCatalogLocally,
+  getCachedGymRushCatalog
+} from '../src/execution-engines/offline-workout-sync-engine.js';
 
 class MockStorage {
   constructor() {
@@ -68,4 +76,68 @@ test('Offline Workout Cache & 1-Tap Completion Suite', async (t) => {
     assert.equal(cached.data[0].sets[0].weightKg, 70);
   });
 
+  await t.test('3. Caches full client master program locally and retrieves it when offline', () => {
+    const storage = new MockStorage();
+    const mockProgram = {
+      version: 'v2.1',
+      training_program: {
+        split: 'UPPER_LOWER',
+        weeks: [{ week_number: 1, phase: 'ACCUMULATION' }]
+      }
+    };
+
+    const cacheResult = cacheProgramLocally({
+      clientCode: '#105',
+      programData: mockProgram,
+      storageDriver: storage
+    });
+
+    assert.equal(cacheResult.success, true);
+    assert.ok(cacheResult.storageKey.includes('105'));
+
+    const retrieved = getCachedProgram({
+      clientCode: '105',
+      storageDriver: storage
+    });
+
+    assert.ok(retrieved !== null);
+    assert.equal(retrieved.version, 'v2.1');
+    assert.equal(retrieved.training_program.split, 'UPPER_LOWER');
+  });
+
+  await t.test('4. Caches Gym Rush equivalence catalog locally and retrieves it for offline gym swaps', () => {
+    const storage = new MockStorage();
+    const sampleCatalog = [
+      {
+        original_code: 'BARBELL_BENCH_PRESS',
+        swap_id: 'DUMBBELL_FLAT_BENCH_PRESS',
+        name_ar: 'تجميع دمبلز مستوي',
+        primary_muscle: 'CHEST'
+      },
+      {
+        original_code: 'LAT_PULLDOWN',
+        swap_id: 'SEATED_CABLE_ROW',
+        name_ar: 'سحب أرضي بالكابل',
+        primary_muscle: 'BACK'
+      }
+    ];
+
+    const cacheResult = cacheGymRushCatalogLocally({
+      catalog: sampleCatalog,
+      storageDriver: storage
+    });
+
+    assert.equal(cacheResult.success, true);
+    assert.equal(cacheResult.count, 2);
+
+    const retrievedCatalog = getCachedGymRushCatalog({
+      storageDriver: storage
+    });
+
+    assert.ok(Array.isArray(retrievedCatalog));
+    assert.equal(retrievedCatalog.length, 2);
+    assert.equal(retrievedCatalog[0].swap_id, 'DUMBBELL_FLAT_BENCH_PRESS');
+  });
+
 });
+

@@ -3,6 +3,7 @@ import { X } from 'lucide-react';
 import { API_BASE } from '../../../config/api';
 import { getExerciseDisplayNames } from '../../../utils/exerciseTranslator';
 import { getGymRushEquivalentSwap } from '../../../utils/biomechanicsFirewallEngine';
+import { getCachedGymRushCatalog } from '../../../utils/offlineWorkoutSync';
 
 export default function ExerciseSwapModal({
   exerciseSwapTarget,
@@ -37,8 +38,25 @@ export default function ExerciseSwapModal({
         }
       })
       .catch(err => {
-        console.warn('Failed to load exercise swaps:', err);
-        setExerciseSwapsList([]);
+        console.warn('Network offline or weak in gym, checking local cached gym rush catalog:', err);
+        const cachedCatalog = getCachedGymRushCatalog();
+        if (cachedCatalog && Array.isArray(cachedCatalog)) {
+          const upperCode = String(exCode).toUpperCase();
+          const localSwaps = cachedCatalog.filter(item => {
+            return item.original_code === upperCode || item.primary_muscle === targetEx.target_muscle;
+          }).map(item => ({
+            exercise_id: item.swap_id,
+            name_ar: item.name_ar,
+            name_en: item.name_en,
+            match_score: item.match_score || 95,
+            equipment: item.equipment || 'DUMBBELL',
+            joint_stress: 'LOW',
+            equivalence_reason: item.equivalence_reason_ar || 'بديل مكافئ حركياً محفوظ محلياً لوضع عدم الاتصال'
+          }));
+          setExerciseSwapsList(localSwaps);
+        } else {
+          setExerciseSwapsList([]);
+        }
       })
       .finally(() => {
         setLoadingExerciseSwaps(false);

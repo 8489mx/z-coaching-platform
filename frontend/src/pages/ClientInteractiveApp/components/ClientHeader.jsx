@@ -5,6 +5,7 @@ import { getCaffeineCutoffTime } from '../../../utils/circadianLabTriggerEngine'
 
 export default function ClientHeader({
   clientData,
+  isOffline,
   syncStatus,
   isSyncing,
   handleTriggerSync,
@@ -271,6 +272,27 @@ export default function ClientHeader({
           })}
         </div>
       </header>
+
+      {/* Offline Gym Mode Reliability Banner */}
+      {isOffline && (
+        <div style={{
+          margin: '10px 16px 0 16px',
+          background: 'rgba(245, 158, 11, 0.08)',
+          border: '1px solid rgba(245, 158, 11, 0.25)',
+          borderRight: '4px solid #F59E0B',
+          borderRadius: '10px',
+          padding: '9px 12px',
+          display: 'flex',
+          alignItems: 'center',
+          gap: '8px',
+          boxShadow: '0 1px 3px rgba(0, 0, 0, 0.02)'
+        }}>
+          <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#F59E0B', flexShrink: 0 }} />
+          <span style={{ fontSize: '0.72rem', color: '#B45309', fontWeight: 700, lineHeight: 1.4 }}>
+            وضع عدم الاتصال بالإنترنت نشط — جميع التمارين الاسترشادية والبدائل محفوظة محلياً وتعمل بدون انقطاع داخل صالة الجيم.
+          </span>
+        </div>
+      )}
 
       {/* Clinical Medication Safety Notice (Unobtrusive - Only for thyroid medication users) */}
       {clientData.clinicalProfile?.takes_thyroid_med && (

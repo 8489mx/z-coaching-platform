@@ -1,9 +1,11 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useCallback } from 'react';
 import { API_BASE } from '../../../config/api.js';
 import { extractClientFastingProfile } from '../../../utils/seasonalFastingRadar.js';
 import { getPracticalCardioPrescription, CARDIO_TYPES } from '../../../utils/cardioZonesEngine.js';
 import { enqueueOfflineAction, flushPendingQueue, getQueueSyncStatus, ACTION_TYPES } from '../../../utils/offlineSyncEngine.js';
 import { adaptProgramToInteractiveMeals, adaptSessionToInteractiveWorkout } from '../utils/programAdapters.js';
+import { cacheProgramLocally, getCachedProgram, cacheGymRushCatalogLocally } from '../../../utils/offlineWorkoutSync.js';
+
 
 export const DEFAULT_FALLBACK_WEEKS = [
   {
@@ -261,123 +263,156 @@ export function useClientInteractiveData() {
     ]
   });
 
-  // 7. Data Fetching Effect
+  // 7. Deterministic Program Data Application & Offline Storage
+  const applyProgramData = useCallback((data, rawCode) => {
+    if (!data) return;
+    if (data.user) {
+      const rawAllergies = (data.user.allergies || data.master_program?.client?.allergies || []).map(a => String(a));
+      const isCeliac = rawAllergies.some(a => {
+        const s = a.toUpperCase();
+        return s.includes('CELIAC') || s.includes('GLUTEN') || a.includes('قمح') || a.includes('جلوتين');
+      });
+      const isG6pd = rawAllergies.some(a => {
+        const s = a.toUpperCase();
+        return s.includes('G6PD') || s.includes('FAVISM') || a.includes('فول') || a.includes('بقول');
+      });
+      const isLactose = rawAllergies.some(a => {
+        const s = a.toUpperCase();
+        return s.includes('LACTOSE') || a.includes('لاكتوز');
+      });
+      const isGout = rawAllergies.some(a => {
+        const s = a.toUpperCase();
+        return s.includes('GOUT') || a.includes('نقرس') || a.includes('يوريك');
+      });
+      const rawInjuries = (data.user.injuries || data.master_program?.client?.injuries || []).map(i => String(i));
+      const isBariatric = rawInjuries.some(inj => {
+        const s = String(inj).toUpperCase();
+        return s.includes('SLEEVE') || s.includes('BYPASS') || inj.includes('تكميم') || inj.includes('تحويل مسار');
+      });
+      const rawMedications = (data.user.medications || data.master_program?.client?.medications || []).map(m => String(m));
+      const rawDiseases = (data.user.chronic_diseases || data.master_program?.client?.chronic_diseases || []).map(d => String(d));
+      const allClinicalStrings = [...rawAllergies, ...rawMedications, ...rawDiseases, ...rawInjuries];
+
+      const takesThyroidMed = allClinicalStrings.some(s => {
+        const u = s.toUpperCase();
+        return u.includes('ELTROXIN') || u.includes('THYROX') || u.includes('LEVOTHYROXINE') ||
+               s.includes('التروكسين') || s.includes('الغدة الدرقية') || s.includes('كسل الغدة');
+      });
+
+      const prehabConditions = rawInjuries.filter(inj => {
+        const s = inj.trim();
+        return s && !s.includes('لا يوجد') && !s.includes('سليم') && !s.includes('متابعة سريرية');
+      });
+
+      const clientOrUser = data.user || data.master_program?.client || {};
+      const extractedFasting = extractClientFastingProfile(clientOrUser, clientOrUser.answers);
+
+      setClientData(prev => ({
+        ...prev,
+        name: data.user.full_name || prev.name,
+        package: data.user.subscription_package || prev.package,
+        tier: data.user.subscription_package || prev.tier,
+        enable_rest_timer: false,
+        enable_weight_logging: false,
+        fastingProfile: extractedFasting,
+        clinicalProfile: {
+          ...prev.clinicalProfile,
+          is_celiac: isCeliac,
+          is_g6pd: isG6pd,
+          is_lactose_intolerant: isLactose,
+          is_gout: isGout,
+          is_bariatric: isBariatric,
+          allergies: rawAllergies,
+          medications: rawMedications,
+          takes_thyroid_med: takesThyroidMed,
+          medical_conditions: prehabConditions,
+          injuries: rawInjuries
+        }
+      }));
+    }
+    if (data.has_program && data.master_program) {
+      setClientProgram(data.master_program);
+
+      const serverVersion = String(data.version || data.master_program.version || data.updated_at || data.program_id || 'v1');
+      const cachedVersion = localStorage.getItem(`kz_prog_ver_${rawCode}`);
+      if (cachedVersion && cachedVersion !== serverVersion) {
+        for (let d = 1; d <= 7; d++) {
+          localStorage.removeItem(`kz_meals_${rawCode}_day_${d}`);
+          localStorage.removeItem(`kz_workout_${rawCode}_day_${d}`);
+        }
+      }
+      localStorage.setItem(`kz_prog_ver_${rawCode}`, serverVersion);
+
+      const programMeals = adaptProgramToInteractiveMeals(data.master_program);
+      if (programMeals.length > 0) {
+        const currentCachedMeals = localStorage.getItem(`kz_meals_${rawCode}_day_${selectedDay}`);
+        if (!currentCachedMeals) {
+          setMeals(programMeals);
+        }
+      }
+      const tWeeks = (Array.isArray(data.master_program?.training_program?.weeks) && data.master_program.training_program.weeks.length > 0)
+        ? data.master_program.training_program.weeks 
+        : ((Array.isArray(data.master_program?.training?.weeks) && data.master_program.training.weeks.length > 0)
+          ? data.master_program.training.weeks 
+          : DEFAULT_FALLBACK_WEEKS);
+      const wData = tWeeks.find(w => w.week_number === currentTrainingWeek) || tWeeks[0];
+      const sessions = wData?.sessions 
+        || data.master_program.training?.sessions 
+        || data.master_program.training_split?.sessions 
+        || [];
+      if (sessions.length > 0) {
+        const currentIdx = Math.max(0, (selectedDay - 1) % sessions.length);
+        const adapted = adaptSessionToInteractiveWorkout(sessions[currentIdx], currentIdx, wData);
+        if (adapted && adapted.exercises && adapted.exercises.length > 0) {
+          setWorkoutSession(prev => ({
+            ...prev,
+            ...adapted
+          }));
+        }
+      }
+    }
+  }, [currentTrainingWeek, selectedDay]);
+
   useEffect(() => {
     const rawCode = String(clientData?.code || '').replace(/^#+/, '').replace(/^client[-_]?/i, '').trim();
     if (!rawCode) return;
-    fetch(`${API_BASE}/api/v1/programs/active/${rawCode}`)
-      .then(res => res.ok ? res.json() : null)
-      .then(data => {
-        if (data) {
-          if (data.user) {
-            const rawAllergies = (data.user.allergies || data.master_program?.client?.allergies || []).map(a => String(a));
-            const isCeliac = rawAllergies.some(a => {
-              const s = a.toUpperCase();
-              return s.includes('CELIAC') || s.includes('GLUTEN') || a.includes('قمح') || a.includes('جلوتين');
-            });
-            const isG6pd = rawAllergies.some(a => {
-              const s = a.toUpperCase();
-              return s.includes('G6PD') || s.includes('FAVISM') || a.includes('فول') || a.includes('بقول');
-            });
-            const isLactose = rawAllergies.some(a => {
-              const s = a.toUpperCase();
-              return s.includes('LACTOSE') || a.includes('لاكتوز');
-            });
-            const isGout = rawAllergies.some(a => {
-              const s = a.toUpperCase();
-              return s.includes('GOUT') || a.includes('نقرس') || a.includes('يوريك');
-            });
-            const rawInjuries = (data.user.injuries || data.master_program?.client?.injuries || []).map(i => String(i));
-            const isBariatric = rawInjuries.some(inj => {
-              const s = String(inj).toUpperCase();
-              return s.includes('SLEEVE') || s.includes('BYPASS') || inj.includes('تكميم') || inj.includes('تحويل مسار');
-            });
-            const rawMedications = (data.user.medications || data.master_program?.client?.medications || []).map(m => String(m));
-            const rawDiseases = (data.user.chronic_diseases || data.master_program?.client?.chronic_diseases || []).map(d => String(d));
-            const allClinicalStrings = [...rawAllergies, ...rawMedications, ...rawDiseases, ...rawInjuries];
 
-            const takesThyroidMed = allClinicalStrings.some(s => {
-              const u = s.toUpperCase();
-              return u.includes('ELTROXIN') || u.includes('THYROX') || u.includes('LEVOTHYROXINE') ||
-                     s.includes('التروكسين') || s.includes('الغدة الدرقية') || s.includes('كسل الغدة');
-            });
+    // 1. Instant offline hydrate from local cache
+    const localCached = getCachedProgram({ clientCode: rawCode });
+    if (localCached) {
+      applyProgramData(localCached, rawCode);
+    }
 
-            const prehabConditions = rawInjuries.filter(inj => {
-              const s = inj.trim();
-              return s && !s.includes('لا يوجد') && !s.includes('سليم') && !s.includes('متابعة سريرية');
-            });
-
-            const clientOrUser = data.user || data.master_program?.client || {};
-            const extractedFasting = extractClientFastingProfile(clientOrUser, clientOrUser.answers);
-
-            setClientData(prev => ({
-              ...prev,
-              name: data.user.full_name || prev.name,
-              package: data.user.subscription_package || prev.package,
-              tier: data.user.subscription_package || prev.tier,
-              enable_rest_timer: Boolean(data.user.enable_rest_timer ?? prev.enable_rest_timer),
-              enable_weight_logging: Boolean(data.user.enable_weight_logging ?? prev.enable_weight_logging),
-              fastingProfile: extractedFasting,
-              clinicalProfile: {
-                ...prev.clinicalProfile,
-                is_celiac: isCeliac,
-                is_g6pd: isG6pd,
-                is_lactose_intolerant: isLactose,
-                is_gout: isGout,
-                is_bariatric: isBariatric,
-                allergies: rawAllergies,
-                medications: rawMedications,
-                takes_thyroid_med: takesThyroidMed,
-                medical_conditions: prehabConditions,
-                injuries: rawInjuries
-              }
-            }));
+    // 2. Fetch live data if online
+    if (typeof navigator === 'undefined' || navigator.onLine !== false) {
+      fetch(`${API_BASE}/api/v1/programs/active/${rawCode}`)
+        .then(res => res.ok ? res.json() : null)
+        .then(data => {
+          if (data) {
+            applyProgramData(data, rawCode);
+            cacheProgramLocally({ clientCode: rawCode, programData: data });
+            setIsOffline(false);
           }
-          if (data.has_program && data.master_program) {
-            setClientProgram(data.master_program);
+        })
+        .catch(err => {
+          console.warn('Network offline or weak in gym, fallback to local cached program:', err);
+          setIsOffline(true);
+        });
 
-            const serverVersion = String(data.version || data.master_program.version || data.updated_at || data.program_id || 'v1');
-            const cachedVersion = localStorage.getItem(`kz_prog_ver_${rawCode}`);
-            if (cachedVersion && cachedVersion !== serverVersion) {
-              for (let d = 1; d <= 7; d++) {
-                localStorage.removeItem(`kz_meals_${rawCode}_day_${d}`);
-                localStorage.removeItem(`kz_workout_${rawCode}_day_${d}`);
-              }
-            }
-            localStorage.setItem(`kz_prog_ver_${rawCode}`, serverVersion);
-
-            const programMeals = adaptProgramToInteractiveMeals(data.master_program);
-            if (programMeals.length > 0) {
-              const currentCachedMeals = localStorage.getItem(`kz_meals_${rawCode}_day_${selectedDay}`);
-              if (!currentCachedMeals) {
-                setMeals(programMeals);
-              }
-            }
-            const tWeeks = (Array.isArray(data.master_program?.training_program?.weeks) && data.master_program.training_program.weeks.length > 0)
-              ? data.master_program.training_program.weeks 
-              : ((Array.isArray(data.master_program?.training?.weeks) && data.master_program.training.weeks.length > 0)
-                ? data.master_program.training.weeks 
-                : DEFAULT_FALLBACK_WEEKS);
-            const wData = tWeeks.find(w => w.week_number === currentTrainingWeek) || tWeeks[0];
-            const sessions = wData?.sessions 
-              || data.master_program.training?.sessions 
-              || data.master_program.training_split?.sessions 
-              || [];
-            if (sessions.length > 0) {
-              const currentIdx = Math.max(0, (selectedDay - 1) % sessions.length);
-              const adapted = adaptSessionToInteractiveWorkout(sessions[currentIdx], currentIdx, wData);
-              if (adapted && adapted.exercises && adapted.exercises.length > 0) {
-                setWorkoutSession(prev => ({
-                  ...prev,
-                  ...adapted
-                }));
-              }
-            }
+      // 3. Pre-fetch and cache Gym Rush Equivalence Catalog for instant offline swaps
+      fetch(`${API_BASE}/api/v1/exercises/gym-rush/catalog`)
+        .then(res => res.ok ? res.json() : null)
+        .then(rushData => {
+          if (rushData && rushData.catalog) {
+            cacheGymRushCatalogLocally({ catalog: rushData.catalog });
           }
-        }
-      })
-      .catch(err => console.warn('Could not fetch client active program:', err));
-  }, [clientData?.code]);
+        })
+        .catch(() => {});
+    } else {
+      setIsOffline(true);
+    }
+  }, [clientData?.code, applyProgramData]);
+
 
   // 8. Sync Workout Session on Day or Meso Week change
   useEffect(() => {
@@ -557,6 +592,10 @@ export function useClientInteractiveData() {
   };
 
   // 13. Offline Flush & Online Listener
+  const [isOffline, setIsOffline] = useState(() => {
+    return typeof navigator !== 'undefined' ? !navigator.onLine : false;
+  });
+
   const handleTriggerSync = async () => {
     if (isSyncing || offlineQueue.length === 0) return;
     setIsSyncing(true);
@@ -578,10 +617,18 @@ export function useClientInteractiveData() {
 
   useEffect(() => {
     const onOnline = () => {
+      setIsOffline(false);
       handleTriggerSync();
     };
+    const onOffline = () => {
+      setIsOffline(true);
+    };
     window.addEventListener('online', onOnline);
-    return () => window.removeEventListener('online', onOnline);
+    window.addEventListener('offline', onOffline);
+    return () => {
+      window.removeEventListener('online', onOnline);
+      window.removeEventListener('offline', onOffline);
+    };
   }, [offlineQueue]);
 
   // 14. Target Macros Calculation
@@ -732,6 +779,7 @@ export function useClientInteractiveData() {
 
     // Offline Sync
     offlineQueue,
+    isOffline,
     isSyncing,
     syncStatus,
     handleTriggerSync,

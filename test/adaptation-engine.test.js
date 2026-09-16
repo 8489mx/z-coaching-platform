@@ -52,7 +52,7 @@ test("Adaptation Engine Suite", async (t) => {
 
     assert.equal(adapted.adaptation_action, AdaptationAction.REDUCE_CALORIES_FOR_PLATEAU);
     assert.equal(adapted.adapted_week_number, 3);
-    const baseKcal = baseProgram.nutrition_program.stages.energy_target.target_calories;
+    const baseKcal = baseProgram.nutrition_program?.macro_targets?.calories_kcal || baseProgram.nutrition_program.stages.energy_target.target_calories;
     assert.equal(adapted.adapted_nutrition.target_calories_kcal, Math.round(baseKcal - 125));
     assert.equal(adapted.adapted_cardio.daily_step_target, (baseProgram.cardio_program.prescription?.daily_step_target || 8000) + 500);
     assert.ok(adapted.adaptation_reasons.some((r) => r.code === AdaptationReasonCode.PLATEAU_DEFICIT_APPLIED));
@@ -93,7 +93,7 @@ test("Adaptation Engine Suite", async (t) => {
     });
 
     assert.equal(adapted.adaptation_action, AdaptationAction.INCREASE_CALORIES_RAPID_LOSS);
-    const baseKcal = baseProgram.nutrition_program.stages.energy_target.target_calories;
+    const baseKcal = baseProgram.nutrition_program?.macro_targets?.calories_kcal || baseProgram.nutrition_program.stages.energy_target.target_calories;
     assert.equal(adapted.adapted_nutrition.target_calories_kcal, Math.round(baseKcal + 150));
   });
 });

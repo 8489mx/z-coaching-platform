@@ -173,8 +173,10 @@ const DEFAULT_BASELINE_MACROS = {
 // =========================================================================
 // CLEAN, MINIMAL PROGRESS CHART (Z COACHING SIGNATURE STYLE)
 // =========================================================================
-function ProgressTrendChart({ history = [], isMaxTier = false, targetWeight = null, client = {} }) {
-  const [activeTab, setActiveTab] = useState('weight'); // 'weight' | 'waist' | 'adherence'
+// استوديو التحليل البياني والتاريخي المتقدم بقمرة المدرب (Coach Long-Term Analytics Studio)
+// =========================================================================
+function ProgressTrendChart({ history = [], isMaxTier = false, targetWeight = null, client = {}, activeCheckin = {} }) {
+  const [activeTab, setActiveTab] = useState('weight'); // 'weight' | 'waist' | 'adherence' | 'biofeedback'
   const [hoveredIdx, setHoveredIdx] = useState(null);
 
   if (!history || history.length === 0) return null;
@@ -182,8 +184,27 @@ function ProgressTrendChart({ history = [], isMaxTier = false, targetWeight = nu
   const colorPrimary = isMaxTier ? '#C4952D' : '#0284C7';
 
   const startPoint = history[0];
-  const startWeightVal = client.start_weight || startPoint.weight;
-  const targetWeightVal = targetWeight || client.target_weight || (startWeightVal - 6);
+  const latestPoint = history[history.length - 1];
+  const startWeightVal = Number(client.start_weight || startPoint.weight || 75);
+  const currentWeightVal = Number(latestPoint.weight || startWeightVal);
+  const targetWeightVal = Number(targetWeight || client.target_weight || (startWeightVal - 6));
+
+  const totalWeightDelta = +(currentWeightVal - startWeightVal).toFixed(1);
+  const startWaistVal = Number(startPoint.waist || 0);
+  const currentWaistVal = Number(latestPoint.waist || startWaistVal);
+  const totalWaistDelta = startWaistVal > 0 ? (currentWaistVal - startWaistVal) : 0;
+
+  const avgAdherence = Math.round(
+    history.reduce((sum, h) => sum + (Number(h.adherence) || 0), 0) / (history.length || 1)
+  );
+
+  // Biofeedback composite
+  const bio = activeCheckin?.biofeedback || {};
+  const sleepVal = Number(bio.sleep_quality || 4);
+  const energyVal = Number(bio.energy_in_gym || 4);
+  const hungerVal = Number(bio.hunger_level || 3);
+  const stressVal = Number(bio.stress_level || 2);
+  const recoveryScore = Math.round(((sleepVal + energyVal + Math.max(1, 6 - stressVal)) / 15) * 10);
 
   // Chart data extraction based on activeTab
   const data = history.map((item, index) => {
@@ -220,10 +241,10 @@ function ProgressTrendChart({ history = [], isMaxTier = false, targetWeight = nu
   const yMin = Math.max(0, minVal - yPad);
   const yMax = maxVal + yPad;
 
-  // SVG setup with generous left and top margin so badges never touch Y-axis labels
+  // SVG setup
   const svgWidth = 720;
   const svgHeight = 190;
-  const padLeft = 115;  // Substantial space: points start at 115, badge starts at 82, Y-axis text is at 36
+  const padLeft = 115;
   const padRight = 45;
   const padTop = 52;
   const padBottom = 30;
@@ -268,7 +289,6 @@ function ProgressTrendChart({ history = [], isMaxTier = false, targetWeight = nu
     ? `${linePath} L ${points[points.length - 1].x},${padTop + chartH} L ${points[0].x},${padTop + chartH} Z`
     : '';
 
-  // Target Goal Reference Line calculation (when in weight tab)
   let targetY = null;
   if (activeTab === 'weight' && targetWeightVal && targetWeightVal >= yMin && targetWeightVal <= yMax) {
     targetY = padTop + chartH - ((targetWeightVal - yMin) / (yMax - yMin || 1)) * chartH;
@@ -281,33 +301,111 @@ function ProgressTrendChart({ history = [], isMaxTier = false, targetWeight = nu
     <div style={{
       background: '#FFFFFF',
       border: '1px solid #E2E8F0',
-      borderRadius: '8px',
-      padding: '12px 16px',
-      marginTop: '6px'
+      borderRadius: '14px',
+      padding: '16px 20px',
+      marginTop: '8px',
+      boxShadow: '0 2px 8px rgba(0, 0, 0, 0.03)',
+      direction: 'rtl'
     }}>
-      
+      {/* 4 Analytical KPI Metric Cards */}
+      <div style={{
+        display: 'grid',
+        gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))',
+        gap: '12px',
+        marginBottom: '16px'
+      }}>
+        <div style={{
+          background: '#F8FAFC',
+          border: '1px solid #E2E8F0',
+          borderRadius: '12px',
+          padding: '12px 14px'
+        }}>
+          <span style={{ fontSize: '11px', color: '#64748B', fontWeight: 600, display: 'block', marginBottom: '4px' }}>
+            التغير التراكمي للوزن
+          </span>
+          <div style={{ fontSize: '1.15rem', fontWeight: 800, color: totalWeightDelta <= 0 ? '#16A34A' : '#D97706', fontFamily: 'JetBrains Mono, Cairo' }}>
+            {totalWeightDelta > 0 ? `+${totalWeightDelta}` : totalWeightDelta} كجم
+          </div>
+          <span style={{ fontSize: '10px', color: '#94A3B8', marginTop: '2px', display: 'block' }}>
+            من أصل {startWeightVal} كجم
+          </span>
+        </div>
+
+        <div style={{
+          background: '#F8FAFC',
+          border: '1px solid #E2E8F0',
+          borderRadius: '12px',
+          padding: '12px 14px'
+        }}>
+          <span style={{ fontSize: '11px', color: '#64748B', fontWeight: 600, display: 'block', marginBottom: '4px' }}>
+            تغير محيط الخصر
+          </span>
+          <div style={{ fontSize: '1.15rem', fontWeight: 800, color: totalWaistDelta <= 0 ? '#0284C7' : '#D97706', fontFamily: 'JetBrains Mono, Cairo' }}>
+            {startWaistVal > 0 ? `${totalWaistDelta > 0 ? `+${totalWaistDelta}` : totalWaistDelta} سم` : 'مستقر'}
+          </div>
+          <span style={{ fontSize: '10px', color: '#94A3B8', marginTop: '2px', display: 'block' }}>
+            انكماش الدهون الحشوية
+          </span>
+        </div>
+
+        <div style={{
+          background: '#F8FAFC',
+          border: '1px solid #E2E8F0',
+          borderRadius: '12px',
+          padding: '12px 14px'
+        }}>
+          <span style={{ fontSize: '11px', color: '#64748B', fontWeight: 600, display: 'block', marginBottom: '4px' }}>
+            متوسط الالتزام العام
+          </span>
+          <div style={{ fontSize: '1.15rem', fontWeight: 800, color: avgAdherence >= 85 ? '#16A34A' : '#EAB308', fontFamily: 'JetBrains Mono, Cairo' }}>
+            {avgAdherence}%
+          </div>
+          <span style={{ fontSize: '10px', color: '#94A3B8', marginTop: '2px', display: 'block' }}>
+            {avgAdherence >= 90 ? 'انضباط فسيولوجي استثنائي' : 'التزام جيد جداً'}
+          </span>
+        </div>
+
+        <div style={{
+          background: '#F8FAFC',
+          border: '1px solid #E2E8F0',
+          borderRadius: '12px',
+          padding: '12px 14px'
+        }}>
+          <span style={{ fontSize: '11px', color: '#64748B', fontWeight: 600, display: 'block', marginBottom: '4px' }}>
+            مؤشر الجاهزية والتعافي
+          </span>
+          <div style={{ fontSize: '1.15rem', fontWeight: 800, color: recoveryScore >= 7 ? '#8B5CF6' : '#EAB308', fontFamily: 'JetBrains Mono, Cairo' }}>
+            {recoveryScore} / 10
+          </div>
+          <span style={{ fontSize: '10px', color: '#94A3B8', marginTop: '2px', display: 'block' }}>
+            {recoveryScore >= 8 ? 'استشفاء عضلي وعصبي ممتاز' : 'جاهزية متوازنة'}
+          </span>
+        </div>
+      </div>
+
       {/* Header Bar: Clean Switcher & Simple Start/Target Hint */}
       <div style={{
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'space-between',
-        marginBottom: '8px',
+        marginBottom: '12px',
         flexWrap: 'wrap',
         gap: '8px'
       }}>
         {/* Switcher Pills */}
-        <div style={{ display: 'flex', background: '#F1F5F9', padding: '2px', borderRadius: '6px', gap: '2px' }}>
+        <div style={{ display: 'flex', background: '#F1F5F9', padding: '3px', borderRadius: '8px', gap: '3px' }}>
           {[
-            { id: 'weight', label: 'الوزن' },
+            { id: 'weight', label: 'مسار الوزن' },
             { id: 'waist', label: 'محيط الخصر' },
-            { id: 'adherence', label: 'الالتزام' }
+            { id: 'adherence', label: 'الالتزام التراكمي' },
+            { id: 'biofeedback', label: 'نبض التعافي والاستشفاء' }
           ].map(tab => (
             <button
               key={tab.id}
               type="button"
               onClick={() => setActiveTab(tab.id)}
               style={{
-                height: '24px',
+                height: '26px',
                 padding: '0 12px',
                 borderRadius: '6px',
                 border: 'none',
@@ -318,7 +416,7 @@ function ProgressTrendChart({ history = [], isMaxTier = false, targetWeight = nu
                 cursor: 'pointer',
                 userSelect: 'none',
                 outline: 'none',
-                transition: 'background-color 0.15s ease, color 0.15s ease'
+                transition: 'all 0.15s ease'
               }}
             >
               {tab.label}
@@ -334,227 +432,265 @@ function ProgressTrendChart({ history = [], isMaxTier = false, targetWeight = nu
         </div>
       </div>
 
-      {/* SVG Canvas Area */}
-      <div style={{ position: 'relative', width: '100%', height: '190px', userSelect: 'none' }}>
-        <svg
-          viewBox={`0 0 ${svgWidth} ${svgHeight}`}
-          style={{ width: '100%', height: '100%', overflow: 'visible' }}
-        >
-          <defs>
-            {/* Soft Shaded Area Gradient */}
-            <linearGradient id={gradId} x1="0%" y1="0%" x2="0%" y2="100%">
-              <stop offset="0%" stopColor={colorPrimary} stopOpacity="0.25" />
-              <stop offset="65%" stopColor={colorPrimary} stopOpacity="0.04" />
-              <stop offset="100%" stopColor={colorPrimary} stopOpacity="0" />
-            </linearGradient>
+      {/* VIEW 1: SVG Canvas Area for weight, waist, adherence */}
+      {activeTab !== 'biofeedback' ? (
+        <div style={{ position: 'relative', width: '100%', height: '190px', userSelect: 'none' }}>
+          <svg
+            viewBox={`0 0 ${svgWidth} ${svgHeight}`}
+            style={{ width: '100%', height: '100%', overflow: 'visible' }}
+          >
+            <defs>
+              <linearGradient id={gradId} x1="0%" y1="0%" x2="0%" y2="100%">
+                <stop offset="0%" stopColor={colorPrimary} stopOpacity="0.25" />
+                <stop offset="65%" stopColor={colorPrimary} stopOpacity="0.04" />
+                <stop offset="100%" stopColor={colorPrimary} stopOpacity="0" />
+              </linearGradient>
 
-            {/* Vertical Light-Beam Highlight Gradient */}
-            <linearGradient id={beamGradId} x1="0%" y1="0%" x2="0%" y2="100%">
-              <stop offset="0%" stopColor={colorPrimary} stopOpacity="0.18" />
-              <stop offset="80%" stopColor={colorPrimary} stopOpacity="0.02" />
-              <stop offset="100%" stopColor={colorPrimary} stopOpacity="0" />
-            </linearGradient>
+              <linearGradient id={beamGradId} x1="0%" y1="0%" x2="0%" y2="100%">
+                <stop offset="0%" stopColor={colorPrimary} stopOpacity="0.18" />
+                <stop offset="80%" stopColor={colorPrimary} stopOpacity="0.02" />
+                <stop offset="100%" stopColor={colorPrimary} stopOpacity="0" />
+              </linearGradient>
 
-            {/* Soft Card Drop Shadow for Floating Badges */}
-            <filter id={shadowFilterId} x="-20%" y="-20%" width="140%" height="150%">
-              <feDropShadow dx="0" dy="2" stdDeviation="2.5" floodColor="#0F172A" floodOpacity="0.08" />
-            </filter>
-          </defs>
+              <filter id={shadowFilterId} x="-20%" y="-20%" width="140%" height="150%">
+                <feDropShadow dx="0" dy="2" stdDeviation="2.5" floodColor="#0F172A" floodOpacity="0.08" />
+              </filter>
+            </defs>
 
-          {/* Horizontal Grid Lines & Y-Axis Labels (Safely isolated on the left) */}
-          {[0, 0.33, 0.66, 1].map((pct, i) => {
-            const y = padTop + chartH * pct;
-            const gridVal = (yMax - pct * (yMax - yMin)).toFixed(activeTab === 'adherence' ? 0 : 1);
-            return (
-              <g key={i}>
-                <line
-                  x1={45}
-                  y1={y}
-                  x2={svgWidth - padRight}
-                  y2={y}
-                  stroke="#F1F5F9"
-                  strokeWidth="1"
-                  strokeDasharray={pct === 1 ? 'none' : '3 3'}
-                />
-                <text
-                  x={36}
-                  y={y + 3.5}
-                  textAnchor="end"
-                  fontSize="9.5"
-                  fill="#94A3B8"
-                  fontFamily="JetBrains Mono, Cairo"
-                  fontWeight="600"
-                >
-                  {gridVal}
-                </text>
-              </g>
-            );
-          })}
-
-          {/* Target Goal Line if in weight view */}
-          {targetY !== null && (
-            <g>
-              <line
-                x1={45}
-                y1={targetY}
-                x2={svgWidth - padRight}
-                y2={targetY}
-                stroke="#10B981"
-                strokeWidth="1.2"
-                strokeDasharray="4 4"
-                opacity="0.8"
-              />
-              <text
-                x={svgWidth - padRight - 4}
-                y={targetY - 5}
-                textAnchor="end"
-                fontSize="9"
-                fill="#10B981"
-                fontFamily="Cairo, sans-serif"
-                fontWeight="700"
-              >
-                الهدف ({targetWeightVal} كجم)
-              </text>
-            </g>
-          )}
-
-          {/* Vertical Light-Beam Column under Active Point */}
-          {activePoint && (
-            <rect
-              x={activePoint.x - 16}
-              y={activePoint.y}
-              width="32"
-              height={padTop + chartH - activePoint.y}
-              fill={`url(#${beamGradId})`}
-              rx="4"
-            />
-          )}
-
-          {/* Area Fill under Spline */}
-          {areaPath && (
-            <path
-              d={areaPath}
-              fill={`url(#${gradId})`}
-            />
-          )}
-
-          {/* Spline Wave Curve Line */}
-          {linePath && (
-            <path
-              d={linePath}
-              fill="none"
-              stroke={colorPrimary}
-              strokeWidth="2.5"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            />
-          )}
-
-          {/* Points & Floating Badges */}
-          {points.map((p, i) => {
-            const isActive = i === activeIdx;
-            const badgeW = 66;
-            const badgeH = 22;
-            const badgeX = p.x - badgeW / 2;
-            const badgeY = p.y - 30;
-
-            return (
-              <g 
-                key={i} 
-                style={{ cursor: 'pointer' }}
-                onMouseEnter={() => setHoveredIdx(i)}
-                onMouseLeave={() => setHoveredIdx(null)}
-              >
-                {/* 1. Floating White Card Badge */}
-                <g filter={`url(#${shadowFilterId})`}>
-                  <rect
-                    x={badgeX}
-                    y={badgeY}
-                    width={badgeW}
-                    height={badgeH}
-                    rx="5"
-                    fill="#FFFFFF"
-                    stroke={isActive ? colorPrimary : '#E2E8F0'}
-                    strokeWidth={isActive ? '1.5' : '1'}
-                  />
-
-                  {/* Downward Pointer Triangle */}
-                  <polygon
-                    points={`${p.x - 3.5},${badgeY + badgeH} ${p.x + 3.5},${badgeY + badgeH} ${p.x},${badgeY + badgeH + 3.5}`}
-                    fill="#FFFFFF"
-                    stroke={isActive ? colorPrimary : '#E2E8F0'}
-                    strokeWidth="0.8"
-                  />
+            {[0, 0.33, 0.66, 1].map((pct, i) => {
+              const y = padTop + chartH * pct;
+              const gridVal = (yMax - pct * (yMax - yMin)).toFixed(activeTab === 'adherence' ? 0 : 1);
+              return (
+                <g key={i}>
                   <line
-                    x1={p.x - 3}
-                    y1={badgeY + badgeH}
-                    x2={p.x + 3}
-                    y2={badgeY + badgeH}
-                    stroke="#FFFFFF"
-                    strokeWidth="1.5"
+                    x1={45}
+                    y1={y}
+                    x2={svgWidth - padRight}
+                    y2={y}
+                    stroke="#F1F5F9"
+                    strokeWidth="1"
+                    strokeDasharray={pct === 1 ? 'none' : '3 3'}
                   />
-
-                  {/* Text inside Badge */}
                   <text
-                    x={p.x}
-                    y={badgeY + 14.5}
-                    textAnchor="middle"
-                    fontSize="10"
+                    x={36}
+                    y={y + 3.5}
+                    textAnchor="end"
+                    fontSize="9.5"
+                    fill="#94A3B8"
                     fontFamily="JetBrains Mono, Cairo"
-                    fontWeight="700"
-                    fill={isActive ? colorPrimary : '#0F172A'}
+                    fontWeight="600"
                   >
-                    {p.value} {p.unit}
+                    {gridVal}
                   </text>
                 </g>
+              );
+            })}
 
-                {/* 2. Interactive Point Dot */}
-                {isActive ? (
-                  <g>
-                    <circle
-                      cx={p.x}
-                      cy={p.y}
-                      r="5.5"
-                      fill="#FFFFFF"
-                      stroke={colorPrimary}
-                      strokeWidth="2.2"
-                    />
-                    <circle
-                      cx={p.x}
-                      cy={p.y}
-                      r="2"
-                      fill={colorPrimary}
-                    />
-                  </g>
-                ) : (
-                  <circle
-                    cx={p.x}
-                    cy={p.y}
-                    r="3.5"
-                    fill="#FFFFFF"
-                    stroke={colorPrimary}
-                    strokeWidth="1.8"
-                  />
-                )}
-
-                {/* 3. X-Axis Label under point */}
+            {targetY !== null && (
+              <g>
+                <line
+                  x1={45}
+                  y1={targetY}
+                  x2={svgWidth - padRight}
+                  y2={targetY}
+                  stroke="#10B981"
+                  strokeWidth="1.2"
+                  strokeDasharray="4 4"
+                  opacity="0.8"
+                />
                 <text
-                  x={p.x}
-                  y={padTop + chartH + 16}
-                  textAnchor="middle"
-                  fontSize="9.5"
-                  fill={isActive ? colorPrimary : '#64748B'}
-                  fontWeight={isActive ? '700' : '600'}
+                  x={svgWidth - padRight - 4}
+                  y={targetY - 5}
+                  textAnchor="end"
+                  fontSize="9"
+                  fill="#10B981"
                   fontFamily="Cairo, sans-serif"
+                  fontWeight="700"
                 >
-                  {p.label}
+                  الهدف ({targetWeightVal} كجم)
                 </text>
               </g>
-            );
-          })}
-        </svg>
-      </div>
+            )}
 
+            {activePoint && (
+              <rect
+                x={activePoint.x - 16}
+                y={activePoint.y}
+                width="32"
+                height={padTop + chartH - activePoint.y}
+                fill={`url(#${beamGradId})`}
+                rx="4"
+              />
+            )}
+
+            {areaPath && (
+              <path
+                d={areaPath}
+                fill={`url(#${gradId})`}
+              />
+            )}
+
+            {linePath && (
+              <path
+                d={linePath}
+                fill="none"
+                stroke={colorPrimary}
+                strokeWidth="2.5"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+            )}
+
+            {points.map((p, i) => {
+              const isActive = i === activeIdx;
+              const badgeW = 66;
+              const badgeH = 22;
+              const badgeX = p.x - badgeW / 2;
+              const badgeY = p.y - 30;
+
+              return (
+                <g 
+                  key={i} 
+                  style={{ cursor: 'pointer' }}
+                  onMouseEnter={() => setHoveredIdx(i)}
+                  onMouseLeave={() => setHoveredIdx(null)}
+                >
+                  <g filter={`url(#${shadowFilterId})`}>
+                    <rect
+                      x={badgeX}
+                      y={badgeY}
+                      width={badgeW}
+                      height={badgeH}
+                      rx="5"
+                      fill="#FFFFFF"
+                      stroke={isActive ? colorPrimary : '#E2E8F0'}
+                      strokeWidth={isActive ? '1.5' : '1'}
+                    />
+                    <polygon
+                      points={`${p.x - 3.5},${badgeY + badgeH} ${p.x + 3.5},${badgeY + badgeH} ${p.x},${badgeY + badgeH + 3.5}`}
+                      fill="#FFFFFF"
+                      stroke={isActive ? colorPrimary : '#E2E8F0'}
+                      strokeWidth="0.8"
+                    />
+                    <line
+                      x1={p.x - 3}
+                      y1={badgeY + badgeH}
+                      x2={p.x + 3}
+                      y2={badgeY + badgeH}
+                      stroke="#FFFFFF"
+                      strokeWidth="1.5"
+                    />
+                    <text
+                      x={p.x}
+                      y={badgeY + 14.5}
+                      textAnchor="middle"
+                      fontSize="10"
+                      fontFamily="JetBrains Mono, Cairo"
+                      fontWeight="700"
+                      fill={isActive ? colorPrimary : '#0F172A'}
+                    >
+                      {p.value} {p.unit}
+                    </text>
+                  </g>
+
+                  {isActive ? (
+                    <g>
+                      <circle
+                        cx={p.x}
+                        cy={p.y}
+                        r="5.5"
+                        fill="#FFFFFF"
+                        stroke={colorPrimary}
+                        strokeWidth="2.2"
+                      />
+                      <circle
+                        cx={p.x}
+                        cy={p.y}
+                        r="2"
+                        fill={colorPrimary}
+                      />
+                    </g>
+                  ) : (
+                    <circle
+                      cx={p.x}
+                      cy={p.y}
+                      r="3.5"
+                      fill="#FFFFFF"
+                      stroke={colorPrimary}
+                      strokeWidth="1.8"
+                    />
+                  )}
+
+                  <text
+                    x={p.x}
+                    y={padTop + chartH + 16}
+                    textAnchor="middle"
+                    fontSize="9.5"
+                    fill={isActive ? colorPrimary : '#64748B'}
+                    fontWeight={isActive ? '700' : '600'}
+                    fontFamily="Cairo, sans-serif"
+                  >
+                    {p.label}
+                  </text>
+                </g>
+              );
+            })}
+          </svg>
+        </div>
+      ) : (
+        /* VIEW 2: Recovery & Biofeedback Pulse Breakdown */
+        <div style={{
+          display: 'grid',
+          gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
+          gap: '12px',
+          padding: '10px 0'
+        }}>
+          {[
+            { label: 'جودة النوم والراحة الليلية', score: sleepVal, max: 5, color: '#0284C7', desc: 'استشفاء الجهاز العصبي المركزي وإفراز هرمون النمو' },
+            { label: 'مستوى الطاقة والنشاط بالتمرين', score: energyVal, max: 5, color: '#16A34A', desc: 'كفاءة مخازن الجليكوجين والجاهزية البدنية' },
+            { label: 'التحكم في الشهية وإدارة الجوع', score: hungerVal, max: 5, color: '#D97706', desc: 'استقرار هرمونات اللبتين والجرلين وسكر الدم' },
+            { label: 'مقاومة الإجهاد والضغط النفسي', score: Math.max(1, 6 - stressVal), max: 5, color: '#8B5CF6', desc: 'تنظيم إفراز الكورتيزول وتفادي احتباس الماء' }
+          ].map((item, idx) => (
+            <div key={idx} style={{
+              background: '#F8FAFC',
+              border: '1px solid #E2E8F0',
+              borderRadius: '10px',
+              padding: '12px 14px'
+            }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
+                <span style={{ fontSize: '11px', fontWeight: 700, color: '#0F172A' }}>{item.label}</span>
+                <span style={{ fontSize: '12px', fontWeight: 800, color: item.color, fontFamily: 'JetBrains Mono' }}>{item.score} / {item.max}</span>
+              </div>
+              <div style={{ height: '6px', background: '#E2E8F0', borderRadius: '9999px', overflow: 'hidden', marginBottom: '6px' }}>
+                <div style={{ width: `${(item.score / item.max) * 100}%`, height: '100%', background: item.color, borderRadius: '9999px', transition: 'width 0.3s ease' }} />
+              </div>
+              <span style={{ fontSize: '9.5px', color: '#64748B', display: 'block', lineHeight: 1.3 }}>{item.desc}</span>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* Trajectory Interpretation Footer Bar */}
+      <div style={{
+        marginTop: '14px',
+        paddingTop: '10px',
+        borderTop: '1px solid #F1F5F9',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        flexWrap: 'wrap',
+        gap: '8px',
+        fontSize: '11px',
+        color: '#64748B'
+      }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+          <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: '#16A34A' }} />
+          <span>المتبقي للوصول للهدف: <strong style={{ color: '#0F172A', fontFamily: 'JetBrains Mono' }}>{Math.abs(currentWeightVal - targetWeightVal).toFixed(1)} كجم</strong></span>
+        </div>
+        <div>
+          <span>معدل التغير الأسبوعي: <strong style={{ color: '#0F172A', fontFamily: 'JetBrains Mono' }}>{Math.abs(totalWeightDelta / (history.length || 1)).toFixed(2)} كجم/أسبوع</strong></span>
+        </div>
+      </div>
     </div>
   );
 }
@@ -1753,7 +1889,7 @@ export default function CheckinReviewDashboard() {
                   }}
                 >
                   <Activity size={14} />
-                  <span>منحنى التطور الأسبوعي</span>
+                  <span>استوديو التحليل البياني والتاريخي</span>
                 </button>
 
                 {(() => {
@@ -1831,6 +1967,7 @@ export default function CheckinReviewDashboard() {
                     isMaxTier={isMaxTier}
                     targetWeight={safeClient.target_weight}
                     client={safeClient}
+                    activeCheckin={activeCheckin}
                   />
                 </div>
               )}

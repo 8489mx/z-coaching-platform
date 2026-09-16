@@ -64,6 +64,7 @@ export default function ClientInteractiveApp() {
     activeSwapItem,
     setActiveSwapItem,
     setSwapMealId,
+    isOffline,
     isSyncing,
     syncStatus,
     handleTriggerSync,
@@ -99,6 +100,7 @@ export default function ClientInteractiveApp() {
         {/* Top App Header & Alerts */}
         <ClientHeader
           clientData={clientData}
+          isOffline={isOffline}
           syncStatus={syncStatus}
           isSyncing={isSyncing}
           handleTriggerSync={handleTriggerSync}

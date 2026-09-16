@@ -136,3 +136,86 @@ export function getCachedWorkoutLog({
     return null;
   }
 }
+
+/**
+ * Cache full client master program locally for offline gym viewing.
+ */
+export function cacheProgramLocally({
+  clientCode = 'default',
+  programData = null,
+  storageDriver = typeof localStorage !== 'undefined' ? localStorage : null
+}) {
+  if (!storageDriver || !programData) return { success: false };
+  const cleanCode = String(clientCode).replace(/^#+/, '').replace(/^client[-_]?/i, '').trim();
+  const storageKey = `kz_cached_program_${cleanCode}`;
+  try {
+    const payload = {
+      cached_at: new Date().toISOString(),
+      client_code: cleanCode,
+      program: programData
+    };
+    storageDriver.setItem(storageKey, JSON.stringify(payload));
+    return { success: true, storageKey, cached_at: payload.cached_at };
+  } catch (e) {
+    return { success: false, error: e.message };
+  }
+}
+
+/**
+ * Retrieve cached client program when cellular/wifi is dead in the gym.
+ */
+export function getCachedProgram({
+  clientCode = 'default',
+  storageDriver = typeof localStorage !== 'undefined' ? localStorage : null
+}) {
+  if (!storageDriver) return null;
+  const cleanCode = String(clientCode).replace(/^#+/, '').replace(/^client[-_]?/i, '').trim();
+  const storageKey = `kz_cached_program_${cleanCode}`;
+  try {
+    const raw = storageDriver.getItem(storageKey);
+    if (!raw) return null;
+    const parsed = JSON.parse(raw);
+    return parsed.program || parsed;
+  } catch (e) {
+    return null;
+  }
+}
+
+/**
+ * Cache Gym Rush equivalence catalog locally for instant zero-lag swaps offline.
+ */
+export function cacheGymRushCatalogLocally({
+  catalog = [],
+  storageDriver = typeof localStorage !== 'undefined' ? localStorage : null
+}) {
+  if (!storageDriver || !catalog) return { success: false };
+  const storageKey = 'kz_gym_rush_catalog';
+  try {
+    storageDriver.setItem(storageKey, JSON.stringify({
+      cached_at: new Date().toISOString(),
+      catalog
+    }));
+    return { success: true, count: Array.isArray(catalog) ? catalog.length : 0 };
+  } catch (e) {
+    return { success: false, error: e.message };
+  }
+}
+
+/**
+ * Get locally cached Gym Rush catalog.
+ */
+export function getCachedGymRushCatalog({
+  storageDriver = typeof localStorage !== 'undefined' ? localStorage : null
+} = {}) {
+  if (!storageDriver) return null;
+  const storageKey = 'kz_gym_rush_catalog';
+  try {
+    const raw = storageDriver.getItem(storageKey);
+    if (!raw) return null;
+    const parsed = JSON.parse(raw);
+    return parsed.catalog || null;
+  } catch (e) {
+    return null;
+  }
+}
+
