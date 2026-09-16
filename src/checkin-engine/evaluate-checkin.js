@@ -4,6 +4,7 @@ import {
   AdherenceTier,
   BiofeedbackAlert,
 } from "./domain/enums.js";
+import { evaluateFemaleCycleBuffer } from "../execution-engines/female-cycle-buffer-engine.js";
 
 function requireObject(value, name) {
   if (value === null || typeof value !== "object" || Array.isArray(value)) {
@@ -121,6 +122,18 @@ export function evaluateCheckin(submission) {
     Math.abs(weightChangeKg) < 0.3
   );
 
+  // 5d. Female Menstrual Cycle Buffer Gate
+  const isFemaleClient = submission.is_female === true || submission.gender === "female" || submission.gender === "FEMALE" || (menstrual_phase && menstrual_phase !== "NOT_APPLICABLE");
+  const femaleCycleBuffer = evaluateFemaleCycleBuffer({
+    is_female: isFemaleClient,
+    cycle_phase: menstrual_phase !== "NOT_APPLICABLE" ? menstrual_phase : null,
+    approximate_next_period_date: submission.approximate_next_period_date || submission.next_period_date || null,
+    is_pms_active: Boolean(submission.is_pms_active || biofeedback.is_pms_active || submission.is_pms),
+    weight_delta_kg: weightChangeKg !== null ? weightChangeKg : 0,
+    adherence_score: nutrition_adherence_percent,
+    has_pcos: Boolean(submission.has_pcos || submission.pcos)
+  });
+
   // 6. Auto-Regulation Decision Tree
   let analysisStatus = CheckinAnalysisStatus.ON_TRACK;
   const recommendationsAr = [];
@@ -175,6 +188,25 @@ export function evaluateCheckin(submission) {
     isRefeedRecommended = true;
     recommendationsAr.push("مؤشرات الجوع مرتفعة مع انخفاض طاقة الاستشفاء رغم التزامك الممتاز. يُوصى بجدولة يوم إعادة شحن كربوهيدرات (Refeed Day) لملء مخازن الجليكوجين وتحفيز هرمون اللبتين.");
     recommendationsEn.push("Elevated hunger and low energy detected under high adherence. Schedule a structured high-carb Refeed Day.");
+  }
+
+  // RULE E2: Female Cycle Luteal / PMS Water Retention Guardrail (Strict Lock on Calorie Cuts)
+  else if (femaleCycleBuffer.deficit_adjustment_locked) {
+    analysisStatus = CheckinAnalysisStatus.FEMALE_PMS_WATER_RETENTION;
+    suggestedCalorieDelta = 0;
+    suggestedCarbDeltaGrams = 0;
+    suggestedStepsDelta = 0;
+    recommendationsAr.push(
+      femaleCycleBuffer.reassurance_message_ar ||
+      "زيادة أو ثبات الميزان في هذه الفترة ناتجة عن احتباس مائي هرموني طبيعي ومؤقت (طور الـ Luteal / PMS). تم قفل خفض السعرات تماماً؛ جسمك ماشي بشكل ممتاز ومكملين بنفس الخطة!"
+    );
+    if (femaleCycleBuffer.micro_adjustments?.comfort_snack_options_ar) {
+      recommendationsAr.push(`توجيه التغذية الذكي: ${femaleCycleBuffer.micro_adjustments.comfort_snack_options_ar}.`);
+    }
+    if (femaleCycleBuffer.micro_adjustments?.recommended_supplement) {
+      recommendationsAr.push(`المكمل الموصى به: ${femaleCycleBuffer.micro_adjustments.recommended_supplement} (${femaleCycleBuffer.micro_adjustments.benefit_ar}).`);
+    }
+    recommendationsEn.push("Female PMS water retention active under optimal adherence. Deficit adjustments locked to prevent hormonal fatigue.");
   }
 
   // RULE F1 (NEW): False Plateau Triad — Block calorie cuts if plateau is caused by water retention
@@ -266,6 +298,7 @@ export function evaluateCheckin(submission) {
       next_week_gym_available,
       next_week_realistic_days,
     }),
+    female_cycle_buffer: Object.freeze(femaleCycleBuffer),
   });
 }
 

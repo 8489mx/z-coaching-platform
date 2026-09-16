@@ -142,6 +142,19 @@ export function buildAdaptedPlan(inputs) {
         message_en: "Reverse Dieting Engine: Optimal metabolic response (weight delta ≤ 0.3kg). Added +75 kcal (+18g carbs) to progressively restore metabolic rate without fat gain.",
       });
     }
+  } else if (
+    status === CheckinAnalysisStatus.FEMALE_PMS_WATER_RETENTION ||
+    checkinAnalysis.female_cycle_buffer?.deficit_adjustment_locked ||
+    options.is_pms_active === true
+  ) {
+    adaptationAction = AdaptationAction.MAINTAIN_TRAJECTORY;
+    adaptedCalories = Math.round(baseEnergy + 150);
+    adaptedCarbs = Math.round(baseCarbs + 35);
+    reasons.push({
+      code: AdaptationReasonCode.FEMALE_CYCLE_PMS_BUFFER_APPLIED,
+      message_ar: "صمام أمان الدورة الهرمونية (طور الـ Luteal / PMS): تم قفل أي خفض للسعرات لمنع الإجهاد الهرموني، مع إضافة +150 سعرة كاربوهيدرات معقدة مهدئة للرغبة في السكريات والحفاظ على توازن السيروتونين.",
+      message_en: "Female Cycle PMS Safety Gate active: Deficit cut locked; added +150 kcal complex carb comfort buffer to stabilize serotonin and curb cravings.",
+    });
   } else if (status === CheckinAnalysisStatus.INJURY_FLAGGED) {
 
 
@@ -324,6 +337,19 @@ export function buildAdaptedPlan(inputs) {
         message_ar: `أسبوع تفريغ أحمال تلقائي (Deload Week): بعد ${accumulatedWeeks} أسابيع متواصلة من التحميل مع مؤشر إجهاد ${fatigueScore}/10، تم خفض الجولات 40% ورفع RIR إلى 4 للسماح للجهاز العصبي والمفاصل بالتعافي التام.`,
         message_en: `Auto-Deload prescribed after ${accumulatedWeeks} consecutive training weeks with fatigue score ${fatigueScore}/10. Sets reduced by 40% with RIR 4.`,
       });
+    }
+
+    // 1b. Female Cycle Luteal/PMS Training Tuning (Unstressed RIR & +30s rest buffer)
+    if (!isDeloadRecommended && (status === CheckinAnalysisStatus.FEMALE_PMS_WATER_RETENTION || checkinAnalysis.female_cycle_buffer?.deficit_adjustment_locked || options.is_pms_active === true)) {
+      adaptedTrainingWeek.focus_note = "تخفيف الحمل التدريبي العصبي لمراعاة طور الـ Luteal / PMS (RIR 2-3 وراحة إضافية 30 ثانية)";
+      for (const session of (adaptedTrainingWeek.sessions || [])) {
+        for (const ex of (session.exercises || [])) {
+          ex.rir = Math.min(3, Math.max(2, (Number(ex.rir || 2) + 1)));
+          ex.target_rir = ex.rir;
+          ex.rest_seconds = Number(ex.rest_seconds || 60) + 30;
+          ex.safetyNote = "تخفيف الحمل العصبي ومراعاة طور الدورة الشهرية (RIR 2-3 وراحة إضافية 30 ثانية).";
+        }
+      }
     }
 
     // 2. Biomechanical Joint Pain Firewall & Exercise Swapping
