@@ -1,9 +1,9 @@
 import { API_BASE } from '../config/api';
 import { ClientCodeBadge, ClientPackageBadge, getClientTier } from '../utils/tierBadgeHelper';
 import { arabicSearchMatch } from '../utils/searchUtils';
-import React, { useState, useMemo, useEffect } from 'react';
+import React, { useState, useMemo, useEffect, useRef } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { DollarSign, CreditCard, TrendingUp, Users, AlertCircle, Clock, CheckCircle2, Send, Search, Filter, Calendar, ArrowUpRight, Check, Plus, X, RotateCw, BadgePercent, Wallet, Receipt, ArrowRight, Pause, Play } from 'lucide-react';
+import { DollarSign, CreditCard, TrendingUp, Users, AlertCircle, Clock, CheckCircle2, Send, Search, Filter, Calendar, ArrowUpRight, Check, Plus, X, RotateCw, BadgePercent, Wallet, Receipt, ArrowRight, Pause, Play, ShieldAlert, MessageSquare, Dumbbell, ExternalLink } from 'lucide-react';
 import AdminLayout from '../components/layout/AdminLayout';
 import FlexibleRenewalModal from '../components/modals/FlexibleRenewalModal';
 import { generateWhatsAppUrl, MESSAGE_TEMPLATES, compileReminderMessage, REMINDER_CATEGORIES } from '../utils/whatsappRemindersEngine';
@@ -17,12 +17,38 @@ export default function FinancialsRenewalsDashboard() {
   const [searchQuery, setSearchQuery] = useState(urlParam ? `#${urlParam}` : '');
   const [renewedMap, setRenewedMap] = useState({});
   const [toast, setToast] = useState(null);
+  const searchInputRef = useRef(null);
 
   useEffect(() => {
     if (urlParam) {
       setSearchQuery(urlParam.startsWith('#') ? urlParam : `#${urlParam}`);
     }
   }, [urlParam]);
+
+  // Global Keyboard Shortcuts
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      const activeTag = document.activeElement ? document.activeElement.tagName.toLowerCase() : '';
+      const isInput = activeTag === 'input' || activeTag === 'textarea';
+
+      if (!isInput && e.key === '/') {
+        e.preventDefault();
+        if (searchInputRef.current) {
+          searchInputRef.current.focus();
+        }
+      } else if (e.key === 'Escape') {
+        if (isInput) {
+          document.activeElement.blur();
+        } else {
+          setSearchQuery('');
+          setRenewalFilter('ALL');
+          setTierFilter('ALL');
+        }
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, []);
 
   // Live Financial Dataset from API
   const [financialsData, setFinancialsData] = useState([]);
@@ -146,6 +172,10 @@ export default function FinancialsRenewalsDashboard() {
     });
   }, [financialsData, searchQuery, tierFilter, renewalFilter]);
 
+  const filteredTotalRevenue = useMemo(() => {
+    return filteredClients.reduce((acc, c) => acc + c.monthlyFee, 0);
+  }, [filteredClients]);
+
   const showToast = (msg) => {
     setToast(msg);
     setTimeout(() => setToast(null), 3000);
@@ -189,11 +219,15 @@ export default function FinancialsRenewalsDashboard() {
   };
 
   const handleSendRenewalWhatsApp = (client) => {
+    const origin = typeof window !== 'undefined' ? window.location.origin : '';
     const tpl = MESSAGE_TEMPLATES[REMINDER_CATEGORIES.RENEWAL_UPCOMING]?.template || '';
     const msg = compileReminderMessage(tpl, {
       client_name: client.full_name || client.name,
       package_name: client.pkgLabel === 'MAX' ? 'باقة MAX' : 'باقة إليت (ELITE)',
-      days_left: client.daysRemaining > 0 ? client.daysRemaining : '0'
+      days_left: client.daysRemaining > 0 ? client.daysRemaining : '0',
+      renewal_url: `${origin}/app/renew`,
+      checkin_url: `${origin}/app/checkin`,
+      app_url: `${origin}/app`
     });
     const url = generateWhatsAppUrl(client.phone_number, msg);
     showToast(`جاري فتح واتساب لتذكير ${client.full_name || client.name} بالتجديد...`);
@@ -218,7 +252,7 @@ export default function FinancialsRenewalsDashboard() {
         <div style={{
           background: '#FFFFFF',
           border: '1px solid #E2E8F0',
-          borderRadius: '10px',
+          borderRadius: '12px',
           padding: '14px 18px',
           display: 'flex',
           justifyContent: 'space-between',
@@ -241,9 +275,31 @@ export default function FinancialsRenewalsDashboard() {
             </div>
           </div>
 
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap' }}>
+            <a
+              href="/coach/reminders"
+              style={{
+                background: '#F8FAFC',
+                border: '1px solid #CBD5E1',
+                padding: '5px 12px',
+                borderRadius: '8px',
+                fontSize: '11px',
+                fontWeight: 700,
+                color: '#334155',
+                textDecoration: 'none',
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '6px',
+                transition: 'all 0.12s ease'
+              }}
+              title="الانتقال السريع إلى مركز تذكيرات الواتساب"
+            >
+              <MessageSquare size={13} color="#0284C7" />
+              <span>مركز تذكيرات الواتساب</span>
+            </a>
+
             <span style={{ fontSize: '11px', color: '#64748B', fontFamily: 'Cairo, sans-serif' }}>
-              إجمالي المشتركين النشطين: <strong style={{ color: '#0F172A', fontFamily: 'JetBrains Mono, Cairo, sans-serif' }}>{financialsData.length}</strong>
+              إجمالي المشتركين: <strong style={{ color: '#0F172A', fontFamily: 'JetBrains Mono, Cairo, sans-serif' }}>{financialsData.length}</strong>
             </span>
           </div>
         </div>
@@ -400,7 +456,7 @@ export default function FinancialsRenewalsDashboard() {
         <div style={{
           background: '#FFFFFF',
           border: '1px solid #E2E8F0',
-          borderRadius: '8px',
+          borderRadius: '12px',
           padding: '12px 16px',
           display: 'flex',
           justifyContent: 'space-between',
@@ -424,7 +480,7 @@ export default function FinancialsRenewalsDashboard() {
               }}
               title="انقر لفلترة باقة MAX فقط"
             >
-              <span style={{ fontSize: '10px', fontWeight: 800, padding: '2px 6px', borderRadius: '3px', background: '#F8FAFC', border: '1px solid #E2E8F0', color: '#B45309' }}>
+              <span style={{ fontSize: '10px', fontWeight: 800, padding: '2px 6px', borderRadius: '6px', background: '#F8FAFC', border: '1px solid #E2E8F0', color: '#B45309' }}>
                 MAX
               </span>
               <span style={{ fontSize: '11.5px', color: '#475569', fontFamily: 'Cairo, sans-serif' }}>
@@ -449,7 +505,7 @@ export default function FinancialsRenewalsDashboard() {
               }}
               title="انقر لفلترة باقة ELITE فقط"
             >
-              <span style={{ fontSize: '10px', fontWeight: 800, padding: '2px 6px', borderRadius: '3px', background: '#F8FAFC', border: '1px solid #E2E8F0', color: '#0284C7' }}>
+              <span style={{ fontSize: '10px', fontWeight: 800, padding: '2px 6px', borderRadius: '6px', background: '#F8FAFC', border: '1px solid #E2E8F0', color: '#0284C7' }}>
                 ELITE
               </span>
               <span style={{ fontSize: '11.5px', color: '#475569', fontFamily: 'Cairo, sans-serif' }}>
@@ -467,58 +523,80 @@ export default function FinancialsRenewalsDashboard() {
         <div style={{
           background: '#FFFFFF',
           border: '1px solid #E2E8F0',
-          borderRadius: '10px',
+          borderRadius: '12px',
           overflow: 'hidden',
           boxShadow: '0 1px 3px rgba(15, 23, 42, 0.02)'
         }}>
           {/* Table Controls */}
           <div style={{ padding: '10px 14px', background: '#F8FAFC', borderBottom: '1px solid #E2E8F0', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '10px' }}>
             {/* Filter Tabs */}
-            <div style={{ display: 'flex', gap: '4px', flexWrap: 'wrap' }}>
-              {[
-                { id: 'ALL', label: 'كافة الاشتراكات', count: financialsData.length },
-                { id: 'URGENT_3D', label: 'عاجل (≤ 3 أيام)', count: urgentRenewals.length },
-                { id: 'WEEK_7D', label: 'خلال أسبوع' },
-                { id: 'FROZEN', label: 'مجمد مؤقتاً', count: financialsData.filter(c => c.status === 'FROZEN').length },
-                { id: 'OVERDUE', label: 'منتهية متأخرة', count: overdueCount },
-                { id: 'PAID', label: 'نشطة ومسددة' }
-              ].map(f => {
-                const isSel = renewalFilter === f.id;
-                return (
-                  <button
-                    key={f.id}
-                    type="button"
-                    onClick={() => setRenewalFilter(f.id)}
-                    style={{
-                      padding: '3px 8px',
-                      borderRadius: '8px',
-                      fontSize: '11px',
-                      fontWeight: isSel ? 800 : 600,
-                      border: isSel ? '1px solid #0F172A' : '1px solid #E2E8F0',
-                      background: isSel ? '#0F172A' : '#FFFFFF',
-                      color: isSel ? '#FFFFFF' : '#475569',
-                      cursor: 'pointer',
-                      display: 'inline-flex',
-                      alignItems: 'center',
-                      gap: '4px'
-                    }}
-                  >
-                    <span>{f.label}</span>
-                    {f.count !== undefined && (
-                      <span style={{
-                        fontSize: '9.5px',
-                        fontWeight: 800,
-                        padding: '0 4px',
-                        borderRadius: '6px',
-                        background: isSel ? 'rgba(255,255,255,0.2)' : '#E2E8F0',
-                        color: isSel ? '#FFFFFF' : '#0F172A'
-                      }}>
-                        {f.count}
-                      </span>
-                    )}
-                  </button>
-                );
-              })}
+            <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flexWrap: 'wrap' }}>
+              <div style={{ display: 'flex', gap: '4px', flexWrap: 'wrap' }}>
+                {[
+                  { id: 'ALL', label: 'كافة الاشتراكات', count: financialsData.length },
+                  { id: 'URGENT_3D', label: 'عاجل (≤ 3 أيام)', count: urgentRenewals.length },
+                  { id: 'WEEK_7D', label: 'خلال أسبوع' },
+                  { id: 'FROZEN', label: 'مجمد مؤقتاً', count: financialsData.filter(c => c.status === 'FROZEN').length },
+                  { id: 'OVERDUE', label: 'منتهية متأخرة', count: overdueCount },
+                  { id: 'PAID', label: 'نشطة ومسددة' }
+                ].map(f => {
+                  const isSel = renewalFilter === f.id;
+                  return (
+                    <button
+                      key={f.id}
+                      type="button"
+                      onClick={() => setRenewalFilter(f.id)}
+                      style={{
+                        padding: '3px 8px',
+                        borderRadius: '8px',
+                        fontSize: '11px',
+                        fontWeight: isSel ? 800 : 600,
+                        border: isSel ? '1px solid #0F172A' : '1px solid #E2E8F0',
+                        background: isSel ? '#0F172A' : '#FFFFFF',
+                        color: isSel ? '#FFFFFF' : '#475569',
+                        cursor: 'pointer',
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: '4px'
+                      }}
+                    >
+                      <span>{f.label}</span>
+                      {f.count !== undefined && (
+                        <span style={{
+                          fontSize: '9.5px',
+                          fontWeight: 800,
+                          padding: '0 4px',
+                          borderRadius: '6px',
+                          background: isSel ? 'rgba(255,255,255,0.2)' : '#E2E8F0',
+                          color: isSel ? '#FFFFFF' : '#0F172A'
+                        }}>
+                          {f.count}
+                        </span>
+                      )}
+                    </button>
+                  );
+                })}
+              </div>
+
+              {/* Filtered Sum Badge */}
+              <div style={{
+                fontSize: '10px',
+                fontWeight: 700,
+                color: '#475569',
+                background: '#FFFFFF',
+                border: '1px solid #CBD5E1',
+                padding: '3px 8px',
+                borderRadius: '6px',
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '4px'
+              }}>
+                <span>قيمة الفلتر:</span>
+                <strong style={{ color: '#0F172A', fontFamily: 'JetBrains Mono, Cairo, sans-serif' }}>
+                  {Math.round(filteredTotalRevenue).toLocaleString('en-US')}
+                </strong>
+                <span>ج.م</span>
+              </div>
             </div>
 
             {/* Tier & Search */}
@@ -553,11 +631,12 @@ export default function FinancialsRenewalsDashboard() {
                 })}
               </div>
 
-              <div style={{ display: 'flex', alignItems: 'center', background: '#FFFFFF', border: '1px solid #CBD5E1', borderRadius: '8px', padding: '0 8px', height: '28px', width: '160px', gap: '4px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', background: '#FFFFFF', border: '1px solid #CBD5E1', borderRadius: '8px', padding: '0 8px', height: '28px', width: '170px', gap: '4px' }}>
                 <Search size={12} color="#94A3B8" />
                 <input
+                  ref={searchInputRef}
                   type="text"
-                  placeholder="بحث باسم أو كود..."
+                  placeholder="بحث (اضغط / للبحث)..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   style={{ border: 'none', background: 'transparent', fontSize: '11px', outline: 'none', width: '100%' }}
@@ -569,7 +648,7 @@ export default function FinancialsRenewalsDashboard() {
           {/* Table Header */}
           <div style={{
             display: 'grid',
-            gridTemplateColumns: '80px 1.5fr 100px 105px 135px 105px 220px',
+            gridTemplateColumns: '75px 1.4fr 85px 95px 130px 100px 245px',
             padding: '8px 14px',
             background: '#F1F5F9',
             fontSize: '11px',
@@ -598,13 +677,19 @@ export default function FinancialsRenewalsDashboard() {
                 const isOverdue = client.daysRemaining < 0;
                 const isRenewed = client.status === 'RENEWED';
                 const cleanCode = String(client.client_code || client.id || '').replace(/^client[-_]?/i, '').replace('#', '');
+                const hasInjuries = Boolean(
+                  (Array.isArray(client.injuries) && client.injuries.some(i => i && i !== 'none')) ||
+                  (typeof client.injuries === 'string' && client.injuries.trim() && client.injuries !== 'none') ||
+                  (client.intakeSubmissions?.[0]?.answers?.injuries_map?.has_injuries) ||
+                  (client.answers?.injuries_map?.has_injuries)
+                );
 
                 return (
                   <div
                     key={client.id}
                     style={{
                       display: 'grid',
-                      gridTemplateColumns: '80px 1.5fr 100px 105px 135px 105px 220px',
+                      gridTemplateColumns: '75px 1.4fr 85px 95px 130px 100px 245px',
                       padding: '10px 14px',
                       alignItems: 'center',
                       borderBottom: '1px solid #F1F5F9',
@@ -618,15 +703,37 @@ export default function FinancialsRenewalsDashboard() {
                       <ClientCodeBadge code={client.client_code || client.id} item={client} size="sm" />
                     </div>
 
-                    {/* Col 2: Name + Phone */}
+                    {/* Col 2: Name + Phone + Injury */}
                     <div>
-                      <strong 
-                        style={{ fontSize: '12px', color: '#0F172A', display: 'block', cursor: 'pointer' }}
-                        onClick={() => window.open(`/customers/${cleanCode}`, '_blank')}
-                        title="عرض ملف التطور الزمني للمشترك"
-                      >
-                        {client.full_name || client.name}
-                      </strong>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
+                        <strong 
+                          style={{ fontSize: '12px', color: '#0F172A', cursor: 'pointer' }}
+                          onClick={() => window.open(`/customers/${cleanCode}`, '_blank')}
+                          title="عرض ملف التطور الزمني للمشترك"
+                        >
+                          {client.full_name || client.name}
+                        </strong>
+                        {hasInjuries && (
+                          <span 
+                            style={{
+                              fontSize: '9px',
+                              fontWeight: 700,
+                              padding: '1px 5px',
+                              borderRadius: '6px',
+                              background: '#FEF2F2',
+                              border: '1px solid #FECACA',
+                              color: '#DC2626',
+                              display: 'inline-flex',
+                              alignItems: 'center',
+                              gap: '2px'
+                            }}
+                            title="تنبيه طبي: المشترك لديه إصابة مسجلة"
+                          >
+                            <ShieldAlert size={9} />
+                            <span>إصابة</span>
+                          </span>
+                        )}
+                      </div>
                       <span style={{ fontSize: '10.5px', color: '#64748B', fontFamily: 'JetBrains Mono, Cairo, sans-serif' }}>
                         {client.phone_number}
                       </span>
@@ -665,7 +772,7 @@ export default function FinancialsRenewalsDashboard() {
                     </div>
 
                     {/* Col 7: Actions */}
-                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '5px', flexWrap: 'wrap' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '4px', flexWrap: 'wrap' }}>
                       {isRenewed ? (
                         <span style={{ fontSize: '10.5px', color: '#059669', fontWeight: 700, display: 'inline-flex', alignItems: 'center', gap: '3px' }}>
                           <CheckCircle2 size={12} />
@@ -689,7 +796,7 @@ export default function FinancialsRenewalsDashboard() {
                               alignItems: 'center',
                               gap: '3px'
                             }}
-                            title="تسجيل سداد وتجديد الاشتراك بمزاجك"
+                            title="تسجيل سداد وتجديد الاشتراك"
                           >
                             <CreditCard size={11} />
                             <span>تجديد</span>
@@ -742,6 +849,29 @@ export default function FinancialsRenewalsDashboard() {
                         </>
                       )}
 
+                      {/* Coach Editor Plan Link */}
+                      <button
+                        type="button"
+                        onClick={() => window.open(`/coach/editor/${cleanCode}`, '_blank')}
+                        style={{
+                          padding: '3px 7px',
+                          borderRadius: '8px',
+                          background: '#F0F9FF',
+                          color: '#0284C7',
+                          border: '1px solid #BAE6FD',
+                          fontSize: '10.5px',
+                          fontWeight: 700,
+                          cursor: 'pointer',
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          gap: '3px'
+                        }}
+                        title="فتح محرر خطة المشترك التدريبية والغذائية"
+                      >
+                        <Dumbbell size={11} />
+                        <span>الخطة</span>
+                      </button>
+
                       <button
                         type="button"
                         onClick={() => window.open(`/customers/${cleanCode}`, '_blank')}
@@ -783,11 +913,11 @@ export default function FinancialsRenewalsDashboard() {
             background: '#0F172A',
             color: '#FFFFFF',
             padding: '8px 18px',
-            borderRadius: '8px',
+            borderRadius: '12px',
             fontSize: '12px',
             fontWeight: 700,
             zIndex: 99999,
-            boxShadow: '0 4px 12px rgba(0,0,0,0.2)'
+            boxShadow: '0 4px 16px rgba(0,0,0,0.25)'
           }}>
             {toast}
           </div>

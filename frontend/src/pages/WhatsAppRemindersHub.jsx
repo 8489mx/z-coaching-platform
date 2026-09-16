@@ -744,7 +744,7 @@ export default function WhatsAppRemindersHub() {
                 <span style={{ fontSize: '10.5px', fontWeight: 700, color: '#64748B' }}>روابط سريعة:</span>
                 
                 <a
-                  href={`/admin/plans?clientCode=${activeClient.client_code || activeClient.id}`}
+                  href={`/coach/editor/${activeClient.client_code || activeClient.id}`}
                   target="_blank"
                   rel="noreferrer"
                   style={{
