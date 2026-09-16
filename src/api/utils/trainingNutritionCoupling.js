@@ -494,3 +494,345 @@ export function auditWeeklyMuscleVolume(sessions = []) {
     has_below_mev: warnings.some(w => w.includes('دون الحد الأدنى')),
   };
 }
+
+// =========================================================================
+// 7. DEFICIT-ADJUSTED VOLUME LANDMARKS (Deficit Volume Shield)
+// =========================================================================
+
+/**
+ * Calculates energy status adjusted volume landmarks.
+ * In deficit, MRV contracts because energy availability and glycogen replenishment are compromised.
+ * In surplus, MRV expands due to higher glycogen stores and enhanced MPS.
+ *
+ * @param {Object} options
+ * @param {number} options.targetCalories
+ * @param {number} options.tdee
+ * @returns {Object} Adjusted landmarks and deficit details
+ */
+export function calculateEnergyAdjustedLandmarks({ targetCalories = 2000, tdee = 2400 }) {
+  const safeCalories = Math.max(800, Number(targetCalories) || 2000);
+  const safeTdee = Math.max(1200, Number(tdee) || safeCalories);
+  const energyDelta = safeTdee - safeCalories;
+  const deficitPercent = safeTdee > 0 ? ((energyDelta / safeTdee) * 100) : 0;
+  const isDeficit = deficitPercent > 5;
+  const isSurplus = energyDelta < -100;
+  const isAggressiveDeficit = deficitPercent >= 20 || safeCalories < 1500;
+
+  // Multipliers for MRV & MAV
+  let mrvMultiplier = 1.0;
+  let mavMultiplier = 1.0;
+
+  if (isAggressiveDeficit) {
+    mrvMultiplier = 0.80; // -20% MRV in steep deficit
+    mavMultiplier = 0.85; // -15% MAV
+  } else if (isDeficit) {
+    mrvMultiplier = 0.90; // -10% MRV in moderate deficit
+    mavMultiplier = 0.90;
+  } else if (isSurplus) {
+    mrvMultiplier = 1.15; // +15% MRV in surplus
+    mavMultiplier = 1.10;
+  }
+
+  const adjustedLandmarks = {};
+  for (const [key, base] of Object.entries(MUSCLE_VOLUME_LANDMARKS)) {
+    const adjMrv = Math.max(base.mev + 2, Math.round(base.mrv * mrvMultiplier));
+    const adjMavMax = Math.max(base.mev + 1, Math.min(adjMrv - 1, Math.round(base.mav_max * mavMultiplier)));
+    const adjMavMin = Math.max(base.mev, Math.round(base.mav_min * mavMultiplier));
+
+    adjustedLandmarks[key] = {
+      ...base,
+      base_mrv: base.mrv,
+      base_mav_max: base.mav_max,
+      base_mav_min: base.mav_min,
+      mrv: adjMrv,
+      mav_max: adjMavMax,
+      mav_min: adjMavMin,
+    };
+  }
+
+  return {
+    is_deficit: isDeficit,
+    is_aggressive_deficit: isAggressiveDeficit,
+    is_surplus: isSurplus,
+    deficit_percent: +deficitPercent.toFixed(1),
+    mrv_multiplier: mrvMultiplier,
+    mav_multiplier: mavMultiplier,
+    adjusted_landmarks: adjustedLandmarks,
+  };
+}
+
+/**
+ * Audits training sessions against deficit-adjusted volume landmarks.
+ * Triggers Deficit Volume Shield warnings if prescribed volume exceeds recovery limits.
+ *
+ * @param {Object} params
+ * @param {Array<Object>} params.sessions
+ * @param {number} params.targetCalories
+ * @param {number} params.tdee
+ * @returns {Object} Shield status, volume audit, and clinical recommendations
+ */
+export function auditDeficitVolumeShield({ sessions = [], targetCalories = 2000, tdee = 2400 }) {
+  const energyStatus = calculateEnergyAdjustedLandmarks({ targetCalories, tdee });
+  const volumeMap = {};
+
+  Object.keys(MUSCLE_VOLUME_LANDMARKS).forEach(k => {
+    volumeMap[k] = 0;
+  });
+
+  for (const session of sessions) {
+    for (const ex of (session.exercises || [])) {
+      const key = resolveMuscleGroupKey(ex);
+      const sets = Number(ex.sets || ex.target_sets || 3);
+      if (volumeMap[key] !== undefined) {
+        volumeMap[key] += sets;
+      }
+    }
+  }
+
+  const analysis = {};
+  const shieldWarnings = [];
+  let requiresVolumeConsolidation = false;
+
+  for (const [key, sets] of Object.entries(volumeMap)) {
+    const landmark = energyStatus.adjusted_landmarks[key];
+    if (!landmark) continue;
+
+    let status = 'OPTIMAL_MAV';
+    let statusLabelAr = 'حجم تدريبي متوازن مع الطاقة';
+
+    if (sets > landmark.mrv) {
+      status = 'EXCEEDS_DEFICIT_MRV';
+      requiresVolumeConsolidation = true;
+      const excessSets = sets - landmark.mrv;
+      statusLabelAr = `تجاوز سقف الاستشفاء في العجز (${sets}/${landmark.mrv} جولة)`;
+      shieldWarnings.push(
+        `درع العجز السعري: حجم تدريب ${landmark.name_ar} (${sets} جولات) يتجاوز سقف الاستشفاء الأقصى المعدل بالعجز (${landmark.mrv} جولة بفارق ${excessSets} جولة زائدة). استمرار هذا الحجم مع عجز ${energyStatus.deficit_percent}% يرفع هرمون الكورتيزول وخطر الهدم العضلي.`
+      );
+    } else if (sets < landmark.mev && sets > 0) {
+      status = 'BELOW_MEV';
+      statusLabelAr = `أقل من الحد الأدنى للتحفيز (${sets}/${landmark.mev} جولة)`;
+    } else if (sets >= landmark.mav_min && sets <= landmark.mav_max) {
+      status = 'OPTIMAL_MAV';
+      statusLabelAr = `نطاق بنائي مثالي في العجز (${sets} جولة)`;
+    } else if (sets > 0) {
+      status = 'ACCEPTABLE';
+      statusLabelAr = `نطاق فعال مقبول (${sets} جولة)`;
+    }
+
+    analysis[key] = {
+      muscle_name_ar: landmark.name_ar,
+      weekly_sets: sets,
+      mev: landmark.mev,
+      mav_range: `${landmark.mav_min}-${landmark.mav_max}`,
+      adjusted_mrv: landmark.mrv,
+      base_mrv: landmark.base_mrv,
+      status,
+      status_label_ar: statusLabelAr,
+    };
+  }
+
+  return {
+    shield_active: energyStatus.is_aggressive_deficit,
+    is_deficit: energyStatus.is_deficit,
+    deficit_percent: energyStatus.deficit_percent,
+    mrv_multiplier: energyStatus.mrv_multiplier,
+    requires_volume_consolidation: requiresVolumeConsolidation,
+    analysis,
+    warnings: shieldWarnings,
+  };
+}
+
+// =========================================================================
+// 8. CARB CYCLING SESSION DYNAMIC SYNC
+// =========================================================================
+
+/**
+ * Automatically couples a 7-day weekly schedule with carb cycling based on actual session demand.
+ * Highest demand sessions get High-Carb (+20%), Moderate gets Baseline, Light/Rest gets Low-Carb (-20%).
+ * Strictly preserves 100% weekly calorie balance (average daily === baseline).
+ */
+export function syncCarbCyclingWithSessions({
+  sessions = [],
+  baselineDailyCalories = 2000,
+  baselineProteinG = 160,
+  baselineCarbsG = 220,
+  baselineFatG = 55,
+  daysOrder = ['MONDAY', 'TUESDAY', 'WEDNESDAY', 'THURSDAY', 'FRIDAY', 'SATURDAY', 'SUNDAY']
+}) {
+  const scoredSessions = sessions.map((sess, idx) => {
+    const demand = calculateSessionDemand(sess.exercises || []);
+    return {
+      session_index: idx,
+      session_name: sess.name || sess.session_name_ar || `اليوم ${idx + 1}`,
+      demand,
+      target_muscles: sess.target_muscles || '',
+    };
+  });
+
+  const scheduleDays = daysOrder.map((dayName, idx) => {
+    const sess = scoredSessions[idx] || null;
+    let dayType = 'REST_DAY';
+    let labelAr = 'راحة واستشفاء';
+
+    if (sess) {
+      if (sess.demand.demand_level === 'HIGH_GLYCOLYTIC' || sess.demand.is_heavy_session) {
+        dayType = 'HEAVY_TRAINING';
+        labelAr = `${sess.session_name} (طلب جليكوجيني مرتفع)`;
+      } else if (sess.demand.demand_level === 'MODERATE') {
+        dayType = 'MODERATE_TRAINING';
+        labelAr = `${sess.session_name} (طلب جليكوجيني متوسط)`;
+      } else {
+        dayType = 'REST_DAY';
+        labelAr = `${sess.session_name} (طلب خفيف / استشفاء)`;
+      }
+    }
+
+    return {
+      day: dayName,
+      type: dayType,
+      label_ar: labelAr,
+      session_name: sess ? sess.session_name : null,
+      glycolytic_demand: sess ? sess.demand.demand_level : 'NONE',
+    };
+  });
+
+  const heavyCount = scheduleDays.filter(d => d.type === 'HEAVY_TRAINING').length;
+  const restCount = scheduleDays.filter(d => d.type === 'REST_DAY').length;
+
+  const carbDeltaPerHeavy = Math.round(baselineCarbsG * 0.20);
+  const totalHeavyCarbExcessG = heavyCount * carbDeltaPerHeavy;
+  const carbDeltaPerRest = restCount > 0 ? Math.round(totalHeavyCarbExcessG / restCount) : carbDeltaPerHeavy;
+
+  const heavyCarbs = baselineCarbsG + carbDeltaPerHeavy;
+  const restCarbs = Math.max(30, baselineCarbsG - carbDeltaPerRest);
+  const modCarbs = baselineCarbsG;
+
+  const heavyFat = Math.max(20, Math.round(baselineFatG - ((carbDeltaPerHeavy * 4) / 9)));
+  const restFat = Math.round(baselineFatG + (((baselineCarbsG - restCarbs) * 4) / 9));
+  const modFat = baselineFatG;
+
+  const weeklyBreakdown = scheduleDays.map(d => {
+    let c = modCarbs;
+    let f = modFat;
+    let strategyAr = 'توزيع متوازن (Baseline)';
+
+    if (d.type === 'HEAVY_TRAINING') {
+      c = heavyCarbs;
+      f = heavyFat;
+      strategyAr = 'شحن كربوهيدرات مرتفع (+20%) لتغذية الحصة الشاقة';
+    } else if (d.type === 'REST_DAY') {
+      c = restCarbs;
+      f = restFat;
+      strategyAr = 'كربوهيدرات منخفضة مع دهون استشفائية في يوم الراحة';
+    }
+
+    const dayCalories = (baselineProteinG * 4) + (c * 4) + (f * 9);
+
+    return {
+      day: d.day,
+      day_type: d.type,
+      label_ar: d.label_ar,
+      session_name: d.session_name,
+      glycolytic_demand: d.glycolytic_demand,
+      strategy_ar: strategyAr,
+      calories: Math.round(dayCalories),
+      protein_g: baselineProteinG,
+      carbs_g: c,
+      fat_g: f,
+    };
+  });
+
+  const totalWeeklyCalories = weeklyBreakdown.reduce((sum, d) => sum + d.calories, 0);
+  const avgDailyCalories = Math.round(totalWeeklyCalories / 7);
+
+  return {
+    baseline: {
+      daily_calories: baselineDailyCalories,
+      protein_g: baselineProteinG,
+      carbs_g: baselineCarbsG,
+      fat_g: baselineFatG,
+    },
+    weekly_breakdown: weeklyBreakdown,
+    weekly_average_calories: avgDailyCalories,
+    calorie_variance: Math.abs(avgDailyCalories - baselineDailyCalories),
+    heavy_days_count: heavyCount,
+    rest_days_count: restCount,
+  };
+}
+
+// =========================================================================
+// 9. PROTEIN-SPARING DYNAMIC DEFENSE
+// =========================================================================
+
+/**
+ * Evaluates protein requirements under energy deficit to prevent muscle wasting (Sparing Effect).
+ * Enforces clinical guardrails for renal safety (CKD capped at maxSafeProtein).
+ *
+ * @param {Object} params
+ * @returns {Object} Protein recommendation, current delta, and clinical status
+ */
+export function evaluateProteinSparingRequirement({
+  targetCalories = 2000,
+  tdee = 2400,
+  clientWeightKg = 80,
+  currentProteinG = 150,
+  hasKidneyCondition = false,
+  clinicalGuardrails = null
+}) {
+  const weight = Math.max(35, Number(clientWeightKg) || 80);
+  const safeCalories = Math.max(800, Number(targetCalories) || 2000);
+  const safeTdee = Math.max(1200, Number(tdee) || safeCalories);
+  const deficitPercent = safeTdee > 0 ? (((safeTdee - safeCalories) / safeTdee) * 100) : 0;
+
+  const maxSafeProtein = Number(clinicalGuardrails?.max_protein_g) || Math.round(weight * 1.0);
+
+  // If patient has kidney disease: lock at kidney ceiling
+  if (hasKidneyCondition) {
+    return {
+      has_kidney_condition: true,
+      locked_at_kidney_ceiling: true,
+      safe_ceiling_protein_g: maxSafeProtein,
+      recommended_protein_g: maxSafeProtein,
+      recommended_multiplier: +(maxSafeProtein / weight).toFixed(2),
+      current_protein_g: currentProteinG,
+      status: currentProteinG <= maxSafeProtein ? 'SAFE_RENAL_PROTECTION' : 'CRITICAL_RENAL_OVERLOAD',
+      message_ar: `حماية كلوية سريرية: تم تثبيت سقف البروتين عند ${maxSafeProtein} جم (${(maxSafeProtein / weight).toFixed(1)} جم/كجم) لحماية وظائف الكلى وترشيح الكبيبات.`
+    };
+  }
+
+  // Normal non-CKD client:
+  let recommendedMultiplier = 1.8;
+  if (deficitPercent >= 20 || safeCalories < 1500) {
+    recommendedMultiplier = 2.3; // Sparing protein in deep cut
+  } else if (deficitPercent >= 10) {
+    recommendedMultiplier = 2.0; // Moderate cut
+  } else {
+    recommendedMultiplier = 1.8; // Maintenance or surplus
+  }
+
+  const recommendedProteinG = Math.round(weight * recommendedMultiplier);
+  const proteinDeltaG = currentProteinG - recommendedProteinG;
+  const isDeficient = proteinDeltaG < -15; // >15g below recommended
+
+  let status = 'OPTIMAL_SPARING';
+  let messageAr = `مستوى بروتين مثالي لحماية الكتلة العضلية (${(currentProteinG / weight).toFixed(1)} جم/كجم).`;
+
+  if (isDeficient) {
+    status = 'INSUFFICIENT_FOR_DEFICIT';
+    messageAr = `تنبيه تدريع بروتيني: في ظل عجز حراري بنسبة ${deficitPercent.toFixed(1)}%، البروتين الحالي (${currentProteinG} جم = ${(currentProteinG / weight).toFixed(1)} جم/كجم) أقل من الحد الوقائي الموصى به (${recommendedProteinG} جم = ${recommendedMultiplier} جم/كجم) لمنع هدم النسيج العضلي.`;
+  }
+
+  return {
+    has_kidney_condition: false,
+    deficit_percent: +deficitPercent.toFixed(1),
+    recommended_multiplier: recommendedMultiplier,
+    recommended_protein_g: recommendedProteinG,
+    current_protein_g: currentProteinG,
+    current_multiplier: +(currentProteinG / weight).toFixed(2),
+    protein_delta_g: proteinDeltaG,
+    is_deficient: isDeficient,
+    status,
+    message_ar: messageAr,
+  };
+}
+

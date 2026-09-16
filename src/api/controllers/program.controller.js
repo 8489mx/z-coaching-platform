@@ -15,7 +15,7 @@ import { MASTER_EXERCISE_DICTIONARY } from "../../../src/exercise-catalog-v2/ind
 import { calculateSmartSwap } from "../../../src/nutrition-swap-engine-v2/calculate-smart-swap.js";
 import { listSmartSwapCandidates, getSmartFoodRegistryItem, SMART_SWAP_REGISTRY } from "../../../src/nutrition-swap-engine-v2/swap-pool-registry.js";
 import { CLINICAL_GUIDELINES } from "../../config/clinical-guidelines.js";
-import { calculateSessionDemand, auditWeeklyMuscleVolume } from "../utils/trainingNutritionCoupling.js";
+import { calculateSessionDemand, auditWeeklyMuscleVolume, auditDeficitVolumeShield, evaluateProteinSparingRequirement } from "../utils/trainingNutritionCoupling.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -1038,7 +1038,7 @@ export const updateCustomProgram = async (req, res) => {
       }
     }
 
-    // 4. Training-Nutrition Dynamic Coupling & Volume Landmarks Audit
+    // 4. Training-Nutrition Dynamic Coupling, Deficit Volume Shield & Volume Landmarks Audit
     if (typeof program_data === "object" && program_data !== null && program_data.training) {
       const activeSessions = (program_data.training.sessions && program_data.training.sessions.length > 0)
         ? program_data.training.sessions
@@ -1050,9 +1050,31 @@ export const updateCustomProgram = async (req, res) => {
         const volumeAudit = auditWeeklyMuscleVolume(activeSessions);
         const sessionDemand = calculateSessionDemand(activeSessions[0]?.exercises || []);
 
+        const targetCalories = Number(program_data.nutrition?.targets?.calories || program_data.nutrition?.energy_target || 2000);
+        const clientTdee = Number(user.tdee || program_data.client?.tdee || targetCalories);
+        const clientWeight = Number(user.weight || user.weight_kg || program_data.client?.weight_kg || 80);
+        const currentProtein = Number(program_data.nutrition?.targets?.protein || 150);
+
+        const deficitShield = auditDeficitVolumeShield({
+          sessions: activeSessions,
+          targetCalories,
+          tdee: clientTdee
+        });
+
+        const proteinSparing = evaluateProteinSparingRequirement({
+          targetCalories,
+          tdee: clientTdee,
+          clientWeightKg: clientWeight,
+          currentProteinG: currentProtein,
+          hasKidneyCondition,
+          clinicalGuardrails: program_data.clinical_guardrails
+        });
+
         program_data._training_coupling = {
           session_demand: sessionDemand,
           volume_audit: volumeAudit,
+          deficit_volume_shield: deficitShield,
+          protein_sparing: proteinSparing,
           last_synced_at: new Date().toISOString()
         };
 
@@ -1061,6 +1083,14 @@ export const updateCustomProgram = async (req, res) => {
           if (mrvWarnings.length > 0) {
             clinicalWarnings.push(`تنبيه حجم تدريبي: ${mrvWarnings.join(' و ')}`);
           }
+        }
+
+        if (deficitShield.requires_volume_consolidation && deficitShield.warnings.length > 0) {
+          clinicalWarnings.push(deficitShield.warnings[0]);
+        }
+
+        if (proteinSparing.is_deficient) {
+          clinicalWarnings.push(proteinSparing.message_ar);
         }
       }
     }

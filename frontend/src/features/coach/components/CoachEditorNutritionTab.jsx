@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Save, Send, Dumbbell, Utensils, FileText, Activity, Loader2, Plus, Trash2, RotateCw, HeartPulse, Printer, X, ArrowRightLeft, Users, Clock, AlertCircle, CheckCircle2, Search, Check, Zap, Target, ShieldAlert, Flame, Copy } from 'lucide-react';
 import { balanceMealItems, balanceAllDayMeals, dynamicRippleRebalanceDailyPlan } from '../../../utils/mealPortionBalancer.js';
+import { auditDeficitVolumeShield, evaluateProteinSparingRequirement, syncCarbCyclingWithSessions } from '../../../utils/trainingCouplingUtils.js';
 
 // Quick Meal Presets for Instant Precision Nutrition Building
 const QUICK_MEAL_PRESETS = [
@@ -125,6 +126,40 @@ export default function CoachEditorNutritionTab(props) {
   const clientWeightKg = Number(program?.client?.weight_kg) || 80;
   const maxSafeProtein = Number(clinicalGuardrails?.max_protein_g) || Math.round(clientWeightKg * 1.0);
 
+  const activeSessions = (program?.training?.sessions && program.training.sessions.length > 0)
+    ? program.training.sessions
+    : (Array.isArray(program?.training?.weeks) && program.training.weeks.length > 0)
+      ? (program.training.weeks[0]?.sessions || [])
+      : (Array.isArray(program?.training_program?.weeks) && program.training_program.weeks.length > 0)
+        ? (program.training_program.weeks[0]?.sessions || [])
+        : [];
+
+  const clientTdee = Number(program?.client?.tdee || (targetCal >= 2000 ? targetCal + 450 : 2400));
+
+  const deficitVolumeShield = auditDeficitVolumeShield({
+    sessions: activeSessions,
+    targetCalories: targetCal,
+    tdee: clientTdee
+  });
+
+  const proteinSparing = evaluateProteinSparingRequirement({
+    targetCalories: targetCal,
+    tdee: clientTdee,
+    clientWeightKg,
+    currentProteinG: targetP,
+    hasKidneyCondition,
+    clinicalGuardrails
+  });
+
+  const [showCarbCyclingModal, setShowCarbCyclingModal] = useState(false);
+  const carbCyclingPlan = syncCarbCyclingWithSessions({
+    sessions: activeSessions,
+    baselineDailyCalories: targetCal,
+    baselineProteinG: targetP,
+    baselineCarbsG: targetC,
+    baselineFatG: targetF
+  });
+
   // Quick Targets Edit Modal State
   const [showEditTargetsModal, setShowEditTargetsModal] = useState(false);
   const [editTargetsState, setEditTargetsState] = useState({
@@ -140,21 +175,46 @@ export default function CoachEditorNutritionTab(props) {
     const newC = Number(editTargetsState.carbs) || targetC;
     const newF = Number(editTargetsState.fats) || targetF;
 
-    setProgram(prev => ({
-      ...prev,
-      nutrition: {
-        ...prev.nutrition,
+    if (hasKidneyCondition && newP > maxSafeProtein) {
+      showToast(`تنبيه سريري (كلى): لا يمكن تجاوز سقف البروتين (${maxSafeProtein} جم) لمرضى القصور الكلوي.`);
+      return;
+    }
+
+    setProgram(prev => {
+      const currentMeals = prev.nutrition?.meals || [];
+      const currentSupps = prev.cardio?.supplements || [];
+      const rebalancedMeals = isAutoRippleOn ? dynamicRippleRebalanceDailyPlan({
+        meals: currentMeals,
+        supplements: currentSupps,
         targets: {
-          ...(prev.nutrition?.targets || {}),
           calories: newCal,
           protein: newP,
           carbs: newC,
           fats: newF
+        },
+        anchorMealId: null,
+        beverageSugarSpoons: prev.nutrition?.beverage_sugar_spoons || 0,
+        autoRippleEnabled: true
+      }) : currentMeals;
+
+      return {
+        ...prev,
+        nutrition: {
+          ...prev.nutrition,
+          targets: {
+            ...(prev.nutrition?.targets || {}),
+            calories: newCal,
+            protein: newP,
+            carbs: newC,
+            fats: newF
+          },
+          meals: rebalancedMeals
         }
-      }
-    }));
+      };
+    });
+
     setShowEditTargetsModal(false);
-    showToast('تم حفظ المستهدفات اليومية وتحديث الموازنة بنجاح');
+    showToast('تم حفظ المستهدفات اليومية وموازنة الوجبات تلقائياً بنجاح');
   };
 
   const handleUpdateSupplementsWithRipple = (newSupps) => {
@@ -608,6 +668,113 @@ export default function CoachEditorNutritionTab(props) {
                 >
                   <Plus size={13} />
                   <span>إضافة وجبة</span>
+                </button>
+              </div>
+            </div>
+
+            {/* Deficit Volume Shield & Carb Cycling Dynamic Bar */}
+            <div style={{
+              background: deficitVolumeShield.requires_volume_consolidation
+                ? '#FFFBEB'
+                : deficitVolumeShield.shield_active
+                  ? '#FEF2F2'
+                  : '#F0FDF4',
+              border: deficitVolumeShield.requires_volume_consolidation
+                ? '1px solid #FCD34D'
+                : deficitVolumeShield.shield_active
+                  ? '1px solid #FECACA'
+                  : '1px solid #BBF7D0',
+              borderRadius: '12px',
+              padding: '10px 14px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              flexWrap: 'wrap',
+              gap: '10px'
+            }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+                <div style={{
+                  width: '28px',
+                  height: '28px',
+                  borderRadius: '8px',
+                  background: deficitVolumeShield.requires_volume_consolidation
+                    ? '#F59E0B'
+                    : deficitVolumeShield.shield_active
+                      ? '#EF4444'
+                      : '#16A34A',
+                  color: '#FFFFFF',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  flexShrink: 0
+                }}>
+                  {deficitVolumeShield.requires_volume_consolidation ? <ShieldAlert size={16} /> : <CheckCircle2 size={16} />}
+                </div>
+
+                <div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flexWrap: 'wrap' }}>
+                    <span style={{ fontSize: '12px', fontWeight: 800, color: '#0F172A' }}>
+                      درع الحجم التدريبي والعجز السعري:
+                    </span>
+                    <span style={{
+                      fontSize: '10.5px',
+                      fontWeight: 800,
+                      padding: '2px 8px',
+                      borderRadius: '6px',
+                      background: deficitVolumeShield.shield_active ? '#FEE2E2' : '#DCFCE7',
+                      color: deficitVolumeShield.shield_active ? '#B91C1C' : '#15803D'
+                    }}>
+                      {deficitVolumeShield.shield_active
+                        ? `عجز حراري حاد (${deficitVolumeShield.deficit_percent}% | انكماش سقف الاستشفاء MRV -20%)`
+                        : deficitVolumeShield.is_deficit
+                          ? `عجز معتدل (${deficitVolumeShield.deficit_percent}% | انكماش MRV -10%)`
+                          : 'سعرات صيانة / فائض (سقف الاستشفاء مستقر)'}
+                    </span>
+
+                    <span style={{
+                      fontSize: '10.5px',
+                      fontWeight: 700,
+                      padding: '2px 8px',
+                      borderRadius: '6px',
+                      background: proteinSparing.is_deficient ? '#FEF3C7' : '#EFF6FF',
+                      color: proteinSparing.is_deficient ? '#B45309' : '#1D4ED8'
+                    }}>
+                      التدريع البروتيني: {proteinSparing.current_multiplier} جم/كجم (الوقائي: {proteinSparing.recommended_multiplier} جم/كجم)
+                    </span>
+                  </div>
+
+                  {deficitVolumeShield.warnings.length > 0 && (
+                    <div style={{ fontSize: '11px', color: '#B91C1C', marginTop: '3px', fontWeight: 600 }}>
+                      {deficitVolumeShield.warnings[0]}
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                <button
+                  type="button"
+                  onClick={() => setShowCarbCyclingModal(true)}
+                  style={{
+                    height: '28px',
+                    padding: '0 10px',
+                    borderRadius: '8px',
+                    border: '1px solid #CBD5E1',
+                    background: '#FFFFFF',
+                    color: '#0F172A',
+                    fontSize: '11px',
+                    fontWeight: 700,
+                    cursor: 'pointer',
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '4px',
+                    transition: 'all 0.12s ease'
+                  }}
+                  onMouseEnter={(e) => { e.currentTarget.style.background = '#0F172A'; e.currentTarget.style.color = '#FFFFFF'; }}
+                  onMouseLeave={(e) => { e.currentTarget.style.background = '#FFFFFF'; e.currentTarget.style.color = '#0F172A'; }}
+                >
+                  <Activity size={13} />
+                  <span>مزامنة تدوير الكارب مع جلسات الأسبوع</span>
                 </button>
               </div>
             </div>
@@ -1276,6 +1443,163 @@ export default function CoachEditorNutritionTab(props) {
                   }}
                 >
                   حفظ وتحديث المستهدفات
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Carb Cycling Sync Modal */}
+        {showCarbCyclingModal && (
+          <div style={{
+            position: 'fixed',
+            inset: 0,
+            background: 'rgba(15, 23, 42, 0.65)',
+            backdropFilter: 'blur(4px)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            zIndex: 9999,
+            padding: '20px'
+          }}>
+            <div style={{
+              background: '#FFFFFF',
+              borderRadius: '16px',
+              width: '100%',
+              maxWidth: '750px',
+              maxHeight: '90vh',
+              overflowY: 'auto',
+              padding: '24px',
+              boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.2)',
+              border: '1px solid #E2E8F0',
+              direction: 'rtl'
+            }}>
+              {/* Header */}
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px', borderBottom: '1px solid #E2E8F0', paddingBottom: '12px' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <div style={{ width: '32px', height: '32px', borderRadius: '8px', background: '#0F172A', color: '#FFFFFF', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    <Activity size={18} />
+                  </div>
+                  <div>
+                    <h3 style={{ margin: 0, fontSize: '15px', fontWeight: 800, color: '#0F172A' }}>
+                      مزامنة تدوير الكارب مع جلسات التدريب (Carb-Cycling Dynamic Sync)
+                    </h3>
+                    <p style={{ margin: '2px 0 0', fontSize: '11.5px', color: '#64748B' }}>
+                      ربط أحمال الكربوهيدرات بالأيام الشاقة وتخفيضها بأيام الراحة مع ثبات متوسط السعرات اليومي 100%
+                    </p>
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setShowCarbCyclingModal(false)}
+                  style={{ background: '#F1F5F9', border: 'none', borderRadius: '8px', width: '30px', height: '30px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: '#64748B' }}
+                >
+                  <X size={16} />
+                </button>
+              </div>
+
+              {/* Summary Stats */}
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '10px', marginBottom: '16px' }}>
+                <div style={{ background: '#F8FAFC', padding: '10px', borderRadius: '10px', border: '1px solid #E2E8F0', textAlign: 'center' }}>
+                  <div style={{ fontSize: '10px', color: '#64748B' }}>المستهدف الأساسي</div>
+                  <strong style={{ fontSize: '13px', color: '#0F172A' }}>{carbCyclingPlan.baseline.daily_calories} kcal</strong>
+                </div>
+                <div style={{ background: '#FEF2F2', padding: '10px', borderRadius: '10px', border: '1px solid #FECACA', textAlign: 'center' }}>
+                  <div style={{ fontSize: '10px', color: '#991B1B' }}>أيام كارب شاق (+20%)</div>
+                  <strong style={{ fontSize: '13px', color: '#B91C1C' }}>{carbCyclingPlan.heavy_days_count} أيام</strong>
+                </div>
+                <div style={{ background: '#EFF6FF', padding: '10px', borderRadius: '10px', border: '1px solid #BFDBFE', textAlign: 'center' }}>
+                  <div style={{ fontSize: '10px', color: '#1E40AF' }}>أيام راحة / استشفاء (-20%)</div>
+                  <strong style={{ fontSize: '13px', color: '#1D4ED8' }}>{carbCyclingPlan.rest_days_count} أيام</strong>
+                </div>
+                <div style={{ background: '#F0FDF4', padding: '10px', borderRadius: '10px', border: '1px solid #BBF7D0', textAlign: 'center' }}>
+                  <div style={{ fontSize: '10px', color: '#166534' }}>متوسط السعرات الأسبوعي</div>
+                  <strong style={{ fontSize: '13px', color: '#15803D' }}>{carbCyclingPlan.weekly_average_calories} kcal (انحراف {carbCyclingPlan.calorie_variance}%)</strong>
+                </div>
+              </div>
+
+              {/* 7 Days Schedule Table */}
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginBottom: '18px' }}>
+                {carbCyclingPlan.weekly_breakdown.map((day, dIdx) => (
+                  <div
+                    key={dIdx}
+                    style={{
+                      background: day.day_type === 'HEAVY_TRAINING' ? '#FFFBEB' : day.day_type === 'REST_DAY' ? '#F8FAFC' : '#FFFFFF',
+                      border: day.day_type === 'HEAVY_TRAINING' ? '1px solid #FCD34D' : '1px solid #E2E8F0',
+                      borderRadius: '10px',
+                      padding: '10px 14px',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'space-between',
+                      flexWrap: 'wrap',
+                      gap: '8px'
+                    }}
+                  >
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                      <span style={{ fontSize: '12px', fontWeight: 800, color: '#0F172A', minWidth: '60px' }}>
+                        {day.day === 'MONDAY' ? 'الإثنين' :
+                         day.day === 'TUESDAY' ? 'الثلاثاء' :
+                         day.day === 'WEDNESDAY' ? 'الأربعاء' :
+                         day.day === 'THURSDAY' ? 'الخميس' :
+                         day.day === 'FRIDAY' ? 'الجمعة' :
+                         day.day === 'SATURDAY' ? 'السبت' : 'الأحد'}
+                      </span>
+
+                      <span style={{
+                        fontSize: '10px',
+                        fontWeight: 800,
+                        padding: '2px 8px',
+                        borderRadius: '6px',
+                        background: day.day_type === 'HEAVY_TRAINING' ? '#FEE2E2' : day.day_type === 'REST_DAY' ? '#EFF6FF' : '#E2E8F0',
+                        color: day.day_type === 'HEAVY_TRAINING' ? '#B91C1C' : day.day_type === 'REST_DAY' ? '#1E40AF' : '#475569'
+                      }}>
+                        {day.day_type === 'HEAVY_TRAINING' ? 'كارب شاق' : day.day_type === 'REST_DAY' ? 'كارب منخفض' : 'كارب متوسط'}
+                      </span>
+
+                      <span style={{ fontSize: '11px', color: '#475569', fontWeight: 600 }}>
+                        {day.label_ar}
+                      </span>
+                    </div>
+
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                      <div style={{ fontSize: '11.5px', color: '#0F172A', textAlign: 'left' }}>
+                        <span style={{ fontWeight: 800, color: '#0284C7' }}>{day.carbs_g}g C</span> •{' '}
+                        <span style={{ fontWeight: 700, color: '#DC2626' }}>{day.protein_g}g P</span> •{' '}
+                        <span style={{ fontWeight: 700, color: '#D97706' }}>{day.fat_g}g F</span>
+                      </div>
+
+                      <div style={{
+                        background: '#0F172A',
+                        color: '#FFFFFF',
+                        padding: '2px 8px',
+                        borderRadius: '6px',
+                        fontSize: '11px',
+                        fontWeight: 800
+                      }}>
+                        {day.calories} kcal
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              {/* Modal Footer */}
+              <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px' }}>
+                <button
+                  type="button"
+                  onClick={() => setShowCarbCyclingModal(false)}
+                  style={{
+                    padding: '8px 18px',
+                    borderRadius: '8px',
+                    border: '1px solid #CBD5E1',
+                    background: '#FFFFFF',
+                    color: '#475569',
+                    fontSize: '12px',
+                    fontWeight: 700,
+                    cursor: 'pointer'
+                  }}
+                >
+                  إغلاق
                 </button>
               </div>
             </div>
