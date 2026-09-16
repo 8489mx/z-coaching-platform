@@ -15,7 +15,6 @@ import {
   CoachAddExerciseModal,
   CoachCardioSwapModal,
   CoachMobilityModal,
-  CoachScenarioSandboxModal,
   CoachPlanQualityModal
 } from './CoachEditor/components';
 import { useCoachEditorData } from './CoachEditor/hooks';
@@ -126,7 +125,6 @@ export default function CoachEditor() {
     CARDIO_MODALITY_OPTIONS
   } = editor;
 
-  const [isSandboxOpen, setIsSandboxOpen] = React.useState(false);
   const [isPlanQualityOpen, setIsPlanQualityOpen] = React.useState(false);
 
   return (
@@ -173,7 +171,6 @@ export default function CoachEditor() {
           handleSaveDraft={handleSaveDraft}
           saving={saving}
           setIsLabModalOpen={setIsLabModalOpen}
-          setIsSandboxOpen={setIsSandboxOpen}
           setIsPlanQualityOpen={setIsPlanQualityOpen}
           handleApproveAndPublish={handleApproveAndPublish}
           publishing={publishing}
@@ -374,32 +371,6 @@ export default function CoachEditor() {
               }));
               setIsLabModalOpen(false);
               showToast('تم تحديث المؤشرات الحيوية والتحاليل في ملف المشترك بنجاح');
-            }}
-          />
-        )}
-
-        {/* Coach Physiological Scenario Sandbox Modal */}
-        {isSandboxOpen && (
-          <CoachScenarioSandboxModal
-            isOpen={isSandboxOpen}
-            onClose={() => setIsSandboxOpen(false)}
-            program={program}
-            currentSessions={currentSessions}
-            onApplyScenario={(applied) => {
-              setProgram(prev => ({
-                ...prev,
-                nutrition: {
-                  ...prev.nutrition,
-                  targets: {
-                    ...prev.nutrition?.targets,
-                    calories: applied.targets.calories,
-                    protein: applied.targets.protein,
-                    carbs: applied.targets.carbs,
-                    fats: applied.targets.fats
-                  }
-                }
-              }));
-              showToast(`تم تطبيق السيناريو الفسيولوجي: ${applied.targets.calories} سعرة حرارية`);
             }}
           />
         )}
