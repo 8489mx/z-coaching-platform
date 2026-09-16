@@ -143,6 +143,12 @@ import { MASTER_ENGINE_V2_VERSION } from "./domain/enums.js";
 import { CLINICAL_GUIDELINES } from "../config/clinical-guidelines.js";
 import { analyzeBloodworkBiomarkers } from "../execution-engines/biomarker-engine.js";
 import { generatePeriWorkoutNutrientTimingSchedule, calculateCaffeineCutoffWindow } from "../execution-engines/circadian-nutrient-timing-engine.js";
+import {
+  calculateTrainingReadiness,
+  autoregulateWorkoutSession,
+  rescheduleMissedWorkout,
+  evaluateCumulativeFatigue
+} from "../execution-engines/autoregulated-recovery-engine.js";
 
 
 function requireObject(value, name) {
@@ -901,6 +907,15 @@ export function buildMasterEngineV2(inputs) {
     biomarker_analysis: universalTargets.biomarker_analysis,
     clinical_safety_shield: universalTargets.clinical_safety_shield,
     circadian_timing: Object.freeze(circadianTiming),
+    recovery_autoregulation: Object.freeze({
+      readiness_baseline: calculateTrainingReadiness({
+        sleep_quality: canonicalIntake.lifestyle?.sleep?.quality || "GOOD",
+        sleep_hours: canonicalIntake.lifestyle?.sleep?.hours || 7.5,
+        stress_level: canonicalIntake.lifestyle?.stressLevel === 'HIGH' ? 8 : (canonicalIntake.lifestyle?.stressLevel === 'LOW' ? 2 : 4),
+        energy_level: 8
+      }),
+      framework_ar: "نظام الاستشفاء وضبط الأحمال الذاتي (Autoregulated Recovery Framework)"
+    }),
   });
 
 }

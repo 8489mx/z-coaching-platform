@@ -6,6 +6,12 @@ import {
 import { CheckinAnalysisStatus } from "../checkin-engine/index.js";
 import { evaluateJointPainAndFirewall } from "../execution-engines/biomechanics-firewall-engine.js";
 import { analyzeBloodworkBiomarkers } from "../execution-engines/biomarker-engine.js";
+import {
+  rescheduleMissedWorkout,
+  calculateTrainingReadiness,
+  autoregulateWorkoutSession,
+  evaluateCumulativeFatigue
+} from "../execution-engines/autoregulated-recovery-engine.js";
 
 function requireObject(value, name) {
   if (value === null || typeof value !== "object" || Array.isArray(value)) {
@@ -350,6 +356,33 @@ export function buildAdaptedPlan(inputs) {
           ex.safetyNote = "تخفيف الحمل العصبي ومراعاة طور الدورة الشهرية (RIR 2-3 وراحة إضافية 30 ثانية).";
         }
       }
+    }
+
+    // 1c. Missed Workout Dynamic Rescheduling & Recovery Autoregulation (Pillar 7)
+    const missedDayIndex = options.missed_day_index !== undefined
+      ? options.missed_day_index
+      : (options.missed_training_day !== undefined ? options.missed_training_day : checkinAnalysis.missed_workout_day);
+
+    if (missedDayIndex !== undefined && missedDayIndex !== null && Array.isArray(adaptedTrainingWeek.sessions)) {
+      const remainingDays = options.remaining_days_in_week !== undefined ? options.remaining_days_in_week : 4;
+      const rescheduleResult = rescheduleMissedWorkout({
+        sessions: adaptedTrainingWeek.sessions,
+        missed_day_index: Number(missedDayIndex),
+        remaining_days_in_week: remainingDays,
+        trainee_fatigue: options.trainee_fatigue || (fatigueScore >= 7 ? 'HIGH' : 'NORMAL')
+      });
+
+      adaptedTrainingWeek.sessions = rescheduleResult.rescheduled_sessions;
+      adaptedTrainingWeek.reschedule_info = {
+        strategy: rescheduleResult.strategy,
+        directive_ar: rescheduleResult.directive_ar
+      };
+
+      reasons.push({
+        code: "AUTOREGULATED_SCHEDULE_ADAPTED",
+        message_ar: rescheduleResult.directive_ar,
+        message_en: `Workout schedule autoregulated via ${rescheduleResult.strategy} strategy.`
+      });
     }
 
     // 2. Biomechanical Joint Pain Firewall & Exercise Swapping

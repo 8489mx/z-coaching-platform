@@ -76,3 +76,4 @@ export * from './scale-truth-clinical-engine.js';
 export * from './behavioral-retention-psychology-engine.js';
 
 export * from './warmup-ladder-engine.js';
+export * from './autoregulated-recovery-engine.js';
