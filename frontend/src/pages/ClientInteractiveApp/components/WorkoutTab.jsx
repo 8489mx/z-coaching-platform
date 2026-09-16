@@ -110,6 +110,24 @@ export default function WorkoutTab({
               );
             })}
           </div>
+
+          {selectedWeekData?.phase === 'DELOAD' && (
+            <div style={{
+              background: 'linear-gradient(135deg, #F0FDF4 0%, #DCFCE7 100%)',
+              border: '1px solid #86EFAC',
+              borderRadius: '12px',
+              padding: '10px 14px',
+              marginTop: '4px',
+              fontSize: '0.74rem',
+              color: '#166534',
+              lineHeight: 1.5
+            }}>
+              <strong style={{ display: 'block', marginBottom: '2px', fontWeight: 800 }}>
+                بروتوكول أسبوع تفريغ الأحمال (Active Deload Protocol):
+              </strong>
+              تم تقليص عدد المجموعات بنسبة 40% وضبط تكرارات الاحتياط عند RIR 3-4 لتجديد النواقل العصبية والأوتار المفصلية مع الحفاظ التام على أوزانك المعتادة.
+            </div>
+          )}
         </div>
       )}
 
@@ -497,20 +515,21 @@ export default function WorkoutTab({
                   display: 'inline-flex',
                   alignItems: 'center',
                   gap: '4px',
-                  background: '#FFFFFF',
+                  background: '#F8FAFC',
                   color: '#0F172A',
                   border: '1px solid #CBD5E1',
                   borderRadius: '8px',
-                  padding: '4px 8px',
+                  padding: '5px 10px',
                   fontSize: '0.72rem',
                   fontWeight: 700,
                   cursor: 'pointer',
-                  flexShrink: 0
+                  flexShrink: 0,
+                  transition: 'all 0.15s ease'
                 }}
-                title="تبديل التمرين في حال انشغال الجهاز في الجيم"
+                title="تبديل فوري في حال انشغال الجهاز أو زحمة الجيم"
               >
-                <ArrowLeftRight style={{ width: '12px', height: '12px' }} />
-                <span>بديل الجهاز</span>
+                <ArrowLeftRight style={{ width: '13px', height: '13px', color: '#0284C7' }} />
+                <span>بديل زحمة الجيم</span>
               </button>
             </div>
 

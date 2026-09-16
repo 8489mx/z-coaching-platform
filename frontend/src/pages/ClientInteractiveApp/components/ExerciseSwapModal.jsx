@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { X } from 'lucide-react';
 import { API_BASE } from '../../../config/api';
 import { getExerciseDisplayNames } from '../../../utils/exerciseTranslator';
+import { getGymRushEquivalentSwap } from '../../../utils/biomechanicsFirewallEngine';
 
 export default function ExerciseSwapModal({
   exerciseSwapTarget,
@@ -97,10 +98,11 @@ export default function ExerciseSwapModal({
           </button>
         </div>
 
-        {/* Filter Chips: All, Gym, Home */}
+        {/* Filter Chips: All, Rush, Gym, Home */}
         <div style={{ display: 'flex', gap: '4px', background: '#F8FAFC', padding: '4px', borderRadius: '8px', border: '1px solid #E2E8F0', marginBottom: '12px' }}>
           {[
             { id: 'ALL', label: 'كافة البدائل' },
+            { id: 'RUSH', label: 'بدائل الزحمة' },
             { id: 'GYM', label: 'بدائل الجيم' },
             { id: 'HOME', label: 'المنزل / دمبلز' }
           ].map(f => (
@@ -110,7 +112,7 @@ export default function ExerciseSwapModal({
               onClick={() => setExerciseSwapFilter(f.id)}
               style={{
                 flex: 1,
-                padding: '4px 8px',
+                padding: '4px 6px',
                 borderRadius: '6px',
                 border: 'none',
                 fontSize: '0.72rem',
@@ -125,6 +127,76 @@ export default function ExerciseSwapModal({
             </button>
           ))}
         </div>
+
+        {/* FEATURED INSTANT GYM RUSH CARD */}
+        {(() => {
+          const targetEx = exerciseSwapTarget?.exercise;
+          const exCode = targetEx?.code || targetEx?.id || targetEx?.exercise_code || targetEx?.name || '';
+          const rushResult = getGymRushEquivalentSwap(exCode);
+
+          if (!rushResult || !rushResult.found) return null;
+          if (exerciseSwapFilter !== 'ALL' && exerciseSwapFilter !== 'RUSH' && exerciseSwapFilter !== 'GYM') return null;
+
+          return (
+            <div style={{
+              background: 'linear-gradient(135deg, #F0F9FF 0%, #E0F2FE 100%)',
+              border: '1.5px solid #7DD3FC',
+              borderRadius: '14px',
+              padding: '12px 14px',
+              marginBottom: '14px',
+              boxShadow: '0 2px 6px rgba(2, 132, 199, 0.08)'
+            }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
+                <span style={{ fontSize: '0.68rem', fontWeight: 800, color: '#0369A1', background: '#FFFFFF', padding: '2px 8px', borderRadius: '6px' }}>
+                  بديل زحمة الجيم الفوري (تطابق بيوميكانيكي)
+                </span>
+                <span style={{ fontSize: '0.66rem', color: '#0284C7', fontWeight: 700 }}>
+                  نفس منحنى المقاومة
+                </span>
+              </div>
+              <strong style={{ display: 'block', fontSize: '0.86rem', color: '#0F172A', marginBottom: '4px' }}>
+                {rushResult.biomechanical_swap_ar}
+              </strong>
+              <p style={{ margin: '0 0 10px 0', fontSize: '0.72rem', color: '#475569', lineHeight: 1.4 }}>
+                {rushResult.coaching_cue_ar}
+              </p>
+              <button
+                type="button"
+                onClick={() => {
+                  setWorkoutSession(prev => {
+                    const updated = [...prev.exercises];
+                    const oldEx = updated[exerciseSwapTarget.exIdx];
+                    updated[exerciseSwapTarget.exIdx] = {
+                      ...oldEx,
+                      id: rushResult.swap_id || oldEx.id,
+                      code: String(rushResult.swap_id || oldEx.code).toUpperCase(),
+                      name: rushResult.biomechanical_swap_ar,
+                      name_ar: rushResult.biomechanical_swap_ar,
+                      nameEn: rushResult.swap_id,
+                      safetyNote: `بديل فوري لزحمة الجيم: ${rushResult.coaching_cue_ar}`
+                    };
+                    return { ...prev, exercises: updated };
+                  });
+                  onClose();
+                }}
+                style={{
+                  width: '100%',
+                  background: '#0284C7',
+                  color: '#FFFFFF',
+                  border: 'none',
+                  borderRadius: '8px',
+                  padding: '8px',
+                  fontSize: '0.76rem',
+                  fontWeight: 800,
+                  cursor: 'pointer',
+                  textAlign: 'center'
+                }}
+              >
+                اعتماد بديل الزحمة فوراً وتخطي الانتظار
+              </button>
+            </div>
+          );
+        })()}
 
         <p style={{ fontSize: '0.74rem', color: '#64748B', marginBottom: '12px', lineHeight: 1.4 }}>
           الجهاز في الجيم زحمة أو مشغول؟ اختر أي بديل من البدائل التالية، يضمن المحرك تطابق زاوية الشد والأمان الحركي الكامل:

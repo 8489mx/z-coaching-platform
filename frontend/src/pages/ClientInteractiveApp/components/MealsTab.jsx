@@ -82,6 +82,46 @@ export default function MealsTab({
         </div>
       </div>
 
+      {/* Static Daily Hydration Target (معدل الترطيب اليومي المستهدف - استرشادي ثابت بدون عدادات) */}
+      <div style={{
+        background: '#F0F9FF',
+        borderRadius: '14px',
+        padding: '10px 14px',
+        border: '1px solid #BAE6FD',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        gap: '10px'
+      }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <div style={{
+            width: '8px',
+            height: '8px',
+            borderRadius: '50%',
+            background: '#0284C7'
+          }} />
+          <div>
+            <span style={{ fontSize: '0.7rem', color: '#0369A1', fontWeight: 700, display: 'block' }}>
+              معدل الترطيب اليومي المستهدف (استرشادي ثابت)
+            </span>
+            <strong style={{ fontSize: '0.84rem', color: '#0F172A', fontWeight: 800 }}>
+              3.5 إلى 4.0 لتر/اليوم
+            </strong>
+          </div>
+        </div>
+        <span style={{
+          fontSize: '0.68rem',
+          color: '#0284C7',
+          background: '#FFFFFF',
+          border: '1px solid #BAE6FD',
+          padding: '3px 8px',
+          borderRadius: '6px',
+          fontWeight: 700
+        }}>
+          توزيع متوازن على مدار اليوم
+        </span>
+      </div>
+
       {/* Unified Compact Meal Controls Bar */}
       <div 
         style={{ 
