@@ -261,7 +261,7 @@ export default function IntakeAuditDetailModal({
         {/* 1. Modal Header */}
         <div style={{ padding: '10px 16px', borderBottom: '1px solid #F1F5F9', display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: '#FFFFFF', flexShrink: 0 }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <span style={{ width: '3px', height: '14px', background: '#0F172A', borderRadius: '2px', display: 'inline-block' }} />
+            <span style={{ width: '3px', height: '14px', background: '#0F172A', borderRadius: '9999px', display: 'inline-block' }} />
             <h4 style={{ margin: 0, fontSize: '13.5px', fontWeight: 800, color: '#0F172A' }}>
               مراجعة استمارة المتدرب: {clientName}
             </h4>
@@ -420,7 +420,7 @@ export default function IntakeAuditDetailModal({
               {/* Card 1: Vitals & Metabolism */}
               <div style={{ background: '#FFFFFF', border: '1px solid #E2E8F0', borderRadius: '8px', padding: '9px 11px' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '5px', marginBottom: '6px' }}>
-                  <span style={{ width: '2.5px', height: '11px', background: '#0F172A', borderRadius: '1px', display: 'inline-block' }} />
+                  <span style={{ width: '2.5px', height: '11px', background: '#0F172A', borderRadius: '9999px', display: 'inline-block' }} />
                   <strong style={{ fontSize: '11.5px', color: '#0F172A' }}>القياسات ومعدل الحرق</strong>
                 </div>
 
@@ -474,7 +474,7 @@ export default function IntakeAuditDetailModal({
               <div style={{ background: '#FFFFFF', border: '1px solid #E2E8F0', borderRadius: '8px', padding: '9px 11px' }}>
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '6px' }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
-                    <span style={{ width: '2.5px', height: '11px', background: '#0F172A', borderRadius: '1px', display: 'inline-block' }} />
+                    <span style={{ width: '2.5px', height: '11px', background: '#0F172A', borderRadius: '9999px', display: 'inline-block' }} />
                     <strong style={{ fontSize: '11.5px', color: '#0F172A' }}>صور القوام وتقرير InBody</strong>
                   </div>
                   {medicalReportsList.length > 0 && (
@@ -519,7 +519,7 @@ export default function IntakeAuditDetailModal({
               {/* Card 3: Nutrition & Exclusions */}
               <div style={{ background: '#FFFFFF', border: '1px solid #E2E8F0', borderRadius: '8px', padding: '9px 11px' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '5px', marginBottom: '6px' }}>
-                  <span style={{ width: '2.5px', height: '11px', background: '#0F172A', borderRadius: '1px', display: 'inline-block' }} />
+                  <span style={{ width: '2.5px', height: '11px', background: '#0F172A', borderRadius: '9999px', display: 'inline-block' }} />
                   <strong style={{ fontSize: '11.5px', color: '#0F172A' }}>النمط الغذائي والممنوعات</strong>
                 </div>
 
@@ -599,7 +599,7 @@ export default function IntakeAuditDetailModal({
               {/* Card 4: Training & Lifestyle */}
               <div style={{ background: '#FFFFFF', border: '1px solid #E2E8F0', borderRadius: '8px', padding: '9px 11px' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '5px', marginBottom: '6px' }}>
-                  <span style={{ width: '2.5px', height: '11px', background: '#0F172A', borderRadius: '1px', display: 'inline-block' }} />
+                  <span style={{ width: '2.5px', height: '11px', background: '#0F172A', borderRadius: '9999px', display: 'inline-block' }} />
                   <strong style={{ fontSize: '11.5px', color: '#0F172A' }}>التدريب ونمط الحياة والصحة</strong>
                 </div>
 
@@ -713,7 +713,7 @@ export default function IntakeAuditDetailModal({
                     }}
                     style={{
                       padding: '6px 14px',
-                      borderRadius: '5px',
+                      borderRadius: '8px',
                       border: '1px solid #93C5FD',
                       background: '#EFF6FF',
                       color: '#1D4ED8',
@@ -738,7 +738,7 @@ export default function IntakeAuditDetailModal({
                     disabled={generatingId === submission.id}
                     style={{
                       padding: '6px 16px',
-                      borderRadius: '5px',
+                      borderRadius: '8px',
                       border: 'none',
                       background: 'linear-gradient(135deg, #0F172A 0%, #1E293B 100%)',
                       color: '#FFFFFF',

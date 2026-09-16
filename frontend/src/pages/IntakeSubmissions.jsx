@@ -1,7 +1,7 @@
 import { ClientCodeBadge, ClientPackageBadge, getClientTier } from '../utils/tierBadgeHelper';
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
-import { ExternalLink, Search, Clock, CheckCircle2, CreditCard, FileText, Send, Check, MessageCircle, Eye, Edit3, X, Layers } from 'lucide-react';
+import { ExternalLink, Search, Clock, CheckCircle2, CreditCard, FileText, Send, Check, MessageCircle, Eye, Edit3, X, Layers, TrendingUp, RefreshCw } from 'lucide-react';
 import { API_BASE } from '../config/api';
 import AdminLayout from '../components/layout/AdminLayout';
 import WhatsAppModal from '../components/modals/WhatsAppModal';
@@ -17,6 +17,7 @@ export default function IntakeSubmissions() {
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState('ALL'); // ALL | IN_PROGRESS | PENDING | PAID | DRAFT | APPROVED
   const [searchTerm, setSearchTerm] = useState('');
+  const searchInputRef = useRef(null);
 
   // Modals state
   const [selectedAnswers, setSelectedAnswers] = useState(null);
@@ -36,14 +37,65 @@ export default function IntakeSubmissions() {
 
   useEffect(() => {
     const handleKeyDown = (e) => {
+      const activeEl = document.activeElement;
+      const isInputActive = activeEl && (
+        activeEl.tagName === 'INPUT' ||
+        activeEl.tagName === 'TEXTAREA' ||
+        activeEl.isContentEditable
+      );
+
       if (e.key === 'Escape' || e.keyCode === 27) {
-        if (whatsappClient) setWhatsappClient(null);
-        if (selectedAnswers) setSelectedAnswers(null);
+        if (whatsappClient) {
+          setWhatsappClient(null);
+          return;
+        }
+        if (selectedAnswers) {
+          setSelectedAnswers(null);
+          return;
+        }
+        if (searchTerm) {
+          setSearchTerm('');
+          return;
+        }
+        if (isInputActive) {
+          activeEl.blur();
+        }
+        return;
+      }
+
+      if (isInputActive) return;
+
+      if (e.key === '/' && !e.ctrlKey && !e.metaKey) {
+        e.preventDefault();
+        searchInputRef.current?.focus();
+        return;
+      }
+
+      if ((e.key === 'r' || e.key === 'R') && !e.ctrlKey && !e.metaKey) {
+        e.preventDefault();
+        fetchSubmissions();
+        return;
+      }
+
+      if (['1', '2', '3', '4', '5', '6'].includes(e.key)) {
+        e.preventDefault();
+        const keyMap = {
+          '1': 'ALL',
+          '2': 'IN_PROGRESS',
+          '3': 'PENDING',
+          '4': 'PAID',
+          '5': 'DRAFT',
+          '6': 'APPROVED'
+        };
+        if (keyMap[e.key]) {
+          setFilter(keyMap[e.key]);
+        }
       }
     };
+
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [whatsappClient, selectedAnswers]);
+  }, [whatsappClient, selectedAnswers, searchTerm]);
 
   const fetchSubmissions = async () => {
     try {
@@ -172,12 +224,12 @@ export default function IntakeSubmissions() {
   const approvedCount = submissions.filter(s => s.status === 'APPROVED').length;
 
   const statCards = [
-    { id: 'ALL', title: 'كافة الاستمارات', value: submissions.length, unit: 'استمارة', label: 'إجمالي المسجلين', icon: Layers },
-    { id: 'IN_PROGRESS', title: 'استمارات جارية', value: inProgressCount, unit: 'استمارة', label: 'قيد التعبئة', icon: Edit3 },
-    { id: 'PENDING', title: 'بانتظار المراجعة', value: pendingCount, unit: 'استمارة', label: 'مكتملة الإجابات', icon: Clock },
-    { id: 'PAID', title: 'مؤكدة الدفع', value: paidCount, unit: 'استمارة', label: 'تم التحويل', icon: CreditCard },
-    { id: 'DRAFT', title: 'مسودات الخطط', value: draftCount, unit: 'خطة', label: 'جاهزة للاعتماد', icon: FileText },
-    { id: 'APPROVED', title: 'البرامج المعتمدة', value: approvedCount, unit: 'برنامج', label: 'منشورة للمتدرب', icon: CheckCircle2 },
+    { id: 'ALL', title: 'كافة الاستمارات', value: submissions.length, unit: 'استمارة', label: 'إجمالي المسجلين', icon: Layers, shortcut: '1' },
+    { id: 'IN_PROGRESS', title: 'استمارات جارية', value: inProgressCount, unit: 'استمارة', label: 'قيد التعبئة', icon: Edit3, shortcut: '2' },
+    { id: 'PENDING', title: 'بانتظار المراجعة', value: pendingCount, unit: 'استمارة', label: 'مكتملة الإجابات', icon: Clock, shortcut: '3' },
+    { id: 'PAID', title: 'مؤكدة الدفع', value: paidCount, unit: 'استمارة', label: 'تم التحويل', icon: CreditCard, shortcut: '4' },
+    { id: 'DRAFT', title: 'مسودات الخطط', value: draftCount, unit: 'خطة', label: 'جاهزة للاعتماد', icon: FileText, shortcut: '5' },
+    { id: 'APPROVED', title: 'البرامج المعتمدة', value: approvedCount, unit: 'برنامج', label: 'منشورة للمتدرب', icon: CheckCircle2, shortcut: '6' },
   ];
 
   return (
@@ -230,7 +282,7 @@ export default function IntakeSubmissions() {
                 style={{
                   background: isSel ? '#F8FAFC' : '#FFFFFF',
                   border: isSel ? '2px solid #0F172A' : '1px solid #E2E8F0',
-                  borderRadius: '10px',
+                  borderRadius: '12px',
                   padding: '14px 16px',
                   boxShadow: isSel ? '0 4px 12px rgba(15, 23, 42, 0.08)' : '0 1px 3px rgba(15, 23, 42, 0.02)',
                   display: 'flex',
@@ -241,7 +293,21 @@ export default function IntakeSubmissions() {
                 }}
               >
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                  <span style={{ fontSize: '12px', fontWeight: isSel ? 800 : 700, color: isSel ? '#0F172A' : '#64748B', whiteSpace: 'nowrap' }}>{st.title}</span>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                    <span style={{ fontSize: '12px', fontWeight: isSel ? 800 : 700, color: isSel ? '#0F172A' : '#64748B', whiteSpace: 'nowrap' }}>{st.title}</span>
+                    <span style={{
+                      fontSize: '9.5px',
+                      fontFamily: 'JetBrains Mono, monospace',
+                      padding: '1px 5px',
+                      borderRadius: '6px',
+                      background: isSel ? '#0F172A' : '#F1F5F9',
+                      color: isSel ? '#FFFFFF' : '#64748B',
+                      border: `1px solid ${isSel ? '#0F172A' : '#CBD5E1'}`,
+                      fontWeight: 700
+                    }}>
+                      [{st.shortcut}]
+                    </span>
+                  </div>
                   <div style={{
                     width: '28px',
                     height: '28px',
@@ -284,6 +350,35 @@ export default function IntakeSubmissions() {
           description="كافة الاستمارات الواردة مع إمكانية مراجعة الإجابات، تأكيد التحويل، وتوليد البرامج."
           actions={(
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+              {/* Refresh Button */}
+              <button
+                type="button"
+                onClick={fetchSubmissions}
+                disabled={loading}
+                style={{
+                  height: '32px',
+                  padding: '0 10px',
+                  borderRadius: '8px',
+                  border: '1px solid #E2E8F0',
+                  background: '#FFFFFF',
+                  color: '#475569',
+                  fontSize: '11px',
+                  fontWeight: 700,
+                  cursor: 'pointer',
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '5px',
+                  transition: 'all 0.15s ease'
+                }}
+                onMouseEnter={(e) => (e.currentTarget.style.background = '#F8FAFC')}
+                onMouseLeave={(e) => (e.currentTarget.style.background = '#FFFFFF')}
+                title="تحديث البيانات لحظياً [R]"
+              >
+                <RefreshCw size={12} className={loading ? 'animate-spin' : ''} />
+                <span>تحديث</span>
+                <span style={{ fontSize: '9px', opacity: 0.7, fontFamily: 'JetBrains Mono, monospace' }}>[R]</span>
+              </button>
+
               {/* Search Box */}
               <div 
                 style={{
@@ -300,8 +395,9 @@ export default function IntakeSubmissions() {
               >
                 <Search size={13} color="#94A3B8" />
                 <input
+                  ref={searchInputRef}
                   type="text"
-                  placeholder="بحث في الاستمارات..."
+                  placeholder="بحث في الاستمارات... [/]"
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                   style={{
@@ -313,10 +409,12 @@ export default function IntakeSubmissions() {
                     color: '#0F172A'
                   }}
                 />
-                {searchTerm && (
+                {searchTerm ? (
                   <button type="button" onClick={() => setSearchTerm('')} style={{ border: 'none', background: 'transparent', cursor: 'pointer', padding: 0, color: '#94A3B8' }}>
                     <X size={12} />
                   </button>
+                ) : (
+                  <span style={{ fontSize: '9.5px', color: '#94A3B8', fontFamily: 'JetBrains Mono, monospace', padding: '1px 5px', background: '#FFFFFF', border: '1px solid #E2E8F0', borderRadius: '6px' }}>/</span>
                 )}
               </div>
 
@@ -342,7 +440,7 @@ export default function IntakeSubmissions() {
               جاري تحميل الاستمارات...
             </div>
           ) : filteredSubmissions.length === 0 ? (
-            <div style={{ padding: '40px 16px', textAlign: 'center', background: '#F8FAFC', border: '1px dashed #CBD5E1', borderRadius: '8px' }}>
+            <div style={{ padding: '40px 16px', textAlign: 'center', background: '#F8FAFC', border: '1px dashed #CBD5E1', borderRadius: '12px' }}>
               <div style={{ width: '36px', height: '36px', borderRadius: '50%', background: '#F1F5F9', color: '#0F172A', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 8px auto' }}>
                 <CheckCircle2 size={18} />
               </div>
@@ -350,7 +448,7 @@ export default function IntakeSubmissions() {
               <small style={{ fontSize: '11.5px', color: '#64748B' }}>لم يتم العثور على أي استمارة مسجلة تحت هذا التصنيف أو البحث.</small>
             </div>
           ) : (
-            <div style={{ overflowX: 'auto', border: '1px solid #E2E8F0', borderRadius: '8px' }}>
+            <div style={{ overflowX: 'auto', border: '1px solid #E2E8F0', borderRadius: '12px' }}>
               <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'right', fontSize: '12px' }}>
                 <thead>
                   <tr style={{ background: '#F8FAFC', borderBottom: '1px solid #E2E8F0', color: '#475569', fontWeight: 700 }}>
@@ -394,6 +492,21 @@ export default function IntakeSubmissions() {
                             <strong style={{ color: '#0F172A', fontSize: '13px' }}>{clientName}</strong>
                             {(() => {
                               const fasting = extractClientFastingProfile(sub, sub.answers);
+                              const injuries = sub.answers?.injuries_map?.selected_areas || sub.answers?.training?.selectedInjuries || [];
+                              const validInjuries = Array.isArray(injuries) ? injuries.filter(x => x && x !== 'NONE') : [];
+                              const hasInjuries = validInjuries.length > 0;
+
+                              const medicalConds = sub.answers?.medical_conditions?.selected || sub.answers?.medical?.conditions || [];
+                              const validConditions = Array.isArray(medicalConds) ? medicalConds.filter(x => {
+                                const code = typeof x === 'string' ? x : x?.conditionCode;
+                                return code && code !== 'NONE';
+                              }) : [];
+                              const hasConditions = validConditions.length > 0;
+
+                              const allergies = sub.answers?.strict_allergies || sub.answers?.nutrition?.excludedFoodsList || [];
+                              const validAllergies = Array.isArray(allergies) ? allergies.filter(x => x && x !== 'NONE') : [];
+                              const hasAllergies = validAllergies.length > 0;
+
                               return (
                                 <>
                                   {fasting.primaryFastingBadge && (
@@ -420,6 +533,45 @@ export default function IntakeSubmissions() {
                                       fontWeight: 800
                                     }}>
                                       {fasting.intermittentBadge.label}
+                                    </span>
+                                  )}
+                                  {hasInjuries && (
+                                    <span style={{
+                                      fontSize: '10px',
+                                      padding: '2px 7px',
+                                      borderRadius: '6px',
+                                      background: '#FEF2F2',
+                                      border: '1px solid #FECACA',
+                                      color: '#DC2626',
+                                      fontWeight: 800
+                                    }} title="توجد إصابات مسجلة بالاستمارة">
+                                      إصابة
+                                    </span>
+                                  )}
+                                  {hasConditions && (
+                                    <span style={{
+                                      fontSize: '10px',
+                                      padding: '2px 7px',
+                                      borderRadius: '6px',
+                                      background: '#FFFBEB',
+                                      border: '1px solid #FDE68A',
+                                      color: '#D97706',
+                                      fontWeight: 800
+                                    }} title="توجد حالات صحية مسجلة">
+                                      حالة صحية
+                                    </span>
+                                  )}
+                                  {hasAllergies && (
+                                    <span style={{
+                                      fontSize: '10px',
+                                      padding: '2px 7px',
+                                      borderRadius: '6px',
+                                      background: '#FDF2F8',
+                                      border: '1px solid #FBCFE8',
+                                      color: '#DB2777',
+                                      fontWeight: 800
+                                    }} title="توجد حساسيات طعام مسجلة">
+                                      حساسية
                                     </span>
                                   )}
                                 </>
@@ -526,9 +678,10 @@ export default function IntakeSubmissions() {
                                 }
                               }}
                               style={{
-                                padding: '4px 10px',
-                                borderRadius: '6px',
-                                border: '1px solid #E2E8F0', background: 'transparent',
+                                padding: '5px 10px',
+                                borderRadius: '8px',
+                                border: '1px solid #E2E8F0',
+                                background: 'transparent',
                                 color: '#16A34A',
                                 fontSize: '11.5px',
                                 fontWeight: 700,
@@ -558,7 +711,7 @@ export default function IntakeSubmissions() {
                               onClick={() => handleToggleAnswers(sub)}
                               style={{
                                 padding: '5px 9px',
-                                borderRadius: '7px',
+                                borderRadius: '8px',
                                 border: '1px solid #CBD5E1',
                                 background: '#FFFFFF',
                                 color: '#475569',
@@ -575,6 +728,33 @@ export default function IntakeSubmissions() {
                               <span>إجابات</span>
                             </button>
 
+                            {/* Timeline Profile Link */}
+                            {cleanCode && cleanCode !== '1' && (
+                              <Link
+                                to={`/coach/timeline/${cleanCode}`}
+                                style={{
+                                  padding: '5px 9px',
+                                  borderRadius: '8px',
+                                  border: '1px solid #CBD5E1',
+                                  background: '#FFFFFF',
+                                  color: '#475569',
+                                  fontSize: '11px',
+                                  fontWeight: 700,
+                                  textDecoration: 'none',
+                                  display: 'inline-flex',
+                                  alignItems: 'center',
+                                  gap: '4px',
+                                  transition: 'all 0.15s ease'
+                                }}
+                                onMouseEnter={(e) => (e.currentTarget.style.background = '#F8FAFC')}
+                                onMouseLeave={(e) => (e.currentTarget.style.background = '#FFFFFF')}
+                                title="سجل التطور الزمني والمقارنات"
+                              >
+                                <TrendingUp size={12} />
+                                <span>التطور</span>
+                              </Link>
+                            )}
+
                             {/* Direct Verify Payment trigger if not paid */}
                             {sub.status !== 'APPROVED' && sub.payment_status !== 'PAID' && (
                               <button
@@ -583,7 +763,7 @@ export default function IntakeSubmissions() {
                                 onClick={() => handleVerifyPayment(sub)}
                                 style={{
                                   padding: '5px 10px',
-                                  borderRadius: '7px',
+                                  borderRadius: '8px',
                                   border: '1px solid #86EFAC',
                                   background: '#F0FDF4',
                                   color: '#16A34A',
@@ -604,7 +784,7 @@ export default function IntakeSubmissions() {
                               disabled={generatingId === sub.id}
                               style={{
                                 padding: '5px 12px',
-                                borderRadius: '7px',
+                                borderRadius: '8px',
                                 background: '#0F172A',
                                 color: '#FFFFFF',
                                 fontSize: '11px',
