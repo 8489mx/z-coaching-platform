@@ -1,5 +1,10 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { User, Activity, TrendingUp, TrendingDown, Calendar, Settings2, ChevronRight, Target, ArrowRightLeft, CheckCircle2, MessageCircle, ExternalLink, ZoomIn, X, Clock, Dumbbell, Scale, Flame, AlertCircle, HeartPulse } from 'lucide-react';
+import { 
+  User, Activity, TrendingUp, TrendingDown, Calendar, Settings2, 
+  ChevronRight, ChevronLeft, Target, ArrowRightLeft, CheckCircle2, 
+  MessageCircle, ExternalLink, ZoomIn, X, Clock, Dumbbell, Scale, 
+  Flame, AlertCircle, HeartPulse, ShieldAlert, Copy, Check 
+} from 'lucide-react';
 import { useNavigate, useParams, Link } from 'react-router-dom';
 import AdminLayout from '../components/layout/AdminLayout';
 import { API_BASE } from '../config/api';
@@ -21,6 +26,7 @@ export default function ClientTimelineProfile() {
 
   const [loading, setLoading] = useState(true);
   const [client, setClient] = useState(null);
+  const [clientsList, setClientsList] = useState([]);
   const [checkins, setCheckins] = useState([]);
   const [photos, setPhotos] = useState([]);
   const [currentPhase, setCurrentPhase] = useState('FAT_LOSS');
@@ -28,6 +34,7 @@ export default function ClientTimelineProfile() {
   const [previewPhoto, setPreviewPhoto] = useState(null);
   const [phaseMessage, setPhaseMessage] = useState('');
   const [isLabModalOpen, setIsLabModalOpen] = useState(false);
+  const [copiedSummary, setCopiedSummary] = useState(false);
 
   // Clean and parse ID / Code
   const cleanId = useMemo(() => String(id || '1').replace(/^#+/, '').replace(/^client[-_]?/i, ''), [id]);
@@ -62,7 +69,9 @@ export default function ClientTimelineProfile() {
         const clientsRes = await fetch(`${API_BASE}/api/v1/clients`);
         if (clientsRes.ok) {
           const clientsJson = await clientsRes.json();
-          const matched = (clientsJson.clients || []).find(c => {
+          const list = clientsJson.clients || [];
+          setClientsList(list);
+          const matched = list.find(c => {
             const strippedCode = String(c.client_code || c.id || '').replace(/^#+/, '').replace(/^client[-_]?/i, '');
             return strippedCode === cleanId ||
               String(c.id) === cleanId ||
@@ -100,6 +109,69 @@ export default function ClientTimelineProfile() {
       console.error('fetchClientProfile global error:', err);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const currentIndex = useMemo(() => {
+    return clientsList.findIndex(c => {
+      const strippedCode = String(c.client_code || c.id || '').replace(/^#+/, '').replace(/^client[-_]?/i, '');
+      return strippedCode === cleanId || String(c.id) === cleanId;
+    });
+  }, [clientsList, cleanId]);
+
+  const prevClient = currentIndex > 0 ? clientsList[currentIndex - 1] : null;
+  const nextClient = currentIndex >= 0 && currentIndex < clientsList.length - 1 ? clientsList[currentIndex + 1] : null;
+
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if (['INPUT', 'TEXTAREA'].includes(e.target?.tagName)) return;
+      if (e.key === 'Escape') {
+        if (previewPhoto) setPreviewPhoto(null);
+        if (isLabModalOpen) setIsLabModalOpen(false);
+      } else if (e.key === '[') {
+        if (prevClient) {
+          const prevCode = prevClient.client_code || prevClient.id;
+          navigate(`/coach/timeline/${prevCode}`);
+        }
+      } else if (e.key === ']') {
+        if (nextClient) {
+          const nextCode = nextClient.client_code || nextClient.id;
+          navigate(`/coach/timeline/${nextCode}`);
+        }
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [prevClient, nextClient, previewPhoto, isLabModalOpen, navigate]);
+
+  const handleCopySummary = async () => {
+    const oldestCheckin = checkins.length > 0 ? checkins[checkins.length - 1] : null;
+    const latestCheckin = checkins.length > 0 ? checkins[0] : null;
+    const initialWeight = oldestCheckin?.average_weight_kg || oldestCheckin?.weight_kg || client?.initial_weight || '--';
+    const currentWeight = latestCheckin?.average_weight_kg || latestCheckin?.weight_kg || client?.current_weight || '--';
+    const weightDiff = (initialWeight !== '--' && currentWeight !== '--')
+      ? (Number(currentWeight) - Number(initialWeight)).toFixed(1)
+      : null;
+
+    const currentWaist = latestCheckin?.waist_circumference_cm || '--';
+    const activeStage = PERIODIZATION_PHASES.find(p => p.id === currentPhase) || PERIODIZATION_PHASES[0];
+
+    const lines = [
+      `تقرير تطور المشترك: ${clientName} (${clientCode ? `#${clientCode}` : ''})`,
+      `المرحلة الفسيولوجية: ${activeStage.label}`,
+      `الوزن الأولي: ${initialWeight} كجم | الوزن الحالي: ${currentWeight} كجم${weightDiff !== null ? ` (الفرق: ${Number(weightDiff) > 0 ? `+${weightDiff}` : weightDiff} كجم)` : ''}`,
+      currentWaist !== '--' ? `محيط الخصر الحالي: ${currentWaist} سم` : null,
+      `أسابيع المتابعة المسجلة: ${checkins.length} أسابيع`,
+      `صور التطور المسجلة: ${photos.length} صور`,
+      client?.days_remaining !== undefined ? `الأيام المتبقية في الاشتراك: ${client.days_remaining} يوم` : null
+    ].filter(Boolean).join('\n');
+
+    try {
+      await navigator.clipboard.writeText(lines);
+      setCopiedSummary(true);
+      setTimeout(() => setCopiedSummary(false), 3000);
+    } catch (err) {
+      console.warn('Clipboard error:', err);
     }
   };
 
@@ -142,22 +214,97 @@ export default function ClientTimelineProfile() {
       <div dir="rtl" style={{ minHeight: '100vh', background: '#F8FAFC', color: '#0F172A', fontFamily: 'Cairo, Tajawal, sans-serif', paddingBottom: '80px' }}>
         
         {/* Top Header Card */}
-        <div style={{ background: '#FFFFFF', borderBottom: '1px solid #E2E8F0', padding: '16px 20px', position: 'sticky', top: 0, zIndex: 30, boxShadow: '0 1px 3px rgba(15, 23, 42, 0.04)' }}>
+        <div style={{ background: '#FFFFFF', borderBottom: '1px solid #E2E8F0', padding: '14px 20px', position: 'sticky', top: 0, zIndex: 30, boxShadow: '0 1px 3px rgba(15, 23, 42, 0.04)' }}>
           <div style={{ maxWidth: '1040px', margin: '0 auto', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '10px' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-              <button 
-                type="button" 
-                onClick={() => navigate('/customers')} 
-                style={{ background: '#F8FAFC', border: '1px solid #CBD5E1', borderRadius: '8px', width: '34px', height: '34px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: '#475569' }}
-                title="الرجوع لقائمة المتدربين"
-              >
-                <ChevronRight size={18} />
-              </button>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                <button 
+                  type="button" 
+                  onClick={() => navigate('/customers')} 
+                  style={{ background: '#F8FAFC', border: '1px solid #CBD5E1', borderRadius: '8px', width: '32px', height: '32px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: '#475569' }}
+                  title="الرجوع لقائمة المتدربين"
+                >
+                  <ChevronRight size={18} />
+                </button>
+
+                {clientsList.length > 1 && (
+                  <div style={{ display: 'inline-flex', alignItems: 'center', gap: '2px', background: '#F1F5F9', padding: '2px 4px', borderRadius: '8px', border: '1px solid #E2E8F0' }}>
+                    <button
+                      type="button"
+                      onClick={() => prevClient && navigate(`/coach/timeline/${prevClient.client_code || prevClient.id}`)}
+                      disabled={!prevClient}
+                      title={prevClient ? `المشترك السابق: ${prevClient.full_name || prevClient.name} (اختصار [)` : 'لا يوجد مشترك سابق'}
+                      style={{
+                        height: '28px',
+                        padding: '0 8px',
+                        borderRadius: '6px',
+                        border: 'none',
+                        background: prevClient ? '#FFFFFF' : 'transparent',
+                        color: prevClient ? '#0F172A' : '#94A3B8',
+                        fontSize: '11px',
+                        fontWeight: 700,
+                        cursor: prevClient ? 'pointer' : 'not-allowed',
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: '2px',
+                        boxShadow: prevClient ? '0 1px 2px rgba(15, 23, 42, 0.05)' : 'none'
+                      }}
+                    >
+                      <ChevronRight size={13} />
+                      <span>السابق</span>
+                    </button>
+
+                    {currentIndex >= 0 && (
+                      <span style={{ fontSize: '10.5px', color: '#64748B', fontWeight: 700, padding: '0 6px' }}>
+                        {currentIndex + 1} / {clientsList.length}
+                      </span>
+                    )}
+
+                    <button
+                      type="button"
+                      onClick={() => nextClient && navigate(`/coach/timeline/${nextClient.client_code || nextClient.id}`)}
+                      disabled={!nextClient}
+                      title={nextClient ? `المشترك التالي: ${nextClient.full_name || nextClient.name} (اختصار ])` : 'لا يوجد مشترك تالي'}
+                      style={{
+                        height: '28px',
+                        padding: '0 8px',
+                        borderRadius: '6px',
+                        border: 'none',
+                        background: nextClient ? '#FFFFFF' : 'transparent',
+                        color: nextClient ? '#0F172A' : '#94A3B8',
+                        fontSize: '11px',
+                        fontWeight: 700,
+                        cursor: nextClient ? 'pointer' : 'not-allowed',
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: '2px',
+                        boxShadow: nextClient ? '0 1px 2px rgba(15, 23, 42, 0.05)' : 'none'
+                      }}
+                    >
+                      <span>التالي</span>
+                      <ChevronLeft size={13} />
+                    </button>
+                  </div>
+                )}
+              </div>
+
               <div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                  <h1 style={{ margin: 0, fontSize: '17px', fontWeight: 900, color: '#0F172A' }}>{clientName}</h1>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+                  <h1 style={{ margin: 0, fontSize: '16.5px', fontWeight: 900, color: '#0F172A' }}>{clientName}</h1>
                   <ClientCodeBadge code={clientCode} item={client} size="md" />
                   <ClientPackageBadge item={client} size="sm" />
+                  {client?.injuries && client.injuries.length > 0 && (
+                    <span style={{ fontSize: '10.5px', padding: '2px 8px', borderRadius: '6px', background: '#FEF2F2', border: '1px solid #FECACA', color: '#DC2626', fontWeight: 800, display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+                      <ShieldAlert size={12} />
+                      <span>إصابة: {client.injuries.join('، ')}</span>
+                    </span>
+                  )}
+                  {client?.allergies && client.allergies.length > 0 && (
+                    <span style={{ fontSize: '10.5px', padding: '2px 8px', borderRadius: '6px', background: '#F0F9FF', border: '1px solid #BAE6FD', color: '#0284C7', fontWeight: 800, display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+                      <AlertCircle size={12} />
+                      <span>حساسية: {client.allergies.join('، ')}</span>
+                    </span>
+                  )}
                   {(() => {
                     const fasting = extractClientFastingProfile(client);
                     if (fasting?.isCoptic) {
@@ -184,12 +331,35 @@ export default function ClientTimelineProfile() {
                     return null;
                   })()}
                 </div>
-                <span style={{ fontSize: '11.5px', color: '#64748B' }}>سجل التطور الزمني والمقارنة البصرية الشاملة</span>
+                <span style={{ fontSize: '11px', color: '#64748B' }}>سجل التطور الزمني والمقارنة البصرية الشاملة (اختصار [ و ] للتنقل)</span>
               </div>
             </div>
 
             {/* Quick Action Buttons */}
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+              <button
+                type="button"
+                onClick={handleCopySummary}
+                style={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '6px',
+                  background: copiedSummary ? '#ECFDF5' : '#F8FAFC',
+                  border: copiedSummary ? '1px solid #A7F3D0' : '1px solid #CBD5E1',
+                  color: copiedSummary ? '#065F46' : '#0F172A',
+                  padding: '7px 14px',
+                  borderRadius: '8px',
+                  fontSize: '11.5px',
+                  fontWeight: 800,
+                  cursor: 'pointer',
+                  transition: 'all 0.15s ease'
+                }}
+                title="نسخ تقرير وملخص التطور الرقمي للحافظة لمشاركته مع المتدرب"
+              >
+                {copiedSummary ? <Check size={14} color="#059669" /> : <Copy size={14} />}
+                <span>{copiedSummary ? 'تم النسخ!' : 'نسخ ملخص التطور'}</span>
+              </button>
+
               <Link 
                 to={`/coach/editor/${clientCode}`}
                 style={{
