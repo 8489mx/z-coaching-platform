@@ -38,6 +38,7 @@ export * from './postural-prehab-engine.js';
 // 4. Physiological Buffers & Recovery Engines
 export * from './female-cycle-buffer-engine.js';
 export * from './circadian-lab-trigger-engine.js';
+export * from './circadian-nutrient-timing-engine.js';
 export * from './hydration-sweat-engine.js';
 export * from './neat-titration-engine.js';
 export * from './phase-progression-engine.js';

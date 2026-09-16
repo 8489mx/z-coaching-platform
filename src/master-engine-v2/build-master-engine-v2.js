@@ -142,6 +142,7 @@ import { adaptIntakePayloadToCanonicalEngine } from "../intake-decision-engine/a
 import { MASTER_ENGINE_V2_VERSION } from "./domain/enums.js";
 import { CLINICAL_GUIDELINES } from "../config/clinical-guidelines.js";
 import { analyzeBloodworkBiomarkers } from "../execution-engines/biomarker-engine.js";
+import { generatePeriWorkoutNutrientTimingSchedule, calculateCaffeineCutoffWindow } from "../execution-engines/circadian-nutrient-timing-engine.js";
 
 
 function requireObject(value, name) {
@@ -834,6 +835,23 @@ export function buildMasterEngineV2(inputs) {
     })),
   };
 
+  // 6. Circadian Rhythm & Peri-Workout Nutrient Timing Synthesis
+  const preferredWorkoutTime = canonicalIntake.training?.preferredTime || effectiveIntake?.training?.preferredTime || effectiveIntake?.preferred_workout_time || "17:00";
+  const clientBedtime = canonicalIntake.lifestyle?.sleep?.bedtime || effectiveIntake?.lifestyle?.sleep?.bedtime || effectiveIntake?.bedtime || "23:00";
+  const clientWakeTime = canonicalIntake.lifestyle?.sleep?.wakeTime || effectiveIntake?.lifestyle?.sleep?.wakeTime || effectiveIntake?.wake_time || "07:00";
+
+  const circadianTiming = generatePeriWorkoutNutrientTimingSchedule({
+    workout_time: preferredWorkoutTime,
+    workout_duration_minutes: 60,
+    bedtime: clientBedtime,
+    wake_time: clientWakeTime,
+    daily_calories: universalTargets.target_calories,
+    daily_protein_g: universalTargets.protein_g,
+    daily_carbs_g: universalTargets.carb_g,
+    daily_fat_g: universalTargets.fat_g,
+    meal_count: universalTargets.meals_count,
+  });
+
   const nutrition_program_v2 = Object.freeze({
     ...baseNutritionProgram,
     targets: {
@@ -854,6 +872,7 @@ export function buildMasterEngineV2(inputs) {
     clinical_supplements: universalTargets.biomarker_analysis?.supplement_recommendations || [],
     whole_food_interventions: universalTargets.biomarker_analysis?.whole_food_interventions || [],
     medical_referrals: universalTargets.biomarker_analysis?.medical_referrals || [],
+    circadian_timing: Object.freeze(circadianTiming),
     hypoglycemia_guard: universalTargets.clinical_guardrails?.hypoglycemia_guard_active ? Object.freeze({
       active: true,
       guidance_ar: CLINICAL_GUIDELINES.DIABETES.SAFETY_GUIDANCE_AR,
@@ -881,6 +900,7 @@ export function buildMasterEngineV2(inputs) {
     hypoglycemia_guard: masterHypoglycemiaGuard,
     biomarker_analysis: universalTargets.biomarker_analysis,
     clinical_safety_shield: universalTargets.clinical_safety_shield,
+    circadian_timing: Object.freeze(circadianTiming),
   });
 
 }
