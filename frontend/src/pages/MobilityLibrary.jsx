@@ -1,6 +1,6 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { Link } from 'react-router-dom';
-import { HeartPulse, Search, Plus, X, Play, Copy, Check, RotateCw, Flame, ShieldCheck, Layers, Edit3, Upload, ArrowRightLeft, Lock, Activity, Dumbbell } from 'lucide-react';
+import { HeartPulse, Search, Plus, X, Play, Copy, Check, RotateCw, Flame, ShieldCheck, Layers, Edit3, Upload, ArrowRightLeft, Lock, Activity, Dumbbell, RefreshCw } from 'lucide-react';
 import { API_BASE } from '../config/api';
 import AdminLayout from '../components/layout/AdminLayout';
 import ExerciseVideoModal from '../components/modals/ExerciseVideoModal';
@@ -117,10 +117,72 @@ export default function MobilityLibrary() {
     image_contraction: ''
   });
   const [savingEditDrill, setSavingEditDrill] = useState(false);
+  const searchInputRef = useRef(null);
 
   useEffect(() => {
     fetchMobilityDrills();
   }, []);
+
+  // Global Power Keyboard Shortcuts: /, Escape, R, 0-4
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      const isInputFocused = ['INPUT', 'TEXTAREA', 'SELECT'].includes(document.activeElement?.tagName);
+
+      if (e.key === 'Escape') {
+        if (activeVideo) {
+          setActiveVideo(null);
+          return;
+        }
+        if (editingDrill) {
+          setEditingDrill(null);
+          return;
+        }
+        if (isAddModalOpen) {
+          setIsAddModalOpen(false);
+          return;
+        }
+        if (searchTerm) {
+          setSearchTerm('');
+          return;
+        }
+      }
+
+      if (isInputFocused) return;
+
+      if (e.key === '/') {
+        e.preventDefault();
+        searchInputRef.current?.focus();
+        return;
+      }
+
+      if (e.key === 'r' || e.key === 'R') {
+        e.preventDefault();
+        fetchMobilityDrills();
+        showToast('جاري تحديث مكتبة المرونة والكارديو...');
+        return;
+      }
+
+      if (e.key === '1') {
+        e.preventDefault();
+        setActiveTab('CARDIO_MODALITY');
+      } else if (e.key === '2') {
+        e.preventDefault();
+        setActiveTab('DYNAMIC_WARMUP');
+      } else if (e.key === '3') {
+        e.preventDefault();
+        setActiveTab('STATIC_STRETCH');
+      } else if (e.key === '4') {
+        e.preventDefault();
+        setActiveTab('POSTURAL_PREHAB');
+      } else if (e.key === '0') {
+        e.preventDefault();
+        setActiveTab('ALL');
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [activeVideo, editingDrill, isAddModalOpen, searchTerm]);
 
   const fetchMobilityDrills = async () => {
     try {
@@ -283,11 +345,11 @@ export default function MobilityLibrary() {
   };
 
   const tabs = [
-    { id: 'CARDIO_MODALITY', label: 'أنظمة الكارديو', icon: Flame, count: drills.filter(d => d.category === 'CARDIO_MODALITY').length },
-    { id: 'DYNAMIC_WARMUP', label: 'الإحماء والمرونة', icon: RotateCw, count: drills.filter(d => d.category === 'DYNAMIC_WARMUP').length },
-    { id: 'STATIC_STRETCH', label: 'الإطالات والاستشفاء', icon: HeartPulse, count: drills.filter(d => d.category === 'STATIC_STRETCH').length },
-    { id: 'POSTURAL_PREHAB', label: 'تصحيح القوام', icon: ShieldCheck, count: drills.filter(d => d.category === 'POSTURAL_PREHAB').length },
-    { id: 'ALL', label: 'الكل', icon: Layers, count: drills.length },
+    { id: 'CARDIO_MODALITY', label: 'أنظمة الكارديو', icon: Flame, shortcut: '1', count: drills.filter(d => d.category === 'CARDIO_MODALITY').length },
+    { id: 'DYNAMIC_WARMUP', label: 'الإحماء والمرونة', icon: RotateCw, shortcut: '2', count: drills.filter(d => d.category === 'DYNAMIC_WARMUP').length },
+    { id: 'STATIC_STRETCH', label: 'الإطالات والاستشفاء', icon: HeartPulse, shortcut: '3', count: drills.filter(d => d.category === 'STATIC_STRETCH').length },
+    { id: 'POSTURAL_PREHAB', label: 'تصحيح القوام', icon: ShieldCheck, shortcut: '4', count: drills.filter(d => d.category === 'POSTURAL_PREHAB').length },
+    { id: 'ALL', label: 'الكل', icon: Layers, shortcut: '0', count: drills.length },
   ];
 
   const filteredDrills = useMemo(() => {
@@ -323,7 +385,7 @@ export default function MobilityLibrary() {
               style={{
                 height: '34px',
                 padding: '0 14px',
-                borderRadius: '6px',
+                borderRadius: '8px',
                 background: '#0F172A',
                 color: '#FFFFFF',
                 border: 'none',
@@ -343,12 +405,12 @@ export default function MobilityLibrary() {
         />
 
         {/* Exercise & Mobility Studio Switcher */}
-        <div style={{ display: 'flex', gap: '6px', background: '#F8FAFC', padding: '4px', borderRadius: '8px', border: '1px solid #E2E8F0', width: 'fit-content' }}>
+        <div style={{ display: 'flex', gap: '6px', background: '#F8FAFC', padding: '4px', borderRadius: '10px', border: '1px solid #E2E8F0', width: 'fit-content' }}>
           <Link
             to="/exercises"
             style={{
               padding: '6px 14px',
-              borderRadius: '6px',
+              borderRadius: '8px',
               fontSize: '12px',
               fontWeight: 700,
               border: 'none',
@@ -370,7 +432,7 @@ export default function MobilityLibrary() {
             type="button"
             style={{
               padding: '6px 14px',
-              borderRadius: '6px',
+              borderRadius: '8px',
               fontSize: '12px',
               fontWeight: 800,
               border: 'none',
@@ -389,10 +451,10 @@ export default function MobilityLibrary() {
         </div>
 
         {/* 2. Unified Control Bar (Tabs + Search + Sub-filters) */}
-        <div style={{ background: '#FFFFFF', border: '1px solid #E2E8F0', borderRadius: '10px', padding: '14px 18px', display: 'flex', flexDirection: 'column', gap: '12px', boxShadow: '0 1px 3px rgba(15, 23, 42, 0.02)' }}>
+        <div style={{ background: '#FFFFFF', border: '1px solid #E2E8F0', borderRadius: '12px', padding: '14px 18px', display: 'flex', flexDirection: 'column', gap: '12px', boxShadow: '0 1px 3px rgba(15, 23, 42, 0.02)' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '10px' }}>
             {/* Primary Category Tabs */}
-            <div style={{ display: 'flex', gap: '4px', background: '#F1F5F9', padding: '4px', borderRadius: '8px', border: '1px solid #E2E8F0', flexWrap: 'wrap' }}>
+            <div style={{ display: 'flex', gap: '4px', background: '#F1F5F9', padding: '4px', borderRadius: '10px', border: '1px solid #E2E8F0', flexWrap: 'wrap' }}>
               {tabs.map((t) => {
                 const Icon = t.icon;
                 const isSel = activeTab === t.id;
@@ -403,7 +465,7 @@ export default function MobilityLibrary() {
                     onClick={() => setActiveTab(t.id)}
                     style={{
                       padding: '6px 14px',
-                      borderRadius: '6px',
+                      borderRadius: '8px',
                       fontSize: '12px',
                       fontWeight: 700,
                       border: 'none',
@@ -420,10 +482,20 @@ export default function MobilityLibrary() {
                     <Icon size={14} color={isSel ? '#FFFFFF' : '#64748B'} />
                     <span>{t.label}</span>
                     <span style={{
+                      fontSize: '9px',
+                      fontFamily: 'JetBrains Mono, monospace',
+                      padding: '1px 5px',
+                      borderRadius: '8px',
+                      background: isSel ? 'rgba(255,255,255,0.2)' : '#E2E8F0',
+                      color: isSel ? '#FFFFFF' : '#64748B'
+                    }}>
+                      {t.shortcut}
+                    </span>
+                    <span style={{
                       fontSize: '10px',
                       fontWeight: 800,
                       padding: '1px 6px',
-                      borderRadius: '10px',
+                      borderRadius: '8px',
                       background: isSel ? 'rgba(255,255,255,0.2)' : '#E2E8F0',
                       color: isSel ? '#FFFFFF' : '#475569'
                     }}>
@@ -434,40 +506,77 @@ export default function MobilityLibrary() {
               })}
             </div>
 
-            {/* Search Box */}
-            <div
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                background: '#FFFFFF',
-                border: '1px solid #CBD5E1',
-                borderRadius: '6px',
-                padding: '0 10px',
-                height: '34px',
-                width: '260px',
-                gap: '6px'
-              }}
-            >
-              <Search size={14} color="#94A3B8" />
-              <input
-                type="text"
-                placeholder="بحث باسم التمرين أو الأداة..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                style={{
-                  border: 'none',
-                  outline: 'none',
-                  background: 'transparent',
-                  fontSize: '12px',
-                  width: '100%',
-                  color: '#0F172A'
+            {/* Refresh & Search Toolbar */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              {/* Refresh Button */}
+              <button
+                type="button"
+                onClick={() => {
+                  fetchMobilityDrills();
+                  showToast('تم تحديث مكتبة المرونة والكارديو');
                 }}
-              />
-              {searchTerm && (
-                <button type="button" onClick={() => setSearchTerm('')} style={{ border: 'none', background: 'transparent', cursor: 'pointer', padding: 0, color: '#94A3B8' }}>
-                  <X size={13} />
-                </button>
-              )}
+                style={{
+                  height: '34px',
+                  padding: '0 12px',
+                  borderRadius: '8px',
+                  background: '#FFFFFF',
+                  border: '1px solid #CBD5E1',
+                  color: '#475569',
+                  fontSize: '11.5px',
+                  fontWeight: 700,
+                  cursor: 'pointer',
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '5px',
+                  boxShadow: '0 1px 2px rgba(15, 23, 42, 0.04)',
+                  transition: 'all 0.12s ease'
+                }}
+                onMouseEnter={(e) => { e.currentTarget.style.background = '#F8FAFC'; e.currentTarget.style.color = '#0F172A'; }}
+                onMouseLeave={(e) => { e.currentTarget.style.background = '#FFFFFF'; e.currentTarget.style.color = '#475569'; }}
+                title="تحديث البيانات من الخادم (اختصار: R)"
+              >
+                <RefreshCw size={12} className={loading ? 'animate-spin' : ''} />
+                <span>تحديث [R]</span>
+              </button>
+
+              {/* Search Box */}
+              <div
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  background: '#FFFFFF',
+                  border: '1px solid #CBD5E1',
+                  borderRadius: '8px',
+                  padding: '0 10px',
+                  height: '34px',
+                  width: '260px',
+                  gap: '6px'
+                }}
+              >
+                <Search size={14} color="#94A3B8" />
+                <input
+                  ref={searchInputRef}
+                  type="text"
+                  placeholder="بحث باسم الحركة أو الأداة..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  style={{
+                    border: 'none',
+                    outline: 'none',
+                    background: 'transparent',
+                    fontSize: '12px',
+                    width: '100%',
+                    color: '#0F172A'
+                  }}
+                />
+                {searchTerm ? (
+                  <button type="button" onClick={() => setSearchTerm('')} style={{ border: 'none', background: 'transparent', cursor: 'pointer', padding: 0, color: '#94A3B8' }}>
+                    <X size={13} />
+                  </button>
+                ) : (
+                  <span style={{ fontSize: '9.5px', color: '#94A3B8', fontFamily: 'JetBrains Mono, monospace', padding: '1px 5px', background: '#F8FAFC', border: '1px solid #E2E8F0', borderRadius: '8px' }}>/</span>
+                )}
+              </div>
             </div>
           </div>
 
@@ -491,7 +600,7 @@ export default function MobilityLibrary() {
                     onClick={() => setSelectedArea(a.id)}
                     style={{
                       padding: '4px 10px',
-                      borderRadius: '6px',
+                      borderRadius: '8px',
                       fontSize: '11px',
                       fontWeight: selectedArea === a.id ? 800 : 600,
                       border: selectedArea === a.id ? '1px solid #0F172A' : '1px solid #CBD5E1',
@@ -524,7 +633,7 @@ export default function MobilityLibrary() {
                 style={{
                   background: '#FFFFFF',
                   border: '1px solid #E2E8F0',
-                  borderRadius: '10px',
+                  borderRadius: '12px',
                   padding: '14px 16px',
                   display: 'flex',
                   flexDirection: 'column',
@@ -582,7 +691,7 @@ export default function MobilityLibrary() {
                         border: '1px solid #CBD5E1',
                         color: '#0F172A',
                         padding: '2px 7px',
-                        borderRadius: '6px',
+                        borderRadius: '8px',
                         fontSize: '10.5px',
                         fontWeight: 700,
                         display: 'inline-flex',
@@ -599,7 +708,7 @@ export default function MobilityLibrary() {
                         border: '1px solid #E2E8F0',
                         color: '#475569',
                         padding: '2px 7px',
-                        borderRadius: '6px',
+                        borderRadius: '8px',
                         fontSize: '10.5px',
                         fontWeight: 600,
                         display: 'inline-flex',
@@ -642,7 +751,7 @@ export default function MobilityLibrary() {
                       background: '#F8FAFC',
                       borderRight: '3px solid #0F172A',
                       padding: '8px 10px',
-                      borderRadius: '6px',
+                      borderRadius: '8px',
                       fontSize: '11.5px',
                       color: '#334155',
                       lineHeight: 1.45,
@@ -665,7 +774,7 @@ export default function MobilityLibrary() {
                       onClick={() => openEditModal(drill)}
                       style={{
                         padding: '4px 10px',
-                        borderRadius: '7px',
+                        borderRadius: '8px',
                         background: '#F1F5F9',
                         border: '1px solid #CBD5E1',
                         color: '#0F172A',
@@ -689,7 +798,7 @@ export default function MobilityLibrary() {
                       onClick={() => handleCopy(drill.cue_ar, drill.id)}
                       style={{
                         padding: '4px 10px',
-                        borderRadius: '7px',
+                        borderRadius: '8px',
                         background: '#F8FAFC',
                         border: '1px solid #CBD5E1',
                         color: '#475569',
@@ -710,10 +819,10 @@ export default function MobilityLibrary() {
                     {drill.video_url && (
                       <button
                         type="button"
-                        onClick={() => setActiveVideo({ url: drill.video_url, name: drill.name_ar })}
+                        onClick={() => setActiveVideo(drill)}
                         style={{
                           padding: '4px 10px',
-                          borderRadius: '7px',
+                          borderRadius: '8px',
                           background: '#0F172A',
                           border: 'none',
                           color: '#FFFFFF',
@@ -751,7 +860,7 @@ export default function MobilityLibrary() {
           }} dir="rtl">
             <div style={{
               background: '#FFFFFF',
-              borderRadius: '12px',
+              borderRadius: '16px',
               width: '100%',
               maxWidth: '560px',
               boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.2)',
@@ -771,7 +880,7 @@ export default function MobilityLibrary() {
                 background: '#F8FAFC'
               }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                  <div style={{ width: '28px', height: '28px', borderRadius: '6px', background: '#0F172A', color: '#FFFFFF', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  <div style={{ width: '28px', height: '28px', borderRadius: '8px', background: '#0F172A', color: '#FFFFFF', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                     <Edit3 size={14} />
                   </div>
                   <div>
@@ -801,7 +910,7 @@ export default function MobilityLibrary() {
               }}>
                 <Lock size={12} color="#1E40AF" />
                 <span>
-                  المعرف البرمجي للمحرك: <strong style={{ fontFamily: 'monospace', fontWeight: 800, background: '#DBEAFE', padding: '2px 6px', borderRadius: '6px' }}>{editingDrill.id}</strong> (محمي وثابت لضمان تطابق الخطط للمشتركين)
+                  المعرف البرمجي للمحرك: <strong style={{ fontFamily: 'monospace', fontWeight: 800, background: '#DBEAFE', padding: '2px 6px', borderRadius: '8px' }}>{editingDrill.id}</strong> (محمي وثابت لضمان تطابق الخطط للمشتركين)
                 </span>
               </div>
 
@@ -887,7 +996,7 @@ export default function MobilityLibrary() {
                     rows={2}
                     value={editFormData.cue_ar}
                     onChange={(e) => setEditFormData({ ...editFormData, cue_ar: e.target.value })}
-                    style={{ width: '100%', borderRadius: '6px', border: '1px solid #CBD5E1', padding: '8px 10px', fontSize: '12px', outline: 'none', boxSizing: 'border-box', fontFamily: 'Cairo, sans-serif' }}
+                    style={{ width: '100%', borderRadius: '8px', border: '1px solid #CBD5E1', padding: '8px 10px', fontSize: '12px', outline: 'none', boxSizing: 'border-box', fontFamily: 'Cairo, sans-serif' }}
                   />
                 </div>
 
@@ -928,7 +1037,7 @@ export default function MobilityLibrary() {
                       }}
                       style={{
                         padding: '4px 10px',
-                        borderRadius: '7px',
+                        borderRadius: '8px',
                         border: '1px solid #CBD5E1',
                         background: '#FFFFFF',
                         fontSize: '11px',
@@ -956,7 +1065,7 @@ export default function MobilityLibrary() {
                         ) : (
                           <span style={{ fontSize: '10px', color: '#94A3B8' }}>لا توجد صورة</span>
                         )}
-                        <span style={{ position: 'absolute', bottom: '4px', right: '4px', background: 'rgba(15, 23, 42, 0.85)', color: '#FFF', fontSize: '9px', fontWeight: 700, padding: '2px 6px', borderRadius: '6px' }}>
+                        <span style={{ position: 'absolute', bottom: '4px', right: '4px', background: 'rgba(15, 23, 42, 0.85)', color: '#FFF', fontSize: '9px', fontWeight: 700, padding: '2px 6px', borderRadius: '8px' }}>
                           1. وضع البداية (0.jpg)
                         </span>
                       </div>
@@ -989,7 +1098,7 @@ export default function MobilityLibrary() {
                         ) : (
                           <span style={{ fontSize: '10px', color: '#94A3B8' }}>لا توجد صورة</span>
                         )}
-                        <span style={{ position: 'absolute', bottom: '4px', right: '4px', background: 'rgba(15, 23, 42, 0.85)', color: '#FFF', fontSize: '9px', fontWeight: 700, padding: '2px 6px', borderRadius: '6px' }}>
+                        <span style={{ position: 'absolute', bottom: '4px', right: '4px', background: 'rgba(15, 23, 42, 0.85)', color: '#FFF', fontSize: '9px', fontWeight: 700, padding: '2px 6px', borderRadius: '8px' }}>
                           2. وضع الأداء (1.jpg)
                         </span>
                       </div>
@@ -1081,7 +1190,10 @@ export default function MobilityLibrary() {
 
         {/* Video Modal */}
         {activeVideo && (
-          <ExerciseVideoModal isOpen={!!activeVideo} onClose={() => setActiveVideo(null)} videoUrl={activeVideo.url} exerciseName={activeVideo.name} />
+          <ExerciseVideoModal
+            exercise={activeVideo}
+            onClose={() => setActiveVideo(null)}
+          />
         )}
 
         {/* Notification Toast */}
