@@ -10,7 +10,8 @@ import {
   Smartphone,
   MessageCircle,
   ChevronRight,
-  ChevronLeft
+  ChevronLeft,
+  Sliders
 } from 'lucide-react';
 import { extractClientFastingProfile } from '../../../utils/seasonalFastingRadar';
 import { generateWhatsAppUrl } from '../../../utils/whatsappRemindersEngine';
@@ -21,6 +22,7 @@ export function CoachHeaderBar({
   handleSaveDraft,
   saving,
   setIsLabModalOpen,
+  setIsSandboxOpen,
   handleApproveAndPublish,
   publishing,
   clientsList = [],
@@ -233,6 +235,33 @@ export function CoachHeaderBar({
           <Smartphone size={13} />
           <span>تطبيق المتدرب</span>
         </a>
+
+        {/* Coach What-If Scenario Sandbox Button */}
+        {typeof setIsSandboxOpen === 'function' && (
+          <button
+            type="button"
+            onClick={() => setIsSandboxOpen(true)}
+            title="فتح مُحاكي سيناريوهات التكييف الفسيولوجي للمدرب"
+            style={{
+              height: '32px',
+              padding: '0 10px',
+              borderRadius: '8px',
+              background: '#F1F5F9',
+              color: '#0F172A',
+              border: '1px solid #CBD5E1',
+              fontSize: '11.5px',
+              fontWeight: 700,
+              cursor: 'pointer',
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '4px',
+              transition: 'all 0.15s ease'
+            }}
+          >
+            <Sliders size={13} color="#0284C7" />
+            <span>مُحاكي السيناريوهات</span>
+          </button>
+        )}
 
         <button
           type="button"

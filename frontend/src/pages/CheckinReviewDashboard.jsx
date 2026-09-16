@@ -44,6 +44,7 @@ import { PageHeader } from '@/shared/components/page-header';
 import { FormSection } from '@/shared/components/form-section';
 import InteractivePhotoComparisonStudio from '../components/checkin/InteractivePhotoComparisonStudio';
 import LabBiomarkersReviewStudio from '../components/clinical/LabBiomarkersReviewStudio';
+import { MilestoneProgressCardModal } from '../components/checkin/MilestoneProgressCardModal';
 import { ClientCodeBadge, ClientPackageBadge, getClientTier } from '../utils/tierBadgeHelper';
 import { arabicSearchMatch } from '../utils/searchUtils';
 import { extractClientFastingProfile } from '../utils/seasonalFastingRadar';
@@ -709,6 +710,7 @@ export default function CheckinReviewDashboard() {
   const [showLabModal, setShowLabModal] = useState(false);
   const [approvalToast, setApprovalToast] = useState(null);
   const [inspectionTab, setInspectionTab] = useState('PHOTOS'); // 'PHOTOS' | 'CHART' | 'LABS'
+  const [isMilestoneModalOpen, setIsMilestoneModalOpen] = useState(false);
 
   // Live Checkins Fetcher from MariaDB
   useEffect(() => {
@@ -1946,6 +1948,32 @@ export default function CheckinReviewDashboard() {
                     </button>
                   );
                 })()}
+
+                <button
+                  type="button"
+                  onClick={() => setIsMilestoneModalOpen(true)}
+                  style={{
+                    height: '32px',
+                    padding: '0 14px',
+                    borderRadius: '8px',
+                    fontSize: '12px',
+                    fontWeight: 700,
+                    cursor: 'pointer',
+                    userSelect: 'none',
+                    outline: 'none',
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '6px',
+                    border: '1px solid #CBD5E1',
+                    background: '#FFFFFF',
+                    color: '#0F172A',
+                    transition: 'all 0.15s ease'
+                  }}
+                  title="تصدير بطاقة الإنجاز التراكمي للمشترك لمشاركتها عبر واتساب"
+                >
+                  <Trophy size={14} color="#D97706" />
+                  <span>تصدير بطاقة الإنجاز</span>
+                </button>
               </div>
 
               {/* Tab 1: Photos Studio */}
@@ -3171,6 +3199,17 @@ export default function CheckinReviewDashboard() {
               <X size={14} />
             </button>
           </div>
+        )}
+
+        {/* Milestone Progress Card Modal */}
+        {isMilestoneModalOpen && (
+          <MilestoneProgressCardModal
+            isOpen={isMilestoneModalOpen}
+            onClose={() => setIsMilestoneModalOpen(false)}
+            client={safeClient}
+            activeCheckin={activeCheckin}
+            history={activeCheckin?.history || []}
+          />
         )}
 
       </div>

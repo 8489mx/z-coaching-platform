@@ -14,7 +14,8 @@ import {
   CoachSwapExerciseModal,
   CoachAddExerciseModal,
   CoachCardioSwapModal,
-  CoachMobilityModal
+  CoachMobilityModal,
+  CoachScenarioSandboxModal
 } from './CoachEditor/components';
 import { useCoachEditorData } from './CoachEditor/hooks';
 
@@ -124,6 +125,8 @@ export default function CoachEditor() {
     CARDIO_MODALITY_OPTIONS
   } = editor;
 
+  const [isSandboxOpen, setIsSandboxOpen] = React.useState(false);
+
   return (
     <AdminLayout fullWidth={true}>
       <div 
@@ -168,6 +171,7 @@ export default function CoachEditor() {
           handleSaveDraft={handleSaveDraft}
           saving={saving}
           setIsLabModalOpen={setIsLabModalOpen}
+          setIsSandboxOpen={setIsSandboxOpen}
           handleApproveAndPublish={handleApproveAndPublish}
           publishing={publishing}
           clientsList={clientsList}
@@ -262,14 +266,7 @@ export default function CoachEditor() {
         {/* 4. TAB 2: NUTRITION & MACROS */}
         {activeWorkspaceTab === 'NUTRITION' && (
           <CoachEditorNutritionTab
-            searchParams={searchParams}
-            setSearchParams={setSearchParams}
-            loading={loading}
-            setLoading={setLoading}
-            saving={saving}
-            setSaving={setSaving}
-            publishing={publishing}
-            setPublishing={setPublishing}
+            {...editor}
             program={program}
             setProgram={setProgram}
             coachNotes={coachNotes}
@@ -278,66 +275,6 @@ export default function CoachEditor() {
             setActiveSessionIdx={setActiveSessionIdx}
             activeWorkspaceTab={activeWorkspaceTab}
             setActiveWorkspaceTab={setActiveWorkspaceTab}
-            notification={notification}
-            setNotification={setNotification}
-            clientsList={clientsList}
-            setClientsList={setClientsList}
-            queueFilter={queueFilter}
-            setQueueFilter={setQueueFilter}
-            queueSearch={queueSearch}
-            setQueueSearch={setQueueSearch}
-            showQueueSlider={showQueueSlider}
-            setShowQueueSlider={setShowQueueSlider}
-            allExercisesList={allExercisesList}
-            setAllExercisesList={setAllExercisesList}
-            cardioSwapModal={cardioSwapModal}
-            setCardioSwapModal={setCardioSwapModal}
-            addFoodModal={addFoodModal}
-            setAddFoodModal={setAddFoodModal}
-            swapFoodModal={swapFoodModal}
-            setSwapFoodModal={setSwapFoodModal}
-            addExModal={addExModal}
-            setAddExModal={setAddExModal}
-            swapExModal={swapExModal}
-            setSwapExModal={setSwapExModal}
-            mobilityModal={mobilityModal}
-            setMobilityModal={setMobilityModal}
-            allMobilityList={allMobilityList}
-            setAllMobilityList={setAllMobilityList}
-            showReasoning={showReasoning}
-            setShowReasoning={setShowReasoning}
-            exModalSearch={exModalSearch}
-            setExModalSearch={setExModalSearch}
-            foodModalSearch={foodModalSearch}
-            setFoodModalSearch={setFoodModalSearch}
-            mobilityModalSearch={mobilityModalSearch}
-            setMobilityModalSearch={setMobilityModalSearch}
-            swapFoodSearch={swapFoodSearch}
-            setSwapFoodSearch={setSwapFoodSearch}
-            swapExSearch={swapExSearch}
-            setSwapExSearch={setSwapExSearch}
-            handleSelectClient={handleSelectClient}
-            handleUpdateFoodAmount={handleUpdateFoodAmount}
-            handleDeleteFood={handleDeleteFood}
-            handleAddNewMeal={handleAddNewMeal}
-            handleDuplicateMeal={handleDuplicateMeal}
-            handleDeleteMeal={handleDeleteMeal}
-            handleAddFoodToMeal={handleAddFoodToMeal}
-            handleExecuteFoodSwap={handleExecuteFoodSwap}
-            handleExecuteExerciseSwap={handleExecuteExerciseSwap}
-            handleUpdateExerciseParam={handleUpdateExerciseParam}
-            handleDeleteExercise={handleDeleteExercise}
-            handleAddExerciseToSession={handleAddExerciseToSession}
-            handleSelectCardioModality={handleSelectCardioModality}
-            handleAddMobilityToSession={handleAddMobilityToSession}
-            handleRemoveMobilityFromSession={handleRemoveMobilityFromSession}
-            handleSaveDraft={handleSaveDraft}
-            handleApproveAndPublish={handleApproveAndPublish}
-            showToast={showToast}
-            autoRippleEnabled={autoRippleEnabled}
-            setAutoRippleEnabled={setAutoRippleEnabled}
-            FOOD_DATABASE_LIST={FOOD_DATABASE_LIST}
-            CARDIO_MODALITY_OPTIONS={CARDIO_MODALITY_OPTIONS}
           />
         )}
 
@@ -347,6 +284,7 @@ export default function CoachEditor() {
             program={program}
             setCardioSwapModal={setCardioSwapModal}
             handleUpdateCardioParam={handleUpdateCardioParam}
+            handleUpdateSupplementsInCardio={editor.handleUpdateSupplementsInCardio}
             coachNotes={coachNotes}
             setCoachNotes={setCoachNotes}
           />
@@ -437,6 +375,32 @@ export default function CoachEditor() {
           />
         )}
 
+        {/* Coach Physiological Scenario Sandbox Modal */}
+        {isSandboxOpen && (
+          <CoachScenarioSandboxModal
+            isOpen={isSandboxOpen}
+            onClose={() => setIsSandboxOpen(false)}
+            program={program}
+            currentSessions={currentSessions}
+            onApplyScenario={(applied) => {
+              setProgram(prev => ({
+                ...prev,
+                nutrition: {
+                  ...prev.nutrition,
+                  targets: {
+                    ...prev.nutrition?.targets,
+                    calories: applied.targets.calories,
+                    protein: applied.targets.protein,
+                    carbs: applied.targets.carbs,
+                    fats: applied.targets.fats
+                  }
+                }
+              }));
+              showToast(`تم تطبيق السيناريو الفسيولوجي: ${applied.targets.calories} سعرة حرارية`);
+            }}
+          />
+        )}
+
         {/* Exercise Video Modal */}
         {activeVideoModalEx && (
           <ExerciseVideoModal
@@ -456,7 +420,7 @@ export default function CoachEditor() {
               background: '#0F172A',
               color: '#FFFFFF',
               padding: '8px 16px',
-              borderRadius: '6px',
+              borderRadius: '10px',
               fontSize: '11.5px',
               fontWeight: 700,
               zIndex: 99999
