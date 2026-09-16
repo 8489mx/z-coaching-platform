@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
-import { Dumbbell, Search, Play, AlertTriangle, Check, X, Plus, Copy, CheckCircle2, ShieldCheck, Edit3, Upload, ArrowRightLeft, BookOpen, HeartPulse, Target } from 'lucide-react';
+import { Dumbbell, Search, Play, AlertTriangle, Check, X, Plus, Copy, CheckCircle2, ShieldCheck, Edit3, Upload, ArrowRightLeft, BookOpen, HeartPulse, Target, RefreshCw } from 'lucide-react';
 import { API_BASE } from '../config/api';
 import AdminLayout from '../components/layout/AdminLayout';
 import ExerciseVideoModal from '../components/modals/ExerciseVideoModal';
@@ -150,7 +150,7 @@ function AlternativesManager({ currentExId, alternatives = [], onChange, allExer
             الربط التبادلي التلقائي للبدائل التوأم
           </span>
         </div>
-        <span style={{ fontSize: '10.5px', color: '#0284C7', fontWeight: 700, background: '#F0F9FF', padding: '2px 8px', borderRadius: '6px', border: '1px solid #BAE6FD' }}>
+        <span style={{ fontSize: '10.5px', color: '#0284C7', fontWeight: 700, background: '#F0F9FF', padding: '2px 8px', borderRadius: '8px', border: '1px solid #BAE6FD' }}>
           {currentAlts.length} بدائل مرتبطة
         </span>
       </div>
@@ -224,7 +224,7 @@ function AlternativesManager({ currentExId, alternatives = [], onChange, allExer
       {/* Linked Alternatives List */}
       <div style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>
         {linkedExercises.length === 0 ? (
-          <div style={{ padding: '10px', textAlign: 'center', background: '#FFFFFF', border: '1px dashed #CBD5E1', borderRadius: '6px', fontSize: '11px', color: '#64748B' }}>
+          <div style={{ padding: '10px', textAlign: 'center', background: '#FFFFFF', border: '1px dashed #CBD5E1', borderRadius: '8px', fontSize: '11px', color: '#64748B' }}>
             لا توجد بدائل توأم مرتبطة حالياً. اختر تمريناً من القائمة أعلاه للربط التبادلي التلقائي.
           </div>
         ) : (
@@ -239,7 +239,7 @@ function AlternativesManager({ currentExId, alternatives = [], onChange, allExer
                   justifyContent: 'space-between',
                   background: '#FFFFFF',
                   border: '1px solid #BAE6FD',
-                  borderRadius: '6px',
+                  borderRadius: '8px',
                   padding: '6px 10px',
                   boxShadow: '0 1px 2px rgba(15, 23, 42, 0.03)'
                 }}
@@ -252,7 +252,7 @@ function AlternativesManager({ currentExId, alternatives = [], onChange, allExer
                   <span style={{ fontSize: '10.5px', color: '#64748B' }}>
                     ({altNames.nameAr})
                   </span>
-                  <span style={{ background: '#F1F5F9', border: '1px solid #E2E8F0', padding: '1px 6px', borderRadius: '6px', fontSize: '9.5px', fontWeight: 600, color: '#475569' }}>
+                  <span style={{ background: '#F1F5F9', border: '1px solid #E2E8F0', padding: '1px 6px', borderRadius: '8px', fontSize: '9.5px', fontWeight: 600, color: '#475569' }}>
                     {getShortEquipmentName(alt.equipment_ar, alt.equipment)}
                   </span>
                 </div>
@@ -263,12 +263,12 @@ function AlternativesManager({ currentExId, alternatives = [], onChange, allExer
                   border: 'none',
                   background: '#FEE2E2',
                   color: '#DC2626',
-                  borderRadius: '6px',
-                  padding: '3px 6px',
+                  borderRadius: '8px',
+                  padding: '4px 8px',
                   cursor: 'pointer',
                   display: 'inline-flex',
                   alignItems: 'center',
-                  gap: '2px',
+                  gap: '3px',
                   fontSize: '10px',
                   fontWeight: 700,
                   transition: 'background 0.15s ease'
@@ -367,6 +367,7 @@ export default function ExerciseLibrary() {
   const [activeVideo, setActiveVideo] = useState(null);
   const [expandedView, setExpandedView] = useState({}); // { [exId]: 'CUES' | 'MISTAKES' | 'ALTERNATIVES' | null }
   const [copiedKey, setCopiedKey] = useState(null); // 'VIDEO_1' | 'CUES_1' | 'MISTAKES_1'
+  const searchInputRef = useRef(null);
 
   // Add Exercise Modal State
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
@@ -403,6 +404,74 @@ export default function ExerciseLibrary() {
     fetchExercises();
   }, []);
 
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      const activeEl = document.activeElement;
+      const isInputActive = activeEl && (
+        activeEl.tagName === 'INPUT' ||
+        activeEl.tagName === 'TEXTAREA' ||
+        activeEl.tagName === 'SELECT' ||
+        activeEl.isContentEditable
+      );
+
+      if (e.key === 'Escape' || e.keyCode === 27) {
+        if (activeVideo) {
+          setActiveVideo(null);
+          return;
+        }
+        if (editingExercise) {
+          setEditingExercise(null);
+          return;
+        }
+        if (isAddModalOpen) {
+          setIsAddModalOpen(false);
+          return;
+        }
+        if (searchTerm) {
+          setSearchTerm('');
+          return;
+        }
+        if (isInputActive) {
+          activeEl.blur();
+        }
+        return;
+      }
+
+      if (isInputActive) return;
+
+      if (e.key === '/' && !e.ctrlKey && !e.metaKey) {
+        e.preventDefault();
+        searchInputRef.current?.focus();
+        return;
+      }
+
+      if ((e.key === 'r' || e.key === 'R') && !e.ctrlKey && !e.metaKey) {
+        e.preventDefault();
+        fetchExercises();
+        return;
+      }
+
+      const muscleKeyMap = {
+        '0': 'ALL',
+        '1': 'CHEST',
+        '2': 'BACK',
+        '3': 'LEGS',
+        '4': 'CALVES',
+        '5': 'SHOULDERS',
+        '6': 'ARMS',
+        '7': 'CORE'
+      };
+
+      if (muscleKeyMap[e.key]) {
+        e.preventDefault();
+        setMuscleFilter(muscleKeyMap[e.key]);
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [activeVideo, editingExercise, isAddModalOpen, searchTerm]);
+
   const fetchExercises = async () => {
     try {
       setLoading(true);
@@ -417,14 +486,14 @@ export default function ExerciseLibrary() {
   };
 
   const muscleCategories = [
-    { id: 'ALL', label: 'جميع العضلات' },
-    { id: 'CHEST', label: 'عضلات الصدر' },
-    { id: 'BACK', label: 'الظهر والترابيس' },
-    { id: 'LEGS', label: 'الأرجل والأرداف' },
-    { id: 'CALVES', label: 'السمانة وقصبة الساق' },
-    { id: 'SHOULDERS', label: 'الأكتاف' },
-    { id: 'ARMS', label: 'الذراعين والساعد' },
-    { id: 'CORE', label: 'البطن والكور' },
+    { id: 'ALL', label: 'جميع العضلات', shortcut: '0' },
+    { id: 'CHEST', label: 'عضلات الصدر', shortcut: '1' },
+    { id: 'BACK', label: 'الظهر والترابيس', shortcut: '2' },
+    { id: 'LEGS', label: 'الأرجل والأرداف', shortcut: '3' },
+    { id: 'CALVES', label: 'السمانة وقصبة الساق', shortcut: '4' },
+    { id: 'SHOULDERS', label: 'الأكتاف', shortcut: '5' },
+    { id: 'ARMS', label: 'الذراعين والساعد', shortcut: '6' },
+    { id: 'CORE', label: 'البطن والكور', shortcut: '7' },
   ];
 
   const toggleCardView = (exId, type) => {
@@ -665,7 +734,7 @@ export default function ExerciseLibrary() {
                 }}
                 style={{
                   padding: '7px 14px',
-                  borderRadius: '6px',
+                  borderRadius: '8px',
                   background: '#0F172A',
                   color: '#FFFFFF',
                   border: 'none',
@@ -689,12 +758,12 @@ export default function ExerciseLibrary() {
         />
 
         {/* Exercise & Mobility Studio Switcher */}
-        <div style={{ display: 'flex', gap: '6px', background: '#F8FAFC', padding: '4px', borderRadius: '8px', border: '1px solid #E2E8F0', width: 'fit-content' }}>
+        <div style={{ display: 'flex', gap: '6px', background: '#F8FAFC', padding: '4px', borderRadius: '10px', border: '1px solid #E2E8F0', width: 'fit-content' }}>
           <button
             type="button"
             style={{
               padding: '6px 14px',
-              borderRadius: '6px',
+              borderRadius: '8px',
               fontSize: '12px',
               fontWeight: 800,
               border: 'none',
@@ -714,7 +783,7 @@ export default function ExerciseLibrary() {
             to="/coach/mobility"
             style={{
               padding: '6px 14px',
-              borderRadius: '6px',
+              borderRadius: '8px',
               fontSize: '12px',
               fontWeight: 700,
               border: 'none',
@@ -739,7 +808,7 @@ export default function ExerciseLibrary() {
           
           {/* Top Row: Muscle Tabs */}
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '10px' }}>
-            <div style={{ display: 'flex', gap: '4px', flexWrap: 'wrap', background: '#F1F5F9', padding: '4px', borderRadius: '8px', border: '1px solid #E2E8F0' }}>
+            <div style={{ display: 'flex', gap: '4px', flexWrap: 'wrap', background: '#F1F5F9', padding: '4px', borderRadius: '10px', border: '1px solid #E2E8F0' }}>
               {muscleCategories.map((cat) => (
                 <button
                   key={cat.id}
@@ -747,7 +816,7 @@ export default function ExerciseLibrary() {
                   onClick={() => setMuscleFilter(cat.id)}
                   style={{
                     padding: '5px 12px',
-                    borderRadius: '6px',
+                    borderRadius: '8px',
                     fontSize: '11.5px',
                     fontWeight: 700,
                     border: 'none',
@@ -755,53 +824,101 @@ export default function ExerciseLibrary() {
                     background: muscleFilter === cat.id ? '#0F172A' : 'transparent',
                     color: muscleFilter === cat.id ? '#FFFFFF' : '#64748B',
                     boxShadow: muscleFilter === cat.id ? '0 2px 5px rgba(15, 23, 42, 0.25)' : 'none',
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '5px',
                     transition: 'background 0.12s ease, color 0.12s ease'
                   }}
                 >
-                  {cat.label}
+                  <span>{cat.label}</span>
+                  <span style={{
+                    fontSize: '9px',
+                    fontFamily: 'JetBrains Mono, monospace',
+                    padding: '1px 4px',
+                    borderRadius: '8px',
+                    background: muscleFilter === cat.id ? 'rgba(255,255,255,0.2)' : '#E2E8F0',
+                    color: muscleFilter === cat.id ? '#FFFFFF' : '#64748B'
+                  }}>
+                    {cat.shortcut}
+                  </span>
                 </button>
               ))}
             </div>
 
-            {/* Search Box */}
-            <div 
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                background: '#FFFFFF',
-                border: '1px solid #CBD5E1',
-                borderRadius: '6px',
-                padding: '0 10px',
-                height: '34px',
-                width: '260px',
-                gap: '6px'
-              }}
-            >
-              <Search size={13} color="#94A3B8" />
-              <input
-                type="text"
-                placeholder="بحث باسم التمرين (عربي / English)..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
+            {/* Search & Refresh Toolbar */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              {/* Refresh Button */}
+              <button
+                type="button"
+                onClick={fetchExercises}
+                disabled={loading}
                 style={{
-                  border: 'none',
-                  outline: 'none',
-                  background: 'transparent',
-                  fontSize: '11.5px',
-                  width: '100%',
-                  color: '#0F172A'
+                  height: '34px',
+                  padding: '0 10px',
+                  borderRadius: '8px',
+                  border: '1px solid #CBD5E1',
+                  background: '#FFFFFF',
+                  color: '#475569',
+                  fontSize: '11px',
+                  fontWeight: 700,
+                  cursor: 'pointer',
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '5px',
+                  transition: 'all 0.15s ease'
                 }}
-              />
-              {searchTerm && (
-                <button type="button" onClick={() => setSearchTerm('')} style={{ border: 'none', background: 'transparent', cursor: 'pointer', padding: 0, color: '#94A3B8' }}>
-                  <X size={12} />
-                </button>
-              )}
+                onMouseEnter={(e) => (e.currentTarget.style.background = '#F8FAFC')}
+                onMouseLeave={(e) => (e.currentTarget.style.background = '#FFFFFF')}
+                title="تحديث قائمة التمارين [R]"
+              >
+                <RefreshCw size={12} className={loading ? 'animate-spin' : ''} />
+                <span>تحديث</span>
+                <span style={{ fontSize: '9px', opacity: 0.7, fontFamily: 'JetBrains Mono, monospace' }}>[R]</span>
+              </button>
+
+              {/* Search Box */}
+              <div 
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  background: '#FFFFFF',
+                  border: '1px solid #CBD5E1',
+                  borderRadius: '8px',
+                  padding: '0 10px',
+                  height: '34px',
+                  width: '260px',
+                  gap: '6px'
+                }}
+              >
+                <Search size={13} color="#94A3B8" />
+                <input
+                  ref={searchInputRef}
+                  type="text"
+                  placeholder="بحث باسم التمرين (عربي / English)... [/]"
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  style={{
+                    border: 'none',
+                    outline: 'none',
+                    background: 'transparent',
+                    fontSize: '11.5px',
+                    width: '100%',
+                    color: '#0F172A'
+                  }}
+                />
+                {searchTerm ? (
+                  <button type="button" onClick={() => setSearchTerm('')} style={{ border: 'none', background: 'transparent', cursor: 'pointer', padding: 0, color: '#94A3B8' }}>
+                    <X size={12} />
+                  </button>
+                ) : (
+                  <span style={{ fontSize: '9.5px', color: '#94A3B8', fontFamily: 'JetBrains Mono, monospace', padding: '1px 5px', background: '#F8FAFC', border: '1px solid #E2E8F0', borderRadius: '8px' }}>/</span>
+                )}
+              </div>
             </div>
           </div>
 
           {/* Secondary Filter Row: Equipment Filter + Injury Safety Filter */}
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '10px', background: '#F8FAFC', padding: '8px 12px', borderRadius: '8px', border: '1px solid #E2E8F0' }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '10px', background: '#F8FAFC', padding: '8px 12px', borderRadius: '10px', border: '1px solid #E2E8F0' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '14px', flexWrap: 'wrap' }}>
               
               {/* Equipment Selector */}
@@ -879,7 +996,7 @@ export default function ExerciseLibrary() {
             جاري تحميل التمارين الرياضية...
           </div>
         ) : exercises.length === 0 ? (
-          <div style={{ padding: '40px 16px', textAlign: 'center', background: '#F8FAFC', border: '1px dashed #CBD5E1', borderRadius: '8px' }}>
+          <div style={{ padding: '40px 16px', textAlign: 'center', background: '#F8FAFC', border: '1px dashed #CBD5E1', borderRadius: '12px' }}>
             <div style={{ width: '36px', height: '36px', borderRadius: '50%', background: '#F1F5F9', color: '#0F172A', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 8px auto' }}>
               <Dumbbell size={18} />
             </div>
@@ -899,9 +1016,9 @@ export default function ExerciseLibrary() {
                   style={{
                     background: '#FFFFFF',
                     border: '1px solid #E2E8F0',
-                    borderRadius: '10px',
+                    borderRadius: '12px',
                     padding: '12px 14px',
-                    boxShadow: '0 1px 3px rgba(15, 23, 42, 0.02)',
+                    boxShadow: '0 2px 6px rgba(15, 23, 42, 0.03)',
                     display: 'flex',
                     flexDirection: 'column',
                     justifyContent: 'space-between',
@@ -955,7 +1072,7 @@ export default function ExerciseLibrary() {
                             border: '1px solid #CBD5E1',
                             color: '#0F172A',
                             padding: '2px 7px',
-                            borderRadius: '6px',
+                            borderRadius: '8px',
                             fontSize: '10.5px',
                             fontWeight: 700,
                             display: 'inline-flex',
@@ -972,7 +1089,7 @@ export default function ExerciseLibrary() {
                             border: '1px solid #E2E8F0',
                             color: '#475569',
                             padding: '2px 7px',
-                            borderRadius: '6px',
+                            borderRadius: '8px',
                             fontSize: '10.5px',
                             fontWeight: 600,
                             display: 'inline-flex',
@@ -993,7 +1110,7 @@ export default function ExerciseLibrary() {
                                 border: '1px solid #BAE6FD',
                                 color: '#0284C7',
                                 padding: '1.5px 6px',
-                                borderRadius: '6px',
+                                borderRadius: '8px',
                                 fontSize: '10px',
                                 fontWeight: 700,
                                 display: 'inline-flex',
@@ -1011,7 +1128,7 @@ export default function ExerciseLibrary() {
                                 border: '1px solid #86EFAC',
                                 color: '#16A34A',
                                 padding: '1.5px 6px',
-                                borderRadius: '6px',
+                                borderRadius: '8px',
                                 fontSize: '10px',
                                 fontWeight: 700,
                                 display: 'inline-flex',
@@ -1054,7 +1171,7 @@ export default function ExerciseLibrary() {
 
                   {/* Expandable Technique Box (with In-Header Copy Button) */}
                   {currentExpanded === 'CUES' && (
-                    <div style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', borderRight: '3px solid #0F172A', padding: '8px 10px', borderRadius: '6px', fontSize: '11.5px', color: '#334155', lineHeight: 1.45 }}>
+                    <div style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', borderRight: '3px solid #0F172A', padding: '8px 10px', borderRadius: '8px', fontSize: '11.5px', color: '#334155', lineHeight: 1.45 }}>
                       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '4px' }}>
                         <div style={{ fontSize: '11px', fontWeight: 800, color: '#0F172A', display: 'flex', alignItems: 'center', gap: '4px' }}>
                           <Check size={11} />
@@ -1065,7 +1182,7 @@ export default function ExerciseLibrary() {
                           onClick={() => handleCopyDirect(ex.cues_ar, `CUES_${ex.id}`)}
                           style={{
                             padding: '2px 7px',
-                            borderRadius: '6px',
+                            borderRadius: '8px',
                             border: copiedKey === `CUES_${ex.id}` ? '1px solid #86EFAC' : '1px solid #CBD5E1',
                             background: copiedKey === `CUES_${ex.id}` ? '#F0FDF4' : '#FFFFFF',
                             color: copiedKey === `CUES_${ex.id}` ? '#16A34A' : '#475569',
@@ -1091,7 +1208,7 @@ export default function ExerciseLibrary() {
 
                   {/* Expandable Mistakes Box (with In-Header Copy Button) */}
                   {currentExpanded === 'MISTAKES' && (
-                    <div style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', borderRight: '3px solid #D97706', padding: '8px 10px', borderRadius: '6px', fontSize: '11.5px', color: '#78350F', lineHeight: 1.45 }}>
+                    <div style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', borderRight: '3px solid #D97706', padding: '8px 10px', borderRadius: '8px', fontSize: '11.5px', color: '#78350F', lineHeight: 1.45 }}>
                       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '4px' }}>
                         <div style={{ fontSize: '11px', fontWeight: 800, color: '#B45309', display: 'flex', alignItems: 'center', gap: '4px' }}>
                           <AlertTriangle size={11} />
@@ -1102,7 +1219,7 @@ export default function ExerciseLibrary() {
                           onClick={() => handleCopyDirect(ex.mistakes_ar, `MISTAKES_${ex.id}`)}
                           style={{
                             padding: '2px 7px',
-                            borderRadius: '6px',
+                            borderRadius: '8px',
                             border: copiedKey === `MISTAKES_${ex.id}` ? '1px solid #86EFAC' : '1px solid #FDE68A',
                             background: copiedKey === `MISTAKES_${ex.id}` ? '#F0FDF4' : '#FFFFFF',
                             color: copiedKey === `MISTAKES_${ex.id}` ? '#16A34A' : '#B45309',
@@ -1128,7 +1245,7 @@ export default function ExerciseLibrary() {
 
                   {/* Expandable Alternatives Box */}
                   {currentExpanded === 'ALTERNATIVES' && (
-                    <div style={{ background: '#F0F9FF', border: '1px solid #BAE6FD', borderRight: '3px solid #0284C7', padding: '8px 10px', borderRadius: '6px', fontSize: '11.5px', color: '#0C4A6E', lineHeight: 1.45 }}>
+                    <div style={{ background: '#F0F9FF', border: '1px solid #BAE6FD', borderRight: '3px solid #0284C7', padding: '8px 10px', borderRadius: '8px', fontSize: '11.5px', color: '#0C4A6E', lineHeight: 1.45 }}>
                       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '6px' }}>
                         <div style={{ fontSize: '11px', fontWeight: 800, color: '#0284C7', display: 'flex', alignItems: 'center', gap: '4px' }}>
                           <ArrowRightLeft size={12} />
@@ -1148,7 +1265,7 @@ export default function ExerciseLibrary() {
                             const target = allExercises.find(e => e.id === altId || e.code === altId);
                             const targetNames = target ? getExerciseDisplayNames(target) : { nameEn: altId, nameAr: altId };
                             return (
-                              <div key={altId} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: '#FFFFFF', padding: '5px 9px', borderRadius: '6px', border: '1px solid #E0F2FE' }}>
+                              <div key={altId} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: '#FFFFFF', padding: '5px 9px', borderRadius: '8px', border: '1px solid #E0F2FE' }}>
                                 <div style={{ display: 'flex', alignItems: 'center', gap: '6px', overflow: 'hidden' }}>
                                   <span style={{ fontWeight: 700, color: '#0F172A', fontSize: '11px' }}>
                                     {targetNames.nameEn}
@@ -1158,7 +1275,7 @@ export default function ExerciseLibrary() {
                                   </span>
                                 </div>
                                 {target && (
-                                  <span style={{ background: '#F1F5F9', border: '1px solid #CBD5E1', color: '#334155', padding: '1px 6px', borderRadius: '6px', fontSize: '9.5px', fontWeight: 600, flexShrink: 0 }}>
+                                  <span style={{ background: '#F1F5F9', border: '1px solid #CBD5E1', color: '#334155', padding: '1px 6px', borderRadius: '8px', fontSize: '9.5px', fontWeight: 600, flexShrink: 0 }}>
                                     {getShortEquipmentName(target.equipment_ar, target.equipment)}
                                   </span>
                                 )}
@@ -1180,7 +1297,7 @@ export default function ExerciseLibrary() {
                         onClick={() => toggleCardView(ex.id, 'CUES')}
                         style={{
                           padding: '5px 9px',
-                          borderRadius: '7px',
+                          borderRadius: '8px',
                           border: currentExpanded === 'CUES' ? '1px solid #0F172A' : '1px solid #CBD5E1',
                           background: currentExpanded === 'CUES' ? '#0F172A' : '#FFFFFF',
                           color: currentExpanded === 'CUES' ? '#FFFFFF' : '#334155',
@@ -1204,7 +1321,7 @@ export default function ExerciseLibrary() {
                         onClick={() => toggleCardView(ex.id, 'MISTAKES')}
                         style={{
                           padding: '5px 9px',
-                          borderRadius: '7px',
+                          borderRadius: '8px',
                           border: currentExpanded === 'MISTAKES' ? '1px solid #FDE68A' : '1px solid #CBD5E1',
                           background: currentExpanded === 'MISTAKES' ? '#FFFBEB' : '#FFFFFF',
                           color: currentExpanded === 'MISTAKES' ? '#B45309' : '#64748B',
@@ -1228,7 +1345,7 @@ export default function ExerciseLibrary() {
                         onClick={() => toggleCardView(ex.id, 'ALTERNATIVES')}
                         style={{
                           padding: '5px 9px',
-                          borderRadius: '7px',
+                          borderRadius: '8px',
                           border: currentExpanded === 'ALTERNATIVES' ? '1px solid #0284C7' : (ex.alternatives?.length > 0 ? '1px solid #BAE6FD' : '1px solid #E2E8F0'),
                           background: currentExpanded === 'ALTERNATIVES' ? '#F0F9FF' : (ex.alternatives?.length > 0 ? '#F0F9FF' : '#FFFFFF'),
                           color: currentExpanded === 'ALTERNATIVES' ? '#0284C7' : (ex.alternatives?.length > 0 ? '#0284C7' : '#94A3B8'),
@@ -1256,7 +1373,7 @@ export default function ExerciseLibrary() {
                         onClick={() => openEditExerciseModal(ex)}
                         style={{
                           padding: '5px 9px',
-                          borderRadius: '7px',
+                          borderRadius: '8px',
                           border: '1px solid #CBD5E1',
                           background: '#FFFFFF',
                           color: '#475569',
@@ -1282,7 +1399,7 @@ export default function ExerciseLibrary() {
                         onClick={() => handleShareVideoLink(ex)}
                         style={{
                           padding: '5px 9px',
-                          borderRadius: '7px',
+                          borderRadius: '8px',
                           border: isVideoCopied ? '1px solid #86EFAC' : '1px solid #CBD5E1',
                           background: isVideoCopied ? '#F0FDF4' : '#FFFFFF',
                           color: isVideoCopied ? '#16A34A' : '#475569',
@@ -1306,7 +1423,7 @@ export default function ExerciseLibrary() {
                         onClick={() => setActiveVideo(ex)}
                         style={{
                           padding: '5px 11px',
-                          borderRadius: '7px',
+                          borderRadius: '8px',
                           background: '#0F172A',
                           color: '#FFFFFF',
                           border: 'none',
@@ -1371,7 +1488,7 @@ export default function ExerciseLibrary() {
                 background: '#F8FAFC'
               }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                  <div style={{ width: '28px', height: '28px', borderRadius: '6px', background: '#0F172A', color: '#FFFFFF', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  <div style={{ width: '28px', height: '28px', borderRadius: '8px', background: '#0F172A', color: '#FFFFFF', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                     <Dumbbell size={14} />
                   </div>
                   <div>
@@ -1403,7 +1520,7 @@ export default function ExerciseLibrary() {
                       placeholder="e.g. Incline Cable Fly"
                       value={newExerciseData.name_en}
                       onChange={(e) => setNewExerciseData({ ...newExerciseData, name_en: e.target.value })}
-                      style={{ width: '100%', height: '34px', borderRadius: '6px', border: '1px solid #CBD5E1', padding: '0 10px', fontSize: '12px', outline: 'none', boxSizing: 'border-box' }}
+                      style={{ width: '100%', height: '34px', borderRadius: '8px', border: '1px solid #CBD5E1', padding: '0 10px', fontSize: '12px', outline: 'none', boxSizing: 'border-box' }}
                     />
                   </div>
                   <div>
@@ -1416,7 +1533,7 @@ export default function ExerciseLibrary() {
                       placeholder="مثال: تفتيح كابل مائل للصدر العلوي"
                       value={newExerciseData.name_ar}
                       onChange={(e) => setNewExerciseData({ ...newExerciseData, name_ar: e.target.value })}
-                      style={{ width: '100%', height: '34px', borderRadius: '6px', border: '1px solid #CBD5E1', padding: '0 10px', fontSize: '12px', outline: 'none', boxSizing: 'border-box' }}
+                      style={{ width: '100%', height: '34px', borderRadius: '8px', border: '1px solid #CBD5E1', padding: '0 10px', fontSize: '12px', outline: 'none', boxSizing: 'border-box' }}
                     />
                   </div>
                 </div>
@@ -1470,7 +1587,7 @@ export default function ExerciseLibrary() {
                     placeholder="https://www.youtube.com/watch?v=... أو رابط Shorts"
                     value={newExerciseData.video_url}
                     onChange={(e) => setNewExerciseData({ ...newExerciseData, video_url: e.target.value })}
-                    style={{ width: '100%', height: '34px', borderRadius: '6px', border: '1px solid #CBD5E1', padding: '0 10px', fontSize: '12px', outline: 'none', boxSizing: 'border-box' }}
+                    style={{ width: '100%', height: '34px', borderRadius: '8px', border: '1px solid #CBD5E1', padding: '0 10px', fontSize: '12px', outline: 'none', boxSizing: 'border-box' }}
                   />
                 </div>
 
@@ -1497,7 +1614,7 @@ export default function ExerciseLibrary() {
                       }}
                       style={{
                         padding: '4px 10px',
-                        borderRadius: '7px',
+                        borderRadius: '8px',
                         border: '1px solid #CBD5E1',
                         background: '#FFFFFF',
                         fontSize: '11px',
@@ -1525,7 +1642,7 @@ export default function ExerciseLibrary() {
                         ) : (
                           <span style={{ fontSize: '10px', color: '#94A3B8' }}>لا توجد صورة</span>
                         )}
-                        <span style={{ position: 'absolute', bottom: '4px', right: '4px', background: 'rgba(15, 23, 42, 0.85)', color: '#FFF', fontSize: '9px', fontWeight: 700, padding: '2px 6px', borderRadius: '6px' }}>
+                        <span style={{ position: 'absolute', bottom: '4px', right: '4px', background: 'rgba(15, 23, 42, 0.85)', color: '#FFF', fontSize: '9px', fontWeight: 700, padding: '2px 6px', borderRadius: '8px' }}>
                           1. وضع البداية
                         </span>
                       </div>
@@ -1558,7 +1675,7 @@ export default function ExerciseLibrary() {
                         ) : (
                           <span style={{ fontSize: '10px', color: '#94A3B8' }}>لا توجد صورة</span>
                         )}
-                        <span style={{ position: 'absolute', bottom: '4px', right: '4px', background: 'rgba(15, 23, 42, 0.85)', color: '#FFF', fontSize: '9px', fontWeight: 700, padding: '2px 6px', borderRadius: '6px' }}>
+                        <span style={{ position: 'absolute', bottom: '4px', right: '4px', background: 'rgba(15, 23, 42, 0.85)', color: '#FFF', fontSize: '9px', fontWeight: 700, padding: '2px 6px', borderRadius: '8px' }}>
                           2. وضع الانقباض
                         </span>
                       </div>
@@ -1579,7 +1696,7 @@ export default function ExerciseLibrary() {
                         placeholder="أو ضع مسار / رابط صورة الانقباض"
                         value={newExerciseData.image_contraction}
                         onChange={(e) => setNewExerciseData({ ...newExerciseData, image_contraction: e.target.value })}
-                        style={{ width: '100%', height: '26px', borderRadius: '6px', border: '1px solid #E2E8F0', padding: '0 8px', fontSize: '10px', outline: 'none', boxSizing: 'border-box' }}
+                        style={{ width: '100%', height: '26px', borderRadius: '8px', border: '1px solid #E2E8F0', padding: '0 8px', fontSize: '10px', outline: 'none', boxSizing: 'border-box' }}
                       />
                     </div>
                   </div>
@@ -1603,7 +1720,7 @@ export default function ExerciseLibrary() {
                     placeholder="شرح خطوات وضعية الجسم، زاوية الكوع، مسار الحركة والمدى الحركي..."
                     value={newExerciseData.cues_ar}
                     onChange={(e) => setNewExerciseData({ ...newExerciseData, cues_ar: e.target.value })}
-                    style={{ width: '100%', borderRadius: '6px', border: '1px solid #CBD5E1', padding: '8px 10px', fontSize: '11.5px', outline: 'none', boxSizing: 'border-box', resize: 'vertical' }}
+                    style={{ width: '100%', borderRadius: '8px', border: '1px solid #CBD5E1', padding: '8px 10px', fontSize: '11.5px', outline: 'none', boxSizing: 'border-box', resize: 'vertical' }}
                   />
                 </div>
 
@@ -1617,7 +1734,7 @@ export default function ExerciseLibrary() {
                     placeholder="أخطاء التكنيك التي قد تسبب ألماً أو إصابة في المفاصل..."
                     value={newExerciseData.mistakes_ar}
                     onChange={(e) => setNewExerciseData({ ...newExerciseData, mistakes_ar: e.target.value })}
-                    style={{ width: '100%', borderRadius: '6px', border: '1px solid #CBD5E1', padding: '8px 10px', fontSize: '11.5px', outline: 'none', boxSizing: 'border-box', resize: 'vertical' }}
+                    style={{ width: '100%', borderRadius: '8px', border: '1px solid #CBD5E1', padding: '8px 10px', fontSize: '11.5px', outline: 'none', boxSizing: 'border-box', resize: 'vertical' }}
                   />
                 </div>
 
@@ -1626,14 +1743,14 @@ export default function ExerciseLibrary() {
                   <button
                     type="button"
                     onClick={() => setIsAddModalOpen(false)}
-                    style={{ padding: '6px 14px', borderRadius: '6px', border: '1px solid #CBD5E1', background: '#FFFFFF', color: '#475569', fontSize: '11.5px', fontWeight: 700, cursor: 'pointer' }}
+                    style={{ padding: '6px 14px', borderRadius: '8px', border: '1px solid #CBD5E1', background: '#FFFFFF', color: '#475569', fontSize: '11.5px', fontWeight: 700, cursor: 'pointer' }}
                   >
                     إلغاء
                   </button>
                   <button
                     type="submit"
                     disabled={savingNewExercise}
-                    style={{ padding: '6px 16px', borderRadius: '6px', border: 'none', background: '#0F172A', color: '#FFFFFF', fontSize: '11.5px', fontWeight: 700, cursor: 'pointer' }}
+                    style={{ padding: '6px 16px', borderRadius: '8px', border: 'none', background: '#0F172A', color: '#FFFFFF', fontSize: '11.5px', fontWeight: 700, cursor: 'pointer' }}
                   >
                     {savingNewExercise ? 'جاري الحفظ...' : 'حفظ التمرين بالمكتبة'}
                   </button>
@@ -1680,7 +1797,7 @@ export default function ExerciseLibrary() {
                 background: '#F8FAFC'
               }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                  <div style={{ width: '28px', height: '28px', borderRadius: '6px', background: '#0F172A', color: '#FFFFFF', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  <div style={{ width: '28px', height: '28px', borderRadius: '8px', background: '#0F172A', color: '#FFFFFF', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                     <Edit3 size={14} />
                   </div>
                   <div>
@@ -1711,7 +1828,7 @@ export default function ExerciseLibrary() {
                       required
                       value={editFormData.name_en}
                       onChange={(e) => setEditFormData({ ...editFormData, name_en: e.target.value })}
-                      style={{ width: '100%', height: '34px', borderRadius: '6px', border: '1px solid #CBD5E1', padding: '0 10px', fontSize: '12px', outline: 'none', boxSizing: 'border-box' }}
+                      style={{ width: '100%', height: '34px', borderRadius: '8px', border: '1px solid #CBD5E1', padding: '0 10px', fontSize: '12px', outline: 'none', boxSizing: 'border-box' }}
                     />
                   </div>
                   <div>
@@ -1723,7 +1840,7 @@ export default function ExerciseLibrary() {
                       required
                       value={editFormData.name_ar}
                       onChange={(e) => setEditFormData({ ...editFormData, name_ar: e.target.value })}
-                      style={{ width: '100%', height: '34px', borderRadius: '6px', border: '1px solid #CBD5E1', padding: '0 10px', fontSize: '12px', outline: 'none', boxSizing: 'border-box' }}
+                      style={{ width: '100%', height: '34px', borderRadius: '8px', border: '1px solid #CBD5E1', padding: '0 10px', fontSize: '12px', outline: 'none', boxSizing: 'border-box' }}
                     />
                   </div>
                 </div>
@@ -1777,7 +1894,7 @@ export default function ExerciseLibrary() {
                     placeholder="https://www.youtube.com/watch?v=..."
                     value={editFormData.video_url}
                     onChange={(e) => setEditFormData({ ...editFormData, video_url: e.target.value })}
-                    style={{ width: '100%', height: '34px', borderRadius: '6px', border: '1px solid #CBD5E1', padding: '0 10px', fontSize: '12px', outline: 'none', boxSizing: 'border-box' }}
+                    style={{ width: '100%', height: '34px', borderRadius: '8px', border: '1px solid #CBD5E1', padding: '0 10px', fontSize: '12px', outline: 'none', boxSizing: 'border-box' }}
                   />
                 </div>
 
@@ -1804,7 +1921,7 @@ export default function ExerciseLibrary() {
                       }}
                       style={{
                         padding: '4px 10px',
-                        borderRadius: '7px',
+                        borderRadius: '8px',
                         border: '1px solid #CBD5E1',
                         background: '#FFFFFF',
                         fontSize: '11px',
@@ -1832,7 +1949,7 @@ export default function ExerciseLibrary() {
                         ) : (
                           <span style={{ fontSize: '10px', color: '#94A3B8' }}>لا توجد صورة</span>
                         )}
-                        <span style={{ position: 'absolute', bottom: '4px', right: '4px', background: 'rgba(15, 23, 42, 0.85)', color: '#FFF', fontSize: '9px', fontWeight: 700, padding: '2px 6px', borderRadius: '6px' }}>
+                        <span style={{ position: 'absolute', bottom: '4px', right: '4px', background: 'rgba(15, 23, 42, 0.85)', color: '#FFF', fontSize: '9px', fontWeight: 700, padding: '2px 6px', borderRadius: '8px' }}>
                           1. وضع البداية (0.jpg)
                         </span>
                       </div>
@@ -1865,7 +1982,7 @@ export default function ExerciseLibrary() {
                         ) : (
                           <span style={{ fontSize: '10px', color: '#94A3B8' }}>لا توجد صورة</span>
                         )}
-                        <span style={{ position: 'absolute', bottom: '4px', right: '4px', background: 'rgba(15, 23, 42, 0.85)', color: '#FFF', fontSize: '9px', fontWeight: 700, padding: '2px 6px', borderRadius: '6px' }}>
+                        <span style={{ position: 'absolute', bottom: '4px', right: '4px', background: 'rgba(15, 23, 42, 0.85)', color: '#FFF', fontSize: '9px', fontWeight: 700, padding: '2px 6px', borderRadius: '8px' }}>
                           2. وضع الانقباض (1.jpg)
                         </span>
                       </div>
@@ -1910,7 +2027,7 @@ export default function ExerciseLibrary() {
                     placeholder="شرح خطوات وضعية الجسم، زاوية الكوع، مسار الحركة والمدى الحركي..."
                     value={editFormData.cues_ar}
                     onChange={(e) => setEditFormData({ ...editFormData, cues_ar: e.target.value })}
-                    style={{ width: '100%', borderRadius: '6px', border: '1px solid #CBD5E1', padding: '8px 10px', fontSize: '11.5px', outline: 'none', boxSizing: 'border-box', resize: 'vertical' }}
+                    style={{ width: '100%', borderRadius: '8px', border: '1px solid #CBD5E1', padding: '8px 10px', fontSize: '11.5px', outline: 'none', boxSizing: 'border-box', resize: 'vertical' }}
                   />
                 </div>
 
@@ -1924,7 +2041,7 @@ export default function ExerciseLibrary() {
                     placeholder="أخطاء التكنيك التي قد تسبب ألماً أو إصابة في المفاصل..."
                     value={editFormData.mistakes_ar}
                     onChange={(e) => setEditFormData({ ...editFormData, mistakes_ar: e.target.value })}
-                    style={{ width: '100%', borderRadius: '6px', border: '1px solid #CBD5E1', padding: '8px 10px', fontSize: '11.5px', outline: 'none', boxSizing: 'border-box', resize: 'vertical' }}
+                    style={{ width: '100%', borderRadius: '8px', border: '1px solid #CBD5E1', padding: '8px 10px', fontSize: '11.5px', outline: 'none', boxSizing: 'border-box', resize: 'vertical' }}
                   />
                 </div>
 
@@ -1933,14 +2050,14 @@ export default function ExerciseLibrary() {
                   <button
                     type="button"
                     onClick={() => setEditingExercise(null)}
-                    style={{ padding: '6px 14px', borderRadius: '6px', border: '1px solid #CBD5E1', background: '#FFFFFF', color: '#475569', fontSize: '11.5px', fontWeight: 700, cursor: 'pointer' }}
+                    style={{ padding: '6px 14px', borderRadius: '8px', border: '1px solid #CBD5E1', background: '#FFFFFF', color: '#475569', fontSize: '11.5px', fontWeight: 700, cursor: 'pointer' }}
                   >
                     إلغاء
                   </button>
                   <button
                     type="submit"
                     disabled={savingEditExercise}
-                    style={{ padding: '6px 16px', borderRadius: '6px', border: 'none', background: '#0F172A', color: '#FFFFFF', fontSize: '11.5px', fontWeight: 700, cursor: 'pointer' }}
+                    style={{ padding: '6px 16px', borderRadius: '8px', border: 'none', background: '#0F172A', color: '#FFFFFF', fontSize: '11.5px', fontWeight: 700, cursor: 'pointer' }}
                   >
                     {savingEditExercise ? 'جاري الحفظ...' : 'حفظ وتحديث التمرين بالكامل'}
                   </button>

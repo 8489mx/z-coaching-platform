@@ -159,10 +159,10 @@ export default function ExerciseVideoModal({ exercise, onClose }) {
           }}
         >
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <span style={{ background: '#F1F5F9', border: '1px solid #CBD5E1', color: '#0F172A', fontWeight: 700, padding: '2px 8px', borderRadius: '6px', fontSize: '10.5px' }}>
+            <span style={{ background: '#F1F5F9', border: '1px solid #CBD5E1', color: '#0F172A', fontWeight: 700, padding: '2px 8px', borderRadius: '8px', fontSize: '10.5px' }}>
               عضلة: {exercise.muscle_group || 'عام'}
             </span>
-            <span style={{ background: '#FFFFFF', border: '1px solid #E2E8F0', color: '#475569', fontWeight: 700, padding: '2px 8px', borderRadius: '6px', fontSize: '10.5px' }}>
+            <span style={{ background: '#FFFFFF', border: '1px solid #E2E8F0', color: '#475569', fontWeight: 700, padding: '2px 8px', borderRadius: '8px', fontSize: '10.5px' }}>
               أداة: {exercise.equipment || 'عام'}
             </span>
             <span style={{ color: '#94A3B8' }}>اضغط ESC للإغلاق</span>
