@@ -288,10 +288,23 @@ export async function approveCheckin(req, res) {
 
       let adapted = null;
       try {
+        const bio = checkin.biofeedback || {};
+        const painReports = Array.isArray(checkin.pain_reports) ? checkin.pain_reports : [];
+        const firstPain = painReports[0] || {};
+        const jointLocation = firstPain.location || firstPain.joint || bio.joint_pain_location || bio.joint_location || checkin.analysis_output?.joint_pain_location;
+        const painScore = firstPain.score || firstPain.severity || bio.pain_score || checkin.analysis_output?.pain_score;
+        const fatigueScore = bio.fatigue_score || bio.fatigue || checkin.analysis_output?.fatigue_score;
+
         adapted = buildAdaptedPlan({
           currentMasterProgram: progData,
           checkinAnalysis: checkin.analysis_output || {},
-          options: { currentWeekNumber: checkin.week_number || 1 }
+          options: {
+            currentWeekNumber: checkin.week_number || 1,
+            joint_pain_location: jointLocation,
+            pain_score: painScore,
+            accumulated_fatigue_score: fatigueScore,
+            weeks_of_accumulated_training: checkin.week_number || 1
+          }
         });
       } catch (e) {
         console.warn("buildAdaptedPlan fallback in checkin.controller:", e.message);

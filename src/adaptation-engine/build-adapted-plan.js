@@ -4,6 +4,7 @@ import {
   AdaptationReasonCode,
 } from "./domain/enums.js";
 import { CheckinAnalysisStatus } from "../checkin-engine/index.js";
+import { evaluateJointPainAndFirewall } from "../execution-engines/biomechanics-firewall-engine.js";
 
 function requireObject(value, name) {
   if (value === null || typeof value !== "object" || Array.isArray(value)) {
@@ -195,10 +196,116 @@ export function buildAdaptedPlan(inputs) {
     });
   }
 
-  // Meso-Cycle Progression extraction
+  // Meso-Cycle Progression extraction & Adaptive Biomechanical Tuning
   const mesoWeeks = currentMasterProgram.training_program?.weeks || [];
   const targetWeekIndex = Math.min(nextWeekNumber - 1, Math.max(0, mesoWeeks.length - 1));
-  const adaptedTrainingWeek = mesoWeeks[targetWeekIndex] || null;
+  let adaptedTrainingWeek = mesoWeeks[targetWeekIndex] ? JSON.parse(JSON.stringify(mesoWeeks[targetWeekIndex])) : null;
+
+  let isDeloadRecommended = false;
+
+  if (adaptedTrainingWeek) {
+    // 1. Auto-Deload Detection & Volume Reduction
+    const accumulatedWeeks = Number(options.weeks_of_accumulated_training || currentWeekNumber || 1);
+    const fatigueScore = Number(options.accumulated_fatigue_score || checkinAnalysis.fatigue_score || (status === CheckinAnalysisStatus.HIGH_FATIGUE_WARNING ? 8 : 4));
+    const isDeloadTriggered = accumulatedWeeks >= 5 || (accumulatedWeeks >= 4 && (fatigueScore >= 7 || status === CheckinAnalysisStatus.HIGH_FATIGUE_WARNING)) || options.force_deload === true;
+
+    if (isDeloadTriggered && !isDietBreakEligible) {
+      isDeloadRecommended = true;
+      adaptationAction = AdaptationAction.SCHEDULE_DELOAD;
+      adaptedTrainingWeek.phase = "DELOAD";
+      adaptedTrainingWeek.focus_note = "أسبوع تفريغ أحمال تلقائي (Auto-Deload) لخفض إجهاد الجهاز العصبي والمفاصل";
+      adaptedTrainingWeek.target_rir = 4;
+
+      for (const session of (adaptedTrainingWeek.sessions || [])) {
+        for (const ex of (session.exercises || [])) {
+          ex.sets = Math.max(2, Math.round(Number(ex.sets || 3) * 0.60));
+          ex.target_sets = ex.sets;
+          ex.rir = 4;
+          ex.target_rir = 4;
+        }
+      }
+
+      reasons.push({
+        code: AdaptationReasonCode.AUTO_DELOAD_FATIGUE_PRESCRIBED,
+        message_ar: `أسبوع تفريغ أحمال تلقائي (Deload Week): بعد ${accumulatedWeeks} أسابيع متواصلة من التحميل مع مؤشر إجهاد ${fatigueScore}/10، تم خفض الجولات 40% ورفع RIR إلى 4 للسماح للجهاز العصبي والمفاصل بالتعافي التام.`,
+        message_en: `Auto-Deload prescribed after ${accumulatedWeeks} consecutive training weeks with fatigue score ${fatigueScore}/10. Sets reduced by 40% with RIR 4.`,
+      });
+    }
+
+    // 2. Biomechanical Joint Pain Firewall & Exercise Swapping
+    const rawJoint = options.joint_pain_location || options.joint_location || checkinAnalysis.joint_pain_location || checkinAnalysis.joint_pain || (status === CheckinAnalysisStatus.INJURY_FLAGGED ? 'LOWER_BACK' : null);
+    const painScore = Number(options.pain_score || checkinAnalysis.pain_score || (status === CheckinAnalysisStatus.INJURY_FLAGGED ? 6 : 0));
+
+    let jointSwappedExercises = [];
+
+    if (rawJoint && painScore >= 3) {
+      let normalizedJoint = String(rawJoint).toUpperCase();
+      if (normalizedJoint.includes('BACK') || normalizedJoint.includes('ظهر') || normalizedJoint.includes('قطنية')) normalizedJoint = 'LOWER_BACK';
+      else if (normalizedJoint.includes('SHOULDER') || normalizedJoint.includes('كتف')) normalizedJoint = 'SHOULDER';
+      else if (normalizedJoint.includes('KNEE') || normalizedJoint.includes('ركبة')) normalizedJoint = 'KNEE_PATELLAR';
+      else if (normalizedJoint.includes('ELBOW') || normalizedJoint.includes('كوع')) normalizedJoint = 'ELBOW';
+
+      const firewallResult = evaluateJointPainAndFirewall({
+        jointLocation: normalizedJoint,
+        painScore
+      });
+
+      if (firewallResult.firewall_active && Array.isArray(firewallResult.forbidden_movements)) {
+        const forbiddenSet = new Set(firewallResult.forbidden_movements.map(m => String(m).toUpperCase()));
+        const availableSwaps = firewallResult.immediate_swaps || [];
+
+        for (const session of (adaptedTrainingWeek.sessions || [])) {
+          session.exercises = (session.exercises || []).map((ex, exIdx) => {
+            const code = String(ex.code || ex.exercise_code || ex.id || '').toUpperCase();
+            const isForbidden = forbiddenSet.has(code) || Array.from(forbiddenSet).some(f => code.includes(f) || f.includes(code));
+            if (isForbidden && availableSwaps.length > 0) {
+              const swapIdx = exIdx % availableSwaps.length;
+              const chosenSwap = availableSwaps[swapIdx];
+
+              jointSwappedExercises.push({
+                original_code: code,
+                original_name: ex.name_ar || ex.name || code,
+                swapped_code: chosenSwap.id,
+                swapped_name_ar: chosenSwap.name_ar,
+                biomechanical_advantage_ar: chosenSwap.biomechanical_advantage_ar
+              });
+
+              return {
+                ...ex,
+                id: `swap_${chosenSwap.id}_${exIdx}`,
+                code: chosenSwap.id.toUpperCase(),
+                name: chosenSwap.name_ar,
+                name_ar: chosenSwap.name_ar,
+                name_en: chosenSwap.name_ar,
+                is_biomechanical_swap: true,
+                original_exercise_code: code,
+                biomechanical_advantage_ar: chosenSwap.biomechanical_advantage_ar,
+                safetyNote: `بديل بيوميكانيكي آمن لحماية المفصل: ${chosenSwap.biomechanical_advantage_ar}`,
+                prescription: {
+                  ...(ex.prescription || {}),
+                  sets: ex.sets || 3,
+                  target_rir: Math.max(2, Number(ex.rir || 2)),
+                  clinical_notes_ar: chosenSwap.biomechanical_advantage_ar
+                }
+              };
+            }
+            return ex;
+          });
+        }
+
+        if (jointSwappedExercises.length > 0) {
+          adaptationAction = AdaptationAction.SUBSTITUTE_INJURED_EXERCISE;
+          requiresCoachApproval = true;
+          reasons.push({
+            code: AdaptationReasonCode.BIOMECHANICAL_INJURY_FIREWALL_SWAPPED,
+            message_ar: `تفعيل جدار حماية المفصل (${normalizedJoint}): تم استبدال ${jointSwappedExercises.length} تمرين ذي حمل قصي بالبدائل البيوميكانيكية الآمنة لحماية المفصل وتسريع الاستشفاء.`,
+            message_en: `Biomechanical firewall activated for ${normalizedJoint}: safely substituted ${jointSwappedExercises.length} contraindicated exercises.`,
+            swaps: jointSwappedExercises
+          });
+        }
+      }
+    }
+  }
 
   return Object.freeze({
     engine_version: ADAPTATION_ENGINE_VERSION,
@@ -206,6 +313,7 @@ export function buildAdaptedPlan(inputs) {
     adapted_week_number: nextWeekNumber,
     adaptation_action: adaptationAction,
     adaptation_reasons: Object.freeze(reasons),
+    is_deload_recommended: isDeloadRecommended,
     adapted_nutrition: Object.freeze({
       target_calories_kcal: adaptedCalories,
       protein_g: adaptedProtein,
@@ -214,7 +322,7 @@ export function buildAdaptedPlan(inputs) {
       fiber_g: baseFiber,
       refeed_config: refeedConfig,
     }),
-    adapted_training_week: adaptedTrainingWeek,
+    adapted_training_week: adaptedTrainingWeek ? Object.freeze(adaptedTrainingWeek) : null,
     adapted_cardio: Object.freeze({
       daily_step_target: adaptedDailySteps,
       sessions: Object.freeze(baseCardioSessions),

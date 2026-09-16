@@ -48,6 +48,7 @@ import { ClientCodeBadge, ClientPackageBadge, getClientTier } from '../utils/tie
 import { arabicSearchMatch } from '../utils/searchUtils';
 import { extractClientFastingProfile } from '../utils/seasonalFastingRadar';
 import { formatWhatsAppPhone } from '../utils/whatsappRemindersEngine';
+import { evaluateJointPainAndFirewall } from '../utils/biomechanicsFirewallEngine';
 
 import { STRESS_TEST_CLIENTS, CLINICAL_MASTER_BLUEPRINTS } from '../data/stressTestClientsBlueprints';
 
@@ -664,6 +665,9 @@ export default function CheckinReviewDashboard() {
                   energy: 4, sleep: 4, hunger: 3, recovery: 4,
                   stress_level: 3, digestion_status: 'good', cycle_phase: null
                 },
+                pain_reports: ch.pain_reports || [],
+                analysis_output: ch.analysis_output || {},
+                is_deload_recommended: ch.analysis_output?.is_deload_recommended || false,
                 reflections: {
                   nsv_note: 'الالتزام الكامل بالخطة',
                   struggle_note: ch.coach_notes || 'لا يوجد صعوبات'
@@ -680,7 +684,8 @@ export default function CheckinReviewDashboard() {
                 ai_analysis: {
                   recommendation: ch.analysis_output?.coach_action || 'الاستمرار بالخطة الحالية مع مراقبة مؤشرات الأسبوع القادم.',
                   status_badge: ch.analysis_status || 'ON_TRACK',
-                  warning: null
+                  warning: null,
+                  ...(ch.analysis_output || {})
                 },
                 baseline_macros: { calories: 2000, protein: 140, carbs: 220, fats: 60 },
                 suggested_reply: `أهلاً بحضرتك يا بطل، تسلم إيدك على تقرير الأسبوع والالتزام. استمر على نفس الخطة والتركيز، وبالتوفيق دائماً.`
@@ -2087,6 +2092,178 @@ export default function CheckinReviewDashboard() {
                     </div>
                   )}
                 </div>
+
+                {/* 5.1.B Biomechanical Joint Firewall & Deload Tuning Box */}
+                {(() => {
+                  const bio = activeCheckin?.biofeedback || {};
+                  const painReports = Array.isArray(activeCheckin?.pain_reports) ? activeCheckin.pain_reports : [];
+                  const firstPain = painReports[0] || {};
+                  let rawJoint = firstPain.location || firstPain.joint || bio.joint_pain_location || bio.joint_location || activeCheckin?.ai_analysis?.joint_pain_location;
+                  let painScore = Number(firstPain.score || firstPain.severity || bio.pain_score || activeCheckin?.ai_analysis?.pain_score || 0);
+                  const fatigueScore = Number(bio.fatigue_score || bio.fatigue || activeCheckin?.ai_analysis?.fatigue_score || 0);
+                  const weekNum = Number(activeCheckin?.week_number || 1);
+
+                  // If no explicit pain report in checkin, check client recorded injuries
+                  if (!rawJoint && Array.isArray(activeCheckin?.client?.injuries) && activeCheckin.client.injuries.length > 0) {
+                    const injStr = activeCheckin.client.injuries.join(' ').toLowerCase();
+                    if (injStr.includes('ظهر') || injStr.includes('فقرات') || injStr.includes('l4') || injStr.includes('l5') || injStr.includes('غضروف') || injStr.includes('disc')) {
+                      rawJoint = 'LOWER_BACK';
+                      painScore = Math.max(painScore, 5);
+                    } else if (injStr.includes('كتف') || injStr.includes('impingement') || injStr.includes('rotator')) {
+                      rawJoint = 'SHOULDER';
+                      painScore = Math.max(painScore, 5);
+                    } else if (injStr.includes('ركبة') || injStr.includes('صابونة') || injStr.includes('patellar')) {
+                      rawJoint = 'KNEE_PATELLAR';
+                      painScore = Math.max(painScore, 5);
+                    } else if (injStr.includes('كوع') || injStr.includes('elbow')) {
+                      rawJoint = 'ELBOW';
+                      painScore = Math.max(painScore, 5);
+                    }
+                  }
+
+                  let normalizedJoint = rawJoint ? String(rawJoint).toUpperCase() : null;
+                  if (normalizedJoint) {
+                    if (normalizedJoint.includes('BACK') || normalizedJoint.includes('ظهر') || normalizedJoint.includes('قطنية')) normalizedJoint = 'LOWER_BACK';
+                    else if (normalizedJoint.includes('SHOULDER') || normalizedJoint.includes('كتف')) normalizedJoint = 'SHOULDER';
+                    else if (normalizedJoint.includes('KNEE') || normalizedJoint.includes('ركبة')) normalizedJoint = 'KNEE_PATELLAR';
+                    else if (normalizedJoint.includes('ELBOW') || normalizedJoint.includes('كوع')) normalizedJoint = 'ELBOW';
+                  }
+
+                  const firewallResult = normalizedJoint && painScore >= 3 ? evaluateJointPainAndFirewall({
+                    jointLocation: normalizedJoint,
+                    painScore
+                  }) : null;
+
+                  const isDeloadTriggered = activeCheckin?.is_deload_recommended || 
+                    activeCheckin?.ai_analysis?.is_deload_recommended || 
+                    (weekNum >= 4 && fatigueScore >= 7) || 
+                    activeCheckin?.ai_analysis?.status_badge?.includes('FATIGUE');
+
+                  if (!firewallResult?.firewall_active && !isDeloadTriggered) return null;
+
+                  const jointLabelMap = {
+                    LOWER_BACK: 'أسفل الظهر والفقرات القطنية (L4/L5)',
+                    SHOULDER: 'مفصل الكتف ومحفظة الروتاتور كف',
+                    KNEE_PATELLAR: 'مفصل الركبة ووتر الصابونة',
+                    ELBOW: 'مفصل الكوع وأوتار الترايسبس'
+                  };
+
+                  return (
+                    <div style={{
+                      background: 'linear-gradient(135deg, #F0FDF4 0%, #DCFCE7 100%)',
+                      border: '1.5px solid #22C55E',
+                      borderRadius: '12px',
+                      padding: '12px 14px',
+                      display: 'flex',
+                      flexDirection: 'column',
+                      gap: '10px'
+                    }}>
+                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '8px' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                          <ShieldCheck size={18} color="#15803D" />
+                          <strong style={{ fontSize: '13px', color: '#166534' }}>
+                            درع الأمان البيوميكانيكي وهندسة الاستشفاء العصبي
+                          </strong>
+                        </div>
+
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                          {firewallResult?.firewall_active && (
+                            <span style={{
+                              fontSize: '10px',
+                              fontWeight: 800,
+                              background: '#DC2626',
+                              color: '#FFFFFF',
+                              padding: '2px 8px',
+                              borderRadius: '6px'
+                            }}>
+                              جدار حماية المفصل نشط
+                            </span>
+                          )}
+                          {isDeloadTriggered && (
+                            <span style={{
+                              fontSize: '10px',
+                              fontWeight: 800,
+                              background: '#D97706',
+                              color: '#FFFFFF',
+                              padding: '2px 8px',
+                              borderRadius: '6px'
+                            }}>
+                              أسبوع تفريغ أحمال تلقائي (Deload)
+                            </span>
+                          )}
+                        </div>
+                      </div>
+
+                      {firewallResult?.firewall_active && (
+                        <div style={{ background: '#FFFFFF', border: '1px solid #BBF7D0', borderRadius: '10px', padding: '10px 12px' }}>
+                          <div style={{ fontSize: '11.5px', color: '#166534', marginBottom: '6px', lineHeight: 1.5 }}>
+                            <strong>المفصل المتأثر:</strong> {jointLabelMap[normalizedJoint] || normalizedJoint} (مستوى الألم: {painScore}/10).
+                            <span style={{ display: 'block', color: '#B91C1C', marginTop: '2px' }}>
+                              تم عزل الحركات ذات الحمل القصي واستبدالها تلقائياً ببدائل بيوميكانيكية آمنة في أسبوع التدريب القادم:
+                            </span>
+                          </div>
+
+                          <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                            {(firewallResult.immediate_swaps || []).slice(0, 2).map((sw, sIdx) => (
+                              <div key={sIdx} style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', borderRadius: '8px', padding: '6px 10px', fontSize: '11px', color: '#0F172A' }}>
+                                <strong style={{ color: '#15803D', display: 'block', marginBottom: '2px' }}>
+                                  البديل الموصى به: {sw.name_ar}
+                                </strong>
+                                <span style={{ color: '#475569' }}>
+                                  الميزة الحركية: {sw.biomechanical_advantage_ar}
+                                </span>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+
+                      {isDeloadTriggered && (
+                        <div style={{ background: '#FFFBEB', border: '1px solid #FDE68A', borderRadius: '10px', padding: '10px 12px', fontSize: '11.5px', color: '#92400E', lineHeight: 1.5 }}>
+                          <strong style={{ color: '#B45309', display: 'block', marginBottom: '2px' }}>
+                            بروتوكول تفريغ الأحمال المعتمد (Auto-Deload Week):
+                          </strong>
+                          تم خفض مجموعات العمل بنسبة 40% تلقائياً مع رفع RIR إلى 4 لإتاحة التعافي العصبي والمفصلي الكامل بعد تراكم الأحمال، مع الحفاظ على التكنيك والأوزان دون هبوط.
+                        </div>
+                      )}
+
+                      <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px' }}>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            let note = `أهلاً يا ${clientFirstName}! `;
+                            if (firewallResult?.firewall_active) {
+                              note += `بناءً على الألم المسجل في ${jointLabelMap[normalizedJoint] || normalizedJoint}، قمنا بتفعيل جدار الحماية البيوميكانيكي وتعديل التمارين ذات الحمل القصي إلى بدائل آمنة تدعم الشفاء. `;
+                            }
+                            if (isDeloadTriggered) {
+                              note += `كما تم اعتماد أسبوع تفريغ أحمال تلقائي (Deload) بخفض المجموعات بنسبة 40% ورفع معدل RIR إلى 4 لتجديد طاقة الجهاز العصبي والمفاصل والعودة بقوة مضاعفة. `;
+                            }
+                            note += `التزم بالبدائل والراحة المقررة، ومستمرون بكل عزم!`;
+                            setCoachReply(note);
+                          }}
+                          style={{
+                            height: '28px',
+                            padding: '0 12px',
+                            borderRadius: '8px',
+                            background: '#15803D',
+                            color: '#FFFFFF',
+                            border: 'none',
+                            fontSize: '11px',
+                            fontWeight: 700,
+                            cursor: 'pointer',
+                            display: 'inline-flex',
+                            alignItems: 'center',
+                            gap: '4px',
+                            transition: 'all 0.15s ease'
+                          }}
+                        >
+                          <ShieldCheck size={13} />
+                          <span>إدراج التوجيه البيوميكانيكي والديلود في الرد</span>
+                        </button>
+                      </div>
+                    </div>
+                  );
+                })()}
 
                 {/* 5.2 1-Click Quick Decision Presets Bar for Coach */}
                 <div style={{ 

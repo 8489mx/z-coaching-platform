@@ -187,13 +187,22 @@ export function mergeAdaptedPlanIntoProgram(currentMasterProgram, adaptationResu
         mergedSessions = existingSessions.map((exSess, sIdx) => {
           const adaptSess = adaptedSessions[sIdx] || {};
           const exList = exSess.exercises || [];
-          const updatedExercises = exList.map(ex => {
+          const updatedExercises = exList.map((ex, exIdx) => {
+            const adaptByOrig = (adaptSess.exercises || []).find(ae => ae?.is_biomechanical_swap && (ae?.original_exercise_code === ex.code || ae?.original_exercise_code === ex.id));
+            const adaptEx = adaptByOrig || (adaptSess.exercises || [])[exIdx];
+            if (adaptEx?.is_biomechanical_swap) {
+              return {
+                ...adaptEx,
+                is_coach_custom: false
+              };
+            }
+
             let rir = ex.rir;
             if (formattedAdaptedWeek.target_rir !== undefined) {
               rir = formattedAdaptedWeek.target_rir;
             }
             let sets = ex.sets;
-            if (adaptationResult?.is_deload_recommended || adaptationResult?.checkinAnalysis?.is_deload_recommended) {
+            if (adaptationResult?.is_deload_recommended || adaptationResult?.checkinAnalysis?.is_deload_recommended || formattedAdaptedWeek.phase === 'DELOAD') {
               sets = Math.max(2, Math.round(Number(ex.sets || 3) * 0.60));
             }
             return {
