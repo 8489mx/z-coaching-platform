@@ -198,12 +198,62 @@ export const GYM_RUSH_EQUIVALENCE_CATALOG = {
     swap_id: 'behind_back_cable_lateral_raise',
     swap_name_ar: 'رفرفة جانبي بالكابل من خلف الظهر (Behind-the-Back Cable Lateral Raise)',
     coaching_cue_ar: 'الكابل يوفر أقصى مقاومة في بداية الحركة حيث تكون العضلة الجانبية في أقصى استطالة.'
+  },
+  LEG_EXTENSION: {
+    id: 'leg_extension',
+    name_ar: 'جهاز فرد الأرجل (Leg Extension)',
+    swap_id: 'spanish_squat_banded',
+    swap_name_ar: 'السكوات الإسباني بالمطاط (Spanish Squat with Resistance Band)',
+    coaching_cue_ar: 'تثبيت الركبتين بالمطاط بزاوية 90 درجة لتوليد أقصى توتر أيزومتري على عضلات الفخذ الرباعية دون إجهاد الرضفة.'
+  },
+  LEG_EXTENSION_MACHINE: {
+    id: 'leg_extension_machine',
+    name_ar: 'جهاز فرد الأرجل (Leg Extension)',
+    swap_id: 'spanish_squat_banded',
+    swap_name_ar: 'السكوات الإسباني بالمطاط (Spanish Squat with Resistance Band)',
+    coaching_cue_ar: 'تثبيت الركبتين بالمطاط بزاوية 90 درجة لتوليد أقصى توتر أيزومتري على عضلات الفخذ الرباعية دون إجهاد الرضفة.'
+  },
+  SEATED_LEG_CURL: {
+    id: 'seated_leg_curl',
+    name_ar: 'جهاز ثني الأرجل جالس (Seated Leg Curl)',
+    swap_id: 'db_romanian_deadlift',
+    swap_name_ar: 'الديدليفت الروماني بالدنابل (DB Romanian Deadlift)',
+    coaching_cue_ar: 'دفع الحوض للخلف مع ثني طفيف في الركبة للوصول لأقصى استطالة في عضلات الفخذ الخلفية.'
+  },
+  LYING_LEG_CURL: {
+    id: 'lying_leg_curl',
+    name_ar: 'جهاز ثني الأرجل منبطح (Lying Leg Curl)',
+    swap_id: 'db_romanian_deadlift',
+    swap_name_ar: 'الديدليفت الروماني بالدنابل (DB Romanian Deadlift)',
+    coaching_cue_ar: 'دفع الحوض للخلف مع ثني طفيف في الركبة للوصول لأقصى استطالة في عضلات الفخذ الخلفية.'
+  },
+  HACK_SQUAT: {
+    id: 'hack_squat',
+    name_ar: 'جهاز الهاك سكوات (Hack Squat)',
+    swap_id: 'bulgarian_split_squat',
+    swap_name_ar: 'السكوات البلغاري بالدنابل (Bulgarian Split Squat)',
+    coaching_cue_ar: 'وضع القدم الخلفية على البنش والنزول عمودياً لتركيز كامل الحمل على الفخذ الأمامي للجزء العامل.'
+  },
+  CABLE_CROSSOVER: {
+    id: 'cable_crossover',
+    name_ar: 'كابل تفتيح الصدر (Cable Crossover)',
+    swap_id: 'incline_db_fly',
+    swap_name_ar: 'تفتيح دمبلز بنش مائل 30° (Incline DB Fly)',
+    coaching_cue_ar: 'الحفاظ على ثني طفيف وثابت في الكوع والتركيز على عصر الصدر العلوي في نهاية الصعود.'
   }
 };
 
 export function getGymRushEquivalentSwap(equipmentKey) {
   const normalizedKey = String(equipmentKey).toUpperCase();
-  const swap = GYM_RUSH_EQUIVALENCE_CATALOG[normalizedKey];
+  let swap = GYM_RUSH_EQUIVALENCE_CATALOG[normalizedKey];
+
+  if (!swap) {
+    // Try matching partial key
+    const foundKey = Object.keys(GYM_RUSH_EQUIVALENCE_CATALOG).find(k => normalizedKey.includes(k) || k.includes(normalizedKey));
+    if (foundKey) {
+      swap = GYM_RUSH_EQUIVALENCE_CATALOG[foundKey];
+    }
+  }
 
   if (!swap) {
     return {
@@ -219,6 +269,72 @@ export function getGymRushEquivalentSwap(equipmentKey) {
     swap_id: swap.swap_id,
     coaching_cue_ar: swap.coaching_cue_ar,
     identical_resistance_profile: true
+  };
+}
+
+export function applyGymRushSwapToProgram(programData, { weekNumber = 1, sessionIndex = 0, exerciseIndex = 0, equipmentKey = null } = {}) {
+  if (!programData || !programData.training_program) {
+    throw new TypeError("programData or training_program is missing");
+  }
+
+  const cloned = JSON.parse(JSON.stringify(programData));
+  const weeks = cloned.training_program.weeks || [];
+  const targetWeek = weeks.find(w => Number(w.week_number) === Number(weekNumber) || Number(w.week) === Number(weekNumber)) || weeks[0];
+
+  if (!targetWeek) {
+    throw new RangeError(`Week ${weekNumber} not found in training program`);
+  }
+
+  const sessions = targetWeek.sessions || targetWeek.days || [];
+  const targetSession = sessions[sessionIndex];
+
+  if (!targetSession || !Array.isArray(targetSession.exercises)) {
+    throw new RangeError(`Session at index ${sessionIndex} not found or has no exercises`);
+  }
+
+  const targetExercise = targetSession.exercises[exerciseIndex];
+  if (!targetExercise) {
+    throw new RangeError(`Exercise at index ${exerciseIndex} not found in session`);
+  }
+
+  const keyToLookup = equipmentKey || targetExercise.code || targetExercise.exercise_code || targetExercise.id;
+  const swapResult = getGymRushEquivalentSwap(keyToLookup);
+
+  if (!swapResult.found) {
+    return {
+      success: false,
+      message_ar: swapResult.message_ar,
+      program: cloned
+    };
+  }
+
+  // Deterministically replace exercise with gym rush equivalent
+  const updatedExercise = {
+    ...targetExercise,
+    id: `rush_swap_${swapResult.swap_id}_${exerciseIndex}`,
+    code: swapResult.swap_id.toUpperCase(),
+    exercise_code: swapResult.swap_id.toUpperCase(),
+    name: swapResult.biomechanical_swap_ar,
+    name_ar: swapResult.biomechanical_swap_ar,
+    name_en: swapResult.biomechanical_swap_ar,
+    is_gym_rush_swap: true,
+    original_exercise_code: targetExercise.code || targetExercise.exercise_code,
+    original_exercise_name_ar: swapResult.original_exercise_ar,
+    coaching_cue_ar: swapResult.coaching_cue_ar,
+    safetyNote: `بديل زحمة الجيم: ${swapResult.coaching_cue_ar}`,
+    prescription: {
+      ...(targetExercise.prescription || {}),
+      sets: targetExercise.sets || 3,
+      clinical_notes_ar: swapResult.coaching_cue_ar
+    }
+  };
+
+  targetSession.exercises[exerciseIndex] = updatedExercise;
+
+  return {
+    success: true,
+    swapped_exercise: updatedExercise,
+    program: cloned
   };
 }
 

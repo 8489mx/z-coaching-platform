@@ -364,6 +364,63 @@ export const swapProgramExerciseHandler = async (req, res) => {
   }
 };
 
+/**
+ * Controller to fetch the full catalog of gym rush equivalents
+ */
+export const getGymRushCatalogHandler = async (req, res) => {
+  try {
+    const { GYM_RUSH_EQUIVALENCE_CATALOG } = await import("../../execution-engines/biomechanics-firewall-engine.js");
+    return res.status(200).json({
+      success: true,
+      catalog: GYM_RUSH_EQUIVALENCE_CATALOG
+    });
+  } catch (err) {
+    console.error("getGymRushCatalogHandler error:", err);
+    return res.status(500).json({ error: "فشل جلب كتالوج بدائل زحمة الجيم", details: err.message });
+  }
+};
+
+/**
+ * Controller to apply gym rush auto-substitution to an active program
+ */
+export const gymRushSwapHandler = async (req, res) => {
+  try {
+    const { programId } = req.params;
+    const { weekNumber = 1, sessionIndex = 0, exerciseIndex = 0, equipmentKey = null } = req.body;
+
+    const { Program } = await import("../models/index.js");
+    const program = await Program.findByPk(programId);
+    if (!program) {
+      return res.status(404).json({ error: "البرنامج التدريبي غير موجود" });
+    }
+
+    const { applyGymRushSwapToProgram } = await import("../../execution-engines/biomechanics-firewall-engine.js");
+    const result = applyGymRushSwapToProgram(program.program_data, {
+      weekNumber,
+      sessionIndex,
+      exerciseIndex,
+      equipmentKey
+    });
+
+    if (!result.success) {
+      return res.status(400).json({ error: result.message_ar });
+    }
+
+    program.program_data = result.program;
+    program.changed("program_data", true);
+    await program.save();
+
+    return res.status(200).json({
+      message: "تم استبدال تمرين زحمة الجيم بنجاح بالبديل البيوميكانيكي المطابق",
+      swapped_exercise: result.swapped_exercise,
+      program: result.program
+    });
+  } catch (err) {
+    console.error("gymRushSwapHandler error:", err);
+    return res.status(500).json({ error: "فشل استبدال تمرين زحمة الجيم", details: err.message });
+  }
+};
+
 
 import fsUploadSync from 'fs';
 import pathUpload from 'path';
