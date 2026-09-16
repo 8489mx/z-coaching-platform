@@ -51,6 +51,7 @@ import { arabicSearchMatch } from '../utils/searchUtils';
 import { extractClientFastingProfile } from '../utils/seasonalFastingRadar';
 import { formatWhatsAppPhone } from '../utils/whatsappRemindersEngine';
 import { evaluateJointPainAndFirewall } from '../utils/biomechanicsFirewallEngine';
+import { generateCheckinApprovalWhatsAppMessage } from '../utils/checkinApprovalWhatsApp';
 
 import { STRESS_TEST_CLIENTS, CLINICAL_MASTER_BLUEPRINTS } from '../data/stressTestClientsBlueprints';
 
@@ -1014,6 +1015,23 @@ export default function CheckinReviewDashboard() {
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [showLabModal, selectedIdx, filteredQueue.length]);
 
+  const buildSmartWhatsAppSummary = (notes = coachReply) => {
+    if (!activeCheckin) return '';
+    return generateCheckinApprovalWhatsAppMessage({
+      clientName: safeClient?.name,
+      clientCode: safeClient?.code,
+      weekNumber: activeCheckin?.week_number || activeCheckin?.checkin_number || 1,
+      currentWeight: safeMetrics?.current_weight,
+      weightDiff: safeMetrics?.weight_change,
+      waistCurrent: safeMetrics?.waist_current,
+      waistDiff: safeMetrics?.waist_change,
+      macros: macroAdjustments,
+      cardioTarget: activeCheckin?.cardio_target || activeCheckin?.cardio || '',
+      coachNotes: typeof notes === 'string' ? notes : '',
+      appBaseUrl: typeof window !== 'undefined' ? window.location.origin : 'https://zakaria.fit'
+    });
+  };
+
   const handleApprove = async () => {
     if (!activeCheckin) return;
     setIsSubmitting(true);
@@ -1049,11 +1067,12 @@ export default function CheckinReviewDashboard() {
       setSelectedIdx(remaining.length - 1);
     }
 
-    // Trigger non-blocking luxury floating toast with 1-click WhatsApp action
+    // Trigger non-blocking luxury floating toast with smart WhatsApp action
+    const smartWhatsAppSummary = buildSmartWhatsAppSummary(replyMsg);
     setApprovalToast({
       clientName: approvedClientName,
       phone: clientPhone,
-      reply: replyMsg
+      reply: smartWhatsAppSummary
     });
   };
 
@@ -1068,7 +1087,8 @@ export default function CheckinReviewDashboard() {
   const handleOpenDirectWhatsApp = () => {
     if (!activeCheckin?.client?.phone) return;
     const cleanPhone = formatWhatsAppPhone(activeCheckin?.client?.phone);
-    window.open(`https://wa.me/${cleanPhone}?text=${encodeURIComponent(coachReply)}`, '_blank');
+    const textToSend = coachReply?.trim() ? coachReply : buildSmartWhatsAppSummary();
+    window.open(`https://wa.me/${cleanPhone}?text=${encodeURIComponent(textToSend)}`, '_blank');
   };
 
   const isMaxTier = activeCheckin?.client?.package?.toUpperCase().includes('MAX');
@@ -2951,6 +2971,40 @@ export default function CheckinReviewDashboard() {
                 description="كتابة التوجيه التشجيعي وإرسال التحديث لبرنامج المتدرب."
               >
                 <div style={{ marginTop: '6px' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+                    <span style={{ fontSize: '11px', color: '#64748B', fontWeight: 600 }}>نص الرسالة الموجهة للمتدرب:</span>
+                    <button
+                      type="button"
+                      onClick={() => setCoachReply(buildSmartWhatsAppSummary(coachReply))}
+                      style={{
+                        height: '28px',
+                        padding: '0 10px',
+                        borderRadius: '8px',
+                        border: '1px solid #CBD5E1',
+                        background: '#F8FAFC',
+                        color: '#0F172A',
+                        fontSize: '11px',
+                        fontWeight: 700,
+                        cursor: 'pointer',
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: '5px',
+                        transition: 'all 0.15s ease'
+                      }}
+                      onMouseEnter={(e) => {
+                        e.currentTarget.style.background = '#F1F5F9';
+                        e.currentTarget.style.borderColor = '#94A3B8';
+                      }}
+                      onMouseLeave={(e) => {
+                        e.currentTarget.style.background = '#F8FAFC';
+                        e.currentTarget.style.borderColor = '#CBD5E1';
+                      }}
+                      title="توليد ملخص أسبوعي منظم وشامل للواتساب"
+                    >
+                      <Zap size={12} color="#16A34A" />
+                      <span>توليد ملخص الواتساب الذكي</span>
+                    </button>
+                  </div>
                   <textarea
                     value={coachReply}
                     onChange={(e) => setCoachReply(e.target.value)}

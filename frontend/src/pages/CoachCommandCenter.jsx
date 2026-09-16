@@ -29,6 +29,7 @@ import { FormSection } from '@/shared/components/form-section';
 import { getUpcomingFastingAlert, extractClientFastingProfile } from '../utils/seasonalFastingRadar';
 import { arabicSearchMatch } from '../utils/searchUtils';
 import { generateWhatsAppUrl } from '../utils/whatsappRemindersEngine';
+import { evaluateClientCheckinOverdue } from '../utils/overdueCheckinEngine';
 
 // Smart 1-Click WhatsApp Pre-filled Message Generator with Direct Action URLs
 export function getWhatsAppMessage(action, raw = false) {
@@ -39,9 +40,13 @@ export function getWhatsAppMessage(action, raw = false) {
   const cleanCode = action?.clientCode || '';
   const renewalUrl = cleanCode ? `${origin}/renewal?code=${cleanCode}` : `${origin}/renewal`;
   const appUrl = cleanCode ? `${origin}/client?code=${cleanCode}` : `${origin}/client`;
+  const checkinUrl = cleanCode ? `${origin}/checkin?code=${cleanCode}` : `${origin}/checkin`;
 
   let msg = `${namePrefix}تم استلام استمارتك بنجاح، وجاري مراجعة البيانات وإعداد خطتك التدريبية والغذائية. يمكنك استعراض تطبيقك عبر الرابط:\n${appUrl}`;
-  if (action?.hasInjury && action?.type === 'NEW_INTAKE') {
+  if (action?.type === 'OVERDUE_CHECKIN') {
+    const greeting = name ? `صباح الفل يا ${name}، ` : 'صباح الفل يا بطل، ';
+    msg = `${greeting}حبينا نطمن عليك! مستنيين شيك إنك وصورك الأسبوعية عشان نراجع التطور في الميزان ومحيطات الجسم ونحدث خطتك للأسبوع الجديد.\n\nرابط تسجيل الشيك إن في دقيقة:\n${checkinUrl}`;
+  } else if (action?.hasInjury && action?.type === 'NEW_INTAKE') {
     msg = `${namePrefix}بخصوص الملاحظات الطبية أو الإصابة المسجلة في الاستمارة، سنقوم بتعديل التمارين وإضافة البدائل المناسبة لك بالكامل.\nرابط تطبيقك:\n${appUrl}`;
   } else if (action?.hasInjury && action?.type === 'CHECKIN') {
     msg = `${namePrefix}بخصوص الملاحظات الطبية أو ثبات الوزن في التقييم الأسبوعي، سنقوم بتعديل الخطة وتقديم التوجيهات المناسبة لك.\nرابط تطبيقك:\n${appUrl}`;
@@ -320,11 +325,57 @@ export default function CoachCommandCenter() {
     }
   });
 
+  // 4. Overdue Check-ins (Active Clients Missed Scheduled Check-in > 48h)
+  safeClients.forEach(c => {
+    const rawCode = c?.client_code || c?.id || '1';
+    const cleanCode = String(rawCode).replace(/^client[-_]?/i, '').replace('#', '');
+    const checkinActionId = `CHECKIN_${cleanCode}`;
+    const overdueActionId = `OVERDUE_${cleanCode}`;
+
+    if (actionsMap.has(checkinActionId)) return;
+
+    const audit = evaluateClientCheckinOverdue(c);
+    if (audit.isOverdue) {
+      const phone = c?.phone_number || '';
+      const country = getClientCountryInfo(phone, c?.country || '');
+      const intakeSub = clientIntakeMap.get(cleanCode) || clientIntakeMap.get(phone);
+      const fasting = extractClientFastingProfile(c, intakeSub?.answers);
+      const rawTimestamp = audit.referenceDate ? new Date(audit.referenceDate).getTime() : Date.now();
+
+      actionsMap.set(overdueActionId, {
+        id: overdueActionId,
+        clientCode: cleanCode,
+        type: 'OVERDUE_CHECKIN',
+        hasInjury: false,
+        clientName: c?.full_name || `مشترك #${cleanCode}`,
+        country,
+        tier: getClientTier(cleanCode || c),
+        phone,
+        rawTimestamp,
+        isOverdue: true,
+        hoursWaiting: audit.daysOverdue * 24,
+        daysOverdue: audit.daysOverdue,
+        daysElapsed: audit.daysElapsed,
+        urgency: audit.urgency,
+        timeAgo: `متأخر ${audit.daysOverdue} أيام`,
+        summary: `مر ${audit.daysElapsed} يوماً على آخر شيك إن (تأخير ${audit.daysOverdue} أيام) • نوصي بمراسلته فوراً لتفادي الانقطاع.`,
+        suggestedAction: 'إرسال تنبيه ودود للمشترك عبر واتساب',
+        badgeText: `تأخر ${audit.daysOverdue} يوم`,
+        actionUrl: `/customers?code=${cleanCode}`,
+        fastingProfile: fasting,
+        isCoptic: fasting.isCoptic,
+        isRamadan: fasting.isRamadan,
+        isIntermittent: fasting.isIntermittent
+      });
+    }
+  });
+
   // Convert map values to array
   const dailyActions = Array.from(actionsMap.values());
 
   const newIntakeCount = dailyActions.filter(a => a.type === 'NEW_INTAKE').length;
   const checkinCount = dailyActions.filter(a => a.type === 'CHECKIN').length;
+  const overdueCount = dailyActions.filter(a => a.type === 'OVERDUE_CHECKIN').length;
   const injuryCount = dailyActions.filter(a => a.hasInjury).length;
   const renewalCount = dailyActions.filter(a => a.type === 'RENEWAL').length;
   const allCount = dailyActions.length;
@@ -365,15 +416,26 @@ export default function CoachCommandCenter() {
       tooltip: 'فلترة المتابعات والتقييمات الأسبوعية الواردة (اختصار 3)'
     },
     { 
+      type: 'OVERDUE',
+      title: 'متأخرون عن الشيك إن', 
+      value: overdueCount.toString(), 
+      unit: 'مشترك',
+      label: overdueCount > 0 ? 'تنبيه لمنع الانقطاع' : 'الجميع منتظم', 
+      icon: AlertCircle,
+      shortcut: '4',
+      onClick: () => setActiveTab('OVERDUE'),
+      tooltip: 'فلترة المشتركين المتأخرين عن تسليم الشيك إن أكثر من 48 ساعة (اختصار 4)'
+    },
+    { 
       type: 'INJURY',
       title: 'الإصابات والشكاوى', 
       value: injuryCount.toString(), 
       unit: 'تنبيه',
       label: injuryCount > 0 ? 'حالات نشطة' : 'لا توجد حالات', 
       icon: ShieldAlert,
-      shortcut: '4',
+      shortcut: '5',
       onClick: () => setActiveTab('INJURY'),
-      tooltip: 'فلترة الإصابات وثبات الوزن والشكاوى (اختصار 4)'
+      tooltip: 'فلترة الإصابات وثبات الوزن والشكاوى (اختصار 5)'
     },
     { 
       type: 'RENEWAL',
@@ -382,9 +444,9 @@ export default function CoachCommandCenter() {
       unit: 'مشترك',
       label: renewalCount > 0 ? 'متابعة الاشتراكات' : 'لا توجد تجديدات قريبة', 
       icon: Clock,
-      shortcut: '5',
+      shortcut: '6',
       onClick: () => setActiveTab('RENEWAL'),
-      tooltip: 'فلترة اشتراكات التجديد المستحقة (اختصار 5)'
+      tooltip: 'فلترة اشتراكات التجديد المستحقة (اختصار 6)'
     },
   ];
 
@@ -392,6 +454,7 @@ export default function CoachCommandCenter() {
     // 1. Tab filter
     if (activeTab === 'NEW_INTAKE' && act.type !== 'NEW_INTAKE') return false;
     if (activeTab === 'CHECKIN' && act.type !== 'CHECKIN') return false;
+    if (activeTab === 'OVERDUE' && act.type !== 'OVERDUE_CHECKIN') return false;
     if (activeTab === 'INJURY' && !act.hasInjury) return false;
     if (activeTab === 'RENEWAL' && act.type !== 'RENEWAL') return false;
 
@@ -1021,8 +1084,24 @@ export default function CoachCommandCenter() {
                       )}
                       <ClientPackageBadge item={action} />
 
-                      {/* Overdue Alert SLA Badge (> 24h) */}
-                      {action.isOverdue && (
+                      {/* Overdue Alert SLA Badge (> 24h or overdue checkin) */}
+                      {action.type === 'OVERDUE_CHECKIN' ? (
+                        <span style={{
+                          fontSize: '10.5px',
+                          background: '#FFF7ED',
+                          border: '1px solid #FFEDD5',
+                          color: '#C2410C',
+                          padding: '2px 8px',
+                          borderRadius: '6px',
+                          fontWeight: 800,
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          gap: '4px'
+                        }} title={action.summary}>
+                          <AlertCircle size={11} />
+                          <span>متأخر عن الشيك إن ({action.daysOverdue} يوم)</span>
+                        </span>
+                      ) : action.isOverdue && (
                         <span style={{
                           fontSize: '10.5px',
                           background: '#FEF2F2',
@@ -1242,20 +1321,22 @@ export default function CoachCommandCenter() {
                       <button
                         type="button"
                         onClick={() => {
-                          if (action.actionUrl) {
+                          if (action.type === 'OVERDUE_CHECKIN' && action.phone) {
+                            window.open(generateWhatsAppUrl(action.phone, getWhatsAppMessage(action, true)), '_blank');
+                          } else if (action.actionUrl) {
                             navigate(action.actionUrl);
                           }
                         }}
-                        title="الانتقال إلى المراجعة والإجراء"
+                        title={action.type === 'OVERDUE_CHECKIN' ? 'مراسلة المشترك لتسليم الشيك إن عبر واتساب' : 'الانتقال إلى المراجعة والإجراء'}
                         style={{
                           height: '32px',
                           padding: '0 14px',
                           borderRadius: '8px',
-                          background: 'var(--color-primary-light, #F1F5F9)',
-                          color: 'var(--primary, #0F172A)',
+                          background: action.type === 'OVERDUE_CHECKIN' ? '#16A34A' : 'var(--color-primary-light, #F1F5F9)',
+                          color: action.type === 'OVERDUE_CHECKIN' ? '#FFFFFF' : 'var(--primary, #0F172A)',
                           fontWeight: 800,
                           fontSize: '11.5px',
-                          border: '1px solid var(--color-primary-border, #CBD5E1)',
+                          border: action.type === 'OVERDUE_CHECKIN' ? '1px solid #15803D' : 'var(--color-primary-border, #CBD5E1)',
                           cursor: 'pointer',
                           display: 'inline-flex',
                           alignItems: 'center',
@@ -1264,12 +1345,20 @@ export default function CoachCommandCenter() {
                           transition: 'all 0.15s ease'
                         }}
                         onMouseEnter={(e) => {
-                          e.currentTarget.style.background = 'var(--primary, #0F172A)';
-                          e.currentTarget.style.color = '#FFFFFF';
+                          if (action.type === 'OVERDUE_CHECKIN') {
+                            e.currentTarget.style.background = '#15803D';
+                          } else {
+                            e.currentTarget.style.background = 'var(--primary, #0F172A)';
+                            e.currentTarget.style.color = '#FFFFFF';
+                          }
                         }}
                         onMouseLeave={(e) => {
-                          e.currentTarget.style.background = 'var(--color-primary-light, #F1F5F9)';
-                          e.currentTarget.style.color = 'var(--primary, #0F172A)';
+                          if (action.type === 'OVERDUE_CHECKIN') {
+                            e.currentTarget.style.background = '#16A34A';
+                          } else {
+                            e.currentTarget.style.background = 'var(--color-primary-light, #F1F5F9)';
+                            e.currentTarget.style.color = 'var(--primary, #0F172A)';
+                          }
                         }}
                       >
                         <span>
@@ -1279,11 +1368,17 @@ export default function CoachCommandCenter() {
                               ? 'تجهيز واعتماد الخطة'
                               : action.type === 'CHECKIN'
                                 ? 'مراجعة التقييم الأسبوعي'
-                                : action.type === 'RENEWAL'
-                                  ? 'متابعة التجديد'
-                                  : 'تجهيز الخطة'}
+                                : action.type === 'OVERDUE_CHECKIN'
+                                  ? 'تنبيه الشيك إن (واتساب)'
+                                  : action.type === 'RENEWAL'
+                                    ? 'متابعة التجديد'
+                                    : 'تجهيز الخطة'}
                         </span>
-                        <ExternalLink size={11} style={{ opacity: 0.7 }} />
+                        {action.type === 'OVERDUE_CHECKIN' ? (
+                          <MessageCircle size={12} />
+                        ) : (
+                          <ExternalLink size={11} style={{ opacity: 0.7 }} />
+                        )}
                       </button>
                     </div>
                   </div>

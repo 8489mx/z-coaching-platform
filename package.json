@@ -42,6 +42,9 @@
     "./nutrition-meal-context-v2": "./src/nutrition-meal-context-v2/index.js"
   },
   "scripts": {
+    "start": "node src/api/server.js",
+    "build:frontend": "npm --prefix frontend run build",
+    "audit:vps": "node tools/audit-hostinger-vps-readiness.js",
     "test": "node --test test/*.test.js",
     "test:coverage": "node --test --experimental-test-coverage test/*.test.js",
     "db:sync": "node src/api/migrations/sync-database.js",

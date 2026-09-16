@@ -169,8 +169,8 @@ function App() {
           <Route path="/reminders" element={<WhatsAppRemindersHub />} />
           <Route path="/customers/:id" element={<ClientTimelineProfile />} />
           <Route path="/profile" element={<Navigate to="/master-settings" replace />} />
-          <Route path="/profile.html" element={<Navigate to="/master-settings" replace />} />
           <Route path="/pdf" element={<ProgramPdfView />} />
+          <Route path="/program-pdf" element={<ProgramPdfView />} />
           <Route path="/coach/mesocycle-debrief/:clientId" element={<MesocycleDebriefPdfView />} />
           <Route path="/coach/mesocycle-debrief" element={<MesocycleDebriefPdfView />} />
           <Route path="/mesocycle-debrief" element={<MesocycleDebriefPdfView />} />

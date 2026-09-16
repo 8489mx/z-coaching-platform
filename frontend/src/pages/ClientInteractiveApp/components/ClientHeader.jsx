@@ -1,6 +1,6 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import { RotateCcw } from 'lucide-react';
+import { RotateCcw, FileDown } from 'lucide-react';
 import { getCaffeineCutoffTime } from '../../../utils/circadianLabTriggerEngine';
 
 export default function ClientHeader({
@@ -197,11 +197,12 @@ export default function ClientHeader({
               مرونة اليوم
             </button>
 
+            {/* Direct PDF Download / Print Button */}
             <button
               type="button"
               onClick={() => {
                 const rawCode = String(clientData?.code || '').replace(/^#+/, '').replace(/^client[-_]?/i, '').trim();
-                window.open(`/pdf?code=${encodeURIComponent(rawCode || '1')}`, '_blank');
+                window.open(`/program-pdf?code=${encodeURIComponent(rawCode || '1')}`, '_blank');
               }}
               style={{
                 background: 'rgba(56, 189, 248, 0.16)',
@@ -211,11 +212,24 @@ export default function ClientHeader({
                 color: '#38BDF8',
                 fontSize: '0.72rem',
                 fontWeight: 700,
-                cursor: 'pointer'
+                cursor: 'pointer',
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '4px',
+                transition: 'all 0.15s ease'
               }}
-              title="استعراض وطباعة وثيقة الخطة التنفيذية الرسمية A4 PDF"
+              onMouseEnter={(e) => {
+                e.currentTarget.style.background = 'rgba(56, 189, 248, 0.28)';
+                e.currentTarget.style.borderColor = '#38BDF8';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.background = 'rgba(56, 189, 248, 0.16)';
+                e.currentTarget.style.borderColor = 'rgba(56, 189, 248, 0.35)';
+              }}
+              title="تحميل وثيقة الخطة التنفيذية الرسمية بصيغة PDF وطباعتها"
             >
-              الخطة التنفيذية (PDF)
+              <FileDown size={12} />
+              <span>تحميل الخطة (PDF)</span>
             </button>
 
             <button

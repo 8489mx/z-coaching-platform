@@ -38,6 +38,15 @@ export default function ProgramPdfView() {
     window.print();
   };
 
+  useEffect(() => {
+    if (!loading && (program || user) && (searchParams.get('auto_print') === 'true' || searchParams.get('download') === 'true')) {
+      const timer = setTimeout(() => {
+        handlePrint();
+      }, 600);
+      return () => clearTimeout(timer);
+    }
+  }, [loading, program, user]);
+
   if (loading) {
     return (
       <div className="d-flex justify-content-center align-items-center vh-100 bg-white" dir="rtl">
