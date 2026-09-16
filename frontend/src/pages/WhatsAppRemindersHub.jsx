@@ -1,7 +1,7 @@
 import { API_BASE } from '../config/api';
 import { getClientTier, getTierColors, ClientCodeBadge, ClientPackageBadge } from '../utils/tierBadgeHelper';
 import React, { useState, useMemo } from 'react';
-import { Send, MessageSquare, Clock, CheckCircle2, AlertCircle, Copy, Search, RotateCw, ExternalLink, Smartphone, ShieldAlert, Filter, Check, Zap, Flame, CreditCard, UserCheck, Bell, Edit3 } from 'lucide-react';
+import { Send, MessageSquare, Clock, CheckCircle2, AlertCircle, Copy, Search, RotateCw, ExternalLink, Smartphone, ShieldAlert, Filter, Check, Zap, Flame, CreditCard, UserCheck, Bell, Edit3, ChevronDown, ChevronRight, ChevronLeft, Dumbbell, Link } from 'lucide-react';
 import AdminLayout from '../components/layout/AdminLayout';
 import { REMINDER_CATEGORIES, MESSAGE_TEMPLATES, compileReminderMessage, generateWhatsAppUrl, formatWhatsAppPhone } from '../utils/whatsappRemindersEngine';
 import { arabicSearchMatch } from '../utils/searchUtils';
@@ -14,6 +14,7 @@ export default function WhatsAppRemindersHub() {
   const [activeTemplateKey, setActiveTemplateKey] = useState(REMINDER_CATEGORIES.CHECKIN_DUE);
   const [customMessage, setCustomMessage] = useState('');
   const [isEditingTemplate, setIsEditingTemplate] = useState(false);
+  const [isTemplateDropdownOpen, setIsTemplateDropdownOpen] = useState(false);
   const [toast, setToast] = useState(null);
   const [dispatchedMap, setDispatchedMap] = useState({});
 
@@ -121,19 +122,91 @@ export default function WhatsAppRemindersHub() {
     return clientsData.find(c => (c.client_code || c.id) == selectedClientId) || clientsData[0];
   }, [clientsData, selectedClientId]);
 
+  const activeIndex = useMemo(() => {
+    if (!activeClient || filteredClients.length === 0) return -1;
+    return filteredClients.findIndex(c => (c.client_code || c.id) === (activeClient.client_code || activeClient.id));
+  }, [filteredClients, activeClient]);
+
+  const handlePrevClient = React.useCallback(() => {
+    if (filteredClients.length === 0) return;
+    const currentIdx = filteredClients.findIndex(c => (c.client_code || c.id) === (activeClient?.client_code || activeClient?.id));
+    const nextIdx = currentIdx > 0 ? currentIdx - 1 : filteredClients.length - 1;
+    const target = filteredClients[nextIdx];
+    if (target) {
+      setSelectedClientId(target.client_code || target.id);
+      setActiveTemplateKey(target.defaultCat);
+    }
+  }, [filteredClients, activeClient]);
+
+  const handleNextClient = React.useCallback(() => {
+    if (filteredClients.length === 0) return;
+    const currentIdx = filteredClients.findIndex(c => (c.client_code || c.id) === (activeClient?.client_code || activeClient?.id));
+    const nextIdx = currentIdx < filteredClients.length - 1 ? currentIdx + 1 : 0;
+    const target = filteredClients[nextIdx];
+    if (target) {
+      setSelectedClientId(target.client_code || target.id);
+      setActiveTemplateKey(target.defaultCat);
+    }
+  }, [filteredClients, activeClient]);
+
+  const getAppOrigin = () => {
+    if (typeof window !== 'undefined' && window.location && window.location.origin) {
+      return window.location.origin;
+    }
+    return '';
+  };
+
   // Sync message when active client or template changes
   React.useEffect(() => {
     if (activeClient) {
+      const origin = getAppOrigin();
       const tpl = MESSAGE_TEMPLATES[activeTemplateKey]?.template || '';
       const compiled = compileReminderMessage(tpl, {
-        client_name: activeClient.full_name || activeClient.name,
+        client_name: activeClient.full_name || activeClient.name || 'عزيزي المشترك',
         package_name: activeClient.pkgLabel === 'MAX' ? 'باقة MAX' : 'باقة إليت (ELITE)',
-        days_left: activeClient.daysLeft || 3
+        days_left: activeClient.daysLeft || 3,
+        checkin_url: `${origin}/app/checkin`,
+        app_url: `${origin}/app`,
+        renewal_url: `${origin}/app/renew`
       });
       setCustomMessage(compiled);
       setIsEditingTemplate(false);
     }
   }, [activeClient, activeTemplateKey]);
+
+  // Global Keyboard Shortcuts
+  React.useEffect(() => {
+    const handleKeyDown = (e) => {
+      const activeTag = document.activeElement ? document.activeElement.tagName.toLowerCase() : '';
+      const isInput = activeTag === 'input' || activeTag === 'textarea';
+
+      // Alt + ArrowUp or [ => Prev Client
+      if (!isInput && (e.key === '[' || (e.altKey && e.key === 'ArrowUp'))) {
+        e.preventDefault();
+        handlePrevClient();
+      }
+      // Alt + ArrowDown or ] => Next Client
+      else if (!isInput && (e.key === ']' || (e.altKey && e.key === 'ArrowDown'))) {
+        e.preventDefault();
+        handleNextClient();
+      }
+      // Ctrl + Enter or Alt + W => Dispatch WhatsApp
+      else if ((e.ctrlKey && e.key === 'Enter') || (e.altKey && (e.key === 'w' || e.key === 'W' || e.key === 'ص'))) {
+        e.preventDefault();
+        if (activeClient) {
+          handleSendWhatsApp(activeClient, customMessage);
+        }
+      }
+      // Alt + C => Copy Message
+      else if (!isInput && e.altKey && (e.key === 'c' || e.key === 'C' || e.key === 'ؤ')) {
+        e.preventDefault();
+        handleCopyMessage(customMessage);
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [handlePrevClient, handleNextClient, activeClient, customMessage]);
 
   const showToast = (msg) => {
     setToast(msg);
@@ -186,7 +259,7 @@ export default function WhatsAppRemindersHub() {
         <div style={{
           background: '#FFFFFF',
           border: '1px solid #E2E8F0',
-          borderRadius: '10px',
+          borderRadius: '12px',
           padding: '14px 18px',
           display: 'flex',
           justifyContent: 'space-between',
@@ -288,7 +361,7 @@ export default function WhatsAppRemindersHub() {
         <div style={{
           background: '#FFFFFF',
           border: '1px solid #E2E8F0',
-          borderRadius: '10px',
+          borderRadius: '12px',
           padding: '10px 14px',
           display: 'flex',
           justifyContent: 'space-between',
@@ -399,7 +472,7 @@ export default function WhatsAppRemindersHub() {
           <div style={{
             background: '#FFFFFF',
             border: '1px solid #E2E8F0',
-            borderRadius: '10px',
+            borderRadius: '12px',
             overflow: 'hidden',
             boxShadow: '0 1px 3px rgba(15, 23, 42, 0.02)'
           }}>
@@ -421,6 +494,12 @@ export default function WhatsAppRemindersHub() {
                 filteredClients.map((client) => {
                   const isSelected = activeClient?.id === client.id;
                   const isDispatched = !!dispatchedMap[client.id];
+                  const hasInjuries = Boolean(
+                    (Array.isArray(client.injuries) && client.injuries.some(i => i && i !== 'none')) ||
+                    (typeof client.injuries === 'string' && client.injuries.trim() && client.injuries !== 'none') ||
+                    (client.intakeSubmissions?.[0]?.answers?.injuries_map?.has_injuries) ||
+                    (client.answers?.injuries_map?.has_injuries)
+                  );
 
                   // Badge config
                   let reasonBadge = { label: 'شيك إن مستحق', bg: '#F0F9FF', border: '#BAE6FD', color: '#0284C7' };
@@ -466,6 +545,26 @@ export default function WhatsAppRemindersHub() {
                               {client.full_name || client.name}
                             </strong>
                             <ClientPackageBadge item={client} size="xs" />
+                            {hasInjuries && (
+                              <span 
+                                style={{
+                                  fontSize: '9.5px',
+                                  fontWeight: 700,
+                                  padding: '1px 6px',
+                                  borderRadius: '6px',
+                                  background: '#FEF2F2',
+                                  border: '1px solid #FECACA',
+                                  color: '#DC2626',
+                                  display: 'inline-flex',
+                                  alignItems: 'center',
+                                  gap: '3px'
+                                }}
+                                title="تنبيه طبي: المشترك لديه إصابة مسجلة"
+                              >
+                                <ShieldAlert size={10} />
+                                <span>إصابة</span>
+                              </span>
+                            )}
                           </div>
                           
                           <div style={{ fontSize: '10.5px', color: '#64748B', display: 'flex', alignItems: 'center', gap: '6px', marginTop: '2px' }}>
@@ -501,11 +600,15 @@ export default function WhatsAppRemindersHub() {
                           type="button"
                           onClick={(e) => {
                             e.stopPropagation();
+                            const origin = getAppOrigin();
                             const tpl = MESSAGE_TEMPLATES[client.defaultCat]?.template || '';
                             const msg = compileReminderMessage(tpl, {
-                              client_name: client.full_name || client.name,
+                              client_name: client.full_name || client.name || 'عزيزي المشترك',
                               package_name: client.pkgLabel === 'MAX' ? 'باقة MAX' : 'باقة إليت (ELITE)',
-                              days_left: client.daysLeft || 3
+                              days_left: client.daysLeft || 3,
+                              checkin_url: `${origin}/app/checkin`,
+                              app_url: `${origin}/app`,
+                              renewal_url: `${origin}/app/renew`
                             });
                             handleSendWhatsApp(client, msg);
                           }}
@@ -539,7 +642,7 @@ export default function WhatsAppRemindersHub() {
           <div style={{
             background: '#FFFFFF',
             border: '1px solid #E2E8F0',
-            borderRadius: '10px',
+            borderRadius: '12px',
             padding: '16px',
             display: 'flex',
             flexDirection: 'column',
@@ -548,47 +651,289 @@ export default function WhatsAppRemindersHub() {
             top: '80px',
             boxShadow: '0 1px 3px rgba(15, 23, 42, 0.03)'
           }}>
-            {/* Studio Header */}
+            {/* Studio Header & Navigation */}
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid #F1F5F9', paddingBottom: '10px' }}>
               <div>
-                <strong style={{ fontSize: '13.5px', color: '#0F172A', display: 'block' }}>
-                  معاينة ومحرر رسالة الواتساب
-                </strong>
-                <span style={{ fontSize: '11px', color: '#64748B' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <strong style={{ fontSize: '13.5px', color: '#0F172A' }}>
+                    معاينة ومحرر رسالة الواتساب
+                  </strong>
+                  <ClientPackageBadge item={activeClient} size="xs" />
+                </div>
+                <span style={{ fontSize: '11px', color: '#64748B', marginTop: '2px', display: 'block' }}>
                   المستلم: <strong style={{ color: '#0F172A' }}>{activeClient ? (activeClient.full_name || activeClient.name) : 'لا يوجد مشترك محدد'}</strong> {activeClient ? `(#${activeClient.client_code || activeClient.id})` : ''}
                 </span>
               </div>
 
-              <ClientPackageBadge item={activeClient} size="xs" />
+              {/* Client Quick Stepper */}
+              <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                <button
+                  type="button"
+                  onClick={handlePrevClient}
+                  disabled={filteredClients.length <= 1}
+                  title="المشترك السابق (اختصار: [ أو Alt+Up)"
+                  style={{
+                    padding: '4px 8px',
+                    borderRadius: '8px',
+                    border: '1px solid #CBD5E1',
+                    background: '#F8FAFC',
+                    cursor: filteredClients.length <= 1 ? 'not-allowed' : 'pointer',
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '2px',
+                    fontSize: '11px',
+                    fontWeight: 700,
+                    color: filteredClients.length <= 1 ? '#94A3B8' : '#334155',
+                    transition: 'all 0.12s ease'
+                  }}
+                >
+                  <ChevronRight size={13} />
+                  <span>السابق</span>
+                </button>
+
+                <span style={{
+                  fontSize: '11px',
+                  fontWeight: 800,
+                  color: '#475569',
+                  fontFamily: 'JetBrains Mono, monospace',
+                  padding: '0 4px',
+                  minWidth: '42px',
+                  textAlign: 'center'
+                }}>
+                  {filteredClients.length > 0 && activeIndex >= 0 ? `${activeIndex + 1} / ${filteredClients.length}` : '0 / 0'}
+                </span>
+
+                <button
+                  type="button"
+                  onClick={handleNextClient}
+                  disabled={filteredClients.length <= 1}
+                  title="المشترك التالي (اختصار: ] أو Alt+Down)"
+                  style={{
+                    padding: '4px 8px',
+                    borderRadius: '8px',
+                    border: '1px solid #CBD5E1',
+                    background: '#F8FAFC',
+                    cursor: filteredClients.length <= 1 ? 'not-allowed' : 'pointer',
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '2px',
+                    fontSize: '11px',
+                    fontWeight: 700,
+                    color: filteredClients.length <= 1 ? '#94A3B8' : '#334155',
+                    transition: 'all 0.12s ease'
+                  }}
+                >
+                  <span>التالي</span>
+                  <ChevronLeft size={13} />
+                </button>
+              </div>
             </div>
 
-            {/* Template Selector Dropdown */}
-            <div>
-              <label style={{ fontSize: '11px', fontWeight: 700, color: '#475569', display: 'block', marginBottom: '4px' }}>
+            {/* Quick Action Links Strip */}
+            {activeClient && (
+              <div style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '6px',
+                flexWrap: 'wrap',
+                background: '#F8FAFC',
+                border: '1px solid #E2E8F0',
+                borderRadius: '8px',
+                padding: '6px 10px'
+              }}>
+                <span style={{ fontSize: '10.5px', fontWeight: 700, color: '#64748B' }}>روابط سريعة:</span>
+                
+                <a
+                  href={`/admin/plans?clientCode=${activeClient.client_code || activeClient.id}`}
+                  target="_blank"
+                  rel="noreferrer"
+                  style={{
+                    fontSize: '10.5px',
+                    fontWeight: 700,
+                    color: '#0284C7',
+                    textDecoration: 'none',
+                    background: '#FFFFFF',
+                    border: '1px solid #BAE6FD',
+                    padding: '2px 8px',
+                    borderRadius: '6px',
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '4px'
+                  }}
+                >
+                  <Dumbbell size={11} />
+                  <span>محرر الخطة</span>
+                  <ExternalLink size={10} />
+                </a>
+
+                <button
+                  type="button"
+                  onClick={() => {
+                    const origin = getAppOrigin();
+                    navigator.clipboard.writeText(`${origin}/app/checkin`);
+                    showToast('تم نسخ رابط الشيك إن للمشترك بنجاح');
+                  }}
+                  style={{
+                    fontSize: '10.5px',
+                    fontWeight: 700,
+                    color: '#475569',
+                    background: '#FFFFFF',
+                    border: '1px solid #CBD5E1',
+                    padding: '2px 8px',
+                    borderRadius: '6px',
+                    cursor: 'pointer',
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '4px'
+                  }}
+                >
+                  <Link size={11} />
+                  <span>نسخ رابط الشيك إن</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => {
+                    const origin = getAppOrigin();
+                    navigator.clipboard.writeText(`${origin}/app`);
+                    showToast('تم نسخ رابط تطبيق المتدرب بنجاح');
+                  }}
+                  style={{
+                    fontSize: '10.5px',
+                    fontWeight: 700,
+                    color: '#475569',
+                    background: '#FFFFFF',
+                    border: '1px solid #CBD5E1',
+                    padding: '2px 8px',
+                    borderRadius: '6px',
+                    cursor: 'pointer',
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '4px'
+                  }}
+                >
+                  <Smartphone size={11} />
+                  <span>رابط التطبيق</span>
+                </button>
+              </div>
+            )}
+
+            {/* Template Selector Custom Curved Dropdown */}
+            <div style={{ position: 'relative' }}>
+              <label style={{ fontSize: '11px', fontWeight: 700, color: '#475569', display: 'block', marginBottom: '5px' }}>
                 اختر نموذج الرسالة الجاهزة:
               </label>
-              <select
-                value={activeTemplateKey}
-                onChange={(e) => setActiveTemplateKey(e.target.value)}
+              
+              <button
+                type="button"
+                onClick={() => setIsTemplateDropdownOpen(prev => !prev)}
                 style={{
                   width: '100%',
-                  height: '32px',
-                  borderRadius: '6px',
+                  height: '36px',
+                  borderRadius: '8px',
                   border: '1px solid #CBD5E1',
-                  padding: '0 8px',
-                  fontSize: '11.5px',
+                  padding: '0 12px',
+                  fontSize: '12px',
                   fontFamily: 'Cairo, sans-serif',
-                  outline: 'none',
                   background: '#F8FAFC',
-                  color: '#0F172A'
+                  color: '#0F172A',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                  cursor: 'pointer',
+                  transition: 'all 0.15s ease',
+                  boxShadow: '0 1px 2px rgba(0,0,0,0.02)'
                 }}
               >
-                {Object.values(MESSAGE_TEMPLATES).map(tpl => (
-                  <option key={tpl.id} value={tpl.id}>
-                    {tpl.title} ({tpl.category_label})
-                  </option>
-                ))}
-              </select>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', overflow: 'hidden' }}>
+                  <span style={{ fontWeight: 700, whiteSpace: 'nowrap', textOverflow: 'ellipsis', overflow: 'hidden' }}>
+                    {MESSAGE_TEMPLATES[activeTemplateKey]?.title || 'اختر النموذج'}
+                  </span>
+                  <span style={{
+                    fontSize: '10px',
+                    fontWeight: 700,
+                    padding: '2px 7px',
+                    borderRadius: '6px',
+                    background: '#E2E8F0',
+                    color: '#334155',
+                    whiteSpace: 'nowrap'
+                  }}>
+                    {MESSAGE_TEMPLATES[activeTemplateKey]?.category_label || ''}
+                  </span>
+                </div>
+                <ChevronDown size={15} color="#64748B" style={{ transform: isTemplateDropdownOpen ? 'rotate(180deg)' : 'none', transition: 'transform 0.2s ease' }} />
+              </button>
+
+              {isTemplateDropdownOpen && (
+                <>
+                  <div
+                    onClick={() => setIsTemplateDropdownOpen(false)}
+                    style={{ position: 'fixed', inset: 0, zIndex: 40 }}
+                  />
+                  <div
+                    style={{
+                      position: 'absolute',
+                      top: 'calc(100% + 4px)',
+                      right: 0,
+                      left: 0,
+                      background: '#FFFFFF',
+                      border: '1px solid #E2E8F0',
+                      borderRadius: '12px',
+                      boxShadow: '0 10px 25px rgba(0,0,0,0.1)',
+                      zIndex: 50,
+                      overflow: 'hidden',
+                      padding: '4px'
+                    }}
+                  >
+                    {Object.values(MESSAGE_TEMPLATES).map(tpl => {
+                      const isSelected = activeTemplateKey === tpl.id;
+                      return (
+                        <div
+                          key={tpl.id}
+                          onClick={() => {
+                            setActiveTemplateKey(tpl.id);
+                            setIsTemplateDropdownOpen(false);
+                          }}
+                          style={{
+                            padding: '9px 12px',
+                            borderRadius: '8px',
+                            background: isSelected ? '#F1F5F9' : 'transparent',
+                            cursor: 'pointer',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'space-between',
+                            gap: '8px',
+                            transition: 'background 0.12s ease'
+                          }}
+                          onMouseEnter={(e) => {
+                            if (!isSelected) e.currentTarget.style.background = '#F8FAFC';
+                          }}
+                          onMouseLeave={(e) => {
+                            if (!isSelected) e.currentTarget.style.background = 'transparent';
+                          }}
+                        >
+                          <span style={{ fontSize: '11.5px', fontWeight: isSelected ? 800 : 600, color: isSelected ? '#0F172A' : '#334155' }}>
+                            {tpl.title}
+                          </span>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                            <span style={{
+                              fontSize: '9.5px',
+                              fontWeight: 700,
+                              padding: '2px 6px',
+                              borderRadius: '6px',
+                              background: isSelected ? '#0F172A' : '#E2E8F0',
+                              color: isSelected ? '#FFFFFF' : '#475569'
+                            }}>
+                              {tpl.category_label}
+                            </span>
+                            {isSelected && <Check size={13} color="#0F172A" />}
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </>
+              )}
             </div>
 
             {/* Live Message Body Textarea */}
@@ -603,7 +948,7 @@ export default function WhatsAppRemindersHub() {
                   style={{
                     background: 'transparent',
                     border: 'none',
-                    color: '#2563EB',
+                    color: '#0284C7',
                     fontSize: '10.5px',
                     fontWeight: 700,
                     cursor: 'pointer',
@@ -623,19 +968,20 @@ export default function WhatsAppRemindersHub() {
                 onChange={(e) => setCustomMessage(e.target.value)}
                 style={{
                   width: '100%',
-                  borderRadius: '6px',
+                  borderRadius: '8px',
                   border: '1px solid #CBD5E1',
-                  padding: '10px',
+                  padding: '10px 12px',
                   fontSize: '11.5px',
                   fontFamily: 'Cairo, sans-serif',
                   lineHeight: '1.6',
                   outline: 'none',
                   boxSizing: 'border-box',
                   background: '#FFFFFF',
-                  color: '#0F172A'
+                  color: '#0F172A',
+                  transition: 'border-color 0.15s ease'
                 }}
               />
-              <span style={{ fontSize: '10px', color: '#94A3B8', marginTop: '2px', display: 'block' }}>
+              <span style={{ fontSize: '10px', color: '#94A3B8', marginTop: '3px', display: 'block' }}>
                 عدد الأحرف: {customMessage.length} • تم تعبئة المتغيرات والروابط التلقائية
               </span>
             </div>
@@ -647,7 +993,7 @@ export default function WhatsAppRemindersHub() {
               style={{
                 width: '100%',
                 padding: '10px 14px',
-                borderRadius: '6px',
+                borderRadius: '8px',
                 background: '#25D366',
                 color: '#FFFFFF',
                 border: 'none',
@@ -665,6 +1011,30 @@ export default function WhatsAppRemindersHub() {
               <Send size={15} />
               <span>إرسال فوري إلى ({activeClient?.full_name || activeClient?.name}) عبر واتساب</span>
             </button>
+
+            {/* Keyboard Shortcuts Helper Strip */}
+            <div style={{
+              background: '#F8FAFC',
+              border: '1px dashed #CBD5E1',
+              borderRadius: '8px',
+              padding: '6px 10px',
+              fontSize: '10px',
+              color: '#64748B',
+              textAlign: 'center',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: '10px',
+              flexWrap: 'wrap'
+            }}>
+              <span><strong>[</strong> المشترك السابق</span>
+              <span>•</span>
+              <span><strong>]</strong> المشترك التالي</span>
+              <span>•</span>
+              <span><strong>Ctrl+Enter</strong> إرسال واتساب</span>
+              <span>•</span>
+              <span><strong>Alt+C</strong> نسخ النص</span>
+            </div>
           </div>
 
         </div>
@@ -679,11 +1049,11 @@ export default function WhatsAppRemindersHub() {
             background: '#0F172A',
             color: '#FFFFFF',
             padding: '8px 18px',
-            borderRadius: '6px',
+            borderRadius: '12px',
             fontSize: '12px',
             fontWeight: 700,
             zIndex: 99999,
-            boxShadow: '0 4px 12px rgba(0,0,0,0.2)'
+            boxShadow: '0 4px 16px rgba(0,0,0,0.25)'
           }}>
             {toast}
           </div>

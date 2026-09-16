@@ -6,6 +6,14 @@ import {
   getTriageWhatsAppAction
 } from '../src/utils/whatsapp-generator.js';
 
+import {
+  REMINDER_CATEGORIES,
+  MESSAGE_TEMPLATES,
+  compileReminderMessage,
+  generateWhatsAppUrl,
+  formatWhatsAppPhone
+} from '../frontend/src/utils/whatsappRemindersEngine.js';
+
 test('WhatsApp Generator Suite', async (t) => {
 
   await t.test('1. generateWhatsAppLink formats Egyptian phone numbers and encodes message', () => {
@@ -50,6 +58,30 @@ test('WhatsApp Generator Suite', async (t) => {
       'PLATEAU_REVIEW'
     );
     assert.ok(action.message_text.includes('ثبات في الميزان'));
+  });
+
+  await t.test('6. compileReminderMessage replaces variables including direct URLs', () => {
+    const tpl = MESSAGE_TEMPLATES[REMINDER_CATEGORIES.CHECKIN_DUE].template;
+    const msg = compileReminderMessage(tpl, {
+      client_name: 'أحمد محمود',
+      checkin_url: 'https://app.zcc.com/app/checkin'
+    });
+    assert.ok(msg.includes('أحمد محمود'));
+    assert.ok(msg.includes('https://app.zcc.com/app/checkin'));
+    assert.ok(!msg.includes('{client_name}'));
+    assert.ok(!msg.includes('{checkin_url}'));
+  });
+
+  await t.test('7. formatWhatsAppPhone handles Egyptian numbers and international prefix', () => {
+    assert.equal(formatWhatsAppPhone('01012345678'), '201012345678');
+    assert.equal(formatWhatsAppPhone('00201012345678'), '201012345678');
+    assert.equal(formatWhatsAppPhone('+201012345678'), '201012345678');
+  });
+
+  await t.test('8. generateWhatsAppUrl outputs proper wa.me link with encoded text', () => {
+    const url = generateWhatsAppUrl('01098765432', 'مرحباً يا بطل');
+    assert.ok(url.startsWith('https://wa.me/201098765432?text='));
+    assert.ok(url.includes('%D9%85%D8%B1%D8%AD%D8%A8%D8%A7%D9%8B'));
   });
 
 });
