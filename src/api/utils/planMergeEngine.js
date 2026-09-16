@@ -5,6 +5,8 @@
  * into an existing Master Program WITHOUT destroying meals or exercise blueprints.
  */
 
+import { calculateSessionDemand, auditWeeklyMuscleVolume } from './trainingNutritionCoupling.js';
+
 /**
  * Deep merges adaptation recommendations into a master program while guaranteeing
  * zero data loss for existing meals, culinary recipes, and workout exercises.
@@ -175,10 +177,45 @@ export function mergeAdaptedPlanIntoProgram(currentMasterProgram, adaptationResu
     };
 
     if (existingIdx !== -1) {
-      // Idempotent In-Place Update: Double clicks or retries will safely overwrite the exact same slot
+      // Idempotent In-Place Update: Preserve custom exercise blueprints if present
+      const existingWeek = weeks[existingIdx];
+      const existingSessions = existingWeek.sessions || existingWeek.days || [];
+      const adaptedSessions = formattedAdaptedWeek.sessions || formattedAdaptedWeek.days || [];
+
+      let mergedSessions = adaptedSessions;
+      if (existingSessions.length > 0 && adaptedSessions.length > 0) {
+        mergedSessions = existingSessions.map((exSess, sIdx) => {
+          const adaptSess = adaptedSessions[sIdx] || {};
+          const exList = exSess.exercises || [];
+          const updatedExercises = exList.map(ex => {
+            let rir = ex.rir;
+            if (formattedAdaptedWeek.target_rir !== undefined) {
+              rir = formattedAdaptedWeek.target_rir;
+            }
+            let sets = ex.sets;
+            if (adaptationResult?.is_deload_recommended || adaptationResult?.checkinAnalysis?.is_deload_recommended) {
+              sets = Math.max(2, Math.round(Number(ex.sets || 3) * 0.60));
+            }
+            return {
+              ...ex,
+              rir,
+              target_rir: rir,
+              sets,
+              target_sets: sets
+            };
+          });
+          return {
+            ...adaptSess,
+            ...exSess,
+            exercises: updatedExercises.length > 0 ? updatedExercises : (adaptSess.exercises || [])
+          };
+        });
+      }
+
       weeks[existingIdx] = {
-        ...weeks[existingIdx],
-        ...formattedAdaptedWeek
+        ...existingWeek,
+        ...formattedAdaptedWeek,
+        ...(existingSessions.length > 0 && adaptedSessions.length > 0 ? { [existingWeek.sessions ? 'sessions' : 'days']: mergedSessions } : {})
       };
     } else {
       // Safe insertion: Append and sort chronologically by week_number to preserve all existing weeks (handles gaps & out-of-order)
@@ -201,7 +238,25 @@ export function mergeAdaptedPlanIntoProgram(currentMasterProgram, adaptationResu
       adaptationResult.adapted_cardio.daily_step_target || merged.cardio_program.prescription.daily_step_target;
   }
 
-  // 7. Store Audit Adaptation Metadata
+  // 7. Training-Nutrition Coupling and Volume Audit
+  const activeSessions = (merged.training?.sessions && merged.training.sessions.length > 0)
+    ? merged.training.sessions
+    : (Array.isArray(merged.training_program?.weeks) && merged.training_program.weeks.length > 0)
+      ? (merged.training_program.weeks.find(w => Number(w.week_number) === targetWeekNumber)?.sessions || merged.training_program.weeks[0]?.sessions || [])
+      : [];
+
+  if (activeSessions.length > 0) {
+    const volumeAudit = auditWeeklyMuscleVolume(activeSessions);
+    const sessionDemand = calculateSessionDemand(activeSessions[0]?.exercises || []);
+
+    merged._training_coupling = {
+      session_demand: sessionDemand,
+      volume_audit: volumeAudit,
+      last_synced_at: new Date().toISOString()
+    };
+  }
+
+  // 8. Store Audit Adaptation Metadata
   merged._last_adaptation = {
     action: adaptationResult?.adaptation_action || 'APPROVED',
     reasons: adaptationResult?.adaptation_reasons || [],

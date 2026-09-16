@@ -33,6 +33,8 @@ export default function CoachEditor() {
     setPublishing,
     program,
     setProgram,
+    activeSessionDemand,
+    weeklyVolumeAudit,
     coachNotes,
     setCoachNotes,
     activeSessionIdx,
@@ -252,6 +254,8 @@ export default function CoachEditor() {
             setAddExModal={setAddExModal}
             handleMoveExercise={handleMoveExercise}
             handleDuplicateSession={handleDuplicateSession}
+            activeSessionDemand={activeSessionDemand}
+            weeklyVolumeAudit={weeklyVolumeAudit}
           />
         )}
 

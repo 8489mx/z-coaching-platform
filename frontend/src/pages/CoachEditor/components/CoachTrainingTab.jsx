@@ -32,7 +32,9 @@ export function CoachTrainingTab({
   handleDeleteExercise,
   setAddExModal,
   handleMoveExercise,
-  handleDuplicateSession
+  handleDuplicateSession,
+  activeSessionDemand,
+  weeklyVolumeAudit
 }) {
   const clientConditions = [
     ...(Array.isArray(program?.client?.injuries) ? program.client.injuries : []),
@@ -303,6 +305,81 @@ export function CoachTrainingTab({
           )}
         </div>
       </div>
+
+      {/* Training-Nutrition Dynamic Coupling & Volume Landmarks Bar */}
+      {activeSessionDemand && (
+        <div style={{
+          background: '#FFFFFF',
+          border: '1px solid #E2E8F0',
+          borderRadius: '10px',
+          padding: '10px 14px',
+          display: 'flex',
+          flexDirection: 'column',
+          gap: '8px',
+          boxShadow: '0 1px 3px rgba(15, 23, 42, 0.03)'
+        }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '8px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+              <span style={{
+                fontSize: '11px',
+                fontWeight: 800,
+                padding: '3px 9px',
+                borderRadius: '6px',
+                background: activeSessionDemand.demand_level === 'HIGH_GLYCOLYTIC' ? '#FEF2F2' : activeSessionDemand.demand_level === 'LOW_GLYCOLYTIC' ? '#F0FDF4' : '#EFF6FF',
+                color: activeSessionDemand.demand_level === 'HIGH_GLYCOLYTIC' ? '#DC2626' : activeSessionDemand.demand_level === 'LOW_GLYCOLYTIC' ? '#166534' : '#2563EB',
+                border: activeSessionDemand.demand_level === 'HIGH_GLYCOLYTIC' ? '1px solid #FECACA' : activeSessionDemand.demand_level === 'LOW_GLYCOLYTIC' ? '1px solid #BBF7D0' : '1px solid #BFDBFE'
+              }}>
+                {activeSessionDemand.demand_label_ar}
+              </span>
+              <span style={{ fontSize: '11px', color: '#475569' }}>
+                مجموع الجولات: <strong>{activeSessionDemand.total_sets} جولة</strong> ({activeSessionDemand.heavy_compounds_count} حركات مركبة) — مدة الجلسة المقدرة: ~{activeSessionDemand.estimated_duration_min} دقيقة
+              </span>
+            </div>
+
+            <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '11px' }}>
+              <span style={{ color: '#64748B' }}>الاقتران الغذائي:</span>
+              <span style={{ fontWeight: 700, color: '#0F172A', background: '#F8FAFC', padding: '2px 8px', borderRadius: '6px', border: '1px solid #CBD5E1' }}>
+                حصة كارب قبل/بعد التمرين: {Math.round((activeSessionDemand.peri_workout_carb_ratio || 0.55) * 100)}%
+              </span>
+            </div>
+          </div>
+
+          {/* Muscle Volume Landmarks Pills */}
+          {weeklyVolumeAudit?.analysis && (
+            <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap', alignItems: 'center', paddingTop: '4px', borderTop: '1px dashed #E2E8F0' }}>
+              <span style={{ fontSize: '10.5px', color: '#64748B', fontWeight: 700 }}>معالم الحجم الأسبوعي (MEV/MAV/MRV):</span>
+              {Object.entries(weeklyVolumeAudit.analysis)
+                .filter(([_, data]) => data.weekly_sets > 0)
+                .map(([key, data]) => {
+                  const isBelowMev = data.status === 'BELOW_MEV';
+                  const isExceedsMrv = data.status === 'EXCEEDS_MRV';
+                  return (
+                    <span
+                      key={key}
+                      style={{
+                        fontSize: '10.5px',
+                        padding: '2px 8px',
+                        borderRadius: '6px',
+                        background: isExceedsMrv ? '#FEE2E2' : isBelowMev ? '#FEF3C7' : '#F1F5F9',
+                        color: isExceedsMrv ? '#B91C1C' : isBelowMev ? '#B45309' : '#334155',
+                        border: isExceedsMrv ? '1px solid #FCA5A5' : isBelowMev ? '1px solid #FDE68A' : '1px solid #E2E8F0',
+                        fontWeight: 600,
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: '4px'
+                      }}
+                      title={data.status_label_ar}
+                    >
+                      <strong>{data.muscle_name_ar}:</strong>
+                      <span>{data.weekly_sets} جولة</span>
+                      <span style={{ fontSize: '9px', opacity: 0.8 }}>({data.mav_range})</span>
+                    </span>
+                  );
+                })}
+            </div>
+          )}
+        </div>
+      )}
 
       {/* Pre-Workout Warmup Bar */}
       <div style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', borderRadius: '6px', padding: '8px 12px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '6px' }}>

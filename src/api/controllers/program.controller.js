@@ -15,6 +15,7 @@ import { MASTER_EXERCISE_DICTIONARY } from "../../../src/exercise-catalog-v2/ind
 import { calculateSmartSwap } from "../../../src/nutrition-swap-engine-v2/calculate-smart-swap.js";
 import { listSmartSwapCandidates, getSmartFoodRegistryItem, SMART_SWAP_REGISTRY } from "../../../src/nutrition-swap-engine-v2/swap-pool-registry.js";
 import { CLINICAL_GUIDELINES } from "../../config/clinical-guidelines.js";
+import { calculateSessionDemand, auditWeeklyMuscleVolume } from "../utils/trainingNutritionCoupling.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -1033,6 +1034,33 @@ export const updateCustomProgram = async (req, res) => {
             ...(program_data.clinical_guardrails || {}),
             coach_override_asthma: true,
           };
+        }
+      }
+    }
+
+    // 4. Training-Nutrition Dynamic Coupling & Volume Landmarks Audit
+    if (typeof program_data === "object" && program_data !== null && program_data.training) {
+      const activeSessions = (program_data.training.sessions && program_data.training.sessions.length > 0)
+        ? program_data.training.sessions
+        : (Array.isArray(program_data.training.weeks) && program_data.training.weeks.length > 0)
+          ? (program_data.training.weeks[0]?.sessions || [])
+          : [];
+
+      if (activeSessions.length > 0) {
+        const volumeAudit = auditWeeklyMuscleVolume(activeSessions);
+        const sessionDemand = calculateSessionDemand(activeSessions[0]?.exercises || []);
+
+        program_data._training_coupling = {
+          session_demand: sessionDemand,
+          volume_audit: volumeAudit,
+          last_synced_at: new Date().toISOString()
+        };
+
+        if (volumeAudit.has_mrv_exceeded) {
+          const mrvWarnings = volumeAudit.warnings.filter(w => w.includes('يتجاوز الحد الأقصى'));
+          if (mrvWarnings.length > 0) {
+            clinicalWarnings.push(`تنبيه حجم تدريبي: ${mrvWarnings.join(' و ')}`);
+          }
         }
       }
     }

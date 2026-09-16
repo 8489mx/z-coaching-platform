@@ -574,3 +574,122 @@ export function dynamicRippleRebalanceDailyPlan({
 
   return meals.map(m => updatedMealsMap.get(m.id) || m);
 }
+
+/**
+ * Synchronizes meal carbohydrate distribution with session training demand.
+ * Allocates ~65% of daily carbs around the workout (Pre & Post workout meals) on HIGH demand,
+ * ~55% on MODERATE demand, ~45% on LOW demand, and distributes the rest evenly across other meals.
+ * Scales carb portions realistically within culinary bounds (70-280g rice, 30-80g oats, etc.),
+ * and guarantees total daily targets remain 100% compliant.
+ */
+export function rebalanceMealsForTrainingDemand({
+  meals = [],
+  supplements = [],
+  targets = { calories: 2000, protein: 150, carbs: 200, fats: 50 },
+  sessionDemand = { peri_workout_carb_ratio: 0.55 },
+  autoRippleEnabled = true
+} = {}) {
+  if (!meals || meals.length === 0 || !autoRippleEnabled) return meals;
+
+  const targetCarbs = Number(targets?.carbs ?? targets?.target_carbs ?? 200);
+  if (targetCarbs <= 0) return meals;
+
+  // Identify pre-workout and post-workout meals
+  let preIdx = -1;
+  let postIdx = -1;
+  meals.forEach((m, idx) => {
+    const name = String(m.name || m.name_ar || '').toLowerCase();
+    const role = String(m.role || '').toUpperCase();
+    if (role === 'PRE_WORKOUT' || name.includes('قبل التمرين')) preIdx = idx;
+    else if (role === 'POST_WORKOUT' || name.includes('بعد التمرين')) postIdx = idx;
+  });
+
+  if (preIdx === -1 || postIdx === -1) {
+    if (meals.length === 2) { preIdx = 0; postIdx = 1; }
+    else if (meals.length === 3) { preIdx = 1; postIdx = 2; }
+    else if (meals.length === 4) { preIdx = 1; postIdx = 2; }
+    else if (meals.length >= 5) { preIdx = 2; postIdx = 3; }
+  }
+
+  if (preIdx === -1 || postIdx === -1 || preIdx === postIdx) return meals;
+
+  const periRatio = Number(sessionDemand.peri_workout_carb_ratio) || 0.55;
+  const periTotalCarbs = Math.round(targetCarbs * periRatio);
+  const remainingCarbs = Math.max(10, targetCarbs - periTotalCarbs);
+
+  const preTargetC = Math.round(periTotalCarbs * 0.45);
+  const postTargetC = periTotalCarbs - preTargetC;
+
+  const nonPeriIndices = meals.map((_, i) => i).filter(i => i !== preIdx && i !== postIdx);
+  const nonPeriCount = nonPeriIndices.length;
+  const nonPeriTargetC = nonPeriCount > 0 ? Math.round(remainingCarbs / nonPeriCount) : 0;
+
+  // Adjust each meal's primary carb source
+  const updatedMeals = meals.map((meal, idx) => {
+    let desiredC = nonPeriTargetC;
+    if (idx === preIdx) desiredC = preTargetC;
+    else if (idx === postIdx) desiredC = postTargetC;
+
+    const items = [...(meal.items || [])];
+    const carbItems = items.filter(it => detectFoodMacroRole(it) === 'CARB');
+    if (carbItems.length === 0) return meal;
+
+    const nonCarbC = items.filter(it => detectFoodMacroRole(it) !== 'CARB').reduce((sum, it) => sum + (Number(it.c) || 0), 0);
+    const neededPrimaryC = Math.max(10, desiredC - nonCarbC);
+
+    const currentPrimaryC = carbItems.reduce((sum, it) => sum + (Number(it.c) || 0), 0);
+    const scale = currentPrimaryC > 0 ? (neededPrimaryC / currentPrimaryC) : 1;
+
+    const newItems = items.map(it => {
+      if (detectFoodMacroRole(it) !== 'CARB') return it;
+      const density = getItemPer100gMacros(it);
+      const isOat = String(it.code || it.name).toUpperCase().includes('OAT') || String(it.name || '').includes('شوفان');
+      const isPotato = String(it.code || it.name).toUpperCase().includes('POTATO') || String(it.name || '').includes('بطاط');
+      const isFruit = String(it.code || it.name).toUpperCase().includes('BANANA') || String(it.name || '').includes('تفاح') || String(it.name || '').includes('موز');
+
+      let newAmt = (Number(it.amount) || 100) * scale;
+      if (isOat) newAmt = Math.max(25, Math.min(85, Math.round(newAmt / 5) * 5));
+      else if (isPotato) newAmt = Math.max(80, Math.min(320, Math.round(newAmt / 10) * 10));
+      else if (isFruit) newAmt = Math.max(50, Math.min(180, Math.round(newAmt / 10) * 10));
+      else newAmt = Math.max(70, Math.min(280, Math.round(newAmt / 5) * 5));
+
+      const factor = newAmt / 100;
+      return {
+        ...it,
+        amount: newAmt,
+        p: Number((density.p100 * factor).toFixed(1)),
+        c: Number((density.c100 * factor).toFixed(1)),
+        f: Number((density.f100 * factor).toFixed(1)),
+        cal: Math.round(density.cal100 * factor),
+      };
+    });
+
+    let mealCal = 0, mealP = 0, mealC = 0, mealF = 0;
+    newItems.forEach(it => {
+      mealCal += Number(it.cal) || 0;
+      mealP += Number(it.p) || 0;
+      mealC += Number(it.c) || 0;
+      mealF += Number(it.f) || 0;
+    });
+
+    return {
+      ...meal,
+      items: newItems,
+      macros: {
+        calories: Math.round(mealCal),
+        protein: Math.round(mealP),
+        carbs: Math.round(mealC),
+        fats: Math.round(mealF),
+      }
+    };
+  });
+
+  return dynamicRippleRebalanceDailyPlan({
+    meals: updatedMeals,
+    supplements,
+    targets,
+    anchorMealId: null,
+    autoRippleEnabled: true
+  });
+}
+

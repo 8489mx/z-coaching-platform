@@ -2,7 +2,14 @@ import { useState, useEffect, useMemo } from 'react';
 import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
 import { API_BASE } from '../../../config/api';
 import { FOOD_DATABASE } from '../../../utils/foodSwapEngine';
-import { dynamicRippleRebalanceDailyPlan } from '../../../utils/mealPortionBalancer';
+import { dynamicRippleRebalanceDailyPlan, rebalanceMealsForTrainingDemand } from '../../../utils/mealPortionBalancer';
+import {
+  calculateSessionDemand,
+  auditWeeklyMuscleVolume,
+  calibrateAddedExercise,
+  identifyPeriWorkoutMeals,
+  MUSCLE_VOLUME_LANDMARKS
+} from '../../../utils/trainingCouplingUtils';
 import defaultMobilityCatalog from '../../../data/mobilityCatalog.json';
 import { arabicSearchMatch } from '../../../utils/searchUtils';
 import { getExerciseDisplayNames } from '../../../utils/exerciseTranslator';
@@ -880,14 +887,71 @@ export function useCoachEditorData() {
   };
 
   const handleDeleteExercise = (sIdx, eIdx) => {
-    updateProgramTrainingSessions(sessionsList => {
-      const list = [...sessionsList];
-      const session = { ...list[sIdx] };
-      session.exercises = (session.exercises || []).filter((_, idx) => idx !== eIdx);
-      list[sIdx] = session;
-      return list;
+    setProgram(prev => {
+      if (!prev?.training) return prev;
+
+      let updatedWeeks = prev.training.weeks ? [...prev.training.weeks] : null;
+      let updatedSessions = [...(prev.training.sessions || [])];
+
+      if (updatedWeeks) {
+        updatedWeeks = updatedWeeks.map(w => {
+          const weekSessions = [...(w.sessions || [])];
+          if (weekSessions[sIdx]) {
+            weekSessions[sIdx] = {
+              ...weekSessions[sIdx],
+              exercises: (weekSessions[sIdx].exercises || []).filter((_, idx) => idx !== eIdx)
+            };
+          }
+          return { ...w, sessions: weekSessions };
+        });
+
+        const activeWeek = updatedWeeks.find(w => w.week_number === selectedWeek) || updatedWeeks[0];
+        if (activeWeek && activeWeek.sessions) {
+          updatedSessions = activeWeek.sessions;
+        }
+      } else {
+        if (updatedSessions[sIdx]) {
+          updatedSessions[sIdx] = {
+            ...updatedSessions[sIdx],
+            exercises: (updatedSessions[sIdx].exercises || []).filter((_, idx) => idx !== eIdx)
+          };
+        }
+      }
+
+      // Training-Nutrition Dynamic Coupling
+      const targetSession = updatedSessions[sIdx];
+      const sessionDemand = calculateSessionDemand(targetSession?.exercises || []);
+
+      let rebalancedMeals = prev.nutrition?.meals || [];
+      if (autoRippleEnabled && rebalancedMeals.length > 0) {
+        rebalancedMeals = rebalanceMealsForTrainingDemand({
+          meals: rebalancedMeals,
+          supplements: prev.cardio?.supplements || [],
+          targets: prev.nutrition?.targets || {
+            calories: prev.nutrition?.target_calories || 2000,
+            protein: prev.nutrition?.target_protein || 150,
+            carbs: prev.nutrition?.target_carbs || 200,
+            fats: prev.nutrition?.target_fats || 50
+          },
+          sessionDemand,
+          autoRippleEnabled: true
+        });
+      }
+
+      return {
+        ...prev,
+        training: {
+          ...prev.training,
+          sessions: updatedSessions,
+          ...(updatedWeeks ? { weeks: updatedWeeks } : {})
+        },
+        nutrition: {
+          ...(prev.nutrition || {}),
+          meals: rebalancedMeals
+        }
+      };
     });
-    showToast('تم حذف التمرين من اليوم التدريبي');
+    showToast('تم حذف التمرين ومواءمة الوجبات تلقائياً');
   };
 
   const handleMoveExercise = (sIdx, eIdx, direction) => {
@@ -928,39 +992,77 @@ export function useCoachEditorData() {
   };
 
   const handleAddExerciseToSession = (sIdx, ex) => {
-    const code = ex.id || ex.code || `EX_${Date.now()}`;
     const names = getExerciseDisplayNames(ex);
-    const newEx = {
-      id: `e${Date.now()}`,
-      code: code,
-      name: names.nameEn,
-      name_ar: names.nameAr,
-      name_en: names.nameEn,
-      muscle_group: ex.muscle_group || '',
-      muscle_ar: ex.muscle_ar || ex.target_muscle || '',
-      equipment: ex.equipment || 'MACHINE',
-      alternatives: Array.isArray(ex.alternatives) ? ex.alternatives : [],
-      sets: 3,
-      reps: '10 - 12',
-      rir: 1,
-      restSec: 75,
-      profile: ex.resistance_profile || 'MID_RANGE_COMPOUND',
-      safetyNote: ex.safety_notes_ar || ex.notes || 'تطبيق التكنيك السليم دون اندفاع',
-      video_url: ex.video_url || (ex.video_id ? `https://www.youtube.com/watch?v=${ex.video_id}` : ''),
-      image_stretch: ex.image_stretch || `/exercises/${code}/0.jpg`,
-      image_contraction: ex.image_contraction || `/exercises/${code}/1.jpg`,
-    };
 
-    updateProgramTrainingSessions(sessionsList => {
-      const list = [...sessionsList];
-      const session = { ...list[sIdx] };
-      session.exercises = [...(session.exercises || []), newEx];
-      list[sIdx] = session;
-      return list;
+    setProgram(prev => {
+      if (!prev?.training) return prev;
+
+      let updatedWeeks = prev.training.weeks ? [...prev.training.weeks] : null;
+      let updatedSessions = [...(prev.training.sessions || [])];
+
+      if (updatedWeeks) {
+        updatedWeeks = updatedWeeks.map(w => {
+          const weekSessions = [...(w.sessions || [])];
+          if (weekSessions[sIdx]) {
+            const weekCalibrated = calibrateAddedExercise(ex, w.week_number || selectedWeek, prev.client || {});
+            weekSessions[sIdx] = {
+              ...weekSessions[sIdx],
+              exercises: [...(weekSessions[sIdx].exercises || []), weekCalibrated]
+            };
+          }
+          return { ...w, sessions: weekSessions };
+        });
+
+        const activeWeek = updatedWeeks.find(w => w.week_number === selectedWeek) || updatedWeeks[0];
+        if (activeWeek && activeWeek.sessions) {
+          updatedSessions = activeWeek.sessions;
+        }
+      } else {
+        const calibratedEx = calibrateAddedExercise(ex, selectedWeek, prev.client || {});
+        if (updatedSessions[sIdx]) {
+          updatedSessions[sIdx] = {
+            ...updatedSessions[sIdx],
+            exercises: [...(updatedSessions[sIdx].exercises || []), calibratedEx]
+          };
+        }
+      }
+
+      // Training-Nutrition Dynamic Coupling
+      const targetSession = updatedSessions[sIdx];
+      const sessionDemand = calculateSessionDemand(targetSession?.exercises || []);
+
+      let rebalancedMeals = prev.nutrition?.meals || [];
+      if (autoRippleEnabled && rebalancedMeals.length > 0) {
+        rebalancedMeals = rebalanceMealsForTrainingDemand({
+          meals: rebalancedMeals,
+          supplements: prev.cardio?.supplements || [],
+          targets: prev.nutrition?.targets || {
+            calories: prev.nutrition?.target_calories || 2000,
+            protein: prev.nutrition?.target_protein || 150,
+            carbs: prev.nutrition?.target_carbs || 200,
+            fats: prev.nutrition?.target_fats || 50
+          },
+          sessionDemand,
+          autoRippleEnabled: true
+        });
+      }
+
+      return {
+        ...prev,
+        training: {
+          ...prev.training,
+          sessions: updatedSessions,
+          ...(updatedWeeks ? { weeks: updatedWeeks } : {})
+        },
+        nutrition: {
+          ...(prev.nutrition || {}),
+          meals: rebalancedMeals
+        }
+      };
     });
 
     setAddExModal({ open: false, sessionIdx: null });
-    showToast(`تمت إضافة ${names.nameEn} (${names.nameAr}) للجدول بنجاح`);
+    showToast(`تمت إضافة ${names.nameEn} (${names.nameAr}) ومواءمة الوجبات مع كثافة التدريب`);
   };
 
   const handleSelectCardioModality = (opt) => {
@@ -1229,6 +1331,14 @@ export function useCoachEditorData() {
   const currentSessions = (program?.training?.weeks && currentWeekData?.sessions) ? currentWeekData.sessions : (program?.training?.sessions || []);
   const activeSession = currentSessions?.[activeSessionIdx] || currentSessions?.[0];
 
+  const activeSessionDemand = useMemo(() => {
+    return calculateSessionDemand(activeSession?.exercises || []);
+  }, [activeSession?.exercises]);
+
+  const weeklyVolumeAudit = useMemo(() => {
+    return auditWeeklyMuscleVolume(currentSessions || []);
+  }, [currentSessions]);
+
   return {
     clientCodeParam,
     searchParams,
@@ -1241,6 +1351,8 @@ export function useCoachEditorData() {
     setPublishing,
     program,
     setProgram,
+    activeSessionDemand,
+    weeklyVolumeAudit,
     coachNotes,
     setCoachNotes,
     activeSessionIdx,

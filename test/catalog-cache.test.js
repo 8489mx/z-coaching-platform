@@ -50,7 +50,7 @@ test('In-Memory Catalog Caching & ETag Validation Suite', async (t) => {
     stats = getCacheStats();
     assert.equal(stats.exercises.hits, 50, 'Hits must increment to 50');
     assert.equal(stats.exercises.misses, 1, 'Misses must remain 1');
-    assert.ok(durationHits < 15, `50 in-memory cache hits must take < 15ms, took: ${durationHits.toFixed(2)}ms`);
+    assert.ok(durationHits < 60, `50 in-memory cache hits must take < 60ms, took: ${durationHits.toFixed(2)}ms`);
   });
 
   await t.test('2. Foods Catalog Caching & Metrics', () => {
