@@ -37,29 +37,33 @@ export function buildAdaptedPlan(inputs) {
   const macroTargetsStage = currentMasterProgram.nutrition_program?.stages?.macro_targets;
 
   const baseEnergy =
+    currentMasterProgram.nutrition_program?.macro_targets?.calories_kcal ||
+    currentMasterProgram.nutrition_program?.targets?.calories_kcal ||
+    currentMasterProgram.nutrition?.targets?.calories ||
     energyTargetStage?.target_calories ||
     energyTargetStage?.target_calories_kcal ||
-    currentMasterProgram.nutrition_program?.macro_targets?.calories_kcal ||
-    currentMasterProgram.nutrition?.targets?.calories ||
     2000;
   const baseProtein =
+    currentMasterProgram.nutrition_program?.macro_targets?.protein_g ||
+    currentMasterProgram.nutrition_program?.targets?.protein_g ||
+    currentMasterProgram.nutrition?.targets?.protein ||
     macroTargetsStage?.protein?.target_g ||
     macroTargetsStage?.protein_g ||
-    currentMasterProgram.nutrition_program?.macro_targets?.protein_g ||
-    currentMasterProgram.nutrition?.targets?.protein ||
     160;
   const baseCarbs =
+    currentMasterProgram.nutrition_program?.macro_targets?.carbohydrate_g ||
+    currentMasterProgram.nutrition_program?.macro_targets?.carb_g ||
+    currentMasterProgram.nutrition_program?.targets?.carbohydrate_g ||
+    currentMasterProgram.nutrition?.targets?.carbs ||
     macroTargetsStage?.carbohydrate?.target_g ||
     macroTargetsStage?.carbohydrate_g ||
-    currentMasterProgram.nutrition_program?.macro_targets?.carb_g ||
-    currentMasterProgram.nutrition_program?.macro_targets?.carbohydrate_g ||
-    currentMasterProgram.nutrition?.targets?.carbs ||
     200;
   const baseFat =
+    currentMasterProgram.nutrition_program?.macro_targets?.fat_g ||
+    currentMasterProgram.nutrition_program?.targets?.fat_g ||
+    currentMasterProgram.nutrition?.targets?.fats ||
     macroTargetsStage?.fat?.target_g ||
     macroTargetsStage?.fat_g ||
-    currentMasterProgram.nutrition_program?.macro_targets?.fat_g ||
-    currentMasterProgram.nutrition?.targets?.fats ||
     60;
   const baseFiber =
     macroTargetsStage?.fiber_target_g ||
@@ -88,8 +92,20 @@ export function buildAdaptedPlan(inputs) {
   const status = checkinAnalysis.analysis_status;
 
 
-  const consecutiveHighComplianceWeeks = Number(options.consecutive_high_compliance_weeks || options.consecutiveHighComplianceWeeks || 0);
-  const isDietBreakEligible = consecutiveHighComplianceWeeks >= 6 && (status === CheckinAnalysisStatus.ON_TRACK || status === CheckinAnalysisStatus.HIGH_FATIGUE_WARNING || status === CheckinAnalysisStatus.PLATEAU_DETECTED);
+  const consecutiveHighComplianceWeeks = Number(
+    options.consecutive_high_compliance_weeks || 
+    options.consecutiveHighComplianceWeeks || 
+    options.consecutive_deficit_weeks || 
+    options.consecutiveDeficitWeeks || 
+    checkinAnalysis.consecutive_deficit_weeks || 
+    checkinAnalysis.consecutive_high_compliance_weeks || 
+    0
+  );
+  const isDietBreakEligible = (consecutiveHighComplianceWeeks >= 6 && (status === CheckinAnalysisStatus.ON_TRACK || status === CheckinAnalysisStatus.HIGH_FATIGUE_WARNING || status === CheckinAnalysisStatus.PLATEAU_DETECTED || status === "CONFIRMED_PLATEAU"))
+    || options.force_diet_break === true
+    || checkinAnalysis.is_diet_break === true
+    || checkinAnalysis.decision === "SCHEDULE_DIET_BREAK"
+    || status === "DIET_BREAK_RECOMMENDED";
 
   
   const isReverseDieting = options.diet_framework === "REVERSE_DIETING" || options.dietFramework === "REVERSE_DIETING";
@@ -169,24 +185,46 @@ export function buildAdaptedPlan(inputs) {
   } else if (
     status === CheckinAnalysisStatus.PLATEAU_DETECTED || 
     status === "TRUE_PLATEAU" || 
-    (typeof checkinAnalysis.suggested_calorie_delta === "number" && checkinAnalysis.suggested_calorie_delta < 0)
+    status === "CONFIRMED_PLATEAU" || 
+    (typeof checkinAnalysis.suggested_calorie_delta === "number" && checkinAnalysis.suggested_calorie_delta < 0) ||
+    (typeof checkinAnalysis.calorie_adjustment === "number" && checkinAnalysis.calorie_adjustment < 0)
   ) {
-    adaptationAction = AdaptationAction.REDUCE_CALORIES_FOR_PLATEAU;
-    const calDelta = typeof checkinAnalysis.suggested_calorie_delta === "number"
-      ? Math.abs(checkinAnalysis.suggested_calorie_delta)
-      : 125;
-    const carbDelta = typeof checkinAnalysis.suggested_carb_delta_g === "number"
-      ? Math.abs(checkinAnalysis.suggested_carb_delta_g)
-      : 25;
-    adaptedCalories -= calDelta;
-    adaptedCarbs -= carbDelta;
-    adaptedFat -= 3;    // -27 kcal
-    adaptedDailySteps += 500;
-    reasons.push({
-      code: AdaptationReasonCode.PLATEAU_DEFICIT_APPLIED,
-      message_ar: `ثبات في الوزن مع التزام تام. تم خفض ${calDelta} سعرة يومياً وزيادة النشاط لكسر الثبات.`,
-      message_en: `Weight plateau broken with a moderate ${calDelta} kcal reduction.`,
-    });
+    const isFemale = options.isFemale ?? checkinAnalysis.is_female ?? (currentMasterProgram.client?.gender === 'female');
+    const calorieFloor = isFemale ? 1200 : 1500;
+
+    if (adaptedCalories - 125 < calorieFloor) {
+      adaptationAction = AdaptationAction.SCHEDULE_REFEED_DAY;
+      refeedConfig = Object.freeze({
+        refeed_day: "SATURDAY",
+        refeed_calories_kcal: Math.round(adaptedCalories + 350),
+        refeed_carbohydrate_g: Math.round(adaptedCarbs + 80),
+        purpose_ar: "يوم إعادة شحن عالي الكاربوهيدرات لكسر الثبات الأيضي بأمان دون النزول تحت الحد الفسيولوجي الأدنى للسعرات.",
+        purpose_en: "High-carb Refeed Day to safely break metabolic plateau without breaching caloric floor.",
+      });
+      adaptedDailySteps += 750;
+      reasons.push({
+        code: AdaptationReasonCode.DIET_BREAK_PLATEAU_BREAKER_APPLIED,
+        message_ar: `السعرات الحالية (${adaptedCalories}) بلغت الحد الفسيولوجي الأدنى الآمن (${calorieFloor} سعرة). تم قفل خفض السعرات لمنع الهبوط الأيضي، وتفعيل يوم شحن (Refeed) وزيادة 750 خطوة يومياً لكسر الثبات.`,
+        message_en: `Caloric floor protection active (${calorieFloor} kcal). Calorie cut prevented; scheduled Refeed and increased daily steps (+750) to break plateau safely.`,
+      });
+    } else {
+      adaptationAction = AdaptationAction.REDUCE_CALORIES_FOR_PLATEAU;
+      const calDelta = typeof checkinAnalysis.suggested_calorie_delta === "number"
+        ? Math.abs(checkinAnalysis.suggested_calorie_delta)
+        : (typeof checkinAnalysis.calorie_adjustment === "number" && checkinAnalysis.calorie_adjustment < 0 ? Math.abs(checkinAnalysis.calorie_adjustment) : 125);
+      const carbDelta = typeof checkinAnalysis.suggested_carb_delta_g === "number"
+        ? Math.abs(checkinAnalysis.suggested_carb_delta_g)
+        : Math.round(calDelta / 4);
+      adaptedCalories -= calDelta;
+      adaptedCarbs -= carbDelta;
+      adaptedFat -= 3;    // -27 kcal
+      adaptedDailySteps += 500;
+      reasons.push({
+        code: AdaptationReasonCode.PLATEAU_DEFICIT_APPLIED,
+        message_ar: `ثبات في الوزن مع التزام تام. تم خفض ${calDelta} سعرة يومياً وزيادة النشاط لكسر الثبات.`,
+        message_en: `Weight plateau broken with a moderate ${calDelta} kcal reduction.`,
+      });
+    }
   } else {
     adaptationAction = AdaptationAction.MAINTAIN_TRAJECTORY;
     reasons.push({
@@ -314,6 +352,7 @@ export function buildAdaptedPlan(inputs) {
     adaptation_action: adaptationAction,
     adaptation_reasons: Object.freeze(reasons),
     is_deload_recommended: isDeloadRecommended,
+    is_diet_break_recommended: isDietBreakEligible,
     adapted_nutrition: Object.freeze({
       target_calories_kcal: adaptedCalories,
       protein_g: adaptedProtein,

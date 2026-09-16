@@ -151,6 +151,33 @@ export function mergeAdaptedPlanIntoProgram(currentMasterProgram, adaptationResu
         merged.nutrition.meals.some(m => Array.isArray(m?.items) && m.items.some(it => Boolean(it?.category || it?.food_code)))) {
       rebalanceCulinaryMeals(merged.nutrition.meals, targetPayload);
     }
+
+    // 3.2 Diet Break and Refeed metadata preservation
+    const isDietBreak = adaptationResult?.adaptation_action === 'SCHEDULE_DIET_BREAK' || 
+      adaptationResult?.is_diet_break_recommended === true || 
+      adaptationResult?.is_diet_break === true || 
+      adaptationResult?.checkinAnalysis?.is_diet_break === true ||
+      adaptationResult?.checkinAnalysis?.decision === 'SCHEDULE_DIET_BREAK';
+
+    if (isDietBreak) {
+      if (merged.nutrition_program) {
+        merged.nutrition_program.is_diet_break = true;
+        merged.nutrition_program.diet_break_note = "استراحة دايت مبرمجة لرفع السعرات إلى حد الصيانة وإعادة تنشيط هرمونات الحرق واللبتين";
+      }
+      if (merged.nutrition) {
+        merged.nutrition.is_diet_break = true;
+        merged.nutrition.diet_break_note = "استراحة دايت مبرمجة لرفع السعرات إلى حد الصيانة وإعادة تنشيط هرمونات الحرق واللبتين";
+      }
+    } else if (merged.nutrition_program?.is_diet_break) {
+      merged.nutrition_program.is_diet_break = false;
+      if (merged.nutrition) merged.nutrition.is_diet_break = false;
+    }
+
+    const refeedConfig = adaptationResult?.adapted_nutrition?.refeed_config || adaptationResult?.refeed_config;
+    if (refeedConfig) {
+      if (merged.nutrition_program) merged.nutrition_program.refeed_config = refeedConfig;
+      if (merged.nutrition) merged.nutrition.refeed_config = refeedConfig;
+    }
   }
 
   // 4. Update Training Meso-Cycle with Idempotency & Chronological Order Guarantee

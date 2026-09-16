@@ -250,7 +250,8 @@ export function evaluateWeeklyProgress({
   bowelRegularity = 'REGULAR',
   sleepStressComposite = 3,
   lifestyleVariance = 'NORMAL_WORK',
-  occupationType = null
+  occupationType = null,
+  consecutiveDeficitWeeks = 0
 }) {
   if (currentWeightKg === undefined || currentWeightKg === null || String(currentWeightKg).trim() === '') {
     throw new RangeError("قيمة الوزن الحالي (currentWeightKg) مطلوبة.");
@@ -362,6 +363,26 @@ export function evaluateWeeklyProgress({
 
     // State C: True Plateau (>= 2 weeks without progress with >= 90% adherence)
     if (weeksOnCurrentCalories >= 2 && adherenceRatePct >= 90 && deltaWeight >= 0 && deltaWaist >= 0) {
+      // Clinical Diet Break Check: If in continuous deficit for 6+ weeks OR calories near floor
+      const isFloorBreached = isFemale ? (parsedCalories - 125 < 1200) : (parsedCalories - 125 < 1500);
+      const isProlongedDeficit = Number(consecutiveDeficitWeeks || 0) >= 6;
+
+      if (isProlongedDeficit || isFloorBreached) {
+        const maintenanceCalories = Math.round(parsedCalories + 350);
+        return {
+          status: 'CONFIRMED_PLATEAU',
+          decision: 'SCHEDULE_DIET_BREAK',
+          calorie_adjustment: 350,
+          new_calories: maintenanceCalories,
+          message_ar: isFloorBreached
+            ? `ثبات حقيقي مع بلوغ السعرات للحد الفسيولوجي الأدنى (${parsedCalories} سعرة). تم تفعيل استراحة دايت أسبوعية لرفع السعرات إلى الصيانة (+350 سعرة) لتنشيط هرمونات الحرق (Leptin و T3) وتفادي التباطؤ الأيضي.`
+            : `تم رصد ثبات حقيقي بعد ${consecutiveDeficitWeeks} أسابيع متصلة من العجز السعري. تم تفعيل استراحة دايت أسبوعية بالصيانة (+350 سعرة) لكسر التعود الأيضي وتجديد مخازن الجليكوجين قبل استئناف التنشيف.`,
+          action_required: true,
+          is_diet_break: true,
+          diet_break_weeks: 1
+        };
+      }
+
       const calorieDrop = -125; // Controlled conservative drop from carbs
       const calculatedNewCalories = Math.max(1200, parsedCalories + calorieDrop);
       if (!Number.isFinite(calculatedNewCalories) || Number.isNaN(calculatedNewCalories)) {
