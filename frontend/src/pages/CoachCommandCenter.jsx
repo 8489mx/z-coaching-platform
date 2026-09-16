@@ -1,6 +1,6 @@
 import { ClientCodeBadge, ClientPackageBadge, getClientTier, getClientCountryInfo, formatTimeAgo } from '../utils/tierBadgeHelper';
-import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, { useState, useEffect, useRef, useMemo } from 'react';
+import { useNavigate, Link } from 'react-router-dom';
 import { 
   Clock, 
   Plus, 
@@ -18,7 +18,8 @@ import {
   Smartphone,
   ArrowUpDown,
   AlertCircle,
-  ChevronDown
+  ChevronDown,
+  TrendingUp
 } from 'lucide-react';
 import { API_BASE } from '../config/api';
 import AdminLayout from '../components/layout/AdminLayout';
@@ -29,21 +30,25 @@ import { getUpcomingFastingAlert, extractClientFastingProfile } from '../utils/s
 import { arabicSearchMatch } from '../utils/searchUtils';
 import { generateWhatsAppUrl } from '../utils/whatsappRemindersEngine';
 
-// Smart 1-Click WhatsApp Pre-filled Message Generator
+// Smart 1-Click WhatsApp Pre-filled Message Generator with Direct Action URLs
 export function getWhatsAppMessage(action, raw = false) {
   const name = action?.clientName ? action.clientName.replace(/مشترك #\d+/g, '').trim() : '';
   const namePrefix = name ? `أهلاً ${name}، ` : 'أهلاً بك، ';
   const cleanTier = String(action?.tier || '').includes('MAX') ? 'MAX' : 'ELITE';
+  const origin = typeof window !== 'undefined' ? window.location.origin : '';
+  const cleanCode = action?.clientCode || '';
+  const renewalUrl = cleanCode ? `${origin}/renewal?code=${cleanCode}` : `${origin}/renewal`;
+  const appUrl = cleanCode ? `${origin}/client?code=${cleanCode}` : `${origin}/client`;
 
-  let msg = `${namePrefix}تم استلام استمارتك بنجاح، وجاري مراجعة البيانات وإعداد خطتك التدريبية والغذائية.`;
+  let msg = `${namePrefix}تم استلام استمارتك بنجاح، وجاري مراجعة البيانات وإعداد خطتك التدريبية والغذائية. يمكنك استعراض تطبيقك عبر الرابط:\n${appUrl}`;
   if (action?.hasInjury && action?.type === 'NEW_INTAKE') {
-    msg = `${namePrefix}بخصوص الملاحظات الطبية أو الإصابة المسجلة في الاستمارة، سنقوم بتعديل التمارين وإضافة البدائل المناسبة لك بالكامل.`;
+    msg = `${namePrefix}بخصوص الملاحظات الطبية أو الإصابة المسجلة في الاستمارة، سنقوم بتعديل التمارين وإضافة البدائل المناسبة لك بالكامل.\nرابط تطبيقك:\n${appUrl}`;
   } else if (action?.hasInjury && action?.type === 'CHECKIN') {
-    msg = `${namePrefix}بخصوص الملاحظات الطبية أو ثبات الوزن في التقييم الأسبوعي، سنقوم بتعديل الخطة وتقديم التوجيهات المناسبة لك.`;
+    msg = `${namePrefix}بخصوص الملاحظات الطبية أو ثبات الوزن في التقييم الأسبوعي، سنقوم بتعديل الخطة وتقديم التوجيهات المناسبة لك.\nرابط تطبيقك:\n${appUrl}`;
   } else if (action?.type === 'CHECKIN') {
-    msg = `${namePrefix}تم استلام تقييمك الأسبوعي بنجاح، وجاري الآن مراجعة القياسات والأداء وتحديث الخطة.`;
+    msg = `${namePrefix}تم استلام تقييمك الأسبوعي بنجاح، وجاري الآن مراجعة القياسات والأداء وتحديث الخطة.\nرابط تطبيقك:\n${appUrl}`;
   } else if (action?.type === 'RENEWAL') {
-    msg = `${namePrefix}نود تذكيرك بأن اشتراكك في باقة ${cleanTier} قارب على الانتهاء. لتأكيد التجديد والاستمرار يرجى التواصل معنا.`;
+    msg = `${namePrefix}نود تذكيرك بأن اشتراكك في باقة ${cleanTier} قارب على الانتهاء. لتأكيد التجديد والاستمرار يمكنك إتمام التجديد مباشرة عبر الرابط:\n${renewalUrl}`;
   }
 
   return raw ? msg : encodeURIComponent(msg);
@@ -64,6 +69,7 @@ export default function CoachCommandCenter() {
   const [sortBy, setSortBy] = useState('DEFAULT'); // 'DEFAULT' | 'OLDEST_WAITING' | 'TIER_PRIORITY' | 'INJURY_FIRST'
   const [isSortOpen, setIsSortOpen] = useState(false);
   const sortRef = React.useRef(null);
+  const searchInputRef = React.useRef(null);
   const [isNewClientModalOpen, setIsNewClientModalOpen] = useState(false);
   const [loading, setLoading] = useState(true);
   const [lastRefreshed, setLastRefreshed] = useState(new Date());
@@ -81,6 +87,41 @@ export default function CoachCommandCenter() {
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
+
+  useEffect(() => {
+    function handleKeyDown(e) {
+      if (['INPUT', 'TEXTAREA'].includes(e.target?.tagName)) {
+        if (e.key === 'Escape') {
+          if (searchQuery) setSearchQuery('');
+          else e.target.blur();
+        }
+        return;
+      }
+
+      if (e.key === '/') {
+        e.preventDefault();
+        searchInputRef.current?.focus();
+      } else if (e.key === 'Escape') {
+        if (searchQuery) setSearchQuery('');
+        if (isNewClientModalOpen) setIsNewClientModalOpen(false);
+        if (isSortOpen) setIsSortOpen(false);
+      } else if (e.key === '1') {
+        setActiveTab('ALL');
+      } else if (e.key === '2') {
+        setActiveTab('NEW_INTAKE');
+      } else if (e.key === '3') {
+        setActiveTab('CHECKIN');
+      } else if (e.key === '4') {
+        setActiveTab('INJURY');
+      } else if (e.key === '5') {
+        setActiveTab('RENEWAL');
+      } else if (e.key === 'r' || e.key === 'R') {
+        fetchDashboardData();
+      }
+    }
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [searchQuery, isNewClientModalOpen, isSortOpen]);
 
   const [clients, setClients] = useState([]);
   const [submissions, setSubmissions] = useState([]);
@@ -297,8 +338,9 @@ export default function CoachCommandCenter() {
       unit: 'إجراء',
       label: allCount > 0 ? 'طابور التشغيل الموحد' : 'لا توجد مهام معلقة', 
       icon: Layers,
+      shortcut: '1',
       onClick: () => setActiveTab('ALL'),
-      tooltip: 'عرض كافة المتابعات والمهام بدون فلترة'
+      tooltip: 'عرض كافة المتابعات والمهام بدون فلترة (اختصار 1)'
     },
     { 
       type: 'NEW_INTAKE',
@@ -307,8 +349,9 @@ export default function CoachCommandCenter() {
       unit: 'استمارة',
       label: newIntakeCount > 0 ? 'بانتظار الخطة' : 'تم تجهيز الكل', 
       icon: ClipboardList,
+      shortcut: '2',
       onClick: () => setActiveTab('NEW_INTAKE'),
-      tooltip: 'فلترة الاستمارات الجديدة بانتظار إعداد الخطة'
+      tooltip: 'فلترة الاستمارات الجديدة بانتظار إعداد الخطة (اختصار 2)'
     },
     { 
       type: 'CHECKIN',
@@ -317,8 +360,9 @@ export default function CoachCommandCenter() {
       unit: 'تقييم',
       label: checkinCount > 0 ? 'بانتظار الاعتماد' : 'لا توجد تقييمات معلقة', 
       icon: CheckCircle2,
+      shortcut: '3',
       onClick: () => setActiveTab('CHECKIN'),
-      tooltip: 'فلترة المتابعات والتقييمات الأسبوعية الواردة'
+      tooltip: 'فلترة المتابعات والتقييمات الأسبوعية الواردة (اختصار 3)'
     },
     { 
       type: 'INJURY',
@@ -327,8 +371,9 @@ export default function CoachCommandCenter() {
       unit: 'تنبيه',
       label: injuryCount > 0 ? 'حالات نشطة' : 'لا توجد حالات', 
       icon: ShieldAlert,
+      shortcut: '4',
       onClick: () => setActiveTab('INJURY'),
-      tooltip: 'فلترة الإصابات وثبات الوزن والشكاوى'
+      tooltip: 'فلترة الإصابات وثبات الوزن والشكاوى (اختصار 4)'
     },
     { 
       type: 'RENEWAL',
@@ -337,8 +382,9 @@ export default function CoachCommandCenter() {
       unit: 'مشترك',
       label: renewalCount > 0 ? 'متابعة الاشتراكات' : 'لا توجد تجديدات قريبة', 
       icon: Clock,
+      shortcut: '5',
       onClick: () => setActiveTab('RENEWAL'),
-      tooltip: 'فلترة اشتراكات التجديد المستحقة'
+      tooltip: 'فلترة اشتراكات التجديد المستحقة (اختصار 5)'
     },
   ];
 
@@ -530,9 +576,25 @@ export default function CoachCommandCenter() {
                 }}
               >
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                  <span style={{ fontSize: '12.5px', fontWeight: 700, color: isActive ? '#0F172A' : '#64748B', whiteSpace: 'nowrap' }}>
-                    {st.title}
-                  </span>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                    <span style={{ fontSize: '12.5px', fontWeight: 700, color: isActive ? '#0F172A' : '#64748B', whiteSpace: 'nowrap' }}>
+                      {st.title}
+                    </span>
+                    {st.shortcut && (
+                      <span style={{ 
+                        fontSize: '9.5px', 
+                        color: isActive ? '#0F172A' : '#64748B', 
+                        background: isActive ? '#E2E8F0' : '#F1F5F9', 
+                        border: '1px solid #CBD5E1', 
+                        padding: '1px 5px', 
+                        borderRadius: '6px', 
+                        fontWeight: 800,
+                        fontFamily: 'JetBrains Mono, monospace'
+                      }}>
+                        {st.shortcut}
+                      </span>
+                    )}
+                  </div>
                   <div style={{ 
                     width: '32px', 
                     height: '32px', 
@@ -829,8 +891,9 @@ export default function CoachCommandCenter() {
                 >
                   <Search size={14} color="#94A3B8" />
                   <input
+                    ref={searchInputRef}
                     type="text"
-                    placeholder="بحث بالاسم أو الكود أو الهاتف..."
+                    placeholder="بحث بالاسم أو الكود أو الهاتف... (اضغط / للتركيز)"
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
                     style={{
@@ -936,7 +999,7 @@ export default function CoachCommandCenter() {
                             color: copiedKey === `code_${action.id}` ? '#16A34A' : '#94A3B8',
                             display: 'inline-flex',
                             alignItems: 'center',
-                            borderRadius: '4px',
+                            borderRadius: '6px',
                             transition: 'color 0.15s ease'
                           }}
                         >
@@ -1143,6 +1206,38 @@ export default function CoachCommandCenter() {
                         <span>تطبيق المتدرب</span>
                       </a>
 
+                      {/* Client Timeline Profile Quick Link */}
+                      <Link
+                        to={`/coach/timeline/${action.clientCode}`}
+                        title="استعراض السجل الزمني وصور التطور للمتدرب"
+                        style={{
+                          height: '32px',
+                          padding: '0 10px',
+                          borderRadius: '8px',
+                          border: '1px solid #E2E8F0',
+                          background: '#F8FAFC',
+                          color: '#475569',
+                          fontWeight: 700,
+                          fontSize: '11.5px',
+                          textDecoration: 'none',
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          gap: '4px',
+                          transition: 'all 0.15s ease'
+                        }}
+                        onMouseEnter={(e) => {
+                          e.currentTarget.style.background = '#F1F5F9';
+                          e.currentTarget.style.color = '#0F172A';
+                        }}
+                        onMouseLeave={(e) => {
+                          e.currentTarget.style.background = '#F8FAFC';
+                          e.currentTarget.style.color = '#475569';
+                        }}
+                      >
+                        <TrendingUp size={13} />
+                        <span>سجل التطور</span>
+                      </Link>
+
                       {/* Main Operational Action Button */}
                       <button
                         type="button"
@@ -1204,7 +1299,7 @@ export default function CoachCommandCenter() {
                     padding: '10px 14px',
                     background: '#F8FAFC',
                     border: '1px solid #E2E8F0',
-                    borderRadius: '8px',
+                    borderRadius: '10px',
                     fontSize: '11.5px',
                     color: '#64748B',
                     fontWeight: 600,
@@ -1223,7 +1318,7 @@ export default function CoachCommandCenter() {
                         disabled={actionsPage === 1}
                         style={{
                           padding: '4px 10px',
-                          borderRadius: '6px',
+                          borderRadius: '8px',
                           border: '1px solid #CBD5E1',
                           background: actionsPage === 1 ? '#F1F5F9' : '#FFFFFF',
                           color: actionsPage === 1 ? '#94A3B8' : '#0F172A',
@@ -1245,7 +1340,7 @@ export default function CoachCommandCenter() {
                         disabled={actionsPage === totalActionPages}
                         style={{
                           padding: '4px 10px',
-                          borderRadius: '6px',
+                          borderRadius: '8px',
                           border: '1px solid #CBD5E1',
                           background: actionsPage === totalActionPages ? '#F1F5F9' : '#FFFFFF',
                           color: actionsPage === totalActionPages ? '#94A3B8' : '#0F172A',
