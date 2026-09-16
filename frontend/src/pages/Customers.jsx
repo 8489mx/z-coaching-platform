@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { 
   Users, 
@@ -11,7 +11,9 @@ import {
   Download,
   Pause,
   Play,
-  CreditCard
+  CreditCard,
+  TrendingUp,
+  ExternalLink
 } from 'lucide-react';
 import { API_BASE } from '../config/api';
 import AdminLayout from '../components/layout/AdminLayout';
@@ -31,6 +33,7 @@ export default function Customers() {
   const [loading, setLoading] = useState(true);
   const [isNewClientModalOpen, setIsNewClientModalOpen] = useState(false);
   const [selectedDrawerClient, setSelectedDrawerClient] = useState(null);
+  const searchInputRef = useRef(null);
 
   // Filters
   const [searchTerm, setSearchTerm] = useState('');
@@ -199,6 +202,41 @@ export default function Customers() {
   const totalPages = Math.ceil(filteredClients.length / pageSize) || 1;
   const paginatedClients = filteredClients.slice((currentPage - 1) * pageSize, currentPage * pageSize);
 
+  useEffect(() => {
+    function handleKeyDown(e) {
+      if (['INPUT', 'TEXTAREA'].includes(e.target?.tagName)) {
+        if (e.key === 'Escape') {
+          if (searchTerm) setSearchTerm('');
+          else e.target.blur();
+        }
+        return;
+      }
+
+      if (e.key === '/') {
+        e.preventDefault();
+        searchInputRef.current?.focus();
+      } else if (e.key === 'Escape') {
+        if (searchTerm) setSearchTerm('');
+        if (selectedDrawerClient) setSelectedDrawerClient(null);
+        if (whatsappModalClient) setWhatsappModalClient(null);
+        if (renewalModalClient) setRenewalModalClient(null);
+        if (isNewClientModalOpen) setIsNewClientModalOpen(false);
+      } else if (e.key === '1') {
+        setTierFilter('ALL');
+      } else if (e.key === '2') {
+        setTierFilter('MAX');
+      } else if (e.key === '3') {
+        setTierFilter('ELITE');
+      } else if (e.key === '[') {
+        setCurrentPage(p => Math.max(1, p - 1));
+      } else if (e.key === ']') {
+        setCurrentPage(p => Math.min(totalPages, p + 1));
+      }
+    }
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [searchTerm, selectedDrawerClient, whatsappModalClient, renewalModalClient, isNewClientModalOpen, totalPages]);
+
   const maxCount = clients.filter(c => getClientTier(c) === 'MAX').length;
   const eliteCount = clients.length - maxCount;
   const activeCount = clients.filter(c => (c.subscription_status || c.status) === 'ACTIVE').length;
@@ -207,7 +245,7 @@ export default function Customers() {
   const totalIntermittent = clients.filter(c => extractClientFastingProfile(c).isIntermittent).length;
 
   const statCards = [
-    { id: 'ALL', title: 'إجمالي المشتركين', value: clients.length, unit: 'مشترك', label: 'كافة المسجلين', icon: Users, isFilter: true },
+    { id: 'ALL', title: 'إجمالي المشتركين', value: clients.length, unit: 'مشترك', label: 'كافة المسجلين', icon: Users, shortcut: '1', isFilter: true },
     { 
       id: 'MAX',
       title: 'مشتركو باقة MAX', 
@@ -216,6 +254,7 @@ export default function Customers() {
       label: 'متابعة أسبوعية',
       badgeText: 'MAX',
       badgeColor: '#D97706',
+      shortcut: '2',
       isFilter: true
     },
     { 
@@ -226,6 +265,7 @@ export default function Customers() {
       label: 'متابعة كل أسبوعين',
       badgeText: 'ELITE',
       badgeColor: '#0284C7',
+      shortcut: '3',
       isFilter: true
     },
     { id: 'ACTIVE_STAT', title: 'الاشتراكات السارية', value: activeCount, unit: 'مشترك', label: 'حسابات نشطة', icon: ShieldCheck, isFilter: false },
@@ -249,7 +289,7 @@ export default function Customers() {
                 background: '#0F172A',
                 color: '#FFFFFF',
                 border: 'none',
-                borderRadius: '6px',
+                borderRadius: '8px',
                 fontSize: '12px',
                 fontWeight: 800,
                 cursor: 'pointer',
@@ -279,7 +319,7 @@ export default function Customers() {
                 style={{
                   background: isSel ? '#F8FAFC' : '#FFFFFF',
                   border: isSel ? '2px solid #0F172A' : '1px solid #E2E8F0',
-                  borderRadius: '10px',
+                  borderRadius: '12px',
                   padding: '16px 18px',
                   boxShadow: isSel ? '0 4px 12px rgba(15, 23, 42, 0.08)' : '0 1px 3px rgba(15, 23, 42, 0.02)',
                   display: 'flex',
@@ -290,7 +330,23 @@ export default function Customers() {
                 }}
               >
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                  <span style={{ fontSize: '12.5px', fontWeight: isSel ? 800 : 700, color: isSel ? '#0F172A' : '#64748B', whiteSpace: 'nowrap' }}>{st.title}</span>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                    <span style={{ fontSize: '12.5px', fontWeight: isSel ? 800 : 700, color: isSel ? '#0F172A' : '#64748B', whiteSpace: 'nowrap' }}>{st.title}</span>
+                    {st.shortcut && (
+                      <span style={{ 
+                        fontSize: '9.5px', 
+                        color: isSel ? '#0F172A' : '#64748B', 
+                        background: isSel ? '#E2E8F0' : '#F1F5F9', 
+                        border: '1px solid #CBD5E1', 
+                        padding: '1px 5px', 
+                        borderRadius: '6px', 
+                        fontWeight: 800,
+                        fontFamily: 'JetBrains Mono, monospace'
+                      }}>
+                        {st.shortcut}
+                      </span>
+                    )}
+                  </div>
                   {st.badgeText ? (
                     <div 
                       style={{ 
@@ -391,14 +447,15 @@ export default function Customers() {
                   borderRadius: '8px',
                   padding: '0 8px',
                   height: '32px',
-                  width: '210px',
+                  width: '230px',
                   gap: '6px'
                 }}
               >
                 <Search size={13} color="#94A3B8" />
                 <input
+                  ref={searchInputRef}
                   type="text"
-                  placeholder="بحث بالاسم، الهاتف، أو الكود..."
+                  placeholder="بحث بالاسم، الهاتف، أو الكود... (اضغط /)"
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                   style={{
@@ -446,7 +503,7 @@ export default function Customers() {
                     onClick={() => setFastingFilter(f.id)}
                     style={{
                       padding: '4px 8px',
-                      borderRadius: '5px',
+                      borderRadius: '6px',
                       fontSize: '11px',
                       fontWeight: 700,
                       border: 'none',
@@ -469,7 +526,7 @@ export default function Customers() {
               جاري تحميل المشتركين...
             </div>
           ) : filteredClients.length === 0 ? (
-            <div style={{ padding: '40px 16px', textAlign: 'center', background: '#F8FAFC', border: '1px dashed #CBD5E1', borderRadius: '8px' }}>
+            <div style={{ padding: '40px 16px', textAlign: 'center', background: '#F8FAFC', border: '1px dashed #CBD5E1', borderRadius: '12px' }}>
               <div style={{ width: '36px', height: '36px', borderRadius: '50%', background: '#F1F5F9', color: '#0F172A', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 8px auto' }}>
                 <Users size={18} />
               </div>
@@ -477,7 +534,7 @@ export default function Customers() {
               <small style={{ fontSize: '11.5px', color: '#64748B' }}>لم يتم العثور على أي مشترك تحت هذا البحث أو الفلتر.</small>
             </div>
           ) : (
-            <div style={{ overflowX: 'auto', border: '1px solid #E2E8F0', borderRadius: '8px' }}>
+            <div style={{ overflowX: 'auto', border: '1px solid #E2E8F0', borderRadius: '12px' }}>
               <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'right', fontSize: '12px' }}>
                 <thead>
                   <tr style={{ background: '#F8FAFC', borderBottom: '1px solid #E2E8F0', color: '#475569', fontWeight: 700 }}>
@@ -706,6 +763,31 @@ export default function Customers() {
                               <span>تجديد</span>
                             </button>
 
+                            {/* Timeline Profile Link */}
+                            <Link
+                              to={`/coach/timeline/${cleanCode}`}
+                              style={{
+                                padding: '4px 8px',
+                                borderRadius: '8px',
+                                border: '1px solid #E2E8F0',
+                                background: '#F8FAFC',
+                                color: '#0F172A',
+                                fontSize: '11px',
+                                fontWeight: 700,
+                                textDecoration: 'none',
+                                display: 'inline-flex',
+                                alignItems: 'center',
+                                gap: '3px',
+                                transition: 'all 0.15s ease'
+                              }}
+                              onMouseEnter={(e) => (e.currentTarget.style.background = '#F1F5F9')}
+                              onMouseLeave={(e) => (e.currentTarget.style.background = '#F8FAFC')}
+                              title="فتح سجل التطور واستوديو المقارنة البصرية للمشترك"
+                            >
+                              <TrendingUp size={11} color="#0284C7" />
+                              <span>التطور</span>
+                            </Link>
+
                             {/* Program Editor Button (New Tab) */}
                             <a
                               href={`/coach/editor/${cleanCode}`}
@@ -791,7 +873,7 @@ export default function Customers() {
                       disabled={currentPage === 1}
                       style={{
                         padding: '4px 10px',
-                        borderRadius: '5px',
+                        borderRadius: '8px',
                         border: '1px solid #CBD5E1',
                         background: currentPage === 1 ? '#F1F5F9' : '#FFFFFF',
                         color: currentPage === 1 ? '#94A3B8' : '#0F172A',
@@ -813,7 +895,7 @@ export default function Customers() {
                       disabled={currentPage === totalPages}
                       style={{
                         padding: '4px 10px',
-                        borderRadius: '5px',
+                        borderRadius: '8px',
                         border: '1px solid #CBD5E1',
                         background: currentPage === totalPages ? '#F1F5F9' : '#FFFFFF',
                         color: currentPage === totalPages ? '#94A3B8' : '#0F172A',
