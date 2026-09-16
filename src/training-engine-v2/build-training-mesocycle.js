@@ -7,6 +7,10 @@ import {
   VolumeProgressionStrategy,
 } from "./domain/enums.js";
 import { CLINICAL_GUIDELINES } from "../config/clinical-guidelines.js";
+import {
+  calculateMicroProgressionBridge,
+  MICRO_PROGRESSION_STRATEGIES,
+} from "../execution-engines/biomechanics-firewall-engine.js";
 
 const DEFAULT_MESOCYCLE_CONFIG = Object.freeze([
   {
@@ -488,6 +492,23 @@ export function buildTrainingMesoCycle(intakeDecision, options = {}) {
         const resolvedNameAr = names.name_ar || (v2Exercise ? v2Exercise.name_ar : null);
         const effectiveTempo = ex.tempo || (ex.prescription && ex.prescription.tempo) || "2-0-1-0";
 
+        const isDumbbell = String(finalCode).includes("DUMBBELL") || 
+          String(finalCode).includes("DB_") || 
+          String(finalCode).startsWith("DB_") ||
+          (v2Exercise && (v2Exercise.equipment === "DUMBBELL" || v2Exercise.equipment_code === "DUMBBELL"));
+
+        const microBridge = isDumbbell ? calculateMicroProgressionBridge({
+          currentWeightKg: 15,
+          targetRepRange: [targetMin, targetMax],
+          currentReps: targetMax,
+          currentRir: effectiveRir,
+          bridgeStrategy: MICRO_PROGRESSION_STRATEGIES.REP_EXTENSION,
+        }) : null;
+
+        const dumbbellCueAr = isDumbbell 
+          ? `استراتيجية قفزة الدمبل: استهدف الوصول لـ ${targetMax + 3} تكراراً بـ RIR ${effectiveRir} أولاً، أو تحكم بالنزول في 4 ثوانٍ (Tempo 4-1-1-0) لتجاوز قفزة الوزن (${microBridge?.percentage_jump_to_next || 16.7}%) بأمان.`
+          : null;
+
         return Object.freeze({
           ...ex,
           exercise_code: finalCode,
@@ -497,6 +518,7 @@ export function buildTrainingMesoCycle(intakeDecision, options = {}) {
           name_ar: resolvedNameAr,
           primary_muscle: v2Exercise ? v2Exercise.primary_muscle : null,
           specific_warmup_protocol: specificWarmupProtocol,
+          micro_progression_bridge: microBridge ? Object.freeze(microBridge) : null,
           target_sets: calculatedSets,
           sets: calculatedSets,
           target_reps: `${targetMin}-${targetMax}`,
@@ -515,6 +537,8 @@ export function buildTrainingMesoCycle(intakeDecision, options = {}) {
             target_rir: effectiveRir,
             tempo: effectiveTempo,
             clinical_valsalva_cue_ar: hasHypertensionOrHeart ? CLINICAL_GUIDELINES.HYPERTENSION.VALSALVA_SAFETY_CUE_AR : null,
+            dumbbell_progression_cue_ar: dumbbellCueAr,
+            micro_progression_bridge: microBridge ? Object.freeze(microBridge) : null,
           }),
         });
 
