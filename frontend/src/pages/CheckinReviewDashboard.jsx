@@ -1353,6 +1353,30 @@ export default function CheckinReviewDashboard() {
                       <ExternalLink size={10} color="#0284C7" />
                     </button>
 
+                    <button
+                      type="button"
+                      onClick={() => setShowLabModal(true)}
+                      style={{
+                        height: '28px',
+                        padding: '0 10px',
+                        fontSize: '11px',
+                        fontWeight: 700,
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: '4px',
+                        borderRadius: '8px',
+                        background: '#EFF6FF',
+                        color: '#1D4ED8',
+                        border: '1px solid #BFDBFE',
+                        cursor: 'pointer',
+                        transition: 'all 0.15s ease'
+                      }}
+                      title="استعراض ومراجعة التحاليل الطبية المخبرية ودرع الأمان السريري"
+                    >
+                      <HeartPulse size={12} color="#1D4ED8" />
+                      <span>التحاليل السريرية</span>
+                    </button>
+
                     {safeClient?.phone && (
                       <button
                         type="button"
