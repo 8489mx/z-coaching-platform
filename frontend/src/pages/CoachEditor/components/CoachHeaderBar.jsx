@@ -6,6 +6,7 @@ import {
   HeartPulse, 
   Loader2, 
   ShieldAlert, 
+  ShieldCheck,
   AlertCircle,
   Smartphone,
   MessageCircle,
@@ -23,6 +24,7 @@ export function CoachHeaderBar({
   saving,
   setIsLabModalOpen,
   setIsSandboxOpen,
+  setIsPlanQualityOpen,
   handleApproveAndPublish,
   publishing,
   clientsList = [],
@@ -260,6 +262,33 @@ export function CoachHeaderBar({
           >
             <Sliders size={13} color="#0284C7" />
             <span>مُحاكي السيناريوهات</span>
+          </button>
+        )}
+
+        {/* Plan Quality Shield Button */}
+        {typeof setIsPlanQualityOpen === 'function' && (
+          <button
+            type="button"
+            onClick={() => setIsPlanQualityOpen(true)}
+            title="فحص جودة وتكامل الخطة سريرياً وتدريبياً قبل النشر"
+            style={{
+              height: '32px',
+              padding: '0 10px',
+              borderRadius: '8px',
+              background: '#F0FDF4',
+              color: '#16A34A',
+              border: '1px solid #BBF7D0',
+              fontSize: '11.5px',
+              fontWeight: 800,
+              cursor: 'pointer',
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '4px',
+              transition: 'all 0.15s ease'
+            }}
+          >
+            <ShieldCheck size={13} />
+            <span>درع جودة الخطة</span>
           </button>
         )}
 

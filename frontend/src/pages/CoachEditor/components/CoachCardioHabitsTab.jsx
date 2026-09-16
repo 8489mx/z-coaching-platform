@@ -1,6 +1,7 @@
-﻿import React, { useState } from 'react';
-import { Zap, ArrowRightLeft, FileText, ShieldAlert, ShieldCheck, AlertTriangle, Plus, Trash2, Pill } from 'lucide-react';
+import React, { useState } from 'react';
+import { Zap, ArrowRightLeft, FileText, ShieldAlert, ShieldCheck, AlertTriangle, Plus, Trash2, Pill, Thermometer, Check } from 'lucide-react';
 import { evaluateClinicalSupplementSafety, getStandardSupplementCatalog } from '../../../utils/clinicalSupplementSafetyEngine';
+import { calculateSeasonalAdaptation, SEASONAL_ENVIRONMENTS } from '../../../utils/seasonalThermalAdaptationEngine';
 
 export function CoachCardioHabitsTab({
   program,
@@ -11,6 +12,10 @@ export function CoachCardioHabitsTab({
   setCoachNotes
 }) {
   const [selectedCatalogSupp, setSelectedCatalogSupp] = useState('CREATINE');
+  const [selectedEnvironment, setSelectedEnvironment] = useState(
+    program?.cardio?.seasonal_environment || 'TEMPERATE_CONTROLLED'
+  );
+  const [appliedNotification, setAppliedNotification] = useState(false);
 
   const clientConditions = [
     ...(Array.isArray(program?.client?.injuries) ? program.client.injuries : []),
@@ -80,6 +85,33 @@ export function CoachCardioHabitsTab({
     } else {
       handleUpdateCardioParam('supplements', updated);
     }
+  };
+
+  const seasonalAdaptation = calculateSeasonalAdaptation({
+    environment: selectedEnvironment,
+    weightKg: program?.client?.weight || 80,
+    currentHydrationLiters: program?.cardio?.daily_water_target_liters || 3.8,
+    currentCalories: program?.nutrition?.target_calories || 2200
+  });
+
+  const handleApplySeasonal = () => {
+    handleUpdateCardioParam('seasonal_environment', selectedEnvironment);
+    handleUpdateCardioParam('daily_water_target_liters', seasonalAdaptation.adapted_hydration_liters);
+
+    if (typeof setCoachNotes === 'function') {
+      const headerTag = `[بروتوكول التكييف البيئي والموسمي: ${seasonalAdaptation.environment_title_ar}]`;
+      const notesBlock = `${headerTag}\n- ${seasonalAdaptation.directives.join('\n- ')}`;
+      setCoachNotes(prev => {
+        if (!prev || !prev.trim()) return notesBlock;
+        if (prev.includes(headerTag)) return prev;
+        return `${prev.trim()}\n\n${notesBlock}`;
+      });
+    }
+
+    setAppliedNotification(true);
+    setTimeout(() => {
+      setAppliedNotification(false);
+    }, 3500);
   };
 
   return (
@@ -410,6 +442,160 @@ export function CoachCardioHabitsTab({
             })}
           </div>
         )}
+      </div>
+
+      {/* =========================================================================
+          SEASONAL & THERMAL PERFORMANCE ADAPTATION STUDIO
+          ========================================================================= */}
+      <div style={{
+        background: '#FFFFFF',
+        border: '1px solid #E2E8F0',
+        borderRadius: '12px',
+        padding: '14px',
+        boxShadow: '0 1px 3px rgba(15, 23, 42, 0.04)'
+      }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px', flexWrap: 'wrap', gap: '8px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <div style={{
+              width: '30px',
+              height: '30px',
+              borderRadius: '8px',
+              background: '#EFF6FF',
+              border: '1px solid #DBEAFE',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              color: '#2563EB'
+            }}>
+              <Thermometer size={16} />
+            </div>
+            <div>
+              <strong style={{ fontSize: '13px', color: '#0F172A' }}>استوديو التكييف البيئي والموسمي للأداء والترطيب:</strong>
+              <div style={{ fontSize: '11px', color: '#64748B' }}>مواءمة فسيولوجية لمعدل السوائل، فترات الراحة، الإحماء، وتوازن الكهارل</div>
+            </div>
+          </div>
+
+          <span style={{
+            fontSize: '11px',
+            fontWeight: 800,
+            padding: '3px 10px',
+            borderRadius: '8px',
+            background: seasonalAdaptation.thermal_stress === 'HIGH' ? '#FEF2F2' : (seasonalAdaptation.thermal_stress === 'LOW' ? '#EFF6FF' : '#F0FDF4'),
+            color: seasonalAdaptation.thermal_stress === 'HIGH' ? '#DC2626' : (seasonalAdaptation.thermal_stress === 'LOW' ? '#2563EB' : '#15803D'),
+            border: `1px solid ${seasonalAdaptation.thermal_stress === 'HIGH' ? '#FECACA' : (seasonalAdaptation.thermal_stress === 'LOW' ? '#BFDBFE' : '#BBF7D0')}`
+          }}>
+            {seasonalAdaptation.thermal_stress === 'HIGH' ? 'إجهاد حراري مرتفع' : (seasonalAdaptation.thermal_stress === 'LOW' ? 'بيئة منخفضة الحرارة' : (seasonalAdaptation.thermal_stress === 'VARIABLE' ? 'صيام وتغير فترات التغذية' : 'بيئة حرارية معتدلة'))}
+          </span>
+        </div>
+
+        {/* Environment Selection Cards */}
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(130px, 1fr))', gap: '8px', marginBottom: '12px' }}>
+          {Object.values(SEASONAL_ENVIRONMENTS).map((env) => {
+            const isSelected = selectedEnvironment === env.id;
+            return (
+              <button
+                key={env.id}
+                type="button"
+                onClick={() => setSelectedEnvironment(env.id)}
+                style={{
+                  padding: '8px 10px',
+                  borderRadius: '10px',
+                  border: isSelected ? '2px solid #2563EB' : '1px solid #E2E8F0',
+                  background: isSelected ? '#EFF6FF' : '#F8FAFC',
+                  color: isSelected ? '#1D4ED8' : '#334155',
+                  cursor: 'pointer',
+                  textAlign: 'center',
+                  fontWeight: isSelected ? 800 : 600,
+                  fontSize: '11px',
+                  transition: 'all 0.15s ease'
+                }}
+              >
+                {env.title_ar}
+              </button>
+            );
+          })}
+        </div>
+
+        {/* Real-time Physiological Adaptation Summary */}
+        <div style={{
+          background: '#F8FAFC',
+          border: '1px solid #E2E8F0',
+          borderRadius: '10px',
+          padding: '10px 12px',
+          marginBottom: '12px'
+        }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(130px, 1fr))', gap: '8px', marginBottom: '10px' }}>
+            <div style={{ background: '#FFFFFF', border: '1px solid #E2E8F0', borderRadius: '8px', padding: '6px 8px', textAlign: 'center' }}>
+              <div style={{ fontSize: '10px', color: '#64748B', fontWeight: 600 }}>الترطيب المستهدف</div>
+              <div style={{ fontSize: '13px', fontWeight: 800, color: '#0F172A', marginTop: '2px' }}>
+                {seasonalAdaptation.adapted_hydration_liters} لتر/اليوم
+              </div>
+            </div>
+
+            <div style={{ background: '#FFFFFF', border: '1px solid #E2E8F0', borderRadius: '8px', padding: '6px 8px', textAlign: 'center' }}>
+              <div style={{ fontSize: '10px', color: '#64748B', fontWeight: 600 }}>الصوديوم والأملاح</div>
+              <div style={{ fontSize: '13px', fontWeight: 800, color: '#0F172A', marginTop: '2px' }}>
+                {seasonalAdaptation.sodium_target_mg} مجم
+              </div>
+            </div>
+
+            <div style={{ background: '#FFFFFF', border: '1px solid #E2E8F0', borderRadius: '8px', padding: '6px 8px', textAlign: 'center' }}>
+              <div style={{ fontSize: '10px', color: '#64748B', fontWeight: 600 }}>تعديل الإحماء</div>
+              <div style={{ fontSize: '13px', fontWeight: 800, color: '#0F172A', marginTop: '2px' }}>
+                {seasonalAdaptation.warmup_modifier_min > 0 ? `+${seasonalAdaptation.warmup_modifier_min} دقائق` : 'إحماء قياسي'}
+              </div>
+            </div>
+
+            <div style={{ background: '#FFFFFF', border: '1px solid #E2E8F0', borderRadius: '8px', padding: '6px 8px', textAlign: 'center' }}>
+              <div style={{ fontSize: '10px', color: '#64748B', fontWeight: 600 }}>فترات الراحة</div>
+              <div style={{ fontSize: '13px', fontWeight: 800, color: '#0F172A', marginTop: '2px' }}>
+                {seasonalAdaptation.rest_interval_delta_sec > 0 ? `+${seasonalAdaptation.rest_interval_delta_sec} ثانية` : 'راحات قياسية'}
+              </div>
+            </div>
+          </div>
+
+          {/* Directives List */}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', borderTop: '1px solid #E2E8F0', paddingTop: '8px' }}>
+            {seasonalAdaptation.directives.map((dir, idx) => (
+              <div key={idx} style={{ fontSize: '11px', color: '#475569', display: 'flex', alignItems: 'flex-start', gap: '6px' }}>
+                <span style={{ color: '#2563EB', fontWeight: 800, lineHeight: '14px' }}>•</span>
+                <span style={{ lineHeight: 1.4 }}>{dir}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Action Button */}
+        <div style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', gap: '10px' }}>
+          {appliedNotification && (
+            <span style={{ fontSize: '11px', fontWeight: 700, color: '#16A34A', display: 'flex', alignItems: 'center', gap: '4px' }}>
+              <Check size={14} />
+              <span>تم تطبيق التكييف وتحديث الخطة بنجاح</span>
+            </span>
+          )}
+
+          <button
+            type="button"
+            onClick={handleApplySeasonal}
+            style={{
+              padding: '8px 16px',
+              borderRadius: '8px',
+              background: '#0F172A',
+              color: '#FFFFFF',
+              border: 'none',
+              fontSize: '11.5px',
+              fontWeight: 700,
+              cursor: 'pointer',
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '6px',
+              transition: 'background 0.15s ease'
+            }}
+          >
+            <Thermometer size={14} />
+            <span>تطبيق التكييف الفسيولوجي على الخطة</span>
+          </button>
+        </div>
       </div>
 
       {/* Daily Habits Bar */}

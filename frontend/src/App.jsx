@@ -93,6 +93,7 @@ import FullIntakeForm from './pages/FullIntakeForm';
 import ClientLogin from './pages/ClientLogin';
 import CoachEditor from './pages/CoachEditor';
 import ProgramPdfView from './pages/ProgramPdfView';
+import MesocycleDebriefPdfView from './pages/MesocycleDebriefPdfView';
 import WeeklyCheckinForm from './pages/WeeklyCheckinForm';
 import FinancialsRenewalsDashboard from './pages/FinancialsRenewalsDashboard';
 import WhatsAppRemindersHub from './pages/WhatsAppRemindersHub';
@@ -170,6 +171,9 @@ function App() {
           <Route path="/profile" element={<Navigate to="/master-settings" replace />} />
           <Route path="/profile.html" element={<Navigate to="/master-settings" replace />} />
           <Route path="/pdf" element={<ProgramPdfView />} />
+          <Route path="/coach/mesocycle-debrief/:clientId" element={<MesocycleDebriefPdfView />} />
+          <Route path="/coach/mesocycle-debrief" element={<MesocycleDebriefPdfView />} />
+          <Route path="/mesocycle-debrief" element={<MesocycleDebriefPdfView />} />
           <Route path="/test-engine" element={<Navigate to="/" replace />} />
 
           {/* Catch-all fallback */}

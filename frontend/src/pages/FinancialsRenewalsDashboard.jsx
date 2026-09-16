@@ -3,20 +3,24 @@ import { ClientCodeBadge, ClientPackageBadge, getClientTier } from '../utils/tie
 import { arabicSearchMatch } from '../utils/searchUtils';
 import React, { useState, useMemo, useEffect, useRef } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { DollarSign, CreditCard, TrendingUp, Users, AlertCircle, Clock, CheckCircle2, Send, Search, Filter, Calendar, ArrowUpRight, Check, Plus, X, RotateCw, BadgePercent, Wallet, Receipt, ArrowRight, Pause, Play, ShieldAlert, MessageSquare, Dumbbell, ExternalLink } from 'lucide-react';
+import { DollarSign, CreditCard, TrendingUp, Users, AlertCircle, Clock, CheckCircle2, Send, Search, Filter, Calendar, ArrowUpRight, Check, Plus, X, RotateCw, BadgePercent, Wallet, Receipt, ArrowRight, Pause, Play, ShieldAlert, MessageSquare, Dumbbell, ExternalLink, Activity, Target, ShieldCheck } from 'lucide-react';
 import AdminLayout from '../components/layout/AdminLayout';
 import FlexibleRenewalModal from '../components/modals/FlexibleRenewalModal';
+import ClientRetentionRadarModal from '../components/modals/ClientRetentionRadarModal';
+import { calculateClientRetentionHealth, batchEvaluateRetentionRadar } from '../utils/clientRetentionRadarEngine';
 import { generateWhatsAppUrl, MESSAGE_TEMPLATES, compileReminderMessage, REMINDER_CATEGORIES } from '../utils/whatsappRemindersEngine';
 
 export default function FinancialsRenewalsDashboard() {
   const [searchParams] = useSearchParams();
   const urlParam = searchParams.get('code') || searchParams.get('client_code') || searchParams.get('search') || searchParams.get('q') || '';
 
-  const [renewalFilter, setRenewalFilter] = useState('ALL'); // 'ALL' | 'URGENT_3D' | 'WEEK_7D' | 'OVERDUE' | 'PAID'
+  const [renewalFilter, setRenewalFilter] = useState('ALL'); // 'ALL' | 'URGENT_3D' | 'WEEK_7D' | 'HIGH_PROPENSITY' | 'AT_RISK' | 'OVERDUE' | 'PAID'
   const [tierFilter, setTierFilter] = useState('ALL'); // 'ALL' | 'MAX' | 'ELITE'
   const [searchQuery, setSearchQuery] = useState(urlParam ? `#${urlParam}` : '');
   const [renewedMap, setRenewedMap] = useState({});
   const [toast, setToast] = useState(null);
+  const [selectedRadarClient, setSelectedRadarClient] = useState(null);
+  const [showRadarStudio, setShowRadarStudio] = useState(true);
   const searchInputRef = useRef(null);
 
   useEffect(() => {
@@ -89,6 +93,16 @@ export default function FinancialsRenewalsDashboard() {
               ? `${expiryDate.getDate()} ${monthsAr[expiryDate.getMonth()]} ${expiryDate.getFullYear()}`
               : '--';
 
+            const retentionEvaluation = calculateClientRetentionHealth({
+              client: c,
+              checkinHistory: c.checkinSubmissions || c.checkins || [],
+              subscription: {
+                end_date: c.subscription_end_date,
+                days_left: daysRemaining
+              },
+              currentWeekNumber: 4
+            });
+
             return {
               ...c,
               isMax,
@@ -97,7 +111,8 @@ export default function FinancialsRenewalsDashboard() {
               daysRemaining,
               status,
               formattedExpiry,
-              paymentMethod: c.payment_method || 'فودافون كاش / إنستاباي'
+              paymentMethod: c.payment_method || 'فودافون كاش / إنستاباي',
+              retentionEvaluation
             };
           });
           setFinancialsData(enriched);
@@ -109,6 +124,19 @@ export default function FinancialsRenewalsDashboard() {
       setLoading(false);
     }
   };
+
+  // Retention Radar Cohort Summary
+  const radarCohort = useMemo(() => {
+    return batchEvaluateRetentionRadar(financialsData.map(c => ({
+      client: c,
+      checkinHistory: c.checkinSubmissions || c.checkins || [],
+      subscription: {
+        end_date: c.subscription_end_date,
+        days_left: c.daysRemaining
+      },
+      currentWeekNumber: 4
+    })));
+  }, [financialsData]);
 
   // Calculations & Executive KPIs
   const totalMRR = useMemo(() => {
@@ -161,7 +189,10 @@ export default function FinancialsRenewalsDashboard() {
       if (tierFilter === 'MAX' && !c.isMax) return false;
       if (tierFilter === 'ELITE' && c.isMax) return false;
 
-      // Renewal Status Filter
+      // Renewal Status & Retention Radar Filters
+      if (renewalFilter === 'HIGH_PROPENSITY') return c.retentionEvaluation?.category === 'HIGH_PROPENSITY';
+      if (renewalFilter === 'AT_RISK') return c.retentionEvaluation?.category === 'AT_RISK';
+      if (renewalFilter === 'NURTURE_ENGAGE') return c.retentionEvaluation?.category === 'NURTURE_ENGAGE';
       if (renewalFilter === 'URGENT_3D') return c.daysRemaining > 0 && c.daysRemaining <= 3 && c.status !== 'FROZEN';
       if (renewalFilter === 'WEEK_7D') return c.daysRemaining > 0 && c.daysRemaining <= 7 && c.status !== 'FROZEN';
       if (renewalFilter === 'FROZEN') return c.status === 'FROZEN';
@@ -276,6 +307,29 @@ export default function FinancialsRenewalsDashboard() {
           </div>
 
           <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap' }}>
+            <button
+              type="button"
+              onClick={() => setShowRadarStudio(!showRadarStudio)}
+              style={{
+                background: showRadarStudio ? '#0F172A' : '#F8FAFC',
+                border: showRadarStudio ? '1px solid #0F172A' : '1px solid #CBD5E1',
+                padding: '5px 12px',
+                borderRadius: '8px',
+                fontSize: '11px',
+                fontWeight: 700,
+                color: showRadarStudio ? '#FFFFFF' : '#334155',
+                cursor: 'pointer',
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '6px',
+                transition: 'all 0.12s ease'
+              }}
+              title="إظهار/إخفاء استوديو رادار الاحتفاظ والتجديد الذكي"
+            >
+              <Activity size={13} color={showRadarStudio ? '#38BDF8' : '#0284C7'} />
+              <span>استوديو رادار الاحتفاظ</span>
+            </button>
+
             <a
               href="/coach/reminders"
               style={{
@@ -303,6 +357,167 @@ export default function FinancialsRenewalsDashboard() {
             </span>
           </div>
         </div>
+
+        {/* 1.5. Client Retention & Renewal Radar Studio (Cohort Analytics) */}
+        {showRadarStudio && (
+          <div style={{
+            background: '#FFFFFF',
+            border: '1px solid #E2E8F0',
+            borderRadius: '12px',
+            padding: '16px',
+            boxShadow: '0 1px 3px rgba(15, 23, 42, 0.03)',
+            display: 'flex',
+            flexDirection: 'column',
+            gap: '12px'
+          }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '8px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <div style={{ background: '#F0FDF4', border: '1px solid #BBF7D0', padding: '6px', borderRadius: '8px', color: '#16A34A' }}>
+                  <Activity size={18} />
+                </div>
+                <div>
+                  <h3 style={{ margin: 0, fontSize: '14px', fontWeight: 800, color: '#0F172A' }}>
+                    استوديو رادار التنبؤ بالتجديدات والاحتفاظ الذكي بالمشتركين
+                  </h3>
+                  <span style={{ fontSize: '11px', color: '#64748B' }}>
+                    تحليل احتمالية التجديد ورصد مخاطر تسرب المشتركين استناداً إلى الالتزام والتقدم القياسي وأجل الاشتراك
+                  </span>
+                </div>
+              </div>
+
+              <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flexWrap: 'wrap' }}>
+                <div style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', borderRadius: '8px', padding: '4px 10px', fontSize: '11px' }}>
+                  <span style={{ color: '#64748B' }}>معدل التجديد التقديري: </span>
+                  <strong style={{ color: '#059669', fontFamily: 'JetBrains Mono, Cairo, sans-serif' }}>
+                    {radarCohort.projected_retention_rate_pct}%
+                  </strong>
+                </div>
+                <div style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', borderRadius: '8px', padding: '4px 10px', fontSize: '11px' }}>
+                  <span style={{ color: '#64748B' }}>متوسط صحة الاحتفاظ: </span>
+                  <strong style={{ color: '#0284C7', fontFamily: 'JetBrains Mono, Cairo, sans-serif' }}>
+                    {radarCohort.average_retention_score} / 100
+                  </strong>
+                </div>
+              </div>
+            </div>
+
+            {/* Radar Cohort Interactive Cards */}
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '10px' }}>
+              
+              {/* High Propensity */}
+              <div
+                onClick={() => setRenewalFilter(renewalFilter === 'HIGH_PROPENSITY' ? 'ALL' : 'HIGH_PROPENSITY')}
+                style={{
+                  background: renewalFilter === 'HIGH_PROPENSITY' ? '#ECFDF5' : '#F8FAFC',
+                  border: renewalFilter === 'HIGH_PROPENSITY' ? '2px solid #059669' : '1px solid #E2E8F0',
+                  borderRadius: '10px',
+                  padding: '10px 12px',
+                  cursor: 'pointer',
+                  transition: 'all 0.15s ease'
+                }}
+                title="انقر لفلترة المشتركين المؤكد تجديدهم"
+              >
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4px' }}>
+                  <span style={{ fontSize: '11px', fontWeight: 700, color: '#059669', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                    <ShieldCheck size={13} />
+                    <span>مرشح مؤكد للتجديد</span>
+                  </span>
+                  <span style={{
+                    fontSize: '9px',
+                    fontWeight: 800,
+                    background: '#DCFCE7',
+                    color: '#166534',
+                    padding: '1px 6px',
+                    borderRadius: '6px'
+                  }}>
+                    نقاط ≥ 80
+                  </span>
+                </div>
+                <div style={{ fontSize: '18px', fontWeight: 900, color: '#0F172A', fontFamily: 'JetBrains Mono, Cairo, sans-serif' }}>
+                  {radarCohort.high_propensity_count} <span style={{ fontSize: '11px', fontWeight: 600, color: '#64748B' }}>مشترك</span>
+                </div>
+                <div style={{ fontSize: '10px', color: '#64748B', marginTop: '2px' }}>
+                  التزام ونتائج مستقرة (انقر للفلترة)
+                </div>
+              </div>
+
+              {/* Nurture & Engage */}
+              <div
+                onClick={() => setRenewalFilter(renewalFilter === 'NURTURE_ENGAGE' ? 'ALL' : 'NURTURE_ENGAGE')}
+                style={{
+                  background: renewalFilter === 'NURTURE_ENGAGE' ? '#FFFBEB' : '#F8FAFC',
+                  border: renewalFilter === 'NURTURE_ENGAGE' ? '2px solid #D97706' : '1px solid #E2E8F0',
+                  borderRadius: '10px',
+                  padding: '10px 12px',
+                  cursor: 'pointer',
+                  transition: 'all 0.15s ease'
+                }}
+                title="انقر لفلترة المشتركين الذين يحتاجون متابعة وتثبيت"
+              >
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4px' }}>
+                  <span style={{ fontSize: '11px', fontWeight: 700, color: '#D97706', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                    <Target size={13} />
+                    <span>يحتاج دعم وتثبيت نتائج</span>
+                  </span>
+                  <span style={{
+                    fontSize: '9px',
+                    fontWeight: 800,
+                    background: '#FEF3C7',
+                    color: '#92400E',
+                    padding: '1px 6px',
+                    borderRadius: '6px'
+                  }}>
+                    نقاط 60-79
+                  </span>
+                </div>
+                <div style={{ fontSize: '18px', fontWeight: 900, color: '#0F172A', fontFamily: 'JetBrains Mono, Cairo, sans-serif' }}>
+                  {radarCohort.nurture_count} <span style={{ fontSize: '11px', fontWeight: 600, color: '#64748B' }}>مشترك</span>
+                </div>
+                <div style={{ fontSize: '10px', color: '#64748B', marginTop: '2px' }}>
+                  تذبذب طفيف أو ثبات مؤقت (انقر للفلترة)
+                </div>
+              </div>
+
+              {/* At Risk */}
+              <div
+                onClick={() => setRenewalFilter(renewalFilter === 'AT_RISK' ? 'ALL' : 'AT_RISK')}
+                style={{
+                  background: renewalFilter === 'AT_RISK' ? '#FEF2F2' : '#F8FAFC',
+                  border: renewalFilter === 'AT_RISK' ? '2px solid #DC2626' : '1px solid #E2E8F0',
+                  borderRadius: '10px',
+                  padding: '10px 12px',
+                  cursor: 'pointer',
+                  transition: 'all 0.15s ease'
+                }}
+                title="انقر لفلترة المشتركين المعرضين لعدم التجديد"
+              >
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4px' }}>
+                  <span style={{ fontSize: '11px', fontWeight: 700, color: '#DC2626', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                    <AlertCircle size={13} />
+                    <span>معرض لمخاطر عدم التجديد</span>
+                  </span>
+                  <span style={{
+                    fontSize: '9px',
+                    fontWeight: 800,
+                    background: '#FEE2E2',
+                    color: '#991B1B',
+                    padding: '1px 6px',
+                    borderRadius: '6px'
+                  }}>
+                    نقاط &lt; 60
+                  </span>
+                </div>
+                <div style={{ fontSize: '18px', fontWeight: 900, color: '#0F172A', fontFamily: 'JetBrains Mono, Cairo, sans-serif' }}>
+                  {radarCohort.at_risk_count} <span style={{ fontSize: '11px', fontWeight: 600, color: '#64748B' }}>مشترك</span>
+                </div>
+                <div style={{ fontSize: '10px', color: '#64748B', marginTop: '2px' }}>
+                  يتطلب مبادرة تكتيكية سريعة لمنع التسرب
+                </div>
+              </div>
+
+            </div>
+          </div>
+        )}
 
         {/* 2. Executive Financial KPI Cards (Interactive Filters) */}
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '12px' }}>
@@ -534,6 +749,8 @@ export default function FinancialsRenewalsDashboard() {
               <div style={{ display: 'flex', gap: '4px', flexWrap: 'wrap' }}>
                 {[
                   { id: 'ALL', label: 'كافة الاشتراكات', count: financialsData.length },
+                  { id: 'HIGH_PROPENSITY', label: 'تجديد مؤكد', count: radarCohort.high_propensity_count },
+                  { id: 'AT_RISK', label: 'معرض للتسرب', count: radarCohort.at_risk_count },
                   { id: 'URGENT_3D', label: 'عاجل (≤ 3 أيام)', count: urgentRenewals.length },
                   { id: 'WEEK_7D', label: 'خلال أسبوع' },
                   { id: 'FROZEN', label: 'مجمد مؤقتاً', count: financialsData.filter(c => c.status === 'FROZEN').length },
@@ -648,7 +865,7 @@ export default function FinancialsRenewalsDashboard() {
           {/* Table Header */}
           <div style={{
             display: 'grid',
-            gridTemplateColumns: '75px 1.4fr 85px 95px 130px 100px 245px',
+            gridTemplateColumns: '70px 1.3fr 75px 85px 125px 115px 95px 255px',
             padding: '8px 14px',
             background: '#F1F5F9',
             fontSize: '11px',
@@ -661,6 +878,7 @@ export default function FinancialsRenewalsDashboard() {
             <div>الباقة</div>
             <div>المعدل الشهري</div>
             <div>تاريخ وموعد التجديد</div>
+            <div>رادار التجديد</div>
             <div>طريقة السداد</div>
             <div style={{ textAlign: 'center' }}>الإجراء المالي والمتابعة</div>
           </div>
@@ -689,7 +907,7 @@ export default function FinancialsRenewalsDashboard() {
                     key={client.id}
                     style={{
                       display: 'grid',
-                      gridTemplateColumns: '75px 1.4fr 85px 95px 130px 100px 245px',
+                      gridTemplateColumns: '70px 1.3fr 75px 85px 125px 115px 95px 255px',
                       padding: '10px 14px',
                       alignItems: 'center',
                       borderBottom: '1px solid #F1F5F9',
@@ -766,12 +984,43 @@ export default function FinancialsRenewalsDashboard() {
                       </span>
                     </div>
 
-                    {/* Col 6: Payment Method */}
+                    {/* Col 6: Retention Radar Propensity Badge */}
+                    <div>
+                      <button
+                        type="button"
+                        onClick={() => setSelectedRadarClient(client)}
+                        style={{
+                          padding: '3px 7px',
+                          borderRadius: '8px',
+                          border: `1px solid ${client.retentionEvaluation?.category === 'HIGH_PROPENSITY' ? '#A7F3D0' : client.retentionEvaluation?.category === 'AT_RISK' ? '#FECACA' : '#FDE68A'}`,
+                          background: client.retentionEvaluation?.category === 'HIGH_PROPENSITY' ? '#ECFDF5' : client.retentionEvaluation?.category === 'AT_RISK' ? '#FEF2F2' : '#FFFBEB',
+                          color: client.retentionEvaluation?.category === 'HIGH_PROPENSITY' ? '#059669' : client.retentionEvaluation?.category === 'AT_RISK' ? '#DC2626' : '#D97706',
+                          fontSize: '10px',
+                          fontWeight: 800,
+                          cursor: 'pointer',
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          gap: '3px',
+                          transition: 'all 0.12s ease'
+                        }}
+                        title="انقر لفتح فحص رادار الاحتفاظ والرسالة التكتيكية"
+                      >
+                        <Activity size={11} />
+                        <span style={{ fontFamily: 'JetBrains Mono, Cairo, sans-serif' }}>
+                          {client.retentionEvaluation?.total_retention_score ?? 80}%
+                        </span>
+                        <span style={{ fontSize: '9px', fontWeight: 700 }}>
+                          {client.retentionEvaluation?.category === 'HIGH_PROPENSITY' ? 'مؤكد' : client.retentionEvaluation?.category === 'AT_RISK' ? 'خطر' : 'دعم'}
+                        </span>
+                      </button>
+                    </div>
+
+                    {/* Col 7: Payment Method */}
                     <div style={{ fontSize: '10.5px', color: '#64748B' }}>
                       {client.paymentMethod}
                     </div>
 
-                    {/* Col 7: Actions */}
+                    {/* Col 8: Actions */}
                     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '4px', flexWrap: 'wrap' }}>
                       {isRenewed ? (
                         <span style={{ fontSize: '10.5px', color: '#059669', fontWeight: 700, display: 'inline-flex', alignItems: 'center', gap: '3px' }}>
@@ -849,6 +1098,29 @@ export default function FinancialsRenewalsDashboard() {
                         </>
                       )}
 
+                      {/* Retention Radar Action Button */}
+                      <button
+                        type="button"
+                        onClick={() => setSelectedRadarClient(client)}
+                        style={{
+                          padding: '3px 7px',
+                          borderRadius: '8px',
+                          background: '#F8FAFC',
+                          color: '#0F172A',
+                          border: '1px solid #CBD5E1',
+                          fontSize: '10.5px',
+                          fontWeight: 700,
+                          cursor: 'pointer',
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          gap: '3px'
+                        }}
+                        title="تحليل رادار الاحتفاظ والرسالة التكتيكية"
+                      >
+                        <Activity size={11} color="#0284C7" />
+                        <span>الرادار</span>
+                      </button>
+
                       {/* Coach Editor Plan Link */}
                       <button
                         type="button"
@@ -922,6 +1194,15 @@ export default function FinancialsRenewalsDashboard() {
             {toast}
           </div>
         )}
+
+        {/* Trainee Retention Radar Modal */}
+        <ClientRetentionRadarModal
+          isOpen={Boolean(selectedRadarClient)}
+          onClose={() => setSelectedRadarClient(null)}
+          evaluation={selectedRadarClient?.retentionEvaluation}
+          phoneNumber={selectedRadarClient?.phone_number}
+          onToast={showToast}
+        />
 
         {/* Flexible Renewal Modal */}
         <FlexibleRenewalModal

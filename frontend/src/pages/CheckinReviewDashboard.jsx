@@ -37,6 +37,7 @@ import {
   ExternalLink,
   Plane,
   Calendar,
+  FileText,
   X
 } from 'lucide-react';
 import AdminLayout from '../components/layout/AdminLayout';
@@ -1973,6 +1974,35 @@ export default function CheckinReviewDashboard() {
                 >
                   <Trophy size={14} color="#D97706" />
                   <span>تصدير بطاقة الإنجاز</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => {
+                    const clientCode = safeClient?.client_code || safeClient?.id || '1';
+                    window.open(`/coach/mesocycle-debrief/${clientCode}`, '_blank');
+                  }}
+                  style={{
+                    height: '32px',
+                    padding: '0 14px',
+                    borderRadius: '8px',
+                    fontSize: '12px',
+                    fontWeight: 700,
+                    cursor: 'pointer',
+                    userSelect: 'none',
+                    outline: 'none',
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '6px',
+                    border: '1px solid #0F172A',
+                    background: '#0F172A',
+                    color: '#FFFFFF',
+                    transition: 'all 0.15s ease'
+                  }}
+                  title="فتح تقرير المراجعة السريرية للميزوسايكل بصيغة PDF للطباعة"
+                >
+                  <FileText size={14} color="#38BDF8" />
+                  <span>تقرير ختام الميزوسايكل (PDF)</span>
                 </button>
               </div>
 

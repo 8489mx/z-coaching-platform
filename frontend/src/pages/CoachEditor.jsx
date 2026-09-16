@@ -15,7 +15,8 @@ import {
   CoachAddExerciseModal,
   CoachCardioSwapModal,
   CoachMobilityModal,
-  CoachScenarioSandboxModal
+  CoachScenarioSandboxModal,
+  CoachPlanQualityModal
 } from './CoachEditor/components';
 import { useCoachEditorData } from './CoachEditor/hooks';
 
@@ -126,6 +127,7 @@ export default function CoachEditor() {
   } = editor;
 
   const [isSandboxOpen, setIsSandboxOpen] = React.useState(false);
+  const [isPlanQualityOpen, setIsPlanQualityOpen] = React.useState(false);
 
   return (
     <AdminLayout fullWidth={true}>
@@ -172,6 +174,7 @@ export default function CoachEditor() {
           saving={saving}
           setIsLabModalOpen={setIsLabModalOpen}
           setIsSandboxOpen={setIsSandboxOpen}
+          setIsPlanQualityOpen={setIsPlanQualityOpen}
           handleApproveAndPublish={handleApproveAndPublish}
           publishing={publishing}
           clientsList={clientsList}
@@ -400,6 +403,15 @@ export default function CoachEditor() {
             }}
           />
         )}
+
+        {/* Pre-Flight Plan Quality & Clinical Audit Shield Modal */}
+        <CoachPlanQualityModal
+          isOpen={isPlanQualityOpen}
+          onClose={() => setIsPlanQualityOpen(false)}
+          program={program}
+          onApproveAndPublish={handleApproveAndPublish}
+          publishing={publishing}
+        />
 
         {/* Exercise Video Modal */}
         {activeVideoModalEx && (
