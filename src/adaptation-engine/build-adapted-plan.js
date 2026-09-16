@@ -5,6 +5,7 @@ import {
 } from "./domain/enums.js";
 import { CheckinAnalysisStatus } from "../checkin-engine/index.js";
 import { evaluateJointPainAndFirewall } from "../execution-engines/biomechanics-firewall-engine.js";
+import { analyzeBloodworkBiomarkers } from "../execution-engines/biomarker-engine.js";
 
 function requireObject(value, name) {
   if (value === null || typeof value !== "object" || Array.isArray(value)) {
@@ -234,6 +235,61 @@ export function buildAdaptedPlan(inputs) {
     });
   }
 
+  // Clinical Lab Biomarkers Evaluation during Weekly Adaptation
+  const clientWeight = Number(
+    options.weight_kg ||
+    options.weight ||
+    checkinAnalysis.weight_kg ||
+    checkinAnalysis.current_weight ||
+    currentMasterProgram.client?.weight_kg ||
+    currentMasterProgram.client?.weight ||
+    75
+  );
+  const clientGender = options.gender || (options.isFemale ? 'FEMALE' : (currentMasterProgram.client?.gender || 'MALE'));
+
+  const activeBiomarkers = {
+    ...(currentMasterProgram.biomarker_analysis?.raw_biomarkers || {}),
+    ...(currentMasterProgram.nutrition_program?.biomarker_analysis?.raw_biomarkers || {}),
+    ...(currentMasterProgram.nutrition_program?.clinical_safety_shield?.raw_biomarkers || {}),
+    ...(options.biomarkers || {}),
+    ...(options.baseline_biomarkers || {}),
+    ...(checkinAnalysis.biomarkers || {}),
+    ...(checkinAnalysis.baseline_biomarkers || {}),
+  };
+
+  let adaptationBiomarkersResult = null;
+  if (Object.keys(activeBiomarkers).length > 0) {
+    adaptationBiomarkersResult = analyzeBloodworkBiomarkers({
+      body_weight_kg: clientWeight,
+      gender: clientGender,
+      ...activeBiomarkers
+    });
+
+    if (adaptationBiomarkersResult.has_biomarker_flags) {
+      const pCap = adaptationBiomarkersResult.dietary_modifications?.protein_cap_g_per_kg;
+      if (pCap) {
+        const maxSafeProteinG = Math.round(clientWeight * pCap);
+        if (adaptedProtein > maxSafeProteinG) {
+          adaptedProtein = maxSafeProteinG;
+          reasons.push({
+            code: AdaptationReasonCode.CLINICAL_BIOMARKER_PROTECTION_APPLIED,
+            message_ar: `تطبيق السد الكلوي الصارم للمؤشرات الحيوية: تم تقييد وتحديد سقف البروتين عند ${adaptedProtein} جم (${pCap} جم/كجم) لحماية وظائف الكلى بناءً على الفحوصات المخبرية.`,
+            message_en: `Clinical biomarker renal guardrail active: protein capped at ${adaptedProtein}g (${pCap} g/kg).`
+          });
+        }
+      }
+
+      if (options.biomarkers || checkinAnalysis.biomarkers) {
+        requiresCoachApproval = true;
+        reasons.push({
+          code: AdaptationReasonCode.CLINICAL_BIOMARKER_PROTECTION_APPLIED,
+          message_ar: `تم رصد فحوصات طبية جديدة أثناء المتابعة (${adaptationBiomarkersResult.flags.map(f => f.biomarker).join('، ')}). تم تفعيل الحماية وتوجيه الخطة لمراجعة المدرب.`,
+          message_en: `New clinical biomarkers submitted during checkin. Safety shields active, routed for coach review.`
+        });
+      }
+    }
+  }
+
   // Meso-Cycle Progression extraction & Adaptive Biomechanical Tuning
   const mesoWeeks = currentMasterProgram.training_program?.weeks || [];
   const targetWeekIndex = Math.min(nextWeekNumber - 1, Math.max(0, mesoWeeks.length - 1));
@@ -358,8 +414,10 @@ export function buildAdaptedPlan(inputs) {
       protein_g: adaptedProtein,
       carbohydrate_g: adaptedCarbs,
       fat_g: adaptedFat,
-      fiber_g: baseFiber,
+      fiber_g: Math.max(baseFiber, adaptationBiomarkersResult?.dietary_modifications?.min_fiber_g || 0),
       refeed_config: refeedConfig,
+      biomarker_analysis: adaptationBiomarkersResult || currentMasterProgram.biomarker_analysis || null,
+      clinical_safety_shield: (adaptationBiomarkersResult?.has_biomarker_flags ? adaptationBiomarkersResult : currentMasterProgram.clinical_safety_shield) || null,
     }),
     adapted_training_week: adaptedTrainingWeek ? Object.freeze(adaptedTrainingWeek) : null,
     adapted_cardio: Object.freeze({
@@ -367,5 +425,7 @@ export function buildAdaptedPlan(inputs) {
       sessions: Object.freeze(baseCardioSessions),
     }),
     requires_coach_approval: requiresCoachApproval,
+    biomarker_analysis: adaptationBiomarkersResult || currentMasterProgram.biomarker_analysis || null,
+    clinical_safety_shield: (adaptationBiomarkersResult?.has_biomarker_flags ? adaptationBiomarkersResult : currentMasterProgram.clinical_safety_shield) || null,
   });
 }

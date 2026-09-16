@@ -141,6 +141,7 @@ import { quantizeNutritionPlan } from "../nutrition-serving-quantizer-v2/index.j
 import { adaptIntakePayloadToCanonicalEngine } from "../intake-decision-engine/adapters/intake-adapter.js";
 import { MASTER_ENGINE_V2_VERSION } from "./domain/enums.js";
 import { CLINICAL_GUIDELINES } from "../config/clinical-guidelines.js";
+import { analyzeBloodworkBiomarkers } from "../execution-engines/biomarker-engine.js";
 
 
 function requireObject(value, name) {
@@ -340,13 +341,44 @@ export function calculateUniversalNutritionTargets(canonicalIntake, evaluationCo
     }
   }
 
+  // Clinical Guard: Laboratory Bloodwork Biomarkers Integration
+  const rawBiomarkers = {
+    ...(canonicalIntake.biomarkers || {}),
+    ...(canonicalIntake.baseline_biomarkers || {}),
+    ...(medical.biomarkers || {}),
+    ...(medical.baseline_biomarkers || {}),
+    ...(rawMedical.biomarkers || {}),
+    ...(rawMedical.baseline_biomarkers || {}),
+    ...(effectiveRaw?.biomarkers || {}),
+    ...(effectiveRaw?.baseline_biomarkers || {}),
+    ...(effectiveRaw?.bloodwork || {}),
+  };
+
+  const biomarkerAnalysis = analyzeBloodworkBiomarkers({
+    body_weight_kg: weight,
+    gender: isMale ? 'MALE' : 'FEMALE',
+    ...rawBiomarkers
+  });
+
+  if (biomarkerAnalysis.has_biomarker_flags) {
+    if (biomarkerAnalysis.dietary_modifications?.protein_cap_g_per_kg) {
+      const cap = biomarkerAnalysis.dietary_modifications.protein_cap_g_per_kg;
+      if (proteinPerKg > cap) {
+        proteinPerKg = cap;
+        kidneyProteinCapped = true;
+        calorieAdjustmentDesc += ` (حظر وتحديد سقف البروتين عند ${cap} جم/كجم بناءً على الفحوصات المخبرية ووظائف الكلى)`;
+      }
+    }
+  }
+
   // Clinical Guard: Diabetes & Insulin Resistance Hypoglycemia Protection (ADA Guidelines)
   const hasDiabetesOrInsulinResistance =
     medical.hasDiabetes === true ||
     medical.hasInsulinResistance === true ||
     effectiveRaw?.medical?.hasDiabetes === true ||
     effectiveRaw?.medical?.hasInsulinResistance === true ||
-    conditionsList.some(c => c.includes("DIABETES") || c.includes("INSULIN_RESISTANCE"));
+    conditionsList.some(c => c.includes("DIABETES") || c.includes("INSULIN_RESISTANCE")) ||
+    (biomarkerAnalysis.has_biomarker_flags && biomarkerAnalysis.flags.some(f => f.biomarker === 'GLUCOSE_METABOLISM'));
 
   // 4. Macro Grams Breakdown
   const proteinG = Math.round(weight * proteinPerKg);
@@ -559,14 +591,14 @@ export function calculateUniversalNutritionTargets(canonicalIntake, evaluationCo
     total_carbs_g: carbG,
     fat_g: fatG,
     total_fat_g: fatG,
-    fiber_g: isMale ? 35 : 25,
-    water_liters: Number((weight * 0.040).toFixed(1)),
+    fiber_g: Math.max(isMale ? 35 : 25, biomarkerAnalysis?.dietary_modifications?.min_fiber_g || 0),
+    water_liters: Math.max(Number((weight * 0.040).toFixed(1)), biomarkerAnalysis?.dietary_modifications?.daily_water_target_liters || 0),
     hydration: {
       formula: "(Weight * 0.040) + 0.5L per workout hour",
-      rest_day_water_liters: Number((weight * 0.040).toFixed(1)),
-      training_day_water_liters: Number((weight * 0.040 + 0.5).toFixed(1)),
-      recommended_range_liters: `${(weight * 0.040).toFixed(1)} - ${(weight * 0.040 + 0.5).toFixed(1)} لتر/يوم`,
-      guidance_ar: `احتياج السوائل اليومي: ${(weight * 0.040).toFixed(1)} لتر في أيام الراحة، و ${(weight * 0.040 + 0.5).toFixed(1)} لتر في أيام التمرين (+0.5 لتر لتعويض العرق والأملاح أثناء التدريب).`,
+      rest_day_water_liters: Math.max(Number((weight * 0.040).toFixed(1)), biomarkerAnalysis?.dietary_modifications?.daily_water_target_liters || 0),
+      training_day_water_liters: Math.max(Number((weight * 0.040 + 0.5).toFixed(1)), (biomarkerAnalysis?.dietary_modifications?.daily_water_target_liters || 0) + 0.5),
+      recommended_range_liters: `${Math.max(Number((weight * 0.040).toFixed(1)), biomarkerAnalysis?.dietary_modifications?.daily_water_target_liters || 0)} - ${Math.max(Number((weight * 0.040 + 0.5).toFixed(1)), (biomarkerAnalysis?.dietary_modifications?.daily_water_target_liters || 0) + 0.5)} لتر/يوم`,
+      guidance_ar: `احتياج السوائل اليومي: ${Math.max(Number((weight * 0.040).toFixed(1)), biomarkerAnalysis?.dietary_modifications?.daily_water_target_liters || 0)} لتر في أيام الراحة، و ${Math.max(Number((weight * 0.040 + 0.5).toFixed(1)), (biomarkerAnalysis?.dietary_modifications?.daily_water_target_liters || 0) + 0.5)} لتر في أيام التمرين (+0.5 لتر لتعويض العرق والأملاح أثناء التدريب).`,
     },
     meals_count: mealCount,
         meal_distribution: mealDistribution,
@@ -579,14 +611,20 @@ export function calculateUniversalNutritionTargets(canonicalIntake, evaluationCo
     reverse_dieting: reverseDietConfig,
     low_fodmap: lowFodmapConfig,
     mediterranean_health: mediterraneanConfig,
+    biomarker_analysis: biomarkerAnalysis,
+    clinical_safety_shield: biomarkerAnalysis?.has_biomarker_flags ? biomarkerAnalysis : null,
     clinical_guardrails: {
       kidney_protein_capped: Boolean(kidneyProteinCapped),
-      max_protein_per_kg: kidneyProteinCapped ? CLINICAL_GUIDELINES.KIDNEY.MAX_PROTEIN_PER_KG : null,
+      max_protein_per_kg: kidneyProteinCapped ? (biomarkerAnalysis?.dietary_modifications?.protein_cap_g_per_kg || CLINICAL_GUIDELINES.KIDNEY.MAX_PROTEIN_PER_KG) : null,
       max_protein_g: kidneyProteinCapped ? proteinG : null,
-      rationale_ar: kidneyProteinCapped ? CLINICAL_GUIDELINES.KIDNEY.RATIONALE_AR : null,
+      rationale_ar: kidneyProteinCapped ? (biomarkerAnalysis?.dietary_modifications?.protein_cap_g_per_kg ? `تحديد سقف البروتين عند ${proteinPerKg} جم/كجم لحماية الكلى بناءً على الفحوصات المخبرية` : CLINICAL_GUIDELINES.KIDNEY.RATIONALE_AR) : null,
       hypoglycemia_guard_active: Boolean(hasDiabetesOrInsulinResistance),
       hypoglycemia_guidance_ar: hasDiabetesOrInsulinResistance ? CLINICAL_GUIDELINES.DIABETES.SAFETY_GUIDANCE_AR : null,
       hypoglycemia_rescue_carbs_grams: hasDiabetesOrInsulinResistance ? CLINICAL_GUIDELINES.DIABETES.HYPOGLYCEMIA_RESCUE_CARBS_GRAMS : null,
+      biomarker_guard_active: Boolean(biomarkerAnalysis?.has_biomarker_flags),
+      withhold_creatine: Boolean(biomarkerAnalysis?.dietary_modifications?.withhold_creatine),
+      purine_restriction: Boolean(biomarkerAnalysis?.dietary_modifications?.purine_restriction),
+      saturated_fat_cap_percent: biomarkerAnalysis?.dietary_modifications?.saturated_fat_cap_percent || null,
     },
   };
 
@@ -811,6 +849,11 @@ export function buildMasterEngineV2(inputs) {
     sanitized_plan: sanitizedMealPlan,
     quantized_plan: enhancedQuantizedPlan,
     culinary_meals: culinaryRecipeMeals,
+    biomarker_analysis: universalTargets.biomarker_analysis,
+    clinical_safety_shield: universalTargets.clinical_safety_shield,
+    clinical_supplements: universalTargets.biomarker_analysis?.supplement_recommendations || [],
+    whole_food_interventions: universalTargets.biomarker_analysis?.whole_food_interventions || [],
+    medical_referrals: universalTargets.biomarker_analysis?.medical_referrals || [],
     hypoglycemia_guard: universalTargets.clinical_guardrails?.hypoglycemia_guard_active ? Object.freeze({
       active: true,
       guidance_ar: CLINICAL_GUIDELINES.DIABETES.SAFETY_GUIDANCE_AR,
@@ -836,6 +879,8 @@ export function buildMasterEngineV2(inputs) {
     mobility_program,
     nutrition_program: nutrition_program_v2,
     hypoglycemia_guard: masterHypoglycemiaGuard,
+    biomarker_analysis: universalTargets.biomarker_analysis,
+    clinical_safety_shield: universalTargets.clinical_safety_shield,
   });
 
 }
