@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { Printer } from 'lucide-react';
 import { API_BASE } from '../config/api';
 import { getStoredCoachConfig } from '../utils/themeAndCoachConfig';
 import { extractClientFastingProfile } from '../utils/seasonalFastingRadar';
@@ -306,10 +307,10 @@ export default function ProgramPdfView() {
 
   if (loading) {
     return (
-      <div className="d-flex justify-content-center align-items-center vh-100 bg-white" dir="rtl">
-        <div className="text-center">
-          <div className="spinner-border text-primary mb-3" role="status" style={{ width: '3rem', height: '3rem', color: '#0284C7' }}></div>
-          <h5 className="fw-bold" style={{ color: '#0F172A', fontFamily: 'var(--font-sans)' }}>جاري تجهيز الوثيقة التنفيذية المعتمدة...</h5>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '100vh', background: '#FFFFFF', direction: 'rtl', fontFamily: 'var(--font-sans)' }}>
+        <div style={{ textAlign: 'center' }}>
+          <div style={{ width: '40px', height: '40px', border: '3px solid #E2E8F0', borderTopColor: '#0284C7', borderRadius: '50%', animation: 'spin 0.8s linear infinite', margin: '0 auto 16px auto' }}></div>
+          <h5 style={{ fontWeight: 800, color: '#0F172A', margin: 0 }}>جاري تجهيز الوثيقة التنفيذية المعتمدة...</h5>
         </div>
       </div>
     );
@@ -471,23 +472,67 @@ export default function ProgramPdfView() {
     <div className="pdf-view-wrapper" dir="rtl">
       
       {/* Non-Printable Floating Action Bar */}
-      <div className="no-print d-flex justify-content-between align-items-center bg-white p-3 px-4 rounded-4 shadow-sm mx-auto mb-4 border" style={{ maxWidth: '210mm', borderColor: '#CBD5E1' }}>
-        <div className="d-flex align-items-center gap-3">
-          <div style={{ width: '40px', height: '40px', borderRadius: '12px', background: '#0284C7', color: '#FFFFFF', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: '900', fontSize: '1.2rem' }}>
+      <div 
+        className="no-print" 
+        style={{ 
+          width: 'calc(100% - 32px)',
+          maxWidth: '210mm', 
+          margin: '0 auto 20px auto', 
+          background: '#FFFFFF',
+          border: '1px solid #CBD5E1',
+          borderRadius: '16px',
+          padding: '12px 20px',
+          boxShadow: '0 4px 16px rgba(15, 23, 42, 0.06)',
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          gap: '16px',
+          boxSizing: 'border-box'
+        }}
+      >
+        <div style={{ display: 'flex', alignItems: 'center', gap: '12px', minWidth: 0 }}>
+          <div style={{ width: '40px', height: '40px', borderRadius: '10px', background: '#0284C7', color: '#FFFFFF', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 900, fontSize: '1.2rem', flexShrink: 0 }}>
             Z
           </div>
-          <div>
-            <h6 className="mb-0 fw-bold" style={{ color: '#0F172A' }}>وثيقة البرنامج المعتمدة (نسخة A4 فاخرة - {totalPages} صفحات)</h6>
-            <small className="text-muted">المشترك: <strong>{clientName}</strong> (كود: #{clientCode})</small>
+          <div style={{ minWidth: 0 }}>
+            <h2 style={{ margin: 0, fontSize: '0.94rem', fontWeight: 800, color: '#0F172A', lineHeight: 1.3 }}>
+              وثيقة البرنامج المعتمدة (نسخة A4 فاخرة - {totalPages} صفحات)
+            </h2>
+            <div style={{ fontSize: '0.76rem', color: '#64748B', marginTop: '2px' }}>
+              المشترك: <strong style={{ color: '#0F172A' }}>{clientName}</strong> (كود: #{clientCode})
+            </div>
           </div>
         </div>
 
         <button 
           type="button" 
           onClick={handlePrint}
-          className="btn rounded-pill px-4 fw-bold text-white shadow-sm d-flex align-items-center gap-2"
-          style={{ background: 'linear-gradient(135deg, #0284C7 0%, #0369A1 100%)', border: 'none', height: '42px', fontSize: '0.9rem', cursor: 'pointer' }}
+          style={{ 
+            background: 'linear-gradient(135deg, #0284C7 0%, #0369A1 100%)', 
+            color: '#FFFFFF',
+            border: 'none', 
+            borderRadius: '10px',
+            padding: '10px 22px', 
+            fontSize: '0.86rem', 
+            fontWeight: 800, 
+            cursor: 'pointer',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '8px',
+            boxShadow: '0 2px 8px rgba(2, 132, 199, 0.28)',
+            flexShrink: 0,
+            transition: 'all 0.15s ease'
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.transform = 'translateY(-1px)';
+            e.currentTarget.style.boxShadow = '0 4px 12px rgba(2, 132, 199, 0.35)';
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.transform = 'none';
+            e.currentTarget.style.boxShadow = '0 2px 8px rgba(2, 132, 199, 0.28)';
+          }}
         >
+          <Printer size={16} />
           <span>طباعة / حفظ كملف PDF ({totalPages} صفحات)</span>
         </button>
       </div>
