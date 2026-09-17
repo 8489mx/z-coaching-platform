@@ -54,7 +54,7 @@ export default function ClientBottomNav({
               gap: '2px',
               background: 'transparent',
               border: 'none',
-              color: isActive ? '#0F172A' : '#94A3B8',
+              color: isActive ? '#0284C7' : '#94A3B8',
               fontSize: '11px',
               fontWeight: isActive ? 800 : 500,
               cursor: 'pointer',

@@ -87,10 +87,10 @@ export default function WorkoutTab({
                     padding: '6px 4px',
                     borderRadius: '8px',
                     border: isCurrent 
-                      ? (isDeload ? '2px solid #16A34A' : '2px solid #0F172A')
+                      ? (isDeload ? '2px solid #16A34A' : '2px solid #0284C7')
                       : '1px solid #E2E8F0',
                     background: isCurrent 
-                      ? (isDeload ? '#DCFCE7' : '#0F172A') 
+                      ? (isDeload ? '#DCFCE7' : '#0284C7') 
                       : (isDeload ? '#F0FDF4' : '#F8FAFC'),
                     color: isCurrent 
                       ? (isDeload ? '#166534' : '#FFFFFF') 
@@ -131,21 +131,35 @@ export default function WorkoutTab({
         </div>
       )}
 
-      {/* Workout Session Banner */}
-      <div style={{ background: 'linear-gradient(135deg, #0F172A 0%, #1E293B 100%)', color: '#FFFFFF', borderRadius: '20px', padding: '18px', boxShadow: '0 4px 15px rgba(15, 23, 42, 0.15)' }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4px' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '6px', color: '#94A3B8', fontSize: '0.72rem', fontWeight: 700 }}>
-            <Dumbbell style={{ width: '13px', height: '13px', color: '#38BDF8' }} />
+      {/* Workout Session Banner - Executive Light Theme */}
+      <div style={{ 
+        background: 'linear-gradient(135deg, #F0F9FF 0%, #E0F2FE 100%)', 
+        border: '1px solid #BAE6FD', 
+        borderRadius: '16px', 
+        padding: '16px 18px', 
+        boxShadow: '0 2px 8px rgba(2, 132, 199, 0.06)' 
+      }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '6px', color: '#0369A1', fontSize: '0.74rem', fontWeight: 800 }}>
+            <Dumbbell style={{ width: '14px', height: '14px', color: '#0284C7' }} />
             <span>جدول تمارين اليوم (دليل استرشادي سريع)</span>
           </div>
-          <span style={{ fontSize: '0.74rem', color: '#94A3B8', fontWeight: 700 }}>
+          <span style={{ 
+            fontSize: '0.72rem', 
+            color: '#0284C7', 
+            fontWeight: 800, 
+            background: '#FFFFFF', 
+            border: '1px solid #BAE6FD', 
+            padding: '2px 8px', 
+            borderRadius: '9999px' 
+          }}>
             {workoutSession.exercises?.length || 0} تمارين
           </span>
         </div>
-        <h2 style={{ fontSize: '1.05rem', fontWeight: 900, color: '#FFFFFF', margin: '0 0 6px 0' }}>
+        <h2 style={{ fontSize: '1.05rem', fontWeight: 900, color: '#0F172A', margin: '0 0 6px 0' }}>
           {workoutSession.title}
         </h2>
-        <div style={{ fontSize: '0.74rem', color: '#94A3B8' }}>
+        <div style={{ fontSize: '0.74rem', color: '#475569', lineHeight: 1.4 }}>
           {workoutSession.warmupProtocol}
         </div>
       </div>
@@ -189,7 +203,7 @@ export default function WorkoutTab({
                       ? (opt.id === 'FATIGUED' ? '#FEE2E2' : (opt.id === 'OPTIMAL' ? '#DCFCE7' : '#FFFFFF'))
                       : 'transparent',
                     color: active 
-                      ? (opt.id === 'FATIGUED' ? '#991B1B' : (opt.id === 'OPTIMAL' ? '#166534' : '#0F172A'))
+                      ? (opt.id === 'FATIGUED' ? '#991B1B' : (opt.id === 'OPTIMAL' ? '#166534' : '#0284C7'))
                       : '#64748B',
                     border: active ? '1px solid rgba(0,0,0,0.06)' : 'none',
                     cursor: 'pointer',
@@ -578,7 +592,7 @@ export default function WorkoutTab({
                   <Dumbbell style={{ width: '18px', height: '18px', opacity: 0.6 }} />
                   <span>وضعية البداية</span>
                 </div>
-                <span style={{ position: 'absolute', bottom: '4px', right: '4px', background: 'rgba(15, 23, 42, 0.85)', color: '#FFFFFF', fontSize: '9px', fontWeight: 700, padding: '1px 5px', borderRadius: '6px' }}>
+                <span style={{ position: 'absolute', bottom: '4px', right: '4px', background: 'rgba(255, 255, 255, 0.92)', color: '#0F172A', border: '1px solid rgba(0, 0, 0, 0.08)', fontSize: '9px', fontWeight: 800, padding: '1px 6px', borderRadius: '6px', boxShadow: '0 1px 3px rgba(0, 0, 0, 0.08)' }}>
                   1. وضع البداية
                 </span>
               </div>
@@ -599,7 +613,7 @@ export default function WorkoutTab({
                   <Dumbbell style={{ width: '18px', height: '18px', opacity: 0.6 }} />
                   <span>وضعية الانقباض</span>
                 </div>
-                <span style={{ position: 'absolute', bottom: '4px', right: '4px', background: 'rgba(15, 23, 42, 0.85)', color: '#FFFFFF', fontSize: '9px', fontWeight: 700, padding: '1px 5px', borderRadius: '6px' }}>
+                <span style={{ position: 'absolute', bottom: '4px', right: '4px', background: 'rgba(255, 255, 255, 0.92)', color: '#0F172A', border: '1px solid rgba(0, 0, 0, 0.08)', fontSize: '9px', fontWeight: 800, padding: '1px 6px', borderRadius: '6px', boxShadow: '0 1px 3px rgba(0, 0, 0, 0.08)' }}>
                   2. وضع الانقباض
                 </span>
               </div>
@@ -615,19 +629,26 @@ export default function WorkoutTab({
                   flex: 1,
                   height: '32px',
                   borderRadius: '8px',
-                  background: '#0F172A',
-                  color: '#FFFFFF',
-                  border: 'none',
+                  background: '#F0F9FF',
+                  color: '#0284C7',
+                  border: '1px solid #BAE6FD',
                   fontSize: '0.75rem',
                   fontWeight: 700,
                   display: 'inline-flex',
                   alignItems: 'center',
                   justifyContent: 'center',
                   gap: '6px',
-                  cursor: 'pointer'
+                  cursor: 'pointer',
+                  transition: 'all 0.15s ease'
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.background = '#E0F2FE';
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.background = '#F0F9FF';
                 }}
               >
-                <Play style={{ width: '12px', height: '12px' }} />
+                <Play style={{ width: '12px', height: '12px', fill: '#0284C7' }} />
                 <span>مشاهدة التكنيك بالفيديو</span>
               </button>
 

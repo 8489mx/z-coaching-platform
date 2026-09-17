@@ -81,20 +81,22 @@ export default function ClientInteractiveApp() {
   } = useClientInteractiveData();
 
   return (
-    <div className="min-h-screen bg-slate-100 flex justify-center font-sans" dir="rtl" style={{ fontFamily: 'Alexandria, Cairo, sans-serif' }}>
+    <div className="min-h-screen bg-slate-100 flex justify-center font-sans" dir="rtl" style={{ fontFamily: 'Alexandria, Cairo, sans-serif', width: '100%', overflowX: 'hidden' }}>
       
       {/* Mobile Shell Wrapper */}
       <div 
         style={{
           width: '100%',
           maxWidth: '480px',
+          margin: '0 auto',
           background: '#FAFAFC',
           minHeight: '100vh',
-          boxShadow: '0 0 40px rgba(0, 0, 0, 0.08)',
+          boxShadow: '0 0 30px rgba(15, 23, 42, 0.08)',
           display: 'flex',
           flexDirection: 'column',
           position: 'relative',
-          paddingBottom: '80px'
+          paddingBottom: '80px',
+          overflowX: 'hidden'
         }}
       >
         {/* Top App Header & Alerts */}

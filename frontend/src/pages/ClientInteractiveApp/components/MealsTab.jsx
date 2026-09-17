@@ -153,7 +153,7 @@ export default function MealsTab({
                   type="button"
                   onClick={() => setPortionDisplayMode(tab.key)}
                   style={{
-                    background: isSel ? '#0F172A' : 'transparent',
+                    background: isSel ? '#0284C7' : 'transparent',
                     color: isSel ? '#FFFFFF' : '#64748B',
                     border: 'none',
                     borderRadius: '8px',
@@ -186,7 +186,7 @@ export default function MealsTab({
                   type="button"
                   onClick={() => setCookingStateMode(cTab.key)}
                   style={{
-                    background: isSel ? '#0F172A' : 'transparent',
+                    background: isSel ? '#0284C7' : 'transparent',
                     color: isSel ? '#FFFFFF' : '#64748B',
                     border: 'none',
                     borderRadius: '8px',
@@ -315,9 +315,9 @@ export default function MealsTab({
                 display: 'flex',
                 alignItems: 'center',
                 gap: '4px',
-                background: meal.completed ? '#0F172A' : '#F8FAFC',
+                background: meal.completed ? '#16A34A' : '#F8FAFC',
                 color: meal.completed ? '#FFFFFF' : '#475569',
-                border: `1px solid ${meal.completed ? '#0F172A' : '#CBD5E1'}`,
+                border: `1px solid ${meal.completed ? '#16A34A' : '#CBD5E1'}`,
                 borderRadius: '8px',
                 padding: '4px 10px',
                 fontSize: '0.72rem',
@@ -343,6 +343,10 @@ export default function MealsTab({
                 food_state: cookingStateMode
               }, portionDisplayMode, cookingStateMode);
 
+              const cleanSecondary = formatted.secondary_text
+                ? String(formatted.secondary_text).replace(/^[\[\(\s]+|[\]\)\s]+$/g, '').trim()
+                : '';
+
               return (
                 <div 
                   key={item.id}
@@ -362,8 +366,13 @@ export default function MealsTab({
                         {item.name}
                       </span>
                       <span style={{ fontSize: '0.75rem', color: '#0284C7', fontWeight: 700 }}>
-                        {formatted.mode === PORTION_DISPLAY_MODES.DUAL ? (
-                          <span>{formatted.primary_text} <span style={{ color: '#64748B', fontWeight: 500 }}>({formatted.secondary_text})</span></span>
+                        {formatted.mode === PORTION_DISPLAY_MODES.DUAL && cleanSecondary ? (
+                          <span>
+                            {formatted.primary_text}
+                            <span style={{ color: '#64748B', fontWeight: 500, margin: '0 4px' }}>
+                              ({cleanSecondary})
+                            </span>
+                          </span>
                         ) : (
                           formatted.primary_text
                         )}

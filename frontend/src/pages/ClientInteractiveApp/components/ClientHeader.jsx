@@ -1,6 +1,6 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import { RotateCcw, FileDown } from 'lucide-react';
+import { RotateCcw, FileDown, Zap, Sparkles, Droplets } from 'lucide-react';
 import { getCaffeineCutoffTime } from '../../../utils/circadianLabTriggerEngine';
 
 export default function ClientHeader({
@@ -19,79 +19,88 @@ export default function ClientHeader({
 
   return (
     <>
-      {/* Top App Header */}
+      {/* Top App Header - Ultra Clean Executive Light Theme */}
       <header 
         style={{
-          background: '#0F172A',
-          color: '#FFFFFF',
-          padding: '16px 18px 14px 18px',
-          borderBottomLeftRadius: '20px',
-          borderBottomRightRadius: '20px',
-          boxShadow: '0 4px 20px rgba(15, 23, 42, 0.1)',
+          background: '#FFFFFF',
+          color: '#0F172A',
+          padding: '14px 16px 12px 16px',
+          borderBottom: '1px solid #E2E8F0',
+          boxShadow: '0 2px 12px rgba(15, 23, 42, 0.04)',
           position: 'sticky',
           top: 0,
           zIndex: 40
         }}
       >
-        {/* Top Client & Status Row */}
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+        {/* Row 1: Client Identity & Sync Status */}
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
+          {/* Identity & Badges */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '10px', minWidth: 0 }}>
             <div 
               style={{
                 width: '38px',
                 height: '38px',
                 borderRadius: '10px',
-                background: '#1E293B',
-                border: '1px solid #334155',
-                color: '#F8FAFC',
+                background: '#E0F2FE',
+                border: '1px solid #BAE6FD',
+                color: '#0284C7',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
-                fontWeight: 800,
-                fontSize: '0.85rem'
+                fontWeight: 900,
+                fontSize: '0.85rem',
+                flexShrink: 0
               }}
             >
               KZ
             </div>
-            <div>
-              <h1 style={{ fontSize: '0.94rem', fontWeight: 800, margin: 0, color: '#FFFFFF', lineHeight: 1.2 }}>
+            <div style={{ minWidth: 0 }}>
+              <h1 style={{ fontSize: '0.94rem', fontWeight: 800, margin: 0, color: '#0F172A', lineHeight: 1.2, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                 {clientData.name}
               </h1>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginTop: '3px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '5px', marginTop: '3px', flexWrap: 'wrap' }}>
                 <span style={{ 
                   fontSize: '10px', 
-                  color: clientData.package?.includes('ELITE') ? '#38BDF8' : '#F59E0B', 
-                  background: clientData.package?.includes('ELITE') ? 'rgba(56, 189, 248, 0.1)' : 'rgba(245, 158, 11, 0.1)', 
-                  border: `1px solid ${clientData.package?.includes('ELITE') ? 'rgba(56, 189, 248, 0.25)' : 'rgba(245, 158, 11, 0.25)'}`,
-                  padding: '1px 7px', 
+                  color: clientData.package?.includes('ELITE') ? '#0284C7' : '#D97706', 
+                  background: clientData.package?.includes('ELITE') ? '#F0F9FF' : '#FFFBEB', 
+                  border: `1px solid ${clientData.package?.includes('ELITE') ? '#BAE6FD' : '#FDE68A'}`,
+                  padding: '1px 6px', 
                   borderRadius: '6px', 
                   fontWeight: 700 
                 }}>
                   {clientData.package}
                 </span>
-                <span style={{ fontSize: '10px', color: '#94A3B8', fontWeight: 600 }}>
+                <span style={{ 
+                  fontSize: '10px', 
+                  color: '#059669', 
+                  background: '#ECFDF5', 
+                  border: '1px solid #A7F3D0', 
+                  padding: '1px 6px', 
+                  borderRadius: '6px', 
+                  fontWeight: 700 
+                }}>
                   {clientData.streak} يوم التزام
                 </span>
                 {clientData.fastingProfile?.isCoptic && (
                   <span style={{ 
                     fontSize: '10px', 
-                    color: '#C4B5FD', 
-                    background: 'rgba(196, 181, 253, 0.12)', 
-                    border: '1px solid rgba(196, 181, 253, 0.25)', 
-                    padding: '1px 7px', 
+                    color: '#7C3AED', 
+                    background: '#F5F3FF', 
+                    border: '1px solid #DDD6FE', 
+                    padding: '1px 6px', 
                     borderRadius: '6px', 
                     fontWeight: 700 
                   }}>
-                    {clientData.fastingProfile.christianFastingStyle === 'STRICT_VEGAN' ? 'صيام نباتي صرف' : 'صيام مع أسماك'}
+                    {clientData.fastingProfile.christianFastingStyle === 'STRICT_VEGAN' ? 'صيام نباتي' : 'صيام مع سمك'}
                   </span>
                 )}
                 {clientData.fastingProfile?.isRamadan && (
                   <span style={{ 
                     fontSize: '10px', 
-                    color: '#FDE68A', 
-                    background: 'rgba(253, 230, 138, 0.12)', 
-                    border: '1px solid rgba(253, 230, 138, 0.25)', 
-                    padding: '1px 7px', 
+                    color: '#B45309', 
+                    background: '#FFFBEB', 
+                    border: '1px solid #FDE68A', 
+                    padding: '1px 6px', 
                     borderRadius: '6px', 
                     fontWeight: 700 
                   }}>
@@ -101,10 +110,10 @@ export default function ClientHeader({
                 {clientData.fastingProfile?.isIntermittent && (
                   <span style={{ 
                     fontSize: '10px', 
-                    color: '#7DD3FC', 
-                    background: 'rgba(125, 211, 252, 0.12)', 
-                    border: '1px solid rgba(125, 211, 252, 0.25)', 
-                    padding: '1px 7px', 
+                    color: '#0369A1', 
+                    background: '#F0F9FF', 
+                    border: '1px solid #BAE6FD', 
+                    padding: '1px 6px', 
                     borderRadius: '6px', 
                     fontWeight: 700 
                   }}>
@@ -115,25 +124,24 @@ export default function ClientHeader({
             </div>
           </div>
 
-          {/* Clean Quick Actions & Sync Badge */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-            {/* Sync Status Badge */}
+          {/* Sync Status Badge & Action */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '5px', flexShrink: 0 }}>
             <div
               style={{
                 display: 'inline-flex',
                 alignItems: 'center',
                 gap: '4px',
-                background: syncStatus?.is_fully_synced ? 'rgba(34, 197, 94, 0.12)' : 'rgba(234, 179, 8, 0.15)',
-                border: `1px solid ${syncStatus?.is_fully_synced ? 'rgba(34, 197, 94, 0.3)' : 'rgba(234, 179, 8, 0.35)'}`,
+                background: syncStatus?.is_fully_synced ? '#DCFCE7' : '#FEF3C7',
+                border: `1px solid ${syncStatus?.is_fully_synced ? '#86EFAC' : '#FCD34D'}`,
                 borderRadius: '6px',
                 padding: '3px 7px',
                 fontSize: '10px',
                 fontWeight: 700,
-                color: syncStatus?.is_fully_synced ? '#86EFAC' : '#FDE047'
+                color: syncStatus?.is_fully_synced ? '#15803D' : '#B45309'
               }}
               title={syncStatus?.status_badge_ar}
             >
-              <div style={{ width: '6px', height: '6px', borderRadius: '50%', background: syncStatus?.is_fully_synced ? '#22C55E' : '#EAB308' }}></div>
+              <div style={{ width: '6px', height: '6px', borderRadius: '50%', background: syncStatus?.is_fully_synced ? '#16A34A' : '#D97706' }}></div>
               <span>{syncStatus?.is_fully_synced ? 'متزامن' : `${syncStatus?.pending_count} محلي`}</span>
             </div>
 
@@ -143,10 +151,10 @@ export default function ClientHeader({
                 onClick={handleTriggerSync}
                 disabled={isSyncing}
                 style={{
-                  background: '#38BDF8',
-                  color: '#0F172A',
+                  background: '#0284C7',
+                  color: '#FFFFFF',
                   border: 'none',
-                  borderRadius: '8px',
+                  borderRadius: '6px',
                   padding: '3px 7px',
                   fontSize: '10px',
                   fontWeight: 800,
@@ -158,108 +166,139 @@ export default function ClientHeader({
                 title="مزامنة التعديلات الآن"
               >
                 <RotateCcw style={{ width: '10px', height: '10px', animation: isSyncing ? 'spin 1s linear infinite' : 'none' }} />
-                <span>{isSyncing ? 'مزامنة...' : 'مزامنة'}</span>
+                <span>{isSyncing ? '...' : 'مزامنة'}</span>
               </button>
             )}
-
-            <div
-              style={{
-                background: 'rgba(255, 255, 255, 0.08)',
-                border: '1px solid rgba(255, 255, 255, 0.14)',
-                borderRadius: '8px',
-                padding: '5px 9px',
-                color: '#E2E8F0',
-                fontSize: '0.72rem',
-                fontWeight: 600,
-                display: 'inline-flex',
-                alignItems: 'center'
-              }}
-              title="المعدل الاسترشادي لاستهلاك الماء يومياً"
-            >
-              الماء المستهدف: 3.5 - 4.0 لتر/اليوم
-            </div>
-
-            <button
-              type="button"
-              onClick={() => setEmergencyModalOpen(true)}
-              style={{
-                background: 'rgba(255, 255, 255, 0.08)',
-                border: '1px solid rgba(255, 255, 255, 0.14)',
-                borderRadius: '8px',
-                padding: '5px 9px',
-                color: '#E2E8F0',
-                fontSize: '0.72rem',
-                fontWeight: 600,
-                cursor: 'pointer'
-              }}
-              title="تكييف الخطة وظروف السفر والعزومات"
-            >
-              مرونة اليوم
-            </button>
-
-            {/* Direct PDF Download / Print Button */}
-            <button
-              type="button"
-              onClick={() => {
-                const rawCode = String(clientData?.code || '').replace(/^#+/, '').replace(/^client[-_]?/i, '').trim();
-                window.open(`/program-pdf?code=${encodeURIComponent(rawCode || '1')}`, '_blank');
-              }}
-              style={{
-                background: 'rgba(56, 189, 248, 0.16)',
-                border: '1px solid rgba(56, 189, 248, 0.35)',
-                borderRadius: '8px',
-                padding: '5px 9px',
-                color: '#38BDF8',
-                fontSize: '0.72rem',
-                fontWeight: 700,
-                cursor: 'pointer',
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: '4px',
-                transition: 'all 0.15s ease'
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.background = 'rgba(56, 189, 248, 0.28)';
-                e.currentTarget.style.borderColor = '#38BDF8';
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.background = 'rgba(56, 189, 248, 0.16)';
-                e.currentTarget.style.borderColor = 'rgba(56, 189, 248, 0.35)';
-              }}
-              title="تحميل وثيقة الخطة التنفيذية الرسمية بصيغة PDF وطباعتها"
-            >
-              <FileDown size={12} />
-              <span>تحميل الخطة (PDF)</span>
-            </button>
-
-            <button
-              type="button"
-              onClick={() => navigate('/renew')}
-              style={{
-                background: 'rgba(217, 119, 6, 0.18)',
-                border: '1px solid rgba(217, 119, 6, 0.35)',
-                borderRadius: '8px',
-                padding: '5px 9px',
-                color: '#FDE68A',
-                fontSize: '0.72rem',
-                fontWeight: 700,
-                cursor: 'pointer'
-              }}
-              title="تجديد الاشتراك أونلاين"
-            >
-              تجديد
-            </button>
           </div>
         </div>
 
-        {/* Clean Muted Status Line (Circadian & NEAT) */}
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '0.7rem', color: '#94A3B8', borderTop: '1px solid rgba(255, 255, 255, 0.07)', paddingTop: '8px', marginBottom: '10px' }}>
-          <span>{getCaffeineCutoffTime("23:00").directive_ar}</span>
-          <span style={{ color: '#CBD5E1', fontWeight: 600 }}>8,500 خطوة (مستقر)</span>
+        {/* Row 2: Clean 3-Action Grid Bar (Zero Horizontal Overflow) */}
+        <div style={{ display: 'grid', gridTemplateColumns: '1.2fr 1fr 0.8fr', gap: '6px', marginBottom: '8px' }}>
+          {/* Direct PDF Download */}
+          <button
+            type="button"
+            onClick={() => {
+              const rawCode = String(clientData?.code || '').replace(/^#+/, '').replace(/^client[-_]?/i, '').trim();
+              window.open(`/program-pdf?code=${encodeURIComponent(rawCode || '1')}`, '_blank');
+            }}
+            style={{
+              background: '#F0F9FF',
+              border: '1px solid #BAE6FD',
+              borderRadius: '8px',
+              padding: '6px 4px',
+              color: '#0284C7',
+              fontSize: '0.72rem',
+              fontWeight: 700,
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: '4px',
+              transition: 'all 0.15s ease'
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.background = '#E0F2FE';
+              e.currentTarget.style.borderColor = '#7DD3FC';
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.background = '#F0F9FF';
+              e.currentTarget.style.borderColor = '#BAE6FD';
+            }}
+            title="تحميل وثيقة الخطة التنفيذية الرسمية بصيغة PDF وطباعتها"
+          >
+            <FileDown size={13} />
+            <span>تحميل الخطة (PDF)</span>
+          </button>
+
+          {/* Daily Flexibility Button */}
+          <button
+            type="button"
+            onClick={() => setEmergencyModalOpen(true)}
+            style={{
+              background: '#F8FAFC',
+              border: '1px solid #E2E8F0',
+              borderRadius: '8px',
+              padding: '6px 4px',
+              color: '#334155',
+              fontSize: '0.72rem',
+              fontWeight: 700,
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: '4px',
+              transition: 'all 0.15s ease'
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.background = '#F1F5F9';
+              e.currentTarget.style.borderColor = '#CBD5E1';
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.background = '#F8FAFC';
+              e.currentTarget.style.borderColor = '#E2E8F0';
+            }}
+            title="تكييف الخطة وظروف السفر والعزومات"
+          >
+            <Zap size={13} style={{ color: '#F59E0B' }} />
+            <span>مرونة اليوم</span>
+          </button>
+
+          {/* Renew Button */}
+          <button
+            type="button"
+            onClick={() => navigate('/renew')}
+            style={{
+              background: '#FFFBEB',
+              border: '1px solid #FDE68A',
+              borderRadius: '8px',
+              padding: '6px 4px',
+              color: '#B45309',
+              fontSize: '0.72rem',
+              fontWeight: 700,
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: '4px',
+              transition: 'all 0.15s ease'
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.background = '#FEF3C7';
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.background = '#FFFBEB';
+            }}
+            title="تجديد الاشتراك أونلاين"
+          >
+            <Sparkles size={13} style={{ color: '#D97706' }} />
+            <span>تجديد</span>
+          </button>
         </div>
 
-        {/* Days Selector Strip */}
-        <div style={{ display: 'flex', gap: '6px', overflowX: 'auto', paddingBottom: '2px', scrollbarWidth: 'none' }}>
+        {/* Row 3: Daily Health & Activity Indicators Capsule */}
+        <div 
+          style={{ 
+            display: 'flex', 
+            justifyContent: 'space-between', 
+            alignItems: 'center', 
+            fontSize: '0.68rem', 
+            background: '#F8FAFC', 
+            border: '1px solid #F1F5F9', 
+            borderRadius: '8px', 
+            padding: '5px 10px', 
+            marginBottom: '10px' 
+          }}
+        >
+          <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+            <Droplets size={12} style={{ color: '#0284C7' }} />
+            <span style={{ color: '#0369A1', fontWeight: 700 }}>ماء: 3.5 - 4.0 لتر/يوم</span>
+          </div>
+          <span style={{ color: '#64748B' }}>{getCaffeineCutoffTime("23:00").directive_ar}</span>
+          <span style={{ color: '#334155', fontWeight: 700 }}>8,500 خطوة</span>
+        </div>
+
+        {/* Row 4: Days Selector Strip */}
+        <div style={{ display: 'flex', gap: '5px', overflowX: 'auto', paddingBottom: '2px', scrollbarWidth: 'none' }}>
           {['السبت', 'الأحد', 'الإثنين', 'الثلاثاء', 'الأربعاء', 'الخميس', 'الجمعة'].map((dayName, idx) => {
             const dayNum = idx + 1;
             const isSelected = selectedDay === dayNum;
@@ -268,16 +307,18 @@ export default function ClientHeader({
                 key={dayNum}
                 onClick={() => setSelectedDay(dayNum)}
                 style={{
-                  flex: '0 0 auto',
-                  padding: '5px 12px',
+                  flex: '1 0 auto',
+                  padding: '6px 8px',
                   borderRadius: '8px',
                   fontSize: '0.74rem',
-                  fontWeight: isSelected ? 800 : 500,
-                  background: isSelected ? '#FFFFFF' : 'rgba(255, 255, 255, 0.06)',
-                  color: isSelected ? '#0F172A' : '#94A3B8',
-                  border: 'none',
+                  fontWeight: isSelected ? 800 : 600,
+                  background: isSelected ? '#0284C7' : '#F8FAFC',
+                  color: isSelected ? '#FFFFFF' : '#64748B',
+                  border: isSelected ? '1px solid #0284C7' : '1px solid #E2E8F0',
                   cursor: 'pointer',
-                  transition: 'all 0.15s ease'
+                  boxShadow: isSelected ? '0 2px 6px rgba(2, 132, 199, 0.25)' : 'none',
+                  transition: 'all 0.15s ease',
+                  textAlign: 'center'
                 }}
               >
                 {dayName}

@@ -90,7 +90,7 @@ export default function FreeGuidesModal({ isOpen, onClose, freeGuideTab, setFree
                   padding: '7px 10px',
                   borderRadius: '8px',
                   border: 'none',
-                  background: isSel ? '#0F172A' : 'transparent',
+                  background: isSel ? '#0284C7' : 'transparent',
                   color: isSel ? '#FFFFFF' : '#475569',
                   fontSize: '0.74rem',
                   fontWeight: isSel ? 800 : 600,
@@ -198,14 +198,16 @@ export default function FreeGuidesModal({ isOpen, onClose, freeGuideTab, setFree
           onClick={onClose}
           style={{
             width: '100%',
-            background: '#0F172A',
+            background: '#0284C7',
             color: '#FFFFFF',
             border: 'none',
-            borderRadius: '14px',
+            borderRadius: '12px',
             padding: '12px',
             fontSize: '0.84rem',
             fontWeight: 800,
-            cursor: 'pointer'
+            cursor: 'pointer',
+            boxShadow: '0 4px 12px rgba(2, 132, 199, 0.25)',
+            transition: 'all 0.15s ease'
           }}
         >
           إغلاق الدليل

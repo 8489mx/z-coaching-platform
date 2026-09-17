@@ -136,7 +136,7 @@ export default function ExerciseSwapModal({
                 fontSize: '0.72rem',
                 fontWeight: 700,
                 cursor: 'pointer',
-                background: exerciseSwapFilter === f.id ? '#0F172A' : 'transparent',
+                background: exerciseSwapFilter === f.id ? '#0284C7' : 'transparent',
                 color: exerciseSwapFilter === f.id ? '#FFFFFF' : '#64748B',
                 transition: 'all 0.12s ease'
               }}
@@ -300,7 +300,7 @@ export default function ExerciseSwapModal({
                         onClose();
                       }}
                       style={{
-                        background: isTwin ? '#0284C7' : '#0F172A',
+                        background: '#0284C7',
                         color: '#FFFFFF',
                         border: 'none',
                         borderRadius: '8px',
@@ -361,7 +361,7 @@ export default function ExerciseSwapModal({
                     onClose();
                   }}
                   style={{
-                    background: '#0F172A',
+                    background: '#0284C7',
                     color: '#FFFFFF',
                     border: 'none',
                     borderRadius: '8px',

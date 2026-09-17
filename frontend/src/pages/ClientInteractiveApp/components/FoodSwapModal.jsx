@@ -213,7 +213,7 @@ export default function FoodSwapModal({
                       setClientSwapSearch('');
                     }}
                     style={{
-                      background: '#0F172A',
+                      background: '#0284C7',
                       color: '#FFFFFF',
                       border: 'none',
                       borderRadius: '8px',
@@ -222,7 +222,7 @@ export default function FoodSwapModal({
                       fontWeight: 800,
                       cursor: 'pointer',
                       flexShrink: 0,
-                      boxShadow: '0 1px 4px rgba(15, 23, 42, 0.15)'
+                      boxShadow: '0 2px 6px rgba(2, 132, 199, 0.25)'
                     }}
                   >
                     تبديل الآن
