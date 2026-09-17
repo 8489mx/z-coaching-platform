@@ -1,13 +1,16 @@
 import React from 'react';
-import { useNavigate } from 'react-router-dom';
-import { Utensils, Dumbbell, Activity } from 'lucide-react';
+import { Utensils, Dumbbell, BookOpen, Activity } from 'lucide-react';
 
 export default function ClientBottomNav({
   activeTab,
-  onSwitchTab,
-  clientCode
+  onSwitchTab
 }) {
-  const navigate = useNavigate();
+  const tabs = [
+    { key: 'meals', label: 'الوجبات', icon: Utensils },
+    { key: 'workout', label: 'التمرين', icon: Dumbbell },
+    { key: 'supplements', label: 'المكملات والأدلة', icon: BookOpen },
+    { key: 'plan', label: 'الخطة والمتابعة', icon: Activity }
+  ];
 
   return (
     <nav 
@@ -20,18 +23,14 @@ export default function ClientBottomNav({
         maxWidth: '480px',
         background: '#FFFFFF',
         borderTop: '1px solid #E2E8F0',
-        display: 'flex',
-        justifyContent: 'space-around',
-        padding: '8px 0',
+        display: 'grid',
+        gridTemplateColumns: 'repeat(4, 1fr)',
+        padding: '6px 4px 8px 4px',
         zIndex: 40,
         boxShadow: '0 -2px 10px rgba(0, 0, 0, 0.04)'
       }}
     >
-      {[
-        { key: 'meals', label: 'الوجبات', icon: Utensils },
-        { key: 'workout', label: 'التمرين', icon: Dumbbell },
-        { key: 'checkin', label: 'المتابعة', icon: Activity, isRoute: true }
-      ].map(tab => {
+      {tabs.map(tab => {
         const isActive = activeTab === tab.key;
         const TabIcon = tab.icon;
 
@@ -39,31 +38,28 @@ export default function ClientBottomNav({
           <button
             key={tab.key}
             type="button"
-            onClick={() => {
-              if (tab.isRoute) {
-                const rawCode = String(clientCode || '').replace(/^#+/, '').replace(/^client[-_]?/i, '').trim();
-                navigate(rawCode ? `/check-in?code=${encodeURIComponent(rawCode)}` : '/check-in');
-              } else {
-                onSwitchTab(tab.key);
-              }
-            }}
+            onClick={() => onSwitchTab(tab.key)}
             style={{
               display: 'flex',
               flexDirection: 'column',
               alignItems: 'center',
-              gap: '2px',
+              justifyContent: 'center',
+              gap: '3px',
               background: 'transparent',
               border: 'none',
               color: isActive ? '#0284C7' : '#94A3B8',
-              fontSize: '11px',
-              fontWeight: isActive ? 800 : 500,
+              fontSize: '10.5px',
+              fontWeight: isActive ? 800 : 600,
               cursor: 'pointer',
-              padding: '4px 16px',
-              transition: 'color 0.15s ease'
+              padding: '4px 2px',
+              borderRadius: '8px',
+              transition: 'all 0.15s ease'
             }}
           >
             <TabIcon style={{ width: '18px', height: '18px', strokeWidth: isActive ? 2.5 : 2 }} />
-            <span>{tab.label}</span>
+            <span style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: '100%' }}>
+              {tab.label}
+            </span>
           </button>
         );
       })}

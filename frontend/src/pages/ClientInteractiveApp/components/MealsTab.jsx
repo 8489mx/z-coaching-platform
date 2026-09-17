@@ -1,13 +1,11 @@
 import React, { useState } from 'react';
-import { Check, ArrowLeftRight, ShieldCheck } from 'lucide-react';
+import { ArrowLeftRight } from 'lucide-react';
 import { 
   formatItemPortionDisplay, 
   PORTION_DISPLAY_MODES, 
-  COOKING_STATE_MODES, 
-  getTravelDiningBlueprints 
+  COOKING_STATE_MODES 
 } from '../../../utils/foodSwapEngine';
 import { getPrepOptionsForFood } from '../../../utils/culinaryRecipes';
-import { SMART_GUIDELINES_MATRIX } from '../../../utils/pdfExportEngine';
 
 export default function MealsTab({
   consumedMacros,
@@ -25,9 +23,6 @@ export default function MealsTab({
 }) {
   const [portionDisplayMode, setPortionDisplayMode] = useState(PORTION_DISPLAY_MODES.DUAL);
   const [cookingStateMode, setCookingStateMode] = useState(COOKING_STATE_MODES.BOTH);
-  const [travelModeActive, setTravelModeActive] = useState(false);
-  const [diningBlueprints] = useState(() => getTravelDiningBlueprints());
-  const [guidelinesOpen, setGuidelinesOpen] = useState(false);
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
@@ -67,24 +62,21 @@ export default function MealsTab({
         </div>
       </div>
 
-      {/* Unified Compact Meal Controls Bar */}
+      {/* Unified Compact Portion & State Bar */}
       <div 
         style={{ 
           display: 'flex', 
           alignItems: 'center', 
           justifyContent: 'space-between', 
-          flexWrap: 'wrap', 
-          gap: '8px', 
           background: '#F8FAFC', 
           border: '1px solid #E2E8F0', 
           borderRadius: '12px', 
-          padding: '6px 10px', 
-          margin: '4px 0 10px 0' 
+          padding: '6px 12px', 
+          margin: '2px 0 6px 0' 
         }}
       >
-        {/* Portion Mode & Cooking State Capsules */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
-          {/* Portion Mode */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+          <span style={{ fontSize: '0.68rem', color: '#64748B', fontWeight: 700 }}>عرض الحصة:</span>
           <div style={{ display: 'inline-flex', background: '#F1F5F9', padding: '2px', borderRadius: '8px', gap: '2px' }}>
             {[
               { key: PORTION_DISPLAY_MODES.DUAL, label: 'مزدوج' },
@@ -101,9 +93,9 @@ export default function MealsTab({
                     background: isSel ? '#0284C7' : 'transparent',
                     color: isSel ? '#FFFFFF' : '#64748B',
                     border: 'none',
-                    borderRadius: '8px',
+                    borderRadius: '6px',
                     padding: '3px 8px',
-                    fontSize: '0.68rem',
+                    fontSize: '0.67rem',
                     fontWeight: isSel ? 800 : 600,
                     cursor: 'pointer',
                     transition: 'all 0.12s ease'
@@ -114,10 +106,10 @@ export default function MealsTab({
               );
             })}
           </div>
+        </div>
 
-          <span style={{ color: '#CBD5E1', fontSize: '10px' }}>•</span>
-
-          {/* Cooking State */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+          <span style={{ fontSize: '0.68rem', color: '#64748B', fontWeight: 700 }}>حالة الوزن:</span>
           <div style={{ display: 'inline-flex', background: '#F1F5F9', padding: '2px', borderRadius: '8px', gap: '2px' }}>
             {[
               { key: COOKING_STATE_MODES.BOTH, label: 'معاً' },
@@ -134,9 +126,9 @@ export default function MealsTab({
                     background: isSel ? '#0284C7' : 'transparent',
                     color: isSel ? '#FFFFFF' : '#64748B',
                     border: 'none',
-                    borderRadius: '8px',
+                    borderRadius: '6px',
                     padding: '3px 8px',
-                    fontSize: '0.68rem',
+                    fontSize: '0.67rem',
                     fontWeight: isSel ? 800 : 600,
                     cursor: 'pointer',
                     transition: 'all 0.12s ease'
@@ -148,70 +140,7 @@ export default function MealsTab({
             })}
           </div>
         </div>
-
-        {/* Secondary Quick Action Buttons */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-          <button
-            type="button"
-            onClick={() => setTravelModeActive(prev => !prev)}
-            style={{
-              background: travelModeActive ? '#EFF6FF' : '#F8FAFC',
-              color: travelModeActive ? '#0284C7' : '#64748B',
-              border: `1px solid ${travelModeActive ? '#BAE6FD' : '#E2E8F0'}`,
-              borderRadius: '8px',
-              padding: '3px 8px',
-              fontSize: '0.68rem',
-              fontWeight: 700,
-              cursor: 'pointer'
-            }}
-          >
-            {travelModeActive ? 'إخفاء المطاعم' : 'خطط المطاعم'}
-          </button>
-
-          <button
-            type="button"
-            onClick={() => setFreeGuideModalOpen(true)}
-            style={{
-              background: '#F0FDF4',
-              color: '#166534',
-              border: '1px solid #BBF7D0',
-              borderRadius: '8px',
-              padding: '3px 8px',
-              fontSize: '0.68rem',
-              fontWeight: 700,
-              cursor: 'pointer'
-            }}
-          >
-            دليل الالتزام
-          </button>
-        </div>
       </div>
-
-      {/* Pre-Engineered Dining Blueprints Section (Visible when travelMode is active) */}
-      {travelModeActive && (
-        <div style={{ background: '#F8FAFC', border: '1px solid #CBD5E1', borderRadius: '16px', padding: '14px' }}>
-          <h3 style={{ margin: '0 0 10px 0', fontSize: '0.84rem', fontWeight: 800, color: '#0F172A' }}>
-            خطط المطاعم والسفر الجاهزة (Dining Blueprints)
-          </h3>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-            {diningBlueprints.map(bp => (
-              <div key={bp.id} style={{ background: '#FFFFFF', border: '1px solid #E2E8F0', borderRadius: '12px', padding: '10px 12px' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4px' }}>
-                  <strong style={{ fontSize: '0.8rem', color: '#0369A1' }}>{bp.title_ar}</strong>
-                  <span style={{ fontSize: '0.7rem', fontWeight: 700, color: '#059669', background: '#ECFDF5', padding: '1px 6px', borderRadius: '6px' }} dir="ltr">
-                    ~{bp.estimated_macros.calories_kcal} kcal • P: {bp.estimated_macros.protein_g}g
-                  </span>
-                </div>
-                <ul style={{ margin: 0, paddingRight: '16px', fontSize: '0.72rem', color: '#334155', lineHeight: 1.4 }}>
-                  {bp.ordered_items_ar.map((item, idx) => (
-                    <li key={idx}>{item}</li>
-                  ))}
-                </ul>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
 
 
 
@@ -378,138 +307,6 @@ export default function MealsTab({
           </div>
         </div>
       ))}
-
-      {/* SMART PLAN GUIDELINES ACCORDION */}
-      <div style={{ background: '#FFFFFF', border: '1px solid #E2E8F0', borderRadius: '12px', padding: '10px 14px', boxShadow: '0 1px 2px rgba(0, 0, 0, 0.02)' }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <div 
-            onClick={() => setGuidelinesOpen(prev => !prev)}
-            style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', userSelect: 'none' }}
-          >
-            <ShieldCheck style={{ width: '15px', height: '15px', color: '#0F172A' }} />
-            <strong style={{ fontSize: '0.8rem', color: '#0F172A' }}>إرشادات وقواعد الخطة</strong>
-            <span style={{ fontSize: '0.68rem', color: '#64748B', background: '#F1F5F9', padding: '1px 6px', borderRadius: '6px' }}>
-              {guidelinesOpen ? 'طي' : 'عرض (5 إرشادات)'}
-            </span>
-          </div>
-
-          <button
-            type="button"
-            onClick={() => setPdfModalOpen(true)}
-            style={{
-              background: '#0F172A',
-              color: '#FFFFFF',
-              border: 'none',
-              borderRadius: '8px',
-              padding: '4px 10px',
-              fontSize: '0.7rem',
-              fontWeight: 700,
-              cursor: 'pointer'
-            }}
-          >
-            تصدير PDF
-          </button>
-        </div>
-
-        {guidelinesOpen && (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', marginTop: '10px', borderTop: '1px solid #F1F5F9', paddingTop: '10px' }}>
-            {SMART_GUIDELINES_MATRIX.map((guide) => (
-              <div key={guide.id} style={{ background: '#F8FAFC', border: '1px solid #F1F5F9', borderRadius: '8px', padding: '8px 10px' }}>
-                <strong style={{ fontSize: '0.74rem', color: '#0F172A', display: 'block', marginBottom: '2px' }}>{guide.title_ar}</strong>
-                <span style={{ fontSize: '0.7rem', color: '#64748B', lineHeight: 1.4 }}>{guide.instruction_ar}</span>
-              </div>
-            ))}
-          </div>
-        )}
-      </div>
-
-      {/* Interactive Supplements & Micronutrition Checklist Card */}
-      {supplementsList.length > 0 && (
-        <div style={{ background: '#FFFFFF', border: '1px solid #E2E8F0', borderRadius: '16px', padding: '14px 16px', boxShadow: '0 1px 3px rgba(0, 0, 0, 0.03)' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-              <strong style={{ fontSize: '0.84rem', color: '#0F172A', fontWeight: 800 }}>المكملات الغذائية المعتمدة وبروتوكول الاستشفاء</strong>
-            </div>
-            <span style={{ fontSize: '0.7rem', color: '#64748B', fontWeight: 600 }}>
-              تم تناول: <strong style={{ color: '#0F172A' }}>{supplementsList.filter(s => supplementsTaken[s.id]).length}</strong> / {supplementsList.length}
-            </span>
-          </div>
-
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-            {supplementsList.map((supp) => {
-              const isDone = Boolean(supplementsTaken[supp.id]);
-              return (
-                <div
-                  key={supp.id}
-                  onClick={() => toggleSupplementTaken(supp.id)}
-                  style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'space-between',
-                    padding: '8px 10px',
-                    borderRadius: '8px',
-                    border: `1px solid ${isDone ? '#BBF7D0' : '#E2E8F0'}`,
-                    background: isDone ? '#F0FDF4' : '#F8FAFC',
-                    cursor: 'pointer',
-                    transition: 'all 0.15s ease'
-                  }}
-                >
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flex: 1 }}>
-                    <button
-                      type="button"
-                      style={{
-                        width: '20px',
-                        height: '20px',
-                        borderRadius: '8px',
-                        border: isDone ? 'none' : '1px solid #CBD5E1',
-                        background: isDone ? '#16A34A' : '#FFFFFF',
-                        color: '#FFFFFF',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        cursor: 'pointer',
-                        flexShrink: 0
-                      }}
-                    >
-                      {isDone && <Check size={13} strokeWidth={3} />}
-                    </button>
-                    <div>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flexWrap: 'wrap' }}>
-                        <strong style={{ fontSize: '0.76rem', color: isDone ? '#166534' : '#0F172A', textDecoration: isDone ? 'line-through' : 'none' }}>
-                          {supp.name}
-                        </strong>
-                        {supp.dose && (
-                          <span style={{ fontSize: '0.68rem', color: '#64748B', background: '#E2E8F0', padding: '1px 5px', borderRadius: '6px', fontWeight: 600 }}>
-                            {supp.dose}
-                          </span>
-                        )}
-                        {supp.timing && (
-                          <span style={{ fontSize: '0.68rem', color: '#0284C7', background: '#E0F2FE', padding: '1px 5px', borderRadius: '6px', fontWeight: 600 }}>
-                            {supp.timing}
-                          </span>
-                        )}
-                      </div>
-                      {supp.notes && (
-                        <span style={{ fontSize: '0.68rem', color: '#64748B', display: 'block', marginTop: '2px' }}>
-                          {supp.notes}
-                        </span>
-                      )}
-                    </div>
-                  </div>
-
-                  {supp.cal > 0 && (
-                    <div style={{ textAlign: 'left', flexShrink: 0, paddingRight: '8px' }}>
-                      <strong style={{ fontSize: '0.74rem', color: '#0F172A', display: 'block' }}>{supp.cal} kcal</strong>
-                      <span style={{ fontSize: '0.65rem', color: '#64748B' }} dir="ltr">P:{supp.p} C:{supp.c} F:{supp.f}</span>
-                    </div>
-                  )}
-                </div>
-              );
-            })}
-          </div>
-        </div>
-      )}
-
     </div>
   );
 }

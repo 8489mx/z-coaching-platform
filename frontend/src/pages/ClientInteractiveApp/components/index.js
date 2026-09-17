@@ -1,6 +1,8 @@
 export { default as ClientHeader } from './ClientHeader';
 export { default as MealsTab } from './MealsTab';
 export { default as WorkoutTab } from './WorkoutTab';
+export { default as SupplementsGuidesTab } from './SupplementsGuidesTab';
+export { default as PlanProfileTab } from './PlanProfileTab';
 export { default as FreeGuidesModal } from './FreeGuidesModal';
 export { default as FoodPrepModal } from './FoodPrepModal';
 export { default as MasterPdfModal } from './MasterPdfModal';

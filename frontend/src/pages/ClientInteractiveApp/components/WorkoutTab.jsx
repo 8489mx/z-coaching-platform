@@ -29,15 +29,58 @@ export default function WorkoutTab({
   exerciseWorkingWeights = {},
   handleUpdateExerciseWeight,
   handleToggleExerciseCompleted,
-  setActiveVideoExercise
+  setActiveVideoExercise,
+  selectedDay = 1,
+  setSelectedDay
 }) {
   const [showWorkoutGuide, setShowWorkoutGuide] = useState(false);
   const [expandedTechnique, setExpandedTechnique] = useState({});
   const enableWeightLogging = Boolean(clientData?.enable_weight_logging);
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
       
+      {/* Days Selector Strip - Native to Workout Schedule */}
+      <div style={{
+        background: '#FFFFFF',
+        borderRadius: '16px',
+        border: '1px solid #E2E8F0',
+        padding: '8px 10px',
+        boxShadow: '0 1px 3px rgba(0, 0, 0, 0.03)',
+        display: 'flex',
+        gap: '5px',
+        overflowX: 'auto',
+        scrollbarWidth: 'none'
+      }}>
+        {['السبت', 'الأحد', 'الإثنين', 'الثلاثاء', 'الأربعاء', 'الخميس', 'الجمعة'].map((dayName, idx) => {
+          const dayNum = idx + 1;
+          const isSelected = selectedDay === dayNum;
+          return (
+            <button
+              key={dayNum}
+              type="button"
+              onClick={() => setSelectedDay && setSelectedDay(dayNum)}
+              style={{
+                flex: '1 0 auto',
+                padding: '7px 10px',
+                borderRadius: '10px',
+                fontSize: '0.74rem',
+                fontWeight: isSelected ? 800 : 600,
+                background: isSelected ? '#0284C7' : '#F8FAFC',
+                color: isSelected ? '#FFFFFF' : '#64748B',
+                border: isSelected ? '1px solid #0284C7' : '1px solid #E2E8F0',
+                cursor: 'pointer',
+                boxShadow: isSelected ? '0 2px 6px rgba(2, 132, 199, 0.22)' : 'none',
+                transition: 'all 0.15s ease',
+                textAlign: 'center'
+              }}
+            >
+              {dayName}
+            </button>
+          );
+        })}
+      </div>
+
       {/* Mesocycle Weeks Selector (دورة الميزوسايكل الفسيولوجية) */}
       {trainingWeeks.length > 0 && (
         <div style={{

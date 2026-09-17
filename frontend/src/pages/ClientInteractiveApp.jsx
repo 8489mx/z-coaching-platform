@@ -5,6 +5,8 @@ import {
   ClientHeader,
   MealsTab,
   WorkoutTab,
+  SupplementsGuidesTab,
+  PlanProfileTab,
   FreeGuidesModal,
   FoodPrepModal,
   MasterPdfModal,
@@ -106,9 +108,6 @@ export default function ClientInteractiveApp() {
           syncStatus={syncStatus}
           isSyncing={isSyncing}
           handleTriggerSync={handleTriggerSync}
-          setEmergencyModalOpen={setEmergencyModalOpen}
-          selectedDay={selectedDay}
-          setSelectedDay={setSelectedDay}
         />
 
         {/* MAIN BODY CONTENT */}
@@ -124,11 +123,6 @@ export default function ClientInteractiveApp() {
               setActivePrepItem={setActivePrepItem}
               setActiveSwapItem={setActiveSwapItem}
               setSwapMealId={setSwapMealId}
-              setFreeGuideModalOpen={setFreeGuideModalOpen}
-              setPdfModalOpen={setPdfModalOpen}
-              supplementsList={supplementsList}
-              supplementsTaken={supplementsTaken}
-              toggleSupplementTaken={toggleSupplementTaken}
             />
           )}
 
@@ -151,6 +145,28 @@ export default function ClientInteractiveApp() {
               handleUpdateExerciseWeight={handleUpdateExerciseWeight}
               handleToggleExerciseCompleted={handleToggleExerciseCompleted}
               setActiveVideoExercise={setActiveVideoExercise}
+              selectedDay={selectedDay}
+              setSelectedDay={setSelectedDay}
+            />
+          )}
+
+          {/* TAB 3: SUPPLEMENTS & GUIDES */}
+          {activeTab === 'supplements' && (
+            <SupplementsGuidesTab
+              supplementsList={supplementsList}
+              supplementsTaken={supplementsTaken}
+              toggleSupplementTaken={toggleSupplementTaken}
+              setFreeGuideModalOpen={setFreeGuideModalOpen}
+              setFreeGuideTab={setFreeGuideTab}
+            />
+          )}
+
+          {/* TAB 4: PLAN PROFILE & CHECK-IN */}
+          {activeTab === 'plan' && (
+            <PlanProfileTab
+              clientData={clientData}
+              setEmergencyModalOpen={setEmergencyModalOpen}
+              setPdfModalOpen={setPdfModalOpen}
             />
           )}
 
@@ -160,7 +176,6 @@ export default function ClientInteractiveApp() {
         <ClientBottomNav
           activeTab={activeTab}
           onSwitchTab={handleSwitchTab}
-          clientCode={clientData?.code}
         />
 
         {/* SMART FOOD SWAP POPUP MODAL WITH CLINICAL FILTERS */}
