@@ -127,7 +127,8 @@ const CSS_STYLES = `
     color: #0F172A !important;
     font-weight: 700;
     border: 0.5pt solid #CBD5E1;
-    padding: 6px 8px;
+    padding: 6px 5px;
+    vertical-align: middle;
     word-break: break-word !important;
     overflow-wrap: break-word !important;
   }
@@ -135,7 +136,7 @@ const CSS_STYLES = `
   .pdf-table td {
     background-color: #FFFFFF !important;
     border: 0.5pt solid #E2E8F0;
-    padding: 6px 8px;
+    padding: 5px 5px;
     color: #0F172A;
     vertical-align: middle;
     word-break: break-word !important;
@@ -540,7 +541,7 @@ export default function ProgramPdfView() {
               <tr style={{ fontWeight: '700' }}>
                 <td style={{ textAlign: 'center' }} className="nowrap">{heightCm} سم</td>
                 <td style={{ textAlign: 'center' }} className="nowrap">{weightKg} كجم</td>
-                <td style={{ textAlign: 'center' }} className="nowrap">{bmi} مؤشر الكتلة</td>
+                <td style={{ textAlign: 'center' }} className="nowrap">{bmi}</td>
                 <td style={{ textAlign: 'center', color: '#0284C7' }} className="nowrap">{bodyFat}</td>
               </tr>
             </tbody>
@@ -721,11 +722,11 @@ export default function ProgramPdfView() {
                 <table className="pdf-table" style={{ margin: 0 }}>
                   <thead>
                     <tr>
-                      <th style={{ width: '38%', textAlign: 'right' }}>التمرين وتكنيك الأداء</th>
-                      <th style={{ width: '24%', textAlign: 'center' }}>العضلة المستهدفة</th>
-                      <th style={{ width: '12%', textAlign: 'center' }}>المجموعات</th>
-                      <th style={{ width: '14%', textAlign: 'center' }}>العدات المستهدفة</th>
-                      <th style={{ width: '12%', textAlign: 'center' }}>فترة الراحة</th>
+                      <th style={{ width: '38%', textAlign: 'right' }}>التمرين والتكنيك</th>
+                      <th style={{ width: '22%', textAlign: 'center' }}>العضلة المستهدفة</th>
+                      <th style={{ width: '13%', textAlign: 'center' }}>المجموعات</th>
+                      <th style={{ width: '13%', textAlign: 'center' }}>العدات</th>
+                      <th style={{ width: '14%', textAlign: 'center' }}>الراحة</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -746,10 +747,10 @@ export default function ProgramPdfView() {
                             {targetMuscle}
                           </td>
                           <td style={{ textAlign: 'center', fontWeight: '700', fontSize: '8pt' }} className="nowrap">
-                            {ex.sets || 3} جولات
+                            {ex.sets || 3}
                           </td>
                           <td style={{ textAlign: 'center', fontWeight: '700', fontSize: '8pt', color: '#0F172A' }} className="nowrap">
-                            {ex.reps || '8 - 10'} عدات
+                            {ex.reps || '8 - 10'}
                           </td>
                           <td style={{ textAlign: 'center', color: '#64748B', fontSize: '7.5pt' }} className="nowrap">
                             {ex.rest || '75 ثانية'}
