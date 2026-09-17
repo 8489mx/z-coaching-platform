@@ -2074,7 +2074,7 @@ export function buildCulinaryRecipeMeals(universalTargets, canonicalIntake = {},
     // =========================================================================
     if (isVegan) {
       if (mealNum === 1) {
-        recipeNameAr = "طبق الشوفان النباتي الخارق ببروتين البازلاء وبذور الشيا والقنب وحليب الشوفان";
+        recipeNameAr = "وجبة الإفطار (شوفان بحليب الشوفان وبذور الشيا وبروتين نباتي)";
         recipeConceptDesc = "إفطار نباتي 100% خالي تماماً من الصويا والمكسرات وحليب اللوز، يعتمد على حليب الشوفان وبذور القنب والشيا لدعم البناء العضلي الصافي.";
 
         // Oat milk (150 ml = 1.5g P, 10g C, 2.2g F, 68 kcal)
@@ -2152,7 +2152,7 @@ export function buildCulinaryRecipeMeals(universalTargets, canonicalIntake = {},
         const canUseLegumes = !isGout && !isLegumesExcluded && !isFavism;
 
         if (canUseLegumes) {
-          recipeNameAr = "طبق الأداء النباتي (يخنة البقوليات المشكلة مع أرز بسمتي وسكوب بروتين معزول)";
+          recipeNameAr = "وجبة الغداء (يخنة بقوليات مشكلة مع أرز بسمتي وبروتين نباتي)";
           recipeConceptDesc = "وجبة أداء عضلي غنية بالكاربوهيدرات المعقدة والبروتين النباتي التكاملي لملء مخازن الجليكوجين.";
 
           // Legumes Stew (250g)
@@ -2244,7 +2244,7 @@ export function buildCulinaryRecipeMeals(universalTargets, canonicalIntake = {},
           }
         } else {
           // CLINICAL PURINE/ALLERGEN SAFETY: Pure Vegan Lunch without Legumes
-          recipeNameAr = "طبق الأداء النباتي النقي الآمن (أرز بسمتي بالخضار مع سكوب بروتين نباتي معزول وزيت زيتون)";
+          recipeNameAr = "وجبة الغداء (أرز بسمتي مع خضار سوتيه وبروتين نباتي معزول)";
           recipeConceptDesc = "وجبة غداء نباتية نقية آمنة لحمض اليوريك والمفاصل، مصممة بأعلى معايير الحماية السريرية مع تغطية كامل الماكروز.";
 
           // Veggies
@@ -2321,7 +2321,7 @@ export function buildCulinaryRecipeMeals(universalTargets, canonicalIntake = {},
         const canUseLegumes = !isGout && !isLegumesExcluded && !isFavism;
 
         if (canUseLegumes) {
-          recipeNameAr = "طبق العشاء النباتي المشبع (يخنة حمص وعدس بالكمون مع بطاطس مشوية وسلطة خضراء)";
+          recipeNameAr = "وجبة العشاء (يخنة حمص وعدس بالكمون مع بطاطس مشوية وسلطة)";
           recipeConceptDesc = "عشاء نباتي مريح للهضم غني بالألياف والمعادن لتعزيز الاستشفاء الليلي.";
 
           // Legumes Stew (250g)
@@ -2413,7 +2413,7 @@ export function buildCulinaryRecipeMeals(universalTargets, canonicalIntake = {},
           }
         } else {
           // CLINICAL PURINE/ALLERGEN SAFETY: Pure Vegan Dinner without Legumes
-          recipeNameAr = "طبق العشاء النباتي الخفيف الآمن (بطاطس مشوية بالأعشاب مع سلطة وسكوب بروتين معزول)";
+          recipeNameAr = "وجبة العشاء (بطاطس مشوية بالأعشاب مع سلطة خضراء وبروتين نباتي)";
           recipeConceptDesc = "عشاء نباتي مريح للهضم وخالي من البيورين ومسببات إجهاد المفاصل، يعزز الاستشفاء العضلي الليلي بأمان سريري تام.";
 
           // Salad
@@ -2496,7 +2496,7 @@ export function buildCulinaryRecipeMeals(universalTargets, canonicalIntake = {},
       recipeConceptDesc = "وجبة مركزة عالية الكثافة الغذائية محددة الحجم الصارم (وزن الطبق الإجمالي 165 - 175 جم) لحماية جدار المعدة ومنع التمدد ومتلازمة الإغراق.";
 
       if (mealNum === 1) {
-        recipeNameAr = "الوجبة 1: إفطار بروتيني مركز عالي الكثافة (بيض ودجاج وبطاطس مهروسة - وزن الطبق 170 جم)";
+        recipeNameAr = "الوجبة 1: إفطار بروتيني (بيض ودجاج وبطاطس مهروسة)";
         // 1 Whole egg (50g = 6.5g P, 5g F, 0.5g C, 75 kcal)
         items.push({
           food_code: "EGGS_OMELETTE",
@@ -2590,7 +2590,7 @@ export function buildCulinaryRecipeMeals(universalTargets, canonicalIntake = {},
         // Total Macros = P:37g, C:11g, F:12g, Kcal: ~309 kcal.
 
       } else if (mealNum === 2) {
-        recipeNameAr = "الوجبة 2: سناك بروتيني ناعم عالي الكثافة (جبن قريش ناعم وبطاطا حلوة وواي بروتين - 170 جم)";
+        recipeNameAr = "الوجبة 2: سناك بروتيني ناعم (جبن قريش وبطاطا حلوة وبروتين)";
 
         if (!isDairyExcluded) {
           items.push({
@@ -2700,7 +2700,7 @@ export function buildCulinaryRecipeMeals(universalTargets, canonicalIntake = {},
 
       } else if (mealNum === 4) {
         if (isGout || isFishExcluded) {
-          recipeNameAr = "الوجبة 4: سناك صدور دجاج وبطاطا حلوة مركزة (وزن الطبق 155 جم)";
+          recipeNameAr = "الوجبة 4: وجبة خفيفة (صدور دجاج وبطاطا حلوة)";
           items.push({
             food_code: "CHICKEN_BREAST",
             name_ar: "صدور دجاج مشوية متبلة بالليمون والأعشاب",
@@ -2715,7 +2715,7 @@ export function buildCulinaryRecipeMeals(universalTargets, canonicalIntake = {},
             swaps: [],
           });
         } else {
-          recipeNameAr = "الوجبة 4: سناك تونة لايت وبطاطا حلوة مركزة (وزن الطبق 165 جم)";
+          recipeNameAr = "الوجبة 4: وجبة خفيفة (تونة لايت وبطاطا حلوة)";
           // Canned Tuna (90g = 23.4g P, 0.9g F, 104 kcal)
           items.push({
             food_code: "CANNED_TUNA",
@@ -2796,7 +2796,7 @@ export function buildCulinaryRecipeMeals(universalTargets, canonicalIntake = {},
 
       } else {
         // Meals 3 & 5 (Lunch & Dinner)
-        recipeNameAr = `الوجبة ${mealNum}: وجبة دجاج وأرز وخضار طرية مركزة (وزن الطبق 170 جم)`;
+        recipeNameAr = `الوجبة ${mealNum}: وجبة دجاج وأرز وخضار طرية`;
 
         // Tender Chicken Breast (85g = 26.5g P, 2.5g F, 140 kcal)
         items.push({
@@ -2897,7 +2897,7 @@ export function buildCulinaryRecipeMeals(universalTargets, canonicalIntake = {},
     // =========================================================================
     else if (totalMeals === 2) {
       if (mealNum === 1) {
-        recipeNameAr = "الوجبة الأولى (كسر الصيام المتكامل): سفرة إفطار ضخمة متعددة مصادر البروتين";
+        recipeNameAr = "الوجبة 1: وجبة الإفطار (كسر الصيام المتكامل)";
         recipeConceptDesc = "وجبة كسر صيام غنية ومتوازنة تجمع بين البيض والجبن والرومي/الواي بروتين لتغطية 85-90 جم بروتين باستمتاع ودون حجم طعام مزعج.";
 
         // 3 Whole Eggs (165g = 20g P, 15g F, 1g C, 215 kcal)
@@ -2923,7 +2923,7 @@ export function buildCulinaryRecipeMeals(universalTargets, canonicalIntake = {},
           // Cottage cheese capped at 150g (18g P, 4.5g C, 2.2g F, 112 kcal)
           items.push({
             food_code: "COTTAGE_CHEESE",
-            name_ar: "جبن قريش طبيعي متبل بالزعتر وزيت الزيتون (حصة معتدلة 150 جم)",
+            name_ar: "جبن قريش طبيعي متبل بالزعتر وزيت الزيتون",
             name_en: "Seasoned Cottage Cheese (150g Portion)",
             category: "PROTEIN",
             portion_g: 150,
@@ -3036,7 +3036,7 @@ export function buildCulinaryRecipeMeals(universalTargets, canonicalIntake = {},
 
       } else {
         // Meal 2 (IF Closing Meal)
-        recipeNameAr = "الوجبة الثانية (الوجبة الرئيسية والختامية): طبق الأداء والقوة متكامل العناصر";
+        recipeNameAr = "الوجبة 2: الوجبة الختامية (صدور دجاج مع أرز بسمتي وخضار)";
         recipeConceptDesc = "وجبة ضخمة ومشبعة تغطي احتياجات الطاقة والاستشفاء العضلي بالكامل قبل بدء ساعات الصيام.";
 
         // Steamed Veggies (200g = 3g P, 6g C, 35 kcal)
@@ -3159,12 +3159,12 @@ export function buildCulinaryRecipeMeals(universalTargets, canonicalIntake = {},
         let currentC = 0;
 
         recipeNameAr = isGlutenExcluded
-          ? "سفرة الإفطار المتكاملة الخالية من الجلوتين (بيض كامل مع صدور دجاج وبطاطس مشوية وسلطة خضراء)"
+          ? "وجبة الإفطار (بيض مع صدور دجاج وبطاطس مشوية وسلطة)"
           : (isDairyExcluded
-            ? "سفرة الإفطار المتكاملة الخالية من الألبان (بيض كامل مع صدور دجاج/تونة وخبز بلدي)"
+            ? "وجبة الإفطار (بيض مع صدور دجاج/تونة وخبز بلدي)"
             : (isGout
-              ? "سفرة الإفطار لمرضى النقرس والضغط (بيض كامل مع جبن قريش بحصة معتدلة وصدور دجاج وخبز بلدي)"
-              : "سفرة الإفطار المتكاملة (بيض كامل مع جبن قريش متبل بالزعتر وخبز بلدي وسلطة)"));
+              ? "وجبة الإفطار (بيض مع جبن قريش وصدور دجاج وخبز بلدي)"
+              : "وجبة الإفطار (بيض مع جبن قريش متبل بالزعتر وخبز بلدي وسلطة)"));
 
         recipeConceptDesc = isGout
           ? "سفرة إفطار خالية تماماً من البيورينات العالية واللحوم الحمراء، تعتمد على توليفة البيض والجبن القريش المعتدل (150 جم) والدجاج الصافي لضبط اليوريك أسيد."
@@ -3222,7 +3222,7 @@ export function buildCulinaryRecipeMeals(universalTargets, canonicalIntake = {},
           cheeseC = Math.round((cheeseGrams / 100) * 3);
           items.push({
             food_code: "COTTAGE_CHEESE",
-            name_ar: isGout ? "جبن قريش طبيعي قليل الملح متبل بزيت الزيتون والنعناع (حصة معتدلة 150 جم)" : "جبن قريش طبيعي متبل برشة زعتر وزيت زيتون خفيف (150 جم)",
+            name_ar: isGout ? "جبن قريش طبيعي قليل الملح متبل بزيت الزيتون والنعناع" : "جبن قريش طبيعي متبل برشة زعتر وزيت زيتون خفيف",
             name_en: "Seasoned Cottage Cheese (150g Cap)",
             category: "PROTEIN",
             portion_g: cheeseGrams,
@@ -3289,7 +3289,7 @@ export function buildCulinaryRecipeMeals(universalTargets, canonicalIntake = {},
             const chkF = Math.round(chickenGrams * 0.03);
             items.push({
               food_code: "CHICKEN_BREAST",
-              name_ar: "صدور دجاج مشوية خفيفة للإفطار (شريحة إضافية لتغطية البروتين)",
+              name_ar: "صدور دجاج مشوية خفيفة للإفطار",
               name_en: "Grilled Chicken Breast Slices",
               category: "PROTEIN",
               portion_g: chickenGrams,
@@ -3343,12 +3343,12 @@ export function buildCulinaryRecipeMeals(universalTargets, canonicalIntake = {},
       } else if (mealNum === 2) {
         // LUNCH
         recipeNameAr = isGout
-          ? "طبق الأداء لمرضى النقرس (صدور دجاج مشوية مع أرز بسمتي وخضار سوتيه قليل البيورين)"
+          ? "وجبة الغداء (صدور دجاج مشوية مع أرز بسمتي وخضار سوتيه)"
           : (isLowBudget && !isFishExcluded
-            ? "طبق الغداء الاقتصادي المتكامل (سمك بلطي مشوي طازج مع أرز مصري وسلطة خضراء)"
-            : "طبق القوة والأداء العضلي (صدور دجاج مشوية مع أرز بسمتي وخضار سوتيه مشكل)");
+            ? "وجبة الغداء (سمك بلطي مشوي مع أرز وسلطة خضراء)"
+            : "وجبة الغداء (صدور دجاج مشوية مع أرز بسمتي وخضار سوتيه)");
 
-        recipeConceptDesc = "وجبة الأداء الرئيسية قبل التمرين غنية بالكاربوهيدرات المعقدة لملء مخازن الجليكوجين والبروتين الصافي للاستشفاء.";
+        recipeConceptDesc = "وجبة الغداء الرئيسية قبل التمرين غنية بالكاربوهيدرات المعقدة والبروتين الصافي للاستشفاء.";
 
         // Sautéed Veggies (150g = 2g P, 4g C, 25 kcal)
         items.push({
@@ -3446,8 +3446,8 @@ export function buildCulinaryRecipeMeals(universalTargets, canonicalIntake = {},
 
       } else if (mealNum === 3) {
         // DINNER
-        recipeNameAr = "طبق العشاء المتوازن والمريح للاستشفاء";
-        recipeConceptDesc = "وجبة عشاء مريحة للهضم غنية بالبروتين الصافي والكاربوهيدرات النظيفة لتعزيز الاستشفاء أثناء النوم مع حصة معتدلة من الجبن القريش (150 جم).";
+        recipeNameAr = "وجبة العشاء (صدور دجاج مشوية مع بطاطس مشوية وسلطة)";
+        recipeConceptDesc = "وجبة عشاء مريحة للهضم غنية بالبروتين الصافي والكاربوهيدرات النظيفة لدعم الاستشفاء.";
 
         // Salad (150g = 2g P, 4g C, 25 kcal)
         items.push({
@@ -3516,7 +3516,7 @@ export function buildCulinaryRecipeMeals(universalTargets, canonicalIntake = {},
           const cheeseF = 2.2;
           items.push({
             food_code: "COTTAGE_CHEESE",
-            name_ar: "جبن قريش طبيعي متبل بزيت الزيتون والنعناع (حصة معتدلة 150 جم)",
+            name_ar: "جبن قريش طبيعي متبل بزيت الزيتون والنعناع",
             name_en: "Cottage Cheese with Olive Oil (150g Cap)",
             category: "PROTEIN",
             portion_g: cheeseGrams,
@@ -3603,8 +3603,8 @@ export function buildCulinaryRecipeMeals(universalTargets, canonicalIntake = {},
       } else {
         // SNACK (Meal 4)
         recipeNameAr = isDairyExcluded
-          ? "سناك الطاقة الصحي الخالي من الألبان (بذور وتفاح طازج مع بروتين صافي)"
-          : "سناك الزبادي اليوناني وبذور الشيا والتفاح الطازج";
+          ? "وجبة خفيفة (سناك فواكه وبذور طبيعية)"
+          : "وجبة خفيفة (سناك زبادي يوناني وبذور الشيا وتفاح)";
         recipeConceptDesc = "سناك صحي خفيف غني بمضادات الأكسدة والبروتين والدهون الصحية غير المشبعة.";
 
         // Fresh Fruit / Carbs

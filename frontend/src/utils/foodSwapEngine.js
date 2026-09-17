@@ -2276,8 +2276,28 @@ export function calculateDynamicFoodSwap({
 export function convertGramsToHandPortions(grams, macroType, foodCode = '') {
   const g = Number(grams) || 0;
   const upperType = String(macroType).toUpperCase();
+  const upperCode = String(foodCode).toUpperCase();
+
+  if (upperType === 'VEGGIES' || upperType === 'VEGETABLES' || upperCode.includes('VEGG') || upperCode.includes('SALAD') || upperCode.includes('خضار') || upperCode.includes('سلطة')) {
+    return {
+      hand_unit: 'BOWL',
+      portions_count: 1,
+      label_ar: 'طبق خضار متوسط',
+      label_en: '1 Medium Bowl',
+      guide_ar: 'الخضروات الورقية والسوتيه غنية بالألياف والمعادن وقليلة السعرات.'
+    };
+  }
 
   if (upperType === 'PROTEIN') {
+    if (g <= 45) {
+      return {
+        hand_unit: 'SLICE',
+        portions_count: 1,
+        label_ar: 'شريحة خفيفة',
+        label_en: '1 Small Slice',
+        guide_ar: 'شريحة بروتين صافية خفيفة.'
+      };
+    }
     // 1 Palm = ~100-120g cooked meat/fish/poultry (~25-30g Protein)
     const palms = Math.round((g / 110) * 10) / 10;
     return {
@@ -2490,9 +2510,13 @@ export function formatItemPortionDisplay({
 
   // 2. Calculate Hand Metric Description
   let handDesc = '';
-  if (upperCode.includes('CHICKEN') || upperCode.includes('BEEF') || upperCode.includes('FISH') || upperCode.includes('SALMON') || upperCode.includes('SHRIMP')) {
-    const palms = Math.round((g / 110) * 10) / 10;
-    handDesc = palms >= 0.8 && palms <= 1.2 ? 'ما يعادل كف اليد كاملاً' : `ما يعادل ${palms} كف اليد`;
+  if (upperCode.includes('CHICKEN') || upperCode.includes('BEEF') || upperCode.includes('FISH') || upperCode.includes('SALMON') || upperCode.includes('SHRIMP') || upperCode.includes('دجاج') || upperCode.includes('لحم') || upperCode.includes('سمك')) {
+    if (g <= 45) {
+      handDesc = 'شريحة خفيفة';
+    } else {
+      const palms = Math.round((g / 110) * 10) / 10;
+      handDesc = palms >= 0.8 && palms <= 1.2 ? 'ما يعادل كف اليد كاملاً' : `ما يعادل ${palms} كف اليد`;
+    }
   } else if (upperCode.includes('EGG_WHITE')) {
     const count = Math.max(1, Math.round(g / 33));
     handDesc = `ما يعادل بياض ${count} بيضات مسلوقة`;
@@ -2545,10 +2569,10 @@ export function formatItemPortionDisplay({
     handDesc = `ما يعادل قبضة صغيرة مفرودة (~${count} حبة)`;
   } else if (upperCode.includes('AVOCADO')) {
     handDesc = 'ما يعادل نصف حبة أفوكادو متوسطة';
-  } else if (upperCode.includes('MOLOKHIA') || upperCode.includes('SALAD') || upperCode.includes('VEGETABLES')) {
-    handDesc = 'ما يعادل كفين مضمومين معاً (حجم حر)';
+  } else if (upperCode.includes('VEGG') || upperCode.includes('SALAD') || upperCode.includes('MOLOKHIA') || upperCode.includes('خضار') || upperCode.includes('سلطة') || upperType === 'VEGGIES') {
+    handDesc = 'طبق خضار متوسط';
   } else {
-    const genericPortion = convertGramsToHandPortions(g, macro_type);
+    const genericPortion = convertGramsToHandPortions(g, macro_type, food_code);
     handDesc = genericPortion.label_ar;
   }
 

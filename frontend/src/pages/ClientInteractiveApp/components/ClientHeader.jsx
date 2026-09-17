@@ -3,6 +3,16 @@ import { useNavigate } from 'react-router-dom';
 import { RotateCcw, FileDown, Zap, Sparkles, Droplets } from 'lucide-react';
 import { getCaffeineCutoffTime } from '../../../utils/circadianLabTriggerEngine';
 
+function formatPackageName(pkg) {
+  if (!pkg) return 'باقة التدريب المخصص';
+  const str = String(pkg).toUpperCase().trim();
+  if (str.includes('MAX')) return 'باقة ماكس (4 شهور)';
+  if (str.includes('ELITE')) return 'باقة النخبة (إيليت)';
+  if (str.includes('PRO')) return 'باقة برو';
+  if (str.includes('VIP')) return 'باقة VIP';
+  return pkg;
+}
+
 export default function ClientHeader({
   clientData,
   isOffline,
@@ -68,7 +78,7 @@ export default function ClientHeader({
                   borderRadius: '6px', 
                   fontWeight: 700 
                 }}>
-                  {clientData.package}
+                  {formatPackageName(clientData.package)}
                 </span>
                 <span style={{ 
                   fontSize: '10px', 
@@ -275,26 +285,73 @@ export default function ClientHeader({
           </button>
         </div>
 
-        {/* Row 3: Daily Health & Activity Indicators Capsule */}
+        {/* Row 3: Daily Health & Activity Indicators Micro-Grid */}
         <div 
           style={{ 
-            display: 'flex', 
-            justifyContent: 'space-between', 
-            alignItems: 'center', 
-            fontSize: '0.68rem', 
-            background: '#F8FAFC', 
-            border: '1px solid #F1F5F9', 
-            borderRadius: '8px', 
-            padding: '5px 10px', 
+            display: 'grid', 
+            gridTemplateColumns: 'repeat(3, 1fr)', 
+            gap: '6px', 
+            fontSize: '0.7rem', 
             marginBottom: '10px' 
           }}
         >
-          <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-            <Droplets size={12} style={{ color: '#0284C7' }} />
-            <span style={{ color: '#0369A1', fontWeight: 700 }}>ماء: 3.5 - 4.0 لتر/يوم</span>
+          <div 
+            style={{ 
+              background: '#F0F9FF', 
+              border: '1px solid #BAE6FD', 
+              borderRadius: '8px', 
+              padding: '5px 6px', 
+              display: 'flex', 
+              alignItems: 'center', 
+              justifyContent: 'center', 
+              gap: '4px',
+              color: '#0369A1',
+              fontWeight: 700,
+              whiteSpace: 'nowrap'
+            }}
+            title="معدل الترطيب اليومي المستهدف: 3.5 إلى 4.0 لتر موزعة على مدار اليوم"
+          >
+            <Droplets size={12} style={{ color: '#0284C7', flexShrink: 0 }} />
+            <span>ماء: 3.5 - 4 لتر</span>
           </div>
-          <span style={{ color: '#64748B' }}>{getCaffeineCutoffTime("23:00").directive_ar}</span>
-          <span style={{ color: '#334155', fontWeight: 700 }}>8,500 خطوة</span>
+
+          <div 
+            style={{ 
+              background: '#F8FAFC', 
+              border: '1px solid #E2E8F0', 
+              borderRadius: '8px', 
+              padding: '5px 6px', 
+              display: 'flex', 
+              alignItems: 'center', 
+              justifyContent: 'center', 
+              gap: '4px',
+              color: '#475569',
+              fontWeight: 700,
+              whiteSpace: 'nowrap'
+            }} 
+            title={getCaffeineCutoffTime("23:00").directive_ar}
+          >
+            <span>إيقاف كافيين: 5:00 م</span>
+          </div>
+
+          <div 
+            style={{ 
+              background: '#F8FAFC', 
+              border: '1px solid #E2E8F0', 
+              borderRadius: '8px', 
+              padding: '5px 6px', 
+              display: 'flex', 
+              alignItems: 'center', 
+              justifyContent: 'center', 
+              gap: '4px',
+              color: '#334155',
+              fontWeight: 700,
+              whiteSpace: 'nowrap'
+            }}
+            title="النشاط الحركي اليومي المستهدف: 8,500 خطوة لدعم معدل الحرق وصحة القلب"
+          >
+            <span>نشاط: 8,500 خطوة</span>
+          </div>
         </div>
 
         {/* Row 4: Days Selector Strip */}
@@ -356,39 +413,36 @@ export default function ClientHeader({
         </div>
       )}
 
-      {/* Active Fasting Mode Status Banner */}
+      {/* Active Fasting Mode Status Strip */}
       {clientData.fastingProfile && (clientData.fastingProfile.isCoptic || clientData.fastingProfile.isIntermittent || clientData.fastingProfile.isRamadan) && (
         <div style={{
-          margin: '10px 16px 0 16px',
+          margin: '8px 16px 0 16px',
           background: '#FFFFFF',
           border: `1px solid ${clientData.fastingProfile.isCoptic ? '#DDD6FE' : (clientData.fastingProfile.isRamadan ? '#FDE68A' : '#BAE6FD')}`,
           borderRight: `4px solid ${clientData.fastingProfile.isCoptic ? '#7C3AED' : (clientData.fastingProfile.isRamadan ? '#D97706' : '#0284C7')}`,
           borderRadius: '10px',
-          padding: '9px 12px',
-          boxShadow: '0 1px 3px rgba(0, 0, 0, 0.03)'
+          padding: '7px 12px',
+          boxShadow: '0 1px 3px rgba(0, 0, 0, 0.02)',
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center'
         }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '3px' }}>
-            <strong style={{ fontSize: '0.76rem', color: '#0F172A' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+            <div style={{ width: '6px', height: '6px', borderRadius: '50%', background: clientData.fastingProfile.isCoptic ? '#7C3AED' : (clientData.fastingProfile.isRamadan ? '#D97706' : '#0284C7') }} />
+            <strong style={{ fontSize: '0.74rem', color: '#0F172A' }}>
               {clientData.fastingProfile.isCoptic 
-                ? (clientData.fastingProfile.christianFastingStyle === 'STRICT_VEGAN' ? 'صيام مسيحي (نباتي)' : 'صيام مسيحي (مع سمك)')
+                ? (clientData.fastingProfile.christianFastingStyle === 'STRICT_VEGAN' ? 'صيام نباتي' : 'صيام مع سمك')
                 : (clientData.fastingProfile.isRamadan 
-                    ? 'صيام رمضان'
+                    ? 'بروتوكول صيام رمضان'
                     : `صيام متقطع (${clientData.fastingProfile.intermittentBadge?.label || '16/8'})`)}
             </strong>
-            <span style={{ 
-              fontSize: '0.68rem', 
-              color: clientData.fastingProfile.isCoptic ? '#6D28D9' : (clientData.fastingProfile.isRamadan ? '#B45309' : '#0369A1'), 
-              fontWeight: 700 
-            }}>
-              بروتوكول نشط
-            </span>
           </div>
-          <span style={{ fontSize: '0.7rem', color: '#475569', lineHeight: 1.4, display: 'block' }}>
-            {clientData.fastingProfile.isCoptic
-              ? 'الخطة التغذوية مهيأة لتأمين كامل احتياجك من البروتين والأحماض الأمينية النباتية المركبة دون الإخلال بهدفك.'
-              : (clientData.fastingProfile.isRamadan
-                  ? 'تمت جدولة الوجبات وتوزيع كميات الماء والسوائل بين وجبتي الإفطار والسحور لدعم الاستشفاء والأداء التدريبي.'
-                  : 'نافذة الإطعام نشطة؛ حافظ على مواعيد تناول وجباتك ضمن الساعات المحددة مع استمرار الترطيب بالماء على مدار اليوم.')}
+          <span style={{ 
+            fontSize: '0.66rem', 
+            color: clientData.fastingProfile.isCoptic ? '#6D28D9' : (clientData.fastingProfile.isRamadan ? '#B45309' : '#0369A1'), 
+            fontWeight: 700 
+          }}>
+            بروتوكول نشط
           </span>
         </div>
       )}

@@ -82,46 +82,6 @@ export default function MealsTab({
         </div>
       </div>
 
-      {/* Static Daily Hydration Target (معدل الترطيب اليومي المستهدف - استرشادي ثابت بدون عدادات) */}
-      <div style={{
-        background: '#F0F9FF',
-        borderRadius: '14px',
-        padding: '10px 14px',
-        border: '1px solid #BAE6FD',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'space-between',
-        gap: '10px'
-      }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-          <div style={{
-            width: '8px',
-            height: '8px',
-            borderRadius: '50%',
-            background: '#0284C7'
-          }} />
-          <div>
-            <span style={{ fontSize: '0.7rem', color: '#0369A1', fontWeight: 700, display: 'block' }}>
-              معدل الترطيب اليومي المستهدف (استرشادي ثابت)
-            </span>
-            <strong style={{ fontSize: '0.84rem', color: '#0F172A', fontWeight: 800 }}>
-              3.5 إلى 4.0 لتر/اليوم
-            </strong>
-          </div>
-        </div>
-        <span style={{
-          fontSize: '0.68rem',
-          color: '#0284C7',
-          background: '#FFFFFF',
-          border: '1px solid #BAE6FD',
-          padding: '3px 8px',
-          borderRadius: '6px',
-          fontWeight: 700
-        }}>
-          توزيع متوازن على مدار اليوم
-        </span>
-      </div>
-
       {/* Unified Compact Meal Controls Bar */}
       <div 
         style={{ 
@@ -268,12 +228,7 @@ export default function MealsTab({
         </div>
       )}
 
-      {/* Workout Timing & Flexibility Guidance Banner */}
-      <div style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', borderRadius: '12px', padding: '10px 14px', marginBottom: '12px' }}>
-        <p style={{ margin: 0, fontSize: '0.73rem', color: '#334155', lineHeight: 1.5 }}>
-          <strong>ملاحظة مرونة التوقيت:</strong> توزيع وتوقيت الوجبات حول التمرين استرشادي لتحقيق أقصى طاقة واستشفاء؛ ولديك كامل المرونة في تقديم أو تأخير أي وجبة وفق جدول يومك ومواعيد دوامك، فالفيصل الرياضي والأيضي هو إكمال إجمالي السعرات والماكروز المقررة لك في نهاية اليوم.
-        </p>
-      </div>
+
 
       {/* Meals List */}
       {meals.map((meal) => (
@@ -335,11 +290,13 @@ export default function MealsTab({
           <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
             {meal.items.map(item => {
               const prepOptions = getPrepOptionsForFood(item.code || item.name);
+              const isVeggie = item.category === 'VEGGIES' || /خضار|سلطة|جرجير|خيار|طماطم|كوسة|بروكلي/i.test(item.name || item.code);
+              const calculatedMacroType = isVeggie ? 'VEGGIES' : (item.p > item.c ? 'PROTEIN' : (item.c > 5 ? 'CARBS' : 'FATS'));
               const formatted = formatItemPortionDisplay({
                 food_code: item.code || item.name, 
                 amount_g: item.amount, 
                 unit: item.unit, 
-                macro_type: item.p > item.c ? 'PROTEIN' : (item.c > 5 ? 'CARBS' : 'FATS'),
+                macro_type: calculatedMacroType,
                 food_state: cookingStateMode
               }, portionDisplayMode, cookingStateMode);
 

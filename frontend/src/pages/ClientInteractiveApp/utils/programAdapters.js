@@ -1,53 +1,112 @@
 import { getExerciseDisplayNames } from '../../../utils/exerciseTranslator.js';
 
+export function cleanMealTitle(rawTitle, mealNumber) {
+  const num = Number(mealNumber) || 1;
+  const standardNames = {
+    1: 'وجبة الإفطار',
+    2: 'وجبة الغداء',
+    3: 'وجبة العشاء',
+    4: 'وجبة خفيفة (سناك)',
+    5: 'وجبة خفيفة ثانية'
+  };
+
+  const defaultName = standardNames[num] || `الوجبة ${num}`;
+
+  if (!rawTitle || typeof rawTitle !== 'string') {
+    return defaultName;
+  }
+
+  let cleaned = rawTitle.trim();
+
+  // Replace AI/Robot Cliches with human titles
+  cleaned = cleaned.replace(/طبق\s+القوة\s+والأداء\s+العضلي/gi, defaultName);
+  cleaned = cleaned.replace(/طبق\s+العشاء\s+المتوازن\s+والمريح\s+للاستشفاء/gi, defaultName);
+  cleaned = cleaned.replace(/طبق\s+الأداء\s+لمرضى\s+النقرس/gi, defaultName);
+  cleaned = cleaned.replace(/طبق\s+الغداء\s+الاقتصادي\s+المتكامل/gi, defaultName);
+  cleaned = cleaned.replace(/طبق\s+الشوفان\s+النباتي\s+الخارق/gi, defaultName);
+  cleaned = cleaned.replace(/طبق\s+الأداء\s+النباتي(\s+النقي\s+الآمن)?/gi, defaultName);
+  cleaned = cleaned.replace(/طبق\s+العشاء\s+النباتي(\s+المشبع|\s+الخفيف\s+الآمن)?/gi, defaultName);
+  cleaned = cleaned.replace(/سفرة\s+الإفطار(\s+المتكاملة)?(\s+الخالية\s+من\s+الجلوتين|\s+الخالية\s+من\s+الألبان|\s+لمرضى\s+النقرس\s+والضغط)?/gi, defaultName);
+  cleaned = cleaned.replace(/طبق\s+الأداء\s+والقوة\s+متكامل\s+العناصر/gi, defaultName);
+  cleaned = cleaned.replace(/سفرة\s+إفطار\s+ضخمة\s+متعددة\s+مصادر\s+البروتين/gi, defaultName);
+
+  // Remove generic "طبق القوة / طبق الأداء / طبق الوحش / طبق الاستشفاء"
+  cleaned = cleaned.replace(/^طبق\s+(القوة|الأداء|الاستشفاء|الطاقة|الوحش|البروتين)\s*/gi, `${defaultName} `);
+
+  // Remove any redundant clinical weight suffixes in title like (وزن الطبق 170 جم)
+  cleaned = cleaned.replace(/\s*\([^)]*وزن\s+الطبق[^)]*\)/gi, '');
+
+  return cleaned.trim();
+}
+
+export function cleanItemName(rawName) {
+  if (!rawName || typeof rawName !== 'string') return 'صنف غذائي';
+  let cleaned = rawName.trim();
+
+  // Remove internal developer / macro leak notes like (شريحة إضافية لتغطية البروتين)
+  cleaned = cleaned.replace(/\s*\([^)]*(تغطية البروتين|حصة معتدلة|إضافية لتغطية|حجم مثالي)[^)]*\)/gi, '');
+  // Remove trailing gram caps like (150 جم)
+  cleaned = cleaned.replace(/\s*\(\d+\s*جم\)/gi, '');
+
+  return cleaned.trim();
+}
+
 export function adaptProgramToInteractiveMeals(masterProgram) {
   if (!masterProgram) return [];
   const rawNutrition = masterProgram.nutrition || masterProgram.nutrition_program;
   
   if (masterProgram.nutrition_program && Array.isArray(masterProgram.nutrition_program.culinary_meals) && masterProgram.nutrition_program.culinary_meals.length > 0) {
-    return masterProgram.nutrition_program.culinary_meals.map((cm, cmIdx) => ({
-      id: cm.id || `m${cm.meal_number || cmIdx + 1}`,
-      title: cm.recipe_title_ar || cm.meal_name_ar || cm.title || cm.name || `الوجبة ${cm.meal_number || cmIdx + 1}`,
-      workout_timing: cm.timing_relation || cm.workout_timing || 'NONE',
-      time: cm.timing || (cmIdx === 0 ? '08:30 ص' : (cmIdx === 1 ? '02:00 م' : (cmIdx === 2 ? '05:30 م' : '09:30 م'))),
-      completed: false,
-      macros: {
-        calories: Math.round(cm.actual_macros?.calories || cm.target_macros?.calories || cm.macros?.calories || 500),
-        protein: Math.round(cm.actual_macros?.protein || cm.target_macros?.protein || cm.macros?.protein || 40),
-        carbs: Math.round(cm.actual_macros?.carbs || cm.target_macros?.carbs || cm.macros?.carbs || 50),
-        fats: Math.round(cm.actual_macros?.fats || cm.target_macros?.fats || cm.macros?.fats || 15)
-      },
-      items: (cm.items || []).map((it, itIdx) => ({
-        id: it.id || `i_${cmIdx + 1}_${itIdx + 1}`,
-        code: it.food_code || it.code,
-        name: it.name_ar || it.name || it.name_en || 'صنف غذائي',
-        amount: Number(it.portion_g || it.amount || 100),
-        unit: it.unit || 'جم',
-        p: Number((it.protein_g ?? it.p ?? 0).toFixed ? (it.protein_g ?? it.p ?? 0).toFixed(1) : (it.protein_g ?? it.p ?? 0)),
-        c: Number((it.carb_g ?? it.c ?? 0).toFixed ? (it.carb_g ?? it.c ?? 0).toFixed(1) : (it.carb_g ?? it.c ?? 0)),
-        f: Number((it.fat_g ?? it.f ?? 0).toFixed ? (it.fat_g ?? it.f ?? 0).toFixed(1) : (it.fat_g ?? it.f ?? 0)),
-        cal: Math.round(it.calories_kcal ?? it.cal ?? 0),
-        category: it.category || 'MAIN',
-        taste_profile: it.taste_profile
-      }))
-    }));
+    return masterProgram.nutrition_program.culinary_meals.map((cm, cmIdx) => {
+      const mealNum = cm.meal_number || cmIdx + 1;
+      const rawTitle = cm.recipe_title_ar || cm.meal_name_ar || cm.title || cm.name || `الوجبة ${mealNum}`;
+      return {
+        id: cm.id || `m${mealNum}`,
+        title: cleanMealTitle(rawTitle, mealNum),
+        workout_timing: cm.timing_relation || cm.workout_timing || 'NONE',
+        time: cm.timing || (cmIdx === 0 ? '08:30 ص' : (cmIdx === 1 ? '02:00 م' : (cmIdx === 2 ? '05:30 م' : '09:30 م'))),
+        completed: false,
+        macros: {
+          calories: Math.round(cm.actual_macros?.calories || cm.target_macros?.calories || cm.macros?.calories || 500),
+          protein: Math.round(cm.actual_macros?.protein || cm.target_macros?.protein || cm.macros?.protein || 40),
+          carbs: Math.round(cm.actual_macros?.carbs || cm.target_macros?.carbs || cm.macros?.carbs || 50),
+          fats: Math.round(cm.actual_macros?.fats || cm.target_macros?.fats || cm.macros?.fats || 15)
+        },
+        items: (cm.items || []).map((it, itIdx) => ({
+          id: it.id || `i_${cmIdx + 1}_${itIdx + 1}`,
+          code: it.food_code || it.code,
+          name: cleanItemName(it.name_ar || it.name || it.name_en || 'صنف غذائي'),
+          amount: Number(it.portion_g || it.amount || 100),
+          unit: it.unit || 'جم',
+          p: Number((it.protein_g ?? it.p ?? 0).toFixed ? (it.protein_g ?? it.p ?? 0).toFixed(1) : (it.protein_g ?? it.p ?? 0)),
+          c: Number((it.carb_g ?? it.c ?? 0).toFixed ? (it.carb_g ?? it.c ?? 0).toFixed(1) : (it.carb_g ?? it.c ?? 0)),
+          f: Number((it.fat_g ?? it.f ?? 0).toFixed ? (it.fat_g ?? it.f ?? 0).toFixed(1) : (it.fat_g ?? it.f ?? 0)),
+          cal: Math.round(it.calories_kcal ?? it.cal ?? 0),
+          category: it.category || 'MAIN',
+          taste_profile: it.taste_profile
+        }))
+      };
+    });
   }
 
   if (rawNutrition?.meals && Array.isArray(rawNutrition.meals) && rawNutrition.meals.length > 0) {
-    return rawNutrition.meals.map((m, mIdx) => ({
-      ...m,
-      id: m.id || `m${mIdx + 1}`,
-      title: m.title || m.name || `الوجبة ${mIdx + 1}`,
-      completed: !!m.completed,
-      items: (m.items || []).map((it, itIdx) => ({
-        ...it,
-        id: it.id || `i_${mIdx + 1}_${itIdx + 1}`,
-        code: it.code || it.food_code,
-        name: it.name || it.name_ar || 'صنف غذائي',
-        amount: Number(it.amount || it.portion_g || 100),
-        unit: it.unit || 'جم'
-      }))
-    }));
+    return rawNutrition.meals.map((m, mIdx) => {
+      const mealNum = mIdx + 1;
+      const rawTitle = m.title || m.name || `الوجبة ${mealNum}`;
+      return {
+        ...m,
+        id: m.id || `m${mealNum}`,
+        title: cleanMealTitle(rawTitle, mealNum),
+        completed: !!m.completed,
+        items: (m.items || []).map((it, itIdx) => ({
+          ...it,
+          id: it.id || `i_${mIdx + 1}_${itIdx + 1}`,
+          code: it.code || it.food_code,
+          name: cleanItemName(it.name || it.name_ar || 'صنف غذائي'),
+          amount: Number(it.amount || it.portion_g || 100),
+          unit: it.unit || 'جم'
+        }))
+      };
+    });
   }
 
   return [];

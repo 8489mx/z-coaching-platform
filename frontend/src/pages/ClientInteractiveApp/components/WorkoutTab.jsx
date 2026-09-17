@@ -217,7 +217,7 @@ export default function WorkoutTab({
           </div>
         </div>
 
-        {dailyReadiness === 'FATIGUED' ? (
+        {dailyReadiness === 'FATIGUED' && (
           <div style={{
             background: '#FEF2F2',
             borderRight: '3px solid #EF4444',
@@ -225,135 +225,16 @@ export default function WorkoutTab({
             padding: '8px 12px',
             fontSize: '0.72rem',
             color: '#991B1B',
-            lineHeight: '1.5'
+            lineHeight: '1.5',
+            marginTop: '8px'
           }}>
             <strong style={{ display: 'block', marginBottom: '2px' }}>توجيه فسيولوجي ليوم الإجهاد:</strong>
             طاقتك تتأثر بنومك وضغوط يومك وهذا تذبذب عصبي طبيعي مؤقت. من الاحترافية خفض الأوزان بنسبة 10-20% والتركيز على المدى الحركي الكامل وتفادي الوصول للفشل العضلي التام اليوم. قوتك الحقيقية ستعود بكامل كفاءتها الأسبوع القادم.
           </div>
-        ) : (
-          <div style={{
-            background: '#F8FAFC',
-            borderRight: '3px solid #0284C7',
-            borderRadius: '8px',
-            padding: '8px 12px',
-            fontSize: '0.72rem',
-            color: '#475569',
-            lineHeight: '1.4'
-          }}>
-            <strong style={{ color: '#0F172A' }}>قاعدة الجاهزية (RPE):</strong> تمرن بأوزان تتحدى عضلاتك مع إبقاء 1-2 تكرار في الاحتياط قبل الفشل العضلي بتكنيك آمن ومحكم؛ الاستمرارية وضبط الأداء هما أساس التطور.
-          </div>
         )}
       </div>
 
-      {/* Workout Execution & Reading Guide Card (دليل تنفيذ وفهم رموز الخطة) */}
-      <div style={{
-        background: '#FFFFFF',
-        borderRadius: '16px',
-        border: '1px solid #E2E8F0',
-        padding: '12px 16px',
-        boxShadow: '0 1px 3px rgba(0, 0, 0, 0.03)'
-      }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '8px' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <BookOpen style={{ width: '17px', height: '17px', color: '#0284C7' }} />
-            <div>
-              <strong style={{ fontSize: '0.82rem', color: '#0F172A', display: 'block' }}>
-                دليل تنفيذ الخطة وفهم الرموز
-              </strong>
-              <span style={{ fontSize: '0.7rem', color: '#64748B' }}>
-                كيف تتدرب باحترافية، ماذا تعني الأرقام، وكيف تحدد أوزانك؟
-              </span>
-            </div>
-          </div>
 
-          <button
-            type="button"
-            onClick={() => setShowWorkoutGuide(prev => !prev)}
-            style={{
-              background: showWorkoutGuide ? '#F1F5F9' : '#E0F2FE',
-              color: showWorkoutGuide ? '#475569' : '#0369A1',
-              border: 'none',
-              borderRadius: '8px',
-              padding: '5px 12px',
-              fontSize: '0.72rem',
-              fontWeight: 800,
-              cursor: 'pointer',
-              display: 'inline-flex',
-              alignItems: 'center',
-              gap: '4px'
-            }}
-          >
-            <span>{showWorkoutGuide ? 'إخفاء الدليل' : 'استعراض الدليل الشامل'}</span>
-            {showWorkoutGuide ? <ChevronUp style={{ width: '12px', height: '12px' }} /> : <ChevronDown style={{ width: '12px', height: '12px' }} />}
-          </button>
-        </div>
-
-        {showWorkoutGuide && (
-          <div style={{ marginTop: '12px', borderTop: '1px solid #F1F5F9', paddingTop: '12px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
-            
-            {/* Rule 1: Working Sets */}
-            <div style={{ background: '#F8FAFC', borderRadius: '10px', padding: '10px 12px', border: '1px solid #E2E8F0' }}>
-              <strong style={{ fontSize: '0.78rem', color: '#0F172A', display: 'block', marginBottom: '3px' }}>
-                1. مجموعات العمل الفعالة (Working Sets)
-              </strong>
-              <p style={{ margin: 0, fontSize: '0.72rem', color: '#475569', lineHeight: '1.5' }}>
-                المجموعات المكتوبة في الجدول (مثال: 3 جولات) هي مجموعات عمل أساسية بنفس الوزن التشغيلي. التسخين يتم مسبقاً بوزن خفيف (بروتوكول RAMP) ولا يُحسب ضمن جولات الجدول إطلاقاً.
-              </p>
-            </div>
-
-            {/* Rule 2: Initial Weight Selection */}
-            <div style={{ background: '#F8FAFC', borderRadius: '10px', padding: '10px 12px', border: '1px solid #E2E8F0' }}>
-              <strong style={{ fontSize: '0.78rem', color: '#0F172A', display: 'block', marginBottom: '3px' }}>
-                2. كيف تحدد وزنك لأول مرة؟
-              </strong>
-              <p style={{ margin: 0, fontSize: '0.72rem', color: '#475569', lineHeight: '1.5' }}>
-                لا نحدد لك وزناً ثابتاً مسبقاً في البداية لاختلاف القوة بين الأفراد واختلاف معايرة الأجهزة في الجيم. اختر وزناً تجريبياً آمناً وتدرج به حتى تصل لوزن يمكنك من إتمام التكرارات المطلوبة وأنت قادر على أداء 1-2 عدة فقط في الاحتياط قبل الفشل العضلي (RPE 8-9) بتكنيك سليم، ثم اكتب هذا الوزن في خانة "أفضل وزن اليوم" ليظل مرجعك الدائم.
-              </p>
-            </div>
-
-            {/* Rule 3: Rep Range */}
-            <div style={{ background: '#F8FAFC', borderRadius: '10px', padding: '10px 12px', border: '1px solid #E2E8F0' }}>
-              <strong style={{ fontSize: '0.78rem', color: '#0F172A', display: 'block', marginBottom: '3px' }}>
-                3. ماذا يعني النطاق التكراري (مثال: 8-10 عدات)؟
-              </strong>
-              <p style={{ margin: 0, fontSize: '0.72rem', color: '#475569', lineHeight: '1.5' }}>
-                يعني اختيار وزن لا تستطيع عمل أقل من 8 عدات به، ولا تستطيع تجاوز 10 عدات به بتكنيك محكم. إذا تمكنت من عمل 11 عدة، فالوزن خفيف؛ وإذا عجزت قبل 8 عدات، فالوزن ثقيل.
-              </p>
-            </div>
-
-            {/* Rule 4: Rest Periods */}
-            <div style={{ background: '#F8FAFC', borderRadius: '10px', padding: '10px 12px', border: '1px solid #E2E8F0' }}>
-              <strong style={{ fontSize: '0.78rem', color: '#0F172A', display: 'block', marginBottom: '3px' }}>
-                4. فترات الراحة بين الجولات (مثال: 60 - 90 ثانية)
-              </strong>
-              <p style={{ margin: 0, fontSize: '0.72rem', color: '#475569', lineHeight: '1.5' }}>
-                الراحة المحددة إلزامية لإعادة شحن مركبات الطاقة الخلوية (ATP) واستشفاء الجهاز العصبي، مما يمكنك من رفع نفس الوزن في المجموعة التالية بكامل التوتر الميكانيكي.
-              </p>
-            </div>
-
-            {/* Rule 5: Progressive Overload */}
-            <div style={{ background: '#F8FAFC', borderRadius: '10px', padding: '10px 12px', border: '1px solid #E2E8F0' }}>
-              <strong style={{ fontSize: '0.78rem', color: '#0F172A', display: 'block', marginBottom: '3px' }}>
-                5. متى ترفع الوزن؟ (الزيادة التدريجية)
-              </strong>
-              <p style={{ margin: 0, fontSize: '0.72rem', color: '#475569', lineHeight: '1.5' }}>
-                ترفع الوزن في الأسبوع التالي فقط بمقدار 2.5 إلى 5 كجم عندما تنجح في أداء الحد الأقصى للتكرارات (مثلاً 10 عدات كاملة) في كافة المجموعات الثلاث بنفس الوزن الحالي.
-              </p>
-            </div>
-
-            {/* Rule 6: Equipment Swap */}
-            <div style={{ background: '#F8FAFC', borderRadius: '10px', padding: '10px 12px', border: '1px solid #E2E8F0' }}>
-              <strong style={{ fontSize: '0.78rem', color: '#0F172A', display: 'block', marginBottom: '3px' }}>
-                6. زر "بديل الجهاز"
-              </strong>
-              <p style={{ margin: 0, fontSize: '0.72rem', color: '#475569', lineHeight: '1.5' }}>
-                في حال كان الجهاز المطلوب مشغولاً في الصالة، اضغط على "بديل الجهاز" لتحصل فوراً على التمرين الميكانيكي المطابق لنفس الزاوية العضلية دون تضييع وقتك.
-              </p>
-            </div>
-
-          </div>
-        )}
-      </div>
 
       {/* POSTURAL & JOINT PREHAB PRIMER CARD (يظهر فقط لمن لديهم إصابات أو مشاكل قوامية مسجلة) */}
       {(() => {
@@ -450,32 +331,7 @@ export default function WorkoutTab({
         );
       })()}
 
-      {/* PRACTICAL TALK-TEST CARDIO CARD */}
-      {cardioPrescription && (
-        <div style={{ background: 'linear-gradient(135deg, #ECFEFF 0%, #E0F2FE 100%)', border: '1px solid #BAE6FD', borderRadius: '18px', padding: '16px' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-              <Activity style={{ width: '16px', height: '16px', color: '#0284C7' }} />
-              <h3 style={{ margin: 0, fontSize: '0.86rem', fontWeight: 800, color: '#0369A1' }}>
-                {cardioPrescription.protocol_title_ar}
-              </h3>
-            </div>
-            <span style={{ fontSize: '0.72rem', fontWeight: 800, color: '#0284C7', background: '#FFFFFF', padding: '2px 8px', borderRadius: '6px' }}>
-              {cardioPrescription.duration_minutes} دقيقة | {cardioPrescription.sessions_per_week} جلسات/أسبوع
-            </span>
-          </div>
 
-          <div style={{ background: '#FFFFFF', border: '1px solid #BAE6FD', borderRadius: '12px', padding: '10px 12px', marginBottom: '8px' }}>
-            <p style={{ margin: 0, fontSize: '0.74rem', color: '#0F172A', lineHeight: 1.4 }}>
-              <strong>قاعدة اختبار التحدث (The Talk Test):</strong> {cardioPrescription.talk_test_cue_ar}
-            </p>
-          </div>
-
-          <p style={{ margin: 0, fontSize: '0.72rem', color: '#475569' }}>
-            <strong>الأداة المقترحة:</strong> {cardioPrescription.suggested_settings_ar || cardioPrescription.equipment_recommendation}
-          </p>
-        </div>
-      )}
 
       {/* Exercises Streamlined Visual Workout Cards */}
       {workoutSession.exercises && workoutSession.exercises.map((ex, exIdx) => {
@@ -768,6 +624,149 @@ export default function WorkoutTab({
           </div>
         );
       })}
+
+      {/* Cardio Prescription Card (موقعه الرياضي السليم: بعد انتهاء التمارين) */}
+      {cardioPrescription && (
+        <div style={{ 
+          background: 'linear-gradient(135deg, #ECFEFF 0%, #E0F2FE 100%)', 
+          border: '1px solid #BAE6FD', 
+          borderRadius: '16px', 
+          padding: '14px 16px',
+          boxShadow: '0 2px 8px rgba(2, 132, 199, 0.04)'
+        }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+              <Activity style={{ width: '16px', height: '16px', color: '#0284C7' }} />
+              <h3 style={{ margin: 0, fontSize: '0.86rem', fontWeight: 800, color: '#0369A1' }}>
+                {cardioPrescription.protocol_title_ar || 'كارديو نهاية الحصة التدريبية'}
+              </h3>
+            </div>
+            <span style={{ fontSize: '0.72rem', fontWeight: 800, color: '#0284C7', background: '#FFFFFF', border: '1px solid #BAE6FD', padding: '2px 8px', borderRadius: '6px' }}>
+              {cardioPrescription.duration_minutes} دقيقة | {cardioPrescription.sessions_per_week} جلسات/أسبوع
+            </span>
+          </div>
+
+          <div style={{ background: '#FFFFFF', border: '1px solid #BAE6FD', borderRadius: '10px', padding: '8px 12px', marginBottom: '6px' }}>
+            <p style={{ margin: 0, fontSize: '0.74rem', color: '#0F172A', lineHeight: 1.4 }}>
+              <strong>الشدة المستهدفة (Zone 2):</strong> {cardioPrescription.talk_test_cue_ar}
+            </p>
+          </div>
+
+          <p style={{ margin: 0, fontSize: '0.72rem', color: '#475569' }}>
+            <strong>الجهاز المقترح:</strong> {cardioPrescription.suggested_settings_ar || cardioPrescription.equipment_recommendation}
+          </p>
+        </div>
+      )}
+
+      {/* Workout Execution & Reading Guide Card (دليل رموز الخطة) */}
+      <div style={{
+        background: '#FFFFFF',
+        borderRadius: '16px',
+        border: '1px solid #E2E8F0',
+        padding: '12px 16px',
+        boxShadow: '0 1px 3px rgba(0, 0, 0, 0.03)'
+      }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '8px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <BookOpen style={{ width: '16px', height: '16px', color: '#0284C7' }} />
+            <div>
+              <strong style={{ fontSize: '0.82rem', color: '#0F172A', display: 'block' }}>
+                دليل رموز الخطة وإرشادات التنفيذ
+              </strong>
+              <span style={{ fontSize: '0.7rem', color: '#64748B' }}>
+                كيف تتدرب باحترافية وتحدد أوزانك وتفهم الرموز
+              </span>
+            </div>
+          </div>
+
+          <button
+            type="button"
+            onClick={() => setShowWorkoutGuide(prev => !prev)}
+            style={{
+              background: showWorkoutGuide ? '#F1F5F9' : '#E0F2FE',
+              color: showWorkoutGuide ? '#475569' : '#0369A1',
+              border: 'none',
+              borderRadius: '8px',
+              padding: '5px 12px',
+              fontSize: '0.72rem',
+              fontWeight: 800,
+              cursor: 'pointer',
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '4px'
+            }}
+          >
+            <span>{showWorkoutGuide ? 'إخفاء الدليل' : 'استعراض الدليل'}</span>
+            {showWorkoutGuide ? <ChevronUp style={{ width: '12px', height: '12px' }} /> : <ChevronDown style={{ width: '12px', height: '12px' }} />}
+          </button>
+        </div>
+
+        {showWorkoutGuide && (
+          <div style={{ marginTop: '12px', borderTop: '1px solid #F1F5F9', paddingTop: '12px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+            
+            {/* Rule 1: Working Sets */}
+            <div style={{ background: '#F8FAFC', borderRadius: '10px', padding: '10px 12px', border: '1px solid #E2E8F0' }}>
+              <strong style={{ fontSize: '0.78rem', color: '#0F172A', display: 'block', marginBottom: '3px' }}>
+                1. مجموعات العمل الفعالة (Working Sets)
+              </strong>
+              <p style={{ margin: 0, fontSize: '0.72rem', color: '#475569', lineHeight: '1.5' }}>
+                المجموعات المكتوبة في الجدول (مثال: 3 جولات) هي مجموعات عمل أساسية بنفس الوزن التشغيلي. التسخين يتم مسبقاً بوزن خفيف (بروتوكول RAMP) ولا يُحسب ضمن جولات الجدول إطلاقاً.
+              </p>
+            </div>
+
+            {/* Rule 2: Initial Weight Selection */}
+            <div style={{ background: '#F8FAFC', borderRadius: '10px', padding: '10px 12px', border: '1px solid #E2E8F0' }}>
+              <strong style={{ fontSize: '0.78rem', color: '#0F172A', display: 'block', marginBottom: '3px' }}>
+                2. كيف تحدد وزنك؟
+              </strong>
+              <p style={{ margin: 0, fontSize: '0.72rem', color: '#475569', lineHeight: '1.5' }}>
+                اختر وزناً يمكنك من إتمام التكرارات المطلوبة مع إبقاء 1-2 عدة في الاحتياط قبل الفشل العضلي (RIR 1-2) بتكنيك محكم وآمن، ثم ثبّت هذا الوزن كمرجع لجلساتك.
+              </p>
+            </div>
+
+            {/* Rule 3: Rep Range */}
+            <div style={{ background: '#F8FAFC', borderRadius: '10px', padding: '10px 12px', border: '1px solid #E2E8F0' }}>
+              <strong style={{ fontSize: '0.78rem', color: '#0F172A', display: 'block', marginBottom: '3px' }}>
+                3. النطاق التكراري (مثال: 8-10 عدات)
+              </strong>
+              <p style={{ margin: 0, fontSize: '0.72rem', color: '#475569', lineHeight: '1.5' }}>
+                اختيار وزن يجعلك تصل للإجهاد المستهدف ضمن هذا المدى؛ إذا استطعت تجاوز الحد الأقصى بتكنيك سليم فالوزن خفيف، وإذا عجزت قبل الحد الأدنى فالوزن ثقيل.
+              </p>
+            </div>
+
+            {/* Rule 4: Rest Periods */}
+            <div style={{ background: '#F8FAFC', borderRadius: '10px', padding: '10px 12px', border: '1px solid #E2E8F0' }}>
+              <strong style={{ fontSize: '0.78rem', color: '#0F172A', display: 'block', marginBottom: '3px' }}>
+                4. فترات الراحة بين الجولات
+              </strong>
+              <p style={{ margin: 0, fontSize: '0.72rem', color: '#475569', lineHeight: '1.5' }}>
+                الراحة المحددة إلزامية لإعادة شحن مركبات الطاقة الخلوية (ATP) واستشفاء الجهاز العصبي، لرفع نفس الوزن في المجموعة التالية بكامل القوة.
+              </p>
+            </div>
+
+            {/* Rule 5: Progressive Overload */}
+            <div style={{ background: '#F8FAFC', borderRadius: '10px', padding: '10px 12px', border: '1px solid #E2E8F0' }}>
+              <strong style={{ fontSize: '0.78rem', color: '#0F172A', display: 'block', marginBottom: '3px' }}>
+                5. متى ترفع الوزن؟ (الزيادة التدريجية)
+              </strong>
+              <p style={{ margin: 0, fontSize: '0.72rem', color: '#475569', lineHeight: '1.5' }}>
+                ترفع الوزن في الأسبوع التالي بمقدار 2.5 إلى 5 كجم فقط عندما تنجح في إتمام الحد الأقصى للتكرارات في كافة مجموعات التمرين بنفس الوزن الحالي.
+              </p>
+            </div>
+
+            {/* Rule 6: Equipment Swap */}
+            <div style={{ background: '#F8FAFC', borderRadius: '10px', padding: '10px 12px', border: '1px solid #E2E8F0' }}>
+              <strong style={{ fontSize: '0.78rem', color: '#0F172A', display: 'block', marginBottom: '3px' }}>
+                6. زر "بديل زحمة الجيم"
+              </strong>
+              <p style={{ margin: 0, fontSize: '0.72rem', color: '#475569', lineHeight: '1.5' }}>
+                في حال كان الجهاز المطلوب مشغولاً في الصالة، اضغط على "بديل زحمة الجيم" لتحصل فوراً على التمرين المطابق لنفس الزاوية العضلية دون تعطيل وقتك.
+              </p>
+            </div>
+
+          </div>
+        )}
+      </div>
 
     </div>
   );
