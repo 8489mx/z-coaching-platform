@@ -2437,6 +2437,7 @@ export function formatItemPortionDisplay({
 }, mode = PORTION_DISPLAY_MODES.DUAL, cooking_state_mode = COOKING_STATE_MODES.BOTH) {
   const g = Number(amount_g) || 0;
   const upperCode = String(food_code).toUpperCase();
+  const upperType = String(macro_type || '').toUpperCase();
 
   // 1. Calculate Precision Raw vs Cooked Equivalents based on cooking_state_mode
   let rawCookedNote = '';
