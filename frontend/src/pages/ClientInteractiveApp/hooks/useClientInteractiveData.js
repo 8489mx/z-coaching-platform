@@ -6,6 +6,14 @@ import { enqueueOfflineAction, flushPendingQueue, getQueueSyncStatus, ACTION_TYP
 import { adaptProgramToInteractiveMeals, adaptSessionToInteractiveWorkout } from '../utils/programAdapters.js';
 import { cacheProgramLocally, getCachedProgram, cacheGymRushCatalogLocally } from '../../../utils/offlineWorkoutSync.js';
 
+function sanitizeClientDisplayName(name) {
+  if (!name) return 'المشترك';
+  return String(name)
+    .replace(/\s*\(.*?\)\s*/g, ' ')
+    .replace(/\b(persona|test|stress|audit|minefield|client|user)\b/gi, '')
+    .replace(/\s+/g, ' ')
+    .trim() || 'المشترك';
+}
 
 export const DEFAULT_FALLBACK_WEEKS = [
   {
@@ -309,7 +317,7 @@ export function useClientInteractiveData() {
 
       setClientData(prev => ({
         ...prev,
-        name: data.user.full_name || prev.name,
+        name: sanitizeClientDisplayName(data.user.full_name || prev.name),
         package: data.user.subscription_package || prev.package,
         tier: data.user.subscription_package || prev.tier,
         enable_rest_timer: false,

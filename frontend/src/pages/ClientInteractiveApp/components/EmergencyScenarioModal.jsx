@@ -47,7 +47,7 @@ export default function EmergencyScenarioModal({
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
             <AlertTriangle style={{ width: '20px', height: '20px', color: '#EF4444' }} />
             <h3 style={{ fontSize: '1rem', fontWeight: 900, margin: 0, color: '#FFFFFF' }}>
-              محرك التكيف اللحظي وحالات الطوارئ
+              تكييف الخطة مع الظروف والطارئ
             </h3>
           </div>
           <button
@@ -60,7 +60,7 @@ export default function EmergencyScenarioModal({
         </div>
 
         <p style={{ fontSize: '0.76rem', color: '#94A3B8', marginBottom: '16px', lineHeight: '1.4' }}>
-          اختر ظرفك الطارئ وسيقوم المحرك بإعادة تشكيل الخطة التدريبية والغذائية فوراً بضغطة زر واحدة:
+          اختر ظرفك الحالي لتكييف جدول التمارين والوجبات فوراً وبكل سهولة:
         </p>
 
         {/* Scenarios Options */}

@@ -183,6 +183,31 @@ const CSS_STYLES = `
 `;
 
 /**
+ * Sanitizes any client display name, stripping developer tags, test labels, or clinical notes in parentheses.
+ */
+function sanitizeClientDisplayName(name) {
+  if (!name) return 'المشترك';
+  return String(name)
+    .replace(/\s*\(.*?\)\s*/g, ' ')
+    .replace(/\b(persona|test|stress|audit|minefield|client|user)\b/gi, '')
+    .replace(/\s+/g, ' ')
+    .trim() || 'المشترك';
+}
+
+/**
+ * Sanitizes goal labels to ensure pure fitness terminology without internal codes.
+ */
+function sanitizeGoalLabel(goal) {
+  if (!goal) return 'خسارة دهون وتنشيف عضلي متقدم';
+  const str = String(goal).trim();
+  const upper = str.toUpperCase();
+  if (upper.includes('FAT_LOSS') || str.includes('خسارة دهون') || str.includes('تنشيف')) return 'خسارة دهون وتنشيف عضلي متقدم';
+  if (upper.includes('HYPERTROPHY') || str.includes('تضخيم') || str.includes('بناء عضلي')) return 'زيادة الكتلة العضلية والقوة البدنية';
+  if (upper.includes('RECOMP') || str.includes('إعادة تشكيل')) return 'إعادة تشكيل القوام وخسارة الدهون بالتوازي';
+  return str.replace(/\s*\(.*?\)\s*/g, ' ').trim() || 'خسارة دهون وتنشيف عضلي متقدم';
+}
+
+/**
  * Resolves precise Arabic muscle name for any exercise, eliminating generic placeholders.
  */
 function resolveExerciseMuscleName(ex) {
@@ -294,7 +319,7 @@ export default function ProgramPdfView() {
   const coachName = coachConfig.coachName || 'كريم زكريا';
   const brandTitle = coachConfig.brandTitle || 'Z COACHING';
 
-  const clientName = program?.client?.full_name || program?.client_name || user?.full_name || 'المشترك';
+  const clientName = sanitizeClientDisplayName(program?.client?.full_name || program?.client_name || user?.full_name || 'المشترك');
   const clientCode = program?.client?.client_code || program?.client_code || user?.client_code || user?.id || targetUserId;
   const rawTier = program?.client?.subscription_package || program?.client?.package_tier || user?.package_tier || user?.subscription_package || 'ELITE';
   const packageTier = String(rawTier).toUpperCase().includes('MAX') ? 'باقة ماكس الشاملة (MAX)' : 'باقة إيليت المتقدمة (ELITE)';
@@ -314,7 +339,7 @@ export default function ProgramPdfView() {
   const neckCm = program?.intake_summary?.neck || 40;
   const waistCm = program?.intake_summary?.waist || 88;
   const hipsCm = program?.intake_summary?.hips || 102;
-  const primaryGoal = program?.client?.goal_label || program?.client?.primary_goal || user?.primary_goal || program?.intake_summary?.primary_goal || 'خسارة دهون وتنشيف عضلي متقدم';
+  const primaryGoal = sanitizeGoalLabel(program?.client?.goal_label || program?.client?.primary_goal || user?.primary_goal || program?.intake_summary?.primary_goal || 'خسارة دهون وتنشيف عضلي متقدم');
 
   // Energy & Macros
   const targetCalories = Math.round(
@@ -901,7 +926,7 @@ export default function ProgramPdfView() {
           {/* Official Sign-off Box */}
           <div className="pdf-card" style={{ background: '#F8FAFC', border: '1pt solid #0284C7', padding: '8px 12px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', margin: 0 }}>
             <div>
-              <div style={{ fontSize: '8.5pt', fontWeight: '900', color: '#0F172A' }}>اعتماد المشرف الرياضي والعيادي المباشر:</div>
+              <div style={{ fontSize: '8.5pt', fontWeight: '900', color: '#0F172A' }}>اعتماد المدرب والمشرف الرياضي المباشر:</div>
               <div style={{ fontSize: '7.5pt', color: '#475569', marginTop: '3px' }}>
                 كابتن <strong>{coachName}</strong> — كبير المدربين ومؤسس منظومة {brandTitle}
               </div>

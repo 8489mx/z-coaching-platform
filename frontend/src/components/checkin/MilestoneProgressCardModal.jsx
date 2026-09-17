@@ -1,4 +1,4 @@
-﻿import React, { useState } from 'react';
+import React, { useState } from 'react';
 import { X, Award, Download, Copy, Check, Share2, Sparkles, TrendingDown } from 'lucide-react';
 
 export function MilestoneProgressCardModal({
@@ -241,7 +241,7 @@ export function MilestoneProgressCardModal({
                 {clientName} <span style={{ fontSize: '12px', color: '#94A3B8' }}>{clientCode}</span>
               </div>
               <div style={{ fontSize: '11.5px', color: '#38BDF8', marginTop: '2px' }}>
-                الهدف السريري المعتمد: {goalLabel}
+                الهدف الرياضي والتغذوي المعتمد: {goalLabel}
               </div>
             </div>
 

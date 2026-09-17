@@ -47,7 +47,7 @@ async function runPersona1StressTest() {
   // 3. Create Persona 1 Client Account
   const client1 = await User.create({
     client_code: "1",
-    full_name: "سارة المنصوري (حقل الألغام السريري)",
+    full_name: "سارة المنصوري",
     phone_number: "+201011111111",
     email: "sara.almansoori@test.com",
     role: "CLIENT",
