@@ -90,8 +90,8 @@ const CSS_STYLES = `
 
   .running-header {
     border-bottom: 1pt solid #E2E8F0;
-    padding-bottom: 4px;
-    margin-bottom: 6px;
+    padding-bottom: 5px;
+    margin-bottom: 8px;
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -102,8 +102,8 @@ const CSS_STYLES = `
 
   .running-footer {
     border-top: 1pt solid #E2E8F0;
-    padding-top: 4px;
-    margin-top: 6px;
+    padding-top: 5px;
+    margin-top: 8px;
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -116,7 +116,7 @@ const CSS_STYLES = `
     width: 100% !important;
     table-layout: fixed !important;
     border-collapse: collapse !important;
-    margin-bottom: 6px;
+    margin-bottom: 8px;
     font-size: 8pt;
     page-break-inside: avoid;
     break-inside: avoid;
@@ -127,7 +127,7 @@ const CSS_STYLES = `
     color: #0F172A !important;
     font-weight: 700;
     border: 0.5pt solid #CBD5E1;
-    padding: 4px 6px;
+    padding: 6px 8px;
     text-align: right;
     word-break: break-word !important;
     overflow-wrap: break-word !important;
@@ -136,7 +136,7 @@ const CSS_STYLES = `
   .pdf-table td {
     background-color: #FFFFFF !important;
     border: 0.5pt solid #E2E8F0;
-    padding: 4px 6px;
+    padding: 6px 8px;
     color: #0F172A;
     vertical-align: middle;
     word-break: break-word !important;
@@ -148,23 +148,27 @@ const CSS_STYLES = `
     background-color: #FFFFFF !important;
     border: 0.5pt solid #CBD5E1;
     border-radius: 8px;
-    padding: 8px 10px;
-    margin-bottom: 6px;
+    padding: 10px 12px;
+    margin-bottom: 8px;
     page-break-inside: avoid;
     break-inside: avoid;
     overflow: hidden;
   }
 
   .section-title {
-    font-size: 8.5pt;
+    font-size: 9pt;
     font-weight: 800;
     color: #0F172A;
-    margin-bottom: 4px;
+    margin-bottom: 6px;
     display: flex;
     align-items: center;
     gap: 6px;
     border-right: 3pt solid #0284C7;
     padding-right: 6px;
+  }
+
+  .nowrap {
+    white-space: nowrap !important;
   }
 `;
 
@@ -355,17 +359,7 @@ export default function ProgramPdfView() {
       protein_g: 48, carbs_g: 62, fat_g: 14
     },
     {
-      meal_name_ar: 'الوجبة الثالثة (سناك بعد التمرين)',
-      meal_energy_kcal: 311,
-      items: [
-        { name_ar: 'زبادي يوناني طبيعي 0% دسم', amount_g: 150, unit: 'جم' },
-        { name_ar: 'موز طازج متوسط الحجم', amount_g: 100, unit: 'جم' },
-        { name_ar: 'لوز نيء غير مملح', amount_g: 20, unit: 'جم' }
-      ],
-      protein_g: 18, carbs_g: 35, fat_g: 11
-    },
-    {
-      meal_name_ar: 'الوجبة الرابعة (وجبة العشاء)',
+      meal_name_ar: 'الوجبة الثالثة (وجبة العشاء)',
       meal_energy_kcal: 308,
       items: [
         { name_ar: 'جبن قريش طبيعي قليل الملح', amount_g: 150, unit: 'جم' },
@@ -382,50 +376,59 @@ export default function ProgramPdfView() {
     || program?.training_program?.weeks?.[0]?.sessions 
     || [
     {
-      session_name: 'اليوم التدريبي 1: الصدر والأكتاف والترايسبس (Push A)',
+      session_name: 'الحصة التدريبية 1: الصدر والأكتاف والترايسبس (Push A)',
       exercises: [
-        { name_en: 'Barbell Bench Press', name_ar: 'بنش برس بالبار مستوي', sets: 3, reps: '8 - 10', rir: '2', rest: '90s' },
-        { name_en: 'Barbell Bent-Over Row', name_ar: 'تجديف بالبار منحني الظهر', sets: 3, reps: '8 - 10', rir: '2', rest: '90s' },
-        { name_en: 'Barbell Overhead Press (OHP)', name_ar: 'ضغط كتف بالبار واقفاً', sets: 3, reps: '8 - 10', rir: '2', rest: '90s' },
-        { name_en: 'Lat Pulldown', name_ar: 'سحب عالي للظهر قبضة واسعة', sets: 3, reps: '8 - 12', rir: '2', rest: '75s' },
-        { name_en: 'Dumbbell Biceps Curl', name_ar: 'مرجحة بايسبس بالدمبل متبادل', sets: 3, reps: '12 - 15', rir: '1 - 2', rest: '60s' },
-        { name_en: 'Close-Grip Push-Up', name_ar: 'ضغط قبضة ضيقة للترايسبس والصدر', sets: 3, reps: '12 - 20', rir: '1 - 2', rest: '60s' }
+        { name_en: 'Barbell Bench Press', name_ar: 'بنش برس بالبار مستوي', sets: 3, reps: '8 - 10', rest: '90 ثانية' },
+        { name_en: 'Barbell Bent-Over Row', name_ar: 'تجديف بالبار منحني الظهر', sets: 3, reps: '8 - 10', rest: '90 ثانية' },
+        { name_en: 'Barbell Overhead Press (OHP)', name_ar: 'ضغط كتف بالبار واقفاً', sets: 3, reps: '8 - 10', rest: '90 ثانية' },
+        { name_en: 'Lat Pulldown', name_ar: 'سحب عالي للظهر قبضة واسعة', sets: 3, reps: '8 - 12', rest: '75 ثانية' },
+        { name_en: 'Dumbbell Biceps Curl', name_ar: 'مرجحة بايسبس بالدمبل متبادل', sets: 3, reps: '12 - 15', rest: '60 ثانية' },
+        { name_en: 'Close-Grip Push-Up', name_ar: 'ضغط قبضة ضيقة للترايسبس والصدر', sets: 3, reps: '12 - 20', rest: '60 ثانية' }
       ]
     },
     {
-      session_name: 'اليوم التدريبي 2: الأرجل والسمانة واستقرار الكور (Legs A)',
+      session_name: 'الحصة التدريبية 2: الأرجل والسمانة واستقرار الكور (Legs A)',
       exercises: [
-        { name_en: 'Barbell Back Squat', name_ar: 'سكوات بالبار الخلفي للأرجل', sets: 3, reps: '8 - 10', rir: '2', rest: '120s' },
-        { name_en: 'Dumbbell Romanian Deadlift', name_ar: 'ديدليفت روماني بالدمبل للخلفيات', sets: 3, reps: '8 - 10', rir: '2', rest: '90s' },
-        { name_en: 'Dumbbell Reverse Lunge', name_ar: 'طعنات عكسية بالدمبل للأرجل', sets: 3, reps: '10 - 12', rir: '2', rest: '75s' },
-        { name_en: 'Lying Leg Curl Machine', name_ar: 'مرجحة أرجل خلفية نائماً على الجهاز', sets: 3, reps: '10 - 15', rir: '1 - 2', rest: '60s' },
-        { name_en: 'Dumbbell Calf Raise', name_ar: 'رفع السمانة بالدمبل واقفاً', sets: 3, reps: '15 - 20', rir: '1', rest: '60s' },
-        { name_en: 'Dead Bug', name_ar: 'تمرين الحشرة الميتة لاستقرار الكور والبطن', sets: 3, reps: '15 - 20', rir: '2', rest: '60s' }
+        { name_en: 'Barbell Back Squat', name_ar: 'سكوات بالبار الخلفي للأرجل', sets: 3, reps: '8 - 10', rest: '120 ثانية' },
+        { name_en: 'Dumbbell Romanian Deadlift', name_ar: 'ديدليفت روماني بالدمبل للخلفيات', sets: 3, reps: '8 - 10', rest: '90 ثانية' },
+        { name_en: 'Dumbbell Reverse Lunge', name_ar: 'طعنات عكسية بالدمبل للأرجل', sets: 3, reps: '10 - 12', rest: '75 ثانية' },
+        { name_en: 'Lying Leg Curl Machine', name_ar: 'مرجحة أرجل خلفية نائماً على الجهاز', sets: 3, reps: '10 - 15', rest: '60 ثانية' },
+        { name_en: 'Dumbbell Calf Raise', name_ar: 'رفع السمانة بالدمبل واقفاً', sets: 3, reps: '15 - 20', rest: '60 ثانية' },
+        { name_en: 'Dead Bug', name_ar: 'تمرين الحشرة الميتة لاستقرار الكور والبطن', sets: 3, reps: '15 - 20', rest: '60 ثانية' }
       ]
     },
     {
-      session_name: 'اليوم التدريبي 3: الظهر والكتف الجانبي والبايسبس (Pull A)',
+      session_name: 'الحصة التدريبية 3: الظهر والكتف الجانبي والبايسبس (Pull A)',
       exercises: [
-        { name_en: 'Barbell Overhead Press (OHP)', name_ar: 'ضغط كتف بالبار واقفاً', sets: 3, reps: '8 - 10', rir: '2', rest: '90s' },
-        { name_en: 'Lat Pulldown', name_ar: 'سحب عالي للظهر قبضة واسعة', sets: 3, reps: '8 - 12', rir: '2', rest: '75s' },
-        { name_en: 'Barbell Bench Press', name_ar: 'بنش برس بالبار مستوي', sets: 3, reps: '8 - 10', rir: '2', rest: '90s' },
-        { name_en: 'Barbell Bent-Over Row', name_ar: 'تجديف بالبار منحني الظهر', sets: 3, reps: '8 - 10', rir: '2', rest: '90s' },
-        { name_en: 'Close-Grip Push-Up', name_ar: 'ضغط قبضة ضيقة للترايسبس والصدر', sets: 3, reps: '12 - 20', rir: '1 - 2', rest: '60s' },
-        { name_en: 'Dumbbell Biceps Curl', name_ar: 'مرجحة بايسبس بالدمبل متبادل', sets: 3, reps: '12 - 15', rir: '1 - 2', rest: '60s' }
+        { name_en: 'Barbell Overhead Press (OHP)', name_ar: 'ضغط كتف بالبار واقفاً', sets: 3, reps: '8 - 10', rest: '90 ثانية' },
+        { name_en: 'Lat Pulldown', name_ar: 'سحب عالي للظهر قبضة واسعة', sets: 3, reps: '8 - 12', rest: '75 ثانية' },
+        { name_en: 'Barbell Bench Press', name_ar: 'بنش برس بالبار مستوي', sets: 3, reps: '8 - 10', rest: '90 ثانية' },
+        { name_en: 'Barbell Bent-Over Row', name_ar: 'تجديف بالبار منحني الظهر', sets: 3, reps: '8 - 10', rest: '90 ثانية' },
+        { name_en: 'Close-Grip Push-Up', name_ar: 'ضغط قبضة ضيقة للترايسبس والصدر', sets: 3, reps: '12 - 20', rest: '60 ثانية' },
+        { name_en: 'Dumbbell Biceps Curl', name_ar: 'مرجحة بايسبس بالدمبل متبادل', sets: 3, reps: '12 - 15', rest: '60 ثانية' }
       ]
     },
     {
-      session_name: 'اليوم التدريبي 4: الجزء السفلي والظهر السفلي (Legs B)',
+      session_name: 'الحصة التدريبية 4: الجزء السفلي والظهر السفلي (Legs B)',
       exercises: [
-        { name_en: 'Dumbbell Romanian Deadlift', name_ar: 'ديدليفت روماني بالدمبل للخلفيات', sets: 3, reps: '8 - 10', rir: '2', rest: '90s' },
-        { name_en: 'Barbell Back Squat', name_ar: 'سكوات بالبار الخلفي للأرجل', sets: 3, reps: '8 - 10', rir: '2', rest: '120s' },
-        { name_en: 'Lying Leg Curl Machine', name_ar: 'مرجحة أرجل خلفية نائماً على الجهاز', sets: 3, reps: '10 - 15', rir: '1 - 2', rest: '60s' },
-        { name_en: 'Dumbbell Reverse Lunge', name_ar: 'طعنات عكسية بالدمبل للأرجل', sets: 3, reps: '10 - 12', rir: '2', rest: '75s' },
-        { name_en: 'Dumbbell Calf Raise', name_ar: 'رفع السمانة بالدمبل واقفاً', sets: 3, reps: '15 - 20', rir: '1', rest: '60s' },
-        { name_en: 'Dead Bug', name_ar: 'تمرين الحشرة الميتة لاستقرار الكور والبطن', sets: 3, reps: '15 - 20', rir: '2', rest: '60s' }
+        { name_en: 'Dumbbell Romanian Deadlift', name_ar: 'ديدليفت روماني بالدمبل للخلفيات', sets: 3, reps: '8 - 10', rest: '90 ثانية' },
+        { name_en: 'Barbell Back Squat', name_ar: 'سكوات بالبار الخلفي للأرجل', sets: 3, reps: '8 - 10', rest: '120 ثانية' },
+        { name_en: 'Lying Leg Curl Machine', name_ar: 'مرجحة أرجل خلفية نائماً على الجهاز', sets: 3, reps: '10 - 15', rest: '60 ثانية' },
+        { name_en: 'Dumbbell Reverse Lunge', name_ar: 'طعنات عكسية بالدمبل للأرجل', sets: 3, reps: '10 - 12', rest: '75 ثانية' },
+        { name_en: 'Dumbbell Calf Raise', name_ar: 'رفع السمانة بالدمبل واقفاً', sets: 3, reps: '15 - 20', rest: '60 ثانية' },
+        { name_en: 'Dead Bug', name_ar: 'تمرين الحشرة الميتة لاستقرار الكور والبطن', sets: 3, reps: '15 - 20', rest: '60 ثانية' }
       ]
     }
   ];
+
+  // Divide sessions into chunks of 2 per page for ultra-spacious, premium full-width rendering
+  const sessionChunks = [];
+  for (let i = 0; i < rawSessions.length; i += 2) {
+    sessionChunks.push(rawSessions.slice(i, i + 2));
+  }
+
+  // Total pages: Page 1 (Nutrition) + Session Pages (usually 2) + Final Page (Periodization & Swaps) = 4 pages
+  const totalPages = 2 + sessionChunks.length;
 
   return (
     <div className="pdf-view-wrapper" dir="rtl">
@@ -437,7 +440,7 @@ export default function ProgramPdfView() {
             Z
           </div>
           <div>
-            <h6 className="mb-0 fw-bold" style={{ color: '#0F172A' }}>وثيقة البرنامج المعتمدة (مقاس A4 قياسي - 3 صفحات)</h6>
+            <h6 className="mb-0 fw-bold" style={{ color: '#0F172A' }}>وثيقة البرنامج المعتمدة (نسخة A4 فاخرة - {totalPages} صفحات)</h6>
             <small className="text-muted">المشترك: <strong>{clientName}</strong> (كود: #{clientCode})</small>
           </div>
         </div>
@@ -448,7 +451,7 @@ export default function ProgramPdfView() {
           className="btn rounded-pill px-4 fw-bold text-white shadow-sm d-flex align-items-center gap-2"
           style={{ background: 'linear-gradient(135deg, #0284C7 0%, #0369A1 100%)', border: 'none', height: '42px', fontSize: '0.9rem', cursor: 'pointer' }}
         >
-          <span>طباعة / حفظ كملف PDF (3 صفحات)</span>
+          <span>طباعة / حفظ كملف PDF ({totalPages} صفحات)</span>
         </button>
       </div>
 
@@ -463,7 +466,7 @@ export default function ProgramPdfView() {
           {/* Running Header */}
           <div className="running-header">
             <span>منظومة {brandTitle} التدريبية والتغذوية</span>
-            <span>كود المشترك: #{clientCode}</span>
+            <span className="nowrap">كود المشترك: #{clientCode}</span>
           </div>
 
           {/* Master Executive Cover Header */}
@@ -492,7 +495,7 @@ export default function ProgramPdfView() {
                 <th>نوع الباقة:</th>
                 <td style={{ fontWeight: '600' }}>{packageTier}</td>
                 <th>تاريخ الاعتماد:</th>
-                <td style={{ fontWeight: '600' }}>{issueDate}</td>
+                <td style={{ fontWeight: '600' }} className="nowrap">{issueDate}</td>
               </tr>
               {fastingProfile && (fastingProfile.isCoptic || fastingProfile.isRamadan || fastingProfile.isIntermittent) && (
                 <tr>
@@ -522,10 +525,10 @@ export default function ProgramPdfView() {
             </thead>
             <tbody>
               <tr style={{ fontWeight: '700', textAlign: 'center' }}>
-                <td>{heightCm} سم</td>
-                <td>{weightKg} كجم</td>
-                <td>{bmi} مؤشر الكتلة</td>
-                <td style={{ color: '#0284C7' }}>{bodyFat}</td>
+                <td className="nowrap">{heightCm} سم</td>
+                <td className="nowrap">{weightKg} كجم</td>
+                <td className="nowrap">{bmi} مؤشر الكتلة</td>
+                <td style={{ color: '#0284C7' }} className="nowrap">{bodyFat}</td>
               </tr>
             </tbody>
           </table>
@@ -541,9 +544,9 @@ export default function ProgramPdfView() {
             </thead>
             <tbody>
               <tr style={{ fontWeight: '600', textAlign: 'center' }}>
-                <td>{neckCm} سم</td>
-                <td style={{ fontWeight: '700', color: '#0F172A' }}>{waistCm} سم</td>
-                <td>{hipsCm} سم</td>
+                <td className="nowrap">{neckCm} سم</td>
+                <td style={{ fontWeight: '700', color: '#0F172A' }} className="nowrap">{waistCm} سم</td>
+                <td className="nowrap">{hipsCm} سم</td>
                 <td style={{ fontWeight: '700', color: '#0284C7' }}>{primaryGoal}</td>
               </tr>
             </tbody>
@@ -556,37 +559,37 @@ export default function ProgramPdfView() {
             {/* Calories */}
             <div className="pdf-card" style={{ textAlign: 'center', borderTop: '2.5pt solid #0F172A', padding: '6px 8px', margin: 0 }}>
               <span style={{ fontSize: '7.5pt', fontWeight: '700', color: '#475569' }}>السعرات المستهدفة</span>
-              <div style={{ fontSize: '13pt', fontWeight: '900', color: '#0F172A', margin: '2px 0' }}>
+              <div style={{ fontSize: '13pt', fontWeight: '900', color: '#0F172A', margin: '2px 0' }} className="nowrap">
                 {targetCalories}
               </div>
-              <small style={{ fontSize: '7pt', color: '#64748B' }}>سعرة حرارية / اليوم</small>
+              <small style={{ fontSize: '7pt', color: '#64748B' }} className="nowrap">سعرة حرارية / اليوم</small>
             </div>
 
             {/* Protein */}
             <div className="pdf-card" style={{ textAlign: 'center', borderTop: '2.5pt solid #0284C7', padding: '6px 8px', margin: 0 }}>
               <span style={{ fontSize: '7.5pt', fontWeight: '700', color: '#0284C7' }}>البروتين الصافي</span>
-              <div style={{ fontSize: '13pt', fontWeight: '900', color: '#0284C7', margin: '2px 0' }}>
+              <div style={{ fontSize: '13pt', fontWeight: '900', color: '#0284C7', margin: '2px 0' }} className="nowrap">
                 {proteinG} جم
               </div>
-              <small style={{ fontSize: '7pt', color: '#64748B' }}>{Math.round(proteinG * 4)} سعرة ({Math.round(((proteinG * 4) / targetCalories) * 100)}%)</small>
+              <small style={{ fontSize: '7pt', color: '#64748B' }} className="nowrap">{Math.round(proteinG * 4)} سعرة ({Math.round(((proteinG * 4) / targetCalories) * 100)}%)</small>
             </div>
 
             {/* Carbs */}
             <div className="pdf-card" style={{ textAlign: 'center', borderTop: '2.5pt solid #D97706', padding: '6px 8px', margin: 0 }}>
               <span style={{ fontSize: '7.5pt', fontWeight: '700', color: '#D97706' }}>الكربوهيدرات</span>
-              <div style={{ fontSize: '13pt', fontWeight: '900', color: '#D97706', margin: '2px 0' }}>
+              <div style={{ fontSize: '13pt', fontWeight: '900', color: '#D97706', margin: '2px 0' }} className="nowrap">
                 {carbsG} جم
               </div>
-              <small style={{ fontSize: '7pt', color: '#64748B' }}>{Math.round(carbsG * 4)} سعرة ({Math.round(((carbsG * 4) / targetCalories) * 100)}%)</small>
+              <small style={{ fontSize: '7pt', color: '#64748B' }} className="nowrap">{Math.round(carbsG * 4)} سعرة ({Math.round(((carbsG * 4) / targetCalories) * 100)}%)</small>
             </div>
 
             {/* Fats */}
             <div className="pdf-card" style={{ textAlign: 'center', borderTop: '2.5pt solid #10B981', padding: '6px 8px', margin: 0 }}>
               <span style={{ fontSize: '7.5pt', fontWeight: '700', color: '#10B981' }}>الدهون الصحية</span>
-              <div style={{ fontSize: '13pt', fontWeight: '900', color: '#10B981', margin: '2px 0' }}>
+              <div style={{ fontSize: '13pt', fontWeight: '900', color: '#10B981', margin: '2px 0' }} className="nowrap">
                 {fatsG} جم
               </div>
-              <small style={{ fontSize: '7pt', color: '#64748B' }}>{Math.round(fatsG * 9)} سعرة ({Math.round(((fatsG * 9) / targetCalories) * 100)}%)</small>
+              <small style={{ fontSize: '7pt', color: '#64748B' }} className="nowrap">{Math.round(fatsG * 9)} سعرة ({Math.round(((fatsG * 9) / targetCalories) * 100)}%)</small>
             </div>
 
           </div>
@@ -594,7 +597,7 @@ export default function ProgramPdfView() {
           {/* Hydration Banner */}
           <div className="pdf-card" style={{ background: '#F0F9FF', borderColor: '#BAE6FD', display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '5px 10px', marginBottom: '6px' }}>
             <span style={{ fontSize: '8pt', fontWeight: '700', color: '#0369A1' }}>معدل الترطيب واستهلاك الماء اليومي المستهدف:</span>
-            <span style={{ fontSize: '9pt', fontWeight: '800', color: '#0284C7' }}>{hydrationLiters}</span>
+            <span style={{ fontSize: '9pt', fontWeight: '800', color: '#0284C7' }} className="nowrap">{hydrationLiters}</span>
           </div>
 
           {/* 3. Structured Meals Protocol */}
@@ -613,18 +616,18 @@ export default function ProgramPdfView() {
           <table className="pdf-table" style={{ marginBottom: '6px' }}>
             <thead>
               <tr>
-                <th style={{ width: '18%' }}>الوجبة</th>
+                <th style={{ width: '16%' }}>الوجبة</th>
                 <th style={{ width: '52%' }}>المكونات والمقادير الدقيقة</th>
-                <th style={{ width: '7%', textAlign: 'center' }}>بروتين</th>
-                <th style={{ width: '7%', textAlign: 'center' }}>كارب</th>
-                <th style={{ width: '7%', textAlign: 'center' }}>دهون</th>
-                <th style={{ width: '9%', textAlign: 'center' }}>السعرات</th>
+                <th style={{ width: '8%', textAlign: 'center' }}>بروتين</th>
+                <th style={{ width: '8%', textAlign: 'center' }}>كارب</th>
+                <th style={{ width: '8%', textAlign: 'center' }}>دهون</th>
+                <th style={{ width: '8%', textAlign: 'center' }}>السعرات</th>
               </tr>
             </thead>
             <tbody>
               {meals.map((meal, mIdx) => (
                 <tr key={mIdx}>
-                  <td style={{ fontWeight: '700', color: '#0F172A', fontSize: '7.5pt' }}>
+                  <td style={{ fontWeight: '700', color: '#0F172A', fontSize: '7.5pt' }} className="nowrap">
                     {meal.meal_name_ar || `الوجبة ${mIdx + 1}`}
                   </td>
                   <td style={{ fontSize: '7.5pt', lineHeight: '1.4' }}>
@@ -634,10 +637,10 @@ export default function ProgramPdfView() {
                       </span>
                     ))}
                   </td>
-                  <td style={{ textAlign: 'center', fontWeight: '700', color: '#0284C7', fontSize: '7.5pt' }}>{meal.protein_g ?? meal.p ?? 35} جم</td>
-                  <td style={{ textAlign: 'center', fontWeight: '700', color: '#D97706', fontSize: '7.5pt' }}>{meal.carbs_g ?? meal.c ?? 45} جم</td>
-                  <td style={{ textAlign: 'center', fontWeight: '700', color: '#10B981', fontSize: '7.5pt' }}>{meal.fat_g ?? meal.f ?? 12} جم</td>
-                  <td style={{ textAlign: 'center', fontWeight: '800', color: '#0F172A', fontSize: '7.5pt' }}>{meal.meal_energy_kcal ?? meal.cal ?? 450}</td>
+                  <td style={{ textAlign: 'center', fontWeight: '700', color: '#0284C7', fontSize: '7.5pt' }} className="nowrap">{meal.protein_g ?? meal.p ?? 35} جم</td>
+                  <td style={{ textAlign: 'center', fontWeight: '700', color: '#D97706', fontSize: '7.5pt' }} className="nowrap">{meal.carbs_g ?? meal.c ?? 45} جم</td>
+                  <td style={{ textAlign: 'center', fontWeight: '700', color: '#10B981', fontSize: '7.5pt' }} className="nowrap">{meal.fat_g ?? meal.f ?? 12} جم</td>
+                  <td style={{ textAlign: 'center', fontWeight: '800', color: '#0F172A', fontSize: '7.5pt' }} className="nowrap">{meal.meal_energy_kcal ?? meal.cal ?? 450}</td>
                 </tr>
               ))}
             </tbody>
@@ -663,53 +666,53 @@ export default function ProgramPdfView() {
         {/* Running Footer */}
         <div className="running-footer">
           <span>وثيقة تدريبية رسمية ومعتمدة — منظومة {brandTitle}</span>
-          <span>الصفحة 1 من 3</span>
+          <span className="nowrap">الصفحة 1 من {totalPages}</span>
         </div>
       </div>
 
       {/* =========================================================================
-          PAGE 2: الخطة التدريبية وجدول الحصص + مصفوفة تدرج الأحمال
+          PAGES 2 & 3: الحصص التدريبية الميدانية (بعرض الصفحة الكامل 100% وبدون أي تكدس)
           ========================================================================= */}
-      <div className="pdf-page-container" id="page-2">
-        <div>
-          {/* Running Header */}
-          <div className="running-header">
-            <span>منظومة {brandTitle} التدريبية — الخطة الميدانية المعتمدة</span>
-            <span>كود المشترك: #{clientCode}</span>
-          </div>
-
-          {/* Split Overview Banner */}
-          <div className="pdf-card" style={{ marginBottom: '6px', background: '#F8FAFC', borderRight: '3pt solid #0284C7', padding: '5px 10px' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <div>
-                <h5 style={{ fontSize: '9.5pt', fontWeight: '900', color: '#0F172A', margin: 0 }}>
-                  البرنامج التدريبي الميداني وتوزيع الحصص الأسبوعية
-                </h5>
-                <small style={{ fontSize: '7pt', color: '#64748B' }}>
-                  نظام التدريب المعتمد: Push / Pull / Legs — تركيز التضخيم العضلي وزيادة الكثافة الحركية
-                </small>
-              </div>
-              <span style={{ background: '#E0F2FE', color: '#0369A1', padding: '2px 8px', borderRadius: '6px', fontSize: '7pt', fontWeight: '800' }}>
-                4 حصص تدريبية أسبوعية
-              </span>
+      {sessionChunks.map((chunk, cIdx) => (
+        <div className="pdf-page-container" id={`page-sessions-${cIdx + 1}`} key={`chunk-${cIdx}`}>
+          <div>
+            {/* Running Header */}
+            <div className="running-header">
+              <span>منظومة {brandTitle} التدريبية — الخطة الميدانية المعتمدة (جزء {cIdx + 1} من {sessionChunks.length})</span>
+              <span className="nowrap">كود المشترك: #{clientCode}</span>
             </div>
-          </div>
 
-          {/* Workout Sessions Grid */}
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '6px', marginBottom: '6px' }}>
-            {rawSessions.slice(0, 4).map((session, sIdx) => (
-              <div key={sIdx} className="pdf-card" style={{ padding: '5px 6px', margin: 0 }}>
-                <div style={{ fontSize: '7.5pt', fontWeight: '800', color: '#0F172A', marginBottom: '4px', background: '#F1F5F9', padding: '2px 6px', borderRadius: '4px' }}>
-                  {session.session_name || `الحصة التدريبية ${sIdx + 1}`}
+            {/* Split Overview Banner */}
+            <div className="pdf-card" style={{ marginBottom: '8px', background: '#F8FAFC', borderRight: '3pt solid #0284C7', padding: '6px 10px' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <div>
+                  <h5 style={{ fontSize: '9.5pt', fontWeight: '900', color: '#0F172A', margin: 0 }}>
+                    البرنامج التدريبي الميداني وتوزيع الحصص الأسبوعية
+                  </h5>
+                  <small style={{ fontSize: '7.5pt', color: '#64748B' }}>
+                    نظام التدريب المعتمد: Push / Pull / Legs — تركيز التضخيم العضلي وزيادة الكثافة الحركية
+                  </small>
                 </div>
-                <table className="pdf-table" style={{ margin: 0, fontSize: '6.8pt' }}>
+                <span style={{ background: '#E0F2FE', color: '#0369A1', padding: '3px 8px', borderRadius: '6px', fontSize: '7.5pt', fontWeight: '800' }}>
+                  {rawSessions.length} حصص تدريبية أسبوعية
+                </span>
+              </div>
+            </div>
+
+            {/* Render 2 Full-Width Sessions per Page with Generous Column Widths */}
+            {chunk.map((session, sIdx) => (
+              <div key={sIdx} style={{ marginBottom: '10px' }}>
+                <div style={{ fontSize: '8.5pt', fontWeight: '800', color: '#0F172A', marginBottom: '4px', background: '#F1F5F9', padding: '4px 8px', borderRadius: '6px', borderRight: '2.5pt solid #0284C7' }}>
+                  {session.session_name || `الحصة التدريبية ${cIdx * 2 + sIdx + 1}`}
+                </div>
+                <table className="pdf-table" style={{ margin: 0 }}>
                   <thead>
                     <tr>
-                      <th style={{ width: '42%' }}>التمرين</th>
-                      <th style={{ width: '28%' }}>العضلة المستهدفة</th>
-                      <th style={{ width: '10%', textAlign: 'center' }}>جولات</th>
-                      <th style={{ width: '10%', textAlign: 'center' }}>عدات</th>
-                      <th style={{ width: '10%', textAlign: 'center' }}>راحة</th>
+                      <th style={{ width: '38%' }}>التمرين وتكنيك الأداء</th>
+                      <th style={{ width: '24%' }}>العضلة المستهدفة</th>
+                      <th style={{ width: '12%', textAlign: 'center' }}>المجموعات</th>
+                      <th style={{ width: '14%', textAlign: 'center' }}>العدات المستهدفة</th>
+                      <th style={{ width: '12%', textAlign: 'center' }}>فترة الراحة</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -719,24 +722,24 @@ export default function ProgramPdfView() {
                       return (
                         <tr key={eIdx}>
                           <td>
-                            <strong style={{ display: 'block', fontSize: '6.8pt', color: '#0F172A', direction: 'ltr', textAlign: 'right' }}>
+                            <strong style={{ display: 'block', fontSize: '7.5pt', color: '#0F172A', direction: 'ltr', textAlign: 'right' }}>
                               {exNames.nameEn}
                             </strong>
-                            <span style={{ fontSize: '6.2pt', color: '#64748B' }}>
+                            <span style={{ fontSize: '7pt', color: '#64748B' }}>
                               {exNames.nameAr}
                             </span>
                           </td>
-                          <td style={{ color: '#0369A1', fontWeight: '600' }}>
+                          <td style={{ color: '#0369A1', fontWeight: '700', fontSize: '7.5pt' }}>
                             {targetMuscle}
                           </td>
-                          <td style={{ textAlign: 'center', fontWeight: '700' }}>
-                            {ex.sets || 3}
+                          <td style={{ textAlign: 'center', fontWeight: '700', fontSize: '8pt' }} className="nowrap">
+                            {ex.sets || 3} جولات
                           </td>
-                          <td style={{ textAlign: 'center', fontWeight: '700' }}>
-                            {ex.reps || '8 - 10'}
+                          <td style={{ textAlign: 'center', fontWeight: '700', fontSize: '8pt', color: '#0F172A' }} className="nowrap">
+                            {ex.reps || '8 - 10'} عدات
                           </td>
-                          <td style={{ textAlign: 'center', color: '#64748B' }}>
-                            {ex.rest || '75s'}
+                          <td style={{ textAlign: 'center', color: '#64748B', fontSize: '7.5pt' }} className="nowrap">
+                            {ex.rest || '75 ثانية'}
                           </td>
                         </tr>
                       );
@@ -747,79 +750,79 @@ export default function ProgramPdfView() {
             ))}
           </div>
 
-          {/* 5. Periodization Schedule Matrix */}
-          <div className="section-title">5. مصفوفة التدرج الدوري للأحمال (دورة الـ 5 أسابيع المتكاملة)</div>
-          <table className="pdf-table" style={{ margin: 0, fontSize: '7pt' }}>
+          {/* Running Footer */}
+          <div className="running-footer">
+            <span>وثيقة تدريبية رسمية ومعتمدة — منظومة {brandTitle}</span>
+            <span className="nowrap">الصفحة {2 + cIdx} من {totalPages}</span>
+          </div>
+        </div>
+      ))}
+
+      {/* =========================================================================
+          PAGE 4: مصفوفة تدرج الأحمال + البدائل الذكية + الكارديو + الاعتماد الرسمي
+          ========================================================================= */}
+      <div className="pdf-page-container" id="page-final">
+        <div>
+          {/* Running Header */}
+          <div className="running-header">
+            <span>منظومة {brandTitle} التدريبية — دليل تدرج الأحمال والاستشفاء</span>
+            <span className="nowrap">كود المشترك: #{clientCode}</span>
+          </div>
+
+          {/* 5. Periodization Schedule Matrix (Spacious & Clean) */}
+          <div className="section-title">5. مصفوفة التدرج الدوري للأحمال (خطة دورة الـ 5 أسابيع الميدانية)</div>
+          <table className="pdf-table" style={{ marginBottom: '12px' }}>
             <thead>
               <tr>
-                <th style={{ width: '18%' }}>الأسبوع التدريبي</th>
+                <th style={{ width: '16%' }}>الأسبوع التدريبي</th>
                 <th style={{ width: '24%' }}>المرحلة والهدف الحركي</th>
                 <th style={{ width: '16%', textAlign: 'center' }}>حجم المجموعات</th>
                 <th style={{ width: '16%', textAlign: 'center' }}>معدل الاحتياط (RIR)</th>
-                <th style={{ width: '26%' }}>التوجيه الفني والتطبيقي</th>
+                <th style={{ width: '28%' }}>التوجيه الفني والتطبيقي</th>
               </tr>
             </thead>
             <tbody>
               <tr>
                 <td style={{ fontWeight: '700', color: '#0F172A' }}>الأسبوع 1</td>
                 <td style={{ fontWeight: '600', color: '#0284C7' }}>التأسيس والتكيف الحركي</td>
-                <td style={{ textAlign: 'center', fontWeight: '700' }}>3 مجموعات</td>
-                <td style={{ textAlign: 'center', fontWeight: '800', color: '#0284C7' }}>RIR 3</td>
+                <td style={{ textAlign: 'center', fontWeight: '700' }} className="nowrap">3 مجموعات</td>
+                <td style={{ textAlign: 'center', fontWeight: '800', color: '#0284C7' }} className="nowrap">RIR 3</td>
                 <td>التعود على مسار الحركة وضبط الأوزان الابتدائية بدقة.</td>
               </tr>
               <tr>
                 <td style={{ fontWeight: '700', color: '#0F172A' }}>الأسبوع 2</td>
                 <td style={{ fontWeight: '600', color: '#0284C7' }}>التحميل التدريجي (Overload)</td>
-                <td style={{ textAlign: 'center', fontWeight: '700' }}>3 مجموعات</td>
-                <td style={{ textAlign: 'center', fontWeight: '800', color: '#0284C7' }}>RIR 2</td>
+                <td style={{ textAlign: 'center', fontWeight: '700' }} className="nowrap">3 مجموعات</td>
+                <td style={{ textAlign: 'center', fontWeight: '800', color: '#0284C7' }} className="nowrap">RIR 2</td>
                 <td>زيادة الحمل الخطي تدريجياً مع إبقاء تكرارين في الاحتياط.</td>
               </tr>
               <tr>
                 <td style={{ fontWeight: '700', color: '#0F172A' }}>الأسبوع 3</td>
                 <td style={{ fontWeight: '600', color: '#D97706' }}>التكثيف والضغط العضلي</td>
-                <td style={{ textAlign: 'center', fontWeight: '700', color: '#D97706' }}>4 مجموعات (+1)</td>
-                <td style={{ textAlign: 'center', fontWeight: '800', color: '#D97706' }}>RIR 1</td>
+                <td style={{ textAlign: 'center', fontWeight: '700', color: '#D97706' }} className="nowrap">4 مجموعات (+1)</td>
+                <td style={{ textAlign: 'center', fontWeight: '800', color: '#D97706' }} className="nowrap">RIR 1</td>
                 <td>إضافة مجموعة عمل لكل حركة أساسية والاقتراب من الفشل العضلي.</td>
               </tr>
               <tr>
                 <td style={{ fontWeight: '700', color: '#0F172A' }}>الأسبوع 4</td>
                 <td style={{ fontWeight: '600', color: '#DC2626' }}>ذروة الأداء (Peak Phase)</td>
-                <td style={{ textAlign: 'center', fontWeight: '700', color: '#DC2626' }}>4 مجموعات</td>
-                <td style={{ textAlign: 'center', fontWeight: '800', color: '#DC2626' }}>RIR 0 - 1</td>
+                <td style={{ textAlign: 'center', fontWeight: '700', color: '#DC2626' }} className="nowrap">4 مجموعات</td>
+                <td style={{ textAlign: 'center', fontWeight: '800', color: '#DC2626' }} className="nowrap">RIR 0 - 1</td>
                 <td>الوصول لأقصى أداء ممكن وبذل أعلى طاقة عضلية قبل الاستشفاء.</td>
               </tr>
               <tr style={{ background: '#F0FDF4' }}>
                 <td style={{ fontWeight: '700', color: '#166534' }}>الأسبوع 5 (ديلود)</td>
                 <td style={{ fontWeight: '600', color: '#166534' }}>أسبوع كسر الإجهاد والاستشفاء</td>
-                <td style={{ textAlign: 'center', fontWeight: '700', color: '#166534' }}>مجموعتان (-40%)</td>
-                <td style={{ textAlign: 'center', fontWeight: '800', color: '#166534' }}>RIR 3 - 4</td>
+                <td style={{ textAlign: 'center', fontWeight: '700', color: '#166534' }} className="nowrap">مجموعتان (-40%)</td>
+                <td style={{ textAlign: 'center', fontWeight: '800', color: '#166534' }} className="nowrap">RIR 3 - 4</td>
                 <td>تخفيض الحجم التدريبي لتجديد الجهاز العصبي والمفاصل والأوتار.</td>
               </tr>
             </tbody>
           </table>
-        </div>
-
-        {/* Running Footer */}
-        <div className="running-footer">
-          <span>وثيقة تدريبية رسمية ومعتمدة — منظومة {brandTitle}</span>
-          <span>الصفحة 2 من 3</span>
-        </div>
-      </div>
-
-      {/* =========================================================================
-          PAGE 3: البدائل الذكية الفورية، الكارديو، والاعتماد الرسمي
-          ========================================================================= */}
-      <div className="pdf-page-container" id="page-3">
-        <div>
-          {/* Running Header */}
-          <div className="running-header">
-            <span>منظومة {brandTitle} التدريبية — دليل البدائل والاستشفاء</span>
-            <span>كود المشترك: #{clientCode}</span>
-          </div>
 
           {/* 6. Smart Food Swaps Table */}
           <div className="section-title">6. جدول المبادلات الغذائية الذكية الفورية (بدائل متكافئة)</div>
-          <table className="pdf-table" style={{ marginBottom: '10px' }}>
+          <table className="pdf-table" style={{ marginBottom: '12px' }}>
             <thead>
               <tr>
                 <th style={{ width: '28%' }}>الصنف الأساسي في الخطة</th>
@@ -848,7 +851,7 @@ export default function ProgramPdfView() {
 
           {/* 7. Zone 2 Cardio Protocol */}
           <div className="section-title">7. بروتوكول كارديو حرق الدهون واللياقة القلبية</div>
-          <table className="pdf-table" style={{ marginBottom: '10px' }}>
+          <table className="pdf-table" style={{ marginBottom: '12px' }}>
             <thead>
               <tr>
                 <th style={{ width: '30%' }}>النشاط الرياضي الموصى به</th>
@@ -860,9 +863,9 @@ export default function ProgramPdfView() {
             <tbody>
               <tr style={{ fontWeight: '700', textAlign: 'center' }}>
                 <td style={{ textAlign: 'right' }}>المشي على سير مائل (Incline Treadmill)</td>
-                <td>3 إلى 4 جلسات</td>
-                <td>30 دقيقة</td>
-                <td style={{ color: '#0284C7' }}>125 - 135 نبضة / دقيقة</td>
+                <td className="nowrap">3 إلى 4 جلسات</td>
+                <td className="nowrap">30 دقيقة</td>
+                <td style={{ color: '#0284C7' }} className="nowrap">125 - 135 نبضة / دقيقة</td>
               </tr>
             </tbody>
           </table>
@@ -900,7 +903,7 @@ export default function ProgramPdfView() {
         {/* Running Footer */}
         <div className="running-footer">
           <span>وثيقة تدريبية رسمية ومعتمدة — منظومة {brandTitle}</span>
-          <span>الصفحة 3 من 3</span>
+          <span className="nowrap">الصفحة {totalPages} من {totalPages}</span>
         </div>
       </div>
 
