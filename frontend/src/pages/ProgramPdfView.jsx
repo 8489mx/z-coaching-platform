@@ -520,7 +520,7 @@ export default function ProgramPdfView() {
           </div>
 
           {/* Identification Metadata Grid - Centered cells */}
-          <table className="pdf-table pdf-table-center" style={{ marginBottom: '6px' }}>
+          <table className="pdf-table pdf-table-center" style={{ marginBottom: '8px' }}>
             <tbody>
               <tr>
                 <th style={{ width: '18%', textAlign: 'center' }}>اسم المتدرب</th>
@@ -533,8 +533,8 @@ export default function ProgramPdfView() {
               <tr>
                 <th style={{ textAlign: 'center' }}>نوع الباقة</th>
                 <td style={{ fontWeight: '600', textAlign: 'center' }}>{packageTier}</td>
-                <th style={{ textAlign: 'center' }}>تاريخ الاعتماد</th>
-                <td style={{ fontWeight: '600', textAlign: 'center' }} className="nowrap">{issueDate}</td>
+                <th style={{ textAlign: 'center' }}>الهدف المعتمد</th>
+                <td style={{ fontWeight: '700', color: '#0284C7', textAlign: 'center' }}>{primaryGoal}</td>
               </tr>
               {fastingProfile && (fastingProfile.isCoptic || fastingProfile.isRamadan || fastingProfile.isIntermittent) && (
                 <tr>
@@ -551,90 +551,77 @@ export default function ProgramPdfView() {
             </tbody>
           </table>
 
-          {/* 1. Physiological Profile Table - All Centered */}
+          {/* 1. Physiological Profile Table - All Centered in One Unified Table */}
           <div className="section-title">1. القياسات ومؤشرات القوام</div>
-          <table className="pdf-table pdf-table-center" style={{ marginBottom: '6px' }}>
+          <table className="pdf-table pdf-table-center" style={{ marginBottom: '8px' }}>
             <thead>
               <tr>
-                <th style={{ width: '25%', textAlign: 'center' }}>الطول</th>
-                <th style={{ width: '25%', textAlign: 'center' }}>الوزن الحالي</th>
-                <th style={{ width: '25%', textAlign: 'center' }}>مؤشر كتلة الجسم</th>
-                <th style={{ width: '25%', textAlign: 'center' }}>نسبة الدهون التقديرية</th>
+                <th style={{ width: '15%', textAlign: 'center' }}>الطول</th>
+                <th style={{ width: '15%', textAlign: 'center' }}>الوزن الحالي</th>
+                <th style={{ width: '15%', textAlign: 'center' }}>نسبة الدهون</th>
+                <th style={{ width: '15%', textAlign: 'center' }}>كتلة الجسم (BMI)</th>
+                <th style={{ width: '13%', textAlign: 'center' }}>محيط الخصر</th>
+                <th style={{ width: '14%', textAlign: 'center' }}>محيط الحوض</th>
+                <th style={{ width: '13%', textAlign: 'center' }}>محيط الرقبة</th>
               </tr>
             </thead>
             <tbody>
               <tr style={{ fontWeight: '700' }}>
                 <td style={{ textAlign: 'center' }} className="nowrap">{heightCm} سم</td>
                 <td style={{ textAlign: 'center' }} className="nowrap">{weightKg} كجم</td>
-                <td style={{ textAlign: 'center' }} className="nowrap">{bmi}</td>
                 <td style={{ textAlign: 'center', color: '#0284C7' }} className="nowrap">{bodyFat}</td>
-              </tr>
-            </tbody>
-          </table>
-
-          <table className="pdf-table pdf-table-center" style={{ marginBottom: '6px' }}>
-            <thead>
-              <tr>
-                <th style={{ width: '20%', textAlign: 'center' }}>محيط الرقبة</th>
-                <th style={{ width: '20%', textAlign: 'center' }}>محيط الوسط (الخصر)</th>
-                <th style={{ width: '20%', textAlign: 'center' }}>محيط الحوض</th>
-                <th style={{ width: '40%', textAlign: 'center' }}>الهدف الرياضي والتغذوي المعتمد</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr style={{ fontWeight: '600' }}>
-                <td style={{ textAlign: 'center' }} className="nowrap">{neckCm} سم</td>
-                <td style={{ textAlign: 'center', fontWeight: '700', color: '#0F172A' }} className="nowrap">{waistCm} سم</td>
+                <td style={{ textAlign: 'center' }} className="nowrap">{bmi}</td>
+                <td style={{ textAlign: 'center' }} className="nowrap">{waistCm} سم</td>
                 <td style={{ textAlign: 'center' }} className="nowrap">{hipsCm} سم</td>
-                <td style={{ textAlign: 'center', fontWeight: '700', color: '#0284C7' }}>{primaryGoal}</td>
+                <td style={{ textAlign: 'center' }} className="nowrap">{neckCm} سم</td>
               </tr>
             </tbody>
           </table>
 
-          {/* 2. Daily Energy & Macronutrient Breakdown (4 KPI Boxes) */}
+          {/* 2. Daily Energy & Macronutrient Breakdown (4 Clean KPI Boxes) */}
           <div className="section-title">2. مصفوفة الطاقة والماكروز اليومية</div>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '8px', marginBottom: '6px' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '8px', marginBottom: '8px' }}>
             
             {/* Calories */}
-            <div className="pdf-card" style={{ textAlign: 'center', borderTop: '2.5pt solid #0F172A', padding: '6px 8px', margin: 0 }}>
-              <span style={{ fontSize: '7.5pt', fontWeight: '700', color: '#475569' }}>السعرات المستهدفة</span>
-              <div style={{ fontSize: '13pt', fontWeight: '900', color: '#0F172A', margin: '2px 0' }} className="nowrap">
+            <div className="pdf-card" style={{ textAlign: 'center', borderTop: '2.5pt solid #0F172A', padding: '8px 6px', margin: 0 }}>
+              <span style={{ fontSize: '7.5pt', fontWeight: '700', color: '#475569' }}>السعرات اليومية</span>
+              <div style={{ fontSize: '14pt', fontWeight: '900', color: '#0F172A', margin: '3px 0' }} className="nowrap">
                 {targetCalories}
               </div>
-              <small style={{ fontSize: '7pt', color: '#64748B' }} className="nowrap">سعرة حرارية / اليوم</small>
+              <small style={{ fontSize: '7pt', color: '#64748B', fontWeight: '600' }} className="nowrap">سعرة / اليوم</small>
             </div>
 
             {/* Protein */}
-            <div className="pdf-card" style={{ textAlign: 'center', borderTop: '2.5pt solid #0284C7', padding: '6px 8px', margin: 0 }}>
+            <div className="pdf-card" style={{ textAlign: 'center', borderTop: '2.5pt solid #0284C7', padding: '8px 6px', margin: 0 }}>
               <span style={{ fontSize: '7.5pt', fontWeight: '700', color: '#0284C7' }}>البروتين الصافي</span>
-              <div style={{ fontSize: '13pt', fontWeight: '900', color: '#0284C7', margin: '2px 0' }} className="nowrap">
+              <div style={{ fontSize: '14pt', fontWeight: '900', color: '#0284C7', margin: '3px 0' }} className="nowrap">
                 {proteinG} جم
               </div>
-              <small style={{ fontSize: '7pt', color: '#64748B' }} className="nowrap">{Math.round(proteinG * 4)} سعرة ({Math.round(((proteinG * 4) / targetCalories) * 100)}%)</small>
+              <small style={{ fontSize: '7pt', color: '#64748B', fontWeight: '600' }} className="nowrap">بناء واستشفاء</small>
             </div>
 
             {/* Carbs */}
-            <div className="pdf-card" style={{ textAlign: 'center', borderTop: '2.5pt solid #D97706', padding: '6px 8px', margin: 0 }}>
+            <div className="pdf-card" style={{ textAlign: 'center', borderTop: '2.5pt solid #D97706', padding: '8px 6px', margin: 0 }}>
               <span style={{ fontSize: '7.5pt', fontWeight: '700', color: '#D97706' }}>الكربوهيدرات</span>
-              <div style={{ fontSize: '13pt', fontWeight: '900', color: '#D97706', margin: '2px 0' }} className="nowrap">
+              <div style={{ fontSize: '14pt', fontWeight: '900', color: '#D97706', margin: '3px 0' }} className="nowrap">
                 {carbsG} جم
               </div>
-              <small style={{ fontSize: '7pt', color: '#64748B' }} className="nowrap">{Math.round(carbsG * 4)} سعرة ({Math.round(((carbsG * 4) / targetCalories) * 100)}%)</small>
+              <small style={{ fontSize: '7pt', color: '#64748B', fontWeight: '600' }} className="nowrap">طاقة وأداء عضلي</small>
             </div>
 
             {/* Fats */}
-            <div className="pdf-card" style={{ textAlign: 'center', borderTop: '2.5pt solid #10B981', padding: '6px 8px', margin: 0 }}>
+            <div className="pdf-card" style={{ textAlign: 'center', borderTop: '2.5pt solid #10B981', padding: '8px 6px', margin: 0 }}>
               <span style={{ fontSize: '7.5pt', fontWeight: '700', color: '#10B981' }}>الدهون الصحية</span>
-              <div style={{ fontSize: '13pt', fontWeight: '900', color: '#10B981', margin: '2px 0' }} className="nowrap">
+              <div style={{ fontSize: '14pt', fontWeight: '900', color: '#10B981', margin: '3px 0' }} className="nowrap">
                 {fatsG} جم
               </div>
-              <small style={{ fontSize: '7pt', color: '#64748B' }} className="nowrap">{Math.round(fatsG * 9)} سعرة ({Math.round(((fatsG * 9) / targetCalories) * 100)}%)</small>
+              <small style={{ fontSize: '7pt', color: '#64748B', fontWeight: '600' }} className="nowrap">توازن هرموني</small>
             </div>
 
           </div>
 
           {/* Hydration Banner - Centered content */}
-          <div className="pdf-card" style={{ background: '#F0F9FF', borderColor: '#BAE6FD', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '12px', padding: '5px 10px', marginBottom: '6px' }}>
+          <div className="pdf-card" style={{ background: '#F0F9FF', borderColor: '#BAE6FD', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '12px', padding: '5px 10px', marginBottom: '8px' }}>
             <span style={{ fontSize: '8pt', fontWeight: '700', color: '#0369A1' }}>معدل الترطيب واستهلاك الماء اليومي المستهدف:</span>
             <span style={{ fontSize: '9pt', fontWeight: '800', color: '#0284C7' }} className="nowrap">{hydrationLiters}</span>
           </div>
@@ -652,7 +639,7 @@ export default function ProgramPdfView() {
           )}
 
           {/* Meals Table with Centered Macro Columns */}
-          <table className="pdf-table" style={{ marginBottom: '6px' }}>
+          <table className="pdf-table" style={{ marginBottom: '8px' }}>
             <thead>
               <tr>
                 <th style={{ width: '16%', textAlign: 'center' }}>الوجبة</th>
@@ -669,12 +656,14 @@ export default function ProgramPdfView() {
                   <td style={{ fontWeight: '700', color: '#0F172A', fontSize: '7.5pt', textAlign: 'center' }} className="nowrap">
                     {meal.meal_name_ar || `الوجبة ${mIdx + 1}`}
                   </td>
-                  <td style={{ fontSize: '7.5pt', lineHeight: '1.4' }}>
-                    {meal.items?.map((it, iIdx) => (
-                      <span key={iIdx} style={{ display: 'inline', marginLeft: '6px' }}>
-                        • <strong>{it.amount_g || it.amount} {it.unit || 'جم'}</strong> {it.name_ar || it.name}{' '}
-                      </span>
-                    ))}
+                  <td style={{ fontSize: '7.5pt', lineHeight: '1.5' }}>
+                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: '3px 6px', alignItems: 'center' }}>
+                      {meal.items?.map((it, iIdx) => (
+                        <span key={iIdx} style={{ background: '#F8FAFC', border: '0.5pt solid #E2E8F0', borderRadius: '4px', padding: '1px 5px', fontSize: '7pt', color: '#334155' }}>
+                          <strong style={{ color: '#0284C7' }}>{it.amount_g || it.amount} {it.unit || 'جم'}</strong> {it.name_ar || it.name}
+                        </span>
+                      ))}
+                    </div>
                   </td>
                   <td style={{ textAlign: 'center', fontWeight: '700', color: '#0284C7', fontSize: '7.5pt' }} className="nowrap">{meal.protein_g ?? meal.p ?? 35} جم</td>
                   <td style={{ textAlign: 'center', fontWeight: '700', color: '#D97706', fontSize: '7.5pt' }} className="nowrap">{meal.carbs_g ?? meal.c ?? 45} جم</td>
@@ -721,21 +710,19 @@ export default function ProgramPdfView() {
               <span className="nowrap">كود المشترك: #{clientCode}</span>
             </div>
 
-            {/* Split Overview Banner */}
-            <div className="pdf-card" style={{ marginBottom: '8px', background: '#F8FAFC', borderRight: '3pt solid #0284C7', padding: '6px 10px' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <div>
-                  <h5 style={{ fontSize: '9.5pt', fontWeight: '900', color: '#0F172A', margin: 0 }}>
-                    البرنامج التدريبي الميداني وتوزيع الحصص الأسبوعية
-                  </h5>
-                  <small style={{ fontSize: '7.5pt', color: '#64748B' }}>
-                    نظام التدريب المعتمد: Push / Pull / Legs — تركيز التضخيم العضلي وزيادة الكثافة الحركية
-                  </small>
-                </div>
-                <span style={{ background: '#E0F2FE', color: '#0369A1', padding: '3px 8px', borderRadius: '6px', fontSize: '7.5pt', fontWeight: '800' }}>
-                  {rawSessions.length} حصص تدريبية أسبوعية
+            {/* Sleek Minimalist Training Header */}
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px', paddingBottom: '4px', borderBottom: '1.5pt solid #0284C7' }}>
+              <div>
+                <span style={{ fontSize: '9pt', fontWeight: '900', color: '#0F172A' }}>
+                  البرنامج التدريبي الميداني وتوزيع الحصص الأسبوعية
+                </span>
+                <span style={{ fontSize: '7pt', color: '#64748B', marginRight: '8px' }}>
+                  (نظام Push / Pull / Legs — زيادة التوتر الميكانيكي والبناء العضلي)
                 </span>
               </div>
+              <span style={{ background: '#E0F2FE', color: '#0369A1', padding: '2px 8px', borderRadius: '6px', fontSize: '7pt', fontWeight: '800' }}>
+                {rawSessions.length} حصص أسبوعية
+              </span>
             </div>
 
             {/* Render 2 Full-Width Sessions per Page with Centered Columns */}
@@ -761,10 +748,10 @@ export default function ProgramPdfView() {
                       return (
                         <tr key={eIdx}>
                           <td style={{ textAlign: 'right' }}>
-                            <strong style={{ display: 'block', fontSize: '7.5pt', color: '#0F172A', direction: 'ltr', textAlign: 'right' }}>
+                            <strong style={{ display: 'block', fontSize: '8pt', fontWeight: '800', color: '#0F172A', direction: 'ltr', textAlign: 'right' }}>
                               {exNames.nameEn}
                             </strong>
-                            <span style={{ fontSize: '7pt', color: '#64748B' }}>
+                            <span style={{ fontSize: '6.8pt', color: '#64748B', display: 'block', marginTop: '1px' }}>
                               {exNames.nameAr}
                             </span>
                           </td>
@@ -860,54 +847,82 @@ export default function ProgramPdfView() {
           </table>
 
           {/* 6. Smart Food Swaps Table */}
-          <div className="section-title">6. جدول المبادلات الغذائية الذكية الفورية (بدائل متكافئة)</div>
-          <table className="pdf-table" style={{ marginBottom: '12px' }}>
+          <div className="section-title">6. جدول المبادلات الغذائية الفورية (بدائل متكافئة)</div>
+          <table className="pdf-table" style={{ marginBottom: '10px' }}>
             <thead>
               <tr>
-                <th style={{ width: '28%', textAlign: 'center' }}>الصنف الأساسي في الخطة</th>
-                <th style={{ width: '72%', textAlign: 'center' }}>البدائل المباشرة المكافئة لنفس السعرات والماكروز بالجرام</th>
+                <th style={{ width: '28%', textAlign: 'center' }}>الصنف الأساسي</th>
+                <th style={{ width: '72%', textAlign: 'right' }}>الخيارات البديلة المكافئة لنفس السعرات والماكروز</th>
               </tr>
             </thead>
             <tbody>
               <tr>
                 <td style={{ fontWeight: '700', color: '#0F172A', textAlign: 'center' }}>100 جم صدور دجاج مشوية</td>
-                <td style={{ textAlign: 'center' }}>= 125 جم سمك فيليه أبيض = 110 جم لحم بقري صافي 5% دهون = 130 جم جمبري مشوي = 130 جم تونة مصفاة بالماء</td>
+                <td style={{ fontSize: '7pt', lineHeight: '1.6' }}>
+                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: '3px 6px', alignItems: 'center' }}>
+                    <span style={{ background: '#F8FAFC', border: '0.5pt solid #E2E8F0', borderRadius: '4px', padding: '1px 5px' }}>125 جم سمك فيليه أبيض</span>
+                    <span style={{ background: '#F8FAFC', border: '0.5pt solid #E2E8F0', borderRadius: '4px', padding: '1px 5px' }}>110 جم لحم بقري صافي (5% دهون)</span>
+                    <span style={{ background: '#F8FAFC', border: '0.5pt solid #E2E8F0', borderRadius: '4px', padding: '1px 5px' }}>130 جم جمبري مشوي</span>
+                    <span style={{ background: '#F8FAFC', border: '0.5pt solid #E2E8F0', borderRadius: '4px', padding: '1px 5px' }}>130 جم تونة مصفاة بالماء</span>
+                  </div>
+                </td>
               </tr>
               <tr>
                 <td style={{ fontWeight: '700', color: '#0F172A', textAlign: 'center' }}>100 جم أرز بسمتي مطبوخ</td>
-                <td style={{ textAlign: 'center' }}>= 110 جم بطاطس مسلوقة/مشوية = 100 جم بطاطا حلوة = 35 جم شوفان خام كامل = 2 شريحة خبز توست بني</td>
+                <td style={{ fontSize: '7pt', lineHeight: '1.6' }}>
+                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: '3px 6px', alignItems: 'center' }}>
+                    <span style={{ background: '#F8FAFC', border: '0.5pt solid #E2E8F0', borderRadius: '4px', padding: '1px 5px' }}>110 جم بطاطس مسلوقة/مشوية</span>
+                    <span style={{ background: '#F8FAFC', border: '0.5pt solid #E2E8F0', borderRadius: '4px', padding: '1px 5px' }}>100 جم بطاطا حلوة</span>
+                    <span style={{ background: '#F8FAFC', border: '0.5pt solid #E2E8F0', borderRadius: '4px', padding: '1px 5px' }}>35 جم شوفان كامل الحبة خام</span>
+                    <span style={{ background: '#F8FAFC', border: '0.5pt solid #E2E8F0', borderRadius: '4px', padding: '1px 5px' }}>2 شريحة خبز توست بني</span>
+                  </div>
+                </td>
               </tr>
               <tr>
                 <td style={{ fontWeight: '700', color: '#0F172A', textAlign: 'center' }}>100 جم جبن قريش طبيعي</td>
-                <td style={{ textAlign: 'center' }}>= 120 جم زبادي يوناني طبيعي 0% دسم = 4 بياض بيض كبير = 1 مكيال بروتين واي معزول (25 جم)</td>
+                <td style={{ fontSize: '7pt', lineHeight: '1.6' }}>
+                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: '3px 6px', alignItems: 'center' }}>
+                    <span style={{ background: '#F8FAFC', border: '0.5pt solid #E2E8F0', borderRadius: '4px', padding: '1px 5px' }}>120 جم زبادي يوناني 0% دسم</span>
+                    <span style={{ background: '#F8FAFC', border: '0.5pt solid #E2E8F0', borderRadius: '4px', padding: '1px 5px' }}>4 بياض بيض كبير</span>
+                    <span style={{ background: '#F8FAFC', border: '0.5pt solid #E2E8F0', borderRadius: '4px', padding: '1px 5px' }}>1 مكيال واي بروتين معزول (25 جم)</span>
+                  </div>
+                </td>
               </tr>
               <tr>
                 <td style={{ fontWeight: '700', color: '#0F172A', textAlign: 'center' }}>10 جم زيت زيتون بكر</td>
-                <td style={{ textAlign: 'center' }}>= 15 جم زبدة فول سوداني طبيعية 100% = 40 جم أفوكادو طازج = 15 جم مكسرات نيئة غير مملحة (لوز أو جوز)</td>
+                <td style={{ fontSize: '7pt', lineHeight: '1.6' }}>
+                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: '3px 6px', alignItems: 'center' }}>
+                    <span style={{ background: '#F8FAFC', border: '0.5pt solid #E2E8F0', borderRadius: '4px', padding: '1px 5px' }}>15 جم زبدة فول سوداني طبيعية 100%</span>
+                    <span style={{ background: '#F8FAFC', border: '0.5pt solid #E2E8F0', borderRadius: '4px', padding: '1px 5px' }}>40 جم أفوكادو طازج</span>
+                    <span style={{ background: '#F8FAFC', border: '0.5pt solid #E2E8F0', borderRadius: '4px', padding: '1px 5px' }}>15 جم مكسرات نيئة (لوز أو جوز)</span>
+                  </div>
+                </td>
               </tr>
             </tbody>
           </table>
 
-          {/* 7. Zone 2 Cardio Protocol */}
-          <div className="section-title">7. بروتوكول كارديو حرق الدهون واللياقة القلبية</div>
-          <table className="pdf-table pdf-table-center" style={{ marginBottom: '12px' }}>
-            <thead>
-              <tr>
-                <th style={{ width: '30%', textAlign: 'center' }}>النشاط الرياضي الموصى به</th>
-                <th style={{ width: '22%', textAlign: 'center' }}>التكرار الأسبوعي</th>
-                <th style={{ width: '22%', textAlign: 'center' }}>المدة لكل جلسة</th>
-                <th style={{ width: '26%', textAlign: 'center' }}>معدل النبض المستهدف</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr style={{ fontWeight: '700', textAlign: 'center' }}>
-                <td style={{ textAlign: 'center' }}>المشي على سير مائل (Incline Treadmill)</td>
-                <td className="nowrap" style={{ textAlign: 'center' }}>3 إلى 4 جلسات</td>
-                <td className="nowrap" style={{ textAlign: 'center' }}>30 دقيقة</td>
-                <td style={{ color: '#0284C7', textAlign: 'center' }} className="nowrap">125 - 135 نبضة / دقيقة</td>
-              </tr>
-            </tbody>
-          </table>
+          {/* 7. Zone 2 Cardio Protocol - Sleek Visual Card */}
+          <div className="section-title">7. بروتوكول كارديو حرق الدهون واللياقة القلبية (Zone 2)</div>
+          <div className="pdf-card" style={{ background: '#F8FAFC', borderColor: '#BAE6FD', padding: '8px 12px', marginBottom: '10px' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '8px', textAlign: 'center' }}>
+              <div>
+                <span style={{ fontSize: '7pt', color: '#64748B', display: 'block' }}>النشاط الموصى به</span>
+                <strong style={{ fontSize: '7.5pt', color: '#0F172A' }}>سير مائل (Incline Treadmill)</strong>
+              </div>
+              <div>
+                <span style={{ fontSize: '7pt', color: '#64748B', display: 'block' }}>التكرار الأسبوعي</span>
+                <strong style={{ fontSize: '7.5pt', color: '#0284C7' }} className="nowrap">3 إلى 4 جلسات</strong>
+              </div>
+              <div>
+                <span style={{ fontSize: '7pt', color: '#64748B', display: 'block' }}>المدة لكل جلسة</span>
+                <strong style={{ fontSize: '7.5pt', color: '#0F172A' }} className="nowrap">30 دقيقة</strong>
+              </div>
+              <div>
+                <span style={{ fontSize: '7pt', color: '#64748B', display: 'block' }}>معدل النبض المستهدف</span>
+                <strong style={{ fontSize: '7.5pt', color: '#16A34A' }} className="nowrap">125 - 135 نبضة / دقيقة</strong>
+              </div>
+            </div>
+          </div>
 
           {/* Practical Tips Box */}
           <div className="section-title">8. القواعد الذهبية للاستمرار وتحقيق النتائج</div>
