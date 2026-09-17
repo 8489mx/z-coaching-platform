@@ -1,7 +1,8 @@
-import React from 'react';
-import { ArrowRightLeft, Search, X } from 'lucide-react';
+import React, { useState } from 'react';
+import { ArrowRightLeft, Search, X, Utensils, Scale } from 'lucide-react';
 import { FOOD_DATABASE_LIST } from '../../constants/coachEditorConstants';
 import { arabicSearchMatch } from '../../../../utils/searchUtils';
+import { convertPortionCookingYield, FOOD_YIELD_MAPPING } from '../../../../utils/kitchenYieldEngine';
 
 export function CoachSwapFoodModal({
   swapFoodModal,
@@ -10,22 +11,39 @@ export function CoachSwapFoodModal({
   setSwapFoodSearch,
   handleExecuteFoodSwap
 }) {
+  const [activeFilter, setActiveFilter] = useState('ALL');
+
   if (!swapFoodModal.open || !swapFoodModal.currentItem) return null;
+
+  const curCat = String(swapFoodModal.currentItem.category || '').toUpperCase();
+  const normCur = (curCat === 'FATS' || curCat === 'FAT') ? 'FAT'
+    : (curCat === 'CARBS' || curCat === 'CARB') ? 'CARB'
+    : (curCat === 'PROTEINS' || curCat === 'PROTEIN') ? 'PROTEIN'
+    : curCat;
+
+  const getHandPortionTip = (category) => {
+    if (category === 'PROTEIN') return 'معيار يدوي: بحجم راحة اليد (Palm)';
+    if (category === 'CARB') return 'معيار يدوي: بحجم قبضة اليد المقبوضة (Fist)';
+    if (category === 'FAT') return 'معيار يدوي: بحجم عقلة الإبهام (Thumb)';
+    return 'معيار يدوي متطابق';
+  };
 
   return (
     <div style={{ position: 'fixed', inset: 0, background: 'rgba(15, 23, 42, 0.5)', backdropFilter: 'blur(4px)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 9999, padding: '16px' }} dir="rtl">
-      <div style={{ maxWidth: '520px', width: '100%', background: '#FFFFFF', borderRadius: '8px', border: '1px solid #E2E8F0', padding: '16px', display: 'flex', flexDirection: 'column', gap: '12px', maxHeight: '85vh', boxShadow: '0 10px 25px rgba(0,0,0,0.1)' }}>
+      <div style={{ maxWidth: '560px', width: '100%', background: '#FFFFFF', borderRadius: '16px', border: '1px solid #E2E8F0', padding: '16px', display: 'flex', flexDirection: 'column', gap: '12px', maxHeight: '88vh', boxShadow: '0 20px 50px rgba(0,0,0,0.15)' }}>
         
         {/* Header */}
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid #F1F5F9', paddingBottom: '8px' }}>
           <div>
             <h4 style={{ margin: 0, fontSize: '13.5px', fontWeight: 800, color: '#0F172A', display: 'flex', alignItems: 'center', gap: '6px' }}>
-              <ArrowRightLeft size={14} color="#2563EB" />
+              <ArrowRightLeft size={15} color="#2563EB" />
               <span>البدائل الغذائية المتكافئة لـ ({swapFoodModal.currentItem.name})</span>
             </h4>
-            <span style={{ fontSize: '10.5px', color: '#64748B', marginTop: '2px', display: 'block' }}>
-              الكمية الحالية: {swapFoodModal.currentItem.amount} {swapFoodModal.currentItem.unit || 'جم'} ({swapFoodModal.currentItem.cal || 0} kcal)
-            </span>
+            <div style={{ fontSize: '10.5px', color: '#64748B', marginTop: '2px', display: 'flex', gap: '8px', alignItems: 'center' }}>
+              <span>الكمية الحالية: <strong style={{ color: '#0F172A' }}>{swapFoodModal.currentItem.amount} {swapFoodModal.currentItem.unit || 'جم'}</strong> ({swapFoodModal.currentItem.cal || 0} kcal)</span>
+              <span>•</span>
+              <span style={{ color: '#2563EB', fontWeight: 600 }}>{getHandPortionTip(normCur)}</span>
+            </div>
           </div>
           <button type="button" onClick={() => setSwapFoodModal({ open: false, mealId: null, itemIdx: null, currentItem: null })} style={{ background: 'transparent', border: 'none', cursor: 'pointer', color: '#64748B' }}>
             <X size={15} />
@@ -36,24 +54,19 @@ export function CoachSwapFoodModal({
         <div style={{ position: 'relative' }}>
           <input
             type="text"
-            placeholder="ابحث عن صنف بديل..."
+            placeholder="ابحث عن صنف بديل باسمه العربي أو الإنجليزي..."
             value={swapFoodSearch}
             onChange={(e) => setSwapFoodSearch(e.target.value)}
-            style={{ width: '100%', height: '32px', borderRadius: '6px', border: '1px solid #CBD5E1', padding: '0 28px 0 10px', fontSize: '11.5px', outline: 'none', boxSizing: 'border-box' }}
+            style={{ width: '100%', height: '32px', borderRadius: '8px', border: '1px solid #CBD5E1', padding: '0 28px 0 10px', fontSize: '11.5px', outline: 'none', boxSizing: 'border-box' }}
           />
           <Search size={13} style={{ position: 'absolute', right: '9px', top: '10px', color: '#94A3B8' }} />
         </div>
 
         {/* Compatible Swaps List */}
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', overflowY: 'auto', maxHeight: '340px', paddingRight: '2px' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', overflowY: 'auto', maxHeight: '400px', paddingRight: '2px' }}>
           {FOOD_DATABASE_LIST
             .filter(f => {
-              const curCat = String(swapFoodModal.currentItem.category || '').toUpperCase();
               const fCat = String(f.category || f.macro_type || '').toUpperCase();
-              const normCur = (curCat === 'FATS' || curCat === 'FAT') ? 'FAT'
-                : (curCat === 'CARBS' || curCat === 'CARB') ? 'CARB'
-                : (curCat === 'PROTEINS' || curCat === 'PROTEIN') ? 'PROTEIN'
-                : curCat;
               const normF = (fCat === 'FATS' || fCat === 'FAT') ? 'FAT'
                 : (fCat === 'CARBS' || fCat === 'CARB') ? 'CARB'
                 : (fCat === 'PROTEINS' || fCat === 'PROTEIN') ? 'PROTEIN'
@@ -67,21 +80,16 @@ export function CoachSwapFoodModal({
             })
             .map((targetFood, tfIdx) => {
               let equivGrams = 100;
-              const curCat = String(swapFoodModal.currentItem.category || '').toUpperCase();
-              const normCat = (curCat === 'FATS' || curCat === 'FAT') ? 'FAT'
-                : (curCat === 'CARBS' || curCat === 'CARB') ? 'CARB'
-                : (curCat === 'PROTEINS' || curCat === 'PROTEIN') ? 'PROTEIN'
-                : curCat;
 
-              if (normCat === 'PROTEIN') {
+              if (normCur === 'PROTEIN') {
                 const curP = Number(swapFoodModal.currentItem.p) || 25;
                 const targetP = Number(targetFood.protein_per_100g || targetFood.p || 25);
                 equivGrams = Math.max(10, Math.round((curP / targetP) * 100));
-              } else if (normCat === 'CARB') {
+              } else if (normCur === 'CARB') {
                 const curC = Number(swapFoodModal.currentItem.c) || 30;
                 const targetC = Number(targetFood.carbs_per_100g || targetFood.c || 25);
                 equivGrams = Math.max(10, Math.round((curC / targetC) * 100));
-              } else if (normCat === 'FAT') {
+              } else if (normCur === 'FAT') {
                 const curF = Number(swapFoodModal.currentItem.f) || 8;
                 const targetF = Number(targetFood.fat_per_100g || targetFood.f || 10);
                 const rawEquiv = Math.round((curF / targetF) * 100);
@@ -100,11 +108,28 @@ export function CoachSwapFoodModal({
                 }
               }
 
+              // Round to clean 5g increments
+              equivGrams = Math.round(equivGrams / 5) * 5;
+
               const factor = equivGrams / 100;
               const equivCal = Math.round((targetFood.calories_per_100g || targetFood.cal || 100) * factor);
               const equivP = Number(((targetFood.protein_per_100g || targetFood.p || 0) * factor).toFixed(1));
               const equivC = Number(((targetFood.carbs_per_100g || targetFood.c || 0) * factor).toFixed(1));
               const equivF = Number(((targetFood.fat_per_100g || targetFood.f || 0) * factor).toFixed(1));
+
+              // Cooking Yield Conversion Info (Raw vs Cooked)
+              let cookingYieldInfo = null;
+              if (targetFood.code && FOOD_YIELD_MAPPING[targetFood.code]) {
+                const yieldConv = convertPortionCookingYield({
+                  food_code: targetFood.code,
+                  amount_g: equivGrams,
+                  from_state: 'COOKED',
+                  to_state: 'RAW'
+                });
+                if (yieldConv.converted_amount_g !== equivGrams) {
+                  cookingYieldInfo = `يزن نيئاً: ~${yieldConv.converted_amount_g} جم`;
+                }
+              }
 
               return (
                 <div
@@ -112,21 +137,28 @@ export function CoachSwapFoodModal({
                   style={{
                     background: '#F8FAFC',
                     border: '1px solid #E2E8F0',
-                    borderRadius: '6px',
-                    padding: '8px 10px',
+                    borderRadius: '10px',
+                    padding: '10px 12px',
                     display: 'flex',
                     justifyContent: 'space-between',
                     alignItems: 'center',
-                    gap: '10px'
+                    gap: '12px'
                   }}
                 >
                   <div>
-                    <strong style={{ fontSize: '12px', color: '#0F172A', display: 'block' }}>{targetFood.name}</strong>
-                    <span style={{ fontSize: '10.5px', color: '#64748B' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                      <strong style={{ fontSize: '12px', color: '#0F172A' }}>{targetFood.name}</strong>
+                      {cookingYieldInfo && (
+                        <span style={{ fontSize: '9.5px', background: '#F1F5F9', color: '#475569', padding: '1px 6px', borderRadius: '6px', border: '1px solid #CBD5E1', fontWeight: 600 }}>
+                          {cookingYieldInfo}
+                        </span>
+                      )}
+                    </div>
+                    <div style={{ fontSize: '10.5px', color: '#64748B', marginTop: '2px' }}>
                       الكمية المكافئة: <strong style={{ color: '#0F172A' }}>{equivGrams} {targetFood.serving_unit || targetFood.unit || 'جم'}</strong> ({equivCal} kcal)
-                    </span>
+                    </div>
                     <div style={{ fontSize: '9.5px', color: '#94A3B8', marginTop: '1px' }}>
-                      P:{equivP}g · C:{equivC}g · F:{equivF}g
+                      P: {equivP}g · C: {equivC}g · F: {equivF}g
                     </div>
                   </div>
 
@@ -136,7 +168,7 @@ export function CoachSwapFoodModal({
                     style={{
                       height: '28px',
                       padding: '0 12px',
-                      borderRadius: '7px',
+                      borderRadius: '8px',
                       background: '#0F172A',
                       color: '#FFFFFF',
                       border: 'none',

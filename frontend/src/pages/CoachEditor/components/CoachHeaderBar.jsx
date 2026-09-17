@@ -8,6 +8,7 @@ import {
   ShieldAlert, 
   ShieldCheck,
   AlertCircle,
+  AlertTriangle,
   Smartphone,
   MessageCircle,
   ChevronRight,
@@ -24,6 +25,7 @@ export function CoachHeaderBar({
   saving,
   setIsLabModalOpen,
   setIsPlanQualityOpen,
+  setIsEmergencyModalOpen,
   handleApproveAndPublish,
   publishing,
   clientsList = [],
@@ -56,8 +58,8 @@ export function CoachHeaderBar({
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
             <h4 style={{ margin: 0, fontSize: '15px', fontWeight: 800, color: '#0F172A', display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
               <span>{program?.client?.full_name || 'أحمد محمود العوضي'}</span>
-              <span style={{ fontSize: '12px', color: '#64748B', fontWeight: 700 }}>
-                ({program?.client?.client_code ? `#${program?.client?.client_code}` : '#1'})
+              <span style={{ fontSize: '12px', color: '#64748B', fontWeight: 700 }} dir="ltr">
+                ({program?.client?.client_code ? `#${String(program.client.client_code).replace(/^#+/, '')}` : '#1'})
               </span>
             </h4>
 
@@ -126,78 +128,80 @@ export function CoachHeaderBar({
         </div>
       </div>
 
-      {/* Actions */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flexWrap: 'wrap' }}>
-        {/* Previous / Next Client Quick Switcher */}
-        {clientsList.length > 1 && handleSelectClient && (
-          <div style={{ display: 'flex', alignItems: 'center', gap: '2px', background: '#F1F5F9', padding: '2px', borderRadius: '8px', border: '1px solid #E2E8F0', marginLeft: '4px' }}>
-            <button
-              type="button"
-              onClick={() => prevClient && handleSelectClient(prevClient.client_code || prevClient.id)}
-              disabled={!prevClient}
-              title={prevClient ? `المشترك السابق: ${prevClient.full_name || prevClient.name}` : 'لا يوجد مشترك سابق'}
-              style={{
-                height: '28px',
-                padding: '0 8px',
-                borderRadius: '6px',
-                border: 'none',
-                background: prevClient ? '#FFFFFF' : 'transparent',
-                color: prevClient ? '#0F172A' : '#94A3B8',
-                fontSize: '11px',
-                fontWeight: 700,
-                cursor: prevClient ? 'pointer' : 'not-allowed',
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: '2px',
-                boxShadow: prevClient ? '0 1px 2px rgba(15, 23, 42, 0.05)' : 'none'
-              }}
-            >
-              <ChevronRight size={13} />
-              <span>السابق</span>
-            </button>
+      {/* Actions Toolbar - Clustered into 3 Functional Modules */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+        
+        {/* Cluster 1: Client Navigation & Live Previews */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '4px', background: '#F8FAFC', border: '1px solid #E2E8F0', padding: '3px 4px', borderRadius: '10px' }}>
+          {/* Quick Switcher */}
+          {clientsList.length > 1 && handleSelectClient && (
+            <div style={{ display: 'flex', alignItems: 'center', gap: '2px' }}>
+              <button
+                type="button"
+                onClick={() => prevClient && handleSelectClient(prevClient.client_code || prevClient.id)}
+                disabled={!prevClient}
+                title={prevClient ? `المشترك السابق: ${prevClient.full_name || prevClient.name}` : 'لا يوجد مشترك سابق'}
+                style={{
+                  height: '26px',
+                  padding: '0 6px',
+                  borderRadius: '6px',
+                  border: 'none',
+                  background: prevClient ? '#FFFFFF' : 'transparent',
+                  color: prevClient ? '#0F172A' : '#94A3B8',
+                  fontSize: '11px',
+                  fontWeight: 700,
+                  cursor: prevClient ? 'pointer' : 'not-allowed',
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '2px',
+                  boxShadow: prevClient ? '0 1px 2px rgba(15, 23, 42, 0.05)' : 'none'
+                }}
+              >
+                <ChevronRight size={12} />
+                <span>السابق</span>
+              </button>
 
-            <button
-              type="button"
-              onClick={() => nextClient && handleSelectClient(nextClient.client_code || nextClient.id)}
-              disabled={!nextClient}
-              title={nextClient ? `المشترك التالي: ${nextClient.full_name || nextClient.name}` : 'لا يوجد مشترك تالي'}
-              style={{
-                height: '28px',
-                padding: '0 8px',
-                borderRadius: '6px',
-                border: 'none',
-                background: nextClient ? '#FFFFFF' : 'transparent',
-                color: nextClient ? '#0F172A' : '#94A3B8',
-                fontSize: '11px',
-                fontWeight: 700,
-                cursor: nextClient ? 'pointer' : 'not-allowed',
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: '2px',
-                boxShadow: nextClient ? '0 1px 2px rgba(15, 23, 42, 0.05)' : 'none'
-              }}
-            >
-              <span>التالي</span>
-              <ChevronLeft size={13} />
-            </button>
-          </div>
-        )}
+              <button
+                type="button"
+                onClick={() => nextClient && handleSelectClient(nextClient.client_code || nextClient.id)}
+                disabled={!nextClient}
+                title={nextClient ? `المشترك التالي: ${nextClient.full_name || nextClient.name}` : 'لا يوجد مشترك تالي'}
+                style={{
+                  height: '26px',
+                  padding: '0 6px',
+                  borderRadius: '6px',
+                  border: 'none',
+                  background: nextClient ? '#FFFFFF' : 'transparent',
+                  color: nextClient ? '#0F172A' : '#94A3B8',
+                  fontSize: '11px',
+                  fontWeight: 700,
+                  cursor: nextClient ? 'pointer' : 'not-allowed',
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '2px',
+                  boxShadow: nextClient ? '0 1px 2px rgba(15, 23, 42, 0.05)' : 'none'
+                }}
+              >
+                <span>التالي</span>
+                <ChevronLeft size={12} />
+              </button>
+            </div>
+          )}
 
-        {/* 1-Click WhatsApp Direct Chat */}
-        {clientPhone && (
+          {/* Live Client App Preview */}
           <a
-            href={generateWhatsAppUrl(clientPhone, `أهلاً ${program?.client?.full_name ? program.client.full_name.replace(/مشترك #\d+/g, '').trim() : ''}، بخصوص خطتك التدريبية والغذائية:`)}
+            href={`/client?code=${currentCode || '1'}`}
             target="_blank"
             rel="noreferrer"
-            title="مراسلة المتدرب مباشرة عبر واتساب"
+            title="معاينة حية لتطبيق المتدرب على الموبايل"
             style={{
-              height: '32px',
-              padding: '0 10px',
-              borderRadius: '8px',
-              background: '#F0FDF4',
-              color: '#16A34A',
-              border: '1px solid #BBF7D0',
-              fontSize: '11.5px',
+              height: '26px',
+              padding: '0 8px',
+              borderRadius: '6px',
+              background: '#FFFFFF',
+              color: '#334155',
+              border: '1px solid #CBD5E1',
+              fontSize: '11px',
               fontWeight: 700,
               textDecoration: 'none',
               display: 'inline-flex',
@@ -206,52 +210,133 @@ export function CoachHeaderBar({
               transition: 'all 0.15s ease'
             }}
           >
-            <MessageCircle size={13} />
-            <span>واتساب</span>
+            <Smartphone size={12} />
+            <span>تطبيق المتدرب</span>
           </a>
-        )}
 
-        {/* Live Client App Preview */}
-        <a
-          href={`/client?code=${currentCode || '1'}`}
-          target="_blank"
-          rel="noreferrer"
-          title="معاينة حية لتطبيق المتدرب على الموبايل"
-          style={{
-            height: '32px',
-            padding: '0 10px',
-            borderRadius: '8px',
-            background: '#F8FAFC',
-            color: '#475569',
-            border: '1px solid #CBD5E1',
-            fontSize: '11.5px',
-            fontWeight: 700,
-            textDecoration: 'none',
-            display: 'inline-flex',
-            alignItems: 'center',
-            gap: '4px',
-            transition: 'all 0.15s ease'
-          }}
-        >
-          <Smartphone size={13} />
-          <span>تطبيق المتدرب</span>
-        </a>
+          {/* WhatsApp Direct Chat */}
+          {clientPhone && (
+            <a
+              href={generateWhatsAppUrl(clientPhone, `أهلاً ${program?.client?.full_name ? program.client.full_name.replace(/مشترك #\d+/g, '').trim() : ''}، بخصوص خطتك التدريبية والغذائية:`)}
+              target="_blank"
+              rel="noreferrer"
+              title="مراسلة المتدرب مباشرة عبر واتساب"
+              style={{
+                height: '26px',
+                padding: '0 8px',
+                borderRadius: '6px',
+                background: '#F0FDF4',
+                color: '#16A34A',
+                border: '1px solid #BBF7D0',
+                fontSize: '11px',
+                fontWeight: 700,
+                textDecoration: 'none',
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '3px',
+                transition: 'all 0.15s ease'
+              }}
+            >
+              <MessageCircle size={12} />
+              <span>واتساب</span>
+            </a>
+          )}
+        </div>
 
-        {/* Plan Quality Shield Button */}
-        {typeof setIsPlanQualityOpen === 'function' && (
+        {/* Cluster 2: Clinical Audit & Quality Assurance */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
           <button
             type="button"
-            onClick={() => setIsPlanQualityOpen(true)}
-            title="فحص جودة وتكامل الخطة سريرياً وتدريبياً قبل النشر"
+            onClick={() => setIsLabModalOpen(true)}
             style={{
-              height: '32px',
+              height: '30px',
               padding: '0 10px',
               borderRadius: '8px',
-              background: '#F0FDF4',
-              color: '#16A34A',
-              border: '1px solid #BBF7D0',
-              fontSize: '11.5px',
-              fontWeight: 800,
+              background: '#F0F9FF',
+              color: '#0284C7',
+              border: '1px solid #BAE6FD',
+              fontSize: '11px',
+              fontWeight: 700,
+              cursor: 'pointer',
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '4px',
+              transition: 'all 0.15s ease'
+            }}
+            title="فحص المؤشرات الحيوية والتحاليل المخبرية للمشترك"
+          >
+            <HeartPulse size={13} color="#0284C7" />
+            <span>فحص التحاليل</span>
+          </button>
+
+          {typeof setIsPlanQualityOpen === 'function' && (
+            <button
+              type="button"
+              onClick={() => setIsPlanQualityOpen(true)}
+              title="فحص جودة وتكامل الخطة سريرياً وتدريبياً قبل النشر"
+              style={{
+                height: '30px',
+                padding: '0 10px',
+                borderRadius: '8px',
+                background: '#F0FDF4',
+                color: '#16A34A',
+                border: '1px solid #BBF7D0',
+                fontSize: '11px',
+                fontWeight: 700,
+                cursor: 'pointer',
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '4px',
+                transition: 'all 0.15s ease'
+              }}
+            >
+              <ShieldCheck size={13} />
+              <span>درع جودة الخطة</span>
+            </button>
+          )}
+
+          {typeof setIsEmergencyModalOpen === 'function' && (
+            <button
+              type="button"
+              onClick={() => setIsEmergencyModalOpen(true)}
+              title="محرك المرونة وسيناريوهات السفر، المرض، وضغط الامتحانات"
+              style={{
+                height: '30px',
+                padding: '0 10px',
+                borderRadius: '8px',
+                background: '#FFFBEB',
+                color: '#B45309',
+                border: '1px solid #FDE68A',
+                fontSize: '11px',
+                fontWeight: 700,
+                cursor: 'pointer',
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '4px',
+                transition: 'all 0.15s ease'
+              }}
+            >
+              <AlertTriangle size={13} color="#B45309" />
+              <span>محرك المرونة والطوارئ</span>
+            </button>
+          )}
+        </div>
+
+        {/* Cluster 3: Primary Save & Publishing Actions */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+          <button
+            type="button"
+            onClick={handleSaveDraft}
+            disabled={saving}
+            style={{
+              height: '30px',
+              padding: '0 10px',
+              borderRadius: '8px',
+              background: '#FFFFFF',
+              color: '#0F172A',
+              border: '1px solid #CBD5E1',
+              fontSize: '11px',
+              fontWeight: 700,
               cursor: 'pointer',
               display: 'inline-flex',
               alignItems: 'center',
@@ -259,107 +344,64 @@ export function CoachHeaderBar({
               transition: 'all 0.15s ease'
             }}
           >
-            <ShieldCheck size={13} />
-            <span>درع جودة الخطة</span>
+            {saving ? <Loader2 size={12} className="animate-spin" /> : <Save size={12} />}
+            <span>حفظ المسودة</span>
           </button>
-        )}
 
-        <button
-          type="button"
-          onClick={handleSaveDraft}
-          disabled={saving}
-          style={{
-            height: '32px',
-            padding: '0 12px',
-            borderRadius: '8px',
-            background: '#FFFFFF',
-            color: '#0F172A',
-            border: '1px solid #CBD5E1',
-            fontSize: '11.5px',
-            fontWeight: 700,
-            cursor: 'pointer',
-            display: 'inline-flex',
-            alignItems: 'center',
-            gap: '5px'
-          }}
-        >
-          {saving ? <Loader2 size={12} className="animate-spin" /> : <Save size={12} />}
-          <span>حفظ المسودة</span>
-        </button>
+          <button
+            type="button"
+            onClick={async () => {
+              try {
+                await handleSaveDraft(false);
+              } catch {}
+              window.open(`/pdf?user_id=${program?.client?.client_code || clientCodeParam}`, '_blank');
+            }}
+            style={{
+              height: '30px',
+              padding: '0 10px',
+              borderRadius: '8px',
+              background: '#F8FAFC',
+              color: '#475569',
+              border: '1px solid #E2E8F0',
+              fontSize: '11px',
+              fontWeight: 700,
+              cursor: 'pointer',
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '4px',
+              transition: 'all 0.15s ease'
+            }}
+          >
+            <Printer size={12} />
+            <span>معاينة PDF</span>
+          </button>
 
-        <button
-          type="button"
-          onClick={async () => {
-            try {
-              await handleSaveDraft(false);
-            } catch {}
-            window.open(`/pdf?user_id=${program?.client?.client_code || clientCodeParam}`, '_blank');
-          }}
-          style={{
-            height: '32px',
-            padding: '0 10px',
-            borderRadius: '8px',
-            background: '#F8FAFC',
-            color: '#475569',
-            border: '1px solid #E2E8F0',
-            fontSize: '11.5px',
-            fontWeight: 700,
-            cursor: 'pointer',
-            display: 'inline-flex',
-            alignItems: 'center',
-            gap: '4px'
-          }}
-        >
-          <Printer size={12} />
-          <span>معاينة PDF</span>
-        </button>
+          <button
+            type="button"
+            onClick={handleApproveAndPublish}
+            disabled={publishing}
+            style={{
+              height: '30px',
+              padding: '0 14px',
+              borderRadius: '8px',
+              background: '#0F172A',
+              color: '#FFFFFF',
+              border: 'none',
+              fontSize: '11.5px',
+              fontWeight: 800,
+              cursor: 'pointer',
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '5px',
+              boxShadow: '0 2px 5px rgba(15, 23, 42, 0.2)',
+              transition: 'all 0.15s ease'
+            }}
+          >
+            {publishing ? <Loader2 size={13} className="animate-spin" /> : <Send size={13} />}
+            <span>اعتماد ونشر الخطة</span>
+          </button>
+        </div>
 
-        <button
-          type="button"
-          onClick={() => setIsLabModalOpen(true)}
-          style={{
-            height: '32px',
-            padding: '0 11px',
-            borderRadius: '8px',
-            background: '#F0F9FF',
-            color: '#0284C7',
-            border: '1px solid #BAE6FD',
-            fontSize: '11.5px',
-            fontWeight: 800,
-            cursor: 'pointer',
-            display: 'inline-flex',
-            alignItems: 'center',
-            gap: '5px'
-          }}
-          title="فحص المؤشرات الحيوية والتحاليل المخبرية للمشترك"
-        >
-          <HeartPulse size={13} color="#0284C7" />
-          <span>فحص التحاليل</span>
-        </button>
-
-        <button
-          type="button"
-          onClick={handleApproveAndPublish}
-          disabled={publishing}
-          style={{
-            height: '32px',
-            padding: '0 14px',
-            borderRadius: '8px',
-            background: '#0F172A',
-            color: '#FFFFFF',
-            border: 'none',
-            fontSize: '11.5px',
-            fontWeight: 800,
-            cursor: 'pointer',
-            display: 'inline-flex',
-            alignItems: 'center',
-            gap: '5px',
-            boxShadow: '0 2px 4px rgba(15, 23, 42, 0.2)'
-          }}
-        >
-          {publishing ? <Loader2 size={13} className="animate-spin" /> : <Send size={13} />}
-          <span>اعتماد ونشر الخطة</span>
-        </button>
       </div>
     </div>
   );

@@ -156,16 +156,20 @@ export function CoachClientsQueue({
                   <strong style={{ fontSize: '12px', fontWeight: 800, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: '140px' }}>
                     {client.full_name || client.name}
                   </strong>
-                  <span style={{
-                    fontSize: '9.5px',
-                    fontFamily: 'monospace',
-                    fontWeight: 800,
-                    padding: '1px 4px',
-                    borderRadius: '6px',
-                    background: isSelected ? 'rgba(255,255,255,0.2)' : '#F1F5F9',
-                    color: isSelected ? '#FFFFFF' : '#475569'
-                  }}>
-                    #{client.client_code || client.id}
+                  <span 
+                    dir="ltr"
+                    style={{
+                      fontSize: '9.5px',
+                      fontFamily: 'monospace',
+                      fontWeight: 800,
+                      padding: '1px 5px',
+                      borderRadius: '6px',
+                      background: isSelected ? 'rgba(255,255,255,0.2)' : '#F1F5F9',
+                      color: isSelected ? '#FFFFFF' : '#475569',
+                      display: 'inline-block'
+                    }}
+                  >
+                    #{String(client.client_code || client.id || '').replace(/^#+/, '')}
                   </span>
                 </div>
 

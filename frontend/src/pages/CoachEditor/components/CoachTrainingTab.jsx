@@ -36,6 +36,18 @@ export function CoachTrainingTab({
   activeSessionDemand,
   weeklyVolumeAudit
 }) {
+  const [showAllVolumeLandmarks, setShowAllVolumeLandmarks] = React.useState(false);
+
+  const formatSplitName = (split) => {
+    if (!split) return '';
+    const s = String(split).toUpperCase().trim();
+    if (s.includes('UPPER_LOWER')) return 'تقسيم علوي / سفلي (Upper / Lower Split)';
+    if (s.includes('PUSH_PULL_LEGS') || s.includes('PPL')) return 'دفع / سحب / أرجل (PPL Split)';
+    if (s.includes('FULL_BODY')) return 'تدريب الجسم بالكامل (Full Body)';
+    if (s.includes('BRO_SPLIT') || s.includes('BODY_PART')) return 'تقسيم عضلات منفصلة (Body Part Split)';
+    return split;
+  };
+
   const clientConditions = [
     ...(Array.isArray(program?.client?.injuries) ? program.client.injuries : []),
     ...(Array.isArray(program?.client?.allergies) ? program.client.allergies : []),
@@ -151,8 +163,8 @@ export function CoachTrainingTab({
             </div>
           </div>
           {program.training?.target_split && (
-            <span style={{ fontSize: '10.5px', fontWeight: 700, padding: '2px 8px', borderRadius: '6px', background: '#FFFFFF', border: '1px solid #CBD5E1', color: '#0F172A', whiteSpace: 'nowrap' }}>
-              {program.training.target_split}
+            <span style={{ fontSize: '11px', fontWeight: 700, padding: '3px 9px', borderRadius: '8px', background: '#FFFFFF', border: '1px solid #CBD5E1', color: '#0F172A', whiteSpace: 'nowrap' }}>
+              {formatSplitName(program.training.target_split)}
             </span>
           )}
         </div>
@@ -298,7 +310,7 @@ export function CoachTrainingTab({
           </div>
 
           {/* Target Muscle Summary */}
-          {activeSession?.target_muscles && (
+          {activeSession?.target_muscles && !/عضلات مستهدفة متوازنة|متوازنة/i.test(activeSession.target_muscles) && (
             <div style={{ fontSize: '11px', color: '#64748B' }}>
               العضلات المستهدفة: <strong style={{ color: '#0F172A' }}>{activeSession.target_muscles}</strong>
             </div>
@@ -344,40 +356,95 @@ export function CoachTrainingTab({
             </div>
           </div>
 
-          {/* Muscle Volume Landmarks Pills */}
-          {weeklyVolumeAudit?.analysis && (
-            <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap', alignItems: 'center', paddingTop: '4px', borderTop: '1px dashed #E2E8F0' }}>
-              <span style={{ fontSize: '10.5px', color: '#64748B', fontWeight: 700 }}>معالم الحجم الأسبوعي (MEV/MAV/MRV):</span>
-              {Object.entries(weeklyVolumeAudit.analysis)
-                .filter(([_, data]) => data.weekly_sets > 0)
-                .map(([key, data]) => {
-                  const isBelowMev = data.status === 'BELOW_MEV';
-                  const isExceedsMrv = data.status === 'EXCEEDS_MRV';
-                  return (
-                    <span
-                      key={key}
+          {/* Muscle Volume Landmarks Executive Bar */}
+          {weeklyVolumeAudit?.analysis && (() => {
+            const activeMuscles = Object.entries(weeklyVolumeAudit.analysis).filter(([_, data]) => data.weekly_sets > 0);
+            const flaggedMuscles = activeMuscles.filter(([_, data]) => data.status === 'BELOW_MEV' || data.status === 'EXCEEDS_MRV');
+            
+            return (
+              <div style={{ paddingTop: '6px', borderTop: '1px dashed #E2E8F0', display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '6px' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+                    <span style={{ fontSize: '11px', color: '#0F172A', fontWeight: 800 }}>معالم الحجم الأسبوعي:</span>
+                    {flaggedMuscles.length === 0 ? (
+                      <span style={{ fontSize: '10.5px', color: '#166534', background: '#DCFCE7', border: '1px solid #BBF7D0', padding: '2px 8px', borderRadius: '6px', fontWeight: 700 }}>
+                        كافة المجموعات العضلية ({activeMuscles.length}) متوازنة فسيولوجياً ضمن نطاق الاستجابة البنائية (MAV)
+                      </span>
+                    ) : (
+                      <div style={{ display: 'flex', gap: '4px', flexWrap: 'wrap' }}>
+                        {flaggedMuscles.map(([key, data]) => (
+                          <span
+                            key={key}
+                            style={{
+                              fontSize: '10px',
+                              padding: '2px 7px',
+                              borderRadius: '6px',
+                              background: data.status === 'EXCEEDS_MRV' ? '#FEE2E2' : '#FEF3C7',
+                              color: data.status === 'EXCEEDS_MRV' ? '#B91C1C' : '#B45309',
+                              border: data.status === 'EXCEEDS_MRV' ? '1px solid #FCA5A5' : '1px solid #FDE68A',
+                              fontWeight: 700
+                            }}
+                          >
+                            تنبيه: {data.muscle_name_ar} {data.weekly_sets} جولة ({data.status_label_ar})
+                          </span>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+
+                  {activeMuscles.length > 0 && (
+                    <button
+                      type="button"
+                      onClick={() => setShowAllVolumeLandmarks(prev => !prev)}
                       style={{
-                        fontSize: '10.5px',
-                        padding: '2px 8px',
+                        background: '#F8FAFC',
+                        border: '1px solid #CBD5E1',
                         borderRadius: '6px',
-                        background: isExceedsMrv ? '#FEE2E2' : isBelowMev ? '#FEF3C7' : '#F1F5F9',
-                        color: isExceedsMrv ? '#B91C1C' : isBelowMev ? '#B45309' : '#334155',
-                        border: isExceedsMrv ? '1px solid #FCA5A5' : isBelowMev ? '1px solid #FDE68A' : '1px solid #E2E8F0',
-                        fontWeight: 600,
-                        display: 'inline-flex',
-                        alignItems: 'center',
-                        gap: '4px'
+                        padding: '2px 8px',
+                        fontSize: '10.5px',
+                        color: '#475569',
+                        fontWeight: 700,
+                        cursor: 'pointer'
                       }}
-                      title={data.status_label_ar}
                     >
-                      <strong>{data.muscle_name_ar}:</strong>
-                      <span>{data.weekly_sets} جولة</span>
-                      <span style={{ fontSize: '9px', opacity: 0.8 }}>({data.mav_range})</span>
-                    </span>
-                  );
-                })}
-            </div>
-          )}
+                      {showAllVolumeLandmarks ? 'إخفاء التفاصيل' : `عرض تفاصيل العضلات (${activeMuscles.length})`}
+                    </button>
+                  )}
+                </div>
+
+                {showAllVolumeLandmarks && (
+                  <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap', alignItems: 'center', paddingTop: '4px' }}>
+                    {activeMuscles.map(([key, data]) => {
+                      const isBelowMev = data.status === 'BELOW_MEV';
+                      const isExceedsMrv = data.status === 'EXCEEDS_MRV';
+                      return (
+                        <span
+                          key={key}
+                          style={{
+                            fontSize: '10.5px',
+                            padding: '2px 8px',
+                            borderRadius: '6px',
+                            background: isExceedsMrv ? '#FEE2E2' : isBelowMev ? '#FEF3C7' : '#F1F5F9',
+                            color: isExceedsMrv ? '#B91C1C' : isBelowMev ? '#B45309' : '#334155',
+                            border: isExceedsMrv ? '1px solid #FCA5A5' : isBelowMev ? '1px solid #FDE68A' : '1px solid #E2E8F0',
+                            fontWeight: 600,
+                            display: 'inline-flex',
+                            alignItems: 'center',
+                            gap: '4px'
+                          }}
+                          title={data.status_label_ar}
+                        >
+                          <strong>{data.muscle_name_ar}:</strong>
+                          <span>{data.weekly_sets} جولة</span>
+                          <span style={{ fontSize: '9px', opacity: 0.8 }}>({data.mav_range})</span>
+                        </span>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
+            );
+          })()}
         </div>
       )}
 

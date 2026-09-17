@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Dumbbell, Utensils, Activity } from 'lucide-react';
 import AdminLayout from '../components/layout/AdminLayout';
 import CoachEditorNutritionTab from '../features/coach/components/CoachEditorNutritionTab';
@@ -15,11 +15,13 @@ import {
   CoachAddExerciseModal,
   CoachCardioSwapModal,
   CoachMobilityModal,
-  CoachPlanQualityModal
+  CoachPlanQualityModal,
+  CoachEmergencyModal
 } from './CoachEditor/components';
 import { useCoachEditorData } from './CoachEditor/hooks';
 
 export default function CoachEditor() {
+  const [isEmergencyModalOpen, setIsEmergencyModalOpen] = useState(false);
   const editor = useCoachEditorData();
 
   const {
@@ -172,6 +174,7 @@ export default function CoachEditor() {
           saving={saving}
           setIsLabModalOpen={setIsLabModalOpen}
           setIsPlanQualityOpen={setIsPlanQualityOpen}
+          setIsEmergencyModalOpen={setIsEmergencyModalOpen}
           handleApproveAndPublish={handleApproveAndPublish}
           publishing={publishing}
           clientsList={clientsList}
@@ -382,6 +385,15 @@ export default function CoachEditor() {
           program={program}
           onApproveAndPublish={handleApproveAndPublish}
           publishing={publishing}
+        />
+
+        {/* Emergency & Flexibility Adaptation Modal */}
+        <CoachEmergencyModal
+          isOpen={isEmergencyModalOpen}
+          onClose={() => setIsEmergencyModalOpen(false)}
+          program={program}
+          setProgram={setProgram}
+          showToast={editor.showToast || showToast}
         />
 
         {/* Exercise Video Modal */}

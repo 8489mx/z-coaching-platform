@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import { Zap, ArrowRightLeft, FileText, ShieldAlert, ShieldCheck, AlertTriangle, Plus, Trash2, Pill } from 'lucide-react';
 import { evaluateClinicalSupplementSafety, getStandardSupplementCatalog } from '../../../utils/clinicalSupplementSafetyEngine';
+import { evaluateCardioInterferenceDecoupling, CARDIO_INTENSITIES } from '../../../utils/cardioInterferenceEngine';
+import { getPracticalCardioPrescription, CARDIO_TYPES } from '../../../utils/cardioZonesEngine';
 
 export function CoachCardioHabitsTab({
   program,
@@ -35,6 +37,18 @@ export function CoachCardioHabitsTab({
   const modality = String(program?.cardio?.modality || '');
   const zone = String(program?.cardio?.target_heart_rate_zone || '');
   const isHiitCardio = /hiit|sprint|كثافة عالية/i.test(modality) || /hiit|zone 4/i.test(zone);
+
+  const clientAge = Number(program?.client?.age) || 28;
+  const interferenceAudit = evaluateCardioInterferenceDecoupling({
+    age: clientAge,
+    cardio_type: isHiitCardio ? CARDIO_INTENSITIES.HIGH_INTENSITY_HIIT : CARDIO_INTENSITIES.ZONE_2_STEADY_STATE,
+    is_same_day: true
+  });
+  const practicalCardio = getPracticalCardioPrescription({
+    type: isHiitCardio ? CARDIO_TYPES.HIIT_INTERVALS : CARDIO_TYPES.LISS_TALK_TEST,
+    duration_minutes: Number(program.cardio?.session_duration_min) || 30,
+    sessions_per_week: Number(program.cardio?.weekly_sessions) || 3
+  });
 
   // Active supplements array
   const currentSupplements = Array.isArray(program?.cardio?.supplements) ? program.cardio.supplements : [];
@@ -217,6 +231,40 @@ export function CoachCardioHabitsTab({
               </select>
             </div>
           </div>
+
+          {/* Practical Talk-Test Biofeedback & AMPK-mTOR Molecular Decoupling */}
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: '8px', paddingTop: '8px', borderTop: '1px solid #E2E8F0' }}>
+            <div style={{ background: '#FFFFFF', border: '1px solid #CBD5E1', borderRadius: '8px', padding: '8px 10px' }}>
+              <div style={{ fontSize: '11px', fontWeight: 800, color: '#0F172A', marginBottom: '2px', display: 'flex', alignItems: 'center', gap: '5px' }}>
+                <Zap size={12} color="#2563EB" />
+                <span>بروتوكول اختبار التحدث (Talk-Test)</span>
+              </div>
+              <div style={{ fontSize: '10.5px', color: '#475569', lineHeight: 1.4 }}>
+                {practicalCardio.talk_test_cue_ar}
+              </div>
+              {interferenceAudit?.heart_rate_prescription?.range_display && (
+                <div style={{ fontSize: '10px', color: '#2563EB', fontWeight: 700, marginTop: '4px' }}>
+                  النبض المستهدف (العمر {clientAge} سنة): {interferenceAudit.heart_rate_prescription.range_display}
+                </div>
+              )}
+            </div>
+
+            <div style={{
+              background: interferenceAudit.has_interference_risk ? '#FEF2F2' : '#F0FDF4',
+              border: interferenceAudit.has_interference_risk ? '1px solid #FECACA' : '1px solid #BBF7D0',
+              borderRadius: '8px',
+              padding: '8px 10px'
+            }}>
+              <div style={{ fontSize: '11px', fontWeight: 800, color: interferenceAudit.has_interference_risk ? '#B91C1C' : '#166534', marginBottom: '2px', display: 'flex', alignItems: 'center', gap: '5px' }}>
+                <ShieldCheck size={12} color={interferenceAudit.has_interference_risk ? '#DC2626' : '#16A34A'} />
+                <span>الفصل الجزيئي لمنع الهدم العضلي (AMPK-mTOR)</span>
+              </div>
+              <div style={{ fontSize: '10.5px', color: interferenceAudit.has_interference_risk ? '#991B1B' : '#15803D', lineHeight: 1.4 }}>
+                {interferenceAudit.timing_verdict_ar}
+              </div>
+            </div>
+          </div>
+
         </div>
       </div>
 

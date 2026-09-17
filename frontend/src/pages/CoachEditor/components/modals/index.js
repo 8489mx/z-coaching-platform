@@ -3,3 +3,5 @@ export { CoachSwapExerciseModal, CoachAddExerciseModal } from './CoachExerciseMo
 export { CoachCardioSwapModal } from './CoachCardioSwapModal';
 export { CoachMobilityModal } from './CoachMobilityModal';
 export { default as CoachPlanQualityModal } from './CoachPlanQualityModal';
+export { CoachEmergencyModal } from './CoachEmergencyModal';
+
