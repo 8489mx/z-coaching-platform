@@ -98,7 +98,9 @@ export default function MasterPdfModal({
         <div style={{ display: 'flex', gap: '8px', marginTop: '20px' }}>
           <button
             type="button"
-            onClick={() => { window.print(); }}
+            onClick={() => {
+              window.open(`/pdf?user_id=${clientCode || '1'}&auto_print=true`, '_blank');
+            }}
             style={{
               flex: 1,
               background: 'linear-gradient(135deg, #0284C7 0%, #0369A1 100%)',
@@ -111,7 +113,7 @@ export default function MasterPdfModal({
               cursor: 'pointer'
             }}
           >
-            طباعة / حفظ كـ PDF
+            فتح وتحميل وثيقة الـ PDF الرسمية
           </button>
           <button
             type="button"
