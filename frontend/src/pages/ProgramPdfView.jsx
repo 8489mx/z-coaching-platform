@@ -298,10 +298,10 @@ export default function ProgramPdfView() {
                   <th>بروتوكول الصيام:</th>
                   <td colSpan="3" style={{ fontWeight: '700', color: fastingProfile.isCoptic ? '#6D28D9' : (fastingProfile.isRamadan ? '#B45309' : '#0284C7') }}>
                     {fastingProfile.isCoptic
-                      ? (fastingProfile.christianFastingStyle === 'STRICT_VEGAN' ? 'الصيام المسيحي القبطي (نمط نباتي صرف خالي من الأسماك)' : 'الصيام المسيحي القبطي (نمط نباتي مع السماح بالأسماك)')
+                      ? (fastingProfile.christianFastingStyle === 'STRICT_VEGAN' ? 'صيام مسيحي (نباتي)' : 'صيام مسيحي (مع سمك)')
                       : (fastingProfile.isRamadan
-                          ? 'الصيام الرمضاني (وجبتان رئيسيتان: إفطار وسحور + سناك تدريبي موجه)'
-                          : `الصيام المتقطع (${fastingProfile.intermittentBadge?.label || '16/8'})`)}
+                          ? 'صيام رمضان (إفطار وسحور)'
+                          : `صيام متقطع (${fastingProfile.intermittentBadge?.label || '16/8'})`)}
                   </td>
                 </tr>
               )}

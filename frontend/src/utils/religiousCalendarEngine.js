@@ -33,7 +33,7 @@ export function evaluateReligiousCalendarSchedule({
 
     return {
       mode: FASTING_TYPES.RAMADAN_DRY_FASTING,
-      mode_name_ar: 'نظام صيام شهر رمضان المبارك (Dry Fasting)',
+      mode_name_ar: 'صيام رمضان',
       eating_window_ar: 'من أذان المغرب حتى أذان الفجر',
       meals_distribution: [
         {

@@ -12,17 +12,17 @@ export function AdminHeader() {
 
   const getBreadcrumbs = () => {
     const path = location.pathname;
-    if (path === '/' || path === '/dashboard') return [{ label: 'الرئيسية' }, { label: 'لوحة التحكم اليومية' }];
-    if (path.includes('/intake')) return [{ label: 'الاستبيانات' }, { label: 'استمارات العملاء' }];
+    if (path === '/' || path === '/dashboard') return [{ label: 'الرئيسية' }, { label: 'لوحة التحكم' }];
+    if (path.includes('/intake')) return [{ label: 'الاستمارات' }, { label: 'الاستمارات الجديدة' }];
     if (path.includes('/checkin')) return [{ label: 'المتابعة' }, { label: 'مراجعة التقييمات' }];
-    if (path.includes('/customers')) return [{ label: 'العملاء' }, { label: 'إدارة المشتركين' }];
-    if (path.includes('/financials') || path.includes('/subscriptions')) return [{ label: 'المالية' }, { label: 'الحسابات والتجديد' }];
+    if (path.includes('/customers')) return [{ label: 'المشتركون' }, { label: 'قائمة المشتركين' }];
+    if (path.includes('/financials') || path.includes('/subscriptions')) return [{ label: 'المالية' }, { label: 'الاشتراكات والمالية' }];
     if (path.includes('/editor')) return [{ label: 'التدريب' }, { label: 'محرر البرامج' }];
-    if (path.includes('/exercises')) return [{ label: 'التمارين' }, { label: 'مكتبة التمارين' }];
-    if (path.includes('/calculator')) return [{ label: 'التغذية' }, { label: 'مكتبة الأطعمة والماكروز' }];
-    if (path.includes('/mobility')) return [{ label: 'التأهيل' }, { label: 'المرونة والتأهيل' }];
+    if (path.includes('/exercises')) return [{ label: 'المراجع' }, { label: 'دليل التمارين' }];
+    if (path.includes('/calculator')) return [{ label: 'المراجع' }, { label: 'الأغذية والماكروز' }];
+    if (path.includes('/mobility')) return [{ label: 'المراجع' }, { label: 'المرونة والاستشفاء' }];
     if (path.includes('/reminders')) return [{ label: 'المراسلات' }, { label: 'رسائل الواتساب' }];
-    if (path.includes('/master-settings')) return [{ label: 'الإعدادات' }, { label: 'إعدادات النظام' }];
+    if (path.includes('/master-settings')) return [{ label: 'الإعدادات' }, { label: 'إعدادات المنظومة' }];
     return [{ label: 'الرئيسية' }, { label: 'لوحة التحكم' }];
   };
 
@@ -93,7 +93,7 @@ export function AdminHeader() {
               gap: '6px', 
               backgroundColor: '#F8FAFC', 
               border: '1px solid #E2E8F0', 
-              borderRadius: '6px', 
+              borderRadius: '8px', 
               cursor: 'pointer',
               fontSize: '11.5px',
               fontWeight: 700,
@@ -112,7 +112,7 @@ export function AdminHeader() {
           {/* Refresh Button */}
           <button 
             type="button"
-            style={{ width: '32px', height: '32px', display: 'flex', alignItems: 'center', justifyContent: 'center', backgroundColor: '#F8FAFC', border: '1px solid #E2E8F0', borderRadius: '6px', cursor: 'pointer' }}
+            style={{ width: '32px', height: '32px', display: 'flex', alignItems: 'center', justifyContent: 'center', backgroundColor: '#F8FAFC', border: '1px solid #E2E8F0', borderRadius: '8px', cursor: 'pointer' }}
             title="تحديث البيانات"
             onClick={handleRefresh}
           >
@@ -122,7 +122,7 @@ export function AdminHeader() {
           {/* Fullscreen Button */}
           <button 
             type="button"
-            style={{ width: '32px', height: '32px', display: 'flex', alignItems: 'center', justifyContent: 'center', backgroundColor: '#F8FAFC', border: '1px solid #E2E8F0', borderRadius: '6px', cursor: 'pointer' }}
+            style={{ width: '32px', height: '32px', display: 'flex', alignItems: 'center', justifyContent: 'center', backgroundColor: '#F8FAFC', border: '1px solid #E2E8F0', borderRadius: '8px', cursor: 'pointer' }}
             title="ملء الشاشة"
             onClick={toggleFullScreen}
           >

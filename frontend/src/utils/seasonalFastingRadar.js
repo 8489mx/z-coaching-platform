@@ -10,11 +10,11 @@
 export const SEASONAL_FASTING_CALENDAR = [
   {
     id: 'RAMADAN_2026',
-    name: 'شهر رمضان المبارك 1447هـ',
+    name: 'رمضان 1447هـ',
     type: 'ISLAMIC',
     startDate: new Date(2026, 1, 18),
     endDate: new Date(2026, 2, 20),
-    description: 'موسم الصيام الجاف (Dry Fasting) مع جدولة نوافذ الإفطار والسحور والترطيب الليلي.'
+    description: 'موسم الصيام وتوزيع وجبات الإفطار والسحور.'
   },
   {
     id: 'COPTIC_LENT_2026',
@@ -22,7 +22,7 @@ export const SEASONAL_FASTING_CALENDAR = [
     type: 'COPTIC',
     startDate: new Date(2026, 1, 16),
     endDate: new Date(2026, 3, 12),
-    description: 'صيام صيامي نباتي خالي من اللحوم والألبان مع التركيز على البقوليات والبروتين النباتي الكامل.'
+    description: 'صيام نباتي خالي من اللحوم والألبان مع التركيز على البقوليات والبروتين النباتي.'
   },
   {
     id: 'COPTIC_NATIVITY_2026',
@@ -30,15 +30,15 @@ export const SEASONAL_FASTING_CALENDAR = [
     type: 'COPTIC',
     startDate: new Date(2026, 10, 25),
     endDate: new Date(2027, 0, 7),
-    description: 'صيام صيامي نباتي مع السماح بالأسماك والمأكولات البحرية لتأمين احتياج البروتين الكامل.'
+    description: 'صيام نباتي مع السماح بالأسماك والمأكولات البحرية.'
   },
   {
     id: 'RAMADAN_2027',
-    name: 'شهر رمضان المبارك 1448هـ',
+    name: 'رمضان 1448هـ',
     type: 'ISLAMIC',
     startDate: new Date(2027, 1, 8),
     endDate: new Date(2027, 2, 9),
-    description: 'موسم الصيام الجاف وتوزيع وجبات الإفطار وبعد التمرين والسحور.'
+    description: 'موسم الصيام وتوزيع وجبات الإفطار وبعد التمرين والسحور.'
   },
   {
     id: 'COPTIC_LENT_2027',
@@ -177,7 +177,7 @@ export function extractClientFastingProfile(clientOrSubmission = {}, explicitAns
   } else if (isRamadan) {
     primaryFastingBadge = {
       type: 'RAMADAN',
-      label: 'صيام شهر رمضان المبارك',
+      label: 'صيام رمضان',
       shortLabel: 'صيام رمضان',
       bg: '#FEF3C7',
       border: '#FDE68A',

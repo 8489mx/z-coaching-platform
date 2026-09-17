@@ -252,7 +252,7 @@ export default function ClientSlideOverDrawer({
               onClick={() => window.open(`/coach/editor/${cleanCode}`, '_blank')}
               style={{
                 padding: '9px 12px',
-                borderRadius: '7px',
+                borderRadius: '8px',
                 background: '#0F172A',
                 color: '#FFFFFF',
                 border: 'none',
@@ -267,7 +267,7 @@ export default function ClientSlideOverDrawer({
               }}
             >
               <FileText size={13} />
-              <span>محرر الخطة (تبويب جديد)</span>
+              <span>محرر الخطة</span>
               <ExternalLink size={11} color="#94A3B8" />
             </button>
 
@@ -276,7 +276,7 @@ export default function ClientSlideOverDrawer({
               onClick={() => window.open(`/coach/checkin-review?code=${cleanCode}`, '_blank')}
               style={{
                 padding: '9px 12px',
-                borderRadius: '7px',
+                borderRadius: '8px',
                 background: '#F8FAFC',
                 color: '#0F172A',
                 border: '1px solid #CBD5E1',
@@ -299,7 +299,7 @@ export default function ClientSlideOverDrawer({
               onClick={() => onOpenWhatsApp(client)}
               style={{
                 padding: '8px 12px',
-                borderRadius: '7px',
+                borderRadius: '8px',
                 background: '#F0FDF4',
                 color: '#16A34A',
                 border: '1px solid #86EFAC',
@@ -321,7 +321,7 @@ export default function ClientSlideOverDrawer({
               onClick={() => onOpenRenewal(client)}
               style={{
                 padding: '8px 12px',
-                borderRadius: '7px',
+                borderRadius: '8px',
                 background: '#F0F9FF',
                 color: '#0284C7',
                 border: '1px solid #BAE6FD',
@@ -336,6 +336,54 @@ export default function ClientSlideOverDrawer({
             >
               <CreditCard size={13} />
               <span>تجديد الاشتراك</span>
+            </button>
+
+            {/* Freeze / Resume Button */}
+            <button
+              type="button"
+              disabled={freezingClientId === client.id}
+              onClick={() => onToggleFreeze && onToggleFreeze(client)}
+              style={{
+                padding: '8px 12px',
+                borderRadius: '8px',
+                background: client.subscription_status === 'FROZEN' ? '#F0FDF4' : '#FFFBEB',
+                color: client.subscription_status === 'FROZEN' ? '#16A34A' : '#B45309',
+                border: client.subscription_status === 'FROZEN' ? '1px solid #86EFAC' : '1px solid #FDE68A',
+                fontSize: '11.5px',
+                fontWeight: 800,
+                cursor: freezingClientId === client.id ? 'wait' : 'pointer',
+                display: 'inline-flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: '6px'
+              }}
+            >
+              {client.subscription_status === 'FROZEN' ? <Play size={13} /> : <Pause size={13} />}
+              <span>{client.subscription_status === 'FROZEN' ? 'استئناف الاشتراك' : 'تجميد مؤقت'}</span>
+            </button>
+
+            {/* Timeline Progress Link */}
+            <button
+              type="button"
+              onClick={() => window.open(`/coach/timeline/${cleanCode}`, '_blank')}
+              style={{
+                padding: '8px 12px',
+                borderRadius: '8px',
+                background: '#F8FAFC',
+                color: '#475569',
+                border: '1px solid #CBD5E1',
+                fontSize: '11.5px',
+                fontWeight: 800,
+                cursor: 'pointer',
+                display: 'inline-flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: '6px'
+              }}
+            >
+              <TrendingUp size={13} color="#0284C7" />
+              <span>سجل التطور</span>
+              <ExternalLink size={11} color="#94A3B8" />
             </button>
           </div>
 

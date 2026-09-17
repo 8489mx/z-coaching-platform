@@ -329,10 +329,10 @@ export default function ClientHeader({
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '3px' }}>
             <strong style={{ fontSize: '0.76rem', color: '#0F172A' }}>
               {clientData.fastingProfile.isCoptic 
-                ? (clientData.fastingProfile.christianFastingStyle === 'STRICT_VEGAN' ? 'نمط الصيام المسيحي (نباتي صرف خالي من الأسماك)' : 'نمط الصيام المسيحي (نباتي مع السماح بالأسماك)')
+                ? (clientData.fastingProfile.christianFastingStyle === 'STRICT_VEGAN' ? 'صيام مسيحي (نباتي)' : 'صيام مسيحي (مع سمك)')
                 : (clientData.fastingProfile.isRamadan 
-                    ? 'نمط صيام شهر رمضان المبارك (مواقيت الإفطار والسحور)'
-                    : `نمط الصيام المتقطع (${clientData.fastingProfile.intermittentBadge?.label || '16/8'})`)}
+                    ? 'صيام رمضان'
+                    : `صيام متقطع (${clientData.fastingProfile.intermittentBadge?.label || '16/8'})`)}
             </strong>
             <span style={{ 
               fontSize: '0.68rem', 

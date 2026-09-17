@@ -649,10 +649,10 @@ function ProgressTrendChart({ history = [], isMaxTier = false, targetWeight = nu
           padding: '10px 0'
         }}>
           {[
-            { label: 'جودة النوم والراحة الليلية', score: sleepVal, max: 5, color: '#0284C7', desc: 'استشفاء الجهاز العصبي المركزي وإفراز هرمون النمو' },
-            { label: 'مستوى الطاقة والنشاط بالتمرين', score: energyVal, max: 5, color: '#16A34A', desc: 'كفاءة مخازن الجليكوجين والجاهزية البدنية' },
-            { label: 'التحكم في الشهية وإدارة الجوع', score: hungerVal, max: 5, color: '#D97706', desc: 'استقرار هرمونات اللبتين والجرلين وسكر الدم' },
-            { label: 'مقاومة الإجهاد والضغط النفسي', score: Math.max(1, 6 - stressVal), max: 5, color: '#8B5CF6', desc: 'تنظيم إفراز الكورتيزول وتفادي احتباس الماء' }
+            { label: 'جودة النوم والراحة الليلية', score: sleepVal, max: 5, color: '#0284C7', desc: 'استشفاء عضلي ونوم عميق' },
+            { label: 'مستوى الطاقة بالتمرين', score: energyVal, max: 5, color: '#16A34A', desc: 'كفاءة الجهد والجاهزية البدنية' },
+            { label: 'التحكم في الشهية والجوع', score: hungerVal, max: 5, color: '#D97706', desc: 'استقرار الشبع والالتزام بالدايت' },
+            { label: 'مقاومة الإجهاد والتوتر', score: Math.max(1, 6 - stressVal), max: 5, color: '#8B5CF6', desc: 'تنظيم الاستشفاء ومقاومة الإجهاد' }
           ].map((item, idx) => (
             <div key={idx} style={{
               background: '#F8FAFC',
@@ -1099,8 +1099,8 @@ export default function CheckinReviewDashboard() {
         
         {/* 1. Page Header */}
         <PageHeader
-          title="مراجعة التقييمات الدورية (Check-in Review)"
-          description={`طابور اتخاذ القرارات الأسبوعية • ${checkinList.length} تقييم بانتظار المراجعة والاعتماد`}
+          title="مراجعة التقييمات الأسبوعية"
+          description={`طابور مراجعة الشيك إن • ${checkinList.length} تقييم بانتظار المراجعة والاعتماد`}
           actions={(
             <button 
               type="button" 

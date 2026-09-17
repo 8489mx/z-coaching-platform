@@ -277,8 +277,8 @@ export default function Customers() {
         
         {/* 1. Page Header */}
         <PageHeader
-          title="قاعدة بيانات المشتركين والباقات المعتمدة"
-          description="إدارة حسابات المشتركين، إنشاء وتفعيل الأكواد الجديدة، وإجراء المتابعات الفورية."
+          title="قائمة المشتركين"
+          description="متابعة حسابات المشتركين والباقات المعتمدة وإجراء المتابعات الفورية."
           actions={(
             <button
               type="button"
@@ -543,7 +543,7 @@ export default function Customers() {
                     <th style={{ padding: '10px 14px', textAlign: 'center' }}>الهاتف</th>
                     <th style={{ padding: '10px 14px', textAlign: 'center' }}>الباقة</th>
                     <th style={{ padding: '10px 14px', textAlign: 'center' }}>حالة الاشتراك</th>
-                    <th style={{ padding: '10px 14px', textAlign: 'left' }}>إجراءات الكوتش والمتابعة</th>
+                    <th style={{ padding: '10px 14px', textAlign: 'left' }}>إجراءات سريعة</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -650,7 +650,61 @@ export default function Customers() {
                         {/* Actions */}
                         <td style={{ padding: '10px 14px', textAlign: 'left' }}>
                           <div style={{ display: 'inline-flex', alignItems: 'center', gap: '5px' }}>
-                            {/* WhatsApp Modal Trigger */}
+                            {/* 1. Check-in Review Dashboard Link (New Tab) */}
+                            <a
+                              href={`/coach/checkin-review?code=${cleanCode}`}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              style={{
+                                padding: '4px 10px',
+                                borderRadius: '8px',
+                                background: '#0F172A',
+                                color: '#FFFFFF',
+                                fontSize: '11px',
+                                fontWeight: 800,
+                                textDecoration: 'none',
+                                boxShadow: '0 1px 3px rgba(15, 23, 42, 0.2)',
+                                display: 'inline-flex',
+                                alignItems: 'center',
+                                gap: '4px',
+                                transition: 'all 0.15s ease'
+                              }}
+                              onMouseEnter={(e) => (e.currentTarget.style.background = '#334155')}
+                              onMouseLeave={(e) => (e.currentTarget.style.background = '#0F172A')}
+                              title="الانتقال لمراجعة تقييم المشترك في تبويب مستقل"
+                            >
+                              <span>التقييم</span>
+                              <ExternalLink size={10} style={{ opacity: 0.8 }} />
+                            </a>
+
+                            {/* 2. Program Editor Button (New Tab) */}
+                            <a
+                              href={`/coach/editor/${cleanCode}`}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              style={{
+                                padding: '4px 9px',
+                                borderRadius: '8px',
+                                border: '1px solid #CBD5E1',
+                                background: '#FFFFFF',
+                                color: '#0F172A',
+                                fontSize: '11px',
+                                fontWeight: 700,
+                                textDecoration: 'none',
+                                display: 'inline-flex',
+                                alignItems: 'center',
+                                gap: '3px',
+                                transition: 'all 0.15s ease'
+                              }}
+                              onMouseEnter={(e) => (e.currentTarget.style.background = '#F8FAFC')}
+                              onMouseLeave={(e) => (e.currentTarget.style.background = '#FFFFFF')}
+                              title="فتح محرر الخطة في تبويب مستقل"
+                            >
+                              <span>الخطة</span>
+                              <ExternalLink size={10} style={{ opacity: 0.7 }} />
+                            </a>
+
+                            {/* 3. WhatsApp Modal Trigger */}
                             <button
                               type="button"
                               onClick={() => setWhatsappModalClient(client)}
@@ -682,7 +736,7 @@ export default function Customers() {
                               <span>واتساب</span>
                             </button>
 
-                            {/* Client Slide-over Drawer Trigger */}
+                            {/* 4. Client Slide-over Drawer Trigger (Hub for Profile, Freeze, Renew & Timeline) */}
                             <button
                               type="button"
                               onClick={() => setSelectedDrawerClient(client)}
@@ -708,137 +762,11 @@ export default function Customers() {
                                 e.currentTarget.style.background = '#F8FAFC';
                                 e.currentTarget.style.borderColor = '#E2E8F0';
                               }}
-                              title="عرض تفاصيل المشترك والتقييمات باللوح الجانبي"
+                              title="عرض تفاصيل المشترك، تجميد/تجديد الاشتراك، وسجل التطور"
                             >
                               <Clock size={12} color="#475569" />
                               <span>الملف</span>
                             </button>
-
-                            {/* Freeze / Resume Button */}
-                            <button
-                              type="button"
-                              disabled={freezingClientId === client.id}
-                              onClick={() => handleToggleFreeze(client)}
-                              style={{
-                                padding: '4px 8px',
-                                borderRadius: '8px',
-                                border: client.subscription_status === 'FROZEN' ? '1px solid #86EFAC' : '1px solid #CBD5E1',
-                                background: client.subscription_status === 'FROZEN' ? '#F0FDF4' : '#FFFFFF',
-                                color: client.subscription_status === 'FROZEN' ? '#16A34A' : '#475569',
-                                fontSize: '11px',
-                                fontWeight: 700,
-                                cursor: freezingClientId === client.id ? 'wait' : 'pointer',
-                                display: 'inline-flex',
-                                alignItems: 'center',
-                                gap: '3px',
-                                transition: 'all 0.15s ease'
-                              }}
-                              title={client.subscription_status === 'FROZEN' ? 'استئناف الاشتراك وتمديد تاريخ الانتهاء' : 'تجميد الاشتراك وتثبيت الأيام المتبقية'}
-                            >
-                              {client.subscription_status === 'FROZEN' ? <Play size={11} /> : <Pause size={11} />}
-                              <span>{client.subscription_status === 'FROZEN' ? 'استئناف' : 'تجميد'}</span>
-                            </button>
-
-                            {/* Quick Renew Button */}
-                            <button
-                              type="button"
-                              onClick={() => setRenewalModalClient(client)}
-                              style={{
-                                padding: '4px 8px',
-                                borderRadius: '8px',
-                                border: '1px solid #BAE6FD',
-                                background: '#F0F9FF',
-                                color: '#0284C7',
-                                fontSize: '11px',
-                                fontWeight: 700,
-                                cursor: 'pointer',
-                                display: 'inline-flex',
-                                alignItems: 'center',
-                                gap: '3px',
-                                transition: 'all 0.15s ease'
-                              }}
-                              title="تسجيل سداد وتجديد الاشتراك وتمديد المدة"
-                            >
-                              <CreditCard size={11} />
-                              <span>تجديد</span>
-                            </button>
-
-                            {/* Timeline Profile Link */}
-                            <Link
-                              to={`/coach/timeline/${cleanCode}`}
-                              style={{
-                                padding: '4px 8px',
-                                borderRadius: '8px',
-                                border: '1px solid #E2E8F0',
-                                background: '#F8FAFC',
-                                color: '#0F172A',
-                                fontSize: '11px',
-                                fontWeight: 700,
-                                textDecoration: 'none',
-                                display: 'inline-flex',
-                                alignItems: 'center',
-                                gap: '3px',
-                                transition: 'all 0.15s ease'
-                              }}
-                              onMouseEnter={(e) => (e.currentTarget.style.background = '#F1F5F9')}
-                              onMouseLeave={(e) => (e.currentTarget.style.background = '#F8FAFC')}
-                              title="فتح سجل التطور واستوديو المقارنة البصرية للمشترك"
-                            >
-                              <TrendingUp size={11} color="#0284C7" />
-                              <span>التطور</span>
-                            </Link>
-
-                            {/* Program Editor Button (New Tab) */}
-                            <a
-                              href={`/coach/editor/${cleanCode}`}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              style={{
-                                padding: '4px 8px',
-                                borderRadius: '8px',
-                                border: '1px solid #CBD5E1',
-                                background: '#FFFFFF',
-                                color: '#0F172A',
-                                fontSize: '11px',
-                                fontWeight: 700,
-                                textDecoration: 'none',
-                                display: 'inline-flex',
-                                alignItems: 'center',
-                                gap: '3px',
-                                transition: 'all 0.15s ease'
-                              }}
-                              onMouseEnter={(e) => (e.currentTarget.style.background = '#F8FAFC')}
-                              onMouseLeave={(e) => (e.currentTarget.style.background = '#FFFFFF')}
-                              title="فتح محرر الخطة في تبويب مستقل"
-                            >
-                              الخطة
-                            </a>
-
-                            {/* Check-in Review Dashboard Link (New Tab) */}
-                            <a
-                              href={`/coach/checkin-review?code=${cleanCode}`}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              style={{
-                                padding: '4px 10px',
-                                borderRadius: '8px',
-                                background: '#0F172A',
-                                color: '#FFFFFF',
-                                fontSize: '11px',
-                                fontWeight: 700,
-                                textDecoration: 'none',
-                                boxShadow: '0 2px 5px rgba(15, 23, 42, 0.25)',
-                                display: 'inline-flex',
-                                alignItems: 'center',
-                                gap: '3px',
-                                transition: 'all 0.15s ease'
-                              }}
-                              onMouseEnter={(e) => (e.currentTarget.style.background = '#334155')}
-                              onMouseLeave={(e) => (e.currentTarget.style.background = '#0F172A')}
-                              title="الانتقال لمراجعة تقييم المشترك في تبويب مستقل"
-                            >
-                              التقييم
-                            </a>
                           </div>
                         </td>
                       </tr>

@@ -1429,11 +1429,11 @@ export default function FullIntakeForm() {
                   <select 
                     value={mealStructure.meals_count || '3_meals_snack'}
                     onChange={(e) => updateNested('meal_structure', 'meals_count', e.target.value)}
-                    style={{ width: '100%', height: '40px', borderRadius: '6px', border: '1px solid #CBD5E1', padding: '0 10px', fontSize: '12.5px' }}
+                    style={{ width: '100%', height: '40px', borderRadius: '8px', border: '1px solid #CBD5E1', padding: '0 10px', fontSize: '12.5px' }}
                   >
-                    <option value="3_meals">3 وجبات رئيسية فقط</option>
-                    <option value="3_meals_snack">3 وجبات رئيسية + سناك خفيف (الموصى به)</option>
-                    <option value="4_to_5_meals">4 إلى 5 وجبات صغيرة موزعة</option>
+                    <option value="3_meals">3 وجبات</option>
+                    <option value="3_meals_snack">3 وجبات + سناك</option>
+                    <option value="4_to_5_meals">4 إلى 5 وجبات</option>
                   </select>
                 </div>
 
@@ -1444,11 +1444,11 @@ export default function FullIntakeForm() {
                   <select 
                     value={mealStructure.intermittent_fasting || 'none'}
                     onChange={(e) => updateNested('meal_structure', 'intermittent_fasting', e.target.value)}
-                    style={{ width: '100%', height: '40px', borderRadius: '6px', border: '1px solid #CBD5E1', padding: '0 10px', fontSize: '12.5px' }}
+                    style={{ width: '100%', height: '40px', borderRadius: '8px', border: '1px solid #CBD5E1', padding: '0 10px', fontSize: '12.5px' }}
                   >
-                    <option value="none">لا أفضله (توزيع مرن على مدار اليوم)</option>
-                    <option value="16_8">نعم، صيام 16 ساعة وإفطار 8 ساعات</option>
-                    <option value="14_10">نعم، صيام 14 ساعة وإفطار 10 ساعات</option>
+                    <option value="none">بدون صيام متقطع</option>
+                    <option value="16_8">صيام 16/8</option>
+                    <option value="14_10">صيام 14/10</option>
                   </select>
                 </div>
               </div>
@@ -1462,11 +1462,11 @@ export default function FullIntakeForm() {
                   <select 
                     value={formData.food_budget || 'MEDIUM'}
                     onChange={(e) => setFormData(p => ({ ...p, food_budget: e.target.value }))}
-                    style={{ width: '100%', height: '40px', borderRadius: '6px', border: '1px solid #CBD5E1', padding: '0 10px', fontSize: '12.5px', background: '#FFFFFF' }}
+                    style={{ width: '100%', height: '40px', borderRadius: '8px', border: '1px solid #CBD5E1', padding: '0 10px', fontSize: '12.5px', background: '#FFFFFF' }}
                   >
-                    <option value="LOW">اقتصادية وموفرة (بيض، تونة، جبن قريش، بقوليات، دجاج محلي)</option>
-                    <option value="MEDIUM">متوسطة ومتوازنة (لحوم، دواجن، أسماك، أرز وشوفان)</option>
-                    <option value="HIGH">مرتفعة ومفتوحة (ستيك، سلمون، مأكولات بحرية، مكملات وأجبان مستوردة)</option>
+                    <option value="LOW">اقتصادية (بيض، تونة، دجاج، قريش)</option>
+                    <option value="MEDIUM">متوسطة (دواجن، لحوم، أسماك)</option>
+                    <option value="HIGH">مرتفعة (ستيك، سلمون، مكملات)</option>
                   </select>
                 </div>
 
@@ -1477,11 +1477,11 @@ export default function FullIntakeForm() {
                   <select 
                     value={formData.food_prep_ability || 'FULL_KITCHEN'}
                     onChange={(e) => setFormData(p => ({ ...p, food_prep_ability: e.target.value }))}
-                    style={{ width: '100%', height: '40px', borderRadius: '6px', border: '1px solid #CBD5E1', padding: '0 10px', fontSize: '12.5px', background: '#FFFFFF' }}
+                    style={{ width: '100%', height: '40px', borderRadius: '8px', border: '1px solid #CBD5E1', padding: '0 10px', fontSize: '12.5px', background: '#FFFFFF' }}
                   >
-                    <option value="FULL_KITCHEN">مطبخ متكامل (أطبخ وأخزن وجباتي يومياً أو أسبوعياً)</option>
-                    <option value="REHEAT_ONLY">تسخين فقط (وجبات جاهزة/مجمدة تحتاج تسخين سريع)</option>
-                    <option value="NO_KITCHEN">بدون مطبخ (اعتماد كامل على مطاعم صحية وتجهيز خارجي)</option>
+                    <option value="FULL_KITCHEN">مطبخ متكامل (أطبخ بنفسي)</option>
+                    <option value="REHEAT_ONLY">تسخين فقط (وجبات جاهزة)</option>
+                    <option value="NO_KITCHEN">اعتماد على مطاعم صحية</option>
                   </select>
                 </div>
               </div>
@@ -1502,11 +1502,11 @@ export default function FullIntakeForm() {
                     <select
                       value={formData.religion || 'MUSLIM'}
                       onChange={(e) => setFormData(p => ({ ...p, religion: e.target.value }))}
-                      style={{ width: '100%', height: '40px', borderRadius: '6px', border: '1px solid #CBD5E1', padding: '0 10px', fontSize: '12.5px', background: '#FFFFFF' }}
+                      style={{ width: '100%', height: '40px', borderRadius: '8px', border: '1px solid #CBD5E1', padding: '0 10px', fontSize: '12.5px', background: '#FFFFFF' }}
                     >
-                      <option value="MUSLIM">مزامنة صيام شهر رمضان المبارك (صيام جاف وتوقيت ليلي)</option>
-                      <option value="CHRISTIAN">مزامنة الصيام الكنسي / المسيحي (صوم الميلاد، الصوم الكبير)</option>
-                      <option value="OTHER">نظام غذائي اعتيادي مستمر طوال العام (بدون أصوام دينية)</option>
+                      <option value="MUSLIM">صيام رمضان (توقيت ليلي)</option>
+                      <option value="CHRISTIAN">صيام مسيحي</option>
+                      <option value="OTHER">نظام اعتيادي (بدون صيام ديني)</option>
                     </select>
                   </div>
 
@@ -1515,10 +1515,10 @@ export default function FullIntakeForm() {
                       <select
                         value={formData.christianFastingStyle || 'PESCATARIAN_ALLOWED'}
                         onChange={(e) => setFormData(p => ({ ...p, christianFastingStyle: e.target.value }))}
-                        style={{ width: '100%', height: '40px', borderRadius: '6px', border: '1px solid #CBD5E1', padding: '0 10px', fontSize: '12.5px', background: '#FFFFFF' }}
+                        style={{ width: '100%', height: '40px', borderRadius: '8px', border: '1px solid #CBD5E1', padding: '0 10px', fontSize: '12.5px', background: '#FFFFFF' }}
                       >
-                        <option value="PESCATARIAN_ALLOWED">صيام نباتي مع السماح بالأسماك والمأكولات البحرية (الموصى به)</option>
-                        <option value="STRICT_VEGAN">صيام نباتي صارم خالي من الأسماك وذوات الأرواح</option>
+                        <option value="PESCATARIAN_ALLOWED">نباتي مع سمك (المفضل)</option>
+                        <option value="STRICT_VEGAN">نباتي صرف (بدون سمك)</option>
                       </select>
                     </div>
                   )}
@@ -1933,11 +1933,11 @@ export default function FullIntakeForm() {
                   <select 
                     value={trainingLogistics.experience_level || 'intermediate'}
                     onChange={(e) => updateNested('training_logistics', 'experience_level', e.target.value)}
-                    style={{ width: '100%', height: '38px', borderRadius: '6px', border: '1px solid #CBD5E1', padding: '0 10px', fontSize: '12px', background: '#FFFFFF' }}
+                    style={{ width: '100%', height: '38px', borderRadius: '8px', border: '1px solid #CBD5E1', padding: '0 10px', fontSize: '12px', background: '#FFFFFF' }}
                   >
-                    <option value="beginner">مبتدئ (أقل من سنة تمرين منتظم)</option>
-                    <option value="intermediate">متوسط (1 إلى 3 سنوات تمرين منتظم)</option>
-                    <option value="advanced">متقدم (أكثر من 3 سنوات مع إتقان التكنيك)</option>
+                    <option value="beginner">مبتدئ (أقل من سنة)</option>
+                    <option value="intermediate">متوسط (1 إلى 3 سنوات)</option>
+                    <option value="advanced">متقدم (أكثر من 3 سنوات)</option>
                   </select>
                 </div>
 
@@ -1948,12 +1948,12 @@ export default function FullIntakeForm() {
                   <select 
                     value={formData.recent_training || 'ACTIVE'}
                     onChange={(e) => setFormData(p => ({ ...p, recent_training: e.target.value }))}
-                    style={{ width: '100%', height: '38px', borderRadius: '6px', border: '1px solid #CBD5E1', padding: '0 10px', fontSize: '12px', background: '#FFFFFF' }}
+                    style={{ width: '100%', height: '38px', borderRadius: '8px', border: '1px solid #CBD5E1', padding: '0 10px', fontSize: '12px', background: '#FFFFFF' }}
                   >
-                    <option value="ACTIVE">أتمرن حالياً بانتظام (جاهز لحمل تدريبي مباشر)</option>
-                    <option value="INCONSISTENT">متقطع في آخر 6 شهور (حاجة لضبط الالتزام)</option>
-                    <option value="NONE_LAST_4_WEEKS">منقطع منذ شهر إلى 3 شهور (تدرج في الأوزان)</option>
-                    <option value="RETURNING_AFTER_LONG_BREAK">عودة بعد انقطاع طويل (تأسيس تدريجي تفادياً للـ DOMS)</option>
+                    <option value="ACTIVE">أتمرن حالياً بانتظام</option>
+                    <option value="INCONSISTENT">متقطع في آخر 6 شهور</option>
+                    <option value="NONE_LAST_4_WEEKS">منقطع منذ 1 إلى 3 شهور</option>
+                    <option value="RETURNING_AFTER_LONG_BREAK">عودة بعد انقطاع طويل</option>
                   </select>
                 </div>
               </div>

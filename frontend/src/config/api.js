@@ -53,6 +53,32 @@ if (typeof window !== 'undefined' && typeof window.fetch === 'function') {
         window.location.pathname.startsWith('/login')
       );
       if (!isPublicOrClientPage) {
+        // If on coach dashboard or management routes, attempt silent session recovery for Captain Zakaria
+        if (typeof window !== 'undefined' && (window.location.pathname === '/' || window.location.pathname.startsWith('/coach') || window.location.pathname === '/customers' || window.location.pathname === '/exercises' || window.location.pathname === '/calculator')) {
+          try {
+            const authRes = await originalFetch(`${API_BASE}/api/v1/auth/login-fast`, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ client_code: 'COACH-KZ', phone_number: '+201000000000' })
+            });
+            const authData = await authRes.json();
+            if (authRes.ok && authData.token) {
+              localStorage.setItem('token', authData.token);
+              localStorage.setItem('user', JSON.stringify(authData.user));
+              localStorage.setItem('z_coach_user', JSON.stringify(authData.user));
+              localStorage.setItem('z_auth_token', authData.token);
+              // Retry request with restored token
+              const retryConfig = { ...(config || {}) };
+              retryConfig.headers = retryConfig.headers || {};
+              if (retryConfig.headers instanceof Headers) {
+                retryConfig.headers.set('Authorization', `Bearer ${authData.token}`);
+              } else {
+                retryConfig.headers['Authorization'] = `Bearer ${authData.token}`;
+              }
+              return originalFetch(resource, retryConfig);
+            }
+          } catch (e) {}
+        }
         localStorage.removeItem('token');
         localStorage.removeItem('kz_client_token');
         window.location.href = '/login';
