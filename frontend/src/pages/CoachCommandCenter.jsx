@@ -106,20 +106,6 @@ export default function CoachCommandCenter() {
         if (searchQuery) setSearchQuery('');
         if (isNewClientModalOpen) setIsNewClientModalOpen(false);
         if (isSortOpen) setIsSortOpen(false);
-      } else if (e.key === '1') {
-        setActiveTab(prev => prev === 'NEW_INTAKE' ? 'ALL' : 'NEW_INTAKE');
-      } else if (e.key === '2') {
-        setActiveTab(prev => prev === 'CHECKIN' ? 'ALL' : 'CHECKIN');
-      } else if (e.key === '3') {
-        setActiveTab(prev => prev === 'OVERDUE' ? 'ALL' : 'OVERDUE');
-      } else if (e.key === '4') {
-        setActiveTab(prev => prev === 'RENEWAL' ? 'ALL' : 'RENEWAL');
-      } else if (e.key === '5') {
-        setActiveTab(prev => prev === 'INJURY' ? 'ALL' : 'INJURY');
-      } else if (e.key === '0' || e.key === '`') {
-        setActiveTab('ALL');
-      } else if (e.key === 'r' || e.key === 'R') {
-        fetchDashboardData();
       }
     }
     window.addEventListener('keydown', handleKeyDown);
