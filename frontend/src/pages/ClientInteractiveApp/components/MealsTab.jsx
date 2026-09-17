@@ -32,52 +32,37 @@ export default function MealsTab({
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
       
-      {/* Daily Macros Target Progress Card - Executive Clean */}
+      {/* Daily Macros Target Card - Executive Prescription Reference */}
       <div style={{ background: '#FFFFFF', borderRadius: '16px', padding: '14px 16px', border: '1px solid #E2E8F0', boxShadow: '0 1px 3px rgba(0, 0, 0, 0.04)' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: '10px' }}>
           <div>
-            <span style={{ fontSize: '0.7rem', color: '#64748B', fontWeight: 600, display: 'block' }}>إجمالي السعرات اليومية</span>
-            <strong style={{ fontSize: '1rem', color: '#0F172A', fontWeight: 900 }}>
-              {Math.round(consumedMacros.cal)} <span style={{ fontSize: '0.76rem', color: '#94A3B8', fontWeight: 500 }}>/ {targetMacros.cal} سعرة</span>
+            <span style={{ fontSize: '0.7rem', color: '#64748B', fontWeight: 600, display: 'block' }}>إجمالي السعرات اليومية المقررة</span>
+            <strong style={{ fontSize: '1.05rem', color: '#0F172A', fontWeight: 900 }}>
+              {targetMacros.cal} <span style={{ fontSize: '0.76rem', color: '#64748B', fontWeight: 500 }}>سعرة حرارية</span>
             </strong>
           </div>
-          <span style={{ fontSize: '0.72rem', color: '#64748B', fontWeight: 600 }}>
-            متبقي: <strong style={{ color: '#0F172A' }}>{Math.max(0, targetMacros.cal - Math.round(consumedMacros.cal))}</strong> سعرة
+          <span style={{ fontSize: '0.72rem', color: '#0284C7', fontWeight: 700, background: '#F0F9FF', border: '1px solid #BAE6FD', padding: '2px 8px', borderRadius: '6px' }}>
+            خطة استرشادية معتمدة
           </span>
         </div>
 
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '8px' }}>
           {/* Protein */}
           <div style={{ background: '#F8FAFC', padding: '8px 10px', borderRadius: '10px', border: '1px solid #F1F5F9' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '10.5px', color: '#64748B', fontWeight: 600 }}>
-              <span>بروتين</span>
-              <span style={{ color: '#0F172A', fontWeight: 700 }} dir="ltr">{Math.round(consumedMacros.p)}/{targetMacros.p}g</span>
-            </div>
-            <div style={{ width: '100%', height: '3px', background: '#E2E8F0', borderRadius: '9999px', marginTop: '5px', overflow: 'hidden' }}>
-              <div style={{ width: `${Math.min(100, (consumedMacros.p / targetMacros.p) * 100)}%`, height: '100%', background: '#0284C7' }}></div>
-            </div>
+            <span style={{ fontSize: '10.5px', color: '#64748B', fontWeight: 600, display: 'block' }}>بروتين صافي</span>
+            <strong style={{ fontSize: '0.92rem', color: '#0284C7', fontWeight: 800 }} dir="ltr">{targetMacros.p}g</strong>
           </div>
 
           {/* Carbs */}
           <div style={{ background: '#F8FAFC', padding: '8px 10px', borderRadius: '10px', border: '1px solid #F1F5F9' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '10.5px', color: '#64748B', fontWeight: 600 }}>
-              <span>كارب</span>
-              <span style={{ color: '#0F172A', fontWeight: 700 }} dir="ltr">{Math.round(consumedMacros.c)}/{targetMacros.c}g</span>
-            </div>
-            <div style={{ width: '100%', height: '3px', background: '#E2E8F0', borderRadius: '9999px', marginTop: '5px', overflow: 'hidden' }}>
-              <div style={{ width: `${Math.min(100, (consumedMacros.c / targetMacros.c) * 100)}%`, height: '100%', background: '#D97706' }}></div>
-            </div>
+            <span style={{ fontSize: '10.5px', color: '#64748B', fontWeight: 600, display: 'block' }}>كاربوهيدرات</span>
+            <strong style={{ fontSize: '0.92rem', color: '#D97706', fontWeight: 800 }} dir="ltr">{targetMacros.c}g</strong>
           </div>
 
           {/* Fats */}
           <div style={{ background: '#F8FAFC', padding: '8px 10px', borderRadius: '10px', border: '1px solid #F1F5F9' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '10.5px', color: '#64748B', fontWeight: 600 }}>
-              <span>دهون</span>
-              <span style={{ color: '#0F172A', fontWeight: 700 }} dir="ltr">{Math.round(consumedMacros.f)}/{targetMacros.f}g</span>
-            </div>
-            <div style={{ width: '100%', height: '3px', background: '#E2E8F0', borderRadius: '9999px', marginTop: '5px', overflow: 'hidden' }}>
-              <div style={{ width: `${Math.min(100, (consumedMacros.f / targetMacros.f) * 100)}%`, height: '100%', background: '#059669' }}></div>
-            </div>
+            <span style={{ fontSize: '10.5px', color: '#64748B', fontWeight: 600, display: 'block' }}>دهون صحية</span>
+            <strong style={{ fontSize: '0.92rem', color: '#059669', fontWeight: 800 }} dir="ltr">{targetMacros.f}g</strong>
           </div>
         </div>
       </div>
@@ -263,27 +248,22 @@ export default function MealsTab({
               <span style={{ fontSize: '0.7rem', color: '#94A3B8' }}>{meal.time}</span>
             </div>
 
-            <button
-              type="button"
-              onClick={() => handleToggleMealCompleted(meal.id)}
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: '4px',
-                background: meal.completed ? '#16A34A' : '#F8FAFC',
-                color: meal.completed ? '#FFFFFF' : '#475569',
-                border: `1px solid ${meal.completed ? '#16A34A' : '#CBD5E1'}`,
-                borderRadius: '8px',
-                padding: '4px 10px',
-                fontSize: '0.72rem',
-                fontWeight: 700,
-                cursor: 'pointer',
-                transition: 'all 0.15s ease'
-              }}
-            >
-              {meal.completed && <Check style={{ width: '12px', height: '12px' }} />}
-              <span>{meal.completed ? 'تم التناول' : 'تسجيل التناول'}</span>
-            </button>
+            {meal.macros?.calories ? (
+              <span 
+                style={{
+                  fontSize: '0.74rem',
+                  fontWeight: 800,
+                  color: '#0284C7',
+                  background: '#F0F9FF',
+                  border: '1px solid #BAE6FD',
+                  padding: '3px 8px',
+                  borderRadius: '8px'
+                }} 
+                dir="ltr"
+              >
+                {meal.macros.calories} kcal
+              </span>
+            ) : null}
           </div>
 
           {/* Meal Items */}
