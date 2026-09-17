@@ -128,7 +128,6 @@ const CSS_STYLES = `
     font-weight: 700;
     border: 0.5pt solid #CBD5E1;
     padding: 6px 8px;
-    text-align: right;
     word-break: break-word !important;
     overflow-wrap: break-word !important;
   }
@@ -142,6 +141,12 @@ const CSS_STYLES = `
     word-break: break-word !important;
     overflow-wrap: break-word !important;
     white-space: normal !important;
+  }
+
+  .pdf-table-center th,
+  .pdf-table-center td {
+    text-align: center !important;
+    vertical-align: middle !important;
   }
 
   .pdf-card {
@@ -169,6 +174,10 @@ const CSS_STYLES = `
 
   .nowrap {
     white-space: nowrap !important;
+  }
+
+  .text-center {
+    text-align: center !important;
   }
 `;
 
@@ -204,7 +213,7 @@ function resolveExerciseMuscleName(ex) {
   if (raw.includes('HAMSTRING') || raw.includes('LEG CURL') || rawAr.includes('خلفي')) {
     return 'عضلات الفخذ الخلفية';
   }
-  if (raw.includes('SHOULDER') || raw.includes('OVERHEAD') || raw.includes('OHP') || raw.includes('LATERAL') || raw.includes('DELT') || rawAr.includes('كتف') || rawAr.includes('رفرفة')) {
+  if (raw.includes('SHOULDER') || raw.includes('OVERHEAD') || raw.includes('OHP') || raw.includes('LATERAL') || rawAr.includes('DELT') || rawAr.includes('كتف') || rawAr.includes('رفرفة')) {
     if (raw.includes('LATERAL') || rawAr.includes('جانبي') || rawAr.includes('رفرفة')) return 'الكتف الجانبي';
     if (raw.includes('REAR') || rawAr.includes('خلفي')) return 'الكتف الخلفي';
     return 'الكتف الأمامي والعلوي';
@@ -288,7 +297,9 @@ export default function ProgramPdfView() {
   const clientCode = program?.client?.client_code || program?.client_code || user?.client_code || user?.id || targetUserId;
   const rawTier = program?.client?.subscription_package || program?.client?.package_tier || user?.package_tier || user?.subscription_package || 'ELITE';
   const packageTier = String(rawTier).toUpperCase().includes('MAX') ? 'باقة ماكس الشاملة (MAX)' : 'باقة إيليت المتقدمة (ELITE)';
-  const issueDate = new Date().toLocaleDateString('ar-EG', { year: 'numeric', month: 'long', day: 'numeric' });
+  const now = new Date();
+  const arabicMonths = ['يناير', 'فبراير', 'مارس', 'أبريل', 'مايو', 'يونيو', 'يوليو', 'أغسطس', 'سبتمبر', 'أكتوبر', 'نوفمبر', 'ديسمبر'];
+  const issueDate = `${now.getDate()} ${arabicMonths[now.getMonth()]} ${now.getFullYear()}`;
 
   // Fasting Profile
   const clientObj = program?.client || user || {};
@@ -482,25 +493,27 @@ export default function ProgramPdfView() {
             </p>
           </div>
 
-          {/* Identification Metadata Grid */}
-          <table className="pdf-table" style={{ marginBottom: '6px' }}>
+          {/* Identification Metadata Grid - Centered cells */}
+          <table className="pdf-table pdf-table-center" style={{ marginBottom: '6px' }}>
             <tbody>
               <tr>
-                <th style={{ width: '18%' }}>اسم المتدرب:</th>
-                <td style={{ width: '32%', fontWeight: '700' }}>{clientName}</td>
-                <th style={{ width: '18%' }}>كود المشترك:</th>
-                <td style={{ width: '32%', fontWeight: '700', color: '#0284C7' }}>#{clientCode}</td>
+                <th style={{ width: '18%', textAlign: 'center' }}>اسم المتدرب</th>
+                <td style={{ width: '32%', fontWeight: '700', textAlign: 'center' }}>{clientName}</td>
+                <th style={{ width: '18%', textAlign: 'center' }}>كود المشترك</th>
+                <td style={{ width: '32%', fontWeight: '700', color: '#0284C7', textAlign: 'center' }} className="nowrap">
+                  <span dir="ltr">#{clientCode}</span>
+                </td>
               </tr>
               <tr>
-                <th>نوع الباقة:</th>
-                <td style={{ fontWeight: '600' }}>{packageTier}</td>
-                <th>تاريخ الاعتماد:</th>
-                <td style={{ fontWeight: '600' }} className="nowrap">{issueDate}</td>
+                <th style={{ textAlign: 'center' }}>نوع الباقة</th>
+                <td style={{ fontWeight: '600', textAlign: 'center' }}>{packageTier}</td>
+                <th style={{ textAlign: 'center' }}>تاريخ الاعتماد</th>
+                <td style={{ fontWeight: '600', textAlign: 'center' }} className="nowrap">{issueDate}</td>
               </tr>
               {fastingProfile && (fastingProfile.isCoptic || fastingProfile.isRamadan || fastingProfile.isIntermittent) && (
                 <tr>
-                  <th>بروتوكول الصيام:</th>
-                  <td colSpan="3" style={{ fontWeight: '700', color: fastingProfile.isCoptic ? '#6D28D9' : (fastingProfile.isRamadan ? '#B45309' : '#0284C7') }}>
+                  <th style={{ textAlign: 'center' }}>بروتوكول الصيام</th>
+                  <td colSpan="3" style={{ fontWeight: '700', color: fastingProfile.isCoptic ? '#6D28D9' : (fastingProfile.isRamadan ? '#B45309' : '#0284C7'), textAlign: 'center' }}>
                     {fastingProfile.isCoptic
                       ? (fastingProfile.christianFastingStyle === 'STRICT_VEGAN' ? 'صيام مسيحي (نباتي بدون سمك)' : 'صيام مسيحي (مع مأكولات بحرية)')
                       : (fastingProfile.isRamadan
@@ -512,11 +525,11 @@ export default function ProgramPdfView() {
             </tbody>
           </table>
 
-          {/* 1. Physiological Profile Table */}
+          {/* 1. Physiological Profile Table - All Centered */}
           <div className="section-title">1. القياسات ومؤشرات القوام</div>
-          <table className="pdf-table" style={{ marginBottom: '6px' }}>
+          <table className="pdf-table pdf-table-center" style={{ marginBottom: '6px' }}>
             <thead>
-              <tr style={{ textAlign: 'center' }}>
+              <tr>
                 <th style={{ width: '25%', textAlign: 'center' }}>الطول</th>
                 <th style={{ width: '25%', textAlign: 'center' }}>الوزن الحالي</th>
                 <th style={{ width: '25%', textAlign: 'center' }}>مؤشر كتلة الجسم</th>
@@ -524,18 +537,18 @@ export default function ProgramPdfView() {
               </tr>
             </thead>
             <tbody>
-              <tr style={{ fontWeight: '700', textAlign: 'center' }}>
-                <td className="nowrap">{heightCm} سم</td>
-                <td className="nowrap">{weightKg} كجم</td>
-                <td className="nowrap">{bmi} مؤشر الكتلة</td>
-                <td style={{ color: '#0284C7' }} className="nowrap">{bodyFat}</td>
+              <tr style={{ fontWeight: '700' }}>
+                <td style={{ textAlign: 'center' }} className="nowrap">{heightCm} سم</td>
+                <td style={{ textAlign: 'center' }} className="nowrap">{weightKg} كجم</td>
+                <td style={{ textAlign: 'center' }} className="nowrap">{bmi} مؤشر الكتلة</td>
+                <td style={{ textAlign: 'center', color: '#0284C7' }} className="nowrap">{bodyFat}</td>
               </tr>
             </tbody>
           </table>
 
-          <table className="pdf-table" style={{ marginBottom: '6px' }}>
+          <table className="pdf-table pdf-table-center" style={{ marginBottom: '6px' }}>
             <thead>
-              <tr style={{ textAlign: 'center' }}>
+              <tr>
                 <th style={{ width: '20%', textAlign: 'center' }}>محيط الرقبة</th>
                 <th style={{ width: '20%', textAlign: 'center' }}>محيط الوسط (الخصر)</th>
                 <th style={{ width: '20%', textAlign: 'center' }}>محيط الحوض</th>
@@ -543,11 +556,11 @@ export default function ProgramPdfView() {
               </tr>
             </thead>
             <tbody>
-              <tr style={{ fontWeight: '600', textAlign: 'center' }}>
-                <td className="nowrap">{neckCm} سم</td>
-                <td style={{ fontWeight: '700', color: '#0F172A' }} className="nowrap">{waistCm} سم</td>
-                <td className="nowrap">{hipsCm} سم</td>
-                <td style={{ fontWeight: '700', color: '#0284C7' }}>{primaryGoal}</td>
+              <tr style={{ fontWeight: '600' }}>
+                <td style={{ textAlign: 'center' }} className="nowrap">{neckCm} سم</td>
+                <td style={{ textAlign: 'center', fontWeight: '700', color: '#0F172A' }} className="nowrap">{waistCm} سم</td>
+                <td style={{ textAlign: 'center' }} className="nowrap">{hipsCm} سم</td>
+                <td style={{ textAlign: 'center', fontWeight: '700', color: '#0284C7' }}>{primaryGoal}</td>
               </tr>
             </tbody>
           </table>
@@ -594,8 +607,8 @@ export default function ProgramPdfView() {
 
           </div>
 
-          {/* Hydration Banner */}
-          <div className="pdf-card" style={{ background: '#F0F9FF', borderColor: '#BAE6FD', display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '5px 10px', marginBottom: '6px' }}>
+          {/* Hydration Banner - Centered content */}
+          <div className="pdf-card" style={{ background: '#F0F9FF', borderColor: '#BAE6FD', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '12px', padding: '5px 10px', marginBottom: '6px' }}>
             <span style={{ fontSize: '8pt', fontWeight: '700', color: '#0369A1' }}>معدل الترطيب واستهلاك الماء اليومي المستهدف:</span>
             <span style={{ fontSize: '9pt', fontWeight: '800', color: '#0284C7' }} className="nowrap">{hydrationLiters}</span>
           </div>
@@ -612,12 +625,12 @@ export default function ProgramPdfView() {
             </div>
           )}
 
-          {/* Meals Table with Fixed Layout & Auto Wrap */}
+          {/* Meals Table with Centered Macro Columns */}
           <table className="pdf-table" style={{ marginBottom: '6px' }}>
             <thead>
               <tr>
-                <th style={{ width: '16%' }}>الوجبة</th>
-                <th style={{ width: '52%' }}>المكونات والمقادير الدقيقة</th>
+                <th style={{ width: '16%', textAlign: 'center' }}>الوجبة</th>
+                <th style={{ width: '52%', textAlign: 'right' }}>المكونات والمقادير الدقيقة</th>
                 <th style={{ width: '8%', textAlign: 'center' }}>بروتين</th>
                 <th style={{ width: '8%', textAlign: 'center' }}>كارب</th>
                 <th style={{ width: '8%', textAlign: 'center' }}>دهون</th>
@@ -627,7 +640,7 @@ export default function ProgramPdfView() {
             <tbody>
               {meals.map((meal, mIdx) => (
                 <tr key={mIdx}>
-                  <td style={{ fontWeight: '700', color: '#0F172A', fontSize: '7.5pt' }} className="nowrap">
+                  <td style={{ fontWeight: '700', color: '#0F172A', fontSize: '7.5pt', textAlign: 'center' }} className="nowrap">
                     {meal.meal_name_ar || `الوجبة ${mIdx + 1}`}
                   </td>
                   <td style={{ fontSize: '7.5pt', lineHeight: '1.4' }}>
@@ -699,7 +712,7 @@ export default function ProgramPdfView() {
               </div>
             </div>
 
-            {/* Render 2 Full-Width Sessions per Page with Generous Column Widths */}
+            {/* Render 2 Full-Width Sessions per Page with Centered Columns */}
             {chunk.map((session, sIdx) => (
               <div key={sIdx} style={{ marginBottom: '10px' }}>
                 <div style={{ fontSize: '8.5pt', fontWeight: '800', color: '#0F172A', marginBottom: '4px', background: '#F1F5F9', padding: '4px 8px', borderRadius: '6px', borderRight: '2.5pt solid #0284C7' }}>
@@ -708,8 +721,8 @@ export default function ProgramPdfView() {
                 <table className="pdf-table" style={{ margin: 0 }}>
                   <thead>
                     <tr>
-                      <th style={{ width: '38%' }}>التمرين وتكنيك الأداء</th>
-                      <th style={{ width: '24%' }}>العضلة المستهدفة</th>
+                      <th style={{ width: '38%', textAlign: 'right' }}>التمرين وتكنيك الأداء</th>
+                      <th style={{ width: '24%', textAlign: 'center' }}>العضلة المستهدفة</th>
                       <th style={{ width: '12%', textAlign: 'center' }}>المجموعات</th>
                       <th style={{ width: '14%', textAlign: 'center' }}>العدات المستهدفة</th>
                       <th style={{ width: '12%', textAlign: 'center' }}>فترة الراحة</th>
@@ -721,7 +734,7 @@ export default function ProgramPdfView() {
                       const targetMuscle = resolveExerciseMuscleName(ex);
                       return (
                         <tr key={eIdx}>
-                          <td>
+                          <td style={{ textAlign: 'right' }}>
                             <strong style={{ display: 'block', fontSize: '7.5pt', color: '#0F172A', direction: 'ltr', textAlign: 'right' }}>
                               {exNames.nameEn}
                             </strong>
@@ -729,7 +742,7 @@ export default function ProgramPdfView() {
                               {exNames.nameAr}
                             </span>
                           </td>
-                          <td style={{ color: '#0369A1', fontWeight: '700', fontSize: '7.5pt' }}>
+                          <td style={{ color: '#0369A1', fontWeight: '700', fontSize: '7.5pt', textAlign: 'center' }}>
                             {targetMuscle}
                           </td>
                           <td style={{ textAlign: 'center', fontWeight: '700', fontSize: '8pt' }} className="nowrap">
@@ -769,53 +782,53 @@ export default function ProgramPdfView() {
             <span className="nowrap">كود المشترك: #{clientCode}</span>
           </div>
 
-          {/* 5. Periodization Schedule Matrix (Spacious & Clean) */}
+          {/* 5. Periodization Schedule Matrix (Spacious & Clean with Centered Cells) */}
           <div className="section-title">5. مصفوفة التدرج الدوري للأحمال (خطة دورة الـ 5 أسابيع الميدانية)</div>
-          <table className="pdf-table" style={{ marginBottom: '12px' }}>
+          <table className="pdf-table pdf-table-center" style={{ marginBottom: '12px' }}>
             <thead>
               <tr>
-                <th style={{ width: '16%' }}>الأسبوع التدريبي</th>
-                <th style={{ width: '24%' }}>المرحلة والهدف الحركي</th>
+                <th style={{ width: '16%', textAlign: 'center' }}>الأسبوع التدريبي</th>
+                <th style={{ width: '24%', textAlign: 'center' }}>المرحلة والهدف الحركي</th>
                 <th style={{ width: '16%', textAlign: 'center' }}>حجم المجموعات</th>
                 <th style={{ width: '16%', textAlign: 'center' }}>معدل الاحتياط (RIR)</th>
-                <th style={{ width: '28%' }}>التوجيه الفني والتطبيقي</th>
+                <th style={{ width: '28%', textAlign: 'center' }}>التوجيه الفني والتطبيقي</th>
               </tr>
             </thead>
             <tbody>
               <tr>
-                <td style={{ fontWeight: '700', color: '#0F172A' }}>الأسبوع 1</td>
-                <td style={{ fontWeight: '600', color: '#0284C7' }}>التأسيس والتكيف الحركي</td>
+                <td style={{ fontWeight: '700', color: '#0F172A', textAlign: 'center' }}>الأسبوع 1</td>
+                <td style={{ fontWeight: '600', color: '#0284C7', textAlign: 'center' }}>التأسيس والتكيف الحركي</td>
                 <td style={{ textAlign: 'center', fontWeight: '700' }} className="nowrap">3 مجموعات</td>
                 <td style={{ textAlign: 'center', fontWeight: '800', color: '#0284C7' }} className="nowrap">RIR 3</td>
-                <td>التعود على مسار الحركة وضبط الأوزان الابتدائية بدقة.</td>
+                <td style={{ textAlign: 'center' }}>التعود على مسار الحركة وضبط الأوزان الابتدائية بدقة.</td>
               </tr>
               <tr>
-                <td style={{ fontWeight: '700', color: '#0F172A' }}>الأسبوع 2</td>
-                <td style={{ fontWeight: '600', color: '#0284C7' }}>التحميل التدريجي (Overload)</td>
+                <td style={{ fontWeight: '700', color: '#0F172A', textAlign: 'center' }}>الأسبوع 2</td>
+                <td style={{ fontWeight: '600', color: '#0284C7', textAlign: 'center' }}>التحميل التدريجي (Overload)</td>
                 <td style={{ textAlign: 'center', fontWeight: '700' }} className="nowrap">3 مجموعات</td>
                 <td style={{ textAlign: 'center', fontWeight: '800', color: '#0284C7' }} className="nowrap">RIR 2</td>
-                <td>زيادة الحمل الخطي تدريجياً مع إبقاء تكرارين في الاحتياط.</td>
+                <td style={{ textAlign: 'center' }}>زيادة الحمل الخطي تدريجياً مع إبقاء تكرارين في الاحتياط.</td>
               </tr>
               <tr>
-                <td style={{ fontWeight: '700', color: '#0F172A' }}>الأسبوع 3</td>
-                <td style={{ fontWeight: '600', color: '#D97706' }}>التكثيف والضغط العضلي</td>
+                <td style={{ fontWeight: '700', color: '#0F172A', textAlign: 'center' }}>الأسبوع 3</td>
+                <td style={{ fontWeight: '600', color: '#D97706', textAlign: 'center' }}>التكثيف والضغط العضلي</td>
                 <td style={{ textAlign: 'center', fontWeight: '700', color: '#D97706' }} className="nowrap">4 مجموعات (+1)</td>
                 <td style={{ textAlign: 'center', fontWeight: '800', color: '#D97706' }} className="nowrap">RIR 1</td>
-                <td>إضافة مجموعة عمل لكل حركة أساسية والاقتراب من الفشل العضلي.</td>
+                <td style={{ textAlign: 'center' }}>إضافة مجموعة عمل لكل حركة أساسية والاقتراب من الفشل العضلي.</td>
               </tr>
               <tr>
-                <td style={{ fontWeight: '700', color: '#0F172A' }}>الأسبوع 4</td>
-                <td style={{ fontWeight: '600', color: '#DC2626' }}>ذروة الأداء (Peak Phase)</td>
+                <td style={{ fontWeight: '700', color: '#0F172A', textAlign: 'center' }}>الأسبوع 4</td>
+                <td style={{ fontWeight: '600', color: '#DC2626', textAlign: 'center' }}>ذروة الأداء (Peak Phase)</td>
                 <td style={{ textAlign: 'center', fontWeight: '700', color: '#DC2626' }} className="nowrap">4 مجموعات</td>
                 <td style={{ textAlign: 'center', fontWeight: '800', color: '#DC2626' }} className="nowrap">RIR 0 - 1</td>
-                <td>الوصول لأقصى أداء ممكن وبذل أعلى طاقة عضلية قبل الاستشفاء.</td>
+                <td style={{ textAlign: 'center' }}>الوصول لأقصى أداء ممكن وبذل أعلى طاقة عضلية قبل الاستشفاء.</td>
               </tr>
               <tr style={{ background: '#F0FDF4' }}>
-                <td style={{ fontWeight: '700', color: '#166534' }}>الأسبوع 5 (ديلود)</td>
-                <td style={{ fontWeight: '600', color: '#166534' }}>أسبوع كسر الإجهاد والاستشفاء</td>
+                <td style={{ fontWeight: '700', color: '#166534', textAlign: 'center' }}>الأسبوع 5 (ديلود)</td>
+                <td style={{ fontWeight: '600', color: '#166534', textAlign: 'center' }}>أسبوع كسر الإجهاد والاستشفاء</td>
                 <td style={{ textAlign: 'center', fontWeight: '700', color: '#166534' }} className="nowrap">مجموعتان (-40%)</td>
                 <td style={{ textAlign: 'center', fontWeight: '800', color: '#166534' }} className="nowrap">RIR 3 - 4</td>
-                <td>تخفيض الحجم التدريبي لتجديد الجهاز العصبي والمفاصل والأوتار.</td>
+                <td style={{ textAlign: 'center' }}>تخفيض الحجم التدريبي لتجديد الجهاز العصبي والمفاصل والأوتار.</td>
               </tr>
             </tbody>
           </table>
@@ -825,36 +838,36 @@ export default function ProgramPdfView() {
           <table className="pdf-table" style={{ marginBottom: '12px' }}>
             <thead>
               <tr>
-                <th style={{ width: '28%' }}>الصنف الأساسي في الخطة</th>
-                <th style={{ width: '72%' }}>البدائل المباشرة المكافئة لنفس السعرات والماكروز بالجرام</th>
+                <th style={{ width: '28%', textAlign: 'center' }}>الصنف الأساسي في الخطة</th>
+                <th style={{ width: '72%', textAlign: 'center' }}>البدائل المباشرة المكافئة لنفس السعرات والماكروز بالجرام</th>
               </tr>
             </thead>
             <tbody>
               <tr>
-                <td style={{ fontWeight: '700', color: '#0F172A' }}>100 جم صدور دجاج مشوية</td>
-                <td>= 125 جم سمك فيليه أبيض = 110 جم لحم بقري صافي 5% دهون = 130 جم جمبري مشوي = 130 جم تونة مصفاة بالماء</td>
+                <td style={{ fontWeight: '700', color: '#0F172A', textAlign: 'center' }}>100 جم صدور دجاج مشوية</td>
+                <td style={{ textAlign: 'center' }}>= 125 جم سمك فيليه أبيض = 110 جم لحم بقري صافي 5% دهون = 130 جم جمبري مشوي = 130 جم تونة مصفاة بالماء</td>
               </tr>
               <tr>
-                <td style={{ fontWeight: '700', color: '#0F172A' }}>100 جم أرز بسمتي مطبوخ</td>
-                <td>= 110 جم بطاطس مسلوقة/مشوية = 100 جم بطاطا حلوة = 35 جم شوفان خام كامل = 2 شريحة خبز توست بني</td>
+                <td style={{ fontWeight: '700', color: '#0F172A', textAlign: 'center' }}>100 جم أرز بسمتي مطبوخ</td>
+                <td style={{ textAlign: 'center' }}>= 110 جم بطاطس مسلوقة/مشوية = 100 جم بطاطا حلوة = 35 جم شوفان خام كامل = 2 شريحة خبز توست بني</td>
               </tr>
               <tr>
-                <td style={{ fontWeight: '700', color: '#0F172A' }}>100 جم جبن قريش طبيعي</td>
-                <td>= 120 جم زبادي يوناني طبيعي 0% دسم = 4 بياض بيض كبير = 1 مكيال بروتين واي معزول (25 جم)</td>
+                <td style={{ fontWeight: '700', color: '#0F172A', textAlign: 'center' }}>100 جم جبن قريش طبيعي</td>
+                <td style={{ textAlign: 'center' }}>= 120 جم زبادي يوناني طبيعي 0% دسم = 4 بياض بيض كبير = 1 مكيال بروتين واي معزول (25 جم)</td>
               </tr>
               <tr>
-                <td style={{ fontWeight: '700', color: '#0F172A' }}>10 جم زيت زيتون بكر</td>
-                <td>= 15 جم زبدة فول سوداني طبيعية 100% = 40 جم أفوكادو طازج = 15 جم مكسرات نيئة غير مملحة (لوز أو جوز)</td>
+                <td style={{ fontWeight: '700', color: '#0F172A', textAlign: 'center' }}>10 جم زيت زيتون بكر</td>
+                <td style={{ textAlign: 'center' }}>= 15 جم زبدة فول سوداني طبيعية 100% = 40 جم أفوكادو طازج = 15 جم مكسرات نيئة غير مملحة (لوز أو جوز)</td>
               </tr>
             </tbody>
           </table>
 
           {/* 7. Zone 2 Cardio Protocol */}
           <div className="section-title">7. بروتوكول كارديو حرق الدهون واللياقة القلبية</div>
-          <table className="pdf-table" style={{ marginBottom: '12px' }}>
+          <table className="pdf-table pdf-table-center" style={{ marginBottom: '12px' }}>
             <thead>
               <tr>
-                <th style={{ width: '30%' }}>النشاط الرياضي الموصى به</th>
+                <th style={{ width: '30%', textAlign: 'center' }}>النشاط الرياضي الموصى به</th>
                 <th style={{ width: '22%', textAlign: 'center' }}>التكرار الأسبوعي</th>
                 <th style={{ width: '22%', textAlign: 'center' }}>المدة لكل جلسة</th>
                 <th style={{ width: '26%', textAlign: 'center' }}>معدل النبض المستهدف</th>
@@ -862,10 +875,10 @@ export default function ProgramPdfView() {
             </thead>
             <tbody>
               <tr style={{ fontWeight: '700', textAlign: 'center' }}>
-                <td style={{ textAlign: 'right' }}>المشي على سير مائل (Incline Treadmill)</td>
-                <td className="nowrap">3 إلى 4 جلسات</td>
-                <td className="nowrap">30 دقيقة</td>
-                <td style={{ color: '#0284C7' }} className="nowrap">125 - 135 نبضة / دقيقة</td>
+                <td style={{ textAlign: 'center' }}>المشي على سير مائل (Incline Treadmill)</td>
+                <td className="nowrap" style={{ textAlign: 'center' }}>3 إلى 4 جلسات</td>
+                <td className="nowrap" style={{ textAlign: 'center' }}>30 دقيقة</td>
+                <td style={{ color: '#0284C7', textAlign: 'center' }} className="nowrap">125 - 135 نبضة / دقيقة</td>
               </tr>
             </tbody>
           </table>
@@ -888,7 +901,7 @@ export default function ProgramPdfView() {
           <div className="pdf-card" style={{ background: '#F8FAFC', border: '1pt solid #0284C7', padding: '8px 12px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', margin: 0 }}>
             <div>
               <div style={{ fontSize: '8.5pt', fontWeight: '900', color: '#0F172A' }}>اعتماد المشرف الرياضي والعيادي المباشر:</div>
-              <div style={{ fontSize: '7.5pt', color: '#475569', marginTop: '2px' }}>
+              <div style={{ fontSize: '7.5pt', color: '#475569', marginTop: '3px' }}>
                 كابتن <strong>{coachName}</strong> — كبير المدربين ومؤسس منظومة {brandTitle}
               </div>
             </div>
