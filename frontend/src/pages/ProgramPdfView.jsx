@@ -7,24 +7,32 @@ import { getExerciseDisplayNames } from '../utils/exerciseTranslator';
 const CSS_STYLES = `
   @page {
     size: A4 portrait;
-    margin: 8mm 10mm;
+    margin: 0 !important;
   }
 
   * {
     box-sizing: border-box !important;
   }
 
+  .pdf-view-wrapper {
+    background-color: #E2E8F0;
+    min-height: 100vh;
+    padding: 24px 0;
+    font-family: var(--font-sans);
+  }
+
   @media screen {
     .pdf-page-container {
       width: 210mm;
+      height: 297mm;
+      max-height: 297mm;
       min-height: 297mm;
-      max-width: 210mm;
       margin: 0 auto 24px auto;
-      background: #FFFFFF;
-      box-shadow: 0 4px 25px rgba(15, 23, 42, 0.08);
-      border: 1px solid #E2E8F0;
-      border-radius: 12px;
-      padding: 10mm 12mm;
+      background: #FFFFFF !important;
+      box-shadow: 0 4px 20px rgba(15, 23, 42, 0.12);
+      border: 1px solid #CBD5E1;
+      border-radius: 8px;
+      padding: 12mm 14mm;
       box-sizing: border-box;
       display: flex;
       flex-direction: column;
@@ -35,39 +43,55 @@ const CSS_STYLES = `
   }
 
   @media print {
-    html, body {
+    html, body, #root, .pdf-view-wrapper {
       background: #FFFFFF !important;
-      padding: 0 !important;
+      background-color: #FFFFFF !important;
       margin: 0 !important;
+      padding: 0 !important;
+      width: 210mm !important;
+      height: auto !important;
       -webkit-print-color-adjust: exact !important;
       print-color-adjust: exact !important;
     }
+
     .no-print {
       display: none !important;
     }
+
     .pdf-page-container {
-      width: 100% !important;
+      width: 210mm !important;
       height: 297mm !important;
       min-height: 297mm !important;
       max-height: 297mm !important;
       margin: 0 !important;
-      padding: 8mm 10mm !important;
+      padding: 10mm 12mm !important;
       border: none !important;
       border-radius: 0 !important;
       box-shadow: none !important;
+      background: #FFFFFF !important;
+      background-color: #FFFFFF !important;
+      page-break-before: auto !important;
       page-break-after: always !important;
       break-after: page !important;
+      page-break-inside: avoid !important;
+      break-inside: avoid !important;
       display: flex !important;
       flex-direction: column !important;
       justify-content: space-between !important;
       overflow: hidden !important;
+      box-sizing: border-box !important;
+    }
+
+    .pdf-page-container:last-of-type {
+      page-break-after: avoid !important;
+      break-after: avoid !important;
     }
   }
 
   .running-header {
-    border-bottom: 0.5pt solid #E2E8F0;
+    border-bottom: 1pt solid #E2E8F0;
     padding-bottom: 4px;
-    margin-bottom: 8px;
+    margin-bottom: 6px;
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -77,9 +101,9 @@ const CSS_STYLES = `
   }
 
   .running-footer {
-    border-top: 0.5pt solid #E2E8F0;
+    border-top: 1pt solid #E2E8F0;
     padding-top: 4px;
-    margin-top: 8px;
+    margin-top: 6px;
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -92,26 +116,27 @@ const CSS_STYLES = `
     width: 100% !important;
     table-layout: fixed !important;
     border-collapse: collapse !important;
-    margin-bottom: 8px;
+    margin-bottom: 6px;
     font-size: 8pt;
     page-break-inside: avoid;
     break-inside: avoid;
   }
 
   .pdf-table th {
-    background-color: #F8FAFC;
-    color: #0F172A;
+    background-color: #F8FAFC !important;
+    color: #0F172A !important;
     font-weight: 700;
     border: 0.5pt solid #CBD5E1;
-    padding: 5px 6px;
+    padding: 4px 6px;
     text-align: right;
     word-break: break-word !important;
     overflow-wrap: break-word !important;
   }
 
   .pdf-table td {
+    background-color: #FFFFFF !important;
     border: 0.5pt solid #E2E8F0;
-    padding: 5px 6px;
+    padding: 4px 6px;
     color: #0F172A;
     vertical-align: middle;
     word-break: break-word !important;
@@ -120,21 +145,21 @@ const CSS_STYLES = `
   }
 
   .pdf-card {
-    background-color: #F8FAFC;
-    border: 0.5pt solid #E2E8F0;
+    background-color: #FFFFFF !important;
+    border: 0.5pt solid #CBD5E1;
     border-radius: 8px;
     padding: 8px 10px;
-    margin-bottom: 8px;
+    margin-bottom: 6px;
     page-break-inside: avoid;
     break-inside: avoid;
     overflow: hidden;
   }
 
   .section-title {
-    font-size: 9pt;
+    font-size: 8.5pt;
     font-weight: 800;
     color: #0F172A;
-    margin-bottom: 6px;
+    margin-bottom: 4px;
     display: flex;
     align-items: center;
     gap: 6px;
@@ -403,16 +428,16 @@ export default function ProgramPdfView() {
   ];
 
   return (
-    <div className="pdf-view-wrapper" dir="rtl" style={{ background: '#F1F5F9', minHeight: '100vh', padding: '20px 0', fontFamily: 'var(--font-sans)' }}>
+    <div className="pdf-view-wrapper" dir="rtl">
       
       {/* Non-Printable Floating Action Bar */}
-      <div className="no-print d-flex justify-content-between align-items-center bg-white p-3 px-4 rounded-4 shadow-sm mx-auto mb-4 border" style={{ maxWidth: '210mm', borderColor: '#E2E8F0' }}>
+      <div className="no-print d-flex justify-content-between align-items-center bg-white p-3 px-4 rounded-4 shadow-sm mx-auto mb-4 border" style={{ maxWidth: '210mm', borderColor: '#CBD5E1' }}>
         <div className="d-flex align-items-center gap-3">
           <div style={{ width: '40px', height: '40px', borderRadius: '12px', background: '#0284C7', color: '#FFFFFF', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: '900', fontSize: '1.2rem' }}>
             Z
           </div>
           <div>
-            <h6 className="mb-0 fw-bold" style={{ color: '#0F172A' }}>الوثيقة التنفيذية المعتمدة (برنامج 3 صفحات مركّز)</h6>
+            <h6 className="mb-0 fw-bold" style={{ color: '#0F172A' }}>وثيقة البرنامج المعتمدة (مقاس A4 قياسي - 3 صفحات)</h6>
             <small className="text-muted">المشترك: <strong>{clientName}</strong> (كود: #{clientCode})</small>
           </div>
         </div>
@@ -421,7 +446,7 @@ export default function ProgramPdfView() {
           type="button" 
           onClick={handlePrint}
           className="btn rounded-pill px-4 fw-bold text-white shadow-sm d-flex align-items-center gap-2"
-          style={{ background: 'linear-gradient(135deg, #0284C7 0%, #0369A1 100%)', border: 'none', height: '42px', fontSize: '0.9rem' }}
+          style={{ background: 'linear-gradient(135deg, #0284C7 0%, #0369A1 100%)', border: 'none', height: '42px', fontSize: '0.9rem', cursor: 'pointer' }}
         >
           <span>طباعة / حفظ كملف PDF (3 صفحات)</span>
         </button>
@@ -442,11 +467,11 @@ export default function ProgramPdfView() {
           </div>
 
           {/* Master Executive Cover Header */}
-          <div style={{ textAlign: 'center', margin: '4px 0 10px 0', borderBottom: '1.5pt solid #0F172A', paddingBottom: '8px' }}>
+          <div style={{ textAlign: 'center', margin: '2px 0 8px 0', borderBottom: '1.5pt solid #0F172A', paddingBottom: '6px' }}>
             <span style={{ fontSize: '7.5pt', fontWeight: '800', letterSpacing: '1px', color: '#0284C7' }}>
               البروتوكول الرياضي والغذائي المتكامل
             </span>
-            <h1 style={{ fontSize: '15pt', fontWeight: '900', color: '#0F172A', margin: '3px 0 2px 0' }}>
+            <h1 style={{ fontSize: '15pt', fontWeight: '900', color: '#0F172A', margin: '2px 0 2px 0' }}>
               برنامج الإعداد الرياضي والتغذوي المخصص
             </h1>
             <p style={{ fontSize: '8pt', color: '#475569', margin: 0 }}>
@@ -455,7 +480,7 @@ export default function ProgramPdfView() {
           </div>
 
           {/* Identification Metadata Grid */}
-          <table className="pdf-table" style={{ marginBottom: '8px' }}>
+          <table className="pdf-table" style={{ marginBottom: '6px' }}>
             <tbody>
               <tr>
                 <th style={{ width: '18%' }}>اسم المتدرب:</th>
@@ -505,7 +530,7 @@ export default function ProgramPdfView() {
             </tbody>
           </table>
 
-          <table className="pdf-table" style={{ marginBottom: '8px' }}>
+          <table className="pdf-table" style={{ marginBottom: '6px' }}>
             <thead>
               <tr style={{ textAlign: 'center' }}>
                 <th style={{ width: '20%', textAlign: 'center' }}>محيط الرقبة</th>
@@ -526,7 +551,7 @@ export default function ProgramPdfView() {
 
           {/* 2. Daily Energy & Macronutrient Breakdown (4 KPI Boxes) */}
           <div className="section-title">2. مصفوفة الطاقة والماكروز اليومية</div>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '8px', marginBottom: '8px' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '8px', marginBottom: '6px' }}>
             
             {/* Calories */}
             <div className="pdf-card" style={{ textAlign: 'center', borderTop: '2.5pt solid #0F172A', padding: '6px 8px', margin: 0 }}>
@@ -567,7 +592,7 @@ export default function ProgramPdfView() {
           </div>
 
           {/* Hydration Banner */}
-          <div className="pdf-card" style={{ background: '#F0F9FF', borderColor: '#BAE6FD', display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '6px 10px', marginBottom: '8px' }}>
+          <div className="pdf-card" style={{ background: '#F0F9FF', borderColor: '#BAE6FD', display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '5px 10px', marginBottom: '6px' }}>
             <span style={{ fontSize: '8pt', fontWeight: '700', color: '#0369A1' }}>معدل الترطيب واستهلاك الماء اليومي المستهدف:</span>
             <span style={{ fontSize: '9pt', fontWeight: '800', color: '#0284C7' }}>{hydrationLiters}</span>
           </div>
@@ -584,12 +609,12 @@ export default function ProgramPdfView() {
             </div>
           )}
 
-          {/* Meals Table with Fixed Layout & Auto Wrap to Prevent Any Text Overflow */}
-          <table className="pdf-table" style={{ marginBottom: '8px' }}>
+          {/* Meals Table with Fixed Layout & Auto Wrap */}
+          <table className="pdf-table" style={{ marginBottom: '6px' }}>
             <thead>
               <tr>
-                <th style={{ width: '20%' }}>الوجبة</th>
-                <th style={{ width: '50%' }}>المكونات والمقادير الدقيقة</th>
+                <th style={{ width: '18%' }}>الوجبة</th>
+                <th style={{ width: '52%' }}>المكونات والمقادير الدقيقة</th>
                 <th style={{ width: '7%', textAlign: 'center' }}>بروتين</th>
                 <th style={{ width: '7%', textAlign: 'center' }}>كارب</th>
                 <th style={{ width: '7%', textAlign: 'center' }}>دهون</th>
@@ -654,30 +679,30 @@ export default function ProgramPdfView() {
           </div>
 
           {/* Split Overview Banner */}
-          <div className="pdf-card" style={{ marginBottom: '8px', background: '#F8FAFC', borderRight: '3pt solid #0284C7', padding: '6px 10px' }}>
+          <div className="pdf-card" style={{ marginBottom: '6px', background: '#F8FAFC', borderRight: '3pt solid #0284C7', padding: '5px 10px' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
               <div>
-                <h5 style={{ fontSize: '10pt', fontWeight: '900', color: '#0F172A', margin: 0 }}>
+                <h5 style={{ fontSize: '9.5pt', fontWeight: '900', color: '#0F172A', margin: 0 }}>
                   البرنامج التدريبي الميداني وتوزيع الحصص الأسبوعية
                 </h5>
-                <small style={{ fontSize: '7.5pt', color: '#64748B' }}>
+                <small style={{ fontSize: '7pt', color: '#64748B' }}>
                   نظام التدريب المعتمد: Push / Pull / Legs — تركيز التضخيم العضلي وزيادة الكثافة الحركية
                 </small>
               </div>
-              <span style={{ background: '#E0F2FE', color: '#0369A1', padding: '3px 8px', borderRadius: '6px', fontSize: '7.5pt', fontWeight: '800' }}>
+              <span style={{ background: '#E0F2FE', color: '#0369A1', padding: '2px 8px', borderRadius: '6px', fontSize: '7pt', fontWeight: '800' }}>
                 4 حصص تدريبية أسبوعية
               </span>
             </div>
           </div>
 
           {/* Workout Sessions Grid */}
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '8px', marginBottom: '8px' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '6px', marginBottom: '6px' }}>
             {rawSessions.slice(0, 4).map((session, sIdx) => (
-              <div key={sIdx} className="pdf-card" style={{ padding: '6px 8px', margin: 0 }}>
-                <div style={{ fontSize: '8pt', fontWeight: '800', color: '#0F172A', marginBottom: '5px', background: '#F1F5F9', padding: '3px 6px', borderRadius: '4px' }}>
+              <div key={sIdx} className="pdf-card" style={{ padding: '5px 6px', margin: 0 }}>
+                <div style={{ fontSize: '7.5pt', fontWeight: '800', color: '#0F172A', marginBottom: '4px', background: '#F1F5F9', padding: '2px 6px', borderRadius: '4px' }}>
                   {session.session_name || `الحصة التدريبية ${sIdx + 1}`}
                 </div>
-                <table className="pdf-table" style={{ margin: 0, fontSize: '7pt' }}>
+                <table className="pdf-table" style={{ margin: 0, fontSize: '6.8pt' }}>
                   <thead>
                     <tr>
                       <th style={{ width: '42%' }}>التمرين</th>
@@ -694,10 +719,10 @@ export default function ProgramPdfView() {
                       return (
                         <tr key={eIdx}>
                           <td>
-                            <strong style={{ display: 'block', fontSize: '7pt', color: '#0F172A', direction: 'ltr', textAlign: 'right' }}>
+                            <strong style={{ display: 'block', fontSize: '6.8pt', color: '#0F172A', direction: 'ltr', textAlign: 'right' }}>
                               {exNames.nameEn}
                             </strong>
-                            <span style={{ fontSize: '6.5pt', color: '#64748B' }}>
+                            <span style={{ fontSize: '6.2pt', color: '#64748B' }}>
                               {exNames.nameAr}
                             </span>
                           </td>
@@ -724,7 +749,7 @@ export default function ProgramPdfView() {
 
           {/* 5. Periodization Schedule Matrix */}
           <div className="section-title">5. مصفوفة التدرج الدوري للأحمال (دورة الـ 5 أسابيع المتكاملة)</div>
-          <table className="pdf-table" style={{ margin: 0, fontSize: '7.5pt' }}>
+          <table className="pdf-table" style={{ margin: 0, fontSize: '7pt' }}>
             <thead>
               <tr>
                 <th style={{ width: '18%' }}>الأسبوع التدريبي</th>
@@ -794,7 +819,7 @@ export default function ProgramPdfView() {
 
           {/* 6. Smart Food Swaps Table */}
           <div className="section-title">6. جدول المبادلات الغذائية الذكية الفورية (بدائل متكافئة)</div>
-          <table className="pdf-table" style={{ marginBottom: '14px' }}>
+          <table className="pdf-table" style={{ marginBottom: '10px' }}>
             <thead>
               <tr>
                 <th style={{ width: '28%' }}>الصنف الأساسي في الخطة</th>
@@ -823,7 +848,7 @@ export default function ProgramPdfView() {
 
           {/* 7. Zone 2 Cardio Protocol */}
           <div className="section-title">7. بروتوكول كارديو حرق الدهون واللياقة القلبية</div>
-          <table className="pdf-table" style={{ marginBottom: '14px' }}>
+          <table className="pdf-table" style={{ marginBottom: '10px' }}>
             <thead>
               <tr>
                 <th style={{ width: '30%' }}>النشاط الرياضي الموصى به</th>
@@ -844,11 +869,11 @@ export default function ProgramPdfView() {
 
           {/* Practical Tips Box */}
           <div className="section-title">8. القواعد الذهبية للاستمرار وتحقيق النتائج</div>
-          <div className="pdf-card" style={{ fontSize: '8pt', lineHeight: '1.7', marginBottom: '16px', padding: '10px 14px' }}>
-            <p style={{ margin: '0 0 6px 0' }}>
+          <div className="pdf-card" style={{ fontSize: '7.5pt', lineHeight: '1.6', marginBottom: '12px', padding: '8px 12px' }}>
+            <p style={{ margin: '0 0 4px 0' }}>
               <strong>• الالتزام بالأوزان والمجموعات:</strong> ركز على إتقان التكنيك الحركي أولاً، ثم التدرج الخطي بالأوزان وفق معدل الـ RIR المحدد لكل أسبوع دون الوصول للفشل العشوائي.
             </p>
-            <p style={{ margin: '0 0 6px 0' }}>
+            <p style={{ margin: '0 0 4px 0' }}>
               <strong>• ثبات مواعيد النوم والاستشفاء:</strong> النوم العميق من 7 إلى 8 ساعات يومياً هو المصنع الحقيقي لإعادة بناء الألياف العضلية وتوازن الهرمونات.
             </p>
             <p style={{ margin: '0' }}>
@@ -857,15 +882,15 @@ export default function ProgramPdfView() {
           </div>
 
           {/* Official Sign-off Box */}
-          <div className="pdf-card" style={{ background: '#F8FAFC', border: '1pt solid #0284C7', padding: '10px 14px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', margin: 0 }}>
+          <div className="pdf-card" style={{ background: '#F8FAFC', border: '1pt solid #0284C7', padding: '8px 12px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', margin: 0 }}>
             <div>
-              <div style={{ fontSize: '9pt', fontWeight: '900', color: '#0F172A' }}>اعتماد المشرف الرياضي والعيادي المباشر:</div>
-              <div style={{ fontSize: '8pt', color: '#475569', marginTop: '3px' }}>
+              <div style={{ fontSize: '8.5pt', fontWeight: '900', color: '#0F172A' }}>اعتماد المشرف الرياضي والعيادي المباشر:</div>
+              <div style={{ fontSize: '7.5pt', color: '#475569', marginTop: '2px' }}>
                 كابتن <strong>{coachName}</strong> — كبير المدربين ومؤسس منظومة {brandTitle}
               </div>
             </div>
             <div style={{ textAlign: 'left' }}>
-              <div style={{ display: 'inline-block', background: '#E0F2FE', border: '1px solid #BAE6FD', color: '#0284C7', padding: '5px 12px', borderRadius: '6px', fontSize: '8pt', fontWeight: '800' }}>
+              <div style={{ display: 'inline-block', background: '#E0F2FE', border: '1px solid #BAE6FD', color: '#0284C7', padding: '4px 10px', borderRadius: '6px', fontSize: '7.5pt', fontWeight: '800' }}>
                 معتمد وموثق رقمياً (Digitally Approved)
               </div>
             </div>
