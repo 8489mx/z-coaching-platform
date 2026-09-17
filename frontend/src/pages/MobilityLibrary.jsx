@@ -376,8 +376,8 @@ export default function MobilityLibrary() {
       <div dir="rtl" style={{ display: 'flex', flexDirection: 'column', gap: '12px', maxWidth: '100%', margin: '0 auto', fontFamily: 'Cairo, sans-serif' }}>
         {/* 1. Header */}
         <PageHeader
-          title="مكتبة الكارديو والإطالات"
-          subtitle="دليل أجهزة وأنظمة الكارديو وحركات الإحماء والاستشفاء وتصحيح القوام"
+          title="المرونة والاستشفاء والكارديو"
+          subtitle="دليل حركات الإحماء والاستشفاء وتصحيح القوام وأنظمة الكارديو."
           actions={(
             <button
               type="button"
@@ -426,7 +426,7 @@ export default function MobilityLibrary() {
             onMouseLeave={(e) => (e.currentTarget.style.color = '#64748B')}
           >
             <Dumbbell size={14} />
-            <span>تمارين القوة والمقاومة والأجهزة</span>
+            <span>تمارين المقاومة والأجهزة</span>
           </Link>
           <button
             type="button"

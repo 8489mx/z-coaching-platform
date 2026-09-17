@@ -275,10 +275,10 @@ export default function WhatsAppRemindersHub() {
               </div>
               <div>
                 <h2 style={{ margin: 0, fontSize: '16px', fontWeight: 800, color: '#0F172A' }}>
-                  مركز تذكيرات ومتابعات الواتساب الذكي
+                  رسائل الواتساب والمتابعة
                 </h2>
                 <span style={{ fontSize: '11px', color: '#64748B' }}>
-                  إدارة رسائل الشيك إن الأسبوعي، تذكيرات التجديد، والمتابعة اليومية بنقرة زر واحدة عبر WhatsApp
+                  إدارة رسائل الشيك إن الأسبوعي وتذكيرات التجديد بنقرة واحدة عبر واتساب.
                 </span>
               </div>
             </div>

@@ -298,10 +298,10 @@ export default function FinancialsRenewalsDashboard() {
             </div>
             <div>
               <h2 style={{ margin: 0, fontSize: '16px', fontWeight: 800, color: '#0F172A' }}>
-                لوحة المالية والتجديدات ومعدل الاحتفاظ (MRR)
+                الاشتراكات والمالية
               </h2>
               <span style={{ fontSize: '11px', color: '#64748B' }}>
-                متابعة الإيراد الشهري، اشتراكات الباقات، والمشتركين المستحقين للتجديد لمنع تسرب العملاء
+                متابعة الدخل الشهري واشتراكات الباقات وتنبيهات التجديد لمنع الانقطاع.
               </span>
             </div>
           </div>

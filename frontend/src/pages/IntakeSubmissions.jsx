@@ -238,8 +238,8 @@ export default function IntakeSubmissions() {
         
         {/* 1. Page Header */}
         <PageHeader
-          title="مركز استمارات العملاء ومراجعة الخطط"
-          description="متابعة ملء الاستمارات لحظياً، استعادة الاستمارات المتروكة، وتوليد مسودة الخطة الذكية."
+          title="استمارات المشتركين"
+          description="متابعة استمارات المشتركين الجدد وتوليد الخطط واعتمادها فورياً."
           actions={(
             <Link
               to="/intake/form"
@@ -263,7 +263,7 @@ export default function IntakeSubmissions() {
               onMouseLeave={(e) => (e.currentTarget.style.background = '#0F172A')}
             >
               <ExternalLink size={14} />
-              <span>فتح رابط الاستمارة العامة</span>
+              <span>رابط الاستمارة</span>
             </Link>
           )}
         />

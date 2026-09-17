@@ -333,10 +333,10 @@ export default function MacroCalculator() {
           <div>
             <h1 style={{ margin: '0 0 4px 0', fontSize: '20px', fontWeight: 900, color: '#0F172A', display: 'flex', alignItems: 'center', gap: '8px' }}>
               <UtensilsCrossed size={22} color="#0284C7" />
-              <span>مكتبة التغذية والأطعمة ومحرك الماكروز</span>
+              <span>الأغذية والماكروز</span>
             </h1>
             <p style={{ margin: 0, fontSize: '12px', color: '#64748B', fontWeight: 600 }}>
-              قاعدة بيانات الأغذية الكاملة، الماكروز الدقيقة لكل 100 جرام، وحاسبة معدل الأيض والتوزيع الرياضي.
+              قاعدة بيانات الأغذية الكاملة، الماكروز لكل 100 جرام، وحاسبة الاحتياج الرياضي اليومي.
             </p>
           </div>
 
@@ -362,7 +362,7 @@ export default function MacroCalculator() {
               }}
             >
               <UtensilsCrossed size={14} color={activeTab === 'CATALOG' ? '#0284C7' : '#64748B'} />
-              <span>مكتبة الأطعمة والماكروز ({foods.length})</span>
+              <span>قاعدة الأطعمة ({foods.length})</span>
             </button>
 
             <button
@@ -385,7 +385,7 @@ export default function MacroCalculator() {
               }}
             >
               <Calculator size={14} color={activeTab === 'CALCULATOR' ? '#0284C7' : '#64748B'} />
-              <span>حاسبة معدل الأيض والأهداف</span>
+              <span>حاسبة الاحتياج اليومي</span>
             </button>
           </div>
         </div>

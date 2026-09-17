@@ -710,8 +710,8 @@ export default function ExerciseLibrary() {
         
         {/* 1. Page Header with Add Exercise Button */}
         <PageHeader
-          title="مكتبة التمارين والفيديوهات الرياضية"
-          description={`قاعدة بيانات تشريحية شاملة تضم ${allExercises.length} تمريناً مع شروحات التكنيك السليم وتجنب الإصابات وإمكانية تعديل روابط الفيديو.`}
+          title="دليل التمارين الرياضية"
+          description={`قاعدة بيانات تشريحية تضم ${allExercises.length} تمريناً مع شروحات التكنيك وبدائل الأجهزة المباشرة.`}
           actions={(
             <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
               <button
@@ -777,7 +777,7 @@ export default function ExerciseLibrary() {
             }}
           >
             <Dumbbell size={14} />
-            <span>تمارين القوة والمقاومة والأجهزة ({allExercises.length})</span>
+            <span>تمارين المقاومة والأجهزة ({allExercises.length})</span>
           </button>
           <Link
             to="/coach/mobility"
@@ -799,7 +799,7 @@ export default function ExerciseLibrary() {
             onMouseLeave={(e) => (e.currentTarget.style.color = '#64748B')}
           >
             <HeartPulse size={14} />
-            <span>بروتوكولات المرونة والتأهيل الحركي</span>
+            <span>المرونة والاستشفاء</span>
           </Link>
         </div>
 
