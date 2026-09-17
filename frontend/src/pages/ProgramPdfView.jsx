@@ -7,13 +7,18 @@ import { getExerciseDisplayNames } from '../utils/exerciseTranslator';
 const CSS_STYLES = `
   @page {
     size: A4 portrait;
-    margin: 10mm 12mm;
+    margin: 8mm 10mm;
+  }
+
+  * {
+    box-sizing: border-box !important;
   }
 
   @media screen {
     .pdf-page-container {
       width: 210mm;
       min-height: 297mm;
+      max-width: 210mm;
       margin: 0 auto 24px auto;
       background: #FFFFFF;
       box-shadow: 0 4px 25px rgba(15, 23, 42, 0.08);
@@ -25,11 +30,12 @@ const CSS_STYLES = `
       flex-direction: column;
       justify-content: space-between;
       position: relative;
+      overflow: hidden;
     }
   }
 
   @media print {
-    body {
+    html, body {
       background: #FFFFFF !important;
       padding: 0 !important;
       margin: 0 !important;
@@ -41,7 +47,7 @@ const CSS_STYLES = `
     }
     .pdf-page-container {
       width: 100% !important;
-      height: 100% !important;
+      height: 297mm !important;
       min-height: 297mm !important;
       max-height: 297mm !important;
       margin: 0 !important;
@@ -60,7 +66,7 @@ const CSS_STYLES = `
 
   .running-header {
     border-bottom: 0.5pt solid #E2E8F0;
-    padding-bottom: 5px;
+    padding-bottom: 4px;
     margin-bottom: 8px;
     display: flex;
     justify-content: space-between;
@@ -72,7 +78,7 @@ const CSS_STYLES = `
 
   .running-footer {
     border-top: 0.5pt solid #E2E8F0;
-    padding-top: 5px;
+    padding-top: 4px;
     margin-top: 8px;
     display: flex;
     justify-content: space-between;
@@ -83,8 +89,9 @@ const CSS_STYLES = `
   }
 
   .pdf-table {
-    width: 100%;
-    border-collapse: collapse;
+    width: 100% !important;
+    table-layout: fixed !important;
+    border-collapse: collapse !important;
     margin-bottom: 8px;
     font-size: 8pt;
     page-break-inside: avoid;
@@ -95,16 +102,21 @@ const CSS_STYLES = `
     background-color: #F8FAFC;
     color: #0F172A;
     font-weight: 700;
-    border: 0.5pt solid #E2E8F0;
-    padding: 4px 6px;
+    border: 0.5pt solid #CBD5E1;
+    padding: 5px 6px;
     text-align: right;
+    word-break: break-word !important;
+    overflow-wrap: break-word !important;
   }
 
   .pdf-table td {
     border: 0.5pt solid #E2E8F0;
-    padding: 4px 6px;
+    padding: 5px 6px;
     color: #0F172A;
     vertical-align: middle;
+    word-break: break-word !important;
+    overflow-wrap: break-word !important;
+    white-space: normal !important;
   }
 
   .pdf-card {
@@ -115,6 +127,7 @@ const CSS_STYLES = `
     margin-bottom: 8px;
     page-break-inside: avoid;
     break-inside: avoid;
+    overflow: hidden;
   }
 
   .section-title {
@@ -134,7 +147,7 @@ const CSS_STYLES = `
  * Resolves precise Arabic muscle name for any exercise, eliminating generic placeholders.
  */
 function resolveExerciseMuscleName(ex) {
-  if (!ex) return 'عضلة رئيسية';
+  if (!ex) return 'عضلات مستهدفة';
   if (ex.target_muscle_ar) return ex.target_muscle_ar;
   if (ex.muscle_ar) return ex.muscle_ar;
   if (ex.target_muscle && /[\u0600-\u06FF]/.test(ex.target_muscle)) return ex.target_muscle;
@@ -149,10 +162,10 @@ function resolveExerciseMuscleName(ex) {
     return 'عضلات الصدر';
   }
   if (raw.includes('LATS') || raw.includes('PULLDOWN') || raw.includes('ROW') || raw.includes('DEADLIFT') || raw.includes('BACK') || rawAr.includes('ظهر') || rawAr.includes('سحب') || rawAr.includes('تجديف')) {
-    if (raw.includes('PULLDOWN') || rawAr.includes('سحب عالي')) return 'عضلات الظهر العريض (اللاتس)';
+    if (raw.includes('PULLDOWN') || rawAr.includes('سحب عالي')) return 'الظهر العريض (اللاتس)';
     if (raw.includes('ROW') || rawAr.includes('تجديف')) return 'منتصف الظهر والمجنص';
     if (raw.includes('DEADLIFT') || rawAr.includes('ديدليفت')) return 'السلسلة الخلفية وأسفل الظهر';
-    return 'عضلات الظهر بالكامل';
+    return 'عضلات الظهر';
   }
   if (raw.includes('SQUAT') || raw.includes('LUNGE') || raw.includes('QUAD') || raw.includes('LEG EXT') || rawAr.includes('سكوات') || rawAr.includes('طعنات') || rawAr.includes('أرجل')) {
     if (raw.includes('LUNGE') || rawAr.includes('طعنات')) return 'الأرجل الأمامية والمؤخرة';
@@ -183,7 +196,7 @@ function resolveExerciseMuscleName(ex) {
     return 'عضلات البطن والجذع (الكور)';
   }
 
-  return 'عضلات الجسم الرئيسية';
+  return 'عضلات مستهدفة';
 }
 
 export default function ProgramPdfView() {
@@ -295,7 +308,7 @@ export default function ProgramPdfView() {
     || program?.nutrition_program?.quantized_plan?.meals 
     || [
     {
-      meal_name_ar: 'الوجبة الأولى (وجبة الإفطار الرئيسة)',
+      meal_name_ar: 'الوجبة الأولى (وجبة الإفطار)',
       meal_energy_kcal: 506,
       items: [
         { name_ar: 'بيض طازج كامل مسلوق', amount_g: 3, unit: 'حبات' },
@@ -306,7 +319,7 @@ export default function ProgramPdfView() {
       protein_g: 34, carbs_g: 52, fat_g: 18
     },
     {
-      meal_name_ar: 'الوجبة الثانية (وجبة الغداء / ما قبل التمرين)',
+      meal_name_ar: 'الوجبة الثانية (وجبة الغداء)',
       meal_energy_kcal: 566,
       items: [
         { name_ar: 'صدور دجاج متبلة مشوية', amount_g: 200, unit: 'جم' },
@@ -317,7 +330,7 @@ export default function ProgramPdfView() {
       protein_g: 48, carbs_g: 62, fat_g: 14
     },
     {
-      meal_name_ar: 'الوجبة الثالثة (وجبة الاستشفاء / بعد التمرين)',
+      meal_name_ar: 'الوجبة الثالثة (سناك بعد التمرين)',
       meal_energy_kcal: 311,
       items: [
         { name_ar: 'زبادي يوناني طبيعي 0% دسم', amount_g: 150, unit: 'جم' },
@@ -327,7 +340,7 @@ export default function ProgramPdfView() {
       protein_g: 18, carbs_g: 35, fat_g: 11
     },
     {
-      meal_name_ar: 'الوجبة الرابعة (وجبة العشاء الخفيفة)',
+      meal_name_ar: 'الوجبة الرابعة (وجبة العشاء)',
       meal_energy_kcal: 308,
       items: [
         { name_ar: 'جبن قريش طبيعي قليل الملح', amount_g: 150, unit: 'جم' },
@@ -429,11 +442,11 @@ export default function ProgramPdfView() {
           </div>
 
           {/* Master Executive Cover Header */}
-          <div style={{ textAlign: 'center', margin: '8px 0 12px 0', borderBottom: '1.5pt solid #0F172A', paddingBottom: '10px' }}>
+          <div style={{ textAlign: 'center', margin: '4px 0 10px 0', borderBottom: '1.5pt solid #0F172A', paddingBottom: '8px' }}>
             <span style={{ fontSize: '7.5pt', fontWeight: '800', letterSpacing: '1px', color: '#0284C7' }}>
               البروتوكول الرياضي والغذائي المتكامل
             </span>
-            <h1 style={{ fontSize: '16pt', fontWeight: '900', color: '#0F172A', margin: '4px 0 2px 0' }}>
+            <h1 style={{ fontSize: '15pt', fontWeight: '900', color: '#0F172A', margin: '3px 0 2px 0' }}>
               برنامج الإعداد الرياضي والتغذوي المخصص
             </h1>
             <p style={{ fontSize: '8pt', color: '#475569', margin: 0 }}>
@@ -442,7 +455,7 @@ export default function ProgramPdfView() {
           </div>
 
           {/* Identification Metadata Grid */}
-          <table className="pdf-table" style={{ marginBottom: '10px' }}>
+          <table className="pdf-table" style={{ marginBottom: '8px' }}>
             <tbody>
               <tr>
                 <th style={{ width: '18%' }}>اسم المتدرب:</th>
@@ -476,10 +489,10 @@ export default function ProgramPdfView() {
           <table className="pdf-table" style={{ marginBottom: '6px' }}>
             <thead>
               <tr style={{ textAlign: 'center' }}>
-                <th style={{ textAlign: 'center' }}>الطول</th>
-                <th style={{ textAlign: 'center' }}>الوزن الحالي</th>
-                <th style={{ textAlign: 'center' }}>مؤشر كتلة الجسم</th>
-                <th style={{ textAlign: 'center' }}>نسبة الدهون التقديرية</th>
+                <th style={{ width: '25%', textAlign: 'center' }}>الطول</th>
+                <th style={{ width: '25%', textAlign: 'center' }}>الوزن الحالي</th>
+                <th style={{ width: '25%', textAlign: 'center' }}>مؤشر كتلة الجسم</th>
+                <th style={{ width: '25%', textAlign: 'center' }}>نسبة الدهون التقديرية</th>
               </tr>
             </thead>
             <tbody>
@@ -492,13 +505,13 @@ export default function ProgramPdfView() {
             </tbody>
           </table>
 
-          <table className="pdf-table" style={{ marginBottom: '10px' }}>
+          <table className="pdf-table" style={{ marginBottom: '8px' }}>
             <thead>
               <tr style={{ textAlign: 'center' }}>
-                <th style={{ textAlign: 'center' }}>محيط الرقبة</th>
-                <th style={{ textAlign: 'center' }}>محيط الوسط (الخصر)</th>
-                <th style={{ textAlign: 'center' }}>محيط الحوض</th>
-                <th style={{ textAlign: 'center' }}>الهدف الرياضي والتغذوي المعتمد</th>
+                <th style={{ width: '20%', textAlign: 'center' }}>محيط الرقبة</th>
+                <th style={{ width: '20%', textAlign: 'center' }}>محيط الوسط (الخصر)</th>
+                <th style={{ width: '20%', textAlign: 'center' }}>محيط الحوض</th>
+                <th style={{ width: '40%', textAlign: 'center' }}>الهدف الرياضي والتغذوي المعتمد</th>
               </tr>
             </thead>
             <tbody>
@@ -516,7 +529,7 @@ export default function ProgramPdfView() {
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '8px', marginBottom: '8px' }}>
             
             {/* Calories */}
-            <div className="pdf-card" style={{ textAlign: 'center', borderTop: '2.5pt solid #0F172A', padding: '6px 8px' }}>
+            <div className="pdf-card" style={{ textAlign: 'center', borderTop: '2.5pt solid #0F172A', padding: '6px 8px', margin: 0 }}>
               <span style={{ fontSize: '7.5pt', fontWeight: '700', color: '#475569' }}>السعرات المستهدفة</span>
               <div style={{ fontSize: '13pt', fontWeight: '900', color: '#0F172A', margin: '2px 0' }}>
                 {targetCalories}
@@ -525,7 +538,7 @@ export default function ProgramPdfView() {
             </div>
 
             {/* Protein */}
-            <div className="pdf-card" style={{ textAlign: 'center', borderTop: '2.5pt solid #0284C7', padding: '6px 8px' }}>
+            <div className="pdf-card" style={{ textAlign: 'center', borderTop: '2.5pt solid #0284C7', padding: '6px 8px', margin: 0 }}>
               <span style={{ fontSize: '7.5pt', fontWeight: '700', color: '#0284C7' }}>البروتين الصافي</span>
               <div style={{ fontSize: '13pt', fontWeight: '900', color: '#0284C7', margin: '2px 0' }}>
                 {proteinG} جم
@@ -534,7 +547,7 @@ export default function ProgramPdfView() {
             </div>
 
             {/* Carbs */}
-            <div className="pdf-card" style={{ textAlign: 'center', borderTop: '2.5pt solid #D97706', padding: '6px 8px' }}>
+            <div className="pdf-card" style={{ textAlign: 'center', borderTop: '2.5pt solid #D97706', padding: '6px 8px', margin: 0 }}>
               <span style={{ fontSize: '7.5pt', fontWeight: '700', color: '#D97706' }}>الكربوهيدرات</span>
               <div style={{ fontSize: '13pt', fontWeight: '900', color: '#D97706', margin: '2px 0' }}>
                 {carbsG} جم
@@ -543,7 +556,7 @@ export default function ProgramPdfView() {
             </div>
 
             {/* Fats */}
-            <div className="pdf-card" style={{ textAlign: 'center', borderTop: '2.5pt solid #10B981', padding: '6px 8px' }}>
+            <div className="pdf-card" style={{ textAlign: 'center', borderTop: '2.5pt solid #10B981', padding: '6px 8px', margin: 0 }}>
               <span style={{ fontSize: '7.5pt', fontWeight: '700', color: '#10B981' }}>الدهون الصحية</span>
               <div style={{ fontSize: '13pt', fontWeight: '900', color: '#10B981', margin: '2px 0' }}>
                 {fatsG} جم
@@ -554,7 +567,7 @@ export default function ProgramPdfView() {
           </div>
 
           {/* Hydration Banner */}
-          <div className="pdf-card" style={{ background: '#F0F9FF', borderColor: '#BAE6FD', display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '6px 10px', marginBottom: '10px' }}>
+          <div className="pdf-card" style={{ background: '#F0F9FF', borderColor: '#BAE6FD', display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '6px 10px', marginBottom: '8px' }}>
             <span style={{ fontSize: '8pt', fontWeight: '700', color: '#0369A1' }}>معدل الترطيب واستهلاك الماء اليومي المستهدف:</span>
             <span style={{ fontSize: '9pt', fontWeight: '800', color: '#0284C7' }}>{hydrationLiters}</span>
           </div>
@@ -563,7 +576,7 @@ export default function ProgramPdfView() {
           <div className="section-title">3. البروتوكول الغذائي وتوزيع الوجبات اليومية</div>
           
           {fastingProfile && (fastingProfile.isCoptic || fastingProfile.isRamadan || fastingProfile.isIntermittent) && (
-            <div className="pdf-card" style={{ background: '#FFFBEB', borderRight: '3pt solid #D97706', borderColor: '#FDE68A', marginBottom: '8px', fontSize: '7.5pt', lineHeight: '1.5', padding: '6px 10px' }}>
+            <div className="pdf-card" style={{ background: '#FFFBEB', borderRight: '3pt solid #D97706', borderColor: '#FDE68A', marginBottom: '6px', fontSize: '7.5pt', lineHeight: '1.4', padding: '5px 8px' }}>
               <strong style={{ color: '#B45309' }}>توجيه نمط وجدولة الصيام: </strong>
               <span style={{ color: '#78350F' }}>
                 مواعيد الوجبات موزعة بدقة بين الإفطار والسحور مع تركيز النشويات حول جلسة التمرين لضمان أعلى طاقة واستشفاء.
@@ -571,12 +584,12 @@ export default function ProgramPdfView() {
             </div>
           )}
 
-          {/* Meals Table */}
-          <table className="pdf-table" style={{ marginBottom: '10px' }}>
+          {/* Meals Table with Fixed Layout & Auto Wrap to Prevent Any Text Overflow */}
+          <table className="pdf-table" style={{ marginBottom: '8px' }}>
             <thead>
               <tr>
-                <th style={{ width: '22%' }}>الوجبة</th>
-                <th style={{ width: '48%' }}>المكونات والمقادير الدقيقة</th>
+                <th style={{ width: '20%' }}>الوجبة</th>
+                <th style={{ width: '50%' }}>المكونات والمقادير الدقيقة</th>
                 <th style={{ width: '7%', textAlign: 'center' }}>بروتين</th>
                 <th style={{ width: '7%', textAlign: 'center' }}>كارب</th>
                 <th style={{ width: '7%', textAlign: 'center' }}>دهون</th>
@@ -589,10 +602,10 @@ export default function ProgramPdfView() {
                   <td style={{ fontWeight: '700', color: '#0F172A', fontSize: '7.5pt' }}>
                     {meal.meal_name_ar || `الوجبة ${mIdx + 1}`}
                   </td>
-                  <td style={{ fontSize: '7.5pt' }}>
+                  <td style={{ fontSize: '7.5pt', lineHeight: '1.4' }}>
                     {meal.items?.map((it, iIdx) => (
-                      <span key={iIdx} style={{ display: 'inline-block', marginLeft: '6px' }}>
-                        • <strong>{it.amount_g || it.amount} {it.unit || 'جم'}</strong> {it.name_ar || it.name}
+                      <span key={iIdx} style={{ display: 'inline', marginLeft: '6px' }}>
+                        • <strong>{it.amount_g || it.amount} {it.unit || 'جم'}</strong> {it.name_ar || it.name}{' '}
                       </span>
                     ))}
                   </td>
@@ -667,10 +680,10 @@ export default function ProgramPdfView() {
                 <table className="pdf-table" style={{ margin: 0, fontSize: '7pt' }}>
                   <thead>
                     <tr>
-                      <th style={{ width: '40%' }}>التمرين</th>
+                      <th style={{ width: '42%' }}>التمرين</th>
                       <th style={{ width: '28%' }}>العضلة المستهدفة</th>
                       <th style={{ width: '10%', textAlign: 'center' }}>جولات</th>
-                      <th style={{ width: '12%', textAlign: 'center' }}>عدات</th>
+                      <th style={{ width: '10%', textAlign: 'center' }}>عدات</th>
                       <th style={{ width: '10%', textAlign: 'center' }}>راحة</th>
                     </tr>
                   </thead>
@@ -709,7 +722,7 @@ export default function ProgramPdfView() {
             ))}
           </div>
 
-          {/* 5. Periodization Schedule Matrix (Replaces 10 repetitive pages!) */}
+          {/* 5. Periodization Schedule Matrix */}
           <div className="section-title">5. مصفوفة التدرج الدوري للأحمال (دورة الـ 5 أسابيع المتكاملة)</div>
           <table className="pdf-table" style={{ margin: 0, fontSize: '7.5pt' }}>
             <thead>
@@ -769,7 +782,7 @@ export default function ProgramPdfView() {
       </div>
 
       {/* =========================================================================
-          PAGE 3: البدائل الذكية، الكارديو، الإحماء، والاعتماد الرسمي
+          PAGE 3: البدائل الذكية الفورية، الكارديو، والاعتماد الرسمي
           ========================================================================= */}
       <div className="pdf-page-container" id="page-3">
         <div>
@@ -780,12 +793,12 @@ export default function ProgramPdfView() {
           </div>
 
           {/* 6. Smart Food Swaps Table */}
-          <div className="section-title">6. جدول المبادلات الغذائية الذكية الفورية</div>
-          <table className="pdf-table" style={{ marginBottom: '10px' }}>
+          <div className="section-title">6. جدول المبادلات الغذائية الذكية الفورية (بدائل متكافئة)</div>
+          <table className="pdf-table" style={{ marginBottom: '14px' }}>
             <thead>
               <tr>
                 <th style={{ width: '28%' }}>الصنف الأساسي في الخطة</th>
-                <th style={{ width: '72%' }}>البدائل المباشرة المكافئة لنفس السعرات والماكروز</th>
+                <th style={{ width: '72%' }}>البدائل المباشرة المكافئة لنفس السعرات والماكروز بالجرام</th>
               </tr>
             </thead>
             <tbody>
@@ -810,7 +823,7 @@ export default function ProgramPdfView() {
 
           {/* 7. Zone 2 Cardio Protocol */}
           <div className="section-title">7. بروتوكول كارديو حرق الدهون واللياقة القلبية</div>
-          <table className="pdf-table" style={{ marginBottom: '10px' }}>
+          <table className="pdf-table" style={{ marginBottom: '14px' }}>
             <thead>
               <tr>
                 <th style={{ width: '30%' }}>النشاط الرياضي الموصى به</th>
@@ -829,54 +842,30 @@ export default function ProgramPdfView() {
             </tbody>
           </table>
 
-          {/* 8. Dynamic Warm-up & Safety Matrix */}
-          <div className="section-title">8. روتين الإحماء الحركي والسلامة المفصلية</div>
-          <div className="pdf-card" style={{ fontSize: '7.5pt', lineHeight: '1.6', marginBottom: '10px', padding: '6px 10px' }}>
-            <p style={{ margin: '0 0 3px 0' }}>
-              <strong>• إحماء الجزء العلوي (5 دقائق):</strong> تدوير الذراعين 15 تكراراً + تفعيل عضلات الكفة المدورة للكتف بالكابل أو الحبل الخفيف 2 × 15.
+          {/* Practical Tips Box */}
+          <div className="section-title">8. القواعد الذهبية للاستمرار وتحقيق النتائج</div>
+          <div className="pdf-card" style={{ fontSize: '8pt', lineHeight: '1.7', marginBottom: '16px', padding: '10px 14px' }}>
+            <p style={{ margin: '0 0 6px 0' }}>
+              <strong>• الالتزام بالأوزان والمجموعات:</strong> ركز على إتقان التكنيك الحركي أولاً، ثم التدرج الخطي بالأوزان وفق معدل الـ RIR المحدد لكل أسبوع دون الوصول للفشل العشوائي.
             </p>
-            <p style={{ margin: '0 0 3px 0' }}>
-              <strong>• إحماء الجزء السفلي (5 دقائق):</strong> إطالات الحوض والعضلة الضامة 6 تكرارات لكل جانب + تفعيل الجلوتس 2 × 12.
+            <p style={{ margin: '0 0 6px 0' }}>
+              <strong>• ثبات مواعيد النوم والاستشفاء:</strong> النوم العميق من 7 إلى 8 ساعات يومياً هو المصنع الحقيقي لإعادة بناء الألياف العضلية وتوازن الهرمونات.
             </p>
             <p style={{ margin: '0' }}>
-              <strong>• مجموعات التسخين التصاعدية:</strong> جولتان تصاعديتان بأوزان خفيفة (40% ثم 60%) قبل بدء أول مجموعة عمل رسمية.
+              <strong>• دقة قياسات التغذية:</strong> وزن الأطعمة بالميزان الرقمي واستخدام الملعقة المعيارية للزيوت يضمن بقاءك في العجز الحراري المستهدف بدقة متناهية.
             </p>
           </div>
 
-          {/* 9. Biomechanical Safety Matrix */}
-          <div className="section-title">9. مصفوفة البدائل الحركية الآمنة وحماية المفاصل</div>
-          <table className="pdf-table" style={{ marginBottom: '14px' }}>
-            <thead>
-              <tr>
-                <th style={{ width: '30%', color: '#DC2626' }}>الحركة التي تتطلب حذراً</th>
-                <th style={{ width: '35%', color: '#16A34A' }}>البديل الحركي الآمن والموصى به</th>
-                <th style={{ width: '35%' }}>الهدف الفسيولوجي وحماية المفاصل</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr>
-                <td style={{ fontWeight: '700', color: '#DC2626' }}>ضغط الكتف بالبار واقفاً (OHP)</td>
-                <td style={{ fontWeight: '700', color: '#16A34A' }}>ضغط الكتف بالدمبل جالساً بقبضة محايدة</td>
-                <td>حماية أوتار الكتف وتجنب أي احتكاك مفصلي للمتدربين.</td>
-              </tr>
-              <tr>
-                <td style={{ fontWeight: '700', color: '#DC2626' }}>الديدليفت بالبار من الأرض</td>
-                <td style={{ fontWeight: '700', color: '#16A34A' }}>الديدليفت الروماني بالدمبل مع ثني الركبة</td>
-                <td>تقليل الضغط المباشر على فقرات أسفل الظهر وتفعيل أوتار الأرجل بأمان.</td>
-              </tr>
-            </tbody>
-          </table>
-
           {/* Official Sign-off Box */}
-          <div className="pdf-card" style={{ background: '#F8FAFC', border: '1pt solid #0284C7', padding: '8px 12px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', margin: 0 }}>
+          <div className="pdf-card" style={{ background: '#F8FAFC', border: '1pt solid #0284C7', padding: '10px 14px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', margin: 0 }}>
             <div>
-              <div style={{ fontSize: '8.5pt', fontWeight: '900', color: '#0F172A' }}>اعتماد المشرف الرياضي والعيادي المباشر:</div>
-              <div style={{ fontSize: '7.5pt', color: '#475569', marginTop: '2px' }}>
+              <div style={{ fontSize: '9pt', fontWeight: '900', color: '#0F172A' }}>اعتماد المشرف الرياضي والعيادي المباشر:</div>
+              <div style={{ fontSize: '8pt', color: '#475569', marginTop: '3px' }}>
                 كابتن <strong>{coachName}</strong> — كبير المدربين ومؤسس منظومة {brandTitle}
               </div>
             </div>
             <div style={{ textAlign: 'left' }}>
-              <div style={{ display: 'inline-block', background: '#E0F2FE', border: '1px solid #BAE6FD', color: '#0284C7', padding: '4px 10px', borderRadius: '6px', fontSize: '7.5pt', fontWeight: '800' }}>
+              <div style={{ display: 'inline-block', background: '#E0F2FE', border: '1px solid #BAE6FD', color: '#0284C7', padding: '5px 12px', borderRadius: '6px', fontSize: '8pt', fontWeight: '800' }}>
                 معتمد وموثق رقمياً (Digitally Approved)
               </div>
             </div>
