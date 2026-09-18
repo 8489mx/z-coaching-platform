@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { ArrowRightLeft, FileText, Plus, Trash2, Pill } from 'lucide-react';
+import { Zap, ArrowRightLeft, FileText, ShieldCheck, Plus, Trash2, Pill } from 'lucide-react';
 import { getStandardSupplementCatalog } from '../../../utils/clinicalSupplementSafetyEngine';
 import { evaluateCardioInterferenceDecoupling, CARDIO_INTENSITIES } from '../../../utils/cardioInterferenceEngine';
 import { getPracticalCardioPrescription, CARDIO_TYPES } from '../../../utils/cardioZonesEngine';
