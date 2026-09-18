@@ -304,6 +304,7 @@ export function useClientInteractiveData() {
         enable_rest_timer: false,
         enable_weight_logging: false,
         fastingProfile: extractedFasting,
+        sleep_schedule: { bedtime_hour: data.lifestyle?.bedtime_hour || prev.sleep_schedule?.bedtime_hour || null },
         clinicalProfile: {
           ...prev.clinicalProfile,
           is_celiac: isCeliac,

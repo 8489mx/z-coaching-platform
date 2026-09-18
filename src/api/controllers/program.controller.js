@@ -11,6 +11,7 @@ import { buildAdaptedPlan } from "../../../src/adaptation-engine/index.js";
 import { User, Program, IntakeSubmission, CheckinSubmission, ProgressPhoto } from "../models/index.js";
 import { saveProgressPhotoToDisk } from "../utils/photoStorage.js";
 import { Op } from "sequelize";
+import { decryptMedicalData } from "../../utils/crypto.js";
 import { MASTER_EXERCISE_DICTIONARY } from "../../../src/exercise-catalog-v2/index.js";
 import { calculateSmartSwap } from "../../../src/nutrition-swap-engine-v2/calculate-smart-swap.js";
 import { listSmartSwapCandidates, getSmartFoodRegistryItem, SMART_SWAP_REGISTRY } from "../../../src/nutrition-swap-engine-v2/swap-pool-registry.js";
@@ -809,6 +810,25 @@ export const calculateSwapHandler = async (req, res) => {
   }
 };
 
+// Reads only the bedtime (HH:MM) from the client's latest intake, for the static caffeine
+// cutoff guide in the client app. Never throws; returns null when unavailable.
+export async function resolveClientBedtimeHour(userId) {
+  try {
+    const submission = await IntakeSubmission.findOne({
+      where: { user_id: userId },
+      order: [["id", "DESC"]],
+      attributes: ["answers"],
+    });
+    let answers = submission?.answers;
+    if (typeof answers === "string") answers = JSON.parse(answers);
+    if (answers && answers._isEncrypted && answers.data) answers = decryptMedicalData(answers.data);
+    const bedtime = answers?.sleep_schedule?.bedtime_hour;
+    return typeof bedtime === "string" && /^([01]?\d|2[0-3]):[0-5]\d$/.test(bedtime.trim()) ? bedtime.trim() : null;
+  } catch {
+    return null;
+  }
+}
+
 export const getActiveProgramByUserId = async (req, res) => {
   try {
     const rawTarget = req.params.user_id || req.params.code || "";
@@ -882,6 +902,7 @@ export const getActiveProgramByUserId = async (req, res) => {
       updated_at: program.updatedAt || program.updated_at,
       user: program.user || user,
       master_program: program.program_data,
+      lifestyle: { bedtime_hour: await resolveClientBedtimeHour(user.id) },
     });
   } catch (err) {
     console.error("getActiveProgramByUserId error:", err);
