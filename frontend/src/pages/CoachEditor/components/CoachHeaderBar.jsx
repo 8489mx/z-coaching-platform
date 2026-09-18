@@ -13,6 +13,7 @@ import {
   MessageCircle,
   ChevronRight,
   ChevronLeft,
+  ChevronDown,
   Sliders
 } from 'lucide-react';
 import { extractClientFastingProfile } from '../../../utils/seasonalFastingRadar';
@@ -36,6 +37,29 @@ export function CoachHeaderBar({
   const prevClient = currentIndex > 0 ? clientsList[currentIndex - 1] : null;
   const nextClient = currentIndex >= 0 && currentIndex < clientsList.length - 1 ? clientsList[currentIndex + 1] : null;
   const clientPhone = program?.client?.phone_number || program?.client?.phone || '';
+
+  const [isAdvancedMenuOpen, setIsAdvancedMenuOpen] = React.useState(false);
+  const advancedMenuRef = React.useRef(null);
+
+  React.useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (advancedMenuRef.current && !advancedMenuRef.current.contains(event.target)) {
+        setIsAdvancedMenuOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  const rawMedicalConditions = [
+    ...(Array.isArray(program?.client?.medical_conditions) ? program.client.medical_conditions : []),
+    ...(Array.isArray(program?.client?.health_conditions) ? program.client.health_conditions : []),
+    ...(typeof program?.client?.chronic_diseases === 'string' ? [program.client.chronic_diseases] : Array.isArray(program?.client?.chronic_diseases) ? program.client.chronic_diseases : [])
+  ];
+  const clientMedicalConditions = rawMedicalConditions
+    .map(c => typeof c === 'string' ? c : (c?.name || c?.name_ar || c?.conditionCode || ''))
+    .filter(c => Boolean(c) && c !== 'none' && c !== 'لا يوجد');
+
   return (
     <div 
       style={{ 
@@ -54,7 +78,8 @@ export function CoachHeaderBar({
     >
       {/* Client Bio Info */}
       <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap' }}>
-        <div>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '3px' }}>
+          {/* Row 1: Name, Code, Package */}
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
             <h4 style={{ margin: 0, fontSize: '15px', fontWeight: 800, color: '#0F172A', display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
               <span>{program?.client?.full_name || 'أحمد محمود العوضي'}</span>
@@ -68,7 +93,8 @@ export function CoachHeaderBar({
             </span>
           </div>
 
-          <div style={{ fontSize: '11px', color: '#64748B', display: 'flex', alignItems: 'center', gap: '8px', marginTop: '3px', flexWrap: 'wrap' }}>
+          {/* Row 2: Metrics & Target Goal */}
+          <div style={{ fontSize: '11px', color: '#64748B', display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
             <span>{program?.client?.age || 27} سنة</span>
             <span>•</span>
             <span>{program?.client?.weight_kg || 84.5} كجم</span>
@@ -76,55 +102,66 @@ export function CoachHeaderBar({
             <span>{program?.client?.height_cm || 180} سم</span>
             <span>•</span>
             <span style={{ color: '#0F172A', fontWeight: 700 }}>{program?.client?.goal_label || 'خسارة دهون وتنشيف'}</span>
-
-            {program?.client?.injuries && program?.client?.injuries.length > 0 && (
-              <span style={{ fontSize: '10px', padding: '1px 6px', borderRadius: '6px', background: '#FEF2F2', border: '1px solid #FECACA', color: '#DC2626', fontWeight: 700, display: 'inline-flex', alignItems: 'center', gap: '3px' }}>
-                <ShieldAlert size={10} />
-                <span>إصابة: {program?.client?.injuries.join('، ')}</span>
-              </span>
-            )}
-
-            {program?.client?.allergies && program?.client?.allergies.length > 0 && (
-              <span style={{ fontSize: '10px', padding: '1px 6px', borderRadius: '6px', background: '#F0F9FF', border: '1px solid #BAE6FD', color: '#0284C7', fontWeight: 700, display: 'inline-flex', alignItems: 'center', gap: '3px' }}>
-                <AlertCircle size={10} />
-                <span>حساسية: {program?.client?.allergies.join('، ')}</span>
-              </span>
-            )}
-
-            {(() => {
-              const fasting = extractClientFastingProfile(program?.client);
-              return (
-                <>
-                  {fasting.primaryFastingBadge && (
-                    <span style={{ 
-                      fontSize: '10px', 
-                      padding: '1px 6px', 
-                      borderRadius: '6px', 
-                      background: fasting.primaryFastingBadge.bg, 
-                      border: `1px solid ${fasting.primaryFastingBadge.border}`, 
-                      color: fasting.primaryFastingBadge.color, 
-                      fontWeight: 800 
-                    }}>
-                      {fasting.primaryFastingBadge.label}
-                    </span>
-                  )}
-                  {fasting.intermittentBadge && (
-                    <span style={{ 
-                      fontSize: '10px', 
-                      padding: '1px 6px', 
-                      borderRadius: '6px', 
-                      background: fasting.intermittentBadge.bg, 
-                      border: `1px solid ${fasting.intermittentBadge.border}`, 
-                      color: fasting.intermittentBadge.color, 
-                      fontWeight: 800 
-                    }}>
-                      {fasting.intermittentBadge.label}
-                    </span>
-                  )}
-                </>
-              );
-            })()}
           </div>
+
+          {/* Row 3: Compact Badges (Health, Injuries, Allergies, Fasting) */}
+          {(clientMedicalConditions.length > 0 || (program?.client?.injuries && program.client.injuries.length > 0) || (program?.client?.allergies && program.client.allergies.length > 0)) && (
+            <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginTop: '2px', flexWrap: 'wrap' }}>
+              {clientMedicalConditions.length > 0 && (
+                <span style={{ fontSize: '10px', padding: '1px 7px', borderRadius: '6px', background: '#F1F5F9', border: '1px solid #CBD5E1', color: '#475569', fontWeight: 700, display: 'inline-flex', alignItems: 'center', gap: '3px' }}>
+                  <span>الحالة الصحية: {clientMedicalConditions.join('، ')}</span>
+                </span>
+              )}
+
+              {program?.client?.injuries && program?.client?.injuries.length > 0 && (
+                <span style={{ fontSize: '10px', padding: '1px 7px', borderRadius: '6px', background: '#FEF2F2', border: '1px solid #FECACA', color: '#DC2626', fontWeight: 700, display: 'inline-flex', alignItems: 'center', gap: '3px' }}>
+                  <ShieldAlert size={10} />
+                  <span>إصابة: {program?.client?.injuries.join('، ')}</span>
+                </span>
+              )}
+
+              {program?.client?.allergies && program?.client?.allergies.length > 0 && (
+                <span style={{ fontSize: '10px', padding: '1px 7px', borderRadius: '6px', background: '#F0F9FF', border: '1px solid #BAE6FD', color: '#0284C7', fontWeight: 700, display: 'inline-flex', alignItems: 'center', gap: '3px' }}>
+                  <AlertCircle size={10} />
+                  <span>حساسية: {program?.client?.allergies.join('، ')}</span>
+                </span>
+              )}
+
+              {(() => {
+                const fasting = extractClientFastingProfile(program?.client);
+                return (
+                  <>
+                    {fasting.primaryFastingBadge && (
+                      <span style={{ 
+                        fontSize: '10px', 
+                        padding: '1px 6px', 
+                        borderRadius: '6px', 
+                        background: fasting.primaryFastingBadge.bg, 
+                        border: `1px solid ${fasting.primaryFastingBadge.border}`, 
+                        color: fasting.primaryFastingBadge.color, 
+                        fontWeight: 800 
+                      }}>
+                        {fasting.primaryFastingBadge.label}
+                      </span>
+                    )}
+                    {fasting.intermittentBadge && (
+                      <span style={{ 
+                        fontSize: '10px', 
+                        padding: '1px 6px', 
+                        borderRadius: '6px', 
+                        background: fasting.intermittentBadge.bg, 
+                        border: `1px solid ${fasting.intermittentBadge.border}`, 
+                        color: fasting.intermittentBadge.color, 
+                        fontWeight: 800 
+                      }}>
+                        {fasting.intermittentBadge.label}
+                      </span>
+                    )}
+                  </>
+                );
+              })()}
+            </div>
+          )}
         </div>
       </div>
 
@@ -243,82 +280,143 @@ export function CoachHeaderBar({
           )}
         </div>
 
-        {/* Cluster 2: Clinical Audit & Quality Assurance */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+        {/* Cluster 2: Advanced Tools Dropdown */}
+        <div ref={advancedMenuRef} style={{ position: 'relative' }}>
           <button
             type="button"
-            onClick={() => setIsLabModalOpen(true)}
+            onClick={() => setIsAdvancedMenuOpen(prev => !prev)}
             style={{
               height: '30px',
               padding: '0 10px',
               borderRadius: '8px',
-              background: '#F0F9FF',
-              color: '#0284C7',
-              border: '1px solid #BAE6FD',
+              background: isAdvancedMenuOpen ? '#F1F5F9' : '#FFFFFF',
+              color: '#0F172A',
+              border: '1px solid #CBD5E1',
               fontSize: '11px',
               fontWeight: 700,
               cursor: 'pointer',
               display: 'inline-flex',
               alignItems: 'center',
-              gap: '4px',
+              gap: '5px',
               transition: 'all 0.15s ease'
             }}
-            title="فحص المؤشرات الحيوية والتحاليل المخبرية للمشترك"
+            title="أدوات ومحركات الفحص المتقدمة"
           >
-            <HeartPulse size={13} color="#0284C7" />
-            <span>فحص التحاليل</span>
+            <Sliders size={13} />
+            <span>أدوات متقدمة</span>
+            <ChevronDown size={12} style={{ transform: isAdvancedMenuOpen ? 'rotate(180deg)' : 'none', transition: 'transform 0.2s' }} />
           </button>
 
-          {typeof setIsPlanQualityOpen === 'function' && (
-            <button
-              type="button"
-              onClick={() => setIsPlanQualityOpen(true)}
-              title="فحص جودة وتكامل الخطة سريرياً وتدريبياً قبل النشر"
-              style={{
-                height: '30px',
-                padding: '0 10px',
-                borderRadius: '8px',
-                background: '#F0FDF4',
-                color: '#16A34A',
-                border: '1px solid #BBF7D0',
-                fontSize: '11px',
-                fontWeight: 700,
-                cursor: 'pointer',
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: '4px',
-                transition: 'all 0.15s ease'
-              }}
-            >
-              <ShieldCheck size={13} />
-              <span>درع جودة الخطة</span>
-            </button>
-          )}
+          {isAdvancedMenuOpen && (
+            <div style={{
+              position: 'absolute',
+              top: '36px',
+              left: 0,
+              background: '#FFFFFF',
+              border: '1px solid #E2E8F0',
+              borderRadius: '10px',
+              boxShadow: '0 10px 25px -5px rgba(15, 23, 42, 0.1), 0 8px 10px -6px rgba(15, 23, 42, 0.05)',
+              padding: '6px',
+              minWidth: '210px',
+              zIndex: 100,
+              display: 'flex',
+              flexDirection: 'column',
+              gap: '2px'
+            }}>
+              <button
+                type="button"
+                onClick={() => {
+                  setIsAdvancedMenuOpen(false);
+                  setIsLabModalOpen(true);
+                }}
+                style={{
+                  width: '100%',
+                  padding: '8px 10px',
+                  borderRadius: '8px',
+                  background: 'transparent',
+                  border: 'none',
+                  color: '#0F172A',
+                  fontSize: '11px',
+                  fontWeight: 700,
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '8px',
+                  textAlign: 'right'
+                }}
+                onMouseEnter={(e) => e.currentTarget.style.background = '#F8FAFC'}
+                onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}
+              >
+                <div style={{ width: '22px', height: '22px', borderRadius: '6px', background: '#F0F9FF', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#0284C7' }}>
+                  <HeartPulse size={12} />
+                </div>
+                <span>فحص التحاليل والمؤشرات</span>
+              </button>
 
-          {typeof setIsEmergencyModalOpen === 'function' && (
-            <button
-              type="button"
-              onClick={() => setIsEmergencyModalOpen(true)}
-              title="محرك المرونة وسيناريوهات السفر، المرض، وضغط الامتحانات"
-              style={{
-                height: '30px',
-                padding: '0 10px',
-                borderRadius: '8px',
-                background: '#FFFBEB',
-                color: '#B45309',
-                border: '1px solid #FDE68A',
-                fontSize: '11px',
-                fontWeight: 700,
-                cursor: 'pointer',
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: '4px',
-                transition: 'all 0.15s ease'
-              }}
-            >
-              <AlertTriangle size={13} color="#B45309" />
-              <span>محرك المرونة والطوارئ</span>
-            </button>
+              {typeof setIsPlanQualityOpen === 'function' && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setIsAdvancedMenuOpen(false);
+                    setIsPlanQualityOpen(true);
+                  }}
+                  style={{
+                    width: '100%',
+                    padding: '8px 10px',
+                    borderRadius: '8px',
+                    background: 'transparent',
+                    border: 'none',
+                    color: '#0F172A',
+                    fontSize: '11px',
+                    fontWeight: 700,
+                    cursor: 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '8px',
+                    textAlign: 'right'
+                  }}
+                  onMouseEnter={(e) => e.currentTarget.style.background = '#F8FAFC'}
+                  onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}
+                >
+                  <div style={{ width: '22px', height: '22px', borderRadius: '6px', background: '#F0FDF4', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#16A34A' }}>
+                    <ShieldCheck size={12} />
+                  </div>
+                  <span>درع جودة الخطة</span>
+                </button>
+              )}
+
+              {typeof setIsEmergencyModalOpen === 'function' && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setIsAdvancedMenuOpen(false);
+                    setIsEmergencyModalOpen(true);
+                  }}
+                  style={{
+                    width: '100%',
+                    padding: '8px 10px',
+                    borderRadius: '8px',
+                    background: 'transparent',
+                    border: 'none',
+                    color: '#0F172A',
+                    fontSize: '11px',
+                    fontWeight: 700,
+                    cursor: 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '8px',
+                    textAlign: 'right'
+                  }}
+                  onMouseEnter={(e) => e.currentTarget.style.background = '#F8FAFC'}
+                  onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}
+                >
+                  <div style={{ width: '22px', height: '22px', borderRadius: '6px', background: '#FFFBEB', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#B45309' }}>
+                    <AlertTriangle size={12} />
+                  </div>
+                  <span>محرك المرونة والطوارئ</span>
+                </button>
+              )}
+            </div>
           )}
         </div>
 

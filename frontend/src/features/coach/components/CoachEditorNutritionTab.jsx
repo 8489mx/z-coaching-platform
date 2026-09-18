@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Save, Send, Dumbbell, Utensils, FileText, Activity, Loader2, Plus, Trash2, RotateCw, HeartPulse, Printer, X, ArrowRightLeft, Users, Clock, AlertCircle, CheckCircle2, Search, Check, Zap, Target, ShieldAlert, Flame, Copy } from 'lucide-react';
 import { balanceMealItems, dynamicRippleRebalanceDailyPlan } from '../../../utils/mealPortionBalancer.js';
-import { auditDeficitVolumeShield, evaluateProteinSparingRequirement } from '../../../utils/trainingCouplingUtils.js';
+
 
 export default function CoachEditorNutritionTab(props) {
   const { searchParams, setSearchParams, loading, setLoading, saving, setSaving, publishing, setPublishing, program, setProgram, coachNotes, setCoachNotes, activeSessionIdx, setActiveSessionIdx, activeWorkspaceTab, setActiveWorkspaceTab, notification, setNotification, clientsList, setClientsList, queueFilter, setQueueFilter, queueSearch, setQueueSearch, showQueueSlider, setShowQueueSlider, allExercisesList, setAllExercisesList, cardioSwapModal, setCardioSwapModal, addFoodModal, setAddFoodModal, swapFoodModal, setSwapFoodModal, addExModal, setAddExModal, swapExModal, setSwapExModal, mobilityModal, setMobilityModal, allMobilityList, setAllMobilityList, showReasoning, setShowReasoning, exModalSearch, setExModalSearch, foodModalSearch, setFoodModalSearch, mobilityModalSearch, setMobilityModalSearch, swapFoodSearch, setSwapFoodSearch, swapExSearch, setSwapExSearch, handleSelectClient, handleUpdateFoodAmount, handleDeleteFood, handleAddNewMeal, handleDuplicateMeal, handleDeleteMeal, handleAddFoodToMeal, handleExecuteFoodSwap, handleExecuteExerciseSwap, handleUpdateExerciseParam, handleDeleteExercise, handleAddExerciseToSession, handleSelectCardioModality, handleAddMobilityToSession, handleRemoveMobilityFromSession, handleSaveDraft, handleApproveAndPublish, FOOD_DATABASE_LIST, CARDIO_MODALITY_OPTIONS } = props;
@@ -56,20 +56,7 @@ export default function CoachEditorNutritionTab(props) {
 
   const clientTdee = Number(program?.client?.tdee || (targetCal >= 2000 ? targetCal + 450 : 2400));
 
-  const deficitVolumeShield = auditDeficitVolumeShield({
-    sessions: activeSessions,
-    targetCalories: targetCal,
-    tdee: clientTdee
-  });
 
-  const proteinSparing = evaluateProteinSparingRequirement({
-    targetCalories: targetCal,
-    tdee: clientTdee,
-    clientWeightKg,
-    currentProteinG: targetP,
-    hasKidneyCondition,
-    clinicalGuardrails
-  });
 
 
 
@@ -216,85 +203,6 @@ export default function CoachEditorNutritionTab(props) {
         {activeWorkspaceTab === 'NUTRITION' && (
           <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
             
-            {/* Clinical Guardrail Alert: Kidney Disease Protein Ceiling (KDOQI Guideline) */}
-            {hasKidneyCondition && (
-              <div style={{
-                background: isProteinExceeded ? '#FEF2F2' : '#F0FDF4',
-                border: isProteinExceeded ? '1.5px solid #F87171' : '1px solid #BBF7D0',
-                borderRadius: '12px',
-                padding: '12px 16px',
-                display: 'flex',
-                justifyContent: 'space-between',
-                alignItems: 'center',
-                gap: '12px',
-                boxShadow: isProteinExceeded ? '0 3px 10px rgba(239, 68, 68, 0.12)' : '0 1px 2px rgba(15, 23, 42, 0.02)',
-                transition: 'all 0.2s ease'
-              }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                  <div style={{
-                    width: '38px',
-                    height: '38px',
-                    borderRadius: '10px',
-                    background: isProteinExceeded ? '#FEE2E2' : '#DCFCE7',
-                    border: isProteinExceeded ? '1px solid #FECACA' : '1px solid #BBF7D0',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    color: isProteinExceeded ? '#DC2626' : '#166534',
-                    flexShrink: 0
-                  }}>
-                    <ShieldAlert size={20} />
-                  </div>
-                  <div>
-                    <div style={{ fontSize: '13px', fontWeight: 800, color: isProteinExceeded ? '#991B1B' : '#166534', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                      <span>{isProteinExceeded ? 'تحذير سريري حرج: تجاوز سقف البروتين لمرضى القصور الكلوي' : 'حماية سريرية نشطة: سقف بروتين الكلى مفعل (KDOQI 1.0 جم/كجم)'}</span>
-                    </div>
-                    <div style={{ fontSize: '11.5px', color: isProteinExceeded ? '#B91C1C' : '#15803D', marginTop: '3px', lineHeight: '1.5' }}>
-                      {isProteinExceeded
-                        ? `المشترك لديه قصور كلوي مسجل. إجمالي البروتين الحالي (${effectiveCurrentProtein} جم) يتجاوز السقف السريري الآمن (${maxSafeProtein} جم بمعدل 1.0 جم/كجم لوزن ${clientWeightKg} كجم). رفع البروتين يزيد العبء النيتروجيني على ترشيح الكبيبات الكلوية.`
-                        : `تم تقييد البروتين بالسقف السريري الآمن (${maxSafeProtein} جم) لضمان حماية وظائف الكلى وترشيح الكبيبات.`}
-                    </div>
-                  </div>
-                </div>
-                <div style={{ textAlign: 'center', flexShrink: 0 }}>
-                  <span style={{
-                    fontSize: '11px',
-                    fontWeight: 800,
-                    background: isProteinExceeded ? '#DC2626' : '#16A34A',
-                    color: '#FFFFFF',
-                    padding: '6px 12px',
-                    borderRadius: '8px',
-                    display: 'inline-block',
-                    whiteSpace: 'nowrap'
-                  }}>
-                    {isProteinExceeded ? `زيادة +${effectiveCurrentProtein - maxSafeProtein} جم فوق السقف` : `السقف: ${maxSafeProtein} جم`}
-                  </span>
-                </div>
-              </div>
-            )}
-
-            {/* Engine Clinical Nutrition Reasoning Card */}
-            {program.nutrition?.reasoning && (
-              <div style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', borderRadius: '8px', padding: '10px 14px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '10px', boxShadow: '0 1px 2px rgba(15, 23, 42, 0.02)' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                  <div style={{ width: '28px', height: '28px', borderRadius: '6px', background: '#F1F5F9', border: '1px solid #E2E8F0', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#0F172A', flexShrink: 0 }}>
-                    <Zap size={13} />
-                  </div>
-                  <div>
-                    <div style={{ fontSize: '12px', fontWeight: 800, color: '#0F172A' }}>تحليل محرك التغذية وهندسة الماكروز</div>
-                    <div style={{ fontSize: '11px', color: '#475569', marginTop: '1px' }}>
-                      {typeof program.nutrition.reasoning === 'string' ? program.nutrition.reasoning : (program.nutrition.reasoning?.rationale || 'احتساب دقيق للعجز/الفائض السعري ونسبة البروتين للحفاظ على الكتلة العضلية.')}
-                    </div>
-                  </div>
-                </div>
-                {program.nutrition?.deficit_pct && (
-                  <span style={{ fontSize: '10.5px', fontWeight: 700, padding: '2px 8px', borderRadius: '6px', background: '#FFFFFF', border: '1px solid #CBD5E1', color: '#0F172A', whiteSpace: 'nowrap' }}>
-                    عجز {program.nutrition.deficit_pct}%
-                  </span>
-                )}
-              </div>
-            )}
-
             {/* Top Macro Summary Bar with Live Calories & Supplements Integration */}
             <div style={{ background: '#FFFFFF', border: '1px solid #E2E8F0', borderRadius: '12px', padding: '10px 14px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '8px', boxShadow: '0 1px 2px rgba(15, 23, 42, 0.02)' }}>
               <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap', alignItems: 'center' }}>
@@ -470,86 +378,6 @@ export default function CoachEditorNutritionTab(props) {
                   <Plus size={13} />
                   <span>إضافة وجبة</span>
                 </button>
-              </div>
-            </div>
-
-            {/* Deficit Volume Shield Bar */}
-            <div style={{
-              background: deficitVolumeShield.requires_volume_consolidation
-                ? '#FFFBEB'
-                : deficitVolumeShield.shield_active
-                  ? '#FEF2F2'
-                  : '#F0FDF4',
-              border: deficitVolumeShield.requires_volume_consolidation
-                ? '1px solid #FCD34D'
-                : deficitVolumeShield.shield_active
-                  ? '1px solid #FECACA'
-                  : '1px solid #BBF7D0',
-              borderRadius: '12px',
-              padding: '10px 14px',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'space-between',
-              flexWrap: 'wrap',
-              gap: '10px'
-            }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
-                <div style={{
-                  width: '28px',
-                  height: '28px',
-                  borderRadius: '8px',
-                  background: deficitVolumeShield.requires_volume_consolidation
-                    ? '#F59E0B'
-                    : deficitVolumeShield.shield_active
-                      ? '#EF4444'
-                      : '#16A34A',
-                  color: '#FFFFFF',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  flexShrink: 0
-                }}>
-                  {deficitVolumeShield.requires_volume_consolidation ? <ShieldAlert size={16} /> : <CheckCircle2 size={16} />}
-                </div>
-
-                <div>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flexWrap: 'wrap' }}>
-                    <span style={{ fontSize: '12px', fontWeight: 800, color: '#0F172A' }}>
-                      درع الحجم التدريبي والعجز السعري:
-                    </span>
-                    <span style={{
-                      fontSize: '10.5px',
-                      fontWeight: 800,
-                      padding: '2px 8px',
-                      borderRadius: '6px',
-                      background: deficitVolumeShield.shield_active ? '#FEE2E2' : '#DCFCE7',
-                      color: deficitVolumeShield.shield_active ? '#B91C1C' : '#15803D'
-                    }}>
-                      {deficitVolumeShield.shield_active
-                        ? `عجز حراري حاد (${deficitVolumeShield.deficit_percent}% | انكماش سقف الاستشفاء MRV -20%)`
-                        : deficitVolumeShield.is_deficit
-                          ? `عجز معتدل (${deficitVolumeShield.deficit_percent}% | انكماش MRV -10%)`
-                          : 'سعرات صيانة / فائض (سقف الاستشفاء مستقر)'}
-                    </span>
-
-                    <span style={{
-                      fontSize: '10.5px',
-                      fontWeight: 700,
-                      padding: '2px 8px',
-                      borderRadius: '6px',
-                      background: proteinSparing.is_deficient ? '#FEF3C7' : '#EFF6FF',
-                      color: proteinSparing.is_deficient ? '#B45309' : '#1D4ED8'
-                    }}>
-                      التدريع البروتيني: {proteinSparing.current_multiplier} جم/كجم (الوقائي: {proteinSparing.recommended_multiplier} جم/كجم)
-                    </span>
-                  </div>
-
-                  {deficitVolumeShield.warnings.length > 0 && (
-                    <div style={{ fontSize: '11px', color: '#B91C1C', marginTop: '3px', fontWeight: 600 }}>
-                      {deficitVolumeShield.warnings[0]}
-                    </div>
-                  )}
-                </div>
               </div>
             </div>
 

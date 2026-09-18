@@ -264,6 +264,89 @@ function resolveExerciseMuscleName(ex) {
   return 'عضلات مستهدفة';
 }
 
+/**
+ * Resolves smart gym rush / equipment substitute for any exercise.
+ */
+function resolveExerciseAlternative(ex) {
+  if (!ex) return null;
+  if (ex.substitute) return ex.substitute;
+  if (ex.alternative) return ex.alternative;
+  if (ex.swap_name) return ex.swap_name;
+  if (ex.alternative_ar) return ex.alternative_ar;
+  if (ex.safetyNote && ex.safetyNote.includes('بديل')) return ex.safetyNote.replace(/^بديل.*?:/i, '').trim();
+
+  const raw = String(ex.name_en || ex.name || ex.code || '').toUpperCase();
+  const rawAr = String(ex.name_ar || ex.name || '');
+
+  // Chest / Press
+  if (raw.includes('INCLINE') && (raw.includes('BENCH') || raw.includes('PRESS') || rawAr.includes('مائل'))) {
+    return 'ضغط دمبلز بنش مائل 30° أو جهاز سميث مائل';
+  }
+  if (raw.includes('BENCH PRESS') || raw.includes('FLAT BENCH') || rawAr.includes('بنش برس') || rawAr.includes('بنش مستوي')) {
+    return 'ضغط دمبلز بنش مستوي أو جهاز الصدر بالوزن الحر (Chest Press Machine)';
+  }
+  if (raw.includes('PUSH-UP') || rawAr.includes('ضغط قبضة')) {
+    return 'ترايسبس دفع كابل لأسفل بالحبل أو بار مستوي';
+  }
+  if (raw.includes('FLY') || raw.includes('PEC DECK') || rawAr.includes('تفتيح') || rawAr.includes('فراشة')) {
+    return 'تفتيح كابل وسطي متقاطع (Cable Crossover) أو تفتيح بالدمبل';
+  }
+
+  // Back / Pull
+  if (raw.includes('PULLDOWN') || rawAr.includes('سحب عالي')) {
+    return 'سحب فردي بالكابل أو سحب عالي قبضة متوازية ضيقة';
+  }
+  if (raw.includes('BENT-OVER ROW') || raw.includes('BARBELL ROW') || (raw.includes('ROW') && !raw.includes('UPRIGHT')) || rawAr.includes('تجديف')) {
+    return 'تجديف دمبل مسنود الصدر على بنش مائل أو سحب كابل جالس';
+  }
+  if (raw.includes('DEADLIFT') || rawAr.includes('ديدليفت')) {
+    return 'ديدليفت روماني بالدمبلز (DB RDL) أو هايبرايكستنشن 45°';
+  }
+
+  // Shoulders
+  if (raw.includes('OVERHEAD') || raw.includes('OHP') || raw.includes('MILITARY') || rawAr.includes('كتف بالبار') || (raw.includes('SHOULDER') && raw.includes('PRESS'))) {
+    return 'ضغط كتف بالدمبلز جالساً أو جهاز ضغط الأكتاف';
+  }
+  if (raw.includes('LATERAL') || rawAr.includes('جانبي') || rawAr.includes('رفرفة')) {
+    return 'رفرفة كابل جانبي قطري (Cable Y-Raise) أو دمبل مائل';
+  }
+  if (raw.includes('REAR') || raw.includes('FACE PULL') || rawAr.includes('خلفي') || rawAr.includes('فيس بول')) {
+    return 'فيس بول بالحبل على الكابل أو رفرفة خلفية بالدمبل على بنش مائل';
+  }
+
+  // Legs
+  if (raw.includes('SQUAT') || rawAr.includes('سكوات')) {
+    return 'السكوات البلغاري بالدمبلز (Bulgarian Split Squat) أو جهاز الهاك سكوات';
+  }
+  if (raw.includes('LUNGE') || rawAr.includes('طعنات')) {
+    return 'طعنات متحركة بالدمبلز أو سبليت سكوات على بنش ثابت';
+  }
+  if (raw.includes('LEG EXTENSION') || rawAr.includes('فرد أرجل') || rawAr.includes('أمامي')) {
+    return 'السكوات الإسباني بالمطاط (Spanish Squat) أو سيسي سكوات بالوزن';
+  }
+  if (raw.includes('LEG CURL') || rawAr.includes('ثني أرجل') || rawAr.includes('مرجحة أرجل')) {
+    return 'ثني أرجل نائماً بالدمبل بين القدمين أو ديدليفت روماني فردي';
+  }
+  if (raw.includes('CALF') || rawAr.includes('سمانة')) {
+    return 'رفع السمانة فردي على حافة الدرج بالدمبل أو جهاز السمانة جالس';
+  }
+
+  // Arms
+  if (raw.includes('BICEPS') || raw.includes('CURL') || rawAr.includes('بايسبس') || rawAr.includes('باي')) {
+    return 'مرجحة بايسبس بالدمبل على بنش مائل أو مرجحة بالحبل على الكابل';
+  }
+  if (raw.includes('TRICEPS') || raw.includes('PUSHDOWN') || rawAr.includes('ترايسبس') || rawAr.includes('تراي')) {
+    return 'ترايسبس فرنساوي بالدمبل نائماً (Skull Crusher) أو حبل فوق الرأس';
+  }
+
+  // Core / Abs
+  if (raw.includes('DEAD BUG') || raw.includes('PLANK') || raw.includes('ABS') || rawAr.includes('حشرة') || rawAr.includes('كور') || rawAr.includes('بطن')) {
+    return 'تمرين البالوف برس بالكابل (Pallof Press) أو رفع الركبتين معلقاً';
+  }
+
+  return 'بديل حر مباشر بالدمبل بنفس زاوية الشد والمفصل';
+}
+
 export default function ProgramPdfView() {
   const [loading, setLoading] = useState(true);
   const [program, setProgram] = useState(null);
@@ -458,6 +541,36 @@ export default function ProgramPdfView() {
       ]
     }
   ];
+
+  // Cardio & Daily Physical Activity (NEAT)
+  const cardioModality = program?.cardio?.modality 
+    || program?.cardio_protocol?.modality 
+    || 'مشي على سير مائل (Incline Treadmill)';
+  const cardioWeeklySessions = program?.cardio?.weekly_sessions 
+    || program?.cardio_protocol?.weekly_sessions 
+    || 3;
+  const cardioDuration = program?.cardio?.session_duration_min 
+    || program?.cardio_protocol?.duration_minutes 
+    || 30;
+  const cardioHeartRate = program?.cardio?.target_heart_rate_zone 
+    || program?.cardio_protocol?.target_heart_rate_zone 
+    || '120 - 135 نبضة / دقيقة (Zone 2)';
+  const cardioNeatSteps = program?.cardio?.neat_target_steps 
+    || program?.cardio?.daily_steps 
+    || program?.cardio?.target_daily_steps 
+    || 8500;
+
+  // Prescribed Daily Supplements Protocol
+  const supplementsList = (Array.isArray(program?.cardio?.supplements) && program.cardio.supplements.length > 0)
+    ? program.cardio.supplements
+    : ((Array.isArray(program?.supplements) && program.supplements.length > 0)
+        ? program.supplements
+        : [
+            { name: 'الكرياتين مونوهيدرات (Creatine Monohydrate)', dosage: '5 جم يومياً', timing: 'بعد التمرين أو مع الوجبة الأولى', purpose: 'زيادة القوة العضلية وتخليق الـ ATP' },
+            { name: 'أوميجا 3 عالي التركيز (Omega-3 Fish Oil)', dosage: '1000 - 2000 مجم EPA/DHA', timing: 'مع وجبة الغداء أو العشاء', purpose: 'صحة المفاصل وتخفيف الالتهاب' },
+            { name: 'فيتامين D3 + K2 (MK-7)', dosage: '5000 وحدة دولية', timing: 'صباحاً مع وجبة غنية بالدهون', purpose: 'دعم العظام والمناعة والتستوستيرون' },
+            { name: 'مغنيسيوم بيسجلايسينات (Magnesium Glycinate)', dosage: '300 - 400 مجم', timing: 'قبل النوم بـ 45 دقيقة', purpose: 'استرخاء العضلات وجودة النوم العميق' }
+          ]);
 
   // Divide sessions into chunks of 2 per page for ultra-spacious, premium full-width rendering
   const sessionChunks = [];
@@ -724,13 +837,13 @@ export default function ProgramPdfView() {
           <div className="pdf-card" style={{ fontSize: '7.5pt', lineHeight: '1.5', margin: 0, padding: '6px 10px' }}>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '8px' }}>
               <div>
-                <strong style={{ color: '#0F172A' }}>• وزن الأغذية:</strong> اللحوم والأسماك توزن نيئة قبل الطهي؛ الأرز والبطاطس توزن مطبوخة وجاهزة.
+                <strong style={{ color: '#0F172A' }}>• وزن الأغذية بعد الطهي:</strong> كافة أوزان البروتينات (دجاج، لحم، سمك) والنشويات (أرز، بطاطس) في جدولك موزونة بعد الطهي وجاهزة للأكل ما لم يُذكر غير ذلك.
               </div>
               <div>
-                <strong style={{ color: '#0F172A' }}>• الزيوت والدهون:</strong> زيت الزيتون وزيت جوز الهند يقاس بالملعقة المعيارية دون سكب عشوائي.
+                <strong style={{ color: '#0F172A' }}>• الزيوت والدهون:</strong> زيت الزيتون وزبدة المكسرات تقاس بالملعقة المعيارية بدقة دون سكب عشوائي لتفادي السعرات الخفية.
               </div>
               <div>
-                <strong style={{ color: '#0F172A' }}>• الورقيات والمشروبات:</strong> الجرجير والخس والخيار حرة، والقهوة والشاي تُشرب بدون سكر أو بمحلي ستيفيا.
+                <strong style={{ color: '#0F172A' }}>• الورقيات والمشروبات:</strong> الورقيات الخضراء والخيار حرة، والقهوة والشاي تُشرب بدون سكر أو بمحلي ستيفيا، مع الالتزام بمعدل الماء اليومي.
               </div>
             </div>
           </div>
@@ -779,26 +892,34 @@ export default function ProgramPdfView() {
                 <table className="pdf-table" style={{ margin: 0 }}>
                   <thead>
                     <tr>
-                      <th style={{ width: '38%', textAlign: 'right' }}>التمرين والتكنيك</th>
-                      <th style={{ width: '22%', textAlign: 'center' }}>العضلة المستهدفة</th>
-                      <th style={{ width: '13%', textAlign: 'center' }}>المجموعات</th>
-                      <th style={{ width: '13%', textAlign: 'center' }}>العدات</th>
-                      <th style={{ width: '14%', textAlign: 'center' }}>الراحة</th>
+                      <th style={{ width: '42%', textAlign: 'right' }}>التمرين وتوجيه التكنيك</th>
+                      <th style={{ width: '20%', textAlign: 'center' }}>العضلة المستهدفة</th>
+                      <th style={{ width: '12%', textAlign: 'center' }}>المجموعات</th>
+                      <th style={{ width: '13%', textAlign: 'center' }}>العدات والشدة</th>
+                      <th style={{ width: '13%', textAlign: 'center' }}>الراحة</th>
                     </tr>
                   </thead>
                   <tbody>
                     {session.exercises?.map((ex, eIdx) => {
                       const exNames = getExerciseDisplayNames(ex);
                       const targetMuscle = resolveExerciseMuscleName(ex);
+                      const altExercise = resolveExerciseAlternative(ex);
+                      const rirLabel = ex.target_rir != null ? `RIR ${ex.target_rir}` : (ex.rir != null ? `RIR ${ex.rir}` : 'RIR 1-2');
                       return (
                         <tr key={eIdx}>
                           <td style={{ textAlign: 'right' }}>
-                            <strong style={{ display: 'block', fontSize: '8pt', fontWeight: '800', color: '#0F172A', direction: 'ltr', textAlign: 'right' }}>
+                            <strong style={{ display: 'block', fontSize: '7.8pt', fontWeight: '800', color: '#0F172A', direction: 'ltr', textAlign: 'right' }}>
                               {exNames.nameEn}
                             </strong>
-                            <span style={{ fontSize: '6.8pt', color: '#64748B', display: 'block', marginTop: '1px' }}>
+                            <span style={{ fontSize: '6.8pt', color: '#475569', display: 'block', marginTop: '1px' }}>
                               {exNames.nameAr}
                             </span>
+                            {altExercise && (
+                              <div style={{ fontSize: '6.2pt', color: '#0369A1', marginTop: '2px', background: '#F0F9FF', border: '0.5pt solid #BAE6FD', borderRadius: '4px', padding: '1px 5px', display: 'inline-block' }}>
+                                <span style={{ fontWeight: '800' }}>بديل زحمة الجيم: </span>
+                                <span>{altExercise}</span>
+                              </div>
+                            )}
                           </td>
                           <td style={{ color: '#0369A1', fontWeight: '700', fontSize: '7.5pt', textAlign: 'center' }}>
                             {targetMuscle}
@@ -806,10 +927,13 @@ export default function ProgramPdfView() {
                           <td style={{ textAlign: 'center', fontWeight: '700', fontSize: '8pt' }} className="nowrap">
                             {ex.sets || 3}
                           </td>
-                          <td style={{ textAlign: 'center', fontWeight: '700', fontSize: '8pt', color: '#0F172A' }} className="nowrap">
-                            {ex.reps || '8 - 10'}
+                          <td style={{ textAlign: 'center', fontWeight: '700', fontSize: '7.5pt', color: '#0F172A' }} className="nowrap">
+                            <div>{ex.reps || '8 - 10'}</div>
+                            <div style={{ fontSize: '6.3pt', color: '#0284C7', fontWeight: '800', marginTop: '1px' }}>
+                              {rirLabel}
+                            </div>
                           </td>
-                          <td style={{ textAlign: 'center', color: '#64748B', fontSize: '7.5pt' }} className="nowrap">
+                          <td style={{ textAlign: 'center', color: '#64748B', fontSize: '7.2pt' }} className="nowrap">
                             {ex.rest || '75 ثانية'}
                           </td>
                         </tr>
@@ -892,11 +1016,11 @@ export default function ProgramPdfView() {
           </table>
 
           {/* 6. Smart Food Swaps Table */}
-          <div className="section-title">6. جدول المبادلات الغذائية الفورية (بدائل متكافئة)</div>
-          <table className="pdf-table" style={{ marginBottom: '10px' }}>
+          <div className="section-title">6. جدول المبادلات الغذائية الفورية (أوزان متكافئة بعد الطهي)</div>
+          <table className="pdf-table" style={{ marginBottom: '8px' }}>
             <thead>
               <tr>
-                <th style={{ width: '28%', textAlign: 'center' }}>الصنف الأساسي</th>
+                <th style={{ width: '28%', textAlign: 'center' }}>الصنف الأساسي (موزون بعد الطهي)</th>
                 <th style={{ width: '72%', textAlign: 'right' }}>الخيارات البديلة المكافئة لنفس السعرات والماكروز</th>
               </tr>
             </thead>
@@ -905,7 +1029,7 @@ export default function ProgramPdfView() {
                 <td style={{ fontWeight: '700', color: '#0F172A', textAlign: 'center' }}>100 جم صدور دجاج مشوية</td>
                 <td style={{ fontSize: '7pt', lineHeight: '1.6' }}>
                   <div style={{ display: 'flex', flexWrap: 'wrap', gap: '3px 6px', alignItems: 'center' }}>
-                    <span style={{ background: '#F8FAFC', border: '0.5pt solid #E2E8F0', borderRadius: '4px', padding: '1px 5px' }}>125 جم سمك فيليه أبيض</span>
+                    <span style={{ background: '#F8FAFC', border: '0.5pt solid #E2E8F0', borderRadius: '4px', padding: '1px 5px' }}>125 جم سمك فيليه مشوي</span>
                     <span style={{ background: '#F8FAFC', border: '0.5pt solid #E2E8F0', borderRadius: '4px', padding: '1px 5px' }}>110 جم لحم بقري صافي (5% دهون)</span>
                     <span style={{ background: '#F8FAFC', border: '0.5pt solid #E2E8F0', borderRadius: '4px', padding: '1px 5px' }}>130 جم جمبري مشوي</span>
                     <span style={{ background: '#F8FAFC', border: '0.5pt solid #E2E8F0', borderRadius: '4px', padding: '1px 5px' }}>130 جم تونة مصفاة بالماء</span>
@@ -917,9 +1041,9 @@ export default function ProgramPdfView() {
                 <td style={{ fontSize: '7pt', lineHeight: '1.6' }}>
                   <div style={{ display: 'flex', flexWrap: 'wrap', gap: '3px 6px', alignItems: 'center' }}>
                     <span style={{ background: '#F8FAFC', border: '0.5pt solid #E2E8F0', borderRadius: '4px', padding: '1px 5px' }}>110 جم بطاطس مسلوقة/مشوية</span>
-                    <span style={{ background: '#F8FAFC', border: '0.5pt solid #E2E8F0', borderRadius: '4px', padding: '1px 5px' }}>100 جم بطاطا حلوة</span>
+                    <span style={{ background: '#F8FAFC', border: '0.5pt solid #E2E8F0', borderRadius: '4px', padding: '1px 5px' }}>100 جم بطاطا حلوة مشوية</span>
                     <span style={{ background: '#F8FAFC', border: '0.5pt solid #E2E8F0', borderRadius: '4px', padding: '1px 5px' }}>35 جم شوفان كامل الحبة خام</span>
-                    <span style={{ background: '#F8FAFC', border: '0.5pt solid #E2E8F0', borderRadius: '4px', padding: '1px 5px' }}>2 شريحة خبز توست بني</span>
+                    <span style={{ background: '#F8FAFC', border: '0.5pt solid #E2E8F0', borderRadius: '4px', padding: '1px 5px' }}>2 شريحة خبز توست بني حبوب كاملة</span>
                   </div>
                 </td>
               </tr>
@@ -929,7 +1053,7 @@ export default function ProgramPdfView() {
                   <div style={{ display: 'flex', flexWrap: 'wrap', gap: '3px 6px', alignItems: 'center' }}>
                     <span style={{ background: '#F8FAFC', border: '0.5pt solid #E2E8F0', borderRadius: '4px', padding: '1px 5px' }}>120 جم زبادي يوناني 0% دسم</span>
                     <span style={{ background: '#F8FAFC', border: '0.5pt solid #E2E8F0', borderRadius: '4px', padding: '1px 5px' }}>4 بياض بيض كبير</span>
-                    <span style={{ background: '#F8FAFC', border: '0.5pt solid #E2E8F0', borderRadius: '4px', padding: '1px 5px' }}>1 مكيال واي بروتين معزول (25 جم)</span>
+                    <span style={{ background: '#F8FAFC', border: '0.5pt solid #E2E8F0', borderRadius: '4px', padding: '1px 5px' }}>1 مكيال واي بروتين أيزوليت (25 جم)</span>
                   </div>
                 </td>
               </tr>
@@ -946,54 +1070,98 @@ export default function ProgramPdfView() {
             </tbody>
           </table>
 
-          {/* 7. Zone 2 Cardio Protocol - Sleek Visual Card */}
-          <div className="section-title">7. بروتوكول كارديو حرق الدهون واللياقة القلبية (Zone 2)</div>
-          <div className="pdf-card" style={{ background: '#F8FAFC', borderColor: '#BAE6FD', padding: '8px 12px', marginBottom: '10px' }}>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '8px', textAlign: 'center' }}>
+          {/* 7. Zone 2 Cardio & NEAT Protocol */}
+          <div className="section-title">7. بروتوكول كارديو حرق الدهون والنشاط الحركي اليومي (Zone 2 & NEAT)</div>
+          <div className="pdf-card" style={{ background: '#F8FAFC', borderColor: '#BAE6FD', padding: '6px 10px', marginBottom: '8px' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: '6px', textAlign: 'center' }}>
               <div>
-                <span style={{ fontSize: '7pt', color: '#64748B', display: 'block' }}>النشاط الموصى به</span>
-                <strong style={{ fontSize: '7.5pt', color: '#0F172A' }}>سير مائل (Incline Treadmill)</strong>
+                <span style={{ fontSize: '6.8pt', color: '#64748B', display: 'block' }}>النشاط الموصى به</span>
+                <strong style={{ fontSize: '7.2pt', color: '#0F172A' }}>{cardioModality}</strong>
               </div>
               <div>
-                <span style={{ fontSize: '7pt', color: '#64748B', display: 'block' }}>التكرار الأسبوعي</span>
-                <strong style={{ fontSize: '7.5pt', color: '#0284C7' }} className="nowrap">3 إلى 4 جلسات</strong>
+                <span style={{ fontSize: '6.8pt', color: '#64748B', display: 'block' }}>التكرار الأسبوعي</span>
+                <strong style={{ fontSize: '7.2pt', color: '#0284C7' }} className="nowrap">{cardioWeeklySessions} جلسات</strong>
               </div>
               <div>
-                <span style={{ fontSize: '7pt', color: '#64748B', display: 'block' }}>المدة لكل جلسة</span>
-                <strong style={{ fontSize: '7.5pt', color: '#0F172A' }} className="nowrap">30 دقيقة</strong>
+                <span style={{ fontSize: '6.8pt', color: '#64748B', display: 'block' }}>المدة لكل جلسة</span>
+                <strong style={{ fontSize: '7.2pt', color: '#0F172A' }} className="nowrap">{cardioDuration} دقيقة</strong>
               </div>
               <div>
-                <span style={{ fontSize: '7pt', color: '#64748B', display: 'block' }}>معدل النبض المستهدف</span>
-                <strong style={{ fontSize: '7.5pt', color: '#16A34A' }} className="nowrap">125 - 135 نبضة / دقيقة</strong>
+                <span style={{ fontSize: '6.8pt', color: '#64748B', display: 'block' }}>النبض المستهدف</span>
+                <strong style={{ fontSize: '7.2pt', color: '#16A34A' }} className="nowrap">{cardioHeartRate}</strong>
+              </div>
+              <div>
+                <span style={{ fontSize: '6.8pt', color: '#64748B', display: 'block' }}>النشاط اليومي (NEAT)</span>
+                <strong style={{ fontSize: '7.2pt', color: '#0284C7' }} className="nowrap">{Number(cardioNeatSteps).toLocaleString()} خطوة / اليوم</strong>
               </div>
             </div>
           </div>
 
-          {/* Practical Tips Box */}
-          <div className="section-title">8. القواعد الذهبية للاستمرار وتحقيق النتائج</div>
-          <div className="pdf-card" style={{ fontSize: '7.5pt', lineHeight: '1.6', marginBottom: '12px', padding: '8px 12px' }}>
-            <p style={{ margin: '0 0 4px 0' }}>
-              <strong>• الالتزام بالأوزان والمجموعات:</strong> ركز على إتقان التكنيك الحركي أولاً، ثم التدرج الخطي بالأوزان وفق معدل الـ RIR المحدد لكل أسبوع دون الوصول للفشل العشوائي.
-            </p>
-            <p style={{ margin: '0 0 4px 0' }}>
-              <strong>• ثبات مواعيد النوم والاستشفاء:</strong> النوم العميق من 7 إلى 8 ساعات يومياً هو المصنع الحقيقي لإعادة بناء الألياف العضلية وتوازن الهرمونات.
-            </p>
-            <p style={{ margin: '0' }}>
-              <strong>• دقة قياسات التغذية:</strong> وزن الأطعمة بالميزان الرقمي واستخدام الملعقة المعيارية للزيوت يضمن بقاءك في العجز الحراري المستهدف بدقة متناهية.
-            </p>
-          </div>
+          {/* 8. Prescribed Daily Supplements Table */}
+          <div className="section-title">8. بروتوكول المكملات الغذائية اليومية المعتمدة</div>
+          <table className="pdf-table" style={{ marginBottom: '8px' }}>
+            <thead>
+              <tr>
+                <th style={{ width: '30%', textAlign: 'right' }}>المكمل الغذائي</th>
+                <th style={{ width: '20%', textAlign: 'center' }}>الجرعة اليومية</th>
+                <th style={{ width: '25%', textAlign: 'center' }}>توقيت التناول المثالي</th>
+                <th style={{ width: '25%', textAlign: 'center' }}>الهدف الفسيولوجي والاستشفاء</th>
+              </tr>
+            </thead>
+            <tbody>
+              {supplementsList.map((sup, sIdx) => {
+                const sName = typeof sup === 'string' ? sup : (sup.name_ar || sup.name || sup.code);
+                const sDose = sup.dosage || sup.dose || sup.standard_dosage || 'جرعة يومية منتظمة';
+                const sTiming = sup.timing || sup.time || 'مع إحدى الوجبات الرئيسية';
+                const sPurpose = sup.purpose || sup.notes || sup.category || 'دعم البناء والاستشفاء العضلي';
+                return (
+                  <tr key={sIdx}>
+                    <td style={{ fontWeight: '700', color: '#0F172A', fontSize: '7pt', textAlign: 'right' }}>
+                      {sName}
+                    </td>
+                    <td style={{ textAlign: 'center', fontWeight: '700', color: '#0284C7', fontSize: '7pt' }} className="nowrap">
+                      {sDose}
+                    </td>
+                    <td style={{ textAlign: 'center', color: '#475569', fontSize: '7pt' }}>
+                      {sTiming}
+                    </td>
+                    <td style={{ textAlign: 'center', color: '#64748B', fontSize: '7pt' }}>
+                      {sPurpose}
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
 
-          {/* Official Sign-off Box */}
-          <div className="pdf-card" style={{ background: '#F8FAFC', border: '1pt solid #0284C7', padding: '8px 12px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', margin: 0 }}>
-            <div>
-              <div style={{ fontSize: '8.5pt', fontWeight: '900', color: '#0F172A' }}>اعتماد المدرب والمشرف الرياضي المباشر:</div>
-              <div style={{ fontSize: '7.5pt', color: '#475569', marginTop: '3px' }}>
-                كابتن <strong>{coachName}</strong> — كبير المدربين ومؤسس منظومة {brandTitle}
+          {/* 9. Practical Tips & Official Sign-off Box */}
+          <div className="section-title">9. القواعد الذهبية للاستمرار واعتماد المدرب الرسمي</div>
+          <div className="pdf-card" style={{ fontSize: '7.2pt', lineHeight: '1.5', margin: 0, padding: '6px 10px', background: '#F8FAFC', border: '1pt solid #CBD5E1' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '8px', marginBottom: '6px', paddingBottom: '6px', borderBottom: '0.5pt solid #E2E8F0' }}>
+              <div>
+                <strong style={{ color: '#0F172A' }}>• الالتزام بالـ RIR والأوزان:</strong> إتقان المسار الحركي أولاً ثم التحميل التدريجي دون الوصول للفشل العشوائي لحماية الأعصاب والمفاصل.
+              </div>
+              <div>
+                <strong style={{ color: '#0F172A' }}>• ثبات النوم والاستشفاء:</strong> النوم العميق من 7 إلى 8 ساعات يومياً مع إيقاف المنبهات قبل النوم بـ 6-8 ساعات لضمان أعلى إفراز لهرمون النمو.
+              </div>
+              <div>
+                <strong style={{ color: '#0F172A' }}>• الدقة التغذوية:</strong> وزن الأطعمة بالميزان الرقمي بعد الطهي مع شرب الماء الكافي يضمن بقاءك في المسار المحسوب بالمللي.
               </div>
             </div>
-            <div style={{ textAlign: 'left' }}>
-              <div style={{ display: 'inline-block', background: '#E0F2FE', border: '1px solid #BAE6FD', color: '#0284C7', padding: '4px 10px', borderRadius: '6px', fontSize: '7.5pt', fontWeight: '800' }}>
-                معتمد وموثق رقمياً (Digitally Approved)
+
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <div>
+                <div style={{ fontSize: '8pt', fontWeight: '900', color: '#0F172A' }}>
+                  اعتماد المشرف الرياضي والتغذوي المباشر: كابتن <strong>{coachName}</strong>
+                </div>
+                <div style={{ fontSize: '6.8pt', color: '#64748B', marginTop: '1px' }}>
+                  كبير المدربين ومؤسس منظومة {brandTitle} — وثيقة رسمية مخصصة ومعتمدة
+                </div>
+              </div>
+              <div style={{ textAlign: 'left' }}>
+                <div style={{ display: 'inline-block', background: '#E0F2FE', border: '1px solid #BAE6FD', color: '#0284C7', padding: '3px 8px', borderRadius: '6px', fontSize: '7pt', fontWeight: '800' }}>
+                  معتمد وموثق رقمياً (Digitally Approved)
+                </div>
               </div>
             </div>
           </div>

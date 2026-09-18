@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
-import { Zap, ArrowRightLeft, FileText, ShieldAlert, ShieldCheck, AlertTriangle, Plus, Trash2, Pill } from 'lucide-react';
-import { evaluateClinicalSupplementSafety, getStandardSupplementCatalog } from '../../../utils/clinicalSupplementSafetyEngine';
+import { ArrowRightLeft, FileText, Plus, Trash2, Pill } from 'lucide-react';
+import { getStandardSupplementCatalog } from '../../../utils/clinicalSupplementSafetyEngine';
 import { evaluateCardioInterferenceDecoupling, CARDIO_INTENSITIES } from '../../../utils/cardioInterferenceEngine';
 import { getPracticalCardioPrescription, CARDIO_TYPES } from '../../../utils/cardioZonesEngine';
 
@@ -53,15 +53,6 @@ export function CoachCardioHabitsTab({
   // Active supplements array
   const currentSupplements = Array.isArray(program?.cardio?.supplements) ? program.cardio.supplements : [];
   
-  // Real-time clinical safety assessment
-  const safetyAudit = evaluateClinicalSupplementSafety({
-    supplements: currentSupplements,
-    medicalConditions: clientConditions,
-    activeMedications: clientMeds,
-    biomarkers: clientBiomarkers,
-    weightKg: program?.client?.weight || 75
-  });
-
   const supplementCatalog = getStandardSupplementCatalog();
 
   const handleAddSupplement = () => {
@@ -75,11 +66,27 @@ export function CoachCardioHabitsTab({
     const newSuppItem = {
       code: catItem.code,
       name: catItem.name_ar,
-      dosage: catItem.standard_dosage,
+      dosage: catItem.standard_dosage || '',
+      timing: (catItem.category === 'STIMULANT' || catItem.category === 'PERFORMANCE') ? 'قبل التمرين بـ 30 دقيقة' : 'مع وجبة الإفطار',
       category: catItem.category
     };
 
     const updated = [...currentSupplements, newSuppItem];
+    if (typeof handleUpdateSupplementsInCardio === 'function') {
+      handleUpdateSupplementsInCardio(updated);
+    } else {
+      handleUpdateCardioParam('supplements', updated);
+    }
+  };
+
+  const handleUpdateSupplementField = (idx, field, val) => {
+    const updated = currentSupplements.map((s, i) => {
+      if (i === idx) {
+        if (typeof s === 'string') return { code: s, name: s, [field]: val };
+        return { ...s, [field]: val };
+      }
+      return s;
+    });
     if (typeof handleUpdateSupplementsInCardio === 'function') {
       handleUpdateSupplementsInCardio(updated);
     } else {
@@ -99,76 +106,6 @@ export function CoachCardioHabitsTab({
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }} dir="rtl">
       
-      {/* Asthma & Respiratory GINA Guardrail Banner */}
-      {hasAsthma && (
-        <div style={{
-          background: isHiitCardio ? '#FEF2F2' : '#F0FDF4',
-          border: isHiitCardio ? '1.5px solid #F87171' : '1px solid #BBF7D0',
-          borderRadius: '12px',
-          padding: '10px 14px',
-          display: 'flex',
-          justifyContent: 'space-between',
-          alignItems: 'center',
-          gap: '12px',
-          boxShadow: isHiitCardio ? '0 3px 10px rgba(239, 68, 68, 0.12)' : 'none'
-        }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-            <div style={{
-              width: '32px',
-              height: '32px',
-              borderRadius: '8px',
-              background: isHiitCardio ? '#FEE2E2' : '#DCFCE7',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              color: isHiitCardio ? '#DC2626' : '#166534',
-              flexShrink: 0
-            }}>
-              <ShieldAlert size={18} />
-            </div>
-            <div>
-              <div style={{ fontSize: '12px', fontWeight: 800, color: isHiitCardio ? '#991B1B' : '#166534' }}>
-                {isHiitCardio
-                  ? 'تحذير سريري: نمط الكارديو المختار (HIIT) غير آمن لمرضى الربو والجهاز التنفسي'
-                  : 'حماية سريرية نشطة لمرضى الربو والجهاز التنفسي (GINA Protocol - Zone 2 LISS)'}
-              </div>
-              <div style={{ fontSize: '11px', color: isHiitCardio ? '#B91C1C' : '#15803D', marginTop: '2px' }}>
-                {isHiitCardio
-                  ? 'تمارين الـ HIIT تسبب فرط تهوية مستمر وجفاف المجرى الهوائي مما يحفز نوبات تضيق القصبات (EIB). الموصى به: Zone 2.'
-                  : 'تم تقييد الكارديو في النطاق الهوائي المعتدل مع اختبار التحدث لضمان استقرار الشعب الهوائية.'}
-              </div>
-            </div>
-          </div>
-          {isHiitCardio && (
-            <span style={{ fontSize: '10.5px', fontWeight: 800, background: '#DC2626', color: '#FFFFFF', padding: '4px 10px', borderRadius: '8px', whiteSpace: 'nowrap' }}>
-              مطلوب مراجعة المدرب
-            </span>
-          )}
-        </div>
-      )}
-
-      {/* Engine Cardio & Recovery Reasoning Card */}
-      {program.cardio?.reasoning && (
-        <div style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', borderRadius: '12px', padding: '10px 14px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '10px', boxShadow: '0 1px 2px rgba(15, 23, 42, 0.02)' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <div style={{ width: '28px', height: '28px', borderRadius: '8px', background: '#FAF5FF', border: '1px solid #E9D5FF', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#9333EA', flexShrink: 0 }}>
-              <Zap size={14} />
-            </div>
-            <div>
-              <div style={{ fontSize: '11.5px', fontWeight: 800, color: '#0F172A' }}>بروتوكول الكارديو والاستشفاء ونمط الحياة</div>
-              <div style={{ fontSize: '11px', color: '#64748B', marginTop: '1px' }}>
-                {typeof program.cardio.reasoning === 'string' ? program.cardio.reasoning : (program.cardio.reasoning?.rationale || 'بروتوكول كارديو Zone 2 لحرق الدهون وتحسين صحة القلب بدون إجهاد للمفاصل.')}
-              </div>
-            </div>
-          </div>
-          {program.cardio?.target_heart_rate_zone && (
-            <span style={{ fontSize: '10.5px', fontWeight: 700, padding: '2px 8px', borderRadius: '8px', background: '#FFFFFF', border: '1px solid #CBD5E1', color: '#0F172A', whiteSpace: 'nowrap' }}>
-              {program.cardio.target_heart_rate_zone}
-            </span>
-          )}
-        </div>
-      )}
-
       {/* Cardio Modality Card */}
       <div style={{ background: '#FFFFFF', border: '1px solid #E2E8F0', borderRadius: '12px', padding: '12px 14px' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
@@ -269,64 +206,38 @@ export function CoachCardioHabitsTab({
       </div>
 
       {/* =========================================================================
-          CLINICAL SUPPLEMENT SAFETY SHIELD SECTION
+          SUPPLEMENTS SCHEDULE SECTION (DIRECT & EXECUTIVE)
           ========================================================================= */}
       <div style={{
         background: '#FFFFFF',
-        border: safetyAudit.overall_status === 'CONTRAINDICATED' ? '1.5px solid #FCA5A5' : '1px solid #E2E8F0',
+        border: '1px solid #E2E8F0',
         borderRadius: '12px',
-        padding: '14px',
-        boxShadow: safetyAudit.overall_status === 'CONTRAINDICATED' ? '0 4px 14px rgba(239, 68, 68, 0.08)' : 'none'
+        padding: '14px'
       }}>
         {/* Header */}
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px', flexWrap: 'wrap', gap: '8px' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px', flexWrap: 'wrap', gap: '8px' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
             <div style={{
               width: '30px',
               height: '30px',
               borderRadius: '8px',
-              background: safetyAudit.overall_status === 'CONTRAINDICATED' ? '#FEE2E2' : (safetyAudit.overall_status === 'CAUTION' ? '#FEF3C7' : '#DCFCE7'),
+              background: '#EFF6FF',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              color: safetyAudit.overall_status === 'CONTRAINDICATED' ? '#DC2626' : (safetyAudit.overall_status === 'CAUTION' ? '#D97706' : '#16A34A')
+              color: '#2563EB'
             }}>
               <Pill size={16} />
             </div>
             <div>
-              <strong style={{ fontSize: '13px', color: '#0F172A' }}>درع الأمان السريري وفحص المكملات الغذائية:</strong>
-              <div style={{ fontSize: '11px', color: '#64748B' }}>فحص لحظي لتوافق المكملات مع الأمراض والأدوية ومؤشرات الدم</div>
+              <strong style={{ fontSize: '13px', color: '#0F172A' }}>جدول المكملات الغذائية اليومية:</strong>
+              <div style={{ fontSize: '11px', color: '#64748B' }}>تحديد المكملات والجرعات ومواعيد التناول اليومية للمتدرب</div>
             </div>
           </div>
 
-          <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-            <span style={{
-              fontSize: '11px',
-              fontWeight: 800,
-              padding: '3px 10px',
-              borderRadius: '8px',
-              background: safetyAudit.overall_status === 'CONTRAINDICATED' ? '#FEF2F2' : (safetyAudit.overall_status === 'CAUTION' ? '#FFFBEB' : '#F0FDF4'),
-              color: safetyAudit.overall_status === 'CONTRAINDICATED' ? '#DC2626' : (safetyAudit.overall_status === 'CAUTION' ? '#B45309' : '#15803D'),
-              border: `1px solid ${safetyAudit.overall_status === 'CONTRAINDICATED' ? '#FCA5A5' : (safetyAudit.overall_status === 'CAUTION' ? '#FDE68A' : '#BBF7D0')}`
-            }}>
-              {safetyAudit.overall_status === 'CONTRAINDICATED'
-                ? 'تحذير: تعارض سريري نشط'
-                : (safetyAudit.overall_status === 'CAUTION' ? 'تنبيه: مطلوب مباعدة وجرعات دقيقة' : 'كافة المكملات متوافقة وآمنة')}
-            </span>
-          </div>
-        </div>
-
-        {/* Clinical Summary Bar */}
-        <div style={{
-          background: safetyAudit.overall_status === 'CONTRAINDICATED' ? '#FEF2F2' : (safetyAudit.overall_status === 'CAUTION' ? '#FFFBEB' : '#F8FAFC'),
-          border: `1px solid ${safetyAudit.overall_status === 'CONTRAINDICATED' ? '#FECACA' : (safetyAudit.overall_status === 'CAUTION' ? '#FEF3C7' : '#E2E8F0')}`,
-          borderRadius: '10px',
-          padding: '8px 12px',
-          fontSize: '11px',
-          color: safetyAudit.overall_status === 'CONTRAINDICATED' ? '#991B1B' : (safetyAudit.overall_status === 'CAUTION' ? '#92400E' : '#475569'),
-          marginBottom: '10px'
-        }}>
-          {safetyAudit.clinical_summary_ar}
+          <span style={{ fontSize: '11px', fontWeight: 700, padding: '2px 8px', borderRadius: '6px', background: '#F1F5F9', color: '#475569' }}>
+            {currentSupplements.length} مكملات محددة
+          </span>
         </div>
 
         {/* Add Supplement Picker */}
@@ -336,7 +247,7 @@ export function CoachCardioHabitsTab({
             onChange={(e) => setSelectedCatalogSupp(e.target.value)}
             style={{
               flex: 1,
-              height: '32px',
+              height: '34px',
               borderRadius: '8px',
               border: '1px solid #CBD5E1',
               padding: '0 10px',
@@ -358,7 +269,7 @@ export function CoachCardioHabitsTab({
             type="button"
             onClick={handleAddSupplement}
             style={{
-              height: '32px',
+              height: '34px',
               padding: '0 14px',
               borderRadius: '8px',
               background: '#0F172A',
@@ -377,82 +288,120 @@ export function CoachCardioHabitsTab({
           </button>
         </div>
 
-        {/* List of Prescribed Supplements with Clinical Badges */}
-        {safetyAudit.evaluations.length === 0 ? (
+        {/* Direct Supplements List */}
+        {currentSupplements.length === 0 ? (
           <div style={{ textAlign: 'center', padding: '14px', color: '#94A3B8', fontSize: '11.5px', background: '#F8FAFC', borderRadius: '8px' }}>
-            لم يتم إدراج مكملات غذائية لهذا المشترك بعد. اختر من القائمة بالأعلى لإجراء الفحص السريري اللحظي.
+            لم يتم إدراج مكملات غذائية لهذا المشترك بعد. اختر من القائمة بالأعلى لإضافة مكمل.
           </div>
         ) : (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-            {safetyAudit.evaluations.map((evalItem, idx) => {
-              const isContra = evalItem.safety_status === 'CONTRAINDICATED';
-              const isCaut = evalItem.safety_status === 'CAUTION';
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+            {/* Table Header */}
+            <div style={{
+              display: 'grid',
+              gridTemplateColumns: 'minmax(140px, 1.2fr) minmax(110px, 1fr) minmax(130px, 1fr) 36px',
+              gap: '8px',
+              padding: '6px 10px',
+              background: '#F1F5F9',
+              borderRadius: '8px',
+              fontSize: '11px',
+              fontWeight: 700,
+              color: '#475569'
+            }}>
+              <span>اسم المكمل</span>
+              <span>الجرعة المحددة</span>
+              <span>موعد التناول</span>
+              <span style={{ textAlign: 'center' }}>إجراء</span>
+            </div>
+
+            {/* Supplement Rows */}
+            {currentSupplements.map((supp, idx) => {
+              const suppName = typeof supp === 'string' ? supp : (supp.name || supp.name_ar || supp.code);
+              const suppDosage = typeof supp === 'string' ? '' : (supp.dosage || supp.standard_dosage || '');
+              const suppTiming = typeof supp === 'string' ? '' : (supp.timing || '');
 
               return (
                 <div
                   key={idx}
                   style={{
-                    background: isContra ? '#FFF1F2' : (isCaut ? '#FFFDF5' : '#F8FAFC'),
-                    border: `1px solid ${isContra ? '#FECDD3' : (isCaut ? '#FEF08A' : '#E2E8F0')}`,
-                    borderRadius: '10px',
-                    padding: '10px 12px',
-                    display: 'flex',
-                    flexDirection: 'column',
-                    gap: '6px'
+                    display: 'grid',
+                    gridTemplateColumns: 'minmax(140px, 1.2fr) minmax(110px, 1fr) minmax(130px, 1fr) 36px',
+                    gap: '8px',
+                    alignItems: 'center',
+                    padding: '8px 10px',
+                    background: '#F8FAFC',
+                    border: '1px solid #E2E8F0',
+                    borderRadius: '8px'
                   }}
                 >
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                      {isContra ? (
-                        <ShieldAlert size={16} color="#E11D48" />
-                      ) : isCaut ? (
-                        <AlertTriangle size={16} color="#D97706" />
-                      ) : (
-                        <ShieldCheck size={16} color="#16A34A" />
-                      )}
-                      <strong style={{ fontSize: '12px', color: isContra ? '#9F1239' : (isCaut ? '#92400E' : '#0F172A') }}>
-                        {evalItem.supplement_name_ar}
-                      </strong>
-                      <span style={{ fontSize: '10.5px', color: '#64748B' }}>({evalItem.standard_dosage})</span>
-                    </div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                    <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: '#2563EB', flexShrink: 0 }}></span>
+                    <strong style={{ fontSize: '12px', color: '#0F172A' }}>{suppName}</strong>
+                  </div>
 
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                      <span style={{
-                        fontSize: '10px',
-                        fontWeight: 700,
-                        padding: '2px 6px',
+                  <div>
+                    <input
+                      type="text"
+                      value={suppDosage}
+                      onChange={(e) => handleUpdateSupplementField(idx, 'dosage', e.target.value)}
+                      placeholder="مثال: 5 جم يومياً"
+                      style={{
+                        width: '100%',
+                        height: '28px',
                         borderRadius: '6px',
-                        background: isContra ? '#E11D48' : (isCaut ? '#D97706' : '#16A34A'),
-                        color: '#FFFFFF'
-                      }}>
-                        {isContra ? 'محظور سريرياً' : (isCaut ? 'تنبيه ومباعدة' : 'آمن ومعتمد')}
-                      </span>
-
-                      <button
-                        type="button"
-                        onClick={() => handleRemoveSupplement(evalItem.supplement_code)}
-                        style={{ border: 'none', background: 'transparent', color: '#94A3B8', cursor: 'pointer', padding: '2px' }}
-                        title="حذف المكمل"
-                      >
-                        <Trash2 size={13} />
-                      </button>
-                    </div>
+                        border: '1px solid #CBD5E1',
+                        padding: '0 8px',
+                        fontSize: '11px',
+                        color: '#0F172A',
+                        background: '#FFFFFF',
+                        outline: 'none',
+                        boxSizing: 'border-box'
+                      }}
+                    />
                   </div>
 
-                  {/* Rationale and Action */}
-                  <div style={{ fontSize: '10.5px', color: isContra ? '#881337' : (isCaut ? '#78350F' : '#64748B'), lineHeight: 1.4 }}>
-                    {isContra ? evalItem.action_required_ar : evalItem.clinical_rationale_ar}
+                  <div>
+                    <input
+                      type="text"
+                      value={suppTiming}
+                      onChange={(e) => handleUpdateSupplementField(idx, 'timing', e.target.value)}
+                      placeholder="مثال: بعد التمرين مباشرة"
+                      style={{
+                        width: '100%',
+                        height: '28px',
+                        borderRadius: '6px',
+                        border: '1px solid #CBD5E1',
+                        padding: '0 8px',
+                        fontSize: '11px',
+                        color: '#0F172A',
+                        background: '#FFFFFF',
+                        outline: 'none',
+                        boxSizing: 'border-box'
+                      }}
+                    />
                   </div>
 
-                  {evalItem.trigger_factors && evalItem.trigger_factors.length > 0 && (
-                    <div style={{ display: 'flex', gap: '4px', flexWrap: 'wrap', marginTop: '2px' }}>
-                      {evalItem.trigger_factors.map((tf, i) => (
-                        <span key={i} style={{ fontSize: '9.5px', padding: '1px 6px', borderRadius: '6px', background: isContra ? '#FFE4E6' : '#FEF9C3', color: isContra ? '#BE123C' : '#854D0E', fontWeight: 600 }}>
-                          {tf}
-                        </span>
-                      ))}
-                    </div>
-                  )}
+                  <div style={{ textAlign: 'center' }}>
+                    <button
+                      type="button"
+                      onClick={() => handleRemoveSupplement(supp.code || supp.name || supp)}
+                      style={{
+                        width: '28px',
+                        height: '28px',
+                        borderRadius: '6px',
+                        border: '1px solid #FECACA',
+                        background: '#FEF2F2',
+                        color: '#DC2626',
+                        cursor: 'pointer',
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        padding: 0
+                      }}
+                      title="حذف المكمل"
+                    >
+                      <Trash2 size={12} />
+                    </button>
+                  </div>
                 </div>
               );
             })}
