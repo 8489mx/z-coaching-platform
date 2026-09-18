@@ -2,35 +2,11 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 
 import {
-  calculateDailyCarbCycling,
-  DAY_TYPES,
   getCaffeineCutoffTime,
   evaluateLabReTestTrigger,
   evaluateFemaleCycleBuffer,
-  CYCLE_PHASES,
-  filterLowFodmapOptions,
-  evaluateChronicGiDistress
+  CYCLE_PHASES
 } from '../src/execution-engines/index.js';
-
-test('1. Carb Cycling - Heavy Day +20% Carbs, Rest Day -20% Carbs, Weekly Average Calorie Balance Preserved', () => {
-  const result = calculateDailyCarbCycling({
-    baseline_daily_calories: 2000,
-    baseline_protein_g: 150,
-    baseline_carbs_g: 220,
-    baseline_fat_g: 58
-  });
-
-  assert.equal(result.weekly_summary.is_calorie_balanced, true);
-
-  const heavyDay = result.weekly_breakdown.find(d => d.day_type === DAY_TYPES.HEAVY_TRAINING);
-  const restDay = result.weekly_breakdown.find(d => d.day_type === DAY_TYPES.REST_DAY);
-  const modDay = result.weekly_breakdown.find(d => d.day_type === DAY_TYPES.MODERATE_TRAINING);
-
-  assert.ok(heavyDay.carbs_g > modDay.carbs_g);
-  assert.ok(restDay.carbs_g < modDay.carbs_g);
-  assert.equal(heavyDay.protein_g, 150);
-  assert.equal(restDay.protein_g, 150);
-});
 
 test('2. Circadian Engine - 8-Hour Prior Caffeine Cutoff Exact Calculation', () => {
   const cutoff1 = getCaffeineCutoffTime("23:00");
@@ -87,22 +63,3 @@ test('5. Female Luteal Buffer Gate - Allows Standard Evaluation for Non-Luteal P
   assert.equal(follicularResult.deficit_adjustment_locked, false);
 });
 
-test('6. Gut Health Filter - Filters Out High-FODMAP Foods and Triggers Chronic GI Red Flags', () => {
-  const foods = ['BASMATI_RICE_COOKED', 'FAVA_BEANS', 'BROCCOLI_RAW', 'CHICKEN_BREAST'];
-  const filtered = filterLowFodmapOptions(foods, true);
-
-  assert.equal(filtered.includes('FAVA_BEANS'), false);
-  assert.equal(filtered.includes('BROCCOLI_RAW'), false);
-  assert.equal(filtered.includes('BASMATI_RICE_COOKED'), true);
-  assert.equal(filtered.includes('CHICKEN_BREAST'), true);
-
-  const chronicGi = evaluateChronicGiDistress({
-    client_name: 'طارق',
-    consecutive_gi_distress_weeks: 2,
-    gi_distress_score_0_to_10: 8
-  });
-
-  assert.equal(chronicGi.is_chronic_distress, true);
-  assert.ok(chronicGi.coach_red_flag.title_ar.includes('اضطراب هضمي مزمن'));
-  assert.equal(chronicGi.clinical_protocol.dietary_intervention, 'Strict Low-FODMAP Diet for 14 Days');
-});

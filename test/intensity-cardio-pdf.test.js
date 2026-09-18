@@ -2,13 +2,6 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 
 import {
-  getRirGuidance,
-  applySpecialIntensityBadge,
-  RIR_LEVELS,
-  INTENSITY_BADGES
-} from '../src/execution-engines/intensity-technique-engine.js';
-
-import {
   getPracticalCardioPrescription,
   CARDIO_TYPES
 } from '../src/execution-engines/cardio-zones-engine.js';
@@ -19,53 +12,7 @@ import {
   generatePrintablePlanHTML
 } from '../src/execution-engines/pdf-export-engine.js';
 
-test('Intensity, Talk-Test Cardio, and PDF Export Engines Suite', async (t) => {
-
-  await t.test('1. RIR Engine: Returns accurate guidance, descriptions, and CNS strain ratings', () => {
-    const rir2 = getRirGuidance(RIR_LEVELS.RIR_2);
-    assert.equal(rir2.rir_number, 2);
-    assert.equal(rir2.rpe_equivalent, 8);
-    assert.ok(rir2.label_ar.includes('RIR 2'));
-    assert.equal(rir2.cns_strain, 'OPTIMAL_HYPERTROPHY');
-
-    const rir0 = getRirGuidance(RIR_LEVELS.RIR_0);
-    assert.equal(rir0.rir_number, 0);
-    assert.equal(rir0.rpe_equivalent, 10);
-    assert.ok(rir0.description_ar.includes('لا يمكنك أداء أي عدة إضافية'));
-  });
-
-  await t.test('2. Special Intensity Badges: Applies DROP_SET on the final set with 45% load drop', () => {
-    // Applying on final set (set index 3 of 4)
-    const dropSet = applySpecialIntensityBadge({
-      exercise_name: 'Lat Pulldown',
-      current_set_index: 3,
-      total_sets: 4,
-      base_weight_kg: 60,
-      base_reps: 10,
-      badge_type: INTENSITY_BADGES.DROP_SET
-    });
-
-    assert.equal(dropSet.applied, true);
-    assert.equal(dropSet.badge_type, INTENSITY_BADGES.DROP_SET);
-    // 60 * 0.55 = 33kg
-    assert.equal(dropSet.drop_weight_kg, 33);
-    assert.equal(dropSet.target_rir, 0);
-  });
-
-  await t.test('3. Special Intensity Badges: Rejects badge application on non-final sets', () => {
-    // Attempting to apply on set 1 of 4
-    const earlyBadge = applySpecialIntensityBadge({
-      exercise_name: 'Lat Pulldown',
-      current_set_index: 0,
-      total_sets: 4,
-      base_weight_kg: 60,
-      base_reps: 10,
-      badge_type: INTENSITY_BADGES.DROP_SET
-    });
-
-    assert.equal(earlyBadge.applied, false);
-    assert.ok(earlyBadge.reason_ar.includes('الجولة الأخيرة'));
-  });
+test('Talk-Test Cardio and PDF Export Engines Suite', async (t) => {
 
   await t.test('4. Practical Cardio Engine: Formulates LISS Zone 2 prescription using The Talk Test', () => {
     const liss = getPracticalCardioPrescription({

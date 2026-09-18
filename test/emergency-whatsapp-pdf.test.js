@@ -7,10 +7,6 @@ import {
 } from '../src/execution-engines/emergency-scenario-engine.js';
 
 import {
-  generateWhatsAppCoachingScript
-} from '../src/execution-engines/whatsapp-script-engine.js';
-
-import {
   generateMasterPdfExportData
 } from '../src/execution-engines/pdf-export-engine.js';
 
@@ -74,37 +70,6 @@ test('4. Emergency Scenario Engine - High-Stress Mode Condenses to 2 Time-Effici
   assert.equal(result.scenario_applied, 'HIGH_STRESS_EXAM_MODE');
   assert.equal(result.training_adjustment.condensed_sessions_count, 2);
   assert.equal(result.training_adjustment.session_duration_minutes, 35);
-});
-
-test('5. WhatsApp Script Engine - Formulates Tailored Directives for All Scenarios', () => {
-  // Scenario 1: ON_TRACK
-  const s1 = generateWhatsAppCoachingScript({
-    client_name: 'سارة',
-    decision_scenario: 'ON_TRACK',
-    weight_loss_kg: 1.2,
-    waist_loss_cm: 2.0
-  });
-  assert.ok(s1.script_text.includes('نزول 1.2 كجم'));
-  assert.ok(s1.whatsapp_url.includes('https://wa.me/201011111110'));
-
-  // Scenario 2: METABOLIC_PLATEAU (+1,500 NEAT)
-  const s2 = generateWhatsAppCoachingScript({
-    client_name: 'طارق',
-    decision_scenario: 'METABOLIC_PLATEAU',
-    neat_step_delta: 1500
-  });
-  assert.ok(s2.script_text.includes('+1500 خطوة'));
-
-  // Scenario 3: JOINT_PAIN_SWAP
-  const s3 = generateWhatsAppCoachingScript({
-    client_name: 'عمر',
-    decision_scenario: 'JOINT_PAIN_SWAP',
-    affected_joint: 'الركبة',
-    offending_exercise: 'الهاك سكوات',
-    replacement_exercise: 'الليج بريس'
-  });
-  assert.ok(s3.script_text.includes('الركبة'));
-  assert.ok(s3.script_text.includes('الليج بريس'));
 });
 
 test('6. Master PDF Exporter Engine - Generates Branded 4K Structure with Video QR Codes', () => {

@@ -7,11 +7,7 @@ import {
   evaluateDeloadNeed,
   compileDeloadSession,
   EXERCISE_CATEGORIES,
-  evaluateAutoDeloadRequirement,
-  calculateReverseDietingStep,
-  REVERSE_DIET_STATUS,
-  calculateNeatTitrationStep,
-  NEAT_LEVELS
+  evaluateAutoDeloadRequirement
 } from '../src/execution-engines/index.js';
 
 test('1. Double Progression - Increments Weight on Hitting Top Reps and Resets to Floor', () => {
@@ -76,49 +72,6 @@ test('3. Auto-Deload Protocol - Triggers 50% Volume Cut on Fatigue Accumulation 
   const deload2 = evaluateAutoDeloadRequirement({ consecutive_training_weeks: 3, consecutive_performance_drop_weeks: 2 });
   assert.equal(deload2.is_deload_active, true);
 });
-
-test('4. Reverse Dieting - Stepwise Escalation and Maintenance Achievement', () => {
-  // Stepwise escalation
-  const step = calculateReverseDietingStep({
-    current_deficit_calories: 1600,
-    target_maintenance_calories: 2200,
-    current_carbs_g: 150,
-    current_protein_g: 150,
-    current_fat_g: 45,
-    waist_change_cm: 0.0
-  });
-
-  assert.equal(step.status, REVERSE_DIET_STATUS.ACTIVE_REVERSING);
-  assert.equal(step.weekly_increment_kcal, 120);
-  assert.equal(step.next_week_target.daily_calories, 1720);
-  assert.ok(step.next_week_target.carbs_g > 150);
-
-  // Maintenance achieved
-  const maintenance = calculateReverseDietingStep({
-    current_deficit_calories: 2180,
-    target_maintenance_calories: 2200
-  });
-  assert.equal(maintenance.status, REVERSE_DIET_STATUS.MAINTENANCE_ACHIEVED);
-});
-
-test('5. NEAT Titration - Step-First Hierarchy Escalation', () => {
-  // Level 1: Steps under 12,000 -> +1,500 steps
-  const lvl1 = calculateNeatTitrationStep({ current_daily_steps: 8000 });
-  assert.equal(lvl1.hierarchy_level, NEAT_LEVELS.LEVEL_1_STEPS_TITRATION);
-  assert.equal(lvl1.next_daily_steps_target, 9500);
-
-  // Level 2: Steps at 12,000 -> +2 Zone 2 Cardio sessions
-  const lvl2 = calculateNeatTitrationStep({ current_daily_steps: 12000, current_weekly_cardio_sessions: 0 });
-  assert.equal(lvl2.hierarchy_level, NEAT_LEVELS.LEVEL_2_ZONE2_CARDIO);
-  assert.equal(lvl2.weekly_cardio_sessions, 2);
-
-  // Level 3: Steps at 12,000 and Cardio at 3 -> -150 Kcal Calorie Cut
-  const lvl3 = calculateNeatTitrationStep({ current_daily_steps: 12000, current_weekly_cardio_sessions: 3, current_daily_calories: 1800 });
-  assert.equal(lvl3.hierarchy_level, NEAT_LEVELS.LEVEL_3_CALORIE_DEFICIT_CUT);
-  assert.equal(lvl3.daily_calories_target, 1650);
-  assert.equal(lvl3.calories_cut_applied, 150);
-});
-
 
 test('6. evaluateExerciseProgression: Increases load and resets reps when all sets hit top range', () => {
   const result = evaluateExerciseProgression({

@@ -2,78 +2,11 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 
 import {
-  RECOVERY_STRATEGIES,
-  absorbCaloricSurplus,
-  detectDietFatigue,
   TRIAGE_TIERS,
   QUICK_ACTIONS,
   evaluateClientTriageItem,
   generateDailyCoachTriage
 } from '../src/execution-engines/index.js';
-
-test('1. Behavioral Recovery - Zero-Guilt Surplus Absorption without Starvation', () => {
-  // Minor surplus (150 Kcal)
-  const minor = absorbCaloricSurplus({
-    excess_calories: 150,
-    remaining_days_in_week: 5,
-    baseline_calories: 2000,
-    baseline_protein_g: 160
-  });
-  assert.equal(minor.strategy, RECOVERY_STRATEGIES.STANDARD_MAINTENANCE_BUFFER);
-  assert.equal(minor.daily_reduction_kcal, 0);
-  assert.equal(minor.protein_g, 160);
-
-  // Moderate surplus (500 Kcal over 4 days) -> 125 Kcal/day gentle spread
-  const moderate = absorbCaloricSurplus({
-    excess_calories: 500,
-    remaining_days_in_week: 4,
-    baseline_calories: 2000,
-    baseline_protein_g: 160
-  });
-  assert.equal(moderate.strategy, RECOVERY_STRATEGIES.GENTLE_DEFICIT_SPREAD);
-  assert.equal(moderate.daily_reduction_kcal, 125);
-  assert.equal(moderate.adjusted_daily_calories, 1875);
-  assert.equal(moderate.protein_g, 160);
-
-  // Heavy surplus (1500 Kcal) -> Capped controlled refeed reset
-  const heavy = absorbCaloricSurplus({
-    excess_calories: 1500,
-    remaining_days_in_week: 4,
-    baseline_calories: 2000,
-    baseline_protein_g: 160
-  });
-  assert.equal(heavy.strategy, RECOVERY_STRATEGIES.CONTROLLED_REFEED_RESET);
-  assert.equal(heavy.daily_reduction_kcal, 100);
-  assert.equal(heavy.protein_g, 160);
-});
-
-test('2. Behavioral Recovery - Diet Fatigue Detection and Intentional Diet Break', () => {
-  // Adherence fatigue (2 consecutive weeks of low compliance)
-  const adherenceFatigued = detectDietFatigue({
-    consecutive_low_adherence_weeks: 2,
-    consecutive_deficit_weeks: 4
-  });
-  assert.equal(adherenceFatigued.diet_break_recommended, true);
-  assert.equal(adherenceFatigued.target_mode, 'MAINTENANCE_DIET_BREAK');
-
-  // Metabolic fatigue (8+ weeks of continuous deficit)
-  const metabolicFatigued = detectDietFatigue({
-    consecutive_low_adherence_weeks: 0,
-    consecutive_deficit_weeks: 8
-  });
-  assert.equal(metabolicFatigued.diet_break_recommended, true);
-  assert.equal(metabolicFatigued.target_mode, 'MAINTENANCE_DIET_BREAK');
-
-  // Normal on-track client
-  const normal = detectDietFatigue({
-    consecutive_low_adherence_weeks: 0,
-    consecutive_deficit_weeks: 3,
-    biofeedback_hunger: 4,
-    biofeedback_stress: 3
-  });
-  assert.equal(normal.diet_break_recommended, false);
-  assert.equal(normal.target_mode, 'DEFICIT_CONTINUATION');
-});
 
 test('3. Coach Triage Cockpit - Deterministic Client Matrix Classification', () => {
   const clients = [

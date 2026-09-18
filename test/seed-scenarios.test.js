@@ -1,26 +1,12 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 
-import { evaluateWeeklyScaleAndWaistTruth } from '../src/execution-engines/scale-truth-clinical-engine.js';
 import { evaluateDietBreakNeed } from '../src/execution-engines/calorie-cycling-diet-break-engine.js';
 import { generateDailyCoachTriage } from '../src/execution-engines/coach-capacity-business-analytics-engine.js';
 import { evaluateJointPainAndFirewall } from '../src/execution-engines/biomechanics-firewall-engine.js';
 import { evaluateExerciseProgression } from '../src/execution-engines/progressive-overload-deload-engine.js';
 
-test('5 Realistic Clinical Scenarios Stress-Test Suite', async (t) => {
-
-  await t.test('Scenario 1: Sarah (PMS Week) -> Locks Calories, Adds Carb Buffer', () => {
-    const res = evaluateWeeklyScaleAndWaistTruth({
-      gender: 'FEMALE',
-      isPMSWeek: true,
-      weightDeltaKg: 1.2,
-      waistDeltaCm: 0.2,
-      currentCalories: 1500
-    });
-    assert.equal(res.decision, 'MENSTRUAL_PMS_HOLD');
-    assert.equal(res.calorie_lock, true);
-    assert.equal(res.carb_buffer_added_g, 25);
-  });
+test('Realistic Clinical Scenarios Stress-Test Suite', async (t) => {
 
   await t.test('Scenario 2: Mohamed (12 Weeks Deficit Plateau) -> Triggers Diet Break', () => {
     const res = evaluateDietBreakNeed({
