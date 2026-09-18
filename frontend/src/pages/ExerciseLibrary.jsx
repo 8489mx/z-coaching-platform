@@ -7,6 +7,7 @@ import ExerciseVideoModal from '../components/modals/ExerciseVideoModal';
 import { PageHeader } from '@/shared/components/page-header';
 import { arabicSearchMatch } from '../utils/searchUtils';
 import { getExerciseDisplayNames } from '../utils/exerciseTranslator';
+import CurvedSelect from '../components/common/CurvedSelect';
 
 // Concise Muscle Badge Formatter (1-2 words max)
 export function getShortMuscleName(muscleAr = '', muscleGroup = '') {
@@ -168,7 +169,7 @@ function AlternativesManager({ currentExId, alternatives = [], onChange, allExer
           onChange={(e) => setSearchQuery(e.target.value)}
           style={{ flex: '1 1 140px', height: '32px', borderRadius: '8px', border: '1px solid #CBD5E1', padding: '0 8px', fontSize: '11px', outline: 'none' }}
         />
-        <select
+        <CurvedSelect
           value={selectedMuscle}
           onChange={(e) => setSelectedMuscle(e.target.value)}
           style={{ width: '120px', height: '32px', borderRadius: '8px', border: '1px solid #CBD5E1', padding: '0 6px', fontSize: '11px', fontWeight: 600, color: '#334155', background: '#FFFFFF', outline: 'none' }}
@@ -181,8 +182,8 @@ function AlternativesManager({ currentExId, alternatives = [], onChange, allExer
           <option value="ARMS">الذراعين</option>
           <option value="CORE">البطن</option>
           <option value="CALVES">السمانة</option>
-        </select>
-        <select
+        </CurvedSelect>
+        <CurvedSelect
           value={selectedToAdd}
           onChange={(e) => setSelectedToAdd(e.target.value)}
           style={{ flex: '2 1 180px', height: '32px', borderRadius: '8px', border: '1px solid #CBD5E1', padding: '0 8px', fontSize: '11px', color: '#0F172A', background: '#FFFFFF', outline: 'none' }}
@@ -196,7 +197,7 @@ function AlternativesManager({ currentExId, alternatives = [], onChange, allExer
               </option>
             );
           })}
-        </select>
+        </CurvedSelect>
         <button
           type="button"
           onClick={handleAdd}
@@ -924,7 +925,7 @@ export default function ExerciseLibrary() {
               {/* Equipment Selector */}
               <div style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', whiteSpace: 'nowrap' }}>
                 <span style={{ fontSize: '11.5px', color: '#475569', fontWeight: 700 }}>الأداة:</span>
-                <select 
+                <CurvedSelect 
                   value={equipmentFilter}
                   onChange={(e) => setEquipmentFilter(e.target.value)}
                   style={{ 
@@ -946,7 +947,7 @@ export default function ExerciseLibrary() {
                   <option value="CABLE">كابلات</option>
                   <option value="MACHINE">أجهزة</option>
                   <option value="BODYWEIGHT">وزن الجسم</option>
-                </select>
+                </CurvedSelect>
               </div>
 
               {/* Injury Safety Selector */}
@@ -955,7 +956,7 @@ export default function ExerciseLibrary() {
                   <ShieldCheck size={14} color={injuryFilter !== 'ALL' ? '#16A34A' : '#64748B'} />
                   <span>الأمان الطبي:</span>
                 </span>
-                <select 
+                <CurvedSelect 
                   value={injuryFilter}
                   onChange={(e) => setInjuryFilter(e.target.value)}
                   style={{ 
@@ -977,7 +978,7 @@ export default function ExerciseLibrary() {
                   <option value="SHOULDER">آمن للكتف والروتاتور كاف</option>
                   <option value="KNEE">آمن لمفصل الركبة</option>
                   <option value="WRIST">آمن للمعصم والساعد</option>
-                </select>
+                </CurvedSelect>
               </div>
 
             </div>
@@ -1544,7 +1545,7 @@ export default function ExerciseLibrary() {
                     <label style={{ display: 'block', fontSize: '11px', fontWeight: 700, color: '#334155', marginBottom: '4px' }}>
                       المجموعة العضلية
                     </label>
-                    <select
+                    <CurvedSelect
                       value={newExerciseData.muscle_group}
                       onChange={(e) => setNewExerciseData({ ...newExerciseData, muscle_group: e.target.value })}
                       style={{ width: '100%', height: '34px', borderRadius: '8px', border: '1px solid #CBD5E1', padding: '0 8px', fontSize: '11.5px', fontWeight: 700, color: '#0F172A', background: '#FFFFFF', outline: 'none', boxSizing: 'border-box' }}
@@ -1556,14 +1557,14 @@ export default function ExerciseLibrary() {
                       <option value="ARMS">الذراعين والساعد</option>
                       <option value="CORE">البطن والكور</option>
                       <option value="CALVES">السمانة</option>
-                    </select>
+                    </CurvedSelect>
                   </div>
 
                   <div>
                     <label style={{ display: 'block', fontSize: '11px', fontWeight: 700, color: '#334155', marginBottom: '4px' }}>
                       الأداة الرياضية
                     </label>
-                    <select
+                    <CurvedSelect
                       value={newExerciseData.equipment}
                       onChange={(e) => setNewExerciseData({ ...newExerciseData, equipment: e.target.value })}
                       style={{ width: '100%', height: '34px', borderRadius: '8px', border: '1px solid #CBD5E1', padding: '0 8px', fontSize: '11.5px', fontWeight: 700, color: '#0F172A', background: '#FFFFFF', outline: 'none', boxSizing: 'border-box' }}
@@ -1573,7 +1574,7 @@ export default function ExerciseLibrary() {
                       <option value="CABLE">كابلات</option>
                       <option value="MACHINE">أجهزة</option>
                       <option value="BODYWEIGHT">وزن الجسم</option>
-                    </select>
+                    </CurvedSelect>
                   </div>
                 </div>
 
@@ -1851,7 +1852,7 @@ export default function ExerciseLibrary() {
                     <label style={{ display: 'block', fontSize: '11px', fontWeight: 700, color: '#334155', marginBottom: '4px' }}>
                       المجموعة العضلية
                     </label>
-                    <select
+                    <CurvedSelect
                       value={editFormData.muscle_group}
                       onChange={(e) => setEditFormData({ ...editFormData, muscle_group: e.target.value })}
                       style={{ width: '100%', height: '34px', borderRadius: '8px', border: '1px solid #CBD5E1', padding: '0 8px', fontSize: '11.5px', fontWeight: 700, color: '#0F172A', background: '#FFFFFF', outline: 'none', boxSizing: 'border-box' }}
@@ -1863,14 +1864,14 @@ export default function ExerciseLibrary() {
                       <option value="ARMS">الذراعين والساعد</option>
                       <option value="CORE">البطن والكور</option>
                       <option value="CALVES">السمانة</option>
-                    </select>
+                    </CurvedSelect>
                   </div>
 
                   <div>
                     <label style={{ display: 'block', fontSize: '11px', fontWeight: 700, color: '#334155', marginBottom: '4px' }}>
                       الأداة الرياضية
                     </label>
-                    <select
+                    <CurvedSelect
                       value={editFormData.equipment}
                       onChange={(e) => setEditFormData({ ...editFormData, equipment: e.target.value })}
                       style={{ width: '100%', height: '34px', borderRadius: '8px', border: '1px solid #CBD5E1', padding: '0 8px', fontSize: '11.5px', fontWeight: 700, color: '#0F172A', background: '#FFFFFF', outline: 'none', boxSizing: 'border-box' }}
@@ -1880,7 +1881,7 @@ export default function ExerciseLibrary() {
                       <option value="CABLE">كابلات</option>
                       <option value="MACHINE">أجهزة</option>
                       <option value="BODYWEIGHT">وزن الجسم</option>
-                    </select>
+                    </CurvedSelect>
                   </div>
                 </div>
 

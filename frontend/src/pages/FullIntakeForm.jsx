@@ -5,6 +5,7 @@ import { API_BASE } from '../config/api';
 import { getStoredCoachConfig } from '../utils/themeAndCoachConfig';
 import { optimizeImageFile, optimizeMultipleFiles } from '../utils/imageOptimizer';
 import { formatWhatsAppPhone } from '../utils/whatsappRemindersEngine';
+import CurvedSelect from '../components/common/CurvedSelect';
 
 const DEFAULT_MASTER_INTAKE = {
   // Screen 1: Biometrics & Target
@@ -1061,7 +1062,7 @@ export default function FullIntakeForm() {
                         <label style={{ display: 'block', fontSize: '11px', color: '#0F172A', marginBottom: '4px', fontWeight: 700 }}>
                           سعة الوجبة التقريبية
                         </label>
-                        <select 
+                        <CurvedSelect 
                           value={bariatric.meal_capacity_grams || '150_200'}
                           onChange={(e) => updateNested('medical_conditions', 'bariatric', { ...bariatric, meal_capacity_grams: e.target.value })}
                           style={{ width: '100%', height: '36px', borderRadius: '6px', border: '1px solid #CBD5E1', padding: '0 8px', fontSize: '12px' }}
@@ -1069,7 +1070,7 @@ export default function FullIntakeForm() {
                           <option value="under_150">أقل من 150 جم (وجبات مكثفة صغيرة)</option>
                           <option value="150_200">150 إلى 200 جم (المعدل القياسي)</option>
                           <option value="over_200">أكثر من 200 جم</option>
-                        </select>
+                        </CurvedSelect>
                       </div>
                       <div>
                         <label style={{ display: 'block', fontSize: '11px', color: '#0F172A', marginBottom: '4px', fontWeight: 700 }}>
@@ -1147,14 +1148,14 @@ export default function FullIntakeForm() {
                     <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '10px' }}>
                       <div>
                         <label style={{ display: 'block', fontSize: '11px', color: '#0F172A', marginBottom: '4px', fontWeight: 700 }}>طبيعة الإصابة</label>
-                        <select 
+                        <CurvedSelect 
                           value={injuriesMap.injury_nature || 'chronic'}
                           onChange={(e) => updateNested('injuries_map', 'injury_nature', e.target.value)}
                           style={{ width: '100%', height: '36px', borderRadius: '6px', border: '1px solid #CBD5E1', padding: '0 8px', fontSize: '12px' }}
                         >
                           <option value="chronic">إجهاد تراكمي وتدريجي (Chronic)</option>
                           <option value="acute">حادث أو صدمة مفاجئة (Acute)</option>
-                        </select>
+                        </CurvedSelect>
                       </div>
                       <div>
                         <label style={{ display: 'block', fontSize: '11px', color: '#0F172A', marginBottom: '4px', fontWeight: 700 }}>هل يهدأ الألم عند الراحة؟</label>
@@ -1426,7 +1427,7 @@ export default function FullIntakeForm() {
                   <label style={{ display: 'block', fontSize: '12px', fontWeight: 800, color: '#0F172A', marginBottom: '6px' }}>
                     عدد الوجبات المفضل يومياً
                   </label>
-                  <select 
+                  <CurvedSelect 
                     value={mealStructure.meals_count || '3_meals_snack'}
                     onChange={(e) => updateNested('meal_structure', 'meals_count', e.target.value)}
                     style={{ width: '100%', height: '40px', borderRadius: '8px', border: '1px solid #CBD5E1', padding: '0 10px', fontSize: '12.5px' }}
@@ -1434,14 +1435,14 @@ export default function FullIntakeForm() {
                     <option value="3_meals">3 وجبات</option>
                     <option value="3_meals_snack">3 وجبات + سناك</option>
                     <option value="4_to_5_meals">4 إلى 5 وجبات</option>
-                  </select>
+                  </CurvedSelect>
                 </div>
 
                 <div>
                   <label style={{ display: 'block', fontSize: '12px', fontWeight: 800, color: '#0F172A', marginBottom: '6px' }}>
                     تطبيق الصيام المتقطع
                   </label>
-                  <select 
+                  <CurvedSelect 
                     value={mealStructure.intermittent_fasting || 'none'}
                     onChange={(e) => updateNested('meal_structure', 'intermittent_fasting', e.target.value)}
                     style={{ width: '100%', height: '40px', borderRadius: '8px', border: '1px solid #CBD5E1', padding: '0 10px', fontSize: '12.5px' }}
@@ -1449,7 +1450,7 @@ export default function FullIntakeForm() {
                     <option value="none">بدون صيام متقطع</option>
                     <option value="16_8">صيام 16/8</option>
                     <option value="14_10">صيام 14/10</option>
-                  </select>
+                  </CurvedSelect>
                 </div>
               </div>
 
@@ -1459,7 +1460,7 @@ export default function FullIntakeForm() {
                   <label style={{ display: 'block', fontSize: '12px', fontWeight: 800, color: '#0F172A', marginBottom: '6px' }}>
                     الميزانية الأسبوعية لتسوق الأكل الصحي *
                   </label>
-                  <select 
+                  <CurvedSelect 
                     value={formData.food_budget || 'MEDIUM'}
                     onChange={(e) => setFormData(p => ({ ...p, food_budget: e.target.value }))}
                     style={{ width: '100%', height: '40px', borderRadius: '8px', border: '1px solid #CBD5E1', padding: '0 10px', fontSize: '12.5px', background: '#FFFFFF' }}
@@ -1467,14 +1468,14 @@ export default function FullIntakeForm() {
                     <option value="LOW">اقتصادية (بيض، تونة، دجاج، قريش)</option>
                     <option value="MEDIUM">متوسطة (دواجن، لحوم، أسماك)</option>
                     <option value="HIGH">مرتفعة (ستيك، سلمون، مكملات)</option>
-                  </select>
+                  </CurvedSelect>
                 </div>
 
                 <div>
                   <label style={{ display: 'block', fontSize: '12px', fontWeight: 800, color: '#0F172A', marginBottom: '6px' }}>
                     قدرتك على تحضير وتجهيز الوجبات *
                   </label>
-                  <select 
+                  <CurvedSelect 
                     value={formData.food_prep_ability || 'FULL_KITCHEN'}
                     onChange={(e) => setFormData(p => ({ ...p, food_prep_ability: e.target.value }))}
                     style={{ width: '100%', height: '40px', borderRadius: '8px', border: '1px solid #CBD5E1', padding: '0 10px', fontSize: '12.5px', background: '#FFFFFF' }}
@@ -1482,7 +1483,7 @@ export default function FullIntakeForm() {
                     <option value="FULL_KITCHEN">مطبخ متكامل (أطبخ بنفسي)</option>
                     <option value="REHEAT_ONLY">تسخين فقط (وجبات جاهزة)</option>
                     <option value="NO_KITCHEN">اعتماد على مطاعم صحية</option>
-                  </select>
+                  </CurvedSelect>
                 </div>
               </div>
 
@@ -1499,7 +1500,7 @@ export default function FullIntakeForm() {
 
                 <div style={{ display: 'grid', gridTemplateColumns: formData.religion === 'CHRISTIAN' ? '1fr 1fr' : '1fr', gap: '14px' }}>
                   <div>
-                    <select
+                    <CurvedSelect
                       value={formData.religion || 'MUSLIM'}
                       onChange={(e) => setFormData(p => ({ ...p, religion: e.target.value }))}
                       style={{ width: '100%', height: '40px', borderRadius: '8px', border: '1px solid #CBD5E1', padding: '0 10px', fontSize: '12.5px', background: '#FFFFFF' }}
@@ -1507,19 +1508,19 @@ export default function FullIntakeForm() {
                       <option value="MUSLIM">صيام رمضان (توقيت ليلي)</option>
                       <option value="CHRISTIAN">صيام مسيحي</option>
                       <option value="OTHER">نظام اعتيادي (بدون صيام ديني)</option>
-                    </select>
+                    </CurvedSelect>
                   </div>
 
                   {formData.religion === 'CHRISTIAN' && (
                     <div>
-                      <select
+                      <CurvedSelect
                         value={formData.christianFastingStyle || 'PESCATARIAN_ALLOWED'}
                         onChange={(e) => setFormData(p => ({ ...p, christianFastingStyle: e.target.value }))}
                         style={{ width: '100%', height: '40px', borderRadius: '8px', border: '1px solid #CBD5E1', padding: '0 10px', fontSize: '12.5px', background: '#FFFFFF' }}
                       >
                         <option value="PESCATARIAN_ALLOWED">نباتي مع سمك (المفضل)</option>
                         <option value="STRICT_VEGAN">نباتي صرف (بدون سمك)</option>
-                      </select>
+                      </CurvedSelect>
                     </div>
                   )}
                 </div>
@@ -1799,7 +1800,7 @@ export default function FullIntakeForm() {
                     <label style={{ display: 'block', fontSize: '11.5px', fontWeight: 800, color: '#0F172A', marginBottom: '6px' }}>
                       متوسط ساعات النوم اليومية:
                     </label>
-                    <select
+                    <CurvedSelect
                       value={formData.sleep_schedule?.average_hours || '7_8'}
                       onChange={(e) => setFormData(p => ({
                         ...p,
@@ -1811,7 +1812,7 @@ export default function FullIntakeForm() {
                       <option value="6_7">من 6 إلى 7 ساعات</option>
                       <option value="7_8">من 7 إلى 8 ساعات (مثالي)</option>
                       <option value="more_than_8">أكثر من 8 ساعات</option>
-                    </select>
+                    </CurvedSelect>
                   </div>
 
                   <div>
@@ -1930,7 +1931,7 @@ export default function FullIntakeForm() {
                   <label style={{ display: 'block', fontSize: '12px', fontWeight: 800, color: '#0F172A', marginBottom: '6px' }}>
                     المستوى التدريبي الفعلي
                   </label>
-                  <select 
+                  <CurvedSelect 
                     value={trainingLogistics.experience_level || 'intermediate'}
                     onChange={(e) => updateNested('training_logistics', 'experience_level', e.target.value)}
                     style={{ width: '100%', height: '38px', borderRadius: '8px', border: '1px solid #CBD5E1', padding: '0 10px', fontSize: '12px', background: '#FFFFFF' }}
@@ -1938,14 +1939,14 @@ export default function FullIntakeForm() {
                     <option value="beginner">مبتدئ (أقل من سنة)</option>
                     <option value="intermediate">متوسط (1 إلى 3 سنوات)</option>
                     <option value="advanced">متقدم (أكثر من 3 سنوات)</option>
-                  </select>
+                  </CurvedSelect>
                 </div>
 
                 <div>
                   <label style={{ display: 'block', fontSize: '12px', fontWeight: 800, color: '#0F172A', marginBottom: '6px' }}>
                     آخر عهد لك بالتمرين المنتظم *
                   </label>
-                  <select 
+                  <CurvedSelect 
                     value={formData.recent_training || 'ACTIVE'}
                     onChange={(e) => setFormData(p => ({ ...p, recent_training: e.target.value }))}
                     style={{ width: '100%', height: '38px', borderRadius: '8px', border: '1px solid #CBD5E1', padding: '0 10px', fontSize: '12px', background: '#FFFFFF' }}
@@ -1954,7 +1955,7 @@ export default function FullIntakeForm() {
                     <option value="INCONSISTENT">متقطع في آخر 6 شهور</option>
                     <option value="NONE_LAST_4_WEEKS">منقطع منذ 1 إلى 3 شهور</option>
                     <option value="RETURNING_AFTER_LONG_BREAK">عودة بعد انقطاع طويل</option>
-                  </select>
+                  </CurvedSelect>
                 </div>
               </div>
 

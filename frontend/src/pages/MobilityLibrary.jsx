@@ -7,6 +7,7 @@ import ExerciseVideoModal from '../components/modals/ExerciseVideoModal';
 import { PageHeader } from '@/shared/components/page-header';
 import defaultMobilityCatalog from '../data/mobilityCatalog.json';
 import { arabicSearchMatch } from '../utils/searchUtils';
+import CurvedSelect from '../components/common/CurvedSelect';
 
 // Resilient Mobility Image Frame with graceful fallback and smooth fade-in
 function MobilityImageFrame({ src, label, icon: Icon = Activity }) {
@@ -950,7 +951,7 @@ export default function MobilityLibrary() {
                     <label style={{ display: 'block', fontSize: '11px', fontWeight: 700, color: '#334155', marginBottom: '4px' }}>
                       القسم
                     </label>
-                    <select
+                    <CurvedSelect
                       value={editFormData.category}
                       onChange={(e) => setEditFormData({ ...editFormData, category: e.target.value })}
                       style={{ width: '100%', height: '34px', borderRadius: '8px', border: '1px solid #CBD5E1', padding: '0 8px', fontSize: '11.5px', fontWeight: 700, color: '#0F172A', background: '#FFFFFF', outline: 'none', boxSizing: 'border-box' }}
@@ -959,7 +960,7 @@ export default function MobilityLibrary() {
                       <option value="DYNAMIC_WARMUP">إحماء ومرونة ديناميكية</option>
                       <option value="STATIC_STRETCH">إطالة استشفائية ثابتة</option>
                       <option value="POSTURAL_PREHAB">تصحيح قوام</option>
-                    </select>
+                    </CurvedSelect>
                   </div>
                   <div>
                     <label style={{ display: 'block', fontSize: '11px', fontWeight: 700, color: '#334155', marginBottom: '4px' }}>
@@ -1163,12 +1164,12 @@ export default function MobilityLibrary() {
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
                   <div>
                     <label style={{ display: 'block', fontSize: '11px', fontWeight: 700, color: '#475569', marginBottom: '4px' }}>القسم</label>
-                    <select value={newDrillData.category} onChange={(e) => setNewDrillData(prev => ({ ...prev, category: e.target.value }))} style={{ width: '100%', height: '34px', borderRadius: '8px', border: '1px solid #CBD5E1', padding: '0 8px', fontSize: '11.5px', fontWeight: 700, color: '#0F172A', outline: 'none', background: '#FFFFFF' }}>
+                    <CurvedSelect value={newDrillData.category} onChange={(e) => setNewDrillData(prev => ({ ...prev, category: e.target.value }))} style={{ width: '100%', height: '34px', borderRadius: '8px', border: '1px solid #CBD5E1', padding: '0 8px', fontSize: '11.5px', fontWeight: 700, color: '#0F172A', outline: 'none', background: '#FFFFFF' }}>
                       <option value="CARDIO_MODALITY">أنظمة الكارديو</option>
                       <option value="DYNAMIC_WARMUP">إحماء ومرونة ديناميكية</option>
                       <option value="STATIC_STRETCH">إطالة استشفائية ثابتة</option>
                       <option value="POSTURAL_PREHAB">تصحيح قوام</option>
-                    </select>
+                    </CurvedSelect>
                   </div>
                   <div>
                     <label style={{ display: 'block', fontSize: '11px', fontWeight: 700, color: '#475569', marginBottom: '4px' }}>المنطقة المستهدفة</label>
