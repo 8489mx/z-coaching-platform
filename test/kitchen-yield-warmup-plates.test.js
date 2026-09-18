@@ -1,10 +1,9 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 
+import * as ExecutionEngines from '../src/execution-engines/index.js';
 import {
   convertPortionCookingYield,
-  generateWeeklyGroceryList,
-  GROCERY_CATEGORIES,
   calculateBarbellPlates,
   calculateNeuralWarmupRamp
 } from '../src/execution-engines/index.js';
@@ -39,22 +38,9 @@ test('1. Kitchen Yield - Converts Cooked to Raw Portions with Exact Deterministi
   assert.equal(fish.converted_amount_g, 200);
 });
 
-test('2. Kitchen Yield - Generates Categorized Weekly Shopping List Aggregated for 7 Days', () => {
-  const sampleMeals = [
-    {
-      items: [
-        { code: 'CHICKEN_BREAST', name: 'صدور دجاج مشوية', amount: 150, unit: 'جم' },
-        { code: 'BASMATI_RICE_COOKED', name: 'أرز بسمتي', amount: 150, unit: 'جم' },
-        { code: 'EXTRA_VIRGIN_OLIVE_OIL', name: 'زيت زيتون بكر', amount: 10, unit: 'جم' }
-      ]
-    }
-  ];
-
-  const grocery = generateWeeklyGroceryList(sampleMeals);
-  assert.equal(grocery.total_unique_items, 3);
-  assert.equal(grocery.summary_by_category.meats.length, 1);
-  assert.equal(grocery.summary_by_category.meats[0].total_weekly_g, 1050); // 150 * 7
-  assert.equal(grocery.summary_by_category.meats[0].display_amount, '1.1 كجم');
+test('2. Zero Grocery Lists - no shopping list generator is exported by the execution engines', () => {
+  const groceryExports = Object.keys(ExecutionEngines).filter((name) => /grocery|shopping/i.test(name));
+  assert.deepEqual(groceryExports, []);
 });
 
 test('3. Plate Math - Calculates Exact Olympic Plates Per Side', () => {
