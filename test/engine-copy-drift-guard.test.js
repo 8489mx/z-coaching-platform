@@ -12,6 +12,7 @@ const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const LIVE_PAIRS = {
   'biomechanical-swap-engine': 'biomechanicalSwapEngine',
   'biomechanics-firewall-engine': 'biomechanicsFirewallEngine',
+  'circadian-lab-trigger-engine': 'circadianLabTriggerEngine',
   'cardio-interference-engine': 'cardioInterferenceEngine',
   'client-retention-radar-engine': 'clientRetentionRadarEngine',
   'clinical-supplement-safety-engine': 'clinicalSupplementSafetyEngine',
@@ -30,7 +31,6 @@ const LIVE_PAIRS = {
 // Known, deliberate differences awaiting an owner decision. Remove an entry once resolved.
 const PENDING_DECISION = {
   'checkin-approval-whatsapp': 'frontend derives app URL from window.location',
-  'circadian-lab-trigger-engine': 'caffeine cutoff: backend 8h fixed, frontend 6h default',
   'cardio-zones-engine': 'asthma HIIT guard lives in backend engine; coach UI enforces it separately'
 };
 
