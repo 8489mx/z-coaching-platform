@@ -82,7 +82,7 @@ export const getSubscriptionOverview = async (req, res) => {
         {
           model: CheckinSubmission,
           as: "checkinSubmissions",
-          attributes: ["id", "status", "createdAt", "created_at"]
+          attributes: ["id", "status", "createdAt"]
         }
       ],
       order: [["id", "DESC"]]
