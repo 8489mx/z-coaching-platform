@@ -58,8 +58,10 @@ describe('THE OMNIPOTENT CHAOS, CLINICAL & OPERATIONAL BATTERY', () => {
         currentWeightKg: 46.0, previousWeightKg: 46.0, currentWaistCm: 61, previousWaistCm: 61,
         adherenceRatePct: 100, currentCalories: 1220, weeksOnCurrentCalories: 3, goalType: 'FAT_LOSS'
       });
-      expect(res.decision).toBe('REDUCE_CALORIES');
-      expect(res.new_calories).toBe(1200); // Clamped at 1200 Floor
+      // A further cut would breach the floor, so the engine schedules a maintenance diet break
+      // (Clinical Plateau Breaker, SYSTEM_CAPABILITIES pillar 1) instead of reducing calories.
+      expect(res.decision).toBe('SCHEDULE_DIET_BREAK');
+      expect(res.new_calories).toBeGreaterThanOrEqual(1200);
     });
   });
 

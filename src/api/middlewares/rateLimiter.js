@@ -150,6 +150,15 @@ export const checkinRateLimiter = createRateLimiter({
   message: (remainingMins) => `تم تجاوز الحد الأقصى المسموح لتقديم المتابعة (10 طلبات خلال ساعة). يرجى الانتظار لمدة ${remainingMins} دقيقة قبل المحاولة مجدداً.`
 });
 
+// 6. Stateless Calculator Rate Limiter (CPU/DoS protection for public engine endpoints)
+export const engineCalculatorRateLimiter = createRateLimiter({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  maxAttempts: 120,
+  keyPrefix: "engine-calc",
+  countAllRequests: true,
+  message: (remainingMins) => `تم تجاوز الحد الأقصى لطلبات المحركات الحسابية (120 طلب خلال 15 دقيقة). يرجى الانتظار لمدة ${remainingMins} دقيقة.`
+});
+
 // Retain legacy helpers for full backward compatibility
 export const recordFailedAttempt = async (ip, attemptedCode = '') => {
   try {

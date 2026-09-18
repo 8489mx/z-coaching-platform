@@ -11,7 +11,7 @@ import { calculateDailyCarbCycling } from './carb-cycling-engine.js';
 import { calculateMpsLeucinePartitioning } from './mps-leucine-engine.js';
 import { evaluateMatadorRefeedStrategy } from './matador-refeed-engine.js';
 import { filterLowFodmapOptions, evaluateChronicGiDistress } from './gut-health-engine.js';
-import { convertPortionCookingYield, generateWeeklyGroceryList } from './kitchen-yield-engine.js';
+import { convertPortionCookingYield } from './kitchen-yield-engine.js';
 import { calculateReverseDietingStep } from './reverse-dieting-engine.js';
 import { evaluateDoubleProgression, evaluateAutoDeloadRequirement } from './progressive-overload-engine.js';
 import { getTorqueMatchedSwaps, applyFatigueModeReduction } from './biomechanical-swap-engine.js';

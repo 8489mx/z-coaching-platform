@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import CurvedSelect from '../common/CurvedSelect';
 
 export default function EditExerciseModal({
   isOpen,
@@ -187,7 +188,7 @@ export default function EditExerciseModal({
                   <label className="form-label fw-bold text-dark small mb-1 d-block text-end" style={{ fontSize: '0.84rem' }}>
                     العضلة المستهدفة
                   </label>
-                  <select
+                  <CurvedSelect
                     className="form-select fw-semibold text-end"
                     style={{ height: '44px', borderRadius: '10px', fontSize: '0.84rem', border: '1.5px solid #e2e8f0', paddingRight: '14px', paddingLeft: '35px' }}
                     value={formData.muscle_group}
@@ -199,14 +200,14 @@ export default function EditExerciseModal({
                     <option value="SHOULDERS">الأكتاف (Shoulders)</option>
                     <option value="ARMS">الذراعين (Arms)</option>
                     <option value="CORE">البطن والكور (Core)</option>
-                  </select>
+                  </CurvedSelect>
                 </div>
 
                 <div className="col-6">
                   <label className="form-label fw-bold text-dark small mb-1 d-block text-end" style={{ fontSize: '0.84rem' }}>
                     الأداة / الجهاز المستخدم
                   </label>
-                  <select
+                  <CurvedSelect
                     className="form-select fw-semibold text-end"
                     style={{ height: '44px', borderRadius: '10px', fontSize: '0.84rem', border: '1.5px solid #e2e8f0', paddingRight: '14px', paddingLeft: '35px' }}
                     value={formData.equipment}
@@ -217,7 +218,7 @@ export default function EditExerciseModal({
                     <option value="CABLE">جهاز الكابل (Cable)</option>
                     <option value="MACHINE">ماكينات الجيم (Machine)</option>
                     <option value="BODYWEIGHT">وزن الجسم (Bodyweight)</option>
-                  </select>
+                  </CurvedSelect>
                 </div>
               </div>
 

@@ -26,8 +26,6 @@ export default function WorkoutTab({
   setPrehabCompleted,
   cardioPrescription,
   setExerciseSwapTarget,
-  exerciseWorkingWeights = {},
-  handleUpdateExerciseWeight,
   handleToggleExerciseCompleted,
   setActiveVideoExercise,
   selectedDay = 1,
@@ -35,7 +33,6 @@ export default function WorkoutTab({
 }) {
   const [showWorkoutGuide, setShowWorkoutGuide] = useState(false);
   const [expandedTechnique, setExpandedTechnique] = useState({});
-  const enableWeightLogging = Boolean(clientData?.enable_weight_logging);
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
@@ -463,14 +460,6 @@ export default function WorkoutTab({
                   </span>
                 </>
               )}
-              {exerciseWorkingWeights[ex.id] && (
-                <>
-                  <span style={{ color: '#94A3B8' }}>•</span>
-                  <span style={{ fontWeight: 700, color: '#16A34A' }}>
-                    وزنك الحالي: {exerciseWorkingWeights[ex.id]} كجم
-                  </span>
-                </>
-              )}
             </div>
 
             {/* Visual Movement Frames (Start & Finish Positions) */}
@@ -589,53 +578,6 @@ export default function WorkoutTab({
                     <span>{ex.mistakes_ar}</span>
                   </div>
                 )}
-              </div>
-            )}
-
-            {/* Optional Single Working Weight Field (يظهر فقط إذا تم تفعيله للمشترك من قبل الكوتش) */}
-            {enableWeightLogging && (
-              <div style={{
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'space-between',
-                background: '#F8FAFC',
-                border: '1px solid #E2E8F0',
-                borderRadius: '10px',
-                padding: '7px 12px',
-                fontSize: '0.74rem'
-              }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                  <span style={{ fontWeight: 700, color: '#334155' }}>أفضل وزن اليوم:</span>
-                  <div style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
-                    <input
-                      type="text"
-                      inputMode="decimal"
-                      placeholder="0"
-                      value={exerciseWorkingWeights[ex.id] ?? ''}
-                      onChange={(e) => handleUpdateExerciseWeight(ex.id, e.target.value)}
-                      style={{
-                        width: '62px',
-                        height: '28px',
-                        padding: '2px 6px',
-                        borderRadius: '8px',
-                        border: '1px solid #CBD5E1',
-                        background: '#FFFFFF',
-                        fontSize: '0.8rem',
-                        fontWeight: 800,
-                        textAlign: 'center',
-                        color: '#0F172A',
-                        outline: 'none'
-                      }}
-                    />
-                    <span style={{ color: '#64748B', fontWeight: 700, fontSize: '0.72rem' }}>كجم</span>
-                  </div>
-                </div>
-
-                <span style={{ fontSize: '0.7rem', color: exerciseWorkingWeights[ex.id] ? '#16A34A' : '#94A3B8', fontWeight: 600 }}>
-                  {exerciseWorkingWeights[ex.id] 
-                    ? 'محفوظ كمرجع لأسبوعك القادم' 
-                    : 'يُحدد بالتجربة الميدانية (RPE 8)'}
-                </span>
               </div>
             )}
 

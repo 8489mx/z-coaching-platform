@@ -2,18 +2,18 @@
  * Circadian & Lab Trigger Engine (محرك مواعيد الكافيين وتنبيه إعادة الفحوصات)
  *
  * 1. Caffeine Cutoff Calculator:
- *    - Strictly calculates caffeine stop time (default 6 hours prior to bedtime as per coach protocol) to protect deep slow-wave / delta sleep.
+ *    - Strictly calculates caffeine stop time (default 8 hours prior to bedtime as per coach protocol) to protect deep slow-wave / delta sleep.
  * 2. Lab Re-Test Scheduler:
  *    - Detects initial abnormal biomarkers (HbA1c >= 5.7%, Vit D < 30, Ferritin < 30).
  *    - Triggers automated re-test milestone at Week 10 for client app & coach center.
  */
 
 /**
- * Computes exact caffeine cutoff time (default 6 hours prior to bedtime).
+ * Computes exact caffeine cutoff time (default 8 hours prior to bedtime).
  * @param {string} bedtimeStr - e.g. "23:00" or "00:30"
- * @param {number} bufferHours - hours before bedtime to cut caffeine (default: 6)
+ * @param {number} bufferHours - hours before bedtime to cut caffeine (default: 8)
  */
-export function getCaffeineCutoffTime(bedtimeStr = "23:00", bufferHours = 6) {
+export function getCaffeineCutoffTime(bedtimeStr = "23:00", bufferHours = 8) {
   const parts = String(bedtimeStr || "23:00").split(":");
   let hours = parseInt(parts[0], 10);
   let minutes = parseInt(parts[1] || "0", 10);
@@ -21,7 +21,7 @@ export function getCaffeineCutoffTime(bedtimeStr = "23:00", bufferHours = 6) {
   if (isNaN(hours)) hours = 23;
   if (isNaN(minutes)) minutes = 0;
 
-  // Subtract bufferHours (default 6 hours as per coach protocol)
+  // Subtract bufferHours (default 8 hours as per coach protocol)
   let cutoffHours = hours - bufferHours;
   if (cutoffHours < 0) {
     cutoffHours = 24 + cutoffHours;

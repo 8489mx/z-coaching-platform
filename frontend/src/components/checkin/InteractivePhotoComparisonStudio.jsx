@@ -22,6 +22,7 @@ import {
 } from '../../utils/transformationCardGenerator';
 import { optimizeImageFile } from '../../utils/imageOptimizer';
 import { generateWhatsAppUrl } from '../../utils/whatsappRemindersEngine';
+import CurvedSelect from '../common/CurvedSelect';
 
 /**
  * مجسم تشريحي بمسارات فيكتور دقيقة يوضح تغير تكوين الجسم
@@ -345,7 +346,7 @@ export default function InteractivePhotoComparisonStudio({
           {/* محدد أسبوع قبل */}
           <div style={{ display: 'flex', alignItems: 'center', gap: '4px', fontSize: '11px' }}>
             <span style={{ color: '#64748B', fontWeight: 600 }}>من:</span>
-            <select
+            <CurvedSelect
               value={beforeWeekIdx}
               onChange={(e) => setBeforeWeekIdx(Number(e.target.value))}
               style={{
@@ -365,7 +366,7 @@ export default function InteractivePhotoComparisonStudio({
                   الأسبوع {w.week} ({w.weight} كجم)
                 </option>
               ))}
-            </select>
+            </CurvedSelect>
           </div>
 
           <span style={{ color: '#94A3B8', fontWeight: 800 }}>←</span>
@@ -373,7 +374,7 @@ export default function InteractivePhotoComparisonStudio({
           {/* محدد أسبوع بعد */}
           <div style={{ display: 'flex', alignItems: 'center', gap: '4px', fontSize: '11px' }}>
             <span style={{ color: '#64748B', fontWeight: 600 }}>إلى:</span>
-            <select
+            <CurvedSelect
               value={afterWeekIdx}
               onChange={(e) => setAfterWeekIdx(Number(e.target.value))}
               style={{
@@ -393,7 +394,7 @@ export default function InteractivePhotoComparisonStudio({
                   الأسبوع {w.week} ({w.weight} كجم)
                 </option>
               ))}
-            </select>
+            </CurvedSelect>
           </div>
 
           {/* زر توليد كارت التحول التسويقي */}

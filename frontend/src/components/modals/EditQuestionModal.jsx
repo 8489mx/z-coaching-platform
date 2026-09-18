@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import CurvedSelect from '../common/CurvedSelect';
 
 export default function EditQuestionModal({
   isOpen,
@@ -148,7 +149,7 @@ export default function EditQuestionModal({
                   <label className="form-label fw-bold text-dark small mb-1 d-block" style={{ fontSize: '0.84rem' }}>
                     قسم الاستمارة
                   </label>
-                  <select
+                  <CurvedSelect
                     className="form-select fw-semibold text-end"
                     style={{ height: '44px', borderRadius: '10px', fontSize: '0.84rem', border: '1.5px solid #e2e8f0', paddingRight: '14px', paddingLeft: '35px' }}
                     value={formData.section}
@@ -159,14 +160,14 @@ export default function EditQuestionModal({
                     <option value="medical">3. الحالة الطبية والإصابات</option>
                     <option value="nutrition">4. التغذية والوجبات والحساسية</option>
                     <option value="training">5. التدريب وأيام الجيم والكارديو</option>
-                  </select>
+                  </CurvedSelect>
                 </div>
 
                 <div className="col-6">
                   <label className="form-label fw-bold text-dark small mb-1 d-block" style={{ fontSize: '0.84rem' }}>
                     نوع الحقل / الإجابة
                   </label>
-                  <select
+                  <CurvedSelect
                     className="form-select fw-semibold text-end"
                     style={{ height: '44px', borderRadius: '10px', fontSize: '0.84rem', border: '1.5px solid #e2e8f0', paddingRight: '14px', paddingLeft: '35px' }}
                     value={formData.type}
@@ -177,7 +178,7 @@ export default function EditQuestionModal({
                     <option value="number">رقمي (Number)</option>
                     <option value="select">قائمة اختيارات فردية (Dropdown)</option>
                     <option value="date">تاريخ (Date)</option>
-                  </select>
+                  </CurvedSelect>
                 </div>
               </div>
 

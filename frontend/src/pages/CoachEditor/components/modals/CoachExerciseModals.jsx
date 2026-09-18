@@ -6,6 +6,7 @@ import { arabicSearchMatch } from '../../../../utils/searchUtils';
 import { getShortMuscleName, getShortEquipmentName } from '../../../ExerciseLibrary';
 import { getTorqueMatchedSwaps, RESISTANCE_PROFILES } from '../../../../utils/biomechanicalSwapEngine';
 import { GYM_RUSH_EQUIVALENCE_CATALOG, getGymRushEquivalentSwap, JOINT_PAIN_SWAP_MATRIX } from '../../../../utils/biomechanicsFirewallEngine';
+import CurvedSelect from '../../../../components/common/CurvedSelect';
 
 export function CoachSwapExerciseModal({
   swapExModal,
@@ -596,7 +597,7 @@ export function CoachAddExerciseModal({
           </div>
 
           <div style={{ display: 'inline-flex', alignItems: 'center', gap: '5px' }}>
-            <select
+            <CurvedSelect
               value={addExEquipmentFilter}
               onChange={(e) => setAddExEquipmentFilter(e.target.value)}
               style={{ height: '32px', borderRadius: '6px', border: '1px solid #CBD5E1', padding: '0 8px', fontSize: '11px', fontWeight: 700, color: '#0F172A', background: '#FFFFFF', outline: 'none', cursor: 'pointer' }}
@@ -604,7 +605,7 @@ export function CoachAddExerciseModal({
               {ADD_EX_EQUIPMENT_OPTIONS.map(opt => (
                 <option key={opt.id} value={opt.id}>{opt.label}</option>
               ))}
-            </select>
+            </CurvedSelect>
           </div>
         </div>
 

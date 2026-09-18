@@ -33,6 +33,7 @@ export default function PlanProfileTab({
   if (!clientData) return null;
 
   const rawCode = String(clientData?.code || '').replace(/^#+/, '').replace(/^client[-_]?/i, '').trim();
+  const caffeineCutoff = getCaffeineCutoffTime(clientData?.sleep_schedule?.bedtime_hour || clientData?.bedtime_hour || '23:00');
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
@@ -249,10 +250,10 @@ export default function PlanProfileTab({
               <Clock size={16} style={{ color: '#D97706', flexShrink: 0 }} />
               <div>
                 <strong style={{ fontSize: '0.76rem', color: '#0F172A', display: 'block' }}>ميقات إيقاف الكافيين والمنبهات</strong>
-                <span style={{ fontSize: '0.66rem', color: '#64748B' }}>قبل موعد النوم بـ 6 إلى 8 ساعات لحماية مرحلة النوم العميق</span>
+                <span style={{ fontSize: '0.66rem', color: '#64748B' }}>قبل موعد النوم بـ {caffeineCutoff.buffer_hours} ساعات لحماية مرحلة النوم العميق</span>
               </div>
             </div>
-            <strong style={{ fontSize: '0.82rem', color: '#92400E', fontWeight: 800 }}>5:00 مساءً</strong>
+            <strong style={{ fontSize: '0.82rem', color: '#92400E', fontWeight: 800 }}>{caffeineCutoff.caffeine_cutoff_display_ar.replace('الساعة ', '')}</strong>
           </div>
 
           {/* Activity / Steps */}

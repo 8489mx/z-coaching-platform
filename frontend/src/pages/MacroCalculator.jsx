@@ -6,6 +6,7 @@ import { copyToClipboard } from '../utils/clipboardUtils';
 import { calculateMetabolicMacroProfile, DAILY_ACTIVITY_FACTORS, WORKOUT_FREQUENCY_FACTORS, GOAL_CALORIE_MULTIPLIERS } from '../utils/metabolicMacroEngine';
 import { DEFAULT_FOOD_CATALOG } from '../data/defaultFoodsCatalog';
 import { arabicSearchMatch } from '../utils/searchUtils';
+import CurvedSelect from '../components/common/CurvedSelect';
 
 export default function MacroCalculator() {
   // Navigation Tabs: 'CATALOG' (Food Library) or 'CALCULATOR' (Macro Engine)
@@ -870,7 +871,7 @@ export default function MacroCalculator() {
                   <label style={{ display: 'block', fontSize: '11px', fontWeight: 700, color: '#475569', marginBottom: '4px' }}>
                     النشاط والحركة اليومية (NEAT)
                   </label>
-                  <select
+                  <CurvedSelect
                     value={calcForm.dailyActivity}
                     onChange={(e) => setCalcForm({ ...calcForm, dailyActivity: e.target.value })}
                     style={{ width: '100%', height: '34px', borderRadius: '8px', border: '1px solid #CBD5E1', padding: '0 8px', fontSize: '11px', fontWeight: 700, color: '#0F172A', outline: 'none' }}
@@ -878,14 +879,14 @@ export default function MacroCalculator() {
                     {Object.entries(DAILY_ACTIVITY_FACTORS).map(([k, v]) => (
                       <option key={k} value={k}>{v.label_ar} (x{v.factor})</option>
                     ))}
-                  </select>
+                  </CurvedSelect>
                 </div>
 
                 <div>
                   <label style={{ display: 'block', fontSize: '11px', fontWeight: 700, color: '#475569', marginBottom: '4px' }}>
                     تكرار تمارين المقاومة (EAT)
                   </label>
-                  <select
+                  <CurvedSelect
                     value={calcForm.workoutFrequency}
                     onChange={(e) => setCalcForm({ ...calcForm, workoutFrequency: e.target.value })}
                     style={{ width: '100%', height: '34px', borderRadius: '8px', border: '1px solid #CBD5E1', padding: '0 8px', fontSize: '11px', fontWeight: 700, color: '#0F172A', outline: 'none' }}
@@ -893,7 +894,7 @@ export default function MacroCalculator() {
                     {Object.entries(WORKOUT_FREQUENCY_FACTORS).map(([k, v]) => (
                       <option key={k} value={k}>{v.label_ar} (+{v.factor})</option>
                     ))}
-                  </select>
+                  </CurvedSelect>
                 </div>
               </div>
 
@@ -901,7 +902,7 @@ export default function MacroCalculator() {
                 <label style={{ display: 'block', fontSize: '11px', fontWeight: 700, color: '#475569', marginBottom: '4px' }}>
                   الهدف المستهدف
                 </label>
-                <select
+                <CurvedSelect
                   value={calcForm.goal}
                   onChange={(e) => setCalcForm({ ...calcForm, goal: e.target.value })}
                   style={{ width: '100%', height: '34px', borderRadius: '8px', border: '1px solid #CBD5E1', padding: '0 8px', fontSize: '11.5px', fontWeight: 800, color: '#0284C7', background: '#F0F9FF', outline: 'none' }}
@@ -909,7 +910,7 @@ export default function MacroCalculator() {
                   {Object.entries(GOAL_CALORIE_MULTIPLIERS).map(([k, v]) => (
                     <option key={k} value={k}>{v.label_ar}</option>
                   ))}
-                </select>
+                </CurvedSelect>
               </div>
 
               {/* Protein Slider */}
@@ -1024,7 +1025,7 @@ export default function MacroCalculator() {
                   تطبيق هذه الماكروز فوراً على خطة متدرب:
                 </label>
                 <div style={{ display: 'flex', gap: '6px' }}>
-                  <select
+                  <CurvedSelect
                     value={selectedClient}
                     onChange={(e) => setSelectedClient(e.target.value)}
                     style={{ flex: 1, height: '34px', borderRadius: '6px', border: '1px solid #CBD5E1', padding: '0 8px', fontSize: '11.5px', fontWeight: 600, outline: 'none' }}
@@ -1035,7 +1036,7 @@ export default function MacroCalculator() {
                         {c.first_name} {c.last_name} ({c.email || c.phone_number})
                       </option>
                     ))}
-                  </select>
+                  </CurvedSelect>
                   <button
                     type="button"
                     onClick={handleApplyToClient}
@@ -1170,7 +1171,7 @@ export default function MacroCalculator() {
                     <label style={{ display: 'block', fontSize: '11px', fontWeight: 700, color: '#334155', marginBottom: '3px' }}>
                       نوع الماكرو الأساسي
                     </label>
-                    <select
+                    <CurvedSelect
                       value={foodFormData.macro_type}
                       onChange={(e) => setFoodFormData({ ...foodFormData, macro_type: e.target.value })}
                       style={{ width: '100%', height: '32px', borderRadius: '8px', border: '1px solid #CBD5E1', padding: '0 6px', fontSize: '11px', fontWeight: 700, outline: 'none' }}
@@ -1180,7 +1181,7 @@ export default function MacroCalculator() {
                       <option value="FATS">دهون صحية (Fats)</option>
                       <option value="VEGGIE">خضروات (Vegetables)</option>
                       <option value="FRUIT">فواكه (Fruits)</option>
-                    </select>
+                    </CurvedSelect>
                   </div>
 
                   <div>
@@ -1200,14 +1201,14 @@ export default function MacroCalculator() {
                     <label style={{ display: 'block', fontSize: '11px', fontWeight: 700, color: '#334155', marginBottom: '3px' }}>
                       حالة الطهي
                     </label>
-                    <select
+                    <CurvedSelect
                       value={foodFormData.food_state}
                       onChange={(e) => setFoodFormData({ ...foodFormData, food_state: e.target.value })}
                       style={{ width: '100%', height: '32px', borderRadius: '8px', border: '1px solid #CBD5E1', padding: '0 6px', fontSize: '11px', fontWeight: 700, outline: 'none' }}
                     >
                       <option value="COOKED">مطبوخ ومجهز</option>
                       <option value="RAW">طازج / نيء</option>
-                    </select>
+                    </CurvedSelect>
                   </div>
                 </div>
 

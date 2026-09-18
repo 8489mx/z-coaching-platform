@@ -1,0 +1,4 @@
+# Data files rewritten by the API at runtime (JSON.stringify emits LF).
+# Pinning LF keeps the working tree clean after test runs and server writes on Windows.
+data/**/*.json text eol=lf
+src/data/*.json text eol=lf

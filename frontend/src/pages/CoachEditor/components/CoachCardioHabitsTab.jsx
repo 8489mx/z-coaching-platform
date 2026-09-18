@@ -3,6 +3,7 @@ import { ArrowRightLeft, FileText, Plus, Trash2, Pill } from 'lucide-react';
 import { getStandardSupplementCatalog } from '../../../utils/clinicalSupplementSafetyEngine';
 import { evaluateCardioInterferenceDecoupling, CARDIO_INTENSITIES } from '../../../utils/cardioInterferenceEngine';
 import { getPracticalCardioPrescription, CARDIO_TYPES } from '../../../utils/cardioZonesEngine';
+import CurvedSelect from '../../../components/common/CurvedSelect';
 
 export function CoachCardioHabitsTab({
   program,
@@ -47,7 +48,8 @@ export function CoachCardioHabitsTab({
   const practicalCardio = getPracticalCardioPrescription({
     type: isHiitCardio ? CARDIO_TYPES.HIIT_INTERVALS : CARDIO_TYPES.LISS_TALK_TEST,
     duration_minutes: Number(program.cardio?.session_duration_min) || 30,
-    sessions_per_week: Number(program.cardio?.weekly_sessions) || 3
+    sessions_per_week: Number(program.cardio?.weekly_sessions) || 3,
+    medicalConditions: clientConditions
   });
 
   // Active supplements array
@@ -145,7 +147,7 @@ export function CoachCardioHabitsTab({
 
             <div>
               <label style={{ fontSize: '10.5px', color: '#64748B', display: 'block', marginBottom: '2px', fontWeight: 600 }}>نطاق النبض المستهدف</label>
-              <select
+              <CurvedSelect
                 value={program.cardio?.target_heart_rate_zone || 'Zone 2'}
                 onChange={(e) => handleUpdateCardioParam('target_heart_rate_zone', e.target.value)}
                 style={{
@@ -165,7 +167,7 @@ export function CoachCardioHabitsTab({
                 <option value="Zone 2">Zone 2 (حرق دهون وتحمل - موصى به)</option>
                 <option value="Zone 3">Zone 3 (تحمل هوائي متوسط)</option>
                 <option value="Zone 4 / HIIT">Zone 4 / HIIT (كثافة عالية)</option>
-              </select>
+              </CurvedSelect>
             </div>
           </div>
 
@@ -242,7 +244,7 @@ export function CoachCardioHabitsTab({
 
         {/* Add Supplement Picker */}
         <div style={{ display: 'flex', gap: '8px', alignItems: 'center', marginBottom: '12px' }}>
-          <select
+          <CurvedSelect
             value={selectedCatalogSupp}
             onChange={(e) => setSelectedCatalogSupp(e.target.value)}
             style={{
@@ -263,7 +265,7 @@ export function CoachCardioHabitsTab({
                 {supp.name_ar} ({supp.standard_dosage})
               </option>
             ))}
-          </select>
+          </CurvedSelect>
 
           <button
             type="button"
