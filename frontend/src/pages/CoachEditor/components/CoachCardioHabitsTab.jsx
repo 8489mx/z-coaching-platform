@@ -48,7 +48,8 @@ export function CoachCardioHabitsTab({
   const practicalCardio = getPracticalCardioPrescription({
     type: isHiitCardio ? CARDIO_TYPES.HIIT_INTERVALS : CARDIO_TYPES.LISS_TALK_TEST,
     duration_minutes: Number(program.cardio?.session_duration_min) || 30,
-    sessions_per_week: Number(program.cardio?.weekly_sessions) || 3
+    sessions_per_week: Number(program.cardio?.weekly_sessions) || 3,
+    medicalConditions: clientConditions
   });
 
   // Active supplements array

@@ -14,6 +14,7 @@ const LIVE_PAIRS = {
   'biomechanics-firewall-engine': 'biomechanicsFirewallEngine',
   'circadian-lab-trigger-engine': 'circadianLabTriggerEngine',
   'cardio-interference-engine': 'cardioInterferenceEngine',
+  'cardio-zones-engine': 'cardioZonesEngine',
   'client-retention-radar-engine': 'clientRetentionRadarEngine',
   'clinical-supplement-safety-engine': 'clinicalSupplementSafetyEngine',
   'emergency-scenario-engine': 'emergencyScenarioEngine',
@@ -28,10 +29,9 @@ const LIVE_PAIRS = {
   'postural-prehab-engine': 'posturalPrehabEngine'
 };
 
-// Known, deliberate differences awaiting an owner decision. Remove an entry once resolved.
+// Known, deliberate differences. Remove an entry once resolved.
 const PENDING_DECISION = {
-  'checkin-approval-whatsapp': 'frontend derives app URL from window.location',
-  'cardio-zones-engine': 'asthma HIIT guard lives in backend engine; coach UI enforces it separately'
+  'checkin-approval-whatsapp': 'intentional: frontend derives app URL from window.location'
 };
 
 const kebabToCamel = (s) => s.replace(/-([a-z])/g, (_, c) => c.toUpperCase());
@@ -56,4 +56,19 @@ test('pending-decision pairs are still documented and present', () => {
   for (const backendName of Object.keys(PENDING_DECISION)) {
     assert.ok(fs.existsSync(path.join(ROOT, 'src/execution-engines', `${backendName}.js`)), backendName);
   }
+});
+
+test('cardio engine asthma guidance text matches CLINICAL_GUIDELINES.RESPIRATORY', async () => {
+  const { CLINICAL_GUIDELINES } = await import('../src/config/clinical-guidelines.js');
+  const { ASTHMA_CARDIO_SAFETY_GUIDANCE_AR, getPracticalCardioPrescription, CARDIO_TYPES } =
+    await import('../src/execution-engines/cardio-zones-engine.js');
+  assert.equal(ASTHMA_CARDIO_SAFETY_GUIDANCE_AR, CLINICAL_GUIDELINES.RESPIRATORY.SAFETY_GUIDANCE_AR);
+
+  for (const condition of ['ASTHMA', 'ربو مزمن', { name: 'Respiratory allergy' }, { conditionCode: 'ASTHMA' }]) {
+    const rx = getPracticalCardioPrescription({ type: CARDIO_TYPES.HIIT_INTERVALS, medicalConditions: [condition] });
+    assert.equal(rx.type, CARDIO_TYPES.LISS_TALK_TEST, `HIIT must be blocked for ${JSON.stringify(condition)}`);
+    assert.equal(rx.clinical_guidance_ar, CLINICAL_GUIDELINES.RESPIRATORY.SAFETY_GUIDANCE_AR);
+  }
+  const healthy = getPracticalCardioPrescription({ type: CARDIO_TYPES.HIIT_INTERVALS, medicalConditions: ['KNEE_PAIN'] });
+  assert.equal(healthy.type, CARDIO_TYPES.HIIT_INTERVALS);
 });

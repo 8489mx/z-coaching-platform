@@ -7,6 +7,8 @@
  *   - LISS_TALK_TEST (Zone 2 / Steady State): Moderate aerobic effort where you can speak full sentences.
  *   - HIIT_INTERVALS (High Intensity): 30s max effort sprint followed by 90s active recovery (1:3 ratio).
  *   - RECOVERY_WALK (Daily NEAT): 8,000 - 10,000 steps for fat loss and metabolic recovery without CNS strain.
+ *
+ * Single source of truth: src/execution-engines/cardio-zones-engine.js re-exports this module.
  */
 
 export const CARDIO_TYPES = {
@@ -23,13 +25,35 @@ export const CARDIO_EQUIPMENT = {
   ROWER: 'جهاز التجديف (Rowing Machine)'
 };
 
+// Mirrors CLINICAL_GUIDELINES.RESPIRATORY.SAFETY_GUIDANCE_AR in src/config/clinical-guidelines.js
+// (kept inline because the Vite dev server cannot serve files outside frontend/; equality is
+// enforced by test/engine-copy-drift-guard.test.js).
+export const ASTHMA_CARDIO_SAFETY_GUIDANCE_AR = "توجيه سريري لمرضى الربو والجهاز التنفسي: حصر الكارديو في النطاق المعتدل المستقر (Zone 2) مع إحماء تدريجي، وحظر الكارديو عالي الشدة (HIIT) لتجنب نوبات ضيق التنفس التحسسية (EIB).";
+
+const RESPIRATORY_PATTERN = /ASTHMA|RESPIRATORY|ربو|تنفسي/i;
+
 export function getPracticalCardioPrescription({
   type = CARDIO_TYPES.LISS_TALK_TEST,
   duration_minutes = 25,
   sessions_per_week = 3,
-  equipment = CARDIO_EQUIPMENT.INCLINE_TREADMILL
+  equipment = CARDIO_EQUIPMENT.INCLINE_TREADMILL,
+  medicalConditions = []
 }) {
-  const upperType = String(type).toUpperCase();
+  const conds = (Array.isArray(medicalConditions) ? medicalConditions : [medicalConditions])
+    .map(c => typeof c === 'string' ? c : String(c?.conditionCode || c?.code || c?.name || c?.area || ''));
+
+  const hasAsthma = conds.some(c => RESPIRATORY_PATTERN.test(c));
+
+  let resolvedType = String(type).toUpperCase();
+  let asthmaClinicalNote = null;
+
+  // GINA Clinical Guideline: Restrict HIIT for asthma / respiratory conditions
+  if (hasAsthma && (resolvedType === CARDIO_TYPES.HIIT_INTERVALS || resolvedType.includes('HIIT'))) {
+    resolvedType = CARDIO_TYPES.LISS_TALK_TEST;
+    asthmaClinicalNote = ASTHMA_CARDIO_SAFETY_GUIDANCE_AR;
+  }
+
+  const upperType = resolvedType;
 
   if (upperType === CARDIO_TYPES.HIIT_INTERVALS || upperType.includes('HIIT')) {
     return {
@@ -79,6 +103,11 @@ export function getPracticalCardioPrescription({
       'التأكد المستمر من القدرة على التحدث بجملة كاملة دون توقف لالتقاط النفس.'
     ],
     fat_oxidation_rationale_ar: 'أقصى كفاءة لأكسدة الدهون كوقود أساسي وتنشيط الميتوكوندريا دون أي تداخل مع استشفاء العضلات.',
-    equipment_recommendation: equipment
+    equipment_recommendation: equipment,
+    clinical_guidance_ar: asthmaClinicalNote,
+    clinical_guardrails: {
+      asthma_hiit_banned: Boolean(hasAsthma),
+      preferred_modality: hasAsthma ? 'LISS_TALK_TEST' : null,
+    }
   };
 }
