@@ -456,7 +456,7 @@ export async function syncCoachConfigFromServer() {
         return merged;
       }
     }
-  } catch (err) {
+  } catch {
     // Network or server offline - silent fallback to local storage
   }
   return getStoredCoachConfig();

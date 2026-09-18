@@ -6,9 +6,7 @@ import { dynamicRippleRebalanceDailyPlan, rebalanceMealsForTrainingDemand } from
 import {
   calculateSessionDemand,
   auditWeeklyMuscleVolume,
-  calibrateAddedExercise,
-  identifyPeriWorkoutMeals,
-  MUSCLE_VOLUME_LANDMARKS
+  calibrateAddedExercise
 } from '../../../utils/trainingCouplingUtils';
 import defaultMobilityCatalog from '../../../data/mobilityCatalog.json';
 import { arabicSearchMatch } from '../../../utils/searchUtils';

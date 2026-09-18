@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { Settings, Users, LogOut, ChevronDown, ShieldCheck } from 'lucide-react';
+import { Settings, Users, LogOut, ChevronDown } from 'lucide-react';
 import { getStoredCoachConfig } from '../../utils/themeAndCoachConfig';
 
 export default function CoachAccountDropdown() {

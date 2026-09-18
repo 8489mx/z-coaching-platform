@@ -1,7 +1,7 @@
 import { ClientCodeBadge, ClientPackageBadge, getClientTier } from '../utils/tierBadgeHelper';
 import React, { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
-import { ExternalLink, Search, Clock, CheckCircle2, CreditCard, FileText, Send, Check, MessageCircle, Eye, Edit3, X, Layers, TrendingUp, RefreshCw } from 'lucide-react';
+import { ExternalLink, Search, Clock, CheckCircle2, CreditCard, FileText, MessageCircle, Eye, Edit3, X, Layers, TrendingUp, RefreshCw } from 'lucide-react';
 import { API_BASE } from '../config/api';
 import AdminLayout from '../components/layout/AdminLayout';
 import WhatsAppModal from '../components/modals/WhatsAppModal';
@@ -141,7 +141,7 @@ export default function IntakeSubmissions() {
         const data = await res.json().catch(() => ({}));
         alert(data.error || 'حدث خطأ أثناء تأكيد الدفع');
       }
-    } catch (e) {
+    } catch {
       alert('خطأ في الاتصال بالخادم');
     } finally {
       setVerifyingPaymentId(null);
@@ -169,7 +169,7 @@ export default function IntakeSubmissions() {
       } else {
         alert(data.error || 'فشل توليد مسودة الخطة');
       }
-    } catch (e) {
+    } catch {
       alert('خطأ أثناء توليد المسودة');
     } finally {
       setGeneratingId(null);

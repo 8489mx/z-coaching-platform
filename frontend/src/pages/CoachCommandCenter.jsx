@@ -1,5 +1,5 @@
 import { ClientCodeBadge, ClientPackageBadge, getClientTier, getClientCountryInfo, formatTimeAgo } from '../utils/tierBadgeHelper';
-import React, { useState, useEffect, useRef, useMemo } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { 
   Clock, 
@@ -137,7 +137,7 @@ export default function CoachCommandCenter() {
         if (u && (u.role === 'ADMIN' || u.role === 'COACH')) {
           isValid = true;
         }
-      } catch (e) {}
+      } catch {}
     }
     if (!isValid) {
       // No staff session: coaches authenticate with email + password on the login page.
@@ -160,21 +160,21 @@ export default function CoachCommandCenter() {
         try {
           const subData = await subOverviewRes.value.json();
           if (subData && Array.isArray(subData.clients)) setClients(subData.clients);
-        } catch (e) {}
+        } catch {}
       }
 
       if (intakeRes.status === 'fulfilled' && intakeRes.value && intakeRes.value.ok) {
         try {
           const intakeData = await intakeRes.value.json();
           if (intakeData && Array.isArray(intakeData.submissions)) setSubmissions(intakeData.submissions);
-        } catch (e) {}
+        } catch {}
       }
 
       if (checkinRes.status === 'fulfilled' && checkinRes.value && checkinRes.value.ok) {
         try {
           const checkinData = await checkinRes.value.json();
           if (checkinData && Array.isArray(checkinData.checkins)) setPendingCheckins(checkinData.checkins);
-        } catch (e) {}
+        } catch {}
       }
       setLastRefreshed(new Date());
     } catch (err) {

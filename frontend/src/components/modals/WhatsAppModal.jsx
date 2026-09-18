@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import ReactDOM from 'react-dom';
-import { MessageCircle, X, Copy, Check, Send } from 'lucide-react';
+import { X, Copy, Check, Send } from 'lucide-react';
 import { copyToClipboard } from '../../utils/clipboardUtils';
 import { formatWhatsAppPhone } from '../../utils/whatsappRemindersEngine';
 

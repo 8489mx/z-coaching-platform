@@ -1,18 +1,14 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Link, useSearchParams } from 'react-router-dom';
-import { 
-  Users, 
-  Search, 
-  Plus, 
-  ShieldCheck, 
-  Clock, 
-  MessageCircle, 
-  X, 
+import { useSearchParams } from 'react-router-dom';
+import {
+  Users,
+  Search,
+  Plus,
+  ShieldCheck,
+  Clock,
+  MessageCircle,
+  X,
   Download,
-  Pause,
-  Play,
-  CreditCard,
-  TrendingUp,
   ExternalLink
 } from 'lucide-react';
 import { API_BASE } from '../config/api';

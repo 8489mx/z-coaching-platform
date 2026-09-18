@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { X, Award, Download, Copy, Check, Share2, Sparkles, TrendingDown } from 'lucide-react';
+import { X, Award, Download, Copy, Check } from 'lucide-react';
 
 export function MilestoneProgressCardModal({
   isOpen,

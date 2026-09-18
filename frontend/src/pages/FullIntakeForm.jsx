@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { Check, ChevronLeft, ChevronRight, Ruler, Lock, Camera, CheckCircle2, Activity, HeartPulse, Utensils, Dumbbell, RotateCw, User, Scale, ShieldAlert, MessageCircle, AlertCircle, FileCheck2, Info, RefreshCcw, Upload, Trash2 } from 'lucide-react';
+import { Check, ChevronLeft, ChevronRight, Ruler, Lock, Camera, CheckCircle2, HeartPulse, Utensils, Dumbbell, RotateCw, Scale, ShieldAlert, MessageCircle, Upload, Trash2 } from 'lucide-react';
 import { API_BASE } from '../config/api';
 import { getStoredCoachConfig } from '../utils/themeAndCoachConfig';
 import { optimizeImageFile, optimizeMultipleFiles } from '../utils/imageOptimizer';
@@ -192,7 +192,7 @@ export default function FullIntakeForm() {
           try {
             const parsed = JSON.parse(localDraft);
             setFormData(prev => deepMerge(DEFAULT_MASTER_INTAKE, parsed));
-          } catch (e) {}
+          } catch {}
         }
       }
     } catch (e) {
@@ -226,7 +226,7 @@ export default function FullIntakeForm() {
           });
         }
         setSaveStatus('saved');
-      } catch (e) {
+      } catch {
         setSaveStatus('saved');
       }
     }, 1200);

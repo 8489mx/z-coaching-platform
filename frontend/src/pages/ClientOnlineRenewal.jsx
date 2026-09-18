@@ -1,17 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import { 
-  CheckCircle2, 
-  Crown, 
-  Zap, 
-  Copy, 
-  Check, 
-  MessageCircle, 
-  ArrowRight, 
-  CreditCard, 
-  ShieldCheck, 
-  Clock,
-  Phone,
+import {
+  CheckCircle2,
+  Crown,
+  Copy,
+  Check,
+  MessageCircle,
   User
 } from 'lucide-react';
 import { API_BASE } from '../config/api';

@@ -1,8 +1,8 @@
-import { getClientTier, getTierColors, ClientCodeBadge, ClientPackageBadge } from '../../utils/tierBadgeHelper';
+import { getClientTier } from '../../utils/tierBadgeHelper';
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import ReactDOM from 'react-dom';
-import { X, CheckCircle2, AlertTriangle, HeartPulse, Dumbbell, Activity, Apple, Camera, MessageCircle, User, ZoomIn, ShieldAlert, Utensils, Flame, Scale, Check, Ban, ShieldCheck, Zap, ExternalLink } from 'lucide-react';
+import { X, MessageCircle, ZoomIn, Zap, ExternalLink } from 'lucide-react';
 import { formatWhatsAppPhone } from '../../utils/whatsappRemindersEngine';
 import { extractClientFastingProfile } from '../../utils/seasonalFastingRadar';
 

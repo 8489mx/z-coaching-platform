@@ -1,11 +1,11 @@
 import React, { useState } from 'react';
-import { ArrowRightLeft, Dumbbell, Search, X, ShieldCheck, Zap, AlertCircle } from 'lucide-react';
+import { ArrowRightLeft, Dumbbell, Search, X, ShieldCheck, Zap } from 'lucide-react';
 import { ADD_EX_MUSCLE_CATEGORIES, ADD_EX_EQUIPMENT_OPTIONS } from '../../constants/coachEditorConstants';
 import { getExerciseDisplayNames } from '../../../../utils/exerciseTranslator';
 import { arabicSearchMatch } from '../../../../utils/searchUtils';
 import { getShortMuscleName, getShortEquipmentName } from '../../../ExerciseLibrary';
 import { getTorqueMatchedSwaps, RESISTANCE_PROFILES } from '../../../../utils/biomechanicalSwapEngine';
-import { GYM_RUSH_EQUIVALENCE_CATALOG, getGymRushEquivalentSwap, JOINT_PAIN_SWAP_MATRIX } from '../../../../utils/biomechanicsFirewallEngine';
+import { getGymRushEquivalentSwap, JOINT_PAIN_SWAP_MATRIX } from '../../../../utils/biomechanicsFirewallEngine';
 import CurvedSelect from '../../../../components/common/CurvedSelect';
 
 export function CoachSwapExerciseModal({

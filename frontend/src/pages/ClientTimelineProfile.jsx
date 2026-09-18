@@ -1,9 +1,23 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { 
-  User, Activity, TrendingUp, TrendingDown, Calendar, Settings2, 
-  ChevronRight, ChevronLeft, Target, ArrowRightLeft, CheckCircle2, 
-  MessageCircle, ExternalLink, ZoomIn, X, Clock, Dumbbell, Scale, 
-  Flame, AlertCircle, HeartPulse, ShieldAlert, Copy, Check 
+import {
+  Activity,
+  TrendingUp,
+  TrendingDown,
+  ChevronRight,
+  ChevronLeft,
+  Target,
+  ArrowRightLeft,
+  MessageCircle,
+  ZoomIn,
+  X,
+  Dumbbell,
+  Scale,
+  Flame,
+  AlertCircle,
+  HeartPulse,
+  ShieldAlert,
+  Copy,
+  Check
 } from 'lucide-react';
 import { useNavigate, useParams, Link } from 'react-router-dom';
 import AdminLayout from '../components/layout/AdminLayout';

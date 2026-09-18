@@ -192,7 +192,7 @@ export default function FlexibleRenewalModal({
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(payload)
         });
-      } catch (err) {
+      } catch {
         console.log('Renew API call finished');
       }
 

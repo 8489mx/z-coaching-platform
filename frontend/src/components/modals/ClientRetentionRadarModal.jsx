@@ -1,15 +1,13 @@
 import React, { useState } from 'react';
-import { 
-  X, 
-  Send, 
-  Check, 
-  Copy, 
-  AlertTriangle, 
-  ShieldCheck, 
-  Activity, 
-  TrendingUp, 
-  Clock, 
-  Target 
+import {
+  X,
+  Send,
+  Check,
+  Copy,
+  AlertTriangle,
+  ShieldCheck,
+  Activity,
+  Target
 } from 'lucide-react';
 import { generateWhatsAppUrl } from '../../utils/whatsappRemindersEngine';
 

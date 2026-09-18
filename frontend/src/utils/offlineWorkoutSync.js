@@ -132,7 +132,7 @@ export function getCachedWorkoutLog({
     const storageKey = `workout_log_${workoutId}_${dateKey}`;
     const data = storageDriver.getItem(storageKey);
     return data ? JSON.parse(data) : null;
-  } catch (e) {
+  } catch {
     return null;
   }
 }
@@ -176,7 +176,7 @@ export function getCachedProgram({
     if (!raw) return null;
     const parsed = JSON.parse(raw);
     return parsed.program || parsed;
-  } catch (e) {
+  } catch {
     return null;
   }
 }
@@ -214,7 +214,7 @@ export function getCachedGymRushCatalog({
     if (!raw) return null;
     const parsed = JSON.parse(raw);
     return parsed.catalog || null;
-  } catch (e) {
+  } catch {
     return null;
   }
 }

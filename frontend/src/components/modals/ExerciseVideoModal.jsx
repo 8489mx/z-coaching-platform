@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import { X, Dumbbell, Play, AlertTriangle } from 'lucide-react';
+import { X, Dumbbell, AlertTriangle } from 'lucide-react';
 
 function getYouTubeEmbedUrl(exercise) {
   if (!exercise) return '';

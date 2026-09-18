@@ -79,7 +79,7 @@ export async function optimizeImageFile(file, options = {}) {
         if (!dataUrl.startsWith(`data:${preferredFormat}`)) {
           dataUrl = canvas.toDataURL('image/jpeg', quality);
         }
-      } catch (e) {
+      } catch {
         dataUrl = canvas.toDataURL('image/jpeg', quality);
       }
 

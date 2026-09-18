@@ -246,7 +246,7 @@ export function formatTimeAgo(dateStr) {
     if (diffDays === 1) return 'أمس';
     if (diffDays < 7) return `منذ ${diffDays} أيام`;
     return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
-  } catch (e) {
+  } catch {
     return 'اليوم';
   }
 }

@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
-import { useNavigate, useLocation, Link } from 'react-router-dom';
-import { ShieldCheck, LogIn, AlertCircle, Smartphone, KeyRound, Loader2, ArrowLeft, Lock, ChevronRight, ClipboardList, LayoutDashboard } from 'lucide-react';
+import { useNavigate, useLocation } from 'react-router-dom';
+import { LogIn, AlertCircle, Smartphone, KeyRound, Loader2, Lock, LayoutDashboard } from 'lucide-react';
 import { API_BASE } from '../config/api';
 import { getStoredCoachConfig } from '../utils/themeAndCoachConfig';
 

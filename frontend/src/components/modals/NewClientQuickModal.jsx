@@ -1,4 +1,4 @@
-import { getClientTier, getTierColors, ClientCodeBadge, ClientPackageBadge } from '../../utils/tierBadgeHelper';
+import { getClientTier } from '../../utils/tierBadgeHelper';
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Phone, User, CheckCircle2, MessageCircle, Copy, Check, Edit3, AlertCircle } from 'lucide-react';

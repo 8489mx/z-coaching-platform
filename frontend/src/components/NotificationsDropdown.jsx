@@ -47,7 +47,7 @@ export default function NotificationsDropdown() {
       const safeJson = async (res) => {
         try {
           if (res && typeof res.json === 'function') return await res.json();
-        } catch (e) {}
+        } catch {}
         return {};
       };
 
@@ -59,10 +59,10 @@ export default function NotificationsDropdown() {
       let completedMap = {};
       try {
         readMap = JSON.parse(localStorage.getItem('z_notif_read_map') || '{}') || {};
-      } catch (e) {}
+      } catch {}
       try {
         completedMap = JSON.parse(localStorage.getItem('z_notif_completed_map') || '{}') || {};
-      } catch (e) {}
+      } catch {}
 
       const list = [];
 
@@ -138,9 +138,9 @@ export default function NotificationsDropdown() {
 
   const handleNotificationClick = (item) => {
     let readMap = {};
-    try { readMap = JSON.parse(localStorage.getItem('z_notif_read_map') || '{}') || {}; } catch (e) {}
+    try { readMap = JSON.parse(localStorage.getItem('z_notif_read_map') || '{}') || {}; } catch {}
     readMap[item.id] = true;
-    try { localStorage.setItem('z_notif_read_map', JSON.stringify(readMap)); } catch (e) {}
+    try { localStorage.setItem('z_notif_read_map', JSON.stringify(readMap)); } catch {}
 
     setNotifications(prev => prev.map(n => n.id === item.id ? { ...n, isRead: true } : n));
     setIsOpen(false);
@@ -151,9 +151,9 @@ export default function NotificationsDropdown() {
 
   const markAllAsRead = () => {
     let readMap = {};
-    try { readMap = JSON.parse(localStorage.getItem('z_notif_read_map') || '{}') || {}; } catch (e) {}
+    try { readMap = JSON.parse(localStorage.getItem('z_notif_read_map') || '{}') || {}; } catch {}
     notifications.forEach(n => { readMap[n.id] = true; });
-    try { localStorage.setItem('z_notif_read_map', JSON.stringify(readMap)); } catch (e) {}
+    try { localStorage.setItem('z_notif_read_map', JSON.stringify(readMap)); } catch {}
     setNotifications(prev => prev.map(n => ({ ...n, isRead: true })));
   };
 

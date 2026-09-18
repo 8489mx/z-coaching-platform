@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { RotateCw, Maximize2, Search, Smartphone } from 'lucide-react';
+import { RotateCw, Maximize2, Smartphone } from 'lucide-react';
 import NotificationsDropdown from '../NotificationsDropdown';
 import CoachAccountDropdown from './CoachAccountDropdown';
 import GlobalSearchModal from '../modals/GlobalSearchModal';

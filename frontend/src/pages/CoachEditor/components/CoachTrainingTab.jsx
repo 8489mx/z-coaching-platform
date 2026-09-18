@@ -1,12 +1,11 @@
 import React from 'react';
-import { 
-  Play, 
-  ArrowRightLeft, 
-  Trash2, 
-  HeartPulse, 
-  Plus, 
+import {
+  Play,
+  ArrowRightLeft,
+  Trash2,
+  HeartPulse,
+  Plus,
   X,
-  ShieldAlert,
   ArrowUp,
   ArrowDown,
   Copy

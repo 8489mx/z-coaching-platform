@@ -1,38 +1,27 @@
 import { API_BASE } from '../config/api';
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import { 
-  CheckCircle2, 
-  MessageCircle, 
-  Camera, 
-  TrendingDown, 
-  TrendingUp, 
+import {
+  CheckCircle2,
+  MessageCircle,
+  Camera,
+  TrendingDown,
+  TrendingUp,
   Minus,
-  Scale, 
-  Utensils, 
-  Activity, 
-  BrainCircuit, 
-  Save, 
-  Loader2, 
+  Utensils,
+  Activity,
+  BrainCircuit,
+  Save,
+  Loader2,
   AlertTriangle,
   ChevronRight,
   ChevronLeft,
   ShieldCheck,
   Zap,
-  Phone,
   Search,
-  ArrowRight,
-  UserCheck,
-  Flame,
-  Moon,
   HeartPulse,
-  RotateCcw,
   Target,
-  Clock,
-  Filter,
-  Check,
   Dumbbell,
-  Droplets,
   Trophy,
   ExternalLink,
   Plane,
@@ -46,7 +35,7 @@ import { FormSection } from '@/shared/components/form-section';
 import InteractivePhotoComparisonStudio from '../components/checkin/InteractivePhotoComparisonStudio';
 import LabBiomarkersReviewStudio from '../components/clinical/LabBiomarkersReviewStudio';
 import { MilestoneProgressCardModal } from '../components/checkin/MilestoneProgressCardModal';
-import { ClientCodeBadge, ClientPackageBadge, getClientTier } from '../utils/tierBadgeHelper';
+import { ClientCodeBadge, ClientPackageBadge } from '../utils/tierBadgeHelper';
 import { arabicSearchMatch } from '../utils/searchUtils';
 import { extractClientFastingProfile } from '../utils/seasonalFastingRadar';
 import { formatWhatsAppPhone } from '../utils/whatsappRemindersEngine';

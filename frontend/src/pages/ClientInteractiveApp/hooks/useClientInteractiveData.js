@@ -192,7 +192,7 @@ export function useClientInteractiveData() {
     setDailyReadiness(status);
     try {
       localStorage.setItem('kz_daily_readiness', status);
-    } catch (e) {}
+    } catch {}
   };
 
   const [workoutSession, setWorkoutSession] = useState({
@@ -469,7 +469,7 @@ export function useClientInteractiveData() {
           setMeals(progMeals);
         }
       }
-    } catch (e) {}
+    } catch {}
   }, [selectedDay, clientData?.code, clientProgram]);
 
   // 10. Exercise Completion Toggle
@@ -494,7 +494,7 @@ export function useClientInteractiveData() {
       if (cleanCode) {
         try {
           localStorage.setItem(`kz_workout_${cleanCode}_day_${selectedDay}`, JSON.stringify(nextSession));
-        } catch (e) {}
+        } catch {}
       }
 
       return nextSession;

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { ArrowRightLeft, Search, X, Utensils, Scale } from 'lucide-react';
+import { ArrowRightLeft, Search, X } from 'lucide-react';
 import { FOOD_DATABASE_LIST } from '../../constants/coachEditorConstants';
 import { arabicSearchMatch } from '../../../../utils/searchUtils';
 import { convertPortionCookingYield, FOOD_YIELD_MAPPING } from '../../../../utils/kitchenYieldEngine';

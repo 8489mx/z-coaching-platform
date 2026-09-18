@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Plane, AlertTriangle, Activity, Briefcase, Utensils, X, Check, RotateCcw } from 'lucide-react';
+import { Plane, AlertTriangle, Activity, Briefcase, X } from 'lucide-react';
 import { applyEmergencyScenarioAdaptation, TRAVEL_EQUIPMENT_TYPES } from '../../../../utils/emergencyScenarioEngine';
 
 export function CoachEmergencyModal({

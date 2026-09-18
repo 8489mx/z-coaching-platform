@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Calculator, Flame, Zap, Dumbbell, Droplet, Footprints, Activity, Copy, Check, Save, RotateCw, MessageCircle, UtensilsCrossed, Search, Plus, Edit2, Trash2, X, Apple, Fish, Beef, Wheat, ShieldAlert, Info, CheckCircle2, Layers, Scale, LayoutGrid, Table as TableIcon } from 'lucide-react';
+import { Calculator, Flame, Droplet, Activity, Check, Save, RotateCw, MessageCircle, UtensilsCrossed, Search, Plus, Edit2, Trash2, X, Scale } from 'lucide-react';
 import { API_BASE } from '../config/api';
 import AdminLayout from '../components/layout/AdminLayout';
 import { copyToClipboard } from '../utils/clipboardUtils';

@@ -1,17 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { useSearchParams, useParams, useNavigate } from 'react-router-dom';
-import { 
-  Printer, 
-  ArrowRight, 
-  Share2, 
-  Download, 
-  CheckCircle2, 
-  Activity, 
-  TrendingDown, 
-  TrendingUp, 
-  Dumbbell, 
-  ShieldCheck, 
-  HeartPulse 
+import {
+  Printer,
+  ArrowRight,
+  Share2,
+  Activity,
+  ShieldCheck
 } from 'lucide-react';
 import { API_BASE } from '../config/api';
 import { generateMesocycleDebriefReport } from '../utils/mesocycleDebriefEngine';

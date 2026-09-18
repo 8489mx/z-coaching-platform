@@ -1,9 +1,9 @@
 import { API_BASE } from '../config/api';
-import { getClientTier, getTierColors, ClientCodeBadge, ClientPackageBadge } from '../utils/tierBadgeHelper';
+import { getClientTier, ClientCodeBadge, ClientPackageBadge } from '../utils/tierBadgeHelper';
 import React, { useState, useMemo } from 'react';
-import { Send, MessageSquare, Clock, CheckCircle2, AlertCircle, Copy, Search, RotateCw, ExternalLink, Smartphone, ShieldAlert, Filter, Check, Zap, Flame, CreditCard, UserCheck, Bell, Edit3, ChevronDown, ChevronRight, ChevronLeft, Dumbbell, Link } from 'lucide-react';
+import { Send, MessageSquare, CheckCircle2, Copy, Search, ExternalLink, Smartphone, ShieldAlert, Check, ChevronDown, ChevronRight, ChevronLeft, Dumbbell, Link } from 'lucide-react';
 import AdminLayout from '../components/layout/AdminLayout';
-import { REMINDER_CATEGORIES, MESSAGE_TEMPLATES, compileReminderMessage, generateWhatsAppUrl, formatWhatsAppPhone } from '../utils/whatsappRemindersEngine';
+import { REMINDER_CATEGORIES, MESSAGE_TEMPLATES, compileReminderMessage, generateWhatsAppUrl } from '../utils/whatsappRemindersEngine';
 import { arabicSearchMatch } from '../utils/searchUtils';
 
 export default function WhatsAppRemindersHub() {

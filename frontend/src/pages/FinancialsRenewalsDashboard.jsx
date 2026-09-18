@@ -3,7 +3,7 @@ import { ClientCodeBadge, ClientPackageBadge, getClientTier } from '../utils/tie
 import { arabicSearchMatch } from '../utils/searchUtils';
 import React, { useState, useMemo, useEffect, useRef } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { DollarSign, CreditCard, TrendingUp, Users, AlertCircle, Clock, CheckCircle2, Send, Search, Filter, Calendar, ArrowUpRight, Check, Plus, X, RotateCw, BadgePercent, Wallet, Receipt, ArrowRight, Pause, Play, ShieldAlert, MessageSquare, Dumbbell, ExternalLink, Activity, Target, ShieldCheck } from 'lucide-react';
+import { DollarSign, CreditCard, AlertCircle, Clock, CheckCircle2, Send, Search, ArrowUpRight, BadgePercent, Wallet, Pause, Play, ShieldAlert, MessageSquare, Dumbbell, Activity, Target, ShieldCheck } from 'lucide-react';
 import AdminLayout from '../components/layout/AdminLayout';
 import FlexibleRenewalModal from '../components/modals/FlexibleRenewalModal';
 import ClientRetentionRadarModal from '../components/modals/ClientRetentionRadarModal';

@@ -1,29 +1,22 @@
 import { API_BASE } from '../../config/api';
-import React, { useState, useRef, useMemo, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, NavLink, useLocation, useNavigate } from 'react-router-dom';
 import {
   LayoutDashboard,
   ClipboardList,
   CheckCircle2,
   Users,
-  CreditCard,
   Dumbbell,
   UtensilsCrossed,
   HeartPulse,
   FileEdit,
-  LineChart,
   Settings,
-  ShieldCheck,
-  Search,
   ChevronLeft,
   ChevronRight,
   ChevronDown,
   MessageSquare,
-  Smartphone,
-  Wallet,
-  X
+  Wallet
 } from 'lucide-react';
-import { arabicSearchMatch } from '../../utils/searchUtils';
 import { getStoredCoachConfig } from '../../utils/themeAndCoachConfig';
 
 // 1. المقر الرئيسي (لوحة التحكم)
@@ -98,7 +91,7 @@ export default function Sidebar({ isCollapsed = false, onToggleSidebar }) {
           checkins: Array.isArray(chData?.checkins) ? chData.checkins.length : 0,
           reminders: 0
         });
-      } catch (e) {}
+      } catch {}
     };
     fetchBadges();
   }, []);

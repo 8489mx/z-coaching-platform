@@ -1,17 +1,13 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { 
-  Maximize2, 
-  X, 
-  Award, 
-  TrendingUp, 
-  Camera, 
-  Upload, 
-  Download, 
-  Share2, 
-  RefreshCw, 
-  Check, 
-  ChevronLeft, 
-  ChevronRight 
+import {
+  Maximize2,
+  X,
+  Award,
+  TrendingUp,
+  Camera,
+  Download,
+  Share2,
+  Check
 } from 'lucide-react';
 import { 
   CARD_FORMATS, 

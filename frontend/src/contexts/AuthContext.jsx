@@ -1,6 +1,5 @@
 import { API_BASE } from '../config/api';
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
 
 const AuthContext = createContext();
 
@@ -10,7 +9,7 @@ export const AuthProvider = ({ children }) => {
   const [token, setToken] = useState(() => {
     try {
       return localStorage.getItem('token') || null;
-    } catch (e) {
+    } catch {
       return null;
     }
   });
@@ -18,7 +17,7 @@ export const AuthProvider = ({ children }) => {
     try {
       const stored = localStorage.getItem('user');
       return (stored && stored !== 'undefined' && stored !== 'null') ? JSON.parse(stored) : null;
-    } catch (e) {
+    } catch {
       return null;
     }
   });
