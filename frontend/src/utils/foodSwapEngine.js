@@ -998,7 +998,7 @@ export const FOOD_DATABASE = {
     fat_per_100g: 0.1,
     calories_per_100g: 35,
     yield_factor_raw_to_cooked: 1.0,
-    allergens: ['DAIRY'],
+    allergens: ['DAIRY', 'MILK'],
     purine_level: 'LOW',
     is_gluten_free: true,
     is_legume: false,
@@ -1018,7 +1018,7 @@ export const FOOD_DATABASE = {
     default_amount: 200,
     serving_unit: 'مل (كوب متوسط)',
     yield_factor_raw_to_cooked: 1.0,
-    allergens: ['DAIRY'],
+    allergens: ['DAIRY', 'MILK'],
     purine_level: 'LOW',
     is_gluten_free: true,
     is_legume: false,
@@ -1475,7 +1475,9 @@ export const FOOD_DATABASE = {
     carbs_per_100g: 14,
     fat_per_100g: 1.0,
     calories_per_100g: 68,
+    yield_factor_raw_to_cooked: 1.0,
     allergens: [],
+    purine_level: 'LOW',
     is_gluten_free: true,
     is_legume: false
   },
@@ -1533,8 +1535,11 @@ export const FOOD_DATABASE = {
     calories_per_100g: 486,
     default_amount: 10,
     serving_unit: 'جرام / ملعقة (10 جم)',
+    yield_factor_raw_to_cooked: 1.0,
     allergens: [],
-    is_gluten_free: true
+    purine_level: 'LOW',
+    is_gluten_free: true,
+    is_legume: false
   },
   RAW_CASHEWS: {
     code: 'RAW_CASHEWS',
@@ -1771,6 +1776,58 @@ export const FOOD_DATABASE = {
     allergens: [],
     is_gluten_free: true,
     is_legume: false
+  },
+  FREEKEH_COOKED: {
+    code: 'FREEKEH_COOKED',
+    name_ar: 'فريك مصري / برغل مسلوق بالبهارات',
+    name_en: 'Cooked Freekeh / Bulgur',
+    macro_type: 'CARBS',
+    taste_profile: TASTE_PROFILES.MAIN_CARB,
+    protein_per_100g: 5.5,
+    carbs_per_100g: 31.0,
+    fat_per_100g: 1.0,
+    calories_per_100g: 150,
+    yield_factor_raw_to_cooked: 1.0,
+    allergens: ['WHEAT', 'GLUTEN'],
+    purine_level: 'LOW',
+    is_gluten_free: false,
+    is_legume: false
+  },
+  ALMOND_MILK_UNSWEETENED: {
+    code: 'ALMOND_MILK_UNSWEETENED',
+    name_ar: 'حليب لوز غير محلى (خالي من السكر واللاكتوز)',
+    name_en: 'Unsweetened Almond Milk',
+    macro_type: 'FATS',
+    taste_profile: TASTE_PROFILES.HEALTHY_FAT,
+    protein_per_100g: 0.5,
+    carbs_per_100g: 0.3,
+    fat_per_100g: 1.1,
+    calories_per_100g: 13,
+    yield_factor_raw_to_cooked: 1.0,
+    allergens: ['NUTS', 'TREE_NUTS', 'ALMONDS'],
+    purine_level: 'LOW',
+    is_gluten_free: true,
+    is_dairy: false,
+    is_low_lactose: true,
+    is_legume: false
+  },
+  LOW_FAT_MOZZARELLA: {
+    code: 'LOW_FAT_MOZZARELLA',
+    name_ar: 'جبن موزاريلا طبيعي قليل الدسم لايت',
+    name_en: 'Part-Skim Mozzarella Cheese',
+    macro_type: 'PROTEIN',
+    taste_profile: TASTE_PROFILES.BREAKFAST_SAVORY_PROTEIN,
+    protein_per_100g: 28.0,
+    carbs_per_100g: 2.0,
+    fat_per_100g: 15.0,
+    calories_per_100g: 250,
+    yield_factor_raw_to_cooked: 1.0,
+    allergens: ['DAIRY', 'CHEESE'],
+    purine_level: 'LOW',
+    is_gluten_free: true,
+    is_dairy: true,
+    is_low_lactose: true,
+    is_legume: false
   }
 };
 
@@ -1867,6 +1924,10 @@ export const FOOD_CLINICAL_OVERRIDES = Object.freeze({
 
   // LOW GLYCEMIC INDEX (GI <= 55) & LOW FODMAP
   LACTOSE_FREE_MILK: { glycemic_index: 'LOW', fodmap_level: 'LOW' },
+  FREEKEH_COOKED: { glycemic_index: 'MEDIUM', fodmap_level: 'HIGH' },
+  LOW_FAT_MOZZARELLA: { glycemic_index: 'LOW', fodmap_level: 'LOW' },
+  CHIA_SEEDS: { glycemic_index: 'LOW', fodmap_level: 'LOW' },
+  ALMOND_MILK_UNSWEETENED: { glycemic_index: 'LOW', fodmap_level: 'LOW' },
   ROLLED_OATS_RAW: { glycemic_index: 'LOW', fodmap_level: 'LOW' },
   COOKED_QUINOA: { glycemic_index: 'LOW', fodmap_level: 'LOW' },
   STRAWBERRIES: { glycemic_index: 'LOW', fodmap_level: 'LOW' },
