@@ -1,0 +1,25 @@
+{
+  "$schema": "./node_modules/oxlint/configuration_schema.json",
+  "plugins": ["react"],
+  "env": {
+    "browser": true,
+    "es2024": true
+  },
+  "globals": {
+    "process": "readonly",
+    "__APP_VERSION__": "readonly"
+  },
+  "categories": {
+    "correctness": "off"
+  },
+  "rules": {
+    "no-undef": "error",
+    "react/jsx-no-undef": "error",
+    "react/rules-of-hooks": "error",
+    "no-dupe-keys": "error",
+    "no-unreachable": "error",
+    "no-const-assign": "error",
+    "no-import-assign": "error",
+    "no-func-assign": "error"
+  }
+}

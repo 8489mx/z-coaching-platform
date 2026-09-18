@@ -1,0 +1,22 @@
+{
+  "$schema": "./node_modules/oxlint/configuration_schema.json",
+  "env": {
+    "node": true,
+    "es2024": true
+  },
+  "categories": {
+    "correctness": "off"
+  },
+  "rules": {
+    "no-undef": "error",
+    "no-dupe-keys": "error",
+    "no-unreachable": "error",
+    "no-const-assign": "error",
+    "no-import-assign": "error",
+    "no-func-assign": "error"
+  },
+  "globals": {
+    "window": "readonly",
+    "localStorage": "readonly"
+  }
+}
