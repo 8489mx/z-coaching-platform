@@ -26,9 +26,10 @@ test('Contextual Food Swap Engine & Taste Profile Partitioning Tests', async (t)
     assert.equal(result.success, true);
     assert.equal(result.current_food.taste_profile, TASTE_PROFILES.MAIN_MEAL_PROTEIN);
     assert.equal(result.replacement_food.taste_profile, TASTE_PROFILES.MAIN_MEAL_PROTEIN);
-    // 46.5g / 0.26 = 178.8 -> 179g
-    assert.equal(result.replacement_food.portion_g, 179);
-    assert.equal(result.replacement_food.macros.protein_g, 46.5);
+    // 46.5g / 0.263 (USDA FDC 171791) = 176.8 -> 177g
+    assert.equal(result.replacement_food.portion_g, 177);
+    // 177g * 0.263 = 46.55 -> 46.6g (portion rounded to whole grams)
+    assert.equal(result.replacement_food.macros.protein_g, 46.6);
   });
 
   await t.test('2. Enforces Culinary Pairing Guard: Throws error when swapping across incompatible taste profiles', () => {
@@ -52,9 +53,9 @@ test('Contextual Food Swap Engine & Taste Profile Partitioning Tests', async (t)
     });
 
     assert.equal(carbSwap.success, true);
-    // 50g carbs / 0.82 = 60.97 -> 61g
+    // 50g carbs / 0.815 (USDA FDC 170250) = 61.3 -> 61g, which carries 49.7g carbs
     assert.equal(carbSwap.replacement_food.portion_g, 61);
-    assert.equal(carbSwap.replacement_food.macros.carbs_g, 50);
+    assert.equal(carbSwap.replacement_food.macros.carbs_g, 49.7);
   });
 
   await t.test('4. Clinical Guardrails: G6PD strictly bans fava beans and Celiac bans wheat bread', () => {

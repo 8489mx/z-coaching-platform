@@ -10,8 +10,8 @@ import {
 test('Context-Aware Food Swap & Portion Converter Engine Suite', async (t) => {
 
   await t.test('1. Accurately calculates equivalent swap between grilled chicken breast and lean ground beef', () => {
-    // 150g Chicken (31g P/100g) -> Lean Ground Beef (26g P/100g)
-    // Target = 150 * (31 / 26) = 178.85g -> rounded to 180g
+    // 150g Chicken (31g P/100g) -> Lean Ground Beef 95/5 (26.3g P/100g, USDA FDC 171791)
+    // Target = 150 * (31 / 26.3) = 176.8g -> rounded to 175g
     const result = calculateEquivalentSwap({
       sourceFoodId: 'grilled_chicken_breast',
       sourceGrams: 150,
@@ -23,7 +23,7 @@ test('Context-Aware Food Swap & Portion Converter Engine Suite', async (t) => {
     assert.equal(result.source_food.id, 'grilled_chicken_breast');
     assert.equal(result.source_food.grams, 150);
     assert.equal(result.target_food.id, 'lean_ground_beef_95');
-    assert.equal(result.target_food.calculated_grams, 180);
+    assert.equal(result.target_food.calculated_grams, 175);
     assert.ok(result.target_food.hand_portion.includes('كف يد'));
     assert.ok(result.target_food.culinary_hacks.length > 0);
     assert.ok(result.macros.protein > 40);
@@ -53,7 +53,8 @@ test('Context-Aware Food Swap & Portion Converter Engine Suite', async (t) => {
     });
 
     assert.equal(result.success, true);
-    assert.equal(result.target_food.calculated_grams, 310);
+    // 100g chicken (31g P) -> Greek yogurt 0% (10.2g P/100g, USDA FDC 170894) = 303.9g -> 305g
+    assert.equal(result.target_food.calculated_grams, 305);
   });
 
   await t.test('4. Correctly swaps carbs within same profile (Cooked Basmati Rice to Cooked Potatoes)', () => {

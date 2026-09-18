@@ -8,8 +8,8 @@ import {
 } from '../src/execution-engines/food-swap-engine.js';
 
 test('1. Food Swap Engine - Dynamic Macro Equivalence Math', () => {
-  // Swap 150g Chicken Breast (31g protein/100g = 46.5g protein) -> White Fish (24g protein/100g)
-  // Expected weight = 46.5 * (100 / 24) = 193.75 -> 194g
+  // Swap 150g Chicken Breast (31g protein/100g = 46.5g protein) -> White Fish (22.8g protein/100g, USDA FDC 171956)
+  // Expected weight = 46.5 * (100 / 22.8) = 203.9 -> 204g
   const swap = calculateDynamicFoodSwap({
     current_food_code: 'CHICKEN_BREAST',
     current_portion_g: 150,
@@ -19,7 +19,7 @@ test('1. Food Swap Engine - Dynamic Macro Equivalence Math', () => {
 
   assert.equal(swap.success, true);
   assert.equal(swap.current_food.portion_g, 150);
-  assert.equal(swap.replacement_food.portion_g, 194);
+  assert.equal(swap.replacement_food.portion_g, 204);
   assert.ok(swap.replacement_food.macros.protein_g >= 45 && swap.replacement_food.macros.protein_g <= 48);
 });
 
