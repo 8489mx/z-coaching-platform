@@ -158,10 +158,6 @@ export const MASTER_EXERCISE_DICTIONARY = Object.freeze({
     name_en: "Chest-Supported T-Bar Row",
     name_ar: "تجديف تي بار مع تثبيت الصدر",
   },
-  CHEST_SUPPORTED_ROW: {
-    name_en: "Chest-Supported Row",
-    name_ar: "تجديف مسنود الصدر للأعلى",
-  },
   T_BAR_ROW: {
     name_en: "T-Bar Row",
     name_ar: "تجديف تي بار للظهر",
@@ -264,10 +260,6 @@ export const MASTER_EXERCISE_DICTIONARY = Object.freeze({
     name_en: "Leg Extension Machine",
     name_ar: "رفرفة أمامية للأرجل على الجهاز",
   },
-  LEG_EXTENSION: {
-    name_en: "Leg Extension Machine",
-    name_ar: "رفرفة أمامية للأرجل على الجهاز",
-  },
   HACK_SQUAT: {
     name_en: "Hack Squat Machine",
     name_ar: "هاك سكوات على الجهاز للرجلين",
@@ -326,10 +318,6 @@ export const MASTER_EXERCISE_DICTIONARY = Object.freeze({
     name_en: "Leg Curl Machine",
     name_ar: "مرجحة أرجل خلفية على الجهاز",
   },
-  SEATED_LEG_CURL: {
-    name_en: "Seated Leg Curl Machine",
-    name_ar: "مرجحة أرجل خلفية جالساً على الجهاز",
-  },
   HAMSTRING_CURL: {
     name_en: "Leg Curl Machine",
     name_ar: "ثني الأرجل الخلفية على الجهاز",
@@ -337,10 +325,6 @@ export const MASTER_EXERCISE_DICTIONARY = Object.freeze({
   CALF_RAISE_STANDING: {
     name_en: "Standing Calf Raise",
     name_ar: "رفع عضلة السمانة واقفاً",
-  },
-  STANDING_CALF_RAISE: {
-    name_en: "Standing Calf Raise",
-    name_ar: "رفع عضلة السمانة واقفاً بوزن الجسم",
   },
   DUMBBELL_CALF_RAISE: {
     name_en: "Dumbbell Calf Raise",
