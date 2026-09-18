@@ -140,27 +140,16 @@ export default function CoachCommandCenter() {
       } catch (e) {}
     }
     if (!isValid) {
-      try {
-        const res = await fetch(`${API_BASE}/api/v1/auth/login-fast`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ client_code: 'COACH-KZ', phone_number: '+201000000000' })
-        });
-        const data = await res.json();
-        if (res.ok && data.token) {
-          localStorage.setItem('token', data.token);
-          localStorage.setItem('user', JSON.stringify(data.user));
-          localStorage.setItem('z_coach_user', JSON.stringify(data.user));
-          localStorage.setItem('z_auth_token', data.token);
-        }
-      } catch (e) {}
+      // No staff session: coaches authenticate with email + password on the login page.
+      window.location.href = '/login';
     }
+    return isValid;
   };
 
   const fetchDashboardData = async () => {
     try {
       setLoading(true);
-      await ensureCoachSession();
+      if (!(await ensureCoachSession())) return;
       const [subOverviewRes, intakeRes, checkinRes] = await Promise.allSettled([
         fetch(`${API_BASE}/api/v1/subscriptions/overview`),
         fetch(`${API_BASE}/api/v1/intake/submissions`),

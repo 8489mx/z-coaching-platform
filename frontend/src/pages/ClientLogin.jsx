@@ -14,20 +14,30 @@ export default function ClientLogin({ onLoginSuccess }) {
 
   const coachConfig = getStoredCoachConfig();
   const [isCoachLoading, setIsCoachLoading] = useState(false);
+  const [showCoachForm, setShowCoachForm] = useState(false);
+  const [coachEmail, setCoachEmail] = useState('');
+  const [coachPassword, setCoachPassword] = useState('');
+  const [coachError, setCoachError] = useState('');
 
-  const handleCoachLogin = async () => {
+  const handleCoachLogin = async (e) => {
+    e.preventDefault();
+    if (!coachEmail.trim() || !coachPassword) {
+      setCoachError('يرجى إدخال البريد الإلكتروني وكلمة المرور.');
+      return;
+    }
     try {
       setIsCoachLoading(true);
-      setError('');
-      
-      const res = await fetch(`${API_BASE}/api/v1/auth/login-fast`, {
+      setCoachError('');
+
+      const res = await fetch(`${API_BASE}/api/v1/auth/login-email`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ client_code: 'COACH-KZ', phone_number: '+201000000000' })
+        body: JSON.stringify({ email: coachEmail.trim(), password: coachPassword })
       });
-      
+
       const data = await res.json();
-      if (res.ok && data.token) {
+      const isStaff = data?.user && (data.user.role === 'ADMIN' || data.user.role === 'COACH');
+      if (res.ok && data.token && isStaff) {
         localStorage.setItem('token', data.token);
         localStorage.setItem('user', JSON.stringify(data.user));
         localStorage.setItem('z_coach_user', JSON.stringify(data.user));
@@ -35,24 +45,21 @@ export default function ClientLogin({ onLoginSuccess }) {
         window.location.href = '/';
       } else {
         setIsCoachLoading(false);
-        setError('تعذر تسجيل دخول الكابتن: ' + (data.error || 'خطأ في التحقق'));
+        setCoachPassword('');
+        setCoachError(res.ok ? 'هذا الحساب ليس حساب كوتش أو إدارة.' : 'البريد الإلكتروني أو كلمة المرور غير صحيحة.');
       }
     } catch (err) {
       console.error('Coach login error:', err);
       setIsCoachLoading(false);
-      setError('تعذر الاتصال بالخادم لدخول الكابتن.');
+      setCoachError('تعذر الاتصال بالخادم لدخول الكابتن.');
     }
   };
 
   const handleLogin = async (e) => {
     e.preventDefault();
-    
+
     const cleanCode = code.replace(/^#+/, '').replace(/^client[-_]?/i, '').trim();
-    if (cleanCode.toLowerCase() === 'admin' || cleanCode.toLowerCase() === 'coach' || cleanCode === '0' || cleanCode === '8489' || cleanCode.toUpperCase() === 'COACH-KZ') {
-      handleCoachLogin();
-      return;
-    }
-    
+
     if (phone.trim().length < 9 || code.trim().length < 1) {
       setError('يرجى إدخال رقم الموبايل وكود الاشتراك بشكل صحيح.');
       return;
@@ -320,46 +327,96 @@ export default function ClientLogin({ onLoginSuccess }) {
             <div style={{ flex: 1, height: '1px', background: '#E2E8F0' }} />
           </div>
 
-          <button
-            type="button"
-            onClick={handleCoachLogin}
-            disabled={isCoachLoading || isLoading}
-            style={{
-              width: '100%',
-              height: '44px',
-              borderRadius: '8px',
-              background: '#0F172A',
-              color: '#FFFFFF',
-              border: 'none',
-              fontSize: '13px',
-              fontWeight: 800,
-              cursor: isCoachLoading ? 'not-allowed' : 'pointer',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              gap: '8px',
-              boxShadow: '0 2px 8px rgba(15, 23, 42, 0.15)',
-              transition: 'all 0.15s ease'
-            }}
-            onMouseEnter={(e) => {
-              if (!isCoachLoading) e.currentTarget.style.background = '#334155';
-            }}
-            onMouseLeave={(e) => {
-              if (!isCoachLoading) e.currentTarget.style.background = '#0F172A';
-            }}
-          >
-            {isCoachLoading ? (
-              <>
-                <Loader2 size={16} className="animate-spin" />
-                <span>جاري الدخول إلى لوحة تحكم الكابتن...</span>
-              </>
-            ) : (
-              <>
-                <LayoutDashboard size={16} color="#FFFFFF" />
-                <span>دخول لوحة تحكم الكابتن (الداشبورد الرئيسية)</span>
-              </>
-            )}
-          </button>
+          {!showCoachForm ? (
+            <button
+              type="button"
+              onClick={() => { setShowCoachForm(true); setError(''); }}
+              disabled={isLoading}
+              style={{
+                width: '100%',
+                height: '44px',
+                borderRadius: '8px',
+                background: '#FFFFFF',
+                color: '#0F172A',
+                border: '1px solid #CBD5E1',
+                fontSize: '13px',
+                fontWeight: 800,
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: '8px'
+              }}
+            >
+              <LayoutDashboard size={16} />
+              <span>دخول لوحة تحكم الكابتن</span>
+            </button>
+          ) : (
+            <form onSubmit={handleCoachLogin} style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+              <input
+                type="email"
+                value={coachEmail}
+                onChange={(e) => setCoachEmail(e.target.value)}
+                placeholder="البريد الإلكتروني للكوتش"
+                autoComplete="username"
+                dir="ltr"
+                required
+                style={{ width: '100%', height: '44px', borderRadius: '8px', border: '1px solid #CBD5E1', background: '#FFFFFF', padding: '0 12px', fontSize: '14px', color: '#0F172A', outline: 'none', boxSizing: 'border-box' }}
+              />
+              <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
+                <span style={{ position: 'absolute', right: '12px', color: '#94A3B8', pointerEvents: 'none' }}>
+                  <Lock size={16} />
+                </span>
+                <input
+                  type="password"
+                  value={coachPassword}
+                  onChange={(e) => setCoachPassword(e.target.value)}
+                  placeholder="كلمة المرور"
+                  autoComplete="current-password"
+                  dir="ltr"
+                  required
+                  style={{ width: '100%', height: '44px', borderRadius: '8px', border: '1px solid #CBD5E1', background: '#FFFFFF', padding: '0 12px 0 38px', fontSize: '14px', color: '#0F172A', outline: 'none', boxSizing: 'border-box' }}
+                />
+              </div>
+              {coachError && (
+                <div style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', borderRadius: '8px', padding: '10px 12px', display: 'flex', alignItems: 'center', gap: '8px', fontSize: '12px', color: '#DC2626', fontWeight: 700 }}>
+                  <AlertCircle size={16} style={{ flexShrink: 0 }} />
+                  <span>{coachError}</span>
+                </div>
+              )}
+              <button
+                type="submit"
+                disabled={isCoachLoading}
+                style={{
+                  width: '100%',
+                  height: '44px',
+                  borderRadius: '8px',
+                  background: '#0F172A',
+                  color: '#FFFFFF',
+                  border: 'none',
+                  fontSize: '13px',
+                  fontWeight: 800,
+                  cursor: isCoachLoading ? 'not-allowed' : 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: '8px'
+                }}
+              >
+                {isCoachLoading ? (
+                  <>
+                    <Loader2 size={16} className="animate-spin" />
+                    <span>جاري التحقق...</span>
+                  </>
+                ) : (
+                  <>
+                    <LayoutDashboard size={16} color="#FFFFFF" />
+                    <span>دخول لوحة تحكم الكابتن</span>
+                  </>
+                )}
+              </button>
+            </form>
+          )}
         </div>
 
         {/* Footer Info */}
