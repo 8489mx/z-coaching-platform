@@ -1,0 +1,84 @@
+name: Platform CI (lint, tests, build)
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  test:
+    name: Lint gate + node:test + vitest + frontend build
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    services:
+      mariadb:
+        image: mariadb:11
+        env:
+          MARIADB_ROOT_PASSWORD: ci_root_password_not_secret
+          MARIADB_DATABASE: z_ci
+          MARIADB_USER: z_ci_user
+          MARIADB_PASSWORD: ci_db_password_not_secret
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="healthcheck.sh --connect --innodb_initialized"
+          --health-interval=5s
+          --health-timeout=5s
+          --health-retries=20
+
+    # CI-only throwaway values; they protect nothing and must never be reused elsewhere.
+    env:
+      TZ: Africa/Cairo
+      DB_HOST: 127.0.0.1
+      DB_PORT: "3306"
+      DB_NAME: z_ci
+      DB_USER: z_ci_user
+      DB_PASSWORD: ci_db_password_not_secret
+      JWT_SECRET: ci_only_jwt_secret_0123456789abcdef0123456789abcdef
+      INTAKE_JWT_SECRET: ci_only_intake_secret_0123456789abcdef0123456789
+      CSRF_SECRET: ci_only_csrf_secret_0123456789abcdef0123456789abcd
+      MEDICAL_ENCRYPTION_KEY: ci_only_medical_key_0123456789abcdef0123456789ab
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: |
+            package-lock.json
+            frontend/package-lock.json
+
+      - name: Install backend dependencies
+        run: npm ci
+
+      - name: Install frontend dependencies
+        run: npm ci --prefix frontend
+
+      - name: Build frontend (the deployment-readiness tests inspect frontend/dist)
+        run: npm run build:frontend
+
+      - name: Create database schema from Sequelize models (fails loudly on error)
+        run: |
+          node --input-type=module -e "
+            import sequelize from './src/api/config/database.js';
+            await import('./src/api/models/index.js');
+            await sequelize.authenticate();
+            await sequelize.sync();
+            const [tables] = await sequelize.query('SHOW TABLES');
+            console.log('tables created:', tables.length);
+            await sequelize.close();
+          "
+
+      - name: Lint gate, node:test and vitest suites
+        run: npm test
