@@ -9,6 +9,7 @@ import { fileURLToPath } from "url";
 
 // Database & Existing API Routes
 import sequelize from "./config/database.js";
+import { assertProductionSecrets } from "./config/productionSecretsGuard.js";
 import authRoutes from "./routes/auth.routes.js";
 import programRoutes from "./routes/program.routes.js";
 import clientRoutes from "./routes/client.routes.js";
@@ -596,6 +597,7 @@ if (fs.existsSync(frontendDistPath)) {
 
 // 5. Database Sync and Server Bootstrap
 const startServer = async () => {
+  assertProductionSecrets();
   try {
     await sequelize.authenticate();
     console.log("Database connection established successfully.");
