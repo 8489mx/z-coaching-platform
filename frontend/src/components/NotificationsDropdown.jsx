@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Bell, CheckCheck, Check, ClipboardList, ActivitySquare, CreditCard, ShoppingBag, Clock } from 'lucide-react';
+import { Bell, CheckCheck, Check, ClipboardList, ActivitySquare, CreditCard, Clock } from 'lucide-react';
 import { API_BASE } from '../config/api';
 
 export default function NotificationsDropdown() {
@@ -65,26 +65,6 @@ export default function NotificationsDropdown() {
       } catch (e) {}
 
       const list = [];
-
-      // 1. Website Orders Alerts
-      if (ordersData.orders && ordersData.orders.length > 0) {
-        ordersData.orders.forEach((ord) => {
-          const isActivated = ord.status === 'ACTIVATED' || completedMap[`ord-${ord.id}`];
-          list.push({
-            id: `ord-${ord.id}`,
-            type: 'ORDER',
-            icon: ShoppingBag,
-            title: `طلب موقع جديد (#${ord.order_number || '1001'})`,
-            body: `${ord.customer_name} اشترك في باقة ${ord.package_name || 'ماكس'} بمبلغ ${ord.amount} ج.م.`,
-            time: 'طلب جديد',
-            link: '/customers?tab=orders',
-            isRead: Boolean(readMap[`ord-${ord.id}`]),
-            isCompleted: Boolean(isActivated),
-            actionLabel: isActivated ? 'تم تفعيل الحساب' : 'تفعيل المشترك',
-            createdAt: ord.createdAt || new Date()
-          });
-        });
-      }
 
       // 2. New Intake Submissions
       if (intakesData.submissions && intakesData.submissions.length > 0) {
