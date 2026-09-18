@@ -77,29 +77,37 @@ class ErrorBoundary extends React.Component {
   }
 }
 
-// Primary Core Cockpits
-import CoachCommandCenter from './pages/CoachCommandCenter';
+// Client-facing pages stay in the main bundle so they open instantly (and keep working on flaky gym connections).
 import ClientInteractiveApp from './pages/ClientInteractiveApp';
-
-// Essential Feature Pages
-import PublicPricingJoin from './pages/PublicPricingJoin';
-import ClientOnlineRenewal from './pages/ClientOnlineRenewal';
-import Customers from './pages/Customers';
-import ExerciseLibrary from './pages/ExerciseLibrary';
-import MacroCalculator from './pages/MacroCalculator';
-import MasterSettingsHub from './pages/MasterSettingsHub';
-import IntakeSubmissions from './pages/IntakeSubmissions';
-import FullIntakeForm from './pages/FullIntakeForm';
 import ClientLogin from './pages/ClientLogin';
-import CoachEditor from './pages/CoachEditor';
-import ProgramPdfView from './pages/ProgramPdfView';
-import MesocycleDebriefPdfView from './pages/MesocycleDebriefPdfView';
+import FullIntakeForm from './pages/FullIntakeForm';
 import WeeklyCheckinForm from './pages/WeeklyCheckinForm';
-import FinancialsRenewalsDashboard from './pages/FinancialsRenewalsDashboard';
-import WhatsAppRemindersHub from './pages/WhatsAppRemindersHub';
-import CheckinReviewDashboard from './pages/CheckinReviewDashboard';
-import ClientTimelineProfile from './pages/ClientTimelineProfile';
-import MobilityLibrary from './pages/MobilityLibrary';
+
+// Coach/admin and secondary pages are code-split and loaded on first visit.
+const CoachCommandCenter = React.lazy(() => import('./pages/CoachCommandCenter'));
+const PublicPricingJoin = React.lazy(() => import('./pages/PublicPricingJoin'));
+const ClientOnlineRenewal = React.lazy(() => import('./pages/ClientOnlineRenewal'));
+const Customers = React.lazy(() => import('./pages/Customers'));
+const ExerciseLibrary = React.lazy(() => import('./pages/ExerciseLibrary'));
+const MacroCalculator = React.lazy(() => import('./pages/MacroCalculator'));
+const MasterSettingsHub = React.lazy(() => import('./pages/MasterSettingsHub'));
+const IntakeSubmissions = React.lazy(() => import('./pages/IntakeSubmissions'));
+const CoachEditor = React.lazy(() => import('./pages/CoachEditor'));
+const ProgramPdfView = React.lazy(() => import('./pages/ProgramPdfView'));
+const MesocycleDebriefPdfView = React.lazy(() => import('./pages/MesocycleDebriefPdfView'));
+const FinancialsRenewalsDashboard = React.lazy(() => import('./pages/FinancialsRenewalsDashboard'));
+const WhatsAppRemindersHub = React.lazy(() => import('./pages/WhatsAppRemindersHub'));
+const CheckinReviewDashboard = React.lazy(() => import('./pages/CheckinReviewDashboard'));
+const ClientTimelineProfile = React.lazy(() => import('./pages/ClientTimelineProfile'));
+const MobilityLibrary = React.lazy(() => import('./pages/MobilityLibrary'));
+
+function RouteLoadingFallback() {
+  return (
+    <div dir="rtl" style={{ minHeight: '60vh', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: 'Cairo, sans-serif', color: '#64748B', fontSize: '14px', fontWeight: 700 }}>
+      جاري تحميل الصفحة...
+    </div>
+  );
+}
 
 function App() {
   return (
@@ -107,6 +115,7 @@ function App() {
       <GlobalModalEscapeHandler />
       <Router>
         <ErrorBoundary>
+        <React.Suspense fallback={<RouteLoadingFallback />}>
         <Routes>
           {/* Coach Primary Command Center */}
           <Route path="/" element={<CoachCommandCenter />} />
@@ -179,6 +188,7 @@ function App() {
           {/* Catch-all fallback */}
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
+        </React.Suspense>
         </ErrorBoundary>
       </Router>
     </AuthProvider>
