@@ -195,25 +195,6 @@ export function useClientInteractiveData() {
     } catch (e) {}
   };
 
-  const [exerciseWorkingWeights, setExerciseWorkingWeights] = useState(() => {
-    try {
-      const stored = localStorage.getItem('kz_exercise_working_weights');
-      return stored ? JSON.parse(stored) : {};
-    } catch (e) {
-      return {};
-    }
-  });
-
-  const handleUpdateExerciseWeight = (exId, val) => {
-    setExerciseWorkingWeights(prev => {
-      const next = { ...prev, [exId]: val };
-      try {
-        localStorage.setItem('kz_exercise_working_weights', JSON.stringify(next));
-      } catch (e) {}
-      return next;
-    });
-  };
-
   const [workoutSession, setWorkoutSession] = useState({
     title: 'اليوم 1: سحب الجزء العلوي (Upper Pull & Core)',
     duration: '55 دقيقة',
@@ -797,8 +778,6 @@ export function useClientInteractiveData() {
     setWorkoutSession,
     dailyReadiness,
     handleSetDailyReadiness,
-    exerciseWorkingWeights,
-    handleUpdateExerciseWeight,
     handleToggleExerciseCompleted,
     prehabCompleted,
     setPrehabCompleted,

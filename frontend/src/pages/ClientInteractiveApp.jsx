@@ -74,8 +74,6 @@ export default function ClientInteractiveApp() {
     setWorkoutSession,
     dailyReadiness,
     handleSetDailyReadiness,
-    exerciseWorkingWeights,
-    handleUpdateExerciseWeight,
     handleToggleExerciseCompleted,
     prehabCompleted,
     setPrehabCompleted,
@@ -141,8 +139,6 @@ export default function ClientInteractiveApp() {
               setPrehabCompleted={setPrehabCompleted}
               cardioPrescription={cardioPrescription}
               setExerciseSwapTarget={setExerciseSwapTarget}
-              exerciseWorkingWeights={exerciseWorkingWeights}
-              handleUpdateExerciseWeight={handleUpdateExerciseWeight}
               handleToggleExerciseCompleted={handleToggleExerciseCompleted}
               setActiveVideoExercise={setActiveVideoExercise}
               selectedDay={selectedDay}

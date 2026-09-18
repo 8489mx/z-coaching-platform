@@ -17,9 +17,7 @@ import {
   CheckCircle2,
   AlertCircle,
   Copy,
-  Check,
-  Sliders,
-  Loader2
+  Check
 } from 'lucide-react';
 import { API_BASE } from '../../config/api';
 import { ClientCodeBadge, ClientPackageBadge } from '../../utils/tierBadgeHelper';
@@ -38,38 +36,6 @@ export default function ClientSlideOverDrawer({
   const [loadingStats, setLoadingStats] = useState(false);
   const [checkinData, setCheckinData] = useState(null);
   const [selectedPhoto, setSelectedPhoto] = useState(null);
-  const [restTimerEnabled, setRestTimerEnabled] = useState(Boolean(client?.enable_rest_timer));
-  const [weightLoggingEnabled, setWeightLoggingEnabled] = useState(Boolean(client?.enable_weight_logging));
-  const [updatingFlag, setUpdatingFlag] = useState(null);
-
-  useEffect(() => {
-    if (client) {
-      setRestTimerEnabled(Boolean(client.enable_rest_timer));
-      setWeightLoggingEnabled(Boolean(client.enable_weight_logging));
-    }
-  }, [client]);
-
-  const handleToggleFlag = async (flagName, currentValue) => {
-    if (!client?.id) return;
-    try {
-      setUpdatingFlag(flagName);
-      const nextVal = !currentValue;
-      const res = await fetch(`${API_BASE}/api/v1/clients/${client.id}/feature-flags`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ [flagName]: nextVal })
-      });
-      if (res.ok) {
-        if (flagName === 'enable_rest_timer') setRestTimerEnabled(nextVal);
-        if (flagName === 'enable_weight_logging') setWeightLoggingEnabled(nextVal);
-        client[flagName] = nextVal;
-      }
-    } catch (err) {
-      console.error('Toggle feature flag error:', err);
-    } finally {
-      setUpdatingFlag(null);
-    }
-  };
 
   const cleanCode = client ? String(client.client_code || client.id || '').replace(/^client[-_]?/i, '') : '';
 
@@ -497,89 +463,6 @@ export default function ClientSlideOverDrawer({
                 )}
               </div>
             )}
-          </div>
-
-          {/* Feature Flags Management Card (أعلام الميزات للمشترك) */}
-          <div
-            style={{
-              background: '#F8FAFC',
-              border: '1px solid #E2E8F0',
-              borderRadius: '8px',
-              padding: '14px 16px',
-              display: 'flex',
-              flexDirection: 'column',
-              gap: '10px'
-            }}
-          >
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                <Sliders size={14} color="#0284C7" />
-                <span style={{ fontSize: '11px', fontWeight: 800, color: '#0F172A' }}>
-                  إعدادات الميزات الاختيارية للمتدرب
-                </span>
-              </div>
-              <span style={{ fontSize: '10px', color: '#64748B' }}>
-                تحكم فوري بحساب المتدرب
-              </span>
-            </div>
-
-            {/* Rest Timer Flag */}
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: '#FFFFFF', padding: '10px 12px', borderRadius: '6px', border: '1px solid #E2E8F0' }}>
-              <div>
-                <strong style={{ fontSize: '11.5px', color: '#0F172A', display: 'block' }}>مؤقت فترات الراحة</strong>
-                <span style={{ fontSize: '10px', color: '#64748B' }}>معطل افتراضياً لمنع التشتت أثناء الجلسة</span>
-              </div>
-              <button
-                type="button"
-                disabled={updatingFlag === 'enable_rest_timer'}
-                onClick={() => handleToggleFlag('enable_rest_timer', restTimerEnabled)}
-                style={{
-                  padding: '4px 10px',
-                  borderRadius: '6px',
-                  fontSize: '11px',
-                  fontWeight: 700,
-                  cursor: updatingFlag === 'enable_rest_timer' ? 'wait' : 'pointer',
-                  background: restTimerEnabled ? '#DCFCE7' : '#F1F5F9',
-                  color: restTimerEnabled ? '#166534' : '#64748B',
-                  border: restTimerEnabled ? '1px solid #86EFAC' : '1px solid #CBD5E1',
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  gap: '4px'
-                }}
-              >
-                {updatingFlag === 'enable_rest_timer' && <Loader2 size={10} className="animate-spin" />}
-                <span>{restTimerEnabled ? 'مفعل' : 'معطل'}</span>
-              </button>
-            </div>
-
-            {/* Weight Logging Flag */}
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: '#FFFFFF', padding: '10px 12px', borderRadius: '6px', border: '1px solid #E2E8F0' }}>
-              <div>
-                <strong style={{ fontSize: '11.5px', color: '#0F172A', display: 'block' }}>تسجيل أوزان التمارين</strong>
-                <span style={{ fontSize: '10px', color: '#64748B' }}>معطل افتراضياً (الجدول مرجع استرشادي)</span>
-              </div>
-              <button
-                type="button"
-                disabled={updatingFlag === 'enable_weight_logging'}
-                onClick={() => handleToggleFlag('enable_weight_logging', weightLoggingEnabled)}
-                style={{
-                  padding: '4px 10px',
-                  borderRadius: '6px',
-                  fontSize: '11px',
-                  fontWeight: 700,
-                  cursor: updatingFlag === 'enable_weight_logging' ? 'wait' : 'pointer',
-                  background: weightLoggingEnabled ? '#DCFCE7' : '#F1F5F9',
-                  color: weightLoggingEnabled ? '#166534' : '#64748B',
-                  border: weightLoggingEnabled ? '1px solid #86EFAC' : '1px solid #CBD5E1',
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  gap: '4px'
-                }}
-              >
-                {updatingFlag === 'enable_weight_logging' && <Loader2 size={10} className="animate-spin" />}
-                <span>{weightLoggingEnabled ? 'مفعل' : 'معطل'}</span>
-              </button>
-            </div>
           </div>
 
           {/* 3. Progress & Weight Tracker Section */}
