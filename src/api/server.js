@@ -27,7 +27,7 @@ import { getPrivacyPolicy, getTermsOfService, getDeleteAccountPage } from "./con
 import { requireAuth, requireAdmin } from "./middlewares/auth.middleware.js";
 import { securityHeaders } from "./middlewares/securityHeaders.js";
 import { csrfProtection, isTrustedOrigin } from "./middlewares/csrfProtection.js";
-import { exportRateLimiter, uploadRateLimiter } from "./middlewares/rateLimiter.js";
+import { exportRateLimiter, uploadRateLimiter, engineCalculatorRateLimiter } from "./middlewares/rateLimiter.js";
 import { recordAuditEvent, readRecentAuditEvents } from "./services/auditLog.service.js";
 import { User } from "./models/index.js";
 
@@ -85,7 +85,7 @@ app.get("/api/v1/health", (req, res) => {
 });
 
 // 2. High-Density Deterministic Execution Engine Endpoints
-app.post("/api/v1/engines/onboarding/generate-plan", (req, res) => {
+app.post("/api/v1/engines/onboarding/generate-plan", engineCalculatorRateLimiter, (req, res) => {
   try {
     const plan = generateInitialPlan(req.body);
     res.json({ success: true, data: plan });
@@ -94,7 +94,7 @@ app.post("/api/v1/engines/onboarding/generate-plan", (req, res) => {
   }
 });
 
-app.post("/api/v1/engines/training/evaluate-progression", (req, res) => {
+app.post("/api/v1/engines/training/evaluate-progression", engineCalculatorRateLimiter, (req, res) => {
   try {
     const result = evaluateExerciseProgression(req.body);
     res.json({ success: true, data: result });
@@ -103,7 +103,7 @@ app.post("/api/v1/engines/training/evaluate-progression", (req, res) => {
   }
 });
 
-app.post("/api/v1/engines/training/warmup-ladder", (req, res) => {
+app.post("/api/v1/engines/training/warmup-ladder", engineCalculatorRateLimiter, (req, res) => {
   try {
     const result = calculateWarmupLadder(req.body.workingWeightKg || req.body.working_weight_kg || 0);
     res.json({ success: true, data: result });
@@ -112,7 +112,7 @@ app.post("/api/v1/engines/training/warmup-ladder", (req, res) => {
   }
 });
 
-app.post("/api/v1/engines/training/deload-check", (req, res) => {
+app.post("/api/v1/engines/training/deload-check", engineCalculatorRateLimiter, (req, res) => {
   try {
     const result = evaluateDeloadNeed(req.body);
     res.json({ success: true, data: result });
@@ -121,7 +121,7 @@ app.post("/api/v1/engines/training/deload-check", (req, res) => {
   }
 });
 
-app.post("/api/v1/engines/nutrition/calorie-cycling", (req, res) => {
+app.post("/api/v1/engines/nutrition/calorie-cycling", engineCalculatorRateLimiter, (req, res) => {
   try {
     const result = calculateCalorieCycling(req.body);
     res.json({ success: true, data: result });
@@ -130,7 +130,7 @@ app.post("/api/v1/engines/nutrition/calorie-cycling", (req, res) => {
   }
 });
 
-app.post("/api/v1/engines/nutrition/diet-break-check", (req, res) => {
+app.post("/api/v1/engines/nutrition/diet-break-check", engineCalculatorRateLimiter, (req, res) => {
   try {
     const result = evaluateDietBreakNeed(req.body);
     res.json({ success: true, data: result });
@@ -139,7 +139,7 @@ app.post("/api/v1/engines/nutrition/diet-break-check", (req, res) => {
   }
 });
 
-app.post("/api/v1/engines/habits/evaluate-daily", (req, res) => {
+app.post("/api/v1/engines/habits/evaluate-daily", engineCalculatorRateLimiter, (req, res) => {
   try {
     const result = evaluateDailyHabits(req.body);
     res.json({ success: true, data: result });
@@ -166,7 +166,7 @@ app.post("/api/v1/engines/coach/triage", requireAuth, requireAdmin, (req, res) =
   }
 });
 
-app.post("/api/v1/food-swap/calculate", (req, res) => {
+app.post("/api/v1/food-swap/calculate", engineCalculatorRateLimiter, (req, res) => {
   try {
     const result = calculateEquivalentSwap(req.body);
     res.json({ success: true, data: result });
@@ -175,7 +175,7 @@ app.post("/api/v1/food-swap/calculate", (req, res) => {
   }
 });
 
-app.post("/api/v1/checkin/evaluate", (req, res) => {
+app.post("/api/v1/checkin/evaluate", engineCalculatorRateLimiter, (req, res) => {
   try {
     const result = evaluateWeeklyProgress(req.body);
     res.json({ success: true, data: result });
@@ -184,7 +184,7 @@ app.post("/api/v1/checkin/evaluate", (req, res) => {
   }
 });
 
-app.post("/api/v1/pdf/export", (req, res) => {
+app.post("/api/v1/pdf/export", engineCalculatorRateLimiter, (req, res) => {
   try {
     const html = generatePrintablePlanHTML(req.body);
     res.setHeader("Content-Type", "text/html; charset=utf-8");
