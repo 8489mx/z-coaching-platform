@@ -79,9 +79,23 @@ export const loginFast = async (req, res) => {
       });
     }
 
+    // Staff accounts must never authenticate with a code + phone pair (no secret involved).
+    if (user.role === 'ADMIN' || user.role === 'COACH') {
+      await recordFailedAttempt(ip, client_code);
+      recordAuditEvent({
+        event: 'STAFF_LOGIN_FAST_BLOCKED',
+        req,
+        status: 'BLOCKED',
+        details: { userId: user.id }
+      });
+      return res.status(403).json({
+        error: "حسابات الكوتش والإدارة تسجل الدخول بالبريد الإلكتروني وكلمة المرور فقط."
+      });
+    }
+
     if (user.subscription_status === 'DEACTIVATED') {
-      return res.status(403).json({ 
-        error: "تم إغلاق هذا الحساب بناءً على طلبكم المسبق لحذف الحساب. لإعادة التفعيل واستعادة البيانات يرجى التواصل مع الإدارة." 
+      return res.status(403).json({
+        error: "تم إغلاق هذا الحساب بناءً على طلبكم المسبق لحذف الحساب. لإعادة التفعيل واستعادة البيانات يرجى التواصل مع الإدارة."
       });
     }
 

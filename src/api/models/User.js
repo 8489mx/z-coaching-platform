@@ -121,4 +121,11 @@ const User = sequelize.define("User", {
   timestamps: true,
 });
 
+// Never serialize the password hash into API responses (raw queries such as backups are unaffected).
+User.prototype.toJSON = function toJSON() {
+  const values = { ...this.get({ plain: true }) };
+  delete values.password;
+  return values;
+};
+
 export default User;
