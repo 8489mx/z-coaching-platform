@@ -7,6 +7,19 @@
  * @param {Object} [rawIntake={}]
  * @returns {{ framework: string, reason_ar: string, reason_en: string }}
  */
+// Intake form answers that the canonical contract cannot carry.
+function readFormFastingProtocol(effectiveRaw) {
+  const protocol = String(effectiveRaw?.meal_structure?.intermittent_fasting || "").toLowerCase();
+  return protocol === "16_8" || protocol === "14_10" ? protocol : null;
+}
+
+function isPostBariatric(effectiveRaw) {
+  const med = effectiveRaw?.medical_conditions;
+  if (!med || typeof med !== "object" || Array.isArray(med)) return false;
+  const selected = Array.isArray(med.selected) ? med.selected.map((s) => String(s).toLowerCase()) : [];
+  return selected.includes("bariatric_surgery") || med.bariatric?.is_operated === true;
+}
+
 export function resolveOptimalDietFramework(canonicalIntake, rawIntake = {}) {
   const effectiveRaw = (rawIntake?.answers && typeof rawIntake.answers === 'object')
     ? { ...rawIntake.answers, ...rawIntake }
@@ -78,12 +91,14 @@ export function resolveOptimalDietFramework(canonicalIntake, rawIntake = {}) {
   }
 
   // 3. Busy schedule / Skips Breakfast -> INTERMITTENT_FASTING
-  const prefersFasting =
+  // Post-bariatric clients need frequent small protein-first meals, so fasting is never auto-selected.
+  const prefersFasting = !isPostBariatric(effectiveRaw) && (
+    readFormFastingProtocol(effectiveRaw) !== null ||
     nutrition.preferredMealCount === 2 ||
     rawNutrition.preferredMealCount === 2 ||
     rawNutrition.skipsBreakfast === true ||
     rawNutrition.prefersFasting === true ||
-    lifestyle.dailyRoutine === "BUSY_MORNINGS";
+    lifestyle.dailyRoutine === "BUSY_MORNINGS");
 
   if (prefersFasting) {
     return {
@@ -592,18 +607,26 @@ export function calculateUniversalNutritionTargets(canonicalIntake, evaluationCo
       weekly_energy_balance_ar: "متوسط السعرات الأسبوعية يطابق تماماً العجز المستهدف مع الاستفادة من قمم الجليكوجين وأكسدة الدهون.",
     });
   } else if (dietFramework === "INTERMITTENT_FASTING") {
+    const fastingProtocol = readFormFastingProtocol(effectiveRaw) || "16_8";
     fastingWindowConfig = Object.freeze({
       framework: "INTERMITTENT_FASTING",
-      framework_name_ar: "الصيام المتقطع الذكي (16/8 Intermittent Fasting)",
-      fasting_hours: 16,
-      eating_window_hours: 8,
-      eating_window_schedule_ar: "نافذة تناول الطعام: 12:00 ظهراً إلى 8:00 مساءً (الصيام من 8 مساءً إلى 12 ظهر اليوم التالي)",
+      framework_name_ar: fastingProtocol === "14_10"
+        ? "الصيام المتقطع الذكي (14/10 Intermittent Fasting)"
+        : "الصيام المتقطع الذكي (16/8 Intermittent Fasting)",
+      fasting_hours: fastingProtocol === "14_10" ? 14 : 16,
+      eating_window_hours: fastingProtocol === "14_10" ? 10 : 8,
+      eating_window_schedule_ar: fastingProtocol === "14_10"
+        ? "نافذة تناول الطعام: 10:00 صباحاً إلى 8:00 مساءً (الصيام من 8 مساءً إلى 10 صباح اليوم التالي)"
+        : "نافذة تناول الطعام: 12:00 ظهراً إلى 8:00 مساءً (الصيام من 8 مساءً إلى 12 ظهر اليوم التالي)",
       rules_ar: "شرب الماء والقهوة السادة والشاي الأخضر والأعشاب مسموح وحر أثناء ساعات الصيام بدون سكر أو حليب.",
     });
   }
 
   // 5. Meal Distribution (2, 3, 4, 5, 6 Meals)
-  const mealCount = Number(nutrition.preferredMealCount || nutrition.mealsPerDay || nutrition.preferred_meal_count) || 3;
+  const preferredMealCount = Number(nutrition.preferredMealCount || nutrition.mealsPerDay || nutrition.preferred_meal_count) || 3;
+  // After sleeve/bypass surgery the stomach holds ~150-250 g per sitting (ASMBS nutrition guideline):
+  // at least 5 small meals so the day's protein fits.
+  const mealCount = isPostBariatric(effectiveRaw) ? Math.max(5, preferredMealCount) : preferredMealCount;
   const mealDistribution = [];
   for (let i = 1; i <= mealCount; i++) {
     let pRatio = 1 / mealCount;
