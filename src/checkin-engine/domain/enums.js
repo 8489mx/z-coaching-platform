@@ -16,6 +16,8 @@ export const CheckinAnalysisStatus = Object.freeze({
   OCCUPATIONAL_NEAT_LOCK: "OCCUPATIONAL_NEAT_LOCK",
   TRAVEL_WEEK_PREVIEW: "TRAVEL_WEEK_PREVIEW",
   FEMALE_PMS_WATER_RETENTION: "FEMALE_PMS_WATER_RETENTION",
+  // Muscle-gain client whose weight stopped rising under good adherence (needs more energy, not less).
+  GAIN_STALL: "GAIN_STALL",
 });
 
 export const AdherenceTier = Object.freeze({

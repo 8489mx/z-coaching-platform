@@ -202,6 +202,21 @@ export function buildAdaptedPlan(inputs) {
       message_ar: "معدل النزول سريع (>1.5% أسبوعياً). تمت إضافة 150 سعرة لحماية الكتلة العضلية ومنع الهبوط الأيضي.",
       message_en: "Rapid weight loss rate detected (>1.5%/wk). Added +150 kcal to protect lean mass.",
     });
+  } else if (status === CheckinAnalysisStatus.GAIN_STALL) {
+    const calDelta = typeof checkinAnalysis.suggested_calorie_delta === "number" && checkinAnalysis.suggested_calorie_delta > 0
+      ? checkinAnalysis.suggested_calorie_delta
+      : 125;
+    const carbDelta = typeof checkinAnalysis.suggested_carb_delta_g === "number" && checkinAnalysis.suggested_carb_delta_g > 0
+      ? checkinAnalysis.suggested_carb_delta_g
+      : Math.round(calDelta / 4);
+    adaptationAction = AdaptationAction.INCREASE_CALORIES_GAIN_STALL;
+    adaptedCalories += calDelta;
+    adaptedCarbs += carbDelta;
+    reasons.push({
+      code: AdaptationReasonCode.GAIN_STALL_SURPLUS_APPLIED,
+      message_ar: `توقف الزيادة في الوزن مع التزام تام وهدف بناء عضلي. تمت إضافة ${calDelta} سعرة يومياً من الكاربوهيدرات لاستئناف البناء.`,
+      message_en: `Muscle-gain stall under full adherence. Added +${calDelta} kcal from carbohydrates to resume gaining.`,
+    });
   } else if (
     status === CheckinAnalysisStatus.PLATEAU_DETECTED || 
     status === "TRUE_PLATEAU" || 

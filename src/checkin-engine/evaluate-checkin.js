@@ -46,7 +46,14 @@ export function evaluateCheckin(submission) {
     next_week_travel = false,
     next_week_gym_available = true,
     next_week_realistic_days = null,
+    primary_goal = null,
   } = submission;
+
+  // Canonical goal of the client (FAT_LOSS, MUSCLE_GAIN, WEIGHT_MAINTENANCE, ...). Unknown goals keep the
+  // historical fat-loss behaviour.
+  const goal = String(primary_goal || "").toUpperCase();
+  const isMuscleGainGoal = goal === "MUSCLE_GAIN";
+  const isWeightStableGoal = goal === "WEIGHT_MAINTENANCE" || goal === "GENERAL_HEALTH" || goal === "PERFORMANCE";
 
   // 1. Calculate Current Weight (Single morning weigh-in or rolling average)
   let currentWeight = null;
@@ -211,6 +218,7 @@ export function evaluateCheckin(submission) {
 
   // RULE F1 (NEW): False Plateau Triad — Block calorie cuts if plateau is caused by water retention
   else if (
+    !isWeightStableGoal &&
     weightChangeKg !== null &&
     Math.abs(weightChangeKg) < 0.2 &&
     (waistChangeCm === null || waistChangeCm > -0.3) &&
@@ -230,6 +238,8 @@ export function evaluateCheckin(submission) {
 
   // RULE F2 (NEW): Occupational NEAT Lock — Don't cut calories if low NEAT is occupational baseline
   else if (
+    !isMuscleGainGoal &&
+    !isWeightStableGoal &&
     weightChangeKg !== null &&
     Math.abs(weightChangeKg) < 0.2 &&
     (waistChangeCm === null || waistChangeCm > -0.3) &&
@@ -242,8 +252,25 @@ export function evaluateCheckin(submission) {
     recommendationsEn.push("Weight plateau with normal desk-based NEAT baseline. Low activity is occupational, not behavioral. Program is held steady for an additional monitoring week.");
   }
 
+  // RULE F0: Muscle-gain stall — stable weight under high adherence means the surplus is gone,
+  // so energy goes up (lean-gain target ~0.25-0.5% bodyweight per week).
+  else if (
+    isMuscleGainGoal &&
+    weightChangeKg !== null &&
+    Math.abs(weightChangeKg) < 0.2 &&
+    adherenceTier === AdherenceTier.OPTIMAL
+  ) {
+    analysisStatus = CheckinAnalysisStatus.GAIN_STALL;
+    suggestedCalorieDelta = 125;
+    suggestedCarbDeltaGrams = 30;
+    recommendationsAr.push("هدفك بناء عضلي والوزن ثابت رغم التزامك الممتاز؛ يعني الفائض الحراري انتهى. يُوصى بزيادة 125 سعرة يومياً (حوالي 30 جم كارب) لاستئناف زيادة هادئة 0.25-0.5% من وزن الجسم أسبوعياً.");
+    recommendationsEn.push("Muscle-gain goal with stable weight under optimal adherence. Add +125 kcal (~30 g carbs) to resume a 0.25-0.5%/week gain.");
+  }
+
   // RULE F: True Plateau (Weight & Waist stagnant under high adherence)
   else if (
+    !isMuscleGainGoal &&
+    !isWeightStableGoal &&
     weightChangeKg !== null &&
     Math.abs(weightChangeKg) < 0.2 &&
     (waistChangeCm === null || waistChangeCm > -0.3) &&
