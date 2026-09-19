@@ -701,6 +701,8 @@ export default function CheckinReviewDashboard() {
   const [approvedCount, setApprovedCount] = useState(0);
   const [showLabModal, setShowLabModal] = useState(false);
   const [approvalToast, setApprovalToast] = useState(null);
+  // A failed approval must stay visible: the check-in stays in the queue until the server confirms.
+  const [approveError, setApproveError] = useState(null);
   const [inspectionTab, setInspectionTab] = useState('PHOTOS'); // 'PHOTOS' | 'CHART' | 'LABS'
   const [isMilestoneModalOpen, setIsMilestoneModalOpen] = useState(false);
 
@@ -1031,9 +1033,10 @@ export default function CheckinReviewDashboard() {
     const replyMsg = coachReply;
     const approvedClientName = safeClient?.name || 'المتدرب';
 
+    setApproveError(null);
     try {
       if (checkinDbId) {
-        await fetch(`${API_BASE}/api/v1/checkin/${checkinDbId}/approve`, {
+        const res = await fetch(`${API_BASE}/api/v1/checkin/${checkinDbId}/approve`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
@@ -1041,9 +1044,18 @@ export default function CheckinReviewDashboard() {
             custom_macros: macroAdjustments
           })
         });
+        if (!res.ok) {
+          const data = await res.json().catch(() => ({}));
+          setApproveError(data.error || 'لم يتم حفظ الاعتماد على الخادم. المتابعة ما زالت في الطابور، حاول مرة أخرى.');
+          setIsSubmitting(false);
+          return;
+        }
       }
     } catch (err) {
       console.warn('Failed to persist checkin approval to database:', err);
+      setApproveError('تعذر الاتصال بالخادم، لم يتم اعتماد المتابعة. حاول مرة أخرى.');
+      setIsSubmitting(false);
+      return;
     }
 
     setIsSubmitting(false);
@@ -3114,6 +3126,11 @@ export default function CheckinReviewDashboard() {
                       )}
                     </button>
                   </div>
+                  {approveError && (
+                    <div role="alert" style={{ marginTop: '8px', background: '#FEF2F2', border: '1px solid #FECACA', borderRadius: '8px', padding: '8px 10px', fontSize: '12px', fontWeight: 700, color: '#B91C1C' }}>
+                      {approveError}
+                    </div>
+                  )}
                 </div>
               </FormSection>
 
