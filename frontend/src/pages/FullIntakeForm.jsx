@@ -346,8 +346,8 @@ export default function FullIntakeForm() {
       setCurrentStep(1);
       return;
     }
-    if (!formData.circumferences?.waist_cm || !formData.circumferences?.neck_cm) {
-      alert('يرجى إدخال محيط الرقبة والوسط بالمتر الشريطي لحساب نسبة الدهون بدقة.');
+    if (!formData.circumferences?.waist_cm) {
+      alert('يرجى إدخال محيط الخصر (الوسط) للتمكن من حساب نسبة الدهون والمتابعة بدقة.');
       setCurrentStep(1);
       return;
     }
@@ -720,7 +720,7 @@ export default function FullIntakeForm() {
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '12px' }}>
                   <div>
                     <label style={{ display: 'block', fontSize: '11.5px', fontWeight: 700, color: '#475569', marginBottom: '4px' }}>
-                      محيط الرقبة (سم) *
+                      محيط الرقبة (سم)
                     </label>
                     <input 
                       type="text" 
@@ -746,7 +746,7 @@ export default function FullIntakeForm() {
 
                   <div>
                     <label style={{ display: 'block', fontSize: '11.5px', fontWeight: 700, color: '#475569', marginBottom: '4px' }}>
-                      محيط الوسط / البطن (سم) *
+                      محيط الخصر (إجباري) *
                     </label>
                     <input 
                       type="text" 
@@ -1005,33 +1005,40 @@ export default function FullIntakeForm() {
 
               {/* Medical Conditions Multi-Select */}
               <div>
-                <label style={{ display: 'block', fontSize: '12px', fontWeight: 800, color: '#0F172A', marginBottom: '8px' }}>
-                  الحالات الطبية أو العمليات السابقة (اختر ما ينطبق):
+                <label style={{ display: 'block', fontSize: '13px', fontWeight: 800, color: '#0F172A', marginBottom: '10px' }}>
+                  هل تعاني من أي حالة طبية، أو خضعت لجراحة سابقة، أو تتناول أدوية مزمنة؟
                 </label>
-                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', marginBottom: '12px' }}>
-                  {[
-                    { key: 'none', label: 'سليم تماماً - لا توجد حالات خاصة' },
-                    { key: 'bariatric_surgery', label: 'تكميم معدة / تحويل مسار' },
-                    { key: 'diabetes', label: 'سكري / مقاومة أنسولين' },
-                    { key: 'favism_g6pd', label: 'أنيميا الفول (G6PD)' },
-                    { key: 'renal_hepatic', label: 'أمراض كلى أو كبد' },
-                    { key: 'thyroid', label: 'اضطرابات الغدة الدرقية' },
-                    { key: 'gi_tract', label: 'قولون عصبي / ارتجاع مريء' },
-                    { key: 'hypertension', label: 'ضغط دم مرتفع' },
-                    { key: 'gout', label: 'نقرس / يوريك أسيد مرتفع' }
-                  ].map((c) => {
-                    const isChecked = medSelected.includes(c.key);
-                    return (
-                      <button 
-                        key={c.key}
-                        type="button"
-                        onClick={() => {
-                          if (c.key === 'none') {
-                            setFormData(p => ({ ...p, medical_conditions: { ...(p.medical_conditions || {}), selected: ['none'], has_conditions: false } }));
-                          } else {
-                            toggleCondition(c.key);
-                          }
-                        }}
+                <div style={{ display: 'flex', gap: '10px', marginBottom: '16px' }}>
+                  <button type="button" onClick={() => {
+                    setFormData(p => ({ ...p, medical_conditions: { ...(p.medical_conditions || {}), has_conditions: true, selected: p.medical_conditions?.selected?.filter(s => s !== 'none') || [] } }));
+                  }} style={{ flex: 1, padding: '10px', borderRadius: '10px', border: formData.medical_conditions?.has_conditions === true ? '2px solid #2563EB' : '1px solid #CBD5E1', background: formData.medical_conditions?.has_conditions === true ? '#EFF6FF' : '#FFF', color: formData.medical_conditions?.has_conditions === true ? '#1E3A8A' : '#475569', fontWeight: 800, transition: 'all 0.15s ease' }}>نعم</button>
+                  <button type="button" onClick={() => {
+                    setFormData(p => ({ ...p, medical_conditions: { ...(p.medical_conditions || {}), has_conditions: false, selected: ['none'] } }));
+                  }} style={{ flex: 1, padding: '10px', borderRadius: '10px', border: formData.medical_conditions?.has_conditions === false ? '2px solid #2563EB' : '1px solid #CBD5E1', background: formData.medical_conditions?.has_conditions === false ? '#EFF6FF' : '#FFF', color: formData.medical_conditions?.has_conditions === false ? '#1E3A8A' : '#475569', fontWeight: 800, transition: 'all 0.15s ease' }}>لا، سليم تماماً</button>
+                </div>
+
+                {formData.medical_conditions?.has_conditions && (
+                  <>
+                    <label style={{ display: 'block', fontSize: '12px', fontWeight: 800, color: '#0F172A', marginBottom: '8px' }}>
+                      اختر الحالات الطبية أو العمليات التي تنطبق عليك:
+                    </label>
+                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', marginBottom: '12px' }}>
+                      {[
+                        { key: 'bariatric_surgery', label: 'تكميم معدة / تحويل مسار' },
+                        { key: 'diabetes', label: 'سكري / مقاومة أنسولين' },
+                        { key: 'favism_g6pd', label: 'أنيميا الفول (G6PD)' },
+                        { key: 'renal_hepatic', label: 'أمراض كلى أو كبد' },
+                        { key: 'thyroid', label: 'اضطرابات الغدة الدرقية' },
+                        { key: 'gi_tract', label: 'قولون عصبي / ارتجاع مريء' },
+                        { key: 'hypertension', label: 'ضغط دم مرتفع' },
+                        { key: 'gout', label: 'نقرس / يوريك أسيد مرتفع' }
+                      ].map((c) => {
+                        const isChecked = medSelected.includes(c.key);
+                        return (
+                          <button 
+                            key={c.key}
+                            type="button"
+                            onClick={() => toggleCondition(c.key)}
                         style={{
                           padding: '7px 14px',
                           borderRadius: '20px',
@@ -1092,6 +1099,7 @@ export default function FullIntakeForm() {
                     </div>
                   </div>
                 )}
+              </>)}
               </div>
 
               {/* Injuries Matrix */}
@@ -2060,6 +2068,12 @@ export default function FullIntakeForm() {
                 <p style={{ fontSize: '11.5px', color: '#64748B', margin: '0 0 12px 0', lineHeight: '1.5' }}>
                   تُرفع الصور بأمان تام وتُشفر على الخزينة السحابية لتقييم توزيع الدهون ونقاط الضعف العضلية (3 زوايا: أمامية، جانبية، خلفية).
                 </p>
+
+                <div style={{ background: '#EFF6FF', border: '1px solid #BFDBFE', borderRadius: '6px', padding: '10px', marginBottom: '14px' }}>
+                  <strong style={{ display: 'block', fontSize: '11.5px', color: '#1E3A8A', fontWeight: 700 }}>
+                    ملاحظة: يمكنك إكمال التسجيل الآن وتخطي رفع الصور، ولكنها ضرورية جداً لاحقاً لتصميم خطتك بدقة ولتقييم مستوى التطور.
+                  </strong>
+                </div>
 
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '10px', marginBottom: '14px' }}>
                   {[
