@@ -7,51 +7,41 @@
  * 3. Coptic Nativity Fast (صوم الميلاد)
  */
 
-export const SEASONAL_FASTING_CALENDAR = [
-  {
-    id: 'RAMADAN_2026',
-    name: 'رمضان 1447هـ',
-    type: 'ISLAMIC',
-    startDate: new Date(2026, 1, 18),
-    endDate: new Date(2026, 2, 20),
-    description: 'موسم الصيام وتوزيع وجبات الإفطار والسحور.'
-  },
-  {
-    id: 'COPTIC_LENT_2026',
-    name: 'الصوم الكبير للأقباط',
-    type: 'COPTIC',
-    startDate: new Date(2026, 1, 16),
-    endDate: new Date(2026, 3, 12),
-    description: 'صيام نباتي خالي من اللحوم والألبان مع التركيز على البقوليات والبروتين النباتي.'
-  },
-  {
-    id: 'COPTIC_NATIVITY_2026',
-    name: 'صوم الميلاد المجيد',
-    type: 'COPTIC',
-    startDate: new Date(2026, 10, 25),
-    endDate: new Date(2027, 0, 7),
-    description: 'صيام نباتي مع السماح بالأسماك والمأكولات البحرية.'
-  },
-  {
-    id: 'RAMADAN_2027',
-    name: 'رمضان 1448هـ',
-    type: 'ISLAMIC',
-    startDate: new Date(2027, 1, 8),
-    endDate: new Date(2027, 2, 9),
-    description: 'موسم الصيام وتوزيع وجبات الإفطار وبعد التمرين والسحور.'
-  },
-  {
-    id: 'COPTIC_LENT_2027',
-    name: 'الصوم الكبير للأقباط',
-    type: 'COPTIC',
-    startDate: new Date(2027, 2, 8),
-    endDate: new Date(2027, 4, 2),
-    description: 'صيام نباتي خالي من الروح، يتطلب تأمين بروتين عالي من مصادر نباتية مركبة.'
+import { ramadanRange, copticFastPeriods } from './fastingCalendarEngine.js';
+
+// Dates are computed by the calendar engine (Umm al-Qura Hijri + Orthodox Easter), not typed, so the
+// radar keeps working every year. Covers the current and the next Gregorian year.
+export function buildSeasonalFastingCalendar(now = new Date()) {
+  const year = new Date(now).getFullYear();
+  const toLocal = (d, endOfDay = false) => new Date(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate(), endOfDay ? 23 : 0, endOfDay ? 59 : 0, endOfDay ? 59 : 0);
+  const seasons = [];
+  for (const y of [year - 1, year, year + 1]) {
+    const ramadan = ramadanRange(y);
+    if (ramadan) {
+      seasons.push({ id: `RAMADAN_${y}`, name: 'شهر رمضان', type: 'ISLAMIC', startDate: toLocal(ramadan.start), endDate: toLocal(ramadan.end, true),
+        description: 'موسم الصيام وتوزيع وجبات الإفطار والسحور.' });
+    }
+    for (const p of copticFastPeriods(y)) {
+      if (!p.id.endsWith(`_${y}`) || !/GREAT_LENT|NATIVITY|APOSTLES|VIRGIN_MARY|JONAH/.test(p.id)) continue;
+      seasons.push({ id: `COPTIC_${p.id}`, name: p.name_ar, type: 'COPTIC', startDate: toLocal(p.start), endDate: toLocal(p.end, true),
+        description: p.strict ? 'صيام نباتي صرف بدون لحوم أو أسماك أو ألبان أو بيض.' : 'صيام نباتي، والسمك حسب اختيار المتدرب.' });
+    }
   }
-];
+  return seasons.sort((a, b) => a.startDate - b.startDate);
+}
+
+export const SEASONAL_FASTING_CALENDAR = buildSeasonalFastingCalendar(new Date());
 
 export function getUpcomingFastingAlert(now = new Date()) {
-  for (const season of SEASONAL_FASTING_CALENDAR) {
+  // When Ramadan and a Coptic fast overlap, Ramadan is reported first (previous behaviour).
+  const ordered = [...SEASONAL_FASTING_CALENDAR].sort((a, b) => {
+    const activeA = now >= a.startDate && now <= a.endDate;
+    const activeB = now >= b.startDate && now <= b.endDate;
+    if (activeA !== activeB) return activeA ? -1 : 1;
+    if (activeA && a.type !== b.type) return a.type === 'ISLAMIC' ? -1 : 1;
+    return a.startDate - b.startDate;
+  });
+  for (const season of ordered) {
     const diffMs = season.startDate.getTime() - now.getTime();
     const daysLeft = Math.ceil(diffMs / (1000 * 60 * 60 * 24));
 
