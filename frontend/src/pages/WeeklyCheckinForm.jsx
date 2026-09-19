@@ -7,6 +7,16 @@ import { optimizeImageFile } from '../utils/imageOptimizer';
 import { getStoredCoachConfig } from '../utils/themeAndCoachConfig';
 import { formatWhatsAppPhone } from '../utils/whatsappRemindersEngine';
 
+const PAIN_AREAS = [
+  { id: 'KNEE', label: 'الركبة' },
+  { id: 'LOWER_BACK', label: 'أسفل الظهر' },
+  { id: 'SHOULDER', label: 'الكتف' },
+  { id: 'ELBOW_WRIST', label: 'الكوع / المعصم' },
+  { id: 'HIP', label: 'الحوض' },
+  { id: 'ANKLE', label: 'الكاحل' },
+  { id: 'NECK', label: 'الرقبة' },
+];
+
 function cleanArabicNumStr(val) {
   if (val === null || val === undefined) return '';
   return String(val)
@@ -42,6 +52,10 @@ export default function WeeklyCheckinForm() {
     weight_kg: '',
     // Optional: 7 morning weigh-ins and average daily calories feed the adaptive TDEE engine.
     daily_weights: ['', '', '', '', '', '', ''],
+    // Joint pain this week (feeds the injury flag and the early-deload recommendation).
+    has_joint_pain: false,
+    pain_area: '',
+    pain_level: 3,
     average_daily_calories: '',
     waist_circumference_cm: '',
     nutrition_adherence_percent: 100,
@@ -156,6 +170,9 @@ export default function WeeklyCheckinForm() {
           sleepQuality: Number(formData.biofeedback.sleepQuality),
           hungerLevel: Number(formData.biofeedback.hungerLevel)
         },
+        pain_reports: formData.has_joint_pain && formData.pain_area
+          ? [{ area: formData.pain_area, body_part: PAIN_AREAS.find((a) => a.id === formData.pain_area)?.label || formData.pain_area, pain_level: Number(formData.pain_level) }]
+          : [],
         client_notes: formData.client_notes,
         fasting_transition: formData.fasting_transition,
         photos: photosPayload,
@@ -656,6 +673,55 @@ export default function WeeklyCheckinForm() {
                   <span>شبع مريح</span>
                   <span>جوع متكرر</span>
                 </div>
+              </div>
+
+              {/* Joint pain (1-10): feeds the injury flag and the early-deload recommendation */}
+              <div style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', borderRadius: '8px', padding: '12px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                <span style={{ fontSize: '12px', fontWeight: 700, color: '#0F172A' }}>هل عندك ألم في أي مفصل هذا الأسبوع؟</span>
+                <div style={{ display: 'flex', gap: '8px' }}>
+                  {[{ v: false, label: 'لا' }, { v: true, label: 'نعم' }].map((opt) => (
+                    <button
+                      key={String(opt.v)}
+                      type="button"
+                      onClick={() => setFormData({ ...formData, has_joint_pain: opt.v, ...(opt.v ? {} : { pain_area: '' }) })}
+                      style={{ flex: 1, padding: '8px', borderRadius: '8px', border: formData.has_joint_pain === opt.v ? '2px solid #0284C7' : '1px solid #CBD5E1', background: formData.has_joint_pain === opt.v ? '#F0F9FF' : '#FFFFFF', fontWeight: 700, fontSize: '12px', cursor: 'pointer' }}
+                    >
+                      {opt.label}
+                    </button>
+                  ))}
+                </div>
+                {formData.has_joint_pain && (
+                  <>
+                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
+                      {PAIN_AREAS.map((a) => (
+                        <button
+                          key={a.id}
+                          type="button"
+                          onClick={() => setFormData({ ...formData, pain_area: a.id })}
+                          style={{ padding: '6px 12px', borderRadius: '9999px', border: formData.pain_area === a.id ? '2px solid #DC2626' : '1px solid #CBD5E1', background: formData.pain_area === a.id ? '#FEF2F2' : '#FFFFFF', fontSize: '11.5px', fontWeight: 700, cursor: 'pointer' }}
+                        >
+                          {a.label}
+                        </button>
+                      ))}
+                    </div>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '12px', fontWeight: 700 }}>
+                      <span style={{ color: '#0F172A' }}>شدة الألم</span>
+                      <strong style={{ color: '#DC2626', fontFamily: 'JetBrains Mono' }}>{formData.pain_level} / 10</strong>
+                    </div>
+                    <input
+                      type="range"
+                      min="1"
+                      max="10"
+                      value={formData.pain_level}
+                      onChange={(e) => setFormData({ ...formData, pain_level: parseInt(e.target.value, 10) })}
+                      style={{ width: '100%', accentColor: '#DC2626', cursor: 'pointer' }}
+                    />
+                    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '10.5px', color: '#64748B', fontWeight: 600 }}>
+                      <span>خفيف</span>
+                      <span>يمنعني من التمرين</span>
+                    </div>
+                  </>
+                )}
               </div>
 
               {/* Retrospective: Lifestyle Variance */}
