@@ -28,13 +28,6 @@ export function CoachCardioHabitsTab({
 
   const clientBiomarkers = program?.client?.biomarkers || program?.client?.lab_markers || {};
 
-  const hasAsthma = Boolean(
-    clientConditions.some(c => {
-      const s = typeof c === 'string' ? c : (c?.conditionCode || c?.name || c?.area || '');
-      return /asthma|ربو|تنفسي|respiratory/i.test(s);
-    })
-  );
-
   const modality = String(program?.cardio?.modality || '');
   const zone = String(program?.cardio?.target_heart_rate_zone || '');
   const isHiitCardio = /hiit|sprint|كثافة عالية/i.test(modality) || /hiit|zone 4/i.test(zone);
@@ -49,8 +42,12 @@ export function CoachCardioHabitsTab({
     type: isHiitCardio ? CARDIO_TYPES.HIIT_INTERVALS : CARDIO_TYPES.LISS_TALK_TEST,
     duration_minutes: Number(program.cardio?.session_duration_min) || 30,
     sessions_per_week: Number(program.cardio?.weekly_sessions) || 3,
-    medicalConditions: clientConditions
+    medicalConditions: clientConditions,
+    weight_kg: program?.client?.weight_kg,
+    height_cm: program?.client?.height_cm
   });
+  // HIIT chosen by the coach but blocked by the engine (asthma, cardiovascular, pregnancy, BMI >= 35).
+  const hiitBlocked = isHiitCardio && practicalCardio.clinical_guardrails?.hiit_banned === true;
 
   // Active supplements array
   const currentSupplements = Array.isArray(program?.cardio?.supplements) ? program.cardio.supplements : [];
@@ -154,9 +151,9 @@ export function CoachCardioHabitsTab({
                   width: '100%',
                   height: '30px',
                   borderRadius: '8px',
-                  border: hasAsthma && isHiitCardio ? '1.5px solid #EF4444' : '1px solid #CBD5E1',
-                  background: hasAsthma && isHiitCardio ? '#FEF2F2' : '#FFFFFF',
-                  color: hasAsthma && isHiitCardio ? '#DC2626' : '#0F172A',
+                  border: hiitBlocked ? '1.5px solid #EF4444' : '1px solid #CBD5E1',
+                  background: hiitBlocked ? '#FEF2F2' : '#FFFFFF',
+                  color: hiitBlocked ? '#DC2626' : '#0F172A',
                   padding: '0 8px',
                   fontSize: '11px',
                   fontWeight: 700,
@@ -181,6 +178,11 @@ export function CoachCardioHabitsTab({
               <div style={{ fontSize: '10.5px', color: '#475569', lineHeight: 1.4 }}>
                 {practicalCardio.talk_test_cue_ar}
               </div>
+              {practicalCardio.clinical_guidance_ar && (
+                <div style={{ fontSize: '10px', color: '#B91C1C', fontWeight: 700, marginTop: '4px', lineHeight: 1.4 }}>
+                  {practicalCardio.clinical_guidance_ar}
+                </div>
+              )}
               {interferenceAudit?.heart_rate_prescription?.range_display && (
                 <div style={{ fontSize: '10px', color: '#2563EB', fontWeight: 700, marginTop: '4px' }}>
                   النبض المستهدف (العمر {clientAge} سنة): {interferenceAudit.heart_rate_prescription.range_display}

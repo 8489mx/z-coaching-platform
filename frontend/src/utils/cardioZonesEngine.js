@@ -31,45 +31,101 @@ export const CARDIO_EQUIPMENT = {
 export const ASTHMA_CARDIO_SAFETY_GUIDANCE_AR = "توجيه سريري لمرضى الربو والجهاز التنفسي: حصر الكارديو في النطاق المعتدل المستقر (Zone 2) مع إحماء تدريجي، وحظر الكارديو عالي الشدة (HIIT) لتجنب نوبات ضيق التنفس التحسسية (EIB).";
 
 const RESPIRATORY_PATTERN = /ASTHMA|RESPIRATORY|ربو|تنفسي/i;
+const CARDIOVASCULAR_PATTERN = /HEART|CARDIAC|CARDIOVASCULAR|HYPERTENSION|HIGH_BLOOD_PRESSURE|ARRHYTHM|قلب|ضغط الدم|ضغط دم/i;
+const PREGNANCY_PATTERN = /PREGNAN|حامل/i;
+const LOWER_LIMB_OR_SPINE_PATTERN = /KNEE|ANKLE|ACHILLES|HIP|LOWER_BACK|LUMBAR|DISC|SPINE|MENISC|ACL|PATELL|ركبة|كاحل|حوض|ظهر|غضروف/i;
+
+export const HIIT_CLINICAL_GUIDANCE_AR = Object.freeze({
+  CARDIOVASCULAR: "توجيه سريري لمرضى الضغط والقلب: تم استبدال الـ HIIT بكارديو معتدل مستقر (Zone 2)؛ الفترات عالية الشدة تحتاج تصريحاً من الطبيب المعالج واختبار جهد قبل إدراجها.",
+  PREGNANCY: "توجيه سريري للحمل: تم استبدال الـ HIIT بنشاط هوائي معتدل يسمح بالكلام (ACOG)، مع تجنب القفز والسبرنت والإجهاد الحراري.",
+  SEVERE_OBESITY: "توجيه أمان للمفاصل: مع مؤشر كتلة جسم 35 أو أكثر يبدأ البرنامج بكارديو معتدل منخفض الصدمات لحماية الركبتين والكاحلين، ويُعاد تقييم الفترات عالية الشدة مع نزول الوزن.",
+  LOW_IMPACT_HIIT: "توجيه أمان للمفاصل: الفترات عالية الشدة تُنفذ على دراجة ثابتة أو جهاز تجديف فقط (بدون جري أو سبرنت على المشاية) لإلغاء صدمة الارتطام على الركبة والكاحل والظهر.",
+});
+
+function resolveBmi(weightKg, heightCm) {
+  const w = Number(weightKg);
+  const h = Number(heightCm) / 100;
+  if (!Number.isFinite(w) || !Number.isFinite(h) || w <= 0 || h <= 0) return null;
+  return Math.round((w / (h * h)) * 10) / 10;
+}
 
 export function getPracticalCardioPrescription({
   type = CARDIO_TYPES.LISS_TALK_TEST,
   duration_minutes = 25,
   sessions_per_week = 3,
   equipment = CARDIO_EQUIPMENT.INCLINE_TREADMILL,
-  medicalConditions = []
+  medicalConditions = [],
+  weight_kg = null,
+  height_cm = null
 }) {
   const conds = (Array.isArray(medicalConditions) ? medicalConditions : [medicalConditions])
     .map(c => typeof c === 'string' ? c : String(c?.conditionCode || c?.code || c?.name || c?.area || ''));
 
   const hasAsthma = conds.some(c => RESPIRATORY_PATTERN.test(c));
+  const hasCardiovascular = conds.some(c => CARDIOVASCULAR_PATTERN.test(c));
+  const isPregnant = conds.some(c => PREGNANCY_PATTERN.test(c));
+  const hasLowerLimbOrSpineIssue = conds.some(c => LOWER_LIMB_OR_SPINE_PATTERN.test(c));
+  const bmi = resolveBmi(weight_kg, height_cm);
 
   let resolvedType = String(type).toUpperCase();
   let asthmaClinicalNote = null;
+  let hiitBanReason = null;
+  const requestedHiit = resolvedType === CARDIO_TYPES.HIIT_INTERVALS || resolvedType.includes('HIIT');
 
   // GINA Clinical Guideline: Restrict HIIT for asthma / respiratory conditions
-  if (hasAsthma && (resolvedType === CARDIO_TYPES.HIIT_INTERVALS || resolvedType.includes('HIIT'))) {
+  if (hasAsthma && requestedHiit) {
     resolvedType = CARDIO_TYPES.LISS_TALK_TEST;
     asthmaClinicalNote = ASTHMA_CARDIO_SAFETY_GUIDANCE_AR;
+    hiitBanReason = 'RESPIRATORY';
+  } else if (requestedHiit && (hasCardiovascular || isPregnant || (bmi !== null && bmi >= 35))) {
+    // ACSM pre-participation screening: vigorous work needs medical clearance with cardiovascular
+    // disease; ACOG: moderate aerobic work in pregnancy; BMI >= 35: start low-impact and moderate.
+    resolvedType = CARDIO_TYPES.LISS_TALK_TEST;
+    hiitBanReason = hasCardiovascular ? 'CARDIOVASCULAR' : isPregnant ? 'PREGNANCY' : 'SEVERE_OBESITY';
   }
+
+  // Sprinting loads the knee, ankle and spine with several times bodyweight per stride; above BMI 30 or
+  // with a lower-limb or spine issue, intervals move to a non-impact machine.
+  const impactRestricted = hasLowerLimbOrSpineIssue || (bmi !== null && bmi >= 30);
+
+  const clinicalGuardrails = {
+    asthma_hiit_banned: Boolean(hasAsthma),
+    hiit_banned: hiitBanReason !== null,
+    hiit_ban_reason: hiitBanReason,
+    impact_restricted: impactRestricted,
+    bmi,
+    preferred_modality: (hasAsthma || hiitBanReason !== null) ? 'LISS_TALK_TEST' : null,
+  };
 
   const upperType = resolvedType;
 
   if (upperType === CARDIO_TYPES.HIIT_INTERVALS || upperType.includes('HIIT')) {
     return {
       type: CARDIO_TYPES.HIIT_INTERVALS,
-      protocol_title_ar: 'تدريب فترات عالي الكثافة (HIIT Interval Protocol)',
-      protocol_title_en: 'High-Intensity Interval Training (HIIT)',
+      protocol_title_ar: impactRestricted
+        ? 'تدريب فترات عالي الكثافة على جهاز بدون صدمات (Low-Impact HIIT)'
+        : 'تدريب فترات عالي الكثافة (HIIT Interval Protocol)',
+      protocol_title_en: impactRestricted ? 'Low-Impact High-Intensity Interval Training' : 'High-Intensity Interval Training (HIIT)',
       duration_minutes: 15,
       sessions_per_week: Math.min(2, sessions_per_week),
-      talk_test_cue_ar: 'جهد هوائي حرج؛ لا يمكنك التحدث أثناء فترات السبرنت (30 ثانية أقصى مجهود 100% تليها 90 ثانية مشي هادئ 40%).',
-      execution_breakdown_ar: [
-        'إحماء هادئ لمدة 3 دقائق.',
-        '6 إلى 8 جولات: (30 ثانية سبرنت أقصى سرعة + 90 ثانية مشي لاستعادة النفس).',
-        'تبريد واستشفاء لمدة دقيقتين.'
-      ],
+      talk_test_cue_ar: impactRestricted
+        ? 'جهد هوائي حرج؛ لا يمكنك التحدث أثناء فترات التبديل السريع (30 ثانية أقصى مجهود تليها 90 ثانية تبديل هادئ بمقاومة خفيفة).'
+        : 'جهد هوائي حرج؛ لا يمكنك التحدث أثناء فترات السبرنت (30 ثانية أقصى مجهود 100% تليها 90 ثانية مشي هادئ 40%).',
+      execution_breakdown_ar: impactRestricted
+        ? [
+          'إحماء هادئ لمدة 3 دقائق على الدراجة.',
+          '6 إلى 8 جولات: (30 ثانية تبديل بأقصى مجهود بمقاومة متوسطة + 90 ثانية تبديل هادئ لاستعادة النفس).',
+          'تبريد واستشفاء لمدة دقيقتين.'
+        ]
+        : [
+          'إحماء هادئ لمدة 3 دقائق.',
+          '6 إلى 8 جولات: (30 ثانية سبرنت أقصى سرعة + 90 ثانية مشي لاستعادة النفس).',
+          'تبريد واستشفاء لمدة دقيقتين.'
+        ],
       fat_oxidation_rationale_ar: 'رفع معدل الاستهلاك الأكسجيني اللاحق للتمرين (EPOC) وتحفيز حرق الدهون في وقت قصير.',
-      equipment_recommendation: equipment
+      equipment_recommendation: impactRestricted ? CARDIO_EQUIPMENT.STATIONARY_BIKE : equipment,
+      clinical_guidance_ar: impactRestricted ? HIIT_CLINICAL_GUIDANCE_AR.LOW_IMPACT_HIIT : null,
+      clinical_guardrails: clinicalGuardrails
     };
   }
 
@@ -104,10 +160,7 @@ export function getPracticalCardioPrescription({
     ],
     fat_oxidation_rationale_ar: 'أقصى كفاءة لأكسدة الدهون كوقود أساسي وتنشيط الميتوكوندريا دون أي تداخل مع استشفاء العضلات.',
     equipment_recommendation: equipment,
-    clinical_guidance_ar: asthmaClinicalNote,
-    clinical_guardrails: {
-      asthma_hiit_banned: Boolean(hasAsthma),
-      preferred_modality: hasAsthma ? 'LISS_TALK_TEST' : null,
-    }
+    clinical_guidance_ar: asthmaClinicalNote || (hiitBanReason ? HIIT_CLINICAL_GUIDANCE_AR[hiitBanReason] : null),
+    clinical_guardrails: clinicalGuardrails
   };
 }
