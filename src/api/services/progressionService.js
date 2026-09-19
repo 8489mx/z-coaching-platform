@@ -18,7 +18,7 @@ export async function loadDeloadWindows(userId) {
 /** Per-exercise progression state for a client, replayed from all their workout logs. */
 export async function loadProgressionState(userId, now = new Date()) {
   const [logs, deloadWindows] = await Promise.all([
-    WorkoutLog.findAll({ where: { user_id: userId }, order: [["createdAt", "ASC"]], attributes: ["createdAt", "week_number", "logged_exercises"] }),
+    WorkoutLog.findAll({ where: { user_id: userId }, order: [["createdAt", "ASC"], ["id", "ASC"]], attributes: ["createdAt", "week_number", "logged_exercises"] }),
     loadDeloadWindows(userId),
   ]);
   return buildProgressionState({
