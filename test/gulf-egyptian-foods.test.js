@@ -71,3 +71,12 @@ test('clinical guards apply to the new dishes', () => {
   assert.equal(isFoodClinicallySafe(FOOD_DATABASE.KABSA_CHICKEN, { is_g6pd: true, is_celiac: true }), true);
   assert.equal(isFoodClinicallySafe(FOOD_DATABASE.KABSA_CHICKEN, { is_diabetic: true }), false, 'white-rice dish is high GI');
 });
+
+test('plant protein powder is its own dairy-free food, not an alias of whey', () => {
+  const pea = FOOD_DATABASE.PEA_RICE_PROTEIN_POWDER;
+  assert.equal(pea.alias_of, undefined);
+  assert.equal(pea.is_dairy, false);
+  assert.deepEqual(pea.allergens, []);
+  assert.equal(isFoodClinicallySafe(pea, { is_lactose_intolerant: true, allergies: ['dairy_lactose'] }), true);
+  assert.equal(isFoodClinicallySafe(FOOD_DATABASE.WHEY_PROTEIN_ISOLATE, { is_lactose_intolerant: true, allergies: ['dairy_lactose'] }), false);
+});

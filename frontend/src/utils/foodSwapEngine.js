@@ -305,6 +305,26 @@ export const FOOD_DATABASE = {
     is_low_lactose: true
   },
 
+  // Plant protein isolate used by the meal builder for vegan / dairy-free plans (same values as the
+  // culinary FOOD_SWAP_DATABASE; label-based, no USDA record). Was an alias of whey (dairy) before.
+  PEA_RICE_PROTEIN_POWDER: {
+    code: 'PEA_RICE_PROTEIN_POWDER',
+    name_ar: 'بروتين نباتي معزول (بازلاء وأرز)',
+    name_en: 'Pea & Rice Protein Isolate',
+    macro_type: 'PROTEIN',
+    taste_profile: TASTE_PROFILES.SWEET_SHAKE_PROTEIN,
+    protein_per_100g: 80,
+    carbs_per_100g: 3,
+    fat_per_100g: 1.5,
+    calories_per_100g: 350,
+    yield_factor_raw_to_cooked: 1.0,
+    allergens: [],
+    purine_level: 'LOW',
+    is_gluten_free: true,
+    is_legume: false,
+    is_dairy: false
+  },
+
   // --- BREAKFAST CARBS ---
   EGYPTIAN_BALADI_BREAD: {
     code: 'EGYPTIAN_BALADI_BREAD',
@@ -1906,7 +1926,6 @@ export const UNIFIED_FOOD_CODE_ALIASES = {
   GREEK_YOGURT: 'GREEK_YOGURT_NONFAT',
   HEMP_CHIA_SEEDS: 'CHIA_SEEDS',
   OAT_MILK: 'SKIM_MILK',
-  PEA_RICE_PROTEIN_POWDER: 'WHEY_PROTEIN_ISOLATE',
   MIXED_LEGUMES_STEW: 'COOKED_WHITE_BEANS',
   SAUTEED_VEGGIES: 'GREEN_BEANS',
   MEDITERRANEAN_SALAD: 'FRESH_CUCUMBER'
