@@ -12,7 +12,7 @@ const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const catalog = JSON.parse(fs.readFileSync(path.join(ROOT, 'data/catalogs/core-global-food-batch-v1.json'), 'utf8'));
 const ctx = Object.freeze({ system_time: '2026-09-19T08:00:00.000Z', assessmentDate: '2026-09-19' });
 
-function formAnswers(selected = []) {
+function formAnswers(selected = [], overrides = {}) {
   return {
     gender: 'male', age: '32', height_cm: '178', weight_kg: '92',
     circumferences: { neck_cm: '40', waist_cm: '98', hips_cm: '', chest_cm: '', arm_cm: '', thigh_cm: '' },
@@ -33,6 +33,7 @@ function formAnswers(selected = []) {
     sleep_schedule: { pattern: 'regular_night', average_hours: '7_8', bedtime_hour: '23:00' },
     training_environment: 'commercial_gym',
     training_logistics: { days_per_week: 4, experience_level: 'intermediate', has_other_sports: false },
+    ...overrides,
   };
 }
 
@@ -70,3 +71,18 @@ for (const key of ['favism_g6pd', 'gout']) {
     assert.deepEqual(legumes, []);
   });
 }
+
+test('neck and waist from the form feed the US Navy body-fat estimate (Katch-McArdle BMR)', () => {
+  const targets = build(formAnswers()).nutrition_program.targets;
+  assert.equal(targets.bmr_formula, 'KATCH_MCARDLE');
+  const noNeck = formAnswers([], { circumferences: { neck_cm: '', waist_cm: '98' } });
+  assert.equal(build(noNeck).nutrition_program.targets.bmr_formula, 'MIFFLIN_ST_JEOR');
+});
+
+test('recomposition from the form uses a 10% deficit, fat loss keeps 20%', () => {
+  const recomp = build(formAnswers([], { primary_goal: 'recomposition' })).nutrition_program.targets;
+  const cut = build(formAnswers([], { primary_goal: 'fat_loss' })).nutrition_program.targets;
+  assert.equal(recomp.tdee, cut.tdee);
+  assert.equal(recomp.target_calories, Math.round(recomp.tdee * 0.9));
+  assert.equal(cut.target_calories, Math.round(cut.tdee * 0.8));
+});

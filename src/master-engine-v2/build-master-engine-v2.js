@@ -215,10 +215,16 @@ export function calculateUniversalNutritionTargets(canonicalIntake, evaluationCo
     ? calculateAge(personal.dateOfBirth, evaluationContext.assessmentDate)
     : Number(personal.age) || 28;
   const isMale = personal.sex !== "FEMALE";
-  let bodyFat = Number(body.bodyFat || body.body_fat) || null;
-  const neck = Number(body.neckCm || body.neck_cm) || null;
-  const waist = Number(body.waistCm || body.waist_cm) || null;
-  const hip = Number(body.hipCm || body.hip_cm) || null;
+  // The canonical body contract carries only height/weight/waist (and fills a missing waist with an
+  // estimate), so body fat and the tape measurements are read from the submitted answers.
+  const rawBody = effectiveRaw?.body || {};
+  const rawCircumferences = effectiveRaw?.circumferences || {};
+  let bodyFat = Number(
+    body.bodyFat || body.body_fat || rawBody.bodyFat || rawBody.body_fat || effectiveRaw?.body_fat || effectiveRaw?.body_fat_percent,
+  ) || null;
+  const neck = Number(body.neckCm || body.neck_cm || rawBody.neckCm || rawBody.neck_cm || rawCircumferences.neck_cm) || null;
+  const waist = Number(rawBody.waistCm || rawBody.waist_cm || rawCircumferences.waist_cm || effectiveRaw?.waist_cm) || null;
+  const hip = Number(body.hipCm || body.hip_cm || rawBody.hipCm || rawBody.hip_cm || rawCircumferences.hips_cm) || null;
 
 
   // Calculate US Navy Body Fat if neck and waist are present and direct bodyFat was not supplied
@@ -270,12 +276,20 @@ export function calculateUniversalNutritionTargets(canonicalIntake, evaluationCo
   const tdee = Math.round(bmr * activityFactor);
 
   // 3. Goal-Driven Calorie Target
-  const primaryGoal = goals.primary || "FAT_LOSS";
+  // The canonical goal enum folds recomposition into FAT_LOSS; recover it from the submitted answer.
+  const rawGoal = String(effectiveRaw?.goals?.primary ?? effectiveRaw?.primary_goal ?? "").trim().toUpperCase();
+  const isRecomposition = rawGoal.includes("RECOMP") || rawGoal.includes("إعادة تكوين") || rawGoal.includes("اعادة تكوين");
+  const primaryGoal = isRecomposition ? "BODY_RECOMPOSITION" : (goals.primary || "FAT_LOSS");
   let targetCalories = tdee;
   let proteinPerKg = 2.0;
   let calorieAdjustmentDesc = "سعرات صيانة (Maintenance)";
 
-  if (primaryGoal === "FAT_LOSS" || primaryGoal === "BODY_RECOMPOSITION") {
+  if (primaryGoal === "BODY_RECOMPOSITION") {
+    // Recomposition relies on resistance training + high protein near maintenance (Barakat et al. 2020, Strength Cond J).
+    targetCalories = Math.round(tdee * 0.90); // 10% Deficit
+    proteinPerKg = 2.2;
+    calorieAdjustmentDesc = "عجز سعرات بسيط 10% لإعادة تكوين الجسم (حرق دهون مع بناء عضلي) مع بروتين مرتفع";
+  } else if (primaryGoal === "FAT_LOSS") {
     targetCalories = Math.round(tdee * 0.80); // 20% Deficit
     proteinPerKg = 2.2; // High protein to spare lean mass
     calorieAdjustmentDesc = "عجز سعرات 20% لحرق الدهون وحماية الكتلة العضلية";
