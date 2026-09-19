@@ -9,35 +9,58 @@
 == خريطة المشروع ==
 - الخادم: Node 22 / Express 5 / MariaDB (Sequelize). نقطة الدخول: src/api/server.js
 - الواجهة: React 19 / Vite. نقطة الدخول: frontend/src/main.jsx. صفحات الكوتش محملة بـ React.lazy في App.jsx، وصفحات المتدرب (ClientInteractiveApp, ClientLogin, FullIntakeForm, WeeklyCheckinForm) في الحزمة الرئيسية ولا تُحوَّل إلى lazy.
-- محركات الخطة الأساسية: src/master-engine-v2, src/nutrition-meal-context-v2 (بناء الوجبات), src/training-engine-v2, src/checkin-engine, src/adaptation-engine.
-- محركات التنفيذ: src/execution-engines (39 ملفاً فقط، كلها مستخدمة). القائمة الحقيقية في SYSTEM_CAPABILITIES.md قسم 3-هـ.
+- محركات الخطة الأساسية: src/master-engine-v2 (السعرات والماكروز ونظام الأكل)، src/nutrition-meal-context-v2 (بناء الوجبات)، src/training-engine-v2 (الميزوسايكل وجدار الإصابات)، src/cardio-engine، src/mobility-warmup-engine-v2، src/checkin-engine، src/adaptation-engine.
+- محركات التنفيذ: src/execution-engines (كلها مستخدمة). القائمة الحقيقية في SYSTEM_CAPABILITIES.md قسم 3-هـ.
+
+== شريان البيانات (من الاستمارة حتى تطبيق المتدرب) ==
+1) FullIntakeForm.jsx يرسل { client_code, phone_number, answers: {...} } إلى POST /api/v1/intake/submit. الخادم يخزن { answers: {...} } مشفراً في IntakeSubmission.
+2) أي كود يقرأ الاستمارة المخزنة يستخدم loadLatestIntakeAnswers في src/api/controllers/program.controller.js (يفك التشفير ويفك غلاف answers). لا تقرأ submission.answers مباشرة.
+3) src/intake-decision-engine/adapters/intake-adapter.js يحول قيم الاستمارة إلى العقد القانوني (canonical). كل قيمة يعرضها الفورم يجب أن تكون مقبولة هنا، وإلا يرفض الخادم الإرسال بـ 400. عند إضافة أو تغيير أي اختيار في الفورم: أضف تحويله في الأدابتر وأضف حالة في test/intake-form-condition-linkage.test.js.
+4) العقد القانوني يرفض أي مفتاح غير معروف (validate-intake.js)، لذلك الحقول التي لا يحملها (محيط الرقبة والحوض، نسبة الدهون، إعادة التكوين، الصيام المتقطع، التكميم، أنيميا الفول، النقرس) تُقرأ من الإجابات الخام داخل master-engine-v2 و build-culinary-meals. لا توسع العقد القانوني بدون تعديل المدقق واختباراته.
+5) generateDraftFromIntake يبني المسودة، approveAndPublishIntake يعتمدها، GET /api/v1/programs/active/:id يرجع master_program + lifestyle.bedtime_hour + clinical_constraints (أنيميا الفول، النقرس، السيلياك، اللاكتوز، السكري، القولون، التكميم، الحساسيات). تطبيق المتدرب يدمج clinical_constraints في clinicalProfile، ومحرك البدائل يرفض أي صنف ممنوع.
+6) المتابعة الأسبوعية: الكنترولر يمرر primary_goal من آخر استمارة إلى evaluateCheckin. الاختبار الشامل للمسار: test/intake-to-client-app-e2e.test.js.
 
 == مصادر الحقيقة (ممنوع كسرها) ==
-1) أرقام الأكل: frontend/src/data/foodReference.js هو المرجع الوحيد (USDA مع fdc_id). أي صنف جديد أو تعديل رقم يبدأ من هنا ثم يُطابق في: frontend/src/utils/foodSwapEngine.js و src/nutrition-meal-context-v2/build-culinary-meals.js و src/data/food-catalog.json و data/settings/foods_catalog.json و frontend/src/data/defaultFoodsCatalog.js. الاختبار test/food-reference-guard.test.js يفشل عند أي اختلاف. ممنوع كتابة رقم غذائي بدون مصدر.
-2) المحركات الموحدة مصدرها frontend/src/utils (foodSwapEngine, pdfExportEngine, biomechanicalSwapEngine, biomechanicsFirewallEngine, circadianLabTriggerEngine, cardioZonesEngine). الملفات المقابلة في src/execution-engines تعيد التصدير فقط: لا تعدّلها ولا تنسخ كوداً فيها. باقي النسخ المكررة يجب أن تبقى متطابقة (test/engine-copy-drift-guard.test.js).
-3) لا تُضف محركاً أو ملفاً جديداً إلا إذا كان مستدعى فعلياً من مسار في الخادم أو شاشة في الواجهة، ومعه اختبار.
+1) أرقام الأكل: frontend/src/data/foodReference.js هو المرجع الوحيد (USDA مع fdc_id). أي صنف جديد أو تعديل رقم يبدأ من هنا ثم يُطابق في: frontend/src/utils/foodSwapEngine.js و src/nutrition-meal-context-v2/build-culinary-meals.js و src/data/food-catalog.json و data/settings/foods_catalog.json و frontend/src/data/defaultFoodsCatalog.js. الاختبار test/food-reference-guard.test.js يفشل عند أي اختلاف.
+2) المحركات الموحدة مصدرها frontend/src/utils (foodSwapEngine, pdfExportEngine, biomechanicalSwapEngine, biomechanicsFirewallEngine, circadianLabTriggerEngine, cardioZonesEngine). الملفات المقابلة في src/execution-engines تعيد التصدير فقط. باقي النسخ المكررة يحرسها test/engine-copy-drift-guard.test.js.
+3) حالات الخطة الوحيدة: READY_FOR_DRAFT, COACH_REVIEW_REQUIRED, MEDICAL_REVIEW_REQUIRED, BLOCKED. الخطة BLOCKED لا تُبنى أبداً (test/plan-status-literal-guard.test.js يرفض أي كلمة حالة غير موجودة).
+4) لا تُضف محركاً أو ملفاً جديداً إلا إذا كان مستدعى فعلياً من مسار في الخادم أو شاشة في الواجهة، ومعه اختبار.
+
+== القواعد العلمية المعتمدة في المحركات (لا تغيرها بدون مصدر علمي وموافقتي) ==
+- السعرات: Katch-McArdle عند توفر نسبة الدهون (من الإدخال المباشر أو معادلة Navy من الرقبة والوسط والحوض)، وإلا Mifflin-St Jeor. عجز 20% للتنشيف، 10% لإعادة التكوين، فائض 10% للتضخيم. حد أدنى 1200 سعرة للنساء و1500 للرجال (AHA/ACC/TOS 2013) أو سعرات الصيانة لو أقل.
+- البروتين: 2.2 جم/كجم للتنشيف وإعادة التكوين، على وزن مرجعي عند ارتفاع الدهون (الكتلة الخالية عند 15% دهون للرجال و25% للنساء، أو الوزن المعدل عند BMI 30 فأكثر). سقف 1.0 جم/كجم لمرضى الكلى (KDOQI). الماء على نفس الوزن المرجعي.
+- الريفيد وتدوير الكارب: متوسط الأسبوع يساوي الهدف اليومي بالضبط، وسعرات كل يوم محسوبة من الماكروز.
+- التمرين: حد أدنى RIR = 2 للمبتدئ في كل التمارين، و2 للمتوسط و1 للمتقدم في التمارين المركبة الثقيلة، و2 لتمارين الثبات (Refalo 2023, Zourdos 2016). الضغط والقلب RIR 2 على الأقل مع حظر حبس النفس.
+- جدار الإصابات: البديل من نفس النمط الحركي (الظهر: leg press/hip thrust/تجديف مسنود/ضغط كتف جالس، الركبة: leg press بمدى بدون ألم وhip thrust بدل الطعن، الكتف: machine/floor press وتدوير خارجي للكفة المدورة بدل الضغط فوق الرأس). البديل يأخذ عدات فئته، ولا يتكرر تمرين في نفس الجلسة (test/training-injury-firewall-slots.test.js). ألم لا يهدأ بالراحة = مراجعة طبية.
+- الكارديو: HIIT ممنوع مع الربو والضغط والقلب والحمل وBMI 35 فأكثر، ويتحول لدراجة بدون صدمات مع BMI 30-35 أو إصابة ركبة/كاحل/حوض/ظهر (test/cardio-hiit-safety-gates.test.js).
+- المتابعة: ثبات الوزن مع التزام = خفض 125 سعرة للتنشيف، وزيادة 125 سعرة للتضخيم (GAIN_STALL)، ونجاح (ON_TRACK) للتثبيت.
+- التكميم: 5 وجبات صغيرة على الأقل ولا صيام متقطع تلقائي. الصيام المتقطع حسب اختيار المتدرب (16/8 أو 14/10).
 
 == ممنوعات مطلقة ==
 - قاعدة البيانات: لا تعديل على بنية الجداول ولا حذف ولا نقل بيانات إلا بنسخة احتياطية وخطة وموافقتي الصريحة. (الأعمدة enable_rest_timer و enable_weight_logging و grocery_list تُركت عمداً، لا تستخدمها).
 - الأمان: ممنوع كتابة أي كلمة سر أو كود دخول أو مفتاح داخل الكود أو .env.example. الكوتش والإدارة يدخلون بالبريد وكلمة المرور فقط (login-email)، و login-fast للمتدربين فقط ويرفض ADMIN/COACH. لا تُرجع password في أي رد.
-- لا قيم افتراضية صامتة للبيانات الصحية (مثل وزن 75 أو سعرات 1900 عند غياب القيمة): ارفض برسالة واضحة. لا catch فارغ يخفي عطلاً في ميزة أساسية.
+- لا قيم افتراضية صامتة للبيانات الصحية: ارفض برسالة واضحة. لا catch فارغ يخفي عطلاً في ميزة أساسية.
 - ممنوعات تطبيق المتدرب: لا حقول إدخال أوزان أو جولات، لا مؤقتات، لا عدادات ماء، لا قوائم تسوق. ممنوعات الواجهة: لا <select> افتراضي (استخدم frontend/src/components/common/CurvedSelect.jsx)، لا زوايا حادة، لا إيموجي. كل الردود بالعربية.
 - أي قيمة طبية أو غذائية جديدة (حدود بروتين، أدوية، أمراض) اذكر مصدرها العلمي وقل إنها تحتاج مراجعة متخصص.
 
 == قبل أي تعديل ==
 - ابحث عن كل مكان يستخدم الملف أو الدالة في frontend/src و src و test و tests و mobile_app واذكر النتيجة.
+- إذا غيرت شكل بيانات يرسلها الفورم أو يرجعها الـ API: تتبع المسار كاملاً (الفورم -> الأدابتر -> المحرك -> الحفظ -> الـ API -> تطبيق المتدرب) قبل التسليم.
 - إذا كان الطلب غامضاً أو يمس أكثر من جزء: اشرح الخطة والمخاطر واطلب موافقتي أولاً.
 
 == بعد كل تعديل ==
 - اذكر كل ملف ودالة تغيّرت بالظبط.
-- اطلب مني تشغيل: npm.cmd test ثم npm.cmd --prefix frontend run build. (npm test يشغل بوابة لينت صارمة ثم اختبارات node ثم اختبارات vitest، ويحتاج MariaDB وملف .env).
+- اطلب مني تشغيل: npm.cmd test ثم npm.cmd --prefix frontend run build. (npm test يشغل بوابة لينت صارمة ثم اختبارات node ثم اختبارات vitest، ويحتاج MariaDB وملف .env). آخر نتيجة معتمدة: 1567 اختبار node و39 اختبار vitest، كلها ناجحة.
 - لا تقل "تم" أو "تم الاختبار" إلا بعد أن ألصق لك المخرجات الحقيقية. لو فشل أي اختبار قديم: توقف واشرح السبب، ولا تعدّل الاختبار لينجح إلا إذا كان التغيير في السلوك مقصوداً ومعلناً.
 - أضف اختباراً في مجلد test لكل إصلاح أو ميزة جديدة يفشل لو انكسرت.
 - لو لاحظت خطأً آخر: لا تصلحه بصمت، أخبرني ونفّذه في خطوة منفصلة. لو لست متأكداً قل "لست متأكداً".
 
 == نقاط مفتوحة معروفة (لا تعتبرها أخطاء جديدة) ==
+- تطبيق الموبايل Flutter (mobile_app) غير موصول بالخادم: لا يجلب البرنامج أبداً (cacheActiveProgram لا تُستدعى)، ويرسل المتابعة بحقل weight واحد بينما /api/v1/programs/checkin/submit يطلب daily_weights_kg بسبعة أوزان. تطبيق المتدرب المعتمد حالياً هو الويب (ClientInteractiveApp). لا تنشر Flutter قبل إعادة ربطه.
+- مؤجل للنسخة الثانية بقرار صاحب المشروع: تمارين مرونة مبنية على نقص حركي (تحتاج أسئلة جديدة في الفورم)، زيادة الحمل حسب الثلث، تنويع جلسات Upper/Lower B، القيم الافتراضية في محرر الكوتش، خطة مؤقتة لحالات ألم الصدر (سلوك مقصود للمراجعة).
+- حقول تُجمع في الفورم ولا يستخدمها أي محرك (للعرض أو مؤجلة): محيط الصدر والذراع والفخذ، سعة معدة التكميم ومتلازمة الإغراق، نسبة ICR للسكري، نوع الغدة، التدخين، المطبخ المفضل، أنماط الاشتهاء.
+- MasterPdfModal في تطبيق المتدرب لا يفتحه أي زر (ويستخدم بيانات نموذجية لو فُتح). الـ PDF الفعلي هو صفحة /program-pdf.
 - أرقام تقريبية تنتظر مرجعاً: المكملات، منتجات الماركات اللايت، الأكلات المركبة والإقليمية، العيش البلدي، لحم الجمل، الزبيدي.
 - ملف database/migrations/20260821_master_schema.sql غير مطابق للموديلات (الجداول الحقيقية تُبنى بـ Sequelize sync).
 - 138 متغيراً غير مستخدم في الواجهة (تحذيرات لينت فقط).
-- تطبيق الموبايل Flutter لم يُفحص.
 ```
