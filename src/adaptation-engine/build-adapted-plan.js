@@ -29,6 +29,16 @@ function requireObject(value, name) {
  * @param {number} [inputs.options.currentWeekNumber=1]
  * @returns {import("./domain/contracts.js").AdaptedMasterProgram}
  */
+// Statuses where the measured expenditure may retune calories. Locks (poor adherence, injury, PMS buffer,
+// false plateau, desk-job NEAT lock, fatigue refeed) and recomposition success keep their own rules.
+const OBSERVED_TDEE_STATUSES = new Set([
+  CheckinAnalysisStatus.ON_TRACK,
+  CheckinAnalysisStatus.PLATEAU_DETECTED,
+  CheckinAnalysisStatus.TRUE_PLATEAU,
+  CheckinAnalysisStatus.GAIN_STALL,
+  CheckinAnalysisStatus.RAPID_LOSS_WARNING,
+]);
+
 export function buildAdaptedPlan(inputs) {
   requireObject(inputs, "inputs");
 
@@ -191,6 +201,29 @@ export function buildAdaptedPlan(inputs) {
       code: AdaptationReasonCode.REFEED_DAY_PRESCRIBED,
       message_ar: "تمت جدولة يوم إعادة شحن (Refeed) يوم السبت لخفض الإجهاد وتحفيز معدل الأيض دون الإخلال بالعجز الأسبوعي.",
       message_en: "Scheduled a high-carb Refeed Day on Saturday to mitigate fatigue without breaking weekly deficit.",
+    });
+  } else if (checkinAnalysis.adaptive_tdee?.ready === true && OBSERVED_TDEE_STATUSES.has(status)) {
+    // Real expenditure is known (>= 2 weeks of trend): the target follows the client's measured response
+    // instead of the fixed +-125/+150 rules below. Protein stays; carbs absorb the change, fat only when
+    // carbs would drop under 50 g.
+    const tdee = checkinAnalysis.adaptive_tdee;
+    const newCalories = Math.round(Number(tdee.recommended_target_kcal));
+    const delta = newCalories - adaptedCalories;
+    let carbDelta = Math.round(delta / 4);
+    let fatDelta = 0;
+    if (adaptedCarbs + carbDelta < 50) {
+      const shortfallKcal = (50 - (adaptedCarbs + carbDelta)) * 4;
+      carbDelta = 50 - adaptedCarbs;
+      fatDelta = -Math.round(shortfallKcal / 9);
+    }
+    adaptationAction = AdaptationAction.APPLY_OBSERVED_TDEE;
+    adaptedCalories = newCalories;
+    adaptedCarbs += carbDelta;
+    adaptedFat += fatDelta;
+    reasons.push({
+      code: AdaptationReasonCode.OBSERVED_TDEE_APPLIED,
+      message_ar: tdee.reason_ar,
+      message_en: `Observed expenditure ${tdee.observed_tdee_kcal} kcal/day from ${tdee.weeks_used} check-ins (trend ${tdee.weight_trend_kg_per_week} kg/week). Target set to ${newCalories} kcal (step ${delta >= 0 ? "+" : ""}${delta}).`,
     });
   } else if (status === CheckinAnalysisStatus.RAPID_LOSS_WARNING) {
     adaptationAction = AdaptationAction.INCREASE_CALORIES_RAPID_LOSS;

@@ -6,3 +6,4 @@ export {
 } from "./domain/enums.js";
 
 export { evaluateCheckin } from "./evaluate-checkin.js";
+export { estimateAdaptiveTdee } from "./adaptive-tdee.js";
