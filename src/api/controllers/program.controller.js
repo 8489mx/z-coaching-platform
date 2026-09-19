@@ -992,6 +992,13 @@ export async function resolveIntakeMedicalReview(userId) {
 
 export const MEDICAL_REVIEW_CONFIRMATION_REQUIRED = "MEDICAL_REVIEW_CONFIRMATION_REQUIRED";
 
+/** GET /api/v1/programs/active: the signed-in client's own program (mobile app; no id in the URL). */
+export const getMyActiveProgram = async (req, res) => {
+  const me = req.user?.id ? await User.findByPk(req.user.id, { attributes: ["id", "client_code"] }).catch(() => null) : null;
+  if (!me) return res.status(401).json({ error: "Unauthorized: User account not found" });
+  return getActiveProgramByUserId({ user: req.user, params: { user_id: String(me.client_code || me.id) } }, res);
+};
+
 export const getActiveProgramByUserId = async (req, res) => {
   try {
     const rawTarget = req.params.user_id || req.params.code || "";

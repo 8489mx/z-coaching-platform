@@ -17,6 +17,7 @@ import {
   getCheckinHistory,
   getSwapCandidatesHandler,
   setFastingOverride,
+  getMyActiveProgram,
 } from "../controllers/program.controller.js";
 import { requireAuth } from "../middlewares/auth.middleware.js";
 
@@ -28,6 +29,7 @@ router.post("/generate-and-save", requireAuth, generateAndSaveProgram);
 router.post("/generate-from-submission/:submission_id", requireAuth, generateProgramFromSubmission);
 router.post("/generate-for-client/:user_id", requireAuth, generateProgramForClient);
 router.get("/", requireAuth, getUserPrograms);
+router.get("/active", requireAuth, getMyActiveProgram);
 router.get("/active/:user_id", requireAuth, getActiveProgramByUserId);
 router.put("/fasting-override", requireAuth, setFastingOverride);
 router.get("/mobile/:code", requireAuth, getActiveProgramByUserId);

@@ -11,7 +11,8 @@ class ApiConstants {
   static const String loginFast = '/api/v1/auth/login-fast';
   static const String loginEmail = '/api/v1/auth/login-email';
   static const String activeProgram = '/api/v1/programs/active';
-  static const String submitCheckin = '/api/v1/programs/checkin/submit';
+  // نفس مسار استمارة المتابعة في الويب (وزن واحد، والخادم يحدد رقم الأسبوع تلقائياً)
+  static const String submitCheckin = '/api/v1/checkin';
   static const String checkinHistory = '/api/v1/programs/checkin/history';
   static const String uploadPhotos = '/api/v1/photos/upload';
   static const String swapCandidates = '/api/v1/programs/swap-candidates';

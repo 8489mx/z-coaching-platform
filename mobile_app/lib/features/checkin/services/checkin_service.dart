@@ -40,19 +40,23 @@ class CheckinService {
       }
     } catch (_) {}
 
+    // الخادم لا يخزن ساعات النوم كحقل مستقل، فتصل للكوتش ضمن الملاحظات
+    final sleepLine = 'متوسط النوم: $sleepHours ساعات';
+    final notes = clientNotes.trim().isEmpty ? sleepLine : '$sleepLine\n$clientNotes';
+
+    // نفس حقول استمارة الويب التي يقرأها الخادم (POST /api/v1/checkin)
     final payload = {
-      'client_code': clientCode,
-      'weight': currentWeight,
-      'waist': waistCircumference,
-      'adherence_rate': adherenceRate,
+      'user_id': clientCode,
+      'weight_kg': currentWeight,
+      'waist_circumference_cm': waistCircumference,
+      'nutrition_adherence_percent': adherenceRate,
       'sleep_hours': sleepHours,
-      'client_notes': clientNotes,
-      'submission_date': DateTime.now().toIso8601String(),
-      'photos': {
-        if (frontBase64 != null) 'front': 'data:image/jpeg;base64,$frontBase64',
-        if (sideBase64 != null) 'side': 'data:image/jpeg;base64,$sideBase64',
-        if (backBase64 != null) 'back': 'data:image/jpeg;base64,$backBase64',
-      }
+      'client_notes': notes,
+      'photos': [
+        if (frontBase64 != null) {'pose': 'FRONT', 'photo_url': 'data:image/jpeg;base64,$frontBase64'},
+        if (sideBase64 != null) {'pose': 'SIDE', 'photo_url': 'data:image/jpeg;base64,$sideBase64'},
+        if (backBase64 != null) {'pose': 'BACK', 'photo_url': 'data:image/jpeg;base64,$backBase64'},
+      ],
     };
 
     // محاولة الإرسال الحي

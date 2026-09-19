@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../../core/constants/app_colors.dart';
+import '../../../core/constants/api_constants.dart';
 import '../../../core/network/api_client.dart';
 import '../../../core/storage/local_storage.dart';
 import '../../auth/models/client_user.dart';
@@ -59,22 +60,9 @@ class _TodayHubScreenState extends State<TodayHubScreen> {
 
     _activeProgram = widget.storage.getCachedActiveProgram();
     if (_activeProgram != null) {
-      final nutrition = _activeProgram!['nutrition'];
-      if (nutrition is Map<String, dynamic>) {
-        _macroTarget = DailyMacroTarget.fromJson(nutrition['daily_targets'] as Map<String, dynamic>?);
-      }
-
-      final training = _activeProgram!['training'];
-      if (training is Map && training['sessions'] is List && (training['sessions'] as List).isNotEmpty) {
-        final firstSession = (training['sessions'] as List).first;
-        if (firstSession is Map) {
-          _todayWorkoutName = firstSession['session_name']?.toString() ?? _todayWorkoutName;
-          if (firstSession['exercises'] is List) {
-            _todayExercisesCount = (firstSession['exercises'] as List).length;
-          }
-        }
-      }
+      _applyProgram(_activeProgram!);
     }
+    _refreshActiveProgram();
 
     if (_user != null) {
       _notificationService.fetchNotifications(_user!.clientCode).then((notifs) {
@@ -88,6 +76,62 @@ class _TodayHubScreenState extends State<TodayHubScreen> {
     }
 
     setState(() {});
+  }
+
+  /// يجلب البرنامج النشط للمتدرب المسجل من الخادم (GET /api/v1/programs/active) ويحفظه للعمل دون اتصال.
+  Future<void> _refreshActiveProgram() async {
+    final response = await ApiClient(widget.storage).get(ApiConstants.activeProgram);
+    final data = response.data;
+    if (!response.isSuccess || data is! Map || data['master_program'] is! Map) return;
+    final program = Map<String, dynamic>.from(data['master_program'] as Map);
+    await widget.storage.cacheActiveProgram(program);
+    if (!mounted) return;
+    setState(() {
+      _activeProgram = program;
+      _applyProgram(program);
+    });
+  }
+
+  /// يقرأ الأهداف اليومية وجلسة اليوم من شكل البرنامج الذي يرسله الخادم.
+  void _applyProgram(Map<String, dynamic> program) {
+    final nutrition = program['nutrition'];
+    final nutritionProgram = program['nutrition_program'];
+    Map? targets;
+    if (nutrition is Map) {
+      final t = nutrition['daily_targets'] ?? nutrition['targets'];
+      if (t is Map) targets = t;
+    }
+    if (targets == null && nutritionProgram is Map && nutritionProgram['macro_targets'] is Map) {
+      targets = nutritionProgram['macro_targets'] as Map;
+    }
+    if (targets != null) {
+      _macroTarget = DailyMacroTarget.fromJson({
+        'calories': targets['calories'] ?? targets['calories_kcal'] ?? targets['target_calories'],
+        'protein': targets['protein'] ?? targets['protein_g'],
+        'carbs': targets['carbs'] ?? targets['carbohydrate_g'] ?? targets['carbs_g'],
+        'fat': targets['fats'] ?? targets['fat'] ?? targets['fat_g'],
+      });
+    }
+
+    List? sessions;
+    for (final key in ['training_program', 'training']) {
+      final block = program[key];
+      if (block is! Map) continue;
+      final weeks = block['weeks'];
+      if (weeks is List && weeks.isNotEmpty && weeks.first is Map && (weeks.first as Map)['sessions'] is List) {
+        sessions = (weeks.first as Map)['sessions'] as List;
+      } else if (block['sessions'] is List) {
+        sessions = block['sessions'] as List;
+      }
+      if (sessions != null && sessions.isNotEmpty) break;
+    }
+    if (sessions != null && sessions.isNotEmpty && sessions.first is Map) {
+      final firstSession = sessions.first as Map;
+      _todayWorkoutName = (firstSession['session_name'] ?? firstSession['name'] ?? firstSession['title'])?.toString() ?? _todayWorkoutName;
+      if (firstSession['exercises'] is List) {
+        _todayExercisesCount = (firstSession['exercises'] as List).length;
+      }
+    }
   }
 
   void _showNotificationsSheet() {
