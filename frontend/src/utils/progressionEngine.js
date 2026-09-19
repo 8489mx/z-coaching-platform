@@ -258,6 +258,8 @@ export function buildProgressionState({ logs = [], deload_windows = [], now = ne
     deload: activeWindow
       ? { status: DELOAD_STATUS.ACTIVE, reason: activeWindow.reason, ends_at: activeWindow.ends_at, affected_exercises: activeWindow.affected_exercises || [] }
       : { status: DELOAD_STATUS.NONE },
+    // A deload just finished (or a long break): the next session starts a new mesocycle from week 1.
+    new_cycle_ready: !activeWindow && Object.values(exercises).some((s) => s.target?.decision === 'POST_DELOAD_RESET'),
     stalled_exercises: Object.values(exercises).filter((s) => s.stall_count >= 1).map((s) => s.exercise_code),
     dropping_exercises: Object.values(exercises).filter((s) => s.drop_streak >= 2).map((s) => s.exercise_code),
   };

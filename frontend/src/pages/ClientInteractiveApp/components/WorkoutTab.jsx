@@ -388,6 +388,19 @@ export default function WorkoutTab({
         </div>
       )}
 
+      {!isDeloadActive && progression?.new_cycle_ready && (
+        <div style={{ background: '#F0FDF4', border: '1px solid #86EFAC', borderRadius: '12px', padding: '10px 12px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '8px', flexWrap: 'wrap' }}>
+          <span style={{ fontSize: '0.76rem', color: '#166534', fontWeight: 700, lineHeight: 1.6 }}>
+            انتهى أسبوع الاستشفاء: ابدأ دورة جديدة من الأسبوع 1. أوزانك الجديدة محسوبة تحت كل تمرين.
+          </span>
+          {currentTrainingWeek !== 1 && typeof setCurrentTrainingWeek === 'function' && (
+            <button type="button" onClick={() => setCurrentTrainingWeek(1)} style={{ padding: '6px 12px', borderRadius: '8px', border: 'none', background: '#166534', color: '#FFFFFF', fontWeight: 800, fontSize: '0.72rem', cursor: 'pointer' }}>
+              ابدأ الأسبوع 1
+            </button>
+          )}
+        </div>
+      )}
+
       {workoutSession.exercises && workoutSession.exercises.map((ex, exIdx) => {
         const isCompleted = Boolean(ex.completed || (ex.sets && ex.sets.length > 0 && ex.sets.every(s => s.completed)));
         const isTechniqueExpanded = Boolean(expandedTechnique[ex.id]);
