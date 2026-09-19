@@ -238,7 +238,9 @@ export const FOOD_REFERENCE = Object.freeze({
   PURE_BEE_HONEY: { kcal: 304, protein: 0.3, carbs: 82.4, fat: 0, fiber: 0.2, fdc_id: 169640 },
   // SUGAR — SR_LEGACY Sugars, granulated
   TABLE_SUGAR: { kcal: 387, protein: 0, carbs: 100, fat: 0, fiber: 0, fdc_id: 169655 },
-  // DATES — SR_LEGACY Dates, deglet noor
+  // DATES_MEDJOOL — SR_LEGACY Dates, medjool
+  DATES_MEDJOOL: { kcal: 277, protein: 1.8, carbs: 75, fat: 0.2, fiber: 6.7, fdc_id: 168191 },
+  // DATES — SR_LEGACY Dates, deglet noor (USDA has no Khalas/Sukkari record; deglet noor is the closest dry-date proxy)
   DATES_KHALAS: { kcal: 282, protein: 2.5, carbs: 75, fat: 0.4, fiber: 8, fdc_id: 171726 },
   SAUDI_DATES_PREMIUM: { kcal: 282, protein: 2.5, carbs: 75, fat: 0.4, fiber: 8, fdc_id: 171726 },
   // APPLE — SR_LEGACY Apples, raw, with skin (Includes foods for USDA's Food Distribution Program) (curated core catalog)

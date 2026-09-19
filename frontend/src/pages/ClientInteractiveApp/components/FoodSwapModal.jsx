@@ -132,7 +132,7 @@ export default function FoodSwapModal({
             if (allCandidateFoods.length === 0) {
               return (
                 <div style={{ padding: '24px', textAlign: 'center', color: '#64748B', fontSize: '0.78rem' }}>
-                  {"لا توجد بدائل مطابقة للبحث من نفس فئة المغذي (" + (currentMacroType === 'PROTEIN' ? 'البروتين' : currentMacroType === 'CARBS' ? 'النشويات' : 'الدهون') + ")."}
+                  {"لا توجد بدائل مطابقة للبحث من نفس فئة المغذي (" + (currentMacroType === 'PROTEIN' ? 'البروتين' : currentMacroType === 'CARBS' ? 'النشويات' : currentMacroType === 'MIXED' ? 'الأطباق المركبة' : 'الدهون') + ")."}
                 </div>
               );
             }

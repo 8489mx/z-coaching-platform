@@ -14,6 +14,8 @@
  * 4. Pre-Engineered Dining Blueprints (Grilled Skewers, Diet Shawarma, Emergency Supermarket)
  */
 
+import { RECIPES, RECIPE_REFERENCE } from '../data/recipeReference.js';
+
 export const TASTE_PROFILES = {
   BREAKFAST_SAVORY_PROTEIN: 'BREAKFAST_SAVORY_PROTEIN',
   SWEET_SHAKE_PROTEIN: 'SWEET_SHAKE_PROTEIN',
@@ -22,7 +24,8 @@ export const TASTE_PROFILES = {
   MAIN_CARB: 'MAIN_CARB',
   HEALTHY_FAT: 'HEALTHY_FAT',
   FRUIT_CARB: 'FRUIT_CARB',
-  FREE_VEGETABLE: 'FREE_VEGETABLE'
+  FREE_VEGETABLE: 'FREE_VEGETABLE',
+  MIXED_MAIN_DISH: 'MIXED_MAIN_DISH'
 };
 
 export const GLYCEMIC_INDEX_LEVELS = Object.freeze({
@@ -1134,6 +1137,24 @@ export const FOOD_DATABASE = {
     is_gluten_free: false,
     is_legume: false
   },
+  DATES_MEDJOOL: {
+    code: 'DATES_MEDJOOL',
+    name_ar: 'تمر مجدول',
+    name_en: 'Medjool Dates',
+    macro_type: 'CARBS',
+    taste_profile: TASTE_PROFILES.FRUIT_CARB,
+    protein_per_100g: 1.8,
+    carbs_per_100g: 75,
+    fat_per_100g: 0.2,
+    calories_per_100g: 277,
+    yield_factor_raw_to_cooked: 1.0,
+    allergens: [],
+    is_gluten_free: true,
+    is_legume: false,
+    glycemic_index: 'HIGH',
+    fodmap_level: 'HIGH'
+  },
+
   DATES_KHALAS: {
     code: 'DATES_KHALAS',
     name_ar: 'تمر خلاص / سكري / عجوة فاخر (قبل التمرين)',
@@ -1831,6 +1852,45 @@ export const FOOD_DATABASE = {
   }
 };
 
+// Gulf and Egyptian composite dishes: macros come from frontend/src/data/recipeReference.js (weighed
+// recipes of USDA ingredients). macro_type MIXED swaps only with other composite dishes, calorie for calorie,
+// because a plate of kabsa carries protein, carbs and fat together.
+const COMPOSITE_DISH_PROFILES = Object.freeze({
+  KABSA_CHICKEN: { allergens: [], is_gluten_free: true, is_legume: false, purine_level: 'LOW_MODERATE', glycemic_index: 'HIGH', fodmap_level: 'HIGH', aliases: ['كبسة', 'كبسة دجاج', 'kabsa'] },
+  KABSA_LAMB: { allergens: [], is_gluten_free: true, is_legume: false, purine_level: 'MODERATE', glycemic_index: 'HIGH', fodmap_level: 'HIGH', aliases: ['كبسة لحم', 'كبسة', 'kabsa'] },
+  MACHBOOS_CHICKEN: { allergens: [], is_gluten_free: true, is_legume: false, purine_level: 'LOW_MODERATE', glycemic_index: 'HIGH', fodmap_level: 'HIGH', aliases: ['مجبوس', 'مكبوس', 'machboos'] },
+  MACHBOOS_KINGFISH: { allergens: ['FISH'], is_gluten_free: true, is_legume: false, purine_level: 'HIGH', glycemic_index: 'HIGH', fodmap_level: 'HIGH', aliases: ['مجبوس سمك', 'مكبوس سمك', 'كنعد'] },
+  HAREES_CHICKEN: { allergens: ['GLUTEN'], is_gluten_free: false, is_legume: false, purine_level: 'LOW_MODERATE', glycemic_index: 'MEDIUM', fodmap_level: 'HIGH', aliases: ['هريس', 'هريسة خليجية', 'harees'] },
+  MADROOBA_CHICKEN: { allergens: ['DAIRY'], is_gluten_free: true, is_legume: false, purine_level: 'LOW_MODERATE', glycemic_index: 'HIGH', fodmap_level: 'HIGH', is_dairy: true, is_low_lactose: true, aliases: ['مضروبة', 'madrooba'] },
+  KOSHARI: { allergens: ['GLUTEN'], is_gluten_free: false, is_legume: true, purine_level: 'MODERATE', glycemic_index: 'MEDIUM', fodmap_level: 'HIGH', aliases: ['كشري', 'كشرى', 'koshari'] },
+  MAHSHI_WARAQ_ENAB: { allergens: [], is_gluten_free: true, is_legume: false, purine_level: 'LOW', glycemic_index: 'MEDIUM', fodmap_level: 'HIGH', aliases: ['محشي', 'ورق عنب', 'دولمة'] },
+  MAHSHI_KROMB: { allergens: [], is_gluten_free: true, is_legume: false, purine_level: 'LOW', glycemic_index: 'MEDIUM', fodmap_level: 'HIGH', aliases: ['محشي', 'محشي كرنب', 'ملفوف'] },
+  MOLOKHIA_TAQLIYA: { allergens: ['DAIRY'], is_gluten_free: true, is_legume: false, purine_level: 'LOW', glycemic_index: 'LOW', fodmap_level: 'HIGH', is_dairy: true, is_low_lactose: true, aliases: ['ملوخية', 'ملوخيه'] },
+  MESAKAA: { allergens: [], is_gluten_free: true, is_legume: false, purine_level: 'LOW', glycemic_index: 'LOW', fodmap_level: 'HIGH', aliases: ['مسقعة', 'مسقعه', 'باذنجان'] },
+});
+
+for (const [code, profile] of Object.entries(COMPOSITE_DISH_PROFILES)) {
+  const recipe = RECIPES[code];
+  const values = RECIPE_REFERENCE[code];
+  FOOD_DATABASE[code] = {
+    code,
+    name_ar: recipe.name_ar,
+    name_en: recipe.name_en,
+    macro_type: 'MIXED',
+    taste_profile: TASTE_PROFILES.MIXED_MAIN_DISH,
+    protein_per_100g: values.protein,
+    carbs_per_100g: values.carbs,
+    fat_per_100g: values.fat,
+    calories_per_100g: values.kcal,
+    fiber_per_100g: values.fiber,
+    yield_factor_raw_to_cooked: 1.0,
+    region: recipe.region,
+    nutrition_source: values.source,
+    is_dairy: false,
+    ...profile,
+  };
+}
+
 export const UNIFIED_FOOD_CODE_ALIASES = {
   LEAN_BEEF: 'LEAN_GROUND_BEEF_95_5',
   ROLLED_OATS: 'ROLLED_OATS_RAW',
@@ -2296,6 +2356,10 @@ export function calculateDynamicFoodSwap({
   } else if (currentFood.macro_type === 'FATS') {
     targetMacroGrams = (current_portion_g * currentFood.fat_per_100g) / 100;
     replacementDensityPer100g = targetFood.fat_per_100g;
+  } else if (currentFood.macro_type === 'MIXED') {
+    // Composite dishes carry all macros together: swap calorie for calorie.
+    targetMacroGrams = (current_portion_g * currentFood.calories_per_100g) / 100;
+    replacementDensityPer100g = targetFood.calories_per_100g;
   }
 
   const calculatedGrams = Math.round(targetMacroGrams * (100 / replacementDensityPer100g));
