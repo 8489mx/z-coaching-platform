@@ -15,7 +15,8 @@ test("Training Engine V2 Meso-Cycle Suite", async (t) => {
   const decision = evaluateIntake(validIntake, evaluationContext);
 
   await t.test("generates a 5-week periodized meso-cycle by default", () => {
-    const meso = buildTrainingMesoCycle(decision);
+    // The fixture lifter is INTERMEDIATE; beginners get an RIR floor (see test below).
+    const meso = buildTrainingMesoCycle(decision, { experience: validIntake.training.experience });
 
     assert.equal(meso.engine_version, TRAINING_ENGINE_V2_VERSION);
     assert.equal(meso.total_weeks, 5);
@@ -36,6 +37,26 @@ test("Training Engine V2 Meso-Cycle Suite", async (t) => {
 
     assert.equal(meso.weeks[4].phase, MesoCyclePhase.DELOAD);
     assert.equal(meso.weeks[4].target_rir, 4);
+  });
+
+  await t.test("beginners never train to failure: week and exercise RIR stay >= 2 outside the deload", () => {
+    const meso = buildTrainingMesoCycle(decision, { experience: "BEGINNER" });
+    assert.deepEqual(meso.weeks.map((w) => w.target_rir), [3, 2, 2, 2, 4]);
+    for (const week of meso.weeks) {
+      for (const session of week.sessions) {
+        for (const exercise of session.exercises) {
+          assert.ok(exercise.prescription.target_rir >= 2, `week ${week.week_number} ${exercise.exercise_code} RIR ${exercise.prescription.target_rir}`);
+        }
+      }
+    }
+  });
+
+  await t.test("heavy primary compounds keep RIR >= 1 even for advanced lifters in the peak week", () => {
+    const meso = buildTrainingMesoCycle(decision, { experience: "ADVANCED" });
+    const peak = meso.weeks[3];
+    const heavy = peak.sessions.flatMap((s) => s.exercises).filter((e) => /^BARBELL_/.test(e.exercise_code));
+    assert.ok(heavy.length > 0);
+    for (const exercise of heavy) assert.ok(exercise.prescription.target_rir >= 1, `${exercise.exercise_code} RIR ${exercise.prescription.target_rir}`);
   });
 
   await t.test("deload week reduces sets appropriately across exercises", () => {

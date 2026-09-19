@@ -104,6 +104,25 @@ const ISOLATION_STRETCH_MOVEMENTS = new Set([
   "TRICEPS_PUSHDOWN",
 ]);
 
+const BEGINNER_MIN_RIR = 2;
+
+/**
+ * Minimum reps-in-reserve per exercise. Training to failure is not required for hypertrophy
+ * (Refalo et al. 2023, Sports Med) and raises fatigue and injury risk on heavy free-weight
+ * compounds; novices also misjudge RIR close to failure (Zourdos et al. 2016, JSCR).
+ * - Beginners: RIR >= 2 on every exercise.
+ * - Intermediate: RIR >= 2 on heavy primary compounds, >= 1 on secondary compounds.
+ * - Advanced: RIR >= 1 on heavy primary compounds.
+ * - Core stability drills are technique-limited, never taken to failure: RIR >= 2.
+ */
+function resolveRirFloor(exerciseCode, slotCode, isAdvanced, isIntermediate) {
+  if (slotCode === "CORE_STABILITY") return 2;
+  if (!isAdvanced && !isIntermediate) return BEGINNER_MIN_RIR;
+  if (HEAVY_PRIMARY_COMPOUNDS.has(exerciseCode)) return isAdvanced ? 1 : 2;
+  if (SECONDARY_COMPOUNDS.has(exerciseCode) && isIntermediate) return 1;
+  return 0;
+}
+
 /**
  * Builds a multi-week periodized meso-cycle from an Intake Decision.
  *
@@ -264,9 +283,12 @@ export function buildTrainingMesoCycle(intakeDecision, options = {}) {
   const weekConfigs = DEFAULT_MESOCYCLE_CONFIG.slice(0, Math.min(weeksCount, DEFAULT_MESOCYCLE_CONFIG.length));
 
   const periodizedWeeks = weekConfigs.map((config) => {
-    const weekTargetRir = hasHypertensionOrHeart
-      ? Math.max(config.target_rir, CLINICAL_GUIDELINES.HYPERTENSION.MIN_RIR)
-      : config.target_rir;
+    const isBeginner = !isAdvanced && !isIntermediate;
+    const weekTargetRir = Math.max(
+      config.target_rir,
+      hasHypertensionOrHeart ? CLINICAL_GUIDELINES.HYPERTENSION.MIN_RIR : 0,
+      isBeginner ? BEGINNER_MIN_RIR : 0,
+    );
     const periodizedSessions = basePlan.sessions.map((baseSession, sessionIdx) => {
       // Create session-specific exercise layout to prevent repetitive duplicates
       let sessionExerciseTemplates = [...(baseSession.exercises || [])];
@@ -448,8 +470,12 @@ export function buildTrainingMesoCycle(intakeDecision, options = {}) {
           calculatedSets = Math.min(5, calculatedSets + 1);
         }
 
-        // Adjust RIR across weeks (Intro RIR 3 -> Loading RIR 2 -> Intensify RIR 1 -> Peak RIR 0 -> Deload RIR 4)
-        let effectiveRir = weekTargetRir !== undefined ? weekTargetRir : baseRir;
+        // Adjust RIR across weeks (Intro RIR 3 -> Loading RIR 2 -> Intensify RIR 1 -> Peak RIR 0 -> Deload RIR 4),
+        // never below the proximity-to-failure floor for this lifter and exercise class.
+        let effectiveRir = Math.max(
+          weekTargetRir !== undefined ? weekTargetRir : baseRir,
+          resolveRirFloor(finalCode, ex.slot_code, isAdvanced, isIntermediate),
+        );
         if (hasHypertensionOrHeart) {
           effectiveRir = Math.max(effectiveRir, CLINICAL_GUIDELINES.HYPERTENSION.MIN_RIR);
         }
@@ -557,7 +583,9 @@ export function buildTrainingMesoCycle(intakeDecision, options = {}) {
       volume_modifier: config.volume_modifier,
       focus_note: hasHypertensionOrHeart && config.target_rir < CLINICAL_GUIDELINES.HYPERTENSION.MIN_RIR
         ? `${config.focus_note} (تم تقييد RIR >= 2 لمرضى الضغط والقلب لحظر الفشل العضلي وحبس النفس)`
-        : config.focus_note,
+        : isBeginner && config.target_rir < BEGINNER_MIN_RIR
+          ? `${config.focus_note} (للمبتدئ: RIR لا يقل عن 2 في كل التمارين؛ التقدم هذا الأسبوع بزيادة الوزن أو التكرار مع ثبات الأداء، بدون الوصول للفشل العضلي)`
+          : config.focus_note,
       sessions: Object.freeze(periodizedSessions),
     });
   });
