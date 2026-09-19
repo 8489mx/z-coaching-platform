@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 
 import { submitWeeklyCheckin } from '../src/api/controllers/program.controller.js';
 import { submitCheckin } from '../src/api/controllers/checkin.controller.js';
-import { User, CheckinSubmission, ProgressPhoto } from '../src/api/models/index.js';
+import { User, CheckinSubmission, ProgressPhoto, IntakeSubmission } from '../src/api/models/index.js';
 
 test('Tier 1 Suite: Check-in Identity Validation & Strict 7-Day Weight Integrity', async (t) => {
 
@@ -44,6 +44,7 @@ test('Tier 1 Suite: Check-in Identity Validation & Strict 7-Day Weight Integrity
   const origFindByPk = User.findByPk;
   const origCheckinCreate = CheckinSubmission.create;
   const origPhotoCreate = ProgressPhoto.create;
+  const origIntakeFindOne = IntakeSubmission.findOne;
 
   let createdCheckinRecords = [];
 
@@ -55,6 +56,8 @@ test('Tier 1 Suite: Check-in Identity Validation & Strict 7-Day Weight Integrity
       return record;
     };
     ProgressPhoto.create = async (data) => ({ id: 8001, ...data });
+    // The check-in reads the client's goal from the latest intake; keep this suite off the real DB.
+    IntakeSubmission.findOne = async () => null;
     User.findOne = async ({ where }) => {
       if (where.client_code === 'CLIENT_105' || where.phone_number === '01099887766') {
         return mockUser;
@@ -69,6 +72,7 @@ test('Tier 1 Suite: Check-in Identity Validation & Strict 7-Day Weight Integrity
     User.findByPk = origFindByPk;
     CheckinSubmission.create = origCheckinCreate;
     ProgressPhoto.create = origPhotoCreate;
+    IntakeSubmission.findOne = origIntakeFindOne;
   });
 
   await t.test('1. submitWeeklyCheckin: Rejects request with missing user identity with HTTP 400 and zero DB writes', async () => {

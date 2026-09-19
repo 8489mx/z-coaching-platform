@@ -463,6 +463,7 @@ export const submitWeeklyCheckin = async (req, res) => {
     }
 
     const analysis = evaluateCheckin({
+      primary_goal: await resolveClientPrimaryGoal(user.id),
       daily_weights_kg: weights,
       previous_week_average_weight_kg: prevAvgWeight,
       waist_circumference_cm: Number(waist_circumference_cm) || null,
@@ -824,6 +825,27 @@ export async function resolveClientBedtimeHour(userId) {
     if (answers && answers._isEncrypted && answers.data) answers = decryptMedicalData(answers.data);
     const bedtime = answers?.sleep_schedule?.bedtime_hour;
     return typeof bedtime === "string" && /^([01]?\d|2[0-3]):[0-5]\d$/.test(bedtime.trim()) ? bedtime.trim() : null;
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * Canonical primary goal (FAT_LOSS, MUSCLE_GAIN, WEIGHT_MAINTENANCE, ...) from the client's latest intake,
+ * so the weekly check-in can tell a fat-loss plateau from a muscle-gain stall. Null when unavailable.
+ */
+export async function resolveClientPrimaryGoal(userId) {
+  try {
+    const submission = await IntakeSubmission.findOne({
+      where: { user_id: userId },
+      order: [["id", "DESC"]],
+      attributes: ["answers"],
+    });
+    let answers = submission?.answers;
+    if (typeof answers === "string") answers = JSON.parse(answers);
+    if (answers && answers._isEncrypted && answers.data) answers = decryptMedicalData(answers.data);
+    if (!answers || typeof answers !== "object") return null;
+    return adaptIntakePayloadToCanonicalEngine(structuredClone(answers)).goals?.primary || null;
   } catch {
     return null;
   }

@@ -3,6 +3,7 @@ import { evaluateCheckin } from "../../checkin-engine/evaluate-checkin.js";
 import { saveProgressPhotoToDisk } from "../utils/photoStorage.js";
 import { buildAdaptedPlan } from "../../adaptation-engine/build-adapted-plan.js";
 import { mergeAdaptedPlanIntoProgram } from "../utils/planMergeEngine.js";
+import { resolveClientPrimaryGoal } from "./program.controller.js";
 
 /**
  * Submit weekly check-in
@@ -117,6 +118,7 @@ export async function submitCheckin(req, res) {
 
     // 2. Evaluate with Auto-Regulation Engine
     const evalInput = {
+      primary_goal: await resolveClientPrimaryGoal(targetUserId),
       weight_kg: parsedWeight,
       previous_weight_kg: prevWeight,
       waist_circumference_cm: waist_circumference_cm ? Number(waist_circumference_cm) : null,
