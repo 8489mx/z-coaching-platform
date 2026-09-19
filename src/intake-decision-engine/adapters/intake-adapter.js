@@ -125,6 +125,8 @@ export function adaptIntakePayloadToCanonicalEngine(raw) {
       ATHLETIC_PERFORMANCE: 'PERFORMANCE',
       PERFORMANCE: 'PERFORMANCE',
       GENERAL_HEALTH: 'GENERAL_HEALTH',
+      // Intake form option "لياقة عامة" (FullIntakeForm primary_goal id)
+      GENERAL_FITNESS: 'GENERAL_HEALTH',
       'لياقة عامة': 'PERFORMANCE',
       'صحة عامة': 'GENERAL_HEALTH',
       OTHER: 'OTHER',
@@ -225,6 +227,10 @@ export function adaptIntakePayloadToCanonicalEngine(raw) {
       'جيم': 'GYM',
       'صالة رياضية': 'GYM',
       HOME: 'HOME',
+      // Intake form options (FullIntakeForm training_environment ids)
+      HOME_GYM: 'HOME',
+      MINIMAL_EQUIPMENT: 'HOME',
+      CALISTHENICS_BANDS: 'HOME',
       HOME_FULL: 'HOME',
       HOME_DUMBBELLS: 'HOME',
       HOME_BODYWEIGHT: 'HOME',
@@ -393,11 +399,15 @@ export function adaptIntakePayloadToCanonicalEngine(raw) {
     };
     // Deep intake form v2: injury_severity maps to painLevel
     const severityPainMap = { MILD: 3, MODERATE: 5, SEVERE: 8 };
-    const injPainLevel = severityPainMap[intake.injury_severity] || 4;
+    // Intake form: an acute (traumatic) injury starts at a higher pain estimate than a chronic one, and
+    // pain that does not settle with rest is a non-mechanical red flag that needs medical review.
+    const isAcuteInjury = String(intake.injuries_map?.injury_nature || '').toLowerCase() === 'acute';
+    const painNotRelievedByRest = intake.injuries_map?.pain_relieved_by_rest === false;
+    const injPainLevel = severityPainMap[intake.injury_severity] || (isAcuteInjury ? 5 : 4);
     injAreas.forEach(a => {
       if (a && a !== 'none' && a !== 'NONE') {
         const canonicalArea = AREA_MAP[a] || String(a).toUpperCase();
-        trainingInjuries.push({ area: canonicalArea, painLevel: injPainLevel, movementImpact: injPainLevel >= 8 ? 'PREVENTS' : (injPainLevel >= 5 ? 'LIMITS' : 'NONE') });
+        trainingInjuries.push({ area: canonicalArea, painLevel: injPainLevel, movementImpact: injPainLevel >= 8 ? 'PREVENTS' : (injPainLevel >= 5 ? 'LIMITS' : 'NONE'), worsening: painNotRelievedByRest });
       }
     });
 
@@ -424,6 +434,7 @@ export function adaptIntakePayloadToCanonicalEngine(raw) {
       '2_meals': 2,
       '3_meals': 3,
       '3_meals_snack': 3,
+      '4_to_5_meals': 4,
       '4_meals': 4,
       '5_meals': 5
     };
@@ -461,11 +472,30 @@ export function adaptIntakePayloadToCanonicalEngine(raw) {
         participationLevel: "RECREATIONAL"
       });
     } else if (intake.training_logistics?.has_other_sports && intake.training_logistics?.sports_name && intake.training_logistics.sports_name !== 'none') {
+      // Intake form sport keys -> canonical SportCode; anything else is kept as free text for the coach.
+      const FORM_SPORT_MAP = {
+        football_padel: 'FOOTBALL',
+        swimming: 'SWIMMING',
+        running_cardio: 'RUNNING',
+        martial_arts: 'MARTIAL_ARTS',
+        crossfit: 'CROSSFIT_OR_FUNCTIONAL',
+      };
+      const rawSport = String(intake.training_logistics.sports_name).trim();
+      const upperSport = rawSport.toUpperCase();
+      const knownCodes = ['FOOTBALL', 'RUNNING', 'CYCLING', 'SWIMMING', 'BOXING', 'MARTIAL_ARTS', 'BASKETBALL', 'HANDBALL', 'VOLLEYBALL', 'RACKET_SPORTS', 'CROSSFIT_OR_FUNCTIONAL'];
+      const sportCode = FORM_SPORT_MAP[rawSport.toLowerCase()] || (knownCodes.includes(upperSport) ? upperSport : null);
+      // Weekly hours are spread over up to three sessions so the cardio engine sees the real sport load.
+      const weeklyHours = Number(intake.training_logistics.hours_per_week);
+      const sessionDays = ["WEDNESDAY", "SATURDAY", "MONDAY"];
+      const sessionCount = Number.isFinite(weeklyHours) && weeklyHours > 0 ? Math.min(3, Math.max(1, Math.ceil(weeklyHours / 1.5))) : 1;
+      const minutesPerSession = Number.isFinite(weeklyHours) && weeklyHours > 0 ? Math.round((weeklyHours * 60) / sessionCount) : 60;
       sports.push({
-        sportCode: intake.training_logistics.sports_name.toUpperCase(),
-        days: ["WEDNESDAY"],
-        minutesPerSession: 60,
-        intensity: "MODERATE"
+        sportCode,
+        otherSportText: sportCode ? null : rawSport,
+        days: sessionDays.slice(0, sessionCount),
+        minutesPerSession,
+        intensity: "MODERATE",
+        participationLevel: "RECREATIONAL"
       });
     }
     intake.cardio = {
