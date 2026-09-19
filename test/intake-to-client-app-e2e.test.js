@@ -10,6 +10,7 @@ import sequelize from "../src/api/config/database.js";
 const CODE = "TEST_E2E_906";
 const PHONE = "01099000906";
 const formAnswers = () => ({
+  health_data_consent: { accepted: true, version: "PDPL-2026-09", accepted_at: "2026-09-01T10:00:00.000Z" },
   gender: "male", age: "34", height_cm: "176", weight_kg: "91",
   circumferences: { neck_cm: "", waist_cm: "99", hips_cm: "", chest_cm: "", arm_cm: "", thigh_cm: "" },
   primary_goal: "general_fitness", neat_level: "sedentary", occupation_type: "DESK_OFFICE",

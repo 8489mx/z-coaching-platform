@@ -6,8 +6,12 @@ import { getStoredCoachConfig } from '../utils/themeAndCoachConfig';
 import { optimizeImageFile, optimizeMultipleFiles } from '../utils/imageOptimizer';
 import { formatWhatsAppPhone } from '../utils/whatsappRemindersEngine';
 import CurvedSelect from '../components/common/CurvedSelect';
+import { HEALTH_DATA_CONSENT_TEXT_AR, hasHealthDataConsent, buildHealthDataConsent } from '../config/healthDataConsent';
 
 const DEFAULT_MASTER_INTAKE = {
+  // Mandatory health-data processing consent (PDPL), given before any answer leaves the device.
+  health_data_consent: { accepted: false, version: '', accepted_at: '' },
+
   // Screen 1: Biometrics & Target
   gender: 'male',
   age: '',
@@ -202,7 +206,9 @@ export default function FullIntakeForm() {
     }
   };
 
-  // Auto-Save Effect
+  const consentGiven = hasHealthDataConsent(formData);
+
+  // Auto-Save Effect (the server draft starts only after the health-data consent)
   useEffect(() => {
     if (loadingDraft || submittedSuccess) return;
 
@@ -213,7 +219,7 @@ export default function FullIntakeForm() {
 
       try {
         localStorage.setItem(`z_intake_${code}_${phone}`, JSON.stringify(formData));
-        if (code !== 'guest') {
+        if (code !== 'guest' && consentGiven) {
           await fetch(`${API_BASE}/api/v1/intake/save-draft`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -232,7 +238,24 @@ export default function FullIntakeForm() {
     }, 1200);
 
     return () => clearTimeout(timer);
-  }, [formData, currentStep, loadingDraft, submittedSuccess]);
+  }, [formData, currentStep, loadingDraft, submittedSuccess, consentGiven]);
+
+  const toggleHealthDataConsent = () => {
+    setFormData(prev => ({
+      ...prev,
+      health_data_consent: hasHealthDataConsent(prev)
+        ? { accepted: false, version: '', accepted_at: '' }
+        : buildHealthDataConsent()
+    }));
+  };
+
+  const goToStep = (step) => {
+    if (step > 1 && !consentGiven) {
+      setCurrentStep(1);
+      return;
+    }
+    setCurrentStep(step);
+  };
 
   const updateNested = (parent, field, val) => {
     setFormData(prev => ({
@@ -341,6 +364,11 @@ export default function FullIntakeForm() {
   };
 
   const handleSubmit = async () => {
+    if (!consentGiven) {
+      alert('يجب الموافقة على معالجة البيانات الصحية في بداية الاستمارة قبل الإرسال.');
+      setCurrentStep(1);
+      return;
+    }
     if (!formData.height_cm || !formData.weight_kg || !formData.age) {
       alert('يرجى التأكد من ملء الطول، الوزن، والسن في الخطوة الأولى.');
       setCurrentStep(1);
@@ -512,7 +540,7 @@ export default function FullIntakeForm() {
               return (
                 <div 
                   key={s.id}
-                  onClick={() => setCurrentStep(s.id)}
+                  onClick={() => goToStep(s.id)}
                   style={{ 
                     cursor: 'pointer',
                     display: 'flex',
@@ -583,6 +611,34 @@ export default function FullIntakeForm() {
                 <p style={{ fontSize: '12px', color: '#64748B', margin: 0 }}>
                   البيانات الأساسية لتشغيل معادلة الأيض BMR ونسبة الدهون U.S. Navy بدقة سريرية.
                 </p>
+              </div>
+
+              {/* Mandatory health-data processing consent (PDPL) */}
+              <div style={{ background: consentGiven ? '#F0FDF4' : '#FFFBEB', border: `1px solid ${consentGiven ? '#BBF7D0' : '#FDE68A'}`, borderRadius: '12px', padding: '14px' }}>
+                <div
+                  role="checkbox"
+                  aria-checked={consentGiven}
+                  tabIndex={0}
+                  onClick={toggleHealthDataConsent}
+                  onKeyDown={(e) => { if (e.key === ' ' || e.key === 'Enter') { e.preventDefault(); toggleHealthDataConsent(); } }}
+                  style={{ display: 'flex', alignItems: 'flex-start', gap: '10px', cursor: 'pointer' }}
+                >
+                  <span style={{ flexShrink: 0, width: '22px', height: '22px', borderRadius: '8px', border: `2px solid ${consentGiven ? '#16A34A' : '#94A3B8'}`, background: consentGiven ? '#16A34A' : '#FFFFFF', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', marginTop: '2px' }}>
+                    {consentGiven && <Check size={14} color="#FFFFFF" />}
+                  </span>
+                  <span style={{ fontSize: '12.5px', color: '#0F172A', lineHeight: 1.8, fontWeight: 600 }}>
+                    <strong style={{ display: 'block', fontWeight: 900, marginBottom: '2px' }}>
+                      <Lock size={13} style={{ verticalAlign: 'middle', marginLeft: '4px' }} />
+                      موافقة إلزامية على معالجة البيانات الصحية
+                    </strong>
+                    {HEALTH_DATA_CONSENT_TEXT_AR}
+                  </span>
+                </div>
+                {!consentGiven && (
+                  <p style={{ margin: '8px 0 0', fontSize: '11.5px', color: '#92400E', fontWeight: 700 }}>
+                    لن يتم حفظ أو إرسال أي بيانات، ولن تنتقل للخطوة التالية، قبل الموافقة.
+                  </p>
+                )}
               </div>
 
               {/* Gender Switcher */}
@@ -2266,7 +2322,7 @@ export default function FullIntakeForm() {
             {currentStep < 4 ? (
               <button 
                 type="button" 
-                onClick={() => setCurrentStep(p => Math.min(4, p + 1))}
+                onClick={() => goToStep(Math.min(4, currentStep + 1))}
                 style={{
                   height: '38px',
                   padding: '0 22px',

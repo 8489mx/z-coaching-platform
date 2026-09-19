@@ -9,6 +9,15 @@ import { buildMasterEngineV2 } from "../../../src/master-engine-v2/index.js";
 import { resolveIntakeMedicalReview, MEDICAL_REVIEW_CONFIRMATION_REQUIRED } from "./program.controller.js";
 import { User, Program, IntakeSubmission } from "../models/index.js";
 import { encryptMedicalData, decryptMedicalData } from "../../utils/crypto.js";
+import { hasHealthDataConsent } from "../../../frontend/src/config/healthDataConsent.js";
+
+const HEALTH_DATA_CONSENT_REQUIRED = Object.freeze({
+  error: "يجب الموافقة على معالجة البيانات الصحية قبل حفظ أو إرسال الاستمارة",
+  code: "HEALTH_DATA_CONSENT_REQUIRED",
+});
+
+/** The form sends { answers: {...form} }; older callers send the form fields at the top level. */
+const intakeHasConsent = (payload) => hasHealthDataConsent(payload?.answers) || hasHealthDataConsent(payload);
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -228,6 +237,7 @@ export const saveDraftIntake = async (req, res) => {
 
     // Strict validation: reject impossible biometrics or invalid field values even in draft
     adaptIntakePayloadToCanonicalEngine(intakePayload);
+    if (!intakeHasConsent(intakePayload)) return res.status(400).json(HEALTH_DATA_CONSENT_REQUIRED);
 
     const rawCode = client_code || code || "";
     const cleanClientCode = String(rawCode).replace(/^#+/, '').trim();
@@ -321,6 +331,7 @@ export const submitPublicIntake = async (req, res) => {
 
     // Strict validation: reject impossible biometrics or invalid field values
     adaptIntakePayloadToCanonicalEngine(intakePayload);
+    if (!intakeHasConsent(intakePayload)) return res.status(400).json(HEALTH_DATA_CONSENT_REQUIRED);
 
     const rawCode = client_code || code || "";
     const cleanClientCode = String(rawCode).replace(/^#+/, '').trim();
