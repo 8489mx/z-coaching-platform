@@ -85,6 +85,11 @@ const SECONDARY_COMPOUNDS = new Set([
   "BULGARIAN_SPLIT_SQUAT",
   "DUMBBELL_REVERSE_LUNGE",
   "HACK_SQUAT_MACHINE",
+  "MACHINE_CHEST_PRESS",
+  "DUMBBELL_FLOOR_PRESS",
+  "SEATED_DUMBBELL_SHOULDER_PRESS",
+  "BARBELL_HIP_THRUST",
+  "CHEST_SUPPORTED_INCLINE_DB_ROW",
 ]);
 
 const ISOLATION_STRETCH_MOVEMENTS = new Set([
@@ -103,6 +108,60 @@ const ISOLATION_STRETCH_MOVEMENTS = new Set([
   "BICEPS_CURL",
   "TRICEPS_PUSHDOWN",
 ]);
+
+// Joint-load groups used by the injury firewall (codes from both the V2 templates and the V1 catalog).
+const AXIAL_SQUATS = new Set(["BARBELL_BACK_SQUAT", "BARBELL_FRONT_SQUAT", "SMITH_MACHINE_SQUAT"]);
+const LOADED_HINGES = new Set([
+  "BARBELL_DEADLIFT",
+  "BARBELL_CONVENTIONAL_DEADLIFT",
+  "BARBELL_ROMANIAN_DEADLIFT",
+  "DUMBBELL_ROMANIAN_DEADLIFT",
+  "B_STANCE_RDL",
+]);
+const LUNGE_PATTERNS = new Set([
+  "BULGARIAN_SPLIT_SQUAT",
+  "DUMBBELL_REVERSE_LUNGE",
+  "DUMBBELL_WALKING_LUNGES",
+  "DEFICIT_REVERSE_LUNGE",
+  "BODYWEIGHT_SPLIT_SQUAT",
+]);
+const KNEE_DOMINANT_LOADED = new Set(["LEG_PRESS_MACHINE", "GOBLET_SQUAT"]);
+const STANDING_OVERHEAD_PRESSES = new Set([
+  "BARBELL_OVERHEAD_PRESS",
+  "STANDING_OVERHEAD_BARBELL_PRESS",
+  "STANDING_DUMBBELL_SHOULDER_PRESS",
+]);
+const OVERHEAD_PRESSES = new Set([
+  ...STANDING_OVERHEAD_PRESSES,
+  "SEATED_DUMBBELL_SHOULDER_PRESS",
+  "MACHINE_SHOULDER_PRESS",
+  "ARNOLD_DUMBBELL_PRESS",
+  "PIKE_PUSH_UP",
+  "DUMBBELL_PULLOVER",
+]);
+const INCLINE_DECLINE_PRESSES = new Set([
+  "INCLINE_DUMBBELL_BENCH_PRESS",
+  "INCLINE_BARBELL_BENCH_PRESS",
+  "INCLINE_SMITH_MACHINE_PRESS",
+  "DECLINE_DUMBBELL_BENCH_PRESS",
+  "DECLINE_BENCH_PRESS",
+]);
+// When a substitution would repeat an exercise already in the session, use this instead.
+const DUPLICATE_ALTERNATIVES = Object.freeze({
+  DUMBBELL_LATERAL_RAISE: "ROTATOR_CUFF_EXTERNAL_ROTATION",
+  CABLE_LATERAL_RAISE: "ROTATOR_CUFF_EXTERNAL_ROTATION",
+  CHEST_SUPPORTED_ROW: "SEATED_CABLE_ROW",
+  ONE_ARM_DUMBBELL_ROW: "CHEST_SUPPORTED_INCLINE_DB_ROW",
+  GOBLET_SQUAT: "GLUTE_BRIDGE",
+  LEG_PRESS_MACHINE: "BARBELL_HIP_THRUST",
+  BARBELL_HIP_THRUST: "GLUTE_BRIDGE",
+  DUMBBELL_FLOOR_PRESS: "MACHINE_CHEST_PRESS",
+});
+const INJURY_CUES_AR = Object.freeze({
+  LOWER_BACK: "حماية أسفل الظهر: تم استبدال التحميل المحوري والانحناء المحمل ببديل بظهر مسنود؛ ثبّت الحوض والعمود الفقري في وضع محايد وأوقف التمرين عند أي ألم ينزل للرجل.",
+  KNEE: "حماية الركبة: اشتغل في مدى حركي بدون ألم (ثني الركبة حتى 90 درجة تقريباً) ونزول بطيء متحكم؛ ألم خفيف لا يتجاوز 3 من 10 ويختفي خلال 24 ساعة مقبول، وأكثر من ذلك يستدعي تقليل المدى أو الوزن.",
+  SHOULDER: "حماية الكتف: تم حذف الضغط فوق الرأس والنزول العميق في تمارين الصدر؛ استخدم قبضة محايدة، وارفع الذراع في مستوى لوح الكتف (30 درجة أمام الجسم) بدون تجاوز مستوى الكتف.",
+});
 
 const BEGINNER_MIN_RIR = 2;
 
@@ -345,6 +404,7 @@ export function buildTrainingMesoCycle(intakeDecision, options = {}) {
         }
       }
 
+      const usedSessionCodes = new Set();
       const periodizedExercises = sessionExerciseTemplates.map((ex, exIdx) => {
         let finalCode = ex.exercise_code;
 
@@ -374,23 +434,43 @@ export function buildTrainingMesoCycle(intakeDecision, options = {}) {
           finalCode = HOME_EQUIPMENT_REPLACEMENTS[finalCode];
         }
 
-        // Active injury overrides for safety
-        if (hasKneeInjury && (finalCode === "BARBELL_BACK_SQUAT" || finalCode === "BULGARIAN_SPLIT_SQUAT" || finalCode === "LEG_PRESS_MACHINE" || finalCode === "HACK_SQUAT_MACHINE")) {
-          finalCode = "GOBLET_SQUAT";
+        // Active injury overrides for safety: each substitute keeps the slot's movement pattern
+        // (a squat stays a lower-body exercise) while removing the aggravating joint load.
+        const codeBeforeClinicalGuards = finalCode;
+        const injuryCues = [];
+        if (hasLowerBackInjury) {
+          if (AXIAL_SQUATS.has(finalCode)) {
+            finalCode = isHome ? "GOBLET_SQUAT" : "LEG_PRESS_MACHINE";
+          } else if (LOADED_HINGES.has(finalCode)) {
+            finalCode = isHome ? "GLUTE_BRIDGE" : "BARBELL_HIP_THRUST";
+          } else if (finalCode === "BARBELL_BENT_OVER_ROW") {
+            finalCode = isHome ? "ONE_ARM_DUMBBELL_ROW" : "CHEST_SUPPORTED_ROW";
+          } else if (STANDING_OVERHEAD_PRESSES.has(finalCode)) {
+            finalCode = "SEATED_DUMBBELL_SHOULDER_PRESS";
+          }
+          if (finalCode !== codeBeforeClinicalGuards) injuryCues.push(INJURY_CUES_AR.LOWER_BACK);
         }
-        if (
-          hasShoulderInjury &&
-          (finalCode === "BARBELL_OVERHEAD_PRESS" ||
-            finalCode === "STANDING_DUMBBELL_SHOULDER_PRESS" ||
-            finalCode === "ARNOLD_DUMBBELL_PRESS" ||
-            finalCode === "INCLINE_DUMBBELL_BENCH_PRESS" ||
-            finalCode === "DUMBBELL_PULLOVER" ||
-            finalCode === "DECLINE_DUMBBELL_BENCH_PRESS")
-        ) {
-          finalCode = "DUMBBELL_LATERAL_RAISE";
+        if (hasKneeInjury) {
+          const beforeKnee = finalCode;
+          if (AXIAL_SQUATS.has(finalCode) || finalCode === "HACK_SQUAT_MACHINE") {
+            finalCode = isHome ? "GOBLET_SQUAT" : "LEG_PRESS_MACHINE";
+          } else if (LUNGE_PATTERNS.has(finalCode)) {
+            finalCode = isHome ? "GLUTE_BRIDGE" : "BARBELL_HIP_THRUST";
+          }
+          if (finalCode !== beforeKnee || KNEE_DOMINANT_LOADED.has(finalCode)) injuryCues.push(INJURY_CUES_AR.KNEE);
         }
-        if (hasLowerBackInjury && (finalCode === "BARBELL_BENT_OVER_ROW" || finalCode === "BARBELL_DEADLIFT" || finalCode === "BARBELL_BACK_SQUAT")) {
-          finalCode = isHome ? "ONE_ARM_DUMBBELL_ROW" : "CHEST_SUPPORTED_ROW";
+        if (hasShoulderInjury) {
+          const beforeShoulder = finalCode;
+          if (finalCode === "BARBELL_BENCH_PRESS" || finalCode === "BARBELL_FLAT_BENCH_PRESS") {
+            finalCode = isHome ? "DUMBBELL_FLOOR_PRESS" : "MACHINE_CHEST_PRESS";
+          } else if (INCLINE_DECLINE_PRESSES.has(finalCode)) {
+            finalCode = "DUMBBELL_FLOOR_PRESS";
+          } else if (OVERHEAD_PRESSES.has(finalCode)) {
+            // Pressing overhead narrows the subacromial space; external-rotation strengthening is
+            // first-line exercise therapy for subacromial shoulder pain, and lateral raises stay in the week.
+            finalCode = "ROTATOR_CUFF_EXTERNAL_ROTATION";
+          }
+          if (finalCode !== beforeShoulder) injuryCues.push(INJURY_CUES_AR.SHOULDER);
         }
 
         // Hypertension & Cardiovascular Guard: Exclude inverted postures & excessive Valsalva compressive exercises
@@ -406,14 +486,27 @@ export function buildTrainingMesoCycle(intakeDecision, options = {}) {
           }
         }
 
+        // Never repeat an exercise inside one session after substitutions.
+        if (usedSessionCodes.has(finalCode)) {
+          const alternative = DUPLICATE_ALTERNATIVES[finalCode];
+          if (!alternative || usedSessionCodes.has(alternative)) return null;
+          finalCode = alternative;
+        }
+        usedSessionCodes.add(finalCode);
+
+        // A clinical substitute takes the dosing of its own exercise class, not the replaced slot's
+        // (e.g. a lateral raise replacing an overhead press must not inherit 6-8 heavy reps).
+        const clinicallySubstituted = finalCode !== codeBeforeClinicalGuards;
+        const dose = clinicallySubstituted ? {} : ex;
+
         const v2Exercise = getExerciseV2ByCode(finalCode);
 
         // Calculate Evidence-Based Reps, Sets, Rest Intervals, and RIR
-        let targetMin = ex.target_min || (isAdvanced ? 6 : isIntermediate ? 8 : 8);
-        let targetMax = ex.target_max || (isAdvanced ? 8 : isIntermediate ? 10 : 10);
-        let restSeconds = ex.custom_rest || 90;
-        let baseSetCount = ex.sets_override || 3;
-        let baseRir = ex.base_rir !== undefined ? ex.base_rir : (isAdvanced ? 2 : isIntermediate ? 2 : 3);
+        let targetMin = dose.target_min || (isAdvanced ? 6 : isIntermediate ? 8 : 8);
+        let targetMax = dose.target_max || (isAdvanced ? 8 : isIntermediate ? 10 : 10);
+        let restSeconds = dose.custom_rest || 90;
+        let baseSetCount = dose.sets_override || 3;
+        let baseRir = dose.base_rir !== undefined ? dose.base_rir : (isAdvanced ? 2 : isIntermediate ? 2 : 3);
 
         // Beginners use higher rep floor for form mastery & safety
         if (!isAdvanced && !isIntermediate && targetMin === 6) {
@@ -422,7 +515,7 @@ export function buildTrainingMesoCycle(intakeDecision, options = {}) {
           baseRir = 3;
         }
 
-        if (!ex.target_min) {
+        if (!dose.target_min) {
           if (HEAVY_PRIMARY_COMPOUNDS.has(finalCode)) {
             targetMin = isAdvanced ? 6 : 8;
             targetMax = isAdvanced ? 8 : 10;
@@ -563,6 +656,7 @@ export function buildTrainingMesoCycle(intakeDecision, options = {}) {
             target_rir: effectiveRir,
             tempo: effectiveTempo,
             clinical_valsalva_cue_ar: hasHypertensionOrHeart ? CLINICAL_GUIDELINES.HYPERTENSION.VALSALVA_SAFETY_CUE_AR : null,
+            injury_safety_cues_ar: injuryCues.length > 0 ? Object.freeze(injuryCues) : null,
             dumbbell_progression_cue_ar: dumbbellCueAr,
             micro_progression_bridge: microBridge ? Object.freeze(microBridge) : null,
           }),
@@ -572,7 +666,7 @@ export function buildTrainingMesoCycle(intakeDecision, options = {}) {
 
       return Object.freeze({
         ...baseSession,
-        exercises: Object.freeze(periodizedExercises),
+        exercises: Object.freeze(periodizedExercises.filter(Boolean)),
       });
     });
 
