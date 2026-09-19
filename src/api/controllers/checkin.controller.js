@@ -2,6 +2,8 @@ import { CheckinSubmission, Program, User, WorkoutLog, ProgressPhoto } from "../
 import { evaluateCheckin } from "../../checkin-engine/evaluate-checkin.js";
 import { estimateAdaptiveTdee } from "../../checkin-engine/adaptive-tdee.js";
 import { CheckinAnalysisStatus } from "../../checkin-engine/domain/enums.js";
+import { normalizeLoggedExercise } from "../../training-engine-v2/progression/index.js";
+import { loadProgressionState } from "../services/progressionService.js";
 import { saveProgressPhotoToDisk } from "../utils/photoStorage.js";
 import { buildAdaptedPlan } from "../../adaptation-engine/build-adapted-plan.js";
 import { mergeAdaptedPlanIntoProgram } from "../utils/planMergeEngine.js";
@@ -441,14 +443,37 @@ export async function logWorkout(req, res) {
       return res.status(400).json({ success: false, error: "user_id is required" });
     }
 
+    // Resolve the client (id, client code or phone) and only let the client or a coach write their logs.
+    const cleanCode = String(user_id).replace('#', '').trim();
+    let userObj = await User.findOne({ where: { client_code: cleanCode } });
+    if (!userObj && !isNaN(cleanCode)) userObj = await User.findByPk(parseInt(cleanCode, 10));
+    if (!userObj) userObj = await User.findOne({ where: { phone_number: cleanCode } });
+    if (!userObj) {
+      return res.status(404).json({ success: false, error: "المستخدم غير موجود" });
+    }
+    if (!req.user || req.user.id !== userObj.id) {
+      const requester = req.user ? await User.findByPk(req.user.id) : null;
+      if (!requester || !['COACH', 'ADMIN'].includes(requester.role)) {
+        return res.status(403).json({ success: false, error: "غير مصرح لك بتسجيل تمارين لمتدرب آخر" });
+      }
+    }
+
+    // One summary per exercise (weight, last-set reps, effort); invalid rows are dropped, not stored.
+    const cleanExercises = (Array.isArray(logged_exercises) ? logged_exercises : [])
+      .map(normalizeLoggedExercise)
+      .filter(Boolean);
+    if (!is_quick_completed && cleanExercises.length === 0) {
+      return res.status(400).json({ success: false, error: "سجّل وزن وعدات تمرين واحد على الأقل" });
+    }
+
     const log = await WorkoutLog.create({
-      user_id,
+      user_id: userObj.id,
       program_id,
       week_number,
       day_number,
       session_title,
       is_quick_completed: Boolean(is_quick_completed),
-      logged_exercises,
+      logged_exercises: cleanExercises,
       duration_minutes,
       session_rpe,
       notes,
@@ -458,6 +483,7 @@ export async function logWorkout(req, res) {
       success: true,
       message: is_quick_completed ? "Workout completed via 1-Tap Quick Complete" : "Workout logged successfully",
       log,
+      progression: await loadProgressionState(userObj.id),
     });
   } catch (error) {
     console.error("Error logging workout:", error);

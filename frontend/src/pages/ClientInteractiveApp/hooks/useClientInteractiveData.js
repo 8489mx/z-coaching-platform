@@ -5,6 +5,15 @@ import { getPracticalCardioPrescription, CARDIO_TYPES } from '../../../utils/car
 import { enqueueOfflineAction, flushPendingQueue, getQueueSyncStatus, ACTION_TYPES } from '../../../utils/offlineSyncEngine.js';
 import { adaptProgramToInteractiveMeals, adaptSessionToInteractiveWorkout } from '../utils/programAdapters.js';
 import { cacheProgramLocally, getCachedProgram, cacheGymRushCatalogLocally } from '../../../utils/offlineWorkoutSync.js';
+import { applyDeloadToSession, EFFORT_LEVELS } from '../../../utils/progressionEngine.js';
+
+/** Rep range of a client exercise from its prescription ("8-10" fallback). */
+function resolveRepRange(ex) {
+  const p = ex?.prescription || {};
+  if (Number(p.target_min) > 0 && Number(p.target_max) >= Number(p.target_min)) return [Number(p.target_min), Number(p.target_max)];
+  const m = String(ex?.targetReps || '').match(/(\d+)\s*-\s*(\d+)/);
+  return m ? [Number(m[1]), Number(m[2])] : [8, 12];
+}
 
 function sanitizeClientDisplayName(name) {
   if (!name) return 'المشترك';
@@ -83,6 +92,11 @@ export function useClientInteractiveData() {
 
   // 3. Active Program State
   const [clientProgram, setClientProgram] = useState(null);
+  // Progression (server-computed from workout logs) and this session's logging draft.
+  const [progression, setProgression] = useState(null);
+  const [programId, setProgramId] = useState(null);
+  const [sessionLogDraft, setSessionLogDraft] = useState({});
+  const [sessionLogStatus, setSessionLogStatus] = useState(null);
 
   const trainingWeeks = useMemo(() => {
     const fromProg = clientProgram?.master_program?.training_program?.weeks
@@ -325,6 +339,8 @@ export function useClientInteractiveData() {
         }
       }));
     }
+    if (data.progression) setProgression(data.progression);
+    if (data.program_id) setProgramId(data.program_id);
     if (data.has_program && data.master_program) {
       setClientProgram(data.master_program);
 
@@ -745,6 +761,96 @@ export function useClientInteractiveData() {
 
   const syncStatus = getQueueSyncStatus(offlineQueue);
 
+  // Approved deload: show the lighter version of the session (about 40% fewer sets, RIR 4).
+  const isDeloadActive = progression?.deload?.status === 'ACTIVE';
+  const displayedWorkoutSession = useMemo(() => {
+    if (!isDeloadActive || !workoutSession?.exercises) return workoutSession;
+    const deloaded = applyDeloadToSession({
+      ...workoutSession,
+      exercises: workoutSession.exercises.map((ex) => ({ ...ex, sets: Number(ex.targetSets) || 3, target_rir: Number(ex.targetRir) || 2 })),
+    });
+    return {
+      ...deloaded,
+      exercises: deloaded.exercises.map((ex) => ({ ...ex, targetSets: ex.sets, targetRir: ex.target_rir, safetyNote: ex.cue })),
+    };
+  }, [isDeloadActive, workoutSession]);
+
+  // Pre-fill each exercise's draft from the engine target (a normal week is one tap).
+  useEffect(() => {
+    const exercises = workoutSession?.exercises || [];
+    setSessionLogDraft((prev) => {
+      const next = {};
+      for (const ex of exercises) {
+        const code = ex.code || ex.id;
+        const entry = progression?.exercises?.[code];
+        const [, repMax] = resolveRepRange(ex);
+        next[code] = prev[code] || {
+          weight_kg: entry?.target?.weight_kg ?? '',
+          last_set_reps: entry?.target?.rep_target ?? repMax,
+          effort: EFFORT_LEVELS.OK,
+        };
+      }
+      return next;
+    });
+    setSessionLogStatus(null);
+  }, [workoutSession, progression]);
+
+  const updateLogDraft = useCallback((code, field, value) => {
+    setSessionLogDraft((prev) => ({ ...prev, [code]: { ...(prev[code] || {}), [field]: value } }));
+  }, []);
+
+  const repeatLastLog = useCallback((code, lastEntry) => {
+    setSessionLogDraft((prev) => ({ ...prev, [code]: { weight_kg: lastEntry.weight_kg, last_set_reps: lastEntry.last_set_reps, effort: lastEntry.effort || EFFORT_LEVELS.OK } }));
+  }, []);
+
+  const submitSessionLog = useCallback(async () => {
+    const rawCode = String(clientData?.code || '').replace(/^#+/, '').replace(/^client[-_]?/i, '').trim();
+    const logged = (workoutSession?.exercises || []).map((ex) => {
+      const code = ex.code || ex.id;
+      const d = sessionLogDraft[code] || {};
+      const [repMin, repMax] = resolveRepRange(ex);
+      return {
+        exercise_code: code,
+        name: ex.nameAr || ex.nameEn || ex.name,
+        weight_kg: Number(d.weight_kg) || 0,
+        last_set_reps: Number(d.last_set_reps),
+        effort: d.effort || EFFORT_LEVELS.OK,
+        rep_min: repMin,
+        rep_max: repMax,
+        sets: Number(ex.targetSets) || null,
+      };
+    }).filter((e) => Number.isFinite(e.last_set_reps) && e.last_set_reps > 0);
+    if (logged.length === 0) {
+      setSessionLogStatus({ type: 'error', message: 'سجّل عدات آخر مجموعة لتمرين واحد على الأقل.' });
+      return;
+    }
+    setSessionLogStatus({ type: 'saving', message: 'جاري حفظ التسجيل...' });
+    try {
+      const res = await fetch(`${API_BASE}/api/v1/checkin/workout-logs`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          user_id: rawCode,
+          program_id: programId,
+          week_number: currentTrainingWeek,
+          day_number: selectedDay,
+          session_title: workoutSession?.title,
+          is_deload: isDeloadActive,
+          logged_exercises: logged,
+        }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        setSessionLogStatus({ type: 'error', message: data.error || 'تعذر حفظ التسجيل، حاول مرة أخرى.' });
+        return;
+      }
+      if (data.progression) setProgression(data.progression);
+      setSessionLogStatus({ type: 'success', message: 'تم حفظ الجلسة، وأهدافك الجاية اتحدثت.' });
+    } catch {
+      setSessionLogStatus({ type: 'error', message: 'تعذر الاتصال بالخادم، لم يتم حفظ التسجيل.' });
+    }
+  }, [clientData?.code, workoutSession, sessionLogDraft, programId, currentTrainingWeek, selectedDay, isDeloadActive]);
+
   return {
     // Client & Program
     clientData,
@@ -780,8 +886,15 @@ export function useClientInteractiveData() {
     handleTriggerSync,
 
     // Workout
-    workoutSession,
+    workoutSession: displayedWorkoutSession,
     setWorkoutSession,
+    progression,
+    isDeloadActive,
+    sessionLogDraft,
+    sessionLogStatus,
+    updateLogDraft,
+    repeatLastLog,
+    submitSessionLog,
     dailyReadiness,
     handleSetDailyReadiness,
     handleToggleExerciseCompleted,

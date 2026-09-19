@@ -77,7 +77,14 @@ export default function ClientInteractiveApp() {
     handleToggleExerciseCompleted,
     prehabCompleted,
     setPrehabCompleted,
-    cardioPrescription
+    cardioPrescription,
+    progression,
+    isDeloadActive,
+    sessionLogDraft,
+    sessionLogStatus,
+    updateLogDraft,
+    repeatLastLog,
+    submitSessionLog
   } = useClientInteractiveData();
 
   return (
@@ -143,6 +150,13 @@ export default function ClientInteractiveApp() {
               setActiveVideoExercise={setActiveVideoExercise}
               selectedDay={selectedDay}
               setSelectedDay={setSelectedDay}
+              progression={progression}
+              isDeloadActive={isDeloadActive}
+              sessionLogDraft={sessionLogDraft}
+              sessionLogStatus={sessionLogStatus}
+              updateLogDraft={updateLogDraft}
+              repeatLastLog={repeatLastLog}
+              submitSessionLog={submitSessionLog}
             />
           )}
 

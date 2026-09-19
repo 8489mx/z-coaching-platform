@@ -12,6 +12,7 @@ import {
   Activity
 } from 'lucide-react';
 import { getPrehabRoutine } from '../../../utils/posturalPrehabEngine';
+import ExerciseLogCard from './ExerciseLogCard';
 
 export default function WorkoutTab({
   trainingWeeks = [],
@@ -29,7 +30,14 @@ export default function WorkoutTab({
   handleToggleExerciseCompleted,
   setActiveVideoExercise,
   selectedDay = 1,
-  setSelectedDay
+  setSelectedDay,
+  progression = null,
+  isDeloadActive = false,
+  sessionLogDraft = {},
+  sessionLogStatus = null,
+  updateLogDraft,
+  repeatLastLog,
+  submitSessionLog
 }) {
   const [showWorkoutGuide, setShowWorkoutGuide] = useState(false);
   const [expandedTechnique, setExpandedTechnique] = useState({});
@@ -374,6 +382,12 @@ export default function WorkoutTab({
 
 
       {/* Exercises Streamlined Visual Workout Cards */}
+      {isDeloadActive && (
+        <div style={{ background: '#EFF6FF', border: '1px solid #BFDBFE', borderRadius: '12px', padding: '10px 12px', fontSize: '0.76rem', color: '#1E3A8A', fontWeight: 700, lineHeight: 1.6 }}>
+          أسبوع استشفاء معتمد من الكابتن: المجموعات أقل والشدة أخف (RIR 4). العب بنفس أوزانك أو أخف قليلاً بتكنيك نظيف، وبعد الأسبوع ده هترجع لأهداف دورة جديدة.
+        </div>
+      )}
+
       {workoutSession.exercises && workoutSession.exercises.map((ex, exIdx) => {
         const isCompleted = Boolean(ex.completed || (ex.sets && ex.sets.length > 0 && ex.sets.every(s => s.completed)));
         const isTechniqueExpanded = Boolean(expandedTechnique[ex.id]);
@@ -461,6 +475,17 @@ export default function WorkoutTab({
                 </>
               )}
             </div>
+
+            {/* Single smart log card: weight, last-set reps, effort (no per-set rows, no timers) */}
+            {typeof updateLogDraft === 'function' && (
+              <ExerciseLogCard
+                exercise={ex}
+                progressionEntry={progression?.exercises?.[ex.code || ex.id]}
+                draft={sessionLogDraft[ex.code || ex.id]}
+                onChange={updateLogDraft}
+                onRepeatLast={repeatLastLog}
+              />
+            )}
 
             {/* Visual Movement Frames (Start & Finish Positions) */}
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
@@ -609,6 +634,24 @@ export default function WorkoutTab({
           </div>
         );
       })}
+
+      {typeof submitSessionLog === 'function' && workoutSession.exercises?.length > 0 && (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+          <button
+            type="button"
+            onClick={submitSessionLog}
+            disabled={sessionLogStatus?.type === 'saving'}
+            style={{ width: '100%', padding: '12px', borderRadius: '10px', border: 'none', background: '#0F172A', color: '#FFFFFF', fontWeight: 800, fontSize: '0.85rem', cursor: 'pointer' }}
+          >
+            حفظ تسجيل الجلسة
+          </button>
+          {sessionLogStatus?.message && (
+            <div style={{ fontSize: '0.74rem', fontWeight: 700, textAlign: 'center', color: sessionLogStatus.type === 'error' ? '#B91C1C' : sessionLogStatus.type === 'success' ? '#15803D' : '#475569' }}>
+              {sessionLogStatus.message}
+            </div>
+          )}
+        </div>
+      )}
 
       {/* Cardio Prescription Card (موقعه الرياضي السليم: بعد انتهاء التمارين) */}
       {cardioPrescription && (

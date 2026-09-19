@@ -16,6 +16,7 @@ import { MASTER_EXERCISE_DICTIONARY } from "../../../src/exercise-catalog-v2/ind
 import { calculateSmartSwap } from "../../../src/nutrition-swap-engine-v2/calculate-smart-swap.js";
 import { listSmartSwapCandidates, getSmartFoodRegistryItem, SMART_SWAP_REGISTRY } from "../../../src/nutrition-swap-engine-v2/swap-pool-registry.js";
 import { CLINICAL_GUIDELINES } from "../../config/clinical-guidelines.js";
+import { loadProgressionState } from "../services/progressionService.js";
 import { calculateSessionDemand, auditWeeklyMuscleVolume, auditDeficitVolumeShield, evaluateProteinSparingRequirement } from "../utils/trainingNutritionCoupling.js";
 
 const __filename = fileURLToPath(import.meta.url);
@@ -1004,6 +1005,7 @@ export const getActiveProgramByUserId = async (req, res) => {
       master_program: program.program_data,
       lifestyle: { bedtime_hour: await resolveClientBedtimeHour(user.id) },
       clinical_constraints: await resolveClientClinicalConstraints(user.id),
+      progression: await loadProgressionState(user.id),
     });
   } catch (err) {
     console.error("getActiveProgramByUserId error:", err);
