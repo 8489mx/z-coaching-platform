@@ -813,16 +813,26 @@ export const calculateSwapHandler = async (req, res) => {
 
 // Reads only the bedtime (HH:MM) from the client's latest intake, for the static caffeine
 // cutoff guide in the client app. Never throws; returns null when unavailable.
+/**
+ * Latest intake answers for a client, decrypted and unwrapped. The public intake endpoint stores the
+ * request body minus identity fields, i.e. { answers: { ...form } }, so the form fields sit one level down.
+ */
+async function loadLatestIntakeAnswers(userId) {
+  const submission = await IntakeSubmission.findOne({
+    where: { user_id: userId },
+    order: [["id", "DESC"]],
+    attributes: ["answers"],
+  });
+  let stored = submission?.answers;
+  if (typeof stored === "string") stored = JSON.parse(stored);
+  if (stored && stored._isEncrypted && stored.data) stored = decryptMedicalData(stored.data);
+  if (!stored || typeof stored !== "object") return null;
+  return stored.answers && typeof stored.answers === "object" ? { ...stored, ...stored.answers } : stored;
+}
+
 export async function resolveClientBedtimeHour(userId) {
   try {
-    const submission = await IntakeSubmission.findOne({
-      where: { user_id: userId },
-      order: [["id", "DESC"]],
-      attributes: ["answers"],
-    });
-    let answers = submission?.answers;
-    if (typeof answers === "string") answers = JSON.parse(answers);
-    if (answers && answers._isEncrypted && answers.data) answers = decryptMedicalData(answers.data);
+    const answers = await loadLatestIntakeAnswers(userId);
     const bedtime = answers?.sleep_schedule?.bedtime_hour;
     return typeof bedtime === "string" && /^([01]?\d|2[0-3]):[0-5]\d$/.test(bedtime.trim()) ? bedtime.trim() : null;
   } catch {
@@ -836,15 +846,8 @@ export async function resolveClientBedtimeHour(userId) {
  */
 export async function resolveClientPrimaryGoal(userId) {
   try {
-    const submission = await IntakeSubmission.findOne({
-      where: { user_id: userId },
-      order: [["id", "DESC"]],
-      attributes: ["answers"],
-    });
-    let answers = submission?.answers;
-    if (typeof answers === "string") answers = JSON.parse(answers);
-    if (answers && answers._isEncrypted && answers.data) answers = decryptMedicalData(answers.data);
-    if (!answers || typeof answers !== "object") return null;
+    const answers = await loadLatestIntakeAnswers(userId);
+    if (!answers) return null;
     return adaptIntakePayloadToCanonicalEngine(structuredClone(answers)).goals?.primary || null;
   } catch {
     return null;
@@ -879,15 +882,7 @@ export function deriveClinicalConstraints(answers) {
 
 export async function resolveClientClinicalConstraints(userId) {
   try {
-    const submission = await IntakeSubmission.findOne({
-      where: { user_id: userId },
-      order: [["id", "DESC"]],
-      attributes: ["answers"],
-    });
-    let answers = submission?.answers;
-    if (typeof answers === "string") answers = JSON.parse(answers);
-    if (answers && answers._isEncrypted && answers.data) answers = decryptMedicalData(answers.data);
-    return deriveClinicalConstraints(answers);
+    return deriveClinicalConstraints(await loadLatestIntakeAnswers(userId));
   } catch {
     return null;
   }
