@@ -39,7 +39,9 @@ test("both check-in endpoints pass the client goal to the check-in engine", () =
   for (const rel of ["src/api/controllers/checkin.controller.js", "src/api/controllers/program.controller.js"]) {
     const src = fs.readFileSync(path.join(ROOT, rel), "utf8");
     const calls = [...src.matchAll(/evaluateCheckin\(\{[\s\S]*?\}\)|const evalInput = \{[\s\S]*?\n {4}\};/g)].map((m) => m[0]);
-    const withGoal = calls.filter((c) => c.includes("primary_goal: await resolveClientPrimaryGoal("));
+    // Either inline, or through a variable assigned from resolveClientPrimaryGoal in the same handler.
+    const goalVar = src.match(/const (\w+) = await resolveClientPrimaryGoal\(/)?.[1];
+    const withGoal = calls.filter((c) => c.includes("primary_goal: await resolveClientPrimaryGoal(") || (goalVar && c.includes(`primary_goal: ${goalVar}`)));
     assert.ok(withGoal.length >= 1, `${rel} must pass primary_goal`);
   }
 });

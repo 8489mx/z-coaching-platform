@@ -1,13 +1,24 @@
 import { CheckinSubmission, Program, User, WorkoutLog, ProgressPhoto } from "../models/index.js";
 import { evaluateCheckin } from "../../checkin-engine/evaluate-checkin.js";
+import { estimateAdaptiveTdee } from "../../checkin-engine/adaptive-tdee.js";
+import { CheckinAnalysisStatus } from "../../checkin-engine/domain/enums.js";
 import { saveProgressPhotoToDisk } from "../utils/photoStorage.js";
 import { buildAdaptedPlan } from "../../adaptation-engine/build-adapted-plan.js";
 import { mergeAdaptedPlanIntoProgram } from "../utils/planMergeEngine.js";
-import { resolveClientPrimaryGoal } from "./program.controller.js";
+import { resolveClientPrimaryGoal, resolveClientIsFemale } from "./program.controller.js";
 
 /**
  * Submit weekly check-in
  */
+// Same statuses the adaptation engine lets the measured TDEE retune (see OBSERVED_TDEE_STATUSES).
+const ADAPTIVE_TDEE_STATUSES = new Set([
+  CheckinAnalysisStatus.ON_TRACK,
+  CheckinAnalysisStatus.PLATEAU_DETECTED,
+  CheckinAnalysisStatus.TRUE_PLATEAU,
+  CheckinAnalysisStatus.GAIN_STALL,
+  CheckinAnalysisStatus.RAPID_LOSS_WARNING,
+]);
+
 export async function submitCheckin(req, res) {
   try {
     const {
@@ -75,6 +86,15 @@ export async function submitCheckin(req, res) {
 
     const targetWeekNumber = Number(week_number) || 1;
 
+    // Weekly weight = average of the 7 morning weigh-ins when given (less water noise), else the single entry.
+    const dailyWeights = validDailyWeights ? req.body.daily_weights_kg.map((w) => Number(w)) : null;
+    const weeklyWeight = dailyWeights
+      ? Math.round((dailyWeights.reduce((sum, w) => sum + w, 0) / dailyWeights.length) * 100) / 100
+      : parsedWeight;
+    // Optional: the client's own average daily calories this week (feeds the adaptive TDEE).
+    const reportedIntake = Number(req.body.average_daily_calories);
+    const reportedIntakeKcal = Number.isFinite(reportedIntake) && reportedIntake >= 800 && reportedIntake <= 6000 ? Math.round(reportedIntake) : null;
+
     // Prevent duplicate check-in submission for the same trainee and week
     const existingCheckin = await CheckinSubmission.findOne({
       where: {
@@ -117,9 +137,10 @@ export async function submitCheckin(req, res) {
 
 
     // 2. Evaluate with Auto-Regulation Engine
+    const primaryGoal = await resolveClientPrimaryGoal(targetUserId);
     const evalInput = {
-      primary_goal: await resolveClientPrimaryGoal(targetUserId),
-      weight_kg: parsedWeight,
+      primary_goal: primaryGoal,
+      weight_kg: weeklyWeight,
       previous_weight_kg: prevWeight,
       waist_circumference_cm: waist_circumference_cm ? Number(waist_circumference_cm) : null,
       previous_waist_circumference_cm: prevWaist,
@@ -148,14 +169,60 @@ export async function submitCheckin(req, res) {
       next_week_notes,
     };
 
-    const analysisOutput = evaluateCheckin(evalInput);
+    const baseAnalysis = evaluateCheckin(evalInput);
+
+    // Adaptive TDEE: measured expenditure from this and previous check-ins replaces the formula once
+    // 2 weeks of trend exist. The plan target at submission time is stored for later weeks.
+    const activeProgram = await Program.findOne({ where: { user_id: targetUserId }, order: [["id", "DESC"]] });
+    const programData = activeProgram?.program_data || {};
+    const planTargetKcal = Number(
+      programData.nutrition?.targets?.calories ||
+      programData.nutrition_program?.macro_targets?.calories_kcal ||
+      programData.nutrition_program?.targets?.target_calories,
+    ) || null;
+    const formulaTdeeKcal = Number(programData.nutrition_program?.targets?.tdee) || null;
+    const adaptiveTdee = estimateAdaptiveTdee({
+      weeks: [
+        ...pastCheckins.map((c) => ({
+          week_number: c.week_number,
+          average_weight_kg: c.average_weight_kg,
+          adherence_percent: c.nutrition_adherence_percent,
+          planned_target_kcal: c.analysis_output?.plan_target_kcal ?? planTargetKcal,
+          reported_intake_kcal: c.analysis_output?.reported_intake_kcal ?? null,
+        })),
+        {
+          week_number: targetWeekNumber,
+          average_weight_kg: weeklyWeight,
+          adherence_percent: Number(nutrition_adherence_percent),
+          planned_target_kcal: planTargetKcal,
+          reported_intake_kcal: reportedIntakeKcal,
+        },
+      ],
+      formula_tdee_kcal: formulaTdeeKcal,
+      current_target_kcal: planTargetKcal,
+      primary_goal: primaryGoal,
+      is_female: await resolveClientIsFemale(targetUserId),
+    });
+    const adaptiveApplies = adaptiveTdee.ready && ADAPTIVE_TDEE_STATUSES.has(baseAnalysis.analysis_status);
+    const analysisOutput = {
+      ...baseAnalysis,
+      plan_target_kcal: planTargetKcal,
+      reported_intake_kcal: reportedIntakeKcal,
+      adaptive_tdee: adaptiveTdee,
+      ...(adaptiveApplies
+        ? {
+            suggested_calorie_delta: adaptiveTdee.calorie_delta,
+            recommendations_ar: [...baseAnalysis.recommendations_ar, adaptiveTdee.reason_ar],
+          }
+        : {}),
+    };
 
     // 3. Save Checkin Submission
     const checkin = await CheckinSubmission.create({
       user_id: targetUserId,
       week_number: targetWeekNumber,
-      daily_weights_kg: [Number(weight_kg)],
-      average_weight_kg: Number(weight_kg),
+      daily_weights_kg: dailyWeights || [weeklyWeight],
+      average_weight_kg: weeklyWeight,
       weight_change_kg: analysisOutput.weight_change_kg,
       waist_circumference_cm: waist_circumference_cm ? Number(waist_circumference_cm) : null,
       nutrition_adherence_percent: Number(nutrition_adherence_percent),

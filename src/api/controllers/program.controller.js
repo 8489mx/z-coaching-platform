@@ -830,6 +830,17 @@ async function loadLatestIntakeAnswers(userId) {
   return stored.answers && typeof stored.answers === "object" ? { ...stored, ...stored.answers } : stored;
 }
 
+/** True when the latest intake says the client is female (User has no sex column). */
+export async function resolveClientIsFemale(userId) {
+  try {
+    const answers = await loadLatestIntakeAnswers(userId);
+    const sex = String(answers?.gender ?? answers?.personal?.sex ?? answers?.personal?.gender ?? "").toLowerCase();
+    return sex === "female";
+  } catch {
+    return false;
+  }
+}
+
 export async function resolveClientBedtimeHour(userId) {
   try {
     const answers = await loadLatestIntakeAnswers(userId);
@@ -848,6 +859,9 @@ export async function resolveClientPrimaryGoal(userId) {
   try {
     const answers = await loadLatestIntakeAnswers(userId);
     if (!answers) return null;
+    // The canonical goal folds recomposition into FAT_LOSS; keep it distinct for the adaptive TDEE (10% deficit).
+    const rawGoal = String(answers.goals?.primary ?? answers.primary_goal ?? "").toUpperCase();
+    if (rawGoal.includes("RECOMP")) return "BODY_RECOMPOSITION";
     return adaptIntakePayloadToCanonicalEngine(structuredClone(answers)).goals?.primary || null;
   } catch {
     return null;

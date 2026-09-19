@@ -40,6 +40,9 @@ export default function WeeklyCheckinForm() {
 
   const [formData, setFormData] = useState({
     weight_kg: '',
+    // Optional: 7 morning weigh-ins and average daily calories feed the adaptive TDEE engine.
+    daily_weights: ['', '', '', '', '', '', ''],
+    average_daily_calories: '',
     waist_circumference_cm: '',
     nutrition_adherence_percent: 100,
     workouts_completed: 4,
@@ -133,10 +136,13 @@ export default function WeeklyCheckinForm() {
           notes: `حجم مضغوط: ${p.compressedSizeKB}KB (توفير ${Math.max(0, Math.round((1 - p.compressedSizeKB / p.originalSizeKB) * 100))}%)`
         }));
 
+      const dailyWeightsComplete = formData.daily_weights.every((w) => Number(cleanArabicNumStr(w)) > 20);
       const payload = {
         user_id: clientCode,
         client_code: clientCode,
         weight_kg: Number(cleanArabicNumStr(formData.weight_kg)),
+        ...(dailyWeightsComplete ? { daily_weights_kg: formData.daily_weights.map((w) => Number(cleanArabicNumStr(w))) } : {}),
+        ...(formData.average_daily_calories ? { average_daily_calories: Number(cleanArabicNumStr(formData.average_daily_calories)) } : {}),
         waist_circumference_cm: formData.waist_circumference_cm ? Number(cleanArabicNumStr(formData.waist_circumference_cm)) : null,
         nutrition_adherence_percent: Number(formData.nutrition_adherence_percent),
         workouts_completed: Number(formData.workouts_completed),
@@ -388,6 +394,47 @@ export default function WeeklyCheckinForm() {
                   />
                   <span style={{ position: 'absolute', left: '14px', fontSize: '12px', color: '#94A3B8', fontWeight: 700 }}>كجم</span>
                 </div>
+              </div>
+
+              <div>
+                <label style={{ display: 'block', fontSize: '12px', fontWeight: 700, color: '#475569', marginBottom: '4px' }}>
+                  أوزان الأيام السبعة على الريق (اختياري - يرفع دقة حساب حرقك الفعلي)
+                </label>
+                <p style={{ fontSize: '11px', color: '#64748B', margin: '0 0 6px 0', lineHeight: 1.5 }}>
+                  لو وزنت نفسك كل يوم الصبح اكتب الأوزان السبعة؛ النظام يحسب المتوسط بدل وزن يوم واحد ليتجاهل تذبذب الماء.
+                </p>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: '4px' }}>
+                  {formData.daily_weights.map((w, i) => (
+                    <input
+                      key={i}
+                      type="text"
+                      inputMode="decimal"
+                      aria-label={`وزن اليوم ${i + 1}`}
+                      value={w}
+                      placeholder={String(i + 1)}
+                      onChange={(e) => {
+                        const next = [...formData.daily_weights];
+                        next[i] = cleanArabicNumStr(e.target.value);
+                        setFormData({ ...formData, daily_weights: next });
+                      }}
+                      style={{ width: '100%', height: '36px', borderRadius: '8px', border: '1px solid #CBD5E1', padding: '0 2px', fontSize: '12px', fontWeight: 700, textAlign: 'center', fontFamily: 'JetBrains Mono, Cairo', color: '#0F172A', outline: 'none', background: '#FFFFFF', boxSizing: 'border-box' }}
+                    />
+                  ))}
+                </div>
+              </div>
+
+              <div>
+                <label style={{ display: 'block', fontSize: '12px', fontWeight: 700, color: '#475569', marginBottom: '6px' }}>
+                  متوسط سعراتك اليومية هذا الأسبوع (اختياري - لو بتحسبها)
+                </label>
+                <input
+                  type="text"
+                  inputMode="numeric"
+                  value={formData.average_daily_calories}
+                  onChange={(e) => setFormData({ ...formData, average_daily_calories: cleanArabicNumStr(e.target.value) })}
+                  placeholder="مثال: 2100"
+                  style={{ width: '100%', height: '42px', borderRadius: '8px', border: '1px solid #CBD5E1', padding: '0 14px', fontSize: '14px', fontWeight: 700, textAlign: 'center', fontFamily: 'JetBrains Mono, Cairo', color: '#0F172A', outline: 'none', background: '#FFFFFF', boxSizing: 'border-box' }}
+                />
               </div>
 
               <div>
