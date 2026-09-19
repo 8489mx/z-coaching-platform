@@ -341,6 +341,34 @@ export function calculateUniversalNutritionTargets(canonicalIntake, evaluationCo
     calorieAdjustmentDesc = "خطة خسارة دهون تدريجية للمرضعات (+450 سعرة حرارية مضافة لحماية إدرار حليب الأم والوقاية من جفاف الرضاعة)";
   }
 
+  // Minimum intake without medical supervision (AHA/ACC/TOS 2013 obesity guideline: 1200 kcal women,
+  // 1500 kcal men). When maintenance itself is below the floor, the plan stays at maintenance.
+  const calorieFloor = isMale ? 1500 : 1200;
+  let calorieFloorApplied = false;
+  if (targetCalories < calorieFloor && targetCalories < tdee) {
+    targetCalories = Math.min(tdee, calorieFloor);
+    calorieFloorApplied = true;
+    calorieAdjustmentDesc += ` (تم رفع السعرات للحد الأدنى الآمن ${targetCalories} سعرة بدون إشراف طبي)`;
+  }
+
+  // Protein reference weight: grams per kg of total weight overshoot in people carrying a lot of fat
+  // mass (a 140 kg client would get ~310 g/day). Use the weight this lean mass would have at a healthy
+  // body fat (15% men / 25% women) when body fat is known, otherwise the dietetic adjusted body weight
+  // (weight at BMI 25 + 25% of the excess) for BMI >= 30.
+  const heightM = height / 100;
+  let referenceWeight = weight;
+  let referenceWeightBasis = "TOTAL_BODY_WEIGHT";
+  if (bodyFat && bodyFat > (isMale ? 20 : 30)) {
+    const leanMass = weight * (1 - bodyFat / 100);
+    referenceWeight = Math.min(weight, leanMass / (1 - (isMale ? 0.15 : 0.25)));
+    referenceWeightBasis = "LEAN_MASS_AT_HEALTHY_BODY_FAT";
+  } else if (!bodyFat && weight / (heightM * heightM) >= 30) {
+    const weightAtBmi25 = 25 * heightM * heightM;
+    referenceWeight = weightAtBmi25 + 0.25 * (weight - weightAtBmi25);
+    referenceWeightBasis = "ADJUSTED_BODY_WEIGHT";
+  }
+  referenceWeight = Math.round(referenceWeight * 10) / 10;
+
   // Clinical Guard: Kidney Disease & Renal Impairment Protein Cap (KDOQI Guideline)
   const conditionsList = [
     ...(Array.isArray(medical.conditions) ? medical.conditions : []),
@@ -402,7 +430,7 @@ export function calculateUniversalNutritionTargets(canonicalIntake, evaluationCo
     (biomarkerAnalysis.has_biomarker_flags && biomarkerAnalysis.flags.some(f => f.biomarker === 'GLUCOSE_METABOLISM'));
 
   // 4. Macro Grams Breakdown
-  const proteinG = Math.round(weight * proteinPerKg);
+  const proteinG = Math.round(referenceWeight * proteinPerKg);
   const proteinKcal = proteinG * 4;
 
   const fatKcal = Math.round(targetCalories * 0.22); // 22% of total calories
@@ -494,8 +522,9 @@ export function calculateUniversalNutritionTargets(canonicalIntake, evaluationCo
     weekendRefeedConfig = Object.freeze({
       framework: "WEEKEND_REFEED_2DAYS",
       framework_name_ar: "نظام الريفيد الموجه ليومين نهاية الأسبوع (2-Day Weekend Refeed)",
-      weekday_deficit_calories_kcal: Math.round(targetCalories - 80),
-      weekend_refeed_calories_kcal: Math.round(tdee),
+      // 5 lower days + 2 maintenance days must average the daily target, or the weekly deficit shrinks.
+      weekday_deficit_calories_kcal: Math.max(calorieFloor, Math.round((7 * targetCalories - 2 * tdee) / 5)),
+      weekend_refeed_calories_kcal: Math.min(tdee, Math.round((7 * targetCalories - 5 * Math.max(calorieFloor, Math.round((7 * targetCalories - 2 * tdee) / 5))) / 2)),
       refeed_carbs_increase_g: 85,
       refeed_days_ar: "الجمعة والسبت (رفع السعرات لحد الصيانة بزيادة الكارب النظيف وخفض الدهون 10%)",
       weekly_energy_balance_ar: "عجز أسبوعي صافي مضمون مع ملء مخازن الجليكوجين وتحسين الأداء.",
@@ -526,22 +555,39 @@ export function calculateUniversalNutritionTargets(canonicalIntake, evaluationCo
       fatty_fish_frequency_ar: "إدراج الأسماك الغنية بالأوميجا 3 (سلمون، تونة، بوري، كنعد) من 2 إلى 3 مرات أسبوعياً مع زيت الزيتون والمكسرات النيئة.",
     });
   } else if (dietFramework === "CARB_CYCLING") {
+    const carbCycleHighDays = Math.min(6, Math.max(1, Math.round(trainDays)));
+    const carbCycleLowDays = 7 - carbCycleHighDays;
+    // Low days drop up to 45 g carbs but never below 50 g.
+    const carbCycleLowShiftG = Math.max(0, Math.min(45, carbG - 50));
+    const carbCycleHighShiftG = Math.round((carbCycleLowShiftG * carbCycleLowDays) / carbCycleHighDays);
+    // High days give back fat only down to the 0.6 g/kg floor; low days gain exactly what high days gave.
+    const carbCycleHighFatShiftG = Math.min(
+      Math.max(0, fatG - minFatG),
+      Math.round((5 * carbCycleLowDays) / carbCycleHighDays),
+    );
+    const carbCycleLowFatShiftG = carbCycleLowDays > 0
+      ? Math.round((carbCycleHighFatShiftG * carbCycleHighDays) / carbCycleLowDays)
+      : 0;
     carbCyclingConfig = Object.freeze({
       framework: "CARB_CYCLING",
       framework_name_ar: "نظام تدوير الكاربوهيدرات الذكي (Carb Cycling)",
       high_carb_days_ar: "أيام تمرين العضلات الكبيرة (الأرجل / الظهر / الصدر)",
       low_carb_days_ar: "أيام الراحة والاستشفاء / الكارديو الخفيف",
+      // Training days are high, the rest low; the carb and fat shifts are sized by the day counts so
+      // the weekly average equals the daily target, and each day's calories are derived from its macros.
+      high_carb_days_per_week: carbCycleHighDays,
+      low_carb_days_per_week: 7 - carbCycleHighDays,
       high_carb_targets: Object.freeze({
-        calories_kcal: Math.round(targetCalories + 120),
+        calories_kcal: proteinG * 4 + (carbG + carbCycleHighShiftG) * 4 + (fatG - carbCycleHighFatShiftG) * 9,
         protein_g: proteinG,
-        carbohydrate_g: Math.round(carbG + 35),
-        fat_g: Math.max(minFatG, Math.round(fatG - 5)),
+        carbohydrate_g: carbG + carbCycleHighShiftG,
+        fat_g: fatG - carbCycleHighFatShiftG,
       }),
       low_carb_targets: Object.freeze({
-        calories_kcal: Math.round(targetCalories - 160),
+        calories_kcal: proteinG * 4 + (carbG - carbCycleLowShiftG) * 4 + (fatG + carbCycleLowFatShiftG) * 9,
         protein_g: proteinG,
-        carbohydrate_g: Math.max(50, Math.round(carbG - 45)),
-        fat_g: Math.round(fatG + 5),
+        carbohydrate_g: carbG - carbCycleLowShiftG,
+        fat_g: fatG + carbCycleLowFatShiftG,
       }),
       weekly_energy_balance_ar: "متوسط السعرات الأسبوعية يطابق تماماً العجز المستهدف مع الاستفادة من قمم الجليكوجين وأكسدة الدهون.",
     });
@@ -607,19 +653,22 @@ export function calculateUniversalNutritionTargets(canonicalIntake, evaluationCo
     protein_g: proteinG,
     total_protein_g: proteinG,
     protein_per_kg: proteinPerKg,
+    protein_reference_weight_kg: referenceWeight,
+    protein_reference_basis: referenceWeightBasis,
+    calorie_floor_applied: calorieFloorApplied,
     carbohydrate_g: carbG,
     carb_g: carbG,
     total_carbs_g: carbG,
     fat_g: fatG,
     total_fat_g: fatG,
     fiber_g: Math.max(isMale ? 35 : 25, biomarkerAnalysis?.dietary_modifications?.min_fiber_g || 0),
-    water_liters: Math.max(Number((weight * 0.040).toFixed(1)), biomarkerAnalysis?.dietary_modifications?.daily_water_target_liters || 0),
+    water_liters: Math.max(Number((referenceWeight * 0.040).toFixed(1)), biomarkerAnalysis?.dietary_modifications?.daily_water_target_liters || 0),
     hydration: {
       formula: "(Weight * 0.040) + 0.5L per workout hour",
-      rest_day_water_liters: Math.max(Number((weight * 0.040).toFixed(1)), biomarkerAnalysis?.dietary_modifications?.daily_water_target_liters || 0),
-      training_day_water_liters: Math.max(Number((weight * 0.040 + 0.5).toFixed(1)), (biomarkerAnalysis?.dietary_modifications?.daily_water_target_liters || 0) + 0.5),
-      recommended_range_liters: `${Math.max(Number((weight * 0.040).toFixed(1)), biomarkerAnalysis?.dietary_modifications?.daily_water_target_liters || 0)} - ${Math.max(Number((weight * 0.040 + 0.5).toFixed(1)), (biomarkerAnalysis?.dietary_modifications?.daily_water_target_liters || 0) + 0.5)} لتر/يوم`,
-      guidance_ar: `احتياج السوائل اليومي: ${Math.max(Number((weight * 0.040).toFixed(1)), biomarkerAnalysis?.dietary_modifications?.daily_water_target_liters || 0)} لتر في أيام الراحة، و ${Math.max(Number((weight * 0.040 + 0.5).toFixed(1)), (biomarkerAnalysis?.dietary_modifications?.daily_water_target_liters || 0) + 0.5)} لتر في أيام التمرين (+0.5 لتر لتعويض العرق والأملاح أثناء التدريب).`,
+      rest_day_water_liters: Math.max(Number((referenceWeight * 0.040).toFixed(1)), biomarkerAnalysis?.dietary_modifications?.daily_water_target_liters || 0),
+      training_day_water_liters: Math.max(Number((referenceWeight * 0.040 + 0.5).toFixed(1)), (biomarkerAnalysis?.dietary_modifications?.daily_water_target_liters || 0) + 0.5),
+      recommended_range_liters: `${Math.max(Number((referenceWeight * 0.040).toFixed(1)), biomarkerAnalysis?.dietary_modifications?.daily_water_target_liters || 0)} - ${Math.max(Number((referenceWeight * 0.040 + 0.5).toFixed(1)), (biomarkerAnalysis?.dietary_modifications?.daily_water_target_liters || 0) + 0.5)} لتر/يوم`,
+      guidance_ar: `احتياج السوائل اليومي: ${Math.max(Number((referenceWeight * 0.040).toFixed(1)), biomarkerAnalysis?.dietary_modifications?.daily_water_target_liters || 0)} لتر في أيام الراحة، و ${Math.max(Number((referenceWeight * 0.040 + 0.5).toFixed(1)), (biomarkerAnalysis?.dietary_modifications?.daily_water_target_liters || 0) + 0.5)} لتر في أيام التمرين (+0.5 لتر لتعويض العرق والأملاح أثناء التدريب).`,
     },
     meals_count: mealCount,
         meal_distribution: mealDistribution,
