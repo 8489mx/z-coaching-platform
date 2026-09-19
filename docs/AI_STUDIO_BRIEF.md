@@ -20,10 +20,11 @@
 5) generateDraftFromIntake يبني المسودة، approveAndPublishIntake يعتمدها، GET /api/v1/programs/active/:id يرجع master_program + lifestyle.bedtime_hour + clinical_constraints (أنيميا الفول، النقرس، السيلياك، اللاكتوز، السكري، القولون، التكميم، الحساسيات). تطبيق المتدرب يدمج clinical_constraints في clinicalProfile، ومحرك البدائل يرفض أي صنف ممنوع.
 6) المتابعة الأسبوعية: الكنترولر يمرر primary_goal من آخر استمارة إلى evaluateCheckin، ويحسب الحرق الفعلي (adaptive_tdee) من أوزان المتابعات السابقة ويخزنه في analysis_output، ومحرك التكيف يطبقه عند اعتماد المتابعة. الاختبار الشامل للمسار: test/intake-to-client-app-e2e.test.js و test/adaptive-tdee-checkin-flow.test.js.
 7) النشر: الخطة لمتدرب حالته MEDICAL_REVIEW_REQUIRED (كلى، كبد، أعراض خطرة، إصابة بعلامة تحذير) لا تُنشر إلا بـ medical_review_confirmed: true من الكوتش، وإلا يرجع الخادم 409 MEDICAL_REVIEW_CONFIRMATION_REQUIRED (test/medical-review-publish-gate.test.js). زر "حفظ المسودة" لا ينشر أبداً.
+8) التطور والديلود: تطبيق المتدرب يسجل ملخصاً واحداً لكل تمرين (ExerciseLogCard: الوزن، وعدات آخر مجموعة، والجهد) عبر POST /api/v1/checkin/workout-logs (العميل نفسه أو الكوتش فقط). الخادم يعيد بناء الحالة من كل سجلات WorkoutLog ونوافذ الديلود المعتمدة (src/api/services/progressionService.js) ويرجعها في progression مع البرنامج النشط. كل متابعة تحسب analysis_output.deload_recommendation، والكوتش يعتمدها من CheckinReviewDashboard عبر POST /api/v1/checkin/:id/deload-decision، فتفتح نافذة ديلود 7 أيام. بعد انتهائها المحرك يحسب أوزان الدورة الجديدة و progression.new_cycle_ready. الاختبارات: test/workout-log-progression-flow, hybrid-deload-flow, post-deload-reset-flow, progression-engine و tests/progression-ui-render.
 
 == مصادر الحقيقة (ممنوع كسرها) ==
 1) أرقام الأكل: frontend/src/data/foodReference.js هو المرجع الوحيد للأصناف المفردة (USDA مع fdc_id)، و frontend/src/data/recipeReference.js للأطباق المركبة الخليجية والمصرية (وصفة موزونة من مكونات USDA تُحسب منها القيم تلقائياً؛ لا تكتب أرقام الطبق يدوياً، عدّل الوصفة). الأطباق المركبة نوعها MIXED وتُبدل ببعضها فقط على أساس السعرات (test/gulf-egyptian-foods.test.js). أي صنف جديد أو تعديل رقم يبدأ من هنا ثم يُطابق في: frontend/src/utils/foodSwapEngine.js و src/nutrition-meal-context-v2/build-culinary-meals.js و src/data/food-catalog.json و data/settings/foods_catalog.json و frontend/src/data/defaultFoodsCatalog.js. الاختبار test/food-reference-guard.test.js يفشل عند أي اختلاف.
-2) المحركات الموحدة مصدرها frontend/src/utils (foodSwapEngine, pdfExportEngine, biomechanicalSwapEngine, biomechanicsFirewallEngine, circadianLabTriggerEngine, cardioZonesEngine). الملفات المقابلة في src/execution-engines تعيد التصدير فقط. باقي النسخ المكررة يحرسها test/engine-copy-drift-guard.test.js.
+2) المحركات الموحدة مصدرها frontend/src/utils (foodSwapEngine, pdfExportEngine, biomechanicalSwapEngine, biomechanicsFirewallEngine, circadianLabTriggerEngine, cardioZonesEngine, progressionEngine). محرك التطور يعاد تصديره من src/training-engine-v2/progression، و compileDeloadSession في المحركات القديمة هو نفسه applyDeloadToSession. الملفات المقابلة في src/execution-engines تعيد التصدير فقط. باقي النسخ المكررة يحرسها test/engine-copy-drift-guard.test.js.
 3) حالات الخطة الوحيدة: READY_FOR_DRAFT, COACH_REVIEW_REQUIRED, MEDICAL_REVIEW_REQUIRED, BLOCKED. الخطة BLOCKED لا تُبنى أبداً (test/plan-status-literal-guard.test.js يرفض أي كلمة حالة غير موجودة).
 4) لا تُضف محركاً أو ملفاً جديداً إلا إذا كان مستدعى فعلياً من مسار في الخادم أو شاشة في الواجهة، ومعه اختبار.
 
@@ -36,6 +37,10 @@
 - التمرين: حد أدنى RIR = 2 للمبتدئ في كل التمارين، و2 للمتوسط و1 للمتقدم في التمارين المركبة الثقيلة، و2 لتمارين الثبات (Refalo 2023, Zourdos 2016). الضغط والقلب RIR 2 على الأقل مع حظر حبس النفس.
 - جدار الإصابات: البديل من نفس النمط الحركي (الظهر: leg press/hip thrust/تجديف مسنود/ضغط كتف جالس، الركبة: leg press بمدى بدون ألم وhip thrust بدل الطعن، الكتف: machine/floor press وتدوير خارجي للكفة المدورة بدل الضغط فوق الرأس). البديل يأخذ عدات فئته، ولا يتكرر تمرين في نفس الجلسة (test/training-injury-firewall-slots.test.js). ألم لا يهدأ بالراحة = مراجعة طبية.
 - الكارديو: HIIT ممنوع مع الربو والضغط والقلب والحمل وBMI 35 فأكثر، ويتحول لدراجة بدون صدمات مع BMI 30-35 أو إصابة ركبة/كاحل/حوض/ظهر (test/cardio-hiit-safety-gates.test.js).
+- التطور المزدوج (progressionEngine.evaluateExercise): آخر مجموعة وصلت لأعلى النطاق بجهد سهل أو مناسب = زيادة وزن بخطوة الأداة (2.5 بار، 2 دمبل، 5 ليج برس وهيب ثرست، 2.5 كيبل وأجهزة) والرجوع لأول النطاق؛ بجهد صعب = تثبيت؛ داخل النطاق = عدة زيادة؛ تحت النطاق = إعادة ثم خفض 10%؛ قفزة دمبل أكبر من 10% تتطلب عدتين زيادة أولاً؛ وزن الجسم = عدات وإبطاء.
+- الديلود الهجين: الأسبوع 5 ديلود ثابت. الديلود المبكر توصية فقط (تراجع 1RM تقديري جلستين متتاليتين في تمرينين أو أكثر مع طاقة أو نوم منخفض، أو ألم مفصل 7/10) ولا يطبق إلا باعتماد الكوتش. أسبوع الديلود: مجموعات أقل 40%، RIR 4.
+- ما بعد الديلود: آخر وزن ناجح للتمرين المتقدم، 10% تحت وزن التعثر للتمرين المتعثر أو المتراجع، 20% للألم، و10-20% بعد انقطاع 14-28 يوماً، وأبداً فوق آخر وزن ناجح.
+- مقياس المتابعة: فورم الويب يرسل الطاقة والنوم والجوع من 10 مع biofeedback_scale: 10، والخادم يحولها لمقياس المحرك من 5. لا تغير المقاييس بدون تعديل التحويل.
 - المتابعة: قبل توفر الحرق الفعلي: ثبات الوزن مع التزام = خفض 125 سعرة للتنشيف، وزيادة 125 سعرة للتضخيم (GAIN_STALL)، ونجاح (ON_TRACK) للتثبيت. بعد توفره يحل محل هذه الخطوات الثابتة.
 - التكميم: 5 وجبات صغيرة على الأقل ولا صيام متقطع تلقائي. الصيام المتقطع حسب اختيار المتدرب (16/8 أو 14/10).
 
@@ -43,7 +48,7 @@
 - قاعدة البيانات: لا تعديل على بنية الجداول ولا حذف ولا نقل بيانات إلا بنسخة احتياطية وخطة وموافقتي الصريحة. (الأعمدة enable_rest_timer و enable_weight_logging و grocery_list تُركت عمداً، لا تستخدمها).
 - الأمان: ممنوع كتابة أي كلمة سر أو كود دخول أو مفتاح داخل الكود أو .env.example. الكوتش والإدارة يدخلون بالبريد وكلمة المرور فقط (login-email)، و login-fast للمتدربين فقط ويرفض ADMIN/COACH. لا تُرجع password في أي رد.
 - لا قيم افتراضية صامتة للبيانات الصحية: ارفض برسالة واضحة. لا catch فارغ يخفي عطلاً في ميزة أساسية.
-- ممنوعات تطبيق المتدرب: لا حقول إدخال أوزان أو جولات، لا مؤقتات، لا عدادات ماء، لا قوائم تسوق. ممنوعات الواجهة: لا <select> افتراضي (استخدم frontend/src/components/common/CurvedSelect.jsx)، لا زوايا حادة، لا إيموجي. كل الردود بالعربية.
+- ممنوعات تطبيق المتدرب: لا جداول أو صفوف لكل مجموعة (المسموح بطاقة تسجيل واحدة لكل تمرين فقط كما في GEMINI.md قسم 3)، لا مؤقتات، لا عدادات ماء، لا قوائم تسوق. ممنوعات الواجهة: لا <select> افتراضي (استخدم frontend/src/components/common/CurvedSelect.jsx)، لا زوايا حادة، لا إيموجي. كل الردود بالعربية.
 - أي قيمة طبية أو غذائية جديدة (حدود بروتين، أدوية، أمراض) اذكر مصدرها العلمي وقل إنها تحتاج مراجعة متخصص.
 
 == قبل أي تعديل ==
@@ -53,7 +58,7 @@
 
 == بعد كل تعديل ==
 - اذكر كل ملف ودالة تغيّرت بالظبط.
-- اطلب مني تشغيل: npm.cmd test ثم npm.cmd --prefix frontend run build. (npm test يشغل بوابة لينت صارمة ثم اختبارات node ثم اختبارات vitest، ويحتاج MariaDB وملف .env). آخر نتيجة معتمدة: 1596 اختبار node و39 اختبار vitest، كلها ناجحة.
+- اطلب مني تشغيل: npm.cmd test ثم npm.cmd --prefix frontend run build. (npm test يشغل بوابة لينت صارمة ثم اختبارات node ثم اختبارات vitest، ويحتاج MariaDB وملف .env). آخر نتيجة معتمدة: 1620 اختبار node و43 اختبار vitest، كلها ناجحة.
 - لا تقل "تم" أو "تم الاختبار" إلا بعد أن ألصق لك المخرجات الحقيقية. لو فشل أي اختبار قديم: توقف واشرح السبب، ولا تعدّل الاختبار لينجح إلا إذا كان التغيير في السلوك مقصوداً ومعلناً.
 - أضف اختباراً في مجلد test لكل إصلاح أو ميزة جديدة يفشل لو انكسرت.
 - لو لاحظت خطأً آخر: لا تصلحه بصمت، أخبرني ونفّذه في خطوة منفصلة. لو لست متأكداً قل "لست متأكداً".
