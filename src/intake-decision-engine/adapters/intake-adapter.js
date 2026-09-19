@@ -334,7 +334,8 @@ export function adaptIntakePayloadToCanonicalEngine(raw) {
         conds.push({ conditionCode: String(s).toUpperCase(), stability: 'STABLE' });
       }
     });
-    if (intake.medical_conditions?.diabetes?.type) {
+    // The intake form always pre-fills diabetes.type ('type2'), so only an explicit selection or insulin use counts.
+    if (intake.medical_conditions?.diabetes?.uses_insulin === true) {
       if (!conds.some(c => c.conditionCode === 'DIABETES')) {
         conds.push({ conditionCode: 'DIABETES', stability: 'STABLE' });
       }
@@ -622,6 +623,9 @@ export function adaptIntakePayloadToCanonicalEngine(raw) {
     POLYCYSTIC_OVARY: "PCOS",
     KIDNEY: "KIDNEY_CONDITION",
     KIDNEY_CONDITION: "KIDNEY_CONDITION",
+    // Intake form keys (FullIntakeForm medical_conditions.selected)
+    RENAL_HEPATIC: "KIDNEY_CONDITION",
+    GI_TRACT: "DIAGNOSED_DIGESTIVE_CONDITION",
     LIVER: "LIVER_CONDITION",
     LIVER_CONDITION: "LIVER_CONDITION"
   };

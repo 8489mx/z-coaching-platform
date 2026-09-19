@@ -1910,6 +1910,15 @@ export function getRecipeDetailsForFood(foodCode) {
   return null;
 }
 
+function formConditionExclusionTokens(medicalConditions) {
+  if (!medicalConditions || typeof medicalConditions !== "object" || Array.isArray(medicalConditions)) return [];
+  const selected = Array.isArray(medicalConditions.selected) ? medicalConditions.selected.map((s) => String(s).toLowerCase()) : [];
+  const tokens = [];
+  if (selected.includes("favism_g6pd") || medicalConditions.favism_g6pd === true) tokens.push("FAVISM", "G6PD");
+  if (selected.includes("gout") || medicalConditions.gout === true) tokens.push("GOUT");
+  return tokens;
+}
+
 export function buildCulinaryRecipeMeals(universalTargets, canonicalIntake = {}, rawIntake = {}) {
   const { meal_distribution = [] } = universalTargets;
   const nutrition = canonicalIntake.nutrition || {};
@@ -1936,6 +1945,8 @@ export function buildCulinaryRecipeMeals(universalTargets, canonicalIntake = {},
     ...(Array.isArray(effectiveRaw.nutrition?.strict_allergies) ? effectiveRaw.nutrition.strict_allergies : []),
     ...(Array.isArray(effectiveRaw.nutrition?.allergies) ? effectiveRaw.nutrition.allergies : []),
     ...(Array.isArray(effectiveRaw.nutrition?.excludedFoodsList) ? effectiveRaw.nutrition.excludedFoodsList : []),
+    // Intake form conditions that the canonical medical list cannot carry (favism, gout).
+    ...formConditionExclusionTokens(effectiveRaw.medical_conditions),
   ];
 
   const excludedFoods = new Set(
