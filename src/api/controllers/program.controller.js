@@ -56,7 +56,7 @@ export const generateProgram = async (req, res) => {
     // 1. Evaluate Intake
     const intakeDecision = evaluateIntake(intakePayload, evaluationContext);
 
-    if (intakeDecision.plan_status === "BLOCK") {
+    if (intakeDecision.plan_status === "BLOCKED") {
       return res.status(400).json({ 
         error: "Intake rejected", 
         reasons: intakeDecision.decision_reasons 
@@ -110,7 +110,7 @@ export const generateProgramPreview = async (req, res) => {
 
     const canonicalIntake = adaptIntakePayloadToCanonicalEngine(intakePayload);
     const intakeDecision = evaluateIntake(canonicalIntake, evaluationContext);
-    if (intakeDecision.plan_status === "BLOCK") {
+    if (intakeDecision.plan_status === "BLOCKED") {
       return res.status(400).json({ error: "Intake rejected", reasons: intakeDecision.decision_reasons });
     }
 
@@ -149,7 +149,7 @@ export const generateAndSaveProgram = async (req, res) => {
 
     // 1. Evaluate Intake
     const intakeDecision = evaluateIntake(intakePayload, evaluationContext);
-    if (intakeDecision.plan_status === "BLOCK") {
+    if (intakeDecision.plan_status === "BLOCKED") {
       return res.status(400).json({ error: "Intake rejected", reasons: intakeDecision.decision_reasons });
     }
 
@@ -250,7 +250,7 @@ export const generateProgramFromSubmission = async (req, res) => {
     });
 
     const intakeDecision = evaluateIntake(intakePayload, evaluationContext);
-    if (intakeDecision.plan_status === "BLOCK") {
+    if (intakeDecision.plan_status === "BLOCKED") {
       submission.status = "REJECTED";
       await submission.save();
       return res.status(400).json({ error: "Intake rejected", reasons: intakeDecision.decision_reasons });

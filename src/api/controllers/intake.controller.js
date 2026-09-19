@@ -494,7 +494,7 @@ export const generateDraftFromIntake = async (req, res) => {
 
     const canonicalIntake = adaptIntakePayloadToCanonicalEngine(intakePayload);
     const intakeDecision = evaluateIntake(canonicalIntake, evaluationContext);
-    if (intakeDecision.plan_status === "BLOCK") {
+    if (intakeDecision.plan_status === "BLOCKED") {
       return res.status(400).json({
         error: "الاستمارة تحتاج مراجعة طبية خاصة لوجود موانع حرجة",
         reasons: intakeDecision.decision_reasons
