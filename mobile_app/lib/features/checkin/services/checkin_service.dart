@@ -67,13 +67,16 @@ class CheckinService {
 
     if (response.isSuccess) {
       return response;
-    } else {
-      // حفظ محلي في طابور الأوفلاين إن فشل الاتصال
+    }
+    if (response.statusCode == 0) {
+      // فشل الشبكة فقط: نحفظ نسخة على الجهاز حتى لا تضيع البيانات
       await _storage.queuePendingCheckin(payload);
       return ApiResponse.failure(
-        'تم حفظ التقييم محلياً لعدم استقرار الشبكة، وسيتم رفعه تلقائياً فور الاتصال.',
-        statusCode: 202,
+        'تعذر الاتصال بالخادم. تم حفظ نسخة من التقييم على جهازك، أعد الإرسال عند عودة الإنترنت.',
+        statusCode: 0,
       );
     }
+    // رفض من الخادم (بيانات غير صالحة أو متابعة مكررة): نعرض السبب ولا نضعه في الطابور
+    return response;
   }
 }

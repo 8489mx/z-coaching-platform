@@ -124,11 +124,14 @@ class _WeeklyCheckinScreenState extends State<WeeklyCheckinScreen> {
         context: context,
         builder: (ctx) => AlertDialog(
           backgroundColor: AppColors.surface,
-          title: const Text('تم استلام التقييم الأسبوعي', style: TextStyle(color: AppColors.textPrimary)),
+          title: Text(
+            res.isSuccess ? 'تم استلام التقييم الأسبوعي' : 'لم يتم إرسال التقييم',
+            style: const TextStyle(color: AppColors.textPrimary),
+          ),
           content: Text(
             res.isSuccess
                 ? 'تم رفع التقييم وصور الزوايا الثلاث بنجاح إلى المنظومة، وسيتم إخطار الكوتش للمراجعة والاعتماد.'
-                : res.errorMessage ?? 'تم حفظ التقييم بنجاح.',
+                : res.errorMessage ?? 'تعذر إرسال التقييم، حاول مرة أخرى.',
             style: const TextStyle(color: AppColors.textSecondary, fontSize: 13),
           ),
           actions: [

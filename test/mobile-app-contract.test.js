@@ -85,4 +85,5 @@ test("mobile_app Dart code points at the routes and fields the server serves", (
   for (const key of ["'user_id'", "'weight_kg'", "'waist_circumference_cm'", "'nutrition_adherence_percent'", "'photo_url'"]) {
     assert.ok(checkin.includes(key), key);
   }
+  assert.match(checkin, /if \(response\.statusCode == 0\) \{/, "only network failures are queued");
 });
