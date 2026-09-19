@@ -36,7 +36,7 @@ export async function submitCheckin(req, res) {
     const {
       user_id,
       client_id,
-      week_number = 1,
+      week_number,
       weight_kg,
       waist_circumference_cm,
       hip_circumference_cm,
@@ -96,7 +96,12 @@ export async function submitCheckin(req, res) {
       return res.status(400).json({ success: false, error: "يجب إدخال وزن حقيقي وصالح (> 20 كجم) لإرسال المتابعة" });
     }
 
-    const targetWeekNumber = Number(week_number) || 1;
+    // The web form and the mobile app send no week: the check-in goes to the week after the client's latest one.
+    let targetWeekNumber = Number(week_number);
+    if (!Number.isInteger(targetWeekNumber) || targetWeekNumber < 1) {
+      const lastWeek = await CheckinSubmission.max("week_number", { where: { user_id: targetUserId } });
+      targetWeekNumber = (Number(lastWeek) || 0) + 1;
+    }
 
     // Weekly weight = average of the 7 morning weigh-ins when given (less water noise), else the single entry.
     const dailyWeights = validDailyWeights ? req.body.daily_weights_kg.map((w) => Number(w)) : null;
