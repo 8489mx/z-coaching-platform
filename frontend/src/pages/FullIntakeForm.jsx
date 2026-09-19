@@ -35,16 +35,12 @@ const DEFAULT_MASTER_INTAKE = {
     has_conditions: false,
     selected: [],
     bariatric: { is_operated: false, meal_capacity_grams: '150_200', dumping_syndrome: false },
-    diabetes: { type: 'type2', uses_insulin: false, icr_ratio: '', hba1c: '' },
+    diabetes: { type: 'type2', uses_insulin: false, hba1c: '' },
     favism_g6pd: false,
-    renal_hepatic_issue: false,
     thyroid: 'hypo',
-    gi_issues: [],
     female_cases: { is_pcos: false, is_lactating: false, is_postpartum: false },
     hypertension: false,
-    gout: false,
-    cholecystectomy: false,
-    other_notes: ''
+    gout: false
   },
   injuries_map: {
     has_injuries: false,
@@ -65,7 +61,6 @@ const DEFAULT_MASTER_INTAKE = {
   religion: 'MUSLIM',
   christianFastingStyle: 'PESCATARIAN_ALLOWED',
   strict_allergies: [],
-  other_allergies: '',
   cuisine_preference: 'egyptian_traditional',
   food_budget: 'MEDIUM',
   food_prep_ability: 'FULL_KITCHEN',
@@ -81,7 +76,6 @@ const DEFAULT_MASTER_INTAKE = {
     bedtime_hour: '23:00'
   },
   disliked_foods: [],
-  disliked_foods_text: '',
 
   // Screen 4: Training & Media
   training_environment: 'commercial_gym',
