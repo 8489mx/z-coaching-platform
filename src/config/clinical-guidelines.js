@@ -14,12 +14,28 @@ export const CLINICAL_GUIDELINES = Object.freeze({
   KIDNEY: Object.freeze({
     /**
      * Scientific Source:
-     * KDOQI Clinical Practice Guideline for Nutrition in CKD (2020 Update) & NIDDK.
-     * For non-dialysis chronic kidney disease / reduced eGFR, safe conservative daily protein ceiling
-     * for active adults is capped at 0.8 - 1.0 g/kg body weight to minimize hyperfiltration and renal load.
+     * KDOQI Clinical Practice Guideline for Nutrition in CKD (2020 Update), non-dialysis, metabolically stable:
+     * 0.55-0.6 g/kg/day for CKD stage 3-5 without diabetes and 0.6-0.8 g/kg/day with diabetes. The stage is
+     * not collected by the intake, so the engine applies the upper bound of the guideline range (0.8 g/kg) as
+     * an automatic ceiling and forces medical review; the treating nephrologist sets the final value. Dialysis
+     * patients need MORE protein (1.0-1.2 g/kg), which is another reason the plan cannot be auto-approved.
      */
-    MAX_PROTEIN_PER_KG: 1.0,
-    RATIONALE_AR: "تم تحديد سقف البروتين بـ 1.0 جم/كجم كحد أقصى آمن لمرضى القصور الكلوي بناءً على توصيات KDOQI لحماية وظائف الكلى وترشيح الكبيبات ومنع تراكم النواتج النيتروجينية.",
+    MAX_PROTEIN_PER_KG: 0.8,
+    RATIONALE_AR: "تم تحديد سقف البروتين بـ 0.8 جم/كجم كحد أعلى لمرضى الكلى بناءً على توصيات KDOQI 2020 (0.55-0.6 جم/كجم للمرحلة 3-5 بدون سكري، و0.6-0.8 مع السكري). الرقم النهائي يحدده طبيب الكلى المعالج حسب المرحلة، ومرضى الغسيل الكلوي يحتاجون بروتيناً أعلى (1.0-1.2 جم/كجم)، لذلك الخطة تتطلب مراجعة طبية قبل الاعتماد.",
+  }),
+
+  // ==========================================
+  // 1b. LIVER DISEASE
+  // ==========================================
+  LIVER: Object.freeze({
+    /**
+     * Scientific Source:
+     * EASL Clinical Practice Guidelines on Nutrition in Chronic Liver Disease (2019) & AASLD NAFLD guidance.
+     * Protein is NOT restricted in liver disease (1.2-1.5 g/kg in cirrhosis to prevent sarcopenia); fatty liver
+     * (MASLD) benefits from 7-10% weight loss. The condition type is not collected, so the plan requires
+     * medical review; no automatic protein cap is applied.
+     */
+    GUIDANCE_AR: "توجيه سريري لأمراض الكبد: لا يتم تقليل البروتين تلقائياً (نقص البروتين يسرّع ضمور العضلات في أمراض الكبد المزمنة). دهون الكبد تستفيد من نزول 7-10% من الوزن تدريجياً. يجب تأكيد نوع الحالة وخطة التغذية مع الطبيب المعالج قبل اعتماد البرنامج، مع منع الكحول والمكملات العشبية غير الموصوفة.",
   }),
 
   // ==========================================

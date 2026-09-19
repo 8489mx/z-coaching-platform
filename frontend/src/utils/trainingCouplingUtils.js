@@ -9,6 +9,7 @@
  */
 
 import { getExerciseDisplayNames } from './exerciseTranslator';
+import { KIDNEY_MAX_PROTEIN_PER_KG } from '../config/clinicalLimits.js';
 
 export const HEAVY_PRIMARY_COMPOUNDS = new Set([
   'BARBELL_BACK_SQUAT',
@@ -599,7 +600,7 @@ export function evaluateProteinSparingRequirement({
   const safeTdee = Math.max(1200, Number(tdee) || safeCalories);
   const deficitPercent = safeTdee > 0 ? (((safeTdee - safeCalories) / safeTdee) * 100) : 0;
 
-  const maxSafeProtein = Number(clinicalGuardrails?.max_protein_g) || Math.round(weight * 1.0);
+  const maxSafeProtein = Number(clinicalGuardrails?.max_protein_g) || Math.round(weight * KIDNEY_MAX_PROTEIN_PER_KG);
 
   if (hasKidneyCondition) {
     return {

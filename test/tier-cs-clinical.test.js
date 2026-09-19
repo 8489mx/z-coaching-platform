@@ -5,7 +5,7 @@ import { CLINICAL_GUIDELINES } from "../src/config/clinical-guidelines.js";
 
 describe("Tier CS Clinical Fixes & Verification", () => {
   describe("Tier CS-0: Item 1 - Kidney Disease Protein Cap (KDOQI Guideline)", () => {
-    test("Should cap protein at 1.0 g/kg for trainee with KIDNEY_CONDITION despite FAT_LOSS goal", () => {
+    test("Should cap protein at the KDOQI ceiling (0.8 g/kg) for trainee with KIDNEY_CONDITION despite FAT_LOSS goal", () => {
       const weight = 80;
       const normalIntake = {
         body: { weightKg: weight, heightCm: 178 },
@@ -22,7 +22,7 @@ describe("Tier CS Clinical Fixes & Verification", () => {
       assert.equal(normalTargets.protein_g, 176);
       assert.equal(normalTargets.clinical_guardrails?.kidney_protein_capped, false);
 
-      // 2. Trainee with KIDNEY_CONDITION: Protein MUST be capped at 1.0 g/kg (80g)
+      // 2. Trainee with KIDNEY_CONDITION: Protein MUST be capped at 0.8 g/kg (64g)
       const kidneyIntake = {
         ...normalIntake,
         medical: {
@@ -32,10 +32,10 @@ describe("Tier CS Clinical Fixes & Verification", () => {
 
       const kidneyTargets = calculateUniversalNutritionTargets(kidneyIntake);
       assert.equal(kidneyTargets.protein_per_kg, CLINICAL_GUIDELINES.KIDNEY.MAX_PROTEIN_PER_KG);
-      assert.equal(kidneyTargets.protein_per_kg, 1.0);
-      assert.equal(kidneyTargets.protein_g, 80);
+      assert.equal(kidneyTargets.protein_per_kg, 0.8);
+      assert.equal(kidneyTargets.protein_g, 64);
       assert.equal(kidneyTargets.clinical_guardrails?.kidney_protein_capped, true);
-      assert.equal(kidneyTargets.clinical_guardrails?.max_protein_per_kg, 1.0);
+      assert.equal(kidneyTargets.clinical_guardrails?.max_protein_per_kg, 0.8);
       assert.ok(kidneyTargets.calorie_adjustment_desc.includes("KDOQI"));
     });
   });
@@ -513,14 +513,14 @@ describe("Tier CS Clinical Fixes & Verification", () => {
       return { complexIntake, evaluationContext, decision, catalog, masterPlan, weight };
     }
 
-    test("E2E Subtest 1: Intake & Dual Concurrency - Kidney 1.0 g/kg Cap & Hypertension Safeguards Co-exist Seamlessly", async () => {
+    test("E2E Subtest 1: Intake & Dual Concurrency - Kidney 0.8 g/kg Cap & Hypertension Safeguards Co-exist Seamlessly", async () => {
       const { masterPlan } = await createComplexTraineeSetup();
 
-      // 1. Kidney condition limits protein to 1.0 g/kg (85g) despite FAT_LOSS goal (which defaults to 2.2 g/kg = 187g)
-      assert.equal(masterPlan.nutrition_program.targets.protein_g, 85, "Protein must be capped at exactly 85g for 85kg trainee with kidney condition");
-      assert.equal(masterPlan.nutrition_program.targets.protein_per_kg, 1.0, "Protein per kg must equal 1.0 g/kg per KDOQI guidelines");
+      // 1. Kidney condition limits protein to 0.8 g/kg (68g) despite FAT_LOSS goal (which defaults to 2.2 g/kg = 187g)
+      assert.equal(masterPlan.nutrition_program.targets.protein_g, 68, "Protein must be capped at exactly 68g for 85kg trainee with kidney condition");
+      assert.equal(masterPlan.nutrition_program.targets.protein_per_kg, 0.8, "Protein per kg must equal 0.8 g/kg per KDOQI guidelines");
       assert.equal(masterPlan.nutrition_program.targets.clinical_guardrails.kidney_protein_capped, true, "kidney_protein_capped flag must be true");
-      assert.equal(masterPlan.nutrition_program.targets.clinical_guardrails.max_protein_g, 85);
+      assert.equal(masterPlan.nutrition_program.targets.clinical_guardrails.max_protein_g, 68);
 
       // 2. Concurrently, hypertension safeguard is fully active in the exact same plan
       assert.equal(masterPlan.training_program.clinical_guardrails.hypertension_guard_active, true, "Hypertension guard must be active simultaneously");
@@ -687,8 +687,8 @@ describe("Tier CS Clinical Fixes & Verification", () => {
 
       // Verify that the merge engine preserved the clinical protein cap
       assert.equal(mergedProgram.nutrition_program.targets.clinical_guardrails.kidney_protein_capped, true, "Protein cap flag must persist after adaptation");
-      assert.equal(mergedProgram.nutrition_program.targets.protein_g, 85, "Protein must remain capped at exactly 85g after calorie reduction");
-      assert.ok(mergedProgram.nutrition_program.targets.protein_g <= 85, "Protein must never exceed 85g");
+      assert.equal(mergedProgram.nutrition_program.targets.protein_g, 68, "Protein must remain capped at exactly 68g after calorie reduction");
+      assert.ok(mergedProgram.nutrition_program.targets.protein_g <= 68, "Protein must never exceed 68g");
       assert.equal(mergedProgram.training_program.weeks.length, masterPlan.training_program.weeks.length, "Mesocycle weeks count must be preserved");
     });
 
@@ -713,7 +713,7 @@ describe("Tier CS Clinical Fixes & Verification", () => {
       // 1. Backend master config MUST exist and export CLINICAL_GUIDELINES
       assert.equal(fs.existsSync(backendPath), true, "Master clinical guidelines must exist in src/config/clinical-guidelines.js");
       assert.ok(CLINICAL_GUIDELINES, "CLINICAL_GUIDELINES must be loaded and defined");
-      assert.equal(CLINICAL_GUIDELINES.KIDNEY.MAX_PROTEIN_PER_KG, 1.0);
+      assert.equal(CLINICAL_GUIDELINES.KIDNEY.MAX_PROTEIN_PER_KG, 0.8);
       assert.equal(CLINICAL_GUIDELINES.HYPERTENSION.MIN_RIR, 2);
 
       // 2. Frontend duplicate file MUST NOT exist on disk (prohibiting dual sources of truth)

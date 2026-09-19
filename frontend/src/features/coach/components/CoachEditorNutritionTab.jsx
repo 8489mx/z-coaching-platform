@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Plus, Trash2, X, ArrowRightLeft, Zap, Target, ShieldAlert, Copy } from 'lucide-react';
 import { balanceMealItems, dynamicRippleRebalanceDailyPlan } from '../../../utils/mealPortionBalancer.js';
+import { KIDNEY_MAX_PROTEIN_PER_KG } from '../../../config/clinicalLimits';
 
 
 export default function CoachEditorNutritionTab(props) {
@@ -44,7 +45,7 @@ export default function CoachEditorNutritionTab(props) {
   );
 
   const clientWeightKg = Number(program?.client?.weight_kg) || 80;
-  const maxSafeProtein = Number(clinicalGuardrails?.max_protein_g) || Math.round(clientWeightKg * 1.0);
+  const maxSafeProtein = Number(clinicalGuardrails?.max_protein_g) || Math.round(clientWeightKg * KIDNEY_MAX_PROTEIN_PER_KG);
 
   const activeSessions = (program?.training?.sessions && program.training.sessions.length > 0)
     ? program.training.sessions
@@ -709,8 +710,8 @@ export default function CoachEditorNutritionTab(props) {
                   <ShieldAlert size={18} color={Number(editTargetsState.protein) > maxSafeProtein ? '#DC2626' : '#166534'} style={{ flexShrink: 0 }} />
                   <div style={{ fontSize: '11.5px', lineHeight: '1.4', color: Number(editTargetsState.protein) > maxSafeProtein ? '#991B1B' : '#166534' }}>
                     {Number(editTargetsState.protein) > maxSafeProtein
-                      ? `تنبيه سريري: البروتين المدخل (${editTargetsState.protein} جم) يتجاوز السقف السريري الآمن لمرضى الكلى (${maxSafeProtein} جم بمعدل 1.0 جم/كجم). سيتم توثيق هذا التجاوز في سجل المراجعة السريرية.`
-                      : `حماية الكلى مفعلة: السقف السريري الآمن هو ${maxSafeProtein} جم/يوم (KDOQI 1.0 جم/كجم).`}
+                      ? `تنبيه سريري: البروتين المدخل (${editTargetsState.protein} جم) يتجاوز السقف السريري الآمن لمرضى الكلى (${maxSafeProtein} جم بمعدل ${KIDNEY_MAX_PROTEIN_PER_KG} جم/كجم). سيتم توثيق هذا التجاوز في سجل المراجعة السريرية.`
+                      : `حماية الكلى مفعلة: السقف السريري الآمن هو ${maxSafeProtein} جم/يوم (KDOQI ${KIDNEY_MAX_PROTEIN_PER_KG} جم/كجم).`}
                   </div>
                 </div>
               )}

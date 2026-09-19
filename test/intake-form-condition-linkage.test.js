@@ -53,11 +53,28 @@ test('selecting diabetes still activates the hypoglycemia guard', () => {
   assert.equal(build(formAnswers(['diabetes'])).nutrition_program.targets.clinical_guardrails.hypoglycemia_guard_active, true);
 });
 
-test('renal_hepatic from the form reaches the engine and caps protein (KDOQI)', () => {
-  assert.deepEqual(codes(formAnswers(['renal_hepatic'])), ['KIDNEY_CONDITION']);
-  const targets = build(formAnswers(['renal_hepatic'])).nutrition_program.targets;
+test('renal from the form caps protein at the KDOQI ceiling and forces medical review', () => {
+  assert.deepEqual(codes(formAnswers(['renal'])), ['KIDNEY_CONDITION']);
+  const program = build(formAnswers(['renal']));
+  const targets = program.nutrition_program.targets;
   assert.equal(targets.clinical_guardrails.kidney_protein_capped, true);
-  assert.ok(targets.protein_per_kg <= 1.0, `protein_per_kg ${targets.protein_per_kg}`);
+  assert.equal(targets.protein_per_kg, 0.8);
+  assert.equal(program.intake_decision.plan_status, 'MEDICAL_REVIEW_REQUIRED');
+});
+
+test('hepatic from the form forces medical review without a protein cap', () => {
+  assert.deepEqual(codes(formAnswers(['hepatic'])), ['LIVER_CONDITION']);
+  const program = build(formAnswers(['hepatic']));
+  const targets = program.nutrition_program.targets;
+  assert.equal(targets.clinical_guardrails.kidney_protein_capped, false);
+  assert.equal(targets.protein_per_kg, 2.2);
+  assert.equal(targets.clinical_guardrails.liver_review_required, true);
+  assert.ok(targets.clinical_guardrails.liver_guidance_ar);
+  assert.equal(program.intake_decision.plan_status, 'MEDICAL_REVIEW_REQUIRED');
+});
+
+test('legacy renal_hepatic intakes keep the safer kidney reading', () => {
+  assert.deepEqual(codes(formAnswers(['renal_hepatic'])), ['KIDNEY_CONDITION']);
 });
 
 test('gi_tract from the form reaches the engine and selects the Low-FODMAP framework', () => {

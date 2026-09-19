@@ -151,14 +151,14 @@ describe('Nutrition-to-Training Reverse Coupling & Deficit Volume Shield Suite',
       targetCalories: 1400,
       tdee: 2200,
       clientWeightKg: 80,
-      currentProteinG: 80,
+      currentProteinG: 64,
       hasKidneyCondition: true
     });
 
     assert.equal(ckdPatient.has_kidney_condition, true);
     assert.equal(ckdPatient.locked_at_kidney_ceiling, true);
-    assert.equal(ckdPatient.safe_ceiling_protein_g, 80);
-    assert.equal(ckdPatient.recommended_protein_g, 80);
+    assert.equal(ckdPatient.safe_ceiling_protein_g, 64);
+    assert.equal(ckdPatient.recommended_protein_g, 64);
     assert.equal(ckdPatient.status, 'SAFE_RENAL_PROTECTION');
   });
 

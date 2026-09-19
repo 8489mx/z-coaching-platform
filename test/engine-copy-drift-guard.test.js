@@ -72,3 +72,9 @@ test('cardio engine asthma guidance text matches CLINICAL_GUIDELINES.RESPIRATORY
   const healthy = getPracticalCardioPrescription({ type: CARDIO_TYPES.HIIT_INTERVALS, medicalConditions: ['KNEE_PAIN'] });
   assert.equal(healthy.type, CARDIO_TYPES.HIIT_INTERVALS);
 });
+
+test('frontend kidney protein ceiling matches CLINICAL_GUIDELINES.KIDNEY', async () => {
+  const { CLINICAL_GUIDELINES } = await import('../src/config/clinical-guidelines.js');
+  const { KIDNEY_MAX_PROTEIN_PER_KG } = await import('../frontend/src/config/clinicalLimits.js');
+  assert.equal(KIDNEY_MAX_PROTEIN_PER_KG, CLINICAL_GUIDELINES.KIDNEY.MAX_PROTEIN_PER_KG);
+});

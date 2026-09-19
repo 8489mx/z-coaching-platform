@@ -784,7 +784,7 @@ export function evaluateProteinSparingRequirement({
   const safeTdee = Math.max(1200, Number(tdee) || safeCalories);
   const deficitPercent = safeTdee > 0 ? (((safeTdee - safeCalories) / safeTdee) * 100) : 0;
 
-  const maxSafeProtein = Number(clinicalGuardrails?.max_protein_g) || Math.round(weight * 1.0);
+  const maxSafeProtein = Number(clinicalGuardrails?.max_protein_g) || Math.round(weight * CLINICAL_GUIDELINES.KIDNEY.MAX_PROTEIN_PER_KG);
 
   // If patient has kidney disease: lock at kidney ceiling
   if (hasKidneyCondition) {

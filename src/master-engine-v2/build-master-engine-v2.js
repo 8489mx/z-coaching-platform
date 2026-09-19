@@ -396,6 +396,10 @@ export function calculateUniversalNutritionTargets(canonicalIntake, evaluationCo
     effectiveRaw?.medical?.hasKidneyCondition === true ||
     conditionsList.some(c => c.includes("KIDNEY") || c.includes("RENAL"));
 
+  const hasLiverCondition =
+    medical.hasLiverCondition === true ||
+    conditionsList.some(c => c.includes("LIVER") || c.includes("HEPATIC"));
+
   let kidneyProteinCapped = false;
   if (hasKidneyCondition) {
     if (proteinPerKg > CLINICAL_GUIDELINES.KIDNEY.MAX_PROTEIN_PER_KG) {
@@ -711,6 +715,8 @@ export function calculateUniversalNutritionTargets(canonicalIntake, evaluationCo
       max_protein_per_kg: kidneyProteinCapped ? (biomarkerAnalysis?.dietary_modifications?.protein_cap_g_per_kg || CLINICAL_GUIDELINES.KIDNEY.MAX_PROTEIN_PER_KG) : null,
       max_protein_g: kidneyProteinCapped ? proteinG : null,
       rationale_ar: kidneyProteinCapped ? (biomarkerAnalysis?.dietary_modifications?.protein_cap_g_per_kg ? `تحديد سقف البروتين عند ${proteinPerKg} جم/كجم لحماية الكلى بناءً على الفحوصات المخبرية` : CLINICAL_GUIDELINES.KIDNEY.RATIONALE_AR) : null,
+      liver_review_required: Boolean(hasLiverCondition),
+      liver_guidance_ar: hasLiverCondition ? CLINICAL_GUIDELINES.LIVER.GUIDANCE_AR : null,
       hypoglycemia_guard_active: Boolean(hasDiabetesOrInsulinResistance),
       hypoglycemia_guidance_ar: hasDiabetesOrInsulinResistance ? CLINICAL_GUIDELINES.DIABETES.SAFETY_GUIDANCE_AR : null,
       hypoglycemia_rescue_carbs_grams: hasDiabetesOrInsulinResistance ? CLINICAL_GUIDELINES.DIABETES.HYPOGLYCEMIA_RESCUE_CARBS_GRAMS : null,

@@ -125,10 +125,33 @@ export function evaluateDangerousSymptoms(input) {
   return result;
 }
 
+// Organ conditions whose nutrition prescription depends on a stage the intake does not collect
+// (CKD stage / dialysis, liver disease type): the plan always needs medical review before approval.
+const MANDATORY_MEDICAL_REVIEW_CONDITIONS = new Set(["KIDNEY_CONDITION", "LIVER_CONDITION"]);
+
 export function evaluateMedicalConditions(input) {
   const result = emptyRuleResult();
   input.medical.conditions.forEach((condition, index) => {
     const sourcePath = `medical.conditions[${index}]`;
+    if (MANDATORY_MEDICAL_REVIEW_CONDITIONS.has(condition.conditionCode)) {
+      result.statusCandidates.push(statusCandidate(PlanStatus.MEDICAL_REVIEW_REQUIRED, "ORGAN_CONDITION_REQUIRES_MEDICAL_REVIEW"));
+      result.reviewFlags.push(
+        reviewFlag(
+          "ORGAN_CONDITION_REQUIRES_MEDICAL_REVIEW",
+          Scope.GLOBAL,
+          ReviewLevel.MEDICAL,
+          "Kidney or liver disease: protein and calorie targets depend on the stage and must be confirmed with the treating physician.",
+          `${sourcePath}.conditionCode`,
+        ),
+      );
+      result.reasons.push(
+        reason(
+          "ORGAN_CONDITION_REQUIRES_MEDICAL_REVIEW",
+          Scope.GLOBAL,
+          "Kidney or liver disease prevents approval until medical review is confirmed.",
+        ),
+      );
+    }
     if (condition.otherConditionText?.trim()) {
       result.statusCandidates.push(
         statusCandidate(PlanStatus.COACH_REVIEW_REQUIRED, "UNCLASSIFIED_MEDICAL_CONDITION"),

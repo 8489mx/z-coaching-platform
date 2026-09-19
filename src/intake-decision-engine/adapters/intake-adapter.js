@@ -654,6 +654,9 @@ export function adaptIntakePayloadToCanonicalEngine(raw) {
     KIDNEY: "KIDNEY_CONDITION",
     KIDNEY_CONDITION: "KIDNEY_CONDITION",
     // Intake form keys (FullIntakeForm medical_conditions.selected)
+    RENAL: "KIDNEY_CONDITION",
+    HEPATIC: "LIVER_CONDITION",
+    // Legacy combined option (intakes submitted before the split): the kidney protein ceiling is the safer reading.
     RENAL_HEPATIC: "KIDNEY_CONDITION",
     GI_TRACT: "DIAGNOSED_DIGESTIVE_CONDITION",
     LIVER: "LIVER_CONDITION",
