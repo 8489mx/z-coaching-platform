@@ -19,6 +19,16 @@ const ADAPTIVE_TDEE_STATUSES = new Set([
   CheckinAnalysisStatus.RAPID_LOSS_WARNING,
 ]);
 
+/**
+ * The check-in engine rates hunger/energy/sleep on 1-5 (e.g. energy <= 2 = low, hunger >= 4 = high).
+ * The web check-in form uses 1-10 sliders and says so with biofeedback_scale: 10; map 1-2 -> 1 ... 9-10 -> 5.
+ */
+function toEngineScale(value, scale) {
+  const n = Number(value);
+  if (!Number.isFinite(n)) return n;
+  return Number(scale) === 10 ? Math.min(5, Math.max(1, Math.ceil(n / 2))) : n;
+}
+
 export async function submitCheckin(req, res) {
   try {
     const {
@@ -149,9 +159,9 @@ export async function submitCheckin(req, res) {
       workouts_completed: Number(workouts_completed),
       workouts_scheduled: Number(workouts_scheduled),
       biofeedback: {
-        hunger_level: Number(biofeedback.hunger_level ?? biofeedback.hungerLevel ?? 2),
-        energy_level: Number(biofeedback.energy_level ?? biofeedback.energyLevel ?? biofeedback.energy_in_gym ?? 4),
-        sleep_quality: Number(biofeedback.sleep_quality ?? biofeedback.sleepQuality ?? 4),
+        hunger_level: toEngineScale(biofeedback.hunger_level ?? biofeedback.hungerLevel ?? 2, req.body.biofeedback_scale),
+        energy_level: toEngineScale(biofeedback.energy_level ?? biofeedback.energyLevel ?? biofeedback.energy_in_gym ?? 4, req.body.biofeedback_scale),
+        sleep_quality: toEngineScale(biofeedback.sleep_quality ?? biofeedback.sleepQuality ?? 4, req.body.biofeedback_scale),
         sleep_hours: Number(biofeedback.sleep_hours ?? biofeedback.sleepHours ?? 7),
         stress_level: Number(biofeedback.stress_level ?? biofeedback.stressLevel ?? 2),
       },

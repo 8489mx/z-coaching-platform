@@ -146,6 +146,8 @@ export default function WeeklyCheckinForm() {
         waist_circumference_cm: formData.waist_circumference_cm ? Number(cleanArabicNumStr(formData.waist_circumference_cm)) : null,
         nutrition_adherence_percent: Number(formData.nutrition_adherence_percent),
         workouts_completed: Number(formData.workouts_completed),
+        // The sliders below are 1-10; the server converts them to the engine's 1-5 scale.
+        biofeedback_scale: 10,
         biofeedback: {
           energy_level: Number(formData.biofeedback.energyLevel),
           sleep_quality: Number(formData.biofeedback.sleepQuality),
