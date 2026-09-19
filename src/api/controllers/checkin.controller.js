@@ -2,8 +2,8 @@ import { CheckinSubmission, Program, User, WorkoutLog, ProgressPhoto } from "../
 import { evaluateCheckin } from "../../checkin-engine/evaluate-checkin.js";
 import { estimateAdaptiveTdee } from "../../checkin-engine/adaptive-tdee.js";
 import { CheckinAnalysisStatus } from "../../checkin-engine/domain/enums.js";
-import { normalizeLoggedExercise } from "../../training-engine-v2/progression/index.js";
-import { loadProgressionState } from "../services/progressionService.js";
+import { normalizeLoggedExercise, evaluateDeloadTrigger } from "../../training-engine-v2/progression/index.js";
+import { loadProgressionState, buildDeloadDecision } from "../services/progressionService.js";
 import { saveProgressPhotoToDisk } from "../utils/photoStorage.js";
 import { buildAdaptedPlan } from "../../adaptation-engine/build-adapted-plan.js";
 import { mergeAdaptedPlanIntoProgram } from "../utils/planMergeEngine.js";
@@ -216,8 +216,19 @@ export async function submitCheckin(req, res) {
       is_female: await resolveClientIsFemale(targetUserId),
     });
     const adaptiveApplies = adaptiveTdee.ready && ADAPTIVE_TDEE_STATUSES.has(baseAnalysis.analysis_status);
+    // Early-deload recommendation for the coach (never applied automatically): logged performance
+    // dropping on 2+ exercises confirmed by this check-in's fatigue signals, or joint pain >= 7/10.
+    const maxPainLevel = (Array.isArray(evalInput.pain_reports) ? evalInput.pain_reports : [])
+      .reduce((max, p) => Math.max(max, Number(p?.pain_level ?? p?.score ?? p?.severity) || 0), 0);
+    const deloadRecommendation = evaluateDeloadTrigger({
+      state: await loadProgressionState(targetUserId),
+      biofeedback: evalInput.biofeedback,
+      sleep_stress_composite: evalInput.sleep_stress_composite,
+      max_pain_level: maxPainLevel,
+    });
     const analysisOutput = {
       ...baseAnalysis,
+      deload_recommendation: { ...deloadRecommendation, generated_at: new Date().toISOString() },
       plan_target_kcal: planTargetKcal,
       reported_intake_kcal: reportedIntakeKcal,
       adaptive_tdee: adaptiveTdee,
@@ -294,6 +305,37 @@ export async function submitCheckin(req, res) {
       });
     }
     console.error("Error evaluating check-in:", error);
+    return res.status(500).json({ success: false, error: error.message });
+  }
+}
+
+/**
+ * Coach decision on an early-deload recommendation: approve (7-day deload window starting now, shown in
+ * the client app and used by the post-deload reset) or dismiss. Coaches and admins only.
+ */
+export async function decideDeload(req, res) {
+  try {
+    const requester = req.user ? await User.findByPk(req.user.id) : null;
+    if (!requester || !['COACH', 'ADMIN'].includes(requester.role)) {
+      return res.status(403).json({ success: false, error: "اعتماد الديلود متاح للكوتش فقط" });
+    }
+    const checkin = await CheckinSubmission.findByPk(req.params.checkinId);
+    if (!checkin) {
+      return res.status(404).json({ success: false, error: "المتابعة غير موجودة" });
+    }
+    const recommendation = checkin.analysis_output?.deload_recommendation || {};
+    const decision = buildDeloadDecision({
+      approved: req.body?.approve === true,
+      reason: recommendation.reason || 'PERFORMANCE_FATIGUE',
+      affected_exercises: recommendation.affected_exercises || [],
+      approved_by: requester.id,
+    });
+    checkin.analysis_output = { ...(checkin.analysis_output || {}), deload_decision: decision };
+    if (typeof checkin.changed === "function") checkin.changed("analysis_output", true);
+    await checkin.save();
+    return res.status(200).json({ success: true, deload_decision: decision, progression: await loadProgressionState(checkin.user_id) });
+  } catch (error) {
+    console.error("Error deciding deload:", error);
     return res.status(500).json({ success: false, error: error.message });
   }
 }

@@ -43,6 +43,7 @@ import { evaluateJointPainAndFirewall } from '../utils/biomechanicsFirewallEngin
 import { generateCheckinApprovalWhatsAppMessage } from '../utils/checkinApprovalWhatsApp';
 
 import { STRESS_TEST_CLIENTS, CLINICAL_MASTER_BLUEPRINTS } from '../data/stressTestClientsBlueprints';
+import DeloadRecommendationCard from '../components/checkin/DeloadRecommendationCard';
 
 export const INITIAL_CHECKINS = Array.isArray(STRESS_TEST_CLIENTS) ? STRESS_TEST_CLIENTS.map((c) => {
   const bp = (CLINICAL_MASTER_BLUEPRINTS && CLINICAL_MASTER_BLUEPRINTS[c.client_code]) || {};
@@ -1811,6 +1812,9 @@ export default function CheckinReviewDashboard() {
                       </div>
                     </div>
                   </div>
+
+                  {/* Early-deload recommendation (coach approves with one tap) */}
+                  <DeloadRecommendationCard key={activeCheckin?.raw_id} checkinId={activeCheckin?.raw_id} analysisOutput={activeCheckin?.analysis_output} />
 
                   {/* False Plateau Triad Alert Banner */}
                   {(() => {
