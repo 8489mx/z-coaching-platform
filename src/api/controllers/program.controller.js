@@ -18,6 +18,7 @@ import { listSmartSwapCandidates, getSmartFoodRegistryItem, SMART_SWAP_REGISTRY 
 import { CLINICAL_GUIDELINES } from "../../config/clinical-guidelines.js";
 import { loadProgressionState } from "../services/progressionService.js";
 import { resolveFastingContext, FASTING_OVERRIDES } from "../../execution-engines/fasting-calendar-engine.js";
+import { getGulfHeatAdvisory } from "../../execution-engines/cardio-zones-engine.js";
 import { calculateSessionDemand, auditWeeklyMuscleVolume, auditDeficitVolumeShield, evaluateProteinSparingRequirement } from "../utils/trainingNutritionCoupling.js";
 
 const __filename = fileURLToPath(import.meta.url);
@@ -1068,6 +1069,7 @@ export const getActiveProgramByUserId = async (req, res) => {
       clinical_constraints: await resolveClientClinicalConstraints(user.id),
       progression: await loadProgressionState(user.id),
       fasting_context: await resolveClientFastingContext(user, program.program_data),
+      heat_advisory: getGulfHeatAdvisory({ country_code: resolveCountryFromPhone(user.phone_number) }),
     });
   } catch (err) {
     console.error("getActiveProgramByUserId error:", err);

@@ -164,3 +164,37 @@ export function getPracticalCardioPrescription({
     clinical_guardrails: clinicalGuardrails
   };
 }
+
+// ---------- Gulf summer heat advisory ----------
+export const GULF_COUNTRY_CODES = Object.freeze(['SA', 'AE', 'KW', 'QA', 'BH', 'OM']);
+const GULF_TIME_ZONES = Object.freeze({ SA: 'Asia/Riyadh', AE: 'Asia/Dubai', KW: 'Asia/Kuwait', QA: 'Asia/Qatar', BH: 'Asia/Bahrain', OM: 'Asia/Muscat' });
+// May to September: daytime shade temperatures in the Gulf routinely pass 40-45 C.
+const GULF_SUMMER_MONTHS = Object.freeze([5, 6, 7, 8, 9]);
+const DAYTIME_START_HOUR = 10;
+const DAYTIME_END_HOUR = 17;
+
+export const GULF_HEAT_ADVISORY_AR = 'تحذير حرارة الصيف في الخليج: ممنوع الكارديو في الهواء الطلق من 10 صباحاً حتى 5 مساءً. نفّذ الكارديو داخل الجيم أو المول (مشاية أو دراجة)، أو في الخارج قبل 7 صباحاً أو بعد المغرب بساعة، واشرب 500 مل ماء قبل الجلسة.';
+
+/**
+ * Heat advisory for Gulf clients in summer. Active for the whole summer so outdoor cardio is never
+ * planned in the daytime window; blocking_now is true while the local clock is inside that window.
+ */
+export function getGulfHeatAdvisory({ country_code, date = new Date() } = {}) {
+  const country = String(country_code || '').toUpperCase();
+  if (!GULF_COUNTRY_CODES.includes(country)) return { active: false, country_code: country || null };
+  const parts = Object.fromEntries(
+    new Intl.DateTimeFormat('en-US', { timeZone: GULF_TIME_ZONES[country], month: 'numeric', hour: 'numeric', hourCycle: 'h23' })
+      .formatToParts(new Date(date))
+      .map((p) => [p.type, p.value])
+  );
+  const month = Number(parts.month);
+  const hour = Number(parts.hour);
+  if (!GULF_SUMMER_MONTHS.includes(month)) return { active: false, country_code: country };
+  return {
+    active: true,
+    country_code: country,
+    outdoor_blocked_window: { start_hour: DAYTIME_START_HOUR, end_hour: DAYTIME_END_HOUR },
+    blocking_now: hour >= DAYTIME_START_HOUR && hour < DAYTIME_END_HOUR,
+    message_ar: GULF_HEAT_ADVISORY_AR,
+  };
+}

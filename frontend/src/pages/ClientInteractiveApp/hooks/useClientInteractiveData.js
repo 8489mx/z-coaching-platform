@@ -1,7 +1,7 @@
 import { useState, useEffect, useMemo, useCallback } from 'react';
 import { API_BASE } from '../../../config/api.js';
 import { extractClientFastingProfile } from '../../../utils/seasonalFastingRadar.js';
-import { getPracticalCardioPrescription, CARDIO_TYPES } from '../../../utils/cardioZonesEngine.js';
+import { getPracticalCardioPrescription, CARDIO_TYPES, getGulfHeatAdvisory } from '../../../utils/cardioZonesEngine.js';
 import { enqueueOfflineAction, flushPendingQueue, getQueueSyncStatus, ACTION_TYPES } from '../../../utils/offlineSyncEngine.js';
 import { adaptProgramToInteractiveMeals, adaptSessionToInteractiveWorkout } from '../utils/programAdapters.js';
 import { cacheProgramLocally, getCachedProgram, cacheGymRushCatalogLocally } from '../../../utils/offlineWorkoutSync.js';
@@ -97,6 +97,8 @@ export function useClientInteractiveData() {
   const [progression, setProgression] = useState(null);
   // Today's religious fasting context (server-computed from religion, the calendar and the coach override).
   const [fastingContext, setFastingContext] = useState(null);
+  // Gulf summer heat advisory (country from the server; re-checked on the device clock for the summer window).
+  const [heatCountry, setHeatCountry] = useState(null);
   const [programId, setProgramId] = useState(null);
   const [sessionLogDraft, setSessionLogDraft] = useState({});
   const [sessionLogStatus, setSessionLogStatus] = useState(null);
@@ -344,6 +346,7 @@ export function useClientInteractiveData() {
     }
     if (data.progression) setProgression(data.progression);
     setFastingContext(data.fasting_context || null);
+    setHeatCountry(data.heat_advisory?.country_code || null);
     if (data.program_id) setProgramId(data.program_id);
     if (data.has_program && data.master_program) {
       setClientProgram(data.master_program);
@@ -746,9 +749,11 @@ export function useClientInteractiveData() {
 
   const cardioAdvisories = useMemo(() => {
     const notes = [];
+    const heat = getGulfHeatAdvisory({ country_code: heatCountry });
+    if (heat.active) notes.push(heat.message_ar);
     if (fastingContext?.active && fastingContext.mode === FASTING_MODES.RAMADAN) notes.push(RAMADAN_CARDIO_GUIDANCE_AR);
     return notes;
-  }, [fastingContext]);
+  }, [fastingContext, heatCountry]);
 
   // 16. Consumed Macros Calculation
   const consumedMacros = useMemo(() => {
