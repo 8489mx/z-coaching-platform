@@ -11,6 +11,7 @@ import {
 import defaultMobilityCatalog from '../../../data/mobilityCatalog.json';
 import { arabicSearchMatch } from '../../../utils/searchUtils';
 import { getExerciseDisplayNames } from '../../../utils/exerciseTranslator';
+import { KIDNEY_MAX_PROTEIN_PER_KG } from '../../../config/clinicalLimits';
 import {
   FOOD_DATABASE_LIST,
   CLIENT_BLUEPRINTS,
@@ -33,6 +34,8 @@ export function useCoachEditorData() {
   const [activeSessionIdx, setActiveSessionIdx] = useState(0);
   const [activeWorkspaceTab, setActiveWorkspaceTab] = useState('TRAINING');
   const [notification, setNotification] = useState(null);
+  // Set when the server refuses to publish until the coach confirms the medical review (HTTP 409).
+  const [medicalReviewPrompt, setMedicalReviewPrompt] = useState(null);
   const [selectedWeek, setSelectedWeek] = useState(1);
   const [activeVideoModalEx, setActiveVideoModalEx] = useState(null);
   const [autoRippleEnabled, setAutoRippleEnabled] = useState(true);
@@ -1158,7 +1161,9 @@ export function useCoachEditorData() {
     showToast('تم حذف الحركة من اليوم التدريبي');
   };
 
-  const handleSaveDraft = async (isPublish = false) => {
+  const handleSaveDraft = async (publishArg = false, medicalReviewConfirmed = false) => {
+    // Only an explicit true publishes (an onClick handler would otherwise pass the click event).
+    const isPublish = publishArg === true;
     try {
       // Clinical Safety Verification: Tier CS-0 (Kidney, Hypertension, Asthma)
       const clinicalGuardrails = program?.clinical_guardrails || program?.nutrition?.clinical_guardrails || program?.nutrition?.targets?.clinical_guardrails;
@@ -1179,14 +1184,14 @@ export function useCoachEditorData() {
         })
       );
       const clientWeightKg = Number(program?.client?.weight_kg) || 80;
-      const maxSafeProtein = Number(clinicalGuardrails?.max_protein_g) || Math.round(clientWeightKg * 1.0);
+      const maxSafeProtein = Number(clinicalGuardrails?.max_protein_g) || Math.round(clientWeightKg * KIDNEY_MAX_PROTEIN_PER_KG);
       const targetP = Number(program?.nutrition?.targets?.protein) || 0;
       const mealsP = (program?.nutrition?.meals || []).reduce((sum, m) => sum + (Number(m.macros?.protein) || 0), 0);
       const suppsP = (program?.cardio?.supplements || []).reduce((sum, s) => sum + (Number(s.protein ?? s.p) || 0), 0);
       const currentEffectiveP = Math.max(targetP, mealsP + suppsP);
 
       if (hasKidneyCondition && currentEffectiveP > maxSafeProtein) {
-        clinicalAlerts.push(`• الكلى (KDOQI): البروتين المحدد (${currentEffectiveP} جم) يتجاوز السقف السريري الآمن (${maxSafeProtein} جم بمعدل 1.0 جم/كجم لوزن ${clientWeightKg} كجم).`);
+        clinicalAlerts.push(`• الكلى (KDOQI): البروتين المحدد (${currentEffectiveP} جم) يتجاوز السقف السريري الآمن (${maxSafeProtein} جم بمعدل ${KIDNEY_MAX_PROTEIN_PER_KG} جم/كجم لوزن ${clientWeightKg} كجم).`);
       }
 
       // 2. Hypertension Contraindicated Exercises & RIR Check
@@ -1265,7 +1270,8 @@ export function useCoachEditorData() {
         program_data: { ...program, coach_notes: coachNotes },
         coach_notes: coachNotes,
         publish: isPublish,
-        is_published: isPublish
+        is_published: isPublish,
+        medical_review_confirmed: medicalReviewConfirmed === true
       };
       
       const res = await fetch(`${API_BASE}/api/v1/programs/update-custom`, {
@@ -1274,6 +1280,15 @@ export function useCoachEditorData() {
         body: JSON.stringify(payload)
       });
       const data = await res.json().catch(() => ({}));
+
+      if (res.status === 409 && data.code === 'MEDICAL_REVIEW_CONFIRMATION_REQUIRED') {
+        setMedicalReviewPrompt({ message: data.error, reasons: Array.isArray(data.reasons) ? data.reasons : [] });
+        return;
+      }
+      if (!res.ok) {
+        showToast(data.error || 'تعذر حفظ الخطة، لم يتم النشر', 'error');
+        return;
+      }
 
       if (data.clinical_warning) {
         showToast(data.clinical_warning, 'warning');
@@ -1286,7 +1301,7 @@ export function useCoachEditorData() {
         showToast('تم حفظ تعديلات الخطة بنجاح');
       }
     } catch {
-      showToast(isPublish ? 'تم اعتماد ونشر الخطة بنجاح' : 'تم الحفظ في الذاكرة بنجاح');
+      showToast('تعذر الاتصال بالخادم، لم يتم حفظ أو نشر الخطة', 'error');
     } finally {
       setSaving(false);
       setPublishing(false);
@@ -1295,6 +1310,11 @@ export function useCoachEditorData() {
 
   const handleApproveAndPublish = async () => {
     await handleSaveDraft(true);
+  };
+
+  const confirmMedicalReviewAndPublish = async () => {
+    setMedicalReviewPrompt(null);
+    await handleSaveDraft(true, true);
   };
 
   const filteredQueue = useMemo(() => {
@@ -1434,6 +1454,9 @@ export function useCoachEditorData() {
     handleRemoveMobilityFromSession,
     handleSaveDraft,
     handleApproveAndPublish,
+    medicalReviewPrompt,
+    setMedicalReviewPrompt,
+    confirmMedicalReviewAndPublish,
     filteredQueue,
     displayedQueue,
     urgentCount,

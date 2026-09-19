@@ -6,6 +6,7 @@ import { evaluateIntake } from "z-coaching-intake-decision-engine";
 import { adaptIntakePayloadToCanonicalEngine } from "../../intake-decision-engine/adapters/intake-adapter.js";
 import { IntakeValidationError } from "../../intake-decision-engine/validation/intake-validation-error.js";
 import { buildMasterEngineV2 } from "../../../src/master-engine-v2/index.js";
+import { resolveIntakeMedicalReview, MEDICAL_REVIEW_CONFIRMATION_REQUIRED } from "./program.controller.js";
 import { User, Program, IntakeSubmission } from "../models/index.js";
 import { encryptMedicalData, decryptMedicalData } from "../../utils/crypto.js";
 
@@ -582,7 +583,7 @@ export const generateDraftFromIntake = async (req, res) => {
 export const approveAndPublishIntake = async (req, res) => {
   try {
     const { submission_id } = req.params;
-    const { coach_notes } = req.body;
+    const { coach_notes } = req.body || {};
 
     const submission = await IntakeSubmission.findByPk(submission_id, {
       include: [{ model: User, as: "user" }]
@@ -599,6 +600,15 @@ export const approveAndPublishIntake = async (req, res) => {
 
     if (!program) {
       return res.status(404).json({ error: "لم يتم توليد مسودة خطة لهذا المتدرب بعد" });
+    }
+
+    const medicalReview = await resolveIntakeMedicalReview(submission.user_id);
+    if (medicalReview.required && req.body?.medical_review_confirmed !== true) {
+      return res.status(409).json({
+        code: MEDICAL_REVIEW_CONFIRMATION_REQUIRED,
+        error: "هذا المتدرب يحتاج مراجعة طبية قبل اعتماد الخطة. راجع الحالة مع الطبيب المعالج ثم أكد المراجعة لنشر الخطة.",
+        reasons: medicalReview.reasons,
+      });
     }
 
     program.status = "ACTIVE";

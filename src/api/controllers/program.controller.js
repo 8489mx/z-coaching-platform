@@ -888,6 +888,33 @@ export async function resolveClientClinicalConstraints(userId) {
   }
 }
 
+/**
+ * Whether the client's latest intake requires medical review before a plan may be published
+ * (kidney/liver disease, dangerous symptoms, injury red flags, unstable conditions).
+ */
+export async function resolveIntakeMedicalReview(userId) {
+  try {
+    const answers = await loadLatestIntakeAnswers(userId);
+    if (!answers) return { required: false, reasons: [] };
+    const decision = evaluateIntake(
+      adaptIntakePayloadToCanonicalEngine(structuredClone(answers)),
+      { assessmentDate: new Date().toISOString().split("T")[0] },
+    );
+    const required = decision.plan_status === "MEDICAL_REVIEW_REQUIRED";
+    return {
+      required,
+      reasons: required
+        ? (decision.review_flags || []).filter((f) => f.level === "MEDICAL").map((f) => f.code)
+        : [],
+    };
+  } catch {
+    // An unreadable intake must not silently allow publishing a medically flagged plan.
+    return { required: true, reasons: ["INTAKE_UNREADABLE"] };
+  }
+}
+
+export const MEDICAL_REVIEW_CONFIRMATION_REQUIRED = "MEDICAL_REVIEW_CONFIRMATION_REQUIRED";
+
 export const getActiveProgramByUserId = async (req, res) => {
   try {
     const rawTarget = req.params.user_id || req.params.code || "";
@@ -993,6 +1020,31 @@ export const updateCustomProgram = async (req, res) => {
 
     const shouldPublish = Boolean(is_published || publish);
 
+    // Medical review gate: a plan for a client flagged for medical review is only published after the
+    // coach explicitly confirms the review (medical_review_confirmed: true in the request).
+    let medicalReviewConfirmation = null;
+    if (shouldPublish) {
+      const medicalReview = await resolveIntakeMedicalReview(user.id);
+      if (medicalReview.required && req.body.medical_review_confirmed !== true) {
+        return res.status(409).json({
+          code: MEDICAL_REVIEW_CONFIRMATION_REQUIRED,
+          error: "هذا المتدرب يحتاج مراجعة طبية قبل اعتماد الخطة (أمراض كلى أو كبد أو أعراض خطرة أو إصابة بعلامة تحذير). راجع الحالة مع الطبيب المعالج ثم أكد المراجعة لنشر الخطة.",
+          reasons: medicalReview.reasons,
+        });
+      }
+      if (medicalReview.required) {
+        medicalReviewConfirmation = {
+          confirmed: true,
+          confirmed_by_user_id: req.user?.id ?? null,
+          confirmed_at: new Date().toISOString(),
+          reasons: medicalReview.reasons,
+        };
+      }
+    }
+    if (medicalReviewConfirmation && program_data && typeof program_data === "object") {
+      program_data.medical_review_confirmation = medicalReviewConfirmation;
+    }
+
     // Clinical Guard: Comprehensive Tier CS-0 Check during Coach Manual Updates (Kidney, Hypertension, Asthma, Diabetes)
     const clinicalWarnings = [];
     const userConditions = [
@@ -1002,7 +1054,7 @@ export const updateCustomProgram = async (req, res) => {
       ...(Array.isArray(program_data?.client?.medical_conditions) ? program_data.client.medical_conditions : []),
     ];
 
-    // 1. Kidney Disease Protein Cap Check (KDOQI 1.0 g/kg)
+    // 1. Kidney Disease Protein Cap Check (KDOQI, CLINICAL_GUIDELINES.KIDNEY.MAX_PROTEIN_PER_KG)
     const hasKidneyCondition = Boolean(
       program_data?.clinical_guardrails?.kidney_protein_capped ||
       program_data?.nutrition?.targets?.clinical_guardrails?.kidney_protein_capped ||
@@ -1017,7 +1069,7 @@ export const updateCustomProgram = async (req, res) => {
       const weight = Number(user.weight || user.weight_kg || program_data?.client?.weight_kg || 80);
       const maxAllowedProtein = Number(program_data?.clinical_guardrails?.max_protein_g) ||
         Number(program_data?.nutrition?.targets?.clinical_guardrails?.max_protein_g) ||
-        Math.round(weight * (CLINICAL_GUIDELINES?.KIDNEY?.MAX_PROTEIN_PER_KG || 1.0));
+        Math.round(weight * CLINICAL_GUIDELINES.KIDNEY.MAX_PROTEIN_PER_KG);
 
       const targetProtein = Number(program_data?.nutrition?.targets?.protein || program_data?.nutrition?.targets?.protein_g || 0);
       const mealsProtein = (program_data?.nutrition?.meals || []).reduce((sum, m) => sum + (Number(m.macros?.protein) || 0), 0);
@@ -1025,7 +1077,7 @@ export const updateCustomProgram = async (req, res) => {
       const effectiveProtein = Math.max(targetProtein, mealsProtein + suppsProtein);
 
       if (effectiveProtein > maxAllowedProtein) {
-        clinicalWarnings.push(`تنبيه سريري (كلى): تم رصد تجاوز يدوي لسقف البروتين الآمن لمرضى القصور الكلوي (البروتين المسجل: ${effectiveProtein} جم، الحد الأقصى الآمن: ${maxAllowedProtein} جم بمعدل 1.0 جم/كجم بناءً على KDOQI).`);
+        clinicalWarnings.push(`تنبيه سريري (كلى): تم رصد تجاوز يدوي لسقف البروتين الآمن لمرضى القصور الكلوي (البروتين المسجل: ${effectiveProtein} جم، الحد الأقصى الآمن: ${maxAllowedProtein} جم بمعدل ${CLINICAL_GUIDELINES.KIDNEY.MAX_PROTEIN_PER_KG} جم/كجم بناءً على KDOQI).`);
         if (typeof program_data === "object" && program_data !== null) {
           program_data.clinical_guardrails = {
             ...(program_data.clinical_guardrails || {}),

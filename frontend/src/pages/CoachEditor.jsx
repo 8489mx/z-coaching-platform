@@ -404,6 +404,39 @@ export default function CoachEditor() {
           />
         )}
 
+        {/* Medical review confirmation before publishing (server returns 409 until confirmed) */}
+        {editor.medicalReviewPrompt && (
+          <div
+            style={{ position: 'fixed', inset: 0, background: 'rgba(15, 23, 42, 0.55)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 99998, padding: '16px' }}
+            onClick={() => editor.setMedicalReviewPrompt(null)}
+            dir="rtl"
+          >
+            <div
+              onClick={(e) => e.stopPropagation()}
+              style={{ background: '#FFFFFF', borderRadius: '16px', maxWidth: '440px', width: '100%', padding: '18px 20px', boxShadow: '0 20px 40px rgba(15, 23, 42, 0.18)' }}
+            >
+              <strong style={{ display: 'block', fontSize: '14px', color: '#991B1B', marginBottom: '8px' }}>مراجعة طبية مطلوبة قبل الاعتماد</strong>
+              <p style={{ fontSize: '12px', color: '#334155', lineHeight: 1.6, margin: '0 0 14px 0' }}>{editor.medicalReviewPrompt.message}</p>
+              <div style={{ display: 'flex', gap: '8px' }}>
+                <button
+                  type="button"
+                  onClick={editor.confirmMedicalReviewAndPublish}
+                  style={{ flex: 1, padding: '9px 12px', borderRadius: '10px', border: 'none', background: '#991B1B', color: '#FFFFFF', fontWeight: 800, fontSize: '12px', cursor: 'pointer' }}
+                >
+                  راجعت الحالة مع الطبيب، اعتمد الخطة
+                </button>
+                <button
+                  type="button"
+                  onClick={() => editor.setMedicalReviewPrompt(null)}
+                  style={{ flex: 1, padding: '9px 12px', borderRadius: '10px', border: '1px solid #CBD5E1', background: '#FFFFFF', color: '#0F172A', fontWeight: 700, fontSize: '12px', cursor: 'pointer' }}
+                >
+                  إلغاء
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* Floating Notification Toast */}
         {notification && (
           <div 

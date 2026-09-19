@@ -424,7 +424,7 @@ export function CoachHeaderBar({
         <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
           <button
             type="button"
-            onClick={handleSaveDraft}
+            onClick={() => handleSaveDraft(false)}
             disabled={saving}
             style={{
               height: '30px',
