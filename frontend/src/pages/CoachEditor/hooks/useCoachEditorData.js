@@ -36,6 +36,8 @@ export function useCoachEditorData() {
   const [notification, setNotification] = useState(null);
   // Set when the server refuses to publish until the coach confirms the medical review (HTTP 409).
   const [medicalReviewPrompt, setMedicalReviewPrompt] = useState(null);
+  // Client's logged progression (per-exercise history and next targets) for the coach timeline.
+  const [clientProgression, setClientProgression] = useState(null);
   const [selectedWeek, setSelectedWeek] = useState(1);
   const [activeVideoModalEx, setActiveVideoModalEx] = useState(null);
   const [autoRippleEnabled, setAutoRippleEnabled] = useState(true);
@@ -187,6 +189,7 @@ export function useCoachEditorData() {
       const res = await fetch(`${API_BASE}/api/v1/programs/active/${targetCode}`);
       if (res.ok) {
         const data = await res.json();
+        setClientProgression(data.progression || null);
         if (data.master_program && (data.master_program.nutrition || data.master_program.training || data.master_program.training_program)) {
           const userMeta = data.user || {};
           const mapped = mapMasterToEditor(data.master_program, userMeta);
@@ -1456,6 +1459,7 @@ export function useCoachEditorData() {
     handleApproveAndPublish,
     medicalReviewPrompt,
     setMedicalReviewPrompt,
+    clientProgression,
     confirmMedicalReviewAndPublish,
     filteredQueue,
     displayedQueue,

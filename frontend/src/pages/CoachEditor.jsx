@@ -263,6 +263,7 @@ export default function CoachEditor() {
             handleDuplicateSession={handleDuplicateSession}
             activeSessionDemand={activeSessionDemand}
             weeklyVolumeAudit={weeklyVolumeAudit}
+            clientProgression={editor.clientProgression}
           />
         )}
 

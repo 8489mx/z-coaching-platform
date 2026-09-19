@@ -11,6 +11,7 @@ import {
   Copy
 } from 'lucide-react';
 import { getExerciseDisplayNames } from '../../../utils/exerciseTranslator';
+import ProgressionTimeline from './ProgressionTimeline';
 
 export function CoachTrainingTab({
   program,
@@ -31,7 +32,8 @@ export function CoachTrainingTab({
   handleMoveExercise,
   handleDuplicateSession,
   activeSessionDemand,
-  weeklyVolumeAudit
+  weeklyVolumeAudit,
+  clientProgression = null
 }) {
   const [showAllVolumeLandmarks, setShowAllVolumeLandmarks] = React.useState(false);
 
@@ -597,6 +599,7 @@ export function CoachTrainingTab({
                   <Trash2 size={13} />
                 </button>
               </div>
+              <ProgressionTimeline entry={clientProgression?.exercises?.[ex.code || ex.id]} />
             </div>
           );
         })}
