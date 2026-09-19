@@ -11,6 +11,7 @@ export default function MealsTab({
   consumedMacros,
   targetMacros,
   meals,
+  fastingContext = null,
   handleToggleMealCompleted,
   setActivePrepItem,
   setActiveSwapItem,
@@ -144,6 +145,18 @@ export default function MealsTab({
 
 
 
+      {/* Religious fasting banner (Ramadan or a Coptic fast) */}
+      {fastingContext?.active && (
+        <div style={{ background: '#F5F3FF', border: '1px solid #DDD6FE', borderRadius: '14px', padding: '12px 14px' }}>
+          <strong style={{ display: 'block', fontSize: '0.84rem', color: '#5B21B6', fontWeight: 800, marginBottom: '4px' }}>
+            {fastingContext.period_name_ar || 'وضع الصيام مفعل'}
+          </strong>
+          <span style={{ fontSize: '0.74rem', color: '#4C1D95', lineHeight: 1.7 }}>
+            {fastingContext.reason_ar}
+          </span>
+        </div>
+      )}
+
       {/* Meals List */}
       {meals.map((meal) => (
         <div 
@@ -255,6 +268,16 @@ export default function MealsTab({
                       <span style={{ margin: '0 4px', color: '#CBD5E1' }}>•</span>
                       <span>F: {item.f}g</span>
                     </div>
+                    {item.fasting_substituted_from && (
+                      <div style={{ marginTop: '3px', fontSize: '0.68rem', color: '#6D28D9', fontWeight: 600 }}>
+                        بديل صيامي بدل {item.fasting_substituted_from.name}
+                      </div>
+                    )}
+                    {item.fasting_note_ar && (
+                      <div style={{ marginTop: '3px', fontSize: '0.68rem', color: item.fasting_blocked ? '#B91C1C' : '#92400E', fontWeight: 600 }}>
+                        {item.fasting_note_ar}
+                      </div>
+                    )}
                   </div>
 
                   {/* Clean Action Buttons */}

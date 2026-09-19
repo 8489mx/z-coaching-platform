@@ -56,6 +56,7 @@ export default function ClientInteractiveApp() {
     setSelectedDay,
     meals,
     setMeals,
+    fastingContext,
     targetMacros,
     consumedMacros,
     supplementsList,
@@ -78,6 +79,7 @@ export default function ClientInteractiveApp() {
     prehabCompleted,
     setPrehabCompleted,
     cardioPrescription,
+    cardioAdvisories,
     progression,
     isDeloadActive,
     sessionLogDraft,
@@ -124,6 +126,7 @@ export default function ClientInteractiveApp() {
               consumedMacros={consumedMacros}
               targetMacros={targetMacros}
               meals={meals}
+              fastingContext={fastingContext}
               handleToggleMealCompleted={handleToggleMealCompleted}
               setActivePrepItem={setActivePrepItem}
               setActiveSwapItem={setActiveSwapItem}
@@ -145,6 +148,7 @@ export default function ClientInteractiveApp() {
               prehabCompleted={prehabCompleted}
               setPrehabCompleted={setPrehabCompleted}
               cardioPrescription={cardioPrescription}
+              cardioAdvisories={cardioAdvisories}
               setExerciseSwapTarget={setExerciseSwapTarget}
               handleToggleExerciseCompleted={handleToggleExerciseCompleted}
               setActiveVideoExercise={setActiveVideoExercise}
@@ -194,6 +198,7 @@ export default function ClientInteractiveApp() {
           onClose={() => setActiveSwapItem(null)}
           onExecuteSwap={handleExecuteSwap}
           clinicalProfile={clientData?.clinicalProfile}
+          fastingContext={fastingContext}
         />
 
         {/* ZERO-CALORIE FREE BEVERAGES & SEASONINGS MODAL */}

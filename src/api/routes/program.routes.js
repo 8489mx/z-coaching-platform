@@ -16,6 +16,7 @@ import {
   getExercisesCatalog,
   getCheckinHistory,
   getSwapCandidatesHandler,
+  setFastingOverride,
 } from "../controllers/program.controller.js";
 import { requireAuth } from "../middlewares/auth.middleware.js";
 
@@ -28,6 +29,7 @@ router.post("/generate-from-submission/:submission_id", requireAuth, generatePro
 router.post("/generate-for-client/:user_id", requireAuth, generateProgramForClient);
 router.get("/", requireAuth, getUserPrograms);
 router.get("/active/:user_id", requireAuth, getActiveProgramByUserId);
+router.put("/fasting-override", requireAuth, setFastingOverride);
 router.get("/mobile/:code", requireAuth, getActiveProgramByUserId);
 
 // Custom Program Editing & Catalog

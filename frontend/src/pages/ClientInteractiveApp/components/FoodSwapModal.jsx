@@ -2,12 +2,14 @@ import React, { useState } from 'react';
 import { X } from 'lucide-react';
 import { FOOD_DATABASE, calculateDynamicFoodSwap } from '../../../utils/foodSwapEngine';
 import { arabicSearchMatch } from '../../../utils/searchUtils';
+import { isFoodAllowedDuringFast } from '../../../utils/fastingCalendarEngine';
 
 export default function FoodSwapModal({
   activeSwapItem,
   onClose,
   onExecuteSwap,
-  clinicalProfile
+  clinicalProfile,
+  fastingContext = null
 }) {
   const [clientSwapSearch, setClientSwapSearch] = useState('');
 
@@ -117,6 +119,8 @@ export default function FoodSwapModal({
               if (f.code !== f.code.toUpperCase()) return false;
               if (f.code === currentItemCode) return false;
               if (f.macro_type !== currentMacroType) return false;
+              // During a religious fast only fast-compatible foods are offered.
+              if (fastingContext?.active && !isFoodAllowedDuringFast(f, fastingContext)) return false;
               if (clientSwapSearch.trim()) {
                 const matchNameAr = arabicSearchMatch(f.name_ar, clientSwapSearch);
                 const matchNameEn = arabicSearchMatch(f.name_en, clientSwapSearch);

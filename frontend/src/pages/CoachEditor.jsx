@@ -9,6 +9,7 @@ import {
   CoachHeaderBar,
   CoachTrainingTab,
   CoachCardioHabitsTab,
+  CoachFastingToggle,
   CoachSwapFoodModal,
   CoachAddFoodModal,
   CoachSwapExerciseModal,
@@ -268,6 +269,13 @@ export default function CoachEditor() {
         )}
 
         {/* 4. TAB 2: NUTRITION & MACROS */}
+        {activeWorkspaceTab === 'NUTRITION' && (
+          <CoachFastingToggle
+            fastingContext={editor.clientFasting}
+            onChange={editor.updateFastingOverride}
+            saving={editor.fastingSaving}
+          />
+        )}
         {activeWorkspaceTab === 'NUTRITION' && (
           <CoachEditorNutritionTab
             {...editor}

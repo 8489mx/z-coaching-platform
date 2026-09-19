@@ -26,6 +26,7 @@ export default function WorkoutTab({
   prehabCompleted,
   setPrehabCompleted,
   cardioPrescription,
+  cardioAdvisories = [],
   setExerciseSwapTarget,
   handleToggleExerciseCompleted,
   setActiveVideoExercise,
@@ -696,6 +697,11 @@ export default function WorkoutTab({
           <p style={{ margin: 0, fontSize: '0.72rem', color: '#475569' }}>
             <strong>الجهاز المقترح:</strong> {cardioPrescription.suggested_settings_ar || cardioPrescription.equipment_recommendation}
           </p>
+          {cardioAdvisories.map((note) => (
+            <p key={note} style={{ margin: '8px 0 0', fontSize: '0.72rem', color: '#92400E', background: '#FFFBEB', border: '1px solid #FDE68A', borderRadius: '10px', padding: '8px 10px', lineHeight: 1.7 }}>
+              {note}
+            </p>
+          ))}
         </div>
       )}
 

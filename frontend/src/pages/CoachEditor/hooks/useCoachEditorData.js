@@ -38,6 +38,9 @@ export function useCoachEditorData() {
   const [medicalReviewPrompt, setMedicalReviewPrompt] = useState(null);
   // Client's logged progression (per-exercise history and next targets) for the coach timeline.
   const [clientProgression, setClientProgression] = useState(null);
+  // Client's religious fasting state today and the coach override (AUTO / OFF / FORCE_ON).
+  const [clientFasting, setClientFasting] = useState(null);
+  const [fastingSaving, setFastingSaving] = useState(false);
   const [selectedWeek, setSelectedWeek] = useState(1);
   const [activeVideoModalEx, setActiveVideoModalEx] = useState(null);
   const [autoRippleEnabled, setAutoRippleEnabled] = useState(true);
@@ -184,12 +187,14 @@ export function useCoachEditorData() {
     try {
       setLoading(true);
       const targetCode = String(code || '1');
+      setClientFasting(null);
 
       // 1. Check if we have custom saved program in DB
       const res = await fetch(`${API_BASE}/api/v1/programs/active/${targetCode}`);
       if (res.ok) {
         const data = await res.json();
         setClientProgression(data.progression || null);
+        setClientFasting(data.fasting_context || null);
         if (data.master_program && (data.master_program.nutrition || data.master_program.training || data.master_program.training_program)) {
           const userMeta = data.user || {};
           const mapped = mapMasterToEditor(data.master_program, userMeta);
@@ -388,6 +393,28 @@ export function useCoachEditorData() {
       training: resolvedTraining,
       cardio: resolvedCardio
     };
+  };
+
+  const updateFastingOverride = async (override) => {
+    setFastingSaving(true);
+    try {
+      const res = await fetch(`${API_BASE}/api/v1/programs/fasting-override`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ client_code: program?.client?.client_code || clientCodeParam, override }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        showToast(data.error || 'تعذر تعديل وضع الصيام', 'error');
+        return;
+      }
+      setClientFasting(data.fasting_context || null);
+      showToast('تم تحديث وضع الصيام للمتدرب', 'success');
+    } catch {
+      showToast('تعذر الاتصال بالخادم، لم يتغير وضع الصيام', 'error');
+    } finally {
+      setFastingSaving(false);
+    }
   };
 
   const showToast = (msg, type = 'success') => {
@@ -1460,6 +1487,9 @@ export function useCoachEditorData() {
     medicalReviewPrompt,
     setMedicalReviewPrompt,
     clientProgression,
+    clientFasting,
+    fastingSaving,
+    updateFastingOverride,
     confirmMedicalReviewAndPublish,
     filteredQueue,
     displayedQueue,

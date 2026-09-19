@@ -17,6 +17,7 @@ import { calculateSmartSwap } from "../../../src/nutrition-swap-engine-v2/calcul
 import { listSmartSwapCandidates, getSmartFoodRegistryItem, SMART_SWAP_REGISTRY } from "../../../src/nutrition-swap-engine-v2/swap-pool-registry.js";
 import { CLINICAL_GUIDELINES } from "../../config/clinical-guidelines.js";
 import { loadProgressionState } from "../services/progressionService.js";
+import { resolveFastingContext, FASTING_OVERRIDES } from "../../execution-engines/fasting-calendar-engine.js";
 import { calculateSessionDemand, auditWeeklyMuscleVolume, auditDeficitVolumeShield, evaluateProteinSparingRequirement } from "../utils/trainingNutritionCoupling.js";
 
 const __filename = fileURLToPath(import.meta.url);
@@ -842,6 +843,66 @@ export async function resolveClientIsFemale(userId) {
   }
 }
 
+const COUNTRY_TIME_ZONES = Object.freeze({
+  EG: "Africa/Cairo", SA: "Asia/Riyadh", AE: "Asia/Dubai", KW: "Asia/Kuwait", QA: "Asia/Qatar", BH: "Asia/Bahrain", OM: "Asia/Muscat",
+});
+
+/** Country of a client from the phone number (international prefix, or local Egyptian 01 / Gulf 05 formats). */
+export function resolveCountryFromPhone(phone) {
+  const digits = String(phone || "").replace(/[^\d+]/g, "").replace(/^00/, "+");
+  const prefixes = [["+20", "EG"], ["+966", "SA"], ["+971", "AE"], ["+965", "KW"], ["+974", "QA"], ["+973", "BH"], ["+968", "OM"]];
+  for (const [prefix, country] of prefixes) if (digits.startsWith(prefix)) return country;
+  if (/^01\d{9}$/.test(digits)) return "EG";
+  if (/^05\d{8}$/.test(digits)) return "SA";
+  return null;
+}
+
+/**
+ * Today's religious fasting context for a client: religion and Christian fasting style from the latest
+ * intake, the coach override stored in program_data.fasting_override, and the client's time zone.
+ */
+export async function resolveClientFastingContext(user, programData = {}, now = new Date()) {
+  const answers = (await loadLatestIntakeAnswers(user.id).catch(() => null)) || {};
+  const country = resolveCountryFromPhone(user.phone_number);
+  const override = Object.values(FASTING_OVERRIDES).includes(programData?.fasting_override) ? programData.fasting_override : FASTING_OVERRIDES.AUTO;
+  return {
+    ...resolveFastingContext({
+      religion: answers.religion,
+      christian_fasting_style: answers.christianFastingStyle,
+      override,
+      date: now,
+      time_zone: COUNTRY_TIME_ZONES[country] || COUNTRY_TIME_ZONES.EG,
+    }),
+    religion: answers.religion || null,
+    country_code: country,
+  };
+}
+
+/** Coach toggle: AUTO (calendar), OFF (client not fasting: illness, travel...), FORCE_ON. Coaches/admins only. */
+export const setFastingOverride = async (req, res) => {
+  try {
+    const requester = req.user ? await User.findByPk(req.user.id) : null;
+    if (!requester || !["COACH", "ADMIN"].includes(requester.role)) {
+      return res.status(403).json({ error: "تعديل وضع الصيام متاح للكوتش فقط" });
+    }
+    const { client_code, override } = req.body || {};
+    if (!Object.values(FASTING_OVERRIDES).includes(override)) {
+      return res.status(400).json({ error: "قيمة غير صالحة. المسموح: AUTO أو OFF أو FORCE_ON" });
+    }
+    const user = await User.findOne({ where: { client_code: String(client_code || "").replace(/^#+/, "").trim() } });
+    if (!user) return res.status(404).json({ error: "المتدرب غير موجود" });
+    const program = await Program.findOne({ where: { user_id: user.id }, order: [["id", "DESC"]] });
+    if (!program) return res.status(404).json({ error: "لا توجد خطة لهذا المتدرب" });
+    program.program_data = { ...(program.program_data || {}), fasting_override: override };
+    if (typeof program.changed === "function") program.changed("program_data", true);
+    await program.save();
+    return res.status(200).json({ fasting_override: override, fasting_context: await resolveClientFastingContext(user, program.program_data) });
+  } catch (err) {
+    console.error("setFastingOverride error:", err);
+    return res.status(500).json({ error: "فشل تعديل وضع الصيام" });
+  }
+};
+
 export async function resolveClientBedtimeHour(userId) {
   try {
     const answers = await loadLatestIntakeAnswers(userId);
@@ -1006,6 +1067,7 @@ export const getActiveProgramByUserId = async (req, res) => {
       lifestyle: { bedtime_hour: await resolveClientBedtimeHour(user.id) },
       clinical_constraints: await resolveClientClinicalConstraints(user.id),
       progression: await loadProgressionState(user.id),
+      fasting_context: await resolveClientFastingContext(user, program.program_data),
     });
   } catch (err) {
     console.error("getActiveProgramByUserId error:", err);
@@ -1270,6 +1332,11 @@ export const updateCustomProgram = async (req, res) => {
       });
     } else {
       if (program_data) {
+        // The coach's fasting toggle lives in program_data but is not part of the editor's plan object.
+        const previousOverride = program.program_data?.fasting_override;
+        if (previousOverride && typeof program_data === "object" && program_data.fasting_override === undefined) {
+          program_data.fasting_override = previousOverride;
+        }
         program.program_data = program_data;
       }
       if (shouldPublish) {

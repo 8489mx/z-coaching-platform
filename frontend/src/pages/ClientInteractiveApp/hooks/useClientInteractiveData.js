@@ -6,6 +6,7 @@ import { enqueueOfflineAction, flushPendingQueue, getQueueSyncStatus, ACTION_TYP
 import { adaptProgramToInteractiveMeals, adaptSessionToInteractiveWorkout } from '../utils/programAdapters.js';
 import { cacheProgramLocally, getCachedProgram, cacheGymRushCatalogLocally } from '../../../utils/offlineWorkoutSync.js';
 import { applyDeloadToSession, EFFORT_LEVELS } from '../../../utils/progressionEngine.js';
+import { applyFastingToMeals, FASTING_MODES, RAMADAN_CARDIO_GUIDANCE_AR } from '../../../utils/fastingCalendarEngine.js';
 
 /** Rep range of a client exercise from its prescription ("8-10" fallback). */
 function resolveRepRange(ex) {
@@ -94,6 +95,8 @@ export function useClientInteractiveData() {
   const [clientProgram, setClientProgram] = useState(null);
   // Progression (server-computed from workout logs) and this session's logging draft.
   const [progression, setProgression] = useState(null);
+  // Today's religious fasting context (server-computed from religion, the calendar and the coach override).
+  const [fastingContext, setFastingContext] = useState(null);
   const [programId, setProgramId] = useState(null);
   const [sessionLogDraft, setSessionLogDraft] = useState({});
   const [sessionLogStatus, setSessionLogStatus] = useState(null);
@@ -340,6 +343,7 @@ export function useClientInteractiveData() {
       }));
     }
     if (data.progression) setProgression(data.progression);
+    setFastingContext(data.fasting_context || null);
     if (data.program_id) setProgramId(data.program_id);
     if (data.has_program && data.master_program) {
       setClientProgram(data.master_program);
@@ -733,9 +737,22 @@ export function useClientInteractiveData() {
     return [];
   }, [clientProgram]);
 
+  // 15b. Fasting view of the day's meals: applied at display time so the stored plan, per-day cache,
+  // completion toggles and swaps keep working on the original items (ids are preserved).
+  const displayedMeals = useMemo(
+    () => applyFastingToMeals(meals, fastingContext, clientData?.clinicalProfile || {}),
+    [meals, fastingContext, clientData?.clinicalProfile]
+  );
+
+  const cardioAdvisories = useMemo(() => {
+    const notes = [];
+    if (fastingContext?.active && fastingContext.mode === FASTING_MODES.RAMADAN) notes.push(RAMADAN_CARDIO_GUIDANCE_AR);
+    return notes;
+  }, [fastingContext]);
+
   // 16. Consumed Macros Calculation
   const consumedMacros = useMemo(() => {
-    const acc = meals.reduce((mealAcc, meal) => {
+    const acc = displayedMeals.reduce((mealAcc, meal) => {
       if (meal.completed) {
         (meal.items || []).forEach(item => {
           mealAcc.p += Number(item.p || 0);
@@ -757,7 +774,7 @@ export function useClientInteractiveData() {
     });
 
     return acc;
-  }, [meals, supplementsList, supplementsTaken]);
+  }, [displayedMeals, supplementsList, supplementsTaken]);
 
   const syncStatus = getQueueSyncStatus(offlineQueue);
 
@@ -864,8 +881,9 @@ export function useClientInteractiveData() {
     setSelectedDay,
 
     // Nutrition
-    meals,
+    meals: displayedMeals,
     setMeals,
+    fastingContext,
     targetMacros,
     consumedMacros,
     supplementsList,
@@ -901,6 +919,7 @@ export function useClientInteractiveData() {
     prehabCompleted,
     setPrehabCompleted,
     cardioPrescription,
+    cardioAdvisories,
     setCardioPrescription
   };
 }
