@@ -111,18 +111,5 @@ export function evaluateDeloadNeed({
   };
 }
 
-export function compileDeloadSession(workoutSession) {
-  if (!workoutSession || !workoutSession.exercises) return workoutSession;
-  const adjustedExercises = workoutSession.exercises.map((ex) => ({
-    ...ex,
-    sets: Math.max(1, Math.round(ex.sets * 0.6)),
-    target_rir: Math.max((ex.target_rir || 2) + 2, 4),
-    cue: `[أسبوع استشفاء] أداء سلس بتركيز حركي كامل دون الوصول للإنهاك.`
-  }));
-  return {
-    ...workoutSession,
-    is_deload: true,
-    title_ar: `${workoutSession.title_ar || 'تمرين اليوم'} (أسبوع الاستشفاء - Deload)`,
-    exercises: adjustedExercises
-  };
-}
+// The deload session transform lives in the unified progression engine (same numbers: -40% sets, RIR >= 4).
+export { applyDeloadToSession as compileDeloadSession } from '../../frontend/src/utils/progressionEngine.js';
