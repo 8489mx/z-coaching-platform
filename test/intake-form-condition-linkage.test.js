@@ -86,3 +86,31 @@ test('recomposition from the form uses a 10% deficit, fat loss keeps 20%', () =>
   assert.equal(recomp.target_calories, Math.round(recomp.tdee * 0.9));
   assert.equal(cut.target_calories, Math.round(cut.tdee * 0.8));
 });
+
+test('every form option for goal, environment, meals and sport is accepted on submit (no 400)', () => {
+  const cases = [
+    { primary_goal: 'general_fitness' }, { primary_goal: 'lean_bulk' }, { training_environment: 'home_gym' },
+    { meal_structure: { meals_count: '4_to_5_meals', intermittent_fasting: 'none' } },
+    ...['football_padel', 'swimming', 'running_cardio', 'martial_arts', 'crossfit'].map((sport) => ({
+      training_logistics: { days_per_week: 4, experience_level: 'intermediate', has_other_sports: true, sports_name: sport, hours_per_week: '5' },
+    })),
+  ];
+  for (const overrides of cases) {
+    const answers = formAnswers([], overrides);
+    assert.doesNotThrow(() => adaptIntakePayloadToCanonicalEngine({ answers: structuredClone(answers) }), JSON.stringify(overrides));
+    assert.ok(build(answers).training_program.total_weeks > 0, JSON.stringify(overrides));
+  }
+});
+
+test('injury pain that does not settle with rest is a red flag for medical review', () => {
+  const injured = (pain_relieved_by_rest) => formAnswers([], { injuries_map: { has_injuries: true, selected_areas: ['knee'], injury_nature: 'chronic', pain_relieved_by_rest } });
+  assert.equal(build(injured(true)).intake_decision.plan_status, 'COACH_REVIEW_REQUIRED');
+  assert.equal(build(injured(false)).intake_decision.plan_status, 'MEDICAL_REVIEW_REQUIRED');
+});
+
+test('post-bariatric clients get at least 5 small meals and never an auto fasting protocol', () => {
+  const answers = formAnswers(['bariatric_surgery'], { meal_structure: { meals_count: '3_meals', intermittent_fasting: '16_8' } });
+  const targets = build(answers).nutrition_program.targets;
+  assert.ok(targets.meals_count >= 5);
+  assert.notEqual(targets.diet_framework, 'INTERMITTENT_FASTING');
+});
