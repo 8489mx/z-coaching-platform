@@ -851,6 +851,48 @@ export async function resolveClientPrimaryGoal(userId) {
   }
 }
 
+/**
+ * Food-relevant clinical constraints from the client's latest intake, for the client app's swap engine
+ * (isFoodClinicallySafe): favism/G6PD, gout, celiac, lactose, diabetes, IBS/GI, bariatric surgery and the
+ * strict allergy list. Null when no intake is available.
+ */
+export function deriveClinicalConstraints(answers) {
+  if (!answers || typeof answers !== "object") return null;
+  const med = answers.medical_conditions && typeof answers.medical_conditions === "object" && !Array.isArray(answers.medical_conditions)
+    ? answers.medical_conditions
+    : {};
+  const selected = new Set((Array.isArray(med.selected) ? med.selected : []).map((s) => String(s).toLowerCase()));
+  const allergies = (Array.isArray(answers.strict_allergies) ? answers.strict_allergies : [])
+    .map((a) => String(a).toLowerCase())
+    .filter((a) => a && a !== "none");
+  return {
+    is_g6pd: selected.has("favism_g6pd") || med.favism_g6pd === true,
+    is_gout: selected.has("gout") || med.gout === true,
+    is_celiac: allergies.includes("gluten_celiac"),
+    is_lactose_intolerant: allergies.includes("dairy_lactose"),
+    is_diabetic: selected.has("diabetes") || med.diabetes?.uses_insulin === true,
+    is_ibs: selected.has("gi_tract"),
+    is_bariatric: selected.has("bariatric_surgery") || med.bariatric?.is_operated === true,
+    allergies,
+  };
+}
+
+export async function resolveClientClinicalConstraints(userId) {
+  try {
+    const submission = await IntakeSubmission.findOne({
+      where: { user_id: userId },
+      order: [["id", "DESC"]],
+      attributes: ["answers"],
+    });
+    let answers = submission?.answers;
+    if (typeof answers === "string") answers = JSON.parse(answers);
+    if (answers && answers._isEncrypted && answers.data) answers = decryptMedicalData(answers.data);
+    return deriveClinicalConstraints(answers);
+  } catch {
+    return null;
+  }
+}
+
 export const getActiveProgramByUserId = async (req, res) => {
   try {
     const rawTarget = req.params.user_id || req.params.code || "";
@@ -925,6 +967,7 @@ export const getActiveProgramByUserId = async (req, res) => {
       user: program.user || user,
       master_program: program.program_data,
       lifestyle: { bedtime_hour: await resolveClientBedtimeHour(user.id) },
+      clinical_constraints: await resolveClientClinicalConstraints(user.id),
     });
   } catch (err) {
     console.error("getActiveProgramByUserId error:", err);

@@ -293,6 +293,9 @@ export function useClientInteractiveData() {
         return s && !s.includes('لا يوجد') && !s.includes('سليم') && !s.includes('متابعة سريرية');
       });
 
+      // Intake-derived constraints sent by the API (GET active program); string matching above stays as a fallback.
+      const constraints = data.clinical_constraints || {};
+
       const clientOrUser = data.user || data.master_program?.client || {};
       const extractedFasting = extractClientFastingProfile(clientOrUser, clientOrUser.answers);
 
@@ -307,12 +310,14 @@ export function useClientInteractiveData() {
         sleep_schedule: { bedtime_hour: data.lifestyle?.bedtime_hour || prev.sleep_schedule?.bedtime_hour || null },
         clinicalProfile: {
           ...prev.clinicalProfile,
-          is_celiac: isCeliac,
-          is_g6pd: isG6pd,
-          is_lactose_intolerant: isLactose,
-          is_gout: isGout,
-          is_bariatric: isBariatric,
-          allergies: rawAllergies,
+          is_celiac: isCeliac || constraints.is_celiac === true,
+          is_g6pd: isG6pd || constraints.is_g6pd === true,
+          is_lactose_intolerant: isLactose || constraints.is_lactose_intolerant === true,
+          is_gout: isGout || constraints.is_gout === true,
+          is_diabetic: constraints.is_diabetic === true,
+          is_ibs: constraints.is_ibs === true,
+          is_bariatric: isBariatric || constraints.is_bariatric === true,
+          allergies: [...rawAllergies, ...(Array.isArray(constraints.allergies) ? constraints.allergies : [])],
           medications: rawMedications,
           takes_thyroid_med: takesThyroidMed,
           medical_conditions: prehabConditions,
