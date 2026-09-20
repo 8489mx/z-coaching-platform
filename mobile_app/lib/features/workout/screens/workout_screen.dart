@@ -37,115 +37,29 @@ class _WorkoutScreenState extends State<WorkoutScreen> {
   void _loadWorkoutSessions() {
     final cached = widget.storage.getCachedActiveProgram();
     final loaded = _workoutService.getSessionsFromProgram(cached);
-
-    if (loaded.isNotEmpty) {
-      _sessions = loaded;
-    } else {
-      // جلسات افتراضية احترافية
-      _sessions = [
-        WorkoutSession(
-          id: 's1',
-          dayName: 'اليوم الأول: دفع وصدر وأكتاف أمامية',
-          warmupProtocol: 'إحماء عام 5 دقائق دراجة + إطالات ديناميكية لعضلات الصدر وروتاتور كاف',
-          exercises: [
-            Exercise(
-              id: 'ex1',
-              name: 'باربل بنش برس مستوي (Barbell Bench Press)',
-              targetSets: 4,
-              targetReps: '6-8',
-              restSeconds: 120,
-              safetyNote: 'تثبيت لوحي الكتف للخلف والأسفل والنزول المتحكم به حتى منتصف الصدر',
-              sets: [
-                WorkoutSet(setNumber: 1, targetReps: '8'),
-                WorkoutSet(setNumber: 2, targetReps: '8'),
-                WorkoutSet(setNumber: 3, targetReps: '6-8'),
-                WorkoutSet(setNumber: 4, targetReps: '6-8'),
-              ],
-            ),
-            Exercise(
-              id: 'ex2',
-              name: 'ضغط دمبل مائل عالي (Incline DB Press)',
-              targetSets: 3,
-              targetReps: '8-10',
-              restSeconds: 90,
-              safetyNote: 'زاوية المقعد 30 درجة لتركيز الحمل على الألياف الترقوية العلوية',
-              sets: [
-                WorkoutSet(setNumber: 1, targetReps: '10'),
-                WorkoutSet(setNumber: 2, targetReps: '10'),
-                WorkoutSet(setNumber: 3, targetReps: '8-10'),
-              ],
-            ),
-            Exercise(
-              id: 'ex3',
-              name: 'تفتيح كيبل للصدر مع ضغط (Cable Flyes)',
-              targetSets: 3,
-              targetReps: '12-15',
-              restSeconds: 60,
-              safetyNote: 'عصر العضلة في نهاية المدى مع ثبات ثانية واحدة',
-              sets: [
-                WorkoutSet(setNumber: 1, targetReps: '15'),
-                WorkoutSet(setNumber: 2, targetReps: '12-15'),
-                WorkoutSet(setNumber: 3, targetReps: '12-15'),
-              ],
-            ),
-            Exercise(
-              id: 'ex4',
-              name: 'ترايسبس حبل كيبل لأسفل (Rope Pushdown)',
-              targetSets: 4,
-              targetReps: '12',
-              restSeconds: 60,
-              safetyNote: 'تثبيت المرفقين بجانب الجذع دون تأرجح',
-              sets: [
-                WorkoutSet(setNumber: 1, targetReps: '12'),
-                WorkoutSet(setNumber: 2, targetReps: '12'),
-                WorkoutSet(setNumber: 3, targetReps: '12'),
-                WorkoutSet(setNumber: 4, targetReps: '12'),
-              ],
-            ),
-          ],
-        ),
-        WorkoutSession(
-          id: 's2',
-          dayName: 'اليوم الثاني: سحب وظهر وبايسبس',
-          warmupProtocol: 'سحب خفيف على الكيبل + تعليق حر لتمديد عضلات الظهر العريضة',
-          exercises: [
-            Exercise(
-              id: 'ex5',
-              name: 'سحب ظهر عريض أمامي (Lat Pulldown)',
-              targetSets: 4,
-              targetReps: '8-10',
-              restSeconds: 90,
-              safetyNote: 'بدء السحب بتنزيل لوحي الكتف ثم سحب المرفقين للجوانب',
-              sets: [
-                WorkoutSet(setNumber: 1, targetReps: '10'),
-                WorkoutSet(setNumber: 2, targetReps: '10'),
-                WorkoutSet(setNumber: 3, targetReps: '8-10'),
-                WorkoutSet(setNumber: 4, targetReps: '8-10'),
-              ],
-            ),
-          ],
-        ),
-      ];
-    }
+    _sessions = loaded;
     setState(() {});
   }
 
-
-
   Future<void> _completeSession(WorkoutSession session) async {
-    await _workoutService.logCompletedSession(
-      sessionId: session.id,
-      sessionName: session.dayName,
+    final clientData = widget.storage.getClientData();
+    final userId = clientData?['client_code']?.toString() ?? clientData?['id']?.toString() ?? 'client';
+
+    final success = await _workoutService.sendWorkoutLog(
+      userId: userId,
+      sessionTitle: session.dayName,
       exercises: session.exercises,
     );
 
     if (mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
+        SnackBar(
           backgroundColor: AppColors.primary,
           content: Text(
-            'تم تسجيل وحفظ جلسة التمرين بنجاح في الذاكرة المحلية والربط مع الخادم',
-            style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+            success
+                ? 'تم حفظ وتسجيل جلسة التمرين بالخادم بنجاح'
+                : 'تم حفظ سجل الجلسة محلياً وسيتم رفعه للخادم تلقائياً',
+            style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
           ),
         ),
       );
@@ -412,10 +326,11 @@ class _WorkoutScreenState extends State<WorkoutScreen> {
                 ),
                 const SizedBox(height: 16),
 
-                // بطاقات التمارين الفردية
+                // بطاقات التمارين الفردية (بطاقة استرشادية وبطاقة تسجيل ذكية واحدة لكل تمرين)
                 ...currentSession.exercises.map((exercise) {
                   return Card(
                     margin: const EdgeInsets.only(bottom: 16),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
                     child: Padding(
                       padding: const EdgeInsets.all(16),
                       child: Column(
@@ -431,7 +346,7 @@ class _WorkoutScreenState extends State<WorkoutScreen> {
                           ),
                           const SizedBox(height: 4),
                           Text(
-                            'توجيه: ${exercise.safetyNote}',
+                            'توجيه: ${exercise.cue}',
                             style: const TextStyle(color: AppColors.textMuted, fontSize: 12),
                           ),
                           const SizedBox(height: 12),
@@ -450,6 +365,10 @@ class _WorkoutScreenState extends State<WorkoutScreen> {
                                 _buildPrescriptionBadge('${exercise.targetSets} مجموعات', 'الحجم المستهدف'),
                                 Container(width: 1, height: 24, color: AppColors.border),
                                 _buildPrescriptionBadge('${exercise.targetReps} عدات', 'النطاق التكراري'),
+                                if (exercise.targetRir != null) ...[
+                                  Container(width: 1, height: 24, color: AppColors.border),
+                                  _buildPrescriptionBadge('${exercise.targetRir} بالاحتياط', 'الجهد المستهدف'),
+                                ],
                                 Container(width: 1, height: 24, color: AppColors.border),
                                 _buildPrescriptionBadge('${exercise.restSeconds} ثانية', 'فترة الراحة'),
                               ],
@@ -457,42 +376,167 @@ class _WorkoutScreenState extends State<WorkoutScreen> {
                           ),
                           const SizedBox(height: 12),
 
-                          // زر تحديد كمنجز (اختياري للاسترشاد)
-                          InkWell(
-                            borderRadius: BorderRadius.circular(8),
-                            onTap: () {
-                              setState(() {
-                                exercise.isDone = !exercise.isDone;
-                              });
-                            },
-                            child: Container(
-                              padding: const EdgeInsets.symmetric(vertical: 9, horizontal: 12),
-                              decoration: BoxDecoration(
-                                color: exercise.isDone ? const Color(0xFFF0FDF4) : AppColors.backgroundDeep,
-                                borderRadius: BorderRadius.circular(8),
-                                border: Border.all(
-                                  color: exercise.isDone ? const Color(0xFFBBF7D0) : AppColors.border,
-                                ),
+                          // بطاقة تسجيل الأداء الميداني الذكية (ExerciseLogCard - بطاقة واحدة لكل تمرين)
+                          Container(
+                            decoration: BoxDecoration(
+                              color: AppColors.backgroundDeep,
+                              borderRadius: BorderRadius.circular(12),
+                              border: Border.all(
+                                color: exercise.isCompleted ? const Color(0xFFBBF7D0) : AppColors.border,
                               ),
-                              child: Row(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  Icon(
-                                    exercise.isDone ? Icons.check_circle : Icons.check_circle_outline,
-                                    size: 18,
-                                    color: exercise.isDone ? const Color(0xFF16A34A) : AppColors.textSecondary,
-                                  ),
-                                  const SizedBox(width: 8),
-                                  Text(
-                                    exercise.isDone ? 'تم إنجاز هذا التمرين' : 'تحديد كمنجز (اختياري)',
-                                    style: TextStyle(
-                                      color: exercise.isDone ? const Color(0xFF166534) : AppColors.textSecondary,
-                                      fontSize: 13,
-                                      fontWeight: FontWeight.bold,
+                            ),
+                            padding: const EdgeInsets.all(12),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Row(
+                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    const Text(
+                                      'تسجيل الأداء الفعلي (المجموعة الأخيرة)',
+                                      style: TextStyle(
+                                        color: AppColors.textPrimary,
+                                        fontSize: 13,
+                                        fontWeight: FontWeight.bold,
+                                      ),
                                     ),
-                                  ),
-                                ],
-                              ),
+                                    if (exercise.isCompleted)
+                                      const Text(
+                                        'تم التسجيل',
+                                        style: TextStyle(color: Color(0xFF16A34A), fontSize: 11, fontWeight: FontWeight.bold),
+                                      ),
+                                  ],
+                                ),
+                                const SizedBox(height: 10),
+                                Row(
+                                  children: [
+                                    Expanded(
+                                      child: TextFormField(
+                                        initialValue: exercise.loggedWeight != null ? exercise.loggedWeight.toString() : '',
+                                        keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                                        style: const TextStyle(color: AppColors.textPrimary, fontSize: 13),
+                                        decoration: InputDecoration(
+                                          labelText: 'الوزن المستخدم (كجم)',
+                                          labelStyle: const TextStyle(color: AppColors.textMuted, fontSize: 11),
+                                          contentPadding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                                          isDense: true,
+                                          filled: true,
+                                          fillColor: AppColors.surface,
+                                          border: OutlineInputBorder(
+                                            borderRadius: BorderRadius.circular(8),
+                                            borderSide: const BorderSide(color: AppColors.border),
+                                          ),
+                                        ),
+                                        onChanged: (val) {
+                                          exercise.loggedWeight = double.tryParse(val.trim());
+                                        },
+                                      ),
+                                    ),
+                                    const SizedBox(width: 8),
+                                    Expanded(
+                                      child: TextFormField(
+                                        initialValue: exercise.loggedLastSetReps != null ? exercise.loggedLastSetReps.toString() : '',
+                                        keyboardType: TextInputType.number,
+                                        style: const TextStyle(color: AppColors.textPrimary, fontSize: 13),
+                                        decoration: InputDecoration(
+                                          labelText: 'عدات آخر مجموعة',
+                                          labelStyle: const TextStyle(color: AppColors.textMuted, fontSize: 11),
+                                          contentPadding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                                          isDense: true,
+                                          filled: true,
+                                          fillColor: AppColors.surface,
+                                          border: OutlineInputBorder(
+                                            borderRadius: BorderRadius.circular(8),
+                                            borderSide: const BorderSide(color: AppColors.border),
+                                          ),
+                                        ),
+                                        onChanged: (val) {
+                                          exercise.loggedLastSetReps = int.tryParse(val.trim());
+                                        },
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                const SizedBox(height: 10),
+                                const Text(
+                                  'مستوى الجهد المبذول:',
+                                  style: TextStyle(color: AppColors.textSecondary, fontSize: 11),
+                                ),
+                                const SizedBox(height: 6),
+                                Row(
+                                  children: [
+                                    ChoiceChip(
+                                      label: const Text('سهل'),
+                                      selected: exercise.loggedEffort == 'EASY',
+                                      selectedColor: const Color(0xFFDCFCE7),
+                                      backgroundColor: AppColors.surface,
+                                      labelStyle: TextStyle(
+                                        color: exercise.loggedEffort == 'EASY' ? const Color(0xFF166534) : AppColors.textSecondary,
+                                        fontSize: 11,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                      onSelected: (val) {
+                                        if (val) setState(() => exercise.loggedEffort = 'EASY');
+                                      },
+                                    ),
+                                    const SizedBox(width: 6),
+                                    ChoiceChip(
+                                      label: const Text('مناسب'),
+                                      selected: exercise.loggedEffort == 'OK',
+                                      selectedColor: AppColors.primaryLight,
+                                      backgroundColor: AppColors.surface,
+                                      labelStyle: TextStyle(
+                                        color: exercise.loggedEffort == 'OK' ? AppColors.primary : AppColors.textSecondary,
+                                        fontSize: 11,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                      onSelected: (val) {
+                                        if (val) setState(() => exercise.loggedEffort = 'OK');
+                                      },
+                                    ),
+                                    const SizedBox(width: 6),
+                                    ChoiceChip(
+                                      label: const Text('صعب'),
+                                      selected: exercise.loggedEffort == 'HARD',
+                                      selectedColor: const Color(0xFFFEE2E2),
+                                      backgroundColor: AppColors.surface,
+                                      labelStyle: TextStyle(
+                                        color: exercise.loggedEffort == 'HARD' ? const Color(0xFF991B1B) : AppColors.textSecondary,
+                                        fontSize: 11,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                      onSelected: (val) {
+                                        if (val) setState(() => exercise.loggedEffort = 'HARD');
+                                      },
+                                    ),
+                                    const Spacer(),
+                                    TextButton.icon(
+                                      style: TextButton.styleFrom(
+                                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                                        backgroundColor: AppColors.surface,
+                                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                                      ),
+                                      onPressed: () {
+                                        setState(() {
+                                          exercise.isCompleted = !exercise.isCompleted;
+                                        });
+                                      },
+                                      icon: Icon(
+                                        exercise.isCompleted ? Icons.check_circle : Icons.check_circle_outline,
+                                        size: 16,
+                                        color: exercise.isCompleted ? const Color(0xFF16A34A) : AppColors.textSecondary,
+                                      ),
+                                      label: Text(
+                                        exercise.isCompleted ? 'مكتمل' : 'تأكيد',
+                                        style: TextStyle(
+                                          color: exercise.isCompleted ? const Color(0xFF166534) : AppColors.textSecondary,
+                                          fontSize: 11,
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ],
                             ),
                           ),
                         ],
