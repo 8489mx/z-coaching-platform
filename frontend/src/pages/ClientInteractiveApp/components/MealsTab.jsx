@@ -223,7 +223,7 @@ export default function MealsTab({
               }, portionDisplayMode, cookingStateMode);
 
               const cleanSecondary = formatted.secondary_text
-                ? String(formatted.secondary_text).replace(/^[\[\(\s]+|[\]\)\s]+$/g, '').trim()
+                ? String(formatted.secondary_text).replace(/^[[(\s]+|[\])\s]+$/g, '').trim()
                 : '';
 
               return (
