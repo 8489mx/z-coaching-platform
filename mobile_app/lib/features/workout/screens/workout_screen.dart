@@ -19,6 +19,8 @@ class _WorkoutScreenState extends State<WorkoutScreen> {
 
   List<WorkoutSession> _sessions = [];
   Map<String, dynamic>? _cardio;
+  // نص الجاهزية يأتي من المحرك عبر client_view، ولا يُكتب داخل التطبيق
+  Map<String, dynamic>? _readinessGuidance;
   int _selectedSessionIndex = 0;
   String _dailyReadiness = 'OPTIMAL';
   bool _showWorkoutGuide = false;
@@ -38,6 +40,9 @@ class _WorkoutScreenState extends State<WorkoutScreen> {
   void _loadWorkoutSessions() {
     final cached = widget.storage.getCachedActiveProgram();
     final clientView = cached?['client_view'] as Map<String, dynamic>?;
+    if (clientView != null && clientView['readiness_guidance_ar'] is Map) {
+      _readinessGuidance = Map<String, dynamic>.from(clientView['readiness_guidance_ar'] as Map);
+    }
     if (clientView != null && clientView['cardio'] is Map) {
       _cardio = Map<String, dynamic>.from(clientView['cardio'] as Map);
     } else if (cached?['cardio'] is Map) {
@@ -202,7 +207,7 @@ class _WorkoutScreenState extends State<WorkoutScreen> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       const Text(
-                        'الجاهزية اليومية والتنظيم الذاتي (RPE)',
+                        'الجاهزية اليومية والتنظيم الذاتي',
                         style: TextStyle(
                           color: AppColors.textPrimary,
                           fontSize: 14,
@@ -280,9 +285,7 @@ class _WorkoutScreenState extends State<WorkoutScreen> {
                           ),
                         ),
                         child: Text(
-                          _dailyReadiness == 'FATIGUED'
-                              ? 'توجيه ليوم الإجهاد: طاقتك تتأثر بنومك وضغوط يومك وهذا تذبذب عصبي طبيعي؛ من الاحترافية خفض الأوزان بنسبة 10-20% والتركيز على المدى الحركي الآمن وتفادي الفشل التام. قوتك ستعود بكامل طاقتها الأسبوع القادم.'
-                              : 'قاعدة الجاهزية (RPE): اضبط أوزانك وفق طاقتك الحالية مع إبقاء 1-2 تكرار في الاحتياط قبل الفشل العضلي بتكنيك آمن ومحكم.',
+                          (_readinessGuidance?[_dailyReadiness == 'FATIGUED' ? 'FATIGUED' : 'OPTIMAL'] ?? '').toString(),
                           style: TextStyle(
                             color: _dailyReadiness == 'FATIGUED' ? const Color(0xFF991B1B) : AppColors.textSecondary,
                             fontSize: 11,
@@ -345,7 +348,7 @@ class _WorkoutScreenState extends State<WorkoutScreen> {
                         const SizedBox(height: 10),
                         _buildGuideItem('1. مجموعات العمل الفعالة (Working Sets)', 'المجموعات المكتوبة (مثال: 3 جولات) هي مجموعات عمل أساسية بنفس الوزن التشغيلي. التسخين يتم مسبقاً ولا يُحسب ضمن جولات الجدول.'),
                         const SizedBox(height: 8),
-                        _buildGuideItem('2. كيف تحدد وزنك لأول مرة؟', 'لا نحدد لك وزناً ثابتاً في البداية؛ اختر وزناً تجريبياً يمكنك من إتمام العدات المطلوبة مع بقاء 1-2 عدة في الاحتياط قبل الفشل (RPE 8-9)، وسجله في خانة أفضل وزن اليوم.'),
+                        _buildGuideItem('2. كيف تحدد وزنك لأول مرة؟', 'لا نحدد لك وزناً ثابتاً في البداية؛ اختر وزناً يمكّنك من إتمام العدات المطلوبة مع الالتزام بهامش الجهد المكتوب على بطاقة التمرين نفسها، وسجّله في خانة أفضل وزن اليوم.'),
                         const SizedBox(height: 8),
                         _buildGuideItem('3. ماذا يعني النطاق التكراري (8-10 عدات)؟', 'اختيار وزن لا تستطيع عمل أقل من 8 به ولا تتجاوز 10 بتكنيك محكم.'),
                         const SizedBox(height: 8),

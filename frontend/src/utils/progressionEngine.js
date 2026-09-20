@@ -310,3 +310,14 @@ export function applyDeloadToSession(workoutSession) {
     exercises: adjustedExercises,
   };
 }
+
+/**
+ * What the client is told about today's effort, by declared readiness. One wording for the web app,
+ * the API (client_view) and the phone: a training rule written twice is a rule that drifts.
+ * Basis: autoregulation by session RPE/RIR (Zourdos 2016, Helms 2018) — on a depleted day the load
+ * comes down and failure is avoided, rather than the session being skipped.
+ */
+export const READINESS_GUIDANCE_AR = Object.freeze({
+  OPTIMAL: 'قاعدة الجاهزية (RPE): اضبط أوزانك وفق طاقتك الحالية مع إبقاء 1-2 تكرار في الاحتياط قبل الفشل العضلي بتكنيك آمن ومحكم.',
+  FATIGUED: 'توجيه فسيولوجي ليوم الإجهاد: طاقتك تتأثر بنومك وضغوط يومك وهذا تذبذب عصبي طبيعي مؤقت. من الاحترافية خفض الأوزان بنسبة 10-20% والتركيز على المدى الحركي الكامل وتفادي الوصول للفشل العضلي التام اليوم. قوتك الحقيقية ستعود بكامل كفاءتها الأسبوع القادم.',
+});

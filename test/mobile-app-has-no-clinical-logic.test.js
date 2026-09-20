@@ -38,7 +38,9 @@ test("no food from the nutrition database is named inside Dart", () => {
 
 test("no fasting, cardio or training rule is expressed in Dart", () => {
   // These words only ever reach the phone as text the server produced (meal titles, advisories).
-  const forbidden = ["رمضان", "الإفطار (", "السحور", "صيام", "ديلود", "استشفاء", "HIIT", "LISS", "RIR", "Zone 2"];
+  const forbidden = ["رمضان", "الإفطار (", "السحور", "صيام", "ديلود", "استشفاء", "HIIT", "LISS", "RIR", "Zone 2",
+    // نصوص القواعد التدريبية نفسها: مصدرها المحرك عبر client_view، لا نسخة داخل التطبيق
+    "الفشل العضلي", "في الاحتياط", "10-20%", "RPE", "المدى الحركي"];
   const offenders = [];
   for (const { file, text } of SOURCES) {
     for (const word of forbidden) {
