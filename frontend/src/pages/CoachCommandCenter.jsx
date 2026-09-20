@@ -117,6 +117,7 @@ export default function CoachCommandCenter() {
   const [clients, setClients] = useState([]);
   const [submissions, setSubmissions] = useState([]);
   const [pendingCheckins, setPendingCheckins] = useState([]);
+  const [cycleAttention, setCycleAttention] = useState({ count: 0, ended_count: 0, clients: [] });
 
   useEffect(() => {
     fetchDashboardData();
@@ -152,10 +153,11 @@ export default function CoachCommandCenter() {
     try {
       setLoading(true);
       if (!(await ensureCoachSession())) return;
-      const [subOverviewRes, intakeRes, checkinRes] = await Promise.allSettled([
+      const [subOverviewRes, intakeRes, checkinRes, cycleAttentionRes] = await Promise.allSettled([
         fetch(`${API_BASE}/api/v1/subscriptions/overview`),
         fetch(`${API_BASE}/api/v1/intake/submissions`),
-        fetch(`${API_BASE}/api/v1/programs/checkin/pending`)
+        fetch(`${API_BASE}/api/v1/programs/checkin/pending`),
+        fetch(`${API_BASE}/api/v1/programs/cycles/attention`)
       ]);
 
       if (subOverviewRes.status === 'fulfilled' && subOverviewRes.value && subOverviewRes.value.ok) {
@@ -176,6 +178,15 @@ export default function CoachCommandCenter() {
         try {
           const checkinData = await checkinRes.value.json();
           if (checkinData && Array.isArray(checkinData.checkins)) setPendingCheckins(checkinData.checkins);
+        } catch {}
+      }
+
+      if (cycleAttentionRes.status === 'fulfilled' && cycleAttentionRes.value && cycleAttentionRes.value.ok) {
+        try {
+          const cycleData = await cycleAttentionRes.value.json();
+          if (cycleData && typeof cycleData.count === 'number' && Array.isArray(cycleData.clients)) {
+            setCycleAttention(cycleData);
+          }
         } catch {}
       }
       setLastRefreshed(new Date());
@@ -692,6 +703,168 @@ export default function CoachCommandCenter() {
             );
           })}
         </div>
+
+        {/* كارت متابعة وتنبيهات الدورات التدريبية (يظهر فقط عند وجود عملاء count > 0) */}
+        {cycleAttention && cycleAttention.count > 0 && Array.isArray(cycleAttention.clients) && cycleAttention.clients.length > 0 && (
+          <div
+            style={{
+              background: '#FFFFFF',
+              border: cycleAttention.ended_count > 0 ? '1.5px solid #FECACA' : '1.5px solid #FDE68A',
+              borderRadius: '16px',
+              padding: '18px 20px',
+              boxShadow: cycleAttention.ended_count > 0
+                ? '0 4px 14px rgba(220, 38, 38, 0.08)'
+                : '0 4px 14px rgba(217, 119, 6, 0.08)',
+              display: 'flex',
+              flexDirection: 'column',
+              gap: '14px',
+              width: '100%'
+            }}
+          >
+            {/* رأس كارت تنبيهات الدورات التدريبية */}
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '10px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                <div style={{
+                  width: '36px',
+                  height: '36px',
+                  borderRadius: '10px',
+                  background: cycleAttention.ended_count > 0 ? '#FEF2F2' : '#FFFBEB',
+                  border: cycleAttention.ended_count > 0 ? '1px solid #FECACA' : '1px solid #FDE68A',
+                  color: cycleAttention.ended_count > 0 ? '#DC2626' : '#D97706',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  flexShrink: 0
+                }}>
+                  <AlertCircle size={20} strokeWidth={2.2} />
+                </div>
+                <div>
+                  <div style={{ fontSize: '14.5px', fontWeight: 800, color: '#0F172A', display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+                    <span>تنبيهات الدورات التدريبية</span>
+                    <span style={{
+                      fontSize: '11px',
+                      fontWeight: 800,
+                      padding: '2px 8px',
+                      borderRadius: '6px',
+                      background: '#0F172A',
+                      color: '#FFFFFF'
+                    }}>
+                      {cycleAttention.count} {cycleAttention.count === 1 ? 'مشترك' : 'مشتركين'}
+                    </span>
+                    {cycleAttention.ended_count > 0 && (
+                      <span style={{
+                        fontSize: '11px',
+                        fontWeight: 800,
+                        padding: '2px 8px',
+                        borderRadius: '6px',
+                        background: '#DC2626',
+                        color: '#FFFFFF'
+                      }}>
+                        {cycleAttention.ended_count} انتهت دورتهم
+                      </span>
+                    )}
+                  </div>
+                  <div style={{ fontSize: '12px', color: '#64748B', marginTop: '2px', fontWeight: 600 }}>
+                    عملاء انتهت دورتهم التدريبية الحالية أو تنتهي خلال أسبوع وبحاجة لإعداد واعتماد الدورة التالية.
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* قائمة المشتركين بحاجة لدورة تدريبية جديدة */}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+              {cycleAttention.clients.map((client) => {
+                const isEnded = client.status === 'ENDED';
+                return (
+                  <div
+                    key={client.client_code || client.program_id}
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'space-between',
+                      gap: '14px',
+                      padding: '12px 16px',
+                      borderRadius: '12px',
+                      border: isEnded ? '1.5px solid #FECACA' : '1px solid #FDE68A',
+                      background: isEnded ? '#FEF2F2' : '#FFFBEB',
+                      flexWrap: 'wrap',
+                      transition: 'all 0.15s ease'
+                    }}
+                  >
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', flex: '1 1 320px' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+                        <span style={{ fontSize: '13.5px', fontWeight: 800, color: isEnded ? '#991B1B' : '#92400E' }}>
+                          {client.full_name || `مشترك #${client.client_code}`}
+                        </span>
+                        <span style={{
+                          fontSize: '11px',
+                          fontWeight: 700,
+                          padding: '2px 8px',
+                          borderRadius: '6px',
+                          background: isEnded ? '#FEE2E2' : '#FEF3C7',
+                          color: isEnded ? '#991B1B' : '#92400E',
+                          border: isEnded ? '1px solid #FCA5A5' : '1px solid #FCD34D',
+                          fontFamily: 'JetBrains Mono, monospace'
+                        }}>
+                          #{client.client_code}
+                        </span>
+                        <span style={{
+                          fontSize: '10.5px',
+                          fontWeight: 800,
+                          padding: '2px 8px',
+                          borderRadius: '6px',
+                          background: isEnded ? '#DC2626' : '#D97706',
+                          color: '#FFFFFF'
+                        }}>
+                          {isEnded ? 'انتهت الدورة' : 'تنتهي قريباً'}
+                        </span>
+                      </div>
+                      <div style={{
+                        fontSize: '12.5px',
+                        color: isEnded ? '#7F1D1D' : '#78350F',
+                        fontWeight: 600,
+                        lineHeight: 1.5
+                      }}>
+                        {client.message_ar}
+                      </div>
+                    </div>
+
+                    <button
+                      type="button"
+                      onClick={() => navigate(`/coach/editor/${client.client_code}`)}
+                      style={{
+                        height: '34px',
+                        padding: '0 14px',
+                        borderRadius: '8px',
+                        background: isEnded ? '#DC2626' : '#D97706',
+                        color: '#FFFFFF',
+                        border: 'none',
+                        cursor: 'pointer',
+                        fontSize: '12px',
+                        fontWeight: 800,
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: '6px',
+                        boxShadow: '0 1px 3px rgba(0,0,0,0.08)',
+                        transition: 'all 0.15s ease',
+                        whiteSpace: 'nowrap'
+                      }}
+                      onMouseEnter={(e) => {
+                        e.currentTarget.style.background = isEnded ? '#B91C1C' : '#B45309';
+                      }}
+                      onMouseLeave={(e) => {
+                        e.currentTarget.style.background = isEnded ? '#DC2626' : '#D97706';
+                      }}
+                    >
+                      <span>فتح محرر الكوتش</span>
+                      <ExternalLink size={13} />
+                    </button>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        )}
 
         {/* 3. Full-Width Unified Action Queue */}
         <div style={{ width: '100%' }}>
