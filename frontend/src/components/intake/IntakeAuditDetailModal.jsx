@@ -230,6 +230,35 @@ export default function IntakeAuditDetailModal({
               <FieldRow label="التدريب مؤخراً" value={answers.recent_training} />
               <FieldRow label="عضلات التركيز" value={answers.focus_muscles} />
             </Section>
+
+            <Section title="6) الملفات (المرفقات)">
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '8px', paddingTop: '8px' }}>
+                {[
+                  { key: 'front', title: 'الأمام', src: answers.media_uploads?.front_url },
+                  { key: 'side', title: 'الجانب', src: answers.media_uploads?.side_url },
+                  { key: 'back', title: 'الخلف', src: answers.media_uploads?.back_url },
+                  { key: 'inbody', title: 'InBody', src: answers.media_uploads?.inbody_report_url }
+                ].map(item => (
+                  <div key={item.key} style={{ background: '#F1F5F9', border: '1px solid #E2E8F0', borderRadius: '8px', padding: '6px', textAlign: 'center', height: '100px', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
+                    <span style={{ fontSize: '10.5px', fontWeight: 700, color: '#475569', marginBottom: '4px' }}>{item.title}</span>
+                    {item.src ? (
+                      <div 
+                        style={{ position: 'relative', width: '100%', flex: 1, borderRadius: '6px', overflow: 'hidden', cursor: 'pointer' }}
+                        onClick={() => setPreviewImage({ title: `صورة ${item.title}`, src: item.src })}
+                      >
+                        <img src={item.src} alt={item.title} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                        <div style={{ position: 'absolute', bottom: '4px', right: '4px', background: 'rgba(15, 23, 42, 0.8)', color: '#FFFFFF', padding: '4px', borderRadius: '6px', display: 'flex' }}>
+                          <ZoomIn size={10} />
+                        </div>
+                      </div>
+                    ) : (
+                      <span style={{ color: '#94A3B8', fontSize: '10px' }}>لم يُجب</span>
+                    )}
+                  </div>
+                ))}
+              </div>
+              <FieldRow label="مرفقات طبية أخرى" value={answers.media_uploads?.medical_reports_urls?.length ? `${answers.media_uploads.medical_reports_urls.length} ملفات` : null} />
+            </Section>
           </div>
         </div>
 
