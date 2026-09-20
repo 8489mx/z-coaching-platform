@@ -427,9 +427,9 @@ export default function WeeklyCheckinForm() {
               </div>
 
               {/* Diet Adherence */}
-              <div>
-                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '12px', fontWeight: 700, marginBottom: '6px' }}>
-                  <span style={{ color: '#475569' }}>نسبة الالتزام بالدايت والماكروز:</span>
+              <div style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', borderRadius: '8px', padding: '12px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '12px', fontWeight: 700 }}>
+                  <span style={{ color: '#0F172A' }}>نسبة الالتزام بالدايت والماكروز</span>
                   <strong style={{ color: '#16A34A', fontFamily: 'JetBrains Mono' }}>{formData.nutrition_adherence_percent}%</strong>
                 </div>
                 <input 
@@ -441,6 +441,10 @@ export default function WeeklyCheckinForm() {
                   onChange={(e) => setFormData({...formData, nutrition_adherence_percent: Number(e.target.value)})} 
                   style={{ width: '100%', accentColor: '#16A34A', cursor: 'pointer' }} 
                 />
+                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '10.5px', color: '#64748B', fontWeight: 600 }}>
+                  <span>لخبطة / عدم التزام</span>
+                  <span>التزام تام بالخطة</span>
+                </div>
               </div>
 
               {/* Sleep Quality */}
