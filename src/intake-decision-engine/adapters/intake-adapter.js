@@ -1038,17 +1038,29 @@ export function adaptIntakePayloadToCanonicalEngine(raw) {
   });
 
   if (location === "HOME" && equipment.length === 0) {
-    equipment = [
-      {
-        equipmentCode: "DUMBBELLS",
-        otherEquipmentText: null,
-        loadCapacity: "MODERATE"
-      },
-      {
-        equipmentCode: "BODYWEIGHT",
-        otherEquipmentText: null,
-        loadCapacity: "BODYWEIGHT_ONLY"
-      }
+    // "Home" is three different rooms. A client who answered "bodyweight only" owns no dumbbells,
+    // and prescribing them a dumbbell press is prescribing a session they cannot do.
+    const homeSetups = {
+      calisthenics_bands: [
+        { equipmentCode: "BODYWEIGHT", otherEquipmentText: null, loadCapacity: "BODYWEIGHT_ONLY" },
+        { equipmentCode: "RESISTANCE_BANDS", otherEquipmentText: null, loadCapacity: "LIGHT" },
+      ],
+      minimal_equipment: [
+        { equipmentCode: "DUMBBELLS", otherEquipmentText: null, loadCapacity: "LIGHT" },
+        { equipmentCode: "RESISTANCE_BANDS", otherEquipmentText: null, loadCapacity: "LIGHT" },
+        { equipmentCode: "BODYWEIGHT", otherEquipmentText: null, loadCapacity: "BODYWEIGHT_ONLY" },
+      ],
+      home_gym: [
+        { equipmentCode: "DUMBBELLS", otherEquipmentText: null, loadCapacity: "HEAVY" },
+        { equipmentCode: "ADJUSTABLE_BENCH", otherEquipmentText: null, loadCapacity: "MODERATE" },
+        { equipmentCode: "RESISTANCE_BANDS", otherEquipmentText: null, loadCapacity: "LIGHT" },
+        { equipmentCode: "BODYWEIGHT", otherEquipmentText: null, loadCapacity: "BODYWEIGHT_ONLY" },
+      ],
+    };
+    const declaredSetup = String(intake.training_environment || intake.training_location || "").toLowerCase();
+    equipment = homeSetups[declaredSetup] || [
+      { equipmentCode: "DUMBBELLS", otherEquipmentText: null, loadCapacity: "MODERATE" },
+      { equipmentCode: "BODYWEIGHT", otherEquipmentText: null, loadCapacity: "BODYWEIGHT_ONLY" },
     ];
   } else if (location === "GYM" && equipment.length === 0) {
     equipment = [

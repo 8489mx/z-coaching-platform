@@ -12,6 +12,21 @@ export const CHECKIN_GRACE_HOURS = 48; // 2 days grace period
 export const OVERDUE_THRESHOLD_DAYS = 9; // 7 days cycle + 2 days grace
 
 /**
+ * How often this client is asked to check in. The packages differ on purpose: MAX is reviewed every
+ * week, ELITE every fortnight (steadier readings, less noise from daily water shifts). Reading the
+ * cadence from the client's package is what stops an ELITE client who is perfectly on schedule from
+ * being chased as if they had disappeared.
+ */
+export const CHECKIN_CYCLE_DAYS_BY_TIER = Object.freeze({ MAX: 7, ELITE: 14 });
+
+export function resolveCheckinCycleDays(client = {}) {
+  const raw = String(client.subscription_package || client.package || client.tier || '').toUpperCase();
+  if (raw.includes('MAX')) return CHECKIN_CYCLE_DAYS_BY_TIER.MAX;
+  if (raw.includes('ELITE')) return CHECKIN_CYCLE_DAYS_BY_TIER.ELITE;
+  return CHECKIN_CYCLE_DAYS;
+}
+
+/**
  * Evaluates whether an individual client is overdue for their weekly check-in.
  */
 export function evaluateClientCheckinOverdue(client = {}, now = new Date()) {
@@ -65,9 +80,11 @@ export function evaluateClientCheckinOverdue(client = {}, now = new Date()) {
   const diffMs = nowTime - referenceDate.getTime();
   const daysElapsed = Math.max(0, Math.floor(diffMs / (1000 * 3600 * 24)));
 
-  // If >= 9 days have passed since last checkin / start date, client is overdue!
-  const isOverdue = daysElapsed >= OVERDUE_THRESHOLD_DAYS;
-  const daysOverdue = isOverdue ? (daysElapsed - CHECKIN_CYCLE_DAYS) : 0;
+  // The client is late only against their own package's cadence, plus the two days of grace.
+  const cycleDays = resolveCheckinCycleDays(client);
+  const overdueThresholdDays = cycleDays + Math.round(CHECKIN_GRACE_HOURS / 24);
+  const isOverdue = daysElapsed >= overdueThresholdDays;
+  const daysOverdue = isOverdue ? (daysElapsed - cycleDays) : 0;
 
   let urgency = 'NONE';
   if (isOverdue) {
