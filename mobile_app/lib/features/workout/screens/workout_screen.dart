@@ -76,10 +76,35 @@ class _WorkoutScreenState extends State<WorkoutScreen> {
   @override
   Widget build(BuildContext context) {
     if (_sessions.isEmpty) {
-      return const Scaffold(
+      return Scaffold(
         backgroundColor: AppColors.background,
+        appBar: AppBar(title: const Text('سجل التمارين الميداني')),
         body: Center(
-          child: Text('لا توجد جلسات تدريبية متاحة حالياً', style: TextStyle(color: AppColors.textSecondary)),
+          child: Padding(
+            padding: const EdgeInsets.all(24),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Icon(Icons.fitness_center, size: 48, color: AppColors.textMuted),
+                const SizedBox(height: 16),
+                const Text(
+                  'لا توجد خطة تدريبية متاحة حالياً. يرجى التحقق من اتصال الإنترنت أو التواصل مع المدرب.',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(color: AppColors.textSecondary, fontSize: 14, height: 1.5),
+                ),
+                const SizedBox(height: 16),
+                ElevatedButton.icon(
+                  style: ElevatedButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                  ),
+                  onPressed: _loadWorkoutSessions,
+                  icon: const Icon(Icons.refresh, size: 18),
+                  label: const Text('إعادة المحاولة'),
+                ),
+              ],
+            ),
+          ),
         ),
       );
     }
