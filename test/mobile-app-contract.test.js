@@ -87,3 +87,9 @@ test("mobile_app Dart code points at the routes and fields the server serves", (
   }
   assert.match(checkin, /if \(response\.statusCode == 0\) \{/, "only network failures are queued");
 });
+
+// Only one Flutter app exists (mobile_app/). The older mobile/ stub was deleted so nobody edits it by mistake.
+test("there is exactly one Flutter app folder", () => {
+  assert.ok(fs.existsSync(path.join(ROOT, "mobile_app/pubspec.yaml")), "mobile_app is the app");
+  assert.ok(!fs.existsSync(path.join(ROOT, "mobile")), "the legacy mobile/ stub must stay deleted");
+});
