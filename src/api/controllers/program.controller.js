@@ -964,7 +964,7 @@ export const getActiveProgramByUserId = async (req, res) => {
     const answers = (await loadLatestIntakeAnswers(user.id).catch(() => null)) || {};
     const conditions = [
       ...(answers.medical_conditions?.selected || []),
-      ...(answers.medical_conditions?.dangerous_symptoms || [])
+      ...(Array.isArray(answers.dangerous_symptoms) ? answers.dangerous_symptoms.filter((s) => s !== "NONE") : [])
     ];
     const cardio = {
       ...getPracticalCardioPrescription({

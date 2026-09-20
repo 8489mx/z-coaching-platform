@@ -134,3 +134,41 @@ test.after(async () => {
   }
   await sequelize.close().catch(() => {});
 });
+
+/**
+ * The guard this file was missing the first time: the phone recomputes nothing, so the clinical
+ * cardio gates (GINA asthma, hypertension, cardiac) have to be applied before the prescription
+ * leaves the server. A client who declared a respiratory condition must never receive intervals.
+ */
+test("a client with a respiratory condition never receives HIIT through client_view", async () => {
+  let user = await User.findOne({ where: { client_code: CODE } });
+  if (user) {
+    await Program.destroy({ where: { user_id: user.id } });
+    await user.destroy();
+  }
+  user = await User.create({ client_code: CODE, phone_number: "01099000921", full_name: "Asthma", role: "CLIENT" });
+  await Program.create({
+    user_id: user.id,
+    status: "ACTIVE",
+    program_data: {
+      nutrition: { targets: { calories: 2000, protein: 150, carbs: 200, fats: 60 }, meals: [] },
+      cardio: { type: "HIIT_INTERVALS", duration_minutes: 20, sessions_per_week: 3 },
+      training_program: { weeks: [{ sessions: [{ session_name: "A", exercises: [{ exercise_code: "X", sets: 4, reps: "8" }] }] }] },
+    },
+  });
+  const originalIntake = IntakeSubmission.findOne;
+  IntakeSubmission.findOne = async () => ({ answers: { answers: {
+    religion: "OTHER",
+    medical_conditions: { selected: ["asthma_respiratory"] },
+  } } });
+  try {
+    const r = mockRes();
+    await getActiveProgramByUserId({ user: { id: user.id }, params: { user_id: CODE }, query: {} }, r.res);
+    assert.equal(r.out.status, 200, JSON.stringify(r.out.body));
+    const cardio = r.out.body.client_view.cardio;
+    assert.notEqual(cardio.type, "HIIT_INTERVALS", "intervals must be downgraded before they reach the phone");
+    assert.match(cardio.clinical_guidance_ar || "", /ربو|تنفس/, "the reason is stated to the client");
+  } finally {
+    IntakeSubmission.findOne = originalIntake;
+  }
+});
