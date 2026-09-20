@@ -1082,6 +1082,8 @@ export function isFoodClinicallySafe(foodCode, allergenContext = {}) {
   if (allergenContext.isPoultryExcluded && (foodCode === "CHICKEN_BREAST" || foodCode === "SMOKED_TURKEY")) return false;
   if (allergenContext.isRedMeatExcluded && (foodCode === "LEAN_BEEF" || foodCode === "CAMEL_MEAT_LEAN")) return false;
   if (allergenContext.isGout && !food.is_gout_safe) return false;
+  // Post-bariatric dumping syndrome: no concentrated sugars in the generated meals.
+  if (allergenContext.isDumpingSyndrome && (food.is_simple_sugar === true || foodCode.startsWith("DATES_"))) return false;
   if (allergenContext.isLegumesExcluded && food.is_legume) return false;
   if (allergenContext.isFavism && (food.is_fava || food.is_legume || foodCode === "FOUL_MUDAMMAS")) return false;
   if (allergenContext.isGlutenExcluded && !food.is_gluten_free) return false;
@@ -2018,6 +2020,9 @@ export function buildCulinaryRecipeMeals(universalTargets, canonicalIntake = {},
     excludedFoods.has("ALMONDS") ||
     excludedFoods.has("PEANUT");
 
+  // Declared in the intake under the bariatric block; not part of the canonical contract.
+  const isDumpingSyndrome = effectiveRaw?.medical_conditions?.bariatric?.dumping_syndrome === true;
+
   const isGout =
     excludedFoods.has("GOUT") ||
     excludedFoods.has("HIGH_URIC_ACID") ||
@@ -2065,6 +2070,7 @@ export function buildCulinaryRecipeMeals(universalTargets, canonicalIntake = {},
     isFavism,
     isLegumesExcluded,
     isLowBudget,
+    isDumpingSyndrome,
   };
 
   const totalMeals = meal_distribution.length;

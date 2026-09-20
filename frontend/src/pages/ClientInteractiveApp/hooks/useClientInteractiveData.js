@@ -336,6 +336,7 @@ export function useClientInteractiveData() {
           is_diabetic: constraints.is_diabetic === true,
           is_ibs: constraints.is_ibs === true,
           is_bariatric: isBariatric || constraints.is_bariatric === true,
+          has_dumping_syndrome: constraints.has_dumping_syndrome === true,
           allergies: [...rawAllergies, ...(Array.isArray(constraints.allergies) ? constraints.allergies : [])],
           medications: rawMedications,
           takes_thyroid_med: takesThyroidMed,

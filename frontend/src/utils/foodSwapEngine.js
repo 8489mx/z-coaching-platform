@@ -1943,11 +1943,13 @@ for (const [aliasCode, targetCode] of Object.entries(UNIFIED_FOOD_CODE_ALIASES))
 
 export const FOOD_CLINICAL_OVERRIDES = Object.freeze({
   // HIGH GLYCEMIC INDEX (GI >= 70) - ADA Contraindicated for Diabetes/Insulin Resistance
-  TABLE_SUGAR: { glycemic_index: 'HIGH', fodmap_level: 'LOW' },
-  WHITE_SUGAR: { glycemic_index: 'HIGH', fodmap_level: 'LOW' },
-  SUGAR: { glycemic_index: 'HIGH', fodmap_level: 'LOW' },
-  PURE_BEE_HONEY: { glycemic_index: 'HIGH', fodmap_level: 'HIGH' },
-  HONEY: { glycemic_index: 'HIGH', fodmap_level: 'HIGH' },
+  // is_simple_sugar marks concentrated sugars: the trigger for post-bariatric dumping syndrome
+  // (ASMBS/ASPEN integrated health nutritional guidelines: avoid concentrated sweets after surgery).
+  TABLE_SUGAR: { glycemic_index: 'HIGH', fodmap_level: 'LOW', is_simple_sugar: true },
+  WHITE_SUGAR: { glycemic_index: 'HIGH', fodmap_level: 'LOW', is_simple_sugar: true },
+  SUGAR: { glycemic_index: 'HIGH', fodmap_level: 'LOW', is_simple_sugar: true },
+  PURE_BEE_HONEY: { glycemic_index: 'HIGH', fodmap_level: 'HIGH', is_simple_sugar: true },
+  HONEY: { glycemic_index: 'HIGH', fodmap_level: 'HIGH', is_simple_sugar: true },
   RICE_CAKES: { glycemic_index: 'HIGH', fodmap_level: 'LOW' },
   EGYPTIAN_BALADI_BREAD: { glycemic_index: 'HIGH', fodmap_level: 'HIGH' },
   TAMEES_BREAD_BR: { glycemic_index: 'HIGH', fodmap_level: 'HIGH' },
@@ -2080,6 +2082,7 @@ export function isFoodClinicallySafe(foodItem, clinicalProfile = {}) {
     is_diabetic = false,
     is_insulin_resistant = false,
     is_ibs = false,
+    has_dumping_syndrome = false,
     allergies = [],
     conditions = []
   } = clinicalProfile;
@@ -2123,6 +2126,19 @@ export function isFoodClinicallySafe(foodItem, clinicalProfile = {}) {
   });
   if (diabetesActive && foodItem.glycemic_index === 'HIGH') {
     return false;
+  }
+
+  // 5b. POST-BARIATRIC DUMPING SYNDROME: ban concentrated sugars, the classic trigger of an
+  // early dumping episode (sugar, honey, dates and any food flagged is_simple_sugar).
+  const dumpingActive = Boolean(has_dumping_syndrome) || allClinicalTokens.some(a => {
+    const s = String(a?.conditionCode || a || '').toUpperCase();
+    return s.includes('DUMPING') || s.includes('إغراق');
+  });
+  if (dumpingActive) {
+    const clinicalProps = getFoodClinicalProperties(foodItem.code, foodItem);
+    if (foodItem.is_simple_sugar === true || clinicalProps?.is_simple_sugar === true || String(foodItem.code || '').startsWith('DATES_')) {
+      return false;
+    }
   }
 
   // 6. IBS & DIGESTIVE CONDITIONS: Ban HIGH FODMAP foods (Monash University Low-FODMAP Protocol)

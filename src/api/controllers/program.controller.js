@@ -820,6 +820,7 @@ export function deriveClinicalConstraints(answers) {
     is_diabetic: selected.has("diabetes") || med.diabetes?.uses_insulin === true,
     is_ibs: selected.has("gi_tract"),
     is_bariatric: selected.has("bariatric_surgery") || med.bariatric?.is_operated === true,
+    has_dumping_syndrome: med.bariatric?.dumping_syndrome === true,
     allergies,
   };
 }
