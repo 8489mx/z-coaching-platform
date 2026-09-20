@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from 'react';
-import { Camera, Scale, ChevronRight, CheckCircle2, Loader2, Activity, Clock, Trash2, MessageCircle, User, AlertCircle, Calendar } from 'lucide-react';
+import { Camera, Scale, ChevronRight, ChevronDown, ChevronUp, CheckCircle2, Loader2, Activity, Clock, Trash2, MessageCircle, User, AlertCircle, Calendar } from 'lucide-react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { API_BASE } from '../config/api';
 import { getUpcomingFastingAlert } from '../utils/seasonalFastingRadar';
@@ -30,6 +30,7 @@ export default function WeeklyCheckinForm() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const [step, setStep] = useState(1);
+  const [showExtraDetails, setShowExtraDetails] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState('');
 
@@ -648,13 +649,37 @@ export default function WeeklyCheckinForm() {
               </div>
             </div>
 
-            {/* Additional Details Section */}
-            <div style={{ background: '#FFFFFF', border: '1px solid #E2E8F0', borderRadius: '12px', padding: '20px', display: 'flex', flexDirection: 'column', gap: '16px', boxShadow: '0 1px 3px rgba(15, 23, 42, 0.04)' }}>
-              
-              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', borderBottom: '1px solid #F1F5F9', paddingBottom: '10px' }}>
-                <Activity size={18} color="#0284C7" />
-                <strong style={{ fontSize: '14px', color: '#0F172A' }}>تفاصيل إضافية (اختيارية)</strong>
-              </div>
+            {/* Additional Details Section (Collapsible) */}
+            <div style={{ background: '#FFFFFF', border: '1px solid #E2E8F0', borderRadius: '12px', padding: '16px 20px', boxShadow: '0 1px 3px rgba(15, 23, 42, 0.04)' }}>
+              <button
+                type="button"
+                onClick={() => setShowExtraDetails(!showExtraDetails)}
+                style={{
+                  width: '100%',
+                  background: 'transparent',
+                  border: 'none',
+                  padding: 0,
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                  cursor: 'pointer',
+                  textAlign: 'right'
+                }}
+              >
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <Activity size={18} color="#0284C7" />
+                  <div>
+                    <strong style={{ fontSize: '13.5px', color: '#0F172A', display: 'block' }}>تفاصيل إضافية (اختيارية)</strong>
+                    <span style={{ fontSize: '11px', color: '#64748B' }}>أوزان الأيام السبعة، الهضم، نمط الأسبوع، واستعدادات الأسبوع القادم</span>
+                  </div>
+                </div>
+                <div style={{ background: '#F8FAFC', border: '1px solid #CBD5E1', borderRadius: '6px', width: '28px', height: '28px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#475569' }}>
+                  {showExtraDetails ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
+                </div>
+              </button>
+
+              {showExtraDetails && (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', marginTop: '16px', borderTop: '1px solid #F1F5F9', paddingTop: '16px' }}>
 
               {/* 7 Daily Weights */}
               <div>
@@ -1113,6 +1138,8 @@ export default function WeeklyCheckinForm() {
                 </div>
               )}
 
+                </div>
+              )}
             </div>
 
             {/* Direct Submit Button */}
