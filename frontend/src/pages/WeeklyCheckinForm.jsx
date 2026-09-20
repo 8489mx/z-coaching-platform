@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from 'react';
-import { Camera, Scale, ChevronLeft, ChevronRight, CheckCircle2, Loader2, Activity, Clock, Trash2, MessageCircle, User, AlertCircle, Calendar } from 'lucide-react';
+import { Camera, Scale, ChevronRight, ChevronDown, ChevronUp, CheckCircle2, Loader2, Activity, Clock, Trash2, MessageCircle, User, AlertCircle, Calendar } from 'lucide-react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { API_BASE } from '../config/api';
 import { getUpcomingFastingAlert } from '../utils/seasonalFastingRadar';
@@ -30,6 +30,7 @@ export default function WeeklyCheckinForm() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const [step, setStep] = useState(1);
+  const [showExtraDetails, setShowExtraDetails] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState('');
 
@@ -47,6 +48,9 @@ export default function WeeklyCheckinForm() {
   const upcomingFasting = useMemo(() => getUpcomingFastingAlert(), []);
   const coachConfig = useMemo(() => getStoredCoachConfig(), []);
   const coachWhatsApp = useMemo(() => formatWhatsAppPhone(coachConfig?.whatsappNumber || coachConfig?.supportWhatsapp || '201001060503'), [coachConfig]);
+  const lastKnownWeight = useMemo(() => {
+    return searchParams.get('last_weight') || searchParams.get('previous_weight') || localStorage.getItem('kz_last_weight') || '84.2';
+  }, [searchParams]);
 
   const [formData, setFormData] = useState({
     weight_kg: '',
@@ -137,7 +141,12 @@ export default function WeeklyCheckinForm() {
       
       if (!clientCode || clientCode.toLowerCase() === 'guest') {
         setError('يرجى إدخال كود المشترك أو رقم الهاتف المسجل أولاً لربط التقييم بملفك');
-        setStep(1);
+        setIsSubmitting(false);
+        return;
+      }
+
+      if (!formData.weight_kg) {
+        setError('يرجى إدخال وزنك الحالي قبل إرسال التقييم');
         setIsSubmitting(false);
         return;
       }
@@ -147,7 +156,7 @@ export default function WeeklyCheckinForm() {
         .map(([pose, p]) => ({
           pose,
           photo_url: p.dataUrl,
-          notes: `حجم مضغوط: ${p.compressedSizeKB}KB (توفير ${Math.max(0, Math.round((1 - p.compressedSizeKB / p.originalSizeKB) * 100))}%)`
+          notes: `حجم مضغوط: ${p.compressedSizeKB}KB (توفير ${Math.max(0, Math.round((1 - p.compressedSizeKB / p.originalSizeKB) * 100))}%`
         }));
 
       const dailyWeightsComplete = formData.daily_weights.every((w) => Number(cleanArabicNumStr(w)) > 20);
@@ -201,17 +210,18 @@ export default function WeeklyCheckinForm() {
           ? `تعذر العثور على حساب المشترك بالكود أو الرقم المدخل (#${clientCode}). يرجى التأكد من كتابة الكود أو رقم الهاتف المسجل لدى الكابتن والمحاولة ثانية.`
           : (data?.error || 'حدث خطأ أثناء حفظ التقييم الأسبوعي. يرجى مراجعة البيانات والمحاولة مجدداً.');
         setError(errorMsg);
-        setStep(1);
         return;
       }
 
-      // Success: persist code for future check-ins
+      // Success: persist code and last weight for future check-ins
       localStorage.setItem('kz_client_code', clientCode);
+      if (formData.weight_kg) {
+        localStorage.setItem('kz_last_weight', String(formData.weight_kg));
+      }
       setStep(4); // Success step
     } catch (err) {
       console.error('Submit checkin error:', err);
       setError('تعذر الاتصال بالخادم لإرسال التقييم الأسبوعي. يرجى التحقق من اتصال الإنترنت والمحاولة مرة أخرى دون قلق، فبياناتك وصورك محفوظة.');
-      setStep(1);
     } finally {
       setIsSubmitting(false);
     }
@@ -265,39 +275,9 @@ export default function WeeklyCheckinForm() {
             </div>
           </div>
 
-          <div style={{ fontSize: '11.5px', fontWeight: 700, color: '#0284C7', background: '#F8FAFC', border: '1px solid #E2E8F0', padding: '3px 10px', borderRadius: '6px' }}>
-            خطوة {step} من 3
+          <div style={{ fontSize: '11.5px', fontWeight: 700, color: '#16A34A', background: '#F0FDF4', border: '1px solid #BBF7D0', padding: '3px 10px', borderRadius: '6px' }}>
+            متابعة سريعة (60 ثانية)
           </div>
-        </div>
-
-        {/* Progress Tracker Steps */}
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '8px' }}>
-          {[
-            { num: 1, title: 'الوزن والمقاسات' },
-            { num: 2, title: 'المؤشرات الحيوية' },
-            { num: 3, title: 'الالتزام والملاحظات' }
-          ].map(s => {
-            const isActive = step === s.num;
-            const isDone = step > s.num;
-            return (
-              <div 
-                key={s.num}
-                style={{
-                  background: isActive ? '#0F172A' : isDone ? '#F0FDF4' : '#FFFFFF',
-                  border: isActive ? '1px solid #0F172A' : isDone ? '1px solid #BBF7D0' : '1px solid #E2E8F0',
-                  color: isActive ? '#FFFFFF' : isDone ? '#166534' : '#64748B',
-                  borderRadius: '8px',
-                  padding: '8px 10px',
-                  textAlign: 'center',
-                  fontSize: '11.5px',
-                  fontWeight: 700,
-                  transition: 'all 0.15s ease'
-                }}
-              >
-                {s.title}
-              </div>
-            );
-          })}
         </div>
 
         {error && (
@@ -307,12 +287,12 @@ export default function WeeklyCheckinForm() {
           </div>
         )}
 
-        {/* STEP 1: Body Metrics */}
-        {step === 1 && (
+        {/* Main Checkin Form */}
+        {step !== 4 ? (
           <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
-            <div style={{ background: '#FFFFFF', border: '1px solid #E2E8F0', borderRadius: '12px', padding: '20px', display: 'flex', flexDirection: 'column', gap: '16px', boxShadow: '0 1px 3px rgba(15, 23, 42, 0.04)' }}>
-              
-              {/* Client Identification Card */}
+            
+            {/* Client Identification Card */}
+            <div style={{ background: '#FFFFFF', border: '1px solid #E2E8F0', borderRadius: '12px', padding: '16px', boxShadow: '0 1px 3px rgba(15, 23, 42, 0.04)' }}>
               <div style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', borderRadius: '8px', padding: '14px' }}>
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: isEditingCode ? '8px' : '0' }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
@@ -378,12 +358,17 @@ export default function WeeklyCheckinForm() {
                   </div>
                 )}
               </div>
+            </div>
 
+            {/* Core 60-Second Checkin Card */}
+            <div style={{ background: '#FFFFFF', border: '1px solid #E2E8F0', borderRadius: '12px', padding: '20px', display: 'flex', flexDirection: 'column', gap: '16px', boxShadow: '0 1px 3px rgba(15, 23, 42, 0.04)' }}>
+              
               <div style={{ display: 'flex', alignItems: 'center', gap: '8px', borderBottom: '1px solid #F1F5F9', paddingBottom: '10px' }}>
                 <Scale size={18} color="#0284C7" />
-                <strong style={{ fontSize: '14px', color: '#0F172A' }}>الوزن الحالي والمقاسات</strong>
+                <strong style={{ fontSize: '14px', color: '#0F172A' }}>القياسات والمؤشرات الأساسية</strong>
               </div>
 
+              {/* Weight */}
               <div>
                 <label style={{ display: 'block', fontSize: '12px', fontWeight: 700, color: '#475569', marginBottom: '6px' }}>
                   الوزن الحالي على الريق (كجم) *
@@ -413,49 +398,12 @@ export default function WeeklyCheckinForm() {
                   />
                   <span style={{ position: 'absolute', left: '14px', fontSize: '12px', color: '#94A3B8', fontWeight: 700 }}>كجم</span>
                 </div>
-              </div>
-
-              <div>
-                <label style={{ display: 'block', fontSize: '12px', fontWeight: 700, color: '#475569', marginBottom: '4px' }}>
-                  أوزان الأيام السبعة على الريق (اختياري - يرفع دقة حساب حرقك الفعلي)
-                </label>
-                <p style={{ fontSize: '11px', color: '#64748B', margin: '0 0 6px 0', lineHeight: 1.5 }}>
-                  لو وزنت نفسك كل يوم الصبح اكتب الأوزان السبعة؛ النظام يحسب المتوسط بدل وزن يوم واحد ليتجاهل تذبذب الماء.
-                </p>
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: '4px' }}>
-                  {formData.daily_weights.map((w, i) => (
-                    <input
-                      key={i}
-                      type="text"
-                      inputMode="decimal"
-                      aria-label={`وزن اليوم ${i + 1}`}
-                      value={w}
-                      placeholder={String(i + 1)}
-                      onChange={(e) => {
-                        const next = [...formData.daily_weights];
-                        next[i] = cleanArabicNumStr(e.target.value);
-                        setFormData({ ...formData, daily_weights: next });
-                      }}
-                      style={{ width: '100%', height: '36px', borderRadius: '8px', border: '1px solid #CBD5E1', padding: '0 2px', fontSize: '12px', fontWeight: 700, textAlign: 'center', fontFamily: 'JetBrains Mono, Cairo', color: '#0F172A', outline: 'none', background: '#FFFFFF', boxSizing: 'border-box' }}
-                    />
-                  ))}
+                <div style={{ fontSize: '11.5px', color: '#64748B', marginTop: '6px', fontWeight: 600 }}>
+                  آخر وزن سجلته: {lastKnownWeight} كجم
                 </div>
               </div>
 
-              <div>
-                <label style={{ display: 'block', fontSize: '12px', fontWeight: 700, color: '#475569', marginBottom: '6px' }}>
-                  متوسط سعراتك اليومية هذا الأسبوع (اختياري - لو بتحسبها)
-                </label>
-                <input
-                  type="text"
-                  inputMode="numeric"
-                  value={formData.average_daily_calories}
-                  onChange={(e) => setFormData({ ...formData, average_daily_calories: cleanArabicNumStr(e.target.value) })}
-                  placeholder="مثال: 2100"
-                  style={{ width: '100%', height: '42px', borderRadius: '8px', border: '1px solid #CBD5E1', padding: '0 14px', fontSize: '14px', fontWeight: 700, textAlign: 'center', fontFamily: 'JetBrains Mono, Cairo', color: '#0F172A', outline: 'none', background: '#FFFFFF', boxSizing: 'border-box' }}
-                />
-              </div>
-
+              {/* Waist */}
               <div>
                 <label style={{ display: 'block', fontSize: '12px', fontWeight: 700, color: '#475569', marginBottom: '6px' }}>
                   محيط الخصر (سم) - اختياري
@@ -487,20 +435,132 @@ export default function WeeklyCheckinForm() {
                 </div>
               </div>
 
+              {/* Diet Adherence */}
+              <div style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', borderRadius: '8px', padding: '12px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '12px', fontWeight: 700 }}>
+                  <span style={{ color: '#0F172A' }}>نسبة الالتزام بالدايت والماكروز</span>
+                  <strong style={{ color: '#16A34A', fontFamily: 'JetBrains Mono' }}>{formData.nutrition_adherence_percent}%</strong>
+                </div>
+                <input 
+                  type="range" 
+                  min="0" 
+                  max="100" 
+                  step="5" 
+                  value={formData.nutrition_adherence_percent} 
+                  onChange={(e) => setFormData({...formData, nutrition_adherence_percent: Number(e.target.value)})} 
+                  style={{ width: '100%', accentColor: '#16A34A', cursor: 'pointer' }} 
+                />
+                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '10.5px', color: '#64748B', fontWeight: 600 }}>
+                  <span>لخبطة / عدم التزام</span>
+                  <span>التزام تام بالخطة</span>
+                </div>
+              </div>
+
+              {/* Sleep Quality */}
+              <div style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', borderRadius: '8px', padding: '12px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '12px', fontWeight: 700 }}>
+                  <span style={{ color: '#0F172A' }}>جودة وعمق النوم</span>
+                  <strong style={{ color: '#0284C7', fontFamily: 'JetBrains Mono' }}>{formData.biofeedback.sleepQuality} / 10</strong>
+                </div>
+                <input 
+                  type="range" 
+                  min="1" 
+                  max="10" 
+                  value={formData.biofeedback.sleepQuality} 
+                  onChange={(e) => handleSliderChange('sleepQuality', e.target.value)} 
+                  style={{ width: '100%', accentColor: '#0284C7', cursor: 'pointer' }} 
+                />
+                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '10.5px', color: '#64748B', fontWeight: 600 }}>
+                  <span>نوم متقطع / أرق</span>
+                  <span>نوم عميق ومريح</span>
+                </div>
+              </div>
+
+              {/* Energy Level */}
+              <div style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', borderRadius: '8px', padding: '12px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '12px', fontWeight: 700 }}>
+                  <span style={{ color: '#0F172A' }}>مستوى الطاقة في التمرين واليوم</span>
+                  <strong style={{ color: '#D97706', fontFamily: 'JetBrains Mono' }}>{formData.biofeedback.energyLevel} / 10</strong>
+                </div>
+                <input 
+                  type="range" 
+                  min="1" 
+                  max="10" 
+                  value={formData.biofeedback.energyLevel} 
+                  onChange={(e) => handleSliderChange('energyLevel', e.target.value)} 
+                  style={{ width: '100%', accentColor: '#D97706', cursor: 'pointer' }} 
+                />
+                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '10.5px', color: '#64748B', fontWeight: 600 }}>
+                  <span>إجهاد وتعب</span>
+                  <span>طاقة ونشاط عالي</span>
+                </div>
+              </div>
+
+              {/* Joint pain (1-10): feeds the injury flag and the early-deload recommendation */}
+              <div style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', borderRadius: '8px', padding: '12px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                <span style={{ fontSize: '12px', fontWeight: 700, color: '#0F172A' }}>هل عندك ألم في أي مفصل هذا الأسبوع؟</span>
+                <div style={{ display: 'flex', gap: '8px' }}>
+                  {[{ v: false, label: 'لا' }, { v: true, label: 'نعم' }].map((opt) => (
+                    <button
+                      key={String(opt.v)}
+                      type="button"
+                      onClick={() => setFormData({ ...formData, has_joint_pain: opt.v, ...(opt.v ? {} : { pain_area: '' }) })}
+                      style={{ flex: 1, padding: '8px', borderRadius: '8px', border: formData.has_joint_pain === opt.v ? '2px solid #0284C7' : '1px solid #CBD5E1', background: formData.has_joint_pain === opt.v ? '#F0F9FF' : '#FFFFFF', fontWeight: 700, fontSize: '12px', cursor: 'pointer' }}
+                    >
+                      {opt.label}
+                    </button>
+                  ))}
+                </div>
+                {formData.has_joint_pain && (
+                  <>
+                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
+                      {PAIN_AREAS.map((a) => (
+                        <button
+                          key={a.id}
+                          type="button"
+                          onClick={() => setFormData({ ...formData, pain_area: a.id })}
+                          style={{ padding: '6px 12px', borderRadius: '9999px', border: formData.pain_area === a.id ? '2px solid #DC2626' : '1px solid #CBD5E1', background: formData.pain_area === a.id ? '#FEF2F2' : '#FFFFFF', fontSize: '11.5px', fontWeight: 700, cursor: 'pointer' }}
+                        >
+                          {a.label}
+                        </button>
+                      ))}
+                    </div>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '12px', fontWeight: 700 }}>
+                      <span style={{ color: '#0F172A' }}>شدة الألم</span>
+                      <strong style={{ color: '#DC2626', fontFamily: 'JetBrains Mono' }}>{formData.pain_level} / 10</strong>
+                    </div>
+                    <input
+                      type="range"
+                      min="1"
+                      max="10"
+                      value={formData.pain_level}
+                      onChange={(e) => setFormData({ ...formData, pain_level: parseInt(e.target.value, 10) })}
+                      style={{ width: '100%', accentColor: '#DC2626', cursor: 'pointer' }}
+                    />
+                    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '10.5px', color: '#64748B', fontWeight: 600 }}>
+                      <span>خفيف</span>
+                      <span>يمنعني من التمرين</span>
+                    </div>
+                  </>
+                )}
+              </div>
+
             </div>
 
-            {/* Photo Upload Section with Self-Contained Local Compression */}
+            {/* Photo Upload Section (Explicitly Optional) */}
             <div style={{ background: '#FFFFFF', border: '1px solid #E2E8F0', borderRadius: '12px', padding: '16px', display: 'flex', flexDirection: 'column', gap: '10px', boxShadow: '0 1px 3px rgba(15, 23, 42, 0.04)' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '6px' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                   <Camera size={18} color="#D97706" />
-                  <strong style={{ fontSize: '13.5px', color: '#0F172A' }}>صور التطور الأسبوعي (3 زوايا)</strong>
+                  <strong style={{ fontSize: '13.5px', color: '#0F172A' }}>صور التطور الأسبوعي (اختيارية)</strong>
                 </div>
-                <span style={{ fontSize: '10.5px', color: '#16A34A', background: '#F0FDF4', padding: '2px 8px', borderRadius: '6px', fontWeight: 700 }}>
-                  ضغط محلي ذكي فائق الوضوح
+                <span style={{ fontSize: '10.5px', color: '#475569', background: '#F1F5F9', border: '1px solid #E2E8F0', padding: '2px 8px', borderRadius: '6px', fontWeight: 700 }}>
+                  اختياري - متاح الإرسال بدون صور أو بزاوية واحدة
                 </span>
               </div>
-              <span style={{ fontSize: '11px', color: '#64748B' }}>يرجى رفع صور واضحة بنفس الإضاءة وزاوية التصوير للمقارنة الدقيقة قبل وبعد.</span>
+              <span style={{ fontSize: '11px', color: '#64748B', lineHeight: 1.5 }}>
+                الصور اختيارية تماماً؛ يمكنك إرسال التقييم بدون صور، أو الاكتفاء بزاوية واحدة أو أكثر لمتابعة تطورك البدني مع الكوتش.
+              </span>
 
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '10px', marginTop: '4px' }}>
                 {[
@@ -603,56 +663,80 @@ export default function WeeklyCheckinForm() {
                 })}
               </div>
             </div>
-          </div>
-        )}
 
-        {/* STEP 2: Bio-feedback */}
-        {step === 2 && (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-            <div style={{ background: '#FFFFFF', border: '1px solid #E2E8F0', borderRadius: '12px', padding: '20px', display: 'flex', flexDirection: 'column', gap: '16px', boxShadow: '0 1px 3px rgba(15, 23, 42, 0.04)' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', borderBottom: '1px solid #F1F5F9', paddingBottom: '10px' }}>
-                <Activity size={18} color="#16A34A" />
-                <strong style={{ fontSize: '14px', color: '#0F172A' }}>المؤشرات الحيوية الأسبوعية</strong>
+            {/* Additional Details Section (Collapsible) */}
+            <div style={{ background: '#FFFFFF', border: '1px solid #E2E8F0', borderRadius: '12px', padding: '16px 20px', boxShadow: '0 1px 3px rgba(15, 23, 42, 0.04)' }}>
+              <button
+                type="button"
+                onClick={() => setShowExtraDetails(!showExtraDetails)}
+                style={{
+                  width: '100%',
+                  background: 'transparent',
+                  border: 'none',
+                  padding: 0,
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                  cursor: 'pointer',
+                  textAlign: 'right'
+                }}
+              >
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <Activity size={18} color="#0284C7" />
+                  <div>
+                    <strong style={{ fontSize: '13.5px', color: '#0F172A', display: 'block' }}>تفاصيل إضافية (اختيارية)</strong>
+                    <span style={{ fontSize: '11px', color: '#64748B' }}>أوزان الأيام السبعة، الهضم، نمط الأسبوع، واستعدادات الأسبوع القادم</span>
+                  </div>
+                </div>
+                <div style={{ background: '#F8FAFC', border: '1px solid #CBD5E1', borderRadius: '6px', width: '28px', height: '28px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#475569' }}>
+                  {showExtraDetails ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
+                </div>
+              </button>
+
+              {showExtraDetails && (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', marginTop: '16px', borderTop: '1px solid #F1F5F9', paddingTop: '16px' }}>
+
+              {/* 7 Daily Weights */}
+              <div>
+                <label style={{ display: 'block', fontSize: '12px', fontWeight: 700, color: '#475569', marginBottom: '4px' }}>
+                  أوزان الأيام السبعة على الريق (اختياري - يرفع دقة حساب حرقك الفعلي)
+                </label>
+                <p style={{ fontSize: '11px', color: '#64748B', margin: '0 0 6px 0', lineHeight: 1.5 }}>
+                  لو وزنت نفسك كل يوم الصبح اكتب الأوزان السبعة؛ النظام يحسب المتوسط بدل وزن يوم واحد ليتجاهل تذبذب الماء.
+                </p>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: '4px' }}>
+                  {formData.daily_weights.map((w, i) => (
+                    <input
+                      key={i}
+                      type="text"
+                      inputMode="decimal"
+                      aria-label={`وزن اليوم ${i + 1}`}
+                      value={w}
+                      placeholder={String(i + 1)}
+                      onChange={(e) => {
+                        const next = [...formData.daily_weights];
+                        next[i] = cleanArabicNumStr(e.target.value);
+                        setFormData({ ...formData, daily_weights: next });
+                      }}
+                      style={{ width: '100%', height: '36px', borderRadius: '8px', border: '1px solid #CBD5E1', padding: '0 2px', fontSize: '12px', fontWeight: 700, textAlign: 'center', fontFamily: 'JetBrains Mono, Cairo', color: '#0F172A', outline: 'none', background: '#FFFFFF', boxSizing: 'border-box' }}
+                    />
+                  ))}
+                </div>
               </div>
 
-              {/* Energy */}
-              <div style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', borderRadius: '8px', padding: '12px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '12px', fontWeight: 700 }}>
-                  <span style={{ color: '#0F172A' }}>مستوى الطاقة في التمرين واليوم</span>
-                  <strong style={{ color: '#D97706', fontFamily: 'JetBrains Mono' }}>{formData.biofeedback.energyLevel} / 10</strong>
-                </div>
-                <input 
-                  type="range" 
-                  min="1" 
-                  max="10" 
-                  value={formData.biofeedback.energyLevel} 
-                  onChange={(e) => handleSliderChange('energyLevel', e.target.value)} 
-                  style={{ width: '100%', accentColor: '#D97706', cursor: 'pointer' }} 
+              {/* Daily Calories */}
+              <div>
+                <label style={{ display: 'block', fontSize: '12px', fontWeight: 700, color: '#475569', marginBottom: '6px' }}>
+                  متوسط سعراتك اليومية هذا الأسبوع (اختياري - لو بتحسبها)
+                </label>
+                <input
+                  type="text"
+                  inputMode="numeric"
+                  value={formData.average_daily_calories}
+                  onChange={(e) => setFormData({ ...formData, average_daily_calories: cleanArabicNumStr(e.target.value) })}
+                  placeholder="مثال: 2100"
+                  style={{ width: '100%', height: '42px', borderRadius: '8px', border: '1px solid #CBD5E1', padding: '0 14px', fontSize: '14px', fontWeight: 700, textAlign: 'center', fontFamily: 'JetBrains Mono, Cairo', color: '#0F172A', outline: 'none', background: '#FFFFFF', boxSizing: 'border-box' }}
                 />
-                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '10.5px', color: '#64748B', fontWeight: 600 }}>
-                  <span>إجهاد وتعب</span>
-                  <span>طاقة ونشاط عالي</span>
-                </div>
-              </div>
-
-              {/* Sleep */}
-              <div style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', borderRadius: '8px', padding: '12px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '12px', fontWeight: 700 }}>
-                  <span style={{ color: '#0F172A' }}>جودة وعمق النوم</span>
-                  <strong style={{ color: '#0284C7', fontFamily: 'JetBrains Mono' }}>{formData.biofeedback.sleepQuality} / 10</strong>
-                </div>
-                <input 
-                  type="range" 
-                  min="1" 
-                  max="10" 
-                  value={formData.biofeedback.sleepQuality} 
-                  onChange={(e) => handleSliderChange('sleepQuality', e.target.value)} 
-                  style={{ width: '100%', accentColor: '#0284C7', cursor: 'pointer' }} 
-                />
-                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '10.5px', color: '#64748B', fontWeight: 600 }}>
-                  <span>نوم متقطع / أرق</span>
-                  <span>نوم عميق ومريح</span>
-                </div>
               </div>
 
               {/* Hunger */}
@@ -675,53 +759,58 @@ export default function WeeklyCheckinForm() {
                 </div>
               </div>
 
-              {/* Joint pain (1-10): feeds the injury flag and the early-deload recommendation */}
-              <div style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', borderRadius: '8px', padding: '12px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                <span style={{ fontSize: '12px', fontWeight: 700, color: '#0F172A' }}>هل عندك ألم في أي مفصل هذا الأسبوع؟</span>
-                <div style={{ display: 'flex', gap: '8px' }}>
-                  {[{ v: false, label: 'لا' }, { v: true, label: 'نعم' }].map((opt) => (
-                    <button
-                      key={String(opt.v)}
+              {/* Workouts Completed */}
+              <div>
+                <label style={{ display: 'block', fontSize: '12px', fontWeight: 700, color: '#475569', marginBottom: '8px' }}>
+                  أيام التمرين المكتملة هذا الأسبوع:
+                </label>
+                <div style={{ display: 'flex', gap: '6px' }}>
+                  {[0,1,2,3,4,5,6,7].map(num => (
+                    <button 
+                      key={num} 
                       type="button"
-                      onClick={() => setFormData({ ...formData, has_joint_pain: opt.v, ...(opt.v ? {} : { pain_area: '' }) })}
-                      style={{ flex: 1, padding: '8px', borderRadius: '8px', border: formData.has_joint_pain === opt.v ? '2px solid #0284C7' : '1px solid #CBD5E1', background: formData.has_joint_pain === opt.v ? '#F0F9FF' : '#FFFFFF', fontWeight: 700, fontSize: '12px', cursor: 'pointer' }}
+                      onClick={() => setFormData({...formData, workouts_completed: num})}
+                      style={{
+                        flex: 1,
+                        height: '36px',
+                        borderRadius: '6px',
+                        fontWeight: 800,
+                        fontSize: '13px',
+                        fontFamily: 'JetBrains Mono',
+                        border: formData.workouts_completed === num ? '1px solid #0F172A' : '1px solid #CBD5E1',
+                        background: formData.workouts_completed === num ? '#0F172A' : '#FFFFFF',
+                        color: formData.workouts_completed === num ? '#FFFFFF' : '#475569',
+                        cursor: 'pointer'
+                      }}
                     >
-                      {opt.label}
+                      {num}
                     </button>
                   ))}
                 </div>
-                {formData.has_joint_pain && (
-                  <>
-                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
-                      {PAIN_AREAS.map((a) => (
-                        <button
-                          key={a.id}
-                          type="button"
-                          onClick={() => setFormData({ ...formData, pain_area: a.id })}
-                          style={{ padding: '6px 12px', borderRadius: '9999px', border: formData.pain_area === a.id ? '2px solid #DC2626' : '1px solid #CBD5E1', background: formData.pain_area === a.id ? '#FEF2F2' : '#FFFFFF', fontSize: '11.5px', fontWeight: 700, cursor: 'pointer' }}
-                        >
-                          {a.label}
-                        </button>
-                      ))}
-                    </div>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '12px', fontWeight: 700 }}>
-                      <span style={{ color: '#0F172A' }}>شدة الألم</span>
-                      <strong style={{ color: '#DC2626', fontFamily: 'JetBrains Mono' }}>{formData.pain_level} / 10</strong>
-                    </div>
-                    <input
-                      type="range"
-                      min="1"
-                      max="10"
-                      value={formData.pain_level}
-                      onChange={(e) => setFormData({ ...formData, pain_level: parseInt(e.target.value, 10) })}
-                      style={{ width: '100%', accentColor: '#DC2626', cursor: 'pointer' }}
-                    />
-                    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '10.5px', color: '#64748B', fontWeight: 600 }}>
-                      <span>خفيف</span>
-                      <span>يمنعني من التمرين</span>
-                    </div>
-                  </>
-                )}
+              </div>
+
+              {/* Notes */}
+              <div>
+                <label style={{ display: 'block', fontSize: '12px', fontWeight: 700, color: '#475569', marginBottom: '6px' }}>
+                  رسالتك واستفساراتك للكوتش:
+                </label>
+                <textarea 
+                  value={formData.client_notes}
+                  onChange={(e) => setFormData({...formData, client_notes: e.target.value})}
+                  placeholder="أكتب أي ملاحظات حول تمرينك، أوزانك، أو شعورك هذا الأسبوع..."
+                  style={{
+                    width: '100%',
+                    height: '90px',
+                    borderRadius: '8px',
+                    border: '1px solid #CBD5E1',
+                    padding: '10px 12px',
+                    fontSize: '12px',
+                    outline: 'none',
+                    resize: 'none',
+                    boxSizing: 'border-box',
+                    fontFamily: 'Cairo, sans-serif'
+                  }}
+                />
               </div>
 
               {/* Retrospective: Lifestyle Variance */}
@@ -862,90 +951,6 @@ export default function WeeklyCheckinForm() {
                     </button>
                   ))}
                 </div>
-              </div>
-
-            </div>
-          </div>
-        )}
-
-        {/* STEP 3: Adherence & Notes */}
-        {step === 3 && (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
-            <div style={{ background: '#FFFFFF', border: '1px solid #E2E8F0', borderRadius: '12px', padding: '20px', display: 'flex', flexDirection: 'column', gap: '16px', boxShadow: '0 1px 3px rgba(15, 23, 42, 0.04)' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', borderBottom: '1px solid #F1F5F9', paddingBottom: '10px' }}>
-                <CheckCircle2 size={18} color="#0284C7" />
-                <strong style={{ fontSize: '14px', color: '#0F172A' }}>الالتزام ورسالة الكوتش</strong>
-              </div>
-
-              {/* Diet Adherence */}
-              <div>
-                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '12px', fontWeight: 700, marginBottom: '6px' }}>
-                  <span style={{ color: '#475569' }}>نسبة الالتزام بالدايت والماكروز:</span>
-                  <strong style={{ color: '#16A34A', fontFamily: 'JetBrains Mono' }}>{formData.nutrition_adherence_percent}%</strong>
-                </div>
-                <input 
-                  type="range" 
-                  min="0" 
-                  max="100" 
-                  step="5" 
-                  value={formData.nutrition_adherence_percent} 
-                  onChange={(e) => setFormData({...formData, nutrition_adherence_percent: Number(e.target.value)})} 
-                  style={{ width: '100%', accentColor: '#16A34A', cursor: 'pointer' }} 
-                />
-              </div>
-
-              {/* Workouts Completed */}
-              <div>
-                <label style={{ display: 'block', fontSize: '12px', fontWeight: 700, color: '#475569', marginBottom: '8px' }}>
-                  أيام التمرين المكتملة هذا الأسبوع:
-                </label>
-                <div style={{ display: 'flex', gap: '6px' }}>
-                  {[0,1,2,3,4,5,6,7].map(num => (
-                    <button 
-                      key={num} 
-                      type="button"
-                      onClick={() => setFormData({...formData, workouts_completed: num})}
-                      style={{
-                        flex: 1,
-                        height: '36px',
-                        borderRadius: '6px',
-                        fontWeight: 800,
-                        fontSize: '13px',
-                        fontFamily: 'JetBrains Mono',
-                        border: formData.workouts_completed === num ? '1px solid #0F172A' : '1px solid #CBD5E1',
-                        background: formData.workouts_completed === num ? '#0F172A' : '#FFFFFF',
-                        color: formData.workouts_completed === num ? '#FFFFFF' : '#475569',
-                        cursor: 'pointer'
-                      }}
-                    >
-                      {num}
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-              {/* Notes */}
-              <div>
-                <label style={{ display: 'block', fontSize: '12px', fontWeight: 700, color: '#475569', marginBottom: '6px' }}>
-                  رسالتك واستفساراتك للكوتش:
-                </label>
-                <textarea 
-                  value={formData.client_notes}
-                  onChange={(e) => setFormData({...formData, client_notes: e.target.value})}
-                  placeholder="أكتب أي ملاحظات حول تمرينك، أوزانك، أو شعورك هذا الأسبوع..."
-                  style={{
-                    width: '100%',
-                    height: '90px',
-                    borderRadius: '8px',
-                    border: '1px solid #CBD5E1',
-                    padding: '10px 12px',
-                    fontSize: '12px',
-                    outline: 'none',
-                    resize: 'none',
-                    boxSizing: 'border-box',
-                    fontFamily: 'Cairo, sans-serif'
-                  }}
-                />
               </div>
 
               {/* Prospective: Forward-Looking Week Preview */}
@@ -1148,12 +1153,39 @@ export default function WeeklyCheckinForm() {
                 </div>
               )}
 
+                </div>
+              )}
             </div>
-          </div>
-        )}
 
-        {/* STEP 4: Success */}
-        {step === 4 && (
+            {/* Direct Submit Button */}
+            <button 
+              type="button"
+              onClick={handleSubmit}
+              disabled={isSubmitting}
+              style={{
+                width: '100%',
+                height: '44px',
+                background: '#16A34A',
+                color: '#FFFFFF',
+                borderRadius: '10px',
+                fontSize: '14px',
+                fontWeight: 800,
+                border: 'none',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: '8px',
+                cursor: isSubmitting ? 'not-allowed' : 'pointer',
+                boxShadow: '0 2px 8px rgba(22, 163, 74, 0.25)',
+                transition: 'background 0.15s ease'
+              }}
+            >
+              {isSubmitting ? <Loader2 size={18} className="animate-spin" /> : 'إرسال التقييم للكوتش'}
+            </button>
+
+          </div>
+        ) : (
+          /* STEP 4: Success */
           <div style={{ background: '#FFFFFF', border: '1px solid #E2E8F0', borderRadius: '12px', padding: '32px 20px', textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '14px', boxShadow: '0 4px 20px rgba(15, 23, 42, 0.05)' }}>
             <div style={{ width: '56px', height: '56px', borderRadius: '50%', background: '#ECFDF5', border: '1px solid #A7F3D0', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#16A34A' }}>
               <CheckCircle2 size={32} />
@@ -1250,99 +1282,6 @@ export default function WeeklyCheckinForm() {
                 معاينة لوحة مراجعة التقييمات للكوتش
               </button>
             </div>
-          </div>
-        )}
-
-        {/* Navigation Buttons */}
-        {step < 4 && (
-          <div style={{ display: 'flex', justifyContent: 'space-between', gap: '10px', marginTop: '6px' }}>
-            {step > 1 ? (
-              <button 
-                type="button"
-                onClick={() => setStep(step - 1)}
-                style={{
-                  height: '38px',
-                  padding: '0 18px',
-                  background: '#FFFFFF',
-                  border: '1px solid #CBD5E1',
-                  borderRadius: '8px',
-                  fontSize: '12px',
-                  fontWeight: 700,
-                  color: '#475569',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '4px',
-                  cursor: 'pointer'
-                }}
-              >
-                <ChevronRight size={16} />
-                <span>السابق</span>
-              </button>
-            ) : (
-              <div />
-            )}
-
-            {step < 3 ? (
-              <button 
-                type="button"
-                onClick={() => {
-                  if (step === 1) {
-                    const clean = clientIdentifier.trim().replace(/^#+/, '').replace(/^client[-_]?/i, '');
-                    if (!clean || clean.toLowerCase() === 'guest') {
-                      setError('يرجى إدخال كود المشترك أو رقم الهاتف المسجل للمتابعة');
-                      return;
-                    }
-                    if (!formData.weight_kg) {
-                      setError('يرجى إدخال وزنك الحالي قبل المتابعة');
-                      return;
-                    }
-                  }
-                  setError('');
-                  setStep(step + 1);
-                }}
-                style={{
-                  height: '38px',
-                  padding: '0 24px',
-                  background: '#0F172A',
-                  color: '#FFFFFF',
-                  borderRadius: '8px',
-                  fontSize: '12.5px',
-                  fontWeight: 700,
-                  border: 'none',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '4px',
-                  cursor: 'pointer',
-                  boxShadow: '0 2px 5px rgba(15, 23, 42, 0.25)'
-                }}
-              >
-                <span>التالي</span>
-                <ChevronLeft size={16} />
-              </button>
-            ) : (
-              <button 
-                type="button"
-                onClick={handleSubmit}
-                disabled={isSubmitting}
-                style={{
-                  height: '38px',
-                  padding: '0 24px',
-                  background: '#16A34A',
-                  color: '#FFFFFF',
-                  borderRadius: '8px',
-                  fontSize: '12.5px',
-                  fontWeight: 800,
-                  border: 'none',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '6px',
-                  cursor: 'pointer',
-                  boxShadow: '0 2px 6px rgba(22, 163, 74, 0.25)'
-                }}
-              >
-                {isSubmitting ? <Loader2 size={16} className="animate-spin" /> : 'إرسال التقييم للكوتش'}
-              </button>
-            )}
           </div>
         )}
 
