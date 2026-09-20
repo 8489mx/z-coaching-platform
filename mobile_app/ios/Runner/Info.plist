@@ -45,12 +45,12 @@
 	<true/>
 	<key>UIApplicationSupportsIndirectInputEvents</key>
 	<true/>
-	<!-- تصاريح الكاميرا ومكتبة الصور المعتمدة لمتجر أبل -->
+	
 	<key>NSCameraUsageDescription</key>
-	<string>يحتاج التطبيق للوصول إلى الكاميرا لالتقاط صور التقييم الأسبوعي لمتابعة التطور البدني والقياسات العضلية.</string>
+	<string>We need access to your camera to take weekly check-in photos. نحتاج صلاحية الكاميرا لالتقاط صور المتابعة الأسبوعية.</string>
 	<key>NSPhotoLibraryUsageDescription</key>
-	<string>يحتاج التطبيق للوصول إلى مكتبة الصور لاختيار وحفظ صور التقييم الأسبوعي للمشترك بأمان تام.</string>
-	<!-- اللغات المدعومة -->
+	<string>We need access to your photo library to upload weekly check-in photos. نحتاج صلاحية معرض الصور لرفع صور المتابعة الأسبوعية.</string>
+	
 	<key>CFBundleLocalizations</key>
 	<array>
 		<string>ar</string>
