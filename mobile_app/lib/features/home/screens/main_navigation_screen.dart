@@ -4,6 +4,7 @@ import '../../../core/network/api_client.dart';
 import '../../../core/storage/local_storage.dart';
 import '../../auth/screens/login_screen.dart';
 import '../../auth/services/auth_service.dart';
+import '../../checkin/services/checkin_service.dart';
 import '../../checkin/screens/weekly_checkin_screen.dart';
 import '../../nutrition/screens/nutrition_screen.dart';
 import '../../workout/screens/workout_screen.dart';
@@ -37,6 +38,20 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
       WorkoutScreen(storage: widget.storage),
       WeeklyCheckinScreen(storage: widget.storage),
     ];
+    _uploadPendingCheckins();
+  }
+
+  /// أي متابعة اتحفظت على الجهاز وقت انقطاع النت تترفع أول ما التطبيق يفتح ومعاه اتصال.
+  Future<void> _uploadPendingCheckins() async {
+    final service = CheckinService(ApiClient(widget.storage), widget.storage);
+    final result = await service.flushPendingCheckins();
+    if (!mounted || (result['uploaded'] ?? 0) == 0) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        backgroundColor: AppColors.primary,
+        content: Text('تم رفع ${result['uploaded']} متابعة كانت محفوظة على جهازك.'),
+      ),
+    );
   }
 
   void _handleLogout() {

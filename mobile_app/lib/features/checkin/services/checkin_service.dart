@@ -79,4 +79,29 @@ class CheckinService {
     // رفض من الخادم (بيانات غير صالحة أو متابعة مكررة): نعرض السبب ولا نضعه في الطابور
     return response;
   }
+
+  /// يرفع المتابعات المحفوظة على الجهاز بعد عودة الاتصال.
+  /// ما يفشل بسبب الشبكة يبقى في الطابور، وما يرفضه الخادم يخرج منه حتى لا تتكرر المحاولة بلا نهاية.
+  Future<Map<String, int>> flushPendingCheckins() async {
+    final pending = _storage.getPendingCheckins();
+    if (pending.isEmpty) return {'uploaded': 0, 'kept': 0, 'rejected': 0};
+
+    final remaining = <Map<String, dynamic>>[];
+    var uploaded = 0;
+    var rejected = 0;
+
+    for (final payload in pending) {
+      final response = await _apiClient.post(ApiConstants.submitCheckin, body: payload);
+      if (response.isSuccess) {
+        uploaded++;
+      } else if (response.statusCode == 0) {
+        remaining.add(payload);
+      } else {
+        rejected++;
+      }
+    }
+
+    await _storage.replacePendingCheckins(remaining);
+    return {'uploaded': uploaded, 'kept': remaining.length, 'rejected': rejected};
+  }
 }

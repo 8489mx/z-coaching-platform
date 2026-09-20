@@ -111,6 +111,15 @@ class LocalStorage {
     await _prefs?.remove(ApiConstants.pendingCheckinsKey);
   }
 
+  /// يستبدل الطابور بما تبقى بعد محاولة الرفع (يمسحه لو لم يتبق شيء).
+  Future<void> replacePendingCheckins(List<Map<String, dynamic>> remaining) async {
+    if (remaining.isEmpty) {
+      await clearPendingCheckins();
+      return;
+    }
+    await _prefs?.setString(ApiConstants.pendingCheckinsKey, jsonEncode(remaining));
+  }
+
   // --- ضبط عنوان الخادم المخصص (Custom Server URL) ---
 
   Future<void> setCustomBaseUrl(String url) async {

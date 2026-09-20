@@ -93,3 +93,15 @@ test("there is exactly one Flutter app folder", () => {
   assert.ok(fs.existsSync(path.join(ROOT, "mobile_app/pubspec.yaml")), "mobile_app is the app");
   assert.ok(!fs.existsSync(path.join(ROOT, "mobile")), "the legacy mobile/ stub must stay deleted");
 });
+
+// The offline queue used to fill up and never empty: nothing in the app uploaded it.
+test("the mobile offline check-in queue is uploaded when the app opens", () => {
+  const service = read("mobile_app/lib/features/checkin/services/checkin_service.dart");
+  assert.match(service, /Future<Map<String, int>> flushPendingCheckins\(\)/);
+  assert.match(service, /replacePendingCheckins\(remaining\)/, "what could not be sent stays queued");
+  const storage = read("mobile_app/lib/core/storage/local_storage.dart");
+  assert.match(storage, /Future<void> replacePendingCheckins\(/);
+  const nav = read("mobile_app/lib/features/home/screens/main_navigation_screen.dart");
+  assert.match(nav, /_uploadPendingCheckins\(\);/);
+  assert.match(nav, /flushPendingCheckins\(\)/);
+});
