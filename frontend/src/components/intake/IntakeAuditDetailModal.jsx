@@ -205,6 +205,20 @@ export default function IntakeAuditDetailModal({
             </Section>
           </div>
           <div style={{ display: 'flex', flexDirection: 'column' }}>
+            <Section title="4) التغذية ونمط الحياة">
+              <FieldRow label="الديانة" value={answers.religion} />
+              <FieldRow label="نمط الصيام المسيحي" value={answers.christianFastingStyle} />
+              <FieldRow label="ممنوعات وحساسية صارمة" value={answers.strict_allergies} />
+              <FieldRow label="أطعمة غير مفضلة" value={answers.disliked_foods} />
+              <FieldRow label="عدد الوجبات" value={answers.meal_structure?.meals_count} />
+              <FieldRow label="صيام متقطع" value={answers.meal_structure?.intermittent_fasting} />
+              <FieldRow label="ميزانية الطعام" value={answers.food_budget} />
+              <FieldRow label="القدرة على تحضير الطعام" value={answers.food_prep_ability} />
+              <FieldRow label="سكر المشروبات" value={answers.beverage_sugar_intake} />
+              <FieldRow label="نمط النوم" value={answers.sleep_schedule?.pattern} />
+              <FieldRow label="متوسط ساعات النوم" value={answers.sleep_schedule?.average_hours} />
+              <FieldRow label="ساعة النوم المعتادة" value={answers.sleep_schedule?.bedtime_hour} />
+            </Section>
           </div>
         </div>
 
