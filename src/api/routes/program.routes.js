@@ -4,8 +4,6 @@ import {
   getUserPrograms,
   generateProgramPreview,
   generateAndSaveProgram,
-  generateProgramFromSubmission,
-  generateProgramForClient,
   evaluateCheckinHandler,
   submitWeeklyCheckin,
   getPendingCheckins,
@@ -26,8 +24,6 @@ const router = express.Router();
 router.post("/generate", requireAuth, generateProgram);
 router.post("/generate-preview", requireAuth, generateProgramPreview);
 router.post("/generate-and-save", requireAuth, generateAndSaveProgram);
-router.post("/generate-from-submission/:submission_id", requireAuth, generateProgramFromSubmission);
-router.post("/generate-for-client/:user_id", requireAuth, generateProgramForClient);
 router.get("/", requireAuth, getUserPrograms);
 router.get("/active", requireAuth, getMyActiveProgram);
 router.get("/active/:user_id", requireAuth, getActiveProgramByUserId);
