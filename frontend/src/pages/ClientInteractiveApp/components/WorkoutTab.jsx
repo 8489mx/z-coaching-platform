@@ -12,6 +12,7 @@ import {
   Activity
 } from 'lucide-react';
 import { getPrehabRoutine } from '../../../utils/posturalPrehabEngine';
+import { READINESS_GUIDANCE_AR } from '../../../utils/progressionEngine';
 import ExerciseLogCard from './ExerciseLogCard';
 
 export default function WorkoutTab({
@@ -277,8 +278,7 @@ export default function WorkoutTab({
             lineHeight: '1.5',
             marginTop: '8px'
           }}>
-            <strong style={{ display: 'block', marginBottom: '2px' }}>توجيه فسيولوجي ليوم الإجهاد:</strong>
-            طاقتك تتأثر بنومك وضغوط يومك وهذا تذبذب عصبي طبيعي مؤقت. من الاحترافية خفض الأوزان بنسبة 10-20% والتركيز على المدى الحركي الكامل وتفادي الوصول للفشل العضلي التام اليوم. قوتك الحقيقية ستعود بكامل كفاءتها الأسبوع القادم.
+            {READINESS_GUIDANCE_AR.FATIGUED}
           </div>
         )}
       </div>

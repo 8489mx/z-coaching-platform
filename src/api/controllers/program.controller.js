@@ -19,7 +19,7 @@ import { loadProgressionState } from "../services/progressionService.js";
 import { resolveFastingContext, FASTING_OVERRIDES, applyFastingToMeals, RAMADAN_CARDIO_GUIDANCE_AR } from "../../execution-engines/fasting-calendar-engine.js";
 import { getGulfHeatAdvisory, getPracticalCardioPrescription } from "../../execution-engines/cardio-zones-engine.js";
 import { calculateSessionDemand, auditWeeklyMuscleVolume, auditDeficitVolumeShield, evaluateProteinSparingRequirement } from "../utils/trainingNutritionCoupling.js";
-import { applyDeloadToSession } from "../../../src/training-engine-v2/progression/index.js";
+import { applyDeloadToSession, READINESS_GUIDANCE_AR } from "../../../src/training-engine-v2/progression/index.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -992,7 +992,9 @@ export const getActiveProgramByUserId = async (req, res) => {
       target_macros,
       meals,
       cardio,
-      training_session
+      training_session,
+      // نص الجاهزية يأتي من المحرك حتى لا يُكتب مرة ثانية داخل التطبيق
+      readiness_guidance_ar: READINESS_GUIDANCE_AR,
     };
 
     return res.status(200).json({

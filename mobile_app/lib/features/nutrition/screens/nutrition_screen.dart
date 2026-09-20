@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
+import '../../../core/constants/api_constants.dart';
 import '../../../core/constants/app_colors.dart';
+import '../../../core/network/api_client.dart';
 import '../../../core/storage/local_storage.dart';
 import '../models/meal_models.dart';
 
-/// شاشة التغذية التفاعلية مع محرك تبديل الأطعمة الذكي
+/// شاشة التغذية التفاعلية مع محرك تبديل الأطعمة
 class NutritionScreen extends StatefulWidget {
   final LocalStorage storage;
   const NutritionScreen({super.key, required this.storage});
@@ -13,32 +15,8 @@ class NutritionScreen extends StatefulWidget {
 }
 
 class _NutritionScreenState extends State<NutritionScreen> {
+  DailyMacroTarget _macroTarget = DailyMacroTarget(calories: 0, protein: 0, carbs: 0, fat: 0);
   List<Meal> _meals = [];
-
-  // قاعدة بيانات بدائل مبسطة مطابقة لمحرك المنظومة
-  final Map<String, List<Map<String, dynamic>>> _smartSwapDatabase = {
-    'بروتين': [
-      {'name': 'صدور دجاج مشوية', 'factor': 1.0, 'calPer100': 165, 'p': 31, 'c': 0, 'f': 3.6},
-      {'name': 'فيليه لحم بقري صافي', 'factor': 0.95, 'calPer100': 190, 'p': 29, 'c': 0, 'f': 8.0},
-      {'name': 'سمك بلطي طازج', 'factor': 1.15, 'calPer100': 128, 'p': 26, 'c': 0, 'f': 2.7},
-      {'name': 'تونة معلبة مصفاة بالماء', 'factor': 1.1, 'calPer100': 130, 'p': 28, 'c': 0, 'f': 1.0},
-      {'name': 'سلمون نرويجي مشوي', 'factor': 0.85, 'calPer100': 208, 'p': 22, 'c': 0, 'f': 13.0},
-      {'name': 'بياض بيض مطبوخ', 'factor': 2.4, 'calPer100': 52, 'p': 11, 'c': 0.7, 'f': 0.2},
-    ],
-    'كارب': [
-      {'name': 'أرز بسمتي مسلوق', 'factor': 1.0, 'calPer100': 130, 'p': 2.7, 'c': 28, 'f': 0.3},
-      {'name': 'بطاطا حلوة مشوية', 'factor': 1.25, 'calPer100': 90, 'p': 2.0, 'c': 21, 'f': 0.2},
-      {'name': 'شوفان حبة كاملة', 'factor': 0.38, 'calPer100': 389, 'p': 16.9, 'c': 66, 'f': 6.9},
-      {'name': 'مكرونة حبة كاملة مسلوقة', 'factor': 0.95, 'calPer100': 140, 'p': 5.5, 'c': 29, 'f': 0.9},
-      {'name': 'بطاطس مسلوقة', 'factor': 1.4, 'calPer100': 87, 'p': 1.9, 'c': 20, 'f': 0.1},
-    ],
-    'دهون': [
-      {'name': 'زيت زيتون بكر ممتاز', 'factor': 1.0, 'calPer100': 884, 'p': 0, 'c': 0, 'f': 100},
-      {'name': 'زبدة فول سوداني طبيعية', 'factor': 1.5, 'calPer100': 588, 'p': 25, 'c': 20, 'f': 50},
-      {'name': 'لوز خام غير محمص', 'factor': 1.5, 'calPer100': 579, 'p': 21, 'c': 22, 'f': 50},
-      {'name': 'أفوكادو طازج', 'factor': 5.5, 'calPer100': 160, 'p': 2, 'c': 9, 'f': 15},
-    ],
-  };
 
   @override
   void initState() {
@@ -48,57 +26,29 @@ class _NutritionScreenState extends State<NutritionScreen> {
 
   void _loadMeals() {
     final cached = widget.storage.getCachedActiveProgram();
-    if (cached != null && cached['nutrition'] is Map && cached['nutrition']['meals'] is List) {
-      final rawMeals = cached['nutrition']['meals'] as List;
-      _meals = rawMeals.asMap().entries.map((e) => Meal.fromJson(Map<String, dynamic>.from(e.value as Map), e.key)).toList();
-    } else {
-      // خطة وجبات افتراضية نموذجية للمتدرب
-      _meals = [
-        Meal(
-          id: 'm1',
-          name: 'وجبة 1: الإفطار المتوازن',
-          time: '08:30 صباحاً',
-          items: [
-            FoodItem(id: 'f1', name: 'شوفان حبة كاملة', grams: 60, calories: 233, protein: 10.1, carbs: 39.6, fat: 4.1),
-            FoodItem(id: 'f2', name: 'بياض بيض مطبوخ', grams: 180, calories: 94, protein: 19.8, carbs: 1.3, fat: 0.4),
-            FoodItem(id: 'f3', name: 'زبدة فول سوداني طبيعية', grams: 15, calories: 88, protein: 3.8, carbs: 3.0, fat: 7.5),
-          ],
-        ),
-        Meal(
-          id: 'm2',
-          name: 'وجبة 2: الغداء (قبل التمرين)',
-          time: '02:00 مساءً',
-          items: [
-            FoodItem(id: 'f4', name: 'صدور دجاج مشوية', grams: 200, calories: 330, protein: 62.0, carbs: 0.0, fat: 7.2),
-            FoodItem(id: 'f5', name: 'أرز بسمتي مسلوق', grams: 220, calories: 286, protein: 5.9, carbs: 61.6, fat: 0.7),
-            FoodItem(id: 'f6', name: 'زيت زيتون بكر ممتاز', grams: 10, calories: 88, protein: 0.0, carbs: 0.0, fat: 10.0),
-          ],
-        ),
-        Meal(
-          id: 'm3',
-          name: 'وجبة 3: العشاء والاستشفاء',
-          time: '08:30 مساءً',
-          items: [
-            FoodItem(id: 'f7', name: 'سمك بلطي طازج', grams: 220, calories: 282, protein: 57.2, carbs: 0.0, fat: 5.9),
-            FoodItem(id: 'f8', name: 'بطاطا حلوة مشوية', grams: 250, calories: 225, protein: 5.0, carbs: 52.5, fat: 0.5),
-          ],
-        ),
-      ];
+    if (cached != null) {
+      final clientView = cached['client_view'] as Map<String, dynamic>?;
+      if (clientView != null) {
+        if (clientView['target_macros'] is Map) {
+          _macroTarget = DailyMacroTarget.fromJson(Map<String, dynamic>.from(clientView['target_macros'] as Map));
+        }
+        if (clientView['meals'] is List) {
+          final rawMeals = clientView['meals'] as List;
+          _meals = rawMeals.asMap().entries.map((e) => Meal.fromJson(Map<String, dynamic>.from(e.value as Map), e.key)).toList();
+        }
+      } else if (cached['nutrition'] is Map && cached['nutrition']['meals'] is List) {
+        final rawMeals = cached['nutrition']['meals'] as List;
+        _meals = rawMeals.asMap().entries.map((e) => Meal.fromJson(Map<String, dynamic>.from(e.value as Map), e.key)).toList();
+        final targets = cached['nutrition']['targets'] ?? cached['nutrition']['daily_targets'];
+        if (targets is Map) {
+          _macroTarget = DailyMacroTarget.fromJson(Map<String, dynamic>.from(targets as Map));
+        }
+      }
     }
     setState(() {});
   }
 
   void _openSwapSheet(Meal meal, FoodItem item) {
-    // تحديد نوع الغذاء بناءً على محتواه الغالب
-    String category = 'بروتين';
-    if (item.carbs > item.protein && item.carbs > item.fat) {
-      category = 'كارب';
-    } else if (item.fat > item.protein && item.fat > item.carbs) {
-      category = 'دهون';
-    }
-
-    final candidates = _smartSwapDatabase[category] ?? [];
-
     showModalBottomSheet(
       context: context,
       backgroundColor: AppColors.surface,
@@ -106,95 +56,18 @@ class _NutritionScreenState extends State<NutritionScreen> {
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
       builder: (ctx) {
-        return Container(
-          padding: const EdgeInsets.all(20),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text(
-                    'بدائل ذكية لـ: ${item.name}',
-                    style: const TextStyle(
-                      color: AppColors.textPrimary,
-                      fontWeight: FontWeight.bold,
-                      fontSize: 16,
-                    ),
-                  ),
-                  IconButton(
-                    icon: const Icon(Icons.close, color: AppColors.textSecondary),
-                    onPressed: () => Navigator.pop(ctx),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 8),
-              const Text(
-                'يتم احتساب الجرامات المكافئة آلياً للحفاظ على نفس السعرات والماكروز المقررة.',
-                style: TextStyle(color: AppColors.textSecondary, fontSize: 13),
-              ),
-              const SizedBox(height: 16),
-              Flexible(
-                child: ListView.separated(
-                  shrinkWrap: true,
-                  itemCount: candidates.length,
-                  separatorBuilder: (_, __) => const Divider(color: AppColors.border),
-                  itemBuilder: (context, idx) {
-                    final cand = candidates[idx];
-                    final double factor = (cand['factor'] as num).toDouble();
-                    final int newGrams = (item.grams * factor).round();
-                    final int newCal = ((newGrams * (cand['calPer100'] as num)) / 100).round();
-                    final double newP = ((newGrams * (cand['p'] as num)) / 100);
-
-                    final isCurrent = cand['name'] == item.name;
-
-                    return ListTile(
-                      contentPadding: EdgeInsets.zero,
-                      title: Text(
-                        cand['name'] as String,
-                        style: TextStyle(
-                          color: isCurrent ? AppColors.primary : AppColors.textPrimary,
-                          fontWeight: FontWeight.bold,
-                          fontSize: 14,
-                        ),
-                      ),
-                      subtitle: Text(
-                        '$newGrams جرام - $newCal سعرة (بروتين: ${newP.toStringAsFixed(1)}g)',
-                        style: const TextStyle(color: AppColors.textSecondary, fontSize: 12),
-                      ),
-                      trailing: isCurrent
-                          ? const Text('الصنف الحالي', style: TextStyle(color: AppColors.primary, fontSize: 12))
-                          : ElevatedButton(
-                              style: ElevatedButton.styleFrom(
-                                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-                                textStyle: const TextStyle(fontSize: 12),
-                              ),
-                              onPressed: () {
-                                setState(() {
-                                  final itemIdx = meal.items.indexOf(item);
-                                  if (itemIdx != -1) {
-                                    meal.items[itemIdx] = FoodItem(
-                                      id: item.id,
-                                      name: cand['name'] as String,
-                                      grams: newGrams.toDouble(),
-                                      calories: newCal,
-                                      protein: newP,
-                                      carbs: ((newGrams * (cand['c'] as num)) / 100),
-                                      fat: ((newGrams * (cand['f'] as num)) / 100),
-                                    );
-                                  }
-                                });
-                                Navigator.pop(ctx);
-                              },
-                              child: const Text('اختيار'),
-                            ),
-                    );
-                  },
-                ),
-              ),
-            ],
-          ),
+        return _SwapSheetContent(
+          storage: widget.storage,
+          item: item,
+          onSwapSelected: (FoodItem swappedItem) {
+            setState(() {
+              final itemIdx = meal.items.indexOf(item);
+              if (itemIdx != -1) {
+                meal.items[itemIdx] = swappedItem;
+              }
+            });
+            Navigator.pop(ctx);
+          },
         );
       },
     );
@@ -213,110 +86,404 @@ class _NutritionScreenState extends State<NutritionScreen> {
           ),
         ],
       ),
-      body: ListView.builder(
-        padding: const EdgeInsets.all(16),
-        itemCount: _meals.length,
-        itemBuilder: (context, mealIndex) {
-          final meal = _meals[mealIndex];
-          return Card(
-            margin: const EdgeInsets.only(bottom: 16),
-            child: Padding(
+      body: _meals.isEmpty
+          ? Center(
+              child: Padding(
+                padding: const EdgeInsets.all(24),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const Icon(Icons.restaurant_menu, size: 48, color: AppColors.textMuted),
+                    const SizedBox(height: 16),
+                    const Text(
+                      'لا توجد خطة وجبات متاحة حالياً. يرجى التحقق من اتصال الإنترنت أو التواصل مع المدرب لتفعيل خطتك.',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(color: AppColors.textSecondary, fontSize: 14, height: 1.5),
+                    ),
+                    const SizedBox(height: 16),
+                    ElevatedButton.icon(
+                      style: ElevatedButton.styleFrom(
+                        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                      ),
+                      onPressed: _loadMeals,
+                      icon: const Icon(Icons.refresh, size: 18),
+                      label: const Text('إعادة المحاولة'),
+                    ),
+                  ],
+                ),
+              ),
+            )
+          : ListView(
               padding: const EdgeInsets.all(16),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  // رأس الوجبة
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            meal.name,
-                            style: const TextStyle(
-                              color: AppColors.textPrimary,
-                              fontWeight: FontWeight.bold,
-                              fontSize: 16,
-                            ),
-                          ),
-                          if (meal.time != null) ...[
-                            const SizedBox(height: 2),
-                            Text(
-                              meal.time!,
-                              style: const TextStyle(color: AppColors.textMuted, fontSize: 12),
-                            ),
-                          ],
-                        ],
+              children: [
+                if (_macroTarget.calories > 0) ...[
+                  Card(
+                    margin: const EdgeInsets.only(bottom: 16),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+              child: Padding(
+                padding: const EdgeInsets.all(16),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    const Text(
+                      'الأهداف اليومية للماكروز والسعرات',
+                      style: TextStyle(
+                        color: AppColors.textPrimary,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 15,
                       ),
-                      Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                        decoration: BoxDecoration(
-                          color: AppColors.surfaceLight,
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                        child: Text(
-                          '${meal.totalCalories} سعرة',
-                          style: const TextStyle(
-                            color: AppColors.secondary,
-                            fontWeight: FontWeight.bold,
-                            fontSize: 13,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 12),
-                  const Divider(color: AppColors.border),
-                  const SizedBox(height: 8),
-
-                  // قائمة أصناف الوجبة
-                  ...meal.items.map((item) {
-                    return Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 6),
-                      child: Row(
-                        children: [
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  item.name,
-                                  style: const TextStyle(
-                                    color: AppColors.textPrimary,
-                                    fontSize: 14,
-                                    fontWeight: FontWeight.w600,
-                                  ),
-                                ),
-                                const SizedBox(height: 2),
-                                Text(
-                                  '${item.grams.round()}g | ${item.calories} سعرة (ب: ${item.protein.round()}g، ك: ${item.carbs.round()}g، د: ${item.fat.round()}g)',
-                                  style: const TextStyle(color: AppColors.textSecondary, fontSize: 12),
-                                ),
-                              ],
-                            ),
-                          ),
-                          OutlinedButton.icon(
-                            style: OutlinedButton.styleFrom(
-                              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-                              side: const BorderSide(color: AppColors.primary, width: 0.8),
-                            ),
-                            onPressed: () => _openSwapSheet(meal, item),
-                            icon: const Icon(Icons.swap_horiz, size: 16, color: AppColors.primary),
-                            label: const Text(
-                              'تبديل',
-                              style: TextStyle(color: AppColors.primary, fontSize: 12),
-                            ),
-                          ),
-                        ],
-                      ),
-                    );
-                  }),
-                ],
+                    ),
+                    const SizedBox(height: 12),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceAround,
+                      children: [
+                        _buildMacroBadge('السعرات', '${_macroTarget.calories}', AppColors.secondary),
+                        _buildMacroBadge('البروتين', '${_macroTarget.protein}g', AppColors.primary),
+                        _buildMacroBadge('الكارب', '${_macroTarget.carbs}g', AppColors.secondary),
+                        _buildMacroBadge('الدهون', '${_macroTarget.fat}g', AppColors.warning),
+                      ],
+                    ),
+                  ],
+                ),
               ),
             ),
-          );
+          ],
+          ..._meals.map((meal) {
+            return Card(
+              margin: const EdgeInsets.only(bottom: 16),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+              child: Padding(
+                padding: const EdgeInsets.all(16),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    // رأس الوجبة
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              meal.name,
+                              style: const TextStyle(
+                                color: AppColors.textPrimary,
+                                fontWeight: FontWeight.bold,
+                                fontSize: 16,
+                              ),
+                            ),
+                            if (meal.time != null) ...[
+                              const SizedBox(height: 2),
+                              Text(
+                                meal.time!,
+                                style: const TextStyle(color: AppColors.textMuted, fontSize: 12),
+                              ),
+                            ],
+                          ],
+                        ),
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                          decoration: BoxDecoration(
+                            color: AppColors.surfaceLight,
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          child: Text(
+                            '${meal.totalCalories} سعرة',
+                            style: const TextStyle(
+                              color: AppColors.secondary,
+                              fontWeight: FontWeight.bold,
+                              fontSize: 13,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 12),
+                    const Divider(color: AppColors.border),
+                    const SizedBox(height: 8),
+
+                    // قائمة أصناف الوجبة
+                    ...meal.items.map((item) {
+                      return Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 6),
+                        child: Row(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    item.name,
+                                    style: const TextStyle(
+                                      color: AppColors.textPrimary,
+                                      fontSize: 14,
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 2),
+                                  Text(
+                                    '${item.grams.round()}g | ${item.calories} سعرة (ب: ${item.protein.round()}g، ك: ${item.carbs.round()}g، د: ${item.fat.round()}g)',
+                                    style: const TextStyle(color: AppColors.textSecondary, fontSize: 12),
+                                  ),
+                                  if (item.fastingNoteAr != null && item.fastingNoteAr!.isNotEmpty) ...[
+                                    const SizedBox(height: 4),
+                                    Container(
+                                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                                      decoration: BoxDecoration(
+                                        color: AppColors.backgroundDeep,
+                                        borderRadius: BorderRadius.circular(8),
+                                        border: Border.all(color: AppColors.border),
+                                      ),
+                                      child: Text(
+                                        item.fastingNoteAr!,
+                                        style: const TextStyle(color: AppColors.secondary, fontSize: 11),
+                                      ),
+                                    ),
+                                  ] else if (item.fastingSubstitutedFrom != null && item.fastingSubstitutedFrom!.isNotEmpty) ...[
+                                    const SizedBox(height: 4),
+                                    Container(
+                                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                                      decoration: BoxDecoration(
+                                        color: AppColors.backgroundDeep,
+                                        borderRadius: BorderRadius.circular(8),
+                                        border: Border.all(color: AppColors.border),
+                                      ),
+                                      child: Text(
+                                        'بديل من: ${item.fastingSubstitutedFrom}',
+                                        style: const TextStyle(color: AppColors.secondary, fontSize: 11),
+                                      ),
+                                    ),
+                                  ],
+                                ],
+                              ),
+                            ),
+                            OutlinedButton.icon(
+                              style: OutlinedButton.styleFrom(
+                                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                                side: const BorderSide(color: AppColors.primary, width: 0.8),
+                              ),
+                              onPressed: () => _openSwapSheet(meal, item),
+                              icon: const Icon(Icons.swap_horiz, size: 16, color: AppColors.primary),
+                              label: const Text(
+                                'تبديل',
+                                style: TextStyle(color: AppColors.primary, fontSize: 12),
+                              ),
+                            ),
+                          ],
+                        ),
+                      );
+                    }),
+                  ],
+                ),
+              ),
+            );
+          }),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildMacroBadge(String label, String val, Color color) {
+    return Column(
+      children: [
+        Text(val, style: TextStyle(color: color, fontWeight: FontWeight.bold, fontSize: 14)),
+        const SizedBox(height: 2),
+        Text(label, style: const TextStyle(color: AppColors.textSecondary, fontSize: 11)),
+      ],
+    );
+  }
+}
+
+class _SwapSheetContent extends StatefulWidget {
+  final LocalStorage storage;
+  final FoodItem item;
+  final ValueChanged<FoodItem> onSwapSelected;
+
+  const _SwapSheetContent({
+    required this.storage,
+    required this.item,
+    required this.onSwapSelected,
+  });
+
+  @override
+  State<_SwapSheetContent> createState() => _SwapSheetContentState();
+}
+
+class _SwapSheetContentState extends State<_SwapSheetContent> {
+  bool _isLoading = true;
+  String? _error;
+  List<Map<String, dynamic>> _candidates = [];
+
+  @override
+  void initState() {
+    super.initState();
+    _fetchCandidates();
+  }
+
+  Future<void> _fetchCandidates() async {
+    setState(() {
+      _isLoading = true;
+      _error = null;
+    });
+
+    try {
+      final client = ApiClient(widget.storage);
+      final response = await client.post(
+        ApiConstants.swapCandidates,
+        {
+          'food_code': widget.item.code.isNotEmpty ? widget.item.code : widget.item.id,
+          'name_ar': widget.item.name,
+          'source_grams': widget.item.grams,
         },
+      );
+
+      if (response.isSuccess && response.data is Map && response.data['candidates'] is List) {
+        final list = response.data['candidates'] as List;
+        _candidates = list.map((e) => Map<String, dynamic>.from(e as Map)).toList();
+      } else {
+        _error = 'لا تتوفر بدائل مسجلة لهذا الصنف حالياً';
+      }
+    } catch (_) {
+      _error = 'تعذر الاتصال بالخادم لجلب البدائل';
+    } finally {
+      if (mounted) {
+        setState(() => _isLoading = false);
+      }
+    }
+  }
+
+  Future<void> _applySwap(Map<String, dynamic> candidate) async {
+    final candCode = candidate['food_code']?.toString() ?? '';
+    if (candCode.isEmpty) return;
+
+    try {
+      final client = ApiClient(widget.storage);
+      final response = await client.post(
+        ApiConstants.swapFood,
+        {
+          'current_food_code': widget.item.code.isNotEmpty ? widget.item.code : widget.item.id,
+          'current_portion_g': widget.item.grams,
+          'target_food_code': candCode,
+        },
+      );
+
+      if (response.isSuccess && response.data is Map) {
+        final data = response.data;
+        final swapped = data['swapped_food'] as Map<String, dynamic>?;
+        final target = data['swap']?['target_food'] as Map<String, dynamic>?;
+
+        final newGrams = ((swapped?['grams'] ?? target?['portion_g'] ?? candidate['target_grams'] ?? widget.item.grams) as num).toDouble();
+        final newName = swapped?['name_ar']?.toString() ?? candidate['name_ar']?.toString() ?? widget.item.name;
+        final newCal = ((target?['calories'] ?? 0) as num).round();
+        final newP = ((target?['protein_g'] ?? 0) as num).toDouble();
+        final newC = ((target?['carbs_g'] ?? target?['carbohydrate_g'] ?? 0) as num).toDouble();
+        final newF = ((target?['fats_g'] ?? target?['fat_g'] ?? 0) as num).toDouble();
+
+        final newItem = FoodItem(
+          id: widget.item.id,
+          code: candCode,
+          name: newName,
+          grams: newGrams,
+          calories: newCal,
+          protein: newP,
+          carbs: newC,
+          fat: newF,
+        );
+
+        widget.onSwapSelected(newItem);
+      }
+    } catch (_) {}
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(20),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                'بدائل لـ: ${widget.item.name}',
+                style: const TextStyle(
+                  color: AppColors.textPrimary,
+                  fontWeight: FontWeight.bold,
+                  fontSize: 16,
+                ),
+              ),
+              IconButton(
+                icon: const Icon(Icons.close, color: AppColors.textSecondary),
+                onPressed: () => Navigator.pop(context),
+              ),
+            ],
+          ),
+          const SizedBox(height: 8),
+          const Text(
+            'البدائل المقررة من الخادم للحفاظ على نفس التوازن الغذائي.',
+            style: TextStyle(color: AppColors.textSecondary, fontSize: 13),
+          ),
+          const SizedBox(height: 16),
+          if (_isLoading)
+            const Padding(
+              padding: EdgeInsets.symmetric(vertical: 24),
+              child: Center(child: CircularProgressIndicator(color: AppColors.primary)),
+            )
+          else if (_error != null || _candidates.isEmpty)
+            Padding(
+              padding: const EdgeInsets.symmetric(vertical: 24),
+              child: Center(
+                child: Text(
+                  _error ?? 'لا تتوفر بدائل مسجلة لهذا الصنف حالياً',
+                  style: const TextStyle(color: AppColors.textMuted, fontSize: 13),
+                ),
+              ),
+            )
+          else
+            Flexible(
+              child: ListView.separated(
+                shrinkWrap: true,
+                itemCount: _candidates.length,
+                separatorBuilder: (_, __) => const Divider(color: AppColors.border),
+                itemBuilder: (context, idx) {
+                  final cand = _candidates[idx];
+                  final name = cand['name_ar']?.toString() ?? cand['display_ar']?.toString() ?? '';
+                  final display = cand['display_ar']?.toString() ?? cand['serving_display_ar']?.toString() ?? name;
+                  final targetGrams = cand['target_grams'] ?? cand['portion_g'];
+
+                  return ListTile(
+                    contentPadding: EdgeInsets.zero,
+                    title: Text(
+                      name,
+                      style: const TextStyle(
+                        color: AppColors.textPrimary,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 14,
+                      ),
+                    ),
+                    subtitle: Text(
+                      display.isNotEmpty ? display : (targetGrams != null ? '$targetGrams جرام' : ''),
+                      style: const TextStyle(color: AppColors.textSecondary, fontSize: 12),
+                    ),
+                    trailing: ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                        textStyle: const TextStyle(fontSize: 12),
+                      ),
+                      onPressed: () => _applySwap(cand),
+                      child: const Text('اختيار'),
+                    ),
+                  );
+                },
+              ),
+            ),
+        ],
       ),
     );
   }

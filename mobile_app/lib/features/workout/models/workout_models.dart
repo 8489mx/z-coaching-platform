@@ -1,98 +1,64 @@
 /// نماذج التمارين وجلسات التدريب الميداني
-class WorkoutSet {
-  final int setNumber;
-  final String targetReps;
-  double? loggedWeight;
-  int? loggedReps;
-  bool isCompleted;
-
-  WorkoutSet({
-    required this.setNumber,
-    required this.targetReps,
-    this.loggedWeight,
-    this.loggedReps,
-    this.isCompleted = false,
-  });
-
-  Map<String, dynamic> toJson() {
-    return {
-      'set_number': setNumber,
-      'target_reps': targetReps,
-      'logged_weight': loggedWeight,
-      'logged_reps': loggedReps,
-      'is_completed': isCompleted,
-    };
-  }
-
-  factory WorkoutSet.fromJson(Map<String, dynamic> json) {
-    return WorkoutSet(
-      setNumber: json['set_number'] ?? 1,
-      targetReps: json['target_reps']?.toString() ?? '10-12',
-      loggedWeight: (json['logged_weight'] as num?)?.toDouble(),
-      loggedReps: json['logged_reps'] as int?,
-      isCompleted: json['is_completed'] == true,
-    );
-  }
-}
-
 class Exercise {
   final String id;
+  final String exerciseCode;
   final String name;
   final int targetSets;
   final String targetReps;
+  final int? targetRir;
   final int restSeconds;
-  final String safetyNote;
+  final String cue;
   final String? videoUrl;
-  final List<WorkoutSet> sets;
-  bool isDone;
-  String? workingWeight;
+
+  // حالة التسجيل الميداني الذكي (بطاقة تسجيل واحدة لكل تمرين)
+  double? loggedWeight;
+  int? loggedLastSetReps;
+  String loggedEffort; // 'OK', 'EASY', 'HARD'
+  bool isCompleted;
 
   Exercise({
     required this.id,
+    required this.exerciseCode,
     required this.name,
     required this.targetSets,
     required this.targetReps,
+    this.targetRir,
     required this.restSeconds,
-    required this.safetyNote,
+    required this.cue,
     this.videoUrl,
-    this.sets = const [],
-    this.isDone = false,
-    this.workingWeight,
+    this.loggedWeight,
+    this.loggedLastSetReps,
+    this.loggedEffort = 'OK',
+    this.isCompleted = false,
   });
 
-  bool get isCompleted => isDone || (sets.isNotEmpty && sets.every((s) => s.isCompleted));
-
   factory Exercise.fromJson(Map<String, dynamic> json, int index) {
-    final numSets = (json['sets'] is int) 
-        ? json['sets'] 
+    final numSets = (json['sets'] is int)
+        ? json['sets']
         : (int.tryParse(json['sets']?.toString() ?? '') ?? 3);
 
-    final targetRepsStr = json['target_reps']?.toString() ?? 
-        json['reps']?.toString() ?? 
-        json['reps_target']?.toString() ?? 
+    final targetRepsStr = json['target_reps']?.toString() ??
+        json['reps']?.toString() ??
+        json['reps_target']?.toString() ??
         '10-12';
 
-    // بناء الجولات الأولية
-    List<WorkoutSet> setsList = [];
-    if (json['logged_sets'] is List) {
-      setsList = (json['logged_sets'] as List)
-          .map((e) => WorkoutSet.fromJson(Map<String, dynamic>.from(e as Map)))
-          .toList();
-    } else {
-      for (int i = 1; i <= numSets; i++) {
-        setsList.add(WorkoutSet(setNumber: i, targetReps: targetRepsStr));
-      }
-    }
+    final targetRirVal = (json['target_rir'] is int)
+        ? json['target_rir']
+        : int.tryParse(json['target_rir']?.toString() ?? '');
+
+    final code = json['exercise_code']?.toString() ?? json['id']?.toString() ?? 'ex_$index';
+    final nameStr = json['name']?.toString() ?? json['exercise_name']?.toString() ?? json['name_ar']?.toString() ?? code;
 
     return Exercise(
-      id: json['id']?.toString() ?? json['exercise_code']?.toString() ?? 'ex_$index',
-      name: json['name']?.toString() ?? json['exercise_name']?.toString() ?? json['name_ar']?.toString() ?? 'تمرين مقاومة',
+      id: code,
+      exerciseCode: code,
+      name: nameStr,
       targetSets: numSets,
       targetReps: targetRepsStr,
+      targetRir: targetRirVal,
       restSeconds: (json['rest_seconds'] as int?) ?? (int.tryParse(json['rest_seconds']?.toString() ?? '') ?? 90),
-      safetyNote: json['safety_note']?.toString() ?? json['cue']?.toString() ?? 'التحكم الكامل في مسار الحركة مع النزول البطيء',
+      cue: json['cue']?.toString() ?? json['safety_note']?.toString() ?? 'التحكم الكامل في مسار الحركة مع النزول البطيء',
       videoUrl: json['video_url']?.toString(),
-      sets: setsList,
     );
   }
 }
@@ -112,14 +78,8 @@ class WorkoutSession {
     this.isCompleted = false,
   });
 
-  int get totalCompletedSets => exercises.fold(
-        0,
-        (sum, ex) => sum + ex.sets.where((s) => s.isCompleted).length,
-      );
-
-  int get totalSets => exercises.fold(0, (sum, ex) => sum + ex.sets.length);
-
-  double get completionProgress => totalSets > 0 ? (totalCompletedSets / totalSets) : 0.0;
+  int get completedExercisesCount => exercises.where((e) => e.isCompleted).length;
+  double get completionProgress => exercises.isNotEmpty ? (completedExercisesCount / exercises.length) : 0.0;
 
   factory WorkoutSession.fromJson(Map<String, dynamic> json, int index) {
     final rawExercises = json['exercises'] ?? [];

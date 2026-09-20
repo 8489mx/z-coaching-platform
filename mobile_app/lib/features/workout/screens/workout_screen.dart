@@ -18,6 +18,9 @@ class _WorkoutScreenState extends State<WorkoutScreen> {
   late final WorkoutService _workoutService;
 
   List<WorkoutSession> _sessions = [];
+  Map<String, dynamic>? _cardio;
+  // نص الجاهزية يأتي من المحرك عبر client_view، ولا يُكتب داخل التطبيق
+  Map<String, dynamic>? _readinessGuidance;
   int _selectedSessionIndex = 0;
   String _dailyReadiness = 'OPTIMAL';
   bool _showWorkoutGuide = false;
@@ -36,116 +39,39 @@ class _WorkoutScreenState extends State<WorkoutScreen> {
 
   void _loadWorkoutSessions() {
     final cached = widget.storage.getCachedActiveProgram();
-    final loaded = _workoutService.getSessionsFromProgram(cached);
-
-    if (loaded.isNotEmpty) {
-      _sessions = loaded;
-    } else {
-      // جلسات افتراضية احترافية
-      _sessions = [
-        WorkoutSession(
-          id: 's1',
-          dayName: 'اليوم الأول: دفع وصدر وأكتاف أمامية',
-          warmupProtocol: 'إحماء عام 5 دقائق دراجة + إطالات ديناميكية لعضلات الصدر وروتاتور كاف',
-          exercises: [
-            Exercise(
-              id: 'ex1',
-              name: 'باربل بنش برس مستوي (Barbell Bench Press)',
-              targetSets: 4,
-              targetReps: '6-8',
-              restSeconds: 120,
-              safetyNote: 'تثبيت لوحي الكتف للخلف والأسفل والنزول المتحكم به حتى منتصف الصدر',
-              sets: [
-                WorkoutSet(setNumber: 1, targetReps: '8'),
-                WorkoutSet(setNumber: 2, targetReps: '8'),
-                WorkoutSet(setNumber: 3, targetReps: '6-8'),
-                WorkoutSet(setNumber: 4, targetReps: '6-8'),
-              ],
-            ),
-            Exercise(
-              id: 'ex2',
-              name: 'ضغط دمبل مائل عالي (Incline DB Press)',
-              targetSets: 3,
-              targetReps: '8-10',
-              restSeconds: 90,
-              safetyNote: 'زاوية المقعد 30 درجة لتركيز الحمل على الألياف الترقوية العلوية',
-              sets: [
-                WorkoutSet(setNumber: 1, targetReps: '10'),
-                WorkoutSet(setNumber: 2, targetReps: '10'),
-                WorkoutSet(setNumber: 3, targetReps: '8-10'),
-              ],
-            ),
-            Exercise(
-              id: 'ex3',
-              name: 'تفتيح كيبل للصدر مع ضغط (Cable Flyes)',
-              targetSets: 3,
-              targetReps: '12-15',
-              restSeconds: 60,
-              safetyNote: 'عصر العضلة في نهاية المدى مع ثبات ثانية واحدة',
-              sets: [
-                WorkoutSet(setNumber: 1, targetReps: '15'),
-                WorkoutSet(setNumber: 2, targetReps: '12-15'),
-                WorkoutSet(setNumber: 3, targetReps: '12-15'),
-              ],
-            ),
-            Exercise(
-              id: 'ex4',
-              name: 'ترايسبس حبل كيبل لأسفل (Rope Pushdown)',
-              targetSets: 4,
-              targetReps: '12',
-              restSeconds: 60,
-              safetyNote: 'تثبيت المرفقين بجانب الجذع دون تأرجح',
-              sets: [
-                WorkoutSet(setNumber: 1, targetReps: '12'),
-                WorkoutSet(setNumber: 2, targetReps: '12'),
-                WorkoutSet(setNumber: 3, targetReps: '12'),
-                WorkoutSet(setNumber: 4, targetReps: '12'),
-              ],
-            ),
-          ],
-        ),
-        WorkoutSession(
-          id: 's2',
-          dayName: 'اليوم الثاني: سحب وظهر وبايسبس',
-          warmupProtocol: 'سحب خفيف على الكيبل + تعليق حر لتمديد عضلات الظهر العريضة',
-          exercises: [
-            Exercise(
-              id: 'ex5',
-              name: 'سحب ظهر عريض أمامي (Lat Pulldown)',
-              targetSets: 4,
-              targetReps: '8-10',
-              restSeconds: 90,
-              safetyNote: 'بدء السحب بتنزيل لوحي الكتف ثم سحب المرفقين للجوانب',
-              sets: [
-                WorkoutSet(setNumber: 1, targetReps: '10'),
-                WorkoutSet(setNumber: 2, targetReps: '10'),
-                WorkoutSet(setNumber: 3, targetReps: '8-10'),
-                WorkoutSet(setNumber: 4, targetReps: '8-10'),
-              ],
-            ),
-          ],
-        ),
-      ];
+    final clientView = cached?['client_view'] as Map<String, dynamic>?;
+    if (clientView != null && clientView['readiness_guidance_ar'] is Map) {
+      _readinessGuidance = Map<String, dynamic>.from(clientView['readiness_guidance_ar'] as Map);
     }
+    if (clientView != null && clientView['cardio'] is Map) {
+      _cardio = Map<String, dynamic>.from(clientView['cardio'] as Map);
+    } else if (cached?['cardio'] is Map) {
+      _cardio = Map<String, dynamic>.from(cached!['cardio'] as Map);
+    }
+    final loaded = _workoutService.getSessionsFromProgram(cached);
+    _sessions = loaded;
     setState(() {});
   }
 
-
-
   Future<void> _completeSession(WorkoutSession session) async {
-    await _workoutService.logCompletedSession(
-      sessionId: session.id,
-      sessionName: session.dayName,
+    final clientData = widget.storage.getClientData();
+    final userId = clientData?['client_code']?.toString() ?? clientData?['id']?.toString() ?? 'client';
+
+    final success = await _workoutService.sendWorkoutLog(
+      userId: userId,
+      sessionTitle: session.dayName,
       exercises: session.exercises,
     );
 
     if (mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
+        SnackBar(
           backgroundColor: AppColors.primary,
           content: Text(
-            'تم تسجيل وحفظ جلسة التمرين بنجاح في الذاكرة المحلية والربط مع الخادم',
-            style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+            success
+                ? 'تم حفظ وتسجيل جلسة التمرين بالخادم بنجاح'
+                : 'تم حفظ سجل الجلسة محلياً وسيتم رفعه للخادم تلقائياً',
+            style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
           ),
         ),
       );
@@ -155,10 +81,35 @@ class _WorkoutScreenState extends State<WorkoutScreen> {
   @override
   Widget build(BuildContext context) {
     if (_sessions.isEmpty) {
-      return const Scaffold(
+      return Scaffold(
         backgroundColor: AppColors.background,
+        appBar: AppBar(title: const Text('سجل التمارين الميداني')),
         body: Center(
-          child: Text('لا توجد جلسات تدريبية متاحة حالياً', style: TextStyle(color: AppColors.textSecondary)),
+          child: Padding(
+            padding: const EdgeInsets.all(24),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Icon(Icons.fitness_center, size: 48, color: AppColors.textMuted),
+                const SizedBox(height: 16),
+                const Text(
+                  'لا توجد خطة تدريبية متاحة حالياً. يرجى التحقق من اتصال الإنترنت أو التواصل مع المدرب.',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(color: AppColors.textSecondary, fontSize: 14, height: 1.5),
+                ),
+                const SizedBox(height: 16),
+                ElevatedButton.icon(
+                  style: ElevatedButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                  ),
+                  onPressed: _loadWorkoutSessions,
+                  icon: const Icon(Icons.refresh, size: 18),
+                  label: const Text('إعادة المحاولة'),
+                ),
+              ],
+            ),
+          ),
         ),
       );
     }
@@ -256,7 +207,7 @@ class _WorkoutScreenState extends State<WorkoutScreen> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       const Text(
-                        'الجاهزية اليومية والتنظيم الذاتي (RPE)',
+                        'الجاهزية اليومية والتنظيم الذاتي',
                         style: TextStyle(
                           color: AppColors.textPrimary,
                           fontSize: 14,
@@ -334,9 +285,7 @@ class _WorkoutScreenState extends State<WorkoutScreen> {
                           ),
                         ),
                         child: Text(
-                          _dailyReadiness == 'FATIGUED'
-                              ? 'توجيه ليوم الإجهاد: طاقتك تتأثر بنومك وضغوط يومك وهذا تذبذب عصبي طبيعي؛ من الاحترافية خفض الأوزان بنسبة 10-20% والتركيز على المدى الحركي الآمن وتفادي الفشل التام. قوتك ستعود بكامل طاقتها الأسبوع القادم.'
-                              : 'قاعدة الجاهزية (RPE): اضبط أوزانك وفق طاقتك الحالية مع إبقاء 1-2 تكرار في الاحتياط قبل الفشل العضلي بتكنيك آمن ومحكم.',
+                          (_readinessGuidance?[_dailyReadiness == 'FATIGUED' ? 'FATIGUED' : 'OPTIMAL'] ?? '').toString(),
                           style: TextStyle(
                             color: _dailyReadiness == 'FATIGUED' ? const Color(0xFF991B1B) : AppColors.textSecondary,
                             fontSize: 11,
@@ -399,7 +348,7 @@ class _WorkoutScreenState extends State<WorkoutScreen> {
                         const SizedBox(height: 10),
                         _buildGuideItem('1. مجموعات العمل الفعالة (Working Sets)', 'المجموعات المكتوبة (مثال: 3 جولات) هي مجموعات عمل أساسية بنفس الوزن التشغيلي. التسخين يتم مسبقاً ولا يُحسب ضمن جولات الجدول.'),
                         const SizedBox(height: 8),
-                        _buildGuideItem('2. كيف تحدد وزنك لأول مرة؟', 'لا نحدد لك وزناً ثابتاً في البداية؛ اختر وزناً تجريبياً يمكنك من إتمام العدات المطلوبة مع بقاء 1-2 عدة في الاحتياط قبل الفشل (RPE 8-9)، وسجله في خانة أفضل وزن اليوم.'),
+                        _buildGuideItem('2. كيف تحدد وزنك لأول مرة؟', 'لا نحدد لك وزناً ثابتاً في البداية؛ اختر وزناً يمكّنك من إتمام العدات المطلوبة مع الالتزام بهامش الجهد المكتوب على بطاقة التمرين نفسها، وسجّله في خانة أفضل وزن اليوم.'),
                         const SizedBox(height: 8),
                         _buildGuideItem('3. ماذا يعني النطاق التكراري (8-10 عدات)؟', 'اختيار وزن لا تستطيع عمل أقل من 8 به ولا تتجاوز 10 بتكنيك محكم.'),
                         const SizedBox(height: 8),
@@ -412,10 +361,16 @@ class _WorkoutScreenState extends State<WorkoutScreen> {
                 ),
                 const SizedBox(height: 16),
 
-                // بطاقات التمارين الفردية
+                if (_cardio != null) ...[
+                  _buildCardioCard(_cardio!),
+                  const SizedBox(height: 16),
+                ],
+
+                // بطاقات التمارين الفردية (بطاقة استرشادية وبطاقة تسجيل ذكية واحدة لكل تمرين)
                 ...currentSession.exercises.map((exercise) {
                   return Card(
                     margin: const EdgeInsets.only(bottom: 16),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
                     child: Padding(
                       padding: const EdgeInsets.all(16),
                       child: Column(
@@ -431,7 +386,7 @@ class _WorkoutScreenState extends State<WorkoutScreen> {
                           ),
                           const SizedBox(height: 4),
                           Text(
-                            'توجيه: ${exercise.safetyNote}',
+                            'توجيه: ${exercise.cue}',
                             style: const TextStyle(color: AppColors.textMuted, fontSize: 12),
                           ),
                           const SizedBox(height: 12),
@@ -450,6 +405,10 @@ class _WorkoutScreenState extends State<WorkoutScreen> {
                                 _buildPrescriptionBadge('${exercise.targetSets} مجموعات', 'الحجم المستهدف'),
                                 Container(width: 1, height: 24, color: AppColors.border),
                                 _buildPrescriptionBadge('${exercise.targetReps} عدات', 'النطاق التكراري'),
+                                if (exercise.targetRir != null) ...[
+                                  Container(width: 1, height: 24, color: AppColors.border),
+                                  _buildPrescriptionBadge('${exercise.targetRir} بالاحتياط', 'الجهد المستهدف'),
+                                ],
                                 Container(width: 1, height: 24, color: AppColors.border),
                                 _buildPrescriptionBadge('${exercise.restSeconds} ثانية', 'فترة الراحة'),
                               ],
@@ -457,42 +416,167 @@ class _WorkoutScreenState extends State<WorkoutScreen> {
                           ),
                           const SizedBox(height: 12),
 
-                          // زر تحديد كمنجز (اختياري للاسترشاد)
-                          InkWell(
-                            borderRadius: BorderRadius.circular(8),
-                            onTap: () {
-                              setState(() {
-                                exercise.isDone = !exercise.isDone;
-                              });
-                            },
-                            child: Container(
-                              padding: const EdgeInsets.symmetric(vertical: 9, horizontal: 12),
-                              decoration: BoxDecoration(
-                                color: exercise.isDone ? const Color(0xFFF0FDF4) : AppColors.backgroundDeep,
-                                borderRadius: BorderRadius.circular(8),
-                                border: Border.all(
-                                  color: exercise.isDone ? const Color(0xFFBBF7D0) : AppColors.border,
-                                ),
+                          // بطاقة تسجيل الأداء الميداني الذكية (ExerciseLogCard - بطاقة واحدة لكل تمرين)
+                          Container(
+                            decoration: BoxDecoration(
+                              color: AppColors.backgroundDeep,
+                              borderRadius: BorderRadius.circular(12),
+                              border: Border.all(
+                                color: exercise.isCompleted ? const Color(0xFFBBF7D0) : AppColors.border,
                               ),
-                              child: Row(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  Icon(
-                                    exercise.isDone ? Icons.check_circle : Icons.check_circle_outline,
-                                    size: 18,
-                                    color: exercise.isDone ? const Color(0xFF16A34A) : AppColors.textSecondary,
-                                  ),
-                                  const SizedBox(width: 8),
-                                  Text(
-                                    exercise.isDone ? 'تم إنجاز هذا التمرين' : 'تحديد كمنجز (اختياري)',
-                                    style: TextStyle(
-                                      color: exercise.isDone ? const Color(0xFF166534) : AppColors.textSecondary,
-                                      fontSize: 13,
-                                      fontWeight: FontWeight.bold,
+                            ),
+                            padding: const EdgeInsets.all(12),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Row(
+                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    const Text(
+                                      'تسجيل الأداء الفعلي (المجموعة الأخيرة)',
+                                      style: TextStyle(
+                                        color: AppColors.textPrimary,
+                                        fontSize: 13,
+                                        fontWeight: FontWeight.bold,
+                                      ),
                                     ),
-                                  ),
-                                ],
-                              ),
+                                    if (exercise.isCompleted)
+                                      const Text(
+                                        'تم التسجيل',
+                                        style: TextStyle(color: Color(0xFF16A34A), fontSize: 11, fontWeight: FontWeight.bold),
+                                      ),
+                                  ],
+                                ),
+                                const SizedBox(height: 10),
+                                Row(
+                                  children: [
+                                    Expanded(
+                                      child: TextFormField(
+                                        initialValue: exercise.loggedWeight != null ? exercise.loggedWeight.toString() : '',
+                                        keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                                        style: const TextStyle(color: AppColors.textPrimary, fontSize: 13),
+                                        decoration: InputDecoration(
+                                          labelText: 'الوزن المستخدم (كجم)',
+                                          labelStyle: const TextStyle(color: AppColors.textMuted, fontSize: 11),
+                                          contentPadding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                                          isDense: true,
+                                          filled: true,
+                                          fillColor: AppColors.surface,
+                                          border: OutlineInputBorder(
+                                            borderRadius: BorderRadius.circular(8),
+                                            borderSide: const BorderSide(color: AppColors.border),
+                                          ),
+                                        ),
+                                        onChanged: (val) {
+                                          exercise.loggedWeight = double.tryParse(val.trim());
+                                        },
+                                      ),
+                                    ),
+                                    const SizedBox(width: 8),
+                                    Expanded(
+                                      child: TextFormField(
+                                        initialValue: exercise.loggedLastSetReps != null ? exercise.loggedLastSetReps.toString() : '',
+                                        keyboardType: TextInputType.number,
+                                        style: const TextStyle(color: AppColors.textPrimary, fontSize: 13),
+                                        decoration: InputDecoration(
+                                          labelText: 'عدات آخر مجموعة',
+                                          labelStyle: const TextStyle(color: AppColors.textMuted, fontSize: 11),
+                                          contentPadding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                                          isDense: true,
+                                          filled: true,
+                                          fillColor: AppColors.surface,
+                                          border: OutlineInputBorder(
+                                            borderRadius: BorderRadius.circular(8),
+                                            borderSide: const BorderSide(color: AppColors.border),
+                                          ),
+                                        ),
+                                        onChanged: (val) {
+                                          exercise.loggedLastSetReps = int.tryParse(val.trim());
+                                        },
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                const SizedBox(height: 10),
+                                const Text(
+                                  'مستوى الجهد المبذول:',
+                                  style: TextStyle(color: AppColors.textSecondary, fontSize: 11),
+                                ),
+                                const SizedBox(height: 6),
+                                Row(
+                                  children: [
+                                    ChoiceChip(
+                                      label: const Text('سهل'),
+                                      selected: exercise.loggedEffort == 'EASY',
+                                      selectedColor: const Color(0xFFDCFCE7),
+                                      backgroundColor: AppColors.surface,
+                                      labelStyle: TextStyle(
+                                        color: exercise.loggedEffort == 'EASY' ? const Color(0xFF166534) : AppColors.textSecondary,
+                                        fontSize: 11,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                      onSelected: (val) {
+                                        if (val) setState(() => exercise.loggedEffort = 'EASY');
+                                      },
+                                    ),
+                                    const SizedBox(width: 6),
+                                    ChoiceChip(
+                                      label: const Text('مناسب'),
+                                      selected: exercise.loggedEffort == 'OK',
+                                      selectedColor: AppColors.primaryLight,
+                                      backgroundColor: AppColors.surface,
+                                      labelStyle: TextStyle(
+                                        color: exercise.loggedEffort == 'OK' ? AppColors.primary : AppColors.textSecondary,
+                                        fontSize: 11,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                      onSelected: (val) {
+                                        if (val) setState(() => exercise.loggedEffort = 'OK');
+                                      },
+                                    ),
+                                    const SizedBox(width: 6),
+                                    ChoiceChip(
+                                      label: const Text('صعب'),
+                                      selected: exercise.loggedEffort == 'HARD',
+                                      selectedColor: const Color(0xFFFEE2E2),
+                                      backgroundColor: AppColors.surface,
+                                      labelStyle: TextStyle(
+                                        color: exercise.loggedEffort == 'HARD' ? const Color(0xFF991B1B) : AppColors.textSecondary,
+                                        fontSize: 11,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                      onSelected: (val) {
+                                        if (val) setState(() => exercise.loggedEffort = 'HARD');
+                                      },
+                                    ),
+                                    const Spacer(),
+                                    TextButton.icon(
+                                      style: TextButton.styleFrom(
+                                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                                        backgroundColor: AppColors.surface,
+                                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                                      ),
+                                      onPressed: () {
+                                        setState(() {
+                                          exercise.isCompleted = !exercise.isCompleted;
+                                        });
+                                      },
+                                      icon: Icon(
+                                        exercise.isCompleted ? Icons.check_circle : Icons.check_circle_outline,
+                                        size: 16,
+                                        color: exercise.isCompleted ? const Color(0xFF16A34A) : AppColors.textSecondary,
+                                      ),
+                                      label: Text(
+                                        exercise.isCompleted ? 'مكتمل' : 'تأكيد',
+                                        style: TextStyle(
+                                          color: exercise.isCompleted ? const Color(0xFF166534) : AppColors.textSecondary,
+                                          fontSize: 11,
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ],
                             ),
                           ),
                         ],
@@ -543,6 +627,167 @@ class _WorkoutScreenState extends State<WorkoutScreen> {
           Text(title, style: const TextStyle(color: AppColors.textPrimary, fontSize: 12, fontWeight: FontWeight.bold)),
           const SizedBox(height: 2),
           Text(desc, style: const TextStyle(color: AppColors.textSecondary, fontSize: 11, height: 1.4)),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildCardioCard(Map<String, dynamic> cardio) {
+    final title = cardio['protocol_title_ar']?.toString() ?? 'بروتوكول النشاط الهوائي';
+    final duration = cardio['duration_minutes'];
+    final frequency = cardio['sessions_per_week'];
+    final talkTestCue = cardio['talk_test_cue_ar']?.toString();
+    final settings = cardio['suggested_settings_ar']?.toString();
+    final clinicalGuidance = cardio['clinical_guidance_ar']?.toString();
+    final advisories = cardio['advisories_ar'] as List?;
+
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: AppColors.surface,
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: AppColors.border),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Row(
+            children: [
+              const Icon(Icons.directions_run, color: AppColors.primary, size: 20),
+              const SizedBox(width: 8),
+              Expanded(
+                child: Text(
+                  title,
+                  style: const TextStyle(
+                    color: AppColors.textPrimary,
+                    fontSize: 15,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          Container(
+            decoration: BoxDecoration(
+              color: AppColors.backgroundDeep,
+              borderRadius: BorderRadius.circular(10),
+              border: Border.all(color: AppColors.border),
+            ),
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceAround,
+              children: [
+                if (duration != null)
+                  _buildPrescriptionBadge('$duration دقيقة', 'المدة المقررة'),
+                if (duration != null && frequency != null)
+                  Container(width: 1, height: 24, color: AppColors.border),
+                if (frequency != null)
+                  _buildPrescriptionBadge('$frequency جلسات/أسبوع', 'التكرار الأسبوعي'),
+              ],
+            ),
+          ),
+          if (talkTestCue != null && talkTestCue.isNotEmpty) ...[
+            const SizedBox(height: 10),
+            Container(
+              padding: const EdgeInsets.all(10),
+              decoration: BoxDecoration(
+                color: AppColors.backgroundDeep,
+                borderRadius: BorderRadius.circular(8),
+                border: Border.all(color: AppColors.border),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text(
+                    'توجيه الشدة واختبار الكلام:',
+                    style: TextStyle(color: AppColors.textPrimary, fontSize: 12, fontWeight: FontWeight.bold),
+                  ),
+                  const SizedBox(height: 2),
+                  Text(
+                    talkTestCue,
+                    style: const TextStyle(color: AppColors.textSecondary, fontSize: 12, height: 1.4),
+                  ),
+                ],
+              ),
+            ),
+          ],
+          if (settings != null && settings.isNotEmpty) ...[
+            const SizedBox(height: 10),
+            Container(
+              padding: const EdgeInsets.all(10),
+              decoration: BoxDecoration(
+                color: AppColors.backgroundDeep,
+                borderRadius: BorderRadius.circular(8),
+                border: Border.all(color: AppColors.border),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text(
+                    'الإعدادات المقترحة للأجهزة:',
+                    style: TextStyle(color: AppColors.textPrimary, fontSize: 12, fontWeight: FontWeight.bold),
+                  ),
+                  const SizedBox(height: 2),
+                  Text(
+                    settings,
+                    style: const TextStyle(color: AppColors.textSecondary, fontSize: 12, height: 1.4),
+                  ),
+                ],
+              ),
+            ),
+          ],
+          if (clinicalGuidance != null && clinicalGuidance.isNotEmpty) ...[
+            const SizedBox(height: 10),
+            Container(
+              padding: const EdgeInsets.all(10),
+              decoration: BoxDecoration(
+                color: const Color(0xFFEFF6FF),
+                borderRadius: BorderRadius.circular(8),
+                border: Border.all(color: const Color(0xFFBFDBFE)),
+              ),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Icon(Icons.health_and_safety_outlined, size: 16, color: Color(0xFF1D4ED8)),
+                  const SizedBox(width: 6),
+                  Expanded(
+                    child: Text(
+                      clinicalGuidance,
+                      style: const TextStyle(color: Color(0xFF1E40AF), fontSize: 12, height: 1.4),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+          if (advisories != null && advisories.isNotEmpty) ...[
+            const SizedBox(height: 10),
+            ...advisories.map((adv) {
+              return Container(
+                margin: const EdgeInsets.only(bottom: 6),
+                padding: const EdgeInsets.all(10),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFFEF3C7),
+                  borderRadius: BorderRadius.circular(8),
+                  border: Border.all(color: const Color(0xFFFCD34D)),
+                ),
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Icon(Icons.info_outline, size: 16, color: Color(0xFFB45309)),
+                    const SizedBox(width: 6),
+                    Expanded(
+                      child: Text(
+                        adv.toString(),
+                        style: const TextStyle(color: Color(0xFF92400E), fontSize: 12, height: 1.4),
+                      ),
+                    ),
+                  ],
+                ),
+              );
+            }),
+          ],
         ],
       ),
     );
