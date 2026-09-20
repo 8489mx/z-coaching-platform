@@ -173,6 +173,25 @@ export default function IntakeAuditDetailModal({
               <FieldRow label="مستوى الحركة اليومية (NEAT)" value={answers.neat_level} />
               <FieldRow label="طبيعة العمل" value={answers.occupation_type} />
             </Section>
+
+            <Section title="2) الملف الطبي">
+              <FieldRow label="أعراض خطيرة" value={answers.dangerous_symptoms} />
+              <FieldRow label="الحالات الطبية المختارة" value={answers.medical_conditions?.selected} />
+              <FieldRow label="نوع السكري" value={answers.medical_conditions?.diabetes?.type} />
+              <FieldRow label="يستخدم الإنسولين" value={answers.medical_conditions?.diabetes?.uses_insulin} />
+              <FieldRow label="السكر التراكمي (HbA1c)" value={answers.medical_conditions?.diabetes?.hba1c} />
+              <FieldRow label="أنيميا الفول (G6PD)" value={answers.medical_conditions?.favism_g6pd} />
+              <FieldRow label="ارتفاع ضغط الدم" value={answers.medical_conditions?.hypertension} />
+              <FieldRow label="النقرس" value={answers.medical_conditions?.gout} />
+              <FieldRow label="عملية سمنة سابقة" value={answers.medical_conditions?.bariatric?.is_operated} />
+              <FieldRow label="سعة الوجبة (جرام)" value={answers.medical_conditions?.bariatric?.meal_capacity_grams} />
+              <FieldRow label="متلازمة الإغراق (Dumping)" value={answers.medical_conditions?.bariatric?.dumping_syndrome} />
+              <FieldRow label="تكيس المبايض (PCOS)" value={answers.medical_conditions?.female_cases?.is_pcos} />
+              <FieldRow label="مرضعة" value={answers.medical_conditions?.female_cases?.is_lactating} />
+              <FieldRow label="ولادة حديثة" value={answers.medical_conditions?.female_cases?.is_postpartum} />
+              <FieldRow label="قائمة الأدوية والمكملات" value={answers.current_meds_supplements_list} />
+              <FieldRow label="تفاصيل الأدوية والمكملات" value={answers.current_meds_supplements} />
+            </Section>
           </div>
           <div style={{ display: 'flex', flexDirection: 'column' }}>
           </div>
