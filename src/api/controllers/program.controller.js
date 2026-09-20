@@ -20,6 +20,7 @@ import { resolveFastingContext, FASTING_OVERRIDES, applyFastingToMeals, RAMADAN_
 import { getGulfHeatAdvisory, getPracticalCardioPrescription } from "../../execution-engines/cardio-zones-engine.js";
 import { calculateSessionDemand, auditWeeklyMuscleVolume, auditDeficitVolumeShield, evaluateProteinSparingRequirement } from "../utils/trainingNutritionCoupling.js";
 import { applyDeloadToSession, READINESS_GUIDANCE_AR } from "../../../src/training-engine-v2/progression/index.js";
+import { resolveTrainingCycleStatus, CYCLE_STATUS } from "../services/trainingCycleService.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -868,6 +869,53 @@ export async function resolveIntakeMedicalReview(userId) {
 
 export const MEDICAL_REVIEW_CONFIRMATION_REQUIRED = "MEDICAL_REVIEW_CONFIRMATION_REQUIRED";
 
+/**
+ * GET /api/v1/programs/cycles/attention: the clients whose training cycle ends within a week or has
+ * already ended. This is what stops a client on a long subscription from training a finished plan.
+ * Coaches and admins only.
+ */
+export const getCyclesNeedingAttention = async (req, res) => {
+  try {
+    const requester = req.user ? await User.findByPk(req.user.id) : null;
+    if (!requester || !["COACH", "ADMIN"].includes(requester.role)) {
+      return res.status(403).json({ error: "هذه القائمة متاحة للكوتش فقط" });
+    }
+
+    const programs = await Program.findAll({
+      where: { status: "ACTIVE" },
+      order: [["id", "DESC"]],
+      include: [{ model: User, as: "user", attributes: ["id", "client_code", "full_name", "subscription_status"] }],
+    });
+
+    const seen = new Set();
+    const clients = [];
+    for (const program of programs) {
+      const client = program.user;
+      if (!client || seen.has(client.id)) continue;
+      seen.add(client.id);
+      if (client.subscription_status === "DEACTIVATED") continue;
+      const cycle = resolveTrainingCycleStatus(program);
+      if (!cycle.needs_new_cycle) continue;
+      clients.push({
+        client_code: client.client_code,
+        full_name: client.full_name,
+        program_id: program.id,
+        ...cycle,
+      });
+    }
+
+    clients.sort((a, b) => a.days_remaining - b.days_remaining);
+    return res.status(200).json({
+      count: clients.length,
+      ended_count: clients.filter((c) => c.status === CYCLE_STATUS.ENDED).length,
+      clients,
+    });
+  } catch (err) {
+    console.error("getCyclesNeedingAttention error:", err);
+    return res.status(500).json({ error: "فشل جلب قائمة الدورات المنتهية" });
+  }
+};
+
 /** GET /api/v1/programs/active: the signed-in client's own program (mobile app; no id in the URL). */
 export const getMyActiveProgram = async (req, res) => {
   const me = req.user?.id ? await User.findByPk(req.user.id, { attributes: ["id", "client_code"] }).catch(() => null) : null;
@@ -1009,6 +1057,7 @@ export const getActiveProgramByUserId = async (req, res) => {
       lifestyle: { bedtime_hour: await resolveClientBedtimeHour(user.id) },
       clinical_constraints: await resolveClientClinicalConstraints(user.id),
       progression: await loadProgressionState(user.id),
+      training_cycle: resolveTrainingCycleStatus(program),
       fasting_context: await resolveClientFastingContext(user, program.program_data),
       heat_advisory: getGulfHeatAdvisory({ country_code: resolveCountryFromPhone(user.phone_number) }),
       client_view
