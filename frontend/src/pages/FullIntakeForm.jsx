@@ -1321,6 +1321,10 @@ export default function FullIntakeForm() {
                   إذا قمت بإجراء تحاليل دم حديثة (خلال آخر 6 أشهر) أو تقرير InBody، يمكنك إرفاق الصور أو ملف PDF هنا ليفحصها الكوتش ويضبط خطتك بدقة إكلينيكية.
                 </p>
 
+                <div style={{ background: '#EFF6FF', border: '1px solid #BFDBFE', borderRadius: '6px', padding: '8px 12px', marginBottom: '10px', fontSize: '11.5px', color: '#1E3A8A', fontWeight: 700 }}>
+                  التقارير والتحاليل قابلة للتخطي الآن، ويمكنك رفعها لاحقاً.
+                </div>
+
                 <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap' }}>
                   <label style={{
                     display: 'inline-flex',
@@ -2024,7 +2028,7 @@ export default function FullIntakeForm() {
 
                 <div style={{ background: '#EFF6FF', border: '1px solid #BFDBFE', borderRadius: '6px', padding: '10px', marginBottom: '14px' }}>
                   <strong style={{ display: 'block', fontSize: '11.5px', color: '#1E3A8A', fontWeight: 700 }}>
-                    ملاحظة: يمكنك إكمال التسجيل الآن وتخطي رفع الصور، ولكنها ضرورية جداً لاحقاً لتصميم خطتك بدقة ولتقييم مستوى التطور.
+                    الصور والتقارير قابلة للتخطي الآن، ويمكنك رفعها لاحقاً من داخل التطبيق أو إرسالها للكوتش.
                   </strong>
                 </div>
 
