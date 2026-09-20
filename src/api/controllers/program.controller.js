@@ -19,6 +19,7 @@ import { loadProgressionState } from "../services/progressionService.js";
 import { resolveFastingContext, FASTING_OVERRIDES, applyFastingToMeals, RAMADAN_CARDIO_GUIDANCE_AR } from "../../execution-engines/fasting-calendar-engine.js";
 import { getGulfHeatAdvisory, getPracticalCardioPrescription } from "../../execution-engines/cardio-zones-engine.js";
 import { calculateSessionDemand, auditWeeklyMuscleVolume, auditDeficitVolumeShield, evaluateProteinSparingRequirement } from "../utils/trainingNutritionCoupling.js";
+import { applyDeloadToSession } from "../../../frontend/src/utils/progressionEngine.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -968,10 +969,25 @@ export const getActiveProgramByUserId = async (req, res) => {
       advisories_ar
     };
 
+    const progression = await loadProgressionState(user.id, now);
+    const trainingNode = program.program_data?.training || program.program_data?.training_program || {};
+    let sessionRaw = null;
+    if (Array.isArray(trainingNode.sessions) && trainingNode.sessions.length > 0) {
+      sessionRaw = trainingNode.sessions[0];
+    } else if (Array.isArray(trainingNode.weeks) && trainingNode.weeks.length > 0 && Array.isArray(trainingNode.weeks[0].sessions) && trainingNode.weeks[0].sessions.length > 0) {
+      sessionRaw = trainingNode.weeks[0].sessions[0];
+    }
+    
+    let training_session = sessionRaw ? JSON.parse(JSON.stringify(sessionRaw)) : null;
+    if (training_session && progression?.deload?.status === "ACTIVE") {
+       training_session = applyDeloadToSession(training_session);
+    }
+
     const client_view = {
       target_macros,
       meals,
-      cardio
+      cardio,
+      training_session
     };
 
     return res.status(200).json({
@@ -984,10 +1000,10 @@ export const getActiveProgramByUserId = async (req, res) => {
       user: program.user || user,
       master_program: program.program_data,
       lifestyle: { bedtime_hour: await resolveClientBedtimeHour(user.id) },
-      clinical_constraints: clinicalConstraints,
+      clinical_constraints: await resolveClientClinicalConstraints(user.id),
       progression: await loadProgressionState(user.id),
-      fasting_context: fastingContext,
-      heat_advisory: heatAdvisory,
+      fasting_context: await resolveClientFastingContext(user, program.program_data),
+      heat_advisory: getGulfHeatAdvisory({ country_code: resolveCountryFromPhone(user.phone_number) }),
       client_view
     });
   } catch (err) {
