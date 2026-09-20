@@ -118,6 +118,9 @@ export default function CoachCommandCenter() {
   const [submissions, setSubmissions] = useState([]);
   const [pendingCheckins, setPendingCheckins] = useState([]);
   const [cycleAttention, setCycleAttention] = useState({ count: 0, ended_count: 0, clients: [] });
+  const [runningDueCycles, setRunningDueCycles] = useState(false);
+  const [cycleRunResult, setCycleRunResult] = useState(null);
+  const [cycleRunError, setCycleRunError] = useState(null);
 
   useEffect(() => {
     fetchDashboardData();
@@ -194,6 +197,48 @@ export default function CoachCommandCenter() {
       console.error('Error fetching dashboard live data:', err);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const refreshCycleAttention = async () => {
+    try {
+      const res = await fetch(`${API_BASE}/api/v1/programs/cycles/attention`);
+      if (res.ok) {
+        const cycleData = await res.json();
+        if (cycleData && typeof cycleData.count === 'number' && Array.isArray(cycleData.clients)) {
+          setCycleAttention(cycleData);
+        }
+      }
+    } catch (err) {
+      console.error('Error refreshing cycle attention:', err);
+    }
+  };
+
+  const handleRunDueCycles = async () => {
+    if (runningDueCycles) return;
+    setRunningDueCycles(true);
+    setCycleRunError(null);
+    try {
+      const res = await fetch(`${API_BASE}/api/v1/programs/cycles/run-due`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        setCycleRunResult(null);
+        setCycleRunError(data?.error || data?.message || 'فشل تشغيل الدورات المستحقة');
+      } else {
+        setCycleRunError(null);
+        setCycleRunResult(data);
+        await refreshCycleAttention();
+      }
+    } catch (err) {
+      setCycleRunResult(null);
+      setCycleRunError(err?.message || 'فشل تشغيل الدورات المستحقة');
+    } finally {
+      setRunningDueCycles(false);
     }
   };
 
@@ -704,15 +749,15 @@ export default function CoachCommandCenter() {
           })}
         </div>
 
-        {/* كارت متابعة وتنبيهات الدورات التدريبية (يظهر فقط عند وجود عملاء count > 0) */}
-        {cycleAttention && cycleAttention.count > 0 && Array.isArray(cycleAttention.clients) && cycleAttention.clients.length > 0 && (
+        {/* كارت متابعة وتنبيهات الدورات التدريبية */}
+        {((cycleAttention && cycleAttention.count > 0 && Array.isArray(cycleAttention.clients) && cycleAttention.clients.length > 0) || Boolean(cycleRunResult) || Boolean(cycleRunError)) && (
           <div
             style={{
               background: '#FFFFFF',
-              border: cycleAttention.ended_count > 0 ? '1.5px solid #FECACA' : '1.5px solid #FDE68A',
+              border: cycleAttention?.ended_count > 0 ? '1.5px solid #FECACA' : (cycleRunError ? '1.5px solid #FECACA' : '1.5px solid #FDE68A'),
               borderRadius: '16px',
               padding: '18px 20px',
-              boxShadow: cycleAttention.ended_count > 0
+              boxShadow: (cycleAttention?.ended_count > 0 || cycleRunError)
                 ? '0 4px 14px rgba(220, 38, 38, 0.08)'
                 : '0 4px 14px rgba(217, 119, 6, 0.08)',
               display: 'flex',
@@ -728,9 +773,9 @@ export default function CoachCommandCenter() {
                   width: '36px',
                   height: '36px',
                   borderRadius: '10px',
-                  background: cycleAttention.ended_count > 0 ? '#FEF2F2' : '#FFFBEB',
-                  border: cycleAttention.ended_count > 0 ? '1px solid #FECACA' : '1px solid #FDE68A',
-                  color: cycleAttention.ended_count > 0 ? '#DC2626' : '#D97706',
+                  background: cycleAttention?.ended_count > 0 ? '#FEF2F2' : '#FFFBEB',
+                  border: cycleAttention?.ended_count > 0 ? '1px solid #FECACA' : '1px solid #FDE68A',
+                  color: cycleAttention?.ended_count > 0 ? '#DC2626' : '#D97706',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
@@ -741,17 +786,19 @@ export default function CoachCommandCenter() {
                 <div>
                   <div style={{ fontSize: '14.5px', fontWeight: 800, color: '#0F172A', display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
                     <span>تنبيهات الدورات التدريبية</span>
-                    <span style={{
-                      fontSize: '11px',
-                      fontWeight: 800,
-                      padding: '2px 8px',
-                      borderRadius: '6px',
-                      background: '#0F172A',
-                      color: '#FFFFFF'
-                    }}>
-                      {cycleAttention.count} {cycleAttention.count === 1 ? 'مشترك' : 'مشتركين'}
-                    </span>
-                    {cycleAttention.ended_count > 0 && (
+                    {cycleAttention && cycleAttention.count > 0 && (
+                      <span style={{
+                        fontSize: '11px',
+                        fontWeight: 800,
+                        padding: '2px 8px',
+                        borderRadius: '6px',
+                        background: '#0F172A',
+                        color: '#FFFFFF'
+                      }}>
+                        {cycleAttention.count} {cycleAttention.count === 1 ? 'مشترك' : 'مشتركين'}
+                      </span>
+                    )}
+                    {cycleAttention?.ended_count > 0 && (
                       <span style={{
                         fontSize: '11px',
                         fontWeight: 800,
@@ -769,100 +816,370 @@ export default function CoachCommandCenter() {
                   </div>
                 </div>
               </div>
+
+              {/* زر تجهيز الدورات المستحقة - يظهر فقط عند وجود مشتركين في الكارت */}
+              {cycleAttention && cycleAttention.count > 0 && (
+                <button
+                  type="button"
+                  disabled={runningDueCycles}
+                  onClick={handleRunDueCycles}
+                  style={{
+                    height: '36px',
+                    padding: '0 16px',
+                    borderRadius: '10px',
+                    background: runningDueCycles ? '#94A3B8' : '#0F172A',
+                    color: '#FFFFFF',
+                    border: 'none',
+                    cursor: runningDueCycles ? 'not-allowed' : 'pointer',
+                    fontSize: '13px',
+                    fontWeight: 800,
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '8px',
+                    boxShadow: '0 1px 3px rgba(0,0,0,0.12)',
+                    transition: 'all 0.15s ease',
+                    whiteSpace: 'nowrap',
+                    opacity: runningDueCycles ? 0.75 : 1
+                  }}
+                  onMouseEnter={(e) => {
+                    if (!runningDueCycles) e.currentTarget.style.background = '#1E293B';
+                  }}
+                  onMouseLeave={(e) => {
+                    if (!runningDueCycles) e.currentTarget.style.background = '#0F172A';
+                  }}
+                >
+                  <RotateCw size={14} className={runningDueCycles ? 'animate-spin' : ''} />
+                  <span>{runningDueCycles ? 'جاري التجهيز...' : 'تجهيز الدورات المستحقة'}</span>
+                </button>
+              )}
             </div>
+
+            {/* في حالة الخطأ من الخادم: إظهار رسالة الخطأ القادمة من الخادم فقط ولا تظهر أي قائمة */}
+            {cycleRunError && (
+              <div
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '10px',
+                  padding: '12px 16px',
+                  borderRadius: '12px',
+                  background: '#FEF2F2',
+                  border: '1.5px solid #FECACA',
+                  color: '#991B1B',
+                  fontSize: '13px',
+                  fontWeight: 700
+                }}
+              >
+                <AlertCircle size={18} strokeWidth={2.2} style={{ flexShrink: 0 }} />
+                <span>{cycleRunError}</span>
+              </div>
+            )}
+
+            {/* نتيجة تشغيل الدورات المستحقة */}
+            {cycleRunResult && (
+              <div
+                style={{
+                  display: 'flex',
+                  flexDirection: 'column',
+                  gap: '12px',
+                  padding: '14px 16px',
+                  borderRadius: '14px',
+                  background: '#F8FAFC',
+                  border: '1.5px solid #E2E8F0'
+                }}
+              >
+                {/* رسالة message_ar كما هي */}
+                <div
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '8px',
+                    fontSize: '13.5px',
+                    fontWeight: 800,
+                    color: '#0F172A'
+                  }}
+                >
+                  <CheckCircle2 size={18} color="#059669" strokeWidth={2.2} style={{ flexShrink: 0 }} />
+                  <span>{cycleRunResult.message_ar}</span>
+                </div>
+
+                {/* قائمة الدورات التي نُشرت تلقائياً */}
+                {Array.isArray(cycleRunResult.published) && cycleRunResult.published.length > 0 && (
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginTop: '2px' }}>
+                    <div style={{ fontSize: '12.5px', fontWeight: 800, color: '#047857', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                      <span>نُشرت تلقائياً</span>
+                      <span style={{
+                        fontSize: '11px',
+                        padding: '1px 6px',
+                        borderRadius: '6px',
+                        background: '#DCFCE7',
+                        color: '#15803D',
+                        fontWeight: 800
+                      }}>
+                        {cycleRunResult.published.length}
+                      </span>
+                    </div>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                      {cycleRunResult.published.map((p, idx) => (
+                        <div
+                          key={p.client_code || p.program_id || idx}
+                          style={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'space-between',
+                            gap: '10px',
+                            padding: '10px 14px',
+                            borderRadius: '10px',
+                            background: '#F0FDF4',
+                            border: '1px solid #BBF7D0',
+                            flexWrap: 'wrap'
+                          }}
+                        >
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+                            <span style={{ fontSize: '13px', fontWeight: 800, color: '#065F46' }}>
+                              {p.full_name || `مشترك #${p.client_code}`}
+                            </span>
+                            <span style={{
+                              fontSize: '11px',
+                              fontWeight: 700,
+                              padding: '2px 8px',
+                              borderRadius: '6px',
+                              background: '#DCFCE7',
+                              color: '#166534',
+                              border: '1px solid #86EFAC',
+                              fontFamily: 'JetBrains Mono, monospace'
+                            }}>
+                              #{p.client_code}
+                            </span>
+                          </div>
+                          <span style={{
+                            fontSize: '11.5px',
+                            fontWeight: 800,
+                            padding: '3px 10px',
+                            borderRadius: '8px',
+                            background: '#059669',
+                            color: '#FFFFFF'
+                          }}>
+                            الدورة {p.cycle_number}
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* قائمة الدورات التي تنتظر قرار الكوتش */}
+                {Array.isArray(cycleRunResult.waiting) && cycleRunResult.waiting.length > 0 && (
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginTop: '4px' }}>
+                    <div style={{ fontSize: '12.5px', fontWeight: 800, color: '#B45309', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                      <span>تنتظر قرارك</span>
+                      <span style={{
+                        fontSize: '11px',
+                        padding: '1px 6px',
+                        borderRadius: '6px',
+                        background: '#FEF3C7',
+                        color: '#B45309',
+                        fontWeight: 800
+                      }}>
+                        {cycleRunResult.waiting.length}
+                      </span>
+                    </div>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                      {cycleRunResult.waiting.map((w, idx) => (
+                        <div
+                          key={w.client_code || w.program_id || idx}
+                          style={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'space-between',
+                            gap: '12px',
+                            padding: '12px 14px',
+                            borderRadius: '10px',
+                            background: '#FFFBEB',
+                            border: '1px solid #FDE68A',
+                            flexWrap: 'wrap'
+                          }}
+                        >
+                          <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', flex: '1 1 300px' }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+                              <span style={{ fontSize: '13px', fontWeight: 800, color: '#92400E' }}>
+                                {w.full_name || `مشترك #${w.client_code}`}
+                              </span>
+                              <span style={{
+                                fontSize: '11px',
+                                fontWeight: 700,
+                                padding: '2px 8px',
+                                borderRadius: '6px',
+                                background: '#FEF3C7',
+                                color: '#92400E',
+                                border: '1px solid #FCD34D',
+                                fontFamily: 'JetBrains Mono, monospace'
+                              }}>
+                                #{w.client_code}
+                              </span>
+                              {w.cycle_number && (
+                                <span style={{
+                                  fontSize: '11px',
+                                  fontWeight: 700,
+                                  padding: '2px 8px',
+                                  borderRadius: '6px',
+                                  background: '#F1F5F9',
+                                  color: '#475569'
+                                }}>
+                                  الدورة {w.cycle_number}
+                                </span>
+                              )}
+                            </div>
+                            {/* إظهار reasons_ar لكل منها كما هي نصاً بلا أي استنتاج أو إعادة صياغة */}
+                            {Array.isArray(w.reasons_ar) && w.reasons_ar.length > 0 ? (
+                              <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
+                                {w.reasons_ar.map((reason, rIdx) => (
+                                  <div key={rIdx} style={{ fontSize: '12px', color: '#78350F', fontWeight: 600, lineHeight: 1.5 }}>
+                                    • {reason}
+                                  </div>
+                                ))}
+                              </div>
+                            ) : (
+                              w.reasons_ar && (
+                                <div style={{ fontSize: '12px', color: '#78350F', fontWeight: 600, lineHeight: 1.5 }}>
+                                  • {String(w.reasons_ar)}
+                                </div>
+                              )
+                            )}
+                          </div>
+
+                          <button
+                            type="button"
+                            onClick={() => navigate(`/coach/editor/${w.client_code}`)}
+                            style={{
+                              height: '34px',
+                              padding: '0 14px',
+                              borderRadius: '8px',
+                              background: '#D97706',
+                              color: '#FFFFFF',
+                              border: 'none',
+                              cursor: 'pointer',
+                              fontSize: '12px',
+                              fontWeight: 800,
+                              display: 'inline-flex',
+                              alignItems: 'center',
+                              gap: '6px',
+                              boxShadow: '0 1px 3px rgba(0,0,0,0.08)',
+                              transition: 'all 0.15s ease',
+                              whiteSpace: 'nowrap'
+                            }}
+                            onMouseEnter={(e) => {
+                              e.currentTarget.style.background = '#B45309';
+                            }}
+                            onMouseLeave={(e) => {
+                              e.currentTarget.style.background = '#D97706';
+                            }}
+                          >
+                            <span>فتح المحرر</span>
+                            <ExternalLink size={13} />
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
 
             {/* قائمة المشتركين بحاجة لدورة تدريبية جديدة */}
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-              {cycleAttention.clients.map((client) => {
-                const isEnded = client.status === 'ENDED';
-                return (
-                  <div
-                    key={client.client_code || client.program_id}
-                    style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'space-between',
-                      gap: '14px',
-                      padding: '12px 16px',
-                      borderRadius: '12px',
-                      border: isEnded ? '1.5px solid #FECACA' : '1px solid #FDE68A',
-                      background: isEnded ? '#FEF2F2' : '#FFFBEB',
-                      flexWrap: 'wrap',
-                      transition: 'all 0.15s ease'
-                    }}
-                  >
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', flex: '1 1 320px' }}>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
-                        <span style={{ fontSize: '13.5px', fontWeight: 800, color: isEnded ? '#991B1B' : '#92400E' }}>
-                          {client.full_name || `مشترك #${client.client_code}`}
-                        </span>
-                        <span style={{
-                          fontSize: '11px',
-                          fontWeight: 700,
-                          padding: '2px 8px',
-                          borderRadius: '6px',
-                          background: isEnded ? '#FEE2E2' : '#FEF3C7',
-                          color: isEnded ? '#991B1B' : '#92400E',
-                          border: isEnded ? '1px solid #FCA5A5' : '1px solid #FCD34D',
-                          fontFamily: 'JetBrains Mono, monospace'
-                        }}>
-                          #{client.client_code}
-                        </span>
-                        <span style={{
-                          fontSize: '10.5px',
-                          fontWeight: 800,
-                          padding: '2px 8px',
-                          borderRadius: '6px',
-                          background: isEnded ? '#DC2626' : '#D97706',
-                          color: '#FFFFFF'
-                        }}>
-                          {isEnded ? 'انتهت الدورة' : 'تنتهي قريباً'}
-                        </span>
-                      </div>
-                      <div style={{
-                        fontSize: '12.5px',
-                        color: isEnded ? '#7F1D1D' : '#78350F',
-                        fontWeight: 600,
-                        lineHeight: 1.5
-                      }}>
-                        {client.message_ar}
-                      </div>
-                    </div>
-
-                    <button
-                      type="button"
-                      onClick={() => navigate(`/coach/editor/${client.client_code}`)}
+            {cycleAttention && cycleAttention.count > 0 && Array.isArray(cycleAttention.clients) && cycleAttention.clients.length > 0 && (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                {cycleAttention.clients.map((client) => {
+                  const isEnded = client.status === 'ENDED';
+                  return (
+                    <div
+                      key={client.client_code || client.program_id}
                       style={{
-                        height: '34px',
-                        padding: '0 14px',
-                        borderRadius: '8px',
-                        background: isEnded ? '#DC2626' : '#D97706',
-                        color: '#FFFFFF',
-                        border: 'none',
-                        cursor: 'pointer',
-                        fontSize: '12px',
-                        fontWeight: 800,
-                        display: 'inline-flex',
+                        display: 'flex',
                         alignItems: 'center',
-                        gap: '6px',
-                        boxShadow: '0 1px 3px rgba(0,0,0,0.08)',
-                        transition: 'all 0.15s ease',
-                        whiteSpace: 'nowrap'
-                      }}
-                      onMouseEnter={(e) => {
-                        e.currentTarget.style.background = isEnded ? '#B91C1C' : '#B45309';
-                      }}
-                      onMouseLeave={(e) => {
-                        e.currentTarget.style.background = isEnded ? '#DC2626' : '#D97706';
+                        justifyContent: 'space-between',
+                        gap: '14px',
+                        padding: '12px 16px',
+                        borderRadius: '12px',
+                        border: isEnded ? '1.5px solid #FECACA' : '1px solid #FDE68A',
+                        background: isEnded ? '#FEF2F2' : '#FFFBEB',
+                        flexWrap: 'wrap',
+                        transition: 'all 0.15s ease'
                       }}
                     >
-                      <span>فتح محرر الكوتش</span>
-                      <ExternalLink size={13} />
-                    </button>
-                  </div>
-                );
-              })}
-            </div>
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', flex: '1 1 320px' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+                          <span style={{ fontSize: '13.5px', fontWeight: 800, color: isEnded ? '#991B1B' : '#92400E' }}>
+                            {client.full_name || `مشترك #${client.client_code}`}
+                          </span>
+                          <span style={{
+                            fontSize: '11px',
+                            fontWeight: 700,
+                            padding: '2px 8px',
+                            borderRadius: '6px',
+                            background: isEnded ? '#FEE2E2' : '#FEF3C7',
+                            color: isEnded ? '#991B1B' : '#92400E',
+                            border: isEnded ? '1px solid #FCA5A5' : '1px solid #FCD34D',
+                            fontFamily: 'JetBrains Mono, monospace'
+                          }}>
+                            #{client.client_code}
+                          </span>
+                          <span style={{
+                            fontSize: '10.5px',
+                            fontWeight: 800,
+                            padding: '2px 8px',
+                            borderRadius: '6px',
+                            background: isEnded ? '#DC2626' : '#D97706',
+                            color: '#FFFFFF'
+                          }}>
+                            {isEnded ? 'انتهت الدورة' : 'تنتهي قريباً'}
+                          </span>
+                        </div>
+                        <div style={{
+                          fontSize: '12.5px',
+                          color: isEnded ? '#7F1D1D' : '#78350F',
+                          fontWeight: 600,
+                          lineHeight: 1.5
+                        }}>
+                          {client.message_ar}
+                        </div>
+                      </div>
+
+                      <button
+                        type="button"
+                        onClick={() => navigate(`/coach/editor/${client.client_code}`)}
+                        style={{
+                          height: '34px',
+                          padding: '0 14px',
+                          borderRadius: '8px',
+                          background: isEnded ? '#DC2626' : '#D97706',
+                          color: '#FFFFFF',
+                          border: 'none',
+                          cursor: 'pointer',
+                          fontSize: '12px',
+                          fontWeight: 800,
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          gap: '6px',
+                          boxShadow: '0 1px 3px rgba(0,0,0,0.08)',
+                          transition: 'all 0.15s ease',
+                          whiteSpace: 'nowrap'
+                        }}
+                        onMouseEnter={(e) => {
+                          e.currentTarget.style.background = isEnded ? '#B91C1C' : '#B45309';
+                        }}
+                        onMouseLeave={(e) => {
+                          e.currentTarget.style.background = isEnded ? '#DC2626' : '#D97706';
+                        }}
+                      >
+                        <span>فتح محرر الكوتش</span>
+                        <ExternalLink size={13} />
+                      </button>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
           </div>
         )}
 
