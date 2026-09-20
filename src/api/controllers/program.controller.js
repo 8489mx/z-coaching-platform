@@ -16,8 +16,8 @@ import { calculateSmartSwap } from "../../../src/nutrition-swap-engine-v2/calcul
 import { listSmartSwapCandidates, getSmartFoodRegistryItem, SMART_SWAP_REGISTRY } from "../../../src/nutrition-swap-engine-v2/swap-pool-registry.js";
 import { CLINICAL_GUIDELINES } from "../../config/clinical-guidelines.js";
 import { loadProgressionState } from "../services/progressionService.js";
-import { resolveFastingContext, FASTING_OVERRIDES, applyFastingToMeals } from "../../execution-engines/fasting-calendar-engine.js";
-import { getGulfHeatAdvisory } from "../../execution-engines/cardio-zones-engine.js";
+import { resolveFastingContext, FASTING_OVERRIDES, applyFastingToMeals, RAMADAN_CARDIO_GUIDANCE_AR } from "../../execution-engines/fasting-calendar-engine.js";
+import { getGulfHeatAdvisory, getPracticalCardioPrescription } from "../../execution-engines/cardio-zones-engine.js";
 import { calculateSessionDemand, auditWeeklyMuscleVolume, auditDeficitVolumeShield, evaluateProteinSparingRequirement } from "../utils/trainingNutritionCoupling.js";
 
 const __filename = fileURLToPath(import.meta.url);
@@ -953,9 +953,25 @@ export const getActiveProgramByUserId = async (req, res) => {
     const clinicalConstraints = await resolveClientClinicalConstraints(user.id) || {};
     const meals = applyFastingToMeals(program.program_data?.nutrition?.meals || [], fastingContext, clinicalConstraints);
 
+    const heatAdvisory = getGulfHeatAdvisory({ country_code: resolveCountryFromPhone(user.phone_number), date: now });
+    
+    const advisories_ar = [];
+    if (fastingContext?.mode === "RAMADAN") advisories_ar.push(RAMADAN_CARDIO_GUIDANCE_AR);
+    if (heatAdvisory?.active) advisories_ar.push(heatAdvisory.message_ar);
+
+    const cardioPayload = program.program_data?.cardio || {};
+    const cardio = {
+      ...getPracticalCardioPrescription({
+        ...cardioPayload,
+        medicalConditions: user.medical_conditions || []
+      }),
+      advisories_ar
+    };
+
     const client_view = {
       target_macros,
-      meals
+      meals,
+      cardio
     };
 
     return res.status(200).json({
@@ -971,7 +987,7 @@ export const getActiveProgramByUserId = async (req, res) => {
       clinical_constraints: clinicalConstraints,
       progression: await loadProgressionState(user.id),
       fasting_context: fastingContext,
-      heat_advisory: getGulfHeatAdvisory({ country_code: resolveCountryFromPhone(user.phone_number) }),
+      heat_advisory: heatAdvisory,
       client_view
     });
   } catch (err) {
