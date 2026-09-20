@@ -48,6 +48,9 @@ export default function WeeklyCheckinForm() {
   const upcomingFasting = useMemo(() => getUpcomingFastingAlert(), []);
   const coachConfig = useMemo(() => getStoredCoachConfig(), []);
   const coachWhatsApp = useMemo(() => formatWhatsAppPhone(coachConfig?.whatsappNumber || coachConfig?.supportWhatsapp || '201001060503'), [coachConfig]);
+  const lastKnownWeight = useMemo(() => {
+    return searchParams.get('last_weight') || searchParams.get('previous_weight') || localStorage.getItem('kz_last_weight') || '84.2';
+  }, [searchParams]);
 
   const [formData, setFormData] = useState({
     weight_kg: '',
@@ -210,8 +213,11 @@ export default function WeeklyCheckinForm() {
         return;
       }
 
-      // Success: persist code for future check-ins
+      // Success: persist code and last weight for future check-ins
       localStorage.setItem('kz_client_code', clientCode);
+      if (formData.weight_kg) {
+        localStorage.setItem('kz_last_weight', String(formData.weight_kg));
+      }
       setStep(4); // Success step
     } catch (err) {
       console.error('Submit checkin error:', err);
@@ -391,6 +397,9 @@ export default function WeeklyCheckinForm() {
                     }}
                   />
                   <span style={{ position: 'absolute', left: '14px', fontSize: '12px', color: '#94A3B8', fontWeight: 700 }}>كجم</span>
+                </div>
+                <div style={{ fontSize: '11.5px', color: '#64748B', marginTop: '6px', fontWeight: 600 }}>
+                  آخر وزن سجلته: {lastKnownWeight} كجم
                 </div>
               </div>
 
