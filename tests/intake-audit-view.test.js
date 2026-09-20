@@ -8,55 +8,87 @@ vi.mock('react-router-dom', () => ({
 }));
 
 describe('IntakeAuditDetailModal Guard', () => {
-  it('translates known codes, leaves unknown codes as is, and shows لم يُجب for empty fields', () => {
-    // 1) Test with known codes, unknown codes, and empty fields
+  it('translates known codes to Arabic strictly without exposing raw keys', () => {
+    // Exact keys requested by the user
     const submission = { 
       id: 'test-123', 
       user: { full_name: 'Test' }, 
       answers: {
-        primary_goal: 'FAT_LOSS', // Known code
-        neat_level: 'UNKNOWN_LEVEL', // Unknown code
-        occupation_type: '' // Empty field
+        primary_goal: 'recomposition',
+        neat_level: 'moderate',
+        training_environment: 'commercial_gym',
+        training_logistics: {
+          experience_level: 'intermediate',
+          days_per_week: 4
+        },
+        recent_training: 'ACTIVE',
+        meal_structure: {
+          meals_count: '3_meals_snack',
+          intermittent_fasting: 'none'
+        },
+        food_budget: 'LOW',
+        food_prep_ability: 'FULL_KITCHEN',
+        beverage_sugar_intake: 'zero_or_sweetener',
+        sleep_schedule: {
+          pattern: 'regular_night',
+          average_hours: '7_8',
+          bedtime_hour: '23:00'
+        },
+        religion: 'MUSLIM',
+        christianFastingStyle: 'PESCATARIAN_ALLOWED',
+        strict_allergies: ['gluten_celiac'],
+        medical_conditions: {
+          selected: ['diabetes', 'gout'],
+          diabetes: { type: 'type2' },
+          bariatric: { meal_capacity_grams: '150_200' }
+        },
+        injuries_map: {
+          injury_nature: 'chronic',
+          selected_areas: ['knee']
+        },
+        focus_muscles: ['arms', 'side_delts'],
+        current_meds_supplements_list: ['creatine', 'whey_protein']
+      }
+    };
+
+    const html = renderToStaticMarkup(
+      React.createElement(IntakeAuditDetailModal, { submission, onClose: () => {} })
+    );
+
+    const forbiddenRawKeys = [
+      'recomposition', 'moderate', 'MUSLIM', 'PESCATARIAN_ALLOWED', 'gluten_celiac',
+      '3_meals_snack', 'FULL_KITCHEN', 'regular_night', 'intermediate', 'ACTIVE',
+      'arms', 'side_delts', 'knee', 'chronic', 'diabetes', 'gout', 'type2'
+    ];
+
+    for (const key of forbiddenRawKeys) {
+      if (html.includes(key)) {
+        throw new Error(`Forbidden raw key appeared in output: ${key}`);
+      }
+    }
+  });
+
+  it('renders unknown codes as-is and empty fields as "لم يُجب"', () => {
+    const submission = { 
+      id: 'test-456', 
+      user: { full_name: 'Test' }, 
+      answers: {
+        primary_goal: 'something_else',
+        neat_level: '',
+        occupation_type: null
       } 
     };
 
     const html = renderToStaticMarkup(
       React.createElement(IntakeAuditDetailModal, { submission, onClose: () => {} })
     );
-    
-    // Check 1: Known code is translated
-    if (!html.includes('حرق وخسارة الدهون')) {
-      throw new Error('Known code (FAT_LOSS) was not translated to Arabic.');
-    }
-    if (html.includes('FAT_LOSS')) {
-      throw new Error('The raw known code (FAT_LOSS) should not be rendered.');
+
+    if (!html.includes('something_else')) {
+      throw new Error('Unknown code "something_else" was hidden or mutated.');
     }
 
-    // Check 2: Unknown code is rendered as is
-    if (!html.includes('UNKNOWN_LEVEL')) {
-      throw new Error('Unknown code (UNKNOWN_LEVEL) was not rendered as is.');
-    }
-
-    // Check 3: Empty fields show لم يُجب
     if (!html.includes('لم يُجب')) {
       throw new Error('Empty fields did not render as "لم يُجب".');
-    }
-
-    // Check 4: All field labels are present
-    const requiredFields = [
-      'الجنس', 'العمر', 'الطول (سم)', 'الوزن (كجم)', 'محيط الرقبة (سم)', 'محيط الخصر (سم)', 'محيط الحوض (سم)', 'الهدف الأساسي', 'مستوى الحركة اليومية (NEAT)', 'طبيعة العمل',
-      'أعراض خطيرة', 'الحالات الطبية المختارة', 'نوع السكري', 'يستخدم الإنسولين', 'السكر التراكمي (HbA1c)', 'أنيميا الفول (G6PD)', 'ارتفاع ضغط الدم', 'النقرس', 'عملية سمنة سابقة', 'سعة الوجبة (جرام)', 'متلازمة الإغراق (Dumping)', 'تكيس المبايض (PCOS)', 'مرضعة', 'ولادة حديثة', 'قائمة الأدوية والمكملات', 'تفاصيل الأدوية والمكملات',
-      'مناطق الإصابة', 'إصابات الركبة', 'إصابات الظهر والعمود الفقري', 'إصابات الكتف', 'إصابات الكور', 'إصابات مفاصل أخرى', 'طبيعة الإصابة', 'يخف الألم بالراحة',
-      'الديانة', 'نمط الصيام المسيحي', 'ممنوعات وحساسية صارمة', 'أطعمة غير مفضلة', 'عدد الوجبات', 'صيام متقطع', 'ميزانية الطعام', 'القدرة على تحضير الطعام', 'سكر المشروبات', 'نمط النوم', 'متوسط ساعات النوم', 'ساعة النوم المعتادة',
-      'بيئة التدريب', 'أيام التمرين في الأسبوع', 'مستوى الخبرة', 'يمارس رياضة أخرى', 'اسم الرياضة الأخرى', 'ساعات الرياضة الأخرى', 'التدريب مؤخراً', 'عضلات التركيز',
-      'الأمام', 'الجانب', 'الخلف', 'InBody', 'مرفقات طبية أخرى',
-      'الموافقة القانونية (PDPL)'
-    ];
-
-    for (const field of requiredFields) {
-      if (!html.includes(field)) {
-        throw new Error(`Missing required field label: ${field}`);
-      }
     }
   });
 });

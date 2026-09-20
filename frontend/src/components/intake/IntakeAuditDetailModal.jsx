@@ -1,139 +1,176 @@
 import React, { useState, useEffect } from 'react';
 import ReactDOM from 'react-dom';
 import { X, MessageCircle, ExternalLink, Zap, ZoomIn } from 'lucide-react';
-import { getClientTier } from '../../utils/tierBadgeHelper';
-import { extractClientFastingProfile } from '../../utils/seasonalFastingRadar';
 import { formatWhatsAppPhone } from '../../utils/whatsappRemindersEngine';
 
 const GOALS_MAP = {
-  FAT_LOSS: 'حرق وخسارة الدهون',
-  MUSCLE_GAIN: 'زيادة الكتلة العضلية (تضخيم)',
-  BODY_RECOMPOSITION: 'إعادة تشكيل الجسم (Recomp)',
-  WEIGHT_MAINTENANCE: 'تثبيت الوزن الحالي',
-  GENERAL_HEALTH: 'لياقة وصحة عامة',
-  PERFORMANCE: 'زيادة الأداء الرياضي والقوة'
+  fat_loss: 'خسارة دهون حادة (Fat Loss)',
+  lean_bulk: 'بناء كتلة عضلية صافية (Lean Bulk)',
+  recomposition: 'إعادة تشكيل الجسم (Body Recomp)',
+  general_fitness: 'لياقة عامة وتأهيل بدني (Fitness)'
 };
 
-const _ACTIVITY_MAP = {
-  SEDENTARY: 'خامل (مكتبي)',
-  LIGHT: 'خفيف (حركة عادية)',
-  MODERATE: 'متوسط (حركة يومية)',
-  HIGH: 'عالي (عمل مجهد)'
-};
-
-const EXPERIENCE_MAP = {
-  BEGINNER: 'مبتدئ (< 6 شهور)',
-  INTERMEDIATE: 'متوسط (6ش - سنتين)',
-  ADVANCED: 'متقدم (+ سنتين)',
-  NEVER_TRAINED: 'لم يتدرب من قبل'
-};
-
-const EXCLUDED_FOODS_LABELS = {
-  EGGS: 'البيض', EGG: 'البيض',
-  DAIRY: 'الألبان والأجبان', MILK: 'الحليب ومشتقاته',
-  FISH_SEAFOOD: 'الأسماك والبحريات', FISH: 'الأسماك', SEAFOOD: 'المأكولات البحرية',
-  PEANUTS_NUTS: 'المكسرات والفول السوداني', PEANUTS: 'الفول السوداني', NUTS: 'المكسرات',
-  WHEAT_GLUTEN: 'الجلوتين والقمح', GLUTEN_WHEAT: 'الجلوتين والقمح', GLUTEN: 'الجلوتين', WHEAT: 'القمح',
-  OATS: 'الشوفان', OAT: 'الشوفان',
-  RED_MEAT: 'اللحوم الحمراء', MEAT: 'اللحوم الحمراء', BEEF: 'اللحوم الحمراء',
-  LEGUMES: 'البقوليات', LEGUME: 'البقوليات',
-  EGGPLANT_COOKED_VEG: 'الباذنجان', EGGPLANT: 'الباذنجان'
-};
-
-const INJURIES_LABELS = {
-  LOWER_BACK: 'أسفل الظهر والقطنية', SPINE: 'العمود الفقري', LUMBAR: 'الفقرات القطنية',
-  SHOULDER: 'مفصل الكتف الدوار', ROTATOR_CUFF: 'الكتف الدوار',
-  KNEE: 'الركبة والغضاريف',
-  NECK: 'الرقبة والفقرات العنقية', CERVICAL_SPINE: 'الفقرات العنقية',
-  ELBOW_WRIST: 'الكوع والرسغ', WRIST: 'رسغ اليد', ELBOW: 'الكوع',
-  NONE: 'لا توجد إصابات'
-};
-
-const CONDITIONS_LABELS = {
-  DIABETES: 'السكري', TYPE_2_DIABETES: 'السكري (النوع 2)', TYPE_1_DIABETES: 'السكري (النوع 1)',
-  HYPERTENSION: 'ضغط الدم',
-  HEART_CONDITION: 'أمراض القلب', CARDIOVASCULAR_DISEASE: 'الأوعية الدموية',
-  THYROID_CONDITION: 'الغدة الدرقية',
-  ANEMIA: 'الأنيميا',
-  ASTHMA_OR_RESPIRATORY_CONDITION: 'الربو والتنفس',
-  PCOS: 'تكيس المبايض',
-  NONE: 'لا توجد'
-};
-
-const MEALS_MAP = {
-  '2_meals': 'وجبتين',
-  '3_meals': '3 وجبات',
-  '4_meals': '4 وجبات',
-  '5_meals': '5 وجبات'
-};
-
-const SLEEP_MAP = {
-  'rotating_shifts': 'شفتات متغيرة (قطع كافيين 6س)',
-  'night_shift': 'شفت ليلي دائم',
-  'irregular': 'نوم غير منتظم',
-  'regular': 'نوم ليلي منتظم'
-};
-
-const SUGAR_MAP = {
-  '1_tsp': 'ملعقة صغيرة (20 سعرة / 5جم كارب)',
-  '2_tsp': 'ملعقتين صغيرتين (40 سعرة / 10جم كارب)',
-  '3_plus_tsp': '3 ملاعق أو أكثر (ينصح بالبدائل)',
-  'none': 'بدون سكر / محليات دايت صفرية'
-};
-
-const BUDGET_MAP = {
-  'LOW': 'اقتصادية', 'low': 'اقتصادية',
-  'MEDIUM': 'متوازنة', 'medium': 'متوازنة',
-  'HIGH': 'ممتازة', 'high': 'ممتازة'
-};
-
-const ENVIRONMENT_MAP = {
-  'HOME': 'المنزل', 'home_gym': 'المنزل',
-  'GYM': 'الجيم', 'commercial_gym': 'الجيم'
-};
-
-const DIABETES_MAP = {
-  'type_1': 'النوع الأول',
-  'type_2': 'النوع الثاني',
-  'prediabetes': 'مقدمات سكري'
-};
-
-const IF_MAP = {
-  '16_8': '16 ساعة صيام',
-  '14_10': '14 ساعة صيام',
-  'none': 'لا أصوم'
+const ACTIVITY_MAP = {
+  sedentary: 'خامل / عمل مكتبي',
+  moderate: 'متوسط النشاط',
+  very_active: 'عالي النشاط / عمل ميداني'
 };
 
 const OCCUPATION_MAP = {
-  'desk_office': 'مكتبي',
-  'active_physical': 'حركي / مجهود بدني',
-  'student': 'طالب',
-  'driver': 'سائق',
-  'mixed': 'مختلط'
+  DESK_OFFICE: 'مكتبي ثابت',
+  FIELD_MOBILE: 'ميداني متحرك',
+  MANUAL_LABOR: 'عمل بدني شاق',
+  STUDENT: 'طالب جامعي / دراسي',
+  UNEMPLOYED: 'لا أعمل حالياً / عمل منزلي'
+};
+
+const ENVIRONMENT_MAP = {
+  commercial_gym: 'جيم تجاري متكامل',
+  home_gym: 'جيم منزلي متطور',
+  minimal_equipment: 'أدوات منزلية خفيفة',
+  calisthenics_bands: 'وزن الجسم فقط (Calisthenics)'
+};
+
+const EXPERIENCE_MAP = {
+  beginner: 'مبتدئ (أقل من سنة)',
+  intermediate: 'متوسط (1 إلى 3 سنوات)',
+  advanced: 'متقدم (أكثر من 3 سنوات)'
+};
+
+const RECENT_TRAINING_MAP = {
+  ACTIVE: 'أتمرن حالياً بانتظام',
+  INCONSISTENT: 'متقطع في آخر 6 شهور',
+  NONE_LAST_4_WEEKS: 'منقطع منذ 1 إلى 3 شهور',
+  RETURNING_AFTER_LONG_BREAK: 'عودة بعد انقطاع طويل'
+};
+
+const MEALS_MAP = {
+  '3_meals': '3 وجبات',
+  '3_meals_snack': '3 وجبات + سناك',
+  '4_to_5_meals': '4 إلى 5 وجبات'
+};
+
+const IF_MAP = {
+  none: 'بدون صيام متقطع',
+  '16_8': 'صيام 16/8',
+  '14_10': 'صيام 14/10'
+};
+
+const BUDGET_MAP = {
+  LOW: 'اقتصادية (بيض، تونة، دجاج، قريش)',
+  MEDIUM: 'متوسطة (دواجن، لحوم، أسماك)',
+  HIGH: 'مرتفعة (ستيك، سلمون، مكملات)'
 };
 
 const PREP_MAP = {
-  'high': 'أطبخ كل وجباتي',
-  'medium': 'أطبخ جزئياً',
-  'low': 'أعتمد على المطاعم'
+  FULL_KITCHEN: 'مطبخ متكامل (أطبخ بنفسي)',
+  REHEAT_ONLY: 'تسخين فقط (وجبات جاهزة)',
+  NO_KITCHEN: 'اعتماد على مطاعم صحية'
+};
+
+const SUGAR_MAP = {
+  zero_or_sweetener: 'بدون سكر / بدائل دايت',
+  '1_tsp': 'ملعقة صغيرة واحدة (5 جم)',
+  '2_tsp': 'ملعقتين صغيرتين (10 جم)',
+  '3_plus_tsp': '3 ملاعق أو أكثر'
+};
+
+const SLEEP_MAP = {
+  regular_night: 'نوم ليلي منتظم',
+  rotating_shifts: 'شفتات عمل متغيرة',
+  night_shift: 'شفت ليلي ثابت (سهر)',
+  irregular: 'نوم غير منتظم / مضطرب'
+};
+
+const SLEEP_HOURS_MAP = {
+  less_than_6: 'أقل من 6 ساعات (نوم قليل)',
+  '6_7': 'من 6 إلى 7 ساعات',
+  '7_8': 'من 7 إلى 8 ساعات (مثالي)',
+  more_than_8: 'أكثر من 8 ساعات'
 };
 
 const RELIGION_MAP = {
-  'muslim': 'مسلم',
-  'christian': 'مسيحي',
-  'other': 'أخرى'
+  MUSLIM: 'صيام رمضان (توقيت ليلي)',
+  CHRISTIAN: 'صيام مسيحي',
+  OTHER: 'نظام اعتيادي (بدون صيام ديني)'
 };
 
 const CHRISTIAN_FASTING_MAP = {
-  'vegan_only': 'نباتي بالكامل (أصوام سيديّة)',
-  'seafood_allowed': 'نباتي + سمك',
-  'none': 'غير صائم حالياً'
+  PESCATARIAN_ALLOWED: 'نباتي مع سمك (المفضل)',
+  STRICT_VEGAN: 'نباتي صرف (بدون سمك)'
+};
+
+const EXCLUDED_FOODS_LABELS = {
+  none: 'لا توجد أي حساسية غذائية',
+  eggs: 'حساسية بيض',
+  dairy_lactose: 'حساسية لاكتوز وألبان',
+  gluten_celiac: 'حساسية قمح وجلوتين / سيلياك',
+  peanuts_tree_nuts: 'حساسية مكسرات وفول سوداني',
+  fish_shellfish: 'حساسية أسماك ومأكولات بحرية',
+  soy: 'حساسية فول صويا',
+  sesame_seeds: 'حساسية سمسم وطحينة وبذور',
+  favism_g6pd: 'بقوليات وأنيميا الفول (G6PD)',
+  strawberries_berries: 'حساسية فراولة وتوت',
+  tropical_fruits_mango: 'حساسية المانجو والفواكه الاستوائية (مانجو، كيوي)'
+};
+
+const CONDITIONS_LABELS = {
+  bariatric_surgery: 'تكميم معدة / تحويل مسار',
+  diabetes: 'سكري / مقاومة أنسولين',
+  favism_g6pd: 'أنيميا الفول (G6PD)',
+  renal: 'أمراض الكلى / ضعف وظائف الكلى',
+  hepatic: 'أمراض الكبد / دهون على الكبد',
+  thyroid: 'اضطرابات الغدة الدرقية',
+  gi_tract: 'قولون عصبي / ارتجاع مريء',
+  hypertension: 'ضغط دم مرتفع',
+  gout: 'نقرس / يوريك أسيد مرتفع'
+};
+
+const DIABETES_MAP = {
+  type1: 'النوع الأول (Type 1)',
+  type2: 'النوع الثاني (Type 2)'
+};
+
+const BARIATRIC_CAPACITY_MAP = {
+  under_150: 'أقل من 150 جم (وجبات مكثفة صغيرة)',
+  '150_200': '150 إلى 200 جم (المعدل القياسي)',
+  over_200: 'أكثر من 200 جم'
 };
 
 const INJURY_NATURE_MAP = {
-  'acute': 'حادة (جديدة)',
-  'chronic': 'مزمنة',
-  'rehabilitated': 'تأهلت وتشفّت'
+  chronic: 'إجهاد تراكمي وتدريجي (Chronic)',
+  acute: 'حادث أو صدمة مفاجئة (Acute)'
+};
+
+const INJURIES_LABELS = {
+  none: 'لا توجد أي إصابات مفصلية',
+  knee: 'إصابات الركبة (صليبي / غضروف / صابونة)',
+  spine_back: 'العمود الفقري (انزلاق غضروفي قطني / عنقي)',
+  shoulder: 'الكتف (اختناق أوتار / كفة مدورة)',
+  core: 'الجدار البطني (انفصال عضلي / فتق)',
+  elbow_wrist: 'الكوع أو المعصم'
+};
+
+const FOCUS_MUSCLES_MAP = {
+  upper_chest: 'الصدر العلوي (Upper Chest)',
+  lats_width: 'عرض الظهر (Lats Width)',
+  side_delts: 'الكتف الجانبي (Side Delts)',
+  arms: 'الذراعين (Arms)',
+  glutes_legs: 'الجلوتس والأرجل (Glutes / Legs)'
+};
+
+const MEDS_SUPPLEMENTS_MAP = {
+  none: 'لا أتناول أي مكملات أو أدوية',
+  creatine: 'كرياتين مونوهيدرات',
+  whey_protein: 'واي بروتين / مكمل بروتين',
+  omega3: 'أوميجا 3 (زيت سمك)',
+  vitamin_d: 'فيتامين د3',
+  multivitamin: 'مالتي فيتامين ومعادن',
+  magnesium: 'مغنيسيوم جلايسينات',
+  pre_workout: 'مشروب طاقة / كافيين بري وورك آوت',
+  hypertension_meds: 'أدوية ضغط الدم',
+  diabetes_meds: 'أدوية السكر أو الأنسولين',
+  thyroid_meds: 'علاج الغدة الدرقية'
 };
 
 export default function IntakeAuditDetailModal({
@@ -304,7 +341,7 @@ export default function IntakeAuditDetailModal({
               <FieldRow label="محيط الخصر (سم)" value={answers.circumferences?.waist_cm} />
               <FieldRow label="محيط الحوض (سم)" value={answers.circumferences?.hips_cm} />
               <FieldRow label="الهدف الأساسي" value={answers.primary_goal} dictionary={GOALS_MAP} />
-              <FieldRow label="مستوى الحركة اليومية (NEAT)" value={answers.neat_level} dictionary={_ACTIVITY_MAP} />
+              <FieldRow label="مستوى الحركة اليومية (NEAT)" value={answers.neat_level} dictionary={ACTIVITY_MAP} />
               <FieldRow label="طبيعة العمل" value={answers.occupation_type} dictionary={OCCUPATION_MAP} />
             </Section>
 
@@ -318,12 +355,12 @@ export default function IntakeAuditDetailModal({
               <FieldRow label="ارتفاع ضغط الدم" value={answers.medical_conditions?.hypertension} />
               <FieldRow label="النقرس" value={answers.medical_conditions?.gout} />
               <FieldRow label="عملية سمنة سابقة" value={answers.medical_conditions?.bariatric?.is_operated} />
-              <FieldRow label="سعة الوجبة (جرام)" value={answers.medical_conditions?.bariatric?.meal_capacity_grams} />
+              <FieldRow label="سعة الوجبة (جرام)" value={answers.medical_conditions?.bariatric?.meal_capacity_grams} dictionary={BARIATRIC_CAPACITY_MAP} />
               <FieldRow label="متلازمة الإغراق (Dumping)" value={answers.medical_conditions?.bariatric?.dumping_syndrome} />
               <FieldRow label="تكيس المبايض (PCOS)" value={answers.medical_conditions?.female_cases?.is_pcos} />
               <FieldRow label="مرضعة" value={answers.medical_conditions?.female_cases?.is_lactating} />
               <FieldRow label="ولادة حديثة" value={answers.medical_conditions?.female_cases?.is_postpartum} />
-              <FieldRow label="قائمة الأدوية والمكملات" value={answers.current_meds_supplements_list} />
+              <FieldRow label="قائمة الأدوية والمكملات" value={answers.current_meds_supplements_list} dictionary={MEDS_SUPPLEMENTS_MAP} />
               <FieldRow label="تفاصيل الأدوية والمكملات" value={answers.current_meds_supplements} />
             </Section>
             
@@ -350,7 +387,7 @@ export default function IntakeAuditDetailModal({
               <FieldRow label="القدرة على تحضير الطعام" value={answers.food_prep_ability} dictionary={PREP_MAP} />
               <FieldRow label="سكر المشروبات" value={answers.beverage_sugar_intake} dictionary={SUGAR_MAP} />
               <FieldRow label="نمط النوم" value={answers.sleep_schedule?.pattern} dictionary={SLEEP_MAP} />
-              <FieldRow label="متوسط ساعات النوم" value={answers.sleep_schedule?.average_hours} />
+              <FieldRow label="متوسط ساعات النوم" value={answers.sleep_schedule?.average_hours} dictionary={SLEEP_HOURS_MAP} />
               <FieldRow label="ساعة النوم المعتادة" value={answers.sleep_schedule?.bedtime_hour} />
             </Section>
 
@@ -361,8 +398,8 @@ export default function IntakeAuditDetailModal({
               <FieldRow label="يمارس رياضة أخرى" value={answers.training_logistics?.has_other_sports} />
               <FieldRow label="اسم الرياضة الأخرى" value={answers.training_logistics?.sports_name} />
               <FieldRow label="ساعات الرياضة الأخرى" value={answers.training_logistics?.hours_per_week} />
-              <FieldRow label="التدريب مؤخراً" value={answers.recent_training} />
-              <FieldRow label="عضلات التركيز" value={answers.focus_muscles} />
+              <FieldRow label="التدريب مؤخراً" value={answers.recent_training} dictionary={RECENT_TRAINING_MAP} />
+              <FieldRow label="عضلات التركيز" value={answers.focus_muscles} dictionary={FOCUS_MUSCLES_MAP} />
             </Section>
 
             <Section title="6) الملفات (المرفقات)">
