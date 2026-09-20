@@ -18,6 +18,7 @@ class _WorkoutScreenState extends State<WorkoutScreen> {
   late final WorkoutService _workoutService;
 
   List<WorkoutSession> _sessions = [];
+  Map<String, dynamic>? _cardio;
   int _selectedSessionIndex = 0;
   String _dailyReadiness = 'OPTIMAL';
   bool _showWorkoutGuide = false;
@@ -36,6 +37,12 @@ class _WorkoutScreenState extends State<WorkoutScreen> {
 
   void _loadWorkoutSessions() {
     final cached = widget.storage.getCachedActiveProgram();
+    final clientView = cached?['client_view'] as Map<String, dynamic>?;
+    if (clientView != null && clientView['cardio'] is Map) {
+      _cardio = Map<String, dynamic>.from(clientView['cardio'] as Map);
+    } else if (cached?['cardio'] is Map) {
+      _cardio = Map<String, dynamic>.from(cached!['cardio'] as Map);
+    }
     final loaded = _workoutService.getSessionsFromProgram(cached);
     _sessions = loaded;
     setState(() {});
@@ -326,6 +333,11 @@ class _WorkoutScreenState extends State<WorkoutScreen> {
                 ),
                 const SizedBox(height: 16),
 
+                if (_cardio != null) ...[
+                  _buildCardioCard(_cardio!),
+                  const SizedBox(height: 16),
+                ],
+
                 // بطاقات التمارين الفردية (بطاقة استرشادية وبطاقة تسجيل ذكية واحدة لكل تمرين)
                 ...currentSession.exercises.map((exercise) {
                   return Card(
@@ -587,6 +599,167 @@ class _WorkoutScreenState extends State<WorkoutScreen> {
           Text(title, style: const TextStyle(color: AppColors.textPrimary, fontSize: 12, fontWeight: FontWeight.bold)),
           const SizedBox(height: 2),
           Text(desc, style: const TextStyle(color: AppColors.textSecondary, fontSize: 11, height: 1.4)),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildCardioCard(Map<String, dynamic> cardio) {
+    final title = cardio['protocol_title_ar']?.toString() ?? 'بروتوكول النشاط الهوائي';
+    final duration = cardio['duration_minutes'];
+    final frequency = cardio['sessions_per_week'];
+    final talkTestCue = cardio['talk_test_cue_ar']?.toString();
+    final settings = cardio['suggested_settings_ar']?.toString();
+    final clinicalGuidance = cardio['clinical_guidance_ar']?.toString();
+    final advisories = cardio['advisories_ar'] as List?;
+
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: AppColors.surface,
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: AppColors.border),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Row(
+            children: [
+              const Icon(Icons.directions_run, color: AppColors.primary, size: 20),
+              const SizedBox(width: 8),
+              Expanded(
+                child: Text(
+                  title,
+                  style: const TextStyle(
+                    color: AppColors.textPrimary,
+                    fontSize: 15,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          Container(
+            decoration: BoxDecoration(
+              color: AppColors.backgroundDeep,
+              borderRadius: BorderRadius.circular(10),
+              border: Border.all(color: AppColors.border),
+            ),
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceAround,
+              children: [
+                if (duration != null)
+                  _buildPrescriptionBadge('$duration دقيقة', 'المدة المقررة'),
+                if (duration != null && frequency != null)
+                  Container(width: 1, height: 24, color: AppColors.border),
+                if (frequency != null)
+                  _buildPrescriptionBadge('$frequency جلسات/أسبوع', 'التكرار الأسبوعي'),
+              ],
+            ),
+          ),
+          if (talkTestCue != null && talkTestCue.isNotEmpty) ...[
+            const SizedBox(height: 10),
+            Container(
+              padding: const EdgeInsets.all(10),
+              decoration: BoxDecoration(
+                color: AppColors.backgroundDeep,
+                borderRadius: BorderRadius.circular(8),
+                border: Border.all(color: AppColors.border),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text(
+                    'توجيه الشدة واختبار الكلام:',
+                    style: TextStyle(color: AppColors.textPrimary, fontSize: 12, fontWeight: FontWeight.bold),
+                  ),
+                  const SizedBox(height: 2),
+                  Text(
+                    talkTestCue,
+                    style: const TextStyle(color: AppColors.textSecondary, fontSize: 12, height: 1.4),
+                  ),
+                ],
+              ),
+            ),
+          ],
+          if (settings != null && settings.isNotEmpty) ...[
+            const SizedBox(height: 10),
+            Container(
+              padding: const EdgeInsets.all(10),
+              decoration: BoxDecoration(
+                color: AppColors.backgroundDeep,
+                borderRadius: BorderRadius.circular(8),
+                border: Border.all(color: AppColors.border),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text(
+                    'الإعدادات المقترحة للأجهزة:',
+                    style: TextStyle(color: AppColors.textPrimary, fontSize: 12, fontWeight: FontWeight.bold),
+                  ),
+                  const SizedBox(height: 2),
+                  Text(
+                    settings,
+                    style: const TextStyle(color: AppColors.textSecondary, fontSize: 12, height: 1.4),
+                  ),
+                ],
+              ),
+            ),
+          ],
+          if (clinicalGuidance != null && clinicalGuidance.isNotEmpty) ...[
+            const SizedBox(height: 10),
+            Container(
+              padding: const EdgeInsets.all(10),
+              decoration: BoxDecoration(
+                color: const Color(0xFFEFF6FF),
+                borderRadius: BorderRadius.circular(8),
+                border: Border.all(color: const Color(0xFFBFDBFE)),
+              ),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Icon(Icons.health_and_safety_outlined, size: 16, color: Color(0xFF1D4ED8)),
+                  const SizedBox(width: 6),
+                  Expanded(
+                    child: Text(
+                      clinicalGuidance,
+                      style: const TextStyle(color: Color(0xFF1E40AF), fontSize: 12, height: 1.4),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+          if (advisories != null && advisories.isNotEmpty) ...[
+            const SizedBox(height: 10),
+            ...advisories.map((adv) {
+              return Container(
+                margin: const EdgeInsets.only(bottom: 6),
+                padding: const EdgeInsets.all(10),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFFEF3C7),
+                  borderRadius: BorderRadius.circular(8),
+                  border: Border.all(color: const Color(0xFFFCD34D)),
+                ),
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Icon(Icons.info_outline, size: 16, color: Color(0xFFB45309)),
+                    const SizedBox(width: 6),
+                    Expanded(
+                      child: Text(
+                        adv.toString(),
+                        style: const TextStyle(color: Color(0xFF92400E), fontSize: 12, height: 1.4),
+                      ),
+                    ),
+                  ],
+                ),
+              );
+            }),
+          ],
         ],
       ),
     );
