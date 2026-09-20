@@ -219,6 +219,17 @@ export default function IntakeAuditDetailModal({
               <FieldRow label="متوسط ساعات النوم" value={answers.sleep_schedule?.average_hours} />
               <FieldRow label="ساعة النوم المعتادة" value={answers.sleep_schedule?.bedtime_hour} />
             </Section>
+
+            <Section title="5) التدريب">
+              <FieldRow label="بيئة التدريب" value={answers.training_environment} />
+              <FieldRow label="أيام التمرين في الأسبوع" value={answers.training_logistics?.days_per_week} />
+              <FieldRow label="مستوى الخبرة" value={answers.training_logistics?.experience_level} />
+              <FieldRow label="يمارس رياضة أخرى" value={answers.training_logistics?.has_other_sports} />
+              <FieldRow label="اسم الرياضة الأخرى" value={answers.training_logistics?.sports_name} />
+              <FieldRow label="ساعات الرياضة الأخرى" value={answers.training_logistics?.hours_per_week} />
+              <FieldRow label="التدريب مؤخراً" value={answers.recent_training} />
+              <FieldRow label="عضلات التركيز" value={answers.focus_muscles} />
+            </Section>
           </div>
         </div>
 
