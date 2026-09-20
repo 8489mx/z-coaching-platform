@@ -20,10 +20,7 @@ const DEFAULT_MASTER_INTAKE = {
   circumferences: {
     neck_cm: '',
     waist_cm: '',
-    hips_cm: '',
-    chest_cm: '',
-    arm_cm: '',
-    thigh_cm: ''
+    hips_cm: ''
   },
   primary_goal: 'recomposition',
   neat_level: 'moderate',
@@ -37,7 +34,6 @@ const DEFAULT_MASTER_INTAKE = {
     bariatric: { is_operated: false, meal_capacity_grams: '150_200', dumping_syndrome: false },
     diabetes: { type: 'type2', uses_insulin: false, hba1c: '' },
     favism_g6pd: false,
-    thyroid: 'hypo',
     female_cases: { is_pcos: false, is_lactating: false, is_postpartum: false },
     hypertension: false,
     gout: false
@@ -53,7 +49,6 @@ const DEFAULT_MASTER_INTAKE = {
     injury_nature: 'chronic',
     pain_relieved_by_rest: true
   },
-  smoking_status: 'non_smoker',
   current_meds_supplements_list: [],
   current_meds_supplements: '',
 
@@ -61,14 +56,12 @@ const DEFAULT_MASTER_INTAKE = {
   religion: 'MUSLIM',
   christianFastingStyle: 'PESCATARIAN_ALLOWED',
   strict_allergies: [],
-  cuisine_preference: 'egyptian_traditional',
   food_budget: 'MEDIUM',
   food_prep_ability: 'FULL_KITCHEN',
   meal_structure: {
     meals_count: '3_meals_snack',
     intermittent_fasting: 'none'
   },
-  cravings_pattern: 'controlled',
   beverage_sugar_intake: 'zero_or_sweetener',
   sleep_schedule: {
     pattern: 'regular_night', // 'regular_night' | 'rotating_shifts' | 'night_shift' | 'irregular'
@@ -483,7 +476,6 @@ export default function FullIntakeForm() {
   const injuriesMap = formData.injuries_map || {};
   const injuriesSelected = Array.isArray(injuriesMap.selected_areas) ? injuriesMap.selected_areas : [];
   const strictAllergies = Array.isArray(formData.strict_allergies) ? formData.strict_allergies : [];
-  const cuisine = formData.cuisine_preference || 'egyptian_traditional';
   const mealStructure = formData.meal_structure || {};
   const dislikedFoods = Array.isArray(formData.disliked_foods) ? formData.disliked_foods : [];
   const trainingEnv = formData.training_environment || 'commercial_gym';
@@ -1236,30 +1228,8 @@ export default function FullIntakeForm() {
                 )}
               </div>
 
-              {/* Smoking & Meds Matrix */}
+              {/* Current Meds & Supplements */}
               <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
-                <div>
-                  <label style={{ display: 'block', fontSize: '12px', fontWeight: 800, color: '#0F172A', marginBottom: '6px' }}>
-                    حالة التدخين *
-                  </label>
-                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '8px' }}>
-                    <button 
-                      type="button" 
-                      onClick={() => setFormData(p => ({ ...p, smoking_status: 'non_smoker' }))}
-                      style={{ height: '38px', borderRadius: '6px', border: formData.smoking_status === 'non_smoker' ? '2px solid #16A34A' : '1px solid #CBD5E1', background: formData.smoking_status === 'non_smoker' ? '#F0FDF4' : '#FFFFFF', color: formData.smoking_status === 'non_smoker' ? '#166534' : '#475569', fontWeight: 800, fontSize: '11.5px', cursor: 'pointer' }}
-                    >
-                      غير مدخن
-                    </button>
-                    <button 
-                      type="button" 
-                      onClick={() => setFormData(p => ({ ...p, smoking_status: 'smoker' }))}
-                      style={{ height: '38px', borderRadius: '6px', border: formData.smoking_status === 'smoker' ? '2px solid #DC2626' : '1px solid #CBD5E1', background: formData.smoking_status === 'smoker' ? '#FEF2F2' : '#FFFFFF', color: formData.smoking_status === 'smoker' ? '#991B1B' : '#475569', fontWeight: 800, fontSize: '11.5px', cursor: 'pointer' }}
-                    >
-                      مدخن
-                    </button>
-                  </div>
-                </div>
-
                 <div>
                   <label style={{ display: 'block', fontSize: '12px', fontWeight: 800, color: '#0F172A', marginBottom: '6px' }}>
                     المكملات الغذائية أو الأدوية التي تتناولها حالياً (اختر كل ما ينطبق):
@@ -1438,48 +1408,6 @@ export default function FullIntakeForm() {
                 </div>
               </div>
 
-              {/* Cuisine Preferences (Cards Grid) */}
-              <div>
-                <label style={{ display: 'block', fontSize: '12px', fontWeight: 800, color: '#0F172A', marginBottom: '8px' }}>
-                  نمط المطبخ والوجبات المفضل لديك *
-                </label>
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '10px' }}>
-                  {[
-                    { id: 'egyptian_traditional', title: 'مطبخ مصري منزلي', desc: 'أرز، خضار مطبوخ، دواجن ولحوم، جبن قريش' },
-                    { id: 'gulf_traditional', title: 'مطبخ خليجي غني', desc: 'كبسة، مجبوس، لحوم ودواجن بتوابل شرقية' },
-                    { id: 'quick_prep_western', title: 'وجبات عصرية سريعة التحضير', desc: 'شوفان، توست، زبادي يوناني، ستيك وفيليه' },
-                    { id: 'keto', title: 'نظام كيتو دايت (Keto)', desc: 'دهون صحية عالية وبروتين مع كارب منعدم' },
-                    { id: 'vegetarian_pescatarian', title: 'نظام نباتي مرن', desc: 'اعتماد على الأسماك، البيض، والألبان والنبات' }
-                  ].map((cuis) => {
-                    const isSelected = cuisine === cuis.id;
-                    return (
-                      <div 
-                        key={cuis.id}
-                        onClick={() => setFormData(p => ({ ...p, cuisine_preference: cuis.id }))}
-                        style={{
-                          padding: '12px 14px',
-                          borderRadius: '8px',
-                          border: isSelected ? '2px solid #0F172A' : '1px solid #E2E8F0',
-                          background: isSelected ? '#F1F5F9' : '#FFFFFF',
-                          cursor: 'pointer',
-                          transition: 'all 0.15s ease',
-                          display: 'flex',
-                          flexDirection: 'column',
-                          gap: '3px'
-                        }}
-                      >
-                        <strong style={{ fontSize: '12.5px', color: '#0F172A', fontWeight: 800 }}>
-                          {cuis.title}
-                        </strong>
-                        <span style={{ fontSize: '11px', color: '#64748B', lineHeight: '1.4' }}>
-                          {cuis.desc}
-                        </span>
-                      </div>
-                    );
-                  })}
-                </div>
-              </div>
-
               {/* Meals Count & Intermittent Fasting (2-Col Grid) */}
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '12px' }}>
                 <div>
@@ -1582,48 +1510,6 @@ export default function FullIntakeForm() {
                       </CurvedSelect>
                     </div>
                   )}
-                </div>
-              </div>
-
-              {/* Cravings & Hunger Timing (Selectable Cards Grid) */}
-              <div>
-                <label style={{ display: 'block', fontSize: '12px', fontWeight: 800, color: '#0F172A', marginBottom: '8px' }}>
-                  توقيت نوبات الجوع واشتهاء السكريات (لتوظيف السناكس الذكية):
-                </label>
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '10px' }}>
-                  {[
-                    { id: 'controlled', title: 'شهية منضبطة', desc: 'لا أعاني من نوبات جوع مفاجئة، شبع طبيعي طوال اليوم' },
-                    { id: 'late_night', title: 'اشتهاء مسائي ليلاً', desc: 'جوع ورغبة في الأكل والتسالي بعد العشاء وقبل النوم' },
-                    { id: 'post_meal_sweets', title: 'اشتهاء السكر بعد الوجبات', desc: 'رغبة ملحة في التحلية فور الانتهاء من الغداء أو العشاء' },
-                    { id: 'midday_dip', title: 'هبوط طاقة منتصف النهار', desc: 'جوع شديد وتراجع تركيز في منتصف فترة العمل أو بعد الظهر' }
-                  ].map((cr) => {
-                    const isSelected = (formData.cravings_pattern || 'controlled') === cr.id;
-                    return (
-                      <div
-                        key={cr.id}
-                        onClick={() => setFormData(p => ({ ...p, cravings_pattern: cr.id }))}
-                        style={{
-                          padding: '11px 13px',
-                          borderRadius: '8px',
-                          border: isSelected ? '2px solid #0F172A' : '1px solid #E2E8F0',
-                          background: isSelected ? '#F1F5F9' : '#FFFFFF',
-                          cursor: 'pointer',
-                          transition: 'all 0.15s ease',
-                          display: 'flex',
-                          flexDirection: 'column',
-                          gap: '3px',
-                          boxShadow: isSelected ? '0 2px 6px rgba(15, 23, 42, 0.08)' : 'none'
-                        }}
-                      >
-                        <strong style={{ fontSize: '12px', color: '#0F172A', fontWeight: 800 }}>
-                          {cr.title}
-                        </strong>
-                        <span style={{ fontSize: '10.5px', color: '#64748B', lineHeight: '1.4' }}>
-                          {cr.desc}
-                        </span>
-                      </div>
-                    );
-                  })}
                 </div>
               </div>
 
