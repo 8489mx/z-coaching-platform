@@ -18,6 +18,7 @@ import {
   getMyActiveProgram,
   getMyCheckinHistory,
   getCyclesNeedingAttention,
+  prepareNextCycle,
 } from "../controllers/program.controller.js";
 import { requireAuth } from "../middlewares/auth.middleware.js";
 
@@ -28,6 +29,7 @@ router.post("/generate-preview", requireAuth, generateProgramPreview);
 router.post("/generate-and-save", requireAuth, generateAndSaveProgram);
 router.get("/", requireAuth, getUserPrograms);
 router.get("/cycles/attention", requireAuth, getCyclesNeedingAttention);
+router.post("/next-cycle", requireAuth, prepareNextCycle);
 router.get("/active", requireAuth, getMyActiveProgram);
 router.get("/active/:user_id", requireAuth, getActiveProgramByUserId);
 router.put("/fasting-override", requireAuth, setFastingOverride);

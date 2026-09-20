@@ -21,6 +21,7 @@ import { getGulfHeatAdvisory, getPracticalCardioPrescription } from "../../execu
 import { calculateSessionDemand, auditWeeklyMuscleVolume, auditDeficitVolumeShield, evaluateProteinSparingRequirement } from "../utils/trainingNutritionCoupling.js";
 import { applyDeloadToSession, READINESS_GUIDANCE_AR } from "../../../src/training-engine-v2/progression/index.js";
 import { resolveTrainingCycleStatus, CYCLE_STATUS } from "../services/trainingCycleService.js";
+import { buildNextCycle, resolvePainFlaggedExercises } from "../services/nextCycleService.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -868,6 +869,55 @@ export async function resolveIntakeMedicalReview(userId) {
 }
 
 export const MEDICAL_REVIEW_CONFIRMATION_REQUIRED = "MEDICAL_REVIEW_CONFIRMATION_REQUIRED";
+
+/**
+ * POST /api/v1/programs/next-cycle: prepare the client's next training cycle from the one they just
+ * finished — same exercises, starting weights taken from their own logs — and save it as a draft.
+ * It is never published here: the coach opens it, deals with anything flagged, and publishes.
+ * Coaches and admins only.
+ */
+export const prepareNextCycle = async (req, res) => {
+  try {
+    const requester = req.user ? await User.findByPk(req.user.id) : null;
+    if (!requester || !["COACH", "ADMIN"].includes(requester.role)) {
+      return res.status(403).json({ error: "تجهيز الدورة الجديدة متاح للكوتش فقط" });
+    }
+
+    const code = String(req.body?.client_code || "").replace(/^#+/, "").trim();
+    const user = code ? await User.findOne({ where: { client_code: code } }) : null;
+    if (!user) return res.status(404).json({ error: "المتدرب غير موجود" });
+
+    const program = await Program.findOne({ where: { user_id: user.id }, order: [["id", "DESC"]] });
+    if (!program) return res.status(404).json({ error: "لا توجد خطة حالية لبناء الدورة التالية منها" });
+    if (program.status !== "ACTIVE") {
+      return res.status(409).json({ error: "آخر خطة لهذا المتدرب ما زالت مسودة لم تُنشر بعد", code: "DRAFT_ALREADY_PENDING" });
+    }
+
+    const [progression, checkins] = await Promise.all([
+      loadProgressionState(user.id),
+      CheckinSubmission.findAll({ where: { user_id: user.id }, order: [["id", "DESC"]], limit: 4, attributes: ["analysis_output"] }),
+    ]);
+
+    const { program_data, summary } = buildNextCycle({
+      program,
+      progression,
+      flagged_exercises: resolvePainFlaggedExercises(checkins),
+    });
+
+    const draft = await Program.create({ user_id: user.id, program_data, status: "DRAFT" });
+
+    return res.status(201).json({
+      message: summary.message_ar,
+      program_id: draft.id,
+      client_code: user.client_code,
+      summary,
+      previous_cycle: resolveTrainingCycleStatus(program),
+    });
+  } catch (err) {
+    console.error("prepareNextCycle error:", err);
+    return res.status(500).json({ error: "فشل تجهيز الدورة التدريبية الجديدة" });
+  }
+};
 
 /**
  * GET /api/v1/programs/cycles/attention: the clients whose training cycle ends within a week or has
