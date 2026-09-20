@@ -16,7 +16,7 @@ import { calculateSmartSwap } from "../../../src/nutrition-swap-engine-v2/calcul
 import { listSmartSwapCandidates, getSmartFoodRegistryItem, SMART_SWAP_REGISTRY } from "../../../src/nutrition-swap-engine-v2/swap-pool-registry.js";
 import { CLINICAL_GUIDELINES } from "../../config/clinical-guidelines.js";
 import { loadProgressionState } from "../services/progressionService.js";
-import { resolveFastingContext, FASTING_OVERRIDES } from "../../execution-engines/fasting-calendar-engine.js";
+import { resolveFastingContext, FASTING_OVERRIDES, applyFastingToMeals } from "../../execution-engines/fasting-calendar-engine.js";
 import { getGulfHeatAdvisory } from "../../execution-engines/cardio-zones-engine.js";
 import { calculateSessionDemand, auditWeeklyMuscleVolume, auditDeficitVolumeShield, evaluateProteinSparingRequirement } from "../utils/trainingNutritionCoupling.js";
 
@@ -946,8 +946,16 @@ export const getActiveProgramByUserId = async (req, res) => {
       fat_g: Number(targets.fats || targets.fat_g || 0),
     };
 
+    const nowStr = req.query?.now;
+    const now = nowStr ? new Date(nowStr) : new Date();
+
+    const fastingContext = await resolveClientFastingContext(user, program.program_data, now);
+    const clinicalConstraints = await resolveClientClinicalConstraints(user.id) || {};
+    const meals = applyFastingToMeals(program.program_data?.nutrition?.meals || [], fastingContext, clinicalConstraints);
+
     const client_view = {
-      target_macros
+      target_macros,
+      meals
     };
 
     return res.status(200).json({
@@ -960,9 +968,9 @@ export const getActiveProgramByUserId = async (req, res) => {
       user: program.user || user,
       master_program: program.program_data,
       lifestyle: { bedtime_hour: await resolveClientBedtimeHour(user.id) },
-      clinical_constraints: await resolveClientClinicalConstraints(user.id),
+      clinical_constraints: clinicalConstraints,
       progression: await loadProgressionState(user.id),
-      fasting_context: await resolveClientFastingContext(user, program.program_data),
+      fasting_context: fastingContext,
       heat_advisory: getGulfHeatAdvisory({ country_code: resolveCountryFromPhone(user.phone_number) }),
       client_view
     });
