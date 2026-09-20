@@ -1869,21 +1869,22 @@ export default function FullIntakeForm() {
                   <label style={{ display: 'block', fontSize: '12px', fontWeight: 800, color: '#0F172A', marginBottom: '6px' }}>
                     أيام التمرين المتاحة أسبوعياً
                   </label>
-                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '6px' }}>
-                    {[3, 4, 5, 6].map((days) => (
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: '6px' }}>
+                    {[2, 3, 4, 5, 6].map((days) => (
                       <button 
                         key={days}
                         type="button"
                         onClick={() => updateNested('training_logistics', 'days_per_week', days)}
                         style={{
                           height: '38px',
-                          borderRadius: '6px',
+                          borderRadius: '8px',
                           border: (trainingLogistics.days_per_week || 4) === days ? '2px solid #0F172A' : '1px solid #CBD5E1',
                           background: (trainingLogistics.days_per_week || 4) === days ? '#0F172A' : '#FFFFFF',
                           color: (trainingLogistics.days_per_week || 4) === days ? '#FFFFFF' : '#475569',
                           fontWeight: 800,
                           fontSize: '12px',
-                          cursor: 'pointer'
+                          cursor: 'pointer',
+                          transition: 'all 0.15s ease'
                         }}
                       >
                         {days} أيام
