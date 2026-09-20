@@ -916,7 +916,7 @@ export default function CoachCommandCenter() {
                         color: '#15803D',
                         fontWeight: 800
                       }}>
-                        {cycleRunResult.published.length}
+                        {cycleRunResult.published_count}
                       </span>
                     </div>
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
@@ -981,7 +981,7 @@ export default function CoachCommandCenter() {
                         color: '#B45309',
                         fontWeight: 800
                       }}>
-                        {cycleRunResult.waiting.length}
+                        {cycleRunResult.waiting_count}
                       </span>
                     </div>
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
