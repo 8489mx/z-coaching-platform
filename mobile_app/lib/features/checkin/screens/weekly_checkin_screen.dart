@@ -1,6 +1,7 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
+import '../../../core/constants/api_constants.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/network/api_client.dart';
 import '../../../core/storage/local_storage.dart';
@@ -19,8 +20,9 @@ class _WeeklyCheckinScreenState extends State<WeeklyCheckinScreen> {
   late final CheckinService _checkinService;
   final _picker = ImagePicker();
 
-  final _weightController = TextEditingController(text: '82.5');
-  final _waistController = TextEditingController(text: '84.0');
+  // تبدأ فاضية: المتدرب يكتب قياس اليوم، ولو له متابعة سابقة نملأها بآخر قياس كنقطة بداية.
+  final _weightController = TextEditingController();
+  final _waistController = TextEditingController();
   final _notesController = TextEditingController();
 
   double _adherenceRate = 90.0;
@@ -37,6 +39,30 @@ class _WeeklyCheckinScreenState extends State<WeeklyCheckinScreen> {
     super.initState();
     final apiClient = ApiClient(widget.storage);
     _checkinService = CheckinService(apiClient, widget.storage);
+    _prefillFromLastCheckin(apiClient);
+  }
+
+  /// يملأ الوزن والخصر بآخر قياس سجله المتدرب، ويتركهما فاضيين لو مفيش متابعة سابقة.
+  Future<void> _prefillFromLastCheckin(ApiClient apiClient) async {
+    final response = await apiClient.get(ApiConstants.checkinHistory);
+    final data = response.data;
+    if (!response.isSuccess || data is! Map || data['checkins'] is! List) return;
+
+    final checkins = data['checkins'] as List;
+    if (checkins.isEmpty || checkins.last is! Map) return;
+    final last = checkins.last as Map;
+
+    final weight = last['average_weight_kg'] ?? last['weight_kg'];
+    final waist = last['waist_circumference_cm'];
+    if (!mounted) return;
+    setState(() {
+      if (weight != null && _weightController.text.isEmpty) {
+        _weightController.text = weight.toString();
+      }
+      if (waist != null && _waistController.text.isEmpty) {
+        _waistController.text = waist.toString();
+      }
+    });
   }
 
   @override

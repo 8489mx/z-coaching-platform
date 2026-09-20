@@ -451,6 +451,13 @@ export const getPendingCheckins = async (req, res) => {
   }
 };
 
+/** GET /api/v1/programs/checkin/history: the signed-in client's own check-ins (mobile app, no id in the URL). */
+export const getMyCheckinHistory = async (req, res) => {
+  const me = req.user?.id ? await User.findByPk(req.user.id, { attributes: ["id", "client_code"] }).catch(() => null) : null;
+  if (!me) return res.status(401).json({ error: "Unauthorized: User account not found" });
+  return getCheckinHistory({ user: req.user, params: { user_id: String(me.client_code || me.id) } }, res);
+};
+
 export const getCheckinHistory = async (req, res) => {
   try {
     const { user_id } = req.params;

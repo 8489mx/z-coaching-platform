@@ -16,6 +16,7 @@ import {
   getSwapCandidatesHandler,
   setFastingOverride,
   getMyActiveProgram,
+  getMyCheckinHistory,
 } from "../controllers/program.controller.js";
 import { requireAuth } from "../middlewares/auth.middleware.js";
 
@@ -38,6 +39,7 @@ router.get("/exercises-catalog", getExercisesCatalog);
 router.post("/checkin/evaluate", requireAuth, evaluateCheckinHandler);
 router.post("/checkin/submit", requireAuth, submitWeeklyCheckin);
 router.get("/checkin/pending", requireAuth, getPendingCheckins);
+router.get("/checkin/history", requireAuth, getMyCheckinHistory);
 router.get("/checkin/history/:user_id", requireAuth, getCheckinHistory);
 router.post("/adapt", requireAuth, adaptProgramHandler);
 

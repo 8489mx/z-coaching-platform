@@ -105,3 +105,14 @@ test("the mobile offline check-in queue is uploaded when the app opens", () => {
   assert.match(nav, /_uploadPendingCheckins\(\);/);
   assert.match(nav, /flushPendingCheckins\(\)/);
 });
+
+// The mobile check-in used to open with someone else's numbers already typed in (82.5 kg / 84 cm),
+// which a client could submit as their own measurement.
+test("the mobile check-in form starts empty and prefills from the client's last check-in", () => {
+  const screen = read("mobile_app/lib/features/checkin/screens/weekly_checkin_screen.dart");
+  assert.ok(!screen.includes("text: '82.5'") && !screen.includes("text: '84.0'"), "hardcoded measurements are gone");
+  assert.match(screen, /_weightController = TextEditingController\(\);/);
+  assert.match(screen, /_prefillFromLastCheckin\(apiClient\);/);
+  assert.match(screen, /last\['average_weight_kg'\] \?\? last\['weight_kg'\]/);
+  assert.match(read("src/api/routes/program.routes.js"), /router\.get\("\/checkin\/history", requireAuth, getMyCheckinHistory\)/);
+});
