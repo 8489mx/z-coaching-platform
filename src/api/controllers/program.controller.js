@@ -16,9 +16,10 @@ import { calculateSmartSwap } from "../../../src/nutrition-swap-engine-v2/calcul
 import { listSmartSwapCandidates, getSmartFoodRegistryItem, SMART_SWAP_REGISTRY } from "../../../src/nutrition-swap-engine-v2/swap-pool-registry.js";
 import { CLINICAL_GUIDELINES } from "../../config/clinical-guidelines.js";
 import { loadProgressionState } from "../services/progressionService.js";
-import { resolveFastingContext, FASTING_OVERRIDES } from "../../execution-engines/fasting-calendar-engine.js";
-import { getGulfHeatAdvisory } from "../../execution-engines/cardio-zones-engine.js";
+import { resolveFastingContext, FASTING_OVERRIDES, applyFastingToMeals, RAMADAN_CARDIO_GUIDANCE_AR } from "../../execution-engines/fasting-calendar-engine.js";
+import { getGulfHeatAdvisory, getPracticalCardioPrescription } from "../../execution-engines/cardio-zones-engine.js";
 import { calculateSessionDemand, auditWeeklyMuscleVolume, auditDeficitVolumeShield, evaluateProteinSparingRequirement } from "../utils/trainingNutritionCoupling.js";
+import { applyDeloadToSession } from "../../../src/training-engine-v2/progression/index.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -938,6 +939,62 @@ export const getActiveProgramByUserId = async (req, res) => {
 
     const isApproved = program.status === "ACTIVE" || user.plan_approval_status === "APPROVED";
 
+    const targets = program.program_data?.nutrition?.targets || {};
+    const target_macros = {
+      calories: Number(targets.calories || 0),
+      protein_g: Number(targets.protein || targets.protein_g || 0),
+      carbs_g: Number(targets.carbs || targets.carbs_g || 0),
+      fat_g: Number(targets.fats || targets.fat_g || 0),
+    };
+
+    const nowStr = req.query?.now;
+    const now = nowStr ? new Date(nowStr) : new Date();
+
+    const fastingContext = await resolveClientFastingContext(user, program.program_data, now);
+    const clinicalConstraints = await resolveClientClinicalConstraints(user.id) || {};
+    const meals = applyFastingToMeals(program.program_data?.nutrition?.meals || [], fastingContext, clinicalConstraints);
+
+    const heatAdvisory = getGulfHeatAdvisory({ country_code: resolveCountryFromPhone(user.phone_number), date: now });
+    
+    const advisories_ar = [];
+    if (fastingContext?.mode === "RAMADAN") advisories_ar.push(RAMADAN_CARDIO_GUIDANCE_AR);
+    if (heatAdvisory?.active) advisories_ar.push(heatAdvisory.message_ar);
+
+    const cardioPayload = program.program_data?.cardio || {};
+    const answers = (await loadLatestIntakeAnswers(user.id).catch(() => null)) || {};
+    const conditions = [
+      ...(answers.medical_conditions?.selected || []),
+      ...(Array.isArray(answers.dangerous_symptoms) ? answers.dangerous_symptoms.filter((s) => s !== "NONE") : [])
+    ];
+    const cardio = {
+      ...getPracticalCardioPrescription({
+        ...cardioPayload,
+        medicalConditions: conditions
+      }),
+      advisories_ar
+    };
+
+    const progression = await loadProgressionState(user.id, now);
+    const trainingNode = program.program_data?.training || program.program_data?.training_program || {};
+    let sessionRaw = null;
+    if (Array.isArray(trainingNode.sessions) && trainingNode.sessions.length > 0) {
+      sessionRaw = trainingNode.sessions[0];
+    } else if (Array.isArray(trainingNode.weeks) && trainingNode.weeks.length > 0 && Array.isArray(trainingNode.weeks[0].sessions) && trainingNode.weeks[0].sessions.length > 0) {
+      sessionRaw = trainingNode.weeks[0].sessions[0];
+    }
+    
+    let training_session = sessionRaw ? JSON.parse(JSON.stringify(sessionRaw)) : null;
+    if (training_session && progression?.deload?.status === "ACTIVE") {
+       training_session = applyDeloadToSession(training_session);
+    }
+
+    const client_view = {
+      target_macros,
+      meals,
+      cardio,
+      training_session
+    };
+
     return res.status(200).json({
       has_program: isApproved,
       is_pending_review: !isApproved,
@@ -952,6 +1009,7 @@ export const getActiveProgramByUserId = async (req, res) => {
       progression: await loadProgressionState(user.id),
       fasting_context: await resolveClientFastingContext(user, program.program_data),
       heat_advisory: getGulfHeatAdvisory({ country_code: resolveCountryFromPhone(user.phone_number) }),
+      client_view
     });
   } catch (err) {
     console.error("getActiveProgramByUserId error:", err);
