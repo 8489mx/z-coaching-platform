@@ -147,7 +147,7 @@ export function generateMasterPdfExportData({
  * Formats a clean, high-density, printable HTML document for 1-click PDF export
  */
 export function generatePrintablePlanHTML({ client = {}, plan = {}, date = new Date().toISOString().split('T')[0] }) {
-  const { prehab, workout = {}, meals = [], cardio = {}, supplements = [], guidelines } = plan;
+  const { prehab, workout = {}, meals = [], cardio = {}, supplements = [], guidelines: _guidelines } = plan;
 
   return `
 <!DOCTYPE html>

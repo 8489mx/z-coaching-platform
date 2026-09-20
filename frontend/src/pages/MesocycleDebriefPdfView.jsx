@@ -133,6 +133,8 @@ export default function MesocycleDebriefPdfView() {
 
   useEffect(() => {
     fetchClientAndCheckins();
+  // مقصود: التأثير يعمل عند تغيّر مفتاحه فقط. إضافة الدوال للتبعيات تُعاد إنشاؤها كل رندر فتدخل في حلقة إعادة تشغيل.
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [targetCode]);
 
   const fetchClientAndCheckins = async () => {

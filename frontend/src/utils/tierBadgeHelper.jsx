@@ -4,6 +4,8 @@ import React from 'react';
  * CLINICAL MASTER ENGINE - SINGLE SOURCE OF TRUTH
  * Canonical 15 Baseline Stress Test Clients
  */
+// مقصود: ثابت أو دالة مشتركة بجوار المكوّن. تحذير Fast Refresh في بيئة التطوير فقط ولا أثر له على الإنتاج.
+// eslint-disable-next-line react/only-export-components
 export const CANONICAL_CLIENT_TIERS = {
   '1': 'MAX',
   '2': 'ELITE',
@@ -22,6 +24,8 @@ export const CANONICAL_CLIENT_TIERS = {
   '15': 'MAX'
 };
 
+// مقصود: ثابت أو دالة مشتركة بجوار المكوّن. تحذير Fast Refresh في بيئة التطوير فقط ولا أثر له على الإنتاج.
+// eslint-disable-next-line react/only-export-components
 export function getClientTier(item) {
   if (!item) return 'ELITE';
 
@@ -82,6 +86,8 @@ export function getClientTier(item) {
   return 'ELITE';
 }
 
+// مقصود: ثابت أو دالة مشتركة بجوار المكوّن. تحذير Fast Refresh في بيئة التطوير فقط ولا أثر له على الإنتاج.
+// eslint-disable-next-line react/only-export-components
 export function getTierColors(tierOrItem) {
   const tier = typeof tierOrItem === 'string' && (tierOrItem === 'MAX' || tierOrItem === 'ELITE')
     ? tierOrItem
@@ -174,6 +180,8 @@ export function ClientPackageBadge({ item, tier, size = 'md', style = {} }) {
 /**
  * Universal Country Detector based on explicit country string or international phone prefix
  */
+// مقصود: ثابت أو دالة مشتركة بجوار المكوّن. تحذير Fast Refresh في بيئة التطوير فقط ولا أثر له على الإنتاج.
+// eslint-disable-next-line react/only-export-components
 export function getClientCountryInfo(phone = '', explicitCountry = '') {
   if (explicitCountry) {
     const c = String(explicitCountry).trim().toLowerCase();
@@ -232,6 +240,8 @@ export function getClientCountryInfo(phone = '', explicitCountry = '') {
 /**
  * Relative / Clean Time Ago Formatter
  */
+// مقصود: ثابت أو دالة مشتركة بجوار المكوّن. تحذير Fast Refresh في بيئة التطوير فقط ولا أثر له على الإنتاج.
+// eslint-disable-next-line react/only-export-components
 export function formatTimeAgo(dateStr) {
   if (!dateStr) return 'اليوم';
   try {

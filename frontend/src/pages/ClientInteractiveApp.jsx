@@ -21,7 +21,7 @@ import { useClientInteractiveData } from './ClientInteractiveApp/hooks/useClient
 
 export default function ClientInteractiveApp() {
   const [searchParams, setSearchParams] = useSearchParams();
-  const navigate = useNavigate();
+  const _navigate = useNavigate();
 
   // Tab Selection ('meals' | 'workout' | 'checkin')
   const rawTab = searchParams.get('tab');
@@ -38,9 +38,9 @@ export default function ClientInteractiveApp() {
   const [freeGuideTab, setFreeGuideTab] = useState('DRINKS');
   const [pdfModalOpen, setPdfModalOpen] = useState(false);
   const [emergencyModalOpen, setEmergencyModalOpen] = useState(false);
-  const [activeScenario, setActiveScenario] = useState(null);
+  const [_activeScenario, setActiveScenario] = useState(null);
   const [travelConfirmTarget, setTravelConfirmTarget] = useState(null);
-  const [travelChosenTier, setTravelChosenTier] = useState(null);
+  const [_travelChosenTier, setTravelChosenTier] = useState(null);
   const [returnTravelModalOpen, setReturnTravelModalOpen] = useState(false);
   const [exerciseSwapTarget, setExerciseSwapTarget] = useState(null);
   const [activeVideoExercise, setActiveVideoExercise] = useState(null);

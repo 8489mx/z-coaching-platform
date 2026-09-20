@@ -5,7 +5,7 @@ import { KIDNEY_MAX_PROTEIN_PER_KG } from '../../../config/clinicalLimits';
 
 
 export default function CoachEditorNutritionTab(props) {
-  const { searchParams, setSearchParams, loading, setLoading, saving, setSaving, publishing, setPublishing, program, setProgram, coachNotes, setCoachNotes, activeSessionIdx, setActiveSessionIdx, activeWorkspaceTab, setActiveWorkspaceTab, notification, setNotification, clientsList, setClientsList, queueFilter, setQueueFilter, queueSearch, setQueueSearch, showQueueSlider, setShowQueueSlider, allExercisesList, setAllExercisesList, cardioSwapModal, setCardioSwapModal, addFoodModal, setAddFoodModal, swapFoodModal, setSwapFoodModal, addExModal, setAddExModal, swapExModal, setSwapExModal, mobilityModal, setMobilityModal, allMobilityList, setAllMobilityList, showReasoning, setShowReasoning, exModalSearch, setExModalSearch, foodModalSearch, setFoodModalSearch, mobilityModalSearch, setMobilityModalSearch, swapFoodSearch, setSwapFoodSearch, swapExSearch, setSwapExSearch, handleSelectClient, handleUpdateFoodAmount, handleDeleteFood, handleAddNewMeal, handleDuplicateMeal, handleDeleteMeal, handleAddFoodToMeal, handleExecuteFoodSwap, handleExecuteExerciseSwap, handleUpdateExerciseParam, handleDeleteExercise, handleAddExerciseToSession, handleSelectCardioModality, handleAddMobilityToSession, handleRemoveMobilityFromSession, handleSaveDraft, handleApproveAndPublish, FOOD_DATABASE_LIST, CARDIO_MODALITY_OPTIONS } = props;
+  const { searchParams: _searchParams, setSearchParams: _setSearchParams, loading: _loading, setLoading: _setLoading, saving: _saving, setSaving: _setSaving, publishing: _publishing, setPublishing: _setPublishing, program, setProgram, coachNotes: _coachNotes, setCoachNotes: _setCoachNotes, activeSessionIdx: _activeSessionIdx, setActiveSessionIdx: _setActiveSessionIdx, activeWorkspaceTab, setActiveWorkspaceTab: _setActiveWorkspaceTab, notification: _notification, setNotification: _setNotification, clientsList: _clientsList, setClientsList: _setClientsList, queueFilter: _queueFilter, setQueueFilter: _setQueueFilter, queueSearch: _queueSearch, setQueueSearch: _setQueueSearch, showQueueSlider: _showQueueSlider, setShowQueueSlider: _setShowQueueSlider, allExercisesList: _allExercisesList, setAllExercisesList: _setAllExercisesList, cardioSwapModal: _cardioSwapModal, setCardioSwapModal: _setCardioSwapModal, addFoodModal: _addFoodModal, setAddFoodModal, swapFoodModal: _swapFoodModal, setSwapFoodModal, addExModal: _addExModal, setAddExModal: _setAddExModal, swapExModal: _swapExModal, setSwapExModal: _setSwapExModal, mobilityModal: _mobilityModal, setMobilityModal: _setMobilityModal, allMobilityList: _allMobilityList, setAllMobilityList: _setAllMobilityList, showReasoning: _showReasoning, setShowReasoning: _setShowReasoning, exModalSearch: _exModalSearch, setExModalSearch: _setExModalSearch, foodModalSearch: _foodModalSearch, setFoodModalSearch: _setFoodModalSearch, mobilityModalSearch: _mobilityModalSearch, setMobilityModalSearch: _setMobilityModalSearch, swapFoodSearch: _swapFoodSearch, setSwapFoodSearch: _setSwapFoodSearch, swapExSearch: _swapExSearch, setSwapExSearch: _setSwapExSearch, handleSelectClient: _handleSelectClient, handleUpdateFoodAmount, handleDeleteFood, handleAddNewMeal, handleDuplicateMeal, handleDeleteMeal, handleAddFoodToMeal: _handleAddFoodToMeal, handleExecuteFoodSwap: _handleExecuteFoodSwap, handleExecuteExerciseSwap: _handleExecuteExerciseSwap, handleUpdateExerciseParam: _handleUpdateExerciseParam, handleDeleteExercise: _handleDeleteExercise, handleAddExerciseToSession: _handleAddExerciseToSession, handleSelectCardioModality: _handleSelectCardioModality, handleAddMobilityToSession: _handleAddMobilityToSession, handleRemoveMobilityFromSession: _handleRemoveMobilityFromSession, handleSaveDraft: _handleSaveDraft, handleApproveAndPublish: _handleApproveAndPublish, FOOD_DATABASE_LIST: _FOOD_DATABASE_LIST, CARDIO_MODALITY_OPTIONS: _CARDIO_MODALITY_OPTIONS } = props;
 
   const showToast = props.showToast || ((msg) => console.log(msg));
 
@@ -47,7 +47,7 @@ export default function CoachEditorNutritionTab(props) {
   const clientWeightKg = Number(program?.client?.weight_kg) || 80;
   const maxSafeProtein = Number(clinicalGuardrails?.max_protein_g) || Math.round(clientWeightKg * KIDNEY_MAX_PROTEIN_PER_KG);
 
-  const activeSessions = (program?.training?.sessions && program.training.sessions.length > 0)
+  const _activeSessions = (program?.training?.sessions && program.training.sessions.length > 0)
     ? program.training.sessions
     : (Array.isArray(program?.training?.weeks) && program.training.weeks.length > 0)
       ? (program.training.weeks[0]?.sessions || [])
@@ -55,7 +55,7 @@ export default function CoachEditorNutritionTab(props) {
         ? (program.training_program.weeks[0]?.sessions || [])
         : [];
 
-  const clientTdee = Number(program?.client?.tdee || (targetCal >= 2000 ? targetCal + 450 : 2400));
+  const _clientTdee = Number(program?.client?.tdee || (targetCal >= 2000 ? targetCal + 450 : 2400));
 
 
 

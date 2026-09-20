@@ -8,19 +8,19 @@ import {
 import { getPrepOptionsForFood } from '../../../utils/culinaryRecipes';
 
 export default function MealsTab({
-  consumedMacros,
+  _consumedMacros,
   targetMacros,
   meals,
   fastingContext = null,
-  handleToggleMealCompleted,
+  _handleToggleMealCompleted,
   setActivePrepItem,
   setActiveSwapItem,
   setSwapMealId,
-  setFreeGuideModalOpen,
-  setPdfModalOpen,
-  supplementsList = [],
-  supplementsTaken = {},
-  toggleSupplementTaken
+  _setFreeGuideModalOpen,
+  _setPdfModalOpen,
+  _supplementsList = [],
+  _supplementsTaken = {},
+  _toggleSupplementTaken
 }) {
   const [portionDisplayMode, setPortionDisplayMode] = useState(PORTION_DISPLAY_MODES.DUAL);
   const [cookingStateMode, setCookingStateMode] = useState(COOKING_STATE_MODES.BOTH);

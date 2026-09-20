@@ -5,7 +5,7 @@ import AdminHeader from './AdminHeader';
 export default function AdminLayout({ 
   children, 
   onOpenNewClient,
-  fullWidth = true
+  _fullWidth = true
 }) {
   const [isCollapsed, setIsCollapsed] = useState(() => {
     const saved = localStorage.getItem('zsystems_sidebar_collapsed');

@@ -30,9 +30,7 @@ export default function NewClientQuickModal({ isOpen, onClose, onClientCreated }
   const finalTotalDays = baseDays + extraDays;
   const packageCode = `${tier}_${currentDurationData.id}`;
 
-  const isMax = getClientTier(tier) === 'MAX';
-  const themeColor = isMax ? '#C89327' : '#170c5c';
-  const themeBg = isMax ? '#FFFBEB' : '#EDE9FE';
+  const _isMax = getClientTier(tier) === 'MAX';
 
   const baseMonths = durationKey === 'FOUR_MONTHS' ? 4 : 8;
   let durationText = `${baseMonths} شهور`;

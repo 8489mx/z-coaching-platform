@@ -357,6 +357,8 @@ export default function ProgramPdfView() {
 
   useEffect(() => {
     fetchData();
+  // مقصود: التأثير يعمل عند تغيّر مفتاحه فقط. إضافة الدوال للتبعيات تُعاد إنشاؤها كل رندر فتدخل في حلقة إعادة تشغيل.
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [targetUserId]);
 
   const fetchData = async () => {
@@ -386,6 +388,8 @@ export default function ProgramPdfView() {
       }, 600);
       return () => clearTimeout(timer);
     }
+  // مقصود: التأثير يعمل عند تغيّر مفتاحه فقط. إضافة الدوال للتبعيات تُعاد إنشاؤها كل رندر فتدخل في حلقة إعادة تشغيل.
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [loading, program, user]);
 
   if (loading) {
@@ -409,7 +413,7 @@ export default function ProgramPdfView() {
   const packageTier = String(rawTier).toUpperCase().includes('MAX') ? 'باقة ماكس الشاملة (MAX)' : 'باقة إيليت المتقدمة (ELITE)';
   const now = new Date();
   const arabicMonths = ['يناير', 'فبراير', 'مارس', 'أبريل', 'مايو', 'يونيو', 'يوليو', 'أغسطس', 'سبتمبر', 'أكتوبر', 'نوفمبر', 'ديسمبر'];
-  const issueDate = `${now.getDate()} ${arabicMonths[now.getMonth()]} ${now.getFullYear()}`;
+  const _issueDate = `${now.getDate()} ${arabicMonths[now.getMonth()]} ${now.getFullYear()}`;
 
   // Fasting Profile
   const clientObj = program?.client || user || {};

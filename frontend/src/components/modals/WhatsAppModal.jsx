@@ -55,6 +55,8 @@ ${baseUrl}/user-dashboard?user_id=${clientCode}`
       setCustomText(templates.intake);
       setTemplate('intake');
     }
+  // مقصود: التأثير يعمل عند تغيّر مفتاحه فقط. إضافة الدوال للتبعيات تُعاد إنشاؤها كل رندر فتدخل في حلقة إعادة تشغيل.
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [client]);
 
   useEffect(() => {

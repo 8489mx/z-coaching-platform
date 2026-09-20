@@ -151,7 +151,7 @@ export default function Customers() {
     }
   };
 
-  const handleSuperAdminOverrideCheckin = (clientId) => {
+  const _handleSuperAdminOverrideCheckin = (clientId) => {
     window.location.href = `/check-in?user_id=${clientId}&override=true`;
   };
 

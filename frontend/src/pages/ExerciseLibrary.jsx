@@ -10,6 +10,8 @@ import { getExerciseDisplayNames } from '../utils/exerciseTranslator';
 import CurvedSelect from '../components/common/CurvedSelect';
 
 // Concise Muscle Badge Formatter (1-2 words max)
+// مقصود: ثابت أو دالة مشتركة بجوار المكوّن. تحذير Fast Refresh في بيئة التطوير فقط ولا أثر له على الإنتاج.
+// eslint-disable-next-line react/only-export-components
 export function getShortMuscleName(muscleAr = '', muscleGroup = '') {
   const m = String(muscleAr || '').trim();
   const mg = String(muscleGroup || '').toUpperCase();
@@ -48,6 +50,8 @@ export function getShortMuscleName(muscleAr = '', muscleGroup = '') {
 }
 
 // Concise Equipment Badge Formatter (1-2 words max)
+// مقصود: ثابت أو دالة مشتركة بجوار المكوّن. تحذير Fast Refresh في بيئة التطوير فقط ولا أثر له على الإنتاج.
+// eslint-disable-next-line react/only-export-components
 export function getShortEquipmentName(equipAr = '', equipment = '') {
   const e = String(equipAr || '').trim();
   const eq = String(equipment || '').toUpperCase();
@@ -64,6 +68,8 @@ export function getShortEquipmentName(equipAr = '', equipment = '') {
 }
 
 // Smart Injury Safety Classifier
+// مقصود: ثابت أو دالة مشتركة بجوار المكوّن. تحذير Fast Refresh في بيئة التطوير فقط ولا أثر له على الإنتاج.
+// eslint-disable-next-line react/only-export-components
 export function isExerciseSafeForInjury(ex, injuryType) {
   if (!injuryType || injuryType === 'ALL') return true;
 

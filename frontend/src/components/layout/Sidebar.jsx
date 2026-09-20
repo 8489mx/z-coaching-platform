@@ -60,7 +60,7 @@ const SIDEBAR_GROUPS = [
 ];
 
 export default function Sidebar({ isCollapsed = false, onToggleSidebar }) {
-  const navigate = useNavigate();
+  const _navigate = useNavigate();
   const [coachConfig, setCoachConfig] = useState(getStoredCoachConfig());
   const [openGroupKeys, setOpenGroupKeys] = useState(() => {
     try {

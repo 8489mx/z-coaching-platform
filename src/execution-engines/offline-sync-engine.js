@@ -60,7 +60,7 @@ export function enqueueOfflineAction({
  */
 export async function flushPendingQueue({
   queue = [],
-  syncHandler = async (action) => ({ success: true })
+  syncHandler = async (_action) => ({ success: true })
 }) {
   const safeQueue = Array.isArray(queue) ? [...queue] : [];
   const processedActions = [];

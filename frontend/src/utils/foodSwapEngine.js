@@ -2585,7 +2585,7 @@ export function formatItemPortionDisplay({
   amount_g = 100,
   unit = 'جم',
   macro_type = 'PROTEIN',
-  food_state = 'COOKED'
+  _food_state = 'COOKED'
 }, mode = PORTION_DISPLAY_MODES.DUAL, cooking_state_mode = COOKING_STATE_MODES.BOTH) {
   const g = Number(amount_g) || 0;
   const upperCode = String(food_code).toUpperCase();

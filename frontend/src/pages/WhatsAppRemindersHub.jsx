@@ -13,14 +13,14 @@ export default function WhatsAppRemindersHub() {
   const [selectedClientId, setSelectedClientId] = useState(1);
   const [activeTemplateKey, setActiveTemplateKey] = useState(REMINDER_CATEGORIES.CHECKIN_DUE);
   const [customMessage, setCustomMessage] = useState('');
-  const [isEditingTemplate, setIsEditingTemplate] = useState(false);
+  const [_isEditingTemplate, setIsEditingTemplate] = useState(false);
   const [isTemplateDropdownOpen, setIsTemplateDropdownOpen] = useState(false);
   const [toast, setToast] = useState(null);
   const [dispatchedMap, setDispatchedMap] = useState({});
 
   // Live Clients API
   const [clientsData, setClientsData] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [_loading, setLoading] = useState(true);
 
   React.useEffect(() => {
     const fetchClients = async () => {
@@ -206,6 +206,8 @@ export default function WhatsAppRemindersHub() {
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
+  // مقصود: التأثير يعمل عند تغيّر مفتاحه فقط. إضافة الدوال للتبعيات تُعاد إنشاؤها كل رندر فتدخل في حلقة إعادة تشغيل.
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [handlePrevClient, handleNextClient, activeClient, customMessage]);
 
   const showToast = (msg) => {

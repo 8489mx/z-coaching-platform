@@ -22,7 +22,7 @@ export default function ClientOnlineRenewal() {
 
   const [clientCode, setClientCode] = useState(initialCode);
   const [clientName, setClientName] = useState('');
-  const [clientPhone, setClientPhone] = useState('');
+  const [_clientPhone, setClientPhone] = useState('');
   const [selectedDuration, setSelectedDuration] = useState(4); // 4 | 2 | 1 months
   const [selectedTier, setSelectedTier] = useState('MAX'); // MAX | ELITE
   const [paymentMethod, setPaymentMethod] = useState('INSTAPAY'); // INSTAPAY | VCASH | BANK

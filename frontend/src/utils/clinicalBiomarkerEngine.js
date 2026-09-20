@@ -110,7 +110,7 @@ export function evaluateClinicalBiomarkers({
   const isFasting = sampleFastingState === 'FASTING';
   const gender = (client.gender || 'MALE').toUpperCase();
   const isMale = gender === 'MALE';
-  const weightKg = Number(client.weight_kg || client.weight || 75);
+  const _weightKg = Number(client.weight_kg || client.weight || 75);
 
   const flags = [];
   const dietaryModifications = {
@@ -141,10 +141,10 @@ export function evaluateClinicalBiomarkers({
   };
 
   const hb = num('hemoglobin');
-  const wbc = num('wbc');
+  const _wbc = num('wbc');
   const creat = num('creatinine');
   const egfr = num('egfr');
-  const bun = num('bun');
+  const _bun = num('bun');
   const uric = num('uric_acid');
   const alt = num('alt');
   const ast = num('ast');
@@ -152,7 +152,7 @@ export function evaluateClinicalBiomarkers({
   const hba1c = num('hba1c');
   const fInsulin = num('fasting_insulin');
   const tg = num('triglycerides');
-  const chol = num('total_cholesterol');
+  const _chol = num('total_cholesterol');
   const ldl = num('ldl');
   const vitD = num('vitamin_d');
   const ferr = num('ferritin');

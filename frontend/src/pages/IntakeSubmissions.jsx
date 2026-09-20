@@ -469,9 +469,8 @@ export default function IntakeSubmissions() {
                     const rawCode = sub.user?.client_code || sub.answers?.client_code || sub.client_code || '1';
                     const cleanCode = String(rawCode).replace(/^client[-_]?/i, '').replace('#', '');
                     const rawPkg = sub.user?.subscription_package || sub.package_name || sub.subscription_package || sub.user?.package || 'ELITE';
-                    const clean = String(rawPkg).trim().toUpperCase();
+                    const _clean = String(rawPkg).trim().toUpperCase();
                     const isMax = getClientTier(sub) === 'MAX';
-                    const label = isMax ? 'MAX' : 'ELITE';
                     const rawPrice = sub.user?.subscription_price || sub.subscription_price || (isMax ? 3500 : 2500);
 
                     return (

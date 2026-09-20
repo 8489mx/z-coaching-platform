@@ -24,7 +24,7 @@ import CurvedSelect from '../common/CurvedSelect';
  * مجسم تشريحي بمسارات فيكتور دقيقة يوضح تغير تكوين الجسم
  * يُعرض تلقائياً في حال عدم توفر صورة حقيقية مرفوعة
  */
-function BodyProgressCanvas({ gender = 'MALE', angle = 'FRONT', progressStage = 'CURRENT', weight = 75, waist = 80 }) {
+function BodyProgressCanvas({ gender = 'MALE', angle = 'FRONT', progressStage = 'CURRENT', _weight = 75, _waist = 80 }) {
   const isMale = (gender || '').toUpperCase() === 'MALE';
   const isBefore = progressStage === 'BEFORE';
   
@@ -116,7 +116,7 @@ export default function InteractivePhotoComparisonStudio({
   history = [],
   activeCheckin = {},
   client = {},
-  onClose = null
+  _onClose = null
 }) {
   // 1. الحالات الأساسية
   const [angle, setAngle] = useState('FRONT'); // 'FRONT' | 'SIDE' | 'BACK'
@@ -262,6 +262,8 @@ export default function InteractivePhotoComparisonStudio({
         setIsGeneratingCard(false);
       });
     }
+  // مقصود: التأثير يعمل عند تغيّر مفتاحه فقط. إضافة الدوال للتبعيات تُعاد إنشاؤها كل رندر فتدخل في حلقة إعادة تشغيل.
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [showMarketingModal, selectedFormat, hideClientName, customCardTitle, angle, beforeWeekIdx, afterWeekIdx, uploadedPhotos]);
 
   // تنزيل كارت التحول

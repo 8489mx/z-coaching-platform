@@ -30,6 +30,8 @@ import { generateWhatsAppUrl } from '../utils/whatsappRemindersEngine';
 import { evaluateClientCheckinOverdue } from '../utils/overdueCheckinEngine';
 
 // Smart 1-Click WhatsApp Pre-filled Message Generator with Direct Action URLs
+// مقصود: ثابت أو دالة مشتركة بجوار المكوّن. تحذير Fast Refresh في بيئة التطوير فقط ولا أثر له على الإنتاج.
+// eslint-disable-next-line react/only-export-components
 export function getWhatsAppMessage(action, raw = false) {
   const name = action?.clientName ? action.clientName.replace(/مشترك #\d+/g, '').trim() : '';
   const namePrefix = name ? `أهلاً ${name}، ` : 'أهلاً بك، ';
@@ -75,7 +77,7 @@ export default function CoachCommandCenter() {
   const searchInputRef = React.useRef(null);
   const [isNewClientModalOpen, setIsNewClientModalOpen] = useState(false);
   const [loading, setLoading] = useState(true);
-  const [lastRefreshed, setLastRefreshed] = useState(new Date());
+  const [_lastRefreshed, setLastRefreshed] = useState(new Date());
   const [copiedKey, setCopiedKey] = useState(null);
   const [searchQuery, setSearchQuery] = useState('');
 
@@ -382,7 +384,6 @@ export default function CoachCommandCenter() {
   const overdueCount = dailyActions.filter(a => a.type === 'OVERDUE_CHECKIN').length;
   const injuryCount = dailyActions.filter(a => a.hasInjury).length;
   const renewalCount = dailyActions.filter(a => a.type === 'RENEWAL').length;
-  const allCount = dailyActions.length;
 
   // Dynamic Live KPIs (5 Focused Core Operational Queues)
   const stats = [
@@ -1341,7 +1342,7 @@ export default function CoachCommandCenter() {
         <NewClientQuickModal
           isOpen={isNewClientModalOpen}
           onClose={() => setIsNewClientModalOpen(false)}
-          onClientCreated={(newClient) => {
+          onClientCreated={(_newClient) => {
             fetchDashboardData();
           }}
         />

@@ -18,8 +18,8 @@ export default function MacroCalculator() {
   const [searchTerm, setSearchTerm] = useState('');
   const [categoryFilter, setCategoryFilter] = useState('ALL');
   const [stateFilter, setStateFilter] = useState('ALL');
-  const [copiedFoodId, setCopiedFoodId] = useState(null);
-  const [viewMode, setViewMode] = useState('GRID'); // 'GRID' (Compact Cards) or 'TABLE' (Dense Table)
+  const [_copiedFoodId, setCopiedFoodId] = useState(null);
+  const [_viewMode, _setViewMode] = useState('GRID'); // 'GRID' (Compact Cards) or 'TABLE' (Dense Table)
 
   // Food Modals (Add / Edit)
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -189,7 +189,7 @@ export default function MacroCalculator() {
     }
   };
 
-  const handleCopyFoodNutrition = (food) => {
+  const _handleCopyFoodNutrition = (food) => {
     const text = `*${food.name_ar}* (${food.name_en || ''})\n` +
       `*القيم لكل 100 جرام (${food.food_state === 'COOKED' ? 'مطبوخ' : 'نيء'}):*\n` +
       `السعرات: ${food.calories_per_100g} kcal | بروتين: ${food.protein_per_100g}g | كارب: ${food.carbs_per_100g}g | دهون: ${food.fat_per_100g}g | ألياف: ${food.fiber_per_100g || 0}g\n` +
@@ -259,7 +259,6 @@ export default function MacroCalculator() {
   const fatCalories = targetFatGrams * 9;
   const carbsCalories = targetCarbGrams * 4;
   const waterTargetLiters = metabolic.water_target_liters.toFixed(1);
-  const stepsTarget = metabolic.steps_target;
 
   const handleApplyToClient = async () => {
     if (!selectedClient) {

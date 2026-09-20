@@ -216,7 +216,7 @@ export function evaluateSingleSupplement(supplementCodeOrName, {
   medicalConditions = [],
   activeMedications = [],
   biomarkers = {},
-  weightKg = 75
+  weightKg: _weightKg = 75
 } = {}) {
   const normInput = normalizeStr(supplementCodeOrName);
   

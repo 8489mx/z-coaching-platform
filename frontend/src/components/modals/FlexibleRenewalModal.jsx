@@ -10,6 +10,8 @@ import {
 import { API_BASE } from '../../config/api';
 import { formatWhatsAppPhone } from '../../utils/whatsappRemindersEngine';
 
+// مقصود: ثابت أو دالة مشتركة بجوار المكوّن. تحذير Fast Refresh في بيئة التطوير فقط ولا أثر له على الإنتاج.
+// eslint-disable-next-line react/only-export-components
 export const CURRENCIES = [
   { id: 'EGP', symbol: 'ج.م', label: 'ج.م (جنيه مصري)' },
   { id: 'SAR', symbol: 'ر.س', label: 'ر.س (ريال سعودي)' },
@@ -18,6 +20,8 @@ export const CURRENCIES = [
   { id: 'USD', symbol: '$', label: '$ (دولار أمريكي)' },
 ];
 
+// مقصود: ثابت أو دالة مشتركة بجوار المكوّن. تحذير Fast Refresh في بيئة التطوير فقط ولا أثر له على الإنتاج.
+// eslint-disable-next-line react/only-export-components
 export const PAYMENT_METHODS = [
   { id: 'INSTAPAY', label: 'إنستاباي (InstaPay)' },
   { id: 'VCASH', label: 'فودافون كاش' },
@@ -27,6 +31,8 @@ export const PAYMENT_METHODS = [
   { id: 'OTHER', label: 'طريقة أخرى' },
 ];
 
+// مقصود: ثابت أو دالة مشتركة بجوار المكوّن. تحذير Fast Refresh في بيئة التطوير فقط ولا أثر له على الإنتاج.
+// eslint-disable-next-line react/only-export-components
 export const RENEWAL_PRICING_MATRIX = {
   '4_MONTHS': { MAX: 6000, ELITE: 4500 },
   '2_MONTHS': { MAX: 3500, ELITE: 2800 },
@@ -66,7 +72,7 @@ export default function FlexibleRenewalModal({
   const [amountEgp, setAmountEgp] = useState(6000);
   const [currency, setCurrency] = useState('EGP'); // EGP | SAR | AED | KWD | USD
   const [paymentMethod, setPaymentMethod] = useState('INSTAPAY'); // INSTAPAY | VCASH | BANK | CASH | ONLINE | OTHER
-  const [paymentType, setPaymentType] = useState('FULL'); // FULL | DEPOSIT
+  const [paymentType, _setPaymentType] = useState('FULL'); // FULL | DEPOSIT
   const [saving, setSaving] = useState(false);
 
   // Custom Dropdowns State

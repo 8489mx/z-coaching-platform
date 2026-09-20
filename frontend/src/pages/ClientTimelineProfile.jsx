@@ -55,6 +55,8 @@ export default function ClientTimelineProfile() {
 
   useEffect(() => {
     fetchClientProfile();
+  // مقصود: التأثير يعمل عند تغيّر مفتاحه فقط. إضافة الدوال للتبعيات تُعاد إنشاؤها كل رندر فتدخل في حلقة إعادة تشغيل.
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [cleanId]);
 
   const fetchClientProfile = async () => {
@@ -209,7 +211,7 @@ export default function ClientTimelineProfile() {
 
   const clientName = client?.full_name || `متدرب #${cleanId}`;
   const clientCode = client?.client_code || cleanId;
-  const isMaxTier = String(client?.subscription_package || '').toUpperCase().includes('MAX');
+  const _isMaxTier = String(client?.subscription_package || '').toUpperCase().includes('MAX');
 
   if (loading) {
     return (

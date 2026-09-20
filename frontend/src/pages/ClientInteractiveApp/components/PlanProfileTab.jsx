@@ -26,7 +26,7 @@ function formatPackageName(pkg) {
 export default function PlanProfileTab({
   clientData,
   setEmergencyModalOpen,
-  setPdfModalOpen
+  _setPdfModalOpen
 }) {
   const navigate = useNavigate();
 

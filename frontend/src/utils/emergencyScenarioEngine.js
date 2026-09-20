@@ -53,7 +53,7 @@ export function applyEmergencyScenarioAdaptation({
   base_calories = 2000,
   base_protein_g = 160,
   base_daily_water_liters = 3.0,
-  base_sessions_per_week = 4,
+  base_sessions_per_week: _base_sessions_per_week = 4,
   exercises = []
 }) {
   const scenario = String(scenario_type).toUpperCase();

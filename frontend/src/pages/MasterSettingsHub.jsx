@@ -28,7 +28,7 @@ const TYPE_TRANSLATIONS = {
 export default function MasterSettingsHub() {
   const initialTab = new URLSearchParams(window.location.search).get('tab') || 'system';
   const [activeTab, setActiveTab] = useState(initialTab);
-  const [loading, setLoading] = useState(false);
+  const [_loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
 
   // Intake Builder State

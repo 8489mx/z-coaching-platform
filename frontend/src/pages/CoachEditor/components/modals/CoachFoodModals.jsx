@@ -11,7 +11,7 @@ export function CoachSwapFoodModal({
   setSwapFoodSearch,
   handleExecuteFoodSwap
 }) {
-  const [activeFilter, setActiveFilter] = useState('ALL');
+  const [_activeFilter, _setActiveFilter] = useState('ALL');
 
   if (!swapFoodModal.open || !swapFoodModal.currentItem) return null;
 

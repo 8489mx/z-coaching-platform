@@ -21,12 +21,12 @@ export function CoachCardioHabitsTab({
     ...(Array.isArray(program?.client?.medical_conditions) ? program.client.medical_conditions : []),
   ];
 
-  const clientMeds = [
+  const _clientMeds = [
     ...(Array.isArray(program?.client?.medications) ? program.client.medications : []),
     ...(Array.isArray(program?.client?.current_meds_supplements_list) ? program.client.current_meds_supplements_list : [])
   ];
 
-  const clientBiomarkers = program?.client?.biomarkers || program?.client?.lab_markers || {};
+  const _clientBiomarkers = program?.client?.biomarkers || program?.client?.lab_markers || {};
 
   const modality = String(program?.cardio?.modality || '');
   const zone = String(program?.cardio?.target_heart_rate_zone || '');

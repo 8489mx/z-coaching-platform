@@ -16,7 +16,7 @@ const GOALS_MAP = {
   PERFORMANCE: 'زيادة الأداء الرياضي والقوة'
 };
 
-const ACTIVITY_MAP = {
+const _ACTIVITY_MAP = {
   SEDENTARY: 'خامل (مكتبي)',
   LIGHT: 'خفيف (حركة عادية)',
   MODERATE: 'متوسط (حركة يومية)',
@@ -111,7 +111,7 @@ export default function IntakeAuditDetailModal({
   onGenerateDraft,
   generatingId
 }) {
-  const navigate = useNavigate();
+  const _navigate = useNavigate();
   const [previewImage, setPreviewImage] = useState(null);
 
   useEffect(() => {
@@ -169,7 +169,7 @@ export default function IntakeAuditDetailModal({
     selectedInjuries: Array.isArray(answers.injuries_map?.selected_areas) ? answers.injuries_map.selected_areas : [],
     targetFocusMuscles: answers.focus_muscles || []
   };
-  const cardio = answers.cardio || {};
+  const _cardio = answers.cardio || {};
   const photos = body.photos || {
     front: answers.media_uploads?.front_url,
     side: answers.media_uploads?.side_url,
@@ -266,9 +266,7 @@ export default function IntakeAuditDetailModal({
               مراجعة استمارة المتدرب: {clientName}
             </h4>
             {(() => {
-              const rawPkg = submission.package_name || submission.subscription_package || '';
               const isMax = getClientTier(submission) === 'MAX';
-              const pkgName = isMax ? 'MAX' : 'ELITE';
               return (
                 <span style={{ 
                   fontFamily: 'JetBrains Mono, monospace', 

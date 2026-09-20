@@ -17,7 +17,7 @@ export default function FinancialsRenewalsDashboard() {
   const [renewalFilter, setRenewalFilter] = useState('ALL'); // 'ALL' | 'URGENT_3D' | 'WEEK_7D' | 'HIGH_PROPENSITY' | 'AT_RISK' | 'OVERDUE' | 'PAID'
   const [tierFilter, setTierFilter] = useState('ALL'); // 'ALL' | 'MAX' | 'ELITE'
   const [searchQuery, setSearchQuery] = useState(urlParam ? `#${urlParam}` : '');
-  const [renewedMap, setRenewedMap] = useState({});
+  const [renewedMap, _setRenewedMap] = useState({});
   const [toast, setToast] = useState(null);
   const [selectedRadarClient, setSelectedRadarClient] = useState(null);
   const [showRadarStudio, setShowRadarStudio] = useState(true);
@@ -56,10 +56,12 @@ export default function FinancialsRenewalsDashboard() {
 
   // Live Financial Dataset from API
   const [financialsData, setFinancialsData] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [_loading, setLoading] = useState(true);
 
   useEffect(() => {
     fetchFinancials();
+  // مقصود: التأثير يعمل عند تغيّر مفتاحه فقط. إضافة الدوال للتبعيات تُعاد إنشاؤها كل رندر فتدخل في حلقة إعادة تشغيل.
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [renewedMap]);
 
   const fetchFinancials = async () => {

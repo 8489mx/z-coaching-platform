@@ -310,7 +310,7 @@ export function dynamicRippleRebalanceDailyPlan({
   const netFoodTargetP = Math.max(10, targetP - suppP);
   const netFoodTargetC = Math.max(10, targetC - suppC - sugarC);
   const netFoodTargetF = Math.max(5, targetF - suppF);
-  const netFoodTargetCal = Math.max(100, targetCal - suppCal - sugarCal);
+  const _netFoodTargetCal = Math.max(100, targetCal - suppCal - sugarCal);
 
   // 4. Distinguish Anchor Meal from Recipient Meals
   const hasAnchor = Boolean(anchorMealId && meals.some(m => m.id === anchorMealId));

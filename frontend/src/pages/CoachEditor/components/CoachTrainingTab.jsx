@@ -15,9 +15,9 @@ import ProgressionTimeline from './ProgressionTimeline';
 
 export function CoachTrainingTab({
   program,
-  selectedWeek,
-  setSelectedWeek,
-  currentWeekData,
+  _selectedWeek,
+  _setSelectedWeek,
+  _currentWeekData,
   currentSessions = [],
   activeSessionIdx,
   setActiveSessionIdx,
@@ -37,7 +37,7 @@ export function CoachTrainingTab({
 }) {
   const [showAllVolumeLandmarks, setShowAllVolumeLandmarks] = React.useState(false);
 
-  const formatSplitName = (split) => {
+  const _formatSplitName = (split) => {
     if (!split) return '';
     const s = String(split).toUpperCase().trim();
     if (s.includes('UPPER_LOWER')) return 'تقسيم علوي / سفلي (Upper / Lower Split)';
@@ -61,7 +61,7 @@ export function CoachTrainingTab({
     })
   );
 
-  const hasDiabetes = Boolean(
+  const _hasDiabetes = Boolean(
     clientConditions.some(c => {
       const s = typeof c === 'string' ? c : (c?.conditionCode || c?.name || c?.area || '');
       return /diabetes|سكري|مقاومة.*أنسولين|insulin/i.test(s);
@@ -76,7 +76,7 @@ export function CoachTrainingTab({
     const r = e.rir ?? 1;
     return Number(r) < 2;
   });
-  const hasHypertensionViolation = hasHypertension && (sessionBannedExercises.length > 0 || sessionLowRirExercises.length > 0);
+  const _hasHypertensionViolation = hasHypertension && (sessionBannedExercises.length > 0 || sessionLowRirExercises.length > 0);
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }} dir="rtl">

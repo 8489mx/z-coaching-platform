@@ -121,7 +121,7 @@ function cleanArabicNumStr(val) {
 }
 
 export default function FullIntakeForm() {
-  const navigate = useNavigate();
+  const _navigate = useNavigate();
   const location = useLocation();
   const coachConfig = useMemo(() => getStoredCoachConfig() || {}, []);
 
@@ -131,7 +131,7 @@ export default function FullIntakeForm() {
   const [saveStatus, setSaveStatus] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [submittedSuccess, setSubmittedSuccess] = useState(null);
-  const [renderError, setRenderError] = useState(null);
+  const [_renderError, _setRenderError] = useState(null);
 
   // Read URL query params (?code=...&phone=...)
   useEffect(() => {
@@ -174,7 +174,7 @@ export default function FullIntakeForm() {
           return;
         }
         if (data.submission.answers) {
-          setFormData(prev => deepMerge(DEFAULT_MASTER_INTAKE, data.submission.answers));
+          setFormData(_prev => deepMerge(DEFAULT_MASTER_INTAKE, data.submission.answers));
         }
       } else {
         // Try local storage draft fallback
@@ -182,7 +182,7 @@ export default function FullIntakeForm() {
         if (localDraft) {
           try {
             const parsed = JSON.parse(localDraft);
-            setFormData(prev => deepMerge(DEFAULT_MASTER_INTAKE, parsed));
+            setFormData(_prev => deepMerge(DEFAULT_MASTER_INTAKE, parsed));
           } catch {}
         }
       }
@@ -472,7 +472,7 @@ export default function FullIntakeForm() {
   const medConditions = formData.medical_conditions || {};
   const medSelected = Array.isArray(medConditions.selected) ? medConditions.selected : [];
   const bariatric = medConditions.bariatric || {};
-  const diabetes = medConditions.diabetes || {};
+  const _diabetes = medConditions.diabetes || {};
   const injuriesMap = formData.injuries_map || {};
   const injuriesSelected = Array.isArray(injuriesMap.selected_areas) ? injuriesMap.selected_areas : [];
   const strictAllergies = Array.isArray(formData.strict_allergies) ? formData.strict_allergies : [];
@@ -520,7 +520,6 @@ export default function FullIntakeForm() {
         <div style={{ background: '#FFFFFF', border: '1px solid #E2E8F0', borderRadius: '12px', padding: '14px 16px', marginBottom: '18px', boxShadow: '0 1px 3px rgba(15, 23, 42, 0.02)' }}>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '8px', marginBottom: '12px' }}>
             {STEPS.map((s) => {
-              const StepIcon = s.icon;
               const isActive = currentStep === s.id;
               const isPast = currentStep > s.id;
               return (

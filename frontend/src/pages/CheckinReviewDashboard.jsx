@@ -45,6 +45,8 @@ import { generateCheckinApprovalWhatsAppMessage } from '../utils/checkinApproval
 import { STRESS_TEST_CLIENTS, CLINICAL_MASTER_BLUEPRINTS } from '../data/stressTestClientsBlueprints';
 import DeloadRecommendationCard from '../components/checkin/DeloadRecommendationCard';
 
+// مقصود: ثابت أو دالة مشتركة بجوار المكوّن. تحذير Fast Refresh في بيئة التطوير فقط ولا أثر له على الإنتاج.
+// eslint-disable-next-line react/only-export-components
 export const INITIAL_CHECKINS = Array.isArray(STRESS_TEST_CLIENTS) ? STRESS_TEST_CLIENTS.map((c) => {
   const bp = (CLINICAL_MASTER_BLUEPRINTS && CLINICAL_MASTER_BLUEPRINTS[c.client_code]) || {};
   const bpTargets = bp?.nutrition?.targets || {};
@@ -698,7 +700,7 @@ export default function CheckinReviewDashboard() {
   const [macroAdjustments, setMacroAdjustments] = useState(DEFAULT_BASELINE_MACROS);
   const [coachReply, setCoachReply] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [approvedCount, setApprovedCount] = useState(0);
+  const [_approvedCount, setApprovedCount] = useState(0);
   const [showLabModal, setShowLabModal] = useState(false);
   const [approvalToast, setApprovalToast] = useState(null);
   // A failed approval must stay visible: the check-in stays in the queue until the server confirms.
@@ -918,6 +920,8 @@ export default function CheckinReviewDashboard() {
         setSelectedIdx(0);
       }
     }
+  // مقصود: التأثير يعمل عند تغيّر مفتاحه فقط. إضافة الدوال للتبعيات تُعاد إنشاؤها كل رندر فتدخل في حلقة إعادة تشغيل.
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [searchParams]);
 
   // Filtered Queue for search and tier
@@ -1005,6 +1009,8 @@ export default function CheckinReviewDashboard() {
     };
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
+  // مقصود: التأثير يعمل عند تغيّر مفتاحه فقط. إضافة الدوال للتبعيات تُعاد إنشاؤها كل رندر فتدخل في حلقة إعادة تشغيل.
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [showLabModal, selectedIdx, filteredQueue.length]);
 
   const buildSmartWhatsAppSummary = (notes = coachReply) => {
@@ -1078,7 +1084,7 @@ export default function CheckinReviewDashboard() {
     });
   };
 
-  const handleResetDemo = () => {
+  const _handleResetDemo = () => {
     window.location.reload();
     setSelectedIdx(0);
     setSearchQuery('');
@@ -1253,7 +1259,7 @@ export default function CheckinReviewDashboard() {
               ) : (
                 filteredQueue.map((item, idx) => {
                   const isSelected = activeCheckin && item.id === activeCheckin.id;
-                  const isMax = String(item?.client?.package || '').toUpperCase().includes('MAX');
+                  const _isMax = String(item?.client?.package || '').toUpperCase().includes('MAX');
                   return (
                     <div
                       key={item.id}
@@ -1832,7 +1838,7 @@ export default function CheckinReviewDashboard() {
                   {(() => {
                     const isConstipated = activeCheckin?.bowel_regularity === 'constipated_3plus';
                     const isHighSleepStress = Number(activeCheckin?.sleep_stress_composite || 0) >= 4;
-                    const isHighAdherence = (safeMetrics.adherence || 100) >= 85;
+                    const _isHighAdherence = (safeMetrics.adherence || 100) >= 85;
                     const isWeightStalled = Math.abs(safeMetrics.weight_change || 0) <= 0.2;
                     const isFalsePlateau = (isConstipated || isHighSleepStress) && (isWeightStalled || activeCheckin?.analysis_output?.lock_reason === 'FALSE_PLATEAU_DETECTED' || activeCheckin?.ai_analysis?.status_badge?.includes('FALSE_PLATEAU') || activeCheckin?.ai_analysis?.recommendation?.includes('ثبات زائف'));
 
