@@ -547,18 +547,20 @@ export default function WeeklyCheckinForm() {
 
             </div>
 
-            {/* Photo Upload Section with Self-Contained Local Compression */}
+            {/* Photo Upload Section (Explicitly Optional) */}
             <div style={{ background: '#FFFFFF', border: '1px solid #E2E8F0', borderRadius: '12px', padding: '16px', display: 'flex', flexDirection: 'column', gap: '10px', boxShadow: '0 1px 3px rgba(15, 23, 42, 0.04)' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '6px' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                   <Camera size={18} color="#D97706" />
-                  <strong style={{ fontSize: '13.5px', color: '#0F172A' }}>صور التطور الأسبوعي (3 زوايا)</strong>
+                  <strong style={{ fontSize: '13.5px', color: '#0F172A' }}>صور التطور الأسبوعي (اختيارية)</strong>
                 </div>
-                <span style={{ fontSize: '10.5px', color: '#16A34A', background: '#F0FDF4', padding: '2px 8px', borderRadius: '6px', fontWeight: 700 }}>
-                  ضغط محلي ذكي فائق الوضوح
+                <span style={{ fontSize: '10.5px', color: '#475569', background: '#F1F5F9', border: '1px solid #E2E8F0', padding: '2px 8px', borderRadius: '6px', fontWeight: 700 }}>
+                  اختياري - متاح الإرسال بدون صور أو بزاوية واحدة
                 </span>
               </div>
-              <span style={{ fontSize: '11px', color: '#64748B' }}>يرجى رفع صور واضحة بنفس الإضاءة وزاوية التصوير للمقارنة الدقيقة قبل وبعد.</span>
+              <span style={{ fontSize: '11px', color: '#64748B', lineHeight: 1.5 }}>
+                الصور اختيارية تماماً؛ يمكنك إرسال التقييم بدون صور، أو الاكتفاء بزاوية واحدة أو أكثر لمتابعة تطورك البدني مع الكوتش.
+              </span>
 
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '10px', marginTop: '4px' }}>
                 {[
