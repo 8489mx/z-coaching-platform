@@ -1,7 +1,140 @@
 import React, { useState, useEffect } from 'react';
 import ReactDOM from 'react-dom';
 import { X, MessageCircle, ExternalLink, Zap, ZoomIn } from 'lucide-react';
+import { getClientTier } from '../../utils/tierBadgeHelper';
+import { extractClientFastingProfile } from '../../utils/seasonalFastingRadar';
 import { formatWhatsAppPhone } from '../../utils/whatsappRemindersEngine';
+
+const GOALS_MAP = {
+  FAT_LOSS: 'حرق وخسارة الدهون',
+  MUSCLE_GAIN: 'زيادة الكتلة العضلية (تضخيم)',
+  BODY_RECOMPOSITION: 'إعادة تشكيل الجسم (Recomp)',
+  WEIGHT_MAINTENANCE: 'تثبيت الوزن الحالي',
+  GENERAL_HEALTH: 'لياقة وصحة عامة',
+  PERFORMANCE: 'زيادة الأداء الرياضي والقوة'
+};
+
+const _ACTIVITY_MAP = {
+  SEDENTARY: 'خامل (مكتبي)',
+  LIGHT: 'خفيف (حركة عادية)',
+  MODERATE: 'متوسط (حركة يومية)',
+  HIGH: 'عالي (عمل مجهد)'
+};
+
+const EXPERIENCE_MAP = {
+  BEGINNER: 'مبتدئ (< 6 شهور)',
+  INTERMEDIATE: 'متوسط (6ش - سنتين)',
+  ADVANCED: 'متقدم (+ سنتين)',
+  NEVER_TRAINED: 'لم يتدرب من قبل'
+};
+
+const EXCLUDED_FOODS_LABELS = {
+  EGGS: 'البيض', EGG: 'البيض',
+  DAIRY: 'الألبان والأجبان', MILK: 'الحليب ومشتقاته',
+  FISH_SEAFOOD: 'الأسماك والبحريات', FISH: 'الأسماك', SEAFOOD: 'المأكولات البحرية',
+  PEANUTS_NUTS: 'المكسرات والفول السوداني', PEANUTS: 'الفول السوداني', NUTS: 'المكسرات',
+  WHEAT_GLUTEN: 'الجلوتين والقمح', GLUTEN_WHEAT: 'الجلوتين والقمح', GLUTEN: 'الجلوتين', WHEAT: 'القمح',
+  OATS: 'الشوفان', OAT: 'الشوفان',
+  RED_MEAT: 'اللحوم الحمراء', MEAT: 'اللحوم الحمراء', BEEF: 'اللحوم الحمراء',
+  LEGUMES: 'البقوليات', LEGUME: 'البقوليات',
+  EGGPLANT_COOKED_VEG: 'الباذنجان', EGGPLANT: 'الباذنجان'
+};
+
+const INJURIES_LABELS = {
+  LOWER_BACK: 'أسفل الظهر والقطنية', SPINE: 'العمود الفقري', LUMBAR: 'الفقرات القطنية',
+  SHOULDER: 'مفصل الكتف الدوار', ROTATOR_CUFF: 'الكتف الدوار',
+  KNEE: 'الركبة والغضاريف',
+  NECK: 'الرقبة والفقرات العنقية', CERVICAL_SPINE: 'الفقرات العنقية',
+  ELBOW_WRIST: 'الكوع والرسغ', WRIST: 'رسغ اليد', ELBOW: 'الكوع',
+  NONE: 'لا توجد إصابات'
+};
+
+const CONDITIONS_LABELS = {
+  DIABETES: 'السكري', TYPE_2_DIABETES: 'السكري (النوع 2)', TYPE_1_DIABETES: 'السكري (النوع 1)',
+  HYPERTENSION: 'ضغط الدم',
+  HEART_CONDITION: 'أمراض القلب', CARDIOVASCULAR_DISEASE: 'الأوعية الدموية',
+  THYROID_CONDITION: 'الغدة الدرقية',
+  ANEMIA: 'الأنيميا',
+  ASTHMA_OR_RESPIRATORY_CONDITION: 'الربو والتنفس',
+  PCOS: 'تكيس المبايض',
+  NONE: 'لا توجد'
+};
+
+const MEALS_MAP = {
+  '2_meals': 'وجبتين',
+  '3_meals': '3 وجبات',
+  '4_meals': '4 وجبات',
+  '5_meals': '5 وجبات'
+};
+
+const SLEEP_MAP = {
+  'rotating_shifts': 'شفتات متغيرة (قطع كافيين 6س)',
+  'night_shift': 'شفت ليلي دائم',
+  'irregular': 'نوم غير منتظم',
+  'regular': 'نوم ليلي منتظم'
+};
+
+const SUGAR_MAP = {
+  '1_tsp': 'ملعقة صغيرة (20 سعرة / 5جم كارب)',
+  '2_tsp': 'ملعقتين صغيرتين (40 سعرة / 10جم كارب)',
+  '3_plus_tsp': '3 ملاعق أو أكثر (ينصح بالبدائل)',
+  'none': 'بدون سكر / محليات دايت صفرية'
+};
+
+const BUDGET_MAP = {
+  'LOW': 'اقتصادية', 'low': 'اقتصادية',
+  'MEDIUM': 'متوازنة', 'medium': 'متوازنة',
+  'HIGH': 'ممتازة', 'high': 'ممتازة'
+};
+
+const ENVIRONMENT_MAP = {
+  'HOME': 'المنزل', 'home_gym': 'المنزل',
+  'GYM': 'الجيم', 'commercial_gym': 'الجيم'
+};
+
+const DIABETES_MAP = {
+  'type_1': 'النوع الأول',
+  'type_2': 'النوع الثاني',
+  'prediabetes': 'مقدمات سكري'
+};
+
+const IF_MAP = {
+  '16_8': '16 ساعة صيام',
+  '14_10': '14 ساعة صيام',
+  'none': 'لا أصوم'
+};
+
+const OCCUPATION_MAP = {
+  'desk_office': 'مكتبي',
+  'active_physical': 'حركي / مجهود بدني',
+  'student': 'طالب',
+  'driver': 'سائق',
+  'mixed': 'مختلط'
+};
+
+const PREP_MAP = {
+  'high': 'أطبخ كل وجباتي',
+  'medium': 'أطبخ جزئياً',
+  'low': 'أعتمد على المطاعم'
+};
+
+const RELIGION_MAP = {
+  'muslim': 'مسلم',
+  'christian': 'مسيحي',
+  'other': 'أخرى'
+};
+
+const CHRISTIAN_FASTING_MAP = {
+  'vegan_only': 'نباتي بالكامل (أصوام سيديّة)',
+  'seafood_allowed': 'نباتي + سمك',
+  'none': 'غير صائم حالياً'
+};
+
+const INJURY_NATURE_MAP = {
+  'acute': 'حادة (جديدة)',
+  'chronic': 'مزمنة',
+  'rehabilitated': 'تأهلت وتشفّت'
+};
 
 export default function IntakeAuditDetailModal({
   submission,
@@ -42,22 +175,25 @@ export default function IntakeAuditDetailModal({
     window.open(`https://wa.me/${cleanPhone}?text=${encodeURIComponent(msg)}`, '_blank');
   };
 
-  const renderValue = (val) => {
-    if (val === undefined || val === null || val === '') return <span style={{ color: '#94A3B8' }}>لم يُجب</span>;
-    if (typeof val === 'boolean') return val ? 'نعم' : 'لا';
-    if (Array.isArray(val)) {
-      if (val.length === 0) return <span style={{ color: '#94A3B8' }}>لم يُجب</span>;
-      return val.join('، ');
+  const FieldRow = ({ label, value, dictionary }) => {
+    let displayValue = value;
+    if (value === undefined || value === null || value === '') {
+      displayValue = <span style={{ color: '#94A3B8' }}>لم يُجب</span>;
+    } else if (typeof value === 'boolean') {
+      displayValue = value ? 'نعم' : 'لا';
+    } else if (Array.isArray(value)) {
+      displayValue = value.length > 0 ? value.map(v => dictionary ? (dictionary[v] ?? v) : v).join('، ') : <span style={{ color: '#94A3B8' }}>لم يُجب</span>;
+    } else {
+      displayValue = dictionary ? (dictionary[value] ?? String(value)) : String(value);
     }
-    return String(val);
+    
+    return (
+      <div style={{ display: 'flex', justifyContent: 'space-between', padding: '6px 0', borderBottom: '1px solid #F1F5F9' }}>
+        <span style={{ fontSize: '11.5px', color: '#64748B' }}>{label}</span>
+        <strong style={{ fontSize: '11.5px', color: '#0F172A', textAlign: 'left', wordBreak: 'break-word', maxWidth: '65%' }}>{displayValue}</strong>
+      </div>
+    );
   };
-
-  const FieldRow = ({ label, value }) => (
-    <div style={{ display: 'flex', justifyContent: 'space-between', padding: '6px 0', borderBottom: '1px solid #F1F5F9' }}>
-      <span style={{ fontSize: '11.5px', color: '#64748B' }}>{label}</span>
-      <strong style={{ fontSize: '11.5px', color: '#0F172A', textAlign: 'left' }}>{renderValue(value)}</strong>
-    </div>
-  );
 
   const Section = ({ title, children }) => (
     <div style={{ background: '#FFFFFF', border: '1px solid #E2E8F0', borderRadius: '12px', padding: '12px', marginBottom: '12px' }}>
@@ -167,15 +303,15 @@ export default function IntakeAuditDetailModal({
               <FieldRow label="محيط الرقبة (سم)" value={answers.circumferences?.neck_cm} />
               <FieldRow label="محيط الخصر (سم)" value={answers.circumferences?.waist_cm} />
               <FieldRow label="محيط الحوض (سم)" value={answers.circumferences?.hips_cm} />
-              <FieldRow label="الهدف الأساسي" value={answers.primary_goal} />
-              <FieldRow label="مستوى الحركة اليومية (NEAT)" value={answers.neat_level} />
-              <FieldRow label="طبيعة العمل" value={answers.occupation_type} />
+              <FieldRow label="الهدف الأساسي" value={answers.primary_goal} dictionary={GOALS_MAP} />
+              <FieldRow label="مستوى الحركة اليومية (NEAT)" value={answers.neat_level} dictionary={_ACTIVITY_MAP} />
+              <FieldRow label="طبيعة العمل" value={answers.occupation_type} dictionary={OCCUPATION_MAP} />
             </Section>
 
             <Section title="2) الملف الطبي">
               <FieldRow label="أعراض خطيرة" value={answers.dangerous_symptoms} />
-              <FieldRow label="الحالات الطبية المختارة" value={answers.medical_conditions?.selected} />
-              <FieldRow label="نوع السكري" value={answers.medical_conditions?.diabetes?.type} />
+              <FieldRow label="الحالات الطبية المختارة" value={answers.medical_conditions?.selected} dictionary={CONDITIONS_LABELS} />
+              <FieldRow label="نوع السكري" value={answers.medical_conditions?.diabetes?.type} dictionary={DIABETES_MAP} />
               <FieldRow label="يستخدم الإنسولين" value={answers.medical_conditions?.diabetes?.uses_insulin} />
               <FieldRow label="السكر التراكمي (HbA1c)" value={answers.medical_conditions?.diabetes?.hba1c} />
               <FieldRow label="أنيميا الفول (G6PD)" value={answers.medical_conditions?.favism_g6pd} />
@@ -192,36 +328,36 @@ export default function IntakeAuditDetailModal({
             </Section>
             
             <Section title="3) الإصابات">
-              <FieldRow label="مناطق الإصابة" value={answers.injuries_map?.selected_areas} />
+              <FieldRow label="مناطق الإصابة" value={answers.injuries_map?.selected_areas} dictionary={INJURIES_LABELS} />
               <FieldRow label="إصابات الركبة" value={answers.injuries_map?.knee} />
               <FieldRow label="إصابات الظهر والعمود الفقري" value={answers.injuries_map?.spine_back} />
               <FieldRow label="إصابات الكتف" value={answers.injuries_map?.shoulder} />
               <FieldRow label="إصابات الكور" value={answers.injuries_map?.core} />
               <FieldRow label="إصابات مفاصل أخرى" value={answers.injuries_map?.other_joints} />
-              <FieldRow label="طبيعة الإصابة" value={answers.injuries_map?.injury_nature} />
+              <FieldRow label="طبيعة الإصابة" value={answers.injuries_map?.injury_nature} dictionary={INJURY_NATURE_MAP} />
               <FieldRow label="يخف الألم بالراحة" value={answers.injuries_map?.pain_relieved_by_rest} />
             </Section>
           </div>
           <div style={{ display: 'flex', flexDirection: 'column' }}>
             <Section title="4) التغذية ونمط الحياة">
-              <FieldRow label="الديانة" value={answers.religion} />
-              <FieldRow label="نمط الصيام المسيحي" value={answers.christianFastingStyle} />
-              <FieldRow label="ممنوعات وحساسية صارمة" value={answers.strict_allergies} />
-              <FieldRow label="أطعمة غير مفضلة" value={answers.disliked_foods} />
-              <FieldRow label="عدد الوجبات" value={answers.meal_structure?.meals_count} />
-              <FieldRow label="صيام متقطع" value={answers.meal_structure?.intermittent_fasting} />
-              <FieldRow label="ميزانية الطعام" value={answers.food_budget} />
-              <FieldRow label="القدرة على تحضير الطعام" value={answers.food_prep_ability} />
-              <FieldRow label="سكر المشروبات" value={answers.beverage_sugar_intake} />
-              <FieldRow label="نمط النوم" value={answers.sleep_schedule?.pattern} />
+              <FieldRow label="الديانة" value={answers.religion} dictionary={RELIGION_MAP} />
+              <FieldRow label="نمط الصيام المسيحي" value={answers.christianFastingStyle} dictionary={CHRISTIAN_FASTING_MAP} />
+              <FieldRow label="ممنوعات وحساسية صارمة" value={answers.strict_allergies} dictionary={EXCLUDED_FOODS_LABELS} />
+              <FieldRow label="أطعمة غير مفضلة" value={answers.disliked_foods} dictionary={EXCLUDED_FOODS_LABELS} />
+              <FieldRow label="عدد الوجبات" value={answers.meal_structure?.meals_count} dictionary={MEALS_MAP} />
+              <FieldRow label="صيام متقطع" value={answers.meal_structure?.intermittent_fasting} dictionary={IF_MAP} />
+              <FieldRow label="ميزانية الطعام" value={answers.food_budget} dictionary={BUDGET_MAP} />
+              <FieldRow label="القدرة على تحضير الطعام" value={answers.food_prep_ability} dictionary={PREP_MAP} />
+              <FieldRow label="سكر المشروبات" value={answers.beverage_sugar_intake} dictionary={SUGAR_MAP} />
+              <FieldRow label="نمط النوم" value={answers.sleep_schedule?.pattern} dictionary={SLEEP_MAP} />
               <FieldRow label="متوسط ساعات النوم" value={answers.sleep_schedule?.average_hours} />
               <FieldRow label="ساعة النوم المعتادة" value={answers.sleep_schedule?.bedtime_hour} />
             </Section>
 
             <Section title="5) التدريب">
-              <FieldRow label="بيئة التدريب" value={answers.training_environment} />
+              <FieldRow label="بيئة التدريب" value={answers.training_environment} dictionary={ENVIRONMENT_MAP} />
               <FieldRow label="أيام التمرين في الأسبوع" value={answers.training_logistics?.days_per_week} />
-              <FieldRow label="مستوى الخبرة" value={answers.training_logistics?.experience_level} />
+              <FieldRow label="مستوى الخبرة" value={answers.training_logistics?.experience_level} dictionary={EXPERIENCE_MAP} />
               <FieldRow label="يمارس رياضة أخرى" value={answers.training_logistics?.has_other_sports} />
               <FieldRow label="اسم الرياضة الأخرى" value={answers.training_logistics?.sports_name} />
               <FieldRow label="ساعات الرياضة الأخرى" value={answers.training_logistics?.hours_per_week} />
