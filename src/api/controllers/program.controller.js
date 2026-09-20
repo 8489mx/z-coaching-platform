@@ -21,7 +21,7 @@ import { getGulfHeatAdvisory, getPracticalCardioPrescription } from "../../execu
 import { calculateSessionDemand, auditWeeklyMuscleVolume, auditDeficitVolumeShield, evaluateProteinSparingRequirement } from "../utils/trainingNutritionCoupling.js";
 import { applyDeloadToSession, READINESS_GUIDANCE_AR } from "../../../src/training-engine-v2/progression/index.js";
 import { resolveTrainingCycleStatus, CYCLE_STATUS } from "../services/trainingCycleService.js";
-import { buildNextCycle, resolvePainFlaggedExercises } from "../services/nextCycleService.js";
+import { buildNextCycle, resolvePainFlaggedExercises, evaluateAutoPublish } from "../services/nextCycleService.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -893,9 +893,10 @@ export const prepareNextCycle = async (req, res) => {
       return res.status(409).json({ error: "آخر خطة لهذا المتدرب ما زالت مسودة لم تُنشر بعد", code: "DRAFT_ALREADY_PENDING" });
     }
 
-    const [progression, checkins] = await Promise.all([
+    const [progression, checkins, medicalReview] = await Promise.all([
       loadProgressionState(user.id),
-      CheckinSubmission.findAll({ where: { user_id: user.id }, order: [["id", "DESC"]], limit: 4, attributes: ["analysis_output"] }),
+      CheckinSubmission.findAll({ where: { user_id: user.id }, order: [["id", "DESC"]], limit: 4, attributes: ["analysis_output", "createdAt"] }),
+      resolveIntakeMedicalReview(user.id).catch(() => ({ required: false })),
     ]);
 
     const { program_data, summary } = buildNextCycle({
@@ -904,18 +905,97 @@ export const prepareNextCycle = async (req, res) => {
       flagged_exercises: resolvePainFlaggedExercises(checkins),
     });
 
-    const draft = await Program.create({ user_id: user.id, program_data, status: "DRAFT" });
+    const decision = evaluateAutoPublish({
+      summary,
+      medical_review_required: medicalReview?.required === true,
+      last_checkin_at: checkins[0]?.createdAt || null,
+      deload_active: progression?.deload?.status === "ACTIVE",
+      subscription_active: user.subscription_status !== "DEACTIVATED"
+        && (!user.subscription_end_date || new Date(user.subscription_end_date).getTime() >= Date.now()),
+    });
+
+    const created = await Program.create({
+      user_id: user.id,
+      program_data,
+      status: decision.allowed ? "ACTIVE" : "DRAFT",
+    });
 
     return res.status(201).json({
-      message: summary.message_ar,
-      program_id: draft.id,
+      message: `${summary.message_ar} ${decision.message_ar}`,
+      program_id: created.id,
       client_code: user.client_code,
+      published: decision.allowed,
+      waiting_reasons_ar: decision.reasons_ar,
       summary,
       previous_cycle: resolveTrainingCycleStatus(program),
     });
   } catch (err) {
     console.error("prepareNextCycle error:", err);
     return res.status(500).json({ error: "فشل تجهيز الدورة التدريبية الجديدة" });
+  }
+};
+
+/**
+ * POST /api/v1/programs/cycles/run-due: go through every client whose cycle has ended or is ending,
+ * prepare the next one for each, publish the ones that clear the safety gates and leave the rest as
+ * drafts with the reason stated. This is the one action that carries a long subscription forward.
+ * Coaches and admins only.
+ */
+export const runDueCycles = async (req, res) => {
+  try {
+    const requester = req.user ? await User.findByPk(req.user.id) : null;
+    if (!requester || !["COACH", "ADMIN"].includes(requester.role)) {
+      return res.status(403).json({ error: "تشغيل الدورات المستحقة متاح للكوتش فقط" });
+    }
+
+    const programs = await Program.findAll({
+      where: { status: "ACTIVE" },
+      order: [["id", "DESC"]],
+      include: [{ model: User, as: "user", attributes: ["id", "client_code", "full_name", "subscription_status"] }],
+    });
+
+    const seen = new Set();
+    const published = [];
+    const waiting = [];
+
+    for (const program of programs) {
+      const client = program.user;
+      if (!client || seen.has(client.id)) continue;
+      seen.add(client.id);
+      if (client.subscription_status === "DEACTIVATED") continue;
+      if (!resolveTrainingCycleStatus(program).needs_new_cycle) continue;
+
+      const pendingDraft = await Program.findOne({ where: { user_id: client.id, status: "DRAFT", id: { [Op.gt]: program.id } }, attributes: ["id"] });
+      if (pendingDraft) {
+        waiting.push({ client_code: client.client_code, full_name: client.full_name, program_id: pendingDraft.id, reasons_ar: ["مسودة دورة جاهزة بالفعل تنتظر قرارك."] });
+        continue;
+      }
+
+      const single = { status: 200, body: null };
+      const innerRes = { status(c) { single.status = c; return innerRes; }, json(b) { single.body = b; return innerRes; } };
+      await prepareNextCycle({ user: req.user, body: { client_code: client.client_code } }, innerRes);
+      if (single.status !== 201) continue;
+
+      const entry = {
+        client_code: client.client_code,
+        full_name: client.full_name,
+        program_id: single.body.program_id,
+        cycle_number: single.body.summary.cycle_number,
+        reasons_ar: single.body.waiting_reasons_ar,
+      };
+      (single.body.published ? published : waiting).push(entry);
+    }
+
+    return res.status(200).json({
+      published_count: published.length,
+      waiting_count: waiting.length,
+      published,
+      waiting,
+      message_ar: `تم تجهيز ${published.length + waiting.length} دورة: ${published.length} نُشرت تلقائياً و${waiting.length} تنتظر قرارك.`,
+    });
+  } catch (err) {
+    console.error("runDueCycles error:", err);
+    return res.status(500).json({ error: "فشل تشغيل الدورات المستحقة" });
   }
 };
 
@@ -1008,11 +1088,23 @@ export const getActiveProgramByUserId = async (req, res) => {
       return res.status(403).json({ error: "غير مصرح لك بعرض برنامج متدرب آخر" });
     }
 
-    const program = await Program.findOne({
-      where: { user_id: user.id },
-      order: [["id", "DESC"]],
-      include: [{ model: User, as: "user", attributes: ["id", "client_code", "full_name", "phone_number", "email", "role", "subscription_package", "plan_approval_status"] }],
-    });
+    // The published plan wins over anything newer: a prepared next cycle sits as a DRAFT until the
+    // coach releases it, and must never reach the client's app by being the most recent row.
+    const clientAttributes = ["id", "client_code", "full_name", "phone_number", "email", "role", "subscription_package", "plan_approval_status"];
+    const program =
+      (await Program.findOne({
+        where: { user_id: user.id, status: "ACTIVE" },
+        order: [["id", "DESC"]],
+        include: [{ model: User, as: "user", attributes: clientAttributes }],
+      })) ||
+      (await Program.findOne({
+        where: { user_id: user.id },
+        order: [["id", "DESC"]],
+        include: [{ model: User, as: "user", attributes: clientAttributes }],
+      }));
+    const pendingDraft = program?.status === "ACTIVE"
+      ? await Program.findOne({ where: { user_id: user.id, status: "DRAFT", id: { [Op.gt]: program.id } }, order: [["id", "DESC"]], attributes: ["id"] })
+      : null;
 
     if (!program) {
       return res.status(200).json({
@@ -1108,6 +1200,7 @@ export const getActiveProgramByUserId = async (req, res) => {
       clinical_constraints: await resolveClientClinicalConstraints(user.id),
       progression: await loadProgressionState(user.id),
       training_cycle: resolveTrainingCycleStatus(program),
+      pending_draft_id: pendingDraft ? pendingDraft.id : null,
       fasting_context: await resolveClientFastingContext(user, program.program_data),
       heat_advisory: getGulfHeatAdvisory({ country_code: resolveCountryFromPhone(user.phone_number) }),
       client_view

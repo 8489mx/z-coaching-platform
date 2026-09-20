@@ -142,6 +142,56 @@ test("the coach prepares the next cycle from the endpoint, and it is saved as a 
     await client.destroy().catch(() => {});
     await coach.destroy().catch(() => {});
     await active.destroy().catch(() => {});
-    await sequelize.close().catch(() => {});
   }
+});
+
+test("the safety gates decide whether the new cycle reaches the client or waits for the coach", async () => {
+  const { evaluateAutoPublish } = await import("../src/api/services/nextCycleService.js");
+  const recent = new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString();
+  const clean = { summary: { exercises_needing_coach_review: [] }, last_checkin_at: recent };
+
+  assert.equal(evaluateAutoPublish(clean).allowed, true, "a client in good standing gets their next cycle without waiting");
+
+  const blocked = [
+    [{ ...clean, medical_review_required: true }, /مراجعة طبية/],
+    [{ ...clean, summary: { exercises_needing_coach_review: ["BARBELL_BENCH_PRESS"] } }, /ألم/],
+    [{ ...clean, deload_active: true }, /استشفاء/],
+    [{ ...clean, subscription_active: false }, /اشتراك/],
+    [{ ...clean, last_checkin_at: null }, /لا توجد متابعة/],
+    [{ ...clean, last_checkin_at: new Date(Date.now() - 40 * 24 * 60 * 60 * 1000).toISOString() }, /منذ 40/],
+  ];
+  for (const [input, expected] of blocked) {
+    const decision = evaluateAutoPublish(input);
+    assert.equal(decision.allowed, false, JSON.stringify(input));
+    assert.ok(decision.reasons_ar.some((reason) => expected.test(reason)), `reason missing: ${expected}`);
+  }
+});
+
+test("a prepared draft never reaches the client's app before the coach publishes it", async () => {
+  const { getActiveProgramByUserId } = await import("../src/api/controllers/program.controller.js");
+  const code = "TEST_DRAFT_SHADOW_924";
+  const existing = await User.findOne({ where: { client_code: code } });
+  if (existing) {
+    await Program.destroy({ where: { user_id: existing.id } });
+    await existing.destroy();
+  }
+  const client = await User.create({ client_code: code, phone_number: "01099000926", full_name: "Shadow", role: "CLIENT" });
+  const active = await Program.create({ user_id: client.id, status: "ACTIVE", program_data: { ...PLAN, cycle_number: 1 } });
+  const draft = await Program.create({ user_id: client.id, status: "DRAFT", program_data: { ...PLAN, cycle_number: 2 } });
+
+  try {
+    const r = mockRes();
+    await getActiveProgramByUserId({ user: { id: client.id }, params: { user_id: code } }, r.res);
+    assert.equal(r.out.status, 200, JSON.stringify(r.out.body));
+    assert.equal(r.out.body.program_id, active.id, "the client keeps seeing the published plan");
+    assert.equal(r.out.body.training_cycle.cycle_number, 1);
+    assert.equal(r.out.body.pending_draft_id, draft.id, "the coach is told a prepared cycle is waiting");
+  } finally {
+    await Program.destroy({ where: { user_id: client.id } }).catch(() => {});
+    await client.destroy().catch(() => {});
+  }
+});
+
+test.after(async () => {
+  await sequelize.close().catch(() => {});
 });

@@ -111,3 +111,53 @@ export function resolvePainFlaggedExercises(checkins = []) {
   }
   return [...codes];
 }
+
+const AUTO_PUBLISH_MAX_CHECKIN_AGE_DAYS = 21;
+
+/**
+ * Whether the prepared cycle may go straight to the client, or has to wait for the coach.
+ *
+ * The system is meant to carry a client through a long subscription without the coach remembering
+ * anything. It is not meant to decide for a client whose file says a doctor should look, who is in
+ * pain, or who stopped reporting: in those cases the plan is ready and waiting, and the coach is
+ * told exactly why.
+ */
+export function evaluateAutoPublish({
+  summary = {},
+  medical_review_required = false,
+  last_checkin_at = null,
+  deload_active = false,
+  subscription_active = true,
+  now = new Date(),
+} = {}) {
+  const reasons = [];
+
+  if (medical_review_required) {
+    reasons.push("ملف المتدرب يستوجب مراجعة طبية، فالنشر التلقائي موقوف لحالته.");
+  }
+  if ((summary.exercises_needing_coach_review || []).length > 0) {
+    reasons.push(`${summary.exercises_needing_coach_review.length} تمرين مسجّل عليه ألم ويحتاج قرارك قبل النشر.`);
+  }
+  if (deload_active) {
+    reasons.push("المتدرب في أسبوع استشفاء لم ينتهِ بعد.");
+  }
+  if (!subscription_active) {
+    reasons.push("اشتراك المتدرب غير سارٍ، فلا تُنشر له دورة جديدة.");
+  }
+  if (!last_checkin_at) {
+    reasons.push("لا توجد متابعة أسبوعية مسجّلة، فحالة المتدرب الحالية غير معروفة.");
+  } else {
+    const ageDays = Math.floor((now.getTime() - new Date(last_checkin_at).getTime()) / DAY_MS);
+    if (ageDays > AUTO_PUBLISH_MAX_CHECKIN_AGE_DAYS) {
+      reasons.push(`آخر متابعة للمتدرب منذ ${ageDays} يوماً، وحالته الحالية غير معروفة.`);
+    }
+  }
+
+  return {
+    allowed: reasons.length === 0,
+    reasons_ar: reasons,
+    message_ar: reasons.length === 0
+      ? "الدورة الجديدة نُشرت للمتدرب تلقائياً."
+      : "الدورة الجديدة جاهزة كمسودة وتنتظر قرارك.",
+  };
+}
