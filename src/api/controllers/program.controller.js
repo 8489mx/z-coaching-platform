@@ -961,10 +961,15 @@ export const getActiveProgramByUserId = async (req, res) => {
     if (heatAdvisory?.active) advisories_ar.push(heatAdvisory.message_ar);
 
     const cardioPayload = program.program_data?.cardio || {};
+    const answers = (await loadLatestIntakeAnswers(user.id).catch(() => null)) || {};
+    const conditions = [
+      ...(answers.medical_conditions?.selected || []),
+      ...(answers.medical_conditions?.dangerous_symptoms || [])
+    ];
     const cardio = {
       ...getPracticalCardioPrescription({
         ...cardioPayload,
-        medicalConditions: user.medical_conditions || []
+        medicalConditions: conditions
       }),
       advisories_ar
     };
