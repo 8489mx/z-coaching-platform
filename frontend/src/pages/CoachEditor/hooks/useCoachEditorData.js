@@ -41,6 +41,8 @@ export function useCoachEditorData() {
   // Client's religious fasting state today and the coach override (AUTO / OFF / FORCE_ON).
   const [clientFasting, setClientFasting] = useState(null);
   const [fastingSaving, setFastingSaving] = useState(false);
+  // Client's training cycle status returned from active program
+  const [trainingCycle, setTrainingCycle] = useState(null);
   const [selectedWeek, setSelectedWeek] = useState(1);
   const [activeVideoModalEx, setActiveVideoModalEx] = useState(null);
   const [autoRippleEnabled, setAutoRippleEnabled] = useState(true);
@@ -188,6 +190,7 @@ export function useCoachEditorData() {
       setLoading(true);
       const targetCode = String(code || '1');
       setClientFasting(null);
+      setTrainingCycle(null);
 
       // 1. Check if we have custom saved program in DB
       const res = await fetch(`${API_BASE}/api/v1/programs/active/${targetCode}`);
@@ -195,6 +198,7 @@ export function useCoachEditorData() {
         const data = await res.json();
         setClientProgression(data.progression || null);
         setClientFasting(data.fasting_context || null);
+        setTrainingCycle(data.training_cycle || null);
         if (data.master_program && (data.master_program.nutrition || data.master_program.training || data.master_program.training_program)) {
           const userMeta = data.user || {};
           const mapped = mapMasterToEditor(data.master_program, userMeta);
@@ -1492,6 +1496,8 @@ export function useCoachEditorData() {
     clientProgression,
     clientFasting,
     fastingSaving,
+    trainingCycle,
+    setTrainingCycle,
     updateFastingOverride,
     confirmMedicalReviewAndPublish,
     filteredQueue,

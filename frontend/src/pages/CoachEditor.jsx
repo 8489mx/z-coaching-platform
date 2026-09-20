@@ -10,6 +10,7 @@ import {
   CoachTrainingTab,
   CoachCardioHabitsTab,
   CoachFastingToggle,
+  CoachCycleStatusLine,
   CoachSwapFoodModal,
   CoachAddFoodModal,
   CoachSwapExerciseModal,
@@ -27,6 +28,7 @@ export default function CoachEditor() {
 
   const {
     clientCodeParam,
+    trainingCycle,
     _searchParams,
     _setSearchParams,
     _loading,
@@ -143,6 +145,12 @@ export default function CoachEditor() {
           boxSizing: 'border-box'
         }}
       >
+        {/* =========================================================================
+            سطر موضع المتدرب من دورته التدريبية
+            ========================================================================= */}
+        {trainingCycle && (
+          <CoachCycleStatusLine trainingCycle={trainingCycle} />
+        )}
         
         {/* =========================================================================
             0. CLIENTS ACTION QUEUE SLIDER BAR
