@@ -760,9 +760,12 @@ export default function FullIntakeForm() {
 
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '12px' }}>
                   <div>
-                    <label style={{ display: 'block', fontSize: '11.5px', fontWeight: 700, color: '#475569', marginBottom: '4px' }}>
-                      محيط الرقبة (سم)
-                    </label>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4px' }}>
+                      <label style={{ fontSize: '11.5px', fontWeight: 700, color: '#475569', margin: 0 }}>
+                        محيط الرقبة (سم)
+                      </label>
+                      <span style={{ fontSize: '10.5px', color: '#94A3B8', fontWeight: 600 }}>(اختياري)</span>
+                    </div>
                     <input 
                       type="text" 
                       inputMode="decimal"
@@ -781,13 +784,12 @@ export default function FullIntakeForm() {
                         fontFamily: 'JetBrains Mono, Cairo',
                         boxSizing: 'border-box'
                       }}
-                      required 
                     />
                   </div>
 
                   <div>
                     <label style={{ display: 'block', fontSize: '11.5px', fontWeight: 700, color: '#475569', marginBottom: '4px' }}>
-                      محيط الخصر (إجباري) *
+                      محيط الخصر (إلزامي) *
                     </label>
                     <input 
                       type="text" 
@@ -814,11 +816,9 @@ export default function FullIntakeForm() {
                   <div>
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4px' }}>
                       <label style={{ fontSize: '11.5px', fontWeight: 700, color: '#475569', margin: 0 }}>
-                        محيط الحوض (سم) {gender === 'female' ? '*' : ''}
+                        محيط الحوض (سم)
                       </label>
-                      {gender !== 'female' && (
-                        <span style={{ fontSize: '10.5px', color: '#94A3B8', fontWeight: 600 }}>(اختياري)</span>
-                      )}
+                      <span style={{ fontSize: '10.5px', color: '#94A3B8', fontWeight: 600 }}>(اختياري)</span>
                     </div>
                     <input 
                       type="text" 
@@ -840,6 +840,9 @@ export default function FullIntakeForm() {
                       }}
                     />
                   </div>
+                </div>
+                <div style={{ fontSize: '11.5px', color: '#64748B', marginTop: '6px', fontWeight: 600 }}>
+                  قياسهما يجعل حساب نسبة الدهون والسعرات أدق
                 </div>
               </div>
 
@@ -1047,18 +1050,18 @@ export default function FullIntakeForm() {
               {/* Medical Conditions Multi-Select */}
               <div>
                 <label style={{ display: 'block', fontSize: '13px', fontWeight: 800, color: '#0F172A', marginBottom: '10px' }}>
-                  هل تعاني من أي حالة طبية، أو خضعت لجراحة سابقة، أو تتناول أدوية مزمنة؟
+                  هل تعاني من أي حالة طبية مشخصة؟
                 </label>
                 <div style={{ display: 'flex', gap: '10px', marginBottom: '16px' }}>
                   <button type="button" onClick={() => {
                     setFormData(p => ({ ...p, medical_conditions: { ...(p.medical_conditions || {}), has_conditions: true, selected: p.medical_conditions?.selected?.filter(s => s !== 'none') || [] } }));
-                  }} style={{ flex: 1, padding: '10px', borderRadius: '10px', border: formData.medical_conditions?.has_conditions === true ? '2px solid #2563EB' : '1px solid #CBD5E1', background: formData.medical_conditions?.has_conditions === true ? '#EFF6FF' : '#FFF', color: formData.medical_conditions?.has_conditions === true ? '#1E3A8A' : '#475569', fontWeight: 800, transition: 'all 0.15s ease' }}>نعم</button>
+                  }} style={{ flex: 1, padding: '10px', borderRadius: '10px', border: medConditions.has_conditions === true ? '2px solid #2563EB' : '1px solid #CBD5E1', background: medConditions.has_conditions === true ? '#EFF6FF' : '#FFF', color: medConditions.has_conditions === true ? '#1E3A8A' : '#475569', fontWeight: 800, transition: 'all 0.15s ease' }}>نعم</button>
                   <button type="button" onClick={() => {
                     setFormData(p => ({ ...p, medical_conditions: { ...(p.medical_conditions || {}), has_conditions: false, selected: ['none'] } }));
-                  }} style={{ flex: 1, padding: '10px', borderRadius: '10px', border: formData.medical_conditions?.has_conditions === false ? '2px solid #2563EB' : '1px solid #CBD5E1', background: formData.medical_conditions?.has_conditions === false ? '#EFF6FF' : '#FFF', color: formData.medical_conditions?.has_conditions === false ? '#1E3A8A' : '#475569', fontWeight: 800, transition: 'all 0.15s ease' }}>لا، سليم تماماً</button>
+                  }} style={{ flex: 1, padding: '10px', borderRadius: '10px', border: medConditions.has_conditions === false ? '2px solid #2563EB' : '1px solid #CBD5E1', background: medConditions.has_conditions === false ? '#EFF6FF' : '#FFF', color: medConditions.has_conditions === false ? '#1E3A8A' : '#475569', fontWeight: 800, transition: 'all 0.15s ease' }}>لا</button>
                 </div>
 
-                {formData.medical_conditions?.has_conditions && (
+                {medConditions.has_conditions && (
                   <>
                     <label style={{ display: 'block', fontSize: '12px', fontWeight: 800, color: '#0F172A', marginBottom: '8px' }}>
                       اختر الحالات الطبية أو العمليات التي تنطبق عليك:
@@ -1146,84 +1149,98 @@ export default function FullIntakeForm() {
 
               {/* Injuries Matrix */}
               <div>
-                <label style={{ display: 'block', fontSize: '12px', fontWeight: 800, color: '#0F172A', marginBottom: '8px' }}>
-                  مواضع الإصابات أو الآلام المفصلية الحالية:
+                <label style={{ display: 'block', fontSize: '13px', fontWeight: 800, color: '#0F172A', marginBottom: '10px' }}>
+                  هل لديك إصابة أو ألم حالي بالمفاصل؟
                 </label>
-                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', marginBottom: '12px' }}>
-                  {[
-                    { key: 'none', label: 'لا توجد أي إصابات مفصلية' },
-                    { key: 'knee', label: 'إصابات الركبة (صليبي / غضروف / صابونة)' },
-                    { key: 'spine_back', label: 'العمود الفقري (انزلاق غضروفي قطني / عنقي)' },
-                    { key: 'shoulder', label: 'الكتف (اختناق أوتار / كفة مدورة)' },
-                    { key: 'core', label: 'الجدار البطني (انفصال عضلي / فتق)' },
-                    { key: 'elbow_wrist', label: 'الكوع أو المعصم' }
-                  ].map((inj) => {
-                    const isChecked = injuriesSelected.includes(inj.key);
-                    return (
-                      <button 
-                        key={inj.key}
-                        type="button"
-                        onClick={() => {
-                          if (inj.key === 'none') {
-                            setFormData(p => ({ ...p, injuries_map: { ...(p.injuries_map || {}), selected_areas: ['none'], has_injuries: false } }));
-                          } else {
-                            toggleInjuryArea(inj.key);
-                          }
-                        }}
-                        style={{
-                          padding: '7px 14px',
-                          borderRadius: '20px',
-                          fontSize: '11.5px',
-                          fontWeight: 700,
-                          cursor: 'pointer',
-                          border: isChecked ? '1px solid #DC2626' : '1px solid #CBD5E1',
-                          background: isChecked ? '#FEF2F2' : '#FFFFFF',
-                          color: isChecked ? '#DC2626' : '#475569',
-                          transition: 'all 0.15s ease'
-                        }}
-                      >
-                        {isChecked && '• '}
-                        {inj.label}
-                      </button>
-                    );
-                  })}
+                <div style={{ display: 'flex', gap: '10px', marginBottom: '16px' }}>
+                  <button type="button" onClick={() => {
+                    setFormData(p => ({ ...p, injuries_map: { ...(p.injuries_map || {}), has_injuries: true, selected_areas: p.injuries_map?.selected_areas?.filter(s => s !== 'none') || [] } }));
+                  }} style={{ flex: 1, padding: '10px', borderRadius: '10px', border: injuriesMap.has_injuries === true ? '2px solid #2563EB' : '1px solid #CBD5E1', background: injuriesMap.has_injuries === true ? '#EFF6FF' : '#FFF', color: injuriesMap.has_injuries === true ? '#1E3A8A' : '#475569', fontWeight: 800, transition: 'all 0.15s ease' }}>نعم</button>
+                  <button type="button" onClick={() => {
+                    setFormData(p => ({ ...p, injuries_map: { ...(p.injuries_map || {}), has_injuries: false, selected_areas: ['none'] } }));
+                  }} style={{ flex: 1, padding: '10px', borderRadius: '10px', border: injuriesMap.has_injuries === false ? '2px solid #2563EB' : '1px solid #CBD5E1', background: injuriesMap.has_injuries === false ? '#EFF6FF' : '#FFF', color: injuriesMap.has_injuries === false ? '#1E3A8A' : '#475569', fontWeight: 800, transition: 'all 0.15s ease' }}>لا</button>
                 </div>
 
-                {/* Sub-injury logic */}
                 {injuriesMap.has_injuries && (
-                  <div style={{ background: '#FFF1F2', border: '1px solid #FECDD3', borderRadius: '8px', padding: '12px 14px', marginBottom: '12px' }}>
-                    <strong style={{ display: 'block', fontSize: '12px', color: '#BE123C', marginBottom: '8px', fontWeight: 800 }}>
-                      تحديد طبيعة الإصابة لضبط محرك البدائل الحركية الآمنة:
-                    </strong>
-                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '10px' }}>
-                      <div>
-                        <label style={{ display: 'block', fontSize: '11px', color: '#0F172A', marginBottom: '4px', fontWeight: 700 }}>طبيعة الإصابة</label>
-                        <CurvedSelect 
-                          value={injuriesMap.injury_nature || 'chronic'}
-                          onChange={(e) => updateNested('injuries_map', 'injury_nature', e.target.value)}
-                          style={{ width: '100%', height: '36px', borderRadius: '6px', border: '1px solid #CBD5E1', padding: '0 8px', fontSize: '12px' }}
-                        >
-                          <option value="chronic">إجهاد تراكمي وتدريجي (Chronic)</option>
-                          <option value="acute">حادث أو صدمة مفاجئة (Acute)</option>
-                        </CurvedSelect>
-                      </div>
-                      <div>
-                        <label style={{ display: 'block', fontSize: '11px', color: '#0F172A', marginBottom: '4px', fontWeight: 700 }}>هل يهدأ الألم عند الراحة؟</label>
-                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '6px' }}>
+                  <>
+                    <label style={{ display: 'block', fontSize: '12px', fontWeight: 800, color: '#0F172A', marginBottom: '8px' }}>
+                      مواضع الإصابات أو الآلام المفصلية الحالية:
+                    </label>
+                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', marginBottom: '12px' }}>
+                      {[
+                        { key: 'none', label: 'لا توجد أي إصابات مفصلية' },
+                        { key: 'knee', label: 'إصابات الركبة (صليبي / غضروف / صابونة)' },
+                        { key: 'spine_back', label: 'العمود الفقري (انزلاق غضروفي قطني / عنقي)' },
+                        { key: 'shoulder', label: 'الكتف (اختناق أوتار / كفة مدورة)' },
+                        { key: 'core', label: 'الجدار البطني (انفصال عضلي / فتق)' },
+                        { key: 'elbow_wrist', label: 'الكوع أو المعصم' }
+                      ].map((inj) => {
+                        const isChecked = injuriesSelected.includes(inj.key);
+                        return (
                           <button 
-                            type="button" 
-                            onClick={() => updateNested('injuries_map', 'pain_relieved_by_rest', true)}
-                            style={{ height: '36px', borderRadius: '6px', border: '1px solid #CBD5E1', background: (injuriesMap.pain_relieved_by_rest ?? true) ? '#16A34A' : '#FFFFFF', color: (injuriesMap.pain_relieved_by_rest ?? true) ? '#FFFFFF' : '#0F172A', fontWeight: 800, fontSize: '11.5px', cursor: 'pointer' }}
-                          >نعم يهدأ</button>
-                          <button 
-                            type="button" 
-                            onClick={() => updateNested('injuries_map', 'pain_relieved_by_rest', false)}
-                            style={{ height: '36px', borderRadius: '6px', border: '1px solid #CBD5E1', background: !(injuriesMap.pain_relieved_by_rest ?? true) ? '#DC2626' : '#FFFFFF', color: !(injuriesMap.pain_relieved_by_rest ?? true) ? '#FFFFFF' : '#0F172A', fontWeight: 800, fontSize: '11.5px', cursor: 'pointer' }}
-                          >لا يستمر</button>
+                            key={inj.key}
+                            type="button"
+                            onClick={() => {
+                              if (inj.key === 'none') {
+                                setFormData(p => ({ ...p, injuries_map: { ...(p.injuries_map || {}), selected_areas: ['none'], has_injuries: false } }));
+                              } else {
+                                toggleInjuryArea(inj.key);
+                              }
+                            }}
+                            style={{
+                              padding: '7px 14px',
+                              borderRadius: '20px',
+                              fontSize: '11.5px',
+                              fontWeight: 700,
+                              cursor: 'pointer',
+                              border: isChecked ? '1px solid #DC2626' : '1px solid #CBD5E1',
+                              background: isChecked ? '#FEF2F2' : '#FFFFFF',
+                              color: isChecked ? '#DC2626' : '#475569',
+                              transition: 'all 0.15s ease'
+                            }}
+                          >
+                            {isChecked && '• '}
+                            {inj.label}
+                          </button>
+                        );
+                      })}
+                    </div>
+
+                    {/* Sub-injury logic */}
+                    <div style={{ background: '#FFF1F2', border: '1px solid #FECDD3', borderRadius: '8px', padding: '12px 14px', marginBottom: '12px' }}>
+                      <strong style={{ display: 'block', fontSize: '12px', color: '#BE123C', marginBottom: '8px', fontWeight: 800 }}>
+                        تحديد طبيعة الإصابة لضبط محرك البدائل الحركية الآمنة:
+                      </strong>
+                      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '10px' }}>
+                        <div>
+                          <label style={{ display: 'block', fontSize: '11px', color: '#0F172A', marginBottom: '4px', fontWeight: 700 }}>طبيعة الإصابة</label>
+                          <CurvedSelect 
+                            value={injuriesMap.injury_nature || 'chronic'}
+                            onChange={(e) => updateNested('injuries_map', 'injury_nature', e.target.value)}
+                            style={{ width: '100%', height: '36px', borderRadius: '6px', border: '1px solid #CBD5E1', padding: '0 8px', fontSize: '12px' }}
+                          >
+                            <option value="chronic">إجهاد تراكمي وتدريجي (Chronic)</option>
+                            <option value="acute">حادث أو صدمة مفاجئة (Acute)</option>
+                          </CurvedSelect>
+                        </div>
+                        <div>
+                          <label style={{ display: 'block', fontSize: '11px', color: '#0F172A', marginBottom: '4px', fontWeight: 700 }}>هل يهدأ الألم عند الراحة؟</label>
+                          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '6px' }}>
+                            <button 
+                              type="button" 
+                              onClick={() => updateNested('injuries_map', 'pain_relieved_by_rest', true)}
+                              style={{ height: '36px', borderRadius: '6px', border: '1px solid #CBD5E1', background: (injuriesMap.pain_relieved_by_rest ?? true) ? '#16A34A' : '#FFFFFF', color: (injuriesMap.pain_relieved_by_rest ?? true) ? '#FFFFFF' : '#0F172A', fontWeight: 800, fontSize: '11.5px', cursor: 'pointer' }}
+                            >نعم يهدأ</button>
+                            <button 
+                              type="button" 
+                              onClick={() => updateNested('injuries_map', 'pain_relieved_by_rest', false)}
+                              style={{ height: '36px', borderRadius: '6px', border: '1px solid #CBD5E1', background: !(injuriesMap.pain_relieved_by_rest ?? true) ? '#DC2626' : '#FFFFFF', color: !(injuriesMap.pain_relieved_by_rest ?? true) ? '#FFFFFF' : '#0F172A', fontWeight: 800, fontSize: '11.5px', cursor: 'pointer' }}
+                            >لا يستمر</button>
+                          </div>
                         </div>
                       </div>
                     </div>
-                  </div>
+                  </>
                 )}
               </div>
 
@@ -1303,6 +1320,10 @@ export default function FullIntakeForm() {
                 <p style={{ fontSize: '11.5px', color: '#64748B', margin: '0 0 10px 0', lineHeight: '1.5' }}>
                   إذا قمت بإجراء تحاليل دم حديثة (خلال آخر 6 أشهر) أو تقرير InBody، يمكنك إرفاق الصور أو ملف PDF هنا ليفحصها الكوتش ويضبط خطتك بدقة إكلينيكية.
                 </p>
+
+                <div style={{ background: '#EFF6FF', border: '1px solid #BFDBFE', borderRadius: '6px', padding: '8px 12px', marginBottom: '10px', fontSize: '11.5px', color: '#1E3A8A', fontWeight: 700 }}>
+                  التقارير والتحاليل قابلة للتخطي الآن، ويمكنك رفعها لاحقاً.
+                </div>
 
                 <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap' }}>
                   <label style={{
@@ -1848,21 +1869,22 @@ export default function FullIntakeForm() {
                   <label style={{ display: 'block', fontSize: '12px', fontWeight: 800, color: '#0F172A', marginBottom: '6px' }}>
                     أيام التمرين المتاحة أسبوعياً
                   </label>
-                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '6px' }}>
-                    {[3, 4, 5, 6].map((days) => (
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: '6px' }}>
+                    {[2, 3, 4, 5, 6].map((days) => (
                       <button 
                         key={days}
                         type="button"
                         onClick={() => updateNested('training_logistics', 'days_per_week', days)}
                         style={{
                           height: '38px',
-                          borderRadius: '6px',
+                          borderRadius: '8px',
                           border: (trainingLogistics.days_per_week || 4) === days ? '2px solid #0F172A' : '1px solid #CBD5E1',
                           background: (trainingLogistics.days_per_week || 4) === days ? '#0F172A' : '#FFFFFF',
                           color: (trainingLogistics.days_per_week || 4) === days ? '#FFFFFF' : '#475569',
                           fontWeight: 800,
                           fontSize: '12px',
-                          cursor: 'pointer'
+                          cursor: 'pointer',
+                          transition: 'all 0.15s ease'
                         }}
                       >
                         {days} أيام
@@ -2007,7 +2029,7 @@ export default function FullIntakeForm() {
 
                 <div style={{ background: '#EFF6FF', border: '1px solid #BFDBFE', borderRadius: '6px', padding: '10px', marginBottom: '14px' }}>
                   <strong style={{ display: 'block', fontSize: '11.5px', color: '#1E3A8A', fontWeight: 700 }}>
-                    ملاحظة: يمكنك إكمال التسجيل الآن وتخطي رفع الصور، ولكنها ضرورية جداً لاحقاً لتصميم خطتك بدقة ولتقييم مستوى التطور.
+                    الصور والتقارير قابلة للتخطي الآن، ويمكنك رفعها لاحقاً من داخل التطبيق أو إرسالها للكوتش.
                   </strong>
                 </div>
 
