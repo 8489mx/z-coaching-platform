@@ -259,6 +259,20 @@ export default function IntakeAuditDetailModal({
               </div>
               <FieldRow label="مرفقات طبية أخرى" value={answers.media_uploads?.medical_reports_urls?.length ? `${answers.media_uploads.medical_reports_urls.length} ملفات` : null} />
             </Section>
+
+            <Section title="7) الموافقة القانونية (PDPL)">
+              {answers.health_data_consent?.accepted ? (
+                <div style={{ background: '#ECFDF5', border: '1px solid #A7F3D0', borderRadius: '8px', padding: '8px', display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                  <strong style={{ fontSize: '11.5px', color: '#065F46' }}>وافق على الشروط</strong>
+                  <span style={{ fontSize: '10.5px', color: '#047857' }}>
+                    تاريخ الموافقة: {answers.health_data_consent.accepted_at}<br/>
+                    نسخة الوثيقة: {answers.health_data_consent.version}
+                  </span>
+                </div>
+              ) : (
+                <span style={{ color: '#94A3B8', fontSize: '11.5px' }}>لم يوافق / لم يُجب</span>
+              )}
+            </Section>
           </div>
         </div>
 
