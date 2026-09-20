@@ -77,3 +77,50 @@ export function resolveTrainingCycleStatus(program, now = new Date()) {
 export function needsCoachAttention(program, now = new Date()) {
   return resolveTrainingCycleStatus(program, now).needs_new_cycle;
 }
+
+const RENEWAL_WINDOW_DAYS = 14;
+
+export const SUBSCRIPTION_STATE = Object.freeze({
+  ACTIVE: "ACTIVE",
+  ENDING_SOON: "ENDING_SOON",
+  ENDED: "ENDED",
+  OPEN: "OPEN",
+});
+
+/**
+ * Where the client stands in their subscription. A client whose months run out without anyone
+ * noticing is a client lost in silence, so the coach is told two weeks ahead.
+ * A client with no end date recorded is treated as open, never as expired.
+ */
+export function resolveSubscriptionState(user, now = new Date()) {
+  const raw = user?.subscription_end_date;
+  if (!raw) return { status: SUBSCRIPTION_STATE.OPEN, days_remaining: null, ends_on: null, message_ar: "لا يوجد تاريخ انتهاء مسجّل للاشتراك." };
+
+  const endsAt = new Date(raw);
+  if (Number.isNaN(endsAt.getTime())) {
+    return { status: SUBSCRIPTION_STATE.OPEN, days_remaining: null, ends_on: null, message_ar: "تاريخ انتهاء الاشتراك غير صالح في ملف المتدرب." };
+  }
+
+  const daysRemaining = Math.ceil((endsAt.getTime() - now.getTime()) / DAY_MS);
+  const status = daysRemaining <= 0
+    ? SUBSCRIPTION_STATE.ENDED
+    : daysRemaining <= RENEWAL_WINDOW_DAYS
+      ? SUBSCRIPTION_STATE.ENDING_SOON
+      : SUBSCRIPTION_STATE.ACTIVE;
+
+  const messages = {
+    [SUBSCRIPTION_STATE.ACTIVE]: `الاشتراك سارٍ حتى ${endsAt.toISOString().slice(0, 10)}.`,
+    [SUBSCRIPTION_STATE.ENDING_SOON]: `اشتراك المتدرب ينتهي خلال ${daysRemaining} يوم، كلّمه في التجديد.`,
+    [SUBSCRIPTION_STATE.ENDED]: daysRemaining === 0
+      ? "اشتراك المتدرب ينتهي اليوم."
+      : `اشتراك المتدرب انتهى منذ ${Math.abs(daysRemaining)} يوم.`,
+  };
+
+  return { status, days_remaining: daysRemaining, ends_on: endsAt.toISOString().slice(0, 10), message_ar: messages[status] };
+}
+
+/** True when the coach should hear about this subscription now. */
+export function subscriptionNeedsAttention(user, now = new Date()) {
+  const state = resolveSubscriptionState(user, now);
+  return state.status === SUBSCRIPTION_STATE.ENDING_SOON || state.status === SUBSCRIPTION_STATE.ENDED;
+}

@@ -20,7 +20,7 @@ import { resolveFastingContext, FASTING_OVERRIDES, applyFastingToMeals, RAMADAN_
 import { getGulfHeatAdvisory, getPracticalCardioPrescription } from "../../execution-engines/cardio-zones-engine.js";
 import { calculateSessionDemand, auditWeeklyMuscleVolume, auditDeficitVolumeShield, evaluateProteinSparingRequirement } from "../utils/trainingNutritionCoupling.js";
 import { applyDeloadToSession, READINESS_GUIDANCE_AR } from "../../../src/training-engine-v2/progression/index.js";
-import { resolveTrainingCycleStatus, CYCLE_STATUS } from "../services/trainingCycleService.js";
+import { resolveTrainingCycleStatus, CYCLE_STATUS, resolveSubscriptionState, subscriptionNeedsAttention } from "../services/trainingCycleService.js";
 import { buildNextCycle, resolvePainFlaggedExercises, evaluateAutoPublish } from "../services/nextCycleService.js";
 
 const __filename = fileURLToPath(import.meta.url);
@@ -1014,7 +1014,7 @@ export const getCyclesNeedingAttention = async (req, res) => {
     const programs = await Program.findAll({
       where: { status: "ACTIVE" },
       order: [["id", "DESC"]],
-      include: [{ model: User, as: "user", attributes: ["id", "client_code", "full_name", "subscription_status"] }],
+      include: [{ model: User, as: "user", attributes: ["id", "client_code", "full_name", "subscription_status", "subscription_end_date"] }],
     });
 
     const seen = new Set();
@@ -1025,12 +1025,18 @@ export const getCyclesNeedingAttention = async (req, res) => {
       seen.add(client.id);
       if (client.subscription_status === "DEACTIVATED") continue;
       const cycle = resolveTrainingCycleStatus(program);
-      if (!cycle.needs_new_cycle) continue;
+      // One list to look at: a plan that ran out, and a subscription about to, are both things the
+      // coach has to act on this week.
+      const subscription = resolveSubscriptionState(client);
+      const renewalDue = subscriptionNeedsAttention(client);
+      if (!cycle.needs_new_cycle && !renewalDue) continue;
       clients.push({
         client_code: client.client_code,
         full_name: client.full_name,
         program_id: program.id,
         ...cycle,
+        subscription,
+        renewal_due: renewalDue,
       });
     }
 
@@ -1038,6 +1044,7 @@ export const getCyclesNeedingAttention = async (req, res) => {
     return res.status(200).json({
       count: clients.length,
       ended_count: clients.filter((c) => c.status === CYCLE_STATUS.ENDED).length,
+      renewal_count: clients.filter((c) => c.renewal_due).length,
       clients,
     });
   } catch (err) {

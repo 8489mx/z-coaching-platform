@@ -114,3 +114,32 @@ test("the active program response carries the cycle, and the coach list names th
     await sequelize.close().catch(() => {});
   }
 });
+
+test("a subscription about to run out is surfaced two weeks ahead, and an open one is never called expired", async () => {
+  const { resolveSubscriptionState, SUBSCRIPTION_STATE } = await import("../src/api/services/trainingCycleService.js");
+  const now = new Date("2026-09-20T06:00:00Z");
+
+  assert.equal(resolveSubscriptionState({ subscription_end_date: "2026-12-01" }, now).status, SUBSCRIPTION_STATE.ACTIVE);
+  const soon = resolveSubscriptionState({ subscription_end_date: "2026-09-30" }, now);
+  assert.equal(soon.status, SUBSCRIPTION_STATE.ENDING_SOON);
+  assert.match(soon.message_ar, /كلّمه في التجديد/);
+  assert.equal(resolveSubscriptionState({ subscription_end_date: "2026-09-01" }, now).status, SUBSCRIPTION_STATE.ENDED);
+  // A client with no recorded end date keeps training; the system never decides they expired.
+  assert.equal(resolveSubscriptionState({}, now).status, SUBSCRIPTION_STATE.OPEN);
+  assert.equal(resolveSubscriptionState({ subscription_end_date: "not-a-date" }, now).status, SUBSCRIPTION_STATE.OPEN);
+});
+
+test("a client who stopped training for a month restarts lighter, by the rule already in the engine", async () => {
+  const { buildPostDeloadTarget } = await import("../src/training-engine-v2/progression/index.js");
+  const base = { exercise_code: "BARBELL_BENCH_PRESS", last_success_weight_kg: 100 };
+
+  assert.equal(buildPostDeloadTarget({ ...base, days_since_last_session: 3 }).weight_kg, 100, "no break, no reduction");
+  const short = buildPostDeloadTarget({ ...base, days_since_last_session: 20 });
+  assert.equal(short.weight_kg, 90);
+  assert.equal(short.rule, "BREAK_MINUS_10");
+  const long = buildPostDeloadTarget({ ...base, days_since_last_session: 40 });
+  assert.equal(long.weight_kg, 80);
+  assert.equal(long.rule, "LONG_BREAK_MINUS_20");
+  // The next cycle takes its starting weights from these targets, so a returning client is carried
+  // back in at the lighter load without anyone deciding anything.
+});
