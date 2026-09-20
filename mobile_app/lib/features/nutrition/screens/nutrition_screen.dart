@@ -13,6 +13,7 @@ class NutritionScreen extends StatefulWidget {
 }
 
 class _NutritionScreenState extends State<NutritionScreen> {
+  DailyMacroTarget _macroTarget = DailyMacroTarget(calories: 0, protein: 0, carbs: 0, fat: 0);
   List<Meal> _meals = [];
 
   // قاعدة بيانات بدائل مبسطة مطابقة لمحرك المنظومة
@@ -48,42 +49,24 @@ class _NutritionScreenState extends State<NutritionScreen> {
 
   void _loadMeals() {
     final cached = widget.storage.getCachedActiveProgram();
-    if (cached != null && cached['nutrition'] is Map && cached['nutrition']['meals'] is List) {
-      final rawMeals = cached['nutrition']['meals'] as List;
-      _meals = rawMeals.asMap().entries.map((e) => Meal.fromJson(Map<String, dynamic>.from(e.value as Map), e.key)).toList();
-    } else {
-      // خطة وجبات افتراضية نموذجية للمتدرب
-      _meals = [
-        Meal(
-          id: 'm1',
-          name: 'وجبة 1: الإفطار المتوازن',
-          time: '08:30 صباحاً',
-          items: [
-            FoodItem(id: 'f1', name: 'شوفان حبة كاملة', grams: 60, calories: 233, protein: 10.1, carbs: 39.6, fat: 4.1),
-            FoodItem(id: 'f2', name: 'بياض بيض مطبوخ', grams: 180, calories: 94, protein: 19.8, carbs: 1.3, fat: 0.4),
-            FoodItem(id: 'f3', name: 'زبدة فول سوداني طبيعية', grams: 15, calories: 88, protein: 3.8, carbs: 3.0, fat: 7.5),
-          ],
-        ),
-        Meal(
-          id: 'm2',
-          name: 'وجبة 2: الغداء (قبل التمرين)',
-          time: '02:00 مساءً',
-          items: [
-            FoodItem(id: 'f4', name: 'صدور دجاج مشوية', grams: 200, calories: 330, protein: 62.0, carbs: 0.0, fat: 7.2),
-            FoodItem(id: 'f5', name: 'أرز بسمتي مسلوق', grams: 220, calories: 286, protein: 5.9, carbs: 61.6, fat: 0.7),
-            FoodItem(id: 'f6', name: 'زيت زيتون بكر ممتاز', grams: 10, calories: 88, protein: 0.0, carbs: 0.0, fat: 10.0),
-          ],
-        ),
-        Meal(
-          id: 'm3',
-          name: 'وجبة 3: العشاء والاستشفاء',
-          time: '08:30 مساءً',
-          items: [
-            FoodItem(id: 'f7', name: 'سمك بلطي طازج', grams: 220, calories: 282, protein: 57.2, carbs: 0.0, fat: 5.9),
-            FoodItem(id: 'f8', name: 'بطاطا حلوة مشوية', grams: 250, calories: 225, protein: 5.0, carbs: 52.5, fat: 0.5),
-          ],
-        ),
-      ];
+    if (cached != null) {
+      final clientView = cached['client_view'] as Map<String, dynamic>?;
+      if (clientView != null) {
+        if (clientView['target_macros'] is Map) {
+          _macroTarget = DailyMacroTarget.fromJson(Map<String, dynamic>.from(clientView['target_macros'] as Map));
+        }
+        if (clientView['meals'] is List) {
+          final rawMeals = clientView['meals'] as List;
+          _meals = rawMeals.asMap().entries.map((e) => Meal.fromJson(Map<String, dynamic>.from(e.value as Map), e.key)).toList();
+        }
+      } else if (cached['nutrition'] is Map && cached['nutrition']['meals'] is List) {
+        final rawMeals = cached['nutrition']['meals'] as List;
+        _meals = rawMeals.asMap().entries.map((e) => Meal.fromJson(Map<String, dynamic>.from(e.value as Map), e.key)).toList();
+        final targets = cached['nutrition']['targets'] ?? cached['nutrition']['daily_targets'];
+        if (targets is Map) {
+          _macroTarget = DailyMacroTarget.fromJson(Map<String, dynamic>.from(targets as Map));
+        }
+      }
     }
     setState(() {});
   }
@@ -213,111 +196,185 @@ class _NutritionScreenState extends State<NutritionScreen> {
           ),
         ],
       ),
-      body: ListView.builder(
+      body: ListView(
         padding: const EdgeInsets.all(16),
-        itemCount: _meals.length,
-        itemBuilder: (context, mealIndex) {
-          final meal = _meals[mealIndex];
-          return Card(
-            margin: const EdgeInsets.only(bottom: 16),
-            child: Padding(
-              padding: const EdgeInsets.all(16),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  // رأس الوجبة
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            meal.name,
-                            style: const TextStyle(
-                              color: AppColors.textPrimary,
-                              fontWeight: FontWeight.bold,
-                              fontSize: 16,
-                            ),
-                          ),
-                          if (meal.time != null) ...[
-                            const SizedBox(height: 2),
-                            Text(
-                              meal.time!,
-                              style: const TextStyle(color: AppColors.textMuted, fontSize: 12),
-                            ),
-                          ],
-                        ],
+        children: [
+          if (_macroTarget.calories > 0) ...[
+            Card(
+              margin: const EdgeInsets.only(bottom: 16),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+              child: Padding(
+                padding: const EdgeInsets.all(16),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    const Text(
+                      'الأهداف اليومية للماكروز والسعرات',
+                      style: TextStyle(
+                        color: AppColors.textPrimary,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 15,
                       ),
-                      Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                        decoration: BoxDecoration(
-                          color: AppColors.surfaceLight,
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                        child: Text(
-                          '${meal.totalCalories} سعرة',
-                          style: const TextStyle(
-                            color: AppColors.secondary,
-                            fontWeight: FontWeight.bold,
-                            fontSize: 13,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 12),
-                  const Divider(color: AppColors.border),
-                  const SizedBox(height: 8),
-
-                  // قائمة أصناف الوجبة
-                  ...meal.items.map((item) {
-                    return Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 6),
-                      child: Row(
-                        children: [
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  item.name,
-                                  style: const TextStyle(
-                                    color: AppColors.textPrimary,
-                                    fontSize: 14,
-                                    fontWeight: FontWeight.w600,
-                                  ),
-                                ),
-                                const SizedBox(height: 2),
-                                Text(
-                                  '${item.grams.round()}g | ${item.calories} سعرة (ب: ${item.protein.round()}g، ك: ${item.carbs.round()}g، د: ${item.fat.round()}g)',
-                                  style: const TextStyle(color: AppColors.textSecondary, fontSize: 12),
-                                ),
-                              ],
-                            ),
-                          ),
-                          OutlinedButton.icon(
-                            style: OutlinedButton.styleFrom(
-                              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-                              side: const BorderSide(color: AppColors.primary, width: 0.8),
-                            ),
-                            onPressed: () => _openSwapSheet(meal, item),
-                            icon: const Icon(Icons.swap_horiz, size: 16, color: AppColors.primary),
-                            label: const Text(
-                              'تبديل',
-                              style: TextStyle(color: AppColors.primary, fontSize: 12),
-                            ),
-                          ),
-                        ],
-                      ),
-                    );
-                  }),
-                ],
+                    ),
+                    const SizedBox(height: 12),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceAround,
+                      children: [
+                        _buildMacroBadge('السعرات', '${_macroTarget.calories}', AppColors.secondary),
+                        _buildMacroBadge('البروتين', '${_macroTarget.protein}g', AppColors.primary),
+                        _buildMacroBadge('الكارب', '${_macroTarget.carbs}g', AppColors.secondary),
+                        _buildMacroBadge('الدهون', '${_macroTarget.fat}g', AppColors.warning),
+                      ],
+                    ),
+                  ],
+                ),
               ),
             ),
-          );
-        },
+          ],
+          ..._meals.map((meal) {
+            return Card(
+              margin: const EdgeInsets.only(bottom: 16),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+              child: Padding(
+                padding: const EdgeInsets.all(16),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    // رأس الوجبة
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              meal.name,
+                              style: const TextStyle(
+                                color: AppColors.textPrimary,
+                                fontWeight: FontWeight.bold,
+                                fontSize: 16,
+                              ),
+                            ),
+                            if (meal.time != null) ...[
+                              const SizedBox(height: 2),
+                              Text(
+                                meal.time!,
+                                style: const TextStyle(color: AppColors.textMuted, fontSize: 12),
+                              ),
+                            ],
+                          ],
+                        ),
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                          decoration: BoxDecoration(
+                            color: AppColors.surfaceLight,
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          child: Text(
+                            '${meal.totalCalories} سعرة',
+                            style: const TextStyle(
+                              color: AppColors.secondary,
+                              fontWeight: FontWeight.bold,
+                              fontSize: 13,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 12),
+                    const Divider(color: AppColors.border),
+                    const SizedBox(height: 8),
+
+                    // قائمة أصناف الوجبة
+                    ...meal.items.map((item) {
+                      return Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 6),
+                        child: Row(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    item.name,
+                                    style: const TextStyle(
+                                      color: AppColors.textPrimary,
+                                      fontSize: 14,
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 2),
+                                  Text(
+                                    '${item.grams.round()}g | ${item.calories} سعرة (ب: ${item.protein.round()}g، ك: ${item.carbs.round()}g، د: ${item.fat.round()}g)',
+                                    style: const TextStyle(color: AppColors.textSecondary, fontSize: 12),
+                                  ),
+                                  if (item.fastingNoteAr != null && item.fastingNoteAr!.isNotEmpty) ...[
+                                    const SizedBox(height: 4),
+                                    Container(
+                                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                                      decoration: BoxDecoration(
+                                        color: AppColors.backgroundDeep,
+                                        borderRadius: BorderRadius.circular(8),
+                                        border: Border.all(color: AppColors.border),
+                                      ),
+                                      child: Text(
+                                        item.fastingNoteAr!,
+                                        style: const TextStyle(color: AppColors.secondary, fontSize: 11),
+                                      ),
+                                    ),
+                                  ] else if (item.fastingSubstitutedFrom != null && item.fastingSubstitutedFrom!.isNotEmpty) ...[
+                                    const SizedBox(height: 4),
+                                    Container(
+                                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                                      decoration: BoxDecoration(
+                                        color: AppColors.backgroundDeep,
+                                        borderRadius: BorderRadius.circular(8),
+                                        border: Border.all(color: AppColors.border),
+                                      ),
+                                      child: Text(
+                                        'بديل من: ${item.fastingSubstitutedFrom}',
+                                        style: const TextStyle(color: AppColors.secondary, fontSize: 11),
+                                      ),
+                                    ),
+                                  ],
+                                ],
+                              ),
+                            ),
+                            OutlinedButton.icon(
+                              style: OutlinedButton.styleFrom(
+                                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                                side: const BorderSide(color: AppColors.primary, width: 0.8),
+                              ),
+                              onPressed: () => _openSwapSheet(meal, item),
+                              icon: const Icon(Icons.swap_horiz, size: 16, color: AppColors.primary),
+                              label: const Text(
+                                'تبديل',
+                                style: TextStyle(color: AppColors.primary, fontSize: 12),
+                              ),
+                            ),
+                          ],
+                        ),
+                      );
+                    }),
+                  ],
+                ),
+              ),
+            );
+          }),
+        ],
       ),
+    );
+  }
+
+  Widget _buildMacroBadge(String label, String val, Color color) {
+    return Column(
+      children: [
+        Text(val, style: TextStyle(color: color, fontWeight: FontWeight.bold, fontSize: 14)),
+        const SizedBox(height: 2),
+        Text(label, style: const TextStyle(color: AppColors.textSecondary, fontSize: 11)),
+      ],
     );
   }
 }

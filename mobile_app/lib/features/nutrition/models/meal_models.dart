@@ -16,13 +16,13 @@ class DailyMacroTarget {
 
   factory DailyMacroTarget.fromJson(Map<String, dynamic>? json) {
     if (json == null) {
-      return DailyMacroTarget(calories: 2200, protein: 160, carbs: 220, fat: 65);
+      return DailyMacroTarget(calories: 0, protein: 0, carbs: 0, fat: 0);
     }
     return DailyMacroTarget(
-      calories: _toInt(json['calories'] ?? json['target_calories'] ?? 2200),
-      protein: _toInt(json['protein'] ?? json['protein_g'] ?? 160),
-      carbs: _toInt(json['carbs'] ?? json['carbs_g'] ?? 220),
-      fat: _toInt(json['fat'] ?? json['fats_g'] ?? json['fat_g'] ?? 65),
+      calories: _toInt(json['calories'] ?? json['target_calories'] ?? 0),
+      protein: _toInt(json['protein_g'] ?? json['protein'] ?? 0),
+      carbs: _toInt(json['carbs_g'] ?? json['carbs'] ?? 0),
+      fat: _toInt(json['fat_g'] ?? json['fats_g'] ?? json['fat'] ?? 0),
       waterLiters: (json['water_liters'] ?? json['hydration_target'] ?? 3.5).toDouble(),
     );
   }
@@ -36,6 +36,7 @@ class DailyMacroTarget {
 
 class FoodItem {
   final String id;
+  final String code;
   final String name;
   final double grams;
   final int calories;
@@ -43,10 +44,14 @@ class FoodItem {
   final double carbs;
   final double fat;
   final String? note;
+  final String? fastingSubstitutedFrom;
+  final String? fastingNoteAr;
+  final bool fastingBlocked;
   bool isCompleted;
 
   FoodItem({
     required this.id,
+    this.code = '',
     required this.name,
     required this.grams,
     required this.calories,
@@ -54,19 +59,26 @@ class FoodItem {
     required this.carbs,
     required this.fat,
     this.note,
+    this.fastingSubstitutedFrom,
+    this.fastingNoteAr,
+    this.fastingBlocked = false,
     this.isCompleted = false,
   });
 
   factory FoodItem.fromJson(Map<String, dynamic> json) {
     return FoodItem(
       id: json['id']?.toString() ?? json['item_code']?.toString() ?? UniqueKeyHelper.generate(),
+      code: json['code']?.toString() ?? json['food_code']?.toString() ?? '',
       name: json['name']?.toString() ?? json['food_name']?.toString() ?? json['name_ar']?.toString() ?? 'عنصر غذائي',
-      grams: _toDouble(json['grams'] ?? json['quantity'] ?? json['amount'] ?? 100),
-      calories: _toInt(json['calories'] ?? 0),
-      protein: _toDouble(json['protein'] ?? json['protein_g'] ?? 0),
-      carbs: _toDouble(json['carbs'] ?? json['carbs_g'] ?? 0),
-      fat: _toDouble(json['fat'] ?? json['fats_g'] ?? 0),
+      grams: _toDouble(json['amount'] ?? json['grams'] ?? json['quantity'] ?? 100),
+      calories: _toInt(json['cal'] ?? json['calories'] ?? 0),
+      protein: _toDouble(json['p'] ?? json['protein'] ?? json['protein_g'] ?? 0),
+      carbs: _toDouble(json['c'] ?? json['carbs'] ?? json['carbs_g'] ?? 0),
+      fat: _toDouble(json['f'] ?? json['fat'] ?? json['fats_g'] ?? 0),
       note: json['note']?.toString(),
+      fastingSubstitutedFrom: json['fasting_substituted_from']?.toString(),
+      fastingNoteAr: json['fasting_note_ar']?.toString(),
+      fastingBlocked: json['fasting_blocked'] == true,
       isCompleted: json['isCompleted'] == true,
     );
   }
@@ -88,6 +100,7 @@ class Meal {
   final String id;
   final String name;
   final String? time;
+  final String? ramadanSlot;
   final List<FoodItem> items;
   bool isCompleted;
 
@@ -95,6 +108,7 @@ class Meal {
     required this.id,
     required this.name,
     this.time,
+    this.ramadanSlot,
     required this.items,
     this.isCompleted = false,
   });
@@ -113,8 +127,9 @@ class Meal {
 
     return Meal(
       id: json['id']?.toString() ?? 'meal_$index',
-      name: json['name']?.toString() ?? json['meal_name']?.toString() ?? 'الوجبة ${index + 1}',
+      name: json['title']?.toString() ?? json['name']?.toString() ?? json['meal_name']?.toString() ?? 'الوجبة ${index + 1}',
       time: json['time']?.toString() ?? json['meal_time']?.toString(),
+      ramadanSlot: json['ramadan_slot']?.toString(),
       items: itemsList,
       isCompleted: json['isCompleted'] == true,
     );
