@@ -192,6 +192,17 @@ export default function IntakeAuditDetailModal({
               <FieldRow label="قائمة الأدوية والمكملات" value={answers.current_meds_supplements_list} />
               <FieldRow label="تفاصيل الأدوية والمكملات" value={answers.current_meds_supplements} />
             </Section>
+            
+            <Section title="3) الإصابات">
+              <FieldRow label="مناطق الإصابة" value={answers.injuries_map?.selected_areas} />
+              <FieldRow label="إصابات الركبة" value={answers.injuries_map?.knee} />
+              <FieldRow label="إصابات الظهر والعمود الفقري" value={answers.injuries_map?.spine_back} />
+              <FieldRow label="إصابات الكتف" value={answers.injuries_map?.shoulder} />
+              <FieldRow label="إصابات الكور" value={answers.injuries_map?.core} />
+              <FieldRow label="إصابات مفاصل أخرى" value={answers.injuries_map?.other_joints} />
+              <FieldRow label="طبيعة الإصابة" value={answers.injuries_map?.injury_nature} />
+              <FieldRow label="يخف الألم بالراحة" value={answers.injuries_map?.pain_relieved_by_rest} />
+            </Section>
           </div>
           <div style={{ display: 'flex', flexDirection: 'column' }}>
           </div>
