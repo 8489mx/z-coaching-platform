@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
+import '../../../core/constants/api_constants.dart';
 import '../../../core/constants/app_colors.dart';
+import '../../../core/network/api_client.dart';
 import '../../../core/storage/local_storage.dart';
 import '../models/meal_models.dart';
 
-/// شاشة التغذية التفاعلية مع محرك تبديل الأطعمة الذكي
+/// شاشة التغذية التفاعلية مع محرك تبديل الأطعمة
 class NutritionScreen extends StatefulWidget {
   final LocalStorage storage;
   const NutritionScreen({super.key, required this.storage});
@@ -15,31 +17,6 @@ class NutritionScreen extends StatefulWidget {
 class _NutritionScreenState extends State<NutritionScreen> {
   DailyMacroTarget _macroTarget = DailyMacroTarget(calories: 0, protein: 0, carbs: 0, fat: 0);
   List<Meal> _meals = [];
-
-  // قاعدة بيانات بدائل مبسطة مطابقة لمحرك المنظومة
-  final Map<String, List<Map<String, dynamic>>> _smartSwapDatabase = {
-    'بروتين': [
-      {'name': 'صدور دجاج مشوية', 'factor': 1.0, 'calPer100': 165, 'p': 31, 'c': 0, 'f': 3.6},
-      {'name': 'فيليه لحم بقري صافي', 'factor': 0.95, 'calPer100': 190, 'p': 29, 'c': 0, 'f': 8.0},
-      {'name': 'سمك بلطي طازج', 'factor': 1.15, 'calPer100': 128, 'p': 26, 'c': 0, 'f': 2.7},
-      {'name': 'تونة معلبة مصفاة بالماء', 'factor': 1.1, 'calPer100': 130, 'p': 28, 'c': 0, 'f': 1.0},
-      {'name': 'سلمون نرويجي مشوي', 'factor': 0.85, 'calPer100': 208, 'p': 22, 'c': 0, 'f': 13.0},
-      {'name': 'بياض بيض مطبوخ', 'factor': 2.4, 'calPer100': 52, 'p': 11, 'c': 0.7, 'f': 0.2},
-    ],
-    'كارب': [
-      {'name': 'أرز بسمتي مسلوق', 'factor': 1.0, 'calPer100': 130, 'p': 2.7, 'c': 28, 'f': 0.3},
-      {'name': 'بطاطا حلوة مشوية', 'factor': 1.25, 'calPer100': 90, 'p': 2.0, 'c': 21, 'f': 0.2},
-      {'name': 'شوفان حبة كاملة', 'factor': 0.38, 'calPer100': 389, 'p': 16.9, 'c': 66, 'f': 6.9},
-      {'name': 'مكرونة حبة كاملة مسلوقة', 'factor': 0.95, 'calPer100': 140, 'p': 5.5, 'c': 29, 'f': 0.9},
-      {'name': 'بطاطس مسلوقة', 'factor': 1.4, 'calPer100': 87, 'p': 1.9, 'c': 20, 'f': 0.1},
-    ],
-    'دهون': [
-      {'name': 'زيت زيتون بكر ممتاز', 'factor': 1.0, 'calPer100': 884, 'p': 0, 'c': 0, 'f': 100},
-      {'name': 'زبدة فول سوداني طبيعية', 'factor': 1.5, 'calPer100': 588, 'p': 25, 'c': 20, 'f': 50},
-      {'name': 'لوز خام غير محمص', 'factor': 1.5, 'calPer100': 579, 'p': 21, 'c': 22, 'f': 50},
-      {'name': 'أفوكادو طازج', 'factor': 5.5, 'calPer100': 160, 'p': 2, 'c': 9, 'f': 15},
-    ],
-  };
 
   @override
   void initState() {
@@ -72,16 +49,6 @@ class _NutritionScreenState extends State<NutritionScreen> {
   }
 
   void _openSwapSheet(Meal meal, FoodItem item) {
-    // تحديد نوع الغذاء بناءً على محتواه الغالب
-    String category = 'بروتين';
-    if (item.carbs > item.protein && item.carbs > item.fat) {
-      category = 'كارب';
-    } else if (item.fat > item.protein && item.fat > item.carbs) {
-      category = 'دهون';
-    }
-
-    final candidates = _smartSwapDatabase[category] ?? [];
-
     showModalBottomSheet(
       context: context,
       backgroundColor: AppColors.surface,
@@ -89,95 +56,18 @@ class _NutritionScreenState extends State<NutritionScreen> {
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
       builder: (ctx) {
-        return Container(
-          padding: const EdgeInsets.all(20),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text(
-                    'بدائل ذكية لـ: ${item.name}',
-                    style: const TextStyle(
-                      color: AppColors.textPrimary,
-                      fontWeight: FontWeight.bold,
-                      fontSize: 16,
-                    ),
-                  ),
-                  IconButton(
-                    icon: const Icon(Icons.close, color: AppColors.textSecondary),
-                    onPressed: () => Navigator.pop(ctx),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 8),
-              const Text(
-                'يتم احتساب الجرامات المكافئة آلياً للحفاظ على نفس السعرات والماكروز المقررة.',
-                style: TextStyle(color: AppColors.textSecondary, fontSize: 13),
-              ),
-              const SizedBox(height: 16),
-              Flexible(
-                child: ListView.separated(
-                  shrinkWrap: true,
-                  itemCount: candidates.length,
-                  separatorBuilder: (_, __) => const Divider(color: AppColors.border),
-                  itemBuilder: (context, idx) {
-                    final cand = candidates[idx];
-                    final double factor = (cand['factor'] as num).toDouble();
-                    final int newGrams = (item.grams * factor).round();
-                    final int newCal = ((newGrams * (cand['calPer100'] as num)) / 100).round();
-                    final double newP = ((newGrams * (cand['p'] as num)) / 100);
-
-                    final isCurrent = cand['name'] == item.name;
-
-                    return ListTile(
-                      contentPadding: EdgeInsets.zero,
-                      title: Text(
-                        cand['name'] as String,
-                        style: TextStyle(
-                          color: isCurrent ? AppColors.primary : AppColors.textPrimary,
-                          fontWeight: FontWeight.bold,
-                          fontSize: 14,
-                        ),
-                      ),
-                      subtitle: Text(
-                        '$newGrams جرام - $newCal سعرة (بروتين: ${newP.toStringAsFixed(1)}g)',
-                        style: const TextStyle(color: AppColors.textSecondary, fontSize: 12),
-                      ),
-                      trailing: isCurrent
-                          ? const Text('الصنف الحالي', style: TextStyle(color: AppColors.primary, fontSize: 12))
-                          : ElevatedButton(
-                              style: ElevatedButton.styleFrom(
-                                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-                                textStyle: const TextStyle(fontSize: 12),
-                              ),
-                              onPressed: () {
-                                setState(() {
-                                  final itemIdx = meal.items.indexOf(item);
-                                  if (itemIdx != -1) {
-                                    meal.items[itemIdx] = FoodItem(
-                                      id: item.id,
-                                      name: cand['name'] as String,
-                                      grams: newGrams.toDouble(),
-                                      calories: newCal,
-                                      protein: newP,
-                                      carbs: ((newGrams * (cand['c'] as num)) / 100),
-                                      fat: ((newGrams * (cand['f'] as num)) / 100),
-                                    );
-                                  }
-                                });
-                                Navigator.pop(ctx);
-                              },
-                              child: const Text('اختيار'),
-                            ),
-                    );
-                  },
-                ),
-              ),
-            ],
-          ),
+        return _SwapSheetContent(
+          storage: widget.storage,
+          item: item,
+          onSwapSelected: (FoodItem swappedItem) {
+            setState(() {
+              final itemIdx = meal.items.indexOf(item);
+              if (itemIdx != -1) {
+                meal.items[itemIdx] = swappedItem;
+              }
+            });
+            Navigator.pop(ctx);
+          },
         );
       },
     );
@@ -375,6 +265,198 @@ class _NutritionScreenState extends State<NutritionScreen> {
         const SizedBox(height: 2),
         Text(label, style: const TextStyle(color: AppColors.textSecondary, fontSize: 11)),
       ],
+    );
+  }
+}
+
+class _SwapSheetContent extends StatefulWidget {
+  final LocalStorage storage;
+  final FoodItem item;
+  final ValueChanged<FoodItem> onSwapSelected;
+
+  const _SwapSheetContent({
+    required this.storage,
+    required this.item,
+    required this.onSwapSelected,
+  });
+
+  @override
+  State<_SwapSheetContent> createState() => _SwapSheetContentState();
+}
+
+class _SwapSheetContentState extends State<_SwapSheetContent> {
+  bool _isLoading = true;
+  String? _error;
+  List<Map<String, dynamic>> _candidates = [];
+
+  @override
+  void initState() {
+    super.initState();
+    _fetchCandidates();
+  }
+
+  Future<void> _fetchCandidates() async {
+    setState(() {
+      _isLoading = true;
+      _error = null;
+    });
+
+    try {
+      final client = ApiClient(widget.storage);
+      final response = await client.post(
+        ApiConstants.swapCandidates,
+        {
+          'food_code': widget.item.code.isNotEmpty ? widget.item.code : widget.item.id,
+          'name_ar': widget.item.name,
+          'source_grams': widget.item.grams,
+        },
+      );
+
+      if (response.isSuccess && response.data is Map && response.data['candidates'] is List) {
+        final list = response.data['candidates'] as List;
+        _candidates = list.map((e) => Map<String, dynamic>.from(e as Map)).toList();
+      } else {
+        _error = 'لا تتوفر بدائل مسجلة لهذا الصنف حالياً';
+      }
+    } catch (_) {
+      _error = 'تعذر الاتصال بالخادم لجلب البدائل';
+    } finally {
+      if (mounted) {
+        setState(() => _isLoading = false);
+      }
+    }
+  }
+
+  Future<void> _applySwap(Map<String, dynamic> candidate) async {
+    final candCode = candidate['food_code']?.toString() ?? '';
+    if (candCode.isEmpty) return;
+
+    try {
+      final client = ApiClient(widget.storage);
+      final response = await client.post(
+        ApiConstants.swapFood,
+        {
+          'current_food_code': widget.item.code.isNotEmpty ? widget.item.code : widget.item.id,
+          'current_portion_g': widget.item.grams,
+          'target_food_code': candCode,
+        },
+      );
+
+      if (response.isSuccess && response.data is Map) {
+        final data = response.data;
+        final swapped = data['swapped_food'] as Map<String, dynamic>?;
+        final target = data['swap']?['target_food'] as Map<String, dynamic>?;
+
+        final newGrams = ((swapped?['grams'] ?? target?['portion_g'] ?? candidate['target_grams'] ?? widget.item.grams) as num).toDouble();
+        final newName = swapped?['name_ar']?.toString() ?? candidate['name_ar']?.toString() ?? widget.item.name;
+        final newCal = ((target?['calories'] ?? 0) as num).round();
+        final newP = ((target?['protein_g'] ?? 0) as num).toDouble();
+        final newC = ((target?['carbs_g'] ?? target?['carbohydrate_g'] ?? 0) as num).toDouble();
+        final newF = ((target?['fats_g'] ?? target?['fat_g'] ?? 0) as num).toDouble();
+
+        final newItem = FoodItem(
+          id: widget.item.id,
+          code: candCode,
+          name: newName,
+          grams: newGrams,
+          calories: newCal,
+          protein: newP,
+          carbs: newC,
+          fat: newF,
+        );
+
+        widget.onSwapSelected(newItem);
+      }
+    } catch (_) {}
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(20),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                'بدائل لـ: ${widget.item.name}',
+                style: const TextStyle(
+                  color: AppColors.textPrimary,
+                  fontWeight: FontWeight.bold,
+                  fontSize: 16,
+                ),
+              ),
+              IconButton(
+                icon: const Icon(Icons.close, color: AppColors.textSecondary),
+                onPressed: () => Navigator.pop(context),
+              ),
+            ],
+          ),
+          const SizedBox(height: 8),
+          const Text(
+            'البدائل المقررة من الخادم للحفاظ على نفس التوازن الغذائي.',
+            style: TextStyle(color: AppColors.textSecondary, fontSize: 13),
+          ),
+          const SizedBox(height: 16),
+          if (_isLoading)
+            const Padding(
+              padding: EdgeInsets.symmetric(vertical: 24),
+              child: Center(child: CircularProgressIndicator(color: AppColors.primary)),
+            )
+          else if (_error != null || _candidates.isEmpty)
+            Padding(
+              padding: const EdgeInsets.symmetric(vertical: 24),
+              child: Center(
+                child: Text(
+                  _error ?? 'لا تتوفر بدائل مسجلة لهذا الصنف حالياً',
+                  style: const TextStyle(color: AppColors.textMuted, fontSize: 13),
+                ),
+              ),
+            )
+          else
+            Flexible(
+              child: ListView.separated(
+                shrinkWrap: true,
+                itemCount: _candidates.length,
+                separatorBuilder: (_, __) => const Divider(color: AppColors.border),
+                itemBuilder: (context, idx) {
+                  final cand = _candidates[idx];
+                  final name = cand['name_ar']?.toString() ?? cand['display_ar']?.toString() ?? '';
+                  final display = cand['display_ar']?.toString() ?? cand['serving_display_ar']?.toString() ?? name;
+                  final targetGrams = cand['target_grams'] ?? cand['portion_g'];
+
+                  return ListTile(
+                    contentPadding: EdgeInsets.zero,
+                    title: Text(
+                      name,
+                      style: const TextStyle(
+                        color: AppColors.textPrimary,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 14,
+                      ),
+                    ),
+                    subtitle: Text(
+                      display.isNotEmpty ? display : (targetGrams != null ? '$targetGrams جرام' : ''),
+                      style: const TextStyle(color: AppColors.textSecondary, fontSize: 12),
+                    ),
+                    trailing: ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                        textStyle: const TextStyle(fontSize: 12),
+                      ),
+                      onPressed: () => _applySwap(cand),
+                      child: const Text('اختيار'),
+                    ),
+                  );
+                },
+              ),
+            ),
+        ],
+      ),
     );
   }
 }
