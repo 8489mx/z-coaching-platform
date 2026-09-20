@@ -938,6 +938,18 @@ export const getActiveProgramByUserId = async (req, res) => {
 
     const isApproved = program.status === "ACTIVE" || user.plan_approval_status === "APPROVED";
 
+    const targets = program.program_data?.nutrition?.targets || {};
+    const target_macros = {
+      calories: Number(targets.calories || 0),
+      protein_g: Number(targets.protein || targets.protein_g || 0),
+      carbs_g: Number(targets.carbs || targets.carbs_g || 0),
+      fat_g: Number(targets.fats || targets.fat_g || 0),
+    };
+
+    const client_view = {
+      target_macros
+    };
+
     return res.status(200).json({
       has_program: isApproved,
       is_pending_review: !isApproved,
@@ -952,6 +964,7 @@ export const getActiveProgramByUserId = async (req, res) => {
       progression: await loadProgressionState(user.id),
       fasting_context: await resolveClientFastingContext(user, program.program_data),
       heat_advisory: getGulfHeatAdvisory({ country_code: resolveCountryFromPhone(user.phone_number) }),
+      client_view
     });
   } catch (err) {
     console.error("getActiveProgramByUserId error:", err);
