@@ -760,9 +760,12 @@ export default function FullIntakeForm() {
 
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '12px' }}>
                   <div>
-                    <label style={{ display: 'block', fontSize: '11.5px', fontWeight: 700, color: '#475569', marginBottom: '4px' }}>
-                      محيط الرقبة (سم)
-                    </label>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4px' }}>
+                      <label style={{ fontSize: '11.5px', fontWeight: 700, color: '#475569', margin: 0 }}>
+                        محيط الرقبة (سم)
+                      </label>
+                      <span style={{ fontSize: '10.5px', color: '#94A3B8', fontWeight: 600 }}>(اختياري)</span>
+                    </div>
                     <input 
                       type="text" 
                       inputMode="decimal"
@@ -781,13 +784,12 @@ export default function FullIntakeForm() {
                         fontFamily: 'JetBrains Mono, Cairo',
                         boxSizing: 'border-box'
                       }}
-                      required 
                     />
                   </div>
 
                   <div>
                     <label style={{ display: 'block', fontSize: '11.5px', fontWeight: 700, color: '#475569', marginBottom: '4px' }}>
-                      محيط الخصر (إجباري) *
+                      محيط الخصر (إلزامي) *
                     </label>
                     <input 
                       type="text" 
@@ -814,11 +816,9 @@ export default function FullIntakeForm() {
                   <div>
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4px' }}>
                       <label style={{ fontSize: '11.5px', fontWeight: 700, color: '#475569', margin: 0 }}>
-                        محيط الحوض (سم) {gender === 'female' ? '*' : ''}
+                        محيط الحوض (سم)
                       </label>
-                      {gender !== 'female' && (
-                        <span style={{ fontSize: '10.5px', color: '#94A3B8', fontWeight: 600 }}>(اختياري)</span>
-                      )}
+                      <span style={{ fontSize: '10.5px', color: '#94A3B8', fontWeight: 600 }}>(اختياري)</span>
                     </div>
                     <input 
                       type="text" 
@@ -840,6 +840,9 @@ export default function FullIntakeForm() {
                       }}
                     />
                   </div>
+                </div>
+                <div style={{ fontSize: '11.5px', color: '#64748B', marginTop: '6px', fontWeight: 600 }}>
+                  قياسهما يجعل حساب نسبة الدهون والسعرات أدق
                 </div>
               </div>
 
