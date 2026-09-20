@@ -200,7 +200,12 @@ export default function IntakeAuditDetailModal({
 
   if (!submission) return null;
 
-  const answers = submission.answers || {};
+  // الخادم يخزّن جسم الطلب كما أرسله الفورم: { answers: { ...الإجابات } }، فبعد فك التشفير تصل
+  // الإجابات داخل غلاف ثانٍ. نفك الغلاف هنا كما تفعل loadLatestIntakeAnswers على الخادم.
+  const storedAnswers = submission.answers || {};
+  const answers = storedAnswers.answers && typeof storedAnswers.answers === 'object' && !Array.isArray(storedAnswers.answers)
+    ? { ...storedAnswers, ...storedAnswers.answers }
+    : storedAnswers;
   const clientName = submission.user?.full_name || answers.full_name || 'بدون اسم';
   const clientCode = String(submission.user?.client_code || submission.id || '').replace(/^client[-_]?/i, '');
   const clientPhone = submission.user?.phone_number || answers.phone || '';

@@ -893,6 +893,18 @@ export const prepareNextCycle = async (req, res) => {
       return res.status(409).json({ error: "آخر خطة لهذا المتدرب ما زالت مسودة لم تُنشر بعد", code: "DRAFT_ALREADY_PENDING" });
     }
 
+    // A cycle that is still running is not replaced by accident: one wrong click would restart a
+    // client in their second week from scratch. The coach can still force it deliberately.
+    const currentCycle = resolveTrainingCycleStatus(program);
+    if (!currentCycle.needs_new_cycle && req.body?.force !== true) {
+      return res.status(409).json({
+        error: `الدورة الحالية ما زالت جارية (الأسبوع ${currentCycle.current_week} من ${currentCycle.total_weeks}، تنتهي ${currentCycle.ends_on}).`,
+        code: "CYCLE_STILL_RUNNING",
+        training_cycle: currentCycle,
+        hint_ar: "لو كنت متأكداً من بناء دورة جديدة الآن أرسل force: true.",
+      });
+    }
+
     const [progression, checkins, medicalReview] = await Promise.all([
       loadProgressionState(user.id),
       CheckinSubmission.findAll({ where: { user_id: user.id }, order: [["id", "DESC"]], limit: 4, attributes: ["analysis_output", "createdAt"] }),

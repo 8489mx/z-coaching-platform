@@ -104,7 +104,12 @@ test("the coach prepares the next cycle from the endpoint, and it is saved as a 
   }
   const client = await User.create({ client_code: CODE, phone_number: "01099000924", full_name: "Cycle Two", role: "CLIENT" });
   const coach = await User.create({ client_code: COACH, phone_number: "01099000925", full_name: "Coach", role: "ADMIN" });
-  const active = await Program.create({ user_id: client.id, status: "ACTIVE", program_data: PLAN });
+  // خطة بدأت من 45 يوماً: دورتها انتهت فعلاً وحان وقت الدورة التالية
+  const active = await Program.create({
+    user_id: client.id,
+    status: "ACTIVE",
+    program_data: { ...PLAN, cycle_started_at: new Date(Date.now() - 45 * 24 * 60 * 60 * 1000).toISOString() },
+  });
 
   try {
     await t.test("a client may not prepare their own cycle", async () => {
@@ -194,4 +199,40 @@ test("a prepared draft never reaches the client's app before the coach publishes
 
 test.after(async () => {
   await sequelize.close().catch(() => {});
+});
+
+test("a cycle that is still running is not replaced by an accidental click", async () => {
+  const code = "TEST_CYCLE_GUARD_930";
+  const coachCode = "TEST_CYCLE_GUARD_COACH_930";
+  for (const c of [code, coachCode]) {
+    const existing = await User.findOne({ where: { client_code: c } });
+    if (existing) {
+      await Program.destroy({ where: { user_id: existing.id } });
+      await existing.destroy();
+    }
+  }
+  const client = await User.create({ client_code: code, phone_number: "01099000932", full_name: "Running", role: "CLIENT" });
+  const coach = await User.create({ client_code: coachCode, phone_number: "01099000933", full_name: "Coach", role: "ADMIN" });
+  // A plan that started three days ago: the client is in week one of five.
+  await Program.create({
+    user_id: client.id,
+    status: "ACTIVE",
+    program_data: { ...PLAN, cycle_started_at: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString() },
+  });
+
+  try {
+    const refused = mockRes();
+    await prepareNextCycle({ user: { id: coach.id }, body: { client_code: code } }, refused.res);
+    assert.equal(refused.out.status, 409);
+    assert.equal(refused.out.body.code, "CYCLE_STILL_RUNNING");
+    assert.match(refused.out.body.error, /ما زالت جارية/);
+
+    const forced = mockRes();
+    await prepareNextCycle({ user: { id: coach.id }, body: { client_code: code, force: true } }, forced.res);
+    assert.equal(forced.out.status, 201, "the coach can still decide to start a new cycle now");
+  } finally {
+    await Program.destroy({ where: { user_id: client.id } }).catch(() => {});
+    await client.destroy().catch(() => {});
+    await coach.destroy().catch(() => {});
+  }
 });

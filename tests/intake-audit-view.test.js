@@ -92,3 +92,32 @@ describe('IntakeAuditDetailModal Guard', () => {
     }
   });
 });
+
+/**
+ * The submission the API returns wraps the form once more: the intake endpoint stores the request
+ * body, which itself carries an `answers` key. Read only the outer layer and every field in the
+ * coach's screen reads "لم يُجب" while the client answered all of them.
+ */
+describe('IntakeAuditDetailModal - API shape', () => {
+  it('reads the answers through the wrapper the server actually returns', () => {
+    const submission = {
+      id: 7,
+      user: { full_name: 'عميل', client_code: '1007' },
+      answers: { answers: { primary_goal: 'fat_loss', neat_level: 'sedentary', age: '32', weight_kg: '92' } },
+    };
+    const html = renderToStaticMarkup(
+      React.createElement(IntakeAuditDetailModal, { submission, onClose: () => {} })
+    );
+    expect(html).toContain('خسارة دهون');
+    expect(html).toContain('>32<');
+    expect(html).toContain('>92<');
+  });
+
+  it('still reads a submission handed over already unwrapped', () => {
+    const submission = { id: 8, user: {}, answers: { primary_goal: 'fat_loss', age: '32' } };
+    const html = renderToStaticMarkup(
+      React.createElement(IntakeAuditDetailModal, { submission, onClose: () => {} })
+    );
+    expect(html).toContain('خسارة دهون');
+  });
+});
