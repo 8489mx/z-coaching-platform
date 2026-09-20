@@ -172,6 +172,35 @@ function requireObject(value, name) {
   }
 }
 
+// The intake asks for up to two priority muscles; the catalog speaks in muscle codes, and two of the
+// choices cover more than one muscle. Anything unrecognised is ignored rather than guessed.
+const FOCUS_MUSCLE_CODES = Object.freeze({
+  UPPER_CHEST: ["UPPER_CHEST"],
+  LATS_WIDTH: ["LATS"],
+  SIDE_DELTS: ["SIDE_DELTS"],
+  ARMS: ["BICEPS", "TRICEPS"],
+  GLUTES_LEGS: ["GLUTES", "QUADS", "HAMSTRINGS"],
+});
+
+/**
+ * The muscles the client asked to prioritise, as catalog codes for the training engine.
+ * focus_muscles is not part of the canonical contract, so it is read from the raw answers
+ * (the same way the fasting protocol and the bariatric fields are).
+ */
+export function resolveFocusMuscleBias(effectiveRaw, canonicalIntake = {}) {
+  const picked = Array.isArray(effectiveRaw?.focus_muscles) && effectiveRaw.focus_muscles.length > 0
+    ? effectiveRaw.focus_muscles
+    : canonicalIntake?.training?.targetFocusMuscles;
+  if (!Array.isArray(picked) || picked.length === 0) return null;
+  const codes = [];
+  for (const choice of picked.slice(0, 2)) {
+    for (const muscle of FOCUS_MUSCLE_CODES[String(choice).toUpperCase()] || []) {
+      if (!codes.includes(muscle)) codes.push(muscle);
+    }
+  }
+  return codes.length > 0 ? codes : null;
+}
+
 function calculateAge(dobString, assessmentDateString) {
   const dob = new Date(dobString);
   const assessDate = new Date(assessmentDateString || new Date().toISOString());
@@ -771,7 +800,7 @@ export function buildMasterEngineV2(inputs) {
   // 2. Training Engine V2 (Multi-Week Meso-Cycle Periodization)
   const training_mesocycle = buildTrainingMesoCycle(intake_decision, {
     weeksCount: options.weeksCount || 5,
-    muscleBias: options.muscleBias || null,
+    muscleBias: options.muscleBias || resolveFocusMuscleBias(effectiveIntake, canonicalIntake),
     rawIntake: canonicalIntake,
     experience: canonicalIntake.training?.experience,
   });

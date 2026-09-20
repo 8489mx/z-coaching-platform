@@ -15,7 +15,7 @@
  * @property {string} split_code
  * @property {string} schedule_mode
  * @property {string} strategy
- * @property {string|null} muscle_bias
+ * @property {string|string[]|null} muscle_bias
  * @property {MesoCycleWeek[]} weeks
  * @property {Object} preflight_report
  */

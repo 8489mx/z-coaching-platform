@@ -188,11 +188,17 @@ function resolveRirFloor(exerciseCode, slotCode, isAdvanced, isIntermediate) {
  * @param {import("../intake-decision-engine/domain/contracts.js").IntakeDecision} intakeDecision
  * @param {Object} [options]
  * @param {number} [options.weeksCount=5]
- * @param {string|null} [options.muscleBias=null]
+ * @param {string|string[]|null} [options.muscleBias=null] one muscle code, or the muscles the client asked to prioritise
  * @returns {import("./domain/contracts.js").MesoCycleProgram}
  */
 export function buildTrainingMesoCycle(intakeDecision, options = {}) {
   const { weeksCount = 5, muscleBias = null } = options;
+  // The client may prioritise more than one muscle, and a single choice ("arms") can cover two.
+  const muscleBiasList = Object.freeze(
+    (Array.isArray(muscleBias) ? muscleBias : muscleBias ? [muscleBias] : [])
+      .map((m) => String(m).toUpperCase())
+      .filter(Boolean),
+  );
 
   // 1. Build Base Training Engine V1 Program
   let effectiveDecision = intakeDecision;
@@ -555,10 +561,13 @@ export function buildTrainingMesoCycle(intakeDecision, options = {}) {
 
         // Apply muscle bias if specified (+1 set per session on target muscles)
         if (
-          muscleBias &&
+          muscleBiasList.length > 0 &&
           v2Exercise &&
-          (v2Exercise.primary_muscle === muscleBias ||
-            v2Exercise.secondary_muscles.includes(muscleBias))
+          muscleBiasList.some(
+            (biasMuscle) =>
+              v2Exercise.primary_muscle === biasMuscle ||
+              v2Exercise.secondary_muscles.includes(biasMuscle),
+          )
         ) {
           calculatedSets = Math.min(5, calculatedSets + 1);
         }
