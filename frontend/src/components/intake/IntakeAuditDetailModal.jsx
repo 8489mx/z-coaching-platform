@@ -1,8 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import ReactDOM from 'react-dom';
 import { X, MessageCircle, ExternalLink, Zap, ZoomIn } from 'lucide-react';
-import { getClientTier } from '../../utils/tierBadgeHelper';
-import { extractClientFastingProfile } from '../../utils/seasonalFastingRadar';
 import { formatWhatsAppPhone } from '../../utils/whatsappRemindersEngine';
 
 export default function IntakeAuditDetailModal({
