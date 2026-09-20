@@ -348,6 +348,7 @@ export function useCoachEditorData() {
         clinical_guardrails: rawClinicalGuardrails
       },
       clinical_guardrails: rawClinicalGuardrails,
+      beverage_sugar_intake: rawNutrition?.beverage_sugar_intake || null,
       meals: mappedMeals.length > 0 ? mappedMeals : (CLIENT_BLUEPRINTS['1']?.nutrition?.meals || []),
       reasoning: rawNutrition?.reasoning || 'خطة غذائية متوازنة مصممة بأصناف دقيقة تلبي احتياج الجسم دون حرمان.'
     };

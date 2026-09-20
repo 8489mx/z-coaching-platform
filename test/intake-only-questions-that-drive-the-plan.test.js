@@ -26,3 +26,15 @@ test("the questions that do drive the plan are still asked", () => {
     assert.ok(FORM.includes(field), `${field} disappeared from the intake form`);
   }
 });
+
+// The sugar-in-drinks question survives because the coach card reads it: the engine carries the
+// answer into the plan, and the coach editor maps it into the nutrition block the card renders.
+test("the sugar-in-drinks answer reaches the coach card", () => {
+  assert.ok(FORM.includes("beverage_sugar_intake"), "the question is still asked");
+  const engine = fs.readFileSync(path.join(ROOT, "src/master-engine-v2/build-master-engine-v2.js"), "utf8");
+  assert.match(engine, /beverage_sugar_intake: effectiveIntake\?\.beverage_sugar_intake \|\| null/);
+  const coachHook = fs.readFileSync(path.join(ROOT, "frontend/src/pages/CoachEditor/hooks/useCoachEditorData.js"), "utf8");
+  assert.match(coachHook, /beverage_sugar_intake: rawNutrition\?\.beverage_sugar_intake \|\| null/);
+  const card = fs.readFileSync(path.join(ROOT, "frontend/src/features/coach/components/CoachEditorNutritionTab.jsx"), "utf8");
+  assert.match(card, /program\.nutrition\?\.beverage_sugar_intake/);
+});
