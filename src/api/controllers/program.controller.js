@@ -23,7 +23,7 @@ import { applyDeloadToSession, READINESS_GUIDANCE_AR } from "../../../src/traini
 import { resolveTrainingCycleStatus, CYCLE_STATUS, resolveSubscriptionState, subscriptionNeedsAttention, startCycleOnPublish } from "../services/trainingCycleService.js";
 import { buildNextCycle, resolvePainFlaggedExercises, evaluateAutoPublish } from "../services/nextCycleService.js";
 import { isSwapFoodSafe, resolveSwapContext, PLAN_FOOD_TO_REGISTRY } from "../services/liveFoodSwapSafety.js";
-import { isLiveSwapEquivalent, liveSwapOilAddition, liveSwapValueWithOil, liveSwapOilText } from "../services/liveFoodSwapValue.js";
+import { isLiveSwapEquivalent, liveSwapOilAddition, liveSwapValueWithOil, liveSwapOilText, liveSwapTargetGrams, liveSwapServingText } from "../services/liveFoodSwapValue.js";
 import { isNoSwapFood, NO_SWAP_NOTE_AR } from "../../../frontend/src/utils/swapExchangeRules.js";
 
 const __filename = fileURLToPath(import.meta.url);
@@ -704,6 +704,12 @@ export const getSwapCandidatesHandler = async (req, res) => {
           displayAr = `${cand.name_ar} (${targetGrams} جرام)`;
         }
       }
+      // Portion from the same food data the value check and the plan use.
+      const oneSourceGrams = currentItem ? liveSwapTargetGrams(normalizedCode, grams, cand.food_code, cand.macro_type) : null;
+      if (oneSourceGrams) {
+        targetGrams = oneSourceGrams;
+        displayAr = liveSwapServingText(cand, oneSourceGrams);
+      }
       // A leaner swap comes with the missing fat as olive oil, shown in its line.
       const oil = currentItem ? liveSwapOilAddition(normalizedCode, grams, cand.food_code, targetGrams) : 0;
       return {
@@ -755,12 +761,27 @@ export const calculateSwapHandler = async (req, res) => {
     const category = meal_category || mealCategoryFromContext(meal_context)
       || getSmartFoodRegistryItem(toCode)?.meal_categories?.[0] || "MAIN_MEAL";
 
-    const result = calculateSmartSwap({
+    const computed = calculateSmartSwap({
       current_food_code: fromCode,
       current_portion_g: fromGrams,
       target_food_code: toCode,
       meal_category: category,
     });
+    // Portion from the same food data the value check and the plan use (as in swap-candidates).
+    const oneSourceGrams = liveSwapTargetGrams(fromCode, fromGrams, toCode, computed.macro_type);
+    const targetItem = getSmartFoodRegistryItem(toCode);
+    const result = oneSourceGrams && targetItem
+      ? {
+          ...computed,
+          target_food: {
+            ...computed.target_food,
+            portion_g: oneSourceGrams,
+            unit_count: Math.round((oneSourceGrams / targetItem.grams_per_household_unit) * 2) / 2,
+            serving_display_ar: liveSwapServingText(targetItem, oneSourceGrams),
+            serving_display_en: `${oneSourceGrams}g ${targetItem.name_en}`,
+          },
+        }
+      : computed;
 
     // A target the client's restrictions forbid is refused even when sent directly.
     const clinicalContext = await swapContextFor(req);

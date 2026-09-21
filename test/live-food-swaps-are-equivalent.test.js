@@ -38,7 +38,9 @@ async function candidates(food_code, source_grams, meal_context) {
 
 test("chicken at lunch is swapped for meat or fish of about the same energy, never laban, foul or eggs", async () => {
   const codes = await candidates("CHICKEN_BREAST", 150, "LUNCH");
-  assert.ok(codes.includes("TILAPIA_COOKED") && codes.includes("BEEF_TOP_SIRLOIN_LEAN"), codes.join(","));
+  // Lean beef is 26% more energy than chicken for the same protein (USDA-based data), just past the
+  // rule; fish and camel meat stay.
+  assert.ok(codes.includes("TILAPIA_COOKED") && codes.filter((c) => ["HAMOUR_FISH", "KANAAD_KINGFISH", "BOURI_FISH", "CAMEL_MEAT_LEAN"].includes(c)).length >= 3, codes.join(","));
   for (const bad of ["LABAN_RAYEB_LOWFAT", "FOUL_MUDAMMAS", "SHAKSHOUKA_EGGS", "LABNEH_LIGHT", "HALLOUMI_LIGHT", "LUPINI_BEANS", "SALMON_ATLANTIC_COOKED"]) {
     assert.ok(!codes.includes(bad), `${bad} offered`);
   }
