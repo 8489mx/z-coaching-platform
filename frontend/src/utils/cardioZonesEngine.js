@@ -39,6 +39,7 @@ export const HIIT_CLINICAL_GUIDANCE_AR = Object.freeze({
   CARDIOVASCULAR: "توجيه سريري لمرضى الضغط والقلب: تم استبدال الـ HIIT بكارديو معتدل مستقر (Zone 2)؛ الفترات عالية الشدة تحتاج تصريحاً من الطبيب المعالج واختبار جهد قبل إدراجها.",
   PREGNANCY: "توجيه سريري للحمل: تم استبدال الـ HIIT بنشاط هوائي معتدل يسمح بالكلام (ACOG)، مع تجنب القفز والسبرنت والإجهاد الحراري.",
   SEVERE_OBESITY: "توجيه أمان للمفاصل: مع مؤشر كتلة جسم 35 أو أكثر يبدأ البرنامج بكارديو معتدل منخفض الصدمات لحماية الركبتين والكاحلين، ويُعاد تقييم الفترات عالية الشدة مع نزول الوزن.",
+  NO_LOW_IMPACT_MACHINE: "توجيه أمان للمفاصل: الفترات عالية الشدة محتاجة دراجة أو جهاز تجديف لحماية الركبة والظهر، ومفيش جهاز متاح؛ الكارديو مشي سريع معتدل يسمح بالكلام.",
   LOW_IMPACT_HIIT: "توجيه أمان للمفاصل: الفترات عالية الشدة تُنفذ على دراجة ثابتة أو جهاز تجديف فقط (بدون جري أو سبرنت على المشاية) لإلغاء صدمة الارتطام على الركبة والكاحل والظهر.",
 });
 
@@ -56,7 +57,9 @@ export function getPracticalCardioPrescription({
   equipment = CARDIO_EQUIPMENT.INCLINE_TREADMILL,
   medicalConditions = [],
   weight_kg = null,
-  height_cm = null
+  height_cm = null,
+  // False for a client without cardio machines (bands, minimal equipment, home).
+  machines_available = true
 }) {
   const conds = (Array.isArray(medicalConditions) ? medicalConditions : [medicalConditions])
     .map(c => typeof c === 'string' ? c : String(c?.conditionCode || c?.code || c?.name || c?.area || ''));
@@ -87,6 +90,14 @@ export function getPracticalCardioPrescription({
   // Sprinting loads the knee, ankle and spine with several times bodyweight per stride; above BMI 30 or
   // with a lower-limb or spine issue, intervals move to a non-impact machine.
   const impactRestricted = hasLowerLimbOrSpineIssue || (bmi !== null && bmi >= 30);
+  // Low-impact intervals need a bike or a rower; without one, the session is a moderate brisk walk.
+  if (requestedHiit && impactRestricted && !machines_available && hiitBanReason === null) {
+    resolvedType = CARDIO_TYPES.LISS_TALK_TEST;
+    hiitBanReason = 'NO_LOW_IMPACT_MACHINE';
+  }
+  if (!machines_available && equipment === CARDIO_EQUIPMENT.INCLINE_TREADMILL) {
+    equipment = CARDIO_EQUIPMENT.OUTDOOR_BRISK_WALK;
+  }
 
   const clinicalGuardrails = {
     asthma_hiit_banned: Boolean(hasAsthma),
@@ -153,7 +164,9 @@ export function getPracticalCardioPrescription({
     duration_minutes: duration_minutes,
     sessions_per_week: sessions_per_week,
     talk_test_cue_ar: 'مجهود هوائي معتدل (Zone 2) يسمح لك بالتحدث بجمل كاملة دون نهجان حاد أو انقطاع النفس.',
-    suggested_settings_ar: 'مشاية بميل Incline 8% إلى 12% على سرعة 4.0 إلى 5.0 كم/س، أو دراجة بمقاومة خفيفة.',
+    suggested_settings_ar: machines_available
+      ? 'مشاية بميل Incline 8% إلى 12% على سرعة 4.0 إلى 5.0 كم/س، أو دراجة بمقاومة خفيفة.'
+      : 'مشي سريع في الشارع أو النادي أو المول بخطوة تسرّع النفس وتسمح بالكلام، ولو فيه طلعة أو سلالم خفيفة تبقى أحسن.',
     execution_breakdown_ar: [
       `الحفاظ على سرعة ثابتة ومريحة لمدة ${duration_minutes} دقيقة متواصلة.`,
       'التأكد المستمر من القدرة على التحدث بجملة كاملة دون توقف لالتقاط النفس.'

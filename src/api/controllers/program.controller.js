@@ -1208,10 +1208,21 @@ export const getActiveProgramByUserId = async (req, res) => {
       ...(answers.medical_conditions?.selected || []),
       ...(Array.isArray(answers.dangerous_symptoms) ? answers.dangerous_symptoms.filter((s) => s !== "NONE") : [])
     ];
+    // The client's injuries, body and equipment reach the cardio rules (they did not: the BMI and
+    // knee/back impact rules never fired), and a steps-only plan is shown as daily walking.
+    const injuries = answers.injuries_map?.has_injuries === false ? [] : (answers.injuries_map?.selected_areas || []).filter((a) => a && a !== "none");
+    const latestWeight = Number((await CheckinSubmission.findOne({ where: { user_id: user.id }, order: [["week_number", "DESC"], ["id", "DESC"]], attributes: ["average_weight_kg"] }).catch(() => null))?.average_weight_kg);
+    const setup = String(answers.training_environment || "").toLowerCase();
+    const machinesAvailable = !["calisthenics_bands", "minimal_equipment", "home_gym"].includes(setup);
+    const engineStrategy = program.program_data?.cardio_program?.plan_specification?.strategy;
     const cardio = {
       ...getPracticalCardioPrescription({
+        ...(["STEPS_ONLY", "NO_ADDITIONAL_CARDIO"].includes(engineStrategy) && !cardioPayload.type ? { type: "RECOVERY_WALK" } : {}),
         ...cardioPayload,
-        medicalConditions: conditions
+        medicalConditions: [...conditions, ...injuries, ...(answers.is_pregnant === true ? ["PREGNANT"] : [])],
+        weight_kg: cardioPayload.weight_kg ?? (Number.isFinite(latestWeight) && latestWeight > 0 ? latestWeight : Number(answers.weight_kg) || null),
+        height_cm: cardioPayload.height_cm ?? (Number(answers.height_cm) || null),
+        machines_available: cardioPayload.machines_available ?? machinesAvailable,
       }),
       advisories_ar
     };
