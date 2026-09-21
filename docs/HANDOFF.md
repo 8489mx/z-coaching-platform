@@ -9,7 +9,7 @@ Everything below is merged into `main` and pushed to GitHub (`8489mx/z-coaching-
 
 1. Read `CLAUDE.md` (standing iron rules) and this file.
 2. Run the full check and confirm the baseline before touching anything:
-   - `npm.cmd test` (Windows) — expected: node:test **1855/1855 pass**, vitest **47/47 pass**, lint 0.
+   - `npm.cmd test` (Windows) — expected: node:test **1873/1873 pass**, vitest **47/47 pass**, lint 0.
    - In a git worktree: link `node_modules` and `frontend/node_modules` to `D:/zcc`'s (junctions), copy `.env` (ignored), and build the frontend once — `test/hostinger-deployment-readiness.test.js` fails without `frontend/dist`.
    - `cd frontend && npm.cmd run build` — expected: builds.
    - Tests need the env: they load `D:/zcc/.env` (never print its values). Scripts: `node --env-file=.env <script>`.
@@ -142,6 +142,18 @@ Owner's words: every food must be palatable; a swap must be eaten the same way a
 - `24a50c9` Check-in that takes a 3-meal plan past 3200 kcal → note in `coach_action` to add a meal ("إضافة وجبة"); the merge cannot rebuild meals (`src/checkin-engine/meal-count-note.js`).
 - Verification: 1855/1855 + 47/47, lint 0, build OK, stress 306 clients 0 violations, journeys 6/6 no issues, 10-client simulation 100%.
 
+## 3f. Sixth round (2026-09-21) — "fix everything you said needs fixing" — merged + pushed
+
+- `1c0be06` **Owner rule: protein powder has no swap** (whey, isolate, casein, pea-rice: `NO_SWAP_FOODS` in swapExchangeRules). The client takes it; when it runs out they tell the coach and protein comes from normal food (`NO_SWAP_NOTE_AR`). Plan: no swaps + `swap_note_ar`; web window shows the note; swap-candidates returns none + `message_ar`; swap-food 409 `NO_SWAP_FOR_FOOD`; client_view items get `note` (Flutter reads `note` but does not display it yet).
+- `c4352e2` Mobile swaps find the food in the client's active plan and use that meal (breakfast/snack/main): breakfast bread is no longer offered rice (the app sends no meal_context; no Dart change needed).
+- `eadd0a4` Mobile: a leaner swap gets the missing fat as olive oil (up to 15 g), shown in the line/name and counted in the returned calories. Salmon now swaps to leaner fish/meat; eggs to cottage/labneh/halloumi/tuna.
+- `1a34160` Mobile portions and values come from **one data source** (the registry densities disagreed: tuna 26 vs 19.4 g protein, USDA drained light tuna; egg and egg white were valued as an omelette cooked with fat; 79 offered swaps changed the main nutrient by more than 1.5 g). Egg, egg white and peanut butter from USDA SR Legacy (01129, 01124, 16098). With the corrected data lean beef is 26% above chicken, so it is not a mobile chicken swap.
+- `baf2e5d` Fruit at most 250 g a plate, dates 80 g (product limits); a split never leaves a part under 40 g (folded into a part with room, else spread over non-potato parts; a diabetic potato limit is never passed).
+- `bbb6ccc` **Kidney: energy at most 35 kcal/kg of reference weight** (KDOQI 2020 nutrition in CKD, guideline 3.1.1: 25-35 kcal/kg/day), first plan and check-ins (`KIDNEY_ENERGY_CEILING_REACHED`); not for pregnancy/lactation. Extreme case 4924 -> 4550 kcal.
+- `e78fe1e` Olive oil above 30 g in a meal -> `portion_warning_ar` for the coach (first plan and after a check-in rescale). Stress: 29/306 clients have a meal above 20 g, 7 above 30 g (mostly kidney + diabetes: protein cap + carb ceiling leave fat as the only energy; changing those limits is a medical decision, not done).
+- Correction: the swap-database omelette (154 kcal, 11.7 g fat per 100 g) is USDA omelette cooked with fat, not an error; the template uses boiled egg. Nothing to fix.
+- Verification: 1873/1873 + 47/47, lint 0, build OK, stress 306 clients 0 violations, journeys 6/6 no issues, 10-client simulation 100%.
+
 ## 4. Open work (in priority order)
 
 ### 4.1 Goal choice and plain names — DONE in `653804c` (kept below for context)
@@ -157,11 +169,11 @@ Suggested approach (confirm with owner first, show proposed Arabic labels):
 
 ### 4.0 WHAT IS STILL OPEN (read this list first)
 1. **Look at the new screens in a real browser** — intake form DONE (3d, 3e). Still to do, plus the web client swap window from 3e (needs the backend restarted on the latest code + owner sign-in): coach editor → nutrition tab "ملاحظات للكوتش قبل الاعتماد"; cardio picker (blocked options + reasons); manual exercise swap amber warning; client injuries/equipment now shown in the editor; intake form: goal cards (5 incl. "سيب الكوتش يحدد") and the daily-steps question; web client app food and exercise swap windows (now signed-in, filtered). Needs the dev server (`.claude/launch.json` / `npm.cmd run dev`) and a real coach + client login (the owner logs in; never enter passwords).
-2. **Flutter app** (Flutter SDK is not installed on the owner PC — Dart cannot be compiled or tested there, so no Dart was changed): (a) verify on a device that swaps load with the token and show calories after a swap (server fixed in `f629a10`); (b) the app shows nothing when swap-food answers 409 (`SWAP_NOT_CLINICALLY_SAFE` / `SWAP_NOT_EQUIVALENT`) — show `error`; (c) send `meal_context` (breakfast/snack/main) in swap-candidates and swap-food so breakfast bread is not offered rice (`nutrition_screen.dart` `_SwapSheetContent`; `Meal` has only a name).
+2. **Flutter app** (no Flutter SDK on the owner PC: Dart cannot be compiled or tested there, so no Dart was changed). Server-side fixes cover calories after a swap (`f629a10`), the meal (`c4352e2`) and protein powder (`1c0be06`). Still needs Dart + a device: (a) display `item.note` under the item (protein powder note), one Text like `fastingNoteAr` in `nutrition_screen.dart`; (b) show the server `error` when swap-food answers 409; (c) verify swaps on a device.
 3. **Production data audit**: must run on the VPS itself (see 3d): `node --env-file=.env scripts/audit-grown-cycles.mjs` (read-only). The owner is not technical — walk them through it or get server access. Repair only with backup + plan + owner approval.
-4. **Extreme case** (130 kg, diabetes + kidney + liver, coeliac + nuts, 4924 kcal): 4th meal, avocado cap, potato/sweet-potato split and names DONE (3d/3e). Still, measured after 3e: olive oil 45–56 g per meal (carb cap moves energy to fat; almonds and full avocado are blocked for this client), rice 479 g at lunch (flagged), banana 400 g in the snack (the split allows 400 g per item — too much for fruit; a lower per-item cap for fruit is a possible next step). Needs the coach anyway (kidney + liver = medical review).
-5. **Data gaps found by the swap work**: peanut butter has no macros (no longer offered); the swap database omelette (154 kcal/100 g, 11.7 g fat) differs from the template omelette (USDA-like 142 kcal/110 g) — `keepEquivalentSwaps` judges against the item, but the database values could be corrected; salmon/tuna/whey/laban/lupini/milks have no equivalent in the mobile list (adding sardine/mackerel, skyr etc. would give them swaps).
-6. Potassium: the intake does not ask for a potassium result; if the owner wants, add an optional lab field so the kidney note becomes automatic.
+4. **Extreme case** (130 kg, diabetes + kidney + liver, coeliac + nuts): now 4550 kcal (KDOQI ceiling), 4 meals, fruit at most 250 g, oil 39-50 g a meal **flagged for the coach**, rice 443 g flagged. The remaining fat comes from the clinical limits (kidney protein cap + diabetic carbs at most 45%): raising carbs or lowering energy further is a medical decision for the coach/doctor.
+5. **Swaps with no equivalent** (mobile): tuna (leanest protein), laban and milks (sugar vs protein), lupini (only snack of its kind). Adding foods of the same kind (sardine/mackerel, skyr, roasted chickpeas) to the swap list would give them swaps.
+6. Potassium: the intake does not ask for a potassium result (the coach note asks for it). Optional: a lab field so the kidney limits become automatic (owner decision).
 7. Branch `agx/full-simulation` must never be merged.
 
 ### 4.2 Verify everything together — DONE (see 3b); rerun after any engine change
