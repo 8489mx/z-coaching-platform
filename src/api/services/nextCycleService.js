@@ -76,6 +76,14 @@ export function buildNextCycle({ program, progression = {}, flagged_exercises = 
 
   writeWeeks(programData, weeks);
 
+  // A deload recommended in the last cycle ended with it; the new cycle starts with its own loading weeks.
+  for (const key of ["training_program", "training"]) {
+    if (programData[key] && typeof programData[key] === "object") {
+      programData[key].is_deload = false;
+      delete programData[key].deload_note;
+    }
+  }
+
   const previousCycle = Number(previous.cycle_number) > 0 ? Number(previous.cycle_number) : 1;
   programData.cycle_number = previousCycle + 1;
   programData.cycle_started_at = new Date(now.getTime()).toISOString();
