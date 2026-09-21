@@ -3673,8 +3673,20 @@ export function buildCulinaryRecipeMeals(universalTargets, canonicalIntake = {},
           : "وجبة خفيفة (سناك زبادي يوناني وبذور الشيا وتفاح)";
         recipeConceptDesc = "سناك صحي خفيف غني بمضادات الأكسدة والبروتين والدهون الصحية غير المشبعة.";
 
-        // Fresh Fruit / Carbs
-        const remC = targetC;
+        // Fat first: a handful of nuts (seeds for a nut allergy), none for a kidney protein cap
+        // since both add protein; the rest of the fat is olive oil on the sweet potato.
+        const kidneyProteinCapped = Boolean(universalTargets.clinical_guardrails?.kidney_protein_capped);
+        const nutCode = kidneyProteinCapped ? null : isNutsExcluded ? "HEMP_CHIA_SEEDS" : "RAW_ALMONDS";
+        const nutFood = nutCode && isFoodClinicallySafe(nutCode, allergenContext) ? FOOD_SWAP_DATABASE[nutCode] : null;
+        const nutGrams = nutFood ? Math.min(SNACK_NUT_MAX_G, Math.round((Math.max(0, targetF) / nutFood.fat_per_100g) * 100)) : 0;
+        const nutMacros = nutGrams > 0 ? {
+          protein_g: Math.round((nutGrams * nutFood.protein_per_100g) / 100),
+          carb_g: Math.round((nutGrams * nutFood.carb_per_100g) / 100),
+          fat_g: Math.round((nutGrams * nutFood.fat_per_100g) / 100),
+        } : { protein_g: 0, carb_g: 0, fat_g: 0 };
+
+        // Carbs
+        const remC = Math.max(0, targetC - nutMacros.carb_g);
         const sweetPotatoGrams = Math.round(remC / 0.21);
         items.push({
           food_code: "SWEET_POTATO",
@@ -3687,11 +3699,11 @@ export function buildCulinaryRecipeMeals(universalTargets, canonicalIntake = {},
           carb_g: remC,
           fat_g: 0.1,
           calories_kcal: Math.round(sweetPotatoGrams * 0.95),
-          swaps: [],
+          swaps: generateSmartSwaps("CARBS", sweetPotatoGrams, "SWEET_POTATO", "SNACK", 5, allergenContext),
         });
 
         // Protein
-        const remP = Math.max(10, targetP - Math.round(sweetPotatoGrams * 0.02));
+        const remP = Math.max(10, targetP - Math.round(sweetPotatoGrams * 0.02) - nutMacros.protein_g);
         if (!isDairyExcluded) {
           const yogurtGrams = Math.round(remP / 0.10);
           items.push({
@@ -3724,34 +3736,34 @@ export function buildCulinaryRecipeMeals(universalTargets, canonicalIntake = {},
           });
         }
 
-        // Fat (Seeds if nut-free, or Almonds)
-        const seedGrams = Math.round(targetF / 0.40);
-        if (isNutsExcluded) {
+        if (nutGrams > 0) {
+          const nutName = nutCode === "RAW_ALMONDS"
+            ? { food_code: "RAW_ALMONDS", name_ar: "لوز نيء غير مملح" }
+            : { food_code: "HEMP_CHIA_SEEDS", name_ar: "بذور الشيا وبذور دوار الشمس (بديل صحي خالي من المكسرات)" };
           items.push({
-            food_code: "HEMP_CHIA_SEEDS",
-            name_ar: "بذور الشيا وبذور دوار الشمس (بديل صحي خالي من المكسرات)",
-            name_en: "Chia & Sunflower Seeds",
+            ...nutName,
+            name_en: nutFood.name_en,
             category: "FATS",
-            portion_g: seedGrams,
-            household_measurement: `${seedGrams} جم (ملعقة طعام ونصف)`,
-            protein_g: Math.round(seedGrams * 0.20),
-            carb_g: Math.round(seedGrams * 0.15),
-            fat_g: targetF,
-            calories_kcal: seedGrams * 5,
+            portion_g: nutGrams,
+            household_measurement: `${nutGrams} جم (حفنة صغيرة)`,
+            ...nutMacros,
+            calories_kcal: Math.round(nutMacros.protein_g * 4 + nutMacros.carb_g * 4 + nutMacros.fat_g * 9),
             swaps: [],
           });
-        } else {
+        }
+        const oilGrams = Math.round(targetF - nutMacros.fat_g - 1.6);
+        if (oilGrams > 0) {
           items.push({
-            food_code: "RAW_ALMONDS",
-            name_ar: "لوز نيء غير مملح",
-            name_en: "Raw Almonds",
+            food_code: "OLIVE_OIL",
+            name_ar: "زيت زيتون بكر ممتاز (على البطاطا الحلوة المشوية)",
+            name_en: "Extra Virgin Olive Oil",
             category: "FATS",
-            portion_g: Math.round(targetF / 0.50),
-            household_measurement: `${Math.round(targetF / 0.50)} جم (حوالي 15 حبة)`,
-            protein_g: 3,
-            carb_g: 3,
-            fat_g: targetF,
-            calories_kcal: Math.round(targetF / 0.50 * 5.8),
+            portion_g: oilGrams,
+            household_measurement: `${oilGrams} جم`,
+            protein_g: 0,
+            carb_g: 0,
+            fat_g: oilGrams,
+            calories_kcal: oilGrams * 9,
             swaps: [],
           });
         }
@@ -3961,6 +3973,8 @@ export function splitOversizedPortions(meals = [], maxGrams = MAX_CARB_PORTION_G
 }
 
 export const MAX_OIL_PER_MEAL_G = 20;
+// Nuts or seeds in the fourth-meal snack: a handful, like the almonds below.
+const SNACK_NUT_MAX_G = 30;
 // Other fat sources, in order, each capped per meal. Almonds add protein, so never for a kidney
 // protein cap.
 const FAT_SOURCES = Object.freeze([
