@@ -30,6 +30,15 @@ export const CLINICAL_GUIDELINES = Object.freeze({
      * (~485 mg K / 100 g) stays at a moderate portion per meal and the coach asks for the test.
      */
     AVOCADO_MAX_G_PER_MEAL: 50,
+    /**
+     * Scientific Source:
+     * KDOQI Clinical Practice Guideline for Nutrition in CKD: 2020 Update, guideline 3.1.1 -
+     * metabolically stable adults with CKD 1-5D: 25-35 kcal/kg body weight per day. The upper bound
+     * is applied as a ceiling (reference weight: adjusted for obesity, as for protein); the treating
+     * team sets the final value. Pregnancy and lactation are left to the medical review.
+     */
+    MAX_KCAL_PER_KG: 35,
+    ENERGY_CAP_NOTE_AR: "مريض كلى: السعرات اتحددت بـ 35 سعرة لكل كجم كحد أعلى (KDOQI 2020: من 25 لـ 35 سعرة/كجم يومياً). الرقم النهائي يحدده الطبيب حسب مرحلة المرض.",
     POTASSIUM_NOTE_AR: "مريض كلى: اطلب آخر تحليل بوتاسيوم في الدم (KDIGO 2024). لو البوتاسيوم عالي أو الطبيب محدده، قلّل الأطعمة الغنية بالبوتاسيوم في الخطة (الأفوكادو، البطاطس والبطاطا، الموز، البلح) وبدائل الملح. لو طبيعي، الخطة تمشي زي ما هي.",
   }),
 

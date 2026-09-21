@@ -324,6 +324,26 @@ export function buildAdaptedPlan(inputs) {
     }
   }
 
+  // Kidney disease: increases stop at 35 kcal per kg of the plan's reference weight (KDOQI 2020,
+  // guideline 3.1.1), the same ceiling as the first plan. Never cuts below the current plan.
+  const kidneyGuard = currentMasterProgram.nutrition_program?.targets?.clinical_guardrails || currentMasterProgram.clinical_guardrails || {};
+  if (kidneyGuard.kidney_condition === true) {
+    const referenceKg = Number(kidneyGuard.energy_reference_weight_kg) || currentWeightKg;
+    if (Number.isFinite(referenceKg) && referenceKg > 30) {
+      const kidneyCeiling = Math.max(Math.round(referenceKg * CLINICAL_GUIDELINES.KIDNEY.MAX_KCAL_PER_KG), Math.round(baseEnergy));
+      if (adaptedCalories > kidneyCeiling) {
+        adaptedCarbs = Math.max(50, adaptedCarbs - Math.round((adaptedCalories - kidneyCeiling) / 4));
+        adaptedCalories = kidneyCeiling;
+        requiresCoachApproval = true;
+        reasons.push({
+          code: "KIDNEY_ENERGY_CEILING_REACHED",
+          message_ar: `مريض كلى: السعرات وصلت لسقف ${CLINICAL_GUIDELINES.KIDNEY.MAX_KCAL_PER_KG} سعرة/كجم (${kidneyCeiling} سعرة، KDOQI 2020). أي زيادة بعد كده بقرار الطبيب.`,
+          message_en: `Kidney disease: calories reached ${CLINICAL_GUIDELINES.KIDNEY.MAX_KCAL_PER_KG} kcal/kg (${kidneyCeiling} kcal, KDOQI 2020).`,
+        });
+      }
+    }
+  }
+
   // Diabetes and insulin resistance: every adjustment above keeps carbohydrate within the same share
   // of energy as the first plan; the excess moves to fat, so months of +150 carb steps cannot creep
   // back to a carbohydrate-heavy plan.

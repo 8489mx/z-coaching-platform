@@ -456,6 +456,17 @@ export function calculateUniversalNutritionTargets(canonicalIntake, evaluationCo
     effectiveRaw?.medical?.hasKidneyCondition === true ||
     conditionsList.some(c => c.includes("KIDNEY") || c.includes("RENAL"));
 
+  // Kidney disease: energy at most 35 kcal per kg of reference weight (KDOQI 2020, guideline 3.1.1).
+  let kidneyEnergyCapped = false;
+  if (hasKidneyCondition && !isPregnant && !isLactating) {
+    const kidneyEnergyCeiling = Math.round(referenceWeight * CLINICAL_GUIDELINES.KIDNEY.MAX_KCAL_PER_KG);
+    if (targetCalories > kidneyEnergyCeiling) {
+      targetCalories = kidneyEnergyCeiling;
+      kidneyEnergyCapped = true;
+      calorieAdjustmentDesc += ` (سقف ${CLINICAL_GUIDELINES.KIDNEY.MAX_KCAL_PER_KG} سعرة/كجم لمرضى الكلى)`;
+    }
+  }
+
   const hasLiverCondition =
     medical.hasLiverCondition === true ||
     conditionsList.some(c => c.includes("LIVER") || c.includes("HEPATIC"));
@@ -801,6 +812,9 @@ export function calculateUniversalNutritionTargets(canonicalIntake, evaluationCo
       kidney_protein_capped: Boolean(kidneyProteinCapped),
       kidney_condition: Boolean(hasKidneyCondition),
       kidney_potassium_note_ar: hasKidneyCondition ? CLINICAL_GUIDELINES.KIDNEY.POTASSIUM_NOTE_AR : null,
+      kidney_energy_capped: kidneyEnergyCapped,
+      kidney_energy_note_ar: kidneyEnergyCapped ? CLINICAL_GUIDELINES.KIDNEY.ENERGY_CAP_NOTE_AR : null,
+      energy_reference_weight_kg: referenceWeight,
       max_protein_per_kg: kidneyProteinCapped ? (biomarkerAnalysis?.dietary_modifications?.protein_cap_g_per_kg || CLINICAL_GUIDELINES.KIDNEY.MAX_PROTEIN_PER_KG) : null,
       max_protein_g: kidneyProteinCapped ? proteinG : null,
       rationale_ar: kidneyProteinCapped ? (biomarkerAnalysis?.dietary_modifications?.protein_cap_g_per_kg ? `تحديد سقف البروتين عند ${proteinPerKg} جم/كجم لحماية الكلى بناءً على الفحوصات المخبرية` : CLINICAL_GUIDELINES.KIDNEY.RATIONALE_AR) : null,
