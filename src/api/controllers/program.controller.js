@@ -727,7 +727,7 @@ export const calculateSwapHandler = async (req, res) => {
  * Latest intake answers for a client, decrypted and unwrapped. The public intake endpoint stores the
  * request body minus identity fields, i.e. { answers: { ...form } }, so the form fields sit one level down.
  */
-async function loadLatestIntakeAnswers(userId) {
+export async function loadLatestIntakeAnswers(userId) {
   const submission = await IntakeSubmission.findOne({
     where: { user_id: userId },
     order: [["id", "DESC"]],

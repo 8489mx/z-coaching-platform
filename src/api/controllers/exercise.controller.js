@@ -1,6 +1,15 @@
 import { MASTER_EXERCISE_DICTIONARY } from "../../exercise-catalog-v2/master-exercise-translations.js";
 import { getExercisesCatalogFile } from "./admin-settings.controller.js";
 import { getExercisesEtag, handleConditionalGet } from "../services/catalogCache.service.js";
+import { trainingProfileFromAnswers, effectiveSetup, resolveRequestClient, mayEditProgram } from "../services/clientTrainingProfile.js";
+import { loadLatestIntakeAnswers } from "./program.controller.js";
+
+/** The signed-in client's (or the named client's) setup and injuries from their intake. */
+async function swapProfileFor(req, clientCode) {
+  const { requester, client } = await resolveRequestClient(req, clientCode);
+  const answers = client ? await loadLatestIntakeAnswers(client.id).catch(() => null) : null;
+  return { requester, client, ...trainingProfileFromAnswers(answers) };
+}
 
 // Enriched Exercise Catalog with muscle classifications, equipment, coaching cues and video tutorials
 const EXERCISES_DATABASE = [
@@ -293,8 +302,10 @@ export const getExercisesList = (req, res) => {
 export const getExerciseSwapsHandler = async (req, res) => {
   try {
     const { exercise_code } = req.params;
-    const { environment, injury } = req.query;
+    const { environment, injury, client_code } = req.query;
     const { getSmartExerciseSwaps } = await import("../../exercise-swap-engine/index.js");
+    // The client's own equipment and injuries come from their intake, whatever the page sends.
+    const profile = await swapProfileFor(req, client_code);
 
     let injuryFlags = [];
     if (injury) {
@@ -307,8 +318,8 @@ export const getExerciseSwapsHandler = async (req, res) => {
     }
 
     const swaps = getSmartExerciseSwaps(exercise_code, {
-      environment: environment || "GYM",
-      injuryFlags,
+      environment: effectiveSetup(profile.setup, environment),
+      injuryFlags: [...new Set([...injuryFlags, ...profile.injuries])],
     });
 
     return res.status(200).json({
@@ -330,10 +341,28 @@ export const swapProgramExerciseHandler = async (req, res) => {
     const { programId } = req.params;
     const { sessionIndex, exerciseIndex, newExerciseCode, newExerciseNameAr, newExerciseNameEn } = req.body;
 
-    const { Program } = await import("../models/index.js");
+    const { Program, User } = await import("../models/index.js");
     const program = await Program.findByPk(programId);
     if (!program) {
       return res.status(404).json({ error: "البرنامج التدريبي غير موجود" });
+    }
+    // Only the program's own client or a coach may change it; a client may only pick a swap the
+    // engine offers for their own equipment and injuries.
+    const requester = req.user?.id ? await User.findByPk(req.user.id).catch(() => null) : null;
+    if (!mayEditProgram(requester, program)) {
+      return res.status(403).json({ error: "غير مسموح لك بتعديل هذا البرنامج" });
+    }
+    if (requester.role === "CLIENT") {
+      const { getSmartExerciseSwaps } = await import("../../exercise-swap-engine/index.js");
+      const current = program.program_data?.training_program?.weeks?.[0]?.sessions?.[sessionIndex]?.exercises?.[exerciseIndex];
+      const profile = trainingProfileFromAnswers(await loadLatestIntakeAnswers(requester.id).catch(() => null));
+      const allowed = getSmartExerciseSwaps(current?.exercise_code || current?.code, {
+        environment: effectiveSetup(profile.setup, null),
+        injuryFlags: profile.injuries,
+      }).map((s) => String(s.exercise_code).toUpperCase());
+      if (!allowed.includes(String(newExerciseCode || "").toUpperCase())) {
+        return res.status(409).json({ error: "البديل ده مش مناسب لأدواتك أو إصاباتك المسجلة", code: "EXERCISE_SWAP_NOT_ALLOWED" });
+      }
     }
 
     const programData = JSON.parse(JSON.stringify(program.program_data || {}));
@@ -388,10 +417,14 @@ export const gymRushSwapHandler = async (req, res) => {
     const { programId } = req.params;
     const { weekNumber = 1, sessionIndex = 0, exerciseIndex = 0, equipmentKey = null } = req.body;
 
-    const { Program } = await import("../models/index.js");
+    const { Program, User } = await import("../models/index.js");
     const program = await Program.findByPk(programId);
     if (!program) {
       return res.status(404).json({ error: "البرنامج التدريبي غير موجود" });
+    }
+    const requester = req.user?.id ? await User.findByPk(req.user.id).catch(() => null) : null;
+    if (!mayEditProgram(requester, program)) {
+      return res.status(403).json({ error: "غير مسموح لك بتعديل هذا البرنامج" });
     }
 
     const { applyGymRushSwapToProgram } = await import("../../execution-engines/biomechanics-firewall-engine.js");

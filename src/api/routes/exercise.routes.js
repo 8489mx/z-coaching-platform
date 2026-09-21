@@ -13,7 +13,8 @@ import { requireAuth } from "../middlewares/auth.middleware.js";
 const router = express.Router();
 
 router.get("/", getExercisesList);
-router.get("/swaps/:exercise_code", getExerciseSwapsHandler);
+// Signed in: the swaps follow the client's own equipment and injuries from the intake.
+router.get("/swaps/:exercise_code", requireAuth, getExerciseSwapsHandler);
 router.post("/swap-in-program/:programId", requireAuth, swapProgramExerciseHandler);
 
 // Gym Rush Equivalence Catalog & Auto-Substitution
