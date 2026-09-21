@@ -37,3 +37,20 @@ test("item notes carry the meal number and the food", () => {
 test("a plan with nothing to note gives an empty list", () => {
   assert.deepEqual(collectCoachAlerts({}), []);
 });
+
+test("a 3200+ kcal day on three meals advises the coach to split it over more meals", async () => {
+  const program = buildMasterEngineV2({
+    intake: {
+      gender: "male", age: "20", height_cm: "190", weight_kg: "92", circumferences: { neck_cm: "38", waist_cm: "80", hips_cm: "95" },
+      primary_goal: "lean_bulk", neat_level: "very_active", occupation_type: "DESK_OFFICE", dangerous_symptoms: ["NONE"],
+      medical_conditions: { has_conditions: false, selected: ["none"] }, injuries_map: { has_injuries: false, selected_areas: ["none"] },
+      religion: "MUSLIM", strict_allergies: ["none"], meal_structure: { meals_count: "3_meals", intermittent_fasting: "none" },
+      training_environment: "commercial_gym", training_logistics: { days_per_week: 4, experience_level: "intermediate" }, recent_training: "ACTIVE",
+    },
+    evaluationContext: { system_time: "2026-09-21T08:00:00.000Z", assessmentDate: "2026-09-21" },
+    nutritionFoodCatalog: CATALOG,
+    options: {},
+  });
+  assert.ok(program.nutrition_program.targets.target_calories >= 3200, "precondition: a high-calorie day");
+  assert.ok(collectCoachAlerts(JSON.parse(JSON.stringify(program))).some((a) => /4 أو 5 وجبات/.test(a)));
+});

@@ -12,6 +12,7 @@ export function collectCoachAlerts(programData = {}) {
   if (targets.goal_redirect?.reason_ar) alerts.push(targets.goal_redirect.reason_ar);
   if (guardrails.diabetic_carb_cap_note_ar) alerts.push(guardrails.diabetic_carb_cap_note_ar);
   if (guardrails.coach_review_high_fat_ar) alerts.push(guardrails.coach_review_high_fat_ar);
+  if (targets.meal_count_note_ar) alerts.push(targets.meal_count_note_ar);
   const meals = Array.isArray(nutrition.culinary_meals) ? nutrition.culinary_meals : [];
   meals.forEach((meal, index) => {
     for (const item of meal?.items || []) {
