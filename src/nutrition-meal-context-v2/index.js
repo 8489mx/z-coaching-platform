@@ -8,6 +8,8 @@ export {
   buildCulinaryRecipeMeals,
   enforceDiabeticCarbChoice,
   splitOversizedPortions,
+  diversifyFatSources,
+  buildAllergenContext,
   carbPortionLimit,
   isDiabeticIntake,
   generateSmartSwaps,

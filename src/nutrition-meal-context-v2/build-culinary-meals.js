@@ -3960,6 +3960,57 @@ export function splitOversizedPortions(meals = [], maxGrams = MAX_CARB_PORTION_G
   });
 }
 
+export const MAX_OIL_PER_MEAL_G = 20;
+// Other fat sources, in order, each capped per meal. Almonds add protein, so never for a kidney
+// protein cap.
+const FAT_SOURCES = Object.freeze([
+  { code: "FRESH_AVOCADO", maxGrams: 100, kidneySafe: true },
+  { code: "RAW_ALMONDS", maxGrams: 30, kidneySafe: false },
+]);
+
+/**
+ * Fat above the oil limit in a meal (a diabetic's carbohydrate ceiling moved 80-90 g of fat a meal
+ * into olive oil) is moved to avocado, then almonds, within each one's portion and the client's
+ * restrictions; what is left stays in the oil. The meal's fat does not change.
+ */
+export function diversifyFatSources(meals = [], allergenContext = {}, { kidneyProteinCapped = false } = {}) {
+  if (!Array.isArray(meals)) return meals;
+  return meals.map((meal) => {
+    const items = Array.isArray(meal?.items) ? meal.items : null;
+    const oilIndex = items ? items.findIndex((item) => item?.food_code === "OLIVE_OIL") : -1;
+    if (oilIndex < 0) return meal;
+    const oil = items[oilIndex];
+    let excessFat = Number(oil.fat_g) - MAX_OIL_PER_MEAL_G;
+    if (!(excessFat > 0)) return meal;
+    const added = [];
+    for (const source of FAT_SOURCES) {
+      if (excessFat <= 0) break;
+      if (kidneyProteinCapped && !source.kidneySafe) continue;
+      if (items.some((item) => item?.food_code === source.code)) continue;
+      const food = FOOD_SWAP_DATABASE[source.code];
+      if (!food || !isFoodClinicallySafe(source.code, allergenContext)) continue;
+      const grams = Math.min(source.maxGrams, Math.round((excessFat / food.fat_per_100g) * 100));
+      if (grams < 10) continue;
+      const fat = Math.round((grams * food.fat_per_100g) / 100);
+      const protein = Math.round((grams * food.protein_per_100g) / 100);
+      const carb = Math.round((grams * food.carb_per_100g) / 100);
+      added.push({
+        food_code: source.code, name_ar: food.name_ar, name_en: food.name_en, category: "FATS",
+        portion_g: grams, household_measurement: `${grams} جم`,
+        protein_g: protein, carb_g: carb, fat_g: fat, calories_kcal: Math.round(protein * 4 + carb * 4 + fat * 9), swaps: [],
+        fat_source_note_ar: "جزء من دهون الوجبة بدل زيادة زيت الزيتون.",
+      });
+      excessFat -= fat;
+    }
+    if (added.length === 0) return meal;
+    const oilFat = MAX_OIL_PER_MEAL_G + Math.max(0, Math.round(excessFat));
+    const nextOil = { ...oil, portion_g: oilFat, fat_g: oilFat, calories_kcal: oilFat * 9, household_measurement: `${oilFat} جم` };
+    const nextItems = [...items];
+    nextItems[oilIndex] = nextOil;
+    return { ...meal, items: [...nextItems, ...added] };
+  });
+}
+
 export function enforceClinicalSafety(meals = [], allergenContext = {}) {
   if (!Array.isArray(meals)) return meals;
   const known = (code) => Boolean(FOOD_SWAP_DATABASE[code]);
