@@ -71,6 +71,21 @@ test("swap-food returns the new portion's calories and macros (the app showed 0 
   }
 });
 
+test("a breakfast swap offered by swap-candidates also works in swap-food (the app sends no meal)", async () => {
+  const offered = await candidates("WHOLE_EGG", 150);
+  assert.ok(offered.includes("EGG_WHITE"), offered.join(","));
+  const fruit = await candidates("BANANA_FRESH", 120);
+  assert.ok(fruit.includes("APPLE_FRESH") && !fruit.includes("BALADI_BREAD"), fruit.join(","));
+  const original = IntakeSubmission.findOne;
+  IntakeSubmission.findOne = async () => null;
+  try {
+    const out = await call(calculateSwapHandler, { user: { id: client.id }, body: { current_food_code: "WHOLE_EGG", current_portion_g: 150, target_food_code: "EGG_WHITE" } });
+    assert.equal(out.status, 200, JSON.stringify(out.body));
+  } finally {
+    IntakeSubmission.findOne = original;
+  }
+});
+
 test("a swap the rule does not offer is refused when sent directly", async () => {
   const original = IntakeSubmission.findOne;
   IntakeSubmission.findOne = async () => null;

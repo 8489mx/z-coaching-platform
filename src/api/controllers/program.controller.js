@@ -608,6 +608,15 @@ async function swapContextFor(req) {
   return resolveSwapContext({ requester, clientForCoach, loadAnswers: loadLatestIntakeAnswers });
 }
 
+/** The swap registry's meal category for a meal named by the app, or null when none is named. */
+function mealCategoryFromContext(mealContext) {
+  const context = String(mealContext || "").toUpperCase();
+  if (!context) return null;
+  if (context === "BREAKFAST") return "BREAKFAST";
+  if (context === "SNACK") return "SNACK";
+  return "MAIN_MEAL";
+}
+
 export const getSwapCandidatesHandler = async (req, res) => {
   try {
     const { food_code, name_ar, meal_context, source_grams } = req.body;
@@ -617,9 +626,11 @@ export const getSwapCandidatesHandler = async (req, res) => {
     }
     const grams = Number(source_grams) || 100;
     const clinicalContext = await swapContextFor(req);
-    const mealCategory = meal_context === "BREAKFAST" ? "BREAKFAST" : "MAIN_MEAL";
+    const mealCategory = mealCategoryFromContext(meal_context);
 
-    let candidates = listSmartSwapCandidates(normalizedCode, mealCategory);
+    // With no meal named (the mobile app sends none) every food of the same macro type is a
+    // candidate; the family rule below keeps only what is eaten the same way.
+    let candidates = mealCategory ? listSmartSwapCandidates(normalizedCode, mealCategory) : [];
     if (!candidates || candidates.length === 0) {
       const current = getSmartFoodRegistryItem(normalizedCode);
       if (current) {
@@ -639,7 +650,7 @@ export const getSwapCandidatesHandler = async (req, res) => {
             current_food_code: normalizedCode,
             current_portion_g: grams,
             target_food_code: cand.food_code,
-            meal_category: cand.meal_categories?.[0] || mealCategory
+            meal_category: mealCategory && cand.meal_categories?.includes(mealCategory) ? mealCategory : cand.meal_categories?.[0]
           });
           targetGrams = swapCalc.target_food.portion_g;
           displayAr = swapCalc.target_food.serving_display_ar;
@@ -689,7 +700,9 @@ export const calculateSwapHandler = async (req, res) => {
       return res.status(400).json({ error: "صنف غير معروف في قائمة البدائل" });
     }
     const fromGrams = Number(source_grams || current_portion_g) || 100;
-    const category = meal_category || (meal_context === "BREAKFAST" ? "BREAKFAST" : "MAIN_MEAL");
+    // No meal named: any meal the target food suits (the candidate list was built the same way).
+    const category = meal_category || mealCategoryFromContext(meal_context)
+      || getSmartFoodRegistryItem(toCode)?.meal_categories?.[0] || "MAIN_MEAL";
 
     const result = calculateSmartSwap({
       current_food_code: fromCode,
