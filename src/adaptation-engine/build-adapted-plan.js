@@ -347,12 +347,42 @@ export function buildAdaptedPlan(inputs) {
   // Diabetes and insulin resistance: every adjustment above keeps carbohydrate within the same share
   // of energy as the first plan; the excess moves to fat, so months of +150 carb steps cannot creep
   // back to a carbohydrate-heavy plan.
+  // The excess keeps the day's balance of the first plan (fat at most 35% of energy, IOM AMDR): it
+  // goes to protein where the kidneys allow (up to 2.2 g/kg of reference weight), then to fat up to
+  // 35%; what is left is not added and the coach decides. A plan whose balance already put
+  // carbohydrate above 45% (kidney protein cap) keeps that share.
   const guardrails = currentMasterProgram.nutrition_program?.targets?.clinical_guardrails || currentMasterProgram.clinical_guardrails || {};
   if (guardrails.hypoglycemia_guard_active === true && adaptedCalories > 0) {
-    const maxCarbG = Math.floor((adaptedCalories * CLINICAL_GUIDELINES.DIABETES.MAX_CARB_ENERGY_SHARE) / 4);
+    const baseCarbShare = baseEnergy > 0 ? (baseCarbs * 4) / baseEnergy : 0;
+    const carbShare = guardrails.kidney_protein_capped === true
+      ? Math.max(CLINICAL_GUIDELINES.DIABETES.MAX_CARB_ENERGY_SHARE, baseCarbShare)
+      : CLINICAL_GUIDELINES.DIABETES.MAX_CARB_ENERGY_SHARE;
+    const maxCarbG = Math.floor((adaptedCalories * carbShare) / 4);
     if (adaptedCarbs > maxCarbG) {
-      adaptedFat += Math.round(((adaptedCarbs - maxCarbG) * 4) / 9);
+      let excessKcal = (adaptedCarbs - maxCarbG) * 4;
       adaptedCarbs = maxCarbG;
+      if (guardrails.kidney_protein_capped !== true) {
+        const referenceKg = Number(guardrails.energy_reference_weight_kg) || currentWeightKg;
+        const maxProteinG = Number.isFinite(referenceKg) && referenceKg > 30
+          ? Math.round(referenceKg * CLINICAL_GUIDELINES.NUTRITION_BALANCE.MAX_PROTEIN_PER_KG)
+          : adaptedProtein;
+        const addProteinG = Math.min(Math.max(0, maxProteinG - adaptedProtein), Math.floor(excessKcal / 4));
+        adaptedProtein += addProteinG;
+        excessKcal -= addProteinG * 4;
+      }
+      const fatRoomKcal = Math.max(0, Math.floor(CLINICAL_GUIDELINES.NUTRITION_BALANCE.MAX_FAT_ENERGY_SHARE * adaptedCalories) - adaptedFat * 9);
+      const toFatKcal = Math.min(excessKcal, fatRoomKcal);
+      adaptedFat += Math.floor(toFatKcal / 9);
+      excessKcal -= toFatKcal;
+      if (excessKcal > 0) {
+        adaptedCalories = Math.max(Math.round(baseEnergy), adaptedCalories - Math.round(excessKcal));
+        requiresCoachApproval = true;
+        reasons.push({
+          code: "FAT_SHARE_LIMIT_REACHED",
+          message_ar: "الزيادة وقفت عند توازن اليوم: النشويات عند سقف السكر والبروتين محدود، وأي زيادة تانية كانت هتبقى دهون فوق 35% من السعرات. قرار أي زيادة للكوتش مع الطبيب.",
+          message_en: "Increase held at the day's balance: carbohydrate at the diabetic ceiling and protein capped; more would be fat above 35% of energy.",
+        });
+      }
     }
   }
 

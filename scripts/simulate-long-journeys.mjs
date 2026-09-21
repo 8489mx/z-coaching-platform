@@ -244,6 +244,8 @@ for (const [i, J] of JOURNEYS.entries()) {
     if (J.code === "JRN_05" && t.kcal && t.kcal < 1700) bad(`أ${n}: مرضعة على ${t.kcal} سعرة`);
     const atw = t.protein * 4 + t.carbs * 4 + t.fat * 9;
     if (t.kcal && Math.abs(atw - t.kcal) / t.kcal > 0.12) bad(`أ${n}: الماكروز ${Math.round(atw)} لا تطابق السعرات ${t.kcal}`);
+    // The day's balance holds over months of check-ins: fat within 35% of energy (IOM AMDR).
+    if (atw > 0 && (t.fat * 9) / atw > 0.355) bad(`أ${n}: الدهون ${Math.round((t.fat * 900) / atw)}% من السعرات`);
     const exNow = exerciseSet(activeNow?.program_data);
     const changed = [...exNow].filter((x) => !baseExercises.has(x));
     if (changed.length > 0 && J.code !== "JRN_06" && J.code !== "JRN_01") bad(`أ${n}: تمارين اتغيرت من غير ألم: ${changed.join(",")}`);
