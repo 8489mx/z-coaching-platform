@@ -392,7 +392,8 @@ export function useCoachEditorData() {
         height_cm: user.height || user.height_cm || clientInfo.height_cm || 180,
         weight_kg: user.weight || user.weight_kg || clientInfo.weight_kg || 80,
         primary_goal: user.primary_goal || clientInfo.primary_goal || 'fat_loss',
-        goal_label: clientInfo.goal_label || (user.primary_goal === 'muscle_gain' ? 'بناء عضل وتضخيم صافي' : 'خسارة دهون وتنشيف'),
+        // The plan's effective goal (after a redirect or a coach-decides suggestion), in the intake's plain names.
+        goal_label: clientInfo.goal_label || ({ FAT_LOSS: 'نزول دهون ووزن', MUSCLE_GAIN: 'زيادة عضل ووزن', BODY_RECOMPOSITION: 'نزول دهون مع شد وبناء عضل' }[master.nutrition_program?.targets?.effective_goal]) || (user.primary_goal === 'muscle_gain' ? 'زيادة عضل ووزن' : 'نزول دهون ووزن'),
         neat_level: user.neat_level || clientInfo.neat_level || 'sedentary',
         neat_label: clientInfo.neat_label || 'خامل / مكتبي (< 5,000 خطوة)',
         package_name: clientInfo.package_name || pkg,

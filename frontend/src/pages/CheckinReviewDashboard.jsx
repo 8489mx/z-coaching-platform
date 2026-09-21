@@ -1435,9 +1435,9 @@ export default function CheckinReviewDashboard() {
             {(() => {
               const goalType = safeClient.goal_type || 'CUTTING';
               const goalConfig = {
-                CUTTING: { label: 'تنشيف وحرق دهون', bg: '#F8FAFC', border: '#CBD5E1', color: '#0F172A' },
-                BULKING: { label: 'تضخيم وبناء عضلي', bg: '#F8FAFC', border: '#CBD5E1', color: '#0F172A' },
-                RECOMP: { label: 'إعادة تشكيل (Recomp)', bg: '#F8FAFC', border: '#CBD5E1', color: '#0F172A' }
+                CUTTING: { label: 'نزول دهون ووزن', bg: '#F8FAFC', border: '#CBD5E1', color: '#0F172A' },
+                BULKING: { label: 'زيادة عضل ووزن', bg: '#F8FAFC', border: '#CBD5E1', color: '#0F172A' },
+                RECOMP: { label: 'نزول دهون مع شد وبناء عضل (Recomp)', bg: '#F8FAFC', border: '#CBD5E1', color: '#0F172A' }
               }[goalType] || { label: 'تنشيف', bg: '#F8FAFC', border: '#CBD5E1', color: '#0F172A' };
               const activeChkNumber = activeCheckin.checkin_number || ((activeCheckin?.history?.length > 1) ? (activeCheckin?.history?.length - 1) : activeCheckin.week_number);
 
