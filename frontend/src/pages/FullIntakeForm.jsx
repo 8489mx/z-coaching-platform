@@ -888,6 +888,9 @@ export default function FullIntakeForm() {
                     );
                   })}
                 </div>
+                <p style={{ margin: '8px 0 0', fontSize: '11.5px', color: '#334155', fontWeight: 700, lineHeight: '1.5' }}>
+                  مهما كان اختيارك، هنوصلك لأفضل فورمة ممكنة.
+                </p>
               </div>
 
               {/* NEAT Activity Level (3 Cards Grid) */}
