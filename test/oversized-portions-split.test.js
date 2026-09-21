@@ -48,3 +48,22 @@ test("the split keeps the item's macros and uses its own swaps; with no swap it 
   assert.equal(alone.items[0].portion_g, 900);
   assert.match(alone.items[0].portion_warning_ar, /راجع/);
 });
+
+test("a check-in that scales the meals up does not bring back an oversized plate", async () => {
+  const { mergeAdaptedPlanIntoProgram } = await import("../src/api/utils/planMergeEngine.js");
+  const program = {
+    nutrition_program: {
+      macro_targets: { calories_kcal: 837, protein_g: 73, carbohydrate_g: 109, fat_g: 8 },
+      culinary_meals: [{ meal_type: "LUNCH", items: [
+        { food_code: "BASMATI_RICE", category: "CARBS", portion_g: 390, protein_g: 11, carb_g: 109, fat_g: 1, calories_kcal: 507,
+          swaps: [{ food_code: "WHOLE_WHEAT_PASTA", equivalent_grams: 350, protein_g: 18, carb_g: 109, fat_g: 3, calories_kcal: 520 }] },
+        { food_code: "CHICKEN_BREAST", category: "PROTEIN", portion_g: 200, protein_g: 62, carb_g: 0, fat_g: 7, calories_kcal: 330, swaps: [] },
+      ] }],
+    },
+  };
+  const merged = mergeAdaptedPlanIntoProgram(program, {
+    adapted_nutrition: { target_calories_kcal: 1010, protein_g: 73, carbohydrate_g: 152, fat_g: 8 },
+  });
+  const carbItems = merged.nutrition_program.culinary_meals[0].items.filter((i) => i.category === "CARBS");
+  assert.ok(carbItems.every((i) => i.portion_g <= MAX_CARB_PORTION_G), carbItems.map((i) => `${i.food_code} ${i.portion_g}`).join(", "));
+});
