@@ -757,6 +757,7 @@ export const FOOD_SWAP_DATABASE = Object.freeze({
   // --- REGIONAL HEALTHY FATS & COOKING FATS ---
   RAW_TAHINI: {
     code: "RAW_TAHINI",
+    is_sesame_free: false,
     name_ar: "طحينة سمسم خام نقية 100% (غنية بالكالسيوم والدهون المفيدة)",
     name_en: "Pure 100% Sesame Tahini",
     protein_per_100g: 17.0,
@@ -895,6 +896,7 @@ export const FOOD_SWAP_DATABASE = Object.freeze({
   },
   RAW_ALMONDS: {
     code: "RAW_ALMONDS",
+    is_nut_free: false,
     name_ar: "لوز نيء أو مكسرات مشكلة غير مملحة",
     name_en: "Raw Unsalted Almonds / Mixed Nuts",
     protein_per_100g: 21.2,
@@ -1092,8 +1094,13 @@ export function isFoodClinicallySafe(foodCode, allergenContext = {}) {
   if (allergenContext.isLegumesExcluded && food.is_legume) return false;
   if (allergenContext.isFavism && (food.is_fava || food.is_legume || foodCode === "FOUL_MUDAMMAS")) return false;
   if (allergenContext.isGlutenExcluded && !food.is_gluten_free) return false;
-  if (allergenContext.isSoyExcluded && !food.is_soy_free) return false;
-  if (allergenContext.isNutsExcluded && !food.is_nut_free) return false;
+  // Nuts, soy and sesame: a food is excluded when it is known to contain the allergen - flagged
+  // false, or named for it. The previous rule excluded every food not explicitly certified free,
+  // and only five of the fifty-nine foods here carry that certificate, so an allergic client lost
+  // bread, rice and chicken alike and every swap list came back empty.
+  if (allergenContext.isSoyExcluded && (food.is_soy_free === false || /SOY|TOFU|EDAMAME/.test(foodCode))) return false;
+  if (allergenContext.isNutsExcluded && (food.is_nut_free === false || /PEANUT|ALMOND|WALNUT|CASHEW|PISTACHIO|HAZELNUT|NUT_BUTTER|MIXED_NUTS/.test(foodCode))) return false;
+  if (allergenContext.isSesameExcluded && (food.is_sesame_free === false || /SESAME|TAHINI/.test(foodCode))) return false;
 
   return true;
 }
@@ -2023,6 +2030,11 @@ export function buildCulinaryRecipeMeals(universalTargets, canonicalIntake = {},
     excludedFoods.has("SOYBEAN") ||
     excludedFoods.has("TOFU");
 
+  const isSesameExcluded =
+    excludedFoods.has("SESAME_SEEDS") ||
+    excludedFoods.has("SESAME") ||
+    excludedFoods.has("TAHINI");
+
   const isNutsExcluded =
     excludedFoods.has("NUTS") ||
     excludedFoods.has("PEANUTS") ||
@@ -2089,6 +2101,7 @@ export function buildCulinaryRecipeMeals(universalTargets, canonicalIntake = {},
     isLowBudget,
     isDumpingSyndrome,
     isDiabetic,
+    isSesameExcluded,
   };
 
   const totalMeals = meal_distribution.length;

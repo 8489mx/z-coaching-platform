@@ -50,6 +50,7 @@ const CASES = [
   ["gluten_celiac", "gluten", (food) => food && !food.is_gluten_free],
   ["peanuts_tree_nuts", "nuts", (food) => food?.is_nut_free === false],
   ["fish_shellfish", "fish", (food) => food?.is_fish === true],
+  ["sesame_seeds", "sesame", (food) => food?.is_sesame_free === false],
 ];
 
 for (const [stored, label, forbidden] of CASES) {
@@ -63,3 +64,20 @@ test("a client with no allergy keeps the ordinary plan", () => {
   const codes = planFoods(["none"]);
   assert.ok(codes.some((code) => FOOD_SWAP_DATABASE[code]?.is_dairy === true), "dairy is still offered to a client who can eat it");
 });
+
+// Nuts and soy used to exclude every food not explicitly certified free of them. Only five of the
+// fifty-nine foods carry that certificate, so an allergic client lost bread, rice and chicken alike
+// and every swap list came back empty.
+for (const stored of ["peanuts_tree_nuts", "soy", "sesame_seeds"]) {
+  test(`a client who declared ${stored} still gets swaps for ordinary foods`, () => {
+    const program = buildMasterEngineV2({
+      intake: { ...INTAKE, strict_allergies: [stored] },
+      evaluationContext: CTX,
+      nutritionFoodCatalog: CATALOG,
+      options: {},
+    });
+    const items = (program.nutrition_program?.culinary_meals || []).flatMap((meal) => meal.items || []);
+    const withSwaps = items.filter((item) => (item.swaps || []).length > 0);
+    assert.ok(withSwaps.length >= items.length / 2, `${withSwaps.length} of ${items.length} items have swaps`);
+  });
+}
