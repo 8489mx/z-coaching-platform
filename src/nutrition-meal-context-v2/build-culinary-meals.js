@@ -3927,8 +3927,19 @@ const DIABETIC_POTATO_TIP_AR = "البطاطس مسموحة بالكمية دي:
 const isPotato = (code) => /POTATO/.test(String(code || ""));
 
 /** Per-food plate limit: the general carbohydrate cap, and a smaller one for potatoes when diabetic. */
+// Fruit on one plate: about two medium pieces (a WHO fruit portion is 80 g); dates about 10.
+export const MAX_FRUIT_PORTION_G = 250;
+export const MAX_DATES_PORTION_G = 80;
+// A split part smaller than this is folded into another part with room.
+const MIN_SPLIT_PART_G = 40;
+const FRESH_FRUIT = new Set(["BANANA_FRESH", "APPLE_FRESH", "FRESH_GUAVA", "ORANGE_FRESH", "STRAWBERRY_FRESH", "WATERMELON_FRESH"]);
+
 export function carbPortionLimit({ diabetic = false } = {}) {
-  return (foodCode) => (diabetic && isPotato(foodCode) ? DIABETIC_POTATO_PORTION_G : MAX_CARB_PORTION_G);
+  return (foodCode) => {
+    if (FRESH_FRUIT.has(foodCode)) return MAX_FRUIT_PORTION_G;
+    if (foodCode === "DATES_KHALAS") return MAX_DATES_PORTION_G;
+    return diabetic && isPotato(foodCode) ? DIABETIC_POTATO_PORTION_G : MAX_CARB_PORTION_G;
+  };
 }
 
 const scaleNumber = (value, factor) => (Number.isFinite(Number(value)) ? Math.round(Number(value) * factor) : value);
@@ -3998,6 +4009,19 @@ export function splitOversizedPortions(meals = [], maxGrams = MAX_CARB_PORTION_G
       if (left > 1e-6) {
         const total = 1 - left;
         for (const p of parts) p.share /= total;
+      } else {
+        // A last part of a few grams (10 g of apple) is not a plate: its share goes to a part with room
+        // under its limit, else is spread over the other non-potato parts (a few grams over a fruit
+        // limit; a diabetic's potato limit is never passed). With neither it stays.
+        for (const tiny of parts.filter((p) => p.partner && p.share > 1e-6 && p.grams * p.share < MIN_SPLIT_PART_G)) {
+          const others = parts.filter((p) => p !== tiny && p.share > 1e-6);
+          const roomy = others.find((p) => p.grams * (p.share + tiny.share) <= p.limit);
+          const spread = roomy ? [roomy] : others.filter((p) => !isPotato(p.partner?.food_code || item?.food_code));
+          if (spread.length === 0) continue;
+          const total = spread.reduce((sum, p) => sum + p.share, 0);
+          for (const p of spread) p.share += (tiny.share * p.share) / total;
+          tiny.share = 0;
+        }
       }
       const overLimit = left > 1e-6
         ? { portion_warning_ar: `البدائل الآمنة المتاحة لا تكفي لتقسيم الحصة تحت الحد؛ راجع عدد الوجبات أو توزيع الكربوهيدرات.` }
