@@ -383,6 +383,22 @@ export function decideCardioStrategy(input, safetyContext, conservativeRecoveryS
     );
   }
 
+  // Obesity with a fat-loss goal gets a daily steps target at least. "Adequate activity" is the
+  // client's own impression (the form rarely has a step count), and a BMI of 30+ losing fat with no
+  // movement target at all leaves the whole deficit to the diet.
+  const heightM = Number(input.body?.heightCm) / 100;
+  const bmi = heightM > 0 ? Number(input.body?.weightKg) / (heightM * heightM) : null;
+  if (strategy === CardioStrategy.NO_ADDITIONAL_CARDIO && input.goals.primary === PrimaryGoal.FAT_LOSS && bmi !== null && bmi >= 30) {
+    strategy = CardioStrategy.STEPS_ONLY;
+    decisionReasons.push(
+      reason(
+        "STEPS_TARGET_FAT_LOSS_WITH_OBESITY",
+        Scope.CARDIO,
+        "A BMI of 30 or more with a fat-loss goal always carries a daily steps target, whatever activity was reported.",
+      ),
+    );
+  }
+
   if (
     !hasFormalCardioCapacity &&
     explicitEnduranceGoal &&
