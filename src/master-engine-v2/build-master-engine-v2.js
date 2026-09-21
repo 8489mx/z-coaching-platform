@@ -323,7 +323,23 @@ export function calculateUniversalNutritionTargets(canonicalIntake, evaluationCo
   // The canonical goal enum folds recomposition into FAT_LOSS; recover it from the submitted answer.
   const rawGoal = String(effectiveRaw?.goals?.primary ?? effectiveRaw?.primary_goal ?? "").trim().toUpperCase();
   const isRecomposition = rawGoal.includes("RECOMP") || rawGoal.includes("إعادة تكوين") || rawGoal.includes("اعادة تكوين");
-  const primaryGoal = isRecomposition ? "BODY_RECOMPOSITION" : (goals.primary || "FAT_LOSS");
+  let primaryGoal = isRecomposition ? "BODY_RECOMPOSITION" : (goals.primary || "FAT_LOSS");
+  // Bulking with high body fat (above 25% men / 35% women, or a BMI of 30+ when body fat is unknown)
+  // adds fat to a body that already carries too much. Recomposition - a small deficit with high
+  // protein and training - builds muscle while fat comes down; the coach sees why the goal changed.
+  let goalRedirect = null;
+  const bmiNow = weight / ((height / 100) ** 2);
+  const tooMuchFatToBulk = bodyFat ? bodyFat > (isMale ? 25 : 35) : bmiNow >= 30;
+  if ((primaryGoal === "MUSCLE_GAIN" || primaryGoal === "LEAN_BULK") && tooMuchFatToBulk) {
+    goalRedirect = {
+      from: primaryGoal,
+      to: "BODY_RECOMPOSITION",
+      reason_ar: bodyFat
+        ? `نسبة الدهون ${bodyFat}% أعلى من المناسب للتضخيم؛ تم تحويل الهدف لإعادة تكوين الجسم (بناء عضل مع نزول دهون) لحد ما النسبة تنزل.`
+        : `مؤشر كتلة الجسم ${bmiNow.toFixed(1)} أعلى من المناسب للتضخيم؛ تم تحويل الهدف لإعادة تكوين الجسم (بناء عضل مع نزول دهون) لحد ما الوزن ينزل.`,
+    };
+    primaryGoal = "BODY_RECOMPOSITION";
+  }
   let targetCalories = tdee;
   let proteinPerKg = 2.0;
   let calorieAdjustmentDesc = "سعرات صيانة (Maintenance)";
@@ -720,6 +736,8 @@ export function calculateUniversalNutritionTargets(canonicalIntake, evaluationCo
     total_calories: targetCalories,
     calories_kcal: targetCalories,
     calorie_adjustment_desc: calorieAdjustmentDesc,
+    effective_goal: goalRedirect ? goalRedirect.to : null,
+    goal_redirect: goalRedirect,
     protein_g: proteinG,
     total_protein_g: proteinG,
     protein_per_kg: proteinPerKg,

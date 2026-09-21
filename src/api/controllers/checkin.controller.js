@@ -166,7 +166,10 @@ export async function submitCheckin(req, res) {
 
 
     // 2. Evaluate with Auto-Regulation Engine
-    const primaryGoal = await resolveClientPrimaryGoal(targetUserId);
+    // The plan's own goal wins when the engine changed it (bulking with high body fat -> recomposition).
+    const planForGoal = await findPlanInUse(targetUserId);
+    const primaryGoal = await resolveClientPrimaryGoal(targetUserId)
+      .then((intakeGoal) => planForGoal?.program_data?.nutrition_program?.targets?.effective_goal || intakeGoal);
     const evalInput = {
       primary_goal: primaryGoal,
       weight_kg: weeklyWeight,
