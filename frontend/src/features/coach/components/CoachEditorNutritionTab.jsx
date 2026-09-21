@@ -204,6 +204,21 @@ export default function CoachEditorNutritionTab(props) {
         {activeWorkspaceTab === 'NUTRITION' && (
           <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
             
+            {/* Notes the plan engine left for the coach (goal change, clinical ceilings, items to check) */}
+            {Array.isArray(program?.nutrition?.coach_alerts) && program.nutrition.coach_alerts.length > 0 && (
+              <div style={{ background: '#FFFBEB', border: '1px solid #FCD34D', borderRadius: '12px', padding: '10px 14px', display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                <strong style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '12.5px', color: '#92400E', fontWeight: 800 }}>
+                  <ShieldAlert size={16} color="#B45309" />
+                  ملاحظات للكوتش قبل الاعتماد ({program.nutrition.coach_alerts.length})
+                </strong>
+                {program.nutrition.coach_alerts.map((alert) => (
+                  <div key={alert} style={{ fontSize: '11.5px', color: '#78350F', lineHeight: 1.6 }}>
+                    - {alert}
+                  </div>
+                ))}
+              </div>
+            )}
+
             {/* Top Macro Summary Bar with Live Calories & Supplements Integration */}
             <div style={{ background: '#FFFFFF', border: '1px solid #E2E8F0', borderRadius: '12px', padding: '10px 14px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '8px', boxShadow: '0 1px 2px rgba(15, 23, 42, 0.02)' }}>
               <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap', alignItems: 'center' }}>

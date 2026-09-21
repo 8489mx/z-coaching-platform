@@ -12,6 +12,7 @@ import defaultMobilityCatalog from '../../../data/mobilityCatalog.json';
 import { arabicSearchMatch } from '../../../utils/searchUtils';
 import { getExerciseDisplayNames } from '../../../utils/exerciseTranslator';
 import { KIDNEY_MAX_PROTEIN_PER_KG } from '../../../config/clinicalLimits';
+import { collectCoachAlerts } from '../../../utils/coachAlerts.js';
 import {
   FOOD_DATABASE_LIST,
   CLIENT_BLUEPRINTS,
@@ -352,6 +353,7 @@ export function useCoachEditorData() {
         clinical_guardrails: rawClinicalGuardrails
       },
       clinical_guardrails: rawClinicalGuardrails,
+      coach_alerts: collectCoachAlerts(master),
       beverage_sugar_intake: rawNutrition?.beverage_sugar_intake || null,
       meals: mappedMeals.length > 0 ? mappedMeals : (CLIENT_BLUEPRINTS['1']?.nutrition?.meals || []),
       reasoning: rawNutrition?.reasoning || 'خطة غذائية متوازنة مصممة بأصناف دقيقة تلبي احتياج الجسم دون حرمان.'
