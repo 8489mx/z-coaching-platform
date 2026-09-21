@@ -1127,6 +1127,12 @@ export function generateSmartSwaps(category, baseGrams, baseFoodCode, mealContex
   });
 }
 
+// USDA FoodData Central medium sizes: baked potato ~173 g, baked sweet potato ~114 g.
+const MEDIUM_POTATO_G = 173;
+const MEDIUM_SWEET_POTATO_G = 114;
+/** Number of medium pieces in a portion, to the nearest half (at least a half). */
+const mediumPieces = (grams, mediumG) => Math.max(0.5, Math.round((grams / mediumG) * 2) / 2);
+
 /**
  * Every clinically safe candidate for the meal, matched on the main nutrient only. Clients and
  * coaches see generateSmartSwaps (equivalent swaps only); this full list is the last resort when an
@@ -1336,7 +1342,7 @@ function buildSmartSwapCandidates(category, baseGrams, baseFoodCode, mealContext
         const loaves = (equivGrams / 85).toFixed(1);
         householdDesc = `${equivGrams} جم (~${loaves} رغيف بلدي بالردة)`;
       } else if (code === "TAMEES_BREAD_WHOLEWHEAT") {
-        householdDesc = `${equivGrams} جم (حوالي ربع إلى ثلث رغيف تميس بر)`;
+        householdDesc = `${equivGrams} جم خبز تميس بر`;
       } else if (code === "SAJ_BREAD_WHOLEWHEAT") {
         const loaves = (equivGrams / 50).toFixed(1);
         householdDesc = `${equivGrams} جم (~${loaves} رغيف صاج بر خفيف)`;
@@ -1344,9 +1350,9 @@ function buildSmartSwapCandidates(category, baseGrams, baseFoodCode, mealContext
         const slices = Math.round(equivGrams / 28);
         householdDesc = `${equivGrams} جم (${slices} شرائح توست بني قمح كامل)`;
       } else if (code === "ROASTED_POTATOES") {
-        householdDesc = `${equivGrams} جم (حوالي ثمرة ونصف متوسطة مشوية بالأعشاب)`;
+        householdDesc = `${equivGrams} جم (حوالي ${mediumPieces(equivGrams, MEDIUM_POTATO_G)} ثمرة متوسطة مشوية بالأعشاب)`;
       } else if (code === "SWEET_POTATO") {
-        householdDesc = `${equivGrams} جم مشوية في الفرن (ثمرة متوسطة)`;
+        householdDesc = `${equivGrams} جم مشوية في الفرن (حوالي ${mediumPieces(equivGrams, MEDIUM_SWEET_POTATO_G)} ثمرة متوسطة)`;
       } else if (code === "ROLLED_OATS") {
         const spoons = Math.round(equivGrams / 10);
         householdDesc = `${equivGrams} جم جاف (${spoons} ملاعق طعام كبيرة)`;
