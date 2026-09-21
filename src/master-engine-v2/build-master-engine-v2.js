@@ -704,7 +704,11 @@ export function calculateUniversalNutritionTargets(canonicalIntake, evaluationCo
   const preferredMealCount = Number(nutrition.preferredMealCount || nutrition.mealsPerDay || nutrition.preferred_meal_count) || 3;
   // After sleeve/bypass surgery the stomach holds ~150-250 g per sitting (ASMBS nutrition guideline):
   // at least 5 small meals so the day's protein fits.
-  const mealCount = isPostBariatric(effectiveRaw) ? Math.max(5, preferredMealCount) : preferredMealCount;
+  const chosenMealCount = isPostBariatric(effectiveRaw) ? Math.max(5, preferredMealCount) : preferredMealCount;
+  // Owner decision: 3200+ kcal on three meals makes very large plates, so a fourth meal is added.
+  // Two meals (a fasting choice) are kept and the coach is only advised.
+  const mealAddedForCalories = targetCalories >= 3200 && chosenMealCount === 3;
+  const mealCount = mealAddedForCalories ? 4 : chosenMealCount;
   const mealDistribution = [];
   for (let i = 1; i <= mealCount; i++) {
     let pRatio = 1 / mealCount;
@@ -774,11 +778,13 @@ export function calculateUniversalNutritionTargets(canonicalIntake, evaluationCo
       guidance_ar: `احتياج السوائل اليومي: ${Math.max(Number((referenceWeight * 0.040).toFixed(1)), biomarkerAnalysis?.dietary_modifications?.daily_water_target_liters || 0)} لتر في أيام الراحة، و ${Math.max(Number((referenceWeight * 0.040 + 0.5).toFixed(1)), (biomarkerAnalysis?.dietary_modifications?.daily_water_target_liters || 0) + 0.5)} لتر في أيام التمرين (+0.5 لتر لتعويض العرق والأملاح أثناء التدريب).`,
     },
     meals_count: mealCount,
-    // A high-calorie day on three meals makes very large plates; the client chose the count, so the
-    // coach is advised rather than the plan changed.
-    meal_count_note_ar: targetCalories >= 3200 && mealCount <= 3
-      ? `${targetCalories} سعرة على ${mealCount} وجبات بتطلع أطباق كبيرة؛ يُفضّل تتقسم على 4 أو 5 وجبات (زوّد وجبة خفيفة أو اتنين).`
-      : null,
+    // A high-calorie day on few meals makes very large plates: three meals get a fourth (above);
+    // two meals are the client's fasting choice, so the coach is advised rather than the plan changed.
+    meal_count_note_ar: mealAddedForCalories
+      ? `العميل اختار 3 وجبات، بس ${targetCalories} سعرة على 3 وجبات بتطلع أطباق كبيرة؛ النظام زوّد وجبة رابعة. لو العميل مش هيقدر، احذف الوجبة الرابعة من المحرر وهيتوزع أكلها على الباقي.`
+      : targetCalories >= 3200 && mealCount <= 3
+        ? `${targetCalories} سعرة على ${mealCount} وجبات بتطلع أطباق كبيرة؛ يُفضّل تتقسم على 4 أو 5 وجبات (زوّد وجبة خفيفة أو اتنين).`
+        : null,
         meal_distribution: mealDistribution,
     diet_framework: dietFramework,
     carb_cycling: carbCyclingConfig,

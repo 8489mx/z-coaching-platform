@@ -38,7 +38,7 @@ test("a plan with nothing to note gives an empty list", () => {
   assert.deepEqual(collectCoachAlerts({}), []);
 });
 
-test("a 3200+ kcal day on three meals advises the coach to split it over more meals", async () => {
+test("a 3200+ kcal day on three meals tells the coach a fourth meal was added", async () => {
   const program = buildMasterEngineV2({
     intake: {
       gender: "male", age: "20", height_cm: "190", weight_kg: "92", circumferences: { neck_cm: "38", waist_cm: "80", hips_cm: "95" },
@@ -52,5 +52,5 @@ test("a 3200+ kcal day on three meals advises the coach to split it over more me
     options: {},
   });
   assert.ok(program.nutrition_program.targets.target_calories >= 3200, "precondition: a high-calorie day");
-  assert.ok(collectCoachAlerts(JSON.parse(JSON.stringify(program))).some((a) => /4 أو 5 وجبات/.test(a)));
+  assert.ok(collectCoachAlerts(JSON.parse(JSON.stringify(program))).some((a) => /وجبة رابعة/.test(a)));
 });
