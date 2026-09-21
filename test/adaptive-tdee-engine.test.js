@@ -96,3 +96,37 @@ test('locks win over the observed TDEE (poor adherence keeps calories)', () => {
   assert.ok(!text.includes(AdaptationAction.APPLY_OBSERVED_TDEE));
   assert.ok(text.includes('"target_calories_kcal":2600'));
 });
+
+// A month off the plan, three kilograms regained, then a steady return. The weeks on either side of
+// the break used to form one trend, read as "gained weight while eating the target", and the
+// calories were cut at every check-in while the client was losing on schedule.
+test('a break in check-ins starts the trend again instead of reading the regain as a slow metabolism', () => {
+  const weeks = [
+    { week_number: 8, average_weight_kg: 88.4, adherence_percent: 85, planned_target_kcal: 1800 },
+    { week_number: 10, average_weight_kg: 87.5, adherence_percent: 85, planned_target_kcal: 1800 },
+    { week_number: 12, average_weight_kg: 86.6, adherence_percent: 85, planned_target_kcal: 1800 },
+    // weeks 13-17: no check-ins, weight back up
+    { week_number: 18, average_weight_kg: 89.3, adherence_percent: 80, planned_target_kcal: 1800 },
+  ];
+  const justBack = estimateAdaptiveTdee({ weeks, formula_tdee_kcal: 2100, current_target_kcal: 1800, primary_goal: 'FAT_LOSS', is_female: true });
+  assert.equal(justBack.ready, false, 'one check-in after the break is not a trend');
+  assert.equal(justBack.calorie_delta, 0);
+
+  const back = [...weeks,
+    { week_number: 20, average_weight_kg: 88.6, adherence_percent: 80, planned_target_kcal: 1800 },
+    { week_number: 22, average_weight_kg: 87.9, adherence_percent: 80, planned_target_kcal: 1800 }];
+  const r = estimateAdaptiveTdee({ weeks: back, formula_tdee_kcal: 2100, current_target_kcal: 1800, primary_goal: 'FAT_LOSS', is_female: true });
+  assert.equal(r.weeks_used, 3, 'only the weeks since the return');
+  assert.ok(r.weight_trend_kg_per_week < 0, 'the client is losing since the return');
+  // Read from the return alone, the burn is the formula's again; the plan only settles toward its
+  // own 20% deficit, instead of taking the full weekly cut as if the metabolism had slowed.
+  assert.ok(r.observed_tdee_kcal >= 2100, `observed burn ${r.observed_tdee_kcal}`);
+  assert.ok(r.calorie_delta > -MAX_WEEKLY_TARGET_STEP_KCAL, `calories cut by ${-r.calorie_delta} while losing on schedule`);
+});
+
+test('fortnightly check-ins are one unbroken trend', () => {
+  const weeks = [2, 4, 6, 8].map((n, i) => ({ week_number: n, average_weight_kg: 90 - 0.8 * i, adherence_percent: 90, planned_target_kcal: 2000 }));
+  const r = estimateAdaptiveTdee({ weeks, formula_tdee_kcal: 2500, current_target_kcal: 2000, primary_goal: 'FAT_LOSS' });
+  assert.equal(r.ready, true);
+  assert.equal(r.weeks_used, 4);
+});

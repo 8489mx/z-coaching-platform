@@ -21,6 +21,9 @@ export const MAX_WEIGHT_POINTS = 5; // last 4 weeks of trend
 export const RELIABLE_ADHERENCE_PERCENT = 80;
 export const MAX_WEEKLY_TARGET_STEP_KCAL = 150;
 export const MAX_DEVIATION_FROM_FORMULA = 0.3;
+// Check-ins come every week (MAX) or every two weeks (ELITE). A longer gap is a break: what the
+// client ate in it is unknown, so the trend starts again after it.
+export const MAX_GAP_WEEKS = 2;
 
 const GOAL_ENERGY_FACTOR = Object.freeze({
   FAT_LOSS: 0.8,
@@ -83,10 +86,14 @@ export function estimateAdaptiveTdee({ weeks = [], formula_tdee_kcal, current_ta
     reason_ar: null,
   };
 
-  const ordered = weeks
+  const valid = weeks
     .filter((w) => Number.isFinite(Number(w.average_weight_kg)) && Number(w.average_weight_kg) > 20 && Number.isFinite(Number(w.week_number)))
-    .sort((a, b) => Number(a.week_number) - Number(b.week_number))
-    .slice(-MAX_WEIGHT_POINTS);
+    .sort((a, b) => Number(a.week_number) - Number(b.week_number));
+  // Only the unbroken run of check-ins that ends with this one: a month off the plan followed by a
+  // return would otherwise read as "gained weight while eating the target" and cut the calories.
+  let runStart = valid.length - 1;
+  while (runStart > 0 && Number(valid[runStart].week_number) - Number(valid[runStart - 1].week_number) <= MAX_GAP_WEEKS) runStart--;
+  const ordered = valid.slice(Math.max(0, runStart)).slice(-MAX_WEIGHT_POINTS);
 
   if (ordered.length < MIN_WEIGHT_POINTS) {
     return Object.freeze({ ...base, reason_ar: `يلزم ${MIN_WEIGHT_POINTS} متابعات أسبوعية على الأقل لحساب الحرق الفعلي (المتوفر: ${ordered.length}). السعرات الحالية مبنية على المعادلة.` });
