@@ -23,6 +23,7 @@ import legalRoutes from "./routes/legal.routes.js";
 import backupRoutes from "./routes/backup.routes.js";
 import notificationRoutes from "./routes/notification.routes.js";
 import { initDailyBackupScheduler } from "./services/backup.service.js";
+import { initDailyCycleScheduler } from "./services/cycleScheduler.service.js";
 import { warmUpCatalogCache } from "./services/catalogCache.service.js";
 import { getPrivacyPolicy, getTermsOfService, getDeleteAccountPage } from "./controllers/legal.controller.js";
 import { requireAuth, requireAdmin } from "./middlewares/auth.middleware.js";
@@ -604,6 +605,7 @@ const startServer = async () => {
     await sequelize.sync();
     console.log("Database synced.");
     initDailyBackupScheduler();
+    initDailyCycleScheduler();
     warmUpCatalogCache();
   } catch (err) {
     console.warn("Database connection notice: running with in-memory / mock persistence if needed.", err.message);
