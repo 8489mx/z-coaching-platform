@@ -86,11 +86,13 @@ const UPPER_LOWER_SLOTS = {
     "ELBOW_FLEXION",
     "ELBOW_EXTENSION",
   ],
+  // A second chest press (chest had 6 weekly sets against 12 for the back).
   UPPER_B: [
     "VERTICAL_PUSH",
     "VERTICAL_PULL",
     "HORIZONTAL_PUSH",
     "HORIZONTAL_PULL",
+    "HORIZONTAL_PUSH",
     "ELBOW_EXTENSION",
     "ELBOW_FLEXION",
   ],
@@ -113,14 +115,16 @@ const UPPER_LOWER_SLOTS = {
 };
 
 const PUSH_PULL_LEGS_SLOTS = {
+  // Two chest presses on each push day; the second overhead press made room on PUSH_B.
   PUSH_A: [
     "HORIZONTAL_PUSH",
     "VERTICAL_PUSH",
+    "HORIZONTAL_PUSH",
     "SHOULDER_ABDUCTION",
     "ELBOW_EXTENSION",
   ],
   PUSH_B: [
-    "VERTICAL_PUSH",
+    "HORIZONTAL_PUSH",
     "HORIZONTAL_PUSH",
     "SHOULDER_ABDUCTION",
     "ELBOW_EXTENSION",

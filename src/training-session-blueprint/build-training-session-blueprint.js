@@ -55,11 +55,16 @@ const SESSION_MOVEMENT_SLOTS = Object.freeze({
     MovementSlotCode.ELBOW_FLEXION,
     MovementSlotCode.ELBOW_EXTENSION,
   ]),
+  // Chest had one movement per upper or push day against two for the back (6 weekly sets vs 12-16).
+  // A second chest movement on UPPER_B and on both push days brings it to about 9-12 weekly sets
+  // (>= 10 weekly sets per muscle: Schoenfeld et al. 2017 dose-response meta-analysis); the repeated
+  // slot becomes a different exercise in the mesocycle (DUPLICATE_ALTERNATIVES).
   [TrainingSessionCode.UPPER_B]: Object.freeze([
     MovementSlotCode.VERTICAL_PUSH,
     MovementSlotCode.VERTICAL_PULL,
     MovementSlotCode.HORIZONTAL_PUSH,
     MovementSlotCode.HORIZONTAL_PULL,
+    MovementSlotCode.HORIZONTAL_PUSH,
     MovementSlotCode.ELBOW_EXTENSION,
     MovementSlotCode.ELBOW_FLEXION,
   ]),
@@ -68,11 +73,14 @@ const SESSION_MOVEMENT_SLOTS = Object.freeze({
   [TrainingSessionCode.PUSH_A]: Object.freeze([
     MovementSlotCode.HORIZONTAL_PUSH,
     MovementSlotCode.VERTICAL_PUSH,
+    MovementSlotCode.HORIZONTAL_PUSH,
     MovementSlotCode.SHOULDER_ABDUCTION,
     MovementSlotCode.ELBOW_EXTENSION,
   ]),
+  // The second push day trades its second overhead press for the second chest movement: the front
+  // delts already work in every press, the side delts keep their lateral raise.
   [TrainingSessionCode.PUSH_B]: Object.freeze([
-    MovementSlotCode.VERTICAL_PUSH,
+    MovementSlotCode.HORIZONTAL_PUSH,
     MovementSlotCode.HORIZONTAL_PUSH,
     MovementSlotCode.SHOULDER_ABDUCTION,
     MovementSlotCode.ELBOW_EXTENSION,

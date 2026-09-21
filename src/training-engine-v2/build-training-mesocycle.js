@@ -199,7 +199,10 @@ const DUPLICATE_ALTERNATIVES = Object.freeze({
   GOBLET_SQUAT: "GLUTE_BRIDGE",
   LEG_PRESS_MACHINE: "BARBELL_HIP_THRUST",
   BARBELL_HIP_THRUST: "GLUTE_BRIDGE",
-  DUMBBELL_FLOOR_PRESS: "MACHINE_CHEST_PRESS",
+  DUMBBELL_FLOOR_PRESS: "INCLINE_DUMBBELL_BENCH_PRESS",
+  // A second chest movement in the same session (UPPER_B, push days) is an incline press.
+  BARBELL_BENCH_PRESS: "INCLINE_DUMBBELL_BENCH_PRESS",
+  PUSH_UP: "INCLINE_PUSH_UP",
 });
 const INJURY_CUES_AR = Object.freeze({
   LOWER_BACK: "حماية أسفل الظهر: تم استبدال التحميل المحوري والانحناء المحمل ببديل بظهر مسنود؛ ثبّت الحوض والعمود الفقري في وضع محايد وأوقف التمرين عند أي ألم ينزل للرجل.",
@@ -441,6 +444,8 @@ export function buildTrainingMesoCycle(intakeDecision, options = {}) {
           sessionExerciseTemplates = [
             { slot_code: "UNILATERAL_LOWER", exercise_code: "BULGARIAN_SPLIT_SQUAT", custom_rest: 90, target_min: 8, target_max: 10, base_rir: 2 },
             { slot_code: "VERTICAL_PUSH", exercise_code: isHome ? "STANDING_DUMBBELL_SHOULDER_PRESS" : "BARBELL_OVERHEAD_PRESS", custom_rest: 120, target_min: 6, target_max: 8, base_rir: 2 },
+            // Chest had two sessions of three (6 weekly sets against ~10 for the back): a third press.
+            { slot_code: "HORIZONTAL_PUSH", exercise_code: isHome ? "PUSH_UP" : "MACHINE_CHEST_PRESS", custom_rest: 90, target_min: 10, target_max: 12, base_rir: 1 },
             { slot_code: "HORIZONTAL_PULL", exercise_code: isHome ? "ONE_ARM_DUMBBELL_ROW" : "SEATED_CABLE_ROW", custom_rest: 90, target_min: 10, target_max: 12, base_rir: 1 },
             { slot_code: "KNEE_FLEXION", exercise_code: isHome ? "GLUTE_BRIDGE" : "LYING_LEG_CURL_MACHINE", custom_rest: 90, target_min: 10, target_max: 12, base_rir: 1 },
             { slot_code: "SHOULDER_ABDUCTION", exercise_code: "DUMBBELL_LATERAL_RAISE", custom_rest: 60, target_min: 12, target_max: 15, base_rir: isAdvanced ? 0 : 1, sets_override: isAdvanced ? 4 : 3 },
