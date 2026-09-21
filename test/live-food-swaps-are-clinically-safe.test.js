@@ -87,11 +87,11 @@ test("an unknown food gets no swaps instead of egg swaps", async () => {
 });
 
 // No food of the same kind and close value exists in the swap list for these (swapExchangeRules):
-// salmon is fattier than every other fish or meat, tuna leaner; whey, laban and milks differ in
-// protein vs sugar; lupini is the only snack of its kind. Protein powder is never swapped
+// tuna is leaner than every other fish or meat; laban and milks carry more sugar than any other
+// protein; lupini is the only snack of its kind. (Salmon swaps to leaner fish with olive oil.) Protein powder is never swapped
 // (isNoSwapFood, owner rule).
 const NO_EQUIVALENT_IN_SWAP_LIST = new Set([
-  "SALMON_FISH", "CANNED_TUNA", "LABAN_RAYEB_LOWFAT", "LUPINI_BEANS", "SKIM_MILK", "LACTOSE_FREE_MILK",
+  "CANNED_TUNA", "LABAN_RAYEB_LOWFAT", "LUPINI_BEANS", "SKIM_MILK", "LACTOSE_FREE_MILK",
 ]);
 
 test("every food a plan can hold gets swaps, except vegetables and foods with no equivalent", async () => {

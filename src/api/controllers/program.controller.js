@@ -23,7 +23,7 @@ import { applyDeloadToSession, READINESS_GUIDANCE_AR } from "../../../src/traini
 import { resolveTrainingCycleStatus, CYCLE_STATUS, resolveSubscriptionState, subscriptionNeedsAttention, startCycleOnPublish } from "../services/trainingCycleService.js";
 import { buildNextCycle, resolvePainFlaggedExercises, evaluateAutoPublish } from "../services/nextCycleService.js";
 import { isSwapFoodSafe, resolveSwapContext, PLAN_FOOD_TO_REGISTRY } from "../services/liveFoodSwapSafety.js";
-import { isLiveSwapEquivalent, liveSwapPortionValue } from "../services/liveFoodSwapValue.js";
+import { isLiveSwapEquivalent, liveSwapOilAddition, liveSwapValueWithOil, liveSwapOilText } from "../services/liveFoodSwapValue.js";
 import { isNoSwapFood, NO_SWAP_NOTE_AR } from "../../../frontend/src/utils/swapExchangeRules.js";
 
 const __filename = fileURLToPath(import.meta.url);
@@ -704,14 +704,17 @@ export const getSwapCandidatesHandler = async (req, res) => {
           displayAr = `${cand.name_ar} (${targetGrams} جرام)`;
         }
       }
+      // A leaner swap comes with the missing fat as olive oil, shown in its line.
+      const oil = currentItem ? liveSwapOilAddition(normalizedCode, grams, cand.food_code, targetGrams) : 0;
       return {
         food_code: cand.food_code,
         name_ar: cand.name_ar,
         name_en: cand.name_en,
         macro_type: cand.macro_type,
         target_grams: targetGrams,
-        display_ar: displayAr,
-        serving_display_ar: displayAr
+        oil_addition_g: oil,
+        display_ar: `${displayAr}${liveSwapOilText(oil)}`,
+        serving_display_ar: `${displayAr}${liveSwapOilText(oil)}`
       };
     });
 
@@ -768,28 +771,35 @@ export const calculateSwapHandler = async (req, res) => {
       return res.status(409).json({ error: "البديل ده مش من نفس نوع الأكل أو قيمته مش قريبة؛ اختار بديل من القايمة", code: "SWAP_NOT_EQUIVALENT" });
     }
 
-    // The app shows the new item's calories and macros from these fields (it showed 0 without them).
-    const value = liveSwapPortionValue(toCode, result.target_food.portion_g);
+    // The app shows the new item's calories and macros from these fields (it showed 0 without them),
+    // including the olive oil a leaner swap adds.
+    const value = liveSwapValueWithOil(fromCode, fromGrams, toCode, result.target_food.portion_g);
+    const oil = value?.oil || 0;
     const macros = value ? {
       calories: Math.round(value.kcal),
       protein_g: Math.round(value.protein * 10) / 10,
       carbs_g: Math.round(value.carbs * 10) / 10,
       fat_g: Math.round(value.fat * 10) / 10,
+      oil_addition_g: oil,
     } : {};
+    const withOil = {
+      name_ar: `${result.target_food.name_ar}${liveSwapOilText(oil)}`,
+      serving_display_ar: `${result.target_food.serving_display_ar}${liveSwapOilText(oil)}`,
+    };
 
     const swappedFood = {
       food_code: result.target_food.food_code,
-      name_ar: result.target_food.name_ar,
+      name_ar: withOil.name_ar,
       name_en: result.target_food.name_en,
       grams: result.target_food.portion_g,
       portion_g_rounded: result.target_food.portion_g,
-      serving_display_ar: result.target_food.serving_display_ar,
+      serving_display_ar: withOil.serving_display_ar,
       serving_display_en: result.target_food.serving_display_en,
       ...macros,
     };
 
     return res.status(200).json({
-      swap: { ...result, target_food: { ...result.target_food, ...macros } },
+      swap: { ...result, target_food: { ...result.target_food, ...withOil, ...macros } },
       swapped_food: swappedFood
     });
   } catch (err) {
