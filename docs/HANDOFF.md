@@ -9,7 +9,7 @@ Everything below is merged into `main` and pushed to GitHub (`8489mx/z-coaching-
 
 1. Read `CLAUDE.md` (standing iron rules) and this file.
 2. Run the full check and confirm the baseline before touching anything:
-   - `npm.cmd test` (Windows) — expected: node:test **1783/1783 pass**, vitest **47/47 pass**, lint 0.
+   - `npm.cmd test` (Windows) — expected: node:test **1819/1819 pass**, vitest **47/47 pass**, lint 0.
    - `cd frontend && npm.cmd run build` — expected: builds.
    - Tests need the env: they load `D:/zcc/.env` (never print its values). Scripts: `node --env-file=.env <script>`.
 3. Then continue with **section 4 (open work)**. Section 3b lists what was done after the first version of this file.
@@ -97,6 +97,26 @@ Commits, newest first (`git log --oneline cf1251e~1..HEAD`):
 - `c3b65c2` `scripts/stress-random-clients.mjs` — 306 clients, no DB (`node scripts/stress-random-clients.mjs`).
 - Verification after all of the above: stress 306 clients **0 crashes, 0 violations** (diabetic carbs >50%: 24→0, oversized portions: 4→0, obese fat-loss without cardio: 10→0); long journeys **6/6 no issues** (JRN_04/JRN_05 now show one cycle fewer than before — expected, their gated cycles are published a week later and now count from the publish date); 10-client simulation **100%**.
 
+## 3c. Swaps (food, exercise, cardio) — third round, all merged + pushed
+
+Food swaps
+-  **Mobile app food swaps** (, ) checked nothing and needed no sign-in; now require sign-in, judge every candidate with the meal generator's own filter and the client's restrictions (,  extracted in , proven identical output), refuse unsafe targets (409), no egg swaps for unknown foods, every plan food except vegetables maps to a swap family, diabetic potato swap ≤200 g.
+-  **Web client swaps** (): cornflakes not gluten-free (barley malt), pea protein under favism's legume rule, diabetic potato swap ≤200 g. A name sweep of all 142 foods vs every form allergy found no other leak.
+
+Exercise swaps
+-  Engine (): joint stress read from the name too (back extensions for a back injury, pike push-ups for a shoulder were leaking); injuries understood in Arabic and form keys (); home never gets gym gear; new **BANDS** setup (bodyweight + bands only); catalog fallback so every exercise keeps a swap (sore knee on a leg day → hip thrust / glute bridge, then RDL).
+-  Endpoints:  requires sign-in and reads the client's setup and injuries from the intake (the page sent none);  and  only for the program's client or a coach, a client only an engine-offered swap (409). Those two POST endpoints have no caller in web/mobile today (searched) — secured, not deleted.
+-  Coach editor: a manual swap that loads an injured joint or needs missing equipment shows an amber warning (, rules kept identical to the server by ).
+
+Cardio
+-  The plan now carries **** (injuries, conditions, allergies, setup, BMI, pregnancy, nursing) — the coach editor used to show every client as healthy in a gym. The coach's cardio list blocks unsafe options with the reason ().
+-  The client's own cardio (client_view) now receives injuries, weight, height and equipment: BMI / knee / back rules fire, no treadmill for bands/home clients, no-machine intervals → brisk walk, a steps-only plan shows daily walking.
+
+Other
+-  Coach screens use the plain goal names; editor shows the plan's effective goal.
+-  Olive oil ≤20 g a meal; excess fat → avocado (≤100 g) then almonds (≤30 g; never with nut allergy or kidney cap); fat total unchanged.
+- Verification after this round: 1819/1819 + 47/47, lint 0, build OK, stress 306 clients 0 crashes / 0 violations, journeys 6/6 no issues, 10-client simulation 100%.
+
 ## 4. Open work (in priority order)
 
 ### 4.1 Goal choice and plain names — DONE in `653804c` (kept below for context)
@@ -109,7 +129,7 @@ Suggested approach (confirm with owner first, show proposed Arabic labels):
 
 ### 4.1b Still open from the naming work
 - Other client-facing places still use older goal wording: `frontend/src/pages/ClientTimelineProfile.jsx` (coach page, "Lean Bulk" labels), `frontend/src/pages/CheckinReviewDashboard.jsx` (coach page, "إعادة تشكيل"), `useCoachEditorData.js` `goal_label` fallback — align if the owner wants the coach side plain too. (`mobile_app/lib` has no goal labels: searched, zero matches.)
-- The app's live swap engine (`/api/v1/programs/swap-candidates`, `frontend/src/utils/foodSwapEngine.js`) does not apply the 200 g diabetic potato limit to swaps it computes on the fly; only the plan's precomputed swaps do.
+- Live swaps now apply the diabetic potato limit too (3c).
 
 ### 4.2 Verify everything together — DONE (see 3b); rerun after any engine change
 - `node --env-file=.env scripts/simulate-long-journeys.mjs` and `scripts/simulate-clients.mjs`; expect no issues. Note: the journeys harness applies run-due's rule (ENDED only).
@@ -122,7 +142,8 @@ Suggested approach (confirm with owner first, show proposed Arabic labels):
 - Extreme case (130 kg, diabetes+kidney+liver, celiac+nut allergy): only basmati rice stays eligible and fat goes to olive oil (80–90 g/meal). It is flagged for the coach (`coach_review_high_fat`, `portion_warning_ar`). Better: more meals for high-calorie plans, and fat sources besides oil (avocado, nuts when allowed).
 - Meal count: DONE as a coach note (`33d33ff`).
 - Coach notes: DONE in the nutrition tab (`8682565`); look at it once in a real browser with a real client. `clinical_alert` shows inside the check-in review (`coach_action`).
-- Fat sources besides olive oil (avocado, nuts when allowed) for high-fat plans: not done.
+- Fat sources: DONE (`40a2a9e`).
+- Coach editor and cardio/exercise warnings: built and tested, **not yet looked at in a real browser**.
 - Flutter app not yet tried on a real device.
 - PDPL consent text: owner says the lawyer reviewed it — done.
 
