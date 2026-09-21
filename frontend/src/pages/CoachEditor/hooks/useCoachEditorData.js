@@ -14,6 +14,7 @@ import { getExerciseDisplayNames } from '../../../utils/exerciseTranslator';
 import { KIDNEY_MAX_PROTEIN_PER_KG } from '../../../config/clinicalLimits';
 import { collectCoachAlerts } from '../../../utils/coachAlerts.js';
 import { evaluateCardioModality } from '../../../utils/cardioModalitySafety.js';
+import { exerciseConflicts } from '../../../utils/exerciseSafety.js';
 
 // Intake injury keys as the coach reads them.
 const INJURY_LABELS_AR = { knee: 'الركبة', spine_back: 'أسفل الظهر', shoulder: 'الكتف', core: 'منطقة البطن (الكور)', elbow_wrist: 'الكوع والرسغ' };
@@ -916,7 +917,9 @@ export function useCoachEditorData() {
       return list;
     });
     setSwapExModal({ open: false, sessionIdx: null, exIdx: null, currentEx: null });
-    showToast('تم استبدال التمرين بنجاح');
+    // The coach decides, but is told when the pick loads an injured joint or needs missing equipment.
+    const conflicts = exerciseConflicts(targetEx.code || targetEx.id, program?.client_profile || {});
+    showToast(conflicts.length > 0 ? `تم الاستبدال، لكن انتبه: التمرين ${conflicts.join('، و')}.` : 'تم استبدال التمرين بنجاح', conflicts.length > 0 ? 'warning' : 'success');
   };
 
   const handleUpdateExerciseParam = (sIdx, eIdx, field, value) => {

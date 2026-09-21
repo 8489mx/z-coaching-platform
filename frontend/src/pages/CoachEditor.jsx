@@ -463,7 +463,7 @@ export default function CoachEditor() {
               bottom: '20px',
               left: '50%',
               transform: 'translateX(-50%)',
-              background: '#0F172A',
+              background: notification.type === 'warning' ? '#B45309' : '#0F172A',
               color: '#FFFFFF',
               padding: '8px 16px',
               borderRadius: '10px',
