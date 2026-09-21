@@ -8,6 +8,7 @@ import { saveProgressPhotoToDisk } from "../utils/photoStorage.js";
 import { buildAdaptedPlan } from "../../adaptation-engine/build-adapted-plan.js";
 import { mergeAdaptedPlanIntoProgram } from "../utils/planMergeEngine.js";
 import { resolveClientPrimaryGoal, resolveClientIsFemale } from "./program.controller.js";
+import { resolveTrainingCycleStatus } from "../services/trainingCycleService.js";
 
 /**
  * Submit weekly check-in
@@ -426,15 +427,22 @@ export async function approveCheckin(req, res) {
         const painScore = firstPain.score || firstPain.severity || bio.pain_score || checkin.analysis_output?.pain_score;
         const fatigueScore = bio.fatigue_score || bio.fatigue || checkin.analysis_output?.fatigue_score;
 
+        // The check-in's week_number counts weeks of the whole subscription; the plan's weeks count
+        // weeks of the current cycle. Passing the first as the second made the adaptation append
+        // "week 14" to a five-week cycle on every check-in, so the cycle never ended, and turned
+        // every week after the first month into a deload. The adapted week is always a week of this
+        // cycle, never one past its end.
+        const cycle = resolveTrainingCycleStatus(latestProgram);
+        const cycleWeek = Math.min(cycle.current_week, Math.max(1, cycle.total_weeks - 1));
         adapted = buildAdaptedPlan({
           currentMasterProgram: progData,
           checkinAnalysis: checkin.analysis_output || {},
           options: {
-            currentWeekNumber: checkin.week_number || 1,
+            currentWeekNumber: cycleWeek,
             joint_pain_location: jointLocation,
             pain_score: painScore,
             accumulated_fatigue_score: fatigueScore,
-            weeks_of_accumulated_training: checkin.week_number || 1
+            weeks_of_accumulated_training: cycle.current_week
           }
         });
       } catch (e) {
