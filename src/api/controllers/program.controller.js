@@ -20,7 +20,7 @@ import { resolveFastingContext, FASTING_OVERRIDES, applyFastingToMeals, RAMADAN_
 import { getGulfHeatAdvisory, getPracticalCardioPrescription } from "../../execution-engines/cardio-zones-engine.js";
 import { calculateSessionDemand, auditWeeklyMuscleVolume, auditDeficitVolumeShield, evaluateProteinSparingRequirement } from "../utils/trainingNutritionCoupling.js";
 import { applyDeloadToSession, READINESS_GUIDANCE_AR } from "../../../src/training-engine-v2/progression/index.js";
-import { resolveTrainingCycleStatus, CYCLE_STATUS, resolveSubscriptionState, subscriptionNeedsAttention } from "../services/trainingCycleService.js";
+import { resolveTrainingCycleStatus, CYCLE_STATUS, resolveSubscriptionState, subscriptionNeedsAttention, startCycleOnPublish } from "../services/trainingCycleService.js";
 import { buildNextCycle, resolvePainFlaggedExercises, evaluateAutoPublish } from "../services/nextCycleService.js";
 
 const __filename = fileURLToPath(import.meta.url);
@@ -1485,7 +1485,7 @@ export const updateCustomProgram = async (req, res) => {
     if (!program) {
       program = await Program.create({
         user_id: user.id,
-        program_data: program_data || {},
+        program_data: shouldPublish ? startCycleOnPublish(program_data || {}) : (program_data || {}),
         status: shouldPublish ? "ACTIVE" : "DRAFT"
       });
     } else {
@@ -1498,6 +1498,11 @@ export const updateCustomProgram = async (req, res) => {
         program.program_data = program_data;
       }
       if (shouldPublish) {
+        // A draft going live starts its cycle today; re-publishing a live plan keeps its dates.
+        if (program.status !== "ACTIVE") {
+          program.program_data = startCycleOnPublish(program.program_data);
+          program.changed("program_data", true);
+        }
         program.status = "ACTIVE";
         program.version = (Number(program.version) || 1) + 1;
       }

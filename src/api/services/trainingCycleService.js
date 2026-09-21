@@ -73,6 +73,16 @@ export function resolveTrainingCycleStatus(program, now = new Date()) {
   };
 }
 
+/**
+ * A plan's cycle starts the day the client receives it. A draft can wait days for the coach (a
+ * medical review, a pain flag); counting from the day it was prepared would start the client in
+ * week two. Called when a draft is published; returns a copy with the start date set.
+ */
+export function startCycleOnPublish(programData, now = new Date()) {
+  if (!programData || typeof programData !== "object") return programData;
+  return { ...programData, cycle_started_at: new Date(now.getTime()).toISOString() };
+}
+
 /** True when the coach should see this client in the "needs a new cycle" list. */
 export function needsCoachAttention(program, now = new Date()) {
   return resolveTrainingCycleStatus(program, now).needs_new_cycle;

@@ -8,6 +8,7 @@ import { IntakeValidationError } from "../../intake-decision-engine/validation/i
 import { buildMasterEngineV2 } from "../../../src/master-engine-v2/index.js";
 import { resolveIntakeMedicalReview, MEDICAL_REVIEW_CONFIRMATION_REQUIRED } from "./program.controller.js";
 import { User, Program, IntakeSubmission } from "../models/index.js";
+import { startCycleOnPublish } from "../services/trainingCycleService.js";
 import { encryptMedicalData, decryptMedicalData } from "../../utils/crypto.js";
 import { hasHealthDataConsent } from "../../../frontend/src/config/healthDataConsent.js";
 
@@ -622,6 +623,10 @@ export const approveAndPublishIntake = async (req, res) => {
       });
     }
 
+    if (program.status !== "ACTIVE") {
+      program.program_data = startCycleOnPublish(program.program_data);
+      program.changed('program_data', true);
+    }
     program.status = "ACTIVE";
     if (coach_notes && typeof program.program_data === 'object' && program.program_data !== null) {
       program.program_data.coach_notes = coach_notes;
