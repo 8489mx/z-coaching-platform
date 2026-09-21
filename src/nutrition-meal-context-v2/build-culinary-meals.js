@@ -1934,16 +1934,17 @@ function formConditionExclusionTokens(medicalConditions) {
   return tokens;
 }
 
-export function buildCulinaryRecipeMeals(universalTargets, canonicalIntake = {}, rawIntake = {}) {
-  const { meal_distribution = [] } = universalTargets;
+/**
+ * The client's food restrictions as the meal generator filters them (allergies, conditions, diet),
+ * from the canonical intake and the raw form answers. Shared by the plan generator and the app's
+ * live food swaps, so a swap can never offer what the plan itself would refuse.
+ */
+export function buildAllergenContext(canonicalIntake = {}, rawIntake = {}) {
   const nutrition = canonicalIntake.nutrition || {};
   const medical = canonicalIntake.medical || {};
-  const training = canonicalIntake.training || {};
   const effectiveRaw = (rawIntake?.answers && typeof rawIntake.answers === 'object')
     ? { ...rawIntake.answers, ...rawIntake }
     : (rawIntake || {});
-  const isAdvanced = (training.experience || "").toUpperCase() === "ADVANCED";
-  const proteinPowderAvailable = Boolean(nutrition.proteinPowderAvailable ?? nutrition.protein_powder_available ?? true);
   const budgetTier = (nutrition.budget || nutrition.budgetTier || "MODERATE").toUpperCase();
 
   const rawExclusions = [
@@ -2084,7 +2085,8 @@ export function buildCulinaryRecipeMeals(universalTargets, canonicalIntake = {},
     budgetTier === "ECONOMIC" ||
     budgetTier === "SAVER";
 
-  const allergenContext = {
+  return {
+    excludedFoods,
     isVegan,
     isGlutenExcluded,
     isDairyExcluded,
@@ -2103,6 +2105,22 @@ export function buildCulinaryRecipeMeals(universalTargets, canonicalIntake = {},
     isDiabetic,
     isSesameExcluded,
   };
+}
+
+export function buildCulinaryRecipeMeals(universalTargets, canonicalIntake = {}, rawIntake = {}) {
+  const { meal_distribution = [] } = universalTargets;
+  const nutrition = canonicalIntake.nutrition || {};
+  const medical = canonicalIntake.medical || {};
+  const training = canonicalIntake.training || {};
+  const effectiveRaw = (rawIntake?.answers && typeof rawIntake.answers === 'object')
+    ? { ...rawIntake.answers, ...rawIntake }
+    : (rawIntake || {});
+  const isAdvanced = (training.experience || "").toUpperCase() === "ADVANCED";
+  const proteinPowderAvailable = Boolean(nutrition.proteinPowderAvailable ?? nutrition.protein_powder_available ?? true);
+  const budgetTier = (nutrition.budget || nutrition.budgetTier || "MODERATE").toUpperCase();
+
+  const allergenContext = buildAllergenContext(canonicalIntake, effectiveRaw);
+  const { excludedFoods, isVegan, isGlutenExcluded, isDairyExcluded, isEggsExcluded, isFishExcluded, isPoultryExcluded, isRedMeatExcluded, isMeatExcluded, isSoyExcluded, isNutsExcluded, isGout, isFavism, isLegumesExcluded, isLowBudget, isDumpingSyndrome, isDiabetic, isSesameExcluded } = allergenContext;
 
   const totalMeals = meal_distribution.length;
 
