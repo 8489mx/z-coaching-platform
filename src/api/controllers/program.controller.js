@@ -22,6 +22,7 @@ import { calculateSessionDemand, auditWeeklyMuscleVolume, auditDeficitVolumeShie
 import { applyDeloadToSession, READINESS_GUIDANCE_AR } from "../../../src/training-engine-v2/progression/index.js";
 import { resolveTrainingCycleStatus, CYCLE_STATUS, resolveSubscriptionState, subscriptionNeedsAttention, startCycleOnPublish } from "../services/trainingCycleService.js";
 import { buildNextCycle, resolvePainFlaggedExercises, evaluateAutoPublish } from "../services/nextCycleService.js";
+import { isSwapFoodSafe, resolveSwapContext, PLAN_FOOD_TO_REGISTRY } from "../services/liveFoodSwapSafety.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -570,12 +571,15 @@ const FOOD_CODE_ALIASES = {
   ALMONDS_RAW: "ALMONDS_RAW"
 };
 
+// An unrecognised food returns null. It used to fall back to "WHOLE_EGG", so rice with an unknown
+// code was offered egg swaps.
 function normalizeFoodCode(codeOrName) {
-  if (!codeOrName) return "WHOLE_EGG";
+  if (!codeOrName) return null;
   const str = String(codeOrName).trim();
   const upper = str.toUpperCase();
 
   if (FOOD_CODE_ALIASES[upper]) return FOOD_CODE_ALIASES[upper];
+  if (PLAN_FOOD_TO_REGISTRY[upper]) return PLAN_FOOD_TO_REGISTRY[upper];
 
   for (const item of SMART_SWAP_REGISTRY) {
     if (item.food_code === upper) return upper;
@@ -590,14 +594,28 @@ function normalizeFoodCode(codeOrName) {
     }
   }
 
-  return "WHOLE_EGG";
+  return null;
+}
+
+/** The clinical restrictions of the client a swap request is for (signed-in client, or client_code from a coach). */
+async function swapContextFor(req) {
+  const requester = req.user?.id ? await User.findByPk(req.user.id).catch(() => null) : null;
+  const code = String(req.body?.client_code || "").replace(/^#+/, "").trim();
+  const clientForCoach = requester && ["COACH", "ADMIN"].includes(requester.role) && code
+    ? await User.findOne({ where: { client_code: code } }).catch(() => null)
+    : null;
+  return resolveSwapContext({ requester, clientForCoach, loadAnswers: loadLatestIntakeAnswers });
 }
 
 export const getSwapCandidatesHandler = async (req, res) => {
   try {
     const { food_code, name_ar, meal_context, source_grams } = req.body;
-    const normalizedCode = normalizeFoodCode(food_code || name_ar);
+    const normalizedCode = normalizeFoodCode(food_code) || normalizeFoodCode(name_ar);
+    if (!normalizedCode) {
+      return res.status(200).json({ candidates: [], message_ar: "لا توجد بدائل مسجلة لهذا الصنف." });
+    }
     const grams = Number(source_grams) || 100;
+    const clinicalContext = await swapContextFor(req);
     const mealCategory = meal_context === "BREAKFAST" ? "BREAKFAST" : "MAIN_MEAL";
 
     let candidates = listSmartSwapCandidates(normalizedCode, mealCategory);
@@ -640,7 +658,10 @@ export const getSwapCandidatesHandler = async (req, res) => {
       };
     });
 
-    return res.status(200).json({ candidates: enrichedCandidates });
+    // Only what the client's own meal plan could contain: allergies, conditions, and the diabetic
+    // potato portion.
+    const safeCandidates = enrichedCandidates.filter((cand) => isSwapFoodSafe(cand.food_code, clinicalContext, cand.target_grams));
+    return res.status(200).json({ candidates: safeCandidates });
   } catch (err) {
     console.error("getSwapCandidatesHandler error:", err);
     return res.status(500).json({ error: "فشل استرجاع البدائل", details: err.message });
@@ -661,6 +682,9 @@ export const calculateSwapHandler = async (req, res) => {
 
     const fromCode = normalizeFoodCode(source_food_code || current_food_code);
     const toCode = normalizeFoodCode(target_food_code);
+    if (!fromCode || !toCode) {
+      return res.status(400).json({ error: "صنف غير معروف في قائمة البدائل" });
+    }
     const fromGrams = Number(source_grams || current_portion_g) || 100;
     const category = meal_category || (meal_context === "BREAKFAST" ? "BREAKFAST" : "MAIN_MEAL");
 
@@ -670,6 +694,12 @@ export const calculateSwapHandler = async (req, res) => {
       target_food_code: toCode,
       meal_category: category,
     });
+
+    // A target the client's restrictions forbid is refused even when sent directly.
+    const clinicalContext = await swapContextFor(req);
+    if (!isSwapFoodSafe(toCode, clinicalContext, result.target_food.portion_g)) {
+      return res.status(409).json({ error: "البديل ده مش مناسب لحالتك الصحية أو الحساسية المسجلة", code: "SWAP_NOT_CLINICALLY_SAFE" });
+    }
 
     const swappedFood = {
       food_code: result.target_food.food_code,

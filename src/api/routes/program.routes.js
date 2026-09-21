@@ -50,7 +50,8 @@ router.get("/checkin/history/:user_id", requireAuth, getCheckinHistory);
 router.post("/adapt", requireAuth, adaptProgramHandler);
 
 // Context-Aware Smart Food Swap V2 endpoints
-router.post("/swap-candidates", getSwapCandidatesHandler);
-router.post("/swap-food", calculateSwapHandler);
+// Signed in: the swaps are filtered by the client's own allergies and conditions.
+router.post("/swap-candidates", requireAuth, getSwapCandidatesHandler);
+router.post("/swap-food", requireAuth, calculateSwapHandler);
 
 export default router;
