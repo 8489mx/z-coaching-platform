@@ -7,6 +7,7 @@ export { sanitizeMealPlan } from "./sanitize-meal-plan.js";
 export {
   buildCulinaryRecipeMeals,
   enforceDiabeticCarbChoice,
+  splitOversizedPortions,
   isDiabeticIntake,
   generateSmartSwaps,
   FOOD_SWAP_DATABASE,

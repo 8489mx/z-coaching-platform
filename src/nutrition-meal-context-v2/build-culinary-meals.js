@@ -3842,6 +3842,76 @@ export function enforceDiabeticCarbChoice(meals = [], isDiabetic = false) {
  * safe, the item stays but is flagged for the coach rather than silently served.
  * Foods this generator does not know are left alone: it cannot judge what it has no record of.
  */
+export const MAX_CARB_PORTION_G = 400;
+
+const scaleNumber = (value, factor) => (Number.isFinite(Number(value)) ? Math.round(Number(value) * factor) : value);
+const gramsText = (grams, reference) => `${grams} جم${/مطبوخ/.test(String(reference || "")) ? " مطبوخ" : ""}`;
+
+/**
+ * A carbohydrate item larger than MAX_CARB_PORTION_G (a bulking plan on three meals put 864 g of
+ * rice on one plate) is split over the same food and the foods of its own swap list, all already
+ * filtered for the client's allergies and conditions: each part is filled up to the cap, the
+ * original first, then the densest swaps. If the list cannot hold it all, every part grows by the
+ * same ratio. The meal's macros do not change. With no safe swap the item stays whole and carries a
+ * note for the coach. Runs once, on the final meals (after the diabetic choice).
+ */
+export function splitOversizedPortions(meals = [], maxGrams = MAX_CARB_PORTION_G) {
+  if (!Array.isArray(meals)) return meals;
+  const scaleSwap = (swap, factor) => {
+    const grams = scaleNumber(swap.equivalent_grams, factor);
+    return { ...swap, equivalent_grams: grams, household_desc: gramsText(grams, swap.household_desc),
+      protein_g: scaleNumber(swap.protein_g, factor), carb_g: scaleNumber(swap.carb_g, factor),
+      fat_g: scaleNumber(swap.fat_g, factor), calories_kcal: scaleNumber(swap.calories_kcal, factor) };
+  };
+  const macros = (item, factor) => ({
+    protein_g: scaleNumber(item.protein_g, factor), carb_g: scaleNumber(item.carb_g, factor),
+    fat_g: scaleNumber(item.fat_g, factor), calories_kcal: scaleNumber(item.calories_kcal, factor),
+  });
+  return meals.map((meal) => {
+    if (!Array.isArray(meal?.items)) return meal;
+    const items = [];
+    for (const item of meal.items) {
+      const portion = Number(item?.portion_g);
+      const swaps = Array.isArray(item?.swaps) ? item.swaps : [];
+      const seen = new Set([item?.food_code]);
+      const partners = swaps
+        .filter((swap) => swap?.food_code && Number(swap.equivalent_grams) > 0 && !seen.has(swap.food_code) && seen.add(swap.food_code))
+        .sort((a, b) => Number(a.equivalent_grams) - Number(b.equivalent_grams));
+      if (item?.category !== "CARBS" || !(portion > maxGrams)) {
+        items.push(item);
+        continue;
+      }
+      if (partners.length === 0) {
+        items.push({ ...item, portion_warning_ar: `حصة ${portion} جم في وجبة واحدة ولا يوجد بديل آمن لتقسيمها مع قيود العميل؛ راجع توزيع الوجبات أو زوّد عددها.` });
+        continue;
+      }
+      // grams of each food that would carry the whole item; shares add up to 1.
+      const parts = [{ grams: portion }, ...partners.map((partner) => ({ grams: Number(partner.equivalent_grams), partner }))];
+      let left = 1;
+      for (const p of parts) {
+        p.share = Math.min(left, maxGrams / p.grams);
+        left -= p.share;
+      }
+      if (left > 1e-6) {
+        const total = 1 - left;
+        for (const p of parts) p.share /= total;
+      }
+      parts.filter((p) => p.share > 1e-6).forEach((p) => {
+        const grams = scaleNumber(p.grams, p.share);
+        if (!p.partner) {
+          items.push({ ...item, ...macros(item, p.share), portion_g: grams, household_measurement: gramsText(grams, item.household_measurement),
+            swaps: swaps.map((swap) => scaleSwap(swap, p.share)), split_from_portion_g: portion });
+        } else {
+          items.push({ ...macros(item, p.share), food_code: p.partner.food_code, name_ar: p.partner.name_ar, name_en: p.partner.name_en,
+            category: "CARBS", portion_g: grams, household_measurement: gramsText(grams, p.partner.household_desc), swaps: [],
+            split_note_ar: "جزء من حصة النشويات في الوجبة، مقسومة على أكتر من صنف علشان الكمية تبقى معقولة في الطبق." });
+        }
+      });
+    }
+    return { ...meal, items };
+  });
+}
+
 export function enforceClinicalSafety(meals = [], allergenContext = {}) {
   if (!Array.isArray(meals)) return meals;
   const known = (code) => Boolean(FOOD_SWAP_DATABASE[code]);
