@@ -894,9 +894,11 @@ export const prepareNextCycle = async (req, res) => {
     }
 
     // A cycle that is still running is not replaced by accident: one wrong click would restart a
-    // client in their second week from scratch. The coach can still force it deliberately.
+    // client in their second week from scratch. Its last week counts as running too: that is the
+    // deload week, and a cycle prepared during it starts at once and skips it. The coach is warned a
+    // week ahead in the attention list, and can still force it deliberately.
     const currentCycle = resolveTrainingCycleStatus(program);
-    if (!currentCycle.needs_new_cycle && req.body?.force !== true) {
+    if (currentCycle.status !== CYCLE_STATUS.ENDED && req.body?.force !== true) {
       return res.status(409).json({
         error: `الدورة الحالية ما زالت جارية (الأسبوع ${currentCycle.current_week} من ${currentCycle.total_weeks}، تنتهي ${currentCycle.ends_on}).`,
         code: "CYCLE_STILL_RUNNING",
@@ -975,7 +977,8 @@ export const runDueCycles = async (req, res) => {
       if (!client || seen.has(client.id)) continue;
       seen.add(client.id);
       if (client.subscription_status === "DEACTIVATED") continue;
-      if (!resolveTrainingCycleStatus(program).needs_new_cycle) continue;
+      // Only cycles that have ended: one in its last (deload) week is left to finish.
+      if (resolveTrainingCycleStatus(program).status !== CYCLE_STATUS.ENDED) continue;
 
       const pendingDraft = await Program.findOne({ where: { user_id: client.id, status: "DRAFT", id: { [Op.gt]: program.id } }, attributes: ["id"] });
       if (pendingDraft) {

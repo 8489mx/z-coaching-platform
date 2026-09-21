@@ -236,3 +236,43 @@ test("a cycle that is still running is not replaced by an accidental click", asy
     await coach.destroy().catch(() => {});
   }
 });
+
+test("a cycle in its last (deload) week is left to finish; once it has ended the next one is prepared", async () => {
+  const code = "TEST_CYCLE_LASTWEEK_931";
+  const coachCode = "TEST_CYCLE_LASTWEEK_COACH_931";
+  for (const c of [code, coachCode]) {
+    const existing = await User.findOne({ where: { client_code: c } });
+    if (existing) {
+      await Program.destroy({ where: { user_id: existing.id } });
+      await existing.destroy();
+    }
+  }
+  const client = await User.create({ client_code: code, phone_number: "01099000934", full_name: "Last week", role: "CLIENT" });
+  const coach = await User.create({ client_code: coachCode, phone_number: "01099000935", full_name: "Coach", role: "ADMIN" });
+  const DAY_MS = 24 * 60 * 60 * 1000;
+  const FIVE_WEEKS = { ...PLAN, training_program: { weeks: [1, 2, 3, 4, 5].map((n) => ({ ...PLAN.training_program.weeks[0], week_number: n })) } };
+  // Thirty days into a five-week plan: the deload week, five days before the end.
+  const program = await Program.create({
+    user_id: client.id,
+    status: "ACTIVE",
+    program_data: { ...FIVE_WEEKS, cycle_started_at: new Date(Date.now() - 30 * DAY_MS).toISOString() },
+  });
+
+  try {
+    const early = mockRes();
+    await prepareNextCycle({ user: { id: coach.id }, body: { client_code: code } }, early.res);
+    assert.equal(early.out.status, 409, "the deload week would have been skipped");
+    assert.equal(early.out.body.code, "CYCLE_STILL_RUNNING");
+
+    program.program_data = { ...FIVE_WEEKS, cycle_started_at: new Date(Date.now() - 36 * DAY_MS).toISOString() };
+    program.changed("program_data", true);
+    await program.save();
+    const due = mockRes();
+    await prepareNextCycle({ user: { id: coach.id }, body: { client_code: code } }, due.res);
+    assert.equal(due.out.status, 201, JSON.stringify(due.out.body));
+  } finally {
+    await Program.destroy({ where: { user_id: client.id } }).catch(() => {});
+    await client.destroy().catch(() => {});
+    await coach.destroy().catch(() => {});
+  }
+});
