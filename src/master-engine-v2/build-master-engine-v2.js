@@ -151,7 +151,7 @@ import { buildCardioEngine } from "../cardio-engine/index.js";
 import { buildMobilityEngine } from "../mobility-engine/index.js";
 import { buildSessionMobilityProtocol } from "../mobility-warmup-engine-v2/index.js";
 import { buildNutritionEngine } from "../nutrition-engine/index.js";
-import { sanitizeMealPlan, buildCulinaryRecipeMeals } from "../nutrition-meal-context-v2/index.js";
+import { sanitizeMealPlan, buildCulinaryRecipeMeals, enforceDiabeticCarbChoice, isDiabeticIntake } from "../nutrition-meal-context-v2/index.js";
 import { quantizeNutritionPlan } from "../nutrition-serving-quantizer-v2/index.js";
 import { adaptIntakePayloadToCanonicalEngine } from "../intake-decision-engine/adapters/intake-adapter.js";
 import { MASTER_ENGINE_V2_VERSION } from "./domain/enums.js";
@@ -918,7 +918,10 @@ export function buildMasterEngineV2(inputs) {
 
   // 5. Universal Nutrition Targets & Culinary Meal Generator
   const universalTargets = calculateUniversalNutritionTargets(canonicalIntake, evaluationContext, effectiveIntake);
-  const culinaryRecipeMeals = buildCulinaryRecipeMeals(universalTargets, canonicalIntake, effectiveIntake);
+  const culinaryRecipeMeals = enforceDiabeticCarbChoice(
+    buildCulinaryRecipeMeals(universalTargets, canonicalIntake, effectiveIntake),
+    isDiabeticIntake(canonicalIntake, effectiveIntake),
+  );
 
   const baseNutritionProgram = buildNutritionEngine({
     intake: canonicalIntake,

@@ -1,3 +1,5 @@
+import { getFoodClinicalProperties } from "../execution-engines/food-swap-engine.js";
+
 /**
  * Advanced Contextual Culinary Meal Archetype, Dynamic Fat Offset & Extreme Edge-Case Engine
  * 
@@ -1082,6 +1084,9 @@ export function isFoodClinicallySafe(foodCode, allergenContext = {}) {
   if (allergenContext.isPoultryExcluded && (foodCode === "CHICKEN_BREAST" || foodCode === "SMOKED_TURKEY")) return false;
   if (allergenContext.isRedMeatExcluded && (foodCode === "LEAN_BEEF" || foodCode === "CAMEL_MEAT_LEAN")) return false;
   if (allergenContext.isGout && !food.is_gout_safe) return false;
+  // Diabetes: high glycemic foods are excluded from the generated meals, by the same classification
+  // the swap engine enforces (ADA Standards of Care), so the plan and the swaps agree.
+  if (allergenContext.isDiabetic && getFoodClinicalProperties(foodCode, food)?.glycemic_index === "HIGH") return false;
   // Post-bariatric dumping syndrome: no concentrated sugars in the generated meals.
   if (allergenContext.isDumpingSyndrome && (food.is_simple_sugar === true || foodCode.startsWith("DATES_"))) return false;
   if (allergenContext.isLegumesExcluded && food.is_legume) return false;
@@ -2023,6 +2028,12 @@ export function buildCulinaryRecipeMeals(universalTargets, canonicalIntake = {},
   // Declared in the intake under the bariatric block; not part of the canonical contract.
   const isDumpingSyndrome = effectiveRaw?.medical_conditions?.bariatric?.dumping_syndrome === true;
 
+  const rawSelected = Array.isArray(effectiveRaw?.medical_conditions?.selected) ? effectiveRaw.medical_conditions.selected : [];
+  const isDiabetic =
+    rawSelected.some((c) => String(c).toLowerCase() === "diabetes") ||
+    effectiveRaw?.medical_conditions?.diabetes?.uses_insulin === true ||
+    (medical.conditions || []).some((c) => /DIABET|INSULIN_RESISTANCE/.test(String(c.conditionCode || "")));
+
   const isGout =
     excludedFoods.has("GOUT") ||
     excludedFoods.has("HIGH_URIC_ACID") ||
@@ -2071,6 +2082,7 @@ export function buildCulinaryRecipeMeals(universalTargets, canonicalIntake = {},
     isLegumesExcluded,
     isLowBudget,
     isDumpingSyndrome,
+    isDiabetic,
   };
 
   const totalMeals = meal_distribution.length;
@@ -3741,6 +3753,60 @@ export function buildCulinaryRecipeMeals(universalTargets, canonicalIntake = {},
         calories_kcal: Math.round(calculatedKcal),
       },
       items: enrichedItems,
+    };
+  });
+}
+/** Whether the intake declares diabetes or insulin resistance (raw form answers or canonical conditions). */
+export function isDiabeticIntake(canonicalIntake = {}, rawIntake = {}) {
+  const effectiveRaw = (rawIntake?.answers && typeof rawIntake.answers === "object")
+    ? { ...rawIntake.answers, ...rawIntake }
+    : (rawIntake || {});
+  const selected = Array.isArray(effectiveRaw?.medical_conditions?.selected) ? effectiveRaw.medical_conditions.selected : [];
+  return (
+    selected.some((c) => String(c).toLowerCase() === "diabetes") ||
+    effectiveRaw?.medical_conditions?.diabetes?.uses_insulin === true ||
+    (canonicalIntake?.medical?.conditions || []).some((c) => /DIABET|INSULIN_RESISTANCE/.test(String(c?.conditionCode || "")))
+  );
+}
+
+/**
+ * Some meal templates place a fixed carbohydrate (baladi bread at breakfast and dinner) without going
+ * through the clinical filter. For a diabetic client, any item the shared classification marks high
+ * glycemic is replaced by the first of its own swaps that is not: those swaps were computed for the
+ * same meal and the same carbohydrate target, and already filtered for this client.
+ */
+export function enforceDiabeticCarbChoice(meals = [], isDiabetic = false) {
+  if (!isDiabetic || !Array.isArray(meals)) return meals;
+  const isHigh = (code) => getFoodClinicalProperties(code, FOOD_SWAP_DATABASE[code])?.glycemic_index === "HIGH";
+
+  return meals.map((meal) => {
+    const items = meal.items || [];
+    if (!items.some((item) => isHigh(item.food_code))) return meal;
+
+    return {
+      ...meal,
+      items: items.map((item) => {
+        if (!isHigh(item.food_code)) return item;
+        const swaps = Array.isArray(item.swaps) ? item.swaps : [];
+        const chosen = swaps.find((swap) => swap?.food_code && !isHigh(swap.food_code));
+        if (!chosen) {
+          return { ...item, glycemic_warning_ar: "صنف عالي المؤشر الجلايسيمي ولا يوجد بديل آمن محسوب له؛ راجعه قبل النشر." };
+        }
+        return {
+          ...item,
+          food_code: chosen.food_code,
+          name_ar: chosen.name_ar,
+          name_en: chosen.name_en,
+          portion_g: chosen.equivalent_grams ?? item.portion_g,
+          household_measurement: chosen.household_desc ?? item.household_measurement,
+          protein_g: chosen.protein_g,
+          carb_g: chosen.carb_g,
+          fat_g: chosen.fat_g,
+          calories_kcal: chosen.calories_kcal,
+          swaps: swaps.filter((swap) => swap !== chosen && !isHigh(swap.food_code)),
+          replaced_for_diabetes_from: item.food_code,
+        };
+      }),
     };
   });
 }

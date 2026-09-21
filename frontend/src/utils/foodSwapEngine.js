@@ -2034,6 +2034,13 @@ export function getFoodClinicalProperties(code, foodItem) {
   if (FOOD_CLINICAL_OVERRIDES[upperCode]) {
     return FOOD_CLINICAL_OVERRIDES[upperCode];
   }
+  // The meal generator names some foods differently (BALADI_BREAD for EGYPTIAN_BALADI_BREAD). Without
+  // following the alias the classification silently fell back to a default and a diabetic client
+  // could be served bread this very table marks as high glycemic.
+  const aliased = UNIFIED_FOOD_CODE_ALIASES[upperCode];
+  if (aliased && FOOD_CLINICAL_OVERRIDES[aliased]) {
+    return FOOD_CLINICAL_OVERRIDES[aliased];
+  }
 
   // Fallback defaults according to macronutrient and food characteristics
   let gi = 'LOW';
