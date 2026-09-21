@@ -1085,8 +1085,27 @@ export function buildMasterEngineV2(inputs) {
     scientific_source: "ADA Standards of Care in Diabetes: Physical Activity & Hypoglycemia Management",
   }) : null;
 
+  // What the coach editor and the swap screens need to know about the client, from the intake
+  // (the plan used to carry none of it, so the editor showed every client as healthy and in a gym).
+  const listOf = (value) => (Array.isArray(value) ? value : []).map((v) => String(v).trim()).filter((v) => v && v.toLowerCase() !== "none");
+  const femaleCases = effectiveIntake?.medical_conditions?.female_cases || {};
+  const client_profile = Object.freeze({
+    gender: effectiveIntake?.gender || null,
+    age: Number(effectiveIntake?.age) || null,
+    weight_kg: bodyWeight,
+    height_cm: bodyHeight,
+    bmi: Math.round((bodyWeight / ((bodyHeight / 100) ** 2)) * 10) / 10,
+    training_environment: effectiveIntake?.training_environment || null,
+    injuries: effectiveIntake?.injuries_map?.has_injuries === false ? [] : listOf(effectiveIntake?.injuries_map?.selected_areas),
+    conditions: listOf(effectiveIntake?.medical_conditions?.selected),
+    allergies: listOf(effectiveIntake?.strict_allergies),
+    is_pregnant: effectiveIntake?.is_pregnant === true || effectiveIntake?.female_pregnancy === "PREGNANT",
+    is_lactating: femaleCases.is_lactating === true,
+  });
+
   return Object.freeze({
     engine_version: MASTER_ENGINE_V2_VERSION,
+    client_profile,
     intake_decision,
     training_program: enrichedTrainingMesocycle,
     cardio_program: cardio_program_v2,

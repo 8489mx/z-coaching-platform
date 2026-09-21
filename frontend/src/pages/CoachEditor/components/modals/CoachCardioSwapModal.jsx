@@ -1,11 +1,13 @@
 import React from 'react';
 import { X } from 'lucide-react';
 import { CARDIO_MODALITY_OPTIONS } from '../../constants/coachEditorConstants';
+import { evaluateCardioModality } from '../../../../utils/cardioModalitySafety.js';
 
 export function CoachCardioSwapModal({
   cardioSwapModal,
   setCardioSwapModal,
-  handleSelectCardioModality
+  handleSelectCardioModality,
+  clientProfile = null
 }) {
   if (!cardioSwapModal) return null;
 
@@ -20,19 +22,28 @@ export function CoachCardioSwapModal({
         </div>
 
         <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', maxHeight: '300px', overflowY: 'auto' }}>
-          {CARDIO_MODALITY_OPTIONS.map((opt) => (
-            <div
-              key={opt.id}
-              onClick={() => handleSelectCardioModality(opt)}
-              style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', borderRadius: '8px', padding: '8px 10px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', cursor: 'pointer' }}
-            >
-              <div>
-                <strong style={{ fontSize: '11.5px', color: '#0F172A', display: 'block' }}>{opt.name}</strong>
-                <span style={{ fontSize: '10px', color: '#64748B' }}>{opt.desc}</span>
+          {CARDIO_MODALITY_OPTIONS.map((opt) => {
+            const verdict = evaluateCardioModality(opt.id, clientProfile || {});
+            return (
+              <div
+                key={opt.id}
+                onClick={() => verdict.allowed && handleSelectCardioModality(opt)}
+                style={{ background: verdict.allowed ? '#F8FAFC' : '#FEF2F2', border: verdict.allowed ? '1px solid #E2E8F0' : '1px solid #FECACA', borderRadius: '8px', padding: '8px 10px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', cursor: verdict.allowed ? 'pointer' : 'not-allowed', opacity: verdict.allowed ? 1 : 0.8 }}
+              >
+                <div>
+                  <strong style={{ fontSize: '11.5px', color: '#0F172A', display: 'block' }}>{opt.name}</strong>
+                  <span style={{ fontSize: '10px', color: '#64748B' }}>{opt.desc}</span>
+                  {!verdict.allowed && (
+                    <span style={{ fontSize: '10px', color: '#B91C1C', display: 'block', marginTop: '2px' }}>{verdict.reasons_ar.join(' ')}</span>
+                  )}
+                  {verdict.allowed && verdict.warning_ar && (
+                    <span style={{ fontSize: '10px', color: '#B45309', display: 'block', marginTop: '2px' }}>{verdict.warning_ar}</span>
+                  )}
+                </div>
+                <button type="button" disabled={!verdict.allowed} style={{ padding: '3px 8px', background: verdict.allowed ? '#0F172A' : '#CBD5E1', color: '#FFFFFF', border: 'none', borderRadius: '7px', fontSize: '10.5px', fontWeight: 700 }}>{verdict.allowed ? 'اختيار' : 'غير مناسب'}</button>
               </div>
-              <button type="button" style={{ padding: '3px 8px', background: '#0F172A', color: '#FFFFFF', border: 'none', borderRadius: '7px', fontSize: '10.5px', fontWeight: 700 }}>اختيار</button>
-            </div>
-          ))}
+            );
+          })}
         </div>
       </div>
     </div>

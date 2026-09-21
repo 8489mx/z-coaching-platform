@@ -13,6 +13,10 @@ import { arabicSearchMatch } from '../../../utils/searchUtils';
 import { getExerciseDisplayNames } from '../../../utils/exerciseTranslator';
 import { KIDNEY_MAX_PROTEIN_PER_KG } from '../../../config/clinicalLimits';
 import { collectCoachAlerts } from '../../../utils/coachAlerts.js';
+import { evaluateCardioModality } from '../../../utils/cardioModalitySafety.js';
+
+// Intake injury keys as the coach reads them.
+const INJURY_LABELS_AR = { knee: 'الركبة', spine_back: 'أسفل الظهر', shoulder: 'الكتف', core: 'منطقة البطن (الكور)', elbow_wrist: 'الكوع والرسغ' };
 import {
   FOOD_DATABASE_LIST,
   CLIENT_BLUEPRINTS,
@@ -225,10 +229,14 @@ export function useCoachEditorData() {
   const mapMasterToEditor = (master, user = {}) => {
     const pkg = (user.subscription_package && user.subscription_package.includes('MAX')) ? 'باقة ماكس' : 'باقة إليت';
     const clientInfo = master.client || {};
+    // The plan's own summary of the intake (plans built before it existed fall back as before).
+    const clientProfile = master.client_profile || null;
 
     const rawInjuries = (Array.isArray(user.injuries) && user.injuries.length)
       ? user.injuries
-      : (Array.isArray(clientInfo.injuries) ? clientInfo.injuries : ['سليم / متابعة سريرية']);
+      : clientProfile
+        ? (clientProfile.injuries.length > 0 ? clientProfile.injuries.map((key) => INJURY_LABELS_AR[key] || key) : ['سليم / متابعة سريرية'])
+        : (Array.isArray(clientInfo.injuries) ? clientInfo.injuries : ['سليم / متابعة سريرية']);
 
     const rawAllergies = (Array.isArray(user.allergies) && user.allergies.length)
       ? user.allergies
@@ -389,13 +397,15 @@ export function useCoachEditorData() {
         package_name: clientInfo.package_name || pkg,
         injuries: rawInjuries,
         allergies: rawAllergies,
-        medical_conditions: user.medical_conditions || clientInfo.medical_conditions || master.intake?.medical?.conditions || master.intake_decision?.profile?.medical_conditions || [],
-        training_env: clientInfo.training_env || 'commercial_gym',
+        medical_conditions: user.medical_conditions || clientInfo.medical_conditions || clientProfile?.conditions || master.intake?.medical?.conditions || master.intake_decision?.profile?.medical_conditions || [],
+        training_env: clientProfile?.training_environment || clientInfo.training_env || 'commercial_gym',
         training_env_label: clientInfo.training_env_label || 'صالة ألعاب رياضية متكاملة',
         training_days: clientInfo.training_days || resolvedTraining.sessions?.length || 3,
         experience_level: clientInfo.experience_level || 'متوسط'
       },
       clinical_guardrails: rawClinicalGuardrails,
+      // For the swap screens: the intake summary plus the cardio guardrails.
+      client_profile: clientProfile ? { ...clientProfile, hiit_banned: master.cardio_program?.clinical_guardrails?.hiit_banned === true } : null,
       nutrition: resolvedNutrition,
       training: resolvedTraining,
       cardio: resolvedCardio
@@ -1104,6 +1114,11 @@ export function useCoachEditorData() {
   };
 
   const handleSelectCardioModality = (opt) => {
+    const verdict = evaluateCardioModality(opt.id, program?.client_profile || {});
+    if (!verdict.allowed) {
+      showToast(`النمط ده مش مناسب للعميل: ${verdict.reasons_ar.join(' ')}`);
+      return;
+    }
     setProgram(prev => ({
       ...prev,
       cardio: {

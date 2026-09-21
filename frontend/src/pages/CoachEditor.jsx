@@ -338,6 +338,7 @@ export default function CoachEditor() {
           cardioSwapModal={cardioSwapModal}
           setCardioSwapModal={setCardioSwapModal}
           handleSelectCardioModality={handleSelectCardioModality}
+          clientProfile={program?.client_profile || null}
         />
 
         {/* Mobility Selection Modal */}
