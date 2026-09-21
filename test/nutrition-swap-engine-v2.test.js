@@ -83,8 +83,10 @@ test("Nutrition Smart Swap Engine V2 Suite", async (t) => {
     assert.ok(foodCodes.includes("TAMEES_BREAD_WHOLEWHEAT"), "Should include Tamees bread in breakfast");
     assert.ok(foodCodes.includes("SAJ_BREAD_WHOLEWHEAT"), "Should include Saj bread in breakfast");
     assert.ok(foodCodes.includes("BROWN_TOAST"), "Should include Brown toast in breakfast");
-    assert.ok(foodCodes.includes("ROLLED_OATS"), "Should include Oats in breakfast");
-    assert.ok(foodCodes.includes("DATES_KHALAS"), "Should include Dates in breakfast");
+    // Owner rule (swapExchangeRules): bread is swapped for bread or potatoes, not for a bowl of
+    // oats or for dates.
+    assert.ok(!foodCodes.includes("ROLLED_OATS"), "Bread is not swapped for oats");
+    assert.ok(!foodCodes.includes("DATES_KHALAS"), "Bread is not swapped for dates");
 
     assert.ok(!foodCodes.includes("BASMATI_RICE"), "Must NOT include Basmati rice in breakfast");
     assert.ok(!foodCodes.includes("KABSA_SPICED_RICE"), "Must NOT include Kabsa rice in breakfast");
@@ -113,9 +115,12 @@ test("Nutrition Smart Swap Engine V2 Suite", async (t) => {
     assert.ok(foodCodes.includes("LABNEH_LIGHT"), "Should include Labneh Light");
     assert.ok(foodCodes.includes("HALLOUMI_LIGHT"), "Should include Halloumi Light");
     assert.ok(foodCodes.includes("SHAKSHOUKA_EGGS"), "Should include Shakshouka Eggs");
-    assert.ok(foodCodes.includes("FOUL_MUDAMMAS"), "Should include Foul Mudammas");
     assert.ok(foodCodes.includes("COTTAGE_CHEESE"), "Should include Cottage cheese");
-    assert.ok(foodCodes.includes("LABAN_RAYEB_LOWFAT"), "Should include Laban Rayeb");
+    // Leaner cheeses make up the fat with olive oil, the way they are eaten.
+    assert.ok(breakfastProteinSwaps.find((s) => s.food_code === "LABNEH_LIGHT").oil_addition_g > 0);
+    // Foul carries a bread's worth of carbohydrate and laban is a drink: neither is an egg swap.
+    assert.ok(!foodCodes.includes("FOUL_MUDAMMAS"), "Foul is not equivalent to eggs");
+    assert.ok(!foodCodes.includes("LABAN_RAYEB_LOWFAT"), "Laban is not an egg swap");
   });
 
   await t.test("Lunch Protein includes GCC & Egypt meats (Hamour, Kanaad, Bouri, Camel Hashi)", () => {
@@ -130,7 +135,10 @@ test("Nutrition Smart Swap Engine V2 Suite", async (t) => {
   });
 
   await t.test("Dynamic Fat Offset deducts olive oil when swapping from lean chicken to fatty salmon/halloumi", () => {
-    const swaps = generateSmartSwaps("PROTEIN", 200, "CHICKEN_BREAST", "LUNCH", 12, {});
+    // Salmon adds ~23 g of fat to 200 g of chicken: offered only when the meal has that much oil to
+    // leave out (with 12 g the plate would still carry 11 g more fat).
+    const swaps = generateSmartSwaps("PROTEIN", 200, "CHICKEN_BREAST", "LUNCH", 25, {});
+    assert.ok(!generateSmartSwaps("PROTEIN", 200, "CHICKEN_BREAST", "LUNCH", 12, {}).some((s) => s.food_code === "SALMON_FISH"));
     const salmonSwap = swaps.find(s => s.food_code === "SALMON_FISH");
 
     assert.ok(salmonSwap, "Salmon swap must exist");

@@ -1,5 +1,6 @@
 import { getFoodClinicalProperties } from "../execution-engines/food-swap-engine.js";
 import { CLINICAL_GUIDELINES } from "../config/clinical-guidelines.js";
+import { isEquivalentSwap, sharesSwapFamily } from "../../frontend/src/utils/swapExchangeRules.js";
 
 /**
  * Advanced Contextual Culinary Meal Archetype, Dynamic Fat Offset & Extreme Edge-Case Engine
@@ -1113,6 +1114,27 @@ export function isFoodClinicallySafe(foodCode, allergenContext = {}) {
 export function generateSmartSwaps(category, baseGrams, baseFoodCode, mealContext = "LUNCH", mealOliveOilGrams = 10, allergenContext = {}) {
   const baseFood = FOOD_SWAP_DATABASE[baseFoodCode];
   if (!baseFood) return [];
+  // Only a food eaten the same way with close energy and fat, after the oil the swap tells the
+  // client to leave out (swapExchangeRules).
+  const baseKcal = (baseGrams / 100) * ((baseFood.protein_per_100g || 0) * 4 + (baseFood.carb_per_100g || 0) * 4 + (baseFood.fat_per_100g || 0) * 9);
+  const baseFat = (baseGrams / 100) * (baseFood.fat_per_100g || 0);
+  return buildSmartSwapCandidates(category, baseGrams, baseFoodCode, mealContext, mealOliveOilGrams, allergenContext).filter((swap) => {
+    const oil = (Number(swap.oil_deduction_g) || 0) - (Number(swap.oil_addition_g) || 0);
+    return isEquivalentSwap({
+      fromCode: baseFoodCode, toCode: swap.food_code,
+      fromKcal: baseKcal, toKcal: swap.calories_kcal - oil * 9, fromFat: baseFat, toFat: swap.fat_g - oil,
+    });
+  });
+}
+
+/**
+ * Every clinically safe candidate for the meal, matched on the main nutrient only. Clients and
+ * coaches see generateSmartSwaps (equivalent swaps only); this full list is the last resort when an
+ * unsafe template food must be replaced and no equivalent safe swap exists.
+ */
+function buildSmartSwapCandidates(category, baseGrams, baseFoodCode, mealContext = "LUNCH", mealOliveOilGrams = 10, allergenContext = {}) {
+  const baseFood = FOOD_SWAP_DATABASE[baseFoodCode];
+  if (!baseFood) return [];
 
   const baseProtein = (baseGrams / 100) * (baseFood.protein_per_100g || 0);
   const baseCarbs = (baseGrams / 100) * (baseFood.carb_per_100g || 0);
@@ -1139,6 +1161,11 @@ export function generateSmartSwaps(category, baseGrams, baseFoodCode, mealContex
         "PEA_RICE_PROTEIN_POWDER",
         "MIXED_LEGUMES_STEW",
       ];
+      // Meat or fish at dinner is swapped like at lunch (the family rule below keeps each kind
+      // with its own).
+      if (mealContext === "DINNER") {
+        proteinCandidates.push("HAMOUR_FISH", "KANAAD_KINGFISH", "TILAPIA_FISH", "BOURI_FISH", "SALMON_FISH", "CAMEL_MEAT_LEAN", "LEAN_BEEF");
+      }
     } else if (mealContext === "LUNCH") {
       proteinCandidates = [
         "CHICKEN_BREAST",
@@ -1182,9 +1209,15 @@ export function generateSmartSwaps(category, baseGrams, baseFoodCode, mealContex
       let fatOffsetInstruction = "";
       let oilDeductionG = 0;
 
+      let oilAdditionG = 0;
       if (extraFatG >= 4) {
         oilDeductionG = Math.min(mealOliveOilGrams, Math.round(extraFatG));
         fatOffsetInstruction = ` (يُخصم ${oilDeductionG} جم من زيت الزيتون في الوجبة لموازنة الدهون والسعرات)`;
+      } else if (extraFatG <= -4) {
+        // A leaner swap gets the missing fat as olive oil (lean protein + a fat exchange), the way
+        // labneh, cottage cheese or tuna are eaten anyway.
+        oilAdditionG = Math.min(MAX_SWAP_OIL_ADDITION_G, Math.round(-extraFatG));
+        fatOffsetInstruction = ` (زوّد ${oilAdditionG} جم زيت زيتون عليه لتعويض الدهون)`;
       }
 
       let householdDesc = `${equivGrams} جم`;
@@ -1229,6 +1262,7 @@ export function generateSmartSwaps(category, baseGrams, baseFoodCode, mealContex
         household_desc: householdDesc,
         fat_tier: candidate.fat_tier,
         oil_deduction_g: oilDeductionG,
+        oil_addition_g: oilAdditionG,
         protein_g: candidateProtein,
         carb_g: candidateCarbs,
         fat_g: candidateFat,
@@ -1238,13 +1272,14 @@ export function generateSmartSwaps(category, baseGrams, baseFoodCode, mealContex
   } else if (category === "CARBS") {
     let carbCandidates = [];
     if (mealContext === "BREAKFAST") {
-      // Breakfast: Breads, Toast, Potatoes, Oats, Dates (NO Rice / Pasta)
+      // Breakfast: Breads, Toast, Potatoes, Sweet potato, Oats, Dates (NO Rice / Pasta)
       carbCandidates = [
         "BALADI_BREAD",
         "TAMEES_BREAD_WHOLEWHEAT",
         "SAJ_BREAD_WHOLEWHEAT",
         "BROWN_TOAST",
         "ROASTED_POTATOES",
+        "SWEET_POTATO",
         "ROLLED_OATS",
         "DATES_KHALAS",
       ];
@@ -1270,11 +1305,16 @@ export function generateSmartSwaps(category, baseGrams, baseFoodCode, mealContex
         "ROLLED_OATS",
       ];
     } else {
-      // Snack: Dates, Sweet Potato, Oats
+      // Snack: Dates, Sweet Potato, Oats, Fruit
       carbCandidates = [
         "DATES_KHALAS",
         "SWEET_POTATO",
         "ROLLED_OATS",
+        "BANANA_FRESH",
+        "APPLE_FRESH",
+        "FRESH_GUAVA",
+        "ORANGE_FRESH",
+        "STRAWBERRY_FRESH",
       ];
     }
 
@@ -3809,7 +3849,7 @@ export function buildCulinaryRecipeMeals(universalTargets, canonicalIntake = {},
   // Some meal templates place a food directly (an omelette for a bariatric client, bread at
   // breakfast) without asking the clinical filter. One last pass holds every generated item to the
   // same rules the candidate lists already follow.
-  return enforceClinicalSafety(generatedMeals, allergenContext);
+  return keepEquivalentSwaps(enforceClinicalSafety(generatedMeals, allergenContext));
 }
 /** Whether the intake declares diabetes or insulin resistance (raw form answers or canonical conditions). */
 export function isDiabeticIntake(canonicalIntake = {}, rawIntake = {}) {
@@ -3974,6 +4014,8 @@ export function splitOversizedPortions(meals = [], maxGrams = MAX_CARB_PORTION_G
 }
 
 export const MAX_OIL_PER_MEAL_G = 20;
+// Olive oil a leaner protein swap may add to make up the fat (about a tablespoon and a half).
+const MAX_SWAP_OIL_ADDITION_G = 15;
 // Nuts or seeds in the fourth-meal snack: a handful, like the almonds below.
 const SNACK_NUT_MAX_G = 30;
 // Other fat sources, in order, each capped per meal. Almonds add protein, so never for a kidney
@@ -4030,6 +4072,37 @@ export function diversifyFatSources(meals = [], allergenContext = {}, { kidneyPr
   });
 }
 
+const itemKcal = (item) => Number(item?.calories_kcal)
+  || (Number(item?.protein_g) || 0) * 4 + (Number(item?.carb_g) || 0) * 4 + (Number(item?.fat_g) || 0) * 9;
+
+/**
+ * Swaps are built from the food database, but a template may state its own macros for an item (a
+ * boiled-egg omelette, egg whites under the omelette code). Each item keeps only the swaps that are
+ * equivalent to the item as the client sees it (swapExchangeRules), after the oil a swap says to
+ * leave out.
+ */
+export function keepEquivalentSwaps(meals = []) {
+  if (!Array.isArray(meals)) return meals;
+  return meals.map((meal) => {
+    if (!Array.isArray(meal?.items)) return meal;
+    return {
+      ...meal,
+      items: meal.items.map((item) => {
+        if (!Array.isArray(item?.swaps) || item.swaps.length === 0) return item;
+        const swaps = item.swaps.filter((swap) => {
+          const oil = (Number(swap?.oil_deduction_g) || 0) - (Number(swap?.oil_addition_g) || 0);
+          return isEquivalentSwap({
+            fromCode: item.food_code, toCode: swap?.food_code,
+            fromKcal: itemKcal(item), toKcal: itemKcal(swap) - oil * 9,
+            fromFat: Number(item.fat_g) || 0, toFat: (Number(swap?.fat_g) || 0) - oil,
+          });
+        });
+        return swaps.length === item.swaps.length ? item : { ...item, swaps };
+      }),
+    };
+  });
+}
+
 export function enforceClinicalSafety(meals = [], allergenContext = {}) {
   if (!Array.isArray(meals)) return meals;
   const known = (code) => Boolean(FOOD_SWAP_DATABASE[code]);
@@ -4052,6 +4125,18 @@ export function enforceClinicalSafety(meals = [], allergenContext = {}) {
           const category = String(item.category || "PROTEIN").toUpperCase();
           swaps = generateSmartSwaps(category, Number(item.portion_g) || 100, item.food_code, context, 0, allergenContext);
           chosen = swaps.find((swap) => swap?.food_code && known(swap.food_code) && !unsafe(swap.food_code));
+        }
+        if (!chosen) {
+          // Safety comes before taste: with no equivalent safe swap, take the closest safe food of
+          // the same kind first, then the closest in energy.
+          const context = String(meal.meal_context || meal.context || meal.meal_type || "LUNCH").toUpperCase();
+          const category = String(item.category || "PROTEIN").toUpperCase();
+          const kcal = Number(item.calories_kcal) || 1;
+          swaps = buildSmartSwapCandidates(category, Number(item.portion_g) || 100, item.food_code, context, 0, allergenContext)
+            .filter((swap) => swap?.food_code && known(swap.food_code) && !unsafe(swap.food_code))
+            .sort((a, b) => (sharesSwapFamily(item.food_code, b.food_code) - sharesSwapFamily(item.food_code, a.food_code))
+              || (Math.abs(a.calories_kcal - kcal) - Math.abs(b.calories_kcal - kcal)));
+          chosen = swaps[0];
         }
         if (!chosen) {
           return {
