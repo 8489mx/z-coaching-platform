@@ -129,10 +129,13 @@ export async function submitCheckin(req, res) {
       });
     }
 
-    // 1. Fetch previous check-in for deltas and consecutive compliance calculation
+    // 1. Fetch previous check-in for deltas and consecutive compliance calculation.
+    // Ordered by the week they belong to, not by when they were saved: queued check-ins (the mobile
+    // app uploads its offline queue in one go) can share a timestamp, and a tie made the engine
+    // compare this week with an older one - a normal half-kilo loss read as a rapid-loss alarm.
     const pastCheckins = await CheckinSubmission.findAll({
       where: { user_id: targetUserId },
-      order: [["createdAt", "DESC"]],
+      order: [["week_number", "DESC"], ["id", "DESC"]],
     });
 
     const previousCheckin = pastCheckins.length > 0 ? pastCheckins[0] : null;
@@ -372,7 +375,7 @@ export async function getClientCheckins(req, res) {
 
     const checkins = await CheckinSubmission.findAll({
       where: { user_id: resolvedId },
-      order: [["createdAt", "DESC"]],
+      order: [["week_number", "DESC"], ["id", "DESC"]],
     });
 
     const photos = await ProgressPhoto.findAll({
