@@ -321,7 +321,8 @@ export const FOOD_DATABASE = {
     allergens: [],
     purine_level: 'LOW',
     is_gluten_free: true,
-    is_legume: false,
+    // Pea protein is a legume product; favism bans legumes throughout this engine.
+    is_legume: true,
     is_dairy: false
   },
 
@@ -1401,7 +1402,8 @@ export const FOOD_DATABASE = {
     calories_per_100g: 384,
     yield_factor_raw_to_cooked: 1.0,
     allergens: [],
-    is_gluten_free: true,
+    // Commercial cornflakes are flavoured with barley malt: not safe for coeliac disease.
+    is_gluten_free: false,
     is_legume: false
   },
   AIRFRYER_POTATO_WEDGES: {
@@ -2397,6 +2399,12 @@ export function calculateDynamicFoodSwap({
   }
 
   const calculatedGrams = Math.round(targetMacroGrams * (100 / replacementDensityPer100g));
+
+  // Potatoes stay for a diabetic in a moderate portion only (the meal plan's own limit).
+  const diabeticProfile = clinical_profile.is_diabetic === true || clinical_profile.is_insulin_resistant === true;
+  if (diabeticProfile && /POTATO/.test(String(targetFood.code || '')) && calculatedGrams > 200) {
+    throw new Error('Clinical Guardrail Violation: a diabetic potato swap above 200 g.');
+  }
 
   let clinicalNote = null;
   if (clinical_profile.is_bariatric && calculatedGrams > 150) {
