@@ -1,5 +1,42 @@
 import { buildTrainingEngine } from "../training-engine/index.js";
 import { getExerciseV2ByCode } from "../exercise-catalog-v2/index.js";
+import { EXERCISE_CATALOG_V2 } from "../exercise-catalog-v2/exercise-catalog-v2.js";
+
+/** True when every piece of equipment the exercise needs is in the client's declared set. */
+function exerciseFitsEquipment(code, available) {
+  if (!available) return true;
+  const record = getExerciseV2ByCode(code);
+  if (record) {
+    return (record.equipment_requirements || []).every((req) => available.has(String(req.equipment_code).toUpperCase()));
+  }
+  // Not in the catalog (some template codes are not): read the equipment from the name itself.
+  const named = String(code || "").toUpperCase();
+  const needs = [];
+  if (/DUMBBELL/.test(named)) needs.push("DUMBBELLS");
+  if (/BARBELL/.test(named)) needs.push("BARBELL_AND_PLATES");
+  if (/CABLE/.test(named)) needs.push("CABLE_STATION");
+  if (/MACHINE/.test(named)) needs.push("SELECTORIZED_MACHINES");
+  if (/SMITH/.test(named)) needs.push("SMITH_MACHINE");
+  return needs.every((item) => available.has(item));
+}
+
+/**
+ * The closest exercise the client can actually do: same movement slot first, then the same primary
+ * muscle, then an exercise that trains it as a secondary muscle. Never one already in the session.
+ */
+function equipmentSafeAlternative(code, slotCode, available, used) {
+  const original = getExerciseV2ByCode(code);
+  const pool = EXERCISE_CATALOG_V2.exercises.filter((candidate) =>
+    !used.has(candidate.exercise_code) &&
+    (candidate.equipment_requirements || []).every((req) => available.has(String(req.equipment_code).toUpperCase())));
+  return (
+    pool.find((candidate) => candidate.slot_code === slotCode) ||
+    (original && pool.find((candidate) => candidate.slot_code === original.slot_code)) ||
+    (original && pool.find((candidate) => candidate.primary_muscle === original.primary_muscle)) ||
+    (original && pool.find((candidate) => (candidate.secondary_muscles || []).includes(original.primary_muscle))) ||
+    null
+  );
+}
 import { resolveExerciseNames } from "../exercise-catalog-v2/master-exercise-translations.js";
 import {
   TRAINING_ENGINE_V2_VERSION,
@@ -250,6 +287,11 @@ export function buildTrainingMesoCycle(intakeDecision, options = {}) {
   const isIntermediate = intakeExperience === "INTERMEDIATE";
 
   const rawIntake = options.rawIntake || {};
+  // What the client said they own. Unknown (no list) leaves every template exactly as it was.
+  const declaredEquipment = Array.isArray(rawIntake?.training?.equipment)
+    ? rawIntake.training.equipment.map((item) => String(item?.equipmentCode || item).toUpperCase())
+    : [];
+  const availableEquipment = declaredEquipment.length > 0 ? new Set([...declaredEquipment, "BODYWEIGHT"]) : null;
   const isHome =
     rawIntake.training?.location === "HOME" ||
     rawIntake.training_location === "HOME" ||
@@ -433,6 +475,18 @@ export function buildTrainingMesoCycle(intakeDecision, options = {}) {
           const upgradedV2 = getExerciseV2ByCode(finalCode);
           if (upgradedV2) {
             finalNameEn = upgradedV2.name_en;
+          }
+        }
+
+        // Equipment guard. The session templates above name specific movements (goblet squats and
+        // dumbbell rows for "home"), but home is three different rooms: a client who trains with
+        // bodyweight and bands owns no dumbbells. Swap to the closest exercise their equipment
+        // allows. Gyms are assumed to have the full room, so gym plans are never touched here.
+        if (isHome && !exerciseFitsEquipment(finalCode, availableEquipment)) {
+          const alternative = equipmentSafeAlternative(finalCode, ex.slot_code, availableEquipment, usedSessionCodes);
+          if (alternative) {
+            finalCode = alternative.exercise_code;
+            finalNameEn = alternative.name_en;
           }
         }
 
