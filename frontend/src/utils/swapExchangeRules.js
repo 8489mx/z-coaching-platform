@@ -82,6 +82,20 @@ export const SWAP_FAMILIES = Object.freeze({
   RAW_ALMONDS: [NUT_SPREAD], ALMONDS_RAW: [NUT_SPREAD], HEMP_CHIA_SEEDS: [NUT_SPREAD], CHIA_SEEDS: [NUT_SPREAD],
 });
 
+/**
+ * Owner rule: protein powder has no swap. The client who has it takes it; when it runs out they
+ * tell the coach, and the protein comes from ordinary food. Plan, web and mobile codes.
+ */
+export const NO_SWAP_FOODS = Object.freeze(new Set([
+  "WHEY_PROTEIN", "WHEY_PROTEIN_POWDER", "WHEY_PROTEIN_ISOLATE", "MICELLAR_CASEIN", "PEA_RICE_PROTEIN_POWDER",
+]));
+export const NO_SWAP_NOTE_AR = "البروتين باودر مالوش بديل: لو معاك خده زي ما هو، ولو خلص بلّغ الكوتش وهيكمّل البروتين من الأكل العادي.";
+
+/** True for a food that is never swapped (protein powder). */
+export function isNoSwapFood(code) {
+  return NO_SWAP_FOODS.has(String(code || "").toUpperCase());
+}
+
 /** True when both foods are eaten the same way (they share a family). Unknown foods never match. */
 export function sharesSwapFamily(fromCode, toCode) {
   const from = SWAP_FAMILIES[fromCode];

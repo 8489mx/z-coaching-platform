@@ -4,6 +4,7 @@ import assert from "node:assert/strict";
 import { getSwapCandidatesHandler, calculateSwapHandler } from "../src/api/controllers/program.controller.js";
 import { User, IntakeSubmission } from "../src/api/models/index.js";
 import sequelize from "../src/api/config/database.js";
+import { isNoSwapFood } from "../frontend/src/utils/swapExchangeRules.js";
 
 /**
  * The mobile app asks the server for food swaps (swap-candidates, then swap-food). Those endpoints
@@ -87,16 +88,17 @@ test("an unknown food gets no swaps instead of egg swaps", async () => {
 
 // No food of the same kind and close value exists in the swap list for these (swapExchangeRules):
 // salmon is fattier than every other fish or meat, tuna leaner; whey, laban and milks differ in
-// protein vs sugar; lupini is the only snack of its kind.
+// protein vs sugar; lupini is the only snack of its kind. Protein powder is never swapped
+// (isNoSwapFood, owner rule).
 const NO_EQUIVALENT_IN_SWAP_LIST = new Set([
-  "SALMON_FISH", "CANNED_TUNA", "WHEY_PROTEIN", "LABAN_RAYEB_LOWFAT", "LUPINI_BEANS", "SKIM_MILK", "LACTOSE_FREE_MILK",
+  "SALMON_FISH", "CANNED_TUNA", "LABAN_RAYEB_LOWFAT", "LUPINI_BEANS", "SKIM_MILK", "LACTOSE_FREE_MILK",
 ]);
 
 test("every food a plan can hold gets swaps, except vegetables and foods with no equivalent", async () => {
   const { FOOD_SWAP_DATABASE } = await import("../src/nutrition-meal-context-v2/index.js");
   const missing = [];
   for (const [code, food] of Object.entries(FOOD_SWAP_DATABASE)) {
-    if (food.category === "VEGGIES" || NO_EQUIVALENT_IN_SWAP_LIST.has(code)) continue;
+    if (food.category === "VEGGIES" || NO_EQUIVALENT_IN_SWAP_LIST.has(code) || isNoSwapFood(code)) continue;
     const codes = await candidatesFor(code, answers([], ["none"]), 100);
     if (codes.length === 0) missing.push(code);
   }

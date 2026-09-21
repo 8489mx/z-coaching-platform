@@ -3,6 +3,7 @@ import { X } from 'lucide-react';
 import { FOOD_DATABASE, listEquivalentFoodSwaps } from '../../../utils/foodSwapEngine';
 import { arabicSearchMatch } from '../../../utils/searchUtils';
 import { isFoodAllowedDuringFast } from '../../../utils/fastingCalendarEngine';
+import { isNoSwapFood, NO_SWAP_NOTE_AR } from '../../../utils/swapExchangeRules';
 
 export default function FoodSwapModal({
   activeSwapItem,
@@ -111,6 +112,15 @@ export default function FoodSwapModal({
             const currentItemObj = FOOD_DATABASE[currentItemCode] || Object.values(FOOD_DATABASE).find(f => f.name_ar === activeSwapItem.name) || {};
             const currentMacroType = currentItemObj.macro_type || (activeSwapItem.p > activeSwapItem.c && activeSwapItem.p > activeSwapItem.f ? 'PROTEIN' : (activeSwapItem.c > 5 ? 'CARBS' : 'FATS'));
             const currentPortion = Number(activeSwapItem.amount) || 100;
+
+            // Protein powder has no swap (owner rule): take it, or tell the coach it ran out.
+            if (isNoSwapFood(currentItemCode) || isNoSwapFood(currentItemObj.code)) {
+              return (
+                <div style={{ padding: '24px', textAlign: 'center', color: '#334155', fontSize: '0.8rem', fontWeight: 700, lineHeight: 1.6 }}>
+                  {NO_SWAP_NOTE_AR}
+                </div>
+              );
+            }
 
             // Only foods of the same taste group with close energy and fat (swapExchangeRules),
             // closest energy first; search text and fasting narrow the list.

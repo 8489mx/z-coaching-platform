@@ -1,6 +1,6 @@
 import { getFoodClinicalProperties } from "../execution-engines/food-swap-engine.js";
 import { CLINICAL_GUIDELINES } from "../config/clinical-guidelines.js";
-import { isEquivalentSwap, sharesSwapFamily } from "../../frontend/src/utils/swapExchangeRules.js";
+import { isEquivalentSwap, sharesSwapFamily, isNoSwapFood, NO_SWAP_NOTE_AR } from "../../frontend/src/utils/swapExchangeRules.js";
 
 /**
  * Advanced Contextual Culinary Meal Archetype, Dynamic Fat Offset & Extreme Edge-Case Engine
@@ -1113,7 +1113,7 @@ export function isFoodClinicallySafe(foodCode, allergenContext = {}) {
  */
 export function generateSmartSwaps(category, baseGrams, baseFoodCode, mealContext = "LUNCH", mealOliveOilGrams = 10, allergenContext = {}) {
   const baseFood = FOOD_SWAP_DATABASE[baseFoodCode];
-  if (!baseFood) return [];
+  if (!baseFood || isNoSwapFood(baseFoodCode)) return [];
   // Only a food eaten the same way with close energy and fat, after the oil the swap tells the
   // client to leave out (swapExchangeRules).
   const baseKcal = (baseGrams / 100) * ((baseFood.protein_per_100g || 0) * 4 + (baseFood.carb_per_100g || 0) * 4 + (baseFood.fat_per_100g || 0) * 9);
@@ -4094,6 +4094,8 @@ export function keepEquivalentSwaps(meals = []) {
     return {
       ...meal,
       items: meal.items.map((item) => {
+        // Protein powder is never swapped: taken as it is, the coach told when it runs out.
+        if (isNoSwapFood(item?.food_code)) return { ...item, swaps: [], swap_note_ar: NO_SWAP_NOTE_AR };
         if (!Array.isArray(item?.swaps) || item.swaps.length === 0) return item;
         const swaps = item.swaps.filter((swap) => {
           const oil = (Number(swap?.oil_deduction_g) || 0) - (Number(swap?.oil_addition_g) || 0);

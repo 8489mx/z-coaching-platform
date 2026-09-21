@@ -24,6 +24,7 @@ import { resolveTrainingCycleStatus, CYCLE_STATUS, resolveSubscriptionState, sub
 import { buildNextCycle, resolvePainFlaggedExercises, evaluateAutoPublish } from "../services/nextCycleService.js";
 import { isSwapFoodSafe, resolveSwapContext, PLAN_FOOD_TO_REGISTRY } from "../services/liveFoodSwapSafety.js";
 import { isLiveSwapEquivalent, liveSwapPortionValue } from "../services/liveFoodSwapValue.js";
+import { isNoSwapFood, NO_SWAP_NOTE_AR } from "../../../frontend/src/utils/swapExchangeRules.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -608,6 +609,17 @@ async function swapContextFor(req) {
   return resolveSwapContext({ requester, clientForCoach, loadAnswers: loadLatestIntakeAnswers });
 }
 
+/** Meal items the client cannot swap (protein powder) carry the note saying what to do instead. */
+function withNoSwapNotes(meals = []) {
+  if (!Array.isArray(meals)) return meals;
+  return meals.map((meal) => ({
+    ...meal,
+    items: Array.isArray(meal?.items)
+      ? meal.items.map((item) => (isNoSwapFood(item?.code || item?.food_code) && !item.note ? { ...item, note: NO_SWAP_NOTE_AR } : item))
+      : meal?.items,
+  }));
+}
+
 /** The swap registry's meal category for a meal named by the app, or null when none is named. */
 function mealCategoryFromContext(mealContext) {
   const context = String(mealContext || "").toUpperCase();
@@ -623,6 +635,10 @@ export const getSwapCandidatesHandler = async (req, res) => {
     const normalizedCode = normalizeFoodCode(food_code) || normalizeFoodCode(name_ar);
     if (!normalizedCode) {
       return res.status(200).json({ candidates: [], message_ar: "لا توجد بدائل مسجلة لهذا الصنف." });
+    }
+    // Protein powder has no swap (owner rule): the client takes it, or tells the coach it ran out.
+    if (isNoSwapFood(normalizedCode) || isNoSwapFood(food_code)) {
+      return res.status(200).json({ candidates: [], message_ar: NO_SWAP_NOTE_AR });
     }
     const grams = Number(source_grams) || 100;
     const clinicalContext = await swapContextFor(req);
@@ -698,6 +714,9 @@ export const calculateSwapHandler = async (req, res) => {
     const toCode = normalizeFoodCode(target_food_code);
     if (!fromCode || !toCode) {
       return res.status(400).json({ error: "صنف غير معروف في قائمة البدائل" });
+    }
+    if (isNoSwapFood(fromCode) || isNoSwapFood(source_food_code || current_food_code)) {
+      return res.status(409).json({ error: NO_SWAP_NOTE_AR, code: "NO_SWAP_FOR_FOOD" });
     }
     const fromGrams = Number(source_grams || current_portion_g) || 100;
     // No meal named: any meal the target food suits (the candidate list was built the same way).
@@ -1223,7 +1242,7 @@ export const getActiveProgramByUserId = async (req, res) => {
 
     const fastingContext = await resolveClientFastingContext(user, program.program_data, now);
     const clinicalConstraints = await resolveClientClinicalConstraints(user.id) || {};
-    const meals = applyFastingToMeals(program.program_data?.nutrition?.meals || [], fastingContext, clinicalConstraints);
+    const meals = withNoSwapNotes(applyFastingToMeals(program.program_data?.nutrition?.meals || [], fastingContext, clinicalConstraints));
 
     const heatAdvisory = getGulfHeatAdvisory({ country_code: resolveCountryFromPhone(user.phone_number), date: now });
     
