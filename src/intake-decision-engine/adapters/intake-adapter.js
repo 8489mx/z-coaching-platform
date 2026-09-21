@@ -778,21 +778,21 @@ export function adaptIntakePayloadToCanonicalEngine(raw) {
     addAllergy("EGG");
     addAllergy("EGGS");
   }
-  if (excludedFoods.includes("DAIRY") || excludedFoods.includes("MILK")) {
+  if (excludedFoods.includes("DAIRY") || excludedFoods.includes("MILK") || excludedFoods.includes("DAIRY_LACTOSE")) {
     addAllergy("MILK");
     addAllergy("DAIRY");
   }
-  if (excludedFoods.includes("FISH_SEAFOOD") || excludedFoods.includes("FISH") || excludedFoods.includes("SEAFOOD")) {
+  if (excludedFoods.includes("FISH_SEAFOOD") || excludedFoods.includes("FISH") || excludedFoods.includes("SEAFOOD") || excludedFoods.includes("FISH_SHELLFISH")) {
     addAllergy("FISH");
     addAllergy("SEAFOOD");
     addAllergy("FISH_SEAFOOD");
   }
-  if (excludedFoods.includes("PEANUTS_NUTS") || excludedFoods.includes("PEANUTS") || excludedFoods.includes("NUTS")) {
+  if (excludedFoods.includes("PEANUTS_NUTS") || excludedFoods.includes("PEANUTS") || excludedFoods.includes("NUTS") || excludedFoods.includes("PEANUTS_TREE_NUTS")) {
     addAllergy("PEANUT");
     addAllergy("PEANUTS");
     addAllergy("TREE_NUT");
   }
-  if (excludedFoods.includes("GLUTEN_WHEAT") || excludedFoods.includes("WHEAT_GLUTEN") || excludedFoods.includes("GLUTEN") || excludedFoods.includes("WHEAT")) {
+  if (excludedFoods.includes("GLUTEN_WHEAT") || excludedFoods.includes("WHEAT_GLUTEN") || excludedFoods.includes("GLUTEN") || excludedFoods.includes("WHEAT") || excludedFoods.includes("GLUTEN_CELIAC") || excludedFoods.includes("CELIAC")) {
     addAllergy("WHEAT");
     addAllergy("GLUTEN");
   }
@@ -820,10 +820,10 @@ export function adaptIntakePayloadToCanonicalEngine(raw) {
   if (excludedFoods.includes("EGGS") || excludedFoods.includes("EGG")) {
     addDisliked("EGG", "EGGS", "WHOLE_EGG", "EGG_WHITE", "EGG_WHOLE_HARD_BOILED", "EGG_WHITE_COOKED");
   }
-  if (excludedFoods.includes("DAIRY") || excludedFoods.includes("MILK")) {
+  if (excludedFoods.includes("DAIRY") || excludedFoods.includes("MILK") || excludedFoods.includes("DAIRY_LACTOSE")) {
     addDisliked("DAIRY", "MILK", "CHEESE", "YOGURT", "COTTAGE_CHEESE", "GREEK_YOGURT", "YOGURT_PLAIN_LOW_FAT", "GREEK_YOGURT_PLAIN_NONFAT", "COTTAGE_CHEESE_LOW_FAT_2_PERCENT");
   }
-  if (excludedFoods.includes("FISH_SEAFOOD") || excludedFoods.includes("FISH") || excludedFoods.includes("SEAFOOD")) {
+  if (excludedFoods.includes("FISH_SEAFOOD") || excludedFoods.includes("FISH") || excludedFoods.includes("SEAFOOD") || excludedFoods.includes("FISH_SHELLFISH")) {
     addDisliked("FISH", "SEAFOOD", "TUNA", "SALMON", "FISH_SEAFOOD", "TUNA_LIGHT_CANNED_WATER_DRAINED");
   }
   if (excludedFoods.includes("OATS") || excludedFoods.includes("OAT")) {
@@ -832,10 +832,10 @@ export function adaptIntakePayloadToCanonicalEngine(raw) {
   if (excludedFoods.includes("RED_MEAT") || excludedFoods.includes("MEAT") || excludedFoods.includes("BEEF")) {
     addDisliked("MEAT", "BEEF", "RED_MEAT", "BEEF_GROUND_90_LEAN_COOKED");
   }
-  if (excludedFoods.includes("PEANUTS_NUTS") || excludedFoods.includes("PEANUTS") || excludedFoods.includes("NUTS")) {
+  if (excludedFoods.includes("PEANUTS_NUTS") || excludedFoods.includes("PEANUTS") || excludedFoods.includes("NUTS") || excludedFoods.includes("PEANUTS_TREE_NUTS")) {
     addDisliked("PEANUT", "PEANUTS", "NUTS", "TREE_NUT");
   }
-  if (excludedFoods.includes("GLUTEN_WHEAT") || excludedFoods.includes("WHEAT_GLUTEN") || excludedFoods.includes("GLUTEN") || excludedFoods.includes("WHEAT")) {
+  if (excludedFoods.includes("GLUTEN_WHEAT") || excludedFoods.includes("WHEAT_GLUTEN") || excludedFoods.includes("GLUTEN") || excludedFoods.includes("WHEAT") || excludedFoods.includes("GLUTEN_CELIAC") || excludedFoods.includes("CELIAC")) {
     addDisliked("WHEAT", "GLUTEN", "BREAD", "PASTA", "BREAD_WHOLE_WHEAT", "PASTA_SPAGHETTI_COOKED");
   }
   if (excludedFoods.includes("LEGUMES") || excludedFoods.includes("LEGUME")) {

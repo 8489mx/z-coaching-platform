@@ -1275,7 +1275,8 @@ export function generateSmartSwaps(category, baseGrams, baseFoodCode, mealContex
       const candidate = FOOD_SWAP_DATABASE[code];
       if (!candidate || candidate.carb_per_100g <= 0) continue;
 
-      if (allergenContext.isGlutenExcluded && !candidate.is_gluten_free) continue;
+      // Every clinical filter applies here, not gluten alone.
+      if (!isFoodClinicallySafe(code, allergenContext)) continue;
 
       const equivGrams = Math.round((baseCarbs / candidate.carb_per_100g) * 100);
       let householdDesc = `${equivGrams} جم`;
@@ -1972,7 +1973,9 @@ export function buildCulinaryRecipeMeals(universalTargets, canonicalIntake = {},
     excludedFoods.has("BARLEY") ||
     excludedFoods.has("RYE") ||
     excludedFoods.has("GLUTEN_WHEAT") ||
-    excludedFoods.has("WHEAT_GLUTEN");
+    excludedFoods.has("WHEAT_GLUTEN") ||
+    excludedFoods.has("GLUTEN_CELIAC") ||
+    excludedFoods.has("CELIAC");
 
   const isDairyExcluded =
     excludedFoods.has("DAIRY") ||
@@ -1980,7 +1983,8 @@ export function buildCulinaryRecipeMeals(universalTargets, canonicalIntake = {},
     excludedFoods.has("LACTOSE") ||
     excludedFoods.has("CHEESE") ||
     excludedFoods.has("YOGURT") ||
-    excludedFoods.has("WHEY");
+    excludedFoods.has("WHEY") ||
+    excludedFoods.has("DAIRY_LACTOSE");
 
   const isEggsExcluded =
     excludedFoods.has("EGGS") ||
@@ -1994,7 +1998,8 @@ export function buildCulinaryRecipeMeals(universalTargets, canonicalIntake = {},
     excludedFoods.has("SEAFOOD") ||
     excludedFoods.has("TILAPIA") ||
     excludedFoods.has("SALMON") ||
-    excludedFoods.has("TUNA");
+    excludedFoods.has("TUNA") ||
+    excludedFoods.has("FISH_SHELLFISH");
 
   const isPoultryExcluded =
     excludedFoods.has("POULTRY") ||
@@ -2023,7 +2028,8 @@ export function buildCulinaryRecipeMeals(universalTargets, canonicalIntake = {},
     excludedFoods.has("PEANUTS") ||
     excludedFoods.has("TREE_NUTS") ||
     excludedFoods.has("ALMONDS") ||
-    excludedFoods.has("PEANUT");
+    excludedFoods.has("PEANUT") ||
+    excludedFoods.has("PEANUTS_TREE_NUTS");
 
   // Declared in the intake under the bariatric block; not part of the canonical contract.
   const isDumpingSyndrome = effectiveRaw?.medical_conditions?.bariatric?.dumping_syndrome === true;
