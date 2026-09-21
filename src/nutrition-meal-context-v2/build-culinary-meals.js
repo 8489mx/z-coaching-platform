@@ -3716,9 +3716,9 @@ export function buildCulinaryRecipeMeals(universalTargets, canonicalIntake = {},
       } else {
         // SNACK (Meal 4)
         recipeNameAr = isDairyExcluded
-          ? "وجبة خفيفة (سناك فواكه وبذور طبيعية)"
-          : "وجبة خفيفة (سناك زبادي يوناني وبذور الشيا وتفاح)";
-        recipeConceptDesc = "سناك صحي خفيف غني بمضادات الأكسدة والبروتين والدهون الصحية غير المشبعة.";
+          ? "سناك دجاج مشوي مع بطاطا حلوة مشوية"
+          : "سناك زبادي يوناني مع بطاطا حلوة مشوية";
+        recipeConceptDesc = "سناك مشبع فيه بروتين ونشويات ودهون صحية، بياخد نصيبه من أكل اليوم.";
 
         // Fat first: a handful of nuts (seeds for a nut allergy), none for a kidney protein cap
         // since both add protein; the rest of the fat is olive oil on the sweet potato.

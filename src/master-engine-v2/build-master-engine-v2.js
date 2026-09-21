@@ -724,7 +724,7 @@ export function calculateUniversalNutritionTargets(canonicalIntake, evaluationCo
       else if (i === 2) cRatio = 0.40;
       else cRatio = 0.30;
     } else if (mealCount === 4) {
-      mealNameAr = i === 1 ? "وجبة الإفطار" : i === 2 ? "وجبة الغداء" : i === 3 ? "وجبة العشاء" : "سناك صحي خفيف";
+      mealNameAr = i === 1 ? "وجبة الإفطار" : i === 2 ? "وجبة الغداء" : i === 3 ? "وجبة العشاء" : "الوجبة الرابعة (سناك)";
     } else if (mealCount === 5) {
       mealNameAr = i === 1 ? "الوجبة 1 (إفطار صغير عالي الكثافة)" : i === 2 ? "الوجبة 2 (سناك بروتيني أول)" : i === 3 ? "الوجبة 3 (غداء صغير الحجم)" : i === 4 ? "الوجبة 4 (سناك بروتيني ثانٍ)" : "الوجبة 5 (عشاء مريح للهضم)";
     } else if (mealCount === 6) {
