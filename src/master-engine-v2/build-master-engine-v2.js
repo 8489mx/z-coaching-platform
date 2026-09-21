@@ -85,7 +85,7 @@ export function resolveOptimalDietFramework(canonicalIntake, rawIntake = {}) {
   if (hasPcosOrIr) {
     return {
       framework: "TARGETED_LOW_CARB",
-      reason_ar: "تم اختيار اللو كارب المقنن (Targeted Low-Carb) تلقائياً لتحسين حساسية الإنسولين وتنظيم الهرمونات وتسريع حرق الدهون.",
+      reason_ar: "تم اختيار نظام الكارب المنخفض المعتدل تلقائياً (نشويات بطيئة الامتصاص بكميات محسوبة) لتحسين حساسية الإنسولين وتنظيم الهرمونات مع سهولة الالتزام.",
       reason_en: "Targeted Low-Carb auto-selected to optimize insulin sensitivity and hormonal profile.",
     };
   }
@@ -538,18 +538,19 @@ export function calculateUniversalNutritionTargets(canonicalIntake, evaluationCo
 
   // Framework Specific Macro Adjustments
   if (dietFramework === "TARGETED_LOW_CARB") {
-    // Hard cap net carbs at 40g, rest fat 65-70%
-    carbG = 40;
-    const lowCarbProteinKcal = proteinG * 4;
-    const lowCarbRemainingKcal = Math.max(0, targetCalories - lowCarbProteinKcal - 160);
+    // Moderate lower-carb for PCOS / insulin resistance: about 30% of energy from slow carbohydrates,
+    // never under 100 g. The benefit comes from the energy deficit and the carbohydrate quality; a
+    // ketogenic 40 g adds nothing for insulin sensitivity over this and few people sustain it.
+    carbG = Math.min(carbG, Math.max(100, Math.round((targetCalories * 0.3) / 4)));
+    const lowCarbRemainingKcal = Math.max(minFatG * 9, targetCalories - proteinG * 4 - carbG * 4);
     fatG = Math.round(lowCarbRemainingKcal / 9);
     lowCarbConfig = Object.freeze({
       framework: "TARGETED_LOW_CARB",
-      framework_name_ar: "نظام اللو كارب والكيتو المقنن (Targeted Low-Carb)",
-      net_carbs_target_g: 40,
+      framework_name_ar: "نظام الكارب المنخفض المعتدل (Moderate Low-Carb)",
+      net_carbs_target_g: carbG,
       fat_ratio_percent: Math.round((fatG * 9 / targetCalories) * 100),
-      carb_timing_ar: "توجيه حصة الكاربوهيدرات المحدودة (40 جم) لتكون حصراً قبل التمرين مباشرة لرفع الأداء.",
-      excluded_foods_ar: "حظر تام لكافة المخبوزات والنشويات الصريحة (أرز، خبز، مكرونة، بطاطس).",
+      carb_timing_ar: `${carbG} جم كاربوهيدرات يومياً من مصادر بطيئة الامتصاص، والجزء الأكبر منها في الوجبة قبل التمرين وبعده.`,
+      excluded_foods_ar: "السكريات والعصائر والمخبوزات البيضاء؛ النشويات مسموحة من الشوفان والخبز الأسمر والأرز البسمتي والبقوليات بالكميات المحددة.",
     });
   } else if (dietFramework === "FLEXIBLE_80_20") {
     const cleanKcal = Math.round(targetCalories * 0.80);
