@@ -1960,13 +1960,16 @@ export const FOOD_CLINICAL_OVERRIDES = Object.freeze({
   SUGAR_FREE_CORNFLAKES: { glycemic_index: 'HIGH', fodmap_level: 'LOW' },
   FRESH_WATERMELON: { glycemic_index: 'HIGH', fodmap_level: 'HIGH' },
   DATES_KHALAS: { glycemic_index: 'HIGH', fodmap_level: 'HIGH' },
+  // Potatoes as this plan cooks them - served hot, roasted, baked or boiled - sit at GI ~70-110 in
+  // the International Tables of Glycemic Index (Atkinson et al.); baked sweet potato ~90. Only boiled
+  // sweet potato or cooled potato fall to the medium band, and neither is on the menu.
+  BOILED_POTATOES: { glycemic_index: 'HIGH', fodmap_level: 'LOW' },
+  AIRFRYER_POTATO_WEDGES: { glycemic_index: 'HIGH', fodmap_level: 'LOW' },
+  SWEET_POTATO_BAKED: { glycemic_index: 'HIGH', fodmap_level: 'MEDIUM' },
 
   // MEDIUM GLYCEMIC INDEX (GI 56-69)
   BASMATI_RICE_COOKED: { glycemic_index: 'MEDIUM', fodmap_level: 'LOW' },
   BROWN_BASMATI_RICE: { glycemic_index: 'MEDIUM', fodmap_level: 'LOW' },
-  BOILED_POTATOES: { glycemic_index: 'MEDIUM', fodmap_level: 'LOW' },
-  AIRFRYER_POTATO_WEDGES: { glycemic_index: 'MEDIUM', fodmap_level: 'LOW' },
-  SWEET_POTATO_BAKED: { glycemic_index: 'MEDIUM', fodmap_level: 'MEDIUM' },
   WHOLE_WHEAT_TOAST: { glycemic_index: 'MEDIUM', fodmap_level: 'HIGH' },
   WHOLE_WHEAT_TORTILLA: { glycemic_index: 'MEDIUM', fodmap_level: 'HIGH' },
   COOKED_BULGUR: { glycemic_index: 'MEDIUM', fodmap_level: 'HIGH' },
