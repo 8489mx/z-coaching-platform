@@ -151,7 +151,7 @@ import { buildCardioEngine } from "../cardio-engine/index.js";
 import { buildMobilityEngine } from "../mobility-engine/index.js";
 import { buildSessionMobilityProtocol } from "../mobility-warmup-engine-v2/index.js";
 import { buildNutritionEngine } from "../nutrition-engine/index.js";
-import { sanitizeMealPlan, buildCulinaryRecipeMeals, enforceDiabeticCarbChoice, splitOversizedPortions, isDiabeticIntake } from "../nutrition-meal-context-v2/index.js";
+import { sanitizeMealPlan, buildCulinaryRecipeMeals, enforceDiabeticCarbChoice, splitOversizedPortions, carbPortionLimit, isDiabeticIntake } from "../nutrition-meal-context-v2/index.js";
 import { quantizeNutritionPlan } from "../nutrition-serving-quantizer-v2/index.js";
 import { adaptIntakePayloadToCanonicalEngine } from "../intake-decision-engine/adapters/intake-adapter.js";
 import { MASTER_ENGINE_V2_VERSION } from "./domain/enums.js";
@@ -959,10 +959,11 @@ export function buildMasterEngineV2(inputs) {
   const universalTargets = calculateUniversalNutritionTargets(canonicalIntake, evaluationContext, effectiveIntake);
   // The diabetic choice can replace a food after the generator split its large portions, so the
   // split runs again on the final meals.
+  const isDiabeticClient = isDiabeticIntake(canonicalIntake, effectiveIntake);
   const culinaryRecipeMeals = splitOversizedPortions(enforceDiabeticCarbChoice(
     buildCulinaryRecipeMeals(universalTargets, canonicalIntake, effectiveIntake),
-    isDiabeticIntake(canonicalIntake, effectiveIntake),
-  ));
+    isDiabeticClient,
+  ), carbPortionLimit({ diabetic: isDiabeticClient }));
 
   const baseNutritionProgram = buildNutritionEngine({
     intake: canonicalIntake,

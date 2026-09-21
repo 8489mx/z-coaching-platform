@@ -3843,6 +3843,16 @@ export function enforceDiabeticCarbChoice(meals = [], isDiabetic = false) {
  * Foods this generator does not know are left alone: it cannot judge what it has no record of.
  */
 export const MAX_CARB_PORTION_G = 400;
+// Potatoes stay on a diabetic's plan, in a moderate portion: up to 200 g a meal, eaten with the
+// meal's protein and salad (or boiled and cooled), which blunts the rise in blood sugar.
+export const DIABETIC_POTATO_PORTION_G = 200;
+const DIABETIC_POTATO_TIP_AR = "البطاطس مسموحة بالكمية دي: كُلها مع البروتين والسلطة في نفس الوجبة، والأفضل مسلوقة ومتسابة تبرد، علشان السكر مايعلاش بسرعة.";
+const isPotato = (code) => /POTATO/.test(String(code || ""));
+
+/** Per-food plate limit: the general carbohydrate cap, and a smaller one for potatoes when diabetic. */
+export function carbPortionLimit({ diabetic = false } = {}) {
+  return (foodCode) => (diabetic && isPotato(foodCode) ? DIABETIC_POTATO_PORTION_G : MAX_CARB_PORTION_G);
+}
 
 const scaleNumber = (value, factor) => (Number.isFinite(Number(value)) ? Math.round(Number(value) * factor) : value);
 const gramsText = (grams, reference) => `${grams} جم${/مطبوخ/.test(String(reference || "")) ? " مطبوخ" : ""}`;
@@ -3857,6 +3867,8 @@ const gramsText = (grams, reference) => `${grams} جم${/مطبوخ/.test(String
  */
 export function splitOversizedPortions(meals = [], maxGrams = MAX_CARB_PORTION_G) {
   if (!Array.isArray(meals)) return meals;
+  const limitOf = typeof maxGrams === "function" ? maxGrams : () => maxGrams;
+  const diabeticPotatoLimit = limitOf("POTATO") < MAX_CARB_PORTION_G;
   const scaleSwap = (swap, factor) => {
     const grams = scaleNumber(swap.equivalent_grams, factor);
     return { ...swap, equivalent_grams: grams, household_desc: gramsText(grams, swap.household_desc),
@@ -3867,18 +3879,32 @@ export function splitOversizedPortions(meals = [], maxGrams = MAX_CARB_PORTION_G
     protein_g: scaleNumber(item.protein_g, factor), carb_g: scaleNumber(item.carb_g, factor),
     fat_g: scaleNumber(item.fat_g, factor), calories_kcal: scaleNumber(item.calories_kcal, factor),
   });
+  // A diabetic's potato swap above the potato limit becomes a mixed plate: the potato limit plus the
+  // rest from the item it replaces, same macros in total.
+  const mixPotatoSwap = (item, swap) => {
+    const limit = limitOf(swap?.food_code);
+    const grams = Number(swap?.equivalent_grams);
+    if (!diabeticPotatoLimit || !isPotato(swap?.food_code) || !(grams > limit) || isPotato(item?.food_code)) return swap;
+    const restGrams = Math.round(Number(item.portion_g) * (1 - limit / grams));
+    return { ...swap, equivalent_grams: limit, mixed_with_food_code: item.food_code, mixed_with_grams: restGrams,
+      household_desc: `${limit} جم ${swap.name_ar || "بطاطس"} + ${restGrams} جم ${item.name_ar || item.food_code}`,
+      diabetic_tip_ar: DIABETIC_POTATO_TIP_AR };
+  };
   return meals.map((meal) => {
     if (!Array.isArray(meal?.items)) return meal;
     const items = [];
-    for (const item of meal.items) {
+    for (const rawItem of meal.items) {
+      const item = Array.isArray(rawItem?.swaps) && diabeticPotatoLimit ? { ...rawItem, swaps: rawItem.swaps.map((swap) => mixPotatoSwap(rawItem, swap)) } : rawItem;
       const portion = Number(item?.portion_g);
-      const swaps = Array.isArray(item?.swaps) ? item.swaps : [];
+      const swaps = Array.isArray(item?.swaps) ? item.swaps.filter((swap) => !swap?.mixed_with_food_code) : [];
       const seen = new Set([item?.food_code]);
       const partners = swaps
         .filter((swap) => swap?.food_code && Number(swap.equivalent_grams) > 0 && !seen.has(swap.food_code) && seen.add(swap.food_code))
         .sort((a, b) => Number(a.equivalent_grams) - Number(b.equivalent_grams));
-      if (item?.category !== "CARBS" || !(portion > maxGrams)) {
-        items.push(item);
+      const itemLimit = limitOf(item?.food_code);
+      const tip = diabeticPotatoLimit && isPotato(item?.food_code) ? { diabetic_tip_ar: DIABETIC_POTATO_TIP_AR } : {};
+      if (item?.category !== "CARBS" || !(portion > itemLimit)) {
+        items.push(Object.keys(tip).length ? { ...item, ...tip } : item);
         continue;
       }
       if (partners.length === 0) {
@@ -3886,24 +3912,28 @@ export function splitOversizedPortions(meals = [], maxGrams = MAX_CARB_PORTION_G
         continue;
       }
       // grams of each food that would carry the whole item; shares add up to 1.
-      const parts = [{ grams: portion }, ...partners.map((partner) => ({ grams: Number(partner.equivalent_grams), partner }))];
+      const parts = [{ grams: portion, limit: itemLimit }, ...partners.map((partner) => ({ grams: Number(partner.equivalent_grams), partner, limit: limitOf(partner.food_code) }))];
       let left = 1;
       for (const p of parts) {
-        p.share = Math.min(left, maxGrams / p.grams);
+        p.share = Math.min(left, p.limit / p.grams);
         left -= p.share;
       }
       if (left > 1e-6) {
         const total = 1 - left;
         for (const p of parts) p.share /= total;
       }
+      const overLimit = left > 1e-6
+        ? { portion_warning_ar: `البدائل الآمنة المتاحة لا تكفي لتقسيم الحصة تحت الحد؛ راجع عدد الوجبات أو توزيع الكربوهيدرات.` }
+        : {};
       parts.filter((p) => p.share > 1e-6).forEach((p) => {
         const grams = scaleNumber(p.grams, p.share);
         if (!p.partner) {
-          items.push({ ...item, ...macros(item, p.share), portion_g: grams, household_measurement: gramsText(grams, item.household_measurement),
+          items.push({ ...item, ...tip, ...overLimit, ...macros(item, p.share), portion_g: grams, household_measurement: gramsText(grams, item.household_measurement),
             swaps: swaps.map((swap) => scaleSwap(swap, p.share)), split_from_portion_g: portion });
         } else {
           items.push({ ...macros(item, p.share), food_code: p.partner.food_code, name_ar: p.partner.name_ar, name_en: p.partner.name_en,
             category: "CARBS", portion_g: grams, household_measurement: gramsText(grams, p.partner.household_desc), swaps: [],
+            ...(diabeticPotatoLimit && isPotato(p.partner.food_code) ? { diabetic_tip_ar: DIABETIC_POTATO_TIP_AR } : {}),
             split_note_ar: "جزء من حصة النشويات في الوجبة، مقسومة على أكتر من صنف علشان الكمية تبقى معقولة في الطبق." });
         }
       });

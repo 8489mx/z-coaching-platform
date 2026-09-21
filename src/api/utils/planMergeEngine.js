@@ -6,7 +6,7 @@
  */
 
 import { calculateSessionDemand, auditWeeklyMuscleVolume } from './trainingNutritionCoupling.js';
-import { splitOversizedPortions } from '../../nutrition-meal-context-v2/build-culinary-meals.js';
+import { splitOversizedPortions, carbPortionLimit } from '../../nutrition-meal-context-v2/build-culinary-meals.js';
 
 /**
  * Deep merges adaptation recommendations into a master program while guaranteeing
@@ -130,11 +130,12 @@ export function mergeAdaptedPlanIntoProgram(currentMasterProgram, adaptationResu
 
     // 3.1 Rebalance culinary meal ingredient grams and macros to match final targets
     const targetPayload = { finalCalories, finalProtein, finalCarbs, finalFats };
+    const portionLimit = carbPortionLimit({ diabetic: merged.nutrition_program?.targets?.clinical_guardrails?.hypoglycemia_guard_active === true });
 
     // Scaling up can take a carbohydrate item back over the plate cap; split it again.
     if (Array.isArray(merged.nutrition_program?.culinary_meals)) {
       rebalanceCulinaryMeals(merged.nutrition_program.culinary_meals, targetPayload);
-      merged.nutrition_program.culinary_meals = splitOversizedPortions(merged.nutrition_program.culinary_meals);
+      merged.nutrition_program.culinary_meals = splitOversizedPortions(merged.nutrition_program.culinary_meals, portionLimit);
     }
 
     if (Array.isArray(merged.nutrition_program?.quantized_plan?.meals)) {
@@ -147,7 +148,7 @@ export function mergeAdaptedPlanIntoProgram(currentMasterProgram, adaptationResu
 
     if (Array.isArray(merged.nutrition?.culinary_meals)) {
       rebalanceCulinaryMeals(merged.nutrition.culinary_meals, targetPayload);
-      merged.nutrition.culinary_meals = splitOversizedPortions(merged.nutrition.culinary_meals);
+      merged.nutrition.culinary_meals = splitOversizedPortions(merged.nutrition.culinary_meals, portionLimit);
     }
 
     // Rebalance merged.nutrition.meals ONLY if it contains structured culinary items
