@@ -4060,8 +4060,26 @@ const FAT_SOURCES = Object.freeze([
  * into olive oil) is moved to avocado, then almonds, within each one's portion and the client's
  * restrictions; what is left stays in the oil. The meal's fat does not change.
  */
-export function diversifyFatSources(meals = [], allergenContext = {}, { kidneyProteinCapped = false, kidneyCondition = false } = {}) {
+export function diversifyFatSources(meals = [], allergenContext = {}, options = {}) {
   if (!Array.isArray(meals)) return meals;
+  return moveFatBeyondOil(meals, allergenContext, options).map(flagHeavyOil);
+}
+
+// Olive oil above two tablespoons in one meal is hard to eat; the coach is told why it is there.
+export const MAX_COMFORTABLE_OIL_PER_MEAL_G = 30;
+export function flagHeavyOil(meal) {
+  if (!Array.isArray(meal?.items)) return meal;
+  const heavy = meal.items.some((item) => item?.food_code === "OLIVE_OIL" && Number(item.portion_g) > MAX_COMFORTABLE_OIL_PER_MEAL_G && !item.portion_warning_ar);
+  if (!heavy) return meal;
+  return {
+    ...meal,
+    items: meal.items.map((item) => (item?.food_code === "OLIVE_OIL" && Number(item.portion_g) > MAX_COMFORTABLE_OIL_PER_MEAL_G && !item.portion_warning_ar
+      ? { ...item, portion_warning_ar: `${item.portion_g} جم زيت زيتون في وجبة واحدة كتير على الطعم والهضم؛ القيود الصحية للحالة (سقف البروتين أو الكربوهيدرات أو الحساسية) خلت الدهون هي مصدر الطاقة الباقي. راجع توزيع الطاقة مع الطبيب قبل الاعتماد.` }
+      : item)),
+  };
+}
+
+function moveFatBeyondOil(meals, allergenContext, { kidneyProteinCapped = false, kidneyCondition = false } = {}) {
   return meals.map((meal) => {
     const items = Array.isArray(meal?.items) ? meal.items : null;
     const oilIndex = items ? items.findIndex((item) => item?.food_code === "OLIVE_OIL") : -1;
