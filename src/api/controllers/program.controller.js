@@ -23,7 +23,7 @@ import { applyDeloadToSession, READINESS_GUIDANCE_AR } from "../../../src/traini
 import { resolveTrainingCycleStatus, CYCLE_STATUS, resolveSubscriptionState, subscriptionNeedsAttention, startCycleOnPublish } from "../services/trainingCycleService.js";
 import { buildNextCycle, resolvePainFlaggedExercises, evaluateAutoPublish } from "../services/nextCycleService.js";
 import { isSwapFoodSafe, resolveSwapContext, PLAN_FOOD_TO_REGISTRY } from "../services/liveFoodSwapSafety.js";
-import { isLiveSwapEquivalent } from "../services/liveFoodSwapValue.js";
+import { isLiveSwapEquivalent, liveSwapPortionValue } from "../services/liveFoodSwapValue.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -707,6 +707,15 @@ export const calculateSwapHandler = async (req, res) => {
       return res.status(409).json({ error: "البديل ده مش من نفس نوع الأكل أو قيمته مش قريبة؛ اختار بديل من القايمة", code: "SWAP_NOT_EQUIVALENT" });
     }
 
+    // The app shows the new item's calories and macros from these fields (it showed 0 without them).
+    const value = liveSwapPortionValue(toCode, result.target_food.portion_g);
+    const macros = value ? {
+      calories: Math.round(value.kcal),
+      protein_g: Math.round(value.protein * 10) / 10,
+      carbs_g: Math.round(value.carbs * 10) / 10,
+      fat_g: Math.round(value.fat * 10) / 10,
+    } : {};
+
     const swappedFood = {
       food_code: result.target_food.food_code,
       name_ar: result.target_food.name_ar,
@@ -714,11 +723,12 @@ export const calculateSwapHandler = async (req, res) => {
       grams: result.target_food.portion_g,
       portion_g_rounded: result.target_food.portion_g,
       serving_display_ar: result.target_food.serving_display_ar,
-      serving_display_en: result.target_food.serving_display_en
+      serving_display_en: result.target_food.serving_display_en,
+      ...macros,
     };
 
     return res.status(200).json({
-      swap: result,
+      swap: { ...result, target_food: { ...result.target_food, ...macros } },
       swapped_food: swappedFood
     });
   } catch (err) {

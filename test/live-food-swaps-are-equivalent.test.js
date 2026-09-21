@@ -57,6 +57,20 @@ test("rice at lunch can become potatoes or bread", async () => {
   assert.ok(codes.includes("POTATO_BAKED") && codes.includes("BALADI_BREAD"), codes.join(","));
 });
 
+test("swap-food returns the new portion's calories and macros (the app showed 0 kcal after every swap)", async () => {
+  const original = IntakeSubmission.findOne;
+  IntakeSubmission.findOne = async () => null;
+  try {
+    const out = await call(calculateSwapHandler, { user: { id: client.id }, body: { current_food_code: "CHICKEN_BREAST", current_portion_g: 150, target_food_code: "TILAPIA_COOKED" } });
+    assert.equal(out.status, 200, JSON.stringify(out.body));
+    const t = out.body.swap.target_food;
+    assert.ok(t.calories > 100 && t.protein_g > 30 && t.fat_g >= 0 && t.carbs_g >= 0, JSON.stringify(t));
+    assert.equal(out.body.swapped_food.calories, t.calories);
+  } finally {
+    IntakeSubmission.findOne = original;
+  }
+});
+
 test("a swap the rule does not offer is refused when sent directly", async () => {
   const original = IntakeSubmission.findOne;
   IntakeSubmission.findOne = async () => null;

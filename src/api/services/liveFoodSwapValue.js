@@ -8,15 +8,17 @@ import { FOOD_SWAP_DATABASE } from "../../nutrition-meal-context-v2/build-culina
 import { isEquivalentSwap } from "../../../frontend/src/utils/swapExchangeRules.js";
 import { REGISTRY_TO_PLAN_FOOD } from "./liveFoodSwapSafety.js";
 
-/** Energy and fat of a swap-registry food portion, or null when its macros are unknown. */
+/** Energy and macros of a swap-registry food portion, or null when its macros are unknown. */
 export function liveSwapPortionValue(registryCode, grams) {
   const code = String(registryCode || "").toUpperCase();
   const food = FOOD_SWAP_DATABASE[REGISTRY_TO_PLAN_FOOD[code] || code];
   const g = Number(grams);
   if (!food || !(g > 0)) return null;
-  const per = (key) => Number(food[key]) || 0;
-  const kcal = ((per("protein_per_100g") * 4 + per("carb_per_100g") * 4 + per("fat_per_100g") * 9) * g) / 100;
-  return { kcal, fat: (per("fat_per_100g") * g) / 100 };
+  const amount = (key) => ((Number(food[key]) || 0) * g) / 100;
+  const protein = amount("protein_per_100g");
+  const carbs = amount("carb_per_100g");
+  const fat = amount("fat_per_100g");
+  return { kcal: protein * 4 + carbs * 4 + fat * 9, protein, carbs, fat };
 }
 
 /** True when the target portion is the same kind of food with close energy and fat. */
