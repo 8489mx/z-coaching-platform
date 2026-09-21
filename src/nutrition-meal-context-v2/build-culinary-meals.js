@@ -1,4 +1,5 @@
 import { getFoodClinicalProperties } from "../execution-engines/food-swap-engine.js";
+import { CLINICAL_GUIDELINES } from "../config/clinical-guidelines.js";
 
 /**
  * Advanced Contextual Culinary Meal Archetype, Dynamic Fat Offset & Extreme Edge-Case Engine
@@ -3987,7 +3988,7 @@ const FAT_SOURCES = Object.freeze([
  * into olive oil) is moved to avocado, then almonds, within each one's portion and the client's
  * restrictions; what is left stays in the oil. The meal's fat does not change.
  */
-export function diversifyFatSources(meals = [], allergenContext = {}, { kidneyProteinCapped = false } = {}) {
+export function diversifyFatSources(meals = [], allergenContext = {}, { kidneyProteinCapped = false, kidneyCondition = false } = {}) {
   if (!Array.isArray(meals)) return meals;
   return meals.map((meal) => {
     const items = Array.isArray(meal?.items) ? meal.items : null;
@@ -4003,7 +4004,11 @@ export function diversifyFatSources(meals = [], allergenContext = {}, { kidneyPr
       if (items.some((item) => item?.food_code === source.code)) continue;
       const food = FOOD_SWAP_DATABASE[source.code];
       if (!food || !isFoodClinicallySafe(source.code, allergenContext)) continue;
-      const grams = Math.min(source.maxGrams, Math.round((excessFat / food.fat_per_100g) * 100));
+      // Avocado is rich in potassium: a kidney client keeps a moderate portion (KDIGO 2024).
+      const maxGrams = kidneyCondition && source.code === "FRESH_AVOCADO"
+        ? Math.min(source.maxGrams, CLINICAL_GUIDELINES.KIDNEY.AVOCADO_MAX_G_PER_MEAL)
+        : source.maxGrams;
+      const grams = Math.min(maxGrams, Math.round((excessFat / food.fat_per_100g) * 100));
       if (grams < 10) continue;
       const fat = Math.round((grams * food.fat_per_100g) / 100);
       const protein = Math.round((grams * food.protein_per_100g) / 100);

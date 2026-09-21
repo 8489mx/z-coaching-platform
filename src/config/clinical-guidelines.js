@@ -22,6 +22,15 @@ export const CLINICAL_GUIDELINES = Object.freeze({
      */
     MAX_PROTEIN_PER_KG: 0.8,
     RATIONALE_AR: "تم تحديد سقف البروتين بـ 0.8 جم/كجم كحد أعلى لمرضى الكلى بناءً على توصيات KDOQI 2020 (0.55-0.6 جم/كجم للمرحلة 3-5 بدون سكري، و0.6-0.8 مع السكري). الرقم النهائي يحدده طبيب الكلى المعالج حسب المرحلة، ومرضى الغسيل الكلوي يحتاجون بروتيناً أعلى (1.0-1.2 جم/كجم)، لذلك الخطة تتطلب مراجعة طبية قبل الاعتماد.",
+    /**
+     * Scientific Source:
+     * KDIGO 2024 CKD Guideline, practice points 3.11.5.1-3.11.5.2: potassium is managed per person;
+     * potassium-rich foods are limited when there is hyperkalaemia or a risk of it, while fruit and
+     * vegetables are not restricted by default. The intake has no potassium result, so avocado
+     * (~485 mg K / 100 g) stays at a moderate portion per meal and the coach asks for the test.
+     */
+    AVOCADO_MAX_G_PER_MEAL: 50,
+    POTASSIUM_NOTE_AR: "مريض كلى: اطلب آخر تحليل بوتاسيوم في الدم (KDIGO 2024). لو البوتاسيوم عالي أو الطبيب محدده، قلّل الأطعمة الغنية بالبوتاسيوم في الخطة (الأفوكادو، البطاطس والبطاطا، الموز، البلح) وبدائل الملح. لو طبيعي، الخطة تمشي زي ما هي.",
   }),
 
   // ==========================================

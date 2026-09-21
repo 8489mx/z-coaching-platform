@@ -799,6 +799,8 @@ export function calculateUniversalNutritionTargets(canonicalIntake, evaluationCo
     clinical_safety_shield: biomarkerAnalysis?.has_biomarker_flags ? biomarkerAnalysis : null,
     clinical_guardrails: {
       kidney_protein_capped: Boolean(kidneyProteinCapped),
+      kidney_condition: Boolean(hasKidneyCondition),
+      kidney_potassium_note_ar: hasKidneyCondition ? CLINICAL_GUIDELINES.KIDNEY.POTASSIUM_NOTE_AR : null,
       max_protein_per_kg: kidneyProteinCapped ? (biomarkerAnalysis?.dietary_modifications?.protein_cap_g_per_kg || CLINICAL_GUIDELINES.KIDNEY.MAX_PROTEIN_PER_KG) : null,
       max_protein_g: kidneyProteinCapped ? proteinG : null,
       rationale_ar: kidneyProteinCapped ? (biomarkerAnalysis?.dietary_modifications?.protein_cap_g_per_kg ? `تحديد سقف البروتين عند ${proteinPerKg} جم/كجم لحماية الكلى بناءً على الفحوصات المخبرية` : CLINICAL_GUIDELINES.KIDNEY.RATIONALE_AR) : null,
@@ -992,7 +994,10 @@ export function buildMasterEngineV2(inputs) {
       isDiabeticClient,
     ), carbPortionLimit({ diabetic: isDiabeticClient })),
     buildAllergenContext(canonicalIntake, effectiveIntake),
-    { kidneyProteinCapped: universalTargets.clinical_guardrails?.kidney_protein_capped === true },
+    {
+      kidneyProteinCapped: universalTargets.clinical_guardrails?.kidney_protein_capped === true,
+      kidneyCondition: universalTargets.clinical_guardrails?.kidney_condition === true,
+    },
   );
 
   const baseNutritionProgram = buildNutritionEngine({
