@@ -2,6 +2,14 @@ import fs from "fs";
 import path from "path";
 import { fileURLToPath } from "url";
 import { CLINICAL_GUIDELINES } from "../config/clinical-guidelines.js";
+import { EXERCISE_CATALOG_V2 } from "../exercise-catalog-v2/exercise-catalog-v2.js";
+import { getExerciseV2ByCode } from "../exercise-catalog-v2/index.js";
+
+// Equipment each training setup owns (catalog v2 equipment codes). A gym owns everything.
+const EQUIPMENT_BY_ENVIRONMENT = Object.freeze({
+  HOME: new Set(["BODYWEIGHT", "RESISTANCE_BANDS", "DUMBBELLS", "ADJUSTABLE_BENCH"]),
+  BANDS: new Set(["BODYWEIGHT", "RESISTANCE_BANDS"]),
+});
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -1303,33 +1311,45 @@ export const EXERCISE_JOINT_STRESS_MAP = Object.freeze({
   WIDE_STANCE_SQUAT: ["HIP"],
 });
 
+// What each joint is loaded by, read from the exercise name. A hand-written stress list can miss a
+// joint (a back extension listed without the lower back), so the name is always read as well.
+const JOINT_STRESS_BY_NAME = Object.freeze({
+  KNEE: /SQUAT|LUNGE|LEG_EXT|LEG_PRESS|HACK|STEP_UP|SPLIT|PISTOL|JUMP|SISSY|WALL_SIT/,
+  LOWER_BACK: /DEADLIFT|RDL|ROMANIAN|BENT_OVER|GOOD_MORNING|T_BAR|BARBELL_ROW|PENDLAY|BACK_SQUAT|FRONT_SQUAT|KETTLEBELL_SWING|CLEAN|SNATCH|HYPEREXT|BACK_EXTENSION/,
+  SHOULDER: /OVERHEAD|SHOULDER_PRESS|MILITARY|ARNOLD|PUSH_PRESS|PIKE|HANDSTAND|UPRIGHT_ROW|DIP|BEHIND_NECK|SNATCH|INCLINE_BENCH/,
+  WRIST: /STRAIGHT_BAR_CURL|WRIST/,
+  ELBOW: /SKULL_CRUSHER|DIP|PREACHER/,
+  NECK: /BEHIND_NECK|SHRUG/,
+});
+
 export function getExerciseJointStress(exerciseCode, candidateObj = null) {
   const code = String(exerciseCode || "").toUpperCase().trim();
-  if (candidateObj && Array.isArray(candidateObj.joint_stress) && candidateObj.joint_stress.length > 0) {
-    return candidateObj.joint_stress;
-  }
-  if (EXERCISE_JOINT_STRESS_MAP[code]) {
-    return EXERCISE_JOINT_STRESS_MAP[code];
-  }
-
-  // Dynamic semantic matching
-  const stress = new Set();
-  if (code.includes("SQUAT") || code.includes("LEG_EXT") || code.includes("LUNGE") || code.includes("LEG_PRESS") || code.includes("HACK")) {
-    stress.add("KNEE");
-  }
-  if (code.includes("DEADLIFT") || code.includes("BENT_OVER_ROW") || code.includes("GOOD_MORNING") || code.includes("T_BAR_ROW")) {
-    stress.add("LOWER_BACK");
-  }
-  if (code.includes("OVERHEAD") || code.includes("SHOULDER") || code.includes("UPRIGHT_ROW") || code.includes("DIP") || code.includes("INCLINE_BENCH")) {
-    stress.add("SHOULDER");
-  }
-  if (code.includes("STRAIGHT_BAR_CURL") || code.includes("WRIST")) {
-    stress.add("WRIST");
-  }
-  if (code.includes("BEHIND_NECK") || code.includes("SHRUG")) {
-    stress.add("NECK");
+  const stress = new Set([
+    ...(candidateObj && Array.isArray(candidateObj.joint_stress) ? candidateObj.joint_stress : []),
+    ...(EXERCISE_JOINT_STRESS_MAP[code] || []),
+  ]);
+  for (const [joint, pattern] of Object.entries(JOINT_STRESS_BY_NAME)) {
+    if (pattern.test(code)) stress.add(joint);
   }
   return Array.from(stress);
+}
+
+/**
+ * An injury as the intake form stores it (knee, spine_back, shoulder, elbow_wrist), in Arabic, or in
+ * English, as the joints it protects. Unknown text protects nothing rather than guessing.
+ */
+export function normalizeInjuryFlag(flag) {
+  const raw = String(flag || "").trim();
+  const upper = raw.toUpperCase();
+  const joints = new Set();
+  if (/KNEE|PATELLA|MENISC|ACL|ركب/.test(upper) || /ركب|رضف|غضروف الركبة/.test(raw)) joints.add("KNEE");
+  if (/BACK|SPINE|DISC|LUMBAR|SCIATIC/.test(upper) || /ظهر|فقر|ديسك|انزلاق|غضروف|عرق النسا|قطن/.test(raw)) joints.add("LOWER_BACK");
+  if (/SHOULDER|ROTATOR|IMPINGE/.test(upper) || /كتف|أكتاف|اكتاف/.test(raw)) joints.add("SHOULDER");
+  if (/WRIST/.test(upper) || /رسغ|معصم/.test(raw)) joints.add("WRIST");
+  if (/ELBOW/.test(upper) || /كوع|مرفق/.test(raw)) joints.add("ELBOW");
+  if (/NECK|CERVICAL/.test(upper) || /رقب/.test(raw)) joints.add("NECK");
+  if (/HIP/.test(upper) || /حوض|ورك/.test(raw)) joints.add("HIP");
+  return [...joints];
 }
 
 function getCatalogExercises() {
@@ -1428,14 +1448,28 @@ export function getSmartExerciseSwaps(exerciseCode, options = {}) {
   }
 
   // 3. Environment Filter (If HOME, prioritize Home & Bodyweight/Bands)
+  const GYM_GEAR = /BARBELL|CABLE|MACHINE|SMITH|LEG_PRESS|HACK|LAT_PULLDOWN|PEC_DECK|EZ_BAR|T_BAR/;
+  const FREE_WEIGHTS = /DUMBBELL|KETTLEBELL|GOBLET/;
+  const nameOf = (c) => String(c.exercise_code || "").toUpperCase();
   if (environment === "HOME") {
     candidates = candidates.filter(
-      (c) => c.environment === "HOME" || c.environment === "GYM_OR_HOME" || c.equipment === "DUMBBELL" || c.equipment === "BODYWEIGHT" || c.equipment === "RESISTANCE_BAND"
+      (c) => (c.environment === "HOME" || c.environment === "GYM_OR_HOME" || c.equipment === "DUMBBELL" || c.equipment === "BODYWEIGHT" || c.equipment === "RESISTANCE_BAND")
+        && (/^BAND_/.test(nameOf(c)) || !GYM_GEAR.test(nameOf(c)))
+    );
+  }
+  // Bodyweight and bands only (the intake's "calisthenics_bands").
+  if (environment === "BANDS") {
+    candidates = candidates.filter(
+      (c) => (c.equipment === "BODYWEIGHT" || c.equipment === "RESISTANCE_BAND" || /^BAND_|BODYWEIGHT|PUSH_UP|PLANK|DEAD_BUG|BRIDGE/.test(nameOf(c)))
+        && (/^BAND_/.test(nameOf(c)) || (!GYM_GEAR.test(nameOf(c)) && !FREE_WEIGHTS.test(nameOf(c))))
     );
   }
 
   // 4. Clinical Joint Stress & Injury Bypass (Covering LOWER_BACK, KNEE, SHOULDER, WRIST, NECK, HIP)
-  const normalizedInjuries = injuryFlags.map((f) => String(f).toUpperCase().trim()).filter(Boolean);
+  const normalizedInjuries = [...new Set(injuryFlags.flatMap((f) => {
+    const joints = normalizeInjuryFlag(f);
+    return joints.length > 0 ? joints : [String(f).toUpperCase().trim()];
+  }).filter(Boolean))];
   if (normalizedInjuries.length > 0) {
     candidates = candidates.filter((c) => {
       const exCode = String(c.exercise_code || "").toUpperCase().trim();
@@ -1465,6 +1499,48 @@ export function getSmartExerciseSwaps(exerciseCode, options = {}) {
 
       return !hasConflict;
     });
+  }
+
+  // Too few swaps left for this setup and these injuries (a barbell squat for a client with bands
+  // only, a split squat for a sore knee): complete the list from the full exercise catalog - same
+  // movement slot, then same main muscle, and for a knee a hip-dominant exercise that spares it -
+  // through the same equipment and joint filters.
+  if (candidates.length < 3) {
+    const original = getExerciseV2ByCode(normalizedCode);
+    const owned = EQUIPMENT_BY_ENVIRONMENT[environment] || null;
+    const taken = new Set([...addedCodes, ...candidates.map((c) => String(c.exercise_code).toUpperCase())]);
+    const fits = (ex) => !owned || (ex.equipment_requirements || []).every((req) => owned.has(String(req.equipment_code).toUpperCase()));
+    const safe = (ex) => !getExerciseJointStress(ex.exercise_code).some((joint) => normalizedInjuries.includes(joint));
+    const pool = EXERCISE_CATALOG_V2.exercises.filter((ex) => !taken.has(ex.exercise_code) && fits(ex) && safe(ex));
+    // A sore knee on a leg exercise: glute bridge / hip thrust first, then a Romanian deadlift (the
+    // plan's own knee rule), never a heavy conventional deadlift.
+    const kneeLegDay = normalizedInjuries.includes("KNEE") && original && ["QUADS", "GLUTES", "HAMSTRINGS"].includes(original.primary_muscle);
+    const tiers = original ? [
+      ...(kneeLegDay ? [
+        (ex) => /BRIDGE|HIP_THRUST/.test(ex.exercise_code),
+        (ex) => /ROMANIAN|RDL/.test(ex.exercise_code),
+      ] : []),
+      (ex) => !kneeLegDay && ex.slot_code === original.slot_code,
+      (ex) => !kneeLegDay && ex.primary_muscle === original.primary_muscle,
+      (ex) => !kneeLegDay && (ex.secondary_muscles || []).includes(original.primary_muscle),
+    ] : [];
+    for (const tier of tiers) {
+      for (const ex of pool.filter(tier)) {
+        if (candidates.length >= 3) break;
+        if (taken.has(ex.exercise_code)) continue;
+        taken.add(ex.exercise_code);
+        const equipment = (ex.equipment_requirements || []).map((req) => String(req.equipment_code).toUpperCase());
+        candidates.push({
+          exercise_code: ex.exercise_code,
+          name_ar: ex.name_ar,
+          name_en: ex.name_en,
+          equipment: equipment.includes("RESISTANCE_BANDS") ? "RESISTANCE_BAND" : equipment.includes("DUMBBELLS") ? "DUMBBELL" : equipment.includes("BODYWEIGHT") ? "BODYWEIGHT" : equipment[0] || "BODYWEIGHT",
+          environment: owned ? environment : "GYM",
+          biomechanical_match_ar: "بديل من نفس النمط الحركي يناسب أدواتك وإصاباتك",
+          from_catalog_fallback: true,
+        });
+      }
+    }
   }
 
   const defaultPattern = entry?.movement_pattern || catalogEx?.biomechanical_focus || "STRENGTH_HYPERTROPHY";
