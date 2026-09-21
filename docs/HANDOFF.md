@@ -9,7 +9,7 @@ Everything below is merged into `main` and pushed to GitHub (`8489mx/z-coaching-
 
 1. Read `CLAUDE.md` (standing iron rules) and this file.
 2. Run the full check and confirm the baseline before touching anything:
-   - `npm.cmd test` (Windows) — expected: node:test **1873/1873 pass**, vitest **47/47 pass**, lint 0.
+   - `npm.cmd test` (Windows) — expected: node:test **1883/1883 pass**, vitest **47/47 pass**, lint 0.
    - In a git worktree: link `node_modules` and `frontend/node_modules` to `D:/zcc`'s (junctions), copy `.env` (ignored), and build the frontend once — `test/hostinger-deployment-readiness.test.js` fails without `frontend/dist`.
    - `cd frontend && npm.cmd run build` — expected: builds.
    - Tests need the env: they load `D:/zcc/.env` (never print its values). Scripts: `node --env-file=.env <script>`.
@@ -154,6 +154,17 @@ Owner's words: every food must be palatable; a swap must be eaten the same way a
 - Correction: the swap-database omelette (154 kcal, 11.7 g fat per 100 g) is USDA omelette cooked with fat, not an error; the template uses boiled egg. Nothing to fix.
 - Verification: 1873/1873 + 47/47, lint 0, build OK, stress 306 clients 0 violations, journeys 6/6 no issues, 10-client simulation 100%.
 
+## 3g. Seventh round (2026-09-21/22) — owner: "the engine first, the app later; training and nutrition are the foundation; 30 g of oil is too much, the overall balance matters" — merged + pushed
+
+Owner decision: **no Flutter work until the engine has no error that can stop a client reaching the goal.**
+
+- `e68c304` **The day's balance** (IOM DRI 2005, adult AMDR: fat 20-35% of energy; `CLINICAL_GUIDELINES.NUTRITION_BALANCE.MAX_FAT_ENERGY_SHARE` 0.35). Energy a clinical limit pushes out (diabetic carb ceiling, kidney protein cap, PCOS lower-carb) no longer piles up as fat. Above 35%: no diabetes -> carbohydrate; diabetes -> protein up to 2.2 g/kg of reference weight where the kidneys allow, then lower energy (never while breastfeeding, never under 1200/1500 or KDOQI 25 kcal/kg, below maintenance only with BMI 25+), then carbohydrate above 45% (with a kidney cap only, at most ~56%, low-GI sources already chosen). PCOS lower-carb: protein then carbohydrate (Teede et al. 2023: no diet type favoured). Coach note `energy_balance_note_ar`. Extreme case: 4550 kcal / fat 46% / oil 39-50 g a meal -> 3254 kcal / fat 35% / carbs 52% / oil 20-24 g. Stress: meals over 30 g of oil 7 clients -> 1; the stress run now also fails any plan with fat above 35% (none).
+- `9e29e02` Pregnant/breastfeeding kidney patients keep +25 g protein on top of the kidney cap (Eur J Clin Nutr 2020 review of CKD in pregnancy: use the CKD recommendation plus the extra needs of pregnancy; IOM +25 g/day). R233 (42 kg, breastfeeding) 34 -> 59 g protein.
+- `6290e88` Check-ins keep the balance: a diabetic's extra energy goes to protein (no kidney cap), then fat up to 35%, else the increase is held (`FAT_SHARE_LIMIT_REACHED`, coach approval); a kidney + diabetes plan keeps its own carbohydrate share instead of being pulled back to 45% (which pushed the difference into fat every check-in). The long-journeys run now fails any week with fat above 35% (none in 6 journeys).
+- `96415be` **Training: chest volume.** Audit of the 306 clients (week 1, fractional sets, Pelland et al. 2024): chest had ~6 weekly sets in every split (back 12-16, shoulders up to 19) - one chest movement per upper/push day against two for the back. Now a second press on UPPER_B and both push days (PUSH_B trades its second overhead press), a third press on full-body day C; repeated slots become incline presses (`DUPLICATE_ALTERNATIVES`). Chest: PPL 6 -> 12.6, upper/lower 6 -> ~9, 5 days 6 -> ~10, full body 3 days 6 -> 9 (>= 10 weekly sets: Schoenfeld et al. 2017). Guard test `training-muscle-balance.test.js`; the slot-map guard updated.
+- Audit also found: no major muscle under 6 or over 22 weekly sets, every muscle trained at least twice a week from 3 days, 12-30 sets a session. Volume is the same for beginners and advanced (see 4.0 item 7).
+- Verification: 1883/1883 + 47/47, lint 0, build OK, stress 306 clients 0 violations (with the new fat and carb checks), journeys 6/6 no issues (with the new fat check), 10-client simulation 100%.
+
 ## 4. Open work (in priority order)
 
 ### 4.1 Goal choice and plain names — DONE in `653804c` (kept below for context)
@@ -169,12 +180,13 @@ Suggested approach (confirm with owner first, show proposed Arabic labels):
 
 ### 4.0 WHAT IS STILL OPEN (read this list first)
 1. **Look at the new screens in a real browser** — intake form DONE (3d, 3e). Still to do, plus the web client swap window from 3e (needs the backend restarted on the latest code + owner sign-in): coach editor → nutrition tab "ملاحظات للكوتش قبل الاعتماد"; cardio picker (blocked options + reasons); manual exercise swap amber warning; client injuries/equipment now shown in the editor; intake form: goal cards (5 incl. "سيب الكوتش يحدد") and the daily-steps question; web client app food and exercise swap windows (now signed-in, filtered). Needs the dev server (`.claude/launch.json` / `npm.cmd run dev`) and a real coach + client login (the owner logs in; never enter passwords).
-2. **Flutter app** (no Flutter SDK on the owner PC: Dart cannot be compiled or tested there, so no Dart was changed). Server-side fixes cover calories after a swap (`f629a10`), the meal (`c4352e2`) and protein powder (`1c0be06`). Still needs Dart + a device: (a) display `item.note` under the item (protein powder note), one Text like `fastingNoteAr` in `nutrition_screen.dart`; (b) show the server `error` when swap-food answers 409; (c) verify swaps on a device.
+2. **Flutter app** — on hold by the owner's decision until the engine is clean. When resumed (needs the Flutter SDK + a device): display `item.note` (protein powder note), show the swap-food 409 `error`, verify swaps on a device.
 3. **Production data audit**: must run on the VPS itself (see 3d): `node --env-file=.env scripts/audit-grown-cycles.mjs` (read-only). The owner is not technical — walk them through it or get server access. Repair only with backup + plan + owner approval.
-4. **Extreme case** (130 kg, diabetes + kidney + liver, coeliac + nuts): now 4550 kcal (KDOQI ceiling), 4 meals, fruit at most 250 g, oil 39-50 g a meal **flagged for the coach**, rice 443 g flagged. The remaining fat comes from the clinical limits (kidney protein cap + diabetic carbs at most 45%): raising carbs or lowering energy further is a medical decision for the coach/doctor.
+4. **Extreme case** (130 kg, diabetes + kidney + liver, coeliac + nuts): balanced now (3254 kcal, fat 35%, oil ~20 g a meal); carbohydrate 52% (kidney cap) with the coach note; potatoes 245-260 g flagged (the diabetic 200 g limit has no other safe carbohydrate for coeliac). Needs the doctor anyway (kidney + liver).
 5. **Swaps with no equivalent** (mobile): tuna (leanest protein), laban and milks (sugar vs protein), lupini (only snack of its kind). Adding foods of the same kind (sardine/mackerel, skyr, roasted chickpeas) to the swap list would give them swaps.
 6. Potassium: the intake does not ask for a potassium result (the coach note asks for it). Optional: a lab field so the kidney limits become automatic (owner decision).
-7. Branch `agx/full-simulation` must never be merged.
+7. **Training volume by experience**: beginners and advanced get the same weekly sets (advanced only get 4 sets on heavy compounds). A possible next step: fewer sets for beginners in the first cycle and more (12-20) for advanced - owner/coach choice, not an error.
+8. Branch `agx/full-simulation` must never be merged.
 
 ### 4.2 Verify everything together — DONE (see 3b); rerun after any engine change
 - `node --env-file=.env scripts/simulate-long-journeys.mjs` and `scripts/simulate-clients.mjs`; expect no issues. Note: the journeys harness applies run-due's rule (ENDED only).
