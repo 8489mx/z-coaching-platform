@@ -9,7 +9,8 @@ Everything below is merged into `main` and pushed to GitHub (`8489mx/z-coaching-
 
 1. Read `CLAUDE.md` (standing iron rules) and this file.
 2. Run the full check and confirm the baseline before touching anything:
-   - `npm.cmd test` (Windows) — expected: node:test **1819/1819 pass**, vitest **47/47 pass**, lint 0.
+   - `npm.cmd test` (Windows) — expected: node:test **1828/1828 pass**, vitest **47/47 pass**, lint 0.
+   - In a git worktree: link `node_modules` and `frontend/node_modules` to `D:/zcc`'s (junctions), copy `.env` (ignored), and build the frontend once — `test/hostinger-deployment-readiness.test.js` fails without `frontend/dist`.
    - `cd frontend && npm.cmd run build` — expected: builds.
    - Tests need the env: they load `D:/zcc/.env` (never print its values). Scripts: `node --env-file=.env <script>`.
 3. Then go to **section 4.0 (WHAT IS STILL OPEN)**. Sections 3, 3b and 3c list everything already done, with commit ids, files and tests.
@@ -118,6 +119,15 @@ Other
 - `40a2a9e` Olive oil ≤20 g per meal (`diversifyFatSources` in build-culinary-meals.js, run last in master-engine-v2): excess fat → avocado (≤100 g) then almonds (≤30 g; never with nut allergy or kidney protein cap); what is left returns to the oil; total fat unchanged (±3 g). Test: `test/fat-sources-beyond-oil.test.js`.
 - Verification after this round: 1819/1819 + 47/47, lint 0, build OK, stress 306 clients 0 crashes / 0 violations, journeys 6/6 no issues, 10-client simulation 100%.
 
+## 3d. Fourth round (2026-09-21, second session) — merged + pushed
+
+- `d0c9c67` **Fourth-meal snack fixed** (standard case D, meal 4 in `buildCulinaryRecipeMeals`, build-culinary-meals.js). Found while adding the automatic 4th meal: for any client on 4 meals the snack had up to 733 g sweet potato with `swaps: []` (so the 400 g split could not run), 102 g almonds for a kidney patient, and almonds always listed as 3 g protein. Now: sweet potato gets `generateSmartSwaps` (split applies), nuts/seeds ≤30 g (`SNACK_NUT_MAX_G`) with macros from `FOOD_SWAP_DATABASE`, none when `clinical_guardrails.kidney_protein_capped`, remaining fat → olive oil (then `diversifyFatSources` as usual). Test: `test/four-meal-snack-is-safe.test.js`.
+- `bc54470` **Owner decision: 3200+ kcal on 3 meals → 4 meals automatically** (`mealAddedForCalories` in build-master-engine-v2.js). Day macros unchanged (only split). Coach note `meal_count_note_ar` says a 4th meal was added and deleting it in the editor ("حذف الوجبة") spreads it over the rest. 2 meals (fasting) keep the advice only; ≥4 untouched. `test/coach-alerts.test.js` updated to the new note. Test: `test/high-calorie-day-gets-a-fourth-meal.test.js`. Extreme case (130 kg, diabetes+kidney+liver, coeliac+nuts, 4924 kcal): 3 meals up to 1841 kcal / 1348 g → 4 meals of ~1275 kcal, largest plate 1187 g.
+- `1f8e69c` Owner's answer on 4.0 item 5: fewer/clearer choices — a line under the goal cards: "مهما كان اختيارك، هنوصلك لأفضل فورمة ممكنة." Redirected / coach-decides plans do **not** wait for approval (owner did not ask for it); the reason stays in the coach notes.
+- Verification: 1828/1828 + 47/47, lint 0, build OK, stress 306 clients 0 crashes / 0 violations, journeys 6/6 no issues, 10-client simulation 100%. The regenerated `docs/SIMULATION_REPORT.md` was reverted (ids/timestamps, plus the blood-pressure + obesity sim client's cardio now `RECOVERY_WALK` instead of `LISS_TALK_TEST` — from `509c585`, "no HIIT" still passes).
+- Browser (real, signed out): intake form shows the 5 goal cards, no "إعادة تكوين", the steps question (5 options) and the new line. The rest of item 1 needs the backend restarted on the latest code (the owner's backend was started at 19:08, before the 3c server commits) and the owner signed in.
+- Production audit: `.env.production` has `DB_HOST=localhost`, i.e. the database lives on the VPS itself; from this PC it would reach the local DB. The audit has to run **on the server**: `node --env-file=.env scripts/audit-grown-cycles.mjs` from the app folder there. Local DB now: 10 plans, 0 grown.
+
 ## 4. Open work (in priority order)
 
 ### 4.1 Goal choice and plain names — DONE in `653804c` (kept below for context)
@@ -132,11 +142,11 @@ Suggested approach (confirm with owner first, show proposed Arabic labels):
 - Coach screens aligned in `43592c3`; `mobile_app/lib` has no goal labels (searched, zero matches). Live swaps apply the diabetic potato limit (3c).
 
 ### 4.0 WHAT IS STILL OPEN (read this list first)
-1. **Look at the new screens in a real browser** (never done by the previous session; only tests + build): coach editor → nutrition tab "ملاحظات للكوتش قبل الاعتماد"; cardio picker (blocked options + reasons); manual exercise swap amber warning; client injuries/equipment now shown in the editor; intake form: goal cards (5 incl. "سيب الكوتش يحدد") and the daily-steps question; web client app food and exercise swap windows (now signed-in, filtered). Needs the dev server (`.claude/launch.json` / `npm.cmd run dev`) and a real coach + client login (the owner logs in; never enter passwords).
+1. **Look at the new screens in a real browser** — intake form part DONE (3d). Still to do (needs the backend restarted on the latest code + owner sign-in): coach editor → nutrition tab "ملاحظات للكوتش قبل الاعتماد"; cardio picker (blocked options + reasons); manual exercise swap amber warning; client injuries/equipment now shown in the editor; intake form: goal cards (5 incl. "سيب الكوتش يحدد") and the daily-steps question; web client app food and exercise swap windows (now signed-in, filtered). Needs the dev server (`.claude/launch.json` / `npm.cmd run dev`) and a real coach + client login (the owner logs in; never enter passwords).
 2. **Flutter app on a real device**: food swaps now require the signed-in token (the app sends it — verify on device that swaps still load, and that an unsafe swap now shows the server's 409 message instead of applying).
-3. **Production data audit**: `node --env-file=<prod env> scripts/audit-grown-cycles.mjs` (read-only). Repair only with backup + plan + owner approval.
-4. **The extreme case** (130 kg, diabetes + kidney + liver, coeliac + nut allergy, bulking on 3 meals): still big plates and a lot of fat; flagged to the coach (`coach_review_high_fat`, `portion_warning_ar`, meal-count note). Possible next step: automatically add a 4th/5th meal above ~3200 kcal (currently only advised — the client's meal count is respected).
-5. Coach-decides goal and goal redirects only record the reason; decide with the owner whether the plan should wait for coach approval in those cases.
+3. **Production data audit**: must run on the VPS itself (see 3d): `node --env-file=.env scripts/audit-grown-cycles.mjs` (read-only). The owner is not technical — walk them through it or get server access. Repair only with backup + plan + owner approval.
+4. **The extreme case** — 4th meal DONE (3d). Still open, found with it (all flagged to the coach with `portion_warning_ar`, not fixed): (a) a large potato item with **no safe swap** is neither cut to the diabetic 200 g limit nor given `diabetic_tip_ar` (640 g roasted potatoes at breakfast, 657 g sweet potato in the snack for the extreme case; the same was 780 g before); (b) for coeliac + nuts + diabetes + kidney + liver, the swap generator finds no safe carbohydrate for potatoes at breakfast/snack; (c) a check-in that later raises a 3-meal plan above 3200 kcal does not add the 4th meal (only the first plan does); (d) the 4-meal snack is named "سناك صحي خفيف" but carries a quarter of the day (~1000+ kcal on a bulking day); (e) `diversifyFatSources` treats avocado as kidney-safe (no protein), but avocado is high in potassium — ask the owner/clinician.
+5. Goal redirect approval: DONE by the owner's answer (no waiting; a reassurance line was added, 3d). The owner wants the goal choices few and clear — the heading "الهدف الفسيولوجي الرئيسي" and "(NEAT Level)" on the next question are still technical; offer plain wording.
 6. Branch `agx/full-simulation` must never be merged.
 
 ### 4.2 Verify everything together — DONE (see 3b); rerun after any engine change
