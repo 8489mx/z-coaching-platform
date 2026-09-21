@@ -620,6 +620,34 @@ function withNoSwapNotes(meals = []) {
   }));
 }
 
+/**
+ * The meal a food sits in on the client's active plan (the portion closest to the one asked about
+ * when it appears more than once), as a swap-registry meal category; null when not found.
+ * The mobile app names no meal, and breakfast bread must not be offered rice.
+ */
+async function mealCategoryFromClientPlan(userId, registryCode, grams) {
+  if (!userId || !registryCode) return null;
+  const program = await Program.findOne({ where: { user_id: userId, status: "ACTIVE" }, order: [["id", "DESC"]] }).catch(() => null);
+  let data = program?.program_data;
+  if (typeof data === "string") {
+    try { data = JSON.parse(data); } catch { data = null; }
+  }
+  const meals = data?.nutrition?.meals?.length ? data.nutrition.meals : (data?.nutrition_program?.culinary_meals || []);
+  let best = null;
+  meals.forEach((meal, index) => {
+    for (const item of meal?.items || []) {
+      if (normalizeFoodCode(item?.food_code || item?.code) !== registryCode) continue;
+      const gap = Math.abs((Number(item.portion_g ?? item.amount) || 0) - (Number(grams) || 0));
+      if (!best || gap < best.gap) best = { gap, meal, index };
+    }
+  });
+  if (!best) return null;
+  const name = String(best.meal.meal_name_ar || best.meal.title || best.meal.name || "");
+  if (/سناك|snack/i.test(name)) return "SNACK";
+  if (/فطار|إفطار|افطار|breakfast/i.test(name) || (!name && best.index === 0)) return "BREAKFAST";
+  return "MAIN_MEAL";
+}
+
 /** The swap registry's meal category for a meal named by the app, or null when none is named. */
 function mealCategoryFromContext(mealContext) {
   const context = String(mealContext || "").toUpperCase();
@@ -642,7 +670,8 @@ export const getSwapCandidatesHandler = async (req, res) => {
     }
     const grams = Number(source_grams) || 100;
     const clinicalContext = await swapContextFor(req);
-    const mealCategory = mealCategoryFromContext(meal_context);
+    const mealCategory = mealCategoryFromContext(meal_context)
+      || (req.user?.id ? await mealCategoryFromClientPlan(req.user.id, normalizedCode, grams) : null);
 
     // With no meal named (the mobile app sends none) every food of the same macro type is a
     // candidate; the family rule below keeps only what is eaten the same way.
