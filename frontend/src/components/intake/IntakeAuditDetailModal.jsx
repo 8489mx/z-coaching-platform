@@ -4,10 +4,11 @@ import { X, MessageCircle, ExternalLink, Zap, ZoomIn } from 'lucide-react';
 import { formatWhatsAppPhone } from '../../utils/whatsappRemindersEngine';
 
 const GOALS_MAP = {
-  fat_loss: 'خسارة دهون حادة (Fat Loss)',
-  lean_bulk: 'بناء كتلة عضلية صافية (Lean Bulk)',
-  recomposition: 'إعادة تشكيل الجسم (Body Recomp)',
-  general_fitness: 'لياقة عامة وتأهيل بدني (Fitness)'
+  fat_loss: 'نزول دهون ووزن (Fat Loss)',
+  lean_bulk: 'زيادة عضل ووزن (Lean Bulk)',
+  recomposition: 'نزول دهون مع شد وبناء عضل (Recomposition)',
+  general_fitness: 'صحة ولياقة عامة (Fitness)',
+  coach_decides: 'ترك الاختيار للكوتش (النظام اقترح هدفاً يراجعه الكوتش)'
 };
 
 const ACTIVITY_MAP = {

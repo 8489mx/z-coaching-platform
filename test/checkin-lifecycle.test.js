@@ -47,7 +47,7 @@ test('Trainee Complete Weekly Lifecycle & Auto-Regulation Suite', async (t) => {
     const analysis = evaluateCheckin(week2Checkin);
     assert.equal(analysis.analysis_status, CheckinAnalysisStatus.BODY_RECOMP_SUCCESS);
     assert.equal(analysis.suggested_calorie_delta, 0);
-    assert.ok(analysis.recommendations_ar[0].includes('إعادة تكوين عضلي ناجحة'));
+    assert.ok(analysis.recommendations_ar[0].includes('نزول دهون مع زيادة عضل بنجاح'));
   });
 
   // 3. Scenario B: Week 3 Check-in — True Plateau (Consecutive weeks no drop)

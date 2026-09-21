@@ -176,7 +176,7 @@ export function evaluateCheckin(submission) {
     (weightChangeKg === null || (weightChangeKg >= -0.2 && weightChangeKg <= 0.8))
   ) {
     analysisStatus = CheckinAnalysisStatus.BODY_RECOMP_SUCCESS;
-    recommendationsAr.push(`إعادة تكوين عضلي ناجحة 100%! انخفض محيط الخصر بمقدار ${Math.abs(waistChangeCm)} سم مع ثبات الميزان، وهو دليل قاطع على حرق دهون الأحشاء وبناء كتلة عضلية صافية في نفس الوقت. استمر على نفس السعرات والماكروز تماماً.`);
+    recommendationsAr.push(`نزول دهون مع زيادة عضل بنجاح! انخفض محيط الخصر بمقدار ${Math.abs(waistChangeCm)} سم مع ثبات الميزان، وهو دليل قاطع على حرق دهون الأحشاء وبناء كتلة عضلية صافية في نفس الوقت. استمر على نفس السعرات والماكروز تماماً.`);
     recommendationsEn.push(`Successful body recomposition! Waist dropped by ${Math.abs(waistChangeCm)} cm while weight remained stable. Maintain current macros.`);
   }
 

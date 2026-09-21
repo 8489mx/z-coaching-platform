@@ -330,13 +330,28 @@ export function calculateUniversalNutritionTargets(canonicalIntake, evaluationCo
   let goalRedirect = null;
   const bmiNow = weight / ((height / 100) ** 2);
   const tooMuchFatToBulk = bodyFat ? bodyFat > (isMale ? 25 : 35) : bmiNow >= 30;
+  // "Let the coach decide": high body fat -> fat loss; moderate -> fat loss with muscle building
+  // (recomposition); lean -> muscle gain. The coach sees the suggestion and why before approving.
+  if (rawGoal === "COACH_DECIDES") {
+    const moderateFat = bodyFat ? bodyFat > (isMale ? 18 : 28) : bmiNow >= 25;
+    const chosen = tooMuchFatToBulk ? "FAT_LOSS" : moderateFat ? "BODY_RECOMPOSITION" : "MUSCLE_GAIN";
+    const chosenAr = { FAT_LOSS: "نزول دهون ووزن", BODY_RECOMPOSITION: "نزول دهون مع شد وبناء عضل", MUSCLE_GAIN: "زيادة عضل ووزن" }[chosen];
+    const basis = bodyFat ? `نسبة الدهون ${bodyFat}%` : `مؤشر كتلة الجسم ${bmiNow.toFixed(1)}`;
+    goalRedirect = {
+      from: "COACH_DECIDES",
+      to: chosen,
+      coach_review_required: true,
+      reason_ar: `المتدرب ساب اختيار الهدف للكوتش؛ النظام اقترح "${chosenAr}" بناءً على ${basis}. راجعه قبل اعتماد الخطة.`,
+    };
+    primaryGoal = chosen;
+  }
   if ((primaryGoal === "MUSCLE_GAIN" || primaryGoal === "LEAN_BULK") && tooMuchFatToBulk) {
     goalRedirect = {
       from: primaryGoal,
       to: "BODY_RECOMPOSITION",
       reason_ar: bodyFat
-        ? `نسبة الدهون ${bodyFat}% أعلى من المناسب للتضخيم؛ تم تحويل الهدف لإعادة تكوين الجسم (بناء عضل مع نزول دهون) لحد ما النسبة تنزل.`
-        : `مؤشر كتلة الجسم ${bmiNow.toFixed(1)} أعلى من المناسب للتضخيم؛ تم تحويل الهدف لإعادة تكوين الجسم (بناء عضل مع نزول دهون) لحد ما الوزن ينزل.`,
+        ? `نسبة الدهون ${bodyFat}% أعلى من المناسب لزيادة الوزن؛ الهدف بقى "نزول دهون مع شد وبناء عضل" لحد ما النسبة تنزل، وبعدها نبدأ زيادة العضل والوزن.`
+        : `مؤشر كتلة الجسم ${bmiNow.toFixed(1)} أعلى من المناسب لزيادة الوزن؛ الهدف بقى "نزول دهون مع شد وبناء عضل" لحد ما الوزن ينزل، وبعدها نبدأ زيادة العضل والوزن.`,
     };
     primaryGoal = "BODY_RECOMPOSITION";
   }
@@ -348,7 +363,7 @@ export function calculateUniversalNutritionTargets(canonicalIntake, evaluationCo
     // Recomposition relies on resistance training + high protein near maintenance (Barakat et al. 2020, Strength Cond J).
     targetCalories = Math.round(tdee * 0.90); // 10% Deficit
     proteinPerKg = 2.2;
-    calorieAdjustmentDesc = "عجز سعرات بسيط 10% لإعادة تكوين الجسم (حرق دهون مع بناء عضلي) مع بروتين مرتفع";
+    calorieAdjustmentDesc = "عجز سعرات بسيط 10% لنزول الدهون مع شد وبناء العضل (حرق دهون مع بناء عضلي) مع بروتين مرتفع";
   } else if (primaryGoal === "FAT_LOSS") {
     targetCalories = Math.round(tdee * 0.80); // 20% Deficit
     proteinPerKg = 2.2; // High protein to spare lean mass

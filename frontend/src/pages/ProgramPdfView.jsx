@@ -204,7 +204,8 @@ function sanitizeGoalLabel(goal) {
   const upper = str.toUpperCase();
   if (upper.includes('FAT_LOSS') || str.includes('خسارة دهون') || str.includes('تنشيف')) return 'خسارة دهون وتنشيف عضلي متقدم';
   if (upper.includes('HYPERTROPHY') || str.includes('تضخيم') || str.includes('بناء عضلي')) return 'زيادة الكتلة العضلية والقوة البدنية';
-  if (upper.includes('RECOMP') || str.includes('إعادة تشكيل')) return 'إعادة تشكيل القوام وخسارة الدهون بالتوازي';
+  if (upper.includes('RECOMP') || str.includes('إعادة تشكيل')) return 'نزول دهون مع شد وبناء عضل';
+  if (upper.includes('COACH_DECIDES')) return 'الهدف اللي حدده الكوتش ليك';
   return str.replace(/\s*\(.*?\)\s*/g, ' ').trim() || 'خسارة دهون وتنشيف عضلي متقدم';
 }
 

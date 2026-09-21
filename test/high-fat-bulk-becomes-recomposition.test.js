@@ -34,3 +34,26 @@ test("a lean client asking to bulk keeps the surplus", () => {
   assert.equal(t.effective_goal, null);
   assert.ok(t.target_calories > t.tdee);
 });
+
+// "Let the coach decide": the engine suggests a goal from body fat and says why, for the coach to review.
+const coachDecides = (weight, waist) => buildMasterEngineV2({
+  intake: {
+    gender: "male", age: "30", height_cm: "178", weight_kg: String(weight), circumferences: { neck_cm: "39", waist_cm: String(waist), hips_cm: "100" },
+    primary_goal: "coach_decides", neat_level: "moderate", occupation_type: "DESK_OFFICE", dangerous_symptoms: ["NONE"],
+    medical_conditions: { has_conditions: false, selected: ["none"] }, injuries_map: { has_injuries: false, selected_areas: ["none"] },
+    religion: "MUSLIM", strict_allergies: ["none"], meal_structure: { meals_count: "3_meals", intermittent_fasting: "none" },
+    training_environment: "commercial_gym", training_logistics: { days_per_week: 4, experience_level: "intermediate" }, recent_training: "ACTIVE",
+  },
+  evaluationContext: { system_time: "2026-09-21T08:00:00.000Z", assessmentDate: "2026-09-21" },
+  nutritionFoodCatalog: CATALOG,
+  options: {},
+}).nutrition_program.targets;
+
+test("'let the coach decide' suggests fat loss, fat loss with muscle, or muscle gain from body fat", () => {
+  for (const [weight, waist, goal] of [[120, 118, "FAT_LOSS"], [85, 92, "BODY_RECOMPOSITION"], [68, 74, "MUSCLE_GAIN"]]) {
+    const t = coachDecides(weight, waist);
+    assert.equal(t.effective_goal, goal, `${weight} kg`);
+    assert.equal(t.goal_redirect.coach_review_required, true);
+    assert.match(t.goal_redirect.reason_ar, /راجعه/);
+  }
+});

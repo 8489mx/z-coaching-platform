@@ -64,7 +64,7 @@ test("Check-in Engine Suite", async (t) => {
     const result = evaluateCheckin(input);
     assert.equal(result.analysis_status, CheckinAnalysisStatus.BODY_RECOMP_SUCCESS);
     assert.equal(result.suggested_calorie_delta, 0); // Keep calories steady
-    assert.ok(result.recommendations_ar.some((r) => r.includes("إعادة تكوين عضلي ناجحة")));
+    assert.ok(result.recommendations_ar.some((r) => r.includes("نزول دهون مع زيادة عضل بنجاح")));
   });
 
   await t.test("identifies TRUE_PLATEAU and suggests -125 kcal adjustment", () => {

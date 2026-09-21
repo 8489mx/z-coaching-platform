@@ -108,7 +108,7 @@ describe('IntakeAuditDetailModal - API shape', () => {
     const html = renderToStaticMarkup(
       React.createElement(IntakeAuditDetailModal, { submission, onClose: () => {} })
     );
-    expect(html).toContain('خسارة دهون');
+    expect(html).toContain('نزول دهون ووزن');
     expect(html).toContain('>32<');
     expect(html).toContain('>92<');
   });
@@ -118,6 +118,6 @@ describe('IntakeAuditDetailModal - API shape', () => {
     const html = renderToStaticMarkup(
       React.createElement(IntakeAuditDetailModal, { submission, onClose: () => {} })
     );
-    expect(html).toContain('خسارة دهون');
+    expect(html).toContain('نزول دهون ووزن');
   });
 });

@@ -854,10 +854,11 @@ export default function FullIntakeForm() {
                 </label>
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '10px' }}>
                   {[
-                    { id: 'fat_loss', title: 'خسارة دهون حادة (Fat Loss)', desc: 'عجز سعرات مدروس مع الحفاظ التام على الكتلة العضلية' },
-                    { id: 'lean_bulk', title: 'بناء كتلة عضلية صافية (Lean Bulk)', desc: 'فائض سعرات خفيف لتضخيم عضلي نظيف بدون دهون' },
-                    { id: 'recomposition', title: 'إعادة تشكيل الجسم (Body Recomp)', desc: 'حرق دهون وبناء عضلات في نفس التوقيت' },
-                    { id: 'general_fitness', title: 'لياقة عامة وتأهيل بدني (Fitness)', desc: 'تحسين كفاءة القلب والتحمل والصحة العامة' }
+                    { id: 'fat_loss', title: 'نزول دهون ووزن', desc: 'تخس وتنشّف مع الحفاظ على عضلاتك' },
+                    { id: 'lean_bulk', title: 'زيادة عضل ووزن', desc: 'عضلاتك تكبر بزيادة وزن محسوبة من غير كرش' },
+                    { id: 'recomposition', title: 'نزول دهون مع شد وبناء عضل', desc: 'الوزن ممكن يفضل قريب، بس الدهون بتنزل والعضل بيزيد والشكل بيتغير' },
+                    { id: 'general_fitness', title: 'صحة ولياقة عامة', desc: 'طاقة أحسن ونفَس أطول وحركة أسهل' },
+                    { id: 'coach_decides', title: 'مش متأكد، سيب الكوتش يحدد', desc: 'بنحدد الهدف الأنسب ليك من قياساتك، والكوتش يراجعه معاك' }
                   ].map((goal) => {
                     const isSelected = formData.primary_goal === goal.id;
                     return (

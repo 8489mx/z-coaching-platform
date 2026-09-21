@@ -115,6 +115,8 @@ export function adaptIntakePayloadToCanonicalEngine(raw) {
       'زيادة عضل': 'MUSCLE_GAIN',
       RECOMPOSITION: 'FAT_LOSS',
       BODY_RECOMPOSITION: 'FAT_LOSS',
+      // "Let the coach decide": the plan engine picks the goal from body fat; see build-master-engine-v2.
+      COACH_DECIDES: 'FAT_LOSS',
       RECOMP: 'FAT_LOSS',
       'إعادة تكوين': 'FAT_LOSS',
       'اعادة تكوين': 'FAT_LOSS',
