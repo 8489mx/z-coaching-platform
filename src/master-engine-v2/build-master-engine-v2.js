@@ -488,6 +488,19 @@ export function calculateUniversalNutritionTargets(canonicalIntake, evaluationCo
   const carbKcal = Math.max(0, targetCalories - proteinKcal - (fatG * 9));
   let carbG = Math.round(carbKcal / 4);
 
+  // Clinical Guard: carbohydrate ceiling for diabetes and insulin resistance. Protein capped for the
+  // kidneys used to leave every remaining calorie to carbohydrate (70% of energy, a kilo of rice a
+  // meal); the energy above the ceiling now goes to fat.
+  let diabeticCarbCapped = false;
+  if (hasDiabetesOrInsulinResistance) {
+    const maxCarbG = Math.floor((targetCalories * CLINICAL_GUIDELINES.DIABETES.MAX_CARB_ENERGY_SHARE) / 4);
+    if (carbG > maxCarbG) {
+      fatG += Math.round(((carbG - maxCarbG) * 4) / 9);
+      carbG = maxCarbG;
+      diabeticCarbCapped = true;
+    }
+  }
+
   // Clinical Guard: Pregnancy Minimum Carbohydrates (IOM 175g/day minimum)
   if (isPregnant && carbG < 175) {
     carbG = 175;
@@ -750,6 +763,13 @@ export function calculateUniversalNutritionTargets(canonicalIntake, evaluationCo
       hypoglycemia_guard_active: Boolean(hasDiabetesOrInsulinResistance),
       hypoglycemia_guidance_ar: hasDiabetesOrInsulinResistance ? CLINICAL_GUIDELINES.DIABETES.SAFETY_GUIDANCE_AR : null,
       hypoglycemia_rescue_carbs_grams: hasDiabetesOrInsulinResistance ? CLINICAL_GUIDELINES.DIABETES.HYPOGLYCEMIA_RESCUE_CARBS_GRAMS : null,
+      diabetic_carb_cap_applied: diabeticCarbCapped,
+      max_carb_energy_share: hasDiabetesOrInsulinResistance ? CLINICAL_GUIDELINES.DIABETES.MAX_CARB_ENERGY_SHARE : null,
+      diabetic_carb_cap_note_ar: diabeticCarbCapped ? CLINICAL_GUIDELINES.DIABETES.CARB_CAP_RATIONALE_AR : null,
+      coach_review_high_fat: hasDiabetesOrInsulinResistance && (fatG * 9) / targetCalories > CLINICAL_GUIDELINES.DIABETES.FAT_SHARE_REVIEW_THRESHOLD,
+      coach_review_high_fat_ar: hasDiabetesOrInsulinResistance && (fatG * 9) / targetCalories > CLINICAL_GUIDELINES.DIABETES.FAT_SHARE_REVIEW_THRESHOLD
+        ? `الدهون ${Math.round((fatG * 900) / targetCalories)}% من السعرات بعد سقف الكربوهيدرات؛ راجع توزيع الطاقة مع الحالة.`
+        : null,
       biomarker_guard_active: Boolean(biomarkerAnalysis?.has_biomarker_flags),
       withhold_creatine: Boolean(biomarkerAnalysis?.dietary_modifications?.withhold_creatine),
       purine_restriction: Boolean(biomarkerAnalysis?.dietary_modifications?.purine_restriction),

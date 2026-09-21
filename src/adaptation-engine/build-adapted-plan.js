@@ -4,6 +4,7 @@ import {
   AdaptationReasonCode,
 } from "./domain/enums.js";
 import { CheckinAnalysisStatus } from "../checkin-engine/index.js";
+import { CLINICAL_GUIDELINES } from "../config/clinical-guidelines.js";
 import { evaluateJointPainAndFirewall } from "../execution-engines/biomechanics-firewall-engine.js";
 import { analyzeBloodworkBiomarkers } from "../execution-engines/biomarker-engine.js";
 import {
@@ -301,6 +302,18 @@ export function buildAdaptedPlan(inputs) {
       message_ar: "النزول يسير وفق المعدل المثالي. استمرار على نفس الخطة مع التقدم في أسابيع الدورة التدريبية.",
       message_en: "Optimal trajectory maintained. Progressing to the next meso-cycle week.",
     });
+  }
+
+  // Diabetes and insulin resistance: every adjustment above keeps carbohydrate within the same share
+  // of energy as the first plan; the excess moves to fat, so months of +150 carb steps cannot creep
+  // back to a carbohydrate-heavy plan.
+  const guardrails = currentMasterProgram.nutrition_program?.targets?.clinical_guardrails || currentMasterProgram.clinical_guardrails || {};
+  if (guardrails.hypoglycemia_guard_active === true && adaptedCalories > 0) {
+    const maxCarbG = Math.floor((adaptedCalories * CLINICAL_GUIDELINES.DIABETES.MAX_CARB_ENERGY_SHARE) / 4);
+    if (adaptedCarbs > maxCarbG) {
+      adaptedFat += Math.round(((adaptedCarbs - maxCarbG) * 4) / 9);
+      adaptedCarbs = maxCarbG;
+    }
   }
 
   // Clinical Lab Biomarkers Evaluation during Weekly Adaptation

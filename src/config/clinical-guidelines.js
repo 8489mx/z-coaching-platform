@@ -78,6 +78,11 @@ export const CLINICAL_GUIDELINES = Object.freeze({
     HIGH_GLYCEMIC_SWAP_BAN: true,
     BANNED_GI_LEVELS: Object.freeze(["HIGH"]),
     RATIONALE_AR: "استبعاد الأطعمة ذات المؤشر الجلايسيمي المرتفع لمرضى السكري ومقاومة الأنسولين لمنع الارتفاعات الحادة في سكر الدم والأنسولين (ADA Guidelines).",
+    // Carbohydrate is at most 45% of energy for diabetes and insulin resistance; the rest of the energy
+    // goes to fat. Above 40% of energy from fat the plan is flagged for the coach.
+    MAX_CARB_ENERGY_SHARE: 0.45,
+    FAT_SHARE_REVIEW_THRESHOLD: 0.4,
+    CARB_CAP_RATIONALE_AR: "سقف الكربوهيدرات 45% من السعرات لمرضى السكري ومقاومة الإنسولين، والطاقة الباقية من دهون صحية (زيت زيتون، أفوكادو، مكسرات عند عدم الحساسية).",
     SAFETY_GUIDANCE_AR: "بروتوكول أمان هبوط السكر: يجب توفير 15-20 جم كربوهيدرات سريعة الامتصاص (مثل عصير فواكه أو تمرة واحدة أو أقراص جلوكوز) أثناء التمارين التي تتجاوز 45 دقيقة مع قياس السكر قبل بدء الجلسة.",
   }),
 
