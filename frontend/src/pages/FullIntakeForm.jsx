@@ -24,6 +24,7 @@ const DEFAULT_MASTER_INTAKE = {
   },
   primary_goal: 'recomposition',
   neat_level: 'moderate',
+  average_daily_steps: 'unknown',
   occupation_type: 'DESK_OFFICE',
 
   // Screen 2: Clinical & Injury Matrix
@@ -924,6 +925,45 @@ export default function FullIntakeForm() {
                         <span style={{ fontSize: '10.5px', color: '#64748B' }}>
                           {act.desc}
                         </span>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* Average daily steps (from the phone's health app when known) */}
+              <div>
+                <label style={{ display: 'block', fontSize: '12px', fontWeight: 800, color: '#0F172A', marginBottom: '4px' }}>
+                  متوسط خطواتك في اليوم
+                </label>
+                <p style={{ fontSize: '11px', color: '#64748B', margin: '0 0 8px 0', lineHeight: 1.4 }}>
+                  تلاقيها في تطبيق الصحة على موبايلك (متوسط آخر أسبوع). لو مش عارف اختار "مش عارف".
+                </p>
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
+                  {[
+                    { id: 'under_3000', title: 'أقل من 3000' },
+                    { id: '3000_6000', title: '3000 - 6000' },
+                    { id: '6000_9000', title: '6000 - 9000' },
+                    { id: 'over_9000', title: 'أكتر من 9000' },
+                    { id: 'unknown', title: 'مش عارف' }
+                  ].map((opt) => {
+                    const isSelected = formData.average_daily_steps === opt.id;
+                    return (
+                      <div
+                        key={opt.id}
+                        onClick={() => setFormData(p => ({ ...p, average_daily_steps: opt.id }))}
+                        style={{
+                          padding: '8px 14px',
+                          borderRadius: '8px',
+                          border: isSelected ? '2px solid #0F172A' : '1px solid #E2E8F0',
+                          background: isSelected ? '#F1F5F9' : '#FFFFFF',
+                          cursor: 'pointer',
+                          fontSize: '12px',
+                          fontWeight: 700,
+                          color: '#0F172A'
+                        }}
+                      >
+                        {opt.title}
                       </div>
                     );
                   })}

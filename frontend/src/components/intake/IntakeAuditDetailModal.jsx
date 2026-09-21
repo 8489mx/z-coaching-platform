@@ -16,6 +16,14 @@ const ACTIVITY_MAP = {
   very_active: 'عالي النشاط / عمل ميداني'
 };
 
+const DAILY_STEPS_MAP = {
+  under_3000: 'أقل من 3000 خطوة',
+  '3000_6000': '3000 - 6000 خطوة',
+  '6000_9000': '6000 - 9000 خطوة',
+  over_9000: 'أكثر من 9000 خطوة',
+  unknown: 'لا يعرف'
+};
+
 const OCCUPATION_MAP = {
   DESK_OFFICE: 'مكتبي ثابت',
   FIELD_MOBILE: 'ميداني متحرك',
@@ -347,6 +355,7 @@ export default function IntakeAuditDetailModal({
               <FieldRow label="محيط الحوض (سم)" value={answers.circumferences?.hips_cm} />
               <FieldRow label="الهدف الأساسي" value={answers.primary_goal} dictionary={GOALS_MAP} />
               <FieldRow label="مستوى الحركة اليومية (NEAT)" value={answers.neat_level} dictionary={ACTIVITY_MAP} />
+              <FieldRow label="متوسط الخطوات اليومية" value={answers.average_daily_steps} dictionary={DAILY_STEPS_MAP} />
               <FieldRow label="طبيعة العمل" value={answers.occupation_type} dictionary={OCCUPATION_MAP} />
             </Section>
 

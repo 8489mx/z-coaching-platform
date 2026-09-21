@@ -1107,7 +1107,12 @@ export function adaptIntakePayloadToCanonicalEngine(raw) {
 
 
   // 8. Cardio & Activity Steps
-  const cardio = intake.cardio || {};
+  // The form's step-count answer, when the client knows it, replaces the step count guessed from the
+  // activity level ("moderate" alone used to mean 8500 steps).
+  const FORM_DAILY_STEPS = { under_3000: 2500, "3000_6000": 4500, "6000_9000": 7500, over_9000: 10500 };
+  const formDailySteps = FORM_DAILY_STEPS[String(intake.average_daily_steps || "").trim().toLowerCase()];
+  const cardio = { ...(intake.cardio || {}) };
+  if (formDailySteps && !(Number(cardio.averageDailySteps) > 0)) cardio.averageDailySteps = formDailySteps;
   const sports = Array.isArray(cardio.additionalSports) ? cardio.additionalSports.map(s => ({
     sportCode: s.sportCode || (s.otherSportText ? null : "FOOTBALL"),
     otherSportText: s.otherSportText ?? null,
