@@ -47,8 +47,8 @@ Everything below is merged into `main` and pushed to GitHub (`8489mx/z-coaching-
 Commits, newest first (`git log --oneline cf1251e~1..HEAD`):
 
 ### Nutrition
-- `2972356` Bulking with high body fat (>25% men / >35% women, or BMI ≥30 when body fat unknown) → goal becomes **BODY_RECOMPOSITION** (10% deficit, high protein). Stored on the plan as `nutrition_program.targets.effective_goal` + `goal_redirect.reason_ar`; check-ins read the plan's goal. **See 4.1: owner wants this to be the coach's choice + plainer names.**
-- `52e790c` Hot roasted/baked/boiled potatoes and baked sweet potato are **HIGH GI** (GI tables ~70–110) → out of diabetic plans. (`frontend/src/utils/foodSwapEngine.js` GI map.)
+- `2972356` Bulking with high body fat (>25% men / >35% women, or BMI ≥30 when body fat unknown) → goal becomes **BODY_RECOMPOSITION** (10% deficit, high protein). Stored on the plan as `nutrition_program.targets.effective_goal` + `goal_redirect.reason_ar`; check-ins read the plan's goal. (Plain names and "coach decides" were added later — see 3b.)
+- ~~`52e790c` potatoes HIGH GI~~ — **REVERTED** in `f9e0a0c` by the owner's decision; potatoes stay for diabetics with a 200 g limit (see 3b).
 - `8efa013` + `b8c9618` Carbohydrate item over **400 g** is split across the same food + its own safe swaps (densest first, ≤400 g each; if not enough, all parts grow equally). Runs on the final meals (after diabetic choice) and again after a check-in rescales meals (`planMergeEngine`). No safe swap → item kept, `portion_warning_ar` for the coach. Function: `splitOversizedPortions` in `src/nutrition-meal-context-v2/build-culinary-meals.js`.
 - `0278d42` Calorie **increases stop at 55 kcal/kg** body weight (adaptation engine); reaching it sets `requires_coach_approval` + reason `CALORIE_CEILING_REACHED`. Never cuts a plan already above it.
 - `dea8b9e` **Diabetes / insulin resistance: carbs ≤45% of energy**, excess energy to fat, in the first plan and every check-in adjustment. Fat >40% → `coach_review_high_fat(_ar)` in `clinical_guardrails`. Constants in `src/config/clinical-guidelines.js` (DIABETES.MAX_CARB_ENERGY_SHARE).
