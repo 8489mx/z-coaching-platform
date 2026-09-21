@@ -9,6 +9,7 @@ import { buildAdaptedPlan } from "../../adaptation-engine/build-adapted-plan.js"
 import { mergeAdaptedPlanIntoProgram } from "../utils/planMergeEngine.js";
 import { resolveClientPrimaryGoal, resolveClientIsFemale, resolveIntakeMedicalReview } from "./program.controller.js";
 import { resolveTrainingCycleStatus } from "../services/trainingCycleService.js";
+import { mealCountNoteForCheckin } from "../../checkin-engine/meal-count-note.js";
 
 /**
  * Submit weekly check-in
@@ -280,6 +281,18 @@ export async function submitCheckin(req, res) {
           }
         : {}),
     };
+
+    // A check-in that takes a three-meal plan past 3200 kcal only rescales the three meals: the coach
+    // is told to add a fourth, like the first plan does.
+    const mealCountNote = mealCountNoteForCheckin({
+      planTargetKcal,
+      calorieDelta: adaptiveApplies ? adaptiveTdee.calorie_delta : baseAnalysis.suggested_calorie_delta,
+      mealsCount: programData.nutrition_program?.culinary_meals?.length || programData.nutrition_program?.targets?.meals_count,
+    });
+    if (mealCountNote) {
+      analysisOutput.meal_count_note_ar = mealCountNote;
+      analysisOutput.coach_action = `${analysisOutput.coach_action || ""} ${mealCountNote}`.trim();
+    }
 
     // 3. Save Checkin Submission
     const checkin = await CheckinSubmission.create({
