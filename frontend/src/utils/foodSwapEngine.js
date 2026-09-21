@@ -15,6 +15,7 @@
  */
 
 import { RECIPES, RECIPE_REFERENCE } from '../data/recipeReference.js';
+import { isCloseInValue } from './swapExchangeRules.js';
 
 export const TASTE_PROFILES = {
   BREAKFAST_SAVORY_PROTEIN: 'BREAKFAST_SAVORY_PROTEIN',
@@ -2435,6 +2436,36 @@ export function calculateDynamicFoodSwap({
     },
     clinical_note: clinicalNote
   };
+}
+
+/**
+ * The swaps a client may pick for a portion: same macro type and taste group, clinically safe, and
+ * close in energy and fat (swapExchangeRules), closest energy first. `accept` narrows the candidate
+ * foods further (search text, fasting).
+ */
+export function listEquivalentFoodSwaps(currentCode, portionG, clinicalProfile = {}, accept = () => true) {
+  const current = FOOD_DATABASE[currentCode];
+  const portion = Number(portionG) || 0;
+  if (!current || !(portion > 0)) return [];
+  const fromKcal = (current.calories_per_100g * portion) / 100;
+  const fromFat = (current.fat_per_100g * portion) / 100;
+  const results = [];
+  for (const target of Object.values(FOOD_DATABASE)) {
+    // Only the standard upper-case keys (lower-case entries are aliases of the same foods).
+    if (!target?.code || target.code !== target.code.toUpperCase() || target.code === current.code) continue;
+    if (target.macro_type !== current.macro_type || target.taste_profile !== current.taste_profile) continue;
+    if (!accept(target)) continue;
+    let swap;
+    try {
+      swap = calculateDynamicFoodSwap({ current_food_code: current.code, current_portion_g: portion, target_food_code: target.code, clinical_profile: clinicalProfile });
+    } catch {
+      continue;
+    }
+    const macros = swap.replacement_food.macros;
+    if (!isCloseInValue({ fromKcal, toKcal: macros.calories_kcal, fromFat, toFat: macros.fat_g })) continue;
+    results.push(swap);
+  }
+  return results.sort((a, b) => Math.abs(a.replacement_food.macros.calories_kcal - fromKcal) - Math.abs(b.replacement_food.macros.calories_kcal - fromKcal));
 }
 
 /**

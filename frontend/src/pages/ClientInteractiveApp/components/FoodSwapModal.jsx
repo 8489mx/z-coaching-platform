@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { X } from 'lucide-react';
-import { FOOD_DATABASE, calculateDynamicFoodSwap } from '../../../utils/foodSwapEngine';
+import { FOOD_DATABASE, listEquivalentFoodSwaps } from '../../../utils/foodSwapEngine';
 import { arabicSearchMatch } from '../../../utils/searchUtils';
 import { isFoodAllowedDuringFast } from '../../../utils/fastingCalendarEngine';
 
@@ -112,57 +112,36 @@ export default function FoodSwapModal({
             const currentMacroType = currentItemObj.macro_type || (activeSwapItem.p > activeSwapItem.c && activeSwapItem.p > activeSwapItem.f ? 'PROTEIN' : (activeSwapItem.c > 5 ? 'CARBS' : 'FATS'));
             const currentPortion = Number(activeSwapItem.amount) || 100;
 
-            // Find eligible foods from full FOOD_DATABASE
-            const allCandidateFoods = Object.values(FOOD_DATABASE).filter(f => {
-              if (!f || !f.code || !f.name_ar) return false;
-              // Only standard upper keys to avoid duplicate aliases
-              if (f.code !== f.code.toUpperCase()) return false;
-              if (f.code === currentItemCode) return false;
-              if (f.macro_type !== currentMacroType) return false;
+            // Only foods of the same taste group with close energy and fat (swapExchangeRules),
+            // closest energy first; search text and fasting narrow the list.
+            const fromCode = currentItemObj.code ? currentItemObj.code : (currentMacroType === 'PROTEIN' ? 'CHICKEN_BREAST' : (currentMacroType === 'CARBS' ? 'BASMATI_RICE_COOKED' : 'EXTRA_VIRGIN_OLIVE_OIL'));
+            const accept = (f) => {
+              if (!f.name_ar) return false;
               // During a religious fast only fast-compatible foods are offered.
               if (fastingContext?.active && !isFoodAllowedDuringFast(f, fastingContext)) return false;
               if (clientSwapSearch.trim()) {
                 const matchNameAr = arabicSearchMatch(f.name_ar, clientSwapSearch);
                 const matchNameEn = arabicSearchMatch(f.name_en, clientSwapSearch);
                 const matchCode = arabicSearchMatch(f.code, clientSwapSearch);
-                const matchAliases = Array.isArray(f.aliases) 
-                  ? f.aliases.some(a => arabicSearchMatch(a, clientSwapSearch)) 
+                const matchAliases = Array.isArray(f.aliases)
+                  ? f.aliases.some(a => arabicSearchMatch(a, clientSwapSearch))
                   : (typeof f.aliases === 'string' && arabicSearchMatch(f.aliases, clientSwapSearch));
                 return matchNameAr || matchNameEn || matchCode || matchAliases;
               }
               return true;
-            });
+            };
+            const swapResults = listEquivalentFoodSwaps(fromCode, currentPortion, clinicalProfile, accept);
 
-            if (allCandidateFoods.length === 0) {
+            if (swapResults.length === 0) {
               return (
                 <div style={{ padding: '24px', textAlign: 'center', color: '#64748B', fontSize: '0.78rem' }}>
-                  {"لا توجد بدائل مطابقة للبحث من نفس فئة المغذي (" + (currentMacroType === 'PROTEIN' ? 'البروتين' : currentMacroType === 'CARBS' ? 'النشويات' : currentMacroType === 'MIXED' ? 'الأطباق المركبة' : 'الدهون') + ")."}
+                  {clientSwapSearch.trim() ? 'لا توجد بدائل مطابقة للبحث بنفس نوع الأكل وقيمة قريبة.' : 'الصنف ده مالوش بديل بنفس نوع الأكل وقيمة قريبة؛ خليه زي ما هو.'}
                 </div>
               );
             }
 
-            // Sort candidates: same taste profile first to ensure highest culinary harmony and palatability
-            const sortedCandidateFoods = [...allCandidateFoods].sort((a, b) => {
-              const aMatches = a.taste_profile && currentItemObj.taste_profile && a.taste_profile === currentItemObj.taste_profile ? 1 : 0;
-              const bMatches = b.taste_profile && currentItemObj.taste_profile && b.taste_profile === currentItemObj.taste_profile ? 1 : 0;
-              return bMatches - aMatches;
-            });
-
-            return sortedCandidateFoods.slice(0, 25).map((targetFood, sIdx) => {
-              let swapResult = null;
-              try {
-                const fromCode = currentItemObj.code ? currentItemObj.code : (currentMacroType === 'PROTEIN' ? 'CHICKEN_BREAST' : (currentMacroType === 'CARBS' ? 'BASMATI_RICE_COOKED' : 'EXTRA_VIRGIN_OLIVE_OIL'));
-                swapResult = calculateDynamicFoodSwap({
-                  current_food_code: fromCode,
-                  current_portion_g: currentPortion,
-                  target_food_code: targetFood.code,
-                  clinical_profile: clinicalProfile,
-                  enforce_taste_profile: false
-                });
-              } catch {}
-
-              if (!swapResult) return null;
-
+            return swapResults.slice(0, 25).map((swapResult, sIdx) => {
+              const targetFood = FOOD_DATABASE[swapResult.replacement_food.code] || {};
               const isMatchingTaste = Boolean(targetFood.taste_profile && currentItemObj.taste_profile && targetFood.taste_profile === currentItemObj.taste_profile);
 
               return (
