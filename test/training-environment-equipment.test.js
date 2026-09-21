@@ -33,9 +33,9 @@ const INTAKE = {
   recent_training: "ACTIVE",
 };
 
-function exerciseCodesFor(environment, days = 4) {
+function exerciseCodesFor(environment, days = 4, experience = "intermediate") {
   const program = buildMasterEngineV2({
-    intake: { ...INTAKE, training_environment: environment, training_logistics: { days_per_week: days, experience_level: "intermediate" } },
+    intake: { ...INTAKE, training_environment: environment, training_logistics: { days_per_week: days, experience_level: experience } },
     evaluationContext: CTX,
     nutritionFoodCatalog: CATALOG,
     options: {},
@@ -48,9 +48,11 @@ function exerciseCodesFor(environment, days = 4) {
 
 // Every weekly frequency: the two- and three-day plans use a hand-written full-body template, the
 // five- and six-day ones others again, and the first version of this test only tried four days.
-for (const days of [2, 3, 4, 5, 6]) {
-  test(`a bodyweight-only client training ${days} days a week is never prescribed equipment they do not own`, () => {
-    const codes = exerciseCodesFor("calisthenics_bands", days);
+// Advanced clients get extra accessories (a second lateral raise on day three), and those were
+// where dumbbells still slipped through: the band version was already in the session.
+for (const [days, experience] of [2, 3, 4, 5, 6].flatMap((d) => ["beginner", "intermediate", "advanced"].map((e) => [d, e]))) {
+  test(`a bodyweight-only ${experience} client training ${days} days a week is never prescribed equipment they do not own`, () => {
+    const codes = exerciseCodesFor("calisthenics_bands", days, experience);
     const forbidden = codes.filter((code) => GYM_ONLY.test(code) || /GOBLET/.test(code));
     assert.deepEqual(forbidden, [], "these need a gym or dumbbells the client said they do not have");
     assert.ok(codes.some((code) => /PUSH_UP|SQUAT|BRIDGE|BAND|PLANK|ROW/.test(code)), "the plan is built from what they do have");

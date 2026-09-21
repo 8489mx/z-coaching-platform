@@ -2,9 +2,16 @@ import { buildTrainingEngine } from "../training-engine/index.js";
 import { getExerciseV2ByCode } from "../exercise-catalog-v2/index.js";
 import { EXERCISE_CATALOG_V2 } from "../exercise-catalog-v2/exercise-catalog-v2.js";
 
+// The catalog records one piece of equipment per exercise. These are done just as well with any of
+// several ("Cable / DB Rotator Cuff External Rotation"): a band or a light dumbbell at home.
+const ANY_OF_EQUIPMENT = Object.freeze({
+  ROTATOR_CUFF_EXTERNAL_ROTATION: ["CABLE_STATION", "DUMBBELLS", "RESISTANCE_BANDS"],
+});
+
 /** True when every piece of equipment the exercise needs is in the client's declared set. */
 function exerciseFitsEquipment(code, available) {
   if (!available) return true;
+  if (ANY_OF_EQUIPMENT[code]) return ANY_OF_EQUIPMENT[code].some((item) => available.has(item));
   const record = getExerciseV2ByCode(code);
   if (record) {
     return (record.equipment_requirements || []).every((req) => available.has(String(req.equipment_code).toUpperCase()));
@@ -490,7 +497,7 @@ export function buildTrainingMesoCycle(intakeDecision, options = {}) {
           }
         }
 
-        if (isHome && HOME_EQUIPMENT_REPLACEMENTS[finalCode]) {
+        if (isHome && HOME_EQUIPMENT_REPLACEMENTS[finalCode] && exerciseFitsEquipment(HOME_EQUIPMENT_REPLACEMENTS[finalCode], availableEquipment)) {
           finalCode = HOME_EQUIPMENT_REPLACEMENTS[finalCode];
         }
 
@@ -546,11 +553,26 @@ export function buildTrainingMesoCycle(intakeDecision, options = {}) {
           }
         }
 
+        // The clinical guards above name dumbbell substitutes for "home"; a bodyweight-and-bands
+        // client owns none, so the substitute is checked again against the declared equipment and,
+        // when it does not fit, swapped for the closest exercise of the substitute's own slot. When
+        // nothing they own fits (a second lateral raise once the band version is already in the
+        // session) the exercise is left out, exactly as a duplicate is below.
+        const fitHomeEquipment = (code) => {
+          if (!isHome || exerciseFitsEquipment(code, availableEquipment)) return code;
+          const own = getExerciseV2ByCode(code);
+          const alternative = equipmentSafeAlternative(code, own?.slot_code || ex.slot_code, availableEquipment, usedSessionCodes);
+          return alternative ? alternative.exercise_code : null;
+        };
+        finalCode = fitHomeEquipment(finalCode);
+        if (!finalCode) return null;
+
         // Never repeat an exercise inside one session after substitutions.
         if (usedSessionCodes.has(finalCode)) {
           const alternative = DUPLICATE_ALTERNATIVES[finalCode];
           if (!alternative || usedSessionCodes.has(alternative)) return null;
-          finalCode = alternative;
+          finalCode = fitHomeEquipment(alternative);
+          if (!finalCode || usedSessionCodes.has(finalCode)) return null;
         }
         usedSessionCodes.add(finalCode);
 
