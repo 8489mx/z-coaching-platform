@@ -33,15 +33,21 @@ function plan({ weight, conditions, goal = "fat_loss", gender = "male" }) {
   });
 }
 
-for (const [label, args] of [
-  ["130 kg diabetic with kidney and liver disease, bulking", { weight: 130, conditions: ["hepatic", "diabetes", "renal"], goal: "lean_bulk" }],
-  ["130 kg diabetic with kidney disease, losing fat", { weight: 130, conditions: ["diabetes", "renal"] }],
-  ["55 kg diabetic, gaining", { weight: 55, conditions: ["diabetes"], goal: "lean_bulk" }],
+// With a kidney protein cap, holding carbohydrate at 45% pushed fat to 46% of energy (40-50 g of oil a
+// meal). The day's balance (fat at most 35%, macro-balance-fat-share.test.js) comes first: energy
+// drops to the KDOQI minimum, then carbohydrate may pass 45% - bounded (protein >= ~9%, fat 35%) and
+// told to the coach - still far from the 70% this test was written against.
+for (const [label, args, maxShare] of [
+  ["130 kg diabetic with kidney and liver disease, bulking", { weight: 130, conditions: ["hepatic", "diabetes", "renal"], goal: "lean_bulk" }, 0.57],
+  ["130 kg diabetic with kidney disease, losing fat", { weight: 130, conditions: ["diabetes", "renal"] }, 0.57],
+  ["55 kg diabetic, gaining", { weight: 55, conditions: ["diabetes"], goal: "lean_bulk" }, 0.451],
 ]) {
-  test(`${label}: carbohydrate is at most 45% of energy and the macros still add up`, () => {
+  test(`${label}: carbohydrate stays bounded (45%, or 57% with a kidney protein cap) and the macros still add up`, () => {
     const program = plan(args);
     const m = program.nutrition_program.macro_targets;
-    assert.ok(share(m) <= 0.451, `${Math.round(share(m) * 100)}% of energy from carbohydrate`);
+    assert.ok(share(m) <= maxShare, `${Math.round(share(m) * 100)}% of energy from carbohydrate`);
+    assert.ok((m.fat_g * 9) / m.calories_kcal <= 0.355, `${Math.round((m.fat_g * 900) / m.calories_kcal)}% of energy from fat`);
+    if (maxShare > 0.451 && share(m) > 0.451) assert.ok(program.nutrition_program.targets.clinical_guardrails.energy_balance_note_ar);
     const atwater = m.protein_g * 4 + m.carbohydrate_g * 4 + m.fat_g * 9;
     assert.ok(Math.abs(atwater - m.calories_kcal) / m.calories_kcal < 0.03, `${atwater} vs ${m.calories_kcal}`);
     const portions = (program.nutrition_program.culinary_meals || []).flatMap((meal) => meal.items || []).map((item) => Number(item.portion_g) || 0);

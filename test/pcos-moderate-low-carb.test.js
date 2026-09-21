@@ -36,7 +36,10 @@ for (const weight of [62, 92, 130]) {
     const kcal = macros.calories_kcal;
     const carbs = macros.carbohydrate_g;
     assert.ok(carbs >= 100, `${carbs} g of carbohydrate a day`);
-    assert.ok((carbs * 4) / kcal <= 0.36, `${Math.round((carbs * 400) / kcal)}% of energy from carbohydrate`);
+    // About 30%; up to 40% when protein is already at its top and fat would pass 35% of energy
+    // (the day's balance, macro-balance-fat-share.test.js).
+    assert.ok((carbs * 4) / kcal <= 0.4, `${Math.round((carbs * 400) / kcal)}% of energy from carbohydrate`);
+    assert.ok((macros.fat_g * 9) / kcal <= 0.355, `${Math.round((macros.fat_g * 900) / kcal)}% of energy from fat`);
     const atwater = macros.protein_g * 4 + carbs * 4 + macros.fat_g * 9;
     assert.ok(Math.abs(atwater - kcal) / kcal < 0.05, `macros ${atwater} vs ${kcal} kcal`);
   });

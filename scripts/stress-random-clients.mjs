@@ -119,7 +119,14 @@ function check(p, program) {
   const atwater = 4 * protein + 4 * carbs + 9 * fat;
   if (Number.isFinite(atwater) && cal > 0 && Math.abs(atwater - cal) / cal > 0.12) fail('الماكروز لا تطابق السعرات', `${atwater.toFixed(0)} مقابل ${cal}`);
   if (protein / w > 3.3) fail('بروتين مبالغ فيه', `${(protein / w).toFixed(2)} جم/كجم`);
-  if (p.conditions.includes('diabetes') && cal > 0 && (4 * carbs) / cal > 0.5) fail('نسبة كربوهيدرات فوق 50% لمريض سكر', `${Math.round(400 * carbs / cal)}% (${carbs} جم، هدف ${p.goal}، BMI ${(w / (Number(p.body.height_cm) / 100) ** 2).toFixed(0)}، ${p.conditions.join('+')})`);
+  // Carbohydrate may pass 50% only when a kidney protein cap leaves nothing else for the day's balance
+  // (fat at most 35%), up to 57%, with a note for the coach.
+  const guard = t.clinical_guardrails || {};
+  const carbLimit = guard.kidney_protein_capped ? 0.57 : 0.5;
+  if (p.conditions.includes('diabetes') && cal > 0 && (4 * carbs) / cal > carbLimit) fail(`نسبة كربوهيدرات فوق ${Math.round(carbLimit * 100)}% لمريض سكر`, `${Math.round(400 * carbs / cal)}% (${carbs} جم، هدف ${p.goal}، BMI ${(w / (Number(p.body.height_cm) / 100) ** 2).toFixed(0)}، ${p.conditions.join('+')})`);
+  if (p.conditions.includes('diabetes') && cal > 0 && (4 * carbs) / cal > 0.5 && !guard.energy_balance_note_ar) fail('كربوهيدرات فوق 50% لمريض سكر من غير ملاحظة للكوتش', `${Math.round(400 * carbs / cal)}%`);
+  // The day's balance: fat within the adult range (IOM AMDR 20-35% of energy).
+  if (cal > 0 && (9 * fat) / cal > 0.355) fail('دهون فوق 35% من السعرات', `${Math.round(900 * fat / cal)}% (${fat} جم من ${cal} سعرة، ${p.conditions.join('+') || 'بدون أمراض'})`);
   if (p.conditions.includes('renal') && protein > 0.8 * w + 2) fail('سقف البروتين الكلوي', `${protein} جم لوزن ${w}`);
 
   const meals = program.nutrition_program?.culinary_meals || [];

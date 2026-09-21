@@ -38,8 +38,26 @@ export const CLINICAL_GUIDELINES = Object.freeze({
      * team sets the final value. Pregnancy and lactation are left to the medical review.
      */
     MAX_KCAL_PER_KG: 35,
+    // KDOQI 2020 guideline 3.1.1 lower bound: energy is never balanced below it.
+    MIN_KCAL_PER_KG: 25,
     ENERGY_CAP_NOTE_AR: "مريض كلى: السعرات اتحددت بـ 35 سعرة لكل كجم كحد أعلى (KDOQI 2020: من 25 لـ 35 سعرة/كجم يومياً). الرقم النهائي يحدده الطبيب حسب مرحلة المرض.",
     POTASSIUM_NOTE_AR: "مريض كلى: اطلب آخر تحليل بوتاسيوم في الدم (KDIGO 2024). لو البوتاسيوم عالي أو الطبيب محدده، قلّل الأطعمة الغنية بالبوتاسيوم في الخطة (الأفوكادو، البطاطس والبطاطا، الموز، البلح) وبدائل الملح. لو طبيعي، الخطة تمشي زي ما هي.",
+  }),
+
+  // ==========================================
+  // 1a. OVERALL BALANCE OF THE DAY
+  // ==========================================
+  NUTRITION_BALANCE: Object.freeze({
+    /**
+     * Scientific Source:
+     * IOM Dietary Reference Intakes for Energy and Macronutrients (2005), Acceptable Macronutrient
+     * Distribution Range for adults: fat 20-35% of energy. Energy a clinical limit pushes out of
+     * carbohydrate (diabetes) or protein (kidneys) must not pile up as fat above this share.
+     */
+    MAX_FAT_ENERGY_SHARE: 0.35,
+    // The engine's own top protein level (fat loss / recomposition), used when protein takes the
+    // energy fat cannot.
+    MAX_PROTEIN_PER_KG: 2.2,
   }),
 
   // ==========================================

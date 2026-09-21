@@ -6,7 +6,7 @@ import { fileURLToPath } from "node:url";
 
 import { buildMasterEngineV2 } from "../src/master-engine-v2/index.js";
 import { collectCoachAlerts } from "../frontend/src/utils/coachAlerts.js";
-import { MAX_COMFORTABLE_OIL_PER_MEAL_G } from "../src/nutrition-meal-context-v2/build-culinary-meals.js";
+import { MAX_COMFORTABLE_OIL_PER_MEAL_G, diversifyFatSources } from "../src/nutrition-meal-context-v2/build-culinary-meals.js";
 
 /**
  * When the clinical limits leave fat as the only energy source (kidney protein cap + diabetic
@@ -32,11 +32,15 @@ const plan = (selected, allergies) => buildMasterEngineV2({
 
 test("every meal with more than 30 g of olive oil carries a note the coach sees", () => {
   assert.equal(MAX_COMFORTABLE_OIL_PER_MEAL_G, 30);
-  const program = JSON.parse(JSON.stringify(plan(["diabetes", "renal", "hepatic"], ["gluten_celiac", "peanuts_tree_nuts"])));
-  const heavy = program.nutrition_program.culinary_meals.flatMap((m) => m.items).filter((i) => i.food_code === "OLIVE_OIL" && i.portion_g > 30);
-  assert.ok(heavy.length > 0, "precondition: this case still needs a lot of fat");
-  for (const oil of heavy) assert.match(oil.portion_warning_ar || "", /زيت/);
-  assert.ok(collectCoachAlerts(program).some((a) => /زيت زيتون/.test(a) && /الطبيب|الكوتش|راجع/.test(a)));
+  // The day's balance (fat <= 35%) keeps whole plans under this now; the note still guards any
+  // meal that gets there (a nut allergy and a kidney protein cap leave only a little avocado).
+  const [meal] = diversifyFatSources([{ items: [{ food_code: "OLIVE_OIL", category: "FATS", portion_g: 45, protein_g: 0, carb_g: 0, fat_g: 45, calories_kcal: 405, swaps: [] }] }],
+    { isNutsExcluded: true }, { kidneyProteinCapped: true, kidneyCondition: true });
+  const oil = meal.items.find((i) => i.food_code === "OLIVE_OIL");
+  assert.ok(oil.portion_g > 30, `precondition: ${oil.portion_g} g oil`);
+  assert.match(oil.portion_warning_ar || "", /زيت/);
+  const program = { nutrition_program: { culinary_meals: [meal] } };
+  assert.ok(collectCoachAlerts(program).some((a) => /زيت زيتون/.test(a) && /الطبيب|راجع/.test(a)));
 });
 
 test("an ordinary meal's oil gets no note", () => {

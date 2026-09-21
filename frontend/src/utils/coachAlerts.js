@@ -14,6 +14,7 @@ export function collectCoachAlerts(programData = {}) {
   if (guardrails.coach_review_high_fat_ar) alerts.push(guardrails.coach_review_high_fat_ar);
   if (guardrails.kidney_potassium_note_ar) alerts.push(guardrails.kidney_potassium_note_ar);
   if (guardrails.kidney_energy_note_ar) alerts.push(guardrails.kidney_energy_note_ar);
+  if (guardrails.energy_balance_note_ar) alerts.push(guardrails.energy_balance_note_ar);
   if (targets.meal_count_note_ar) alerts.push(targets.meal_count_note_ar);
   const meals = Array.isArray(nutrition.culinary_meals) ? nutrition.culinary_meals : [];
   meals.forEach((meal, index) => {

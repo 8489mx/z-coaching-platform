@@ -520,7 +520,7 @@ export function calculateUniversalNutritionTargets(canonicalIntake, evaluationCo
     (biomarkerAnalysis.has_biomarker_flags && biomarkerAnalysis.flags.some(f => f.biomarker === 'GLUCOSE_METABOLISM'));
 
   // 4. Macro Grams Breakdown
-  const proteinG = Math.round(referenceWeight * proteinPerKg);
+  let proteinG = Math.round(referenceWeight * proteinPerKg);
   const proteinKcal = proteinG * 4;
 
   const fatKcal = Math.round(targetCalories * 0.22); // 22% of total calories
@@ -542,6 +542,67 @@ export function calculateUniversalNutritionTargets(canonicalIntake, evaluationCo
       diabeticCarbCapped = true;
     }
   }
+
+  // Balance of the day: fat within the adult range (IOM DRI 2005, AMDR fat 20-35% of energy). The
+  // diabetic ceiling above (and a kidney protein cap) used to push every leftover calorie into fat -
+  // 46% of energy, 40-50 g of olive oil a meal. Above the range: without diabetes carbohydrate takes
+  // the energy back; with diabetes protein takes it where the kidneys allow (up to 2.2 g/kg), then
+  // energy comes down (kidney disease: not below KDOQI 25 kcal/kg), and only then carbohydrate
+  // passes the 45% ceiling - each step told to the coach.
+  const maxFatShare = CLINICAL_GUIDELINES.NUTRITION_BALANCE.MAX_FAT_ENERGY_SHARE;
+  const fatCeilingG = () => Math.floor((maxFatShare * targetCalories) / 9);
+  const balanceSteps = [];
+  if (!isPregnant && fatG > fatCeilingG()) {
+    if (!hasDiabetesOrInsulinResistance) {
+      carbG += Math.round(((fatG - fatCeilingG()) * 9) / 4);
+      fatG = fatCeilingG();
+      balanceSteps.push("CARBS");
+    } else {
+      if (!kidneyProteinCapped) {
+        const maxProteinG = Math.round(referenceWeight * CLINICAL_GUIDELINES.NUTRITION_BALANCE.MAX_PROTEIN_PER_KG);
+        const addProteinG = Math.min(Math.max(0, maxProteinG - proteinG), Math.ceil(((fatG - fatCeilingG()) * 9) / 4));
+        if (addProteinG > 0) {
+          proteinG += addProteinG;
+          fatG -= Math.round((addProteinG * 4) / 9);
+          balanceSteps.push("PROTEIN");
+        }
+      }
+      // Energy only comes down for someone who can afford it: never while breastfeeding, never below
+      // the safety floor or the KDOQI minimum, and below maintenance only when overweight (BMI 25+).
+      if (fatG > fatCeilingG() && !isLactating) {
+        const carbCap = CLINICAL_GUIDELINES.DIABETES.MAX_CARB_ENERGY_SHARE;
+        const energyFloor = Math.max(
+          calorieFloor,
+          hasKidneyCondition ? Math.round(referenceWeight * CLINICAL_GUIDELINES.KIDNEY.MIN_KCAL_PER_KG) : 0,
+          weight / (heightM * heightM) < 25 ? Math.min(tdee, targetCalories) : 0,
+        );
+        const balancedEnergy = Math.round((proteinG * 4) / (1 - maxFatShare - carbCap));
+        const nextEnergy = Math.min(targetCalories, Math.max(energyFloor, balancedEnergy));
+        if (nextEnergy < targetCalories) {
+          targetCalories = nextEnergy;
+          carbG = Math.floor((targetCalories * carbCap) / 4);
+          fatG = Math.round((targetCalories - proteinG * 4 - carbG * 4) / 9);
+          balanceSteps.push("ENERGY");
+        }
+      }
+      if (fatG > fatCeilingG()) {
+        carbG += Math.round(((fatG - fatCeilingG()) * 9) / 4);
+        fatG = fatCeilingG();
+        balanceSteps.push("CARBS_ABOVE_DIABETIC_CEILING");
+      }
+    }
+    targetCalories = proteinG * 4 + carbG * 4 + fatG * 9;
+  }
+  // Built when the targets are returned: the PCOS lower-carb below may add its own steps.
+  const energyBalanceNoteAr = () => balanceSteps.length === 0 ? null : [
+    `توازن اليوم: الدهون اتحددت بـ ${Math.round(maxFatShare * 100)}% من السعرات كحد أعلى (المدى الطبيعي للبالغين 20-35%)`,
+    balanceSteps.includes("PROTEIN") ? `البروتين اتزود لـ ${proteinG} جم` : null,
+    balanceSteps.includes("ENERGY") ? `السعرات نزلت لـ ${targetCalories} سعرة بدل ما تتحول دهون` : null,
+    balanceSteps.includes("CARBS") ? "الباقي راح للنشويات" : null,
+    balanceSteps.includes("CARBS_ABOVE_DIABETIC_CEILING")
+      ? `النشويات ${Math.round((carbG * 400) / targetCalories)}% فوق سقف السكر 45% لأن البروتين محدود للكلى؛ من المصادر بطيئة الامتصاص، راجعها مع الطبيب`
+      : null,
+  ].filter(Boolean).join("؛ ") + ".";
 
   // Clinical Guard: Pregnancy Minimum Carbohydrates (IOM 175g/day minimum)
   if (isPregnant && carbG < 175) {
@@ -599,6 +660,25 @@ export function calculateUniversalNutritionTargets(canonicalIntake, evaluationCo
     carbG = Math.min(carbG, Math.max(100, Math.round((targetCalories * 0.3) / 4)));
     const lowCarbRemainingKcal = Math.max(minFatG * 9, targetCalories - proteinG * 4 - carbG * 4);
     fatG = Math.round(lowCarbRemainingKcal / 9);
+    // The same balance as above: the lower carbohydrate must not become more than 35% fat (a kidney
+    // protein cap left 65%). Protein takes it where the kidneys allow, then carbohydrate comes back
+    // up; the international PCOS guideline (Teede et al. 2023) favours no diet type over another.
+    if (fatG > fatCeilingG()) {
+      if (!kidneyProteinCapped) {
+        const maxProteinG = Math.round(referenceWeight * CLINICAL_GUIDELINES.NUTRITION_BALANCE.MAX_PROTEIN_PER_KG);
+        const addProteinG = Math.min(Math.max(0, maxProteinG - proteinG), Math.ceil(((fatG - fatCeilingG()) * 9) / 4));
+        if (addProteinG > 0) {
+          proteinG += addProteinG;
+          fatG -= Math.round((addProteinG * 4) / 9);
+          balanceSteps.push("PROTEIN");
+        }
+      }
+      if (fatG > fatCeilingG()) {
+        carbG += Math.round(((fatG - fatCeilingG()) * 9) / 4);
+        fatG = fatCeilingG();
+        balanceSteps.push("CARBS");
+      }
+    }
     lowCarbConfig = Object.freeze({
       framework: "TARGETED_LOW_CARB",
       framework_name_ar: "نظام الكارب المنخفض المعتدل (Moderate Low-Carb)",
@@ -815,6 +895,8 @@ export function calculateUniversalNutritionTargets(canonicalIntake, evaluationCo
       kidney_energy_capped: kidneyEnergyCapped,
       kidney_energy_note_ar: kidneyEnergyCapped ? CLINICAL_GUIDELINES.KIDNEY.ENERGY_CAP_NOTE_AR : null,
       energy_reference_weight_kg: referenceWeight,
+      energy_balance_steps: balanceSteps,
+      energy_balance_note_ar: energyBalanceNoteAr(),
       max_protein_per_kg: kidneyProteinCapped ? (biomarkerAnalysis?.dietary_modifications?.protein_cap_g_per_kg || CLINICAL_GUIDELINES.KIDNEY.MAX_PROTEIN_PER_KG) : null,
       max_protein_g: kidneyProteinCapped ? proteinG : null,
       rationale_ar: kidneyProteinCapped ? (biomarkerAnalysis?.dietary_modifications?.protein_cap_g_per_kg ? `تحديد سقف البروتين عند ${proteinPerKg} جم/كجم لحماية الكلى بناءً على الفحوصات المخبرية` : CLINICAL_GUIDELINES.KIDNEY.RATIONALE_AR) : null,
