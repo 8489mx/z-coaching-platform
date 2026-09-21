@@ -2093,7 +2093,7 @@ export function buildCulinaryRecipeMeals(universalTargets, canonicalIntake = {},
 
   const totalMeals = meal_distribution.length;
 
-  return meal_distribution.map((mealDist, idx) => {
+  const generatedMeals = meal_distribution.map((mealDist, idx) => {
     const mealNum = mealDist.meal_number || idx + 1;
     const targetP = mealDist.protein_g;
     const targetC = mealDist.carb_g;
@@ -3761,6 +3761,11 @@ export function buildCulinaryRecipeMeals(universalTargets, canonicalIntake = {},
       items: enrichedItems,
     };
   });
+
+  // Some meal templates place a food directly (an omelette for a bariatric client, bread at
+  // breakfast) without asking the clinical filter. One last pass holds every generated item to the
+  // same rules the candidate lists already follow.
+  return enforceClinicalSafety(generatedMeals, allergenContext);
 }
 /** Whether the intake declares diabetes or insulin resistance (raw form answers or canonical conditions). */
 export function isDiabeticIntake(canonicalIntake = {}, rawIntake = {}) {
@@ -3811,6 +3816,62 @@ export function enforceDiabeticCarbChoice(meals = [], isDiabetic = false) {
           calories_kcal: chosen.calories_kcal,
           swaps: swaps.filter((swap) => swap !== chosen && !isHigh(swap.food_code)),
           replaced_for_diabetes_from: item.food_code,
+        };
+      }),
+    };
+  });
+}
+
+/**
+ * Holds every generated item to the client's clinical profile. An item the profile forbids (an egg
+ * dish for an egg allergy, bread for coeliac disease...) is replaced by the first of its own swaps
+ * that is safe: those swaps were computed for the same meal and the same macro target. When none is
+ * safe, the item stays but is flagged for the coach rather than silently served.
+ * Foods this generator does not know are left alone: it cannot judge what it has no record of.
+ */
+export function enforceClinicalSafety(meals = [], allergenContext = {}) {
+  if (!Array.isArray(meals)) return meals;
+  const known = (code) => Boolean(FOOD_SWAP_DATABASE[code]);
+  const unsafe = (code) => known(code) && !isFoodClinicallySafe(code, allergenContext);
+
+  return meals.map((meal) => {
+    const items = meal.items || [];
+    if (!items.some((item) => unsafe(item.food_code))) return meal;
+
+    return {
+      ...meal,
+      items: items.map((item) => {
+        if (!unsafe(item.food_code)) return item;
+        let swaps = Array.isArray(item.swaps) ? item.swaps : [];
+        let chosen = swaps.find((swap) => swap?.food_code && known(swap.food_code) && !unsafe(swap.food_code));
+        if (!chosen) {
+          // Some templates place an item with no swap list at all (the bariatric omelette): compute
+          // the equivalents now, for the same portion and meal, already filtered for this client.
+          const context = String(meal.meal_context || meal.context || meal.meal_type || "LUNCH").toUpperCase();
+          const category = String(item.category || "PROTEIN").toUpperCase();
+          swaps = generateSmartSwaps(category, Number(item.portion_g) || 100, item.food_code, context, 0, allergenContext);
+          chosen = swaps.find((swap) => swap?.food_code && known(swap.food_code) && !unsafe(swap.food_code));
+        }
+        if (!chosen) {
+          return {
+            ...item,
+            clinically_unsafe: true,
+            clinical_warning_ar: "هذا الصنف يتعارض مع الملف الطبي للمتدرب ولا يوجد بديل آمن محسوب له؛ راجعه قبل النشر.",
+          };
+        }
+        return {
+          ...item,
+          food_code: chosen.food_code,
+          name_ar: chosen.name_ar,
+          name_en: chosen.name_en,
+          portion_g: chosen.equivalent_grams ?? item.portion_g,
+          household_measurement: chosen.household_desc ?? item.household_measurement,
+          protein_g: chosen.protein_g,
+          carb_g: chosen.carb_g,
+          fat_g: chosen.fat_g,
+          calories_kcal: chosen.calories_kcal,
+          swaps: swaps.filter((swap) => swap !== chosen && !unsafe(swap.food_code)),
+          replaced_for_clinical_safety_from: item.food_code,
         };
       }),
     };
