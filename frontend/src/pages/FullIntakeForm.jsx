@@ -850,7 +850,7 @@ export default function FullIntakeForm() {
               {/* Primary Physiological Goal (2x2 Cards Grid) */}
               <div>
                 <label style={{ display: 'block', fontSize: '12px', fontWeight: 800, color: '#0F172A', marginBottom: '8px' }}>
-                  الهدف الفسيولوجي الرئيسي *
+                  هدفك الأساسي *
                 </label>
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '10px' }}>
                   {[
@@ -896,7 +896,7 @@ export default function FullIntakeForm() {
               {/* NEAT Activity Level (3 Cards Grid) */}
               <div>
                 <label style={{ display: 'block', fontSize: '12px', fontWeight: 800, color: '#0F172A', marginBottom: '8px' }}>
-                  معدل النشاط اليومي خارج الجيم (NEAT Level) *
+                  حركتك اليومية برا الجيم *
                 </label>
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '10px' }}>
                   {[
@@ -977,7 +977,7 @@ export default function FullIntakeForm() {
               {/* Occupation Type (نوع وظيفتك أو عملك الأساسي لضبط النشاط المهني) */}
               <div>
                 <label style={{ display: 'block', fontSize: '12px', fontWeight: 800, color: '#0F172A', marginBottom: '8px' }}>
-                  طبيعة وظيفتك أو عملك الأساسي (تحديد خط الأساس لنشاط NEAT) *
+                  طبيعة شغلك *
                 </label>
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '10px' }}>
                   {[
