@@ -9,10 +9,10 @@ Everything below is merged into `main` and pushed to GitHub (`8489mx/z-coaching-
 
 1. Read `CLAUDE.md` (standing iron rules) and this file.
 2. Run the full check and confirm the baseline before touching anything:
-   - `npm.cmd test` (Windows) — expected: node:test **1776/1776 pass**, vitest **47/47 pass**, lint 0.
+   - `npm.cmd test` (Windows) — expected: node:test **1783/1783 pass**, vitest **47/47 pass**, lint 0.
    - `cd frontend && npm.cmd run build` — expected: builds.
    - Tests need the env: they load `D:/zcc/.env` (never print its values). Scripts: `node --env-file=.env <script>`.
-3. Then continue with **section 4 (open work)**, starting with 4.1.
+3. Then continue with **section 4 (open work)**. Section 3b lists what was done after the first version of this file.
 
 ---
 
@@ -81,9 +81,25 @@ Commits, newest first (`git log --oneline cf1251e~1..HEAD`):
 - `scripts/audit-grown-cycles.mjs` — read-only; local DB: 10 plans, 0 grown. **Run it on production** (see 4.3).
 - A 306-client stress harness existed only in the old session's scratchpad (not in the repo). Its findings are all fixed above except what is listed in section 4.
 
+## 3b. Done after the first handoff (all merged + pushed)
+
+- `f9e0a0c` + `66c38a9` **Owner decision: potatoes are NOT banned for diabetics.** The high-GI classification (`52e790c`) was reverted (potatoes/sweet potato are MEDIUM again). For a diabetic: a potato item above **200 g** is split with another carbohydrate; a larger potato swap becomes a mixed plate ("200 g potato + N g of the original food", same macros); potato items/swaps carry `diabetic_tip_ar` (eat with protein and salad, best boiled and cooled). Applied in the first plan and after check-in rescales (`carbPortionLimit({ diabetic })` in build-culinary-meals.js).
+- `653804c` **Plain goal names + "سيب الكوتش يحدد"** (see table below). Internal codes unchanged; new form value `coach_decides` (adapter maps it to canonical FAT_LOSS as a placeholder; the plan engine decides). Engine for `coach_decides`: high body fat (>25% men / >35% women, or BMI ≥30 without body fat) → FAT_LOSS; moderate (>18% / >28%, or BMI ≥25) → BODY_RECOMPOSITION; lean → MUSCLE_GAIN; recorded in `targets.goal_redirect` with `coach_review_required: true` and the Arabic reason. Recomposition wording in client texts is now "نزول دهون مع شد وبناء عضل".
+  | code | label shown |
+  |---|---|
+  | fat_loss | نزول دهون ووزن |
+  | lean_bulk | زيادة عضل ووزن |
+  | recomposition | نزول دهون مع شد وبناء عضل |
+  | general_fitness | صحة ولياقة عامة |
+  | coach_decides | مش متأكد، سيب الكوتش يحدد |
+- `8682565` Coach editor nutrition tab shows **"ملاحظات للكوتش قبل الاعتماد"**: every engine note (goal suggestion/change, diabetic carb ceiling, high fat share, meal-count advice, items with portion/clinical/glycemic warnings). Collector: `frontend/src/utils/coachAlerts.js` (`collectCoachAlerts`). Build and tests pass; **not yet looked at in a real browser session**.
+- `33d33ff` 3200+ kcal on ≤3 meals → coach note advising 4–5 meals (`targets.meal_count_note_ar`); the plan is not changed (client's choice).
+- `c3b65c2` `scripts/stress-random-clients.mjs` — 306 clients, no DB (`node scripts/stress-random-clients.mjs`).
+- Verification after all of the above: stress 306 clients **0 crashes, 0 violations** (diabetic carbs >50%: 24→0, oversized portions: 4→0, obese fat-loss without cardio: 10→0); long journeys **6/6 no issues** (JRN_04/JRN_05 now show one cycle fewer than before — expected, their gated cycles are published a week later and now count from the publish date); 10-client simulation **100%**.
+
 ## 4. Open work (in priority order)
 
-### 4.1 Goal choice and plain names (owner request, NOT started)
+### 4.1 Goal choice and plain names — DONE in `653804c` (kept below for context)
 Owner's words: in the case "client picked bulking but is too fat", there should be an intake answer like **"سيبها للكوتش يحدد الأفضل"**, and goal names must be **professional and easy for clients** — many clients will not understand "إعادة تكوين الجسم". Applies to the intake questions AND everything the client sees in the app.
 Suggested approach (confirm with owner first, show proposed Arabic labels):
 - Intake goal options with plain Arabic + one-line explanation, e.g. "نزول دهون", "بناء عضل", "نزول دهون مع شد وبناء عضل" (instead of إعادة تكوين), "الحفاظ على الوزن وتحسين اللياقة", and **"سيب الكوتش يحدد الأنسب"**.
@@ -91,7 +107,11 @@ Suggested approach (confirm with owner first, show proposed Arabic labels):
 - Keep internal codes unchanged (`fat_loss`, `lean_bulk`, `recomposition`); change only labels. Search every place labels appear: `frontend/src/pages/FullIntakeForm.jsx`, `frontend/src/components/intake/IntakeAuditDetailModal.jsx` (GOALS_MAP), client app pages under `frontend/src/pages/ClientInteractiveApp/`, `mobile_app/lib` (labels only), and `goal_redirect.reason_ar` in `src/master-engine-v2/build-master-engine-v2.js`.
 - Also decide: when the goal is redirected, should the plan wait for coach approval? (currently it just records the reason).
 
-### 4.2 Verify everything together (not yet done after the last 12 commits)
+### 4.1b Still open from the naming work
+- Other client-facing places still use older goal wording: `frontend/src/pages/ClientTimelineProfile.jsx` (coach page, "Lean Bulk" labels), `frontend/src/pages/CheckinReviewDashboard.jsx` (coach page, "إعادة تشكيل"), `useCoachEditorData.js` `goal_label` fallback — align if the owner wants the coach side plain too. (`mobile_app/lib` has no goal labels: searched, zero matches.)
+- The app's live swap engine (`/api/v1/programs/swap-candidates`, `frontend/src/utils/foodSwapEngine.js`) does not apply the 200 g diabetic potato limit to swaps it computes on the fly; only the plan's precomputed swaps do.
+
+### 4.2 Verify everything together — DONE (see 3b); rerun after any engine change
 - `node --env-file=.env scripts/simulate-long-journeys.mjs` and `scripts/simulate-clients.mjs`; expect no issues. Note: the journeys harness applies run-due's rule (ENDED only).
 - Rebuild the 306-client stress idea if wanted (random intakes through `buildMasterEngineV2`, check allergies/GI/equipment/portions/macros/cardio).
 
@@ -100,8 +120,9 @@ Suggested approach (confirm with owner first, show proposed Arabic labels):
 
 ### 4.4 Known smaller points
 - Extreme case (130 kg, diabetes+kidney+liver, celiac+nut allergy): only basmati rice stays eligible and fat goes to olive oil (80–90 g/meal). It is flagged for the coach (`coach_review_high_fat`, `portion_warning_ar`). Better: more meals for high-calorie plans, and fat sources besides oil (avocado, nuts when allowed).
-- Meal count: high-calorie plans on "3 meals" give big plates; consider recommending 4–5 meals above ~3200 kcal.
-- The coach dashboard should visibly show `clinical_guardrails` notes (`coach_review_high_fat_ar`, `diabetic_carb_cap_note_ar`), `goal_redirect.reason_ar`, `portion_warning_ar`, `clinical_alert` — verify they are displayed; `clinical_alert` is already inside `coach_action`.
+- Meal count: DONE as a coach note (`33d33ff`).
+- Coach notes: DONE in the nutrition tab (`8682565`); look at it once in a real browser with a real client. `clinical_alert` shows inside the check-in review (`coach_action`).
+- Fat sources besides olive oil (avocado, nuts when allowed) for high-fat plans: not done.
 - Flutter app not yet tried on a real device.
 - PDPL consent text: owner says the lawyer reviewed it — done.
 
