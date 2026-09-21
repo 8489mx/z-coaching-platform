@@ -85,11 +85,19 @@ test("an unknown food gets no swaps instead of egg swaps", async () => {
   assert.deepEqual(codes, []);
 });
 
-test("every food a plan can hold gets swaps, except vegetables", async () => {
+// No food of the same kind and close value exists in the swap list for these (swapExchangeRules):
+// salmon is fattier than every other fish or meat, tuna leaner; yogurt, whey, laban and milks
+// differ in protein vs sugar; lupini and popcorn are the only snack of their kind.
+const NO_EQUIVALENT_IN_SWAP_LIST = new Set([
+  "SALMON_FISH", "CANNED_TUNA", "GREEK_YOGURT", "WHEY_PROTEIN", "LABAN_RAYEB_LOWFAT", "LUPINI_BEANS",
+  "AIR_POPPED_POPCORN", "SKIM_MILK", "LACTOSE_FREE_MILK",
+]);
+
+test("every food a plan can hold gets swaps, except vegetables and foods with no equivalent", async () => {
   const { FOOD_SWAP_DATABASE } = await import("../src/nutrition-meal-context-v2/index.js");
   const missing = [];
   for (const [code, food] of Object.entries(FOOD_SWAP_DATABASE)) {
-    if (food.category === "VEGGIES") continue;
+    if (food.category === "VEGGIES" || NO_EQUIVALENT_IN_SWAP_LIST.has(code)) continue;
     const codes = await candidatesFor(code, answers([], ["none"]), 100);
     if (codes.length === 0) missing.push(code);
   }

@@ -23,6 +23,7 @@ import { applyDeloadToSession, READINESS_GUIDANCE_AR } from "../../../src/traini
 import { resolveTrainingCycleStatus, CYCLE_STATUS, resolveSubscriptionState, subscriptionNeedsAttention, startCycleOnPublish } from "../services/trainingCycleService.js";
 import { buildNextCycle, resolvePainFlaggedExercises, evaluateAutoPublish } from "../services/nextCycleService.js";
 import { isSwapFoodSafe, resolveSwapContext, PLAN_FOOD_TO_REGISTRY } from "../services/liveFoodSwapSafety.js";
+import { isLiveSwapEquivalent } from "../services/liveFoodSwapValue.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -660,7 +661,9 @@ export const getSwapCandidatesHandler = async (req, res) => {
 
     // Only what the client's own meal plan could contain: allergies, conditions, and the diabetic
     // potato portion.
-    const safeCandidates = enrichedCandidates.filter((cand) => isSwapFoodSafe(cand.food_code, clinicalContext, cand.target_grams));
+    // ...and eaten the same way with about the same energy (swapExchangeRules).
+    const safeCandidates = enrichedCandidates.filter((cand) => isSwapFoodSafe(cand.food_code, clinicalContext, cand.target_grams)
+      && isLiveSwapEquivalent(normalizedCode, grams, cand.food_code, cand.target_grams));
     return res.status(200).json({ candidates: safeCandidates });
   } catch (err) {
     console.error("getSwapCandidatesHandler error:", err);
@@ -699,6 +702,9 @@ export const calculateSwapHandler = async (req, res) => {
     const clinicalContext = await swapContextFor(req);
     if (!isSwapFoodSafe(toCode, clinicalContext, result.target_food.portion_g)) {
       return res.status(409).json({ error: "البديل ده مش مناسب لحالتك الصحية أو الحساسية المسجلة", code: "SWAP_NOT_CLINICALLY_SAFE" });
+    }
+    if (!isLiveSwapEquivalent(fromCode, fromGrams, toCode, result.target_food.portion_g)) {
+      return res.status(409).json({ error: "البديل ده مش من نفس نوع الأكل أو قيمته مش قريبة؛ اختار بديل من القايمة", code: "SWAP_NOT_EQUIVALENT" });
     }
 
     const swappedFood = {
