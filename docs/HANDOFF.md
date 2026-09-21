@@ -12,7 +12,7 @@ Everything below is merged into `main` and pushed to GitHub (`8489mx/z-coaching-
    - `npm.cmd test` (Windows) — expected: node:test **1819/1819 pass**, vitest **47/47 pass**, lint 0.
    - `cd frontend && npm.cmd run build` — expected: builds.
    - Tests need the env: they load `D:/zcc/.env` (never print its values). Scripts: `node --env-file=.env <script>`.
-3. Then continue with **section 4 (open work)**. Section 3b lists what was done after the first version of this file.
+3. Then go to **section 4.0 (WHAT IS STILL OPEN)**. Sections 3, 3b and 3c list everything already done, with commit ids, files and tests.
 
 ---
 
@@ -100,21 +100,22 @@ Commits, newest first (`git log --oneline cf1251e~1..HEAD`):
 ## 3c. Swaps (food, exercise, cardio) — third round, all merged + pushed
 
 Food swaps
--  **Mobile app food swaps** (, ) checked nothing and needed no sign-in; now require sign-in, judge every candidate with the meal generator's own filter and the client's restrictions (,  extracted in , proven identical output), refuse unsafe targets (409), no egg swaps for unknown foods, every plan food except vegetables maps to a swap family, diabetic potato swap ≤200 g.
--  **Web client swaps** (): cornflakes not gluten-free (barley malt), pea protein under favism's legume rule, diabetic potato swap ≤200 g. A name sweep of all 142 foods vs every form allergy found no other leak.
+- `8c623a7` (refactor, no behavior change — 60 plans hash identically) `buildAllergenContext` extracted from the meal generator and exported, so the plan and the swaps share the same restrictions.
+- `c3fd9a2` **Mobile app food swaps** (`POST /api/v1/programs/swap-candidates`, `POST /api/v1/programs/swap-food`) checked nothing and needed no sign-in (a coeliac client was offered bread, a sesame allergy tahini, favism fava beans; an unknown food code was treated as egg). Now: `requireAuth` (the Flutter app already sends its token); every candidate judged by the meal generator's own `isFoodClinicallySafe` with the client's restrictions from the intake (`src/api/services/liveFoodSwapSafety.js`: `REGISTRY_TO_PLAN_FOOD`, `PLAN_FOOD_TO_REGISTRY`, `isSwapFoodSafe`, `resolveSwapContext`); unknown registry food refused (fail closed); swap-food returns 409 `SWAP_NOT_CLINICALLY_SAFE` for an unsafe target; unknown source food → no swaps (not egg); every plan food except vegetables maps to a swap family; diabetic potato swap only up to 200 g. Test: `test/live-food-swaps-are-clinically-safe.test.js`.
+- `a7be2b4` **Web client swaps** (`frontend/src/utils/foodSwapEngine.js`, used by `ClientInteractiveApp/components/FoodSwapModal.jsx`): `SUGAR_FREE_CORNFLAKES` no longer gluten-free (barley malt); `PEA_RICE_PROTEIN_POWDER` is a legume (favism rule); diabetic potato swap above 200 g refused in `calculateDynamicFoodSwap`. A name sweep of all 142 foods against every form allergy found no other leak. Test: `test/web-food-swaps-are-clinically-safe.test.js`.
 
 Exercise swaps
--  Engine (): joint stress read from the name too (back extensions for a back injury, pike push-ups for a shoulder were leaking); injuries understood in Arabic and form keys (); home never gets gym gear; new **BANDS** setup (bodyweight + bands only); catalog fallback so every exercise keeps a swap (sore knee on a leg day → hip thrust / glute bridge, then RDL).
--  Endpoints:  requires sign-in and reads the client's setup and injuries from the intake (the page sent none);  and  only for the program's client or a coach, a client only an engine-offered swap (409). Those two POST endpoints have no caller in web/mobile today (searched) — secured, not deleted.
--  Coach editor: a manual swap that loads an injured joint or needs missing equipment shows an amber warning (, rules kept identical to the server by ).
+- `0e46cb4` Engine (`src/exercise-swap-engine/smart-exercise-swap-registry.js`): `getExerciseJointStress` now always reads the name too (`JOINT_STRESS_BY_NAME`) — back extensions / 45° hyperextensions were offered for a back injury (7 cases), pike push-ups for a shoulder (4); `normalizeInjuryFlag` understands Arabic (ركبة، ظهر، كتف...) and form keys (`spine_back`, `elbow_wrist`); `HOME` never gets gym gear by name (was: barbell hip thrust, barbell OHP — 10 cases); new setup **`BANDS`** (bodyweight + bands only); when fewer than 3 swaps remain, fallback from `EXERCISE_CATALOG_V2` (same slot → same main muscle; sore knee on a leg exercise → hip thrust / glute bridge, then Romanian deadlift, never conventional deadlift). Every registry exercise keeps ≥1 swap in every setup/injury. Test: `test/exercise-swaps-are-safe.test.js`.
+- `3478919` Endpoints (`src/api/controllers/exercise.controller.js`, `src/api/services/clientTrainingProfile.js`): `GET /api/v1/exercises/swaps/:code` now `requireAuth` and reads the client's setup (`commercial_gym`→GYM, `home_gym`/`minimal_equipment`→HOME, `calisthenics_bands`→BANDS) and injuries from the intake (the web page sent none); the page's toggle can narrow the setup, never widen it. `POST /swap-in-program/:programId` and `POST /gym-rush/swap/:programId` changed ANY program for any signed-in user → now only the program's own client or a coach/admin (403); a client may only pick a swap the engine offers them (409 `EXERCISE_SWAP_NOT_ALLOWED`). These two POST endpoints have no caller in web or mobile today (searched, zero matches) — secured, not deleted. `loadLatestIntakeAnswers` is now exported from program.controller. Test: `test/exercise-swap-endpoints-follow-the-client.test.js`.
+- `5258048` Coach editor manual exercise swap: allowed, but an amber warning names the conflict (loads an injured joint / needs gym machines at home / free weights for bands-only). Rules in `frontend/src/utils/exerciseSafety.js`, kept identical to the server engine by `test/exercise-safety-drift-guard.test.js`. Notification bar in `frontend/src/pages/CoachEditor.jsx` now shows `type: 'warning'` in amber.
 
 Cardio
--  The plan now carries **** (injuries, conditions, allergies, setup, BMI, pregnancy, nursing) — the coach editor used to show every client as healthy in a gym. The coach's cardio list blocks unsafe options with the reason ().
--  The client's own cardio (client_view) now receives injuries, weight, height and equipment: BMI / knee / back rules fire, no treadmill for bands/home clients, no-machine intervals → brisk walk, a steps-only plan shows daily walking.
+- `af9d591` The plan now carries **`client_profile`** (gender, age, weight, height, BMI, training_environment, injuries, conditions, allergies, is_pregnant, is_lactating) from `buildMasterEngineV2` — before, the plan had no client data and the coach editor showed every client as "healthy" in a commercial gym. `useCoachEditorData.js` reads it (older plans keep the old fallback) and exposes `program.client_profile` (+ `hiit_banned`). The coach's cardio list (`CoachCardioSwapModal.jsx`) blocks unsafe options with the reason via `frontend/src/utils/cardioModalitySafety.js` (`evaluateCardioModality`): knee → no jumping/stairs; back → no burpees/rowing; shoulder → no burpees/mountain climbers; BMI ≥35 → no jumping; asthma → no HIIT; blood pressure/heart → no maximal effort; pregnancy → no impact/intensity; bands/minimal → no machines (home gym only warns). Test: `test/cardio-modality-safety.test.js`.
+- `509c585` The cardio the client sees (`client_view.cardio` in `getActiveProgramByUserId`) now receives injuries, latest check-in weight (else intake weight), height and equipment (`machines_available`): the BMI and knee/back impact rules actually fire; bands/home clients get brisk walking instead of a treadmill; low-impact intervals without a machine become a moderate brisk walk (`NO_LOW_IMPACT_MACHINE` guidance); a `STEPS_ONLY` / `NO_ADDITIONAL_CARDIO` plan shows daily walking. Engine: `frontend/src/utils/cardioZonesEngine.js` (single copy, re-exported by `src/execution-engines/cardio-zones-engine.js`). Test: `test/client-cardio-follows-the-client.test.js`.
 
 Other
--  Coach screens use the plain goal names; editor shows the plan's effective goal.
--  Olive oil ≤20 g a meal; excess fat → avocado (≤100 g) then almonds (≤30 g; never with nut allergy or kidney cap); fat total unchanged.
+- `43592c3` Coach screens (`CheckinReviewDashboard.jsx`, editor `goal_label`) use the plain goal names; the editor shows the plan's effective goal. Timeline periodization phases (Cut, Diet Break, Mini-Cut) intentionally kept as coaching terms.
+- `40a2a9e` Olive oil ≤20 g per meal (`diversifyFatSources` in build-culinary-meals.js, run last in master-engine-v2): excess fat → avocado (≤100 g) then almonds (≤30 g; never with nut allergy or kidney protein cap); what is left returns to the oil; total fat unchanged (±3 g). Test: `test/fat-sources-beyond-oil.test.js`.
 - Verification after this round: 1819/1819 + 47/47, lint 0, build OK, stress 306 clients 0 crashes / 0 violations, journeys 6/6 no issues, 10-client simulation 100%.
 
 ## 4. Open work (in priority order)
@@ -127,9 +128,16 @@ Suggested approach (confirm with owner first, show proposed Arabic labels):
 - Keep internal codes unchanged (`fat_loss`, `lean_bulk`, `recomposition`); change only labels. Search every place labels appear: `frontend/src/pages/FullIntakeForm.jsx`, `frontend/src/components/intake/IntakeAuditDetailModal.jsx` (GOALS_MAP), client app pages under `frontend/src/pages/ClientInteractiveApp/`, `mobile_app/lib` (labels only), and `goal_redirect.reason_ar` in `src/master-engine-v2/build-master-engine-v2.js`.
 - Also decide: when the goal is redirected, should the plan wait for coach approval? (currently it just records the reason).
 
-### 4.1b Still open from the naming work
-- Other client-facing places still use older goal wording: `frontend/src/pages/ClientTimelineProfile.jsx` (coach page, "Lean Bulk" labels), `frontend/src/pages/CheckinReviewDashboard.jsx` (coach page, "إعادة تشكيل"), `useCoachEditorData.js` `goal_label` fallback — align if the owner wants the coach side plain too. (`mobile_app/lib` has no goal labels: searched, zero matches.)
-- Live swaps now apply the diabetic potato limit too (3c).
+### 4.1b Naming work — DONE
+- Coach screens aligned in `43592c3`; `mobile_app/lib` has no goal labels (searched, zero matches). Live swaps apply the diabetic potato limit (3c).
+
+### 4.0 WHAT IS STILL OPEN (read this list first)
+1. **Look at the new screens in a real browser** (never done by the previous session; only tests + build): coach editor → nutrition tab "ملاحظات للكوتش قبل الاعتماد"; cardio picker (blocked options + reasons); manual exercise swap amber warning; client injuries/equipment now shown in the editor; intake form: goal cards (5 incl. "سيب الكوتش يحدد") and the daily-steps question; web client app food and exercise swap windows (now signed-in, filtered). Needs the dev server (`.claude/launch.json` / `npm.cmd run dev`) and a real coach + client login (the owner logs in; never enter passwords).
+2. **Flutter app on a real device**: food swaps now require the signed-in token (the app sends it — verify on device that swaps still load, and that an unsafe swap now shows the server's 409 message instead of applying).
+3. **Production data audit**: `node --env-file=<prod env> scripts/audit-grown-cycles.mjs` (read-only). Repair only with backup + plan + owner approval.
+4. **The extreme case** (130 kg, diabetes + kidney + liver, coeliac + nut allergy, bulking on 3 meals): still big plates and a lot of fat; flagged to the coach (`coach_review_high_fat`, `portion_warning_ar`, meal-count note). Possible next step: automatically add a 4th/5th meal above ~3200 kcal (currently only advised — the client's meal count is respected).
+5. Coach-decides goal and goal redirects only record the reason; decide with the owner whether the plan should wait for coach approval in those cases.
+6. Branch `agx/full-simulation` must never be merged.
 
 ### 4.2 Verify everything together — DONE (see 3b); rerun after any engine change
 - `node --env-file=.env scripts/simulate-long-journeys.mjs` and `scripts/simulate-clients.mjs`; expect no issues. Note: the journeys harness applies run-due's rule (ENDED only).
@@ -139,7 +147,7 @@ Suggested approach (confirm with owner first, show proposed Arabic labels):
 - Run `node --env-file=<prod env> scripts/audit-grown-cycles.mjs` on production. If it finds plans with >5 weeks or >1 deload week, they were damaged by the pre-`789bd8e` bug: repair needs backup + plan + owner approval (CLAUDE.md rule 5).
 
 ### 4.4 Known smaller points
-- Extreme case (130 kg, diabetes+kidney+liver, celiac+nut allergy): only basmati rice stays eligible and fat goes to olive oil (80–90 g/meal). It is flagged for the coach (`coach_review_high_fat`, `portion_warning_ar`). Better: more meals for high-calorie plans, and fat sources besides oil (avocado, nuts when allowed).
+- Extreme case: see 4.0 item 4 (oil now capped at 20 g/meal with avocado/almonds; plates still large on 3 meals).
 - Meal count: DONE as a coach note (`33d33ff`).
 - Coach notes: DONE in the nutrition tab (`8682565`); look at it once in a real browser with a real client. `clinical_alert` shows inside the check-in review (`coach_action`).
 - Fat sources: DONE (`40a2a9e`).
