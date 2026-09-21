@@ -97,3 +97,24 @@ test("Adaptation Engine Suite", async (t) => {
     assert.equal(adapted.adapted_nutrition.target_calories_kcal, Math.round(baseKcal + 150));
   });
 });
+
+// Once the measured burn was known it replaced the rapid-loss rule, and it aims at the goal's
+// deficit: a nursing mother losing 1.1 kg a week had her calories cut, then held, for four months.
+test("rapid loss adds calories even when the measured burn is known", () => {
+  const baseProgram = buildMasterEngineV2({ intake: VALID_MINIMAL_PROFILE, evaluationContext, nutritionFoodCatalog });
+  const rapidLoss = evaluateCheckin({
+    daily_weights_kg: [82.5, 82.3, 82.1, 82.0, 82.0, 81.9, 81.8],
+    previous_week_average_weight_kg: 84.5,
+    nutrition_adherence_percent: 95,
+    biofeedback: { hunger_level: 3, energy_in_gym: 3, sleep_quality: 3, stress_level: 2 },
+  });
+  const baseKcal = baseProgram.nutrition_program?.macro_targets?.calories_kcal || baseProgram.nutrition_program.stages.energy_target.target_calories;
+  const adapted = buildAdaptedPlan({
+    currentMasterProgram: baseProgram,
+    // The measured burn would have taken 60 kcal away.
+    checkinAnalysis: { ...rapidLoss, adaptive_tdee: { ready: true, recommended_target_kcal: Math.round(baseKcal - 60), observed_tdee_kcal: 2400, weeks_used: 3, weight_trend_kg_per_week: -1.1, reason_ar: "x" } },
+    options: { currentWeekNumber: 1 },
+  });
+  assert.equal(adapted.adaptation_action, AdaptationAction.INCREASE_CALORIES_RAPID_LOSS);
+  assert.equal(adapted.adapted_nutrition.target_calories_kcal, Math.round(baseKcal + 150));
+});

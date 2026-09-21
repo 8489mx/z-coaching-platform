@@ -31,12 +31,13 @@ function requireObject(value, name) {
  */
 // Statuses where the measured expenditure may retune calories. Locks (poor adherence, injury, PMS buffer,
 // false plateau, desk-job NEAT lock, fatigue refeed) and recomposition success keep their own rules.
+// Rapid loss is not one of them: the measured burn aims at the goal's deficit and could cut the
+// calories of a client already losing more than 1.5% a week, so rapid loss keeps its +150 rule.
 const OBSERVED_TDEE_STATUSES = new Set([
   CheckinAnalysisStatus.ON_TRACK,
   CheckinAnalysisStatus.PLATEAU_DETECTED,
   CheckinAnalysisStatus.TRUE_PLATEAU,
   CheckinAnalysisStatus.GAIN_STALL,
-  CheckinAnalysisStatus.RAPID_LOSS_WARNING,
 ]);
 
 export function buildAdaptedPlan(inputs) {

@@ -19,7 +19,6 @@ const ADAPTIVE_TDEE_STATUSES = new Set([
   CheckinAnalysisStatus.PLATEAU_DETECTED,
   CheckinAnalysisStatus.TRUE_PLATEAU,
   CheckinAnalysisStatus.GAIN_STALL,
-  CheckinAnalysisStatus.RAPID_LOSS_WARNING,
 ]);
 
 /**
