@@ -22,6 +22,15 @@ const ADAPTIVE_TDEE_STATUSES = new Set([
 ]);
 
 /**
+ * The plan the client is training and eating on: the newest published one. A newer draft (the next
+ * cycle waiting for the coach) is not it; with no published plan at all, the newest plan is used.
+ */
+async function findPlanInUse(userId) {
+  return (await Program.findOne({ where: { user_id: userId, status: "ACTIVE" }, order: [["id", "DESC"]] }))
+    || (await Program.findOne({ where: { user_id: userId }, order: [["id", "DESC"]] }));
+}
+
+/**
  * The check-in engine rates hunger/energy/sleep on 1-5 (e.g. energy <= 2 = low, hunger >= 4 = high).
  * The web check-in form uses 1-10 sliders and says so with biofeedback_scale: 10; map 1-2 -> 1 ... 9-10 -> 5.
  */
@@ -193,7 +202,7 @@ export async function submitCheckin(req, res) {
 
     // Adaptive TDEE: measured expenditure from this and previous check-ins replaces the formula once
     // 2 weeks of trend exist. The plan target at submission time is stored for later weeks.
-    const activeProgram = await Program.findOne({ where: { user_id: targetUserId }, order: [["id", "DESC"]] });
+    const activeProgram = await findPlanInUse(targetUserId);
     const programData = activeProgram?.program_data || {};
     const planTargetKcal = Number(
       programData.nutrition?.targets?.calories ||
@@ -407,10 +416,7 @@ export async function approveCheckin(req, res) {
       return res.status(404).json({ success: false, error: "Check-in not found" });
     }
 
-    const latestProgram = await Program.findOne({
-      where: { user_id: checkin.user_id },
-      order: [["id", "DESC"]],
-    });
+    const latestProgram = await findPlanInUse(checkin.user_id);
 
     if (latestProgram && latestProgram.program_data) {
       const progData = typeof latestProgram.program_data === "string"
@@ -458,6 +464,16 @@ export async function approveCheckin(req, res) {
       await latestProgram.update({
         program_data: mergedProgramData,
       });
+
+      // The next cycle waiting as a draft was cloned before this check-in: give it the same food
+      // targets, so publishing it does not take the client back to last week's calories.
+      const waitingDraft = await Program.findOne({ where: { user_id: checkin.user_id, status: "DRAFT" }, order: [["id", "DESC"]] });
+      if (waitingDraft && waitingDraft.id !== latestProgram.id && Number(waitingDraft.id) > Number(latestProgram.id) && waitingDraft.program_data) {
+        const draftData = JSON.parse(JSON.stringify(waitingDraft.program_data));
+        if (mergedProgramData.nutrition) draftData.nutrition = mergedProgramData.nutrition;
+        if (mergedProgramData.nutrition_program) draftData.nutrition_program = mergedProgramData.nutrition_program;
+        await waitingDraft.update({ program_data: draftData });
+      }
 
       checkin.adapted_program_id = latestProgram.id;
     }
