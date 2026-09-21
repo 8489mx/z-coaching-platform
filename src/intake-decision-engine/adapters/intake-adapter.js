@@ -611,15 +611,22 @@ export function adaptIntakePayloadToCanonicalEngine(raw) {
 
   // 5. Medical
   const medical = intake.medical || {};
-  const dangerousList = Array.isArray(medical.dangerousSymptomsList) ? medical.dangerousSymptomsList
+  const rawDangerousList = Array.isArray(medical.dangerousSymptomsList) ? medical.dangerousSymptomsList
     : (Array.isArray(medical.dangerous_symptoms) ? medical.dangerous_symptoms
     : (Array.isArray(intake.dangerous_symptoms) ? intake.dangerous_symptoms : []));
+  // Matched case-insensitively, and any symptom this engine does not recognise is treated as a
+  // dangerous symptom rather than dropped: a client who reported something alarming in a form the
+  // engine does not know (a new option, another app sending lower case) must still reach medical
+  // review, never receive an ordinary plan in silence.
+  const dangerousList = rawDangerousList.map((symptom) => String(symptom || "").trim().toUpperCase()).filter(Boolean);
+  const KNOWN_DANGEROUS = ["NONE", "CHEST_PAIN", "FAINTING", "SHORTNESS_OF_BREATH", "PALPITATIONS", "DOCTOR_RESTRICTION"];
+  const unrecognisedDangerous = dangerousList.filter((symptom) => !KNOWN_DANGEROUS.includes(symptom));
   const dangerousSymptoms = {
     chestPainOrPressure: (dangerousList.includes("CHEST_PAIN") || medical.dangerousSymptoms?.chestPainOrPressure === "YES") ? "YES" : "NO",
     fainting: (dangerousList.includes("FAINTING") || medical.dangerousSymptoms?.fainting === "YES") ? "YES" : "NO",
     unusualShortnessOfBreath: (dangerousList.includes("SHORTNESS_OF_BREATH") || medical.dangerousSymptoms?.unusualShortnessOfBreath === "YES") ? "YES" : "NO",
     abnormalPalpitations: (dangerousList.includes("PALPITATIONS") || medical.dangerousSymptoms?.abnormalPalpitations === "YES") ? "YES" : "NO",
-    otherDangerousSymptomsPresent: (dangerousList.includes("DOCTOR_RESTRICTION") || medical.dangerousSymptoms?.otherDangerousSymptomsPresent === "YES") ? "YES" : "NO",
+    otherDangerousSymptomsPresent: (dangerousList.includes("DOCTOR_RESTRICTION") || unrecognisedDangerous.length > 0 || medical.dangerousSymptoms?.otherDangerousSymptomsPresent === "YES") ? "YES" : "NO",
     otherDangerousSymptoms: []
   };
 
