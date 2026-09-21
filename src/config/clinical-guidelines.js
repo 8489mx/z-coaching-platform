@@ -40,6 +40,13 @@ export const CLINICAL_GUIDELINES = Object.freeze({
     MAX_KCAL_PER_KG: 35,
     // KDOQI 2020 guideline 3.1.1 lower bound: energy is never balanced below it.
     MIN_KCAL_PER_KG: 25,
+    /**
+     * Scientific Source:
+     * Nutrition care for CKD during pregnancy (Eur J Clin Nutr 2020, updated review): use the adult
+     * CKD protein recommendation and add the extra needs of pregnancy; IOM DRI (2005): +25 g/day of
+     * protein in pregnancy (2nd-3rd trimester) and lactation. The nephrologist sets the final value.
+     */
+    PREGNANCY_LACTATION_EXTRA_PROTEIN_G: 25,
     ENERGY_CAP_NOTE_AR: "مريض كلى: السعرات اتحددت بـ 35 سعرة لكل كجم كحد أعلى (KDOQI 2020: من 25 لـ 35 سعرة/كجم يومياً). الرقم النهائي يحدده الطبيب حسب مرحلة المرض.",
     POTASSIUM_NOTE_AR: "مريض كلى: اطلب آخر تحليل بوتاسيوم في الدم (KDIGO 2024). لو البوتاسيوم عالي أو الطبيب محدده، قلّل الأطعمة الغنية بالبوتاسيوم في الخطة (الأفوكادو، البطاطس والبطاطا، الموز، البلح) وبدائل الملح. لو طبيعي، الخطة تمشي زي ما هي.",
   }),

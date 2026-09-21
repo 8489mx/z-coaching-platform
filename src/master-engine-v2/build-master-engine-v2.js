@@ -521,6 +521,11 @@ export function calculateUniversalNutritionTargets(canonicalIntake, evaluationCo
 
   // 4. Macro Grams Breakdown
   let proteinG = Math.round(referenceWeight * proteinPerKg);
+  // Kidney cap in pregnancy or lactation: the CKD recommendation plus the extra needs of pregnancy
+  // (IOM +25 g/day), not the cap alone (a breastfeeding 42 kg client got 34 g a day).
+  if (kidneyProteinCapped && (isPregnant || isLactating)) {
+    proteinG += CLINICAL_GUIDELINES.KIDNEY.PREGNANCY_LACTATION_EXTRA_PROTEIN_G;
+  }
   const proteinKcal = proteinG * 4;
 
   const fatKcal = Math.round(targetCalories * 0.22); // 22% of total calories

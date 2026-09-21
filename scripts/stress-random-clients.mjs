@@ -127,7 +127,9 @@ function check(p, program) {
   if (p.conditions.includes('diabetes') && cal > 0 && (4 * carbs) / cal > 0.5 && !guard.energy_balance_note_ar) fail('كربوهيدرات فوق 50% لمريض سكر من غير ملاحظة للكوتش', `${Math.round(400 * carbs / cal)}%`);
   // The day's balance: fat within the adult range (IOM AMDR 20-35% of energy).
   if (cal > 0 && (9 * fat) / cal > 0.355) fail('دهون فوق 35% من السعرات', `${Math.round(900 * fat / cal)}% (${fat} جم من ${cal} سعرة، ${p.conditions.join('+') || 'بدون أمراض'})`);
-  if (p.conditions.includes('renal') && protein > 0.8 * w + 2) fail('سقف البروتين الكلوي', `${protein} جم لوزن ${w}`);
+  // Pregnancy or lactation keeps the IOM extra 25 g/day on top of the kidney cap.
+  const kidneyExtra = p.lactating ? 25 : 0;
+  if (p.conditions.includes('renal') && protein > 0.8 * w + 2 + kidneyExtra) fail('سقف البروتين الكلوي', `${protein} جم لوزن ${w}`);
 
   const meals = program.nutrition_program?.culinary_meals || [];
   if (meals.length === 0) fail('لا توجد وجبات', '');
