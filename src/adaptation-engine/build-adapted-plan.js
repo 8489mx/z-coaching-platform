@@ -34,6 +34,8 @@ function requireObject(value, name) {
 // false plateau, desk-job NEAT lock, fatigue refeed) and recomposition success keep their own rules.
 // Rapid loss is not one of them: the measured burn aims at the goal's deficit and could cut the
 // calories of a client already losing more than 1.5% a week, so rapid loss keeps its +150 rule.
+const MAX_KCAL_PER_KG = 55;
+
 const OBSERVED_TDEE_STATUSES = new Set([
   CheckinAnalysisStatus.ON_TRACK,
   CheckinAnalysisStatus.PLATEAU_DETECTED,
@@ -302,6 +304,24 @@ export function buildAdaptedPlan(inputs) {
       message_ar: "النزول يسير وفق المعدل المثالي. استمرار على نفس الخطة مع التقدم في أسابيع الدورة التدريبية.",
       message_en: "Optimal trajectory maintained. Progressing to the next meso-cycle week.",
     });
+  }
+
+  // Ceiling on increases: 55 kcal per kg of body weight. A gain that stalls at that intake is an
+  // adherence or measurement question for the coach, not another +125 kcal (a 66 kg client reached
+  // 4100 kcal and 745 g of carbohydrate after a year of stalls). Never cuts below the current plan.
+  const currentWeightKg = Number(checkinAnalysis.current_average_weight_kg);
+  if (Number.isFinite(currentWeightKg) && currentWeightKg > 30) {
+    const ceiling = Math.max(Math.round(currentWeightKg * MAX_KCAL_PER_KG), Math.round(baseEnergy));
+    if (adaptedCalories > ceiling) {
+      adaptedCarbs = Math.max(50, adaptedCarbs - Math.round((adaptedCalories - ceiling) / 4));
+      adaptedCalories = ceiling;
+      requiresCoachApproval = true;
+      reasons.push({
+        code: "CALORIE_CEILING_REACHED",
+        message_ar: `وصلت السعرات لسقف ${MAX_KCAL_PER_KG} سعرة لكل كجم من الوزن (${ceiling} سعرة). لو الوزن لسه ثابت راجع الالتزام الفعلي بالأكل وطريقة الوزن قبل أي زيادة.`,
+        message_en: `Calories reached the ${MAX_KCAL_PER_KG} kcal/kg ceiling (${ceiling} kcal). Review real intake and weighing before any further increase.`,
+      });
+    }
   }
 
   // Diabetes and insulin resistance: every adjustment above keeps carbohydrate within the same share
