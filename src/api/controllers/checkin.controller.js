@@ -7,7 +7,7 @@ import { loadProgressionState, buildDeloadDecision } from "../services/progressi
 import { saveProgressPhotoToDisk } from "../utils/photoStorage.js";
 import { buildAdaptedPlan } from "../../adaptation-engine/build-adapted-plan.js";
 import { mergeAdaptedPlanIntoProgram } from "../utils/planMergeEngine.js";
-import { resolveClientPrimaryGoal, resolveClientIsFemale } from "./program.controller.js";
+import { resolveClientPrimaryGoal, resolveClientIsFemale, resolveIntakeMedicalReview } from "./program.controller.js";
 import { resolveTrainingCycleStatus } from "../services/trainingCycleService.js";
 
 /**
@@ -243,8 +243,29 @@ export async function submitCheckin(req, res) {
       sleep_stress_composite: evalInput.sleep_stress_composite,
       max_pain_level: maxPainLevel,
     });
+    // Rapid loss two check-ins running, in a client whose file needs medical review (nursing,
+    // pregnancy, kidney or liver disease...), is more than a calorie question: the +150 kcal still
+    // applies, and the coach is told to review the case now.
+    let clinicalAlert = null;
+    if (baseAnalysis.analysis_status === CheckinAnalysisStatus.RAPID_LOSS_WARNING
+      && previousCheckin?.analysis_status === CheckinAnalysisStatus.RAPID_LOSS_WARNING) {
+      const review = await resolveIntakeMedicalReview(targetUserId).catch(() => ({ required: false }));
+      if (review.required) {
+        clinicalAlert = {
+          code: "REPEATED_RAPID_LOSS_MEDICAL_CLIENT",
+          message_ar: "تنبيه طبي: نزول سريع للمتابعة الثانية على التوالي لمتدرب ملفه يستوجب مراجعة طبية. راجع الحالة الآن (الأكل الفعلي، الرضاعة أو الحمل، الأعراض) وتواصل مع الطبيب المعالج إن لزم.",
+        };
+      }
+    }
     const analysisOutput = {
       ...baseAnalysis,
+      ...(clinicalAlert
+        ? {
+            clinical_alert: clinicalAlert,
+            requires_coach_review: true,
+            coach_action: `${clinicalAlert.message_ar} ${baseAnalysis.coach_action || ""}`.trim(),
+          }
+        : {}),
       deload_recommendation: { ...deloadRecommendation, generated_at: new Date().toISOString() },
       plan_target_kcal: planTargetKcal,
       reported_intake_kcal: reportedIntakeKcal,
