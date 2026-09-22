@@ -4043,6 +4043,7 @@ export function splitOversizedPortions(meals = [], maxGrams = MAX_CARB_PORTION_G
   return meals.map((meal) => {
     if (!Array.isArray(meal?.items)) return meal;
     const items = [];
+    let oilCutG = 0;
     for (const rawItem of meal.items) {
       const item = Array.isArray(rawItem?.swaps) && diabeticPotatoLimit ? { ...rawItem, swaps: rawItem.swaps.map((swap) => mixPotatoSwap(rawItem, swap)) } : rawItem;
       const portion = Number(item?.portion_g);
@@ -4096,12 +4097,23 @@ export function splitOversizedPortions(meals = [], maxGrams = MAX_CARB_PORTION_G
           items.push({ ...item, ...tip, ...overLimit, ...macros(item, p.share), portion_g: grams, household_measurement: gramsText(grams, item.household_measurement),
             swaps: swaps.map((swap) => scaleSwap(swap, p.share)), split_from_portion_g: portion });
         } else {
-          items.push({ ...macros(item, p.share), food_code: p.partner.food_code, name_ar: p.partner.name_ar, name_en: p.partner.name_en,
+          // A part carries its own food's macros (the carbohydrate is matched, so the meal's does not
+          // change); extra fat it brings leaves its share of the meal's oil out.
+          oilCutG += (Number(p.partner.oil_deduction_g) || 0) * p.share;
+          const own = scaleSwap(p.partner, p.share);
+          items.push({ protein_g: own.protein_g, carb_g: own.carb_g, fat_g: own.fat_g, calories_kcal: own.calories_kcal,
+            food_code: p.partner.food_code, name_ar: p.partner.name_ar, name_en: p.partner.name_en,
             category: "CARBS", portion_g: grams, household_measurement: gramsText(grams, p.partner.household_desc), swaps: [],
             ...(diabeticPotatoLimit && isPotato(p.partner.food_code) ? { diabetic_tip_ar: DIABETIC_POTATO_TIP_AR } : {}),
             split_note_ar: "جزء من حصة النشويات في الوجبة، مقسومة على أكتر من صنف علشان الكمية تبقى معقولة في الطبق." });
         }
       });
+    }
+    const oilIndex = oilCutG >= 1 ? items.findIndex((i) => i?.food_code === "OLIVE_OIL") : -1;
+    if (oilIndex >= 0) {
+      const oil = items[oilIndex];
+      const grams = Math.max(0, Math.round(Number(oil.portion_g) - oilCutG));
+      items[oilIndex] = { ...oil, portion_g: grams, fat_g: grams, calories_kcal: grams * 9, household_measurement: `${grams} جم` };
     }
     return { ...meal, items };
   });
