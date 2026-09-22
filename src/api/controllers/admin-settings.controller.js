@@ -220,7 +220,9 @@ export function getExercisesCatalogFile() {
         fs.writeFileSync(EXERCISES_CATALOG_FILE, srcRaw, 'utf-8');
         try {
           return JSON.parse(srcRaw);
-        } catch (_) {}
+        } catch (err) {
+          console.error("[admin-settings] data/exercises-catalog.json unreadable, default catalog used:", err.message);
+        }
       }
       fs.writeFileSync(EXERCISES_CATALOG_FILE, JSON.stringify(DEFAULT_EXERCISES_CATALOG, null, 2), 'utf-8');
       return DEFAULT_EXERCISES_CATALOG;
@@ -229,10 +231,13 @@ export function getExercisesCatalogFile() {
       const raw = fs.readFileSync(EXERCISES_CATALOG_FILE, 'utf-8');
       return JSON.parse(raw);
     } catch (e) {
+      console.error("[admin-settings] exercise catalog settings file unreadable, falling back:", e.message);
       if (fs.existsSync(srcCatalogFile)) {
         try {
           return JSON.parse(fs.readFileSync(srcCatalogFile, 'utf-8'));
-        } catch (_) {}
+        } catch (err) {
+          console.error("[admin-settings] both exercise catalog files unreadable, default catalog used:", err.message);
+        }
       }
       return DEFAULT_EXERCISES_CATALOG;
     }
@@ -248,7 +253,9 @@ export function saveExercisesCatalogFile(data) {
     if (fs.existsSync(srcCatalogFile)) {
       fs.writeFileSync(srcCatalogFile, jsonStr, 'utf-8');
     }
-  } catch (_) {}
+  } catch (err) {
+    console.error("[admin-settings] could not mirror the exercise catalog to data/exercises-catalog.json:", err.message);
+  }
   // Write-Through: Immediately update in-memory cache
   invalidateExercisesCache(data);
 }

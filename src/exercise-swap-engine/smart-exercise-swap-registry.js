@@ -1362,7 +1362,10 @@ function getCatalogExercises() {
     if (fs.existsSync(srcPath)) {
       return JSON.parse(fs.readFileSync(srcPath, "utf-8"));
     }
-  } catch (_) {}
+  } catch (err) {
+    // A corrupt catalog file must show in the server log: swaps continue from the built-in registry only.
+    console.error("[exercise-swaps] exercise catalog unreadable, catalog alternatives skipped:", err.message);
+  }
   return [];
 }
 
