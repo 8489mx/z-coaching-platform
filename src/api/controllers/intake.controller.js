@@ -173,6 +173,27 @@ function generateAiRationaleAudit(intakePayload, masterProgram) {
   };
 }
 
+// Client codes are sequential (1001, 1002 ...): a code alone never writes a client's medical intake.
+const CLIENT_PHONE_MISMATCH = Object.freeze({
+  code: "CLIENT_PHONE_MISMATCH",
+  error: "كود العميل ورقم الموبايل مش متطابقين. ادخل بنفس الرقم المسجل عند الكوتش.",
+});
+
+/**
+ * Whether a client found by code may have their intake written with this phone: the phone on file
+ * (same digits, or the same last 8 digits either way), or a draft still on a TEMP_ phone (none to check).
+ */
+function mayWriteIntake(user, rawPhone) {
+  const onFileRaw = String(user?.phone_number || "");
+  if (onFileRaw.startsWith("TEMP_")) return true;
+  const given = String(rawPhone || "").replace(/\D/g, "");
+  const onFile = onFileRaw.replace(/\D/g, "");
+  if (!given || !onFile) return false;
+  return onFile === given
+    || (given.length >= 8 && onFile.endsWith(given.slice(-8)))
+    || (onFile.length >= 8 && given.endsWith(onFile.slice(-8)));
+}
+
 // 0. Fetch existing intake draft or submitted status for client
 export const getClientIntakeDraft = async (req, res) => {
   try {
@@ -249,6 +270,7 @@ export const saveDraftIntake = async (req, res) => {
     let user = null;
     if (cleanClientCode) {
       user = await User.findOne({ where: { client_code: cleanClientCode, role: 'CLIENT' } });
+      if (user && !mayWriteIntake(user, rawPhone)) return res.status(403).json(CLIENT_PHONE_MISMATCH);
     }
     if (!user && cleanPhone) {
       user = await User.findOne({ where: { phone_number: cleanPhone, role: 'CLIENT' } });
@@ -343,6 +365,7 @@ export const submitPublicIntake = async (req, res) => {
     let user = null;
     if (cleanClientCode) {
       user = await User.findOne({ where: { client_code: cleanClientCode, role: 'CLIENT' } });
+      if (user && !mayWriteIntake(user, rawPhone)) return res.status(403).json(CLIENT_PHONE_MISMATCH);
     }
     if (!user && cleanPhone) {
       user = await User.findOne({ where: { phone_number: cleanPhone, role: 'CLIENT' } });
@@ -398,8 +421,7 @@ export const submitPublicIntake = async (req, res) => {
       message: "تم استلام استمارتك بنجاح وإرسالها إلى كابتن كريم زكريا للمراجعة وتصميم الخطة المخصصة",
       client_code: user.client_code,
       user_id: user.id,
-      submission_id: submission.id,
-      user
+      submission_id: submission.id
     });
   } catch (err) {
     if (err instanceof IntakeValidationError || err.name === "IntakeValidationError" || err.code === "INVALID_BIOMETRICS" || err.code === "INVALID_FIELD_VALUE") {
