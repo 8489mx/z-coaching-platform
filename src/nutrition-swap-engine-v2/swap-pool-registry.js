@@ -178,6 +178,18 @@ export const SMART_SWAP_REGISTRY = Object.freeze([
     unit_label_en: "Medium Potato",
   },
   {
+    // Gluten-free, low glycemic starch (same code and USDA values as the plan and web lists).
+    food_code: "COOKED_QUINOA",
+    name_ar: "كينوا مسلوقة",
+    name_en: "Cooked Quinoa",
+    macro_type: FoodMacroType.CARBOHYDRATE_DOMINANT,
+    meal_categories: Object.freeze([MealTimeCategory.MAIN_MEAL, MealTimeCategory.BREAKFAST]),
+    primary_nutrient_per_100g: 21.3,
+    grams_per_household_unit: 185,
+    unit_label_ar: "كوب كينوا مسلوقة",
+    unit_label_en: "Cup of cooked quinoa",
+  },
+  {
     food_code: "SWEET_POTATO_BAKED",
     name_ar: "بطاطا حلوة مشوية",
     name_en: "Baked Sweet Potato",

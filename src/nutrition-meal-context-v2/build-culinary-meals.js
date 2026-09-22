@@ -255,6 +255,24 @@ export const FOOD_SWAP_DATABASE = Object.freeze({
     is_economic: true,
     is_gout_safe: true,
   },
+  // Gluten-free, low glycemic savory starch (USDA FoodData Central, quinoa, cooked; the web list's code).
+  COOKED_QUINOA: {
+    code: "COOKED_QUINOA",
+    name_ar: "كينوا مسلوقة",
+    name_en: "Cooked Quinoa",
+    protein_per_100g: 4.4,
+    carb_per_100g: 21.3,
+    fat_per_100g: 1.9,
+    kcal_per_100g: 120,
+    unit_label: "جم مسلوقة (4-6 ملاعق طعام كبيرة)",
+    category: "CARBS",
+    meal_suitability: ["BREAKFAST", "LUNCH", "DINNER"],
+    is_gluten_free: true,
+    is_dairy_free: true,
+    is_vegan: true,
+    is_economic: false,
+    is_gout_safe: true,
+  },
   ROASTED_POTATOES: {
     code: "ROASTED_POTATOES",
     name_ar: "بطاطس ودجز مشوية بالأعشاب في الإيرفراير",
@@ -1287,6 +1305,7 @@ function buildSmartSwapCandidates(category, baseGrams, baseFoodCode, mealContext
         "BROWN_TOAST",
         "ROASTED_POTATOES",
         "SWEET_POTATO",
+        "COOKED_QUINOA",
         "ROLLED_OATS",
         "DATES_KHALAS",
       ];
@@ -1298,6 +1317,7 @@ function buildSmartSwapCandidates(category, baseGrams, baseFoodCode, mealContext
         "EGYPTIAN_RICE",
         "ROASTED_POTATOES",
         "SWEET_POTATO",
+        "COOKED_QUINOA",
         "WHOLE_WHEAT_PASTA",
       ];
     } else if (mealContext === "DINNER") {
@@ -1309,6 +1329,7 @@ function buildSmartSwapCandidates(category, baseGrams, baseFoodCode, mealContext
         "BROWN_TOAST",
         "ROASTED_POTATOES",
         "SWEET_POTATO",
+        "COOKED_QUINOA",
         "ROLLED_OATS",
       ];
     } else {
@@ -1360,6 +1381,8 @@ function buildSmartSwapCandidates(category, baseGrams, baseFoodCode, mealContext
       } else if (code === "DATES_KHALAS") {
         const dateCount = Math.round(equivGrams / 8);
         householdDesc = `${equivGrams} جم (${dateCount} حبات تمر خلاص / سكري)`;
+      } else if (code === "COOKED_QUINOA") {
+        householdDesc = `${equivGrams} جم كينوا مسلوقة (${Math.round(equivGrams / 25)} ملاعق طعام كبيرة)`;
       } else if (code === "WHOLE_WHEAT_PASTA") {
         const spoons = Math.round(equivGrams / 25);
         householdDesc = `${equivGrams} جم مطبوخة (${spoons} ملاعق طعام)`;
@@ -1369,12 +1392,21 @@ function buildSmartSwapCandidates(category, baseGrams, baseFoodCode, mealContext
       const candidateCarbs = Math.round((equivGrams / 100) * candidate.carb_per_100g);
       const candidateFat = Math.round((equivGrams / 100) * candidate.fat_per_100g);
 
+      // A starch that brings its own fat (quinoa, oats) leaves that much of the meal's oil out, like
+      // a fattier protein swap does (a starch with fat = a starch + a fat exchange).
+      const extraCarbSwapFatG = candidateFat - baseFat;
+      const carbOilDeductionG = extraCarbSwapFatG >= 4 ? Math.min(mealOliveOilGrams, Math.round(extraCarbSwapFatG)) : 0;
+      if (carbOilDeductionG > 0) {
+        householdDesc += ` (يُخصم ${carbOilDeductionG} جم من زيت الزيتون في الوجبة لموازنة الدهون والسعرات)`;
+      }
+
       swaps.push({
         food_code: candidate.code,
         name_ar: candidate.name_ar,
         name_en: candidate.name_en,
         equivalent_grams: equivGrams,
         household_desc: householdDesc,
+        oil_deduction_g: carbOilDeductionG,
         protein_g: candidateProtein,
         carb_g: candidateCarbs,
         fat_g: candidateFat,
