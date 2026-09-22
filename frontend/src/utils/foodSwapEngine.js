@@ -2094,9 +2094,13 @@ export function isFoodClinicallySafe(foodItem, clinicalProfile = {}) {
     is_ibs = false,
     has_dumping_syndrome = false,
     is_high_potassium = false,
+    disliked_food_codes = [],
     allergies = [],
     conditions = []
   } = clinicalProfile;
+
+  // Foods the client said they do not like (web codes, utils/dislikedFoods.js).
+  if (Array.isArray(disliked_food_codes) && disliked_food_codes.includes(foodItem.code)) return false;
 
   // Kidney disease with a high potassium result: the potassium-rich foods are out, as in the plan
   // (HIGH_POTASSIUM_FOODS in build-culinary-meals.js).

@@ -973,6 +973,8 @@ export function deriveClinicalConstraints(answers) {
     // Kidney disease with a high potassium result (the same rule as the plan).
     is_high_potassium: kidneyPotassium(answers, {}).status === "HIGH",
     allergies,
+    // The intake's "foods I don't like" labels; the web swap window leaves them out.
+    disliked_foods: (Array.isArray(answers.disliked_foods) ? answers.disliked_foods : []).map((f) => String(f)),
   };
 }
 

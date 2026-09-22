@@ -7,6 +7,7 @@ import { adaptProgramToInteractiveMeals, adaptSessionToInteractiveWorkout } from
 import { cacheProgramLocally, getCachedProgram, cacheGymRushCatalogLocally } from '../../../utils/offlineWorkoutSync.js';
 import { applyDeloadToSession, EFFORT_LEVELS } from '../../../utils/progressionEngine.js';
 import { applyFastingToMeals, FASTING_MODES, RAMADAN_CARDIO_GUIDANCE_AR } from '../../../utils/fastingCalendarEngine.js';
+import { webCodesForDislikes } from '../../../utils/dislikedFoods.js';
 
 /** Rep range of a client exercise from its prescription ("8-10" fallback). */
 function resolveRepRange(ex) {
@@ -338,6 +339,7 @@ export function useClientInteractiveData() {
           is_bariatric: isBariatric || constraints.is_bariatric === true,
           has_dumping_syndrome: constraints.has_dumping_syndrome === true,
           is_high_potassium: constraints.is_high_potassium === true,
+          disliked_food_codes: webCodesForDislikes(constraints.disliked_foods),
           allergies: [...rawAllergies, ...(Array.isArray(constraints.allergies) ? constraints.allergies : [])],
           medications: rawMedications,
           takes_thyroid_med: takesThyroidMed,
