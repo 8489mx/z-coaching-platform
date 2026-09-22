@@ -11,6 +11,7 @@ import { User, Program, IntakeSubmission } from "../models/index.js";
 import { startCycleOnPublish } from "../services/trainingCycleService.js";
 import { encryptMedicalData, decryptMedicalData } from "../../utils/crypto.js";
 import { hasHealthDataConsent } from "../../../frontend/src/config/healthDataConsent.js";
+import { recordFailedAttempt } from "../middlewares/rateLimiter.js";
 
 const HEALTH_DATA_CONSENT_REQUIRED = Object.freeze({
   error: "يجب الموافقة على معالجة البيانات الصحية قبل حفظ أو إرسال الاستمارة",
@@ -173,6 +174,9 @@ function generateAiRationaleAudit(intakePayload, masterProgram) {
   };
 }
 
+/** The caller's IP, read the way the rate limiter reads it. */
+const requestIp = (req) => req.headers?.["x-forwarded-for"] || req.socket?.remoteAddress || req.ip || "127.0.0.1";
+
 // Client codes are sequential (1001, 1002 ...): a code alone never writes a client's medical intake.
 const CLIENT_PHONE_MISMATCH = Object.freeze({
   code: "CLIENT_PHONE_MISMATCH",
@@ -211,6 +215,7 @@ export const getClientIntakeDraft = async (req, res) => {
                await User.findOne({ where: { id: isNaN(parseInt(clientCode, 10)) ? 0 : parseInt(clientCode, 10), role: 'CLIENT' } });
 
     if (!user) {
+      await recordFailedAttempt(requestIp(req), clientCode);
       return res.status(200).json({ user: null, submission: null });
     }
 
@@ -223,6 +228,7 @@ export const getClientIntakeDraft = async (req, res) => {
     );
 
     if (!isPhoneMatch) {
+      await recordFailedAttempt(requestIp(req), clientCode);
       return res.status(200).json({ user: null, submission: null });
     }
 
@@ -270,7 +276,10 @@ export const saveDraftIntake = async (req, res) => {
     let user = null;
     if (cleanClientCode) {
       user = await User.findOne({ where: { client_code: cleanClientCode, role: 'CLIENT' } });
-      if (user && !mayWriteIntake(user, rawPhone)) return res.status(403).json(CLIENT_PHONE_MISMATCH);
+      if (user && !mayWriteIntake(user, rawPhone)) {
+        await recordFailedAttempt(requestIp(req), cleanClientCode);
+        return res.status(403).json(CLIENT_PHONE_MISMATCH);
+      }
     }
     if (!user && cleanPhone) {
       user = await User.findOne({ where: { phone_number: cleanPhone, role: 'CLIENT' } });
@@ -365,7 +374,10 @@ export const submitPublicIntake = async (req, res) => {
     let user = null;
     if (cleanClientCode) {
       user = await User.findOne({ where: { client_code: cleanClientCode, role: 'CLIENT' } });
-      if (user && !mayWriteIntake(user, rawPhone)) return res.status(403).json(CLIENT_PHONE_MISMATCH);
+      if (user && !mayWriteIntake(user, rawPhone)) {
+        await recordFailedAttempt(requestIp(req), cleanClientCode);
+        return res.status(403).json(CLIENT_PHONE_MISMATCH);
+      }
     }
     if (!user && cleanPhone) {
       user = await User.findOne({ where: { phone_number: cleanPhone, role: 'CLIENT' } });

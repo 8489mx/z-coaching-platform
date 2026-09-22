@@ -11,14 +11,16 @@ import {
 } from "../controllers/intake.controller.js";
 
 import { requireAuth } from "../middlewares/auth.middleware.js";
+import { intakeRateLimiter } from "../middlewares/rateLimiter.js";
 
 const router = express.Router();
 
 // Public submission and auto-saving drafts from client
-router.get("/client-draft", getClientIntakeDraft);
-router.post("/save-draft", saveDraftIntake);
-router.post("/submit", submitPublicIntake);
-router.post("/", submitPublicIntake);
+// Wrong code/phone pairs count as failed attempts (intake.controller); five block the IP for 15 minutes.
+router.get("/client-draft", intakeRateLimiter, getClientIntakeDraft);
+router.post("/save-draft", intakeRateLimiter, saveDraftIntake);
+router.post("/submit", intakeRateLimiter, submitPublicIntake);
+router.post("/", intakeRateLimiter, submitPublicIntake);
 
 // Coach management endpoints
 router.get("/submissions", requireAuth, getAllIntakeSubmissions);
