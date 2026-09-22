@@ -14,6 +14,7 @@ export {
   isDiabeticIntake,
   generateSmartSwaps,
   kidneyPotassium,
+  refreshActualMacros,
   FOOD_SWAP_DATABASE,
 } from "./build-culinary-meals.js";
 

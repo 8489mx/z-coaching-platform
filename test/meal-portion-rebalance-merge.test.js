@@ -97,7 +97,10 @@ test('Red Team Item 5: Culinary Meals Ingredient Portion Rebalancing on Calorie 
     assert.equal(adaptedOil.portion_g, origOilPortion, 'Fat portions must not change when only carbs are cut');
     // The same small correction toward the unchanged fat target (split parts carry their own fat).
     assert.ok(Math.abs(newFats - origFats) <= 2, `Total fat ${newFats} g vs ${origFats} g`);
-    assert.ok(Math.abs(newProtein - origProtein) <= 4, 'Total protein grams must remain stable');
+    // Measured against the protein target (a carbohydrate cut leaves it unchanged): the stored meal
+    // totals are now the real sum of the items, a few grams from the target, not the target itself.
+    const proteinTarget = merged.nutrition_program.macro_targets.protein_g;
+    assert.ok(Math.abs(newProtein - proteinTarget) <= 4, `Total protein ${newProtein} g for a ${proteinTarget} g target (plan before: ${origProtein} g)`);
 
     // 5. Swaps must be scaled proportionally with parent item
     if (adaptedRice.swaps && adaptedRice.swaps.length > 0) {

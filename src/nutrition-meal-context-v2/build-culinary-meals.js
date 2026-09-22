@@ -4119,6 +4119,28 @@ export function splitOversizedPortions(meals = [], maxGrams = MAX_CARB_PORTION_G
   });
 }
 
+/**
+ * A meal's stored totals (actual_macros) are summed before the last steps - split plates, fat
+ * sources, safety swaps - and went stale (1211 stored against 1230 kcal in the items). Recompute
+ * them from the items as the final step.
+ */
+export function refreshActualMacros(meals = []) {
+  if (!Array.isArray(meals)) return meals;
+  return meals.map((meal) => {
+    if (!Array.isArray(meal?.items)) return meal;
+    const sum = (key) => meal.items.reduce((total, item) => total + (Number(item?.[key]) || 0), 0);
+    return {
+      ...meal,
+      actual_macros: {
+        protein_g: Math.round(sum("protein_g")),
+        carb_g: Math.round(sum("carb_g")),
+        fat_g: Math.round(sum("fat_g")),
+        calories_kcal: Math.round(sum("calories_kcal")),
+      },
+    };
+  });
+}
+
 export const MAX_OIL_PER_MEAL_G = 20;
 // Olive oil a leaner protein swap may add to make up the fat (about a tablespoon and a half).
 const MAX_SWAP_OIL_ADDITION_G = 15;

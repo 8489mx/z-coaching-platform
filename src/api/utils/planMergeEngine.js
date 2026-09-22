@@ -6,7 +6,7 @@
  */
 
 import { calculateSessionDemand, auditWeeklyMuscleVolume } from './trainingNutritionCoupling.js';
-import { splitOversizedPortions, carbPortionLimit, flagHeavyOil } from '../../nutrition-meal-context-v2/build-culinary-meals.js';
+import { splitOversizedPortions, carbPortionLimit, flagHeavyOil, refreshActualMacros } from '../../nutrition-meal-context-v2/build-culinary-meals.js';
 
 /**
  * Deep merges adaptation recommendations into a master program while guaranteeing
@@ -136,7 +136,7 @@ export function mergeAdaptedPlanIntoProgram(currentMasterProgram, adaptationResu
     if (Array.isArray(merged.nutrition_program?.culinary_meals)) {
       rebalanceCulinaryMeals(merged.nutrition_program.culinary_meals, targetPayload);
       // ...and scaling fat up can take the olive oil past two tablespoons a meal: the coach is told.
-      merged.nutrition_program.culinary_meals = splitOversizedPortions(merged.nutrition_program.culinary_meals, portionLimit).map(flagHeavyOil);
+      merged.nutrition_program.culinary_meals = refreshActualMacros(splitOversizedPortions(merged.nutrition_program.culinary_meals, portionLimit).map(flagHeavyOil));
     }
 
     if (Array.isArray(merged.nutrition_program?.quantized_plan?.meals)) {
