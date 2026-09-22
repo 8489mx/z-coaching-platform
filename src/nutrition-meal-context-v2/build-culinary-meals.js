@@ -3956,7 +3956,12 @@ const isPotato = (code) => /POTATO/.test(String(code || ""));
 export const MAX_FRUIT_PORTION_G = 250;
 export const MAX_DATES_PORTION_G = 80;
 // A split part smaller than this is folded into another part with room.
+// A split part small in both weight and carbohydrate is a crumb (10 g of apple), not a plate: 35 g of
+// oats (a starch exchange is 15 g carbohydrate, ADA/AND lists) or half a guava are real portions.
 const MIN_SPLIT_PART_G = 40;
+const MIN_SPLIT_PART_CARB_G = 10;
+// Folding a small part into the others never takes one of them more than this over its limit.
+const SPLIT_SPREAD_MARGIN_G = 10;
 const FRESH_FRUIT = new Set(["BANANA_FRESH", "APPLE_FRESH", "FRESH_GUAVA", "ORANGE_FRESH", "STRAWBERRY_FRESH", "WATERMELON_FRESH"]);
 
 export function carbPortionLimit({ diabetic = false } = {}) {
@@ -4038,12 +4043,14 @@ export function splitOversizedPortions(meals = [], maxGrams = MAX_CARB_PORTION_G
         // A last part of a few grams (10 g of apple) is not a plate: its share goes to a part with room
         // under its limit, else is spread over the other non-potato parts (a few grams over a fruit
         // limit; a diabetic's potato limit is never passed). With neither it stays.
-        for (const tiny of parts.filter((p) => p.partner && p.share > 1e-6 && p.grams * p.share < MIN_SPLIT_PART_G)) {
+        for (const tiny of parts.filter((p) => p.partner && p.share > 1e-6 && p.grams * p.share < MIN_SPLIT_PART_G && (Number(item.carb_g) || 0) * p.share < MIN_SPLIT_PART_CARB_G)) {
           const others = parts.filter((p) => p !== tiny && p.share > 1e-6);
           const roomy = others.find((p) => p.grams * (p.share + tiny.share) <= p.limit);
           const spread = roomy ? [roomy] : others.filter((p) => !isPotato(p.partner?.food_code || item?.food_code));
           if (spread.length === 0) continue;
           const total = spread.reduce((sum, p) => sum + p.share, 0);
+          // "A few grams" over a limit means at most SPLIT_SPREAD_MARGIN_G; otherwise the small part stays.
+          if (spread.some((p) => p.grams * (p.share + (tiny.share * p.share) / total) > p.limit + SPLIT_SPREAD_MARGIN_G)) continue;
           for (const p of spread) p.share += (tiny.share * p.share) / total;
           tiny.share = 0;
         }

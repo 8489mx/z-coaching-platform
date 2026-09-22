@@ -10,7 +10,7 @@ import { carbPortionLimit, MAX_FRUIT_PORTION_G, MAX_DATES_PORTION_G } from "../s
 /**
  * A large snack carbohydrate was split into parts of up to 400 g each, so a snack could hold 400 g
  * of banana. Fresh fruit now stays at most 250 g a plate (about two medium pieces; a WHO fruit
- * portion is 80 g) and dates 80 g (about 10 dates); a split never leaves a part of a few grams.
+ * portion is 80 g) and dates 80 g (about 10 dates); a split never leaves a crumb (under 40 g and under 10 g of carbohydrate).
  */
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const CATALOG = JSON.parse(fs.readFileSync(path.join(ROOT, "data/catalogs/core-global-food-batch-v1.json"), "utf8"));
@@ -47,7 +47,8 @@ test("no plate holds more fruit or dates than that, and the day's carbohydrate i
     const over = items.filter((i) => (FRUIT.includes(i.food_code) && i.portion_g > MAX_FRUIT_PORTION_G + 10 && !i.portion_warning_ar)
       || (i.food_code === "DATES_KHALAS" && i.portion_g > MAX_DATES_PORTION_G + 10 && !i.portion_warning_ar));
     assert.deepEqual(over.map((i) => `${i.food_code} ${i.portion_g}`), [], conditions.join("+"));
-    const crumbs = items.filter((i) => i.split_note_ar && i.portion_g < 40);
+    // A crumb is a split part under 40 g and under 10 g of carbohydrate (10 g of apple).
+    const crumbs = items.filter((i) => i.split_note_ar && i.portion_g < 40 && (Number(i.carb_g) || 0) < 10);
     assert.deepEqual(crumbs.map((i) => `${i.food_code} ${i.portion_g}`), [], "no split part of a few grams");
     const carbs = items.reduce((s, i) => s + (Number(i.carb_g) || 0), 0);
     assert.ok(Math.abs(carbs - n.macro_targets.carbohydrate_g) / n.macro_targets.carbohydrate_g < 0.08, `${carbs} for ${n.macro_targets.carbohydrate_g}`);
