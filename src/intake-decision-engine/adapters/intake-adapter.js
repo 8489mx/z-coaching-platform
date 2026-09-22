@@ -4,6 +4,7 @@
  * Guarantees zero schema validation errors while preserving 100% of user safety & decision data.
  */
 
+import { normalizeTrainingAge, experienceForTrainingAge, trainingAgeForExperience } from "../../training-engine-v2/training-age.js";
 import { IntakeValidationError } from "../validation/intake-validation-error.js";
 
 export function parseCleanNumber(val, fallback = null) {
@@ -1090,6 +1091,12 @@ export function adaptIntakePayloadToCanonicalEngine(raw) {
     6: ["MONDAY", "TUESDAY", "WEDNESDAY", "THURSDAY", "FRIDAY", "SATURDAY"]
   };
 
+  // Training age (six steps, from never lifted to 4+ years) decides the experience level when the
+  // form gives it; an older intake keeps its level and the training age that level implies.
+  const formTrainingAge = normalizeTrainingAge(intake.training_age ?? intake.training_logistics?.training_age ?? training.trainingAge);
+  const resolvedExperience = (formTrainingAge && experienceForTrainingAge(formTrainingAge))
+    || canonicalExp
+    || (["BEGINNER", "INTERMEDIATE", "ADVANCED"].includes(training.experience) ? training.experience : "BEGINNER");
   const canonicalTraining = {
     location: canonicalLoc || location,
     equipment,
@@ -1101,7 +1108,8 @@ export function adaptIntakePayloadToCanonicalEngine(raw) {
       : (defaultDaysByCount[prefDays] || ["MONDAY", "WEDNESDAY", "FRIDAY"]),
     unavailableTrainingDays: [],
     maxSessionMinutes: Number(training.maxSessionMinutes) || 60,
-    experience: canonicalExp || (["BEGINNER", "INTERMEDIATE", "ADVANCED"].includes(training.experience) ? training.experience : "BEGINNER"),
+    experience: resolvedExperience,
+    trainingAge: formTrainingAge || trainingAgeForExperience(resolvedExperience),
     recentTraining: (training.recentTraining === "CONSISTENT_LAST_3_MONTHS" || training.recentTraining === "ACTIVE") ? "ACTIVE" : (training.recentTraining === "INTERMITTENT_LAST_6_MONTHS" || training.recentTraining === "INCONSISTENT") ? "INCONSISTENT" : ["NONE_LAST_4_WEEKS", "RETURNING_AFTER_LONG_BREAK", "UNKNOWN"].includes(training.recentTraining) ? training.recentTraining : "ACTIVE",
     injuries,
     medicalMovementRestrictions: []

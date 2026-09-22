@@ -1,3 +1,4 @@
+import { TRAINING_AGES } from "../../training-engine-v2/training-age.js";
 import {
   ActivityLevel,
   BudgetLevel,
@@ -525,6 +526,7 @@ function validateTraining(input, issues) {
       "unavailableTrainingDays",
       "maxSessionMinutes",
       "experience",
+      "trainingAge",
       "recentTraining",
       "injuries",
       "medicalMovementRestrictions",
@@ -811,6 +813,10 @@ function validateTraining(input, issues) {
     integer: true,
   });
   enumValue(training.experience, TrainingExperience, "training.experience", issues);
+  // Optional: how long the client has trained (the older intakes have only the experience level).
+  if (training.trainingAge !== undefined) {
+    allowedEnumValue(training.trainingAge, TRAINING_AGES, "training.trainingAge", issues);
+  }
   enumValue(training.recentTraining, RecentTraining, "training.recentTraining", issues);
 
   array(training.injuries, "training.injuries", issues).forEach((raw, index) => {

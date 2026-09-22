@@ -121,6 +121,12 @@ function cleanArabicNumStr(val) {
     .replace(/[^\d.]/g, '');
 }
 
+// The general level each training-age answer implies (older consumers read experience_level).
+const TRAINING_AGE_LEVEL = {
+  never: 'beginner', under_6_months: 'beginner', '6_12_months': 'beginner',
+  '1_2_years': 'intermediate', '2_4_years': 'intermediate', over_4_years: 'advanced',
+};
+
 export default function FullIntakeForm() {
   const _navigate = useNavigate();
   const location = useLocation();
@@ -365,6 +371,11 @@ export default function FullIntakeForm() {
     if (!formData.circumferences?.waist_cm) {
       alert('يرجى إدخال محيط الخصر (الوسط) للتمكن من حساب نسبة الدهون والمتابعة بدقة.');
       setCurrentStep(1);
+      return;
+    }
+    if (!formData.training_logistics?.training_age) {
+      alert('يرجى اختيار بقالك قد إيه بتتمرن حديد (في خطوة التدريب) علشان نحدد حجم التمرين المناسب ليك.');
+      setCurrentStep(4);
       return;
     }
 
@@ -1939,16 +1950,28 @@ export default function FullIntakeForm() {
 
                 <div>
                   <label style={{ display: 'block', fontSize: '12px', fontWeight: 800, color: '#0F172A', marginBottom: '6px' }}>
-                    المستوى التدريبي الفعلي
+                    بقالك قد إيه بتتمرن حديد بانتظام؟ *
                   </label>
-                  <CurvedSelect 
-                    value={trainingLogistics.experience_level || 'intermediate'}
-                    onChange={(e) => updateNested('training_logistics', 'experience_level', e.target.value)}
+                  {/* Training age decides the weekly volume; the general level follows from it. */}
+                  <CurvedSelect
+                    value={trainingLogistics.training_age || ''}
+                    onChange={(e) => {
+                      const age = e.target.value;
+                      const level = TRAINING_AGE_LEVEL[age];
+                      setFormData(prev => ({
+                        ...prev,
+                        training_logistics: { ...(prev.training_logistics || {}), training_age: age, ...(level ? { experience_level: level } : {}) },
+                      }));
+                    }}
                     style={{ width: '100%', height: '38px', borderRadius: '8px', border: '1px solid #CBD5E1', padding: '0 10px', fontSize: '12px', background: '#FFFFFF' }}
                   >
-                    <option value="beginner">مبتدئ (أقل من سنة)</option>
-                    <option value="intermediate">متوسط (1 إلى 3 سنوات)</option>
-                    <option value="advanced">متقدم (أكثر من 3 سنوات)</option>
+                    <option value="" disabled>اختار</option>
+                    <option value="never">أول مرة أتمرن حديد (صفر خبرة)</option>
+                    <option value="under_6_months">أقل من 6 شهور</option>
+                    <option value="6_12_months">من 6 شهور لسنة</option>
+                    <option value="1_2_years">من سنة لسنتين</option>
+                    <option value="2_4_years">من سنتين لـ 4 سنين</option>
+                    <option value="over_4_years">أكتر من 4 سنين</option>
                   </CurvedSelect>
                 </div>
 

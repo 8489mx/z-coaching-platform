@@ -1,3 +1,4 @@
+import { trainingAgePolicy, trainingAgeForExperience } from "./training-age.js";
 import { buildTrainingEngine } from "../training-engine/index.js";
 import { getExerciseV2ByCode } from "../exercise-catalog-v2/index.js";
 import { EXERCISE_CATALOG_V2 } from "../exercise-catalog-v2/exercise-catalog-v2.js";
@@ -295,6 +296,8 @@ export function buildTrainingMesoCycle(intakeDecision, options = {}) {
     "BEGINNER";
   const isAdvanced = intakeExperience === "ADVANCED";
   const isIntermediate = intakeExperience === "INTERMEDIATE";
+  // Volume by training age (never lifted ... 4+ years); older intakes follow their level exactly.
+  const agePolicy = trainingAgePolicy(options.rawIntake?.training?.trainingAge ?? trainingAgeForExperience(intakeExperience));
 
   const rawIntake = options.rawIntake || {};
   // What the client said they own. Unknown (no list) leaves every template exactly as it was.
@@ -630,9 +633,18 @@ export function buildTrainingMesoCycle(intakeDecision, options = {}) {
           }
         }
 
+        if (agePolicy.baseSets) {
+          baseSetCount = agePolicy.baseSets;
+        } else {
+          const isCompound = HEAVY_PRIMARY_COMPOUNDS.has(finalCode) || SECONDARY_COMPOUNDS.has(finalCode);
+          if (agePolicy.isolationSets && !isCompound) baseSetCount = Math.min(baseSetCount, agePolicy.isolationSets);
+          if (agePolicy.heavyCompoundSets && HEAVY_PRIMARY_COMPOUNDS.has(finalCode)) baseSetCount = Math.max(baseSetCount, agePolicy.heavyCompoundSets);
+        }
+        const setDelta = agePolicy.addSetsInLoadingWeeks === false ? Math.min(0, config.set_delta) : config.set_delta;
+
         let calculatedSets = Math.max(
           2,
-          Math.min(5, baseSetCount + config.set_delta),
+          Math.min(5, baseSetCount + setDelta),
         );
 
         if (config.phase === MesoCyclePhase.DELOAD) {
@@ -641,7 +653,9 @@ export function buildTrainingMesoCycle(intakeDecision, options = {}) {
         }
 
         // Apply muscle bias if specified (+1 set per session on target muscles)
+        // A client who never lifted learns the basic movements first: no extra sets for focus muscles.
         if (
+          !agePolicy.baseSets &&
           muscleBiasList.length > 0 &&
           v2Exercise &&
           muscleBiasList.some(
@@ -662,6 +676,7 @@ export function buildTrainingMesoCycle(intakeDecision, options = {}) {
         if (hasHypertensionOrHeart) {
           effectiveRir = Math.max(effectiveRir, CLINICAL_GUIDELINES.HYPERTENSION.MIN_RIR);
         }
+        if (agePolicy.minRir) effectiveRir = Math.max(effectiveRir, agePolicy.minRir);
 
         const isFirstExerciseInSession = exIdx === 0;
         const isPrimaryHeavy = isFirstExerciseInSession || HEAVY_PRIMARY_COMPOUNDS.has(finalCode);

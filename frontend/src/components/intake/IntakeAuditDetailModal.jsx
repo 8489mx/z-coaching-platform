@@ -46,6 +46,15 @@ const EXPERIENCE_MAP = {
   advanced: 'متقدم (أكثر من 3 سنوات)'
 };
 
+const TRAINING_AGE_MAP = {
+  never: 'أول مرة يتمرن حديد (صفر خبرة)',
+  under_6_months: 'أقل من 6 شهور',
+  '6_12_months': 'من 6 شهور لسنة',
+  '1_2_years': 'من سنة لسنتين',
+  '2_4_years': 'من سنتين لـ 4 سنين',
+  over_4_years: 'أكتر من 4 سنين'
+};
+
 const RECENT_TRAINING_MAP = {
   ACTIVE: 'أتمرن حالياً بانتظام',
   INCONSISTENT: 'متقطع في آخر 6 شهور',
@@ -409,6 +418,7 @@ export default function IntakeAuditDetailModal({
             <Section title="5) التدريب">
               <FieldRow label="بيئة التدريب" value={answers.training_environment} dictionary={ENVIRONMENT_MAP} />
               <FieldRow label="أيام التمرين في الأسبوع" value={answers.training_logistics?.days_per_week} />
+              <FieldRow label="بيتمرن حديد بقاله" value={answers.training_logistics?.training_age} dictionary={TRAINING_AGE_MAP} />
               <FieldRow label="مستوى الخبرة" value={answers.training_logistics?.experience_level} dictionary={EXPERIENCE_MAP} />
               <FieldRow label="يمارس رياضة أخرى" value={answers.training_logistics?.has_other_sports} />
               <FieldRow label="اسم الرياضة الأخرى" value={answers.training_logistics?.sports_name} />
