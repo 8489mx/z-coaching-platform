@@ -7,7 +7,7 @@ Everything below is merged into `main` and pushed to GitHub (`8489mx/z-coaching-
 
 ## 0. First thing to do in the new session
 
-1. Read `CLAUDE.md` (standing iron rules) and this file.
+1. Read `AI_RULES.md` (how any AI tool must work and prove its work), `CLAUDE.md` (standing iron rules) and this file. Old docs are in `docs/archive/` (history only).
 2. Run the full check and confirm the baseline before touching anything:
    - `npm.cmd test` (Windows) — expected: node:test **1898/1898 pass**, vitest **47/47 pass**, lint 0.
    - In a git worktree: link `node_modules` and `frontend/node_modules` to `D:/zcc`'s (junctions), copy `.env` (ignored), and build the frontend once — `test/hostinger-deployment-readiness.test.js` fails without `frontend/dist`.
@@ -180,6 +180,13 @@ Owner decision: **no Flutter work until the engine has no error that can stop a 
 - `33e4b87` The engine's stored meal totals (`actual_macros`) are recomputed from the items after the last steps (`refreshActualMacros`, first plan and check-in merge) - they were summed before split/fat/safety steps (1211 stored vs 1230 in items).
 - `991aa92` Skim and lactose-free milk are mobile registry foods of their own (they were read as laban): laban and the milks swap for each other within the value rule. Tuna swaps since `1a34160`. The only food with no equivalent swap left is lupini (high protein, low carbohydrate - roasted chickpeas and halabessa are mostly carbohydrate).
 - Verification: 1898/1898 + 47/47, lint 0, build OK, stress 306 clients 0 violations, journeys 6/6 no issues, 10-client simulation 100%, oil audit: meals over 20 g of oil 29 -> 13 clients, over 30 g 1, over 40 g 0; swap audit: 46 pair types, the 7 over 25% before oil all carry an oil instruction.
+
+## 3j. Tenth round (2026-09-22) — owner: "clean up the project files and make one file Antigravity reads before every change" — merged + pushed
+
+- `a485810` Removed 11 unused root files (zero references by `git grep`: debug.json, test_output.txt, old stress/simulate/test-flow scripts and their results, theme-switcher.cjs, two old Claude prompts). Moved the July docs and the old AI_STUDIO_BRIEF.md to `docs/archive/` (they reference only each other; no code or test reads them).
+- `AI_RULES.md` (root): the rules for Antigravity / any AI tool — honesty, task steps, the full check with accepted results, test fails-before/passes-after, deletion proof, prohibitions, report format, project map, scientific rules. `AGENTS.md` and `GEMINI.md` point to it first.
+- Not touched: `supabase/` (cron + migrations, referenced only by docs/production-go-live-runbook.md) — database-related, needs the owner's decision before any removal.
+- Verification: 1898/1898 + 47/47, lint 0, build OK, stress 0 violations.
 
 ## 4. Open work (in priority order)
 
