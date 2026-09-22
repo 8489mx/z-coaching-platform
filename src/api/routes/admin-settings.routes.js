@@ -21,13 +21,13 @@ import { requireAuth, requireAdmin } from '../middlewares/auth.middleware.js';
 const router = express.Router();
 
 // 1. Intake Schema Builder
-router.get('/intake-schema', getIntakeSchema);
+router.get('/intake-schema', requireAuth, requireAdmin, getIntakeSchema);
 router.post('/intake-schema/question', requireAuth, requireAdmin, (req, res) => updateIntakeQuestion(req, res));
 router.put('/intake-schema/question/:id', requireAuth, requireAdmin, updateIntakeQuestion);
 router.delete('/intake-schema/question/:id', requireAuth, requireAdmin, deleteIntakeQuestion);
 
 // 2. Exercise Catalog & Video Manager
-router.get('/exercises', getAdminExercises);
+router.get('/exercises', requireAuth, requireAdmin, getAdminExercises);
 router.post('/exercises', requireAuth, requireAdmin, saveAdminExercise);
 router.put('/exercises/:id', requireAuth, requireAdmin, (req, res) => {
   req.body.id = req.params.id;
@@ -36,7 +36,7 @@ router.put('/exercises/:id', requireAuth, requireAdmin, (req, res) => {
 router.delete('/exercises/:id', requireAuth, requireAdmin, deleteAdminExercise);
 
 // 3. Subscription Packages & Pricing Manager
-router.get('/packages', getSubscriptionPackages);
+router.get('/packages', requireAuth, requireAdmin, getSubscriptionPackages);
 router.post('/packages', requireAuth, requireAdmin, saveSubscriptionPackage);
 router.put('/packages/:id', requireAuth, requireAdmin, (req, res) => {
   req.body.id = req.params.id;
@@ -45,7 +45,7 @@ router.put('/packages/:id', requireAuth, requireAdmin, (req, res) => {
 router.delete('/packages/:id', requireAuth, requireAdmin, deleteSubscriptionPackage);
 
 // 4. Food & Nutrition Catalog Manager
-router.get('/foods', getAdminFoods);
+router.get('/foods', requireAuth, requireAdmin, getAdminFoods);
 router.post('/foods', requireAuth, requireAdmin, saveAdminFood);
 router.put('/foods/:id', requireAuth, requireAdmin, (req, res) => {
   req.body.id = req.params.id;
