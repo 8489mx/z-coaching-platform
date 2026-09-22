@@ -1,3 +1,4 @@
+import { mealTotalsFromItems } from '../../../utils/mealTotals.js';
 import { getExerciseDisplayNames } from '../../../utils/exerciseTranslator.js';
 
 export function cleanMealTitle(rawTitle, mealNumber) {
@@ -65,12 +66,8 @@ export function adaptProgramToInteractiveMeals(masterProgram) {
         workout_timing: cm.timing_relation || cm.workout_timing || 'NONE',
         time: cm.timing || (cmIdx === 0 ? '08:30 ص' : (cmIdx === 1 ? '02:00 م' : (cmIdx === 2 ? '05:30 م' : '09:30 م'))),
         completed: false,
-        macros: {
-          calories: Math.round(cm.actual_macros?.calories || cm.target_macros?.calories || cm.macros?.calories || 500),
-          protein: Math.round(cm.actual_macros?.protein || cm.target_macros?.protein || cm.macros?.protein || 40),
-          carbs: Math.round(cm.actual_macros?.carbs || cm.target_macros?.carbs || cm.macros?.carbs || 50),
-          fats: Math.round(cm.actual_macros?.fats || cm.target_macros?.fats || cm.macros?.fats || 15)
-        },
+        // The meal's real totals: the sum of its items (the stored meal macros use other names).
+        macros: mealTotalsFromItems(cm.items),
         items: (cm.items || []).map((it, itIdx) => ({
           id: it.id || `i_${cmIdx + 1}_${itIdx + 1}`,
           code: it.food_code || it.code,

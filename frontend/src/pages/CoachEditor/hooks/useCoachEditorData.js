@@ -1,3 +1,4 @@
+import { mealTotalsFromItems } from '../../../utils/mealTotals.js';
 import { useState, useEffect, useMemo } from 'react';
 import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
 import { API_BASE } from '../../../config/api';
@@ -325,12 +326,8 @@ export function useCoachEditorData() {
         id: `m${cm.meal_number || cmIdx + 1}`,
         name: cm.recipe_title_ar || cm.meal_name_ar || `الوجبة ${cm.meal_number || cmIdx + 1}`,
         time: cmIdx === 0 ? '08:30 ص' : (cmIdx === 1 ? '01:30 م' : (cmIdx === 2 ? '05:30 م' : '09:00 م')),
-        macros: {
-          calories: Math.round(cm.actual_macros?.calories || cm.target_macros?.calories || 500),
-          protein: Math.round(cm.actual_macros?.protein || cm.target_macros?.protein || 40),
-          carbs: Math.round(cm.actual_macros?.carbs || cm.target_macros?.carbs || 50),
-          fats: Math.round(cm.actual_macros?.fats || cm.target_macros?.fats || 15)
-        },
+        // The meal's real totals: the sum of its items (the stored meal macros use other names).
+        macros: mealTotalsFromItems(cm.items),
         items: (cm.items || []).map((it, itIdx) => ({
           id: `it_${cmIdx}_${itIdx}`,
           code: it.food_code,
