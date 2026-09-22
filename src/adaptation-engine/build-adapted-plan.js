@@ -310,15 +310,22 @@ export function buildAdaptedPlan(inputs) {
   // adherence or measurement question for the coach, not another +125 kcal (a 66 kg client reached
   // 4100 kcal and 745 g of carbohydrate after a year of stalls). Never cuts below the current plan.
   const currentWeightKg = Number(checkinAnalysis.current_average_weight_kg);
+  // With high body fat the plan has a reference weight (lean mass at a healthy body fat, or the
+  // adjusted weight - the one the protein uses): the ceiling uses it, or 140 kg would allow 7700 kcal.
+  const planTargets = currentMasterProgram.nutrition_program?.targets || {};
+  const planReferenceKg = Number(planTargets.protein_reference_weight_kg);
+  const usesReferenceWeight = Boolean(planTargets.protein_reference_basis) && planTargets.protein_reference_basis !== "TOTAL_BODY_WEIGHT"
+    && Number.isFinite(planReferenceKg) && planReferenceKg > 30;
+  const ceilingWeightKg = usesReferenceWeight ? Math.min(currentWeightKg, planReferenceKg) : currentWeightKg;
   if (Number.isFinite(currentWeightKg) && currentWeightKg > 30) {
-    const ceiling = Math.max(Math.round(currentWeightKg * MAX_KCAL_PER_KG), Math.round(baseEnergy));
+    const ceiling = Math.max(Math.round(ceilingWeightKg * MAX_KCAL_PER_KG), Math.round(baseEnergy));
     if (adaptedCalories > ceiling) {
       adaptedCarbs = Math.max(50, adaptedCarbs - Math.round((adaptedCalories - ceiling) / 4));
       adaptedCalories = ceiling;
       requiresCoachApproval = true;
       reasons.push({
         code: "CALORIE_CEILING_REACHED",
-        message_ar: `وصلت السعرات لسقف ${MAX_KCAL_PER_KG} سعرة لكل كجم من الوزن (${ceiling} سعرة). لو الوزن لسه ثابت راجع الالتزام الفعلي بالأكل وطريقة الوزن قبل أي زيادة.`,
+        message_ar: `وصلت السعرات لسقف ${MAX_KCAL_PER_KG} سعرة لكل كجم من ${usesReferenceWeight ? `الوزن المرجعي (${ceilingWeightKg} كجم)` : "الوزن"} (${ceiling} سعرة). لو الوزن لسه ثابت راجع الالتزام الفعلي بالأكل وطريقة الوزن قبل أي زيادة.`,
         message_en: `Calories reached the ${MAX_KCAL_PER_KG} kcal/kg ceiling (${ceiling} kcal). Review real intake and weighing before any further increase.`,
       });
     }
