@@ -1,6 +1,6 @@
 import { getFoodClinicalProperties } from "../execution-engines/food-swap-engine.js";
 import { CLINICAL_GUIDELINES } from "../config/clinical-guidelines.js";
-import { dislikedFoodCodes } from "../intake-decision-engine/adapters/disliked-foods.js";
+import { dislikedFoodCodes, applyDislikedNames } from "../intake-decision-engine/adapters/disliked-foods.js";
 import { isEquivalentSwap, sharesSwapFamily, isNoSwapFood, NO_SWAP_NOTE_AR } from "../../frontend/src/utils/swapExchangeRules.js";
 
 /**
@@ -3942,7 +3942,11 @@ export function buildCulinaryRecipeMeals(universalTargets, canonicalIntake = {},
   // Some meal templates place a food directly (an omelette for a bariatric client, bread at
   // breakfast) without asking the clinical filter. One last pass holds every generated item to the
   // same rules the candidate lists already follow.
-  return keepEquivalentSwaps(diversifyDailyProteins(enforceClinicalSafety(generatedMeals, allergenContext)));
+  // Disliked vegetables and olive oil stay on the plate but leave its name (applyDislikedNames).
+  return applyDislikedNames(
+    keepEquivalentSwaps(diversifyDailyProteins(enforceClinicalSafety(generatedMeals, allergenContext))),
+    effectiveRaw.disliked_foods,
+  );
 }
 
 // One protein food in at most this many meals a day (chicken breast used to fill all three).

@@ -4,9 +4,8 @@
  * maps here to the meal generator's food codes (FOOD_SWAP_DATABASE in build-culinary-meals.js) and, for
  * foods only the swap list has, the swap registry's code.
  *
- * An empty list means the plan never holds that food, so there is nothing to remove. Vegetables and
- * olive oil stay: the plan's vegetables are mixed plates (salad, sauteed vegetables) and the oil is
- * the cooking oil every meal's fat budget counts on.
+ * An empty list means nothing is removed: the plan never holds that food (liver, thighs, shrimp),
+ * or it stays on the plate and only leaves the name (vegetables, olive oil - applyDislikedNames below).
  */
 export const DISLIKED_FOOD_LABEL_CODES = Object.freeze({
   // Proteins
@@ -67,4 +66,56 @@ export function dislikedFoodCodes(list = []) {
     }
   }
   return [...codes];
+}
+
+/**
+ * Vegetables and olive oil stay in the plan (mixed plates, the cooking oil), but their names follow
+ * the client: a disliked vegetable leaves the plate's list of vegetables ("(without ...)" when it is
+ * part of the dish name), and disliked olive oil becomes a plain vegetable oil (same 9 kcal per gram).
+ */
+export const DISLIKED_VEGETABLE_WORDS = Object.freeze({
+  "بروكلي": ["بروكلي"],
+  "سبانخ": ["سبانخ"],
+  "باذنجان": ["باذنجان"],
+  "كوسة": ["كوسة"],
+  "فاصوليا خضراء": ["فاصوليا خضراء"],
+  "قرنبيط": ["قرنبيط"],
+  "مشروم": ["مشروم"],
+  "شمندر / بنجر": ["شمندر", "بنجر"],
+});
+export const OLIVE_OIL_LABEL = "زيت زيتون";
+const VEGETABLE_OIL_AR = "زيت نباتي (كانولا أو دوار الشمس)";
+
+function withoutVegetables(name, words) {
+  let out = String(name || "");
+  const left = [];
+  out = out.replace(/\(([^)]*)\)/g, (whole, inside) => {
+    const parts = inside.split("،").map((p) => p.trim()).filter(Boolean);
+    const kept = parts.filter((p) => !words.some((w) => p.includes(w)));
+    if (kept.length === parts.length) return whole;
+    return kept.length ? `(${kept.join("، ")})` : "(أي خضار بتحبه)";
+  });
+  for (const word of words) if (out.includes(word)) left.push(word);
+  return left.length ? `${out} (من غير ${left.join(" و")})` : out;
+}
+
+/** Plan item names adjusted to the client's disliked vegetables and olive oil (macros unchanged). */
+export function applyDislikedNames(meals = [], labels = []) {
+  const list = Array.isArray(labels) ? labels.map((l) => String(l).trim()) : [];
+  const words = list.flatMap((l) => DISLIKED_VEGETABLE_WORDS[l] || []);
+  const noOliveOil = list.includes(OLIVE_OIL_LABEL);
+  if (!Array.isArray(meals) || (!words.length && !noOliveOil)) return meals;
+  return meals.map((meal) => ({
+    ...meal,
+    items: (meal.items || []).map((item) => {
+      let name = item.name_ar;
+      if (words.length && String(item.category).toUpperCase() === "VEGGIES") name = withoutVegetables(name, words);
+      if (noOliveOil && typeof name === "string") {
+        name = item.food_code === "OLIVE_OIL"
+          ? name.replace(/زيت (ال)?زيتون( بكر ممتاز)?/g, VEGETABLE_OIL_AR)
+          : name.replace(/زيت (ال)?زيتون( بكر ممتاز)?/g, "زيت نباتي");
+      }
+      return name === item.name_ar ? item : { ...item, name_ar: name };
+    }),
+  }));
 }
