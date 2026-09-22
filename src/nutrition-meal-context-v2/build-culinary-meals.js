@@ -3921,7 +3921,67 @@ export function buildCulinaryRecipeMeals(universalTargets, canonicalIntake = {},
   // Some meal templates place a food directly (an omelette for a bariatric client, bread at
   // breakfast) without asking the clinical filter. One last pass holds every generated item to the
   // same rules the candidate lists already follow.
-  return keepEquivalentSwaps(enforceClinicalSafety(generatedMeals, allergenContext));
+  return keepEquivalentSwaps(diversifyDailyProteins(enforceClinicalSafety(generatedMeals, allergenContext)));
+}
+
+// One protein food in at most this many meals a day (chicken breast used to fill all three).
+export const MAX_MEALS_PER_PROTEIN_FOOD = 2;
+
+/**
+ * Daily variety: a protein food found in more than MAX_MEALS_PER_PROTEIN_FOOD meals is changed in the
+ * later meals to one of the item's own swaps - equivalent in value, already filtered for the client's
+ * restrictions, dislikes and budget - that needs no oil change, is not on that plate and is used the
+ * least in the day. The original food stays first in the swap list, so the client can switch back.
+ * Protein powder is never changed (isNoSwapFood).
+ */
+export function diversifyDailyProteins(meals = []) {
+  if (!Array.isArray(meals)) return meals;
+  const out = meals.map((meal) => ({ ...meal, items: [...(meal.items || [])] }));
+  const mealsWith = (code) => out.filter((meal) => meal.items.some((item) => item.food_code === code)).length;
+  const noOilChange = (swap) => !(Number(swap?.oil_deduction_g) > 0) && !(Number(swap?.oil_addition_g) > 0);
+
+  for (let m = out.length - 1; m >= 0; m -= 1) {
+    const meal = out[m];
+    meal.items.forEach((item, index) => {
+      if (String(item?.category).toUpperCase() !== "PROTEIN" || isNoSwapFood(item.food_code)) return;
+      if (mealsWith(item.food_code) <= MAX_MEALS_PER_PROTEIN_FOOD) return;
+      const onPlate = new Set(meal.items.map((i) => i.food_code));
+      const choices = (Array.isArray(item.swaps) ? item.swaps : [])
+        .filter((swap) => swap?.food_code && FOOD_SWAP_DATABASE[swap.food_code] && noOilChange(swap)
+          && !onPlate.has(swap.food_code) && mealsWith(swap.food_code) < MAX_MEALS_PER_PROTEIN_FOOD)
+        .sort((a, b) => mealsWith(a.food_code) - mealsWith(b.food_code));
+      const chosen = choices[0];
+      if (!chosen) return;
+      const back = {
+        food_code: item.food_code,
+        name_ar: item.name_ar,
+        name_en: item.name_en,
+        equivalent_grams: item.portion_g,
+        household_desc: item.household_measurement,
+        oil_deduction_g: 0,
+        oil_addition_g: 0,
+        protein_g: item.protein_g,
+        carb_g: item.carb_g,
+        fat_g: item.fat_g,
+        calories_kcal: item.calories_kcal,
+      };
+      meal.items[index] = {
+        ...item,
+        food_code: chosen.food_code,
+        name_ar: chosen.name_ar,
+        name_en: chosen.name_en,
+        portion_g: chosen.equivalent_grams ?? item.portion_g,
+        household_measurement: chosen.household_desc ?? item.household_measurement,
+        protein_g: chosen.protein_g,
+        carb_g: chosen.carb_g,
+        fat_g: chosen.fat_g,
+        calories_kcal: chosen.calories_kcal,
+        swaps: [back, ...item.swaps.filter((swap) => swap !== chosen)],
+        replaced_for_variety_from: item.food_code,
+      };
+    });
+  }
+  return out;
 }
 /** Whether the intake declares diabetes or insulin resistance (raw form answers or canonical conditions). */
 export function isDiabeticIntake(canonicalIntake = {}, rawIntake = {}) {
@@ -4272,20 +4332,25 @@ export function enforceClinicalSafety(meals = [], allergenContext = {}) {
   return meals.map((meal) => {
     const items = meal.items || [];
     if (!items.some((item) => unsafe(item.food_code))) return meal;
+    // Foods already on this plate: a replacement takes another food when one exists (two items
+    // replaced by the same shakshouka made one breakfast hold it twice).
+    const onPlate = new Set(items.map((item) => item.food_code));
+    const usable = (swap) => swap?.food_code && known(swap.food_code) && !unsafe(swap.food_code);
+    const pick = (list) => list.find((swap) => usable(swap) && !onPlate.has(swap.food_code)) || list.find(usable);
 
     return {
       ...meal,
       items: items.map((item) => {
         if (!unsafe(item.food_code)) return item;
         let swaps = Array.isArray(item.swaps) ? item.swaps : [];
-        let chosen = swaps.find((swap) => swap?.food_code && known(swap.food_code) && !unsafe(swap.food_code));
+        let chosen = pick(swaps);
         if (!chosen) {
           // Some templates place an item with no swap list at all (the bariatric omelette): compute
           // the equivalents now, for the same portion and meal, already filtered for this client.
           const context = String(meal.meal_context || meal.context || meal.meal_type || "LUNCH").toUpperCase();
           const category = String(item.category || "PROTEIN").toUpperCase();
           swaps = generateSmartSwaps(category, Number(item.portion_g) || 100, item.food_code, context, 0, allergenContext);
-          chosen = swaps.find((swap) => swap?.food_code && known(swap.food_code) && !unsafe(swap.food_code));
+          chosen = pick(swaps);
         }
         if (!chosen) {
           // Safety comes before taste: with no equivalent safe swap, take the closest safe food of
@@ -4297,7 +4362,7 @@ export function enforceClinicalSafety(meals = [], allergenContext = {}) {
             .filter((swap) => swap?.food_code && known(swap.food_code) && !unsafe(swap.food_code))
             .sort((a, b) => (sharesSwapFamily(item.food_code, b.food_code) - sharesSwapFamily(item.food_code, a.food_code))
               || (Math.abs(a.calories_kcal - kcal) - Math.abs(b.calories_kcal - kcal)));
-          chosen = swaps[0];
+          chosen = pick(swaps);
         }
         if (!chosen && onlyDisliked(item.food_code)) {
           return {
@@ -4312,6 +4377,7 @@ export function enforceClinicalSafety(meals = [], allergenContext = {}) {
             clinical_warning_ar: "هذا الصنف يتعارض مع الملف الطبي للمتدرب ولا يوجد بديل آمن محسوب له؛ راجعه قبل النشر.",
           };
         }
+        onPlate.add(chosen.food_code);
         return {
           ...item,
           food_code: chosen.food_code,
