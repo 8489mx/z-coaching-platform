@@ -813,8 +813,8 @@ export function calculateUniversalNutritionTargets(canonicalIntake, evaluationCo
   // at least 5 small meals so the day's protein fits.
   const chosenMealCount = isPostBariatric(effectiveRaw) ? Math.max(5, preferredMealCount) : preferredMealCount;
   // Owner decision: 3200+ kcal on three meals makes very large plates, so a fourth meal is added.
-  // Two meals (a fasting choice) are kept and the coach is only advised.
-  const mealAddedForCalories = targetCalories >= 3200 && chosenMealCount === 3;
+  // Two meals get the same rule (they made plates of 2300+ kcal); below 3200 kcal they stay.
+  const mealAddedForCalories = targetCalories >= 3200 && (chosenMealCount === 3 || chosenMealCount === 2);
   const mealCount = mealAddedForCalories ? 4 : chosenMealCount;
   const mealDistribution = [];
   for (let i = 1; i <= mealCount; i++) {
@@ -887,7 +887,9 @@ export function calculateUniversalNutritionTargets(canonicalIntake, evaluationCo
     meals_count: mealCount,
     // A high-calorie day on few meals makes very large plates: three meals get a fourth (above);
     // two meals are the client's fasting choice, so the coach is advised rather than the plan changed.
-    meal_count_note_ar: mealAddedForCalories
+    meal_count_note_ar: mealAddedForCalories && chosenMealCount === 2
+      ? `العميل اختار وجبتين، بس ${targetCalories} سعرة على وجبتين بتطلع أطباق ضخمة جداً؛ النظام خلّاها 4 وجبات (ممكن تتاكل كلها في نفس شباك الأكل لو صايم صيام متقطع). لو العميل مش هيقدر، احذف وجبة من المحرر وهيتوزع أكلها على الباقي.`
+      : mealAddedForCalories
       ? `العميل اختار 3 وجبات، بس ${targetCalories} سعرة على 3 وجبات بتطلع أطباق كبيرة؛ النظام زوّد وجبة رابعة. لو العميل مش هيقدر، احذف الوجبة الرابعة من المحرر وهيتوزع أكلها على الباقي.`
       : targetCalories >= 3200 && mealCount <= 3
         ? `${targetCalories} سعرة على ${mealCount} وجبات بتطلع أطباق كبيرة؛ يُفضّل تتقسم على 4 أو 5 وجبات (زوّد وجبة خفيفة أو اتنين).`

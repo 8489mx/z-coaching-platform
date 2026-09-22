@@ -9,8 +9,8 @@ export const MEAL_COUNT_KCAL_LINE = 3200;
 export function mealCountNoteForCheckin({ planTargetKcal, calorieDelta = 0, mealsCount }) {
   const current = Number(planTargetKcal);
   const meals = Number(mealsCount);
-  if (!(current > 0) || meals !== 3) return null;
+  if (!(current > 0) || (meals !== 3 && meals !== 2)) return null;
   const next = Math.round(current + (Number(calorieDelta) || 0));
   if (next < MEAL_COUNT_KCAL_LINE) return null;
-  return `السعرات هتبقى ${next} سعرة على 3 وجبات، والأطباق هتكبر؛ زوّد وجبة رابعة من المحرر ("إضافة وجبة") ووزّع عليها.`;
+  return `السعرات هتبقى ${next} سعرة على ${meals === 2 ? "وجبتين" : "3 وجبات"}، والأطباق هتكبر؛ زوّد وجبة رابعة من المحرر ("إضافة وجبة") ووزّع عليها.`;
 }

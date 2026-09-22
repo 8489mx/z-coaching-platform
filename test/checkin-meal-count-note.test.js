@@ -15,10 +15,10 @@ test("a check-in that takes a three-meal plan to 3200+ kcal tells the coach to a
   assert.match(note, /إضافة وجبة/);
 });
 
-test("no note below 3200, on four or more meals, or on two meals (a fasting choice)", () => {
+// Two meals get the note too since 2026-09-22 (test/two-meals-never-make-giant-plates.test.js).
+test("no note below 3200 or on four or more meals", () => {
   assert.equal(mealCountNoteForCheckin({ planTargetKcal: 3000, calorieDelta: 150, mealsCount: 3 }), null);
   assert.equal(mealCountNoteForCheckin({ planTargetKcal: 3300, calorieDelta: 150, mealsCount: 4 }), null);
-  assert.equal(mealCountNoteForCheckin({ planTargetKcal: 3300, calorieDelta: 150, mealsCount: 2 }), null);
   assert.equal(mealCountNoteForCheckin({ planTargetKcal: null, calorieDelta: 150, mealsCount: 3 }), null);
 });
 

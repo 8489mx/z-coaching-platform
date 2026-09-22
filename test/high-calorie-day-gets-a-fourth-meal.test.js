@@ -9,8 +9,8 @@ import { collectCoachAlerts } from "../frontend/src/utils/coachAlerts.js";
 
 /**
  * Owner decision (2026-09-21): a day of 3200 kcal or more on three meals makes very large plates,
- * so the plan adds a fourth meal by itself and tells the coach why. Two meals (a fasting choice)
- * and four or more meals are left as the client chose.
+ * so the plan adds a fourth meal by itself and tells the coach why. Since 2026-09-22 two meals at
+ * 3200+ kcal do too; four or more meals are left as the client chose.
  */
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const CATALOG = JSON.parse(fs.readFileSync(path.join(ROOT, "data/catalogs/core-global-food-batch-v1.json"), "utf8"));
@@ -55,11 +55,13 @@ test("a normal day on three meals stays three meals with no note", () => {
   assert.equal(targets.meal_count_note_ar, null);
 });
 
-test("two meals (a fasting choice) are kept; the coach is only advised", () => {
+// Changed 2026-09-22: two meals at 3200+ kcal made plates of 2300+ kcal; they now become four too
+// (test/two-meals-never-make-giant-plates.test.js).
+test("two meals at 3200+ kcal become four meals, with the coach told why", () => {
   const targets = build({ meals: "2_meals" }).nutrition_program.targets;
   assert.ok(targets.target_calories >= 3200, "precondition: a high-calorie day");
-  assert.equal(targets.meals_count, 2);
-  assert.match(targets.meal_count_note_ar, /4 أو 5 وجبات/);
+  assert.equal(targets.meals_count, 4);
+  assert.match(targets.meal_count_note_ar, /وجبتين/);
 });
 
 test("four meals chosen by the client are kept with no note", () => {
