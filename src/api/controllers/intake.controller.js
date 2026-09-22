@@ -6,7 +6,7 @@ import { evaluateIntake } from "z-coaching-intake-decision-engine";
 import { adaptIntakePayloadToCanonicalEngine } from "../../intake-decision-engine/adapters/intake-adapter.js";
 import { IntakeValidationError } from "../../intake-decision-engine/validation/intake-validation-error.js";
 import { buildMasterEngineV2 } from "../../../src/master-engine-v2/index.js";
-import { resolveIntakeMedicalReview, MEDICAL_REVIEW_CONFIRMATION_REQUIRED } from "./program.controller.js";
+import { resolveIntakeMedicalReview, MEDICAL_REVIEW_CONFIRMATION_REQUIRED, resolveCountryFromPhone } from "./program.controller.js";
 import { User, Program, IntakeSubmission } from "../models/index.js";
 import { startCycleOnPublish } from "../services/trainingCycleService.js";
 import { encryptMedicalData, decryptMedicalData } from "../../utils/crypto.js";
@@ -517,7 +517,8 @@ export const generateDraftFromIntake = async (req, res) => {
     const catalog = await loadFoodCatalog();
 
     const rawProgram = buildMasterEngineV2({
-      intake: intakePayload,
+      // The client's country (from the phone number) lists local foods first in the swaps.
+      intake: { ...intakePayload, client_country: resolveCountryFromPhone(submission.user?.phone_number) },
       evaluationContext,
       nutritionFoodCatalog: catalog,
       options: {}

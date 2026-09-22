@@ -1096,6 +1096,25 @@ export const FOOD_SWAP_DATABASE = Object.freeze({
  * Evaluates whether a food code is clinically safe given the client's allergen, intolerance,
  * and clinical context (gout, legumes allergy, favism, celiac/gluten, dairy, eggs, etc.).
  */
+// Foods most clients of the other region do not know or buy. They stay in the swap lists, after the
+// local ones, for a client whose country is known (client_country, from the phone number).
+const GULF_FOODS = new Set(["HAMOUR_FISH", "KANAAD_KINGFISH", "CAMEL_MEAT_LEAN", "TAMEES_BREAD_WHOLEWHEAT", "SAJ_BREAD_WHOLEWHEAT", "KABSA_SPICED_RICE"]);
+const EGYPTIAN_FOODS = new Set(["BOURI_FISH", "BALADI_BREAD", "EGYPTIAN_RICE", "FREEKEH_COOKED"]);
+const GULF_COUNTRIES = new Set(["SA", "AE", "KW", "QA", "BH", "OM"]);
+
+/** 1 for a food of the other region than the client's country, else 0 (unknown country: 0). */
+export function foreignFoodRank(code, country) {
+  if (country === "EG") return GULF_FOODS.has(code) ? 1 : 0;
+  if (GULF_COUNTRIES.has(country)) return EGYPTIAN_FOODS.has(code) ? 1 : 0;
+  return 0;
+}
+
+/** Local foods first, the rest in their order (stable). */
+function orderByCountry(swaps, country) {
+  if (!country) return swaps;
+  return [...swaps].sort((a, b) => foreignFoodRank(a.food_code, country) - foreignFoodRank(b.food_code, country));
+}
+
 export function isFoodClinicallySafe(foodCode, allergenContext = {}) {
   const food = FOOD_SWAP_DATABASE[foodCode];
   if (!food) return false;
@@ -1419,7 +1438,7 @@ function buildSmartSwapCandidates(category, baseGrams, baseFoodCode, mealContext
     }
   }
 
-  return swaps;
+  return orderByCountry(swaps, allergenContext.country);
 }
 
 
@@ -2190,6 +2209,8 @@ export function buildAllergenContext(canonicalIntake = {}, rawIntake = {}) {
     isSesameExcluded,
     // Kidney disease with a high potassium result: potassium-rich foods leave the plan and swaps.
     isHighPotassium: kidneyPotassium(effectiveRaw, medical).status === "HIGH",
+    // The client's country (EG, SA, AE ...) when known: local foods first in the swap lists.
+    country: typeof effectiveRaw.client_country === "string" && effectiveRaw.client_country ? effectiveRaw.client_country.toUpperCase() : null,
     // Food codes of the foods the client does not like (intake form labels mapped in disliked-foods.js).
     dislikedFoodCodes: new Set([
       ...dislikedFoodCodes(nutrition.dislikedFoods),
@@ -4361,6 +4382,7 @@ export function enforceClinicalSafety(meals = [], allergenContext = {}) {
           swaps = buildSmartSwapCandidates(category, Number(item.portion_g) || 100, item.food_code, context, 0, allergenContext)
             .filter((swap) => swap?.food_code && known(swap.food_code) && !unsafe(swap.food_code))
             .sort((a, b) => (sharesSwapFamily(item.food_code, b.food_code) - sharesSwapFamily(item.food_code, a.food_code))
+              || (foreignFoodRank(a.food_code, allergenContext.country) - foreignFoodRank(b.food_code, allergenContext.country))
               || (Math.abs(a.calories_kcal - kcal) - Math.abs(b.calories_kcal - kcal)));
           chosen = pick(swaps);
         }
