@@ -141,7 +141,9 @@ const CONDITIONS_LABELS = {
   thyroid: 'اضطرابات الغدة الدرقية',
   gi_tract: 'قولون عصبي / ارتجاع مريء',
   hypertension: 'ضغط دم مرتفع',
-  gout: 'نقرس / يوريك أسيد مرتفع'
+  gout: 'نقرس / يوريك أسيد مرتفع',
+  asthma: 'ربو / حساسية صدر',
+  heart_condition: 'مرض في القلب (مشخص)'
 };
 
 const DIABETES_MAP = {
@@ -382,6 +384,7 @@ export default function IntakeAuditDetailModal({
               <FieldRow label="عملية سمنة سابقة" value={answers.medical_conditions?.bariatric?.is_operated} />
               <FieldRow label="سعة الوجبة (جرام)" value={answers.medical_conditions?.bariatric?.meal_capacity_grams} dictionary={BARIATRIC_CAPACITY_MAP} />
               <FieldRow label="متلازمة الإغراق (Dumping)" value={answers.medical_conditions?.bariatric?.dumping_syndrome} />
+              <FieldRow label="حامل" value={answers.female_pregnancy === 'PREGNANT'} />
               <FieldRow label="تكيس المبايض (PCOS)" value={answers.medical_conditions?.female_cases?.is_pcos} />
               <FieldRow label="مرضعة" value={answers.medical_conditions?.female_cases?.is_lactating} />
               <FieldRow label="ولادة حديثة" value={answers.medical_conditions?.female_cases?.is_postpartum} />

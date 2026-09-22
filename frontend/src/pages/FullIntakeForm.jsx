@@ -323,6 +323,22 @@ export default function FullIntakeForm() {
     }));
   };
 
+  // Women's cases in one question. Pregnancy goes to female_pregnancy (the engine's field), the rest to
+  // medical_conditions.female_cases; 'none' clears them. answered marks the question as done.
+  const toggleFemaleCase = (caseKey) => {
+    setFormData(prev => {
+      const med = prev.medical_conditions || {};
+      const cases = { is_pcos: false, is_lactating: false, is_postpartum: false, ...(med.female_cases || {}) };
+      if (caseKey === 'none') {
+        return { ...prev, female_pregnancy: null, medical_conditions: { ...med, female_cases: { is_pcos: false, is_lactating: false, is_postpartum: false, answered: true } } };
+      }
+      if (caseKey === 'pregnant') {
+        return { ...prev, female_pregnancy: prev.female_pregnancy === 'PREGNANT' ? null : 'PREGNANT', medical_conditions: { ...med, female_cases: { ...cases, answered: true } } };
+      }
+      return { ...prev, medical_conditions: { ...med, female_cases: { ...cases, [caseKey]: !cases[caseKey], answered: true } } };
+    });
+  };
+
   const toggleCondition = (conditionKey) => {
     setFormData(prev => {
       const med = prev.medical_conditions || {};
@@ -373,6 +389,11 @@ export default function FullIntakeForm() {
       setCurrentStep(1);
       return;
     }
+    if (formData.gender === 'female' && formData.medical_conditions?.female_cases?.answered !== true) {
+      alert('من فضلك جاوبي على سؤال الحالات الخاصة بالسيدات (حمل، رضاعة، ولادة حديثة، تكيس) في خطوة السجل الطبي.');
+      setCurrentStep(2);
+      return;
+    }
     if (!formData.training_logistics?.training_age) {
       alert('يرجى اختيار بقالك قد إيه بتتمرن حديد (في خطوة التدريب) علشان نحدد حجم التمرين المناسب ليك.');
       setCurrentStep(4);
@@ -391,7 +412,11 @@ export default function FullIntakeForm() {
         body: JSON.stringify({
           client_code: code,
           phone_number: phone,
-          answers: formData
+          answers: formData.gender === 'female' ? formData : {
+            ...formData,
+            female_pregnancy: null,
+            medical_conditions: { ...(formData.medical_conditions || {}), female_cases: { is_pcos: false, is_lactating: false, is_postpartum: false } }
+          }
         })
       });
 
@@ -1131,7 +1156,9 @@ export default function FullIntakeForm() {
                         { key: 'thyroid', label: 'اضطرابات الغدة الدرقية' },
                         { key: 'gi_tract', label: 'قولون عصبي / ارتجاع مريء' },
                         { key: 'hypertension', label: 'ضغط دم مرتفع' },
-                        { key: 'gout', label: 'نقرس / يوريك أسيد مرتفع' }
+                        { key: 'gout', label: 'نقرس / يوريك أسيد مرتفع' },
+                        { key: 'asthma', label: 'ربو / حساسية صدر' },
+                        { key: 'heart_condition', label: 'مرض في القلب (مشخص من دكتور)' }
                       ].map((c) => {
                         const isChecked = medSelected.includes(c.key);
                         return (
@@ -1224,6 +1251,53 @@ export default function FullIntakeForm() {
                 )}
               </>)}
               </div>
+
+              {/* Women's cases: pregnancy, breastfeeding, recent birth, PCOS */}
+              {gender === 'female' && (() => {
+                const cases = medConditions.female_cases || {};
+                const isOn = {
+                  pregnant: formData.female_pregnancy === 'PREGNANT',
+                  is_lactating: cases.is_lactating === true,
+                  is_postpartum: cases.is_postpartum === true,
+                  is_pcos: cases.is_pcos === true,
+                };
+                const noneOn = cases.answered === true && !Object.values(isOn).some(Boolean);
+                return (
+                  <div>
+                    <label style={{ display: 'block', fontSize: '13px', fontWeight: 800, color: '#0F172A', marginBottom: '10px' }}>
+                      حالات خاصة بالسيدات (اختاري كل اللي ينطبق عليكي):
+                    </label>
+                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
+                      {[
+                        { key: 'none', label: 'ولا حاجة من دول', on: noneOn },
+                        { key: 'pregnant', label: 'حامل', on: isOn.pregnant },
+                        { key: 'is_lactating', label: 'مرضعة', on: isOn.is_lactating },
+                        { key: 'is_postpartum', label: 'ولدت في آخر 6 شهور', on: isOn.is_postpartum },
+                        { key: 'is_pcos', label: 'تكيس مبايض', on: isOn.is_pcos },
+                      ].map((c) => (
+                        <button
+                          key={c.key}
+                          type="button"
+                          onClick={() => toggleFemaleCase(c.key)}
+                          style={{
+                            padding: '7px 14px',
+                            borderRadius: '20px',
+                            fontSize: '11.5px',
+                            fontWeight: 700,
+                            cursor: 'pointer',
+                            border: c.on ? '1px solid #0F172A' : '1px solid #CBD5E1',
+                            background: c.on ? '#0F172A' : '#FFFFFF',
+                            color: c.on ? '#FFFFFF' : '#475569',
+                            transition: 'all 0.15s ease'
+                          }}
+                        >
+                          {c.label}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                );
+              })()}
 
               {/* Injuries Matrix */}
               <div>
