@@ -9,7 +9,7 @@ Everything below is merged into `main` and pushed to GitHub (`8489mx/z-coaching-
 
 1. Read `AI_RULES.md` (how any AI tool must work and prove its work), `CLAUDE.md` (standing iron rules) and this file. Old docs are in `docs/archive/` (history only).
 2. Run the full check and confirm the baseline before touching anything:
-   - `npm.cmd test` (Windows) — expected: node:test **1914/1914 pass**, vitest **47/47 pass**, lint 0.
+   - `npm.cmd test` (Windows) — expected: node:test **1929/1929 pass**, vitest **47/47 pass**, lint 0.
    - In a git worktree: link `node_modules` and `frontend/node_modules` to `D:/zcc`'s (junctions), copy `.env` (ignored), and build the frontend once — `test/hostinger-deployment-readiness.test.js` fails without `frontend/dist`.
    - `cd frontend && npm.cmd run build` — expected: builds.
    - Tests need the env: they load `D:/zcc/.env` (never print its values). Scripts: `node --env-file=.env <script>`.
@@ -195,7 +195,16 @@ Owner decision: **no Flutter work until the engine has no error that can stop a 
 - `e4b3f05` The form never asked women about pregnancy, breastfeeding, a recent birth or PCOS (the engine handled them; every woman arrived as not pregnant). One women-only multi-choice question ("none" is one tap), required before submitting; a man's answers never carry it. Asthma and heart disease added to the conditions list. Coach intake view shows them.
 - `23eea5b` Daily protein variety: one protein food in at most 2 meals a day (`diversifyDailyProteins`, uses the item's own equivalent, safe, budget-fitting swaps with no oil change; the original stays first in the swaps). The safety pass no longer puts the same food twice on one plate.
 - Verification: 1914/1914 + 47/47, lint 0, build OK, stress 0 violations, journeys 6/6 no issues, 10-client simulation 100%. The intake page loads in the browser (5174); step 2 not viewed because it needs the health-data consent, which only the owner ticks.
-- Open from this round: (1) swap lists put Gulf fish (hamour, kingfish) before Egyptian fish - an Egyptian client who dislikes tuna gets hamour; ordering by country is not done. (2) Disliked vegetables / olive oil are not removed (see above). (3) The web client's swap window (frontend foodSwapEngine) does not yet hide disliked foods; the plan and the app's live swaps do. (4) Pregnancy energy uses the 2nd-trimester surplus (+340) for every pregnancy (trimester is not asked); medical review applies.
+- Open items of this round were all done in 3l.
+
+## 3l. Twelfth round (2026-09-22) — owner: "do everything we still need" — merged + pushed
+
+- `2da02e5` **Bug: the web client's swap window listed the same food several times** (kingfish 3x, tilapia 4x: alias keys in the web food list). `listEquivalentFoodSwaps` keeps each food once (code and Arabic name), never the current food.
+- `bf5fd0e` The web swap window leaves out disliked foods: `deriveClinicalConstraints` sends `disliked_foods`; `frontend/src/utils/dislikedFoods.js` maps labels to web codes; `clinicalProfile.disliked_food_codes` is refused by `isFoodClinicallySafe`.
+- `abccfad` Swap lists put local foods first by the client's country (generate-draft passes `client_country` from the phone): Egypt -> Gulf fish/camel/tamees/saj/kabsa last; Gulf -> bouri/baladi/Egyptian rice/freekeh last. Nothing removed; unknown country unchanged. Not applied to the app's live swaps or the web window (they order by closest value).
+- `5d6f1a4` Disliked vegetables leave the vegetable plates' names ("(zucchini, broccoli, carrots)" -> "(carrots)"), disliked olive oil becomes "vegetable oil (canola or sunflower)" - same grams and energy (`applyDislikedNames`).
+- `a859ee5` Pregnancy energy by trimester (IOM 2005): +0 / +340 / +450 kcal; the form asks the month range only when pregnant (required); not given keeps +340. `intake-asks-women-cases-asthma-heart.test.js` source check updated to the new toggle (same behavior).
+- Verification: 1929/1929 + 47/47, lint 0, build OK, stress 0 violations, journeys 6/6, simulation 100%.
 
 ## 4. Open work (in priority order)
 
