@@ -9,7 +9,7 @@ Everything below is merged into `main` and pushed to GitHub (`8489mx/z-coaching-
 
 1. Read `CLAUDE.md` (standing iron rules) and this file.
 2. Run the full check and confirm the baseline before touching anything:
-   - `npm.cmd test` (Windows) — expected: node:test **1891/1891 pass**, vitest **47/47 pass**, lint 0.
+   - `npm.cmd test` (Windows) — expected: node:test **1898/1898 pass**, vitest **47/47 pass**, lint 0.
    - In a git worktree: link `node_modules` and `frontend/node_modules` to `D:/zcc`'s (junctions), copy `.env` (ignored), and build the frontend once — `test/hostinger-deployment-readiness.test.js` fails without `frontend/dist`.
    - `cd frontend && npm.cmd run build` — expected: builds.
    - Tests need the env: they load `D:/zcc/.env` (never print its values). Scripts: `node --env-file=.env <script>`.
@@ -171,6 +171,16 @@ Owner decision: **no Flutter work until the engine has no error that can stop a 
 - `4a8ed0b` **Kidney potassium result**: the form asks (when kidney disease is selected, optional) for the latest serum potassium (`medical_conditions.renal.potassium_mmol_l`); coach view shows it. `kidneyPotassium()`: HIGH > 5.0 mmol/L -> `HIGH_POTASSIUM_FOODS` (avocado, potatoes, sweet potato, banana, dates, orange) out of the plan and every swap (plan, split, mobile via `buildAllergenContext.isHighPotassium`, web via `deriveClinicalConstraints.is_high_potassium`); NORMAL -> no limit; UNKNOWN -> as before. KDIGO 2024 practice points 3.11.5.1-2.
 - Verification: 1891/1891 + 47/47, lint 0, build OK, stress 306 clients 0 violations, journeys 6/6 no issues, 10-client simulation 100%, training audit: no muscle under 6 or over 22 weekly sets, every muscle twice a week from 3 days.
 
+## 3i. Ninth round (2026-09-22) — owner: "go, do the right thing" (add the missing foods) — merged + pushed
+
+- `9bdce87` Split fold: a small leftover part never takes another part more than 10 g past its limit (a leftover of oats had pushed dates to 112 g, limit 80); a crumb is a part under 40 g AND under 10 g carbohydrate (35 g oats, half a guava are real portions).
+- `4ffba9b` **Cooked quinoa** (USDA 120 kcal / 4.4 P / 21.3 C / 1.9 F per 100 g; low GI; gluten-free) joins the plan and mobile lists under the web code `COOKED_QUINOA` (savory starch; breakfast/lunch/dinner swap lists). Carb swaps with 4+ g extra fat now leave that much of the meal's oil out, like protein swaps. Extreme case breakfast: potatoes 245 g flagged -> potatoes 200 g + quinoa 284 g, no warning.
+- `ac13787` A split plate's parts carry their own food's macros (quinoa as quinoa, pasta as pasta) and a part with extra fat takes its share out of the meal's oil. `meal-portion-rebalance-merge.test.js` allows the protein item 3% and total fat 2 g (the merge now meets the targets from the real values).
+- `8baf49b` **Bug: the web client's meal page and the coach editor showed every meal as 500 kcal / 40 / 50 / 15** (they read `actual_macros.calories/protein/carbs/fats`, the engine writes `calories_kcal/protein_g/carb_g/fat_g`; the editor's day sum too). Totals now come from the items (`frontend/src/utils/mealTotals.js`). The Flutter app already sums items.
+- `33e4b87` The engine's stored meal totals (`actual_macros`) are recomputed from the items after the last steps (`refreshActualMacros`, first plan and check-in merge) - they were summed before split/fat/safety steps (1211 stored vs 1230 in items).
+- `991aa92` Skim and lactose-free milk are mobile registry foods of their own (they were read as laban): laban and the milks swap for each other within the value rule. Tuna swaps since `1a34160`. The only food with no equivalent swap left is lupini (high protein, low carbohydrate - roasted chickpeas and halabessa are mostly carbohydrate).
+- Verification: 1898/1898 + 47/47, lint 0, build OK, stress 306 clients 0 violations, journeys 6/6 no issues, 10-client simulation 100%, oil audit: meals over 20 g of oil 29 -> 13 clients, over 30 g 1, over 40 g 0; swap audit: 46 pair types, the 7 over 25% before oil all carry an oil instruction.
+
 ## 4. Open work (in priority order)
 
 ### 4.1 Goal choice and plain names — DONE in `653804c` (kept below for context)
@@ -188,8 +198,8 @@ Suggested approach (confirm with owner first, show proposed Arabic labels):
 1. **Look at the new screens in a real browser** (needs the backend restarted on the latest code + the owner signed in and the health-data consent ticked by the owner): coach editor notes (balance, potassium, kidney energy, oil), cardio picker, exercise swap warning, web client swap windows (food: same taste group/close value/protein powder note), intake training step (training age question) and the potassium field.
 2. **Flutter app** — on hold by the owner's decision until the engine is clean. When resumed (needs the Flutter SDK + a device): display `item.note` (protein powder note), show the swap-food 409 `error`, verify swaps on a device.
 3. **Production data audit**: must run on the VPS itself (see 3d): `node --env-file=.env scripts/audit-grown-cycles.mjs` (read-only). The owner is not technical — walk them through it or get server access. Repair only with backup + plan + owner approval.
-4. **Extreme case** (130 kg, diabetes + kidney + liver, coeliac + nuts): balanced (3254 kcal, fat 35%, oil ~20 g a meal); carbohydrate 52% (kidney cap) with the coach note; breakfast potatoes 245-260 g flagged (the diabetic 200 g limit leaves no other gluten-free breakfast carbohydrate in the food list; adding one - e.g. quinoa or certified gluten-free oats - to all three food lists would remove the flag). Needs the doctor anyway.
-5. **Swaps with no equivalent** (mobile): tuna (leanest protein), laban and milks (sugar vs protein), lupini (only snack of its kind) - the client keeps the food; adding foods of the same kind (sardine/mackerel, skyr, roasted chickpeas) to the food lists would give them swaps.
+4. **Extreme case** (130 kg, diabetes + kidney + liver, coeliac + nuts): balanced (3254 kcal, fat 35%, oil 17-24 g a meal), no portion flags (quinoa, 3i); carbohydrate 52% (kidney cap) with the coach note. Needs the doctor anyway.
+5. **Swaps with no equivalent**: lupini only (intentional: nothing of the same kind and value). Protein powder has no swap by the owner's rule.
 6. Potassium: DONE (`4a8ed0b`).
 7. **Training volume by experience**: DONE (`5df9d52`).
 8. Branch `agx/full-simulation` must never be merged.
