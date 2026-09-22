@@ -109,6 +109,8 @@ export const PregnancyStatus = Object.freeze({
   PREGNANT: "PREGNANT",
   POSSIBLY_PREGNANT: "POSSIBLY_PREGNANT",
   BREASTFEEDING: "BREASTFEEDING",
+  // Gave birth within the last 6 months and not breastfeeding (intake form female_cases.is_postpartum).
+  POSTPARTUM: "POSTPARTUM",
   UNKNOWN: "UNKNOWN",
 });
 

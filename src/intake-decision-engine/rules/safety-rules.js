@@ -128,11 +128,26 @@ export function evaluateDangerousSymptoms(input) {
 // Organ conditions whose nutrition prescription depends on a stage the intake does not collect
 // (CKD stage / dialysis, liver disease type): the plan always needs medical review before approval.
 const MANDATORY_MEDICAL_REVIEW_CONDITIONS = new Set(["KIDNEY_CONDITION", "LIVER_CONDITION"]);
+// Known cardiovascular disease: medical clearance before exercise (ACSM preparticipation screening,
+// Riebe et al. 2015).
+const CLEARANCE_BEFORE_EXERCISE_CONDITIONS = new Set(["HEART_CONDITION"]);
 
 export function evaluateMedicalConditions(input) {
   const result = emptyRuleResult();
   input.medical.conditions.forEach((condition, index) => {
     const sourcePath = `medical.conditions[${index}]`;
+    if (CLEARANCE_BEFORE_EXERCISE_CONDITIONS.has(condition.conditionCode)) {
+      result.statusCandidates.push(statusCandidate(PlanStatus.MEDICAL_REVIEW_REQUIRED, "HEART_CONDITION_REQUIRES_CLEARANCE"));
+      result.reviewFlags.push(
+        reviewFlag(
+          "HEART_CONDITION_REQUIRES_CLEARANCE",
+          Scope.GLOBAL,
+          ReviewLevel.MEDICAL,
+          "Diagnosed heart condition: the treating physician must clear exercise intensity before the plan is approved.",
+          `${sourcePath}.conditionCode`,
+        ),
+      );
+    }
     if (MANDATORY_MEDICAL_REVIEW_CONDITIONS.has(condition.conditionCode)) {
       result.statusCandidates.push(statusCandidate(PlanStatus.MEDICAL_REVIEW_REQUIRED, "ORGAN_CONDITION_REQUIRES_MEDICAL_REVIEW"));
       result.reviewFlags.push(
@@ -252,6 +267,19 @@ export function evaluatePregnancySafety(input) {
         "PREGNANCY_OR_BREASTFEEDING_SAFETY_GATE",
         Scope.GLOBAL,
         "The conservative V1 policy requires medical review for this state.",
+      ),
+    );
+  } else if (status === PregnancyStatus.POSTPARTUM) {
+    // Return to exercise after birth is individual (ACOG Committee Opinion 804, 2020): caesarean,
+    // pelvic floor and abdominal separation need the obstetrician's clearance first.
+    result.statusCandidates.push(statusCandidate(PlanStatus.MEDICAL_REVIEW_REQUIRED, "POSTPARTUM_CLEARANCE"));
+    result.reviewFlags.push(
+      reviewFlag(
+        "POSTPARTUM_CLEARANCE",
+        Scope.GLOBAL,
+        ReviewLevel.MEDICAL,
+        "Gave birth within the last 6 months: confirm the obstetrician cleared exercise before approving the plan.",
+        "medical.pregnancyStatus",
       ),
     );
   } else if (status === PregnancyStatus.UNKNOWN) {

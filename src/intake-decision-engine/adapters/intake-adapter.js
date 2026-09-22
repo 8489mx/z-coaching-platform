@@ -367,7 +367,7 @@ export function adaptIntakePayloadToCanonicalEngine(raw) {
     intake.medical = {
       conditions: conds,
       dangerousSymptomsList: dangerousList,
-      pregnancyStatus: intake.female_pregnancy || (intake.medical_conditions?.female_cases?.is_lactating ? 'BREASTFEEDING' : (intake.medical_conditions?.female_cases?.is_postpartum ? 'POSTPARTUM_LESS_THAN_12_MONTHS' : 'NOT_PREGNANT')),
+      pregnancyStatus: intake.female_pregnancy || (intake.medical_conditions?.female_cases?.is_lactating ? 'BREASTFEEDING' : (intake.medical_conditions?.female_cases?.is_postpartum ? 'POSTPARTUM' : 'NOT_PREGNANT')),
       menstrualStatus: intake.female_menstrual || undefined,
       medications: intake.current_meds_supplements_list || []
     };
@@ -727,7 +727,7 @@ export function adaptIntakePayloadToCanonicalEngine(raw) {
       : (["NONE", "PAST", "ACTIVE", "SUSPECTED", "UNKNOWN"].includes(intake.eating_disorder_history)
         ? intake.eating_disorder_history
         : "NONE"),
-    pregnancyStatus: ["NOT_PREGNANT", "PREGNANT", "POSTPARTUM_LESS_THAN_12_MONTHS", "BREASTFEEDING"].includes(medical.pregnancyStatus) ? medical.pregnancyStatus : "NOT_PREGNANT",
+    pregnancyStatus: ["NOT_PREGNANT", "PREGNANT", "POSTPARTUM", "BREASTFEEDING"].includes(medical.pregnancyStatus) ? medical.pregnancyStatus : "NOT_PREGNANT",
     menstrualStatus: ["REGULAR", "IRREGULAR", "ABSENT", "NOT_APPLICABLE"].includes(medical.menstrualStatus) ? medical.menstrualStatus : (canonicalPersonal.sex === "FEMALE" ? "REGULAR" : "NOT_APPLICABLE"),
     unclassifiedText: unclassifiedConditions
   };
