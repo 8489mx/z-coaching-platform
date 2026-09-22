@@ -20,7 +20,8 @@ test("the form asks women about pregnancy, breastfeeding, a recent birth and PCO
   for (const key of ["'none'", "'pregnant'", "'is_lactating'", "'is_postpartum'", "'is_pcos'"]) {
     assert.ok(FORM.includes(`key: ${key}, label:`), `${key} option`);
   }
-  assert.match(FORM, /female_pregnancy: prev\.female_pregnancy === 'PREGNANT' \? null : 'PREGNANT'/);
+  assert.match(FORM, /const pregnant = prev\.female_pregnancy !== 'PREGNANT';/);
+  assert.match(FORM, /female_pregnancy: pregnant \? 'PREGNANT' : null/);
 });
 
 test("a woman must answer it before submitting, and a man never sends it", () => {

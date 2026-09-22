@@ -391,10 +391,17 @@ export function calculateUniversalNutritionTargets(canonicalIntake, evaluationCo
     rawMedical.is_pregnant === true;
 
   if (isPregnant) {
-    const surplus = CLINICAL_GUIDELINES.PREGNANCY?.SURPLUS_TRIMESTER_2_KCAL || 340;
+    // By trimester from the intake (pregnancy_trimester 1/2/3); not given: the second-trimester value.
+    const trimester = Number(effectiveRaw?.pregnancy_trimester);
+    const P = CLINICAL_GUIDELINES.PREGNANCY;
+    const surplus = trimester === 1 ? P.SURPLUS_TRIMESTER_1_KCAL
+      : trimester === 3 ? P.SURPLUS_TRIMESTER_3_KCAL
+        : P.SURPLUS_TRIMESTER_2_KCAL;
     targetCalories = Math.round(tdee + surplus);
     proteinPerKg = Math.max(1.8, proteinPerKg);
-    calorieAdjustmentDesc = "خطة تغذية داعمة للحمل (+340 سعرة حرارية فائض آمن ومدروس لنمو الجنين وصحة الأم بدون أي عجز حراري)";
+    calorieAdjustmentDesc = surplus > 0
+      ? `خطة تغذية داعمة للحمل (+${surplus} سعرة فوق الاحتياج بدون أي عجز حراري)`
+      : "خطة تغذية داعمة للحمل (سعرات الاحتياج بدون عجز ولا زيادة في أول 3 شهور)";
   }
 
   // Lactation Energy Adjustment (+450 kcal to protect milk supply)

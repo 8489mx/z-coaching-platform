@@ -191,6 +191,8 @@ export const CLINICAL_GUIDELINES = Object.freeze({
      * Severe calorie deficits, ketogenic diets, and prolonged fasting are strictly contraindicated.
      */
     MIN_CARBS_GRAMS: 175,
+    // IOM (2005) estimated energy requirement in pregnancy: +0 / +340 / +452 kcal a day by trimester.
+    SURPLUS_TRIMESTER_1_KCAL: 0,
     SURPLUS_TRIMESTER_2_KCAL: 340,
     SURPLUS_TRIMESTER_3_KCAL: 450,
     BANNED_FRAMEWORKS: Object.freeze(["TARGETED_LOW_CARB", "INTERMITTENT_FASTING"]),

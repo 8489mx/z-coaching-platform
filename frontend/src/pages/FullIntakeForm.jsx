@@ -330,10 +330,11 @@ export default function FullIntakeForm() {
       const med = prev.medical_conditions || {};
       const cases = { is_pcos: false, is_lactating: false, is_postpartum: false, ...(med.female_cases || {}) };
       if (caseKey === 'none') {
-        return { ...prev, female_pregnancy: null, medical_conditions: { ...med, female_cases: { is_pcos: false, is_lactating: false, is_postpartum: false, answered: true } } };
+        return { ...prev, female_pregnancy: null, pregnancy_trimester: null, medical_conditions: { ...med, female_cases: { is_pcos: false, is_lactating: false, is_postpartum: false, answered: true } } };
       }
       if (caseKey === 'pregnant') {
-        return { ...prev, female_pregnancy: prev.female_pregnancy === 'PREGNANT' ? null : 'PREGNANT', medical_conditions: { ...med, female_cases: { ...cases, answered: true } } };
+        const pregnant = prev.female_pregnancy !== 'PREGNANT';
+        return { ...prev, female_pregnancy: pregnant ? 'PREGNANT' : null, pregnancy_trimester: pregnant ? prev.pregnancy_trimester || null : null, medical_conditions: { ...med, female_cases: { ...cases, answered: true } } };
       }
       return { ...prev, medical_conditions: { ...med, female_cases: { ...cases, [caseKey]: !cases[caseKey], answered: true } } };
     });
@@ -394,6 +395,11 @@ export default function FullIntakeForm() {
       setCurrentStep(2);
       return;
     }
+    if (formData.gender === 'female' && formData.female_pregnancy === 'PREGNANT' && !formData.pregnancy_trimester) {
+      alert('من فضلك اختاري انتي في شهر كام من الحمل (في خطوة السجل الطبي) علشان نحسب السعرات المناسبة ليكي وللجنين.');
+      setCurrentStep(2);
+      return;
+    }
     if (!formData.training_logistics?.training_age) {
       alert('يرجى اختيار بقالك قد إيه بتتمرن حديد (في خطوة التدريب) علشان نحدد حجم التمرين المناسب ليك.');
       setCurrentStep(4);
@@ -415,6 +421,7 @@ export default function FullIntakeForm() {
           answers: formData.gender === 'female' ? formData : {
             ...formData,
             female_pregnancy: null,
+            pregnancy_trimester: null,
             medical_conditions: { ...(formData.medical_conditions || {}), female_cases: { is_pcos: false, is_lactating: false, is_postpartum: false } }
           }
         })
@@ -1295,6 +1302,42 @@ export default function FullIntakeForm() {
                         </button>
                       ))}
                     </div>
+                    {formData.female_pregnancy === 'PREGNANT' && (
+                      <div style={{ marginTop: '12px' }}>
+                        <label style={{ display: 'block', fontSize: '12px', fontWeight: 800, color: '#0F172A', marginBottom: '8px' }}>
+                          انتي في شهر كام من الحمل؟
+                        </label>
+                        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
+                          {[
+                            { patch: { pregnancy_trimester: '1' }, label: 'من الشهر 1 للشهر 3' },
+                            { patch: { pregnancy_trimester: '2' }, label: 'من الشهر 4 للشهر 6' },
+                            { patch: { pregnancy_trimester: '3' }, label: 'من الشهر 7 للشهر 9' },
+                          ].map((t) => {
+                            const on = formData.pregnancy_trimester === t.patch.pregnancy_trimester;
+                            return (
+                              <button
+                                key={t.label}
+                                type="button"
+                                onClick={() => setFormData(p => ({ ...p, ...t.patch }))}
+                                style={{
+                                  padding: '7px 14px',
+                                  borderRadius: '20px',
+                                  fontSize: '11.5px',
+                                  fontWeight: 700,
+                                  cursor: 'pointer',
+                                  border: on ? '1px solid #0F172A' : '1px solid #CBD5E1',
+                                  background: on ? '#0F172A' : '#FFFFFF',
+                                  color: on ? '#FFFFFF' : '#475569',
+                                  transition: 'all 0.15s ease'
+                                }}
+                              >
+                                {t.label}
+                              </button>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    )}
                   </div>
                 );
               })()}
