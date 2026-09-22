@@ -9,7 +9,7 @@ Everything below is merged into `main` and pushed to GitHub (`8489mx/z-coaching-
 
 1. Read `AI_RULES.md` (how any AI tool must work and prove its work), `CLAUDE.md` (standing iron rules) and this file. Old docs are in `docs/archive/` (history only).
 2. Run the full check and confirm the baseline before touching anything:
-   - `npm.cmd test` (Windows) — expected: node:test **1929/1929 pass**, vitest **47/47 pass**, lint 0.
+   - `npm.cmd test` (Windows) — expected: node:test **1944/1944 pass**, vitest **47/47 pass**, lint 0.
    - In a git worktree: link `node_modules` and `frontend/node_modules` to `D:/zcc`'s (junctions), copy `.env` (ignored), and build the frontend once — `test/hostinger-deployment-readiness.test.js` fails without `frontend/dist`.
    - `cd frontend && npm.cmd run build` — expected: builds.
    - Tests need the env: they load `D:/zcc/.env` (never print its values). Scripts: `node --env-file=.env <script>`.
@@ -206,6 +206,17 @@ Owner decision: **no Flutter work until the engine has no error that can stop a 
 - `a859ee5` Pregnancy energy by trimester (IOM 2005): +0 / +340 / +450 kcal; the form asks the month range only when pregnant (required); not given keeps +340. `intake-asks-women-cases-asthma-heart.test.js` source check updated to the new toggle (same behavior).
 - Verification: 1929/1929 + 47/47, lint 0, build OK, stress 0 violations, journeys 6/6, simulation 100%.
 
+## 3m. Thirteenth round (2026-09-22) — Antigravity's review, each point checked by running things first — merged + pushed
+
+- `d69811c` **Security: a client code alone wrote a client's medical intake** (codes are sequential): save-draft/submit found the client by code only - a wrong phone got 200/201 in the new test - and submit returned the client record with the phone, which then opened client-draft. Writes now need the phone on file (`mayWriteIntake`, 403 `CLIENT_PHONE_MISMATCH`); submit returns no user.
+- `86b6879` **Security: GET exercises/foods/packages/intake-schema under /api/v1/admin-settings (and /api/v1/admin) were public.** Now requireAuth + requireAdmin (coach/admin) like the rest; only coach/admin pages read them.
+- `b9cc350` Four empty catches in the server (exercise swap catalog read, admin catalog files) now log; guard test: no empty catch in `src/` (csrfProtection allowed). Antigravity said plans could lose their exercises - not so: that read only feeds exercise swaps.
+- `f2f1e63` Two meals at 3200+ kcal become four (a 110 kg bulker on two meals had plates of 2342 kcal / 330 g carbs); check-in note too. The form offers 3+ meals; two come from older answers or the API. Old tests `high-calorie-day-gets-a-fourth-meal` and `checkin-meal-count-note` changed on purpose.
+- `cbc0e7e` The 55 kcal/kg check-in ceiling uses the plan's reference weight when the protein does (high body fat); lean plans and old plans unchanged.
+- `9c0039e` Public intake routes rate limited: wrong code/phone pairs count, five in 15 minutes -> 429.
+- Checked and not changed: backend imports 12 files from `frontend/src` (intentional single source, guarded by tests - a shared/ folder is a large refactor); main web bundle 722 kB (197 kB gzip) - client pages stay in it by an earlier decision; lupini has no swap by design (and leaves the plan when disliked); production audit needs the VPS (4.3).
+- Verification: 1944/1944 + 47/47, lint 0, build OK, stress 0 violations, journeys 6/6, simulation 100%.
+
 ## 4. Open work (in priority order)
 
 ### 4.1 Goal choice and plain names — DONE in `653804c` (kept below for context)
@@ -221,7 +232,7 @@ Suggested approach (confirm with owner first, show proposed Arabic labels):
 
 ### 4.0 WHAT IS STILL OPEN (read this list first)
 1. **Look at the new screens in a real browser** (needs the backend restarted on the latest code + the owner signed in and the health-data consent ticked by the owner): coach editor notes (balance, potassium, kidney energy, oil), cardio picker, exercise swap warning, web client swap windows (food: same taste group/close value/protein powder note), intake training step (training age question) and the potassium field.
-2. **Flutter app** — on hold by the owner's decision until the engine is clean. When resumed (needs the Flutter SDK + a device): display `item.note` (protein powder note), show the swap-food 409 `error`, verify swaps on a device.
+2. **Flutter app** — on hold by the owner's decision until the engine is clean. When resumed (needs the Flutter SDK + a device): display `item.note` (protein powder note), show the swap-food 409 `error`, verify swaps on a device. Also (verified 2026-09-22 in the Dart source): `checkin_service.dart:41` empty catch - an unreadable photo sends the check-in without it silently; `workout_service.dart:65` - any non-success reply (a server 500 too) goes to the offline queue as if the network failed; empty catches also in `local_storage.dart` 82/106, `auth_service.dart` 83, `notification_service.dart` 18, `nutrition_screen.dart` 398.
 3. **Production data audit**: must run on the VPS itself (see 3d): `node --env-file=.env scripts/audit-grown-cycles.mjs` (read-only). The owner is not technical — walk them through it or get server access. Repair only with backup + plan + owner approval.
 4. **Extreme case** (130 kg, diabetes + kidney + liver, coeliac + nuts): balanced (3254 kcal, fat 35%, oil 17-24 g a meal), no portion flags (quinoa, 3i); carbohydrate 52% (kidney cap) with the coach note. Needs the doctor anyway.
 5. **Swaps with no equivalent**: lupini only (intentional: nothing of the same kind and value). Protein powder has no swap by the owner's rule.
