@@ -9,7 +9,7 @@ Everything below is merged into `main` and pushed to GitHub (`8489mx/z-coaching-
 
 1. Read `CLAUDE.md` (standing iron rules) and this file.
 2. Run the full check and confirm the baseline before touching anything:
-   - `npm.cmd test` (Windows) — expected: node:test **1883/1883 pass**, vitest **47/47 pass**, lint 0.
+   - `npm.cmd test` (Windows) — expected: node:test **1891/1891 pass**, vitest **47/47 pass**, lint 0.
    - In a git worktree: link `node_modules` and `frontend/node_modules` to `D:/zcc`'s (junctions), copy `.env` (ignored), and build the frontend once — `test/hostinger-deployment-readiness.test.js` fails without `frontend/dist`.
    - `cd frontend && npm.cmd run build` — expected: builds.
    - Tests need the env: they load `D:/zcc/.env` (never print its values). Scripts: `node --env-file=.env <script>`.
@@ -165,6 +165,12 @@ Owner decision: **no Flutter work until the engine has no error that can stop a 
 - Audit also found: no major muscle under 6 or over 22 weekly sets, every muscle trained at least twice a week from 3 days, 12-30 sets a session. Volume is the same for beginners and advanced (see 4.0 item 7).
 - Verification: 1883/1883 + 47/47, lint 0, build OK, stress 306 clients 0 violations (with the new fat and carb checks), journeys 6/6 no issues (with the new fat check), 10-client simulation 100%.
 
+## 3h. Eighth round (2026-09-22) — owner: "a never-trained beginner is not a 6-month or 2-year lifter; separate every client well" + "fix the rest" — merged + pushed
+
+- `5df9d52` **Training age in six steps** (form: "بقالك قد إيه بتتمرن حديد بانتظام؟", required, no default; `training_logistics.training_age`: never / under_6_months / 6_12_months / 1_2_years / 2_4_years / over_4_years; `experience_level` follows). Engine `src/training-engine-v2/training-age.js` (ACSM 2009 progression models; Schoenfeld 2017; Baz-Valle 2022; Zourdos 2016): never -> NEVER_TRAINED (the decision engine's intro week), 2 sets an exercise, no added sets in weeks 3-4, RIR >= 3, no focus-muscle extras; under 6 months -> isolation 2 sets; 6-12 months and 1-2 years -> unchanged; 2-4 and 4+ years -> 4 sets on heavy compounds. Older intakes map beginner -> 6-12 months, intermediate -> 1-2 years, advanced -> 4+ years: 41 of 45 reference plans identical; the 4 changed are advanced full body (3 -> 4 sets on heavy compounds, the templates had fixed the dose). Validator accepts `training.trainingAge`; coach intake view shows it. The form's training step was not opened in the browser (it sits behind the health-data consent, which Claude does not tick).
+- `4a8ed0b` **Kidney potassium result**: the form asks (when kidney disease is selected, optional) for the latest serum potassium (`medical_conditions.renal.potassium_mmol_l`); coach view shows it. `kidneyPotassium()`: HIGH > 5.0 mmol/L -> `HIGH_POTASSIUM_FOODS` (avocado, potatoes, sweet potato, banana, dates, orange) out of the plan and every swap (plan, split, mobile via `buildAllergenContext.isHighPotassium`, web via `deriveClinicalConstraints.is_high_potassium`); NORMAL -> no limit; UNKNOWN -> as before. KDIGO 2024 practice points 3.11.5.1-2.
+- Verification: 1891/1891 + 47/47, lint 0, build OK, stress 306 clients 0 violations, journeys 6/6 no issues, 10-client simulation 100%, training audit: no muscle under 6 or over 22 weekly sets, every muscle twice a week from 3 days.
+
 ## 4. Open work (in priority order)
 
 ### 4.1 Goal choice and plain names — DONE in `653804c` (kept below for context)
@@ -179,13 +185,13 @@ Suggested approach (confirm with owner first, show proposed Arabic labels):
 - Coach screens aligned in `43592c3`; `mobile_app/lib` has no goal labels (searched, zero matches). Live swaps apply the diabetic potato limit (3c).
 
 ### 4.0 WHAT IS STILL OPEN (read this list first)
-1. **Look at the new screens in a real browser** — intake form DONE (3d, 3e). Still to do, plus the web client swap window from 3e (needs the backend restarted on the latest code + owner sign-in): coach editor → nutrition tab "ملاحظات للكوتش قبل الاعتماد"; cardio picker (blocked options + reasons); manual exercise swap amber warning; client injuries/equipment now shown in the editor; intake form: goal cards (5 incl. "سيب الكوتش يحدد") and the daily-steps question; web client app food and exercise swap windows (now signed-in, filtered). Needs the dev server (`.claude/launch.json` / `npm.cmd run dev`) and a real coach + client login (the owner logs in; never enter passwords).
+1. **Look at the new screens in a real browser** (needs the backend restarted on the latest code + the owner signed in and the health-data consent ticked by the owner): coach editor notes (balance, potassium, kidney energy, oil), cardio picker, exercise swap warning, web client swap windows (food: same taste group/close value/protein powder note), intake training step (training age question) and the potassium field.
 2. **Flutter app** — on hold by the owner's decision until the engine is clean. When resumed (needs the Flutter SDK + a device): display `item.note` (protein powder note), show the swap-food 409 `error`, verify swaps on a device.
 3. **Production data audit**: must run on the VPS itself (see 3d): `node --env-file=.env scripts/audit-grown-cycles.mjs` (read-only). The owner is not technical — walk them through it or get server access. Repair only with backup + plan + owner approval.
-4. **Extreme case** (130 kg, diabetes + kidney + liver, coeliac + nuts): balanced now (3254 kcal, fat 35%, oil ~20 g a meal); carbohydrate 52% (kidney cap) with the coach note; potatoes 245-260 g flagged (the diabetic 200 g limit has no other safe carbohydrate for coeliac). Needs the doctor anyway (kidney + liver).
-5. **Swaps with no equivalent** (mobile): tuna (leanest protein), laban and milks (sugar vs protein), lupini (only snack of its kind). Adding foods of the same kind (sardine/mackerel, skyr, roasted chickpeas) to the swap list would give them swaps.
-6. Potassium: the intake does not ask for a potassium result (the coach note asks for it). Optional: a lab field so the kidney limits become automatic (owner decision).
-7. **Training volume by experience**: beginners and advanced get the same weekly sets (advanced only get 4 sets on heavy compounds). A possible next step: fewer sets for beginners in the first cycle and more (12-20) for advanced - owner/coach choice, not an error.
+4. **Extreme case** (130 kg, diabetes + kidney + liver, coeliac + nuts): balanced (3254 kcal, fat 35%, oil ~20 g a meal); carbohydrate 52% (kidney cap) with the coach note; breakfast potatoes 245-260 g flagged (the diabetic 200 g limit leaves no other gluten-free breakfast carbohydrate in the food list; adding one - e.g. quinoa or certified gluten-free oats - to all three food lists would remove the flag). Needs the doctor anyway.
+5. **Swaps with no equivalent** (mobile): tuna (leanest protein), laban and milks (sugar vs protein), lupini (only snack of its kind) - the client keeps the food; adding foods of the same kind (sardine/mackerel, skyr, roasted chickpeas) to the food lists would give them swaps.
+6. Potassium: DONE (`4a8ed0b`).
+7. **Training volume by experience**: DONE (`5df9d52`).
 8. Branch `agx/full-simulation` must never be merged.
 
 ### 4.2 Verify everything together — DONE (see 3b); rerun after any engine change
