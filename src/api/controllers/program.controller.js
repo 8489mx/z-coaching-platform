@@ -25,6 +25,7 @@ import { buildNextCycle, resolvePainFlaggedExercises, evaluateAutoPublish } from
 import { isSwapFoodSafe, resolveSwapContext, PLAN_FOOD_TO_REGISTRY } from "../services/liveFoodSwapSafety.js";
 import { isLiveSwapEquivalent, liveSwapOilAddition, liveSwapValueWithOil, liveSwapOilText, liveSwapTargetGrams, liveSwapServingText } from "../services/liveFoodSwapValue.js";
 import { isNoSwapFood, NO_SWAP_NOTE_AR } from "../../../frontend/src/utils/swapExchangeRules.js";
+import { kidneyPotassium } from "../../nutrition-meal-context-v2/build-culinary-meals.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -969,6 +970,8 @@ export function deriveClinicalConstraints(answers) {
     is_ibs: selected.has("gi_tract"),
     is_bariatric: selected.has("bariatric_surgery") || med.bariatric?.is_operated === true,
     has_dumping_syndrome: med.bariatric?.dumping_syndrome === true,
+    // Kidney disease with a high potassium result (the same rule as the plan).
+    is_high_potassium: kidneyPotassium(answers, {}).status === "HIGH",
     allergies,
   };
 }

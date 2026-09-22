@@ -151,7 +151,7 @@ import { buildCardioEngine } from "../cardio-engine/index.js";
 import { buildMobilityEngine } from "../mobility-engine/index.js";
 import { buildSessionMobilityProtocol } from "../mobility-warmup-engine-v2/index.js";
 import { buildNutritionEngine } from "../nutrition-engine/index.js";
-import { sanitizeMealPlan, buildCulinaryRecipeMeals, enforceDiabeticCarbChoice, splitOversizedPortions, carbPortionLimit, isDiabeticIntake, diversifyFatSources, buildAllergenContext } from "../nutrition-meal-context-v2/index.js";
+import { sanitizeMealPlan, buildCulinaryRecipeMeals, enforceDiabeticCarbChoice, splitOversizedPortions, carbPortionLimit, isDiabeticIntake, diversifyFatSources, buildAllergenContext, kidneyPotassium } from "../nutrition-meal-context-v2/index.js";
 import { quantizeNutritionPlan } from "../nutrition-serving-quantizer-v2/index.js";
 import { adaptIntakePayloadToCanonicalEngine } from "../intake-decision-engine/adapters/intake-adapter.js";
 import { MASTER_ENGINE_V2_VERSION } from "./domain/enums.js";
@@ -455,6 +455,10 @@ export function calculateUniversalNutritionTargets(canonicalIntake, evaluationCo
     medical.hasKidneyCondition === true ||
     effectiveRaw?.medical?.hasKidneyCondition === true ||
     conditionsList.some(c => c.includes("KIDNEY") || c.includes("RENAL"));
+
+  const kidneyPotassiumResult = hasKidneyCondition
+    ? (() => { const r = kidneyPotassium(effectiveRaw, { ...medical, hasKidneyCondition: true }); return r.status === "NONE" ? { status: "UNKNOWN", value: null } : r; })()
+    : { status: "NONE", value: null };
 
   // Kidney disease: energy at most 35 kcal per kg of reference weight (KDOQI 2020, guideline 3.1.1).
   let kidneyEnergyCapped = false;
@@ -896,7 +900,14 @@ export function calculateUniversalNutritionTargets(canonicalIntake, evaluationCo
     clinical_guardrails: {
       kidney_protein_capped: Boolean(kidneyProteinCapped),
       kidney_condition: Boolean(hasKidneyCondition),
-      kidney_potassium_note_ar: hasKidneyCondition ? CLINICAL_GUIDELINES.KIDNEY.POTASSIUM_NOTE_AR : null,
+      // The latest potassium result decides: high -> potassium-rich foods out; normal -> no limit;
+      // unknown -> moderate avocado and the coach asks for the test.
+      kidney_potassium_status: hasKidneyCondition ? kidneyPotassiumResult.status : null,
+      kidney_potassium_mmol_l: hasKidneyCondition ? kidneyPotassiumResult.value : null,
+      kidney_potassium_note_ar: !hasKidneyCondition ? null
+        : kidneyPotassiumResult.status === "HIGH" ? CLINICAL_GUIDELINES.KIDNEY.POTASSIUM_HIGH_NOTE_AR(kidneyPotassiumResult.value)
+          : kidneyPotassiumResult.status === "NORMAL" ? CLINICAL_GUIDELINES.KIDNEY.POTASSIUM_NORMAL_NOTE_AR(kidneyPotassiumResult.value)
+            : CLINICAL_GUIDELINES.KIDNEY.POTASSIUM_NOTE_AR,
       kidney_energy_capped: kidneyEnergyCapped,
       kidney_energy_note_ar: kidneyEnergyCapped ? CLINICAL_GUIDELINES.KIDNEY.ENERGY_CAP_NOTE_AR : null,
       energy_reference_weight_kg: referenceWeight,
@@ -1098,6 +1109,7 @@ export function buildMasterEngineV2(inputs) {
     {
       kidneyProteinCapped: universalTargets.clinical_guardrails?.kidney_protein_capped === true,
       kidneyCondition: universalTargets.clinical_guardrails?.kidney_condition === true,
+      kidneyPotassiumStatus: universalTargets.clinical_guardrails?.kidney_potassium_status || "UNKNOWN",
     },
   );
 

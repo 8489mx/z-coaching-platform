@@ -2093,9 +2093,14 @@ export function isFoodClinicallySafe(foodItem, clinicalProfile = {}) {
     is_insulin_resistant = false,
     is_ibs = false,
     has_dumping_syndrome = false,
+    is_high_potassium = false,
     allergies = [],
     conditions = []
   } = clinicalProfile;
+
+  // Kidney disease with a high potassium result: the potassium-rich foods are out, as in the plan
+  // (HIGH_POTASSIUM_FOODS in build-culinary-meals.js).
+  if (is_high_potassium && /AVOCADO|POTATO|BANANA|DATES|ORANGE/.test(String(foodItem.code || "").toUpperCase())) return false;
 
   const allergyList = Array.isArray(allergies) ? allergies : (typeof allergies === 'string' ? [allergies] : []);
   const conditionList = Array.isArray(conditions) ? conditions : (typeof conditions === 'string' ? [conditions] : []);

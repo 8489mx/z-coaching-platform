@@ -30,6 +30,10 @@ export const CLINICAL_GUIDELINES = Object.freeze({
      * (~485 mg K / 100 g) stays at a moderate portion per meal and the coach asks for the test.
      */
     AVOCADO_MAX_G_PER_MEAL: 50,
+    // Serum potassium above the usual reference range (3.5-5.0 mmol/L) counts as high.
+    HIGH_POTASSIUM_MMOL_L: 5.0,
+    POTASSIUM_HIGH_NOTE_AR: (value) => `مريض كلى والبوتاسيوم عالي (${value} mmol/L): الأطعمة الغنية بالبوتاسيوم اتشالت من الخطة والبدائل (أفوكادو، بطاطس وبطاطا، موز، بلح، برتقال)، وبلاش بدائل الملح. راجع الخطة مع الطبيب أو أخصائي تغذية الكلى (KDIGO 2024).`,
+    POTASSIUM_NORMAL_NOTE_AR: (value) => `مريض كلى والبوتاسيوم طبيعي (${value} mmol/L): مفيش تقييد للأطعمة الغنية بالبوتاسيوم (KDIGO 2024). اطلب تحليل جديد لو الطبيب غيّر الأدوية أو الحالة اتغيرت.`,
     /**
      * Scientific Source:
      * KDOQI Clinical Practice Guideline for Nutrition in CKD: 2020 Update, guideline 3.1.1 -

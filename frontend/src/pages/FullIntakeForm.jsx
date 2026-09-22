@@ -1199,6 +1199,29 @@ export default function FullIntakeForm() {
                     </div>
                   </div>
                 )}
+
+                {/* Kidney disease: the latest potassium result decides whether potassium-rich foods are limited. */}
+                {medSelected.includes('renal') && (
+                  <div style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', borderRadius: '8px', padding: '12px 14px', marginBottom: '12px' }}>
+                    <label style={{ display: 'block', fontSize: '12px', color: '#0369A1', marginBottom: '6px', fontWeight: 800 }}>
+                      آخر تحليل بوتاسيوم في الدم (mmol/L) — اختياري
+                    </label>
+                    <input
+                      type="number"
+                      step="0.1"
+                      min="2"
+                      max="9"
+                      inputMode="decimal"
+                      placeholder="مثلاً 4.5 — سيبه فاضي لو مش معاك"
+                      value={medConditions.renal?.potassium_mmol_l || ''}
+                      onChange={(e) => updateNested('medical_conditions', 'renal', { ...(medConditions.renal || {}), potassium_mmol_l: e.target.value })}
+                      style={{ width: '100%', height: '38px', borderRadius: '8px', border: '1px solid #CBD5E1', padding: '0 10px', fontSize: '12px', background: '#FFFFFF', boxSizing: 'border-box' }}
+                    />
+                    <span style={{ display: 'block', fontSize: '11px', color: '#64748B', marginTop: '4px' }}>
+                      لو عالي هنقلل الأكل الغني بالبوتاسيوم، ولو طبيعي مش هنمنع حاجة.
+                    </span>
+                  </div>
+                )}
               </>)}
               </div>
 

@@ -375,6 +375,7 @@ export default function IntakeAuditDetailModal({
               <FieldRow label="نوع السكري" value={answers.medical_conditions?.diabetes?.type} dictionary={DIABETES_MAP} />
               <FieldRow label="يستخدم الإنسولين" value={answers.medical_conditions?.diabetes?.uses_insulin} />
               <FieldRow label="السكر التراكمي (HbA1c)" value={answers.medical_conditions?.diabetes?.hba1c} />
+              <FieldRow label="آخر تحليل بوتاسيوم (mmol/L)" value={answers.medical_conditions?.renal?.potassium_mmol_l} />
               <FieldRow label="أنيميا الفول (G6PD)" value={answers.medical_conditions?.favism_g6pd} />
               <FieldRow label="ارتفاع ضغط الدم" value={answers.medical_conditions?.hypertension} />
               <FieldRow label="النقرس" value={answers.medical_conditions?.gout} />

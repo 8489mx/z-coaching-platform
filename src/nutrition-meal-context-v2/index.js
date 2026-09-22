@@ -13,6 +13,7 @@ export {
   carbPortionLimit,
   isDiabeticIntake,
   generateSmartSwaps,
+  kidneyPotassium,
   FOOD_SWAP_DATABASE,
 } from "./build-culinary-meals.js";
 
