@@ -6,6 +6,7 @@
 
 import { normalizeTrainingAge, experienceForTrainingAge, trainingAgeForExperience } from "../../training-engine-v2/training-age.js";
 import { IntakeValidationError } from "../validation/intake-validation-error.js";
+import { dislikedFoodCodes } from "./disliked-foods.js";
 
 export function parseCleanNumber(val, fallback = null) {
   if (val === null || val === undefined || val === '') return fallback;
@@ -450,7 +451,8 @@ export function adaptIntakePayloadToCanonicalEngine(raw) {
       preferredMealCount: Number(intake.preferred_meal_count) || mealCountMap[intake.meal_structure?.meals_count] || 3,
       allergies: allergens,
       excludedFoodsList: (intake.strict_allergies || rawAllergyDislikes).map(a => String(a).toUpperCase()),
-      dislikedFoods: Array.isArray(intake.disliked_foods) ? intake.disliked_foods : rawAllergyDislikes,
+      // The form sends Arabic labels; the canonical intake takes food codes (disliked-foods.js).
+      dislikedFoods: dislikedFoodCodes(Array.isArray(intake.disliked_foods) ? intake.disliked_foods : rawAllergyDislikes),
       // Deep intake form v2: structured digestive, budget, and food prep fields
       digestiveIssues: (intake.digestive_issues && intake.digestive_issues !== 'NONE')
         ? [{ name: intake.digestive_issues === 'IBS' ? 'IBS' : (intake.digestive_issues === 'GERD' ? 'ACID_REFLUX' : 'BLOATING'), severity: 'MODERATE' }]

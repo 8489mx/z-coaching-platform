@@ -1,5 +1,6 @@
 import { getFoodClinicalProperties } from "../execution-engines/food-swap-engine.js";
 import { CLINICAL_GUIDELINES } from "../config/clinical-guidelines.js";
+import { dislikedFoodCodes } from "../intake-decision-engine/adapters/disliked-foods.js";
 import { isEquivalentSwap, sharesSwapFamily, isNoSwapFood, NO_SWAP_NOTE_AR } from "../../frontend/src/utils/swapExchangeRules.js";
 
 /**
@@ -1122,6 +1123,9 @@ export function isFoodClinicallySafe(foodCode, allergenContext = {}) {
   if (allergenContext.isNutsExcluded && (food.is_nut_free === false || /PEANUT|ALMOND|WALNUT|CASHEW|PISTACHIO|HAZELNUT|NUT_BUTTER|MIXED_NUTS/.test(foodCode))) return false;
   if (allergenContext.isSesameExcluded && (food.is_sesame_free === false || /SESAME|TAHINI/.test(foodCode))) return false;
   if (allergenContext.isHighPotassium && HIGH_POTASSIUM_FOODS.has(foodCode)) return false;
+  // Foods the client said they do not like leave the meals and swaps like a restriction does
+  // (enforceClinicalSafety labels that replacement as a preference, not a clinical one).
+  if (allergenContext.dislikedFoodCodes?.has(foodCode)) return false;
 
   return true;
 }
@@ -2186,6 +2190,11 @@ export function buildAllergenContext(canonicalIntake = {}, rawIntake = {}) {
     isSesameExcluded,
     // Kidney disease with a high potassium result: potassium-rich foods leave the plan and swaps.
     isHighPotassium: kidneyPotassium(effectiveRaw, medical).status === "HIGH",
+    // Food codes of the foods the client does not like (intake form labels mapped in disliked-foods.js).
+    dislikedFoodCodes: new Set([
+      ...dislikedFoodCodes(nutrition.dislikedFoods),
+      ...dislikedFoodCodes(effectiveRaw.disliked_foods),
+    ]),
   };
 }
 
@@ -4256,6 +4265,9 @@ export function enforceClinicalSafety(meals = [], allergenContext = {}) {
   if (!Array.isArray(meals)) return meals;
   const known = (code) => Boolean(FOOD_SWAP_DATABASE[code]);
   const unsafe = (code) => known(code) && !isFoodClinicallySafe(code, allergenContext);
+  // Disliked but clinically fine: replaced when an alternative exists, otherwise kept with a coach note.
+  const withoutDislikes = { ...allergenContext, dislikedFoodCodes: undefined };
+  const onlyDisliked = (code) => isFoodClinicallySafe(code, withoutDislikes);
 
   return meals.map((meal) => {
     const items = meal.items || [];
@@ -4287,6 +4299,12 @@ export function enforceClinicalSafety(meals = [], allergenContext = {}) {
               || (Math.abs(a.calories_kcal - kcal) - Math.abs(b.calories_kcal - kcal)));
           chosen = swaps[0];
         }
+        if (!chosen && onlyDisliked(item.food_code)) {
+          return {
+            ...item,
+            preference_note_ar: "المتدرب ذكر إنه مش بيحب الصنف ده، ومفيش بديل مناسب محسوب له؛ راجعه معاه.",
+          };
+        }
         if (!chosen) {
           return {
             ...item,
@@ -4306,7 +4324,9 @@ export function enforceClinicalSafety(meals = [], allergenContext = {}) {
           fat_g: chosen.fat_g,
           calories_kcal: chosen.calories_kcal,
           swaps: swaps.filter((swap) => swap !== chosen && !unsafe(swap.food_code)),
-          replaced_for_clinical_safety_from: item.food_code,
+          ...(onlyDisliked(item.food_code)
+            ? { replaced_for_preference_from: item.food_code }
+            : { replaced_for_clinical_safety_from: item.food_code }),
         };
       }),
     };

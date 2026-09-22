@@ -72,6 +72,7 @@ const isPotato = (code) => /POTATO/.test(String(code || ""));
  */
 export function isSwapFoodSafe(registryCode, context = {}, targetGrams = null) {
   const code = String(registryCode || "").toUpperCase();
+  if (context.dislikedFoodCodes?.has(code)) return false;
   if (code === "PEANUT_BUTTER") {
     return !(context.isNutsExcluded || context.isFavism || context.isLegumesExcluded);
   }
