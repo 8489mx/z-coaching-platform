@@ -2470,7 +2470,18 @@ export function listEquivalentFoodSwaps(currentCode, portionG, clinicalProfile =
     if (!isCloseInValue({ fromKcal, toKcal: macros.calories_kcal, fromFat, toFat: macros.fat_g })) continue;
     results.push(swap);
   }
-  return results.sort((a, b) => Math.abs(a.replacement_food.macros.calories_kcal - fromKcal) - Math.abs(b.replacement_food.macros.calories_kcal - fromKcal));
+  results.sort((a, b) => Math.abs(a.replacement_food.macros.calories_kcal - fromKcal) - Math.abs(b.replacement_food.macros.calories_kcal - fromKcal));
+  // The food list keeps alias keys for the same food: list each food once (by code and by name),
+  // and never the current food under another key.
+  const seenCodes = new Set([current.code]);
+  const seenNames = new Set([current.name_ar]);
+  return results.filter((swap) => {
+    const { code, name_ar: name } = swap.replacement_food;
+    if (seenCodes.has(code) || (name && seenNames.has(name))) return false;
+    seenCodes.add(code);
+    if (name) seenNames.add(name);
+    return true;
+  });
 }
 
 /**
