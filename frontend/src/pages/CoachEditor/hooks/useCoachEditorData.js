@@ -21,9 +21,8 @@ import { exerciseConflicts } from '../../../utils/exerciseSafety.js';
 const INJURY_LABELS_AR = { knee: 'الركبة', spine_back: 'أسفل الظهر', shoulder: 'الكتف', core: 'منطقة البطن (الكور)', elbow_wrist: 'الكوع والرسغ' };
 import {
   FOOD_DATABASE_LIST,
-  CLIENT_BLUEPRINTS,
-  CARDIO_MODALITY_OPTIONS,
-  STRESS_TEST_CLIENTS
+  EMPTY_PROGRAM,
+  CARDIO_MODALITY_OPTIONS
 } from '../constants/coachEditorConstants';
 
 export function useCoachEditorData() {
@@ -36,7 +35,8 @@ export function useCoachEditorData() {
   const [saving, setSaving] = useState(false);
   const [publishing, setPublishing] = useState(false);
   
-  const [program, setProgram] = useState(CLIENT_BLUEPRINTS['1']);
+  // Starts empty: an unsaved screen shows nothing rather than another client's demo plan.
+  const [program, setProgram] = useState(EMPTY_PROGRAM);
   const [coachNotes, setCoachNotes] = useState('');
   const [activeSessionIdx, setActiveSessionIdx] = useState(0);
   const [activeWorkspaceTab, setActiveWorkspaceTab] = useState('TRAINING');
@@ -123,52 +123,50 @@ export function useCoachEditorData() {
 
       const pendingCheckinUserIds = new Set(pendingCheckins.map(c => String(c.user_id || c.userId)));
 
-      // Base source is either DB clients or full 15 Stress Test Clients catalog
-      const sourceClients = clients.length > 0 ? clients : STRESS_TEST_CLIENTS;
-
-      const enrichedClients = sourceClients.map((c, index) => {
-        const cCode = String(c.client_code || c.id || (index + 1));
-        const stressRef = STRESS_TEST_CLIENTS.find(st => st.client_code === cCode) || STRESS_TEST_CLIENTS[index % STRESS_TEST_CLIENTS.length];
+      // Only real subscribers. The queue used to fall back to the fifteen demo clients when the
+      // server returned none, and to merge each real client with a demo one by position - so a real
+      // client carried another person's injuries, package and queue status.
+      const enrichedClients = clients.map((c) => {
+        const cCode = String(c.client_code || c.id || '');
         const hasPendingCheckin = pendingCheckinUserIds.has(String(c.id)) || pendingCheckinUserIds.has(cCode);
-        
-        let status = stressRef.queue_status || 'ACTION_NEEDED';
-        let statusLabel = 'مطلوب إجراء فسيولوجي';
-        let priority = 1;
+        const submissions = Array.isArray(c.intakeSubmissions) ? c.intakeSubmissions : [];
+        const awaitingPlan = submissions.some(s => !['APPROVED', 'REJECTED'].includes(String(s.status || '')));
 
-        if (status === 'PENDING_PLAN') {
+        let status = 'ACTIVE';
+        let statusLabel = 'متابعة اعتيادية';
+        let priority = 3;
+
+        if (awaitingPlan) {
+          status = 'PENDING_PLAN';
           statusLabel = 'بانتظار خطة جديدة';
           priority = 1;
-        } else if (status === 'NEEDS_UPDATE' || hasPendingCheckin) {
+        } else if (hasPendingCheckin) {
           status = 'NEEDS_UPDATE';
           statusLabel = 'مطلوب تعديل وتدقيق';
           priority = 2;
-        } else {
-          statusLabel = 'مطلوب مراجعة الخطة';
-          priority = 1;
         }
 
-        const packageName = stressRef.package_name || ((c.subscription_package && c.subscription_package.includes('MAX')) ? 'باقة ماكس' : 'باقة إليت');
+        const packageName = (c.subscription_package && String(c.subscription_package).includes('MAX')) ? 'باقة ماكس' : 'باقة إليت';
 
         return {
-          ...stressRef,
           ...c,
-          id: c.id || stressRef.id,
           client_code: cCode,
-          full_name: c.full_name || stressRef.full_name,
           package_name: packageName,
-          injuries: stressRef.injuries || ['متابعة سريرية'],
-          allergies: stressRef.allergies || [],
+          injuries: Array.isArray(c.injuries) ? c.injuries : [],
+          allergies: Array.isArray(c.allergies) ? c.allergies : [],
           queue_status: status,
           queue_label: statusLabel,
           queue_priority: priority
         };
       });
 
-      enrichedClients.sort((a, b) => parseInt(a.client_code, 10) - parseInt(b.client_code, 10));
+      // What is waiting on the coach comes first, then the rest by code.
+      enrichedClients.sort((a, b) => (a.queue_priority - b.queue_priority) ||
+        String(a.client_code).localeCompare(String(b.client_code), 'en', { numeric: true }));
       setClientsList(enrichedClients);
     } catch (e) {
       console.warn('fetchClients error:', e);
-      setClientsList(STRESS_TEST_CLIENTS);
+      setClientsList([]);
     }
   };
 
@@ -215,13 +213,12 @@ export function useCoachEditorData() {
         }
       }
 
-      // 2. Load Clinical Master Blueprint for this exact test case
-      const basePlan = CLIENT_BLUEPRINTS[targetCode] || CLIENT_BLUEPRINTS['1'];
-      setProgram(basePlan);
-      if (basePlan.coach_notes) setCoachNotes(basePlan.coach_notes);
+      // No plan on the server for this client: an empty editor, not a demo plan.
+      setProgram({ ...EMPTY_PROGRAM, client: { ...EMPTY_PROGRAM.client, client_code: targetCode } });
+      setCoachNotes('');
     } catch (e) {
       console.warn('fetchClientProgram error:', e);
-      setProgram(CLIENT_BLUEPRINTS['1']);
+      setProgram(EMPTY_PROGRAM);
     } finally {
       setLoading(false);
     }
@@ -315,7 +312,8 @@ export function useCoachEditorData() {
       total_weeks: mappedWeeks.length || 5,
       current_week: 1,
       weeks: mappedWeeks.length > 0 ? mappedWeeks : undefined,
-      sessions: mappedSessions.length > 0 ? mappedSessions : (CLIENT_BLUEPRINTS['1']?.training?.sessions || [])
+      // A real plan with no sessions stays empty; it must never borrow the demo client's training.
+      sessions: mappedSessions
     };
 
     // 2. Intelligent Nutrition Program Mapping
@@ -361,7 +359,7 @@ export function useCoachEditorData() {
       clinical_guardrails: rawClinicalGuardrails,
       coach_alerts: collectCoachAlerts(master),
       beverage_sugar_intake: rawNutrition?.beverage_sugar_intake || null,
-      meals: mappedMeals.length > 0 ? mappedMeals : (CLIENT_BLUEPRINTS['1']?.nutrition?.meals || []),
+      meals: mappedMeals,
       reasoning: rawNutrition?.reasoning || 'خطة غذائية متوازنة مصممة بأصناف دقيقة تلبي احتياج الجسم دون حرمان.'
     };
 

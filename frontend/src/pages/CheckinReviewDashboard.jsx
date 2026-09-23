@@ -42,121 +42,7 @@ import { formatWhatsAppPhone } from '../utils/whatsappRemindersEngine';
 import { evaluateJointPainAndFirewall } from '../utils/biomechanicsFirewallEngine';
 import { generateCheckinApprovalWhatsAppMessage } from '../utils/checkinApprovalWhatsApp';
 
-import { STRESS_TEST_CLIENTS, CLINICAL_MASTER_BLUEPRINTS } from '../data/stressTestClientsBlueprints';
 import DeloadRecommendationCard from '../components/checkin/DeloadRecommendationCard';
-
-// مقصود: ثابت أو دالة مشتركة بجوار المكوّن. تحذير Fast Refresh في بيئة التطوير فقط ولا أثر له على الإنتاج.
-// eslint-disable-next-line react/only-export-components
-export const INITIAL_CHECKINS = Array.isArray(STRESS_TEST_CLIENTS) ? STRESS_TEST_CLIENTS.map((c) => {
-  const bp = (CLINICAL_MASTER_BLUEPRINTS && CLINICAL_MASTER_BLUEPRINTS[c.client_code]) || {};
-  const bpTargets = bp?.nutrition?.targets || {};
-  const isFatLoss = c.primary_goal === 'fat_loss';
-  const isLeanBulk = c.primary_goal === 'lean_bulk';
-  const isRecomp = c.primary_goal === 'recomp';
-
-  const baseWeight = c.weight_kg || 75;
-  const baseWaist = Math.round(baseWeight * (c.gender === 'female' ? 0.95 : 1.05));
-  
-  // Realistic delta matching physiological primary goal
-  const w1Delta = isFatLoss ? -0.7 : (isLeanBulk ? 0.3 : -0.2);
-  const w2Delta = isFatLoss ? -0.6 : (isLeanBulk ? 0.2 : 0.0);
-  const w3Delta = isFatLoss ? -0.8 : (isLeanBulk ? 0.3 : -0.1);
-
-  const curWeight = Number((baseWeight + w1Delta + w2Delta + w3Delta).toFixed(1));
-  const curWaist = Math.round(baseWaist - (isFatLoss ? 3 : (isRecomp ? 2 : 0)));
-  const weightChangeThisWeek = w3Delta;
-
-  const baselineMacros = {
-    calories: bpTargets.calories || (isFatLoss ? 1800 : (isLeanBulk ? 2500 : 2000)),
-    protein: bpTargets.protein || (isFatLoss ? 150 : (isLeanBulk ? 140 : 130)),
-    carbs: bpTargets.carbs || (isFatLoss ? 170 : (isLeanBulk ? 320 : 220)),
-    fats: bpTargets.fats || (isFatLoss ? 48 : (isLeanBulk ? 65 : 55))
-  };
-
-  const clientFirstName = (c.full_name || 'المتدرب').split(' ')[0];
-
-  return {
-    id: `CHK_${c.client_code}`,
-    raw_id: c.id,
-    user_id: c.id,
-    client: {
-      id: `CL_${c.client_code}`,
-      name: c.full_name,
-      code: c.client_code,
-      package: (c.package_name || '').toUpperCase().includes('MAX') ? 'MAX' : 'ELITE',
-      package_name: c.package_name || 'باقة ماكس',
-      phone: c.phone_number,
-      country: { name: 'مصر' },
-      gender: c.gender,
-      goal_type: isFatLoss ? 'CUTTING' : (isLeanBulk ? 'BULKING' : 'RECOMP'),
-      target_goal: c.goal_label,
-      start_weight: baseWeight,
-      target_weight: isFatLoss ? (baseWeight - 8) : (baseWeight + 4),
-      injuries: c.injuries || bp?.client?.injuries || []
-    },
-    week_number: 3,
-    checkin_number: 3,
-    submission_date: 'اليوم • وارد حديثاً',
-    history: [
-      { week: 0, weight: baseWeight, waist: baseWaist, adherence: 100, date: 'نقطة البداية', diff: 0 },
-      { week: 1, weight: Number((baseWeight + w1Delta).toFixed(1)), waist: baseWaist - 1, adherence: 95, date: 'الأسبوع 1', diff: w1Delta },
-      { week: 2, weight: Number((baseWeight + w1Delta + w2Delta).toFixed(1)), waist: baseWaist - 2, adherence: 90, date: 'الأسبوع 2', diff: w2Delta },
-      { week: 3, weight: curWeight, waist: curWaist, adherence: 93, date: 'الأسبوع 3', diff: w3Delta }
-    ],
-    metrics: {
-      previous_weight: Number((curWeight - weightChangeThisWeek).toFixed(1)),
-      current_weight: curWeight,
-      weight_change: weightChangeThisWeek,
-      waist_previous: curWaist + 1,
-      waist_current: curWaist,
-      waist_change: -1,
-      adherence: 93,
-      workouts_completed: c.training_days || 4,
-      workouts_target: c.training_days || 4,
-      daily_steps_avg: 8200,
-      strength_trend: 'INCREASED',
-      strength_note: 'تطور ملحوظ في الأوزان',
-      water_liters: bpTargets.water_liters || 3.5,
-      off_plan_meals: 0,
-      rpe_average: 8.0,
-      status_badge: 'تقدم ممتاز',
-      warning: null
-    },
-    biofeedback: {
-      energy: 8,
-      sleep: 8,
-      hunger: 4,
-      digestion_status: 'ممتاز',
-      stress: 3
-    },
-    reflections: {
-      nsv_note: 'التزام كامل بالوجبات ومواعيد التمرين دون أي تخريب.',
-      struggle_note: 'لا توجد صعوبات تذكر، الطاقة ممتازة خلال اليوم.'
-    },
-    client_notes: 'الالتزام 100% بالخطة والأوزان في تحسن مستمر.',
-    // Retrospective deep check-in fields
-    lifestyle_variance: 'normal_routine',
-    bowel_regularity: c.client_code === 'CL_FAT_LOSS_STALL' ? 'constipated_3plus' : 'regular_daily',
-    sleep_stress_composite: c.client_code === 'CL_FAT_LOSS_STALL' ? 5 : 2,
-    menstrual_phase: null,
-    // Prospective forward-looking preview fields
-    next_week_travel: c.client_code === 'CL_FAT_LOSS_STALL',
-    next_week_gym_available: c.client_code !== 'CL_FAT_LOSS_STALL',
-    next_week_realistic_days: c.training_days || 4,
-    next_week_notes: c.client_code === 'CL_FAT_LOSS_STALL' ? 'مسافر لحضور مؤتمر عمل 4 أيام وهتمرن بوزن الجسم' : '',
-    ai_analysis: {
-      recommendation: isFatLoss
-        ? 'استجابة أيضية ممتازة ومعدل نزول دهون متزن. يوصى بتثبيت السعرات والماكروز لمواصلة التقدم بنفس المعدل.'
-        : (isLeanBulk
-          ? 'زيادة عضلية صافية متزنة دون تراكم دهون زائدة. يوصى بالاستمرار على السعرات الحالية.'
-          : 'إعادة تشكيل متميزة مع انخفاض محيط الخصر وثبات الوزن. استمر على نفس الماكروز.'),
-      status_badge: 'تقدم ممتاز',
-      warning: null
-    },
-    baseline_macros: baselineMacros,
-    suggested_reply: `عاش يا ${clientFirstName}! أداء ممتاز في المتابعة، والالتزام 93% انعكس مباشرة على النتيجة. مستمرون بنفس القوة!`
-  };
-}) : [];
 
 const DEFAULT_BASELINE_MACROS = {
   calories: 2000,
@@ -693,7 +579,10 @@ function ProgressTrendChart({ history = [], isMaxTier = false, targetWeight = nu
 export default function CheckinReviewDashboard() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
-  const [checkinList, setCheckinList] = useState(INITIAL_CHECKINS);
+  // Starts empty. The screen used to open on fifteen demo clients (STRESS_TEST_CLIENTS) and keep
+  // them whenever the server had no pending check-in, so the coach could review and approve a
+  // client who does not exist.
+  const [checkinList, setCheckinList] = useState([]);
   const [selectedIdx, setSelectedIdx] = useState(0);
   const [searchQuery, setSearchQuery] = useState('');
   const [tierFilter, setTierFilter] = useState('ALL'); // ALL | MAX | ELITE

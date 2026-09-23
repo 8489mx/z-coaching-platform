@@ -101,6 +101,34 @@ export const FOOD_DATABASE_LIST = Array.from(uniqueFoodsMap.values());
 // 15 Master Clinical Archetypes for Instant Switching
 export const CLIENT_BLUEPRINTS = CLINICAL_MASTER_BLUEPRINTS;
 
+/**
+ * The editor's starting state: the shape of a plan with nothing in it. The editor used to open on a
+ * demo client's plan (CLIENT_BLUEPRINTS['1']) and fall back to it whenever a real plan was missing
+ * or failed to load, so another person's training and meals could be shown - and published - as a
+ * client's own.
+ */
+export const EMPTY_PROGRAM = Object.freeze({
+  client: Object.freeze({
+    id: null, full_name: '', client_code: '', age: null, gender: '', height_cm: null, weight_kg: null,
+    primary_goal: '', goal_label: '', neat_level: '', neat_label: '', package_name: '',
+    injuries: Object.freeze([]), allergies: Object.freeze([]), medical_conditions: Object.freeze([]),
+    training_env: '', training_env_label: '', training_days: 0, experience_level: '',
+  }),
+  clinical_guardrails: null,
+  client_profile: null,
+  nutrition: Object.freeze({
+    targets: Object.freeze({ calories: 0, protein: 0, carbs: 0, fats: 0, clinical_guardrails: null }),
+    clinical_guardrails: null, coach_alerts: Object.freeze([]), beverage_sugar_intake: null,
+    meals: Object.freeze([]), reasoning: '',
+  }),
+  training: Object.freeze({ current_week: 1, sessions: Object.freeze([]) }),
+  cardio: Object.freeze({
+    protocol_name: '', weekly_sessions: 0, session_duration_min: 0, modality: '',
+    neat_target_steps: 0, daily_water_target_liters: 0, sleep_target_hours: 0,
+    caffeine_cutoff_time: '', supplements: Object.freeze([]),
+  }),
+});
+
 export const CARDIO_MODALITY_OPTIONS = [
   { id: 'incline_treadmill', name: 'مشي على سير مائل (Incline Treadmill)', desc: 'ميل 6-8%، سرعة 4.5-5.0 كم/س • حرق دهون بدون صدمات' },
   { id: 'elliptical', name: 'جهاز التزحلق البيضاوي (Elliptical Cross-Trainer)', desc: 'حركة انسيابية زيرو صدمات للمفاصل والركبة' },
