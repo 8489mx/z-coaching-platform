@@ -1,4 +1,5 @@
 import { API_BASE } from '../config/api';
+import { buildClientLinks } from '../utils/clientLinks';
 import { ClientCodeBadge, ClientPackageBadge, getClientTier } from '../utils/tierBadgeHelper';
 import { arabicSearchMatch } from '../utils/searchUtils';
 import React, { useState, useMemo, useEffect, useRef } from 'react';
@@ -258,9 +259,7 @@ export default function FinancialsRenewalsDashboard() {
       client_name: client.full_name || client.name,
       package_name: client.pkgLabel === 'MAX' ? 'باقة MAX' : 'باقة إليت (ELITE)',
       days_left: client.daysRemaining > 0 ? client.daysRemaining : '0',
-      renewal_url: `${origin}/app/renew`,
-      checkin_url: `${origin}/app/checkin`,
-      app_url: `${origin}/app`
+      ...buildClientLinks(client.client_code, origin)
     });
     const url = generateWhatsAppUrl(client.phone_number, msg);
     showToast(`جاري فتح واتساب لتذكير ${client.full_name || client.name} بالتجديد...`);

@@ -1,5 +1,5 @@
 import React from 'react';
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { AuthProvider } from './contexts/AuthContext';
 // Global Modal Escape Key Listener Component
 function GlobalModalEscapeHandler() {
@@ -109,6 +109,15 @@ function RouteLoadingFallback() {
   );
 }
 
+/**
+ * Sends an old link to its real page and keeps what it carries (?code=...), so a client opening a
+ * renewal or check-in link from an older message still lands on the right screen, already identified.
+ */
+function RedirectKeepingQuery({ to }) {
+  const { search } = useLocation();
+  return <Navigate to={`${to}${search}`} replace />;
+}
+
 function App() {
   return (
     <AuthProvider>
@@ -186,6 +195,14 @@ function App() {
           <Route path="/test-engine" element={<Navigate to="/" replace />} />
 
           {/* Catch-all fallback */}
+          {/* Links already sent to clients before the paths were fixed (they keep their ?code=).
+              RedirectKeepingQuery is defined below this component. */}
+          <Route path="/app" element={<RedirectKeepingQuery to="/client/today" />} />
+          <Route path="/app/checkin" element={<RedirectKeepingQuery to="/check-in" />} />
+          <Route path="/app/renew" element={<RedirectKeepingQuery to="/renew" />} />
+          <Route path="/checkin" element={<RedirectKeepingQuery to="/check-in" />} />
+          <Route path="/renewal" element={<RedirectKeepingQuery to="/renew" />} />
+          <Route path="/client" element={<RedirectKeepingQuery to="/client/today" />} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
         </React.Suspense>

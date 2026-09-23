@@ -1,4 +1,5 @@
 import { ClientCodeBadge, ClientPackageBadge, getClientTier, getClientCountryInfo, formatTimeAgo } from '../utils/tierBadgeHelper';
+import { buildClientLinks } from '../utils/clientLinks';
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { 
@@ -38,9 +39,7 @@ export function getWhatsAppMessage(action, raw = false) {
   const cleanTier = String(action?.tier || '').includes('MAX') ? 'MAX' : 'ELITE';
   const origin = typeof window !== 'undefined' ? window.location.origin : '';
   const cleanCode = action?.clientCode || '';
-  const renewalUrl = cleanCode ? `${origin}/renewal?code=${cleanCode}` : `${origin}/renewal`;
-  const appUrl = cleanCode ? `${origin}/client?code=${cleanCode}` : `${origin}/client`;
-  const checkinUrl = cleanCode ? `${origin}/checkin?code=${cleanCode}` : `${origin}/checkin`;
+  const { renewal_url: renewalUrl, app_url: appUrl, checkin_url: checkinUrl } = buildClientLinks(cleanCode, origin);
 
   let msg = `${namePrefix}تم استلام استمارتك بنجاح، وجاري مراجعة البيانات وإعداد خطتك التدريبية والغذائية. يمكنك استعراض تطبيقك عبر الرابط:\n${appUrl}`;
   if (action?.type === 'OVERDUE_CHECKIN') {

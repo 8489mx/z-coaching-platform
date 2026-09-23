@@ -1,4 +1,5 @@
 import { API_BASE } from '../config/api';
+import { buildClientLinks } from '../utils/clientLinks';
 import { getClientTier, ClientCodeBadge, ClientPackageBadge } from '../utils/tierBadgeHelper';
 import React, { useState, useMemo } from 'react';
 import { Send, MessageSquare, CheckCircle2, Copy, Search, ExternalLink, Smartphone, ShieldAlert, Check, ChevronDown, ChevronRight, ChevronLeft, Dumbbell, Link } from 'lucide-react';
@@ -165,9 +166,7 @@ export default function WhatsAppRemindersHub() {
         client_name: activeClient.full_name || activeClient.name || 'عزيزي المشترك',
         package_name: activeClient.pkgLabel === 'MAX' ? 'باقة MAX' : 'باقة إليت (ELITE)',
         days_left: activeClient.daysLeft || 3,
-        checkin_url: `${origin}/app/checkin`,
-        app_url: `${origin}/app`,
-        renewal_url: `${origin}/app/renew`
+        ...buildClientLinks(activeClient.client_code, origin)
       });
       setCustomMessage(compiled);
       setIsEditingTemplate(false);
@@ -608,9 +607,7 @@ export default function WhatsAppRemindersHub() {
                               client_name: client.full_name || client.name || 'عزيزي المشترك',
                               package_name: client.pkgLabel === 'MAX' ? 'باقة MAX' : 'باقة إليت (ELITE)',
                               days_left: client.daysLeft || 3,
-                              checkin_url: `${origin}/app/checkin`,
-                              app_url: `${origin}/app`,
-                              renewal_url: `${origin}/app/renew`
+                              ...buildClientLinks(client.client_code, origin)
                             });
                             handleSendWhatsApp(client, msg);
                           }}
@@ -772,7 +769,7 @@ export default function WhatsAppRemindersHub() {
                   type="button"
                   onClick={() => {
                     const origin = getAppOrigin();
-                    navigator.clipboard.writeText(`${origin}/app/checkin`);
+                    navigator.clipboard.writeText(buildClientLinks(activeClient?.client_code, origin).checkin_url);
                     showToast('تم نسخ رابط الشيك إن للمشترك بنجاح');
                   }}
                   style={{
@@ -797,7 +794,7 @@ export default function WhatsAppRemindersHub() {
                   type="button"
                   onClick={() => {
                     const origin = getAppOrigin();
-                    navigator.clipboard.writeText(`${origin}/app`);
+                    navigator.clipboard.writeText(buildClientLinks(activeClient?.client_code, origin).app_url);
                     showToast('تم نسخ رابط تطبيق المتدرب بنجاح');
                   }}
                   style={{
