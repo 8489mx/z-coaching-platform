@@ -825,7 +825,7 @@ export default function FinancialsRenewalsDashboard() {
           {/* Table Header */}
           <div style={{
             display: 'grid',
-            gridTemplateColumns: '70px 1.3fr 75px 85px 125px 115px 95px 255px',
+            gridTemplateColumns: '70px 1.3fr 75px 85px 125px 115px 95px 205px',
             padding: '8px 14px',
             background: '#F1F5F9',
             fontSize: '11px',
@@ -867,7 +867,7 @@ export default function FinancialsRenewalsDashboard() {
                     key={client.id}
                     style={{
                       display: 'grid',
-                      gridTemplateColumns: '70px 1.3fr 75px 85px 125px 115px 95px 255px',
+                      gridTemplateColumns: '70px 1.3fr 75px 85px 125px 115px 95px 205px',
                       padding: '10px 14px',
                       alignItems: 'center',
                       borderBottom: '1px solid #F1F5F9',
@@ -1058,72 +1058,49 @@ export default function FinancialsRenewalsDashboard() {
                         </>
                       )}
 
-                      {/* Retention Radar Action Button */}
-                      <button
-                        type="button"
-                        onClick={() => setSelectedRadarClient(client)}
-                        style={{
-                          padding: '3px 7px',
-                          borderRadius: '8px',
-                          background: '#F8FAFC',
-                          color: '#0F172A',
-                          border: '1px solid #CBD5E1',
-                          fontSize: '10.5px',
-                          fontWeight: 700,
-                          cursor: 'pointer',
-                          display: 'inline-flex',
-                          alignItems: 'center',
-                          gap: '3px'
-                        }}
-                        title="تحليل رادار الاحتفاظ والرسالة التكتيكية"
-                      >
-                        <Activity size={11} color="#0284C7" />
-                        <span>الرادار</span>
-                      </button>
-
-                      {/* Coach Editor Plan Link */}
+                      {/* Going to the plan or the file is navigation, not a financial action: icon only. */}
                       <button
                         type="button"
                         onClick={() => window.open(`/coach/editor/${cleanCode}`, '_blank')}
+                        aria-label="فتح خطة المشترك"
                         style={{
-                          padding: '3px 7px',
+                          width: '26px',
+                          height: '24px',
                           borderRadius: '8px',
                           background: '#F0F9FF',
                           color: '#0284C7',
                           border: '1px solid #BAE6FD',
-                          fontSize: '10.5px',
-                          fontWeight: 700,
                           cursor: 'pointer',
                           display: 'inline-flex',
                           alignItems: 'center',
-                          gap: '3px'
+                          justifyContent: 'center',
+                          padding: 0
                         }}
                         title="فتح محرر خطة المشترك التدريبية والغذائية"
                       >
-                        <Dumbbell size={11} />
-                        <span>الخطة</span>
+                        <Dumbbell size={12} />
                       </button>
 
                       <button
                         type="button"
                         onClick={() => window.open(`/customers/${cleanCode}`, '_blank')}
+                        aria-label="عرض ملف المشترك"
                         style={{
-                          padding: '3px 7px',
+                          width: '26px',
+                          height: '24px',
                           borderRadius: '8px',
                           background: '#F8FAFC',
                           color: '#334155',
                           border: '1px solid #CBD5E1',
-                          fontSize: '10.5px',
-                          fontWeight: 700,
                           cursor: 'pointer',
                           display: 'inline-flex',
                           alignItems: 'center',
-                          gap: '3px'
+                          justifyContent: 'center',
+                          padding: 0
                         }}
                         title="عرض ملف التطور الزمني والمقارنة البصرية للمشترك"
                       >
-                        <Clock size={11} color="#475569" />
-                        <span>الملف</span>
+                        <Clock size={12} color="#475569" />
                       </button>
                     </div>
 
