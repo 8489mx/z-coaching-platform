@@ -1,10 +1,11 @@
 import { ClientCodeBadge, ClientPackageBadge, getClientTier } from '../utils/tierBadgeHelper';
 import React, { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
-import { ExternalLink, Clock, CheckCircle2, CreditCard, FileText, MessageCircle, Eye, Edit3, X, Layers, TrendingUp, RefreshCw } from 'lucide-react';
+import { ExternalLink, Clock, CheckCircle2, CreditCard, FileText, MessageCircle, Eye, Edit3, X, Layers, TrendingUp } from 'lucide-react';
 import { API_BASE } from '../config/api';
 import AdminLayout from '../components/layout/AdminLayout';
 import { TableSearch } from '@/shared/components/table-search';
+import { RefreshButton } from '@/shared/components/refresh-button';
 import WhatsAppModal from '../components/modals/WhatsAppModal';
 import IntakeAuditDetailModal from '../components/intake/IntakeAuditDetailModal';
 import { arabicSearchMatch } from '../utils/searchUtils';
@@ -242,6 +243,8 @@ export default function IntakeSubmissions() {
           title="استمارات المشتركين"
           description="متابعة استمارات المشتركين الجدد وتوليد الخطط واعتمادها فورياً."
           actions={(
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <RefreshButton onClick={fetchSubmissions} loading={loading} shortcut="R" />
             <Link
               to="/intake/form"
               target="_blank"
@@ -266,6 +269,7 @@ export default function IntakeSubmissions() {
               <ExternalLink size={14} />
               <span>رابط الاستمارة</span>
             </Link>
+            </div>
           )}
         />
 
@@ -353,35 +357,6 @@ export default function IntakeSubmissions() {
           description="كافة الاستمارات الواردة مع إمكانية مراجعة الإجابات، تأكيد التحويل، وتوليد البرامج."
           actions={(
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
-              {/* Refresh Button */}
-              <button
-                type="button"
-                onClick={fetchSubmissions}
-                disabled={loading}
-                style={{
-                  height: '32px',
-                  padding: '0 10px',
-                  borderRadius: '8px',
-                  border: '1px solid #E2E8F0',
-                  background: '#FFFFFF',
-                  color: '#475569',
-                  fontSize: '11px',
-                  fontWeight: 700,
-                  cursor: 'pointer',
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  gap: '5px',
-                  transition: 'all 0.15s ease'
-                }}
-                onMouseEnter={(e) => (e.currentTarget.style.background = '#F8FAFC')}
-                onMouseLeave={(e) => (e.currentTarget.style.background = '#FFFFFF')}
-                title="تحديث البيانات لحظياً [R]"
-              >
-                <RefreshCw size={12} className={loading ? 'animate-spin' : ''} />
-                <span>تحديث</span>
-                <span style={{ fontSize: '9px', opacity: 0.7, fontFamily: 'JetBrains Mono, monospace' }}>[R]</span>
-              </button>
-
               {/* Search Box */}
               <TableSearch value={searchTerm} onChange={setSearchTerm} inputRef={searchInputRef} placeholder="بحث في الاستمارات" width="210px" />
 

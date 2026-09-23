@@ -25,6 +25,7 @@ import NewClientQuickModal from '../components/modals/NewClientQuickModal';
 import { PageHeader } from '@/shared/components/page-header';
 import { TierFilter } from '@/shared/components/tier-filter';
 import { TableSearch } from '@/shared/components/table-search';
+import { RefreshButton } from '@/shared/components/refresh-button';
 import { FormSection } from '@/shared/components/form-section';
 import { extractClientFastingProfile } from '../utils/seasonalFastingRadar';
 import { arabicSearchMatch } from '../utils/searchUtils';
@@ -585,42 +586,7 @@ export default function CoachCommandCenter() {
           description="متابعة المشتركين، الاستمارات الجديدة، والخطط المطلوب اعتمادها اليوم."
           actions={(
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-              <button
-                type="button"
-                onClick={fetchDashboardData}
-                disabled={loading}
-                title="تحديث البيانات اللحظية من الخادم"
-                style={{
-                  height: '36px',
-                  padding: '0 14px',
-                  fontSize: '12px',
-                  fontWeight: 700,
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  gap: '6px',
-                  borderRadius: '8px',
-                  background: '#FFFFFF',
-                  color: '#1E293B',
-                  border: '1px solid #CBD5E1',
-                  cursor: loading ? 'not-allowed' : 'pointer',
-                  opacity: loading ? 0.7 : 1,
-                  boxShadow: '0 1px 2px rgba(15, 23, 42, 0.05)',
-                  transition: 'all 0.15s ease'
-                }}
-                onMouseEnter={(e) => {
-                  if (!loading) {
-                    e.currentTarget.style.background = '#F8FAFC';
-                    e.currentTarget.style.borderColor = '#94A3B8';
-                  }
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.background = '#FFFFFF';
-                  e.currentTarget.style.borderColor = '#CBD5E1';
-                }}
-              >
-                <RotateCw size={14} className={loading ? 'animate-spin' : ''} />
-                <span>تحديث البيانات</span>
-              </button>
+              <RefreshButton onClick={fetchDashboardData} loading={loading} />
 
               <button 
                 type="button" 
