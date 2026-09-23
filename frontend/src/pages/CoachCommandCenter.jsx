@@ -656,6 +656,9 @@ export default function CoachCommandCenter() {
           {stats.map((st, i) => {
             const IconComponent = st.icon;
             const isActive = activeTab === st.type;
+            // A card with nothing in it stays readable but steps back, so the cards that carry
+            // today's work are the ones the eye lands on first.
+            const isEmpty = Number(st.value) === 0 && !isActive;
             return (
               <div 
                 key={i} 
@@ -690,7 +693,7 @@ export default function CoachCommandCenter() {
               >
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                    <span style={{ fontSize: '12.5px', fontWeight: 700, color: isActive ? '#0F172A' : '#64748B', whiteSpace: 'nowrap' }}>
+                    <span style={{ fontSize: '12.5px', fontWeight: 700, color: isActive ? '#0F172A' : (isEmpty ? '#94A3B8' : '#64748B'), whiteSpace: 'nowrap' }}>
                       {st.title}
                     </span>
                     {st.shortcut && (
@@ -714,7 +717,7 @@ export default function CoachCommandCenter() {
                     borderRadius: '8px', 
                     background: isActive ? '#0F172A' : '#F8FAFC', 
                     border: isActive ? '1px solid #0F172A' : '1px solid #E2E8F0', 
-                    color: isActive ? '#FFFFFF' : '#0F172A', 
+                    color: isActive ? '#FFFFFF' : (isEmpty ? '#94A3B8' : '#0F172A'), 
                     display: 'flex', 
                     alignItems: 'center', 
                     justifyContent: 'center', 
@@ -726,7 +729,7 @@ export default function CoachCommandCenter() {
                 </div>
                 <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', gap: '8px' }}>
                   <div style={{ display: 'flex', alignItems: 'baseline', gap: '4px' }}>
-                    <span style={{ fontSize: '1.65rem', fontWeight: 900, color: '#0F172A', fontFamily: 'JetBrains Mono, Cairo, sans-serif', lineHeight: 1 }}>
+                    <span style={{ fontSize: '1.65rem', fontWeight: 900, color: isEmpty ? '#CBD5E1' : '#0F172A', fontFamily: 'JetBrains Mono, Cairo, sans-serif', lineHeight: 1 }}>
                       {st.value}
                     </span>
                     {st.unit && (

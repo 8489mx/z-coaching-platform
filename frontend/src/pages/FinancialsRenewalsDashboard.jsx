@@ -545,7 +545,7 @@ export default function FinancialsRenewalsDashboard() {
               </div>
             </div>
             <div style={{ display: 'flex', alignItems: 'baseline', gap: '6px' }}>
-              <strong style={{ fontSize: '20px', fontWeight: 800, color: '#0F172A', fontFamily: 'JetBrains Mono, Cairo, sans-serif' }}>
+              <strong style={{ fontSize: '20px', fontWeight: 800, color: totalMRR === 0 ? '#CBD5E1' : '#0F172A', fontFamily: 'JetBrains Mono, Cairo, sans-serif' }}>
                 {totalMRR.toLocaleString('en-US')}
               </strong>
               <span style={{ fontSize: '11px', fontWeight: 700, color: '#64748B', fontFamily: 'Cairo, sans-serif' }}>ج.م / شهر</span>
@@ -624,7 +624,7 @@ export default function FinancialsRenewalsDashboard() {
               </div>
             </div>
             <div style={{ display: 'flex', alignItems: 'baseline', gap: '6px' }}>
-              <strong style={{ fontSize: '20px', fontWeight: 800, color: '#B45309', fontFamily: 'JetBrains Mono, Cairo, sans-serif' }}>
+              <strong style={{ fontSize: '20px', fontWeight: 800, color: urgentRenewals.length === 0 ? '#CBD5E1' : '#B45309', fontFamily: 'JetBrains Mono, Cairo, sans-serif' }}>
                 {urgentRenewals.length}
               </strong>
               <span style={{ fontSize: '11px', color: '#64748B', fontFamily: 'Cairo, sans-serif' }}>
@@ -657,13 +657,13 @@ export default function FinancialsRenewalsDashboard() {
               </div>
             </div>
             <div style={{ display: 'flex', alignItems: 'baseline', gap: '6px' }}>
-              <strong style={{ fontSize: '20px', fontWeight: 800, color: '#DC2626', fontFamily: 'JetBrains Mono, Cairo, sans-serif' }}>
+              <strong style={{ fontSize: '20px', fontWeight: 800, color: overdueCount === 0 ? '#CBD5E1' : '#DC2626', fontFamily: 'JetBrains Mono, Cairo, sans-serif' }}>
                 {overdueCount}
               </strong>
               <span style={{ fontSize: '11px', color: '#64748B', fontFamily: 'Cairo, sans-serif' }}>مشترك</span>
             </div>
-            <div style={{ fontSize: '10px', color: '#DC2626', fontWeight: 700, marginTop: '4px' }}>
-              تحتاج متابعة هاتفية (انقر للفلترة)
+            <div style={{ fontSize: '10px', color: overdueCount === 0 ? '#64748B' : '#DC2626', fontWeight: 700, marginTop: '4px' }}>
+              {overdueCount === 0 ? 'لا توجد اشتراكات منتهية' : 'تحتاج متابعة هاتفية (انقر للفلترة)'}
             </div>
           </div>
 

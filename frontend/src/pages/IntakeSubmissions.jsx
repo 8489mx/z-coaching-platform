@@ -273,6 +273,8 @@ export default function IntakeSubmissions() {
           {statCards.map((st, i) => {
             const Icon = st.icon;
             const isSel = filter === st.id;
+            // Same rule as the daily dashboard: an empty count steps back instead of shouting zero.
+            const isEmpty = Number(st.value) === 0 && !isSel;
             return (
               <div 
                 key={i} 
@@ -294,7 +296,7 @@ export default function IntakeSubmissions() {
               >
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                    <span style={{ fontSize: '12px', fontWeight: isSel ? 800 : 700, color: isSel ? '#0F172A' : '#64748B', whiteSpace: 'nowrap' }}>{st.title}</span>
+                    <span style={{ fontSize: '12px', fontWeight: isSel ? 800 : 700, color: isSel ? '#0F172A' : (isEmpty ? '#94A3B8' : '#64748B'), whiteSpace: 'nowrap' }}>{st.title}</span>
                     <span style={{
                       fontSize: '9.5px',
                       fontFamily: 'JetBrains Mono, monospace',
@@ -314,7 +316,7 @@ export default function IntakeSubmissions() {
                     borderRadius: '8px',
                     background: isSel ? '#0F172A' : '#F8FAFC',
                     border: isSel ? '1px solid #0F172A' : '1px solid #E2E8F0',
-                    color: isSel ? '#FFFFFF' : '#0F172A',
+                    color: isSel ? '#FFFFFF' : (isEmpty ? '#94A3B8' : '#0F172A'),
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
@@ -326,7 +328,7 @@ export default function IntakeSubmissions() {
                 </div>
                 <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', gap: '6px' }}>
                   <div style={{ display: 'flex', alignItems: 'baseline', gap: '3px' }}>
-                    <span style={{ fontSize: '1.5rem', fontWeight: 900, color: '#0F172A', fontFamily: 'JetBrains Mono, Cairo, sans-serif', lineHeight: 1 }}>
+                    <span style={{ fontSize: '1.5rem', fontWeight: 900, color: isEmpty ? '#CBD5E1' : '#0F172A', fontFamily: 'JetBrains Mono, Cairo, sans-serif', lineHeight: 1 }}>
                       {st.value}
                     </span>
                     {st.unit && (
