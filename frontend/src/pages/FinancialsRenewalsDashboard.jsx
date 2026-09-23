@@ -4,9 +4,10 @@ import { ClientCodeBadge, ClientPackageBadge, getClientTier } from '../utils/tie
 import { arabicSearchMatch } from '../utils/searchUtils';
 import React, { useState, useMemo, useEffect, useRef } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { DollarSign, CreditCard, AlertCircle, Clock, CheckCircle2, Send, Search, ArrowUpRight, BadgePercent, Wallet, Pause, Play, ShieldAlert, MessageSquare, Dumbbell, Activity, Target, ShieldCheck } from 'lucide-react';
+import { DollarSign, CreditCard, AlertCircle, Clock, CheckCircle2, Send, ArrowUpRight, BadgePercent, Wallet, Pause, Play, ShieldAlert, MessageSquare, Dumbbell, Activity, Target, ShieldCheck } from 'lucide-react';
 import AdminLayout from '../components/layout/AdminLayout';
 import { TierFilter } from '@/shared/components/tier-filter';
+import { TableSearch } from '@/shared/components/table-search';
 import FlexibleRenewalModal from '../components/modals/FlexibleRenewalModal';
 import ClientRetentionRadarModal from '../components/modals/ClientRetentionRadarModal';
 import { calculateClientRetentionHealth, batchEvaluateRetentionRadar } from '../utils/clientRetentionRadarEngine';
@@ -808,17 +809,7 @@ export default function FinancialsRenewalsDashboard() {
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
               <TierFilter value={tierFilter} onChange={setTierFilter} />
 
-              <div style={{ display: 'flex', alignItems: 'center', background: '#FFFFFF', border: '1px solid #CBD5E1', borderRadius: '8px', padding: '0 8px', height: '28px', width: '170px', gap: '4px' }}>
-                <Search size={12} color="#94A3B8" />
-                <input
-                  ref={searchInputRef}
-                  type="text"
-                  placeholder="بحث (اضغط / للبحث)..."
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  style={{ border: 'none', background: 'transparent', fontSize: '11px', outline: 'none', width: '100%' }}
-                />
-              </div>
+              <TableSearch value={searchQuery} onChange={setSearchQuery} inputRef={searchInputRef} width="200px" />
             </div>
           </div>
 

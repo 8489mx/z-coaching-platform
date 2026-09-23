@@ -1,9 +1,10 @@
 import { ClientCodeBadge, ClientPackageBadge, getClientTier } from '../utils/tierBadgeHelper';
 import React, { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
-import { ExternalLink, Search, Clock, CheckCircle2, CreditCard, FileText, MessageCircle, Eye, Edit3, X, Layers, TrendingUp, RefreshCw } from 'lucide-react';
+import { ExternalLink, Clock, CheckCircle2, CreditCard, FileText, MessageCircle, Eye, Edit3, X, Layers, TrendingUp, RefreshCw } from 'lucide-react';
 import { API_BASE } from '../config/api';
 import AdminLayout from '../components/layout/AdminLayout';
+import { TableSearch } from '@/shared/components/table-search';
 import WhatsAppModal from '../components/modals/WhatsAppModal';
 import IntakeAuditDetailModal from '../components/intake/IntakeAuditDetailModal';
 import { arabicSearchMatch } from '../utils/searchUtils';
@@ -382,43 +383,7 @@ export default function IntakeSubmissions() {
               </button>
 
               {/* Search Box */}
-              <div 
-                style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  background: '#F8FAFC',
-                  border: '1px solid #E2E8F0',
-                  borderRadius: '8px',
-                  padding: '0 8px',
-                  height: '32px',
-                  width: '210px',
-                  gap: '6px'
-                }}
-              >
-                <Search size={13} color="#94A3B8" />
-                <input
-                  ref={searchInputRef}
-                  type="text"
-                  placeholder="بحث في الاستمارات... [/]"
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  style={{
-                    border: 'none',
-                    outline: 'none',
-                    background: 'transparent',
-                    fontSize: '11.5px',
-                    width: '100%',
-                    color: '#0F172A'
-                  }}
-                />
-                {searchTerm ? (
-                  <button type="button" onClick={() => setSearchTerm('')} style={{ border: 'none', background: 'transparent', cursor: 'pointer', padding: 0, color: '#94A3B8' }}>
-                    <X size={12} />
-                  </button>
-                ) : (
-                  <span style={{ fontSize: '9.5px', color: '#94A3B8', fontFamily: 'JetBrains Mono, monospace', padding: '1px 5px', background: '#FFFFFF', border: '1px solid #E2E8F0', borderRadius: '6px' }}>/</span>
-                )}
-              </div>
+              <TableSearch value={searchTerm} onChange={setSearchTerm} inputRef={searchInputRef} placeholder="بحث في الاستمارات" width="210px" />
 
               {/* Active Filter Indicator Tag */}
               {filter !== 'ALL' && (

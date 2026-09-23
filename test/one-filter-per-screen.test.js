@@ -17,20 +17,21 @@ const SCREENS_WITH_A_PACKAGE_FILTER = [
   "frontend/src/pages/Customers.jsx",
   "frontend/src/pages/FinancialsRenewalsDashboard.jsx",
   "frontend/src/pages/CoachCommandCenter.jsx",
+  "frontend/src/pages/CheckinReviewDashboard.jsx",
 ];
 
 test("every screen takes its package filter from the one shared control", () => {
   for (const file of SCREENS_WITH_A_PACKAGE_FILTER) {
     const code = read(file);
     assert.match(code, /import \{ TierFilter \} from '@\/shared\/components\/tier-filter'/, `${file} does not use the shared filter`);
-    assert.match(code, /<TierFilter /, `${file} imports the shared filter but does not render it`);
+    assert.match(code, /<TierFilter[\s>]/, `${file} imports the shared filter but does not render it`);
   }
 });
 
 test("no screen draws its own package filter next to the shared one", () => {
   for (const file of SCREENS_WITH_A_PACKAGE_FILTER) {
     const code = read(file);
-    const rendered = (code.match(/<TierFilter /g) || []).length;
+    const rendered = (code.match(/<TierFilter[\s>]/g) || []).length;
     assert.equal(rendered, 1, `${file} renders the package filter ${rendered} times`);
     // A second control setting the same filter is what made the two disagree.
     const setters = (code.match(/setTierFilter\(/g) || []).length;

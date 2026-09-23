@@ -1,5 +1,6 @@
 import React from 'react';
-import { Users, AlertCircle, Clock, RotateCw, Search } from 'lucide-react';
+import { Users, AlertCircle, Clock, RotateCw } from 'lucide-react';
+import { TableSearch } from '@/shared/components/table-search';
 
 export function CoachClientsQueue({
   urgentCount,
@@ -89,16 +90,7 @@ export function CoachClientsQueue({
 
         {/* Quick Search & Toggle Slider */}
         <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-          <div style={{ display: 'flex', alignItems: 'center', background: '#F8FAFC', border: '1px solid #CBD5E1', borderRadius: '8px', padding: '0 6px', height: '26px', width: '160px', gap: '4px' }}>
-            <Search size={11} color="#94A3B8" />
-            <input
-              type="text"
-              placeholder="بحث سريع..."
-              value={queueSearch}
-              onChange={(e) => setQueueSearch(e.target.value)}
-              style={{ border: 'none', background: 'transparent', fontSize: '10.5px', outline: 'none', width: '100%' }}
-            />
-          </div>
+          <TableSearch value={queueSearch} onChange={setQueueSearch} placeholder="بحث بالاسم أو الكود" width="180px" showShortcut={false} />
 
           <button
             type="button"

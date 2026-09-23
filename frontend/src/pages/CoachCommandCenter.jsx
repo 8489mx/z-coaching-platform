@@ -9,8 +9,7 @@ import {
   CheckCircle2, 
   ShieldAlert, 
   ExternalLink, 
-  ClipboardList, 
-  Search, 
+  ClipboardList,  
   X, 
   RotateCw, 
   Copy, 
@@ -25,6 +24,7 @@ import AdminLayout from '../components/layout/AdminLayout';
 import NewClientQuickModal from '../components/modals/NewClientQuickModal';
 import { PageHeader } from '@/shared/components/page-header';
 import { TierFilter } from '@/shared/components/tier-filter';
+import { TableSearch } from '@/shared/components/table-search';
 import { FormSection } from '@/shared/components/form-section';
 import { extractClientFastingProfile } from '../utils/seasonalFastingRadar';
 import { arabicSearchMatch } from '../utils/searchUtils';
@@ -1322,42 +1322,7 @@ export default function CoachCommandCenter() {
                 </div>
 
                 {/* Search Box */}
-                <div 
-                  style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    background: '#FFFFFF',
-                    border: '1px solid #CBD5E1',
-                    borderRadius: '8px',
-                    padding: '0 10px',
-                    height: '34px',
-                    minWidth: '240px',
-                    gap: '6px'
-                  }}
-                >
-                  <Search size={14} color="#94A3B8" />
-                  <input
-                    ref={searchInputRef}
-                    type="text"
-                    placeholder="بحث بالاسم أو الكود أو الهاتف... (اضغط / للتركيز)"
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    style={{
-                      border: 'none',
-                      outline: 'none',
-                      background: 'transparent',
-                      fontSize: '12px',
-                      width: '100%',
-                      color: '#0F172A',
-                      fontFamily: 'Cairo, sans-serif'
-                    }}
-                  />
-                  {searchQuery && (
-                    <button type="button" onClick={() => setSearchQuery('')} style={{ border: 'none', background: 'transparent', cursor: 'pointer', padding: 0, color: '#94A3B8' }}>
-                      <X size={13} />
-                    </button>
-                  )}
-                </div>
+                <TableSearch value={searchQuery} onChange={setSearchQuery} inputRef={searchInputRef} />
               </div>
             </div>
 

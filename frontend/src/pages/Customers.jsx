@@ -2,12 +2,10 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import {
   Users,
-  Search,
   Plus,
   ShieldCheck,
   Clock,
   MessageCircle,
-  X,
   Download,
   ExternalLink
 } from 'lucide-react';
@@ -17,6 +15,7 @@ import WhatsAppModal from '../components/modals/WhatsAppModal';
 import FlexibleRenewalModal from '../components/modals/FlexibleRenewalModal';
 import { PageHeader } from '@/shared/components/page-header';
 import { TierFilter } from '@/shared/components/tier-filter';
+import { TableSearch } from '@/shared/components/table-search';
 import { FormSection } from '@/shared/components/form-section';
 import NewClientQuickModal from '../components/modals/NewClientQuickModal';
 import { ClientCodeBadge, ClientPackageBadge, getClientTier } from '../utils/tierBadgeHelper';
@@ -367,42 +366,7 @@ export default function Customers() {
                 <span>تصدير Excel / CSV</span>
               </button>
 
-              {/* Search Box */}
-              <div 
-                style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  background: '#F8FAFC',
-                  border: '1px solid #E2E8F0',
-                  borderRadius: '8px',
-                  padding: '0 8px',
-                  height: '32px',
-                  width: '230px',
-                  gap: '6px'
-                }}
-              >
-                <Search size={13} color="#94A3B8" />
-                <input
-                  ref={searchInputRef}
-                  type="text"
-                  placeholder="بحث بالاسم، الهاتف، أو الكود... (اضغط /)"
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  style={{
-                    border: 'none',
-                    outline: 'none',
-                    background: 'transparent',
-                    fontSize: '11.5px',
-                    width: '100%',
-                    color: '#0F172A'
-                  }}
-                />
-                {searchTerm && (
-                  <button type="button" onClick={() => setSearchTerm('')} style={{ border: 'none', background: 'transparent', cursor: 'pointer', padding: 0, color: '#94A3B8' }}>
-                    <X size={12} />
-                  </button>
-                )}
-              </div>
+              <TableSearch value={searchTerm} onChange={setSearchTerm} inputRef={searchInputRef} width="230px" />
 
               <TierFilter value={tierFilter} onChange={setTierFilter} counts={{ ALL: clients.length, MAX: maxCount, ELITE: eliteCount }} />
 

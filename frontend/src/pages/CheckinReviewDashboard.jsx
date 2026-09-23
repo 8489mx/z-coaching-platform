@@ -18,7 +18,6 @@ import {
   ChevronLeft,
   ShieldCheck,
   Zap,
-  Search,
   HeartPulse,
   Target,
   Dumbbell,
@@ -43,6 +42,8 @@ import { evaluateJointPainAndFirewall } from '../utils/biomechanicsFirewallEngin
 import { generateCheckinApprovalWhatsAppMessage } from '../utils/checkinApprovalWhatsApp';
 
 import DeloadRecommendationCard from '../components/checkin/DeloadRecommendationCard';
+import { TableSearch } from '@/shared/components/table-search';
+import { TierFilter } from '@/shared/components/tier-filter';
 
 const DEFAULT_BASELINE_MACROS = {
   calories: 2000,
@@ -1056,87 +1057,21 @@ export default function CheckinReviewDashboard() {
               </div>
 
               {/* Search Bar in Queue */}
-              <div style={{ position: 'relative', marginBottom: '8px' }}>
-                <Search size={13} style={{ position: 'absolute', right: '9px', top: '50%', transform: 'translateY(-50%)', color: '#94A3B8' }} />
-                <input
-                  type="text"
-                  placeholder="بحث بالاسم أو الكود..."
+              <div style={{ marginBottom: '8px' }}>
+                <TableSearch
                   value={searchQuery}
-                  onChange={(e) => {
-                    setSearchQuery(e.target.value);
-                    setSelectedIdx(0);
-                  }}
-                  style={{
-                    width: '100%',
-                    height: '30px',
-                    borderRadius: '8px',
-                    border: '1px solid #CBD5E1',
-                    padding: '0 28px 0 8px',
-                    fontSize: '11px',
-                    outline: 'none',
-                    background: '#FFFFFF',
-                    boxSizing: 'border-box'
-                  }}
+                  onChange={(next) => { setSearchQuery(next); setSelectedIdx(0); }}
+                  placeholder="بحث بالاسم أو الكود"
+                  width="100%"
+                  showShortcut={false}
                 />
               </div>
 
-              {/* Filter Pills */}
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '4px' }}>
-                {[
-                  { id: 'ALL', label: 'الكل' },
-                  { id: 'MAX', label: 'MAX' },
-                  { id: 'ELITE', label: 'ELITE' }
-                ].map(t => {
-                  const isSelected = tierFilter === t.id;
-                  let border = '1px solid #E2E8F0';
-                  let background = '#F8FAFC';
-                  let color = '#64748B';
-                  let shadow = 'none';
-
-                  if (isSelected) {
-                    border = '1px solid #0F172A';
-                    background = '#0F172A';
-                    color = '#FFFFFF';
-                    shadow = '0 1px 3px rgba(15, 23, 42, 0.2)';
-                  } else if (t.id === 'MAX') {
-                    border = '1px solid #E2E8F0';
-                    background = '#F8FAFC';
-                    color = '#B45309';
-                  } else if (t.id === 'ELITE') {
-                    border = '1px solid #E2E8F0';
-                    background = '#F8FAFC';
-                    color = '#0284C7';
-                  }
-
-                  return (
-                    <button
-                      key={t.id}
-                      type="button"
-                      onClick={() => {
-                        setTierFilter(t.id);
-                        setSelectedIdx(0);
-                      }}
-                      style={{
-                        height: '24px',
-                        borderRadius: '8px',
-                        border,
-                        background,
-                        color,
-                        boxShadow: shadow,
-                        fontSize: '10.5px',
-                        fontWeight: 800,
-                        fontFamily: t.id !== 'ALL' ? 'JetBrains Mono, sans-serif' : 'inherit',
-                        cursor: 'pointer',
-                        userSelect: 'none',
-                        outline: 'none',
-                        transition: 'background-color 0.15s ease, color 0.15s ease, border-color 0.15s ease'
-                      }}
-                    >
-                      {t.label}
-                    </button>
-                  );
-                })}
-              </div>
+              {/* The same package filter the other screens use. */}
+              <TierFilter
+                value={tierFilter}
+                onChange={(next) => { setTierFilter(next); setSelectedIdx(0); }}
+              />
             </div>
 
             {/* Scrollable Queue Items */}

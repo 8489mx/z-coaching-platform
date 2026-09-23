@@ -2,8 +2,9 @@ import { API_BASE } from '../config/api';
 import { buildClientLinks } from '../utils/clientLinks';
 import { getClientTier, ClientCodeBadge, ClientPackageBadge } from '../utils/tierBadgeHelper';
 import React, { useState, useMemo } from 'react';
-import { Send, MessageSquare, CheckCircle2, Copy, Search, ExternalLink, Smartphone, ShieldAlert, Check, ChevronDown, ChevronRight, ChevronLeft, Dumbbell, Link } from 'lucide-react';
+import { Send, MessageSquare, CheckCircle2, Copy, ExternalLink, Smartphone, ShieldAlert, Check, ChevronDown, ChevronRight, ChevronLeft, Dumbbell, Link } from 'lucide-react';
 import AdminLayout from '../components/layout/AdminLayout';
+import { TableSearch } from '@/shared/components/table-search';
 import { REMINDER_CATEGORIES, MESSAGE_TEMPLATES, compileReminderMessage, generateWhatsAppUrl } from '../utils/whatsappRemindersEngine';
 import { arabicSearchMatch } from '../utils/searchUtils';
 
@@ -453,16 +454,7 @@ export default function WhatsAppRemindersHub() {
               })}
             </div>
 
-            <div style={{ display: 'flex', alignItems: 'center', background: '#F8FAFC', border: '1px solid #CBD5E1', borderRadius: '8px', padding: '0 8px', height: '30px', width: '180px', gap: '5px' }}>
-              <Search size={13} color="#94A3B8" />
-              <input
-                type="text"
-                placeholder="بحث باسم أو رقم..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                style={{ border: 'none', background: 'transparent', fontSize: '11px', outline: 'none', width: '100%' }}
-              />
-            </div>
+            <TableSearch value={searchQuery} onChange={setSearchQuery} placeholder="بحث بالاسم أو الرقم" width="200px" showShortcut={false} />
           </div>
         </div>
 
