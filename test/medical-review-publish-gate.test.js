@@ -63,12 +63,18 @@ test("publishing a plan for a kidney/liver client needs an explicit medical revi
         assert.equal(await Program.count({ where: { user_id: user.id, status: "ACTIVE" } }), 0);
       });
 
-      await t.test(`${condition}: approve-and-publish is refused without confirmation`, async () => {
+      await t.test(`${condition}: approve-and-publish is refused`, async () => {
         await Program.create({ user_id: user.id, program_data: {}, status: "DRAFT" });
         const r = mockRes();
         await approveAndPublishIntake({ params: { submission_id: submission.id }, body: {} }, r.res);
-        assert.equal(r.out.status, 409);
-        assert.equal(r.out.body.code, "MEDICAL_REVIEW_CONFIRMATION_REQUIRED");
+        if (condition === "renal") {
+          // Kidney disease is outside the service (serviceScope): refused outright, not "needs confirmation".
+          assert.equal(r.out.status, 422);
+          assert.equal(r.out.body.code, "OUTSIDE_SERVICE_SCOPE");
+        } else {
+          assert.equal(r.out.status, 409);
+          assert.equal(r.out.body.code, "MEDICAL_REVIEW_CONFIRMATION_REQUIRED");
+        }
       });
 
       await t.test(`${condition}: confirmed publish succeeds and records the confirmation`, async () => {

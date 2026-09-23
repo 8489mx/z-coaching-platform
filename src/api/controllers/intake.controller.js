@@ -12,6 +12,7 @@ import { startCycleOnPublish } from "../services/trainingCycleService.js";
 import { encryptMedicalData, decryptMedicalData } from "../../utils/crypto.js";
 import { hasHealthDataConsent } from "../../../frontend/src/config/healthDataConsent.js";
 import { recordFailedAttempt } from "../middlewares/rateLimiter.js";
+import { assessServiceScope, outsideScopeResponse } from "../services/serviceScope.js";
 
 const HEALTH_DATA_CONSENT_REQUIRED = Object.freeze({
   error: "يجب الموافقة على معالجة البيانات الصحية قبل حفظ أو إرسال الاستمارة",
@@ -539,6 +540,12 @@ export const generateDraftFromIntake = async (req, res) => {
       assessmentDate: new Date().toISOString().split("T")[0]
     });
 
+    // Pregnancy and kidney disease are followed by the client's own doctor: no plan is built.
+    const scope = assessServiceScope(intakePayload);
+    if (!scope.supported) {
+      return res.status(422).json(outsideScopeResponse(scope));
+    }
+
     const canonicalIntake = adaptIntakePayloadToCanonicalEngine(intakePayload);
     const intakeDecision = evaluateIntake(canonicalIntake, evaluationContext);
     if (intakeDecision.plan_status === "BLOCKED") {
@@ -638,6 +645,16 @@ export const approveAndPublishIntake = async (req, res) => {
 
     if (!submission) {
       return res.status(404).json({ error: "الاستمارة غير موجودة" });
+    }
+
+    // The same gate on the way out: a draft made before this rule is not published either.
+    let scopeAnswers = submission.answers;
+    if (scopeAnswers && scopeAnswers._isEncrypted) {
+      scopeAnswers = decryptMedicalData(scopeAnswers.data);
+    }
+    const scope = assessServiceScope(scopeAnswers);
+    if (!scope.supported) {
+      return res.status(422).json(outsideScopeResponse(scope));
     }
 
     let program = await Program.findOne({
