@@ -50,3 +50,13 @@ test("the empty program carries nothing of anyone's plan", () => {
   assert.match(block, /sessions: Object\.freeze\(\[\]\)/);
   assert.match(block, /calories: 0, protein: 0, carbs: 0, fats: 0/);
 });
+
+test("the sidebar badge counts only what is waiting on the coach", () => {
+  const sidebar = read("frontend/src/components/layout/Sidebar.jsx");
+  assert.match(sidebar, /AWAITING_COACH = \['PENDING_COACH_REVIEW', 'PAYMENT_CONFIRMED', 'DRAFT_GENERATED'\]/);
+  assert.doesNotMatch(sidebar, /intakes: Array\.isArray\(inData\?\.submissions\) \? inData\.submissions\.length/);
+  // A failed request keeps the number it had; it does not silently become zero.
+  assert.match(sidebar, /: prev\.intakes/);
+  assert.match(sidebar, /: prev\.checkins/);
+  assert.match(sidebar, /setInterval\(fetchBadges, 60000\)/);
+});

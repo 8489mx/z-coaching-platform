@@ -79,22 +79,50 @@ export default function Sidebar({ isCollapsed = false, onToggleSidebar }) {
   const [liveBadges, setLiveBadges] = useState({ intakes: 0, checkins: 0, reminders: 0 });
 
   useEffect(() => {
+    // A badge counts what is still waiting on the coach - an approved or rejected form is done, and
+    // a form the client has not finished yet is not his to act on. It used to count every form ever
+    // submitted, so the sidebar said ten while the page itself showed nothing pending.
+    const AWAITING_COACH = ['PENDING_COACH_REVIEW', 'PAYMENT_CONFIRMED', 'DRAFT_GENERATED'];
+    let cancelled = false;
+
     const fetchBadges = async () => {
-      try {
-        const [chRes, inRes] = await Promise.all([
-          fetch(`${API_BASE}/api/v1/programs/checkin/pending`).catch(() => ({ json: () => ({ checkins: [] }) })),
-          fetch(`${API_BASE}/api/v1/intake/submissions`).catch(() => ({ json: () => ({ submissions: [] }) }))
-        ]);
-        const chData = await chRes.json?.().catch(() => ({}));
-        const inData = await inRes.json?.().catch(() => ({}));
-        setLiveBadges({
-          intakes: Array.isArray(inData?.submissions) ? inData.submissions.length : 0,
-          checkins: Array.isArray(chData?.checkins) ? chData.checkins.length : 0,
-          reminders: 0
-        });
-      } catch {}
+      const readJson = async (url) => {
+        try {
+          const res = await fetch(url);
+          if (!res.ok) return null;
+          return await res.json();
+        } catch {
+          return null;
+        }
+      };
+
+      const [chData, inData] = await Promise.all([
+        readJson(`${API_BASE}/api/v1/programs/checkin/pending`),
+        readJson(`${API_BASE}/api/v1/intake/submissions`)
+      ]);
+      if (cancelled) return;
+
+      // A request that failed leaves its own badge as it was instead of dropping it to zero.
+      setLiveBadges((prev) => ({
+        ...prev,
+        intakes: Array.isArray(inData?.submissions)
+          ? inData.submissions.filter((s) => AWAITING_COACH.includes(String(s?.status || ''))).length
+          : prev.intakes,
+        checkins: Array.isArray(chData?.checkins) ? chData.checkins.length : prev.checkins,
+        reminders: 0
+      }));
     };
+
     fetchBadges();
+    // The numbers follow the day: they refresh on their own and whenever the coach comes back to the tab.
+    const timer = setInterval(fetchBadges, 60000);
+    const onFocus = () => fetchBadges();
+    window.addEventListener('focus', onFocus);
+    return () => {
+      cancelled = true;
+      clearInterval(timer);
+      window.removeEventListener('focus', onFocus);
+    };
   }, []);
 
       const [activeTooltip, setActiveTooltip] = useState(null);
