@@ -128,38 +128,38 @@ function App() {
         <Routes>
           {/* Coach Primary Command Center */}
           <Route path="/" element={<CoachCommandCenter />} />
-          <Route path="/today" element={<CoachCommandCenter />} />
-          <Route path="/coach/today" element={<CoachCommandCenter />} />
+          <Route path="/today" element={<Navigate to="/" replace />} />
+          <Route path="/coach/today" element={<Navigate to="/" replace />} />
           <Route path="/index" element={<Navigate to="/" replace />} />
           <Route path="/index.html" element={<Navigate to="/" replace />} />
           <Route path="/dashboard" element={<Navigate to="/" replace />} />
 
           {/* Client Unified Interactive Hub */}
           <Route path="/client/today" element={<ClientInteractiveApp />} />
-          <Route path="/client/meals" element={<ClientInteractiveApp />} />
-          <Route path="/client/workout" element={<ClientInteractiveApp />} />
+          <Route path="/client/meals" element={<Navigate to="/client/today?tab=meals" replace />} />
+          <Route path="/client/workout" element={<Navigate to="/client/today?tab=workout" replace />} />
           <Route path="/client/grocery" element={<Navigate to="/client/today" replace />} />
-          <Route path="/client-app" element={<ClientInteractiveApp />} />
-          <Route path="/mobile" element={<ClientInteractiveApp />} />
-          <Route path="/program" element={<ClientInteractiveApp />} />
-          <Route path="/user-dashboard" element={<ClientInteractiveApp />} />
+          <Route path="/client-app" element={<RedirectKeepingQuery to="/client/today" />} />
+          <Route path="/mobile" element={<RedirectKeepingQuery to="/client/today" />} />
+          <Route path="/program" element={<RedirectKeepingQuery to="/client/today" />} />
+          <Route path="/user-dashboard" element={<RedirectKeepingQuery to="/client/today" />} />
           <Route path="/user-dashboard.html" element={<Navigate to="/client/today" replace />} />
 
           {/* Client Onboarding, Pricing, Renewal & Check-in */}
           <Route path="/join" element={<PublicPricingJoin />} />
-          <Route path="/pricing" element={<PublicPricingJoin />} />
+          <Route path="/pricing" element={<RedirectKeepingQuery to="/join" />} />
           <Route path="/renew" element={<ClientOnlineRenewal />} />
-          <Route path="/client/renew" element={<ClientOnlineRenewal />} />
+          <Route path="/client/renew" element={<RedirectKeepingQuery to="/renew" />} />
           <Route path="/onboarding" element={<Navigate to="/intake/form" replace />} />
           <Route path="/onboarding/multi" element={<Navigate to="/intake/form" replace />} />
           <Route path="/onboarding/classic" element={<Navigate to="/intake/form" replace />} />
           <Route path="/intake" element={<ClientLogin />} />
-          <Route path="/client/login" element={<ClientLogin />} />
+          <Route path="/client/login" element={<RedirectKeepingQuery to="/login" />} />
           <Route path="/login" element={<ClientLogin />} />
           <Route path="/intake/form" element={<FullIntakeForm />} />
           <Route path="/intake/submissions" element={<IntakeSubmissions />} />
           <Route path="/check-in" element={<WeeklyCheckinForm />} />
-          <Route path="/client/check-in" element={<WeeklyCheckinForm />} />
+          <Route path="/client/check-in" element={<RedirectKeepingQuery to="/check-in" />} />
           <Route path="/progress" element={<Navigate to="/coach/checkin-review" replace />} />
           <Route path="/progress.html" element={<Navigate to="/coach/checkin-review" replace />} />
           <Route path="/check-ins" element={<Navigate to="/coach/checkin-review" replace />} />
@@ -168,7 +168,7 @@ function App() {
           <Route path="/customers" element={<Customers />} />
           <Route path="/exercises" element={<ExerciseLibrary />} />
           <Route path="/calculator" element={<MacroCalculator />} />
-          <Route path="/mobility" element={<MobilityLibrary />} />
+          <Route path="/mobility" element={<Navigate to="/coach/mobility" replace />} />
           <Route path="/coach/mobility" element={<MobilityLibrary />} />
           <Route path="/subscriptions" element={<Navigate to="/coach/financials" replace />} />
           <Route path="/master-settings" element={<MasterSettingsHub />} />
@@ -177,21 +177,21 @@ function App() {
           <Route path="/coach/editor/:userId" element={<CoachEditor />} />
           <Route path="/coach/analytics" element={<Navigate to="/coach/financials" replace />} />
           <Route path="/coach/checkin-review" element={<CheckinReviewDashboard />} />
-          <Route path="/checkins/review" element={<CheckinReviewDashboard />} />
-          <Route path="/checkin/review" element={<CheckinReviewDashboard />} />
-          <Route path="/coach/checkin" element={<CheckinReviewDashboard />} />
-          <Route path="/coach/checkins" element={<CheckinReviewDashboard />} />
+          <Route path="/checkins/review" element={<Navigate to="/coach/checkin-review" replace />} />
+          <Route path="/checkin/review" element={<Navigate to="/coach/checkin-review" replace />} />
+          <Route path="/coach/checkin" element={<Navigate to="/coach/checkin-review" replace />} />
+          <Route path="/coach/checkins" element={<Navigate to="/coach/checkin-review" replace />} />
           <Route path="/coach/financials" element={<FinancialsRenewalsDashboard />} />
-          <Route path="/financials" element={<FinancialsRenewalsDashboard />} />
+          <Route path="/financials" element={<Navigate to="/coach/financials" replace />} />
           <Route path="/coach/reminders" element={<WhatsAppRemindersHub />} />
-          <Route path="/reminders" element={<WhatsAppRemindersHub />} />
+          <Route path="/reminders" element={<Navigate to="/coach/reminders" replace />} />
           <Route path="/customers/:id" element={<ClientTimelineProfile />} />
           <Route path="/profile" element={<Navigate to="/master-settings" replace />} />
           <Route path="/pdf" element={<ProgramPdfView />} />
-          <Route path="/program-pdf" element={<ProgramPdfView />} />
+          <Route path="/program-pdf" element={<RedirectKeepingQuery to="/pdf" />} />
           <Route path="/coach/mesocycle-debrief/:clientId" element={<MesocycleDebriefPdfView />} />
           <Route path="/coach/mesocycle-debrief" element={<MesocycleDebriefPdfView />} />
-          <Route path="/mesocycle-debrief" element={<MesocycleDebriefPdfView />} />
+          <Route path="/mesocycle-debrief" element={<RedirectKeepingQuery to="/coach/mesocycle-debrief" />} />
           <Route path="/test-engine" element={<Navigate to="/" replace />} />
 
           {/* Catch-all fallback */}

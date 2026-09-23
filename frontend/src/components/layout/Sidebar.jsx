@@ -31,10 +31,11 @@ const SIDEBAR_GROUPS = [
     label: 'المشتركين والمتابعة اليومية',
     icon: Users,
     items: [
-      { key: 'customers', label: 'قائمة المشتركين', to: '/customers', icon: Users },
-      { key: 'checkins', label: 'مراجعة التقييمات', to: '/coach/checkin-review', icon: CheckCircle2, badgeKey: 'checkins' },
+      // In the order of the day: what is waiting on the coach first, then the tools.
       { key: 'intakes', label: 'الاستمارات الجديدة', to: '/intake/submissions', icon: ClipboardList, badgeKey: 'intakes' },
+      { key: 'checkins', label: 'مراجعة التقييمات', to: '/coach/checkin-review', icon: CheckCircle2, badgeKey: 'checkins' },
       { key: 'editor', label: 'محرر البرامج', to: '/coach/editor', icon: FileEdit },
+      { key: 'customers', label: 'قائمة المشتركين', to: '/customers', icon: Users },
       { key: 'reminders', label: 'رسائل الواتساب', to: '/coach/reminders', icon: MessageSquare, badgeKey: 'reminders' },
     ],
   },
