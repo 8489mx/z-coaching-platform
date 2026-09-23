@@ -24,6 +24,7 @@ import { API_BASE } from '../config/api';
 import AdminLayout from '../components/layout/AdminLayout';
 import NewClientQuickModal from '../components/modals/NewClientQuickModal';
 import { PageHeader } from '@/shared/components/page-header';
+import { TierFilter } from '@/shared/components/tier-filter';
 import { FormSection } from '@/shared/components/form-section';
 import { extractClientFastingProfile } from '../utils/seasonalFastingRadar';
 import { arabicSearchMatch } from '../utils/searchUtils';
@@ -1226,38 +1227,7 @@ export default function CoachCommandCenter() {
                   </button>
                 )}
 
-                {/* Tier Filter Pills */}
-                <div style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', background: '#F1F5F9', padding: '3px', borderRadius: '8px', border: '1px solid #E2E8F0' }}>
-                  {[
-                    { id: 'ALL', label: 'كافة الباقات' },
-                    { id: 'MAX', label: 'باقة ماكس' },
-                    { id: 'ELITE', label: 'باقة إيليت' }
-                  ].map(pill => {
-                    const isSelected = tierFilter === pill.id;
-                    return (
-                      <button
-                        key={pill.id}
-                        type="button"
-                        onClick={() => setTierFilter(pill.id)}
-                        style={{
-                          height: '26px',
-                          padding: '0 9px',
-                          fontSize: '11px',
-                          fontWeight: isSelected ? 800 : 600,
-                          color: isSelected ? '#0F172A' : '#64748B',
-                          background: isSelected ? '#FFFFFF' : 'transparent',
-                          border: 'none',
-                          borderRadius: '6px',
-                          cursor: 'pointer',
-                          boxShadow: isSelected ? '0 1px 3px rgba(15, 23, 42, 0.08)' : 'none',
-                          transition: 'all 0.15s ease'
-                        }}
-                      >
-                        {pill.label}
-                      </button>
-                    );
-                  })}
-                </div>
+                <TierFilter value={tierFilter} onChange={setTierFilter} />
               </div>
 
               {/* Smart Sort & Search Box */}

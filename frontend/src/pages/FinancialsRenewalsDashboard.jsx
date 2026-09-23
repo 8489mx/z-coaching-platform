@@ -6,6 +6,7 @@ import React, { useState, useMemo, useEffect, useRef } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { DollarSign, CreditCard, AlertCircle, Clock, CheckCircle2, Send, Search, ArrowUpRight, BadgePercent, Wallet, Pause, Play, ShieldAlert, MessageSquare, Dumbbell, Activity, Target, ShieldCheck } from 'lucide-react';
 import AdminLayout from '../components/layout/AdminLayout';
+import { TierFilter } from '@/shared/components/tier-filter';
 import FlexibleRenewalModal from '../components/modals/FlexibleRenewalModal';
 import ClientRetentionRadarModal from '../components/modals/ClientRetentionRadarModal';
 import { calculateClientRetentionHealth, batchEvaluateRetentionRadar } from '../utils/clientRetentionRadarEngine';
@@ -682,19 +683,12 @@ export default function FinancialsRenewalsDashboard() {
         }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '16px', flexWrap: 'wrap' }}>
             <div 
-              onClick={() => setTierFilter(tierFilter === 'MAX' ? 'ALL' : 'MAX')}
               style={{ 
                 display: 'flex', 
                 alignItems: 'center', 
                 gap: '8px', 
-                cursor: 'pointer',
-                padding: '4px 8px',
-                borderRadius: '6px',
-                background: tierFilter === 'MAX' ? '#FEF3C7' : 'transparent',
-                border: tierFilter === 'MAX' ? '1px solid #FDE68A' : '1px solid transparent',
-                transition: 'all 0.12s ease'
+                padding: '4px 8px'
               }}
-              title="انقر لفلترة باقة MAX فقط"
             >
               <span style={{ fontSize: '10px', fontWeight: 800, padding: '2px 6px', borderRadius: '6px', background: '#F8FAFC', border: '1px solid #E2E8F0', color: '#B45309' }}>
                 MAX
@@ -707,19 +701,12 @@ export default function FinancialsRenewalsDashboard() {
             <span style={{ color: '#CBD5E1' }}>•</span>
 
             <div 
-              onClick={() => setTierFilter(tierFilter === 'ELITE' ? 'ALL' : 'ELITE')}
               style={{ 
                 display: 'flex', 
                 alignItems: 'center', 
                 gap: '8px', 
-                cursor: 'pointer',
-                padding: '4px 8px',
-                borderRadius: '6px',
-                background: tierFilter === 'ELITE' ? '#E0F2FE' : 'transparent',
-                border: tierFilter === 'ELITE' ? '1px solid #BAE6FD' : '1px solid transparent',
-                transition: 'all 0.12s ease'
+                padding: '4px 8px'
               }}
-              title="انقر لفلترة باقة ELITE فقط"
             >
               <span style={{ fontSize: '10px', fontWeight: 800, padding: '2px 6px', borderRadius: '6px', background: '#F8FAFC', border: '1px solid #E2E8F0', color: '#0284C7' }}>
                 ELITE
@@ -819,35 +806,7 @@ export default function FinancialsRenewalsDashboard() {
 
             {/* Tier & Search */}
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-              <div style={{ display: 'flex', gap: '3px' }}>
-                {[
-                  { id: 'ALL', label: 'الكل' },
-                  { id: 'MAX', label: 'MAX' },
-                  { id: 'ELITE', label: 'ELITE' }
-                ].map(t => {
-                  const isSel = tierFilter === t.id;
-                  return (
-                    <button
-                      key={t.id}
-                      type="button"
-                      onClick={() => setTierFilter(t.id)}
-                      style={{
-                        padding: '2px 8px',
-                        borderRadius: '8px',
-                        fontSize: '10.5px',
-                        fontWeight: 800,
-                        fontFamily: t.id !== 'ALL' ? 'JetBrains Mono, Cairo, sans-serif' : 'inherit',
-                        border: isSel ? '1px solid #0F172A' : '1px solid #E2E8F0',
-                        background: isSel ? '#0F172A' : '#FFFFFF',
-                        color: isSel ? '#FFFFFF' : (t.id === 'MAX' ? '#B45309' : t.id === 'ELITE' ? '#0284C7' : '#64748B'),
-                        cursor: 'pointer'
-                      }}
-                    >
-                      {t.label}
-                    </button>
-                  );
-                })}
-              </div>
+              <TierFilter value={tierFilter} onChange={setTierFilter} />
 
               <div style={{ display: 'flex', alignItems: 'center', background: '#FFFFFF', border: '1px solid #CBD5E1', borderRadius: '8px', padding: '0 8px', height: '28px', width: '170px', gap: '4px' }}>
                 <Search size={12} color="#94A3B8" />
