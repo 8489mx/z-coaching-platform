@@ -55,11 +55,17 @@ test("publishing a plan for a kidney/liver client needs an explicit medical revi
       await Program.destroy({ where: { user_id: user.id } });
       const submission = await IntakeSubmission.create({ user_id: user.id, answers: storedIntake([condition]), status: "PENDING_COACH_REVIEW" });
 
-      await t.test(`${condition}: update-custom publish is refused without confirmation`, async () => {
+      await t.test(`${condition}: update-custom publish is refused`, async () => {
         const out = await publish();
-        assert.equal(out.status, 409);
-        assert.equal(out.body.code, "MEDICAL_REVIEW_CONFIRMATION_REQUIRED");
-        assert.ok(out.body.reasons.includes("ORGAN_CONDITION_REQUIRES_MEDICAL_REVIEW"));
+        if (condition === "renal") {
+          // Kidney disease is outside the service: the editor does not publish it either.
+          assert.equal(out.status, 422);
+          assert.equal(out.body.code, "OUTSIDE_SERVICE_SCOPE");
+        } else {
+          assert.equal(out.status, 409);
+          assert.equal(out.body.code, "MEDICAL_REVIEW_CONFIRMATION_REQUIRED");
+          assert.ok(out.body.reasons.includes("ORGAN_CONDITION_REQUIRES_MEDICAL_REVIEW"));
+        }
         assert.equal(await Program.count({ where: { user_id: user.id, status: "ACTIVE" } }), 0);
       });
 
@@ -77,8 +83,14 @@ test("publishing a plan for a kidney/liver client needs an explicit medical revi
         }
       });
 
-      await t.test(`${condition}: confirmed publish succeeds and records the confirmation`, async () => {
+      await t.test(`${condition}: confirmed publish`, async () => {
         const out = await publish({ medical_review_confirmed: true });
+        if (condition === "renal") {
+          // No confirmation opens a case the service does not cover.
+          assert.equal(out.status, 422);
+          assert.equal(out.body.code, "OUTSIDE_SERVICE_SCOPE");
+          return;
+        }
         assert.equal(out.status, 200, JSON.stringify(out.body));
         assert.equal(out.body.master_program.medical_review_confirmation.confirmed, true);
         assert.equal(out.body.master_program.medical_review_confirmation.confirmed_by_user_id, user.id);

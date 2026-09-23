@@ -23,6 +23,7 @@ import { applyDeloadToSession, READINESS_GUIDANCE_AR } from "../../../src/traini
 import { resolveTrainingCycleStatus, CYCLE_STATUS, resolveSubscriptionState, subscriptionNeedsAttention, startCycleOnPublish } from "../services/trainingCycleService.js";
 import { buildNextCycle, resolvePainFlaggedExercises, evaluateAutoPublish } from "../services/nextCycleService.js";
 import { isSwapFoodSafe, resolveSwapContext, PLAN_FOOD_TO_REGISTRY } from "../services/liveFoodSwapSafety.js";
+import { assessServiceScope, outsideScopeResponse } from "../services/serviceScope.js";
 import { isLiveSwapEquivalent, liveSwapOilAddition, liveSwapValueWithOil, liveSwapOilText, liveSwapTargetGrams, liveSwapServingText } from "../services/liveFoodSwapValue.js";
 import { isNoSwapFood, NO_SWAP_NOTE_AR } from "../../../frontend/src/utils/swapExchangeRules.js";
 import { kidneyPotassium } from "../../nutrition-meal-context-v2/build-culinary-meals.js";
@@ -1409,6 +1410,15 @@ export const updateCustomProgram = async (req, res) => {
     }
 
     const shouldPublish = Boolean(is_published || publish);
+
+    // A case outside the service (pregnancy, kidney disease, a diagnosed heart condition...) is not
+    // published from the editor either, with or without a medical confirmation.
+    if (shouldPublish) {
+      const scope = assessServiceScope(await loadLatestIntakeAnswers(user.id).catch(() => null));
+      if (!scope.supported) {
+        return res.status(422).json(outsideScopeResponse(scope));
+      }
+    }
 
     // Medical review gate: a plan for a client flagged for medical review is only published after the
     // coach explicitly confirms the review (medical_review_confirmed: true in the request).

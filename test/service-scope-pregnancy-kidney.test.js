@@ -92,3 +92,22 @@ test("an ordinary client still gets her plan", async () => {
   assert.equal(draft.status, 200, JSON.stringify(draft.body).slice(0, 300));
   assert.ok(await Program.count({ where: { user_id: user.id } }) > 0);
 });
+
+// A diagnosed heart condition, a body far too light for a weight-loss goal, and cancer or
+// chemotherapy written in the notes are outside the service too.
+test("a diagnosed heart condition is outside the service", () => {
+  const client = { ...base(), medical_conditions: { ...base().medical_conditions, has_conditions: true, selected: ["heart_condition"] } };
+  const scope = assessServiceScope(client);
+  assert.equal(scope.supported, false);
+  assert.deepEqual(scope.cases, ["HEART_CONDITION"]);
+  assert.match(scope.reasons_ar[0], /القلب/);
+});
+
+test("too light for a weight-loss goal is refused; a light client who wants to build is served", () => {
+  const at = (kg, goal) => assessServiceScope({ ...base(), weight_kg: String(kg), height_cm: "165", primary_goal: goal });
+  assert.equal(at(42, "fat_loss").supported, false, "BMI 15.4 losing fat");
+  assert.equal(at(42, "lean_bulk").supported, false, "BMI 15.4 is severe thinness whatever the goal");
+  assert.equal(at(49, "fat_loss").supported, false, "BMI 18 losing fat");
+  assert.equal(at(49, "lean_bulk").supported, true, "BMI 18 building muscle is exactly our client");
+  assert.equal(at(60, "fat_loss").supported, true);
+});
