@@ -1226,7 +1226,9 @@ function buildSmartSwapCandidates(category, baseGrams, baseFoodCode, mealContext
         "CANNED_TUNA",
       ];
     } else {
-      // SNACK
+      // SNACK. The savory options are here too: a snack of grilled chicken or cottage cheese is a
+      // snack, and without them a client whose snack is chicken (no dairy) was offered nothing to
+      // swap it with - the only plate of the day with no alternatives at all.
       proteinCandidates = [
         "GREEK_YOGURT",
         "LABAN_RAYEB_LOWFAT",
@@ -1234,6 +1236,13 @@ function buildSmartSwapCandidates(category, baseGrams, baseFoodCode, mealContext
         "WHEY_PROTEIN",
         "PEA_RICE_PROTEIN_POWDER",
         "RAW_ALMONDS",
+        "COTTAGE_CHEESE",
+        "LABNEH_LIGHT",
+        "CANNED_TUNA",
+        "SMOKED_TURKEY",
+        "CHICKEN_BREAST",
+        "FOUL_MUDAMMAS",
+        "EGGS_OMELETTE",
       ];
     }
 
@@ -3828,7 +3837,7 @@ export function buildCulinaryRecipeMeals(universalTargets, canonicalIntake = {},
             carb_g: Math.round(yogurtGrams * 0.035),
             fat_g: 1.5,
             calories_kcal: Math.round(yogurtGrams * 0.70),
-            swaps: [],
+            swaps: generateSmartSwaps("PROTEIN", yogurtGrams, "GREEK_YOGURT", "SNACK", 0, allergenContext),
           });
         } else {
           const chickenGrams = Math.round(remP / 0.31);
@@ -3843,7 +3852,7 @@ export function buildCulinaryRecipeMeals(universalTargets, canonicalIntake = {},
             carb_g: 0,
             fat_g: 1.5,
             calories_kcal: Math.round(chickenGrams * 1.65),
-            swaps: [],
+            swaps: generateSmartSwaps("PROTEIN", chickenGrams, "CHICKEN_BREAST", "SNACK", 0, allergenContext),
           });
         }
 
@@ -3859,7 +3868,7 @@ export function buildCulinaryRecipeMeals(universalTargets, canonicalIntake = {},
             household_measurement: `${nutGrams} جم (حفنة صغيرة)`,
             ...nutMacros,
             calories_kcal: Math.round(nutMacros.protein_g * 4 + nutMacros.carb_g * 4 + nutMacros.fat_g * 9),
-            swaps: [],
+            swaps: generateSmartSwaps("FATS", nutGrams, nutCode, "SNACK", 0, allergenContext),
           });
         }
         const oilGrams = Math.round(targetF - nutMacros.fat_g - 1.6);

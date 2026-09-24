@@ -79,3 +79,14 @@ test("a day too big for three plates shares the four equally instead", () => {
   const share = kcalOf(huge.culinary_meals[3]) / huge.macro_targets.calories_kcal;
   assert.ok(share > 0.20, `the snack of a ${huge.macro_targets.calories_kcal} kcal day is ${Math.round(share * 100)}%`);
 });
+
+test("the snack offers the client something to swap, like every other plate", () => {
+  for (const allergies of [["none"], ["dairy_lactose"]]) {
+    const snack = buildMasterEngineV2({
+      intake: { ...answers("3_meals_snack"), strict_allergies: allergies },
+      evaluationContext: CTX, nutritionFoodCatalog: CATALOG, options: {},
+    }).nutrition_program.culinary_meals[3];
+    const withSwaps = (snack.items || []).filter((item) => (item.swaps || []).length > 0);
+    assert.ok(withSwaps.length > 0, `the snack of a ${allergies.join(",")} client has no swap at all`);
+  }
+});
