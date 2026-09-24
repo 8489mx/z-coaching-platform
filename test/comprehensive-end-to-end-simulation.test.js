@@ -519,7 +519,11 @@ test('4. End-to-End Simulation: Persona 4 (Nourhan Ali - Female, Post-Bariatric 
   });
   const decision = evaluateIntake(canonical, evaluationContext);
   assert.notEqual(decision.plan_status, 'BLOCKED', 'Plan must not be blocked');
-  assert.ok(['READY_FOR_DRAFT', 'COACH_REVIEW_REQUIRED'].includes(decision.plan_status));
+  // A stomach that has been operated on waits for a person: how far past the surgery the client is,
+  // and what her surgeon allows, decide the calories and the size of a plate, and the intake asks
+  // neither (src/intake-decision-engine/rules/safety-rules.js).
+  assert.equal(decision.plan_status, 'MEDICAL_REVIEW_REQUIRED');
+  assert.ok(decision.review_flags.some((flag) => flag.code === 'ORGAN_CONDITION_REQUIRES_MEDICAL_REVIEW'));
 
   // Step 2: Build Master Program V2
   const masterPlan = buildMasterEngineV2({

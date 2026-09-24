@@ -102,3 +102,24 @@ test("a fixed plate is left exactly as it was by the trim pass", () => {
   };
   assert.equal(trimMealsToTarget([meal])[0], meal);
 });
+
+test("a plan after stomach surgery waits for a person before it is approved", async () => {
+  const { adaptIntakePayloadToCanonicalEngine } = await import("../src/intake-decision-engine/adapters/intake-adapter.js");
+  const { evaluateIntake } = await import("../src/intake-decision-engine/index.js");
+  const answers = (operated) => ({
+    gender: "male", age: "30", height_cm: "180", weight_kg: "95", circumferences: { neck_cm: "40", waist_cm: "95", hips_cm: "100" },
+    primary_goal: "fat_loss", neat_level: "moderate", occupation_type: "DESK_OFFICE", dangerous_symptoms: ["NONE"],
+    medical_conditions: {
+      has_conditions: operated, selected: operated ? ["bariatric_surgery"] : ["none"],
+      bariatric: { is_operated: operated, meal_capacity_grams: "150_200", dumping_syndrome: false },
+    },
+    injuries_map: { has_injuries: false, selected_areas: ["none"] }, religion: "MUSLIM", strict_allergies: ["none"],
+    meal_structure: { meals_count: "3_meals", intermittent_fasting: "none" }, training_environment: "commercial_gym",
+    training_logistics: { days_per_week: 4, experience_level: "intermediate" }, recent_training: "ACTIVE",
+  });
+  const decide = (operated) => evaluateIntake(adaptIntakePayloadToCanonicalEngine(structuredClone(answers(operated))), CTX);
+  assert.equal(decide(false).plan_status, "READY_FOR_DRAFT");
+  assert.equal(decide(true).plan_status, "MEDICAL_REVIEW_REQUIRED");
+  const codes = adaptIntakePayloadToCanonicalEngine(structuredClone(answers(true))).medical.conditions.map((c) => c.conditionCode);
+  assert.deepEqual(codes, ["BARIATRIC_SURGERY"]);
+});

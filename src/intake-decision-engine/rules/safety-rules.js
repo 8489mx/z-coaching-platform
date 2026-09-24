@@ -129,7 +129,13 @@ export function evaluateDangerousSymptoms(input) {
 // so the plan always needs medical review before approval. Kidney disease was here too and left
 // with the case - it is refused outright now (src/api/services/serviceScope.js), as is a diagnosed
 // heart condition, whose clearance-before-exercise rule (ACSM, Riebe et al. 2015) left with it.
-const MANDATORY_MEDICAL_REVIEW_CONDITIONS = new Set(["LIVER_CONDITION"]);
+//
+// A stomach that has been operated on is the same kind of question: how far past the surgery the
+// client is, and what his surgeon and dietitian allow, decide the calories and the size of a
+// plate. The intake collects neither, and the plates that protect the stomach cannot carry the
+// calories a body of that size is calculated to need - the plan says so in numbers and waits for
+// a person to decide.
+const MANDATORY_MEDICAL_REVIEW_CONDITIONS = new Set(["LIVER_CONDITION", "BARIATRIC_SURGERY"]);
 
 export function evaluateMedicalConditions(input) {
   const result = emptyRuleResult();
@@ -142,7 +148,7 @@ export function evaluateMedicalConditions(input) {
           "ORGAN_CONDITION_REQUIRES_MEDICAL_REVIEW",
           Scope.GLOBAL,
           ReviewLevel.MEDICAL,
-          "Liver disease: protein and calorie targets depend on the type and must be confirmed with the treating physician.",
+          "Liver disease or a stomach that has been operated on: the targets depend on the type, or on how far past the surgery the client is, and must be confirmed with the treating team.",
           `${sourcePath}.conditionCode`,
         ),
       );
