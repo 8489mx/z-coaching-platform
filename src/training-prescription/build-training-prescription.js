@@ -23,6 +23,7 @@ const MOVEMENT_SLOT_CATEGORY = Object.freeze({
   [MovementSlotCode.HORIZONTAL_PULL]: MovementSlotCategory.PRIMARY,
   [MovementSlotCode.VERTICAL_PUSH]: MovementSlotCategory.PRIMARY,
   [MovementSlotCode.VERTICAL_PULL]: MovementSlotCategory.PRIMARY,
+  [MovementSlotCode.HIP_EXTENSION]: MovementSlotCategory.ACCESSORY,
   [MovementSlotCode.KNEE_FLEXION]: MovementSlotCategory.ACCESSORY,
   [MovementSlotCode.CALF_RAISE]: MovementSlotCategory.ACCESSORY,
   [MovementSlotCode.SHOULDER_ABDUCTION]: MovementSlotCategory.ACCESSORY,

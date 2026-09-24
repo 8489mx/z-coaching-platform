@@ -82,11 +82,34 @@ const EXERCISES = Object.freeze([
   createExercise({
     exerciseCode: "GLUTE_BRIDGE",
     nameEn: "Glute Bridge",
-    slotCode: MovementSlotCode.HIP_HINGE,
+    slotCode: MovementSlotCode.HIP_EXTENSION,
     equipmentCode: EquipmentCode.BODYWEIGHT,
     minimumLoadCapacity: EquipmentLoadCapacity.BODYWEIGHT_ONLY,
     beginnerFriendly: true,
     prescriptionUnit: ExercisePrescriptionUnit.REPS,
+  }),
+  // This catalogue carries bodyweight, dumbbells, bands, cables and machines; the barbell hip thrust
+  // lives in the gym templates of the mesocycle builder.
+  createExercise({
+    exerciseCode: "HIP_THRUST",
+    nameEn: "Hip Thrust",
+    slotCode: MovementSlotCode.HIP_EXTENSION,
+    equipmentCode: EquipmentCode.SELECTORIZED_MACHINES,
+    minimumLoadCapacity: EquipmentLoadCapacity.MODERATE,
+    beginnerFriendly: true,
+    prescriptionUnit: ExercisePrescriptionUnit.REPS,
+  }),
+  // The hinge keeps a movement for a client with nothing but the floor: the glute bridge used to be
+  // it, and it belongs to the glutes.
+  createExercise({
+    exerciseCode: "SINGLE_LEG_RDL_BODYWEIGHT",
+    nameEn: "Single-Leg Romanian Deadlift (Bodyweight)",
+    slotCode: MovementSlotCode.HIP_HINGE,
+    equipmentCode: EquipmentCode.BODYWEIGHT,
+    minimumLoadCapacity: EquipmentLoadCapacity.BODYWEIGHT_ONLY,
+    beginnerFriendly: true,
+    // One leg at a time, so it is counted per side like the split squat and the lunge.
+    prescriptionUnit: ExercisePrescriptionUnit.REPS_PER_SIDE,
   }),
   createExercise({
     exerciseCode: "DUMBBELL_ROMANIAN_DEADLIFT",

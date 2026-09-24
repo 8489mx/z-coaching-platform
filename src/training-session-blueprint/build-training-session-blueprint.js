@@ -7,9 +7,14 @@ import {
   TRAINING_SESSION_BLUEPRINT_VERSION,
 } from "./domain/enums.js";
 
+// A lower day squats, hinges, steps, curls the hamstrings and raises the calves - and never once
+// trained the glutes on their own. They work in all of it, but the muscle that carries a hip
+// answers to being trained directly (Contreras et al. 2015 on the hip thrust), and for many
+// clients it is the reason they came. Each lower day gets a hip thrust or a glute bridge.
 const LOWER_A_SLOTS = Object.freeze([
   MovementSlotCode.KNEE_DOMINANT,
   MovementSlotCode.HIP_HINGE,
+  MovementSlotCode.HIP_EXTENSION,
   MovementSlotCode.UNILATERAL_LOWER,
   MovementSlotCode.KNEE_FLEXION,
   MovementSlotCode.CALF_RAISE,
@@ -18,6 +23,7 @@ const LOWER_A_SLOTS = Object.freeze([
 
 const LOWER_B_SLOTS = Object.freeze([
   MovementSlotCode.HIP_HINGE,
+  MovementSlotCode.HIP_EXTENSION,
   MovementSlotCode.KNEE_DOMINANT,
   MovementSlotCode.KNEE_FLEXION,
   MovementSlotCode.UNILATERAL_LOWER,
@@ -35,6 +41,7 @@ const SESSION_MOVEMENT_SLOTS = Object.freeze({
   ]),
   [TrainingSessionCode.FULL_BODY_B]: Object.freeze([
     MovementSlotCode.HIP_HINGE,
+    MovementSlotCode.HIP_EXTENSION,
     MovementSlotCode.KNEE_DOMINANT,
     MovementSlotCode.VERTICAL_PUSH,
     MovementSlotCode.VERTICAL_PULL,

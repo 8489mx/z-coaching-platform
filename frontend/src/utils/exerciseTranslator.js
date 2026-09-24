@@ -274,6 +274,14 @@ export const MASTER_EXERCISE_DICTIONARY = Object.freeze({
     name_en: "Conventional Deadlift",
     name_ar: "ديدليفت تقليدي بالبار للأرجل والظهر",
   },
+  SINGLE_LEG_RDL_BODYWEIGHT: {
+    name_en: "Single-Leg Romanian Deadlift (Bodyweight)",
+    name_ar: "ديدليفت روماني برجل واحدة بوزن الجسم",
+  },
+  DUMBBELL_GLUTE_BRIDGE: {
+    name_en: "Dumbbell Glute Bridge",
+    name_ar: "جلوت بريدج بالدمبل على الحوض للأرداف",
+  },
   BARBELL_ROMANIAN_DEADLIFT: {
     name_en: "Barbell Romanian Deadlift (RDL)",
     name_ar: "ديدليفت روماني بالبار للأرجل الخلفية",

@@ -170,7 +170,10 @@ test("home training with only implicit bodyweight uses bodyweight exercises", ()
 
   for (const [slotCode, exerciseCode] of [
     [MovementSlotCode.KNEE_DOMINANT, "BODYWEIGHT_SQUAT"],
-    [MovementSlotCode.HIP_HINGE, "GLUTE_BRIDGE"],
+    // The glute bridge moved to the movement written for the glutes; the hinge keeps its own
+    // bodyweight option.
+    [MovementSlotCode.HIP_HINGE, "SINGLE_LEG_RDL_BODYWEIGHT"],
+    [MovementSlotCode.HIP_EXTENSION, "GLUTE_BRIDGE"],
     [MovementSlotCode.HORIZONTAL_PUSH, "PUSH_UP"],
     [MovementSlotCode.VERTICAL_PUSH, "PIKE_PUSH_UP"],
     [MovementSlotCode.CORE_STABILITY, "DEAD_BUG"],

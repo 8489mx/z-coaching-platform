@@ -18,7 +18,9 @@ import {
 const EXPECTED_EXERCISES = [
   ["BODYWEIGHT_SQUAT", "Bodyweight Squat", "KNEE_DOMINANT", "BODYWEIGHT", "BODYWEIGHT_ONLY", true],
   ["GOBLET_SQUAT", "Goblet Squat", "KNEE_DOMINANT", "DUMBBELLS", "LIGHT", true],
-  ["GLUTE_BRIDGE", "Glute Bridge", "HIP_HINGE", "BODYWEIGHT", "BODYWEIGHT_ONLY", true],
+  ["GLUTE_BRIDGE", "Glute Bridge", "HIP_EXTENSION", "BODYWEIGHT", "BODYWEIGHT_ONLY", true],
+  ["HIP_THRUST", "Hip Thrust", "HIP_EXTENSION", "SELECTORIZED_MACHINES", "MODERATE", true],
+  ["SINGLE_LEG_RDL_BODYWEIGHT", "Single-Leg Romanian Deadlift (Bodyweight)", "HIP_HINGE", "BODYWEIGHT", "BODYWEIGHT_ONLY", true],
   ["DUMBBELL_ROMANIAN_DEADLIFT", "Dumbbell Romanian Deadlift", "HIP_HINGE", "DUMBBELLS", "LIGHT", true],
   ["SPLIT_SQUAT", "Split Squat", "UNILATERAL_LOWER", "BODYWEIGHT", "BODYWEIGHT_ONLY", true],
   ["DUMBBELL_REVERSE_LUNGE", "Dumbbell Reverse Lunge", "UNILATERAL_LOWER", "DUMBBELLS", "LIGHT", false],
@@ -57,7 +59,9 @@ const EXPECTED_EXERCISES = [
 
 const EXPECTED_CODES_BY_SLOT = {
   KNEE_DOMINANT: ["BODYWEIGHT_SQUAT", "GOBLET_SQUAT"],
-  HIP_HINGE: ["GLUTE_BRIDGE", "DUMBBELL_ROMANIAN_DEADLIFT"],
+  // The glutes have their own movement now; the hinge keeps a pair of its own.
+  HIP_EXTENSION: ["GLUTE_BRIDGE", "HIP_THRUST"],
+  HIP_HINGE: ["SINGLE_LEG_RDL_BODYWEIGHT", "DUMBBELL_ROMANIAN_DEADLIFT"],
   UNILATERAL_LOWER: ["SPLIT_SQUAT", "DUMBBELL_REVERSE_LUNGE"],
   KNEE_FLEXION: ["HAMSTRING_WALKOUT", "LYING_LEG_CURL_MACHINE"],
   CALF_RAISE: ["STANDING_CALF_RAISE", "DUMBBELL_CALF_RAISE"],
@@ -77,6 +81,7 @@ const EXPECTED_CODES_BY_PRESCRIPTION_UNIT = {
     "BODYWEIGHT_SQUAT",
     "GOBLET_SQUAT",
     "GLUTE_BRIDGE",
+    "HIP_THRUST",
     "DUMBBELL_ROMANIAN_DEADLIFT",
     "HAMSTRING_WALKOUT",
     "LYING_LEG_CURL_MACHINE",
@@ -98,6 +103,7 @@ const EXPECTED_CODES_BY_PRESCRIPTION_UNIT = {
     "BAND_TRICEPS_EXTENSION",
   ],
   [ExercisePrescriptionUnit.REPS_PER_SIDE]: [
+    "SINGLE_LEG_RDL_BODYWEIGHT",
     "SPLIT_SQUAT",
     "DUMBBELL_REVERSE_LUNGE",
     "ONE_ARM_DUMBBELL_ROW",
@@ -132,8 +138,8 @@ test("ExercisePrescriptionUnit exposes only the three approved units", () => {
   assert.deepEqual(Object.values(ExercisePrescriptionUnit), ["REPS", "REPS_PER_SIDE", "SECONDS"]);
 });
 
-test("catalog contains exactly 28 exercise records with the required shape", () => {
-  assert.equal(EXERCISE_CATALOG.exercises.length, 28);
+test("catalog contains exactly 30 exercise records with the required shape", () => {
+  assert.equal(EXERCISE_CATALOG.exercises.length, 30);
   assert.deepEqual(
     EXERCISE_CATALOG.exercises.map(({ exercise_code: exerciseCode }) => exerciseCode),
     EXPECTED_EXERCISES.map(({ exerciseCode }) => exerciseCode),
@@ -158,9 +164,9 @@ test("catalog contains exactly 28 exercise records with the required shape", () 
   }
 });
 
-test("all 28 exercises use the exact approved prescription-unit distribution", () => {
+test("all 30 exercises use the exact approved prescription-unit distribution", () => {
   const knownUnits = new Set(Object.values(ExercisePrescriptionUnit));
-  assert.equal(EXPECTED_PRESCRIPTION_UNIT_BY_CODE.size, 28);
+  assert.equal(EXPECTED_PRESCRIPTION_UNIT_BY_CODE.size, 30);
   assert.ok(
     EXERCISE_CATALOG.exercises.every(({ prescription_unit: unit }) => knownUnits.has(unit)),
   );
@@ -326,5 +332,5 @@ test("modifying a returned slot list does not modify the catalog", () => {
     ),
     EXPECTED_CODES_BY_SLOT.KNEE_DOMINANT,
   );
-  assert.equal(EXERCISE_CATALOG.exercises.length, 28);
+  assert.equal(EXERCISE_CATALOG.exercises.length, 30);
 });

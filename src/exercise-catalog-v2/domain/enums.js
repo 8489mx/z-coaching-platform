@@ -11,6 +11,9 @@ export const MovementSlotCodeV2 = Object.freeze({
   KNEE_DOMINANT: "KNEE_DOMINANT",
   HIP_HINGE: "HIP_HINGE",
   UNILATERAL_LOWER: "UNILATERAL_LOWER",
+  // The hip thrust and the glute bridge sat under HIP_HINGE and lost every time to the Romanian
+  // deadlift, so no plan ever trained the glutes directly - not even a woman's.
+  HIP_EXTENSION: "HIP_EXTENSION",
   
   // Upper Body Compound
   HORIZONTAL_PUSH: "HORIZONTAL_PUSH",

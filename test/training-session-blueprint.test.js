@@ -63,6 +63,7 @@ const FULL_BODY_SLOTS = {
   ],
   FULL_BODY_B: [
     "HIP_HINGE",
+    "HIP_EXTENSION",
     "KNEE_DOMINANT",
     "VERTICAL_PUSH",
     "VERTICAL_PULL",
@@ -103,6 +104,7 @@ const UPPER_LOWER_SLOTS = {
   LOWER_A: [
     "KNEE_DOMINANT",
     "HIP_HINGE",
+    "HIP_EXTENSION",
     "UNILATERAL_LOWER",
     "KNEE_FLEXION",
     "CALF_RAISE",
@@ -110,6 +112,7 @@ const UPPER_LOWER_SLOTS = {
   ],
   LOWER_B: [
     "HIP_HINGE",
+    "HIP_EXTENSION",
     "KNEE_DOMINANT",
     "KNEE_FLEXION",
     "UNILATERAL_LOWER",
@@ -144,6 +147,8 @@ test("every training session code has a known movement-slot blueprint", () => {
     "KNEE_DOMINANT",
     "HIP_HINGE",
     "UNILATERAL_LOWER",
+    // Direct glute work, which no plan had.
+    "HIP_EXTENSION",
     "KNEE_FLEXION",
     "CALF_RAISE",
     "HORIZONTAL_PUSH",

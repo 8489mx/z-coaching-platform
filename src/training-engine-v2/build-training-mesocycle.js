@@ -118,9 +118,14 @@ const HEAVY_PRIMARY_COMPOUNDS = new Set([
   "GOBLET_SQUAT",
   "LEG_PRESS_MACHINE",
   "DUMBBELL_INCLINE_BENCH_PRESS",
+  // A loaded barbell across the hips: for a glute-led plan it is a primary lift, and it keeps a rep
+  // in hand at the peak like the rest of them.
+  "BARBELL_HIP_THRUST",
 ]);
 
 const SECONDARY_COMPOUNDS = new Set([
+  "DUMBBELL_GLUTE_BRIDGE",
+  "HIP_THRUST",
   "LAT_PULLDOWN",
   "SEATED_CABLE_ROW",
   "CHEST_SUPPORTED_ROW",
@@ -436,6 +441,8 @@ export function buildTrainingMesoCycle(intakeDecision, options = {}) {
           // Day 2 (Full Body B - Posterior Hinge, Incline Push, Vertical Pull, Quad Machine & Stretch Arms)
           sessionExerciseTemplates = [
             { slot_code: "HIP_HINGE", exercise_code: "DUMBBELL_ROMANIAN_DEADLIFT", custom_rest: 150, target_min: 6, target_max: 8, base_rir: 2 },
+            // The glutes worked in every squat and hinge and were never trained on their own.
+            { slot_code: "HIP_EXTENSION", exercise_code: isHome ? "DUMBBELL_GLUTE_BRIDGE" : "BARBELL_HIP_THRUST", custom_rest: 90, target_min: 8, target_max: 12, base_rir: 2 },
             { slot_code: "HORIZONTAL_PUSH", exercise_code: "INCLINE_DUMBBELL_BENCH_PRESS", custom_rest: 120, target_min: 8, target_max: 10, base_rir: 2 },
             { slot_code: "VERTICAL_PULL", exercise_code: isHome ? "ONE_ARM_DUMBBELL_ROW" : "LAT_PULLDOWN", custom_rest: 90, target_min: 8, target_max: 10, base_rir: 1 },
             { slot_code: "KNEE_DOMINANT", exercise_code: isHome ? "GOBLET_SQUAT" : "LEG_PRESS_MACHINE", custom_rest: 120, target_min: 8, target_max: 10, base_rir: 2 },
@@ -450,7 +457,7 @@ export function buildTrainingMesoCycle(intakeDecision, options = {}) {
             // Chest had two sessions of three (6 weekly sets against ~10 for the back): a third press.
             { slot_code: "HORIZONTAL_PUSH", exercise_code: isHome ? "PUSH_UP" : "MACHINE_CHEST_PRESS", custom_rest: 90, target_min: 10, target_max: 12, base_rir: 1 },
             { slot_code: "HORIZONTAL_PULL", exercise_code: isHome ? "ONE_ARM_DUMBBELL_ROW" : "SEATED_CABLE_ROW", custom_rest: 90, target_min: 10, target_max: 12, base_rir: 1 },
-            { slot_code: "KNEE_FLEXION", exercise_code: isHome ? "GLUTE_BRIDGE" : "LYING_LEG_CURL_MACHINE", custom_rest: 90, target_min: 10, target_max: 12, base_rir: 1 },
+            { slot_code: "KNEE_FLEXION", exercise_code: isHome ? "NORDIC_HAMSTRING_CURL" : "LYING_LEG_CURL_MACHINE", custom_rest: 90, target_min: 10, target_max: 12, base_rir: 1 },
             { slot_code: "SHOULDER_ABDUCTION", exercise_code: "DUMBBELL_LATERAL_RAISE", custom_rest: 60, target_min: 12, target_max: 15, base_rir: isAdvanced ? 0 : 1, sets_override: isAdvanced ? 4 : 3 },
           ];
 

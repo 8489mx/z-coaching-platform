@@ -106,3 +106,34 @@ test("a beginner's week is judged by a beginner's table", async () => {
   const fair = auditWeeklyMuscleVolume(week, "BEGINNER").warnings.length;
   assert.ok(fair < strict, `${fair} warnings against ${strict}`);
 });
+
+test("the glutes are trained on their own, not only inside the squats", () => {
+  for (const days of [3, 4, 5, 6]) {
+    for (const env of ["commercial_gym", "home_gym"]) {
+      const experience = days >= 5 ? "advanced" : days === 3 ? "beginner" : "intermediate";
+      const week = weekOf({ days, env, experience });
+      const audit = auditWeeklyMuscleVolume(week, experience);
+      assert.ok(audit.analysis.GLUTES.weekly_sets >= 3, `${days} days ${env}: ${audit.analysis.GLUTES.weekly_sets} glute sets`);
+      const direct = week.flatMap((session) => session.exercises || [])
+        .filter((exercise) => /HIP_THRUST|GLUTE_BRIDGE/.test(String(exercise.exercise_code || "")));
+      assert.ok(direct.length > 0, `${days} days ${env}: no direct glute movement`);
+    }
+  }
+});
+
+test("the movement a client can do with nothing stays available for every slot", async () => {
+  const { EXERCISE_CATALOG } = await import("../src/exercise-catalog/index.js");
+  const bySlot = new Map();
+  for (const exercise of EXERCISE_CATALOG.exercises) {
+    const list = bySlot.get(exercise.slot_code) || [];
+    list.push(exercise);
+    bySlot.set(exercise.slot_code, list);
+  }
+  for (const [slot, exercises] of bySlot) {
+    assert.equal(exercises.length, 2, `${slot} has ${exercises.length} exercises`);
+    assert.ok(
+      exercises.some((exercise) => exercise.allowed_locations.includes("HOME")),
+      `${slot} has nothing a client can do at home`,
+    );
+  }
+});

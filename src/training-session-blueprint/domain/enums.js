@@ -4,6 +4,9 @@ export const MovementSlotCode = Object.freeze({
   KNEE_DOMINANT: "KNEE_DOMINANT",
   HIP_HINGE: "HIP_HINGE",
   UNILATERAL_LOWER: "UNILATERAL_LOWER",
+  // Direct glute work: the hip thrust and the glute bridge, which used to sit under the hinge and
+  // never got picked over the Romanian deadlift.
+  HIP_EXTENSION: "HIP_EXTENSION",
   KNEE_FLEXION: "KNEE_FLEXION",
   CALF_RAISE: "CALF_RAISE",
   HORIZONTAL_PUSH: "HORIZONTAL_PUSH",

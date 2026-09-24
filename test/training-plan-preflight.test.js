@@ -761,6 +761,8 @@ test("the full example passes through the complete pipeline into the actual revi
     plan_status: TrainingPlanStatus.PROVISIONAL_REVIEW_REQUIRED,
     result: TrainingPlanPreflightResult.REVIEW_REQUIRED,
     can_approve: false,
-    issues: [reviewIssue(2, 4)],
+    // The glute movement joins the hinge day, so the vertical pull this client has no bar for is
+    // the fifth slot of the session instead of the fourth.
+    issues: [reviewIssue(2, 5)],
   });
 });
