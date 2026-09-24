@@ -2157,6 +2157,12 @@ export function buildAllergenContext(canonicalIntake = {}, rawIntake = {}) {
 
   // Declared in the intake under the bariatric block; not part of the canonical contract.
   const isDumpingSyndrome = effectiveRaw?.medical_conditions?.bariatric?.dumping_syndrome === true;
+  const rawBariatricSelected = Array.isArray(effectiveRaw?.medical_conditions?.selected)
+    ? effectiveRaw.medical_conditions.selected.map((condition) => String(condition).toLowerCase())
+    : [];
+  const isPostBariatric = rawBariatricSelected.includes("bariatric_surgery")
+    || effectiveRaw?.medical_conditions?.bariatric?.is_operated === true
+    || (medical.conditions || []).some((condition) => /BARIATRIC/.test(String(condition.conditionCode || "")));
 
   const rawSelected = Array.isArray(effectiveRaw?.medical_conditions?.selected) ? effectiveRaw.medical_conditions.selected : [];
   const isDiabetic =
@@ -2213,6 +2219,7 @@ export function buildAllergenContext(canonicalIntake = {}, rawIntake = {}) {
     isLegumesExcluded,
     isLowBudget,
     isDumpingSyndrome,
+    isPostBariatric,
     isDiabetic,
     isSesameExcluded,
     // The client's country (EG, SA, AE ...) when known: local foods first in the swap lists.
@@ -2240,7 +2247,7 @@ export function buildCulinaryRecipeMeals(universalTargets, canonicalIntake = {},
   const budgetTier = (nutrition.budget || nutrition.budgetTier || "MODERATE").toUpperCase();
 
   const allergenContext = buildAllergenContext(canonicalIntake, effectiveRaw);
-  const { excludedFoods, isVegan, isGlutenExcluded, isDairyExcluded, isEggsExcluded, isFishExcluded, isPoultryExcluded, isRedMeatExcluded, isMeatExcluded, isSoyExcluded, isNutsExcluded, isGout, isFavism, isLegumesExcluded, isLowBudget, isDumpingSyndrome, isDiabetic, isSesameExcluded } = allergenContext;
+  const { excludedFoods, isVegan, isGlutenExcluded, isDairyExcluded, isEggsExcluded, isFishExcluded, isPoultryExcluded, isRedMeatExcluded, isMeatExcluded, isSoyExcluded, isNutsExcluded, isGout, isFavism, isLegumesExcluded, isLowBudget, isDumpingSyndrome, isPostBariatric, isDiabetic, isSesameExcluded } = allergenContext;
 
   const totalMeals = meal_distribution.length;
 
@@ -2675,10 +2682,14 @@ export function buildCulinaryRecipeMeals(universalTargets, canonicalIntake = {},
     }
 
     // =========================================================================
-    // CASE B: 5 OR 6 MINI-MEALS / POST-BARIATRIC SLEEVE (Dalia Elqadi - Case 2)
+    // CASE B: POST-BARIATRIC SLEEVE, 5 OR 6 MINI-MEALS (Dalia Elqadi - Case 2)
     // STRICT TOTAL PLATE WEIGHT CAP: <= 175-180g PER MEAL
+    //
+    // These plates are fixed at the size an operated stomach holds, and they do not grow with the
+    // day. Everyone else who eats five or six times gets the ordinary meals below, each scaled to
+    // its own target: a 4924 kcal day sent through here came back with 700 kcal of food.
     // =========================================================================
-    else if (totalMeals >= 5) {
+    else if (totalMeals >= 5 && isPostBariatric) {
       recipeConceptDesc = "وجبة مركزة عالية الكثافة الغذائية محددة الحجم الصارم (وزن الطبق الإجمالي 165 - 175 جم) لحماية جدار المعدة ومنع التمدد ومتلازمة الإغراق.";
 
       if (mealNum === 1) {

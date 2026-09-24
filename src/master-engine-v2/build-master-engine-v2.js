@@ -767,9 +767,12 @@ export function calculateUniversalNutritionTargets(canonicalIntake, evaluationCo
       const snackShare = targetCalories * 0.85 / 3 > 1020 ? 0.25 : 0.15;
       pRatio = fRatio = cRatio = i === 4 ? snackShare : (1 - snackShare) / 3;
     } else if (mealCount === 5) {
-      mealNameAr = i === 1 ? "الوجبة 1 (إفطار صغير عالي الكثافة)" : i === 2 ? "الوجبة 2 (سناك بروتيني أول)" : i === 3 ? "الوجبة 3 (غداء صغير الحجم)" : i === 4 ? "الوجبة 4 (سناك بروتيني ثانٍ)" : "الوجبة 5 (عشاء مريح للهضم)";
+      // The names say what the plate actually is: the kitchen writes breakfast, lunch and dinner
+      // first and a snack after them, and the names used to be shifted against it - meal 2 was called
+      // a protein snack and came out as lunch.
+      mealNameAr = i === 1 ? "وجبة الإفطار" : i === 2 ? "وجبة الغداء" : i === 3 ? "وجبة العشاء" : i === 4 ? "سناك أول" : "سناك تاني";
     } else if (mealCount === 6) {
-      mealNameAr = i === 1 ? "الوجبة 1 (إفطار صغير عالي الكثافة)" : i === 2 ? "الوجبة 2 (سناك بروتيني أول)" : i === 3 ? "الوجبة 3 (غداء صغير الحجم)" : i === 4 ? "الوجبة 4 (سناك بروتيني ثانٍ)" : i === 5 ? "الوجبة 5 (عشاء خفيف)" : "الوجبة 6 (سناك مسائي خفيف)";
+      mealNameAr = i === 1 ? "وجبة الإفطار" : i === 2 ? "وجبة الغداء" : i === 3 ? "وجبة العشاء" : i === 4 ? "سناك أول" : i === 5 ? "سناك تاني" : "سناك تالت";
     }
 
     mealDistribution.push({
