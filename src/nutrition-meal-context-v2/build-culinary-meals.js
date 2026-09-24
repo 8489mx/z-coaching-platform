@@ -1444,6 +1444,58 @@ function buildSmartSwapCandidates(category, baseGrams, baseFoodCode, mealContext
         calories_kcal: Math.round(candidateProtein * 4 + candidateCarbs * 4 + candidateFat * 9),
       });
     }
+  } else if (category === "FATS") {
+    // A fat item had no alternatives at all - the one plate a client could never change. It is
+    // matched on the fat it carries (16 g of almonds for the 8 g of fat in a spoon of oil), and the
+    // same rule as everywhere else decides what the client actually sees: the same family (what you
+    // cook in, or what you eat as it is), within a quarter of the energy and 10 g of fat.
+    const fatCandidates = [
+      "OLIVE_OIL",
+      "NATURAL_BUTTER_GHEE",
+      "FRESH_AVOCADO",
+      "RAW_TAHINI",
+      "PEANUT_BUTTER",
+      "RAW_ALMONDS",
+      "HEMP_CHIA_SEEDS",
+      "CHIA_SEEDS",
+    ];
+
+    for (const code of fatCandidates) {
+      if (code === baseFoodCode) continue;
+      const candidate = FOOD_SWAP_DATABASE[code];
+      if (!candidate || !(candidate.fat_per_100g > 0) || !(baseFat > 0)) continue;
+      if (!isFoodClinicallySafe(code, allergenContext)) continue;
+      if (allergenContext.isLowBudget && !candidate.is_economic) continue;
+
+      const equivGrams = Math.round((baseFat / candidate.fat_per_100g) * 100);
+      // Under 5 g is a smear, not a portion a client can measure.
+      if (equivGrams < 5) continue;
+      const candidateProtein = Math.round((equivGrams / 100) * (candidate.protein_per_100g || 0));
+      const candidateCarbs = Math.round((equivGrams / 100) * (candidate.carb_per_100g || 0));
+      const candidateFat = Math.round((equivGrams / 100) * candidate.fat_per_100g);
+
+      const SPOONS = { OLIVE_OIL: "ملعقة كبيرة زيت", NATURAL_BUTTER_GHEE: "ملعقة سمن بلدي", RAW_TAHINI: "ملعقة طحينة", PEANUT_BUTTER: "ملعقة زبدة فول سوداني" };
+      const householdDesc = code === "FRESH_AVOCADO"
+        ? `${equivGrams} جم (حوالي ${(equivGrams / 150).toFixed(1)} ثمرة أفوكادو)`
+        : SPOONS[code]
+          ? `${equivGrams} جم (~${Math.max(1, Math.round(equivGrams / 15))} ${SPOONS[code]})`
+          : `${equivGrams} جم (حفنة صغيرة)`;
+
+      swaps.push({
+        food_code: candidate.code,
+        name_ar: candidate.name_ar,
+        name_en: candidate.name_en,
+        equivalent_grams: equivGrams,
+        household_desc: householdDesc,
+        fat_tier: candidate.fat_tier,
+        oil_deduction_g: 0,
+        oil_addition_g: 0,
+        protein_g: candidateProtein,
+        carb_g: candidateCarbs,
+        fat_g: candidateFat,
+        calories_kcal: Math.round(candidateProtein * 4 + candidateCarbs * 4 + candidateFat * 9),
+      });
+    }
   }
 
   return orderByCountry(swaps, allergenContext.country);
@@ -3950,11 +4002,19 @@ export function buildCulinaryRecipeMeals(universalTargets, canonicalIntake = {},
     const calculatedF = items.reduce((sum, it) => sum + (it.fat_g || 0), 0);
     const calculatedKcal = items.reduce((sum, it) => sum + (it.calories_kcal || 0), 0);
 
-    // Enrich every item with recipe_details if available
+    // Enrich every item with recipe_details if available. A fat item that was written without
+    // alternatives gets them here - every recipe places its oil, its nuts or its avocado by hand, and
+    // this is the one place that can offer the client something else for all of them at once. The
+    // plates of an operated stomach keep their exact composition, swaps included.
+    const mealContextForSwaps = mealNum === 1 ? "BREAKFAST" : mealNum === 2 ? "LUNCH" : mealNum === 3 ? "DINNER" : "SNACK";
     const enrichedItems = items.map(it => {
       const recipe = getRecipeDetailsForFood(it.food_code);
+      const needsFatSwaps = !fixedPortions && it?.category === "FATS" && (!Array.isArray(it.swaps) || it.swaps.length === 0);
       return {
         ...it,
+        ...(needsFatSwaps
+          ? { swaps: generateSmartSwaps("FATS", Number(it.portion_g) || 0, it.food_code, mealContextForSwaps, 0, allergenContext) }
+          : {}),
         recipe_details: recipe || null,
       };
     });
