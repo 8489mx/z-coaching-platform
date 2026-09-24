@@ -56,3 +56,26 @@ test("the day the client eats is still the day that was planned", () => {
     assert.ok(Math.abs(sum(key) - target) / target < 0.12, `${key}: ${sum(key)} for ${target}`);
   }
 });
+
+test("the snack is the size of a snack, not a fourth dinner", () => {
+  const withSnack = plan("3_meals_snack");
+  const kcalOf = (meal) => (meal.items || []).reduce((total, item) => total + (Number(item.calories_kcal) || 0), 0);
+  const day = withSnack.macro_targets.calories_kcal;
+  const share = kcalOf(withSnack.culinary_meals[3]) / day;
+  assert.ok(share > 0.10 && share < 0.20, `the snack is ${Math.round(share * 100)}% of the day`);
+  for (const meal of withSnack.culinary_meals.slice(0, 3)) {
+    assert.ok(kcalOf(meal) / day > 0.22, `${meal.meal_name_ar} is only ${Math.round((kcalOf(meal) / day) * 100)}% of the day`);
+  }
+});
+
+test("a day too big for three plates shares the four equally instead", () => {
+  // Above about 1020 kcal a meal the three plates cannot hold their food, and a plate that cannot
+  // hold its food drops it - so the day goes back to four equal sittings.
+  const huge = buildMasterEngineV2({
+    intake: { ...answers("3_meals_snack"), weight_kg: "130", height_cm: "200", primary_goal: "lean_bulk", neat_level: "very_active" },
+    evaluationContext: CTX, nutritionFoodCatalog: CATALOG, options: {},
+  }).nutrition_program;
+  const kcalOf = (meal) => (meal.items || []).reduce((total, item) => total + (Number(item.calories_kcal) || 0), 0);
+  const share = kcalOf(huge.culinary_meals[3]) / huge.macro_targets.calories_kcal;
+  assert.ok(share > 0.20, `the snack of a ${huge.macro_targets.calories_kcal} kcal day is ${Math.round(share * 100)}%`);
+});

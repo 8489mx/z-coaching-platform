@@ -759,6 +759,13 @@ export function calculateUniversalNutritionTargets(canonicalIntake, evaluationCo
       else cRatio = 0.30;
     } else if (mealCount === 4) {
       mealNameAr = i === 1 ? "وجبة الإفطار" : i === 2 ? "وجبة الغداء" : i === 3 ? "وجبة العشاء" : "الوجبة الرابعة (سناك)";
+      // Four sittings are three meals and a snack, so the snack is the size of a snack: it used to
+      // take an equal quarter of the day (927 kcal of a 3574 kcal day - 357 g of sweet potato and
+      // 290 g of yogurt), which is a dinner. The three meals share what is left - unless the day is
+      // so big that they would not fit on a plate (above ~1020 kcal a meal), and then the four
+      // plates share equally, because a plate that cannot hold its food drops it.
+      const snackShare = targetCalories * 0.85 / 3 > 1020 ? 0.25 : 0.15;
+      pRatio = fRatio = cRatio = i === 4 ? snackShare : (1 - snackShare) / 3;
     } else if (mealCount === 5) {
       mealNameAr = i === 1 ? "الوجبة 1 (إفطار صغير عالي الكثافة)" : i === 2 ? "الوجبة 2 (سناك بروتيني أول)" : i === 3 ? "الوجبة 3 (غداء صغير الحجم)" : i === 4 ? "الوجبة 4 (سناك بروتيني ثانٍ)" : "الوجبة 5 (عشاء مريح للهضم)";
     } else if (mealCount === 6) {
