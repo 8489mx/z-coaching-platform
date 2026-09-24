@@ -95,3 +95,31 @@ test("a swap shrinks with the item it belongs to, oil included", () => {
   assert.equal(swap.protein_g, Math.round(30 * factor));
   assert.ok(swap.oil_deduction_g < 6, "the oil to leave out shrinks with the portion");
 });
+
+test("breakfast fits its protein target instead of being fixed amounts", () => {
+  // Two eggs and 150 g of cheese were placed whatever the target was, and the bread brought 17 g of
+  // protein of its own, so a small breakfast was over before it was built. The eggs and the cheese
+  // take what the bread and the salad leave now.
+  for (const weight of ["60", "75", "85", "110"]) {
+    const program = buildMasterEngineV2({
+      intake: {
+        gender: "male", age: "30", height_cm: "178", weight_kg: weight, circumferences: { neck_cm: "38", waist_cm: "90", hips_cm: "100" },
+        primary_goal: weight === "110" ? "lean_bulk" : "fat_loss", neat_level: "moderate", occupation_type: "DESK_OFFICE", dangerous_symptoms: ["NONE"],
+        medical_conditions: { has_conditions: false, selected: ["none"] },
+        injuries_map: { has_injuries: false, selected_areas: ["none"] }, religion: "MUSLIM", strict_allergies: ["none"],
+        meal_structure: { meals_count: "3_meals_snack", intermittent_fasting: "none" }, training_environment: "commercial_gym",
+        training_logistics: { days_per_week: 4, experience_level: "intermediate" }, recent_training: "ACTIVE",
+      },
+      evaluationContext: { system_time: "2026-09-21T08:00:00.000Z", assessmentDate: "2026-09-21" },
+      nutritionFoodCatalog: CATALOG, options: {},
+    }).nutrition_program;
+    const breakfast = program.culinary_meals[0];
+    const target = Number(breakfast.target_macros.protein_g);
+    const actual = sum(breakfast.items, "protein_g");
+    assert.ok(Math.abs(actual - target) <= Math.max(3, target * 0.08), `${weight} kg: breakfast protein ${actual} for ${target}`);
+    // It is still breakfast: eggs on the plate, and the cheese only when it is worth a portion.
+    assert.ok((breakfast.items || []).some((item) => item.food_code === "EGGS_OMELETTE"), "breakfast keeps its eggs");
+    const cheese = (breakfast.items || []).find((item) => item.food_code === "COTTAGE_CHEESE");
+    if (cheese) assert.ok(cheese.portion_g >= 40, `cottage cheese ${cheese.portion_g} g is not a portion`);
+  }
+});

@@ -3429,8 +3429,19 @@ export function buildCulinaryRecipeMeals(universalTargets, canonicalIntake = {},
           ? "سفرة إفطار خالية تماماً من البيورينات العالية واللحوم الحمراء، تعتمد على توليفة البيض والجبن القريش المعتدل (150 جم) والدجاج الصافي لضبط اليوريك أسيد."
           : "سفرة إفطار متوازنة وشهية تمد الجسم بالبروتين عالي الجودة والألياف والشبع مع الاستفادة الكاملة من صفار البيض دون أي هدر.";
 
+        // What the bread (or the potatoes) will bring of protein, before anything is placed: the
+        // carbohydrate item is sized by the carbohydrate target, and its protein lands on the plate
+        // whether the meal has room for it or not. Everything else is fitted into what is left.
+        const carbForBread = Math.max(5, targetC - 4 - 1 - (isDairyExcluded ? 0 : 3));
+        const carbProteinEstimate = isGlutenExcluded
+          ? Math.round((carbForBread / 0.20) * 0.02)
+          : Math.round((carbForBread / 0.52) * 0.09);
+        // The salad is 2 g, and a plate is still a plate: at least one egg and a spoon of cheese.
+        const proteinLeftForTable = Math.max(0, targetP - 2 - carbProteinEstimate);
+
         if (!isEggsExcluded) {
-          const wholeEggsCount = (targetP >= 55 || isAdvanced) ? 3 : 2;
+          const roomForEggs = Math.floor(proteinLeftForTable / 6.5);
+          const wholeEggsCount = Math.max(1, Math.min((targetP >= 55 || isAdvanced) ? 3 : 2, roomForEggs));
           const wholeEggsGrams = wholeEggsCount * 55;
           const eggProtein = Math.round(wholeEggsCount * 6.5);
           const eggFat = Math.round(wholeEggsCount * 5.0);
@@ -3475,7 +3486,11 @@ export function buildCulinaryRecipeMeals(universalTargets, canonicalIntake = {},
         let cheeseF = 0;
         let cheeseP = 0;
         if (!isDairyExcluded) {
-          const cheeseGrams = 150; // Capped at 150g ideal portion
+          // The cheese takes what the eggs and the bread left, up to the ideal 150 g portion, and is
+          // left off the plate altogether when there is no room worth a portion.
+          const cheeseRoomG = Math.round((Math.max(0, proteinLeftForTable - (currentP - 2)) / 12) * 100);
+          const cheeseGrams = Math.max(0, Math.min(150, cheeseRoomG));
+          if (cheeseGrams >= 40) {
           cheeseP = Math.round((cheeseGrams / 100) * 12);
           cheeseF = Math.round((cheeseGrams / 100) * 1.5);
           cheeseC = Math.round((cheeseGrams / 100) * 3);
@@ -3495,6 +3510,11 @@ export function buildCulinaryRecipeMeals(universalTargets, canonicalIntake = {},
           currentP += cheeseP;
           currentF += cheeseF;
           currentC += cheeseC;
+          } else {
+            cheeseP = 0;
+            cheeseF = 0;
+            cheeseC = 0;
+          }
         }
 
         // Breakfast Carb Selection (exact remaining carb)

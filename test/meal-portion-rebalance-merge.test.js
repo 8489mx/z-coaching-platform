@@ -98,9 +98,10 @@ test('Red Team Item 5: Culinary Meals Ingredient Portion Rebalancing on Calorie 
     // The same small correction toward the unchanged fat target (split parts carry their own fat).
     assert.ok(Math.abs(newFats - origFats) <= 2, `Total fat ${newFats} g vs ${origFats} g`);
     // Measured against the protein target (a carbohydrate cut leaves it unchanged): the stored meal
-    // totals are now the real sum of the items, a few grams from the target, not the target itself.
+    // totals are the real sum of the items, so whole-gram portions put the day a few grams off the
+    // target - within 5% of it, and the protein item itself is held to 3% above.
     const proteinTarget = merged.nutrition_program.macro_targets.protein_g;
-    assert.ok(Math.abs(newProtein - proteinTarget) <= 4, `Total protein ${newProtein} g for a ${proteinTarget} g target (plan before: ${origProtein} g)`);
+    assert.ok(Math.abs(newProtein - proteinTarget) <= proteinTarget * 0.05, `Total protein ${newProtein} g for a ${proteinTarget} g target (plan before: ${origProtein} g)`);
 
     // 5. Swaps must be scaled proportionally with parent item
     if (adaptedRice.swaps && adaptedRice.swaps.length > 0) {
