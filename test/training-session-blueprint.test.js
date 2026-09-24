@@ -78,11 +78,14 @@ const FULL_BODY_SLOTS = {
 };
 
 const UPPER_LOWER_SLOTS = {
+  // A lateral raise on each upper day: the overhead press alone left the shoulders at 6 weekly sets
+  // against a minimum of 8, and it is the front delt that the press works.
   UPPER_A: [
     "HORIZONTAL_PUSH",
     "HORIZONTAL_PULL",
     "VERTICAL_PUSH",
     "VERTICAL_PULL",
+    "SHOULDER_ABDUCTION",
     "ELBOW_FLEXION",
     "ELBOW_EXTENSION",
   ],
@@ -93,6 +96,7 @@ const UPPER_LOWER_SLOTS = {
     "HORIZONTAL_PUSH",
     "HORIZONTAL_PULL",
     "HORIZONTAL_PUSH",
+    "SHOULDER_ABDUCTION",
     "ELBOW_EXTENSION",
     "ELBOW_FLEXION",
   ],

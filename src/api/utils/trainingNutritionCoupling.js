@@ -95,6 +95,15 @@ export function resolveMuscleGroupKey(exercise) {
   const rawCode = String(exercise.code || exercise.exercise_code || exercise.id || '').toUpperCase();
   const rawName = String(exercise.name || exercise.name_en || exercise.name_ar || '').toUpperCase();
 
+  // A push-up trains the chest, a close-grip push-up is there for the triceps, a reverse lunge is a
+  // quadriceps exercise and a glute bridge is for the glutes. None of them were recognised, so the
+  // weekly volume the coach is shown counted them as nothing: a plan's quadriceps read 6 sets when
+  // the lunges made them 12, and its triceps read zero.
+  if (rawCode.includes('CLOSE_GRIP_PUSH_UP')) return 'TRICEPS';
+  if (rawCode.includes('PUSH_UP')) return 'CHEST';
+  if (rawCode.includes('LUNGE') || rawCode.includes('SPLIT_SQUAT') || rawCode.includes('STEP_UP') || rawCode.includes('LEG_PRESS') || rawCode.includes('HACK_SQUAT')) return 'QUADS';
+  if (rawCode.includes('GLUTE_BRIDGE') || rawCode.includes('HIP_THRUST') || rawCode.includes('KICKBACK')) return 'GLUTES';
+
   if (rawGroup.includes('CHEST') || rawCode.includes('BENCH') || rawCode.includes('FLY') || rawName.includes('CHEST') || rawName.includes('صدر')) return 'CHEST';
   if (rawGroup.includes('BACK') || rawGroup.includes('LATS') || rawCode.includes('ROW') || rawCode.includes('PULLDOWN') || rawName.includes('ظهر')) return 'BACK';
   if (rawGroup.includes('QUAD') || rawCode.includes('SQUAT') || rawCode.includes('LEG_EXT') || rawName.includes('فخذ أمامي')) return 'QUADS';
@@ -460,7 +469,13 @@ export function auditWeeklyMuscleVolume(sessions = []) {
     let status = 'OPTIMAL_MAV';
     let statusLabelAr = 'حجم تدريبي مثالي (MAV)';
 
-    if (sets < landmark.mev && sets > 0) {
+    // No direct sets at all used to read as an optimal volume, so a plan with no triceps work and
+    // a plan with twelve sets of it looked the same to the coach. The glutes sit here in every
+    // plan: they work in every squat, hinge and lunge, and the table counts direct sets only.
+    if (sets === 0) {
+      status = 'NOT_TRAINED_DIRECTLY';
+      statusLabelAr = 'لا توجد جولات مباشرة (بتشتغل بشكل غير مباشر في التمارين المركبة)';
+    } else if (sets < landmark.mev && sets > 0) {
       status = 'BELOW_MEV';
       statusLabelAr = `أقل من الحد الأدنى للتحفيز البنائي (${sets}/${landmark.mev} جولة)`;
       warnings.push(`عضلة ${landmark.name_ar}: الحجم الحالي (${sets} جولات) دون الحد الأدنى الفعال (MEV: ${landmark.mev} جولة).`);

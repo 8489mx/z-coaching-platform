@@ -47,11 +47,17 @@ const SESSION_MOVEMENT_SLOTS = Object.freeze({
     MovementSlotCode.HORIZONTAL_PULL,
     MovementSlotCode.CORE_STABILITY,
   ]),
+  // The shoulders had the overhead press and nothing else on an upper/lower week - 6 weekly sets
+  // against a minimum of 8 - and the press works the front delt while the side delt is what makes
+  // a shoulder look like a shoulder. A lateral raise on each upper day brings them to about 12
+  // (>= 10 weekly sets per muscle: Schoenfeld et al. 2017), the same reasoning as the second chest
+  // movement below.
   [TrainingSessionCode.UPPER_A]: Object.freeze([
     MovementSlotCode.HORIZONTAL_PUSH,
     MovementSlotCode.HORIZONTAL_PULL,
     MovementSlotCode.VERTICAL_PUSH,
     MovementSlotCode.VERTICAL_PULL,
+    MovementSlotCode.SHOULDER_ABDUCTION,
     MovementSlotCode.ELBOW_FLEXION,
     MovementSlotCode.ELBOW_EXTENSION,
   ]),
@@ -65,6 +71,7 @@ const SESSION_MOVEMENT_SLOTS = Object.freeze({
     MovementSlotCode.HORIZONTAL_PUSH,
     MovementSlotCode.HORIZONTAL_PULL,
     MovementSlotCode.HORIZONTAL_PUSH,
+    MovementSlotCode.SHOULDER_ABDUCTION,
     MovementSlotCode.ELBOW_EXTENSION,
     MovementSlotCode.ELBOW_FLEXION,
   ]),
