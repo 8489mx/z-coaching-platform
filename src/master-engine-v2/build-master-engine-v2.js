@@ -737,7 +737,10 @@ export function calculateUniversalNutritionTargets(canonicalIntake, evaluationCo
   // at least 5 small meals so the day's protein fits.
   const chosenMealCount = isPostBariatric(effectiveRaw) ? Math.max(5, preferredMealCount) : preferredMealCount;
   // Owner decision: 3200+ kcal on three meals makes very large plates, so a fourth meal is added.
-  // Two meals get the same rule (they made plates of 2300+ kcal); below 3200 kcal they stay.
+  // Two meals get the same rule (they made plates of 2300+ kcal); below 3200 kcal they stay. The
+  // A fifth plate is not an option here: the five- and six-meal recipes are the small fixed plates
+  // written for a client after stomach surgery, and a 4900 kcal day sent through them comes back
+  // with 700 kcal of food. Until those recipes scale, four is as far as this goes.
   const mealAddedForCalories = targetCalories >= 3200 && (chosenMealCount === 3 || chosenMealCount === 2);
   const mealCount = mealAddedForCalories ? 4 : chosenMealCount;
   const mealDistribution = [];

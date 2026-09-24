@@ -4148,9 +4148,29 @@ export function splitOversizedPortions(meals = [], maxGrams = MAX_CARB_PORTION_G
         left -= p.share;
       }
       let plateIsFull = false;
+      let clinicalLimitHeld = false;
       if (left > 1e-6) {
-        const total = 1 - left;
-        for (const p of parts) p.share /= total;
+        // The foods available cannot hold the whole portion under their limits. The plate grows and
+        // the coach is told - but a limit that is clinical and not a matter of plate size holds all
+        // the same: a diabetic's potato stays at its ceiling (KDOQI-style caps are the coach's, this
+        // one is the plan's own diabetic rule) and the other foods take the difference. A 4900 kcal
+        // diabetic day used to answer this by putting 372 g of potatoes on one plate.
+        const isClinicallyCapped = (part) => diabeticPotatoLimit && isPotato(part.partner?.food_code || item?.food_code);
+        const flexible = parts.filter((part) => !isClinicallyCapped(part) && part.share > 1e-6);
+        const flexibleShare = flexible.reduce((sum, part) => sum + part.share, 0);
+        const cappedShare = parts.filter(isClinicallyCapped).reduce((sum, part) => sum + part.share, 0);
+        if (cappedShare <= 1e-6) {
+          const total = 1 - left;
+          for (const p of parts) p.share /= total;
+        } else if (flexibleShare > 1e-6) {
+          clinicalLimitHeld = true;
+          const factor = (flexibleShare + left) / flexibleShare;
+          for (const part of flexible) part.share *= factor;
+        } else {
+          // Every food on this plate is clinically capped: what is left simply does not fit here.
+          clinicalLimitHeld = true;
+          plateIsFull = true;
+        }
       } else {
         // A last part of a few grams (10 g of apple) is not a plate: its share goes to a part with room
         // under its limit, else is spread over the other non-potato parts (a few grams over a fruit
@@ -4176,9 +4196,9 @@ export function splitOversizedPortions(meals = [], maxGrams = MAX_CARB_PORTION_G
           plateIsFull = true;
         }
       }
-      const overLimit = left > 1e-6
+      const overLimit = left > 1e-6 && !clinicalLimitHeld
         ? { portion_warning_ar: `البدائل الآمنة المتاحة لا تكفي لتقسيم الحصة تحت الحد؛ راجع عدد الوجبات أو توزيع الكربوهيدرات.` }
-        : plateIsFull
+        : plateIsFull || clinicalLimitHeld
           ? { portion_note_ar: `الوجبة دي كربوهيدراتها أكتر من اللي يتحط في قعدة واحدة: الأصناف المتاحة وصلت لحدها، والباقي اتشال بدل ما يتحط كقطعة صغيرة. وزّع جزء منها على وجبة تانية.` }
           : {};
       parts.filter((p) => p.share > 1e-6).forEach((p) => {
