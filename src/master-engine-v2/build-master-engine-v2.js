@@ -31,24 +31,10 @@ export function resolveOptimalDietFramework(canonicalIntake, rawIntake = {}) {
   const rawMedical = effectiveRaw?.medical || {};
   const rawNutrition = effectiveRaw?.nutrition || {};
 
-  // 0. Pregnancy Check -> Strict Contraindication to Low-Carb & Fasting (IOM / ACOG Guidelines)
-  const isPregnant =
-    medical.pregnancyStatus === "PREGNANT" ||
-    rawMedical.pregnancyStatus === "PREGNANT" ||
-    effectiveRaw?.pregnancyStatus === "PREGNANT" ||
-    effectiveRaw?.female_pregnancy === "PREGNANT" ||
-    effectiveRaw?.isPregnant === true ||
-    effectiveRaw?.is_pregnant === true ||
-    rawMedical.isPregnant === true ||
-    rawMedical.is_pregnant === true;
-
-  if (isPregnant) {
-    return {
-      framework: "BALANCED_HIGH_PROTEIN",
-      reason_ar: "تم اختيار النظام المتوازن عالي البروتين والمعقد غذائياً تلقائياً لحماية نمو الجنين وتوفير الجلوكوز الكافي للدماغ العصبي وتجنب الحالة الكيتونية الضارة.",
-      reason_en: "Balanced High-Protein auto-selected to protect fetal development, ensure brain glucose supply, and prevent ketosis.",
-    };
-  }
+  // Pregnancy is outside the service (src/api/services/serviceScope.js): no plan is built for a
+  // pregnant client, so the framework, the energy surplus, the 175 g carbohydrate floor and the
+  // ban on low-carb and fasting that used to live here left with the case. Breastfeeding and a
+  // recent birth stay inside the service and keep everything they had.
 
   // 1. IBS / Severe Digestion Bloating -> LOW_FODMAP
   const hasIbs =
@@ -379,31 +365,6 @@ export function calculateUniversalNutritionTargets(canonicalIntake, evaluationCo
     calorieAdjustmentDesc = "سعرات صيانة وتثبيت الوزن مع تحسين اللياقة";
   }
 
-  // Pregnancy Energy Adjustment (+340 kcal for 2nd trimester, zero calorie deficit permitted)
-  const isPregnant =
-    medical.pregnancyStatus === "PREGNANT" ||
-    rawMedical.pregnancyStatus === "PREGNANT" ||
-    effectiveRaw?.pregnancyStatus === "PREGNANT" ||
-    effectiveRaw?.female_pregnancy === "PREGNANT" ||
-    effectiveRaw?.isPregnant === true ||
-    effectiveRaw?.is_pregnant === true ||
-    rawMedical.isPregnant === true ||
-    rawMedical.is_pregnant === true;
-
-  if (isPregnant) {
-    // By trimester from the intake (pregnancy_trimester 1/2/3); not given: the second-trimester value.
-    const trimester = Number(effectiveRaw?.pregnancy_trimester);
-    const P = CLINICAL_GUIDELINES.PREGNANCY;
-    const surplus = trimester === 1 ? P.SURPLUS_TRIMESTER_1_KCAL
-      : trimester === 3 ? P.SURPLUS_TRIMESTER_3_KCAL
-        : P.SURPLUS_TRIMESTER_2_KCAL;
-    targetCalories = Math.round(tdee + surplus);
-    proteinPerKg = Math.max(1.8, proteinPerKg);
-    calorieAdjustmentDesc = surplus > 0
-      ? `خطة تغذية داعمة للحمل (+${surplus} سعرة فوق الاحتياج بدون أي عجز حراري)`
-      : "خطة تغذية داعمة للحمل (سعرات الاحتياج بدون عجز ولا زيادة في أول 3 شهور)";
-  }
-
   // Lactation Energy Adjustment (+450 kcal to protect milk supply)
   const isLactating =
     medical.pregnancyStatus === "BREASTFEEDING" ||
@@ -513,7 +474,7 @@ export function calculateUniversalNutritionTargets(canonicalIntake, evaluationCo
   let proteinG = Math.round(referenceWeight * proteinPerKg);
   // A protein cap from the bloodwork plus what breastfeeding costs, not the cap alone (a
   // breastfeeding 42 kg client got 34 g a day).
-  if (kidneyProteinCapped && (isPregnant || isLactating)) {
+  if (kidneyProteinCapped && isLactating) {
     proteinG += CLINICAL_GUIDELINES.LAB_PROTEIN_CAP.LACTATION_EXTRA_PROTEIN_G;
   }
   const proteinKcal = proteinG * 4;
@@ -547,7 +508,7 @@ export function calculateUniversalNutritionTargets(canonicalIntake, evaluationCo
   const maxFatShare = CLINICAL_GUIDELINES.NUTRITION_BALANCE.MAX_FAT_ENERGY_SHARE;
   const fatCeilingG = () => Math.floor((maxFatShare * targetCalories) / 9);
   const balanceSteps = [];
-  if (!isPregnant && fatG > fatCeilingG()) {
+  if (fatG > fatCeilingG()) {
     if (!hasDiabetesOrInsulinResistance) {
       carbG += Math.round(((fatG - fatCeilingG()) * 9) / 4);
       fatG = fatCeilingG();
@@ -598,13 +559,6 @@ export function calculateUniversalNutritionTargets(canonicalIntake, evaluationCo
       : null,
   ].filter(Boolean).join("؛ ") + ".";
 
-  // Clinical Guard: Pregnancy Minimum Carbohydrates (IOM 175g/day minimum)
-  if (isPregnant && carbG < 175) {
-    carbG = 175;
-    const proteinFatRemaining = Math.max(minFatG * 9, targetCalories - (proteinG * 4) - (carbG * 4));
-    fatG = Math.round(proteinFatRemaining / 9);
-    targetCalories = (proteinG * 4) + (carbG * 4) + (fatG * 9);
-  }
 
   // 5. Diet Framework Resolution
   const rawDietChoice = (
@@ -625,15 +579,7 @@ export function calculateUniversalNutritionTargets(canonicalIntake, evaluationCo
     rawDietChoice !== "BALANCED_HIGH_PROTEIN" &&
     rawDietChoice !== ""
   ) {
-    if (isPregnant && (rawDietChoice === "TARGETED_LOW_CARB" || rawDietChoice === "INTERMITTENT_FASTING")) {
-      dietFramework = "BALANCED_HIGH_PROTEIN";
-    } else {
-      dietFramework = rawDietChoice;
-    }
-  }
-
-  if (isPregnant && (dietFramework === "TARGETED_LOW_CARB" || dietFramework === "INTERMITTENT_FASTING")) {
-    dietFramework = "BALANCED_HIGH_PROTEIN";
+    dietFramework = rawDietChoice;
   }
 
 

@@ -385,7 +385,6 @@ export default function IntakeAuditDetailModal({
               <FieldRow label="سعة الوجبة (جرام)" value={answers.medical_conditions?.bariatric?.meal_capacity_grams} dictionary={BARIATRIC_CAPACITY_MAP} />
               <FieldRow label="متلازمة الإغراق (Dumping)" value={answers.medical_conditions?.bariatric?.dumping_syndrome} />
               <FieldRow label="حامل" value={answers.female_pregnancy === 'PREGNANT'} />
-              <FieldRow label="شهر الحمل" value={answers.pregnancy_trimester} dictionary={{ 1: 'الشهور 1-3', 2: 'الشهور 4-6', 3: 'الشهور 7-9' }} />
               <FieldRow label="تكيس المبايض (PCOS)" value={answers.medical_conditions?.female_cases?.is_pcos} />
               <FieldRow label="مرضعة" value={answers.medical_conditions?.female_cases?.is_lactating} />
               <FieldRow label="ولادة حديثة" value={answers.medical_conditions?.female_cases?.is_postpartum} />

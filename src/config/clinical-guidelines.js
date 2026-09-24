@@ -152,19 +152,7 @@ export const CLINICAL_GUIDELINES = Object.freeze({
   // ==========================================
   // 7. PREGNANCY & MATERNAL HEALTH
   // ==========================================
-  PREGNANCY: Object.freeze({
-    /**
-     * Scientific Source:
-     * Institute of Medicine (IOM) Dietary Reference Intakes & ACOG Guidelines.
-     * Minimum 175g/day carbohydrates required for fetal neurodevelopment and ketosis prevention.
-     * Severe calorie deficits, ketogenic diets, and prolonged fasting are strictly contraindicated.
-     */
-    MIN_CARBS_GRAMS: 175,
-    // IOM (2005) estimated energy requirement in pregnancy: +0 / +340 / +452 kcal a day by trimester.
-    SURPLUS_TRIMESTER_1_KCAL: 0,
-    SURPLUS_TRIMESTER_2_KCAL: 340,
-    SURPLUS_TRIMESTER_3_KCAL: 450,
-    BANNED_FRAMEWORKS: Object.freeze(["TARGETED_LOW_CARB", "INTERMITTENT_FASTING"]),
-    RATIONALE_AR: "فرض حد أدنى 175 جم كربوهيدرات يومياً وحظر الكيتو والصيام المتقطع للحوامل بناءً على توصيات معهد الطب الأمريكي (IOM) والكلية الأمريكية لأطباء النساء والتوليد (ACOG) لتغذية دماغ الجنين ومنع الكيتوزس.",
-  }),
+  // The PREGNANCY block (IOM/ACOG: a 175 g carbohydrate floor, the surplus by trimester, and the
+  // ban on low-carb and fasting) left with the case: pregnancy is outside the service and no plan
+  // is built for it (src/api/services/serviceScope.js).
 });
