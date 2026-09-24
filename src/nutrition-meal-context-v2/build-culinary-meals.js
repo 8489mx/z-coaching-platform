@@ -1141,7 +1141,6 @@ export function isFoodClinicallySafe(foodCode, allergenContext = {}) {
   if (allergenContext.isSoyExcluded && (food.is_soy_free === false || /SOY|TOFU|EDAMAME/.test(foodCode))) return false;
   if (allergenContext.isNutsExcluded && (food.is_nut_free === false || /PEANUT|ALMOND|WALNUT|CASHEW|PISTACHIO|HAZELNUT|NUT_BUTTER|MIXED_NUTS/.test(foodCode))) return false;
   if (allergenContext.isSesameExcluded && (food.is_sesame_free === false || /SESAME|TAHINI/.test(foodCode))) return false;
-  if (allergenContext.isHighPotassium && HIGH_POTASSIUM_FOODS.has(foodCode)) return false;
   // Foods the client said they do not like leave the meals and swaps like a restriction does
   // (enforceClinicalSafety labels that replacement as a preference, not a clinical one).
   if (allergenContext.dislikedFoodCodes?.has(foodCode)) return false;
@@ -2207,8 +2206,6 @@ export function buildAllergenContext(canonicalIntake = {}, rawIntake = {}) {
     isDumpingSyndrome,
     isDiabetic,
     isSesameExcluded,
-    // Kidney disease with a high potassium result: potassium-rich foods leave the plan and swaps.
-    isHighPotassium: kidneyPotassium(effectiveRaw, medical).status === "HIGH",
     // The client's country (EG, SA, AE ...) when known: local foods first in the swap lists.
     country: typeof effectiveRaw.client_country === "string" && effectiveRaw.client_country ? effectiveRaw.client_country.toUpperCase() : null,
     // Food codes of the foods the client does not like (intake form labels mapped in disliked-foods.js).
@@ -2219,27 +2216,7 @@ export function buildAllergenContext(canonicalIntake = {}, rawIntake = {}) {
   };
 }
 
-// Potassium-rich foods of this food list (roughly 350-500 mg per 100 g or more; oranges ~180 mg but
-// eaten in large portions): limited only with a high result (KDIGO 2024, per person).
-export const HIGH_POTASSIUM_FOODS = Object.freeze(new Set([
-  "FRESH_AVOCADO", "ROASTED_POTATOES", "SWEET_POTATO", "BANANA_FRESH", "DATES_KHALAS", "ORANGE_FRESH",
-]));
 
-/**
- * A kidney client's latest potassium result from the intake (medical_conditions.renal.potassium_mmol_l):
- * HIGH above KIDNEY.HIGH_POTASSIUM_MMOL_L, NORMAL within range, UNKNOWN without a usable number; NONE
- * without kidney disease.
- */
-export function kidneyPotassium(effectiveRaw = {}, medical = {}) {
-  const selected = Array.isArray(effectiveRaw?.medical_conditions?.selected) ? effectiveRaw.medical_conditions.selected : [];
-  const hasKidney = selected.some((c) => /renal|kidney/i.test(String(c)))
-    || (medical.conditions || []).some((c) => /KIDNEY|RENAL/.test(String(c?.conditionCode || c || "").toUpperCase()))
-    || medical.hasKidneyCondition === true;
-  if (!hasKidney) return { status: "NONE", value: null };
-  const value = Number(String(effectiveRaw?.medical_conditions?.renal?.potassium_mmol_l ?? "").replace(",", "."));
-  if (!Number.isFinite(value) || value < 2 || value > 9) return { status: "UNKNOWN", value: null };
-  return { status: value > CLINICAL_GUIDELINES.KIDNEY.HIGH_POTASSIUM_MMOL_L ? "HIGH" : "NORMAL", value };
-}
 
 export function buildCulinaryRecipeMeals(universalTargets, canonicalIntake = {}, rawIntake = {}) {
   const { meal_distribution = [] } = universalTargets;
@@ -4271,7 +4248,7 @@ export function flagHeavyOil(meal) {
   };
 }
 
-function moveFatBeyondOil(meals, allergenContext, { kidneyProteinCapped = false, kidneyCondition = false, kidneyPotassiumStatus = "UNKNOWN" } = {}) {
+function moveFatBeyondOil(meals, allergenContext, { kidneyProteinCapped = false } = {}) {
   return meals.map((meal) => {
     const items = Array.isArray(meal?.items) ? meal.items : null;
     const oilIndex = items ? items.findIndex((item) => item?.food_code === "OLIVE_OIL") : -1;
@@ -4286,12 +4263,7 @@ function moveFatBeyondOil(meals, allergenContext, { kidneyProteinCapped = false,
       if (items.some((item) => item?.food_code === source.code)) continue;
       const food = FOOD_SWAP_DATABASE[source.code];
       if (!food || !isFoodClinicallySafe(source.code, allergenContext)) continue;
-      // Avocado is rich in potassium: a kidney client keeps a moderate portion (KDIGO 2024).
-      // With a normal potassium result nothing is limited.
-      const maxGrams = kidneyCondition && kidneyPotassiumStatus !== "NORMAL" && source.code === "FRESH_AVOCADO"
-        ? Math.min(source.maxGrams, CLINICAL_GUIDELINES.KIDNEY.AVOCADO_MAX_G_PER_MEAL)
-        : source.maxGrams;
-      const grams = Math.min(maxGrams, Math.round((excessFat / food.fat_per_100g) * 100));
+      const grams = Math.min(source.maxGrams, Math.round((excessFat / food.fat_per_100g) * 100));
       if (grams < 10) continue;
       const fat = Math.round((grams * food.fat_per_100g) / 100);
       const protein = Math.round((grams * food.protein_per_100g) / 100);

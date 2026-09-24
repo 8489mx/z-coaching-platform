@@ -73,8 +73,6 @@ test('cardio engine asthma guidance text matches CLINICAL_GUIDELINES.RESPIRATORY
   assert.equal(healthy.type, CARDIO_TYPES.HIIT_INTERVALS);
 });
 
-test('frontend kidney protein ceiling matches CLINICAL_GUIDELINES.KIDNEY', async () => {
-  const { CLINICAL_GUIDELINES } = await import('../src/config/clinical-guidelines.js');
-  const { KIDNEY_MAX_PROTEIN_PER_KG } = await import('../frontend/src/config/clinicalLimits.js');
-  assert.equal(KIDNEY_MAX_PROTEIN_PER_KG, CLINICAL_GUIDELINES.KIDNEY.MAX_PROTEIN_PER_KG);
-});
+// The kidney protein ceiling was mirrored here for the browser. Declared kidney disease is outside
+// the service now, the mirror file is gone with it, and a protein cap comes from the bloodwork in the
+// plan itself (clinical_guardrails.max_protein_g).

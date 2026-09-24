@@ -53,13 +53,14 @@ test('selecting diabetes still activates the hypoglycemia guard', () => {
   assert.equal(build(formAnswers(['diabetes'])).nutrition_program.targets.clinical_guardrails.hypoglycemia_guard_active, true);
 });
 
-test('renal from the form caps protein at the KDOQI ceiling and forces medical review', () => {
+// Renal from the form is still read - that is how the service knows to refuse it. The KDOQI protein
+// cap that used to follow is gone with the case (src/api/services/serviceScope.js).
+test('renal from the form is read and the case is refused by the service', async () => {
+  const { assessServiceScope } = await import('../src/api/services/serviceScope.js');
   assert.deepEqual(codes(formAnswers(['renal'])), ['KIDNEY_CONDITION']);
-  const program = build(formAnswers(['renal']));
-  const targets = program.nutrition_program.targets;
-  assert.equal(targets.clinical_guardrails.kidney_protein_capped, true);
-  assert.equal(targets.protein_per_kg, 0.8);
-  assert.equal(program.intake_decision.plan_status, 'MEDICAL_REVIEW_REQUIRED');
+  const scope = assessServiceScope(formAnswers(['renal']));
+  assert.equal(scope.supported, false);
+  assert.deepEqual(scope.cases, ['KIDNEY_DISEASE']);
 });
 
 test('hepatic from the form forces medical review without a protein cap', () => {

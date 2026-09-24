@@ -26,7 +26,6 @@ import { isSwapFoodSafe, resolveSwapContext, PLAN_FOOD_TO_REGISTRY } from "../se
 import { assessServiceScope, outsideScopeResponse } from "../services/serviceScope.js";
 import { isLiveSwapEquivalent, liveSwapOilAddition, liveSwapValueWithOil, liveSwapOilText, liveSwapTargetGrams, liveSwapServingText } from "../services/liveFoodSwapValue.js";
 import { isNoSwapFood, NO_SWAP_NOTE_AR } from "../../../frontend/src/utils/swapExchangeRules.js";
-import { kidneyPotassium } from "../../nutrition-meal-context-v2/build-culinary-meals.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -971,8 +970,6 @@ export function deriveClinicalConstraints(answers) {
     is_ibs: selected.has("gi_tract"),
     is_bariatric: selected.has("bariatric_surgery") || med.bariatric?.is_operated === true,
     has_dumping_syndrome: med.bariatric?.dumping_syndrome === true,
-    // Kidney disease with a high potassium result (the same rule as the plan).
-    is_high_potassium: kidneyPotassium(answers, {}).status === "HIGH",
     allergies,
     // The intake's "foods I don't like" labels; the web swap window leaves them out.
     disliked_foods: (Array.isArray(answers.disliked_foods) ? answers.disliked_foods : []).map((f) => String(f)),
@@ -1454,22 +1451,19 @@ export const updateCustomProgram = async (req, res) => {
       ...(Array.isArray(program_data?.client?.medical_conditions) ? program_data.client.medical_conditions : []),
     ];
 
-    // 1. Kidney Disease Protein Cap Check (KDOQI, CLINICAL_GUIDELINES.KIDNEY.MAX_PROTEIN_PER_KG)
-    const hasKidneyCondition = Boolean(
+    // 1. A protein cap the bloodwork asked for: the coach may still type past it, and that is
+    // written into the clinical review log. A declared kidney diagnosis is outside the service
+    // and never reaches here (src/api/services/serviceScope.js).
+    const cappedProtein = Number(program_data?.clinical_guardrails?.max_protein_g) ||
+      Number(program_data?.nutrition?.targets?.clinical_guardrails?.max_protein_g) || 0;
+    const hasProteinCap = cappedProtein > 0 && Boolean(
       program_data?.clinical_guardrails?.kidney_protein_capped ||
       program_data?.nutrition?.targets?.clinical_guardrails?.kidney_protein_capped ||
-      program_data?.nutrition?.clinical_guardrails?.kidney_protein_capped ||
-      userConditions.some(c => {
-        const s = typeof c === 'string' ? c : (c?.conditionCode || c?.name || c?.area || '');
-        return /kidney|ckd|كلى|قصور.*كلوي|وظائف.*الكلى/i.test(s);
-      })
+      program_data?.nutrition?.clinical_guardrails?.kidney_protein_capped
     );
 
-    if (hasKidneyCondition && program_data) {
-      const weight = Number(user.weight || user.weight_kg || program_data?.client?.weight_kg || 80);
-      const maxAllowedProtein = Number(program_data?.clinical_guardrails?.max_protein_g) ||
-        Number(program_data?.nutrition?.targets?.clinical_guardrails?.max_protein_g) ||
-        Math.round(weight * CLINICAL_GUIDELINES.KIDNEY.MAX_PROTEIN_PER_KG);
+    if (hasProteinCap && program_data) {
+      const maxAllowedProtein = cappedProtein;
 
       const targetProtein = Number(program_data?.nutrition?.targets?.protein || program_data?.nutrition?.targets?.protein_g || 0);
       const mealsProtein = (program_data?.nutrition?.meals || []).reduce((sum, m) => sum + (Number(m.macros?.protein) || 0), 0);
@@ -1477,7 +1471,7 @@ export const updateCustomProgram = async (req, res) => {
       const effectiveProtein = Math.max(targetProtein, mealsProtein + suppsProtein);
 
       if (effectiveProtein > maxAllowedProtein) {
-        clinicalWarnings.push(`تنبيه سريري (كلى): تم رصد تجاوز يدوي لسقف البروتين الآمن لمرضى القصور الكلوي (البروتين المسجل: ${effectiveProtein} جم، الحد الأقصى الآمن: ${maxAllowedProtein} جم بمعدل ${CLINICAL_GUIDELINES.KIDNEY.MAX_PROTEIN_PER_KG} جم/كجم بناءً على KDOQI).`);
+        clinicalWarnings.push(`تنبيه سريري (وظائف الكلى في التحاليل): تم رصد تجاوز يدوي لسقف البروتين (البروتين المسجل: ${effectiveProtein} جم، السقف المحسوب من التحاليل: ${maxAllowedProtein} جم).`);
         if (typeof program_data === "object" && program_data !== null) {
           program_data.clinical_guardrails = {
             ...(program_data.clinical_guardrails || {}),
@@ -1599,8 +1593,6 @@ export const updateCustomProgram = async (req, res) => {
           tdee: clientTdee,
           clientWeightKg: clientWeight,
           currentProteinG: currentProtein,
-          hasKidneyCondition,
-          clinicalGuardrails: program_data.clinical_guardrails
         });
 
         program_data._training_coupling = {

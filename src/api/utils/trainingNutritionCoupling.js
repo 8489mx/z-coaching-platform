@@ -766,7 +766,8 @@ export function syncCarbCyclingWithSessions({
 
 /**
  * Evaluates protein requirements under energy deficit to prevent muscle wasting (Sparing Effect).
- * Enforces clinical guardrails for renal safety (CKD capped at maxSafeProtein).
+ * The locked ceiling for declared kidney disease is gone with the case: the service refuses it
+ * before a plan is built (src/api/services/serviceScope.js).
  *
  * @param {Object} params
  * @returns {Object} Protein recommendation, current delta, and clinical status
@@ -776,31 +777,12 @@ export function evaluateProteinSparingRequirement({
   tdee = 2400,
   clientWeightKg = 80,
   currentProteinG = 150,
-  hasKidneyCondition = false,
-  clinicalGuardrails = null
 }) {
   const weight = Math.max(35, Number(clientWeightKg) || 80);
   const safeCalories = Math.max(800, Number(targetCalories) || 2000);
   const safeTdee = Math.max(1200, Number(tdee) || safeCalories);
   const deficitPercent = safeTdee > 0 ? (((safeTdee - safeCalories) / safeTdee) * 100) : 0;
 
-  const maxSafeProtein = Number(clinicalGuardrails?.max_protein_g) || Math.round(weight * CLINICAL_GUIDELINES.KIDNEY.MAX_PROTEIN_PER_KG);
-
-  // If patient has kidney disease: lock at kidney ceiling
-  if (hasKidneyCondition) {
-    return {
-      has_kidney_condition: true,
-      locked_at_kidney_ceiling: true,
-      safe_ceiling_protein_g: maxSafeProtein,
-      recommended_protein_g: maxSafeProtein,
-      recommended_multiplier: +(maxSafeProtein / weight).toFixed(2),
-      current_protein_g: currentProteinG,
-      status: currentProteinG <= maxSafeProtein ? 'SAFE_RENAL_PROTECTION' : 'CRITICAL_RENAL_OVERLOAD',
-      message_ar: `حماية كلوية سريرية: تم تثبيت سقف البروتين عند ${maxSafeProtein} جم (${(maxSafeProtein / weight).toFixed(1)} جم/كجم) لحماية وظائف الكلى وترشيح الكبيبات.`
-    };
-  }
-
-  // Normal non-CKD client:
   let recommendedMultiplier = 1.8;
   if (deficitPercent >= 20 || safeCalories < 1500) {
     recommendedMultiplier = 2.3; // Sparing protein in deep cut
@@ -823,7 +805,6 @@ export function evaluateProteinSparingRequirement({
   }
 
   return {
-    has_kidney_condition: false,
     deficit_percent: +deficitPercent.toFixed(1),
     recommended_multiplier: recommendedMultiplier,
     recommended_protein_g: recommendedProteinG,

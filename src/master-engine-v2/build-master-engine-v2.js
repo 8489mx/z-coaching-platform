@@ -151,7 +151,7 @@ import { buildCardioEngine } from "../cardio-engine/index.js";
 import { buildMobilityEngine } from "../mobility-engine/index.js";
 import { buildSessionMobilityProtocol } from "../mobility-warmup-engine-v2/index.js";
 import { buildNutritionEngine } from "../nutrition-engine/index.js";
-import { sanitizeMealPlan, buildCulinaryRecipeMeals, enforceDiabeticCarbChoice, splitOversizedPortions, carbPortionLimit, isDiabeticIntake, diversifyFatSources, buildAllergenContext, kidneyPotassium, refreshActualMacros } from "../nutrition-meal-context-v2/index.js";
+import { sanitizeMealPlan, buildCulinaryRecipeMeals, enforceDiabeticCarbChoice, splitOversizedPortions, carbPortionLimit, isDiabeticIntake, diversifyFatSources, buildAllergenContext, refreshActualMacros } from "../nutrition-meal-context-v2/index.js";
 import { quantizeNutritionPlan } from "../nutrition-serving-quantizer-v2/index.js";
 import { adaptIntakePayloadToCanonicalEngine } from "../intake-decision-engine/adapters/intake-adapter.js";
 import { MASTER_ENGINE_V2_VERSION } from "./domain/enums.js";
@@ -458,38 +458,17 @@ export function calculateUniversalNutritionTargets(canonicalIntake, evaluationCo
     ...(Array.isArray(effectiveRaw?.medical_conditions) ? effectiveRaw.medical_conditions : [])
   ].map(c => typeof c === 'string' ? c.toUpperCase() : String(c?.conditionCode || c?.code || '').toUpperCase());
 
-  const hasKidneyCondition =
-    medical.hasKidneyCondition === true ||
-    effectiveRaw?.medical?.hasKidneyCondition === true ||
-    conditionsList.some(c => c.includes("KIDNEY") || c.includes("RENAL"));
-
-  const kidneyPotassiumResult = hasKidneyCondition
-    ? (() => { const r = kidneyPotassium(effectiveRaw, { ...medical, hasKidneyCondition: true }); return r.status === "NONE" ? { status: "UNKNOWN", value: null } : r; })()
-    : { status: "NONE", value: null };
-
-  // Kidney disease: energy at most 35 kcal per kg of reference weight (KDOQI 2020, guideline 3.1.1).
-  let kidneyEnergyCapped = false;
-  if (hasKidneyCondition && !isPregnant && !isLactating) {
-    const kidneyEnergyCeiling = Math.round(referenceWeight * CLINICAL_GUIDELINES.KIDNEY.MAX_KCAL_PER_KG);
-    if (targetCalories > kidneyEnergyCeiling) {
-      targetCalories = kidneyEnergyCeiling;
-      kidneyEnergyCapped = true;
-      calorieAdjustmentDesc += ` (سقف ${CLINICAL_GUIDELINES.KIDNEY.MAX_KCAL_PER_KG} سعرة/كجم لمرضى الكلى)`;
-    }
-  }
+  // Declared kidney disease is outside the service: the plan is refused before the engine runs
+  // (src/api/services/serviceScope.js), so the engine no longer carries a case it never builds -
+  // the KDOQI energy ceiling, the potassium reading and the protein cap for a declared diagnosis.
+  // What stays below is the protein cap the laboratory asks for, which belongs to a client we do
+  // follow: normal history, kidney function off in the bloodwork.
 
   const hasLiverCondition =
     medical.hasLiverCondition === true ||
     conditionsList.some(c => c.includes("LIVER") || c.includes("HEPATIC"));
 
   let kidneyProteinCapped = false;
-  if (hasKidneyCondition) {
-    if (proteinPerKg > CLINICAL_GUIDELINES.KIDNEY.MAX_PROTEIN_PER_KG) {
-      proteinPerKg = CLINICAL_GUIDELINES.KIDNEY.MAX_PROTEIN_PER_KG;
-      kidneyProteinCapped = true;
-      calorieAdjustmentDesc += ` (${CLINICAL_GUIDELINES.KIDNEY.RATIONALE_AR})`;
-    }
-  }
 
   // Clinical Guard: Laboratory Bloodwork Biomarkers Integration
   const rawBiomarkers = {
@@ -532,10 +511,10 @@ export function calculateUniversalNutritionTargets(canonicalIntake, evaluationCo
 
   // 4. Macro Grams Breakdown
   let proteinG = Math.round(referenceWeight * proteinPerKg);
-  // Kidney cap in pregnancy or lactation: the CKD recommendation plus the extra needs of pregnancy
-  // (IOM +25 g/day), not the cap alone (a breastfeeding 42 kg client got 34 g a day).
+  // A protein cap from the bloodwork plus what breastfeeding costs, not the cap alone (a
+  // breastfeeding 42 kg client got 34 g a day).
   if (kidneyProteinCapped && (isPregnant || isLactating)) {
-    proteinG += CLINICAL_GUIDELINES.KIDNEY.PREGNANCY_LACTATION_EXTRA_PROTEIN_G;
+    proteinG += CLINICAL_GUIDELINES.LAB_PROTEIN_CAP.LACTATION_EXTRA_PROTEIN_G;
   }
   const proteinKcal = proteinG * 4;
 
@@ -589,7 +568,6 @@ export function calculateUniversalNutritionTargets(canonicalIntake, evaluationCo
         const carbCap = CLINICAL_GUIDELINES.DIABETES.MAX_CARB_ENERGY_SHARE;
         const energyFloor = Math.max(
           calorieFloor,
-          hasKidneyCondition ? Math.round(referenceWeight * CLINICAL_GUIDELINES.KIDNEY.MIN_KCAL_PER_KG) : 0,
           weight / (heightM * heightM) < 25 ? Math.min(tdee, targetCalories) : 0,
         );
         const balancedEnergy = Math.round((proteinG * 4) / (1 - maxFatShare - carbCap));
@@ -907,24 +885,15 @@ export function calculateUniversalNutritionTargets(canonicalIntake, evaluationCo
     biomarker_analysis: biomarkerAnalysis,
     clinical_safety_shield: biomarkerAnalysis?.has_biomarker_flags ? biomarkerAnalysis : null,
     clinical_guardrails: {
+      // The key keeps its name: a plan already saved carries it, and the merge that preserves a
+      // capped protein reads it. What changed is where the cap comes from - the bloodwork only.
       kidney_protein_capped: Boolean(kidneyProteinCapped),
-      kidney_condition: Boolean(hasKidneyCondition),
-      // The latest potassium result decides: high -> potassium-rich foods out; normal -> no limit;
-      // unknown -> moderate avocado and the coach asks for the test.
-      kidney_potassium_status: hasKidneyCondition ? kidneyPotassiumResult.status : null,
-      kidney_potassium_mmol_l: hasKidneyCondition ? kidneyPotassiumResult.value : null,
-      kidney_potassium_note_ar: !hasKidneyCondition ? null
-        : kidneyPotassiumResult.status === "HIGH" ? CLINICAL_GUIDELINES.KIDNEY.POTASSIUM_HIGH_NOTE_AR(kidneyPotassiumResult.value)
-          : kidneyPotassiumResult.status === "NORMAL" ? CLINICAL_GUIDELINES.KIDNEY.POTASSIUM_NORMAL_NOTE_AR(kidneyPotassiumResult.value)
-            : CLINICAL_GUIDELINES.KIDNEY.POTASSIUM_NOTE_AR,
-      kidney_energy_capped: kidneyEnergyCapped,
-      kidney_energy_note_ar: kidneyEnergyCapped ? CLINICAL_GUIDELINES.KIDNEY.ENERGY_CAP_NOTE_AR : null,
       energy_reference_weight_kg: referenceWeight,
       energy_balance_steps: balanceSteps,
       energy_balance_note_ar: energyBalanceNoteAr(),
-      max_protein_per_kg: kidneyProteinCapped ? (biomarkerAnalysis?.dietary_modifications?.protein_cap_g_per_kg || CLINICAL_GUIDELINES.KIDNEY.MAX_PROTEIN_PER_KG) : null,
+      max_protein_per_kg: kidneyProteinCapped ? (biomarkerAnalysis?.dietary_modifications?.protein_cap_g_per_kg || null) : null,
       max_protein_g: kidneyProteinCapped ? proteinG : null,
-      rationale_ar: kidneyProteinCapped ? (biomarkerAnalysis?.dietary_modifications?.protein_cap_g_per_kg ? `تحديد سقف البروتين عند ${proteinPerKg} جم/كجم لحماية الكلى بناءً على الفحوصات المخبرية` : CLINICAL_GUIDELINES.KIDNEY.RATIONALE_AR) : null,
+      rationale_ar: kidneyProteinCapped ? `تحديد سقف البروتين عند ${proteinPerKg} جم/كجم لحماية وظائف الكلى بناءً على الفحوصات المخبرية` : null,
       liver_review_required: Boolean(hasLiverCondition),
       liver_guidance_ar: hasLiverCondition ? CLINICAL_GUIDELINES.LIVER.GUIDANCE_AR : null,
       hypoglycemia_guard_active: Boolean(hasDiabetesOrInsulinResistance),
@@ -1118,8 +1087,6 @@ export function buildMasterEngineV2(inputs) {
     buildAllergenContext(canonicalIntake, effectiveIntake),
     {
       kidneyProteinCapped: universalTargets.clinical_guardrails?.kidney_protein_capped === true,
-      kidneyCondition: universalTargets.clinical_guardrails?.kidney_condition === true,
-      kidneyPotassiumStatus: universalTargets.clinical_guardrails?.kidney_potassium_status || "UNKNOWN",
     },
   ));
 

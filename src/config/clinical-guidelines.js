@@ -9,50 +9,19 @@
 
 export const CLINICAL_GUIDELINES = Object.freeze({
   // ==========================================
-  // 1. KIDNEY DISEASE / RENAL IMPAIRMENT
+  // 1. A PROTEIN CAP THE BLOODWORK ASKS FOR
   // ==========================================
-  KIDNEY: Object.freeze({
+  // Declared kidney disease is outside the service (src/api/services/serviceScope.js): the KDOQI
+  // energy ceiling, the potassium rules and the protein ceiling for a diagnosis left with the case.
+  // What remains is the cap the biomarker engine asks for when a client we do follow shows kidney
+  // function off in the laboratory results - that cap carries its own number and its own rationale.
+  LAB_PROTEIN_CAP: Object.freeze({
     /**
      * Scientific Source:
-     * KDOQI Clinical Practice Guideline for Nutrition in CKD (2020 Update), non-dialysis, metabolically stable:
-     * 0.55-0.6 g/kg/day for CKD stage 3-5 without diabetes and 0.6-0.8 g/kg/day with diabetes. The stage is
-     * not collected by the intake, so the engine applies the upper bound of the guideline range (0.8 g/kg) as
-     * an automatic ceiling and forces medical review; the treating nephrologist sets the final value. Dialysis
-     * patients need MORE protein (1.0-1.2 g/kg), which is another reason the plan cannot be auto-approved.
+     * IOM DRI (2005): +25 g/day of protein in lactation. A capped protein plus what breastfeeding
+     * costs, never the cap alone.
      */
-    MAX_PROTEIN_PER_KG: 0.8,
-    RATIONALE_AR: "تم تحديد سقف البروتين بـ 0.8 جم/كجم كحد أعلى لمرضى الكلى بناءً على توصيات KDOQI 2020 (0.55-0.6 جم/كجم للمرحلة 3-5 بدون سكري، و0.6-0.8 مع السكري). الرقم النهائي يحدده طبيب الكلى المعالج حسب المرحلة، ومرضى الغسيل الكلوي يحتاجون بروتيناً أعلى (1.0-1.2 جم/كجم)، لذلك الخطة تتطلب مراجعة طبية قبل الاعتماد.",
-    /**
-     * Scientific Source:
-     * KDIGO 2024 CKD Guideline, practice points 3.11.5.1-3.11.5.2: potassium is managed per person;
-     * potassium-rich foods are limited when there is hyperkalaemia or a risk of it, while fruit and
-     * vegetables are not restricted by default. The intake has no potassium result, so avocado
-     * (~485 mg K / 100 g) stays at a moderate portion per meal and the coach asks for the test.
-     */
-    AVOCADO_MAX_G_PER_MEAL: 50,
-    // Serum potassium above the usual reference range (3.5-5.0 mmol/L) counts as high.
-    HIGH_POTASSIUM_MMOL_L: 5.0,
-    POTASSIUM_HIGH_NOTE_AR: (value) => `مريض كلى والبوتاسيوم عالي (${value} mmol/L): الأطعمة الغنية بالبوتاسيوم اتشالت من الخطة والبدائل (أفوكادو، بطاطس وبطاطا، موز، بلح، برتقال)، وبلاش بدائل الملح. راجع الخطة مع الطبيب أو أخصائي تغذية الكلى (KDIGO 2024).`,
-    POTASSIUM_NORMAL_NOTE_AR: (value) => `مريض كلى والبوتاسيوم طبيعي (${value} mmol/L): مفيش تقييد للأطعمة الغنية بالبوتاسيوم (KDIGO 2024). اطلب تحليل جديد لو الطبيب غيّر الأدوية أو الحالة اتغيرت.`,
-    /**
-     * Scientific Source:
-     * KDOQI Clinical Practice Guideline for Nutrition in CKD: 2020 Update, guideline 3.1.1 -
-     * metabolically stable adults with CKD 1-5D: 25-35 kcal/kg body weight per day. The upper bound
-     * is applied as a ceiling (reference weight: adjusted for obesity, as for protein); the treating
-     * team sets the final value. Pregnancy and lactation are left to the medical review.
-     */
-    MAX_KCAL_PER_KG: 35,
-    // KDOQI 2020 guideline 3.1.1 lower bound: energy is never balanced below it.
-    MIN_KCAL_PER_KG: 25,
-    /**
-     * Scientific Source:
-     * Nutrition care for CKD during pregnancy (Eur J Clin Nutr 2020, updated review): use the adult
-     * CKD protein recommendation and add the extra needs of pregnancy; IOM DRI (2005): +25 g/day of
-     * protein in pregnancy (2nd-3rd trimester) and lactation. The nephrologist sets the final value.
-     */
-    PREGNANCY_LACTATION_EXTRA_PROTEIN_G: 25,
-    ENERGY_CAP_NOTE_AR: "مريض كلى: السعرات اتحددت بـ 35 سعرة لكل كجم كحد أعلى (KDOQI 2020: من 25 لـ 35 سعرة/كجم يومياً). الرقم النهائي يحدده الطبيب حسب مرحلة المرض.",
-    POTASSIUM_NOTE_AR: "مريض كلى: اطلب آخر تحليل بوتاسيوم في الدم (KDIGO 2024). لو البوتاسيوم عالي أو الطبيب محدده، قلّل الأطعمة الغنية بالبوتاسيوم في الخطة (الأفوكادو، البطاطس والبطاطا، الموز، البلح) وبدائل الملح. لو طبيعي، الخطة تمشي زي ما هي.",
+    LACTATION_EXTRA_PROTEIN_G: 25,
   }),
 
   // ==========================================

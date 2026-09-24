@@ -36,8 +36,8 @@ test("a high-fat diabetic plan spreads fat beyond oil and still holds the fat ta
   assert.ok(Math.abs(fat - n.macro_targets.fat_g) / n.macro_targets.fat_g < 0.05, `${fat} g of fat in the meals for ${n.macro_targets.fat_g}`);
 });
 
-test("no almonds for a nut allergy or a kidney protein cap", () => {
-  for (const [selected, allergies] of [[["diabetes"], ["peanuts_tree_nuts"]], [["diabetes", "renal"], ["none"]]]) {
+test("no almonds for a nut allergy", () => {
+  for (const [selected, allergies] of [[["diabetes"], ["peanuts_tree_nuts"]]]) {
     const codes = plan(selected, allergies).culinary_meals.flatMap((m) => (m.items || []).map((i) => i.food_code));
     assert.ok(!codes.includes("RAW_ALMONDS"), `${selected} ${allergies}`);
   }

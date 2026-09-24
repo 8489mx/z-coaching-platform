@@ -131,35 +131,22 @@ describe('Nutrition-to-Training Reverse Coupling & Deficit Volume Shield Suite',
   });
 
   // 4. evaluateProteinSparingRequirement
-  it('4. evaluateProteinSparingRequirement: scales protein in deep deficit and enforces renal protection', () => {
+  it('4. evaluateProteinSparingRequirement: scales protein in deep deficit', () => {
     const deepCut = evaluateProteinSparingRequirement({
       targetCalories: 1400,
       tdee: 2200,
       clientWeightKg: 80,
       currentProteinG: 140,
-      hasKidneyCondition: false
     });
 
-    assert.equal(deepCut.has_kidney_condition, false);
     assert.equal(deepCut.recommended_multiplier, 2.3);
     assert.equal(deepCut.recommended_protein_g, 184);
     assert.equal(deepCut.is_deficient, true);
     assert.equal(deepCut.status, 'INSUFFICIENT_FOR_DEFICIT');
     assert.ok(deepCut.message_ar.includes('تنبيه تدريع بروتيني'));
 
-    const ckdPatient = evaluateProteinSparingRequirement({
-      targetCalories: 1400,
-      tdee: 2200,
-      clientWeightKg: 80,
-      currentProteinG: 64,
-      hasKidneyCondition: true
-    });
-
-    assert.equal(ckdPatient.has_kidney_condition, true);
-    assert.equal(ckdPatient.locked_at_kidney_ceiling, true);
-    assert.equal(ckdPatient.safe_ceiling_protein_g, 64);
-    assert.equal(ckdPatient.recommended_protein_g, 64);
-    assert.equal(ckdPatient.status, 'SAFE_RENAL_PROTECTION');
+    // The locked ceiling for a declared kidney patient left with the case: the service refuses
+    // that diagnosis before a plan is built (src/api/services/serviceScope.js).
   });
 
 });

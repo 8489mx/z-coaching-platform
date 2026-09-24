@@ -33,9 +33,12 @@ const plan = (selected, allergies) => buildMasterEngineV2({
 test("every meal with more than 30 g of olive oil carries a note the coach sees", () => {
   assert.equal(MAX_COMFORTABLE_OIL_PER_MEAL_G, 30);
   // The day's balance (fat <= 35%) keeps whole plans under this now; the note still guards any
-  // meal that gets there (a nut allergy and a kidney protein cap leave only a little avocado).
-  const [meal] = diversifyFatSources([{ items: [{ food_code: "OLIVE_OIL", category: "FATS", portion_g: 45, protein_g: 0, carb_g: 0, fat_g: 45, calories_kcal: 405, swaps: [] }] }],
-    { isNutsExcluded: true }, { kidneyProteinCapped: true, kidneyCondition: true });
+  // meal that gets there - here the plate already carries its avocado and a nut allergy closes the
+  // other way out, so the oil has nowhere to move.
+  const [meal] = diversifyFatSources([{ items: [
+    { food_code: "OLIVE_OIL", category: "FATS", portion_g: 45, protein_g: 0, carb_g: 0, fat_g: 45, calories_kcal: 405, swaps: [] },
+    { food_code: "FRESH_AVOCADO", category: "FATS", portion_g: 100, protein_g: 2, carb_g: 9, fat_g: 15, calories_kcal: 160, swaps: [] },
+  ] }], { isNutsExcluded: true });
   const oil = meal.items.find((i) => i.food_code === "OLIVE_OIL");
   assert.ok(oil.portion_g > 30, `precondition: ${oil.portion_g} g oil`);
   assert.match(oil.portion_warning_ar || "", /زيت/);

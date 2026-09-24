@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { Plus, Trash2, X, ArrowRightLeft, Zap, Target, ShieldAlert, Copy } from 'lucide-react';
 import { balanceMealItems, dynamicRippleRebalanceDailyPlan } from '../../../utils/mealPortionBalancer.js';
-import { KIDNEY_MAX_PROTEIN_PER_KG } from '../../../config/clinicalLimits';
 
 
 export default function CoachEditorNutritionTab(props) {
@@ -30,22 +29,10 @@ export default function CoachEditorNutritionTab(props) {
     program?.nutrition?.clinical_guardrails ||
     program?.nutrition?.targets?.clinical_guardrails;
 
-  const clientConditions = [
-    ...(Array.isArray(program?.client?.injuries) ? program.client.injuries : []),
-    ...(Array.isArray(program?.client?.allergies) ? program.client.allergies : []),
-    ...(Array.isArray(program?.client?.medical_conditions) ? program.client.medical_conditions : []),
-  ];
-
-  const hasKidneyCondition = Boolean(
-    clinicalGuardrails?.kidney_protein_capped ||
-    clientConditions.some(c => {
-      const s = typeof c === 'string' ? c : (c?.conditionCode || c?.name || c?.area || '');
-      return /kidney|ckd|كلى|قصور.*كلوي|وظائف.*الكلى/i.test(s);
-    })
-  );
-
-  const clientWeightKg = Number(program?.client?.weight_kg) || 80;
-  const maxSafeProtein = Number(clinicalGuardrails?.max_protein_g) || Math.round(clientWeightKg * KIDNEY_MAX_PROTEIN_PER_KG);
+  // A protein cap the bloodwork asked for. A declared kidney diagnosis is outside the service and
+  // never reaches the editor (src/api/services/serviceScope.js).
+  const maxSafeProtein = Number(clinicalGuardrails?.max_protein_g) || 0;
+  const hasProteinCap = Boolean(clinicalGuardrails?.kidney_protein_capped) && maxSafeProtein > 0;
 
   const _activeSessions = (program?.training?.sessions && program.training.sessions.length > 0)
     ? program.training.sessions
@@ -76,7 +63,7 @@ export default function CoachEditorNutritionTab(props) {
     const newC = Number(editTargetsState.carbs) || targetC;
     const newF = Number(editTargetsState.fats) || targetF;
 
-    if (hasKidneyCondition && newP > maxSafeProtein) {
+    if (hasProteinCap && newP > maxSafeProtein) {
       showToast(`تنبيه سريري (كلى): لا يمكن تجاوز سقف البروتين (${maxSafeProtein} جم) لمرضى القصور الكلوي.`);
       return;
     }
@@ -141,7 +128,7 @@ export default function CoachEditorNutritionTab(props) {
   const deltaF = totalPlannedF - targetF;
 
   const effectiveCurrentProtein = Math.max(totalPlannedP, targetP);
-  const isProteinExceeded = hasKidneyCondition && effectiveCurrentProtein > maxSafeProtein;
+  const isProteinExceeded = hasProteinCap && effectiveCurrentProtein > maxSafeProtein;
   const recalculateMeal = (items) => {
     let cal = 0, p = 0, c = 0, f = 0;
     items.forEach(item => {
@@ -272,7 +259,7 @@ export default function CoachEditorNutritionTab(props) {
                 }}>
                   <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '4px' }}>
                     <span style={{ fontSize: '9.5px', color: isProteinExceeded ? '#DC2626' : '#64748B' }}>البروتين</span>
-                    {hasKidneyCondition && (
+                    {hasProteinCap && (
                       <span style={{
                         fontSize: '8px',
                         fontWeight: 800,
@@ -282,7 +269,7 @@ export default function CoachEditorNutritionTab(props) {
                         color: isProteinExceeded ? '#DC2626' : '#166534',
                         border: isProteinExceeded ? '1px solid #FECACA' : '1px solid #BBF7D0'
                       }}>
-                        سقف الكلى: {maxSafeProtein}g
+                        سقف البروتين: {maxSafeProtein}g
                       </span>
                     )}
                   </div>
@@ -710,7 +697,7 @@ export default function CoachEditorNutritionTab(props) {
               </div>
 
               {/* Kidney Warning in Modal if Exceeded */}
-              {hasKidneyCondition && (
+              {hasProteinCap && (
                 <div
                   style={{
                     background: Number(editTargetsState.protein) > maxSafeProtein ? '#FEF2F2' : '#F0FDF4',
@@ -725,8 +712,8 @@ export default function CoachEditorNutritionTab(props) {
                   <ShieldAlert size={18} color={Number(editTargetsState.protein) > maxSafeProtein ? '#DC2626' : '#166534'} style={{ flexShrink: 0 }} />
                   <div style={{ fontSize: '11.5px', lineHeight: '1.4', color: Number(editTargetsState.protein) > maxSafeProtein ? '#991B1B' : '#166534' }}>
                     {Number(editTargetsState.protein) > maxSafeProtein
-                      ? `تنبيه سريري: البروتين المدخل (${editTargetsState.protein} جم) يتجاوز السقف السريري الآمن لمرضى الكلى (${maxSafeProtein} جم بمعدل ${KIDNEY_MAX_PROTEIN_PER_KG} جم/كجم). سيتم توثيق هذا التجاوز في سجل المراجعة السريرية.`
-                      : `حماية الكلى مفعلة: السقف السريري الآمن هو ${maxSafeProtein} جم/يوم (KDOQI ${KIDNEY_MAX_PROTEIN_PER_KG} جم/كجم).`}
+                      ? `تنبيه سريري: البروتين المدخل (${editTargetsState.protein} جم) يتجاوز السقف اللي التحاليل حددته (${maxSafeProtein} جم). سيتم توثيق هذا التجاوز في سجل المراجعة السريرية.`
+                      : `سقف بروتين من التحاليل: ${maxSafeProtein} جم/يوم.`}
                   </div>
                 </div>
               )}
@@ -758,9 +745,9 @@ export default function CoachEditorNutritionTab(props) {
                 </div>
 
                 <div>
-                  <label style={{ fontSize: '11px', fontWeight: 700, color: hasKidneyCondition && Number(editTargetsState.protein) > maxSafeProtein ? '#DC2626' : '#475569', display: 'flex', justifyContent: 'space-between', marginBottom: '4px' }}>
+                  <label style={{ fontSize: '11px', fontWeight: 700, color: hasProteinCap && Number(editTargetsState.protein) > maxSafeProtein ? '#DC2626' : '#475569', display: 'flex', justifyContent: 'space-between', marginBottom: '4px' }}>
                     <span>البروتين (جم)</span>
-                    {hasKidneyCondition && <span style={{ fontSize: '9.5px', color: '#DC2626' }}>سقف: {maxSafeProtein}g</span>}
+                    {hasProteinCap && <span style={{ fontSize: '9.5px', color: '#DC2626' }}>سقف: {maxSafeProtein}g</span>}
                   </label>
                   <input
                     type="number"
@@ -772,8 +759,8 @@ export default function CoachEditorNutritionTab(props) {
                       width: '100%',
                       height: '38px',
                       borderRadius: '8px',
-                      border: hasKidneyCondition && Number(editTargetsState.protein) > maxSafeProtein ? '1.5px solid #EF4444' : '1px solid #CBD5E1',
-                      background: hasKidneyCondition && Number(editTargetsState.protein) > maxSafeProtein ? '#FEF2F2' : '#FFFFFF',
+                      border: hasProteinCap && Number(editTargetsState.protein) > maxSafeProtein ? '1.5px solid #EF4444' : '1px solid #CBD5E1',
+                      background: hasProteinCap && Number(editTargetsState.protein) > maxSafeProtein ? '#FEF2F2' : '#FFFFFF',
                       padding: '0 10px',
                       fontSize: '13px',
                       fontWeight: 700,

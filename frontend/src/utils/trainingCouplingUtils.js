@@ -9,7 +9,6 @@
  */
 
 import { getExerciseDisplayNames } from './exerciseTranslator';
-import { KIDNEY_MAX_PROTEIN_PER_KG } from '../config/clinicalLimits.js';
 
 export const HEAVY_PRIMARY_COMPOUNDS = new Set([
   'BARBELL_BACK_SQUAT',
@@ -592,28 +591,11 @@ export function evaluateProteinSparingRequirement({
   tdee = 2400,
   clientWeightKg = 80,
   currentProteinG = 150,
-  hasKidneyCondition = false,
-  clinicalGuardrails = null
 }) {
   const weight = Math.max(35, Number(clientWeightKg) || 80);
   const safeCalories = Math.max(800, Number(targetCalories) || 2000);
   const safeTdee = Math.max(1200, Number(tdee) || safeCalories);
   const deficitPercent = safeTdee > 0 ? (((safeTdee - safeCalories) / safeTdee) * 100) : 0;
-
-  const maxSafeProtein = Number(clinicalGuardrails?.max_protein_g) || Math.round(weight * KIDNEY_MAX_PROTEIN_PER_KG);
-
-  if (hasKidneyCondition) {
-    return {
-      has_kidney_condition: true,
-      locked_at_kidney_ceiling: true,
-      safe_ceiling_protein_g: maxSafeProtein,
-      recommended_protein_g: maxSafeProtein,
-      recommended_multiplier: +(maxSafeProtein / weight).toFixed(2),
-      current_protein_g: currentProteinG,
-      status: currentProteinG <= maxSafeProtein ? 'SAFE_RENAL_PROTECTION' : 'CRITICAL_RENAL_OVERLOAD',
-      message_ar: `حماية كلوية سريرية: تم تثبيت سقف البروتين عند ${maxSafeProtein} جم (${(maxSafeProtein / weight).toFixed(1)} جم/كجم) لحماية وظائف الكلى وترشيح الكبيبات.`
-    };
-  }
 
   let recommendedMultiplier = 1.8;
   if (deficitPercent >= 20 || safeCalories < 1500) {
@@ -637,7 +619,6 @@ export function evaluateProteinSparingRequirement({
   }
 
   return {
-    has_kidney_condition: false,
     deficit_percent: +deficitPercent.toFixed(1),
     recommended_multiplier: recommendedMultiplier,
     recommended_protein_g: recommendedProteinG,

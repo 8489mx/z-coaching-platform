@@ -12,7 +12,6 @@ import {
 import defaultMobilityCatalog from '../../../data/mobilityCatalog.json';
 import { arabicSearchMatch } from '../../../utils/searchUtils';
 import { getExerciseDisplayNames } from '../../../utils/exerciseTranslator';
-import { KIDNEY_MAX_PROTEIN_PER_KG } from '../../../config/clinicalLimits';
 import { collectCoachAlerts } from '../../../utils/coachAlerts.js';
 import { evaluateCardioModality } from '../../../utils/cardioModalitySafety.js';
 import { exerciseConflicts } from '../../../utils/exerciseSafety.js';
@@ -1227,22 +1226,16 @@ export function useCoachEditorData() {
       const clinicalAlerts = [];
 
       // 1. Kidney Protein Cap Check
-      const hasKidneyCondition = Boolean(
-        clinicalGuardrails?.kidney_protein_capped ||
-        clientConditions.some(c => {
-          const s = typeof c === 'string' ? c : (c?.conditionCode || c?.name || c?.area || '');
-          return /kidney|ckd|كلى|قصور.*كلوي|وظائف.*الكلى/i.test(s);
-        })
-      );
-      const clientWeightKg = Number(program?.client?.weight_kg) || 80;
-      const maxSafeProtein = Number(clinicalGuardrails?.max_protein_g) || Math.round(clientWeightKg * KIDNEY_MAX_PROTEIN_PER_KG);
+      // A protein cap comes from the bloodwork now; a declared kidney diagnosis is outside the service.
+      const hasProteinCap = Boolean(clinicalGuardrails?.kidney_protein_capped);
+      const maxSafeProtein = Number(clinicalGuardrails?.max_protein_g) || 0;
       const targetP = Number(program?.nutrition?.targets?.protein) || 0;
       const mealsP = (program?.nutrition?.meals || []).reduce((sum, m) => sum + (Number(m.macros?.protein) || 0), 0);
       const suppsP = (program?.cardio?.supplements || []).reduce((sum, s) => sum + (Number(s.protein ?? s.p) || 0), 0);
       const currentEffectiveP = Math.max(targetP, mealsP + suppsP);
 
-      if (hasKidneyCondition && currentEffectiveP > maxSafeProtein) {
-        clinicalAlerts.push(`• الكلى (KDOQI): البروتين المحدد (${currentEffectiveP} جم) يتجاوز السقف السريري الآمن (${maxSafeProtein} جم بمعدل ${KIDNEY_MAX_PROTEIN_PER_KG} جم/كجم لوزن ${clientWeightKg} كجم).`);
+      if (hasProteinCap && maxSafeProtein > 0 && currentEffectiveP > maxSafeProtein) {
+        clinicalAlerts.push(`• وظائف الكلى في التحاليل: البروتين المحدد (${currentEffectiveP} جم) يتجاوز السقف اللي التحاليل حددته (${maxSafeProtein} جم).`);
       }
 
       // 2. Hypertension Contraindicated Exercises & RIR Check

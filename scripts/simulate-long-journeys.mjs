@@ -66,9 +66,9 @@ const JOURNEYS = [
     week: (n) => ({ w: 58 + Math.min(n, 30) * 0.22 + Math.max(0, n - 30) * 0.08, adh: n % 9 === 0 ? 55 : 85, pain: n === 40 ? 7 : 0, off: n >= 25 && n <= 26 }),
   },
   {
-    code: "JRN_04", name: "ست 58 سنة كلى وكبد (مراجعة طبية) - 8 شهور", gender: "female", pkg: "ELITE_8M", months: 8,
+    code: "JRN_04", name: "ست 58 سنة كبد وضغط (مراجعة طبية) - 8 شهور", gender: "female", pkg: "ELITE_8M", months: 8,
     answers: { ...base(), gender: "female", age: "58", height_cm: "158", weight_kg: "81", circumferences: { neck_cm: "37", waist_cm: "99", hips_cm: "112" },
-      primary_goal: "general_fitness", medical_conditions: med({ selected: ["renal", "hepatic", "hypertension"], renal_hepatic_issue: true, hypertension: true }),
+      primary_goal: "general_fitness", medical_conditions: med({ selected: ["hepatic", "hypertension"], renal_hepatic_issue: true, hypertension: true }),
       injuries_map: { ...base().injuries_map, has_injuries: true, selected_areas: ["spine_back"], spine_back: ["disc_herniation"] },
       training_environment: "minimal_equipment", training_logistics: { ...base().training_logistics, days_per_week: 2, experience_level: "beginner" }, strict_allergies: ["fish_shellfish"] },
     week: (n) => ({ w: 81 - 0.2 * Math.min(n, 20), adh: 80, pain: n === 15 ? 6 : 0, off: false }),
@@ -240,7 +240,7 @@ for (const [i, J] of JOURNEYS.entries()) {
     for (const [k, v] of Object.entries(t)) if (v === null || v <= 0) bad(`أ${n}: ${k} غير صالح (${v})`);
     if (t.kcal && t.kcal < floor - 1) bad(`أ${n}: السعرات ${t.kcal} تحت الحد ${floor}`);
     if (t.kcal && prevKcal && Math.abs(t.kcal - prevKcal) > 350) bad(`أ${n}: قفزة سعرات ${prevKcal} -> ${t.kcal}`);
-    if (J.code === "JRN_04" && t.protein > 0.8 * 81 + 2) bad(`أ${n}: بروتين ${t.protein} فوق سقف الكلى`);
+    // كانت الرحلة دي لمريضة كلى وكبد؛ مرض الكلى بقى خارج نطاق الخدمة ومفيش خطة تتبني له أصلاً.
     if (J.code === "JRN_05" && t.kcal && t.kcal < 1700) bad(`أ${n}: مرضعة على ${t.kcal} سعرة`);
     const atw = t.protein * 4 + t.carbs * 4 + t.fat * 9;
     if (t.kcal && Math.abs(atw - t.kcal) / t.kcal > 0.12) bad(`أ${n}: الماكروز ${Math.round(atw)} لا تطابق السعرات ${t.kcal}`);

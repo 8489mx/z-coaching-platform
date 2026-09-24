@@ -32,7 +32,10 @@ const BODIES = [
   { gender: 'male', age: '68', height_cm: '168', weight_kg: '84', neck: '41', waist: '104', hips: '102' },
 ];
 const GOALS = ['fat_loss', 'lean_bulk', 'recomposition', 'general_fitness'];
-const CONDITIONS = ['diabetes', 'renal', 'hepatic', 'gout', 'favism_g6pd', 'hypertension', 'bariatric_surgery', 'gi_tract', 'thyroid'];
+// Conditions the service follows. Kidney disease, pregnancy, a diagnosed heart condition and a body
+// far too light are refused before a plan is built (src/api/services/serviceScope.js), so a plan for
+// them cannot be stress-tested - there is none.
+const CONDITIONS = ['diabetes', 'hepatic', 'gout', 'favism_g6pd', 'hypertension', 'bariatric_surgery', 'gi_tract', 'thyroid'];
 const ALLERGIES = ['dairy_lactose', 'gluten_celiac', 'peanuts_tree_nuts', 'fish_shellfish', 'eggs', 'soy', 'sesame_seeds'];
 const INJURIES = ['knee', 'spine_back', 'shoulder', 'core', 'elbow_wrist'];
 const ENVS = ['commercial_gym', 'home_gym', 'minimal_equipment', 'calisthenics_bands'];
@@ -83,10 +86,10 @@ function randomPersona(i) {
 
 // Hand-built nightmares: everything at once.
 const NIGHTMARES = [
-  { id: 'N01-كل الأمراض رجل', body: BODIES[7], goal: 'fat_loss', conditions: ['diabetes', 'renal', 'gout', 'hypertension', 'favism_g6pd'], insulin: true, dumping: false, pcos: false, lactating: false, allergies: ALLERGIES, injuries: ['knee', 'spine_back', 'shoulder'], acute: true, env: 'calisthenics_bands', days: 3, experience: 'beginner', religion: 'MUSLIM', fasting: '16_8', chestPain: false },
+  { id: 'N01-كل الأمراض رجل', body: BODIES[7], goal: 'fat_loss', conditions: ['diabetes', 'gout', 'hypertension', 'favism_g6pd'], insulin: true, dumping: false, pcos: false, lactating: false, allergies: ALLERGIES, injuries: ['knee', 'spine_back', 'shoulder'], acute: true, env: 'calisthenics_bands', days: 3, experience: 'beginner', religion: 'MUSLIM', fasting: '16_8', chestPain: false },
   { id: 'N02-تكميم+إغراق+سكري ست', body: BODIES[2], goal: 'fat_loss', conditions: ['bariatric_surgery', 'diabetes'], insulin: true, dumping: true, pcos: true, lactating: false, allergies: ['dairy_lactose', 'gluten_celiac'], injuries: ['knee'], acute: false, env: 'minimal_equipment', days: 2, experience: 'beginner', religion: 'CHRISTIAN', fasting: 'none', chestPain: false },
   { id: 'N03-مرضعة نحيفة حساسيات', body: BODIES[0], goal: 'lean_bulk', conditions: ['favism_g6pd'], insulin: false, dumping: false, pcos: false, lactating: true, allergies: ALLERGIES, injuries: [], acute: false, env: 'home_gym', days: 6, experience: 'advanced', religion: 'OTHER', fasting: 'none', chestPain: false },
-  { id: 'N04-مسنة كلى وكبد', body: BODIES[4], goal: 'general_fitness', conditions: ['renal', 'hepatic', 'hypertension'], insulin: false, dumping: false, pcos: false, lactating: false, allergies: ['fish_shellfish'], injuries: ['spine_back', 'knee'], acute: true, env: 'calisthenics_bands', days: 2, experience: 'beginner', religion: 'MUSLIM', fasting: 'none', chestPain: false },
+  { id: 'N04-مسنة كبد', body: BODIES[4], goal: 'general_fitness', conditions: ['hepatic', 'hypertension'], insulin: false, dumping: false, pcos: false, lactating: false, allergies: ['fish_shellfish'], injuries: ['spine_back', 'knee'], acute: true, env: 'calisthenics_bands', days: 2, experience: 'beginner', religion: 'MUSLIM', fasting: 'none', chestPain: false },
   { id: 'N05-ألم صدر', body: BODIES[9], goal: 'fat_loss', conditions: ['hypertension', 'diabetes'], insulin: false, dumping: false, pcos: false, lactating: false, allergies: [], injuries: [], acute: false, env: 'commercial_gym', days: 5, experience: 'intermediate', religion: 'MUSLIM', fasting: 'none', chestPain: true },
   { id: 'N06-عملاق تضخيم 6 أيام', body: BODIES[8], goal: 'lean_bulk', conditions: [], insulin: false, dumping: false, pcos: false, lactating: false, allergies: ['peanuts_tree_nuts'], injuries: ['shoulder'], acute: false, env: 'commercial_gym', days: 6, experience: 'advanced', religion: 'OTHER', fasting: 'none', chestPain: false },
 ];
@@ -119,17 +122,16 @@ function check(p, program) {
   const atwater = 4 * protein + 4 * carbs + 9 * fat;
   if (Number.isFinite(atwater) && cal > 0 && Math.abs(atwater - cal) / cal > 0.12) fail('الماكروز لا تطابق السعرات', `${atwater.toFixed(0)} مقابل ${cal}`);
   if (protein / w > 3.3) fail('بروتين مبالغ فيه', `${(protein / w).toFixed(2)} جم/كجم`);
-  // Carbohydrate may pass 50% only when a kidney protein cap leaves nothing else for the day's balance
-  // (fat at most 35%), up to 57%, with a note for the coach.
+  // Carbohydrate may pass 50% only when a protein cap from the bloodwork leaves nothing else for the
+  // day's balance (fat at most 35%), up to 57%, with a note for the coach.
   const guard = t.clinical_guardrails || {};
   const carbLimit = guard.kidney_protein_capped ? 0.57 : 0.5;
   if (p.conditions.includes('diabetes') && cal > 0 && (4 * carbs) / cal > carbLimit) fail(`نسبة كربوهيدرات فوق ${Math.round(carbLimit * 100)}% لمريض سكر`, `${Math.round(400 * carbs / cal)}% (${carbs} جم، هدف ${p.goal}، BMI ${(w / (Number(p.body.height_cm) / 100) ** 2).toFixed(0)}، ${p.conditions.join('+')})`);
   if (p.conditions.includes('diabetes') && cal > 0 && (4 * carbs) / cal > 0.5 && !guard.energy_balance_note_ar) fail('كربوهيدرات فوق 50% لمريض سكر من غير ملاحظة للكوتش', `${Math.round(400 * carbs / cal)}%`);
   // The day's balance: fat within the adult range (IOM AMDR 20-35% of energy).
   if (cal > 0 && (9 * fat) / cal > 0.355) fail('دهون فوق 35% من السعرات', `${Math.round(900 * fat / cal)}% (${fat} جم من ${cal} سعرة، ${p.conditions.join('+') || 'بدون أمراض'})`);
-  // Pregnancy or lactation keeps the IOM extra 25 g/day on top of the kidney cap.
-  const kidneyExtra = p.lactating ? 25 : 0;
-  if (p.conditions.includes('renal') && protein > 0.8 * w + 2 + kidneyExtra) fail('سقف البروتين الكلوي', `${protein} جم لوزن ${w}`);
+  // The kidney protein ceiling was checked here. Declared kidney disease is outside the service now
+  // (src/api/services/serviceScope.js): no plan is built for it, so there is no plan to check.
 
   const meals = program.nutrition_program?.culinary_meals || [];
   if (meals.length === 0) fail('لا توجد وجبات', '');

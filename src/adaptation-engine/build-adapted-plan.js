@@ -331,33 +331,14 @@ export function buildAdaptedPlan(inputs) {
     }
   }
 
-  // Kidney disease: increases stop at 35 kcal per kg of the plan's reference weight (KDOQI 2020,
-  // guideline 3.1.1), the same ceiling as the first plan. Never cuts below the current plan.
-  const kidneyGuard = currentMasterProgram.nutrition_program?.targets?.clinical_guardrails || currentMasterProgram.clinical_guardrails || {};
-  if (kidneyGuard.kidney_condition === true) {
-    const referenceKg = Number(kidneyGuard.energy_reference_weight_kg) || currentWeightKg;
-    if (Number.isFinite(referenceKg) && referenceKg > 30) {
-      const kidneyCeiling = Math.max(Math.round(referenceKg * CLINICAL_GUIDELINES.KIDNEY.MAX_KCAL_PER_KG), Math.round(baseEnergy));
-      if (adaptedCalories > kidneyCeiling) {
-        adaptedCarbs = Math.max(50, adaptedCarbs - Math.round((adaptedCalories - kidneyCeiling) / 4));
-        adaptedCalories = kidneyCeiling;
-        requiresCoachApproval = true;
-        reasons.push({
-          code: "KIDNEY_ENERGY_CEILING_REACHED",
-          message_ar: `مريض كلى: السعرات وصلت لسقف ${CLINICAL_GUIDELINES.KIDNEY.MAX_KCAL_PER_KG} سعرة/كجم (${kidneyCeiling} سعرة، KDOQI 2020). أي زيادة بعد كده بقرار الطبيب.`,
-          message_en: `Kidney disease: calories reached ${CLINICAL_GUIDELINES.KIDNEY.MAX_KCAL_PER_KG} kcal/kg (${kidneyCeiling} kcal, KDOQI 2020).`,
-        });
-      }
-    }
-  }
 
   // Diabetes and insulin resistance: every adjustment above keeps carbohydrate within the same share
   // of energy as the first plan; the excess moves to fat, so months of +150 carb steps cannot creep
   // back to a carbohydrate-heavy plan.
   // The excess keeps the day's balance of the first plan (fat at most 35% of energy, IOM AMDR): it
-  // goes to protein where the kidneys allow (up to 2.2 g/kg of reference weight), then to fat up to
-  // 35%; what is left is not added and the coach decides. A plan whose balance already put
-  // carbohydrate above 45% (kidney protein cap) keeps that share.
+  // goes to protein where a laboratory protein cap allows (up to 2.2 g/kg of reference weight), then
+  // to fat up to 35%; what is left is not added and the coach decides. A plan whose balance already
+  // put carbohydrate above 45% (a capped protein) keeps that share.
   const guardrails = currentMasterProgram.nutrition_program?.targets?.clinical_guardrails || currentMasterProgram.clinical_guardrails || {};
   if (guardrails.hypoglycemia_guard_active === true && adaptedCalories > 0) {
     const baseCarbShare = baseEnergy > 0 ? (baseCarbs * 4) / baseEnergy : 0;
