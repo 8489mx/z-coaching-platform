@@ -53,7 +53,7 @@ async function twoRapidLossCheckins(code, phone, intake) {
 }
 
 test("two rapid-loss check-ins running in a client needing medical review alert the coach", async () => {
-  const [, second, third] = await twoRapidLossCheckins("TEST_RAPID_MED_961", "01099000961", INTAKE(["renal"]));
+  const [, second, third] = await twoRapidLossCheckins("TEST_RAPID_MED_961", "01099000961", INTAKE(["hepatic"]));
   assert.equal(second.analysis_status, "RAPID_LOSS_WARNING");
   assert.equal(second.analysis_output.clinical_alert, undefined, "one rapid-loss week is not yet an alert");
   assert.equal(third.analysis_status, "RAPID_LOSS_WARNING");

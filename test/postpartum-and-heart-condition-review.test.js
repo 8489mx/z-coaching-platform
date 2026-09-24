@@ -42,8 +42,13 @@ test("breastfeeding wins over a recent birth, and pregnancy over both", () => {
   assert.equal(decide(intake([], {}, { female_pregnancy: "PREGNANT" })).plan_status, "MEDICAL_REVIEW_REQUIRED");
 });
 
-test("a diagnosed heart condition needs medical review; asthma does not, but bans HIIT", () => {
-  assert.equal(decide(intake(["heart_condition"])).plan_status, "MEDICAL_REVIEW_REQUIRED");
+// A diagnosed heart condition is outside the service now: the clearance-before-exercise review it
+// used to get left with the case, and the refusal happens before a plan is built.
+test("a diagnosed heart condition is refused; asthma is followed, but bans HIIT", async () => {
+  const { assessServiceScope } = await import("../src/api/services/serviceScope.js");
+  const heart = assessServiceScope(intake(["heart_condition"]));
+  assert.equal(heart.supported, false);
+  assert.deepEqual(heart.cases, ["HEART_CONDITION"]);
   assert.equal(decide(intake(["asthma"])).plan_status, "READY_FOR_DRAFT");
   const asthma = build(intake(["asthma"]));
   assert.equal(asthma.cardio_program.clinical_guardrails.hiit_banned, true);

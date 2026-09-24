@@ -125,29 +125,16 @@ export function evaluateDangerousSymptoms(input) {
   return result;
 }
 
-// Organ conditions whose nutrition prescription depends on a stage the intake does not collect
-// (CKD stage / dialysis, liver disease type): the plan always needs medical review before approval.
-const MANDATORY_MEDICAL_REVIEW_CONDITIONS = new Set(["KIDNEY_CONDITION", "LIVER_CONDITION"]);
-// Known cardiovascular disease: medical clearance before exercise (ACSM preparticipation screening,
-// Riebe et al. 2015).
-const CLEARANCE_BEFORE_EXERCISE_CONDITIONS = new Set(["HEART_CONDITION"]);
+// Liver disease: the nutrition prescription depends on the type, which the intake does not collect,
+// so the plan always needs medical review before approval. Kidney disease was here too and left
+// with the case - it is refused outright now (src/api/services/serviceScope.js), as is a diagnosed
+// heart condition, whose clearance-before-exercise rule (ACSM, Riebe et al. 2015) left with it.
+const MANDATORY_MEDICAL_REVIEW_CONDITIONS = new Set(["LIVER_CONDITION"]);
 
 export function evaluateMedicalConditions(input) {
   const result = emptyRuleResult();
   input.medical.conditions.forEach((condition, index) => {
     const sourcePath = `medical.conditions[${index}]`;
-    if (CLEARANCE_BEFORE_EXERCISE_CONDITIONS.has(condition.conditionCode)) {
-      result.statusCandidates.push(statusCandidate(PlanStatus.MEDICAL_REVIEW_REQUIRED, "HEART_CONDITION_REQUIRES_CLEARANCE"));
-      result.reviewFlags.push(
-        reviewFlag(
-          "HEART_CONDITION_REQUIRES_CLEARANCE",
-          Scope.GLOBAL,
-          ReviewLevel.MEDICAL,
-          "Diagnosed heart condition: the treating physician must clear exercise intensity before the plan is approved.",
-          `${sourcePath}.conditionCode`,
-        ),
-      );
-    }
     if (MANDATORY_MEDICAL_REVIEW_CONDITIONS.has(condition.conditionCode)) {
       result.statusCandidates.push(statusCandidate(PlanStatus.MEDICAL_REVIEW_REQUIRED, "ORGAN_CONDITION_REQUIRES_MEDICAL_REVIEW"));
       result.reviewFlags.push(
@@ -155,7 +142,7 @@ export function evaluateMedicalConditions(input) {
           "ORGAN_CONDITION_REQUIRES_MEDICAL_REVIEW",
           Scope.GLOBAL,
           ReviewLevel.MEDICAL,
-          "Kidney or liver disease: protein and calorie targets depend on the stage and must be confirmed with the treating physician.",
+          "Liver disease: protein and calorie targets depend on the type and must be confirmed with the treating physician.",
           `${sourcePath}.conditionCode`,
         ),
       );
