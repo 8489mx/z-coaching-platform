@@ -738,11 +738,21 @@ export function calculateUniversalNutritionTargets(canonicalIntake, evaluationCo
   const chosenMealCount = isPostBariatric(effectiveRaw) ? Math.max(5, preferredMealCount) : preferredMealCount;
   // Owner decision: 3200+ kcal on three meals makes very large plates, so a fourth meal is added.
   // Two meals get the same rule (they made plates of 2300+ kcal); below 3200 kcal they stay. The
-  // A fifth plate is not an option here: the five- and six-meal recipes are the small fixed plates
-  // written for a client after stomach surgery, and a 4900 kcal day sent through them comes back
-  // with 700 kcal of food. Until those recipes scale, four is as far as this goes.
-  const mealAddedForCalories = targetCalories >= 3200 && (chosenMealCount === 3 || chosenMealCount === 2);
-  const mealCount = mealAddedForCalories ? 4 : chosenMealCount;
+  // A plate holds about a thousand calories before it stops being a plate: 400 g of a cooked
+  // carbohydrate, its protein and its fat. Owner decision: 3200 kcal on three meals already makes
+  // plates too big, so a fourth is added - and the same reasoning keeps going, a fifth above 4200
+  // and a sixth above 5200. Without them a big day cannot carry its own carbohydrate once the
+  // clinical limits hold, and the client is served less than the plan promises.
+  const platesForCalories = targetCalories >= 5200 ? 6 : targetCalories >= 4200 ? 5 : targetCalories >= 3200 ? 4 : 0;
+  const mealCount = Math.max(chosenMealCount, platesForCalories);
+  const mealAddedForCalories = mealCount > chosenMealCount;
+  // How a day is shared out. Protein is spread evenly over every sitting, snacks included: the
+  // muscle answers to each meal on its own (about 0.3-0.4 g/kg a sitting, Moore 2015 / Schoenfeld
+  // & Aragon 2018), so an even spread is worth more than the same protein piled into two plates.
+  // Carbohydrate and fat follow the size of the sitting - a snack is a snack - and a snack of
+  // protein with a little carbohydrate is also what keeps a client full between meals.
+  const SNACK_ENERGY_SHARE = { 4: 0.15, 5: 0.14, 6: 0.12 };
+  const isSnackMeal = (mealNumber) => mealCount >= 4 && mealNumber > 3;
   const mealDistribution = [];
   for (let i = 1; i <= mealCount; i++) {
     let pRatio = 1 / mealCount;
@@ -757,22 +767,17 @@ export function calculateUniversalNutritionTargets(canonicalIntake, evaluationCo
       if (i === 1) cRatio = 0.30;
       else if (i === 2) cRatio = 0.40;
       else cRatio = 0.30;
-    } else if (mealCount === 4) {
-      mealNameAr = i === 1 ? "وجبة الإفطار" : i === 2 ? "وجبة الغداء" : i === 3 ? "وجبة العشاء" : "الوجبة الرابعة (سناك)";
-      // Four sittings are three meals and a snack, so the snack is the size of a snack: it used to
-      // take an equal quarter of the day (927 kcal of a 3574 kcal day - 357 g of sweet potato and
-      // 290 g of yogurt), which is a dinner. The three meals share what is left - unless the day is
-      // so big that they would not fit on a plate (above ~1020 kcal a meal), and then the four
-      // plates share equally, because a plate that cannot hold its food drops it.
-      const snackShare = targetCalories * 0.85 / 3 > 1020 ? 0.25 : 0.15;
-      pRatio = fRatio = cRatio = i === 4 ? snackShare : (1 - snackShare) / 3;
-    } else if (mealCount === 5) {
+    } else if (mealCount >= 4) {
       // The names say what the plate actually is: the kitchen writes breakfast, lunch and dinner
-      // first and a snack after them, and the names used to be shifted against it - meal 2 was called
-      // a protein snack and came out as lunch.
-      mealNameAr = i === 1 ? "وجبة الإفطار" : i === 2 ? "وجبة الغداء" : i === 3 ? "وجبة العشاء" : i === 4 ? "سناك أول" : "سناك تاني";
-    } else if (mealCount === 6) {
-      mealNameAr = i === 1 ? "وجبة الإفطار" : i === 2 ? "وجبة الغداء" : i === 3 ? "وجبة العشاء" : i === 4 ? "سناك أول" : i === 5 ? "سناك تاني" : "سناك تالت";
+      // first and the snacks after them, and the names used to be shifted against it - meal 2 was
+      // called a protein snack and came out as lunch.
+      const SNACK_NAMES = ["سناك أول", "سناك تاني", "سناك تالت"];
+      mealNameAr = i === 1 ? "وجبة الإفطار" : i === 2 ? "وجبة الغداء" : i === 3 ? "وجبة العشاء" : SNACK_NAMES[i - 4] || `سناك ${i - 3}`;
+      // A snack used to take an equal share of the day: the "snack" of a 3574 kcal day was 927 kcal,
+      // 357 g of sweet potato and 290 g of yogurt. It keeps its protein and gives back the rest.
+      const snackShare = SNACK_ENERGY_SHARE[mealCount] || 0.15;
+      const snacks = mealCount - 3;
+      cRatio = fRatio = isSnackMeal(i) ? snackShare : (1 - snacks * snackShare) / 3;
     }
 
     mealDistribution.push({
@@ -825,7 +830,7 @@ export function calculateUniversalNutritionTargets(canonicalIntake, evaluationCo
     // A high-calorie day on few meals makes very large plates: three meals get a fourth (above);
     // two meals are the client's fasting choice, so the coach is advised rather than the plan changed.
     meal_count_note_ar: mealAddedForCalories && chosenMealCount === 2
-      ? `العميل اختار وجبتين، بس ${targetCalories} سعرة على وجبتين بتطلع أطباق ضخمة جداً؛ النظام خلّاها 4 وجبات (ممكن تتاكل كلها في نفس شباك الأكل لو صايم صيام متقطع). لو العميل مش هيقدر، احذف وجبة من المحرر وهيتوزع أكلها على الباقي.`
+      ? `العميل اختار وجبتين، بس ${targetCalories} سعرة على وجبتين بتطلع أطباق ضخمة جداً؛ النظام خلّاها ${mealCount} وجبات (ممكن تتاكل كلها في نفس شباك الأكل لو صايم صيام متقطع). لو العميل مش هيقدر، احذف وجبة من المحرر وهيتوزع أكلها على الباقي.`
       : mealAddedForCalories
       ? `العميل اختار 3 وجبات، بس ${targetCalories} سعرة على 3 وجبات بتطلع أطباق كبيرة؛ النظام زوّد وجبة رابعة. لو العميل مش هيقدر، احذف الوجبة الرابعة من المحرر وهيتوزع أكلها على الباقي.`
       : targetCalories >= 3200 && mealCount <= 3
@@ -1048,6 +1053,23 @@ export function buildMasterEngineV2(inputs) {
       kidneyProteinCapped: universalTargets.clinical_guardrails?.kidney_protein_capped === true,
     },
   )));
+
+  // What the plates actually carry against what the plan asks for. They part company when the food
+  // a client can have cannot hold the day: an operated stomach on small fixed plates, or a client
+  // whose limits (a diabetic's potato ceiling, a coeliac's missing starches) leave the plate full
+  // before the target is met. The coach sees both numbers rather than the gap going unnoticed.
+  const servedCalories = culinaryRecipeMeals.reduce(
+    (total, meal) => total + (meal.items || []).reduce((sum, item) => sum + (Number(item.calories_kcal) || 0), 0),
+    0,
+  );
+  const servedGap = universalTargets.target_calories > 0
+    ? (servedCalories - universalTargets.target_calories) / universalTargets.target_calories
+    : 0;
+  if (Math.abs(servedGap) > 0.1) {
+    universalTargets.plate_capacity_note_ar = servedGap < 0
+      ? `الأكل اللي في الأطباق ${Math.round(servedCalories)} سعرة مقابل هدف ${universalTargets.target_calories} سعرة: الأصناف المتاحة للعميل (حدود سريرية، حساسية، أو سعة معدة بعد عملية) مش قادرة تشيل اليوم كله. راجع عدد الوجبات أو الهدف مع العميل.`
+      : `الأكل اللي في الأطباق ${Math.round(servedCalories)} سعرة مقابل هدف ${universalTargets.target_calories} سعرة: الأطباق زيادة عن الهدف، راجع الكميات.`;
+  }
 
   const baseNutritionProgram = buildNutritionEngine({
     intake: canonicalIntake,

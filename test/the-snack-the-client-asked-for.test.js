@@ -57,27 +57,32 @@ test("the day the client eats is still the day that was planned", () => {
   }
 });
 
+// The snack keeps a full share of the day's protein - the muscle answers to each sitting on its own
+// - and gives back the carbohydrate and the fat, so it eats smaller than any meal without being a
+// plate of nothing.
 test("the snack is the size of a snack, not a fourth dinner", () => {
   const withSnack = plan("3_meals_snack");
   const kcalOf = (meal) => (meal.items || []).reduce((total, item) => total + (Number(item.calories_kcal) || 0), 0);
-  const day = withSnack.macro_targets.calories_kcal;
-  const share = kcalOf(withSnack.culinary_meals[3]) / day;
-  assert.ok(share > 0.10 && share < 0.20, `the snack is ${Math.round(share * 100)}% of the day`);
-  for (const meal of withSnack.culinary_meals.slice(0, 3)) {
-    assert.ok(kcalOf(meal) / day > 0.22, `${meal.meal_name_ar} is only ${Math.round((kcalOf(meal) / day) * 100)}% of the day`);
-  }
+  const meals = withSnack.culinary_meals;
+  const snack = kcalOf(meals[3]);
+  const smallestMeal = Math.min(...meals.slice(0, 3).map(kcalOf));
+  assert.ok(snack < smallestMeal * 0.8, `the snack is ${snack} kcal against a ${smallestMeal} kcal meal`);
+  assert.ok(snack > withSnack.macro_targets.calories_kcal * 0.12, `the snack is only ${snack} kcal`);
+  const proteinOf = (meal) => (meal.items || []).reduce((total, item) => total + (Number(item.protein_g) || 0), 0);
+  assert.ok(proteinOf(meals[3]) >= proteinOf(meals[0]) * 0.8, "the snack keeps its share of the protein");
 });
 
-test("a day too big for three plates shares the four equally instead", () => {
-  // Above about 1020 kcal a meal the three plates cannot hold their food, and a plate that cannot
-  // hold its food drops it - so the day goes back to four equal sittings.
+test("a day too big for four plates gets a fifth instead of bigger plates", () => {
   const huge = buildMasterEngineV2({
     intake: { ...answers("3_meals_snack"), weight_kg: "130", height_cm: "200", primary_goal: "lean_bulk", neat_level: "very_active" },
     evaluationContext: CTX, nutritionFoodCatalog: CATALOG, options: {},
   }).nutrition_program;
+  assert.ok(huge.macro_targets.calories_kcal >= 4200, "precondition");
+  assert.equal(huge.culinary_meals.length, 5);
   const kcalOf = (meal) => (meal.items || []).reduce((total, item) => total + (Number(item.calories_kcal) || 0), 0);
-  const share = kcalOf(huge.culinary_meals[3]) / huge.macro_targets.calories_kcal;
-  assert.ok(share > 0.20, `the snack of a ${huge.macro_targets.calories_kcal} kcal day is ${Math.round(share * 100)}%`);
+  for (const meal of huge.culinary_meals) {
+    assert.ok(kcalOf(meal) <= 1400, `${meal.meal_name_ar}: ${kcalOf(meal)} kcal on one plate`);
+  }
 });
 
 test("the snack offers the client something to swap, like every other plate", () => {

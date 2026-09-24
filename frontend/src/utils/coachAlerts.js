@@ -12,15 +12,14 @@ export function collectCoachAlerts(programData = {}) {
   if (targets.goal_redirect?.reason_ar) alerts.push(targets.goal_redirect.reason_ar);
   if (guardrails.diabetic_carb_cap_note_ar) alerts.push(guardrails.diabetic_carb_cap_note_ar);
   if (guardrails.coach_review_high_fat_ar) alerts.push(guardrails.coach_review_high_fat_ar);
-  if (guardrails.kidney_potassium_note_ar) alerts.push(guardrails.kidney_potassium_note_ar);
-  if (guardrails.kidney_energy_note_ar) alerts.push(guardrails.kidney_energy_note_ar);
   if (guardrails.energy_balance_note_ar) alerts.push(guardrails.energy_balance_note_ar);
   if (targets.meal_count_note_ar) alerts.push(targets.meal_count_note_ar);
+  if (targets.plate_capacity_note_ar) alerts.push(targets.plate_capacity_note_ar);
   const meals = Array.isArray(nutrition.culinary_meals) ? nutrition.culinary_meals : [];
   meals.forEach((meal, index) => {
     for (const item of meal?.items || []) {
       const name = item.name_ar || item.food_code;
-      for (const note of [item.portion_warning_ar, item.clinical_warning_ar, item.glycemic_warning_ar]) {
+      for (const note of [item.portion_warning_ar, item.portion_note_ar, item.clinical_warning_ar, item.glycemic_warning_ar]) {
         if (note) alerts.push(`الوجبة ${index + 1} - ${name}: ${note}`);
       }
     }

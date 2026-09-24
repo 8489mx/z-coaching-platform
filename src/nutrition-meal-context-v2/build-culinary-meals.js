@@ -2163,6 +2163,11 @@ export function buildAllergenContext(canonicalIntake = {}, rawIntake = {}) {
   const isPostBariatric = rawBariatricSelected.includes("bariatric_surgery")
     || effectiveRaw?.medical_conditions?.bariatric?.is_operated === true
     || (medical.conditions || []).some((condition) => /BARIATRIC/.test(String(condition.conditionCode || "")));
+  // The intake asks how much the stomach holds in one sitting, and the answer was never read. The
+  // small fixed plates are the early protocol; a client who says he takes more than 200 g is years
+  // past that and was being served a third of his day.
+  const bariatricCapacity = String(effectiveRaw?.medical_conditions?.bariatric?.meal_capacity_grams || "150_200");
+  const needsMiniPlates = isPostBariatric && bariatricCapacity !== "over_200";
 
   const rawSelected = Array.isArray(effectiveRaw?.medical_conditions?.selected) ? effectiveRaw.medical_conditions.selected : [];
   const isDiabetic =
@@ -2220,6 +2225,7 @@ export function buildAllergenContext(canonicalIntake = {}, rawIntake = {}) {
     isLowBudget,
     isDumpingSyndrome,
     isPostBariatric,
+    needsMiniPlates,
     isDiabetic,
     isSesameExcluded,
     // The client's country (EG, SA, AE ...) when known: local foods first in the swap lists.
@@ -2247,7 +2253,7 @@ export function buildCulinaryRecipeMeals(universalTargets, canonicalIntake = {},
   const budgetTier = (nutrition.budget || nutrition.budgetTier || "MODERATE").toUpperCase();
 
   const allergenContext = buildAllergenContext(canonicalIntake, effectiveRaw);
-  const { excludedFoods, isVegan, isGlutenExcluded, isDairyExcluded, isEggsExcluded, isFishExcluded, isPoultryExcluded, isRedMeatExcluded, isMeatExcluded, isSoyExcluded, isNutsExcluded, isGout, isFavism, isLegumesExcluded, isLowBudget, isDumpingSyndrome, isPostBariatric, isDiabetic, isSesameExcluded } = allergenContext;
+  const { excludedFoods, isVegan, isGlutenExcluded, isDairyExcluded, isEggsExcluded, isFishExcluded, isPoultryExcluded, isRedMeatExcluded, isMeatExcluded, isSoyExcluded, isNutsExcluded, isGout, isFavism, isLegumesExcluded, isLowBudget, isDumpingSyndrome, isPostBariatric, needsMiniPlates, isDiabetic, isSesameExcluded } = allergenContext;
 
   const totalMeals = meal_distribution.length;
 
@@ -2260,6 +2266,9 @@ export function buildCulinaryRecipeMeals(universalTargets, canonicalIntake = {},
 
     let recipeNameAr = "";
     let recipeConceptDesc = "";
+    // The plates written for an operated stomach are the prescription itself - 165 to 175 g a
+    // sitting - so nothing downstream resizes them to hit a macro target.
+    let fixedPortions = false;
     const items = [];
 
     // =========================================================================
@@ -2689,7 +2698,8 @@ export function buildCulinaryRecipeMeals(universalTargets, canonicalIntake = {},
     // day. Everyone else who eats five or six times gets the ordinary meals below, each scaled to
     // its own target: a 4924 kcal day sent through here came back with 700 kcal of food.
     // =========================================================================
-    else if (totalMeals >= 5 && isPostBariatric) {
+    else if (totalMeals >= 5 && needsMiniPlates) {
+      fixedPortions = true;
       recipeConceptDesc = "وجبة مركزة عالية الكثافة الغذائية محددة الحجم الصارم (وزن الطبق الإجمالي 165 - 175 جم) لحماية جدار المعدة ومنع التمدد ومتلازمة الإغراق.";
 
       if (mealNum === 1) {
@@ -3836,7 +3846,12 @@ export function buildCulinaryRecipeMeals(universalTargets, canonicalIntake = {},
         // Protein
         const remP = Math.max(10, targetP - Math.round(sweetPotatoGrams * 0.02) - nutMacros.protein_g);
         if (!isDairyExcluded) {
-          const yogurtGrams = Math.round(remP / 0.10);
+          // Protein above a tub and a half of yogurt goes to a scoop of powder (or a second protein
+          // food when the client has no powder), instead of 370 g of yogurt in one sitting.
+          const wholeYogurtGrams = Math.round(remP / 0.10);
+          const yogurtGrams = Math.min(SNACK_YOGURT_COMFORTABLE_G, wholeYogurtGrams);
+          const yogurtProtein = Math.round(yogurtGrams * 0.10);
+          const secondProteinG = Math.max(0, remP - yogurtProtein);
           items.push({
             food_code: "GREEK_YOGURT",
             name_ar: "زبادي يوناني طبيعي قليل الدسم عالي البروتين",
@@ -3844,12 +3859,41 @@ export function buildCulinaryRecipeMeals(universalTargets, canonicalIntake = {},
             category: "PROTEIN",
             portion_g: yogurtGrams,
             household_measurement: `${yogurtGrams} جم (${(yogurtGrams / 170).toFixed(1)} علبة كبيرة)`,
-            protein_g: remP,
+            protein_g: yogurtProtein,
             carb_g: Math.round(yogurtGrams * 0.035),
             fat_g: 1.5,
             calories_kcal: Math.round(yogurtGrams * 0.70),
             swaps: generateSmartSwaps("PROTEIN", yogurtGrams, "GREEK_YOGURT", "SNACK", 0, allergenContext),
           });
+
+          if (secondProteinG >= 5) {
+            // Food before a supplement: the intake never asks whether the client keeps protein powder
+            // at home, so the snack reaches for cottage cheese first - a food everybody has - and only
+            // falls back to a scoop when cheese is out of the question.
+            const powderCode = proteinPowderAvailable
+              ? (isDairyExcluded || isVegan ? "PEA_RICE_PROTEIN_POWDER" : "WHEY_PROTEIN")
+              : null;
+            const secondCode = isFoodClinicallySafe("COTTAGE_CHEESE", allergenContext)
+              ? "COTTAGE_CHEESE"
+              : (powderCode && isFoodClinicallySafe(powderCode, allergenContext) ? powderCode : null);
+            const secondFood = secondCode ? FOOD_SWAP_DATABASE[secondCode] : null;
+            if (secondFood) {
+              const grams = Math.round((secondProteinG / secondFood.protein_per_100g) * 100);
+              items.push({
+                food_code: secondCode,
+                name_ar: secondFood.name_ar,
+                name_en: secondFood.name_en,
+                category: "PROTEIN",
+                portion_g: grams,
+                household_measurement: secondCode === "COTTAGE_CHEESE" ? `${grams} جم` : `${grams} جم (سكوب)`,
+                protein_g: Math.round((grams * secondFood.protein_per_100g) / 100),
+                carb_g: Math.round((grams * secondFood.carb_per_100g) / 100),
+                fat_g: Math.round((grams * secondFood.fat_per_100g) / 100),
+                calories_kcal: Math.round((grams * (secondFood.protein_per_100g * 4 + secondFood.carb_per_100g * 4 + secondFood.fat_per_100g * 9)) / 100),
+                swaps: generateSmartSwaps("PROTEIN", grams, secondCode, "SNACK", 0, allergenContext),
+              });
+            }
+          }
         } else {
           const chickenGrams = Math.round(remP / 0.31);
           items.push({
@@ -3918,6 +3962,7 @@ export function buildCulinaryRecipeMeals(universalTargets, canonicalIntake = {},
     return {
       meal_number: mealNum,
       meal_name_ar: mealDist.meal_name_ar,
+      fixed_portions: fixedPortions,
       recipe_title_ar: recipeNameAr,
       recipe_description_ar: recipeConceptDesc,
       target_macros: {
@@ -4276,6 +4321,9 @@ export const MAX_OIL_PER_MEAL_G = 20;
 const MAX_SWAP_OIL_ADDITION_G = 15;
 // Nuts or seeds in the fourth-meal snack: a handful, like the almonds below.
 const SNACK_NUT_MAX_G = 30;
+// A snack of yogurt stays within about a tub and a half; protein beyond that comes from a second
+// food, so the plate stays something a person actually finishes.
+const SNACK_YOGURT_COMFORTABLE_G = 250;
 // Other fat sources, in order, each capped per meal. Almonds add protein, so never for a kidney
 // protein cap.
 const FAT_SOURCES = Object.freeze([
@@ -4358,7 +4406,7 @@ function moveFatBeyondOil(meals, allergenContext, { kidneyProteinCapped = false 
 export function trimMealsToTarget(meals = []) {
   if (!Array.isArray(meals)) return meals;
   return meals.map((meal) => {
-    if (!Array.isArray(meal?.items) || !meal?.target_macros) return meal;
+    if (!Array.isArray(meal?.items) || !meal?.target_macros || meal.fixed_portions === true) return meal;
     let items = meal.items;
     // Carbohydrate first: trimming a carbohydrate food takes its protein down with it, and the
     // protein pass then sees what is really left.

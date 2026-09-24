@@ -20,11 +20,13 @@ const targetsFor = ({ weight, goal, neat, meals }) => buildMasterEngineV2({ inta
   training_environment: "commercial_gym", training_logistics: { days_per_week: 5, training_age: "2_4_years" }, recent_training: "ACTIVE",
 }, evaluationContext: { system_time: "2026-09-22T08:00:00.000Z", assessmentDate: "2026-09-22" }, nutritionFoodCatalog: CATALOG, options: {} }).nutrition_program;
 
-test("3200+ kcal on two meals becomes four meals, and the coach is told why", () => {
+// A plate holds about a thousand calories, so the number of plates follows the size of the day:
+// four above 3200 kcal, five above 4200, six above 5200.
+test("a big day on two meals is spread over more plates, and the coach is told why", () => {
   const n = targetsFor({ weight: "110", goal: "lean_bulk", neat: "very_active", meals: "2_meals" });
-  assert.ok(n.targets.target_calories >= 3200, "precondition");
-  assert.equal(n.targets.meals_count, 4);
-  assert.equal(n.culinary_meals.length, 4);
+  assert.ok(n.targets.target_calories >= 4200, "precondition");
+  assert.equal(n.targets.meals_count, 5);
+  assert.equal(n.culinary_meals.length, 5);
   assert.match(n.targets.meal_count_note_ar, /وجبتين/);
   for (const meal of n.culinary_meals) {
     const kcal = meal.items.reduce((s, i) => s + i.calories_kcal, 0);
