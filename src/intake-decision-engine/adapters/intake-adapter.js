@@ -434,10 +434,13 @@ export function adaptIntakePayloadToCanonicalEngine(raw) {
   }
 
   if (!intake.nutrition && (intake.strict_allergies || intake.meal_structure || intake.disliked_foods || intake.digestive_issues || intake.food_budget || intake.food_prep_ability || intake.allergies_and_dislikes || intake.preferred_meal_count)) {
+    // What the client picked is how many times a day they eat. "3 وجبات + سناك" is four sittings:
+    // it used to map to three, so the snack the client asked for never appeared in the plan - and it
+    // is the option the form starts on.
     const mealCountMap = {
       '2_meals': 2,
       '3_meals': 3,
-      '3_meals_snack': 3,
+      '3_meals_snack': 4,
       '4_to_5_meals': 4,
       '4_meals': 4,
       '5_meals': 5
