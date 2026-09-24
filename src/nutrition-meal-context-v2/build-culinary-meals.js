@@ -4086,16 +4086,23 @@ const gramsText = (grams, reference) => `${grams} جم${/مطبوخ/.test(String
  * same ratio. The meal's macros do not change. With no safe swap the item stays whole and carries a
  * note for the coach. Runs once, on the final meals (after the diabetic choice).
  */
+// A swap is written for the portion it replaces, so it shrinks with it - grams, macros and the
+// household measure - or a plan would offer a swap that no longer matches the item's own plate.
+const scaleSwap = (swap, factor) => {
+  const grams = scaleNumber(swap.equivalent_grams, factor);
+  const oil = (key) => (Number.isFinite(Number(swap[key])) ? { [key]: Number((Number(swap[key]) * factor).toFixed(1)) } : {});
+  return { ...swap, equivalent_grams: grams, household_desc: gramsText(grams, swap.household_desc),
+    protein_g: scaleNumber(swap.protein_g, factor), carb_g: scaleNumber(swap.carb_g, factor),
+    fat_g: scaleNumber(swap.fat_g, factor), calories_kcal: scaleNumber(swap.calories_kcal, factor),
+    // The oil a swap says to leave out (or add) belongs to the portion it replaces, so it scales with
+    // it; a half portion that still asked for the whole spoon of oil stopped matching its own item.
+    ...oil("oil_deduction_g"), ...oil("oil_addition_g") };
+};
+
 export function splitOversizedPortions(meals = [], maxGrams = MAX_CARB_PORTION_G) {
   if (!Array.isArray(meals)) return meals;
   const limitOf = typeof maxGrams === "function" ? maxGrams : () => maxGrams;
   const diabeticPotatoLimit = limitOf("POTATO") < MAX_CARB_PORTION_G;
-  const scaleSwap = (swap, factor) => {
-    const grams = scaleNumber(swap.equivalent_grams, factor);
-    return { ...swap, equivalent_grams: grams, household_desc: gramsText(grams, swap.household_desc),
-      protein_g: scaleNumber(swap.protein_g, factor), carb_g: scaleNumber(swap.carb_g, factor),
-      fat_g: scaleNumber(swap.fat_g, factor), calories_kcal: scaleNumber(swap.calories_kcal, factor) };
-  };
   const macros = (item, factor) => ({
     protein_g: scaleNumber(item.protein_g, factor), carb_g: scaleNumber(item.carb_g, factor),
     fat_g: scaleNumber(item.fat_g, factor), calories_kcal: scaleNumber(item.calories_kcal, factor),
@@ -4140,28 +4147,40 @@ export function splitOversizedPortions(meals = [], maxGrams = MAX_CARB_PORTION_G
         p.share = Math.min(left, p.limit / p.grams);
         left -= p.share;
       }
+      let plateIsFull = false;
       if (left > 1e-6) {
         const total = 1 - left;
         for (const p of parts) p.share /= total;
       } else {
         // A last part of a few grams (10 g of apple) is not a plate: its share goes to a part with room
         // under its limit, else is spread over the other non-potato parts (a few grams over a fruit
-        // limit; a diabetic's potato limit is never passed). With neither it stays.
+        // limit; a diabetic's potato limit is never passed).
         for (const tiny of parts.filter((p) => p.partner && p.share > 1e-6 && p.grams * p.share < MIN_SPLIT_PART_G && (Number(item.carb_g) || 0) * p.share < MIN_SPLIT_PART_CARB_G)) {
           const others = parts.filter((p) => p !== tiny && p.share > 1e-6);
           const roomy = others.find((p) => p.grams * (p.share + tiny.share) <= p.limit);
           const spread = roomy ? [roomy] : others.filter((p) => !isPotato(p.partner?.food_code || item?.food_code));
-          if (spread.length === 0) continue;
           const total = spread.reduce((sum, p) => sum + p.share, 0);
-          // "A few grams" over a limit means at most SPLIT_SPREAD_MARGIN_G; otherwise the small part stays.
-          if (spread.some((p) => p.grams * (p.share + (tiny.share * p.share) / total) > p.limit + SPLIT_SPREAD_MARGIN_G)) continue;
-          for (const p of spread) p.share += (tiny.share * p.share) / total;
+          // "A few grams" over a limit means at most SPLIT_SPREAD_MARGIN_G.
+          const fits = spread.length > 0
+            && !spread.some((p) => p.grams * (p.share + (tiny.share * p.share) / total) > p.limit + SPLIT_SPREAD_MARGIN_G);
+          if (fits) {
+            for (const p of spread) p.share += (tiny.share * p.share) / total;
+            tiny.share = 0;
+            continue;
+          }
+          // Every plate is already at its limit, so this last piece has nowhere to go: a 39 g scrap of
+          // sweet potato beside 400 g of quinoa is not a serving, it is the sign that the meal is
+          // carrying more carbohydrate than one sitting can hold. The piece is dropped and the coach
+          // is told to move it to another meal, instead of the plan quietly showing the scrap.
           tiny.share = 0;
+          plateIsFull = true;
         }
       }
       const overLimit = left > 1e-6
         ? { portion_warning_ar: `البدائل الآمنة المتاحة لا تكفي لتقسيم الحصة تحت الحد؛ راجع عدد الوجبات أو توزيع الكربوهيدرات.` }
-        : {};
+        : plateIsFull
+          ? { portion_note_ar: `الوجبة دي كربوهيدراتها أكتر من اللي يتحط في قعدة واحدة: الأصناف المتاحة وصلت لحدها، والباقي اتشال بدل ما يتحط كقطعة صغيرة. وزّع جزء منها على وجبة تانية.` }
+          : {};
       parts.filter((p) => p.share > 1e-6).forEach((p) => {
         const grams = scaleNumber(p.grams, p.share);
         if (!p.partner) {
@@ -4281,7 +4300,63 @@ function moveFatBeyondOil(meals, allergenContext, { kidneyProteinCapped = false 
     const nextOil = { ...oil, portion_g: oilFat, fat_g: oilFat, calories_kcal: oilFat * 9, household_measurement: `${oilFat} جم` };
     const nextItems = [...items];
     nextItems[oilIndex] = nextOil;
+
     return { ...meal, items: [...nextItems, ...added] };
+  });
+}
+
+/**
+ * A plate can end above the meal it was planned as. Two steps put food on it that carries more than
+ * the macro they were chosen for: a split part carries its own food (86 g of oats replacing 250 g of
+ * sweet potato match on carbohydrate but add 10 g of protein), and a fat source carries its own
+ * (30 g of almonds add 6 g of protein and 6 g of carbohydrate). A snack ran 12% over its protein.
+ *
+ * The excess is taken off the meal's largest item of that macro, and a donor never gives more than a
+ * third of itself, so the plate stays the meal it was written as. Fat is left alone: the oil is
+ * already balanced against what a swap or a fat source brings.
+ */
+export function trimMealsToTarget(meals = []) {
+  if (!Array.isArray(meals)) return meals;
+  return meals.map((meal) => {
+    if (!Array.isArray(meal?.items) || !meal?.target_macros) return meal;
+    let items = meal.items;
+    // Carbohydrate first: trimming a carbohydrate food takes its protein down with it, and the
+    // protein pass then sees what is really left.
+    for (const [macro, category] of [["carb_g", "CARBS"], ["protein_g", "PROTEIN"]]) {
+      const target = Number(meal.target_macros[macro]);
+      if (!(target > 0)) continue;
+      const actual = items.reduce((sum, item) => sum + (Number(item[macro]) || 0), 0);
+      // Under three grams is rounding, not a plate that needs changing.
+      let excess = Math.round(actual - target);
+      if (excess < 3) continue;
+      const donors = items
+        .map((item, index) => ({ item, index }))
+        .filter(({ item }) => item?.category === category && (Number(item[macro]) || 0) > 0 && (Number(item.portion_g) || 0) > 0)
+        .sort((a, b) => (Number(b.item[macro]) || 0) - (Number(a.item[macro]) || 0));
+      for (const { item, index } of donors) {
+        if (excess <= 0) break;
+        const have = Number(item[macro]) || 0;
+        const take = Math.min(excess, Math.floor(have / 3));
+        if (take < 1) continue;
+        const factor = (have - take) / have;
+        const grams = scaleNumber(item.portion_g, factor);
+        if (!(grams > 0)) continue;
+        const next = items.slice();
+        next[index] = {
+          ...item,
+          portion_g: grams,
+          household_measurement: gramsText(grams, item.household_measurement),
+          protein_g: scaleNumber(item.protein_g, factor),
+          carb_g: scaleNumber(item.carb_g, factor),
+          fat_g: scaleNumber(item.fat_g, factor),
+          calories_kcal: scaleNumber(item.calories_kcal, factor),
+          swaps: Array.isArray(item.swaps) ? item.swaps.map((swap) => scaleSwap(swap, factor)) : item.swaps,
+        };
+        items = next;
+        excess -= take;
+      }
+    }
+    return items === meal.items ? meal : { ...meal, items };
   });
 }
 

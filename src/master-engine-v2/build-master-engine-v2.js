@@ -137,7 +137,7 @@ import { buildCardioEngine } from "../cardio-engine/index.js";
 import { buildMobilityEngine } from "../mobility-engine/index.js";
 import { buildSessionMobilityProtocol } from "../mobility-warmup-engine-v2/index.js";
 import { buildNutritionEngine } from "../nutrition-engine/index.js";
-import { sanitizeMealPlan, buildCulinaryRecipeMeals, enforceDiabeticCarbChoice, splitOversizedPortions, carbPortionLimit, isDiabeticIntake, diversifyFatSources, buildAllergenContext, refreshActualMacros } from "../nutrition-meal-context-v2/index.js";
+import { sanitizeMealPlan, buildCulinaryRecipeMeals, enforceDiabeticCarbChoice, splitOversizedPortions, carbPortionLimit, isDiabeticIntake, diversifyFatSources, buildAllergenContext, trimMealsToTarget, refreshActualMacros } from "../nutrition-meal-context-v2/index.js";
 import { quantizeNutritionPlan } from "../nutrition-serving-quantizer-v2/index.js";
 import { adaptIntakePayloadToCanonicalEngine } from "../intake-decision-engine/adapters/intake-adapter.js";
 import { MASTER_ENGINE_V2_VERSION } from "./domain/enums.js";
@@ -1025,7 +1025,7 @@ export function buildMasterEngineV2(inputs) {
   // split runs again on the final meals.
   const isDiabeticClient = isDiabeticIntake(canonicalIntake, effectiveIntake);
   // Stored meal totals are recomputed from the items once every step has run.
-  const culinaryRecipeMeals = refreshActualMacros(diversifyFatSources(
+  const culinaryRecipeMeals = refreshActualMacros(trimMealsToTarget(diversifyFatSources(
     splitOversizedPortions(enforceDiabeticCarbChoice(
       buildCulinaryRecipeMeals(universalTargets, canonicalIntake, effectiveIntake),
       isDiabeticClient,
@@ -1034,7 +1034,7 @@ export function buildMasterEngineV2(inputs) {
     {
       kidneyProteinCapped: universalTargets.clinical_guardrails?.kidney_protein_capped === true,
     },
-  ));
+  )));
 
   const baseNutritionProgram = buildNutritionEngine({
     intake: canonicalIntake,

@@ -8,6 +8,7 @@ export {
   buildCulinaryRecipeMeals,
   enforceDiabeticCarbChoice,
   splitOversizedPortions,
+  trimMealsToTarget,
   diversifyFatSources,
   buildAllergenContext,
   carbPortionLimit,
