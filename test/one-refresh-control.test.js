@@ -13,9 +13,15 @@ import { fileURLToPath } from "node:url";
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const read = (file) => fs.readFileSync(path.join(ROOT, file), "utf8");
 
+// Every screen that reads its data from the server can ask for it again, from the same control in
+// the same place. Four of them had none at all: the coach reloaded the whole page.
 const SCREENS_WITH_A_REFRESH = [
   "frontend/src/pages/CoachCommandCenter.jsx",
   "frontend/src/pages/IntakeSubmissions.jsx",
+  "frontend/src/pages/Customers.jsx",
+  "frontend/src/pages/FinancialsRenewalsDashboard.jsx",
+  "frontend/src/pages/CheckinReviewDashboard.jsx",
+  "frontend/src/pages/WhatsAppRemindersHub.jsx",
 ];
 
 test("both screens refresh from the one shared control", () => {
@@ -27,14 +33,15 @@ test("both screens refresh from the one shared control", () => {
   }
 });
 
-test("the control sits in the page header on both", () => {
+test("the control sits at the top of the screen, not down in a table toolbar", () => {
   for (const file of SCREENS_WITH_A_REFRESH) {
     const code = read(file);
-    const header = code.indexOf("<PageHeader");
     const button = code.indexOf("<RefreshButton");
-    const section = code.indexOf("<FormSection");
-    assert.ok(header >= 0 && button > header, `${file} does not put the control in the header`);
-    if (section >= 0) assert.ok(button < section, `${file} still keeps the control down in the table toolbar`);
+    // The screen headers differ (three use PageHeader, two draw their own banner), so what is checked
+    // is that the control comes before the screen starts listing anything.
+    const list = code.indexOf(".map(", code.indexOf("<AdminLayout"));
+    assert.ok(button > 0, `${file} has no refresh control`);
+    assert.ok(list < 0 || button < list, `${file} puts the control below its list`);
   }
 });
 

@@ -8,6 +8,7 @@ import { DollarSign, CreditCard, AlertCircle, Clock, CheckCircle2, Send, ArrowUp
 import AdminLayout from '../components/layout/AdminLayout';
 import { TierFilter } from '@/shared/components/tier-filter';
 import { TableSearch } from '@/shared/components/table-search';
+import { RefreshButton } from '@/shared/components/refresh-button';
 import FlexibleRenewalModal from '../components/modals/FlexibleRenewalModal';
 import ClientRetentionRadarModal from '../components/modals/ClientRetentionRadarModal';
 import { calculateClientRetentionHealth, batchEvaluateRetentionRadar } from '../utils/clientRetentionRadarEngine';
@@ -59,7 +60,7 @@ export default function FinancialsRenewalsDashboard() {
 
   // Live Financial Dataset from API
   const [financialsData, setFinancialsData] = useState([]);
-  const [_loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     fetchFinancials();
@@ -310,6 +311,7 @@ export default function FinancialsRenewalsDashboard() {
           </div>
 
           <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap' }}>
+            <RefreshButton onClick={fetchFinancials} loading={loading} />
             <button
               type="button"
               onClick={() => setShowRadarStudio(!showRadarStudio)}

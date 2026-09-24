@@ -1,5 +1,5 @@
 import { API_BASE } from '../config/api';
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import {
   CheckCircle2,
@@ -43,6 +43,7 @@ import { generateCheckinApprovalWhatsAppMessage } from '../utils/checkinApproval
 
 import DeloadRecommendationCard from '../components/checkin/DeloadRecommendationCard';
 import { TableSearch } from '@/shared/components/table-search';
+import { RefreshButton } from '@/shared/components/refresh-button';
 import { TierFilter } from '@/shared/components/tier-filter';
 
 const DEFAULT_BASELINE_MACROS = {
@@ -599,131 +600,133 @@ export default function CheckinReviewDashboard() {
   const [isMilestoneModalOpen, setIsMilestoneModalOpen] = useState(false);
 
   // Live Checkins Fetcher from MariaDB
-  useEffect(() => {
-    const fetchLiveCheckins = async () => {
-      try {
-        const res = await fetch(`${API_BASE}/api/v1/programs/checkin/pending`);
-        if (res.ok) {
-          const data = await res.json();
-          if (data.checkins && Array.isArray(data.checkins) && data.checkins.length > 0) {
-            const liveMapped = data.checkins.map(ch => {
-              const userPhotos = ch.user?.progressPhotos || [];
-              const weekPhotos = userPhotos.filter(p => Number(p.week_number) === Number(ch.week_number));
-              const currentWeekPhotos = {
-                front: (weekPhotos.find(p => String(p.pose).toUpperCase() === 'FRONT') || {}).photo_url || null,
-                side: (weekPhotos.find(p => String(p.pose).toUpperCase() === 'SIDE') || {}).photo_url || null,
-                back: (weekPhotos.find(p => String(p.pose).toUpperCase() === 'BACK') || {}).photo_url || null,
-              };
+  // The loader sits outside the effect so the coach can ask for it again without reloading the page.
+  const fetchLiveCheckins = useCallback(async () => {
+    try {
+      const res = await fetch(`${API_BASE}/api/v1/programs/checkin/pending`);
+      if (res.ok) {
+        const data = await res.json();
+        if (data.checkins && Array.isArray(data.checkins) && data.checkins.length > 0) {
+          const liveMapped = data.checkins.map(ch => {
+            const userPhotos = ch.user?.progressPhotos || [];
+            const weekPhotos = userPhotos.filter(p => Number(p.week_number) === Number(ch.week_number));
+            const currentWeekPhotos = {
+              front: (weekPhotos.find(p => String(p.pose).toUpperCase() === 'FRONT') || {}).photo_url || null,
+              side: (weekPhotos.find(p => String(p.pose).toUpperCase() === 'SIDE') || {}).photo_url || null,
+              back: (weekPhotos.find(p => String(p.pose).toUpperCase() === 'BACK') || {}).photo_url || null,
+            };
 
-              // Build comprehensive multi-week progression history
-              const allUserCheckins = (ch.user?.checkinSubmissions || []).slice().sort((a, b) => (Number(a.week_number) || 0) - (Number(b.week_number) || 0));
-              let clientHistory = [];
-              if (allUserCheckins.length > 0) {
-                clientHistory = allUserCheckins.map(pc => {
-                  const pcPhotos = userPhotos.filter(p => Number(p.week_number) === Number(pc.week_number));
-                  return {
-                    week: Number(pc.week_number) || 1,
-                    weight: Number(pc.average_weight_kg) || 0,
-                    waist: Number(pc.waist_circumference_cm) || 0,
-                    adherence: Number(pc.nutrition_adherence_percent) || 100,
-                    date: `الأسبوع ${pc.week_number}`,
-                    photos: {
-                      front: (pcPhotos.find(p => String(p.pose).toUpperCase() === 'FRONT') || {}).photo_url || null,
-                      side: (pcPhotos.find(p => String(p.pose).toUpperCase() === 'SIDE') || {}).photo_url || null,
-                      back: (pcPhotos.find(p => String(p.pose).toUpperCase() === 'BACK') || {}).photo_url || null,
-                    }
-                  };
-                });
-              } else {
-                clientHistory = [{
-                  week: ch.week_number || 1,
-                  weight: ch.average_weight_kg || 0,
-                  waist: ch.waist_circumference_cm || 0,
-                  adherence: ch.nutrition_adherence_percent || 100,
-                  date: `الأسبوع ${ch.week_number || 1}`,
-                  photos: currentWeekPhotos
-                }];
-              }
+            // Build comprehensive multi-week progression history
+            const allUserCheckins = (ch.user?.checkinSubmissions || []).slice().sort((a, b) => (Number(a.week_number) || 0) - (Number(b.week_number) || 0));
+            let clientHistory = [];
+            if (allUserCheckins.length > 0) {
+              clientHistory = allUserCheckins.map(pc => {
+                const pcPhotos = userPhotos.filter(p => Number(p.week_number) === Number(pc.week_number));
+                return {
+                  week: Number(pc.week_number) || 1,
+                  weight: Number(pc.average_weight_kg) || 0,
+                  waist: Number(pc.waist_circumference_cm) || 0,
+                  adherence: Number(pc.nutrition_adherence_percent) || 100,
+                  date: `الأسبوع ${pc.week_number}`,
+                  photos: {
+                    front: (pcPhotos.find(p => String(p.pose).toUpperCase() === 'FRONT') || {}).photo_url || null,
+                    side: (pcPhotos.find(p => String(p.pose).toUpperCase() === 'SIDE') || {}).photo_url || null,
+                    back: (pcPhotos.find(p => String(p.pose).toUpperCase() === 'BACK') || {}).photo_url || null,
+                  }
+                };
+              });
+            } else {
+              clientHistory = [{
+                week: ch.week_number || 1,
+                weight: ch.average_weight_kg || 0,
+                waist: ch.waist_circumference_cm || 0,
+                adherence: ch.nutrition_adherence_percent || 100,
+                date: `الأسبوع ${ch.week_number || 1}`,
+                photos: currentWeekPhotos
+              }];
+            }
 
-              return {
-                id: `CHK_${ch.id}`,
-                raw_id: ch.id,
-                user_id: ch.user_id,
-                client: {
-                  id: `CL_${ch.user_id}`,
-                  name: ch.user?.full_name || `مشترك #${ch.user?.client_code || ch.user_id}`,
-                  code: ch.user?.client_code || String(ch.user_id),
-                  package: String(ch.user?.subscription_package || 'MAX').toUpperCase().includes('MAX') ? 'MAX' : 'ELITE',
-                  package_name: String(ch.user?.subscription_package || '').includes('MAX') ? 'باقة ماكس' : 'باقة إليت',
-                  phone: ch.user?.phone_number || '',
-                  country: { name: 'مصر' },
-                  gender: 'male',
-                  goal_type: 'FAT_LOSS',
-                  target_goal: 'خسارة دهون',
-                  start_weight: ch.average_weight_kg || 80,
-                  target_weight: (ch.average_weight_kg || 80) - 10,
-                  injuries: ch.user?.injuries || []
-                },
-                week_number: ch.week_number || 1,
-                checkin_number: ch.week_number || 1,
-                submission_date: new Date(ch.createdAt).toLocaleDateString('en-US'),
-                photos: currentWeekPhotos,
-                history: clientHistory,
-                metrics: {
-                  previous_weight: ch.average_weight_kg || 0,
-                  current_weight: ch.average_weight_kg || 0,
-                  weight_change: ch.weight_change_kg || 0,
-                  waist_previous: ch.waist_circumference_cm || 0,
-                  waist_current: ch.waist_circumference_cm || 0,
-                  waist_change: 0,
-                  adherence: ch.nutrition_adherence_percent || 100,
-                  workouts_completed: ch.workouts_completed || 0,
-                  workouts_target: ch.workouts_scheduled || 4,
-                  daily_steps_avg: 8000,
-                  strength_trend: 'MAINTAINED',
-                  strength_note: 'أداء مستقر',
-                  off_plan_meals: 0,
-                  water_liters: 3
-                },
-                biofeedback: ch.biofeedback || {
-                  energy: 4, sleep: 4, hunger: 3, recovery: 4,
-                  stress_level: 3, digestion_status: 'good', cycle_phase: null
-                },
-                pain_reports: ch.pain_reports || [],
-                analysis_output: ch.analysis_output || {},
-                is_deload_recommended: ch.analysis_output?.is_deload_recommended || false,
-                reflections: {
-                  nsv_note: 'الالتزام الكامل بالخطة',
-                  struggle_note: ch.coach_notes || 'لا يوجد صعوبات'
-                },
-                client_notes: ch.coach_notes || '',
-                lifestyle_variance: ch.lifestyle_variance || 'normal_routine',
-                bowel_regularity: ch.bowel_regularity || 'regular_daily',
-                sleep_stress_composite: ch.sleep_stress_composite || (ch.biofeedback?.sleep_stress_composite ?? 2),
-                menstrual_phase: ch.menstrual_phase || null,
-                next_week_travel: Boolean(ch.next_week_travel),
-                next_week_gym_available: ch.next_week_gym_available !== undefined ? Boolean(ch.next_week_gym_available) : true,
-                next_week_realistic_days: ch.next_week_realistic_days || null,
-                next_week_notes: ch.next_week_notes || '',
-                ai_analysis: {
-                  recommendation: ch.analysis_output?.coach_action || 'الاستمرار بالخطة الحالية مع مراقبة مؤشرات الأسبوع القادم.',
-                  status_badge: ch.analysis_status || 'ON_TRACK',
-                  warning: null,
-                  ...(ch.analysis_output || {})
-                },
-                baseline_macros: { calories: 2000, protein: 140, carbs: 220, fats: 60 },
-                suggested_reply: `أهلاً بحضرتك يا بطل، تسلم إيدك على تقرير الأسبوع والالتزام. استمر على نفس الخطة والتركيز، وبالتوفيق دائماً.`
-              };
-            });
-            setCheckinList(liveMapped);
-          }
+            return {
+              id: `CHK_${ch.id}`,
+              raw_id: ch.id,
+              user_id: ch.user_id,
+              client: {
+                id: `CL_${ch.user_id}`,
+                name: ch.user?.full_name || `مشترك #${ch.user?.client_code || ch.user_id}`,
+                code: ch.user?.client_code || String(ch.user_id),
+                package: String(ch.user?.subscription_package || 'MAX').toUpperCase().includes('MAX') ? 'MAX' : 'ELITE',
+                package_name: String(ch.user?.subscription_package || '').includes('MAX') ? 'باقة ماكس' : 'باقة إليت',
+                phone: ch.user?.phone_number || '',
+                country: { name: 'مصر' },
+                gender: 'male',
+                goal_type: 'FAT_LOSS',
+                target_goal: 'خسارة دهون',
+                start_weight: ch.average_weight_kg || 80,
+                target_weight: (ch.average_weight_kg || 80) - 10,
+                injuries: ch.user?.injuries || []
+              },
+              week_number: ch.week_number || 1,
+              checkin_number: ch.week_number || 1,
+              submission_date: new Date(ch.createdAt).toLocaleDateString('en-US'),
+              photos: currentWeekPhotos,
+              history: clientHistory,
+              metrics: {
+                previous_weight: ch.average_weight_kg || 0,
+                current_weight: ch.average_weight_kg || 0,
+                weight_change: ch.weight_change_kg || 0,
+                waist_previous: ch.waist_circumference_cm || 0,
+                waist_current: ch.waist_circumference_cm || 0,
+                waist_change: 0,
+                adherence: ch.nutrition_adherence_percent || 100,
+                workouts_completed: ch.workouts_completed || 0,
+                workouts_target: ch.workouts_scheduled || 4,
+                daily_steps_avg: 8000,
+                strength_trend: 'MAINTAINED',
+                strength_note: 'أداء مستقر',
+                off_plan_meals: 0,
+                water_liters: 3
+              },
+              biofeedback: ch.biofeedback || {
+                energy: 4, sleep: 4, hunger: 3, recovery: 4,
+                stress_level: 3, digestion_status: 'good', cycle_phase: null
+              },
+              pain_reports: ch.pain_reports || [],
+              analysis_output: ch.analysis_output || {},
+              is_deload_recommended: ch.analysis_output?.is_deload_recommended || false,
+              reflections: {
+                nsv_note: 'الالتزام الكامل بالخطة',
+                struggle_note: ch.coach_notes || 'لا يوجد صعوبات'
+              },
+              client_notes: ch.coach_notes || '',
+              lifestyle_variance: ch.lifestyle_variance || 'normal_routine',
+              bowel_regularity: ch.bowel_regularity || 'regular_daily',
+              sleep_stress_composite: ch.sleep_stress_composite || (ch.biofeedback?.sleep_stress_composite ?? 2),
+              menstrual_phase: ch.menstrual_phase || null,
+              next_week_travel: Boolean(ch.next_week_travel),
+              next_week_gym_available: ch.next_week_gym_available !== undefined ? Boolean(ch.next_week_gym_available) : true,
+              next_week_realistic_days: ch.next_week_realistic_days || null,
+              next_week_notes: ch.next_week_notes || '',
+              ai_analysis: {
+                recommendation: ch.analysis_output?.coach_action || 'الاستمرار بالخطة الحالية مع مراقبة مؤشرات الأسبوع القادم.',
+                status_badge: ch.analysis_status || 'ON_TRACK',
+                warning: null,
+                ...(ch.analysis_output || {})
+              },
+              baseline_macros: { calories: 2000, protein: 140, carbs: 220, fats: 60 },
+              suggested_reply: `أهلاً بحضرتك يا بطل، تسلم إيدك على تقرير الأسبوع والالتزام. استمر على نفس الخطة والتركيز، وبالتوفيق دائماً.`
+            };
+          });
+          setCheckinList(liveMapped);
         }
-      } catch (e) {
-        console.warn('Failed to load live checkins:', e);
       }
-    };
-    fetchLiveCheckins();
+    } catch (e) {
+      console.warn('Failed to load live checkins:', e);
+    }
   }, []);
+
+  useEffect(() => {
+    fetchLiveCheckins();
+  }, [fetchLiveCheckins]);
 
   // Read URL query params on mount or param change
   useEffect(() => {
@@ -1000,6 +1003,8 @@ export default function CheckinReviewDashboard() {
           title="مراجعة التقييمات الأسبوعية"
           description={`طابور مراجعة الشيك إن • ${checkinList.length} تقييم بانتظار المراجعة والاعتماد`}
           actions={(
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <RefreshButton onClick={fetchLiveCheckins} />
             <button 
               type="button" 
               onClick={() => navigate('/')}
@@ -1022,6 +1027,7 @@ export default function CheckinReviewDashboard() {
               <ChevronRight size={14} />
               <span>لوحة القيادة (Esc)</span>
             </button>
+            </div>
           )}
         />
 

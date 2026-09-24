@@ -16,6 +16,7 @@ import FlexibleRenewalModal from '../components/modals/FlexibleRenewalModal';
 import { PageHeader } from '@/shared/components/page-header';
 import { TierFilter } from '@/shared/components/tier-filter';
 import { TableSearch } from '@/shared/components/table-search';
+import { RefreshButton } from '@/shared/components/refresh-button';
 import { FormSection } from '@/shared/components/form-section';
 import NewClientQuickModal from '../components/modals/NewClientQuickModal';
 import { ClientCodeBadge, ClientPackageBadge, getClientTier } from '../utils/tierBadgeHelper';
@@ -254,6 +255,8 @@ export default function Customers() {
           title="قائمة المشتركين"
           description="متابعة حسابات المشتركين والباقات المعتمدة وإجراء المتابعات الفورية."
           actions={(
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <RefreshButton onClick={fetchClients} loading={loading} />
             <button
               type="button"
               onClick={() => setIsNewClientModalOpen(true)}
@@ -276,6 +279,7 @@ export default function Customers() {
               <Plus size={15} />
               <span>إضافة مشترك جديد +</span>
             </button>
+            </div>
           )}
         />
 

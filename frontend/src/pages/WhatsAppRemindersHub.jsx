@@ -5,6 +5,7 @@ import React, { useState, useMemo } from 'react';
 import { Send, MessageSquare, CheckCircle2, Copy, ExternalLink, Smartphone, ShieldAlert, Check, ChevronDown, ChevronRight, ChevronLeft, Dumbbell, Link } from 'lucide-react';
 import AdminLayout from '../components/layout/AdminLayout';
 import { TableSearch } from '@/shared/components/table-search';
+import { RefreshButton } from '@/shared/components/refresh-button';
 import { REMINDER_CATEGORIES, MESSAGE_TEMPLATES, compileReminderMessage, generateWhatsAppUrl } from '../utils/whatsappRemindersEngine';
 import { arabicSearchMatch } from '../utils/searchUtils';
 
@@ -22,74 +23,76 @@ export default function WhatsAppRemindersHub() {
 
   // Live Clients API
   const [clientsData, setClientsData] = useState([]);
-  const [_loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(true);
 
-  React.useEffect(() => {
-    const fetchClients = async () => {
-      try {
-        setLoading(true);
-        const res = await fetch(`${API_BASE}/api/v1/subscriptions/overview`);
-        if (res.ok) {
-          const data = await res.json();
-          if (data.clients) {
-            const enriched = data.clients.map((client) => {
-              const isMax = getClientTier(client) === 'MAX';
-              const checkinInterval = isMax ? 7 : 14;
-              let defaultCat = REMINDER_CATEGORIES.MOTIVATION;
-              let daysLeft = client.days_remaining || 0;
-              let lastCheckinDays = 0;
-              let triggerStatus = 'NORMAL';
+  // The loader sits outside the effect so the coach can ask for it again without reloading the page.
+  const fetchClients = React.useCallback(async () => {
+    try {
+      setLoading(true);
+      const res = await fetch(`${API_BASE}/api/v1/subscriptions/overview`);
+      if (res.ok) {
+        const data = await res.json();
+        if (data.clients) {
+          const enriched = data.clients.map((client) => {
+            const isMax = getClientTier(client) === 'MAX';
+            const checkinInterval = isMax ? 7 : 14;
+            let defaultCat = REMINDER_CATEGORIES.MOTIVATION;
+            let daysLeft = client.days_remaining || 0;
+            let lastCheckinDays = 0;
+            let triggerStatus = 'NORMAL';
 
-              if (client.checkinSubmissions && client.checkinSubmissions.length > 0) {
-                const latestCheckin = client.checkinSubmissions[0];
-                const checkinDate = new Date(latestCheckin.createdAt || latestCheckin.created_at || Date.now());
-                lastCheckinDays = Math.max(0, Math.round((Date.now() - checkinDate.getTime()) / (1000 * 60 * 60 * 24)));
-              } else if (client.createdAt) {
-                const joinDate = new Date(client.createdAt);
-                lastCheckinDays = Math.max(0, Math.round((Date.now() - joinDate.getTime()) / (1000 * 60 * 60 * 24)));
-              }
-
-              if (client.status === 'FROZEN') {
-                defaultCat = REMINDER_CATEGORIES.MOTIVATION;
-                triggerStatus = 'FROZEN';
-              } else if (client.status === 'EXPIRING_SOON' || (daysLeft > 0 && daysLeft <= 3)) {
-                defaultCat = REMINDER_CATEGORIES.RENEWAL_UPCOMING;
-                triggerStatus = 'EXPIRING_SOON';
-              } else if (client.status === 'EXPIRED' || daysLeft <= 0) {
-                defaultCat = REMINDER_CATEGORIES.RENEWAL_UPCOMING;
-                triggerStatus = 'EXPIRED';
-              } else if (lastCheckinDays > checkinInterval) {
-                defaultCat = REMINDER_CATEGORIES.CHECKIN_OVERDUE;
-                triggerStatus = 'CHECKIN_OVERDUE';
-              } else if (lastCheckinDays >= checkinInterval - 1) {
-                defaultCat = REMINDER_CATEGORIES.CHECKIN_DUE;
-                triggerStatus = 'CHECKIN_DUE';
-              }
-
-              return {
-                ...client,
-                isMax,
-                pkgLabel: isMax ? 'MAX' : 'ELITE',
-                defaultCat,
-                triggerStatus,
-                daysLeft,
-                lastCheckinDays
-              };
-            });
-            setClientsData(enriched);
-            if (enriched.length > 0) {
-               setSelectedClientId(enriched[0].client_code || enriched[0].id);
+            if (client.checkinSubmissions && client.checkinSubmissions.length > 0) {
+              const latestCheckin = client.checkinSubmissions[0];
+              const checkinDate = new Date(latestCheckin.createdAt || latestCheckin.created_at || Date.now());
+              lastCheckinDays = Math.max(0, Math.round((Date.now() - checkinDate.getTime()) / (1000 * 60 * 60 * 24)));
+            } else if (client.createdAt) {
+              const joinDate = new Date(client.createdAt);
+              lastCheckinDays = Math.max(0, Math.round((Date.now() - joinDate.getTime()) / (1000 * 60 * 60 * 24)));
             }
+
+            if (client.status === 'FROZEN') {
+              defaultCat = REMINDER_CATEGORIES.MOTIVATION;
+              triggerStatus = 'FROZEN';
+            } else if (client.status === 'EXPIRING_SOON' || (daysLeft > 0 && daysLeft <= 3)) {
+              defaultCat = REMINDER_CATEGORIES.RENEWAL_UPCOMING;
+              triggerStatus = 'EXPIRING_SOON';
+            } else if (client.status === 'EXPIRED' || daysLeft <= 0) {
+              defaultCat = REMINDER_CATEGORIES.RENEWAL_UPCOMING;
+              triggerStatus = 'EXPIRED';
+            } else if (lastCheckinDays > checkinInterval) {
+              defaultCat = REMINDER_CATEGORIES.CHECKIN_OVERDUE;
+              triggerStatus = 'CHECKIN_OVERDUE';
+            } else if (lastCheckinDays >= checkinInterval - 1) {
+              defaultCat = REMINDER_CATEGORIES.CHECKIN_DUE;
+              triggerStatus = 'CHECKIN_DUE';
+            }
+
+            return {
+              ...client,
+              isMax,
+              pkgLabel: isMax ? 'MAX' : 'ELITE',
+              defaultCat,
+              triggerStatus,
+              daysLeft,
+              lastCheckinDays
+            };
+          });
+          setClientsData(enriched);
+          if (enriched.length > 0) {
+             setSelectedClientId(enriched[0].client_code || enriched[0].id);
           }
         }
-      } catch (err) {
-        console.error('Failed to fetch clients:', err);
-      } finally {
-        setLoading(false);
       }
-    };
-    fetchClients();
+    } catch (err) {
+      console.error('Failed to fetch clients:', err);
+    } finally {
+      setLoading(false);
+    }
   }, []);
+
+  React.useEffect(() => {
+    fetchClients();
+  }, [fetchClients]);
 
   const filteredClients = useMemo(() => {
     return clientsData.filter(c => {
@@ -287,8 +290,8 @@ export default function WhatsAppRemindersHub() {
           </div>
 
           {/* Quick Metrics Strip (Interactive Filters) */}
-          {/* Quick Metrics Strip (Interactive Filters) */}
-          <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+          <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', alignItems: 'center' }}>
+            <RefreshButton onClick={fetchClients} loading={loading} />
             <div 
               onClick={() => setSelectedCategory(selectedCategory === REMINDER_CATEGORIES.CHECKIN_DUE ? 'ALL' : REMINDER_CATEGORIES.CHECKIN_DUE)}
               style={{ 
