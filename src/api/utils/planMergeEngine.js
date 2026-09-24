@@ -288,7 +288,7 @@ export function mergeAdaptedPlanIntoProgram(currentMasterProgram, adaptationResu
       : [];
 
   if (activeSessions.length > 0) {
-    const volumeAudit = auditWeeklyMuscleVolume(activeSessions);
+    const volumeAudit = auditWeeklyMuscleVolume(activeSessions, merged.client_profile?.experience_level || merged.training_program?.experience_level);
     const sessionDemand = calculateSessionDemand(activeSessions[0]?.exercises || []);
 
     merged._training_coupling = {

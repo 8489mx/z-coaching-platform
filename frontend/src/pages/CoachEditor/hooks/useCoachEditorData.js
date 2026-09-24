@@ -1398,10 +1398,10 @@ export function useCoachEditorData() {
   }, [activeSession?.exercises]);
 
   const weeklyVolumeAudit = useMemo(() => {
-    return auditWeeklyMuscleVolume(currentSessions || []);
+    return auditWeeklyMuscleVolume(currentSessions || [], program?.client?.experience_level);
   // مقصود: التأثير يعمل عند تغيّر مفتاحه فقط. إضافة الدوال للتبعيات تُعاد إنشاؤها كل رندر فتدخل في حلقة إعادة تشغيل.
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [currentSessions]);
+  }, [currentSessions, program?.client?.experience_level]);
 
   return {
     clientCodeParam,

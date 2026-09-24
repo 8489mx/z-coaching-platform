@@ -83,14 +83,20 @@ export function resolveMuscleGroupKey(exercise) {
   const rawCode = String(exercise.code || exercise.exercise_code || exercise.id || '').toUpperCase();
   const rawName = String(exercise.name || exercise.name_en || exercise.name_ar || '').toUpperCase();
 
-  // A push-up trains the chest, a close-grip push-up is there for the triceps, a reverse lunge is a
-  // quadriceps exercise and a glute bridge is for the glutes. None of them were recognised, so the
-  // weekly volume the coach is shown counted them as nothing: a plan's quadriceps read 6 sets when
-  // the lunges made them 12, and its triceps read zero.
-  if (rawCode.includes('CLOSE_GRIP_PUSH_UP')) return 'TRICEPS';
-  if (rawCode.includes('PUSH_UP')) return 'CHEST';
-  if (rawCode.includes('LUNGE') || rawCode.includes('SPLIT_SQUAT') || rawCode.includes('STEP_UP') || rawCode.includes('LEG_PRESS') || rawCode.includes('HACK_SQUAT')) return 'QUADS';
+  // The exercise the plan actually wrote decides, before any word in its name does. The names used
+  // to decide, and they were wrong often enough to matter: a chest-supported row counted as chest
+  // (its Arabic name says "للصدر"), a rear-delt raise and a face pull counted as hamstrings (their
+  // names say "الخلفية"), bench dips as chest, a pike push-up as chest, and a push-up, a close-grip
+  // push-up, a reverse lunge and a glute bridge as nothing at all.
+  if (rawCode.includes('ROW') || rawCode.includes('PULLDOWN') || rawCode.includes('PULL_UP') || rawCode.includes('CHIN_UP')) return 'BACK';
+  if (rawCode.includes('FACE_PULL') || rawCode.includes('REAR_DELT') || rawCode.includes('ROTATOR_CUFF') || rawCode.includes('LATERAL_RAISE') || rawCode.includes('PIKE_PUSH_UP') || rawCode.includes('OVERHEAD_PRESS') || rawCode.includes('SHOULDER_PRESS')) return 'SHOULDERS';
+  if (rawCode.includes('TRICEPS') || rawCode.includes('PUSHDOWN') || rawCode.includes('CLOSE_GRIP') || rawCode.includes('DIPS')) return 'TRICEPS';
+  if (rawCode.includes('PUSH_UP') || rawCode.includes('BENCH_PRESS') || rawCode.includes('CHEST_PRESS') || rawCode.includes('FLOOR_PRESS') || rawCode.includes('CHEST_FLY')) return 'CHEST';
+  if (rawCode.includes('LEG_CURL') || rawCode.includes('ROMANIAN') || rawCode.includes('NORDIC') || rawCode.includes('HAMSTRING')) return 'HAMSTRINGS';
+  if (rawCode.includes('LUNGE') || rawCode.includes('SPLIT_SQUAT') || rawCode.includes('STEP_UP') || rawCode.includes('LEG_PRESS') || rawCode.includes('HACK_SQUAT') || rawCode.includes('SQUAT') || rawCode.includes('LEG_EXTENSION')) return 'QUADS';
   if (rawCode.includes('GLUTE_BRIDGE') || rawCode.includes('HIP_THRUST') || rawCode.includes('KICKBACK')) return 'GLUTES';
+  if (rawCode.includes('CALF')) return 'CALVES';
+  if (rawCode.includes('CURL')) return 'BICEPS';
 
   if (rawGroup.includes('CHEST') || rawCode.includes('BENCH') || rawCode.includes('FLY') || rawName.includes('CHEST') || rawName.includes('صدر')) return 'CHEST';
   if (rawGroup.includes('BACK') || rawGroup.includes('LATS') || rawCode.includes('ROW') || rawCode.includes('PULLDOWN') || rawName.includes('ظهر')) return 'BACK';
@@ -227,10 +233,35 @@ export function identifyPeriWorkoutMeals(meals = []) {
   return { preIdx, postIdx, hasTaggedRoles: false };
 }
 
-export function auditWeeklyMuscleVolume(sessions = []) {
+/**
+ * The landmarks above are written for a lifter who has been training for a while. A beginner grows
+ * on less - the first year answers to about two thirds of that volume (Schoenfeld et al. 2017 read
+ * the dose-response in trained lifters; untrained gains saturate lower) - so a beginner's week was
+ * being marked short against a table that was never his. Everything else keeps the same numbers.
+ */
+const BEGINNER_VOLUME_FACTOR = 0.65;
+
+export function volumeLandmarksFor(experienceLevel = "INTERMEDIATE") {
+  const level = String(experienceLevel || "").toUpperCase();
+  if (level !== "BEGINNER" && level !== "NOVICE") return MUSCLE_VOLUME_LANDMARKS;
+  const scaled = {};
+  for (const [key, landmark] of Object.entries(MUSCLE_VOLUME_LANDMARKS)) {
+    scaled[key] = Object.freeze({
+      ...landmark,
+      mev: Math.max(3, Math.round(landmark.mev * BEGINNER_VOLUME_FACTOR)),
+      mav_min: Math.max(4, Math.round(landmark.mav_min * BEGINNER_VOLUME_FACTOR)),
+      mav_max: Math.max(6, Math.round(landmark.mav_max * BEGINNER_VOLUME_FACTOR)),
+      mrv: Math.max(8, Math.round(landmark.mrv * BEGINNER_VOLUME_FACTOR)),
+    });
+  }
+  return Object.freeze(scaled);
+}
+
+export function auditWeeklyMuscleVolume(sessions = [], experienceLevel = "INTERMEDIATE") {
+  const landmarks = volumeLandmarksFor(experienceLevel);
   const volumeMap = {};
 
-  Object.keys(MUSCLE_VOLUME_LANDMARKS).forEach(k => {
+  Object.keys(landmarks).forEach(k => {
     volumeMap[k] = 0;
   });
 
@@ -248,7 +279,7 @@ export function auditWeeklyMuscleVolume(sessions = []) {
   const warnings = [];
 
   for (const [key, sets] of Object.entries(volumeMap)) {
-    const landmark = MUSCLE_VOLUME_LANDMARKS[key];
+    const landmark = landmarks[key];
     if (!landmark) continue;
 
     let status = 'OPTIMAL_MAV';

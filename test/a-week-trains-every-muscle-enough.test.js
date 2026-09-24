@@ -68,3 +68,41 @@ test("a muscle with no direct sets says so instead of reading as optimal", () =>
   assert.equal(audit.analysis.GLUTES.status, "NOT_TRAINED_DIRECTLY");
   assert.match(audit.analysis.GLUTES.status_label_ar, /غير مباشر/);
 });
+
+test("every exercise is counted against the muscle it actually trains", () => {
+  const cases = [
+    ["CHEST_SUPPORTED_ROW", "BACK"],
+    ["LAT_PULLDOWN", "BACK"],
+    ["FACE_PULL", "SHOULDERS"],
+    ["DUMBBELL_REAR_DELT_RAISE", "SHOULDERS"],
+    ["PIKE_PUSH_UP", "SHOULDERS"],
+    ["BENCH_DIPS_BODYWEIGHT", "TRICEPS"],
+    ["CLOSE_GRIP_PUSH_UP", "TRICEPS"],
+    ["PUSH_UP", "CHEST"],
+    ["BARBELL_BENCH_PRESS", "CHEST"],
+    ["SEATED_LEG_CURL", "HAMSTRINGS"],
+    ["DUMBBELL_ROMANIAN_DEADLIFT", "HAMSTRINGS"],
+    ["DUMBBELL_REVERSE_LUNGE", "QUADS"],
+    ["BULGARIAN_SPLIT_SQUAT", "QUADS"],
+    ["GLUTE_BRIDGE", "GLUTES"],
+    ["DUMBBELL_BICEPS_CURL", "BICEPS"],
+    ["STANDING_CALF_RAISE", "CALVES"],
+  ];
+  for (const [code, muscle] of cases) {
+    assert.equal(resolveMuscleGroupKey({ exercise_code: code }), muscle, code);
+  }
+});
+
+test("a beginner's week is judged by a beginner's table", async () => {
+  const { volumeLandmarksFor } = await import("../src/api/utils/trainingNutritionCoupling.js");
+  const intermediate = volumeLandmarksFor("INTERMEDIATE");
+  const beginner = volumeLandmarksFor("BEGINNER");
+  assert.equal(intermediate.CHEST.mev, 8);
+  assert.ok(beginner.CHEST.mev < intermediate.CHEST.mev, `${beginner.CHEST.mev} against ${intermediate.CHEST.mev}`);
+  assert.ok(beginner.CHEST.mev >= 3, "a beginner still trains the muscle");
+  // The same week reads short against the wrong table and fine against its own.
+  const week = weekOf({ days: 3, experience: "beginner" });
+  const strict = auditWeeklyMuscleVolume(week, "INTERMEDIATE").warnings.length;
+  const fair = auditWeeklyMuscleVolume(week, "BEGINNER").warnings.length;
+  assert.ok(fair < strict, `${fair} warnings against ${strict}`);
+});

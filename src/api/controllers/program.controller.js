@@ -1574,7 +1574,7 @@ export const updateCustomProgram = async (req, res) => {
           : [];
 
       if (activeSessions.length > 0) {
-        const volumeAudit = auditWeeklyMuscleVolume(activeSessions);
+        const volumeAudit = auditWeeklyMuscleVolume(activeSessions, program_data.client?.experience_level || program_data.training?.experience_level);
         const sessionDemand = calculateSessionDemand(activeSessions[0]?.exercises || []);
 
         const targetCalories = Number(program_data.nutrition?.targets?.calories || program_data.nutrition?.energy_target || 2000);
