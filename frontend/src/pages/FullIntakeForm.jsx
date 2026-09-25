@@ -1228,6 +1228,91 @@ export default function FullIntakeForm() {
                   </div>
                 )}
 
+                {/* A diagnosed heart condition is served only with the cardiologist's written clearance
+                    and without a recent event (src/api/services/serviceScope.js). */}
+                {medSelected.includes('heart_condition') && (() => {
+                  const heart = medConditions.heart || {};
+                  const events = Array.isArray(heart.recent_events) ? heart.recent_events : [];
+                  const setHeart = (patch) => updateNested('medical_conditions', 'heart', { ...heart, ...patch });
+                  const toggleEvent = (key) => {
+                    const next = key === 'none'
+                      ? ['none']
+                      : (events.includes(key) ? events.filter((e) => e !== key) : [...events.filter((e) => e !== 'none'), key]);
+                    setHeart({ recent_events: next });
+                  };
+                  return (
+                    <div style={{ background: '#FEF2F2', border: '1px solid #FECACA', borderRadius: '10px', padding: '12px 14px', marginBottom: '12px' }}>
+                      <strong style={{ display: 'block', fontSize: '12px', color: '#991B1B', marginBottom: '8px', fontWeight: 800 }}>
+                        مرض القلب: محتاجين نطمن عليك الأول
+                      </strong>
+                      <label style={{ display: 'block', fontSize: '11.5px', color: '#0F172A', marginBottom: '6px', fontWeight: 700 }}>
+                        معاك تصريح مكتوب من دكتور القلب بممارسة الرياضة؟
+                      </label>
+                      <div style={{ display: 'flex', gap: '8px', marginBottom: '12px' }}>
+                        {[{ value: 'YES', label: 'أيوه معايا' }, { value: 'NO', label: 'لأ مش معايا' }].map((option) => (
+                          <button
+                            key={option.value}
+                            type="button"
+                            onClick={() => setHeart({ doctor_clearance: option.value })}
+                            style={{
+                              padding: '7px 16px',
+                              borderRadius: '20px',
+                              fontSize: '11.5px',
+                              fontWeight: 700,
+                              cursor: 'pointer',
+                              border: heart.doctor_clearance === option.value ? '1px solid #0F172A' : '1px solid #CBD5E1',
+                              background: heart.doctor_clearance === option.value ? '#0F172A' : '#FFFFFF',
+                              color: heart.doctor_clearance === option.value ? '#FFFFFF' : '#475569',
+                              transition: 'all 0.15s ease'
+                            }}
+                          >
+                            {option.label}
+                          </button>
+                        ))}
+                      </div>
+                      <p style={{ fontSize: '11px', color: '#7F1D1D', margin: '0 0 6px 0', lineHeight: 1.5 }}>
+                        ارفع صورة التصريح مع تقاريرك في آخر الخطوة دي، والكوتش هيشوفها قبل ما يبعتلك الخطة.
+                      </p>
+                      <label style={{ display: 'block', fontSize: '11.5px', color: '#0F172A', margin: '10px 0 6px 0', fontWeight: 700 }}>
+                        حصلك أي حاجة من دول في آخر 6 شهور؟
+                      </label>
+                      <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
+                        {[
+                          { key: 'none', label: 'ولا حاجة من دول' },
+                          { key: 'heart_attack', label: 'جلطة في القلب' },
+                          { key: 'stent_catheter', label: 'قسطرة أو دعامة' },
+                          { key: 'open_heart_surgery', label: 'عملية قلب مفتوح' },
+                          { key: 'heart_failure', label: 'هبوط أو ضعف في عضلة القلب' },
+                          { key: 'arrhythmia_pacemaker', label: 'عدم انتظام ضربات أو بطارية' },
+                          { key: 'chest_pain_on_effort', label: 'ألم في الصدر مع المجهود' },
+                        ].map((event) => {
+                          const on = events.includes(event.key);
+                          return (
+                            <button
+                              key={event.key}
+                              type="button"
+                              onClick={() => toggleEvent(event.key)}
+                              style={{
+                                padding: '7px 14px',
+                                borderRadius: '20px',
+                                fontSize: '11.5px',
+                                fontWeight: 700,
+                                cursor: 'pointer',
+                                border: on ? '1px solid #0F172A' : '1px solid #CBD5E1',
+                                background: on ? '#0F172A' : '#FFFFFF',
+                                color: on ? '#FFFFFF' : '#475569',
+                                transition: 'all 0.15s ease'
+                              }}
+                            >
+                              {event.label}
+                            </button>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  );
+                })()}
+
                 {/* Kidney disease: the latest potassium result decides whether potassium-rich foods are limited. */}
                 {medSelected.includes('renal') && (
                   <div style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', borderRadius: '8px', padding: '12px 14px', marginBottom: '12px' }}>

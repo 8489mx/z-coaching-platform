@@ -55,10 +55,20 @@ export function assessServiceScope(intake) {
     reasons.push("أمراض الكلى والغسيل الكلوي: البروتين والأملاح بتتحدد بتحاليل ومتابعة دكتور الكلى، فالخدمة مش بتشملها.");
   }
 
+  // Owner's decision (2026-09-25): a diagnosed heart condition is served when the client brings his
+  // cardiologist's written clearance to exercise (we ask for no labs). It stays outside the service
+  // without that clearance, or with an event that needs the cardiologist first.
   const heart = conditions.some((condition) => condition.includes("heart") || condition.includes("cardiac"));
   if (heart) {
-    cases.push("HEART_CONDITION");
-    reasons.push("مرض القلب المشخص: التمرين نفسه محتاج تصريح من دكتور القلب ورسم قلب بمجهود، فالخدمة مش بتشملها.");
+    const answers_heart = medical.heart && typeof medical.heart === "object" ? medical.heart : {};
+    const cleared = String(answers_heart.doctor_clearance || "").toUpperCase() === "YES";
+    const events = listOf(answers_heart.recent_events).filter((event) => event && event !== "none");
+    if (!cleared || events.length > 0) {
+      cases.push("HEART_CONDITION");
+      reasons.push(!cleared
+        ? "مرض القلب المشخص: لازم تصريح مكتوب من دكتور القلب بممارسة الرياضة قبل أي خطة، والعميل مامعهوش."
+        : "مرض القلب المشخص مع حالة محتاجة دكتور القلب الأول (جلطة أو قسطرة أو عملية أو هبوط عضلة أو عدم انتظام ضربات أو ألم صدر مع المجهود).");
+    }
   }
 
   const weight = Number(answers.weight_kg);

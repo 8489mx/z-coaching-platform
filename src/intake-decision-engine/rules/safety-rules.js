@@ -135,12 +135,28 @@ export function evaluateDangerousSymptoms(input) {
 // plate. The intake collects neither, and the plates that protect the stomach cannot carry the
 // calories a body of that size is calculated to need - the plan says so in numbers and waits for
 // a person to decide.
+// A heart condition reaches the engine only with the cardiologist's clearance (serviceScope):
+// the coach still confirms he saw that paper before the plan is published (ACSM preparticipation
+// screening, Riebe 2015).
+const CLEARANCE_BEFORE_EXERCISE_CONDITIONS = new Set(["HEART_CONDITION"]);
 const MANDATORY_MEDICAL_REVIEW_CONDITIONS = new Set(["LIVER_CONDITION", "BARIATRIC_SURGERY"]);
 
 export function evaluateMedicalConditions(input) {
   const result = emptyRuleResult();
   input.medical.conditions.forEach((condition, index) => {
     const sourcePath = `medical.conditions[${index}]`;
+    if (CLEARANCE_BEFORE_EXERCISE_CONDITIONS.has(condition.conditionCode)) {
+      result.statusCandidates.push(statusCandidate(PlanStatus.MEDICAL_REVIEW_REQUIRED, "HEART_CLEARANCE_MUST_BE_SEEN"));
+      result.reviewFlags.push(
+        reviewFlag(
+          "HEART_CLEARANCE_MUST_BE_SEEN",
+          Scope.GLOBAL,
+          ReviewLevel.MEDICAL,
+          "Diagnosed heart condition: read the cardiologist's clearance yourself before approving this plan.",
+          `${sourcePath}.conditionCode`,
+        ),
+      );
+    }
     if (MANDATORY_MEDICAL_REVIEW_CONDITIONS.has(condition.conditionCode)) {
       result.statusCandidates.push(statusCandidate(PlanStatus.MEDICAL_REVIEW_REQUIRED, "ORGAN_CONDITION_REQUIRES_MEDICAL_REVIEW"));
       result.reviewFlags.push(

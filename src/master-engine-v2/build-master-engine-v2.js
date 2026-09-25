@@ -868,6 +868,11 @@ export function calculateUniversalNutritionTargets(canonicalIntake, evaluationCo
       energy_reference_weight_kg: referenceWeight,
       energy_balance_steps: balanceSteps,
       energy_balance_note_ar: energyBalanceNoteAr(),
+      // A heart client is served with his cardiologist's clearance: the plate follows the same
+      // advice his doctor gives (AHA 2021 dietary guidance - less salt, less saturated fat).
+      heart_diet_note_ar: conditionsList.some((c) => c.includes("HEART") || c.includes("CARDIAC"))
+        ? "مريض قلب: خفّف الملح في الطبخ وعلى السفرة (أقل من معلقة صغيرة ملح في اليوم)، وقلّل الدهون المشبعة (السمن والزبدة واللحوم الدسمة)، وخلي الدهون من زيت الزيتون والمكسرات والسمك. ولو دكتوره ادّاه تعليمات أكل، تعليماته هي الأصل."
+        : null,
       max_protein_per_kg: kidneyProteinCapped ? (biomarkerAnalysis?.dietary_modifications?.protein_cap_g_per_kg || null) : null,
       max_protein_g: kidneyProteinCapped ? proteinG : null,
       rationale_ar: kidneyProteinCapped ? `تحديد سقف البروتين عند ${proteinPerKg} جم/كجم لحماية وظائف الكلى بناءً على الفحوصات المخبرية` : null,
@@ -1011,22 +1016,30 @@ export function buildMasterEngineV2(inputs) {
     rawMedical.hasAsthma === true ||
     rawConditions.some(c => c.includes("ASTHMA") || c.includes("RESPIRATORY"));
 
+  // Blood pressure and heart conditions take the same road asthma does here: intervals out,
+  // steady moderate cardio in (ACSM/AHA; the same rule the cardio prescription engine applies).
+  const hasCardiovascular = rawConditions.some((c) => c.includes("HEART") || c.includes("CARDIAC") || c.includes("HYPERTENSION"));
+  const noHighIntensity = hasAsthma || hasCardiovascular;
+  const HIGH_INTENSITY_NOTE_AR = hasAsthma
+    ? CLINICAL_GUIDELINES.RESPIRATORY.SAFETY_GUIDANCE_AR
+    : "توجيه سريري لمرضى الضغط والقلب: الكارديو معتدل ومستقر (Zone 2) بدل الفترات عالية الشدة، ولو حسيت بأي ألم في الصدر أو دوخة أو ضيق نفس وقف فوراً وكلم دكتورك.";
+
   const enrichedCardioSessions = (baseCardioProgram.weekly_schedule?.sessions || []).map(
     (session) => {
       const isHiit = String(session.modality_type || "").toUpperCase().includes("HIIT");
-      const safeModality = (hasAsthma && isHiit) ? "LISS" : session.modality_type;
+      const safeModality = (noHighIntensity && isHiit) ? "LISS" : session.modality_type;
       return Object.freeze({
         ...session,
         modality_type: safeModality,
-        clinical_guidance_ar: hasAsthma ? CLINICAL_GUIDELINES.RESPIRATORY.SAFETY_GUIDANCE_AR : null,
+        clinical_guidance_ar: noHighIntensity ? HIGH_INTENSITY_NOTE_AR : null,
         heart_rate_target: {
           estimated_hr_max: estimatedMaxHr,
           zone: "ZONE_2",
           target_range_bpm: `${zone2LowBpm} - ${zone2HighBpm} BPM`,
           target_low_bpm: zone2LowBpm,
           target_high_bpm: zone2HighBpm,
-          guidance_ar: hasAsthma
-            ? `${CLINICAL_GUIDELINES.RESPIRATORY.SAFETY_GUIDANCE_AR} معدل نبضات القلب المستهدف: بين ${zone2LowBpm} و ${zone2HighBpm} نبضة/دقيقة.`
+          guidance_ar: noHighIntensity
+            ? `${HIGH_INTENSITY_NOTE_AR} معدل نبضات القلب المستهدف: بين ${zone2LowBpm} و ${zone2HighBpm} نبضة/دقيقة.`
             : `معدل نبضات القلب المستهدف أثناء جلسة الكارديو: بين ${zone2LowBpm} و ${zone2HighBpm} نبضة/دقيقة لحرق الدهون بكفاءة.`,
         },
       });
@@ -1037,9 +1050,10 @@ export function buildMasterEngineV2(inputs) {
     ...baseCardioProgram,
     clinical_guardrails: {
       asthma_guard_active: Boolean(hasAsthma),
-      hiit_banned: Boolean(hasAsthma),
-      preferred_modality: hasAsthma ? "LISS_ZONE_2" : null,
-      guidance_ar: hasAsthma ? CLINICAL_GUIDELINES.RESPIRATORY.SAFETY_GUIDANCE_AR : null,
+      cardiovascular_guard_active: Boolean(hasCardiovascular),
+      hiit_banned: Boolean(noHighIntensity),
+      preferred_modality: noHighIntensity ? "LISS_ZONE_2" : null,
+      guidance_ar: noHighIntensity ? HIGH_INTENSITY_NOTE_AR : null,
     },
     weekly_schedule: Object.freeze({
       ...baseCardioProgram.weekly_schedule,
