@@ -169,7 +169,13 @@ export default function IntakeSubmissions() {
         window.open(`/coach/editor?user_id=${lookup}&submission_id=${submission.id}`, '_blank');
         fetchSubmissions();
       } else {
-        alert(data.error || 'فشل توليد مسودة الخطة');
+        // A case outside the service comes back with its reasons and what to tell the client.
+        const reasons = Array.isArray(data.reasons_ar) ? data.reasons_ar : [];
+        alert([
+          data.error || 'فشل توليد مسودة الخطة',
+          ...reasons.map((reason) => `- ${reason}`),
+          data.hint_ar || '',
+        ].filter(Boolean).join('\n\n'));
       }
     } catch {
       alert('خطأ أثناء توليد المسودة');
