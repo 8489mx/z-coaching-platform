@@ -103,11 +103,14 @@ test("a diagnosed heart condition is outside the service", () => {
   assert.match(scope.reasons_ar[0], /القلب/);
 });
 
-test("too light for a weight-loss goal is refused; a light client who wants to build is served", () => {
+// Changed 2026-09-25 by the owner: only severe thinness (BMI under 16) is refused. A thin client
+// asking to lose weight is served and the engine moves the goal to building muscle with a note for
+// the coach (test/underweight-goes-to-the-coach.test.js).
+test("severe thinness is refused; a thin client is served whatever the goal", () => {
   const at = (kg, goal) => assessServiceScope({ ...base(), weight_kg: String(kg), height_cm: "165", primary_goal: goal });
   assert.equal(at(42, "fat_loss").supported, false, "BMI 15.4 losing fat");
   assert.equal(at(42, "lean_bulk").supported, false, "BMI 15.4 is severe thinness whatever the goal");
-  assert.equal(at(49, "fat_loss").supported, false, "BMI 18 losing fat");
+  assert.equal(at(49, "fat_loss").supported, true, "BMI 18 losing fat: the coach talks to him");
   assert.equal(at(49, "lean_bulk").supported, true, "BMI 18 building muscle is exactly our client");
   assert.equal(at(60, "fat_loss").supported, true);
 });

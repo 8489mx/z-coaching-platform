@@ -65,9 +65,12 @@ export function assessServiceScope(intake) {
   const heightM = Number(answers.height_cm) / 100;
   const bmi = heightM > 0 && weight > 0 ? weight / (heightM * heightM) : null;
   const goal = String(answers.primary_goal || "").toLowerCase();
-  if (bmi !== null && (bmi < SEVERE_UNDERWEIGHT_BMI || (bmi < UNDERWEIGHT_BMI && WEIGHT_LOSS_GOALS.has(goal)))) {
+  // Owner's decision (2026-09-25): only severe thinness is outside the service. A thin client who
+  // asks to lose weight is served - the engine moves the goal to building muscle and the coach is
+  // told why (goal_redirect in build-master-engine-v2), so he can talk to the client.
+  if (bmi !== null && bmi < SEVERE_UNDERWEIGHT_BMI) {
     cases.push("UNDERWEIGHT");
-    reasons.push(`الوزن تحت الطبيعي (مؤشر كتلة الجسم ${bmi.toFixed(1)})${WEIGHT_LOSS_GOALS.has(goal) ? " مع هدف نزول وزن" : ""}: الحالة دي محتاجة تقييم طبي وتغذية علاجية الأول، مش خطة تنشيف.`);
+    reasons.push(`الوزن تحت الطبيعي بشكل شديد (مؤشر كتلة الجسم ${bmi.toFixed(1)}): الحالة دي محتاجة تقييم طبي وتغذية علاجية الأول، مش خطة تدريب.`);
   }
 
   return { supported: reasons.length === 0, reasons_ar: reasons, cases };

@@ -331,6 +331,19 @@ export function calculateUniversalNutritionTargets(canonicalIntake, evaluationCo
     };
     primaryGoal = chosen;
   }
+  // A body under BMI 18.5 asking to lose weight: never a deficit on a body that light. The goal
+  // becomes building muscle and the coach reads why, so he can talk to the client and change it
+  // (WHO thinness; severe thinness under 16 is refused earlier, api/services/serviceScope.js).
+  const UNDERWEIGHT_BMI = 18.5;
+  if (bmiNow < UNDERWEIGHT_BMI && (primaryGoal === "FAT_LOSS" || primaryGoal === "BODY_RECOMPOSITION")) {
+    goalRedirect = {
+      from: primaryGoal,
+      to: "MUSCLE_GAIN",
+      coach_review_required: true,
+      reason_ar: `وزن المتدرب تحت الطبيعي (مؤشر كتلة الجسم ${bmiNow.toFixed(1)}) وطلب نزول وزن؛ النظام حوّل الهدف لبناء عضل من غير أي عجز حراري. كلّمه: لو الهدف اتكتب غلط عدّله من المحرر، ولو مصمم على النزول وجّهه لدكتور الأول.`,
+    };
+    primaryGoal = "MUSCLE_GAIN";
+  }
   if ((primaryGoal === "MUSCLE_GAIN" || primaryGoal === "LEAN_BULK") && tooMuchFatToBulk) {
     goalRedirect = {
       from: primaryGoal,
