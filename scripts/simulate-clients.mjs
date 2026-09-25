@@ -717,16 +717,16 @@ async function runSimulation() {
       });
       reportData.invariants.push({ client: tDef.code, name: "حد السعرات للأمان الأيضي (>=1200)", passed: calOk });
     } else if (tDef.code === "SIM_03") {
-      // سقف البروتين لا يتجاوز 0.8 جم لكل كجم
-      const maxAllowedProtein = Math.round(80 * 0.8 * 10) / 10; // 64g
-      const actualProtein = targetMacros.protein_g;
-      const renalSafe = actualProtein <= maxAllowedProtein;
+      // مرض الكلى خارج نطاق الخدمة (src/api/services/serviceScope.js): المطلوب رفض مهذب بلا خطة،
+      // مش خطة بسقف بروتين. الثابت بقى: الباب اتقفل في التوليد والنشر، ومفيش برنامج نشط للعميل.
+      const refusedSteps = traineeReport.steps.filter((step) => String(step.status) === "422");
+      const refusedProperly = refusedSteps.length >= 2 && !activeProgData?.master_program;
       traineeReport.invariants.push({
-        name: "سقف البروتين لمرضى الكلى لا يتجاوز 0.8 جم/كجم (<= 64 جم لوزن 80 كجم)",
-        passed: renalSafe,
-        actual: `بروتين الخطة: ${actualProtein} جم (الحد الأقصى المسموح: ${maxAllowedProtein} جم)`,
+        name: "مرض الكلى: النظام يرفض الحالة ولا يطلع لها خطة (رفض مهذب مع سبب)",
+        passed: refusedProperly,
+        actual: `خطوات مرفوضة برمز 422: ${refusedSteps.length} | برنامج نشط: ${activeProgData?.master_program ? "موجود" : "لا يوجد"}`,
       });
-      reportData.invariants.push({ client: tDef.code, name: "سقف بروتين الكلى (<=0.8 جم/كجم)", passed: renalSafe });
+      reportData.invariants.push({ client: tDef.code, name: "رفض حالة الكلى بلا خطة", passed: refusedProperly });
     } else if (tDef.code === "SIM_05") {
       // 1. لا سكريات مركزة
       const allFoodCodes = meals.flatMap((m) =>
