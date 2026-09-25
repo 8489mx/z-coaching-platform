@@ -9,7 +9,7 @@ Everything below is merged into `main` and pushed to GitHub (`8489mx/z-coaching-
 
 1. Read `AI_RULES.md` (how any AI tool must work and prove its work), `CLAUDE.md` (standing iron rules) and this file. Old docs are in `docs/archive/` (history only).
 2. Run the full check and confirm the baseline before touching anything:
-   - `npm.cmd test` (Windows) — expected: node:test **1944/1944 pass**, vitest **47/47 pass**, lint 0.
+   - `npm.cmd test` (Windows) — expected: node:test **2015/2015 pass**, vitest **47/47 pass**, lint 0.
    - In a git worktree: link `node_modules` and `frontend/node_modules` to `D:/zcc`'s (junctions), copy `.env` (ignored), and build the frontend once — `test/hostinger-deployment-readiness.test.js` fails without `frontend/dist`.
    - `cd frontend && npm.cmd run build` — expected: builds.
    - Tests need the env: they load `D:/zcc/.env` (never print its values). Scripts: `node --env-file=.env <script>`.
@@ -217,6 +217,26 @@ Owner decision: **no Flutter work until the engine has no error that can stop a 
 - Checked and not changed: backend imports 12 files from `frontend/src` (intentional single source, guarded by tests - a shared/ folder is a large refactor); main web bundle 722 kB (197 kB gzip) - client pages stay in it by an earlier decision; lupini has no swap by design (and leaves the plan when disliked); production audit needs the VPS (4.3).
 - Verification: 1944/1944 + 47/47, lint 0, build OK, stress 0 violations, journeys 6/6, simulation 100%.
 
+## 3n. Fourteenth round (2026-09-23/24, the other Claude account) — 28 commits, documented here afterwards
+
+That session did not update this file or `AI_RULES.md` at all; this section was written on 2026-09-25 from its commits, after re-running every check.
+
+- **Service scope (new `src/api/services/serviceScope.js`)**: pregnancy, kidney disease, a diagnosed heart condition and a body too light were refused with 422 `OUTSIDE_SERVICE_SCOPE` at both plan doors (`76140b2`, `43047ce`, `323a384`, `d5d3311`, `b39d1eb`). The kidney and pregnancy branches left the engines with them; the protein cap the **biomarker** engine asks for (a client we do follow whose bloodwork shows kidney trouble) stayed, and check-ins still honour it. Bariatric surgery became a condition that waits for medical review (`94a60fc`).
+- **Demo data out of the coach's screens (`8946b8f`, `1dc9a13`)**: the check-in review opened on fifteen made-up clients and the editor filled a real client's missing meals from a demo plan - a coach could review and approve someone who does not exist. Removed, with the sidebar badge counting only forms still waiting.
+- **Nutrition**: breakfast built to fit its target instead of fixed amounts (`08fdbce`), the snack is a snack and can be swapped (`d33ebf5`, `911cae9`), five meals are five real meals (`cdcaea3`), the day is shared the way a day is eaten (`331c0ea`), a plate is the meal it was planned as (`5234da3`), a fat item can be swapped (`c684d91`), the diabetic potato limit holds (`f53eee1`), and "3 meals + snack" finally gets the snack (`161d73f`).
+- **Training**: a week trains every muscle and the volume the coach reads is the volume he gets (`e6b27c4`), the volume audit counts the right muscle and judges a beginner by a beginner's table (0.65 of the trained-lifter landmarks, `398e498`), the glutes get a movement of their own (`756a055`).
+- **Coach dashboard**: one address per screen, one search box, one filter, one refresh control, money actions in a row, empty cards that step back (`8b7fdc3`, `a671c7e`, `156aad4`, `1bc2210`, `58c148d`, `c43a519`, `d264cef`), and client links that open the right page with the client's code (`fca3e44`).
+- Checked on 2026-09-25: 1999/1999 + 47/47, lint 0, build OK, stress 0 violations, journeys 6/6 - but `scripts/simulate-clients.mjs` ended "[فشل] فشل 1 ثوابت": it still asked the kidney client for a plan. That script was not run after the scope change (fixed in 3o).
+
+## 3o. Fifteenth round (2026-09-25) — owner's decisions after reading the review — merged + pushed
+
+- `0478fec` **Underweight**: only severe thinness (BMI under 16) stays outside the service. A thin client asking to lose weight is served - the goal moves to building muscle with no deficit and the coach reads why, so he can talk to the client.
+- `51e493c` **A heart condition is served with the cardiologist's written clearance** (owner's decision). The form asks for the clearance and for recent events (heart attack, stent, open-heart surgery, heart failure, arrhythmia or pacemaker, chest pain on exertion); without the clearance or with an event the case stays outside the service. A served heart client's plan waits for medical review (`HEART_CLEARANCE_MUST_BE_SEEN`). **Bug found on the way**: high-intensity cardio only left the plan for asthma - heart and blood pressure clients kept `hiit_banned: false` and their sessions unconverted; now they take the same road. Plus a heart plate note for the coach (AHA 2021).
+- `7ad44e1` **Trainees from 12 years old** (owner's decision), with the age's own rules: the guardian's name, phone and consent under 18 (required, and the decision engine then asks for coach review instead of blocking); energy from the FAO/WHO/UNU (Schofield) equations for 10-18 and never the adult body-fat formulas; never a deficit on a growing body (a fat-loss goal becomes maintenance); a coach note with the NSCA youth rules (supervision, technique, never to failure, no maximal attempts). Under 12 is outside the service. The adult thinness cut-offs now apply to adults only - a BMI of 17-18 is normal for a child.
+- `78a4372` The ten-client simulation expects the kidney refusal instead of a plan; the run is back to 100%.
+- `29a5440` The coach reads the refusal reasons and the hint of what to tell the client; the dead potassium question left the form (kidney is outside the service, and no engine read it - searched everywhere).
+- Verification: 2015/2015 + 47/47, lint 0, build OK, stress 0 violations, journeys 6/6, simulation 100%.
+
 ## 4. Open work (in priority order)
 
 ### 4.1 Goal choice and plain names — DONE in `653804c` (kept below for context)
@@ -231,6 +251,11 @@ Suggested approach (confirm with owner first, show proposed Arabic labels):
 - Coach screens aligned in `43592c3`; `mobile_app/lib` has no goal labels (searched, zero matches). Live swaps apply the diabetic potato limit (3c).
 
 ### 4.0 WHAT IS STILL OPEN (read this list first)
+
+**Service scope (owner, 2026-09-25) - what the platform takes and refuses, for the website too:**
+- Refused, no plan: pregnancy; kidney disease or dialysis; a heart condition without the cardiologist’s written clearance, or with a recent event; BMI under 16; under 12 years old; under 18 without the guardian’s consent; a client who did not answer the safety questions.
+- Served, plan held for a person to confirm: liver disease; bariatric surgery; a heart condition with clearance; dangerous symptoms on exertion; breastfeeding or a recent birth; an injury red flag; anything unstable or unclassified; every trainee under 18.
+- Served with the engine’s own adjustments: type 2 diabetes and insulin resistance, blood pressure, thyroid, gout, IBS and reflux, favism, PCOS, asthma, coeliac disease and food allergies, joint injuries.
 1. **Look at the new screens in a real browser** (needs the backend restarted on the latest code + the owner signed in and the health-data consent ticked by the owner): coach editor notes (balance, potassium, kidney energy, oil), cardio picker, exercise swap warning, web client swap windows (food: same taste group/close value/protein powder note), intake training step (training age question) and the potassium field.
 2. **Flutter app** — on hold by the owner's decision until the engine is clean. When resumed (needs the Flutter SDK + a device): display `item.note` (protein powder note), show the swap-food 409 `error`, verify swaps on a device. Also (verified 2026-09-22 in the Dart source): `checkin_service.dart:41` empty catch - an unreadable photo sends the check-in without it silently; `workout_service.dart:65` - any non-success reply (a server 500 too) goes to the offline queue as if the network failed; empty catches also in `local_storage.dart` 82/106, `auth_service.dart` 83, `notification_service.dart` 18, `nutrition_screen.dart` 398.
 3. **Production data audit**: must run on the VPS itself (see 3d): `node --env-file=.env scripts/audit-grown-cycles.mjs` (read-only). The owner is not technical — walk them through it or get server access. Repair only with backup + plan + owner approval.
