@@ -1,5 +1,30 @@
 # دليل النشر والتشغيل الشامل على استضافة هوستنجر (Hostinger Full Deployment Guide)
 
+## رفع تحديث على سيرفر شغال (خمس خطوات)
+
+السيرفر شغال بـ PM2 خلف nginx (`ecosystem.config.cjs`، `deploy/nginx/z-coaching.conf`). التحديث ده مفيهوش أي تعديل على قاعدة البيانات، فمفيش هجرة ولا نسخة احتياطية مطلوبة قبله.
+
+```bash
+cd ~/z-coaching-platform        # 1. مجلد المشروع على السيرفر
+git pull origin main            # 2. جلب آخر نسخة
+npm ci                          # 3. تحديث الحزم
+npm --prefix frontend ci && npm --prefix frontend run build   # 4. بناء الموقع
+pm2 restart z-coaching-platform # 5. إعادة تشغيل الخادم
+```
+
+**تأكد إن كله تمام بعد الخطوة الخامسة:**
+
+```bash
+pm2 status                                  # لازم z-coaching-platform حالته online
+curl -s http://127.0.0.1:3000/api/v1/health # لازم يرد HEALTHY
+git log --oneline -1                        # لازم يطابق آخر كوميت على GitHub
+pm2 logs z-coaching-platform --lines 30     # آخر 30 سطر، لازم من غير أخطاء
+```
+
+**لو حصلت مشكلة بعد النشر:** `git reset --hard <كود الكوميت القديم>` ثم إعادة البناء وإعادة التشغيل بنفس الخطوات 4 و5.
+
+---
+
 يوضح هذا الدليل الخطوات التفصيلية لرفع وتشغيل منصة **Z Coaching Platform** (الفرونت إند، الباك إند، وقاعدة بيانات MySQL) على استضافة **Hostinger**.
 
 ---
