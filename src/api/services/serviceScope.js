@@ -26,6 +26,9 @@ export const OUTSIDE_SERVICE_SCOPE = "OUTSIDE_SERVICE_SCOPE";
 
 // Underweight: WHO thinness is a BMI under 18.5, and a BMI under 16 is severe thinness.
 export const UNDERWEIGHT_BMI = 18.5;
+// Owner's decision (2026-09-25): trainees from 12 years old, with the guardian's consent. Younger
+// than that is a different job (growth and puberty), not a setting on this engine.
+export const MIN_TRAINEE_AGE = 12;
 export const SEVERE_UNDERWEIGHT_BMI = 16;
 const WEIGHT_LOSS_GOALS = new Set(["fat_loss", "recomposition", "weight_loss"]);
 
@@ -71,6 +74,12 @@ export function assessServiceScope(intake) {
     }
   }
 
+  const age = Number(answers.age);
+  if (Number.isFinite(age) && age > 0 && age < MIN_TRAINEE_AGE) {
+    cases.push("TOO_YOUNG");
+    reasons.push(`السن أقل من ${MIN_TRAINEE_AGE} سنة: في السن ده الأكل والتمرين بيتحددوا مع دكتور أطفال أو تغذية أطفال، فالخدمة بتبدأ من ${MIN_TRAINEE_AGE} سنة.`);
+  }
+
   const weight = Number(answers.weight_kg);
   const heightM = Number(answers.height_cm) / 100;
   const bmi = heightM > 0 && weight > 0 ? weight / (heightM * heightM) : null;
@@ -78,7 +87,9 @@ export function assessServiceScope(intake) {
   // Owner's decision (2026-09-25): only severe thinness is outside the service. A thin client who
   // asks to lose weight is served - the engine moves the goal to building muscle and the coach is
   // told why (goal_redirect in build-master-engine-v2), so he can talk to the client.
-  if (bmi !== null && bmi < SEVERE_UNDERWEIGHT_BMI) {
+  // Adult cut-offs, on purpose: a child's thinness is read from growth charts by age, not from a
+  // single number, and a young trainee is seen by his guardian and the coach anyway.
+  if (bmi !== null && bmi < SEVERE_UNDERWEIGHT_BMI && (!Number.isFinite(age) || age >= 18)) {
     cases.push("UNDERWEIGHT");
     reasons.push(`الوزن تحت الطبيعي بشكل شديد (مؤشر كتلة الجسم ${bmi.toFixed(1)}): الحالة دي محتاجة تقييم طبي وتغذية علاجية الأول، مش خطة تدريب.`);
   }

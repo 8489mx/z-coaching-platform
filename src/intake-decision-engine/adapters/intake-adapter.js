@@ -529,7 +529,10 @@ export function adaptIntakePayloadToCanonicalEngine(raw) {
     dateOfBirth: dob,
     sex: canonicalSex || (personal.sex === "FEMALE" ? "FEMALE" : "MALE"),
     residenceCountry: personal.residenceCountry && personal.residenceCountry.length === 2 ? personal.residenceCountry.toUpperCase() : "EG",
-    guardianConsent: personal.guardianConsent !== undefined ? personal.guardianConsent : null
+    // The form asks for the guardian only under 18: name, phone and an explicit consent.
+    guardianConsent: personal.guardianConsent !== undefined
+      ? personal.guardianConsent
+      : (intake.guardian?.consent === true ? true : (intake.guardian ? false : null))
   };
 
   // 2. Goals

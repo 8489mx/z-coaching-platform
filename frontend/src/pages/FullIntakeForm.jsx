@@ -395,6 +395,12 @@ export default function FullIntakeForm() {
       setCurrentStep(2);
       return;
     }
+    if (Number(formData.age) > 0 && Number(formData.age) < 18
+      && !(formData.guardian?.consent === true && String(formData.guardian?.name || '').trim() && String(formData.guardian?.phone || '').trim())) {
+      alert('المتدرب تحت 18 سنة: اكتب اسم ولي الأمر ورقم موبايله ووافق على الإقرار في الخطوة الأولى.');
+      setCurrentStep(1);
+      return;
+    }
     if (!formData.training_logistics?.training_age) {
       alert('يرجى اختيار بقالك قد إيه بتتمرن حديد (في خطوة التدريب) علشان نحدد حجم التمرين المناسب ليك.');
       setCurrentStep(4);
@@ -786,6 +792,72 @@ export default function FullIntakeForm() {
                   />
                 </div>
               </div>
+
+              {/* Under 18: the guardian's name, phone and explicit consent (the engine blocks the plan without it). */}
+              {Number(formData.age) > 0 && Number(formData.age) < 18 && (() => {
+                const guardian = formData.guardian || {};
+                const setGuardian = (patch) => setFormData(p => ({ ...p, guardian: { ...(p.guardian || {}), ...patch } }));
+                return (
+                  <div style={{ background: '#EFF6FF', border: '1px solid #BFDBFE', borderRadius: '10px', padding: '14px 16px', marginBottom: '16px' }}>
+                    <strong style={{ display: 'block', fontSize: '12.5px', color: '#1E3A8A', marginBottom: '4px', fontWeight: 800 }}>
+                      المتدرب تحت 18 سنة: بيانات ولي الأمر
+                    </strong>
+                    <p style={{ fontSize: '11px', color: '#1E40AF', margin: '0 0 10px 0', lineHeight: 1.5 }}>
+                      المتابعة في السن ده بتكون مع ولي الأمر، والتمرين لازم يبقى تحت إشراف مباشر.
+                    </p>
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '12px', marginBottom: '10px' }}>
+                      <div>
+                        <label style={{ display: 'block', fontSize: '11.5px', fontWeight: 800, color: '#0F172A', marginBottom: '5px' }}>
+                          اسم ولي الأمر *
+                        </label>
+                        <input
+                          type="text"
+                          value={guardian.name || ''}
+                          onChange={(e) => setGuardian({ name: e.target.value })}
+                          style={{ width: '100%', height: '38px', borderRadius: '8px', border: '1px solid #CBD5E1', padding: '0 10px', fontSize: '12.5px', fontWeight: 700, boxSizing: 'border-box' }}
+                        />
+                      </div>
+                      <div>
+                        <label style={{ display: 'block', fontSize: '11.5px', fontWeight: 800, color: '#0F172A', marginBottom: '5px' }}>
+                          رقم موبايل ولي الأمر *
+                        </label>
+                        <input
+                          type="text"
+                          inputMode="numeric"
+                          value={guardian.phone || ''}
+                          onChange={(e) => setGuardian({ phone: cleanArabicNumStr(e.target.value) })}
+                          style={{ width: '100%', height: '38px', borderRadius: '8px', border: '1px solid #CBD5E1', padding: '0 10px', fontSize: '12.5px', fontWeight: 700, fontFamily: 'JetBrains Mono, Cairo', boxSizing: 'border-box' }}
+                        />
+                      </div>
+                    </div>
+                    <button
+                      type="button"
+                      role="checkbox"
+                      aria-checked={guardian.consent === true}
+                      onClick={() => setGuardian({ consent: guardian.consent !== true })}
+                      style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '8px',
+                        width: '100%',
+                        textAlign: 'right',
+                        padding: '10px 12px',
+                        borderRadius: '10px',
+                        border: guardian.consent === true ? '2px solid #0F172A' : '1px solid #CBD5E1',
+                        background: guardian.consent === true ? '#0F172A' : '#FFFFFF',
+                        color: guardian.consent === true ? '#FFFFFF' : '#475569',
+                        fontSize: '11.5px',
+                        fontWeight: 700,
+                        cursor: 'pointer',
+                        transition: 'all 0.15s ease'
+                      }}
+                    >
+                      {guardian.consent === true ? <CheckCircle2 size={15} /> : <Lock size={15} />}
+                      <span>أنا ولي أمر المتدرب، وموافق على اشتراكه ومتابعته، وهيتمرن تحت إشرافي.</span>
+                    </button>
+                  </div>
+                );
+              })()}
 
               {/* Tape Measurements Box */}
               <div style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', borderRadius: '10px', padding: '14px 16px' }}>

@@ -279,7 +279,13 @@ export function calculateUniversalNutritionTargets(canonicalIntake, evaluationCo
   // 1. BMR Calculation (Katch-McArdle if body fat provided, otherwise Mifflin-St Jeor)
   let bmr = 0;
   let bmrFormula = "MIFFLIN_ST_JEOR";
-  if (bodyFat && bodyFat > 0 && bodyFat < 50) {
+  // A trainee under 18 is not a small adult: the FAO/WHO/UNU (Schofield) equations are the ones
+  // written for 10-18 year olds, and the body-fat formulas below are validated on adults only.
+  const isYoungTrainee = Number.isFinite(age) && age > 0 && age < 18;
+  if (isYoungTrainee) {
+    bmr = Math.round(isMale ? (17.686 * weight) + 658.2 : (13.384 * weight) + 692.6);
+    bmrFormula = "SCHOFIELD_YOUTH";
+  } else if (bodyFat && bodyFat > 0 && bodyFat < 50) {
     const lbm = weight * (1 - bodyFat / 100);
     bmr = Math.round(370 + (21.6 * lbm));
     bmrFormula = "KATCH_MCARDLE";
@@ -335,7 +341,8 @@ export function calculateUniversalNutritionTargets(canonicalIntake, evaluationCo
   // becomes building muscle and the coach reads why, so he can talk to the client and change it
   // (WHO thinness; severe thinness under 16 is refused earlier, api/services/serviceScope.js).
   const UNDERWEIGHT_BMI = 18.5;
-  if (bmiNow < UNDERWEIGHT_BMI && (primaryGoal === "FAT_LOSS" || primaryGoal === "BODY_RECOMPOSITION")) {
+  // Adults only: a BMI of 17-18 is normal for a growing child (see the young trainee rules below).
+  if (!isYoungTrainee && bmiNow < UNDERWEIGHT_BMI && (primaryGoal === "FAT_LOSS" || primaryGoal === "BODY_RECOMPOSITION")) {
     goalRedirect = {
       from: primaryGoal,
       to: "MUSCLE_GAIN",
@@ -395,6 +402,15 @@ export function calculateUniversalNutritionTargets(canonicalIntake, evaluationCo
   if (isLactating) {
     targetCalories += 450;
     calorieAdjustmentDesc = "خطة خسارة دهون تدريجية للمرضعات (+450 سعرة حرارية مضافة لحماية إدرار حليب الأم والوقاية من جفاف الرضاعة)";
+  }
+
+  // A growing body is never put in a calorie deficit: a young trainee's plan starts at maintenance,
+  // and the weight settles as he grows into it. Building muscle keeps its small surplus.
+  let youngTraineeMaintenanceApplied = false;
+  if (isYoungTrainee && targetCalories < tdee) {
+    targetCalories = Math.round(tdee);
+    youngTraineeMaintenanceApplied = true;
+    calorieAdjustmentDesc = "سعرات الاحتياج اليومي كاملة (متدرب تحت 18 سنة: ممنوع أي عجز حراري على جسم في مرحلة نمو)";
   }
 
   // Minimum intake without medical supervision (AHA/ACC/TOS 2013 obesity guideline: 1200 kcal women,
@@ -868,6 +884,10 @@ export function calculateUniversalNutritionTargets(canonicalIntake, evaluationCo
       energy_reference_weight_kg: referenceWeight,
       energy_balance_steps: balanceSteps,
       energy_balance_note_ar: energyBalanceNoteAr(),
+      is_young_trainee: isYoungTrainee,
+      young_trainee_note_ar: isYoungTrainee
+        ? `متدرب سنه ${age} سنة: السعرات محسوبة بمعادلة الأطفال والمراهقين (Schofield) والخطة على سعرات الاحتياج من غير أي عجز${youngTraineeMaintenanceApplied ? " (اتعدلت من هدف النزول)" : ""}. التمرين بإشراف مباشر، تركيز على الأداء الصحيح، ممنوع الوصول للفشل أو تجربة أقصى وزن (NSCA)، والمتابعة على الأداء والطول والنشاط مش على الوزن بس.`
+        : null,
       // A heart client is served with his cardiologist's clearance: the plate follows the same
       // advice his doctor gives (AHA 2021 dietary guidance - less salt, less saturated fat).
       heart_diet_note_ar: conditionsList.some((c) => c.includes("HEART") || c.includes("CARDIAC"))
