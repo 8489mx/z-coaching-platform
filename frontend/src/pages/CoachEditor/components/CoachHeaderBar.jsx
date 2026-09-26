@@ -33,9 +33,6 @@ export function CoachHeaderBar({
   handleSelectClient
 }) {
   const currentCode = String(program?.client?.client_code || clientCodeParam || '');
-  const currentIndex = clientsList.findIndex(c => String(c.client_code || c.id) === currentCode);
-  const prevClient = currentIndex > 0 ? clientsList[currentIndex - 1] : null;
-  const nextClient = currentIndex >= 0 && currentIndex < clientsList.length - 1 ? clientsList[currentIndex + 1] : null;
   const clientPhone = program?.client?.phone_number || program?.client?.phone || '';
 
   const [isAdvancedMenuOpen, setIsAdvancedMenuOpen] = React.useState(false);
@@ -170,60 +167,7 @@ export function CoachHeaderBar({
         
         {/* Cluster 1: Client Navigation & Live Previews */}
         <div style={{ display: 'flex', alignItems: 'center', gap: '4px', background: '#F8FAFC', border: '1px solid #E2E8F0', padding: '3px 4px', borderRadius: '10px' }}>
-          {/* Quick Switcher */}
-          {clientsList.length > 1 && handleSelectClient && (
-            <div style={{ display: 'flex', alignItems: 'center', gap: '2px' }}>
-              <button
-                type="button"
-                onClick={() => prevClient && handleSelectClient(prevClient.client_code || prevClient.id)}
-                disabled={!prevClient}
-                title={prevClient ? `المشترك السابق: ${prevClient.full_name || prevClient.name}` : 'لا يوجد مشترك سابق'}
-                style={{
-                  height: '26px',
-                  padding: '0 6px',
-                  borderRadius: '6px',
-                  border: 'none',
-                  background: prevClient ? '#FFFFFF' : 'transparent',
-                  color: prevClient ? '#0F172A' : '#94A3B8',
-                  fontSize: '11px',
-                  fontWeight: 700,
-                  cursor: prevClient ? 'pointer' : 'not-allowed',
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  gap: '2px',
-                  boxShadow: prevClient ? '0 1px 2px rgba(15, 23, 42, 0.05)' : 'none'
-                }}
-              >
-                <ChevronRight size={12} />
-                <span>السابق</span>
-              </button>
-
-              <button
-                type="button"
-                onClick={() => nextClient && handleSelectClient(nextClient.client_code || nextClient.id)}
-                disabled={!nextClient}
-                title={nextClient ? `المشترك التالي: ${nextClient.full_name || nextClient.name}` : 'لا يوجد مشترك تالي'}
-                style={{
-                  height: '26px',
-                  padding: '0 6px',
-                  borderRadius: '6px',
-                  border: 'none',
-                  background: nextClient ? '#FFFFFF' : 'transparent',
-                  color: nextClient ? '#0F172A' : '#94A3B8',
-                  fontSize: '11px',
-                  fontWeight: 700,
-                  cursor: nextClient ? 'pointer' : 'not-allowed',
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  gap: '2px',
-                  boxShadow: nextClient ? '0 1px 2px rgba(15, 23, 42, 0.05)' : 'none'
-                }}
-              >
-                <span>التالي</span>
-                <ChevronLeft size={12} />
-              </button>
-            </div>
-          )}
+          {/* The client list beside the editor replaces the previous/next arrows. */}
 
           {/* Live Client App Preview */}
           <a

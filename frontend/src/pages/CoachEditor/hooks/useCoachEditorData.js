@@ -57,7 +57,6 @@ export function useCoachEditorData() {
   const [clientsList, setClientsList] = useState([]);
   const [queueFilter, setQueueFilter] = useState('ACTION_NEEDED'); // 'ACTION_NEEDED' | 'PENDING_PLAN' | 'NEEDS_UPDATE' | 'ALL'
   const [queueSearch, setQueueSearch] = useState('');
-  const [showQueueSlider, setShowQueueSlider] = useState(false);
 
   const [allExercisesList, setAllExercisesList] = useState([]);
   const [cardioSwapModal, setCardioSwapModal] = useState(false);
@@ -1437,8 +1436,6 @@ export function useCoachEditorData() {
     setQueueFilter,
     queueSearch,
     setQueueSearch,
-    showQueueSlider,
-    setShowQueueSlider,
     allExercisesList,
     setAllExercisesList,
     cardioSwapModal,

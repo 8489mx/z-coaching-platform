@@ -61,8 +61,6 @@ export default function CoachEditor() {
     setQueueFilter,
     queueSearch,
     setQueueSearch,
-    showQueueSlider,
-    setShowQueueSlider,
     allExercisesList,
     _setAllExercisesList,
     cardioSwapModal,
@@ -134,44 +132,55 @@ export default function CoachEditor() {
 
   return (
     <AdminLayout fullWidth={true}>
-      <div 
-        dir="rtl" 
-        style={{ 
-          display: 'flex', 
-          flexDirection: 'column', 
-          gap: '12px', 
+      <div
+        dir="rtl"
+        style={{
+          display: 'flex',
+          flexWrap: 'wrap',
+          alignItems: 'flex-start',
+          gap: '12px',
           fontFamily: 'Cairo, sans-serif',
           width: '100%',
           boxSizing: 'border-box'
         }}
       >
         {/* =========================================================================
+            0. CLIENTS LIST - beside the editor, always open (one click per client)
+            ========================================================================= */}
+        <aside style={{ flex: '0 0 250px', minWidth: '230px', maxWidth: '100%', boxSizing: 'border-box' }}>
+          <CoachClientsQueue
+            urgentCount={urgentCount}
+            pendingPlanCount={pendingPlanCount}
+            needsUpdateCount={needsUpdateCount}
+            clientsList={clientsList}
+            queueFilter={queueFilter}
+            setQueueFilter={setQueueFilter}
+            queueSearch={queueSearch}
+            setQueueSearch={setQueueSearch}
+            displayedQueue={displayedQueue}
+            filteredQueue={filteredQueue}
+            program={program}
+            clientCodeParam={clientCodeParam}
+            handleSelectClient={handleSelectClient}
+          />
+        </aside>
+
+        <div
+          style={{
+            flex: '1 1 640px',
+            minWidth: 0,
+            display: 'flex',
+            flexDirection: 'column',
+            gap: '12px',
+            boxSizing: 'border-box'
+          }}
+        >
+        {/* =========================================================================
             سطر موضع المتدرب من دورته التدريبية
             ========================================================================= */}
         {trainingCycle && (
           <CoachCycleStatusLine trainingCycle={trainingCycle} />
         )}
-        
-        {/* =========================================================================
-            0. CLIENTS ACTION QUEUE SLIDER BAR
-            ========================================================================= */}
-        <CoachClientsQueue
-          urgentCount={urgentCount}
-          pendingPlanCount={pendingPlanCount}
-          needsUpdateCount={needsUpdateCount}
-          clientsList={clientsList}
-          queueFilter={queueFilter}
-          setQueueFilter={setQueueFilter}
-          queueSearch={queueSearch}
-          setQueueSearch={setQueueSearch}
-          showQueueSlider={showQueueSlider}
-          setShowQueueSlider={setShowQueueSlider}
-          displayedQueue={displayedQueue}
-          filteredQueue={filteredQueue}
-          program={program}
-          clientCodeParam={clientCodeParam}
-          handleSelectClient={handleSelectClient}
-        />
 
         {/* =========================================================================
             1. Executive Client Bar & Action Header
@@ -477,6 +486,7 @@ export default function CoachEditor() {
           </div>
         )}
 
+        </div>
       </div>
     </AdminLayout>
   );
