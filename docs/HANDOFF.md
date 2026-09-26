@@ -9,7 +9,7 @@ Everything below is merged into `main` and pushed to GitHub (`8489mx/z-coaching-
 
 1. Read `AI_RULES.md` (how any AI tool must work and prove its work), `CLAUDE.md` (standing iron rules) and this file. Old docs are in `docs/archive/` (history only).
 2. Run the full check and confirm the baseline before touching anything:
-   - `npm.cmd test` (Windows) — expected: node:test **2015/2015 pass**, vitest **47/47 pass**, lint 0.
+   - `npm.cmd test` (Windows) — expected: node:test **2022/2022 pass**, vitest **47/47 pass**, lint 0.
    - In a git worktree: link `node_modules` and `frontend/node_modules` to `D:/zcc`'s (junctions), copy `.env` (ignored), and build the frontend once — `test/hostinger-deployment-readiness.test.js` fails without `frontend/dist`.
    - `cd frontend && npm.cmd run build` — expected: builds.
    - Tests need the env: they load `D:/zcc/.env` (never print its values). Scripts: `node --env-file=.env <script>`.
@@ -236,6 +236,13 @@ That session did not update this file or `AI_RULES.md` at all; this section was 
 - `78a4372` The ten-client simulation expects the kidney refusal instead of a plan; the run is back to 100%.
 - `29a5440` The coach reads the refusal reasons and the hint of what to tell the client; the dead potassium question left the form (kidney is outside the service, and no engine read it - searched everywhere).
 - Verification: 2015/2015 + 47/47, lint 0, build OK, stress 0 violations, journeys 6/6, simulation 100%.
+
+## 3p. Sixteenth round (2026-09-26) — owner: "the engine first, no mistake even after a year" — merged + pushed
+
+- `4cdfa91` **A growing body was walked down by the check-ins.** The long-journey audit was extended to a 14 year old and caught it: his first plan starts at maintenance, but every week his weight did not drop the check-in cut another 150 kcal - eight months took him from 2898 kcal to 1623, still falling. The adaptation engine now holds a young trainee at the maintenance his plan was built on (`YOUNG_TRAINEE_NO_DEFICIT`); a surplus for building muscle is untouched.
+- Same commit: four more journeys in `scripts/simulate-long-journeys.mjs` - a 14 year old over 8 months, a heart client with clearance over a year, a thin client who asked to lose weight, and eighteen months on one subscription - plus weekly checks on protein per kilo, **the plates against the plan's own target**, the young trainee's floor, and a heart client's cardio and effort. All ten journeys end "مشاكل: لا شيء".
+- `3e1fbf6` The coach editor shows the client list beside the plan, always open and searchable (it was hidden behind a button and scrolled sideways, so the coach used the Previous/Next arrows, which are gone now). Not yet looked at in a browser: the editor needs a coach login.
+- Verification: 2022/2022 + 47/47, lint 0, build OK, stress 0 violations, journeys 10/10, simulation 100%.
 
 ## 4. Open work (in priority order)
 
