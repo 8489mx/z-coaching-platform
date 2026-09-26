@@ -89,6 +89,34 @@ const JOURNEYS = [
       training_logistics: { ...base().training_logistics, days_per_week: 4, experience_level: "advanced" }, meal_structure: { meals_count: "3_meals", intermittent_fasting: "16_8" } },
     week: (n) => ({ w: 100 + (n % 6 < 3 ? 0.5 : -0.4) + (n > 26 ? -0.1 * (n - 26) : 0), adh: 40 + (n % 5) * 8, pain: n === 20 || n === 21 ? 7 : 0, off: n >= 33 && n <= 36 }),
   },
+  {
+    code: "JRN_07", name: "ولد 14 سنة بموافقة ولي الأمر - 8 شهور", gender: "male", pkg: "ELITE_8M", months: 8,
+    answers: { ...base(), gender: "male", age: "14", height_cm: "163", weight_kg: "72", circumferences: { neck_cm: "34", waist_cm: "84", hips_cm: "94" },
+      primary_goal: "fat_loss", occupation_type: "STUDENT",
+      guardian: { name: "والد المتدرب", phone: "01099000714", consent: true },
+      training_logistics: { ...base().training_logistics, days_per_week: 3, training_age: "never", experience_level: "beginner" } },
+    week: (n) => ({ w: 72 + Math.min(n, 34) * 0.05, adh: 85, pain: 0, off: n >= 20 && n <= 21 }),
+  },
+  {
+    code: "JRN_08", name: "رجل قلب بتصريح دكتور القلب - سنة كاملة", gender: "male", pkg: "MAX", months: 12,
+    answers: { ...base(), gender: "male", age: "52", height_cm: "174", weight_kg: "96", circumferences: { neck_cm: "43", waist_cm: "110", hips_cm: "108" },
+      primary_goal: "fat_loss", neat_level: "sedentary",
+      medical_conditions: med({ selected: ["heart_condition", "hypertension"], hypertension: true, heart: { doctor_clearance: "YES", recent_events: ["none"] } }),
+      training_logistics: { ...base().training_logistics, days_per_week: 3, experience_level: "beginner" } },
+    week: (n) => ({ w: 96 - 0.35 * Math.min(n, 30) - 0.1 * Math.max(0, n - 30), adh: 82, pain: 0, off: false }),
+  },
+  {
+    code: "JRN_09", name: "ست نحيفة طلبت نزول وزن - 4 شهور", gender: "female", pkg: "ELITE_4M", months: 4,
+    answers: { ...base(), gender: "female", age: "24", height_cm: "168", weight_kg: "51", circumferences: { neck_cm: "30", waist_cm: "66", hips_cm: "88" },
+      primary_goal: "fat_loss", training_logistics: { ...base().training_logistics, days_per_week: 3, experience_level: "beginner" } },
+    week: (n) => ({ w: 51 + 0.06 * Math.min(n, 18), adh: 88, pain: 0, off: false }),
+  },
+  {
+    code: "JRN_10", name: "رجل سنة ونصف متواصلة على نفس الاشتراك - MAX", gender: "male", pkg: "MAX", months: 18,
+    answers: { ...base(), gender: "male", age: "31", height_cm: "180", weight_kg: "104", circumferences: { neck_cm: "43", waist_cm: "112", hips_cm: "110" },
+      primary_goal: "fat_loss", training_logistics: { ...base().training_logistics, days_per_week: 4, experience_level: "intermediate" } },
+    week: (n) => ({ w: n <= 40 ? 104 - 0.45 * n : 86 + 0.05 * (n - 40), adh: n % 11 === 0 ? 60 : 86, pain: n === 55 ? 6 : 0, off: n >= 46 && n <= 47 }),
+  },
 ];
 
 async function cleanup() {
@@ -249,6 +277,42 @@ for (const [i, J] of JOURNEYS.entries()) {
     const exNow = exerciseSet(activeNow?.program_data);
     const changed = [...exNow].filter((x) => !baseExercises.has(x));
     if (changed.length > 0 && J.code !== "JRN_06" && J.code !== "JRN_01") bad(`أ${n}: تمارين اتغيرت من غير ألم: ${changed.join(",")}`);
+    // Protein stays inside a sane band for every client, every week.
+    const wNow = Number(wk.w) || 0;
+    if (t.protein && wNow > 0) {
+      const perKg = t.protein / wNow;
+      if (perKg > 2.6) bad(`أ${n}: بروتين ${perKg.toFixed(2)} جم/كجم أعلى من اللازم`);
+      if (perKg < 1.0) bad(`أ${n}: بروتين ${perKg.toFixed(2)} جم/كجم أقل من اللازم`);
+    }
+    // What the plates carry against what the plan asks (the client eats the plates, not the number).
+    const mealsNow = activeNow?.program_data?.nutrition?.meals || activeNow?.program_data?.nutrition_program?.culinary_meals || [];
+    const plateKcal = mealsNow.reduce((sum, meal) => sum + (meal.items || []).reduce((x, i) => x + (Number(i.calories_kcal) || Number(i.cal) || 0), 0), 0);
+    const isBariatric = (J.answers.medical_conditions?.selected || []).includes("bariatric_surgery");
+    if (plateKcal > 0 && t.kcal && Math.abs(plateKcal - t.kcal) / t.kcal > 0.15 && !isBariatric) {
+      bad(`أ${n}: الأطباق ${Math.round(plateKcal)} سعرة والخطة ${t.kcal}`);
+    }
+    const guards = activeNow?.program_data?.nutrition?.targets?.clinical_guardrails
+      || activeNow?.program_data?.nutrition_program?.targets?.clinical_guardrails || {};
+    if (J.code === "JRN_07") {
+      if (guards.is_young_trainee !== true) bad(`أ${n}: متدرب تحت 18 والخطة مش متعلمة إنه صغير`);
+      const maintenance = activeNow?.program_data?.nutrition?.targets?.tdee
+        || activeNow?.program_data?.nutrition_program?.targets?.tdee || 0;
+      if (maintenance && t.kcal && t.kcal < maintenance - 25) bad(`أ${n}: جسم بيكبر على عجز حراري (${t.kcal} من ${maintenance})`);
+    }
+    if (J.code === "JRN_08") {
+      const cardioGuards = activeNow?.program_data?.cardio?.clinical_guardrails
+        || activeNow?.program_data?.cardio_program?.clinical_guardrails || {};
+      if (cardioGuards.hiit_banned !== true) bad(`أ${n}: مريض قلب والكارديو عالي الشدة مسموح`);
+      const weeksNow = activeNow?.program_data?.training?.weeks || activeNow?.program_data?.training_program?.weeks || [];
+      const lowRir = weeksNow.flatMap((w) => (w.sessions || []).flatMap((ss) => (ss.exercises || []).map((e) => Number(e.target_rir ?? e.rir))))
+        .filter((r) => Number.isFinite(r) && r < 2);
+      if (lowRir.length) bad(`أ${n}: مريض قلب وفيه ${lowRir.length} تمرين قريب من الفشل`);
+    }
+    if (J.code === "JRN_09" && t.kcal) {
+      const maintenance = activeNow?.program_data?.nutrition?.targets?.tdee
+        || activeNow?.program_data?.nutrition_program?.targets?.tdee || 0;
+      if (maintenance && t.kcal < maintenance - 25) bad(`أ${n}: عميلة نحيفة على عجز حراري (${t.kcal} من ${maintenance})`);
+    }
     prevKcal = t.kcal ?? prevKcal;
     log.push({ n, w: wk.w.toFixed(1), kcal: t.kcal, p: t.protein, c: t.carbs, f: t.fat, cycle: cycleNow.cycle_number, wk: `${cycleNow.current_week}/${cycleNow.total_weeks}`, ev: [wk.off ? "منقطع" : "", subEnded ? "اشتراك منتهي" : "", ...events].filter(Boolean).join("؛ ") });
   }

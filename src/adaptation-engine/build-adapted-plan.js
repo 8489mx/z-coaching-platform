@@ -332,6 +332,23 @@ export function buildAdaptedPlan(inputs) {
   }
 
 
+  // A trainee under 18 is never put in a deficit: the first plan starts at maintenance, and a
+  // check-in must not walk it down week after week (eight months of stalls took a 14 year old from
+  // 2898 kcal to 1623 before this rule - scripts/simulate-long-journeys.mjs JRN_07). Building
+  // muscle keeps its surplus; only the cut is refused.
+  if (planTargets.clinical_guardrails?.is_young_trainee === true) {
+    const maintenance = Number(planTargets.tdee);
+    if (Number.isFinite(maintenance) && maintenance > 0 && adaptedCalories < maintenance) {
+      adaptedCarbs = Math.max(50, adaptedCarbs + Math.round((maintenance - adaptedCalories) / 4));
+      adaptedCalories = Math.round(maintenance);
+      reasons.push({
+        code: "YOUNG_TRAINEE_NO_DEFICIT",
+        message_ar: `متدرب تحت 18 سنة: السعرات رجعت لاحتياجه اليومي (${adaptedCalories} سعرة). الجسم في مرحلة نمو، والوزن بينضبط بالطول والنشاط مش بتقليل الأكل.`,
+        message_en: `Under 18: calories held at maintenance (${adaptedCalories} kcal). A growing body is not put in a deficit.`,
+      });
+    }
+  }
+
   // Diabetes and insulin resistance: every adjustment above keeps carbohydrate within the same share
   // of energy as the first plan; the excess moves to fat, so months of +150 carb steps cannot creep
   // back to a carbohydrate-heavy plan.
