@@ -1,8 +1,8 @@
 /// ثوابت الاتصال بخادم المنظومة المركزي (API Constants)
 class ApiConstants {
-  // عنوان الخادم الأساسي (يمكن تغييره وفق بيئة التشغيل أو خادم هوستنجر)
-  static const String defaultBaseUrl = 'http://10.0.2.2:3000'; // للمحاكي الأندرويدي أو الشبكة المحلية
-  static const String webBaseUrl = 'http://localhost:3000';
+  // عنوان الخادم الأساسي (النطاق السحابي الإنتاجي)
+  static const String defaultBaseUrl = 'https://app.karimzakaria.com';
+  static const String webBaseUrl = 'https://app.karimzakaria.com';
   
   // مفتاح التخزين لعنوان الخادم المخصص
   static const String customBaseUrlKey = 'custom_base_url';

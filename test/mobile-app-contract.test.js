@@ -116,3 +116,9 @@ test("the mobile check-in form starts empty and prefills from the client's last 
   assert.match(screen, /last\['average_weight_kg'\] \?\? last\['weight_kg'\]/);
   assert.match(read("src/api/routes/program.routes.js"), /router\.get\("\/checkin\/history", requireAuth, getMyCheckinHistory\)/);
 });
+
+test("the mobile app defaultBaseUrl points to the production subdomain over HTTPS", () => {
+  const constants = read("mobile_app/lib/core/constants/api_constants.dart");
+  assert.match(constants, /defaultBaseUrl = 'https:\/\/app\.karimzakaria\.com';/);
+});
+
