@@ -9,7 +9,7 @@ Everything below is merged into `main` and pushed to GitHub (`8489mx/z-coaching-
 
 1. Read `AI_RULES.md` (how any AI tool must work and prove its work), `CLAUDE.md` (standing iron rules) and this file. Old docs are in `docs/archive/` (history only).
 2. Run the full check and confirm the baseline before touching anything:
-   - `npm.cmd test` (Windows) — expected: node:test **2022/2022 pass**, vitest **47/47 pass**, lint 0.
+   - `npm.cmd test` (Windows) — expected: node:test **2023/2023 pass**, vitest **47/47 pass**, lint 0.
    - In a git worktree: link `node_modules` and `frontend/node_modules` to `D:/zcc`'s (junctions), copy `.env` (ignored), and build the frontend once — `test/hostinger-deployment-readiness.test.js` fails without `frontend/dist`.
    - `cd frontend && npm.cmd run build` — expected: builds.
    - Tests need the env: they load `D:/zcc/.env` (never print its values). Scripts: `node --env-file=.env <script>`.
@@ -244,7 +244,13 @@ That session did not update this file or `AI_RULES.md` at all; this section was 
 - `3e1fbf6` The coach editor shows the client list beside the plan, always open and searchable (it was hidden behind a button and scrolled sideways, so the coach used the Previous/Next arrows, which are gone now). Not yet looked at in a browser: the editor needs a coach login.
 - Verification: 2022/2022 + 47/47, lint 0, build OK, stress 0 violations, journeys 10/10, simulation 100%.
 
+## 3q. Seventeenth round (2026-10-08) — production subdomain configuration (karimzakaria.com & app.karimzakaria.com) — merged + pushed
+
+- `288a077` **Mobile app production subdomain & CORS environment**: `mobile_app/lib/core/constants/api_constants.dart` defaultBaseUrl updated to `https://app.karimzakaria.com` so the Flutter app communicates directly with the production subdomain over HTTPS; `.env.example` ALLOWED_ORIGINS updated to `https://karimzakaria.com,https://app.karimzakaria.com`; contract test in `test/mobile-app-contract.test.js` guards the production URL.
+- Verification: 2023/2023 + 47/47, lint 0, build OK, stress 306 clients 0 violations.
+
 ## 4. Open work (in priority order)
+
 
 ### 4.1 Goal choice and plain names — DONE in `653804c` (kept below for context)
 Owner's words: in the case "client picked bulking but is too fat", there should be an intake answer like **"سيبها للكوتش يحدد الأفضل"**, and goal names must be **professional and easy for clients** — many clients will not understand "إعادة تكوين الجسم". Applies to the intake questions AND everything the client sees in the app.
