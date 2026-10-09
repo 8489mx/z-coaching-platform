@@ -99,7 +99,7 @@ void main() {
     test('التحقق من صحة مسارات واجهات البرمجة للخادم', () {
       expect(ApiConstants.loginFast, '/api/v1/auth/login-fast');
       expect(ApiConstants.activeProgram, '/api/v1/programs/active');
-      expect(ApiConstants.submitCheckin, '/api/v1/programs/checkin/submit');
+      expect(ApiConstants.submitCheckin, '/api/v1/checkin');
     });
   });
 }
