@@ -43,7 +43,8 @@
   },
   "scripts": {
     "start": "node src/api/server.js",
-    "build:frontend": "npm --prefix frontend run build",
+    "build": "npm --prefix frontend ci --include=dev && npm --prefix frontend run build",
+    "build:frontend": "npm --prefix frontend ci --include=dev && npm --prefix frontend run build",
     "audit:vps": "node tools/audit-hostinger-vps-readiness.js",
     "test": "npm run lint:errors && node --test test/*.test.js && vitest run",
     "test:node": "node --test test/*.test.js",

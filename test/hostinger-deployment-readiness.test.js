@@ -1,5 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
+import fs from 'node:fs';
 import { auditDeploymentReadiness, formatDeploymentReadinessReport } from '../src/execution-engines/hostinger-deployment-engine.js';
 
 test('Hostinger VPS Deployment Readiness Suite', async (suite) => {
@@ -46,5 +47,13 @@ test('Hostinger VPS Deployment Readiness Suite', async (suite) => {
     assert.ok(report.includes('خطوات النشر على سيرفر Hostinger VPS'));
     // Enforce Zero Emojis
     assert.ok(!/[^\u0000-\u007F\u0600-\u06FF\s.,:;!?()[\]{}<>=+/%#•\-_]/.test(report));
+  });
+
+  await suite.test('5. Verifies build scripts install frontend dependencies and root server.js fallback exists', () => {
+    const pkg = JSON.parse(fs.readFileSync('package.json', 'utf8'));
+    assert.ok(pkg.scripts['build:frontend'], 'build:frontend script must exist');
+    assert.ok(pkg.scripts['build:frontend'].includes('ci') || pkg.scripts['build:frontend'].includes('install'), 'build:frontend must install frontend deps');
+    assert.ok(pkg.scripts['build'], 'build script must exist for cloud platforms');
+    assert.ok(fs.existsSync('server.js'), 'Root fallback server.js must exist');
   });
 });
