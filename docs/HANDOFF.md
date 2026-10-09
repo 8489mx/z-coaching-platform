@@ -249,6 +249,11 @@ That session did not update this file or `AI_RULES.md` at all; this section was 
 - `288a077` **Mobile app production subdomain & CORS environment**: `mobile_app/lib/core/constants/api_constants.dart` defaultBaseUrl updated to `https://app.karimzakaria.com` so the Flutter app communicates directly with the production subdomain over HTTPS; `.env.example` ALLOWED_ORIGINS updated to `https://karimzakaria.com,https://app.karimzakaria.com`; contract test in `test/mobile-app-contract.test.js` guards the production URL.
 - Verification: 2023/2023 + 47/47, lint 0, build OK, stress 306 clients 0 violations.
 
+## 3r. Eighteenth round (2026-10-09) — Hostinger Cloud Node.js build pipeline & root server fallback — merged + pushed
+
+- `c638afa` **Hostinger Cloud frontend build & root server fallback**: `package.json` `build` and `build:frontend` scripts updated to install frontend dependencies with dev dependencies (`npm --prefix frontend ci --include=dev && npm --prefix frontend run build`) before running Vite build, preventing `vite: command not found` on Hostinger Cloud; root `server.js` fallback created to import `src/api/server.js` ensuring entry points in root or `src/api/` work seamlessly; guard test added to `test/hostinger-deployment-readiness.test.js`.
+- Verification: 2024/2024 + 47/47, lint 0, build OK.
+
 ## 4. Open work (in priority order)
 
 
