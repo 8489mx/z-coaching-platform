@@ -1,0 +1,1136 @@
+[
+  {
+    "count": 1,
+    "lineNo": 1339,
+    "screen": "1. الرئيسية (Home / Today)",
+    "role": "أيقونة",
+    "attrs": " class=\"w-4 h-4 shrink-0 rtl:rotate-180\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2.4\" stroke-linecap=\"round\" stroke-linejoin=\"round\"",
+    "body": "<path d=\"M19 12H5M12 19l-7-7 7-7\"/>",
+    "defect": null
+  },
+  {
+    "count": 2,
+    "lineNo": 1352,
+    "screen": "1. الرئيسية (Home / Today)",
+    "role": "أيقونة",
+    "attrs": " class=\"w-3 h-3 rtl:rotate-180\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2.5\" stroke-linecap=\"round\" stroke-linejoin=\"round\"",
+    "body": "<path d=\"M9 18l6-6-6-6\"/>",
+    "defect": null
+  },
+  {
+    "count": 3,
+    "lineNo": 1360,
+    "screen": "1. الرئيسية (Home / Today)",
+    "role": "أيقونة",
+    "attrs": " class=\"w-full h-full -rotate-90 transform\" viewBox=\"0 0 76 76\"",
+    "body": "<defs>\n                      <filter id=\"appleRingDepthHome\"",
+    "defect": null
+  },
+  {
+    "count": 4,
+    "lineNo": 1431,
+    "screen": "1. الرئيسية (Home / Today)",
+    "role": "أيقونة",
+    "attrs": " class=\"w-2.5 h-2.5 text-[#00C7BE]\" viewBox=\"0 0 24 24\" fill=\"currentColor\"",
+    "body": "<path d=\"M12 2.69l5.66 5.66a8 8 0 1 1-11.31 0z\"/>",
+    "defect": null
+  },
+  {
+    "count": 5,
+    "lineNo": 1447,
+    "screen": "1. الرئيسية (Home / Today)",
+    "role": "أيقونة",
+    "attrs": " class=\"w-4 h-4 text-[#248A3D]\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2.2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"",
+    "body": "<rect x=\"3\" y=\"4\" width=\"18\" height=\"18\" rx=\"2\" ry=\"2\"></rec",
+    "defect": null
+  },
+  {
+    "count": 6,
+    "lineNo": 1456,
+    "screen": "1. الرئيسية (Home / Today)",
+    "role": "أيقونة",
+    "attrs": " class=\"w-3.5 h-3.5 text-[#C7C7CC] rtl:rotate-180\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2.4\" stroke-linecap=\"round\" stroke-linejoin=\"round\"",
+    "body": "<path d=\"M9 18l6-6-6-6\"/>",
+    "defect": null
+  },
+  {
+    "count": 7,
+    "lineNo": 1538,
+    "screen": "2. التمارين (Workout)",
+    "role": "أيقونة",
+    "attrs": " class=\"w-5 h-5\" viewBox=\"0 0 56 56\" fill=\"currentColor\"",
+    "body": "<path d=\"M8.125 37.398c0 9.516 7.781 16.243 18.75 16.243c12.",
+    "defect": null
+  },
+  {
+    "count": 8,
+    "lineNo": 1553,
+    "screen": "2. التمارين (Workout)",
+    "role": "أيقونة",
+    "attrs": " id=\"warmup-arrow\" class=\"w-4 h-4 transition-transform duration-200\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2.2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"",
+    "body": "<path d=\"M6 9l6 6 6-6\"/>",
+    "defect": null
+  },
+  {
+    "count": 9,
+    "lineNo": 1601,
+    "screen": "2. التمارين (Workout)",
+    "role": "أيقونة",
+    "attrs": " class=\"w-4 h-4\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2.5\" stroke-linecap=\"round\" stroke-linejoin=\"round\"",
+    "body": "<polyline points=\"20 6 9 17 4 12\"/>",
+    "defect": null
+  },
+  {
+    "count": 10,
+    "lineNo": 1606,
+    "screen": "2. التمارين (Workout)",
+    "role": "أيقونة",
+    "attrs": " id=\"ex-arrow-1\" class=\"w-4 h-4 transition-transform duration-200\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2.2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"",
+    "body": "<path d=\"M6 9l6 6 6-6\"/>",
+    "defect": null
+  },
+  {
+    "count": 11,
+    "lineNo": 1677,
+    "screen": "2. التمارين (Workout)",
+    "role": "زر طريقة الأداء (مثلث التشغيل Play)",
+    "attrs": " class=\"w-3 h-3 fill-current ml-0.5\" viewBox=\"0 0 24 24\"",
+    "body": "<polygon points=\"5 3 19 12 5 21 5 3\"/>",
+    "defect": null
+  },
+  {
+    "count": 12,
+    "lineNo": 1686,
+    "screen": "2. التمارين (Workout)",
+    "role": "زر بدائل التمرين (أسهم التبديل)",
+    "attrs": " class=\"w-3.5 h-3.5\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2.2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"",
+    "body": "<path d=\"M21 12a9 9 0 0 0-9-9 9.75 9.75 0 0 0-6.74 2.74L3 8\"",
+    "defect": "عدم تطابق بصري: تستخدم أيقونة سهم دائري منفرد (Reload) بينما الكروت المولدة ديناميكياً تستخدم أسهم التبديل المزدوجة (Swap)."
+  },
+  {
+    "count": 13,
+    "lineNo": 1695,
+    "screen": "2. التمارين (Workout)",
+    "role": "أيقونة",
+    "attrs": " id=\"tech1-arrow\" class=\"w-4 h-4 transition-transform duration-200\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2.2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"",
+    "body": "<path d=\"M6 9l6 6 6-6\"/>",
+    "defect": null
+  },
+  {
+    "count": 14,
+    "lineNo": 1743,
+    "screen": "2. التمارين (Workout)",
+    "role": "أيقونة",
+    "attrs": " class=\"w-4 h-4\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2.5\" stroke-linecap=\"round\" stroke-linejoin=\"round\"",
+    "body": "<polyline points=\"20 6 9 17 4 12\"/>",
+    "defect": null
+  },
+  {
+    "count": 15,
+    "lineNo": 1748,
+    "screen": "2. التمارين (Workout)",
+    "role": "أيقونة",
+    "attrs": " id=\"ex-arrow-2\" class=\"w-4 h-4 transition-transform duration-200\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2.2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"",
+    "body": "<path d=\"M6 9l6 6 6-6\"/>",
+    "defect": null
+  },
+  {
+    "count": 16,
+    "lineNo": 1819,
+    "screen": "2. التمارين (Workout)",
+    "role": "زر طريقة الأداء (مثلث التشغيل Play)",
+    "attrs": " class=\"w-3 h-3 fill-current ml-0.5\" viewBox=\"0 0 24 24\"",
+    "body": "<polygon points=\"5 3 19 12 5 21 5 3\"/>",
+    "defect": null
+  },
+  {
+    "count": 17,
+    "lineNo": 1828,
+    "screen": "2. التمارين (Workout)",
+    "role": "زر بدائل التمرين (أسهم التبديل)",
+    "attrs": " class=\"w-3.5 h-3.5\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2.2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"",
+    "body": "<path d=\"M21 12a9 9 0 0 0-9-9 9.75 9.75 0 0 0-6.74 2.74L3 8\"",
+    "defect": "عدم تطابق بصري: تستخدم أيقونة سهم دائري منفرد (Reload) بينما الكروت المولدة ديناميكياً تستخدم أسهم التبديل المزدوجة (Swap)."
+  },
+  {
+    "count": 18,
+    "lineNo": 1837,
+    "screen": "2. التمارين (Workout)",
+    "role": "أيقونة",
+    "attrs": " id=\"tech2-arrow\" class=\"w-4 h-4 transition-transform duration-200\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2.2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"",
+    "body": "<path d=\"M6 9l6 6 6-6\"/>",
+    "defect": null
+  },
+  {
+    "count": 19,
+    "lineNo": 1883,
+    "screen": "2. التمارين (Workout)",
+    "role": "أيقونة",
+    "attrs": " class=\"w-3.5 h-3.5 text-[#8E8E93]\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\"",
+    "body": "<circle cx=\"12\" cy=\"12\" r=\"10\"/><polyline points=\"12 6 12 12",
+    "defect": null
+  },
+  {
+    "count": 20,
+    "lineNo": 1890,
+    "screen": "2. التمارين (Workout)",
+    "role": "أيقونة",
+    "attrs": " class=\"w-3.5 h-3.5 fill-current\" viewBox=\"0 0 24 24\"",
+    "body": "<path d=\"M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42",
+    "defect": null
+  },
+  {
+    "count": 21,
+    "lineNo": 1901,
+    "screen": "2. التمارين (Workout)",
+    "role": "أيقونة",
+    "attrs": " class=\"w-4 h-4 rtl:rotate-180\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2.2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"",
+    "body": "<path d=\"M9 18l6-6-6-6\"/>",
+    "defect": null
+  },
+  {
+    "count": 22,
+    "lineNo": 1921,
+    "screen": "2. التمارين (Workout)",
+    "role": "أيقونة",
+    "attrs": " class=\"w-6 h-6\" viewBox=\"0 0 256 256\" fill=\"currentColor\"",
+    "body": "<path d=\"M227.65 149.14a12 12 0 0 1-8.79 14.51l-20.67 5.08l5",
+    "defect": null
+  },
+  {
+    "count": 23,
+    "lineNo": 1934,
+    "screen": "2. التمارين (Workout)",
+    "role": "أيقونة",
+    "attrs": " id=\"stretching-arrow\" class=\"w-4 h-4 transition-transform duration-200\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2.2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"",
+    "body": "<path d=\"M6 9l6 6 6-6\"/>",
+    "defect": null
+  },
+  {
+    "count": 24,
+    "lineNo": 1947,
+    "screen": "2. التمارين (Workout)",
+    "role": "زر إنهاء التمرين (علامة صح)",
+    "attrs": " class=\"w-5 h-5 text-white\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2.5\" stroke-linecap=\"round\" stroke-linejoin=\"round\"",
+    "body": "<polyline points=\"20 6 9 17 4 12\"/>",
+    "defect": null
+  },
+  {
+    "count": 25,
+    "lineNo": 1972,
+    "screen": "3. التغذية (Nutrition)",
+    "role": "شارة تنبيه الأوزان قبل الطهي",
+    "attrs": " class=\"w-3 h-3\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2.5\"",
+    "body": "<circle cx=\"12\" cy=\"12\" r=\"10\"/><path d=\"M12 16v-4\"/><path d",
+    "defect": "بايظة تماماً (الأيقونة التي أشرت إليها): رُسمت بمسار M12 8h.01 ومسار v-4 وبدون stroke-linecap=\"round\" وبحجم صغير جداً w-3 h-3، مما جعلها تظهر كنقطة دائرية مصمتة في المنتصف ⊙ بدلاً من علامة معلومات واضحة."
+  },
+  {
+    "count": 26,
+    "lineNo": 1985,
+    "screen": "3. التغذية (Nutrition)",
+    "role": "أيقونة الترطيب والماء (قطرة الماء)",
+    "attrs": " class=\"w-3.5 h-3.5 fill-current\" viewBox=\"0 0 24 24\"",
+    "body": "<path d=\"M12 2.69l5.66 5.66a8 8 0 1 1-11.31 0z\"/>",
+    "defect": null
+  },
+  {
+    "count": 27,
+    "lineNo": 2018,
+    "screen": "3. التغذية (Nutrition)",
+    "role": "أيقونة",
+    "attrs": " class=\"w-3.5 h-3.5\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2.2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"",
+    "body": "<circle cx=\"12\" cy=\"12\" r=\"5\"/><line x1=\"12\" y1=\"1\" x2=\"12\" ",
+    "defect": null
+  },
+  {
+    "count": 28,
+    "lineNo": 2037,
+    "screen": "3. التغذية (Nutrition)",
+    "role": "زر تبديل الصنف الغذائي",
+    "attrs": " class=\"w-3.5 h-3.5\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2.2\"",
+    "body": "<path d=\"M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4\"/>",
+    "defect": null
+  },
+  {
+    "count": 29,
+    "lineNo": 2055,
+    "screen": "3. التغذية (Nutrition)",
+    "role": "زر تبديل الصنف الغذائي",
+    "attrs": " class=\"w-3.5 h-3.5\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2.2\"",
+    "body": "<path d=\"M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4\"/>",
+    "defect": null
+  },
+  {
+    "count": 30,
+    "lineNo": 2064,
+    "screen": "3. التغذية (Nutrition)",
+    "role": "أيقونة",
+    "attrs": " class=\"w-3.5 h-3.5 text-[#007AFF] shrink-0 mt-0.5\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2.2\"",
+    "body": "<path d=\"M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 ",
+    "defect": null
+  },
+  {
+    "count": 31,
+    "lineNo": 2077,
+    "screen": "3. التغذية (Nutrition)",
+    "role": "أيقونة وجبة الغداء (الملعقة والشوكة)",
+    "attrs": " class=\"w-3.5 h-3.5\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2.2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"",
+    "body": "<path d=\"M18 2v6a3 3 0 0 1-3 3 3 3 0 0 1-3-3V2\"/><path d=\"M1",
+    "defect": null
+  },
+  {
+    "count": 32,
+    "lineNo": 2096,
+    "screen": "3. التغذية (Nutrition)",
+    "role": "زر تبديل الصنف الغذائي",
+    "attrs": " class=\"w-3.5 h-3.5\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2.2\"",
+    "body": "<path d=\"M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4\"/>",
+    "defect": null
+  },
+  {
+    "count": 33,
+    "lineNo": 2114,
+    "screen": "3. التغذية (Nutrition)",
+    "role": "زر تبديل الصنف الغذائي",
+    "attrs": " class=\"w-3.5 h-3.5\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2.2\"",
+    "body": "<path d=\"M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4\"/>",
+    "defect": null
+  },
+  {
+    "count": 34,
+    "lineNo": 2132,
+    "screen": "3. التغذية (Nutrition)",
+    "role": "قفل الصنف الثابت (غير قابل للاستبدال)",
+    "attrs": " class=\"w-3 h-3 text-slate-400\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\"",
+    "body": "<rect x=\"3\" y=\"11\" width=\"18\" height=\"11\" rx=\"2\"/><path d=\"M",
+    "defect": "صغيرة جداً ومطمسة: القفل مرسوم بحجم 12px بسماكة 2px مما يجعل فتحة القفل 1 بكسل فقط وتبدو ككتلة رمادية غير واضحة."
+  },
+  {
+    "count": 35,
+    "lineNo": 2141,
+    "screen": "3. التغذية (Nutrition)",
+    "role": "أيقونة",
+    "attrs": " class=\"w-3.5 h-3.5 text-[#007AFF] shrink-0 mt-0.5\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2.2\"",
+    "body": "<path d=\"M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 ",
+    "defect": null
+  },
+  {
+    "count": 36,
+    "lineNo": 2154,
+    "screen": "3. التغذية (Nutrition)",
+    "role": "أيقونة وجبة السناك (الصاعقة)",
+    "attrs": " class=\"w-3.5 h-3.5\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2.2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"",
+    "body": "<polygon points=\"13 2 3 14 12 14 11 22 21 10 12 10 13 2\"/>",
+    "defect": null
+  },
+  {
+    "count": 37,
+    "lineNo": 2172,
+    "screen": "3. التغذية (Nutrition)",
+    "role": "زر تبديل الصنف الغذائي",
+    "attrs": " class=\"w-3.5 h-3.5\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2.2\"",
+    "body": "<path d=\"M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4\"/>",
+    "defect": null
+  },
+  {
+    "count": 38,
+    "lineNo": 2189,
+    "screen": "3. التغذية (Nutrition)",
+    "role": "زر تبديل الصنف الغذائي",
+    "attrs": " class=\"w-3.5 h-3.5\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2.2\"",
+    "body": "<path d=\"M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4\"/>",
+    "defect": null
+  },
+  {
+    "count": 39,
+    "lineNo": 2198,
+    "screen": "3. التغذية (Nutrition)",
+    "role": "أيقونة",
+    "attrs": " class=\"w-3.5 h-3.5 text-[#007AFF] shrink-0 mt-0.5\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2.2\"",
+    "body": "<path d=\"M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 ",
+    "defect": null
+  },
+  {
+    "count": 40,
+    "lineNo": 2211,
+    "screen": "3. التغذية (Nutrition)",
+    "role": "أيقونة وجبة العشاء (الهلال)",
+    "attrs": " class=\"w-3.5 h-3.5\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2.2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"",
+    "body": "<path d=\"M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z\"/>",
+    "defect": null
+  },
+  {
+    "count": 41,
+    "lineNo": 2229,
+    "screen": "3. التغذية (Nutrition)",
+    "role": "زر تبديل الصنف الغذائي",
+    "attrs": " class=\"w-3.5 h-3.5\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2.2\"",
+    "body": "<path d=\"M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4\"/>",
+    "defect": null
+  },
+  {
+    "count": 42,
+    "lineNo": 2246,
+    "screen": "3. التغذية (Nutrition)",
+    "role": "زر تبديل الصنف الغذائي",
+    "attrs": " class=\"w-3.5 h-3.5\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2.2\"",
+    "body": "<path d=\"M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4\"/>",
+    "defect": null
+  },
+  {
+    "count": 43,
+    "lineNo": 2255,
+    "screen": "3. التغذية (Nutrition)",
+    "role": "أيقونة",
+    "attrs": " class=\"w-3.5 h-3.5 text-[#007AFF] shrink-0 mt-0.5\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2.2\"",
+    "body": "<path d=\"M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 ",
+    "defect": null
+  },
+  {
+    "count": 44,
+    "lineNo": 2306,
+    "screen": "4. المتابعة (Check-in)",
+    "role": "تبويب المتابعة",
+    "attrs": " class=\"w-3.5 h-3.5\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2.5\"",
+    "body": "<path d=\"M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 ",
+    "defect": "بايظة/مشوهة: نقطة علامة التعجب أو التنبيه تعتمد على طول خط صفري بدون stroke-linecap=\"round\"، مما يجعل النقطة تختفي أو تظهر كشريحة مشوهة."
+  },
+  {
+    "count": 45,
+    "lineNo": 2329,
+    "screen": "4. المتابعة (Check-in)",
+    "role": "أيقونة",
+    "attrs": " class=\"w-3.5 h-3.5\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2.2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"",
+    "body": "<path d=\"M12 3v18M3 12h18M5 7l14 10M5 17L19 7\"/>",
+    "defect": null
+  },
+  {
+    "count": 46,
+    "lineNo": 2353,
+    "screen": "4. المتابعة (Check-in)",
+    "role": "ستبر وزن المتابعة (+ / -)",
+    "attrs": " class=\"w-3 h-3\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2.5\" stroke-linecap=\"round\"",
+    "body": "<line x1=\"6\" y1=\"12\" x2=\"18\" y2=\"12\"/>",
+    "defect": "خط رفيع وحاد: علامة الزائد والناقص (+) و (-) مرسومة بحجم صغير 12px وبدون انحناء في الأطراف (round linecap)."
+  },
+  {
+    "count": 47,
+    "lineNo": 2357,
+    "screen": "4. المتابعة (Check-in)",
+    "role": "أيقونة",
+    "attrs": " class=\"w-3 h-3\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2.5\" stroke-linecap=\"round\"",
+    "body": "<line x1=\"12\" y1=\"6\" x2=\"12\" y2=\"18\"/><line x1=\"6\" y1=\"12\" x",
+    "defect": null
+  },
+  {
+    "count": 48,
+    "lineNo": 2384,
+    "screen": "4. المتابعة (Check-in)",
+    "role": "ستبر خصر المتابعة (+ / -)",
+    "attrs": " class=\"w-3 h-3\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2.5\" stroke-linecap=\"round\"",
+    "body": "<line x1=\"6\" y1=\"12\" x2=\"18\" y2=\"12\"/>",
+    "defect": "خط رفيع وحاد: علامة الزائد والناقص (+) و (-) مرسومة بحجم صغير 12px وبدون انحناء في الأطراف (round linecap)."
+  },
+  {
+    "count": 49,
+    "lineNo": 2388,
+    "screen": "4. المتابعة (Check-in)",
+    "role": "أيقونة",
+    "attrs": " class=\"w-3 h-3\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2.5\" stroke-linecap=\"round\"",
+    "body": "<line x1=\"12\" y1=\"6\" x2=\"12\" y2=\"18\"/><line x1=\"6\" y1=\"12\" x",
+    "defect": null
+  },
+  {
+    "count": 50,
+    "lineNo": 2412,
+    "screen": "4. المتابعة (Check-in)",
+    "role": "أيقونة",
+    "attrs": " class=\"w-3.5 h-3.5\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2.2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"",
+    "body": "<path d=\"M22 12h-4l-3 9L9 3l-3 9H2\"/>",
+    "defect": null
+  },
+  {
+    "count": 51,
+    "lineNo": 2518,
+    "screen": "4. المتابعة (Check-in)",
+    "role": "أيقونة",
+    "attrs": " class=\"w-3.5 h-3.5\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2.2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"",
+    "body": "<path d=\"M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-",
+    "defect": null
+  },
+  {
+    "count": 52,
+    "lineNo": 2535,
+    "screen": "4. المتابعة (Check-in)",
+    "role": "زر حذف صورة المتابعة",
+    "attrs": " class=\"w-4 h-4\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2.5\"",
+    "body": "<line x1=\"18\" y1=\"6\" x2=\"6\" y2=\"18\"/><line x1=\"6\" y1=\"6\" x2=",
+    "defect": null
+  },
+  {
+    "count": 53,
+    "lineNo": 2541,
+    "screen": "4. المتابعة (Check-in)",
+    "role": "أيقونة",
+    "attrs": " class=\"w-4 h-4\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\"",
+    "body": "<path d=\"M12 5v14M5 12h14\"/>",
+    "defect": null
+  },
+  {
+    "count": 54,
+    "lineNo": 2554,
+    "screen": "4. المتابعة (Check-in)",
+    "role": "زر حذف صورة المتابعة",
+    "attrs": " class=\"w-4 h-4\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2.5\"",
+    "body": "<line x1=\"18\" y1=\"6\" x2=\"6\" y2=\"18\"/><line x1=\"6\" y1=\"6\" x2=",
+    "defect": null
+  },
+  {
+    "count": 55,
+    "lineNo": 2560,
+    "screen": "4. المتابعة (Check-in)",
+    "role": "أيقونة",
+    "attrs": " class=\"w-4 h-4\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\"",
+    "body": "<path d=\"M12 5v14M5 12h14\"/>",
+    "defect": null
+  },
+  {
+    "count": 56,
+    "lineNo": 2573,
+    "screen": "4. المتابعة (Check-in)",
+    "role": "زر حذف صورة المتابعة",
+    "attrs": " class=\"w-4 h-4\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2.5\"",
+    "body": "<line x1=\"18\" y1=\"6\" x2=\"6\" y2=\"18\"/><line x1=\"6\" y1=\"6\" x2=",
+    "defect": null
+  },
+  {
+    "count": 57,
+    "lineNo": 2579,
+    "screen": "4. المتابعة (Check-in)",
+    "role": "أيقونة",
+    "attrs": " class=\"w-4 h-4\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\"",
+    "body": "<path d=\"M12 5v14M5 12h14\"/>",
+    "defect": null
+  },
+  {
+    "count": 58,
+    "lineNo": 2601,
+    "screen": "4. المتابعة (Check-in)",
+    "role": "زر إرسال المتابعة",
+    "attrs": " class=\"w-4 h-4 rtl:rotate-180 shrink-0\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2.4\" stroke-linecap=\"round\" stroke-linejoin=\"round\"",
+    "body": "<path d=\"M19 12H5M12 19l-7-7 7-7\"/>",
+    "defect": null
+  },
+  {
+    "count": 59,
+    "lineNo": 2658,
+    "screen": "4. المتابعة (Check-in)",
+    "role": "أيقونة",
+    "attrs": " viewBox=\"0 0 300 70\" class=\"w-full h-14 overflow-visible\"",
+    "body": "<!-- Gradient Area -->\n                    <defs>\n          ",
+    "defect": null
+  },
+  {
+    "count": 60,
+    "lineNo": 2836,
+    "screen": "5. حسابي (Account)",
+    "role": "أيقونة",
+    "attrs": " class=\"w-4 h-4 text-[#007AFF]\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"",
+    "body": "<path d=\"M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 ",
+    "defect": null
+  },
+  {
+    "count": 61,
+    "lineNo": 2845,
+    "screen": "5. حسابي (Account)",
+    "role": "أيقونة",
+    "attrs": " class=\"w-3.5 h-3.5 rtl:rotate-180\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2.4\" stroke-linecap=\"round\" stroke-linejoin=\"round\"",
+    "body": "<path d=\"M9 18l6-6-6-6\"/>",
+    "defect": null
+  },
+  {
+    "count": 62,
+    "lineNo": 2896,
+    "screen": "5. حسابي (Account)",
+    "role": "أيقونة",
+    "attrs": " class=\"w-4 h-4\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"",
+    "body": "<path d=\"M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0",
+    "defect": null
+  },
+  {
+    "count": 63,
+    "lineNo": 2912,
+    "screen": "5. حسابي (Account)",
+    "role": "أيقونة",
+    "attrs": " class=\"w-4 h-4\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"",
+    "body": "<path d=\"M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4\"/><polyli",
+    "defect": null
+  },
+  {
+    "count": 64,
+    "lineNo": 2921,
+    "screen": "5. حسابي (Account)",
+    "role": "أيقونة",
+    "attrs": " class=\"w-3.5 h-3.5\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2.4\" stroke-linecap=\"round\" stroke-linejoin=\"round\"",
+    "body": "<path d=\"M12 19V5M5 12l7-7 7 7\"/>",
+    "defect": null
+  },
+  {
+    "count": 65,
+    "lineNo": 3025,
+    "screen": "5. حسابي (Account)",
+    "role": "أيقونة",
+    "attrs": " class=\"w-4 h-4\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"",
+    "body": "<path d=\"M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 ",
+    "defect": null
+  },
+  {
+    "count": 66,
+    "lineNo": 3034,
+    "screen": "5. حسابي (Account)",
+    "role": "أيقونة",
+    "attrs": " class=\"w-3.5 h-3.5 rtl:rotate-180\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2.4\" stroke-linecap=\"round\" stroke-linejoin=\"round\"",
+    "body": "<path d=\"M9 18l6-6-6-6\"/>",
+    "defect": null
+  },
+  {
+    "count": 67,
+    "lineNo": 3042,
+    "screen": "5. حسابي (Account)",
+    "role": "أيقونة",
+    "attrs": " class=\"w-4 h-4\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"",
+    "body": "<path d=\"M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0",
+    "defect": null
+  },
+  {
+    "count": 68,
+    "lineNo": 3048,
+    "screen": "5. حسابي (Account)",
+    "role": "أيقونة",
+    "attrs": " class=\"w-4 h-4 text-[#C7C7CC] group-hover:text-[#1C1C1E] transition-colors rtl:rotate-180 shrink-0\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2.2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"",
+    "body": "<path d=\"M9 18l6-6-6-6\"/>",
+    "defect": null
+  },
+  {
+    "count": 69,
+    "lineNo": 3055,
+    "screen": "5. حسابي (Account)",
+    "role": "أيقونة",
+    "attrs": " class=\"w-4 h-4\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"",
+    "body": "<path d=\"M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z\"/>",
+    "defect": null
+  },
+  {
+    "count": 70,
+    "lineNo": 3061,
+    "screen": "5. حسابي (Account)",
+    "role": "أيقونة",
+    "attrs": " class=\"w-4 h-4 text-[#C7C7CC] group-hover:text-[#1C1C1E] transition-colors rtl:rotate-180 shrink-0\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2.2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"",
+    "body": "<path d=\"M9 18l6-6-6-6\"/>",
+    "defect": null
+  },
+  {
+    "count": 71,
+    "lineNo": 3075,
+    "screen": "5. حسابي (Account)",
+    "role": "أيقونة",
+    "attrs": " class=\"w-4 h-4\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"",
+    "body": "<path d=\"M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4\"/><polyline",
+    "defect": null
+  },
+  {
+    "count": 72,
+    "lineNo": 3079,
+    "screen": "5. حسابي (Account)",
+    "role": "أيقونة",
+    "attrs": " class=\"w-4 h-4 text-[#C7C7CC] group-hover:text-[#1C1C1E] transition-colors rtl:rotate-180 shrink-0\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2.2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"",
+    "body": "<path d=\"M9 18l6-6-6-6\"/>",
+    "defect": null
+  },
+  {
+    "count": 73,
+    "lineNo": 3086,
+    "screen": "5. حسابي (Account)",
+    "role": "أيقونة",
+    "attrs": " class=\"w-4 h-4\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"",
+    "body": "<polyline points=\"3 6 5 6 21 6\"/><path d=\"M19 6v14a2 2 0 0 1",
+    "defect": null
+  },
+  {
+    "count": 74,
+    "lineNo": 3092,
+    "screen": "5. حسابي (Account)",
+    "role": "أيقونة",
+    "attrs": " class=\"w-4 h-4 text-[#FF3B30]/40 group-hover:text-[#FF3B30] transition-colors rtl:rotate-180 shrink-0\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2.2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"",
+    "body": "<path d=\"M9 18l6-6-6-6\"/>",
+    "defect": null
+  },
+  {
+    "count": 75,
+    "lineNo": 3118,
+    "screen": "6. شريط التنقل السفلي (Bottom Nav)",
+    "role": "تبويب اليوم (الرئيسية)",
+    "attrs": " class=\"w-[20px] h-[20px]\" viewBox=\"0 0 24 24\" fill=\"currentColor\"",
+    "body": "<path d=\"M12 2.1c-.43 0-.85.18-1.15.49L2.6 10.38c-.46.47-.46",
+    "defect": null
+  },
+  {
+    "count": 76,
+    "lineNo": 3132,
+    "screen": "6. شريط التنقل السفلي (Bottom Nav)",
+    "role": "تبويب التمارين",
+    "attrs": " class=\"w-[22px] h-[20px]\" viewBox=\"0 0 24 24\" fill=\"currentColor\"",
+    "body": "<rect x=\"1.5\" y=\"6\" width=\"3.5\" height=\"12\" rx=\"1.5\"/>\n     ",
+    "defect": null
+  },
+  {
+    "count": 77,
+    "lineNo": 3150,
+    "screen": "6. شريط التنقل السفلي (Bottom Nav)",
+    "role": "تبويب التغذية (طبق السلطة)",
+    "attrs": " class=\"w-[20px] h-[20px]\" viewBox=\"0 0 24 24\" fill=\"currentColor\"",
+    "body": "<path d=\"M12 3.2c-1.4 0-2.6.9-3.1 2.2-.8-.3-1.8-.1-2.4.6-1 1",
+    "defect": null
+  },
+  {
+    "count": 78,
+    "lineNo": 3165,
+    "screen": "6. شريط التنقل السفلي (Bottom Nav)",
+    "role": "تبويب المتابعة",
+    "attrs": " class=\"w-[19px] h-[20px]\" viewBox=\"0 0 24 24\" fill=\"currentColor\"",
+    "body": "<path fill-rule=\"evenodd\" clip-rule=\"evenodd\" d=\"M9 2c-.55 0",
+    "defect": null
+  },
+  {
+    "count": 79,
+    "lineNo": 3179,
+    "screen": "6. شريط التنقل السفلي (Bottom Nav)",
+    "role": "تبويب حسابي",
+    "attrs": " class=\"w-[20px] h-[20px]\" viewBox=\"0 0 24 24\" fill=\"currentColor\"",
+    "body": "<path fill-rule=\"evenodd\" clip-rule=\"evenodd\" d=\"M12 2C6.48 ",
+    "defect": null
+  },
+  {
+    "count": 80,
+    "lineNo": 3204,
+    "screen": "7. النوافذ المنبثقة (Modals & Sheets)",
+    "role": "أيقونة",
+    "attrs": " class=\"w-3.5 h-3.5\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"",
+    "body": "<rect x=\"3\" y=\"11\" width=\"18\" height=\"11\" rx=\"2\" ry=\"2\"/><pa",
+    "defect": null
+  },
+  {
+    "count": 81,
+    "lineNo": 3209,
+    "screen": "7. النوافذ المنبثقة (Modals & Sheets)",
+    "role": "أيقونة",
+    "attrs": " class=\"w-3.5 h-3.5\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2.2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"",
+    "body": "<line x1=\"18\" y1=\"6\" x2=\"6\" y2=\"18\"></line>\n                ",
+    "defect": null
+  },
+  {
+    "count": 82,
+    "lineNo": 3240,
+    "screen": "7. النوافذ المنبثقة (Modals & Sheets)",
+    "role": "أيقونة",
+    "attrs": " class=\"w-3.5 h-3.5\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2.2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"",
+    "body": "<line x1=\"18\" y1=\"6\" x2=\"6\" y2=\"18\"></line>\n                ",
+    "defect": null
+  },
+  {
+    "count": 83,
+    "lineNo": 3250,
+    "screen": "7. النوافذ المنبثقة (Modals & Sheets)",
+    "role": "أيقونة",
+    "attrs": " class=\"w-5 h-5\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"",
+    "body": "<path d=\"M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4\"/><polyli",
+    "defect": null
+  },
+  {
+    "count": 84,
+    "lineNo": 3281,
+    "screen": "7. النوافذ المنبثقة (Modals & Sheets)",
+    "role": "أيقونة",
+    "attrs": " class=\"w-4 h-4\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2.2\"",
+    "body": "<line x1=\"18\" y1=\"6\" x2=\"6\" y2=\"18\"/><line x1=\"6\" y1=\"6\" x2=",
+    "defect": null
+  },
+  {
+    "count": 85,
+    "lineNo": 3323,
+    "screen": "7. النوافذ المنبثقة (Modals & Sheets)",
+    "role": "أيقونة",
+    "attrs": " class=\"w-3.5 h-3.5\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2.2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"",
+    "body": "<line x1=\"18\" y1=\"6\" x2=\"6\" y2=\"18\"></line>\n                ",
+    "defect": null
+  },
+  {
+    "count": 86,
+    "lineNo": 3352,
+    "screen": "7. النوافذ المنبثقة (Modals & Sheets)",
+    "role": "أيقونة",
+    "attrs": " class=\"w-3.5 h-3.5\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2.2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"",
+    "body": "<line x1=\"18\" y1=\"6\" x2=\"6\" y2=\"18\"></line>\n                ",
+    "defect": null
+  },
+  {
+    "count": 87,
+    "lineNo": 3388,
+    "screen": "7. النوافذ المنبثقة (Modals & Sheets)",
+    "role": "أيقونة",
+    "attrs": " class=\"w-4 h-4\" fill=\"none\" viewBox=\"0 0 24 24\" stroke=\"currentColor\"",
+    "body": "<path stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-",
+    "defect": null
+  },
+  {
+    "count": 88,
+    "lineNo": 3397,
+    "screen": "7. النوافذ المنبثقة (Modals & Sheets)",
+    "role": "أيقونة",
+    "attrs": " class=\"w-3.5 h-3.5 rotate-180\" fill=\"none\" viewBox=\"0 0 24 24\" stroke=\"currentColor\"",
+    "body": "<path stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-",
+    "defect": null
+  },
+  {
+    "count": 89,
+    "lineNo": 3416,
+    "screen": "7. النوافذ المنبثقة (Modals & Sheets)",
+    "role": "أيقونة",
+    "attrs": " class=\"w-3.5 h-3.5\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2.2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"",
+    "body": "<line x1=\"18\" y1=\"6\" x2=\"6\" y2=\"18\"></line>\n                ",
+    "defect": null
+  },
+  {
+    "count": 90,
+    "lineNo": 3503,
+    "screen": "7. النوافذ المنبثقة (Modals & Sheets)",
+    "role": "أيقونة",
+    "attrs": " class=\"w-3.5 h-3.5\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2.2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"",
+    "body": "<line x1=\"18\" y1=\"6\" x2=\"6\" y2=\"18\"></line>\n                ",
+    "defect": null
+  },
+  {
+    "count": 91,
+    "lineNo": 3525,
+    "screen": "7. النوافذ المنبثقة (Modals & Sheets)",
+    "role": "أيقونة تحذير تأكيد الإجراء",
+    "attrs": " class=\"w-6 h-6\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"",
+    "body": "<path d=\"M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 ",
+    "defect": null
+  },
+  {
+    "count": 92,
+    "lineNo": 3604,
+    "screen": "7. النوافذ المنبثقة (Modals & Sheets)",
+    "role": "أيقونة الإشعار السريع (Toast)",
+    "attrs": " class=\"w-2.5 h-2.5\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"3\" stroke-linecap=\"round\" stroke-linejoin=\"round\"",
+    "body": "<polyline points=\"20 6 9 17 4 12\"></polyline>",
+    "defect": "متناهية الصغر: علامة الصح في التوست بحجم 10px فقط."
+  },
+  {
+    "count": 93,
+    "lineNo": 3868,
+    "screen": "8. القوالب البرمجية (Dynamic JS)",
+    "role": "سهم الانتقال لعرض الوجبات",
+    "attrs": " class=\"w-3 h-3 rtl:rotate-180\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2.2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"",
+    "body": "<path d=\"M9 18l6-6-6-6\"/>",
+    "defect": null
+  },
+  {
+    "count": 94,
+    "lineNo": 3877,
+    "screen": "8. القوالب البرمجية (Dynamic JS)",
+    "role": "أيقونة",
+    "attrs": " class=\"w-6 h-6\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"",
+    "body": "<path d=\"M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072",
+    "defect": null
+  },
+  {
+    "count": 95,
+    "lineNo": 3901,
+    "screen": "8. القوالب البرمجية (Dynamic JS)",
+    "role": "أيقونة",
+    "attrs": " class=\"w-5 h-5\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"",
+    "body": "<path d=\"M6 18h12M4 9h16M7 6h10M7 12h10M9 21h6\"/>",
+    "defect": null
+  },
+  {
+    "count": 96,
+    "lineNo": 3922,
+    "screen": "8. القوالب البرمجية (Dynamic JS)",
+    "role": "أيقونة",
+    "attrs": " class=\"w-5 h-5\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"",
+    "body": "<path d=\"M2 22s5.5-1.5 8-6c2.5-4.5 3-10 3-10s-5.5.5-10 3c-4.",
+    "defect": null
+  },
+  {
+    "count": 97,
+    "lineNo": 3944,
+    "screen": "8. القوالب البرمجية (Dynamic JS)",
+    "role": "أيقونة",
+    "attrs": " class=\"w-5 h-5\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"",
+    "body": "<path d=\"M12 2a5 5 0 0 1 5 5c0 3-5 9-5 9s-5-6-5-9a5 5 0 0 1 ",
+    "defect": null
+  },
+  {
+    "count": 98,
+    "lineNo": 3965,
+    "screen": "8. القوالب البرمجية (Dynamic JS)",
+    "role": "أيقونة",
+    "attrs": " class=\"w-5 h-5\" viewBox=\"0 0 24 24\" fill=\"currentColor\"",
+    "body": "<path d=\"M12 2.69l5.66 5.66a8 8 0 1 1-11.31 0z\"/>",
+    "defect": null
+  },
+  {
+    "count": 99,
+    "lineNo": 3995,
+    "screen": "8. القوالب البرمجية (Dynamic JS)",
+    "role": "سهم الانتقال لعرض الوجبات",
+    "attrs": " class=\"w-3 h-3 rtl:rotate-180\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2.2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"",
+    "body": "<path d=\"M9 18l6-6-6-6\"/>",
+    "defect": null
+  },
+  {
+    "count": 100,
+    "lineNo": 4003,
+    "screen": "8. القوالب البرمجية (Dynamic JS)",
+    "role": "أيقونة",
+    "attrs": " class=\"w-6 h-6\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"",
+    "body": "<path d=\"M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072",
+    "defect": null
+  },
+  {
+    "count": 101,
+    "lineNo": 4023,
+    "screen": "8. القوالب البرمجية (Dynamic JS)",
+    "role": "أيقونة",
+    "attrs": " class=\"w-4.5 h-4.5\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"",
+    "body": "<path d=\"M6 18h12M4 9h16M7 6h10M7 12h10M9 21h6\"/>",
+    "defect": null
+  },
+  {
+    "count": 102,
+    "lineNo": 4035,
+    "screen": "8. القوالب البرمجية (Dynamic JS)",
+    "role": "أيقونة",
+    "attrs": " class=\"w-4.5 h-4.5\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"",
+    "body": "<path d=\"M2 22s5.5-1.5 8-6c2.5-4.5 3-10 3-10s-5.5.5-10 3c-4.",
+    "defect": null
+  },
+  {
+    "count": 103,
+    "lineNo": 4047,
+    "screen": "8. القوالب البرمجية (Dynamic JS)",
+    "role": "أيقونة",
+    "attrs": " class=\"w-4.5 h-4.5\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"",
+    "body": "<path d=\"M12 2a5 5 0 0 1 5 5c0 3-5 9-5 9s-5-6-5-9a5 5 0 0 1 ",
+    "defect": null
+  },
+  {
+    "count": 104,
+    "lineNo": 4061,
+    "screen": "8. القوالب البرمجية (Dynamic JS)",
+    "role": "تبويب اليوم (الرئيسية)",
+    "attrs": " class=\"w-4 h-4\" viewBox=\"0 0 24 24\" fill=\"currentColor\"",
+    "body": "<path d=\"M12 2.69l5.66 5.66a8 8 0 1 1-11.31 0z\"/>",
+    "defect": null
+  },
+  {
+    "count": 105,
+    "lineNo": 4081,
+    "screen": "8. القوالب البرمجية (Dynamic JS)",
+    "role": "سهم الانتقال لعرض الوجبات",
+    "attrs": " class=\"w-3 h-3 rtl:rotate-180\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2.5\" stroke-linecap=\"round\" stroke-linejoin=\"round\"",
+    "body": "<path d=\"M9 18l6-6-6-6\"/>",
+    "defect": null
+  },
+  {
+    "count": 106,
+    "lineNo": 4089,
+    "screen": "8. القوالب البرمجية (Dynamic JS)",
+    "role": "أيقونة",
+    "attrs": " class=\"w-full h-full -rotate-90 transform\" viewBox=\"0 0 76 76\"",
+    "body": "<defs>\n                  <filter id=\"appleRingDepthDynamic\" ",
+    "defect": null
+  },
+  {
+    "count": 107,
+    "lineNo": 4160,
+    "screen": "8. القوالب البرمجية (Dynamic JS)",
+    "role": "أيقونة",
+    "attrs": " class=\"w-2.5 h-2.5 text-[#00C7BE]\" viewBox=\"0 0 24 24\" fill=\"currentColor\"",
+    "body": "<path d=\"M12 2.69l5.66 5.66a8 8 0 1 1-11.31 0z\"/>",
+    "defect": null
+  },
+  {
+    "count": 108,
+    "lineNo": 4199,
+    "screen": "8. القوالب البرمجية (Dynamic JS)",
+    "role": "أيقونة",
+    "attrs": " class=\"w-5 h-5\" fill=\"none\" stroke=\"currentColor\" viewBox=\"0 0 24 24\"",
+    "body": "<path stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-",
+    "defect": null
+  },
+  {
+    "count": 109,
+    "lineNo": 4207,
+    "screen": "8. القوالب البرمجية (Dynamic JS)",
+    "role": "سهم مراجعة الأداء",
+    "attrs": " class=\"w-4 h-4 rtl:rotate-180 text-[#8E8E93]\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2.4\" stroke-linecap=\"round\" stroke-linejoin=\"round\"",
+    "body": "<path d=\"M9 18l6-6-6-6\"/>",
+    "defect": null
+  },
+  {
+    "count": 110,
+    "lineNo": 4247,
+    "screen": "8. القوالب البرمجية (Dynamic JS)",
+    "role": "أيقونة",
+    "attrs": " class=\"w-4.5 h-4.5 text-emerald-600\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\"",
+    "body": "<path d=\"M12 2a10 10 0 0 1 10 10c0 5.5-4.5 10-10 10S2 17.5 2",
+    "defect": null
+  },
+  {
+    "count": 111,
+    "lineNo": 4256,
+    "screen": "8. القوالب البرمجية (Dynamic JS)",
+    "role": "أيقونة",
+    "attrs": " class=\"w-4.5 h-4.5 text-[#7B4FFE]\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\"",
+    "body": "<path d=\"M9 11l3 3L22 4\"/><path d=\"M21 12v7a2 2 0 0 1-2 2H5a",
+    "defect": null
+  },
+  {
+    "count": 112,
+    "lineNo": 4324,
+    "screen": "8. القوالب البرمجية (Dynamic JS)",
+    "role": "أيقونة",
+    "attrs": " class=\"w-4 h-4 shrink-0 rtl:rotate-180\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2.4\" stroke-linecap=\"round\" stroke-linejoin=\"round\"",
+    "body": "<path d=\"M19 12H5M12 19l-7-7 7-7\"/>",
+    "defect": null
+  },
+  {
+    "count": 113,
+    "lineNo": 5189,
+    "screen": "8. القوالب البرمجية (Dynamic JS)",
+    "role": "أيقونة",
+    "attrs": " class=\"w-4 h-4\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2.5\" stroke-linecap=\"round\" stroke-linejoin=\"round\"",
+    "body": "<polyline points=\"20 6 9 17 4 12\"/>",
+    "defect": null
+  },
+  {
+    "count": 114,
+    "lineNo": 5232,
+    "screen": "8. القوالب البرمجية (Dynamic JS)",
+    "role": "زر نسخ أوزان وعدات السابق",
+    "attrs": " class=\"w-3 h-3 shrink-0\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2.2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"",
+    "body": "<rect x=\"9\" y=\"9\" width=\"13\" height=\"13\" rx=\"2\" ry=\"2\"></rec",
+    "defect": null
+  },
+  {
+    "count": 115,
+    "lineNo": 5277,
+    "screen": "8. القوالب البرمجية (Dynamic JS)",
+    "role": "زر طريقة الأداء (مثلث التشغيل Play)",
+    "attrs": " class=\"w-3.5 h-3.5 text-[#007AFF] shrink-0 fill-current\" viewBox=\"0 0 24 24\"",
+    "body": "<polygon points=\"5 3 19 12 5 21 5 3\"/>",
+    "defect": null
+  },
+  {
+    "count": 116,
+    "lineNo": 5285,
+    "screen": "8. القوالب البرمجية (Dynamic JS)",
+    "role": "زر بدائل التمرين (أسهم التبديل)",
+    "attrs": " class=\"w-3.5 h-3.5 text-[#8E8E93] shrink-0 fill-current\" viewBox=\"0 0 24 24\"",
+    "body": "<path d=\"M12 4V1L8 5l4 4V6c3.31 0 6 2.69 6 6 0 1.01-.25 1.97",
+    "defect": null
+  },
+  {
+    "count": 117,
+    "lineNo": 5291,
+    "screen": "8. القوالب البرمجية (Dynamic JS)",
+    "role": "أيقونة",
+    "attrs": " id=\"tech${idx}-arrow\" class=\"w-4 h-4 transition-transform duration-200\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2.2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"",
+    "body": "<path d=\"M6 9l6 6 6-6\"/>",
+    "defect": null
+  },
+  {
+    "count": 118,
+    "lineNo": 6330,
+    "screen": "8. القوالب البرمجية (Dynamic JS)",
+    "role": "أيقونة",
+    "attrs": " class=\"w-3 h-3\" fill=\"none\" stroke=\"currentColor\" viewBox=\"0 0 24 24\"",
+    "body": "<path stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-",
+    "defect": null
+  },
+  {
+    "count": 119,
+    "lineNo": 6476,
+    "screen": "8. القوالب البرمجية (Dynamic JS)",
+    "role": "تبويب المتابعة",
+    "attrs": " class=\"w-4 h-4\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2.3\"",
+    "body": "<circle cx=\"12\" cy=\"12\" r=\"10\"/><polyline points=\"12 6 12 12",
+    "defect": null
+  },
+  {
+    "count": 120,
+    "lineNo": 6493,
+    "screen": "8. القوالب البرمجية (Dynamic JS)",
+    "role": "زر سجل التطور",
+    "attrs": " class=\"w-3.5 h-3.5 rtl:rotate-180\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2.4\"",
+    "body": "<path d=\"M9 18l6-6-6-6\"/>",
+    "defect": null
+  },
+  {
+    "count": 121,
+    "lineNo": 6508,
+    "screen": "8. القوالب البرمجية (Dynamic JS)",
+    "role": "تبويب المتابعة",
+    "attrs": " class=\"w-4 h-4\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2.4\"",
+    "body": "<path d=\"M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 ",
+    "defect": "بايظة/مشوهة: نقطة علامة التعجب أو التنبيه تعتمد على طول خط صفري بدون stroke-linecap=\"round\"، مما يجعل النقطة تختفي أو تظهر كشريحة مشوهة."
+  },
+  {
+    "count": 122,
+    "lineNo": 6527,
+    "screen": "8. القوالب البرمجية (Dynamic JS)",
+    "role": "زر إرسال المتابعة",
+    "attrs": " class=\"w-4 h-4 rtl:rotate-180 shrink-0\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2.4\"",
+    "body": "<path d=\"M19 12H5M12 19l-7-7 7-7\"/>",
+    "defect": null
+  },
+  {
+    "count": 123,
+    "lineNo": 6539,
+    "screen": "8. القوالب البرمجية (Dynamic JS)",
+    "role": "أيقونة",
+    "attrs": " class=\"w-4 h-4\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2.5\"",
+    "body": "<polyline points=\"20 6 9 17 4 12\"/>",
+    "defect": null
+  },
+  {
+    "count": 124,
+    "lineNo": 6574,
+    "screen": "8. القوالب البرمجية (Dynamic JS)",
+    "role": "زر سجل التطور",
+    "attrs": " class=\"w-3.5 h-3.5 rtl:rotate-180\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2.4\"",
+    "body": "<path d=\"M9 18l6-6-6-6\"/>",
+    "defect": null
+  },
+  {
+    "count": 125,
+    "lineNo": 6589,
+    "screen": "8. القوالب البرمجية (Dynamic JS)",
+    "role": "تبويب المتابعة",
+    "attrs": " class=\"w-4 h-4\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2.5\"",
+    "body": "<circle cx=\"12\" cy=\"12\" r=\"10\"/><line x1=\"12\" y1=\"8\" x2=\"12\"",
+    "defect": "بايظة/مشوهة: نقطة علامة التعجب أو التنبيه تعتمد على طول خط صفري بدون stroke-linecap=\"round\"، مما يجعل النقطة تختفي أو تظهر كشريحة مشوهة."
+  },
+  {
+    "count": 126,
+    "lineNo": 6603,
+    "screen": "8. القوالب البرمجية (Dynamic JS)",
+    "role": "أيقونة واتساب المدرب",
+    "attrs": " class=\"w-4 h-4 rtl:rotate-180\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2.4\"",
+    "body": "<path d=\"M9 18l6-6-6-6\"/>",
+    "defect": null
+  }
+]

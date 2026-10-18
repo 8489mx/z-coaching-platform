@@ -1,5 +1,6 @@
 import { DataTypes } from "sequelize";
 import sequelize from "../config/database.js";
+import { parseUserUnitPreferences } from "../../../frontend/src/utils/unitConverter.js";
 
 const User = sequelize.define("User", {
   id: {
@@ -125,6 +126,7 @@ const User = sequelize.define("User", {
 User.prototype.toJSON = function toJSON() {
   const values = { ...this.get({ plain: true }) };
   delete values.password;
+  values.preferences = parseUserUnitPreferences(values.notes);
   return values;
 };
 

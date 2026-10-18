@@ -37,7 +37,7 @@ export default function MealsTab({
               {targetMacros.cal} <span style={{ fontSize: '0.76rem', color: '#64748B', fontWeight: 500 }}>سعرة حرارية</span>
             </strong>
           </div>
-          <span style={{ fontSize: '0.72rem', color: '#0284C7', fontWeight: 700, background: '#F0F9FF', border: '1px solid #BAE6FD', padding: '2px 8px', borderRadius: '6px' }}>
+          <span style={{ fontSize: '0.67rem', color: '#0284C7', fontWeight: 700, background: '#F0F9FF', border: '1px solid #BAE6FD', padding: '2px 8px', borderRadius: '6px' }}>
             خطة استرشادية معتمدة
           </span>
         </div>
@@ -308,20 +308,30 @@ export default function MealsTab({
                       style={{
                         display: 'flex',
                         alignItems: 'center',
-                        gap: '3px',
-                        background: '#FFFFFF',
-                        color: '#0F172A',
-                        border: '1px solid #CBD5E1',
-                        borderRadius: '8px',
-                        padding: '3px 8px',
-                        fontSize: '0.68rem',
-                        fontWeight: 700,
-                        cursor: 'pointer'
+                        gap: '5px',
+                        background: '#F8FBFF',
+                        color: '#284C7C',
+                        border: '1px solid #D9E7F5',
+                        borderRadius: '9999px',
+                        height: '24px',
+                        padding: '0 8px',
+                        fontSize: '0.67rem',
+                        fontWeight: 600,
+                        cursor: 'pointer',
+                        transition: 'all 0.15s ease'
+                      }}
+                      onMouseEnter={(e) => {
+                        e.currentTarget.style.background = '#EBF4FE';
+                        e.currentTarget.style.borderColor = '#C5DBF0';
+                      }}
+                      onMouseLeave={(e) => {
+                        e.currentTarget.style.background = '#F8FBFF';
+                        e.currentTarget.style.borderColor = '#D9E7F5';
                       }}
                       title="تبديل الصنف ببديل مكافئ"
                     >
-                      <ArrowLeftRight style={{ width: '11px', height: '11px' }} />
-                      <span>بديل</span>
+                      <ArrowLeftRight style={{ width: '12px', height: '12px' }} />
+                      <span>تبديل</span>
                     </button>
                   </div>
                 </div>

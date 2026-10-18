@@ -3,12 +3,14 @@ import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/api_constants.dart';
 import '../../../core/network/api_client.dart';
 import '../../../core/storage/local_storage.dart';
+import '../../account/screens/account_screen.dart';
 import '../../auth/models/client_user.dart';
 import '../../nutrition/models/meal_models.dart';
 import '../../notifications/models/notification_item.dart';
 import '../../notifications/services/notification_service.dart';
 
 /// شاشة اليوم التفاعلية (Today Hub)
+/// تصميم فائق النقاء والهدوء متطابق مع معايير التطبيقات العالمية الراقية (Editorial Minimal)
 class TodayHubScreen extends StatefulWidget {
   final LocalStorage storage;
   final Function(int tabIndex)? onNavigateToTab;
@@ -28,14 +30,8 @@ class _TodayHubScreenState extends State<TodayHubScreen> {
   Map<String, dynamic>? _activeProgram;
   late final NotificationService _notificationService;
   List<NotificationItem> _notifications = [];
-  int _unreadNotificationsCount = 0;
 
   DailyMacroTarget _macroTarget = DailyMacroTarget(calories: 0, protein: 0, carbs: 0, fat: 0, waterLiters: 0.0);
-  int _consumedCalories = 0;
-  int _consumedProtein = 0;
-  int _consumedCarbs = 0;
-  int _consumedFat = 0;
-
   List<SupplementItem> _supplements = [];
 
   String _todayWorkoutName = 'لا توجد جلسة محددة لليوم';
@@ -43,6 +39,7 @@ class _TodayHubScreenState extends State<TodayHubScreen> {
   bool _hasProgram = false;
   bool _isLoading = false;
   String? _errorMessage;
+  String? _programChangeSummary;
 
   @override
   void initState() {
@@ -68,7 +65,6 @@ class _TodayHubScreenState extends State<TodayHubScreen> {
         if (mounted) {
           setState(() {
             _notifications = notifs;
-            _unreadNotificationsCount = notifs.where((n) => !n.isRead).length;
           });
         }
       });
@@ -77,7 +73,7 @@ class _TodayHubScreenState extends State<TodayHubScreen> {
     setState(() {});
   }
 
-  /// يجلب البرنامج النشط للمتدرب المسجل من الخادم (GET /api/v1/programs/active) ويحفظه للعمل دون اتصال.
+  /// يجلب البرنامج النشط للمتدرب المسجل من الخادم ويحفظه للعمل دون اتصال.
   Future<void> _refreshActiveProgram() async {
     setState(() {
       _isLoading = true;
@@ -96,12 +92,19 @@ class _TodayHubScreenState extends State<TodayHubScreen> {
         });
         return;
       }
+
       final program = data['master_program'] is Map
           ? Map<String, dynamic>.from(data['master_program'] as Map)
           : Map<String, dynamic>.from(data);
       if (data['client_view'] is Map) {
         program['client_view'] = data['client_view'];
       }
+
+      // مقارنة مع النسخة السابقة لعرض ملخص التعديل إن وجد
+      if (_activeProgram != null && data['updated_at'] != null && _activeProgram!['updated_at'] != data['updated_at']) {
+        _programChangeSummary = 'تم تحديث خطتك التدريبية والغذائية من قبل المدرب وفق تقييمك الأخير.';
+      }
+
       await widget.storage.cacheActiveProgram(program);
       if (!mounted) return;
       setState(() {
@@ -115,7 +118,7 @@ class _TodayHubScreenState extends State<TodayHubScreen> {
       setState(() {
         _isLoading = false;
         if (_activeProgram == null) {
-          _errorMessage = 'حدث خطأ أثناء تحميل الخطة. يرجى التحقق من اتصال الإنترنت أو مراجعة المدرب.';
+          _errorMessage = 'حدث خطأ أثناء تحميل الخطة. يرجى مراجعة الاتصال أو المدرب.';
         }
       });
     }
@@ -183,7 +186,7 @@ class _TodayHubScreenState extends State<TodayHubScreen> {
       }
     }
 
-    // 3. المكملات المقررة من الخادم
+    // 3. المكملات المقررة من الخادم (للعرض فقط)
     final supplementsRaw = program['supplements'] ?? (program['master_program'] is Map ? (program['master_program'] as Map)['supplements'] : null);
     if (supplementsRaw is List && supplementsRaw.isNotEmpty) {
       _supplements = supplementsRaw
@@ -194,517 +197,551 @@ class _TodayHubScreenState extends State<TodayHubScreen> {
       _supplements = [];
     }
 
-    _hasProgram = hasAnyData;
+    _hasProgram = hasAnyData || _todayExercisesCount > 0 || _macroTarget.calories > 0;
   }
 
-  void _showNotificationsSheet() {
-    showModalBottomSheet(
-      context: context,
-      backgroundColor: AppColors.surface,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-      ),
-      builder: (ctx) {
-        return StatefulBuilder(
-          builder: (context, setSheetState) {
-            return Padding(
-              padding: const EdgeInsets.all(20),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.stretch,
+  @override
+  Widget build(BuildContext context) {
+    final clientName = _user?.fullName.isNotEmpty == true ? _user!.fullName : 'كابتن';
+    final isMax = _user?.tier.toUpperCase().contains('MAX') == true;
+
+    return Scaffold(
+      backgroundColor: AppColors.background,
+      body: SafeArea(
+        child: RefreshIndicator(
+          onRefresh: _refreshActiveProgram,
+          color: AppColors.primary,
+          backgroundColor: AppColors.surface,
+          child: ListView(
+            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+            children: [
+              // ============================================================
+              // 1. HEADER: CLEAN EDITORIAL WELCOME & ACCOUNT ACCESS
+              // ============================================================
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
                   Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
+                      Container(
+                        width: 44,
+                        height: 44,
+                        decoration: BoxDecoration(
+                          color: AppColors.primaryLight,
+                          borderRadius: BorderRadius.circular(16),
+                        ),
+                        child: Center(
+                          child: Text(
+                            clientName.characters.first,
+                            style: const TextStyle(
+                              color: AppColors.primaryDeep,
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
+                              fontFamily: 'Alexandria',
+                            ),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const Text(
+                            'أهلاً بك،',
+                            style: TextStyle(
+                              color: AppColors.textMuted,
+                              fontSize: 12,
+                              fontFamily: 'Alexandria',
+                            ),
+                          ),
+                          const SizedBox(height: 2),
+                          Text(
+                            clientName,
+                            style: const TextStyle(
+                              color: AppColors.textPrimary,
+                              fontSize: 17,
+                              fontWeight: FontWeight.bold,
+                              letterSpacing: -0.3,
+                              fontFamily: 'Alexandria',
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                  GestureDetector(
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (_) => AccountScreen(storage: widget.storage)),
+                      );
+                    },
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 7),
+                      decoration: BoxDecoration(
+                        color: isMax ? AppColors.maxTint : AppColors.primaryLight,
+                        borderRadius: BorderRadius.circular(9999),
+                        border: Border.all(
+                          color: isMax ? AppColors.maxGold : AppColors.primary,
+                          width: 1,
+                        ),
+                        boxShadow: AppColors.softCardShadow,
+                      ),
+                      child: Text(
+                        isMax ? 'MAX' : 'ELITE',
+                        style: TextStyle(
+                          color: isMax ? AppColors.maxPrimary : AppColors.primaryDeep,
+                          fontSize: 11,
+                          fontWeight: FontWeight.bold,
+                          fontFamily: 'Alexandria',
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+
+              const SizedBox(height: 24),
+
+              // تنبيه تعديل البرنامج إن وجد
+              if (_programChangeSummary != null) ...[
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                  decoration: BoxDecoration(
+                    color: AppColors.primaryLight,
+                    borderRadius: BorderRadius.circular(16),
+                  ),
+                  child: Row(
+                    children: [
+                      const Icon(Icons.info_outline, color: AppColors.primaryDeep, size: 18),
+                      const SizedBox(width: 10),
+                      Expanded(
+                        child: Text(
+                          _programChangeSummary!,
+                          style: const TextStyle(color: AppColors.textPrimary, fontSize: 12, height: 1.4),
+                        ),
+                      ),
+                      GestureDetector(
+                        onTap: () => setState(() => _programChangeSummary = null),
+                        child: const Icon(Icons.close, size: 16, color: AppColors.textMuted),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 20),
+              ],
+
+              if (!_hasProgram) ...[
+                // حالة عدم وجود خطة نشطة
+                Container(
+                  padding: const EdgeInsets.all(32),
+                  decoration: BoxDecoration(
+                    color: AppColors.surface,
+                    borderRadius: BorderRadius.circular(24),
+                    border: Border.all(color: AppColors.border, width: 0.8),
+                    boxShadow: AppColors.softCardShadow,
+                  ),
+                  child: Column(
+                    children: [
+                      const Icon(Icons.fitness_center_outlined, size: 44, color: AppColors.textMuted),
+                      const SizedBox(height: 16),
                       const Text(
-                        'صندوق التنبيهات والإشعارات',
+                        'لا توجد خطة معتمدة حالياً',
                         style: TextStyle(
                           color: AppColors.textPrimary,
                           fontSize: 16,
                           fontWeight: FontWeight.bold,
                         ),
                       ),
-                      if (_unreadNotificationsCount > 0)
-                        TextButton(
-                          onPressed: () async {
-                            if (_user != null) {
-                              await _notificationService.markAsRead(_user!.clientCode);
-                              if (mounted) {
-                                setState(() {
-                                  _unreadNotificationsCount = 0;
-                                  _notifications = _notifications.map((n) => NotificationItem(
-                                    id: n.id,
-                                    clientCode: n.clientCode,
-                                    title: n.title,
-                                    body: n.body,
-                                    isRead: true,
-                                    createdAt: n.createdAt,
-                                    payload: n.payload,
-                                  )).toList();
-                                });
-                                setSheetState(() {});
-                              }
-                            }
-                          },
-                          child: const Text('تحديد الكل كمقروء', style: TextStyle(color: AppColors.primary, fontSize: 12)),
-                        ),
+                      const SizedBox(height: 8),
+                      Text(
+                        _errorMessage ?? 'يقوم المدرب حالياً بمراجعة واعتماد برنامجك المخصص.',
+                        textAlign: TextAlign.center,
+                        style: const TextStyle(color: AppColors.textMuted, fontSize: 13, height: 1.5),
+                      ),
+                      const SizedBox(height: 20),
+                      ElevatedButton(
+                        onPressed: _refreshActiveProgram,
+                        child: const Text('تحديث الصفحة'),
+                      ),
                     ],
                   ),
-                  const Divider(color: AppColors.border),
-                  const SizedBox(height: 8),
-                  if (_notifications.isEmpty)
-                    const Padding(
-                      padding: EdgeInsets.symmetric(vertical: 30),
-                      child: Center(
-                        child: Text(
-                          'لا توجد إشعارات جديدة حالياً',
-                          style: TextStyle(color: AppColors.textMuted, fontSize: 13),
+                ),
+              ] else ...[
+                // ============================================================
+                // 2. HERO TODAY WORKOUT CARD (TOP PRIORITY)
+                // ============================================================
+                Container(
+                  padding: const EdgeInsets.all(22),
+                  decoration: BoxDecoration(
+                    color: AppColors.surface,
+                    borderRadius: BorderRadius.circular(26),
+                    border: Border.all(color: AppColors.border, width: 0.8),
+                    boxShadow: AppColors.heroCardShadow,
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          const Text(
+                            'تمرين اليوم المقرر',
+                            style: TextStyle(
+                              color: AppColors.primaryDeep,
+                              fontSize: 12,
+                              fontWeight: FontWeight.bold,
+                              fontFamily: 'Alexandria',
+                            ),
+                          ),
+                          if (_todayExercisesCount > 0)
+                            Text(
+                              '$_todayExercisesCount تمارين',
+                              style: const TextStyle(
+                                color: AppColors.textMuted,
+                                fontSize: 12,
+                                fontFamily: 'Alexandria',
+                              ),
+                            ),
+                        ],
+                      ),
+                      const SizedBox(height: 12),
+                      Text(
+                        _todayWorkoutName,
+                        style: const TextStyle(
+                          color: AppColors.textPrimary,
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                          letterSpacing: -0.4,
+                          fontFamily: 'Alexandria',
                         ),
                       ),
-                    )
-                  else
-                    Flexible(
-                      child: ListView.separated(
-                        shrinkWrap: true,
-                        itemCount: _notifications.length,
-                        separatorBuilder: (_, __) => const Divider(color: AppColors.border, height: 1),
-                        itemBuilder: (context, idx) {
-                          final item = _notifications[idx];
-                          return ListTile(
-                            contentPadding: const EdgeInsets.symmetric(vertical: 4, horizontal: 0),
-                            leading: Container(
-                              padding: const EdgeInsets.all(8),
-                              decoration: BoxDecoration(
-                                color: item.isRead ? AppColors.backgroundDeep : AppColors.primaryLight,
-                                shape: BoxShape.circle,
-                              ),
-                              child: Icon(
-                                item.isRead ? Icons.notifications_none : Icons.notifications_active,
-                                color: item.isRead ? AppColors.textMuted : AppColors.primary,
-                                size: 20,
-                              ),
-                            ),
-                            title: Text(
-                              item.title,
-                              style: TextStyle(
-                                color: AppColors.textPrimary,
-                                fontSize: 13,
-                                fontWeight: item.isRead ? FontWeight.normal : FontWeight.bold,
-                              ),
-                            ),
-                            subtitle: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                const SizedBox(height: 2),
-                                Text(
-                                  item.body,
-                                  style: const TextStyle(color: AppColors.textSecondary, fontSize: 12),
-                                ),
-                              ],
-                            ),
-                          );
-                        },
+                      const SizedBox(height: 6),
+                      const Text(
+                        'جلسة رئيسية لزيادة الكتلة والقوة مع تسجيل الأداء الميداني.',
+                        style: TextStyle(
+                          color: AppColors.textSecondary,
+                          fontSize: 12,
+                          height: 1.4,
+                          fontFamily: 'Alexandria',
+                        ),
                       ),
-                    ),
-                ],
-              ),
-            );
-          },
-        );
-      },
-    );
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final clientName = _user?.fullName ?? 'بطل Z Coaching';
-    final tier = _user?.subscriptionTier ?? 'MAX';
-    final calProgress = _macroTarget.calories > 0
-        ? (_consumedCalories / _macroTarget.calories).clamp(0.0, 1.0)
-        : 0.0;
-
-    return Scaffold(
-      backgroundColor: AppColors.background,
-      body: SafeArea(
-        child: RefreshIndicator(
-          onRefresh: () async {
-            await _refreshActiveProgram();
-          },
-          color: AppColors.primary,
-          child: SingleChildScrollView(
-            physics: const AlwaysScrollableScrollPhysics(),
-            padding: const EdgeInsets.all(20),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                // رأس الصفحة وبيانات المشترك
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          'أهلاً بك، $clientName',
-                          style: const TextStyle(
-                            color: AppColors.textPrimary,
-                            fontSize: 20,
-                            fontWeight: FontWeight.bold,
+                      const SizedBox(height: 20),
+                      SizedBox(
+                        width: double.infinity,
+                        child: ElevatedButton(
+                          onPressed: () {
+                            widget.onNavigateToTab?.call(1); // الانتقال لتبويب التمارين
+                          },
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: AppColors.primary,
+                            padding: const EdgeInsets.symmetric(vertical: 14),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(16),
+                            ),
+                          ),
+                          child: const Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Text(
+                                'بدء تمرين اليوم وتسجيل الأوزان',
+                                style: TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 13,
+                                  fontWeight: FontWeight.bold,
+                                  fontFamily: 'Alexandria',
+                                ),
+                              ),
+                              SizedBox(width: 8),
+                              Icon(Icons.arrow_forward, size: 16, color: Colors.white),
+                            ],
                           ),
                         ),
-                        const SizedBox(height: 4),
-                        const Text(
-                          'الجدول اليومي والأهداف المحددة',
-                          style: TextStyle(color: AppColors.textSecondary, fontSize: 13),
-                        ),
-                      ],
-                    ),
-                    Row(
-                      children: [
-                        Stack(
-                          children: [
-                            IconButton(
-                              icon: const Icon(Icons.notifications_outlined, color: AppColors.textPrimary),
-                              onPressed: _showNotificationsSheet,
+                      ),
+                    ],
+                  ),
+                ),
+
+                const SizedBox(height: 24),
+
+                // ============================================================
+                // 3. CLEAN EDITORIAL MACRO TARGETS (NO BOXES IN BOXES)
+                // ============================================================
+                const Text(
+                  'الأهداف الغذائية المقررة',
+                  style: TextStyle(
+                    color: AppColors.textPrimary,
+                    fontSize: 15,
+                    fontWeight: FontWeight.bold,
+                    fontFamily: 'Alexandria',
+                  ),
+                ),
+                const SizedBox(height: 12),
+                Container(
+                  padding: const EdgeInsets.all(22),
+                  decoration: BoxDecoration(
+                    color: AppColors.surface,
+                    borderRadius: BorderRadius.circular(26),
+                    border: Border.all(color: AppColors.border, width: 0.8),
+                    boxShadow: AppColors.softCardShadow,
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        crossAxisAlignment: CrossAxisAlignment.baseline,
+                        textBaseline: TextBaseline.alphabetic,
+                        children: [
+                          Text(
+                            '${_macroTarget.calories}',
+                            style: const TextStyle(
+                              color: AppColors.textPrimary,
+                              fontSize: 32,
+                              fontWeight: FontWeight.bold,
+                              letterSpacing: -1,
+                              fontFamily: 'Alexandria',
                             ),
-                            if (_unreadNotificationsCount > 0)
-                              Positioned(
-                                right: 8,
-                                top: 8,
-                                child: Container(
-                                  padding: const EdgeInsets.all(3),
-                                  decoration: const BoxDecoration(
-                                    color: Color(0xFFEF4444),
-                                    shape: BoxShape.circle,
-                                  ),
-                                  constraints: const BoxConstraints(minWidth: 16, minHeight: 16),
-                                  child: Text(
-                                    '$_unreadNotificationsCount',
-                                    style: const TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.bold),
-                                    textAlign: TextAlign.center,
-                                  ),
-                                ),
+                          ),
+                          const SizedBox(width: 8),
+                          const Text(
+                            'سعرة حرارية / اليوم',
+                            style: TextStyle(
+                              color: AppColors.textMuted,
+                              fontSize: 13,
+                              fontWeight: FontWeight.w500,
+                              fontFamily: 'Alexandria',
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 20),
+                      // صف الماكروز الثلاثة بتنفس مريح وتصميم نظيف جداً
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          _buildCleanMacroCol('البروتين', '${_macroTarget.protein}g', const Color(0xFF2563EB)),
+                          Container(width: 1, height: 28, color: AppColors.borderLight),
+                          _buildCleanMacroCol('الكارب', '${_macroTarget.carbs}g', const Color(0xFFD97706)),
+                          Container(width: 1, height: 28, color: AppColors.borderLight),
+                          _buildCleanMacroCol('الدهون', '${_macroTarget.fat}g', const Color(0xFFB45309)),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+
+                const SizedBox(height: 20),
+
+                // ============================================================
+                // 4. NEXT FOLLOW-UP & HYDRATION (DUAL TILES)
+                // ============================================================
+                Row(
+                  children: [
+                    // المتابعة القادمة
+                    Expanded(
+                      child: Container(
+                        padding: const EdgeInsets.all(18),
+                        decoration: BoxDecoration(
+                          color: AppColors.surface,
+                          borderRadius: BorderRadius.circular(22),
+                          border: Border.all(color: AppColors.border, width: 0.8),
+                          boxShadow: AppColors.softCardShadow,
+                        ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const Text(
+                              'المتابعة القادمة',
+                              style: TextStyle(color: AppColors.textMuted, fontSize: 11, fontFamily: 'Alexandria'),
+                            ),
+                            const SizedBox(height: 8),
+                            Text(
+                              isMax ? 'كل 7 أيام' : 'كل 14 يوماً',
+                              style: const TextStyle(
+                                color: AppColors.textPrimary,
+                                fontSize: 14,
+                                fontWeight: FontWeight.bold,
+                                fontFamily: 'Alexandria',
                               ),
+                            ),
+                            const SizedBox(height: 2),
+                            Text(
+                              isMax ? 'باقة MAX VIP' : 'باقة ELITE',
+                              style: TextStyle(
+                                color: isMax ? AppColors.maxPrimary : AppColors.primaryDeep,
+                                fontSize: 10,
+                                fontWeight: FontWeight.w600,
+                                fontFamily: 'Alexandria',
+                              ),
+                            ),
                           ],
                         ),
-                        const SizedBox(width: 4),
-                        Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                          decoration: BoxDecoration(
-                            color: AppColors.surface,
-                            borderRadius: BorderRadius.circular(20),
-                            border: Border.all(color: AppColors.primary, width: 1.2),
-                          ),
-                          child: Text(
-                            'باقة $tier',
-                            style: const TextStyle(
-                              color: AppColors.primary,
-                              fontWeight: FontWeight.bold,
-                              fontSize: 12,
-                            ),
-                          ),
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    // الترطيب المستهدف
+                    Expanded(
+                      child: Container(
+                        padding: const EdgeInsets.all(18),
+                        decoration: BoxDecoration(
+                          color: AppColors.surface,
+                          borderRadius: BorderRadius.circular(22),
+                          border: Border.all(color: AppColors.border, width: 0.8),
+                          boxShadow: AppColors.softCardShadow,
                         ),
-                      ],
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const Text(
+                              'الترطيب اليومي',
+                              style: TextStyle(color: AppColors.textMuted, fontSize: 11, fontFamily: 'Alexandria'),
+                            ),
+                            const SizedBox(height: 8),
+                            Text(
+                              _macroTarget.waterLiters > 0 ? '${_macroTarget.waterLiters} لتر' : '3.5 - 4.0 لتر',
+                              style: const TextStyle(
+                                color: AppColors.textPrimary,
+                                fontSize: 14,
+                                fontWeight: FontWeight.bold,
+                                fontFamily: 'Alexandria',
+                              ),
+                            ),
+                            const SizedBox(height: 2),
+                            const Text(
+                              'معدل مستهدف ثابت',
+                              style: TextStyle(
+                                color: AppColors.textMuted,
+                                fontSize: 10,
+                                fontFamily: 'Alexandria',
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
                     ),
                   ],
                 ),
-                const SizedBox(height: 20),
 
-                if (!_hasProgram) ...[
-                  Container(
-                    padding: const EdgeInsets.all(28),
-                    decoration: BoxDecoration(
-                      color: AppColors.surface,
-                      borderRadius: BorderRadius.circular(16),
-                      border: Border.all(color: AppColors.border),
-                    ),
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        const Icon(Icons.assignment_outlined, size: 52, color: AppColors.textMuted),
-                        const SizedBox(height: 16),
-                        const Text(
-                          'لا توجد خطة نشطة حالياً',
-                          style: TextStyle(
-                            color: AppColors.textPrimary,
-                            fontSize: 16,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                        const SizedBox(height: 8),
-                        Text(
-                          _errorMessage ?? 'يرجى تحديث الصفحة أو مراجعة المدرب لتفعيل خطتك التدريبية والغذائية.',
-                          textAlign: TextAlign.center,
-                          style: const TextStyle(
-                            color: AppColors.textSecondary,
-                            fontSize: 13,
-                            height: 1.5,
-                          ),
-                        ),
-                        const SizedBox(height: 20),
-                        ElevatedButton.icon(
-                          onPressed: _refreshActiveProgram,
-                          icon: const Icon(Icons.refresh, size: 18),
-                          label: const Text('تحديث الصفحة'),
-                          style: ElevatedButton.styleFrom(
-                            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                          ),
-                        ),
-                      ],
+                // ============================================================
+                // 5. SUPPLEMENTS REFERENCE (CLEAN LIST - READ-ONLY)
+                // ============================================================
+                if (_supplements.isNotEmpty) ...[
+                  const SizedBox(height: 24),
+                  const Text(
+                    'المكملات المقررة',
+                    style: TextStyle(
+                      color: AppColors.textPrimary,
+                      fontSize: 15,
+                      fontWeight: FontWeight.bold,
+                      fontFamily: 'Alexandria',
                     ),
                   ),
-                ] else ...[
-                  // بطاقة السعرات والماكروز اليومية
+                  const SizedBox(height: 12),
                   Container(
-                    padding: const EdgeInsets.all(18),
+                    padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 12),
                     decoration: BoxDecoration(
                       color: AppColors.surface,
-                      borderRadius: BorderRadius.circular(16),
-                      border: Border.all(color: AppColors.border),
+                      borderRadius: BorderRadius.circular(24),
+                      border: Border.all(color: AppColors.border, width: 0.8),
+                      boxShadow: AppColors.softCardShadow,
                     ),
                     child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.stretch,
-                      children: [
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            const Text(
-                              'السعرات الحرارية اليومية',
-                              style: TextStyle(
-                                color: AppColors.textPrimary,
-                                fontWeight: FontWeight.bold,
-                                fontSize: 15,
-                              ),
-                            ),
-                            Text(
-                              '$_consumedCalories / ${_macroTarget.calories} سعرة',
-                              style: const TextStyle(
-                                color: AppColors.secondary,
-                                fontWeight: FontWeight.bold,
-                                fontSize: 14,
-                              ),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 12),
-                        ClipRRect(
-                          borderRadius: BorderRadius.circular(8),
-                          child: LinearProgressIndicator(
-                            value: calProgress,
-                            minHeight: 10,
-                            backgroundColor: AppColors.surfaceLight,
-                            valueColor: const AlwaysStoppedAnimation<Color>(AppColors.primary),
-                          ),
-                        ),
-                        const SizedBox(height: 16),
-                        const Divider(color: AppColors.border),
-                        const SizedBox(height: 12),
+                      children: _supplements.asMap().entries.map((entry) {
+                        final index = entry.key;
+                        final sup = entry.value;
+                        final isLast = index == _supplements.length - 1;
 
-                        // الماكروز الثلاثة
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceAround,
-                          children: [
-                            _buildMacroItem('البروتين', '$_consumedProtein / ${_macroTarget.protein}g', AppColors.primary),
-                            _buildMacroItem('الكارب', '$_consumedCarbs / ${_macroTarget.carbs}g', AppColors.secondary),
-                            _buildMacroItem('الدهون', '$_consumedFat / ${_macroTarget.fat}g', AppColors.warning),
-                          ],
-                        ),
-                      ],
-                    ),
-                  ),
-                  const SizedBox(height: 16),
-
-                  // بطاقة تمرين اليوم
-                  Container(
-                    padding: const EdgeInsets.all(18),
-                    decoration: BoxDecoration(
-                      color: AppColors.surface,
-                      borderRadius: BorderRadius.circular(16),
-                      border: Border.all(color: AppColors.border),
-                    ),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            const Row(
-                              children: [
-                                Icon(Icons.fitness_center, color: AppColors.primary, size: 20),
-                                SizedBox(width: 8),
-                                Text(
-                                  'تمرين اليوم',
-                                  style: TextStyle(
-                                    color: AppColors.textPrimary,
-                                    fontWeight: FontWeight.bold,
-                                    fontSize: 15,
-                                  ),
-                                ),
-                              ],
-                            ),
-                            if (_todayExercisesCount > 0)
-                              Text(
-                                '$_todayExercisesCount تمارين',
-                                style: const TextStyle(color: AppColors.textSecondary, fontSize: 13),
-                              ),
-                          ],
-                        ),
-                        const SizedBox(height: 10),
-                        Text(
-                          _todayWorkoutName,
-                          style: const TextStyle(
-                            color: AppColors.textPrimary,
-                            fontSize: 16,
-                            fontWeight: FontWeight.w600,
+                        return Container(
+                          padding: const EdgeInsets.symmetric(vertical: 12),
+                          decoration: BoxDecoration(
+                            border: isLast ? null : const Border(bottom: BorderSide(color: AppColors.borderLight, width: 0.8)),
                           ),
-                        ),
-                        const SizedBox(height: 16),
-                        ElevatedButton.icon(
-                          onPressed: () {
-                            widget.onNavigateToTab?.call(2); // التوجه لتبويب التمرين
-                          },
-                          icon: const Icon(Icons.play_arrow, size: 18),
-                          label: const Text('بدء جلسة التمرين الآن وتسجيل الأوزان'),
-                          style: ElevatedButton.styleFrom(
-                            minimumSize: const Size.fromHeight(46),
-                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  const SizedBox(height: 16),
-
-                  // بطاقة متابعة شرب الماء
-                  if (_macroTarget.waterLiters > 0) ...[
-                    Container(
-                      padding: const EdgeInsets.all(18),
-                      decoration: BoxDecoration(
-                        color: AppColors.surface,
-                        borderRadius: BorderRadius.circular(16),
-                        border: Border.all(color: AppColors.border),
-                      ),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.stretch,
-                        children: [
-                          Row(
+                          child: Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
-                              const Row(
-                                children: [
-                                  Icon(Icons.water_drop_outlined, color: AppColors.secondary, size: 20),
-                                  SizedBox(width: 8),
-                                  Text(
-                                    'شرب الماء والترطيب',
-                                    style: TextStyle(
-                                      color: AppColors.textPrimary,
-                                      fontWeight: FontWeight.bold,
-                                      fontSize: 15,
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      sup.name,
+                                      style: const TextStyle(
+                                        color: AppColors.textPrimary,
+                                        fontSize: 13,
+                                        fontWeight: FontWeight.bold,
+                                        fontFamily: 'Alexandria',
+                                      ),
                                     ),
-                                  ),
-                                ],
+                                    if (sup.timing.isNotEmpty) ...[
+                                      const SizedBox(height: 2),
+                                      Text(
+                                        sup.timing,
+                                        style: const TextStyle(
+                                          color: AppColors.textMuted,
+                                          fontSize: 11,
+                                          fontFamily: 'Alexandria',
+                                        ),
+                                      ),
+                                    ],
+                                  ],
+                                ),
                               ),
-                              Text(
-                                '${_macroTarget.waterLiters} لتر/اليوم',
-                                style: const TextStyle(
-                                  color: AppColors.secondary,
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: 14,
+                              Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                                decoration: BoxDecoration(
+                                  color: AppColors.surfaceMuted,
+                                  borderRadius: BorderRadius.circular(8),
+                                ),
+                                child: Text(
+                                  sup.dosage,
+                                  style: const TextStyle(
+                                    color: AppColors.primaryDeep,
+                                    fontSize: 11,
+                                    fontWeight: FontWeight.bold,
+                                    fontFamily: 'Alexandria',
+                                  ),
                                 ),
                               ),
                             ],
                           ),
-                          const SizedBox(height: 8),
-                          const Text(
-                            'المعدل الاسترشادي الثابت للحفاظ على الترطيب والوظائف الفسيولوجية للجسم',
-                            style: TextStyle(color: AppColors.textSecondary, fontSize: 12),
-                          ),
-                        ],
-                      ),
+                        );
+                      }).toList(),
                     ),
-                    const SizedBox(height: 16),
-                  ],
-
-                  // بطاقة المكملات الغذائية اليومية
-                  if (_supplements.isNotEmpty) ...[
-                    Container(
-                      padding: const EdgeInsets.all(18),
-                      decoration: BoxDecoration(
-                        color: AppColors.surface,
-                        borderRadius: BorderRadius.circular(16),
-                        border: Border.all(color: AppColors.border),
-                      ),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          const Row(
-                            children: [
-                              Icon(Icons.medication_outlined, color: AppColors.warning, size: 20),
-                              SizedBox(width: 8),
-                              Text(
-                                'المكملات المقررة اليوم',
-                                style: TextStyle(
-                                  color: AppColors.textPrimary,
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: 15,
-                                ),
-                              ),
-                            ],
-                          ),
-                          const SizedBox(height: 12),
-                          ..._supplements.map((sup) {
-                            return Padding(
-                              padding: const EdgeInsets.symmetric(vertical: 4),
-                              child: CheckboxListTile(
-                                contentPadding: EdgeInsets.zero,
-                                title: Text(
-                                  sup.name,
-                                  style: TextStyle(
-                                    color: sup.isTaken ? AppColors.textMuted : AppColors.textPrimary,
-                                    decoration: sup.isTaken ? TextDecoration.lineThrough : null,
-                                    fontSize: 14,
-                                    fontWeight: FontWeight.w600,
-                                  ),
-                                ),
-                                subtitle: Text(
-                                  '${sup.dosage} - ${sup.timing}',
-                                  style: const TextStyle(color: AppColors.textSecondary, fontSize: 12),
-                                ),
-                                value: sup.isTaken,
-                                activeColor: AppColors.primary,
-                                onChanged: (val) {
-                                  setState(() {
-                                    sup.isTaken = val ?? false;
-                                  });
-                                },
-                              ),
-                            );
-                          }),
-                        ],
-                      ),
-                    ),
-                  ],
+                  ),
                 ],
+
+                const SizedBox(height: 32),
               ],
-            ),
+            ],
           ),
         ),
       ),
     );
   }
 
-  Widget _buildMacroItem(String title, String value, Color color) {
+  Widget _buildCleanMacroCol(String label, String value, Color dotColor) {
     return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          title,
-          style: const TextStyle(color: AppColors.textSecondary, fontSize: 12),
+          label,
+          style: TextStyle(
+            color: dotColor,
+            fontSize: 11,
+            fontWeight: FontWeight.w600,
+            fontFamily: 'Alexandria',
+          ),
         ),
         const SizedBox(height: 4),
         Text(
           value,
-          style: TextStyle(color: color, fontWeight: FontWeight.bold, fontSize: 13),
+          style: const TextStyle(
+            color: AppColors.textPrimary,
+            fontSize: 16,
+            fontWeight: FontWeight.bold,
+            fontFamily: 'Alexandria',
+          ),
         ),
       ],
     );

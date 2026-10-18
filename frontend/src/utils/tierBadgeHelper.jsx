@@ -76,7 +76,7 @@ export function getClientTier(item) {
     rawCode = item.client_code || item.clientCode || item.code || item.user_id || item.id || item.user?.client_code || item.user?.id || '';
   }
 
-  const cleanCode = String(rawCode || '').replace(/^client[-_]?/i, '').replace('#', '').trim();
+  const cleanCode = String(rawCode || '').replace(/^(client|kz)[-_]?/i, '').replace('#', '').trim();
 
   // 4. Match against Master Engine Canonical Baseline Clients (1 to 15) ONLY if no explicit package was found
   if (cleanCode && CANONICAL_CLIENT_TIERS[cleanCode]) {

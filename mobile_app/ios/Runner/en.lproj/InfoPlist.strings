@@ -1,0 +1,5 @@
+/* Localized versions of Info.plist keys for English */
+"CFBundleDisplayName" = "Z Coaching";
+"CFBundleName" = "Z Coaching";
+"NSCameraUsageDescription" = "Z Coaching uses your camera to capture weekly progress photos for your coach review.";
+"NSPhotoLibraryUsageDescription" = "Z Coaching accesses your photo library to select and upload weekly progress photos for your coach review.";

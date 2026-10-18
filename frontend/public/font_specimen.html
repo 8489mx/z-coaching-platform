@@ -1,0 +1,580 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Z Coaching — Typography Comparison</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Alexandria:wght@400;500;600;700;800&family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&family=Inter:wght@400;500;600;700;800&family=Readex+Pro:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background-color: #0B1120;
+      color: #F8FAFC;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 32px 20px 80px;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    }
+
+    .en-font {
+      font-family: 'Inter', sans-serif !important;
+      direction: ltr !important;
+      display: inline-block;
+    }
+
+    .header-banner {
+      width: 100%;
+      max-width: 1360px;
+      background: rgba(30, 41, 59, 0.75);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      border-radius: 18px;
+      padding: 22px 28px;
+      margin-bottom: 32px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .header-title {
+      font-size: 20px;
+      font-weight: 800;
+      color: #FFFFFF;
+      letter-spacing: -0.3px;
+    }
+
+    .header-desc {
+      font-size: 13.5px;
+      color: #94A3B8;
+      line-height: 1.6;
+    }
+
+    /* Comparison Grid */
+    .specimen-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 320px);
+      gap: 22px;
+      width: 100%;
+      max-width: 1360px;
+      justify-content: center;
+    }
+
+    .font-col {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      background: #111827;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 24px;
+      padding: 18px 16px;
+    }
+
+    .font-badge-header {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      padding-bottom: 12px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    }
+
+    .font-tag {
+      font-size: 11px;
+      font-weight: 700;
+      padding: 3px 8px;
+      border-radius: 6px;
+      align-self: flex-start;
+      letter-spacing: 0.3px;
+    }
+
+    .tag-segoe { background: rgba(59, 130, 246, 0.2); color: #60A5FA; border: 1px solid rgba(59, 130, 246, 0.3); }
+    .tag-ibm { background: rgba(16, 185, 129, 0.2); color: #34D399; border: 1px solid rgba(16, 185, 129, 0.3); }
+    .tag-readex { background: rgba(168, 85, 247, 0.2); color: #C084FC; border: 1px solid rgba(168, 85, 247, 0.3); }
+    .tag-alexandria { background: rgba(245, 158, 11, 0.2); color: #FBBF24; border: 1px solid rgba(245, 158, 11, 0.3); }
+
+    .font-name-title {
+      font-size: 16px;
+      font-weight: 700;
+      color: #FFFFFF;
+      margin-top: 4px;
+    }
+
+    .font-sub-info {
+      font-size: 11.5px;
+      color: #94A3B8;
+      line-height: 1.4;
+    }
+
+    /* Font Specific Classes */
+    .font-segoe {
+      font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, 'Tahoma', sans-serif !important;
+    }
+
+    .font-ibm {
+      font-family: 'IBM Plex Sans Arabic', sans-serif !important;
+    }
+
+    .font-readex {
+      font-family: 'Readex Pro', sans-serif !important;
+    }
+
+    .font-alexandria {
+      font-family: 'Alexandria', sans-serif !important;
+    }
+
+    /* Mobile Preview Container */
+    .card-preview-area {
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+      background: #F8FAFC;
+      border-radius: 20px;
+      padding: 16px 14px;
+      color: #0F172A;
+    }
+
+    /* Hero Workout Card */
+    .hero-card {
+      background: #0F172A;
+      color: #FFFFFF;
+      border-radius: 16px;
+      padding: 16px 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      box-shadow: 0 8px 20px -4px rgba(15, 23, 42, 0.25);
+    }
+
+    .hero-badge-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .hero-tag {
+      background: rgba(59, 130, 246, 0.2);
+      color: #93C5FD;
+      font-size: 10.5px;
+      font-weight: 700;
+      padding: 3px 8px;
+      border-radius: 6px;
+    }
+
+    .hero-dur {
+      font-size: 11.5px;
+      color: #94A3B8;
+      font-weight: 600;
+    }
+
+    .hero-en-title {
+      font-size: 18px;
+      font-weight: 800;
+      letter-spacing: -0.2px;
+      color: #FFFFFF;
+      line-height: 1.2;
+    }
+
+    .hero-ar-title {
+      font-size: 12.5px;
+      font-weight: 500;
+      color: #94A3B8;
+      margin-top: 3px;
+    }
+
+    .hero-stats-row {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      padding-top: 2px;
+    }
+
+    .hero-stat-item {
+      font-size: 11.5px;
+      color: #CBD5E1;
+      display: flex;
+      gap: 4px;
+    }
+
+    .hero-stat-item strong {
+      color: #FFFFFF;
+    }
+
+    .hero-btn {
+      background: #FFFFFF;
+      color: #0F172A;
+      font-family: inherit;
+      font-size: 12.5px;
+      font-weight: 700;
+      border: none;
+      border-radius: 10px;
+      padding: 9px 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      cursor: pointer;
+    }
+
+    /* Check-in Banner */
+    .checkin-card {
+      background: #FFFFFF;
+      border: 1px solid #E2E8F0;
+      border-radius: 14px;
+      padding: 12px 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.03);
+    }
+
+    .checkin-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .checkin-pill {
+      background: #ECFDF5;
+      color: #059669;
+      font-size: 11px;
+      font-weight: 700;
+      padding: 3px 8px;
+      border-radius: 6px;
+    }
+
+    .checkin-time {
+      font-size: 11.5px;
+      font-weight: 600;
+      color: #0F172A;
+    }
+
+    .checkin-helper {
+      font-size: 11px;
+      color: #64748B;
+      line-height: 1.4;
+    }
+
+    /* Nutrition Target Card */
+    .nutrition-card {
+      background: #FFFFFF;
+      border: 1px solid #E2E8F0;
+      border-radius: 14px;
+      padding: 12px 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.03);
+    }
+
+    .nut-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .nut-title {
+      font-size: 12px;
+      font-weight: 700;
+      color: #0F172A;
+    }
+
+    .nut-cal {
+      font-size: 14px;
+      font-weight: 800;
+      color: #0F172A;
+    }
+
+    .nut-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 6px;
+      background: #F8FAFC;
+      padding: 8px 10px;
+      border-radius: 10px;
+    }
+
+    .nut-cell {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 2px;
+    }
+
+    .nut-cell span {
+      font-size: 10px;
+      color: #64748B;
+      font-weight: 600;
+    }
+
+    .nut-cell strong {
+      font-size: 12px;
+      color: #0F172A;
+      font-weight: 700;
+    }
+
+    .water-line {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-size: 11px;
+      color: #64748B;
+      padding-top: 2px;
+      border-top: 1px dashed #E2E8F0;
+    }
+
+    .water-val {
+      font-weight: 700;
+      color: #0284C7;
+    }
+  </style>
+</head>
+<body>
+
+  <header class="header-banner">
+    <div class="header-title">مقارنة الخطوط في واجهة كريم زكريا — تقييم الخط المعروض</div>
+    <div class="header-desc">
+      عرض ومقارنة حية لنفس الكروت والبيانات الحقيقية بالخطوط الأربعة: خط محادثة ويندوز الذي اخترته (Segoe UI)، والبديل الهندسي المفتوح المعتمد (IBM Plex Sans Arabic)، والبديل العصري للشاشات (Readex Pro)، وخط البرنامج السابق (Alexandria).
+    </div>
+  </header>
+
+  <main class="specimen-grid">
+
+    <!-- 1. Segoe UI -->
+    <section class="font-col font-segoe" id="specimen-segoe">
+      <div class="font-badge-header">
+        <span class="font-tag tag-segoe">خط المحادثة في ويندوز</span>
+        <div class="font-name-title">Segoe UI Arabic</div>
+        <div class="font-sub-info">الخط الظاهر في لقطة شاشة المحادثة التي رفعتها. خط ويندوز الافتراضي.</div>
+      </div>
+
+      <div class="card-preview-area">
+        <!-- Hero Workout Card -->
+        <div class="hero-card">
+          <div class="hero-badge-row">
+            <span class="hero-tag">تمرين اليوم</span>
+            <span class="hero-dur en-font">45–50 min</span>
+          </div>
+          <div>
+            <div class="hero-en-title en-font">Upper Body Push A</div>
+            <div class="hero-ar-title">دفع علوي — صدر وأكتاف وترايسبس</div>
+          </div>
+          <div class="hero-stats-row">
+            <div class="hero-stat-item"><span>التمارين:</span> <strong class="en-font">5 exercises</strong></div>
+            <div class="hero-stat-item"><span>المجموعات:</span> <strong class="en-font">14 sets</strong></div>
+          </div>
+          <button class="hero-btn">
+            <span>ابدأ التمرين</span>
+            <span class="en-font">→</span>
+          </button>
+        </div>
+
+        <!-- Checkin Card -->
+        <div class="checkin-card">
+          <div class="checkin-row">
+            <span class="checkin-pill">النافذة مفتوحة</span>
+            <span class="checkin-time">متبقي 38 ساعة</span>
+          </div>
+          <div class="checkin-helper">سجل قياسات الوزن والمحيطات والتزام الأسبوع قبل إغلاق النافذة.</div>
+        </div>
+
+        <!-- Nutrition Card -->
+        <div class="nutrition-card">
+          <div class="nut-top">
+            <span class="nut-title">التغذية</span>
+            <span class="nut-cal en-font">2,350 kcal</span>
+          </div>
+          <div class="nut-grid">
+            <div class="nut-cell"><span>بروتين</span><strong class="en-font">175g</strong></div>
+            <div class="nut-cell"><span>كارب</span><strong class="en-font">240g</strong></div>
+            <div class="nut-cell"><span>دهون</span><strong class="en-font">65g</strong></div>
+          </div>
+          <div class="water-line">
+            <span>معدل الماء المستهدف:</span>
+            <span class="water-val">3.5 – 4.0 لتر/اليوم</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 2. IBM Plex Sans Arabic -->
+    <section class="font-col font-ibm" id="specimen-ibm">
+      <div class="font-badge-header">
+        <span class="font-tag tag-ibm">البديل الهندسي المفتوح (موصى به)</span>
+        <div class="font-name-title">IBM Plex Sans Arabic</div>
+        <div class="font-sub-info">نفس روح Segoe UI تماماً: خط شاشات تقني وهندسي، متاح مجاناً للويب وFlutter دون مشاكل تراخيص.</div>
+      </div>
+
+      <div class="card-preview-area">
+        <!-- Hero Workout Card -->
+        <div class="hero-card">
+          <div class="hero-badge-row">
+            <span class="hero-tag">تمرين اليوم</span>
+            <span class="hero-dur en-font">45–50 min</span>
+          </div>
+          <div>
+            <div class="hero-en-title en-font">Upper Body Push A</div>
+            <div class="hero-ar-title">دفع علوي — صدر وأكتاف وترايسبس</div>
+          </div>
+          <div class="hero-stats-row">
+            <div class="hero-stat-item"><span>التمارين:</span> <strong class="en-font">5 exercises</strong></div>
+            <div class="hero-stat-item"><span>المجموعات:</span> <strong class="en-font">14 sets</strong></div>
+          </div>
+          <button class="hero-btn">
+            <span>ابدأ التمرين</span>
+            <span class="en-font">→</span>
+          </button>
+        </div>
+
+        <!-- Checkin Card -->
+        <div class="checkin-card">
+          <div class="checkin-row">
+            <span class="checkin-pill">النافذة مفتوحة</span>
+            <span class="checkin-time">متبقي 38 ساعة</span>
+          </div>
+          <div class="checkin-helper">سجل قياسات الوزن والمحيطات والتزام الأسبوع قبل إغلاق النافذة.</div>
+        </div>
+
+        <!-- Nutrition Card -->
+        <div class="nutrition-card">
+          <div class="nut-top">
+            <span class="nut-title">التغذية</span>
+            <span class="nut-cal en-font">2,350 kcal</span>
+          </div>
+          <div class="nut-grid">
+            <div class="nut-cell"><span>بروتين</span><strong class="en-font">175g</strong></div>
+            <div class="nut-cell"><span>كارب</span><strong class="en-font">240g</strong></div>
+            <div class="nut-cell"><span>دهون</span><strong class="en-font">65g</strong></div>
+          </div>
+          <div class="water-line">
+            <span>معدل الماء المستهدف:</span>
+            <span class="water-val">3.5 – 4.0 لتر/اليوم</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 3. Readex Pro -->
+    <section class="font-col font-readex" id="specimen-readex">
+      <div class="font-badge-header">
+        <span class="font-tag tag-readex">عصري للشاشات الرقمية</span>
+        <div class="font-name-title">Readex Pro</div>
+        <div class="font-sub-info">مصمم خصيصاً للقراءة على شاشات الموبايل الحديثة مع حروف ناعمة ومدمجة.</div>
+      </div>
+
+      <div class="card-preview-area">
+        <!-- Hero Workout Card -->
+        <div class="hero-card">
+          <div class="hero-badge-row">
+            <span class="hero-tag">تمرين اليوم</span>
+            <span class="hero-dur en-font">45–50 min</span>
+          </div>
+          <div>
+            <div class="hero-en-title en-font">Upper Body Push A</div>
+            <div class="hero-ar-title">دفع علوي — صدر وأكتاف وترايسبس</div>
+          </div>
+          <div class="hero-stats-row">
+            <div class="hero-stat-item"><span>التمارين:</span> <strong class="en-font">5 exercises</strong></div>
+            <div class="hero-stat-item"><span>المجموعات:</span> <strong class="en-font">14 sets</strong></div>
+          </div>
+          <button class="hero-btn">
+            <span>ابدأ التمرين</span>
+            <span class="en-font">→</span>
+          </button>
+        </div>
+
+        <!-- Checkin Card -->
+        <div class="checkin-card">
+          <div class="checkin-row">
+            <span class="checkin-pill">النافذة مفتوحة</span>
+            <span class="checkin-time">متبقي 38 ساعة</span>
+          </div>
+          <div class="checkin-helper">سجل قياسات الوزن والمحيطات والتزام الأسبوع قبل إغلاق النافذة.</div>
+        </div>
+
+        <!-- Nutrition Card -->
+        <div class="nutrition-card">
+          <div class="nut-top">
+            <span class="nut-title">التغذية</span>
+            <span class="nut-cal en-font">2,350 kcal</span>
+          </div>
+          <div class="nut-grid">
+            <div class="nut-cell"><span>بروتين</span><strong class="en-font">175g</strong></div>
+            <div class="nut-cell"><span>كارب</span><strong class="en-font">240g</strong></div>
+            <div class="nut-cell"><span>دهون</span><strong class="en-font">65g</strong></div>
+          </div>
+          <div class="water-line">
+            <span>معدل الماء المستهدف:</span>
+            <span class="water-val">3.5 – 4.0 لتر/اليوم</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 4. Alexandria -->
+    <section class="font-col font-alexandria" id="specimen-alexandria">
+      <div class="font-badge-header">
+        <span class="font-tag tag-alexandria">الخط السابق للمقارنة</span>
+        <div class="font-name-title">Alexandria</div>
+        <div class="font-sub-info">الخط الهندسي الدائري المستخدم سابقاً. حروفه أوسع وتأخذ مساحة أفقية أكبر.</div>
+      </div>
+
+      <div class="card-preview-area">
+        <!-- Hero Workout Card -->
+        <div class="hero-card">
+          <div class="hero-badge-row">
+            <span class="hero-tag">تمرين اليوم</span>
+            <span class="hero-dur en-font">45–50 min</span>
+          </div>
+          <div>
+            <div class="hero-en-title en-font">Upper Body Push A</div>
+            <div class="hero-ar-title">دفع علوي — صدر وأكتاف وترايسبس</div>
+          </div>
+          <div class="hero-stats-row">
+            <div class="hero-stat-item"><span>التمارين:</span> <strong class="en-font">5 exercises</strong></div>
+            <div class="hero-stat-item"><span>المجموعات:</span> <strong class="en-font">14 sets</strong></div>
+          </div>
+          <button class="hero-btn">
+            <span>ابدأ التمرين</span>
+            <span class="en-font">→</span>
+          </button>
+        </div>
+
+        <!-- Checkin Card -->
+        <div class="checkin-card">
+          <div class="checkin-row">
+            <span class="checkin-pill">النافذة مفتوحة</span>
+            <span class="checkin-time">متبقي 38 ساعة</span>
+          </div>
+          <div class="checkin-helper">سجل قياسات الوزن والمحيطات والتزام الأسبوع قبل إغلاق النافذة.</div>
+        </div>
+
+        <!-- Nutrition Card -->
+        <div class="nutrition-card">
+          <div class="nut-top">
+            <span class="nut-title">التغذية</span>
+            <span class="nut-cal en-font">2,350 kcal</span>
+          </div>
+          <div class="nut-grid">
+            <div class="nut-cell"><span>بروتين</span><strong class="en-font">175g</strong></div>
+            <div class="nut-cell"><span>كارب</span><strong class="en-font">240g</strong></div>
+            <div class="nut-cell"><span>دهون</span><strong class="en-font">65g</strong></div>
+          </div>
+          <div class="water-line">
+            <span>معدل الماء المستهدف:</span>
+            <span class="water-val">3.5 – 4.0 لتر/اليوم</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+</body>
+</html>

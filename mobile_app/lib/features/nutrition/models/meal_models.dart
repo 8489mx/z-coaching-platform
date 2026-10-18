@@ -47,6 +47,8 @@ class FoodItem {
   final String? fastingSubstitutedFrom;
   final String? fastingNoteAr;
   final bool fastingBlocked;
+  final bool isLocked;
+  final String? lockReason;
   bool isCompleted;
 
   FoodItem({
@@ -62,14 +64,44 @@ class FoodItem {
     this.fastingSubstitutedFrom,
     this.fastingNoteAr,
     this.fastingBlocked = false,
+    this.isLocked = false,
+    this.lockReason,
     this.isCompleted = false,
   });
 
+  String get imageAsset {
+    final lower = name.toLowerCase();
+    if (lower.contains('شوفان') && lower.contains('سريع')) return 'assets/food/quick_oats.jpg';
+    if (lower.contains('شوفان')) return 'assets/food/oats.jpg';
+    if (lower.contains('بيض')) return 'assets/food/eggs.jpg';
+    if (lower.contains('دجاج')) return 'assets/food/chicken.jpg';
+    if (lower.contains('أرز') || lower.contains('ارز')) return 'assets/food/rice.jpg';
+    if (lower.contains('زيت') && lower.contains('خضار')) return 'assets/food/veggies_oil.jpg';
+    if (lower.contains('زيت')) return 'assets/food/olive_oil.jpg';
+    if (lower.contains('موز')) return 'assets/food/banana.jpg';
+    if (lower.contains('سمك') || lower.contains('فيليه')) return 'assets/food/fish.jpg';
+    if (lower.contains('لحم') || lower.contains('بقري')) return 'assets/food/beef.jpg';
+    if (lower.contains('تونة')) return 'assets/food/tuna.jpg';
+    if (lower.contains('قريش')) return 'assets/food/cottage_cheese.jpg';
+    if (lower.contains('كينوا')) return 'assets/food/quinoa.jpg';
+    if (lower.contains('بطاطا')) return 'assets/food/sweet_potato.jpg';
+    if (lower.contains('بطاطس')) return 'assets/food/potato.jpg';
+    if (lower.contains('توست')) return 'assets/food/toast_bread.jpg';
+    if (lower.contains('طحينة')) return 'assets/food/tahini.jpg';
+    return 'assets/food/oats.jpg';
+  }
+
   factory FoodItem.fromJson(Map<String, dynamic> json) {
+    final rawName = json['name']?.toString() ?? json['food_name']?.toString() ?? json['name_ar']?.toString() ?? 'عنصر غذائي';
+    final bool locked = json['is_locked'] == true ||
+        json['locked'] == true ||
+        rawName.contains('زيت زيتون') ||
+        rawName.contains('خضار مشكل');
+
     return FoodItem(
       id: json['id']?.toString() ?? json['item_code']?.toString() ?? UniqueKeyHelper.generate(),
       code: json['code']?.toString() ?? json['food_code']?.toString() ?? '',
-      name: json['name']?.toString() ?? json['food_name']?.toString() ?? json['name_ar']?.toString() ?? 'عنصر غذائي',
+      name: rawName,
       grams: _toDouble(json['amount'] ?? json['grams'] ?? json['quantity'] ?? 100),
       calories: _toInt(json['cal'] ?? json['calories'] ?? 0),
       protein: _toDouble(json['p'] ?? json['protein'] ?? json['protein_g'] ?? 0),
@@ -79,6 +111,8 @@ class FoodItem {
       fastingSubstitutedFrom: json['fasting_substituted_from']?.toString(),
       fastingNoteAr: json['fasting_note_ar']?.toString(),
       fastingBlocked: json['fasting_blocked'] == true,
+      isLocked: locked,
+      lockReason: json['lock_reason']?.toString() ?? 'صنف أساسي لتوازن الدهون الصحية والألياف ولا يمكن استبداله.',
       isCompleted: json['isCompleted'] == true,
     );
   }
@@ -102,6 +136,7 @@ class Meal {
   final String? time;
   final String? ramadanSlot;
   final List<FoodItem> items;
+  final String? coachNote;
   bool isCompleted;
 
   Meal({
@@ -110,6 +145,7 @@ class Meal {
     this.time,
     this.ramadanSlot,
     required this.items,
+    this.coachNote,
     this.isCompleted = false,
   });
 
@@ -131,6 +167,7 @@ class Meal {
       time: json['time']?.toString() ?? json['meal_time']?.toString(),
       ramadanSlot: json['ramadan_slot']?.toString(),
       items: itemsList,
+      coachNote: json['coach_note']?.toString() ?? json['note']?.toString() ?? json['instructions']?.toString(),
       isCompleted: json['isCompleted'] == true,
     );
   }

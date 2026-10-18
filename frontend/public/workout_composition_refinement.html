@@ -1,0 +1,837 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <title>Workout Screen — Intentional Visual Composition Refinement</title>
+  <script src="https://www.gstatic.com/antigravity/web/dev/tailwindcss.min.js"></script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Alexandria:wght@300;400;500;600;700;800;900&family=Inter:wght@400;500;600;700;800&family=Readex+Pro:wght@300;400;500;600;700&display=swap');
+
+    * {
+      -webkit-font-smoothing: antialiased;
+      box-sizing: border-box;
+    }
+
+    /* Font Themes */
+    .font-readex, .font-readex *:not(.font-inter):not(.font-inter *) {
+      font-family: 'Readex Pro', sans-serif !important;
+    }
+    .font-readex .font-inter, .font-readex .font-inter * {
+      font-family: 'Inter', sans-serif !important;
+    }
+
+    .font-alexandria, .font-alexandria *:not(.font-inter):not(.font-inter *) {
+      font-family: 'Alexandria', sans-serif !important;
+    }
+    .font-alexandria .font-inter, .font-alexandria .font-inter * {
+      font-family: 'Inter', sans-serif !important;
+    }
+
+    html, body {
+      direction: rtl;
+      background-color: #F8FAFC;
+      color: #0F172A;
+      margin: 0;
+      padding: 0;
+      min-height: 100vh;
+    }
+
+    .no-scrollbar::-webkit-scrollbar {
+      display: none;
+    }
+    .no-scrollbar {
+      -ms-overflow-style: none;
+      scrollbar-width: none;
+    }
+
+    /* Refined Elevation & Shadows */
+    .premium-card-shadow {
+      box-shadow: 0 4px 20px -2px rgba(15, 23, 42, 0.04), 0 2px 6px -1px rgba(15, 23, 42, 0.02);
+    }
+    .stepper-btn-shadow {
+      box-shadow: 0 1px 3px 0 rgba(15, 23, 42, 0.08);
+    }
+
+    /* Mobile Mockup Frames */
+    .mobile-frame {
+      width: 390px;
+      height: 844px;
+      background: #FAFBFC;
+      border-radius: 44px;
+      box-shadow: 0 25px 60px -15px rgba(15, 23, 42, 0.18), 0 0 0 10px #1E293B, 0 0 0 12px #94A3B8;
+      overflow: hidden;
+      position: relative;
+      flex-shrink: 0;
+      transition: width 0.25s ease, height 0.25s ease;
+    }
+
+    /* Standalone / Raw preview mode */
+    body.raw-preview {
+      background: #FAFBFC !important;
+      padding: 0 !important;
+      margin: 0 !important;
+      display: block !important;
+      overflow: hidden !important;
+    }
+    body.raw-preview #top-nav-bar {
+      display: none !important;
+    }
+    body.raw-preview #frames-wrapper {
+      padding: 0 !important;
+      margin: 0 !important;
+      max-width: 100% !important;
+      gap: 0 !important;
+      height: 100vh !important;
+      display: block !important;
+    }
+    body.raw-preview .frame-col {
+      width: 100% !important;
+      height: 100vh !important;
+      gap: 0 !important;
+      display: block !important;
+    }
+    body.raw-preview .frame-col.hidden-frame {
+      display: none !important;
+    }
+    body.raw-preview .frame-col > .col-header {
+      display: none !important;
+    }
+    body.raw-preview .mobile-frame {
+      width: 100% !important;
+      height: 100vh !important;
+      border-radius: 0 !important;
+      box-shadow: none !important;
+      border: none !important;
+    }
+
+    /* Accessibility Large Text Simulation */
+    body.large-text-sim .text-scalable-title { font-size: 17.5px !important; }
+    body.large-text-sim .text-scalable-sub { font-size: 14px !important; }
+    body.large-text-sim .text-scalable-body { font-size: 13px !important; }
+  </style>
+</head>
+<body class="p-4 md:p-6 flex flex-col items-center font-readex">
+
+  <!-- Desktop Interactive Toolbar -->
+  <header id="top-nav-bar" class="w-full max-w-6xl mb-6 bg-white border border-[#E2E8F0] rounded-[18px] p-4 shadow-sm flex flex-wrap items-center justify-between gap-4 z-50">
+    <div>
+      <div class="flex items-center gap-2">
+        <span class="w-2.5 h-2.5 rounded-full bg-[#58B4E5]"></span>
+        <h1 class="text-[15px] font-bold text-[#0F172A]">إعادة بناء التكوين البصري لشاشة Workout (Visual Composition)</h1>
+      </div>
+      <p class="text-[11.5px] text-[#64748B] mt-0.5">مقارنة التكوين العشوائي المرصوص (Before) بالتكوين المدروس المنظم (After) وفق مراجع Karim Zakaria</p>
+    </div>
+
+    <!-- Mode Selector -->
+    <div class="flex items-center bg-[#F1F5F9] p-1 rounded-[12px] gap-1">
+      <button onclick="setMode('dual')" id="btn-mode-dual" class="px-3 py-1.5 rounded-[9px] text-[11.5px] font-semibold bg-[#58B4E5] text-white shadow-2xs transition-all">
+        مقارنة جنباً إلى جنب
+      </button>
+      <button onclick="setMode('after')" id="btn-mode-after" class="px-3 py-1.5 rounded-[9px] text-[11.5px] font-medium text-[#64748B] hover:text-[#0F172A] transition-all">
+        After: التكوين الجديد المنظم
+      </button>
+      <button onclick="setMode('before')" id="btn-mode-before" class="px-3 py-1.5 rounded-[9px] text-[11.5px] font-medium text-[#64748B] hover:text-[#0F172A] transition-all">
+        Before: التصميم السابق المرصوص
+      </button>
+    </div>
+
+    <!-- Controls Group -->
+    <div class="flex items-center gap-3">
+      <!-- Font Switcher -->
+      <div class="flex items-center gap-1 bg-[#F8FAFC] border border-[#E2E8F0] p-1 rounded-[10px] text-[11px]">
+        <span class="text-[#64748B] px-1 font-medium">الخط:</span>
+        <button onclick="setFontTheme('readex')" id="btn-font-readex" class="px-2 py-1 rounded-[6px] bg-[#0F172A] text-white font-semibold">Readex Pro + Inter</button>
+        <button onclick="setFontTheme('alexandria')" id="btn-font-alex" class="px-2 py-1 rounded-[6px] text-[#64748B] hover:text-[#0F172A]">Alexandria</button>
+      </div>
+
+      <!-- Unit Switcher -->
+      <div class="flex items-center gap-1 bg-[#F8FAFC] border border-[#E2E8F0] p-1 rounded-[10px] text-[11px]">
+        <span class="text-[#64748B] px-1 font-medium">الوحدة:</span>
+        <button onclick="setWorkoutUnit('kg')" id="btn-unit-kg" class="px-2 py-1 rounded-[6px] bg-[#0F172A] text-white font-semibold">KG</button>
+        <button onclick="setWorkoutUnit('lb')" id="btn-unit-lb" class="px-2 py-1 rounded-[6px] text-[#64748B] hover:text-[#0F172A]">LB</button>
+      </div>
+
+      <!-- Viewport Width -->
+      <div class="flex items-center gap-1 bg-[#F8FAFC] border border-[#E2E8F0] p-1 rounded-[10px] text-[11px]">
+        <button onclick="setViewportWidth(375)" id="btn-w-375" class="px-2 py-1 rounded-[6px] text-[#64748B]">375px</button>
+        <button onclick="setViewportWidth(390)" id="btn-w-390" class="px-2 py-1 rounded-[6px] bg-[#0F172A] text-white font-semibold">390px</button>
+        <button onclick="setViewportWidth(430)" id="btn-w-430" class="px-2 py-1 rounded-[6px] text-[#64748B]">430px</button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Frames Wrapper -->
+  <main id="frames-wrapper" class="flex flex-wrap items-start justify-center gap-8 w-full max-w-7xl pb-16">
+
+    <!-- ========================================== -->
+    <!-- FRAME 1: BEFORE (التصميم السابق المرصوص) -->
+    <!-- ========================================== -->
+    <div id="col-before" class="frame-col flex flex-col items-center gap-2.5">
+      <div class="col-header flex items-center justify-between w-full max-w-[390px] px-2 text-[12px] font-semibold text-rose-600 bg-rose-50 border border-rose-200/60 rounded-[10px] py-1.5">
+        <div class="flex items-center gap-1.5">
+          <span class="w-2 h-2 rounded-full bg-rose-500"></span>
+          <span>Before: كروت ومربعات متراكمة وعلامة صح مضللة</span>
+        </div>
+        <span class="text-[10px] text-rose-500 font-normal">تشتت بصري</span>
+      </div>
+
+      <div class="mobile-frame flex flex-col" id="frame-before">
+        <!-- Status Bar -->
+        <div class="h-10 bg-white/80 backdrop-blur-md flex items-center justify-between px-6 shrink-0 border-b border-[#F1F5F9]/60 select-none z-20">
+          <span class="text-[12px] font-semibold tracking-tight text-[#0F172A] font-inter">09:41</span>
+          <div class="w-20 h-4 bg-[#0F172A] rounded-full"></div>
+          <span class="text-[11px] font-medium text-[#64748B] font-inter">100% 5G</span>
+        </div>
+
+        <!-- Scrollable Workout Content Before -->
+        <div class="flex-1 overflow-y-auto no-scrollbar px-3.5 py-2 space-y-2.5 pb-20 sync-scroll" id="scroll-before">
+          <!-- Header -->
+          <section class="flex items-center justify-between pt-0.5">
+            <div>
+              <h1 class="text-[17px] font-bold text-[#0F172A] tracking-tight">التمارين</h1>
+              <p class="text-[10.5px] font-normal text-[#64748B]">برنامج المقاومة والقوة</p>
+            </div>
+            <span class="px-2 py-0.5 bg-[#FEFCE8] text-[#C4952D] border border-[#E5B951]/40 rounded-full text-[9.5px] font-bold">MAX</span>
+          </section>
+
+          <!-- Sessions Bar -->
+          <section class="flex gap-1.5 overflow-x-auto no-scrollbar pb-0.5">
+            <button class="whitespace-nowrap h-7 px-3 rounded-full bg-[#0F172A] text-white text-[11px] font-semibold shadow-2xs shrink-0 flex items-center gap-1.5">
+              <span>جلسة 1</span>
+              <span class="text-[9.5px] text-slate-300 font-normal">· الصدر والبايسبس</span>
+            </button>
+            <button class="whitespace-nowrap h-7 px-3 rounded-full bg-white border border-[#E2E8F0] text-[#64748B] text-[11px] font-medium shrink-0 flex items-center gap-1.5">
+              <span>جلسة 2</span>
+              <span class="text-[9.5px] text-[#94A3B8]">· الظهر والترايسبس</span>
+            </button>
+          </section>
+
+          <!-- Warmup -->
+          <section class="bg-white border border-[#E7EEF3] rounded-[10px] p-2 flex items-center justify-between text-[11px]">
+            <div class="flex items-center gap-2">
+              <span class="w-1.5 h-1.5 rounded-full bg-[#58B4E5]"></span>
+              <span class="font-medium text-[#0F172A]">التهيئة الحركية والإحماء</span>
+              <span class="text-[10px] text-[#64748B]">· 5 دقائق</span>
+            </div>
+            <span class="text-[#94A3B8]">&darr;</span>
+          </section>
+
+          <!-- OLD CARD 1 (Stacked Nested Boxes) -->
+          <article class="bg-white border border-[#E7EEF3] rounded-[16px] p-3 soft-card-shadow space-y-2.5">
+            <div class="flex items-start justify-between gap-2">
+              <div class="flex items-center gap-2.5">
+                <div class="w-12 h-12 rounded-[10px] border border-[#E2E8F0] overflow-hidden bg-[#F8FAFC]">
+                  <img src="/exercises/MACHINE_CHEST_PRESS/0.jpg" alt="" class="w-full h-full object-cover">
+                </div>
+                <div>
+                  <h3 class="text-[14.5px] font-bold text-[#0F172A] font-inter"><span dir="ltr">Machine Chest Press</span></h3>
+                  <p class="text-[11.5px] font-medium text-[#64748B]">دفع صدر بالجهاز</p>
+                  <p class="text-[10px] text-[#94A3B8]">عضلات الصدر الأوسط · ترايسبس</p>
+                </div>
+              </div>
+              <!-- Misleading Checkmark -->
+              <button class="w-8 h-8 rounded-full border border-[#E2E8F0] bg-[#F8FAFC] flex items-center justify-center text-[#94A3B8]">
+                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
+              </button>
+            </div>
+
+            <!-- Crowded Single Gray Strip -->
+            <div class="flex items-center justify-between px-2.5 py-1.5 bg-[#F8FAFC] rounded-[10px] border border-[#F1F5F9] text-[11px]">
+              <span class="font-bold text-[#0F172A]">3 <span class="font-normal text-[#64748B] text-[10px]">مجموعات</span></span>
+              <span>·</span>
+              <span class="font-bold text-[#0F172A]">8 - 10 <span class="font-normal text-[#64748B] text-[10px]">عدات</span></span>
+              <span>·</span>
+              <span class="bg-[#E0F2FE] text-[#0284C7] font-bold text-[10px] px-1.5 py-0.5 rounded">RIR 2</span>
+              <span>·</span>
+              <span class="font-bold text-[#0F172A]">90 <span class="font-normal text-[#64748B] text-[10px]">ث راحة</span></span>
+            </div>
+
+            <!-- Nested Log Box -->
+            <div class="space-y-1.5">
+              <div class="flex items-center justify-between text-[11px]">
+                <span class="font-semibold text-[#475569]">تسجيل آخر مجموعة</span>
+                <span class="text-[10px] font-medium bg-[#F0F7FF] text-[#0284C7] px-2 py-0.5 rounded-full">زي آخر مرة · 45 كجم × 10</span>
+              </div>
+              <div class="grid grid-cols-2 gap-2">
+                <div class="bg-[#F8FAFC] border border-[#E7EEF3] rounded-[10px] p-1.5 flex items-center justify-between">
+                  <button class="w-6 h-6 rounded bg-white border text-xs">-</button>
+                  <span class="font-bold text-[14px]">45 كجم</span>
+                  <button class="w-6 h-6 rounded bg-[#58B4E5] text-white text-xs">+</button>
+                </div>
+                <div class="bg-[#F8FAFC] border border-[#E7EEF3] rounded-[10px] p-1.5 flex items-center justify-between">
+                  <button class="w-6 h-6 rounded bg-white border text-xs">-</button>
+                  <span class="font-bold text-[14px]">10 عدات</span>
+                  <button class="w-6 h-6 rounded bg-[#58B4E5] text-white text-xs">+</button>
+                </div>
+              </div>
+            </div>
+
+            <!-- Effort Buttons -->
+            <div class="grid grid-cols-3 gap-1.5">
+              <button class="h-7 rounded-[8px] bg-white border text-[11px]">صعب</button>
+              <button class="h-7 rounded-[8px] bg-[#58B4E5] text-white text-[11px] font-semibold">مناسب</button>
+              <button class="h-7 rounded-[8px] bg-white border text-[11px]">سهل</button>
+            </div>
+
+            <div class="pt-1 border-t border-[#F1F5F9] text-[10.5px] text-[#64748B] flex justify-between">
+              <span>تعليمات التكنيك والفيديو</span>
+              <span>&larr;</span>
+            </div>
+          </article>
+
+          <!-- OLD CARD 2 -->
+          <article class="bg-white border border-[#E7EEF3] rounded-[16px] p-3 soft-card-shadow space-y-2.5">
+            <div class="flex items-start justify-between gap-2">
+              <div class="flex items-center gap-2.5">
+                <div class="w-12 h-12 rounded-[10px] border border-[#E2E8F0] overflow-hidden bg-[#F8FAFC]">
+                  <img src="/exercises/INCLINE_DUMBBELL_BENCH_PRESS/0.jpg" alt="" class="w-full h-full object-cover">
+                </div>
+                <div>
+                  <h3 class="text-[14.5px] font-bold text-[#0F172A] font-inter"><span dir="ltr">Incline Dumbbell Bench Press</span></h3>
+                  <p class="text-[11.5px] font-medium text-[#64748B]">دفع بالدمبل بنش عالي</p>
+                  <p class="text-[10px] text-[#94A3B8]">عضلات الصدر العلوي · الكتف الأمامي</p>
+                </div>
+              </div>
+              <button class="w-8 h-8 rounded-full border border-[#E2E8F0] bg-[#F8FAFC] flex items-center justify-center text-[#94A3B8]">
+                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
+              </button>
+            </div>
+            <div class="flex items-center justify-between px-2.5 py-1.5 bg-[#F8FAFC] rounded-[10px] border border-[#F1F5F9] text-[11px]">
+              <span class="font-bold text-[#0F172A]">3 مجموعات</span>
+              <span>·</span>
+              <span class="font-bold text-[#0F172A]">10 - 12 عدات</span>
+              <span>·</span>
+              <span class="bg-[#E0F2FE] text-[#0284C7] font-bold text-[10px] px-1.5 py-0.5 rounded">RIR 2</span>
+              <span>·</span>
+              <span class="font-bold text-[#0F172A]">75 ث راحة</span>
+            </div>
+            <div class="grid grid-cols-2 gap-2">
+              <div class="bg-[#F8FAFC] border border-[#E7EEF3] rounded-[10px] p-1.5 flex items-center justify-between">
+                <span class="font-bold text-[14px]">20 كجم</span>
+              </div>
+              <div class="bg-[#F8FAFC] border border-[#E7EEF3] rounded-[10px] p-1.5 flex items-center justify-between">
+                <span class="font-bold text-[14px]">10 عدات</span>
+              </div>
+            </div>
+          </article>
+        </div>
+
+        <!-- Floating Bottom Nav -->
+        <nav class="absolute bottom-3 inset-x-4 h-[50px] bg-white/95 backdrop-blur-xl rounded-full border border-[#E2E8F0] shadow-md p-1 flex items-center justify-between z-30">
+          <div class="flex-1 text-center text-[10px] text-[#64748B]">اليوم</div>
+          <div class="flex-1 text-center text-[10px] font-bold text-white bg-[#58B4E5] h-full rounded-full flex items-center justify-center">التمارين</div>
+          <div class="flex-1 text-center text-[10px] text-[#64748B]">التغذية</div>
+          <div class="flex-1 text-center text-[10px] text-[#64748B]">المتابعة</div>
+        </nav>
+      </div>
+    </div>
+
+
+    <!-- ======================================================== -->
+    <!-- FRAME 2: AFTER (التصميم الجديد ذو التكوين البصري المدروس) -->
+    <!-- ======================================================== -->
+    <div id="col-after" class="frame-col flex flex-col items-center gap-2.5">
+      <div class="col-header flex items-center justify-between w-full max-w-[390px] px-2 text-[12px] font-semibold text-emerald-700 bg-emerald-50 border border-emerald-200/80 rounded-[10px] py-1.5">
+        <div class="flex items-center gap-1.5">
+          <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
+          <span>After: تكوين بصري منظم وهرمية واضحة ومريحة</span>
+        </div>
+        <span class="text-[10px] text-emerald-600 font-bold bg-white px-2 py-0.5 rounded-full shadow-2xs">تصميم مدروس</span>
+      </div>
+
+      <div class="mobile-frame flex flex-col" id="frame-after">
+        <!-- Status Bar -->
+        <div class="h-10 bg-white/80 backdrop-blur-md flex items-center justify-between px-6 shrink-0 border-b border-[#F1F5F9]/60 select-none z-20">
+          <span class="text-[12px] font-semibold tracking-tight text-[#0F172A] font-inter">09:41</span>
+          <div class="w-20 h-4 bg-[#0F172A] rounded-full"></div>
+          <span class="text-[11px] font-medium text-[#64748B] font-inter">100% 5G</span>
+        </div>
+
+        <!-- Scrollable Workout Content After -->
+        <div class="flex-1 overflow-y-auto no-scrollbar px-3.5 py-2.5 space-y-3 pb-24 sync-scroll" id="scroll-after">
+
+          <!-- 1. Screen Header (Clean & Anchor) -->
+          <section class="flex items-end justify-between pt-0.5 px-0.5">
+            <div>
+              <div class="flex items-center gap-2">
+                <h1 class="text-[18px] font-bold text-[#0F172A] tracking-tight leading-none text-scalable-title">التمارين المقررة</h1>
+                <span class="px-2 py-0.5 bg-[#FEFCE8] text-[#B45309] border border-[#FDE68A] rounded-full text-[9px] font-bold tracking-wide">MAX</span>
+              </div>
+              <p class="text-[11px] font-normal text-[#64748B] mt-1 text-scalable-sub">برنامج القوة والضخامة العضلية · الدورة 1</p>
+            </div>
+            <div class="text-left">
+              <span class="text-[10px] font-semibold text-[#0284C7] bg-[#F0F9FF] px-2 py-1 rounded-full border border-[#BAE6FD]">
+                جلسة 1 من 4
+              </span>
+            </div>
+          </section>
+
+          <!-- 2. Clean Session Selector (Tab Segmented Bar) -->
+          <section class="bg-[#F1F5F9] p-1 rounded-[12px] flex items-center gap-1">
+            <button class="flex-1 py-1.5 px-2 rounded-[9px] bg-[#0F172A] text-white text-[11px] font-semibold shadow-2xs text-center transition-all">
+              1: الصدر والبايسبس
+            </button>
+            <button class="flex-1 py-1.5 px-2 rounded-[9px] text-[#64748B] hover:text-[#0F172A] text-[11px] font-medium text-center transition-all">
+              2: الظهر والتراي
+            </button>
+            <button class="flex-1 py-1.5 px-2 rounded-[9px] text-[#64748B] hover:text-[#0F172A] text-[11px] font-medium text-center transition-all">
+              3: الأرجل
+            </button>
+          </section>
+
+          <!-- 3. Warmup Card (Compact, Quiet, Secondary) -->
+          <section class="bg-white border border-[#E7EEF3] rounded-[14px] p-2.5 premium-card-shadow flex items-center justify-between text-[11.5px]">
+            <div class="flex items-center gap-2.5">
+              <span class="w-2 h-2 rounded-full bg-[#58B4E5]"></span>
+              <div>
+                <span class="font-semibold text-[#0F172A] block leading-tight">التهيئة الحركية والإحماء</span>
+                <span class="text-[10px] text-[#64748B] font-normal">5 دقائق لتجهيز أوتار الكتف والمرفق</span>
+              </div>
+            </div>
+            <button class="text-[10.5px] font-medium text-[#0284C7] hover:underline flex items-center gap-1">
+              <span>التفاصيل</span>
+              <span class="text-[9px]">&larr;</span>
+            </button>
+          </section>
+
+          <!-- ============================================== -->
+          <!-- REFINED EXERCISE CARD 1 (Intentional Layout) -->
+          <!-- ============================================== -->
+          <article class="bg-white border border-[#E2E8F0] rounded-[18px] p-3.5 premium-card-shadow space-y-3 transition-all">
+
+            <!-- ZONE A: Visual Anchor & Exercise Identity -->
+            <div class="flex items-start gap-3">
+              <!-- Crisp Exercise Thumbnail with Subtle Radius -->
+              <div class="w-14 h-14 rounded-[12px] border border-[#E2E8F0] overflow-hidden bg-[#F8FAFC] shrink-0 shadow-2xs">
+                <img src="/exercises/MACHINE_CHEST_PRESS/0.jpg" alt="Machine Chest Press" class="w-full h-full object-cover">
+              </div>
+
+              <!-- Exercise Typographic Stack (Clear Visual Hierarchy) -->
+              <div class="flex-1 min-w-0">
+                <h3 class="text-[15.5px] font-bold text-[#0F172A] leading-tight tracking-tight font-inter text-scalable-title" dir="ltr">
+                  Machine Chest Press
+                </h3>
+                <h4 class="text-[12.5px] font-medium text-[#475569] mt-0.5 leading-snug text-scalable-sub">
+                  دفع صدر بالجهاز
+                </h4>
+                <p class="text-[10.5px] text-[#94A3B8] font-normal mt-0.5 truncate">
+                  عضلات الصدر الأوسط · ترايسبس
+                </p>
+              </div>
+
+              <!-- Exercise Sequence Index Badge (Clean Context, No Fake Done Checkmark) -->
+              <span class="w-6 h-6 rounded-full bg-[#F1F5F9] text-[#64748B] text-[11px] font-bold font-inter flex items-center justify-center shrink-0">
+                01
+              </span>
+            </div>
+
+            <!-- ZONE B: Prescription Spec Grid (Organized Columns, Clean Separators) -->
+            <div class="bg-[#F8FAFC] border border-[#EEF2F6] rounded-[12px] py-2 px-3">
+              <div class="grid grid-cols-4 divide-x divide-x-reverse divide-[#E2E8F0] text-center">
+                <!-- Sets -->
+                <div class="px-1">
+                  <span class="text-[13.5px] font-bold text-[#0F172A] block leading-none font-inter">3</span>
+                  <span class="text-[10px] font-medium text-[#64748B] mt-1 block">مجموعات</span>
+                </div>
+                <!-- Reps -->
+                <div class="px-1">
+                  <span class="text-[13.5px] font-bold text-[#0F172A] block leading-none font-inter" dir="ltr">8 - 10</span>
+                  <span class="text-[10px] font-medium text-[#64748B] mt-1 block">عدات</span>
+                </div>
+                <!-- Intensity / RIR -->
+                <div class="px-1">
+                  <span class="text-[13.5px] font-bold text-[#0284C7] block leading-none font-inter">RIR 2</span>
+                  <span class="text-[10px] font-medium text-[#64748B] mt-1 block">الشدة</span>
+                </div>
+                <!-- Rest -->
+                <div class="px-1">
+                  <span class="text-[13.5px] font-bold text-[#0F172A] block leading-none font-inter">90 ث</span>
+                  <span class="text-[10px] font-medium text-[#64748B] mt-1 block">الراحة</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- ZONE C: Last Recorded Performance (Calm Benchmark Anchor) -->
+            <div class="flex items-center justify-between px-2.5 py-1.5 bg-[#F0FDF4] border border-[#DCFCE7] rounded-[10px] text-[11px]">
+              <div class="flex items-center gap-1.5 text-emerald-800">
+                <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+                <span class="font-semibold">آخر أداء محقق:</span>
+                <span class="font-bold font-inter text-[#0F172A]" id="after-perf-1" dir="ltr">45 kg × 10 reps</span>
+              </div>
+              <button class="text-[10px] font-semibold text-emerald-700 hover:text-emerald-900 bg-white px-2 py-0.5 rounded-[6px] border border-emerald-200/80 shadow-2xs transition-all flex items-center gap-1">
+                <span>تثبيت الأداء</span>
+                <svg class="w-2.5 h-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+              </button>
+            </div>
+
+            <!-- ZONE D: Logging Inputs (Generous Touch Targets, Optical Alignment) -->
+            <div class="space-y-2 pt-0.5">
+              <div class="flex items-center justify-between text-[11.5px] px-0.5">
+                <span class="font-bold text-[#0F172A]">تسجيل آخر مجموعة في التمرين:</span>
+                <span class="text-[10px] text-[#64748B]">حفظ تلقائي فوري</span>
+              </div>
+
+              <div class="grid grid-cols-2 gap-2.5">
+                <!-- Weight Input -->
+                <div class="bg-[#F8FAFC] border border-[#E2E8F0] rounded-[12px] p-1.5 flex items-center justify-between" dir="ltr">
+                  <button onclick="stepRefinementWeight(1, -1)" class="w-9 h-9 rounded-[9px] bg-white border border-[#E2E8F0] stepper-btn-shadow flex items-center justify-center text-[15px] font-bold text-[#64748B] hover:text-[#0F172A] active:scale-95 transition-all">-</button>
+                  <div class="text-center px-1">
+                    <span id="after-w1" class="text-[17px] font-bold text-[#0F172A] block leading-none font-inter">45</span>
+                    <span id="after-w1-unit" class="text-[10px] font-medium text-[#64748B] mt-0.5 block">كجم</span>
+                  </div>
+                  <button onclick="stepRefinementWeight(1, 1)" class="w-9 h-9 rounded-[9px] bg-[#58B4E5] text-white stepper-btn-shadow flex items-center justify-center text-[15px] font-bold hover:bg-[#0284C7] active:scale-95 transition-all">+</button>
+                </div>
+
+                <!-- Reps Input -->
+                <div class="bg-[#F8FAFC] border border-[#E2E8F0] rounded-[12px] p-1.5 flex items-center justify-between" dir="ltr">
+                  <button class="w-9 h-9 rounded-[9px] bg-white border border-[#E2E8F0] stepper-btn-shadow flex items-center justify-center text-[15px] font-bold text-[#64748B] hover:text-[#0F172A] active:scale-95 transition-all">-</button>
+                  <div class="text-center px-1">
+                    <span class="text-[17px] font-bold text-[#0F172A] block leading-none font-inter">10</span>
+                    <span class="text-[10px] font-medium text-[#64748B] mt-0.5 block">عدات</span>
+                  </div>
+                  <button class="w-9 h-9 rounded-[9px] bg-[#58B4E5] text-white stepper-btn-shadow flex items-center justify-center text-[15px] font-bold hover:bg-[#0284C7] active:scale-95 transition-all">+</button>
+                </div>
+              </div>
+
+              <!-- Effort Rating: Unified Segmented Control -->
+              <div class="pt-0.5">
+                <div class="grid grid-cols-3 bg-[#F1F5F9] p-1 rounded-[10px] gap-1 text-[11px]">
+                  <button class="py-1.5 rounded-[8px] font-medium text-[#64748B] hover:text-[#0F172A] transition-all text-center">
+                    صعب جداً
+                  </button>
+                  <button class="py-1.5 rounded-[8px] font-bold text-white bg-[#58B4E5] shadow-2xs transition-all text-center">
+                    مناسب
+                  </button>
+                  <button class="py-1.5 rounded-[8px] font-medium text-[#64748B] hover:text-[#0F172A] transition-all text-center">
+                    سهل
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <!-- ZONE E: Technique & Video Accordion (Subtle, Clean Footer) -->
+            <div class="pt-2 border-t border-[#F1F5F9]">
+              <button class="w-full flex items-center justify-between text-[#64748B] hover:text-[#0284C7] transition-colors py-0.5 text-[11px] font-medium">
+                <span class="flex items-center gap-1.5">
+                  <svg class="w-3.5 h-3.5 text-[#0284C7]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                  <span>تعليمات التكنيك ومسار الحركة الصحيح</span>
+                </span>
+                <span class="text-[10px] text-[#94A3B8] font-bold">&larr;</span>
+              </button>
+            </div>
+          </article>
+
+          <!-- ============================================== -->
+          <!-- REFINED EXERCISE CARD 2 (Consistent Rhythm) -->
+          <!-- ============================================== -->
+          <article class="bg-white border border-[#E2E8F0] rounded-[18px] p-3.5 premium-card-shadow space-y-3 transition-all">
+            <!-- Identity -->
+            <div class="flex items-start gap-3">
+              <div class="w-14 h-14 rounded-[12px] border border-[#E2E8F0] overflow-hidden bg-[#F8FAFC] shrink-0 shadow-2xs">
+                <img src="/exercises/INCLINE_DUMBBELL_BENCH_PRESS/0.jpg" alt="Incline Dumbbell Bench Press" class="w-full h-full object-cover">
+              </div>
+              <div class="flex-1 min-w-0">
+                <h3 class="text-[15.5px] font-bold text-[#0F172A] leading-tight tracking-tight font-inter text-scalable-title" dir="ltr">
+                  Incline Dumbbell Bench Press
+                </h3>
+                <h4 class="text-[12.5px] font-medium text-[#475569] mt-0.5 leading-snug text-scalable-sub">
+                  دفع بالدمبل بنش عالي
+                </h4>
+                <p class="text-[10.5px] text-[#94A3B8] font-normal mt-0.5 truncate">
+                  عضلات الصدر العلوي · الكتف الأمامي
+                </p>
+              </div>
+              <span class="w-6 h-6 rounded-full bg-[#F1F5F9] text-[#64748B] text-[11px] font-bold font-inter flex items-center justify-center shrink-0">
+                02
+              </span>
+            </div>
+
+            <!-- Prescription Grid -->
+            <div class="bg-[#F8FAFC] border border-[#EEF2F6] rounded-[12px] py-2 px-3">
+              <div class="grid grid-cols-4 divide-x divide-x-reverse divide-[#E2E8F0] text-center">
+                <div class="px-1">
+                  <span class="text-[13.5px] font-bold text-[#0F172A] block leading-none font-inter">3</span>
+                  <span class="text-[10px] font-medium text-[#64748B] mt-1 block">مجموعات</span>
+                </div>
+                <div class="px-1">
+                  <span class="text-[13.5px] font-bold text-[#0F172A] block leading-none font-inter" dir="ltr">10 - 12</span>
+                  <span class="text-[10px] font-medium text-[#64748B] mt-1 block">عدات</span>
+                </div>
+                <div class="px-1">
+                  <span class="text-[13.5px] font-bold text-[#0284C7] block leading-none font-inter">RIR 2</span>
+                  <span class="text-[10px] font-medium text-[#64748B] mt-1 block">الشدة</span>
+                </div>
+                <div class="px-1">
+                  <span class="text-[13.5px] font-bold text-[#0F172A] block leading-none font-inter">75 ث</span>
+                  <span class="text-[10px] font-medium text-[#64748B] mt-1 block">الراحة</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Last Benchmark -->
+            <div class="flex items-center justify-between px-2.5 py-1.5 bg-[#F0FDF4] border border-[#DCFCE7] rounded-[10px] text-[11px]">
+              <div class="flex items-center gap-1.5 text-emerald-800">
+                <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+                <span class="font-semibold">آخر أداء محقق:</span>
+                <span class="font-bold font-inter text-[#0F172A]" id="after-perf-2" dir="ltr">20 kg × 10 reps</span>
+              </div>
+              <button class="text-[10px] font-semibold text-emerald-700 hover:text-emerald-900 bg-white px-2 py-0.5 rounded-[6px] border border-emerald-200/80 shadow-2xs transition-all flex items-center gap-1">
+                <span>تثبيت الأداء</span>
+                <svg class="w-2.5 h-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+              </button>
+            </div>
+
+            <!-- Inputs -->
+            <div class="grid grid-cols-2 gap-2.5 pt-0.5">
+              <div class="bg-[#F8FAFC] border border-[#E2E8F0] rounded-[12px] p-1.5 flex items-center justify-between" dir="ltr">
+                <button onclick="stepRefinementWeight(2, -1)" class="w-9 h-9 rounded-[9px] bg-white border border-[#E2E8F0] stepper-btn-shadow flex items-center justify-center text-[15px] font-bold text-[#64748B]">-</button>
+                <div class="text-center px-1">
+                  <span id="after-w2" class="text-[17px] font-bold text-[#0F172A] block leading-none font-inter">20</span>
+                  <span id="after-w2-unit" class="text-[10px] font-medium text-[#64748B] mt-0.5 block">كجم</span>
+                </div>
+                <button onclick="stepRefinementWeight(2, 1)" class="w-9 h-9 rounded-[9px] bg-[#58B4E5] text-white stepper-btn-shadow flex items-center justify-center text-[15px] font-bold">+</button>
+              </div>
+
+              <div class="bg-[#F8FAFC] border border-[#E2E8F0] rounded-[12px] p-1.5 flex items-center justify-between" dir="ltr">
+                <button class="w-9 h-9 rounded-[9px] bg-white border border-[#E2E8F0] stepper-btn-shadow flex items-center justify-center text-[15px] font-bold text-[#64748B]">-</button>
+                <div class="text-center px-1">
+                  <span class="text-[17px] font-bold text-[#0F172A] block leading-none font-inter">10</span>
+                  <span class="text-[10px] font-medium text-[#64748B] mt-0.5 block">عدات</span>
+                </div>
+                <button class="w-9 h-9 rounded-[9px] bg-[#58B4E5] text-white stepper-btn-shadow flex items-center justify-center text-[15px] font-bold">+</button>
+              </div>
+            </div>
+
+            <!-- Effort Control -->
+            <div class="grid grid-cols-3 bg-[#F1F5F9] p-1 rounded-[10px] gap-1 text-[11px]">
+              <button class="py-1.5 rounded-[8px] font-medium text-[#64748B] text-center">صعب جداً</button>
+              <button class="py-1.5 rounded-[8px] font-bold text-white bg-[#58B4E5] shadow-2xs text-center">مناسب</button>
+              <button class="py-1.5 rounded-[8px] font-medium text-[#64748B] text-center">سهل</button>
+            </div>
+          </article>
+
+          <!-- 4. Cardio Section (Harmonious & Purpose-built) -->
+          <article class="bg-white border border-[#E2E8F0] rounded-[18px] p-3.5 premium-card-shadow space-y-2.5">
+            <div class="flex items-center justify-between pb-1.5 border-b border-[#F1F5F9]">
+              <div class="flex items-center gap-2">
+                <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
+                <span class="text-[12px] font-bold text-[#0F172A]">الكارديو الموصوف بعد التمرين</span>
+              </div>
+              <span class="text-[10.5px] font-semibold text-emerald-700 bg-emerald-50 px-2.5 py-0.5 rounded-full border border-emerald-200/80">
+                منطقة حرق الدهون (Zone 2)
+              </span>
+            </div>
+
+            <div>
+              <h3 class="text-[14.5px] font-bold text-[#0F172A] leading-tight font-inter" dir="ltr">Treadmill Incline Walk</h3>
+              <p class="text-[11.5px] font-medium text-[#64748B] mt-0.5">مشي على السير الكهربائي بانحدار</p>
+            </div>
+
+            <div class="bg-[#F8FAFC] p-2.5 rounded-[12px] border border-[#EEF2F6] flex items-center justify-around text-center">
+              <div>
+                <span class="text-[14px] font-bold text-[#0F172A] block font-inter">20 دقيقة</span>
+                <span class="text-[10px] text-[#64748B] mt-0.5 block">المدة المستهدفة</span>
+              </div>
+              <div class="h-6 w-px bg-[#E2E8F0]"></div>
+              <div>
+                <span class="text-[14px] font-bold text-[#0284C7] block font-inter" dir="ltr">125 - 135</span>
+                <span class="text-[10px] text-[#64748B] mt-0.5 block">معدل النبض (BPM)</span>
+              </div>
+              <div class="h-6 w-px bg-[#E2E8F0]"></div>
+              <div>
+                <span class="text-[14px] font-bold text-[#0F172A] block font-inter">4% - 6%</span>
+                <span class="text-[10px] text-[#64748B] mt-0.5 block">الانحدار</span>
+              </div>
+            </div>
+          </article>
+
+          <!-- 5. End Workout CTA (Definitive Closure Button) -->
+          <section class="pt-1">
+            <button class="w-full h-11 bg-[#0F172A] hover:bg-[#1E293B] active:scale-[0.99] text-white rounded-[14px] text-[13px] font-bold shadow-md transition-all flex items-center justify-center gap-2">
+              <svg class="w-4 h-4 text-[#58B4E5]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+              <span>أنهيت تمرين اليوم</span>
+            </button>
+            <p class="text-[10px] text-center text-[#94A3B8] mt-1.5 font-normal">يتم تسجيل إتمام الجلسة وتحديث جدول الأسبوع تلقائياً</p>
+          </section>
+
+        </div>
+
+        <!-- Floating Bottom Navigation -->
+        <nav class="absolute bottom-3 inset-x-4 h-[50px] bg-white/95 backdrop-blur-xl rounded-full border border-[#E2E8F0]/90 shadow-[0_10px_25px_-5px_rgba(15,23,42,0.1),0_2px_8px_-2px_rgba(15,23,42,0.04)] p-1 flex items-center justify-between z-30 select-none">
+          <button class="flex-1 h-full rounded-full text-[#64748B] flex flex-col items-center justify-center py-0.5">
+            <svg class="w-4 h-4 mb-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg>
+            <span class="text-[9.5px] font-medium tracking-tight text-[#64748B] leading-none">اليوم</span>
+          </button>
+          <button class="flex-1 h-full rounded-full bg-[#58B4E5] text-white flex flex-col items-center justify-center py-0.5 shadow-2xs">
+            <svg class="w-4 h-4 mb-0.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 5v14M18 5v14M2 9v6M22 9v6M6 12h12"/></svg>
+            <span class="text-[9.5px] font-semibold tracking-tight text-white leading-none">التمارين</span>
+          </button>
+          <button class="flex-1 h-full rounded-full text-[#64748B] flex flex-col items-center justify-center py-0.5">
+            <svg class="w-4 h-4 mb-0.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 2v20M21 2v6a3 3 0 0 1-3 3M18 11v11M5 2v7a3 3 0 0 0 6 0V2M8 12v10"/></svg>
+            <span class="text-[9.5px] font-medium tracking-tight text-[#64748B] leading-none">التغذية</span>
+          </button>
+          <button class="flex-1 h-full rounded-full text-[#64748B] flex flex-col items-center justify-center py-0.5">
+            <svg class="w-4 h-4 mb-0.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2"/><rect x="9" y="3" width="6" height="4" rx="2"/><path d="m9 14 2 2 4-4"/></svg>
+            <span class="text-[9.5px] font-medium tracking-tight text-[#64748B] leading-none">المتابعة</span>
+          </button>
+        </nav>
+      </div>
+    </div>
+
+  </main>
+
+  <script>
+    function setMode(mode) {
+      const colBefore = document.getElementById('col-before');
+      const colAfter = document.getElementById('col-after');
+      const btnDual = document.getElementById('btn-mode-dual');
+      const btnBefore = document.getElementById('btn-mode-before');
+      const btnAfter = document.getElementById('btn-mode-after');
+
+      const active = "px-3 py-1.5 rounded-[9px] text-[11.5px] font-semibold bg-[#58B4E5] text-white shadow-2xs transition-all";
+      const inactive = "px-3 py-1.5 rounded-[9px] text-[11.5px] font-medium text-[#64748B] hover:text-[#0F172A] transition-all";
+
+      btnDual.className = inactive;
+      btnBefore.className = inactive;
+      btnAfter.className = inactive;
+
+      if (mode === 'dual') {
+        colBefore.classList.remove('hidden-frame');
+        colAfter.classList.remove('hidden-frame');
+        colBefore.style.display = 'flex';
+        colAfter.style.display = 'flex';
+        btnDual.className = active;
+      } else if (mode === 'before') {
+        colBefore.classList.remove('hidden-frame');
+        colAfter.classList.add('hidden-frame');
+        colBefore.style.display = 'flex';
+        colAfter.style.display = 'none';
+        btnBefore.className = active;
+      } else if (mode === 'after') {
+        colBefore.classList.add('hidden-frame');
+        colAfter.classList.remove('hidden-frame');
+        colBefore.style.display = 'none';
+        colAfter.style.display = 'flex';
+        btnAfter.className = active;
+      }
+    }
+
+    function setFontTheme(theme) {
+      const btnReadex = document.getElementById('btn-font-readex');
+      const btnAlex = document.getElementById('btn-font-alex');
+      const body = document.body;
+
+      if (theme === 'readex') {
+        body.classList.remove('font-alexandria');
+        body.classList.add('font-readex');
+        btnReadex.className = "px-2 py-1 rounded-[6px] bg-[#0F172A] text-white font-semibold";
+        btnAlex.className = "px-2 py-1 rounded-[6px] text-[#64748B] hover:text-[#0F172A]";
+      } else {
+        body.classList.remove('font-readex');
+        body.classList.add('font-alexandria');
+        btnAlex.className = "px-2 py-1 rounded-[6px] bg-[#0F172A] text-white font-semibold";
+        btnReadex.className = "px-2 py-1 rounded-[6px] text-[#64748B] hover:text-[#0F172A]";
+      }
+    }
+
+    function setViewportWidth(w) {
+      document.querySelectorAll('.mobile-frame').forEach(f => {
+        f.style.width = w + 'px';
+      });
+      [375, 390, 430].forEach(bw => {
+        const b = document.getElementById('btn-w-' + bw);
+        if (bw === w) {
+          b.className = "px-2 py-1 rounded-[6px] bg-[#0F172A] text-white font-semibold";
+        } else {
+          b.className = "px-2 py-1 rounded-[6px] text-[#64748B]";
+        }
+      });
+    }
+
+    // Synchronize scrolling between Before and After
+    const scrBefore = document.getElementById('scroll-before');
+    const scrAfter = document.getElementById('scroll-after');
+    let isScrA = false, isScrB = false;
+
+    scrBefore.addEventListener('scroll', () => {
+      if (!isScrA) {
+        isScrB = true;
+        scrAfter.scrollTop = scrBefore.scrollTop;
+      }
+      isScrA = false;
+    });
+
+    scrAfter.addEventListener('scroll', () => {
+      if (!isScrB) {
+        isScrA = true;
+        scrBefore.scrollTop = scrAfter.scrollTop;
+      }
+      isScrB = false;
+    });
+
+    
+    let currentWorkoutUnit = 'kg';
+    const canonicalWeights = { 1: 45.0, 2: 20.0 };
+
+    function setWorkoutUnit(unit) {
+      currentWorkoutUnit = unit;
+      const isLb = unit === 'lb';
+      document.getElementById('btn-unit-kg').className = !isLb ? 'px-2 py-1 rounded-[6px] bg-[#0F172A] text-white font-semibold' : 'px-2 py-1 rounded-[6px] text-[#64748B] hover:text-[#0F172A]';
+      document.getElementById('btn-unit-lb').className = isLb ? 'px-2 py-1 rounded-[6px] bg-[#0F172A] text-white font-semibold' : 'px-2 py-1 rounded-[6px] text-[#64748B] hover:text-[#0F172A]';
+
+      // Exercise 1: 45 kg -> 100 lb
+      const w1 = document.getElementById('after-w1');
+      const u1 = document.getElementById('after-w1-unit');
+      const p1 = document.getElementById('after-perf-1');
+      if (w1) w1.innerText = isLb ? (Math.round(canonicalWeights[1] * 2.2046226218 * 2) / 2).toString() : canonicalWeights[1].toString();
+      if (u1) u1.innerText = isLb ? 'باوند' : 'كجم';
+      if (p1) p1.innerText = isLb ? '100 lb × 10 reps' : '45 kg × 10 reps';
+
+      // Exercise 2: 20 kg -> 45 lb (or 44 lb)
+      const w2 = document.getElementById('after-w2');
+      const u2 = document.getElementById('after-w2-unit');
+      const p2 = document.getElementById('after-perf-2');
+      if (w2) w2.innerText = isLb ? (Math.round(canonicalWeights[2] * 2.2046226218 * 2) / 2).toString() : canonicalWeights[2].toString();
+      if (u2) u2.innerText = isLb ? 'باوند' : 'كجم';
+      if (p2) p2.innerText = isLb ? '45 lb × 10 reps' : '20 kg × 10 reps';
+    }
+
+    function stepRefinementWeight(idx, dir) {
+      const isLb = currentWorkoutUnit === 'lb';
+      const step = isLb ? 5.0 : 2.5;
+      const el = document.getElementById('after-w' + idx);
+      if (!el) return;
+      let val = parseFloat(el.innerText) || 0;
+      val += dir * step;
+      if (val < 0) val = 0;
+      el.innerText = val % 1 === 0 ? val.toFixed(0) : val.toFixed(1);
+      canonicalWeights[idx] = isLb ? (val / 2.2046226218) : val;
+    }
+
+    // URL Params handler
+    const params = new URLSearchParams(window.location.search);
+    if (params.get('raw') === '1') {
+      document.body.classList.add('raw-preview');
+    }
+    if (params.get('large_font') === '1') {
+      document.body.classList.add('large-text-sim');
+    }
+    if (params.get('mode') === 'after') {
+      setMode('after');
+    } else if (params.get('mode') === 'before') {
+      setMode('before');
+    } else {
+      setMode('dual');
+    }
+    if (params.get('unit') === 'lb') { setWorkoutUnit('lb'); }
+    if (params.get('font') === 'alexandria') {
+      setFontTheme('alexandria');
+    }
+    if (params.get('width')) {
+      const w = parseInt(params.get('width'), 10);
+      if ([375, 390, 430].includes(w)) setViewportWidth(w);
+    }
+  </script>
+</body>
+</html>

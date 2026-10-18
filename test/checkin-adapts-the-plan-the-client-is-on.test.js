@@ -55,7 +55,7 @@ test("a check-in approved while the next cycle waits as a draft adapts the activ
     });
 
     const out = {};
-    await approveCheckin({ params: { checkinId: checkin.id }, body: {} }, { status(c) { out.status = c; return this; }, json(b) { out.body = b; return this; } });
+    await approveCheckin({ params: { checkinId: checkin.id }, body: { apply_program_adaptation: true } }, { status(c) { out.status = c; return this; }, json(b) { out.body = b; return this; } });
     assert.equal(out.status, 200, JSON.stringify(out.body));
 
     await active.reload();

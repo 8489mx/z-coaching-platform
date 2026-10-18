@@ -1,0 +1,586 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <title>Karim Zakaria — Exercise Card Final Polish (A vs B)</title>
+  <script src="https://www.gstatic.com/antigravity/web/dev/tailwindcss.min.js"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Alexandria:wght@300;400;500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    * {
+      -webkit-font-smoothing: antialiased;
+      box-sizing: border-box;
+      font-family: 'Alexandria', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    }
+
+    .font-inter {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif !important;
+    }
+
+    body {
+      background-color: #F2F4F7;
+      color: #1C1C1E;
+      margin: 0;
+      padding: 0;
+      min-height: 100vh;
+    }
+
+    /* Soft Apple Tactile Surfaces */
+    .apple-card-surface {
+      background: #FFFFFF;
+      border: 1px solid rgba(226, 232, 240, 0.85);
+      border-radius: 16px;
+      box-shadow: 0 4px 20px -2px rgba(28, 28, 30, 0.04), 0 2px 6px -1px rgba(28, 28, 30, 0.02);
+      transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    /* Stepper button with 44px invisible touch target */
+    .apple-stepper-btn {
+      position: relative;
+      width: 32px;
+      height: 32px;
+      border-radius: 9px;
+      background: #FFFFFF;
+      border: 1px solid #E2E8F0;
+      color: #1C1C1E;
+      font-weight: 600;
+      font-size: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 1px 2px rgba(0, 0, 0, 0.03);
+      cursor: pointer;
+      transition: all 0.15s ease;
+      user-select: none;
+    }
+    .apple-stepper-btn::after {
+      content: '';
+      position: absolute;
+      top: -6px;
+      bottom: -6px;
+      left: -6px;
+      right: -6px;
+    }
+    .apple-stepper-btn:hover {
+      background: #F8FAFC;
+      border-color: #CBD5E1;
+    }
+    .apple-stepper-btn:active {
+      transform: scale(0.92);
+      background: #EDF2F7;
+    }
+
+    /* Responsive Viewport Frame */
+    .card-frame {
+      width: 390px;
+      background: #FAFBFC;
+      border-radius: 24px;
+      padding: 16px;
+      border: 1px solid #E2E8F0;
+      box-shadow: 0 10px 25px -5px rgba(15, 23, 42, 0.08);
+      transition: width 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+      flex-shrink: 0;
+    }
+
+    /* Effort Pill Transition */
+    .effort-pill-active {
+      background: #FFFFFF;
+      color: #007AFF;
+      font-weight: 600;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.06);
+    }
+    .effort-pill-inactive {
+      background: transparent;
+      color: #8E8E93;
+      font-weight: 500;
+    }
+    .effort-pill-inactive:hover {
+      color: #1C1C1E;
+    }
+  </style>
+</head>
+<body class="p-4 md:p-8">
+
+  <!-- Top Navigation & Controls Header -->
+  <div class="max-w-6xl mx-auto mb-6">
+    <header class="bg-white border border-[#E2E8F0] rounded-2xl p-4 md:p-5 shadow-sm flex flex-col md:flex-row items-center justify-between gap-4">
+      <div>
+        <div class="flex items-center gap-2">
+          <span class="w-2.5 h-2.5 rounded-full bg-[#007AFF]"></span>
+          <h1 class="text-lg font-bold text-[#1C1C1E]">تدقيق كارت التمرين (Exercise Card) — النسخة A مقابل النسخة B</h1>
+        </div>
+        <p class="text-xs text-[#8E8E93] mt-1">
+          مقارنة مباشرة لكارت واحد بنفس البيانات لإزالة الزحمة البصرية وتخفيف الكروت الداخلية
+        </p>
+      </div>
+
+      <div class="flex flex-wrap items-center gap-3">
+        <!-- Exercise Switcher -->
+        <div class="flex items-center gap-1.5 bg-[#F2F4F7] p-1 rounded-xl">
+          <button onclick="switchExercise(0)" id="ex-btn-0" class="px-2.5 py-1 rounded-lg text-xs font-bold bg-white text-[#1C1C1E] shadow-2xs transition-all">Machine Press</button>
+          <button onclick="switchExercise(1)" id="ex-btn-1" class="px-2.5 py-1 rounded-lg text-xs font-medium text-[#8E8E93] hover:text-[#1C1C1E] transition-all">Incline DB</button>
+          <button onclick="switchExercise(2)" id="ex-btn-2" class="px-2.5 py-1 rounded-lg text-xs font-medium text-[#8E8E93] hover:text-[#1C1C1E] transition-all">Triceps Ext</button>
+        </div>
+
+        <!-- Viewport Width Switcher -->
+        <div class="flex items-center gap-1.5 bg-[#F2F4F7] p-1 rounded-xl">
+          <button onclick="setCardWidth(375)" id="btn-375" class="px-2.5 py-1 rounded-lg text-xs font-medium text-[#8E8E93] hover:text-[#1C1C1E] transition-all">375px</button>
+          <button onclick="setCardWidth(390)" id="btn-390" class="px-2.5 py-1 rounded-lg text-xs font-bold bg-[#007AFF] text-white shadow-2xs transition-all">390px (الافتراضي)</button>
+          <button onclick="setCardWidth(430)" id="btn-430" class="px-2.5 py-1 rounded-lg text-xs font-medium text-[#8E8E93] hover:text-[#1C1C1E] transition-all">430px</button>
+        </div>
+      </div>
+    </header>
+  </div>
+
+  <!-- Comparison Workspace: Side-by-Side (A vs B) -->
+  <div class="max-w-6xl mx-auto">
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 items-start justify-items-center">
+
+      <!-- ==================================================== -->
+      <!-- VERSION A: النسخة السابقة (مع الزحمة البصرية)         -->
+      <!-- ==================================================== -->
+      <div class="flex flex-col items-center w-full max-w-[430px]">
+        <div class="w-full mb-2.5 flex items-center justify-between px-2">
+          <div class="flex items-center gap-2">
+            <span class="w-2 h-2 rounded-full bg-amber-500"></span>
+            <span class="text-sm font-bold text-[#1C1C1E]">النسخة A (الحالية قبل التخفيف)</span>
+          </div>
+          <span class="text-[11px] text-amber-800 bg-amber-50 px-2 py-0.5 rounded-full border border-amber-200">
+            4 صناديق منفصلة · كروت متداخلة
+          </span>
+        </div>
+
+        <div class="card-frame" id="frame-a">
+          <article class="apple-card-surface p-4 space-y-3.5" id="card-version-a">
+            <!-- Header A -->
+            <div class="space-y-1.5">
+              <div class="flex items-center justify-between gap-2">
+                <h3 class="text-[16.5px] font-bold text-[#1C1C1E] font-inter tracking-tight leading-snug truncate" id="a-en-title">
+                  <span dir="ltr">Machine Chest Press</span>
+                </h3>
+                <button type="button" class="w-8 h-8 rounded-full bg-[#F2F4F8] text-[#8E8E93] flex items-center justify-center shrink-0">
+                  <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+                </button>
+              </div>
+
+              <div class="flex items-center gap-2.5">
+                <div class="w-10 h-10 rounded-[10px] overflow-hidden bg-slate-100 shrink-0 border border-slate-200">
+                  <img src="exercises/MACHINE_CHEST_PRESS/0.jpg" alt="" class="w-full h-full object-cover" id="a-img">
+                </div>
+                <div>
+                  <p class="text-[13px] font-semibold text-[#8E8E93] leading-tight" id="a-ar-title">
+                    دفع صدر بالجهاز
+                  </p>
+                  <p class="text-[11px] text-[#A1A1A6] leading-tight mt-0.5" id="a-sub-title">
+                    عضلات الصدر · الترايسبس
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <!-- Problem 1: Four Separate Boxes (Visual Clutter) -->
+            <div class="grid grid-cols-4 gap-1.5 select-none">
+              <div class="p-1.5 rounded-lg bg-[#F8FAFC] border border-[#EEF2F6] text-center flex flex-col justify-center">
+                <span class="text-[10px] text-[#8E8E93] font-medium">المجموعات</span>
+                <span class="text-[13px] font-bold font-inter text-[#1C1C1E]" id="a-sets">3</span>
+              </div>
+              <div class="p-1.5 rounded-lg bg-[#F8FAFC] border border-[#EEF2F6] text-center flex flex-col justify-center">
+                <span class="text-[10px] text-[#8E8E93] font-medium">العدات</span>
+                <span class="text-[13px] font-bold font-inter text-[#1C1C1E]" dir="ltr" id="a-reps">8 - 10</span>
+              </div>
+              <div class="p-1.5 rounded-lg bg-[rgba(0,122,255,0.08)] border border-[rgba(0,122,255,0.16)] text-center flex flex-col justify-center">
+                <span class="text-[10px] text-[#007AFF] font-semibold">الشدة</span>
+                <span class="text-[13px] font-bold font-inter text-[#007AFF]" id="a-rir">RIR 2</span>
+              </div>
+              <div class="p-1.5 rounded-lg bg-[#F8FAFC] border border-[#EEF2F6] text-center flex flex-col justify-center">
+                <span class="text-[10px] text-[#8E8E93] font-medium">الراحة</span>
+                <span class="text-[13px] font-bold font-inter text-[#1C1C1E]" dir="ltr" id="a-rest">90ث</span>
+              </div>
+            </div>
+
+            <!-- Problem 2: Nested Dashboard Inside Card (Card Inception) -->
+            <div class="p-3 bg-[#F8FAFC] rounded-[14px] border border-[#EEF2F6] space-y-2.5">
+              <div class="grid grid-cols-3 gap-2 items-center text-center select-none">
+                <div>
+                  <span class="text-[11px] font-semibold text-[#8E8E93] block mb-1">الوزن (كجم)</span>
+                  <div class="bg-white rounded-[12px] h-10 px-1.5 flex items-center justify-between border border-slate-200/60 shadow-2xs">
+                    <button class="apple-stepper-btn">+</button>
+                    <span class="text-[15px] font-bold font-inter" id="a-weight-val">45.0</span>
+                    <button class="apple-stepper-btn">&minus;</button>
+                  </div>
+                </div>
+
+                <div>
+                  <span class="text-[11px] font-semibold text-[#8E8E93] block mb-1">العدات الفعلية</span>
+                  <div class="bg-white rounded-[12px] h-10 px-1.5 flex items-center justify-between border border-slate-200/60 shadow-2xs">
+                    <button class="apple-stepper-btn">+</button>
+                    <span class="text-[15px] font-bold font-inter" id="a-reps-val">10</span>
+                    <button class="apple-stepper-btn">&minus;</button>
+                  </div>
+                </div>
+
+                <div>
+                  <span class="text-[11px] font-semibold text-[#8E8E93] block mb-1">زي آخر مرة</span>
+                  <button class="w-full bg-white rounded-[12px] h-10 px-2 flex items-center justify-center border border-slate-200/60 shadow-2xs">
+                    <span class="text-[11.5px] font-bold font-inter text-[#007AFF]" dir="ltr" id="a-last-val">45 kg × 10</span>
+                  </button>
+                </div>
+              </div>
+
+              <!-- Problem 7: Verbose mixed label -->
+              <div class="pt-0.5">
+                <span class="text-[11px] font-semibold text-[#8E8E93] block mb-1 text-right">مستوى الجهد (RPE/Effort):</span>
+                <div class="grid grid-cols-3 gap-1 bg-[#EEF2F6] p-1 rounded-[10px] select-none">
+                  <button class="py-1.5 rounded-[8px] text-[12px] font-medium text-[#8E8E93]">سهل</button>
+                  <button class="py-1.5 rounded-[8px] bg-white text-[#007AFF] font-bold text-[12px] shadow-2xs border border-[#007AFF]/20">مناسب</button>
+                  <button class="py-1.5 rounded-[8px] text-[12px] font-medium text-[#8E8E93]">صعب</button>
+                </div>
+              </div>
+            </div>
+
+            <!-- Bottom Actions -->
+            <div class="pt-0.5 flex items-center justify-between text-xs">
+              <button class="flex items-center gap-1.5 text-[#1C1C1E] font-bold">
+                <div class="w-5 h-5 rounded-[6px] bg-[#007AFF]/10 text-[#007AFF] flex items-center justify-center">
+                  <svg class="w-2.5 h-2.5 fill-current" viewBox="0 0 24 24"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+                </div>
+                <span>تعليمات التكنيك والفيديو</span>
+              </button>
+              <button class="flex items-center gap-1 text-[#007AFF] font-bold">
+                <svg class="w-3.5 h-3.5 fill-current" viewBox="0 0 24 24"><path d="M12 4V1L8 5l4 4V6c3.31 0 6 2.69 6 6 0 1.01-.25 1.97-.7 2.8l1.46 1.46A7.93 7.93 0 0020 12c0-4.42-3.58-8-8-8zm0 14c-3.31 0-6-2.69-6-6 0-1.01.25-1.97.7-2.8L5.24 7.74A7.93 7.93 0 004 12c0 4.42 3.58 8 8 8v3l4-4-4-4v3z"/></svg>
+                <span>عرض البدائل</span>
+              </button>
+            </div>
+          </article>
+        </div>
+      </div>
+
+      <!-- ==================================================== -->
+      <!-- VERSION B: النسخة المنقحة والمخففة (Apple Refined)      -->
+      <!-- ==================================================== -->
+      <div class="flex flex-col items-center w-full max-w-[430px]">
+        <div class="w-full mb-2.5 flex items-center justify-between px-2">
+          <div class="flex items-center gap-2">
+            <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
+            <span class="text-sm font-bold text-[#1C1C1E]">النسخة B (المنقحة — مستوى Apple الحقيقي)</span>
+          </div>
+          <span class="text-[11px] text-emerald-800 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200 font-semibold">
+            صف موحد هادئ · وحدة تسجيل مدمجة
+          </span>
+        </div>
+
+        <div class="card-frame" id="frame-b">
+          <article class="apple-card-surface p-4 space-y-3.5 transition-all" id="card-version-b">
+
+            <!-- 1. Exercise Header: Strict Optical Hierarchy & Interactive Completion Toggle -->
+            <div class="flex items-start justify-between gap-3">
+              <div class="flex items-start gap-3 min-w-0 flex-1">
+                <!-- Thumbnail (Clean 44x44, 12px curvature) -->
+                <div class="w-11 h-11 rounded-[12px] overflow-hidden bg-slate-100 shrink-0 border border-slate-200/80 shadow-2xs">
+                  <img src="exercises/MACHINE_CHEST_PRESS/0.jpg" alt="" class="w-full h-full object-cover" id="b-img">
+                </div>
+
+                <!-- Titles Block -->
+                <div class="min-w-0 flex-1">
+                  <!-- English Name (SemiBold 16px, Inter, LTR) -->
+                  <h3 class="text-[16px] font-semibold text-[#1C1C1E] font-inter tracking-tight leading-snug truncate" id="b-en-title">
+                    <span dir="ltr">Machine Chest Press</span>
+                  </h3>
+                  <!-- Arabic Subtitle (13px Medium, Quiet #8E8E93) -->
+                  <p class="text-[12.5px] font-medium text-[#8E8E93] leading-tight mt-0.5" id="b-ar-title">
+                    دفع صدر بالجهاز
+                  </p>
+                </div>
+              </div>
+
+              <!-- 4. Completion Checkmark: Real Active / Inactive State -->
+              <button type="button" onclick="toggleCompletionState()" id="b-check-btn" aria-label="حالة اكتمال التمرين" class="w-8 h-8 rounded-full border border-[#D1D5DB] text-transparent hover:border-[#34C759] hover:text-[#34C759] flex items-center justify-center shrink-0 transition-all cursor-pointer active:scale-90 mt-0.5">
+                <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                  <polyline points="20 6 9 17 4 12"/>
+                </svg>
+              </button>
+            </div>
+
+            <!-- 1. Refined Prescription Row: Single Unified Quiet Strip (Zero Box Clutter) -->
+            <div class="bg-[#F8FAFC] border border-[#EEF2F6] rounded-[10px] px-3 py-2 flex items-center justify-between select-none">
+              <!-- Sets -->
+              <div class="flex items-baseline gap-1 text-[12.5px]">
+                <span class="font-bold font-inter text-[#1C1C1E]" id="b-sets">3</span>
+                <span class="text-[#8E8E93] text-[11px] font-medium">مجموعات</span>
+              </div>
+
+              <span class="w-px h-3 bg-slate-200/90"></span>
+
+              <!-- Reps -->
+              <div class="flex items-baseline gap-1 text-[12.5px]">
+                <span class="font-bold font-inter text-[#1C1C1E]" dir="ltr" id="b-reps">8 - 10</span>
+                <span class="text-[#8E8E93] text-[11px] font-medium">عدات</span>
+              </div>
+
+              <span class="w-px h-3 bg-slate-200/90"></span>
+
+              <!-- RIR Intensity -->
+              <div class="flex items-center">
+                <span class="px-2 py-0.5 rounded-full bg-[#007AFF]/10 text-[#007AFF] text-[11px] font-bold font-inter" id="b-rir">RIR 2</span>
+              </div>
+
+              <span class="w-px h-3 bg-slate-200/90"></span>
+
+              <!-- Rest -->
+              <div class="flex items-baseline gap-1 text-[12.5px]">
+                <span class="font-bold font-inter text-[#1C1C1E]" dir="ltr" id="b-rest">90</span>
+                <span class="text-[#8E8E93] text-[11px] font-medium">ثانية</span>
+              </div>
+            </div>
+
+            <!-- 2. Refined Logging Unit: Compact, Cohesive & Connected (No Dashboard Inception) -->
+            <div class="space-y-2.5 pt-0.5">
+
+              <!-- Previous Performance: Clear Separation of View vs Action -->
+              <div class="flex items-center justify-between px-1 text-[12px] select-none">
+                <div class="flex items-center gap-1.5 text-[#8E8E93]">
+                  <span class="font-medium">آخر أداء:</span>
+                  <span class="font-semibold font-inter text-[#1C1C1E]" dir="ltr" id="b-last-display">45.0 kg × 10</span>
+                </div>
+                <!-- 5. Distinct Action to Apply/Copy -->
+                <button type="button" onclick="copyLastPerformance()" class="flex items-center gap-1 px-2.5 py-1 rounded-[8px] bg-slate-100 hover:bg-blue-50 text-slate-700 hover:text-[#007AFF] text-[11.5px] font-medium transition-colors cursor-pointer active:scale-95">
+                  <svg class="w-3 h-3 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                    <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                    <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                  </svg>
+                  <span>نسخ للأداء الحالي</span>
+                </button>
+              </div>
+
+              <!-- Numeric Inputs: 2 Cohesive Steppers with 44px Touch Target -->
+              <div class="grid grid-cols-2 gap-2.5 select-none">
+                <!-- Weight Stepper -->
+                <div class="bg-[#F8FAFC] border border-[#EEF2F6] rounded-[12px] p-2 flex items-center justify-between">
+                  <button type="button" onclick="changeWeight(2.5)" aria-label="زيادة الوزن" class="apple-stepper-btn">+</button>
+                  <div class="text-center px-2">
+                    <span class="text-[17px] font-bold text-[#1C1C1E] font-inter block leading-none" id="b-weight-val">45.0</span>
+                    <span class="text-[10px] text-[#8E8E93] font-medium block mt-1 leading-none">كجم</span>
+                  </div>
+                  <button type="button" onclick="changeWeight(-2.5)" aria-label="إنقاص الوزن" class="apple-stepper-btn">&minus;</button>
+                </div>
+
+                <!-- Reps Stepper -->
+                <div class="bg-[#F8FAFC] border border-[#EEF2F6] rounded-[12px] p-2 flex items-center justify-between">
+                  <button type="button" onclick="changeReps(1)" aria-label="زيادة العدات" class="apple-stepper-btn">+</button>
+                  <div class="text-center px-2">
+                    <span class="text-[17px] font-bold text-[#1C1C1E] font-inter block leading-none" id="b-reps-val">10</span>
+                    <span class="text-[10px] text-[#8E8E93] font-medium block mt-1 leading-none">عدات</span>
+                  </div>
+                  <button type="button" onclick="changeReps(-1)" aria-label="إنقاص العدات" class="apple-stepper-btn">&minus;</button>
+                </div>
+              </div>
+
+              <!-- 7. Effort Control: Clean Label «المجهود» with Apple Segmented Control -->
+              <div class="flex items-center justify-between gap-3 pt-0.5 select-none">
+                <span class="text-[12px] font-medium text-[#8E8E93] shrink-0">المجهود:</span>
+                <div class="grid grid-cols-3 gap-1 bg-[#EEF2F6] p-1 rounded-[10px] flex-1">
+                  <button type="button" onclick="selectEffort(this, 'easy')" class="effort-pill-inactive py-1.5 rounded-[8px] text-[12px] text-center transition-all cursor-pointer">سهل</button>
+                  <button type="button" onclick="selectEffort(this, 'ideal')" class="effort-pill-active py-1.5 rounded-[8px] text-[12px] text-center transition-all cursor-pointer">مناسب</button>
+                  <button type="button" onclick="selectEffort(this, 'hard')" class="effort-pill-inactive py-1.5 rounded-[8px] text-[12px] text-center transition-all cursor-pointer">صعب</button>
+                </div>
+              </div>
+
+            </div>
+
+            <!-- 8. Technique & Alternatives: Calm Secondary Actions (Zero Crowding) -->
+            <div class="pt-1.5 border-t border-slate-100 flex items-center justify-between text-[12px] select-none">
+              <!-- Technique Button -->
+              <button type="button" onclick="toggleTechniqueToast()" class="flex items-center gap-1.5 text-slate-700 hover:text-[#007AFF] font-medium transition-colors cursor-pointer">
+                <svg class="w-3.5 h-3.5 text-[#007AFF] shrink-0 fill-current" viewBox="0 0 24 24">
+                  <polygon points="5 3 19 12 5 21 5 3"/>
+                </svg>
+                <span>تعليمات التكنيك والفيديو</span>
+              </button>
+
+              <!-- Alternatives Button -->
+              <button type="button" onclick="toggleAltToast()" class="flex items-center gap-1.5 text-slate-700 hover:text-[#007AFF] font-medium transition-colors cursor-pointer">
+                <svg class="w-3.5 h-3.5 text-[#8E8E93] shrink-0 fill-current" viewBox="0 0 24 24">
+                  <path d="M12 4V1L8 5l4 4V6c3.31 0 6 2.69 6 6 0 1.01-.25 1.97-.7 2.8l1.46 1.46A7.93 7.93 0 0020 12c0-4.42-3.58-8-8-8zm0 14c-3.31 0-6-2.69-6-6 0-1.01.25-1.97.7-2.8L5.24 7.74A7.93 7.93 0 004 12c0 4.42 3.58 8 8 8v3l4-4-4-4v3z"/>
+                </svg>
+                <span>عرض البدائل</span>
+              </button>
+            </div>
+
+          </article>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Toast Notification -->
+  <div id="toast" class="fixed bottom-6 left-1/2 -translate-x-1/2 bg-[#1C1C1E] text-white text-xs px-4 py-2 rounded-full shadow-lg opacity-0 pointer-events-none transition-opacity duration-300 z-50">
+  </div>
+
+  <script>
+    const EXERCISES_DATA = [
+      {
+        enName: "Machine Chest Press",
+        arName: "دفع صدر بالجهاز",
+        subTitle: "عضلات الصدر · الترايسبس",
+        img: "exercises/MACHINE_CHEST_PRESS/0.jpg",
+        sets: 3,
+        reps: "8 - 10",
+        rir: "RIR 2",
+        rest: "90ث",
+        weight: 45.0,
+        actualReps: 10,
+        lastPerf: "45.0 kg × 10"
+      },
+      {
+        enName: "Incline Dumbbell Bench Press",
+        arName: "دفع بالدمبل بنش عالي",
+        subTitle: "عضلات الصدر العلوي · الكتف الأمامي",
+        img: "exercises/INCLINE_DUMBBELL_BENCH_PRESS/0.jpg",
+        sets: 3,
+        reps: "10 - 12",
+        rir: "RIR 2",
+        rest: "75ث",
+        weight: 20.0,
+        actualReps: 11,
+        lastPerf: "20.0 kg × 10"
+      },
+      {
+        enName: "Single Arm DB Overhead Triceps Extension",
+        arName: "ترايسبس ذراع واحدة بالدمبل خلف الرأس",
+        subTitle: "الرأس الطويل للترايسبس",
+        img: "exercises/DUMBBELL_LATERAL_RAISE/0.jpg",
+        sets: 3,
+        reps: "12 - 15",
+        rir: "RIR 1",
+        rest: "60ث",
+        weight: 10.0,
+        actualReps: 12,
+        lastPerf: "10.0 kg × 12"
+      }
+    ];
+
+    let currentExIndex = 0;
+    let bCompleted = false;
+    let currentWeight = 45.0;
+    let currentReps = 10;
+
+    function switchExercise(idx) {
+      currentExIndex = idx;
+      const ex = EXERCISES_DATA[idx];
+
+      // Update switcher buttons
+      [0, 1, 2].forEach(i => {
+        const btn = document.getElementById(`ex-btn-${i}`);
+        if (i === idx) {
+          btn.className = 'px-2.5 py-1 rounded-lg text-xs font-bold bg-white text-[#1C1C1E] shadow-2xs transition-all';
+        } else {
+          btn.className = 'px-2.5 py-1 rounded-lg text-xs font-medium text-[#8E8E93] hover:text-[#1C1C1E] transition-all';
+        }
+      });
+
+      // Update Version A
+      document.getElementById('a-en-title').innerHTML = `<span dir="ltr">${ex.enName}</span>`;
+      document.getElementById('a-ar-title').textContent = ex.arName;
+      document.getElementById('a-sub-title').textContent = ex.subTitle;
+      document.getElementById('a-img').src = ex.img;
+      document.getElementById('a-sets').textContent = ex.sets;
+      document.getElementById('a-reps').textContent = ex.reps;
+      document.getElementById('a-rir').textContent = ex.rir;
+      document.getElementById('a-rest').textContent = ex.rest;
+      document.getElementById('a-weight-val').textContent = ex.weight.toFixed(1);
+      document.getElementById('a-reps-val').textContent = ex.actualReps;
+      document.getElementById('a-last-val').textContent = ex.lastPerf;
+
+      // Update Version B
+      document.getElementById('b-en-title').innerHTML = `<span dir="ltr">${ex.enName}</span>`;
+      document.getElementById('b-ar-title').textContent = ex.arName;
+      document.getElementById('b-img').src = ex.img;
+      document.getElementById('b-sets').textContent = ex.sets;
+      document.getElementById('b-reps').textContent = ex.reps;
+      document.getElementById('b-rir').textContent = ex.rir;
+      document.getElementById('b-rest').textContent = ex.rest.replace('ث', '');
+      document.getElementById('b-weight-val').textContent = ex.weight.toFixed(1);
+      document.getElementById('b-reps-val').textContent = ex.actualReps;
+      document.getElementById('b-last-display').textContent = ex.lastPerf;
+
+      currentWeight = ex.weight;
+      currentReps = ex.actualReps;
+    }
+
+    function setCardWidth(width) {
+      document.getElementById('frame-a').style.width = width + 'px';
+      document.getElementById('frame-b').style.width = width + 'px';
+
+      [375, 390, 430].forEach(w => {
+        const btn = document.getElementById(`btn-${w}`);
+        if (w === width) {
+          btn.className = 'px-2.5 py-1 rounded-lg text-xs font-bold bg-[#007AFF] text-white shadow-2xs transition-all';
+        } else {
+          btn.className = 'px-2.5 py-1 rounded-lg text-xs font-medium text-[#8E8E93] hover:text-[#1C1C1E] transition-all';
+        }
+      });
+    }
+
+    function toggleCompletionState() {
+      bCompleted = !bCompleted;
+      const btn = document.getElementById('b-check-btn');
+      const card = document.getElementById('card-version-b');
+
+      if (bCompleted) {
+        btn.className = 'w-8 h-8 rounded-full bg-[#34C759] border border-[#34C759] text-white flex items-center justify-center shrink-0 transition-all cursor-pointer active:scale-90 mt-0.5 shadow-2xs';
+        showToast('تم تسجيل اكتمال التمرين');
+      } else {
+        btn.className = 'w-8 h-8 rounded-full border border-[#D1D5DB] text-transparent hover:border-[#34C759] hover:text-[#34C759] flex items-center justify-center shrink-0 transition-all cursor-pointer active:scale-90 mt-0.5';
+        showToast('تم إلغاء حالة الاكتمال');
+      }
+    }
+
+    function changeWeight(delta) {
+      currentWeight = Math.max(0, currentWeight + delta);
+      document.getElementById('b-weight-val').textContent = currentWeight.toFixed(1);
+    }
+
+    function changeReps(delta) {
+      currentReps = Math.max(1, currentReps + delta);
+      document.getElementById('b-reps-val').textContent = currentReps;
+    }
+
+    function copyLastPerformance() {
+      const ex = EXERCISES_DATA[currentExIndex];
+      currentWeight = ex.weight;
+      currentReps = ex.actualReps;
+      document.getElementById('b-weight-val').textContent = currentWeight.toFixed(1);
+      document.getElementById('b-reps-val').textContent = currentReps;
+      showToast('تم نسخ قيم آخر أداء إلى حقول التسجيل الحالية');
+    }
+
+    function selectEffort(btn, type) {
+      const container = btn.parentElement;
+      Array.from(container.children).forEach(child => {
+        child.className = 'effort-pill-inactive py-1.5 rounded-[8px] text-[12px] text-center transition-all cursor-pointer';
+      });
+      btn.className = 'effort-pill-active py-1.5 rounded-[8px] text-[12px] text-center transition-all cursor-pointer';
+    }
+
+    function toggleTechniqueToast() {
+      showToast('فتح نافذة تعليمات التكنيك والفيديو');
+    }
+
+    function toggleAltToast() {
+      showToast('فتح قائمة بدائل التمرين المتوافقة');
+    }
+
+    function showToast(msg) {
+      const toast = document.getElementById('toast');
+      toast.textContent = msg;
+      toast.classList.remove('opacity-0', 'pointer-events-none');
+      setTimeout(() => {
+        toast.classList.add('opacity-0', 'pointer-events-none');
+      }, 2000);
+    }
+  </script>
+</body>
+</html>

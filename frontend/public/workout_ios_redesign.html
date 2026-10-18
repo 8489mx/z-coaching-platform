@@ -1,0 +1,1048 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <title>Karim Zakaria — Premium Native iOS Workout Screen Redesign</title>
+  <script src="https://www.gstatic.com/antigravity/web/dev/tailwindcss.min.js"></script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Alexandria:wght@300;400;500;600;700;800;900&family=Inter:wght@400;500;600;700;800;900&family=Readex+Pro:wght@300;400;500;600;700&display=swap');
+
+    * {
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+      box-sizing: border-box;
+    }
+
+    body {
+      direction: rtl;
+      background-color: #EBF0F5;
+      color: #1C1C1E;
+      margin: 0;
+      padding: 0;
+      font-family: 'Readex Pro', -apple-system, BlinkMacSystemFont, sans-serif;
+    }
+
+    .font-inter {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif !important;
+    }
+
+    .no-scrollbar::-webkit-scrollbar {
+      display: none;
+    }
+    .no-scrollbar {
+      -ms-overflow-style: none;
+      scrollbar-width: none;
+    }
+
+    /* iOS Reference Elevation & Shadows */
+    .ios-floating-card {
+      background: #FFFFFF;
+      border-radius: 24px;
+      box-shadow: 0 4px 20px -2px rgba(28, 39, 60, 0.05), 0 2px 6px -1px rgba(28, 39, 60, 0.02);
+      border: 1px solid rgba(255, 255, 255, 0.8);
+    }
+
+    .ios-stepper-shadow {
+      box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.06), 0 1px 2px 0 rgba(0, 0, 0, 0.04);
+    }
+
+    .ios-btn-blue-glow {
+      box-shadow: 0 6px 20px -2px rgba(0, 122, 255, 0.38), 0 2px 6px -1px rgba(0, 122, 255, 0.2);
+    }
+
+    /* Mobile Mockup Frame */
+    .iphone-frame {
+      width: 390px;
+      height: 844px;
+      background: #F4F6F9;
+      border-radius: 50px;
+      box-shadow: 0 25px 70px -15px rgba(15, 23, 42, 0.25), 0 0 0 12px #1C1C1E, 0 0 0 14px #CBD5E1;
+      overflow: hidden;
+      position: relative;
+      flex-shrink: 0;
+      transition: width 0.25s ease, height 0.25s ease;
+    }
+
+    /* Floating Liquid Glass Bottom Navigation */
+    .glass-nav-container {
+      background: rgba(255, 255, 255, 0.88);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border-radius: 36px;
+      border: 1px solid rgba(255, 255, 255, 0.9);
+      box-shadow: 0 12px 32px -4px rgba(15, 23, 42, 0.12), 0 4px 12px rgba(15, 23, 42, 0.04);
+    }
+
+    .liquid-lens {
+      position: absolute;
+      top: 6px;
+      bottom: 6px;
+      border-radius: 30px;
+      background: #EBF5FF;
+      box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.8), 0 2px 8px rgba(0, 122, 255, 0.12);
+      transition: left 0.3s cubic-bezier(0.2, 0.9, 0.2, 1), width 0.3s cubic-bezier(0.2, 0.9, 0.2, 1);
+      pointer-events: none;
+      z-index: 1;
+    }
+
+    .nav-tab-item {
+      position: relative;
+      z-index: 2;
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      height: 100%;
+      user-select: none;
+    }
+
+    /* Accessibility Simulation */
+    body.large-text-sim .text-scalable-title { font-size: 18px !important; }
+    body.large-text-sim .text-scalable-sub { font-size: 13.5px !important; }
+    body.large-text-sim .text-scalable-body { font-size: 13px !important; }
+  </style>
+</head>
+<body class="p-4 md:p-6 flex flex-col items-center">
+
+  <!-- Desktop Interactive Toolbar -->
+  <header class="w-full max-w-6xl mb-6 bg-white border border-[#E2E8F0] rounded-[22px] p-4 shadow-sm flex flex-wrap items-center justify-between gap-4 z-50">
+    <div class="flex items-center gap-3">
+      <div class="w-10 h-10 rounded-2xl bg-[#007AFF] text-white flex items-center justify-center font-black shadow-sm text-lg font-inter">
+        KZ
+      </div>
+      <div>
+        <div class="flex items-center gap-2">
+          <span class="w-2 h-2 rounded-full bg-[#007AFF]"></span>
+          <h1 class="text-[15.5px] font-bold text-[#1C1C1E]">إعادة تصميم شاشة Workout — مطابقة المرجع البصري (Apple iOS)</h1>
+        </div>
+        <p class="text-[11.5px] text-[#8E8E93] mt-0.5">تصميم الأسطح البيضاء الطافية، أزرار الـ Stepper المتوازنة، وتسجيل الأداء الفوري بأسلوب Apple Fitness</p>
+      </div>
+    </div>
+
+    <!-- Mode Selector -->
+    <div class="flex items-center bg-[#F2F4F8] p-1 rounded-full gap-1">
+      <button onclick="setViewMode('new')" id="btn-mode-new" class="px-4 py-1.5 rounded-full text-[12px] font-bold bg-[#007AFF] text-white shadow-2xs transition-all">
+        النموذج الجديد (Reference iOS)
+      </button>
+      <button onclick="setViewMode('dual')" id="btn-mode-dual" class="px-4 py-1.5 rounded-full text-[12px] font-medium text-[#64748B] hover:text-[#1C1C1E] transition-all">
+        مقارنة جنباً إلى جنب (Before vs After)
+      </button>
+      <button onclick="setViewMode('old')" id="btn-mode-old" class="px-4 py-1.5 rounded-full text-[12px] font-medium text-[#64748B] hover:text-[#1C1C1E] transition-all">
+        التصميم القديم (Before)
+      </button>
+    </div>
+
+    <!-- Controls Group -->
+    <div class="flex items-center gap-3">
+      <!-- Width Selector -->
+      <div class="flex items-center gap-1 bg-[#F8FAFC] border border-[#E2E8F0] p-1 rounded-full text-[11px]">
+        <button onclick="setFrameWidth(375)" id="btn-w-375" class="px-2.5 py-1 rounded-full text-[#64748B]">375px</button>
+        <button onclick="setFrameWidth(390)" id="btn-w-390" class="px-2.5 py-1 rounded-full bg-[#1C1C1E] text-white font-bold">390px</button>
+        <button onclick="setFrameWidth(430)" id="btn-w-430" class="px-2.5 py-1 rounded-full text-[#64748B]">430px</button>
+      </div>
+
+      <!-- Unit Selector -->
+      <div class="flex items-center gap-1 bg-[#F8FAFC] border border-[#E2E8F0] p-1 rounded-full text-[11px]">
+        <span class="text-[#8E8E93] px-1 font-medium">الوحدة:</span>
+        <button onclick="setUnit('kg')" id="btn-u-kg" class="px-2.5 py-1 rounded-full bg-[#1C1C1E] text-white font-bold">KG</button>
+        <button onclick="setUnit('lb')" id="btn-u-lb" class="px-2.5 py-1 rounded-full text-[#64748B]">LB</button>
+      </div>
+
+      <!-- Accessibility Scale Toggle -->
+      <button onclick="toggleLargeText()" id="btn-a11y" class="px-3 py-1.5 bg-[#F8FAFC] hover:bg-[#F2F4F8] border border-[#E2E8F0] text-[#1C1C1E] rounded-full text-[11px] font-semibold transition-all">
+        تكبير الخط
+      </button>
+    </div>
+  </header>
+
+  <!-- Main Comparison Area -->
+  <main id="frames-container" class="flex flex-wrap items-start justify-center gap-8 w-full max-w-7xl pb-20">
+
+    <!-- ============================================================== -->
+    <!-- FRAME 1: OLD DESIGN (التصميم السابق المرصوص قبل التعديل)        -->
+    <!-- ============================================================== -->
+    <div id="col-old" class="hidden flex-col items-center gap-3">
+      <div class="flex items-center justify-between w-full max-w-[390px] px-3 text-[12px] font-semibold text-rose-700 bg-rose-50 border border-rose-200 rounded-[14px] py-1.5">
+        <span>التصميم السابق (Before): أدراج مغلقة ومربعات متراكمة</span>
+        <span class="text-[10px] text-rose-500 font-normal">زحمة وتدرجات</span>
+      </div>
+
+      <div class="iphone-frame flex flex-col" id="frame-old">
+        <!-- iOS Status Bar -->
+        <div class="h-11 bg-transparent flex items-center justify-between px-7 shrink-0 select-none z-30">
+          <span class="text-[14px] font-semibold tracking-tight text-[#1C1C1E] font-inter">9:41</span>
+          <div class="w-24 h-5 bg-black rounded-full flex items-center justify-center">
+            <div class="w-3 h-3 rounded-full bg-slate-900 border border-slate-700 mr-2"></div>
+          </div>
+          <div class="flex items-center gap-1.5 text-[#1C1C1E]">
+            <svg class="w-4 h-3" viewBox="0 0 24 16" fill="currentColor"><path d="M0 12h4v4H0zm6-4h4v8H6zm6-4h4v12h-4zm6-4h4v16h-4z"/></svg>
+            <svg class="w-4 h-3" viewBox="0 0 24 16" fill="currentColor"><path d="M12 2C6.5 2 2 6.5 2 12c0 2.2.7 4.2 2 5.8l8-9.8 8 9.8c1.3-1.6 2-3.6 2-5.8 0-5.5-4.5-10-10-10z"/></svg>
+            <div class="w-5 h-2.5 border border-[#1C1C1E] rounded-[3px] p-0.5 flex items-center"><div class="w-full h-full bg-[#1C1C1E] rounded-2xs"></div></div>
+          </div>
+        </div>
+
+        <!-- Scrollable Body (Old Style) -->
+        <div class="flex-1 overflow-y-auto no-scrollbar px-4 py-2 space-y-3 pb-24">
+          <div class="flex items-center justify-between pt-1">
+            <div>
+              <span class="text-[12px] text-[#8E8E93] font-medium">برنامج القوة والضخامة</span>
+              <h2 class="text-[24px] font-black text-[#1C1C1E]">التمارين</h2>
+            </div>
+            <span class="px-2.5 py-1 bg-[#F2F2F7] text-[#8E8E93] rounded-full text-[11px] font-bold">الأسبوع 4 · 4 تمارين</span>
+          </div>
+
+          <!-- Old Session Bar -->
+          <div class="bg-white p-1 rounded-[14px] border border-[#E5E5EA] grid grid-cols-3 gap-1">
+            <button class="py-2 rounded-[10px] bg-[#1C1C1E] text-white font-bold text-[12px]">Push</button>
+            <button class="py-2 rounded-[10px] bg-white text-[#8E8E93] font-medium text-[12px]">Pull</button>
+            <button class="py-2 rounded-[10px] bg-white text-[#8E8E93] font-medium text-[12px]">Legs</button>
+          </div>
+
+          <!-- Old Warmup -->
+          <div class="bg-white rounded-[16px] border border-[#E5E5EA] p-3.5 flex items-center justify-between text-[12px]">
+            <div>
+              <div class="font-bold text-[#1C1C1E]">الإحماء والتسخين</div>
+              <div class="text-[11px] text-[#8E8E93]">تجهيز المفاصل والأوتار</div>
+            </div>
+            <span class="text-[#8E8E93]">5 دقائق ⌄</span>
+          </div>
+
+          <!-- Old Card 1 -->
+          <div class="bg-white rounded-[18px] border border-[#E5E5EA] p-4 space-y-3 shadow-2xs">
+            <div class="flex items-center gap-3">
+              <img src="/exercises/MACHINE_CHEST_PRESS/0.jpg" class="w-14 h-14 rounded-[14px] object-cover bg-slate-100">
+              <div class="flex-1 min-w-0">
+                <div class="text-[15px] font-bold text-[#1C1C1E] font-inter">Machine Chest Press</div>
+                <div class="text-[12px] text-[#8E8E93]">دفع صدر بالجهاز</div>
+              </div>
+              <div class="w-8 h-8 rounded-full bg-[#F2F2F7] text-[#8E8E93] flex items-center justify-center font-bold">⌄</div>
+            </div>
+            <div class="p-2.5 bg-[#F2F2F7] rounded-[12px] text-[11px] flex justify-between">
+              <span>3 مجموعات · 8-10 عدات · RIR 2 · 90 ث راحة</span>
+            </div>
+            <div class="text-[11.5px] text-[#8E8E93] text-center p-2 border border-dashed border-[#E5E5EA] rounded-[12px]">
+              افتح الدرج لتسجيل الأداء يدويًا
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+
+    <!-- ============================================================== -->
+    <!-- FRAME 2: NEW APPLE-GRADE PREMIUM NATIVE iOS DESIGN (المطلوب)     -->
+    <!-- ============================================================== -->
+    <div id="col-new" class="flex flex-col items-center gap-3">
+      <div class="flex items-center justify-between w-full max-w-[390px] px-3 text-[12px] font-semibold text-emerald-800 bg-emerald-50 border border-emerald-200 rounded-[14px] py-1.5 shadow-2xs">
+        <div class="flex items-center gap-1.5">
+          <span class="w-2 h-2 rounded-full bg-[#34C759]"></span>
+          <span>النموذج الجديد (After): مطابقة تامة للصورة المرجعية</span>
+        </div>
+        <span class="text-[10px] text-emerald-600 font-bold font-inter">Apple Native</span>
+      </div>
+
+      <div class="iphone-frame flex flex-col" id="frame-new">
+
+        <!-- Dynamic Island & Status Bar (iPhone 15 Pro Reference) -->
+        <div class="h-11 bg-transparent flex items-center justify-between px-7 shrink-0 select-none z-30 pt-1">
+          <span class="text-[14px] font-bold tracking-tight text-[#1C1C1E] font-inter">9:41</span>
+          <div class="w-24 h-6 bg-black rounded-full flex items-center justify-between px-2 shadow-sm">
+            <div class="w-2.5 h-2.5 rounded-full bg-[#1C1C1E] border border-slate-800"></div>
+            <div class="w-2 h-2 rounded-full bg-[#007AFF]/60"></div>
+          </div>
+          <div class="flex items-center gap-1.5 text-[#1C1C1E]">
+            <svg class="w-4 h-3" viewBox="0 0 24 16" fill="currentColor"><path d="M0 12h4v4H0zm6-4h4v8H6zm6-4h4v12h-4zm6-4h4v16h-4z"/></svg>
+            <svg class="w-4 h-3" viewBox="0 0 24 16" fill="currentColor"><path d="M12 2C6.5 2 2 6.5 2 12c0 2.2.7 4.2 2 5.8l8-9.8 8 9.8c1.3-1.6 2-3.6 2-5.8 0-5.5-4.5-10-10-10z"/></svg>
+            <div class="w-5 h-2.5 border border-[#1C1C1E] rounded-[3px] p-0.5 flex items-center"><div class="w-full h-full bg-[#1C1C1E] rounded-2xs"></div></div>
+          </div>
+        </div>
+
+        <!-- Scrollable Workout Body -->
+        <div class="flex-1 overflow-y-auto no-scrollbar px-4 py-2 space-y-3.5 pb-28" id="workout-scroll-body">
+
+          <!-- SECTION 1: SCREEN HEADER -->
+          <section class="flex items-end justify-between pt-1 select-none">
+            <div>
+              <span class="text-[12px] font-semibold text-[#8E8E93] block leading-tight">جلسات المقاومة</span>
+              <h1 class="text-[28px] font-black text-[#1C1C1E] tracking-tight leading-none mt-0.5">التمارين</h1>
+            </div>
+
+            <div class="flex flex-col items-end gap-1">
+              <div class="flex items-center gap-1.5">
+                <span class="px-3 py-1 rounded-full bg-[#E5E8EC] text-[#64748B] text-[11.5px] font-bold">
+                  الأسبوع 4 · 4 تمارين
+                </span>
+              </div>
+              <div id="new-sync-badge" class="opacity-0 transition-opacity duration-300 pointer-events-none">
+                <span class="text-[10px] font-bold text-[#34C759] flex items-center gap-1">
+                  <span>تم الحفظ تلقائياً</span>
+                </span>
+              </div>
+            </div>
+          </section>
+
+          <!-- SECTION 2: HORIZONTAL SESSION SELECTOR (FLOATING PILL CAPSULES) -->
+          <section class="grid grid-cols-3 gap-2 select-none">
+            <!-- Push (Active) -->
+            <button type="button" onclick="changeSession('Push', this)" class="session-tab-btn py-2.5 px-4 rounded-full bg-[#007AFF] text-white text-[14px] font-bold text-center shadow-sm cursor-pointer transition-all active:scale-95 font-inter">
+              Push
+            </button>
+            <!-- Pull -->
+            <button type="button" onclick="changeSession('Pull', this)" class="session-tab-btn py-2.5 px-4 rounded-full bg-white text-[#1C1C1E] text-[14px] font-bold text-center shadow-[0_2px_8px_rgba(0,0,0,0.04)] cursor-pointer transition-all active:scale-95 hover:bg-slate-50 font-inter">
+              Pull
+            </button>
+            <!-- Legs -->
+            <button type="button" onclick="changeSession('Legs', this)" class="session-tab-btn py-2.5 px-4 rounded-full bg-white text-[#1C1C1E] text-[14px] font-bold text-center shadow-[0_2px_8px_rgba(0,0,0,0.04)] cursor-pointer transition-all active:scale-95 hover:bg-slate-50 font-inter">
+              Legs
+            </button>
+          </section>
+
+          <!-- SECTION 3: WARM-UP & MOBILITY CARD (الأصل بالمرجع) -->
+          <section class="ios-floating-card overflow-hidden transition-all" id="card-warmup">
+            <div onclick="toggleWarmup()" class="p-3.5 flex items-center justify-between cursor-pointer select-none">
+              <div class="flex items-center gap-3 min-w-0 flex-1">
+                <div class="w-10 h-10 rounded-full bg-[#FF3B30]/10 text-[#FF3B30] flex items-center justify-center shrink-0">
+                  <svg class="w-5 h-5" viewBox="0 0 56 56" fill="currentColor">
+                    <path d="M8.125 37.398c0 9.516 7.781 16.243 18.75 16.243c12.445 0 21-8.04 21-21.258c0-20.625-18.094-30.024-31.289-30.024c-2.086 0-3.117 1.032-3.117 2.227c0 .96.515 1.758 1.289 2.86c1.875 2.577 5.062 6.327 5.062 11.038c0 .399-.023.797-.07 1.22c-1.312-2.462-3.633-4.196-6.445-4.196c-.797 0-1.219.469-1.219 1.148c0 .82.187 1.407.187 3.961c0 4.899-4.148 8.203-4.148 16.781m19.219 9.657c-4.688 0-7.805-2.836-7.805-7.055c0-4.43 3.14-6 3.563-8.86c.023-.234.187-.304.351-.14c1.172 1.008 1.899 2.273 2.461 3.727c.117.257.305.28.422.07c1.289-2.25 1.523-5.602 1.219-9.82c-.047-.235.117-.352.328-.258c5.555 2.531 8.39 8.039 8.39 12.984c0 4.969-2.93 9.352-8.93 9.352"/>
+                  </svg>
+                </div>
+                <div class="min-w-0">
+                  <div class="flex items-center gap-2">
+                    <h3 class="text-[14.5px] font-black text-[#1C1C1E] leading-tight text-scalable-title">الإحماء والتسخين</h3>
+                    <span class="px-2 py-0.5 rounded-full bg-[#F2F4F7] text-[#8E8E93] text-[10.5px] font-bold">5 دقائق</span>
+                  </div>
+                  <p class="text-[11.5px] font-medium text-[#8E8E93] mt-0.5 leading-tight truncate text-scalable-sub">
+                    تجهيز المفاصل والأوتار وتنشيط الدورة الدموية
+                  </p>
+                </div>
+              </div>
+
+              <div class="w-8 h-8 rounded-full bg-[#F2F4F8] hover:bg-[#E5E8EC] flex items-center justify-center text-[#8E8E93] shrink-0 transition-colors">
+                <svg id="warmup-chevron" class="w-4 h-4 transition-transform duration-200" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M6 9l6 6 6-6"/>
+                </svg>
+              </div>
+            </div>
+
+            <!-- Warm-up Collapsible Details -->
+            <div id="warmup-details" class="hidden px-4 py-3 bg-[#F8FAFC] border-t border-[#F2F4F8] text-[11.5px] text-[#48484A] space-y-1.5 leading-relaxed">
+              <div class="flex items-start gap-1.5">
+                <span class="text-[#007AFF] font-bold shrink-0">1.</span>
+                <span>دوران الكتفين والمرفقين 15 تكراراً بالاتجاهين لتدوير السائل الزلالي.</span>
+              </div>
+              <div class="flex items-start gap-1.5">
+                <span class="text-[#007AFF] font-bold shrink-0">2.</span>
+                <span>إطالات ديناميكية خفيفة للصدر والظهر لتوسيع المدى الحركي.</span>
+              </div>
+              <div class="flex items-start gap-1.5">
+                <span class="text-[#007AFF] font-bold shrink-0">3.</span>
+                <span>مجموعة تسخين بالوزن الحر (50% من الوزن التشغيلي).</span>
+              </div>
+            </div>
+          </section>
+
+          <!-- ============================================================== -->
+          <!-- EXERCISE CARD 1: Machine Chest Press (مطابقة تامة للصورة المرجعية) -->
+          <!-- ============================================================== -->
+          <article class="ios-floating-card p-4 space-y-3.5 transition-all" id="ex-card-1">
+
+            <!-- Card Header: Image + English/Arabic Titles + Control Actions -->
+            <div class="flex items-center justify-between gap-3">
+              <div class="flex items-center gap-3 min-w-0 flex-1">
+                <div class="w-[54px] h-[54px] rounded-[16px] overflow-hidden bg-slate-100 shrink-0 shadow-2xs border border-slate-100">
+                  <img src="/exercises/MACHINE_CHEST_PRESS/0.jpg" alt="Machine Chest Press" onerror="this.src='/exercises/AB_WHEEL_ROLLOUT/0.jpg'" class="w-full h-full object-cover">
+                </div>
+                <div class="min-w-0 flex-1">
+                  <h3 class="text-[16px] font-bold text-[#1C1C1E] font-inter text-right leading-tight tracking-tight text-scalable-title">
+                    Machine Chest Press
+                  </h3>
+                  <p class="text-[12.5px] font-medium text-[#8E8E93] text-right mt-0.5 leading-tight text-scalable-sub">
+                    دفع صدر بالجهاز
+                  </p>
+                </div>
+              </div>
+
+              <!-- Two Circular Action Buttons (Checkmark + Chevron) -->
+              <div class="flex items-center gap-1.5 shrink-0">
+                <button type="button" onclick="toggleExComplete(1, this)" aria-label="اكتمال التمرين" class="ex-check-btn w-8 h-8 rounded-full bg-[#F2F4F8] hover:bg-[#34C759]/20 text-[#8E8E93] hover:text-[#34C759] flex items-center justify-center active:scale-90 transition-all cursor-pointer">
+                  <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                    <polyline points="20 6 9 17 4 12"/>
+                  </svg>
+                </button>
+                <button type="button" onclick="toggleCardBody(1)" aria-label="طي الكارت" class="w-8 h-8 rounded-full bg-[#F2F4F8] hover:bg-[#E5E8EC] text-[#8E8E93] hover:text-[#1C1C1E] flex items-center justify-center active:scale-90 transition-all cursor-pointer">
+                  <svg id="ex1-chevron" class="w-4 h-4 transition-transform duration-200" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M6 9l6 6 6-6"/>
+                  </svg>
+                </button>
+              </div>
+            </div>
+
+            <!-- Exercise Prescription Row (Exactly as in Reference) -->
+            <div class="flex items-center justify-between text-[12px] select-none text-[#1C1C1E] px-0.5">
+              <!-- Sets with Stack Icon -->
+              <div class="flex items-center gap-1.5">
+                <svg class="w-4 h-4 text-[#007AFF] shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <polygon points="12 2 2 7 12 12 22 7 12 2"/>
+                  <polyline points="2 17 12 22 22 17"/>
+                  <polyline points="2 12 12 17 22 12"/>
+                </svg>
+                <span class="font-semibold text-scalable-body"><strong class="font-bold font-inter">3</strong> مجموعات</span>
+              </div>
+
+              <!-- Reps with Repeat Icon -->
+              <div class="flex items-center gap-1.5">
+                <svg class="w-4 h-4 text-[#007AFF] shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <polyline points="17 1 21 5 17 9"/>
+                  <path d="M3 11V9a4 4 0 0 1 4-4h14"/>
+                  <polyline points="7 23 3 19 7 15"/>
+                  <path d="M21 13v2a4 4 0 0 1-4 4H3"/>
+                </svg>
+                <span class="font-bold font-inter text-scalable-body" dir="ltr">8 - 10 <span class="font-normal font-sans text-[#8E8E93]">عدات</span></span>
+              </div>
+
+              <!-- RIR Pill Badge -->
+              <span class="bg-[#EBF5FF] text-[#007AFF] px-2.5 py-0.5 rounded-full text-[11px] font-bold font-inter">
+                RIR 2
+              </span>
+
+              <!-- Rest with Timer Icon -->
+              <div class="flex items-center gap-1.5 text-[#8E8E93]">
+                <svg class="w-4 h-4 text-[#8E8E93] shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <circle cx="12" cy="12" r="10"/>
+                  <polyline points="12 6 12 12 16 14"/>
+                </svg>
+                <span class="font-semibold font-inter text-[#1C1C1E] text-scalable-body" dir="ltr">90 <span class="font-normal font-sans text-[#8E8E93]">ثانية</span></span>
+              </div>
+            </div>
+
+            <!-- Performance Logging Box (The Tactile Stepper Architecture) -->
+            <div id="ex1-log-box" class="bg-[#F2F4F8] rounded-[20px] p-3 space-y-2.5">
+              
+              <!-- Top Row: Weight Stepper | Reps Stepper | Previous Best -->
+              <div class="grid grid-cols-3 gap-2 items-center text-center select-none">
+                
+                <!-- Col 1 (Right): Weight (كجم) -->
+                <div>
+                  <span id="ex1-unit-label" class="text-[11px] font-semibold text-[#8E8E93] block mb-1">كجم</span>
+                  <div class="bg-white rounded-full h-10 px-1.5 flex items-center justify-between shadow-2xs ios-stepper-shadow">
+                    <button type="button" onclick="stepVal(1, 'w', 2.5)" aria-label="زيادة الوزن" class="w-7 h-7 rounded-full flex items-center justify-center text-[#1C1C1E] font-bold text-sm hover:bg-slate-100 active:scale-90 transition-all cursor-pointer font-inter">
+                      +
+                    </button>
+                    <span id="ex1-weight" class="text-[15px] font-bold text-[#1C1C1E] font-inter px-1">20</span>
+                    <button type="button" onclick="stepVal(1, 'w', -2.5)" aria-label="إنقاص الوزن" class="w-7 h-7 rounded-full flex items-center justify-center text-[#1C1C1E] font-bold text-sm hover:bg-slate-100 active:scale-90 transition-all cursor-pointer font-inter">
+                      &minus;
+                    </button>
+                  </div>
+                </div>
+
+                <!-- Col 2 (Middle): Reps (العدات) -->
+                <div>
+                  <span class="text-[11px] font-semibold text-[#8E8E93] block mb-1">العدات</span>
+                  <div class="bg-white rounded-full h-10 px-1.5 flex items-center justify-between shadow-2xs ios-stepper-shadow">
+                    <button type="button" onclick="stepVal(1, 'r', 1)" aria-label="زيادة العدات" class="w-7 h-7 rounded-full flex items-center justify-center text-[#1C1C1E] font-bold text-sm hover:bg-slate-100 active:scale-90 transition-all cursor-pointer font-inter">
+                      +
+                    </button>
+                    <span id="ex1-reps" class="text-[15px] font-bold text-[#1C1C1E] font-inter px-1">10</span>
+                    <button type="button" onclick="stepVal(1, 'r', -1)" aria-label="إنقاص العدات" class="w-7 h-7 rounded-full flex items-center justify-center text-[#1C1C1E] font-bold text-sm hover:bg-slate-100 active:scale-90 transition-all cursor-pointer font-inter">
+                      &minus;
+                    </button>
+                  </div>
+                </div>
+
+                <!-- Col 3 (Left): Previous Best (آخر مرة) -->
+                <div>
+                  <span class="text-[11px] font-semibold text-[#8E8E93] block mb-1">آخر مرة</span>
+                  <button type="button" onclick="loadLastBest(1, 20, 10)" title="تطبيق أداء آخر مرة" class="w-full bg-white rounded-full h-10 px-2 flex items-center justify-center shadow-2xs ios-stepper-shadow hover:bg-slate-50 active:scale-95 transition-all cursor-pointer">
+                    <span id="ex1-last-label" class="text-[11.5px] font-bold font-inter text-[#8E8E93]" dir="ltr">20 kg × 10</span>
+                  </button>
+                </div>
+
+              </div>
+
+              <!-- Bottom Row: Effort Segmented Rating (سهل / مناسب / صعب) -->
+              <div class="flex items-center justify-between gap-1 select-none pt-0.5">
+                <button type="button" onclick="setEffort(1, 'easy', this)" class="effort-btn-1 flex-1 py-1.5 rounded-full text-[12px] font-semibold text-[#8E8E93] hover:text-[#1C1C1E] text-center cursor-pointer transition-all">
+                  سهل
+                </button>
+                <!-- Active 'مناسب' exactly matching reference image -->
+                <button type="button" onclick="setEffort(1, 'moderate', this)" class="effort-btn-1 flex-1 py-1.5 rounded-full bg-white text-[#007AFF] font-bold text-[12px] text-center shadow-2xs border border-[#007AFF]/25 cursor-pointer transition-all">
+                  مناسب
+                </button>
+                <button type="button" onclick="setEffort(1, 'hard', this)" class="effort-btn-1 flex-1 py-1.5 rounded-full text-[12px] font-semibold text-[#8E8E93] hover:text-[#1C1C1E] text-center cursor-pointer transition-all">
+                  صعب
+                </button>
+              </div>
+
+            </div>
+
+            <!-- Card Bottom Bar: Technique & Alternatives Bar -->
+            <div class="pt-0.5 flex items-center justify-between">
+              <button type="button" onclick="openExerciseDetails(1, 'Machine Chest Press', 'دفع صدر بالجهاز')" class="flex items-center gap-2 hover:opacity-80 transition-opacity cursor-pointer">
+                <div class="w-6 h-6 rounded-[8px] bg-[#007AFF] text-white flex items-center justify-center shrink-0 shadow-2xs">
+                  <svg class="w-3 h-3 fill-current ml-0.5" viewBox="0 0 24 24">
+                    <polygon points="5 3 19 12 5 21 5 3"/>
+                  </svg>
+                </div>
+                <span class="text-[12.5px] font-bold text-[#1C1C1E]">تعليمات التكنيك والفيديو</span>
+              </button>
+
+              <button type="button" onclick="openExerciseDetails(1, 'Machine Chest Press', 'دفع صدر بالجهاز')" class="w-7 h-7 rounded-full flex items-center justify-center text-[#8E8E93] hover:text-[#1C1C1E] hover:bg-[#F2F4F8] transition-colors cursor-pointer">
+                <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M6 9l6 6 6-6"/>
+                </svg>
+              </button>
+            </div>
+
+          </article>
+
+          <!-- ============================================================== -->
+          <!-- EXERCISE CARD 2: Low-to-High Cable Fly (الكارت الثاني بالمرجع) -->
+          <!-- ============================================================== -->
+          <article class="ios-floating-card p-4 space-y-3.5 transition-all" id="ex-card-2">
+
+            <!-- Card Header: Image + English/Arabic Titles + Control Actions -->
+            <div class="flex items-center justify-between gap-3">
+              <div class="flex items-center gap-3 min-w-0 flex-1">
+                <div class="w-[54px] h-[54px] rounded-[16px] overflow-hidden bg-slate-100 shrink-0 shadow-2xs border border-slate-100">
+                  <img src="/exercises/chest_low_to_high_cable_fly/0.jpg" alt="Low-to-High Cable Fly" onerror="this.src='/exercises/MACHINE_CHEST_PRESS/0.jpg'" class="w-full h-full object-cover">
+                </div>
+                <div class="min-w-0 flex-1">
+                  <h3 class="text-[16px] font-bold text-[#1C1C1E] font-inter text-right leading-tight tracking-tight text-scalable-title">
+                    Low-to-High Cable Fly
+                  </h3>
+                  <p class="text-[12.5px] font-medium text-[#8E8E93] text-right mt-0.5 leading-tight text-scalable-sub">
+                    تجميع كابل للصدر العلوي
+                  </p>
+                </div>
+              </div>
+
+              <!-- Two Circular Action Buttons -->
+              <div class="flex items-center gap-1.5 shrink-0">
+                <button type="button" onclick="toggleExComplete(2, this)" aria-label="اكتمال التمرين" class="ex-check-btn w-8 h-8 rounded-full bg-[#F2F4F8] hover:bg-[#34C759]/20 text-[#8E8E93] hover:text-[#34C759] flex items-center justify-center active:scale-90 transition-all cursor-pointer">
+                  <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                    <polyline points="20 6 9 17 4 12"/>
+                  </svg>
+                </button>
+                <button type="button" onclick="toggleCardBody(2)" aria-label="طي الكارت" class="w-8 h-8 rounded-full bg-[#F2F4F8] hover:bg-[#E5E8EC] text-[#8E8E93] hover:text-[#1C1C1E] flex items-center justify-center active:scale-90 transition-all cursor-pointer">
+                  <svg id="ex2-chevron" class="w-4 h-4 transition-transform duration-200" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M6 9l6 6 6-6"/>
+                  </svg>
+                </button>
+              </div>
+            </div>
+
+            <!-- Prescription Row -->
+            <div class="flex items-center justify-between text-[12px] select-none text-[#1C1C1E] px-0.5">
+              <div class="flex items-center gap-1.5">
+                <svg class="w-4 h-4 text-[#007AFF] shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <polygon points="12 2 2 7 12 12 22 7 12 2"/>
+                  <polyline points="2 17 12 22 22 17"/>
+                  <polyline points="2 12 12 17 22 12"/>
+                </svg>
+                <span class="font-semibold text-scalable-body"><strong class="font-bold font-inter">3</strong> مجموعات</span>
+              </div>
+
+              <div class="flex items-center gap-1.5">
+                <svg class="w-4 h-4 text-[#007AFF] shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <polyline points="17 1 21 5 17 9"/>
+                  <path d="M3 11V9a4 4 0 0 1 4-4h14"/>
+                  <polyline points="7 23 3 19 7 15"/>
+                  <path d="M21 13v2a4 4 0 0 1-4 4H3"/>
+                </svg>
+                <span class="font-bold font-inter text-scalable-body" dir="ltr">10 - 12 <span class="font-normal font-sans text-[#8E8E93]">عدات</span></span>
+              </div>
+
+              <span class="bg-[#EBF5FF] text-[#007AFF] px-2.5 py-0.5 rounded-full text-[11px] font-bold font-inter">
+                RIR 2
+              </span>
+
+              <div class="flex items-center gap-1.5 text-[#8E8E93]">
+                <svg class="w-4 h-4 text-[#8E8E93] shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <circle cx="12" cy="12" r="10"/>
+                  <polyline points="12 6 12 12 16 14"/>
+                </svg>
+                <span class="font-semibold font-inter text-[#1C1C1E] text-scalable-body" dir="ltr">75 <span class="font-normal font-sans text-[#8E8E93]">ثانية</span></span>
+              </div>
+            </div>
+
+            <!-- Performance Logging Box -->
+            <div id="ex2-log-box" class="bg-[#F2F4F8] rounded-[20px] p-3 space-y-2.5">
+              <div class="grid grid-cols-3 gap-2 items-center text-center select-none">
+                <div>
+                  <span id="ex2-unit-label" class="text-[11px] font-semibold text-[#8E8E93] block mb-1">كجم</span>
+                  <div class="bg-white rounded-full h-10 px-1.5 flex items-center justify-between shadow-2xs ios-stepper-shadow">
+                    <button type="button" onclick="stepVal(2, 'w', 2.5)" aria-label="زيادة الوزن" class="w-7 h-7 rounded-full flex items-center justify-center text-[#1C1C1E] font-bold text-sm hover:bg-slate-100 active:scale-90 transition-all cursor-pointer font-inter">
+                      +
+                    </button>
+                    <span id="ex2-weight" class="text-[15px] font-bold text-[#1C1C1E] font-inter px-1">20</span>
+                    <button type="button" onclick="stepVal(2, 'w', -2.5)" aria-label="إنقاص الوزن" class="w-7 h-7 rounded-full flex items-center justify-center text-[#1C1C1E] font-bold text-sm hover:bg-slate-100 active:scale-90 transition-all cursor-pointer font-inter">
+                      &minus;
+                    </button>
+                  </div>
+                </div>
+
+                <div>
+                  <span class="text-[11px] font-semibold text-[#8E8E93] block mb-1">العدات</span>
+                  <div class="bg-white rounded-full h-10 px-1.5 flex items-center justify-between shadow-2xs ios-stepper-shadow">
+                    <button type="button" onclick="stepVal(2, 'r', 1)" aria-label="زيادة العدات" class="w-7 h-7 rounded-full flex items-center justify-center text-[#1C1C1E] font-bold text-sm hover:bg-slate-100 active:scale-90 transition-all cursor-pointer font-inter">
+                      +
+                    </button>
+                    <span id="ex2-reps" class="text-[15px] font-bold text-[#1C1C1E] font-inter px-1">10</span>
+                    <button type="button" onclick="stepVal(2, 'r', -1)" aria-label="إنقاص العدات" class="w-7 h-7 rounded-full flex items-center justify-center text-[#1C1C1E] font-bold text-sm hover:bg-slate-100 active:scale-90 transition-all cursor-pointer font-inter">
+                      &minus;
+                    </button>
+                  </div>
+                </div>
+
+                <div>
+                  <span class="text-[11px] font-semibold text-[#8E8E93] block mb-1">آخر مرة</span>
+                  <button type="button" onclick="loadLastBest(2, 20, 10)" title="تطبيق أداء آخر مرة" class="w-full bg-white rounded-full h-10 px-2 flex items-center justify-center shadow-2xs ios-stepper-shadow hover:bg-slate-50 active:scale-95 transition-all cursor-pointer">
+                    <span id="ex2-last-label" class="text-[11.5px] font-bold font-inter text-[#8E8E93]" dir="ltr">20 kg × 10</span>
+                  </button>
+                </div>
+              </div>
+
+              <!-- Effort Rating -->
+              <div class="flex items-center justify-between gap-1 select-none pt-0.5">
+                <button type="button" onclick="setEffort(2, 'easy', this)" class="effort-btn-2 flex-1 py-1.5 rounded-full text-[12px] font-semibold text-[#8E8E93] hover:text-[#1C1C1E] text-center cursor-pointer transition-all">
+                  سهل
+                </button>
+                <button type="button" onclick="setEffort(2, 'moderate', this)" class="effort-btn-2 flex-1 py-1.5 rounded-full bg-white text-[#007AFF] font-bold text-[12px] text-center shadow-2xs border border-[#007AFF]/25 cursor-pointer transition-all">
+                  مناسب
+                </button>
+                <button type="button" onclick="setEffort(2, 'hard', this)" class="effort-btn-2 flex-1 py-1.5 rounded-full text-[12px] font-semibold text-[#8E8E93] hover:text-[#1C1C1E] text-center cursor-pointer transition-all">
+                  صعب
+                </button>
+              </div>
+            </div>
+
+            <!-- Card Bottom Bar -->
+            <div class="pt-0.5 flex items-center justify-between">
+              <button type="button" onclick="openExerciseDetails(2, 'Low-to-High Cable Fly', 'تجميع كابل للصدر العلوي')" class="flex items-center gap-2 hover:opacity-80 transition-opacity cursor-pointer">
+                <div class="w-6 h-6 rounded-[8px] bg-[#007AFF] text-white flex items-center justify-center shrink-0 shadow-2xs">
+                  <svg class="w-3 h-3 fill-current ml-0.5" viewBox="0 0 24 24">
+                    <polygon points="5 3 19 12 5 21 5 3"/>
+                  </svg>
+                </div>
+                <span class="text-[12.5px] font-bold text-[#1C1C1E]">تعليمات التكنيك والفيديو</span>
+              </button>
+
+              <button type="button" onclick="openExerciseDetails(2, 'Low-to-High Cable Fly', 'تجميع كابل للصدر العلوي')" class="w-7 h-7 rounded-full flex items-center justify-center text-[#8E8E93] hover:text-[#1C1C1E] hover:bg-[#F2F4F8] transition-colors cursor-pointer">
+                <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M6 9l6 6 6-6"/>
+                </svg>
+              </button>
+            </div>
+
+          </article>
+
+          <!-- ============================================================== -->
+          <!-- SECTION 4: CARDIO & CONDITIONING (كما بالمرجع تماماً)          -->
+          <!-- ============================================================== -->
+          <section class="ios-floating-card p-3.5 flex items-center justify-between gap-3 cursor-pointer hover:bg-white/90 active:scale-[0.99] transition-all select-none" onclick="toggleCardioInfo()">
+            <div class="flex items-center gap-3 min-w-0 flex-1">
+              <div class="w-14 h-14 rounded-[16px] overflow-hidden bg-slate-100 shrink-0 shadow-2xs border border-slate-100">
+                <img src="/exercises/CARDIO_MOD_01/0.jpg" alt="Treadmill Incline Walk" onerror="this.src='/exercises/AB_WHEEL_ROLLOUT/0.jpg'" class="w-full h-full object-cover">
+              </div>
+              <div class="min-w-0 flex-1">
+                <h3 class="text-[14.5px] font-bold text-[#1C1C1E] font-inter text-right leading-tight tracking-tight text-scalable-title">
+                  Treadmill Incline Walk
+                </h3>
+                <p class="text-[11.5px] font-medium text-[#8E8E93] text-right mt-0.5 leading-tight text-scalable-sub">
+                  مشي على جهاز المشي مائل
+                </p>
+                <div class="flex items-center gap-3 mt-1 text-[11px] text-[#8E8E93]">
+                  <span class="flex items-center gap-1 font-inter">
+                    <svg class="w-3.5 h-3.5 text-[#8E8E93]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>
+                    </svg>
+                    20 دقيقة
+                  </span>
+                  <span class="flex items-center gap-1 font-inter text-rose-500 font-bold" dir="ltr">
+                    <svg class="w-3.5 h-3.5 fill-current" viewBox="0 0 24 24">
+                      <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
+                    </svg>
+                    125 – 135 bpm
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            <div class="w-8 h-8 rounded-full bg-[#F2F4F8] flex items-center justify-center text-[#8E8E93] shrink-0">
+              <svg class="w-4 h-4 rtl:rotate-180" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M9 18l6-6-6-6"/>
+              </svg>
+            </div>
+          </section>
+
+          <!-- SECTION 5: FINISH WORKOUT BUTTON (إنهاء واعتماد تمرين اليوم) -->
+          <section class="pt-1">
+            <button type="button" onclick="finishWorkout()" id="btn-finish-workout" class="w-full h-12 rounded-full bg-[#007AFF] hover:bg-[#0071E3] text-white text-[15px] font-bold ios-btn-blue-glow flex items-center justify-center gap-2 cursor-pointer active:scale-[0.98] transition-all">
+              <div class="w-5 h-5 rounded-full bg-white text-[#007AFF] flex items-center justify-center">
+                <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+                  <polyline points="20 6 9 17 4 12"/>
+                </svg>
+              </div>
+              <span id="finish-btn-text">إنهاء واعتماد تمرين اليوم</span>
+            </button>
+          </section>
+
+        </div>
+
+        <!-- ============================================================== -->
+        <!-- LIQUID GLASS FLOATING BOTTOM NAVIGATION (APPROVED 5-TABS)      -->
+        <!-- ============================================================== -->
+        <nav class="glass-nav-container absolute bottom-3.5 inset-x-3.5 h-[58px] px-1.5 py-1 flex items-center justify-between z-30 select-none">
+          <div id="liquid-lens-indicator" class="liquid-lens" style="right: 76px; width: 68px;"></div>
+
+          <!-- Tab 0: اليوم -->
+          <div onclick="switchNavTab(0, this)" class="nav-tab-item" data-index="0">
+            <svg class="w-5 h-5 text-[#8E8E93]" viewBox="0 1.2 24 23.2" fill="currentColor">
+              <path d="m2.64 10.59 9-7.48a.48.48 0 0 1 .62 0l9 7.48a1.45 1.45 0 0 0 2.06-.22 1.52 1.52 0 0 0-.21-2.11l-9-7.49a3.41 3.41 0 0 0-4.32 0l-9 7.49a1.52 1.52 0 0 0-.21 2.11 1.45 1.45 0 0 0 2.06.22"/>
+              <path d="M22.28 22v-7a2.22 2.22 0 0 0-.73-1.59l-8.3-7a1.94 1.94 0 0 0-2.5 0l-8.3 7A2.22 2.22 0 0 0 1.72 15v7a2 2 0 0 0 2 2h5.34a1 1 0 0 0 1-1v-5.5a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1V23a1 1 0 0 0 1 1h5.38a2 2 0 0 0 1.84-2"/>
+            </svg>
+            <span class="text-[10px] font-bold text-[#8E8E93] mt-0.5">اليوم</span>
+          </div>
+
+          <!-- Tab 1: التمارين (ACTIVE AS IN REFERENCE) -->
+          <div onclick="switchNavTab(1, this)" class="nav-tab-item text-[#007AFF]" data-index="1">
+            <svg class="w-5 h-5 text-[#007AFF]" viewBox="0 4 24 16" fill="currentColor">
+              <rect x="7" y="10.5" width="10" height="3" rx="1.5"/>
+              <rect x="4.5" y="4.5" width="3" height="15" rx="1.5"/>
+              <rect x="16.5" y="4.5" width="3" height="15" rx="1.5"/>
+              <rect x="1" y="7" width="2.5" height="10" rx="1.25"/>
+              <rect x="20.5" y="7" width="2.5" height="10" rx="1.25"/>
+            </svg>
+            <span class="text-[10px] font-black text-[#007AFF] mt-0.5">التمارين</span>
+          </div>
+
+          <!-- Tab 2: التغذية -->
+          <div onclick="switchNavTab(2, this)" class="nav-tab-item" data-index="2">
+            <svg class="w-5 h-5 text-[#8E8E93]" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 14H9v-2h2v2zm0-4H9V7h2v5zm4 4h-2v-2h2v2zm0-4h-2V7h2v5z"/>
+            </svg>
+            <span class="text-[10px] font-bold text-[#8E8E93] mt-0.5">التغذية</span>
+          </div>
+
+          <!-- Tab 3: المتابعة -->
+          <div onclick="switchNavTab(3, this)" class="nav-tab-item" data-index="3">
+            <svg class="w-5 h-5 text-[#8E8E93]" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-9 14l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
+            </svg>
+            <span class="text-[10px] font-bold text-[#8E8E93] mt-0.5">المتابعة</span>
+          </div>
+
+          <!-- Tab 4: حسابي -->
+          <div onclick="switchNavTab(4, this)" class="nav-tab-item" data-index="4">
+            <svg class="w-5 h-5 text-[#8E8E93]" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
+            </svg>
+            <span class="text-[10px] font-bold text-[#8E8E93] mt-0.5">حسابي</span>
+          </div>
+        </nav>
+
+        <!-- Home Indicator Bar -->
+        <div class="absolute bottom-1 inset-x-0 h-1.5 flex items-center justify-center pointer-events-none z-30">
+          <div class="w-32 h-1 bg-slate-300 rounded-full"></div>
+        </div>
+
+        <!-- ============================================================== -->
+        <!-- BOTTOM SHEET: TECHNIQUE & MACHINE ALTERNATIVE (APPLE SHEET)    -->
+        <!-- ============================================================== -->
+        <div id="modal-technique-sheet" class="hidden absolute inset-0 bg-slate-900/40 backdrop-blur-[2px] z-50 flex flex-col justify-end transition-all cursor-pointer" onclick="closeExerciseDetails()">
+          <div onclick="event.stopPropagation()" class="bg-white cursor-default rounded-t-[28px] p-4 sheet-shadow space-y-3.5 max-h-[80%] flex flex-col pb-8">
+            <div class="w-8 h-1 bg-slate-200 rounded-full mx-auto shrink-0"></div>
+
+            <div class="flex items-center justify-between pb-2 border-b border-[#F2F4F8] shrink-0">
+              <div>
+                <span class="text-[11px] font-semibold text-[#007AFF] block leading-tight">دليل الأداء المعتمد</span>
+                <h3 id="modal-title-en" class="text-[15px] font-bold text-[#1C1C1E] font-inter mt-0.5">Machine Chest Press</h3>
+                <p id="modal-title-ar" class="text-[12px] text-[#8E8E93] mt-0.5">دفع صدر بالجهاز</p>
+              </div>
+              <button onclick="closeExerciseDetails()" class="w-8 h-8 rounded-full bg-[#F2F4F8] hover:bg-[#E5E8EC] text-[#8E8E93] hover:text-[#1C1C1E] flex items-center justify-center transition-all cursor-pointer">
+                <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+                  <line x1="18" y1="6" x2="6" y2="18"></line>
+                  <line x1="6" y1="6" x2="18" y2="18"></line>
+                </svg>
+              </button>
+            </div>
+
+            <!-- Technique Cues -->
+            <div class="space-y-2">
+              <span class="text-[11.5px] font-bold text-[#1C1C1E] block">توجيهات التكنيك من الكوتش:</span>
+              <div class="p-3 bg-[#F4F6F9] rounded-[16px] space-y-2 text-[12px] text-[#48484A] leading-relaxed">
+                <div class="flex items-start gap-2">
+                  <span class="text-[#007AFF] font-bold shrink-0">1.</span>
+                  <span>تثبيت لوحي الكتف للخلف وأسفل المقعد طوال مدى الحركة.</span>
+                </div>
+                <div class="flex items-start gap-2">
+                  <span class="text-[#007AFF] font-bold shrink-0">2.</span>
+                  <span>نزول متحكم به في ثانيتين دون ارتطام الأوزان بنهاية التكرار.</span>
+                </div>
+                <div class="flex items-start gap-2">
+                  <span class="text-[#007AFF] font-bold shrink-0">3.</span>
+                  <span>دفع قوي للأمام مع الزفير وتجنب قفل مفصل الكوع بالكامل.</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Machine Alternative Option -->
+            <div class="p-3 rounded-[16px] bg-[#EBF5FF]/50 border border-[#007AFF]/20 flex items-center justify-between gap-3">
+              <div>
+                <span class="text-[10.5px] font-semibold text-[#007AFF] block leading-none">الجهاز مشغول بالجيم؟</span>
+                <span class="text-[13px] font-bold text-[#1C1C1E] mt-1 block">بديل معتمد: Dumbbell Flat Bench Press</span>
+              </div>
+              <button onclick="applyAltSwitch()" class="px-3 py-1.5 bg-[#007AFF] hover:bg-[#0071E3] active:scale-95 text-white rounded-full text-[11px] font-bold transition-all shadow-2xs cursor-pointer">
+                اعتماد البديل
+              </button>
+            </div>
+
+            <button onclick="closeExerciseDetails()" class="w-full h-11 bg-[#1C1C1E] hover:bg-black text-white rounded-full text-[13px] font-bold transition-all shadow-2xs cursor-pointer active:scale-[0.98]">
+              إغلاق ومتابعة التمرين
+            </button>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+  </main>
+
+  <!-- Interactive JavaScript Logic -->
+  <script>
+    // State Store
+    const state = {
+      unit: 'kg',
+      isCompleted: false,
+      ex: {
+        1: { weightKg: 20, reps: 10, effort: 'moderate', completed: false, lastBest: '20 kg × 10' },
+        2: { weightKg: 20, reps: 10, effort: 'moderate', completed: false, lastBest: '20 kg × 10' }
+      }
+    };
+
+    // Stepper function (+ and - buttons)
+    function stepVal(exId, type, delta) {
+      const item = state.ex[exId];
+      if (!item) return;
+
+      if (type === 'w') {
+        item.weightKg = Math.max(2.5, item.weightKg + delta);
+        const el = document.getElementById(`ex${exId}-weight`);
+        if (el) el.innerText = item.weightKg;
+      } else if (type === 'r') {
+        item.reps = Math.max(1, item.reps + delta);
+        const el = document.getElementById(`ex${exId}-reps`);
+        if (el) el.innerText = item.reps;
+      }
+
+      showSyncBadge();
+    }
+
+    // Load Last Best
+    function loadLastBest(exId, defaultW, defaultR) {
+      const item = state.ex[exId];
+      if (!item) return;
+      item.weightKg = defaultW;
+      item.reps = defaultR;
+      const wEl = document.getElementById(`ex${exId}-weight`);
+      const rEl = document.getElementById(`ex${exId}-reps`);
+      if (wEl) wEl.innerText = defaultW;
+      if (rEl) rEl.innerText = defaultR;
+      showSyncBadge();
+    }
+
+    // Set Effort
+    function setEffort(exId, level, btn) {
+      state.ex[exId].effort = level;
+      const parent = btn.parentElement;
+      parent.querySelectorAll(`.effort-btn-${exId}`).forEach(b => {
+        b.className = `effort-btn-${exId} flex-1 py-1.5 rounded-full text-[12px] font-semibold text-[#8E8E93] hover:text-[#1C1C1E] text-center cursor-pointer transition-all`;
+      });
+      btn.className = `effort-btn-${exId} flex-1 py-1.5 rounded-full bg-white text-[#007AFF] font-bold text-[12px] text-center shadow-2xs border border-[#007AFF]/25 cursor-pointer transition-all`;
+      showSyncBadge();
+    }
+
+    // Toggle Exercise Complete
+    function toggleExComplete(exId, btn) {
+      const item = state.ex[exId];
+      item.completed = !item.completed;
+
+      if (item.completed) {
+        btn.className = "ex-check-btn w-8 h-8 rounded-full bg-[#34C759] text-white flex items-center justify-center active:scale-90 transition-all cursor-pointer shadow-2xs";
+      } else {
+        btn.className = "ex-check-btn w-8 h-8 rounded-full bg-[#F2F4F8] hover:bg-[#34C759]/20 text-[#8E8E93] hover:text-[#34C759] flex items-center justify-center active:scale-90 transition-all cursor-pointer";
+      }
+      showSyncBadge();
+    }
+
+    // Toggle Card Drawer
+    function toggleCardBody(exId) {
+      const logBox = document.getElementById(`ex${exId}-log-box`);
+      const chevron = document.getElementById(`ex${exId}-chevron`);
+      if (!logBox) return;
+
+      if (logBox.classList.contains('hidden')) {
+        logBox.classList.remove('hidden');
+        if (chevron) chevron.style.transform = 'rotate(0deg)';
+      } else {
+        logBox.classList.add('hidden');
+        if (chevron) chevron.style.transform = 'rotate(180deg)';
+      }
+    }
+
+    // Warm-up Accordion
+    function toggleWarmup() {
+      const d = document.getElementById('warmup-details');
+      const c = document.getElementById('warmup-chevron');
+      if (!d) return;
+      if (d.classList.contains('hidden')) {
+        d.classList.remove('hidden');
+        if (c) c.style.transform = 'rotate(180deg)';
+      } else {
+        d.classList.add('hidden');
+        if (c) c.style.transform = 'rotate(0deg)';
+      }
+    }
+
+    // Finish Workout Button
+    function finishWorkout() {
+      state.isCompleted = !state.isCompleted;
+      const btn = document.getElementById('btn-finish-workout');
+      const text = document.getElementById('finish-btn-text');
+      if (state.isCompleted) {
+        btn.className = "w-full h-12 rounded-full bg-[#34C759] hover:bg-[#30B753] text-white text-[15px] font-bold shadow-sm flex items-center justify-center gap-2 cursor-pointer active:scale-[0.98] transition-all";
+        text.innerText = "تم إنهاء تمرين اليوم بنجاح (مكتمل)";
+        document.querySelectorAll('.ex-check-btn').forEach(b => {
+          b.className = "ex-check-btn w-8 h-8 rounded-full bg-[#34C759] text-white flex items-center justify-center active:scale-90 transition-all cursor-pointer shadow-2xs";
+        });
+      } else {
+        btn.className = "w-full h-12 rounded-full bg-[#007AFF] hover:bg-[#0071E3] text-white text-[15px] font-bold ios-btn-blue-glow flex items-center justify-center gap-2 cursor-pointer active:scale-[0.98] transition-all";
+        text.innerText = "إنهاء واعتماد تمرين اليوم";
+      }
+    }
+
+    // Sync Badge Trigger
+    let syncTimeout;
+    function showSyncBadge() {
+      const badge = document.getElementById('new-sync-badge');
+      if (!badge) return;
+      badge.style.opacity = '1';
+      clearTimeout(syncTimeout);
+      syncTimeout = setTimeout(() => {
+        badge.style.opacity = '0';
+      }, 1500);
+    }
+
+    // Change Session
+    function changeSession(name, btn) {
+      document.querySelectorAll('.session-tab-btn').forEach(b => {
+        b.className = "session-tab-btn py-2.5 px-4 rounded-full bg-white text-[#1C1C1E] text-[14px] font-bold text-center shadow-[0_2px_8px_rgba(0,0,0,0.04)] cursor-pointer transition-all active:scale-95 hover:bg-slate-50 font-inter";
+      });
+      btn.className = "session-tab-btn py-2.5 px-4 rounded-full bg-[#007AFF] text-white text-[14px] font-bold text-center shadow-sm cursor-pointer transition-all active:scale-95 font-inter";
+      showSyncBadge();
+    }
+
+    // Technique Bottom Sheet
+    function openExerciseDetails(exId, enName, arName) {
+      const modal = document.getElementById('modal-technique-sheet');
+      const enEl = document.getElementById('modal-title-en');
+      const arEl = document.getElementById('modal-title-ar');
+      if (enEl) enEl.innerText = enName;
+      if (arEl) arEl.innerText = arName;
+      if (modal) modal.classList.remove('hidden');
+    }
+
+    function closeExerciseDetails() {
+      const modal = document.getElementById('modal-technique-sheet');
+      if (modal) modal.classList.add('hidden');
+    }
+
+    function applyAltSwitch() {
+      closeExerciseDetails();
+      showSyncBadge();
+      alert('تم اعتماد البديل وتحديث بطاقة التمرين بنجاح.');
+    }
+
+    // Toolbar Controls
+    function setViewMode(mode) {
+      const colOld = document.getElementById('col-old');
+      const colNew = document.getElementById('col-new');
+      const bNew = document.getElementById('btn-mode-new');
+      const bDual = document.getElementById('btn-mode-dual');
+      const bOld = document.getElementById('btn-mode-old');
+
+      [bNew, bDual, bOld].forEach(b => {
+        b.className = "px-4 py-1.5 rounded-full text-[12px] font-medium text-[#64748B] hover:text-[#1C1C1E] transition-all";
+      });
+
+      if (mode === 'new') {
+        colOld.classList.add('hidden');
+        colNew.classList.remove('hidden');
+        bNew.className = "px-4 py-1.5 rounded-full text-[12px] font-bold bg-[#007AFF] text-white shadow-2xs transition-all";
+      } else if (mode === 'dual') {
+        colOld.classList.remove('hidden');
+        colNew.classList.remove('hidden');
+        bDual.className = "px-4 py-1.5 rounded-full text-[12px] font-bold bg-[#007AFF] text-white shadow-2xs transition-all";
+      } else if (mode === 'old') {
+        colOld.classList.remove('hidden');
+        colNew.classList.add('hidden');
+        bOld.className = "px-4 py-1.5 rounded-full text-[12px] font-bold bg-[#007AFF] text-white shadow-2xs transition-all";
+      }
+    }
+
+    function setFrameWidth(w) {
+      const frames = document.querySelectorAll('.iphone-frame');
+      frames.forEach(f => f.style.width = w + 'px');
+      [375, 390, 430].forEach(dim => {
+        const btn = document.getElementById('btn-w-' + dim);
+        if (btn) {
+          if (dim === w) {
+            btn.className = "px-2.5 py-1 rounded-full bg-[#1C1C1E] text-white font-bold";
+          } else {
+            btn.className = "px-2.5 py-1 rounded-full text-[#64748B]";
+          }
+        }
+      });
+    }
+
+    function setUnit(u) {
+      state.unit = u;
+      const isLb = u === 'lb';
+      document.getElementById('ex1-unit-label').innerText = isLb ? 'LB' : 'كجم';
+      document.getElementById('ex2-unit-label').innerText = isLb ? 'LB' : 'كجم';
+      
+      const bKg = document.getElementById('btn-u-kg');
+      const bLb = document.getElementById('btn-u-lb');
+      if (isLb) {
+        bLb.className = "px-2.5 py-1 rounded-full bg-[#1C1C1E] text-white font-bold";
+        bKg.className = "px-2.5 py-1 rounded-full text-[#64748B]";
+      } else {
+        bKg.className = "px-2.5 py-1 rounded-full bg-[#1C1C1E] text-white font-bold";
+        bLb.className = "px-2.5 py-1 rounded-full text-[#64748B]";
+      }
+    }
+
+    function toggleLargeText() {
+      document.body.classList.toggle('large-text-sim');
+      const btn = document.getElementById('btn-a11y');
+      if (document.body.classList.contains('large-text-sim')) {
+        btn.className = "px-3 py-1.5 bg-[#007AFF] text-white border border-[#007AFF] rounded-full text-[11px] font-bold transition-all";
+      } else {
+        btn.className = "px-3 py-1.5 bg-[#F8FAFC] hover:bg-[#F2F4F8] border border-[#E2E8F0] text-[#1C1C1E] rounded-full text-[11px] font-semibold transition-all";
+      }
+    }
+
+    function switchNavTab(idx, el) {
+      const lens = document.getElementById('liquid-lens-indicator');
+      if (lens) {
+        // Compute position based on clicked tab
+        const offset = 14 + (idx * 68);
+        lens.style.right = offset + 'px';
+      }
+    }
+  </script>
+</body>
+</html>

@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>لوحة المقارنة الهندسية — إعادة تصميم قسم التغذية</title>
+  <script src="https://www.gstatic.com/antigravity/web/dev/tailwindcss.min.js"></script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@300;400;500;600;700;800&family=Inter:wght@400;500;600;700;800&display=swap');
+    * {
+      font-family: 'Segoe UI', 'IBM Plex Sans Arabic', -apple-system, BlinkMacSystemFont, sans-serif;
+      box-sizing: border-box;
+    }
+    .font-inter {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    }
+    body {
+      background-color: #F1F4F8;
+      color: #0F172A;
+    }
+    .soft-card-shadow {
+      background-color: #FFFFFF;
+      border: 1px solid rgba(226, 232, 240, 0.65);
+      border-radius: 20px;
+      box-shadow: 
+        0 2px 4px 0 rgba(15, 23, 42, 0.015),
+        0 10px 28px -4px rgba(15, 23, 42, 0.05),
+        0 1px 2px 0 rgba(0, 0, 0, 0.015),
+        inset 0 1px 1px 0 rgba(255, 255, 255, 0.95);
+    }
+    .btn-ghost-pill {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 4.5px;
+      height: 26px;
+      padding: 0 10px;
+      border-radius: 9999px;
+      font-size: 11px;
+      font-weight: 600;
+      color: #284C7C;
+      background-color: #FFFFFF;
+      border: 1px solid rgba(226, 232, 240, 0.85);
+      box-shadow: 0 1px 3px 0 rgba(15, 23, 42, 0.03), inset 0 1px 0.5px rgba(255, 255, 255, 0.95);
+      text-decoration: none !important;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body class="p-4 md:p-8 min-h-screen">
+
+  <div class="max-w-6xl mx-auto space-y-6">
+
+    <!-- Top Master Header -->
+    <header class="bg-white rounded-3xl p-5 md:p-6 soft-card-shadow flex flex-col md:flex-row items-center justify-between gap-4">
+      <div>
+        <div class="flex items-center gap-2 mb-1.5">
+          <span class="px-3 py-0.5 rounded-full text-xs font-bold bg-[#EFF6FF] text-[#0284C7] border border-[#DBEAFE]">
+            Z Coaching Platform · مقارنة المرجع
+          </span>
+          <span class="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200">
+            Soft Tactile UI Architecture
+          </span>
+        </div>
+        <h1 class="text-xl md:text-2xl font-bold text-[#0F172A] tracking-tight">
+          إعادة تصميم قسم التغذية في شاشة اليوم (Nutrition Summary Redesign)
+        </h1>
+        <p class="text-xs text-[#64748B] mt-1">
+          مقارنة مباشرة بين الصورة المرجعية (Activity Plan)، والتصميم السابق (Before)، والتصميم الجديد المعتمد (After)
+        </p>
+      </div>
+
+      <div class="flex items-center gap-2">
+        <a href="/mobile_app_preview.html" class="px-4 py-2 rounded-xl text-xs font-bold bg-[#0F172A] hover:bg-[#1E293B] text-white shadow-sm transition-all flex items-center gap-1.5">
+          <span>العودة لمحاكي الموبايل</span>
+          <span>&larr;</span>
+        </a>
+      </div>
+    </header>
+
+    <!-- 3-Column Visual Comparison Grid -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 items-start">
+
+      <!-- Column 1: Reference Image -->
+      <section class="bg-white rounded-3xl p-5 soft-card-shadow space-y-3">
+        <div class="flex items-center justify-between pb-2 border-b border-slate-100">
+          <div class="flex items-center gap-2">
+            <span class="w-6 h-6 rounded-full bg-amber-100 text-amber-700 font-bold flex items-center justify-center text-xs">1</span>
+            <h2 class="text-sm font-bold text-[#0F172A]">الصورة المرجعية الأصلية</h2>
+          </div>
+          <span class="text-[10px] font-bold text-amber-700 bg-amber-50 px-2 py-0.5 rounded-full border border-amber-200">Activity Plan</span>
+        </div>
+
+        <p class="text-xs text-[#64748B] leading-relaxed">
+          الشاشة الوسطى: كبسولات عائمة بيضاء ناصعة فوق خلفية رمادية ناعمة بأيقونات داخل دوائر باستيل وتدرج بصري هادئ.
+        </p>
+
+        <div class="rounded-2xl overflow-hidden border border-slate-200 bg-slate-100 relative shadow-inner">
+          <img src="/reference_activity_plan.png" alt="Reference Activity Plan" class="w-full object-cover">
+        </div>
+
+        <div class="bg-amber-50/60 rounded-xl p-3 border border-amber-200/60 text-[11px] text-amber-900 space-y-1">
+          <span class="font-bold block">العناصر المستخرجة من المرجع:</span>
+          <div>• أسطح كبسولية بيضاء عائمة (Floating Capsules).</div>
+          <div>• حاضنات أيقونات دائرية باستيل (Pastel Circles).</div>
+          <div>• أرقام بارزة صريحة مع تسميات فرعية دقيقة.</div>
+        </div>
+      </section>
+
+      <!-- Column 2: Before (Old Design) -->
+      <section class="bg-white rounded-3xl p-5 soft-card-shadow space-y-3">
+        <div class="flex items-center justify-between pb-2 border-b border-slate-100">
+          <div class="flex items-center gap-2">
+            <span class="w-6 h-6 rounded-full bg-slate-200 text-slate-700 font-bold flex items-center justify-center text-xs">2</span>
+            <h2 class="text-sm font-bold text-[#0F172A]">الكارت السابق (Before)</h2>
+          </div>
+          <span class="text-[10px] font-bold text-slate-600 bg-slate-100 px-2 py-0.5 rounded-full border border-slate-200">الحلقة الدائرية</span>
+        </div>
+
+        <p class="text-xs text-[#64748B] leading-relaxed">
+          التصميم السابق: حلقة مفرغة على اليمين مع 4 أعمدة مضغوطة أفقياً على اليسار بدون فواصل تجسيمية واضحة.
+        </p>
+
+        <div class="rounded-2xl overflow-hidden border border-slate-200 bg-slate-50 p-2 shadow-inner">
+          <img src="/nutrition_card_before.png" alt="Before Nutrition Card" class="w-full rounded-xl object-cover">
+        </div>
+
+        <div class="bg-slate-50 rounded-xl p-3 border border-slate-200 text-[11px] text-[#475569] space-y-1">
+          <span class="font-bold block">ملاحظات الكارت القديم:</span>
+          <div>• حلقة دائرية تماثل عداد الاستهلاك وتوحي بالاكتمال دون وجود بيانات فعلية.</div>
+          <div>• ضغط الأعمدة الأربعة يسبب صعوبة في قراءة نسب الماكروز.</div>
+          <div>• حدود مسطحة تفتقر إلى النعومة والتجسيم اللمسي للبطاقات العائمة.</div>
+        </div>
+      </section>
+
+      <!-- Column 3: After (Live Component) -->
+      <section class="bg-white rounded-3xl p-5 soft-card-shadow space-y-3">
+        <div class="flex items-center justify-between pb-2 border-b border-slate-100">
+          <div class="flex items-center gap-2">
+            <span class="w-6 h-6 rounded-full bg-emerald-100 text-emerald-700 font-bold flex items-center justify-center text-xs">3</span>
+            <h2 class="text-sm font-bold text-[#0F172A]">التصميم الجديد (After)</h2>
+          </div>
+          <span class="text-[10px] font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200">النمط المعتمد</span>
+        </div>
+
+        <p class="text-xs text-[#64748B] leading-relaxed">
+          نظام الكبسولات العائمة المستقلة: كبسولة رئيسية للسعرات 2,450 مع صفوف متدفقة للماكروز والماء تحاكي Activity Plan تماماً.
+        </p>
+
+        <!-- Live Render Container simulating Phone Canvas -->
+        <div class="p-3.5 rounded-2xl bg-[#F1F4F8] border border-slate-200 space-y-2.5">
+          
+          <!-- Header -->
+          <div class="flex items-center justify-between px-1">
+            <div class="flex items-center gap-2">
+              <span class="text-[13px] font-bold text-[#0F172A] leading-none">التغذية</span>
+              <span class="text-[10px] font-semibold text-[#0284C7] bg-[#EFF6FF] border border-[#DBEAFE] px-2 py-0.5 rounded-full leading-none">الخطة المعتمدة</span>
+            </div>
+            <span class="btn-ghost-pill text-[10.5px]">
+              <span>عرض الوجبات</span>
+              <span class="text-xs">&larr;</span>
+            </span>
+          </div>
+
+          <!-- Main Calories Hero Surface -->
+          <div class="bg-white rounded-[20px] p-3 soft-card-shadow flex items-center justify-between gap-2.5">
+            <div class="flex items-center gap-2.5 min-w-0">
+              <div class="w-11 h-11 rounded-full bg-[#EFF6FF] border border-[#DBEAFE] shadow-2xs flex items-center justify-center text-[#0284C7] shrink-0">
+                <svg class="w-5.5 h-5.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 2.5z"/>
+                </svg>
+              </div>
+              <div class="min-w-0">
+                <div class="flex items-baseline gap-1">
+                  <span class="text-[20px] font-extrabold text-[#0F172A] font-inter leading-none">2,450</span>
+                  <span class="text-[11px] font-bold text-[#64748B] leading-none">سعرة / يوم</span>
+                </div>
+                <p class="text-[10.5px] font-medium text-[#64748B] mt-1 leading-none">السعرات المستهدفة المقررة</p>
+              </div>
+            </div>
+            <span class="text-[10px] font-bold text-emerald-700 bg-emerald-50 border border-emerald-200 px-2 py-0.5 rounded-full leading-none shrink-0">هدف يومي</span>
+          </div>
+
+          <!-- Macro Surfaces -->
+          <div class="bg-white rounded-[20px] p-2.5 soft-card-shadow space-y-1">
+            <!-- Row 1: Protein -->
+            <div class="flex items-center justify-between p-1.5 rounded-xl hover:bg-slate-50 transition-colors">
+              <div class="flex items-center gap-2.5">
+                <div class="w-9 h-9 rounded-full bg-[#EFF6FF] border border-[#DBEAFE] flex items-center justify-center text-[#0284C7] shrink-0">
+                  <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 18h12M4 9h16M7 6h10M7 12h10M9 21h6"/></svg>
+                </div>
+                <div>
+                  <div class="text-[14.5px] font-bold text-[#0F172A] font-inter leading-none">180<span class="text-[10px] text-[#64748B] mr-0.5">g</span></div>
+                  <span class="text-[10.5px] font-semibold text-[#475569] mt-0.5 block leading-none">بروتين</span>
+                </div>
+              </div>
+              <span class="text-[10.5px] font-bold text-[#0284C7] bg-[#EFF6FF] border border-[#DBEAFE] px-2 py-0.5 rounded-full font-inter leading-none">29%</span>
+            </div>
+
+            <!-- Row 2: Carbs -->
+            <div class="flex items-center justify-between p-1.5 rounded-xl hover:bg-slate-50 transition-colors">
+              <div class="flex items-center gap-2.5">
+                <div class="w-9 h-9 rounded-full bg-[#FFF1EC] border border-[#FFEDD5] flex items-center justify-center text-[#EA580C] shrink-0">
+                  <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 22s5.5-1.5 8-6c2.5-4.5 3-10 3-10s-5.5.5-10 3c-4.5 2.5-6 8-6 8z"/><path d="M12 12c2.5 2.5 7 5 10 5-2.5-4.5-5-9-10-10"/></svg>
+                </div>
+                <div>
+                  <div class="text-[14.5px] font-bold text-[#0F172A] font-inter leading-none">250<span class="text-[10px] text-[#64748B] mr-0.5">g</span></div>
+                  <span class="text-[10.5px] font-semibold text-[#475569] mt-0.5 block leading-none">كاربوهيدرات</span>
+                </div>
+              </div>
+              <span class="text-[10.5px] font-bold text-[#EA580C] bg-[#FFF1EC] border border-[#FFEDD5] px-2 py-0.5 rounded-full font-inter leading-none">41%</span>
+            </div>
+
+            <!-- Row 3: Fats -->
+            <div class="flex items-center justify-between p-1.5 rounded-xl hover:bg-slate-50 transition-colors">
+              <div class="flex items-center gap-2.5">
+                <div class="w-9 h-9 rounded-full bg-[#F5F3FF] border border-[#EDE9FE] flex items-center justify-center text-[#7C3AED] shrink-0">
+                  <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2a5 5 0 0 1 5 5c0 3-5 9-5 9s-5-6-5-9a5 5 0 0 1 5-5z"/></svg>
+                </div>
+                <div>
+                  <div class="text-[14.5px] font-bold text-[#0F172A] font-inter leading-none">81<span class="text-[10px] text-[#64748B] mr-0.5">g</span></div>
+                  <span class="text-[10.5px] font-semibold text-[#475569] mt-0.5 block leading-none">دهون صحية</span>
+                </div>
+              </div>
+              <span class="text-[10.5px] font-bold text-[#7C3AED] bg-[#F5F3FF] border border-[#EDE9FE] px-2 py-0.5 rounded-full font-inter leading-none">30%</span>
+            </div>
+
+            <!-- Row 4: Water -->
+            <div class="flex items-center justify-between p-1.5 rounded-xl bg-slate-50/80 border border-slate-100">
+              <div class="flex items-center gap-2.5">
+                <div class="w-9 h-9 rounded-full bg-[#F0F9FF] border border-[#BAE6FD] flex items-center justify-center text-[#0284C7] shrink-0">
+                  <svg class="w-4 h-4" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2.69l5.66 5.66a8 8 0 1 1-11.31 0z"/></svg>
+                </div>
+                <div>
+                  <div class="text-[14.5px] font-bold text-[#0F172A] font-inter leading-none">3.5<span class="text-[10px] text-[#64748B] mr-0.5">لتر</span></div>
+                  <span class="text-[10.5px] font-medium text-[#64748B] mt-0.5 block leading-none">الترطيب المستهدف</span>
+                </div>
+              </div>
+              <span class="text-[10px] font-semibold text-[#64748B] bg-white border border-[#E2E8F0] px-2 py-0.5 rounded-full leading-none">موزعة باليوم</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="bg-emerald-50 rounded-xl p-3 border border-emerald-200 text-[11px] text-emerald-900 space-y-1">
+          <span class="font-bold block">مكاسب التصميم الجديد:</span>
+          <div>• تطابق بنسبة 100% مع لغة Activity Plan في الصورة المرجعية.</div>
+          <div>• وضوح استثنائي لكل عنصر غذائي مع نسبته من الطاقة.</div>
+          <div>• استقرار المساحات على كافة مقاسات الهواتف (375px / 390px / 430px).</div>
+        </div>
+      </section>
+
+    </div>
+
+    <!-- Architectural Tokens Table -->
+    <section class="bg-white rounded-3xl p-5 md:p-6 soft-card-shadow space-y-4">
+      <h3 class="text-base font-bold text-[#0F172A]">جدول مطابقة المعايير الهندسية بين المرجع والمنظومة</h3>
+      
+      <div class="overflow-x-auto">
+        <table class="w-full text-xs text-right border-collapse">
+          <thead>
+            <tr class="border-b border-slate-200 text-[#475569] bg-slate-50">
+              <th class="py-2.5 px-3 font-bold">العنصر التصميمي</th>
+              <th class="py-2.5 px-3 font-bold">الصورة المرجعية (Reference)</th>
+              <th class="py-2.5 px-3 font-bold">الكارت السابق (Before)</th>
+              <th class="py-2.5 px-3 font-bold">التصميم الجديد (After)</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-slate-100 text-[#334155]">
+            <tr>
+              <td class="py-2.5 px-3 font-semibold text-[#0F172A]">نوع الأسطح والعمق</td>
+              <td class="py-2.5 px-3">Floating White Rounded Capsules</td>
+              <td class="py-2.5 px-3 text-[#64748B]">Single Flat Box</td>
+              <td class="py-2.5 px-3 font-bold text-emerald-700">كبسولات عائمة ثلاثية الطبقات</td>
+            </tr>
+            <tr>
+              <td class="py-2.5 px-3 font-semibold text-[#0F172A]">حواضن الأيقونات</td>
+              <td class="py-2.5 px-3">Soft Circular Pastel Pods</td>
+              <td class="py-2.5 px-3 text-[#64748B]">أيقونة ماء فقط</td>
+              <td class="py-2.5 px-3 font-bold text-emerald-700">دوائر باستيل ناعمة لكل ماكرو</td>
+            </tr>
+            <tr>
+              <td class="py-2.5 px-3 font-semibold text-[#0F172A]">تمثيل السعرات</td>
+              <td class="py-2.5 px-3">Hero Metric Row</td>
+              <td class="py-2.5 px-3 text-[#64748B]">حلقة دائرية توحي بالاكتمال</td>
+              <td class="py-2.5 px-3 font-bold text-emerald-700">كبسولة مستقلة صريحة (الهدف اليومي)</td>
+            </tr>
+            <tr>
+              <td class="py-2.5 px-3 font-semibold text-[#0F172A]">النسب المئوية</td>
+              <td class="py-2.5 px-3">Secondary Right-side Metric</td>
+              <td class="py-2.5 px-3 text-[#64748B]">نصوص عمودية صغيرة</td>
+              <td class="py-2.5 px-3 font-bold text-emerald-700">شارات كبسولية توضح توزيع السعرات</td>
+            </tr>
+            <tr>
+              <td class="py-2.5 px-3 font-semibold text-[#0F172A]">معدل الترطيب</td>
+              <td class="py-2.5 px-3">Low-priority target row</td>
+              <td class="py-2.5 px-3 text-[#64748B]">عمود رابع مدمج</td>
+              <td class="py-2.5 px-3 font-bold text-emerald-700">صف هادئ بدون مؤقتات أو عدادات</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+  </div>
+
+</body>
+</html>

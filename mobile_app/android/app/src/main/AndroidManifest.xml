@@ -4,17 +4,16 @@
     <uses-permission android:name="android.permission.INTERNET"/>
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE"/>
 
-    <!-- Camera and Photo Library Permissions for weekly check-in photos -->
-    <!-- صلاحيات الكاميرا ومعرض الصور لرفع صور المتابعة الأسبوعية -->
+    <!-- Camera Permission for weekly check-in photos -->
+    <!-- صلاحية الكاميرا لالتقاط صور المتابعة الأسبوعية عبر الكاميرا -->
+    <!-- ملاحظة: اختيار الصور من المعرض يتم عبر Android Photo Picker المدمج دون الحاجة لأي صلاحيات تخزين عامة -->
     <uses-permission android:name="android.permission.CAMERA"/>
-    <uses-permission android:name="android.permission.READ_MEDIA_IMAGES"/>
-    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" android:maxSdkVersion="32"/>
 
     <application
         android:label="Z Coaching"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher"
-        android:usesCleartextTraffic="true">
+        android:usesCleartextTraffic="false">
         <activity
             android:name=".MainActivity"
             android:exported="true"

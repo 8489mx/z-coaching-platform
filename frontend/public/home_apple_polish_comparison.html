@@ -1,0 +1,962 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <title>Karim Zakaria — Phase 04 Home Screen Apple Polish Comparison</title>
+  <script src="https://www.gstatic.com/antigravity/web/dev/tailwindcss.min.js"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Alexandria:wght@300;400;500;600;700;800;900&family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <style>
+    * {
+      -webkit-font-smoothing: antialiased;
+      box-sizing: border-box;
+      font-family: 'Alexandria', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    }
+    .font-inter {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif !important;
+    }
+    body {
+      background-color: #F8FAFC;
+      color: #1C1C1E;
+      margin: 0;
+      padding: 0;
+      min-height: 100vh;
+    }
+
+    /* Apple Health Grouped Card */
+    .apple-card {
+      background: #FFFFFF;
+      border: 1px solid rgba(226, 232, 240, 0.85);
+      border-radius: 20px;
+      box-shadow: 0 2px 8px -1px rgba(15, 23, 42, 0.04), 0 1px 3px -1px rgba(15, 23, 42, 0.02);
+      transition: all 0.2s ease;
+    }
+
+    /* Floating Liquid Glass Navigation */
+    .glass-nav-container {
+      background: rgba(255, 255, 255, 0.82);
+      backdrop-filter: blur(24px) saturate(190%);
+      -webkit-backdrop-filter: blur(24px) saturate(190%);
+      border: 1px solid rgba(255, 255, 255, 0.9);
+      border-radius: 9999px;
+      box-shadow: 0 10px 30px -5px rgba(15, 23, 42, 0.12),
+                  0 4px 12px -2px rgba(15, 23, 42, 0.06),
+                  inset 0 1px 1.5px rgba(255, 255, 255, 0.95);
+      position: relative;
+    }
+
+    .liquid-lens {
+      position: absolute;
+      top: 5px;
+      bottom: 5px;
+      border-radius: 9999px;
+      background: rgba(255, 255, 255, 0.96);
+      box-shadow: 0 3px 10px rgba(0, 122, 255, 0.14),
+                  0 1px 3px rgba(0, 0, 0, 0.05),
+                  inset 0 1px 1px rgba(255, 255, 255, 1);
+      transition: all 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+      z-index: 1;
+      pointer-events: none;
+    }
+
+    .nav-tab-item {
+      position: relative;
+      flex: 1;
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      z-index: 2;
+      user-select: none;
+    }
+
+    /* Badges */
+    .apple-badge-tint {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 3px 9px;
+      border-radius: 9999px;
+      font-size: 11px;
+      font-weight: 700;
+      line-height: 1;
+    }
+    .apple-badge-tint-blue {
+      background: rgba(0, 122, 255, 0.1);
+      color: #007AFF;
+    }
+    .apple-badge-tint-green {
+      background: rgba(52, 199, 89, 0.12);
+      color: #248A3D;
+    }
+    .apple-badge-tint-gray {
+      background: rgba(142, 142, 147, 0.12);
+      color: #636366;
+    }
+
+    /* Buttons */
+    .apple-btn-primary {
+      background: #007AFF;
+      color: #FFFFFF;
+      box-shadow: 0 4px 14px rgba(0, 122, 255, 0.25), inset 0 1px 1px rgba(255, 255, 255, 0.35);
+      transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .apple-btn-primary:active {
+      transform: scale(0.97);
+      background: #0062CC;
+    }
+
+    .apple-action-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 4px 10px;
+      border-radius: 9999px;
+      background: #F2F2F7;
+      color: #007AFF;
+      font-size: 11px;
+      font-weight: 700;
+      transition: all 0.18s ease;
+      cursor: pointer;
+      user-select: none;
+    }
+    .apple-action-btn:hover {
+      background: #E5E5EA;
+    }
+    .apple-action-btn:active {
+      transform: scale(0.96);
+    }
+
+    /* Date Pills: Version A (Old Purple Protruding) */
+    .old-date-pill-active {
+      background-color: #7B4FFE;
+      border-radius: 28px;
+      height: 74px;
+      margin-top: -5px;
+      margin-bottom: -5px;
+      z-index: 10;
+      border: 1px solid rgba(255, 255, 255, 0.25);
+      box-shadow: 0 8px 20px -2px rgba(123, 79, 254, 0.38), inset 0 1px 1.5px 0 rgba(255, 255, 255, 0.35);
+    }
+    .old-date-pill-inactive {
+      background-color: #FFFFFF;
+      border: 1px solid rgba(226, 232, 240, 0.75);
+      border-radius: 26px;
+      height: 64px;
+    }
+
+    /* Date Pills: Version B (Apple Health Refined Blue Capsule) */
+    .refined-date-pill-active {
+      background: #007AFF;
+      border-radius: 16px;
+      height: 64px;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      box-shadow: 0 4px 14px rgba(0, 122, 255, 0.28), inset 0 1px 1px rgba(255, 255, 255, 0.35);
+      transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .refined-date-pill-active:active {
+      transform: scale(0.96);
+    }
+    .refined-date-pill-inactive {
+      background: #F8FAFC;
+      border: 1px solid rgba(226, 232, 240, 0.7);
+      border-radius: 16px;
+      height: 64px;
+      transition: all 0.2s ease;
+    }
+    .refined-date-pill-inactive:hover {
+      background: #EDF2F7;
+    }
+    .refined-date-pill-inactive:active {
+      transform: scale(0.96);
+    }
+
+    /* Custom scrollbar */
+    .no-scrollbar::-webkit-scrollbar {
+      display: none;
+    }
+    .no-scrollbar {
+      -ms-overflow-style: none;
+      scrollbar-width: none;
+    }
+  </style>
+</head>
+<body class="p-4 sm:p-6 lg:p-8">
+
+  <div class="max-w-7xl mx-auto space-y-8">
+
+    <!-- Top Executive Header -->
+    <header class="apple-card p-6 border-b border-slate-200">
+      <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div>
+          <div class="flex items-center gap-2">
+            <span class="apple-badge-tint apple-badge-tint-blue">PHASE 04 — FINAL UI REFINEMENT</span>
+            <span class="apple-badge-tint apple-badge-tint-green">جاهز للمعاينة والاعتماد</span>
+          </div>
+          <h1 class="text-2xl font-black text-[#1C1C1E] tracking-tight mt-2">لوحة المعايرة البصرية لشاشة اليوم (Home Screen)</h1>
+          <p class="text-xs text-[#8E8E93] mt-1 max-w-2xl leading-relaxed">
+            مقارنة بصرية شاملة وعميقة بين النسخة السابقة (Version A) والنسخة المحسنة (Version B) بمستوى Apple Fitness وApple Health، مع الحفاظ الصارم على ترتيب الأقسام، وبنية البيانات، وهوية كريم زكريا.
+          </p>
+        </div>
+
+        <!-- Viewport Switcher Controls -->
+        <div class="flex items-center gap-2 bg-[#F2F2F7] p-1.5 rounded-full border border-slate-200 self-start md:self-auto select-none">
+          <span class="text-[11px] font-bold text-[#8E8E93] px-2.5">عرض الجهاز:</span>
+          <button onclick="setGlobalWidth(375)" id="btn-w-375" class="px-3 py-1 rounded-full text-[11px] font-semibold text-[#8E8E93] hover:text-[#1C1C1E] transition-all cursor-pointer">
+            375px (Compact)
+          </button>
+          <button onclick="setGlobalWidth(390)" id="btn-w-390" class="px-3 py-1 rounded-full text-[11px] font-bold bg-white text-[#007AFF] shadow-2xs transition-all cursor-pointer">
+            390px (Standard iPhone)
+          </button>
+          <button onclick="setGlobalWidth(430)" id="btn-w-430" class="px-3 py-1 rounded-full text-[11px] font-semibold text-[#8E8E93] hover:text-[#1C1C1E] transition-all cursor-pointer">
+            430px (Pro Max)
+          </button>
+        </div>
+      </div>
+    </header>
+
+    <!-- ============================================================== -->
+    <!-- 1. LIVE SIDE-BY-SIDE MOBILE APP SCREEN COMPARISON (A vs B)     -->
+    <!-- ============================================================== -->
+    <section class="space-y-4">
+      <div class="flex items-center justify-between">
+        <div>
+          <h2 class="text-lg font-black text-[#1C1C1E]">1. المقارنة التفاعلية الحية من الأعلى إلى الأسفل (Side-by-Side Live Viewports)</h2>
+          <p class="text-xs text-[#8E8E93]">فحص مباشر للتدفق الكامل، استجابة التمرير، هوامش الأمان، وارتفاع شريط التنقل الزجاجي العائم.</p>
+        </div>
+        <div class="flex items-center gap-3">
+          <span class="text-xs text-[#8E8E93]">التمرير مستقل لكل جهاز</span>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 items-start">
+
+        <!-- ========================================== -->
+        <!-- VERSION A: PREVIOUS HOME SCREEN            -->
+        <!-- ========================================== -->
+        <div class="apple-card p-5 space-y-4">
+          <div class="flex items-center justify-between pb-3 border-b border-slate-100">
+            <div>
+              <span class="apple-badge-tint bg-amber-50 text-amber-700 border border-amber-200">Version A (قبل التحسين)</span>
+              <h3 class="text-sm font-bold text-[#1C1C1E] mt-1">Home Screen الحالية</h3>
+            </div>
+            <span class="text-[11px] text-[#8E8E93]">نشاز لوني في التقويم وزوايا متباينة</span>
+          </div>
+
+          <p class="text-xs text-[#64748B] leading-relaxed">
+            تقويم أسبوعي بارتفاع زائد ولون بنفسجي دخيل، تباين في أوزان الخطوط، كارت تغذية يحاكي حلقة استهلاك مضللة، وأزرار توقيت مكملات تعطي إيحاء تفاعلي وهمي.
+          </p>
+
+          <!-- Mock iPhone Device Container (Version A) -->
+          <div class="flex justify-center bg-[#EAEEF4] py-8 rounded-[32px] border border-slate-200/80 overflow-hidden">
+            <div id="device-container-a" class="w-[390px] h-[780px] bg-[#F1F4F8] rounded-[44px] shadow-[0_20px_50px_rgba(0,0,0,0.12)] border-[8px] border-[#1E293B] flex flex-col relative overflow-hidden transition-all duration-300">
+              
+              <!-- iOS Status Bar -->
+              <div class="h-10 pt-2 px-6 flex items-center justify-between text-[#1C1C1E] shrink-0 select-none text-[12px] font-bold font-inter z-20">
+                <span>9:41</span>
+                <div class="w-20 h-4 bg-black rounded-full mx-auto"></div>
+                <div class="flex items-center gap-1.5 text-[10px]">
+                  <span>5G</span>
+                  <span>100%</span>
+                </div>
+              </div>
+
+              <!-- Scrollable Content (Version A) -->
+              <div class="flex-1 overflow-y-auto no-scrollbar px-4 py-3.5 space-y-3.5 pb-28">
+
+                <!-- Header: Greeting -->
+                <section class="flex items-center justify-between pt-1 pb-0.5 select-none">
+                  <div class="space-y-0.5">
+                    <p class="text-[12px] font-semibold text-[#8E8E93] uppercase tracking-wider leading-none">السبت، 10 أكتوبر 2026</p>
+                    <h1 class="text-[25px] font-black text-[#1C1C1E] tracking-tight leading-tight mt-1">صباح الخير، أحمد</h1>
+                  </div>
+                </section>
+
+                <!-- Date Selector (Version A - Old Protruding Purple) -->
+                <section class="apple-card p-3.5 space-y-2.5">
+                  <div class="flex items-center justify-between px-1">
+                    <span class="text-[14.5px] font-bold text-[#1C1C1E] leading-none">جدول الأسبوع</span>
+                    <span class="apple-badge-tint apple-badge-tint-gray">الأسبوع 4 · تمرين 1 من 4</span>
+                  </div>
+                  <div class="grid grid-cols-7 gap-1 items-center pt-1.5 pb-1 overflow-visible">
+                    <div class="old-date-pill-active text-center flex flex-col items-center justify-between pt-2.5 pb-1.5 px-0.5 select-none">
+                      <span class="text-[10px] font-bold block text-white leading-none">السبت</span>
+                      <div class="w-[28px] h-[28px] rounded-full bg-white flex items-center justify-center shadow-sm">
+                        <span class="text-[13px] font-bold text-[#7B4FFE] leading-none font-inter">10</span>
+                      </div>
+                    </div>
+                    <div class="old-date-pill-inactive text-center text-[#64748B] flex flex-col items-center justify-between pt-1.5 pb-1 px-0.5 select-none">
+                      <span class="text-[10px] font-medium block text-[#64748B] leading-none">الأحد</span>
+                      <div class="w-[28px] h-[28px] rounded-full bg-white flex items-center justify-center">
+                        <span class="text-[12px] font-semibold text-[#1E293B] leading-none font-inter">11</span>
+                      </div>
+                    </div>
+                    <div class="old-date-pill-inactive text-center text-[#64748B] flex flex-col items-center justify-between pt-1.5 pb-1 px-0.5 select-none">
+                      <span class="text-[10px] font-medium block text-[#64748B] leading-none">الإثنين</span>
+                      <div class="w-[28px] h-[28px] rounded-full bg-white flex items-center justify-center">
+                        <span class="text-[12px] font-semibold text-[#1E293B] leading-none font-inter">12</span>
+                      </div>
+                    </div>
+                    <div class="old-date-pill-inactive text-center text-[#64748B] flex flex-col items-center justify-between pt-1.5 pb-1 px-0.5 select-none">
+                      <span class="text-[10px] font-medium block text-[#64748B] leading-none">الثلاثاء</span>
+                      <div class="w-[28px] h-[28px] rounded-full bg-white flex items-center justify-center">
+                        <span class="text-[12px] font-semibold text-[#1E293B] leading-none font-inter">13</span>
+                      </div>
+                    </div>
+                    <div class="old-date-pill-inactive text-center text-[#64748B] flex flex-col items-center justify-between pt-1.5 pb-1 px-0.5 select-none">
+                      <span class="text-[10px] font-medium block text-[#64748B] leading-none">الأربعاء</span>
+                      <div class="w-[28px] h-[28px] rounded-full bg-white flex items-center justify-center">
+                        <span class="text-[12px] font-semibold text-[#1E293B] leading-none font-inter">14</span>
+                      </div>
+                    </div>
+                    <div class="old-date-pill-inactive text-center text-[#64748B] flex flex-col items-center justify-between pt-1.5 pb-1 px-0.5 select-none">
+                      <span class="text-[10px] font-medium block text-[#94A3B8] leading-none">الخميس</span>
+                      <div class="w-[28px] h-[28px] rounded-full bg-white flex items-center justify-center">
+                        <span class="text-[12px] font-semibold text-[#64748B] leading-none font-inter">15</span>
+                      </div>
+                    </div>
+                    <div class="old-date-pill-inactive text-center text-[#64748B] flex flex-col items-center justify-between pt-1.5 pb-1 px-0.5 select-none">
+                      <span class="text-[10px] font-medium block text-[#64748B] leading-none">الجمعة</span>
+                      <div class="w-[28px] h-[28px] rounded-full bg-white flex items-center justify-center">
+                        <span class="text-[12px] font-semibold text-[#1E293B] leading-none font-inter">16</span>
+                      </div>
+                    </div>
+                  </div>
+                </section>
+
+                <!-- Workout Card (Version A) -->
+                <section class="apple-card p-4.5 space-y-3">
+                  <div class="flex items-center justify-between">
+                    <span class="text-[14.5px] font-bold text-[#1C1C1E] leading-none">تمرين اليوم</span>
+                    <span class="apple-badge-tint apple-badge-tint-blue">الجلسة 1 من 4</span>
+                  </div>
+                  <div class="flex items-center justify-between gap-3">
+                    <div class="space-y-1 flex-1 min-w-0">
+                      <h2 class="text-[22px] font-black text-[#1C1C1E] font-inter tracking-tight leading-tight" dir="ltr" style="text-align: right;">Push Day</h2>
+                      <p class="text-[12.5px] font-semibold text-[#8E8E93] leading-tight">الصدر والترايسبس · عضلات الدفع</p>
+                      <div class="pt-1">
+                        <span class="text-[12.5px] font-medium text-[#8E8E93] flex items-center gap-1.5 leading-none">
+                          <span><strong class="font-black text-[#1C1C1E] font-inter text-[14px]">45</strong> <span class="text-[10.5px]">دقيقة</span></span>
+                          <span class="text-[#D1D1D6]">·</span>
+                          <span><strong class="font-black text-[#1C1C1E] font-inter text-[14px]">5</strong> <span class="text-[10.5px]">تمارين</span></span>
+                        </span>
+                      </div>
+                    </div>
+                    <div class="w-[96px] h-[86px] rounded-[18px] overflow-hidden shrink-0 bg-[#F2F2F7] flex items-center justify-center border border-slate-100">
+                      <img src="/exercises/MACHINE_CHEST_PRESS/0.jpg" alt="Push Day" onerror="this.src='/exercises/AB_WHEEL_ROLLOUT/0.jpg'" class="w-full h-full object-cover">
+                    </div>
+                  </div>
+                  <button class="w-full h-[50px] rounded-full apple-btn-primary text-white text-[15px] font-bold flex items-center justify-center gap-2">
+                    <span>ابدأ التمرين الآن</span>
+                    <svg class="w-4 h-4 rtl:rotate-180" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+                  </button>
+                </section>
+
+                <!-- Nutrition Summary (Version A - Pseudo Progress Ring) -->
+                <section class="apple-card p-4 space-y-3.5">
+                  <div class="flex items-center justify-between">
+                    <div class="flex items-center gap-2">
+                      <span class="text-[14px] font-black text-[#1C1C1E] leading-none">التغذية</span>
+                      <span class="apple-badge-tint apple-badge-tint-blue text-[9.5px]">الهدف اليومي</span>
+                    </div>
+                    <span class="apple-action-btn">عرض الوجبات</span>
+                  </div>
+                  <div class="flex items-center justify-between gap-2.5">
+                    <div class="relative w-[76px] h-[76px] shrink-0 flex items-center justify-center">
+                      <svg class="w-full h-full -rotate-90 transform" viewBox="0 0 76 76">
+                        <circle cx="38" cy="38" r="31" stroke="#E5E5EA" stroke-width="5.5" fill="none" opacity="0.6"/>
+                        <circle cx="38" cy="38" r="31" stroke="#FF2D55" stroke-width="5.5" fill="none" stroke-linecap="round" stroke-dasharray="70.7 194.8" stroke-dashoffset="-2.75" />
+                        <circle cx="38" cy="38" r="31" stroke="#007AFF" stroke-width="5.5" fill="none" stroke-linecap="round" stroke-dasharray="48.4 194.8" stroke-dashoffset="-81.92" />
+                        <circle cx="38" cy="38" r="31" stroke="#AF52DE" stroke-width="5.5" fill="none" stroke-linecap="round" stroke-dasharray="50.2 194.8" stroke-dashoffset="-138.8" />
+                      </svg>
+                      <div class="absolute inset-0 flex flex-col items-center justify-center text-center">
+                        <span class="text-[17px] font-black text-[#1C1C1E] font-inter leading-none">2,450</span>
+                        <span class="text-[9px] font-bold text-[#8E8E93] leading-none mt-1">سعرة</span>
+                      </div>
+                    </div>
+                    <div class="flex-1 grid grid-cols-4 gap-1 text-center">
+                      <div class="space-y-1">
+                        <span class="text-[10px] font-black text-[#FF2D55] font-inter block">41%</span>
+                        <span class="text-[14px] font-black text-[#1C1C1E] font-inter block">250g</span>
+                        <span class="text-[10px] font-bold text-[#8E8E93] block">كارب</span>
+                      </div>
+                      <div class="space-y-1">
+                        <span class="text-[10px] font-black text-[#007AFF] font-inter block">29%</span>
+                        <span class="text-[14px] font-black text-[#1C1C1E] font-inter block">180g</span>
+                        <span class="text-[10px] font-bold text-[#8E8E93] block">بروتين</span>
+                      </div>
+                      <div class="space-y-1">
+                        <span class="text-[10px] font-black text-[#AF52DE] font-inter block">30%</span>
+                        <span class="text-[14px] font-black text-[#1C1C1E] font-inter block">81g</span>
+                        <span class="text-[10px] font-bold text-[#8E8E93] block">دهون</span>
+                      </div>
+                      <div class="space-y-1">
+                        <span class="text-[10px] font-black text-[#00C7BE] font-inter block">ماء</span>
+                        <span class="text-[14px] font-black text-[#1C1C1E] font-inter block">3.5L</span>
+                        <span class="text-[10px] font-bold text-[#8E8E93] block">لتر</span>
+                      </div>
+                    </div>
+                  </div>
+                </section>
+
+                <!-- Check-in Strip (Version A) -->
+                <div class="apple-card px-4 py-3 flex items-center justify-between select-none">
+                  <div class="flex items-center gap-2.5 min-w-0">
+                    <div class="w-8 h-8 rounded-[11px] bg-[#34C759]/12 flex items-center justify-center shrink-0">
+                      <svg class="w-4 h-4 text-[#248A3D]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
+                    </div>
+                    <div class="min-w-0">
+                      <span class="text-[13px] font-bold text-[#1C1C1E] block leading-tight">ميعاد المتابعة الأسبوعية</span>
+                      <span class="text-[11px] text-[#8E8E93] block leading-tight mt-0.5">الجمعة 16 أكتوبر</span>
+                    </div>
+                  </div>
+                  <span class="apple-badge-tint apple-badge-tint-green">متبقي 6 أيام</span>
+                </div>
+
+                <!-- Supplements (Version A) -->
+                <section class="apple-card p-4 space-y-3">
+                  <div class="flex items-center justify-between">
+                    <span class="text-[14.5px] font-bold text-[#1C1C1E] leading-none">مكملات اليوم</span>
+                    <span class="apple-badge-tint apple-badge-tint-blue">3 مكملات</span>
+                  </div>
+                  <div class="space-y-1.5">
+                    <div class="bg-[#F2F2F7] rounded-[14px] px-3.5 py-2.5 flex items-center justify-between">
+                      <div>
+                        <span class="text-[13.5px] font-bold text-[#1C1C1E] block">كرياتين</span>
+                        <span class="text-[11px] text-[#8E8E93] block">مكيال (5 جم)</span>
+                      </div>
+                      <span class="apple-action-btn !h-6 !px-2.5 text-[10.5px] !bg-white !text-[#1C1C1E] shadow-2xs font-bold">صباحاً مع الماء</span>
+                    </div>
+                    <div class="bg-[#F2F2F7] rounded-[14px] px-3.5 py-2.5 flex items-center justify-between">
+                      <div>
+                        <span class="text-[13.5px] font-bold text-[#1C1C1E] block">أوميجا 3</span>
+                        <span class="text-[11px] text-[#8E8E93] block">كبسولتان</span>
+                      </div>
+                      <span class="apple-action-btn !h-6 !px-2.5 text-[10.5px] !bg-white !text-[#1C1C1E] shadow-2xs font-bold">مع الغداء</span>
+                    </div>
+                    <div class="bg-[#F2F2F7] rounded-[14px] px-3.5 py-2.5 flex items-center justify-between">
+                      <div>
+                        <span class="text-[13.5px] font-bold text-[#1C1C1E] block">فيتامين د3</span>
+                        <span class="text-[11px] text-[#8E8E93] block">كبسولة واحدة (5000 وحدة)</span>
+                      </div>
+                      <span class="apple-action-btn !h-6 !px-2.5 text-[10.5px] !bg-white !text-[#1C1C1E] shadow-2xs font-bold">مع الفطور</span>
+                    </div>
+                  </div>
+                </section>
+
+                <div class="h-4"></div>
+              </div>
+
+              <!-- Floating Bottom Navigation (Version A) -->
+              <div class="absolute bottom-3 inset-x-3.5 h-[60px] glass-nav-container px-1.5 py-1 flex items-center justify-between select-none z-30 pointer-events-none">
+                <div class="liquid-lens" style="width: 66px; left: calc(100% - 72px);"></div>
+                <div class="nav-tab-item text-[#007AFF]">
+                  <span class="text-[10px] font-bold">اليوم</span>
+                </div>
+                <div class="nav-tab-item text-[#8E8E93]">
+                  <span class="text-[10px] font-semibold">التمارين</span>
+                </div>
+                <div class="nav-tab-item text-[#8E8E93]">
+                  <span class="text-[10px] font-semibold">التغذية</span>
+                </div>
+                <div class="nav-tab-item text-[#8E8E93]">
+                  <span class="text-[10px] font-semibold">المتابعة</span>
+                </div>
+                <div class="nav-tab-item text-[#8E8E93]">
+                  <span class="text-[10px] font-semibold">حسابي</span>
+                </div>
+              </div>
+
+            </div>
+          </div>
+        </div>
+
+        <!-- ========================================== -->
+        <!-- VERSION B: APPLE POLISHED HOME SCREEN      -->
+        <!-- ========================================== -->
+        <div class="apple-card p-5 space-y-4 border-2 border-[#007AFF]/30">
+          <div class="flex items-center justify-between pb-3 border-b border-slate-100">
+            <div>
+              <span class="apple-badge-tint apple-badge-tint-blue">Version B (المعتمد المقترح)</span>
+              <h3 class="text-sm font-bold text-[#1C1C1E] mt-1">Apple-Level Precision Home Screen</h3>
+            </div>
+            <span class="apple-badge-tint apple-badge-tint-green">تناسق معماري وهدوء بصري</span>
+          </div>
+
+          <p class="text-xs text-[#48484A] leading-relaxed">
+            تقويم متناسق الارتفاع بهوية زرقاء نقية، كارت تمرين بأوزان بصرية متزنة وميكرو-تفاعلات مريحة، ملخص تغذية صريح للأهداف دون إيحاء استهلاك وهمي، وصفحات مكملات منظمة بهوامش قراءة هادئة.
+          </p>
+
+          <!-- Mock iPhone Device Container (Version B) -->
+          <div class="flex justify-center bg-[#EAEEF4] py-8 rounded-[32px] border border-slate-200/80 overflow-hidden">
+            <div id="device-container-b" class="w-[390px] h-[780px] bg-[#F1F4F8] rounded-[44px] shadow-[0_20px_50px_rgba(0,0,0,0.12)] border-[8px] border-[#1E293B] flex flex-col relative overflow-hidden transition-all duration-300">
+              
+              <!-- iOS Status Bar -->
+              <div class="h-10 pt-2 px-6 flex items-center justify-between text-[#1C1C1E] shrink-0 select-none text-[12px] font-bold font-inter z-20">
+                <span>9:41</span>
+                <div class="w-20 h-4 bg-black rounded-full mx-auto"></div>
+                <div class="flex items-center gap-1.5 text-[10px]">
+                  <span>5G</span>
+                  <span>100%</span>
+                </div>
+              </div>
+
+              <!-- Scrollable Content (Version B) -->
+              <div class="flex-1 overflow-y-auto no-scrollbar px-4 py-3.5 space-y-3.5 pb-32">
+
+                <!-- Header: Greeting (Apple Large Title Hierarchy) -->
+                <section class="flex items-center justify-between pt-1 select-none">
+                  <div class="space-y-0.5">
+                    <p class="text-[12px] font-bold text-[#8E8E93] tracking-normal leading-none">السبت، 10 أكتوبر 2026</p>
+                    <h1 class="text-[25px] font-black text-[#1C1C1E] tracking-tight leading-tight mt-1">صباح الخير، أحمد</h1>
+                  </div>
+                  <div class="w-10 h-10 rounded-full bg-white border border-slate-200/80 flex items-center justify-center shadow-2xs">
+                    <span class="text-xs font-black text-[#007AFF] font-inter">AZ</span>
+                  </div>
+                </section>
+
+                <!-- Date Selector: Refined Apple Fitness Style -->
+                <section class="apple-card p-3.5 space-y-2.5">
+                  <div class="flex items-center justify-between px-1">
+                    <span class="text-[14px] font-bold text-[#1C1C1E] leading-none">جدول الأسبوع</span>
+                    <span class="apple-badge-tint apple-badge-tint-gray text-[10.5px]">الأسبوع 4 · تمرين 1 من 4</span>
+                  </div>
+                  
+                  <!-- 7 Uniform Equal-Height Day Capsules (64px Exact) -->
+                  <div id="refined-date-row" class="grid grid-cols-7 gap-1.5 items-center pt-0.5 select-none">
+                    
+                    <!-- Day 0: السبت (Selected / Active) -->
+                    <button onclick="selectRefinedDate(0)" id="ref-day-0" class="refined-date-pill-active flex flex-col items-center justify-between py-2 px-0.5 cursor-pointer">
+                      <span class="text-[10px] font-bold text-white/90 leading-none">السبت</span>
+                      <span class="text-[15px] font-black text-white leading-none font-inter">10</span>
+                      <div class="w-1 h-1 rounded-full bg-white"></div>
+                    </button>
+
+                    <!-- Day 1: الأحد -->
+                    <button onclick="selectRefinedDate(1)" id="ref-day-1" class="refined-date-pill-inactive flex flex-col items-center justify-between py-2 px-0.5 cursor-pointer">
+                      <span class="text-[10px] font-semibold text-[#8E8E93] leading-none">الأحد</span>
+                      <span class="text-[14px] font-bold text-[#1C1C1E] leading-none font-inter">11</span>
+                      <div class="w-1 h-1 rounded-full bg-transparent"></div>
+                    </button>
+
+                    <!-- Day 2: الإثنين -->
+                    <button onclick="selectRefinedDate(2)" id="ref-day-2" class="refined-date-pill-inactive flex flex-col items-center justify-between py-2 px-0.5 cursor-pointer">
+                      <span class="text-[10px] font-semibold text-[#8E8E93] leading-none">الإثنين</span>
+                      <span class="text-[14px] font-bold text-[#1C1C1E] leading-none font-inter">12</span>
+                      <div class="w-1 h-1 rounded-full bg-transparent"></div>
+                    </button>
+
+                    <!-- Day 3: الثلاثاء -->
+                    <button onclick="selectRefinedDate(3)" id="ref-day-3" class="refined-date-pill-inactive flex flex-col items-center justify-between py-2 px-0.5 cursor-pointer">
+                      <span class="text-[10px] font-semibold text-[#8E8E93] leading-none">الثلاثاء</span>
+                      <span class="text-[14px] font-bold text-[#1C1C1E] leading-none font-inter">13</span>
+                      <div class="w-1 h-1 rounded-full bg-transparent"></div>
+                    </button>
+
+                    <!-- Day 4: الأربعاء -->
+                    <button onclick="selectRefinedDate(4)" id="ref-day-4" class="refined-date-pill-inactive flex flex-col items-center justify-between py-2 px-0.5 cursor-pointer">
+                      <span class="text-[10px] font-semibold text-[#8E8E93] leading-none">الأربعاء</span>
+                      <span class="text-[14px] font-bold text-[#1C1C1E] leading-none font-inter">14</span>
+                      <div class="w-1 h-1 rounded-full bg-transparent"></div>
+                    </button>
+
+                    <!-- Day 5: الخميس (راحة) -->
+                    <button onclick="selectRefinedDate(5)" id="ref-day-5" class="refined-date-pill-inactive flex flex-col items-center justify-between py-2 px-0.5 cursor-pointer opacity-75">
+                      <span class="text-[10px] font-medium text-[#C7C7CC] leading-none">الخميس</span>
+                      <span class="text-[14px] font-semibold text-[#8E8E93] leading-none font-inter">15</span>
+                      <div class="w-1 h-1 rounded-full bg-transparent"></div>
+                    </button>
+
+                    <!-- Day 6: الجمعة -->
+                    <button onclick="selectRefinedDate(6)" id="ref-day-6" class="refined-date-pill-inactive flex flex-col items-center justify-between py-2 px-0.5 cursor-pointer">
+                      <span class="text-[10px] font-semibold text-[#8E8E93] leading-none">الجمعة</span>
+                      <span class="text-[14px] font-bold text-[#1C1C1E] leading-none font-inter">16</span>
+                      <div class="w-1 h-1 rounded-full bg-transparent"></div>
+                    </button>
+
+                  </div>
+                </section>
+
+                <!-- Today's Workout Card: Apple Fitness+ Precision -->
+                <section class="apple-card p-4 space-y-3.5 transition-all">
+                  <!-- Header row -->
+                  <div class="flex items-center justify-between">
+                    <span class="text-[14px] font-bold text-[#1C1C1E] leading-none">تمرين اليوم</span>
+                    <span class="apple-badge-tint apple-badge-tint-blue text-[10.5px]">الجلسة 1 من 4</span>
+                  </div>
+
+                  <!-- Content info -->
+                  <div class="flex items-center justify-between gap-3 pt-0.5">
+                    <div class="space-y-1.5 flex-1 min-w-0">
+                      <div class="flex items-center gap-2">
+                        <h2 class="text-[20px] font-black text-[#1C1C1E] font-inter tracking-tight leading-none" dir="ltr">Push Day</h2>
+                      </div>
+                      <p class="text-[12.5px] font-medium text-[#8E8E93] leading-tight">الصدر والترايسبس · عضلات الدفع</p>
+                      
+                      <!-- Metrics Strip -->
+                      <div class="flex items-center gap-2 pt-1 text-[12px] font-medium text-[#64748B]">
+                        <span class="inline-flex items-center gap-1 font-inter">
+                          <strong class="font-extrabold text-[#1C1C1E]">45</strong>
+                          <span class="text-[#8E8E93] text-[11px] font-sans">دقيقة</span>
+                        </span>
+                        <span class="text-[#D1D1D6]">·</span>
+                        <span class="inline-flex items-center gap-1 font-inter">
+                          <strong class="font-extrabold text-[#1C1C1E]">5</strong>
+                          <span class="text-[#8E8E93] text-[11px] font-sans">تمارين</span>
+                        </span>
+                      </div>
+                    </div>
+
+                    <!-- Visual Thumbnail (Curved & Balanced) -->
+                    <div class="w-[90px] h-[80px] rounded-[16px] overflow-hidden shrink-0 bg-[#F2F2F7] border border-slate-200/60 shadow-2xs">
+                      <img src="/exercises/MACHINE_CHEST_PRESS/0.jpg" alt="Push Day" onerror="this.src='/exercises/AB_WHEEL_ROLLOUT/0.jpg'" class="w-full h-full object-cover">
+                    </div>
+                  </div>
+
+                  <!-- CTA Button -->
+                  <button class="w-full h-[46px] rounded-full apple-btn-primary text-[14px] font-bold flex items-center justify-center gap-2 cursor-pointer">
+                    <span>ابدأ التمرين الآن</span>
+                    <svg class="w-4 h-4 rtl:rotate-180" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+                  </button>
+                </section>
+
+                <!-- Nutrition Targets: Calm Macro Distribution (Zero Fake Progress Rings) -->
+                <section class="apple-card p-4 space-y-3.5">
+                  <div class="flex items-center justify-between">
+                    <div class="flex items-center gap-2">
+                      <span class="text-[14px] font-bold text-[#1C1C1E] leading-none">أهداف التغذية اليومية</span>
+                      <span class="apple-badge-tint apple-badge-tint-blue text-[10px]">مستهدف الخطة</span>
+                    </div>
+                    <span class="apple-action-btn">عرض الوجبات</span>
+                  </div>
+
+                  <!-- Total Target Calories & Macro Distribution Bar -->
+                  <div class="bg-[#F8FAFC] rounded-[16px] p-3 border border-slate-100 space-y-2.5">
+                    <div class="flex items-baseline justify-between">
+                      <span class="text-xs text-[#8E8E93] font-medium">مجموع السعرات المستهدفة</span>
+                      <div class="flex items-baseline gap-1" dir="ltr">
+                        <span class="text-[20px] font-black text-[#1C1C1E] font-inter leading-none">2,450</span>
+                        <span class="text-[11px] font-bold text-[#8E8E93] font-sans leading-none">سعرة</span>
+                      </div>
+                    </div>
+
+                    <!-- Calm Segmented Macro Proportion Bar (Apple Health Style) -->
+                    <div class="h-2 w-full bg-slate-200/60 rounded-full overflow-hidden flex" dir="ltr">
+                      <div class="bg-[#FF375F] h-full" style="width: 41%;" title="Carbs 41%"></div>
+                      <div class="bg-[#007AFF] h-full" style="width: 29%;" title="Protein 29%"></div>
+                      <div class="bg-[#AF52DE] h-full" style="width: 30%;" title="Fat 30%"></div>
+                    </div>
+                  </div>
+
+                  <!-- 4 Macro Target Metric Columns -->
+                  <div class="grid grid-cols-4 gap-2 text-center pt-0.5">
+                    <!-- Carbs -->
+                    <div class="bg-[#F8FAFC] rounded-[14px] py-2 px-1 border border-slate-100/80">
+                      <div class="flex items-center justify-center gap-1 mb-1">
+                        <div class="w-1.5 h-1.5 rounded-full bg-[#FF375F]"></div>
+                        <span class="text-[10.5px] font-bold text-[#8E8E93] leading-none">كارب</span>
+                      </div>
+                      <div class="flex items-baseline justify-center gap-0.5" dir="ltr">
+                        <span class="text-[14px] font-black text-[#1C1C1E] font-inter leading-none">250</span>
+                        <span class="text-[9.5px] font-bold text-[#8E8E93] font-inter leading-none">g</span>
+                      </div>
+                      <span class="text-[9.5px] font-bold text-[#FF375F] font-inter block mt-1">41%</span>
+                    </div>
+
+                    <!-- Protein -->
+                    <div class="bg-[#F8FAFC] rounded-[14px] py-2 px-1 border border-slate-100/80">
+                      <div class="flex items-center justify-center gap-1 mb-1">
+                        <div class="w-1.5 h-1.5 rounded-full bg-[#007AFF]"></div>
+                        <span class="text-[10.5px] font-bold text-[#8E8E93] leading-none">بروتين</span>
+                      </div>
+                      <div class="flex items-baseline justify-center gap-0.5" dir="ltr">
+                        <span class="text-[14px] font-black text-[#1C1C1E] font-inter leading-none">180</span>
+                        <span class="text-[9.5px] font-bold text-[#8E8E93] font-inter leading-none">g</span>
+                      </div>
+                      <span class="text-[9.5px] font-bold text-[#007AFF] font-inter block mt-1">29%</span>
+                    </div>
+
+                    <!-- Fat -->
+                    <div class="bg-[#F8FAFC] rounded-[14px] py-2 px-1 border border-slate-100/80">
+                      <div class="flex items-center justify-center gap-1 mb-1">
+                        <div class="w-1.5 h-1.5 rounded-full bg-[#AF52DE]"></div>
+                        <span class="text-[10.5px] font-bold text-[#8E8E93] leading-none">دهون</span>
+                      </div>
+                      <div class="flex items-baseline justify-center gap-0.5" dir="ltr">
+                        <span class="text-[14px] font-black text-[#1C1C1E] font-inter leading-none">81</span>
+                        <span class="text-[9.5px] font-bold text-[#8E8E93] font-inter leading-none">g</span>
+                      </div>
+                      <span class="text-[9.5px] font-bold text-[#AF52DE] font-inter block mt-1">30%</span>
+                    </div>
+
+                    <!-- Water -->
+                    <div class="bg-[#F8FAFC] rounded-[14px] py-2 px-1 border border-slate-100/80">
+                      <div class="flex items-center justify-center gap-1 mb-1">
+                        <div class="w-1.5 h-1.5 rounded-full bg-[#00C7BE]"></div>
+                        <span class="text-[10.5px] font-bold text-[#8E8E93] leading-none">الماء</span>
+                      </div>
+                      <div class="flex items-baseline justify-center gap-0.5" dir="ltr">
+                        <span class="text-[14px] font-black text-[#1C1C1E] font-inter leading-none">3.5</span>
+                        <span class="text-[9.5px] font-bold text-[#8E8E93] font-inter leading-none">L</span>
+                      </div>
+                      <span class="text-[9.5px] font-bold text-[#00C7BE] font-sans block mt-1">مستهدف</span>
+                    </div>
+                  </div>
+                </section>
+
+                <!-- Next Check-in Strip (Apple Schedule Pill) -->
+                <div class="apple-card px-4 py-3 flex items-center justify-between cursor-pointer hover:bg-slate-50/80 active:scale-[0.99] transition-all select-none">
+                  <div class="flex items-center gap-3 min-w-0">
+                    <div class="w-8 h-8 rounded-[10px] bg-[#34C759]/12 flex items-center justify-center shrink-0">
+                      <svg class="w-4 h-4 text-[#248A3D]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
+                    </div>
+                    <div class="min-w-0">
+                      <span class="text-[13px] font-bold text-[#1C1C1E] block leading-tight">المتابعة القادمة</span>
+                      <span class="text-[11px] text-[#8E8E93] block leading-tight mt-0.5">الجمعة، 16 أكتوبر 2026</span>
+                    </div>
+                  </div>
+                  <div class="flex items-center gap-2 shrink-0">
+                    <span class="apple-badge-tint apple-badge-tint-green text-[10.5px]">متبقي 6 أيام</span>
+                    <svg class="w-3.5 h-3.5 text-[#C7C7CC] rtl:rotate-180" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M9 18l6-6-6-6"/></svg>
+                  </div>
+                </div>
+
+                <!-- Supplements: Calm Informative List (Zero Fake Buttons) -->
+                <section class="apple-card p-4 space-y-3">
+                  <div class="flex items-center justify-between">
+                    <span class="text-[14px] font-bold text-[#1C1C1E] leading-none">مكملات اليوم الموصوفة</span>
+                    <span class="apple-badge-tint apple-badge-tint-blue text-[10.5px]">3 أصناف</span>
+                  </div>
+
+                  <div class="space-y-1.5">
+                    <!-- Creatine -->
+                    <div class="bg-[#F8FAFC] rounded-[14px] px-3.5 py-2.5 flex items-center justify-between border border-slate-100">
+                      <div>
+                        <span class="text-[13px] font-bold text-[#1C1C1E] block leading-tight">كرياتين مونوهيدرات</span>
+                        <span class="text-[11px] text-[#8E8E93] block leading-tight mt-0.5">مكيال (5 جم)</span>
+                      </div>
+                      <span class="text-[10.5px] font-bold text-[#64748B] bg-slate-200/60 px-2.5 py-1 rounded-full">صباحاً مع الماء</span>
+                    </div>
+
+                    <!-- Omega 3 -->
+                    <div class="bg-[#F8FAFC] rounded-[14px] px-3.5 py-2.5 flex items-center justify-between border border-slate-100">
+                      <div>
+                        <span class="text-[13px] font-bold text-[#1C1C1E] block leading-tight">أوميجا 3 (EPA / DHA)</span>
+                        <span class="text-[11px] text-[#8E8E93] block leading-tight mt-0.5">كبسولتان</span>
+                      </div>
+                      <span class="text-[10.5px] font-bold text-[#64748B] bg-slate-200/60 px-2.5 py-1 rounded-full">مع وجبة الغداء</span>
+                    </div>
+
+                    <!-- Vitamin D3 -->
+                    <div class="bg-[#F8FAFC] rounded-[14px] px-3.5 py-2.5 flex items-center justify-between border border-slate-100">
+                      <div>
+                        <span class="text-[13px] font-bold text-[#1C1C1E] block leading-tight">فيتامين د3</span>
+                        <span class="text-[11px] text-[#8E8E93] block leading-tight mt-0.5">كبسولة واحدة (5,000 وحدة)</span>
+                      </div>
+                      <span class="text-[10.5px] font-bold text-[#64748B] bg-slate-200/60 px-2.5 py-1 rounded-full">مع وجبة الفطور</span>
+                    </div>
+                  </div>
+                </section>
+
+                <!-- Safe Bottom Spacer to prevent Bottom Nav overlay -->
+                <div class="h-6"></div>
+              </div>
+
+              <!-- Floating Bottom Navigation (Version B) -->
+              <div class="absolute bottom-3 inset-x-3.5 h-[60px] glass-nav-container px-1.5 py-1 flex items-center justify-between select-none z-30 pointer-events-none">
+                <div class="liquid-lens" style="width: 66px; left: calc(100% - 72px);"></div>
+                
+                <!-- Tab 0: اليوم -->
+                <div class="nav-tab-item text-[#007AFF]">
+                  <svg class="w-[20px] h-[20px]" viewBox="0 0 24 24" fill="currentColor">
+                    <path fill-rule="evenodd" clip-rule="evenodd" d="M12 2.15c-.4 0-.8.18-1.08.45L2.6 10.3c-.5.48-.52 1.27-.05 1.77.48.5 1.28.52 1.78.05L5 11.5V20c0 1.1.9 2 2 2h3.5c.28 0 .5-.22.5-.5V15.5c0-.83.67-1.5 1.5-1.5s1.5.67 1.5 1.5V21.5c0 .28.22.5.5.5H18c1.1 0 2-.9 2-2v-8.5l.67.62c.5.47 1.3.45 1.78-.05.47-.5.45-1.29-.05-1.77L13.08 2.6c-.28-.27-.68-.45-1.08-.45z"/>
+                  </svg>
+                  <span class="text-[10px] font-black leading-none mt-1">اليوم</span>
+                </div>
+
+                <!-- Tab 1: التمارين -->
+                <div class="nav-tab-item text-[#8E8E93]">
+                  <svg class="w-[21px] h-[19px]" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M6 6.5C6 5.67 5.33 5 4.5 5S3 5.67 3 6.5v11C3 18.33 3.67 19 4.5 19S6 18.33 6 17.5v-1h1.5c.28 0 .5-.22.5-.5v-7c0-.28-.22-.5-.5-.5H6v-2zm12 0c0-.83.67-1.5 1.5-1.5s1.5.67 1.5 1.5v11c0 .83-.67 1.5-1.5 1.5s-1.5-.67-1.5-1.5v-1h-1.5c-.28 0-.5-.22-.5-.5v-7c0-.28.22-.5.5-.5H18v-2zm-2 4.5c0-.28-.22-.5-.5-.5h-7c-.28 0-.5.22-.5.5v2c0 .28.22.5.5.5h7c.28 0 .5-.22.5-.5v-2zM2 8.5C2 7.95 1.55 7.5 1 7.5S0 7.95 0 8.5v7c0 .55.45 1 1 1s1-.45 1-1v-7zm22 0c0-.55-.45-1-1-1s-1 .45-1 1v7c0 .55.45 1 1 1s1-.45 1-1v-7z"/>
+                  </svg>
+                  <span class="text-[10px] font-semibold leading-none mt-1">التمارين</span>
+                </div>
+
+                <!-- Tab 2: التغذية -->
+                <div class="nav-tab-item text-[#8E8E93]">
+                  <svg class="w-[20px] h-[20px]" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M7.8 4.2C8.3 2.5 10 1.2 12 1.2c1.4 0 2.6.7 3.4 1.8 1.9-.3 3.6.6 4.4 2.2.8 1.6.4 3.7-1 4.9-.5.4-1.1.7-1.7.9-1.3.4-2.7.3-3.9-.2-.6-.3-1.1-.7-1.5-1.2-.5.7-1.3 1.2-2.2 1.4-.8.2-1.6.1-2.3-.2C7.3 10.2 6.4 9 6.2 7.6c-.2-1.3.3-2.6 1.2-3.4h.4zm4.2-.8c-.8 0-1.5.5-1.8 1.2-.3.7-.2 1.5.3 2.1.5.6 1.3.9 2.1.8.8-.1 1.5-.6 1.8-1.3.3-.7.2-1.5-.3-2.1-.5-.5-1.2-.7-2.1-.7z"/>
+                    <path d="M2 12.2c0-.66.54-1.2 1.2-1.2h17.6c.66 0 1.2.54 1.2 1.2 0 5.4-4.3 9.8-9.7 9.8-5.4 0-9.7-4.4-9.7-9.8h-.6z"/>
+                  </svg>
+                  <span class="text-[10px] font-semibold leading-none mt-1">التغذية</span>
+                </div>
+
+                <!-- Tab 3: المتابعة -->
+                <div class="nav-tab-item text-[#8E8E93]">
+                  <svg class="w-[19px] h-[19px]" viewBox="0 0 24 24" fill="currentColor">
+                    <path fill-rule="evenodd" clip-rule="evenodd" d="M18.5 2H15.8C15.4.8 14.3 0 13 0h-2C9.7 0 8.6.8 8.2 2H5.5C4.1 2 3 3.1 3 4.5v16C3 21.9 4.1 23 5.5 23h13c1.4 0 2.5-1.1 2.5-2.5v-16C21 3.1 19.9 2 18.5 2zM12 1.6c.6 0 1.1.4 1.2 1H10.8c.1-.6.6-1 1.2-1zM7.5 9a1 1 0 1 0 0-2 1 1 0 0 0 0 2zm3-1.6a.8.8 0 0 0 0 1.6h6a.8.8 0 0 0 0-1.6h-6zm-3 5.6a1 1 0 1 0 0-2 1 1 0 0 0 0 2zm3-1.6a.8.8 0 0 0 0 1.6h6a.8.8 0 0 0 0-1.6h-6zm-3 5.6a1 1 0 1 0 0-2 1 1 0 0 0 0 2zm3-1.6a.8.8 0 0 0 0 1.6h4.5a.8.8 0 0 0 0-1.6h-4.5z"/>
+                  </svg>
+                  <span class="text-[10px] font-semibold leading-none mt-1">المتابعة</span>
+                </div>
+
+                <!-- Tab 4: حسابي -->
+                <div class="nav-tab-item text-[#8E8E93]">
+                  <svg class="w-[20px] h-[20px]" viewBox="0 0 24 24" fill="currentColor">
+                    <path fill-rule="evenodd" clip-rule="evenodd" d="M12 0C5.37 0 0 5.37 0 12s5.37 12 12 12 12-5.37 12-12S18.63 0 12 0zm0 5.5a3.5 3.5 0 1 0 0 7 3.5 3.5 0 0 0 0-7zm-6.2 13.3c.7-2.6 3.2-4.3 6.2-4.3s5.5 1.7 6.2 4.3C16.4 20.3 14.3 21 12 21s-4.4-.7-6.2-2.2z"/>
+                  </svg>
+                  <span class="text-[10px] font-semibold leading-none mt-1">حسابي</span>
+                </div>
+              </div>
+
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ============================================================== -->
+    <!-- 2. DETAILED COMPONENT-BY-COMPONENT SPECIFICATION MATRIX        -->
+    <!-- ============================================================== -->
+    <section class="apple-card p-6 space-y-6">
+      <div>
+        <h2 class="text-lg font-black text-[#1C1C1E]">2. مصفوفة التدقيق والتحسين الهندسي لكل مكون (Component Precision Matrix)</h2>
+        <p class="text-xs text-[#8E8E93]">تفنيد تفصيلي لما تم الإبقاء عليه وتصحيحه في كل قسم على حدة وفق توجيهات المرحلة الرابعة.</p>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+
+        <!-- Component 1: Header & Greeting -->
+        <div class="bg-[#F8FAFC] p-4 rounded-[18px] border border-slate-200/70 space-y-2.5">
+          <div class="flex items-center justify-between pb-2 border-b border-slate-200">
+            <span class="text-xs font-bold text-[#1C1C1E]">1. الرأس والتحية (Header)</span>
+            <span class="apple-badge-tint apple-badge-tint-green text-[10px]">REFINE</span>
+          </div>
+          <ul class="text-[11.5px] text-[#48484A] space-y-1.5 leading-relaxed list-disc list-inside">
+            <li><strong>المحافظة:</strong> نص التحية "صباح الخير، أحمد" والتاريخ الهجري/الميلادي.</li>
+            <li><strong>التصحيح:</strong> إزالة `uppercase` غير المناسب للنصوص العربية، ضبط وزن التاريخ إلى `font-bold` هادئ، ومحاذاة تباعد الأسطر بدقة `-0.5px`.</li>
+            <li><strong>الإضافة البصرية:</strong> شارة اختصار المشترك (AZ) بأسلوب الملف الشخصي الأصيل في iOS.</li>
+          </ul>
+        </div>
+
+        <!-- Component 2: Weekly Calendar -->
+        <div class="bg-[#F8FAFC] p-4 rounded-[18px] border border-slate-200/70 space-y-2.5">
+          <div class="flex items-center justify-between pb-2 border-b border-slate-200">
+            <span class="text-xs font-bold text-[#1C1C1E]">2. شريط الأيام (Weekly Calendar)</span>
+            <span class="apple-badge-tint apple-badge-tint-green text-[10px]">REFINE</span>
+          </div>
+          <ul class="text-[11.5px] text-[#48484A] space-y-1.5 leading-relaxed list-disc list-inside">
+            <li><strong>المحافظة:</strong> الأيام السبعة، وظيفة التحديد، ربطها بتمرين اليوم.</li>
+            <li><strong>التصحيح:</strong> التخلص من اللون البنفسجي الدخيل (`#7B4FFE`) واعتماد كبسولة زرقاء نقية (`#007AFF`) متطابقة مع باقي النظام.</li>
+            <li><strong>توحيد الارتفاع:</strong> إلغاء البروز السلبي الزائد (`margin-top: -5px; height: 74px`) وتوحيد الكبسولات بارتفاع `64px` مريح ومتزن.</li>
+          </ul>
+        </div>
+
+        <!-- Component 3: Today's Workout Card -->
+        <div class="bg-[#F8FAFC] p-4 rounded-[18px] border border-slate-200/70 space-y-2.5">
+          <div class="flex items-center justify-between pb-2 border-b border-slate-200">
+            <span class="text-xs font-bold text-[#1C1C1E]">3. كارت تمرين اليوم (Workout Hero)</span>
+            <span class="apple-badge-tint apple-badge-tint-green text-[10px]">REFINE</span>
+          </div>
+          <ul class="text-[11.5px] text-[#48484A] space-y-1.5 leading-relaxed list-disc list-inside">
+            <li><strong>المحافظة:</strong> عنوان الجلسة (Push Day)، الوصف العربي، العداد (45 دقيقة · 5 تمارين)، الصورة والزر.</li>
+            <li><strong>التصحيح:</strong> ضبط اتجاه وحجم نص `Push Day` بخط Inter بارز، تحسين تباين المدة والعدات.</li>
+            <li><strong>زر الإجراء:</strong> ارتفاع `46px` رشيق بانحناء دائري كامل مع تأثير لمس فيزيائي خفيف.</li>
+          </ul>
+        </div>
+
+        <!-- Component 4: Nutrition Summary -->
+        <div class="bg-[#F8FAFC] p-4 rounded-[18px] border border-slate-200/70 space-y-2.5">
+          <div class="flex items-center justify-between pb-2 border-b border-slate-200">
+            <span class="text-xs font-bold text-[#1C1C1E]">4. ملخص أهداف التغذية (Nutrition)</span>
+            <span class="apple-badge-tint apple-badge-tint-green text-[10px]">REFINE</span>
+          </div>
+          <ul class="text-[11.5px] text-[#48484A] space-y-1.5 leading-relaxed list-disc list-inside">
+            <li><strong>المحافظة:</strong> الأهداف المقررة (2,450 سعرة، 250g كارب، 180g بروتين، 81g دهون، 3.5L ماء).</li>
+            <li><strong>التصحيح الحاسم:</strong> التخلص من حلقة SVG المزدحمة التي كانت تشبه حلقة الإنجاز الفعلي (Progress Ring)، واستبدالها بشريط نسبي هادئ ومقروء للأهداف فقط (Macro Target Proportion Bar).</li>
+            <li><strong>الألوان:</strong> درجات الباستيل المعتمدة في Apple Health (الوردي للكارب، الأزرق للبروتين، البنفسجي للدهون، والتركواز للماء).</li>
+          </ul>
+        </div>
+
+        <!-- Component 5: Next Check-in Strip -->
+        <div class="bg-[#F8FAFC] p-4 rounded-[18px] border border-slate-200/70 space-y-2.5">
+          <div class="flex items-center justify-between pb-2 border-b border-slate-200">
+            <span class="text-xs font-bold text-[#1C1C1E]">5. كارت استحقاق المتابعة (Check-in)</span>
+            <span class="apple-badge-tint apple-badge-tint-green text-[10px]">REFINE</span>
+          </div>
+          <ul class="text-[11.5px] text-[#48484A] space-y-1.5 leading-relaxed list-disc list-inside">
+            <li><strong>المحافظة:</strong> موعد المتابعة، والوقت المتبقي الدقيق من السيرفر.</li>
+            <li><strong>التصحيح:</strong> تقليص النص إلى "المتابعة القادمة"، شارة خضراء هادئة بدون أي دوائر نقطية، والتنقل الفوري لشاشة المتابعة وسجل القياسات.</li>
+            <li><strong>منع التشتيت:</strong> عدم عرض أي نموذج أو حقول إرسال داخل كارت Home قبل استحقاق الموعد.</li>
+          </ul>
+        </div>
+
+        <!-- Component 6: Supplements -->
+        <div class="bg-[#F8FAFC] p-4 rounded-[18px] border border-slate-200/70 space-y-2.5">
+          <div class="flex items-center justify-between pb-2 border-b border-slate-200">
+            <span class="text-xs font-bold text-[#1C1C1E]">6. مكملات اليوم (Supplements)</span>
+            <span class="apple-badge-tint apple-badge-tint-green text-[10px]">REFINE</span>
+          </div>
+          <ul class="text-[11.5px] text-[#48484A] space-y-1.5 leading-relaxed list-disc list-inside">
+            <li><strong>المحافظة:</strong> المكملات الثلاثة الموصوفة من المدرب فقط (كرياتين، أوميجا 3، فيتامين د3).</li>
+            <li><strong>التصحيح:</strong> تحويل حبة التوقيت من زر أبيض وهمي إلى شارة معلوماتية هادئة (`text-[#64748B] bg-slate-200/60`).</li>
+            <li><strong>الالتزام بالقيود:</strong> صفر مربعات اختيار (No Checkboxes)، وصفر عدادات التزام (No Adherence Tracking).</li>
+          </ul>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- Footer Note -->
+    <footer class="text-center text-xs text-[#8E8E93] pb-6">
+      Karim Zakaria System Core · Phase 04 Home Polish Verification Board · Zero Emojis · Strict Apple Health Guidelines
+    </footer>
+
+  </div>
+
+  <script>
+    let activeDay = 0;
+
+    function selectRefinedDate(idx) {
+      activeDay = idx;
+      for (let i = 0; i < 7; i++) {
+        const btn = document.getElementById(`ref-day-${i}`);
+        if (!btn) continue;
+        if (i === idx) {
+          btn.className = "refined-date-pill-active flex flex-col items-center justify-between py-2 px-0.5 cursor-pointer";
+          btn.querySelector('span:first-child').className = "text-[10px] font-bold text-white/90 leading-none";
+          btn.querySelector('span:nth-child(2)').className = "text-[15px] font-black text-white leading-none font-inter";
+          btn.querySelector('div').className = "w-1 h-1 rounded-full bg-white";
+        } else {
+          btn.className = "refined-date-pill-inactive flex flex-col items-center justify-between py-2 px-0.5 cursor-pointer";
+          btn.querySelector('span:first-child').className = "text-[10px] font-semibold text-[#8E8E93] leading-none";
+          btn.querySelector('span:nth-child(2)').className = "text-[14px] font-bold text-[#1C1C1E] leading-none font-inter";
+          btn.querySelector('div').className = "w-1 h-1 rounded-full bg-transparent";
+        }
+      }
+    }
+
+    function setGlobalWidth(w) {
+      const containerA = document.getElementById('device-container-a');
+      const containerB = document.getElementById('device-container-b');
+      if (containerA) containerA.style.width = `${w}px`;
+      if (containerB) containerB.style.width = `${w}px`;
+
+      [375, 390, 430].forEach(width => {
+        const btn = document.getElementById(`btn-w-${width}`);
+        if (btn) {
+          if (width === w) {
+            btn.className = "px-3 py-1 rounded-full text-[11px] font-bold bg-white text-[#007AFF] shadow-2xs transition-all cursor-pointer";
+          } else {
+            btn.className = "px-3 py-1 rounded-full text-[11px] font-semibold text-[#8E8E93] hover:text-[#1C1C1E] transition-all cursor-pointer";
+          }
+        }
+      });
+    }
+  </script>
+</body>
+</html>

@@ -73,7 +73,7 @@ html, body, #root { height: 100%; min-height: 100%; }
 
 body {
   margin: 0;
-  font-family: 'Cairo', 'Tajawal', system-ui, -apple-system, sans-serif;
+  font-family: 'Segoe UI', 'IBM Plex Sans Arabic', 'Cairo', 'Tajawal', system-ui, -apple-system, sans-serif;
   background: var(--bg);
   color: var(--text);
   overflow: hidden;
@@ -101,7 +101,7 @@ textarea { min-height: 88px; resize: vertical; }
 .small { font-size: 12px; }
 .text-left { text-align: left; }
 .screen-center { min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 20px; }
-.field { display: flex; flex-direction: column; gap: 6px; margin-bottom: 10px; }
+.field { display: flex; flex-direction: column; gap: 4.5px; margin-bottom: 10px; }
 .field > span, .field > label { font-weight: 700; font-size: 12px; color: #334155; }
 .field-error { color: var(--danger); }
 .error-box, .warning-box, .success-box {
@@ -123,7 +123,7 @@ textarea { min-height: 88px; resize: vertical; }
   border-radius: 8px;
   cursor: pointer;
   font-weight: 700;
-  font-size: 13px;
+  font-size: 11px;
   box-shadow: 0 8px 18px rgba(15, 23, 42, 0.05);
   transition: transform 0.16s ease, box-shadow 0.16s ease, opacity 0.16s ease, background 0.16s ease;
 }
@@ -166,7 +166,7 @@ textarea { min-height: 88px; resize: vertical; }
   border-radius: 8px;
   box-shadow: var(--shadow);
   padding: 16px;
-  font-size: 13px;
+  font-size: 11px;
 }
 .section-title {
   display: flex;
@@ -193,9 +193,9 @@ textarea { min-height: 88px; resize: vertical; }
 .status-draft { background: #fef3c7; color: #92400e; }
 .status-cancelled { background: #fee2e2; color: #991b1b; }
 .actions { display: flex; gap: 8px; flex-wrap: wrap; }
-.compact-actions { gap: 6px; flex-wrap: wrap; }
+.compact-actions { gap: 4.5px; flex-wrap: wrap; }
 .page-stack { display: flex; flex-direction: column; gap: 14px; }
-.page-header-description { line-height: 1.65; font-size: 13px; }
+.page-header-description { line-height: 1.65; font-size: 11px; }
 .form-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -256,14 +256,14 @@ th {
 .inline-create-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
 .filter-chip-row { display:flex; gap:8px; flex-wrap:wrap; margin-bottom:12px; }
 .align-end-inline { align-items: flex-end; }
-.section-heading-copy { display: flex; flex-direction: column; gap: 6px; min-width: 0; }
+.section-heading-copy { display: flex; flex-direction: column; gap: 4.5px; min-width: 0; }
 .section-description { font-size: 12px; line-height: 1.5; }
 .table-caption {
   caption-side: top;
   padding: 12px 14px;
   text-align: right;
   color: var(--muted);
-  font-size: 13px;
+  font-size: 11px;
   background: #fff;
 }
 .table-wrap-compact { font-size: 14px; }
@@ -315,7 +315,7 @@ th {
 }
 .status-surface-error .status-surface-icon { background: #fee2e2; color: #b91c1c; }
 .status-surface-empty .status-surface-icon { background: #f1f5f9; color: #475569; }
-.status-surface-copy { display: flex; flex-direction: column; gap: 6px; min-width: 0; }
+.status-surface-copy { display: flex; flex-direction: column; gap: 4.5px; min-width: 0; }
 .status-surface-copy strong { font-size: 16px; }
 .status-surface-copy span { color: var(--muted); line-height: 1.8; }
 .status-surface-actions { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 6px; }
@@ -342,7 +342,7 @@ th {
 .pagination-meta, .pagination-actions { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
 .pagination-count, .pagination-page-indicator { color: var(--muted); font-size: 12px; }
 .pagination-page-size { display: inline-flex; align-items: center; gap: 8px; color: var(--muted); font-size: 12px; }
-.pagination-page-size select { width: auto; min-width: 74px; min-height: 32px; }
+.pagination-page-size select { width: auto; min-width: 74px; min-height: 24px; }
 .bulk-toolbar {
   display: flex;
   align-items: center;
@@ -468,3 +468,69 @@ h1, h2, h3, h4, h5, h6 {
 .dark .app-sidebar-logo-text {
   color: var(--sidebar-text);
 }
+
+/* =========================================================================
+   Design System Button Hierarchy
+   Tier 1: Primary Filled Button
+   Tier 2: Secondary Ghost Pill Button (.btn-ghost-pill)
+   Tier 3: Tertiary Text Button
+   ========================================================================= */
+.btn-ghost-pill {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4.5px;
+  height: 26px;
+  padding: 0 10px;
+  border-radius: 9999px;
+  font-size: 11px;
+  font-weight: 600;
+  color: #284C7C;
+  background-color: #F8FBFF;
+  border: 1px solid #D9E7F5;
+  text-decoration: none !important;
+  cursor: pointer;
+  transition: all 0.18s cubic-bezier(0.16, 1, 0.3, 1);
+  user-select: none;
+  white-space: nowrap;
+  line-height: 1;
+  position: relative;
+  -webkit-tap-highlight-color: transparent;
+  outline: none;
+  box-shadow: none;
+}
+
+.btn-ghost-pill:hover {
+  background-color: #EBF4FE;
+  border-color: #C5DBF0;
+  color: #0F172A;
+}
+
+.btn-ghost-pill:active {
+  background-color: #E1EFFD;
+  border-color: #B4D3EC;
+  color: #0F172A;
+  transform: scale(0.97);
+}
+
+.btn-ghost-pill:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(40, 76, 124, 0.15);
+}
+
+.btn-ghost-pill::after {
+  content: '';
+  position: absolute;
+  top: -5px;
+  bottom: -5px;
+  left: -4px;
+  right: -4px;
+}
+
+.btn-ghost-pill-sm {
+  height: 24px;
+  padding: 0 8px;
+  font-size: 10.5px;
+  gap: 5px;
+}
+

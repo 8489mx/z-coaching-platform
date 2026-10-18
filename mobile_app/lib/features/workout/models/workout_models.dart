@@ -3,6 +3,9 @@ class Exercise {
   final String id;
   final String exerciseCode;
   final String name;
+  final String? nameEn;
+  final String? imageUrl;
+  final String? swapName;
   final int targetSets;
   final String targetReps;
   final int? targetRir;
@@ -20,6 +23,9 @@ class Exercise {
     required this.id,
     required this.exerciseCode,
     required this.name,
+    this.nameEn,
+    this.imageUrl,
+    this.swapName,
     required this.targetSets,
     required this.targetReps,
     this.targetRir,
@@ -48,16 +54,22 @@ class Exercise {
 
     final code = json['exercise_code']?.toString() ?? json['id']?.toString() ?? 'ex_$index';
     final nameStr = json['name']?.toString() ?? json['exercise_name']?.toString() ?? json['name_ar']?.toString() ?? code;
+    final nameEnStr = json['name_en']?.toString() ?? json['exercise_name_en']?.toString();
+    final imgStr = json['image_url']?.toString() ?? json['image_stretch']?.toString() ?? json['thumbnail']?.toString();
+    final swapStr = json['swap_name']?.toString() ?? json['alternative_name']?.toString();
 
     return Exercise(
       id: code,
       exerciseCode: code,
       name: nameStr,
+      nameEn: nameEnStr,
+      imageUrl: imgStr,
+      swapName: swapStr,
       targetSets: numSets,
       targetReps: targetRepsStr,
       targetRir: targetRirVal,
       restSeconds: (json['rest_seconds'] as int?) ?? (int.tryParse(json['rest_seconds']?.toString() ?? '') ?? 90),
-      cue: json['cue']?.toString() ?? json['safety_note']?.toString() ?? 'التحكم الكامل في مسار الحركة مع النزول البطيء',
+      cue: json['cue']?.toString() ?? json['safety_note']?.toString() ?? 'التحكم الكامل في مسار الحركة مع النزول المتزن',
       videoUrl: json['video_url']?.toString(),
     );
   }

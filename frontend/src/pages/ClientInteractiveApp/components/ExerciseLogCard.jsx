@@ -93,9 +93,24 @@ export default function ExerciseLogCard({ exercise, progressionEntry, draft, onC
         <button
           type="button"
           onClick={() => onRepeatLast(code, lastEntry)}
-          style={{ alignSelf: 'flex-start', padding: '5px 10px', borderRadius: '8px', border: '1px solid #CBD5E1', background: '#FFFFFF', color: '#0F172A', fontSize: '0.68rem', fontWeight: 700, cursor: 'pointer' }}
+          style={{
+            alignSelf: 'flex-start',
+            height: '24px',
+            padding: '0 8px',
+            borderRadius: '9999px',
+            border: '1px solid #D9E7F5',
+            background: '#F8FBFF',
+            color: '#284C7C',
+            fontSize: '0.67rem',
+            fontWeight: 600,
+            cursor: 'pointer',
+            display: 'inline-flex',
+            alignItems: 'center',
+            gap: '5px',
+            transition: 'all 0.15s ease'
+          }}
         >
-          زي آخر مرة ({isBodyweight ? `${lastEntry.last_set_reps} عدات` : `${lastEntry.weight_kg} كجم × ${lastEntry.last_set_reps}`})
+          <span>زي آخر مرة ({isBodyweight ? `${lastEntry.last_set_reps} عدات` : `${lastEntry.weight_kg} كجم × ${lastEntry.last_set_reps}`})</span>
         </button>
       )}
     </div>

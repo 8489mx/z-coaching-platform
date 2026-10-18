@@ -47,9 +47,9 @@
 	<true/>
 	
 	<key>NSCameraUsageDescription</key>
-	<string>We need access to your camera to take weekly check-in photos. نحتاج صلاحية الكاميرا لالتقاط صور المتابعة الأسبوعية.</string>
+	<string>Z Coaching uses your camera to capture weekly progress photos for your coach review.</string>
 	<key>NSPhotoLibraryUsageDescription</key>
-	<string>We need access to your photo library to upload weekly check-in photos. نحتاج صلاحية معرض الصور لرفع صور المتابعة الأسبوعية.</string>
+	<string>Z Coaching accesses your photo library to select and upload weekly progress photos for your coach review.</string>
 	
 	<key>CFBundleLocalizations</key>
 	<array>

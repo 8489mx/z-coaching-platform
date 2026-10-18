@@ -1,0 +1,2615 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Z Coaching Platform — استوديو المعاينة المركزي الموحد</title>
+  <script src="https://www.gstatic.com/antigravity/web/dev/tailwindcss.min.js"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@300;400;500;600;700;800&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    * {
+      font-family: 'Segoe UI', 'IBM Plex Sans Arabic', -apple-system, BlinkMacSystemFont, 'Tahoma', sans-serif;
+      box-sizing: border-box;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    .font-inter, [dir="ltr"] {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    }
+
+    .font-mono-num {
+      font-family: 'Inter', monospace;
+    }
+
+    body {
+      background: #F8FAFC;
+      color: #0F172A;
+      margin: 0;
+      padding: 0;
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    /* Soft Custom Scrollbar */
+    ::-webkit-scrollbar {
+      width: 4px;
+      height: 4px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #F1F5F9;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #CBD5E1;
+      border-radius: 9999px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #94A3B8;
+    }
+
+    .no-scrollbar::-webkit-scrollbar {
+      display: none;
+    }
+    .no-scrollbar {
+      -ms-overflow-style: none;
+      scrollbar-width: none;
+    }
+
+    /* Zero Spinners */
+    input[type=number]::-webkit-inner-spin-button, 
+    input[type=number]::-webkit-outer-spin-button { 
+      -webkit-appearance: none; 
+      margin: 0; 
+    }
+
+    /* Good Shadow Architecture (Multi-layered ambient shadows inspired by modern luxury UI) */
+    .soft-card-shadow {
+      box-shadow: 
+        0 1px 3px 0 rgba(15, 23, 42, 0.02),
+        0 6px 16px -2px rgba(15, 23, 42, 0.03),
+        0 16px 32px -6px rgba(2, 132, 199, 0.04);
+      transition: box-shadow 0.25s ease, transform 0.25s ease;
+    }
+    .soft-card-shadow:hover {
+      box-shadow: 
+        0 2px 6px 0 rgba(15, 23, 42, 0.02),
+        0 8px 22px -3px rgba(2, 132, 199, 0.06),
+        0 20px 38px -6px rgba(15, 23, 42, 0.05);
+    }
+
+    .card-workout-ambient {
+      box-shadow: 
+        0 1px 3px 0 rgba(15, 23, 42, 0.02),
+        0 8px 20px -3px rgba(2, 132, 199, 0.09),
+        0 20px 38px -6px rgba(2, 132, 199, 0.05) !important;
+    }
+    
+    .card-nutrition-ambient {
+      box-shadow: 
+        0 1px 3px 0 rgba(15, 23, 42, 0.02),
+        0 8px 20px -3px rgba(245, 158, 11, 0.08),
+        0 20px 38px -6px rgba(245, 158, 11, 0.04) !important;
+    }
+    
+    .card-checkin-ambient {
+      box-shadow: 
+        0 1px 3px 0 rgba(15, 23, 42, 0.02),
+        0 8px 20px -3px rgba(16, 185, 129, 0.08),
+        0 20px 38px -6px rgba(16, 185, 129, 0.04) !important;
+    }
+
+    .card-supplements-ambient {
+      box-shadow: 
+        0 1px 3px 0 rgba(15, 23, 42, 0.02),
+        0 8px 20px -3px rgba(99, 102, 241, 0.08),
+        0 20px 38px -6px rgba(99, 102, 241, 0.04) !important;
+    }
+
+    .phone-shell-shadow {
+      box-shadow: 
+        0 20px 50px -12px rgba(15, 23, 42, 0.12),
+        0 10px 25px -5px rgba(2, 132, 199, 0.08);
+    }
+    
+    .sheet-shadow {
+      box-shadow: 
+        0 -4px 16px -2px rgba(15, 23, 42, 0.03),
+        0 -16px 40px -4px rgba(2, 132, 199, 0.08),
+        0 -28px 64px -8px rgba(15, 23, 42, 0.05);
+    }
+
+    /* Floating Capsule Nav Bar (Container) */
+    .glass-nav-container {
+      position: relative;
+      background: rgba(255, 255, 255, 0.94);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border-radius: 32px;
+      box-shadow: 
+        0 16px 36px -6px rgba(2, 132, 199, 0.13),
+        0 4px 14px -2px rgba(15, 23, 42, 0.04),
+        0 1px 3px 0 rgba(15, 23, 42, 0.02),
+        inset 0 1.5px 2px 0 rgba(255, 255, 255, 0.95),
+        inset 0 -1px 1.5px 0 rgba(2, 132, 199, 0.03);
+      border: 1.2px solid rgba(255, 255, 255, 0.85);
+      overflow: visible;
+      user-select: none;
+    }
+
+    /* Liquid Glass Selection Lens */
+    .liquid-lens {
+      position: absolute;
+      top: 5px;
+      height: 50px;
+      border-radius: 25px;
+      pointer-events: none;
+      z-index: 10;
+      background: radial-gradient(
+        ellipse 90% 80% at 50% 30%,
+        rgba(255, 255, 255, 0.75) 0%,
+        rgba(235, 242, 250, 0.45) 65%,
+        rgba(203, 213, 225, 0.30) 100%
+      );
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+      border: 1.3px solid rgba(255, 255, 255, 0.95);
+      box-shadow: 
+        0 12px 26px -4px rgba(2, 132, 199, 0.15),
+        0 3px 8px -2px rgba(15, 23, 42, 0.05),
+        inset 0 1.5px 2px 0 rgba(255, 255, 255, 1.0),
+        inset 0 -1.5px 2px 0 rgba(2, 132, 199, 0.05);
+      transform-origin: center center;
+      transition: background 0.22s ease, border-color 0.22s ease, box-shadow 0.22s ease;
+      will-change: transform, left, width;
+    }
+
+    /* Settled state: Calm, soft resting pill */
+    .liquid-lens.settled {
+      background: rgba(226, 232, 240, 0.72);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      border: 1px solid rgba(255, 255, 255, 0.75);
+      box-shadow: 
+        0 2px 8px -1px rgba(2, 132, 199, 0.08),
+        0 1px 3px 0 rgba(15, 23, 42, 0.03),
+        inset 0 1px 1.5px 0 rgba(255, 255, 255, 0.85);
+    }
+
+    /* Traveling glass bubble highlight sheen */
+    .liquid-lens::before {
+      content: '';
+      position: absolute;
+      top: 2px;
+      left: 15%;
+      right: 15%;
+      height: 38%;
+      border-radius: 20px;
+      background: linear-gradient(
+        to bottom,
+        rgba(255, 255, 255, 0.95) 0%,
+        rgba(255, 255, 255, 0.0) 100%
+      );
+      opacity: 1;
+      transition: opacity 0.2s ease;
+      pointer-events: none;
+    }
+
+    .liquid-lens.settled::before {
+      opacity: 0;
+    }
+
+    /* Tab item wrapper */
+    .nav-tab-item {
+      position: relative;
+      flex: 1;
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      z-index: 20;
+      cursor: pointer;
+      -webkit-tap-highlight-color: transparent;
+      outline: none;
+    }
+
+    /* Tab item content (icon + label) */
+    .tab-content-wrapper {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      transform-origin: center center;
+      transition: color 0.15s ease;
+      will-change: transform;
+    }
+
+    /* Device frame shadow */
+    .phone-shadow {
+      box-shadow: 
+        0 25px 60px -15px rgba(15, 23, 42, 0.15),
+        0 4px 20px -2px rgba(15, 23, 42, 0.06),
+        0 0 0 10px #1E293B,
+        0 0 0 12px #CBD5E1;
+    }
+
+    /* Studio Tab Switcher Buttons */
+    .studio-tab-btn {
+      transition: all 0.2s ease;
+      border: 1px solid transparent;
+    }
+    .studio-tab-btn.active {
+      background: #0284C7;
+      color: #FFFFFF;
+      box-shadow: 0 4px 12px rgba(2, 132, 199, 0.25);
+      border-color: #0284C7;
+    }
+    .studio-tab-btn:not(.active) {
+      background: #FFFFFF;
+      color: #64748B;
+      border-color: #E2E8F0;
+    }
+    .studio-tab-btn:not(.active):hover {
+      background: #F1F5F9;
+      color: #0F172A;
+      border-color: #CBD5E1;
+    }
+
+    input[type=range] {
+      accent-color: #0284C7;
+    }
+  </style>
+</head>
+<body class="p-3 md:p-6 flex flex-col items-center">
+
+  <div class="w-full max-w-7xl flex flex-col gap-5">
+
+    <!-- MASTER TOP HEADER -->
+    <header class="bg-white border border-[#E2E8F0] rounded-3xl p-4 md:p-5 shadow-sm flex flex-col lg:flex-row items-center justify-between gap-4">
+      <div>
+        <div class="flex items-center gap-2 mb-1">
+          <span class="px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-sky-50 text-sky-700 border border-sky-200">
+            Z Coaching Platform · استوديو المعاينة المركزي
+          </span>
+          <span class="px-2.5 py-0.5 rounded-full text-[11px] font-medium bg-emerald-50 text-emerald-700 border border-emerald-200">
+            مظهر مريح للعين (Light Theme)
+          </span>
+        </div>
+        <h1 class="text-xl md:text-2xl font-black text-slate-900 tracking-tight">
+          لوحة الفحص والاعتماد الموحدة — تطبيق الموبايل وشريط التنقل
+        </h1>
+        <p class="text-xs text-slate-500 mt-0.5">
+          شاشات التطبيق الكاملة الحقيقية متصلة بالكامل بشريط التنقل بالعدسة الزجاجية السائلة، مع لوحة المقارنة الثلاثية والمواصفات.
+        </p>
+      </div>
+
+      <!-- MASTER STUDIO TABS SWITCHER -->
+      <nav class="flex items-center gap-1.5 bg-slate-100/90 p-1.5 rounded-2xl border border-slate-200 shrink-0">
+        <button onclick="switchStudioView('app-simulator', this)" class="studio-tab-btn active px-3.5 py-2 rounded-xl text-xs font-bold whitespace-nowrap">
+          <span>محاكي التطبيق (العدسة الزجاجية)</span>
+        </button>
+        <button onclick="switchStudioView('benchmark-3way', this)" class="studio-tab-btn px-3.5 py-2 rounded-xl text-xs font-bold whitespace-nowrap">
+          <span>لوحة المقارنة الثلاثية</span>
+        </button>
+        <button onclick="switchStudioView('flutter-specs', this)" class="studio-tab-btn px-3.5 py-2 rounded-xl text-xs font-bold whitespace-nowrap">
+          <span>المواصفات وكود Flutter</span>
+        </button>
+      </nav>
+    </header>
+
+    <!-- ========================================================================= -->
+    <!-- VIEW 1: THE REAL APP SIMULATOR WITH LIQUID GLASS (محاكي التطبيق الحقيقي) -->
+    <!-- ========================================================================= -->
+    <section id="view-app-simulator" class="studio-view grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+      
+      <!-- LEFT: Live Interactive Mobile Device with REAL Trainee App Screens (390px iPhone Shell) -->
+      <div class="lg:col-span-6 flex justify-center">
+        <div id="device-shell" class="w-[390px] h-[820px] bg-[#FAFBFC] rounded-[48px] phone-shadow relative overflow-hidden flex flex-col border-[5px] border-slate-800">
+          
+          <!-- Top Notch / Status Bar -->
+          <div class="absolute top-0 inset-x-0 h-10 flex items-center justify-between px-7 z-50 text-[11px] font-semibold text-slate-900 select-none bg-[#FAFBFC]/90 backdrop-blur-xs">
+            <span class="font-mono-num" dir="ltr">09:41</span>
+            <div class="w-24 h-5 bg-slate-900 rounded-full flex items-center justify-center">
+              <div class="w-2.5 h-2.5 rounded-full bg-slate-800 mr-7"></div>
+            </div>
+            <div class="flex items-center gap-1.5">
+              <span class="text-[9px] font-bold text-slate-600 font-mono-num" dir="ltr">5G</span>
+              <span class="w-3.5 h-2 border border-slate-800 rounded-xs flex items-center p-0.5"><span class="w-full h-full bg-slate-900"></span></span>
+            </div>
+          </div>
+
+          <!-- Main Scrollable App Container Holding Real Trainee Screens -->
+          <main class="flex-1 overflow-y-auto pt-10 pb-20 px-0 bg-[#FAFBFC] custom-scrollbar">
+          <div id="screen-today" class="px-3.5 py-2 space-y-2.5 pb-20">
+
+            <!-- Header: Greeting, Avatar & Tier Pill -->
+            <section class="flex items-center justify-between pt-0.5">
+              <div class="flex items-center gap-2">
+                <div class="w-8 h-8 rounded-full bg-[#0284C7] text-white flex items-center justify-center text-[11px] font-bold shadow-2xs shrink-0">
+                  أ.م
+                </div>
+                <div>
+                  <p class="text-[10.5px] font-normal text-[#64748B] leading-none mb-0.5">السبت، 10 أكتوبر 2026</p>
+                  <h1 class="text-[17px] font-bold text-[#0F172A] tracking-tight leading-tight">صباح الخير، أحمد</h1>
+                </div>
+              </div>
+
+              <!-- Account / Tier Pill -->
+              <button onclick="openAccountModal()" class="h-7 px-2.5 bg-white border border-[#E7EEF3] rounded-full flex items-center gap-1.5 soft-card-shadow hover:border-[#CBD5E1] transition-all">
+                <span class="w-1.5 h-1.5 rounded-full bg-[#C4952D]"></span>
+                <span class="text-[9.5px] font-bold text-[#C4952D] tracking-wide">MAX</span>
+              </button>
+            </section>
+
+            <!-- Weekly Progress Strip (Clean Minimalist Rhythm) -->
+            <section class="bg-white border border-[#E7EEF3] rounded-[16px] p-2.5 soft-card-shadow space-y-1.5">
+              <div class="flex items-center justify-between px-0.5">
+                <span class="text-[11px] font-bold text-[#0F172A]">جدول الأسبوع</span>
+                <span class="text-[9.5px] font-semibold text-[#0284C7] bg-[#F0F7FF] border border-[#E0F2FE] px-2 py-0.5 rounded-full">الأسبوع 4 · تمرين 1 من 4</span>
+              </div>
+              <div class="flex items-center justify-between gap-1 pt-0.5">
+                <div class="flex-1 py-1 rounded-[10px] bg-[#0F172A] text-white text-center shadow-xs">
+                  <span class="text-[8px] font-medium block opacity-75">السبت</span>
+                  <span class="text-[12px] font-bold block">10</span>
+                </div>
+                <div class="flex-1 py-1 rounded-[10px] text-center text-[#64748B]">
+                  <span class="text-[8px] font-medium block">الأحد</span>
+                  <span class="text-[11.5px] font-semibold block">11</span>
+                </div>
+                <div class="flex-1 py-1 rounded-[10px] text-center text-[#64748B]">
+                  <span class="text-[8px] font-medium block">الإثنين</span>
+                  <span class="text-[11.5px] font-semibold block">12</span>
+                </div>
+                <div class="flex-1 py-1 rounded-[10px] text-center text-[#64748B]">
+                  <span class="text-[8px] font-medium block">الثلاثاء</span>
+                  <span class="text-[11.5px] font-semibold block">13</span>
+                </div>
+                <div class="flex-1 py-1 rounded-[10px] text-center text-[#64748B]">
+                  <span class="text-[8px] font-medium block">الأربعاء</span>
+                  <span class="text-[11.5px] font-semibold block">14</span>
+                </div>
+                <div class="flex-1 py-1 rounded-[10px] text-center text-[#64748B]">
+                  <span class="text-[8px] font-medium block">الخميس</span>
+                  <span class="text-[11.5px] font-semibold block">15</span>
+                </div>
+                <div class="flex-1 py-1 rounded-[10px] text-center text-[#64748B]">
+                  <span class="text-[8px] font-medium block">الجمعة</span>
+                  <span class="text-[11.5px] font-semibold block">16</span>
+                </div>
+              </div>
+            </section>
+
+            <!-- Workout Card: Luxury White with Electric Blue Accent Strip & Onyx CTA -->
+            <section class="bg-white border border-[#E7EEF3] border-r-[3.5px] border-r-[#0284C7] rounded-[16px] p-3 soft-card-shadow card-workout-ambient space-y-2 transition-all">
+              <div class="flex items-center justify-between">
+                <div class="flex items-center gap-1.5">
+                  <span class="w-1.5 h-1.5 rounded-full bg-[#0284C7]"></span>
+                  <span class="text-[10.5px] font-bold text-[#0284C7]">تمرين اليوم</span>
+                </div>
+                <span class="text-[10px] font-medium text-[#64748B] bg-[#F8FAFC] px-2 py-0.5 rounded-full border border-[#F1F5F9]">تمرين 1 من 4</span>
+              </div>
+
+              <div class="flex items-center justify-between gap-2">
+                <div>
+                  <h2 id="home-workout-title" class="text-[15px] font-bold text-[#0F172A] tracking-tight">الصدر والبايسبس</h2>
+                  <p id="home-workout-sub" class="text-[11px] font-normal text-[#64748B] mt-0.5">5 تمارين · حوالي 45 دقيقة</p>
+                </div>
+                <button onclick="switchTab(1)" class="h-8 px-3.5 bg-[#0F172A] hover:bg-[#1E293B] active:scale-[0.98] text-white rounded-full text-[11.5px] font-bold transition-all flex items-center gap-1.5 shadow-xs">
+                  <span>ابدأ التمرين</span>
+                  <svg class="w-3 h-3 rtl:rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M14 5l7 7m0 0l-7 7m7-7H3"/></svg>
+                </button>
+              </div>
+            </section>
+
+            <!-- Nutrition Targets: Coral/Amber Accent Strip + Pastel Macro Pills -->
+            <section class="bg-white border border-[#E7EEF3] border-r-[3.5px] border-r-[#F59E0B] rounded-[16px] p-3 soft-card-shadow card-nutrition-ambient space-y-2">
+              <div class="flex items-center justify-between">
+                <div class="flex items-center gap-1.5">
+                  <span class="w-1.5 h-1.5 rounded-full bg-[#F59E0B]"></span>
+                  <span class="text-[11px] font-bold text-[#0F172A]">التغذية</span>
+                </div>
+                <button onclick="switchTab(2)" class="text-[10.5px] font-semibold text-[#0284C7] hover:text-[#0369A1] transition-colors flex items-center gap-1">
+                  <span>عرض الوجبات</span>
+                  <span class="text-[9px]">&larr;</span>
+                </button>
+              </div>
+
+              <div class="flex items-center justify-between pt-0.5">
+                <div class="flex items-baseline gap-1.5">
+                  <span class="text-[20px] font-extrabold text-[#0F172A] leading-none tracking-tight">2,450</span>
+                  <span class="text-[10.5px] font-medium text-[#64748B]">سعرة</span>
+                </div>
+                <div class="flex items-center gap-1 px-2.5 py-1 bg-[#F0F9FF] border border-[#E0F2FE] text-[#0284C7] rounded-full text-[10px] font-semibold">
+                  <svg class="w-2.5 h-2.5 text-[#0284C7]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"/></svg>
+                  <span>الماء: 3.5 لتر</span>
+                </div>
+              </div>
+
+              <!-- Pastel Macro Capsules (3 Refined Boxes) -->
+              <div class="grid grid-cols-3 gap-1.5 pt-1">
+                <div class="bg-[#F0FDF4] border border-[#DCFCE7] rounded-[10px] py-1.5 px-2 text-center">
+                  <span class="text-[9.5px] font-semibold text-[#166534] block">بروتين</span>
+                  <span class="text-[12.5px] font-bold text-[#14532D] block mt-0.5">180 <span class="text-[9px] font-normal opacity-75">جم</span></span>
+                </div>
+                <div class="bg-[#EFF6FF] border border-[#DBEAFE] rounded-[10px] py-1.5 px-2 text-center">
+                  <span class="text-[9.5px] font-semibold text-[#1E40AF] block">كارب</span>
+                  <span class="text-[12.5px] font-bold text-[#1E3A8A] block mt-0.5">250 <span class="text-[9px] font-normal opacity-75">جم</span></span>
+                </div>
+                <div class="bg-[#FFFBEB] border border-[#FEF3C7] rounded-[10px] py-1.5 px-2 text-center">
+                  <span class="text-[9.5px] font-semibold text-[#92400E] block">دهون</span>
+                  <span class="text-[12.5px] font-bold text-[#78350F] block mt-0.5">81 <span class="text-[9px] font-normal opacity-75">جم</span></span>
+                </div>
+              </div>
+            </section>
+
+            <!-- Next Check-in: Emerald Accent Strip -->
+            <section class="bg-white border border-[#E7EEF3] border-r-[3.5px] border-r-emerald-500 rounded-[16px] p-3 soft-card-shadow card-checkin-ambient space-y-1.5">
+              <div class="flex items-center justify-between">
+                <div class="flex items-center gap-1.5">
+                  <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+                  <span class="text-[11px] font-bold text-[#0F172A]">ميعاد المتابعة</span>
+                </div>
+                <span class="text-[9.5px] font-bold text-emerald-700 bg-emerald-50 border border-emerald-200/60 px-2 py-0.5 rounded-full">
+                  متبقي 6 أيام
+                </span>
+              </div>
+
+              <div class="flex items-center justify-between pt-0.5">
+                <div>
+                  <span class="text-[10px] font-medium text-[#64748B] block">متابعة الأسبوع 4</span>
+                  <h4 class="text-[14px] font-bold text-[#0F172A] tracking-tight">الجمعة 16 أكتوبر 2026</h4>
+                </div>
+                <button onclick="switchTab(3)" class="text-[10.5px] font-semibold text-[#0284C7] hover:underline flex items-center gap-1">
+                  <span>المتابعات السابقة</span>
+                  <span class="text-[9px]">&larr;</span>
+                </button>
+              </div>
+              <p class="text-[10.5px] font-normal text-[#64748B] leading-relaxed pt-0.5 border-t border-[#F8FAFC]">
+                تسجيل المقاسات والصور متاح من صباح الجمعة، والنافذة بتفضل مفتوحة 72 ساعة.
+              </p>
+            </section>
+
+            <!-- Supplements: Indigo Accent Strip -->
+            <section class="bg-white border border-[#E7EEF3] border-r-[3.5px] border-r-[#6366F1] rounded-[16px] p-3 soft-card-shadow card-supplements-ambient space-y-2">
+              <div class="flex items-center justify-between">
+                <div class="flex items-center gap-1.5">
+                  <span class="w-1.5 h-1.5 rounded-full bg-[#6366F1]"></span>
+                  <span class="text-[11px] font-bold text-[#0F172A]">مكملات اليوم</span>
+                </div>
+                <span class="text-[9.5px] font-semibold text-[#4338CA] bg-[#EEF2FF] border border-[#E0E7FF] px-2 py-0.5 rounded-full">3 مكملات</span>
+              </div>
+
+              <div class="divide-y divide-[#F8FAFC]">
+                <div class="py-1.5 first:pt-0 last:pb-0 flex items-center justify-between">
+                  <span class="text-[11.5px] font-medium text-[#0F172A]">كرياتين مونوهيدرات</span>
+                  <span class="text-[10px] font-medium text-[#64748B] bg-[#F8FAFC] px-2 py-0.5 rounded-[6px]">5 جم صباحاً مع الماء</span>
+                </div>
+                <div class="py-1.5 first:pt-0 last:pb-0 flex items-center justify-between">
+                  <span class="text-[11.5px] font-medium text-[#0F172A]">أوميجا 3</span>
+                  <span class="text-[10px] font-medium text-[#64748B] bg-[#F8FAFC] px-2 py-0.5 rounded-[6px]">2 كبسولة مع الغداء</span>
+                </div>
+                <div class="py-1.5 first:pt-0 last:pb-0 flex items-center justify-between">
+                  <span class="text-[11.5px] font-medium text-[#0F172A]">فيتامين D3</span>
+                  <span class="text-[10px] font-medium text-[#64748B] bg-[#F8FAFC] px-2 py-0.5 rounded-[6px]">5000 وحدة مع الفطار</span>
+                </div>
+              </div>
+            </section>
+
+            <div class="h-1"></div>
+          </div>
+
+          <!-- ========================================== -->
+          <!-- 2. SCREEN: WORKOUT (التمارين)              -->
+          <!-- ========================================== -->
+          <div id="screen-workout" class="hidden px-3.5 py-2 space-y-2.5 pb-20">
+
+            <!-- Compact Top Header -->
+            <section class="flex items-center justify-between pt-0.5">
+              <div>
+                <h1 class="text-[17px] font-bold text-[#0F172A] tracking-tight">التمارين</h1>
+                <p class="text-[10.5px] font-normal text-[#64748B]">تمارينك</p>
+              </div>
+
+              <div class="flex items-center gap-1.5">
+                <div id="sync-badge" class="opacity-0 transition-opacity duration-300 px-2 py-0.5 bg-[#ECFDF5] border border-[#A7F3D0] rounded-full flex items-center gap-1 pointer-events-none">
+                  <span id="sync-dot" class="w-1.5 h-1.5 rounded-full bg-[#10B981]"></span>
+                  <span id="sync-text" class="text-[9px] font-semibold text-[#059669]">تم الحفظ</span>
+                </div>
+                <span class="px-2 py-0.5 bg-[#FEFCE8] text-[#C4952D] border border-[#E5B951]/40 rounded-full text-[9.5px] font-bold">
+                  MAX
+                </span>
+              </div>
+            </section>
+
+            <!-- Simple & Clean Session Selector Strip -->
+            <section class="flex gap-1.5 overflow-x-auto no-scrollbar pb-0.5">
+              <button onclick="selectSession(1)" id="session-btn-1" class="whitespace-nowrap h-7 px-3 rounded-full bg-[#0F172A] text-white text-[11px] font-semibold shadow-2xs shrink-0 transition-all flex items-center gap-1.5">
+                <span>تمرين 1</span>
+                <span class="text-[9.5px] text-slate-300 font-normal">· الصدر والبايسبس</span>
+              </button>
+              <button onclick="selectSession(2)" id="session-btn-2" class="whitespace-nowrap h-7 px-3 rounded-full bg-white border border-[#E2E8F0] text-[#64748B] hover:text-[#0F172A] text-[11px] font-medium shrink-0 transition-all flex items-center gap-1.5">
+                <span>تمرين 2</span>
+                <span class="text-[9.5px] text-[#94A3B8]">· الظهر والترايسبس</span>
+              </button>
+              <button onclick="selectSession(3)" id="session-btn-3" class="whitespace-nowrap h-7 px-3 rounded-full bg-white border border-[#E2E8F0] text-[#64748B] hover:text-[#0F172A] text-[11px] font-medium shrink-0 transition-all flex items-center gap-1.5">
+                <span>تمرين 3</span>
+                <span class="text-[9.5px] text-[#94A3B8]">· الأرجل والأكتاف</span>
+              </button>
+            </section>
+
+            <!-- Execution Sequence 1: الإحماء والتسخين -->
+            <section class="bg-white border border-[#E7EEF3] rounded-[10px] soft-card-shadow overflow-hidden">
+              <button onclick="toggleSection('warmup')" class="w-full px-2.5 py-1.5 flex items-center justify-between text-right hover:bg-[#F8FAFC] transition-colors">
+                <div class="flex items-center gap-2">
+                  <span class="w-1.5 h-1.5 rounded-full bg-[#58B4E5]"></span>
+                  <span class="text-[11.5px] font-medium text-[#0F172A]">الإحماء والتسخين</span>
+                  <span class="text-[10px] text-[#64748B]">· 5 دقائق لتجهيز الجسم والمفاصل</span>
+                </div>
+                <span id="warmup-arrow" class="text-[10px] text-[#94A3B8] transition-transform">&darr;</span>
+              </button>
+              <div id="warmup-content" class="hidden px-2.5 pb-2 text-[10.5px] font-normal text-[#64748B] leading-relaxed border-t border-[#F8FAFC]">
+                تسخين خفيف لتجهيز المفاصل وتنشيط العضلات قبل البدء، مع التركيز على حركة الكتف والذراعين.
+              </div>
+            </section>
+
+            <!-- Execution Sequence 2: تمارين المقاومة -->
+            <section class="space-y-2.5" id="workout-exercises-list">
+
+              <!-- Exercise Card 1 (Compact Premium Style) -->
+              <article class="bg-white border border-[#E7EEF3] rounded-[16px] p-3 soft-card-shadow space-y-2.5 transition-all">
+                <div class="flex items-start justify-between gap-2.5">
+                  <div class="flex items-center gap-2.5 min-w-0 flex-1">
+                    <div class="w-12 h-12 rounded-[10px] border border-[#E2E8F0] overflow-hidden bg-[#F8FAFC] shrink-0 shadow-2xs">
+                      <img src="/exercises/MACHINE_CHEST_PRESS/0.jpg" alt="Machine Chest Press" onerror="this.src='/exercises/AB_WHEEL_ROLLOUT/0.jpg'" class="w-full h-full object-cover">
+                    </div>
+                    <div class="min-w-0 flex-1">
+                      <h3 class="text-[14.5px] font-bold text-[#0F172A] leading-tight tracking-tight text-right" style="font-family: 'Inter', sans-serif;"><span dir="ltr">Machine Chest Press</span></h3>
+                      <p class="text-[11.5px] font-medium text-[#64748B] mt-0.5">دفع صدر بالجهاز</p>
+                      <p class="text-[10px] text-[#94A3B8] font-normal mt-0.5 truncate">عضلات الصدر الأوسط · ترايسبس</p>
+                    </div>
+                  </div>
+                  <button onclick="toggleDone(this)" aria-label="اكتمال التمرين" class="ex-done-btn w-8 h-8 rounded-full border border-[#E2E8F0] bg-[#F8FAFC] flex items-center justify-center text-[#94A3B8] hover:border-emerald-500 hover:text-emerald-500 hover:bg-emerald-50 active:scale-95 transition-all shrink-0">
+                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
+                  </button>
+                </div>
+
+                <!-- Prescription Row -->
+                <div class="flex items-center justify-between px-2.5 py-1.5 bg-[#F8FAFC] rounded-[10px] border border-[#F1F5F9] text-[11px]">
+                  <div class="whitespace-nowrap flex items-baseline gap-1">
+                    <span class="text-[12.5px] font-bold text-[#0F172A]">3</span>
+                    <span class="text-[10px] font-medium text-[#64748B]">مجموعات</span>
+                  </div>
+                  <span class="text-[#CBD5E1]">·</span>
+                  <div class="whitespace-nowrap flex items-baseline gap-1">
+                    <span class="text-[12.5px] font-bold text-[#0F172A]" dir="ltr">8 - 10</span>
+                    <span class="text-[10px] font-medium text-[#64748B]">عدات</span>
+                  </div>
+                  <span class="text-[#CBD5E1]">·</span>
+                  <div class="whitespace-nowrap">
+                    <span class="text-[10px] font-bold text-[#0284C7] bg-[#E0F2FE] px-1.5 py-0.5 rounded-[5px]">RIR 2</span>
+                  </div>
+                  <span class="text-[#CBD5E1]">·</span>
+                  <div class="whitespace-nowrap flex items-baseline gap-1">
+                    <span class="text-[12.5px] font-bold text-[#0F172A]">90</span>
+                    <span class="text-[10px] font-medium text-[#64748B]">ث راحة</span>
+                  </div>
+                </div>
+
+                <!-- Performance Inputs -->
+                <div class="space-y-1.5">
+                  <div class="flex items-center justify-between text-[11px]">
+                    <span class="font-semibold text-[#475569]">تسجيل آخر مجموعة</span>
+                    <button onclick="fillLastDynamic(1)" class="h-5 px-2 rounded-full bg-[#F0F7FF] hover:bg-[#E0F2FE] text-[#0284C7] text-[10px] font-semibold transition-colors flex items-center gap-1">
+                      <svg class="w-2.5 h-2.5 text-[#58B4E5]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+                      <span>زي آخر مرة</span>
+                      <span id="last-perf-1" class="text-[#64748B] text-[9.5px] font-medium">· 45 كجم × 10</span>
+                    </button>
+                  </div>
+
+                  <div class="grid grid-cols-2 gap-2">
+                    <div class="bg-[#F8FAFC] border border-[#E7EEF3] rounded-[10px] px-2 py-1 flex items-center justify-between" dir="ltr">
+                      <button onclick="stepExerciseWeight('w1', -1)" aria-label="تقليل الوزن" class="w-6 h-6 rounded-[7px] bg-white border border-[#E2E8F0] shadow-2xs flex items-center justify-center text-[13px] font-bold text-[#64748B] hover:text-[#0F172A] active:scale-95 transition-all">-</button>
+                      <div class="text-center px-1">
+                        <span id="w1" class="text-[14.5px] font-bold text-[#0F172A] block leading-none">45</span>
+                        <span id="w1-unit" class="text-[9.5px] font-medium text-[#64748B] mt-0.5 block">كجم</span>
+                      </div>
+                      <button onclick="stepExerciseWeight('w1', 1)" aria-label="زيادة الوزن" class="w-6 h-6 rounded-[7px] bg-[#58B4E5] text-white shadow-2xs flex items-center justify-center text-[13px] font-bold hover:bg-[#0284C7] active:scale-95 transition-all">+</button>
+                    </div>
+
+                    <div class="bg-[#F8FAFC] border border-[#E7EEF3] rounded-[10px] px-2 py-1 flex items-center justify-between" dir="ltr">
+                      <button onclick="stepVal('r1', -1)" aria-label="تقليل العدات" class="w-6 h-6 rounded-[7px] bg-white border border-[#E2E8F0] shadow-2xs flex items-center justify-center text-[13px] font-bold text-[#64748B] hover:text-[#0F172A] active:scale-95 transition-all">-</button>
+                      <div class="text-center px-1">
+                        <span id="r1" class="text-[14.5px] font-bold text-[#0F172A] block leading-none">10</span>
+                        <span class="text-[9.5px] font-medium text-[#64748B] mt-0.5 block">عدات</span>
+                      </div>
+                      <button onclick="stepVal('r1', 1)" aria-label="زيادة العدات" class="w-6 h-6 rounded-[7px] bg-[#58B4E5] text-white shadow-2xs flex items-center justify-center text-[13px] font-bold hover:bg-[#0284C7] active:scale-95 transition-all">+</button>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Effort Rating -->
+                <div class="grid grid-cols-3 gap-1.5">
+                  <button onclick="pickEffort(this)" class="h-7 rounded-[8px] bg-white border border-[#E2E8F0] text-[11px] font-medium text-[#64748B] hover:bg-[#F8FAFC] transition-all">صعب</button>
+                  <button onclick="pickEffort(this)" class="h-7 rounded-[8px] bg-[#58B4E5] text-white text-[11px] font-semibold shadow-2xs transition-all">مناسب</button>
+                  <button onclick="pickEffort(this)" class="h-7 rounded-[8px] bg-white border border-[#E2E8F0] text-[11px] font-medium text-[#64748B] hover:bg-[#F8FAFC] transition-all">سهل</button>
+                </div>
+
+                <!-- Technique & Video -->
+                <div class="pt-1 border-t border-[#F1F5F9]">
+                  <button onclick="toggleSection('tech1')" class="w-full flex items-center justify-between text-[#64748B] hover:text-[#0284C7] transition-colors py-0.5 text-[10.5px] font-medium">
+                    <span class="flex items-center gap-1.5">
+                      <svg class="w-3 h-3 text-[#0284C7]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                      <span>تعليمات التكنيك والفيديو</span>
+                    </span>
+                    <span id="tech1-arrow" class="text-[10px] text-[#94A3B8] transition-transform font-bold">&larr;</span>
+                  </button>
+                  <div id="tech1-content" class="hidden mt-1 p-2 bg-[#F8FAFC] rounded-[8px] text-[#475569] text-[10.5px] leading-relaxed border border-[#E7EEF3]">
+                    ثبات لوحي الكتف على المقعد، والنزول بالمقابض بمدى حركي كامل ومتحكم به حتى خط الصدر مع تجنب قفل المفاصل في الصعود.
+                  </div>
+                </div>
+              </article>
+
+              <!-- Exercise Card 2 (Incline Dumbbell Bench Press) -->
+              <article class="bg-white border border-[#E7EEF3] rounded-[16px] p-3 soft-card-shadow space-y-2.5 transition-all">
+                <div class="flex items-start justify-between gap-2.5">
+                  <div class="flex items-center gap-2.5 min-w-0 flex-1">
+                    <div class="w-12 h-12 rounded-[10px] border border-[#E2E8F0] overflow-hidden bg-[#F8FAFC] shrink-0 shadow-2xs">
+                      <img src="/exercises/INCLINE_DUMBBELL_BENCH_PRESS/0.jpg" alt="Incline Dumbbell Bench Press" onerror="this.src='/exercises/AB_WHEEL_ROLLOUT/0.jpg'" class="w-full h-full object-cover">
+                    </div>
+                    <div class="min-w-0 flex-1">
+                      <h3 class="text-[14.5px] font-bold text-[#0F172A] leading-tight tracking-tight text-right" style="font-family: 'Inter', sans-serif;"><span dir="ltr">Incline Dumbbell Bench Press</span></h3>
+                      <p class="text-[11.5px] font-medium text-[#64748B] mt-0.5">دفع بالدمبل بنش عالي</p>
+                      <p class="text-[10px] text-[#94A3B8] font-normal mt-0.5 truncate">عضلات الصدر العلوي · الكتف الأمامي</p>
+                    </div>
+                  </div>
+                  <button onclick="toggleDone(this)" aria-label="اكتمال التمرين" class="ex-done-btn w-8 h-8 rounded-full border border-[#E2E8F0] bg-[#F8FAFC] flex items-center justify-center text-[#94A3B8] hover:border-emerald-500 hover:text-emerald-500 hover:bg-emerald-50 active:scale-95 transition-all shrink-0">
+                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
+                  </button>
+                </div>
+
+                <!-- Prescription Row -->
+                <div class="flex items-center justify-between px-2.5 py-1.5 bg-[#F8FAFC] rounded-[10px] border border-[#F1F5F9] text-[11px]">
+                  <div class="whitespace-nowrap flex items-baseline gap-1">
+                    <span class="text-[12.5px] font-bold text-[#0F172A]">3</span>
+                    <span class="text-[10px] font-medium text-[#64748B]">مجموعات</span>
+                  </div>
+                  <span class="text-[#CBD5E1]">·</span>
+                  <div class="whitespace-nowrap flex items-baseline gap-1">
+                    <span class="text-[12.5px] font-bold text-[#0F172A]" dir="ltr">10 - 12</span>
+                    <span class="text-[10px] font-medium text-[#64748B]">عدات</span>
+                  </div>
+                  <span class="text-[#CBD5E1]">·</span>
+                  <div class="whitespace-nowrap">
+                    <span class="text-[10px] font-bold text-[#0284C7] bg-[#E0F2FE] px-1.5 py-0.5 rounded-[5px]">RIR 2</span>
+                  </div>
+                  <span class="text-[#CBD5E1]">·</span>
+                  <div class="whitespace-nowrap flex items-baseline gap-1">
+                    <span class="text-[12.5px] font-bold text-[#0F172A]">75</span>
+                    <span class="text-[10px] font-medium text-[#64748B]">ث راحة</span>
+                  </div>
+                </div>
+
+                <!-- Performance Inputs -->
+                <div class="space-y-1.5">
+                  <div class="flex items-center justify-between text-[11px]">
+                    <span class="font-semibold text-[#475569]">تسجيل آخر مجموعة</span>
+                    <button onclick="fillLastDynamic(2)" class="h-5 px-2 rounded-full bg-[#F0F7FF] hover:bg-[#E0F2FE] text-[#0284C7] text-[10px] font-semibold transition-colors flex items-center gap-1">
+                      <svg class="w-2.5 h-2.5 text-[#58B4E5]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+                      <span>زي آخر مرة</span>
+                      <span id="last-perf-2" class="text-[#64748B] text-[9.5px] font-medium">· 20 كجم × 10</span>
+                    </button>
+                  </div>
+
+                  <div class="grid grid-cols-2 gap-2">
+                    <div class="bg-[#F8FAFC] border border-[#E7EEF3] rounded-[10px] px-2 py-1 flex items-center justify-between" dir="ltr">
+                      <button onclick="stepExerciseWeight('w2', -1)" aria-label="تقليل الوزن" class="w-6 h-6 rounded-[7px] bg-white border border-[#E2E8F0] shadow-2xs flex items-center justify-center text-[13px] font-bold text-[#64748B] hover:text-[#0F172A] active:scale-95 transition-all">-</button>
+                      <div class="text-center px-1">
+                        <span id="w2" class="text-[14.5px] font-bold text-[#0F172A] block leading-none">20</span>
+                        <span id="w2-unit" class="text-[9.5px] font-medium text-[#64748B] mt-0.5 block">كجم</span>
+                      </div>
+                      <button onclick="stepExerciseWeight('w2', 1)" aria-label="زيادة الوزن" class="w-6 h-6 rounded-[7px] bg-[#58B4E5] text-white shadow-2xs flex items-center justify-center text-[13px] font-bold hover:bg-[#0284C7] active:scale-95 transition-all">+</button>
+                    </div>
+
+                    <div class="bg-[#F8FAFC] border border-[#E7EEF3] rounded-[10px] px-2 py-1 flex items-center justify-between" dir="ltr">
+                      <button onclick="stepVal('r2', -1)" aria-label="تقليل العدات" class="w-6 h-6 rounded-[7px] bg-white border border-[#E2E8F0] shadow-2xs flex items-center justify-center text-[13px] font-bold text-[#64748B] hover:text-[#0F172A] active:scale-95 transition-all">-</button>
+                      <div class="text-center px-1">
+                        <span id="r2" class="text-[14.5px] font-bold text-[#0F172A] block leading-none">10</span>
+                        <span class="text-[9.5px] font-medium text-[#64748B] mt-0.5 block">عدات</span>
+                      </div>
+                      <button onclick="stepVal('r2', 1)" aria-label="زيادة العدات" class="w-6 h-6 rounded-[7px] bg-[#58B4E5] text-white shadow-2xs flex items-center justify-center text-[13px] font-bold hover:bg-[#0284C7] active:scale-95 transition-all">+</button>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Effort Rating -->
+                <div class="grid grid-cols-3 gap-1.5">
+                  <button onclick="pickEffort(this)" class="h-7 rounded-[8px] bg-white border border-[#E2E8F0] text-[11px] font-medium text-[#64748B] hover:bg-[#F8FAFC] transition-all">صعب</button>
+                  <button onclick="pickEffort(this)" class="h-7 rounded-[8px] bg-[#58B4E5] text-white text-[11px] font-semibold shadow-2xs transition-all">مناسب</button>
+                  <button onclick="pickEffort(this)" class="h-7 rounded-[8px] bg-white border border-[#E2E8F0] text-[11px] font-medium text-[#64748B] hover:bg-[#F8FAFC] transition-all">سهل</button>
+                </div>
+
+                <!-- Technique & Video -->
+                <div class="pt-1 border-t border-[#F1F5F9]">
+                  <button onclick="toggleSection('tech2')" class="w-full flex items-center justify-between text-[#64748B] hover:text-[#0284C7] transition-colors py-0.5 text-[10.5px] font-medium">
+                    <span class="flex items-center gap-1.5">
+                      <svg class="w-3 h-3 text-[#0284C7]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                      <span>تعليمات التكنيك والفيديو</span>
+                    </span>
+                    <span id="tech2-arrow" class="text-[10px] text-[#94A3B8] transition-transform font-bold">&larr;</span>
+                  </button>
+                  <div id="tech2-content" class="hidden mt-1 p-2 bg-[#F8FAFC] rounded-[8px] text-[#475569] text-[10.5px] leading-relaxed border border-[#E7EEF3]">
+                    ضبط زاوية المقعد على 30 درجة، دفع الدمبل للأعلى بمسار مقوس خفيف والنزول في 2-3 ثوانٍ لتحفيز التمدد العضلي بأمان.
+                  </div>
+                </div>
+              </article>
+
+            </section>
+
+              <!-- Execution Sequence 3: الكارديو بعد التمرين (Compact) -->
+            <section class="bg-white border border-[#E7EEF3] rounded-[12px] p-2.5 soft-card-shadow space-y-1.5" id="workout-cardio-card">
+              <div class="flex items-start justify-between">
+                <div>
+                  <span class="text-[10px] font-semibold text-emerald-600 block mb-0.5">كارديو بعد التمرين</span>
+                  <h3 id="cardio-en-name" class="text-[13.5px] font-bold text-[#0F172A] leading-tight text-right" style="font-family: 'Inter', sans-serif;"><span dir="ltr">Treadmill Incline Walk</span></h3>
+                  <p id="cardio-ar-name" class="text-[11px] font-medium text-[#64748B] mt-0.5">مشي على السير بانحدار</p>
+                </div>
+                <button onclick="toggleDone(this)" aria-label="اكتمال الكارديو" class="ex-done-btn w-7 h-7 rounded-full border border-[#E2E8F0] bg-[#F8FAFC] flex items-center justify-center text-[#94A3B8] hover:border-emerald-500 hover:text-emerald-500 hover:bg-emerald-50 transition-all shrink-0">
+                  <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
+                </button>
+              </div>
+
+              <div class="flex items-center justify-between py-1 border-t border-[#F1F5F9] text-[11px]">
+                <div class="flex items-center gap-1 text-[#64748B]">
+                  <span>المدة:</span>
+                  <span id="cardio-duration" class="font-bold text-[#0F172A]">20 دقيقة</span>
+                </div>
+                <div class="flex items-center gap-1 text-[#64748B]">
+                  <span>النبض:</span>
+                  <span id="cardio-bpm" class="font-bold text-[#0284C7]" dir="ltr">125 - 135 bpm</span>
+                </div>
+              </div>
+              <p id="cardio-desc" class="text-[10.5px] text-[#64748B] leading-relaxed pt-0.5 border-t border-[#F8FAFC]">انحدار 4% إلى 6% بسرعة ثابتة مع الحفاظ على التنفس المنتظم ومعدل النبض في النطاق المستهدف.</p>
+            </section>
+
+            <!-- Execution Sequence 4: الإطالات والمرونة (Cooldown & Mobility) -->
+            <section class="bg-white border border-[#E7EEF3] rounded-[10px] soft-card-shadow overflow-hidden" id="workout-stretch-card">
+              <button onclick="toggleSection('stretching')" class="w-full px-2.5 py-2 flex items-center justify-between text-right hover:bg-[#F8FAFC] transition-colors">
+                <div class="flex items-center gap-2">
+                  <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 shrink-0"></span>
+                  <div>
+                    <div class="flex items-baseline gap-1.5">
+                      <span id="stretch-en-name" class="text-[12px] font-bold text-[#0F172A]" style="font-family: 'Inter', sans-serif;" dir="ltr">Static Stretch</span>
+                      <span id="stretch-time" class="text-[10px] text-[#64748B]">· 5 دقائق إطالة ثابتة</span>
+                    </div>
+                    <p id="stretch-ar-name" class="text-[10.5px] font-medium text-[#64748B]">إطالة العضلات</p>
+                  </div>
+                </div>
+                <span id="stretching-arrow" class="text-[10px] text-[#94A3B8] transition-transform">&darr;</span>
+              </button>
+              <div id="stretching-content" class="hidden px-2.5 pb-2 text-[10.5px] font-normal text-[#64748B] leading-relaxed border-t border-[#F8FAFC]">
+                <span id="stretch-desc">إطالات هادئة وثابتة لعضلات الصدر وأوتار البايسبس، كل وضعية 20-30 ثانية لتسريع استشفاء الألياف العضلية.</span>
+              </div>
+            </section>
+
+            <div class="h-1"></div>
+          </div>
+
+          <!-- ========================================== -->
+          <!-- 3. SCREEN: NUTRITION (التغذية)             -->
+          <!-- ========================================== -->
+          <div id="screen-nutrition" class="hidden px-3.5 py-2 space-y-2.5 pb-20">
+
+            <!-- Header -->
+            <section class="flex items-center justify-between pt-0.5">
+              <div>
+                <h1 class="text-[17px] font-bold text-[#0F172A] tracking-tight">التغذية والوجبات</h1>
+                <p class="text-[10.5px] font-normal text-[#64748B]">وجباتك اليومية ونظامك الغذائي</p>
+              </div>
+              <span class="px-2 py-0.5 bg-[#FEFCE8] text-[#C4952D] border border-[#E5B951]/50 rounded-full text-[9.5px] font-bold">
+                MAX
+              </span>
+            </section>
+
+            <!-- Macro Targets Summary -->
+            <section class="bg-white border border-[#E7EEF3] rounded-[14px] p-3 soft-card-shadow space-y-2">
+              <div class="flex items-baseline justify-between">
+                <div class="flex items-baseline gap-1.5">
+                  <span class="text-[20px] font-bold text-[#0F172A] leading-none">2,450</span>
+                  <span class="text-[11px] font-normal text-[#64748B]">سعرة حرارية</span>
+                </div>
+                <span class="text-[10px] font-semibold text-[#0284C7] bg-[#F0F7FF] px-2 py-0.5 rounded-[5px]">ماء 3.5 لتر/اليوم</span>
+              </div>
+
+              <div class="border-t border-[#F1F5F9]"></div>
+
+              <div class="grid grid-cols-3 divide-x divide-x-reverse divide-[#F1F5F9] text-center pt-0.5">
+                <div class="px-1">
+                  <div class="text-[10px] font-normal text-[#64748B] mb-0.5">البروتين</div>
+                  <div class="text-[14px] font-bold text-[#0F172A]">180 <span class="text-[9.5px] font-normal text-[#64748B]">جم</span></div>
+                </div>
+                <div class="px-1">
+                  <div class="text-[10px] font-normal text-[#64748B] mb-0.5">الكارب</div>
+                  <div class="text-[14px] font-bold text-[#0F172A]">250 <span class="text-[9.5px] font-normal text-[#64748B]">جم</span></div>
+                </div>
+                <div class="px-1">
+                  <div class="text-[10px] font-normal text-[#64748B] mb-0.5">الدهون</div>
+                  <div class="text-[14px] font-bold text-[#0F172A]">81 <span class="text-[9.5px] font-normal text-[#64748B]">جم</span></div>
+                </div>
+              </div>
+            </section>
+
+            <!-- Meals List: Clean Surfaces with Hairline Dividers -->
+            <section class="space-y-2.5">
+
+              <!-- Meal 1: الإفطار -->
+              <article class="bg-white border border-[#E7EEF3] rounded-[14px] p-3 soft-card-shadow space-y-1.5">
+                <div class="flex items-center justify-between pb-1 border-b border-[#F8FAFC]">
+                  <h3 class="text-[13.5px] font-bold text-[#0F172A]">وجبة 1: الإفطار</h3>
+                  <span class="text-[11px] font-medium text-[#64748B]">580 سعرة حرارية</span>
+                </div>
+
+                <div class="divide-y divide-[#F1F5F9]">
+                  <div class="py-1.5 first:pt-0.5 last:pb-0 flex items-center justify-between">
+                    <div>
+                      <div class="text-[12.5px] font-medium text-[#0F172A]" id="food-m1-item1">شوفان كامل الحبة</div>
+                      <div class="text-[10.5px] font-normal text-[#64748B]">80 جم · 300 سعرة · 55g كارب</div>
+                    </div>
+                    <button onclick="openSwapModal('شوفان كامل الحبة', 'food-m1-item1', 'carb')" class="h-6 px-2 bg-[#F8FAFC] hover:bg-[#F1F5F9] border border-[#E2E8F0] text-[#0284C7] rounded-[6px] text-[10.5px] font-semibold transition-all">
+                      تبديل
+                    </button>
+                  </div>
+
+                  <div class="py-1.5 first:pt-0.5 last:pb-0 flex items-center justify-between">
+                    <div>
+                      <div class="text-[12.5px] font-medium text-[#0F172A]" id="food-m1-item2">بياض بيض + بيضة كاملة</div>
+                      <div class="text-[10.5px] font-normal text-[#64748B]">200 جم · 180 سعرة · 26g بروتين</div>
+                    </div>
+                    <button onclick="openSwapModal('بياض بيض', 'food-m1-item2', 'protein')" class="h-6 px-2 bg-[#F8FAFC] hover:bg-[#F1F5F9] border border-[#E2E8F0] text-[#0284C7] rounded-[6px] text-[10.5px] font-semibold transition-all">
+                      تبديل
+                    </button>
+                  </div>
+                </div>
+              </article>
+
+              <!-- Meal 2: الغداء الرئيسية -->
+              <article class="bg-white border border-[#E7EEF3] rounded-[14px] p-3 soft-card-shadow space-y-1.5">
+                <div class="flex items-center justify-between pb-1 border-b border-[#F8FAFC]">
+                  <h3 class="text-[13.5px] font-bold text-[#0F172A]">وجبة 2: الغداء الرئيسية</h3>
+                  <span class="text-[11px] font-medium text-[#64748B]">750 سعرة حرارية</span>
+                </div>
+
+                <div class="divide-y divide-[#F1F5F9]">
+                  <div class="py-1.5 first:pt-0.5 last:pb-0 flex items-center justify-between">
+                    <div>
+                      <div class="text-[12.5px] font-medium text-[#0F172A]" id="food-m2-item1">صدور دجاج مشوية</div>
+                      <div class="text-[10.5px] font-normal text-[#64748B]">200 جم · 230 سعرة · 46g بروتين</div>
+                    </div>
+                    <button onclick="openSwapModal('صدور دجاج مشوية', 'food-m2-item1', 'protein')" class="h-6 px-2 bg-[#F8FAFC] hover:bg-[#F1F5F9] border border-[#E2E8F0] text-[#0284C7] rounded-[6px] text-[10.5px] font-semibold transition-all">
+                      تبديل
+                    </button>
+                  </div>
+
+                  <div class="py-1.5 first:pt-0.5 last:pb-0 flex items-center justify-between">
+                    <div>
+                      <div class="text-[12.5px] font-medium text-[#0F172A]" id="food-m2-item2">أرز بسمتي مسلوق</div>
+                      <div class="text-[10.5px] font-normal text-[#64748B]">250 جم · 320 سعرة · 70g كارب</div>
+                    </div>
+                    <button onclick="openSwapModal('أرز بسمتي مسلوق', 'food-m2-item2', 'carb')" class="h-6 px-2 bg-[#F8FAFC] hover:bg-[#F1F5F9] border border-[#E2E8F0] text-[#0284C7] rounded-[6px] text-[10.5px] font-semibold transition-all">
+                      تبديل
+                    </button>
+                  </div>
+
+                  <div class="py-1.5 first:pt-0.5 last:pb-0 flex items-center justify-between">
+                    <div>
+                      <div class="text-[12.5px] font-medium text-[#0F172A]">زيت زيتون بكر وخضار مشكل</div>
+                      <div class="text-[10.5px] font-normal text-[#64748B]">10 جم زيت + 150 جم خضار سوتيه</div>
+                    </div>
+                    <span class="text-[10px] font-normal text-[#94A3B8]">أساسي</span>
+                  </div>
+                </div>
+              </article>
+
+              <!-- Meal 3: وجبة قبل التمرين -->
+              <article class="bg-white border border-[#E7EEF3] rounded-[14px] p-3 soft-card-shadow space-y-1">
+                <div class="flex items-center justify-between pb-1 border-b border-[#F8FAFC]">
+                  <h3 class="text-[13.5px] font-bold text-[#0F172A]">وجبة 3: سناك قبل التمرين</h3>
+                  <span class="text-[11px] font-medium text-[#64748B]">320 سعرة حرارية</span>
+                </div>
+
+                <div class="pt-0.5 text-[12px] text-[#475569] leading-relaxed">
+                  <span class="font-medium text-[#0F172A]">توست بني وزبدة فول سوداني وموز</span>
+                  <p class="text-[10.5px] font-normal text-[#64748B] mt-0.5">2 شريحة توست + 20 جم زبدة فول سوداني + موزة صغيرة</p>
+                </div>
+              </article>
+
+              <!-- Meal 4: العشاء -->
+              <article class="bg-white border border-[#E7EEF3] rounded-[14px] p-3 soft-card-shadow space-y-1.5">
+                <div class="flex items-center justify-between pb-1 border-b border-[#F8FAFC]">
+                  <h3 class="text-[13.5px] font-bold text-[#0F172A]">وجبة 4: العشاء</h3>
+                  <span class="text-[11px] font-medium text-[#64748B]">450 سعرة حرارية</span>
+                </div>
+
+                <div class="py-1 flex items-center justify-between">
+                  <div>
+                    <div class="text-[12.5px] font-medium text-[#0F172A]" id="food-m4-item1">جبن قريش طبيعي وخضار</div>
+                    <div class="text-[10.5px] font-normal text-[#64748B]">200 جم · 200 سعرة · 30g بروتين</div>
+                  </div>
+                  <button onclick="openSwapModal('جبن قريش طبيعي', 'food-m4-item1', 'protein')" class="h-6 px-2 bg-[#F8FAFC] hover:bg-[#F1F5F9] border border-[#E2E8F0] text-[#0284C7] rounded-[6px] text-[10.5px] font-semibold transition-all">
+                    تبديل
+                  </button>
+                </div>
+              </article>
+
+            </section>
+
+            <div class="h-1"></div>
+          </div>
+
+          <!-- ========================================== -->
+          <!-- 4. SCREEN: CHECK-IN (المتابعة)             -->
+          <!-- ========================================== -->
+          <div id="screen-checkin" class="hidden px-3.5 py-2 space-y-2.5 pb-20">
+
+            <!-- Header -->
+            <section class="flex items-center justify-between pt-0.5">
+              <div>
+                <h1 class="text-[17px] font-bold text-[#0F172A] tracking-tight">المتابعة</h1>
+                <p class="text-[10.5px] font-normal text-[#64748B]">متابعة وزنك ومقاساتك مع الكوتش</p>
+              </div>
+              <span class="px-2 py-0.5 bg-[#FEFCE8] text-[#C4952D] border border-[#E5B951]/50 rounded-full text-[9.5px] font-bold">
+                MAX
+              </span>
+            </section>
+
+            <!-- View Switcher -->
+            <section class="bg-white border border-[#E2E8F0] p-0.5 rounded-[10px] flex items-center gap-1 soft-card-shadow">
+              <button onclick="toggleCheckinView('form')" id="chk-view-form" class="flex-1 py-1.5 rounded-[8px] text-[11.5px] font-semibold bg-[#58B4E5] text-white shadow-2xs transition-all text-center">
+                تسجيل المتابعة
+              </button>
+              <button onclick="toggleCheckinView('history')" id="chk-view-history" class="flex-1 py-1.5 rounded-[8px] text-[11.5px] font-medium text-[#64748B] hover:text-[#0F172A] transition-all text-center">
+                المتابعات السابقة
+              </button>
+            </section>
+
+            <!-- VIEW A: Form Mode -->
+            <div id="checkin-mode-form" class="space-y-2.5">
+
+              <!-- Status Card -->
+              <div class="bg-white border border-[#E7EEF3] rounded-[14px] p-3 soft-card-shadow space-y-1">
+                <div class="flex items-center justify-between">
+                  <span class="text-[11px] font-semibold text-[#0284C7]">ميعاد المتابعة</span>
+                  <span class="text-[10px] font-semibold text-[#C4952D] bg-[#FEFCE8] px-2 py-0.5 rounded-full border border-[#E5B951]/40">
+                    متبقي 6 أيام
+                  </span>
+                </div>
+                <div>
+                  <h3 class="text-[15px] font-bold text-[#0F172A]">الجمعة 16 أكتوبر 2026</h3>
+                  <p class="text-[10.5px] font-normal text-[#64748B] mt-0.5">
+                    النافذة بتفضل مفتوحة 72 ساعة لتسجيل المتابعة الأسبوعية.
+                  </p>
+                </div>
+              </div>
+
+              <!-- Biometrics Inputs -->
+              <div class="bg-white border border-[#E7EEF3] rounded-[14px] p-3 soft-card-shadow space-y-2">
+                <h3 class="text-[12px] font-bold text-[#0F172A]">مقاسات اليوم (الصبح على الريق)</h3>
+
+                <div class="grid grid-cols-2 gap-2">
+                  <div class="space-y-1">
+                    <span id="chk-weight-label" class="text-[10px] font-normal text-[#64748B] block text-center">الوزن (كجم)</span>
+                    <div class="h-9 bg-[#F8FAFC] border border-[#E2E8F0] rounded-[8px] flex items-center justify-between px-2" dir="ltr">
+                      <button onclick="stepBodyWeight('chk-weight', -1)" class="w-6 h-6 flex items-center justify-center text-xs font-bold text-[#64748B] hover:text-[#0F172A]">-</button>
+                      <span id="chk-weight" class="text-[13.5px] font-bold text-[#0F172A]">82.5</span>
+                      <button onclick="stepBodyWeight('chk-weight', 1)" class="w-6 h-6 flex items-center justify-center text-xs font-bold text-[#0284C7]">+</button>
+                    </div>
+                  </div>
+
+                  <div class="space-y-1">
+                    <span id="chk-waist-label" class="text-[10px] font-normal text-[#64748B] block text-center">محيط الخصر (سم)</span>
+                    <div class="h-9 bg-[#F8FAFC] border border-[#E2E8F0] rounded-[8px] flex items-center justify-between px-2" dir="ltr">
+                      <button onclick="stepWaist('chk-waist', -1)" class="w-6 h-6 flex items-center justify-center text-xs font-bold text-[#64748B] hover:text-[#0F172A]">-</button>
+                      <span id="chk-waist" class="text-[13.5px] font-bold text-[#0F172A]">84.0</span>
+                      <button onclick="stepWaist('chk-waist', 1)" class="w-6 h-6 flex items-center justify-center text-xs font-bold text-[#0284C7]">+</button>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Sleep Hours -->
+                <div class="space-y-1 pt-0.5">
+                  <span class="text-[11px] font-medium text-[#0F172A]">متوسط ساعات النوم اليومية:</span>
+                  <div class="grid grid-cols-4 gap-1">
+                    <button onclick="pickSleep(this)" class="h-7 rounded-[7px] bg-white border border-[#E2E8F0] text-[10.5px] font-medium text-[#64748B]">6 س</button>
+                    <button onclick="pickSleep(this)" class="h-7 rounded-[7px] bg-[#F0F7FF] border border-[#58B4E5] text-[10.5px] font-semibold text-[#0284C7]">7 س</button>
+                    <button onclick="pickSleep(this)" class="h-7 rounded-[7px] bg-white border border-[#E2E8F0] text-[10.5px] font-medium text-[#64748B]">8 س</button>
+                    <button onclick="pickSleep(this)" class="h-7 rounded-[7px] bg-white border border-[#E2E8F0] text-[10.5px] font-medium text-[#64748B]">9 س</button>
+                  </div>
+                </div>
+
+                <!-- Adherence -->
+                <div class="space-y-1 pt-0.5">
+                  <span class="text-[11px] font-medium text-[#0F172A]">نسبة الالتزام بالخطة:</span>
+                  <div class="grid grid-cols-3 gap-1">
+                    <button onclick="pickAdherence(this)" class="h-7 rounded-[7px] bg-[#F0F7FF] border border-[#58B4E5] text-[10.5px] font-semibold text-[#0284C7]">100% ممتاز</button>
+                    <button onclick="pickAdherence(this)" class="h-7 rounded-[7px] bg-white border border-[#E2E8F0] text-[10.5px] font-medium text-[#64748B]">90% جيد</button>
+                    <button onclick="pickAdherence(this)" class="h-7 rounded-[7px] bg-white border border-[#E2E8F0] text-[10.5px] font-medium text-[#64748B]">80% متوسط</button>
+                  </div>
+                </div>
+              </div>
+
+              <!-- 3 Photo Slots -->
+              <div class="bg-white border border-[#E7EEF3] rounded-[14px] p-3 soft-card-shadow space-y-1.5">
+                <h3 class="text-[12px] font-bold text-[#0F172A]">صور التطور (3 زوايا)</h3>
+                <div class="grid grid-cols-3 gap-1.5 text-center">
+                  <button onclick="togglePhotoUpload(this)" class="p-2 bg-[#F8FAFC] border border-dashed border-[#CBD5E1] rounded-[10px] flex flex-col items-center justify-center gap-0.5 hover:border-[#58B4E5] transition-all">
+                    <svg class="w-4 h-4 text-[#94A3B8]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+                    <span class="text-[10px] font-semibold text-[#0F172A]">أمامي</span>
+                    <span class="photo-status text-[9px] text-[#94A3B8]">اضغط للرفع</span>
+                  </button>
+                  <button onclick="togglePhotoUpload(this)" class="p-2 bg-[#F8FAFC] border border-dashed border-[#CBD5E1] rounded-[10px] flex flex-col items-center justify-center gap-0.5 hover:border-[#58B4E5] transition-all">
+                    <svg class="w-4 h-4 text-[#94A3B8]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+                    <span class="text-[10px] font-semibold text-[#0F172A]">جانبي</span>
+                    <span class="photo-status text-[9px] text-[#94A3B8]">اضغط للرفع</span>
+                  </button>
+                  <button onclick="togglePhotoUpload(this)" class="p-2 bg-[#F8FAFC] border border-dashed border-[#CBD5E1] rounded-[10px] flex flex-col items-center justify-center gap-0.5 hover:border-[#58B4E5] transition-all">
+                    <svg class="w-4 h-4 text-[#94A3B8]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+                    <span class="text-[10px] font-semibold text-[#0F172A]">خلفي</span>
+                    <span class="photo-status text-[9px] text-[#94A3B8]">اضغط للرفع</span>
+                  </button>
+                </div>
+              </div>
+
+              <!-- Submit Button -->
+              <button onclick="submitCheckinForm()" class="w-full h-10 bg-[#58B4E5] hover:bg-[#0284C7] active:scale-[0.99] text-white rounded-[10px] text-[12.5px] font-semibold transition-all shadow-2xs">
+                إرسال المتابعة للمدرب
+              </button>
+            </div>
+
+            <!-- VIEW B: History Mode -->
+            <div id="checkin-mode-history" class="hidden space-y-2.5">
+              <div class="bg-white border border-[#E7EEF3] rounded-[14px] p-3 soft-card-shadow space-y-1.5">
+                <span class="text-[11px] font-semibold text-emerald-600">ملخص التطور التراكمي</span>
+                <div class="grid grid-cols-2 divide-x divide-x-reverse divide-[#F1F5F9] pt-0.5">
+                  <div class="px-1.5">
+                    <span class="text-[10.5px] font-normal text-[#64748B] block">نزول الوزن الكلي</span>
+                    <span class="text-[18px] font-bold text-[#0F172A]"><span id="prog-weight-loss">-3.5</span> <span id="prog-weight-unit" class="text-[11px] font-normal text-[#64748B]">كجم</span></span>
+                  </div>
+                  <div class="px-1.5">
+                    <span class="text-[10.5px] font-normal text-[#64748B] block">نزول محيط الخصر</span>
+                    <span class="text-[18px] font-bold text-[#0F172A]"><span id="prog-waist-loss">-4.0</span> <span id="prog-waist-unit" class="text-[11px] font-normal text-[#64748B]">سم</span></span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Coach Feedback -->
+              <div class="bg-white border border-[#E7EEF3] rounded-[14px] p-3 soft-card-shadow space-y-1">
+                <div class="flex items-center justify-between pb-1 border-b border-[#F8FAFC]">
+                  <span class="text-[12.5px] font-bold text-[#0F172A]">ملاحظات الكوتش كريم زكريا:</span>
+                  <span class="text-[10px] text-[#0284C7] bg-[#F0F7FF] px-2 py-0.5 rounded-full font-semibold">الأسبوع 3</span>
+                </div>
+                <p class="text-[11.5px] font-normal text-[#475569] leading-relaxed">
+                  تطور ممتاز يا أحمد، التزامك بالأوزان والعدات رائع والخصر في نزول مستمر. مستمرون بنفس العجز للأسبوع القادم مع التركيز على جودة النوم.
+                </p>
+              </div>
+
+              <!-- History Logs -->
+              <div class="space-y-1.5">
+                <div class="p-2.5 bg-white border border-[#E7EEF3] rounded-[10px] flex items-center justify-between text-[11.5px]">
+                  <div>
+                    <span class="font-semibold text-[#0F172A]">الأسبوع 3 (الجمعة 9 أكتوبر)</span>
+                    <span id="history-log-1" class="text-[10px] font-normal text-[#64748B] block mt-0.5">الوزن: 83.0 كجم · الخصر: 84.5 سم</span>
+                  </div>
+                  <span class="text-[10px] font-semibold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full">معتمدة</span>
+                </div>
+                <div class="p-2.5 bg-white border border-[#E7EEF3] rounded-[10px] flex items-center justify-between text-[11.5px]">
+                  <div>
+                    <span class="font-semibold text-[#0F172A]">الأسبوع 2 (الجمعة 2 أكتوبر)</span>
+                    <span id="history-log-2" class="text-[10px] font-normal text-[#64748B] block mt-0.5">الوزن: 83.8 كجم · الخصر: 85.5 سم</span>
+                  </div>
+                  <span class="text-[10px] font-semibold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full">معتمدة</span>
+                </div>
+                <div class="p-2.5 bg-white border border-[#E7EEF3] rounded-[10px] flex items-center justify-between text-[11.5px]">
+                  <div>
+                    <span class="font-semibold text-[#0F172A]">الأسبوع 1 (البداية 25 سبتمبر)</span>
+                    <span id="history-log-3" class="text-[10px] font-normal text-[#64748B] block mt-0.5">الوزن: 86.0 كجم · الخصر: 88.0 سم</span>
+                  </div>
+                  <span class="text-[10px] font-semibold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full">معتمدة</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="h-1"></div>
+          </div>
+
+          </main>
+
+          <!-- THE LIQUID GLASS FLOATING BOTTOM NAVIGATION BAR (CORE) -->
+          <nav id="liquid-glass-nav" class="glass-nav-container absolute bottom-2.5 inset-x-3.5 h-[60px] px-1.5 py-1.5 flex items-center justify-between z-30 select-none">
+            <!-- The Animated Liquid Glass Selection Lens -->
+            <div id="liquid-lens" class="liquid-lens settled"></div>
+
+            <!-- Tab 0: اليوم (Index 0 in RTL = Rightmost) -->
+            <div class="nav-tab-item" onclick="switchTab(0)" data-index="0" aria-label="اليوم">
+              <div id="tab-content-0" class="tab-content-wrapper text-sky-600">
+                <svg class="w-5 h-5 mb-0.5" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/>
+                </svg>
+                <span class="nav-tab-label text-[10px] font-bold tracking-tight leading-none">اليوم</span>
+              </div>
+            </div>
+
+            <!-- Tab 1: التمارين (Index 1) -->
+            <div class="nav-tab-item" onclick="switchTab(1)" data-index="1" aria-label="التمارين">
+              <div id="tab-content-1" class="tab-content-wrapper text-slate-800">
+                <svg class="w-5 h-5 mb-0.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M6 5v14M18 5v14M2 9v6M22 9v6M6 12h12"/>
+                </svg>
+                <span class="nav-tab-label text-[10px] font-semibold text-slate-500 tracking-tight leading-none">التمارين</span>
+              </div>
+            </div>
+
+            <!-- Tab 2: التغذية (Index 2) -->
+            <div class="nav-tab-item" onclick="switchTab(2)" data-index="2" aria-label="التغذية">
+              <div id="tab-content-2" class="tab-content-wrapper text-slate-800">
+                <svg class="w-5 h-5 mb-0.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M18 2v20M21 2v6a3 3 0 0 1-3 3M18 11v11M5 2v7a3 3 0 0 0 6 0V2M8 12v10"/>
+                </svg>
+                <span class="nav-tab-label text-[10px] font-semibold text-slate-500 tracking-tight leading-none">التغذية</span>
+              </div>
+            </div>
+
+            <!-- Tab 3: المتابعة (Index 3 in RTL = Leftmost) -->
+            <div class="nav-tab-item" onclick="switchTab(3)" data-index="3" aria-label="المتابعة">
+              <div id="tab-content-3" class="tab-content-wrapper text-slate-800">
+                <svg class="w-5 h-5 mb-0.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2"/>
+                  <rect x="9" y="3" width="6" height="4" rx="2"/>
+                  <path d="m9 14 2 2 4-4"/>
+                </svg>
+                <span class="nav-tab-label text-[10px] font-semibold text-slate-500 tracking-tight leading-none">المتابعة</span>
+              </div>
+            </div>
+
+          </nav>
+
+          <!-- Home Indicator -->
+          <div class="absolute bottom-1 inset-x-0 h-2 flex items-center justify-center pointer-events-none z-40">
+            <div class="w-32 h-1 bg-slate-900/25 rounded-full"></div>
+          </div>
+
+          <!-- Modals (Food Swap, Account, Units) -->
+        <div id="modal-swap-sheet" class="hidden absolute inset-0 bg-slate-900/40 z-30 flex flex-col justify-end transition-all">
+          <div class="bg-white rounded-t-[24px] p-4 sheet-shadow space-y-3 max-h-[85%] overflow-y-auto">
+            <div class="w-8 h-1 bg-slate-200 rounded-full mx-auto"></div>
+            
+            <div class="flex items-center justify-between">
+              <div>
+                <h3 class="text-[15px] font-bold text-[#0F172A]">تبديل الصنف الغذائي</h3>
+                <p class="text-[11px] font-normal text-[#64748B]">بدائل متكافئة لليوم فقط</p>
+              </div>
+              <button onclick="closeSwapModal()" class="w-7 h-7 rounded-full bg-[#F8FAFC] text-[#64748B] flex items-center justify-center text-sm font-bold">
+                &times;
+              </button>
+            </div>
+
+            <div class="p-2.5 bg-[#F8FAFC] rounded-[12px] border border-[#E2E8F0]">
+              <span class="text-[10px] text-[#64748B] block">الصنف الحالي:</span>
+              <span id="swap-current-label" class="text-[13px] font-semibold text-[#0F172A]">صدور دجاج مشوية</span>
+            </div>
+
+            <div class="space-y-1.5" id="swap-options-list"></div>
+
+            <button onclick="confirmSwapSelection()" class="w-full h-10 bg-[#58B4E5] hover:bg-[#0284C7] text-white rounded-[10px] text-[13px] font-semibold transition-all shadow-xs">
+              اعتماد التبديل لليوم
+            </button>
+          </div>
+        </div>
+
+        <!-- ========================================== -->
+        <!-- MODAL: ACCOUNT PROFILE                     -->
+        <!-- ========================================== -->
+        <div id="modal-account" class="hidden absolute inset-0 bg-slate-900/40 z-30 flex flex-col justify-end transition-all">
+          <div class="bg-white rounded-t-[24px] p-4 sheet-shadow space-y-3">
+            <div class="w-8 h-1 bg-slate-200 rounded-full mx-auto"></div>
+
+            <div class="flex items-center justify-between pb-1.5 border-b border-[#F8FAFC]">
+              <h3 class="text-[15px] font-bold text-[#0F172A]">بيانات الحساب والاشتراك</h3>
+              <button onclick="closeAccountModal()" class="w-7 h-7 rounded-full bg-[#F8FAFC] text-[#64748B] flex items-center justify-center text-sm font-bold">
+                &times;
+              </button>
+            </div>
+
+            <div class="flex items-center gap-2.5 p-2.5 bg-[#F8FAFC] rounded-[14px]">
+              <div class="w-10 h-10 rounded-full bg-[#0284C7] text-white font-bold flex items-center justify-center text-xs">
+                أ.م
+              </div>
+              <div>
+                <h4 class="text-[14px] font-bold text-[#0F172A]">أحمد ممدوح</h4>
+                <p class="text-[11px] text-[#64748B]">كود العميل: <span class="font-mono text-[#0284C7] font-bold">KZ-2049</span></p>
+              </div>
+            </div>
+
+            <div class="space-y-1.5 text-[12px]">
+              <div class="flex justify-between p-2.5 rounded-[10px] bg-white border border-[#E7EEF3]">
+                <span class="text-[#64748B]">باقة الاشتراك:</span>
+                <span class="font-bold text-[#C4952D]">باقة التدريب الخاصة MAX</span>
+              </div>
+              <div class="flex justify-between p-2.5 rounded-[10px] bg-white border border-[#E7EEF3]">
+                <span class="text-[#64748B]">تاريخ التجديد القادم:</span>
+                <span class="font-semibold text-[#0F172A]">1 نوفمبر 2026</span>
+              </div>
+              <div class="flex justify-between p-2.5 rounded-[10px] bg-white border border-[#E7EEF3]">
+                <span class="text-[#64748B]">الأيام المتبقية:</span>
+                <span class="font-semibold text-emerald-600">22 يوماً</span>
+              </div>
+            </div>
+
+            <!-- Measurement Units Settings Option -->
+            <button onclick="openUnitsModal()" class="w-full flex items-center justify-between p-3 rounded-[12px] bg-[#F8FAFC] border border-[#E7EEF3] hover:border-[#0284C7] active:scale-[0.99] transition-all text-right group">
+              <div class="flex items-center gap-2.5">
+                <div class="w-8 h-8 rounded-[8px] bg-[#F0F7FF] text-[#0284C7] flex items-center justify-center text-xs font-bold">
+                  <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+                </div>
+                <div>
+                  <span class="text-[13px] font-bold text-[#0F172A] block">وحدات القياس</span>
+                  <span id="account-units-summary" class="text-[10px] text-[#64748B] block">كجم · كجم · سم</span>
+                </div>
+              </div>
+              <div class="flex items-center gap-1 text-[#0284C7] text-[11px] font-semibold">
+                <span>تعديل</span>
+                <svg class="w-3.5 h-3.5 rotate-180" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+              </div>
+            </button>
+          </div>
+        </div>
+
+        <!-- ========================================== -->
+        <!-- MODAL: MEASUREMENT UNITS PREFERENCES       -->
+        <!-- ========================================== -->
+        <div id="modal-units" class="hidden absolute inset-0 bg-slate-900/40 z-35 flex flex-col justify-end transition-all">
+          <div class="bg-white rounded-t-[24px] p-4 sheet-shadow space-y-3.5 max-h-[85%] overflow-y-auto">
+            <div class="w-8 h-1 bg-slate-200 rounded-full mx-auto"></div>
+
+            <div class="flex items-center justify-between pb-1 border-b border-[#F8FAFC]">
+              <div>
+                <h3 class="text-[15px] font-bold text-[#0F172A]">وحدات القياس</h3>
+                <p class="text-[10.5px] text-[#64748B]">تفضيلات العرض والإدخال (تُحفظ تلقائياً)</p>
+              </div>
+              <button onclick="closeUnitsModal()" class="w-7 h-7 rounded-full bg-[#F8FAFC] text-[#64748B] hover:text-[#0F172A] flex items-center justify-center text-sm font-bold">
+                &times;
+              </button>
+            </div>
+
+            <!-- Group 1: Exercise Weights -->
+            <div class="p-3 bg-[#FAFBFC] rounded-[14px] border border-[#E7EEF3] space-y-2">
+              <div class="flex items-center justify-between">
+                <div>
+                  <span class="text-[12.5px] font-bold text-[#0F172A] block">أوزان التمارين</span>
+                  <span class="text-[10px] text-[#64748B] block">تسجيل أداء التمارين وكروت الأوزان (خطوة 2.5 كجم / 5 باوند)</span>
+                </div>
+                <span class="text-[10px] font-semibold text-[#0284C7] bg-[#F0F7FF] px-2 py-0.5 rounded-full" id="badge-pref-ex">KG</span>
+              </div>
+              <!-- Segmented Control -->
+              <div class="grid grid-cols-2 p-1 bg-[#EEF2F6] rounded-[10px] gap-1 text-[11.5px] font-semibold">
+                <button type="button" onclick="setUnitPref('exercise_weight', 'kg')" id="seg-ex-kg" class="py-1.5 rounded-[8px] transition-all bg-white text-[#0F172A] shadow-xs">
+                  KG — كيلوجرام
+                </button>
+                <button type="button" onclick="setUnitPref('exercise_weight', 'lb')" id="seg-ex-lb" class="py-1.5 rounded-[8px] transition-all text-[#64748B] hover:text-[#0F172A]">
+                  LB — باوند
+                </button>
+              </div>
+            </div>
+
+            <!-- Group 2: Body Weight -->
+            <div class="p-3 bg-[#FAFBFC] rounded-[14px] border border-[#E7EEF3] space-y-2">
+              <div class="flex items-center justify-between">
+                <div>
+                  <span class="text-[12.5px] font-bold text-[#0F172A] block">وزن الجسم</span>
+                  <span class="text-[10px] text-[#64748B] block">إدخال المتابعة وسجل الوزن (خطوة 0.5 كجم / 1 باوند)</span>
+                </div>
+                <span class="text-[10px] font-semibold text-[#0284C7] bg-[#F0F7FF] px-2 py-0.5 rounded-full" id="badge-pref-bw">KG</span>
+              </div>
+              <!-- Segmented Control -->
+              <div class="grid grid-cols-2 p-1 bg-[#EEF2F6] rounded-[10px] gap-1 text-[11.5px] font-semibold">
+                <button type="button" onclick="setUnitPref('body_weight', 'kg')" id="seg-bw-kg" class="py-1.5 rounded-[8px] transition-all bg-white text-[#0F172A] shadow-xs">
+                  KG — كيلوجرام
+                </button>
+                <button type="button" onclick="setUnitPref('body_weight', 'lb')" id="seg-bw-lb" class="py-1.5 rounded-[8px] transition-all text-[#64748B] hover:text-[#0F172A]">
+                  LB — باوند
+                </button>
+              </div>
+            </div>
+
+            <!-- Group 3: Waist and Body Measurements -->
+            <div class="p-3 bg-[#FAFBFC] rounded-[14px] border border-[#E7EEF3] space-y-2">
+              <div class="flex items-center justify-between">
+                <div>
+                  <span class="text-[12.5px] font-bold text-[#0F172A] block">محيط الخصر والمقاسات</span>
+                  <span class="text-[10px] text-[#64748B] block">إدخال مقاسات الجسم وسجل القياسات (خطوة 0.5 سم / 0.25 بوصة)</span>
+                </div>
+                <span class="text-[10px] font-semibold text-[#0284C7] bg-[#F0F7FF] px-2 py-0.5 rounded-full" id="badge-pref-ms">CM</span>
+              </div>
+              <!-- Segmented Control -->
+              <div class="grid grid-cols-2 p-1 bg-[#EEF2F6] rounded-[10px] gap-1 text-[11.5px] font-semibold">
+                <button type="button" onclick="setUnitPref('measurement', 'cm')" id="seg-ms-cm" class="py-1.5 rounded-[8px] transition-all bg-white text-[#0F172A] shadow-xs">
+                  CM — سنتيمتر
+                </button>
+                <button type="button" onclick="setUnitPref('measurement', 'in')" id="seg-ms-in" class="py-1.5 rounded-[8px] transition-all text-[#64748B] hover:text-[#0F172A]">
+                  IN — بوصة
+                </button>
+              </div>
+            </div>
+
+            <div class="p-2.5 bg-[#F0F7FF] rounded-[10px] border border-[#BAE6FD] text-[11px] text-[#0369A1] flex items-center justify-between">
+              <span>تُحفظ التفضيلات تلقائياً وتطبق فوراً على كافة الشاشات.</span>
+              <span class="font-bold text-[10px] bg-white px-2 py-0.5 rounded-full text-[#0284C7] shadow-2xs">تلقائي</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Toast Notification -->
+        <div id="toast-notify" class="hidden absolute top-12 left-4 right-4 bg-[#0F172A] text-white p-2.5 rounded-xl text-xs font-semibold text-center z-40 shadow-xl transition-all">
+          تم تحديث الخطة بنجاح
+        </div>
+
+      </div>
+    </section>
+
+  </main>
+
+        </div>
+      </div>
+
+      <!-- RIGHT: Interactive Physics Control Studio -->
+      <div class="lg:col-span-6 bg-white border border-[#E2E8F0] rounded-3xl p-5 shadow-sm space-y-4">
+        
+        <div class="flex items-center justify-between border-b border-slate-100 pb-3">
+          <div>
+            <h3 class="text-sm font-bold text-slate-900">مختبر المعايرة البصرية والفيزيائية</h3>
+            <p class="text-[11px] text-slate-500">تحكم لحظي متصل بشاشات التطبيق الكاملة وشريط التنقل بالعدسة الزجاجية.</p>
+          </div>
+          <span id="status-chip" class="text-[11px] font-bold text-sky-700 bg-sky-50 border border-sky-200 px-3 py-1 rounded-xl">
+            مستقر عند: «اليوم»
+          </span>
+        </div>
+
+        <!-- 1. Quick Tab Switcher Buttons -->
+        <div class="space-y-1.5">
+          <label class="text-xs font-bold text-slate-700 block">الانتقال المباشر بين الشاشات والتبويبات:</label>
+          <div class="grid grid-cols-4 gap-2">
+            <button onclick="switchTab(0)" class="py-2 px-2 rounded-xl border border-slate-200 bg-slate-50 hover:bg-sky-50 hover:border-sky-300 text-xs font-bold text-slate-700 hover:text-sky-700 transition-all text-center">
+              اليوم (0)
+            </button>
+            <button onclick="switchTab(1)" class="py-2 px-2 rounded-xl border border-slate-200 bg-slate-50 hover:bg-sky-50 hover:border-sky-300 text-xs font-bold text-slate-700 hover:text-sky-700 transition-all text-center">
+              التمارين (1)
+            </button>
+            <button onclick="switchTab(2)" class="py-2 px-2 rounded-xl border border-slate-200 bg-slate-50 hover:bg-sky-50 hover:border-sky-300 text-xs font-bold text-slate-700 hover:text-sky-700 transition-all text-center">
+              التغذية (2)
+            </button>
+            <button onclick="switchTab(3)" class="py-2 px-2 rounded-xl border border-slate-200 bg-slate-50 hover:bg-sky-50 hover:border-sky-300 text-xs font-bold text-slate-700 hover:text-sky-700 transition-all text-center">
+              المتابعة (3)
+            </button>
+          </div>
+        </div>
+
+        <!-- 2. Motion Speed Calibration -->
+        <div class="space-y-1.5">
+          <label class="text-xs font-bold text-slate-700 block">معايرة سرعة النابض (Spring Duration):</label>
+          <div class="grid grid-cols-4 gap-2">
+            <button id="btn-speed-350" onclick="setSpeed(350, this)" class="py-2 rounded-xl border border-slate-200 bg-slate-50 text-xs font-semibold text-slate-600 hover:border-sky-300 transition-all">
+              350ms (خفيف)
+            </button>
+            <button id="btn-speed-400" onclick="setSpeed(400, this)" class="py-2 rounded-xl border border-sky-500 bg-sky-50 text-xs font-bold text-sky-700 transition-all">
+              400ms (المعتمدة)
+            </button>
+            <button id="btn-speed-450" onclick="setSpeed(450, this)" class="py-2 rounded-xl border border-slate-200 bg-slate-50 text-xs font-semibold text-slate-600 hover:border-sky-300 transition-all">
+              450ms (متزن)
+            </button>
+            <button id="btn-speed-slow" onclick="setSpeed(1000, this)" class="py-2 rounded-xl border border-slate-200 bg-slate-50 text-xs font-semibold text-slate-600 hover:border-sky-300 transition-all">
+              1000ms (فحص)
+            </button>
+          </div>
+        </div>
+
+        <!-- 3. Visual Labels Toggle -->
+        <div class="bg-slate-50 border border-slate-200 rounded-2xl p-3 flex items-center justify-between">
+          <div>
+            <span class="text-xs font-bold text-slate-900 block">مظهر التبويبات (Labels Toggle):</span>
+            <span class="text-[11px] text-slate-500">فحص شكل الشريط بالأيقونات فقط أو مع النصوص</span>
+          </div>
+          <div class="flex gap-1.5 bg-white p-1 rounded-xl border border-slate-200 shadow-2xs">
+            <button id="btn-labels-show" onclick="toggleLabels(true, this)" class="px-3 py-1 rounded-lg text-xs font-bold bg-sky-600 text-white transition-all">
+              أيقونة + نص
+            </button>
+            <button id="btn-labels-hide" onclick="toggleLabels(false, this)" class="px-3 py-1 rounded-lg text-xs font-semibold text-slate-600 hover:text-slate-900 transition-all">
+              أيقونة فقط
+            </button>
+          </div>
+        </div>
+
+        <!-- 4. Manual Frame Scrubber -->
+        <div class="space-y-1.5 bg-slate-50 border border-slate-200 rounded-2xl p-3">
+          <div class="flex items-center justify-between text-xs">
+            <span class="font-bold text-slate-800">شريط الفحص التدريجي (Manual Scrub):</span>
+            <span id="scrub-val" class="font-mono-num text-sky-700 font-bold" dir="ltr">0%</span>
+          </div>
+          <input type="range" id="scrub-slider" min="0" max="100" value="0" oninput="onScrubSlider(this.value)" class="w-full cursor-pointer">
+          <div class="flex justify-between text-[10px] text-slate-400 font-mono-num" dir="ltr">
+            <span>01 (سكون)</span>
+            <span>02 (تمدد)</span>
+            <span>03 (قبة بصرية)</span>
+            <span>04 (وصول)</span>
+            <span>05 (سكون)</span>
+          </div>
+        </div>
+
+        <!-- 5. Automated 9-Frames Benchmark Runner -->
+        <div class="space-y-2">
+          <button onclick="run9FrameSequence()" class="w-full py-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs flex items-center justify-center gap-2 shadow-xs transition-all">
+            <span>تشغيل التسلسل الكامل للفريمات التسعة تلقائياً (Auto Walkthrough)</span>
+            <span class="text-sky-400">&larr;</span>
+          </button>
+        </div>
+
+        <!-- 6. Architectural Physics Reference -->
+        <div class="bg-slate-50 rounded-2xl p-3 border border-slate-200 space-y-1 text-xs text-slate-600">
+          <div class="font-bold text-slate-800 mb-1">المعادلات الفيزيائية المطبقة لحظياً:</div>
+          <p>• <strong>النابض التوافقي (Damped Spring):</strong> تخامد حرج (معامل 0.85) وتردد طبيعي (7.5) بزمن 400ms مع وصول سريع واستقرار هادئ بدون ارتداد مفرط.</p>
+          <p>• <strong>الانكسار الكروي (Convex Meniscus):</strong> تشوه وانكسار حواف الحروف والأيقونات عند عبور محيط العدسة مع تكبير القبة البصرية حتى 1.28x.</p>
+          <p>• <strong>كبسولة الاستقرار (Resting Pill):</strong> اختفاء قوس اللمعان والبريق عند السكون وتحوله لكبسولة رمادية هادئة ناعمة مطابقة للمرجع.</p>
+        </div>
+
+      </div>
+
+    </section>
+
+    
+
+    
+
+  </div>
+
+  <script>
+    // Studio View Switcher
+    function switchStudioView(viewId, btn) {
+      document.querySelectorAll('.studio-view').forEach(v => v.classList.add('hidden'));
+      const target = document.getElementById('view-' + viewId);
+      if (target) target.classList.remove('hidden');
+
+      document.querySelectorAll('.studio-tab-btn').forEach(b => {
+        b.classList.remove('active');
+      });
+      if (btn) btn.classList.add('active');
+
+      if (viewId === 'app-simulator') {
+        setTimeout(initLensPosition, 60);
+      }
+    }
+
+    // Spring Duration state
+    let globalDuration = 400;
+
+    function setSpeed(ms, btn) {
+      globalDuration = ms;
+      ['btn-speed-350', 'btn-speed-400', 'btn-speed-450', 'btn-speed-slow'].forEach(id => {
+        const b = document.getElementById(id);
+        if (b) {
+          b.className = "py-2 rounded-xl border border-slate-200 bg-slate-50 text-xs font-semibold text-slate-600 hover:border-sky-300 transition-all";
+        }
+      });
+      if (btn) {
+        btn.className = "py-2 rounded-xl border border-sky-500 bg-sky-50 text-xs font-bold text-sky-700 transition-all";
+      }
+    }
+
+    function toggleLabels(show, btn) {
+      const labels = document.querySelectorAll('.nav-tab-label');
+      labels.forEach(l => {
+        if (show) l.classList.remove('hidden');
+        else l.classList.add('hidden');
+      });
+
+      const btnShow = document.getElementById('btn-labels-show');
+      const btnHide = document.getElementById('btn-labels-hide');
+      if (show) {
+        btnShow.className = "px-3 py-1 rounded-lg text-xs font-bold bg-sky-600 text-white transition-all";
+        btnHide.className = "px-3 py-1 rounded-lg text-xs font-semibold text-slate-600 hover:text-slate-900 transition-all";
+      } else {
+        btnHide.className = "px-3 py-1 rounded-lg text-xs font-bold bg-sky-600 text-white transition-all";
+        btnShow.className = "px-3 py-1 rounded-lg text-xs font-semibold text-slate-600 hover:text-slate-900 transition-all";
+      }
+      setTimeout(initLensPosition, 50);
+    }
+
+    function onScrubSlider(val) {
+      document.getElementById('scrub-val').innerText = val + '%';
+      const p = val / 100;
+      const lensEl = document.getElementById('liquid-lens');
+      if (!lensEl) return;
+
+      const mStart = getTabMetrics(0);
+      const mEnd = getTabMetrics(1);
+      const totalDist = mEnd.center - mStart.center;
+
+      lensEl.classList.remove('settled');
+
+      const currentCenter = mStart.center + totalDist * p;
+      const maxStretch = 36;
+      const stretchAmount = maxStretch * Math.sin(Math.PI * p);
+      const restingWidth = Math.max(mEnd.width - 8, 64);
+      const currentWidth = restingWidth + stretchAmount;
+
+      lensEl.style.left = `${currentCenter - currentWidth / 2}px`;
+      lensEl.style.width = `${currentWidth}px`;
+
+      updateOptics(currentCenter, currentWidth, p > 0.05 && p < 0.95);
+
+      if (p === 0 || p === 1) {
+        lensEl.classList.add('settled');
+      }
+    }
+
+    async function run9FrameSequence() {
+      const slider = document.getElementById('scrub-slider');
+      for (let i = 0; i <= 100; i += 2) {
+        slider.value = i;
+        onScrubSlider(i);
+        await new Promise(r => setTimeout(r, 20));
+      }
+      switchTab(1);
+    }
+
+    let activeTab = 0;
+    let isAnimating = false;
+    let animRafId = null;
+
+    function getTabMetrics(index) {
+      const tabEl = document.querySelector(`.nav-tab-item[data-index="${index}"]`);
+      const navEl = document.getElementById('floating-bottom-nav');
+      if (!tabEl || !navEl) return { center: 0, width: 72, left: 0 };
+      const navRect = navEl.getBoundingClientRect();
+      const tabRect = tabEl.getBoundingClientRect();
+      const left = tabRect.left - navRect.left;
+      const width = tabRect.width;
+      const center = left + width / 2;
+      return { center, width, left };
+    }
+
+    function initLensPosition() {
+      const lensEl = document.getElementById('liquid-lens');
+      if (!lensEl) return;
+      const m = getTabMetrics(activeTab);
+      const restingWidth = Math.max(m.width - 8, 64);
+      const restingLeft = m.center - restingWidth / 2;
+      lensEl.style.left = `${restingLeft}px`;
+      lensEl.style.width = `${restingWidth}px`;
+      lensEl.classList.add('settled');
+      updateOptics(m.center, restingWidth, false);
+    }
+
+    function updateOptics(lensCenter, lensWidth, isMovingNow) {
+      const lensRadius = lensWidth / 2;
+      const moving = isMovingNow !== undefined ? isMovingNow : isAnimating;
+
+      for (let i = 0; i < 4; i++) {
+        const m = getTabMetrics(i);
+        const contentEl = document.getElementById(`tab-content-${i}`);
+        if (!contentEl) continue;
+
+        const dist = Math.abs(m.center - lensCenter);
+
+        if (dist < lensRadius * 1.15 && moving) {
+          const norm = Math.min(dist / (lensRadius * 1.15), 1);
+          const z = Math.sqrt(Math.max(0, 1 - norm * norm));
+          const mag = 1.0 + (0.28 * z);
+          const shiftX = (lensCenter - m.center) * 0.16 * z;
+          const shearX = -(m.center - lensCenter) / (lensRadius * 1.15) * 8.5 * (1 - z);
+          const stretchX = 1.0 + (0.08 * (1 - norm));
+
+          contentEl.style.transform = `translateX(${shiftX.toFixed(2)}px) skewX(${shearX.toFixed(2)}deg) scale(${(mag * stretchX).toFixed(3)}, ${mag.toFixed(3)})`;
+          contentEl.style.filter = `drop-shadow(0 2px 4px rgba(15,23,42,0.10))`;
+        } else {
+          contentEl.style.transform = 'translateX(0px) skewX(0deg) scale(1.0, 1.0)';
+          contentEl.style.filter = 'none';
+        }
+
+        if (i === activeTab && !moving) {
+          contentEl.classList.remove('text-slate-800');
+          contentEl.classList.add('text-sky-600');
+          const span = contentEl.querySelector('span');
+          if (span) {
+            span.classList.remove('text-slate-500');
+            span.classList.add('text-sky-600', 'font-bold');
+          }
+        } else if (!moving) {
+          contentEl.classList.remove('text-sky-600');
+          contentEl.classList.add('text-slate-800');
+          const span = contentEl.querySelector('span');
+          if (span) {
+            span.classList.remove('text-sky-600', 'font-bold');
+            span.classList.add('text-slate-500', 'font-semibold');
+          }
+        }
+      }
+    }
+
+    function springEasing(t) {
+      if (t <= 0) return 0;
+      if (t >= 1) return 1;
+      const zeta = 0.85;
+      const wn = 7.5;
+      const wd = wn * Math.sqrt(1 - zeta * zeta);
+      const decay = Math.exp(-zeta * wn * t);
+      return 1 - decay * (Math.cos(wd * t) + (zeta * wn / wd) * Math.sin(wd * t));
+    }
+
+    function stretchEnvelope(t) {
+      return Math.sin(Math.PI * Math.pow(t, 0.85));
+    }
+
+    function animateLiquidLens(targetIndex) {
+      const lensEl = document.getElementById('liquid-lens');
+      if (!lensEl) return;
+      if (isAnimating && animRafId) cancelAnimationFrame(animRafId);
+
+      const startIndex = activeTab;
+      const startM = getTabMetrics(startIndex);
+      const targetM = getTabMetrics(targetIndex);
+
+      const duration = 400;
+      const startTime = performance.now();
+      isAnimating = true;
+
+      lensEl.classList.remove('settled');
+
+      const totalDist = targetM.center - startM.center;
+      const maxStretch = Math.min(Math.abs(totalDist) * 0.42, 48);
+
+      for (let i = 0; i < 4; i++) {
+        const contentEl = document.getElementById(`tab-content-${i}`);
+        if (!contentEl) continue;
+        const span = contentEl.querySelector('span');
+        if (i === targetIndex) {
+          contentEl.classList.remove('text-slate-800');
+          contentEl.classList.add('text-sky-600');
+          if (span) {
+            span.classList.remove('text-slate-500');
+            span.classList.add('text-sky-600', 'font-bold');
+          }
+        } else {
+          contentEl.classList.remove('text-sky-600');
+          contentEl.classList.add('text-slate-800');
+          if (span) {
+            span.classList.remove('text-sky-600', 'font-bold');
+            span.classList.add('text-slate-500', 'font-semibold');
+          }
+        }
+      }
+
+      function step(now) {
+        const elapsed = now - startTime;
+        let progress = Math.min(elapsed / duration, 1.0);
+
+        const springT = springEasing(progress);
+        const currentCenter = startM.center + totalDist * springT;
+
+        const stretchAmount = maxStretch * stretchEnvelope(progress);
+        const restingWidth = Math.max(targetM.width - 8, 64);
+        const currentWidth = restingWidth + stretchAmount;
+
+        lensEl.style.left = `${currentCenter - currentWidth / 2}px`;
+        lensEl.style.width = `${currentWidth}px`;
+
+        updateOptics(currentCenter, currentWidth, true);
+
+        if (progress < 1.0) {
+          animRafId = requestAnimationFrame(step);
+        } else {
+          isAnimating = false;
+          lensEl.classList.add('settled');
+          lensEl.style.left = `${targetM.center - restingWidth / 2}px`;
+          lensEl.style.width = `${restingWidth}px`;
+          updateOptics(targetM.center, restingWidth, false);
+        }
+      }
+
+      animRafId = requestAnimationFrame(step);
+    }
+
+    function switchTab(index) {
+      if (index !== activeTab) {
+        animateLiquidLens(index);
+      }
+      activeTab = index;
+
+      const screenMap = ['screen-today', 'screen-workout', 'screen-nutrition', 'screen-checkin'];
+      screenMap.forEach((id, i) => {
+        const el = document.getElementById(id);
+        if (el) {
+          if (i === index) {
+            el.classList.remove('hidden');
+          } else {
+            el.classList.add('hidden');
+          }
+        }
+      });
+
+      const scrollArea = document.querySelector('#device-shell .overflow-y-auto');
+      if (scrollArea) scrollArea.scrollTop = 0;
+
+      const topBtnMap = ['top-btn-today', 'top-btn-workout', 'top-btn-nutrition', 'top-btn-checkin'];
+      topBtnMap.forEach((id, i) => {
+        const b = document.getElementById(id);
+        if (b) {
+          if (i === index) {
+            b.className = "px-3 py-1.5 rounded-xl text-xs font-bold bg-[#58B4E5] text-white shadow-sm transition-all";
+          } else {
+            b.className = "px-3 py-1.5 rounded-xl text-xs font-semibold text-[#64748B] hover:text-[#0F172A] transition-all";
+          }
+        }
+      });
+    }
+
+    function setDeviceSize(type) {
+      const shell = document.getElementById('device-shell');
+      const b390 = document.getElementById('btn-dev-390');
+      const b375 = document.getElementById('btn-dev-375');
+      const b430 = document.getElementById('btn-dev-430');
+
+      [b390, b375, b430].forEach(b => {
+        if (b) b.className = "px-2.5 py-1.5 rounded-xl text-xs font-medium text-[#64748B] hover:text-[#0F172A] transition-all";
+      });
+
+      if (type === '375') {
+        shell.style.width = '375px';
+        shell.style.height = '812px';
+        if (b375) b375.className = "px-2.5 py-1.5 rounded-xl text-xs font-bold bg-white text-[#0F172A] shadow-sm border border-[#E2E8F0] transition-all";
+      } else if (type === '430') {
+        shell.style.width = '430px';
+        shell.style.height = '880px';
+        if (b430) b430.className = "px-2.5 py-1.5 rounded-xl text-xs font-bold bg-white text-[#0F172A] shadow-sm border border-[#E2E8F0] transition-all";
+      } else {
+        shell.style.width = '390px';
+        shell.style.height = '844px';
+        if (b390) b390.className = "px-2.5 py-1.5 rounded-xl text-xs font-bold bg-white text-[#0F172A] shadow-sm border border-[#E2E8F0] transition-all";
+      }
+    }
+
+    const workoutSessionsData = {
+      1: {
+        num: "جلسة 1",
+        sub: "· الصدر والبايسبس",
+        title: "جلسة 1: الصدر والبايسبس",
+        homeSubtitle: "5 تمارين مقترحة · 45 دقيقة",
+        exercises: [
+          {
+            id: 1,
+            enName: "Machine Chest Press",
+            arName: "دفع صدر بالجهاز",
+            muscle: "عضلات الصدر الأوسط · ترايسبس",
+            img: "/exercises/MACHINE_CHEST_PRESS/0.jpg",
+            sets: "3",
+            reps: "8 - 10",
+            rir: "RIR 2",
+            rest: "90",
+            defaultWeight: 45,
+            defaultReps: 10,
+            tech: "ثبات لوحي الكتف على المقعد، والنزول بالمقابض بمدى حركي كامل ومتحكم به حتى خط الصدر مع تجنب قفل المفاصل في الصعود."
+          },
+          {
+            id: 2,
+            enName: "Incline Dumbbell Bench Press",
+            arName: "دفع بالدمبل بنش عالي",
+            muscle: "عضلات الصدر العلوي · الكتف الأمامي",
+            img: "/exercises/INCLINE_DUMBBELL_BENCH_PRESS/0.jpg",
+            sets: "3",
+            reps: "10 - 12",
+            rir: "RIR 2",
+            rest: "75",
+            defaultWeight: 20,
+            defaultReps: 10,
+            tech: "ضبط زاوية المقعد على 30 درجة، دفع الدمبل للأعلى بمسار مقوس خفيف والنزول في 2-3 ثوانٍ لتحفيز التمدد العضلي بأمان."
+          }
+        ],
+        cardio: {
+          enName: "Treadmill Incline Walk",
+          arName: "مشي على السير بانحدار",
+          duration: "20 دقيقة",
+          bpm: "125 - 135 bpm",
+          desc: "انحدار 4% إلى 6% بسرعة ثابتة مع الحفاظ على التنفس المنتظم ومعدل النبض في النطاق المستهدف."
+        },
+        stretch: {
+          enName: "Static Stretch",
+          arName: "إطالة العضلات",
+          time: "· 5 دقائق إطالة ثابتة",
+          desc: "إطالات هادئة وثابتة لعضلات الصدر وأوتار البايسبس، كل وضعية 20-30 ثانية لتسريع استشفاء الألياف العضلية."
+        }
+      },
+      2: {
+        num: "جلسة 2",
+        sub: "· الظهر والترايسبس",
+        title: "جلسة 2: الظهر والترايسبس",
+        homeSubtitle: "5 تمارين مقترحة · 45 دقيقة",
+        exercises: [
+          {
+            id: 1,
+            enName: "Wide Grip Lat Pulldown",
+            arName: "سحب ظهر واسع بالجهاز",
+            muscle: "عضلات الظهر العريض (المجنص) · بايسبس",
+            img: "/exercises/WIDE_GRIP_LAT_PULLDOWN/0.jpg",
+            sets: "3",
+            reps: "8 - 10",
+            rir: "RIR 2",
+            rest: "90",
+            defaultWeight: 55,
+            defaultReps: 10,
+            tech: "سحب البار باتجاه أعلى الصدر مع إرجاع الكتفين للخلف وعصر عضلات الظهر، ثم الصعود بتحكم كامل."
+          },
+          {
+            id: 2,
+            enName: "Cable Triceps Rope Pushdown",
+            arName: "دفع ترايسبس بالحبل",
+            muscle: "عضلات الترايسبس (الرأس الجانبي والطويل)",
+            img: "/exercises/CABLE_TRICEPS_ROPE_PUSHDOWN/0.jpg",
+            sets: "3",
+            reps: "10 - 12",
+            rir: "RIR 2",
+            rest: "60",
+            defaultWeight: 22.5,
+            defaultReps: 12,
+            tech: "تثبيت الكوعين بجانب الجذع تماماً ودفع الحبل للأسفل مع فتح الحبل عند نقطة الانقباض الكاملة."
+          }
+        ],
+        cardio: {
+          enName: "Stationary Bike Zone 2",
+          arName: "دراجة ثابتة",
+          duration: "20 دقيقة",
+          bpm: "120 - 130 bpm",
+          desc: "مقاومة متوسطة بسرعة دوران مريحة (75-80 RPM) للحفاظ على حرق الدهون الهوائي دون إجهاد المفاصل."
+        },
+        stretch: {
+          enName: "Lats & Triceps Stretch",
+          arName: "إطالة عضلات الظهر والترايسبس",
+          time: "· 5 دقائق إطالة ثابتة",
+          desc: "إطالة عضلات المجنص بالتعلق الخفيف وإطالة الترايسبس بمد الذراع خلف الرأس برفق."
+        }
+      },
+      3: {
+        num: "جلسة 3",
+        sub: "· الأرجل والأكتاف",
+        title: "جلسة 3: الأرجل والأكتاف",
+        homeSubtitle: "5 تمارين مقترحة · 50 دقيقة",
+        exercises: [
+          {
+            id: 1,
+            enName: "Leg Press Machine",
+            arName: "دفع أرجل بالجهاز",
+            muscle: "عضلات الفخذ الأمامي والرباعية · المؤخرة",
+            img: "/exercises/LEG_PRESS_MACHINE/0.jpg",
+            sets: "3",
+            reps: "8 - 10",
+            rir: "RIR 2",
+            rest: "90",
+            defaultWeight: 120,
+            defaultReps: 10,
+            tech: "وضع القدمين باتساع الكتفين على المنصة، النزول بتحكم حتى زاوية 90 درجة دون رفع أسفل الظهر عن المقعد."
+          },
+          {
+            id: 2,
+            enName: "Dumbbell Lateral Raise",
+            arName: "رفرفة جانبية بالدمبل",
+            muscle: "عضلات الكتف الجانبي",
+            img: "/exercises/DUMBBELL_LATERAL_RAISE/0.jpg",
+            sets: "3",
+            reps: "12 - 15",
+            rir: "RIR 1-2",
+            rest: "60",
+            defaultWeight: 8,
+            defaultReps: 12,
+            tech: "رفع الدمبل بالمرفقين بقيادة الحركة للأعلى وللخارج قليلاً دون أرجحة الجذع، مع التوقف لحظة بالقمة."
+          }
+        ],
+        cardio: {
+          enName: "Stair Climber Machine",
+          arName: "جهاز الدرج",
+          duration: "15 دقيقة",
+          bpm: "130 - 140 bpm",
+          desc: "صعود بدرجة سرعة معتدلة وثابتة مع تجنب الاستناد الكامل على المقابض لضمان تشغيل عضلات الساقين."
+        },
+        stretch: {
+          enName: "Hamstrings & Shoulders Stretch",
+          arName: "إطالة الأرجل والأكتاف",
+          time: "· 5 دقائق إطالة ثابتة",
+          desc: "إطالة عضلات الفخذ الخلفي والسمانة وعضلات الكتف بحركات تمدد استرخائية ثابتة."
+        }
+      }
+    };
+
+    function renderExerciseCard(ex, idx) {
+      return `
+        <article class="bg-white border border-[#E7EEF3] rounded-[16px] p-3 soft-card-shadow space-y-2.5 transition-all">
+          <div class="flex items-start justify-between gap-2.5">
+            <div class="flex items-center gap-2.5 min-w-0 flex-1">
+              <div class="w-12 h-12 rounded-[10px] border border-[#E2E8F0] overflow-hidden bg-[#F8FAFC] shrink-0 shadow-2xs">
+                <img src="${ex.img}" alt="${ex.enName}" onerror="this.src='/exercises/AB_WHEEL_ROLLOUT/0.jpg'" class="w-full h-full object-cover">
+              </div>
+              <div class="min-w-0 flex-1">
+                <h3 class="text-[14.5px] font-bold text-[#0F172A] leading-tight tracking-tight text-right" style="font-family: 'Inter', sans-serif;"><span dir="ltr">${ex.enName}</span></h3>
+                <p class="text-[11.5px] font-medium text-[#64748B] mt-0.5">${ex.arName}</p>
+                <p class="text-[10px] text-[#94A3B8] font-normal mt-0.5 truncate">${ex.muscle}</p>
+              </div>
+            </div>
+            <button onclick="toggleDone(this)" aria-label="اكتمال التمرين" class="ex-done-btn w-8 h-8 rounded-full border border-[#E2E8F0] bg-[#F8FAFC] flex items-center justify-center text-[#94A3B8] hover:border-emerald-500 hover:text-emerald-500 hover:bg-emerald-50 active:scale-95 transition-all shrink-0">
+              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
+            </button>
+          </div>
+
+          <div class="flex items-center justify-between px-2.5 py-1.5 bg-[#F8FAFC] rounded-[10px] border border-[#F1F5F9] text-[11px]">
+            <div class="whitespace-nowrap flex items-baseline gap-1">
+              <span class="text-[12.5px] font-bold text-[#0F172A]">${ex.sets}</span>
+              <span class="text-[10px] font-medium text-[#64748B]">مجموعات</span>
+            </div>
+            <span class="text-[#CBD5E1]">·</span>
+            <div class="whitespace-nowrap flex items-baseline gap-1">
+              <span class="text-[12.5px] font-bold text-[#0F172A]" dir="ltr">${ex.reps}</span>
+              <span class="text-[10px] font-medium text-[#64748B]">عدات</span>
+            </div>
+            <span class="text-[#CBD5E1]">·</span>
+            <div class="whitespace-nowrap">
+              <span class="text-[10px] font-bold text-[#0284C7] bg-[#E0F2FE] px-1.5 py-0.5 rounded-[5px]">${ex.rir}</span>
+            </div>
+            <span class="text-[#CBD5E1]">·</span>
+            <div class="whitespace-nowrap flex items-baseline gap-1">
+              <span class="text-[12.5px] font-bold text-[#0F172A]">${ex.rest}</span>
+              <span class="text-[10px] font-medium text-[#64748B]">ث راحة</span>
+            </div>
+          </div>
+
+          <div class="space-y-1.5">
+            <div class="flex items-center justify-between text-[11px]">
+              <span class="font-semibold text-[#475569]">تسجيل آخر مجموعة</span>
+              <button onclick="fillLastDynamic(${idx}, ${ex.defaultWeight}, ${ex.defaultReps})" class="h-5 px-2 rounded-full bg-[#F0F7FF] hover:bg-[#E0F2FE] text-[#0284C7] text-[10px] font-semibold transition-colors flex items-center gap-1">
+                <svg class="w-2.5 h-2.5 text-[#58B4E5]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+                <span>زي آخر مرة</span>
+                <span class="text-[#64748B] text-[9.5px] font-medium">· ${ex.defaultWeight} كجم × ${ex.defaultReps}</span>
+              </button>
+            </div>
+
+            <div class="grid grid-cols-2 gap-2">
+              <div class="bg-[#F8FAFC] border border-[#E7EEF3] rounded-[10px] px-2 py-1 flex items-center justify-between" dir="ltr">
+                <button onclick="stepVal('w${idx}', -2.5)" aria-label="تقليل الوزن" class="w-6 h-6 rounded-[7px] bg-white border border-[#E2E8F0] shadow-2xs flex items-center justify-center text-[13px] font-bold text-[#64748B] hover:text-[#0F172A] active:scale-95 transition-all">-</button>
+                <div class="text-center px-1">
+                  <span id="w${idx}" class="text-[14.5px] font-bold text-[#0F172A] block leading-none">${ex.defaultWeight}</span>
+                  <span class="text-[9.5px] font-medium text-[#64748B] mt-0.5 block">كجم</span>
+                </div>
+                <button onclick="stepVal('w${idx}', 2.5)" aria-label="زيادة الوزن" class="w-6 h-6 rounded-[7px] bg-[#58B4E5] text-white shadow-2xs flex items-center justify-center text-[13px] font-bold hover:bg-[#0284C7] active:scale-95 transition-all">+</button>
+              </div>
+
+              <div class="bg-[#F8FAFC] border border-[#E7EEF3] rounded-[10px] px-2 py-1 flex items-center justify-between" dir="ltr">
+                <button onclick="stepVal('r${idx}', -1)" aria-label="تقليل العدات" class="w-6 h-6 rounded-[7px] bg-white border border-[#E2E8F0] shadow-2xs flex items-center justify-center text-[13px] font-bold text-[#64748B] hover:text-[#0F172A] active:scale-95 transition-all">-</button>
+                <div class="text-center px-1">
+                  <span id="r${idx}" class="text-[14.5px] font-bold text-[#0F172A] block leading-none">${ex.defaultReps}</span>
+                  <span class="text-[9.5px] font-medium text-[#64748B] mt-0.5 block">عدات</span>
+                </div>
+                <button onclick="stepVal('r${idx}', 1)" aria-label="زيادة العدات" class="w-6 h-6 rounded-[7px] bg-[#58B4E5] text-white shadow-2xs flex items-center justify-center text-[13px] font-bold hover:bg-[#0284C7] active:scale-95 transition-all">+</button>
+              </div>
+            </div>
+          </div>
+
+          <div class="grid grid-cols-3 gap-1.5">
+            <button onclick="pickEffort(this)" class="h-7 rounded-[8px] bg-white border border-[#E2E8F0] text-[11px] font-medium text-[#64748B] hover:bg-[#F8FAFC] transition-all">صعب</button>
+            <button onclick="pickEffort(this)" class="h-7 rounded-[8px] bg-[#58B4E5] text-white text-[11px] font-semibold shadow-2xs transition-all">مناسب</button>
+            <button onclick="pickEffort(this)" class="h-7 rounded-[8px] bg-white border border-[#E2E8F0] text-[11px] font-medium text-[#64748B] hover:bg-[#F8FAFC] transition-all">سهل</button>
+          </div>
+
+          <div class="pt-1 border-t border-[#F1F5F9]">
+            <button onclick="toggleSection('tech${idx}')" class="w-full flex items-center justify-between text-[#64748B] hover:text-[#0284C7] transition-colors py-0.5 text-[10.5px] font-medium">
+              <span class="flex items-center gap-1.5">
+                <svg class="w-3 h-3 text-[#0284C7]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                <span>تعليمات التكنيك والفيديو</span>
+              </span>
+              <span id="tech${idx}-arrow" class="text-[10px] text-[#94A3B8] transition-transform font-bold">&larr;</span>
+            </button>
+            <div id="tech${idx}-content" class="hidden mt-1 p-2 bg-[#F8FAFC] rounded-[8px] text-[#475569] text-[10.5px] leading-relaxed border border-[#E7EEF3]">
+              ${ex.tech}
+            </div>
+          </div>
+        </article>
+      `;
+    }
+
+    function selectSession(num) {
+      const session = workoutSessionsData[num] || workoutSessionsData[1];
+
+      for (let i = 1; i <= 3; i++) {
+        const btn = document.getElementById('session-btn-' + i);
+        if (!btn) continue;
+        const sInfo = workoutSessionsData[i];
+        if (i === num) {
+          btn.className = "whitespace-nowrap h-7 px-3 rounded-full bg-[#0F172A] text-white text-[11px] font-semibold shadow-2xs shrink-0 transition-all flex items-center gap-1.5";
+          btn.innerHTML = `<span>${sInfo.num}</span><span class="text-[9.5px] text-slate-300 font-normal">${sInfo.sub}</span>`;
+        } else {
+          btn.className = "whitespace-nowrap h-7 px-3 rounded-full bg-white border border-[#E2E8F0] text-[#64748B] hover:text-[#0F172A] text-[11px] font-medium shrink-0 transition-all flex items-center gap-1.5";
+          btn.innerHTML = `<span>${sInfo.num}</span><span class="text-[9.5px] text-[#94A3B8]">${sInfo.sub}</span>`;
+        }
+      }
+
+      const exContainer = document.getElementById('workout-exercises-list');
+      if (exContainer) {
+        exContainer.innerHTML = session.exercises.map((ex, i) => renderExerciseCard(ex, i + 1)).join('');
+      }
+
+      const cardioEn = document.getElementById('cardio-en-name');
+      const cardioAr = document.getElementById('cardio-ar-name');
+      const cardioDur = document.getElementById('cardio-duration');
+      const cardioBpm = document.getElementById('cardio-bpm');
+      const cardioDesc = document.getElementById('cardio-desc');
+      if (cardioEn) cardioEn.innerHTML = `<span dir="ltr">${session.cardio.enName}</span>`;
+      if (cardioAr) cardioAr.innerText = session.cardio.arName;
+      if (cardioDur) cardioDur.innerText = session.cardio.duration;
+      if (cardioBpm) cardioBpm.innerText = session.cardio.bpm;
+      if (cardioDesc) cardioDesc.innerText = session.cardio.desc;
+
+      const stretchEn = document.getElementById('stretch-en-name');
+      const stretchAr = document.getElementById('stretch-ar-name');
+      const stretchTime = document.getElementById('stretch-time');
+      const stretchDesc = document.getElementById('stretch-desc');
+      if (stretchEn) stretchEn.innerText = session.stretch.enName;
+      if (stretchAr) stretchAr.innerText = session.stretch.arName;
+      if (stretchTime) stretchTime.innerText = session.stretch.time;
+      if (stretchDesc) stretchDesc.innerText = session.stretch.desc;
+
+      const homeTitle = document.getElementById('home-workout-title');
+      const homeSub = document.getElementById('home-workout-sub');
+      if (homeTitle) homeTitle.innerText = session.title;
+      if (homeSub) homeSub.innerText = session.homeSubtitle;
+
+      showToast('تم اختيار ' + session.title);
+    }
+
+    function toggleSection(id) {
+      const content = document.getElementById(id + '-content');
+      const arrow = document.getElementById(id + '-arrow');
+      if (!content) return;
+      if (content.classList.contains('hidden')) {
+        content.classList.remove('hidden');
+        if (arrow) arrow.style.transform = 'rotate(180deg)';
+      } else {
+        content.classList.add('hidden');
+        if (arrow) arrow.style.transform = 'rotate(0deg)';
+      }
+    }
+
+    function toggleDone(btn) {
+      if (btn.classList.contains('bg-emerald-500')) {
+        btn.className = "ex-done-btn w-8 h-8 rounded-full border border-[#E2E8F0] bg-[#F8FAFC] flex items-center justify-center text-[#94A3B8] hover:border-emerald-500 hover:text-emerald-500 hover:bg-emerald-50 active:scale-95 transition-all shrink-0";
+      } else {
+        btn.className = "ex-done-btn w-8 h-8 rounded-full border border-emerald-500 bg-emerald-500 flex items-center justify-center text-white active:scale-95 transition-all shadow-sm shrink-0";
+      }
+      triggerSync();
+    }
+
+    // ==========================================
+    // MEASUREMENT UNITS PREFERENCES ENGINE
+    // ==========================================
+    const CONVERSION_FACTORS = {
+      KG_TO_LB: 2.2046226218,
+      LB_TO_KG: 1 / 2.2046226218,
+      CM_TO_IN: 1 / 2.54,
+      IN_TO_CM: 2.54,
+    };
+
+    // Canonical internal values (Always KG and CM)
+    const canonicalState = {
+      exercises: {
+        1: { weightKg: 45.0, reps: 10 },
+        2: { weightKg: 20.0, reps: 10 },
+      },
+      checkin: {
+        weightKg: 82.5,
+        waistCm: 84.0,
+      },
+      progress: {
+        totalWeightLossKg: -3.5,
+        totalWaistLossCm: -4.0,
+        history: [
+          { week: 3, date: 'الجمعة 9 أكتوبر', weightKg: 83.0, waistCm: 84.5 },
+          { week: 2, date: 'الجمعة 2 أكتوبر', weightKg: 83.8, waistCm: 85.5 },
+          { week: 1, date: 'البداية 25 سبتمبر', weightKg: 86.0, waistCm: 88.0 },
+        ]
+      }
+    };
+
+    let userUnitPreferences = {
+      exercise_weight: 'kg', // 'kg' | 'lb'
+      body_weight: 'kg',     // 'kg' | 'lb'
+      measurement: 'cm',     // 'cm' | 'in'
+    };
+
+    function loadSavedUnitPreferences() {
+      try {
+        const saved = localStorage.getItem('kz_unit_preferences');
+        if (saved) {
+          const parsed = JSON.parse(saved);
+          if (parsed.exercise_weight === 'lb' || parsed.exercise_weight === 'kg') userUnitPreferences.exercise_weight = parsed.exercise_weight;
+          if (parsed.body_weight === 'lb' || parsed.body_weight === 'kg') userUnitPreferences.body_weight = parsed.body_weight;
+          if (parsed.measurement === 'in' || parsed.measurement === 'cm') userUnitPreferences.measurement = parsed.measurement;
+        }
+      } catch (_) {}
+    }
+
+    function saveUnitPreferencesToStorage() {
+      try {
+        localStorage.setItem('kz_unit_preferences', JSON.stringify(userUnitPreferences));
+      } catch (_) {}
+    }
+
+    function openUnitsModal() {
+      document.getElementById('modal-units').classList.remove('hidden');
+    }
+
+    function closeUnitsModal() {
+      document.getElementById('modal-units').classList.add('hidden');
+    }
+
+    function setUnitPref(type, value) {
+      if (userUnitPreferences[type] === value) return;
+      userUnitPreferences[type] = value;
+      saveUnitPreferencesToStorage();
+      applyUnitPreferencesToUI();
+      showToast('تم حفظ تفضيل وحدات القياس تلقائياً');
+    }
+
+    function updateSegmentUI(type, activeVal) {
+      const isEx = type === 'exercise_weight';
+      const isBw = type === 'body_weight';
+      const isMs = type === 'measurement';
+
+      if (isEx) {
+        const btnKg = document.getElementById('seg-ex-kg');
+        const btnLb = document.getElementById('seg-ex-lb');
+        const badge = document.getElementById('badge-pref-ex');
+        if (activeVal === 'kg') {
+          if (btnKg) btnKg.className = "py-1.5 rounded-[8px] transition-all bg-white text-[#0F172A] shadow-xs font-bold";
+          if (btnLb) btnLb.className = "py-1.5 rounded-[8px] transition-all text-[#64748B] hover:text-[#0F172A] font-medium";
+          if (badge) badge.innerText = "KG";
+        } else {
+          if (btnLb) btnLb.className = "py-1.5 rounded-[8px] transition-all bg-white text-[#0F172A] shadow-xs font-bold";
+          if (btnKg) btnKg.className = "py-1.5 rounded-[8px] transition-all text-[#64748B] hover:text-[#0F172A] font-medium";
+          if (badge) badge.innerText = "LB";
+        }
+      } else if (isBw) {
+        const btnKg = document.getElementById('seg-bw-kg');
+        const btnLb = document.getElementById('seg-bw-lb');
+        const badge = document.getElementById('badge-pref-bw');
+        if (activeVal === 'kg') {
+          if (btnKg) btnKg.className = "py-1.5 rounded-[8px] transition-all bg-white text-[#0F172A] shadow-xs font-bold";
+          if (btnLb) btnLb.className = "py-1.5 rounded-[8px] transition-all text-[#64748B] hover:text-[#0F172A] font-medium";
+          if (badge) badge.innerText = "KG";
+        } else {
+          if (btnLb) btnLb.className = "py-1.5 rounded-[8px] transition-all bg-white text-[#0F172A] shadow-xs font-bold";
+          if (btnKg) btnKg.className = "py-1.5 rounded-[8px] transition-all text-[#64748B] hover:text-[#0F172A] font-medium";
+          if (badge) badge.innerText = "LB";
+        }
+      } else if (isMs) {
+        const btnCm = document.getElementById('seg-ms-cm');
+        const btnIn = document.getElementById('seg-ms-in');
+        const badge = document.getElementById('badge-pref-ms');
+        if (activeVal === 'cm') {
+          if (btnCm) btnCm.className = "py-1.5 rounded-[8px] transition-all bg-white text-[#0F172A] shadow-xs font-bold";
+          if (btnIn) btnIn.className = "py-1.5 rounded-[8px] transition-all text-[#64748B] hover:text-[#0F172A] font-medium";
+          if (badge) badge.innerText = "CM";
+        } else {
+          if (btnIn) btnIn.className = "py-1.5 rounded-[8px] transition-all bg-white text-[#0F172A] shadow-xs font-bold";
+          if (btnCm) btnCm.className = "py-1.5 rounded-[8px] transition-all text-[#64748B] hover:text-[#0F172A] font-medium";
+          if (badge) badge.innerText = "IN";
+        }
+      }
+    }
+
+    function applyUnitPreferencesToUI() {
+      // 1. Update Segmented Controls
+      updateSegmentUI('exercise_weight', userUnitPreferences.exercise_weight);
+      updateSegmentUI('body_weight', userUnitPreferences.body_weight);
+      updateSegmentUI('measurement', userUnitPreferences.measurement);
+
+      // 2. Update Account summary badge
+      const summaryEl = document.getElementById('account-units-summary');
+      if (summaryEl) {
+        const exLbl = userUnitPreferences.exercise_weight === 'lb' ? 'باوند' : 'كجم';
+        const bwLbl = userUnitPreferences.body_weight === 'lb' ? 'باوند' : 'كجم';
+        const msLbl = userUnitPreferences.measurement === 'in' ? 'بوصة' : 'سم';
+        summaryEl.innerText = `${exLbl} · ${bwLbl} · ${msLbl}`;
+      }
+
+      // 3. Update Workout Cards
+      const isExLb = userUnitPreferences.exercise_weight === 'lb';
+      [1, 2].forEach(idx => {
+        const c = canonicalState.exercises[idx];
+        const valEl = document.getElementById('w' + idx);
+        const unitEl = document.getElementById('w' + idx + '-unit');
+        const lastEl = document.getElementById('last-perf-' + idx);
+
+        let dispVal;
+        let unitText;
+        if (isExLb) {
+          const lb = Math.round(c.weightKg * CONVERSION_FACTORS.KG_TO_LB * 2) / 2;
+          dispVal = lb % 1 === 0 ? lb.toString() : lb.toFixed(1);
+          unitText = "باوند";
+        } else {
+          dispVal = c.weightKg % 1 === 0 ? c.weightKg.toString() : c.weightKg.toFixed(1);
+          unitText = "كجم";
+        }
+
+        if (valEl) valEl.innerText = dispVal;
+        if (unitEl) unitEl.innerText = unitText;
+        if (lastEl) lastEl.innerText = `· ${dispVal} ${unitText} × ${c.reps}`;
+      });
+
+      // 4. Update Checkin Screen Inputs
+      const isBwLb = userUnitPreferences.body_weight === 'lb';
+      const chkWEl = document.getElementById('chk-weight');
+      const chkLbl = document.getElementById('chk-weight-label');
+      if (chkWEl && chkLbl) {
+        if (isBwLb) {
+          const lb = (canonicalState.checkin.weightKg * CONVERSION_FACTORS.KG_TO_LB).toFixed(1);
+          chkWEl.innerText = lb;
+          chkLbl.innerText = "الوزن (باوند)";
+        } else {
+          chkWEl.innerText = canonicalState.checkin.weightKg.toFixed(1);
+          chkLbl.innerText = "الوزن (كجم)";
+        }
+      }
+
+      const isMsIn = userUnitPreferences.measurement === 'in';
+      const chkMEl = document.getElementById('chk-waist');
+      const chkMLbl = document.getElementById('chk-waist-label');
+      if (chkMEl && chkMLbl) {
+        if (isMsIn) {
+          const inches = (canonicalState.checkin.waistCm * CONVERSION_FACTORS.CM_TO_IN).toFixed(1);
+          chkMEl.innerText = inches;
+          chkMLbl.innerText = "محيط الخصر (بوصة)";
+        } else {
+          chkMEl.innerText = canonicalState.checkin.waistCm.toFixed(1);
+          chkMLbl.innerText = "محيط الخصر (سم)";
+        }
+      }
+
+      // 5. Update Progress Mode Summary
+      const progWLoss = document.getElementById('prog-weight-loss');
+      const progWUnit = document.getElementById('prog-weight-unit');
+      if (progWLoss && progWUnit) {
+        if (isBwLb) {
+          progWLoss.innerText = (canonicalState.progress.totalWeightLossKg * CONVERSION_FACTORS.KG_TO_LB).toFixed(1);
+          progWUnit.innerText = "باوند";
+        } else {
+          progWLoss.innerText = canonicalState.progress.totalWeightLossKg.toFixed(1);
+          progWUnit.innerText = "كجم";
+        }
+      }
+
+      const progMLoss = document.getElementById('prog-waist-loss');
+      const progMUnit = document.getElementById('prog-waist-unit');
+      if (progMLoss && progMUnit) {
+        if (isMsIn) {
+          progMLoss.innerText = (canonicalState.progress.totalWaistLossCm * CONVERSION_FACTORS.CM_TO_IN).toFixed(1);
+          progMUnit.innerText = "بوصة";
+        } else {
+          progMLoss.innerText = canonicalState.progress.totalWaistLossCm.toFixed(1);
+          progMUnit.innerText = "سم";
+        }
+      }
+
+      // 6. Update History Logs
+      canonicalState.progress.history.forEach((item, i) => {
+        const logEl = document.getElementById('history-log-' + (i + 1));
+        if (logEl) {
+          const wDisp = isBwLb
+            ? `${(item.weightKg * CONVERSION_FACTORS.KG_TO_LB).toFixed(1)} باوند`
+            : `${item.weightKg.toFixed(1)} كجم`;
+          const mDisp = isMsIn
+            ? `${(item.waistCm * CONVERSION_FACTORS.CM_TO_IN).toFixed(1)} بوصة`
+            : `${item.waistCm.toFixed(1)} سم`;
+          logEl.innerText = `الوزن: ${wDisp} · الخصر: ${mDisp}`;
+        }
+      });
+    }
+
+    // Step handlers with precise unit steps
+    function stepExerciseWeight(id, direction) {
+      const isLb = userUnitPreferences.exercise_weight === 'lb';
+      const step = isLb ? 5.0 : 2.5;
+      const el = document.getElementById(id);
+      if (!el) return;
+      let v = parseFloat(el.innerText) || 0;
+      v += direction * step;
+      if (v < 0) v = 0;
+      el.innerText = v % 1 === 0 ? v.toFixed(0) : v.toFixed(1);
+
+      const idx = id.replace('w', '');
+      if (canonicalState.exercises[idx]) {
+        canonicalState.exercises[idx].weightKg = isLb ? (v * CONVERSION_FACTORS.LB_TO_KG) : v;
+      }
+      triggerSync();
+    }
+
+    function stepBodyWeight(id, direction) {
+      const isLb = userUnitPreferences.body_weight === 'lb';
+      const step = isLb ? 1.0 : 0.5;
+      const el = document.getElementById(id);
+      if (!el) return;
+      let v = parseFloat(el.innerText) || 0;
+      v += direction * step;
+      if (v < 0) v = 0;
+      el.innerText = v.toFixed(1);
+
+      canonicalState.checkin.weightKg = isLb ? (v * CONVERSION_FACTORS.LB_TO_KG) : v;
+      triggerSync();
+    }
+
+    function stepWaist(id, direction) {
+      const isIn = userUnitPreferences.measurement === 'in';
+      const step = isIn ? 0.25 : 0.5;
+      const el = document.getElementById(id);
+      if (!el) return;
+      let v = parseFloat(el.innerText) || 0;
+      v += direction * step;
+      if (v < 0) v = 0;
+      el.innerText = v.toFixed(isIn ? 2 : 1);
+
+      canonicalState.checkin.waistCm = isIn ? (v * CONVERSION_FACTORS.IN_TO_CM) : v;
+      triggerSync();
+    }
+
+    function stepVal(id, delta) {
+      const el = document.getElementById(id);
+      if (!el) return;
+      let v = parseFloat(el.innerText) || 0;
+      v += delta;
+      if (v < 0) v = 0;
+      el.innerText = v % 1 === 0 ? v.toFixed(0) : v.toFixed(1);
+      triggerSync();
+    }
+
+    function fillLastDynamic(idx) {
+      const c = canonicalState.exercises[idx];
+      if (!c) return;
+      const isLb = userUnitPreferences.exercise_weight === 'lb';
+      const elW = document.getElementById('w' + idx);
+      const elR = document.getElementById('r' + idx);
+
+      let dispW = isLb
+        ? (Math.round(c.weightKg * CONVERSION_FACTORS.KG_TO_LB * 2) / 2).toString()
+        : c.weightKg.toString();
+
+      if (elW) elW.innerText = dispW;
+      if (elR) elR.innerText = c.reps.toString();
+      triggerSync();
+    }
+
+    function fillLast(w, r) {
+      fillLastDynamic(1);
+    }
+
+    function fillLast2(w, r) {
+      fillLastDynamic(2);
+    }
+
+    let syncTimer = null;
+    let fadeTimer = null;
+    function triggerSync() {
+      const badge = document.getElementById('sync-badge');
+      const dot = document.getElementById('sync-dot');
+      const text = document.getElementById('sync-text');
+      if (!badge || !dot || !text) return;
+
+      badge.classList.remove('opacity-0');
+      badge.classList.add('opacity-100');
+      dot.className = "w-1.5 h-1.5 rounded-full bg-[#58B4E5] animate-ping";
+      text.innerText = "جاري الحفظ...";
+      text.className = "text-[9px] font-semibold text-[#0284C7]";
+
+      clearTimeout(syncTimer);
+      clearTimeout(fadeTimer);
+      syncTimer = setTimeout(() => {
+        dot.className = "w-1.5 h-1.5 rounded-full bg-[#10B981]";
+        text.innerText = "تم الحفظ";
+        text.className = "text-[9px] font-semibold text-[#059669]";
+
+        fadeTimer = setTimeout(() => {
+          badge.classList.remove('opacity-100');
+          badge.classList.add('opacity-0');
+        }, 1500);
+      }, 500);
+    }
+
+    // Food Swap Logic
+    let activeSwapTargetElementId = null;
+    let selectedSwapOption = null;
+
+    const swapDatabase = {
+      protein: [
+        { name: "صدور دجاج مشوية", grams: "200 جم", cal: "230 سعرة", p: "46g بروتين" },
+        { name: "سمك فيليه أبيض مشوي", grams: "240 جم", cal: "230 سعرة", p: "46g بروتين" },
+        { name: "لحم بقري مفروم (5% دهن)", grams: "190 جم", cal: "240 سعرة", p: "44g بروتين" },
+        { name: "تونة مصفاة من الزيت", grams: "210 جم", cal: "225 سعرة", p: "45g بروتين" }
+      ],
+      carb: [
+        { name: "أرز بسمتي مسلوق", grams: "250 جم", cal: "320 سعرة", c: "70g كارب" },
+        { name: "بطاطس مسلوقة أو مشوية", grams: "350 جم", cal: "315 سعرة", c: "70g كارب" },
+        { name: "بطاطا حلوة مشوية", grams: "300 جم", cal: "310 سعرة", c: "72g كارب" },
+        { name: "شوفان كامل الحبة", grams: "85 جم", cal: "320 سعرة", c: "58g كارب" }
+      ]
+    };
+
+    function openSwapModal(currentName, targetId, type) {
+      activeSwapTargetElementId = targetId;
+      document.getElementById('swap-current-label').innerText = currentName;
+
+      const listContainer = document.getElementById('swap-options-list');
+      listContainer.innerHTML = '';
+
+      const items = swapDatabase[type] || swapDatabase.protein;
+      items.forEach((item) => {
+        const isCurrent = item.name === currentName;
+        const opt = document.createElement('div');
+        opt.className = `p-2.5 rounded-[12px] border transition-all cursor-pointer flex items-center justify-between ${isCurrent ? 'bg-[#F0F7FF] border-[#58B4E5]' : 'bg-[#F8FAFC] border-[#E2E8F0]'}`;
+        opt.onclick = () => {
+          selectedSwapOption = item;
+          closeSwapModal();
+          confirmSwapSelection();
+        };
+        opt.innerHTML = `
+          <div>
+            <div class="text-[12px] font-semibold text-[#0F172A]">${item.name}</div>
+            <div class="text-[10.5px] text-[#64748B]">${item.grams} · ${item.cal} · ${item.p || item.c}</div>
+          </div>
+          <div class="w-3.5 h-3.5 rounded-full border ${isCurrent ? 'border-[#0284C7] bg-[#0284C7]' : 'border-[#CBD5E1] bg-white'}"></div>
+        `;
+        listContainer.appendChild(opt);
+      });
+
+      document.getElementById('modal-swap-sheet').classList.remove('hidden');
+    }
+
+    function confirmSwapSelection() {
+      if (selectedSwapOption && activeSwapTargetElementId) {
+        const target = document.getElementById(activeSwapTargetElementId);
+        if (target) {
+          target.innerText = selectedSwapOption.name;
+          const sub = target.nextElementSibling;
+          if (sub) {
+            sub.innerText = `${selectedSwapOption.grams} · ${selectedSwapOption.cal} · ${selectedSwapOption.p || selectedSwapOption.c}`;
+          }
+        }
+        showToast('تم اعتماد التبديل ومطابقة الجرامات');
+      }
+    }
+
+    function closeSwapModal() {
+      document.getElementById('modal-swap-sheet').classList.add('hidden');
+    }
+
+    // Checkin Screen Actions
+    function toggleCheckinView(mode) {
+      const btnForm = document.getElementById('chk-view-form');
+      const btnHist = document.getElementById('chk-view-history');
+      const modeForm = document.getElementById('checkin-mode-form');
+      const modeHist = document.getElementById('checkin-mode-history');
+
+      if (mode === 'form') {
+        modeForm.classList.remove('hidden');
+        modeHist.classList.add('hidden');
+        btnForm.className = "flex-1 py-1.5 rounded-[8px] text-[11.5px] font-semibold bg-[#58B4E5] text-white shadow-2xs transition-all text-center";
+        btnHist.className = "flex-1 py-1.5 rounded-[8px] text-[11.5px] font-medium text-[#64748B] hover:text-[#0F172A] transition-all text-center";
+      } else {
+        modeForm.classList.add('hidden');
+        modeHist.classList.remove('hidden');
+        btnHist.className = "flex-1 py-1.5 rounded-[8px] text-[11.5px] font-semibold bg-[#58B4E5] text-white shadow-2xs transition-all text-center";
+        btnForm.className = "flex-1 py-1.5 rounded-[8px] text-[11.5px] font-medium text-[#64748B] hover:text-[#0F172A] transition-all text-center";
+      }
+    }
+
+    function pickSleep(btn) {
+      btn.parentElement.querySelectorAll('button').forEach(b => {
+        b.className = "h-7 rounded-[7px] bg-white border border-[#E2E8F0] text-[10.5px] font-medium text-[#64748B]";
+      });
+      btn.className = "h-7 rounded-[7px] bg-[#F0F7FF] border border-[#58B4E5] text-[10.5px] font-semibold text-[#0284C7]";
+    }
+
+    function pickAdherence(btn) {
+      btn.parentElement.querySelectorAll('button').forEach(b => {
+        b.className = "h-7 rounded-[7px] bg-white border border-[#E2E8F0] text-[10.5px] font-medium text-[#64748B]";
+      });
+      btn.className = "h-7 rounded-[7px] bg-[#F0F7FF] border border-[#58B4E5] text-[10.5px] font-semibold text-[#0284C7]";
+    }
+
+    function togglePhotoUpload(btn) {
+      const statusSpan = btn.querySelector('.photo-status');
+      if (btn.classList.contains('bg-emerald-50')) {
+        btn.className = "p-2 bg-[#F8FAFC] border border-dashed border-[#CBD5E1] rounded-[10px] flex flex-col items-center justify-center gap-0.5 hover:border-[#58B4E5] transition-all";
+        statusSpan.innerText = "اضغط للرفع";
+        statusSpan.className = "photo-status text-[9px] text-[#94A3B8]";
+      } else {
+        btn.className = "p-2 bg-emerald-50 border border-emerald-400 rounded-[10px] flex flex-col items-center justify-center gap-0.5 transition-all";
+        statusSpan.innerText = "✓ تم الإرفاق";
+        statusSpan.className = "photo-status text-[9px] text-emerald-700 font-bold";
+      }
+    }
+
+    function submitCheckinForm() {
+      showToast('تم إرسال المتابعة الأسبوعية بنجاح إلى الكوتش كريم');
+      setTimeout(() => {
+        toggleCheckinView('history');
+      }, 1000);
+    }
+
+    function openAccountModal() {
+      document.getElementById('modal-account').classList.remove('hidden');
+    }
+
+    function closeAccountModal() {
+      document.getElementById('modal-account').classList.add('hidden');
+    }
+
+    let toastTimer = null;
+    function showToast(msg) {
+      const t = document.getElementById('toast-notify');
+      t.innerText = msg;
+      t.classList.remove('hidden');
+      clearTimeout(toastTimer);
+      toastTimer = setTimeout(() => {
+        t.classList.add('hidden');
+      }, 2000);
+    }
+
+    window.addEventListener('DOMContentLoaded', () => {
+      loadSavedUnitPreferences();
+      const params = new URLSearchParams(window.location.search);
+      if (params.get('raw') === '1') document.body.classList.add('raw-preview');
+      if (params.get('unit_ex')) userUnitPreferences.exercise_weight = params.get('unit_ex');
+      if (params.get('unit_bw')) userUnitPreferences.body_weight = params.get('unit_bw');
+      if (params.get('unit_ms')) userUnitPreferences.measurement = params.get('unit_ms');
+      
+      applyUnitPreferencesToUI();
+      
+      const tab = params.get('tab');
+      if (tab === 'workout') switchTab(1);
+      else if (tab === 'nutrition') switchTab(2);
+      else if (tab === 'checkin') {
+        switchTab(3);
+        if (params.get('checkin_view')) toggleCheckinView(params.get('checkin_view'));
+      }
+      else switchTab(0);
+
+      const modal = params.get('modal');
+      if (modal === 'units') openUnitsModal();
+      else if (modal === 'account') openAccountModal();
+
+      setTimeout(initLensPosition, 120);
+    });
+    window.addEventListener('resize', initLensPosition);
+
+    // Override / connect switchTab to update studio calibration panel
+    const originalSwitchTab = window.switchTab;
+    window.switchTab = window.switchAppTab = function(index) {
+      if (typeof originalSwitchTab === 'function') {
+        originalSwitchTab(index);
+      }
+      const names = ['اليوم', 'التمارين', 'التغذية', 'المتابعة'];
+      const chip = document.getElementById('status-chip');
+      if (chip && names[index]) {
+        chip.textContent = 'مستقر عند: «' + names[index] + '»';
+      }
+    };
+
+    window.addEventListener('resize', () => {
+      initLensPosition();
+    });
+
+    window.addEventListener('DOMContentLoaded', () => {
+      initLensPosition();
+    });
+  </script>
+</body>
+</html>

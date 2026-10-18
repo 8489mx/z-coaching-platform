@@ -310,7 +310,8 @@ test('Tier 1 Suite: Check-in Plan Preservation & Idempotent Plan Merge Engine', 
         params: { checkinId: '501' },
         body: {
           coach_notes: 'استمر يا بطل، تم خفض الكارب لكسر الثبات',
-          custom_macros: null
+          custom_macros: null,
+          apply_program_adaptation: true
         }
       };
 

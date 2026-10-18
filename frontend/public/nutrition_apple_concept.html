@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Nutrition Items - Apple HIG Concept</title>
+  <script src="https://www.gstatic.com/antigravity/web/dev/tailwindcss.min.js"></script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@300;400;500;600;700;800&family=Inter:wght@400;500;600;700;800&display=swap');
+    * {
+      font-family: 'IBM Plex Sans Arabic', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      box-sizing: border-box;
+      -webkit-font-smoothing: antialiased;
+    }
+    .font-inter { font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif; }
+    body { background-color: #F2F4F7; margin: 0; padding: 24px 16px; display: flex; flex-direction: column; align-items: center; }
+  </style>
+</head>
+<body class="min-h-screen">
+
+  <div class="w-[390px] space-y-4">
+
+    <!-- Concept Card Container -->
+    <div class="bg-white rounded-[24px] p-4.5 shadow-[0_4px_24px_-2px_rgba(15,23,42,0.06)] border border-slate-100/90 space-y-4">
+      
+      <!-- Card Header: Apple Inset Group Title -->
+      <div class="flex items-center justify-between pb-3.5 border-b border-[#F2F2F7]">
+        <div class="flex items-center gap-2.5">
+          <div class="w-8 h-8 rounded-[10px] bg-orange-500/10 text-orange-600 flex items-center justify-center shrink-0">
+            <svg class="w-4.5 h-4.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M18 2v6a3 3 0 0 1-3 3 3 3 0 0 1-3-3V2"/><path d="M15 11v11"/><path d="M6 2v20"/><path d="M9 2v4a3 3 0 0 1-3 3"/>
+            </svg>
+          </div>
+          <div>
+            <h3 class="text-[16px] font-bold text-[#1C1C1E] tracking-tight leading-none">الغداء</h3>
+            <span class="text-[11.5px] font-medium text-[#8E8E93] leading-none mt-1.5 block">الوجبة الرئيسية الثانية</span>
+          </div>
+        </div>
+        <div class="flex items-center gap-1 px-3 py-1.5 rounded-full bg-slate-100 text-[#1C1C1E] text-[12px] font-bold font-inter">
+          <span class="font-black text-[#007AFF]">800</span>
+          <span class="text-[10.5px] text-[#8E8E93] font-medium">سعرة</span>
+        </div>
+      </div>
+
+      <!-- Food Items List (Apple Refined System - Zero Locks) -->
+      <div class="divide-y divide-[#F2F2F7]">
+
+        <!-- Item 1: أرز بسمتي مسلوق -->
+        <div class="py-3.5 flex items-center justify-between gap-3 group">
+          <div class="flex items-center gap-3.5 min-w-0 flex-1">
+            <div class="w-[62px] h-[62px] rounded-[16px] overflow-hidden bg-slate-100 shrink-0 border border-slate-200/80 shadow-2xs">
+              <img src="/assets/food/rice.jpg" alt="أرز بسمتي مسلوق" class="w-full h-full object-cover">
+            </div>
+            <div class="min-w-0 flex-1 text-right space-y-1.5">
+              <div class="text-[15px] font-bold text-[#1C1C1E] leading-snug">أرز بسمتي مسلوق</div>
+              <div class="flex items-center gap-2 text-[12.5px] font-bold">
+                <span class="text-[#007AFF] font-black font-inter">200 جم</span>
+                <span class="text-slate-300">•</span>
+                <span class="text-slate-600 font-inter">260 سعرة</span>
+              </div>
+              <!-- Apple Pastel Macro Pills (Open & Fully Unlocked) -->
+              <div class="flex items-center gap-1.5 select-none font-inter whitespace-nowrap">
+                <span class="px-2 py-0.5 rounded-[6px] bg-[#FF9500]/10 text-[#C96B00] text-[10px] font-bold">57g كارب</span>
+                <span class="px-2 py-0.5 rounded-[6px] bg-[#007AFF]/10 text-[#007AFF] text-[10px] font-bold">6g بروتين</span>
+                <span class="px-2 py-0.5 rounded-[6px] bg-[#AF52DE]/10 text-[#AF52DE] text-[10px] font-bold">1g دهون</span>
+              </div>
+            </div>
+          </div>
+          <!-- Action: Circular Swap Button (Exactly Matching Reference) -->
+          <button type="button" title="تبديل الصنف" class="w-9 h-9 rounded-full bg-[#F2F2F7] hover:bg-[#E5E5EA] active:scale-95 text-[#007AFF] flex items-center justify-center shrink-0 border border-slate-200/50 transition-all cursor-pointer">
+            <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3">
+              <path d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"/>
+            </svg>
+          </button>
+        </div>
+
+        <!-- Item 2: صدور دجاج مشوية -->
+        <div class="py-3.5 flex items-center justify-between gap-3 group">
+          <div class="flex items-center gap-3.5 min-w-0 flex-1">
+            <div class="w-[62px] h-[62px] rounded-[16px] overflow-hidden bg-slate-100 shrink-0 border border-slate-200/80 shadow-2xs">
+              <img src="/assets/food/chicken.jpg" alt="صدور دجاج مشوية" class="w-full h-full object-cover">
+            </div>
+            <div class="min-w-0 flex-1 text-right space-y-1.5">
+              <div class="text-[15px] font-bold text-[#1C1C1E] leading-snug">صدور دجاج مشوية</div>
+              <div class="flex items-center gap-2 text-[12.5px] font-bold">
+                <span class="text-[#007AFF] font-black font-inter">200 جم</span>
+                <span class="text-slate-300">•</span>
+                <span class="text-slate-600 font-inter">330 سعرة</span>
+              </div>
+              <!-- Apple Pastel Macro Pills -->
+              <div class="flex items-center gap-1.5 select-none font-inter whitespace-nowrap">
+                <span class="px-2 py-0.5 rounded-[6px] bg-[#007AFF]/10 text-[#007AFF] text-[10px] font-bold">62g بروتين</span>
+                <span class="px-2 py-0.5 rounded-[6px] bg-[#AF52DE]/10 text-[#AF52DE] text-[10px] font-bold">7g دهون</span>
+                <span class="px-2 py-0.5 rounded-[6px] bg-slate-100 text-slate-500 text-[10px] font-semibold">0g كارب</span>
+              </div>
+            </div>
+          </div>
+          <!-- Action: Circular Swap Button -->
+          <button type="button" title="تبديل الصنف" class="w-9 h-9 rounded-full bg-[#F2F2F7] hover:bg-[#E5E5EA] active:scale-95 text-[#007AFF] flex items-center justify-center shrink-0 border border-slate-200/50 transition-all cursor-pointer">
+            <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3">
+              <path d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"/>
+            </svg>
+          </button>
+        </div>
+
+        <!-- Item 3: طحينة سمسم نقية -->
+        <div class="py-3.5 flex items-center justify-between gap-3 group">
+          <div class="flex items-center gap-3.5 min-w-0 flex-1">
+            <div class="w-[62px] h-[62px] rounded-[16px] overflow-hidden bg-slate-100 shrink-0 border border-slate-200/80 shadow-2xs">
+              <img src="/assets/food/tahini.jpg" alt="طحينة سمسم نقية" class="w-full h-full object-cover">
+            </div>
+            <div class="min-w-0 flex-1 text-right space-y-1.5">
+              <div class="text-[15px] font-bold text-[#1C1C1E] leading-snug">طحينة سمسم نقية</div>
+              <div class="flex items-center gap-2 text-[12.5px] font-bold">
+                <span class="text-[#007AFF] font-black font-inter">20 جم</span>
+                <span class="text-slate-300">•</span>
+                <span class="text-slate-600 font-inter">120 سعرة</span>
+              </div>
+              <!-- Apple Pastel Macro Pills -->
+              <div class="flex items-center gap-1.5 select-none font-inter whitespace-nowrap">
+                <span class="px-2 py-0.5 rounded-[6px] bg-[#AF52DE]/10 text-[#AF52DE] text-[10px] font-bold">11g دهون صحية</span>
+                <span class="px-2 py-0.5 rounded-[6px] bg-[#007AFF]/10 text-[#007AFF] text-[10px] font-bold">5g بروتين</span>
+                <span class="px-2 py-0.5 rounded-[6px] bg-[#FF9500]/10 text-[#C96B00] text-[10px] font-bold">3g كارب</span>
+              </div>
+            </div>
+          </div>
+          <!-- Action: Circular Swap Button -->
+          <button type="button" title="تبديل الصنف" class="w-9 h-9 rounded-full bg-[#F2F2F7] hover:bg-[#E5E5EA] active:scale-95 text-[#007AFF] flex items-center justify-center shrink-0 border border-slate-200/50 transition-all cursor-pointer">
+            <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3">
+              <path d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"/>
+            </svg>
+          </button>
+        </div>
+
+        <!-- Item 4: زيت زيتون بكر ممتاز (صنف أساسي) -->
+        <div class="py-3.5 flex items-center justify-between gap-3">
+          <div class="flex items-center gap-3.5 min-w-0 flex-1">
+            <div class="w-[62px] h-[62px] rounded-[16px] overflow-hidden bg-slate-100 shrink-0 border border-slate-200/80 shadow-2xs">
+              <img src="/assets/food/olive_oil.jpg" alt="زيت زيتون بكر ممتاز" class="w-full h-full object-cover">
+            </div>
+            <div class="min-w-0 flex-1 text-right space-y-1.5">
+              <div class="text-[15px] font-bold text-[#1C1C1E] leading-snug">زيت زيتون بكر ممتاز</div>
+              <div class="flex items-center gap-2 text-[12.5px] font-bold">
+                <span class="text-[#007AFF] font-black font-inter">10 جم</span>
+                <span class="text-slate-300">•</span>
+                <span class="text-slate-600 font-inter">90 سعرة</span>
+              </div>
+              <!-- Apple Pastel Macro Pills -->
+              <div class="flex items-center gap-1.5 select-none font-inter whitespace-nowrap">
+                <span class="px-2 py-0.5 rounded-[6px] bg-[#AF52DE]/10 text-[#AF52DE] text-[10px] font-bold">10g دهون صحية</span>
+              </div>
+            </div>
+          </div>
+          <!-- Quiet Essential Badge -->
+          <span class="h-7 px-2.5 rounded-full bg-slate-100 text-[#8E8E93] text-[10.5px] font-semibold shrink-0 flex items-center border border-slate-200/60 select-none">
+            صنف أساسي
+          </span>
+        </div>
+
+      </div>
+
+      <!-- Meal Coach Tip -->
+      <div class="bg-[#F8FAFC] rounded-[14px] p-3 flex items-start gap-2.5 border border-slate-100 text-[11.5px] text-[#475569] leading-relaxed">
+        <svg class="w-4 h-4 text-[#007AFF] shrink-0 mt-0.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+          <circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><circle cx="12" cy="8" r="0.8" fill="currentColor"/>
+        </svg>
+        <span>وزن الدجاج والأرز قبل الطهي بميزان المطبخ بدقة، مع شرب 500 مل ماء مع الوجبة.</span>
+      </div>
+
+    </div>
+
+  </div>
+
+</body>
+</html>

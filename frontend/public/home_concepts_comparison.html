@@ -1,0 +1,1480 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Z Coaching — Home / Today Hub Concepts Evaluation</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Alexandria:wght@300;400;500;600;700;800&family=IBM+Plex+Sans+Arabic:wght@300;400;500;600;700&family=Inter:wght@400;500;600;700;800&family=Readex+Pro:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --active-font: 'Segoe UI', -apple-system, BlinkMacSystemFont, 'Tahoma', sans-serif;
+    }
+
+    *, *::before, *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background-color: #0F172A;
+      color: #F8FAFC;
+      font-family: var(--active-font);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 24px 16px 60px;
+    }
+
+    /* English names and numbers font */
+    .en-font, [lang="en"], .font-inter {
+      font-family: 'Inter', sans-serif !important;
+      direction: ltr !important;
+      display: inline-block;
+    }
+
+    .top-controls {
+      width: 100%;
+      max-width: 1240px;
+      background: rgba(30, 41, 59, 0.7);
+      backdrop-filter: blur(12px);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 16px;
+      padding: 16px 20px;
+      margin-bottom: 28px;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+    }
+
+    .control-title {
+      font-size: 15px;
+      font-weight: 700;
+      color: #FFFFFF;
+    }
+
+    .control-group {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .btn-toggle {
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      color: #94A3B8;
+      font-family: inherit;
+      font-size: 13px;
+      font-weight: 600;
+      padding: 8px 14px;
+      border-radius: 10px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .btn-toggle:hover {
+      background: rgba(255, 255, 255, 0.15);
+      color: #FFFFFF;
+    }
+
+    .btn-toggle.active {
+      background: #FFFFFF;
+      color: #0F172A;
+      border-color: #FFFFFF;
+      font-weight: 700;
+    }
+
+    /* Comparison Stage */
+    .comparison-container {
+      display: flex;
+      gap: 28px;
+      justify-content: center;
+      align-items: flex-start;
+      flex-wrap: wrap;
+      width: 100%;
+      max-width: 1300px;
+    }
+
+    .device-column {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 14px;
+    }
+
+    .concept-header-badge {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      gap: 4px;
+    }
+
+    .concept-badge {
+      font-size: 12px;
+      font-weight: 800;
+      letter-spacing: 0.5px;
+      padding: 4px 12px;
+      border-radius: 9999px;
+      text-transform: uppercase;
+    }
+
+    .badge-a { background: #38BDF8; color: #0F172A; }
+    .badge-b { background: #34D399; color: #064E3B; }
+    .badge-c { background: #FCD34D; color: #78350F; }
+
+    .concept-name {
+      font-size: 14px;
+      font-weight: 700;
+      color: #E2E8F0;
+    }
+
+    .concept-desc {
+      font-size: 11px;
+      color: #94A3B8;
+      max-width: 380px;
+    }
+
+    /* Mobile Frame */
+    .mobile-frame {
+      width: 390px;
+      min-height: 820px;
+      background: #F8FAFC;
+      border-radius: 40px;
+      box-shadow: 0 25px 60px -15px rgba(0, 0, 0, 0.5), 0 0 0 8px #1E293B, 0 0 0 10px rgba(255, 255, 255, 0.1);
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      position: relative;
+      color: #0F172A;
+      font-family: var(--active-font);
+      transition: width 0.3s ease;
+    }
+
+    /* Screen Content Container */
+    .screen-content {
+      flex: 1;
+      padding: 16px 18px 100px;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    /* Common Header for All Concepts */
+    .app-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding-top: 10px;
+      padding-bottom: 4px;
+    }
+
+    .user-greeting {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+
+    .greeting-sub {
+      font-size: 11px;
+      font-weight: 500;
+      color: #64748B;
+    }
+
+    .greeting-name {
+      font-size: 17px;
+      font-weight: 800;
+      color: #0F172A;
+      letter-spacing: -0.3px;
+    }
+
+    .header-account-btn {
+      width: 38px;
+      height: 38px;
+      border-radius: 12px;
+      background: #FFFFFF;
+      border: 1px solid #E2E8F0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #334155;
+      cursor: pointer;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+      transition: all 0.15s ease;
+    }
+
+    .header-account-btn:hover {
+      background: #F1F5F9;
+      border-color: #CBD5E1;
+    }
+
+    /* Floating Navigation (4 Tabs) */
+    .bottom-nav {
+      position: absolute;
+      bottom: 12px;
+      left: 16px;
+      right: 16px;
+      height: 60px;
+      background: rgba(255, 255, 255, 0.95);
+      backdrop-filter: blur(16px);
+      border: 1px solid rgba(226, 232, 240, 0.9);
+      border-radius: 20px;
+      box-shadow: 0 10px 25px -5px rgba(15, 23, 42, 0.08), 0 4px 10px -2px rgba(15, 23, 42, 0.04);
+      display: flex;
+      align-items: center;
+      justify-content: space-around;
+      padding: 0 8px;
+      z-index: 50;
+    }
+
+    .nav-tab {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 4px;
+      color: #94A3B8;
+      text-decoration: none;
+      font-size: 10px;
+      font-weight: 600;
+      cursor: pointer;
+      padding: 6px 12px;
+      border-radius: 12px;
+      transition: all 0.15s ease;
+    }
+
+    .nav-tab.active {
+      color: #0F172A;
+      font-weight: 800;
+    }
+
+    .nav-tab svg {
+      width: 20px;
+      height: 20px;
+      stroke-width: 2;
+    }
+
+    /* ============================================================== */
+    /* CONCEPT A: HERO ACTION FIRST (البطل التنفيذي)                     */
+    /* ============================================================== */
+    .concept-a .hero-workout-card {
+      background: #0F172A;
+      color: #FFFFFF;
+      border-radius: 18px;
+      padding: 20px 18px;
+      box-shadow: 0 8px 24px -4px rgba(15, 23, 42, 0.22);
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .concept-a .hero-workout-card::after {
+      content: '';
+      position: absolute;
+      top: -30px;
+      left: -30px;
+      width: 110px;
+      height: 110px;
+      background: radial-gradient(circle, rgba(56, 189, 248, 0.25) 0%, rgba(15, 23, 42, 0) 70%);
+      pointer-events: none;
+    }
+
+    .concept-a .hero-top-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .concept-a .hero-badge {
+      font-size: 10px;
+      font-weight: 700;
+      background: rgba(255, 255, 255, 0.12);
+      color: #38BDF8;
+      padding: 4px 10px;
+      border-radius: 8px;
+      letter-spacing: 0.3px;
+    }
+
+    .concept-a .hero-duration {
+      font-size: 11px;
+      color: #94A3B8;
+      font-weight: 500;
+    }
+
+    .concept-a .hero-title-group {
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+    }
+
+    .concept-a .hero-en-title {
+      font-size: 18px;
+      font-weight: 800;
+      color: #FFFFFF;
+      letter-spacing: -0.3px;
+    }
+
+    .concept-a .hero-ar-title {
+      font-size: 13px;
+      font-weight: 600;
+      color: #94A3B8;
+    }
+
+    .concept-a .hero-stats-row {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      padding-top: 4px;
+      border-top: 1px solid rgba(255, 255, 255, 0.08);
+    }
+
+    .concept-a .hero-stat {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 11px;
+      color: #CBD5E1;
+    }
+
+    .concept-a .hero-stat strong {
+      color: #FFFFFF;
+      font-weight: 700;
+    }
+
+    .concept-a .hero-action-btn {
+      background: #FFFFFF;
+      color: #0F172A;
+      font-family: inherit;
+      font-size: 13px;
+      font-weight: 800;
+      padding: 12px;
+      border-radius: 12px;
+      border: none;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      cursor: pointer;
+      box-shadow: 0 4px 12px rgba(255, 255, 255, 0.15);
+      transition: background 0.15s ease;
+    }
+
+    .concept-a .hero-action-btn:hover {
+      background: #F1F5F9;
+    }
+
+    /* Rest Day Card for Concept A */
+    .concept-a .rest-day-card {
+      background: #FFFFFF;
+      border: 1px solid #E2E8F0;
+      border-radius: 18px;
+      padding: 18px;
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      box-shadow: 0 2px 8px rgba(15, 23, 42, 0.03);
+    }
+
+    .concept-a .rest-icon-wrap {
+      width: 44px;
+      height: 44px;
+      border-radius: 12px;
+      background: #F0FDF4;
+      border: 1px solid #DCFCE7;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #16A34A;
+      flex-shrink: 0;
+    }
+
+    .concept-a .rest-info {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+
+    .concept-a .rest-title {
+      font-size: 14px;
+      font-weight: 700;
+      color: #0F172A;
+    }
+
+    .concept-a .rest-desc {
+      font-size: 11px;
+      color: #64748B;
+      line-height: 1.4;
+    }
+
+    /* Nutrition Block in Concept A */
+    .concept-a .nutrition-card {
+      background: #FFFFFF;
+      border: 1px solid #E2E8F0;
+      border-radius: 18px;
+      padding: 16px 18px;
+      box-shadow: 0 2px 8px rgba(15, 23, 42, 0.03);
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+
+    .concept-a .section-header-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .concept-a .section-heading {
+      font-size: 13px;
+      font-weight: 800;
+      color: #0F172A;
+    }
+
+    .concept-a .calorie-badge {
+      display: flex;
+      align-items: baseline;
+      gap: 4px;
+      background: #F8FAFC;
+      border: 1px solid #E2E8F0;
+      padding: 4px 10px;
+      border-radius: 8px;
+    }
+
+    .concept-a .calorie-badge strong {
+      font-size: 14px;
+      font-weight: 800;
+      color: #0F172A;
+    }
+
+    .concept-a .calorie-badge span {
+      font-size: 10px;
+      color: #64748B;
+      font-weight: 600;
+    }
+
+    .concept-a .macros-progress-bar {
+      height: 8px;
+      border-radius: 9999px;
+      background: #F1F5F9;
+      display: flex;
+      overflow: hidden;
+      gap: 2px;
+    }
+
+    .concept-a .macro-seg-protein { width: 30%; background: #0F172A; border-radius: 4px; }
+    .concept-a .macro-seg-carbs { width: 45%; background: #0284C7; border-radius: 4px; }
+    .concept-a .macro-seg-fat { width: 25%; background: #94A3B8; border-radius: 4px; }
+
+    .concept-a .macros-detail-row {
+      display: flex;
+      justify-content: space-between;
+      gap: 8px;
+    }
+
+    .concept-a .macro-item {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+
+    .concept-a .macro-label {
+      font-size: 10px;
+      color: #64748B;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .concept-a .macro-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 9999px;
+      display: inline-block;
+    }
+
+    .concept-a .dot-protein { background: #0F172A; }
+    .concept-a .dot-carbs { background: #0284C7; }
+    .concept-a .dot-fat { background: #94A3B8; }
+
+    .concept-a .macro-val {
+      font-size: 13px;
+      font-weight: 700;
+      color: #0F172A;
+    }
+
+    /* Checkin & Coach Banner in Concept A */
+    .concept-a .status-banner {
+      background: #F8FAFC;
+      border: 1px solid #E2E8F0;
+      border-radius: 16px;
+      padding: 14px 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .concept-a .banner-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .concept-a .checkin-badge-open {
+      font-size: 11px;
+      font-weight: 700;
+      color: #047857;
+      background: #ECFDF5;
+      border: 1px solid #A7F3D0;
+      padding: 4px 10px;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .concept-a .checkin-badge-open::before {
+      content: '';
+      width: 6px;
+      height: 6px;
+      border-radius: 9999px;
+      background: #10B981;
+    }
+
+    .concept-a .checkin-time-left {
+      font-size: 11px;
+      color: #64748B;
+      font-weight: 600;
+    }
+
+    .concept-a .coach-quote-box {
+      background: #FFFFFF;
+      border: 1px solid #E2E8F0;
+      border-radius: 10px;
+      padding: 10px 12px;
+      font-size: 11.5px;
+      color: #334155;
+      line-height: 1.5;
+    }
+
+    .concept-a .coach-quote-box strong {
+      color: #0F172A;
+      font-weight: 700;
+      display: block;
+      margin-bottom: 2px;
+    }
+
+    /* ============================================================== */
+    /* CONCEPT B: BALANCED PILLARS (الأعمدة المتوازنة المستقلة)         */
+    /* ============================================================== */
+    .concept-b .coach-compact-strip {
+      background: #F8FAFC;
+      border: 1px solid #E2E8F0;
+      border-radius: 14px;
+      padding: 10px 14px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .concept-b .coach-avatar {
+      width: 32px;
+      height: 32px;
+      border-radius: 10px;
+      background: #0F172A;
+      color: #FFFFFF;
+      font-size: 11px;
+      font-weight: 800;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .concept-b .coach-compact-text {
+      font-size: 11px;
+      color: #334155;
+      line-height: 1.4;
+      flex: 1;
+    }
+
+    /* Training Card in Concept B */
+    .concept-b .training-pillar-card {
+      background: #FFFFFF;
+      border: 1px solid #E2E8F0;
+      border-radius: 18px;
+      padding: 16px 18px;
+      box-shadow: 0 2px 8px rgba(15, 23, 42, 0.03);
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .concept-b .pillar-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .concept-b .pillar-title-sub {
+      font-size: 11px;
+      font-weight: 600;
+      color: #64748B;
+    }
+
+    .concept-b .pillar-title-main {
+      font-size: 15px;
+      font-weight: 800;
+      color: #0F172A;
+    }
+
+    .concept-b .session-preview-list {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      background: #F8FAFC;
+      border-radius: 12px;
+      padding: 10px 12px;
+    }
+
+    .concept-b .preview-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-size: 12px;
+    }
+
+    .concept-b .preview-item-name {
+      font-weight: 700;
+      color: #1E293B;
+    }
+
+    .concept-b .preview-item-sets {
+      font-size: 11px;
+      color: #64748B;
+      font-weight: 600;
+    }
+
+    .concept-b .view-all-link {
+      font-size: 12px;
+      font-weight: 700;
+      color: #0284C7;
+      text-decoration: none;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      align-self: flex-start;
+      margin-top: 2px;
+    }
+
+    /* Nutrition Pillar in Concept B */
+    .concept-b .nutrition-grid-card {
+      background: #FFFFFF;
+      border: 1px solid #E2E8F0;
+      border-radius: 18px;
+      padding: 16px 18px;
+      box-shadow: 0 2px 8px rgba(15, 23, 42, 0.03);
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .concept-b .macro-grid-4col {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 8px;
+    }
+
+    .concept-b .macro-box {
+      background: #F8FAFC;
+      border: 1px solid #E2E8F0;
+      border-radius: 12px;
+      padding: 10px 8px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      gap: 3px;
+    }
+
+    .concept-b .macro-box-lbl {
+      font-size: 10px;
+      color: #64748B;
+      font-weight: 600;
+    }
+
+    .concept-b .macro-box-val {
+      font-size: 13px;
+      font-weight: 800;
+      color: #0F172A;
+    }
+
+    /* Check-in Pill in Concept B */
+    .concept-b .checkin-pill-card {
+      background: #F0FDF4;
+      border: 1px solid #DCFCE7;
+      border-radius: 16px;
+      padding: 14px 16px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .concept-b .checkin-pill-title {
+      font-size: 13px;
+      font-weight: 800;
+      color: #166534;
+    }
+
+    .concept-b .checkin-pill-sub {
+      font-size: 11px;
+      color: #15803D;
+      font-weight: 600;
+    }
+
+    .concept-b .checkin-pill-btn {
+      background: #16A34A;
+      color: #FFFFFF;
+      font-size: 11.5px;
+      font-weight: 700;
+      padding: 6px 12px;
+      border-radius: 8px;
+      border: none;
+      cursor: pointer;
+    }
+
+    /* ============================================================== */
+    /* CONCEPT C: DAY-STREAM MINIMAL (التدفق اليومي المريح)            */
+    /* ============================================================== */
+    .concept-c .stream-status-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 4px;
+    }
+
+    .concept-c .stream-date {
+      font-size: 12px;
+      font-weight: 700;
+      color: #64748B;
+    }
+
+    .concept-c .stream-checkin-badge {
+      font-size: 11px;
+      font-weight: 700;
+      background: #FEF3C7;
+      color: #92400E;
+      border: 1px solid #FDE68A;
+      padding: 3px 10px;
+      border-radius: 8px;
+    }
+
+    .concept-c .stream-card {
+      background: #FFFFFF;
+      border: 1px solid #E2E8F0;
+      border-radius: 18px;
+      padding: 16px 18px;
+      box-shadow: 0 1px 4px rgba(15, 23, 42, 0.02);
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .concept-c .stream-tag {
+      font-size: 10px;
+      font-weight: 800;
+      color: #0284C7;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .concept-c .stream-title-en {
+      font-size: 17px;
+      font-weight: 800;
+      color: #0F172A;
+      margin-top: 2px;
+    }
+
+    .concept-c .stream-title-ar {
+      font-size: 12px;
+      color: #64748B;
+      font-weight: 500;
+    }
+
+    .concept-c .stream-stats-pills {
+      display: flex;
+      gap: 8px;
+      margin-top: 4px;
+    }
+
+    .concept-c .stat-pill {
+      font-size: 11px;
+      background: #F8FAFC;
+      border: 1px solid #E2E8F0;
+      padding: 4px 10px;
+      border-radius: 8px;
+      color: #334155;
+      font-weight: 600;
+    }
+
+    .concept-c .unified-macros-strip {
+      background: #F8FAFC;
+      border: 1px solid #E2E8F0;
+      border-radius: 14px;
+      padding: 12px 14px;
+      display: flex;
+      align-items: center;
+      justify-content: space-around;
+      font-size: 12px;
+    }
+
+    .concept-c .strip-metric {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 2px;
+    }
+
+    .concept-c .strip-lbl {
+      font-size: 10px;
+      color: #64748B;
+      font-weight: 600;
+    }
+
+    .concept-c .strip-val {
+      font-size: 13px;
+      font-weight: 800;
+      color: #0F172A;
+    }
+
+    .concept-c .coach-simple-note {
+      border-right: 3px solid #0F172A;
+      padding-right: 12px;
+      font-size: 11.5px;
+      color: #475569;
+      line-height: 1.5;
+    }
+
+    .concept-c .supplements-strip {
+      background: #FFFFFF;
+      border: 1px solid #E2E8F0;
+      border-radius: 14px;
+      padding: 10px 14px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 11.5px;
+    }
+
+    .concept-c .supplements-strip strong {
+      color: #0F172A;
+      font-weight: 700;
+    }
+
+    .concept-c .supplements-strip span {
+      color: #64748B;
+    }
+
+    /* Empty state styling */
+    .empty-state-card {
+      background: #FFFFFF;
+      border: 1px solid #E2E8F0;
+      border-radius: 18px;
+      padding: 24px 18px;
+      text-align: center;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .empty-state-card h3 {
+      font-size: 14px;
+      font-weight: 800;
+      color: #0F172A;
+    }
+
+    .empty-state-card p {
+      font-size: 12px;
+      color: #64748B;
+      line-height: 1.4;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Controls Bar -->
+  <header class="top-controls">
+    <div>
+      <div class="control-title">مختبر تقييم شاشة اليوم (Home / Today Hub) — معمارية بصرية جديدة</div>
+      <div style="font-size: 12px; color: #94A3B8; margin-top: 2px;">مقارنة 3 هياكل تخطيطية مختلفة جذرياً لعرض 390px (بيانات تجريبية موحدة)</div>
+    </div>
+
+    <div class="control-group">
+      <span style="font-size: 12px; color: #CBD5E1; font-weight: 600;">حالة اليوم:</span>
+      <button class="btn-toggle active" id="btn-state-workout" onclick="switchState('workout')">يوم تمرين (Workout)</button>
+      <button class="btn-toggle" id="btn-state-rest" onclick="switchState('rest')">يوم راحة (Rest Day)</button>
+      <button class="btn-toggle" id="btn-state-empty" onclick="switchState('empty')">بدون برنامج منشور</button>
+    </div>
+
+    <div class="control-group">
+      <span style="font-size: 12px; color: #CBD5E1; font-weight: 600;">حالة المتابعة:</span>
+      <button class="btn-toggle active" id="btn-chk-open" onclick="switchCheckin('open')">نافذة مفتوحة (38h)</button>
+      <button class="btn-toggle" id="btn-chk-upcoming" onclick="switchCheckin('upcoming')">قادمة (5 أيام)</button>
+      <button class="btn-toggle" id="btn-chk-expired" onclick="switchCheckin('expired')">متأخر (تواصل)</button>
+    </div>
+
+    <div class="control-group">
+      <span style="font-size: 12px; color: #CBD5E1; font-weight: 600;">الخط المعروض:</span>
+      <button class="btn-toggle active" id="btn-font-segoe" onclick="switchFont('segoe')">Segoe UI (خط المحادثة)</button>
+      <button class="btn-toggle" id="btn-font-ibm" onclick="switchFont('ibm')">IBM Plex Sans Arabic</button>
+      <button class="btn-toggle" id="btn-font-readex" onclick="switchFont('readex')">Readex Pro</button>
+      <button class="btn-toggle" id="btn-font-alexandria" onclick="switchFont('alexandria')">Alexandria (السابق)</button>
+    </div>
+
+    <div class="control-group">
+      <span style="font-size: 12px; color: #CBD5E1; font-weight: 600;">العرض:</span>
+      <button class="btn-toggle" id="btn-w-375" onclick="switchWidth(375)">375px</button>
+      <button class="btn-toggle active" id="btn-w-390" onclick="switchWidth(390)">390px</button>
+      <button class="btn-toggle" id="btn-w-430" onclick="switchWidth(430)">430px</button>
+    </div>
+  </header>
+
+  <!-- Comparison Columns -->
+  <main class="comparison-container">
+
+    <!-- ============================================================== -->
+    <!-- CONCEPT A: HERO ACTION FIRST (البطل التنفيذي)                     -->
+    <!-- ============================================================== -->
+    <div class="device-column">
+      <div class="concept-header-badge">
+        <span class="concept-badge badge-a">التصور A: البطل التنفيذي</span>
+        <span class="concept-name">Hero Focused / Action-First</span>
+        <span class="concept-desc">تركيز فوري على جلسة اليوم بكارت داكن بارز + شريط متابعة مدمج + كارت ماكروز أفقي</span>
+      </div>
+
+      <div class="mobile-frame concept-a" id="frame-a">
+        <div class="screen-content">
+
+          <!-- Header -->
+          <div class="app-header">
+            <div class="user-greeting">
+              <span class="greeting-sub">صباح الخير، الأحد 11 أكتوبر</span>
+              <span class="greeting-name">أحمد الشناوي</span>
+            </div>
+            <button class="header-account-btn" title="حسابي">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                <circle cx="12" cy="8" r="4"></circle>
+                <path d="M6 20v-2a6 6 0 0 1 12 0v2"></path>
+              </svg>
+            </button>
+          </div>
+
+          <!-- Hero Workout Card (Workout State) -->
+          <div class="state-workout-block">
+            <div class="hero-workout-card">
+              <div class="hero-top-row">
+                <span class="hero-badge">تمرين اليوم</span>
+                <span class="hero-duration en-font">45–50 min</span>
+              </div>
+              <div class="hero-title-group">
+                <span class="hero-en-title en-font">Upper Body Push A</span>
+                <span class="hero-ar-title">دفع علوي — صدر وأكتاف وترايسبس</span>
+              </div>
+              <div class="hero-stats-row">
+                <div class="hero-stat">
+                  <span>التمارين:</span>
+                  <strong class="en-font">5 exercises</strong>
+                </div>
+                <div class="hero-stat">
+                  <span>المجموعات:</span>
+                  <strong class="en-font">14 sets</strong>
+                </div>
+              </div>
+              <button class="hero-action-btn">
+                <span>ابدأ التمرين</span>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                  <path d="M5 12h14"></path>
+                  <path d="M12 5l7 7-7 7"></path>
+                </svg>
+              </button>
+            </div>
+          </div>
+
+          <!-- Rest Day Card (Rest State) -->
+          <div class="state-rest-block" style="display: none;">
+            <div class="rest-day-card">
+              <div class="rest-icon-wrap">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+                </svg>
+              </div>
+              <div class="rest-info">
+                <span class="rest-title">اليوم راحة واستشفاء عالي</span>
+                <span class="rest-desc">فرصة ممتازة للبناء العضلي. حافظ على شرب 3.5 لتر ماء و10 آلاف خطوة خفيفة.</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Empty State (No Program) -->
+          <div class="state-empty-block" style="display: none;">
+            <div class="empty-state-card">
+              <h3>البرنامج قيد الإعداد والمراجعة</h3>
+              <p>الكوتش كريم يقوم حالياً بدراسة استمارتك الطبية وإعداد خطتك التدريبية والغذائية المخصصة.</p>
+            </div>
+          </div>
+
+          <!-- Status & Check-in Banner -->
+          <div class="status-banner">
+            <div class="banner-top checkin-state-open">
+              <span class="checkin-badge-open">نافذة المتابعة مفتوحة الآن</span>
+              <span class="checkin-time-left">متبقي 38 ساعة</span>
+            </div>
+            <div class="banner-top checkin-state-upcoming" style="display: none;">
+              <span style="font-size: 11px; font-weight: 700; color: #475569; background: #F1F5F9; border: 1px solid #E2E8F0; padding: 4px 10px; border-radius: 8px;">ميعاد المتابعة: الجمعة 16 أكتوبر</span>
+              <span style="font-size: 11px; color: #64748B;">متبقي 5 أيام</span>
+            </div>
+            <div class="banner-top checkin-state-expired" style="display: none;">
+              <span style="font-size: 11px; font-weight: 700; color: #B91C1C; background: #FEF2F2; border: 1px solid #FECACA; padding: 4px 10px; border-radius: 8px;">انتهت مهلة المتابعة الأسبوعية</span>
+              <span style="font-size: 11px; color: #DC2626; font-weight: 700;">تواصل مع الكوتش</span>
+            </div>
+
+            <div class="coach-quote-box">
+              <strong>توجيه الكوتش كريم:</strong>
+              «ركز على التكنيك البطيء في تمرين البنش برس، وامنح كتفك الإحماء الكافي الموضح في البروتوكول.»
+            </div>
+          </div>
+
+          <!-- Nutrition Blueprint Card -->
+          <div class="nutrition-card">
+            <div class="section-header-row">
+              <span class="section-heading">التغذية</span>
+              <div class="calorie-badge">
+                <strong class="en-font">2,400</strong>
+                <span>سعرة</span>
+              </div>
+            </div>
+
+            <div class="macros-progress-bar">
+              <div class="macro-seg-protein"></div>
+              <div class="macro-seg-carbs"></div>
+              <div class="macro-seg-fat"></div>
+            </div>
+
+            <div class="macros-detail-row">
+              <div class="macro-item">
+                <span class="macro-label"><span class="macro-dot dot-protein"></span>بروتين</span>
+                <span class="macro-val en-font">180g</span>
+              </div>
+              <div class="macro-item">
+                <span class="macro-label"><span class="macro-dot dot-carbs"></span>كاربوهيدرات</span>
+                <span class="macro-val en-font">250g</span>
+              </div>
+              <div class="macro-item">
+                <span class="macro-label"><span class="macro-dot dot-fat"></span>دهون صحية</span>
+                <span class="macro-val en-font">65g</span>
+              </div>
+              <div class="macro-item">
+                <span class="macro-label">ترطيب مستهدف</span>
+                <span class="macro-val en-font">3.5L</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Prescribed Supplements (Only if Prescribed) -->
+          <div class="supplements-box" style="background: #FFFFFF; border: 1px solid #E2E8F0; border-radius: 14px; padding: 12px 14px; display: flex; align-items: center; justify-content: space-between;">
+            <div style="display: flex; flex-direction: column; gap: 2px;">
+              <span style="font-size: 10px; font-weight: 700; color: #64748B;">المكملات الموصوفة لليوم</span>
+              <span style="font-size: 12px; font-weight: 700; color: #0F172A;" class="en-font">Creatine 5g • Omega-3 (2 caps)</span>
+            </div>
+            <span style="font-size: 10px; color: #0284C7; font-weight: 700; background: #F0F9FF; border: 1px solid #BAE6FD; padding: 3px 8px; border-radius: 6px;">مع الغداء</span>
+          </div>
+
+        </div>
+
+        <!-- 4-Tabs Navigation -->
+        <nav class="bottom-nav">
+          <div class="nav-tab active">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
+            <span>اليوم</span>
+          </div>
+          <div class="nav-tab">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M6 5v14M18 5v14M2 9v6M22 9v6M6 12h12"></path></svg>
+            <span>التمارين</span>
+          </div>
+          <div class="nav-tab">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M18 8h1a4 4 0 0 1 0 8h-1M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8z"></path><line x1="6" y1="1" x2="6" y2="4"></line><line x1="10" y1="1" x2="10" y2="4"></line><line x1="14" y1="1" x2="14" y2="4"></line></svg>
+            <span>التغذية</span>
+          </div>
+          <div class="nav-tab">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M9 11l3 3L22 4"></path><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path></svg>
+            <span>المتابعة</span>
+          </div>
+        </nav>
+      </div>
+    </div>
+
+
+    <!-- ============================================================== -->
+    <!-- CONCEPT B: BALANCED PILLARS (الأعمدة المتوازنة المستقلة)         -->
+    <!-- ============================================================== -->
+    <div class="device-column">
+      <div class="concept-header-badge">
+        <span class="concept-badge badge-b">التصور B: الأعمدة المتوازنة</span>
+        <span class="concept-name">Balanced Pillars Architecture</span>
+        <span class="concept-desc">توزيع متوازن مستقل للتدريب والتغذية والمتابعة؛ بطاقة تمرين بيضاء مع معاينة سريعة لأهم حركتين</span>
+      </div>
+
+      <div class="mobile-frame concept-b" id="frame-b">
+        <div class="screen-content">
+
+          <!-- Header -->
+          <div class="app-header">
+            <div class="user-greeting">
+              <span class="greeting-sub">خطة الأسبوع 3 • باقة MAX</span>
+              <span class="greeting-name">أحمد الشناوي</span>
+            </div>
+            <button class="header-account-btn" title="حسابي">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                <circle cx="12" cy="8" r="4"></circle>
+                <path d="M6 20v-2a6 6 0 0 1 12 0v2"></path>
+              </svg>
+            </button>
+          </div>
+
+          <!-- Coach Directive Compact Strip -->
+          <div class="coach-compact-strip">
+            <div class="coach-avatar">KZ</div>
+            <div class="coach-compact-text">
+              <strong>توجيه الأسبوع:</strong> ركز على ثبات وتدرج أوزان السكوات والبنش، والالتزام بـ 180 جم بروتين يومياً.
+            </div>
+          </div>
+
+          <!-- Pillar 1: Training -->
+          <div class="state-workout-block">
+            <div class="training-pillar-card">
+              <div class="pillar-header">
+                <div>
+                  <span class="pillar-title-sub">جلسة التدريب لليوم</span>
+                  <div class="pillar-title-main en-font" style="margin-top: 1px;">Upper Body Push A</div>
+                </div>
+                <span style="font-size: 11px; background: #F1F5F9; color: #0F172A; font-weight: 700; padding: 4px 10px; border-radius: 8px;" class="en-font">5 Exercises</span>
+              </div>
+
+              <!-- Exercise Quick Preview List -->
+              <div class="session-preview-list">
+                <div class="preview-item">
+                  <span class="preview-item-name en-font">1. Incline Dumbbell Press</span>
+                  <span class="preview-item-sets en-font">4 sets × 8–10 reps</span>
+                </div>
+                <div class="preview-item">
+                  <span class="preview-item-name en-font">2. Machine Chest Press</span>
+                  <span class="preview-item-sets en-font">3 sets × 10–12 reps</span>
+                </div>
+              </div>
+
+              <a href="#" class="view-all-link">
+                <span>فتح تفاصيل وجدول الجلسة كاملاً</span>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14"></path><path d="M12 5l7 7-7 7"></path></svg>
+              </a>
+            </div>
+          </div>
+
+          <!-- Rest State for Concept B -->
+          <div class="state-rest-block" style="display: none;">
+            <div class="training-pillar-card" style="background: #F8FAFC; border-color: #E2E8F0;">
+              <span class="pillar-title-sub">برنامج اليوم</span>
+              <div class="pillar-title-main" style="color: #0F172A;">يوم استشفاء وراحة سلبية</div>
+              <p style="font-size: 12px; color: #64748B; line-height: 1.4;">لا توجد تمارين مقاومة مقررة اليوم. ركز على التغذية والراحة التامة لإعداد العضلات لجلسة الغد.</p>
+            </div>
+          </div>
+
+          <!-- Empty State -->
+          <div class="state-empty-block" style="display: none;">
+            <div class="empty-state-card">
+              <h3>البرنامج قيد الإعداد والمراجعة</h3>
+              <p>الكوتش كريم يقوم حالياً بدراسة استمارتك وإعداد خطتك.</p>
+            </div>
+          </div>
+
+          <!-- Pillar 2: Nutrition Target Grid -->
+          <div class="nutrition-grid-card">
+            <div class="pillar-header">
+              <span style="font-size: 13px; font-weight: 800; color: #0F172A;">المستهدفات الغذائية المقررة</span>
+              <span style="font-size: 11px; font-weight: 700; color: #64748B;">4 وجبات / اليوم</span>
+            </div>
+
+            <div class="macro-grid-4col">
+              <div class="macro-box">
+                <span class="macro-box-lbl">السعرات</span>
+                <span class="macro-box-val en-font">2400</span>
+              </div>
+              <div class="macro-box">
+                <span class="macro-box-lbl">البروتين</span>
+                <span class="macro-box-val en-font">180g</span>
+              </div>
+              <div class="macro-box">
+                <span class="macro-box-lbl">الكارب</span>
+                <span class="macro-box-val en-font">250g</span>
+              </div>
+              <div class="macro-box">
+                <span class="macro-box-lbl">الدهون</span>
+                <span class="macro-box-val en-font">65g</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Pillar 3: Check-in Status Card -->
+          <div class="checkin-state-open">
+            <div class="checkin-pill-card">
+              <div>
+                <div class="checkin-pill-title">نافذة المتابعة متاحة للإرسال</div>
+                <div class="checkin-pill-sub">متبقي 38 ساعة لإغلاق التقرير</div>
+              </div>
+              <button class="checkin-pill-btn">تسجيل الآن</button>
+            </div>
+          </div>
+
+          <div class="checkin-state-upcoming" style="display: none;">
+            <div class="checkin-pill-card" style="background: #F8FAFC; border-color: #E2E8F0;">
+              <div>
+                <div class="checkin-pill-title" style="color: #0F172A;">المتابعة القادمة: الجمعة 16 أكتوبر</div>
+                <div class="checkin-pill-sub" style="color: #64748B;">تفتح النافذة الساعة 00:00 بتوقيت القاهرة</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="checkin-state-expired" style="display: none;">
+            <div class="checkin-pill-card" style="background: #FEF2F2; border-color: #FECACA;">
+              <div>
+                <div class="checkin-pill-title" style="color: #991B1B;">انتهت مهلة 72 ساعة للمتابعة</div>
+                <div class="checkin-pill-sub" style="color: #B91C1C;">يرجى التواصل المباشر مع الكوتش</div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- 4-Tabs Navigation -->
+        <nav class="bottom-nav">
+          <div class="nav-tab active">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
+            <span>اليوم</span>
+          </div>
+          <div class="nav-tab">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M6 5v14M18 5v14M2 9v6M22 9v6M6 12h12"></path></svg>
+            <span>التمارين</span>
+          </div>
+          <div class="nav-tab">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M18 8h1a4 4 0 0 1 0 8h-1M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8z"></path><line x1="6" y1="1" x2="6" y2="4"></line><line x1="10" y1="1" x2="10" y2="4"></line><line x1="14" y1="1" x2="14" y2="4"></line></svg>
+            <span>التغذية</span>
+          </div>
+          <div class="nav-tab">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M9 11l3 3L22 4"></path><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path></svg>
+            <span>المتابعة</span>
+          </div>
+        </nav>
+      </div>
+    </div>
+
+
+    <!-- ============================================================== -->
+    <!-- CONCEPT C: DAY-STREAM MINIMAL (التدفق اليومي المريح)            -->
+    <!-- ============================================================== -->
+    <div class="device-column">
+      <div class="concept-header-badge">
+        <span class="concept-badge badge-c">التصور C: التدفق المريح</span>
+        <span class="concept-name">Minimalist Day-Stream</span>
+        <span class="concept-desc">أعلى درجات الهدوء البصري والمسافات البيضاء؛ شريط ماكروز كبسولي موحد وكارت تدفق انسيابي</span>
+      </div>
+
+      <div class="mobile-frame concept-c" id="frame-c">
+        <div class="screen-content">
+
+          <!-- Header -->
+          <div class="app-header">
+            <div class="user-greeting">
+              <span class="greeting-sub">خطة تدريب شخصية</span>
+              <span class="greeting-name">أحمد الشناوي</span>
+            </div>
+            <button class="header-account-btn" title="حسابي">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                <circle cx="12" cy="8" r="4"></circle>
+                <path d="M6 20v-2a6 6 0 0 1 12 0v2"></path>
+              </svg>
+            </button>
+          </div>
+
+          <!-- Day Status Strip -->
+          <div class="stream-status-row">
+            <span class="stream-date">الأحد، 11 أكتوبر</span>
+            <div class="checkin-state-open">
+              <span class="stream-checkin-badge">المتابعة مفتوحة (38h)</span>
+            </div>
+            <div class="checkin-state-upcoming" style="display: none;">
+              <span class="stream-checkin-badge" style="background: #F1F5F9; color: #475569; border-color: #E2E8F0;">المتابعة الجمعة القادمة</span>
+            </div>
+            <div class="checkin-state-expired" style="display: none;">
+              <span class="stream-checkin-badge" style="background: #FEF2F2; color: #991B1B; border-color: #FECACA;">المتابعة متأخرة</span>
+            </div>
+          </div>
+
+          <!-- Main Stream Card (Workout State) -->
+          <div class="state-workout-block">
+            <div class="stream-card">
+              <div>
+                <span class="stream-tag">جلسة اليوم الميدانية</span>
+                <div class="stream-title-en en-font">Upper Body Push A</div>
+                <div class="stream-title-ar">دفع علوي — تركيز صدر وترايسبس</div>
+              </div>
+
+              <div class="stream-stats-pills">
+                <span class="stat-pill en-font">5 Exercises</span>
+                <span class="stat-pill en-font">14 Sets Total</span>
+                <span class="stat-pill en-font">~50 Mins</span>
+              </div>
+
+              <button style="margin-top: 4px; background: #0F172A; color: #FFFFFF; border: none; font-family: inherit; font-size: 12.5px; font-weight: 700; padding: 10px; border-radius: 10px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px;">
+                <span>فتح تمارين اليوم</span>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14"></path><path d="M12 5l7 7-7 7"></path></svg>
+              </button>
+            </div>
+          </div>
+
+          <!-- Rest State for Concept C -->
+          <div class="state-rest-block" style="display: none;">
+            <div class="stream-card" style="background: #F8FAFC;">
+              <span class="stream-tag" style="color: #16A34A;">يوم استشفاء</span>
+              <div class="stream-title-en" style="font-size: 16px;">Rest & Muscular Recovery</div>
+              <div class="stream-title-ar">راحة سلبية لدعم تخليق البروتين واستشفاء الجهاز العصبي</div>
+            </div>
+          </div>
+
+          <!-- Empty State -->
+          <div class="state-empty-block" style="display: none;">
+            <div class="empty-state-card">
+              <h3>البرنامج قيد الإعداد</h3>
+              <p>يتم تجهيز خطتك من قِبل الكوتش كريم حالياً.</p>
+            </div>
+          </div>
+
+          <!-- Unified Macro Strip -->
+          <div class="stream-card" style="padding: 14px 16px;">
+            <span style="font-size: 11px; font-weight: 700; color: #64748B;">مستهدفات التغذية اليومية</span>
+            <div class="unified-macros-strip">
+              <div class="strip-metric">
+                <span class="strip-lbl">السعرات</span>
+                <span class="strip-val en-font">2,400</span>
+              </div>
+              <div style="width: 1px; height: 24px; background: #E2E8F0;"></div>
+              <div class="strip-metric">
+                <span class="strip-lbl">البروتين</span>
+                <span class="strip-val en-font">180g</span>
+              </div>
+              <div style="width: 1px; height: 24px; background: #E2E8F0;"></div>
+              <div class="strip-metric">
+                <span class="strip-lbl">الكارب</span>
+                <span class="strip-val en-font">250g</span>
+              </div>
+              <div style="width: 1px; height: 24px; background: #E2E8F0;"></div>
+              <div class="strip-metric">
+                <span class="strip-lbl">الدهون</span>
+                <span class="strip-val en-font">65g</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Coach Simple Directive -->
+          <div class="stream-card">
+            <span style="font-size: 11px; font-weight: 800; color: #0F172A;">توجيه الكوتش كريم</span>
+            <div class="coach-simple-note">
+              «احرص على أداء الإحماء الموصوف لمفصل الكتف قبل البنش برس، وتناول وجبة ما قبل التمرين بساعتين على الأقل.»
+            </div>
+          </div>
+
+          <!-- Supplements Strip -->
+          <div class="supplements-strip">
+            <strong>المكملات:</strong>
+            <span class="en-font">Creatine Monohydrate 5g • Omega-3</span>
+          </div>
+
+        </div>
+
+        <!-- 4-Tabs Navigation -->
+        <nav class="bottom-nav">
+          <div class="nav-tab active">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
+            <span>اليوم</span>
+          </div>
+          <div class="nav-tab">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M6 5v14M18 5v14M2 9v6M22 9v6M6 12h12"></path></svg>
+            <span>التمارين</span>
+          </div>
+          <div class="nav-tab">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M18 8h1a4 4 0 0 1 0 8h-1M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8z"></path><line x1="6" y1="1" x2="6" y2="4"></line><line x1="10" y1="1" x2="10" y2="4"></line><line x1="14" y1="1" x2="14" y2="4"></line></svg>
+            <span>التغذية</span>
+          </div>
+          <div class="nav-tab">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M9 11l3 3L22 4"></path><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path></svg>
+            <span>المتابعة</span>
+          </div>
+        </nav>
+      </div>
+    </div>
+
+  </main>
+
+  <script>
+    function switchState(state) {
+      document.getElementById('btn-state-workout').classList.toggle('active', state === 'workout');
+      document.getElementById('btn-state-rest').classList.toggle('active', state === 'rest');
+      document.getElementById('btn-state-empty').classList.toggle('active', state === 'empty');
+
+      document.querySelectorAll('.state-workout-block').forEach(el => el.style.display = state === 'workout' ? 'block' : 'none');
+      document.querySelectorAll('.state-rest-block').forEach(el => el.style.display = state === 'rest' ? 'block' : 'none');
+      document.querySelectorAll('.state-empty-block').forEach(el => el.style.display = state === 'empty' ? 'block' : 'none');
+    }
+
+    function switchCheckin(chkState) {
+      document.getElementById('btn-chk-open').classList.toggle('active', chkState === 'open');
+      document.getElementById('btn-chk-upcoming').classList.toggle('active', chkState === 'upcoming');
+      document.getElementById('btn-chk-expired').classList.toggle('active', chkState === 'expired');
+
+      document.querySelectorAll('.checkin-state-open').forEach(el => el.style.display = chkState === 'open' ? (el.classList.contains('stream-checkin-badge') ? 'inline-block' : 'flex') : 'none');
+      document.querySelectorAll('.checkin-state-upcoming').forEach(el => el.style.display = chkState === 'upcoming' ? (el.classList.contains('stream-checkin-badge') ? 'inline-block' : 'flex') : 'none');
+      document.querySelectorAll('.checkin-state-expired').forEach(el => el.style.display = chkState === 'expired' ? (el.classList.contains('stream-checkin-badge') ? 'inline-block' : 'flex') : 'none');
+    }
+
+    function switchWidth(widthPx) {
+      document.getElementById('btn-w-375').classList.toggle('active', widthPx === 375);
+      document.getElementById('btn-w-390').classList.toggle('active', widthPx === 390);
+      document.getElementById('btn-w-430').classList.toggle('active', widthPx === 430);
+
+      document.getElementById('frame-a').style.width = widthPx + 'px';
+      document.getElementById('frame-b').style.width = widthPx + 'px';
+      document.getElementById('frame-c').style.width = widthPx + 'px';
+    }
+
+    function switchFont(fontKey) {
+      const map = {
+        'segoe': "'Segoe UI', -apple-system, BlinkMacSystemFont, 'Tahoma', sans-serif",
+        'ibm': "'IBM Plex Sans Arabic', sans-serif",
+        'readex': "'Readex Pro', sans-serif",
+        'alexandria': "'Alexandria', sans-serif"
+      };
+      const selectedFont = map[fontKey] || map['segoe'];
+      document.documentElement.style.setProperty('--active-font', selectedFont);
+      document.querySelectorAll('[id^="btn-font-"]').forEach(b => b.classList.remove('active'));
+      document.getElementById('btn-font-' + fontKey)?.classList.add('active');
+    }
+  </script>
+</body>
+</html>

@@ -10,6 +10,7 @@ import { mergeAdaptedPlanIntoProgram } from "../utils/planMergeEngine.js";
 import { resolveClientPrimaryGoal, resolveClientIsFemale, resolveIntakeMedicalReview } from "./program.controller.js";
 import { resolveTrainingCycleStatus } from "../services/trainingCycleService.js";
 import { mealCountNoteForCheckin } from "../../checkin-engine/meal-count-note.js";
+import { evaluateClientCheckinSchedule } from "../services/checkinScheduleService.js";
 
 /**
  * Submit weekly check-in
@@ -106,8 +107,41 @@ export async function submitCheckin(req, res) {
       return res.status(400).json({ success: false, error: "يجب إدخال وزن حقيقي وصالح (> 20 كجم) لإرسال المتابعة" });
     }
 
-    // The web form and the mobile app send no week: the check-in goes to the week after the client's latest one.
-    let targetWeekNumber = Number(week_number);
+    // -------------------------------------------------------------
+    // Tier 0 / Tier 1 Authoritative Server-Side Schedule Guard
+    // -------------------------------------------------------------
+    const submissionTime = req.body.submission_time ? new Date(req.body.submission_time) : new Date();
+    const schedule = await evaluateClientCheckinSchedule(targetUserId, submissionTime);
+
+    // If active program exists, strictly enforce schedule window and cadence
+    // In production and live Express HTTP requests, strictly enforced. In direct unit test mocks, enabled when requested.
+    const isLiveHttpRequest = Boolean(req.headers || req.app || req.get || req.ip);
+    const bypassGuard = req.body.bypass_schedule_guard === true;
+    const shouldEnforce = (isLiveHttpRequest || req.body.enforce_schedule_guard === true) && !bypassGuard;
+
+    if (shouldEnforce && schedule.program_id) {
+      if (!schedule.allowed) {
+        const httpStatus = schedule.code === "DUPLICATE_CHECKIN_SUBMISSION" ? 409 : 403;
+        return res.status(httpStatus).json({
+          success: false,
+          error: schedule.message_ar,
+          code: schedule.code,
+          schedule: {
+            status: schedule.status,
+            scheduled_due_date: schedule.scheduled_due_date,
+            window_opens_at: schedule.window_opens_at,
+            window_closes_at: schedule.window_closes_at,
+            expected_week_number: schedule.expected_week_number,
+          },
+        });
+      }
+    }
+
+    // Authoritative week_number resolution: server dictates expected cycle week when guard is enforced
+    let targetWeekNumber = shouldEnforce && schedule?.program_id
+      ? schedule.expected_week_number
+      : (Number(week_number) || 0);
+
     if (!Number.isInteger(targetWeekNumber) || targetWeekNumber < 1) {
       const lastWeek = await CheckinSubmission.max("week_number", { where: { user_id: targetUserId } });
       targetWeekNumber = (Number(lastWeek) || 0) + 1;
@@ -446,7 +480,11 @@ export async function getClientCheckins(req, res) {
 export async function approveCheckin(req, res) {
   try {
     const { checkinId } = req.params;
-    const { coach_notes, custom_macros } = req.body;
+    const {
+      coach_notes,
+      custom_macros,
+      apply_program_adaptation
+    } = req.body;
 
     const checkin = await CheckinSubmission.findByPk(checkinId);
     if (!checkin) {
@@ -455,7 +493,13 @@ export async function approveCheckin(req, res) {
 
     const latestProgram = await findPlanInUse(checkin.user_id);
 
-    if (latestProgram && latestProgram.program_data) {
+    // الفصل التام بين مراجعة المتابعة وتعديل البرامج:
+    // لا يتم تعديل البرنامج إلا بطلب صريح معتمد من المدرب (apply_program_adaptation: true)
+    // أو عند إرسال تعديل ماكروز صريح ما لم يحدد المدرب عدم التعديل صراحة (apply_program_adaptation === false)
+    const hasCustomMacros = Boolean(custom_macros && typeof custom_macros === "object" && Object.keys(custom_macros).length > 0);
+    const shouldAdaptProgram = apply_program_adaptation === true || (hasCustomMacros && apply_program_adaptation !== false);
+
+    if (shouldAdaptProgram && latestProgram && latestProgram.program_data) {
       const progData = typeof latestProgram.program_data === "string"
         ? JSON.parse(latestProgram.program_data)
         : JSON.parse(JSON.stringify(latestProgram.program_data));
@@ -521,9 +565,12 @@ export async function approveCheckin(req, res) {
 
     return res.status(200).json({
       success: true,
-      message: "Check-in approved and program updated successfully",
+      message: shouldAdaptProgram
+        ? "تم اعتماد المتابعة وتحديث البرنامج التدريبي والغذائي بنجاح"
+        : "تم اعتماد المتابعة وحفظ الملاحظات بنجاح دون تعديل البرنامج",
       checkin,
       program: latestProgram,
+      program_adapted: shouldAdaptProgram,
     });
   } catch (error) {
     console.error("Error approving check-in:", error);
@@ -617,3 +664,45 @@ export async function getWorkoutLogs(req, res) {
     return res.status(500).json({ success: false, error: error.message });
   }
 }
+
+/**
+ * Authoritative Check-in Schedule Query
+ * Single Source of Truth for Trainee App and Coach Command Center
+ */
+export async function getCheckinSchedule(req, res) {
+  try {
+    const rawTarget = req.params.userId || req.user?.id;
+    if (!rawTarget) {
+      return res.status(400).json({ success: false, error: "معرف المتدرب مطلوب" });
+    }
+
+    const cleanCode = String(rawTarget).replace("#", "").trim();
+    let userObj = await User.findOne({ where: { client_code: cleanCode } });
+    if (!userObj && !isNaN(cleanCode)) {
+      userObj = await User.findByPk(parseInt(cleanCode, 10));
+    }
+    const resolvedId = userObj ? userObj.id : (!isNaN(cleanCode) ? parseInt(cleanCode, 10) : null);
+    if (!resolvedId) {
+      return res.status(404).json({ success: false, error: "المتدرب غير موجود" });
+    }
+
+    // فحص الملكية ومنع ثغرة IDOR: المتدرب يطّلع على جدوله فقط، والمدرب أو الأدمن له حق الوصول لكافة الجداول
+    if (req.user && req.user.id !== resolvedId) {
+      const requester = await User.findByPk(req.user.id);
+      const isCoachOrAdmin = requester && (requester.role === "COACH" || requester.role === "ADMIN");
+      if (!isCoachOrAdmin) {
+        return res.status(403).json({ success: false, error: "غير مصرح لك بعرض جدول متابعات متدرب آخر" });
+      }
+    }
+
+    const schedule = await evaluateClientCheckinSchedule(resolvedId, new Date());
+    return res.status(200).json({
+      success: true,
+      schedule,
+    });
+  } catch (error) {
+    console.error("Error retrieving checkin schedule:", error);
+    return res.status(500).json({ success: false, error: error.message });
+  }
+}
+

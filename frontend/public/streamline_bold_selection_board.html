@@ -1,0 +1,709 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>لوحة اعتماد أيقونات Streamline Bold — شريط التنقل وبدائل التغذية</title>
+  <script src="https://www.gstatic.com/antigravity/web/dev/tailwindcss.min.js"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@300;400;500;600;700;800&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    * {
+      font-family: 'Segoe UI', 'IBM Plex Sans Arabic', -apple-system, BlinkMacSystemFont, 'Tahoma', sans-serif;
+      box-sizing: border-box;
+      -webkit-font-smoothing: antialiased;
+    }
+    .font-inter { font-family: 'Inter', sans-serif; }
+    
+    /* Liquid Glass Bottom Nav Base */
+    .glass-nav-container {
+      position: relative;
+      background: rgba(255, 255, 255, 0.94);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border-radius: 30px;
+      box-shadow: 
+        0 16px 36px -6px rgba(2, 132, 199, 0.13),
+        0 4px 14px -2px rgba(15, 23, 42, 0.04),
+        0 1px 3px 0 rgba(15, 23, 42, 0.02),
+        inset 0 1.5px 2px 0 rgba(255, 255, 255, 0.95),
+        inset 0 -1px 1.5px 0 rgba(2, 132, 199, 0.03);
+      border: 1.2px solid rgba(255, 255, 255, 0.85);
+      user-select: none;
+      transition: width 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .liquid-lens {
+      position: absolute;
+      top: 5px;
+      height: 48px;
+      border-radius: 24px;
+      background: rgba(226, 232, 240, 0.72);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      border: 1px solid rgba(255, 255, 255, 0.75);
+      box-shadow: 
+        0 2px 8px -1px rgba(2, 132, 199, 0.08),
+        0 1px 3px 0 rgba(15, 23, 42, 0.03),
+        inset 0 1px 1.5px 0 rgba(255, 255, 255, 0.85);
+      pointer-events: none;
+      z-index: 10;
+      transition: right 0.35s cubic-bezier(0.16, 1, 0.3, 1), width 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .nav-tab-item {
+      position: relative;
+      flex: 1;
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      z-index: 20;
+      cursor: pointer;
+      transition: transform 0.15s ease;
+    }
+    .nav-tab-item:active {
+      transform: scale(0.94);
+    }
+  </style>
+</head>
+<body class="min-h-screen bg-[#F8FAFC] text-[#0F172A] p-4 md:p-8 flex flex-col items-center">
+
+  <div class="w-full max-w-5xl space-y-8">
+
+    <!-- Header Section -->
+    <header class="bg-white border border-[#E2E8F0] rounded-3xl p-5 md:p-6 shadow-sm flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+      <div>
+        <div class="flex items-center gap-2 mb-1.5 flex-wrap">
+          <span class="px-3 py-0.5 rounded-full text-xs font-bold bg-sky-50 text-sky-700 border border-sky-200">
+            Z Coaching Platform · تدقيق الأيقونات المعتمد
+          </span>
+          <span class="px-2.5 py-0.5 rounded-full text-xs font-medium bg-amber-50 text-amber-700 border border-amber-200">
+            مكتبة Streamline Bold الرسمية
+          </span>
+          <span class="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200">
+            ترخيص تجاري CC BY 4.0
+          </span>
+        </div>
+        <h1 class="text-xl md:text-2xl font-black text-slate-900 tracking-tight">
+          لوحة اعتماد أيقونات Streamline Bold الخمسة ومقارنة بدائل التغذية (Bowl Icons)
+        </h1>
+        <p class="text-xs text-slate-500 mt-1">
+          مطابقة تامة لأسلوب الأيقونات المصمتة الممتلئة (Thick Rounded Filled Silhouettes) المستوحاة من الصورة المرجعية البرتقالية الرسمية، مع استبعاد أدوات المائدة (Fork & Knife) واعتماد أوعية التغذية الصحية.
+        </p>
+      </div>
+      <div class="shrink-0 flex items-center gap-2">
+        <a href="/mobile_app_preview.html" class="px-3.5 py-2 rounded-xl bg-slate-900 hover:bg-slate-800 text-sky-400 text-xs font-bold transition-all shadow-xs flex items-center gap-1.5">
+          <span>محاكي الموبايل</span>
+          <span>&larr;</span>
+        </a>
+      </div>
+    </header>
+
+    <!-- SECTION 1: ACTUAL SIZE (24px) & MAGNIFIED (48px) BOARD -->
+    <section class="bg-white border border-[#E2E8F0] rounded-3xl p-6 shadow-sm space-y-5">
+      <div class="flex items-center justify-between border-b border-slate-100 pb-3 flex-wrap gap-2">
+        <div>
+          <h2 class="text-base font-bold text-slate-900">1. لوحة الأيقونات الخمسة المختارة بالحجم الفعلي (24px) والمكبر (48px)</h2>
+          <p class="text-xs text-slate-500">فحص الاتزان البصري (Optical Weight Balance) والخطوط المنحنية والأشكال الممتلئة.</p>
+        </div>
+        <span class="text-xs font-bold text-sky-600 bg-sky-50 px-3 py-1 rounded-full border border-sky-100">
+          Dark Slate (#0F172A) &middot; Brand Blue (#0284C7)
+        </span>
+      </div>
+
+      <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-4">
+
+        <!-- 1. اليوم -->
+        <div class="bg-slate-50 border border-slate-200 rounded-2xl p-4 flex flex-col items-center text-center space-y-3">
+          <span class="text-xs font-bold text-slate-800">1. اليوم (Home)</span>
+          <div class="flex items-center gap-4">
+            <!-- 24px -->
+            <div class="w-10 h-10 rounded-xl bg-white border border-slate-200 flex flex-col items-center justify-center shadow-xs">
+              <svg class="w-6 h-6 text-[#0284C7]" viewBox="0 0 24 24" fill="currentColor">
+                <path d="m2.64 10.59 9-7.48a.48.48 0 0 1 .62 0l9 7.48a1.45 1.45 0 0 0 2.06-.22 1.52 1.52 0 0 0-.21-2.11l-9-7.49a3.41 3.41 0 0 0-4.32 0l-9 7.49a1.52 1.52 0 0 0-.21 2.11 1.45 1.45 0 0 0 2.06.22"/>
+                <path d="M22.28 22v-7a2.22 2.22 0 0 0-.73-1.59l-8.3-7a1.94 1.94 0 0 0-2.5 0l-8.3 7A2.22 2.22 0 0 0 1.72 15v7a2 2 0 0 0 2 2h5.34a1 1 0 0 0 1-1v-5.5a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1V23a1 1 0 0 0 1 1h5.38a2 2 0 0 0 1.84-2"/>
+              </svg>
+              <span class="text-[9px] font-mono text-slate-400 mt-0.5">24px</span>
+            </div>
+            <!-- 48px -->
+            <div class="w-16 h-16 rounded-2xl bg-white border border-slate-200 flex flex-col items-center justify-center shadow-xs">
+              <svg class="w-10 h-10 text-slate-900" viewBox="0 0 24 24" fill="currentColor">
+                <path d="m2.64 10.59 9-7.48a.48.48 0 0 1 .62 0l9 7.48a1.45 1.45 0 0 0 2.06-.22 1.52 1.52 0 0 0-.21-2.11l-9-7.49a3.41 3.41 0 0 0-4.32 0l-9 7.49a1.52 1.52 0 0 0-.21 2.11 1.45 1.45 0 0 0 2.06.22"/>
+                <path d="M22.28 22v-7a2.22 2.22 0 0 0-.73-1.59l-8.3-7a1.94 1.94 0 0 0-2.5 0l-8.3 7A2.22 2.22 0 0 0 1.72 15v7a2 2 0 0 0 2 2h5.34a1 1 0 0 0 1-1v-5.5a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1V23a1 1 0 0 0 1 1h5.38a2 2 0 0 0 1.84-2"/>
+              </svg>
+              <span class="text-[9px] font-mono text-slate-400 mt-0.5">48px</span>
+            </div>
+          </div>
+          <div class="text-[11px] font-mono text-slate-600 font-bold">House 4</div>
+          <span class="text-[10.5px] text-slate-500">سقف منحنٍ وباب مفرغ متزن</span>
+        </div>
+
+        <!-- 2. التمارين -->
+        <div class="bg-slate-50 border border-slate-200 rounded-2xl p-4 flex flex-col items-center text-center space-y-3">
+          <span class="text-xs font-bold text-slate-800">2. التمارين (Workout)</span>
+          <div class="flex items-center gap-4">
+            <!-- 24px -->
+            <div class="w-10 h-10 rounded-xl bg-white border border-slate-200 flex flex-col items-center justify-center shadow-xs">
+              <svg class="w-6 h-6 text-slate-900" viewBox="0 0 24 24" fill="currentColor">
+                <rect x="7" y="10.5" width="10" height="3" rx="1.5"/>
+                <rect x="4.5" y="6" width="3" height="12" rx="1.5"/>
+                <rect x="2" y="7.5" width="2.2" height="9" rx="1.1"/>
+                <rect x="0.5" y="9.5" width="1.2" height="5" rx="0.6"/>
+                <rect x="16.5" y="6" width="3" height="12" rx="1.5"/>
+                <rect x="19.8" y="7.5" width="2.2" height="9" rx="1.1"/>
+                <rect x="22.3" y="9.5" width="1.2" height="5" rx="0.6"/>
+              </svg>
+              <span class="text-[9px] font-mono text-slate-400 mt-0.5">24px</span>
+            </div>
+            <!-- 48px -->
+            <div class="w-16 h-16 rounded-2xl bg-white border border-slate-200 flex flex-col items-center justify-center shadow-xs">
+              <svg class="w-10 h-10 text-slate-900" viewBox="0 0 24 24" fill="currentColor">
+                <rect x="7" y="10.5" width="10" height="3" rx="1.5"/>
+                <rect x="4.5" y="6" width="3" height="12" rx="1.5"/>
+                <rect x="2" y="7.5" width="2.2" height="9" rx="1.1"/>
+                <rect x="0.5" y="9.5" width="1.2" height="5" rx="0.6"/>
+                <rect x="16.5" y="6" width="3" height="12" rx="1.5"/>
+                <rect x="19.8" y="7.5" width="2.2" height="9" rx="1.1"/>
+                <rect x="22.3" y="9.5" width="1.2" height="5" rx="0.6"/>
+              </svg>
+              <span class="text-[9px] font-mono text-slate-400 mt-0.5">48px</span>
+            </div>
+          </div>
+          <div class="text-[11px] font-mono text-slate-600 font-bold">Fitness Dumbbell</div>
+          <span class="text-[10.5px] text-slate-500">أفقي ممتلئ بأقراص مستديرة</span>
+        </div>
+
+        <!-- 3. التغذية -->
+        <div class="bg-amber-50/70 border-2 border-amber-300 rounded-2xl p-4 flex flex-col items-center text-center space-y-3 ring-2 ring-amber-100">
+          <div class="flex items-center gap-1">
+            <span class="text-xs font-bold text-amber-950">3. التغذية (Nutrition)</span>
+            <span class="px-1.5 py-0.2 bg-amber-200 text-amber-900 text-[9px] font-bold rounded">جديد</span>
+          </div>
+          <div class="flex items-center gap-4">
+            <!-- 24px -->
+            <div class="w-10 h-10 rounded-xl bg-white border border-amber-200 flex flex-col items-center justify-center shadow-xs">
+              <svg class="w-6 h-6 text-slate-900" viewBox="0 0 14 14" fill="currentColor">
+                <path fill-rule="evenodd" clip-rule="evenodd" d="M5.998 3.028a3.7 3.7 0 0 0-.23-.63C5.069.914 3.534.17 2.338.734s-1.6 2.222-.9 3.704q.147.312.34.578c-.539.47-.867 1.22-.828 2.054q.054-.003.11-.003h3.91a6.2 6.2 0 0 0-1.26-2.276.625.625 0 1 1 .951-.812 7.5 7.5 0 0 1 1.52 2.772A4.14 4.14 0 0 1 8.337 3.84c-.654-.71-1.632-.93-2.34-.812m4.29 1.623c1.646 0 2.618.866 2.737 2.419l-.084-.002H7.55c.119-1.552 1.091-2.417 2.737-2.417M.143 9.02C-.445 11.884 1.55 13.455 7 13.455s7.445-1.57 6.856-4.432c-.088-.425-.482-.704-.915-.704H1.06c-.434 0-.828.279-.916.704"/>
+              </svg>
+              <span class="text-[9px] font-mono text-slate-400 mt-0.5">24px</span>
+            </div>
+            <!-- 48px -->
+            <div class="w-16 h-16 rounded-2xl bg-white border border-amber-200 flex flex-col items-center justify-center shadow-xs">
+              <svg class="w-10 h-10 text-slate-900" viewBox="0 0 14 14" fill="currentColor">
+                <path fill-rule="evenodd" clip-rule="evenodd" d="M5.998 3.028a3.7 3.7 0 0 0-.23-.63C5.069.914 3.534.17 2.338.734s-1.6 2.222-.9 3.704q.147.312.34.578c-.539.47-.867 1.22-.828 2.054q.054-.003.11-.003h3.91a6.2 6.2 0 0 0-1.26-2.276.625.625 0 1 1 .951-.812 7.5 7.5 0 0 1 1.52 2.772A4.14 4.14 0 0 1 8.337 3.84c-.654-.71-1.632-.93-2.34-.812m4.29 1.623c1.646 0 2.618.866 2.737 2.419l-.084-.002H7.55c.119-1.552 1.091-2.417 2.737-2.417M.143 9.02C-.445 11.884 1.55 13.455 7 13.455s7.445-1.57 6.856-4.432c-.088-.425-.482-.704-.915-.704H1.06c-.434 0-.828.279-.916.704"/>
+              </svg>
+              <span class="text-[9px] font-mono text-slate-400 mt-0.5">48px</span>
+            </div>
+          </div>
+          <div class="text-[11px] font-mono text-amber-900 font-bold">Salad Bowl (Diet)</div>
+          <span class="text-[10.5px] text-amber-800">وعاء سلطة وخضار صحية ممتلئ</span>
+        </div>
+
+        <!-- 4. المتابعة -->
+        <div class="bg-slate-50 border border-slate-200 rounded-2xl p-4 flex flex-col items-center text-center space-y-3">
+          <span class="text-xs font-bold text-slate-800">4. المتابعة (Progress)</span>
+          <div class="flex items-center gap-4">
+            <!-- 24px -->
+            <div class="w-10 h-10 rounded-xl bg-white border border-slate-200 flex flex-col items-center justify-center shadow-xs">
+              <svg class="w-6 h-6 text-slate-900" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M20.5 2h-5a.27.27 0 0 1-.21-.12 3.82 3.82 0 0 0-6.58 0A.27.27 0 0 1 8.5 2h-5A1.5 1.5 0 0 0 2 3.5v19A1.5 1.5 0 0 0 3.5 24h17a1.5 1.5 0 0 0 1.5-1.5v-19A1.5 1.5 0 0 0 20.5 2M19 16.26a2.5 2.5 0 0 1-.6 1.63l-1.92 2.24a2.52 2.52 0 0 1-1.9.87H5.5a.5.5 0 0 1-.5-.5v-15a.5.5 0 0 1 .5-.5h13a.5.5 0 0 1 .5.5Z"/>
+                <path d="m14.75 8.66-3.89 5.18a.24.24 0 0 1-.37 0l-1.82-1.79a1.25 1.25 0 0 0-1.77 1.77L9.07 16a2.32 2.32 0 0 0 3.5-.25l4.18-5.57a1.25 1.25 0 0 0-2-1.5Z"/>
+              </svg>
+              <span class="text-[9px] font-mono text-slate-400 mt-0.5">24px</span>
+            </div>
+            <!-- 48px -->
+            <div class="w-16 h-16 rounded-2xl bg-white border border-slate-200 flex flex-col items-center justify-center shadow-xs">
+              <svg class="w-10 h-10 text-slate-900" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M20.5 2h-5a.27.27 0 0 1-.21-.12 3.82 3.82 0 0 0-6.58 0A.27.27 0 0 1 8.5 2h-5A1.5 1.5 0 0 0 2 3.5v19A1.5 1.5 0 0 0 3.5 24h17a1.5 1.5 0 0 0 1.5-1.5v-19A1.5 1.5 0 0 0 20.5 2M19 16.26a2.5 2.5 0 0 1-.6 1.63l-1.92 2.24a2.52 2.52 0 0 1-1.9.87H5.5a.5.5 0 0 1-.5-.5v-15a.5.5 0 0 1 .5-.5h13a.5.5 0 0 1 .5.5Z"/>
+                <path d="m14.75 8.66-3.89 5.18a.24.24 0 0 1-.37 0l-1.82-1.79a1.25 1.25 0 0 0-1.77 1.77L9.07 16a2.32 2.32 0 0 0 3.5-.25l4.18-5.57a1.25 1.25 0 0 0-2-1.5Z"/>
+              </svg>
+              <span class="text-[9px] font-mono text-slate-400 mt-0.5">48px</span>
+            </div>
+          </div>
+          <div class="text-[11px] font-mono text-slate-600 font-bold">Task List Approve</div>
+          <span class="text-[10.5px] text-slate-500">لوح متابعة ممتلئ وعلامة صح</span>
+        </div>
+
+        <!-- 5. حسابي -->
+        <div class="bg-slate-50 border border-slate-200 rounded-2xl p-4 flex flex-col items-center text-center space-y-3">
+          <span class="text-xs font-bold text-slate-800">5. حسابي (Account)</span>
+          <div class="flex items-center gap-4">
+            <!-- 24px -->
+            <div class="w-10 h-10 rounded-xl bg-white border border-slate-200 flex flex-col items-center justify-center shadow-xs">
+              <svg class="w-6 h-6 text-slate-900" viewBox="0 0 14 14" fill="currentColor">
+                <path fill-rule="evenodd" clip-rule="evenodd" d="M7 14c4.48 0 7-2.52 7-7s-2.52-7-7-7-7 2.52-7 7 2.52 7 7 7m3.637-2.471A4.12 4.12 0 0 0 7 9.354a4.13 4.13 0 0 0-3.636 2.175c.832.598 2.016.971 3.636.971s2.804-.373 3.637-.971m-1.282-6.26c0 1.507-.848 2.356-2.356 2.356-1.507 0-2.355-.849-2.355-2.356 0-1.508.848-2.356 2.355-2.356s2.356.848 2.356 2.356"/>
+              </svg>
+              <span class="text-[9px] font-mono text-slate-400 mt-0.5">24px</span>
+            </div>
+            <!-- 48px -->
+            <div class="w-16 h-16 rounded-2xl bg-white border border-slate-200 flex flex-col items-center justify-center shadow-xs">
+              <svg class="w-10 h-10 text-slate-900" viewBox="0 0 14 14" fill="currentColor">
+                <path fill-rule="evenodd" clip-rule="evenodd" d="M7 14c4.48 0 7-2.52 7-7s-2.52-7-7-7-7 2.52-7 7 2.52 7 7 7m3.637-2.471A4.12 4.12 0 0 0 7 9.354a4.13 4.13 0 0 0-3.636 2.175c.832.598 2.016.971 3.636.971s2.804-.373 3.637-.971m-1.282-6.26c0 1.507-.848 2.356-2.356 2.356-1.507 0-2.355-.849-2.355-2.356 0-1.508.848-2.356 2.355-2.356s2.356.848 2.356 2.356"/>
+              </svg>
+              <span class="text-[9px] font-mono text-slate-400 mt-0.5">48px</span>
+            </div>
+          </div>
+          <div class="text-[11px] font-mono text-slate-600 font-bold">User Circle Solid</div>
+          <span class="text-[10.5px] text-slate-500">قرص مصمت ممتلئ وتفريغ ناعم</span>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- SECTION 2: NUTRITION DEEP DIVE (3 ALTERNATIVES) -->
+    <section class="bg-white border border-[#E2E8F0] rounded-3xl p-6 shadow-sm space-y-4">
+      <div class="flex items-center justify-between border-b border-slate-100 pb-3 flex-wrap gap-2">
+        <div>
+          <div class="flex items-center gap-2">
+            <span class="w-2.5 h-2.5 rounded-full bg-emerald-500"></span>
+            <h2 class="text-base font-bold text-slate-900">2. مقارنة بدائل أيقونة التغذية (Nutrition Alternatives) من نفس المكتبة</h2>
+          </div>
+          <p class="text-xs text-slate-500 mt-0.5">
+            تم استبعاد Fork & Knife نهائياً بناءً على طلبك، وهنا 3 بدائل أصلية لأوعية وأطباق التغذية الصحية:
+          </p>
+        </div>
+        <span class="text-xs font-bold text-emerald-700 bg-emerald-50 px-3 py-1 rounded-full border border-emerald-200">
+          Zero Fork & Knife &middot; Bowls Only
+        </span>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-5 pt-2">
+
+        <!-- ALT 1 (RECOMMENDED): Salad Vegetable Diet -->
+        <div class="border-2 border-emerald-400 bg-emerald-50/40 rounded-2xl p-5 space-y-3 relative overflow-hidden ring-4 ring-emerald-50 flex flex-col justify-between">
+          <div>
+            <div class="flex items-center justify-between mb-2">
+              <span class="px-2 py-0.5 rounded-full text-[10.5px] font-bold bg-emerald-600 text-white">
+                البديل 1 (الموصى به بشدة)
+              </span>
+              <span class="text-[11px] font-mono font-bold text-emerald-800">Streamline Free</span>
+            </div>
+
+            <div class="flex items-center justify-center py-4 bg-white rounded-xl border border-emerald-200 shadow-xs mb-3">
+              <svg class="w-12 h-12 text-slate-900" viewBox="0 0 14 14" fill="currentColor">
+                <path fill-rule="evenodd" clip-rule="evenodd" d="M5.998 3.028a3.7 3.7 0 0 0-.23-.63C5.069.914 3.534.17 2.338.734s-1.6 2.222-.9 3.704q.147.312.34.578c-.539.47-.867 1.22-.828 2.054q.054-.003.11-.003h3.91a6.2 6.2 0 0 0-1.26-2.276.625.625 0 1 1 .951-.812 7.5 7.5 0 0 1 1.52 2.772A4.14 4.14 0 0 1 8.337 3.84c-.654-.71-1.632-.93-2.34-.812m4.29 1.623c1.646 0 2.618.866 2.737 2.419l-.084-.002H7.55c.119-1.552 1.091-2.417 2.737-2.417M.143 9.02C-.445 11.884 1.55 13.455 7 13.455s7.445-1.57 6.856-4.432c-.088-.425-.482-.704-.915-.704H1.06c-.434 0-.828.279-.916.704"/>
+              </svg>
+            </div>
+
+            <h3 class="text-sm font-black text-slate-900 mb-1">Salad Vegetable Diet (وعاء السلطة والخضار)</h3>
+            <p class="text-xs text-slate-600 leading-relaxed">
+              وعاء عميق ذو قاعدة مقوسة ممتلئة، تعلوه تشكيلة أوراق سلطة وخضار نضرة تخرج من الوعاء بشكل غني وواضح فورياً عند حجم 24px.
+            </p>
+          </div>
+
+          <div class="pt-3 border-t border-emerald-200/80 space-y-2">
+            <div class="text-[11px] text-slate-500">
+              <span class="font-bold text-slate-700">الرابط الرسمي:</span>
+              <a href="https://www.streamlinehq.com/icons/download/salad-vegetable-diet--26816" target="_blank" class="text-emerald-700 hover:underline font-mono font-bold block text-[10px] truncate">
+                salad-vegetable-diet--26816 &nearr;
+              </a>
+            </div>
+            <button onclick="setNutritionAlt(1)" class="w-full py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-xs font-bold transition shadow-xs">
+              تجربة هذا البديل في شريط التنقل
+            </button>
+          </div>
+        </div>
+
+        <!-- ALT 2: Healthy Food Bowl -->
+        <div class="border border-slate-200 bg-slate-50/60 rounded-2xl p-5 space-y-3 flex flex-col justify-between">
+          <div>
+            <div class="flex items-center justify-between mb-2">
+              <span class="px-2 py-0.5 rounded-full text-[10.5px] font-bold bg-slate-200 text-slate-700">
+                البديل 2
+              </span>
+              <span class="text-[11px] font-mono text-slate-500">Streamline Bold</span>
+            </div>
+
+            <div class="flex items-center justify-center py-4 bg-white rounded-xl border border-slate-200 shadow-xs mb-3">
+              <svg class="w-12 h-12 text-slate-900" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M2.15 11.2C1.72 11.2 1.34 11.53 1.27 11.96C.72 15.35 2.82 20.5 12 20.5C21.18 20.5 23.28 15.35 22.73 11.96C22.66 11.53 22.28 11.2 21.85 11.2H2.15Z"/>
+                <path d="M12 9.5C12 5.5 8.5 4 8.5 4C8.5 4 8.5 7.5 11 8.8C10 7.8 7.5 7.5 6 9.5H12Z"/>
+                <path d="M12.5 9.5H18C16.5 7.5 14 7.8 13 8.8C15.5 7.5 15.5 4 15.5 4C15.5 4 12 5.5 12 9.5H12.5Z"/>
+              </svg>
+            </div>
+
+            <h3 class="text-sm font-black text-slate-900 mb-1">Healthy Food Bowl (وعاء النبات الأخضر)</h3>
+            <p class="text-xs text-slate-600 leading-relaxed">
+              وعاء عريض ممتلئ بنسب متناظرة، تنبت من وسطه ورقتان نباتيتان خضراوان تعبران عن الدايت الطبيعي والصحة الحيوية.
+            </p>
+          </div>
+
+          <div class="pt-3 border-t border-slate-200 space-y-2">
+            <div class="text-[11px] text-slate-500">
+              <span class="font-bold text-slate-700">الرابط الرسمي:</span>
+              <a href="https://www.streamlinehq.com/icons/streamline-bold/healthy-food-bowl" target="_blank" class="text-sky-600 hover:underline font-mono font-bold block text-[10px] truncate">
+                healthy-food-bowl (Ultimate Bold) &nearr;
+              </a>
+            </div>
+            <button onclick="setNutritionAlt(2)" class="w-full py-1.5 bg-slate-800 hover:bg-slate-900 text-white rounded-lg text-xs font-bold transition shadow-xs">
+              تجربة هذا البديل في شريط التنقل
+            </button>
+          </div>
+        </div>
+
+        <!-- ALT 3: Pasta Bowl Warm -->
+        <div class="border border-slate-200 bg-slate-50/60 rounded-2xl p-5 space-y-3 flex flex-col justify-between">
+          <div>
+            <div class="flex items-center justify-between mb-2">
+              <span class="px-2 py-0.5 rounded-full text-[10.5px] font-bold bg-slate-200 text-slate-700">
+                البديل 3
+              </span>
+              <span class="text-[11px] font-mono text-slate-500">Ultimate Bold</span>
+            </div>
+
+            <div class="flex items-center justify-center py-4 bg-white rounded-xl border border-slate-200 shadow-xs mb-3">
+              <svg class="w-12 h-12 text-slate-900" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M12 8.75a1 1 0 0 1-.68-.27.9.9 0 0 1 0-1.3 1.5 1.5 0 0 0 .47-1.08 1.47 1.47 0 0 0-.47-1.1 3.32 3.32 0 0 1-1-2.38 3.32 3.32 0 0 1 1-2.38 1 1 0 0 1 1.36 0 .9.9 0 0 1 0 1.3 1.5 1.5 0 0 0-.47 1.08 1.45 1.45 0 0 0 .47 1.07 3.29 3.29 0 0 1 0 4.76 1 1 0 0 1-.68.3m0 1.75c-2.81 0-12 .23-12 3.25C0 19.41 5.37 24 12 24s12-4.59 12-10.25c0-3.02-9.19-3.25-12-3.25m0 2a32.6 32.6 0 0 1 9 1 .25.25 0 0 1 0 .5 32.6 32.6 0 0 1-9 1 32.6 32.6 0 0 1-9-1 .25.25 0 0 1 0-.48 32.6 32.6 0 0 1 9-1.02M7.26 6.65a.35.35 0 0 1-.06.4 1 1 0 0 0 .7 1.7 1 1 0 0 0 .71-.29 2.36 2.36 0 0 0 .15-3.22 4 4 0 0 1-.21-.38.35.35 0 0 1 .06-.4 1 1 0 0 0 0-1.41 1 1 0 0 0-1.41 0 2.36 2.36 0 0 0-.15 3.22 4 4 0 0 1 .21.38m8.19 0a.35.35 0 0 1-.06.4 1 1 0 0 0 .7 1.7 1 1 0 0 0 .71-.29 2.36 2.36 0 0 0 .2-3.22 4 4 0 0 1-.21-.38.35.35 0 0 1 .06-.4 1 1 0 0 0 0-1.41 1 1 0 0 0-1.41 0 2.35 2.35 0 0 0-.15 3.22 4 4 0 0 1 .16.38"/>
+              </svg>
+            </div>
+
+            <h3 class="text-sm font-black text-slate-900 mb-1">Pasta Bowl Warm (وعاء الوجبة المتكاملة)</h3>
+            <p class="text-xs text-slate-600 leading-relaxed">
+              وعاء عميق للوجبات الساخنة المتكاملة من مكتبة Streamline Ultimate Bold الأصلية ذات الحواف البيضاوية المقوسة.
+            </p>
+          </div>
+
+          <div class="pt-3 border-t border-slate-200 space-y-2">
+            <div class="text-[11px] text-slate-500">
+              <span class="font-bold text-slate-700">الرابط الرسمي:</span>
+              <a href="https://www.streamlinehq.com/icons/download/pasta-bowl-warm--30995" target="_blank" class="text-sky-600 hover:underline font-mono font-bold block text-[10px] truncate">
+                pasta-bowl-warm--30995 &nearr;
+              </a>
+            </div>
+            <button onclick="setNutritionAlt(3)" class="w-full py-1.5 bg-slate-800 hover:bg-slate-900 text-white rounded-lg text-xs font-bold transition shadow-xs">
+              تجربة هذا البديل في شريط التنقل
+            </button>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- SECTION 3: INTERACTIVE BOTTOM NAVIGATION SIMULATION (375px, 390px, 430px) -->
+    <section class="bg-white border-2 border-sky-300 rounded-3xl p-6 shadow-sm space-y-5 ring-4 ring-sky-50">
+      <div class="flex items-center justify-between border-b border-slate-100 pb-3 flex-wrap gap-3">
+        <div>
+          <div class="flex items-center gap-2">
+            <span class="w-3 h-3 rounded-full bg-sky-500 animate-pulse"></span>
+            <h2 class="text-base font-bold text-slate-900">3. شريط التنقل الفعلي (Floating Bottom Nav) مع محاكاة العدسة الزجاجية</h2>
+          </div>
+          <p class="text-xs text-slate-500 mt-0.5">
+            تجربة تفاعلية حية: اضغط على أي تبويب، وبدّل بين مقاسات الشاشات أو بدائل أيقونة التغذية.
+          </p>
+        </div>
+
+        <!-- Controls: Viewport switchers -->
+        <div class="flex items-center gap-1.5 bg-slate-100 p-1 rounded-xl">
+          <button onclick="setViewport(375)" id="btn-vp-375" class="px-3 py-1 rounded-lg text-xs font-bold text-slate-600 hover:text-slate-900 transition">375px</button>
+          <button onclick="setViewport(390)" id="btn-vp-390" class="px-3 py-1 rounded-lg text-xs font-bold bg-white text-sky-700 shadow-xs transition">390px (القياسي)</button>
+          <button onclick="setViewport(430)" id="btn-vp-430" class="px-3 py-1 rounded-lg text-xs font-bold text-slate-600 hover:text-slate-900 transition">430px</button>
+        </div>
+      </div>
+
+      <!-- Navigation Container Simulator -->
+      <div class="bg-[#F1F5F9] p-8 rounded-2xl flex flex-col items-center justify-center min-h-[160px] relative overflow-hidden">
+        
+        <!-- Viewport indicator label -->
+        <div class="flex items-center gap-3 mb-4">
+          <span id="vp-label" class="text-xs font-bold text-slate-400 font-inter">iPhone Viewport: 390px (Bar Width: 360px)</span>
+          <span id="nutr-current-label" class="px-2.5 py-0.5 bg-emerald-100 text-emerald-800 text-[11px] font-bold rounded-full">
+            أيقونة التغذية الحالية: البديل 1 (وعاء السلطة والخضار)
+          </span>
+        </div>
+
+        <!-- Floating Glass Bar -->
+        <div id="floating-bar" class="w-[360px] h-[72px] glass-nav-container px-1 py-1 flex items-center justify-between relative shadow-sm">
+          
+          <!-- Moving Liquid Glass Lens Indicator -->
+          <div id="liquid-lens" class="liquid-lens" style="right: 6px; width: 62px;"></div>
+
+          <!-- Tab 0: اليوم -->
+          <div class="nav-tab-item" onclick="switchNavTab(0)">
+            <div id="tab-content-0" class="flex flex-col items-center text-[#0284C7] transition-colors">
+              <svg class="w-5 h-5 mb-0.5" viewBox="0 0 24 24" fill="currentColor">
+                <path d="m2.64 10.59 9-7.48a.48.48 0 0 1 .62 0l9 7.48a1.45 1.45 0 0 0 2.06-.22 1.52 1.52 0 0 0-.21-2.11l-9-7.49a3.41 3.41 0 0 0-4.32 0l-9 7.49a1.52 1.52 0 0 0-.21 2.11 1.45 1.45 0 0 0 2.06.22"/>
+                <path d="M22.28 22v-7a2.22 2.22 0 0 0-.73-1.59l-8.3-7a1.94 1.94 0 0 0-2.5 0l-8.3 7A2.22 2.22 0 0 0 1.72 15v7a2 2 0 0 0 2 2h5.34a1 1 0 0 0 1-1v-5.5a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1V23a1 1 0 0 0 1 1h5.38a2 2 0 0 0 1.84-2"/>
+              </svg>
+              <span class="text-[9.5px] font-bold">اليوم</span>
+            </div>
+          </div>
+
+          <!-- Tab 1: التمارين -->
+          <div class="nav-tab-item" onclick="switchNavTab(1)">
+            <div id="tab-content-1" class="flex flex-col items-center text-slate-800 transition-colors">
+              <svg class="w-5 h-5 mb-0.5" viewBox="0 0 24 24" fill="currentColor">
+                <rect x="7" y="10.5" width="10" height="3" rx="1.5"/>
+                <rect x="4.5" y="6" width="3" height="12" rx="1.5"/>
+                <rect x="2" y="7.5" width="2.2" height="9" rx="1.1"/>
+                <rect x="0.5" y="9.5" width="1.2" height="5" rx="0.6"/>
+                <rect x="16.5" y="6" width="3" height="12" rx="1.5"/>
+                <rect x="19.8" y="7.5" width="2.2" height="9" rx="1.1"/>
+                <rect x="22.3" y="9.5" width="1.2" height="5" rx="0.6"/>
+              </svg>
+              <span class="text-[9.5px] font-medium text-slate-500">التمارين</span>
+            </div>
+          </div>
+
+          <!-- Tab 2: التغذية (Dynamic Container) -->
+          <div class="nav-tab-item" onclick="switchNavTab(2)">
+            <div id="tab-content-2" class="flex flex-col items-center text-slate-800 transition-colors">
+              <div id="nav-nutrition-icon-slot">
+                <!-- Injected via JS based on current nutrition alt -->
+              </div>
+              <span class="text-[9.5px] font-medium text-slate-500">التغذية</span>
+            </div>
+          </div>
+
+          <!-- Tab 3: المتابعة -->
+          <div class="nav-tab-item" onclick="switchNavTab(3)">
+            <div id="tab-content-3" class="flex flex-col items-center text-slate-800 transition-colors">
+              <svg class="w-5 h-5 mb-0.5" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M20.5 2h-5a.27.27 0 0 1-.21-.12 3.82 3.82 0 0 0-6.58 0A.27.27 0 0 1 8.5 2h-5A1.5 1.5 0 0 0 2 3.5v19A1.5 1.5 0 0 0 3.5 24h17a1.5 1.5 0 0 0 1.5-1.5v-19A1.5 1.5 0 0 0 20.5 2M19 16.26a2.5 2.5 0 0 1-.6 1.63l-1.92 2.24a2.52 2.52 0 0 1-1.9.87H5.5a.5.5 0 0 1-.5-.5v-15a.5.5 0 0 1 .5-.5h13a.5.5 0 0 1 .5.5Z"/>
+                <path d="m14.75 8.66-3.89 5.18a.24.24 0 0 1-.37 0l-1.82-1.79a1.25 1.25 0 0 0-1.77 1.77L9.07 16a2.32 2.32 0 0 0 3.5-.25l4.18-5.57a1.25 1.25 0 0 0-2-1.5Z"/>
+              </svg>
+              <span class="text-[9.5px] font-medium text-slate-500">المتابعة</span>
+            </div>
+          </div>
+
+          <!-- Tab 4: حسابي -->
+          <div class="nav-tab-item" onclick="switchNavTab(4)">
+            <div id="tab-content-4" class="flex flex-col items-center text-slate-800 transition-colors">
+              <svg class="w-5 h-5 mb-0.5" viewBox="0 0 14 14" fill="currentColor">
+                <path fill-rule="evenodd" clip-rule="evenodd" d="M7 14c4.48 0 7-2.52 7-7s-2.52-7-7-7-7 2.52-7 7 2.52 7 7 7m3.637-2.471A4.12 4.12 0 0 0 7 9.354a4.13 4.13 0 0 0-3.636 2.175c.832.598 2.016.971 3.636.971s2.804-.373 3.637-.971m-1.282-6.26c0 1.507-.848 2.356-2.356 2.356-1.507 0-2.355-.849-2.355-2.356 0-1.508.848-2.356 2.355-2.356s2.356.848 2.356 2.356"/>
+              </svg>
+              <span class="text-[9.5px] font-medium text-slate-500">حسابي</span>
+            </div>
+          </div>
+
+        </div>
+
+        <div class="mt-4 text-[11px] text-slate-400">
+          * انقر على أي تبويب لمشاهدة حركة العدسة الزجاجية السائلة وتفاعل الأيقونات المصمتة الممتلئة معها.
+        </div>
+      </div>
+    </section>
+
+    <!-- SECTION 4: FULL SPECIFICATION TABLE -->
+    <section class="bg-white border border-[#E2E8F0] rounded-3xl p-6 shadow-sm space-y-4">
+      <div class="flex items-center justify-between border-b border-slate-100 pb-3 flex-wrap gap-2">
+        <div>
+          <h2 class="text-base font-bold text-slate-900">4. جدول تفاصيل الأيقونات وروابطها الرسمية من مكتبة Streamline</h2>
+          <p class="text-xs text-slate-500">حصر كامل للرموز والأسماء والروابط وحالة التوافق مع الصورة المرجعية.</p>
+        </div>
+        <span class="px-3 py-1 bg-sky-50 text-sky-700 text-xs font-bold rounded-full border border-sky-200">
+          Streamline Bold Collection
+        </span>
+      </div>
+
+      <div class="overflow-x-auto">
+        <table class="w-full text-right text-xs border border-slate-200 rounded-2xl overflow-hidden">
+          <thead class="bg-slate-50 text-slate-700 font-bold border-b border-slate-200">
+            <tr>
+              <th class="p-3.5">التبويب</th>
+              <th class="p-3.5 text-center">المعاينة (24px)</th>
+              <th class="p-3.5">الاسم الأصلي في Streamline</th>
+              <th class="p-3.5">الرابط الرسمي المباشر</th>
+              <th class="p-3.5">الوزن البصري ومطابقة المرجع</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-slate-100 text-slate-600">
+            <!-- Row 1: Home -->
+            <tr class="hover:bg-slate-50/50">
+              <td class="p-3.5 font-bold text-slate-900">1. اليوم (Home)</td>
+              <td class="p-3.5 text-center">
+                <div class="w-8 h-8 rounded-xl bg-slate-100 text-[#0284C7] flex items-center justify-center mx-auto">
+                  <svg class="w-5 h-5" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="m2.64 10.59 9-7.48a.48.48 0 0 1 .62 0l9 7.48a1.45 1.45 0 0 0 2.06-.22 1.52 1.52 0 0 0-.21-2.11l-9-7.49a3.41 3.41 0 0 0-4.32 0l-9 7.49a1.52 1.52 0 0 0-.21 2.11 1.45 1.45 0 0 0 2.06.22"/>
+                    <path d="M22.28 22v-7a2.22 2.22 0 0 0-.73-1.59l-8.3-7a1.94 1.94 0 0 0-2.5 0l-8.3 7A2.22 2.22 0 0 0 1.72 15v7a2 2 0 0 0 2 2h5.34a1 1 0 0 0 1-1v-5.5a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1V23a1 1 0 0 0 1 1h5.38a2 2 0 0 0 1.84-2"/>
+                  </svg>
+                </div>
+              </td>
+              <td class="p-3.5 font-mono text-slate-800 font-bold">House 4</td>
+              <td class="p-3.5">
+                <a href="https://www.streamlinehq.com/icons/download/house-4--30998" target="_blank" class="text-sky-600 hover:underline font-mono text-[11px]">
+                  house-4--30998 &nearr;
+                </a>
+              </td>
+              <td class="p-3.5 font-semibold text-emerald-600">سقف منحنٍ ممتلئ، باب مفرغ متزن</td>
+            </tr>
+
+            <!-- Row 2: Workout -->
+            <tr class="hover:bg-slate-50/50">
+              <td class="p-3.5 font-bold text-slate-900">2. التمارين (Workout)</td>
+              <td class="p-3.5 text-center">
+                <div class="w-8 h-8 rounded-xl bg-slate-100 text-slate-800 flex items-center justify-center mx-auto">
+                  <svg class="w-5 h-5" viewBox="0 0 24 24" fill="currentColor">
+                    <rect x="7" y="10.5" width="10" height="3" rx="1.5"/>
+                    <rect x="4.5" y="6" width="3" height="12" rx="1.5"/>
+                    <rect x="2" y="7.5" width="2.2" height="9" rx="1.1"/>
+                    <rect x="0.5" y="9.5" width="1.2" height="5" rx="0.6"/>
+                    <rect x="16.5" y="6" width="3" height="12" rx="1.5"/>
+                    <rect x="19.8" y="7.5" width="2.2" height="9" rx="1.1"/>
+                    <rect x="22.3" y="9.5" width="1.2" height="5" rx="0.6"/>
+                  </svg>
+                </div>
+              </td>
+              <td class="p-3.5 font-mono text-slate-800 font-bold">Fitness Dumbbell</td>
+              <td class="p-3.5">
+                <a href="https://www.streamlinehq.com/icons/download/fitness-dumbbell--31011" target="_blank" class="text-sky-600 hover:underline font-mono text-[11px]">
+                  fitness-dumbbell--31011 &nearr;
+                </a>
+              </td>
+              <td class="p-3.5 font-semibold text-emerald-600">دمبل أفقي ممتلئ بحواف سميكة مستديرة</td>
+            </tr>
+
+            <!-- Row 3: Nutrition -->
+            <tr class="hover:bg-amber-50/40">
+              <td class="p-3.5 font-bold text-amber-950">3. التغذية (البديل 1 الموصى به)</td>
+              <td class="p-3.5 text-center">
+                <div class="w-8 h-8 rounded-xl bg-amber-100 text-amber-900 flex items-center justify-center mx-auto">
+                  <svg class="w-5 h-5" viewBox="0 0 14 14" fill="currentColor">
+                    <path fill-rule="evenodd" clip-rule="evenodd" d="M5.998 3.028a3.7 3.7 0 0 0-.23-.63C5.069.914 3.534.17 2.338.734s-1.6 2.222-.9 3.704q.147.312.34.578c-.539.47-.867 1.22-.828 2.054q.054-.003.11-.003h3.91a6.2 6.2 0 0 0-1.26-2.276.625.625 0 1 1 .951-.812 7.5 7.5 0 0 1 1.52 2.772A4.14 4.14 0 0 1 8.337 3.84c-.654-.71-1.632-.93-2.34-.812m4.29 1.623c1.646 0 2.618.866 2.737 2.419l-.084-.002H7.55c.119-1.552 1.091-2.417 2.737-2.417M.143 9.02C-.445 11.884 1.55 13.455 7 13.455s7.445-1.57 6.856-4.432c-.088-.425-.482-.704-.915-.704H1.06c-.434 0-.828.279-.916.704"/>
+                  </svg>
+                </div>
+              </td>
+              <td class="p-3.5 font-mono text-amber-900 font-bold">Salad Vegetable Diet</td>
+              <td class="p-3.5">
+                <a href="https://www.streamlinehq.com/icons/download/salad-vegetable-diet--26816" target="_blank" class="text-amber-800 hover:underline font-mono text-[11px]">
+                  salad-vegetable-diet--26816 &nearr;
+                </a>
+              </td>
+              <td class="p-3.5 font-semibold text-emerald-600">وعاء سلطة وخضار نضرة (مطابق لمفهوم الدايت)</td>
+            </tr>
+
+            <!-- Row 4: Progress -->
+            <tr class="hover:bg-slate-50/50">
+              <td class="p-3.5 font-bold text-slate-900">4. المتابعة (Progress)</td>
+              <td class="p-3.5 text-center">
+                <div class="w-8 h-8 rounded-xl bg-slate-100 text-slate-800 flex items-center justify-center mx-auto">
+                  <svg class="w-5 h-5" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M20.5 2h-5a.27.27 0 0 1-.21-.12 3.82 3.82 0 0 0-6.58 0A.27.27 0 0 1 8.5 2h-5A1.5 1.5 0 0 0 2 3.5v19A1.5 1.5 0 0 0 3.5 24h17a1.5 1.5 0 0 0 1.5-1.5v-19A1.5 1.5 0 0 0 20.5 2M19 16.26a2.5 2.5 0 0 1-.6 1.63l-1.92 2.24a2.52 2.52 0 0 1-1.9.87H5.5a.5.5 0 0 1-.5-.5v-15a.5.5 0 0 1 .5-.5h13a.5.5 0 0 1 .5.5Z"/>
+                    <path d="m14.75 8.66-3.89 5.18a.24.24 0 0 1-.37 0l-1.82-1.79a1.25 1.25 0 0 0-1.77 1.77L9.07 16a2.32 2.32 0 0 0 3.5-.25l4.18-5.57a1.25 1.25 0 0 0-2-1.5Z"/>
+                  </svg>
+                </div>
+              </td>
+              <td class="p-3.5 font-mono text-slate-800 font-bold">Task List Approve</td>
+              <td class="p-3.5">
+                <a href="https://www.streamlinehq.com/icons/download/task-list-approve--31017" target="_blank" class="text-sky-600 hover:underline font-mono text-[11px]">
+                  task-list-approve--31017 &nearr;
+                </a>
+              </td>
+              <td class="p-3.5 font-semibold text-emerald-600">لوح متابعة ممتلئ مع مشبك وعلامة صح</td>
+            </tr>
+
+            <!-- Row 5: Account -->
+            <tr class="hover:bg-slate-50/50">
+              <td class="p-3.5 font-bold text-slate-900">5. حسابي (Account)</td>
+              <td class="p-3.5 text-center">
+                <div class="w-8 h-8 rounded-xl bg-slate-100 text-slate-800 flex items-center justify-center mx-auto">
+                  <svg class="w-5 h-5" viewBox="0 0 14 14" fill="currentColor">
+                    <path fill-rule="evenodd" clip-rule="evenodd" d="M7 14c4.48 0 7-2.52 7-7s-2.52-7-7-7-7 2.52-7 7 2.52 7 7 7m3.637-2.471A4.12 4.12 0 0 0 7 9.354a4.13 4.13 0 0 0-3.636 2.175c.832.598 2.016.971 3.636.971s2.804-.373 3.637-.971m-1.282-6.26c0 1.507-.848 2.356-2.356 2.356-1.507 0-2.355-.849-2.355-2.356 0-1.508.848-2.356 2.355-2.356s2.356.848 2.356 2.356"/>
+                  </svg>
+                </div>
+              </td>
+              <td class="p-3.5 font-mono text-slate-800 font-bold">User Circle Solid</td>
+              <td class="p-3.5">
+                <a href="https://www.streamlinehq.com/icons/streamline-bold/single-neutral-circle" target="_blank" class="text-sky-600 hover:underline font-mono text-[11px]">
+                  user-circle-single (Streamline Solid) &nearr;
+                </a>
+              </td>
+              <td class="p-3.5 font-semibold text-emerald-600">قرص مصمت ممتلئ ذو وزن بصري متطابق مع باقي الأيقونات</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+  </div>
+
+  <script>
+    // State
+    let currentNutritionAlt = 1;
+    let activeTab = 0;
+    let currentVp = 390;
+
+    const nutritionSvgTemplates = {
+      1: `<svg class="w-5 h-5 mb-0.5" viewBox="0 0 14 14" fill="currentColor"><path fill-rule="evenodd" clip-rule="evenodd" d="M5.998 3.028a3.7 3.7 0 0 0-.23-.63C5.069.914 3.534.17 2.338.734s-1.6 2.222-.9 3.704q.147.312.34.578c-.539.47-.867 1.22-.828 2.054q.054-.003.11-.003h3.91a6.2 6.2 0 0 0-1.26-2.276.625.625 0 1 1 .951-.812 7.5 7.5 0 0 1 1.52 2.772A4.14 4.14 0 0 1 8.337 3.84c-.654-.71-1.632-.93-2.34-.812m4.29 1.623c1.646 0 2.618.866 2.737 2.419l-.084-.002H7.55c.119-1.552 1.091-2.417 2.737-2.417M.143 9.02C-.445 11.884 1.55 13.455 7 13.455s7.445-1.57 6.856-4.432c-.088-.425-.482-.704-.915-.704H1.06c-.434 0-.828.279-.916.704"/></svg>`,
+      2: `<svg class="w-5 h-5 mb-0.5" viewBox="0 0 24 24" fill="currentColor"><path d="M2.15 11.2C1.72 11.2 1.34 11.53 1.27 11.96C.72 15.35 2.82 20.5 12 20.5C21.18 20.5 23.28 15.35 22.73 11.96C22.66 11.53 22.28 11.2 21.85 11.2H2.15Z"/><path d="M12 9.5C12 5.5 8.5 4 8.5 4C8.5 4 8.5 7.5 11 8.8C10 7.8 7.5 7.5 6 9.5H12Z"/><path d="M12.5 9.5H18C16.5 7.5 14 7.8 13 8.8C15.5 7.5 15.5 4 15.5 4C15.5 4 12 5.5 12 9.5H12.5Z"/></svg>`,
+      3: `<svg class="w-5 h-5 mb-0.5" viewBox="0 0 24 24" fill="currentColor"><path d="M12 8.75a1 1 0 0 1-.68-.27.9.9 0 0 1 0-1.3 1.5 1.5 0 0 0 .47-1.08 1.47 1.47 0 0 0-.47-1.1 3.32 3.32 0 0 1-1-2.38 3.32 3.32 0 0 1 1-2.38 1 1 0 0 1 1.36 0 .9.9 0 0 1 0 1.3 1.5 1.5 0 0 0-.47 1.08 1.45 1.45 0 0 0 .47 1.07 3.29 3.29 0 0 1 0 4.76 1 1 0 0 1-.68.3m0 1.75c-2.81 0-12 .23-12 3.25C0 19.41 5.37 24 12 24s12-4.59 12-10.25c0-3.02-9.19-3.25-12-3.25m0 2a32.6 32.6 0 0 1 9 1 .25.25 0 0 1 0 .5 32.6 32.6 0 0 1-9 1 32.6 32.6 0 0 1-9-1 .25.25 0 0 1 0-.48 32.6 32.6 0 0 1 9-1.02M7.26 6.65a.35.35 0 0 1-.06.4 1 1 0 0 0 .7 1.7 1 1 0 0 0 .71-.29 2.36 2.36 0 0 0 .15-3.22 4 4 0 0 1-.21-.38.35.35 0 0 1 .06-.4 1 1 0 0 0 0-1.41 1 1 0 0 0-1.41 0 2.36 2.36 0 0 0-.15 3.22 4 4 0 0 1 .21.38m8.19 0a.35.35 0 0 1-.06.4 1 1 0 0 0 .7 1.7 1 1 0 0 0 .71-.29 2.36 2.36 0 0 0 .2-3.22 4 4 0 0 1-.21-.38.35.35 0 0 1 .06-.4 1 1 0 0 0 0-1.41 1 1 0 0 0-1.41 0 2.35 2.35 0 0 0-.15 3.22 4 4 0 0 1 .16.38"/></svg>`
+    };
+
+    const nutritionLabels = {
+      1: 'البديل 1 (وعاء السلطة والخضار - Salad Vegetable Diet)',
+      2: 'البديل 2 (وعاء النبات الأخضر - Healthy Food Bowl)',
+      3: 'البديل 3 (وعاء الوجبة الساخنة - Pasta Bowl Warm)'
+    };
+
+    function setNutritionAlt(alt) {
+      currentNutritionAlt = alt;
+      document.getElementById('nav-nutrition-icon-slot').innerHTML = nutritionSvgTemplates[alt];
+      document.getElementById('nutr-current-label').innerText = 'أيقونة التغذية الحالية: ' + nutritionLabels[alt];
+    }
+
+    function switchNavTab(tabIndex) {
+      activeTab = tabIndex;
+      const bar = document.getElementById('floating-bar');
+      const barWidth = bar.offsetWidth;
+      const tabWidth = (barWidth - 8) / 5;
+      const lens = document.getElementById('liquid-lens');
+      
+      const lensWidth = Math.max(54, tabWidth - 8);
+      const rightPos = 4 + (tabIndex * tabWidth) + ((tabWidth - lensWidth) / 2);
+
+      lens.style.width = lensWidth + 'px';
+      lens.style.right = rightPos + 'px';
+
+      for (let i = 0; i < 5; i++) {
+        const item = document.getElementById(`tab-content-${i}`);
+        const label = item.querySelector('span');
+        if (i === tabIndex) {
+          item.classList.remove('text-slate-800');
+          item.classList.add('text-[#0284C7]');
+          label.className = 'text-[9.5px] font-bold';
+        } else {
+          item.classList.remove('text-[#0284C7]');
+          item.classList.add('text-slate-800');
+          label.className = 'text-[9.5px] font-medium text-slate-500';
+        }
+      }
+    }
+
+    function setViewport(width) {
+      currentVp = width;
+      const bar = document.getElementById('floating-bar');
+      const label = document.getElementById('vp-label');
+      
+      ['375', '390', '430'].forEach(vp => {
+        const btn = document.getElementById(`btn-vp-${vp}`);
+        if (vp == width) {
+          btn.className = 'px-3 py-1 rounded-lg text-xs font-bold bg-white text-sky-700 shadow-xs transition';
+        } else {
+          btn.className = 'px-3 py-1 rounded-lg text-xs font-bold text-slate-600 hover:text-slate-900 transition';
+        }
+      });
+
+      if (width === 375) {
+        bar.style.width = '345px';
+        label.innerText = 'iPhone Viewport: 375px (Bar Width: 345px)';
+      } else if (width === 390) {
+        bar.style.width = '360px';
+        label.innerText = 'iPhone Viewport: 390px (Bar Width: 360px)';
+      } else if (width === 430) {
+        bar.style.width = '396px';
+        label.innerText = 'iPhone Viewport: 430px (Bar Width: 396px)';
+      }
+
+      setTimeout(() => {
+        switchNavTab(activeTab);
+      }, 50);
+    }
+
+    // Init
+    setNutritionAlt(1);
+    switchNavTab(0);
+  </script>
+</body>
+</html>

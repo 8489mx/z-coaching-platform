@@ -71,7 +71,7 @@ export default function WorkoutTab({
                 flex: '1 0 auto',
                 padding: '7px 10px',
                 borderRadius: '10px',
-                fontSize: '0.74rem',
+                fontSize: '0.7rem',
                 fontWeight: isSelected ? 800 : 600,
                 background: isSelected ? '#0284C7' : '#F8FAFC',
                 color: isSelected ? '#FFFFFF' : '#64748B',
@@ -168,7 +168,7 @@ export default function WorkoutTab({
               borderRadius: '12px',
               padding: '10px 14px',
               marginTop: '4px',
-              fontSize: '0.74rem',
+              fontSize: '0.7rem',
               color: '#166534',
               lineHeight: 1.5
             }}>
@@ -190,7 +190,7 @@ export default function WorkoutTab({
         boxShadow: '0 2px 8px rgba(2, 132, 199, 0.06)' 
       }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '6px', color: '#0369A1', fontSize: '0.74rem', fontWeight: 800 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '6px', color: '#0369A1', fontSize: '0.7rem', fontWeight: 800 }}>
             <Dumbbell style={{ width: '14px', height: '14px', color: '#0284C7' }} />
             <span>جدول تمارين اليوم (دليل استرشادي سريع)</span>
           </div>
@@ -209,7 +209,7 @@ export default function WorkoutTab({
         <h2 style={{ fontSize: '1.05rem', fontWeight: 900, color: '#0F172A', margin: '0 0 6px 0' }}>
           {workoutSession.title}
         </h2>
-        <div style={{ fontSize: '0.74rem', color: '#475569', lineHeight: 1.4 }}>
+        <div style={{ fontSize: '0.7rem', color: '#475569', lineHeight: 1.4 }}>
           {workoutSession.warmupProtocol}
         </div>
       </div>
@@ -335,7 +335,7 @@ export default function WorkoutTab({
                   border: 'none',
                   borderRadius: '10px',
                   padding: '6px 12px',
-                  fontSize: '0.74rem',
+                  fontSize: '0.7rem',
                   fontWeight: 800,
                   cursor: 'pointer'
                 }}
@@ -440,7 +440,7 @@ export default function WorkoutTab({
                   {exIdx + 1}. {ex.nameEn || ex.name}
                 </h3>
                 {(ex.nameAr || ex.name) && (
-                  <div style={{ fontSize: '0.74rem', color: '#64748B', fontWeight: 600 }}>
+                  <div style={{ fontSize: '0.7rem', color: '#64748B', fontWeight: 600 }}>
                     {ex.nameAr || ex.name}
                   </div>
                 )}
@@ -554,13 +554,13 @@ export default function WorkoutTab({
                 onClick={() => setActiveVideoExercise(ex)}
                 style={{
                   flex: 1,
-                  height: '32px',
-                  borderRadius: '8px',
-                  background: '#F0F9FF',
-                  color: '#0284C7',
-                  border: '1px solid #BAE6FD',
-                  fontSize: '0.75rem',
-                  fontWeight: 700,
+                  height: '28px',
+                  borderRadius: '9999px',
+                  background: '#F8FBFF',
+                  color: '#284C7C',
+                  border: '1px solid #D9E7F5',
+                  fontSize: '0.7rem',
+                  fontWeight: 600,
                   display: 'inline-flex',
                   alignItems: 'center',
                   justifyContent: 'center',
@@ -569,13 +569,15 @@ export default function WorkoutTab({
                   transition: 'all 0.15s ease'
                 }}
                 onMouseEnter={(e) => {
-                  e.currentTarget.style.background = '#E0F2FE';
+                  e.currentTarget.style.background = '#EBF4FE';
+                  e.currentTarget.style.borderColor = '#C5DBF0';
                 }}
                 onMouseLeave={(e) => {
-                  e.currentTarget.style.background = '#F0F9FF';
+                  e.currentTarget.style.background = '#F8FBFF';
+                  e.currentTarget.style.borderColor = '#D9E7F5';
                 }}
               >
-                <Play style={{ width: '12px', height: '12px', fill: '#0284C7' }} />
+                <Play style={{ width: '13px', height: '13px', fill: '#284C7C' }} />
                 <span>مشاهدة التكنيك بالفيديو</span>
               </button>
 
@@ -584,21 +586,30 @@ export default function WorkoutTab({
                 type="button"
                 onClick={() => setExpandedTechnique(prev => ({ ...prev, [ex.id]: !prev[ex.id] }))}
                 style={{
-                  height: '32px',
+                  height: '28px',
                   padding: '0 10px',
-                  borderRadius: '8px',
-                  background: '#FFFFFF',
-                  color: '#475569',
-                  border: '1px solid #CBD5E1',
-                  fontSize: '0.74rem',
-                  fontWeight: 700,
+                  borderRadius: '9999px',
+                  background: '#F8FBFF',
+                  color: '#284C7C',
+                  border: '1px solid #D9E7F5',
+                  fontSize: '0.7rem',
+                  fontWeight: 600,
                   display: 'inline-flex',
                   alignItems: 'center',
-                  gap: '4px',
-                  cursor: 'pointer'
+                  gap: '6px',
+                  cursor: 'pointer',
+                  transition: 'all 0.15s ease'
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.background = '#EBF4FE';
+                  e.currentTarget.style.borderColor = '#C5DBF0';
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.background = '#F8FBFF';
+                  e.currentTarget.style.borderColor = '#D9E7F5';
                 }}
               >
-                <ShieldCheck style={{ width: '13px', height: '13px', color: '#D97706' }} />
+                <ShieldCheck style={{ width: '13px', height: '13px', color: '#284C7C' }} />
                 <span>إرشادات التكنيك</span>
                 {isTechniqueExpanded ? <ChevronUp style={{ width: '12px', height: '12px' }} /> : <ChevronDown style={{ width: '12px', height: '12px' }} />}
               </button>
@@ -606,7 +617,7 @@ export default function WorkoutTab({
 
             {/* Collapsible Coaching Cues & Injury Avoidance */}
             {isTechniqueExpanded && (
-              <div style={{ background: '#FFFBEB', border: '1px solid #FDE68A', borderRadius: '10px', padding: '10px', fontSize: '0.74rem', display: 'flex', flexDirection: 'column', gap: '6px', color: '#92400E' }}>
+              <div style={{ background: '#FFFBEB', border: '1px solid #FDE68A', borderRadius: '10px', padding: '10px', fontSize: '0.7rem', display: 'flex', flexDirection: 'column', gap: '6px', color: '#92400E' }}>
                 <div>
                   <strong style={{ color: '#0F172A', display: 'block', marginBottom: '2px' }}>التكنيك السليم:</strong>
                   <span>{ex.cues_ar || ex.safetyNote || 'الحفاظ على المدى الحركي الكامل والتحكم في الوزن أثناء النزول.'}</span>
@@ -626,7 +637,7 @@ export default function WorkoutTab({
               onClick={() => handleToggleExerciseCompleted(ex.id)}
               style={{
                 width: '100%',
-                height: '34px',
+                height: '28px',
                 borderRadius: '8px',
                 background: isCompleted ? '#F0FDF4' : '#F8FAFC',
                 color: isCompleted ? '#166534' : '#64748B',
@@ -660,7 +671,7 @@ export default function WorkoutTab({
             حفظ تسجيل الجلسة
           </button>
           {sessionLogStatus?.message && (
-            <div style={{ fontSize: '0.74rem', fontWeight: 700, textAlign: 'center', color: sessionLogStatus.type === 'error' ? '#B91C1C' : sessionLogStatus.type === 'success' ? '#15803D' : '#475569' }}>
+            <div style={{ fontSize: '0.7rem', fontWeight: 700, textAlign: 'center', color: sessionLogStatus.type === 'error' ? '#B91C1C' : sessionLogStatus.type === 'success' ? '#15803D' : '#475569' }}>
               {sessionLogStatus.message}
             </div>
           )}
@@ -689,7 +700,7 @@ export default function WorkoutTab({
           </div>
 
           <div style={{ background: '#FFFFFF', border: '1px solid #BAE6FD', borderRadius: '10px', padding: '8px 12px', marginBottom: '6px' }}>
-            <p style={{ margin: 0, fontSize: '0.74rem', color: '#0F172A', lineHeight: 1.4 }}>
+            <p style={{ margin: 0, fontSize: '0.7rem', color: '#0F172A', lineHeight: 1.4 }}>
               <strong>الشدة المستهدفة (Zone 2):</strong> {cardioPrescription.talk_test_cue_ar}
             </p>
           </div>

@@ -59,7 +59,13 @@ Desktop.ini
 # Local tooling and archives
 .agents/
 *.zip
+*.sql
 backups/
+backup_redesign_state/
+temp_screenshots/
+test-results/
+karim_zakaria_app_screens/
+temp_nutrition_screen.html
 data/fcm-device-tokens.json
 data/notifications-log.json
 data/self-hosted-notifications.json

@@ -7,7 +7,8 @@ import {
   deleteAccount,
   changePassword,
   logoutAll,
-  getCsrfTokenController
+  getCsrfTokenController,
+  updatePreferences
 } from "../controllers/auth.controller.js";
 import { requireAuth } from "../middlewares/auth.middleware.js";
 import { authRateLimiter } from "../middlewares/rateLimiter.js";
@@ -19,6 +20,7 @@ router.post("/register-fast", authRateLimiter, registerFast);
 router.post("/login-fast", authRateLimiter, loginFast);
 router.post("/login-email", authRateLimiter, loginEmail);
 router.get("/profile", requireAuth, getProfile);
+router.patch("/preferences", requireAuth, updatePreferences);
 router.post("/change-password", requireAuth, authRateLimiter, changePassword);
 router.post("/logout-all", requireAuth, logoutAll);
 router.delete("/delete-account", requireAuth, deleteAccount);

@@ -1,0 +1,431 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>مقارنة أيقونات شريط التنقل — Streamline Bold vs Current Outline</title>
+  <script src="https://www.gstatic.com/antigravity/web/dev/tailwindcss.min.js"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@300;400;500;600;700;800&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    * {
+      font-family: 'Segoe UI', 'IBM Plex Sans Arabic', -apple-system, BlinkMacSystemFont, 'Tahoma', sans-serif;
+      box-sizing: border-box;
+      -webkit-font-smoothing: antialiased;
+    }
+    .font-inter { font-family: 'Inter', sans-serif; }
+    
+    /* Liquid Glass Bottom Nav Base */
+    .glass-nav-container {
+      position: relative;
+      background: rgba(255, 255, 255, 0.94);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border-radius: 30px;
+      box-shadow: 
+        0 16px 36px -6px rgba(2, 132, 199, 0.13),
+        0 4px 14px -2px rgba(15, 23, 42, 0.04),
+        0 1px 3px 0 rgba(15, 23, 42, 0.02),
+        inset 0 1.5px 2px 0 rgba(255, 255, 255, 0.95),
+        inset 0 -1px 1.5px 0 rgba(2, 132, 199, 0.03);
+      border: 1.2px solid rgba(255, 255, 255, 0.85);
+      user-select: none;
+    }
+
+    .liquid-lens-settled {
+      position: absolute;
+      top: 5px;
+      height: 48px;
+      border-radius: 24px;
+      background: rgba(226, 232, 240, 0.72);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      border: 1px solid rgba(255, 255, 255, 0.75);
+      box-shadow: 
+        0 2px 8px -1px rgba(2, 132, 199, 0.08),
+        0 1px 3px 0 rgba(15, 23, 42, 0.03),
+        inset 0 1px 1.5px 0 rgba(255, 255, 255, 0.85);
+      pointer-events: none;
+      z-index: 10;
+    }
+
+    .nav-tab-item {
+      position: relative;
+      flex: 1;
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      z-index: 20;
+    }
+  </style>
+</head>
+<body class="min-h-screen bg-[#F8FAFC] text-[#0F172A] p-4 md:p-8 flex flex-col items-center">
+
+  <div class="w-full max-w-5xl space-y-8">
+
+    <!-- Header Section -->
+    <header class="bg-white border border-[#E2E8F0] rounded-3xl p-5 md:p-6 shadow-sm flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+      <div>
+        <div class="flex items-center gap-2 mb-1.5">
+          <span class="px-3 py-0.5 rounded-full text-xs font-bold bg-sky-50 text-sky-700 border border-sky-200">
+            Z Coaching Platform · تدقيق الأيقونات
+          </span>
+          <span class="px-2.5 py-0.5 rounded-full text-xs font-medium bg-emerald-50 text-emerald-700 border border-emerald-200">
+            مرجع Streamline Bold الأصلي
+          </span>
+        </div>
+        <h1 class="text-xl md:text-2xl font-black text-slate-900 tracking-tight">
+          مقارنة شريط التنقل السفلي: الأيقونات الحالية vs أيقونات Streamline Bold الأصلية
+        </h1>
+        <p class="text-xs text-slate-500 mt-1">
+          عرض مباشر للمقارنة البصرية بين الأيقونات الحالية (Outline) والأيقونات الأصلية المقترحة من مكتبة Streamline Bold (Thick Filled Silhouettes) قبل الاعتماد.
+        </p>
+      </div>
+      <div class="shrink-0 flex items-center gap-2">
+        <a href="/preview.html" class="px-3.5 py-2 rounded-xl bg-slate-900 hover:bg-slate-800 text-sky-400 text-xs font-bold transition-all shadow-xs flex items-center gap-1.5">
+          <span>الاستوديو المركزي</span>
+          <span>&larr;</span>
+        </a>
+      </div>
+    </header>
+
+    <!-- Visual Comparison Cards -->
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+
+      <!-- ============================================== -->
+      <!-- OPTION A: CURRENT ICONS (Outline Stroke Style) -->
+      <!-- ============================================== -->
+      <div class="bg-white border border-rose-200 rounded-3xl p-5 shadow-sm space-y-4 relative overflow-hidden">
+        <div class="flex items-center justify-between border-b border-slate-100 pb-3">
+          <div class="flex items-center gap-2">
+            <span class="w-2.5 h-2.5 rounded-full bg-rose-500"></span>
+            <h2 class="text-sm font-bold text-slate-900">الخيار (A): الأيقونات الموجودة حالياً</h2>
+          </div>
+          <span class="px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-rose-50 text-rose-700 border border-rose-200">
+            Lucide Outline (خطوط رفيعة)
+          </span>
+        </div>
+
+        <p class="text-xs text-slate-500 leading-relaxed">
+          الأيقونات الحالية تعتمد على خطوط تفريغ رقيقة (Stroke Width 1.9–2.2px) ذات تجويف أبيض كامل، وهي النمط التقليدي قبل طلب المطابقة مع الصورة المرجعية.
+        </p>
+
+        <!-- Simulated Floating Bar Preview (390px frame centered) -->
+        <div class="bg-[#F1F5F9] p-4 rounded-2xl flex flex-col items-center justify-center">
+          <span class="text-[11px] font-bold text-slate-400 mb-2 font-inter">iPhone 390px Viewport</span>
+          <div class="w-[360px] h-[72px] glass-nav-container px-1 py-1 flex items-center justify-between relative shadow-sm">
+            <!-- Simulated lens on Tab 0 (Today) -->
+            <div class="liquid-lens-settled" style="right: 6px; width: 62px;"></div>
+
+            <!-- Tab 0: اليوم (Active) -->
+            <div class="nav-tab-item">
+              <div class="flex flex-col items-center text-sky-600">
+                <svg class="w-5 h-5 mb-0.5" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg>
+                <span class="text-[9.5px] font-bold">اليوم</span>
+              </div>
+            </div>
+
+            <!-- Tab 1: التمارين (Inactive) -->
+            <div class="nav-tab-item">
+              <div class="flex flex-col items-center text-slate-700">
+                <svg class="w-5 h-5 mb-0.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M6 5v14M18 5v14M2 9v6M22 9v6M6 12h12"/></svg>
+                <span class="text-[9.5px] font-medium text-slate-500">التمارين</span>
+              </div>
+            </div>
+
+            <!-- Tab 2: التغذية (Inactive) -->
+            <div class="nav-tab-item">
+              <div class="flex flex-col items-center text-slate-700">
+                <svg class="w-5 h-5 mb-0.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M18 2v20M21 2v6a3 3 0 0 1-3 3M18 11v11M5 2v7a3 3 0 0 0 6 0V2M8 12v10"/></svg>
+                <span class="text-[9.5px] font-medium text-slate-500">التغذية</span>
+              </div>
+            </div>
+
+            <!-- Tab 3: المتابعة (Inactive) -->
+            <div class="nav-tab-item">
+              <div class="flex flex-col items-center text-slate-700">
+                <svg class="w-5 h-5 mb-0.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2"/><rect x="9" y="3" width="6" height="4" rx="2"/><path d="m9 14 2 2 4-4"/></svg>
+                <span class="text-[9.5px] font-medium text-slate-500">المتابعة</span>
+              </div>
+            </div>
+
+            <!-- Tab 4: حسابي (Inactive) -->
+            <div class="nav-tab-item">
+              <div class="flex flex-col items-center text-slate-700">
+                <svg class="w-5 h-5 mb-0.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="10" r="3"/><path d="M7 20.662V19a2 2 0 0 1 2-2h6a2 2 0 0 1 2 2v1.662"/></svg>
+                <span class="text-[9.5px] font-medium text-slate-500">حسابي</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="p-3 bg-slate-50 rounded-xl text-[11.5px] text-slate-600 space-y-1">
+          <div class="font-bold text-slate-800">ملاحظات الأسلوب الحالي:</div>
+          <p>• خطوط رفيعة (Thin Strokes) مع فراغات مفتوحة بالكامل.</p>
+          <p>• وزن بصري خفيف قد يقل وضوحه تحت حركة العدسة الزجاجية.</p>
+          <p>• لا يطابق الأيقونات المصمتة الممتلئة الموجودة في الصورة المرجعية.</p>
+        </div>
+      </div>
+
+      <!-- ==================================================== -->
+      <!-- OPTION B: STREAMLINE BOLD (Thick Solid Filled Style) -->
+      <!-- ==================================================== -->
+      <div class="bg-white border-2 border-sky-400 rounded-3xl p-5 shadow-sm space-y-4 relative overflow-hidden ring-4 ring-sky-50">
+        <div class="flex items-center justify-between border-b border-slate-100 pb-3">
+          <div class="flex items-center gap-2">
+            <span class="w-2.5 h-2.5 rounded-full bg-emerald-500"></span>
+            <h2 class="text-sm font-bold text-slate-900">الخيار (B): أيقونات Streamline Bold الأصلية (المطلوبة)</h2>
+          </div>
+          <span class="px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-sky-50 text-sky-700 border border-sky-200">
+            Streamline Ultimate Bold (مطابقة تامة)
+          </span>
+        </div>
+
+        <p class="text-xs text-slate-500 leading-relaxed">
+          أيقونات مصمتة ممتلئة (Thick Rounded Filled Silhouettes) بأوزان بصرية متوازنة، ومنحنيات انسيابية مريحة، وفراغات سلبية دقيقة مطابقة تماماً للصورة المرجعية.
+        </p>
+
+        <!-- Simulated Floating Bar Preview (390px frame centered) -->
+        <div class="bg-[#F1F5F9] p-4 rounded-2xl flex flex-col items-center justify-center">
+          <span class="text-[11px] font-bold text-sky-700 mb-2 font-inter">Streamline Bold Navigation Preview</span>
+          <div class="w-[360px] h-[72px] glass-nav-container px-1 py-1 flex items-center justify-between relative shadow-sm">
+            <!-- Simulated lens on Tab 0 (Today) -->
+            <div class="liquid-lens-settled" style="right: 6px; width: 62px;"></div>
+
+            <!-- Tab 0: اليوم (Active Streamline House 4) -->
+            <div class="nav-tab-item">
+              <div class="flex flex-col items-center text-[#0284C7]">
+                <svg class="w-5 h-5 mb-0.5" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="m2.64 10.59 9-7.48a.48.48 0 0 1 .62 0l9 7.48a1.45 1.45 0 0 0 2.06-.22 1.52 1.52 0 0 0-.21-2.11l-9-7.49a3.41 3.41 0 0 0-4.32 0l-9 7.49a1.52 1.52 0 0 0-.21 2.11 1.45 1.45 0 0 0 2.06.22"/>
+                  <path d="M22.28 22v-7a2.22 2.22 0 0 0-.73-1.59l-8.3-7a1.94 1.94 0 0 0-2.5 0l-8.3 7A2.22 2.22 0 0 0 1.72 15v7a2 2 0 0 0 2 2h5.34a1 1 0 0 0 1-1v-5.5a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1V23a1 1 0 0 0 1 1h5.38a2 2 0 0 0 1.84-2"/>
+                </svg>
+                <span class="text-[9.5px] font-bold">اليوم</span>
+              </div>
+            </div>
+
+            <!-- Tab 1: التمارين (Inactive Streamline Fitness Dumbbell) -->
+            <div class="nav-tab-item">
+              <div class="flex flex-col items-center text-slate-800">
+                <svg class="w-5 h-5 mb-0.5" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M5.5 3A1.5 1.5 0 0 0 4 4.5v15A1.5 1.5 0 0 0 5.5 21h1A1.5 1.5 0 0 0 8 19.5v-6h8v6a1.5 1.5 0 0 0 1.5 1.5h1a1.5 1.5 0 0 0 1.5-1.5v-15A1.5 1.5 0 0 0 18.5 3h-1A1.5 1.5 0 0 0 16 4.5v6H8v-6A1.5 1.5 0 0 0 6.5 3h-1zM2 7a1 1 0 0 1 1-1h.5v12H3a1 1 0 0 1-1-1V7zm19-1h.5a1 1 0 0 1 1 1v10a1 1 0 0 1-1 1H21V6z"/>
+                </svg>
+                <span class="text-[9.5px] font-medium text-slate-500">التمارين</span>
+              </div>
+            </div>
+
+            <!-- Tab 2: التغذية (Inactive Streamline Restaurant Fork Knife) -->
+            <div class="nav-tab-item">
+              <div class="flex flex-col items-center text-slate-800">
+                <svg class="w-5 h-5 mb-0.5" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M11 2v6c0 1.66-1.34 3-3 3s-3-1.34-3-3V2H3v6a5 5 0 0 0 4 4.9V21a1 1 0 0 0 2 0v-8.1A5 5 0 0 0 13 8V2h-2zm-4 4V2h2v4H7zM19 2c-2.76 0-5 2.24-5 5v5h2v9a1 1 0 0 0 2 0V2h1z"/>
+                </svg>
+                <span class="text-[9.5px] font-medium text-slate-500">التغذية</span>
+              </div>
+            </div>
+
+            <!-- Tab 3: المتابعة (Inactive Streamline Task List Approve) -->
+            <div class="nav-tab-item">
+              <div class="flex flex-col items-center text-slate-800">
+                <svg class="w-5 h-5 mb-0.5" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M20.5 2h-5a.27.27 0 0 1-.21-.12 3.82 3.82 0 0 0-6.58 0A.27.27 0 0 1 8.5 2h-5A1.5 1.5 0 0 0 2 3.5v19A1.5 1.5 0 0 0 3.5 24h17a1.5 1.5 0 0 0 1.5-1.5v-19A1.5 1.5 0 0 0 20.5 2M19 16.26a2.5 2.5 0 0 1-.6 1.63l-1.92 2.24a2.52 2.52 0 0 1-1.9.87H5.5a.5.5 0 0 1-.5-.5v-15a.5.5 0 0 1 .5-.5h13a.5.5 0 0 1 .5.5Z"/>
+                  <path d="m14.75 8.66-3.89 5.18a.24.24 0 0 1-.37 0l-1.82-1.79a1.25 1.25 0 0 0-1.77 1.77L9.07 16a2.32 2.32 0 0 0 3.5-.25l4.18-5.57a1.25 1.25 0 0 0-2-1.5Z"/>
+                </svg>
+                <span class="text-[9.5px] font-medium text-slate-500">المتابعة</span>
+              </div>
+            </div>
+
+            <!-- Tab 4: حسابي (Inactive Streamline Single Neutral Circle) -->
+            <div class="nav-tab-item">
+              <div class="flex flex-col items-center text-slate-800">
+                <svg class="w-5 h-5 mb-0.5" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M12 0a12 12 0 1 0 12 12A12 12 0 0 0 12 0m0 21.5a9.5 9.5 0 1 1 9.5-9.5 9.51 9.51 0 0 1-9.5 9.5"/>
+                  <path d="M9.25 6.75a2.75 2.75 0 1 0 5.5 0 2.75 2.75 0 1 0-5.5 0M12 10.5a4.45 4.45 0 0 0-4.5 4.4V16a.51.51 0 0 0 .5.5h1.32a.25.25 0 0 1 .25.22L9.76 19c0 .26.25.34.5.5A3.5 3.5 0 0 0 12 20a3.5 3.5 0 0 0 1.74-.5c.27-.18.47-.24.5-.5l.19-2.28a.25.25 0 0 1 .25-.22H16a.51.51 0 0 0 .5-.5v-1.1a4.45 4.45 0 0 0-4.5-4.4"/>
+                </svg>
+                <span class="text-[9.5px] font-medium text-slate-500">حسابي</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="p-3 bg-sky-50/70 border border-sky-100 rounded-xl text-[11.5px] text-sky-900 space-y-1">
+          <div class="font-bold text-sky-950">مزايا أسلوب Streamline Bold الأصلي:</div>
+          <p>• وضوح بصري فوري (High Instant Recognition) بمجرد النظر.</p>
+          <p>• ثبات الوزن البصري (Optical Weight Balance) عبر جميع التبويبات الخمسة.</p>
+          <p>• بروز وانكسار ضوئي رائع عند عبور عدسة الزجاج السائل فوق الأيقونة الممتلئة.</p>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Detailed Table of Selected Streamline Bold Icons -->
+    <section class="bg-white border border-[#E2E8F0] rounded-3xl p-6 shadow-sm space-y-4">
+      <div class="flex items-center justify-between border-b border-slate-100 pb-3">
+        <div>
+          <h2 class="text-base font-bold text-slate-900">جدول الأيقونات الخمسة المختارة من مكتبة Streamline Bold الرسمية</h2>
+          <p class="text-xs text-slate-500">تفاصيل كل أيقونة، اسمها الأصلي، رابطها الرسمي، وتوافق شكلها مع المرجع.</p>
+        </div>
+        <span class="px-3 py-1 bg-emerald-50 text-emerald-700 text-xs font-bold rounded-full border border-emerald-200">
+          ترخيص CC BY 4.0 للاستخدام التجاري
+        </span>
+      </div>
+
+      <div class="overflow-x-auto">
+        <table class="w-full text-right text-xs border border-slate-200 rounded-2xl overflow-hidden">
+          <thead class="bg-slate-50 text-slate-700 font-bold border-b border-slate-200">
+            <tr>
+              <th class="p-3.5">التبويب</th>
+              <th class="p-3.5 text-center">المعاينة (24px)</th>
+              <th class="p-3.5">الاسم في مكتبة Streamline</th>
+              <th class="p-3.5">العائلة والنمط</th>
+              <th class="p-3.5">الرابط المباشر من المكتبة الرسمية</th>
+              <th class="p-3.5">مطابقة المرجع</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-slate-100 text-slate-600">
+            <!-- Row 1: Home -->
+            <tr class="hover:bg-slate-50/50">
+              <td class="p-3.5 font-bold text-slate-900">1. اليوم (Home)</td>
+              <td class="p-3.5 text-center">
+                <div class="w-8 h-8 rounded-xl bg-slate-100 text-[#0284C7] flex items-center justify-center mx-auto">
+                  <svg class="w-5 h-5" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="m2.64 10.59 9-7.48a.48.48 0 0 1 .62 0l9 7.48a1.45 1.45 0 0 0 2.06-.22 1.52 1.52 0 0 0-.21-2.11l-9-7.49a3.41 3.41 0 0 0-4.32 0l-9 7.49a1.52 1.52 0 0 0-.21 2.11 1.45 1.45 0 0 0 2.06.22"/>
+                    <path d="M22.28 22v-7a2.22 2.22 0 0 0-.73-1.59l-8.3-7a1.94 1.94 0 0 0-2.5 0l-8.3 7A2.22 2.22 0 0 0 1.72 15v7a2 2 0 0 0 2 2h5.34a1 1 0 0 0 1-1v-5.5a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1V23a1 1 0 0 0 1 1h5.38a2 2 0 0 0 1.84-2"/>
+                  </svg>
+                </div>
+              </td>
+              <td class="p-3.5 font-mono text-slate-800 font-bold">House 4</td>
+              <td class="p-3.5">Streamline Ultimate Bold</td>
+              <td class="p-3.5">
+                <a href="https://www.streamlinehq.com/icons/download/house-4--30998" target="_blank" class="text-sky-600 hover:underline font-mono text-[11px] flex items-center gap-1">
+                  <span>house-4--30998</span>
+                  <span>&nearr;</span>
+                </a>
+              </td>
+              <td class="p-3.5 font-semibold text-emerald-600">مطابقة تامة (سقف مدبب وباب مفرغ)</td>
+            </tr>
+
+            <!-- Row 2: Workout -->
+            <tr class="hover:bg-slate-50/50">
+              <td class="p-3.5 font-bold text-slate-900">2. التمارين (Workout)</td>
+              <td class="p-3.5 text-center">
+                <div class="w-8 h-8 rounded-xl bg-slate-100 text-slate-800 flex items-center justify-center mx-auto">
+                  <svg class="w-5 h-5" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M5.5 3A1.5 1.5 0 0 0 4 4.5v15A1.5 1.5 0 0 0 5.5 21h1A1.5 1.5 0 0 0 8 19.5v-6h8v6a1.5 1.5 0 0 0 1.5 1.5h1a1.5 1.5 0 0 0 1.5-1.5v-15A1.5 1.5 0 0 0 18.5 3h-1A1.5 1.5 0 0 0 16 4.5v6H8v-6A1.5 1.5 0 0 0 6.5 3h-1zM2 7a1 1 0 0 1 1-1h.5v12H3a1 1 0 0 1-1-1V7zm19-1h.5a1 1 0 0 1 1 1v10a1 1 0 0 1-1 1H21V6z"/>
+                  </svg>
+                </div>
+              </td>
+              <td class="p-3.5 font-mono text-slate-800 font-bold">Fitness Dumbbell</td>
+              <td class="p-3.5">Streamline Bold / Ultimate Bold</td>
+              <td class="p-3.5">
+                <a href="https://www.streamlinehq.com/icons/download/fitness-dumbbell--31011" target="_blank" class="text-sky-600 hover:underline font-mono text-[11px] flex items-center gap-1">
+                  <span>fitness-dumbbell--31011</span>
+                  <span>&nearr;</span>
+                </a>
+              </td>
+              <td class="p-3.5 font-semibold text-emerald-600">مطابقة تامة لشكل الدمبل بالصورة</td>
+            </tr>
+
+            <!-- Row 3: Nutrition -->
+            <tr class="hover:bg-slate-50/50">
+              <td class="p-3.5 font-bold text-slate-900">3. التغذية (Nutrition)</td>
+              <td class="p-3.5 text-center">
+                <div class="w-8 h-8 rounded-xl bg-slate-100 text-slate-800 flex items-center justify-center mx-auto">
+                  <svg class="w-5 h-5" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M11 2v6c0 1.66-1.34 3-3 3s-3-1.34-3-3V2H3v6a5 5 0 0 0 4 4.9V21a1 1 0 0 0 2 0v-8.1A5 5 0 0 0 13 8V2h-2zm-4 4V2h2v4H7zM19 2c-2.76 0-5 2.24-5 5v5h2v9a1 1 0 0 0 2 0V2h1z"/>
+                  </svg>
+                </div>
+              </td>
+              <td class="p-3.5 font-mono text-slate-800 font-bold">Restaurant Fork Knife</td>
+              <td class="p-3.5">Streamline Ultimate Bold</td>
+              <td class="p-3.5">
+                <a href="https://www.streamlinehq.com/icons/download/restaurant-fork-knife--30995" target="_blank" class="text-sky-600 hover:underline font-mono text-[11px] flex items-center gap-1">
+                  <span>restaurant-fork-knife--30995</span>
+                  <span>&nearr;</span>
+                </a>
+              </td>
+              <td class="p-3.5 font-semibold text-emerald-600">مطابقة تامة (شوكة وسكين مصمتان)</td>
+            </tr>
+
+            <!-- Row 4: Progress -->
+            <tr class="hover:bg-slate-50/50">
+              <td class="p-3.5 font-bold text-slate-900">4. المتابعة (Progress)</td>
+              <td class="p-3.5 text-center">
+                <div class="w-8 h-8 rounded-xl bg-slate-100 text-slate-800 flex items-center justify-center mx-auto">
+                  <svg class="w-5 h-5" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M20.5 2h-5a.27.27 0 0 1-.21-.12 3.82 3.82 0 0 0-6.58 0A.27.27 0 0 1 8.5 2h-5A1.5 1.5 0 0 0 2 3.5v19A1.5 1.5 0 0 0 3.5 24h17a1.5 1.5 0 0 0 1.5-1.5v-19A1.5 1.5 0 0 0 20.5 2M19 16.26a2.5 2.5 0 0 1-.6 1.63l-1.92 2.24a2.52 2.52 0 0 1-1.9.87H5.5a.5.5 0 0 1-.5-.5v-15a.5.5 0 0 1 .5-.5h13a.5.5 0 0 1 .5.5Z"/>
+                    <path d="m14.75 8.66-3.89 5.18a.24.24 0 0 1-.37 0l-1.82-1.79a1.25 1.25 0 0 0-1.77 1.77L9.07 16a2.32 2.32 0 0 0 3.5-.25l4.18-5.57a1.25 1.25 0 0 0-2-1.5Z"/>
+                  </svg>
+                </div>
+              </td>
+              <td class="p-3.5 font-mono text-slate-800 font-bold">Task List Approve</td>
+              <td class="p-3.5">Streamline Ultimate Bold</td>
+              <td class="p-3.5">
+                <a href="https://www.streamlinehq.com/icons/download/task-list-approve--31017" target="_blank" class="text-sky-600 hover:underline font-mono text-[11px] flex items-center gap-1">
+                  <span>task-list-approve--31017</span>
+                  <span>&nearr;</span>
+                </a>
+              </td>
+              <td class="p-3.5 font-semibold text-emerald-600">مطابقة تامة (لوح تقييم بكليب وعلامة صح)</td>
+            </tr>
+
+            <!-- Row 5: Account -->
+            <tr class="hover:bg-slate-50/50">
+              <td class="p-3.5 font-bold text-slate-900">5. حسابي (Account)</td>
+              <td class="p-3.5 text-center">
+                <div class="w-8 h-8 rounded-xl bg-slate-100 text-slate-800 flex items-center justify-center mx-auto">
+                  <svg class="w-5 h-5" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M12 0a12 12 0 1 0 12 12A12 12 0 0 0 12 0m0 21.5a9.5 9.5 0 1 1 9.5-9.5 9.51 9.51 0 0 1-9.5 9.5"/>
+                    <path d="M9.25 6.75a2.75 2.75 0 1 0 5.5 0 2.75 2.75 0 1 0-5.5 0M12 10.5a4.45 4.45 0 0 0-4.5 4.4V16a.51.51 0 0 0 .5.5h1.32a.25.25 0 0 1 .25.22L9.76 19c0 .26.25.34.5.5A3.5 3.5 0 0 0 12 20a3.5 3.5 0 0 0 1.74-.5c.27-.18.47-.24.5-.5l.19-2.28a.25.25 0 0 1 .25-.22H16a.51.51 0 0 0 .5-.5v-1.1a4.45 4.45 0 0 0-4.5-4.4"/>
+                  </svg>
+                </div>
+              </td>
+              <td class="p-3.5 font-mono text-slate-800 font-bold">Single Neutral Circle</td>
+              <td class="p-3.5">Streamline Ultimate Bold</td>
+              <td class="p-3.5">
+                <a href="https://www.streamlinehq.com/icons/download/single-neutral-circle--31013" target="_blank" class="text-sky-600 hover:underline font-mono text-[11px] flex items-center gap-1">
+                  <span>single-neutral-circle--31013</span>
+                  <span>&nearr;</span>
+                </a>
+              </td>
+              <td class="p-3.5 font-semibold text-emerald-600">مطابقة تامة (أيقونة مستخدم دائرية مصمتة)</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- Verification of Sizes Across Viewports -->
+    <section class="bg-white border border-[#E2E8F0] rounded-3xl p-6 shadow-sm space-y-4">
+      <h3 class="text-sm font-bold text-slate-900">فحص انضباط الشريط وتوزيع الأيقونات على المقاسات الثلاثة:</h3>
+      
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-4 pt-1">
+        <!-- 375px SE / Mini -->
+        <div class="p-3.5 bg-slate-50 rounded-2xl border border-slate-200 text-center space-y-1.5">
+          <span class="text-xs font-bold text-slate-800 font-inter">iPhone 375px</span>
+          <p class="text-[11px] text-slate-500">عرض التبويب: ~68px · مساحة اللمس: 48x48px كاملة بدون أي تداخل أو ضيق.</p>
+          <span class="inline-block px-2 py-0.5 bg-emerald-50 text-emerald-700 text-[10px] font-bold rounded-full">متناسق 100%</span>
+        </div>
+
+        <!-- 390px Standard -->
+        <div class="p-3.5 bg-sky-50/70 rounded-2xl border border-sky-200 text-center space-y-1.5 ring-2 ring-sky-300/40">
+          <span class="text-xs font-bold text-sky-950 font-inter">iPhone 390px (القياسي)</span>
+          <p class="text-[11px] text-sky-800">عرض التبويب: ~71px · مساحة اللمس: مريحة ومطابقة لنسب الصورة المرجعية.</p>
+          <span class="inline-block px-2 py-0.5 bg-sky-600 text-white text-[10px] font-bold rounded-full">المقاس المعتمد</span>
+        </div>
+
+        <!-- 430px Pro Max -->
+        <div class="p-3.5 bg-slate-50 rounded-2xl border border-slate-200 text-center space-y-1.5">
+          <span class="text-xs font-bold text-slate-800 font-inter">iPhone 430px</span>
+          <p class="text-[11px] text-slate-500">عرض التبويب: ~79px · مساحة اللمس: واسعة ومريحة مع تباعد متزن بين العناصر.</p>
+          <span class="inline-block px-2 py-0.5 bg-emerald-50 text-emerald-700 text-[10px] font-bold rounded-full">متناسق 100%</span>
+        </div>
+      </div>
+    </section>
+
+  </div>
+
+</body>
+</html>

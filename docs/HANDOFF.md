@@ -9,7 +9,7 @@ Everything below is merged into `main` and pushed to GitHub (`8489mx/z-coaching-
 
 1. Read `AI_RULES.md` (how any AI tool must work and prove its work), `CLAUDE.md` (standing iron rules) and this file. Old docs are in `docs/archive/` (history only).
 2. Run the full check and confirm the baseline before touching anything:
-   - `npm.cmd test` (Windows) — expected: node:test **2023/2023 pass**, vitest **47/47 pass**, lint 0.
+   - `npm.cmd test` (Windows) — expected: node:test **2032/2032 pass**, vitest **47/47 pass**, lint 0.
    - In a git worktree: link `node_modules` and `frontend/node_modules` to `D:/zcc`'s (junctions), copy `.env` (ignored), and build the frontend once — `test/hostinger-deployment-readiness.test.js` fails without `frontend/dist`.
    - `cd frontend && npm.cmd run build` — expected: builds.
    - Tests need the env: they load `D:/zcc/.env` (never print its values). Scripts: `node --env-file=.env <script>`.
@@ -253,6 +253,16 @@ That session did not update this file or `AI_RULES.md` at all; this section was 
 
 - `c638afa` **Hostinger Cloud frontend build & root server fallback**: `package.json` `build` and `build:frontend` scripts updated to install frontend dependencies with dev dependencies (`npm --prefix frontend ci --include=dev && npm --prefix frontend run build`) before running Vite build, preventing `vite: command not found` on Hostinger Cloud; root `server.js` fallback created to import `src/api/server.js` ensuring entry points in root or `src/api/` work seamlessly; guard test added to `test/hostinger-deployment-readiness.test.js`.
 - Verification: 2024/2024 + 47/47, lint 0, build OK.
+
+## 3s. Nineteenth round (2026-10-10) — Measurement Units Preferences (تفضيلات وحدات القياس)
+
+- **Measurement Units Preferences (KG/LB for Exercise Weights, KG/LB for Body Weight, CM/IN for Waist & Measurements)**:
+  - Canonical Single Source of Truth: `frontend/src/utils/unitConverter.js` handles bidirectional conversions with zero accumulated drift. Storage is canonical in KG and CM (zero database schema modifications / Zero `ALTER TABLE` via user notes metadata `[UNIT_PREFERENCES:{...}]`).
+  - Backend & API: `src/api/models/User.js` returns user preferences in `toJSON()`; `src/api/controllers/auth.controller.js` and `src/api/routes/auth.routes.js` handle `PATCH /api/v1/auth/preferences`.
+  - Flutter Mobile App: `mobile_app/lib/core/storage/local_storage.dart` persists preferences across sessions; `mobile_app/lib/features/account/screens/account_screen.dart` provides curved bottom sheet with 3 segmented controls; `mobile_app/lib/features/workout/screens/workout_screen.dart` uses dynamic step sizes (±2.5 kg vs ±5 lb); `mobile_app/lib/features/checkin/screens/weekly_checkin_screen.dart` dynamically formats body weight (±0.5 kg vs ±1 lb) and waist circumference (±0.5 cm vs ±0.25 in) and historical records.
+  - Interactive Preview & Simulators: `frontend/public/mobile_app_preview.html` and `frontend/public/mobile_home_pure.html` support live switching, instant calculation, and URL parameter triggers (`?tab=workout&unit_ex=lb`, `?tab=checkin&unit_bw=lb&unit_ms=in`, `?modal=units`).
+  - Nutrition Guard: Nutrition plans, macros, and food grams are strictly guarded and completely untouched.
+  - Verification: `test/unit-converter.test.js` (7 comprehensive domain tests) + `test/api-preferences.test.js` (API integration test). Full suite: **2032/2032 node:test pass**, **47/47 vitest pass**, lint 0, frontend build clean.
 
 ## 4. Open work (in priority order)
 

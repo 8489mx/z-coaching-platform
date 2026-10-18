@@ -2,15 +2,16 @@ import 'package:flutter/material.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/network/api_client.dart';
 import '../../../core/storage/local_storage.dart';
-import '../../auth/screens/login_screen.dart';
-import '../../auth/services/auth_service.dart';
+import '../../account/screens/account_screen.dart';
 import '../../checkin/services/checkin_service.dart';
 import '../../checkin/screens/weekly_checkin_screen.dart';
 import '../../nutrition/screens/nutrition_screen.dart';
 import '../../workout/screens/workout_screen.dart';
+import '../widgets/liquid_glass_nav_bar.dart';
 import 'today_hub_screen.dart';
 
 /// الشاشة الرئيسية الحاضنة لأشرطة التنقل السفلية (Main Navigation Hub)
+/// شريط ملاحة سفلي عالمي فائق النقاء بنمط العدسة الزجاجية السائلة (Liquid Glass Navigation)
 class MainNavigationScreen extends StatefulWidget {
   final LocalStorage storage;
   const MainNavigationScreen({super.key, required this.storage});
@@ -24,6 +25,14 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
 
   late final List<Widget> _screens;
 
+  static const List<LiquidGlassNavItem> _navItems = [
+    LiquidGlassNavItem(icon: Icons.home_rounded, label: 'اليوم'),
+    LiquidGlassNavItem(icon: Icons.fitness_center_rounded, label: 'التمارين'),
+    LiquidGlassNavItem(icon: Icons.eco_rounded, label: 'التغذية'),
+    LiquidGlassNavItem(icon: Icons.fact_check_rounded, label: 'المتابعة'),
+    LiquidGlassNavItem(icon: Icons.account_circle_rounded, label: 'حسابي'),
+  ];
+
   @override
   void initState() {
     super.initState();
@@ -34,9 +43,10 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
           setState(() => _currentIndex = index);
         },
       ),
-      NutritionScreen(storage: widget.storage),
       WorkoutScreen(storage: widget.storage),
+      NutritionScreen(storage: widget.storage),
       WeeklyCheckinScreen(storage: widget.storage),
+      AccountScreen(storage: widget.storage),
     ];
     _uploadPendingCheckins();
   }
@@ -48,83 +58,13 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
     if (!mounted || (result['uploaded'] ?? 0) == 0) return;
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        backgroundColor: AppColors.primary,
-        content: Text('تم رفع ${result['uploaded']} متابعة كانت محفوظة على جهازك.'),
-      ),
-    );
-  }
-
-  void _handleLogout() {
-    showDialog(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        backgroundColor: AppColors.surface,
-        title: const Text('تسجيل الخروج', style: TextStyle(color: AppColors.textPrimary)),
-        content: const Text(
-          'هل ترغب بالفعل في تسجيل الخروج من هذا الجهاز؟',
-          style: TextStyle(color: AppColors.textSecondary, fontSize: 13),
+        backgroundColor: AppColors.primaryDeep,
+        behavior: SnackBarBehavior.floating,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+        content: Text(
+          'تمت مزامنة ${result['uploaded']} متابعة مسجلة محلياً بنجاح.',
+          style: const TextStyle(fontFamily: 'Alexandria', fontSize: 13),
         ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx),
-            child: const Text('إلغاء', style: TextStyle(color: AppColors.textSecondary)),
-          ),
-          ElevatedButton(
-            style: ElevatedButton.styleFrom(backgroundColor: AppColors.danger),
-            onPressed: () async {
-              await widget.storage.clearSession();
-              if (ctx.mounted) {
-                Navigator.pop(ctx);
-              }
-              if (mounted) {
-                Navigator.of(context).pushReplacement(
-                  MaterialPageRoute(
-                    builder: (_) => LoginScreen(storage: widget.storage),
-                  ),
-                );
-              }
-            },
-            child: const Text('تأكيد الخروج'),
-          ),
-        ],
-      ),
-    );
-  }
-
-  void _handleDeleteAccount() {
-    showDialog(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        backgroundColor: AppColors.surface,
-        title: const Text('حذف الحساب والبيانات نهائياً', style: TextStyle(color: AppColors.danger, fontWeight: FontWeight.bold)),
-        content: const Text(
-          'تحذير: سيؤدي هذا الإجراء إلى مسح حسابك وكافة خططك الرياضية وسجلات التمارين وصور التقييم الأسبوعي بشكل كامل ونهائي من خوادم المنظومة دون إمكانية استرجاعها.\n\nهل تؤكد رغبتك في حذف الحساب نهائياً؟',
-          style: TextStyle(color: AppColors.textSecondary, fontSize: 13, height: 1.6),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx),
-            child: const Text('إلغاء التراجع', style: TextStyle(color: AppColors.textPrimary)),
-          ),
-          ElevatedButton(
-            style: ElevatedButton.styleFrom(backgroundColor: AppColors.danger),
-            onPressed: () async {
-              Navigator.pop(ctx);
-              final apiClient = ApiClient(widget.storage);
-              final authService = AuthService(apiClient, widget.storage);
-              await authService.deleteAccount();
-
-              if (mounted) {
-                Navigator.of(context).pushReplacement(
-                  MaterialPageRoute(
-                    builder: (_) => LoginScreen(storage: widget.storage),
-                  ),
-                );
-              }
-            },
-            child: const Text('نعم، احذف حسابي نهائياً'),
-          ),
-        ],
       ),
     );
   }
@@ -133,74 +73,17 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.background,
-      appBar: AppBar(
-        title: const Text('Z COACHING'),
-        actions: [
-          PopupMenuButton<String>(
-            icon: const Icon(Icons.more_vert, color: AppColors.textSecondary),
-            color: AppColors.surface,
-            onSelected: (value) {
-              if (value == 'logout') {
-                _handleLogout();
-              } else if (value == 'delete_account') {
-                _handleDeleteAccount();
-              }
-            },
-            itemBuilder: (context) => [
-              const PopupMenuItem(
-                value: 'logout',
-                child: Row(
-                  children: [
-                    Icon(Icons.logout, size: 18, color: AppColors.textSecondary),
-                    SizedBox(width: 8),
-                    Text('تسجيل الخروج', style: TextStyle(color: AppColors.textPrimary, fontSize: 13)),
-                  ],
-                ),
-              ),
-              const PopupMenuDivider(),
-              const PopupMenuItem(
-                value: 'delete_account',
-                child: Row(
-                  children: [
-                    Icon(Icons.delete_forever, size: 18, color: AppColors.danger),
-                    SizedBox(width: 8),
-                    Text('حذف الحساب نهائياً', style: TextStyle(color: AppColors.danger, fontSize: 13, fontWeight: FontWeight.bold)),
-                  ],
-                ),
-              ),
-            ],
-          ),
-        ],
-      ),
+      extendBody: true,
       body: IndexedStack(
         index: _currentIndex,
         children: _screens,
       ),
-      bottomNavigationBar: BottomNavigationBar(
+      bottomNavigationBar: LiquidGlassNavBar(
         currentIndex: _currentIndex,
-        onTap: (index) => setState(() => _currentIndex = index),
-        items: const [
-          BottomNavigationBarItem(
-            icon: Icon(Icons.today_outlined),
-            activeIcon: Icon(Icons.today),
-            label: 'اليوم',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.restaurant_outlined),
-            activeIcon: Icon(Icons.restaurant),
-            label: 'التغذية',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.fitness_center_outlined),
-            activeIcon: Icon(Icons.fitness_center),
-            label: 'التمارين',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.assignment_turned_in_outlined),
-            activeIcon: Icon(Icons.assignment_turned_in),
-            label: 'المتابعة',
-          ),
-        ],
+        items: _navItems,
+        onTabSelected: (index) {
+          setState(() => _currentIndex = index);
+        },
       ),
     );
   }

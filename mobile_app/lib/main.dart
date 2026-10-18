@@ -29,7 +29,7 @@ class ZCoachingApp extends StatelessWidget {
     return MaterialApp(
       title: 'منظومة Z التدريبية',
       debugShowCheckedModeBanner: false,
-      theme: AppTheme.darkTheme,
+      theme: AppTheme.lightTheme,
 
       // فرض اتجاه القراءة والكتابة من اليمين لليسار (RTL) بشكل أصيل للغة العربية
       locale: const Locale('ar', 'EG'),

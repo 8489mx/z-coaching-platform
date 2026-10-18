@@ -1,0 +1,5 @@
+/* Localized versions of Info.plist keys for Arabic */
+"CFBundleDisplayName" = "كريم زكريا";
+"CFBundleName" = "كريم زكريا";
+"NSCameraUsageDescription" = "نحتاج صلاحية الكاميرا لالتقاط صور المتابعة الأسبوعية ومشاركتها مع المدرب.";
+"NSPhotoLibraryUsageDescription" = "نحتاج صلاحية ألبوم الصور لتتمكن من اختيار ورفع صور المتابعة الأسبوعية للمدرب.";

@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Badges Design System Comparison</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    body { font-family: 'Cairo', sans-serif; background-color: #FAFBFC; color: #0F172A; }
+    .font-inter { font-family: 'Inter', sans-serif; }
+  </style>
+</head>
+<body class="p-8 max-w-4xl mx-auto space-y-8">
+  <div>
+    <h1 class="text-2xl font-extrabold mb-1">مقارنة تصاميم الشارات والعلامات (Badges & Pills)</h1>
+    <p class="text-slate-500 text-sm">مقارنة بصرية واضحة بين النمط الحالي وثلاثة مقترحات بريميوم فاخرة لحل مشكلة التباين والألوان غير المتناسقة</p>
+  </div>
+
+  <!-- 1. The Current Badges (What the user uploaded) -->
+  <div class="bg-white rounded-[18px] border border-slate-200 p-6 shadow-xs">
+    <div class="flex items-center justify-between mb-4 border-b border-slate-100 pb-3">
+      <div>
+        <h2 class="text-sm font-bold text-rose-600">التصميم الحالي (المرفوض من المستخدم)</h2>
+        <p class="text-xs text-slate-400 mt-0.5">ألوان باستيل عشوائية متباينة (Candy Pastel)، كبسولات تقليدية، وأيقونة شمس للماء</p>
+      </div>
+      <span class="px-2.5 py-0.5 rounded-full bg-rose-50 text-rose-600 text-[11px] font-bold">الحالي</span>
+    </div>
+    <div class="flex flex-wrap items-center gap-3.5 py-2">
+      <!-- Current Badge 1 -->
+      <span class="text-[11px] font-semibold text-[#7B4FFE] bg-[#7B4FFE]/10 border border-[#7B4FFE]/20 px-2.5 py-1 rounded-full leading-none">
+        الأسبوع 4 · تمرين 1 من 4
+      </span>
+      <!-- Current Badge 2 -->
+      <span class="text-[11px] font-semibold text-[#64748B] bg-[#F8FAFC] border border-[#E2E8F0] px-2.5 py-0.5 rounded-full leading-none">
+        الجلسة 1 من 4
+      </span>
+      <!-- Current Badge 3 (With wrong sun icon) -->
+      <div class="inline-flex items-center gap-1.5 px-3 py-1 bg-[#F0F9FF] border border-[#E0F2FE] text-[#0284C7] rounded-full text-[11px] font-medium leading-none">
+        <svg class="w-3 h-3 text-[#0284C7]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"/></svg>
+        <span>الماء: 3.5 لتر</span>
+      </div>
+      <!-- Current Badge 4 -->
+      <span class="text-[11px] font-bold text-emerald-700 bg-emerald-50 border border-emerald-200/60 px-2.5 py-1 rounded-full leading-none">
+        متبقي 6 أيام
+      </span>
+      <!-- Current Badge 5 -->
+      <span class="text-[11px] font-semibold text-[#4338CA] bg-[#EEF2FF] border border-[#E0E7FF] px-2.5 py-1 rounded-full leading-none">
+        3 مكملات
+      </span>
+    </div>
+  </div>
+
+  <!-- Direction A: Editorial Architectural Tags (Rounded 7px, Linear / Stripe Style) -->
+  <div class="bg-white rounded-[18px] border-2 border-[#58B4E5]/40 p-6 shadow-sm relative">
+    <div class="absolute -top-3 left-6 bg-[#58B4E5] text-white text-[10px] font-bold px-2.5 py-0.5 rounded-full shadow-xs">
+      الموصى به هندسياً
+    </div>
+    <div class="flex items-center justify-between mb-4 border-b border-slate-100 pb-3">
+      <div>
+        <h2 class="text-sm font-bold text-[#0F172A]">المقترح (A): شارات معمارية تحريرية (Architectural Micro-Tags - borderRadius: 7px)</h2>
+        <p class="text-xs text-slate-500 mt-0.5">انحناء ناعم (7px)، أرضية سلايت فاخرة موحدة، خط Inter منضبط، نقاط حالة دقيقة، وقطرة ماء حقيقية</p>
+      </div>
+      <span class="px-2.5 py-0.5 rounded-[6px] bg-sky-50 text-[#0284C7] text-[11px] font-bold">مقترح A</span>
+    </div>
+    <div class="flex flex-wrap items-center gap-3.5 py-2">
+      <!-- Badge A1 -->
+      <div class="inline-flex items-center gap-1.5 h-6 px-2.5 rounded-[7px] bg-[#F8FAFC] border border-[#E2E8F0] shadow-[0_1px_2px_rgba(0,0,0,0.02)]">
+        <span class="w-1.5 h-1.5 rounded-full bg-[#58B4E5]"></span>
+        <span class="text-[11px] font-semibold text-[#1E293B] leading-none">الأسبوع 4 · تمرين 1 من 4</span>
+      </div>
+
+      <!-- Badge A2 -->
+      <div class="inline-flex items-center gap-1.5 h-6 px-2.5 rounded-[7px] bg-[#F8FAFC] border border-[#E2E8F0] shadow-[0_1px_2px_rgba(0,0,0,0.02)]">
+        <span class="w-1.5 h-1.5 rounded-full bg-[#58B4E5]"></span>
+        <span class="text-[11px] font-semibold text-[#1E293B] leading-none">الجلسة 1 من 4</span>
+      </div>
+
+      <!-- Badge A3 (Water Droplet) -->
+      <div class="inline-flex items-center gap-1.5 h-6 px-2.5 rounded-[7px] bg-[#F0F7FB] border border-[#D0E7F5] shadow-[0_1px_2px_rgba(88,180,229,0.06)]">
+        <svg class="w-3 h-3 text-[#0284C7] shrink-0" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2.69l5.66 5.66a8 8 0 1 1-11.31 0z"/></svg>
+        <span class="text-[11px] font-bold text-[#0369A1] leading-none">الماء: 3.5 لتر</span>
+      </div>
+
+      <!-- Badge A4 (Countdown) -->
+      <div class="inline-flex items-center gap-1.5 h-6 px-2.5 rounded-[7px] bg-[#F0FDF4] border border-[#DCFCE7] shadow-[0_1px_2px_rgba(22,101,52,0.04)]">
+        <span class="w-1.5 h-1.5 rounded-full bg-[#16A34A]"></span>
+        <span class="text-[11px] font-bold text-[#15803D] leading-none">متبقي 6 أيام</span>
+      </div>
+
+      <!-- Badge A5 (Supplements) -->
+      <div class="inline-flex items-center gap-1.5 h-6 px-2.5 rounded-[7px] bg-[#F8FAFC] border border-[#E2E8F0] shadow-[0_1px_2px_rgba(0,0,0,0.02)]">
+        <span class="w-1.5 h-1.5 rounded-full bg-[#64748B]"></span>
+        <span class="text-[11px] font-semibold text-[#1E293B] leading-none">3 مكملات</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Direction B: Luxury Apple Health Micro-Capsules (Rounded-full, Refined Frosted Tones) -->
+  <div class="bg-white rounded-[18px] border border-slate-200 p-6 shadow-xs">
+    <div class="flex items-center justify-between mb-4 border-b border-slate-100 pb-3">
+      <div>
+        <h2 class="text-sm font-bold text-[#0F172A]">المقترح (B): كبسولات أبل هيلث الفاخرة (Luxury Frosted iOS Capsules - rounded-full)</h2>
+        <p class="text-xs text-slate-500 mt-0.5">أقراص دائرية كاملة متناسقة، مساحات بصرية محكمة، تدرجات رمادية/سماوية فاخرة غير باهتة</p>
+      </div>
+      <span class="px-2.5 py-0.5 rounded-full bg-slate-100 text-slate-700 text-[11px] font-bold">مقترح B</span>
+    </div>
+    <div class="flex flex-wrap items-center gap-3.5 py-2">
+      <!-- Badge B1 -->
+      <div class="inline-flex items-center gap-1.5 h-[23px] px-2.5 rounded-full bg-[#F8FAFC] border border-[#E2E8F0] shadow-[0_1px_2px_rgba(0,0,0,0.02)]">
+        <span class="w-1.5 h-1.5 rounded-full bg-[#58B4E5]"></span>
+        <span class="text-[11px] font-semibold text-[#0F172A] leading-none">الأسبوع 4 · تمرين 1 من 4</span>
+      </div>
+
+      <!-- Badge B2 -->
+      <div class="inline-flex items-center gap-1.5 h-[23px] px-2.5 rounded-full bg-[#F8FAFC] border border-[#E2E8F0] shadow-[0_1px_2px_rgba(0,0,0,0.02)]">
+        <span class="w-1.5 h-1.5 rounded-full bg-[#58B4E5]"></span>
+        <span class="text-[11px] font-semibold text-[#0F172A] leading-none">الجلسة 1 من 4</span>
+      </div>
+
+      <!-- Badge B3 -->
+      <div class="inline-flex items-center gap-1.5 h-[23px] px-2.5 rounded-full bg-[#F0F7FB] border border-[#D0E7F5] shadow-[0_1px_2px_rgba(88,180,229,0.05)]">
+        <svg class="w-3 h-3 text-[#0284C7] shrink-0" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2.69l5.66 5.66a8 8 0 1 1-11.31 0z"/></svg>
+        <span class="text-[11px] font-bold text-[#0369A1] leading-none">الماء: 3.5 لتر</span>
+      </div>
+
+      <!-- Badge B4 -->
+      <div class="inline-flex items-center gap-1.5 h-[23px] px-2.5 rounded-full bg-[#ECFDF5] border border-[#A7F3D0] shadow-[0_1px_2px_rgba(16,185,129,0.05)]">
+        <span class="w-1.5 h-1.5 rounded-full bg-[#10B981]"></span>
+        <span class="text-[11px] font-bold text-[#065F46] leading-none">متبقي 6 أيام</span>
+      </div>
+
+      <!-- Badge B5 -->
+      <div class="inline-flex items-center gap-1.5 h-[23px] px-2.5 rounded-full bg-[#F8FAFC] border border-[#E2E8F0] shadow-[0_1px_2px_rgba(0,0,0,0.02)]">
+        <span class="w-1.5 h-1.5 rounded-full bg-[#64748B]"></span>
+        <span class="text-[11px] font-semibold text-[#0F172A] leading-none">3 مكملات</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Direction C: Pure Monochrome Editorial (Clean Slate Luxury) -->
+  <div class="bg-white rounded-[18px] border border-slate-200 p-6 shadow-xs">
+    <div class="flex items-center justify-between mb-4 border-b border-slate-100 pb-3">
+      <div>
+        <h2 class="text-sm font-bold text-[#0F172A]">المقترح (C): توحيد مونوتون كلاسيكي (Pure Monochrome Slate)</h2>
+        <p class="text-xs text-slate-500 mt-0.5">إلغاء كافة الخلفيات الملونة والاعتماد على خامة رمادية موحدة لجميع البطاقات</p>
+      </div>
+      <span class="px-2.5 py-0.5 rounded-[6px] bg-slate-100 text-slate-700 text-[11px] font-bold">مقترح C</span>
+    </div>
+    <div class="flex flex-wrap items-center gap-3.5 py-2">
+      <!-- Badge C1 -->
+      <div class="inline-flex items-center gap-1.5 h-6 px-2.5 rounded-[7px] bg-[#F1F5F9] border border-[#E2E8F0]">
+        <span class="text-[11px] font-semibold text-[#334155] leading-none">الأسبوع 4 · تمرين 1 من 4</span>
+      </div>
+
+      <!-- Badge C2 -->
+      <div class="inline-flex items-center gap-1.5 h-6 px-2.5 rounded-[7px] bg-[#F1F5F9] border border-[#E2E8F0]">
+        <span class="text-[11px] font-semibold text-[#334155] leading-none">الجلسة 1 من 4</span>
+      </div>
+
+      <!-- Badge C3 -->
+      <div class="inline-flex items-center gap-1.5 h-6 px-2.5 rounded-[7px] bg-[#F1F5F9] border border-[#E2E8F0]">
+        <svg class="w-3 h-3 text-[#475569] shrink-0" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2.69l5.66 5.66a8 8 0 1 1-11.31 0z"/></svg>
+        <span class="text-[11px] font-semibold text-[#334155] leading-none">الماء: 3.5 لتر</span>
+      </div>
+
+      <!-- Badge C4 -->
+      <div class="inline-flex items-center gap-1.5 h-6 px-2.5 rounded-[7px] bg-[#F1F5F9] border border-[#E2E8F0]">
+        <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+        <span class="text-[11px] font-semibold text-[#334155] leading-none">متبقي 6 أيام</span>
+      </div>
+
+      <!-- Badge C5 -->
+      <div class="inline-flex items-center gap-1.5 h-6 px-2.5 rounded-[7px] bg-[#F1F5F9] border border-[#E2E8F0]">
+        <span class="text-[11px] font-semibold text-[#334155] leading-none">3 مكملات</span>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

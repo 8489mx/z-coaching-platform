@@ -1,0 +1,846 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <title>Karim Zakaria — Nutrition Screen Apple Polish (Before vs After)</title>
+  <script src="https://www.gstatic.com/antigravity/web/dev/tailwindcss.min.js"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Alexandria:wght@300;400;500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    * {
+      -webkit-font-smoothing: antialiased;
+      box-sizing: border-box;
+      font-family: 'Alexandria', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    }
+
+    .font-inter {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif !important;
+    }
+
+    body {
+      background-color: #F2F4F7;
+      color: #1C1C1E;
+      margin: 0;
+      padding: 0;
+      min-height: 100vh;
+    }
+
+    /* Apple Tactile Surfaces */
+    .apple-card-surface {
+      background: #FFFFFF;
+      border: 1px solid rgba(226, 232, 240, 0.85);
+      border-radius: 18px;
+      box-shadow: 0 4px 20px -2px rgba(28, 28, 30, 0.04), 0 2px 6px -1px rgba(28, 28, 30, 0.02);
+      transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    /* Apple Inset Grouped Surface */
+    .apple-grouped-card {
+      background: #FFFFFF;
+      border: 1px solid rgba(226, 232, 240, 0.9);
+      border-radius: 20px;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.02), 0 1px 3px rgba(0, 0, 0, 0.03);
+    }
+
+    /* Action button with 44px touch target */
+    .apple-action-btn {
+      position: relative;
+      cursor: pointer;
+      user-select: none;
+      transition: all 0.15s ease;
+    }
+    .apple-action-btn::after {
+      content: '';
+      position: absolute;
+      top: -6px;
+      bottom: -6px;
+      left: -6px;
+      right: -6px;
+    }
+
+    /* Responsive Viewport Frame */
+    .phone-frame {
+      width: 390px;
+      background: #F8F9FA;
+      border-radius: 28px;
+      padding: 16px;
+      border: 1px solid #E2E8F0;
+      box-shadow: 0 12px 30px -5px rgba(15, 23, 42, 0.08);
+      transition: width 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+      flex-shrink: 0;
+    }
+
+    /* Sheet modal shadow */
+    .sheet-shadow {
+      box-shadow: 0 -10px 40px rgba(0, 0, 0, 0.15);
+    }
+  </style>
+</head>
+<body class="p-4 md:p-8">
+
+  <!-- Top Navigation & Viewport Bar -->
+  <header class="max-w-7xl mx-auto mb-6 bg-white p-4 rounded-[20px] shadow-sm border border-slate-200/80 flex flex-wrap items-center justify-between gap-4">
+    <div>
+      <div class="flex items-center gap-2">
+        <span class="w-3 h-3 rounded-full bg-[#007AFF]"></span>
+        <h1 class="text-[17px] font-black text-[#1C1C1E] tracking-tight">مراجعة شاشة التغذية — PHASE 02</h1>
+      </div>
+      <p class="text-[12px] font-medium text-[#8E8E93] mt-0.5">مقارنة التصميم الحالي (Before) مقابل التصميم المحسن بمستوى Apple Health (After)</p>
+    </div>
+
+    <!-- Viewport Switcher -->
+    <div class="flex items-center gap-1.5 bg-[#F2F4F7] p-1 rounded-full border border-slate-200">
+      <button id="btn-375" onclick="setViewport(375)" class="px-3.5 py-1.5 rounded-full text-[12px] font-bold text-[#8E8E93] hover:text-[#1C1C1E] transition-all cursor-pointer">
+        375px (Mini)
+      </button>
+      <button id="btn-390" onclick="setViewport(390)" class="px-3.5 py-1.5 rounded-full text-[12px] font-bold bg-white text-[#007AFF] shadow-xs transition-all cursor-pointer">
+        390px (iPhone 15)
+      </button>
+      <button id="btn-430" onclick="setViewport(430)" class="px-3.5 py-1.5 rounded-full text-[12px] font-bold text-[#8E8E93] hover:text-[#1C1C1E] transition-all cursor-pointer">
+        430px (Pro Max)
+      </button>
+    </div>
+
+    <!-- Quick Actions -->
+    <div class="flex items-center gap-2">
+      <button onclick="openSwapModalPreview()" class="px-3.5 py-1.5 rounded-full text-[12px] font-bold bg-[#007AFF]/10 text-[#007AFF] hover:bg-[#007AFF]/20 transition-all cursor-pointer">
+        معاينة نافذة التبديل (Sheet)
+      </button>
+      <a href="mobile_app_preview.html" class="px-3.5 py-1.5 rounded-full text-[12px] font-bold bg-slate-100 text-[#48484A] hover:bg-slate-200 transition-all">
+        العودة للتطبيق الكامل
+      </a>
+    </div>
+  </header>
+
+  <!-- Side-by-Side Comparison Container -->
+  <main class="max-w-7xl mx-auto space-y-8">
+
+    <div class="flex flex-col lg:flex-row items-start justify-center gap-8 overflow-x-auto pb-4">
+
+      <!-- ===================================================== -->
+      <!-- COLUMN A: BEFORE (التصميم الحالي)                     -->
+      <!-- ===================================================== -->
+      <div class="flex flex-col items-center w-full lg:w-auto">
+        <div class="flex items-center gap-2 mb-3">
+          <span class="px-3 py-1 rounded-full bg-slate-200 text-[#48484A] text-[11px] font-bold">BEFORE — التصميم الحالي</span>
+          <span class="text-[11px] text-[#8E8E93]">صناديق متداخلة + أزرار متباينة</span>
+        </div>
+
+        <div id="frame-before" class="phone-frame space-y-3.5">
+
+          <!-- Header -->
+          <section class="flex items-center justify-between pt-1 pb-0.5 select-none">
+            <h2 class="text-[25px] font-black text-[#1C1C1E] tracking-tight leading-tight">التغذية</h2>
+            <span class="text-[11.5px] font-bold px-3 py-1 rounded-full bg-[#007AFF]/10 text-[#007AFF]">4 وجبات</span>
+          </section>
+
+          <!-- Banner -->
+          <div class="flex items-center gap-2.5 bg-white rounded-[16px] px-3.5 py-2.5 text-[11.5px] font-semibold text-[#8E8E93] shadow-xs border border-slate-100/60">
+            <div class="w-6 h-6 rounded-full bg-[#007AFF]/10 text-[#007AFF] flex items-center justify-center shrink-0">
+              <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg>
+            </div>
+            <span class="text-[#48484A] leading-relaxed">أوزان الأطعمة محسوبة ومسجلة قبل الطهي (نيئة)، والأصناف المطبوخة كالأرز والخضار محددة بالاسم.</span>
+          </div>
+
+          <!-- BEFORE Summary Card: Nested Boxes -->
+          <section class="p-4 space-y-3 bg-white rounded-[20px] shadow-xs border border-slate-100/60">
+            <div class="flex items-center justify-between">
+              <div>
+                <div class="text-[28px] font-black text-[#1C1C1E] leading-none font-inter">2,450</div>
+                <div class="text-[11.5px] font-semibold text-[#8E8E93] mt-1">سعرة حرارية</div>
+              </div>
+              <div class="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-[#007AFF]/10 text-[#007AFF] text-[12px] font-bold border border-[#007AFF]/20">
+                <svg class="w-3.5 h-3.5 fill-current" viewBox="0 0 24 24"><path d="M12 2.69l5.66 5.66a8 8 0 1 1-11.31 0z"/></svg>
+                <span>ماء 3.5 لتر/اليوم</span>
+              </div>
+            </div>
+
+            <!-- Nested Boxes (Before) -->
+            <div class="grid grid-cols-3 gap-2 text-center">
+              <div class="bg-[#F8FAFC] border border-slate-100/80 rounded-[14px] py-2.5 px-1.5">
+                <div class="text-[12px] font-bold text-[#007AFF] mb-0.5">البروتين</div>
+                <div class="text-[17px] font-black text-[#1C1C1E] font-inter">180 <span class="text-[10.5px] font-semibold text-[#8E8E93]">جم</span></div>
+              </div>
+              <div class="bg-[#F8FAFC] border border-slate-100/80 rounded-[14px] py-2.5 px-1.5">
+                <div class="text-[12px] font-bold text-[#FF2D55] mb-0.5">الكارب</div>
+                <div class="text-[17px] font-black text-[#1C1C1E] font-inter">250 <span class="text-[10.5px] font-semibold text-[#8E8E93]">جم</span></div>
+              </div>
+              <div class="bg-[#F8FAFC] border border-slate-100/80 rounded-[14px] py-2.5 px-1.5">
+                <div class="text-[12px] font-bold text-[#AF52DE] mb-0.5">الدهون</div>
+                <div class="text-[17px] font-black text-[#1C1C1E] font-inter">81 <span class="text-[10.5px] font-semibold text-[#8E8E93]">جم</span></div>
+              </div>
+            </div>
+          </section>
+
+          <!-- Meal 1 (Before) -->
+          <article class="bg-white rounded-[20px] p-4 shadow-xs border border-slate-100/60 space-y-3">
+            <div class="flex items-center justify-between pb-2 border-b border-[#F2F2F7]">
+              <div class="flex items-center gap-2">
+                <h3 class="text-[15px] font-bold text-[#1C1C1E]">الإفطار</h3>
+                <svg class="w-4 h-4 text-amber-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/></svg>
+              </div>
+              <span class="text-[11px] font-semibold px-2.5 py-0.5 rounded-full bg-slate-100 text-[#8E8E93]">580 سعرة</span>
+            </div>
+
+            <div class="divide-y divide-[#F2F2F7]">
+              <!-- Food 1 -->
+              <div class="py-2.5 flex items-center justify-between gap-3">
+                <div class="flex items-center gap-3 min-w-0">
+                  <img src="assets/food/oats.jpg" alt="شوفان" class="w-11 h-11 rounded-[12px] object-cover shrink-0 border border-slate-100">
+                  <div class="min-w-0">
+                    <div class="text-[14px] font-bold text-[#1C1C1E]">شوفان كامل الحبة</div>
+                    <div class="text-[11.5px] font-medium text-[#8E8E93]">80 جم</div>
+                    <div class="text-[11px] font-normal text-[#8E8E93]">350 سعرة · 55 جم كارب</div>
+                  </div>
+                </div>
+                <button class="w-8 h-8 rounded-full bg-[#007AFF]/10 text-[#007AFF] flex items-center justify-center shrink-0">
+                  <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"/></svg>
+                </button>
+              </div>
+              <!-- Food 2 -->
+              <div class="py-2.5 flex items-center justify-between gap-3">
+                <div class="flex items-center gap-3 min-w-0">
+                  <img src="assets/food/eggs.jpg" alt="بيض" class="w-11 h-11 rounded-[12px] object-cover shrink-0 border border-slate-100">
+                  <div class="min-w-0">
+                    <div class="text-[14px] font-bold text-[#1C1C1E]">بياض بيض + بيضة كاملة</div>
+                    <div class="text-[11.5px] font-medium text-[#8E8E93]">200 جم</div>
+                    <div class="text-[11px] font-normal text-[#8E8E93]">230 سعرة · 30 جم بروتين</div>
+                  </div>
+                </div>
+                <button class="w-8 h-8 rounded-full bg-[#007AFF]/10 text-[#007AFF] flex items-center justify-center shrink-0">
+                  <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"/></svg>
+                </button>
+              </div>
+            </div>
+
+            <!-- Nested Box Note -->
+            <div class="bg-[#F8FAFC] border border-slate-100/80 rounded-[14px] p-3 space-y-1">
+              <div class="flex items-center gap-1.5 text-[12px] font-bold text-[#007AFF]">
+                <svg class="w-3.5 h-3.5 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+                <span>ملاحظة المدرب</span>
+              </div>
+              <p class="text-[11.5px] text-[#475569] leading-relaxed">ينفع الشوفان مع حليب اللوز أو الماء المغلي مع رشة قرفة.</p>
+            </div>
+          </article>
+
+          <!-- Meal 2 (Before) -->
+          <article class="bg-white rounded-[20px] p-4 shadow-xs border border-slate-100/60 space-y-3">
+            <div class="flex items-center justify-between pb-2 border-b border-[#F2F2F7]">
+              <div class="flex items-center gap-2">
+                <h3 class="text-[15px] font-bold text-[#1C1C1E]">الغداء</h3>
+                <svg class="w-4 h-4 text-orange-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 2v6a3 3 0 0 1-3 3 3 3 0 0 1-3-3V2"/><path d="M15 11v11"/><path d="M6 2v20"/><path d="M9 2v4a3 3 0 0 1-3 3"/></svg>
+              </div>
+              <span class="text-[11px] font-semibold px-2.5 py-0.5 rounded-full bg-slate-100 text-[#8E8E93]">850 سعرة</span>
+            </div>
+
+            <div class="divide-y divide-[#F2F2F7]">
+              <div class="py-2.5 flex items-center justify-between gap-3">
+                <div class="flex items-center gap-3 min-w-0">
+                  <img src="assets/food/chicken.jpg" alt="دجاج" class="w-11 h-11 rounded-[12px] object-cover shrink-0 border border-slate-100">
+                  <div class="min-w-0">
+                    <div class="text-[14px] font-bold text-[#1C1C1E]">صدور دجاج مشوية</div>
+                    <div class="text-[11.5px] font-medium text-[#8E8E93]">250 جم</div>
+                    <div class="text-[11px] font-normal text-[#8E8E93]">330 سعرة · 55 جم بروتين</div>
+                  </div>
+                </div>
+                <button class="w-8 h-8 rounded-full bg-[#007AFF]/10 text-[#007AFF] flex items-center justify-center shrink-0">
+                  <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"/></svg>
+                </button>
+              </div>
+              <div class="py-2.5 flex items-center justify-between gap-3">
+                <div class="flex items-center gap-3 min-w-0">
+                  <img src="assets/food/rice.jpg" alt="أرز" class="w-11 h-11 rounded-[12px] object-cover shrink-0 border border-slate-100">
+                  <div class="min-w-0">
+                    <div class="text-[14px] font-bold text-[#1C1C1E]">أرز بسمتي مسلوق</div>
+                    <div class="text-[11.5px] font-medium text-[#8E8E93]">280 جم</div>
+                    <div class="text-[11px] font-normal text-[#8E8E93]">380 سعرة · 80 جم كارب</div>
+                  </div>
+                </div>
+                <button class="w-8 h-8 rounded-full bg-[#007AFF]/10 text-[#007AFF] flex items-center justify-center shrink-0">
+                  <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"/></svg>
+                </button>
+              </div>
+              <div class="py-2.5 flex items-center justify-between gap-3">
+                <div class="flex items-center gap-3 min-w-0">
+                  <img src="assets/food/veggies_oil.jpg" alt="خضار" class="w-11 h-11 rounded-[12px] object-cover shrink-0 border border-slate-100">
+                  <div class="min-w-0">
+                    <div class="text-[14px] font-bold text-[#1C1C1E]">زيت زيتون وخضار مشكل</div>
+                    <div class="text-[11.5px] font-medium text-[#8E8E93]">10 جم زيت + 150 جم خضار</div>
+                    <div class="text-[11px] font-normal text-[#8E8E93]">صنف أساسي · 140 سعرة</div>
+                  </div>
+                </div>
+                <button class="w-8 h-8 rounded-full bg-slate-100 text-slate-400 flex items-center justify-center shrink-0">
+                  <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+                </button>
+              </div>
+            </div>
+
+            <div class="bg-[#F8FAFC] border border-slate-100/80 rounded-[14px] p-3 space-y-1">
+              <div class="flex items-center gap-1.5 text-[12px] font-bold text-[#007AFF]">
+                <svg class="w-3.5 h-3.5 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+                <span>ملاحظة المدرب</span>
+              </div>
+              <p class="text-[11.5px] text-[#475569] leading-relaxed">وزن صدور الدجاج بعد التشفية وقبل الشوي مع بهارات خالية من الصوديوم.</p>
+            </div>
+          </article>
+
+        </div>
+      </div>
+
+      <!-- ===================================================== -->
+      <!-- COLUMN B: AFTER (التصميم المحسن Apple Health Style)  -->
+      <!-- ===================================================== -->
+      <div class="flex flex-col items-center w-full lg:w-auto">
+        <div class="flex items-center gap-2 mb-3">
+          <span class="px-3 py-1 rounded-full bg-[#007AFF] text-white text-[11px] font-bold shadow-xs">AFTER — التحسين المعتمد (Apple Health Level)</span>
+          <span class="text-[11px] text-[#007AFF] font-bold">كتلة ماكروز موحدة + تسلسل بصري ثلاثي بدون تداخل</span>
+        </div>
+
+        <div id="frame-after" class="phone-frame space-y-3.5">
+
+          <!-- Header (Apple Clean Large Title) -->
+          <section class="flex items-center justify-between pt-1 pb-0.5 select-none">
+            <h2 class="text-[25px] font-black text-[#1C1C1E] tracking-tight leading-tight">التغذية</h2>
+            <span class="text-[11px] font-bold px-3 py-1 rounded-full bg-[#007AFF]/10 text-[#007AFF] border border-[#007AFF]/15">4 وجبات مقررة</span>
+          </section>
+
+          <!-- Banner (Soft Apple Tactile Strip) -->
+          <div class="flex items-center gap-2.5 bg-white rounded-[14px] px-3.5 py-2.5 text-[11.5px] font-medium text-[#48484A] shadow-xs border border-slate-100">
+            <div class="w-5 h-5 rounded-full bg-[#007AFF]/10 text-[#007AFF] flex items-center justify-center shrink-0">
+              <svg class="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg>
+            </div>
+            <span class="leading-relaxed text-[11px]">أوزان الأطعمة محسوبة ومسجلة قبل الطهي (نيئة)، والأصناف المطبوخة كالأرز والخضار محددة بالاسم.</span>
+          </div>
+
+          <!-- AFTER Summary Card: Single Unified Visual Macro Strip -->
+          <section id="after-summary-card" class="apple-card-surface p-4 space-y-3.5">
+            <div class="flex items-center justify-between">
+              <div>
+                <div class="text-[30px] font-black text-[#1C1C1E] leading-none font-inter tracking-tight">2,450</div>
+                <div class="text-[11px] font-medium text-[#8E8E93] mt-1">سعرة حرارية مقررة</div>
+              </div>
+              <div class="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-[#007AFF]/8 text-[#007AFF] text-[11.5px] font-bold border border-[#007AFF]/15">
+                <svg class="w-3.5 h-3.5 fill-current" viewBox="0 0 24 24"><path d="M12 2.69l5.66 5.66a8 8 0 1 1-11.31 0z"/></svg>
+                <span>ماء 3.5 لتر/اليوم</span>
+              </div>
+            </div>
+
+            <!-- UNIFIED MACRO STRIP (Zero Nested Cards) -->
+            <div class="bg-[#F8FAFC] rounded-[14px] p-2.5 flex items-center divide-x divide-x-reverse divide-slate-200/80 border border-slate-100">
+              <!-- Protein -->
+              <div class="flex-1 text-center px-1">
+                <div class="text-[11px] font-bold text-[#007AFF] mb-0.5">البروتين</div>
+                <div class="text-[17px] font-black text-[#1C1C1E] font-inter leading-none">180<span class="text-[10px] font-semibold text-[#8E8E93] mr-0.5">جم</span></div>
+              </div>
+              <!-- Carbs -->
+              <div class="flex-1 text-center px-1">
+                <div class="text-[11px] font-bold text-[#FF2D55] mb-0.5">الكارب</div>
+                <div class="text-[17px] font-black text-[#1C1C1E] font-inter leading-none">250<span class="text-[10px] font-semibold text-[#8E8E93] mr-0.5">جم</span></div>
+              </div>
+              <!-- Fats -->
+              <div class="flex-1 text-center px-1">
+                <div class="text-[11px] font-bold text-[#AF52DE] mb-0.5">الدهون</div>
+                <div class="text-[17px] font-black text-[#1C1C1E] font-inter leading-none">81<span class="text-[10px] font-semibold text-[#8E8E93] mr-0.5">جم</span></div>
+              </div>
+            </div>
+          </section>
+
+          <!-- AFTER Meals List (Apple Grouped Sections) -->
+          <div class="space-y-3.5">
+
+            <!-- Meal 1: الإفطار -->
+            <article class="apple-grouped-card p-3.5 space-y-2.5">
+              <!-- Header -->
+              <div class="flex items-center justify-between pb-2 border-b border-[#F2F2F7]">
+                <div class="flex items-center gap-2">
+                  <div class="w-6 h-6 rounded-[8px] bg-amber-500/10 text-amber-600 flex items-center justify-center shrink-0">
+                    <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
+                  </div>
+                  <h3 class="text-[14.5px] font-black text-[#1C1C1E] tracking-tight">الإفطار</h3>
+                </div>
+                <span class="text-[11px] font-bold px-2.5 py-0.5 rounded-full bg-slate-100 text-[#48484A] font-inter">580 سعرة</span>
+              </div>
+
+              <!-- Food List (Clean Optical Hierarchy Rows) -->
+              <div class="space-y-1">
+                <!-- Food Item 1 -->
+                <div class="py-2.5 flex items-center justify-between gap-3 group">
+                  <div class="flex items-center gap-3 min-w-0 flex-1">
+                    <img src="assets/food/oats.jpg" alt="شوفان كامل الحبة" class="w-12 h-12 rounded-[12px] object-cover shrink-0 border border-slate-100 shadow-2xs">
+                    <div class="min-w-0 flex-1">
+                      <div class="text-[13.5px] font-bold text-[#1C1C1E] leading-snug" id="after-food-m1-item1">شوفان كامل الحبة</div>
+                      <div class="text-[12px] font-bold text-[#1C1C1E] font-inter mt-0.5 leading-snug">80 جم</div>
+                      <div class="text-[11px] font-normal text-[#8E8E93] mt-0.5 leading-snug font-inter">350 سعرة · 55 جم كارب</div>
+                    </div>
+                  </div>
+                  <button onclick="openSwapModalPreview('شوفان كامل الحبة', 'after-food-m1-item1', 'carb')" class="apple-action-btn h-8 px-2.5 rounded-full bg-[#007AFF]/10 hover:bg-[#007AFF]/20 active:scale-95 text-[#007AFF] flex items-center gap-1 text-[11px] font-bold border border-[#007AFF]/20 shrink-0 self-center" title="تبديل الصنف الغذائي">
+                    <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"/></svg>
+                    <span>تبديل</span>
+                  </button>
+                </div>
+
+                <div class="border-b border-[#F2F2F7] mr-[60px]"></div>
+
+                <!-- Food Item 2 -->
+                <div class="py-2.5 flex items-center justify-between gap-3 group">
+                  <div class="flex items-center gap-3 min-w-0 flex-1">
+                    <img src="assets/food/eggs.jpg" alt="بياض بيض + بيضة كاملة" class="w-12 h-12 rounded-[12px] object-cover shrink-0 border border-slate-100 shadow-2xs">
+                    <div class="min-w-0 flex-1">
+                      <div class="text-[13.5px] font-bold text-[#1C1C1E] leading-snug" id="after-food-m1-item2">بياض بيض + بيضة كاملة</div>
+                      <div class="text-[12px] font-bold text-[#1C1C1E] font-inter mt-0.5 leading-snug">200 جم</div>
+                      <div class="text-[11px] font-normal text-[#8E8E93] mt-0.5 leading-snug font-inter">230 سعرة · 30 جم بروتين</div>
+                    </div>
+                  </div>
+                  <button onclick="openSwapModalPreview('بياض بيض + بيضة كاملة', 'after-food-m1-item2', 'protein')" class="apple-action-btn h-8 px-2.5 rounded-full bg-[#007AFF]/10 hover:bg-[#007AFF]/20 active:scale-95 text-[#007AFF] flex items-center gap-1 text-[11px] font-bold border border-[#007AFF]/20 shrink-0 self-center" title="تبديل الصنف الغذائي">
+                    <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"/></svg>
+                    <span>تبديل</span>
+                  </button>
+                </div>
+              </div>
+
+              <!-- Soft Inline Coach Note (Refined) -->
+              <div class="pt-1">
+                <div class="bg-[#F8FAFC] rounded-[12px] px-3 py-2 flex items-start gap-2 border border-slate-100">
+                  <svg class="w-3.5 h-3.5 text-[#007AFF] shrink-0 mt-0.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+                  <p class="text-[11px] text-[#475569] leading-relaxed">
+                    <strong class="font-bold text-[#1C1C1E]">توجيه الكوتش:</strong> ينفع الشوفان مع حليب اللوز أو الماء المغلي مع رشة قرفة.
+                  </p>
+                </div>
+              </div>
+            </article>
+
+            <!-- Meal 2: الغداء -->
+            <article class="apple-grouped-card p-3.5 space-y-2.5">
+              <div class="flex items-center justify-between pb-2 border-b border-[#F2F2F7]">
+                <div class="flex items-center gap-2">
+                  <div class="w-6 h-6 rounded-[8px] bg-orange-500/10 text-orange-600 flex items-center justify-center shrink-0">
+                    <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M18 2v6a3 3 0 0 1-3 3 3 3 0 0 1-3-3V2"/><path d="M15 11v11"/><path d="M6 2v20"/><path d="M9 2v4a3 3 0 0 1-3 3"/></svg>
+                  </div>
+                  <h3 class="text-[14.5px] font-black text-[#1C1C1E] tracking-tight">الغداء</h3>
+                </div>
+                <span class="text-[11px] font-bold px-2.5 py-0.5 rounded-full bg-slate-100 text-[#48484A] font-inter">850 سعرة</span>
+              </div>
+
+              <div class="space-y-1">
+                <!-- Food 1 -->
+                <div class="py-2.5 flex items-center justify-between gap-3 group">
+                  <div class="flex items-center gap-3 min-w-0 flex-1">
+                    <img src="assets/food/chicken.jpg" alt="صدور دجاج مشوية" class="w-12 h-12 rounded-[12px] object-cover shrink-0 border border-slate-100 shadow-2xs">
+                    <div class="min-w-0 flex-1">
+                      <div class="text-[13.5px] font-bold text-[#1C1C1E] leading-snug" id="after-food-m2-item1">صدور دجاج مشوية</div>
+                      <div class="text-[12px] font-bold text-[#1C1C1E] font-inter mt-0.5 leading-snug">250 جم</div>
+                      <div class="text-[11px] font-normal text-[#8E8E93] mt-0.5 leading-snug font-inter">330 سعرة · 55 جم بروتين</div>
+                    </div>
+                  </div>
+                  <button onclick="openSwapModalPreview('صدور دجاج مشوية', 'after-food-m2-item1', 'protein')" class="apple-action-btn h-8 px-2.5 rounded-full bg-[#007AFF]/10 hover:bg-[#007AFF]/20 active:scale-95 text-[#007AFF] flex items-center gap-1 text-[11px] font-bold border border-[#007AFF]/20 shrink-0 self-center" title="تبديل الصنف الغذائي">
+                    <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"/></svg>
+                    <span>تبديل</span>
+                  </button>
+                </div>
+
+                <div class="border-b border-[#F2F2F7] mr-[60px]"></div>
+
+                <!-- Food 2 -->
+                <div class="py-2.5 flex items-center justify-between gap-3 group">
+                  <div class="flex items-center gap-3 min-w-0 flex-1">
+                    <img src="assets/food/rice.jpg" alt="أرز بسمتي مسلوق" class="w-12 h-12 rounded-[12px] object-cover shrink-0 border border-slate-100 shadow-2xs">
+                    <div class="min-w-0 flex-1">
+                      <div class="text-[13.5px] font-bold text-[#1C1C1E] leading-snug" id="after-food-m2-item2">أرز بسمتي مسلوق</div>
+                      <div class="text-[12px] font-bold text-[#1C1C1E] font-inter mt-0.5 leading-snug">280 جم</div>
+                      <div class="text-[11px] font-normal text-[#8E8E93] mt-0.5 leading-snug font-inter">380 سعرة · 80 جم كارب</div>
+                    </div>
+                  </div>
+                  <button onclick="openSwapModalPreview('أرز بسمتي مسلوق', 'after-food-m2-item2', 'carb')" class="apple-action-btn h-8 px-2.5 rounded-full bg-[#007AFF]/10 hover:bg-[#007AFF]/20 active:scale-95 text-[#007AFF] flex items-center gap-1 text-[11px] font-bold border border-[#007AFF]/20 shrink-0 self-center" title="تبديل الصنف الغذائي">
+                    <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"/></svg>
+                    <span>تبديل</span>
+                  </button>
+                </div>
+
+                <div class="border-b border-[#F2F2F7] mr-[60px]"></div>
+
+                <!-- Food 3 (Locked Essential Item) -->
+                <div class="py-2.5 flex items-center justify-between gap-3">
+                  <div class="flex items-center gap-3 min-w-0 flex-1">
+                    <img src="assets/food/veggies_oil.jpg" alt="زيت زيتون وخضار" class="w-12 h-12 rounded-[12px] object-cover shrink-0 border border-slate-100 shadow-2xs">
+                    <div class="min-w-0 flex-1">
+                      <div class="text-[13.5px] font-bold text-[#1C1C1E] leading-snug">زيت زيتون بكر وخضار مشكل</div>
+                      <div class="text-[12px] font-bold text-[#1C1C1E] mt-0.5 leading-snug">10 جم زيت + 150 جم خضار</div>
+                      <div class="text-[11px] font-normal text-[#8E8E93] mt-0.5 leading-snug font-inter">صنف أساسي · 140 سعرة</div>
+                    </div>
+                  </div>
+                  <div class="h-8 px-2.5 rounded-full bg-slate-100 text-slate-400 flex items-center gap-1 text-[10.5px] font-semibold shrink-0 self-center border border-slate-200/50 select-none" title="صنف أساسي غير قابل للاستبدال">
+                    <svg class="w-3 h-3 text-slate-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+                    <span>ثابت</span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Coach Note -->
+              <div class="pt-1">
+                <div class="bg-[#F8FAFC] rounded-[12px] px-3 py-2 flex items-start gap-2 border border-slate-100">
+                  <svg class="w-3.5 h-3.5 text-[#007AFF] shrink-0 mt-0.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+                  <p class="text-[11px] text-[#475569] leading-relaxed">
+                    <strong class="font-bold text-[#1C1C1E]">توجيه الكوتش:</strong> وزن صدور الدجاج بعد التشفية وقبل الشوي مع بهارات خالية من الصوديوم.
+                  </p>
+                </div>
+              </div>
+            </article>
+
+            <!-- Meal 3: سناك قبل التمرين -->
+            <article class="apple-grouped-card p-3.5 space-y-2.5">
+              <div class="flex items-center justify-between pb-2 border-b border-[#F2F2F7]">
+                <div class="flex items-center gap-2">
+                  <div class="w-6 h-6 rounded-[8px] bg-amber-500/10 text-amber-600 flex items-center justify-center shrink-0">
+                    <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+                  </div>
+                  <h3 class="text-[14.5px] font-black text-[#1C1C1E] tracking-tight">سناك قبل التمرين</h3>
+                </div>
+                <span class="text-[11px] font-bold px-2.5 py-0.5 rounded-full bg-slate-100 text-[#48484A] font-inter">420 سعرة</span>
+              </div>
+
+              <div class="space-y-1">
+                <div class="py-2.5 flex items-center justify-between gap-3 group">
+                  <div class="flex items-center gap-3 min-w-0 flex-1">
+                    <img src="assets/food/toast_almond.jpg" alt="توست بني" class="w-12 h-12 rounded-[12px] object-cover shrink-0 border border-slate-100 shadow-2xs">
+                    <div class="min-w-0 flex-1">
+                      <div class="text-[13.5px] font-bold text-[#1C1C1E] leading-snug" id="after-food-m3-item1">توست بني وزبدة لوز طبيعية</div>
+                      <div class="text-[12px] font-bold text-[#1C1C1E] mt-0.5 leading-snug">2 شريحة + 25 جم زبدة</div>
+                      <div class="text-[11px] font-normal text-[#8E8E93] mt-0.5 leading-snug font-inter">320 سعرة · 32 جم كارب</div>
+                    </div>
+                  </div>
+                  <button onclick="openSwapModalPreview('توست بني وزبدة لوز طبيعية', 'after-food-m3-item1', 'carb')" class="apple-action-btn h-8 px-2.5 rounded-full bg-[#007AFF]/10 hover:bg-[#007AFF]/20 active:scale-95 text-[#007AFF] flex items-center gap-1 text-[11px] font-bold border border-[#007AFF]/20 shrink-0 self-center" title="تبديل الصنف الغذائي">
+                    <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"/></svg>
+                    <span>تبديل</span>
+                  </button>
+                </div>
+
+                <div class="border-b border-[#F2F2F7] mr-[60px]"></div>
+
+                <div class="py-2.5 flex items-center justify-between gap-3 group">
+                  <div class="flex items-center gap-3 min-w-0 flex-1">
+                    <img src="assets/food/banana.jpg" alt="موز طازج" class="w-12 h-12 rounded-[12px] object-cover shrink-0 border border-slate-100 shadow-2xs">
+                    <div class="min-w-0 flex-1">
+                      <div class="text-[13.5px] font-bold text-[#1C1C1E] leading-snug" id="after-food-m3-item2">موز طازج</div>
+                      <div class="text-[12px] font-bold text-[#1C1C1E] mt-0.5 leading-snug">موزة متوسطة (120 جم)</div>
+                      <div class="text-[11px] font-normal text-[#8E8E93] mt-0.5 leading-snug font-inter">100 سعرة · 25 جم كارب</div>
+                    </div>
+                  </div>
+                  <button onclick="openSwapModalPreview('موز طازج', 'after-food-m3-item2', 'carb')" class="apple-action-btn h-8 px-2.5 rounded-full bg-[#007AFF]/10 hover:bg-[#007AFF]/20 active:scale-95 text-[#007AFF] flex items-center gap-1 text-[11px] font-bold border border-[#007AFF]/20 shrink-0 self-center" title="تبديل الصنف الغذائي">
+                    <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"/></svg>
+                    <span>تبديل</span>
+                  </button>
+                </div>
+              </div>
+
+              <!-- Coach Note -->
+              <div class="pt-1">
+                <div class="bg-[#F8FAFC] rounded-[12px] px-3 py-2 flex items-start gap-2 border border-slate-100">
+                  <svg class="w-3.5 h-3.5 text-[#007AFF] shrink-0 mt-0.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+                  <p class="text-[11px] text-[#475569] leading-relaxed">
+                    <strong class="font-bold text-[#1C1C1E]">توجيه الكوتش:</strong> تناول الموز مع زبدة اللوز قبل بدء التمرين بـ 45 دقيقة لإمداد الجسم بالطاقة.
+                  </p>
+                </div>
+              </div>
+            </article>
+
+            <!-- Meal 4: العشاء -->
+            <article class="apple-grouped-card p-3.5 space-y-2.5">
+              <div class="flex items-center justify-between pb-2 border-b border-[#F2F2F7]">
+                <div class="flex items-center gap-2">
+                  <div class="w-6 h-6 rounded-[8px] bg-indigo-500/10 text-indigo-600 flex items-center justify-center shrink-0">
+                    <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+                  </div>
+                  <h3 class="text-[14.5px] font-black text-[#1C1C1E] tracking-tight">العشاء</h3>
+                </div>
+                <span class="text-[11px] font-bold px-2.5 py-0.5 rounded-full bg-slate-100 text-[#48484A] font-inter">600 سعرة</span>
+              </div>
+
+              <div class="space-y-1">
+                <div class="py-2.5 flex items-center justify-between gap-3 group">
+                  <div class="flex items-center gap-3 min-w-0 flex-1">
+                    <img src="assets/food/cottage_cheese.jpg" alt="جبن قريش" class="w-12 h-12 rounded-[12px] object-cover shrink-0 border border-slate-100 shadow-2xs">
+                    <div class="min-w-0 flex-1">
+                      <div class="text-[13.5px] font-bold text-[#1C1C1E] leading-snug" id="after-food-m4-item1">جبن قريش خالي من اللاكتوز وخضار</div>
+                      <div class="text-[12px] font-bold text-[#1C1C1E] mt-0.5 leading-snug">250 جم قريش + خضار</div>
+                      <div class="text-[11px] font-normal text-[#8E8E93] mt-0.5 leading-snug font-inter">350 سعرة · 36 جم بروتين</div>
+                    </div>
+                  </div>
+                  <button onclick="openSwapModalPreview('جبن قريش خالي من اللاكتوز وخضار', 'after-food-m4-item1', 'protein')" class="apple-action-btn h-8 px-2.5 rounded-full bg-[#007AFF]/10 hover:bg-[#007AFF]/20 active:scale-95 text-[#007AFF] flex items-center gap-1 text-[11px] font-bold border border-[#007AFF]/20 shrink-0 self-center" title="تبديل الصنف الغذائي">
+                    <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"/></svg>
+                    <span>تبديل</span>
+                  </button>
+                </div>
+
+                <div class="border-b border-[#F2F2F7] mr-[60px]"></div>
+
+                <div class="py-2.5 flex items-center justify-between gap-3 group">
+                  <div class="flex items-center gap-3 min-w-0 flex-1">
+                    <img src="assets/food/toast_almond.jpg" alt="توست أسمر" class="w-12 h-12 rounded-[12px] object-cover shrink-0 border border-slate-100 shadow-2xs">
+                    <div class="min-w-0 flex-1">
+                      <div class="text-[13.5px] font-bold text-[#1C1C1E] leading-snug" id="after-food-m4-item2">توست أسمر حبوب كاملة</div>
+                      <div class="text-[12px] font-bold text-[#1C1C1E] mt-0.5 leading-snug">2 شريحة توست (60 جم)</div>
+                      <div class="text-[11px] font-normal text-[#8E8E93] mt-0.5 leading-snug font-inter">250 سعرة · 45 جم كارب</div>
+                    </div>
+                  </div>
+                  <button onclick="openSwapModalPreview('توست أسمر حبوب كاملة', 'after-food-m4-item2', 'carb')" class="apple-action-btn h-8 px-2.5 rounded-full bg-[#007AFF]/10 hover:bg-[#007AFF]/20 active:scale-95 text-[#007AFF] flex items-center gap-1 text-[11px] font-bold border border-[#007AFF]/20 shrink-0 self-center" title="تبديل الصنف الغذائي">
+                    <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"/></svg>
+                    <span>تبديل</span>
+                  </button>
+                </div>
+              </div>
+
+              <!-- Coach Note -->
+              <div class="pt-1">
+                <div class="bg-[#F8FAFC] rounded-[12px] px-3 py-2 flex items-start gap-2 border border-slate-100">
+                  <svg class="w-3.5 h-3.5 text-[#007AFF] shrink-0 mt-0.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+                  <p class="text-[11px] text-[#475569] leading-relaxed">
+                    <strong class="font-bold text-[#1C1C1E]">توجيه الكوتش:</strong> جبن قريش خالي من اللاكتوز غني بالكازين بطيء الامتصاص لدعم الاستشفاء العضلي أثناء النوم.
+                  </p>
+                </div>
+              </div>
+            </article>
+
+          </div>
+
+        </div>
+      </div>
+
+    </div>
+
+    <!-- ===================================================== -->
+    <!-- COMPONENT AUDIT & COMPARISON BREAKDOWN TABLE           -->
+    <!-- ===================================================== -->
+    <div class="bg-white rounded-[24px] p-6 shadow-sm border border-slate-200/80 space-y-6">
+      <div class="border-b border-slate-100 pb-4">
+        <h2 class="text-[18px] font-black text-[#1C1C1E]">تقرير تدقيق مكونات شاشة التغذية (Component Audit)</h2>
+        <p class="text-[12.5px] font-medium text-[#8E8E93] mt-1">تصنيف المكونات وفقاً لمتطلبات المرحلة الثانية: KEEP و REFINE و REPLACE VISUAL ONLY</p>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <!-- KEEP -->
+        <div class="bg-[#F0FDF4] border border-[#DCFCE7] rounded-[18px] p-4 space-y-2">
+          <div class="flex items-center gap-2 text-emerald-800 font-bold text-[13px]">
+            <span class="w-2.5 h-2.5 rounded-full bg-emerald-500"></span>
+            <span>KEEP (مكونات تم الحفاظ عليها 100%)</span>
+          </div>
+          <ul class="text-[11.5px] text-emerald-950/80 space-y-1.5 list-disc list-inside">
+            <li>ترتيب الوجبات الأربع (الإفطار، الغداء، السناك، العشاء).</li>
+            <li>أسماء الأطعمة والكميات بالجرام المعتمدة.</li>
+            <li>إجمالي السعرات (2,450) والماكروز (180P, 250C, 81F).</li>
+            <li>هدف الماء الاسترشادي (3.5 لتر/اليوم) دون عدادات أكواب تفاعلية.</li>
+            <li>قاعدة بيانات البدائل الحلال (swapDatabase) ومنطق الحساب الفوري.</li>
+            <li>تنبيه استبعاد مسببات الحساسية المعتمد من السيرفر.</li>
+          </ul>
+        </div>
+
+        <!-- REFINE -->
+        <div class="bg-[#EFF6FF] border border-[#DBEAFE] rounded-[18px] p-4 space-y-2">
+          <div class="flex items-center gap-2 text-blue-800 font-bold text-[13px]">
+            <span class="w-2.5 h-2.5 rounded-full bg-blue-500"></span>
+            <span>REFINE (تحسينات محاذاة وهندسة بصرية)</span>
+          </div>
+          <ul class="text-[11.5px] text-blue-950/80 space-y-1.5 list-disc list-inside">
+            <li>صفوف الأصناف الغذائية: تنظيم ثلاثي هرمي واضح (الاسم &larr; الجرامات &larr; السعرات والماكرو) بدون تداخل أو قطع نصوص.</li>
+            <li>فواصل الصفوف: اعتماد Hairline Divider منزاح جهة النص للحفاظ على نقاء الصور.</li>
+            <li>ملاحظات الكوتش: تحويلها إلى Soft Inline Note بدون إشغال مساحات ضخمة.</li>
+            <li>أزرار التبديل: إضافة مساحة لمس غير مرئية 44px مع شارة تفاعلية واضحة.</li>
+            <li>تمييز الصنف المقفل (زيت الزيتون والخضار) بشارة ثابت واضحة وغير مزعجة.</li>
+          </ul>
+        </div>
+
+        <!-- REPLACE VISUAL ONLY -->
+        <div class="bg-[#FAF5FF] border border-[#F3E8FF] rounded-[18px] p-4 space-y-2">
+          <div class="flex items-center gap-2 text-purple-800 font-bold text-[13px]">
+            <span class="w-2.5 h-2.5 rounded-full bg-purple-500"></span>
+            <span>REPLACE VISUAL ONLY (شكل أرفع بمستوى Apple)</span>
+          </div>
+          <ul class="text-[11.5px] text-purple-950/80 space-y-1.5 list-disc list-inside">
+            <li>إلغاء الصناديق الثلاثة المنفصلة للماكروز واستبدالها بشريط موحد ناعم ومقسم (Unified Macro Strip).</li>
+            <li>تحويل الوجبة إلى Grouped Inset Card بأسلوب Apple Health بدلاً من الكروت المعزولة المزدحمة.</li>
+            <li>إعادة صياغة Bottom Sheet للبدائل لتطابق نوافذ iOS التفاعلية بحساب وزني فوري وأزرار حاسمة.</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+  </main>
+
+  <!-- ===================================================== -->
+  <!-- REFINED MODAL: SWAP FOOD SHEET (Apple Health Style)   -->
+  <!-- ===================================================== -->
+  <div id="modal-swap-sheet-preview" class="hidden fixed inset-0 bg-slate-900/50 backdrop-blur-[3px] z-50 flex flex-col justify-end transition-all" onclick="closeSwapModalPreview()">
+    <div onclick="event.stopPropagation()" class="bg-white rounded-t-[28px] p-5 sheet-shadow space-y-4 max-h-[85%] overflow-y-auto w-full max-w-lg mx-auto">
+      
+      <!-- iOS Drag Indicator Handle -->
+      <div class="w-9 h-1.5 bg-slate-200 rounded-full mx-auto"></div>
+      
+      <!-- Sheet Header -->
+      <div class="flex items-center justify-between pb-1 border-b border-slate-100">
+        <div>
+          <h3 class="text-[16px] font-black text-[#1C1C1E]">تبديل الصنف الغذائي</h3>
+          <p class="text-[11.5px] font-medium text-[#8E8E93] mt-0.5">بدائل متكافئة غذائياً محسوبة لليوم فقط</p>
+        </div>
+        <button onclick="closeSwapModalPreview()" aria-label="إغلاق" class="w-8 h-8 rounded-full bg-[#F2F4F7] hover:bg-slate-200 active:scale-95 text-[#64748B] flex items-center justify-center transition-all cursor-pointer">
+          <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </button>
+      </div>
+
+      <!-- Current Food + Immediate Kitchen Formula Callout -->
+      <div class="bg-[#F8FAFC] rounded-[16px] p-3.5 border border-slate-200/70 space-y-2">
+        <div class="flex items-center justify-between text-[11px] text-[#8E8E93]">
+          <span>الصنف المستبدل:</span>
+          <span class="text-emerald-700 font-bold bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200/60">مفحوص صحياً ومستبعد المسببات</span>
+        </div>
+        <div class="text-[14px] font-bold text-[#1C1C1E]" id="preview-current-food-name">صدور دجاج مشوية</div>
+        
+        <div class="pt-2 border-t border-slate-200/60 flex items-center justify-between">
+          <span class="text-[11.5px] font-medium text-[#007AFF]">معادلة المطبخ الفورية:</span>
+          <span class="text-[12.5px] font-black text-[#1C1C1E] font-inter" id="preview-kitchen-equiv">اختر الصنف البديل أدناه</span>
+        </div>
+      </div>
+
+      <!-- Options List -->
+      <div class="space-y-2" id="preview-swap-options">
+        <!-- Rendered dynamically -->
+      </div>
+
+      <!-- Apply Button -->
+      <button onclick="applySwapSelectionPreview()" class="w-full h-11 bg-[#007AFF] hover:bg-[#0071E3] active:scale-[0.98] text-white rounded-full text-[13.5px] font-bold transition-all shadow-xs cursor-pointer">
+        اعتماد التبديل لليوم
+      </button>
+
+    </div>
+  </div>
+
+  <!-- Notification Toast -->
+  <div id="preview-toast" class="fixed bottom-6 left-1/2 -translate-x-1/2 bg-[#1C1C1E] text-white text-[12.5px] font-bold px-4 py-2.5 rounded-full shadow-lg opacity-0 pointer-events-none transition-all duration-300 z-50">
+    تم التبديل بنجاح
+  </div>
+
+  <script>
+    // Viewport switcher
+    function setViewport(w) {
+      document.getElementById('frame-before').style.width = w + 'px';
+      document.getElementById('frame-after').style.width = w + 'px';
+      
+      ['375', '390', '430'].forEach(id => {
+        const btn = document.getElementById('btn-' + id);
+        if (id === String(w)) {
+          btn.className = 'px-3.5 py-1.5 rounded-full text-[12px] font-bold bg-white text-[#007AFF] shadow-xs transition-all cursor-pointer';
+        } else {
+          btn.className = 'px-3.5 py-1.5 rounded-full text-[12px] font-bold text-[#8E8E93] hover:text-[#1C1C1E] transition-all cursor-pointer';
+        }
+      });
+    }
+
+    // Swaps Database
+    const swapData = {
+      protein: [
+        { name: "صدور دجاج مشوية", grams: "200 جم", cal: "230 سعرة", p: "46g بروتين", img: "assets/food/chicken.jpg" },
+        { name: "سمك فيليه أبيض مشوي", grams: "240 جم", cal: "230 سعرة", p: "46g بروتين", img: "assets/food/fish.jpg" },
+        { name: "لحم بقري مفروم (5% دهن)", grams: "190 جم", cal: "240 سعرة", p: "44g بروتين", img: "assets/food/beef.jpg" },
+        { name: "تونة مصفاة من الزيت", grams: "210 جم", cal: "225 سعرة", p: "45g بروتين", img: "assets/food/tuna.jpg" },
+        { name: "بياض بيض + بيضة كاملة", grams: "200 جم", cal: "230 سعرة", p: "30 جم بروتين", img: "assets/food/eggs.jpg" },
+        { name: "جبن قريش خالي من اللاكتوز", grams: "250 جم", cal: "220 سعرة", p: "36 جم بروتين", img: "assets/food/cottage_cheese.jpg" }
+      ],
+      carb: [
+        { name: "شوفان كامل الحبة", grams: "80 جم", cal: "300 سعرة", c: "55 جم كارب", img: "assets/food/oats.jpg" },
+        { name: "شوفان سريع التحضير", grams: "80 جم", cal: "340 سعرة", c: "54g كارب", img: "assets/food/quick_oats.jpg" },
+        { name: "كينوا (نيئة)", grams: "80 جم", cal: "320 سعرة", c: "56g كارب", img: "assets/food/quinoa.jpg" },
+        { name: "أرز بسمتي مسلوق", grams: "250 جم", cal: "320 سعرة", c: "70g كارب", img: "assets/food/rice.jpg" },
+        { name: "بطاطس مسلوقة أو مشوية", grams: "200 جم", cal: "180 سعرة", c: "40g كارب", constraintTag: "الحد الأقصى 200 جم لحفظ استقرار الجلوكوز", img: "assets/food/potato.jpg" },
+        { name: "بطاطا حلوة مشوية", grams: "250 جم", cal: "260 سعرة", c: "60g كارب", img: "assets/food/sweet_potato.jpg" },
+        { name: "توست أسمر حبوب كاملة", grams: "60 جم (2 شريحة)", cal: "250 سعرة", c: "45 جم كارب", img: "assets/food/toast_almond.jpg" },
+        { name: "موز طازج", grams: "120 جم", cal: "100 سعرة", c: "25 جم كارب", img: "assets/food/banana.jpg" }
+      ]
+    };
+
+    let activeTargetId = null;
+    let selectedItem = null;
+
+    function openSwapModalPreview(currentName = 'صدور دجاج مشوية', targetId = 'after-food-m2-item1', type = 'protein') {
+      activeTargetId = targetId;
+      document.getElementById('preview-current-food-name').innerText = currentName;
+      document.getElementById('preview-kitchen-equiv').innerText = 'اختر الصنف البديل لمعرفة الوزن الدقيق';
+      
+      const container = document.getElementById('preview-swap-options');
+      container.innerHTML = '';
+
+      const items = swapData[type] || swapData.protein;
+      items.forEach(item => {
+        const isCurrent = item.name === currentName;
+        const opt = document.createElement('div');
+        opt.className = `p-2.5 rounded-[16px] transition-all cursor-pointer flex items-center justify-between gap-3 ${isCurrent ? 'bg-[#007AFF]/10 border border-[#007AFF]/30' : 'bg-[#F2F4F7] hover:bg-[#E5E5EA] border border-transparent'}`;
+        opt.onclick = () => {
+          selectedItem = item;
+          document.getElementById('preview-kitchen-equiv').innerHTML = `الوزن المطلوب: <strong class="text-[#007AFF] font-inter text-[13.5px]">${item.grams}</strong> بالمطبخ`;
+          container.querySelectorAll('.border-\\[\\#007AFF\\]\\/30').forEach(el => {
+            el.className = 'p-2.5 rounded-[16px] transition-all cursor-pointer flex items-center justify-between gap-3 bg-[#F2F4F7] hover:bg-[#E5E5EA] border border-transparent';
+          });
+          opt.className = 'p-2.5 rounded-[16px] transition-all cursor-pointer flex items-center justify-between gap-3 bg-[#007AFF]/10 border border-[#007AFF]/30';
+        };
+
+        const tagHtml = item.constraintTag 
+          ? `<span class="px-2 py-0.5 rounded-[6px] bg-amber-50 text-amber-700 text-[10px] font-bold border border-amber-200/50 mt-1 inline-block">${item.constraintTag}</span>` 
+          : '';
+
+        opt.innerHTML = `
+          <div class="flex items-center gap-3 min-w-0">
+            <img src="${item.img}" alt="${item.name}" class="w-11 h-11 rounded-[12px] object-cover shrink-0 border border-slate-100 shadow-2xs">
+            <div class="space-y-0.5 min-w-0">
+              <div class="text-[13.5px] font-bold text-[#1C1C1E] leading-snug">${item.name}</div>
+              <div class="text-[11.5px] font-medium text-[#8E8E93] leading-none font-inter">${item.grams} · ${item.cal} · ${item.p || item.c}</div>
+              ${tagHtml}
+            </div>
+          </div>
+          <div class="w-5 h-5 rounded-full border-2 ${isCurrent ? 'border-[#007AFF] bg-[#007AFF]' : 'border-[#C7C7CC] bg-white'} flex items-center justify-center shrink-0">
+            ${isCurrent ? '<svg class="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/></svg>' : ''}
+          </div>
+        `;
+        container.appendChild(opt);
+      });
+
+      document.getElementById('modal-swap-sheet-preview').classList.remove('hidden');
+    }
+
+    function closeSwapModalPreview() {
+      document.getElementById('modal-swap-sheet-preview').classList.add('hidden');
+    }
+
+    function applySwapSelectionPreview() {
+      if (selectedItem && activeTargetId) {
+        const target = document.getElementById(activeTargetId);
+        if (target) {
+          target.innerText = selectedItem.name;
+          const parentRow = target.closest('.py-2\\.5');
+          if (parentRow) {
+            const img = parentRow.querySelector('img');
+            if (img && selectedItem.img) img.src = selectedItem.img;
+            
+            const gramsEl = target.nextElementSibling;
+            if (gramsEl) gramsEl.innerText = selectedItem.grams;
+
+            const metaEl = gramsEl ? gramsEl.nextElementSibling : null;
+            if (metaEl) metaEl.innerText = `${selectedItem.cal} · ${selectedItem.p || selectedItem.c}`;
+          }
+        }
+        showToast('تم التبديل: زن ' + selectedItem.grams + ' مباشرة في المطبخ');
+        closeSwapModalPreview();
+      } else {
+        closeSwapModalPreview();
+      }
+    }
+
+    function showToast(msg) {
+      const toast = document.getElementById('preview-toast');
+      toast.innerText = msg;
+      toast.style.opacity = '1';
+      setTimeout(() => {
+        toast.style.opacity = '0';
+      }, 2500);
+    }
+  </script>
+</body>
+</html>

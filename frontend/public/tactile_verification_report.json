@@ -1,0 +1,227 @@
+[
+  {
+    "viewport": 375,
+    "beforeHasHScroll": false,
+    "afterHasHScroll": false,
+    "textMatches": false,
+    "cardsCount": 6,
+    "cardComparisons": [
+      {
+        "index": 0,
+        "title": "صباح الخير، أحمد",
+        "beforeWidth": 336,
+        "afterWidth": 336,
+        "widthDiff": 0,
+        "beforeHeight": 47,
+        "afterHeight": 47,
+        "heightDiff": 0,
+        "dimensionMatch": true
+      },
+      {
+        "index": 1,
+        "title": "جدول الأسبوع",
+        "beforeWidth": 336,
+        "afterWidth": 336,
+        "widthDiff": 0,
+        "beforeHeight": 144,
+        "afterHeight": 146,
+        "heightDiff": 2,
+        "dimensionMatch": false
+      },
+      {
+        "index": 2,
+        "title": "تمرين اليوم",
+        "beforeWidth": 336,
+        "afterWidth": 336,
+        "widthDiff": 0,
+        "beforeHeight": 218,
+        "afterHeight": 218,
+        "heightDiff": 0,
+        "dimensionMatch": true
+      },
+      {
+        "index": 3,
+        "title": "التغذية",
+        "beforeWidth": 336,
+        "afterWidth": 336,
+        "widthDiff": 0,
+        "beforeHeight": 160,
+        "afterHeight": 158,
+        "heightDiff": 2,
+        "dimensionMatch": false
+      },
+      {
+        "index": 4,
+        "title": "ميعاد المتابعة",
+        "beforeWidth": 336,
+        "afterWidth": 336,
+        "widthDiff": 0,
+        "beforeHeight": 104,
+        "afterHeight": 102,
+        "heightDiff": 2,
+        "dimensionMatch": false
+      },
+      {
+        "index": 5,
+        "title": "مكملات اليوم",
+        "beforeWidth": 336,
+        "afterWidth": 336,
+        "widthDiff": 0,
+        "beforeHeight": 241,
+        "afterHeight": 233,
+        "heightDiff": 8,
+        "dimensionMatch": false
+      }
+    ]
+  },
+  {
+    "viewport": 390,
+    "beforeHasHScroll": false,
+    "afterHasHScroll": false,
+    "textMatches": false,
+    "cardsCount": 6,
+    "cardComparisons": [
+      {
+        "index": 0,
+        "title": "صباح الخير، أحمد",
+        "beforeWidth": 349,
+        "afterWidth": 349,
+        "widthDiff": 0,
+        "beforeHeight": 47,
+        "afterHeight": 47,
+        "heightDiff": 0,
+        "dimensionMatch": true
+      },
+      {
+        "index": 1,
+        "title": "جدول الأسبوع",
+        "beforeWidth": 349,
+        "afterWidth": 349,
+        "widthDiff": 0,
+        "beforeHeight": 144,
+        "afterHeight": 146,
+        "heightDiff": 2,
+        "dimensionMatch": false
+      },
+      {
+        "index": 2,
+        "title": "تمرين اليوم",
+        "beforeWidth": 349,
+        "afterWidth": 349,
+        "widthDiff": 0,
+        "beforeHeight": 218,
+        "afterHeight": 218,
+        "heightDiff": 0,
+        "dimensionMatch": true
+      },
+      {
+        "index": 3,
+        "title": "التغذية",
+        "beforeWidth": 349,
+        "afterWidth": 349,
+        "widthDiff": 0,
+        "beforeHeight": 160,
+        "afterHeight": 158,
+        "heightDiff": 2,
+        "dimensionMatch": false
+      },
+      {
+        "index": 4,
+        "title": "ميعاد المتابعة",
+        "beforeWidth": 349,
+        "afterWidth": 349,
+        "widthDiff": 0,
+        "beforeHeight": 104,
+        "afterHeight": 102,
+        "heightDiff": 2,
+        "dimensionMatch": false
+      },
+      {
+        "index": 5,
+        "title": "مكملات اليوم",
+        "beforeWidth": 349,
+        "afterWidth": 349,
+        "widthDiff": 0,
+        "beforeHeight": 241,
+        "afterHeight": 233,
+        "heightDiff": 8,
+        "dimensionMatch": false
+      }
+    ]
+  },
+  {
+    "viewport": 430,
+    "beforeHasHScroll": false,
+    "afterHasHScroll": false,
+    "textMatches": false,
+    "cardsCount": 6,
+    "cardComparisons": [
+      {
+        "index": 0,
+        "title": "صباح الخير، أحمد",
+        "beforeWidth": 387,
+        "afterWidth": 387,
+        "widthDiff": 0,
+        "beforeHeight": 47,
+        "afterHeight": 47,
+        "heightDiff": 0,
+        "dimensionMatch": true
+      },
+      {
+        "index": 1,
+        "title": "جدول الأسبوع",
+        "beforeWidth": 387,
+        "afterWidth": 387,
+        "widthDiff": 0,
+        "beforeHeight": 144,
+        "afterHeight": 146,
+        "heightDiff": 2,
+        "dimensionMatch": false
+      },
+      {
+        "index": 2,
+        "title": "تمرين اليوم",
+        "beforeWidth": 387,
+        "afterWidth": 387,
+        "widthDiff": 0,
+        "beforeHeight": 218,
+        "afterHeight": 218,
+        "heightDiff": 0,
+        "dimensionMatch": true
+      },
+      {
+        "index": 3,
+        "title": "التغذية",
+        "beforeWidth": 387,
+        "afterWidth": 387,
+        "widthDiff": 0,
+        "beforeHeight": 160,
+        "afterHeight": 158,
+        "heightDiff": 2,
+        "dimensionMatch": false
+      },
+      {
+        "index": 4,
+        "title": "ميعاد المتابعة",
+        "beforeWidth": 387,
+        "afterWidth": 387,
+        "widthDiff": 0,
+        "beforeHeight": 104,
+        "afterHeight": 102,
+        "heightDiff": 2,
+        "dimensionMatch": false
+      },
+      {
+        "index": 5,
+        "title": "مكملات اليوم",
+        "beforeWidth": 387,
+        "afterWidth": 387,
+        "widthDiff": 0,
+        "beforeHeight": 241,
+        "afterHeight": 233,
+        "heightDiff": 8,
+        "dimensionMatch": false
+      }
+    ]
+  }
+]

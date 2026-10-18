@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Refined Soft Tint Capsule Simulation</title>
+  <script src="https://www.gstatic.com/antigravity/web/dev/tailwindcss.min.js"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    * {
+      font-family: 'IBM Plex Sans Arabic', -apple-system, sans-serif;
+      box-sizing: border-box;
+    }
+    .font-inter {
+      font-family: 'Inter', -apple-system, sans-serif;
+    }
+    /* Flat Soft Tint Capsule (مطابقة للصورة المرجعية بدون تجسيم) */
+    .soft-muted-pill {
+      background-color: #8D96A8;
+      border-radius: 9999px;
+      transition: all 0.15s ease;
+    }
+    .soft-muted-pill-violet {
+      background-color: #8C82A2;
+      border-radius: 9999px;
+      transition: all 0.15s ease;
+    }
+    .soft-inactive-pill {
+      background-color: #EEF2F6;
+      border-radius: 9999px;
+      transition: all 0.15s ease;
+    }
+  </style>
+</head>
+<body class="bg-[#F8FAFC] p-8 text-[#0F172A] min-h-screen">
+  <div class="max-w-2xl mx-auto space-y-6">
+
+    <!-- Header with user reference -->
+    <div class="bg-white rounded-[20px] p-5 border border-[#E2E8F0] shadow-sm">
+      <div class="text-xs font-bold text-[#64748B] mb-2">الصورة المرجعية التي رفعها المستخدم:</div>
+      <div class="bg-[#ECEFF1] p-4 rounded-[12px] flex items-center justify-center">
+        <img src="C:/Users/Fannan/.gemini/antigravity/brain/4e0e0f3a-2130-4f00-8c43-e6b3dc5f46c2/.user_uploaded/media_1791821131743_4736cc36.png" class="h-16 rounded" alt="Reference">
+      </div>
+    </div>
+
+    <!-- Variant 1: Pure Muted Slate from Reference Image (#8D96A8) -->
+    <div class="bg-white rounded-[20px] p-5 border border-[#E2E8F0] shadow-sm space-y-2.5">
+      <div class="flex items-center justify-between">
+        <span class="text-sm font-bold text-[#0F172A]">النموذج 1: لون مطفأ مطابق للصورة بالمليمتر (#8D96A8)</span>
+        <span class="text-xs font-semibold text-[#475569] bg-[#F1F5F9] px-2.5 py-1 rounded-full">مسطح 100% بدون تجسيم</span>
+      </div>
+      <div class="grid grid-cols-7 gap-1.5 items-center pt-1">
+        <!-- Sat Active -->
+        <div class="soft-muted-pill h-[68px] pt-2 pb-1 px-0.5 flex flex-col items-center justify-between cursor-pointer select-none">
+          <span class="text-[11px] font-bold text-[#1E293B] leading-none">السبت</span>
+          <div class="w-[29px] h-[29px] rounded-full bg-[#D5D8DD] flex items-center justify-center">
+            <span class="text-[13px] font-bold text-[#1E293B] leading-none font-inter">10</span>
+          </div>
+        </div>
+        <!-- Sun -->
+        <div class="soft-inactive-pill h-[68px] pt-2 pb-1 px-0.5 flex flex-col items-center justify-between cursor-pointer select-none">
+          <span class="text-[11px] font-medium text-[#64748B] leading-none">الأحد</span>
+          <div class="w-[29px] h-[29px] rounded-full bg-white flex items-center justify-center">
+            <span class="text-[13px] font-semibold text-[#1E293B] leading-none font-inter">11</span>
+          </div>
+        </div>
+        <!-- Mon -->
+        <div class="soft-inactive-pill h-[68px] pt-2 pb-1 px-0.5 flex flex-col items-center justify-between cursor-pointer select-none">
+          <span class="text-[11px] font-medium text-[#64748B] leading-none">الإثنين</span>
+          <div class="w-[29px] h-[29px] rounded-full bg-white flex items-center justify-center">
+            <span class="text-[13px] font-semibold text-[#1E293B] leading-none font-inter">12</span>
+          </div>
+        </div>
+        <!-- Tue -->
+        <div class="soft-inactive-pill h-[68px] pt-2 pb-1 px-0.5 flex flex-col items-center justify-between cursor-pointer select-none">
+          <span class="text-[11px] font-medium text-[#64748B] leading-none">الثلاثاء</span>
+          <div class="w-[29px] h-[29px] rounded-full bg-white flex items-center justify-center">
+            <span class="text-[13px] font-semibold text-[#1E293B] leading-none font-inter">13</span>
+          </div>
+        </div>
+        <!-- Wed -->
+        <div class="soft-inactive-pill h-[68px] pt-2 pb-1 px-0.5 flex flex-col items-center justify-between cursor-pointer select-none">
+          <span class="text-[11px] font-medium text-[#64748B] leading-none">الأربعاء</span>
+          <div class="w-[29px] h-[29px] rounded-full bg-white flex items-center justify-center">
+            <span class="text-[13px] font-semibold text-[#1E293B] leading-none font-inter">14</span>
+          </div>
+        </div>
+        <!-- Thu -->
+        <div class="soft-inactive-pill h-[68px] pt-2 pb-1 px-0.5 flex flex-col items-center justify-between cursor-pointer select-none">
+          <span class="text-[11px] font-medium text-[#94A3B8] leading-none">الخميس</span>
+          <div class="w-[29px] h-[29px] rounded-full bg-white flex items-center justify-center">
+            <span class="text-[13px] font-semibold text-[#64748B] leading-none font-inter">15</span>
+          </div>
+        </div>
+        <!-- Fri -->
+        <div class="soft-inactive-pill h-[68px] pt-2 pb-1 px-0.5 flex flex-col items-center justify-between cursor-pointer select-none">
+          <span class="text-[11px] font-medium text-[#64748B] leading-none">الجمعة</span>
+          <div class="w-[29px] h-[29px] rounded-full bg-white flex items-center justify-center">
+            <span class="text-[13px] font-semibold text-[#1E293B] leading-none font-inter">16</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Variant 2: Muted Slate with touch of Violet (#8C82A2) -->
+    <div class="bg-white rounded-[20px] p-5 border border-[#E2E8F0] shadow-sm space-y-2.5">
+      <div class="flex items-center justify-between">
+        <span class="text-sm font-bold text-[#0F172A]">النموذج 2: لون بنفسجي رمادي مطفأ ومتخفف (#8C82A2)</span>
+        <span class="text-xs font-semibold text-[#6D28D9] bg-[#EDE9FE] px-2.5 py-1 rounded-full">بنفسجي مطفأ هادئ</span>
+      </div>
+      <div class="grid grid-cols-7 gap-1.5 items-center pt-1">
+        <!-- Sat Active -->
+        <div class="soft-muted-pill-violet h-[68px] pt-2 pb-1 px-0.5 flex flex-col items-center justify-between cursor-pointer select-none">
+          <span class="text-[11px] font-bold text-[#1E1B2E] leading-none">السبت</span>
+          <div class="w-[29px] h-[29px] rounded-full bg-[#E5E2EC] flex items-center justify-center">
+            <span class="text-[13px] font-bold text-[#1E1B2E] leading-none font-inter">10</span>
+          </div>
+        </div>
+        <!-- Sun -->
+        <div class="soft-inactive-pill h-[68px] pt-2 pb-1 px-0.5 flex flex-col items-center justify-between cursor-pointer select-none">
+          <span class="text-[11px] font-medium text-[#64748B] leading-none">الأحد</span>
+          <div class="w-[29px] h-[29px] rounded-full bg-white flex items-center justify-center">
+            <span class="text-[13px] font-semibold text-[#1E293B] leading-none font-inter">11</span>
+          </div>
+        </div>
+        <!-- Mon -->
+        <div class="soft-inactive-pill h-[68px] pt-2 pb-1 px-0.5 flex flex-col items-center justify-between cursor-pointer select-none">
+          <span class="text-[11px] font-medium text-[#64748B] leading-none">الإثنين</span>
+          <div class="w-[29px] h-[29px] rounded-full bg-white flex items-center justify-center">
+            <span class="text-[13px] font-semibold text-[#1E293B] leading-none font-inter">12</span>
+          </div>
+        </div>
+        <!-- Tue -->
+        <div class="soft-inactive-pill h-[68px] pt-2 pb-1 px-0.5 flex flex-col items-center justify-between cursor-pointer select-none">
+          <span class="text-[11px] font-medium text-[#64748B] leading-none">الثلاثاء</span>
+          <div class="w-[29px] h-[29px] rounded-full bg-white flex items-center justify-center">
+            <span class="text-[13px] font-semibold text-[#1E293B] leading-none font-inter">13</span>
+          </div>
+        </div>
+        <!-- Wed -->
+        <div class="soft-inactive-pill h-[68px] pt-2 pb-1 px-0.5 flex flex-col items-center justify-between cursor-pointer select-none">
+          <span class="text-[11px] font-medium text-[#64748B] leading-none">الأربعاء</span>
+          <div class="w-[29px] h-[29px] rounded-full bg-white flex items-center justify-center">
+            <span class="text-[13px] font-semibold text-[#1E293B] leading-none font-inter">14</span>
+          </div>
+        </div>
+        <!-- Thu -->
+        <div class="soft-inactive-pill h-[68px] pt-2 pb-1 px-0.5 flex flex-col items-center justify-between cursor-pointer select-none">
+          <span class="text-[11px] font-medium text-[#94A3B8] leading-none">الخميس</span>
+          <div class="w-[29px] h-[29px] rounded-full bg-white flex items-center justify-center">
+            <span class="text-[13px] font-semibold text-[#64748B] leading-none font-inter">15</span>
+          </div>
+        </div>
+        <!-- Fri -->
+        <div class="soft-inactive-pill h-[68px] pt-2 pb-1 px-0.5 flex flex-col items-center justify-between cursor-pointer select-none">
+          <span class="text-[11px] font-medium text-[#64748B] leading-none">الجمعة</span>
+          <div class="w-[29px] h-[29px] rounded-full bg-white flex items-center justify-center">
+            <span class="text-[13px] font-semibold text-[#1E293B] leading-none font-inter">16</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</body>
+</html>

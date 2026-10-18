@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@600;700;800&family=Inter:wght@600;700;800&display=swap" rel="stylesheet">
+  <style>
+    body { font-family: 'Cairo', sans-serif; background: #FAFBFC; }
+    .font-inter { font-family: 'Inter', sans-serif; }
+  </style>
+</head>
+<body class="p-8 max-w-2xl mx-auto space-y-6">
+
+  <h1 class="text-lg font-black text-slate-800 text-center">مقارنة خيارات إغلاق حلقة السعرات بدون أي فراغ (100% Full Ring)</h1>
+
+  <div class="grid grid-cols-2 gap-6">
+
+    <!-- Option 1: Completely Contiguous (Seamless Zero-Gap Solid Ring) -->
+    <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex flex-col items-center gap-3">
+      <span class="text-xs font-bold text-slate-700">الخيار 1: متصل تماماً بدون أي فواصل نهائياً (Seamless Zero Gap)</span>
+      <div class="relative w-[96px] h-[96px] flex items-center justify-center">
+        <svg class="w-full h-full -rotate-90 transform" viewBox="0 0 88 88">
+          <!-- Carbs (41%) -->
+          <circle cx="44" cy="44" r="36" stroke="#FB7185" stroke-width="5" fill="none"
+                  stroke-dasharray="92.74 226.2" stroke-dashoffset="0" />
+          <!-- Protein (29%) -->
+          <circle cx="44" cy="44" r="36" stroke="#38BDF8" stroke-width="5" fill="none"
+                  stroke-dasharray="65.6 226.2" stroke-dashoffset="-92.74" />
+          <!-- Fat (30%) -->
+          <circle cx="44" cy="44" r="36" stroke="#A78BFA" stroke-width="5" fill="none"
+                  stroke-dasharray="67.86 226.2" stroke-dashoffset="-158.34" />
+        </svg>
+        <div class="absolute inset-0 flex flex-col items-center justify-center text-center">
+          <span class="text-[19px] font-extrabold text-[#0F172A] font-inter leading-none">2,450</span>
+          <span class="text-[10px] font-medium text-[#94A3B8] leading-none mt-1">سعرة</span>
+        </div>
+      </div>
+      <p class="text-[11px] text-slate-500 text-center">حلقة ثلاثية الألوان متصلة 360 درجة بدون أي فراغ رمادي أو فواصل</p>
+    </div>
+
+    <!-- Option 2: Crisp 1.5px Hairline Separators (No Missing Track, Clean Slices) -->
+    <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex flex-col items-center gap-3">
+      <span class="text-xs font-bold text-slate-700">الخيار 2: متصل بالكامل مع خطوط فصل بيضاء أنيقة (1.5px Hairline)</span>
+      <div class="relative w-[96px] h-[96px] flex items-center justify-center">
+        <svg class="w-full h-full -rotate-90 transform" viewBox="0 0 88 88">
+          <!-- Carbs (41%) -->
+          <circle cx="44" cy="44" r="36" stroke="#FB7185" stroke-width="5" fill="none"
+                  stroke-dasharray="91.24 226.2" stroke-dashoffset="0" />
+          <!-- Protein (29%) -->
+          <circle cx="44" cy="44" r="36" stroke="#38BDF8" stroke-width="5" fill="none"
+                  stroke-dasharray="64.1 226.2" stroke-dashoffset="-92.74" />
+          <!-- Fat (30%) -->
+          <circle cx="44" cy="44" r="36" stroke="#A78BFA" stroke-width="5" fill="none"
+                  stroke-dasharray="66.36 226.2" stroke-dashoffset="-158.34" />
+        </svg>
+        <div class="absolute inset-0 flex flex-col items-center justify-center text-center">
+          <span class="text-[19px] font-extrabold text-[#0F172A] font-inter leading-none">2,450</span>
+          <span class="text-[10px] font-medium text-[#94A3B8] leading-none mt-1">سعرة</span>
+        </div>
+      </div>
+      <p class="text-[11px] text-slate-500 text-center">فواصل بيضاء دقيقة جداً (1.5px) متساوية بين كل قطاع دون أي فراغ رمادي</p>
+    </div>
+
+    <!-- Option 3: Balanced 3-Arc Rounded with Equal Micro-Breathing (2px gap exactly balanced) -->
+    <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex flex-col items-center gap-3">
+      <span class="text-xs font-bold text-slate-700">الخيار 3: كبسولات دائرية متساوية التوزيع 100% (Balanced Rounded Caps)</span>
+      <div class="relative w-[96px] h-[96px] flex items-center justify-center">
+        <svg class="w-full h-full -rotate-90 transform" viewBox="0 0 88 88">
+          <!-- Carbs (41%) - starts at 3, len = 86.7 -->
+          <circle cx="44" cy="44" r="36" stroke="#FB7185" stroke-width="5" fill="none"
+                  stroke-dasharray="86.7 226.2" stroke-dashoffset="-3" stroke-linecap="round" />
+          <!-- Protein (29%) - starts at 92.7 + 3 = 95.7, len = 59.6 -->
+          <circle cx="44" cy="44" r="36" stroke="#38BDF8" stroke-width="5" fill="none"
+                  stroke-dasharray="59.6 226.2" stroke-dashoffset="-95.7" stroke-linecap="round" />
+          <!-- Fat (30%) - starts at 158.3 + 3 = 161.3, len = 61.8 -->
+          <circle cx="44" cy="44" r="36" stroke="#A78BFA" stroke-width="5" fill="none"
+                  stroke-dasharray="61.8 226.2" stroke-dashoffset="-161.3" stroke-linecap="round" />
+        </svg>
+        <div class="absolute inset-0 flex flex-col items-center justify-center text-center">
+          <span class="text-[19px] font-extrabold text-[#0F172A] font-inter leading-none">2,450</span>
+          <span class="text-[10px] font-medium text-[#94A3B8] leading-none mt-1">سعرة</span>
+        </div>
+      </div>
+      <p class="text-[11px] text-slate-500 text-center">حواف ناعمة مستديرة مع فواصل متساوية تماماً (3px) بدون أي فراغ كبير في الأعلى</p>
+    </div>
+
+    <!-- Option 4: Full-bleed Seamless Ring with 6px stroke -->
+    <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex flex-col items-center gap-3">
+      <span class="text-xs font-bold text-slate-700">الخيار 4: متصل تماماً بسماكة 5.5px مع توهج ناعم</span>
+      <div class="relative w-[96px] h-[96px] flex items-center justify-center">
+        <svg class="w-full h-full -rotate-90 transform" viewBox="0 0 88 88">
+          <!-- Carbs (41%) -->
+          <circle cx="44" cy="44" r="36" stroke="#FB7185" stroke-width="5.5" fill="none"
+                  stroke-dasharray="92.74 226.2" stroke-dashoffset="0" />
+          <!-- Protein (29%) -->
+          <circle cx="44" cy="44" r="36" stroke="#38BDF8" stroke-width="5.5" fill="none"
+                  stroke-dasharray="65.6 226.2" stroke-dashoffset="-92.74" />
+          <!-- Fat (30%) -->
+          <circle cx="44" cy="44" r="36" stroke="#A78BFA" stroke-width="5.5" fill="none"
+                  stroke-dasharray="67.86 226.2" stroke-dashoffset="-158.34" />
+        </svg>
+        <div class="absolute inset-0 flex flex-col items-center justify-center text-center">
+          <span class="text-[19px] font-extrabold text-[#0F172A] font-inter leading-none">2,450</span>
+          <span class="text-[10px] font-medium text-[#94A3B8] leading-none mt-1">سعرة</span>
+        </div>
+      </div>
+      <p class="text-[11px] text-slate-500 text-center">حلقة مكتملة 100% مغلقة كلياً دون أي ثغرة أو انقطاع</p>
+    </div>
+
+  </div>
+
+</body>
+</html>

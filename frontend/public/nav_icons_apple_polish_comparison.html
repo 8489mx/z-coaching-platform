@@ -1,0 +1,655 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <title>Karim Zakaria — Bottom Navigation Icons SF Symbols Calibration Board</title>
+  <script src="https://www.gstatic.com/antigravity/web/dev/tailwindcss.min.js"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Alexandria:wght@300;400;500;600;700;800;900&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    * {
+      -webkit-font-smoothing: antialiased;
+      box-sizing: border-box;
+      font-family: 'Alexandria', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    }
+    .font-inter {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif !important;
+    }
+    body {
+      background-color: #F1F4F8;
+      color: #1C1C1E;
+      margin: 0;
+      padding: 0;
+      min-height: 100vh;
+    }
+
+    /* Floating Liquid Glass Navigation Styles */
+    .glass-nav-container {
+      background: rgba(255, 255, 255, 0.78);
+      backdrop-filter: blur(24px) saturate(190%);
+      -webkit-backdrop-filter: blur(24px) saturate(190%);
+      border: 1px solid rgba(255, 255, 255, 0.85);
+      border-radius: 9999px;
+      box-shadow: 0 10px 30px -5px rgba(15, 23, 42, 0.12),
+                  0 4px 12px -2px rgba(15, 23, 42, 0.06),
+                  inset 0 1px 1.5px rgba(255, 255, 255, 0.9);
+      position: relative;
+    }
+
+    .liquid-lens {
+      position: absolute;
+      top: 5px;
+      bottom: 5px;
+      border-radius: 9999px;
+      background: rgba(255, 255, 255, 0.95);
+      box-shadow: 0 3px 10px rgba(0, 122, 255, 0.14),
+                  0 1px 3px rgba(0, 0, 0, 0.05),
+                  inset 0 1px 1px rgba(255, 255, 255, 1);
+      transition: all 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+      z-index: 1;
+      pointer-events: none;
+    }
+
+    .nav-tab-item {
+      position: relative;
+      flex: 1;
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      z-index: 2;
+      user-select: none;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    .tab-content-wrapper {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 2px;
+      transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), color 0.2s ease;
+    }
+
+    .nav-tab-item:active .tab-content-wrapper {
+      transform: scale(0.92);
+    }
+
+    .apple-card {
+      background: #FFFFFF;
+      border: 1px solid rgba(226, 232, 240, 0.8);
+      border-radius: 20px;
+      box-shadow: 0 4px 20px -2px rgba(15, 23, 42, 0.04), 0 2px 6px -1px rgba(15, 23, 42, 0.02);
+    }
+
+    .apple-badge {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 3px 10px;
+      border-radius: 9999px;
+      font-size: 11px;
+      font-weight: 700;
+    }
+  </style>
+</head>
+<body class="p-4 sm:p-6 lg:p-8">
+
+  <!-- Header -->
+  <header class="max-w-6xl mx-auto mb-8 space-y-3">
+    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-slate-200">
+      <div>
+        <div class="flex items-center gap-2">
+          <span class="apple-badge bg-blue-50 text-[#007AFF] border border-blue-100">SF Symbols Calibration</span>
+          <span class="apple-badge bg-emerald-50 text-emerald-700 border border-emerald-100">Android & iOS Cross-Platform</span>
+        </div>
+        <h1 class="text-2xl sm:text-3xl font-black text-[#1C1C1E] tracking-tight mt-1.5">
+          لوحة معايرة أيقونات شريط التنقل السفلي: Streamline Bold مقابل Apple SF Symbols
+        </h1>
+        <p class="text-sm text-[#8E8E93] mt-1">
+          دراسة وتطبيق فلسفة الرسم البصري لـ Apple SF Symbols وApple Fitness مع الحفاظ التام على شريط Liquid Glass Navigation وهوية كريم زكريا.
+        </p>
+      </div>
+
+      <div class="flex items-center gap-2">
+        <a href="/mobile_app_preview.html" class="px-3.5 py-2 rounded-xl text-xs font-bold bg-[#007AFF] text-white shadow-sm hover:bg-[#0066D6] transition-all flex items-center gap-1.5">
+          <span>معاينة التطبيق الحية</span>
+          <span>&larr;</span>
+        </a>
+      </div>
+    </div>
+
+    <!-- Controls Bar -->
+    <div class="flex flex-wrap items-center justify-between gap-3 bg-white p-3 rounded-2xl border border-slate-200/80 shadow-2xs text-xs">
+      <!-- Active Tab Selector -->
+      <div class="flex items-center gap-1.5 bg-[#F2F4F8] p-1 rounded-full">
+        <span class="text-[11px] font-bold text-[#8E8E93] px-2">التبويب النشط:</span>
+        <button onclick="setActiveTab(0)" id="btn-tab-0" class="px-3 py-1 rounded-full text-[11px] font-bold bg-white text-[#007AFF] shadow-2xs transition-all">0. اليوم</button>
+        <button onclick="setActiveTab(1)" id="btn-tab-1" class="px-3 py-1 rounded-full text-[11px] font-semibold text-[#8E8E93] hover:text-[#1C1C1E] transition-all">1. التمارين</button>
+        <button onclick="setActiveTab(2)" id="btn-tab-2" class="px-3 py-1 rounded-full text-[11px] font-semibold text-[#8E8E93] hover:text-[#1C1C1E] transition-all">2. التغذية</button>
+        <button onclick="setActiveTab(3)" id="btn-tab-3" class="px-3 py-1 rounded-full text-[11px] font-semibold text-[#8E8E93] hover:text-[#1C1C1E] transition-all">3. المتابعة</button>
+        <button onclick="setActiveTab(4)" id="btn-tab-4" class="px-3 py-1 rounded-full text-[11px] font-semibold text-[#8E8E93] hover:text-[#1C1C1E] transition-all">4. حسابي</button>
+      </div>
+
+      <!-- Device Viewport Switcher -->
+      <div class="flex items-center gap-1.5 bg-[#F2F4F8] p-1 rounded-full">
+        <span class="text-[11px] font-bold text-[#8E8E93] px-2">عرض الشاشة:</span>
+        <button onclick="setViewportWidth('375')" id="btn-w-375" class="px-3 py-1 rounded-full text-[11px] font-semibold text-[#8E8E93] hover:text-[#1C1C1E] transition-all">375px (SE/Mini)</button>
+        <button onclick="setViewportWidth('390')" id="btn-w-390" class="px-3 py-1 rounded-full text-[11px] font-bold bg-white text-[#007AFF] shadow-2xs transition-all">390px (iPhone 14/15)</button>
+        <button onclick="setViewportWidth('430')" id="btn-w-430" class="px-3 py-1 rounded-full text-[11px] font-semibold text-[#8E8E93] hover:text-[#1C1C1E] transition-all">430px (Pro Max)</button>
+      </div>
+    </div>
+  </header>
+
+  <main class="max-w-6xl mx-auto space-y-8">
+
+    <!-- ============================================================== -->
+    <!-- 1. LIVE FLOATING LIQUID GLASS BAR COMPARISON (A vs B)          -->
+    <!-- ============================================================== -->
+    <section class="space-y-4">
+      <div class="flex items-center justify-between">
+        <div>
+          <h2 class="text-lg font-black text-[#1C1C1E]">1. المعاينة المباشرة داخل شريط Liquid Glass Navigation</h2>
+          <p class="text-xs text-[#8E8E93]">مقارنة حقيقية لنفس الشريط بنفس الأبعاد والتأثير الزجاجي وحركة العدسة عند الضغط.</p>
+        </div>
+        <span class="apple-badge bg-slate-100 text-[#48484A]">اضغط على أي تبويب للتجربة</span>
+      </div>
+
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+
+        <!-- VERSION A: Current Streamline Bold -->
+        <div class="apple-card p-5 space-y-4">
+          <div class="flex items-center justify-between pb-3 border-b border-slate-100">
+            <div>
+              <span class="apple-badge bg-amber-50 text-amber-700 border border-amber-200">Version A (الحالي)</span>
+              <h3 class="text-sm font-bold text-[#1C1C1E] mt-1">أيقونات Streamline Bold الحالية</h3>
+            </div>
+            <span class="text-[11px] text-[#8E8E93]">أيقونات متباينة الأوزان الفراغية</span>
+          </div>
+
+          <p class="text-xs text-[#64748B] leading-relaxed">
+            تمرين مبني من مستطيلات منفصلة، التغذية شوربة ساخنة ببخار متموج، المتابعة وثيقة بورقة، والأوزان الظاهرية غير متطابقة هندسياً.
+          </p>
+
+          <!-- Device Container Simulator -->
+          <div class="bg-[#F8FAFC] rounded-[28px] p-6 border border-slate-200/60 flex flex-col items-center justify-center min-h-[160px] relative overflow-hidden transition-all duration-300">
+            <!-- Simulated background content -->
+            <div class="w-full space-y-2 opacity-30 select-none pointer-events-none mb-12">
+              <div class="h-4 bg-slate-200 rounded-full w-2/3"></div>
+              <div class="h-8 bg-slate-200 rounded-2xl w-full"></div>
+            </div>
+
+            <!-- Version A Real Floating Nav Bar -->
+            <div id="nav-container-a" class="w-[358px] transition-all duration-300">
+              <nav class="glass-nav-container h-[60px] px-1.5 py-1 flex items-center justify-between select-none">
+                <div id="liquid-lens-a" class="liquid-lens" style="width: 66px; left: calc(80% - 33px + 10%);"></div>
+
+                <!-- Tab 0: اليوم -->
+                <div onclick="setActiveTab(0)" class="nav-tab-item" data-index="0">
+                  <div id="tab-a-0" class="tab-content-wrapper text-slate-500">
+                    <svg class="w-[20px] h-[20px]" viewBox="0 1.2 24 23.2" fill="currentColor">
+                      <path d="m2.64 10.59 9-7.48a.48.48 0 0 1 .62 0l9 7.48a1.45 1.45 0 0 0 2.06-.22 1.52 1.52 0 0 0-.21-2.11l-9-7.49a3.41 3.41 0 0 0-4.32 0l-9 7.49a1.52 1.52 0 0 0-.21 2.11 1.45 1.45 0 0 0 2.06.22"/>
+                      <path d="M22.28 22v-7a2.22 2.22 0 0 0-.73-1.59l-8.3-7a1.94 1.94 0 0 0-2.5 0l-8.3 7A2.22 2.22 0 0 0 1.72 15v7a2 2 0 0 0 2 2h5.34a1 1 0 0 0 1-1v-5.5a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1V23a1 1 0 0 0 1 1h5.38a2 2 0 0 0 1.84-2"/>
+                    </svg>
+                    <span class="text-[10px] font-bold tracking-tight leading-none">اليوم</span>
+                  </div>
+                </div>
+
+                <!-- Tab 1: التمارين -->
+                <div onclick="setActiveTab(1)" class="nav-tab-item" data-index="1">
+                  <div id="tab-a-1" class="tab-content-wrapper text-slate-500">
+                    <svg class="w-[22px] h-[16px]" viewBox="0 4 24 16" fill="currentColor">
+                      <rect x="7" y="10.5" width="10" height="3" rx="1.5"/>
+                      <rect x="4.5" y="4.5" width="3" height="15" rx="1.5"/>
+                      <rect x="1.75" y="6.5" width="2.25" height="11" rx="1.125"/>
+                      <rect x="0.25" y="8.5" width="1.2" height="7" rx="0.6"/>
+                      <rect x="16.5" y="4.5" width="3" height="15" rx="1.5"/>
+                      <rect x="20" y="6.5" width="2.25" height="11" rx="1.125"/>
+                      <rect x="22.55" y="8.5" width="1.2" height="7" rx="0.6"/>
+                    </svg>
+                    <span class="text-[10px] font-bold tracking-tight leading-none">التمارين</span>
+                  </div>
+                </div>
+
+                <!-- Tab 2: التغذية -->
+                <div onclick="setActiveTab(2)" class="nav-tab-item" data-index="2">
+                  <div id="tab-a-2" class="tab-content-wrapper text-slate-500">
+                    <svg class="w-[21px] h-[21px]" viewBox="0 3.0 24 22" fill="currentColor">
+                      <path d="M12 8.75a1 1 0 0 1-.68-.27.9.9 0 0 1 0-1.3 1.5 1.5 0 0 0 .47-1.08 1.47 1.47 0 0 0-.47-1.1 3.32 3.32 0 0 1-1-2.38 3.32 3.32 0 0 1 1-2.38 1 1 0 0 1 1.36 0 .9.9 0 0 1 0 1.3 1.5 1.5 0 0 0-.47 1.08 1.45 1.45 0 0 0 .47 1.07 3.29 3.29 0 0 1 0 4.76 1 1 0 0 1-.68.3m0 1.75c-2.81 0-12 .23-12 3.25C0 19.41 5.37 24 12 24s12-4.59 12-10.25c0-3.02-9.19-3.25-12-3.25m0 2a32.6 32.6 0 0 1 9 1 .25.25 0 0 1 0 .5 32.6 32.6 0 0 1-9 1 32.6 32.6 0 0 1-9-1 .25.25 0 0 1 0-.48 32.6 32.6 0 0 1 9-1.02M7.26 6.65a.35.35 0 0 1-.06.4 1 1 0 0 0 .7 1.7 1 1 0 0 0 .71-.29 2.36 2.36 0 0 0 .15-3.22 4 4 0 0 1-.21-.38.35.35 0 0 1 .06-.4 1 1 0 0 0 0-1.41 1 1 0 0 0-1.41 0 2.36 2.36 0 0 0-.15 3.22 4 4 0 0 1 .21.38m8.19 0a.35.35 0 0 1-.06.4 1 1 0 0 0 .7 1.7 1 1 0 0 0 .71-.29 2.36 2.36 0 0 0 .2-3.22 4 4 0 0 1-.21-.38.35.35 0 0 1 .06-.4 1 1 0 0 0 0-1.41 1 1 0 0 0-1.41 0 2.35 2.35 0 0 0-.15 3.22 4 4 0 0 1 .16.38"/>
+                    </svg>
+                    <span class="text-[10px] font-bold tracking-tight leading-none">التغذية</span>
+                  </div>
+                </div>
+
+                <!-- Tab 3: المتابعة -->
+                <div onclick="setActiveTab(3)" class="nav-tab-item" data-index="3">
+                  <div id="tab-a-3" class="tab-content-wrapper text-slate-500">
+                    <svg class="w-[20px] h-[20px]" viewBox="0 1 24 23" fill="currentColor">
+                      <path d="M20.5 2h-5a.27.27 0 0 1-.21-.12 3.82 3.82 0 0 0-6.58 0A.27.27 0 0 1 8.5 2h-5A1.5 1.5 0 0 0 2 3.5v19A1.5 1.5 0 0 0 3.5 24h17a1.5 1.5 0 0 0 1.5-1.5v-19A1.5 1.5 0 0 0 20.5 2M19 16.26a2.5 2.5 0 0 1-.6 1.63l-1.92 2.24a2.52 2.52 0 0 1-1.9.87H5.5a.5.5 0 0 1-.5-.5v-15a.5.5 0 0 1 .5-.5h13a.5.5 0 0 1 .5.5Z"/>
+                      <path d="m14.75 8.66-3.89 5.18a.24.24 0 0 1-.37 0l-1.82-1.79a1.25 1.25 0 0 0-1.77 1.77L9.07 16a2.32 2.32 0 0 0 3.5-.25l4.18-5.57a1.25 1.25 0 0 0-2-1.5Z"/>
+                    </svg>
+                    <span class="text-[10px] font-bold tracking-tight leading-none">المتابعة</span>
+                  </div>
+                </div>
+
+                <!-- Tab 4: حسابي -->
+                <div onclick="setActiveTab(4)" class="nav-tab-item" data-index="4">
+                  <div id="tab-a-4" class="tab-content-wrapper text-slate-500">
+                    <svg class="w-[20px] h-[20px]" viewBox="0 0 14 14" fill="currentColor">
+                      <path fill-rule="evenodd" clip-rule="evenodd" d="M7 14c4.48 0 7-2.52 7-7s-2.52-7-7-7-7 2.52-7 7 2.52 7 7 7m3.637-2.471A4.12 4.12 0 0 0 7 9.354a4.13 4.13 0 0 0-3.636 2.175c.832.598 2.016.971 3.636.971s2.804-.373 3.637-.971m-1.282-6.26c0 1.507-.848 2.356-2.356 2.356-1.507 0-2.355-.849-2.355-2.356 0-1.508.848-2.356 2.355-2.356s2.356.848 2.356 2.356"/>
+                    </svg>
+                    <span class="text-[10px] font-bold tracking-tight leading-none">حسابي</span>
+                  </div>
+                </div>
+              </nav>
+            </div>
+          </div>
+        </div>
+
+        <!-- VERSION B: Apple SF Symbols Visual Direction -->
+        <div class="apple-card p-5 space-y-4 border-2 border-[#007AFF]/25">
+          <div class="flex items-center justify-between pb-3 border-b border-slate-100">
+            <div>
+              <span class="apple-badge bg-blue-50 text-[#007AFF] border border-blue-200">Version B (المقترح المعتمد)</span>
+              <h3 class="text-sm font-bold text-[#1C1C1E] mt-1">Apple SF Symbols Precision Vectors</h3>
+            </div>
+            <span class="apple-badge bg-emerald-50 text-emerald-700 text-[10px]">Optical Weight متوازن</span>
+          </div>
+
+          <p class="text-xs text-[#48484A] leading-relaxed">
+            رسم هندسي مصمت بنسب SF Symbols الأصلية: منزل بكتلة موحدة وباب مقوس، دمبل نقي، وعاء سلطة خضراء صحية بدون شوكة وسكينة، ولوحة كلبورد بنظام فراغات ناعمة.
+          </p>
+
+          <!-- Device Container Simulator -->
+          <div class="bg-[#F8FAFC] rounded-[28px] p-6 border border-slate-200/60 flex flex-col items-center justify-center min-h-[160px] relative overflow-hidden transition-all duration-300">
+            <!-- Simulated background content -->
+            <div class="w-full space-y-2 opacity-30 select-none pointer-events-none mb-12">
+              <div class="h-4 bg-slate-200 rounded-full w-2/3"></div>
+              <div class="h-8 bg-slate-200 rounded-2xl w-full"></div>
+            </div>
+
+            <!-- Version B Real Floating Nav Bar -->
+            <div id="nav-container-b" class="w-[358px] transition-all duration-300">
+              <nav class="glass-nav-container h-[60px] px-1.5 py-1 flex items-center justify-between select-none">
+                <div id="liquid-lens-b" class="liquid-lens" style="width: 66px; left: calc(80% - 33px + 10%);"></div>
+
+                <!-- Tab 0: اليوم (house.fill) -->
+                <div onclick="setActiveTab(0)" class="nav-tab-item" data-index="0">
+                  <div id="tab-b-0" class="tab-content-wrapper text-slate-500">
+                    <svg class="w-[22px] h-[22px]" viewBox="0 0 24 24" fill="currentColor">
+                      <!-- SF Symbols: house.fill -->
+                      <path fill-rule="evenodd" clip-rule="evenodd" d="M12 2.15c-.4 0-.8.18-1.08.45L2.6 10.3c-.5.48-.52 1.27-.05 1.77.48.5 1.28.52 1.78.05L5 11.5V20c0 1.1.9 2 2 2h3.5c.28 0 .5-.22.5-.5V15.5c0-.83.67-1.5 1.5-1.5s1.5.67 1.5 1.5V21.5c0 .28.22.5.5.5H18c1.1 0 2-.9 2-2v-8.5l.67.62c.5.47 1.3.45 1.78-.05.47-.5.45-1.29-.05-1.77L13.08 2.6c-.28-.27-.68-.45-1.08-.45z"/>
+                    </svg>
+                    <span class="text-[10px] font-bold tracking-tight leading-none">اليوم</span>
+                  </div>
+                </div>
+
+                <!-- Tab 1: التمارين (dumbbell.fill) -->
+                <div onclick="setActiveTab(1)" class="nav-tab-item" data-index="1">
+                  <div id="tab-b-1" class="tab-content-wrapper text-slate-500">
+                    <svg class="w-[23px] h-[21px]" viewBox="0 0 24 24" fill="currentColor">
+                      <!-- SF Symbols: dumbbell.fill -->
+                      <path d="M6 6.5C6 5.67 5.33 5 4.5 5S3 5.67 3 6.5v11C3 18.33 3.67 19 4.5 19S6 18.33 6 17.5v-1h1.5c.28 0 .5-.22.5-.5v-7c0-.28-.22-.5-.5-.5H6v-2zm12 0c0-.83.67-1.5 1.5-1.5s1.5.67 1.5 1.5v11c0 .83-.67 1.5-1.5 1.5s-1.5-.67-1.5-1.5v-1h-1.5c-.28 0-.5-.22-.5-.5v-7c0-.28.22-.5.5-.5H18v-2zm-2 4.5c0-.28-.22-.5-.5-.5h-7c-.28 0-.5.22-.5.5v2c0 .28.22.5.5.5h7c.28 0 .5-.22.5-.5v-2zM2 8.5C2 7.95 1.55 7.5 1 7.5S0 7.95 0 8.5v7c0 .55.45 1 1 1s1-.45 1-1v-7zm22 0c0-.55-.45-1-1-1s-1 .45-1 1v7c0 .55.45 1 1 1s1-.45 1-1v-7z"/>
+                    </svg>
+                    <span class="text-[10px] font-bold tracking-tight leading-none">التمارين</span>
+                  </div>
+                </div>
+
+                <!-- Tab 2: التغذية (Custom Salad Bowl - SF Symbols Style) -->
+                <div onclick="setActiveTab(2)" class="nav-tab-item" data-index="2">
+                  <div id="tab-b-2" class="tab-content-wrapper text-slate-500">
+                    <svg class="w-[22px] h-[22px]" viewBox="0 0 24 24" fill="currentColor">
+                      <!-- Salad Leaves (Smooth Organic Silhouette) -->
+                      <path d="M7.8 4.2C8.3 2.5 10 1.2 12 1.2c1.4 0 2.6.7 3.4 1.8 1.9-.3 3.6.6 4.4 2.2.8 1.6.4 3.7-1 4.9-.5.4-1.1.7-1.7.9-1.3.4-2.7.3-3.9-.2-.6-.3-1.1-.7-1.5-1.2-.5.7-1.3 1.2-2.2 1.4-.8.2-1.6.1-2.3-.2C7.3 10.2 6.4 9 6.2 7.6c-.2-1.3.3-2.6 1.2-3.4h.4zm4.2-.8c-.8 0-1.5.5-1.8 1.2-.3.7-.2 1.5.3 2.1.5.6 1.3.9 2.1.8.8-.1 1.5-.6 1.8-1.3.3-.7.2-1.5-.3-2.1-.5-.5-1.2-.7-2.1-.7z"/>
+                      <!-- Hemispherical Bowl Contour with Smooth Base -->
+                      <path d="M2 12.2c0-.66.54-1.2 1.2-1.2h17.6c.66 0 1.2.54 1.2 1.2 0 5.4-4.3 9.8-9.7 9.8-5.4 0-9.7-4.4-9.7-9.8h-.6z"/>
+                    </svg>
+                    <span class="text-[10px] font-bold tracking-tight leading-none">التغذية</span>
+                  </div>
+                </div>
+
+                <!-- Tab 3: المتابعة (list.clipboard.fill) -->
+                <div onclick="setActiveTab(3)" class="nav-tab-item" data-index="3">
+                  <div id="tab-b-3" class="tab-content-wrapper text-slate-500">
+                    <svg class="w-[21px] h-[21px]" viewBox="0 0 24 24" fill="currentColor">
+                      <!-- SF Symbols: list.clipboard.fill (Single Contiguous Solid Knockout) -->
+                      <path fill-rule="evenodd" clip-rule="evenodd" d="M18.5 2H15.8C15.4.8 14.3 0 13 0h-2C9.7 0 8.6.8 8.2 2H5.5C4.1 2 3 3.1 3 4.5v16C3 21.9 4.1 23 5.5 23h13c1.4 0 2.5-1.1 2.5-2.5v-16C21 3.1 19.9 2 18.5 2zM12 1.6c.6 0 1.1.4 1.2 1H10.8c.1-.6.6-1 1.2-1zM7.5 9a1 1 0 1 0 0-2 1 1 0 0 0 0 2zm3-1.6a.8.8 0 0 0 0 1.6h6a.8.8 0 0 0 0-1.6h-6zm-3 5.6a1 1 0 1 0 0-2 1 1 0 0 0 0 2zm3-1.6a.8.8 0 0 0 0 1.6h6a.8.8 0 0 0 0-1.6h-6zm-3 5.6a1 1 0 1 0 0-2 1 1 0 0 0 0 2zm3-1.6a.8.8 0 0 0 0 1.6h4.5a.8.8 0 0 0 0-1.6h-4.5z"/>
+                    </svg>
+                    <span class="text-[10px] font-bold tracking-tight leading-none">المتابعة</span>
+                  </div>
+                </div>
+
+                <!-- Tab 4: حسابي (person.crop.circle.fill) -->
+                <div onclick="setActiveTab(4)" class="nav-tab-item" data-index="4">
+                  <div id="tab-b-4" class="tab-content-wrapper text-slate-500">
+                    <svg class="w-[22px] h-[22px]" viewBox="0 0 24 24" fill="currentColor">
+                      <!-- SF Symbols: person.crop.circle.fill -->
+                      <path fill-rule="evenodd" clip-rule="evenodd" d="M12 0C5.37 0 0 5.37 0 12s5.37 12 12 12 12-5.37 12-12S18.63 0 12 0zm0 5.5a3.5 3.5 0 1 0 0 7 3.5 3.5 0 0 0 0-7zm-6.2 13.3c.7-2.6 3.2-4.3 6.2-4.3s5.5 1.7 6.2 4.3C16.4 20.3 14.3 21 12 21s-4.4-.7-6.2-2.2z"/>
+                    </svg>
+                    <span class="text-[10px] font-bold tracking-tight leading-none">حسابي</span>
+                  </div>
+                </div>
+              </nav>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ============================================================== -->
+    <!-- 2. TAB-BY-TAB OPTICAL MAGNIFICATION GRID (64px DETAIL)        -->
+    <!-- ============================================================== -->
+    <section class="space-y-4">
+      <div>
+        <h2 class="text-lg font-black text-[#1C1C1E]">2. الفحص البصري الدقيق لكل أيقونة (Optical Weight & Geometry Grid)</h2>
+        <p class="text-xs text-[#8E8E93]">تحليل تفصيلي لنسب الرسم، استدارة الزوايا، الفراغات الداخلية، والتوافق مع SF Symbols.</p>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-5 gap-4">
+
+        <!-- Card 1: Home -->
+        <div class="apple-card p-4 space-y-3">
+          <div class="flex items-center justify-between pb-2 border-b border-slate-100">
+            <span class="text-[12px] font-bold text-[#1C1C1E]">1. اليوم (Home)</span>
+            <span class="apple-badge bg-blue-50 text-[#007AFF] text-[9.5px]">iOS 13+</span>
+          </div>
+          <div class="grid grid-cols-2 gap-2 text-center">
+            <div class="p-3 bg-slate-50 rounded-xl flex flex-col items-center">
+              <span class="text-[10px] text-[#8E8E93] mb-1.5">Streamline A</span>
+              <svg class="w-8 h-8 text-slate-800" viewBox="0 1.2 24 23.2" fill="currentColor">
+                <path d="m2.64 10.59 9-7.48a.48.48 0 0 1 .62 0l9 7.48a1.45 1.45 0 0 0 2.06-.22 1.52 1.52 0 0 0-.21-2.11l-9-7.49a3.41 3.41 0 0 0-4.32 0l-9 7.49a1.52 1.52 0 0 0-.21 2.11 1.45 1.45 0 0 0 2.06.22"/>
+                <path d="M22.28 22v-7a2.22 2.22 0 0 0-.73-1.59l-8.3-7a1.94 1.94 0 0 0-2.5 0l-8.3 7A2.22 2.22 0 0 0 1.72 15v7a2 2 0 0 0 2 2h5.34a1 1 0 0 0 1-1v-5.5a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1V23a1 1 0 0 0 1 1h5.38a2 2 0 0 0 1.84-2"/>
+              </svg>
+            </div>
+            <div class="p-3 bg-blue-50/60 border border-blue-100 rounded-xl flex flex-col items-center">
+              <span class="text-[10px] text-[#007AFF] font-bold mb-1.5">SF Symbol B</span>
+              <svg class="w-8 h-8 text-[#007AFF]" viewBox="0 0 24 24" fill="currentColor">
+                <path fill-rule="evenodd" clip-rule="evenodd" d="M12 2.15c-.4 0-.8.18-1.08.45L2.6 10.3c-.5.48-.52 1.27-.05 1.77.48.5 1.28.52 1.78.05L5 11.5V20c0 1.1.9 2 2 2h3.5c.28 0 .5-.22.5-.5V15.5c0-.83.67-1.5 1.5-1.5s1.5.67 1.5 1.5V21.5c0 .28.22.5.5.5H18c1.1 0 2-.9 2-2v-8.5l.67.62c.5.47 1.3.45 1.78-.05.47-.5.45-1.29-.05-1.77L13.08 2.6c-.28-.27-.68-.45-1.08-.45z"/>
+              </svg>
+            </div>
+          </div>
+          <div class="text-[10.5px] text-[#64748B] space-y-1">
+            <p><strong>الرمز الرسمي:</strong> <code class="text-[#007AFF]">house.fill</code></p>
+            <p><strong>المكسب البصري:</strong> كتلة مصمتة موحدة بدون فواصل السقف الزائدة، مع فتحة باب مقوسة ومريحة.</p>
+          </div>
+        </div>
+
+        <!-- Card 2: Workout -->
+        <div class="apple-card p-4 space-y-3">
+          <div class="flex items-center justify-between pb-2 border-b border-slate-100">
+            <span class="text-[12px] font-bold text-[#1C1C1E]">2. التمارين</span>
+            <span class="apple-badge bg-blue-50 text-[#007AFF] text-[9.5px]">iOS 16+</span>
+          </div>
+          <div class="grid grid-cols-2 gap-2 text-center">
+            <div class="p-3 bg-slate-50 rounded-xl flex flex-col items-center">
+              <span class="text-[10px] text-[#8E8E93] mb-1.5">Streamline A</span>
+              <svg class="w-8 h-8 text-slate-800" viewBox="0 4 24 16" fill="currentColor">
+                <rect x="7" y="10.5" width="10" height="3" rx="1.5"/>
+                <rect x="4.5" y="4.5" width="3" height="15" rx="1.5"/>
+                <rect x="1.75" y="6.5" width="2.25" height="11" rx="1.125"/>
+                <rect x="0.25" y="8.5" width="1.2" height="7" rx="0.6"/>
+                <rect x="16.5" y="4.5" width="3" height="15" rx="1.5"/>
+                <rect x="20" y="6.5" width="2.25" height="11" rx="1.125"/>
+                <rect x="22.55" y="8.5" width="1.2" height="7" rx="0.6"/>
+              </svg>
+            </div>
+            <div class="p-3 bg-blue-50/60 border border-blue-100 rounded-xl flex flex-col items-center">
+              <span class="text-[10px] text-[#007AFF] font-bold mb-1.5">SF Symbol B</span>
+              <svg class="w-8 h-8 text-[#007AFF]" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M6 6.5C6 5.67 5.33 5 4.5 5S3 5.67 3 6.5v11C3 18.33 3.67 19 4.5 19S6 18.33 6 17.5v-1h1.5c.28 0 .5-.22.5-.5v-7c0-.28-.22-.5-.5-.5H6v-2zm12 0c0-.83.67-1.5 1.5-1.5s1.5.67 1.5 1.5v11c0 .83-.67 1.5-1.5 1.5s-1.5-.67-1.5-1.5v-1h-1.5c-.28 0-.5-.22-.5-.5v-7c0-.28.22-.5.5-.5H18v-2zm-2 4.5c0-.28-.22-.5-.5-.5h-7c-.28 0-.5.22-.5.5v2c0 .28.22.5.5.5h7c.28 0 .5-.22.5-.5v-2zM2 8.5C2 7.95 1.55 7.5 1 7.5S0 7.95 0 8.5v7c0 .55.45 1 1 1s1-.45 1-1v-7zm22 0c0-.55-.45-1-1-1s-1 .45-1 1v7c0 .55.45 1 1 1s1-.45 1-1v-7z"/>
+              </svg>
+            </div>
+          </div>
+          <div class="text-[10.5px] text-[#64748B] space-y-1">
+            <p><strong>الرمز الرسمي:</strong> <code class="text-[#007AFF]">dumbbell.fill</code></p>
+            <p><strong>المكسب البصري:</strong> تحول من 7 مستطيلات مبعثرة إلى أوزان ميكانيكية مصمتة صريحة تتبع Apple Fitness+.</p>
+          </div>
+        </div>
+
+        <!-- Card 3: Nutrition -->
+        <div class="apple-card p-4 space-y-3">
+          <div class="flex items-center justify-between pb-2 border-b border-slate-100">
+            <span class="text-[12px] font-bold text-[#1C1C1E]">3. التغذية</span>
+            <span class="apple-badge bg-emerald-50 text-emerald-700 text-[9.5px]">Custom SF Salad</span>
+          </div>
+          <div class="grid grid-cols-2 gap-2 text-center">
+            <div class="p-3 bg-slate-50 rounded-xl flex flex-col items-center">
+              <span class="text-[10px] text-[#8E8E93] mb-1.5">Streamline A</span>
+              <svg class="w-8 h-8 text-slate-800" viewBox="0 3.0 24 22" fill="currentColor">
+                <path d="M12 8.75a1 1 0 0 1-.68-.27.9.9 0 0 1 0-1.3 1.5 1.5 0 0 0 .47-1.08 1.47 1.47 0 0 0-.47-1.1 3.32 3.32 0 0 1-1-2.38 3.32 3.32 0 0 1 1-2.38 1 1 0 0 1 1.36 0 .9.9 0 0 1 0 1.3 1.5 1.5 0 0 0-.47 1.08 1.45 1.45 0 0 0 .47 1.07 3.29 3.29 0 0 1 0 4.76 1 1 0 0 1-.68.3m0 1.75c-2.81 0-12 .23-12 3.25C0 19.41 5.37 24 12 24s12-4.59 12-10.25c0-3.02-9.19-3.25-12-3.25m0 2a32.6 32.6 0 0 1 9 1 .25.25 0 0 1 0 .5 32.6 32.6 0 0 1-9 1 32.6 32.6 0 0 1-9-1 .25.25 0 0 1 0-.48 32.6 32.6 0 0 1 9-1.02M7.26 6.65a.35.35 0 0 1-.06.4 1 1 0 0 0 .7 1.7 1 1 0 0 0 .71-.29 2.36 2.36 0 0 0 .15-3.22 4 4 0 0 1-.21-.38.35.35 0 0 1 .06-.4 1 1 0 0 0 0-1.41 1 1 0 0 0-1.41 0 2.36 2.36 0 0 0-.15 3.22 4 4 0 0 1 .21.38m8.19 0a.35.35 0 0 1-.06.4 1 1 0 0 0 .7 1.7 1 1 0 0 0 .71-.29 2.36 2.36 0 0 0 .2-3.22 4 4 0 0 1-.21-.38.35.35 0 0 1 .06-.4 1 1 0 0 0 0-1.41 1 1 0 0 0-1.41 0 2.35 2.35 0 0 0-.15 3.22 4 4 0 0 1 .16.38"/>
+              </svg>
+            </div>
+            <div class="p-3 bg-blue-50/60 border border-blue-100 rounded-xl flex flex-col items-center">
+              <span class="text-[10px] text-[#007AFF] font-bold mb-1.5">SF Symbol B</span>
+              <svg class="w-8 h-8 text-[#007AFF]" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M7.8 4.2C8.3 2.5 10 1.2 12 1.2c1.4 0 2.6.7 3.4 1.8 1.9-.3 3.6.6 4.4 2.2.8 1.6.4 3.7-1 4.9-.5.4-1.1.7-1.7.9-1.3.4-2.7.3-3.9-.2-.6-.3-1.1-.7-1.5-1.2-.5.7-1.3 1.2-2.2 1.4-.8.2-1.6.1-2.3-.2C7.3 10.2 6.4 9 6.2 7.6c-.2-1.3.3-2.6 1.2-3.4h.4zm4.2-.8c-.8 0-1.5.5-1.8 1.2-.3.7-.2 1.5.3 2.1.5.6 1.3.9 2.1.8.8-.1 1.5-.6 1.8-1.3.3-.7.2-1.5-.3-2.1-.5-.5-1.2-.7-2.1-.7z"/>
+                <path d="M2 12.2c0-.66.54-1.2 1.2-1.2h17.6c.66 0 1.2.54 1.2 1.2 0 5.4-4.3 9.8-9.7 9.8-5.4 0-9.7-4.4-9.7-9.8h-.6z"/>
+              </svg>
+            </div>
+          </div>
+          <div class="text-[10.5px] text-[#64748B] space-y-1">
+            <p><strong>الرمز المخصص:</strong> <code class="text-[#007AFF]">salad.bowl.fill</code></p>
+            <p><strong>المكسب البصري:</strong> وعاء سلطة خضراء صحية بدون شوكة وسكينة وبدون خطوط بخار ساخنة مشوشة.</p>
+          </div>
+        </div>
+
+        <!-- Card 4: Progress -->
+        <div class="apple-card p-4 space-y-3">
+          <div class="flex items-center justify-between pb-2 border-b border-slate-100">
+            <span class="text-[12px] font-bold text-[#1C1C1E]">4. المتابعة</span>
+            <span class="apple-badge bg-blue-50 text-[#007AFF] text-[9.5px]">iOS 16+</span>
+          </div>
+          <div class="grid grid-cols-2 gap-2 text-center">
+            <div class="p-3 bg-slate-50 rounded-xl flex flex-col items-center">
+              <span class="text-[10px] text-[#8E8E93] mb-1.5">Streamline A</span>
+              <svg class="w-8 h-8 text-slate-800" viewBox="0 1 24 23" fill="currentColor">
+                <path d="M20.5 2h-5a.27.27 0 0 1-.21-.12 3.82 3.82 0 0 0-6.58 0A.27.27 0 0 1 8.5 2h-5A1.5 1.5 0 0 0 2 3.5v19A1.5 1.5 0 0 0 3.5 24h17a1.5 1.5 0 0 0 1.5-1.5v-19A1.5 1.5 0 0 0 20.5 2M19 16.26a2.5 2.5 0 0 1-.6 1.63l-1.92 2.24a2.52 2.52 0 0 1-1.9.87H5.5a.5.5 0 0 1-.5-.5v-15a.5.5 0 0 1 .5-.5h13a.5.5 0 0 1 .5.5Z"/>
+                <path d="m14.75 8.66-3.89 5.18a.24.24 0 0 1-.37 0l-1.82-1.79a1.25 1.25 0 0 0-1.77 1.77L9.07 16a2.32 2.32 0 0 0 3.5-.25l4.18-5.57a1.25 1.25 0 0 0-2-1.5Z"/>
+              </svg>
+            </div>
+            <div class="p-3 bg-blue-50/60 border border-blue-100 rounded-xl flex flex-col items-center">
+              <span class="text-[10px] text-[#007AFF] font-bold mb-1.5">SF Symbol B</span>
+              <svg class="w-8 h-8 text-[#007AFF]" viewBox="0 0 24 24" fill="currentColor">
+                <path fill-rule="evenodd" clip-rule="evenodd" d="M18.5 2H15.8C15.4.8 14.3 0 13 0h-2C9.7 0 8.6.8 8.2 2H5.5C4.1 2 3 3.1 3 4.5v16C3 21.9 4.1 23 5.5 23h13c1.4 0 2.5-1.1 2.5-2.5v-16C21 3.1 19.9 2 18.5 2zM12 1.6c.6 0 1.1.4 1.2 1H10.8c.1-.6.6-1 1.2-1zM7.5 9a1 1 0 1 0 0-2 1 1 0 0 0 0 2zm3-1.6a.8.8 0 0 0 0 1.6h6a.8.8 0 0 0 0-1.6h-6zm-3 5.6a1 1 0 1 0 0-2 1 1 0 0 0 0 2zm3-1.6a.8.8 0 0 0 0 1.6h6a.8.8 0 0 0 0-1.6h-6zm-3 5.6a1 1 0 1 0 0-2 1 1 0 0 0 0 2zm3-1.6a.8.8 0 0 0 0 1.6h4.5a.8.8 0 0 0 0-1.6h-4.5z"/>
+              </svg>
+            </div>
+          </div>
+          <div class="text-[10.5px] text-[#64748B] space-y-1">
+            <p><strong>الرمز الرسمي:</strong> <code class="text-[#007AFF]">list.clipboard.fill</code></p>
+            <p><strong>المكسب البصري:</strong> لوحة متابعة مصمتة بـ 3 أسطر فراغية منتظمة تعبر عن قائمة التقييم الطبي الدورية.</p>
+          </div>
+        </div>
+
+        <!-- Card 5: Account -->
+        <div class="apple-card p-4 space-y-3">
+          <div class="flex items-center justify-between pb-2 border-b border-slate-100">
+            <span class="text-[12px] font-bold text-[#1C1C1E]">5. حسابي</span>
+            <span class="apple-badge bg-blue-50 text-[#007AFF] text-[9.5px]">iOS 13+</span>
+          </div>
+          <div class="grid grid-cols-2 gap-2 text-center">
+            <div class="p-3 bg-slate-50 rounded-xl flex flex-col items-center">
+              <span class="text-[10px] text-[#8E8E93] mb-1.5">Streamline A</span>
+              <svg class="w-8 h-8 text-slate-800" viewBox="0 0 14 14" fill="currentColor">
+                <path fill-rule="evenodd" clip-rule="evenodd" d="M7 14c4.48 0 7-2.52 7-7s-2.52-7-7-7-7 2.52-7 7 2.52 7 7 7m3.637-2.471A4.12 4.12 0 0 0 7 9.354a4.13 4.13 0 0 0-3.636 2.175c.832.598 2.016.971 3.636.971s2.804-.373 3.637-.971m-1.282-6.26c0 1.507-.848 2.356-2.356 2.356-1.507 0-2.355-.849-2.355-2.356 0-1.508.848-2.356 2.355-2.356s2.356.848 2.356 2.356"/>
+              </svg>
+            </div>
+            <div class="p-3 bg-blue-50/60 border border-blue-100 rounded-xl flex flex-col items-center">
+              <span class="text-[10px] text-[#007AFF] font-bold mb-1.5">SF Symbol B</span>
+              <svg class="w-8 h-8 text-[#007AFF]" viewBox="0 0 24 24" fill="currentColor">
+                <path fill-rule="evenodd" clip-rule="evenodd" d="M12 0C5.37 0 0 5.37 0 12s5.37 12 12 12 12-5.37 12-12S18.63 0 12 0zm0 5.5a3.5 3.5 0 1 0 0 7 3.5 3.5 0 0 0 0-7zm-6.2 13.3c.7-2.6 3.2-4.3 6.2-4.3s5.5 1.7 6.2 4.3C16.4 20.3 14.3 21 12 21s-4.4-.7-6.2-2.2z"/>
+              </svg>
+            </div>
+          </div>
+          <div class="text-[10.5px] text-[#64748B] space-y-1">
+            <p><strong>الرمز الرسمي:</strong> <code class="text-[#007AFF]">person.crop.circle.fill</code></p>
+            <p><strong>المكسب البصري:</strong> ضبط شبكة الـ 24×24 ليتطابق مع باقي الأيقونات بدلاً من مقاس 14×14 القديم.</p>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ============================================================== -->
+    <!-- 3. CROSS-PLATFORM COMPATIBILITY & LICENSING MATRIX            -->
+    <!-- ============================================================== -->
+    <section class="apple-card p-6 space-y-4">
+      <div>
+        <h2 class="text-lg font-black text-[#1C1C1E]">3. تقييم التراخيص والتوافق بين iOS وAndroid (Engineering Assessment)</h2>
+        <p class="text-xs text-[#8E8E93]">دراسة معمقة للمسارات المتاحة لاختيار الحل الأضمن قانونياً وبصرياً للتطبيق.</p>
+      </div>
+
+      <div class="overflow-x-auto">
+        <table class="w-full text-right text-xs border-collapse">
+          <thead>
+            <tr class="bg-slate-50 border-b border-slate-200 text-[#475569]">
+              <th class="p-3 font-bold">الخيار الهندسي</th>
+              <th class="p-3 font-bold">التوافق القانوني والترخيص</th>
+              <th class="p-3 font-bold">تطابق المظهر بين Android وiOS</th>
+              <th class="p-3 font-bold">أيقونة Salad Bowl</th>
+              <th class="p-3 font-bold">التقييم الفني النهائي</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-slate-100">
+            <tr>
+              <td class="p-3 font-bold text-[#1C1C1E]">1. تضمين خط SF Symbols الرسمي على أندرويد</td>
+              <td class="p-3 text-red-600 font-semibold">مخالف لصريح ترخيص Apple (ممنوع تشغيله خارج منتجات أبل)</td>
+              <td class="p-3 text-red-600">مخاطرة رفض في متجر Google Play</td>
+              <td class="p-3 text-slate-500">غير موجود في خط أبل</td>
+              <td class="p-3"><span class="apple-badge bg-red-50 text-red-600 border border-red-200">مستبعد تماماً</span></td>
+            </tr>
+            <tr>
+              <td class="p-3 font-bold text-[#1C1C1E]">2. الاعتماد على حزمة cupertino_icons</td>
+              <td class="p-3 text-emerald-600 font-semibold">مرخص بالكامل (MIT / Flutter)</td>
+              <td class="p-3 text-amber-600">محدود (نسخ قديمة من iOS 13/14)</td>
+              <td class="p-3 text-red-600 font-semibold">مفقود (سيلزم خلط مكتبات أخرى)</td>
+              <td class="p-3"><span class="apple-badge bg-amber-50 text-amber-700 border border-amber-200">غير متجانس</span></td>
+            </tr>
+            <tr class="bg-blue-50/40">
+              <td class="p-3 font-bold text-[#007AFF]">3. نظام المتجهات الموحدة (Unified Custom SVGs)</td>
+              <td class="p-3 text-emerald-600 font-semibold">100% قانوني ومرخص للمنظومة بدون أي حقوق مقيدة</td>
+              <td class="p-3 text-emerald-600 font-bold">تطابق بياني وتفاعلي 100% على Android وiOS والويب</td>
+              <td class="p-3 text-emerald-600 font-bold">رسم مخصص نقي بنفس لغة Apple</td>
+              <td class="p-3"><span class="apple-badge bg-blue-50 text-[#007AFF] border border-blue-200">الخيار الموصى به</span></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="bg-[#F8FAFC] rounded-xl p-3.5 border border-slate-200 text-xs text-[#48484A] leading-relaxed">
+        <strong>الخلاصة الفنية:</strong> الخيار رقم (3) يمنحنا نفس الروح البصرية الفاخرة لـ Apple SF Symbols في Optical Weight ونعومة الحواف، مع ضمان سلامة الملكية الفكرية، وظهور الأيقونات الخمسة (بما فيها وعاء السلطة المخصص) بنفس الدقة التامة والحدة على هواتف Samsung وPixel وiPhone بدون أي اعتماديات خارجية أو تشوه بصري.
+      </div>
+    </section>
+
+  </main>
+
+  <script>
+    let activeTab = 0; // 0 to 4
+    let currentWidth = 390;
+
+    const tabsMeta = [
+      { id: 0, name: 'اليوم', color: '#007AFF' },
+      { id: 1, name: 'التمارين', color: '#007AFF' },
+      { id: 2, name: 'التغذية', color: '#007AFF' },
+      { id: 3, name: 'المتابعة', color: '#007AFF' },
+      { id: 4, name: 'حسابي', color: '#007AFF' }
+    ];
+
+    function setActiveTab(idx) {
+      activeTab = idx;
+
+      // Update control buttons
+      for (let i = 0; i < 5; i++) {
+        const btn = document.getElementById(`btn-tab-${i}`);
+        if (btn) {
+          if (i === idx) {
+            btn.className = "px-3 py-1 rounded-full text-[11px] font-bold bg-white text-[#007AFF] shadow-2xs transition-all";
+          } else {
+            btn.className = "px-3 py-1 rounded-full text-[11px] font-semibold text-[#8E8E93] hover:text-[#1C1C1E] transition-all";
+          }
+        }
+      }
+
+      // Update Version A Tab items & Liquid Lens
+      updateNavState('a', idx);
+      // Update Version B Tab items & Liquid Lens
+      updateNavState('b', idx);
+    }
+
+    function updateNavState(version, idx) {
+      const lens = document.getElementById(`liquid-lens-${version}`);
+      const container = document.getElementById(`nav-container-${version}`);
+      if (!lens || !container) return;
+
+      const navEl = container.querySelector('nav');
+      const tabs = container.querySelectorAll('.nav-tab-item');
+      if (!tabs[idx]) return;
+
+      const targetTab = tabs[idx];
+      const navRect = navEl.getBoundingClientRect();
+      const tabRect = targetTab.getBoundingClientRect();
+
+      // In RTL or LTR coordinate relative to nav
+      const leftOffset = tabRect.left - navRect.left + (tabRect.width - 66) / 2;
+      lens.style.left = `${leftOffset}px`;
+      lens.style.width = '66px';
+
+      // Update text/icon colors
+      for (let i = 0; i < 5; i++) {
+        const wrapper = document.getElementById(`tab-${version}-${i}`);
+        if (!wrapper) continue;
+
+        if (i === idx) {
+          wrapper.className = "tab-content-wrapper text-[#007AFF]";
+          const label = wrapper.querySelector('span');
+          if (label) label.className = "text-[10px] font-black tracking-tight leading-none text-[#007AFF]";
+        } else {
+          wrapper.className = "tab-content-wrapper text-[#8E8E93] hover:text-[#1C1C1E]";
+          const label = wrapper.querySelector('span');
+          if (label) label.className = "text-[10px] font-semibold tracking-tight leading-none text-[#8E8E93]";
+        }
+      }
+    }
+
+    function setViewportWidth(w) {
+      currentWidth = parseInt(w);
+      const containerA = document.getElementById('nav-container-a');
+      const containerB = document.getElementById('nav-container-b');
+
+      const widthMap = {
+        375: '343px',
+        390: '358px',
+        430: '398px'
+      };
+
+      if (containerA) containerA.style.width = widthMap[currentWidth];
+      if (containerB) containerB.style.width = widthMap[currentWidth];
+
+      ['375', '390', '430'].forEach(width => {
+        const btn = document.getElementById(`btn-w-${width}`);
+        if (btn) {
+          if (width == w) {
+            btn.className = "px-3 py-1 rounded-full text-[11px] font-bold bg-white text-[#007AFF] shadow-2xs transition-all";
+          } else {
+            btn.className = "px-3 py-1 rounded-full text-[11px] font-semibold text-[#8E8E93] hover:text-[#1C1C1E] transition-all";
+          }
+        }
+      });
+
+      setTimeout(() => {
+        setActiveTab(activeTab);
+      }, 50);
+    }
+
+    // Initialize
+    window.addEventListener('load', () => {
+      setActiveTab(0);
+      window.addEventListener('resize', () => setActiveTab(activeTab));
+    });
+  </script>
+</body>
+</html>

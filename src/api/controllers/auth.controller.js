@@ -6,6 +6,7 @@ import { User } from "../models/index.js";
 import { recordFailedAttempt, resetAttempts } from "../middlewares/rateLimiter.js";
 import { recordAuditEvent } from "../services/auditLog.service.js";
 import { generateCsrfToken } from "../middlewares/csrfProtection.js";
+import { serializeUserUnitPreferences, parseUserUnitPreferences } from "../../../frontend/src/utils/unitConverter.js";
 
 const generateToken = (userOrId, tokenVersion = 1) => {
   const secret = process.env.JWT_SECRET;
@@ -315,6 +316,30 @@ export const getCsrfTokenController = (req, res) => {
   return res.status(200).json({
     csrf_token: csrfToken
   });
+};
+
+/**
+ * تحديث تفضيلات وحدات القياس للمتدرب (أوزان التمارين، وزن الجسم، المقاسات)
+ */
+export const updatePreferences = async (req, res) => {
+  try {
+    const user = await User.findByPk(req.user.id);
+    if (!user) return res.status(404).json({ error: "المستخدم غير موجود" });
+
+    const newPrefs = req.body || {};
+    user.notes = serializeUserUnitPreferences(user.notes, newPrefs);
+    await user.save();
+
+    return res.status(200).json({
+      success: true,
+      message: "تم حفظ تفضيلات وحدات القياس بنجاح",
+      preferences: parseUserUnitPreferences(user.notes),
+      user,
+    });
+  } catch (err) {
+    console.error("updatePreferences error:", err);
+    return res.status(500).json({ error: "Internal server error" });
+  }
 };
 
 

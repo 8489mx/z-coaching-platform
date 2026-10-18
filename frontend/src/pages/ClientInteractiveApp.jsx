@@ -90,7 +90,7 @@ export default function ClientInteractiveApp() {
   } = useClientInteractiveData();
 
   return (
-    <div className="min-h-screen bg-slate-100 flex justify-center font-sans" dir="rtl" style={{ fontFamily: 'Alexandria, Cairo, sans-serif', width: '100%', overflowX: 'hidden' }}>
+    <div className="min-h-screen bg-slate-100 flex justify-center font-sans" dir="rtl" style={{ fontFamily: "'Segoe UI', 'IBM Plex Sans Arabic', -apple-system, BlinkMacSystemFont, 'Tahoma', sans-serif", width: '100%', overflowX: 'hidden' }}>
       
       {/* Mobile Shell Wrapper */}
       <div 

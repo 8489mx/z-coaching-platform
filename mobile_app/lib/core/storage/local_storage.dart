@@ -47,6 +47,37 @@ class LocalStorage {
     await _prefs?.remove(ApiConstants.activeProgramCacheKey);
   }
 
+  // --- تفضيلات وحدات القياس (Measurement Units Preferences) ---
+
+  Future<void> saveUnitPreferences(Map<String, dynamic> prefs) async {
+    await _prefs?.setString('unit_preferences', jsonEncode(prefs));
+  }
+
+  Map<String, dynamic> getUnitPreferences() {
+    final raw = _prefs?.getString('unit_preferences');
+    if (raw == null || raw.isEmpty) {
+      return {
+        'exercise_weight_unit': 'kg',
+        'body_weight_unit': 'kg',
+        'measurement_unit': 'cm',
+      };
+    }
+    try {
+      final map = jsonDecode(raw) as Map<String, dynamic>;
+      return {
+        'exercise_weight_unit': map['exercise_weight_unit'] == 'lb' ? 'lb' : 'kg',
+        'body_weight_unit': map['body_weight_unit'] == 'lb' ? 'lb' : 'kg',
+        'measurement_unit': map['measurement_unit'] == 'in' ? 'in' : 'cm',
+      };
+    } catch (_) {
+      return {
+        'exercise_weight_unit': 'kg',
+        'body_weight_unit': 'kg',
+        'measurement_unit': 'cm',
+      };
+    }
+  }
+
   // --- التخزين المؤقت للبرنامج النشط (Active Program Offline Cache) ---
 
   Future<void> cacheActiveProgram(Map<String, dynamic> programData) async {

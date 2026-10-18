@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Protrusion Violet Capsule Reference Board</title>
+  <script src="https://www.gstatic.com/antigravity/web/dev/tailwindcss.min.js"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    * {
+      font-family: 'IBM Plex Sans Arabic', -apple-system, sans-serif;
+      box-sizing: border-box;
+    }
+    .font-inter {
+      font-family: 'Inter', -apple-system, sans-serif;
+    }
+  </style>
+</head>
+<body class="bg-[#F8FAFC] p-8 text-[#0F172A]">
+  <div class="max-w-4xl mx-auto space-y-6">
+    
+    <!-- Header -->
+    <div class="bg-white rounded-[20px] p-6 border border-[#E2E8F0] shadow-sm flex items-center justify-between">
+      <div>
+        <div class="inline-block px-3 py-1 bg-[#EDE9FE] text-[#7B4FFE] text-xs font-bold rounded-full mb-2">تطبيق البروز الهيكلي لليوم المختار باللون البنفسجي</div>
+        <h1 class="text-xl font-bold text-[#0F172A]">محدد الأيام (Date Selector) مع ميزة البروز الرأسي واللون البنفسجي المعتمد</h1>
+        <p class="text-xs text-[#64748B] mt-1">بروز الكبسولة المختارة للأعلى والأسفل عن باقي الأيام مع الحفاظ التام على هوية اللون البنفسجي #7B4FFE</p>
+      </div>
+      <div class="text-left font-inter font-bold text-lg text-[#7B4FFE] bg-[#F5F3FF] px-4 py-2 rounded-xl border border-[#DDD6FE]">
+        #7B4FFE
+      </div>
+    </div>
+
+    <!-- 2 Column Comparison -->
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 items-start">
+      
+      <!-- User Reference Image for Protrusion -->
+      <div class="bg-white rounded-[20px] p-6 border border-[#E2E8F0] shadow-sm space-y-4">
+        <div class="flex items-center justify-between">
+          <span class="text-sm font-bold text-[#0F172A]">المرجع المطلوب: البروز الرأسي لليوم المختار</span>
+          <span class="text-xs text-[#64748B] bg-[#F1F5F9] px-2.5 py-1 rounded-full font-medium">مرجع البروز</span>
+        </div>
+        <div class="bg-[#F8FAFC] p-6 rounded-[16px] flex items-center justify-center min-h-[160px] border border-[#E2E8F0]">
+          <img src="C:/Users/Fannan/.gemini/antigravity/brain/4e0e0f3a-2130-4f00-8c43-e6b3dc5f46c2/.user_uploaded/media_1791822920999_d3599dd8.png" class="max-w-full rounded-[10px] shadow-sm" alt="Protrusion Reference">
+        </div>
+        <div class="text-xs text-[#64748B] space-y-1.5 leading-relaxed bg-[#F8FAFC] p-3.5 rounded-[12px] border border-[#F1F5F9]">
+          <div class="font-bold text-[#334155]">توجيه المستخدم الدقيق:</div>
+          <div>"وعايز اليوم اللى اختاره يبقي بارز عن الباقي شبهه كده خد من ده البروز بس متاخدش حاجه تانيه"</div>
+          <div class="mt-2 text-[#7B4FFE] font-semibold">• الكبسولة المختارة أطول وتبرز للأعلى والأسفل عن باقي الأيام المجاورة.</div>
+        </div>
+      </div>
+
+      <!-- Live Implementation -->
+      <div class="bg-white rounded-[20px] p-6 border border-[#E2E8F0] shadow-sm space-y-4">
+        <div class="flex items-center justify-between">
+          <span class="text-sm font-bold text-[#0F172A]">التنفيذ الحي في محاكي التطبيق</span>
+          <span class="text-xs text-[#7B4FFE] bg-[#EDE9FE] px-2.5 py-1 rounded-full font-bold">المحاكي الفعلي</span>
+        </div>
+        <div class="bg-[#F8FAFC] p-4 rounded-[16px] flex items-center justify-center min-h-[160px] border border-[#E2E8F0]">
+          <img src="C:/Users/Fannan/.gemini/antigravity/brain/4e0e0f3a-2130-4f00-8c43-e6b3dc5f46c2/visual_audit/new_capsule_date_selector_tue_active.png" class="max-w-full rounded-[14px] shadow-sm max-h-[340px]" alt="Implemented Design">
+        </div>
+        <div class="text-xs text-[#64748B] space-y-1.5 leading-relaxed bg-[#F8FAFC] p-3.5 rounded-[12px] border border-[#F1F5F9]">
+          <div class="font-bold text-[#334155]">ما تم تطبيقه بالمليمتر:</div>
+          <div>• اليوم المختار (الثلاثاء) يبرز للأعلى والأسفل (74px مقابل 64px للأيام العادية).</div>
+          <div>• اللون البنفسجي المعتمد #7B4FFE للكبسولة واسم اليوم أبيض ناصع.</div>
+          <div>• قرص أبيض ناصع في الأسفل مع رقم اليوم بالبنفسجي #7B4FFE.</div>
+          <div>• انتقال فوري وسلس للبروز عند النقر على أي يوم من الأسبوع.</div>
+        </div>
+      </div>
+
+    </div>
+
+  </div>
+</body>
+</html>

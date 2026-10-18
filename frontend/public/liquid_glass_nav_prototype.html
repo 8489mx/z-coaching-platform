@@ -1,0 +1,712 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Liquid Glass Navigation — Interactive Prototype</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --brand-primary: #0284C7;
+      --brand-cyan: #58B4E5;
+      --charcoal: #0F172A;
+      --muted: #64748B;
+    }
+    body {
+      font-family: 'Segoe UI', 'IBM Plex Sans Arabic', -apple-system, BlinkMacSystemFont, sans-serif;
+      background: linear-gradient(135deg, #F1F5F9 0%, #E2E8F0 100%);
+      color: #0F172A;
+      min-height: 100vh;
+      margin: 0;
+      padding: 0;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* Floating Capsule Container */
+    .glass-nav-container {
+      background: rgba(255, 255, 255, 0.88);
+      backdrop-filter: blur(24px) saturate(180%);
+      -webkit-backdrop-filter: blur(24px) saturate(180%);
+      border: 1px solid rgba(255, 255, 255, 0.95);
+      border-radius: 34px;
+      box-shadow: 
+        0 20px 40px -10px rgba(15, 23, 42, 0.12),
+        0 4px 14px -2px rgba(15, 23, 42, 0.05),
+        inset 0 1px 1px 0 rgba(255, 255, 255, 0.9);
+      position: relative;
+      overflow: visible;
+      user-select: none;
+    }
+
+    /* Liquid Glass Selection Lens */
+    .liquid-lens {
+      position: absolute;
+      top: 6px;
+      height: 52px;
+      border-radius: 26px;
+      pointer-events: none;
+      z-index: 10;
+      /* Active moving liquid glass droplet */
+      background: radial-gradient(
+        ellipse 90% 80% at 50% 30%,
+        rgba(255, 255, 255, 0.70) 0%,
+        rgba(235, 242, 250, 0.40) 65%,
+        rgba(203, 213, 225, 0.25) 100%
+      );
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+      border: 1.3px solid rgba(255, 255, 255, 0.95);
+      box-shadow: 
+        0 10px 25px -4px rgba(15, 23, 42, 0.12),
+        0 3px 10px -2px rgba(15, 23, 42, 0.06),
+        inset 0 1.5px 2px 0 rgba(255, 255, 255, 1.0),
+        inset 0 -1.5px 2px 0 rgba(15, 23, 42, 0.04);
+      transform-origin: center center;
+      transition: background 0.22s ease, border-color 0.22s ease, box-shadow 0.22s ease;
+      will-change: transform, left, width;
+    }
+
+    /* Settled state: Calm, soft resting pill (Matching Frames 01, 05, 09) */
+    .liquid-lens.settled {
+      background: rgba(226, 232, 240, 0.70);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      border: 1px solid rgba(255, 255, 255, 0.65);
+      box-shadow: 0 2px 6px -1px rgba(15, 23, 42, 0.04);
+    }
+
+    /* Traveling glass bubble highlight sheen */
+    .liquid-lens::before {
+      content: '';
+      position: absolute;
+      top: 2px;
+      left: 15%;
+      right: 15%;
+      height: 38%;
+      border-radius: 20px;
+      background: linear-gradient(
+        to bottom,
+        rgba(255, 255, 255, 0.95) 0%,
+        rgba(255, 255, 255, 0.0) 100%
+      );
+      opacity: 1;
+      transition: opacity 0.2s ease;
+      pointer-events: none;
+    }
+
+    .liquid-lens.settled::before {
+      opacity: 0;
+    }
+
+    /* Tab item wrapper */
+    .nav-tab-item {
+      position: relative;
+      flex: 1;
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      z-index: 20;
+      cursor: pointer;
+      -webkit-tap-highlight-color: transparent;
+      outline: none;
+    }
+
+    /* Tab item content (icon + label) that gets magnified/refracted */
+    .tab-content-wrapper {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      transform-origin: center center;
+      transition: color 0.15s ease;
+      will-change: transform;
+    }
+
+    /* Device frame shadow */
+    .phone-shadow {
+      box-shadow: 
+        0 25px 60px -15px rgba(15, 23, 42, 0.25),
+        0 0 0 12px #1E293B,
+        0 0 0 14px #475569;
+    }
+
+    /* Custom range slider styling */
+    input[type=range] {
+      accent-color: #0284C7;
+    }
+  </style>
+</head>
+<body class="p-4 md:p-8 flex flex-col items-center justify-center min-h-screen">
+
+  <div class="w-full max-w-4xl flex flex-col items-center gap-6">
+
+    <!-- Top Executive Header -->
+    <header class="text-center space-y-2">
+      <div class="flex items-center justify-center gap-2">
+        <a href="/preview.html" class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-slate-900 hover:bg-slate-800 text-sky-400 hover:text-white text-xs font-bold shadow-md transition-all">
+          <span>الاستوديو المركزي الموحد (جميع المعاينات في رابط واحد)</span>
+          <span>&larr;</span>
+        </a>
+      </div>
+      <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-sky-100 text-sky-800 text-xs font-semibold">
+        <span class="w-2 h-2 rounded-full bg-sky-500 animate-pulse"></span>
+        <span>Liquid Glass Refractive Selection Lens — Interactive Prototype</span>
+      </div>
+      <h1 class="text-2xl md:text-3xl font-extrabold text-[#0F172A] tracking-tight">
+        شريط التنقل بالعدسة الزجاجية السائلة وانكسار الأيقونات
+      </h1>
+      <p class="text-xs md:text-sm text-[#64748B] max-w-xl mx-auto">
+        محاكاة حركية وفيزيائية حية متطابقة مع Frames 01 إلى 09: تمدد الفقاعة، انكسار وتكبير العناصر العابرة، وانتقال Spring Physics ناعم.
+      </p>
+    </header>
+
+    <!-- Main Workspace Grid: Phone Mockup + Control Studio -->
+    <div class="w-full grid grid-cols-1 lg:grid-cols-12 gap-8 items-start justify-center">
+
+      <!-- LEFT (Desktop) / TOP (Mobile): Phone Mockup (390px width) -->
+      <div class="lg:col-span-6 flex justify-center">
+        <div id="phone-shell" class="w-[390px] h-[780px] bg-slate-50 rounded-[48px] phone-shadow relative overflow-hidden flex flex-col select-none border-4 border-slate-900">
+          
+          <!-- Dynamic Island / Status Bar -->
+          <div class="absolute top-0 inset-x-0 h-11 px-7 flex items-center justify-between text-xs font-bold text-slate-800 z-40">
+            <span>09:41</span>
+            <div class="w-28 h-6 bg-slate-900 rounded-full flex items-center justify-center">
+              <div class="w-3 h-3 rounded-full bg-slate-800/80 mr-1.5"></div>
+            </div>
+            <div class="flex items-center gap-1.5 text-[11px]">
+              <span>5G</span>
+              <span>100%</span>
+            </div>
+          </div>
+
+          <!-- App Header -->
+          <div class="pt-12 px-5 pb-3 flex items-center justify-between z-30">
+            <div class="flex items-center gap-2.5">
+              <div class="w-9 h-9 rounded-full bg-[#58B4E5] text-white font-bold text-xs flex items-center justify-center shadow-xs">
+                أ.م
+              </div>
+              <div>
+                <span class="text-[10px] text-[#64748B] block">السبت، 10 أكتوبر 2026</span>
+                <h2 class="text-sm font-bold text-[#0F172A]">صباح الخير، أحمد</h2>
+              </div>
+            </div>
+            <span class="text-[10px] font-bold text-amber-700 bg-amber-50 border border-amber-200 px-2 py-0.5 rounded-full">MAX</span>
+          </div>
+
+          <!-- Phone Scroll Content Area (Simulated Background) -->
+          <div class="flex-1 overflow-y-auto px-4 pb-28 space-y-3">
+            
+            <!-- Week Strip -->
+            <div class="bg-white border border-slate-200/80 rounded-[18px] p-2.5 shadow-xs">
+              <div class="flex items-center justify-between text-xs pb-1 px-1">
+                <span class="font-bold text-slate-800">جدول الأسبوع</span>
+                <span class="text-[10px] text-sky-600 bg-sky-50 px-2 py-0.5 rounded-full font-semibold">الأسبوع 4 · تمرين 1 من 4</span>
+              </div>
+              <div class="flex justify-between gap-1 pt-1 text-center">
+                <div class="flex-1 py-1 rounded-[10px] bg-slate-900 text-white font-bold text-xs">
+                  <span class="text-[8px] opacity-75 block">السبت</span>10
+                </div>
+                <div class="flex-1 py-1 rounded-[10px] text-slate-500 font-semibold text-xs">
+                  <span class="text-[8px] opacity-75 block">الأحد</span>11
+                </div>
+                <div class="flex-1 py-1 rounded-[10px] text-slate-500 font-semibold text-xs">
+                  <span class="text-[8px] opacity-75 block">الإثنين</span>12
+                </div>
+                <div class="flex-1 py-1 rounded-[10px] text-slate-500 font-semibold text-xs">
+                  <span class="text-[8px] opacity-75 block">الثلاثاء</span>13
+                </div>
+                <div class="flex-1 py-1 rounded-[10px] text-slate-500 font-semibold text-xs">
+                  <span class="text-[8px] opacity-75 block">الأربعاء</span>14
+                </div>
+                <div class="flex-1 py-1 rounded-[10px] text-slate-500 font-semibold text-xs">
+                  <span class="text-[8px] opacity-75 block">الخميس</span>15
+                </div>
+                <div class="flex-1 py-1 rounded-[10px] text-slate-500 font-semibold text-xs">
+                  <span class="text-[8px] opacity-75 block">الجمعة</span>16
+                </div>
+              </div>
+            </div>
+
+            <!-- Card 1: Today Workout -->
+            <div class="bg-white border border-slate-200/80 border-r-[3.5px] border-r-sky-600 rounded-[18px] p-3 shadow-xs space-y-1.5">
+              <div class="flex justify-between items-center text-xs">
+                <span class="font-bold text-slate-900">تمرين اليوم</span>
+                <span class="text-[10px] font-semibold text-slate-500 bg-slate-100 px-2 py-0.5 rounded-full">تمرين 1 من 4</span>
+              </div>
+              <div class="flex justify-between items-center">
+                <div>
+                  <h3 class="text-sm font-bold text-slate-900">الصدر والبايسبس</h3>
+                  <p class="text-[11px] text-slate-500">5 تمارين · حوالي 45 دقيقة</p>
+                </div>
+                <button class="bg-slate-900 text-white text-xs font-semibold px-3 py-1.5 rounded-full">ابدأ التمرين &larr;</button>
+              </div>
+            </div>
+
+            <!-- Card 2: Nutrition Summary -->
+            <div class="bg-white border border-slate-200/80 border-r-[3.5px] border-r-amber-500 rounded-[18px] p-3 shadow-xs space-y-2">
+              <div class="flex justify-between items-center text-xs">
+                <span class="font-bold text-slate-900">التغذية</span>
+                <span class="text-sky-600 font-semibold text-[11px]">عرض الوجبات &larr;</span>
+              </div>
+              <div class="flex items-baseline justify-between">
+                <span class="text-lg font-extrabold text-slate-900">2,450 <span class="text-xs font-normal text-slate-500">سعرة</span></span>
+                <span class="text-[10px] font-semibold text-sky-700 bg-sky-50 px-2 py-0.5 rounded-full">الماء: 3.5 لتر</span>
+              </div>
+              <div class="grid grid-cols-3 gap-1.5 text-center">
+                <div class="bg-emerald-50 border border-emerald-100 rounded-[10px] py-1">
+                  <span class="text-[9px] text-emerald-700 block">بروتين</span>
+                  <span class="text-xs font-bold text-emerald-900">180 جم</span>
+                </div>
+                <div class="bg-sky-50 border border-sky-100 rounded-[10px] py-1">
+                  <span class="text-[9px] text-sky-700 block">كارب</span>
+                  <span class="text-xs font-bold text-sky-900">250 جم</span>
+                </div>
+                <div class="bg-amber-50 border border-amber-100 rounded-[10px] py-1">
+                  <span class="text-[9px] text-amber-700 block">دهون</span>
+                  <span class="text-xs font-bold text-amber-900">81 جم</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Card 3: Checkin Banner -->
+            <div class="bg-white border border-slate-200/80 border-r-[3.5px] border-r-emerald-500 rounded-[18px] p-3 shadow-xs space-y-1">
+              <div class="flex justify-between items-center text-xs">
+                <span class="font-bold text-slate-900">ميعاد المتابعة</span>
+                <span class="text-[10px] font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full">متبقي 6 أيام</span>
+              </div>
+              <h4 class="text-xs font-bold text-slate-900">الجمعة 16 أكتوبر 2026</h4>
+              <p class="text-[10px] text-slate-500">تسجيل المقاسات والصور متاح من صباح الجمعة حتى الأحد.</p>
+            </div>
+
+          </div>
+
+          <!-- ========================================================= -->
+          <!-- THE LIQUID GLASS FLOATING BOTTOM NAVIGATION BAR (CORE)    -->
+          <!-- ========================================================= -->
+          <div class="absolute bottom-4 inset-x-3.5 z-40">
+            <nav id="liquid-glass-nav" class="glass-nav-container h-[64px] px-1.5 py-1.5 flex items-center justify-between">
+              
+              <!-- The Animated Liquid Glass Selection Lens -->
+              <div id="liquid-lens" class="liquid-lens settled"></div>
+
+              <!-- Tab 0: اليوم (Index 0 in RTL = Rightmost) -->
+              <div class="nav-tab-item" onclick="triggerTabSelection(0)" data-index="0" aria-label="اليوم">
+                <div id="tab-content-0" class="tab-content-wrapper text-sky-600">
+                  <svg class="w-5 h-5 mb-0.5" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/>
+                  </svg>
+                  <span class="text-[10px] font-bold tracking-tight leading-none">اليوم</span>
+                </div>
+              </div>
+
+              <!-- Tab 1: التمارين (Index 1) -->
+              <div class="nav-tab-item" onclick="triggerTabSelection(1)" data-index="1" aria-label="التمارين">
+                <div id="tab-content-1" class="tab-content-wrapper text-slate-800">
+                  <svg class="w-5 h-5 mb-0.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M6 5v14M18 5v14M2 9v6M22 9v6M6 12h12"/>
+                  </svg>
+                  <span class="text-[10px] font-semibold text-slate-500 tracking-tight leading-none">التمارين</span>
+                </div>
+              </div>
+
+              <!-- Tab 2: التغذية (Index 2) -->
+              <div class="nav-tab-item" onclick="triggerTabSelection(2)" data-index="2" aria-label="التغذية">
+                <div id="tab-content-2" class="tab-content-wrapper text-slate-800">
+                  <svg class="w-5 h-5 mb-0.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M18 2v20M21 2v6a3 3 0 0 1-3 3M18 11v11M5 2v7a3 3 0 0 0 6 0V2M8 12v10"/>
+                  </svg>
+                  <span class="text-[10px] font-semibold text-slate-500 tracking-tight leading-none">التغذية</span>
+                </div>
+              </div>
+
+              <!-- Tab 3: المتابعة (Index 3 in RTL = Leftmost) -->
+              <div class="nav-tab-item" onclick="triggerTabSelection(3)" data-index="3" aria-label="المتابعة">
+                <div id="tab-content-3" class="tab-content-wrapper text-slate-800">
+                  <svg class="w-5 h-5 mb-0.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2"/>
+                    <rect x="9" y="3" width="6" height="4" rx="2"/>
+                    <path d="m9 14 2 2 4-4"/>
+                  </svg>
+                  <span class="text-[10px] font-semibold text-slate-500 tracking-tight leading-none">المتابعة</span>
+                </div>
+              </div>
+
+            </nav>
+          </div>
+
+          <!-- Home Indicator -->
+          <div class="absolute bottom-1 inset-x-0 h-2 flex items-center justify-center pointer-events-none z-50">
+            <div class="w-32 h-1 bg-slate-900/30 rounded-full"></div>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- RIGHT: Interactive Inspection Studio (مختبر التحكم والفحص الدقيق) -->
+      <div class="lg:col-span-6 bg-white border border-slate-200/90 rounded-[28px] p-5 shadow-sm space-y-5">
+        
+        <div class="border-b border-slate-100 pb-3">
+          <h3 class="text-base font-bold text-slate-900">مختبر الفيزياء والتحكم الحركي</h3>
+          <p class="text-xs text-slate-500 mt-0.5">تحكم في سرعة حركة العدسة، دقة الانكسار، ومعاينة الفريمات التسعة خطوة بخطوة.</p>
+        </div>
+
+        <!-- 1. Quick Tab Triggers -->
+        <div class="space-y-1.5">
+          <label class="text-xs font-bold text-slate-700 block">الانتقال السريع للتبويب:</label>
+          <div class="grid grid-cols-4 gap-2">
+            <button onclick="triggerTabSelection(0)" class="py-2 px-2.5 rounded-xl border border-slate-200 bg-slate-50 hover:bg-sky-50 hover:border-sky-300 text-xs font-bold text-slate-700 hover:text-sky-700 transition-all text-center">
+              اليوم (0)
+            </button>
+            <button onclick="triggerTabSelection(1)" class="py-2 px-2.5 rounded-xl border border-slate-200 bg-slate-50 hover:bg-sky-50 hover:border-sky-300 text-xs font-bold text-slate-700 hover:text-sky-700 transition-all text-center">
+              التمارين (1)
+            </button>
+            <button onclick="triggerTabSelection(2)" class="py-2 px-2.5 rounded-xl border border-slate-200 bg-slate-50 hover:bg-sky-50 hover:border-sky-300 text-xs font-bold text-slate-700 hover:text-sky-700 transition-all text-center">
+              التغذية (2)
+            </button>
+            <button onclick="triggerTabSelection(3)" class="py-2 px-2.5 rounded-xl border border-slate-200 bg-slate-50 hover:bg-sky-50 hover:border-sky-300 text-xs font-bold text-slate-700 hover:text-sky-700 transition-all text-center">
+              المتابعة (3)
+            </button>
+          </div>
+        </div>
+
+        <!-- 2. Motion Speed Toggle -->
+        <div class="space-y-1.5">
+          <label class="text-xs font-bold text-slate-700 block">معايرة سرعة النابض (Spring Duration):</label>
+          <div class="flex gap-2">
+            <button id="btn-speed-350" onclick="setSpeed(350, this)" class="flex-1 py-1.5 rounded-xl border border-slate-200 bg-slate-50 text-xs font-semibold text-slate-600 hover:border-sky-300 transition-all">
+              350ms
+            </button>
+            <button id="btn-speed-400" onclick="setSpeed(400, this)" class="flex-1 py-1.5 rounded-xl border border-sky-500 bg-sky-50 text-xs font-bold text-sky-700 transition-all">
+              400ms (المعتمدة)
+            </button>
+            <button id="btn-speed-450" onclick="setSpeed(450, this)" class="flex-1 py-1.5 rounded-xl border border-slate-200 bg-slate-50 text-xs font-semibold text-slate-600 hover:border-sky-300 transition-all">
+              450ms
+            </button>
+            <button id="btn-speed-slow" onclick="setSpeed(1000, this)" class="flex-1 py-1.5 rounded-xl border border-slate-200 bg-slate-50 text-xs font-semibold text-slate-600 hover:border-sky-300 transition-all">
+              1000ms (فحص)
+            </button>
+          </div>
+        </div>
+
+        <!-- 3. Frame Scrubbing / Timeline Slider -->
+        <div class="space-y-1.5 bg-slate-50 border border-slate-100 rounded-2xl p-3">
+          <div class="flex items-center justify-between text-xs">
+            <span class="font-bold text-slate-700">شريط المعاينة التدريجية (Manual Scrub):</span>
+            <span id="scrub-val" class="font-mono text-sky-700 font-bold">0%</span>
+          </div>
+          <input type="range" id="scrub-slider" min="0" max="100" value="0" oninput="onScrubSlider(this.value)" class="w-full cursor-pointer">
+          <div class="flex justify-between text-[10px] text-slate-400 font-mono">
+            <span>START (01)</span>
+            <span>STRETCH (02)</span>
+            <span>TRAVEL (03)</span>
+            <span>ARRIVE (04)</span>
+            <span>SETTLED (05)</span>
+          </div>
+        </div>
+
+        <!-- 4. Automated 9-Frames Benchmark Runner -->
+        <div class="space-y-2">
+          <button onclick="run9FrameSequence()" class="w-full py-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs flex items-center justify-center gap-2 shadow-sm transition-all">
+            <span>تشغيل التسلسل الكامل للفريمات التسعة (Auto 9-Frames)</span>
+            <span class="text-sky-400">&larr;</span>
+          </button>
+          <div id="status-chip" class="text-center text-[11px] font-semibold text-slate-500 bg-slate-100 py-1 rounded-lg">
+            الحالة: مستقر عند تبويب «اليوم» (Frame 01)
+          </div>
+        </div>
+
+        <!-- 5. Technical Specifications -->
+        <div class="bg-slate-50 rounded-2xl p-3 border border-slate-100 space-y-1 text-xs text-slate-600">
+          <div class="font-bold text-slate-800 mb-1">المعادلات الفيزيائية المطبقة:</div>
+          <p>• <strong>تمدد الفقاعة (Squish & Stretch):</strong> تمدد العرض $W(t)$ حتى 130% عند منتصف المسافة مع انضغاط طفيف للارتفاع $H(t)$.</p>
+          <p>• <strong>تكبير وانكسار العدسة (Refractive Magnification):</strong> تكبير الأيقونات والعناوين حتى $1.32\times$ مع إزاحة نصف قطرية نحو مركز العدسة عند العبور تحتها.</p>
+          <p>• <strong>ارتداد الاستقرار (Damped Spring Physics):</strong> تذبذب مرن عند الوصول قبل الاستقرار في الكبسولة الزجاجية الفاتحة.</p>
+        </div>
+
+      </div>
+
+    </div>
+
+  </div>
+
+  <script>
+    // ========================================================
+    // LIQUID GLASS ANIMATION ENGINE (PHYSICS & OPTICAL LENS)
+    // ========================================================
+
+    const navEl = document.getElementById('liquid-glass-nav');
+    const lensEl = document.getElementById('liquid-lens');
+    const statusChip = document.getElementById('status-chip');
+    const scrubVal = document.getElementById('scrub-val');
+    const scrubSlider = document.getElementById('scrub-slider');
+
+    let currentTabIndex = 0; // 0 = اليوم (Rightmost in RTL)
+    let animationDuration = 400; // ms (calibrated default within 350-450ms)
+    let isAnimating = false;
+    let animRafId = null;
+
+    // Tab items configuration
+    const tabCount = 4;
+    const tabNames = ['اليوم', 'التمارين', 'التغذية', 'المتابعة'];
+
+    // Retrieve layout geometry of each tab inside the nav bar
+    function getTabMetrics(index) {
+      const tabEl = document.querySelector(`.nav-tab-item[data-index="${index}"]`);
+      if (!tabEl || !navEl) return { center: 0, width: 72, left: 0 };
+      const navRect = navEl.getBoundingClientRect();
+      const tabRect = tabEl.getBoundingClientRect();
+      const left = tabRect.left - navRect.left;
+      const width = tabRect.width;
+      const center = left + width / 2;
+      return { center, width, left };
+    }
+
+    // Set initial position of the liquid lens
+    function initLensPosition() {
+      const m = getTabMetrics(currentTabIndex);
+      const restingWidth = Math.max(m.width - 8, 68);
+      const restingLeft = m.center - restingWidth / 2;
+      lensEl.style.left = `${restingLeft}px`;
+      lensEl.style.width = `${restingWidth}px`;
+      lensEl.classList.add('settled');
+      updateOptics(m.center, restingWidth, false);
+    }
+
+    // Update magnification, optical shear and refraction on tabs under the moving lens
+    function updateOptics(lensCenter, lensWidth, isMovingNow) {
+      const lensRadius = lensWidth / 2;
+      const moving = isMovingNow !== undefined ? isMovingNow : isAnimating;
+
+      for (let i = 0; i < tabCount; i++) {
+        const m = getTabMetrics(i);
+        const contentEl = document.getElementById(`tab-content-${i}`);
+        if (!contentEl) continue;
+
+        const dist = Math.abs(m.center - lensCenter);
+
+        // Check if tab content is under the liquid lens during motion
+        if (dist < lensRadius * 1.15 && moving) {
+          const norm = Math.min(dist / (lensRadius * 1.15), 1);
+          // Convex dome height profile: z = sqrt(1 - norm^2)
+          const z = Math.sqrt(Math.max(0, 1 - norm * norm));
+
+          // 1. Optical dome magnification: max 1.28x at optical center
+          const mag = 1.0 + (0.28 * z);
+
+          // 2. Optical refraction displacement (pulling toward dome center)
+          const shiftX = (lensCenter - m.center) * 0.16 * z;
+
+          // 3. Meniscus edge shear (shears individual letters/glyphs as they cross the lens rim)
+          const shearX = -(m.center - lensCenter) / (lensRadius * 1.15) * 8.5 * (1 - z);
+
+          // 4. Anisotropic stretch along motion direction
+          const stretchX = 1.0 + (0.08 * (1 - norm));
+
+          contentEl.style.transform = `translateX(${shiftX.toFixed(2)}px) skewX(${shearX.toFixed(2)}deg) scale(${(mag * stretchX).toFixed(3)}, ${mag.toFixed(3)})`;
+          contentEl.style.filter = `drop-shadow(0 2px 4px rgba(15,23,42,0.10))`;
+        } else {
+          // Settled resting state or outside lens: clean unwarped display
+          contentEl.style.transform = 'translateX(0px) skewX(0deg) scale(1.0, 1.0)';
+          contentEl.style.filter = 'none';
+        }
+
+        // Color handling
+        if (i === currentTabIndex && !moving) {
+          contentEl.classList.remove('text-slate-800');
+          contentEl.classList.add('text-sky-600');
+          const span = contentEl.querySelector('span');
+          if (span) {
+            span.classList.remove('text-slate-500');
+            span.classList.add('text-sky-600', 'font-bold');
+          }
+        } else if (!moving) {
+          contentEl.classList.remove('text-sky-600');
+          contentEl.classList.add('text-slate-800');
+          const span = contentEl.querySelector('span');
+          if (span) {
+            span.classList.remove('text-sky-600', 'font-bold');
+            span.classList.add('text-slate-500', 'font-semibold');
+          }
+        }
+      }
+    }
+
+    // Snappy critically-damped spring physics (matching 350-450ms pacing)
+    function springEasing(t) {
+      if (t <= 0) return 0;
+      if (t >= 1) return 1;
+      const zeta = 0.85; // Critically-damped: prevents exaggerated bounce
+      const wn = 7.5;    // Snappy natural frequency
+      const wd = wn * Math.sqrt(1 - zeta * zeta);
+      const decay = Math.exp(-zeta * wn * t);
+      return 1 - decay * (Math.cos(wd * t) + (zeta * wn / wd) * Math.sin(wd * t));
+    }
+
+    // Smooth squish & stretch envelope for bubble width during motion
+    function stretchEnvelope(t) {
+      // Peaks at t = 0.38
+      return Math.sin(Math.PI * Math.pow(t, 0.85));
+    }
+
+    // Animate tab selection with liquid glass lens physics
+    function triggerTabSelection(targetIndex, customDuration) {
+      if (isAnimating && animRafId) cancelAnimationFrame(animRafId);
+
+      const startIndex = currentTabIndex;
+      currentTabIndex = targetIndex;
+
+      const startM = getTabMetrics(startIndex);
+      const targetM = getTabMetrics(targetIndex);
+
+      const duration = customDuration || animationDuration;
+      const startTime = performance.now();
+      isAnimating = true;
+
+      lensEl.classList.remove('settled');
+
+      // Distance and stretch scale
+      const totalDist = targetM.center - startM.center;
+      const maxStretch = Math.min(Math.abs(totalDist) * 0.42, 48); // Max horizontal stretch in px
+
+      statusChip.innerText = `انتقال جاري: من «${tabNames[startIndex]}» إلى «${tabNames[targetIndex]}» (فقاعة متمددة)`;
+
+      // Immediately switch colors so destination becomes active blue during travel
+      for (let i = 0; i < tabCount; i++) {
+        const contentEl = document.getElementById(`tab-content-${i}`);
+        if (!contentEl) continue;
+        const span = contentEl.querySelector('span');
+        if (i === targetIndex) {
+          contentEl.classList.remove('text-slate-800');
+          contentEl.classList.add('text-sky-600');
+          if (span) {
+            span.classList.remove('text-slate-500');
+            span.classList.add('text-sky-600', 'font-bold');
+          }
+        } else {
+          contentEl.classList.remove('text-sky-600');
+          contentEl.classList.add('text-slate-800');
+          if (span) {
+            span.classList.remove('text-sky-600', 'font-bold');
+            span.classList.add('text-slate-500', 'font-semibold');
+          }
+        }
+      }
+
+      function step(now) {
+        const elapsed = now - startTime;
+        let progress = Math.min(elapsed / duration, 1.0);
+
+        // Calculate lens center position via spring physics
+        const springT = springEasing(progress);
+        const currentCenter = startM.center + totalDist * springT;
+
+        // Calculate dynamic width with liquid stretch
+        const stretchAmount = maxStretch * stretchEnvelope(progress);
+        const restingWidth = Math.max(targetM.width - 8, 68);
+        const currentWidth = restingWidth + stretchAmount;
+
+        // Position lens
+        const currentLeft = currentCenter - currentWidth / 2;
+        lensEl.style.left = `${currentLeft}px`;
+        lensEl.style.width = `${currentWidth}px`;
+
+        // Update optical magnification & refraction of underlying elements
+        updateOptics(currentCenter, currentWidth, true);
+
+        // Update scrubber slider in sync
+        scrubSlider.value = Math.round(progress * 100);
+        scrubVal.innerText = `${Math.round(progress * 100)}%`;
+
+        if (progress < 1.0) {
+          animRafId = requestAnimationFrame(step);
+        } else {
+          // Settled state reached
+          isAnimating = false;
+          lensEl.classList.add('settled');
+          lensEl.style.left = `${targetM.center - restingWidth / 2}px`;
+          lensEl.style.width = `${restingWidth}px`;
+          updateOptics(targetM.center, restingWidth, false);
+          statusChip.innerText = `مستقر عند: «${tabNames[targetIndex]}»`;
+        }
+      }
+
+      animRafId = requestAnimationFrame(step);
+    }
+
+    // Manual Scrubber slider control (inspect frame by frame)
+    function onScrubSlider(val) {
+      if (isAnimating && animRafId) cancelAnimationFrame(animRafId);
+      const progress = val / 100;
+      isAnimating = progress > 0.02 && progress < 0.98;
+      scrubVal.innerText = `${val}%`;
+
+      const startM = getTabMetrics(0);
+      const targetM = getTabMetrics(1); // Scrub between 0 (اليوم) and 1 (التمارين)
+      const totalDist = targetM.center - startM.center;
+
+      const springT = springEasing(progress);
+      const currentCenter = startM.center + totalDist * springT;
+      const maxStretch = Math.min(Math.abs(totalDist) * 0.42, 48);
+      const restingWidth = Math.max(targetM.width - 8, 68);
+      const currentWidth = restingWidth + maxStretch * stretchEnvelope(progress);
+
+      if (isAnimating) {
+        lensEl.classList.remove('settled');
+      } else {
+        lensEl.classList.add('settled');
+      }
+
+      lensEl.style.left = `${currentCenter - currentWidth / 2}px`;
+      lensEl.style.width = `${currentWidth}px`;
+
+      updateOptics(currentCenter, currentWidth, isAnimating);
+
+      statusChip.innerText = `معاينة يدوية عند فريم: ${Math.round(progress * 9) || 1} من 9 (${val}%)`;
+    }
+
+    // Speed setter
+    function setSpeed(ms, btn) {
+      animationDuration = ms;
+      ['btn-speed-350', 'btn-speed-400', 'btn-speed-450', 'btn-speed-slow'].forEach(id => {
+        const b = document.getElementById(id);
+        if (b) {
+          b.className = "flex-1 py-1.5 rounded-xl border border-slate-200 bg-slate-50 text-xs font-semibold text-slate-600 hover:border-sky-300 transition-all";
+        }
+      });
+      btn.className = "flex-1 py-1.5 rounded-xl border border-sky-500 bg-sky-50 text-xs font-bold text-sky-700 transition-all";
+    }
+
+    // Automated 9-Frame Sequence Walkthrough (Matching the reference video)
+    async function run9FrameSequence() {
+      // Step 1: Start on Home (Tab 0)
+      statusChip.innerText = "فريم 01: مستقر عند «اليوم» (Resting Pill)";
+      triggerTabSelection(0, 50);
+      await new Promise(r => setTimeout(r, 500));
+
+      // Step 2 to 5: Transition to Tab 1 (التمارين)
+      statusChip.innerText = "فريم 02 - 05: انتقال سائل نحو «التمارين» (Liquid Droplet & Refraction)";
+      triggerTabSelection(1, 400);
+      await new Promise(r => setTimeout(r, 600));
+
+      // Step 6 to 9: Transition to Tab 2 (التغذية)
+      statusChip.innerText = "فريم 06 - 09: انتقال جديد نحو «التغذية» واستقرار";
+      triggerTabSelection(2, 400);
+      await new Promise(r => setTimeout(r, 600));
+
+      // Return to Tab 0
+      triggerTabSelection(0, 400);
+    }
+
+    // Window load & resize handling
+    window.addEventListener('load', () => {
+      setTimeout(initLensPosition, 150);
+    });
+    window.addEventListener('resize', initLensPosition);
+  </script>
+</body>
+</html>

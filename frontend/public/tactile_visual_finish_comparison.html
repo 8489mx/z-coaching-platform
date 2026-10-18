@@ -1,0 +1,2208 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Z Coaching Platform — مقارنة التجسيم الفاخر المعزولة (BEFORE vs AFTER)</title>
+  <script src="https://www.gstatic.com/antigravity/web/dev/tailwindcss.min.js"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@300;400;500;600;700;800&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+
+    @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@300;400;500;600;700;800&family=Inter:wght@400;500;600;700;800&display=swap');
+    
+    * {
+      font-family: 'Segoe UI', 'IBM Plex Sans Arabic', -apple-system, BlinkMacSystemFont, 'Tahoma', sans-serif;
+      -webkit-font-smoothing: antialiased;
+      box-sizing: border-box;
+    }
+
+    .font-inter {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    }
+    
+    body {
+      direction: rtl;
+      background-color: #F8FAFC;
+      color: #0F172A;
+    }
+
+    .custom-scrollbar::-webkit-scrollbar {
+      width: 4px;
+    }
+    .custom-scrollbar::-webkit-scrollbar-thumb {
+      background: #CBD5E1;
+      border-radius: 4px;
+    }
+    
+    /* Zero Spinners */
+    input[type=number]::-webkit-inner-spin-button, 
+    input[type=number]::-webkit-outer-spin-button { 
+      -webkit-appearance: none; 
+      margin: 0; 
+    }
+
+    .no-scrollbar::-webkit-scrollbar {
+      display: none;
+    }
+    .no-scrollbar {
+      -ms-overflow-style: none;
+      scrollbar-width: none;
+    }
+
+    /* Premium Elevated Card Shadows (Visible, Elegant Depth & Soft Tactile Floating) */
+    .soft-card-shadow,
+    .card-shadow {
+      background-color: #FFFFFF !important;
+      border: none !important;
+      border-radius: 26px !important;
+      box-shadow: 
+        0 2px 4px 0 rgba(15, 23, 42, 0.012),
+        0 8px 20px -2px rgba(15, 23, 42, 0.035),
+        0 20px 48px -4px rgba(15, 23, 42, 0.03),
+        inset 0 1px 1px 0 rgba(255, 255, 255, 0.98) !important;
+      transition: all 0.22s cubic-bezier(0.16, 1, 0.3, 1) !important;
+    }
+    .soft-card-shadow:hover,
+    .card-shadow:hover {
+      box-shadow: 
+        0 4px 8px 0 rgba(15, 23, 42, 0.018),
+        0 12px 28px -2px rgba(15, 23, 42, 0.05),
+        0 24px 56px -4px rgba(15, 23, 42, 0.04),
+        inset 0 1px 1px 0 rgba(255, 255, 255, 1) !important;
+    }
+
+    /* Hero Card (workout card on home, profile card) — stronger depth */
+    .card-elevated {
+      background-color: #FFFFFF !important;
+      border: none !important;
+      border-radius: 26px !important;
+      box-shadow: 
+        0 3px 6px 0 rgba(15, 23, 42, 0.015),
+        0 12px 28px -3px rgba(15, 23, 42, 0.045),
+        0 24px 54px -6px rgba(15, 23, 42, 0.035),
+        inset 0 1px 1.5px 0 rgba(255, 255, 255, 0.98) !important;
+      transition: all 0.22s cubic-bezier(0.16, 1, 0.3, 1) !important;
+    }
+
+    .phone-shell-shadow {
+      box-shadow: 
+        0 20px 50px -12px rgba(15, 23, 42, 0.12),
+        0 10px 25px -5px rgba(2, 132, 199, 0.08);
+    }
+    
+    .sheet-shadow {
+      box-shadow: 
+        0 -4px 16px -2px rgba(15, 23, 42, 0.03),
+        0 -16px 40px -4px rgba(2, 132, 199, 0.08),
+        0 -28px 64px -8px rgba(15, 23, 42, 0.05);
+    }
+
+    /* Standalone Raw Mobile Preview */
+    body.raw-preview {
+      background: #F1F4F8 !important;
+      padding: 0 !important;
+      margin: 0 !important;
+      display: block !important;
+      overflow: hidden !important;
+      height: 100vh !important;
+    }
+    body.raw-preview header,
+    body.raw-preview aside {
+      display: none !important;
+    }
+    body.raw-preview main {
+      display: block !important;
+      max-width: 100% !important;
+      padding: 0 !important;
+      margin: 0 !important;
+      grid-template-columns: 1fr !important;
+    }
+    body.raw-preview main > section {
+      padding: 0 !important;
+      margin: 0 !important;
+      display: block !important;
+    }
+    body.raw-preview #device-shell {
+      border: none !important;
+      box-shadow: none !important;
+      border-radius: 0 !important;
+      width: 100vw !important;
+      height: 100vh !important;
+      --tw-ring-shadow: none !important;
+    }
+
+    /* ============================================================ */
+    /* PREMIUM MOBILE SPACING SYSTEM TOKENS (4pt / 8pt GRID)        */
+    /* ============================================================ */
+    :root {
+      --space-1: 4px;   /* Micro spacing: numbers to units, badges */
+      --space-2: 8px;   /* Tight spacing: icon to label, subtitles */
+      --space-3: 12px;  /* Component spacing: grouped fields, macro rows */
+      --space-4: 16px;  /* Standard card interior padding */
+      --space-5: 20px;  /* Screen horizontal margins on standard viewports */
+      --space-6: 24px;  /* Major section separation */
+      --space-8: 32px;  /* Generous breathing room */
+      
+      --radius-badge: 8px;
+      --radius-btn: 10px;
+      --radius-card: 16px;
+      --radius-pill: 9999px;
+    }
+
+    /* Liquid Glass Bottom Navigation */
+    .glass-nav-container {
+      position: relative;
+      background: rgba(255, 255, 255, 0.94);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border-radius: 30px;
+      box-shadow: 
+        0 16px 36px -6px rgba(2, 132, 199, 0.13),
+        0 4px 14px -2px rgba(15, 23, 42, 0.04),
+        0 1px 3px 0 rgba(15, 23, 42, 0.02),
+        inset 0 1.5px 2px 0 rgba(255, 255, 255, 0.95),
+        inset 0 -1px 1.5px 0 rgba(2, 132, 199, 0.03);
+      border: 1.2px solid rgba(255, 255, 255, 0.85);
+      overflow: visible;
+      user-select: none;
+    }
+
+    .liquid-lens {
+      position: absolute;
+      top: 5px;
+      height: 50px;
+      border-radius: 25px;
+      pointer-events: none;
+      z-index: 10;
+      background: radial-gradient(
+        ellipse 90% 80% at 50% 30%,
+        rgba(255, 255, 255, 0.75) 0%,
+        rgba(235, 242, 250, 0.45) 65%,
+        rgba(203, 213, 225, 0.30) 100%
+      );
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+      border: 1.3px solid rgba(255, 255, 255, 0.95);
+      box-shadow: 
+        0 12px 26px -4px rgba(2, 132, 199, 0.15),
+        0 3px 8px -2px rgba(15, 23, 42, 0.05),
+        inset 0 1.5px 2px 0 rgba(255, 255, 255, 1.0),
+        inset 0 -1.5px 2px 0 rgba(2, 132, 199, 0.05);
+      transform-origin: center center;
+      transition: background 0.22s ease, border-color 0.22s ease, box-shadow 0.22s ease;
+      will-change: transform, left, width;
+    }
+
+    .liquid-lens.settled {
+      background: rgba(226, 232, 240, 0.72);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      border: 1px solid rgba(255, 255, 255, 0.75);
+      box-shadow: 
+        0 2px 8px -1px rgba(2, 132, 199, 0.08),
+        0 1px 3px 0 rgba(15, 23, 42, 0.03),
+        inset 0 1px 1.5px 0 rgba(255, 255, 255, 0.85);
+    }
+
+    .liquid-lens::before {
+      content: '';
+      position: absolute;
+      top: 2px;
+      left: 15%;
+      right: 15%;
+      height: 38%;
+      border-radius: 20px;
+      background: linear-gradient(
+        to bottom,
+        rgba(255, 255, 255, 0.95) 0%,
+        rgba(255, 255, 255, 0.0) 100%
+      );
+      opacity: 1;
+      transition: opacity 0.2s ease;
+      pointer-events: none;
+    }
+
+    .liquid-lens.settled::before {
+      opacity: 0;
+    }
+
+    .nav-tab-item {
+      position: relative;
+      flex: 1 1 0;
+      width: 0;
+      min-width: 0;
+      max-width: 20%;
+      height: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 20;
+      cursor: pointer;
+      -webkit-tap-highlight-color: transparent;
+      outline: none;
+    }
+
+    .tab-content-wrapper {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      width: 100%;
+      height: 100%;
+      transform-origin: center center;
+      transition: color 0.15s ease;
+      will-change: transform;
+    }
+
+    .nav-icon-slot {
+      width: 24px;
+      height: 24px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .nav-label-slot {
+      height: 14px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-top: 3px;
+      line-height: 1;
+      flex-shrink: 0;
+    }
+
+    /* Ultra-Smooth Continuous Curvature Date Capsule (Soft Tactile Capsule Style) */
+    .soft-muted-date-pill {
+      background-color: #7B4FFE;
+      border-radius: 28px;
+      height: 74px;
+      margin-top: -5px;
+      margin-bottom: -5px;
+      z-index: 10;
+      border: 1px solid rgba(255, 255, 255, 0.25);
+      box-shadow: 
+        0 8px 20px -2px rgba(123, 79, 254, 0.38),
+        inset 0 1px 1.5px 0 rgba(255, 255, 255, 0.35);
+      transition: all 0.22s cubic-bezier(0.34, 1.56, 0.64, 1);
+      color: #FFFFFF !important;
+    }
+    .soft-muted-date-pill:active {
+      transform: scale(0.97);
+    }
+
+    .inactive-date-pill {
+      background-color: #FFFFFF;
+      border: 1px solid rgba(226, 232, 240, 0.75);
+      box-shadow: 
+        0 2px 5px 0 rgba(15, 23, 42, 0.025),
+        inset 0 1px 1px 0 rgba(255, 255, 255, 0.95);
+      border-radius: 26px;
+      height: 64px;
+      transition: all 0.2s ease;
+      z-index: 1;
+    }
+    .inactive-date-pill:hover {
+      background-color: #F8FAFC;
+      border-color: #CBD5E1;
+      box-shadow: 0 4px 8px 0 rgba(15, 23, 42, 0.04);
+    }
+    .inactive-date-pill:active {
+      transform: scale(0.96);
+    }
+
+    /* =========================================================================
+       Design System Button Hierarchy
+       Tier 1: Primary Filled Button
+       Tier 2: Secondary Ghost Pill Button (.btn-ghost-pill)
+       Tier 3: Tertiary Text Button
+       ========================================================================= */
+    .btn-ghost-pill {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 4.5px;
+      height: 26px;
+      padding: 0 10px;
+      border-radius: 9999px;
+      font-size: 11px;
+      font-weight: 600;
+      color: #284C7C;
+      background-color: #FFFFFF;
+      border: 1px solid rgba(226, 232, 240, 0.75) !important;
+      box-shadow: 0 2px 6px -1px rgba(15, 23, 42, 0.04), 0 1px 2px 0 rgba(15, 23, 42, 0.02), inset 0 1px 1px 0 rgba(255, 255, 255, 0.98) !important;
+      text-decoration: none !important;
+      cursor: pointer;
+      transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1) !important;
+      user-select: none;
+      white-space: nowrap;
+      line-height: 1;
+      position: relative;
+      -webkit-tap-highlight-color: transparent;
+      outline: none;
+    }
+
+    .btn-ghost-pill:hover {
+      background-color: #F8FAFC;
+      border-color: #CBD5E1;
+      color: #0F172A;
+      box-shadow: 0 2px 6px 0 rgba(15, 23, 42, 0.05);
+    }
+
+    .btn-ghost-pill:active {
+      background-color: #F1F5F9;
+      border-color: #94A3B8;
+      color: #0F172A;
+      transform: scale(0.96);
+    }
+
+    .btn-ghost-pill:focus-visible {
+      outline: none;
+      box-shadow: 0 0 0 3px rgba(40, 76, 124, 0.15);
+    }
+
+    /* Expanding touch area to guarantee >= 44x44px touch target on touch devices */
+    .btn-ghost-pill::after {
+      content: '';
+      position: absolute;
+      top: -9px;
+      bottom: -9px;
+      left: -6px;
+      right: -6px;
+    }
+
+    .btn-ghost-pill-sm {
+      height: 24px;
+      padding: 0 8px;
+      font-size: 10.5px;
+      gap: 3.5px;
+    }
+
+    /* =========================================================================
+       PREMIUM VISUAL UPGRADES
+       ========================================================================= */
+
+    /* Primary CTA Buttons — Tactile Soft Raised Button */
+    .btn-primary-premium {
+      background: linear-gradient(180deg, #1B3A5C 0%, #0F2744 100%) !important;
+      border: 1px solid rgba(255, 255, 255, 0.18) !important;
+      box-shadow:
+        0 2px 5px 0 rgba(15, 23, 42, 0.1),
+        0 8px 22px -3px rgba(14, 36, 62, 0.32),
+        inset 0 1px 1px 0 rgba(255, 255, 255, 0.32) !important;
+      border-radius: 9999px !important;
+      transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1) !important;
+    }
+    .btn-primary-premium:hover {
+      background: linear-gradient(180deg, #1E4268 0%, #122B4A 100%) !important;
+      box-shadow:
+        0 3px 8px 0 rgba(15, 23, 42, 0.12),
+        0 10px 26px -3px rgba(14, 36, 62, 0.38),
+        inset 0 1px 1px 0 rgba(255, 255, 255, 0.38) !important;
+    }
+    .btn-primary-premium:active {
+      transform: scale(0.98) translateY(1px) !important;
+      box-shadow:
+        0 1px 2px 0 rgba(15, 23, 42, 0.12),
+        0 4px 10px -2px rgba(14, 36, 62, 0.22),
+        inset 0 1px 1px 0 rgba(255, 255, 255, 0.15) !important;
+    }
+
+    /* Page Background: Soft, Calm, Neutral Tactile Canvas */
+    .premium-page-bg {
+      background: #EFF2F6 !important;
+    }
+
+    /* Stepper Buttons (+/-) — Pure White Tactile Floating Circle */
+    .stepper-btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      background: #FFFFFF;
+      border: 1px solid rgba(226, 232, 240, 0.85);
+      font-size: 17px;
+      font-weight: 700;
+      color: #0F172A;
+      box-shadow: 
+        0 2px 5px 0 rgba(15, 23, 42, 0.04),
+        0 1px 2px 0 rgba(0, 0, 0, 0.02),
+        inset 0 1px 1px 0 rgba(255, 255, 255, 0.95);
+      cursor: pointer;
+      transition: all 0.18s cubic-bezier(0.16, 1, 0.3, 1);
+      user-select: none;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .stepper-btn:hover {
+      border-color: #CBD5E1;
+      box-shadow: 0 4px 8px 0 rgba(15, 23, 42, 0.07);
+    }
+    .stepper-btn:active {
+      background: #F8FAFC;
+      transform: scale(0.92);
+      box-shadow: 0 1px 2px 0 rgba(15, 23, 42, 0.04);
+    }
+
+    /* Photo Upload Zones — Dashed, Attractive */
+    .photo-upload-zone {
+      border: 2px dashed #C5D5E4;
+      border-radius: 14px;
+      background: #F6F9FC;
+      transition: all 0.2s ease;
+    }
+    .photo-upload-zone:active {
+      border-color: #0284C7;
+      background: #F0F9FF;
+    }
+
+    /* Avatar Circle — Premium Gradient */
+    .avatar-premium {
+      background: linear-gradient(135deg, #284C7C 0%, #0284C7 100%);
+      color: #FFFFFF;
+      font-weight: 700;
+      box-shadow: 0 4px 12px -2px rgba(2, 132, 199, 0.25);
+    }
+
+    /* Active Membership Badge */
+    .badge-active {
+      background: #ECFDF5;
+      color: #059669;
+      border: 1px solid #A7F3D0;
+      font-weight: 600;
+    }
+
+    /* Segmented Control (Unit Preferences) — Clear Active/Inactive */
+    .segment-active {
+      background: #0F172A;
+      color: #FFFFFF;
+      font-weight: 700;
+      box-shadow: 0 2px 6px -1px rgba(15, 23, 42, 0.2);
+    }
+    .segment-inactive {
+      background: #F1F5F9;
+      color: #94A3B8;
+      font-weight: 500;
+    }
+
+    /* Toggle Switch — Premium Style */
+    .toggle-track {
+      width: 44px;
+      height: 24px;
+      border-radius: 12px;
+      background: #CBD5E1;
+      position: relative;
+      cursor: pointer;
+      transition: background 0.2s ease;
+    }
+    .toggle-track.active {
+      background: #0284C7;
+    }
+    .toggle-track::after {
+      content: '';
+      position: absolute;
+      top: 2px;
+      left: 2px;
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      background: #FFFFFF;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.15);
+      transition: transform 0.2s ease;
+    }
+    .toggle-track.active::after {
+      transform: translateX(20px);
+    }
+
+    /* Exercise Image — Larger, Rounded */
+    .exercise-img-premium {
+      width: 56px;
+      height: 56px;
+      border-radius: 12px;
+      object-fit: cover;
+      box-shadow: 0 2px 8px -2px rgba(15, 23, 42, 0.1);
+    }
+
+    /* Macro Pill with Left Color Accent */
+    .macro-pill-accent {
+      border-radius: 10px;
+      border: 1px solid #E7EEF3;
+      position: relative;
+      overflow: hidden;
+    }
+    .macro-pill-accent::before {
+      content: '';
+      position: absolute;
+      top: 6px;
+      bottom: 6px;
+      right: 0;
+      width: 3px;
+      border-radius: 0 3px 3px 0;
+    }
+    .macro-pill-accent.protein::before { background: #0284C7; }
+    .macro-pill-accent.carbs::before { background: #E11D48; }
+    .macro-pill-accent.fat::before { background: #8B5CF6; }
+
+    /* Completion Checkmark Circle */
+    .check-circle {
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.2s ease;
+    }
+    .check-circle.done {
+      background: #ECFDF5;
+      border: 1.5px solid #6EE7B7;
+      color: #059669;
+    }
+    .check-circle.pending {
+      background: #F8FAFC;
+      border: 1.5px solid #E2E8F0;
+      color: #CBD5E1;
+    }
+  
+
+    /* ============================================================ */
+    /* MASTER TACTILE SURFACE DESIGN TOKENS (VISUAL FINISH ONLY)    */
+    /* ============================================================ */
+
+    /* 1. Canvas Background: Soft, warm, calm neutral finish */
+    .tactile-canvas-bg {
+      background-color: #EFF2F6 !important;
+    }
+
+    /* 2. Tactile Standard Card Surface:
+          - Pure white ceramic/acrylic surface
+          - Zero hard borders (border: none)
+          - Multi-layered diffused soft ambient elevation
+          - Subtle top light bevel highlight (inset)
+          - Squircle 26px smooth curvature */
+    .tactile-card-surface {
+      background-color: #FFFFFF !important;
+      border: none !important;
+      border-radius: 26px !important;
+      box-shadow: 
+        0 2px 4px 0 rgba(15, 23, 42, 0.012),
+        0 8px 20px -2px rgba(15, 23, 42, 0.035),
+        0 20px 48px -4px rgba(15, 23, 42, 0.03),
+        inset 0 1px 1px 0 rgba(255, 255, 255, 0.98) !important;
+      transition: all 0.22s cubic-bezier(0.16, 1, 0.3, 1) !important;
+    }
+    .tactile-card-surface:hover {
+      box-shadow: 
+        0 4px 8px 0 rgba(15, 23, 42, 0.018),
+        0 12px 28px -2px rgba(15, 23, 42, 0.05),
+        0 24px 56px -4px rgba(15, 23, 42, 0.04),
+        inset 0 1px 1px 0 rgba(255, 255, 255, 1) !important;
+    }
+
+    /* 3. Tactile Hero Card (Workout Card on Home):
+          - Zero hard borders
+          - Slightly deeper elevation with soft diffused halo
+          - Crisp top micro-highlight
+          - Squircle 26px curvature */
+    .tactile-card-hero {
+      background-color: #FFFFFF !important;
+      border: none !important;
+      border-radius: 26px !important;
+      box-shadow: 
+        0 3px 6px 0 rgba(15, 23, 42, 0.015),
+        0 12px 28px -3px rgba(15, 23, 42, 0.045),
+        0 24px 54px -6px rgba(15, 23, 42, 0.035),
+        inset 0 1px 1.5px 0 rgba(255, 255, 255, 0.98) !important;
+      transition: all 0.22s cubic-bezier(0.16, 1, 0.3, 1) !important;
+    }
+
+    /* 4. Tactile Sub-Surface (e.g. Supplement rows):
+          - Quiet, calm #F8FAFC
+          - Inset soft highlight, zero hard outer border */
+    .tactile-sub-surface {
+      background-color: #F8FAFC !important;
+      border: none !important;
+      box-shadow: 
+        0 1px 2px 0 rgba(15, 23, 42, 0.02),
+        inset 0 1px 0.5px 0 rgba(255, 255, 255, 0.95) !important;
+    }
+
+    /* 5. Tactile Primary Button:
+          - Deep navy tactical surface
+          - Natural tactile raised shadow
+          - Subtle bevel light on top rim
+          - Full pill radius */
+    .tactile-btn-primary {
+      background: linear-gradient(180deg, #1B3A5C 0%, #0F2744 100%) !important;
+      border: 1px solid rgba(255, 255, 255, 0.18) !important;
+      box-shadow: 
+        0 2px 5px 0 rgba(15, 23, 42, 0.1),
+        0 8px 22px -3px rgba(14, 36, 62, 0.32),
+        inset 0 1px 1px 0 rgba(255, 255, 255, 0.32) !important;
+      border-radius: 9999px !important;
+      transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1) !important;
+    }
+    .tactile-btn-primary:hover {
+      background: linear-gradient(180deg, #1E4268 0%, #122B4A 100%) !important;
+      box-shadow: 
+        0 3px 8px 0 rgba(15, 23, 42, 0.12),
+        0 10px 26px -3px rgba(14, 36, 62, 0.38),
+        inset 0 1px 1px 0 rgba(255, 255, 255, 0.38) !important;
+    }
+    .tactile-btn-primary:active {
+      transform: scale(0.98) translateY(1px) !important;
+      box-shadow: 
+        0 1px 2px 0 rgba(15, 23, 42, 0.12),
+        0 4px 10px -2px rgba(14, 36, 62, 0.22),
+        inset 0 1px 1px 0 rgba(255, 255, 255, 0.15) !important;
+    }
+
+    /* 6. Tactile Ghost Pill Buttons:
+          - Polished white capsule
+          - Soft tactile depth */
+    .tactile-ghost-pill {
+      display: inline-flex !important;
+      align-items: center !important;
+      justify-content: center !important;
+      gap: 4.5px !important;
+      height: 26px !important;
+      padding: 0 10px !important;
+      border-radius: 9999px !important;
+      font-size: 11px !important;
+      font-weight: 600 !important;
+      color: #284C7C !important;
+      background-color: #FFFFFF !important;
+      border: 1px solid rgba(226, 232, 240, 0.75) !important;
+      box-shadow: 
+        0 2px 6px -1px rgba(15, 23, 42, 0.04),
+        0 1px 2px 0 rgba(15, 23, 42, 0.02),
+        inset 0 1px 1px 0 rgba(255, 255, 255, 0.98) !important;
+      transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1) !important;
+    }
+    .tactile-ghost-pill-sm {
+      height: 24px !important;
+      padding: 0 8px !important;
+      font-size: 10.5px !important;
+      gap: 3.5px !important;
+    }
+    .tactile-ghost-pill:hover {
+      background-color: #F8FAFC !important;
+      border-color: #CBD5E1 !important;
+      color: #0F172A !important;
+      box-shadow: 
+        0 3px 8px -1px rgba(15, 23, 42, 0.06),
+        inset 0 1px 1px 0 rgba(255, 255, 255, 1) !important;
+    }
+
+    /* Phone Shell Chrome for Showcase */
+    .showcase-phone-shell {
+      width: 390px;
+      height: 844px;
+      border-radius: 46px;
+      box-shadow: 
+        0 0 0 11px #1E293B,
+        0 0 0 12px #334155,
+        0 25px 60px -15px rgba(0, 0, 0, 0.35);
+      position: relative;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      background: #FFFFFF;
+      transition: width 0.3s ease, height 0.3s ease;
+    }
+
+    /* Comparison Slider Styles */
+    .split-container {
+      position: relative;
+      width: 390px;
+      height: 844px;
+      border-radius: 46px;
+      box-shadow: 
+        0 0 0 11px #1E293B,
+        0 0 0 12px #334155,
+        0 25px 60px -15px rgba(0, 0, 0, 0.35);
+      overflow: hidden;
+      background: #FFFFFF;
+    }
+    .split-before, .split-after {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 390px;
+      height: 100%;
+      overflow-y: auto;
+      overflow-x: hidden;
+    }
+    .split-after {
+      width: 50%;
+      border-left: 2px solid #0284C7;
+      z-index: 10;
+      background: #EFF2F6;
+    }
+    .split-handle {
+      position: absolute;
+      top: 0;
+      bottom: 0;
+      left: 50%;
+      width: 4px;
+      margin-left: -2px;
+      background: #0284C7;
+      cursor: ew-resize;
+      z-index: 20;
+    }
+    .split-handle-button {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 36px;
+      height: 36px;
+      background: #0284C7;
+      color: white;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 4px 12px rgba(2, 132, 199, 0.4);
+      font-size: 13px;
+      font-weight: bold;
+      user-select: none;
+    }
+  </style>
+</head>
+<body class="bg-[#F8FAFC] text-[#0F172A] p-4 sm:p-6 lg:p-8 min-h-screen">
+
+  <div class="max-w-[1600px] mx-auto space-y-6">
+
+    <!-- Header Panel -->
+    <header class="bg-white border border-[#E2E8F0] rounded-3xl p-5 shadow-sm flex flex-col lg:flex-row items-center justify-between gap-4">
+      <div class="space-y-1 text-center lg:text-right">
+        <div class="flex items-center gap-2 justify-center lg:justify-start">
+          <span class="px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-sky-50 text-sky-700 border border-sky-200">
+            Z Coaching Platform · اختبار التجسيم البصري
+          </span>
+          <span class="px-2.5 py-0.5 rounded-full text-[11px] font-medium bg-emerald-50 text-emerald-700 border border-emerald-200">
+            Strict UI Preservation · Visual Finish Only
+          </span>
+        </div>
+        <h1 class="text-xl sm:text-2xl font-bold text-[#0F172A] tracking-tight">
+          لوحة المقارنة الثلاثية المعتمدة (BEFORE vs AFTER vs REFERENCE)
+        </h1>
+        <p class="text-xs text-[#64748B]">
+          تطبيق البنود التشخيصية الخمسة المعتمدة (إلغاء الحدود الصريحة، ظلال متعددة الطبقات، هوامش تنفسية رحبة، تباين طباعي للأرقام، ونعومة الزوايا 26px) مع الحفاظ الحرفي على نفس الهيكل بنسبة 100%.
+        </p>
+      </div>
+
+      <!-- Controls: Viewport & View Mode -->
+      <div class="flex flex-wrap items-center gap-2.5 justify-center">
+        <!-- Viewport Switcher -->
+        <div class="bg-[#F1F5F9] border border-[#E2E8F0] rounded-2xl p-1 flex items-center gap-1">
+          <span class="text-[11px] font-bold text-[#64748B] px-2 hidden sm:inline">المقاس:</span>
+          <button onclick="setViewport(375, 812, this)" class="vp-btn px-3 py-1.5 rounded-xl text-xs font-semibold text-[#64748B] hover:text-[#0F172A] transition-all cursor-pointer">
+            375px (Compact)
+          </button>
+          <button onclick="setViewport(390, 844, this)" class="vp-btn px-3 py-1.5 rounded-xl text-xs font-bold bg-[#0F172A] text-white shadow-sm transition-all cursor-pointer">
+            390px (Standard)
+          </button>
+          <button onclick="setViewport(430, 932, this)" class="vp-btn px-3 py-1.5 rounded-xl text-xs font-semibold text-[#64748B] hover:text-[#0F172A] transition-all cursor-pointer">
+            430px (Max)
+          </button>
+        </div>
+
+        <!-- Mode Switcher -->
+        <div class="bg-[#F1F5F9] border border-[#E2E8F0] rounded-2xl p-1 flex items-center gap-1">
+          <button onclick="setViewMode('sideBySide', this)" class="mode-btn px-3 py-1.5 rounded-xl text-xs font-bold bg-[#0284C7] text-white shadow-sm transition-all cursor-pointer">
+            مقارنة جنباً إلى جنب
+          </button>
+          <button onclick="setViewMode('slider', this)" class="mode-btn px-3 py-1.5 rounded-xl text-xs font-semibold text-[#64748B] hover:text-[#0F172A] transition-all cursor-pointer">
+            سلايدر التبديل التفاعلي
+          </button>
+        </div>
+
+        <a href="/mobile_app_preview.html" class="px-3.5 py-1.5 rounded-xl text-xs font-bold bg-white text-[#0F172A] border border-[#CBD5E1] hover:bg-[#F8FAFC] shadow-2xs transition-all flex items-center gap-1">
+          <span>فتح المحاكي الرئيسي</span>
+          <span>&larr;</span>
+        </a>
+      </div>
+    </header>
+
+    <!-- 5 Pillars Fulfillment Banner -->
+    <div class="bg-white border border-[#E2E8F0] rounded-2xl p-4 shadow-2xs grid grid-cols-2 md:grid-cols-5 gap-3 text-center">
+      <div class="border-b md:border-b-0 md:border-l border-[#F1F5F9] pb-2 md:pb-0 md:pl-2">
+        <span class="text-[10.5px] font-semibold text-[#64748B] block">1. إلغاء الحدود الصريحة</span>
+        <span class="text-xs font-bold text-emerald-700 mt-0.5 block">Zero Hard Borders</span>
+        <span class="text-[9.5px] text-[#94A3B8]">أسطح طافية بنقاء</span>
+      </div>
+      <div class="border-b md:border-b-0 md:border-l border-[#F1F5F9] pb-2 md:pb-0 md:pl-2">
+        <span class="text-[10.5px] font-semibold text-[#64748B] block">2. ظلال متعددة الطبقات</span>
+        <span class="text-xs font-bold text-[#0284C7] mt-0.5 block">Diffused Ambient Halo</span>
+        <span class="text-[9.5px] text-[#94A3B8]">خامة سيراميك بلمعة علوية</span>
+      </div>
+      <div class="border-b md:border-b-0 md:border-l border-[#F1F5F9] pb-2 md:pb-0 md:pl-2">
+        <span class="text-[10.5px] font-semibold text-[#64748B] block">3. راحة وتنفس داخلي</span>
+        <span class="text-xs font-bold text-emerald-700 mt-0.5 block">Breathing Room</span>
+        <span class="text-[9.5px] text-[#94A3B8]">هوامش فندقية متزنة</span>
+      </div>
+      <div class="border-b md:border-b-0 md:border-l border-[#F1F5F9] pb-2 md:pb-0 md:pl-2">
+        <span class="text-[10.5px] font-semibold text-[#64748B] block">4. تباين الأرقام والوحدات</span>
+        <span class="text-xs font-bold text-[#0284C7] mt-0.5 block">Typography Contrast</span>
+        <span class="text-[9.5px] text-[#94A3B8]">أرقام بارزة ووحدات مجهرية</span>
+      </div>
+      <div>
+        <span class="text-[10.5px] font-semibold text-[#64748B] block">5. نعومة الزوايا العضوية</span>
+        <span class="text-xs font-bold text-emerald-700 mt-0.5 block">26px Squircle</span>
+        <span class="text-[9.5px] text-[#94A3B8]">انحناء أملس كحجر النرد</span>
+      </div>
+    </div>
+
+    <!-- MAIN COMPARISON SECTION -->
+
+    <!-- MODE 1: Side by Side (3 Columns) -->
+    <div id="view-side-by-side" class="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start justify-items-center">
+
+      <!-- COLUMN 1: BEFORE (Original Baseline) -->
+      <div class="flex flex-col items-center gap-3 w-full max-w-[430px]">
+        <div class="flex items-center justify-between w-full px-2">
+          <div class="flex items-center gap-2">
+            <span class="w-3 h-3 rounded-full bg-slate-400"></span>
+            <span class="text-sm font-bold text-[#0F172A]">1. الواجهة الأصلية الحالية (BEFORE)</span>
+          </div>
+          <span class="text-[11px] font-bold text-[#64748B] bg-[#F1F5F9] border border-[#E2E8F0] px-2 py-0.5 rounded-full">الأساس المعتمد</span>
+        </div>
+        <p class="text-[11.5px] text-[#64748B] w-full px-2 leading-relaxed">
+          الواجهة الحالية بالحدود الرمادية الكلاسيكية (#E7EEF3) والظلال الخفيفة والأرقام ذات النمط المعتاد.
+        </p>
+
+        <!-- Phone Shell Before -->
+        <div class="showcase-phone-shell phone-viewport">
+          <!-- Status Bar -->
+          <div class="h-11 bg-transparent px-6 flex items-center justify-between shrink-0 select-none z-20">
+            <span class="text-[13px] font-semibold font-inter text-[#0F172A]">9:41</span>
+            <div class="w-24 h-4 bg-black rounded-full mx-auto -mt-1"></div>
+            <div class="flex items-center gap-1.5 text-[#0F172A]">
+              <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="currentColor"><path d="M12 3c-4.97 0-9 4.03-9 9 0 2.12.74 4.07 1.97 5.61L12 22l7.03-4.39C20.26 16.07 21 14.12 21 12c0-4.97-4.03-9-9-9z"/></svg>
+              <span class="text-[11px] font-bold font-inter">5G</span>
+              <div class="w-5 h-2.5 border border-current rounded-xs p-0.5 flex items-center">
+                <div class="h-full w-full bg-current rounded-2xs"></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Phone Content Scroll Area -->
+          <div class="flex-1 overflow-y-auto no-scrollbar relative">
+            <div id="before-screen-today" class="premium-page-bg px-4 py-3 space-y-3 pb-28 sm:px-5 sm:space-y-3.5">
+
+            <!-- Header: Greeting -->
+            <section class="flex items-center justify-between pt-1 pb-0.5">
+              <div class="space-y-1">
+                <p class="text-[12px] font-medium text-[#64748B] leading-none">السبت، 10 أكتوبر 2026</p>
+                <h1 class="text-[20px] font-bold text-[#0F172A] tracking-tight leading-tight">صباح الخير، أحمد</h1>
+              </div>
+            </section>
+
+            <!-- Date Selector (User Reference Capsule Style with Circular Disk in #7B4FFE) -->
+            <section class="bg-white border border-[#E7EEF3] rounded-[22px] p-3 sm:p-3.5 soft-card-shadow space-y-2.5">
+              <div class="flex items-center justify-between px-1">
+                <span class="text-[13px] font-bold text-[#0F172A] leading-none">جدول الأسبوع</span>
+                <div class="app-badge inline-flex items-center justify-center h-6 px-2.5 rounded-[7px] bg-[#F8FAFC] border border-[#E2E8F0] shadow-[0_1px_2px_rgba(0,0,0,0.02)] transition-all">
+                  <span class="text-[11px] font-semibold text-[#1E293B] leading-none">الأسبوع 4 · تمرين 1 من 4</span>
+                </div>
+              </div>
+              <div id="before-date-selector-row" class="grid grid-cols-7 gap-1 sm:gap-1.5 items-center pt-2 pb-2 overflow-visible">
+                <button onclick="selectDate(0)" id="before-date-item-0" class="soft-muted-date-pill text-center flex flex-col items-center justify-between pt-2.5 pb-1.5 px-0.5 cursor-pointer select-none">
+                  <span class="text-[10px] font-bold block text-white leading-none">السبت</span>
+                  <div class="w-[28px] h-[28px] sm:w-[31px] sm:h-[31px] rounded-full bg-white flex items-center justify-center shadow-sm">
+                    <span class="text-[13px] sm:text-[14px] font-bold text-[#7B4FFE] leading-none font-inter">10</span>
+                  </div>
+                </button>
+                <button onclick="selectDate(1)" id="before-date-item-1" class="inactive-date-pill text-center text-[#64748B] flex flex-col items-center justify-between pt-1.5 pb-1 px-0.5 cursor-pointer select-none">
+                  <span class="text-[10px] font-medium block text-[#64748B] leading-none">الأحد</span>
+                  <div class="w-[28px] h-[28px] sm:w-[30px] sm:h-[30px] rounded-full bg-white flex items-center justify-center">
+                    <span class="text-[12px] sm:text-[13px] font-semibold text-[#1E293B] leading-none font-inter">11</span>
+                  </div>
+                </button>
+                <button onclick="selectDate(2)" id="before-date-item-2" class="inactive-date-pill text-center text-[#64748B] flex flex-col items-center justify-between pt-1.5 pb-1 px-0.5 cursor-pointer select-none">
+                  <span class="text-[10px] font-medium block text-[#64748B] leading-none">الإثنين</span>
+                  <div class="w-[28px] h-[28px] sm:w-[30px] sm:h-[30px] rounded-full bg-white flex items-center justify-center">
+                    <span class="text-[12px] sm:text-[13px] font-semibold text-[#1E293B] leading-none font-inter">12</span>
+                  </div>
+                </button>
+                <button onclick="selectDate(3)" id="before-date-item-3" class="inactive-date-pill text-center text-[#64748B] flex flex-col items-center justify-between pt-1.5 pb-1 px-0.5 cursor-pointer select-none">
+                  <span class="text-[10px] font-medium block text-[#64748B] leading-none">الثلاثاء</span>
+                  <div class="w-[28px] h-[28px] sm:w-[30px] sm:h-[30px] rounded-full bg-white flex items-center justify-center">
+                    <span class="text-[12px] sm:text-[13px] font-semibold text-[#1E293B] leading-none font-inter">13</span>
+                  </div>
+                </button>
+                <button onclick="selectDate(4)" id="before-date-item-4" class="inactive-date-pill text-center text-[#64748B] flex flex-col items-center justify-between pt-1.5 pb-1 px-0.5 cursor-pointer select-none">
+                  <span class="text-[10px] font-medium block text-[#64748B] leading-none">الأربعاء</span>
+                  <div class="w-[28px] h-[28px] sm:w-[30px] sm:h-[30px] rounded-full bg-white flex items-center justify-center">
+                    <span class="text-[12px] sm:text-[13px] font-semibold text-[#1E293B] leading-none font-inter">14</span>
+                  </div>
+                </button>
+                <button onclick="selectDate(5)" id="before-date-item-5" class="inactive-date-pill text-center text-[#64748B] flex flex-col items-center justify-between pt-1.5 pb-1 px-0.5 cursor-pointer select-none">
+                  <span class="text-[10px] font-medium block text-[#94A3B8] leading-none">الخميس</span>
+                  <div class="w-[28px] h-[28px] sm:w-[30px] sm:h-[30px] rounded-full bg-white flex items-center justify-center">
+                    <span class="text-[12px] sm:text-[13px] font-semibold text-[#64748B] leading-none font-inter">15</span>
+                  </div>
+                </button>
+                <button onclick="selectDate(6)" id="before-date-item-6" class="inactive-date-pill text-center text-[#64748B] flex flex-col items-center justify-between pt-1.5 pb-1 px-0.5 cursor-pointer select-none">
+                  <span class="text-[10px] font-medium block text-[#64748B] leading-none">الجمعة</span>
+                  <div class="w-[28px] h-[28px] sm:w-[30px] sm:h-[30px] rounded-full bg-white flex items-center justify-center">
+                    <span class="text-[12px] sm:text-[13px] font-semibold text-[#1E293B] leading-none font-inter">16</span>
+                  </div>
+                </button>
+              </div>
+            </section>
+
+            <!-- Fitness Workout Hero Card UI: Premium Editorial iOS Design (Adaptive Dynamic) -->
+            <section id="before-home-hero-card" class="bg-white border border-[#E7EEF3] rounded-[22px] p-4.5 sm:p-5 card-shadow transition-all duration-300 relative overflow-hidden">
+              <!-- Top Row: Section Title & Session Number -->
+              <div class="flex items-center justify-between mb-3">
+                <span id="before-home-hero-type-badge" class="text-[13px] font-bold text-[#0F172A] leading-none">
+                  تمرين اليوم
+                </span>
+                <div id="before-home-hero-phase-container" class="app-badge inline-flex items-center justify-center h-6 px-2.5 rounded-[7px] bg-[#F8FAFC] border border-[#E2E8F0] shadow-[0_1px_2px_rgba(0,0,0,0.02)] transition-all">
+                  <span id="before-home-hero-phase-badge" class="text-[11px] font-semibold text-[#1E293B] leading-none">
+                    الجلسة 1 من 4
+                  </span>
+                </div>
+              </div>
+
+              <!-- Main Content: Left Visual + Right Workout Info -->
+              <div class="flex items-center justify-between gap-3 mb-3.5 pt-0.5">
+                <div class="space-y-1.5 flex-1 min-w-0">
+                  <h2 id="before-home-workout-title" class="text-[21px] font-extrabold text-[#0F172A] font-inter tracking-tight leading-tight" dir="ltr" style="text-align: right;">Push Day</h2>
+                  <p id="before-home-workout-arabic-title" class="text-[12px] font-semibold text-[#475569] leading-tight">الصدر والترايسبس · عضلات الدفع</p>
+                  
+                  <!-- Metadata Info Line -->
+                  <div class="pt-1">
+                    <span class="text-[12px] font-medium text-[#64748B] flex items-center gap-1.5 leading-none">
+                      <span id="before-home-workout-duration"><strong class="font-extrabold text-[#0F172A] font-inter text-[13px]">45</strong> <span class="text-[10.5px] text-[#94A3B8]">دقيقة</span></span>
+                      <span class="text-slate-300">·</span>
+                      <span id="before-home-workout-ex-count"><strong class="font-extrabold text-[#0F172A] font-inter text-[13px]">5</strong> <span class="text-[10.5px] text-[#94A3B8]">تمارين</span></span>
+                    </span>
+                  </div>
+                </div>
+
+                <!-- Exercise Visual Thumbnail -->
+                <div id="before-home-hero-visual" class="relative w-[94px] h-[84px] rounded-[18px] overflow-hidden shrink-0 border border-[#E7EEF3] shadow-[0_2px_8px_rgba(0,0,0,0.03)] bg-[#F8FAFC] flex items-center justify-center">
+                  <img src="/exercises/MACHINE_CHEST_PRESS/0.jpg" alt="Push Day" onerror="this.src='/exercises/AB_WHEEL_ROLLOUT/0.jpg'" class="w-full h-full object-cover">
+                  <div class="absolute inset-0 bg-gradient-to-t from-black/20 via-transparent to-transparent pointer-events-none"></div>
+                </div>
+              </div>
+
+              <!-- Bottom CTA Action -->
+              <div class="pt-0.5">
+                <button id="before-home-hero-cta" onclick="handleHeroCtaClick()" class="w-full h-[40px] rounded-full btn-primary-premium text-white text-[12.5px] font-bold transition-all flex items-center justify-center gap-2 cursor-pointer">
+                  <span id="before-home-hero-cta-text">ابدأ التمرين الآن</span>
+                  <svg class="w-3.5 h-3.5 rtl:rotate-180" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3"/></svg>
+                </button>
+              </div>
+            </section>
+
+            <!-- Nutrition Summary Section (Original Before Design) -->
+            <section id="before-home-nutrition-card" class="bg-white border-none rounded-[26px] p-4.5 sm:p-5 soft-card-shadow space-y-4 transition-all duration-300">
+              <div class="flex items-center justify-between">
+                <span class="text-[13px] font-bold text-[#0F172A] leading-none">التغذية</span>
+                <button onclick="switchTab(2)" class="btn-ghost-pill" aria-label="عرض الوجبات">
+                  <span>عرض الوجبات</span>
+                  <svg class="w-3 h-3 rtl:rotate-180" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></svg>
+                </button>
+              </div>
+
+              <div class="flex items-center justify-between gap-3 pt-0.5">
+                <div class="relative w-[84px] h-[84px] shrink-0 flex items-center justify-center">
+                  <svg class="w-full h-full -rotate-90 transform" viewBox="0 0 88 88">
+                    <!-- Carbs Arc (41%) -->
+                    <circle cx="44" cy="44" r="36" stroke="#FB7185" stroke-width="5" fill="none"
+                            stroke-dasharray="92.74 226.2" stroke-dashoffset="0" />
+                    <!-- Protein Arc (29%) -->
+                    <circle cx="44" cy="44" r="36" stroke="#38BDF8" stroke-width="5" fill="none"
+                            stroke-dasharray="65.6 226.2" stroke-dashoffset="-92.74" />
+                    <!-- Fat Arc (30%) -->
+                    <circle cx="44" cy="44" r="36" stroke="#A78BFA" stroke-width="5" fill="none"
+                            stroke-dasharray="67.86 226.2" stroke-dashoffset="-158.34" />
+                  </svg>
+                  <div class="absolute inset-0 flex flex-col items-center justify-center text-center">
+                    <span class="text-[21px] font-extrabold text-[#0F172A] font-inter leading-none tracking-tight">2,450</span>
+                    <span class="text-[9.5px] font-semibold text-[#94A3B8] leading-none mt-1 uppercase tracking-wider">سعرة</span>
+                  </div>
+                </div>
+
+                <div class="flex-1 grid grid-cols-4 gap-1 text-center items-center">
+                  <div class="space-y-1.5">
+                    <span class="text-[11.5px] font-bold text-[#FB7185] font-inter block leading-none">41%</span>
+                    <div class="flex items-baseline justify-center gap-0.5"><span class="text-[17px] font-extrabold text-[#0F172A] font-inter leading-none">250</span><span class="text-[10px] font-semibold text-[#94A3B8] leading-none">g</span></div>
+                    <span class="text-[11px] font-semibold text-[#64748B] block leading-none">كارب</span>
+                  </div>
+                  <div class="space-y-1.5">
+                    <span class="text-[11.5px] font-bold text-[#0284C7] font-inter block leading-none">29%</span>
+                    <div class="flex items-baseline justify-center gap-0.5"><span class="text-[17px] font-extrabold text-[#0F172A] font-inter leading-none">180</span><span class="text-[10px] font-semibold text-[#94A3B8] leading-none">g</span></div>
+                    <span class="text-[11px] font-semibold text-[#64748B] block leading-none">بروتين</span>
+                  </div>
+                  <div class="space-y-1.5">
+                    <span class="text-[11.5px] font-bold text-[#8B5CF6] font-inter block leading-none">30%</span>
+                    <div class="flex items-baseline justify-center gap-0.5"><span class="text-[17px] font-extrabold text-[#0F172A] font-inter leading-none">81</span><span class="text-[10px] font-semibold text-[#94A3B8] leading-none">g</span></div>
+                    <span class="text-[11px] font-semibold text-[#64748B] block leading-none">دهون</span>
+                  </div>
+                  <div class="space-y-1.5">
+                    <div class="h-[12px] flex items-center justify-center">
+                      <svg class="w-3.5 h-3.5 text-[#58B4E5]" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2.69l5.66 5.66a8 8 0 1 1-11.31 0z"/></svg>
+                    </div>
+                    <div class="flex items-baseline justify-center gap-0.5"><span class="text-[17px] font-extrabold text-[#0F172A] font-inter leading-none">3.5</span><span class="text-[10px] font-semibold text-[#94A3B8] leading-none">L</span></div>
+                    <span class="text-[11px] font-semibold text-[#64748B] block leading-none">ماء</span>
+                  </div>
+                </div>
+              </div>
+            </section>
+
+            <!-- Next Check-in Card: Balanced & Harmonious -->
+            <section class="bg-white border border-[#E7EEF3] rounded-[20px] p-3.5 sm:p-4 soft-card-shadow space-y-3">
+              <div class="flex items-center justify-between">
+                <span class="text-[13px] font-bold text-[#0F172A] leading-none">ميعاد المتابعة</span>
+                <button onclick="switchTab(3)" class="btn-ghost-pill btn-ghost-pill-sm shrink-0" aria-label="المتابعات السابقة">
+                  <span>المتابعات السابقة</span>
+                  <svg class="w-3 h-3 rtl:rotate-180" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></svg>
+                </button>
+              </div>
+
+              <div class="flex items-center justify-between gap-2.5 pt-0.5">
+                <div class="flex items-center gap-2.5 min-w-0">
+                  <div class="w-8 h-8 rounded-[10px] bg-[#F0FDF4] border border-[#DCFCE7] flex items-center justify-center shrink-0">
+                    <svg class="w-4 h-4 text-[#16A34A]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
+                  </div>
+                  <div class="min-w-0">
+                    <h4 class="text-[14px] font-bold text-[#0F172A] leading-none">الجمعة، 16 أكتوبر 2026</h4>
+                    <span class="text-[11.5px] text-[#64748B] block mt-1.5 leading-none whitespace-nowrap">متابعة الأسبوع 4 · نافذة 72 ساعة</span>
+                  </div>
+                </div>
+                <span class="text-[11px] font-bold text-[#16A34A] bg-[#DCFCE7]/80 border border-[#86EFAC]/60 px-2.5 py-1 rounded-full leading-none shrink-0 whitespace-nowrap">متبقي 6 أيام</span>
+              </div>
+            </section>
+
+            <!-- Supplements: Dense & Professional -->
+            <section class="bg-white border border-[#E7EEF3] rounded-[20px] p-3.5 sm:p-4 soft-card-shadow space-y-2.5">
+              <div class="flex items-center justify-between">
+                <span class="text-[13px] font-bold text-[#0F172A] leading-none">مكملات اليوم</span>
+                <span class="text-[11px] font-semibold text-[#0284C7] bg-[#F0F7FF] border border-[#E0F2FE] w-[74px] justify-center text-center py-0.5 rounded-full leading-none inline-flex items-center ml-3.5">3 مكملات</span>
+              </div>
+
+              <div class="space-y-1.5">
+                <!-- Creatine -->
+                <div class="bg-[#F8FAFC] border border-[#E2E8F0] rounded-[12px] px-3.5 py-2.5 flex items-center justify-between">
+                  <div class="min-w-0">
+                    <span class="text-[13px] font-bold text-[#0F172A] block leading-tight truncate">كرياتين مونوهيدرات</span>
+                    <span class="text-[11px] text-[#64748B] block leading-tight mt-1">5 جم مع 300 مل ماء</span>
+                  </div>
+                  <span class="btn-ghost-pill btn-ghost-pill-sm w-[74px] justify-center text-center text-[#284C7C] shrink-0">صباحاً</span>
+                </div>
+
+                <!-- Omega 3 -->
+                <div class="bg-[#F8FAFC] border border-[#E2E8F0] rounded-[12px] px-3.5 py-2.5 flex items-center justify-between">
+                  <div class="min-w-0">
+                    <span class="text-[13px] font-bold text-[#0F172A] block leading-tight truncate">أوميجا 3 (زيت سمك)</span>
+                    <span class="text-[11px] text-[#64748B] block leading-tight mt-1">2 كبسولة مع الوجبة</span>
+                  </div>
+                  <span class="btn-ghost-pill btn-ghost-pill-sm w-[74px] justify-center text-center text-[#284C7C] shrink-0">مع الغداء</span>
+                </div>
+
+                <!-- Vitamin D3 -->
+                <div class="bg-[#F8FAFC] border border-[#E2E8F0] rounded-[12px] px-3.5 py-2.5 flex items-center justify-between">
+                  <div class="min-w-0">
+                    <span class="text-[13px] font-bold text-[#0F172A] block leading-tight truncate">فيتامين D3</span>
+                    <span class="text-[11px] text-[#64748B] block leading-tight mt-1">5000 وحدة دولية</span>
+                  </div>
+                  <span class="btn-ghost-pill btn-ghost-pill-sm w-[74px] justify-center text-center text-[#284C7C] shrink-0">مع الفطور</span>
+                </div>
+              </div>
+            </section>
+
+            <div class="h-2"></div>
+          </div>
+          </div>
+
+          <!-- Bottom Navigation -->
+          <div class="relative shrink-0 pointer-events-none">
+            <nav id="floating-bottom-nav" class="glass-nav-container absolute bottom-3 inset-x-3.5 h-[60px] px-1.5 py-1 flex items-center justify-between z-30 select-none">
+          <div id="liquid-lens" class="liquid-lens settled"></div>
+
+          <!-- Tab 0: اليوم -->
+          <div onclick="switchTab(0)" class="nav-tab-item" data-index="0" aria-label="اليوم">
+            <div id="tab-content-0" class="tab-content-wrapper text-sky-600">
+              <div class="nav-icon-slot">
+                <svg class="w-[20px] h-[20px]" viewBox="0 1.2 24 23.2" fill="currentColor">
+                  <path d="m2.64 10.59 9-7.48a.48.48 0 0 1 .62 0l9 7.48a1.45 1.45 0 0 0 2.06-.22 1.52 1.52 0 0 0-.21-2.11l-9-7.49a3.41 3.41 0 0 0-4.32 0l-9 7.49a1.52 1.52 0 0 0-.21 2.11 1.45 1.45 0 0 0 2.06.22"/>
+                  <path d="M22.28 22v-7a2.22 2.22 0 0 0-.73-1.59l-8.3-7a1.94 1.94 0 0 0-2.5 0l-8.3 7A2.22 2.22 0 0 0 1.72 15v7a2 2 0 0 0 2 2h5.34a1 1 0 0 0 1-1v-5.5a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1V23a1 1 0 0 0 1 1h5.38a2 2 0 0 0 1.84-2"/>
+                </svg>
+              </div>
+              <div class="nav-label-slot">
+                <span class="nav-tab-label text-[10px] font-bold tracking-tight leading-none">اليوم</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Tab 1: التمارين -->
+          <div onclick="switchTab(1)" class="nav-tab-item" data-index="1" aria-label="التمارين">
+            <div id="tab-content-1" class="tab-content-wrapper text-slate-800">
+              <div class="nav-icon-slot">
+                <svg class="w-[22px] h-[16px]" viewBox="0 4 24 16" fill="currentColor">
+                  <rect x="7" y="10.5" width="10" height="3" rx="1.5"/>
+                  <rect x="4.5" y="4.5" width="3" height="15" rx="1.5"/>
+                  <rect x="1.75" y="6.5" width="2.25" height="11" rx="1.125"/>
+                  <rect x="0.25" y="8.5" width="1.2" height="7" rx="0.6"/>
+                  <rect x="16.5" y="4.5" width="3" height="15" rx="1.5"/>
+                  <rect x="20" y="6.5" width="2.25" height="11" rx="1.125"/>
+                  <rect x="22.55" y="8.5" width="1.2" height="7" rx="0.6"/>
+                </svg>
+              </div>
+              <div class="nav-label-slot">
+                <span class="nav-tab-label text-[10px] font-semibold text-slate-500 tracking-tight leading-none">التمارين</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Tab 2: التغذية -->
+          <div onclick="switchTab(2)" class="nav-tab-item" data-index="2" aria-label="التغذية">
+            <div id="tab-content-2" class="tab-content-wrapper text-slate-800">
+              <div class="nav-icon-slot">
+                <svg class="w-[21px] h-[21px]" viewBox="0 3.0 24 22" fill="currentColor">
+                  <path d="M12 8.75a1 1 0 0 1-.68-.27.9.9 0 0 1 0-1.3 1.5 1.5 0 0 0 .47-1.08 1.47 1.47 0 0 0-.47-1.1 3.32 3.32 0 0 1-1-2.38 3.32 3.32 0 0 1 1-2.38 1 1 0 0 1 1.36 0 .9.9 0 0 1 0 1.3 1.5 1.5 0 0 0-.47 1.08 1.45 1.45 0 0 0 .47 1.07 3.29 3.29 0 0 1 0 4.76 1 1 0 0 1-.68.3m0 1.75c-2.81 0-12 .23-12 3.25C0 19.41 5.37 24 12 24s12-4.59 12-10.25c0-3.02-9.19-3.25-12-3.25m0 2a32.6 32.6 0 0 1 9 1 .25.25 0 0 1 0 .5 32.6 32.6 0 0 1-9 1 32.6 32.6 0 0 1-9-1 .25.25 0 0 1 0-.48 32.6 32.6 0 0 1 9-1.02M7.26 6.65a.35.35 0 0 1-.06.4 1 1 0 0 0 .7 1.7 1 1 0 0 0 .71-.29 2.36 2.36 0 0 0 .15-3.22 4 4 0 0 1-.21-.38.35.35 0 0 1 .06-.4 1 1 0 0 0 0-1.41 1 1 0 0 0-1.41 0 2.36 2.36 0 0 0-.15 3.22 4 4 0 0 1 .21.38m8.19 0a.35.35 0 0 1-.06.4 1 1 0 0 0 .7 1.7 1 1 0 0 0 .71-.29 2.36 2.36 0 0 0 .2-3.22 4 4 0 0 1-.21-.38.35.35 0 0 1 .06-.4 1 1 0 0 0 0-1.41 1 1 0 0 0-1.41 0 2.35 2.35 0 0 0-.15 3.22 4 4 0 0 1 .16.38"/>
+                </svg>
+              </div>
+              <div class="nav-label-slot">
+                <span class="nav-tab-label text-[10px] font-semibold text-slate-500 tracking-tight leading-none">التغذية</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Tab 3: المتابعة -->
+          <div onclick="switchTab(3)" class="nav-tab-item" data-index="3" aria-label="المتابعة">
+            <div id="tab-content-3" class="tab-content-wrapper text-slate-800">
+              <div class="nav-icon-slot">
+                <svg class="w-[20px] h-[20px]" viewBox="0 1 24 23" fill="currentColor">
+                  <path d="M20.5 2h-5a.27.27 0 0 1-.21-.12 3.82 3.82 0 0 0-6.58 0A.27.27 0 0 1 8.5 2h-5A1.5 1.5 0 0 0 2 3.5v19A1.5 1.5 0 0 0 3.5 24h17a1.5 1.5 0 0 0 1.5-1.5v-19A1.5 1.5 0 0 0 20.5 2M19 16.26a2.5 2.5 0 0 1-.6 1.63l-1.92 2.24a2.52 2.52 0 0 1-1.9.87H5.5a.5.5 0 0 1-.5-.5v-15a.5.5 0 0 1 .5-.5h13a.5.5 0 0 1 .5.5Z"/>
+                  <path d="m14.75 8.66-3.89 5.18a.24.24 0 0 1-.37 0l-1.82-1.79a1.25 1.25 0 0 0-1.77 1.77L9.07 16a2.32 2.32 0 0 0 3.5-.25l4.18-5.57a1.25 1.25 0 0 0-2-1.5Z"/>
+                </svg>
+              </div>
+              <div class="nav-label-slot">
+                <span class="nav-tab-label text-[10px] font-semibold text-slate-500 tracking-tight leading-none">المتابعة</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Tab 4: حسابي -->
+          <div onclick="switchTab(4)" class="nav-tab-item" data-index="4" aria-label="حسابي">
+            <div id="tab-content-4" class="tab-content-wrapper text-slate-800">
+              <div class="nav-icon-slot">
+                <svg class="w-[20px] h-[20px]" viewBox="0 0 14 14" fill="currentColor">
+                  <path fill-rule="evenodd" clip-rule="evenodd" d="M7 14c4.48 0 7-2.52 7-7s-2.52-7-7-7-7 2.52-7 7 2.52 7 7 7m3.637-2.471A4.12 4.12 0 0 0 7 9.354a4.13 4.13 0 0 0-3.636 2.175c.832.598 2.016.971 3.636.971s2.804-.373 3.637-.971m-1.282-6.26c0 1.507-.848 2.356-2.356 2.356-1.507 0-2.355-.849-2.355-2.356 0-1.508.848-2.356 2.355-2.356s2.356.848 2.356 2.356"/>
+                </svg>
+              </div>
+              <div class="nav-label-slot">
+                <span class="nav-tab-label text-[10px] font-semibold text-slate-500 tracking-tight leading-none">حسابي</span>
+              </div>
+            </div>
+          </div>
+        </nav>
+          </div>
+        </div>
+      </div>
+
+      <!-- COLUMN 2: AFTER (Tactile Depth & Material Polish) -->
+      <div class="flex flex-col items-center gap-3 w-full max-w-[430px]">
+        <div class="flex items-center justify-between w-full px-2">
+          <div class="flex items-center gap-2">
+            <span class="w-3 h-3 rounded-full bg-[#0284C7] ring-4 ring-sky-100"></span>
+            <span class="text-sm font-bold text-[#0F172A]">2. نفس الواجهة بالتجسيم الفاخر (AFTER)</span>
+          </div>
+          <span class="text-[11px] font-bold text-sky-700 bg-sky-50 border border-sky-200 px-2 py-0.5 rounded-full">Tactile Surface Finish</span>
+        </div>
+        <p class="text-[11.5px] text-[#64748B] w-full px-2 leading-relaxed">
+          نفس المكونات بالمللي: كروت عائمة بدون إطارات رمادية، ظلال هوائية منتشرة، انحناءات 26px ناعمة، مساحات تنفس رحبة، وأرقام عريضة بارزة.
+        </p>
+
+        <!-- Phone Shell After -->
+        <div class="showcase-phone-shell phone-viewport ring-2 ring-[#0284C7]/20">
+          <!-- Status Bar -->
+          <div class="h-11 bg-transparent px-6 flex items-center justify-between shrink-0 select-none z-20">
+            <span class="text-[13px] font-semibold font-inter text-[#0F172A]">9:41</span>
+            <div class="w-24 h-4 bg-black rounded-full mx-auto -mt-1"></div>
+            <div class="flex items-center gap-1.5 text-[#0F172A]">
+              <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="currentColor"><path d="M12 3c-4.97 0-9 4.03-9 9 0 2.12.74 4.07 1.97 5.61L12 22l7.03-4.39C20.26 16.07 21 14.12 21 12c0-4.97-4.03-9-9-9z"/></svg>
+              <span class="text-[11px] font-bold font-inter">5G</span>
+              <div class="w-5 h-2.5 border border-current rounded-xs p-0.5 flex items-center">
+                <div class="h-full w-full bg-current rounded-2xs"></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Phone Content Scroll Area -->
+          <div class="flex-1 overflow-y-auto no-scrollbar relative">
+            <div id="after-screen-today" class="tactile-canvas-bg px-4 py-3 space-y-3 pb-28 sm:px-5 sm:space-y-3.5">
+
+            <!-- Header: Greeting -->
+            <section class="flex items-center justify-between pt-1 pb-0.5">
+              <div class="space-y-1">
+                <p class="text-[12px] font-medium text-[#64748B] leading-none">السبت، 10 أكتوبر 2026</p>
+                <h1 class="text-[20px] font-bold text-[#0F172A] tracking-tight leading-tight">صباح الخير، أحمد</h1>
+              </div>
+            </section>
+
+            <!-- Date Selector (User Reference Capsule Style with Circular Disk in #7B4FFE) -->
+            <section class="bg-white border-none rounded-[26px] p-4 sm:p-4.5 tactile-card-surface space-y-2.5">
+              <div class="flex items-center justify-between px-1">
+                <span class="text-[13px] font-bold text-[#0F172A] leading-none">جدول الأسبوع</span>
+                <div class="app-badge inline-flex items-center justify-center h-6 px-2.5 rounded-[7px] bg-[#F8FAFC] border-none shadow-[0_1px_2px_rgba(0,0,0,0.02)] transition-all">
+                  <span class="text-[11px] font-semibold text-[#1E293B] leading-none">الأسبوع 4 · تمرين 1 من 4</span>
+                </div>
+              </div>
+              <div id="after-date-selector-row" class="grid grid-cols-7 gap-1 sm:gap-1.5 items-center pt-2 pb-2 overflow-visible">
+                <button onclick="selectDate(0)" id="after-date-item-0" class="soft-muted-date-pill text-center flex flex-col items-center justify-between pt-2.5 pb-1.5 px-0.5 cursor-pointer select-none">
+                  <span class="text-[10px] font-bold block text-white leading-none">السبت</span>
+                  <div class="w-[28px] h-[28px] sm:w-[31px] sm:h-[31px] rounded-full bg-white flex items-center justify-center shadow-sm">
+                    <span class="text-[13px] sm:text-[14px] font-bold text-[#7B4FFE] leading-none font-inter">10</span>
+                  </div>
+                </button>
+                <button onclick="selectDate(1)" id="after-date-item-1" class="inactive-date-pill text-center text-[#64748B] flex flex-col items-center justify-between pt-1.5 pb-1 px-0.5 cursor-pointer select-none">
+                  <span class="text-[10px] font-medium block text-[#64748B] leading-none">الأحد</span>
+                  <div class="w-[28px] h-[28px] sm:w-[30px] sm:h-[30px] rounded-full bg-white flex items-center justify-center">
+                    <span class="text-[12px] sm:text-[13px] font-semibold text-[#1E293B] leading-none font-inter">11</span>
+                  </div>
+                </button>
+                <button onclick="selectDate(2)" id="after-date-item-2" class="inactive-date-pill text-center text-[#64748B] flex flex-col items-center justify-between pt-1.5 pb-1 px-0.5 cursor-pointer select-none">
+                  <span class="text-[10px] font-medium block text-[#64748B] leading-none">الإثنين</span>
+                  <div class="w-[28px] h-[28px] sm:w-[30px] sm:h-[30px] rounded-full bg-white flex items-center justify-center">
+                    <span class="text-[12px] sm:text-[13px] font-semibold text-[#1E293B] leading-none font-inter">12</span>
+                  </div>
+                </button>
+                <button onclick="selectDate(3)" id="after-date-item-3" class="inactive-date-pill text-center text-[#64748B] flex flex-col items-center justify-between pt-1.5 pb-1 px-0.5 cursor-pointer select-none">
+                  <span class="text-[10px] font-medium block text-[#64748B] leading-none">الثلاثاء</span>
+                  <div class="w-[28px] h-[28px] sm:w-[30px] sm:h-[30px] rounded-full bg-white flex items-center justify-center">
+                    <span class="text-[12px] sm:text-[13px] font-semibold text-[#1E293B] leading-none font-inter">13</span>
+                  </div>
+                </button>
+                <button onclick="selectDate(4)" id="after-date-item-4" class="inactive-date-pill text-center text-[#64748B] flex flex-col items-center justify-between pt-1.5 pb-1 px-0.5 cursor-pointer select-none">
+                  <span class="text-[10px] font-medium block text-[#64748B] leading-none">الأربعاء</span>
+                  <div class="w-[28px] h-[28px] sm:w-[30px] sm:h-[30px] rounded-full bg-white flex items-center justify-center">
+                    <span class="text-[12px] sm:text-[13px] font-semibold text-[#1E293B] leading-none font-inter">14</span>
+                  </div>
+                </button>
+                <button onclick="selectDate(5)" id="after-date-item-5" class="inactive-date-pill text-center text-[#64748B] flex flex-col items-center justify-between pt-1.5 pb-1 px-0.5 cursor-pointer select-none">
+                  <span class="text-[10px] font-medium block text-[#94A3B8] leading-none">الخميس</span>
+                  <div class="w-[28px] h-[28px] sm:w-[30px] sm:h-[30px] rounded-full bg-white flex items-center justify-center">
+                    <span class="text-[12px] sm:text-[13px] font-semibold text-[#64748B] leading-none font-inter">15</span>
+                  </div>
+                </button>
+                <button onclick="selectDate(6)" id="after-date-item-6" class="inactive-date-pill text-center text-[#64748B] flex flex-col items-center justify-between pt-1.5 pb-1 px-0.5 cursor-pointer select-none">
+                  <span class="text-[10px] font-medium block text-[#64748B] leading-none">الجمعة</span>
+                  <div class="w-[28px] h-[28px] sm:w-[30px] sm:h-[30px] rounded-full bg-white flex items-center justify-center">
+                    <span class="text-[12px] sm:text-[13px] font-semibold text-[#1E293B] leading-none font-inter">16</span>
+                  </div>
+                </button>
+              </div>
+            </section>
+
+            <!-- Fitness Workout Hero Card UI: Premium Editorial iOS Design (Adaptive Dynamic) -->
+            <section id="after-home-hero-card" class="bg-white border-none rounded-[26px] p-5 sm:p-5.5 tactile-card-hero transition-all duration-300 relative overflow-hidden">
+              <!-- Top Row: Section Title & Session Number -->
+              <div class="flex items-center justify-between mb-3">
+                <span id="after-home-hero-type-badge" class="text-[13px] font-bold text-[#0F172A] leading-none">
+                  تمرين اليوم
+                </span>
+                <div id="after-home-hero-phase-container" class="app-badge inline-flex items-center justify-center h-6 px-2.5 rounded-[7px] bg-[#F8FAFC] border-none shadow-[0_1px_2px_rgba(0,0,0,0.02)] transition-all">
+                  <span id="after-home-hero-phase-badge" class="text-[11px] font-semibold text-[#1E293B] leading-none">
+                    الجلسة 1 من 4
+                  </span>
+                </div>
+              </div>
+
+              <!-- Main Content: Left Visual + Right Workout Info -->
+              <div class="flex items-center justify-between gap-3 mb-3.5 pt-0.5">
+                <div class="space-y-1.5 flex-1 min-w-0">
+                  <h2 id="after-home-workout-title" class="text-[21px] font-extrabold text-[#0F172A] font-inter tracking-tight leading-tight" dir="ltr" style="text-align: right;">Push Day</h2>
+                  <p id="after-home-workout-arabic-title" class="text-[12px] font-semibold text-[#475569] leading-tight">الصدر والترايسبس · عضلات الدفع</p>
+                  
+                  <!-- Metadata Info Line -->
+                  <div class="pt-1">
+                    <span class="text-[12px] font-medium text-[#64748B] flex items-center gap-1.5 leading-none">
+                      <span id="after-home-workout-duration"><strong class="font-extrabold text-[#0F172A] font-inter text-[13px]">45</strong> <span class="text-[10.5px] text-[#94A3B8]">دقيقة</span></span>
+                      <span class="text-slate-300">·</span>
+                      <span id="after-home-workout-ex-count"><strong class="font-extrabold text-[#0F172A] font-inter text-[13px]">5</strong> <span class="text-[10.5px] text-[#94A3B8]">تمارين</span></span>
+                    </span>
+                  </div>
+                </div>
+
+                <!-- Exercise Visual Thumbnail -->
+                <div id="after-home-hero-visual" class="relative w-[94px] h-[84px] rounded-[18px] overflow-hidden shrink-0 border-none shadow-[0_2px_8px_rgba(0,0,0,0.03)] bg-[#F8FAFC] flex items-center justify-center">
+                  <img src="/exercises/MACHINE_CHEST_PRESS/0.jpg" alt="Push Day" onerror="this.src='/exercises/AB_WHEEL_ROLLOUT/0.jpg'" class="w-full h-full object-cover">
+                  <div class="absolute inset-0 bg-gradient-to-t from-black/20 via-transparent to-transparent pointer-events-none"></div>
+                </div>
+              </div>
+
+              <!-- Bottom CTA Action -->
+              <div class="pt-0.5">
+                <button id="after-home-hero-cta" onclick="handleHeroCtaClick()" class="w-full h-[40px] rounded-full tactile-btn-primary text-white text-[12.5px] font-bold transition-all flex items-center justify-center gap-2 cursor-pointer">
+                  <span id="after-home-hero-cta-text">ابدأ التمرين الآن</span>
+                  <svg class="w-3.5 h-3.5 rtl:rotate-180" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3"/></svg>
+                </button>
+              </div>
+            </section>
+
+            <!-- Nutrition Summary Section (Original Before Design) -->
+            <section id="after-home-nutrition-card" class="bg-white border-none rounded-[26px] p-5 sm:p-5.5 tactile-card-surface space-y-4 transition-all duration-300">
+              <div class="flex items-center justify-between">
+                <span class="text-[13px] font-bold text-[#0F172A] leading-none">التغذية</span>
+                <button onclick="switchTab(2)" class="tactile-ghost-pill" aria-label="عرض الوجبات">
+                  <span>عرض الوجبات</span>
+                  <svg class="w-3 h-3 rtl:rotate-180" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></svg>
+                </button>
+              </div>
+
+              <div class="flex items-center justify-between gap-3 pt-0.5">
+                <div class="relative w-[84px] h-[84px] shrink-0 flex items-center justify-center">
+                  <svg class="w-full h-full -rotate-90 transform" viewBox="0 0 88 88">
+                    <!-- Carbs Arc (41%) -->
+                    <circle cx="44" cy="44" r="36" stroke="#FB7185" stroke-width="5" fill="none"
+                            stroke-dasharray="92.74 226.2" stroke-dashoffset="0" />
+                    <!-- Protein Arc (29%) -->
+                    <circle cx="44" cy="44" r="36" stroke="#38BDF8" stroke-width="5" fill="none"
+                            stroke-dasharray="65.6 226.2" stroke-dashoffset="-92.74" />
+                    <!-- Fat Arc (30%) -->
+                    <circle cx="44" cy="44" r="36" stroke="#A78BFA" stroke-width="5" fill="none"
+                            stroke-dasharray="67.86 226.2" stroke-dashoffset="-158.34" />
+                  </svg>
+                  <div class="absolute inset-0 flex flex-col items-center justify-center text-center">
+                    <span class="text-[21px] font-extrabold text-[#0F172A] font-inter leading-none tracking-tight">2,450</span>
+                    <span class="text-[9.5px] font-semibold text-[#94A3B8] leading-none mt-1 uppercase tracking-wider">سعرة</span>
+                  </div>
+                </div>
+
+                <div class="flex-1 grid grid-cols-4 gap-1 text-center items-center">
+                  <div class="space-y-1.5">
+                    <span class="text-[11.5px] font-bold text-[#FB7185] font-inter block leading-none">41%</span>
+                    <div class="flex items-baseline justify-center gap-0.5"><span class="text-[17px] font-extrabold text-[#0F172A] font-inter leading-none">250</span><span class="text-[10px] font-semibold text-[#94A3B8] leading-none">g</span></div>
+                    <span class="text-[11px] font-semibold text-[#64748B] block leading-none">كارب</span>
+                  </div>
+                  <div class="space-y-1.5">
+                    <span class="text-[11.5px] font-bold text-[#0284C7] font-inter block leading-none">29%</span>
+                    <div class="flex items-baseline justify-center gap-0.5"><span class="text-[17px] font-extrabold text-[#0F172A] font-inter leading-none">180</span><span class="text-[10px] font-semibold text-[#94A3B8] leading-none">g</span></div>
+                    <span class="text-[11px] font-semibold text-[#64748B] block leading-none">بروتين</span>
+                  </div>
+                  <div class="space-y-1.5">
+                    <span class="text-[11.5px] font-bold text-[#8B5CF6] font-inter block leading-none">30%</span>
+                    <div class="flex items-baseline justify-center gap-0.5"><span class="text-[17px] font-extrabold text-[#0F172A] font-inter leading-none">81</span><span class="text-[10px] font-semibold text-[#94A3B8] leading-none">g</span></div>
+                    <span class="text-[11px] font-semibold text-[#64748B] block leading-none">دهون</span>
+                  </div>
+                  <div class="space-y-1.5">
+                    <div class="h-[12px] flex items-center justify-center">
+                      <svg class="w-3.5 h-3.5 text-[#58B4E5]" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2.69l5.66 5.66a8 8 0 1 1-11.31 0z"/></svg>
+                    </div>
+                    <div class="flex items-baseline justify-center gap-0.5"><span class="text-[17px] font-extrabold text-[#0F172A] font-inter leading-none">3.5</span><span class="text-[10px] font-semibold text-[#94A3B8] leading-none">L</span></div>
+                    <span class="text-[11px] font-semibold text-[#64748B] block leading-none">ماء</span>
+                  </div>
+                </div>
+              </div>
+            </section>
+
+            <!-- Next Check-in Card: Balanced & Harmonious -->
+            <section class="bg-white border-none rounded-[26px] p-4 sm:p-4.5 tactile-card-surface space-y-3">
+              <div class="flex items-center justify-between">
+                <span class="text-[13px] font-bold text-[#0F172A] leading-none">ميعاد المتابعة</span>
+                <button onclick="switchTab(3)" class="tactile-ghost-pill tactile-ghost-pill-sm shrink-0" aria-label="المتابعات السابقة">
+                  <span>المتابعات السابقة</span>
+                  <svg class="w-3 h-3 rtl:rotate-180" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></svg>
+                </button>
+              </div>
+
+              <div class="flex items-center justify-between gap-2.5 pt-0.5">
+                <div class="flex items-center gap-2.5 min-w-0">
+                  <div class="w-8 h-8 rounded-[10px] bg-[#F0FDF4] border border-[#DCFCE7] flex items-center justify-center shrink-0">
+                    <svg class="w-4 h-4 text-[#16A34A]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
+                  </div>
+                  <div class="min-w-0">
+                    <h4 class="text-[14px] font-bold text-[#0F172A] leading-none">الجمعة، 16 أكتوبر 2026</h4>
+                    <span class="text-[11.5px] text-[#64748B] block mt-1.5 leading-none whitespace-nowrap">متابعة الأسبوع 4 · نافذة 72 ساعة</span>
+                  </div>
+                </div>
+                <span class="text-[11px] font-bold text-[#16A34A] bg-[#DCFCE7]/80 border border-[#86EFAC]/60 px-2.5 py-1 rounded-full leading-none shrink-0 whitespace-nowrap">متبقي 6 أيام</span>
+              </div>
+            </section>
+
+            <!-- Supplements: Dense & Professional -->
+            <section class="bg-white border-none rounded-[26px] p-4 sm:p-4.5 tactile-card-surface space-y-2.5">
+              <div class="flex items-center justify-between">
+                <span class="text-[13px] font-bold text-[#0F172A] leading-none">مكملات اليوم</span>
+                <span class="text-[11px] font-semibold text-[#0284C7] bg-[#F0F7FF] border border-[#E0F2FE] w-[74px] justify-center text-center py-0.5 rounded-full leading-none inline-flex items-center ml-3.5">3 مكملات</span>
+              </div>
+
+              <div class="space-y-1.5">
+                <!-- Creatine -->
+                <div class="tactile-sub-surface rounded-[16px] px-3.5 py-2.5 flex items-center justify-between">
+                  <div class="min-w-0">
+                    <span class="text-[13px] font-bold text-[#0F172A] block leading-tight truncate">كرياتين مونوهيدرات</span>
+                    <span class="text-[11px] text-[#64748B] block leading-tight mt-1"><strong class="text-[#0F172A] font-semibold">5</strong> <span class="text-[10px] text-[#94A3B8]">جم</span> مع <strong class="text-[#0F172A] font-semibold">300</strong> <span class="text-[10px] text-[#94A3B8]">مل</span> ماء</span>
+                  </div>
+                  <span class="tactile-ghost-pill tactile-ghost-pill-sm w-[74px] justify-center text-center text-[#284C7C] shrink-0">صباحاً</span>
+                </div>
+
+                <!-- Omega 3 -->
+                <div class="tactile-sub-surface rounded-[16px] px-3.5 py-2.5 flex items-center justify-between">
+                  <div class="min-w-0">
+                    <span class="text-[13px] font-bold text-[#0F172A] block leading-tight truncate">أوميجا 3 (زيت سمك)</span>
+                    <span class="text-[11px] text-[#64748B] block leading-tight mt-1"><strong class="text-[#0F172A] font-semibold">2</strong> <span class="text-[10px] text-[#94A3B8]">كبسولة</span> مع الوجبة</span>
+                  </div>
+                  <span class="tactile-ghost-pill tactile-ghost-pill-sm w-[74px] justify-center text-center text-[#284C7C] shrink-0">مع الغداء</span>
+                </div>
+
+                <!-- Vitamin D3 -->
+                <div class="tactile-sub-surface rounded-[16px] px-3.5 py-2.5 flex items-center justify-between">
+                  <div class="min-w-0">
+                    <span class="text-[13px] font-bold text-[#0F172A] block leading-tight truncate">فيتامين D3</span>
+                    <span class="text-[11px] text-[#64748B] block leading-tight mt-1"><strong class="text-[#0F172A] font-semibold">5000</strong> <span class="text-[10px] text-[#94A3B8]">وحدة دولية</span></span>
+                  </div>
+                  <span class="tactile-ghost-pill tactile-ghost-pill-sm w-[74px] justify-center text-center text-[#284C7C] shrink-0">مع الفطور</span>
+                </div>
+              </div>
+            </section>
+
+            <div class="h-2"></div>
+          </div>
+          </div>
+
+          <!-- Bottom Navigation -->
+          <div class="relative shrink-0 pointer-events-none">
+            <nav id="floating-bottom-nav" class="glass-nav-container absolute bottom-3 inset-x-3.5 h-[60px] px-1.5 py-1 flex items-center justify-between z-30 select-none">
+          <div id="liquid-lens" class="liquid-lens settled"></div>
+
+          <!-- Tab 0: اليوم -->
+          <div onclick="switchTab(0)" class="nav-tab-item" data-index="0" aria-label="اليوم">
+            <div id="tab-content-0" class="tab-content-wrapper text-sky-600">
+              <div class="nav-icon-slot">
+                <svg class="w-[20px] h-[20px]" viewBox="0 1.2 24 23.2" fill="currentColor">
+                  <path d="m2.64 10.59 9-7.48a.48.48 0 0 1 .62 0l9 7.48a1.45 1.45 0 0 0 2.06-.22 1.52 1.52 0 0 0-.21-2.11l-9-7.49a3.41 3.41 0 0 0-4.32 0l-9 7.49a1.52 1.52 0 0 0-.21 2.11 1.45 1.45 0 0 0 2.06.22"/>
+                  <path d="M22.28 22v-7a2.22 2.22 0 0 0-.73-1.59l-8.3-7a1.94 1.94 0 0 0-2.5 0l-8.3 7A2.22 2.22 0 0 0 1.72 15v7a2 2 0 0 0 2 2h5.34a1 1 0 0 0 1-1v-5.5a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1V23a1 1 0 0 0 1 1h5.38a2 2 0 0 0 1.84-2"/>
+                </svg>
+              </div>
+              <div class="nav-label-slot">
+                <span class="nav-tab-label text-[10px] font-bold tracking-tight leading-none">اليوم</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Tab 1: التمارين -->
+          <div onclick="switchTab(1)" class="nav-tab-item" data-index="1" aria-label="التمارين">
+            <div id="tab-content-1" class="tab-content-wrapper text-slate-800">
+              <div class="nav-icon-slot">
+                <svg class="w-[22px] h-[16px]" viewBox="0 4 24 16" fill="currentColor">
+                  <rect x="7" y="10.5" width="10" height="3" rx="1.5"/>
+                  <rect x="4.5" y="4.5" width="3" height="15" rx="1.5"/>
+                  <rect x="1.75" y="6.5" width="2.25" height="11" rx="1.125"/>
+                  <rect x="0.25" y="8.5" width="1.2" height="7" rx="0.6"/>
+                  <rect x="16.5" y="4.5" width="3" height="15" rx="1.5"/>
+                  <rect x="20" y="6.5" width="2.25" height="11" rx="1.125"/>
+                  <rect x="22.55" y="8.5" width="1.2" height="7" rx="0.6"/>
+                </svg>
+              </div>
+              <div class="nav-label-slot">
+                <span class="nav-tab-label text-[10px] font-semibold text-slate-500 tracking-tight leading-none">التمارين</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Tab 2: التغذية -->
+          <div onclick="switchTab(2)" class="nav-tab-item" data-index="2" aria-label="التغذية">
+            <div id="tab-content-2" class="tab-content-wrapper text-slate-800">
+              <div class="nav-icon-slot">
+                <svg class="w-[21px] h-[21px]" viewBox="0 3.0 24 22" fill="currentColor">
+                  <path d="M12 8.75a1 1 0 0 1-.68-.27.9.9 0 0 1 0-1.3 1.5 1.5 0 0 0 .47-1.08 1.47 1.47 0 0 0-.47-1.1 3.32 3.32 0 0 1-1-2.38 3.32 3.32 0 0 1 1-2.38 1 1 0 0 1 1.36 0 .9.9 0 0 1 0 1.3 1.5 1.5 0 0 0-.47 1.08 1.45 1.45 0 0 0 .47 1.07 3.29 3.29 0 0 1 0 4.76 1 1 0 0 1-.68.3m0 1.75c-2.81 0-12 .23-12 3.25C0 19.41 5.37 24 12 24s12-4.59 12-10.25c0-3.02-9.19-3.25-12-3.25m0 2a32.6 32.6 0 0 1 9 1 .25.25 0 0 1 0 .5 32.6 32.6 0 0 1-9 1 32.6 32.6 0 0 1-9-1 .25.25 0 0 1 0-.48 32.6 32.6 0 0 1 9-1.02M7.26 6.65a.35.35 0 0 1-.06.4 1 1 0 0 0 .7 1.7 1 1 0 0 0 .71-.29 2.36 2.36 0 0 0 .15-3.22 4 4 0 0 1-.21-.38.35.35 0 0 1 .06-.4 1 1 0 0 0 0-1.41 1 1 0 0 0-1.41 0 2.36 2.36 0 0 0-.15 3.22 4 4 0 0 1 .21.38m8.19 0a.35.35 0 0 1-.06.4 1 1 0 0 0 .7 1.7 1 1 0 0 0 .71-.29 2.36 2.36 0 0 0 .2-3.22 4 4 0 0 1-.21-.38.35.35 0 0 1 .06-.4 1 1 0 0 0 0-1.41 1 1 0 0 0-1.41 0 2.35 2.35 0 0 0-.15 3.22 4 4 0 0 1 .16.38"/>
+                </svg>
+              </div>
+              <div class="nav-label-slot">
+                <span class="nav-tab-label text-[10px] font-semibold text-slate-500 tracking-tight leading-none">التغذية</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Tab 3: المتابعة -->
+          <div onclick="switchTab(3)" class="nav-tab-item" data-index="3" aria-label="المتابعة">
+            <div id="tab-content-3" class="tab-content-wrapper text-slate-800">
+              <div class="nav-icon-slot">
+                <svg class="w-[20px] h-[20px]" viewBox="0 1 24 23" fill="currentColor">
+                  <path d="M20.5 2h-5a.27.27 0 0 1-.21-.12 3.82 3.82 0 0 0-6.58 0A.27.27 0 0 1 8.5 2h-5A1.5 1.5 0 0 0 2 3.5v19A1.5 1.5 0 0 0 3.5 24h17a1.5 1.5 0 0 0 1.5-1.5v-19A1.5 1.5 0 0 0 20.5 2M19 16.26a2.5 2.5 0 0 1-.6 1.63l-1.92 2.24a2.52 2.52 0 0 1-1.9.87H5.5a.5.5 0 0 1-.5-.5v-15a.5.5 0 0 1 .5-.5h13a.5.5 0 0 1 .5.5Z"/>
+                  <path d="m14.75 8.66-3.89 5.18a.24.24 0 0 1-.37 0l-1.82-1.79a1.25 1.25 0 0 0-1.77 1.77L9.07 16a2.32 2.32 0 0 0 3.5-.25l4.18-5.57a1.25 1.25 0 0 0-2-1.5Z"/>
+                </svg>
+              </div>
+              <div class="nav-label-slot">
+                <span class="nav-tab-label text-[10px] font-semibold text-slate-500 tracking-tight leading-none">المتابعة</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Tab 4: حسابي -->
+          <div onclick="switchTab(4)" class="nav-tab-item" data-index="4" aria-label="حسابي">
+            <div id="tab-content-4" class="tab-content-wrapper text-slate-800">
+              <div class="nav-icon-slot">
+                <svg class="w-[20px] h-[20px]" viewBox="0 0 14 14" fill="currentColor">
+                  <path fill-rule="evenodd" clip-rule="evenodd" d="M7 14c4.48 0 7-2.52 7-7s-2.52-7-7-7-7 2.52-7 7 2.52 7 7 7m3.637-2.471A4.12 4.12 0 0 0 7 9.354a4.13 4.13 0 0 0-3.636 2.175c.832.598 2.016.971 3.636.971s2.804-.373 3.637-.971m-1.282-6.26c0 1.507-.848 2.356-2.356 2.356-1.507 0-2.355-.849-2.355-2.356 0-1.508.848-2.356 2.355-2.356s2.356.848 2.356 2.356"/>
+                </svg>
+              </div>
+              <div class="nav-label-slot">
+                <span class="nav-tab-label text-[10px] font-semibold text-slate-500 tracking-tight leading-none">حسابي</span>
+              </div>
+            </div>
+          </div>
+        </nav>
+          </div>
+        </div>
+      </div>
+
+      <!-- COLUMN 3: REFERENCE (Master Image) -->
+      <div class="flex flex-col items-center gap-3 w-full max-w-[430px]">
+        <div class="flex items-center justify-between w-full px-2">
+          <div class="flex items-center gap-2">
+            <span class="w-3 h-3 rounded-full bg-emerald-500"></span>
+            <span class="text-sm font-bold text-[#0F172A]">3. الصورة المرجعية المرفقة (REFERENCE)</span>
+          </div>
+          <span class="text-[11px] font-bold text-emerald-700 bg-emerald-50 border border-emerald-200 px-2 py-0.5 rounded-full">مرجع الخامة فقط</span>
+        </div>
+        <p class="text-[11.5px] text-[#64748B] w-full px-2 leading-relaxed">
+          المرجع البصري المعتمد لاستلهام خامة الأسطح السيراميكية، ونعومة الحواف، وتدرج الظلال، ونقاء المساحات.
+        </p>
+
+        <!-- Reference Image Container -->
+        <div class="showcase-phone-shell phone-viewport overflow-hidden bg-[#ECEEF2] p-2 flex items-center justify-center">
+          <img src="/reference_tactile_master.png" alt="Reference Master" class="w-full h-full object-contain rounded-[38px] shadow-sm">
+        </div>
+      </div>
+
+    </div>
+
+    <!-- MODE 2: Interactive Slider (Split View) -->
+    <div id="view-slider" class="hidden flex-col items-center justify-center py-6">
+      <div class="text-center mb-4">
+        <span class="text-sm font-bold text-[#0F172A]">سلايدر السحب التفاعلي (اسحب المقبض لليمين واليسار)</span>
+        <p class="text-xs text-[#64748B] mt-1">حرّك الخط الفاصل لترى التحول الفوري بين الواجهة الأصلية (يمين) والتجسيم الفاخر (يسار) على نفس البكسل بالضبط.</p>
+      </div>
+
+      <div class="split-container phone-viewport" id="split-box">
+        <!-- Before layer (full width behind) -->
+        <div class="split-before phone-viewport">
+          <div class="h-11 bg-transparent px-6 flex items-center justify-between shrink-0 select-none">
+            <span class="text-[13px] font-semibold font-inter text-[#0F172A]">9:41</span>
+            <div class="w-24 h-4 bg-black rounded-full mx-auto -mt-1"></div>
+            <span class="text-[11px] font-bold font-inter text-[#0F172A]">BEFORE</span>
+          </div>
+          <div id="before-screen-today" class="premium-page-bg px-4 py-3 space-y-3 pb-28 sm:px-5 sm:space-y-3.5">
+
+            <!-- Header: Greeting -->
+            <section class="flex items-center justify-between pt-1 pb-0.5">
+              <div class="space-y-1">
+                <p class="text-[12px] font-medium text-[#64748B] leading-none">السبت، 10 أكتوبر 2026</p>
+                <h1 class="text-[20px] font-bold text-[#0F172A] tracking-tight leading-tight">صباح الخير، أحمد</h1>
+              </div>
+            </section>
+
+            <!-- Date Selector (User Reference Capsule Style with Circular Disk in #7B4FFE) -->
+            <section class="bg-white border border-[#E7EEF3] rounded-[22px] p-3 sm:p-3.5 soft-card-shadow space-y-2.5">
+              <div class="flex items-center justify-between px-1">
+                <span class="text-[13px] font-bold text-[#0F172A] leading-none">جدول الأسبوع</span>
+                <div class="app-badge inline-flex items-center justify-center h-6 px-2.5 rounded-[7px] bg-[#F8FAFC] border border-[#E2E8F0] shadow-[0_1px_2px_rgba(0,0,0,0.02)] transition-all">
+                  <span class="text-[11px] font-semibold text-[#1E293B] leading-none">الأسبوع 4 · تمرين 1 من 4</span>
+                </div>
+              </div>
+              <div id="before-date-selector-row" class="grid grid-cols-7 gap-1 sm:gap-1.5 items-center pt-2 pb-2 overflow-visible">
+                <button onclick="selectDate(0)" id="before-date-item-0" class="soft-muted-date-pill text-center flex flex-col items-center justify-between pt-2.5 pb-1.5 px-0.5 cursor-pointer select-none">
+                  <span class="text-[10px] font-bold block text-white leading-none">السبت</span>
+                  <div class="w-[28px] h-[28px] sm:w-[31px] sm:h-[31px] rounded-full bg-white flex items-center justify-center shadow-sm">
+                    <span class="text-[13px] sm:text-[14px] font-bold text-[#7B4FFE] leading-none font-inter">10</span>
+                  </div>
+                </button>
+                <button onclick="selectDate(1)" id="before-date-item-1" class="inactive-date-pill text-center text-[#64748B] flex flex-col items-center justify-between pt-1.5 pb-1 px-0.5 cursor-pointer select-none">
+                  <span class="text-[10px] font-medium block text-[#64748B] leading-none">الأحد</span>
+                  <div class="w-[28px] h-[28px] sm:w-[30px] sm:h-[30px] rounded-full bg-white flex items-center justify-center">
+                    <span class="text-[12px] sm:text-[13px] font-semibold text-[#1E293B] leading-none font-inter">11</span>
+                  </div>
+                </button>
+                <button onclick="selectDate(2)" id="before-date-item-2" class="inactive-date-pill text-center text-[#64748B] flex flex-col items-center justify-between pt-1.5 pb-1 px-0.5 cursor-pointer select-none">
+                  <span class="text-[10px] font-medium block text-[#64748B] leading-none">الإثنين</span>
+                  <div class="w-[28px] h-[28px] sm:w-[30px] sm:h-[30px] rounded-full bg-white flex items-center justify-center">
+                    <span class="text-[12px] sm:text-[13px] font-semibold text-[#1E293B] leading-none font-inter">12</span>
+                  </div>
+                </button>
+                <button onclick="selectDate(3)" id="before-date-item-3" class="inactive-date-pill text-center text-[#64748B] flex flex-col items-center justify-between pt-1.5 pb-1 px-0.5 cursor-pointer select-none">
+                  <span class="text-[10px] font-medium block text-[#64748B] leading-none">الثلاثاء</span>
+                  <div class="w-[28px] h-[28px] sm:w-[30px] sm:h-[30px] rounded-full bg-white flex items-center justify-center">
+                    <span class="text-[12px] sm:text-[13px] font-semibold text-[#1E293B] leading-none font-inter">13</span>
+                  </div>
+                </button>
+                <button onclick="selectDate(4)" id="before-date-item-4" class="inactive-date-pill text-center text-[#64748B] flex flex-col items-center justify-between pt-1.5 pb-1 px-0.5 cursor-pointer select-none">
+                  <span class="text-[10px] font-medium block text-[#64748B] leading-none">الأربعاء</span>
+                  <div class="w-[28px] h-[28px] sm:w-[30px] sm:h-[30px] rounded-full bg-white flex items-center justify-center">
+                    <span class="text-[12px] sm:text-[13px] font-semibold text-[#1E293B] leading-none font-inter">14</span>
+                  </div>
+                </button>
+                <button onclick="selectDate(5)" id="before-date-item-5" class="inactive-date-pill text-center text-[#64748B] flex flex-col items-center justify-between pt-1.5 pb-1 px-0.5 cursor-pointer select-none">
+                  <span class="text-[10px] font-medium block text-[#94A3B8] leading-none">الخميس</span>
+                  <div class="w-[28px] h-[28px] sm:w-[30px] sm:h-[30px] rounded-full bg-white flex items-center justify-center">
+                    <span class="text-[12px] sm:text-[13px] font-semibold text-[#64748B] leading-none font-inter">15</span>
+                  </div>
+                </button>
+                <button onclick="selectDate(6)" id="before-date-item-6" class="inactive-date-pill text-center text-[#64748B] flex flex-col items-center justify-between pt-1.5 pb-1 px-0.5 cursor-pointer select-none">
+                  <span class="text-[10px] font-medium block text-[#64748B] leading-none">الجمعة</span>
+                  <div class="w-[28px] h-[28px] sm:w-[30px] sm:h-[30px] rounded-full bg-white flex items-center justify-center">
+                    <span class="text-[12px] sm:text-[13px] font-semibold text-[#1E293B] leading-none font-inter">16</span>
+                  </div>
+                </button>
+              </div>
+            </section>
+
+            <!-- Fitness Workout Hero Card UI: Premium Editorial iOS Design (Adaptive Dynamic) -->
+            <section id="before-home-hero-card" class="bg-white border border-[#E7EEF3] rounded-[22px] p-4.5 sm:p-5 card-shadow transition-all duration-300 relative overflow-hidden">
+              <!-- Top Row: Section Title & Session Number -->
+              <div class="flex items-center justify-between mb-3">
+                <span id="before-home-hero-type-badge" class="text-[13px] font-bold text-[#0F172A] leading-none">
+                  تمرين اليوم
+                </span>
+                <div id="before-home-hero-phase-container" class="app-badge inline-flex items-center justify-center h-6 px-2.5 rounded-[7px] bg-[#F8FAFC] border border-[#E2E8F0] shadow-[0_1px_2px_rgba(0,0,0,0.02)] transition-all">
+                  <span id="before-home-hero-phase-badge" class="text-[11px] font-semibold text-[#1E293B] leading-none">
+                    الجلسة 1 من 4
+                  </span>
+                </div>
+              </div>
+
+              <!-- Main Content: Left Visual + Right Workout Info -->
+              <div class="flex items-center justify-between gap-3 mb-3.5 pt-0.5">
+                <div class="space-y-1.5 flex-1 min-w-0">
+                  <h2 id="before-home-workout-title" class="text-[21px] font-extrabold text-[#0F172A] font-inter tracking-tight leading-tight" dir="ltr" style="text-align: right;">Push Day</h2>
+                  <p id="before-home-workout-arabic-title" class="text-[12px] font-semibold text-[#475569] leading-tight">الصدر والترايسبس · عضلات الدفع</p>
+                  
+                  <!-- Metadata Info Line -->
+                  <div class="pt-1">
+                    <span class="text-[12px] font-medium text-[#64748B] flex items-center gap-1.5 leading-none">
+                      <span id="before-home-workout-duration"><strong class="font-extrabold text-[#0F172A] font-inter text-[13px]">45</strong> <span class="text-[10.5px] text-[#94A3B8]">دقيقة</span></span>
+                      <span class="text-slate-300">·</span>
+                      <span id="before-home-workout-ex-count"><strong class="font-extrabold text-[#0F172A] font-inter text-[13px]">5</strong> <span class="text-[10.5px] text-[#94A3B8]">تمارين</span></span>
+                    </span>
+                  </div>
+                </div>
+
+                <!-- Exercise Visual Thumbnail -->
+                <div id="before-home-hero-visual" class="relative w-[94px] h-[84px] rounded-[18px] overflow-hidden shrink-0 border border-[#E7EEF3] shadow-[0_2px_8px_rgba(0,0,0,0.03)] bg-[#F8FAFC] flex items-center justify-center">
+                  <img src="/exercises/MACHINE_CHEST_PRESS/0.jpg" alt="Push Day" onerror="this.src='/exercises/AB_WHEEL_ROLLOUT/0.jpg'" class="w-full h-full object-cover">
+                  <div class="absolute inset-0 bg-gradient-to-t from-black/20 via-transparent to-transparent pointer-events-none"></div>
+                </div>
+              </div>
+
+              <!-- Bottom CTA Action -->
+              <div class="pt-0.5">
+                <button id="before-home-hero-cta" onclick="handleHeroCtaClick()" class="w-full h-[40px] rounded-full btn-primary-premium text-white text-[12.5px] font-bold transition-all flex items-center justify-center gap-2 cursor-pointer">
+                  <span id="before-home-hero-cta-text">ابدأ التمرين الآن</span>
+                  <svg class="w-3.5 h-3.5 rtl:rotate-180" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3"/></svg>
+                </button>
+              </div>
+            </section>
+
+            <!-- Nutrition Summary Section (Original Before Design) -->
+            <section id="before-home-nutrition-card" class="bg-white border-none rounded-[26px] p-4.5 sm:p-5 soft-card-shadow space-y-4 transition-all duration-300">
+              <div class="flex items-center justify-between">
+                <span class="text-[13px] font-bold text-[#0F172A] leading-none">التغذية</span>
+                <button onclick="switchTab(2)" class="btn-ghost-pill" aria-label="عرض الوجبات">
+                  <span>عرض الوجبات</span>
+                  <svg class="w-3 h-3 rtl:rotate-180" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></svg>
+                </button>
+              </div>
+
+              <div class="flex items-center justify-between gap-3 pt-0.5">
+                <div class="relative w-[84px] h-[84px] shrink-0 flex items-center justify-center">
+                  <svg class="w-full h-full -rotate-90 transform" viewBox="0 0 88 88">
+                    <!-- Carbs Arc (41%) -->
+                    <circle cx="44" cy="44" r="36" stroke="#FB7185" stroke-width="5" fill="none"
+                            stroke-dasharray="92.74 226.2" stroke-dashoffset="0" />
+                    <!-- Protein Arc (29%) -->
+                    <circle cx="44" cy="44" r="36" stroke="#38BDF8" stroke-width="5" fill="none"
+                            stroke-dasharray="65.6 226.2" stroke-dashoffset="-92.74" />
+                    <!-- Fat Arc (30%) -->
+                    <circle cx="44" cy="44" r="36" stroke="#A78BFA" stroke-width="5" fill="none"
+                            stroke-dasharray="67.86 226.2" stroke-dashoffset="-158.34" />
+                  </svg>
+                  <div class="absolute inset-0 flex flex-col items-center justify-center text-center">
+                    <span class="text-[21px] font-extrabold text-[#0F172A] font-inter leading-none tracking-tight">2,450</span>
+                    <span class="text-[9.5px] font-semibold text-[#94A3B8] leading-none mt-1 uppercase tracking-wider">سعرة</span>
+                  </div>
+                </div>
+
+                <div class="flex-1 grid grid-cols-4 gap-1 text-center items-center">
+                  <div class="space-y-1.5">
+                    <span class="text-[11.5px] font-bold text-[#FB7185] font-inter block leading-none">41%</span>
+                    <div class="flex items-baseline justify-center gap-0.5"><span class="text-[17px] font-extrabold text-[#0F172A] font-inter leading-none">250</span><span class="text-[10px] font-semibold text-[#94A3B8] leading-none">g</span></div>
+                    <span class="text-[11px] font-semibold text-[#64748B] block leading-none">كارب</span>
+                  </div>
+                  <div class="space-y-1.5">
+                    <span class="text-[11.5px] font-bold text-[#0284C7] font-inter block leading-none">29%</span>
+                    <div class="flex items-baseline justify-center gap-0.5"><span class="text-[17px] font-extrabold text-[#0F172A] font-inter leading-none">180</span><span class="text-[10px] font-semibold text-[#94A3B8] leading-none">g</span></div>
+                    <span class="text-[11px] font-semibold text-[#64748B] block leading-none">بروتين</span>
+                  </div>
+                  <div class="space-y-1.5">
+                    <span class="text-[11.5px] font-bold text-[#8B5CF6] font-inter block leading-none">30%</span>
+                    <div class="flex items-baseline justify-center gap-0.5"><span class="text-[17px] font-extrabold text-[#0F172A] font-inter leading-none">81</span><span class="text-[10px] font-semibold text-[#94A3B8] leading-none">g</span></div>
+                    <span class="text-[11px] font-semibold text-[#64748B] block leading-none">دهون</span>
+                  </div>
+                  <div class="space-y-1.5">
+                    <div class="h-[12px] flex items-center justify-center">
+                      <svg class="w-3.5 h-3.5 text-[#58B4E5]" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2.69l5.66 5.66a8 8 0 1 1-11.31 0z"/></svg>
+                    </div>
+                    <div class="flex items-baseline justify-center gap-0.5"><span class="text-[17px] font-extrabold text-[#0F172A] font-inter leading-none">3.5</span><span class="text-[10px] font-semibold text-[#94A3B8] leading-none">L</span></div>
+                    <span class="text-[11px] font-semibold text-[#64748B] block leading-none">ماء</span>
+                  </div>
+                </div>
+              </div>
+            </section>
+
+            <!-- Next Check-in Card: Balanced & Harmonious -->
+            <section class="bg-white border border-[#E7EEF3] rounded-[20px] p-3.5 sm:p-4 soft-card-shadow space-y-3">
+              <div class="flex items-center justify-between">
+                <span class="text-[13px] font-bold text-[#0F172A] leading-none">ميعاد المتابعة</span>
+                <button onclick="switchTab(3)" class="btn-ghost-pill btn-ghost-pill-sm shrink-0" aria-label="المتابعات السابقة">
+                  <span>المتابعات السابقة</span>
+                  <svg class="w-3 h-3 rtl:rotate-180" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></svg>
+                </button>
+              </div>
+
+              <div class="flex items-center justify-between gap-2.5 pt-0.5">
+                <div class="flex items-center gap-2.5 min-w-0">
+                  <div class="w-8 h-8 rounded-[10px] bg-[#F0FDF4] border border-[#DCFCE7] flex items-center justify-center shrink-0">
+                    <svg class="w-4 h-4 text-[#16A34A]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
+                  </div>
+                  <div class="min-w-0">
+                    <h4 class="text-[14px] font-bold text-[#0F172A] leading-none">الجمعة، 16 أكتوبر 2026</h4>
+                    <span class="text-[11.5px] text-[#64748B] block mt-1.5 leading-none whitespace-nowrap">متابعة الأسبوع 4 · نافذة 72 ساعة</span>
+                  </div>
+                </div>
+                <span class="text-[11px] font-bold text-[#16A34A] bg-[#DCFCE7]/80 border border-[#86EFAC]/60 px-2.5 py-1 rounded-full leading-none shrink-0 whitespace-nowrap">متبقي 6 أيام</span>
+              </div>
+            </section>
+
+            <!-- Supplements: Dense & Professional -->
+            <section class="bg-white border border-[#E7EEF3] rounded-[20px] p-3.5 sm:p-4 soft-card-shadow space-y-2.5">
+              <div class="flex items-center justify-between">
+                <span class="text-[13px] font-bold text-[#0F172A] leading-none">مكملات اليوم</span>
+                <span class="text-[11px] font-semibold text-[#0284C7] bg-[#F0F7FF] border border-[#E0F2FE] w-[74px] justify-center text-center py-0.5 rounded-full leading-none inline-flex items-center ml-3.5">3 مكملات</span>
+              </div>
+
+              <div class="space-y-1.5">
+                <!-- Creatine -->
+                <div class="bg-[#F8FAFC] border border-[#E2E8F0] rounded-[12px] px-3.5 py-2.5 flex items-center justify-between">
+                  <div class="min-w-0">
+                    <span class="text-[13px] font-bold text-[#0F172A] block leading-tight truncate">كرياتين مونوهيدرات</span>
+                    <span class="text-[11px] text-[#64748B] block leading-tight mt-1">5 جم مع 300 مل ماء</span>
+                  </div>
+                  <span class="btn-ghost-pill btn-ghost-pill-sm w-[74px] justify-center text-center text-[#284C7C] shrink-0">صباحاً</span>
+                </div>
+
+                <!-- Omega 3 -->
+                <div class="bg-[#F8FAFC] border border-[#E2E8F0] rounded-[12px] px-3.5 py-2.5 flex items-center justify-between">
+                  <div class="min-w-0">
+                    <span class="text-[13px] font-bold text-[#0F172A] block leading-tight truncate">أوميجا 3 (زيت سمك)</span>
+                    <span class="text-[11px] text-[#64748B] block leading-tight mt-1">2 كبسولة مع الوجبة</span>
+                  </div>
+                  <span class="btn-ghost-pill btn-ghost-pill-sm w-[74px] justify-center text-center text-[#284C7C] shrink-0">مع الغداء</span>
+                </div>
+
+                <!-- Vitamin D3 -->
+                <div class="bg-[#F8FAFC] border border-[#E2E8F0] rounded-[12px] px-3.5 py-2.5 flex items-center justify-between">
+                  <div class="min-w-0">
+                    <span class="text-[13px] font-bold text-[#0F172A] block leading-tight truncate">فيتامين D3</span>
+                    <span class="text-[11px] text-[#64748B] block leading-tight mt-1">5000 وحدة دولية</span>
+                  </div>
+                  <span class="btn-ghost-pill btn-ghost-pill-sm w-[74px] justify-center text-center text-[#284C7C] shrink-0">مع الفطور</span>
+                </div>
+              </div>
+            </section>
+
+            <div class="h-2"></div>
+          </div>
+        </div>
+
+        <!-- After layer (clipped with width) -->
+        <div class="split-after phone-viewport" id="split-after-layer">
+          <div class="h-11 bg-transparent px-6 flex items-center justify-between shrink-0 select-none">
+            <span class="text-[13px] font-semibold font-inter text-[#0F172A]">9:41</span>
+            <div class="w-24 h-4 bg-black rounded-full mx-auto -mt-1"></div>
+            <span class="text-[11px] font-bold font-inter text-[#0284C7]">AFTER</span>
+          </div>
+          <div id="after-screen-today" class="tactile-canvas-bg px-4 py-3 space-y-3 pb-28 sm:px-5 sm:space-y-3.5">
+
+            <!-- Header: Greeting -->
+            <section class="flex items-center justify-between pt-1 pb-0.5">
+              <div class="space-y-1">
+                <p class="text-[12px] font-medium text-[#64748B] leading-none">السبت، 10 أكتوبر 2026</p>
+                <h1 class="text-[20px] font-bold text-[#0F172A] tracking-tight leading-tight">صباح الخير، أحمد</h1>
+              </div>
+            </section>
+
+            <!-- Date Selector (User Reference Capsule Style with Circular Disk in #7B4FFE) -->
+            <section class="bg-white border-none rounded-[26px] p-4 sm:p-4.5 tactile-card-surface space-y-2.5">
+              <div class="flex items-center justify-between px-1">
+                <span class="text-[13px] font-bold text-[#0F172A] leading-none">جدول الأسبوع</span>
+                <div class="app-badge inline-flex items-center justify-center h-6 px-2.5 rounded-[7px] bg-[#F8FAFC] border-none shadow-[0_1px_2px_rgba(0,0,0,0.02)] transition-all">
+                  <span class="text-[11px] font-semibold text-[#1E293B] leading-none">الأسبوع 4 · تمرين 1 من 4</span>
+                </div>
+              </div>
+              <div id="after-date-selector-row" class="grid grid-cols-7 gap-1 sm:gap-1.5 items-center pt-2 pb-2 overflow-visible">
+                <button onclick="selectDate(0)" id="after-date-item-0" class="soft-muted-date-pill text-center flex flex-col items-center justify-between pt-2.5 pb-1.5 px-0.5 cursor-pointer select-none">
+                  <span class="text-[10px] font-bold block text-white leading-none">السبت</span>
+                  <div class="w-[28px] h-[28px] sm:w-[31px] sm:h-[31px] rounded-full bg-white flex items-center justify-center shadow-sm">
+                    <span class="text-[13px] sm:text-[14px] font-bold text-[#7B4FFE] leading-none font-inter">10</span>
+                  </div>
+                </button>
+                <button onclick="selectDate(1)" id="after-date-item-1" class="inactive-date-pill text-center text-[#64748B] flex flex-col items-center justify-between pt-1.5 pb-1 px-0.5 cursor-pointer select-none">
+                  <span class="text-[10px] font-medium block text-[#64748B] leading-none">الأحد</span>
+                  <div class="w-[28px] h-[28px] sm:w-[30px] sm:h-[30px] rounded-full bg-white flex items-center justify-center">
+                    <span class="text-[12px] sm:text-[13px] font-semibold text-[#1E293B] leading-none font-inter">11</span>
+                  </div>
+                </button>
+                <button onclick="selectDate(2)" id="after-date-item-2" class="inactive-date-pill text-center text-[#64748B] flex flex-col items-center justify-between pt-1.5 pb-1 px-0.5 cursor-pointer select-none">
+                  <span class="text-[10px] font-medium block text-[#64748B] leading-none">الإثنين</span>
+                  <div class="w-[28px] h-[28px] sm:w-[30px] sm:h-[30px] rounded-full bg-white flex items-center justify-center">
+                    <span class="text-[12px] sm:text-[13px] font-semibold text-[#1E293B] leading-none font-inter">12</span>
+                  </div>
+                </button>
+                <button onclick="selectDate(3)" id="after-date-item-3" class="inactive-date-pill text-center text-[#64748B] flex flex-col items-center justify-between pt-1.5 pb-1 px-0.5 cursor-pointer select-none">
+                  <span class="text-[10px] font-medium block text-[#64748B] leading-none">الثلاثاء</span>
+                  <div class="w-[28px] h-[28px] sm:w-[30px] sm:h-[30px] rounded-full bg-white flex items-center justify-center">
+                    <span class="text-[12px] sm:text-[13px] font-semibold text-[#1E293B] leading-none font-inter">13</span>
+                  </div>
+                </button>
+                <button onclick="selectDate(4)" id="after-date-item-4" class="inactive-date-pill text-center text-[#64748B] flex flex-col items-center justify-between pt-1.5 pb-1 px-0.5 cursor-pointer select-none">
+                  <span class="text-[10px] font-medium block text-[#64748B] leading-none">الأربعاء</span>
+                  <div class="w-[28px] h-[28px] sm:w-[30px] sm:h-[30px] rounded-full bg-white flex items-center justify-center">
+                    <span class="text-[12px] sm:text-[13px] font-semibold text-[#1E293B] leading-none font-inter">14</span>
+                  </div>
+                </button>
+                <button onclick="selectDate(5)" id="after-date-item-5" class="inactive-date-pill text-center text-[#64748B] flex flex-col items-center justify-between pt-1.5 pb-1 px-0.5 cursor-pointer select-none">
+                  <span class="text-[10px] font-medium block text-[#94A3B8] leading-none">الخميس</span>
+                  <div class="w-[28px] h-[28px] sm:w-[30px] sm:h-[30px] rounded-full bg-white flex items-center justify-center">
+                    <span class="text-[12px] sm:text-[13px] font-semibold text-[#64748B] leading-none font-inter">15</span>
+                  </div>
+                </button>
+                <button onclick="selectDate(6)" id="after-date-item-6" class="inactive-date-pill text-center text-[#64748B] flex flex-col items-center justify-between pt-1.5 pb-1 px-0.5 cursor-pointer select-none">
+                  <span class="text-[10px] font-medium block text-[#64748B] leading-none">الجمعة</span>
+                  <div class="w-[28px] h-[28px] sm:w-[30px] sm:h-[30px] rounded-full bg-white flex items-center justify-center">
+                    <span class="text-[12px] sm:text-[13px] font-semibold text-[#1E293B] leading-none font-inter">16</span>
+                  </div>
+                </button>
+              </div>
+            </section>
+
+            <!-- Fitness Workout Hero Card UI: Premium Editorial iOS Design (Adaptive Dynamic) -->
+            <section id="after-home-hero-card" class="bg-white border-none rounded-[26px] p-5 sm:p-5.5 tactile-card-hero transition-all duration-300 relative overflow-hidden">
+              <!-- Top Row: Section Title & Session Number -->
+              <div class="flex items-center justify-between mb-3">
+                <span id="after-home-hero-type-badge" class="text-[13px] font-bold text-[#0F172A] leading-none">
+                  تمرين اليوم
+                </span>
+                <div id="after-home-hero-phase-container" class="app-badge inline-flex items-center justify-center h-6 px-2.5 rounded-[7px] bg-[#F8FAFC] border-none shadow-[0_1px_2px_rgba(0,0,0,0.02)] transition-all">
+                  <span id="after-home-hero-phase-badge" class="text-[11px] font-semibold text-[#1E293B] leading-none">
+                    الجلسة 1 من 4
+                  </span>
+                </div>
+              </div>
+
+              <!-- Main Content: Left Visual + Right Workout Info -->
+              <div class="flex items-center justify-between gap-3 mb-3.5 pt-0.5">
+                <div class="space-y-1.5 flex-1 min-w-0">
+                  <h2 id="after-home-workout-title" class="text-[21px] font-extrabold text-[#0F172A] font-inter tracking-tight leading-tight" dir="ltr" style="text-align: right;">Push Day</h2>
+                  <p id="after-home-workout-arabic-title" class="text-[12px] font-semibold text-[#475569] leading-tight">الصدر والترايسبس · عضلات الدفع</p>
+                  
+                  <!-- Metadata Info Line -->
+                  <div class="pt-1">
+                    <span class="text-[12px] font-medium text-[#64748B] flex items-center gap-1.5 leading-none">
+                      <span id="after-home-workout-duration"><strong class="font-extrabold text-[#0F172A] font-inter text-[13px]">45</strong> <span class="text-[10.5px] text-[#94A3B8]">دقيقة</span></span>
+                      <span class="text-slate-300">·</span>
+                      <span id="after-home-workout-ex-count"><strong class="font-extrabold text-[#0F172A] font-inter text-[13px]">5</strong> <span class="text-[10.5px] text-[#94A3B8]">تمارين</span></span>
+                    </span>
+                  </div>
+                </div>
+
+                <!-- Exercise Visual Thumbnail -->
+                <div id="after-home-hero-visual" class="relative w-[94px] h-[84px] rounded-[18px] overflow-hidden shrink-0 border-none shadow-[0_2px_8px_rgba(0,0,0,0.03)] bg-[#F8FAFC] flex items-center justify-center">
+                  <img src="/exercises/MACHINE_CHEST_PRESS/0.jpg" alt="Push Day" onerror="this.src='/exercises/AB_WHEEL_ROLLOUT/0.jpg'" class="w-full h-full object-cover">
+                  <div class="absolute inset-0 bg-gradient-to-t from-black/20 via-transparent to-transparent pointer-events-none"></div>
+                </div>
+              </div>
+
+              <!-- Bottom CTA Action -->
+              <div class="pt-0.5">
+                <button id="after-home-hero-cta" onclick="handleHeroCtaClick()" class="w-full h-[40px] rounded-full tactile-btn-primary text-white text-[12.5px] font-bold transition-all flex items-center justify-center gap-2 cursor-pointer">
+                  <span id="after-home-hero-cta-text">ابدأ التمرين الآن</span>
+                  <svg class="w-3.5 h-3.5 rtl:rotate-180" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3"/></svg>
+                </button>
+              </div>
+            </section>
+
+            <!-- Nutrition Summary Section (Original Before Design) -->
+            <section id="after-home-nutrition-card" class="bg-white border-none rounded-[26px] p-5 sm:p-5.5 tactile-card-surface space-y-4 transition-all duration-300">
+              <div class="flex items-center justify-between">
+                <span class="text-[13px] font-bold text-[#0F172A] leading-none">التغذية</span>
+                <button onclick="switchTab(2)" class="tactile-ghost-pill" aria-label="عرض الوجبات">
+                  <span>عرض الوجبات</span>
+                  <svg class="w-3 h-3 rtl:rotate-180" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></svg>
+                </button>
+              </div>
+
+              <div class="flex items-center justify-between gap-3 pt-0.5">
+                <div class="relative w-[84px] h-[84px] shrink-0 flex items-center justify-center">
+                  <svg class="w-full h-full -rotate-90 transform" viewBox="0 0 88 88">
+                    <!-- Carbs Arc (41%) -->
+                    <circle cx="44" cy="44" r="36" stroke="#FB7185" stroke-width="5" fill="none"
+                            stroke-dasharray="92.74 226.2" stroke-dashoffset="0" />
+                    <!-- Protein Arc (29%) -->
+                    <circle cx="44" cy="44" r="36" stroke="#38BDF8" stroke-width="5" fill="none"
+                            stroke-dasharray="65.6 226.2" stroke-dashoffset="-92.74" />
+                    <!-- Fat Arc (30%) -->
+                    <circle cx="44" cy="44" r="36" stroke="#A78BFA" stroke-width="5" fill="none"
+                            stroke-dasharray="67.86 226.2" stroke-dashoffset="-158.34" />
+                  </svg>
+                  <div class="absolute inset-0 flex flex-col items-center justify-center text-center">
+                    <span class="text-[21px] font-extrabold text-[#0F172A] font-inter leading-none tracking-tight">2,450</span>
+                    <span class="text-[9.5px] font-semibold text-[#94A3B8] leading-none mt-1 uppercase tracking-wider">سعرة</span>
+                  </div>
+                </div>
+
+                <div class="flex-1 grid grid-cols-4 gap-1 text-center items-center">
+                  <div class="space-y-1.5">
+                    <span class="text-[11.5px] font-bold text-[#FB7185] font-inter block leading-none">41%</span>
+                    <div class="flex items-baseline justify-center gap-0.5"><span class="text-[17px] font-extrabold text-[#0F172A] font-inter leading-none">250</span><span class="text-[10px] font-semibold text-[#94A3B8] leading-none">g</span></div>
+                    <span class="text-[11px] font-semibold text-[#64748B] block leading-none">كارب</span>
+                  </div>
+                  <div class="space-y-1.5">
+                    <span class="text-[11.5px] font-bold text-[#0284C7] font-inter block leading-none">29%</span>
+                    <div class="flex items-baseline justify-center gap-0.5"><span class="text-[17px] font-extrabold text-[#0F172A] font-inter leading-none">180</span><span class="text-[10px] font-semibold text-[#94A3B8] leading-none">g</span></div>
+                    <span class="text-[11px] font-semibold text-[#64748B] block leading-none">بروتين</span>
+                  </div>
+                  <div class="space-y-1.5">
+                    <span class="text-[11.5px] font-bold text-[#8B5CF6] font-inter block leading-none">30%</span>
+                    <div class="flex items-baseline justify-center gap-0.5"><span class="text-[17px] font-extrabold text-[#0F172A] font-inter leading-none">81</span><span class="text-[10px] font-semibold text-[#94A3B8] leading-none">g</span></div>
+                    <span class="text-[11px] font-semibold text-[#64748B] block leading-none">دهون</span>
+                  </div>
+                  <div class="space-y-1.5">
+                    <div class="h-[12px] flex items-center justify-center">
+                      <svg class="w-3.5 h-3.5 text-[#58B4E5]" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2.69l5.66 5.66a8 8 0 1 1-11.31 0z"/></svg>
+                    </div>
+                    <div class="flex items-baseline justify-center gap-0.5"><span class="text-[17px] font-extrabold text-[#0F172A] font-inter leading-none">3.5</span><span class="text-[10px] font-semibold text-[#94A3B8] leading-none">L</span></div>
+                    <span class="text-[11px] font-semibold text-[#64748B] block leading-none">ماء</span>
+                  </div>
+                </div>
+              </div>
+            </section>
+
+            <!-- Next Check-in Card: Balanced & Harmonious -->
+            <section class="bg-white border-none rounded-[26px] p-4 sm:p-4.5 tactile-card-surface space-y-3">
+              <div class="flex items-center justify-between">
+                <span class="text-[13px] font-bold text-[#0F172A] leading-none">ميعاد المتابعة</span>
+                <button onclick="switchTab(3)" class="tactile-ghost-pill tactile-ghost-pill-sm shrink-0" aria-label="المتابعات السابقة">
+                  <span>المتابعات السابقة</span>
+                  <svg class="w-3 h-3 rtl:rotate-180" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></svg>
+                </button>
+              </div>
+
+              <div class="flex items-center justify-between gap-2.5 pt-0.5">
+                <div class="flex items-center gap-2.5 min-w-0">
+                  <div class="w-8 h-8 rounded-[10px] bg-[#F0FDF4] border border-[#DCFCE7] flex items-center justify-center shrink-0">
+                    <svg class="w-4 h-4 text-[#16A34A]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
+                  </div>
+                  <div class="min-w-0">
+                    <h4 class="text-[14px] font-bold text-[#0F172A] leading-none">الجمعة، 16 أكتوبر 2026</h4>
+                    <span class="text-[11.5px] text-[#64748B] block mt-1.5 leading-none whitespace-nowrap">متابعة الأسبوع 4 · نافذة 72 ساعة</span>
+                  </div>
+                </div>
+                <span class="text-[11px] font-bold text-[#16A34A] bg-[#DCFCE7]/80 border border-[#86EFAC]/60 px-2.5 py-1 rounded-full leading-none shrink-0 whitespace-nowrap">متبقي 6 أيام</span>
+              </div>
+            </section>
+
+            <!-- Supplements: Dense & Professional -->
+            <section class="bg-white border-none rounded-[26px] p-4 sm:p-4.5 tactile-card-surface space-y-2.5">
+              <div class="flex items-center justify-between">
+                <span class="text-[13px] font-bold text-[#0F172A] leading-none">مكملات اليوم</span>
+                <span class="text-[11px] font-semibold text-[#0284C7] bg-[#F0F7FF] border border-[#E0F2FE] w-[74px] justify-center text-center py-0.5 rounded-full leading-none inline-flex items-center ml-3.5">3 مكملات</span>
+              </div>
+
+              <div class="space-y-1.5">
+                <!-- Creatine -->
+                <div class="tactile-sub-surface rounded-[16px] px-3.5 py-2.5 flex items-center justify-between">
+                  <div class="min-w-0">
+                    <span class="text-[13px] font-bold text-[#0F172A] block leading-tight truncate">كرياتين مونوهيدرات</span>
+                    <span class="text-[11px] text-[#64748B] block leading-tight mt-1"><strong class="text-[#0F172A] font-semibold">5</strong> <span class="text-[10px] text-[#94A3B8]">جم</span> مع <strong class="text-[#0F172A] font-semibold">300</strong> <span class="text-[10px] text-[#94A3B8]">مل</span> ماء</span>
+                  </div>
+                  <span class="tactile-ghost-pill tactile-ghost-pill-sm w-[74px] justify-center text-center text-[#284C7C] shrink-0">صباحاً</span>
+                </div>
+
+                <!-- Omega 3 -->
+                <div class="tactile-sub-surface rounded-[16px] px-3.5 py-2.5 flex items-center justify-between">
+                  <div class="min-w-0">
+                    <span class="text-[13px] font-bold text-[#0F172A] block leading-tight truncate">أوميجا 3 (زيت سمك)</span>
+                    <span class="text-[11px] text-[#64748B] block leading-tight mt-1"><strong class="text-[#0F172A] font-semibold">2</strong> <span class="text-[10px] text-[#94A3B8]">كبسولة</span> مع الوجبة</span>
+                  </div>
+                  <span class="tactile-ghost-pill tactile-ghost-pill-sm w-[74px] justify-center text-center text-[#284C7C] shrink-0">مع الغداء</span>
+                </div>
+
+                <!-- Vitamin D3 -->
+                <div class="tactile-sub-surface rounded-[16px] px-3.5 py-2.5 flex items-center justify-between">
+                  <div class="min-w-0">
+                    <span class="text-[13px] font-bold text-[#0F172A] block leading-tight truncate">فيتامين D3</span>
+                    <span class="text-[11px] text-[#64748B] block leading-tight mt-1"><strong class="text-[#0F172A] font-semibold">5000</strong> <span class="text-[10px] text-[#94A3B8]">وحدة دولية</span></span>
+                  </div>
+                  <span class="tactile-ghost-pill tactile-ghost-pill-sm w-[74px] justify-center text-center text-[#284C7C] shrink-0">مع الفطور</span>
+                </div>
+              </div>
+            </section>
+
+            <div class="h-2"></div>
+          </div>
+        </div>
+
+        <!-- Handle -->
+        <div class="split-handle" id="split-handle-bar">
+          <div class="split-handle-button">&harr;</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Engineering Details Table -->
+    <section class="bg-white border border-[#E2E8F0] rounded-3xl p-6 shadow-sm space-y-4">
+      <div class="border-b border-[#F1F5F9] pb-3">
+        <h3 class="text-base font-bold text-[#0F172A]">التفاصيل الهندسية لتطبيق البنود الخمسة (Tactile Tokens Matrix)</h3>
+        <p class="text-xs text-[#64748B] mt-0.5">جدول الفروقات البصرية الدقيقة بين كود BEFORE وكود AFTER لإثبات الالتزام الصارم بشرط عدم المساس بالهيكل:</p>
+      </div>
+
+      <div class="overflow-x-auto">
+        <table class="w-full text-right text-xs">
+          <thead>
+            <tr class="border-b border-[#E2E8F0] text-[#64748B] bg-[#F8FAFC]">
+              <th class="py-2.5 px-3 font-semibold">البند التشخيصي</th>
+              <th class="py-2.5 px-3 font-semibold">الخامة السابقة (BEFORE)</th>
+              <th class="py-2.5 px-3 font-semibold text-[#0284C7]">التجسيم الجديد (AFTER)</th>
+              <th class="py-2.5 px-3 font-semibold">الحالة الهندسية والأبعاد</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-[#F1F5F9] text-[#1E293B]">
+            <tr>
+              <td class="py-3 px-3 font-bold">1. إلغاء الحدود الصريحة</td>
+              <td class="py-3 px-3 font-mono text-[11px] text-[#64748B]">border: 1px solid #E7EEF3</td>
+              <td class="py-3 px-3 font-mono text-[11px] text-[#0284C7]">border: none مع لمعة سيراميك علوية خافتة</td>
+              <td class="py-3 px-3 font-semibold text-emerald-700">تخلص تام من شكل الأقفاص والجداول</td>
+            </tr>
+            <tr>
+              <td class="py-3 px-3 font-bold">2. الظلال والتجسيم اللمسي</td>
+              <td class="py-3 px-3 font-mono text-[11px] text-[#64748B]">soft-card-shadow خفيف مسطح</td>
+              <td class="py-3 px-3 font-mono text-[11px] text-[#0284C7]">3 طبقات هوائية منتشرة (2px / 8px / 20px)</td>
+              <td class="py-3 px-3 font-semibold text-emerald-700">عوم ناعم وهادئ يحاكي المرجع بالضبط</td>
+            </tr>
+            <tr>
+              <td class="py-3 px-3 font-bold">3. راحة وتنفس الكارت الداخلي</td>
+              <td class="py-3 px-3 font-mono text-[11px] text-[#64748B]">p-3 / p-3.5 ضيق نسبياً</td>
+              <td class="py-3 px-3 font-mono text-[11px] text-[#0284C7]">p-4 / p-4.5 / p-5 مدروس ومريح</td>
+              <td class="py-3 px-3 font-semibold text-emerald-700">وقار بصري دون أي زيادة غير مبررة في السكرول</td>
+            </tr>
+            <tr>
+              <td class="py-3 px-3 font-bold">4. تباين الأرقام والوحدات</td>
+              <td class="py-3 px-3 font-mono text-[11px] text-[#64748B]">أرقام 15.5px ووحدات ملتصقة</td>
+              <td class="py-3 px-3 font-mono text-[11px] text-[#0284C7]">أرقام 17px/21px ExtraBold ووحدات مجهرية هادئة</td>
+              <td class="py-3 px-3 font-semibold text-emerald-700">بروز وثقة بصرية في مؤشرات الأداء</td>
+            </tr>
+            <tr>
+              <td class="py-3 px-3 font-bold">5. زوايا الكروت (Squircle)</td>
+              <td class="py-3 px-3 font-mono text-[11px] text-[#64748B]">rounded-[20px] و rounded-[22px]</td>
+              <td class="py-3 px-3 font-mono text-[11px] text-[#0284C7]">rounded-[26px] انسيابية فائقة</td>
+              <td class="py-3 px-3 font-semibold text-emerald-700">ملمس حجري ناعم مطابق لروح المرجع</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+  </div>
+
+  <script>
+    function setViewport(w, h, btn) {
+      document.querySelectorAll('.vp-btn').forEach(b => {
+        b.className = "vp-btn px-3 py-1.5 rounded-xl text-xs font-semibold text-[#64748B] hover:text-[#0F172A] transition-all cursor-pointer";
+      });
+      btn.className = "vp-btn px-3 py-1.5 rounded-xl text-xs font-bold bg-[#0F172A] text-white shadow-sm transition-all cursor-pointer";
+
+      document.querySelectorAll('.phone-viewport').forEach(shell => {
+        shell.style.width = w + 'px';
+        shell.style.height = h + 'px';
+      });
+
+      // Update split layers
+      const splitBefore = document.querySelector('.split-before');
+      const splitAfter = document.querySelector('.split-after');
+      if (splitBefore) splitBefore.style.width = w + 'px';
+      if (splitAfter) splitAfter.style.width = (w / 2) + 'px';
+      const handle = document.getElementById('split-handle-bar');
+      if (handle) handle.style.left = '50%';
+    }
+
+    function setViewMode(mode, btn) {
+      document.querySelectorAll('.mode-btn').forEach(b => {
+        b.className = "mode-btn px-3 py-1.5 rounded-xl text-xs font-semibold text-[#64748B] hover:text-[#0F172A] transition-all cursor-pointer";
+      });
+      btn.className = "mode-btn px-3 py-1.5 rounded-xl text-xs font-bold bg-[#0284C7] text-white shadow-sm transition-all cursor-pointer";
+
+      const sideBySide = document.getElementById('view-side-by-side');
+      const slider = document.getElementById('view-slider');
+
+      if (mode === 'sideBySide') {
+        sideBySide.classList.remove('hidden');
+        sideBySide.classList.add('grid');
+        slider.classList.add('hidden');
+        slider.classList.remove('flex');
+      } else {
+        sideBySide.classList.add('hidden');
+        sideBySide.classList.remove('grid');
+        slider.classList.remove('hidden');
+        slider.classList.add('flex');
+      }
+    }
+
+    // Split Slider Dragging Logic
+    const splitBox = document.getElementById('split-box');
+    const splitAfterLayer = document.getElementById('split-after-layer');
+    const handleBar = document.getElementById('split-handle-bar');
+
+    let isDragging = false;
+
+    if (splitBox && handleBar && splitAfterLayer) {
+      const updateSplit = (clientX) => {
+        const rect = splitBox.getBoundingClientRect();
+        let offsetX = clientX - rect.left;
+        if (offsetX < 20) offsetX = 20;
+        if (offsetX > rect.width - 20) offsetX = rect.width - 20;
+
+        const percentage = (offsetX / rect.width) * 100;
+        splitAfterLayer.style.width = offsetX + 'px';
+        handleBar.style.left = offsetX + 'px';
+      };
+
+      handleBar.addEventListener('mousedown', () => isDragging = true);
+      window.addEventListener('mouseup', () => isDragging = false);
+      window.addEventListener('mousemove', (e) => {
+        if (!isDragging) return;
+        updateSplit(e.clientX);
+      });
+
+      handleBar.addEventListener('touchstart', () => isDragging = true);
+      window.addEventListener('touchend', () => isDragging = false);
+      window.addEventListener('touchmove', (e) => {
+        if (!isDragging || !e.touches[0]) return;
+        updateSplit(e.touches[0].clientX);
+      });
+    }
+  </script>
+</body>
+</html>
