@@ -43,6 +43,7 @@ scratch/
 frontend/dist/
 frontend/node_modules/
 temp/
+uploads/
 .cache/
 *.tmp
 

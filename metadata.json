@@ -1,0 +1,8 @@
+{
+  "name": "Z Coaching Master Platform",
+  "description": "منظومة التدريب الرياضي والمتابعة الإكلينيكية المتقدمة لإدارة برامج التغذية والتمارين والمتابعات الأسبوعية",
+  "permissions": [],
+  "capabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}

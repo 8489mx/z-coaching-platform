@@ -118,6 +118,14 @@ function RedirectKeepingQuery({ to }) {
   return <Navigate to={`${to}${search}`} replace />;
 }
 
+function RootRouteHandler() {
+  const isCoach = typeof window !== 'undefined' && Boolean(localStorage.getItem('token') && localStorage.getItem('z_coach_user'));
+  if (isCoach) {
+    return <CoachCommandCenter />;
+  }
+  return <ClientLogin />;
+}
+
 function App() {
   return (
     <AuthProvider>
@@ -126,8 +134,8 @@ function App() {
         <ErrorBoundary>
         <React.Suspense fallback={<RouteLoadingFallback />}>
         <Routes>
-          {/* Coach Primary Command Center */}
-          <Route path="/" element={<CoachCommandCenter />} />
+          {/* Coach Primary Command Center / Mobile Simulator */}
+          <Route path="/" element={<RootRouteHandler />} />
           <Route path="/today" element={<Navigate to="/" replace />} />
           <Route path="/coach/today" element={<Navigate to="/" replace />} />
           <Route path="/index" element={<Navigate to="/" replace />} />
