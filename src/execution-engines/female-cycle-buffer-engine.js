@@ -128,7 +128,9 @@ export function evaluateFemaleCycleBuffer({
       null,
     micro_adjustments: isLuteal ? {
       comfort_snack_options_ar: 'حصة شوكولاتة داكنة (20g بنسبة 70%+) أو فواكه طازجة مهدئة لتهدئة الرغبة في السكريات بمرونة تامة',
-      recommended_supplement: 'Magnesium Glycinate (جرعة توفر 100 - 200 mg مغنسيوم عنصري مساءً)',
+      recommended_supplement: 'Magnesium Glycinate (نص استرشادي: 100 - 200 mg مغنسيوم عنصري مساءً؛ الجرعات العلاجية 350-400 mg تتطلب استشارة طبية واعتماد المدرب)',
+      supplement_guidance_only: true,
+      requires_coach_review: true,
       benefit_ar: 'لتهدئة التقلصات العضلية وتحسين جودة النوم العميق'
     } : null,
     pcos_protocol: pcosProtocol

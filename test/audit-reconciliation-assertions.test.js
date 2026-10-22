@@ -76,20 +76,29 @@ test('3. Diabetes Carbohydrate Protection: Individualized without rigid 45% cap,
   assert.ok(res.nutrition_program.hypoglycemia_guard.active);
 });
 
-test('4. Universal 5-Week Deload: Week 5 sets reduce to 60% with target RIR 4', () => {
-  const intake = completeIntake();
-  intake.training.experience = 'BEGINNER';
-  const res = buildMasterEngineV2({ intake, evaluationContext, nutritionFoodCatalog });
-  const weeks = res.training_program.weeks;
+test('4. Differentiated 5-Week Deload: Advanced has Regenerative Deload (60% sets, RIR 4), Beginner consolidates unless planned', () => {
+  const advIntake = completeIntake();
+  advIntake.training.experience = 'ADVANCED';
+  const advRes = buildMasterEngineV2({ intake: advIntake, evaluationContext, nutritionFoodCatalog });
+  const advWeeks = advRes.training_program.weeks;
 
-  assert.equal(res.training_program.total_weeks, 5);
-  assert.equal(weeks[0].target_rir, 3);
-  assert.equal(weeks[1].target_rir, 2);
-  assert.equal(weeks[4].target_rir, 4);
+  assert.equal(advRes.training_program.total_weeks, 5);
+  assert.equal(advWeeks[0].target_rir, 2);
+  assert.equal(advWeeks[1].target_rir, 1);
+  assert.equal(advWeeks[4].target_rir, 4);
+  assert.equal(advWeeks[4].phase, 'DELOAD');
 
-  const w4Sets = weeks[3].sessions[0].exercises[0].sets;
-  const w5Sets = weeks[4].sessions[0].exercises[0].sets;
-  assert.equal(w5Sets, Math.max(2, Math.round(w4Sets * 0.60)));
+  const advW4Sets = advWeeks[3].sessions[0].exercises[0].sets;
+  const advW5Sets = advWeeks[4].sessions[0].exercises[0].sets;
+  assert.ok(advW5Sets < advW4Sets, 'Deload sets must drop from peak volume');
+  assert.equal(advW5Sets, 2);
+
+  // Beginner with normal progress consolidates in week 5 without forced deload
+  const begIntake = completeIntake();
+  begIntake.training.experience = 'BEGINNER';
+  const begRes = buildMasterEngineV2({ intake: begIntake, evaluationContext, nutritionFoodCatalog });
+  assert.equal(begRes.training_program.weeks[4].phase, 'CONSOLIDATION');
+  assert.equal(begRes.training_program.weeks[4].target_rir, 2);
 });
 
 test('5. Check-in Time-Series: 3kg/week Rapid Loss Triggers RAPID_LOSS_WARNING and +150 kcal', () => {

@@ -47,7 +47,10 @@ export function alignMacrosWithCalories(targetCalories, proteinG, carbsG, fatG, 
   // 1. Protein is inviolable: never altered to satisfy an energy rounding diff
   const p = Math.max(0, Math.round(proteinG));
 
-  // 2. Fat safety floor: default 20g (or client constraint) to preserve essential lipid absorption
+  // 2. Computational lower bound for fat (default 20g or client constraint):
+  // NOTE: This is strictly an algorithmic guard against zero/negative lipid values during macro alignment.
+  // It is NOT a universal dietary target (optimal intake requires ~20-35% energy or 0.6-1.0 g/kg).
+  // The client's individualized planned target (fatG) is respected and preserved.
   const minFat = Math.max(15, Number(constraints.min_fat_g ?? constraints.minFatG ?? 20));
   const minCarbs = Math.max(0, Number(constraints.min_carbs_g ?? constraints.minCarbsG ?? 0));
 
@@ -386,6 +389,9 @@ export function buildAdaptedPlan(inputs) {
 
 
       adaptedDailySteps += 500;
+      if (effectiveCalDelta < requestedCutMagnitude) {
+        requiresCoachApproval = true;
+      }
       reasons.push({
         code: AdaptationReasonCode.PLATEAU_DEFICIT_APPLIED,
         message_ar: effectiveCalDelta < requestedCutMagnitude
@@ -567,31 +573,81 @@ export function buildAdaptedPlan(inputs) {
   let isDeloadRecommended = false;
 
   if (adaptedTrainingWeek) {
-    // 1. Auto-Deload Detection & Volume Reduction
+    // 1. Differentiated Deload & Autoregulation
+    const clientExp = String(
+      options.experience ||
+      checkinAnalysis.experience ||
+      currentMasterProgram.client?.experience ||
+      currentMasterProgram.training_program?.experience ||
+      "BEGINNER"
+    ).toUpperCase();
+    const isClientAdvanced = clientExp === "ADVANCED";
+    const isClientIntermediate = clientExp === "INTERMEDIATE";
+    const isClientBeginner = !isClientAdvanced && !isClientIntermediate;
+
     const accumulatedWeeks = Number(options.weeks_of_accumulated_training || currentWeekNumber || 1);
     const fatigueScore = Number(options.accumulated_fatigue_score || checkinAnalysis.fatigue_score || (status === CheckinAnalysisStatus.HIGH_FATIGUE_WARNING ? 8 : 4));
-    const isDeloadTriggered = accumulatedWeeks >= 5 || (accumulatedWeeks >= 4 && (fatigueScore >= 7 || status === CheckinAnalysisStatus.HIGH_FATIGUE_WARNING)) || options.force_deload === true;
+
+    const hasInsufficientLogData = options.has_insufficient_training_data === true ||
+      checkinAnalysis.has_insufficient_training_data === true ||
+      checkinAnalysis.unreliable_training_data === true;
+
+    let isDeloadTriggered = false;
+
+    if (hasInsufficientLogData) {
+      // Guard: never infer accumulated fatigue or force deload on incomplete logs
+      isDeloadTriggered = false;
+      requiresCoachApproval = true;
+      reasons.push({
+        code: "INSUFFICIENT_TRAINING_LOGS_HOLD",
+        message_ar: "بيانات التدريب المسجلة غير كافية لتقييم الإجهاد التراكمي بدقة؛ تم تثبيت الخطة وتوجيه القرار لمراجعة المدرب قبل تعديل الأحمال.",
+        message_en: "Insufficient workout logs to reliably determine fatigue accumulation. Preserved training plan and routed for coach review.",
+      });
+    } else if (options.force_deload === true || options.planned_deload === true || checkinAnalysis.deload_approved === true) {
+      isDeloadTriggered = true;
+    } else if (fatigueScore >= 7 || status === CheckinAnalysisStatus.HIGH_FATIGUE_WARNING) {
+      isDeloadTriggered = true;
+    } else if (accumulatedWeeks >= 5) {
+      if (isClientBeginner && fatigueScore < 6 && options.planned_deload !== true) {
+        // Novice without fatigue continues progression/consolidation
+        isDeloadTriggered = false;
+        adaptedTrainingWeek.phase = "CONSOLIDATION";
+        adaptedTrainingWeek.focus_note = "أسبوع تثبيت الأداء للمبتدئ: استمرار التكنيك المحكم والتقدم الآمن دون الحاجة لتفريغ أحمال حاد.";
+        reasons.push({
+          code: "BEGINNER_CONSOLIDATION_MAINTAINED",
+          message_ar: `المتدرب في مرحلة التأسيس (مبتدئ) بمؤشر إجهاد منخفض (${fatigueScore}/10). تم الاستمرار في تثبيت الأداء الحركي دون فرض تفريغ أحمال إجباري.`,
+          message_en: `Beginner trainee with low fatigue score (${fatigueScore}/10). Preserved progression and technique consolidation without forced deload.`,
+        });
+      } else {
+        isDeloadTriggered = true;
+      }
+    }
 
     if (isDeloadTriggered && !isDietBreakEligible) {
       isDeloadRecommended = true;
       adaptationAction = AdaptationAction.SCHEDULE_DELOAD;
+      requiresCoachApproval = true;
       adaptedTrainingWeek.phase = "DELOAD";
-      adaptedTrainingWeek.focus_note = "أسبوع تفريغ أحمال تلقائي (Auto-Deload) لخفض إجهاد الجهاز العصبي والمفاصل";
-      adaptedTrainingWeek.target_rir = 4;
+      adaptedTrainingWeek.focus_note = isClientAdvanced
+        ? "أسبوع تفريغ أحمال تجديدي (Regenerative Deload) لتصفية الإجهاد العصبي المركزي"
+        : (isClientIntermediate ? "أسبوع تفريغ أحمال استراتيجي (Strategic Deload) لإراحة المفاصل والأوتار" : "أسبوع تفريغ أحمال خفيف للمبتدئ لتجديد النشاط");
+      adaptedTrainingWeek.target_rir = isClientAdvanced ? 4 : 3;
+
+      const deloadVolumeMod = isClientAdvanced ? 0.60 : (isClientIntermediate ? 0.70 : 0.75);
 
       for (const session of (adaptedTrainingWeek.sessions || [])) {
         for (const ex of (session.exercises || [])) {
-          ex.sets = Math.max(2, Math.round(Number(ex.sets || 3) * 0.60));
+          ex.sets = Math.max(2, Math.round(Number(ex.sets || 3) * deloadVolumeMod));
           ex.target_sets = ex.sets;
-          ex.rir = 4;
-          ex.target_rir = 4;
+          ex.rir = adaptedTrainingWeek.target_rir;
+          ex.target_rir = adaptedTrainingWeek.target_rir;
         }
       }
 
       reasons.push({
         code: AdaptationReasonCode.AUTO_DELOAD_FATIGUE_PRESCRIBED,
-        message_ar: `أسبوع تفريغ أحمال تلقائي (Deload Week): بعد ${accumulatedWeeks} أسابيع متواصلة من التحميل مع مؤشر إجهاد ${fatigueScore}/10، تم خفض الجولات 40% ورفع RIR إلى 4 للسماح للجهاز العصبي والمفاصل بالتعافي التام.`,
-        message_en: `Auto-Deload prescribed after ${accumulatedWeeks} consecutive training weeks with fatigue score ${fatigueScore}/10. Sets reduced by 40% with RIR 4.`,
+        message_ar: `أسبوع تفريغ أحمال (${adaptedTrainingWeek.phase}): بعد ${accumulatedWeeks} أسابيع تحميل مع مؤشر إجهاد ${fatigueScore}/10، تم خفض الجولات بنسبة ${Math.round((1 - deloadVolumeMod) * 100)}% وضبط RIR ${adaptedTrainingWeek.target_rir} للتعافي التام.`,
+        message_en: `Deload prescribed after ${accumulatedWeeks} consecutive training weeks with fatigue score ${fatigueScore}/10. Sets reduced by ${Math.round((1 - deloadVolumeMod) * 100)}% with RIR ${adaptedTrainingWeek.target_rir}.`,
       });
     }
 

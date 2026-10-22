@@ -404,3 +404,82 @@ test('Regression. Reverse Dieting (+75 kcal) maintains exact macro consistency',
   const diff = Math.abs(cals - macroCalories(adapted.adapted_nutrition));
   assert.ok(diff <= 2);
 });
+
+// ============================================================================
+// PART A VERIFICATION TESTS (Closeout Checks)
+// ============================================================================
+
+test('Part A1. Female Cycle Buffer: Magnesium Elemental is guidance-only (100-200 mg), requires coach review', () => {
+  const result = evaluateFemaleCycleBuffer({
+    is_female: true,
+    is_pms_active: true,
+    weight_delta_kg: 1.2,
+    adherence_score: 90,
+    current_calories: 1600
+  });
+
+  assert.ok(result.micro_adjustments, 'Must provide micro adjustments for luteal phase');
+  assert.ok(result.micro_adjustments.recommended_supplement.includes('Magnesium Glycinate'));
+  assert.ok(result.micro_adjustments.recommended_supplement.includes('مغنسيوم عنصري'));
+  assert.equal(result.micro_adjustments.supplement_guidance_only, true, 'Must be guidance only');
+  assert.equal(result.micro_adjustments.requires_coach_review, true, 'Requires coach review');
+});
+
+test('Part A2. Macro Alignment: minFat=20g is computational bound; normal client fat targets (65g) strictly preserved', () => {
+  const targetCals = 1800;
+  const p = 140; // 560 kcal
+  const c = 160; // 640 kcal
+  const f = 65;  // 585 kcal -> sum = 1785
+  const constraints = { minFatG: 20 };
+
+  const res = alignMacrosWithCalories(targetCals, p, c, f, constraints);
+  assert.equal(res.fat, 65, 'Target fat (65g) must remain intact, never dragged down to minFat (20g)');
+  assert.equal(res.protein, 140, 'Protein must be strictly preserved');
+  assert.ok(Math.abs(targetCals - (res.protein * 4 + res.carbs * 4 + res.fat * 9)) <= 2, 'Energy aligned within integer rounding');
+});
+
+test('Part A3-1. Body Fat Out-of-bounds (>65% or <3%) falls back to MIFFLIN_ST_JEOR', () => {
+  const intakeTooHigh = completeIntake();
+  intakeTooHigh.body.bodyFat = 90; // Absurd value
+
+  const resHigh = buildMasterEngineV2({ intake: intakeTooHigh, evaluationContext, nutritionFoodCatalog });
+  assert.equal(resHigh.nutrition_program.targets.bmr_formula, 'MIFFLIN_ST_JEOR');
+  assert.equal(resHigh.nutrition_program.targets.body_fat_percentage, null);
+});
+
+test('Part A3-2. Obese client with high body fat uses LEAN_MASS_AT_HEALTHY_BODY_FAT', () => {
+  const intake = completeIntake();
+  intake.body.weightKg = 130;
+  intake.body.heightCm = 175;
+  intake.body.bodyFat = 42;
+  intake.goals.primary = 'FAT_LOSS';
+
+  const res = buildMasterEngineV2({ intake, evaluationContext, nutritionFoodCatalog });
+  const targets = res.nutrition_program.targets;
+  assert.equal(targets.bmr_formula, 'KATCH_MCARDLE');
+  assert.equal(targets.protein_reference_basis, 'LEAN_MASS_AT_HEALTHY_BODY_FAT');
+  assert.ok(targets.protein_reference_weight_kg < 95, `Ref weight must be lean reference, got ${targets.protein_reference_weight_kg}`);
+});
+
+test('Part A3-3. Female Calorie Floor: Extreme delta (-400) never breaches 1200 kcal floor', () => {
+  const femaleMaster = {
+    client: { gender: 'female' },
+    nutrition_program: {
+      targets: { calories_kcal: 1350, carbohydrate_g: 130, fat_g: 45, protein_g: 110 },
+      cardio_program: { prescription: { daily_step_target: 7000 } }
+    }
+  };
+
+  const adapted = buildAdaptedPlan({
+    currentMasterProgram: femaleMaster,
+    checkinAnalysis: {
+      analysis_status: CheckinAnalysisStatus.PLATEAU_DETECTED,
+      suggested_calorie_delta: -400 // Extreme cut attempt
+    },
+    options: { isFemale: true }
+  });
+
+  const cals = adapted.adapted_nutrition.target_calories_kcal;
+  assert.equal(cals, 1200, `Clamped exactly to female floor 1200, got ${cals}`);
+  assert.equal(adapted.requires_coach_approval, true);
+});

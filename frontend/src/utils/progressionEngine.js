@@ -92,12 +92,46 @@ export function normalizeLoggedExercise(raw = {}) {
  * Next-session decision for one exercise from its latest logged summary.
  * @returns {{decision, next_weight_kg, next_rep_min, next_rep_max, next_rep_target, stall_count, directive_ar}}
  */
-export function evaluateExercise({ exercise_code, rep_min, rep_max, weight_kg, last_set_reps, effort = 'OK', stall_count = 0 }) {
+export function evaluateExercise({
+  exercise_code,
+  rep_min,
+  rep_max,
+  weight_kg,
+  last_set_reps,
+  effort = 'OK',
+  stall_count = 0,
+  is_unreliable_data = false,
+  joint_pain_reported = false,
+}) {
   const increment = resolveIncrementKg(exercise_code);
   const weight = Number(weight_kg) || 0;
   const reps = Number(last_set_reps) || 0;
   const hard = effort === EFFORT_LEVELS.HARD;
   const base = { next_rep_min: rep_min, next_rep_max: rep_max, next_weight_kg: weight, stall_count: 0 };
+
+  // Guard: Incomplete or unreliable training data
+  if (is_unreliable_data || (weight === 0 && increment > 0 && reps > 0) || reps < 0) {
+    return {
+      ...base,
+      decision: PROGRESSION_DECISIONS.HOLD_CONSOLIDATE,
+      next_rep_target: rep_min,
+      requires_coach_review: true,
+      directive_ar: 'بيانات التسجيل غير مكتملة أو غير مؤكدة: استمر على نفس الوزن والتركيز على إتقان الحركة والتسجيل الدقيق الجلسة القادمة.',
+    };
+  }
+
+  // Guard: Reported joint pain contraindication
+  if (joint_pain_reported) {
+    const safeWeight = reps < rep_min ? Math.max(increment, round1(roundDownTo(weight * 0.9, increment))) : weight;
+    return {
+      ...base,
+      next_weight_kg: safeWeight,
+      decision: reps < rep_min ? PROGRESSION_DECISIONS.REDUCE_WEIGHT : PROGRESSION_DECISIONS.HOLD_CONSOLIDATE,
+      next_rep_target: rep_min,
+      requires_coach_review: true,
+      directive_ar: 'تم رصد ألم أو إجهاد مفصلي في المتابعة: حظر زيادة الوزن للحفاظ على سلامة المفصل ومراجعة المدرب.',
+    };
+  }
 
   if (increment === 0 || weight === 0) {
     const target = reps >= rep_max && !hard ? rep_max + 2 : Math.min(rep_max, reps + 1);
@@ -191,7 +225,7 @@ export function buildProgressionState({ logs = [], deload_windows = [], now = ne
 
   for (const log of ordered) {
     const window = inDeloadWindow(log.created_at, deload_windows);
-    const isDeloadEntry = Boolean(log.is_deload) || Number(log.week_number) === 5 || Boolean(window);
+    const isDeloadEntry = Boolean(log.is_deload) || (Number(log.week_number) === 5 && log.phase !== 'CONSOLIDATION' && log.is_deload !== false && (log.phase === 'DELOAD' || log.is_deload === true || log.is_planned_deload === true)) || Boolean(window);
     if (isDeloadEntry) lastDeload = { reason: window?.reason || DELOAD_REASONS.SCHEDULED, affected: window?.affected_exercises || [], at: log.created_at };
 
     for (const raw of Array.isArray(log.logged_exercises) ? log.logged_exercises : []) {
