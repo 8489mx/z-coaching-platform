@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from 'react';
-import { Camera, Scale, ChevronRight, ChevronDown, ChevronUp, CheckCircle2, Loader2, Activity, Clock, Trash2, MessageCircle, User, AlertCircle, Calendar } from 'lucide-react';
+import { Camera, Scale, ChevronRight, ChevronDown, ChevronUp, CheckCircle2, Loader2, Activity, Clock, Trash2, MessageCircle, User, AlertCircle, Calendar, ShieldAlert } from 'lucide-react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { API_BASE } from '../config/api';
 import { getUpcomingFastingAlert } from '../utils/seasonalFastingRadar';

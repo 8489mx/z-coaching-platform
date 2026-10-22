@@ -341,3 +341,203 @@ test('P3-8. Clinical Safety Shield: Critical Cardiac Flag locks all workouts (tr
   const lockoutReason = adapted.adaptation_reasons.find(r => r.code === 'CLINICAL_TRAINING_LOCKOUT');
   assert.ok(lockoutReason, 'Clinical lockout reason must be attached');
 });
+
+// ============================================================================
+// Scenario 9: Week 4 Target RIR Autoregulation (No Forced Failure RIR 0)
+// ============================================================================
+
+test('P3-9a. Advanced Mesocycle Week 4: Defaults to RIR 1 (NOT forced to absolute failure RIR 0)', () => {
+  const configs = resolveMesocycleWeekConfigs({ experience: 'ADVANCED', weeksCount: 5 });
+  const w4 = configs[3];
+  assert.equal(w4.week_number, 4);
+  assert.equal(w4.target_rir, 1, 'Default for advanced in week 4 must be RIR 1, not forced 0');
+  assert.ok(!w4.focus_note.includes('RIR 0-1'), 'Must not describe mandatory failure');
+});
+
+test('P3-9b. Advanced Mesocycle Week 4: Elevates to RIR 2 when fatigue is high or recovery is low', () => {
+  const fatiguedConfigs = resolveMesocycleWeekConfigs({
+    experience: 'ADVANCED',
+    weeksCount: 5,
+    fatigueScore: 7
+  });
+  assert.equal(fatiguedConfigs[3].target_rir, 2, 'Fatigued advanced lifter gets RIR 2 in week 4');
+
+  const poorRecoveryConfigs = resolveMesocycleWeekConfigs({
+    experience: 'ADVANCED',
+    weeksCount: 5,
+    recoveryScore: 2
+  });
+  assert.equal(poorRecoveryConfigs[3].target_rir, 2, 'Low recovery advanced lifter gets RIR 2 in week 4');
+});
+
+test('P3-9c. Advanced Mesocycle Week 4: Coach can explicitly customize target RIR', () => {
+  const customRirConfigs = resolveMesocycleWeekConfigs({
+    experience: 'ADVANCED',
+    weeksCount: 5,
+    targetRirWeek4: 2
+  });
+  assert.equal(customRirConfigs[3].target_rir, 2, 'Respects coach custom RIR for week 4');
+});
+
+// ============================================================================
+// Scenario 10: Week 5 Autoregulated Deload & Planned Deload Customizability
+// ============================================================================
+
+test('P3-10a. Intermediate with High Recovery & Progressing: Consolidates in Week 5 without forced deload', () => {
+  const configs = resolveMesocycleWeekConfigs({
+    experience: 'INTERMEDIATE',
+    weeksCount: 5,
+    recoveryScore: 4,
+    performanceTrend: 'PROGRESSING'
+  });
+  const w5 = configs[4];
+  assert.equal(w5.phase, 'CONSOLIDATION', 'Thriving intermediate trainee can consolidate instead of mandatory deload');
+  assert.equal(w5.target_rir, 2);
+  assert.equal(w5.volume_modifier, 1.0);
+});
+
+test('P3-10b. Beginner with Fatigue or Dropping Performance: Gets Deload in Week 5', () => {
+  const configs = resolveMesocycleWeekConfigs({
+    experience: 'BEGINNER',
+    weeksCount: 5,
+    fatigueScore: 8,
+    performanceTrend: 'DROPPING'
+  });
+  const w5 = configs[4];
+  assert.equal(w5.phase, 'DELOAD', 'Fatigued beginner receives planned deload');
+  assert.equal(w5.target_rir, 3);
+  assert.equal(w5.volume_modifier, 0.75);
+});
+
+test('P3-10c. Coach Preference Override: Coach can explicitly select DELOAD or CONSOLIDATION', () => {
+  const forceDeload = resolveMesocycleWeekConfigs({
+    experience: 'BEGINNER',
+    coachDeloadPreference: 'DELOAD'
+  });
+  assert.equal(forceDeload[4].phase, 'DELOAD');
+
+  const forceConsolidate = resolveMesocycleWeekConfigs({
+    experience: 'ADVANCED',
+    coachDeloadPreference: 'CONSOLIDATION'
+  });
+  assert.equal(forceConsolidate[4].phase, 'CONSOLIDATION');
+});
+
+// ============================================================================
+// Scenario 11: Planned Deload Post-Reset Load Retention (No Unjustified -10%)
+// ============================================================================
+
+test('P3-11a. Planned Deload without confirmed regression: Restores LAST_SUCCESS weight (NO -10%)', () => {
+  const postTarget = buildPostDeloadTarget({
+    exercise_code: 'BARBELL_BENCH_PRESS',
+    last_success_weight_kg: 100,
+    stall_weight_kg: null,
+    affected: false,
+    reason: DELOAD_REASONS.SCHEDULED
+  });
+
+  assert.equal(postTarget.weight_kg, 100, 'Must return to full 100 kg after planned deload');
+  assert.equal(postTarget.rule, 'LAST_SUCCESS');
+});
+
+test('P3-11b. Single minor rep miss (HOLD_RETRY) in week before deload: Does NOT penalize with -10%', () => {
+  // Trainee reached 7 reps instead of 8 once before planned deload (stall_count = 1)
+  const logs = [
+    { created_at: '2026-09-01T10:00:00Z', week_number: 1, logged_exercises: [{ exercise_code: 'BARBELL_BENCH_PRESS', weight_kg: 80, last_set_reps: 8, rep_min: 8, rep_max: 10, effort: 'OK' }] },
+    { created_at: '2026-09-08T10:00:00Z', week_number: 2, logged_exercises: [{ exercise_code: 'BARBELL_BENCH_PRESS', weight_kg: 80, last_set_reps: 7, rep_min: 8, rep_max: 10, effort: 'HARD' }] }, // single retry
+    { created_at: '2026-09-15T10:00:00Z', week_number: 5, is_deload: true, logged_exercises: [{ exercise_code: 'BARBELL_BENCH_PRESS', weight_kg: 50, last_set_reps: 6, rep_min: 8, rep_max: 10, effort: 'EASY' }] },
+  ];
+
+  const state = buildProgressionState({ logs, now: new Date('2026-09-17T10:00:00Z') });
+  const bench = state.exercises['BARBELL_BENCH_PRESS'];
+
+  assert.equal(bench.target.decision, 'POST_DELOAD_RESET');
+  assert.equal(bench.target.weight_kg, 80, 'Must not penalize 10% after scheduled deload for single normal retry');
+  assert.equal(bench.target.rule, 'LAST_SUCCESS');
+});
+
+test('P3-11c. Confirmed repeated stall (stall_count >= 2) before deload: Applies STALL_MINUS_10', () => {
+  const logs = [
+    { created_at: '2026-09-01T10:00:00Z', week_number: 1, logged_exercises: [{ exercise_code: 'BARBELL_BENCH_PRESS', weight_kg: 80, last_set_reps: 7, rep_min: 8, rep_max: 10, effort: 'HARD' }] },
+    { created_at: '2026-09-08T10:00:00Z', week_number: 2, logged_exercises: [{ exercise_code: 'BARBELL_BENCH_PRESS', weight_kg: 80, last_set_reps: 7, rep_min: 8, rep_max: 10, effort: 'HARD' }] }, // second stall!
+    { created_at: '2026-09-15T10:00:00Z', week_number: 5, is_deload: true, logged_exercises: [{ exercise_code: 'BARBELL_BENCH_PRESS', weight_kg: 50, last_set_reps: 6, rep_min: 8, rep_max: 10, effort: 'EASY' }] },
+  ];
+
+  const state = buildProgressionState({ logs, now: new Date('2026-09-17T10:00:00Z') });
+  const bench = state.exercises['BARBELL_BENCH_PRESS'];
+
+  assert.equal(bench.target.decision, 'POST_DELOAD_RESET');
+  assert.equal(bench.target.weight_kg, 70, 'Must reduce 10% (80 -> 72 -> rounded down to 70 kg) when multi-session stall is confirmed');
+  assert.equal(bench.target.rule, 'STALL_MINUS_10');
+});
+
+// ============================================================================
+// Scenario 12: Severe Joint Pain (>= 7/10) Cannot Auto-Resolve via Deload
+// ============================================================================
+
+test('P3-12. Severe Joint Pain (>= 7/10) flags clinical review and firewall, not mere volume deload', () => {
+  const trigger = evaluateDeloadTrigger({
+    state: { deload: { status: 'NONE' }, dropping_exercises: [] },
+    max_pain_level: 8
+  });
+
+  assert.equal(trigger.recommended, true);
+  assert.equal(trigger.reason, DELOAD_REASONS.JOINT_PAIN);
+  assert.equal(trigger.requires_coach_review, true, 'Must require coach review');
+  assert.equal(trigger.requires_clinical_review, true, 'Must require clinical review');
+  assert.equal(trigger.clinical_firewall, true, 'Must activate clinical firewall');
+  assert.equal(trigger.action_required, 'CLINICAL_EVALUATION_AND_EXERCISE_SWAP');
+  assert.ok(trigger.reasons_ar.some(r => r.includes('جدار الحماية')), 'Must explicitly mandate injury firewall');
+});
+
+// ============================================================================
+// Scenario 13: Consolidation Week Does Not Increment Drop Streak
+// ============================================================================
+
+test('P3-13. Week 5 Consolidation Log does not falsely count as a performance drop streak', () => {
+  const logs = [
+    { created_at: '2026-09-01T10:00:00Z', week_number: 4, phase: 'PEAK_OVERLOAD', logged_exercises: [{ exercise_code: 'BARBELL_BENCH_PRESS', weight_kg: 100, last_set_reps: 10, rep_min: 8, rep_max: 10, effort: 'HARD' }] },
+    // Consolidation week keeping RIR 2 with 8 clean reps instead of 10
+    { created_at: '2026-09-08T10:00:00Z', week_number: 5, phase: 'CONSOLIDATION', is_consolidation: true, logged_exercises: [{ exercise_code: 'BARBELL_BENCH_PRESS', weight_kg: 100, last_set_reps: 8, rep_min: 8, rep_max: 10, effort: 'OK' }] },
+  ];
+
+  const state = buildProgressionState({ logs, now: new Date('2026-09-09T10:00:00Z') });
+  const bench = state.exercises['BARBELL_BENCH_PRESS'];
+
+  assert.equal(bench.drop_streak, 0, 'Consolidation week must NEVER increment drop streak');
+});
+
+// ============================================================================
+// Scenario 14: Coach Approval Enforcement
+// ============================================================================
+
+test('P3-14. Coach Approval: approveCheckin requires authenticated COACH or ADMIN role', async () => {
+  const { approveCheckin } = await import('../src/api/controllers/checkin.controller.js');
+
+  const reqClient = {
+    user: { id: 99, role: 'CLIENT' },
+    params: { checkinId: 1 },
+    body: { apply_program_adaptation: true }
+  };
+
+  let clientStatusCode = 0;
+  let clientResponseBody = null;
+  const resClient = {
+    status(code) { clientStatusCode = code; return this; },
+    json(body) { clientResponseBody = body; return this; }
+  };
+
+  await approveCheckin(reqClient, resClient);
+  assert.equal(clientStatusCode, 403, 'Client must be forbidden from approving check-ins');
+  assert.equal(clientResponseBody.error, 'اعتماد المتابعة متاح للكوتش فقط');
+});
+
+test.after(async () => {
+  try {
+    const { default: sequelize } = await import('../src/api/config/db.js');
+    if (sequelize && typeof sequelize.close === 'function') {
+      await sequelize.close();
+    }
+  } catch (_) {}
+  setTimeout(() => process.exit(0), 100);
+});

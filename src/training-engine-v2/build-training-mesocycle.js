@@ -63,6 +63,12 @@ export function resolveMesocycleWeekConfigs({
   plannedDeload = null,
   skipDeload = false,
   customWeeksConfig = null,
+  targetRirWeek4 = null,
+  fatigueScore = null,
+  recoveryScore = null,
+  performanceTrend = null,
+  dataQuality = null,
+  coachDeloadPreference = null,
 } = {}) {
   if (Array.isArray(customWeeksConfig) && customWeeksConfig.length > 0) {
     return customWeeksConfig.slice(0, weeksCount);
@@ -112,19 +118,49 @@ export function resolveMesocycleWeekConfigs({
           : 'الأسبوع 3 (تكثيف): RIR 1 — رفع الشدة والاقتراب من الفشل العضلي مع إضافة مجموعة للحركات الأساسية.',
       });
     } else if (w === 4) {
+      // Week 4 target RIR: customizable, never forced to 0 for advanced lifters
+      let w4Rir = targetRirWeek4 !== null ? Number(targetRirWeek4) : null;
+      if (w4Rir === null) {
+        if (isBeginner) {
+          w4Rir = 2;
+        } else if (isIntermediate) {
+          w4Rir = 1;
+        } else {
+          // Advanced lifter: default RIR 1; if fatigued or poor recovery, RIR 2; never forced RIR 0
+          const fatigued = (fatigueScore !== null && Number(fatigueScore) >= 6) ||
+                           (recoveryScore !== null && Number(recoveryScore) <= 2);
+          w4Rir = fatigued ? 2 : 1;
+        }
+      }
+
       configs.push({
         week_number: 4,
         phase: isBeginner ? MesoCyclePhase.PROGRESSIVE_OVERLOAD : MesoCyclePhase.PEAK_OVERLOAD,
-        phase_ar: isBeginner ? 'الأسبوع 4 (ذروة الحمل التدريجي للمبتدئ)' : 'الأسبوع 4 (القمة والأوفرلود الأقصى)',
-        target_rir: isBeginner ? 2 : (isIntermediate ? 1 : 0),
-        volume_modifier: isBeginner ? 1.0 : 1.25,
+        phase_ar: isBeginner ? 'الأسبوع 4 (ذروة الحمل التدريجي للمبتدئ)' : 'الأسبوع 4 (القمة والأوفرلود المتقدم)',
+        target_rir: w4Rir,
+        volume_modifier: isBeginner ? 1.0 : (w4Rir <= 1 ? 1.25 : 1.15),
         set_delta: isBeginner ? 0 : 1,
         focus_note: isBeginner
           ? 'الأسبوع 4 (ذروة التحميل): استمرار الأداء المحكم عند RIR 2 دون الوصول للفشل العضلي غير المحسوب.'
-          : 'الأسبوع 4 (القمة والأوفرلود الأقصى): RIR 0-1 — الوصول لأقصى أداء وتحدي عضلي كامل.',
+          : `الأسبوع 4 (القمة والأوفرلود): RIR ${w4Rir} — تحفيز عصبي وعضلي عالٍ بتكنيك محكم وموجه ذاتياً.`,
       });
     } else if (w === 5) {
-      const shouldDeload = (plannedDeload === true) || (!isBeginner && skipDeload !== true && plannedDeload !== false);
+      // Week 5: Planned Deload vs Consolidation based on experience, performance, recovery, data quality, and coach preference
+      let shouldDeload;
+      if (skipDeload === true || plannedDeload === false || coachDeloadPreference === 'CONSOLIDATION') {
+        shouldDeload = false;
+      } else if (plannedDeload === true || coachDeloadPreference === 'DELOAD') {
+        shouldDeload = true;
+      } else if (dataQuality === 'INSUFFICIENT') {
+        shouldDeload = false;
+      } else if (Number(fatigueScore) >= 7 || performanceTrend === 'DROPPING') {
+        shouldDeload = true;
+      } else if (Number(recoveryScore) >= 4 && performanceTrend === 'PROGRESSING') {
+        shouldDeload = false;
+      } else {
+        // Standard Planned 5-Week Mesocycle
+        shouldDeload = !isBeginner;
+      }
 
       if (shouldDeload) {
         const isAdvancedDeload = isAdvanced;
@@ -526,6 +562,12 @@ export function buildTrainingMesoCycle(intakeDecision, options = {}) {
     plannedDeload: options.plannedDeload ?? options.forceDeload,
     skipDeload: options.skipDeload ?? (options.includeDeload === false),
     customWeeksConfig: options.weeksConfig || options.customWeeksConfig,
+    targetRirWeek4: options.targetRirWeek4 ?? options.peakRir,
+    fatigueScore: options.fatigueScore ?? options.accumulated_fatigue_score,
+    recoveryScore: options.recoveryScore,
+    performanceTrend: options.performanceTrend,
+    dataQuality: options.dataQuality,
+    coachDeloadPreference: options.coachDeloadPreference,
   });
 
   const periodizedWeeks = weekConfigs.map((config) => {

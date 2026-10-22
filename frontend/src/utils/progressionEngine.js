@@ -186,7 +186,16 @@ export function evaluateExercise({
  * - break longer than 14 days: 10% under (20% after 28 days)
  * Never above the last successful weight.
  */
-export function buildPostDeloadTarget({ exercise_code, last_success_weight_kg, stall_weight_kg = null, affected = false, reason = DELOAD_REASONS.SCHEDULED, days_since_last_session = 0 }) {
+export function buildPostDeloadTarget({
+  exercise_code,
+  last_success_weight_kg,
+  stall_weight_kg = null,
+  affected = false,
+  has_confirmed_drop = false,
+  has_confirmed_stall = false,
+  reason = DELOAD_REASONS.SCHEDULED,
+  days_since_last_session = 0,
+}) {
   const increment = resolveIncrementKg(exercise_code);
   const lastSuccess = Number(last_success_weight_kg) || 0;
   if (!(lastSuccess > 0) || increment === 0) return { weight_kg: lastSuccess, rule: 'UNCHANGED' };
@@ -195,9 +204,12 @@ export function buildPostDeloadTarget({ exercise_code, last_success_weight_kg, s
   if (affected && reason === DELOAD_REASONS.JOINT_PAIN) {
     weight = lastSuccess * 0.8;
     rule = 'PAIN_MINUS_20';
-  } else if (affected) {
+  } else if (affected && (has_confirmed_drop || has_confirmed_stall || Number(stall_weight_kg) > 0 || reason === DELOAD_REASONS.PERFORMANCE_FATIGUE)) {
     weight = (Number(stall_weight_kg) || lastSuccess) * 0.9;
     rule = 'STALL_MINUS_10';
+  } else {
+    weight = lastSuccess;
+    rule = 'LAST_SUCCESS';
   }
   if (days_since_last_session > 28) { weight = Math.min(weight, lastSuccess * 0.8); rule = 'LONG_BREAK_MINUS_20'; }
   else if (days_since_last_session > 14) { weight = Math.min(weight, lastSuccess * 0.9); rule = 'BREAK_MINUS_10'; }
@@ -225,7 +237,9 @@ export function buildProgressionState({ logs = [], deload_windows = [], now = ne
 
   for (const log of ordered) {
     const window = inDeloadWindow(log.created_at, deload_windows);
-    const isDeloadEntry = Boolean(log.is_deload) || (Number(log.week_number) === 5 && log.phase !== 'CONSOLIDATION' && log.is_deload !== false && (log.phase === 'DELOAD' || log.is_deload === true || log.is_planned_deload === true)) || Boolean(window);
+    const isDeloadEntry = Boolean(log.is_deload) ||
+      (Number(log.week_number) === 5 && log.phase !== 'CONSOLIDATION' && log.is_consolidation !== true && log.is_deload !== false) ||
+      Boolean(window);
     if (isDeloadEntry) lastDeload = { reason: window?.reason || DELOAD_REASONS.SCHEDULED, affected: window?.affected_exercises || [], at: log.created_at };
 
     for (const raw of Array.isArray(log.logged_exercises) ? log.logged_exercises : []) {
@@ -242,16 +256,22 @@ export function buildProgressionState({ logs = [], deload_windows = [], now = ne
       if (isDeloadEntry) {
         s.history.push({ date: log.created_at, week_number: log.week_number, ...entry, e1rm, is_deload: true, decision: 'DELOAD' });
         const lastDecision = previous?.decision;
+        const hasConfirmedDrop = s.drop_streak >= 2;
+        const hasConfirmedStall = s.stall_count >= 2 || lastDecision === PROGRESSION_DECISIONS.REDUCE_WEIGHT;
         s.pending_post_deload = {
           reason: lastDeload.reason,
-          affected: lastDeload.affected.includes(entry.exercise_code) || s.drop_streak >= 2 || s.stall_count >= 1 ||
-            lastDecision === PROGRESSION_DECISIONS.HOLD_RETRY || lastDecision === PROGRESSION_DECISIONS.REDUCE_WEIGHT,
+          affected: lastDeload.affected.includes(entry.exercise_code) || hasConfirmedDrop || hasConfirmedStall,
+          has_confirmed_drop: hasConfirmedDrop,
+          has_confirmed_stall: hasConfirmedStall,
         };
         continue;
       }
 
       s.pending_post_deload = null;
-      s.drop_streak = previous?.e1rm && e1rm && e1rm < previous.e1rm * PERFORMANCE_DROP_RATIO ? s.drop_streak + 1 : 0;
+      const isConsolidation = log.phase === 'CONSOLIDATION' || log.is_consolidation === true;
+      if (!isConsolidation) {
+        s.drop_streak = previous?.e1rm && e1rm && e1rm < previous.e1rm * PERFORMANCE_DROP_RATIO ? s.drop_streak + 1 : 0;
+      }
       const decision = evaluateExercise({ ...entry, stall_count: s.stall_count });
       if (entry.last_set_reps >= entry.rep_min) s.last_success_weight_kg = entry.weight_kg;
       if (entry.last_set_reps < entry.rep_min) s.stall_weight_kg = entry.weight_kg;
@@ -273,6 +293,8 @@ export function buildProgressionState({ logs = [], deload_windows = [], now = ne
         last_success_weight_kg: s.last_success_weight_kg ?? lastWorking?.weight_kg,
         stall_weight_kg: s.stall_weight_kg,
         affected: Boolean(s.pending_post_deload?.affected),
+        has_confirmed_drop: Boolean(s.pending_post_deload?.has_confirmed_drop),
+        has_confirmed_stall: Boolean(s.pending_post_deload?.has_confirmed_stall),
         reason: s.pending_post_deload?.reason || DELOAD_REASONS.SCHEDULED,
         days_since_last_session: daysSince,
       });
@@ -318,8 +340,20 @@ export function evaluateDeloadTrigger({ state, biofeedback = {}, sleep_stress_co
   if (sleep_stress_composite !== null && Number(sleep_stress_composite) <= 2) fatigueSignals.push('نوم وتوتر مرتفع');
 
   if (Number(max_pain_level) >= 7) {
-    return { recommended: true, reason: DELOAD_REASONS.JOINT_PAIN, affected_exercises: dropping,
-      reasons_ar: [`ألم مفصلي ${max_pain_level}/10 في المتابعة`] };
+    return {
+      recommended: true,
+      reason: DELOAD_REASONS.JOINT_PAIN,
+      requires_coach_review: true,
+      requires_clinical_review: true,
+      requires_coach_approval: true,
+      clinical_firewall: true,
+      action_required: 'CLINICAL_EVALUATION_AND_EXERCISE_SWAP',
+      affected_exercises: dropping,
+      reasons_ar: [
+        `ألم مفصلي ${max_pain_level}/10 في المتابعة`,
+        'ألم مفصلي حاد (>= 7/10) يستوجب تفعيل جدار الحماية وعزل الحركات المسببة للألم ومراجعة الكوتش والتقييم الطبي بدلاً من الاكتفاء بتفريغ الأحمال التلقائي.',
+      ],
+    };
   }
   if (dropping.length >= 2 && fatigueSignals.length > 0) {
     return { recommended: true, reason: DELOAD_REASONS.PERFORMANCE_FATIGUE, affected_exercises: dropping,

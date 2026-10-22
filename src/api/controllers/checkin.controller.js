@@ -500,6 +500,11 @@ export async function getClientCheckins(req, res) {
  */
 export async function approveCheckin(req, res) {
   try {
+    const requester = req.user ? await User.findByPk(req.user.id) : null;
+    if (!requester || !['COACH', 'ADMIN'].includes(requester.role)) {
+      return res.status(403).json({ success: false, error: "اعتماد المتابعة متاح للكوتش فقط" });
+    }
+
     const { checkinId } = req.params;
     const {
       coach_notes,
