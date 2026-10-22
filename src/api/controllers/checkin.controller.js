@@ -11,6 +11,8 @@ import { resolveClientPrimaryGoal, resolveClientIsFemale, resolveIntakeMedicalRe
 import { resolveTrainingCycleStatus } from "../services/trainingCycleService.js";
 import { mealCountNoteForCheckin } from "../../checkin-engine/meal-count-note.js";
 import { evaluateClientCheckinSchedule } from "../services/checkinScheduleService.js";
+import { getActiveClinicalLockout } from "../services/clinicalSafetyService.js";
+export { getActiveClinicalLockout };
 
 /**
  * Submit weekly check-in
@@ -43,34 +45,7 @@ function toEngineScale(value, scale) {
 }
 
 
-/**
- * P0 Clinical Safety: Scans trainee checkins to determine if an un-unlocked clinical training lock exists.
- * Preserves lock persistence across new checkins, late submissions, and server restarts.
- */
-export async function getActiveClinicalLockout(userId) {
-  try {
-    const checkins = await CheckinSubmission.findAll({
-      where: { user_id: userId },
-      order: [["week_number", "DESC"], ["id", "DESC"]],
-    });
-    for (const c of checkins) {
-      const analysis = c.analysis_output;
-      if (analysis?.training_locked === true) {
-        if (!analysis.clinical_unlock || analysis.clinical_unlock.unlocked !== true) {
-          return {
-            locked: true,
-            checkin_id: c.id,
-            week_number: c.week_number,
-            directive_ar: analysis.emergency_directive_ar || "تم قفل التدريب بقرار أمان سريري طارئ.",
-          };
-        }
-      }
-    }
-  } catch (err) {
-    console.error("getActiveClinicalLockout error:", err);
-  }
-  return { locked: false };
-}
+// getActiveClinicalLockout is imported and re-exported from clinicalSafetyService.js
 
 export async function submitCheckin(req, res) {
   try {

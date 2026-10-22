@@ -97,6 +97,11 @@ class LocalStorage {
   // --- طابور مزامنة التمارين دون اتصال (Offline Workout Sync Queue) ---
 
   Future<void> queuePendingWorkoutLog(Map<String, dynamic> logEntry) async {
+    final userId = logEntry['user_id']?.toString() ?? '';
+    // منع إضافة أي سجل لمستخدم خاضع لقفل طبي إلى طابور الأوفلاين
+    if (userId.isNotEmpty && isClientClinicallyLocked(userId)) {
+      return;
+    }
     final list = getPendingWorkoutLogs();
     list.add(logEntry);
     await _prefs?.setString(ApiConstants.pendingWorkoutLogsKey, jsonEncode(list));
@@ -116,6 +121,64 @@ class LocalStorage {
 
   Future<void> clearPendingWorkoutLogs() async {
     await _prefs?.remove(ApiConstants.pendingWorkoutLogsKey);
+  }
+
+  /// يستبدل طابور التمارين بما تبقى بعد محاولة الرفع دون حذف السجلات غير المرفوعة
+  Future<void> replacePendingWorkoutLogs(List<Map<String, dynamic>> remaining) async {
+    if (remaining.isEmpty) {
+      await clearPendingWorkoutLogs();
+      return;
+    }
+    await _prefs?.setString(ApiConstants.pendingWorkoutLogsKey, jsonEncode(remaining));
+  }
+
+  // --- حالة القفل الطبي للسلامة السريرية (Clinical Safety Lockout State) ---
+
+  String _cleanClientKey(String clientCode) {
+    return clientCode.replaceAll(RegExp(r'[^a-zA-Z0-9_-]'), '').trim();
+  }
+
+  Future<void> setClientClinicalLockout(
+    String clientCode,
+    bool locked, {
+    String? directive,
+    String? lockedAt,
+  }) async {
+    final clean = _cleanClientKey(clientCode);
+    if (clean.isEmpty) return;
+    final key = 'z_clinical_lockout_' + clean;
+    if (!locked) {
+      await _prefs?.remove(key);
+      return;
+    }
+    final data = {
+      'locked': true,
+      'directive': directive ?? 'إيقاف النشاط التدريبي فوراً والرجوع للطبيب المعالج.',
+      'locked_at': lockedAt ?? DateTime.now().toIso8601String(),
+    };
+    await _prefs?.setString(key, jsonEncode(data));
+  }
+
+  Map<String, dynamic>? getClientClinicalLockout(String clientCode) {
+    final clean = _cleanClientKey(clientCode);
+    if (clean.isEmpty) return null;
+    final raw = _prefs?.getString('z_clinical_lockout_' + clean);
+    if (raw == null || raw.isEmpty) return null;
+    try {
+      final map = jsonDecode(raw);
+      if (map is Map && map['locked'] == true) {
+        return Map<String, dynamic>.from(map);
+      }
+    } catch (_) {}
+    return null;
+  }
+
+  bool isClientClinicallyLocked(String clientCode) {
+    return getClientClinicalLockout(clientCode) != null;
+  }
+
+  Future<void> clearClientClinicalLockout(String clientCode) async {
+    await setClientClinicalLockout(clientCode, false);
   }
 
   // --- طابور مزامنة التقييم الأسبوعي (Offline Checkin Sync Queue) ---

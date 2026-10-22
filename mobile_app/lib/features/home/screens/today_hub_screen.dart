@@ -40,6 +40,8 @@ class _TodayHubScreenState extends State<TodayHubScreen> {
   bool _isLoading = false;
   String? _errorMessage;
   String? _programChangeSummary;
+  bool _isClinicalLocked = false;
+  String? _clinicalDirective;
 
   @override
   void initState() {
@@ -52,6 +54,15 @@ class _TodayHubScreenState extends State<TodayHubScreen> {
     final clientData = widget.storage.getClientData();
     if (clientData != null) {
       _user = ClientUser.fromJson(clientData);
+    }
+
+    final clientCode = _user?.clientCode ?? clientData?['client_code']?.toString() ?? '';
+    if (clientCode.isNotEmpty && widget.storage.isClientClinicallyLocked(clientCode)) {
+      _isClinicalLocked = true;
+      _clinicalDirective = widget.storage.getClientClinicalLockout(clientCode)?['directive']?.toString();
+    } else {
+      _isClinicalLocked = false;
+      _clinicalDirective = null;
     }
 
     _activeProgram = widget.storage.getCachedActiveProgram();
@@ -98,6 +109,29 @@ class _TodayHubScreenState extends State<TodayHubScreen> {
           : Map<String, dynamic>.from(data);
       if (data['client_view'] is Map) {
         program['client_view'] = data['client_view'];
+      }
+      if (data['clinical_lockout'] is Map) {
+        program['clinical_lockout'] = data['clinical_lockout'];
+        final isLocked = data['clinical_lockout']['active'] == true;
+        final clientCode = _user?.clientCode ?? widget.storage.getClientData()?['client_code']?.toString() ?? '';
+        if (clientCode.isNotEmpty) {
+          if (isLocked) {
+            await widget.storage.setClientClinicalLockout(
+              clientCode,
+              true,
+              directive: data['clinical_lockout']['emergency_directive']?.toString() ??
+                  data['clinical_lockout']['reason_ar']?.toString(),
+              lockedAt: data['clinical_lockout']['locked_at']?.toString(),
+            );
+            _isClinicalLocked = true;
+            _clinicalDirective = data['clinical_lockout']['emergency_directive']?.toString();
+          } else {
+            // تأكيد فك القفل المعتمد من الخادم
+            await widget.storage.clearClientClinicalLockout(clientCode);
+            _isClinicalLocked = false;
+            _clinicalDirective = null;
+          }
+        }
       }
 
       // مقارنة مع النسخة السابقة لعرض ملخص التعديل إن وجد
@@ -430,34 +464,63 @@ class _TodayHubScreenState extends State<TodayHubScreen> {
                       const SizedBox(height: 20),
                       SizedBox(
                         width: double.infinity,
-                        child: ElevatedButton(
-                          onPressed: () {
-                            widget.onNavigateToTab?.call(1); // الانتقال لتبويب التمارين
-                          },
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: AppColors.primary,
-                            padding: const EdgeInsets.symmetric(vertical: 14),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(16),
-                            ),
-                          ),
-                          child: const Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Text(
-                                'بدء تمرين اليوم وتسجيل الأوزان',
-                                style: TextStyle(
-                                  color: Colors.white,
-                                  fontSize: 13,
-                                  fontWeight: FontWeight.bold,
-                                  fontFamily: 'Alexandria',
+                        child: _isClinicalLocked
+                            ? ElevatedButton(
+                                onPressed: () {
+                                  _showClinicalLockoutDialog(context);
+                                },
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: const Color(0xFFDC2626),
+                                  padding: const EdgeInsets.symmetric(vertical: 14),
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(16),
+                                  ),
+                                ),
+                                child: const Row(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    Icon(Icons.health_and_safety_outlined, size: 18, color: Colors.white),
+                                    SizedBox(width: 8),
+                                    Text(
+                                      'التدريب موقوف لدواعي السلامة السريرية',
+                                      style: TextStyle(
+                                        color: Colors.white,
+                                        fontSize: 13,
+                                        fontWeight: FontWeight.bold,
+                                        fontFamily: 'Alexandria',
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              )
+                            : ElevatedButton(
+                                onPressed: () {
+                                  widget.onNavigateToTab?.call(1); // الانتقال لتبويب التمارين
+                                },
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: AppColors.primary,
+                                  padding: const EdgeInsets.symmetric(vertical: 14),
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(16),
+                                  ),
+                                ),
+                                child: const Row(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    Text(
+                                      'بدء تمرين اليوم وتسجيل الأوزان',
+                                      style: TextStyle(
+                                        color: Colors.white,
+                                        fontSize: 13,
+                                        fontWeight: FontWeight.bold,
+                                        fontFamily: 'Alexandria',
+                                      ),
+                                    ),
+                                    SizedBox(width: 8),
+                                    Icon(Icons.arrow_forward, size: 16, color: Colors.white),
+                                  ],
                                 ),
                               ),
-                              SizedBox(width: 8),
-                              Icon(Icons.arrow_forward, size: 16, color: Colors.white),
-                            ],
-                          ),
-                        ),
                       ),
                     ],
                   ),
@@ -716,6 +779,71 @@ class _TodayHubScreenState extends State<TodayHubScreen> {
             ],
           ),
         ),
+      ),
+    );
+  }
+
+  void _showClinicalLockoutDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        backgroundColor: Colors.white,
+        title: const Row(
+          children: [
+            Icon(Icons.health_and_safety_outlined, color: Color(0xFFDC2626), size: 24),
+            SizedBox(width: 8),
+            Text(
+              'تنبيه سريري عاجل',
+              style: TextStyle(
+                fontFamily: 'Alexandria',
+                fontSize: 16,
+                fontWeight: FontWeight.bold,
+                color: Color(0xFF991B1B),
+              ),
+            ),
+          ],
+        ),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              _clinicalDirective ??
+                  'تم إيقاف النشاط التدريبي مؤقتاً لدواعي السلامة السريرية والوقاية القلبية. يجب استيفاء شروط الاستئناف وموافقة الطبيب المعالج قبل بدء التمرين.',
+              style: const TextStyle(
+                fontFamily: 'Alexandria',
+                fontSize: 13,
+                height: 1.5,
+                color: AppColors.textPrimary,
+              ),
+            ),
+            const SizedBox(height: 14),
+            Container(
+              padding: const EdgeInsets.all(10),
+              decoration: BoxDecoration(
+                color: const Color(0xFFFEF2F2),
+                borderRadius: BorderRadius.circular(10),
+                border: Border.all(color: const Color(0xFFFECACA)),
+              ),
+              child: const Text(
+                'إذا كانت لديك أعراض حادة أو ألم ممتد للذراع أو الفك، توجه لأقرب مستشفى أو اتصل فوراً بالإسعاف (123 / 997 / 911).',
+                style: TextStyle(
+                  fontFamily: 'Alexandria',
+                  fontSize: 11,
+                  color: Color(0xFF991B1B),
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(),
+            child: const Text('حسناً', style: TextStyle(fontFamily: 'Alexandria')),
+          ),
+        ],
       ),
     );
   }

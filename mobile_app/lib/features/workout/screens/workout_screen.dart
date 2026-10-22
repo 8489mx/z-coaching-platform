@@ -34,6 +34,10 @@ class _WorkoutScreenState extends State<WorkoutScreen> {
   Timer? _autoSaveDebounceTimer;
   String _autoSaveStatus = 'جاهز'; // 'جاهز' | 'جاري الحفظ...' | 'تم الحفظ' | 'محفوظ محلياً'
 
+  // حالة الأمان السريري والقفل الطبي (P0 Clinical Safety)
+  bool _isClinicalLocked = false;
+  String? _clinicalDirective;
+
   @override
   void initState() {
     super.initState();
@@ -48,7 +52,24 @@ class _WorkoutScreenState extends State<WorkoutScreen> {
   }
 
   void _loadWorkoutSessions() {
+    final clientData = widget.storage.getClientData();
+    final userId = clientData?['client_code']?.toString() ?? clientData?['id']?.toString() ?? 'client';
     final cached = widget.storage.getCachedActiveProgram();
+
+    // فحص القفل السريري من الذاكرة المحلية أو من كاش الخطة النشطة
+    final localLock = widget.storage.getClientClinicalLockout(userId);
+    final programLock = cached?['clinical_lockout'] is Map && cached!['clinical_lockout']['active'] == true;
+
+    if (localLock != null || programLock) {
+      _isClinicalLocked = true;
+      _clinicalDirective = localLock?['directive']?.toString() ??
+          (cached?['clinical_lockout'] is Map ? cached!['clinical_lockout']['emergency_directive']?.toString() : null) ??
+          'تم إيقاف النشاط التدريبي فوراً لدواعي السلامة السريرية والوقاية القلبية.';
+    } else {
+      _isClinicalLocked = false;
+      _clinicalDirective = null;
+    }
+
     final clientView = cached?['client_view'] as Map<String, dynamic>?;
     if (clientView != null && clientView['readiness_guidance_ar'] is Map) {
       _readinessGuidance = Map<String, dynamic>.from(clientView['readiness_guidance_ar'] as Map);
@@ -65,7 +86,7 @@ class _WorkoutScreenState extends State<WorkoutScreen> {
 
   /// تشغيل الحفظ التلقائي الفوري بمجرد تعديل أي حقل
   void _triggerAutoSave() {
-    if (_sessions.isEmpty) return;
+    if (_sessions.isEmpty || _isClinicalLocked) return;
     setState(() {
       _autoSaveStatus = 'جاري الحفظ...';
     });
@@ -76,7 +97,7 @@ class _WorkoutScreenState extends State<WorkoutScreen> {
       final clientData = widget.storage.getClientData();
       final userId = clientData?['client_code']?.toString() ?? clientData?['id']?.toString() ?? 'client';
 
-      final success = await _workoutService.sendWorkoutLog(
+      final result = await _workoutService.submitWorkoutLog(
         userId: userId,
         sessionTitle: currentSession.dayName,
         exercises: currentSession.exercises,
@@ -84,14 +105,156 @@ class _WorkoutScreenState extends State<WorkoutScreen> {
 
       if (mounted) {
         setState(() {
-          _autoSaveStatus = success ? 'تم الحفظ' : 'محفوظ محلياً';
+          if (result.isClinicalLockout) {
+            _isClinicalLocked = true;
+            _clinicalDirective = result.emergencyDirective ?? 'تم إيقاف التدريب مؤقتاً لدواعي السلامة السريرية.';
+            _autoSaveStatus = 'مرفوض: قفل طبي سارٍ';
+          } else if (result.isSuccess) {
+            _autoSaveStatus = 'تم الحفظ';
+          } else if (result.isOfflineQueued) {
+            _autoSaveStatus = 'محفوظ محلياً';
+          } else {
+            _autoSaveStatus = 'فشل الحفظ';
+          }
         });
       }
     });
   }
 
+  Widget _buildClinicalAlertCard() {
+    return Container(
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: const Color(0xFFFEF2F2),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: const Color(0xFFF87171), width: 1.5),
+        boxShadow: [
+          BoxShadow(
+            color: const Color(0xFFEF4444).withOpacity(0.08),
+            blurRadius: 16,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Row(
+            children: [
+              Container(
+                width: 44,
+                height: 44,
+                decoration: BoxDecoration(
+                  color: const Color(0xFFFEE2E2),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: const Icon(
+                  Icons.health_and_safety_outlined,
+                  color: Color(0xFFDC2626),
+                  size: 24,
+                ),
+              ),
+              const SizedBox(width: 12),
+              const Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'تنبيه سريري عاجل',
+                      style: TextStyle(
+                        fontFamily: 'Alexandria',
+                        fontSize: 15,
+                        fontWeight: FontWeight.bold,
+                        color: Color(0xFF991B1B),
+                      ),
+                    ),
+                    Text(
+                      'تم إيقاف التدريب مؤقتاً لدواعي السلامة',
+                      style: TextStyle(
+                        fontFamily: 'Alexandria',
+                        fontSize: 12,
+                        color: Color(0xFFB91C1C),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 16),
+          Text(
+            _clinicalDirective ??
+                'تم رصد أعراض ألم بالصدر أو إغماء أثناء الجهد البدني. يجب إيقاف أي مجهود تدريبي فوراً والرجوع للطبيب المعالج.',
+            style: const TextStyle(
+              fontFamily: 'Alexandria',
+              fontSize: 13,
+              height: 1.5,
+              color: Color(0xFF7F1D1D),
+            ),
+          ),
+          const SizedBox(height: 16),
+          Container(
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(10),
+              border: Border.all(color: const Color(0xFFFECACA)),
+            ),
+            child: const Text(
+              'إذا كانت لديك أعراض حادة ومستمرة أو ألم ممتد للذراع أو الفك، توجه لأقرب مستشفى أو اتصل فوراً بالإسعاف (123 في مصر / 997 في السعودية / 911 دولياً).',
+              style: TextStyle(
+                fontFamily: 'Alexandria',
+                fontSize: 11,
+                height: 1.4,
+                color: Color(0xFF991B1B),
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ),
+          const SizedBox(height: 16),
+          ElevatedButton.icon(
+            onPressed: () {
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(
+                  content: Text('تواصل مع الكوتش عبر الواتساب لطلب المراجعة الطبية واستيفاء شروط الاستئناف.'),
+                ),
+              );
+            },
+            icon: const Icon(Icons.support_agent_outlined, size: 18),
+            label: const Text(
+              'التواصل مع الكوتش للمراجعة الطبية',
+              style: TextStyle(fontFamily: 'Alexandria', fontSize: 12, fontWeight: FontWeight.bold),
+            ),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFFDC2626),
+              foregroundColor: Colors.white,
+              padding: const EdgeInsets.symmetric(vertical: 12),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
+    if (_isClinicalLocked) {
+      return Scaffold(
+        backgroundColor: AppColors.background,
+        appBar: AppBar(
+          title: const Text('التمارين'),
+        ),
+        body: Center(
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.all(24),
+            child: _buildClinicalAlertCard(),
+          ),
+        ),
+      );
+    }
+
     if (_sessions.isEmpty) {
       return Scaffold(
         backgroundColor: AppColors.background,
