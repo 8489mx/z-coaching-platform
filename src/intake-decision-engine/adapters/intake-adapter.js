@@ -578,7 +578,20 @@ export function adaptIntakePayloadToCanonicalEngine(raw) {
   const waist = parseCleanNumber(body.waistCm, parseCleanNumber(intake.waist_cm || intake.circumferences?.waist_cm, Math.round(height * 0.45)));
   const neck = parseCleanNumber(body.neckCm, parseCleanNumber(intake.circumferences?.neck_cm, null));
   const hip = parseCleanNumber(body.hipCm, parseCleanNumber(intake.circumferences?.hips_cm, null));
-  let bodyFat = parseCleanNumber(body.bodyFat, null);
+  let rawBodyFatInput = 
+    body.bodyFat ?? body.body_fat ?? body.bodyFatPct ?? body.body_fat_pct ?? body.body_fat_percent ?? body.bodyFatPercentage ??
+    intake.bodyFat ?? intake.body_fat ?? intake.bodyFatPct ?? intake.body_fat_pct ?? intake.body_fat_percent ?? intake.bodyFatPercentage ??
+    intake.body?.bodyFatPct ?? intake.body?.body_fat_pct;
+
+  let bodyFat = parseCleanNumber(rawBodyFatInput, null);
+
+  if (bodyFat !== null && bodyFat > 0 && bodyFat <= 0.60) {
+    bodyFat = Math.round(bodyFat * 100 * 10) / 10;
+  }
+
+  if (bodyFat !== null && (bodyFat < 3 || bodyFat > 65)) {
+    bodyFat = null;
+  }
 
   // Calculate US Navy Body Fat if neckCm and waistCm are provided and direct bodyFat is missing
   if (!bodyFat && neck && waist && waist > neck) {
@@ -603,6 +616,8 @@ export function adaptIntakePayloadToCanonicalEngine(raw) {
     heightCm: height,
     weightKg: weight,
     waistCm: waist,
+
+
     weightTrend: ["LOSING", "STABLE", "GAINING"].includes(body.weightTrend) ? body.weightTrend : "STABLE",
     measurementQuality: quality,
     progressPhotosAvailable: Boolean(body.progressPhotosAvailable || (body.photos && Object.keys(body.photos).length > 0))

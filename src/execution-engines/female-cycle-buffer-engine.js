@@ -85,7 +85,7 @@ export function evaluateFemaleCycleBuffer({
   const shouldLockDeficit = isLuteal && isHydrationGain && isHighAdherence;
 
   // Comfort snack shift: +150 to +200 kcal
-  const comfortSnackKcal = isLuteal ? 175 : 0;
+  const comfortSnackKcal = isLuteal ? 150 : 0;
   const adjustedDailyCalories = current_calories + comfortSnackKcal;
 
   // Gym tuning: +30s rest interval on heavy/compound lifts
@@ -124,7 +124,7 @@ export function evaluateFemaleCycleBuffer({
       null,
     micro_adjustments: isLuteal ? {
       comfort_snack_options_ar: 'حصة شوكولاتة داكنة (20g بنسبة 70%+) أو فواكه طازجة مهدئة لتهدئة الرغبة في السكريات بمرونة تامة',
-      recommended_supplement: 'Magnesium Glycinate (300 - 400 mg مساءً)',
+      recommended_supplement: 'Magnesium Glycinate (جرعة توفر 100 - 200 mg مغنسيوم عنصري مساءً)',
       benefit_ar: 'لتهدئة التقلصات العضلية وتحسين جودة النوم العميق'
     } : null,
     pcos_protocol: pcosProtocol

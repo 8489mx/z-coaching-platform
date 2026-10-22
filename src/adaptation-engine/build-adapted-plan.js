@@ -43,6 +43,31 @@ const OBSERVED_TDEE_STATUSES = new Set([
   CheckinAnalysisStatus.GAIN_STALL,
 ]);
 
+export function alignMacrosWithCalories(targetCalories, proteinG, carbsG, fatG) {
+  const p = Math.max(0, Math.round(proteinG));
+  let f = Math.max(15, Math.round(fatG));
+  let c = Math.max(0, Math.round((targetCalories - (p * 4) - (f * 9)) / 4));
+  let macroSum = p * 4 + c * 4 + f * 9;
+  let diff = targetCalories - macroSum;
+
+  if (diff === 2 && c >= 2) {
+    f += 1;
+    c -= 2;
+  } else if (diff === -2 && f >= 16) {
+    f -= 1;
+    c += 2;
+  }
+
+  macroSum = p * 4 + c * 4 + f * 9;
+  return {
+    protein: p,
+    carbs: c,
+    fat: f,
+    macroSum,
+    diff: targetCalories - macroSum
+  };
+}
+
 export function buildAdaptedPlan(inputs) {
   requireObject(inputs, "inputs");
 
@@ -60,6 +85,9 @@ export function buildAdaptedPlan(inputs) {
   const baseEnergy =
     currentMasterProgram.nutrition_program?.macro_targets?.calories_kcal ||
     currentMasterProgram.nutrition_program?.targets?.calories_kcal ||
+    currentMasterProgram.nutrition_program?.targets?.target_calories_kcal ||
+    currentMasterProgram.nutrition_program?.targets?.target_calories ||
+    currentMasterProgram.nutrition_program?.target_calories_kcal ||
     currentMasterProgram.nutrition?.targets?.calories ||
     energyTargetStage?.target_calories ||
     energyTargetStage?.target_calories_kcal ||
@@ -133,13 +161,18 @@ export function buildAdaptedPlan(inputs) {
 
   if (isDietBreakEligible) {
     adaptationAction = AdaptationAction.SCHEDULE_DIET_BREAK;
-    const maintenanceCalories = Math.round(baseEnergy + 350);
-    const maintenanceCarbs = Math.round(baseCarbs + 75);
+    const planTdee = Number(currentMasterProgram.nutrition_program?.targets?.tdee || currentMasterProgram.nutrition_program?.tdee);
+    const maintenanceCalories = (Number.isFinite(planTdee) && planTdee > baseEnergy)
+      ? Math.round(planTdee)
+      : Math.round(baseEnergy + 350);
+
     adaptedCalories = maintenanceCalories;
-    adaptedCarbs = maintenanceCarbs;
+    const aligned = alignMacrosWithCalories(adaptedCalories, adaptedProtein, adaptedCarbs, adaptedFat);
+    adaptedCarbs = aligned.carbs;
+    adaptedFat = aligned.fat;
     reasons.push({
       code: AdaptationReasonCode.DIET_BREAK_TRIGGERED_AFTER_COMPLIANCE,
-      message_ar: "استراحة دايت مبرمجة (Diet Break)! بعد 6 أسابيع متصلة من الالتزام العالي (≥85%)، تم رفع السعرات إلى حد الصيانة (+350 سعرة من الكاربوهيدرات النظيفة) لمدة أسبوع لإعادة تنشيط هرمونات الحرق (Leptin و T3) وإراحة الجهاز العصبي قبل استئناف العجز.",
+      message_ar: `استراحة دايت مبرمجة (Diet Break)! بعد ${consecutiveHighComplianceWeeks} أسابيع متصلة من الالتزام العالي (≥85%)، تم رفع السعرات إلى حد الصيانة (${adaptedCalories} سعرة) لمدة أسبوع لإعادة تنشيط هرمونات الحرق (Leptin و T3) وإراحة الجهاز العصبي قبل استئناف العجز.`,
       message_en: "Adherence-gated Diet Break activated! Following 6 consecutive weeks of high compliance (≥85%), calories increased to maintenance (+350 kcal) for one week to restore leptin, thyroid output, and metabolic rate.",
     });
   } else if (isReverseDieting) {
@@ -155,7 +188,9 @@ export function buildAdaptedPlan(inputs) {
     } else {
       // Weight stable or minor increase <= 0.3kg -> add +75 kcal (+18g carbs)
       adaptedCalories += 75;
-      adaptedCarbs += 18;
+      const aligned = alignMacrosWithCalories(adaptedCalories, adaptedProtein, adaptedCarbs + 18, adaptedFat);
+      adaptedCarbs = aligned.carbs;
+      adaptedFat = aligned.fat;
       reasons.push({
         code: AdaptationReasonCode.REVERSE_DIET_SURPLUS_APPLIED || "REVERSE_DIET_SURPLUS_APPLIED",
         message_ar: "محرك الدايت العكسي (Reverse Dieting): استجابة فسيولوجية ممتازة وثبات في الوزن (تغير ≤ 0.3 كجم). تم رفع السعرات بمقدار +75 سعرة حرارية (+18 جم كاربوهيدرات معقدة) لإعادة تنشيط سرعة الحرق تدريجياً دون زيادة دهون.",
@@ -168,8 +203,11 @@ export function buildAdaptedPlan(inputs) {
     options.is_pms_active === true
   ) {
     adaptationAction = AdaptationAction.MAINTAIN_TRAJECTORY;
-    adaptedCalories = Math.round(baseEnergy + 150);
-    adaptedCarbs = Math.round(baseCarbs + 35);
+    const comfortKcal = Number(checkinAnalysis.female_cycle_buffer?.comfort_snack_added_kcal) || 150;
+    adaptedCalories = Math.round(baseEnergy + comfortKcal);
+    const aligned = alignMacrosWithCalories(adaptedCalories, adaptedProtein, adaptedCarbs + 35, adaptedFat);
+    adaptedCarbs = aligned.carbs;
+    adaptedFat = aligned.fat;
     reasons.push({
       code: AdaptationReasonCode.FEMALE_CYCLE_PMS_BUFFER_APPLIED,
       message_ar: "صمام أمان الدورة الهرمونية (طور الـ Luteal / PMS): تم قفل أي خفض للسعرات لمنع الإجهاد الهرموني، مع إضافة +150 سعرة كاربوهيدرات معقدة مهدئة للرغبة في السكريات والحفاظ على توازن السيروتونين.",
@@ -222,8 +260,10 @@ export function buildAdaptedPlan(inputs) {
     }
     adaptationAction = AdaptationAction.APPLY_OBSERVED_TDEE;
     adaptedCalories = newCalories;
-    adaptedCarbs += carbDelta;
-    adaptedFat += fatDelta;
+    const aligned = alignMacrosWithCalories(adaptedCalories, adaptedProtein, adaptedCarbs + carbDelta, adaptedFat);
+    adaptedCarbs = aligned.carbs;
+    adaptedFat = aligned.fat;
+
     reasons.push({
       code: AdaptationReasonCode.OBSERVED_TDEE_APPLIED,
       message_ar: tdee.reason_ar,
@@ -232,8 +272,10 @@ export function buildAdaptedPlan(inputs) {
   } else if (status === CheckinAnalysisStatus.RAPID_LOSS_WARNING) {
     adaptationAction = AdaptationAction.INCREASE_CALORIES_RAPID_LOSS;
     adaptedCalories += 150;
-    adaptedCarbs += 30; // +120 kcal
-    adaptedFat += 3;    // +27 kcal
+    const aligned = alignMacrosWithCalories(adaptedCalories, adaptedProtein, adaptedCarbs + 30, adaptedFat + 3);
+    adaptedCarbs = aligned.carbs;
+    adaptedFat = aligned.fat;
+
     reasons.push({
       code: AdaptationReasonCode.RAPID_LOSS_SURPLUS_APPLIED,
       message_ar: "معدل النزول سريع (>1.5% أسبوعياً). تمت إضافة 150 سعرة لحماية الكتلة العضلية ومنع الهبوط الأيضي.",
@@ -248,7 +290,9 @@ export function buildAdaptedPlan(inputs) {
       : Math.round(calDelta / 4);
     adaptationAction = AdaptationAction.INCREASE_CALORIES_GAIN_STALL;
     adaptedCalories += calDelta;
-    adaptedCarbs += carbDelta;
+    const aligned = alignMacrosWithCalories(adaptedCalories, adaptedProtein, adaptedCarbs + carbDelta, adaptedFat);
+    adaptedCarbs = aligned.carbs;
+    adaptedFat = aligned.fat;
     reasons.push({
       code: AdaptationReasonCode.GAIN_STALL_SURPLUS_APPLIED,
       message_ar: `توقف الزيادة في الوزن مع التزام تام وهدف بناء عضلي. تمت إضافة ${calDelta} سعرة يومياً من الكاربوهيدرات لاستئناف البناء.`,
@@ -263,13 +307,17 @@ export function buildAdaptedPlan(inputs) {
   ) {
     const isFemale = options.isFemale ?? checkinAnalysis.is_female ?? (currentMasterProgram.client?.gender === 'female');
     const calorieFloor = isFemale ? 1200 : 1500;
+    const requestedCalDelta = typeof checkinAnalysis.suggested_calorie_delta === "number"
+      ? Math.abs(checkinAnalysis.suggested_calorie_delta)
+      : (typeof checkinAnalysis.calorie_adjustment === "number" && checkinAnalysis.calorie_adjustment < 0 ? Math.abs(checkinAnalysis.calorie_adjustment) : 125);
+    const availableCut = Math.max(0, adaptedCalories - calorieFloor);
 
-    if (adaptedCalories - 125 < calorieFloor) {
+    if (availableCut <= 0 || availableCut < 75) {
       adaptationAction = AdaptationAction.SCHEDULE_REFEED_DAY;
       refeedConfig = Object.freeze({
         refeed_day: "SATURDAY",
         refeed_calories_kcal: Math.round(adaptedCalories + 350),
-        refeed_carbohydrate_g: Math.round(adaptedCarbs + 80),
+        refeed_carbohydrate_g: Math.round(adaptedCarbs + 88),
         purpose_ar: "يوم إعادة شحن عالي الكاربوهيدرات لكسر الثبات الأيضي بأمان دون النزول تحت الحد الفسيولوجي الأدنى للسعرات.",
         purpose_en: "High-carb Refeed Day to safely break metabolic plateau without breaching caloric floor.",
       });
@@ -281,20 +329,27 @@ export function buildAdaptedPlan(inputs) {
       });
     } else {
       adaptationAction = AdaptationAction.REDUCE_CALORIES_FOR_PLATEAU;
-      const calDelta = typeof checkinAnalysis.suggested_calorie_delta === "number"
-        ? Math.abs(checkinAnalysis.suggested_calorie_delta)
-        : (typeof checkinAnalysis.calorie_adjustment === "number" && checkinAnalysis.calorie_adjustment < 0 ? Math.abs(checkinAnalysis.calorie_adjustment) : 125);
-      const carbDelta = typeof checkinAnalysis.suggested_carb_delta_g === "number"
-        ? Math.abs(checkinAnalysis.suggested_carb_delta_g)
-        : Math.round(calDelta / 4);
-      adaptedCalories -= calDelta;
-      adaptedCarbs -= carbDelta;
-      adaptedFat -= 3;    // -27 kcal
+      const effectiveCalDelta = Math.min(requestedCalDelta, availableCut);
+
+
+      adaptedCalories -= effectiveCalDelta;
+      const aligned = alignMacrosWithCalories(adaptedCalories, adaptedProtein, adaptedCarbs - Math.round(effectiveCalDelta / 4), adaptedFat);
+      adaptedCarbs = aligned.carbs;
+      adaptedFat = aligned.fat;
+
+
+
+
+
       adaptedDailySteps += 500;
       reasons.push({
         code: AdaptationReasonCode.PLATEAU_DEFICIT_APPLIED,
-        message_ar: `ثبات في الوزن مع التزام تام. تم خفض ${calDelta} سعرة يومياً وزيادة النشاط لكسر الثبات.`,
-        message_en: `Weight plateau broken with a moderate ${calDelta} kcal reduction.`,
+        message_ar: effectiveCalDelta < requestedCalDelta
+          ? `ثبات في الوزن مع التزام تام. تم تقييد الخفض عند ${effectiveCalDelta} سعرة يومياً (بدلاً من ${requestedCalDelta}) احتراماً لحد الأمان الأدنى (${calorieFloor} سعرة)، مع زيادة النشاط 500 خطوة لكسر الثبات.`
+          : `ثبات في الوزن مع التزام تام. تم خفض ${effectiveCalDelta} سعرة يومياً وزيادة النشاط لكسر الثبات.`,
+        message_en: effectiveCalDelta < requestedCalDelta
+          ? `Plateau deficit capped at ${effectiveCalDelta} kcal (instead of requested ${requestedCalDelta}) to respect caloric floor (${calorieFloor} kcal). Increased daily steps (+500).`
+          : `Weight plateau broken with a moderate ${effectiveCalDelta} kcal reduction.`,
       });
     }
   } else {
@@ -608,6 +663,18 @@ export function buildAdaptedPlan(inputs) {
       }
     }
   }
+
+  // Post-Adjustment Invariant: Strict Calorie Floor Guard & Exact Macro Alignment
+  const clientIsFemale = options.isFemale ?? checkinAnalysis.is_female ?? (currentMasterProgram.client?.gender === 'female');
+  const finalCalorieFloor = clientIsFemale ? 1200 : 1500;
+  if (adaptedCalories < finalCalorieFloor) {
+    adaptedCalories = finalCalorieFloor;
+  }
+
+  const finalAligned = alignMacrosWithCalories(adaptedCalories, adaptedProtein, adaptedCarbs, adaptedFat);
+  adaptedProtein = finalAligned.protein;
+  adaptedCarbs = finalAligned.carbs;
+  adaptedFat = finalAligned.fat;
 
   return Object.freeze({
     engine_version: ADAPTATION_ENGINE_VERSION,

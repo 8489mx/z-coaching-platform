@@ -250,8 +250,16 @@ export function calculateUniversalNutritionTargets(canonicalIntake, evaluationCo
   const rawBody = effectiveRaw?.body || {};
   const rawCircumferences = effectiveRaw?.circumferences || {};
   let bodyFat = Number(
-    body.bodyFat || body.body_fat || rawBody.bodyFat || rawBody.body_fat || effectiveRaw?.body_fat || effectiveRaw?.body_fat_percent,
+    body.bodyFat ?? body.body_fat ?? body.bodyFatPct ?? body.body_fat_pct ??
+    rawBody.bodyFat ?? rawBody.body_fat ?? rawBody.bodyFatPct ?? rawBody.body_fat_pct ?? rawBody.body_fat_percent ?? rawBody.bodyFatPercentage ??
+    effectiveRaw?.body_fat ?? effectiveRaw?.body_fat_percent ?? effectiveRaw?.bodyFatPct ?? effectiveRaw?.bodyFat ?? effectiveRaw?.body_fat_percentage,
   ) || null;
+  if (bodyFat !== null && bodyFat > 0 && bodyFat <= 0.60) {
+    bodyFat = Math.round(bodyFat * 100 * 10) / 10;
+  }
+  if (bodyFat !== null && (bodyFat < 3 || bodyFat > 65)) {
+    bodyFat = null;
+  }
   const neck = Number(body.neckCm || body.neck_cm || rawBody.neckCm || rawBody.neck_cm || rawCircumferences.neck_cm) || null;
   const waist = Number(rawBody.waistCm || rawBody.waist_cm || rawCircumferences.waist_cm || effectiveRaw?.waist_cm) || null;
   const hip = Number(body.hipCm || body.hip_cm || rawBody.hipCm || rawBody.hip_cm || rawCircumferences.hips_cm) || null;
@@ -285,7 +293,7 @@ export function calculateUniversalNutritionTargets(canonicalIntake, evaluationCo
   if (isYoungTrainee) {
     bmr = Math.round(isMale ? (17.686 * weight) + 658.2 : (13.384 * weight) + 692.6);
     bmrFormula = "SCHOFIELD_YOUTH";
-  } else if (bodyFat && bodyFat > 0 && bodyFat < 50) {
+  } else if (bodyFat && bodyFat >= 3 && bodyFat <= 60) {
     const lbm = weight * (1 - bodyFat / 100);
     bmr = Math.round(370 + (21.6 * lbm));
     bmrFormula = "KATCH_MCARDLE";
@@ -838,6 +846,7 @@ export function calculateUniversalNutritionTargets(canonicalIntake, evaluationCo
   return {
     bmr,
     bmr_formula: bmrFormula,
+    body_fat_percentage: bodyFat,
     activity_factor: activityFactor,
     tdee,
     target_calories: targetCalories,
