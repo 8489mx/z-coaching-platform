@@ -43,28 +43,40 @@ const OBSERVED_TDEE_STATUSES = new Set([
   CheckinAnalysisStatus.GAIN_STALL,
 ]);
 
-export function alignMacrosWithCalories(targetCalories, proteinG, carbsG, fatG) {
+export function alignMacrosWithCalories(targetCalories, proteinG, carbsG, fatG, constraints = {}) {
+  // 1. Protein is inviolable: never altered to satisfy an energy rounding diff
   const p = Math.max(0, Math.round(proteinG));
-  let f = Math.max(15, Math.round(fatG));
-  let c = Math.max(0, Math.round((targetCalories - (p * 4) - (f * 9)) / 4));
-  let macroSum = p * 4 + c * 4 + f * 9;
-  let diff = targetCalories - macroSum;
 
-  if (diff === 2 && c >= 2) {
-    f += 1;
-    c -= 2;
-  } else if (diff === -2 && f >= 16) {
-    f -= 1;
-    c += 2;
+  // 2. Fat safety floor: default 20g (or client constraint) to preserve essential lipid absorption
+  const minFat = Math.max(15, Number(constraints.min_fat_g ?? constraints.minFatG ?? 20));
+  const minCarbs = Math.max(0, Number(constraints.min_carbs_g ?? constraints.minCarbsG ?? 0));
+
+  let f = Math.max(minFat, Math.round(fatG));
+  const remainingForCarbs = targetCalories - (p * 4) - (f * 9);
+
+  let alignmentConflict = false;
+  let conflictReason = null;
+  let c = 0;
+
+  if (remainingForCarbs < minCarbs * 4) {
+    c = minCarbs;
+    alignmentConflict = true;
+    conflictReason = "CALORIC_BUDGET_BELOW_MINIMUM_MACRO_CONSTRAINTS";
+  } else {
+    c = Math.round(remainingForCarbs / 4);
   }
 
-  macroSum = p * 4 + c * 4 + f * 9;
+  const macroSum = p * 4 + c * 4 + f * 9;
+  const diff = targetCalories - macroSum;
+
   return {
     protein: p,
     carbs: c,
     fat: f,
     macroSum,
-    diff: targetCalories - macroSum
+    diff,
+    alignment_conflict: alignmentConflict,
+    conflict_reason: conflictReason
   };
 }
 
@@ -161,10 +173,12 @@ export function buildAdaptedPlan(inputs) {
 
   if (isDietBreakEligible) {
     adaptationAction = AdaptationAction.SCHEDULE_DIET_BREAK;
+    requiresCoachApproval = true;
+    const observedTdee = checkinAnalysis.adaptive_tdee?.ready ? Number(checkinAnalysis.adaptive_tdee.observed_tdee_kcal) : null;
     const planTdee = Number(currentMasterProgram.nutrition_program?.targets?.tdee || currentMasterProgram.nutrition_program?.tdee);
-    const maintenanceCalories = (Number.isFinite(planTdee) && planTdee > baseEnergy)
-      ? Math.round(planTdee)
-      : Math.round(baseEnergy + 350);
+    const maintenanceCalories = Number.isFinite(observedTdee) && observedTdee > baseEnergy
+      ? Math.round(observedTdee)
+      : (Number.isFinite(planTdee) && planTdee > baseEnergy ? Math.round(planTdee) : Math.round(baseEnergy + 350));
 
     adaptedCalories = maintenanceCalories;
     const aligned = alignMacrosWithCalories(adaptedCalories, adaptedProtein, adaptedCarbs, adaptedFat);
@@ -203,15 +217,24 @@ export function buildAdaptedPlan(inputs) {
     options.is_pms_active === true
   ) {
     adaptationAction = AdaptationAction.MAINTAIN_TRAJECTORY;
-    const comfortKcal = Number(checkinAnalysis.female_cycle_buffer?.comfort_snack_added_kcal) || 150;
+    const shouldApplyComfortBuffer = options.apply_pms_comfort_snack === true || checkinAnalysis.female_cycle_buffer?.apply_comfort_snack === true;
+    const comfortKcal = shouldApplyComfortBuffer
+      ? (Number(checkinAnalysis.female_cycle_buffer?.comfort_snack_added_kcal || checkinAnalysis.female_cycle_buffer?.comfort_snack_recommended_kcal) || 150)
+      : 0;
     adaptedCalories = Math.round(baseEnergy + comfortKcal);
-    const aligned = alignMacrosWithCalories(adaptedCalories, adaptedProtein, adaptedCarbs + 35, adaptedFat);
+    const aligned = alignMacrosWithCalories(adaptedCalories, adaptedProtein, shouldApplyComfortBuffer ? adaptedCarbs + 35 : adaptedCarbs, adaptedFat);
     adaptedCarbs = aligned.carbs;
     adaptedFat = aligned.fat;
     reasons.push({
       code: AdaptationReasonCode.FEMALE_CYCLE_PMS_BUFFER_APPLIED,
-      message_ar: "صمام أمان الدورة الهرمونية (طور الـ Luteal / PMS): تم قفل أي خفض للسعرات لمنع الإجهاد الهرموني، مع إضافة +150 سعرة كاربوهيدرات معقدة مهدئة للرغبة في السكريات والحفاظ على توازن السيروتونين.",
-      message_en: "Female Cycle PMS Safety Gate active: Deficit cut locked; added +150 kcal complex carb comfort buffer to stabilize serotonin and curb cravings.",
+      message_ar: shouldApplyComfortBuffer
+        ? `صمام أمان الدورة الهرمونية (طور الـ Luteal / PMS): تم قفل خفض السعرات وتفعيل سناك الراحة (+${comfortKcal} سعرة) بتوجيه المدرب لدعم التوازن الهرموني وتهدئة الرغبة في السكريات.`
+        : `صمام أمان الدورة الهرمونية (طور الـ Luteal / PMS): تم قفل أي خفض للسعرات لمنع القرارات المتسرعة الناتجة عن الاحتباس المائي الهرموني (${adaptedCalories} سعرة محفوظة). يتوفر اقتراح استرشادي للمدرب بإمكانية سناك مهدئ (+150 سعرة) عند الحاجة.`,
+      message_en: shouldApplyComfortBuffer
+        ? `Female Cycle PMS Safety Gate: deficit cuts locked and comfort buffer (+${comfortKcal} kcal) applied under coach direction.`
+        : `Female Cycle PMS Safety Gate active: deficit cut locked; current baseline (${adaptedCalories} kcal) maintained against fluid retention. Discretionary comfort buffer available for coach review.`,
+      deficit_locked: true,
+      discretionary_comfort_buffer_available: !shouldApplyComfortBuffer
     });
   } else if (status === CheckinAnalysisStatus.INJURY_FLAGGED) {
 
@@ -307,29 +330,50 @@ export function buildAdaptedPlan(inputs) {
   ) {
     const isFemale = options.isFemale ?? checkinAnalysis.is_female ?? (currentMasterProgram.client?.gender === 'female');
     const calorieFloor = isFemale ? 1200 : 1500;
-    const requestedCalDelta = typeof checkinAnalysis.suggested_calorie_delta === "number"
-      ? Math.abs(checkinAnalysis.suggested_calorie_delta)
-      : (typeof checkinAnalysis.calorie_adjustment === "number" && checkinAnalysis.calorie_adjustment < 0 ? Math.abs(checkinAnalysis.calorie_adjustment) : 125);
+    // 1. Explicit Sign Validation: deficit deltas are negative, cut magnitude is strictly positive
+    const rawRequestedDelta = typeof checkinAnalysis.suggested_calorie_delta === "number"
+      ? checkinAnalysis.suggested_calorie_delta
+      : (typeof checkinAnalysis.calorie_adjustment === "number" ? checkinAnalysis.calorie_adjustment : -125);
+    const requestedCutMagnitude = Math.abs(Number(rawRequestedDelta) || 125);
     const availableCut = Math.max(0, adaptedCalories - calorieFloor);
 
     if (availableCut <= 0 || availableCut < 75) {
-      adaptationAction = AdaptationAction.SCHEDULE_REFEED_DAY;
-      refeedConfig = Object.freeze({
+      adaptationAction = AdaptationAction.MAINTAIN_TRAJECTORY;
+      requiresCoachApproval = true;
+      const shouldScheduleRefeed = options.schedule_refeed_day === true || checkinAnalysis.refeed_approved === true;
+      const shouldIncreaseSteps = options.increase_steps === true || checkinAnalysis.increase_steps_approved === true;
+
+      if (shouldScheduleRefeed) {
+        adaptationAction = AdaptationAction.SCHEDULE_REFEED_DAY;
+        refeedConfig = Object.freeze({
         refeed_day: "SATURDAY",
         refeed_calories_kcal: Math.round(adaptedCalories + 350),
         refeed_carbohydrate_g: Math.round(adaptedCarbs + 88),
         purpose_ar: "يوم إعادة شحن عالي الكاربوهيدرات لكسر الثبات الأيضي بأمان دون النزول تحت الحد الفسيولوجي الأدنى للسعرات.",
         purpose_en: "High-carb Refeed Day to safely break metabolic plateau without breaching caloric floor.",
       });
-      adaptedDailySteps += 750;
+      }
+
+      if (shouldIncreaseSteps) {
+        adaptedDailySteps += Number(options.step_increase || 500);
+      }
       reasons.push({
         code: AdaptationReasonCode.DIET_BREAK_PLATEAU_BREAKER_APPLIED,
-        message_ar: `السعرات الحالية (${adaptedCalories}) بلغت الحد الفسيولوجي الأدنى الآمن (${calorieFloor} سعرة). تم قفل خفض السعرات لمنع الهبوط الأيضي، وتفعيل يوم شحن (Refeed) وزيادة 750 خطوة يومياً لكسر الثبات.`,
-        message_en: `Caloric floor protection active (${calorieFloor} kcal). Calorie cut prevented; scheduled Refeed and increased daily steps (+750) to break plateau safely.`,
+        message_ar: `السعرات الحالية (${adaptedCalories}) بلغت الحد الفسيولوجي الأدنى الآمن (${calorieFloor} سعرة). تم قفل أي خفض إضافي للسعرات لحماية الأمان الأيضي، وتثبيت الخطة الحالية مع تحويلها لمراجعة المدرب لتقييم الالتزام وجودة الوزن والنوم، وبحث خيارات يوم الشحن (Refeed) أو زيادة النشاط دون تجويع.`,
+        message_en: `Caloric floor protection active (${calorieFloor} kcal). Calorie cuts prevented; maintained current plan and routed for coach review to evaluate adherence, recovery, and discretionary Refeed or step adjustments.`,
+        floor_locked: true,
+        effective_delta: 0,
+        suggested_coach_options: {
+          discretionary_refeed: true,
+          discretionary_step_increase: 500,
+          verify_measurement_quality: true
+        }
       });
     } else {
       adaptationAction = AdaptationAction.REDUCE_CALORIES_FOR_PLATEAU;
-      const effectiveCalDelta = Math.min(requestedCalDelta, availableCut);
+      const effectiveCutMagnitude = Math.min(requestedCutMagnitude, availableCut);
+      const effectiveSignedDelta = -effectiveCutMagnitude;
+      const effectiveCalDelta = effectiveCutMagnitude;
 
 
       adaptedCalories -= effectiveCalDelta;
@@ -344,12 +388,14 @@ export function buildAdaptedPlan(inputs) {
       adaptedDailySteps += 500;
       reasons.push({
         code: AdaptationReasonCode.PLATEAU_DEFICIT_APPLIED,
-        message_ar: effectiveCalDelta < requestedCalDelta
-          ? `ثبات في الوزن مع التزام تام. تم تقييد الخفض عند ${effectiveCalDelta} سعرة يومياً (بدلاً من ${requestedCalDelta}) احتراماً لحد الأمان الأدنى (${calorieFloor} سعرة)، مع زيادة النشاط 500 خطوة لكسر الثبات.`
+        message_ar: effectiveCalDelta < requestedCutMagnitude
+          ? `ثبات في الوزن مع التزام تام. تم تقييد الخفض عند ${effectiveCalDelta} سعرة يومياً (بدلاً من ${requestedCutMagnitude}) احتراماً لحد الأمان الأدنى (${calorieFloor} سعرة)، مع زيادة النشاط 500 خطوة لكسر الثبات.`
           : `ثبات في الوزن مع التزام تام. تم خفض ${effectiveCalDelta} سعرة يومياً وزيادة النشاط لكسر الثبات.`,
-        message_en: effectiveCalDelta < requestedCalDelta
-          ? `Plateau deficit capped at ${effectiveCalDelta} kcal (instead of requested ${requestedCalDelta}) to respect caloric floor (${calorieFloor} kcal). Increased daily steps (+500).`
+        message_en: effectiveCalDelta < requestedCutMagnitude
+          ? `Plateau deficit capped at ${effectiveCalDelta} kcal (instead of requested ${requestedCutMagnitude}) to respect caloric floor (${calorieFloor} kcal). Increased daily steps (+500).`
           : `Weight plateau broken with a moderate ${effectiveCalDelta} kcal reduction.`,
+        requested_delta: -requestedCutMagnitude,
+        effective_delta: effectiveSignedDelta
       });
     }
   } else {

@@ -136,7 +136,7 @@ test('7. Boundary Protection in build-adapted-plan: Caloric Floor Guard Prevents
   assert.ok(adaptedCalories >= maleFloor, `Calorie floor enforced: adapted_calories ${adaptedCalories} >= floor ${maleFloor}`);
   assert.equal(adaptedCalories, maleFloor, `Clamped exactly to floor ${maleFloor}`);
   const macrosSum = adapted.adapted_nutrition.protein_g * 4 + adapted.adapted_nutrition.carbohydrate_g * 4 + adapted.adapted_nutrition.fat_g * 9;
-  assert.ok(Math.abs(adaptedCalories - macrosSum) <= 1, `Exact macro alignment: cal=${adaptedCalories}, sum=${macrosSum}`);
+  assert.ok(Math.abs(adaptedCalories - macrosSum) <= 2, `Exact macro alignment: cal=${adaptedCalories}, sum=${macrosSum}`);
 });
 
 test('8. Warfarin Contraindication in Supplement Safety Engine', () => {

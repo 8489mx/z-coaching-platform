@@ -66,7 +66,8 @@ export function evaluateFemaleCycleBuffer({
   adherence_score = 90,
   current_calories = 1600,
   has_pcos = false,
-  base_rest_seconds = 60
+  base_rest_seconds = 60,
+  apply_comfort_snack = false
 }) {
   if (!is_female) {
     return {
@@ -85,7 +86,8 @@ export function evaluateFemaleCycleBuffer({
   const shouldLockDeficit = isLuteal && isHydrationGain && isHighAdherence;
 
   // Comfort snack shift: +150 to +200 kcal
-  const comfortSnackKcal = isLuteal ? 150 : 0;
+  const recommendedComfortSnackKcal = isLuteal ? 150 : 0;
+  const comfortSnackKcal = (isLuteal && apply_comfort_snack === true) ? 150 : 0;
   const adjustedDailyCalories = current_calories + comfortSnackKcal;
 
   // Gym tuning: +30s rest interval on heavy/compound lifts
@@ -110,6 +112,8 @@ export function evaluateFemaleCycleBuffer({
     locked_calories_target: current_calories,
     adjusted_calories_with_comfort_snack: adjustedDailyCalories,
     comfort_snack_added_kcal: comfortSnackKcal,
+    comfort_snack_recommended_kcal: recommendedComfortSnackKcal,
+    comfort_snack_discretionary: true,
     gym_tuning: {
       tuned_rest_seconds: tunedRestSeconds,
       recommended_rir: isLuteal ? '2-3 RIR (Unstressed)' : '1-2 RIR'

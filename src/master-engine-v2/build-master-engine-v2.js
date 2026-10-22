@@ -289,11 +289,15 @@ export function calculateUniversalNutritionTargets(canonicalIntake, evaluationCo
   let bmrFormula = "MIFFLIN_ST_JEOR";
   // A trainee under 18 is not a small adult: the FAO/WHO/UNU (Schofield) equations are the ones
   // written for 10-18 year olds, and the body-fat formulas below are validated on adults only.
+  const measurementQuality = String(
+    body.measurementQuality || rawBody.measurementQuality || effectiveRaw?.measurement_quality || "HIGH"
+  ).toUpperCase();
+  const isReliableBodyFat = bodyFat && bodyFat >= 3 && bodyFat <= 60 && measurementQuality !== "LOW";
   const isYoungTrainee = Number.isFinite(age) && age > 0 && age < 18;
   if (isYoungTrainee) {
     bmr = Math.round(isMale ? (17.686 * weight) + 658.2 : (13.384 * weight) + 692.6);
     bmrFormula = "SCHOFIELD_YOUTH";
-  } else if (bodyFat && bodyFat >= 3 && bodyFat <= 60) {
+  } else if (isReliableBodyFat) {
     const lbm = weight * (1 - bodyFat / 100);
     bmr = Math.round(370 + (21.6 * lbm));
     bmrFormula = "KATCH_MCARDLE";
