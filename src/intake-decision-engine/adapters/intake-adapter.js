@@ -345,7 +345,16 @@ export function adaptIntakePayloadToCanonicalEngine(raw) {
       }
     });
     // The intake form always pre-fills diabetes.type ('type2'), so only an explicit selection or insulin use counts.
+    // Differentiate Type 1 and Insulin-Dependent Diabetes
+    if (intake.medical_conditions?.diabetes?.type === 'type1') {
+      if (!conds.some(c => c.conditionCode === 'TYPE_1_DIABETES')) {
+        conds.push({ conditionCode: 'TYPE_1_DIABETES', stability: 'STABLE' });
+      }
+    }
     if (intake.medical_conditions?.diabetes?.uses_insulin === true) {
+      if (!conds.some(c => c.conditionCode === 'INSULIN_DEPENDENT_DIABETES')) {
+        conds.push({ conditionCode: 'INSULIN_DEPENDENT_DIABETES', stability: 'STABLE' });
+      }
       if (!conds.some(c => c.conditionCode === 'DIABETES')) {
         conds.push({ conditionCode: 'DIABETES', stability: 'STABLE' });
       }
@@ -644,7 +653,8 @@ export function adaptIntakePayloadToCanonicalEngine(raw) {
   const CONDITION_MAP = {
     DIABETES: "DIABETES",
     TYPE_2_DIABETES: "DIABETES",
-    TYPE_1_DIABETES: "DIABETES",
+    TYPE_1_DIABETES: "TYPE_1_DIABETES",
+    INSULIN_DEPENDENT_DIABETES: "INSULIN_DEPENDENT_DIABETES",
     INSULIN_RESISTANCE: "INSULIN_RESISTANCE",
     HYPERTENSION: "HYPERTENSION",
     HIGH_BLOOD_PRESSURE: "HYPERTENSION",
@@ -728,6 +738,24 @@ export function adaptIntakePayloadToCanonicalEngine(raw) {
       }
     }
   });
+
+  // Clinical Safety: Inspect medications for insulin therapy
+  const INSULIN_KEYS_INTAKE = ["INSULIN", "LANTUS", "NOVORAPID", "APIDRA", "TRESIBA", "MIXTARD", "HUMALOG", "LEVEMIR", "انسولين"];
+  const allMedsText = [
+    ...(Array.isArray(medical.medications) ? medical.medications : []),
+    ...(Array.isArray(intake.current_meds_supplements_list) ? intake.current_meds_supplements_list : []),
+    String(intake.current_meds_supplements || "")
+  ].join(" ").toUpperCase();
+  if (INSULIN_KEYS_INTAKE.some(k => allMedsText.includes(k))) {
+    if (!conditions.some(c => c.conditionCode === "INSULIN_DEPENDENT_DIABETES")) {
+      conditions.push({
+        conditionCode: "INSULIN_DEPENDENT_DIABETES",
+        stability: "STABLE",
+        otherConditionText: null,
+        physicianInstructions: []
+      });
+    }
+  }
 
   const canonicalMedical = {
     conditions,

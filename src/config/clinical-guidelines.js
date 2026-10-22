@@ -85,21 +85,26 @@ export const CLINICAL_GUIDELINES = Object.freeze({
      * Scientific Source:
      * American Diabetes Association (ADA) Standards of Care in Diabetes (Nutrition Therapy & Glycemic Control).
      * High glycemic index (GI >= 70) foods cause rapid postprandial hyperglycemia and insulin surges.
-     * Meal swaps must filter out high-GI carbohydrates to preserve glycemic stability.
+     * Meal swaps filter out high-GI carbohydrates to preserve glycemic stability.
      * The 'Rule of 15': 15-20g of fast-acting carbohydrate must be on hand during sessions > 45 minutes
      * or whenever symptoms of exercise-induced hypoglycemia appear.
+     * Note: Carbohydrate distribution is individualized (ADA Standards of Care); no universal 45% mandatory ceiling.
+     * Note: 130g/day is an estimated average requirement (EAR) for cerebral glucose utilization in healthy adults,
+     * NOT an insulin-safety guarantee or hypoglycemia prevention shield.
+     * Note: The coaching platform NEVER adjusts or recommends adjusting insulin or medication dosages.
      */
     HYPOGLYCEMIA_RESCUE_CARBS_GRAMS: 15,
     SESSION_DURATION_THRESHOLD_MINUTES: 45,
     HIGH_GLYCEMIC_SWAP_BAN: true,
     BANNED_GI_LEVELS: Object.freeze(["HIGH"]),
     RATIONALE_AR: "استبعاد الأطعمة ذات المؤشر الجلايسيمي المرتفع لمرضى السكري ومقاومة الأنسولين لمنع الارتفاعات الحادة في سكر الدم والأنسولين (ADA Guidelines).",
-    // Carbohydrate is at most 45% of energy for diabetes and insulin resistance; the rest of the energy
-    // goes to fat. Above 40% of energy from fat the plan is flagged for the coach.
-    MAX_CARB_ENERGY_SHARE: 0.45,
+    MAX_CARB_ENERGY_SHARE: null,
+    REFERENCE_CARB_ENERGY_SHARE: 0.45,
     FAT_SHARE_REVIEW_THRESHOLD: 0.4,
-    CARB_CAP_RATIONALE_AR: "سقف الكربوهيدرات 45% من السعرات لمرضى السكري ومقاومة الإنسولين، والطاقة الباقية من دهون صحية (زيت زيتون، أفوكادو، مكسرات عند عدم الحساسية).",
+    CARB_CAP_RATIONALE_AR: "توزيع الكربوهيدرات يتم بشكل فردي وفق إرشادات ADA وحالة كل متدرب، مع حظر الأغذية مرتفعة المؤشر الجلايسيمي وتوفير بروتوكول الإنقاذ السريع.",
     SAFETY_GUIDANCE_AR: "بروتوكول أمان هبوط السكر: يجب توفير 15-20 جم كربوهيدرات سريعة الامتصاص (مثل عصير فواكه أو تمرة واحدة أو أقراص جلوكوز) أثناء التمارين التي تتجاوز 45 دقيقة مع قياس السكر قبل بدء الجلسة.",
+    INSULIN_COORDINATION_AR: "مرضى السكري المعتمدون على الإنسولين أو النوع الأول يتطلبون تنسيقاً مع الفريق الطبي المعالج لضبط التغذية والنشاط البدني دون أي تعديل في جرعات الإنسولين أو الأدوية من قبل المنظومة.",
+    EAR_130G_DISCLAIMER_AR: "الحد الأدنى 130 جم كربوهيدرات هو تقدير فسيولوجي لاستهلاك جلوكوز الدماغ (EAR)، ولا يُعد ضماناً ذاتياً لمنع هبوط السكر لدى متناولي الإنسولين أو محفزات إفرازه."
   }),
 
   // ==========================================

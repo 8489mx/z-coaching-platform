@@ -58,6 +58,8 @@ export default function WeeklyCheckinForm() {
     daily_weights: ['', '', '', '', '', '', ''],
     // Joint pain this week (feeds the injury flag and the early-deload recommendation).
     has_joint_pain: false,
+    exertional_chest_pain: false,
+    syncope: false,
     pain_area: '',
     pain_level: 3,
     average_daily_calories: '',
@@ -182,6 +184,8 @@ export default function WeeklyCheckinForm() {
         pain_reports: formData.has_joint_pain && formData.pain_area
           ? [{ area: formData.pain_area, body_part: PAIN_AREAS.find((a) => a.id === formData.pain_area)?.label || formData.pain_area, pain_level: Number(formData.pain_level) }]
           : [],
+        exertional_chest_pain: Boolean(formData.exertional_chest_pain),
+        syncope: Boolean(formData.syncope),
         client_notes: formData.client_notes,
         fasting_transition: formData.fasting_transition,
         photos: photosPayload,
@@ -542,6 +546,52 @@ export default function WeeklyCheckinForm() {
                       <span>يمنعني من التمرين</span>
                     </div>
                   </>
+                )}
+              </div>
+
+              {/* P0 Clinical Safety: Exertional Chest Pain & Syncope Screening */}
+              <div style={{ background: '#FFF1F2', border: '1px solid #FECDD3', borderRadius: '8px', padding: '12px', display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                  <ShieldAlert size={16} color="#E11D48" />
+                  <span style={{ fontSize: '12px', fontWeight: 700, color: '#9F1239' }}>فحص الأمان القلبي والسريري (أثناء أو بعد المجهود)</span>
+                </div>
+                
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                  <span style={{ fontSize: '11.5px', fontWeight: 600, color: '#334155' }}>هل شعرت بألم، ضغط، أو حرقان في الصدر أثناء أو بعد التمرين؟</span>
+                  <div style={{ display: 'flex', gap: '8px' }}>
+                    {[{ v: false, label: 'لا' }, { v: true, label: 'نعم' }].map((opt) => (
+                      <button
+                        key={String(opt.v)}
+                        type="button"
+                        onClick={() => setFormData({ ...formData, exertional_chest_pain: opt.v })}
+                        style={{ flex: 1, padding: '6px', borderRadius: '8px', border: formData.exertional_chest_pain === opt.v ? '2px solid #E11D48' : '1px solid #CBD5E1', background: formData.exertional_chest_pain === opt.v ? '#FFE4E6' : '#FFFFFF', fontWeight: 700, fontSize: '11.5px', cursor: 'pointer' }}
+                      >
+                        {opt.label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                  <span style={{ fontSize: '11.5px', fontWeight: 600, color: '#334155' }}>هل تعرضت لإغماء، فقدان للوعي، أو دوار شديد مقلق؟</span>
+                  <div style={{ display: 'flex', gap: '8px' }}>
+                    {[{ v: false, label: 'لا' }, { v: true, label: 'نعم' }].map((opt) => (
+                      <button
+                        key={String(opt.v)}
+                        type="button"
+                        onClick={() => setFormData({ ...formData, syncope: opt.v })}
+                        style={{ flex: 1, padding: '6px', borderRadius: '8px', border: formData.syncope === opt.v ? '2px solid #E11D48' : '1px solid #CBD5E1', background: formData.syncope === opt.v ? '#FFE4E6' : '#FFFFFF', fontWeight: 700, fontSize: '11.5px', cursor: 'pointer' }}
+                      >
+                        {opt.label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {(formData.exertional_chest_pain || formData.syncope) && (
+                  <div style={{ background: '#FFFFFF', border: '1.5px solid #E11D48', borderRadius: '8px', padding: '10px', fontSize: '11px', color: '#9F1239', lineHeight: 1.5, fontWeight: 700 }}>
+                    تحذير أمان سريري عاجل: توقف فوراً عن ممارسة أي تمرين أو مجهود بدني، واستشر الطبيب المختص أو اتصل بالإسعاف (123 / 997 / 911) عند وجود ألم ممتد للذراع أو الفك أو ضيق تنفس حاد. سيتم تعليق التمارين تلقائياً لحمايتك.
+                  </div>
                 )}
               </div>
 

@@ -112,6 +112,64 @@ export function evaluateCheckin(submission) {
     alerts.push(BiofeedbackAlert.JOINT_DISCOMFORT);
   }
 
+  // 5a. Critical Cardiac & Exertional Safety Screening (P0 Clinical Safety)
+  function evaluateCardiacScreeningText(text) {
+    const t = String(text || "").toLowerCase().trim();
+    if (!t) return false;
+
+    // Negation check: trainee explicitly stating absence of pain or symptoms
+    // e.g. "لا يوجد ألم بالصدر أو دوخة", "ما فيش أي ألم بالصدر", "no chest pain, no dizziness"
+    const negationRegex = /(?:لا\s*يوجد|ما\s*(?:فيش|عندي|حسيت|شعرت)|بدون|no|without|never\s*had)\s+[^.،,\n]*(?:ألم|وجع|ضغط|حرقان|خفقان|دوخة|إغماء|صدر|chest|pain|syncope|dizziness)[^.،,\n]*/gi;
+    const workingText = t.replace(negationRegex, " ").trim();
+    if (!workingText) return false;
+
+    // Benign muscular soreness / DOMS in pectorals
+    const benignMuscularDoms = [
+      /شد\s*عضلي\s*(في\s*)?(عضلات\s*)?الصدر/i,
+      /عضلات\s*الصدر\s*(بتوجعني|فيها\s*ألم|مألمة|شدت)/i,
+      /ألم\s*عضلي\s*(في\s*)?(عضلات\s*)?الصدر/i,
+      /(chest\s*muscle|pecs|pectoral)\s*(soreness|doms|tightness)/i,
+      /sore\s*(chest\s*muscles|pecs)/i,
+    ];
+    if (benignMuscularDoms.some((p) => p.test(workingText))) {
+      const trueEmergencyKeywords = /(إغماء|فقدان\s*الوعي|خفقان\s*حاد|ألم\s*ضاغط|حرقان\s*شديد|ضيق\s*تنفس\s*شديد|syncope|passed\s*out|radiat)/i;
+      if (!trueEmergencyKeywords.test(workingText)) {
+        return false;
+      }
+    }
+
+    const cardiacEmergencyPatterns = /(ألم.*صدر|وجع.*صدر|ضغط.*صدر|حرقان.*صدر|خفقان.*حاد|إغماء|فقدت.*الوعي|دوخة.*مفاجئة|chest.*pain|syncope|passed.*out|fainted|loss.*of.*consciousness)/i;
+    return cardiacEmergencyPatterns.test(workingText);
+  }
+
+  const notesText = [
+    String(submission.client_notes || ""),
+    String(submission.notes || ""),
+    String(submission.next_week_notes || "")
+  ].join(" ");
+
+  const hasChestPainInReports = (Array.isArray(pain_reports) ? pain_reports : []).some((p) => {
+    const loc = String(p.area || p.location || p.body_part || "").toUpperCase();
+    return loc.includes("CHEST") || loc.includes("صدر");
+  });
+
+  const hasStructuredCardiac = Boolean(
+    submission.exertional_chest_pain === true ||
+    submission.syncope === true ||
+    submission.fainting === true ||
+    submission.concerning_dizziness === true ||
+    submission.cardiac_symptoms?.exertional_chest_pain === true ||
+    submission.cardiac_symptoms?.syncope === true ||
+    submission.cardiac_symptoms?.concerning_dizziness === true ||
+    submission.cardiac_symptoms?.emergency_symptoms === true
+  );
+
+  const isCardiacRedFlag = hasStructuredCardiac || hasChestPainInReports || evaluateCardiacScreeningText(notesText);
+  const hasPriorClinicalLock = Boolean(submission.has_prior_clinical_lock);
+  if (isCardiacRedFlag || hasPriorClinicalLock) {
+    alerts.push(BiofeedbackAlert.CARDIAC_RED_FLAG);
+  }
+
   // 5b. False Plateau Triad Detection (2 of 3 must be true)
   let falsePlateauScore = 0;
   if (bowel_regularity !== "REGULAR") falsePlateauScore++;
@@ -148,12 +206,27 @@ export function evaluateCheckin(submission) {
   let suggestedCalorieDelta = 0;
   let suggestedCarbDeltaGrams = 0;
   let suggestedStepsDelta = 0;
+  let trainingLocked = false;
+  let emergencyDirectiveAr = null;
+  let emergencyDirectiveEn = null;
+
   let isDeloadRecommended = false;
   let isRefeedRecommended = false;
   let requiresCoachReview = false;
 
-  // RULE A: Joint Pain / Injury Red Flag
-  if (flaggedPains.length > 0) {
+  if (isCardiacRedFlag || hasPriorClinicalLock) {
+    analysisStatus = CheckinAnalysisStatus.CRITICAL_CARDIAC_FLAG;
+    trainingLocked = true;
+    requiresCoachReview = true;
+    emergencyDirectiveAr = hasPriorClinicalLock
+      ? `تنبيه سريري: لا يزال قفل التدريب سارياً بسبب أعراض قلبية/إغماء سابقة (أسبوع ${submission.prior_clinical_lock_week || 1}). يُحظر استئناف التمارين إلا بعد تقديم التصريح الطبي للكوتش.`
+      : "توقف فوري عن كافة التمارين والمجهود البدني. أبلغت عن أعراض قلبية أو إغماء مرتبطة بالمجهود تستدعي تقييماً طبياً عاجلاً. في حال وجود ألم يمتد للذراع أو الفك أو ضيق تنفس شديد أو تعرق بارد، اتصل بالإسعاف فوراً (123 / 997 / 911).";
+    emergencyDirectiveEn = "IMMEDIATE CESSATION OF ALL PHYSICAL TRAINING. Exertional chest pain or syncope reported requiring urgent medical evaluation. Call emergency services immediately if symptoms radiate or worsen.";
+    recommendationsAr.push(emergencyDirectiveAr);
+    recommendationsEn.push(emergencyDirectiveEn);
+    suggestedCalorieDelta = 0;
+    suggestedStepsDelta = 0;
+  } else if (flaggedPains.length > 0) {
     analysisStatus = CheckinAnalysisStatus.INJURY_FLAGGED;
     requiresCoachReview = true;
     isDeloadRecommended = flaggedPains.some((p) => p.pain_level >= 7);
@@ -310,6 +383,9 @@ export function evaluateCheckin(submission) {
     recommendations_ar: Object.freeze(recommendationsAr),
     recommendations_en: Object.freeze(recommendationsEn),
     requires_coach_review: requiresCoachReview,
+    training_locked: trainingLocked,
+    emergency_directive_ar: emergencyDirectiveAr,
+    emergency_directive_en: emergencyDirectiveEn,
     // Deep check-in v3: enriched output
     false_plateau_triad: Object.freeze({
       is_false_plateau: isFalsePlateau,

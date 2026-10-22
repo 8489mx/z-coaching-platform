@@ -42,6 +42,36 @@ function toEngineScale(value, scale) {
   return Number(scale) === 10 ? Math.min(5, Math.max(1, Math.ceil(n / 2))) : n;
 }
 
+
+/**
+ * P0 Clinical Safety: Scans trainee checkins to determine if an un-unlocked clinical training lock exists.
+ * Preserves lock persistence across new checkins, late submissions, and server restarts.
+ */
+export async function getActiveClinicalLockout(userId) {
+  try {
+    const checkins = await CheckinSubmission.findAll({
+      where: { user_id: userId },
+      order: [["week_number", "DESC"], ["id", "DESC"]],
+    });
+    for (const c of checkins) {
+      const analysis = c.analysis_output;
+      if (analysis?.training_locked === true) {
+        if (!analysis.clinical_unlock || analysis.clinical_unlock.unlocked !== true) {
+          return {
+            locked: true,
+            checkin_id: c.id,
+            week_number: c.week_number,
+            directive_ar: analysis.emergency_directive_ar || "تم قفل التدريب بقرار أمان سريري طارئ.",
+          };
+        }
+      }
+    }
+  } catch (err) {
+    console.error("getActiveClinicalLockout error:", err);
+  }
+  return { locked: false };
+}
+
 export async function submitCheckin(req, res) {
   try {
     const {
@@ -57,6 +87,10 @@ export async function submitCheckin(req, res) {
       biofeedback = {},
       pain_reports = [],
       client_notes = "",
+      exertional_chest_pain = false,
+      syncope = false,
+      concerning_dizziness = false,
+      cardiac_symptoms = null,
       photos = [],
       // Deep check-in v3: new fields
       lifestyle_variance = "NORMAL_WORK",
@@ -234,7 +268,19 @@ export async function submitCheckin(req, res) {
       next_week_gym_available: next_week_gym_available !== false,
       next_week_realistic_days: next_week_realistic_days ? Number(next_week_realistic_days) : null,
       next_week_notes,
+      client_notes: client_notes || req.body.notes || "",
+      exertional_chest_pain: Boolean(exertional_chest_pain || req.body.exertional_chest_pain),
+      syncope: Boolean(syncope || req.body.syncope || req.body.fainting),
+      concerning_dizziness: Boolean(concerning_dizziness || req.body.concerning_dizziness),
+      cardiac_symptoms: cardiac_symptoms || req.body.cardiac_symptoms || null,
     };
+
+    // Clinical Safety Invariant: Check if trainee has an active clinical lockout from an earlier check-in
+    const priorLock = await getActiveClinicalLockout(targetUserId);
+    if (priorLock.locked && !evalInput.cardiac_symptoms && !evalInput.exertional_chest_pain) {
+      evalInput.has_prior_clinical_lock = true;
+      evalInput.prior_clinical_lock_week = priorLock.week_number;
+    }
 
     const baseAnalysis = evaluateCheckin(evalInput);
 
@@ -608,6 +654,21 @@ export async function logWorkout(req, res) {
     if (!userObj) {
       return res.status(404).json({ success: false, error: "المستخدم غير موجود" });
     }
+
+    // P0 Clinical Safety: Check for active clinical safety lockout (Cardiac / Exertional red flags)
+    const clinicalLock = await getActiveClinicalLockout(userObj.id);
+    if (clinicalLock.locked) {
+      return res.status(403).json({
+        success: false,
+        code: "CLINICAL_SAFETY_LOCKOUT",
+        error: "تم إيقاف تسجيل ومزامنة التمارين وقفل التدريب بقرار أمان سريري (أعراض قلبية أو إغماء مرتبطة بالمجهود). يرجى التوقف الفوري عن المجهود ومراجعة الطبيب المختص وتزويد الكوتش بالتقرير الطبي لإلغاء القفل.",
+        details: {
+          locked: true,
+          locked_since_week: clinicalLock.week_number,
+          directive_ar: clinicalLock.directive_ar,
+        },
+      });
+    }
     if (!req.user || req.user.id !== userObj.id) {
       const requester = req.user ? await User.findByPk(req.user.id) : null;
       if (!requester || !['COACH', 'ADMIN'].includes(requester.role)) {
@@ -706,3 +767,68 @@ export async function getCheckinSchedule(req, res) {
   }
 }
 
+
+/**
+ * Coach unlock of clinical safety lockout after verified medical clearance.
+ * Coaches and Admins only.
+ */
+export async function unlockClinicalSafety(req, res) {
+  try {
+    const requester = req.user ? await User.findByPk(req.user.id) : null;
+    if (!requester || !['COACH', 'ADMIN'].includes(requester.role)) {
+      return res.status(403).json({ success: false, error: "إلغاء القفل السريري متاح للكوتش أو المشرف الطبي فقط" });
+    }
+
+    const { checkinId } = req.params;
+    const { medical_clearance_confirmed, clearance_notes } = req.body;
+
+    if (medical_clearance_confirmed !== true) {
+      return res.status(400).json({
+        success: false,
+        error: "يجب تأكيد استلام التقرير والتصريح الطبي من الطبيب المعالج لإلغاء القفل السريري (medical_clearance_confirmed: true)",
+      });
+    }
+
+    const checkin = await CheckinSubmission.findByPk(checkinId);
+    if (!checkin) {
+      return res.status(404).json({ success: false, error: "سجل المتابعة غير موجود" });
+    }
+
+    const updatedAnalysis = {
+      ...(checkin.analysis_output || {}),
+      training_locked: false,
+      clinical_unlock: {
+        unlocked: true,
+        unlocked_by: requester.id,
+        unlocked_by_name: requester.name || requester.username,
+        unlocked_at: new Date().toISOString(),
+        clearance_notes: String(clearance_notes || "").trim(),
+      },
+    };
+
+    checkin.analysis_output = updatedAnalysis;
+    await checkin.save();
+
+    // Complete trainee clearance: unlock any other locked checkin rows for this client
+    const allUserCheckins = await CheckinSubmission.findAll({ where: { user_id: checkin.user_id } });
+    for (const c of allUserCheckins) {
+      if (c.id !== checkin.id && c.analysis_output?.training_locked === true && (!c.analysis_output.clinical_unlock || c.analysis_output.clinical_unlock.unlocked !== true)) {
+        c.analysis_output = {
+          ...c.analysis_output,
+          training_locked: false,
+          clinical_unlock: updatedAnalysis.clinical_unlock,
+        };
+        await c.save();
+      }
+    }
+
+    return res.status(200).json({
+      success: true,
+      message: "تم إلغاء القفل السريري بنجاح بعد توثيق التصريح الطبي",
+      clinical_unlock: updatedAnalysis.clinical_unlock,
+    });
+  } catch (error) {
+    console.error("Error in unlockClinicalSafety:", error);
+    return res.status(500).json({ success: false, error: error.message });
+  }
+}

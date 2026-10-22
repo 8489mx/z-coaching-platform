@@ -359,10 +359,12 @@ export function buildAdaptedPlan(inputs) {
   const guardrails = currentMasterProgram.nutrition_program?.targets?.clinical_guardrails || currentMasterProgram.clinical_guardrails || {};
   if (guardrails.hypoglycemia_guard_active === true && adaptedCalories > 0) {
     const baseCarbShare = baseEnergy > 0 ? (baseCarbs * 4) / baseEnergy : 0;
+    const refCarbShare = CLINICAL_GUIDELINES.DIABETES.REFERENCE_CARB_ENERGY_SHARE || 0.45;
     const carbShare = guardrails.kidney_protein_capped === true
-      ? Math.max(CLINICAL_GUIDELINES.DIABETES.MAX_CARB_ENERGY_SHARE, baseCarbShare)
-      : CLINICAL_GUIDELINES.DIABETES.MAX_CARB_ENERGY_SHARE;
-    const maxCarbG = Math.floor((adaptedCalories * carbShare) / 4);
+      ? Math.max(refCarbShare, baseCarbShare)
+      : Math.max(refCarbShare, baseCarbShare);
+    // Individualized carbohydrate adaptation: avoid rigid arbitrary ceilings while guarding extremes
+    const maxCarbG = Math.floor((adaptedCalories * Math.max(0.60, carbShare)) / 4);
     if (adaptedCarbs > maxCarbG) {
       let excessKcal = (adaptedCarbs - maxCarbG) * 4;
       adaptedCarbs = maxCarbG;
@@ -450,6 +452,16 @@ export function buildAdaptedPlan(inputs) {
   const mesoWeeks = currentMasterProgram.training_program?.weeks || [];
   const targetWeekIndex = Math.min(nextWeekNumber - 1, Math.max(0, mesoWeeks.length - 1));
   let adaptedTrainingWeek = mesoWeeks[targetWeekIndex] ? JSON.parse(JSON.stringify(mesoWeeks[targetWeekIndex])) : null;
+
+  // P0 Clinical Safety: Lock and suspend all physical training sessions on cardiac emergency or clinical lockout
+  if (checkinAnalysis.training_locked === true || status === CheckinAnalysisStatus.CRITICAL_CARDIAC_FLAG) {
+    adaptedTrainingWeek = null;
+    reasons.push({
+      code: "CLINICAL_TRAINING_LOCKOUT",
+      message_ar: "تم إيقاف وتعليق كافة الحصص التدريبية بموجب قفل السلامة السريرية الطارئة (أعراض قلبية أو إغماء مرتبطة بالمجهود).",
+      message_en: "All workout sessions suspended under clinical emergency lockout."
+    });
+  }
 
   let isDeloadRecommended = false;
 
