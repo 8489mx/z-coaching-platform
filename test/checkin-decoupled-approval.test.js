@@ -42,6 +42,7 @@ test("Decoupled Check-in Approval: Coach reviews and gives feedback WITHOUT modi
   }
 
   const client = await User.create({ client_code: CODE, phone_number: "01099112233", full_name: "Decoupled Trainee", role: "CLIENT", gender: "male" });
+  const coach = await User.create({ client_code: "COACH_" + CODE, phone_number: "01099112244", full_name: "Decoupled Coach", role: "ADMIN", gender: "male" });
 
   try {
     const basePlanData = createSamplePlan();
@@ -67,11 +68,19 @@ test("Decoupled Check-in Approval: Coach reviews and gives feedback WITHOUT modi
       status: "PENDING_REVIEW",
     });
 
+    // 0. Unauthorized attempt (client trying to approve) must be rejected with 403
+    const outUnauthorized = {};
+    await approveCheckin(
+      { user: { id: client.id, role: "CLIENT" }, params: { checkinId: checkin.id }, body: { coach_notes: "self-approve" } },
+      { status(c) { outUnauthorized.status = c; return this; }, json(b) { outUnauthorized.body = b; return this; } }
+    );
+    assert.equal(outUnauthorized.status, 403, "Client role cannot approve check-ins");
+
     // 1. Coach reviews and leaves feedback ONLY (apply_program_adaptation not true)
     const out1 = {};
     const feedbackNote = "التزامك رائع يا بطل، سنحافظ على نفس الأرقام هذا الأسبوع لمراقبة استقرار الوزن.";
     await approveCheckin(
-      { params: { checkinId: checkin.id }, body: { coach_notes: feedbackNote } },
+      { user: { id: coach.id, role: "COACH" }, params: { checkinId: checkin.id }, body: { coach_notes: feedbackNote } },
       { status(c) { out1.status = c; return this; }, json(b) { out1.body = b; return this; } }
     );
 
@@ -94,7 +103,7 @@ test("Decoupled Check-in Approval: Coach reviews and gives feedback WITHOUT modi
     // 2. Coach explicitly decides to adapt program (apply_program_adaptation: true)
     const out2 = {};
     await approveCheckin(
-      { params: { checkinId: checkin.id }, body: { coach_notes: "تم تعديل السعرات لكسر النزول السريع", apply_program_adaptation: true } },
+      { user: { id: coach.id, role: "COACH" }, params: { checkinId: checkin.id }, body: { coach_notes: "تم تعديل السعرات لكسر النزول السريع", apply_program_adaptation: true } },
       { status(c) { out2.status = c; return this; }, json(b) { out2.body = b; return this; } }
     );
 
@@ -113,5 +122,6 @@ test("Decoupled Check-in Approval: Coach reviews and gives feedback WITHOUT modi
     await CheckinSubmission.destroy({ where: { user_id: client.id } }).catch(() => {});
     await Program.destroy({ where: { user_id: client.id } }).catch(() => {});
     await client.destroy().catch(() => {});
+    await coach.destroy().catch(() => {});
   }
 });
