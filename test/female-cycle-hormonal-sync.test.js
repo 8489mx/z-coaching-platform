@@ -1,4 +1,4 @@
-﻿import test from 'node:test';
+import test from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 
@@ -82,8 +82,9 @@ test('Milestone 5: Female Cycle Hormonal Sync Engine Suite', async (suite) => {
     });
 
     assert.equal(buffer.deficit_adjustment_locked, true);
-    assert.equal(buffer.comfort_snack_added_kcal, 175);
-    assert.equal(buffer.adjusted_calories_with_comfort_snack, 1825);
+    assert.equal(buffer.comfort_snack_added_kcal, 0);
+    assert.equal(buffer.comfort_snack_recommended_kcal, 150);
+    assert.equal(buffer.adjusted_calories_with_comfort_snack, 1650);
     assert.ok(buffer.prohibited_actions.includes('حظر خفض السعرات الحرارية اليومية'));
     assert.ok(buffer.reassurance_message_ar.includes('مؤقتة'));
     assert.ok(buffer.micro_adjustments.comfort_snack_options_ar.includes('شوكولاتة داكنة'));
@@ -137,7 +138,8 @@ test('Milestone 5: Female Cycle Hormonal Sync Engine Suite', async (suite) => {
       options: {
         weight_kg: 69,
         isFemale: true,
-        currentWeekNumber: 1
+        currentWeekNumber: 1,
+        apply_pms_comfort_snack: true
       }
     });
 

@@ -121,7 +121,7 @@ test('Milestone 12: 15 Clinical Stress-Test Clients End-to-End Suite', async (su
       const pdfExport = generateMasterPdfExportData({
         client_name: c.full_name,
         client_code: c.client_code,
-        package_tier: c.package_name?.includes('ماكس') ? 'MAX' : 'ELITE',
+        package_tier: (c.package_name?.includes('MAX') || c.package_name?.includes('ماكس')) ? 'MAX' : 'ELITE',
         current_week: 1,
         nutrition_plan: {
           daily_calories: bp.nutrition.targets.calories,

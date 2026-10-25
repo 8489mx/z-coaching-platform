@@ -298,9 +298,8 @@ export function buildAdaptedPlan(inputs) {
   } else if (status === CheckinAnalysisStatus.RAPID_LOSS_WARNING) {
     adaptationAction = AdaptationAction.INCREASE_CALORIES_RAPID_LOSS;
     adaptedCalories += 150;
-    const aligned = alignMacrosWithCalories(adaptedCalories, adaptedProtein, adaptedCarbs + 30, adaptedFat + 3);
-    adaptedCarbs = aligned.carbs;
-    adaptedFat = aligned.fat;
+    adaptedCarbs += 30;
+    adaptedFat += 3;
 
     reasons.push({
       code: AdaptationReasonCode.RAPID_LOSS_SURPLUS_APPLIED,
@@ -316,9 +315,7 @@ export function buildAdaptedPlan(inputs) {
       : Math.round(calDelta / 4);
     adaptationAction = AdaptationAction.INCREASE_CALORIES_GAIN_STALL;
     adaptedCalories += calDelta;
-    const aligned = alignMacrosWithCalories(adaptedCalories, adaptedProtein, adaptedCarbs + carbDelta, adaptedFat);
-    adaptedCarbs = aligned.carbs;
-    adaptedFat = aligned.fat;
+    adaptedCarbs += carbDelta;
     reasons.push({
       code: AdaptationReasonCode.GAIN_STALL_SURPLUS_APPLIED,
       message_ar: `توقف الزيادة في الوزن مع التزام تام وهدف بناء عضلي. تمت إضافة ${calDelta} سعرة يومياً من الكاربوهيدرات لاستئناف البناء.`,
@@ -464,15 +461,16 @@ export function buildAdaptedPlan(inputs) {
   // to fat up to 35%; what is left is not added and the coach decides. A plan whose balance already
   // put carbohydrate above 45% (a capped protein) keeps that share.
   const guardrails = currentMasterProgram.nutrition_program?.targets?.clinical_guardrails || currentMasterProgram.clinical_guardrails || {};
+  let diabeticMacrosBounded = false;
   if (guardrails.hypoglycemia_guard_active === true && adaptedCalories > 0) {
     const baseCarbShare = baseEnergy > 0 ? (baseCarbs * 4) / baseEnergy : 0;
-    const refCarbShare = CLINICAL_GUIDELINES.DIABETES.REFERENCE_CARB_ENERGY_SHARE || 0.45;
+    const refCarbShare = CLINICAL_GUIDELINES.DIABETES.MAX_CARB_ENERGY_SHARE || CLINICAL_GUIDELINES.DIABETES.REFERENCE_CARB_ENERGY_SHARE || 0.45;
     const carbShare = guardrails.kidney_protein_capped === true
       ? Math.max(refCarbShare, baseCarbShare)
-      : Math.max(refCarbShare, baseCarbShare);
-    // Individualized carbohydrate adaptation: avoid rigid arbitrary ceilings while guarding extremes
-    const maxCarbG = Math.floor((adaptedCalories * Math.max(0.60, carbShare)) / 4);
+      : refCarbShare;
+    const maxCarbG = Math.floor((adaptedCalories * carbShare) / 4);
     if (adaptedCarbs > maxCarbG) {
+      diabeticMacrosBounded = true;
       let excessKcal = (adaptedCarbs - maxCarbG) * 4;
       adaptedCarbs = maxCarbG;
       if (guardrails.kidney_protein_capped !== true) {
@@ -605,7 +603,10 @@ export function buildAdaptedPlan(inputs) {
       });
     } else if (options.force_deload === true || options.planned_deload === true || checkinAnalysis.deload_approved === true) {
       isDeloadTriggered = true;
-    } else if (fatigueScore >= 7 || status === CheckinAnalysisStatus.HIGH_FATIGUE_WARNING) {
+    } else if (
+      Number(options.accumulated_fatigue_score || checkinAnalysis.fatigue_score) >= 7 ||
+      (accumulatedWeeks >= 4 && (fatigueScore >= 7 || status === CheckinAnalysisStatus.HIGH_FATIGUE_WARNING))
+    ) {
       isDeloadTriggered = true;
     } else if (accumulatedWeeks >= 5) {
       if (isClientBeginner && fatigueScore < 6 && options.planned_deload !== true) {
@@ -773,10 +774,12 @@ export function buildAdaptedPlan(inputs) {
     adaptedCalories = finalCalorieFloor;
   }
 
-  const finalAligned = alignMacrosWithCalories(adaptedCalories, adaptedProtein, adaptedCarbs, adaptedFat);
-  adaptedProtein = finalAligned.protein;
-  adaptedCarbs = finalAligned.carbs;
-  adaptedFat = finalAligned.fat;
+  if (!diabeticMacrosBounded && guardrails.hypoglycemia_guard_active !== true) {
+    const finalAligned = alignMacrosWithCalories(adaptedCalories, adaptedProtein, adaptedCarbs, adaptedFat);
+    adaptedProtein = finalAligned.protein;
+    adaptedCarbs = finalAligned.carbs;
+    adaptedFat = finalAligned.fat;
+  }
 
   return Object.freeze({
     engine_version: ADAPTATION_ENGINE_VERSION,

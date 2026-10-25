@@ -59,8 +59,14 @@
     "required": true,
     "active": true,
     "options": [
-      { "value": "MALE", "label": "ذكر" },
-      { "value": "FEMALE", "label": "أنثى" }
+      {
+        "value": "MALE",
+        "label": "ذكر"
+      },
+      {
+        "value": "FEMALE",
+        "label": "أنثى"
+      }
     ],
     "order": 5,
     "wizard_step": 1,
@@ -75,10 +81,22 @@
     "required": true,
     "active": true,
     "options": [
-      { "value": "FAT_LOSS", "label": "تنشيف" },
-      { "value": "MUSCLE_GAIN", "label": "تضخيم" },
-      { "value": "RECOMPOSITION", "label": "إعادة تكوين" },
-      { "value": "ATHLETIC_PERFORMANCE", "label": "لياقة عامة" }
+      {
+        "value": "FAT_LOSS",
+        "label": "تنشيف"
+      },
+      {
+        "value": "MUSCLE_GAIN",
+        "label": "تضخيم"
+      },
+      {
+        "value": "RECOMPOSITION",
+        "label": "إعادة تكوين"
+      },
+      {
+        "value": "ATHLETIC_PERFORMANCE",
+        "label": "لياقة عامة"
+      }
     ],
     "order": 6,
     "wizard_step": 1,
@@ -132,10 +150,22 @@
     "required": true,
     "active": true,
     "options": [
-      { "value": "SEDENTARY", "label": "مكتبي خامل" },
-      { "value": "LIGHT", "label": "نشاط خفيف" },
-      { "value": "MODERATE", "label": "نشاط معتدل" },
-      { "value": "VERY_ACTIVE", "label": "نشاط عالي" }
+      {
+        "value": "SEDENTARY",
+        "label": "مكتبي خامل"
+      },
+      {
+        "value": "LIGHT",
+        "label": "نشاط خفيف"
+      },
+      {
+        "value": "MODERATE",
+        "label": "نشاط معتدل"
+      },
+      {
+        "value": "VERY_ACTIVE",
+        "label": "نشاط عالي"
+      }
     ],
     "order": 10,
     "wizard_step": 2,
@@ -150,11 +180,26 @@
     "required": true,
     "active": true,
     "options": [
-      { "value": "DESK_OFFICE", "label": "مكتبي ثابت" },
-      { "value": "FIELD_MOBILE", "label": "ميداني متحرك" },
-      { "value": "MANUAL_LABOR", "label": "عمل بدني شاق" },
-      { "value": "STUDENT", "label": "طالب" },
-      { "value": "UNEMPLOYED", "label": "لا يعمل حالياً" }
+      {
+        "value": "DESK_OFFICE",
+        "label": "مكتبي ثابت"
+      },
+      {
+        "value": "FIELD_MOBILE",
+        "label": "ميداني متحرك"
+      },
+      {
+        "value": "MANUAL_LABOR",
+        "label": "عمل بدني شاق"
+      },
+      {
+        "value": "STUDENT",
+        "label": "طالب"
+      },
+      {
+        "value": "UNEMPLOYED",
+        "label": "لا يعمل حالياً"
+      }
     ],
     "order": 11,
     "wizard_step": 2,
@@ -169,11 +214,26 @@
     "required": true,
     "active": true,
     "options": [
-      { "value": "LESS_5", "label": "أقل من 5 ساعات" },
-      { "value": "HOURS_5_6", "label": "5 إلى 6 ساعات" },
-      { "value": "HOURS_6_7", "label": "6 إلى 7 ساعات" },
-      { "value": "HOURS_7_8", "label": "7 إلى 8 ساعات" },
-      { "value": "MORE_8", "label": "أكثر من 8 ساعات" }
+      {
+        "value": "LESS_5",
+        "label": "أقل من 5 ساعات"
+      },
+      {
+        "value": "HOURS_5_6",
+        "label": "5 إلى 6 ساعات"
+      },
+      {
+        "value": "HOURS_6_7",
+        "label": "6 إلى 7 ساعات"
+      },
+      {
+        "value": "HOURS_7_8",
+        "label": "7 إلى 8 ساعات"
+      },
+      {
+        "value": "MORE_8",
+        "label": "أكثر من 8 ساعات"
+      }
     ],
     "order": 12,
     "wizard_step": 2,
@@ -188,19 +248,58 @@
     "required": true,
     "active": true,
     "options": [
-      { "value": "NONE", "label": "لا يوجد" },
-      { "value": "HYPERTENSION", "label": "ضغط دم مرتفع" },
-      { "value": "DIABETES", "label": "سكري" },
-      { "value": "THYROID_CONDITION", "label": "غدة درقية" },
-      { "value": "ASTHMA_OR_RESPIRATORY_CONDITION", "label": "ربو" },
-      { "value": "DIAGNOSED_DIGESTIVE_CONDITION", "label": "قولون عصبي" },
-      { "value": "KIDNEY_CONDITION", "label": "أمراض كلى" },
-      { "value": "LIVER_CONDITION", "label": "أمراض كبد" },
-      { "value": "ANEMIA", "label": "أنيميا" },
-      { "value": "PCOS", "label": "تكيس مبايض" },
-      { "value": "INSULIN_RESISTANCE", "label": "مقاومة أنسولين" },
-      { "value": "HEART_CONDITION", "label": "مرض قلبي" },
-      { "value": "OTHER", "label": "حالة أخرى" }
+      {
+        "value": "NONE",
+        "label": "لا يوجد"
+      },
+      {
+        "value": "HYPERTENSION",
+        "label": "ضغط دم مرتفع"
+      },
+      {
+        "value": "DIABETES",
+        "label": "سكري"
+      },
+      {
+        "value": "THYROID_CONDITION",
+        "label": "غدة درقية"
+      },
+      {
+        "value": "ASTHMA_OR_RESPIRATORY_CONDITION",
+        "label": "ربو"
+      },
+      {
+        "value": "DIAGNOSED_DIGESTIVE_CONDITION",
+        "label": "قولون عصبي"
+      },
+      {
+        "value": "KIDNEY_CONDITION",
+        "label": "أمراض كلى"
+      },
+      {
+        "value": "LIVER_CONDITION",
+        "label": "أمراض كبد"
+      },
+      {
+        "value": "ANEMIA",
+        "label": "أنيميا"
+      },
+      {
+        "value": "PCOS",
+        "label": "تكيس مبايض"
+      },
+      {
+        "value": "INSULIN_RESISTANCE",
+        "label": "مقاومة أنسولين"
+      },
+      {
+        "value": "HEART_CONDITION",
+        "label": "مرض قلبي"
+      },
+      {
+        "value": "OTHER",
+        "label": "حالة أخرى"
+      }
     ],
     "order": 13,
     "wizard_step": 3,
@@ -215,11 +314,26 @@
     "required": true,
     "active": true,
     "options": [
-      { "value": "NONE", "label": "لا يوجد" },
-      { "value": "CHEST_PAIN", "label": "ألم أو ضغط في الصدر أثناء المجهود" },
-      { "value": "FAINTING", "label": "إغماء أو دوخة شديدة" },
-      { "value": "SHORTNESS_OF_BREATH", "label": "ضيق تنفس غير طبيعي" },
-      { "value": "PALPITATIONS", "label": "خفقان قلب غير منتظم" }
+      {
+        "value": "NONE",
+        "label": "لا يوجد"
+      },
+      {
+        "value": "CHEST_PAIN",
+        "label": "ألم أو ضغط في الصدر أثناء المجهود"
+      },
+      {
+        "value": "FAINTING",
+        "label": "إغماء أو دوخة شديدة"
+      },
+      {
+        "value": "SHORTNESS_OF_BREATH",
+        "label": "ضيق تنفس غير طبيعي"
+      },
+      {
+        "value": "PALPITATIONS",
+        "label": "خفقان قلب غير منتظم"
+      }
     ],
     "order": 14,
     "wizard_step": 3,
@@ -234,13 +348,34 @@
     "required": true,
     "active": true,
     "options": [
-      { "value": "NONE", "label": "لا يوجد" },
-      { "value": "LOWER_BACK", "label": "أسفل الظهر" },
-      { "value": "KNEE", "label": "الركبة" },
-      { "value": "SHOULDER", "label": "الكتف" },
-      { "value": "NECK", "label": "الرقبة" },
-      { "value": "ELBOW_WRIST", "label": "الكوع أو الرسغ" },
-      { "value": "HIP", "label": "الورك" }
+      {
+        "value": "NONE",
+        "label": "لا يوجد"
+      },
+      {
+        "value": "LOWER_BACK",
+        "label": "أسفل الظهر"
+      },
+      {
+        "value": "KNEE",
+        "label": "الركبة"
+      },
+      {
+        "value": "SHOULDER",
+        "label": "الكتف"
+      },
+      {
+        "value": "NECK",
+        "label": "الرقبة"
+      },
+      {
+        "value": "ELBOW_WRIST",
+        "label": "الكوع أو الرسغ"
+      },
+      {
+        "value": "HIP",
+        "label": "الورك"
+      }
     ],
     "order": 15,
     "wizard_step": 3,
@@ -255,13 +390,25 @@
     "required": true,
     "active": true,
     "options": [
-      { "value": "MILD", "label": "خفيف ولا يمنعني" },
-      { "value": "MODERATE", "label": "متوسط ويحد من بعض الحركات" },
-      { "value": "SEVERE", "label": "شديد ويمنعني من التمرين" }
+      {
+        "value": "MILD",
+        "label": "خفيف ولا يمنعني"
+      },
+      {
+        "value": "MODERATE",
+        "label": "متوسط ويحد من بعض الحركات"
+      },
+      {
+        "value": "SEVERE",
+        "label": "شديد ويمنعني من التمرين"
+      }
     ],
     "order": 16,
     "wizard_step": 3,
-    "condition": { "field": "injuries", "not_equals": "NONE" },
+    "condition": {
+      "field": "injuries",
+      "not_equals": "NONE"
+    },
     "engine_variable": "training.injuries[].painLevel"
   },
   {
@@ -272,13 +419,25 @@
     "required": true,
     "active": true,
     "options": [
-      { "value": "NOT_PREGNANT", "label": "غير حامل" },
-      { "value": "PREGNANT", "label": "حامل" },
-      { "value": "BREASTFEEDING", "label": "مرضعة" }
+      {
+        "value": "NOT_PREGNANT",
+        "label": "غير حامل"
+      },
+      {
+        "value": "PREGNANT",
+        "label": "حامل"
+      },
+      {
+        "value": "BREASTFEEDING",
+        "label": "مرضعة"
+      }
     ],
     "order": 17,
     "wizard_step": 3,
-    "condition": { "field": "sex", "equals": "FEMALE" },
+    "condition": {
+      "field": "sex",
+      "equals": "FEMALE"
+    },
     "engine_variable": "medical.pregnancyStatus"
   },
   {
@@ -289,13 +448,29 @@
     "required": true,
     "active": true,
     "options": [
-      { "value": "REGULAR", "label": "منتظمة" },
-      { "value": "IRREGULAR", "label": "غير منتظمة" },
-      { "value": "ABSENT", "label": "منقطعة" }
+      {
+        "value": "REGULAR",
+        "label": "منتظمة"
+      },
+      {
+        "value": "IRREGULAR",
+        "label": "غير منتظمة"
+      },
+      {
+        "value": "ABSENT",
+        "label": "منقطعة"
+      }
     ],
     "order": 18,
     "wizard_step": 3,
-    "condition": { "field": "sex", "equals": "FEMALE", "and": { "field": "female_pregnancy", "equals": "NOT_PREGNANT" } },
+    "condition": {
+      "field": "sex",
+      "equals": "FEMALE",
+      "and": {
+        "field": "female_pregnancy",
+        "equals": "NOT_PREGNANT"
+      }
+    },
     "engine_variable": "medical.menstrualStatus"
   },
   {
@@ -306,10 +481,22 @@
     "required": true,
     "active": true,
     "options": [
-      { "value": "2", "label": "وجبتين" },
-      { "value": "3", "label": "3 وجبات" },
-      { "value": "4", "label": "4 وجبات" },
-      { "value": "5", "label": "5 وجبات" }
+      {
+        "value": "2",
+        "label": "وجبتين"
+      },
+      {
+        "value": "3",
+        "label": "3 وجبات"
+      },
+      {
+        "value": "4",
+        "label": "4 وجبات"
+      },
+      {
+        "value": "5",
+        "label": "5 وجبات"
+      }
     ],
     "order": 19,
     "wizard_step": 4,
@@ -324,16 +511,46 @@
     "required": true,
     "active": true,
     "options": [
-      { "value": "NONE", "label": "لا يوجد" },
-      { "value": "EGGS", "label": "بيض" },
-      { "value": "DAIRY", "label": "ألبان وأجبان" },
-      { "value": "FISH_SEAFOOD", "label": "أسماك ومأكولات بحرية" },
-      { "value": "PEANUTS_NUTS", "label": "مكسرات وفول سوداني" },
-      { "value": "GLUTEN_WHEAT", "label": "قمح وجلوتين" },
-      { "value": "LEGUMES", "label": "بقوليات" },
-      { "value": "RED_MEAT", "label": "لحوم حمراء" },
-      { "value": "OATS", "label": "شوفان" },
-      { "value": "EGGPLANT", "label": "باذنجان" }
+      {
+        "value": "NONE",
+        "label": "لا يوجد"
+      },
+      {
+        "value": "EGGS",
+        "label": "بيض"
+      },
+      {
+        "value": "DAIRY",
+        "label": "ألبان وأجبان"
+      },
+      {
+        "value": "FISH_SEAFOOD",
+        "label": "أسماك ومأكولات بحرية"
+      },
+      {
+        "value": "PEANUTS_NUTS",
+        "label": "مكسرات وفول سوداني"
+      },
+      {
+        "value": "GLUTEN_WHEAT",
+        "label": "قمح وجلوتين"
+      },
+      {
+        "value": "LEGUMES",
+        "label": "بقوليات"
+      },
+      {
+        "value": "RED_MEAT",
+        "label": "لحوم حمراء"
+      },
+      {
+        "value": "OATS",
+        "label": "شوفان"
+      },
+      {
+        "value": "EGGPLANT",
+        "label": "باذنجان"
+      }
     ],
     "order": 20,
     "wizard_step": 4,
@@ -348,10 +565,22 @@
     "required": true,
     "active": true,
     "options": [
-      { "value": "NONE", "label": "لا يوجد" },
-      { "value": "IBS", "label": "قولون عصبي" },
-      { "value": "GERD", "label": "ارتجاع مريئي" },
-      { "value": "BLOATING", "label": "انتفاخ مزمن" }
+      {
+        "value": "NONE",
+        "label": "لا يوجد"
+      },
+      {
+        "value": "IBS",
+        "label": "قولون عصبي"
+      },
+      {
+        "value": "GERD",
+        "label": "ارتجاع مريئي"
+      },
+      {
+        "value": "BLOATING",
+        "label": "انتفاخ مزمن"
+      }
     ],
     "order": 21,
     "wizard_step": 4,
@@ -366,9 +595,18 @@
     "required": true,
     "active": true,
     "options": [
-      { "value": "LOW", "label": "اقتصادية" },
-      { "value": "MEDIUM", "label": "متوسطة" },
-      { "value": "HIGH", "label": "مرتفعة" }
+      {
+        "value": "LOW",
+        "label": "اقتصادية"
+      },
+      {
+        "value": "MEDIUM",
+        "label": "متوسطة"
+      },
+      {
+        "value": "HIGH",
+        "label": "مرتفعة"
+      }
     ],
     "order": 22,
     "wizard_step": 4,
@@ -383,9 +621,18 @@
     "required": true,
     "active": true,
     "options": [
-      { "value": "FULL_KITCHEN", "label": "أقدر أطبخ وأخزن وأسخن" },
-      { "value": "REHEAT_ONLY", "label": "أقدر أسخن بس مش أطبخ" },
-      { "value": "NO_KITCHEN", "label": "لا آكل من بره" }
+      {
+        "value": "FULL_KITCHEN",
+        "label": "أقدر أطبخ وأخزن وأسخن"
+      },
+      {
+        "value": "REHEAT_ONLY",
+        "label": "أقدر أسخن بس مش أطبخ"
+      },
+      {
+        "value": "NO_KITCHEN",
+        "label": "لا آكل من بره"
+      }
     ],
     "order": 23,
     "wizard_step": 4,
@@ -400,8 +647,14 @@
     "required": true,
     "active": true,
     "options": [
-      { "value": "HOME", "label": "المنزل" },
-      { "value": "GYM", "label": "الجيم" }
+      {
+        "value": "HOME",
+        "label": "المنزل"
+      },
+      {
+        "value": "GYM",
+        "label": "الجيم"
+      }
     ],
     "order": 24,
     "wizard_step": 5,
@@ -416,11 +669,26 @@
     "required": true,
     "active": true,
     "options": [
-      { "value": "2", "label": "يومين" },
-      { "value": "3", "label": "3 أيام" },
-      { "value": "4", "label": "4 أيام" },
-      { "value": "5", "label": "5 أيام" },
-      { "value": "6", "label": "6 أيام" }
+      {
+        "value": "2",
+        "label": "يومين"
+      },
+      {
+        "value": "3",
+        "label": "3 أيام"
+      },
+      {
+        "value": "4",
+        "label": "4 أيام"
+      },
+      {
+        "value": "5",
+        "label": "5 أيام"
+      },
+      {
+        "value": "6",
+        "label": "6 أيام"
+      }
     ],
     "order": 25,
     "wizard_step": 5,
@@ -435,9 +703,18 @@
     "required": true,
     "active": true,
     "options": [
-      { "value": "BEGINNER", "label": "مبتدئ" },
-      { "value": "INTERMEDIATE", "label": "متوسط" },
-      { "value": "ADVANCED", "label": "متقدم" }
+      {
+        "value": "BEGINNER",
+        "label": "مبتدئ"
+      },
+      {
+        "value": "INTERMEDIATE",
+        "label": "متوسط"
+      },
+      {
+        "value": "ADVANCED",
+        "label": "متقدم"
+      }
     ],
     "order": 26,
     "wizard_step": 5,
@@ -452,10 +729,22 @@
     "required": true,
     "active": true,
     "options": [
-      { "value": "ACTIVE", "label": "بتمرن حالياً بانتظام" },
-      { "value": "INCONSISTENT", "label": "متقطع آخر 6 شهور" },
-      { "value": "NONE_LAST_4_WEEKS", "label": "واقف من أكثر من شهر" },
-      { "value": "RETURNING_AFTER_LONG_BREAK", "label": "راجع بعد انقطاع طويل" }
+      {
+        "value": "ACTIVE",
+        "label": "بتمرن حالياً بانتظام"
+      },
+      {
+        "value": "INCONSISTENT",
+        "label": "متقطع آخر 6 شهور"
+      },
+      {
+        "value": "NONE_LAST_4_WEEKS",
+        "label": "واقف من أكثر من شهر"
+      },
+      {
+        "value": "RETURNING_AFTER_LONG_BREAK",
+        "label": "راجع بعد انقطاع طويل"
+      }
     ],
     "order": 27,
     "wizard_step": 5,
@@ -470,13 +759,34 @@
     "required": false,
     "active": true,
     "options": [
-      { "value": "NONE", "label": "لا" },
-      { "value": "FOOTBALL", "label": "كورة قدم" },
-      { "value": "RUNNING", "label": "جري" },
-      { "value": "SWIMMING", "label": "سباحة" },
-      { "value": "BOXING", "label": "ملاكمة أو فنون قتالية" },
-      { "value": "CROSSFIT_OR_FUNCTIONAL", "label": "كروس فت" },
-      { "value": "OTHER", "label": "رياضة تانية" }
+      {
+        "value": "NONE",
+        "label": "لا"
+      },
+      {
+        "value": "FOOTBALL",
+        "label": "كورة قدم"
+      },
+      {
+        "value": "RUNNING",
+        "label": "جري"
+      },
+      {
+        "value": "SWIMMING",
+        "label": "سباحة"
+      },
+      {
+        "value": "BOXING",
+        "label": "ملاكمة أو فنون قتالية"
+      },
+      {
+        "value": "CROSSFIT_OR_FUNCTIONAL",
+        "label": "كروس فت"
+      },
+      {
+        "value": "OTHER",
+        "label": "رياضة تانية"
+      }
     ],
     "order": 28,
     "wizard_step": 5,

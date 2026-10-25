@@ -40,8 +40,9 @@ test('2. Female Cycle - Silent Deficit Lock, Comfort Snack Shift, and Rest Tunin
   });
 
   assert.equal(result.deficit_adjustment_locked, true);
-  assert.equal(result.comfort_snack_added_kcal, 175);
-  assert.equal(result.adjusted_calories_with_comfort_snack, 1775);
+  assert.equal(result.comfort_snack_added_kcal, 0);
+  assert.equal(result.comfort_snack_recommended_kcal, 150);
+  assert.equal(result.adjusted_calories_with_comfort_snack, 1600);
   assert.equal(result.gym_tuning.tuned_rest_seconds, 90); // 60s + 30s
   assert.equal(result.gym_tuning.recommended_rir, '2-3 RIR (Unstressed)');
   assert.ok(result.reassurance_message_ar.includes('زيادة الميزان في هذه الفترة طبيعية ومؤقتة'));

@@ -22,7 +22,7 @@ export function generateMesocycleDebriefReport({
   const clientName = client.full_name || client.name || 'المشترك';
   const clientCode = client.client_code || client.code || '1';
   const goalLabel = client.goal_label || (client.primary_goal === 'fat_loss' ? 'خسارة دهون وتنشيف' : 'بناء عضلي وتطوير القوة');
-  const packageName = client.package_name || (String(client.package || '').includes('MAX') ? 'باقة ماكس (MAX)' : 'باقة إليت (ELITE)');
+  const packageName = client.package_name || (String(client.package || '').includes('MAX') ? 'باقة MAX' : 'باقة ELITE');
 
   const totalWeeks = Math.max(1, history.length || 4);
 

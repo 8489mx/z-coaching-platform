@@ -551,6 +551,15 @@ export function calculateUniversalNutritionTargets(canonicalIntake, evaluationCo
     effectiveRaw?.medical_conditions?.diabetes?.uses_insulin === true ||
     conditionsList.some(c => c.includes("INSULIN_DEPENDENT"));
   let diabeticCarbCapped = false;
+  if (hasDiabetesOrInsulinResistance) {
+    const carbLimitShare = CLINICAL_GUIDELINES.DIABETES.MAX_CARB_ENERGY_SHARE || CLINICAL_GUIDELINES.DIABETES.REFERENCE_CARB_ENERGY_SHARE || 0.45;
+    const maxCarbG = Math.floor((targetCalories * carbLimitShare) / 4);
+    if (carbG > maxCarbG) {
+      fatG += Math.round(((carbG - maxCarbG) * 4) / 9);
+      carbG = maxCarbG;
+      diabeticCarbCapped = true;
+    }
+  }
 
   // Balance of the day: fat within the adult range (IOM DRI 2005, AMDR fat 20-35% of energy). The
   // diabetic ceiling above (and a kidney protein cap) used to push every leftover calorie into fat -

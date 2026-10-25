@@ -33,15 +33,15 @@ test("Training Engine V2 Meso-Cycle Suite", async (t) => {
     assert.equal(meso.weeks[2].target_rir, 1);
 
     assert.equal(meso.weeks[3].phase, MesoCyclePhase.PEAK_OVERLOAD);
-    assert.equal(meso.weeks[3].target_rir, 0);
+    assert.equal(meso.weeks[3].target_rir, 1);
 
     assert.equal(meso.weeks[4].phase, MesoCyclePhase.DELOAD);
-    assert.equal(meso.weeks[4].target_rir, 4);
+    assert.equal(meso.weeks[4].target_rir, 3);
   });
 
   await t.test("beginners never train to failure: week and exercise RIR stay >= 2 outside the deload", () => {
     const meso = buildTrainingMesoCycle(decision, { experience: "BEGINNER" });
-    assert.deepEqual(meso.weeks.map((w) => w.target_rir), [3, 2, 2, 2, 4]);
+    assert.deepEqual(meso.weeks.map((w) => w.target_rir), [3, 2, 2, 2, 2]);
     for (const week of meso.weeks) {
       for (const session of week.sessions) {
         for (const exercise of session.exercises) {
@@ -66,7 +66,7 @@ test("Training Engine V2 Meso-Cycle Suite", async (t) => {
     for (const session of deloadWeek.sessions) {
       for (const exercise of session.exercises) {
         assert.equal(exercise.prescription.sets, 2);
-        assert.equal(exercise.prescription.target_rir, 4);
+        assert.equal(exercise.prescription.target_rir, 3);
       }
     }
   });

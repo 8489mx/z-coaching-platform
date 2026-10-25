@@ -449,7 +449,7 @@ export function buildTrainingMesoCycle(intakeDecision, options = {}) {
     options.experience ||
     (options.rawIntake && options.rawIntake.training && options.rawIntake.training.experience) ||
     intakeDecision.profile?.experience ||
-    "BEGINNER";
+    (intakeDecision.training_decision?.intro_week_required === false && intakeDecision.training_decision?.volume_start === "NORMAL" ? "INTERMEDIATE" : "BEGINNER");
   const isAdvanced = intakeExperience === "ADVANCED";
   const isIntermediate = intakeExperience === "INTERMEDIATE";
   // Volume by training age (never lifted ... 4+ years); older intakes follow their level exactly.

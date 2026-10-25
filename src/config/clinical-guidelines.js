@@ -98,7 +98,7 @@ export const CLINICAL_GUIDELINES = Object.freeze({
     HIGH_GLYCEMIC_SWAP_BAN: true,
     BANNED_GI_LEVELS: Object.freeze(["HIGH"]),
     RATIONALE_AR: "استبعاد الأطعمة ذات المؤشر الجلايسيمي المرتفع لمرضى السكري ومقاومة الأنسولين لمنع الارتفاعات الحادة في سكر الدم والأنسولين (ADA Guidelines).",
-    MAX_CARB_ENERGY_SHARE: null,
+    MAX_CARB_ENERGY_SHARE: 0.45,
     REFERENCE_CARB_ENERGY_SHARE: 0.45,
     FAT_SHARE_REVIEW_THRESHOLD: 0.4,
     CARB_CAP_RATIONALE_AR: "توزيع الكربوهيدرات يتم بشكل فردي وفق إرشادات ADA وحالة كل متدرب، مع حظر الأغذية مرتفعة المؤشر الجلايسيمي وتوفير بروتوكول الإنقاذ السريع.",
