@@ -404,9 +404,9 @@ export function CoachTrainingTab({
                       onClick={() => setActiveVideoModalEx(ex)}
                       title="مشاهدة الفيديو التوضيحي للأداء"
                       style={{
-                        width: '32px',
-                        height: '54px',
-                        borderRadius: '10px',
+                        width: '30px',
+                        height: '30px',
+                        borderRadius: '9px',
                         background: '#EFF8FF',
                         border: '1px solid #B2DDFF',
                         color: '#175CD3',
@@ -414,10 +414,19 @@ export function CoachTrainingTab({
                         display: 'flex',
                         alignItems: 'center',
                         justifyContent: 'center',
-                        flexShrink: 0
+                        flexShrink: 0,
+                        transition: 'all 0.15s ease'
+                      }}
+                      onMouseEnter={(e) => {
+                        e.currentTarget.style.background = '#DCEEFE';
+                        e.currentTarget.style.borderColor = '#84CAFF';
+                      }}
+                      onMouseLeave={(e) => {
+                        e.currentTarget.style.background = '#EFF8FF';
+                        e.currentTarget.style.borderColor = '#B2DDFF';
                       }}
                     >
-                      <Play size={15} fill="#175CD3" />
+                      <Play size={13} fill="#175CD3" />
                     </button>
                   </div>
 
