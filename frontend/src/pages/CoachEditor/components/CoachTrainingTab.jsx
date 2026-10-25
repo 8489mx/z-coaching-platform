@@ -458,12 +458,6 @@ export function CoachTrainingTab({
                         {getExerciseDisplayNames(ex).nameAr}
                       </span>
                     </div>
-
-                    {ex.safetyNote && (
-                      <div style={{ fontSize: '11px', color: '#475467', marginTop: '1px' }}>
-                        {ex.safetyNote}
-                      </div>
-                    )}
                   </div>
                 </div>
 
@@ -664,13 +658,95 @@ export function CoachTrainingTab({
                   </button>
                 </div>
               </div>
+
+              {/* Coach Cue / تركاية الكوتش */}
+              <div style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px',
+                background: '#F9FAFB',
+                border: '1px solid #EAECF0',
+                borderRadius: '10px',
+                padding: '6px 12px',
+                transition: 'border-color 0.15s ease'
+              }}>
+                <span style={{ fontSize: '11px', fontWeight: 700, color: '#673DE6', whiteSpace: 'nowrap' }}>
+                  تركاية الكوتش:
+                </span>
+                <input
+                  type="text"
+                  value={ex.safetyNote || ex.cues_ar || ''}
+                  onChange={(e) => handleUpdateExerciseParam(activeSessionIdx, eIdx, 'safetyNote', e.target.value)}
+                  placeholder="أضف تركاية أو توجيه تكنيك مخصص للمتدرب في هذا التمرين (اختياري)..."
+                  style={{
+                    flex: 1,
+                    background: 'transparent',
+                    border: 'none',
+                    outline: 'none',
+                    fontSize: '11.5px',
+                    color: '#344054',
+                    fontWeight: 500,
+                    padding: 0
+                  }}
+                />
+                {(ex.safetyNote || ex.cues_ar) && (
+                  <button
+                    type="button"
+                    onClick={() => handleUpdateExerciseParam(activeSessionIdx, eIdx, 'safetyNote', '')}
+                    title="مسح التركاية"
+                    style={{
+                      border: 'none',
+                      background: 'transparent',
+                      cursor: 'pointer',
+                      color: '#98A2B3',
+                      padding: '2px',
+                      display: 'flex',
+                      alignItems: 'center'
+                    }}
+                    onMouseEnter={(e) => (e.currentTarget.style.color = '#B42318')}
+                    onMouseLeave={(e) => (e.currentTarget.style.color = '#98A2B3')}
+                  >
+                    <X size={12} />
+                  </button>
+                )}
+              </div>
+
               <ProgressionTimeline entry={clientProgression?.exercises?.[ex.code || ex.id]} />
             </div>
           );
         })}
       </div>
 
-      {/* Post-Workout Stretches Bar */}
+      {/* Centered Add Exercise Button - directly below exercise cards */}
+      <div style={{ textAlign: 'center', marginTop: '4px', marginBottom: '4px' }}>
+        <button
+          type="button"
+          onClick={() => setAddExModal({ open: true, sessionIdx: activeSessionIdx })}
+          style={{
+            height: '38px',
+            padding: '0 20px',
+            borderRadius: '8px',
+            border: '1px solid #673DE6',
+            background: '#F4F0FD',
+            color: '#673DE6',
+            fontSize: '12.5px',
+            fontWeight: 700,
+            cursor: 'pointer',
+            display: 'inline-flex',
+            alignItems: 'center',
+            gap: '6px',
+            boxShadow: '0 1px 3px rgba(103, 61, 230, 0.15)',
+            transition: 'all 0.15s ease'
+          }}
+          onMouseEnter={(e) => (e.currentTarget.style.background = '#EDE8FA')}
+          onMouseLeave={(e) => (e.currentTarget.style.background = '#F4F0FD')}
+        >
+          <Plus size={15} />
+          <span>إضافة تمرين جديد لـ ({activeSession?.name})</span>
+        </button>
+      </div>
+
+      {/* Post-Workout Stretches Bar - at the very bottom */}
       <div style={{ background: '#FFFFFF', border: '1px solid #EAECF0', borderRadius: '16px', padding: '12px 18px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '8px', boxShadow: '0 1px 2px rgba(16, 24, 40, 0.04)' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
           <span style={{ fontSize: '12.5px', fontWeight: 700, color: '#101828', display: 'inline-flex', alignItems: 'center', gap: '5px' }}>
@@ -714,35 +790,6 @@ export function CoachTrainingTab({
           onMouseLeave={(e) => (e.currentTarget.style.background = '#FFFFFF')}
         >
           + إضافة إطالة
-        </button>
-      </div>
-
-      {/* Centered Add Exercise Button - Hostinger Accent */}
-      <div style={{ textAlign: 'center', marginTop: '6px' }}>
-        <button
-          type="button"
-          onClick={() => setAddExModal({ open: true, sessionIdx: activeSessionIdx })}
-          style={{
-            height: '38px',
-            padding: '0 20px',
-            borderRadius: '8px',
-            border: '1px solid #673DE6',
-            background: '#F4F0FD',
-            color: '#673DE6',
-            fontSize: '12.5px',
-            fontWeight: 700,
-            cursor: 'pointer',
-            display: 'inline-flex',
-            alignItems: 'center',
-            gap: '6px',
-            boxShadow: '0 1px 3px rgba(103, 61, 230, 0.15)',
-            transition: 'all 0.15s ease'
-          }}
-          onMouseEnter={(e) => (e.currentTarget.style.background = '#EDE8FA')}
-          onMouseLeave={(e) => (e.currentTarget.style.background = '#F4F0FD')}
-        >
-          <Plus size={15} />
-          <span>إضافة تمرين جديد لـ ({activeSession?.name})</span>
         </button>
       </div>
 

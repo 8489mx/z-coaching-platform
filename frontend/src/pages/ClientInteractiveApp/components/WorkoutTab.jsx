@@ -620,7 +620,7 @@ export default function WorkoutTab({
               <div style={{ background: '#FFFBEB', border: '1px solid #FDE68A', borderRadius: '10px', padding: '10px', fontSize: '0.7rem', display: 'flex', flexDirection: 'column', gap: '6px', color: '#92400E' }}>
                 <div>
                   <strong style={{ color: '#0F172A', display: 'block', marginBottom: '2px' }}>التكنيك السليم:</strong>
-                  <span>{ex.cues_ar || ex.safetyNote || 'الحفاظ على المدى الحركي الكامل والتحكم في الوزن أثناء النزول.'}</span>
+                  <span>{ex.safetyNote || ex.cues_ar || 'الحفاظ على المدى الحركي الكامل والتحكم في الوزن أثناء النزول.'}</span>
                 </div>
                 {ex.mistakes_ar && (
                   <div style={{ borderTop: '1px dashed #FCD34D', paddingTop: '6px', marginTop: '2px' }}>

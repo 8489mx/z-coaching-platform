@@ -927,6 +927,9 @@ export function useCoachEditorData() {
         ...updatedExercises[eIdx],
         [field]: value
       };
+      if (field === 'safetyNote') {
+        updatedExercises[eIdx].cues_ar = value;
+      }
       session.exercises = updatedExercises;
       list[sIdx] = session;
       return list;
