@@ -348,12 +348,12 @@ export function CoachTrainingTab({
                   </span>
 
                   {/* Visual Thumbnails & Video Button */}
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '3px', flexShrink: 0 }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '5px', flexShrink: 0 }}>
                     <div 
                       style={{ 
-                        width: '40px', 
-                        height: '40px', 
-                        borderRadius: '9px', 
+                        width: '54px', 
+                        height: '54px', 
+                        borderRadius: '10px', 
                         overflow: 'hidden', 
                         background: '#F2F4F7', 
                         border: '1px solid #EAECF0', 
@@ -371,13 +371,13 @@ export function CoachTrainingTab({
                         onError={(e) => { e.currentTarget.style.display = 'none'; if (e.currentTarget.parentElement) { e.currentTarget.parentElement.style.display = 'none'; } }}
                         loading="lazy"
                       />
-                      <span style={{ position: 'absolute', bottom: '1px', right: '2px', fontSize: '8px', fontWeight: 700, color: '#475467', background: 'rgba(255,255,255,0.9)', padding: '0 3px', borderRadius: '4px' }}>1</span>
+                      <span style={{ position: 'absolute', bottom: '2px', right: '2px', fontSize: '8.5px', fontWeight: 700, color: '#475467', background: 'rgba(255,255,255,0.92)', padding: '0 3.5px', borderRadius: '4px' }}>1</span>
                     </div>
                     <div 
                       style={{ 
-                        width: '40px', 
-                        height: '40px', 
-                        borderRadius: '9px', 
+                        width: '54px', 
+                        height: '54px', 
+                        borderRadius: '10px', 
                         overflow: 'hidden', 
                         background: '#F2F4F7', 
                         border: '1px solid #EAECF0', 
@@ -395,7 +395,7 @@ export function CoachTrainingTab({
                         onError={(e) => { e.currentTarget.style.display = 'none'; if (e.currentTarget.parentElement) { e.currentTarget.parentElement.style.display = 'none'; } }}
                         loading="lazy"
                       />
-                      <span style={{ position: 'absolute', bottom: '1px', right: '2px', fontSize: '8px', fontWeight: 700, color: '#475467', background: 'rgba(255,255,255,0.9)', padding: '0 3px', borderRadius: '4px' }}>2</span>
+                      <span style={{ position: 'absolute', bottom: '2px', right: '2px', fontSize: '8.5px', fontWeight: 700, color: '#475467', background: 'rgba(255,255,255,0.92)', padding: '0 3.5px', borderRadius: '4px' }}>2</span>
                     </div>
                     
                     {/* Video Trigger Button */}
@@ -405,8 +405,8 @@ export function CoachTrainingTab({
                       title="مشاهدة الفيديو التوضيحي للأداء"
                       style={{
                         width: '32px',
-                        height: '40px',
-                        borderRadius: '9px',
+                        height: '54px',
+                        borderRadius: '10px',
                         background: '#EFF8FF',
                         border: '1px solid #B2DDFF',
                         color: '#175CD3',
@@ -417,7 +417,7 @@ export function CoachTrainingTab({
                         flexShrink: 0
                       }}
                     >
-                      <Play size={13} />
+                      <Play size={15} fill="#175CD3" />
                     </button>
                   </div>
 

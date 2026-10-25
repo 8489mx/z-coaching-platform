@@ -17,7 +17,7 @@ const DECISION_LABELS_AR = {
 export default function ProgressionTimeline({ entry }) {
   if (!entry || !Array.isArray(entry.history) || entry.history.length === 0) {
     return (
-      <div style={{ flexBasis: '100%', fontSize: '11px', color: '#94A3B8', fontWeight: 600 }}>
+      <div style={{ flexBasis: '100%', fontSize: '11px', color: '#94A3B8', fontWeight: 600, textAlign: 'left', width: '100%' }}>
         لم يسجل المتدرب هذا التمرين بعد.
       </div>
     );
