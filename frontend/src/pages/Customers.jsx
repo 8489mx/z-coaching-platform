@@ -60,7 +60,13 @@ export default function Customers() {
   const fetchClients = async () => {
     try {
       setLoading(true);
-      const res = await fetch(`${API_BASE}/api/v1/clients`);
+      const token = localStorage.getItem('token') || localStorage.getItem('coach_token') || localStorage.getItem('admin_token');
+      const res = await fetch(`${API_BASE}/api/v1/clients`, {
+        headers: {
+          'Content-Type': 'application/json',
+          ...(token ? { Authorization: `Bearer ${token}` } : {})
+        }
+      });
       const data = await res.json();
       if (data.clients) setClients(data.clients);
     } catch (e) {
@@ -747,17 +753,17 @@ export default function Customers() {
             </div>
           ) : (
             <div style={{ overflowX: 'auto' }}>
-              <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'right', fontSize: '12.5px' }}>
+              <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'right', fontSize: '12px' }}>
                 <thead>
-                  <tr style={{ background: '#F9FAFB', borderBottom: '1px solid #EAECF0', color: '#475467', fontWeight: 600, fontSize: '12px' }}>
-                    <th style={{ padding: '12px 14px', textAlign: 'center', width: '75px' }}>الكود</th>
-                    <th style={{ padding: '12px 14px', textAlign: 'right', minWidth: '170px' }}>المشترك</th>
-                    <th style={{ padding: '12px 14px', textAlign: 'center', width: '135px' }}>الهدف الرياضي</th>
-                    <th style={{ padding: '12px 14px', textAlign: 'center', width: '135px' }}>التدريب</th>
-                    <th style={{ padding: '12px 14px', textAlign: 'center', width: '135px' }}>التغذية</th>
-                    <th style={{ padding: '12px 14px', textAlign: 'center', width: '115px' }}>الكارديو</th>
-                    <th style={{ padding: '12px 14px', textAlign: 'center', width: '140px' }}>الاشتراك والصلاحية</th>
-                    <th style={{ padding: '12px 14px', textAlign: 'left', width: '220px' }}>إجراءات المشترك</th>
+                  <tr style={{ background: '#F9FAFB', borderBottom: '1px solid #EAECF0', color: '#475467', fontWeight: 700, fontSize: '11.5px' }}>
+                    <th style={{ padding: '9px 12px', textAlign: 'center', width: '65px', whiteSpace: 'nowrap' }}>الكود</th>
+                    <th style={{ padding: '9px 12px', textAlign: 'right', minWidth: '155px' }}>المشترك</th>
+                    <th style={{ padding: '9px 12px', textAlign: 'center', width: '135px', whiteSpace: 'nowrap' }}>الهدف الرياضي</th>
+                    <th style={{ padding: '9px 12px', textAlign: 'center', width: '125px', whiteSpace: 'nowrap' }}>التدريب</th>
+                    <th style={{ padding: '9px 12px', textAlign: 'center', width: '125px', whiteSpace: 'nowrap' }}>التغذية</th>
+                    <th style={{ padding: '9px 12px', textAlign: 'center', width: '110px', whiteSpace: 'nowrap' }}>الكارديو</th>
+                    <th style={{ padding: '9px 12px', textAlign: 'center', width: '135px', whiteSpace: 'nowrap' }}>الاشتراك والصلاحية</th>
+                    <th style={{ padding: '9px 12px', textAlign: 'center', width: '205px', whiteSpace: 'nowrap' }}>إجراءات المشترك</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -775,7 +781,7 @@ export default function Customers() {
                         onMouseLeave={(e) => (e.currentTarget.style.background = 'transparent')}
                       >
                         {/* 1. Client Code */}
-                        <td style={{ padding: '12px 14px', textAlign: 'center' }}>
+                        <td style={{ padding: '9px 12px', textAlign: 'center', whiteSpace: 'nowrap' }}>
                           <span
                             onClick={() => setSelectedDrawerClient(client)}
                             style={{ cursor: 'pointer', display: 'inline-block' }}
@@ -786,16 +792,17 @@ export default function Customers() {
                         </td>
 
                         {/* 2. Full Name & Sub-meta */}
-                        <td style={{ padding: '12px 14px', textAlign: 'right' }}>
-                          <div style={{ display: 'flex', flexDirection: 'column', gap: '3px' }}>
+                        <td style={{ padding: '9px 12px', textAlign: 'right' }}>
+                          <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
                             <strong 
                               onClick={() => setSelectedDrawerClient(client)}
                               style={{
                                 color: '#111827',
-                                fontSize: '13.5px',
+                                fontSize: '13px',
                                 fontWeight: 700,
                                 cursor: 'pointer',
-                                transition: 'color 0.12s ease'
+                                transition: 'color 0.12s ease',
+                                whiteSpace: 'nowrap'
                               }}
                               onMouseEnter={(e) => (e.currentTarget.style.color = '#673DE6')}
                               onMouseLeave={(e) => (e.currentTarget.style.color = '#111827')}
@@ -809,7 +816,7 @@ export default function Customers() {
                                 {client.phone_number || '-'}
                               </span>
                               {fasting.intermittentBadge && (
-                                <span style={{ fontSize: '9.5px', padding: '1px 5px', borderRadius: '4px', background: '#E0F2FE', color: '#0284C7', fontWeight: 700 }}>
+                                <span style={{ fontSize: '9.5px', padding: '1px 5px', borderRadius: '4px', background: '#E0F2FE', color: '#0284C7', fontWeight: 700, whiteSpace: 'nowrap' }}>
                                   {fasting.intermittentBadge.shortLabel}
                                 </span>
                               )}
@@ -818,30 +825,32 @@ export default function Customers() {
                         </td>
 
                         {/* 3. Fitness Goal & Medical Alert */}
-                        <td style={{ padding: '12px 14px', textAlign: 'center' }}>
-                          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '3px' }}>
+                        <td style={{ padding: '9px 12px', textAlign: 'center', whiteSpace: 'nowrap' }}>
+                          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '2px' }}>
                             <span style={{
                               fontSize: '11px',
                               fontWeight: 700,
                               padding: '2px 8px',
-                              borderRadius: '8px',
+                              borderRadius: '7px',
                               background: '#F4F0FD',
                               color: '#673DE6',
                               border: '1px solid #EDE8FA',
-                              display: 'inline-block'
+                              display: 'inline-block',
+                              whiteSpace: 'nowrap'
                             }}>
                               {client.plan_summary?.cleanGoal || 'لياقة وصحة'}
                             </span>
                             {client.plan_summary?.hasMedical && (
                               <span style={{
-                                fontSize: '9.5px',
+                                fontSize: '9px',
                                 fontWeight: 700,
-                                padding: '1px 6px',
-                                borderRadius: '6px',
+                                padding: '1px 5px',
+                                borderRadius: '5px',
                                 background: '#FEF3F2',
                                 color: '#B42318',
                                 border: '1px solid #FECDCA',
-                                display: 'inline-block'
+                                display: 'inline-block',
+                                whiteSpace: 'nowrap'
                               }}>
                                 متابعة طبية
                               </span>
@@ -850,55 +859,73 @@ export default function Customers() {
                         </td>
 
                         {/* 4. Training (Split & Days) */}
-                        <td style={{ padding: '12px 14px', textAlign: 'center' }}>
-                          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '2px' }}>
-                            <span style={{ fontSize: '11.5px', fontWeight: 700, color: '#101828' }}>
+                        <td style={{ padding: '9px 12px', textAlign: 'center', whiteSpace: 'nowrap' }}>
+                          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '1px' }}>
+                            <span style={{ fontSize: '11.5px', fontWeight: 700, color: '#101828', whiteSpace: 'nowrap' }}>
                               {client.plan_summary?.trainingSplit || 'علوي / سفلي'}
                             </span>
-                            <span style={{ fontSize: '10.5px', color: '#667085', fontWeight: 600 }}>
+                            <span style={{ fontSize: '10px', color: '#667085', fontWeight: 600, whiteSpace: 'nowrap' }}>
                               {client.plan_summary?.trainingDays || 4} أيام / أسبوع
                             </span>
                           </div>
                         </td>
 
                         {/* 5. Nutrition (Calories & Protein) */}
-                        <td style={{ padding: '12px 14px', textAlign: 'center' }}>
+                        <td style={{ padding: '9px 12px', textAlign: 'center', whiteSpace: 'nowrap' }}>
                           <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '2px' }}>
-                            <strong style={{ fontSize: '12px', color: '#101828', fontFamily: 'JetBrains Mono, monospace' }}>
+                            <strong style={{ fontSize: '11.5px', color: '#101828', fontFamily: 'JetBrains Mono, monospace', whiteSpace: 'nowrap' }}>
                               {Number(client.plan_summary?.nutritionCalories || 2150).toLocaleString()} سعرة
                             </strong>
-                            <span style={{ fontSize: '10.5px', color: '#027A48', fontWeight: 700, background: '#ECFDF3', border: '1px solid #A6F4C7', padding: '1px 6px', borderRadius: '6px' }}>
+                            <span style={{ fontSize: '9.5px', color: '#027A48', fontWeight: 700, background: '#ECFDF3', border: '1px solid #A6F4C7', padding: '1px 6px', borderRadius: '5px', whiteSpace: 'nowrap' }}>
                               {client.plan_summary?.nutritionProtein || 160}g بروتين
                             </span>
                           </div>
                         </td>
 
                         {/* 6. Cardio */}
-                        <td style={{ padding: '12px 14px', textAlign: 'center' }}>
-                          <span style={{
-                            fontSize: '11px',
-                            fontWeight: 700,
-                            color: '#175CD3',
-                            background: '#EFF8FF',
-                            border: '1px solid #B2DDFF',
-                            padding: '2px 8px',
-                            borderRadius: '8px',
-                            display: 'inline-block'
-                          }}>
-                            {client.plan_summary?.cardioSessions || 3} جلسات / أسبوع
-                          </span>
+                        <td style={{ padding: '9px 12px', textAlign: 'center', whiteSpace: 'nowrap' }}>
+                          {client.plan_summary?.cardioSessions > 0 ? (
+                            <span style={{
+                              fontSize: '11px',
+                              fontWeight: 700,
+                              color: '#175CD3',
+                              background: '#EFF8FF',
+                              border: '1px solid #B2DDFF',
+                              padding: '2px 7px',
+                              borderRadius: '7px',
+                              display: 'inline-block',
+                              whiteSpace: 'nowrap'
+                            }}>
+                              {client.plan_summary.cardioSessions} جلسات / أسبوع
+                            </span>
+                          ) : (
+                            <span style={{
+                              fontSize: '10px',
+                              fontWeight: 600,
+                              color: '#667085',
+                              background: '#F8FAFC',
+                              border: '1px solid #E2E8F0',
+                              padding: '2px 7px',
+                              borderRadius: '7px',
+                              display: 'inline-block',
+                              whiteSpace: 'nowrap'
+                            }}>
+                              0 جلسات (مُعلق)
+                            </span>
+                          )}
                         </td>
 
                         {/* 7. Subscription Tier & Expiration Badge */}
-                        <td style={{ padding: '12px 14px', textAlign: 'center' }}>
-                          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px' }}>
+                        <td style={{ padding: '9px 12px', textAlign: 'center', whiteSpace: 'nowrap' }}>
+                          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '3px' }}>
                             <ClientPackageBadge item={client} />
                             <span style={{
-                              fontSize: '10.5px',
+                              fontSize: '10px',
                               fontWeight: 700,
-                              padding: '2px 7px',
-                              borderRadius: '6px',
+                              padding: '1.5px 6px',
+                              borderRadius: '5px',
                               display: 'inline-block',
+                              whiteSpace: 'nowrap',
                               background: rawStatus === 'FROZEN' ? '#F8FAFC' : rawStatus === 'EXPIRED' ? '#FEF3F2' : (daysRemaining <= 3 ? '#FFFAEB' : '#ECFDF3'),
                               color: rawStatus === 'FROZEN' ? '#475467' : rawStatus === 'EXPIRED' ? '#B42318' : (daysRemaining <= 3 ? '#B54708' : '#027A48'),
                               border: rawStatus === 'FROZEN' ? '1px solid #E2E8F0' : rawStatus === 'EXPIRED' ? '1px solid #FECDCA' : (daysRemaining <= 3 ? '1px solid #FEDF89' : '1px solid #A6F4C7')
@@ -909,28 +936,29 @@ export default function Customers() {
                         </td>
 
                         {/* 8. Action Buttons */}
-                        <td style={{ padding: '12px 14px', textAlign: 'left' }}>
-                          <div style={{ display: 'inline-flex', alignItems: 'center', gap: '5px' }}>
+                        <td style={{ padding: '9px 12px', textAlign: 'center', whiteSpace: 'nowrap' }}>
+                          <div style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', whiteSpace: 'nowrap' }}>
                             {/* Program Editor (Primary Branded Action) */}
                             <a
                               href={`/coach/editor/${cleanCode}`}
                               target="_blank"
                               rel="noopener noreferrer"
                               style={{
-                                height: '30px',
-                                padding: '0 10px',
-                                borderRadius: '8px',
+                                height: '28px',
+                                padding: '0 9px',
+                                borderRadius: '7px',
                                 border: '1px solid #DDD6FE',
                                 background: '#F4F0FD',
                                 color: '#673DE6',
-                                fontSize: '11.5px',
+                                fontSize: '11px',
                                 fontWeight: 700,
                                 textDecoration: 'none',
                                 display: 'inline-flex',
                                 alignItems: 'center',
-                                gap: '4px',
+                                gap: '3px',
                                 boxShadow: '0 1px 2px rgba(103, 61, 230, 0.08)',
-                                transition: 'all 0.15s ease'
+                                transition: 'all 0.15s ease',
+                                whiteSpace: 'nowrap'
                               }}
                               onMouseEnter={(e) => {
                                 e.currentTarget.style.background = '#EDE8FA';
@@ -943,7 +971,7 @@ export default function Customers() {
                               title="فتح محرر الخطة التدريبية والغذائية بالكامل"
                             >
                               <span>الخطة</span>
-                              <ExternalLink size={11} color="#673DE6" />
+                              <ExternalLink size={10} color="#673DE6" />
                             </a>
 
                             {/* Check-in Review */}
@@ -952,20 +980,21 @@ export default function Customers() {
                               target="_blank"
                               rel="noopener noreferrer"
                               style={{
-                                height: '30px',
-                                padding: '0 9px',
-                                borderRadius: '8px',
+                                height: '28px',
+                                padding: '0 8px',
+                                borderRadius: '7px',
                                 border: '1px solid #D0D5DD',
                                 background: '#FFFFFF',
                                 color: '#344054',
-                                fontSize: '11.5px',
+                                fontSize: '11px',
                                 fontWeight: 600,
                                 textDecoration: 'none',
                                 boxShadow: '0 1px 2px rgba(16, 24, 40, 0.03)',
                                 display: 'inline-flex',
                                 alignItems: 'center',
                                 gap: '3px',
-                                transition: 'all 0.15s ease'
+                                transition: 'all 0.15s ease',
+                                whiteSpace: 'nowrap'
                               }}
                               onMouseEnter={(e) => {
                                 e.currentTarget.style.background = '#F9FAFB';
@@ -986,9 +1015,10 @@ export default function Customers() {
                               type="button"
                               onClick={() => setWhatsappModalClient(client)}
                               style={{
-                                height: '30px',
-                                padding: '0 8px',
-                                borderRadius: '8px',
+                                height: '28px',
+                                width: '28px',
+                                padding: 0,
+                                borderRadius: '7px',
                                 border: '1px solid #D0D5DD',
                                 background: '#FFFFFF',
                                 color: '#027A48',
@@ -1017,20 +1047,21 @@ export default function Customers() {
                               type="button"
                               onClick={() => setSelectedDrawerClient(client)}
                               style={{
-                                height: '30px',
-                                padding: '0 9px',
-                                borderRadius: '8px',
+                                height: '28px',
+                                padding: '0 8px',
+                                borderRadius: '7px',
                                 border: '1px solid #D0D5DD',
                                 background: '#FFFFFF',
                                 color: '#344054',
-                                fontSize: '11.5px',
+                                fontSize: '11px',
                                 fontWeight: 600,
                                 cursor: 'pointer',
                                 display: 'inline-flex',
                                 alignItems: 'center',
-                                gap: '4px',
+                                gap: '3px',
                                 boxShadow: '0 1px 2px rgba(16, 24, 40, 0.03)',
-                                transition: 'all 0.15s ease'
+                                transition: 'all 0.15s ease',
+                                whiteSpace: 'nowrap'
                               }}
                               onMouseEnter={(e) => {
                                 e.currentTarget.style.background = '#F9FAFB';
@@ -1042,7 +1073,7 @@ export default function Customers() {
                               }}
                               title="عرض تفاصيل المشترك وسجل التطور"
                             >
-                              <Clock size={12} color="#667085" />
+                              <Clock size={11} color="#667085" />
                               <span>الملف</span>
                             </button>
                           </div>

@@ -672,11 +672,11 @@ export default function ClientSlideOverDrawer({
               {/* Cardio Box */}
               <div style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', borderRadius: '8px', padding: '10px' }}>
                 <span style={{ fontSize: '10.5px', color: '#64748B', fontWeight: 600, display: 'block' }}>الكارديو المخصص:</span>
-                <strong style={{ fontSize: '12px', color: '#175CD3', display: 'block', marginTop: '2px' }}>
-                  {client.plan_summary?.cardioSessions || 3} جلسات / أسبوع
+                <strong style={{ fontSize: '12px', color: client.plan_summary?.cardioSessions > 0 ? '#175CD3' : '#64748B', display: 'block', marginTop: '2px' }}>
+                  {client.plan_summary?.cardioSessions > 0 ? `${client.plan_summary.cardioSessions} جلسات / أسبوع` : '0 جلسات (مُعلق)'}
                 </strong>
                 <span style={{ fontSize: '10.5px', color: '#64748B', fontWeight: 500 }}>
-                  Zone 2 منخفض الشدة
+                  {client.plan_summary?.cardioSessions > 0 ? 'Zone 2 منخفض الشدة' : 'حماية وقائية معتمدة'}
                 </span>
               </div>
 

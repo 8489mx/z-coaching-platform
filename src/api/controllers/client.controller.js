@@ -13,6 +13,7 @@ import {
   WorkoutPlan 
 } from "../models/index.js";
 import { recordAuditEvent } from "../services/auditLog.service.js";
+import { decryptMedicalData } from "../../utils/crypto.js";
 
 export const addClient = async (req, res) => {
   try {
@@ -85,14 +86,22 @@ export const getClients = async (req, res) => {
           as: "programs",
           where: { status: 'ACTIVE' },
           required: false,
-          attributes: ['id', 'status', 'version', 'program_data', 'updatedAt']
+          attributes: ['id', 'status', 'version', 'program_data', 'updatedAt', 'createdAt']
         }
       ],
-      order: [['createdAt', 'DESC']]
+      order: [['id', 'ASC']]
     });
 
     const now = new Date();
-    const enrichedClients = clients.map(client => {
+    // Sort clients numerically by client_code
+    const sortedClients = clients.slice().sort((a, b) => {
+      const codeA = parseInt(a.client_code || a.id, 10);
+      const codeB = parseInt(b.client_code || b.id, 10);
+      if (!isNaN(codeA) && !isNaN(codeB)) return codeA - codeB;
+      return (a.client_code || '').localeCompare(b.client_code || '');
+    });
+
+    const enrichedClients = sortedClients.map(client => {
       const c = client.toJSON();
       let daysRemaining = 0;
       let calculatedStatus = c.subscription_status || 'ACTIVE';
@@ -111,29 +120,80 @@ export const getClients = async (req, res) => {
         }
       }
 
-      // Extract Coaching Plan Summary (Training, Nutrition, Cardio, Goal)
-      const activeProg = c.programs?.[0]?.program_data;
-      const intakeAns = c.intakeSubmissions?.[0]?.answers;
+      // 1. Decrypt Intake Answers if encrypted
+      let intakeAns = c.intakeSubmissions?.[0]?.answers;
+      if (intakeAns) {
+        try {
+          const raw = intakeAns._isEncrypted ? intakeAns.data : intakeAns;
+          const dec = typeof raw === 'string' ? decryptMedicalData(raw) : raw;
+          intakeAns = dec?.answers || dec || intakeAns;
+        } catch {
+          // Keep raw intakeAns if decryption fails
+        }
+      }
 
-      const trainingDays = activeProg?.training_program?.sessions?.length || activeProg?.training?.sessions?.length || intakeAns?.training_logistics?.days_per_week || 4;
-      const rawSplit = activeProg?.training_program?.split || activeProg?.training?.split || '';
+      // 2. Select Latest Active Program
+      const activePrograms = (c.programs || []).slice().sort((a, b) => {
+        const timeA = new Date(a.updatedAt || a.createdAt || 0).getTime();
+        const timeB = new Date(b.updatedAt || b.createdAt || 0).getTime();
+        return timeB - timeA;
+      });
+      const activeProg = activePrograms[0]?.program_data;
+
+      // 3. Training logistics & split
+      const trainingDays = activeProg?.training_program?.weeks?.[0]?.sessions?.length ||
+                           activeProg?.training_program?.sessions?.length ||
+                           activeProg?.training?.sessions?.length ||
+                           intakeAns?.training_logistics?.days_per_week || 4;
+
+      const rawSplit = activeProg?.training_program?.split_code ||
+                       activeProg?.training_program?.split ||
+                       activeProg?.training?.split || '';
+
       let trainingSplit = 'علوي / سفلي';
       if (/PPL|PUSH_PULL/i.test(rawSplit)) trainingSplit = 'دفع / سحب / أرجل';
       else if (/FULL_BODY/i.test(rawSplit)) trainingSplit = 'كامل الجسم';
-      else if (/BRO|BODY_PART/i.test(rawSplit)) trainingSplit = 'عضلات منفصلة';
+      else if (/BRO|BODY_PART|ARNOLD/i.test(rawSplit)) trainingSplit = 'عضلات منفصلة';
 
-      const nutritionCalories = activeProg?.nutrition_program?.daily_targets?.calories || activeProg?.nutrition?.targets?.calories || c.target_calories || 2150;
-      const nutritionProtein = activeProg?.nutrition_program?.daily_targets?.protein || activeProg?.nutrition?.targets?.protein || 160;
+      // 4. Nutrition targets
+      const nutritionCalories = activeProg?.nutrition_program?.targets?.target_calories ||
+                                activeProg?.nutrition_program?.targets?.total_calories ||
+                                activeProg?.nutrition_program?.targets?.calories_kcal ||
+                                activeProg?.nutrition_program?.daily_targets?.calories ||
+                                activeProg?.nutrition?.targets?.calories ||
+                                c.target_calories || 2150;
 
-      const cardioSessions = activeProg?.cardio_program?.weekly_schedule?.length || activeProg?.cardio?.frequency_per_week || 3;
+      const nutritionProtein = activeProg?.nutrition_program?.targets?.protein_g ||
+                               activeProg?.nutrition_program?.targets?.total_protein_g ||
+                               activeProg?.nutrition_program?.daily_targets?.protein ||
+                               activeProg?.nutrition?.targets?.protein || 160;
 
+      const nutritionCarbs = activeProg?.nutrition_program?.targets?.carbohydrate_g ||
+                             activeProg?.nutrition_program?.targets?.carb_g || 180;
+
+      const nutritionFat = activeProg?.nutrition_program?.targets?.fat_g || 60;
+
+      // 5. Cardio prescription
+      const cardioSessions = activeProg?.cardio_program?.prescription?.recommended_sessions ??
+                             activeProg?.cardio_program?.prescription?.sessions?.length ??
+                             activeProg?.cardio_program?.weekly_schedule?.length ??
+                             activeProg?.cardio?.frequency_per_week ??
+                             (activeProg ? 0 : 3);
+
+      // 6. Fitness Goal
       const rawGoal = c.goal || intakeAns?.primary_goal || activeProg?.client_profile?.goal || 'FAT_LOSS';
       let cleanGoal = 'تنشيف ونزول دهون';
-      if (/muscle|bulk|تضخيم/i.test(rawGoal)) cleanGoal = 'تضخيم وبناء عضلي';
+      if (/muscle|bulk|hypertrophy|تضخيم/i.test(rawGoal)) cleanGoal = 'تضخيم وبناء عضلي';
       else if (/recomp|ريكومب/i.test(rawGoal)) cleanGoal = 'إعادة تشكيل (ريكومب)';
       else if (/health|لياقة|صحة/i.test(rawGoal)) cleanGoal = 'صحة عامة ولياقة';
 
-      const hasMedical = Boolean(intakeAns?.medical_conditions?.has_conditions || intakeAns?.medical_conditions?.selected?.length);
+      // 7. Clinical & Medical alert
+      const hasMedical = Boolean(
+        intakeAns?.medical_conditions?.has_conditions ||
+        intakeAns?.medical_conditions?.selected?.length ||
+        activeProg?.clinical_safety_shield?.status === 'ACTIVE' ||
+        (activeProg?.client_profile?.conditions && activeProg?.client_profile?.conditions?.length > 0)
+      );
 
       return {
         ...c,
@@ -146,6 +206,8 @@ export const getClients = async (req, res) => {
           trainingSplit,
           nutritionCalories,
           nutritionProtein,
+          nutritionCarbs,
+          nutritionFat,
           cardioSessions,
           cleanGoal,
           hasMedical
