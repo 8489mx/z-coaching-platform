@@ -463,12 +463,6 @@ export function CoachTrainingTab({
                       >
                         {getExerciseDisplayNames(ex).nameAr}
                       </span>
-
-                      {ex.code && ex.code !== getExerciseDisplayNames(ex).nameEn && (
-                        <span style={{ fontSize: '8.5px', color: '#667085', fontFamily: 'monospace' }}>
-                          ({ex.code})
-                        </span>
-                      )}
                     </div>
 
                     {ex.safetyNote && (
