@@ -31,6 +31,7 @@ export function CoachTrainingTab({
   setAddExModal,
   handleMoveExercise,
   handleDuplicateSession,
+  handleDeleteSession,
   activeSessionDemand,
   weeklyVolumeAudit,
   clientProgression = null
@@ -149,6 +150,35 @@ export function CoachTrainingTab({
               >
                 <Copy size={13} color="#667085" />
                 <span>نسخ هذا اليوم</span>
+              </button>
+            )}
+
+            {/* Delete Workout Day Button */}
+            {handleDeleteSession && currentSessions.length > 1 && (
+              <button
+                type="button"
+                onClick={() => handleDeleteSession(activeSessionIdx)}
+                style={{
+                  height: '36px',
+                  padding: '0 14px',
+                  borderRadius: '8px',
+                  border: '1px solid #FECDCA',
+                  background: '#FEF3F2',
+                  color: '#D92D20',
+                  fontSize: '12px',
+                  fontWeight: 600,
+                  cursor: 'pointer',
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '5px',
+                  transition: 'all 0.15s ease'
+                }}
+                onMouseEnter={(e) => (e.currentTarget.style.background = '#FEE4E2')}
+                onMouseLeave={(e) => (e.currentTarget.style.background = '#FEF3F2')}
+                title={`حذف اليوم التدريبي الحالي (${activeSession?.name || ''}) بالكامل من الخطة`}
+              >
+                <Trash2 size={13} color="#D92D20" />
+                <span>حذف هذا اليوم</span>
               </button>
             )}
           </div>

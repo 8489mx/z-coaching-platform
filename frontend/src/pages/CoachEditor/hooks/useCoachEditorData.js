@@ -1018,24 +1018,186 @@ export function useCoachEditorData() {
   };
 
   const handleDuplicateSession = (sIdx) => {
-    updateProgramTrainingSessions(sessionsList => {
-      const list = [...sessionsList];
-      const sourceSession = list[sIdx];
-      if (!sourceSession) return list;
-      const newSession = {
-        ...sourceSession,
-        id: `sess_copy_${Date.now()}`,
-        name: `${sourceSession.name || 'اليوم التدريبي'} (نسخة)`,
-        exercises: (sourceSession.exercises || []).map((ex, idx) => ({
-          ...ex,
-          id: `ex_copy_${Date.now()}_${idx}`
-        }))
+    setProgram(prev => {
+      if (!prev?.training) return prev;
+      let updatedWeeks = prev.training.weeks ? [...prev.training.weeks] : null;
+      let updatedSessions = [...(prev.training.sessions || [])];
+      const now = Date.now();
+
+      if (updatedWeeks && updatedWeeks.length > 0) {
+        updatedWeeks = updatedWeeks.map((w, wIdx) => {
+          const weekSessions = [...(w.sessions || [])];
+          const srcSess = weekSessions[sIdx];
+          if (!srcSess) return w;
+          const clonedExercises = (srcSess.exercises || []).map((ex, eIdx) => ({
+            ...ex,
+            id: `ex_copy_${now}_w${w.week_number || wIdx}_${eIdx}`
+          }));
+          const baseName = srcSess.name || 'اليوم التدريبي';
+          const clonedSession = {
+            ...srcSess,
+            id: `sess_copy_${now}_w${w.week_number || wIdx}`,
+            name: baseName.includes('(نسخة)') ? baseName : `${baseName} (نسخة)`,
+            exercises: clonedExercises
+          };
+          weekSessions.splice(sIdx + 1, 0, clonedSession);
+          return { ...w, sessions: weekSessions };
+        });
+
+        const activeWeek = updatedWeeks.find(w => w.week_number === selectedWeek) || updatedWeeks[0];
+        if (activeWeek && activeWeek.sessions) {
+          updatedSessions = activeWeek.sessions;
+        }
+      } else {
+        const srcSess = updatedSessions[sIdx];
+        if (srcSess) {
+          const clonedExercises = (srcSess.exercises || []).map((ex, eIdx) => ({
+            ...ex,
+            id: `ex_copy_${now}_${eIdx}`
+          }));
+          const baseName = srcSess.name || 'اليوم التدريبي';
+          const clonedSession = {
+            ...srcSess,
+            id: `sess_copy_${now}`,
+            name: baseName.includes('(نسخة)') ? baseName : `${baseName} (نسخة)`,
+            exercises: clonedExercises
+          };
+          updatedSessions.splice(sIdx + 1, 0, clonedSession);
+        }
+      }
+
+      const newTraining = {
+        ...prev.training,
+        sessions: updatedSessions,
+        ...(Array.isArray(prev.training.workout_days) ? { workout_days: updatedSessions } : {}),
+        ...(Array.isArray(prev.training.days) ? { days: updatedSessions } : {}),
+        ...(updatedWeeks ? { weeks: updatedWeeks } : {})
       };
-      list.splice(sIdx + 1, 0, newSession);
-      return list;
+
+      const syncObj = {
+        ...prev,
+        training: newTraining
+      };
+
+      if (prev.training_program) {
+        syncObj.training_program = {
+          ...prev.training_program,
+          sessions: updatedSessions,
+          ...(updatedWeeks ? { weeks: updatedWeeks } : {})
+        };
+      }
+      if (prev.training_split) {
+        syncObj.training_split = {
+          ...prev.training_split,
+          sessions: updatedSessions
+        };
+      }
+
+      return syncObj;
     });
+
     setActiveSessionIdx(sIdx + 1);
-    showToast('تم نسخ اليوم التدريبي بالكامل بنجاح');
+    showToast('تم نسخ اليوم التدريبي بالكامل بنجاح ومزامنته في الخطة');
+  };
+
+  const handleDeleteSession = (sIdx) => {
+    const currentSessionsList = (program?.training?.weeks && currentWeekData?.sessions)
+      ? currentWeekData.sessions
+      : (program?.training?.sessions || []);
+
+    if (currentSessionsList.length <= 1) {
+      showToast('لا يمكن حذف اليوم، يجب أن يحتوي البرنامج على يوم تدريبي واحد على الأقل', 'error');
+      return;
+    }
+
+    const sessToDelete = currentSessionsList[sIdx];
+    const sessName = sessToDelete?.name || `اليوم التدريبي ${sIdx + 1}`;
+
+    if (typeof window !== 'undefined' && window.confirm && !window.confirm(`هل أنت متأكد من حذف ${sessName} نهائياً من البرنامج؟`)) {
+      return;
+    }
+
+    let nextActiveIdx = activeSessionIdx;
+    if (activeSessionIdx >= currentSessionsList.length - 1) {
+      nextActiveIdx = Math.max(0, currentSessionsList.length - 2);
+    } else if (activeSessionIdx > sIdx) {
+      nextActiveIdx = activeSessionIdx - 1;
+    }
+
+    setProgram(prev => {
+      if (!prev?.training) return prev;
+      let updatedWeeks = prev.training.weeks ? [...prev.training.weeks] : null;
+      let updatedSessions = [...(prev.training.sessions || [])];
+
+      if (updatedWeeks && updatedWeeks.length > 0) {
+        updatedWeeks = updatedWeeks.map(w => {
+          const weekSessions = [...(w.sessions || [])].filter((_, idx) => idx !== sIdx);
+          return { ...w, sessions: weekSessions };
+        });
+
+        const activeWeek = updatedWeeks.find(w => w.week_number === selectedWeek) || updatedWeeks[0];
+        if (activeWeek && activeWeek.sessions) {
+          updatedSessions = activeWeek.sessions;
+        }
+      } else {
+        updatedSessions = updatedSessions.filter((_, idx) => idx !== sIdx);
+      }
+
+      const targetSession = updatedSessions[nextActiveIdx] || updatedSessions[0];
+      const sessionDemand = calculateSessionDemand(targetSession?.exercises || []);
+
+      let rebalancedMeals = prev.nutrition?.meals || [];
+      if (autoRippleEnabled && rebalancedMeals.length > 0) {
+        rebalancedMeals = rebalanceMealsForTrainingDemand({
+          meals: rebalancedMeals,
+          supplements: prev.cardio?.supplements || [],
+          targets: prev.nutrition?.targets || {
+            calories: prev.nutrition?.target_calories || 2000,
+            protein: prev.nutrition?.target_protein || 150,
+            carbs: prev.nutrition?.target_carbs || 200,
+            fats: prev.nutrition?.target_fats || 50
+          },
+          sessionDemand,
+          autoRippleEnabled: true
+        });
+      }
+
+      const newTraining = {
+        ...prev.training,
+        sessions: updatedSessions,
+        ...(Array.isArray(prev.training.workout_days) ? { workout_days: updatedSessions } : {}),
+        ...(Array.isArray(prev.training.days) ? { days: updatedSessions } : {}),
+        ...(updatedWeeks ? { weeks: updatedWeeks } : {})
+      };
+
+      const syncObj = {
+        ...prev,
+        training: newTraining,
+        nutrition: {
+          ...prev.nutrition,
+          meals: rebalancedMeals
+        }
+      };
+
+      if (prev.training_program) {
+        syncObj.training_program = {
+          ...prev.training_program,
+          sessions: updatedSessions,
+          ...(updatedWeeks ? { weeks: updatedWeeks } : {})
+        };
+      }
+      if (prev.training_split) {
+        syncObj.training_split = {
+          ...prev.training_split,
+          sessions: updatedSessions
+        };
+      }
+
+      return syncObj;
+    });
+
+    setActiveSessionIdx(nextActiveIdx);
+    showToast(`تم حذف ${sessName} بنجاح ومزامنة الخطة`);
   };
 
   const handleAddExerciseToSession = (sIdx, ex) => {
@@ -1496,6 +1658,7 @@ export function useCoachEditorData() {
     handleUpdateExerciseParam,
     handleMoveExercise,
     handleDuplicateSession,
+    handleDeleteSession,
     handleDeleteExercise,
     handleAddExerciseToSession,
     handleSelectCardioModality,

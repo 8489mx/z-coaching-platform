@@ -46,7 +46,7 @@ export default function CoachEditor() {
     handleSelectClient, showToast, _handleUpdateFoodAmount, _handleDeleteFood,
     _handleAddNewMeal, _handleDuplicateMeal, _handleDeleteMeal, handleAddFoodToMeal,
     handleExecuteFoodSwap, handleExecuteExerciseSwap, handleUpdateExerciseParam,
-    handleMoveExercise, handleDuplicateSession, handleDeleteExercise,
+    handleMoveExercise, handleDuplicateSession, handleDeleteSession, handleDeleteExercise,
     handleAddExerciseToSession, handleSelectCardioModality, handleUpdateCardioParam,
     handleAddMobilityToSession, handleRemoveMobilityFromSession,
     handleSaveDraft, handleApproveAndPublish, filteredQueue, displayedQueue,
@@ -216,6 +216,7 @@ export default function CoachEditor() {
             setAddExModal={setAddExModal}
             handleMoveExercise={handleMoveExercise}
             handleDuplicateSession={handleDuplicateSession}
+            handleDeleteSession={handleDeleteSession}
             activeSessionDemand={activeSessionDemand}
             weeklyVolumeAudit={weeklyVolumeAudit}
             clientProgression={editor.clientProgression}
