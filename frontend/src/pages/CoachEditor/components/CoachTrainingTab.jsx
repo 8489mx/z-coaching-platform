@@ -659,7 +659,7 @@ export function CoachTrainingTab({
                 </div>
               </div>
 
-              {/* Coach Cue / تركاية الكوتش */}
+              {/* Performance Cue / توجيه الأداء */}
               <div style={{
                 display: 'flex',
                 alignItems: 'center',
@@ -671,13 +671,13 @@ export function CoachTrainingTab({
                 transition: 'border-color 0.15s ease'
               }}>
                 <span style={{ fontSize: '11px', fontWeight: 700, color: '#673DE6', whiteSpace: 'nowrap' }}>
-                  تركاية الكوتش:
+                  توجيه الأداء:
                 </span>
                 <input
                   type="text"
                   value={ex.safetyNote || ex.cues_ar || ''}
                   onChange={(e) => handleUpdateExerciseParam(activeSessionIdx, eIdx, 'safetyNote', e.target.value)}
-                  placeholder="أضف تركاية أو توجيه تكنيك مخصص للمتدرب في هذا التمرين (اختياري)..."
+                  placeholder="تعليمات التكنيك وملاحظات الأداء الخاصة للمتدرب (اختياري)..."
                   style={{
                     flex: 1,
                     background: 'transparent',
@@ -693,7 +693,7 @@ export function CoachTrainingTab({
                   <button
                     type="button"
                     onClick={() => handleUpdateExerciseParam(activeSessionIdx, eIdx, 'safetyNote', '')}
-                    title="مسح التركاية"
+                    title="مسح التوجيه"
                     style={{
                       border: 'none',
                       background: 'transparent',
